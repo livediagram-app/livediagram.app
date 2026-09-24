@@ -131,7 +131,8 @@ overlapping LABELS (for the operator to review, not for the detector).
   - [x] R2 Necks: take a sprawling blob apart where its paper narrows to a
         corner or a sliver (checkerboards of two kinds), before the grid.
   - [ ] R2b Small-pad pairs: cut at the pad's scale where the paper shows a gap.
-  - [ ] R3 Cross-colour boxes: a box that spans another colour's notes.
+  - [x] R3 Cross-colour boxes: trim the colour fringe a note trails along a
+        neighbour of another kind (the necks' erosion, grown back only so far).
   - [ ] R4 Heavily lapped pairs: trim the sliver of the note underneath.
   - [ ] R5 2-D seam search in sprawling blobs (cut where the seams are, not
         where the grid falls).

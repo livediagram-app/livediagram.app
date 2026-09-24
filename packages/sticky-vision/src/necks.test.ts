@@ -78,6 +78,18 @@ describe('splitAtNecks', () => {
     expect(splitAtNecks(box, c.mask, 40)).toEqual([box]);
   });
 
+  it('trims a fringe of paper colour trailing off a note', () => {
+    // A line of pixels a JPEG edge painted this colour along a neighbour of
+    // another kind: one pixel wide, running a note's length off the corner.
+    const c = canvas(100, 120);
+    c.paint(10, 10, 40, 40);
+    c.paint(49, 50, 1, 40);
+    const pieces = splitAtNecks(c.boxAround(), c.mask, 40);
+    expect(pieces).toHaveLength(1);
+    expect(pieces[0]).toMatchObject({ x: 10, y: 10, w: 40 });
+    expect(pieces[0]!.h).toBeLessThan(56);
+  });
+
   it('only reads paper of the box’s own colour', () => {
     const c = canvas(120, 60);
     c.paint(10, 10, 40, 40);

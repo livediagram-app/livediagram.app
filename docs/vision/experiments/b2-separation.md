@@ -165,3 +165,53 @@ panorama note found. About 40 ms more per photo.
 **Verdict: kept**, for a small, clean gain. It does not touch the merged
 count: those merges are pairs a neck cannot see (flush, or at a smaller
 pad's scale).
+
+## R3: trim the fringe a note trails along its neighbour (kept)
+
+**Finding.** Two of the four cross-colour boxes (201646 #1, panorama #1)
+were a note whose box ran down the side of a neighbour of another kind. The
+raw mask (`region.ts`) shows why: along the edge of a yellow actor lapped
+over an orange event, the JPEG blend of yellow and wall reads as orange, a
+line of orange one pixel wide running the actor's whole length. The close
+joins it to the orange note, and the orange box grows over the actor.
+
+**Rule.** The necks' cores (R2) grow back only `NECK_REGROW` = 2 erosions
+far, square by square (8-connected, so the growth matches the square
+erosion). Paper further than that from every core is a strip thinner than
+a note's edge trailing off it, and is dropped; a blob with one core comes
+back trimmed. Applied from `NECK_MIN_AREA` = 1.5 note areas (lowered from 2,
+which is above a note with a fringe down one side).
+
+| area \ regrow | 1.75      | 2         | 2.25      | 2.5       |
+| ------------- | --------- | --------- | --------- | --------- |
+| 1.25          | 88.7 / 26 | 88.9 / 26 | 88.9 / 27 |           |
+| 1.5           | 88.7 / 26 | 88.9 / 26 | 88.9 / 27 | 89.0 / 28 |
+| 1.75          | 88.8 / 26 | 88.8 / 26 | 88.8 / 27 |           |
+| 2 (R2's)      |           | 88.9 / 28 | 88.9 / 28 | 89.0 / 29 |
+
+(A: TOTAL / merged.) Regrowing only once (an exact opening) takes merged to
+26 but shaves the panorama's small actors below the size floor (recall 66
+→ 60). Regrowth unlimited is R2.
+
+| wall             | A: F1 / rec-A / merged | L: F1 / rec-A / merged |
+| ---------------- | ---------------------- | ---------------------- |
+| 201646           | 82 / 93 / 1            | 82 / 93 / 1            |
+| 201654           | 98 / 98 / 3            | 98 / 98 / 3            |
+| 201707           | 94 / 93 / 2            | 94 / 95 / 1            |
+| 201713           | 97 / 96 / 0            | 97 / 96 / 0            |
+| 201730 (shade)   | 93 / 92 / 2            | 93 / 92 / 2            |
+| 201743 (night)   | 57 / 51 / 1            | 57 / 51 / 1            |
+| wall-panorama    | 77 / 64 / 7            | 77 / 64 / 7            |
+| whiteboard-dense | 92 / 88 / 10           | 93 / 89 / 8            |
+| **TOTAL**        | **88.9 / 26**          | **89.1 / 23**          |
+
+What moved (A): cross-colour 4 → 2, one inseparable pair on the panorama
+parted, 201646 and 201730 each find one more note; 201743 and the panorama
+each gain one spurious box, and the panorama loses one small actor. In L,
+201730's lapped pair (which the seam cut parted) is merged again: the
+lower note shows a strip 12 px deep below the upper one, the trim takes it
+for a fringe, and the box left (1.08 × 1.19 notes) is too short for
+`SEAM_MIN_SPAN` while still holding both centres.
+
+**Verdict: kept.** Merged 29 → 26 on the branch, 25 → 23 with luminance,
+TOTAL level.

@@ -13,6 +13,12 @@ import type { Box, PaperMask } from './boxes';
 // and every pixel of the blob goes back to the core it is nearest along the
 // paper. Two notes flush along a whole side have no neck, and are left to
 // the splitter.
+//
+// The same erosion TRIMS a note: paper that is not within reach of any core
+// is a strip thinner than a note's edge trailing off it — a fringe of this
+// colour the JPEG painted along a neighbour of another kind, a sliver of a
+// note underneath — and it is dropped, so the box is the note's and not the
+// note's plus a line down its neighbour.
 
 // How deep the erosion bites, as a fraction of the note: a join thinner than
 // twice this parts, while a note (at least half a note thick, even a small
@@ -21,6 +27,12 @@ const NECK_ERODE_FRACTION = 0.15;
 // A core smaller than this square (in notes) is a tab, a corner or a curl,
 // not a note: its pixels go to the note it hangs off.
 const NECK_MIN_CORE = 0.25;
+// How far a core grows back, as a multiple of the erosion. Once is the note
+// exactly (an opening), which on the panorama also shaved its small actors
+// below the size floor; twice gives the note back and still stops short of a
+// strip longer than the erosion. 1.75–2.25 score alike on the eight walls,
+// 1.5 and 2.5 each give back two merged boxes.
+const NECK_REGROW = 2;
 
 // The blob's own paper, padded by `pad` so the erosion bites at the box's
 // edges too.
@@ -70,8 +82,8 @@ function labelsOf(bin: Uint8Array, width: number, height: number): Int32Array {
   return labels;
 }
 
-// Split `box` at the necks of its paper into one box per note, or return it
-// as it was when it has fewer than two cores.
+// One box per note in `box`, split at the necks of its paper and trimmed of
+// what trails off it, or `box` as it was when not even one note has a core.
 export function splitAtNecks(box: Box, mask: PaperMask, noteSize: number): Box[] {
   if (noteSize <= 0 || box.w <= 0 || box.h <= 0) return [box];
   const radius = Math.max(1, Math.round(noteSize * NECK_ERODE_FRACTION));
@@ -83,9 +95,10 @@ export function splitAtNecks(box: Box, mask: PaperMask, noteSize: number): Box[]
   for (const l of labels) if (l !== 0) counts.set(l, (counts.get(l) ?? 0) + 1);
   const minCore = (noteSize * NECK_MIN_CORE) ** 2;
   const cores = [...counts].filter(([, n]) => n >= minCore).map(([l]) => l);
-  if (cores.length < 2) return [box];
+  if (cores.length === 0) return [box];
 
-  // Grow the cores back over the blob's paper, breadth first, so each pixel
+  // Grow the cores back over the blob's paper, breadth first and square by
+  // square (as far as the erosion took, and as far again), so each pixel
   // goes to the core nearest it ALONG the paper: a pixel of one note never
   // goes to the note across a gap from it.
   const owner = new Int32Array(labels.length);
@@ -97,11 +110,22 @@ export function splitAtNecks(box: Box, mask: PaperMask, noteSize: number): Box[]
       frontier.push(p);
     }
   }
-  while (frontier.length > 0) {
+  for (let step = 0; frontier.length > 0 && step < NECK_REGROW * radius; step += 1) {
     const next: number[] = [];
     for (const p of frontier) {
       const x = p % width;
-      for (const q of [x > 0 ? p - 1 : -1, x < width - 1 ? p + 1 : -1, p - width, p + width]) {
+      const l = x > 0;
+      const r = x < width - 1;
+      for (const q of [
+        l ? p - 1 : -1,
+        r ? p + 1 : -1,
+        p - width,
+        p + width,
+        l ? p - width - 1 : -1,
+        r ? p - width + 1 : -1,
+        l ? p + width - 1 : -1,
+        r ? p + width + 1 : -1,
+      ]) {
         if (q < 0 || q >= owner.length || region.classes[q] === 0 || owner[q] !== 0) continue;
         owner[q] = owner[p]!;
         next.push(q);
@@ -132,4 +156,4 @@ export function splitAtNecks(box: Box, mask: PaperMask, noteSize: number): Box[]
   return [...pieces.values()];
 }
 
-export const NECK_CALIBRATION = { NECK_ERODE_FRACTION, NECK_MIN_CORE } as const;
+export const NECK_CALIBRATION = { NECK_ERODE_FRACTION, NECK_MIN_CORE, NECK_REGROW } as const;

@@ -40,11 +40,13 @@ const CUT_SNAP_FRACTION = 0.3;
 const VALLEY_MAX_FILL = 0.7;
 
 // A blob at least this big (in note areas) is first taken apart at its NECKS
-// (see `necks.ts`): notes of one colour that touch only at a corner or along
-// a sliver, as in a checkerboard of two kinds, part there rather than where
-// an even grid falls. Any value from 1.5 to 3 scores the same on the eight
-// labelled walls.
-const NECK_MIN_AREA = 2;
+// and trimmed of the strips trailing off it (see `necks.ts`): notes of one
+// colour that touch only at a corner or along a sliver, as in a checkerboard
+// of two kinds, part there rather than where an even grid falls. A single
+// note is not trimmed: its box is already its own. Any value from 1.25 to
+// 1.75 scores alike on the eight labelled walls; from 2 up, the fringes along
+// a note lapped over a neighbour of another kind are no longer trimmed.
+const NECK_MIN_AREA = 1.5;
 // …and the parts are taken only when every one is a note, at most this long
 // (in notes). A part longer than that is a group of notes the necks happened
 // to fall around, and the grid over the whole blob was measured to do better
