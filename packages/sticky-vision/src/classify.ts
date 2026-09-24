@@ -32,8 +32,11 @@ const HUE_BANDS: HueBand[] = [
   { kind: 'domain-event', from: 12, to: 44 },
   // Yellow: actor vs aggregate, split by saturation below.
   { kind: 'actor', from: 44, to: 70 },
-  // Green, from the yellow-greens a warm room produces to a proper green.
-  { kind: 'read-model', from: 70, to: 175 },
+  // Green, from the yellow-greens a warm room produces to a proper green, and
+  // on to where blue begins: a pale mint read model on kraft measures h≈173
+  // to 182 as photographed, and a gap between the bands made that paper
+  // nobody's. Anywhere from 180 to 185 finds it and moves nothing else.
+  { kind: 'read-model', from: 70, to: 185 },
   // Blue.
   { kind: 'command', from: 185, to: 250 },
   // Purple. Runs to 305 because the pale lilac the operator's wall uses for a
