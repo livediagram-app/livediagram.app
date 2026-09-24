@@ -5,7 +5,7 @@ import { ModeBanner } from '@/components/chrome/ModeBanner';
 import { GroupIcon } from '@/components/canvas/selection-popover-icons';
 import { ParticipantAvatar } from '@/components/primitives/ParticipantAvatar';
 import { TimerWidget } from '@/components/chrome/TimerWidget';
-import { TopCenterRow, TopCenterStack } from '@/components/chrome/TopCenter';
+import { TopCenterBanner, TopCenterRow, TopCenterStack } from '@/components/chrome/TopCenter';
 import { VoteBanner } from '@/components/chrome/VoteBanner';
 
 // Everything that floats at the top of the canvas: the owner / role
@@ -84,7 +84,12 @@ export function TopCenterChrome({
           this feature must never leave you in. */}
       {followingName ? (
         <TopCenterRow>
-          <div className="flex items-center gap-2 rounded-full bg-brand-500 px-3 py-1 text-[11px] font-medium text-white shadow-sm">
+          {/* A TopCenterBanner rather than a hand-rolled pill, because the
+              stack is `pointer-events-none` and each pill re-enables events
+              for ITSELF. Built by hand, this one never did: Stop could not be
+              clicked and did not even take the pointer cursor, so the only
+              exit from being followed was a canvas gesture. */}
+          <TopCenterBanner tone="live" className="gap-2 px-3 py-1 text-[11px] font-medium">
             <span className="relative flex h-1.5 w-1.5" aria-hidden>
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white/80" />
               <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-white" />
@@ -97,7 +102,7 @@ export function TopCenterChrome({
             >
               Stop
             </button>
-          </div>
+          </TopCenterBanner>
         </TopCenterRow>
       ) : null}
       {/* Visitor-only owner + role badge. Desktop-only: the top row is
