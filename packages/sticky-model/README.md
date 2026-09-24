@@ -31,6 +31,7 @@ repo: weights fine-tuned on the private walls are derived from them.
 
 ```bash
 cd packages/sticky-model
+scripts/install-tfjs-node.sh [--gpu]            # once: TensorFlow for Node, outside the repo
 npx tsx scripts/preview-synth.ts 16            # contact sheet of synthetic walls
 npx tsx scripts/gen-synth.ts --count 12000     # shards of 256px tiles
 npx tsx scripts/train.ts --synth <shards> --out <dir> --steps 8000
@@ -40,6 +41,15 @@ npx tsx scripts/score.ts --models <dir> --t 0.4 --min-core 45 --min-area 0.35 [-
 
 Scoring reads the private truth (`vision-model-truths`) exactly as
 `sticky-vision/scripts/calibrate.ts` does.
+
+### Why TensorFlow is installed separately
+
+`@tensorflow/tfjs-node` and `-gpu` download libtensorflow (hundreds of MB) in
+an install script. As workspace dependencies every `pnpm install`, CI
+included, would pay for them; so the workspace depends only on the pure
+JavaScript `@tensorflow/tfjs` (for types), and `scripts/install-tfjs-node.sh`
+puts the native bindings under `$STICKY_MODEL_DIR/tfjs` (override:
+`STICKY_MODEL_TF_DIR`), where `scripts/model/tf.ts` loads them from.
 
 ### On the GPU
 

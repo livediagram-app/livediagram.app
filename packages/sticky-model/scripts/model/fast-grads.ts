@@ -1,4 +1,4 @@
-import type { NamedAttrMap, Tensor } from '@tensorflow/tfjs-node';
+import type { NamedAttrMap, Tensor } from '@tensorflow/tfjs';
 import { tf } from './tf';
 
 // tfjs-core's gradients of Sum and Mean broadcast the incoming gradient by
