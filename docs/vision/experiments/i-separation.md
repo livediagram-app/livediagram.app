@@ -174,3 +174,54 @@ any wall moves.
 left on the panorama (#2, #3, #8: 23–25 px thick, 0.70–0.76 of a note) sit
 just above the threshold; 0.75 reaches the thickness but finds no seam in
 them.
+
+## I5a: the fringe beside a neighbour of another colour (kept)
+
+**Finding.** Both cross-colour boxes left on the panorama (#0, #5: an orange
+event whose box reaches over a pink hotspot's centre) hang on the same
+thing: a ring of orange one or two pixels wide around a small yellow note
+lapped on the event's foot (`region.ts`), the JPEG's blend of yellow and
+wall. Round 2's trim drops such a fringe only where it runs further than the
+regrowth reaches (twice the erosion, 10 px there); this one is shorter, so
+the event's box grows 9 px down the yellow note's side and takes the
+hotspot's centre with it.
+
+**Rule.** In `necks.ts`, paper that touches paper of another colour
+(8-connected, in the closed mask) is BESIDE it. The erosion reads all the
+paper, as before; the regrowth follows BESIDE paper only while it is
+restoring the note's own body, up to `NECK_FRINGE_FREE` = 1.5 erosions from
+the core, and not beyond.
+
+| variant                                               | TOTAL | merged | panorama F1 / prec / rec-A / m |
+| ----------------------------------------------------- | ----- | ------ | ------------------------------ |
+| reference (I2)                                        | 91.8  | 26     | 86 / 91 / 83 / 9               |
+| BESIDE paper left out of the region altogether (1 px) | 91.7  | 24     | 85 / 89 / 83 / 7               |
+| …2 px                                                 | 90.5  | 21     | 74 / 90 / 70 / 5               |
+| …3 px                                                 | 90.3  | 22     | 71 / 88 / 66 / 5               |
+| BESIDE only where ≥ 2–3 of the 8 neighbours are other | 91.7  | 24     | 85 / 89 / 83 / 7               |
+| erode everything, never regrow into BESIDE            | 91.7  | 24     | 85 / 89 / 83 / 7               |
+| …after 1.0–1.4 erosions                               | 91.7  | 24     | 85 / 89 / 83 / 7               |
+| …after 1.5–1.6 erosions                               | 91.8  | 24     | 86 / 91 / 83 / 7               |
+| …after 1.8 erosions                                   | 91.8  | 25     | 86 / 91 / 83 / 8               |
+
+Leaving BESIDE paper out of the region also narrows every note lapped on
+another colour by a pixel and changes which cores the erosion finds, so one
+small actor on the panorama (beside a big one) is swapped for a box. Letting
+the body regrow into it first keeps the cores as they were. Below 1.5 the
+same actor is swapped; from 1.8 one of the two fringes is followed again.
+
+| wall             | F1 / prec / rec-A / merged |
+| ---------------- | -------------------------- |
+| 201646           | 84 / 80 / 93 / 1           |
+| 201654           | 99 / 100 / 98 / 3          |
+| 201707           | 95 / 95 / 95 / 0           |
+| 201713           | 95 / 96 / 94 / 0           |
+| 201730 (shade)   | 93 / 94 / 92 / 2           |
+| 201743 (night)   | 80 / 82 / 77 / 2           |
+| wall-panorama    | 86 / 91 / 83 / 7           |
+| whiteboard-dense | 94 / 97 / 91 / 9           |
+| **TOTAL**        | **91.8 / 94 / 24**         |
+
+**Verdict: kept.** Merged 26 → 24 (cross-colour 3 → 1: the one left is a
+whiteboard note lapped under a command, 0.7 of it hidden), TOTAL level, no
+wall moves otherwise.

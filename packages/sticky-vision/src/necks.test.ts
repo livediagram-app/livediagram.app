@@ -90,6 +90,21 @@ describe('splitAtNecks', () => {
     expect(pieces[0]!.h).toBeLessThan(56);
   });
 
+  it('follows no fringe down the side of a neighbour of another colour', () => {
+    // The JPEG paints the edge of a neighbour of another kind in this note's
+    // colour: a line one pixel wide, running from the note's corner down the
+    // neighbour's side. The regrowth reaches to 56 (h 46), but past the
+    // note's own body it follows no paper that touches the neighbour.
+    const c = canvas(120, 120);
+    c.paint(10, 10, 40, 40);
+    c.paint(50, 50, 40, 40, 2);
+    c.paint(49, 50, 1, 16);
+    const pieces = splitAtNecks(c.boxAround(), c.mask, 40);
+    expect(pieces).toHaveLength(1);
+    expect(pieces[0]).toMatchObject({ x: 10, y: 10, w: 40 });
+    expect(pieces[0]!.h).toBeLessThanOrEqual(44);
+  });
+
   it('only reads paper of the box’s own colour', () => {
     const c = canvas(120, 60);
     c.paint(10, 10, 40, 40);

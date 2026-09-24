@@ -18,7 +18,9 @@ import type { Box, PaperMask } from './boxes';
 // is a strip thinner than a note's edge trailing off it — a fringe of this
 // colour the JPEG painted along a neighbour of another kind, a sliver of a
 // note underneath — and it is dropped, so the box is the note's and not the
-// note's plus a line down its neighbour.
+// note's plus a line down its neighbour. Such a fringe can also be shorter
+// than the regrowth reaches; so, beyond the note's own body, the regrowth does
+// not follow paper that touches paper of another colour.
 
 // How deep the erosion bites, as a fraction of the note: a join thinner than
 // twice this parts, while a note (at least half a note thick, even a small
@@ -30,12 +32,27 @@ const NECK_MIN_CORE = 0.25;
 // How far a core grows back, as a multiple of the erosion. Once is the note
 // exactly (an opening), which on the panorama also shaved its small actors
 // below the size floor; twice gives the note back and still stops short of a
-// strip longer than the erosion. 1.75–2.25 score alike on the eight walls,
-// 1.5 and 2.5 each give back two merged boxes.
+// strip longer than the erosion. It is sensitive: on the panorama (a 5 px
+// erosion) one step of regrowth more or less moves recall by up to ten
+// points (docs/vision/experiments/i-separation.md, I2).
 const NECK_REGROW = 2;
+// How far a core grows back before it stops following paper that touches
+// another colour, as a multiple of the erosion. Up to once is the note's own
+// body, whose edge may well lie against a neighbour; beyond it, paper that
+// runs along a neighbour of another kind is the JPEG's fringe of that
+// neighbour. Measured on the eight labelled walls, 0 to 1.7 all take the
+// panorama's two cross-colour boxes apart (merged 26 → 24); at 1.5–1.6 no wall
+// loses a note, while at 1.4 and below one small actor on the panorama is
+// swapped for a box (TOTAL 91.8 → 91.7).
+const NECK_FRINGE_FREE = 1.5;
+
+// Paper in the blob's own region: OPEN, or BESIDE where it touches paper of
+// another colour (8-connected).
+const OPEN = 1;
+const BESIDE = 2;
 
 // The blob's own paper, padded by `pad` so the erosion bites at the box's
-// edges too.
+// edges too, each pixel OPEN or BESIDE another colour.
 function regionOf(box: Box, mask: PaperMask, pad: number): PaperMask {
   const width = box.w + 2 * pad;
   const height = box.h + 2 * pad;
@@ -46,11 +63,20 @@ function regionOf(box: Box, mask: PaperMask, pad: number): PaperMask {
     for (let x = 0; x < box.w; x += 1) {
       const sx = x + box.x;
       if (sx < 0 || sx >= mask.width) continue;
-      if (mask.classes[sy * mask.width + sx] === box.classId)
-        classes[(y + pad) * width + x + pad] = 1;
+      if (mask.classes[sy * mask.width + sx] !== box.classId) continue;
+      classes[(y + pad) * width + x + pad] = besideOther(mask, sx, sy, box.classId) ? BESIDE : OPEN;
     }
   }
   return { width, height, classes };
+}
+
+function besideOther(mask: PaperMask, x: number, y: number, own: number): boolean {
+  for (let yy = Math.max(0, y - 1); yy <= Math.min(mask.height - 1, y + 1); yy += 1)
+    for (let xx = Math.max(0, x - 1); xx <= Math.min(mask.width - 1, x + 1); xx += 1) {
+      const c = mask.classes[yy * mask.width + xx]!;
+      if (c !== 0 && c !== own) return true;
+    }
+  return false;
 }
 
 // 4-connected labels of the set pixels, 1-based; 0 is unset.
@@ -89,7 +115,8 @@ export function splitAtNecks(box: Box, mask: PaperMask, noteSize: number): Box[]
   const radius = Math.max(1, Math.round(noteSize * NECK_ERODE_FRACTION));
   const region = regionOf(box, mask, radius);
   const { width, height } = region;
-  const eroded = erodePaperMask(region, radius).classes;
+  const paper = { width, height, classes: region.classes.map((c) => (c === 0 ? 0 : 1)) };
+  const eroded = erodePaperMask(paper, radius).classes;
   const labels = labelsOf(eroded, width, height);
   const counts = new Map<number, number>();
   for (const l of labels) if (l !== 0) counts.set(l, (counts.get(l) ?? 0) + 1);
@@ -112,6 +139,7 @@ export function splitAtNecks(box: Box, mask: PaperMask, noteSize: number): Box[]
   }
   for (let step = 0; frontier.length > 0 && step < NECK_REGROW * radius; step += 1) {
     const next: number[] = [];
+    const body = step < NECK_FRINGE_FREE * radius;
     for (const p of frontier) {
       const x = p % width;
       const l = x > 0;
@@ -127,6 +155,7 @@ export function splitAtNecks(box: Box, mask: PaperMask, noteSize: number): Box[]
         r ? p + width + 1 : -1,
       ]) {
         if (q < 0 || q >= owner.length || region.classes[q] === 0 || owner[q] !== 0) continue;
+        if (!body && region.classes[q] === BESIDE) continue;
         owner[q] = owner[p]!;
         next.push(q);
       }
@@ -156,4 +185,9 @@ export function splitAtNecks(box: Box, mask: PaperMask, noteSize: number): Box[]
   return [...pieces.values()];
 }
 
-export const NECK_CALIBRATION = { NECK_ERODE_FRACTION, NECK_MIN_CORE, NECK_REGROW } as const;
+export const NECK_CALIBRATION = {
+  NECK_ERODE_FRACTION,
+  NECK_MIN_CORE,
+  NECK_REGROW,
+  NECK_FRINGE_FREE,
+} as const;
