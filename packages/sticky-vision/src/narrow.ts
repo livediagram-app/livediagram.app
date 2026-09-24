@@ -61,10 +61,52 @@ export function isNarrowNote(box: Box, noteSize: number, raw?: PaperMask): boole
   return raw === undefined || seamAcross(box, raw) >= NARROW_MIN_SEAM;
 }
 
+// A narrow note is about twice as long as it is thick: the labelled ones are
+// 1.8 to 2.1. A run of them end to end is counted by that, its own
+// proportion, and not by the wall's note, which is what cuts a column of two
+// slanted notes into three slivers.
+const NARROW_RUN_ASPECT = 2;
+// …and a run is at most this many notes: longer is a strip of tape.
+const NARROW_RUN_MAX = 4;
+
+// A whole box that is a run of narrow notes end to end, cut into them: each
+// piece must be a narrow note in its own right, seam test and all, or the run
+// is not one and nothing is returned.
+export function cutNarrowRun(box: Box, noteSize: number, mask?: PaperMask, raw?: PaperMask): Box[] {
+  const short = Math.min(box.w, box.h);
+  const long = Math.max(box.w, box.h);
+  const count = Math.round(long / (short * NARROW_RUN_ASPECT));
+  if (count < 2 || count > NARROW_RUN_MAX) return [];
+  const horizontal = box.w > box.h;
+  const pieces: Box[] = [];
+  for (let i = 0; i < count; i += 1) {
+    const from = Math.round((i * long) / count);
+    const to = Math.round(((i + 1) * long) / count);
+    const piece = horizontal
+      ? { ...box, x: box.x + from, w: to - from }
+      : { ...box, y: box.y + from, h: to - from };
+    pieces.push({ ...piece, parts: undefined, pixels: paperIn(piece, box, mask) });
+  }
+  return pieces.every((p) => isNarrowNote(p, noteSize, raw)) ? pieces : [];
+}
+
+// The paper of the box's colour inside a piece, from the mask where there is
+// one; without it the box's own density, pro rata.
+function paperIn(piece: Box, box: Box, mask?: PaperMask): number {
+  if (!mask) return Math.round((box.pixels * piece.w * piece.h) / Math.max(1, box.w * box.h));
+  let count = 0;
+  for (let y = piece.y; y < piece.y + piece.h; y += 1)
+    for (let x = piece.x; x < piece.x + piece.w; x += 1)
+      if (mask.classes[y * mask.width + x] === box.classId) count += 1;
+  return count;
+}
+
 export const NARROW_CALIBRATION = {
   SEAM_SEARCH_FROM,
   SEAM_SEARCH_TO,
   NARROW_SHORT_RATIO,
   NARROW_LONG_RATIO,
   NARROW_MIN_SEAM,
+  NARROW_RUN_ASPECT,
+  NARROW_RUN_MAX,
 } as const;

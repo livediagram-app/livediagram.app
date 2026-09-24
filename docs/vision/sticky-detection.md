@@ -124,6 +124,11 @@ and testable.
      and 0.9 of one long, and ONE note: two small squares the close fused
      into a column still show a line of wall across their middle in the raw
      mask. A cut piece that thin keeps the ordinary floor, being a sliver.
+     A whole box that is a RUN of narrow notes end to end (two slanted notes
+     in a column) is counted by its own proportion, a narrow note being about
+     twice as long as thick, and kept only when every piece is a narrow note
+     of the wall's size; the length rule would count it by the wall's note
+     and cut it into slivers.
 
    What the size, area and aspect gates refuse is not thrown away yet: a
    **pad of small notes** (`pads.ts`) — a far board in the photograph, a pad
@@ -200,6 +205,7 @@ and testable.
 | `CUT_PIECE_SIZE_RATIO`                      | 0.6               | Each side of a notch or seam cut at least this thick; between this and `MIN_PAPER_SIZE_RATIO` a side is a sliver, dropped. 0.575–0.65 score alike.                                            |
 | `NARROW_SHORT_RATIO` / `_LONG_RATIO`        | 0.5 / 0.9         | A whole narrow note is at least this thick and long, in notes of its colour. 0.45–0.55 × 0.85–0.95 score alike.                                                                               |
 | `NARROW_MIN_SEAM`                           | 0.5               | The emptiest raw-mask line across a narrow box's middle, against its mean line: one note keeps 0.6+, a fused pair 0.25 or less. 0.3–0.6 score alike.                                          |
+| `NARROW_RUN_ASPECT` / `NARROW_RUN_MAX`      | 2 / 4             | A run of narrow notes is cut into long ÷ (2 × short) pieces, at most four. 1.85–2.3 score alike; 1.7 cuts a column of two into three.                                                         |
 | `PAD_REACH` / `PAD_SIZE_RATIO`              | 3.25 / 1.45       | Pad siblings: centres within this many short sides, sizes within this ratio. Reach 2.75 loses the night wall's far board; 3.5–5 let one scrap in. Ratio 1.3–1.6 score alike.                  |
 | `PAD_MIN_NOTES` / `PAD_MAX_SIZE`            | 3 / 0.7           | A pad is at least three boxes, each at most this share of the wall's note.                                                                                                                    |
 | `FUSED_MIN_ASPECT` / `FUSED_SIZE_RATIO`     | 1.75 / 1.5        | A refused box this elongated beside a pad is fused pad notes; a cut square joins at this looser size match. 1.6–1.85 and 1.35–1.5 score alike.                                                |

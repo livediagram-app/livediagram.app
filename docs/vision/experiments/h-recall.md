@@ -90,3 +90,41 @@ tell the two radii apart: each fails only where a stroke is wider than the gap
 between notes, at its own scale. The gain is in how real paper edges are
 photographed, which is why the guard test pins the rule (a one-pixel close for
 the working size's notes) rather than a drawing.
+
+## H2: a column of narrow notes, counted by its own proportion (kept)
+
+**Finding.** The night wall's slanted left column is two narrow notes end to
+end, 28×56 and 26×51 lapped by a few pixels, one component 24×111 with no seam
+in either mask. The length rule counts it by the wall's 41px note (2.7 notes)
+and cuts three 24×37 slivers, each under the size floor; the rescue finds
+nothing. As a single box it is refused for its aspect (4.6).
+
+**Hypothesis.** A narrow note is about twice as long as it is thick (the
+labelled ones 1.8 to 2.1). A whole box whose pieces, counted by that
+proportion, are each a narrow note (F1's test: half a note thick, 0.9 of one
+long, one note by the raw-mask seam) is a run of them.
+
+**Rule** (`cutNarrowRun`, `narrow.ts`). Tried after the pieces and the parts
+have failed and before the rescue: `round(long / (2 × short))` pieces, two to
+four, cut evenly; every piece must be a narrow note and paper by the ordinary
+filters, or the box goes on to the rescue as before.
+
+| variant                                   | TOTAL | 201743 night | wall-panorama |
+| ----------------------------------------- | ----- | ------------ | ------------- |
+| before                                    | 91.5  | 81/84/77/2   | 80/88/77/10   |
+| run judged by its colour's note size      | 91.5  | 83/83/82/2   | 79/86/77/10   |
+| run judged by the wall's note size (kept) | 91.6  | 83/83/82/2   | 80/88/77/10   |
+
+By its colour's size the panorama's small-pad floor let a strip of tape 14px
+thick through as two "narrow notes"; half a small note thick is tape, so the
+run is judged against the wall's note. The one box it adds that is not a note
+is a strip of lit kraft beside the night wall's racket handle (26×106, fill
+0.62; the column is 0.71): no feature of its own tells it apart.
+
+| `NARROW_RUN_ASPECT` | 1.7  | 1.85 | 2 (kept) | 2.15 | 2.3  |
+| ------------------- | ---- | ---- | -------- | ---- | ---- |
+| TOTAL               | 91.5 | 91.6 | 91.6     | 91.6 | 91.6 |
+| night rec-A         | 77   | 82   | 82       | 82   | 82   |
+
+At 1.7 the column counts as three again. Night +2 notes (77 → 82 rec-A),
++1 junk; no other wall moves.

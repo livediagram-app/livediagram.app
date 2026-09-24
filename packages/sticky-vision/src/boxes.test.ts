@@ -182,4 +182,33 @@ describe('fitBoxes, a narrow note', () => {
   it('drops two small squares stacked, with a line of wall between them', () => {
     expect(fit(20, 46, (_x, y) => y !== 22 && y !== 23).out).toHaveLength(0);
   });
+
+  it('cuts a column of two narrow notes end to end into the two', () => {
+    const { out } = fit(24, 88);
+    expect(out).toHaveLength(2);
+    for (const b of out) {
+      expect(b.w).toBe(24);
+      expect(b.h).toBeGreaterThanOrEqual(40);
+      expect(b.h).toBeLessThanOrEqual(48);
+    }
+  });
+
+  it('cuts a row of three narrow notes the same way', () => {
+    const width = 150;
+    const classes = new Uint8Array(width * 60);
+    for (let y = 10; y < 34; y += 1) for (let x = 5; x < 137; x += 1) classes[y * width + x] = 1;
+    const component = { classId: 1, minX: 5, minY: 10, maxX: 136, maxY: 33, pixels: 132 * 24 };
+    const mask = { width, height: 60, classes };
+    const out = fitBoxes([component], { imageSize: 1000, noteSize: 40, mask, seams: mask });
+    expect(out).toHaveLength(3);
+  });
+
+  it('still drops a strip of tape two notes long', () => {
+    expect(fit(18, 88).out).toHaveLength(0);
+  });
+
+  it('does not make two narrow notes of four small squares in a column', () => {
+    const seams = new Set([21, 22, 65, 66]);
+    expect(fit(22, 88, (_x, y) => !seams.has(y)).out).toHaveLength(0);
+  });
 });

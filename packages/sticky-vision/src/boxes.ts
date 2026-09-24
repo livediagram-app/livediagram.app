@@ -2,7 +2,7 @@ import { erodePaperMask, labelComponents, type Component } from './components';
 import { splitOversized, SPLIT_CALIBRATION } from './split';
 import { cutAtNotches } from './chords';
 import { cutAtSeam, type Luminance } from './seam';
-import { isNarrowNote } from './narrow';
+import { cutNarrowRun, isNarrowNote } from './narrow';
 
 // From blobs to stickies (spec/139 Phase 8).
 //
@@ -362,6 +362,10 @@ export function fitBoxes(
   // after the split.
   // `whole`: the box is a component as the mask drew it, not a piece cut
   // out of one, and so may be a narrow note (see `isNarrowNote`).
+  const floorOf = (b: Box) => {
+    const own = opts.classNoteSize?.get(b.classId);
+    return own !== undefined && own > 0 && own < size ? own : size;
+  };
   const isPaper = (b: Box) => notPaper(b, MIN_PAPER_SIZE_RATIO) === null;
   const paperAt = (b: Box, sizeRatio: number) => notPaper(b, sizeRatio) === null;
   const notPaper = (b: Box, sizeRatio: number, whole = false): DropReason | null => {
@@ -380,8 +384,7 @@ export function fitBoxes(
     // events with small yellow actors on it has two sizes, and a floor set by
     // the orange threw every actor away — while an orange sliver among orange
     // notes is still a sliver.
-    const own = opts.classNoteSize?.get(b.classId);
-    const floorSize = own !== undefined && own > 0 && own < size ? own : size;
+    const floorSize = floorOf(b);
     // …unless it is a whole NARROW note: a note long, and nobody's cut piece
     // (a piece of a cut this thin is a sliver of the note underneath).
     const narrow = whole && isNarrowNote(b, floorSize, opts.seams);
@@ -433,6 +436,13 @@ export function fitBoxes(
         splitOversized(part, size, opts.mask, opts.seams).filter((p) => keepPaper(p, p === part)),
       );
     if (parts.length > 0) return parts;
+    // A run of narrow notes end to end (two slanted notes in a column), which
+    // the length rule counts by the wall's note and so cuts into slivers.
+    // Judged against the WALL's note, not its colour's: half a small pad note
+    // thick is a strip of tape cut in two.
+    const run = cutNarrowRun(box, size, opts.mask, opts.seams);
+    if (run.length > 0 && run.every((p) => notPaper(p, MIN_PAPER_SIZE_RATIO, true) === null))
+      return run;
     // A block of touching notes, then: one component too square for the
     // splitter's arithmetic and too big for the filters. Rather than lose
     // eight real notes to it, pull it apart at the seams the paper itself has
