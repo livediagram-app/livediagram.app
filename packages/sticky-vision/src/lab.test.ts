@@ -57,12 +57,16 @@ describe('labImageOf', () => {
   });
 
   it('converts a 1000px photograph quickly', () => {
+    // A loose bound, like the detector's own speed test: the point is "not
+    // seconds", not a benchmark. It normally takes about 30 ms; a tight
+    // budget (150 ms) failed on a machine running every package's tests in
+    // parallel while nothing was slow.
     const width = 1000;
     const height = 750;
     const data = new Uint8ClampedArray(width * height * 4);
     for (let i = 0; i < data.length; i += 1) data[i] = (i * 2654435761) >>> 24;
     const started = performance.now();
     labImageOf({ width, height, data });
-    expect(performance.now() - started).toBeLessThan(150);
+    expect(performance.now() - started).toBeLessThan(750);
   });
 });
