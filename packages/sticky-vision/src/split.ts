@@ -33,8 +33,10 @@ const CUT_SNAP_FRACTION = 0.3;
 
 // How full the emptiest line near a proposed cut may be, as a fraction of the
 // blob's mean density along that axis, before the cut is refused for want of
-// a seam. See `cutLines`.
-const VALLEY_MAX_FILL = 0.85;
+// a seam. See `cutLines`. Tuned on the eight hand-labelled walls: 0.85 let
+// a note photographed close up be cut at a mere dip in its handwriting; 0.7
+// helped two walls and cost none, and 0.95 cost two.
+const VALLEY_MAX_FILL = 0.7;
 
 // Split a box that is plainly more than one note along its long axis. Two
 // overlapping orange events are one blob and two stickies, and a wall has
