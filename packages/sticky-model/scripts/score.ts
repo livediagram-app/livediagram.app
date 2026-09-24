@@ -25,6 +25,7 @@ const arg = (name: string, fallback: string) => {
   return i === -1 ? fallback : process.argv[i + 1]!;
 };
 const modelsDir = arg('models', `${WORK_DIR}/models/run`);
+const inferOpts = { scale: Number(arg('scale', '1')), flips: process.argv.includes('--tta') };
 
 const modelCache = new Map<string, TfNode.LayersModel>();
 async function modelFor(wall: string): Promise<TfNode.LayersModel> {
@@ -167,9 +168,9 @@ const walls = loadRealWalls();
 const predictions: { wall: RealWall; probs: Float32Array; ms: number }[] = [];
 for (const wall of walls) {
   const model = await modelFor(wall.name);
-  predictProbs(model, wall.rgba, wall.width, wall.height);
+  predictProbs(model, wall.rgba, wall.width, wall.height, inferOpts);
   const started = performance.now();
-  const probs = predictProbs(model, wall.rgba, wall.width, wall.height);
+  const probs = predictProbs(model, wall.rgba, wall.width, wall.height, inferOpts);
   predictions.push({ wall, probs, ms: performance.now() - started });
 }
 
@@ -210,6 +211,8 @@ if (process.argv.includes('--sweep')) {
     if (process.argv.includes('--overlay')) overlay(p.wall, p.probs, boxes);
     if (process.argv.includes('--list')) list(p.wall, boxes, row);
   }
-  console.log(`models: ${modelsDir}  decode: ${JSON.stringify(base)}`);
+  console.log(
+    `models: ${modelsDir}  infer: ${JSON.stringify(inferOpts)}  decode: ${JSON.stringify(base)}`,
+  );
   console.log(table(rows));
 }
