@@ -80,13 +80,22 @@ function groupCells(rng: Rng, size: number): Cell[] {
   return cells;
 }
 
+// Some walls carry a second, much smaller pad in whole groups (a column of
+// small notes, notes seen small through a window), so the model never learns
+// that every note on a wall is the same size.
+const SECOND_PAD_CHANCE = 0.2;
+const SECOND_PAD_SHARE = 0.35;
+const SECOND_PAD_SCALE: [number, number] = [0.25, 0.42];
+
 export function layoutNotes(rng: Rng, width: number, height: number, size: number): NoteSpec[] {
   const notes: NoteSpec[] = [];
+  const secondPad = rng.chance(SECOND_PAD_CHANCE) ? size * rng.range(...SECOND_PAD_SCALE) : null;
   const taken: { x0: number; y0: number; x1: number; y1: number }[] = [];
   const target = rng.range(0.12, 0.55) * width * height;
   let covered = 0;
   for (let attempt = 0; attempt < 200 && covered < target; attempt += 1) {
-    const cells = groupCells(rng, size);
+    const groupSize = secondPad !== null && rng.chance(SECOND_PAD_SHARE) ? secondPad : size;
+    const cells = groupCells(rng, groupSize);
     const minX = Math.min(...cells.map((c) => c.cx - c.w / 2));
     const maxX = Math.max(...cells.map((c) => c.cx + c.w / 2));
     const minY = Math.min(...cells.map((c) => c.cy - c.h / 2));
@@ -94,7 +103,7 @@ export function layoutNotes(rng: Rng, width: number, height: number, size: numbe
     // Groups may hang off the frame: a note cut by the photo's edge is real.
     const ox = rng.range(-minX - (maxX - minX) * 0.3, width - maxX + (maxX - minX) * 0.3);
     const oy = rng.range(-minY - (maxY - minY) * 0.3, height - maxY + (maxY - minY) * 0.3);
-    const margin = size * rng.range(0.1, 0.6);
+    const margin = groupSize * rng.range(0.1, 0.6);
     const box = {
       x0: ox + minX - margin,
       y0: oy + minY - margin,
@@ -126,6 +135,37 @@ export function layoutNotes(rng: Rng, width: number, height: number, size: numbe
       });
       covered += c.w * c.h;
     }
+  }
+  return notes;
+}
+
+// Notes outside the arrangement: fallen on the floor, stuck on at an angle,
+// on a window. Turned up to 45 degrees either way, centred wherever `where`
+// allows (anywhere by default).
+export function looseNotes(
+  rng: Rng,
+  width: number,
+  height: number,
+  size: number,
+  firstId: number,
+  where: (x: number, y: number) => boolean = () => true,
+): NoteSpec[] {
+  const notes: NoteSpec[] = [];
+  const count = rng.int(1, 8);
+  for (let tries = 0; tries < 60 && notes.length < count; tries += 1) {
+    const cx = rng.range(0, width);
+    const cy = rng.range(0, height);
+    if (!where(cx, cy)) continue;
+    const paper = pickPaper(rng);
+    notes.push({
+      id: firstId + notes.length,
+      cx,
+      cy,
+      ...noteShape(rng, size * rng.range(0.6, 1.1)),
+      angle: rng.range(-Math.PI / 4, Math.PI / 4),
+      paper,
+      colour: paperColour(rng, paper),
+    });
   }
   return notes;
 }

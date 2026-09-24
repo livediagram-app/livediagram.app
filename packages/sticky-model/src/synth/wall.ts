@@ -1,7 +1,7 @@
 import { AMBIGUOUS_ID, seamRadiusFor, threeClassMask, type Rect } from '../mask';
 import { paintBacking, paintDistractors, paintWallMarks, tape } from './backing';
 import { develop, light, randomView, warp } from './camera';
-import { layoutNotes } from './layout';
+import { layoutNotes, looseNotes } from './layout';
 import { paintNote } from './notes';
 import { BACKINGS, type Backing } from './palette';
 import { planeOf } from './raster';
@@ -33,6 +33,8 @@ const PLANE_MARGIN = 1.2;
 const MIN_VISIBLE_FRACTION = 0.3;
 // The range of note sizes, in output pixels: the real walls at the 1000px
 // working size run from ~18px (a dense whiteboard) to ~110px (a close-up).
+// How often a wall also has notes outside its arrangement (see looseNotes).
+const LOOSE_NOTES_CHANCE = 0.35;
 export const NOTE_SIZE_RANGE: [number, number] = [14, 120];
 
 export function syntheticWall(
@@ -55,7 +57,20 @@ export function syntheticWall(
   // Tape over the notes themselves: the paper stays a note beneath it.
   const tapes = rng.chance(0.3) ? rng.int(1, 3) : 0;
   for (let i = 0; i < tapes; i += 1) tape(plane, rng, noteSize);
-  paintRoom(plane, rng, noteSize);
+  const room = paintRoom(plane, rng, noteSize);
+  if (rng.chance(LOOSE_NOTES_CHANCE)) {
+    const inRoom = room !== null && rng.chance(0.6);
+    const loose = looseNotes(
+      rng,
+      plane.width,
+      plane.height,
+      noteSize,
+      notes.length + 1,
+      inRoom ? room : undefined,
+    );
+    for (const note of loose) paintNote(plane, rng, note, shadowFall);
+    notes.push(...loose);
+  }
 
   const view = randomView(rng, { w: width, h: height }, plane);
   const { rgb: linear, ids } = warp(plane, view, width, height);

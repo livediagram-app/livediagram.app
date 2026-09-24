@@ -34,7 +34,14 @@ function fillRegion(
   }
 }
 
-export function paintRoom(plane: Plane, rng: Rng, size: number): void {
+// Returns where the room is, when the frame shows one, so loose notes can be
+// dropped into it (a note fallen on the floor, one stuck on a window).
+export function paintRoom(
+  plane: Plane,
+  rng: Rng,
+  size: number,
+): ((x: number, y: number) => boolean) | null {
+  let room: ((x: number, y: number) => boolean) | null = null;
   if (rng.chance(0.35)) {
     // The wall ends: one side of the frame is the room.
     const side = rng.int(0, 3);
@@ -48,6 +55,7 @@ export function paintRoom(plane: Plane, rng: Rng, size: number): void {
           : side === 2
             ? x > plane.width - depth + slope * y
             : y > plane.height - depth + slope * x;
+    room = beyond;
     fillRegion(plane, rng, beyond, objectColour(rng));
     // Furniture and windows in the room, in any colour at all.
     const things = rng.int(1, 6);
@@ -72,4 +80,5 @@ export function paintRoom(plane: Plane, rng: Rng, size: number): void {
     const y0 = plane.height - h * rng.range(0.5, 1);
     fillRegion(plane, rng, (x, y) => x >= x0 && x < x0 + w && y >= y0, objectColour(rng));
   }
+  return room;
 }
