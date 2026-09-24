@@ -38,8 +38,8 @@ the same 1-D data model, while the line chart carries a 2-D dataset (see Model).
   vertical strip for a left/right legend or a horizontal band for a top/bottom
   one, and the chart body fills the remaining `area`; `ChartLegend` stacks in a
   column on the side, or wraps in a centred row on top/bottom.
-- Under the placement tiles (while the legend is on), **Text Size** —
-  **Small / Medium / Large** — sets the key's row size. It writes the element's
+- Under the placement tiles (while the legend is on), **Text Size**
+  (**Small / Medium / Large**) sets the key's row size. It writes the element's
   ordinary `textSize` (a chart has no label, so the Text flyout never offers
   it) and reads through `legendFontPx` (`label-font.ts`): 11 / 14 / 18px, with
   Medium the default. A key is not a name, so it has its own scale rather than

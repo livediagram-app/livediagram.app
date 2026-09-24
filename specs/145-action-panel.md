@@ -3,8 +3,8 @@
 Status: **implemented**.
 
 A **Collaborate** element: a card on the board carrying ONE assigned action
-(spec/68) — its name, description, who it is assigned to, and whether it is
-done — read where it sits rather than opened, and configured from the card.
+(spec/68): its name, description, who it is assigned to, and whether it is
+done. It is read where it sits rather than opened, and configured from the card.
 
 The shape kind is `action-card`. It is the action sibling of the Comment panel
 (spec/136), built the same way for the same reasons.
@@ -31,7 +31,7 @@ only job is to hold an `action`, so:
 
 - **Configuring** it opens the SAME Assign Action dialog the element menu's
   Assign Action tile opens (`openAssignActionDialog`): assignee picker, name,
-  description, the email toggle, the team-library nudges — all of spec/68 §2,
+  description, the email toggle, the team-library nudges: all of spec/68 §2,
   unchanged.
 - **Complete / Reopen** call the same `completeAction` / `reopenAction`, so the
   same telemetry fires and the same non-undoable carve-out applies (Cmd+Z must
@@ -47,7 +47,7 @@ If it ever grows a second way to store an action, that is the bug.
 - **Empty** (dropped fresh, no action yet): the card says so and offers one
   button, **Set Up Action**, which opens the Assign Action dialog for this
   card. The dialog prefills the action name from the element's label as it
-  does for any element, so the card ships with **no label** — a default
+  does for any element, so the card ships with **no label**, since a default
   caption would become every new action's name.
 - **With an action**: a header (the action glyph, "Action", and a **Done** chip
   once completed), the action's **name**, its **description** (scrolls when
@@ -64,7 +64,7 @@ If it ever grows a second way to store an action, that is the bug.
   empty card there just says there is no action yet.
 
 The generic action **badge** is suppressed on this kind: the card IS the badge,
-and a badge in its corner repeating what the card says is one too many — the
+and a badge in its corner repeating what the card says is one too many. It is the
 same rule the Comment panel applies to its comment count.
 
 ## Joined by an arrow

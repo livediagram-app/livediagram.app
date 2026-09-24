@@ -45,7 +45,7 @@ export function useBoxedElementAnimation(element: BoxedElement, textColor: strin
     element.type === 'shape' && (element.shape === 'sticker' || element.shape === 'chair');
   const isTextNativeAnim = (element.type === 'text' || isDrawnArt) && silhouetteAnim;
   // `gradient` is a background clipped to the glyphs, which drawn art has
-  // nothing to clip to — it gets a hue cycle over its own colours instead,
+  // nothing to clip to, so it gets a hue cycle over its own colours instead,
   // which is the same idea (a colour that moves) on a surface that has one.
   const silhouetteAnimClass = !isTextNativeAnim
     ? undefined
