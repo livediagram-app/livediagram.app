@@ -1202,6 +1202,34 @@ The plans live in `plans/event-storming-photo-review.md`,
 `plans/event-storming-photo-surface-and-shade.md` and
 `plans/event-storming-photo-precision.md`.
 
+## Phase 10 (planned): a higher-quality import through the author's own AI
+
+The default photo import is and stays FREE for everyone: detection in the
+browser, reading by the deployment's reader or the in-browser one, no key,
+no sign-up. Phase 10 adds an OPTION on top, for an author who already runs an
+AI coding agent (Claude Code, pi, anything that speaks MCP) and would rather
+spend their own model on a hard wall — a night shot, a whiteboard of three
+hundred small notes.
+
+- **An MCP tool, `add_photo_notes`.** The agent looks at the photograph with
+  its own vision model and calls the tool with the notes it sees: for each, its
+  KIND, its WORDS, and where it sits (a box as fractions of the photo). The
+  tool reconciles them against the board exactly as the photo import does
+  (`reconcilePhoto`: a note the board already has is "already here", never
+  moved or re-worded) and lands the new ones through the one builder
+  (`buildDraftNotes`) as a DRAFT on an event-storming tab. The author sees the
+  ordinary draft bar in the editor — **Add** or **Discard** — because a draft is
+  derived from the tab's elements; nothing new to learn, nothing lands
+  without the author.
+- **The photograph never goes to livediagram.** The agent holds it; only the
+  notes it read cross the wire, as they would if the author typed them.
+- **Discoverable, never required.** The help centre's photo-import article
+  and the MCP prompt list mention it; the editor does not nag. No tier, no
+  flag: whoever has an agent can use it, whoever does not loses nothing.
+- **A CLI is the same tool without an agent**: `livediagram import-wall
+<photo>` with the author's own key (a flash-class vision model) or a local
+  one, tiled for small notes, writing the same draft through the API.
+
 ## Domain learnings (session log)
 
 One-liners captured as they were learned — product truths for this diagram

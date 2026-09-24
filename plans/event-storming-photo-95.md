@@ -98,7 +98,7 @@ bundle size, effort, and links.
 
 ## Phase 5 — optional higher-quality paths
 
-- [ ] 5.1 Spec an MCP / CLI path (Claude Code, pi): hand the photo to the
+- [x] 5.1 Spec an MCP / CLI path (Claude Code, pi): hand the photo to the
       author's own model for detection or reading, as an OPTION.
 - [ ] 5.2 Build it if the research shows it earns its keep; the default path
       stays free.
