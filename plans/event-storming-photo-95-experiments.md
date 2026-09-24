@@ -92,6 +92,32 @@ touch another group's file stops and asks.
 - [ ] E4 Report: per-wall table, model size, node inference time, and an
       honest verdict on whether it can beat the classical pipeline.
 
+## Round 2 — after merging A, B, C, D (commit `155d4083` + label dedupe)
+
+Merged so far: A (CIELAB at the wall's hue, glare out of floors), B (never
+merge two whole notes, notch cuts, shadow-seam cuts), C (dark-and-grained
+gate, blank-and-edgeless gate), D (1000px stays; `--edge` sweep). TOTAL F1
+83.7 → **88.7**, precision 85% → 94%, merged 40 → 29, walls passing 0 → 1
+(201713). E (learned model) still running.
+
+What still fails, by cause (`scripts/merged.ts`): **paper found but no box
+survives** — night 19, whiteboard 18, panorama 8, shade 4; **inside a merged
+blob** — panorama 10, whiteboard 5, plus 12 same-colour and 4 cross-colour
+merged boxes; **no paper** — panorama 6; and 13 merged boxes that are
+overlapping LABELS (for the operator to review, not for the detector).
+
+- [ ] F — **no box made** (owns `boxes.ts`, `standout.ts`, `texture.ts`,
+      `detect.ts`): trace, per missed note with paper, which gate drops it
+      (speck/area, size floor, fill, aspect, split pieces refused, standout,
+      dark-grain, blank); fix the gates that drop notes without losing the
+      precision C bought. Night and whiteboard first.
+- [ ] B2 — **separation, round 2** (owns `split.ts`, `contour.ts`,
+      `seam.ts`): sprawling multi-note blobs still cut on an even grid (2-D
+      seam search instead), the 12 same-colour merges, the 4 cross-colour ones.
+- [ ] A2 — **colour, round 2** (owns `classify.ts`, `floors.ts`, `lab.ts`,
+      `colour.ts`): the panorama's no-paper notes (small pink hotspots,
+      pale pink), and the night wall's classification.
+
 ## Not yet delegated
 
 - **D-FINE-N / RT-DETR fine-tuning**: needs PyTorch, i.e. Python, which the
