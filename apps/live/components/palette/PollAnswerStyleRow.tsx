@@ -25,6 +25,7 @@ const PREVIEW: Record<PollStyle, string> = {
   yesNo: pollStyleTokens('yesNo').join('  '),
   yesNoAbstain: pollStyleTokens('yesNoAbstain').join('  '),
   choice: 'The answers you write',
+  collaborators: 'Everyone in the diagram',
   rating: pollStyleTokens('rating').join('  '),
   text: 'Whatever people type',
 };

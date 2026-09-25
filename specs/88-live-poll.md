@@ -68,13 +68,43 @@ across that line:
 `LivePoll.style`, all reducing to a single string `value` on the wire so one
 tally path serves them all:
 
-| Style          | Options                      |
-| -------------- | ---------------------------- |
-| `yesNo`        | Yes / No                     |
-| `yesNoAbstain` | Yes / No / Abstain           |
-| `choice`       | 2–10 creator-defined options |
-| `rating`       | 1–5                          |
-| `text`         | free text                    |
+| Style           | Options                           |
+| --------------- | --------------------------------- |
+| `yesNo`         | Yes / No                          |
+| `yesNoAbstain`  | Yes / No / Abstain                |
+| `choice`        | 2–10 creator-defined options      |
+| `collaborators` | everyone currently in the diagram |
+| `rating`        | 1–5                               |
+| `text`          | free text                         |
+
+### `collaborators` — vote for a person
+
+"Who chose this movie?", "who should take this?", "who explained that best?" —
+the answers are the people in the room, and typing their names into a `choice`
+poll by hand is both tedious and wrong by the time somebody joins.
+
+It is a **snapshot, not a live list.** The roster is read once, when the poll
+starts, and stored in the poll's own `options` exactly as a `choice` poll's
+are. Everything downstream — the wire op, the tally, the bars — is then
+identical to `choice`, which is the point: a poll whose answers moved while
+people were voting would re-target votes already cast, and late joiners would
+see a different ballot from everyone else.
+
+So the style is an **authoring** convenience, not a new answer shape. It earns
+its place in the union rather than being a button that fills the `choice` list
+because the composer has to show the roster it is about to freeze, and because
+a Session button ([spec/105](105-session-button.md)) can be configured with it
+long before the room it will run in exists.
+
+Names are de-duplicated before they are frozen (`poll-collaborators.ts`): two
+guests both called "Guest" would otherwise be one token and their votes would
+merge into a single bar. Repeats are suffixed — `Guest`, `Guest (2)`. The
+roster is capped at `POLL_OPTIONS_MAX` like any other option list, and the
+composer previews exactly what will be sent, so a room bigger than the cap
+shows the truncation before it is asked rather than after.
+
+Precedent: the Picker ([spec/107](107-picker.md)) already draws candidates from
+`participants`, and this is the same idea pointed at a poll.
 
 The union lives in **`@livediagram/diagram`** (`poll-style.ts`), not beside
 `LivePoll` here, because a Session button ([spec/105](105-session-button.md))
@@ -89,7 +119,7 @@ Caps (the issue's other open question), enforced at the input and re-checked
 when an op arrives so a hand-crafted frame can't blow up a peer's panel:
 
 - question ≤ 200 chars
-- ≤ 10 choice options, each ≤ 60 chars, minimum 2 (`POLL_OPTIONS_MAX`; was 6, which ran out on ordinary polls like the people in the room or a film shortlist — nothing downstream is keyed to the count, the results bars come off the list)
+- ≤ 10 options, each ≤ 60 chars, minimum 2 — for `choice` AND `collaborators`, which are the two styles carrying their own list (`POLL_OPTIONS_MAX`; was 6, which ran out on ordinary polls like the people in the room or a film shortlist — nothing downstream is keyed to the count, the results bars come off the list)
 - free-text answer ≤ 280 chars
 
 ## Lifecycle

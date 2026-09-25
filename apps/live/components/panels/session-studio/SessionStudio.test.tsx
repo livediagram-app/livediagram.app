@@ -28,6 +28,7 @@ function props(overrides: Partial<SessionToolsProps & { selfId: string }> = {}) 
     onRevealVote: vi.fn(),
     onClearVote: vi.fn(),
     livePoll: null,
+    pollCollaborators: [],
     pollHasAudience: true,
     onStartPoll: vi.fn(),
     voteLayers: [],

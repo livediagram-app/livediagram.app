@@ -3328,6 +3328,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "yesNo",
       "yesNoAbstain",
       "choice",
+      "collaborators",
       "rating",
       "text"
     ],

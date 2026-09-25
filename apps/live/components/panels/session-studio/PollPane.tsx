@@ -20,38 +20,74 @@ import {
   type LivePoll,
   type PollStyle,
 } from '@livediagram/api-schema';
-import { POLL_STYLES, POLL_STYLE_LABEL, pollStyleTokens } from '@livediagram/diagram';
+import {
+  POLL_STYLES,
+  POLL_STYLE_LABEL,
+  pollStyleTokens,
+  pollStyleUsesRoster,
+} from '@livediagram/diagram';
+import { pollCollaboratorOptions } from '@/lib/poll-collaborators';
 import type { SessionToolsProps } from '@/components/chrome/session-tools-props';
 import { StudioButton, StudioCallout, StudioLabel } from './studio-ui';
 
 const field =
   'w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[12px] text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-400/20 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100';
 
-type PollPaneProps = Pick<SessionToolsProps, 'livePoll' | 'pollHasAudience' | 'onStartPoll'>;
+type PollPaneProps = Pick<
+  SessionToolsProps,
+  'livePoll' | 'pollHasAudience' | 'onStartPoll' | 'pollCollaborators'
+>;
 
-export function PollPane({ livePoll, pollHasAudience, onStartPoll }: PollPaneProps) {
+export function PollPane({
+  livePoll,
+  pollHasAudience,
+  onStartPoll,
+  pollCollaborators,
+}: PollPaneProps) {
   if (livePoll) return <RunningPoll poll={livePoll} />;
-  return <PollComposer onStartPoll={onStartPoll} hasAudience={pollHasAudience} />;
+  return (
+    <PollComposer
+      onStartPoll={onStartPoll}
+      hasAudience={pollHasAudience}
+      collaborators={pollCollaborators}
+    />
+  );
 }
 
 function PollComposer({
   onStartPoll,
   hasAudience,
-}: Pick<PollPaneProps, 'onStartPoll'> & { hasAudience: boolean }) {
+  collaborators,
+}: Pick<PollPaneProps, 'onStartPoll'> & {
+  hasAudience: boolean;
+  collaborators: PollPaneProps['pollCollaborators'];
+}) {
   const [question, setQuestion] = useState('');
   const [style, setStyle] = useState<PollStyle>('yesNo');
   const [options, setOptions] = useState<string[]>(['', '']);
   const optionRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const trimmed = options.map((o) => o.trim()).filter((o) => o.length > 0);
+  // What a roster poll WOULD freeze if it started now. Shown rather than
+  // described, because the ballot is about to be fixed for everyone and a
+  // facilitator should see the names — and the truncation, if the room is
+  // bigger than the cap — before asking rather than after.
+  const rosterOptions = pollStyleUsesRoster(style) ? pollCollaboratorOptions(collaborators) : [];
   const missing = !question.trim()
     ? 'Write a question to ask'
     : style === 'choice' && trimmed.length < POLL_OPTIONS_MIN
       ? `Add at least ${POLL_OPTIONS_MIN} answers`
-      : null;
+      : // The room is the ballot, so there is nothing the facilitator can type
+        // to fix this one: it needs another person, not another answer.
+        pollStyleUsesRoster(style) && rosterOptions.length < POLL_OPTIONS_MIN
+        ? 'Need at least 2 people here to vote on'
+        : null;
 
   const start = () => {
     if (missing) return;
+    // `options` is ignored for a roster poll — `startPoll` reads the room
+    // itself, so what is asked matches the instant of the press rather than
+    // whenever this pane last rendered.
     onStartPoll({ question: question.trim(), style, options: trimmed });
   };
 
@@ -112,6 +148,7 @@ function PollComposer({
           ))}
         </div>
       </div>
+      {pollStyleUsesRoster(style) ? <RosterPreview options={rosterOptions} /> : null}
       {style === 'choice' ? (
         <div className="flex flex-col gap-1">
           {options.map((opt, i) => (
@@ -192,6 +229,18 @@ const STYLE_ART: Record<PollStyle, ReactNode> = {
       ))}
     </span>
   ),
+  // Three heads in a row: people, not answers — and deliberately unlike the
+  // rating's evenly-spaced dots, which are the same shape at the same size.
+  collaborators: (
+    <span className="flex items-end justify-center gap-0.5">
+      {[0, 1, 2].map((i) => (
+        <span key={i} className="flex flex-col items-center gap-[1px]">
+          <span className="h-1 w-1 rounded-full bg-current opacity-70" />
+          <span className="h-[3px] w-2 rounded-t-full bg-current opacity-40" />
+        </span>
+      ))}
+    </span>
+  ),
   rating: (
     <span className="flex gap-0.5">
       {[0, 1, 2, 3, 4].map((i) => (
@@ -214,6 +263,39 @@ function PillRow({ count }: { count: number }) {
         <span key={i} className="h-2 w-3 rounded-full bg-current opacity-50" />
       ))}
     </span>
+  );
+}
+
+// The ballot a `collaborators` poll will freeze (spec/88): the room, exactly as
+// it will be asked. Read-only on purpose — these are not answers the author
+// writes, and a list they could edit would be a list that disagrees with who is
+// actually here.
+function RosterPreview({ options }: { options: string[] }) {
+  if (options.length === 0) {
+    return (
+      <p className="rounded-lg bg-slate-50 px-2.5 py-2 text-[11px] text-slate-500 dark:bg-slate-800/60 dark:text-slate-400">
+        Nobody else is here yet. Share the diagram and this poll will list whoever has joined when
+        you ask it.
+      </p>
+    );
+  }
+  return (
+    <div className="flex flex-col gap-1">
+      <StudioLabel>Who people can pick</StudioLabel>
+      <ul className="flex flex-wrap gap-1">
+        {options.map((name) => (
+          <li
+            key={name}
+            className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[11px] text-slate-700 dark:bg-slate-800 dark:text-slate-200"
+          >
+            {name}
+          </li>
+        ))}
+      </ul>
+      <p className="text-[10px] text-slate-400 dark:text-slate-500">
+        Taken when you ask, so anyone who joins after won&rsquo;t be on the list.
+      </p>
+    </div>
   );
 }
 

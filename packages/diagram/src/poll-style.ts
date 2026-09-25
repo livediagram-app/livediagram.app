@@ -10,16 +10,46 @@
 // dependency runs the other way). api-schema re-exports `PollStyle` from
 // here, so there is one list and both sides read it.
 
-export const POLL_STYLES = ['yesNo', 'yesNoAbstain', 'choice', 'rating', 'text'] as const;
+export const POLL_STYLES = [
+  'yesNo',
+  'yesNoAbstain',
+  'choice',
+  'collaborators',
+  'rating',
+  'text',
+] as const;
 
 export type PollStyle = (typeof POLL_STYLES)[number];
 
-// `choice` is the only style whose answers the author writes; every other
-// style has a fixed set (Yes / No, 1-5, or free text). Callers use this to
-// decide whether to ask for an answer list at all, so the "does this poll
-// need options" question is answered in one place.
+// `choice` is the only style whose answers the author WRITES; every other
+// style's answers come from somewhere else — a fixed set (Yes / No, 1-5),
+// the room (`collaborators`), or nowhere (`text`). Callers use this to decide
+// whether to show an answer EDITOR, so the "do I ask the author to type a
+// list" question is answered in one place.
 export function pollStyleNeedsOptions(style: PollStyle): boolean {
   return style === 'choice';
+}
+
+// Whether a poll of this style carries its own `options` list rather than
+// resolving to a fixed set. A DIFFERENT question from the one above, and the
+// distinction is the whole of `collaborators`: its list is generated rather
+// than typed, but once generated it is stored and validated exactly like a
+// written one (min 2, max POLL_OPTIONS_MAX, frozen for the poll's life).
+//
+// Kept separate rather than widening `pollStyleNeedsOptions`, because that one
+// drives an editor UI that `collaborators` must NOT show — the author does not
+// type the room's names, and a list they could edit would be a list that
+// disagrees with who is actually here.
+export function pollStyleCarriesOptions(style: PollStyle): boolean {
+  return style === 'choice' || style === 'collaborators';
+}
+
+// Whether the poll's answers are the people currently in the diagram, filled
+// in when the poll STARTS (spec/88). One place to ask, because two surfaces
+// start polls — the Session Studio composer and a Session button (spec/105) —
+// and both hand the substitution to the same `startPoll`.
+export function pollStyleUsesRoster(style: PollStyle): boolean {
+  return style === 'collaborators';
 }
 
 // The fixed answer sets. `choice` is the only style that reads the author's
@@ -45,7 +75,12 @@ export function pollStyleTokens(style: PollStyle, options: readonly string[] = [
       return [...YES_NO_ABSTAIN];
     case 'rating':
       return [...RATINGS];
+    // Both styles carry their own list: `choice` because the author wrote it,
+    // `collaborators` because the room was frozen into it when the poll
+    // started. From here on the two are indistinguishable, which is the whole
+    // intent — one tally path, and a ballot that cannot move under the voters.
     case 'choice':
+    case 'collaborators':
       return [...options];
     case 'text':
       return [];
@@ -64,6 +99,7 @@ export const POLL_STYLE_LABEL: Record<PollStyle, string> = {
   yesNo: 'Yes / No',
   yesNoAbstain: '+ Abstain',
   choice: 'Choices',
+  collaborators: 'Collaborators',
   rating: 'Rating 1-5',
   text: 'Free text',
 };

@@ -45,6 +45,7 @@ import {
   toggleRecentExcluded,
   writeUserPreferences,
 } from '@/lib/user-preferences';
+import type { PollCandidate } from '@/lib/poll-collaborators';
 import { track } from '@/lib/telemetry';
 import { pollResultElement } from '@/lib/poll-capture';
 import { useActivityLogDebounce } from '@/hooks/collab/useActivityLogDebounce';
@@ -734,7 +735,16 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // Kept in step with the facilitator hook below, which cannot be declared up
   // here: it needs the room, and the room needs this.
   const sessionBlockedRef = useRef(false);
-  const livePoll = useLivePoll({ roomRef, sessionBlockedRef });
+  // The room's roster, for a `collaborators` poll (spec/88). A ref because the
+  // presence rows it is filled from are derived much further down this file —
+  // they need the room, which needs the poll hook — and because the only
+  // moment its value matters is the instant somebody starts a poll.
+  const pollCollaboratorsRef = useRef<readonly PollCandidate[]>([]);
+  const livePoll = useLivePoll({
+    roomRef,
+    sessionBlockedRef,
+    collaboratorsRef: pollCollaboratorsRef,
+  });
   // In-place recovery when the room can't replay our reconnect gap
   // (spec/97), in place of the page reload this used to do.
   const resyncFromServer = useRoomResync({
@@ -1223,6 +1233,24 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     selfLaserConfig: laserPen.config,
     cursorsHidden: voteCursorsHidden,
   });
+  // Everyone in the diagram, as poll candidates (spec/88). Self first, then
+  // whoever is present on any tab — the order the Collaborators modal uses, so
+  // a roster poll's ballot reads the way the panel beside it does. Someone on
+  // two tabs appears twice here; de-duplicating is `pollCollaboratorOptions`'s
+  // job, along with numbering shared names and applying the cap, so the
+  // composer's preview and the frozen ballot cannot disagree.
+  const pollCollaborators = useMemo<readonly PollCandidate[]>(
+    () => [
+      { id: selfParticipant.id, name: selfParticipant.name },
+      ...[...participantsByTab.values()].flat().map((p) => ({ id: p.id, name: p.name })),
+    ],
+    [participantsByTab, selfParticipant],
+  );
+  // The poll hook reads the roster through a ref, because it is declared long
+  // before this point (see the note there).
+  useEffect(() => {
+    pollCollaboratorsRef.current = pollCollaborators;
+  }, [pollCollaborators]);
   // Comment-bearing element rows for the floating Comments panel.
   // Only the boxed elements carry threads (arrows can't), so the
   // filter walks `activeTab.elements` and routes the boxed ones
@@ -2776,6 +2804,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     openTemplatePicker,
     participantsByTab,
     pendingDraw,
+    pollCollaborators,
     redo,
     refreshRecentImages,
     remoteAvatarRows,

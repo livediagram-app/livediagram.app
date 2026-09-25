@@ -15,6 +15,8 @@ import {
   type LivePoll,
   type RoomOutgoing,
 } from '@livediagram/api-schema';
+import { pollStyleUsesRoster } from '@livediagram/diagram';
+import { pollCollaboratorOptions, type PollCandidate } from '@/lib/poll-collaborators';
 import { track } from '@/lib/telemetry';
 
 type RoomHandle = { send: (msg: RoomOutgoing) => void };
@@ -26,12 +28,19 @@ export type PollAnswers = Map<string, string | null>;
 
 export function useLivePoll(deps: {
   roomRef: React.RefObject<RoomHandle | null>;
+  // The people currently in the diagram, for a `collaborators` poll (spec/88).
+  // A ref for the same reason as `sessionBlockedRef` below — the roster changes
+  // constantly and is only ever read at the instant a poll starts — and because
+  // reading it here is what lets BOTH poll surfaces (the Studio composer and a
+  // Session button, spec/105) get the substitution without either knowing about
+  // it. Optional so a caller that never starts a roster poll can omit it.
+  collaboratorsRef?: React.RefObject<readonly PollCandidate[]>;
   // Live "somebody else is facilitating" (spec/149). A ref because the poll
   // hook is created before the facilitator hook (which needs the room, which
   // needs this), and the value is only ever read at press time.
   sessionBlockedRef?: React.RefObject<boolean>;
 }) {
-  const { roomRef, sessionBlockedRef } = deps;
+  const { roomRef, sessionBlockedRef, collaboratorsRef } = deps;
   const [poll, setPoll] = useState<LivePoll | null>(null);
   const [answers, setAnswers] = useState<PollAnswers>(() => new Map());
   // Have we responded yet? Answering or skipping both count, and both
@@ -123,14 +132,28 @@ export function useLivePoll(deps: {
       // unlike the timer they are their own op kinds. This keeps the local
       // panel from opening on a frame that is going to be dropped.
       if (sessionBlockedRef?.current) return;
-      const next = sanitisePoll({ ...draft, id: crypto.randomUUID(), startedAt: Date.now() });
+      // A roster poll's answers are the room, resolved HERE rather than by
+      // either composer: a Session button is configured long before the room it
+      // runs in exists, and the Studio's own list would be a second copy to
+      // keep in step. `sanitisePoll` then applies the same floor and cap it
+      // applies to a written list, so a poll with fewer than two people in the
+      // room is refused exactly like a one-answer `choice` poll.
+      const options = pollStyleUsesRoster(draft.style)
+        ? pollCollaboratorOptions(collaboratorsRef?.current ?? [])
+        : draft.options;
+      const next = sanitisePoll({
+        ...draft,
+        options,
+        id: crypto.randomUUID(),
+        startedAt: Date.now(),
+      });
       if (!next) return;
       hostedPollRef.current = next.id;
       openPoll(next);
       roomRef.current?.send({ kind: 'op', op: { kind: 'poll-start', poll: next } });
       track('Tab', 'Started', 'Poll');
     },
-    [roomRef, openPoll],
+    [roomRef, openPoll, sessionBlockedRef, collaboratorsRef],
   );
 
   // Answer (or skip, with `null`). Applied locally under a fixed 'self'

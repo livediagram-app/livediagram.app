@@ -23,6 +23,33 @@ const poll = (style: PollStyle, options: string[] = []): LivePoll => ({
 const answers = (...values: (string | null)[]) =>
   new Map(values.map((v, i) => [`sender-${i}`, v] as const));
 
+describe('sanitisePoll on a collaborators poll', () => {
+  const poll = (options: string[]) => ({
+    id: 'p1',
+    question: 'Who chose this movie?',
+    style: 'collaborators' as const,
+    options,
+    startedAt: 0,
+  });
+
+  it('keeps the frozen roster, like a written list', () => {
+    expect(sanitisePoll(poll(['Ariel', 'Pete']))?.options).toEqual(['Ariel', 'Pete']);
+  });
+
+  it('applies the same floor as a choice poll', () => {
+    // A roster poll that started in an empty room is as unusable as a
+    // one-answer choice poll, and is refused the same way rather than
+    // reaching peers as a ballot nobody can complete.
+    expect(sanitisePoll(poll(['Ariel']))).toBeNull();
+    expect(sanitisePoll(poll([]))).toBeNull();
+  });
+
+  it('applies the same cap', () => {
+    const many = Array.from({ length: POLL_OPTIONS_MAX + 4 }, (_, i) => `P${i}`);
+    expect(sanitisePoll(poll(many))?.options).toHaveLength(POLL_OPTIONS_MAX);
+  });
+});
+
 describe('pollOptionTokens', () => {
   it('gives each style its answer set, and free text none', () => {
     expect(pollOptionTokens(poll('yesNo'))).toEqual(['Yes', 'No']);

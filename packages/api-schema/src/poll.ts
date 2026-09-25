@@ -13,7 +13,7 @@
 // element and `SessionButtonConfig` is a `Tab` field. Re-exported here so
 // every existing `import { PollStyle } from '@livediagram/api-schema'`
 // keeps resolving and there is still only one list.
-import { pollStyleTokens, type PollStyle } from '@livediagram/diagram';
+import { pollStyleCarriesOptions, pollStyleTokens, type PollStyle } from '@livediagram/diagram';
 
 export type { PollStyle };
 
@@ -21,8 +21,9 @@ export type LivePoll = {
   id: string;
   question: string;
   style: PollStyle;
-  // Creator-defined answers for `choice`. Empty for every other style,
-  // whose options are fixed (see pollOptionTokens).
+  // The poll's own answer list: written by the author for `choice`, frozen
+  // from the room's roster at start for `collaborators` (spec/88). Empty for
+  // every other style, whose options are fixed (see pollOptionTokens).
   options: string[];
   startedAt: number;
 };
@@ -51,19 +52,26 @@ export function pollOptionTokens(poll: LivePoll): string[] {
 }
 
 // Trim a poll to the caps and drop anything unusable. Returns null when
-// the poll can't be salvaged (no question, or a choice poll without at
-// least two options) so callers can ignore a malformed op outright.
+// the poll can't be salvaged (no question, or a poll that carries its own
+// answer list without at least two entries) so callers can ignore a
+// malformed op outright.
+//
+// `pollStyleCarriesOptions`, not `style === 'choice'`: a `collaborators`
+// poll's list is generated from the room rather than typed, but by the time
+// it reaches here it has been frozen into `options` and deserves exactly the
+// same trimming and floor. Asking the narrower question would have let a
+// roster poll through with fifty names and no minimum.
 export function sanitisePoll(poll: LivePoll): LivePoll | null {
   const question = poll.question.trim().slice(0, POLL_QUESTION_MAX);
   if (question.length === 0) return null;
-  const options =
-    poll.style === 'choice'
-      ? poll.options
-          .map((o) => o.trim().slice(0, POLL_OPTION_MAX))
-          .filter((o) => o.length > 0)
-          .slice(0, POLL_OPTIONS_MAX)
-      : [];
-  if (poll.style === 'choice' && options.length < POLL_OPTIONS_MIN) return null;
+  const carriesOptions = pollStyleCarriesOptions(poll.style);
+  const options = carriesOptions
+    ? poll.options
+        .map((o) => o.trim().slice(0, POLL_OPTION_MAX))
+        .filter((o) => o.length > 0)
+        .slice(0, POLL_OPTIONS_MAX)
+    : [];
+  if (carriesOptions && options.length < POLL_OPTIONS_MIN) return null;
   return { ...poll, question, options };
 }
 

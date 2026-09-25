@@ -45,6 +45,7 @@ export function EllipsisMenuButton({
   livePoll,
   pollHasAudience,
   onStartPoll,
+  pollCollaborators,
   voteLayers,
   activeLayerId,
 }: {
@@ -131,6 +132,7 @@ export function EllipsisMenuButton({
             livePoll={livePoll}
             pollHasAudience={pollHasAudience}
             onStartPoll={onStartPoll}
+            pollCollaborators={pollCollaborators}
             voteLayers={voteLayers}
             activeLayerId={activeLayerId}
           />

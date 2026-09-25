@@ -168,6 +168,7 @@ export function TabBar({
   livePoll,
   pollHasAudience,
   onStartPoll,
+  pollCollaborators,
   voteLayers,
   activeLayerId,
   otherDiagrams,
@@ -278,6 +279,7 @@ export function TabBar({
     livePoll,
     pollHasAudience,
     onStartPoll,
+    pollCollaborators,
     voteLayers,
     activeLayerId,
   });

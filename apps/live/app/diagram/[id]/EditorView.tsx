@@ -107,6 +107,7 @@ export function EditorView() {
     makeCopy,
     openTemplatePicker,
     participantsByTab,
+    pollCollaborators,
     pendingDraw,
     renameTab,
     renameTabFolder,
@@ -329,6 +330,7 @@ export function EditorView() {
               // the composer says so rather than refusing.
               pollHasAudience={diagramShareable || !!diagramTeamId}
               onStartPoll={livePoll.startPoll}
+              pollCollaborators={pollCollaborators}
               voteLayers={layers}
               activeLayerId={activeLayerId}
               otherDiagrams={

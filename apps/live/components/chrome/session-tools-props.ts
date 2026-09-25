@@ -1,5 +1,6 @@
 import type { Layer, TabTimer, TabVote, TimerMode, VoteSetup } from '@livediagram/diagram';
 import type { LivePoll, PollStyle } from '@livediagram/api-schema';
+import type { PollCandidate } from '@/lib/poll-collaborators';
 
 // The session-tools bundle (spec/39, spec/88, spec/96): the running timer, the
 // dot vote, the live poll, and every verb that drives them.
@@ -37,6 +38,14 @@ export type SessionToolsProps = {
   // a poll (it runs for just you); the composer only notes it.
   pollHasAudience: boolean;
   onStartPoll: (draft: { question: string; style: PollStyle; options: string[] }) => void;
+  // Everyone currently in the diagram, for the `collaborators` poll style
+  // (spec/88). The composer needs it to PREVIEW the ballot it is about to
+  // freeze; the freeze itself happens in `startPoll`, reading the roster again
+  // at the instant the poll starts, so what is sent is never staler than the
+  // press. Raw candidates rather than finished option strings: turning them
+  // into a ballot (de-duplicating, numbering repeats, capping) is one pure
+  // function both sides call, not a list one side prepares for the other.
+  pollCollaborators: readonly PollCandidate[];
   // The tab's layers + the active one, for the vote's layer scope (spec/96).
   voteLayers: Layer[];
   activeLayerId: string;
