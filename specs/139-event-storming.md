@@ -899,7 +899,7 @@ Decisions from the operator:
   zoomed out past its whole self, nor panned off its own frame.
 
   **The in-browser reader's model download is shown.** With no AI key, the
-  words are read by a model downloaded once per device (~250 MB of weights
+  words are read by a model downloaded once per device (~180 MB of weights
   from Hugging Face's CDN, the runtime from jsDelivr; kept in the browser's
   cache). While it downloads, the review shows a progress bar with megabytes
   and a share, and says it happens only the first time. Only the WEIGHTS are
@@ -1043,7 +1043,7 @@ Decisions from the operator:
   deployment HAS rather than by what the author asks for: a model configured on
   the api reads the crops (`POST /api/ai/read-notes`), and when there is none an
   in-browser model reads them (`browser-reader.ts`, SmolVLM-256M through
-  transformers.js, ~190MB fetched once and cached, WebGPU where the driver
+  transformers.js, ~180 MB fetched once and cached, WebGPU where the driver
   allows it and WASM everywhere else). Detection is in-browser in both cases,
   and the photograph itself never leaves the machine in either — only crops of
   individual notes, and only on the server path.

@@ -22,8 +22,9 @@ import type { ReaderBackend } from './reader-protocol';
 
 // The model, and why this one. SmolVLM-256M is the smallest that reads real
 // handwriting; the 500M variant is twice the download for about two points of
-// accuracy, which is the wrong trade on a phone. q4 for the decoder is what
-// makes it ~190MB rather than a gigabyte.
+// accuracy, which is the wrong trade on a phone. q4 for the decoder (and q8
+// for the embedding table on the processor) is what makes it ~180MB rather
+// than a gigabyte.
 export const MODEL_ID = 'HuggingFaceTB/SmolVLM-256M-Instruct';
 
 // Ask for the words and nothing else. Deliberately plain: a firmer
@@ -77,7 +78,14 @@ export async function loadReader(
             dtype: { embed_tokens: 'fp16', vision_encoder: 'fp16', decoder_model_merged: 'q4' },
             progress_callback,
           }
-        : { device: 'wasm', dtype: 'q4', progress_callback },
+        : // On the processor the embedding is q8: its q4 file is the fp32
+          // table, so q8 is 85 MB less to download for the same answers
+          // (docs/vision/handwriting-readers.md).
+          {
+            device: 'wasm',
+            dtype: { embed_tokens: 'q8', vision_encoder: 'q4', decoder_model_merged: 'q4' },
+            progress_callback,
+          },
     );
     // However the files arrived — from the network or the browser's cache —
     // the bar ends here.

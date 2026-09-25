@@ -1,6 +1,6 @@
 // One progress figure for the in-browser reader's model download.
 //
-// The model is ~160 MB, fetched once and kept in the browser's cache; the
+// The model is ~180 MB, fetched once and kept in the browser's cache; the
 // first photo import on a device pays for it, and a download that size with
 // nothing moving on screen is indistinguishable from a hang. The library
 // (transformers.js) reports it FILE BY FILE — a processor config, a tokenizer,

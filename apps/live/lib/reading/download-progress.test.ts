@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { downloadProgress } from './download-progress';
 
-// The in-browser reader's model is ~160 MB, fetched once and cached. The
+// The in-browser reader's model is ~180 MB, fetched once and cached. The
 // library reports it FILE BY FILE (a processor config, a tokenizer, three
 // model files…); the author wants one bar.
 describe('downloadProgress', () => {

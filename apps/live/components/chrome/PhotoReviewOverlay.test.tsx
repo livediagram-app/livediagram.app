@@ -739,7 +739,7 @@ describe('the unread tip', () => {
   });
 });
 
-// The in-browser reader's model is ~160 MB, fetched once per device. A
+// The in-browser reader's model is ~180 MB, fetched once per device. A
 // download that size with nothing moving on screen reads as a hang.
 describe('the reading model downloading', () => {
   const MB = 1024 * 1024;

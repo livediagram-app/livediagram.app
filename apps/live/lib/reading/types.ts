@@ -12,7 +12,7 @@ export type ReadOptions = {
   // Crops finished so far, for the review's progress bar.
   onProgress?: (readSoFar: number) => void;
   // The reading model's download, for a reader that fetches one (the
-  // in-browser reader: ~160 MB, once per device). See download-progress.ts.
+  // in-browser reader: ~180 MB, once per device). See download-progress.ts.
   onModelDownload?: (download: ModelDownload) => void;
   // Where a reader that runs HERE runs: the graphics card or the processor —
   // a minute or half an hour on a big wall, which the author should be told.

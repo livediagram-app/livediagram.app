@@ -61,7 +61,7 @@ export type PhotoDraftState = {
   // How many crops the reader has finished, for the progress bar.
   readSoFar: number;
   // The reading model's download, while an in-browser reader fetches it
-  // (~160 MB, once per device). Absent for a reader with nothing to download.
+  // (~180 MB, once per device). Absent for a reader with nothing to download.
   modelDownload?: ModelDownload;
   // Where an in-browser reader runs: the graphics card, or the processor.
   readerBackend?: ReaderBackend;
