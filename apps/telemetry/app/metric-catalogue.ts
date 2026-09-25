@@ -396,11 +396,10 @@ export const TOKENS_REVOKED: Metric = {
 
 export const API_TOKENS: MetricStack = {
   stack: true,
-  title: 'API Tokens',
-  blurb: 'Tokens minted by hand or by an AI tool connecting over MCP, and tokens revoked.',
+  title: 'API Token Activity',
+  blurb:
+    'Every token event: minted by hand, minted by an AI tool connecting over MCP, and revoked.',
   members: [TOKENS_CREATED, AI_TOOLS_CONNECTED, TOKENS_REVOKED],
-  // Tokens minted; revocations are the same tokens leaving, not more of them.
-  headline: [TOKENS_CREATED, AI_TOOLS_CONNECTED],
 };
 
 // MCP tool calls, one chart per tool the MCP server registers (apps/mcp
