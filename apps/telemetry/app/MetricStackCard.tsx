@@ -1,20 +1,19 @@
 'use client';
 
-import type { KeyboardEvent } from 'react';
+import type { KeyboardEvent, MouseEvent } from 'react';
 import { fmtDay } from './chart-utils';
-import type { MetricStack } from './metric-series';
+import { stackDrawsLines, type MetricStack } from './metric-series';
 import { StackTrendChart, type StackSeries } from './StackTrendChart';
 
 // The head card of a chart stack (spec/22): the members' combined count and
 // their lines on one chart, with one or two faux-card layers stepping out
 // behind it so it reads as a deck (the Timeline stack's look, spec/138 §2.1).
 //
-// It is the stack's toggle in both states. Collapsed it reads "click to
-// expand"; open it stays in its cell, its layers gone, ringed in the colour of
-// the tray its members are dealt into below it (StackTray), reading "click to
-// collapse". The caller
-// renders it unconditionally so toggling never remounts it and replays its
-// arrival.
+// It is the stack's toggle in both states. Closed it reads "click to open";
+// open, its members float in a popover anchored to it (StackPopover) while it
+// stays in its cell, its layers gone and ringed, reading "click to close". The
+// caller renders it unconditionally so toggling never remounts it and replays
+// its arrival.
 //
 // A div with role="button" rather than a <button>: the chart's hover columns
 // are Tooltip triggers, and interactive content inside a <button> is invalid.
@@ -33,19 +32,22 @@ export function MetricStackCard({
   days: number[] | undefined;
   highlightFromIndex: number | null;
   expanded: boolean;
-  onToggle: () => void;
+  // Hands back the head element, which the popover anchors to.
+  onToggle: (anchor: HTMLElement) => void;
 }) {
   const total = counts.reduce((sum, n) => sum + n, 0);
   const count = stack.members.length;
+  const { chart, legend, hidden } = headView(stack.title, series, counts);
   // Two layers at three or more, one at two, as on the Timeline.
   const deep = count >= 3 && !expanded;
   const layer =
     'pointer-events-none absolute inset-0 rounded-2xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900';
-  const onKeyDown = (e: KeyboardEvent) => {
+  const onKeyDown = (e: KeyboardEvent<HTMLElement>) => {
     if (e.key !== 'Enter' && e.key !== ' ') return;
     e.preventDefault();
-    onToggle();
+    onToggle(e.currentTarget);
   };
+  const onClick = (e: MouseEvent<HTMLElement>) => onToggle(e.currentTarget);
 
   return (
     // The layers step down and right into the grid gap; `mb-2 mr-2` keeps
@@ -61,7 +63,8 @@ export function MetricStackCard({
         role="button"
         tabIndex={0}
         aria-expanded={expanded}
-        onClick={onToggle}
+        aria-haspopup="dialog"
+        onClick={onClick}
         onKeyDown={onKeyDown}
         className={`relative flex flex-1 cursor-pointer flex-col rounded-2xl border bg-white p-5 transition-colors hover:border-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 dark:bg-slate-900 dark:hover:border-slate-600 ${
           expanded
@@ -79,7 +82,7 @@ export function MetricStackCard({
                 {stack.title}
               </p>
               <p className="text-xs text-slate-400">
-                {count} charts · click to {expanded ? 'collapse' : 'expand'}
+                {count} charts · click to {expanded ? 'close' : 'open'}
               </p>
             </div>
           </div>
@@ -90,21 +93,26 @@ export function MetricStackCard({
         <p className="mt-3 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
           {stack.blurb}
         </p>
-        {/* Legend: which line is which, with each member's window count. */}
+        {/* Legend: which line is which, with each member's window count. A
+            stack too big to draw one line per member shows its busiest
+            members instead, uncoloured since no line matches them. */}
         <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-600 dark:text-slate-300">
-          {series.map((s, i) => (
-            <li key={s.label} className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: s.color }} />
-              {s.label}
+          {legend.map((entry) => (
+            <li key={entry.label} className="flex items-center gap-1.5">
+              {entry.color ? (
+                <span className="h-2 w-2 rounded-full" style={{ backgroundColor: entry.color }} />
+              ) : null}
+              {entry.label}
               <span className="font-semibold text-slate-900 dark:text-slate-100">
-                {(counts[i] ?? 0).toLocaleString()}
+                {entry.count.toLocaleString()}
               </span>
             </li>
           ))}
+          {hidden > 0 ? <li className="text-slate-400">+{hidden} more</li> : null}
         </ul>
         {days ? (
           <div className="mt-auto pt-4">
-            <StackTrendChart days={days} series={series} highlightFromIndex={highlightFromIndex} />
+            <StackTrendChart days={days} series={chart} highlightFromIndex={highlightFromIndex} />
             <div className="mt-2 flex justify-between text-[10px] text-slate-400">
               <span>{fmtDay(days[0] ?? 0)}</span>
               <span>{fmtDay(days[days.length - 1] ?? 0)}</span>
@@ -114,6 +122,43 @@ export function MetricStackCard({
       </div>
     </div>
   );
+}
+
+// A few members' busiest charts for a summarised head's legend.
+const LEGEND_TOP = 4;
+// The combined line on a summarised head.
+const TOTAL_COLOR = '#0ea5e9';
+
+type LegendEntry = { label: string; count: number; color?: string };
+
+// What the head draws. Up to MAX_STACK_LINES members, one coloured line each
+// with a matching legend. Past that the lines turn to spaghetti (Emails Sent
+// has fourteen), so the chart is the members' combined line and the legend
+// names the busiest few by window count.
+function headView(
+  title: string,
+  series: StackSeries[],
+  counts: number[],
+): { chart: StackSeries[]; legend: LegendEntry[]; hidden: number } {
+  if (stackDrawsLines(series.length)) {
+    return {
+      chart: series,
+      legend: series.map((s, i) => ({ label: s.label, count: counts[i] ?? 0, color: s.color })),
+      hidden: 0,
+    };
+  }
+  const days = series[0]?.values.length ?? 0;
+  const combined = Array.from({ length: days }, (_, d) =>
+    series.reduce((sum, s) => sum + (s.values[d] ?? 0), 0),
+  );
+  const ranked = series
+    .map((s, i) => ({ label: s.label, count: counts[i] ?? 0 }))
+    .sort((a, b) => b.count - a.count);
+  return {
+    chart: [{ label: title, color: TOTAL_COLOR, values: combined }],
+    legend: ranked.slice(0, LEGEND_TOP),
+    hidden: Math.max(0, ranked.length - LEGEND_TOP),
+  };
 }
 
 // Three offset cards: the stack itself, rather than any one member's event.

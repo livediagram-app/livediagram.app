@@ -81,3 +81,10 @@ const STACK_SERIES_COLORS = ['#0ea5e9', '#f59e0b', '#8b5cf6', '#10b981', '#ec489
 
 export const stackSeriesColor = (index: number): string =>
   STACK_SERIES_COLORS[index % STACK_SERIES_COLORS.length]!;
+
+// The most members a stack's head draws as separate lines, one colour each.
+// A bigger stack draws its combined line instead, and its members' cards keep
+// their own category colour since no head line matches them.
+export const MAX_STACK_LINES = STACK_SERIES_COLORS.length;
+
+export const stackDrawsLines = (members: number): boolean => members <= MAX_STACK_LINES;

@@ -22,23 +22,3 @@
     opacity: 1;
   }
 }
-
-/* An open chart stack's box (spec/22) draws in around its cards rather than
- * snapping on: the tray's tint and border fade up while the members are dealt
- * out with tl-fan-out. Fires when the class lands, i.e. on each open. */
-@keyframes stack-box-in {
-  from {
-    background-color: transparent;
-    border-color: transparent;
-  }
-}
-
-.stack-box {
-  animation: stack-box-in 0.32s ease-out;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .stack-box {
-    animation: none;
-  }
-}

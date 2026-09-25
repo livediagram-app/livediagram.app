@@ -16,7 +16,7 @@ import {
   THEME_ALIASES,
 } from './LookAndFeelView';
 import * as CATALOGUE from './metric-catalogue';
-import { groupMetrics, type MetricGroup } from './metric-series';
+import { groupMetrics, isStack, type MetricGroup } from './metric-series';
 import { SELECTION_MODES } from './PaletteView';
 
 // Every card and every hard-coded ranking type on the dashboard must be an
@@ -70,6 +70,17 @@ const COMPUTED_TYPES: Record<string, string> = {
   'Email·Sent·Welcome': 'apps/api email/templates.ts, the welcome message',
   'Email·Sent·TeamInvite': 'apps/api email/templates.ts, the team invite',
   'Email·Sent·ActionAssigned': 'apps/api email/templates.ts, the action notification',
+  'Email·Sent·Week1': 'apps/api email/templates.ts, onboarding week 1',
+  'Email·Sent·Week2': 'apps/api email/templates.ts, onboarding week 2',
+  'Email·Sent·Activation': 'apps/api email/templates.ts, the zero-diagram nudge',
+  'Email·Sent·WinBack': 'apps/api email/templates.ts, the quiet-account win-back',
+  'Email·Sent·Milestone': 'apps/api email/templates.ts, the diagram-count milestone',
+  'Email·Sent·FirstShare': 'apps/api email/templates.ts, the first share link',
+  'Email·Sent·InviteResponse': 'apps/api email/templates.ts, the invite accepted/declined notice',
+  'Email·Sent·DiagramJoined': 'apps/api email/templates.ts, the shared-diagram opened notice',
+  'Email·Sent·CommentNotification': 'apps/api email/templates.ts, the new-comment notice',
+  'Email·Sent·TokenExpiring': 'apps/api email/templates.ts, the API token expiry warning',
+  'Email·Sent·AccountDeleted': 'apps/api email/templates.ts, the deletion confirmation',
 };
 
 function sendable(category: string, action: string, type: string | null): boolean {
@@ -94,7 +105,12 @@ const ALL: MetricGroup[] = [
 ];
 // Plus every catalogue chart, including ones parked off every tab, so a chart
 // waiting to be added back can't rot while it is out of view.
-const METRICS = [...ALL.flatMap(groupMetrics), ...Object.values(CATALOGUE)];
+const METRICS = [
+  ...ALL.flatMap(groupMetrics),
+  ...Object.values(CATALOGUE)
+    .flat()
+    .flatMap((item) => (isStack(item) ? item.members : [item])),
+];
 const UNTYPED = METRICS.filter((m) => !m.allTypes && !m.typeIn && (m.type ?? null) === null);
 const TYPED = METRICS.filter((m) => !m.allTypes && !m.typeIn && typeof m.type === 'string');
 

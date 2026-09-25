@@ -1,5 +1,8 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { NEW_VISITORS, RETURNING_VISITORS } from './metric-catalogue';
+import { GROUPS as ACQUISITION } from './AcquisitionView';
+import { EMAIL_KIND_METRICS, NEW_VISITORS, RETURNING_VISITORS } from './metric-catalogue';
 import { groupMetrics, isStack, stackSeriesColor, type MetricGroup } from './metric-series';
 
 describe('chart stacks', () => {
@@ -25,5 +28,29 @@ describe('chart stacks', () => {
 
   it('gives each member its own line colour', () => {
     expect(stackSeriesColor(0)).not.toBe(stackSeriesColor(1));
+  });
+});
+
+describe('the Emails Sent stack', () => {
+  // The head's total is the sum of its members, so a template with no chart
+  // would silently drop out of it. Read the api's EmailKind union as source.
+  const source = readFileSync(resolve(__dirname, '../../api/src/email/templates.ts'), 'utf8');
+  const union = /export type EmailKind =([^;]+);/.exec(source)?.[1] ?? '';
+  const kinds = [...union.matchAll(/'([A-Za-z0-9]+)'/g)].map((m) => m[1]);
+
+  it('reads the template kinds', () => {
+    expect(kinds.length).toBeGreaterThan(10);
+  });
+
+  it('has one chart per email template', () => {
+    const charted = EMAIL_KIND_METRICS.map((m) => m.type);
+    expect([...charted].sort()).toEqual([...kinds].sort());
+  });
+
+  it('is what Acquisition stacks', () => {
+    const stack = ACQUISITION.flatMap((g) => g.metrics).find(
+      (item) => isStack(item) && item.title === 'Emails Sent',
+    );
+    expect(stack && isStack(stack) ? stack.members : []).toEqual(EMAIL_KIND_METRICS);
   });
 });

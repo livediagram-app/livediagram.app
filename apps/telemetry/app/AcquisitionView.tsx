@@ -2,12 +2,10 @@
 
 import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
 import {
-  ACCOUNTS_DELETED,
+  ACCOUNT_ACTIVITY,
+  EMAIL_KIND_METRICS,
   NEW_VISITORS,
   RETURNING_VISITORS,
-  SIGN_INS,
-  SIGN_OUTS,
-  SIGN_UPS,
 } from './metric-catalogue';
 import { MetricGroups, type MetricGroup } from './MetricCards';
 import { windowLabel } from './windows';
@@ -15,12 +13,13 @@ import { windowLabel } from './windows';
 // Acquisition view (spec/22): the top of the funnel, how many fresh browsers
 // arrive and how many convert to accounts, plus the account lifecycle on the
 // way out. New visitors are the bare `Participant·Created` count; sign-up /
-// sign-in / sign-out and account deletion come from `Session` (these only fire
-// when Clerk auth is configured, so a pure-guest deploy shows zeroes).
+// sign-in / sign-out and account deletion are the Account Activity stack, the
+// same one Highlights shows, from `Session` (these only fire when Clerk auth
+// is configured, so a pure-guest deploy shows zeroes).
 export const GROUPS: MetricGroup[] = [
   {
     title: 'Arrivals & conversion',
-    metrics: [NEW_VISITORS, SIGN_UPS, SIGN_INS],
+    metrics: [NEW_VISITORS, ACCOUNT_ACTIVITY],
   },
   {
     // Returning visitors, spec/22: the combined sum first (allTypes over
@@ -49,10 +48,6 @@ export const GROUPS: MetricGroup[] = [
       },
     ],
   },
-  {
-    title: 'Account lifecycle',
-    metrics: [SIGN_OUTS, ACCOUNTS_DELETED],
-  },
   // Lifecycle + transactional email (spec/64), written server-side by the api
   // worker — nothing about a send reaches a browser, so this is the only place
   // it can be counted. It sits under Acquisition because the onboarding series
@@ -65,33 +60,11 @@ export const GROUPS: MetricGroup[] = [
     title: 'Email sent',
     metrics: [
       {
-        category: 'Email',
-        action: 'Sent',
-        allTypes: true,
+        stack: true,
         title: 'Emails Sent',
         blurb:
-          'Every transactional and lifecycle email that left the worker, across all templates. The kind only, never a recipient.',
-      },
-      {
-        category: 'Email',
-        action: 'Sent',
-        type: 'Welcome',
-        title: 'Welcome Emails',
-        blurb: 'Sent on sign-up, the first of the onboarding series.',
-      },
-      {
-        category: 'Email',
-        action: 'Sent',
-        type: 'TeamInvite',
-        title: 'Team Invites',
-        blurb: 'Read against Teams / Members Added on the Collaboration tab for invite conversion.',
-      },
-      {
-        category: 'Email',
-        action: 'Sent',
-        type: 'ActionAssigned',
-        title: 'Action Notifications',
-        blurb: 'A teammate was emailed about work assigned to them (spec/68).',
+          'Every transactional and lifecycle email that left the worker, one chart per template. The kind only, never a recipient.',
+        members: [...EMAIL_KIND_METRICS],
       },
     ],
   },

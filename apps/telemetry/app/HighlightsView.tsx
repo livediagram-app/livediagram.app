@@ -2,20 +2,22 @@
 
 import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
 import {
-  ACCOUNTS_DELETED,
+  ACCOUNT_ACTIVITY,
+  DASHBOARD_PAGES,
+  HELP_PAGES,
+  LIVE_PAGES,
+  MARKETING_PAGES,
   NEW_VISITORS,
   RETURNING_VISITORS,
-  SIGN_INS,
-  SIGN_OUTS,
-  SIGN_UPS,
 } from './metric-catalogue';
 import { MetricGroups, type MetricGroup } from './MetricCards';
 import { windowLabel } from './windows';
 
 // The Highlights view (spec/22, default tab): the key product metrics we
 // most want to watch. Being rebuilt one tab at a time: for now it carries
-// only Visitors, as two chart stacks (All Visitors: New + Returning; Account
-// Activity: Sign-Ups + Sign-Ins + Sign-Outs + Accounts Deleted), each a
+// only Visitors, as three chart stacks (All Visitors: New + Returning;
+// Account Activity: Sign-Ups + Sign-Ins + Sign-Outs + Accounts Deleted; Page
+// Views by App: views per app, moved here from the Pages tab), each a
 // combined chart that fans out into its members' cards. Charts come from the
 // shared catalogue, so a stack only references them; more are added back
 // from the other tabs as each one is reviewed.
@@ -36,12 +38,13 @@ export const GROUPS: MetricGroup[] = [
           'Every browser that opened the app: first-timers and those back on a later day, counted once per day each.',
         members: [NEW_VISITORS, RETURNING_VISITORS],
       },
+      ACCOUNT_ACTIVITY,
       {
         stack: true,
-        title: 'Account Activity',
+        title: 'Page Views by App',
         blurb:
-          'Accounts made, signed into, signed out of, and deleted. Only fires where sign-in is configured.',
-        members: [SIGN_UPS, SIGN_INS, SIGN_OUTS, ACCOUNTS_DELETED],
+          'Every page viewed across the site, by full load or in-app navigation, split by the app that serves it.',
+        members: [MARKETING_PAGES, LIVE_PAGES, HELP_PAGES, DASHBOARD_PAGES],
       },
     ],
   },

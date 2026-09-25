@@ -1,6 +1,18 @@
 'use client';
 
 import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
+import {
+  DIAGRAMS_CREATED,
+  DIAGRAMS_DELETED,
+  DIAGRAMS_DUPLICATED,
+  DIAGRAMS_LOADED,
+  DIAGRAMS_RENAMED,
+  TABS_CREATED,
+  TABS_DELETED,
+  TABS_DUPLICATED,
+  TABS_LOADED,
+  TABS_RENAMED,
+} from './metric-catalogue';
 import { MetricGroups, type MetricGroup } from './MetricCards';
 import { windowLabel } from './windows';
 
@@ -8,55 +20,30 @@ import { windowLabel } from './windows';
 // often they're opened (Loaded), made (Created), renamed, deleted and
 // duplicated. Loaded is an opens/engagement signal (every open of an
 // existing diagram / every tab whose content is fetched), distinct from
-// the once-per-object Created. Two groups, one per object type, sharing
-// the same MetricGroups renderer as Highlights / Acquisition.
+// the once-per-object Created. One chart stack per object type (spec/22),
+// sharing the same MetricGroups renderer as Highlights / Acquisition.
 export const GROUPS: MetricGroup[] = [
   {
-    title: 'Diagram',
+    title: 'Lifecycle',
     metrics: [
       {
-        category: 'Diagram',
-        action: 'Loaded',
-        type: null,
-        title: 'Diagrams Loaded',
-        blurb:
-          'A diagram was opened, counted on every open (including a page refresh), not just the first time. Includes the first open of every new diagram, straight after it is created.',
+        stack: true,
+        title: 'Diagram Actions',
+        blurb: 'Diagrams opened, made, renamed, deleted and duplicated.',
+        members: [
+          DIAGRAMS_LOADED,
+          DIAGRAMS_CREATED,
+          DIAGRAMS_RENAMED,
+          DIAGRAMS_DELETED,
+          DIAGRAMS_DUPLICATED,
+        ],
       },
       {
-        category: 'Diagram',
-        action: 'Created',
-        allTypes: true,
-        title: 'Diagrams Created',
-        blurb:
-          'New diagrams from the New Diagram wizard, stored in the cloud or offline in this browser.',
+        stack: true,
+        title: 'Tab Actions',
+        blurb: 'Tabs opened, made, renamed, deleted and duplicated.',
+        members: [TABS_LOADED, TABS_CREATED, TABS_RENAMED, TABS_DELETED, TABS_DUPLICATED],
       },
-      { category: 'Diagram', action: 'Renamed', type: null, title: 'Diagrams Renamed' },
-      { category: 'Diagram', action: 'Deleted', type: null, title: 'Diagrams Deleted' },
-      {
-        category: 'Diagram',
-        action: 'Duplicated',
-        allTypes: true,
-        title: 'Diagrams Duplicated',
-        blurb:
-          'A diagram copied from the Explorer, or a shared diagram cloned into your own account.',
-      },
-    ],
-  },
-  {
-    title: 'Tab',
-    metrics: [
-      {
-        category: 'Tab',
-        action: 'Loaded',
-        type: null,
-        title: 'Tabs Loaded',
-        blurb:
-          "A tab's content was fetched for viewing, counted each time (the first tab when a diagram opens, then each tab switched to).",
-      },
-      { category: 'Tab', action: 'Created', type: null, title: 'Tabs Created' },
-      { category: 'Tab', action: 'Renamed', type: null, title: 'Tabs Renamed' },
-      { category: 'Tab', action: 'Deleted', type: null, title: 'Tabs Deleted' },
-      { category: 'Tab', action: 'Duplicated', type: null, title: 'Tabs Duplicated' },
     ],
   },
 ];

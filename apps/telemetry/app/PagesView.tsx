@@ -2,31 +2,20 @@
 
 import {
   pageViewApp,
-  type PageViewApp,
   type TelemetrySummary,
   type TelemetryWindowKey,
 } from '@livediagram/api-schema';
-import { MetricGroups, type Metric, type MetricGroup } from './MetricCards';
 import { RankCard } from './RankCard';
-import { PAGE_VIEW_APPS, pageViewRows, per100, risingPages, viewsOf } from './page-insights';
+import { PAGE_VIEW_APPS, pageViewRows, per100, risingPages } from './page-insights';
 import { PageInsightTile, RisingPagesCard } from './PageInsights';
 import { windowLabel } from './windows';
 
 // Pages view (spec/150): which pages across the site get viewed, broken down
 // by the app that serves them. Every frontend emits `Page·View·<path>` on
 // each path change (full load or in-app navigation), with ids and query
-// strings stripped in the browser. Top to bottom: views per app, a few
-// derived insights, the top pages of each app, then every page.
-
-const APP_BLURBS: Record<PageViewApp, string> = {
-  Marketing: 'The landing page, features, alternatives, FAQ and legal pages.',
-  Live: 'The Explorer, the New Diagram wizard, sign-in, and every diagram.',
-  Help: 'The help centre: its home, categories and every article.',
-  Dashboard: 'This public telemetry dashboard.',
-};
-
-const isApp = (app: PageViewApp) => (type: string | null) =>
-  type !== null && pageViewApp(type) === app;
+// strings stripped in the browser. Top to bottom: a few derived insights, the
+// top pages of each app, then every page. Views per app moved to Highlights
+// as the Page Views by App stack.
 
 const isLanding = (p: string) => p === '/';
 const isNew = (p: string) => p === '/new';
@@ -41,33 +30,6 @@ export function PagesView({
   active: TelemetryWindowKey;
 }) {
   const rows = summary.windows[active].rows;
-  const total = viewsOf(rows, () => true);
-  const share = (app: PageViewApp) => {
-    const n = viewsOf(rows, (p) => pageViewApp(p) === app);
-    return total === 0 ? '' : ` ${Math.round((n / total) * 100)}% of page views.`;
-  };
-
-  const groups: MetricGroup[] = [
-    {
-      title: 'Views by app',
-      metrics: [
-        {
-          category: 'Page',
-          action: 'View',
-          allTypes: true,
-          title: 'All Pages',
-          blurb: 'Every page viewed across the site, by full load or in-app navigation.',
-        },
-        ...PAGE_VIEW_APPS.map((app): Metric => ({
-          category: 'Page',
-          action: 'View',
-          typeIn: isApp(app),
-          title: app,
-          blurb: APP_BLURBS[app] + share(app),
-        })),
-      ],
-    },
-  ];
 
   const allPages = pageViewRows(rows, 'All');
   const risers = summary.daily ? risingPages(summary.daily) : [];
@@ -77,10 +39,9 @@ export function PagesView({
       <p className="text-sm text-slate-500 dark:text-slate-400">
         Which pages people view, for <span className="font-medium">{windowLabel(active)}</span>, by
         the app that serves them. Ids and query strings never leave the browser, so every diagram
-        counts as one page, <code>/diagram</code>.
+        counts as one page, <code>/diagram</code>. Views per app are the Page Views by App stack on
+        Highlights.
       </p>
-      <MetricGroups groups={groups} summary={summary} active={active} />
-
       <section className="mt-8">
         <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-400">Insights</h3>
         <div className="mt-3 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

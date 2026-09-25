@@ -129,9 +129,12 @@ segment using the same live route-segment list the router routes by (shared
 from `@livediagram/api-schema`, so the dashboard and router can't disagree
 about which app serves a path). Top to bottom:
 
-- **Views by app.** An All Pages card plus one per app: the window's views,
-  that app's share of all page views, and its 30-day trend (the shared metric
-  card, matching a set of paths rather than one type).
+- **Views by app** now lives on **Highlights** as the **Page Views by App**
+  chart stack (spec/22): a head plotting each app's line with the combined
+  count, opening into one card per app (the shared metric card, matching a set
+  of paths rather than one type). The per-card "N% of page views" line went
+  with the move, since catalogue charts are fixed definitions and the share
+  depends on the selected window; each app's count sits in the head's legend.
 - **Insights.** Derived numbers for the window, each a ratio of page views
   per 100 page views, never of people (nothing links one view to another):
   Landing to New Diagram (`/new` per 100 `/`), Explorer to Diagram (`/diagram`
