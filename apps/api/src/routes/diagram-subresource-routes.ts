@@ -365,7 +365,7 @@ export async function handleDiagramSubresources(ctx: RouteContext): Promise<Resp
     // The second half of this route's auth doesn't help here — it re-uses the
     // SAME resolved owner, so a forged identity satisfies it with the victim's
     // own diagrams.
-    if (!ownsDiagram(ctx, existing)) return forbidden();
+    if (!(await ownsDiagram(ctx, existing))) return forbidden();
     // The tab must already live in at least one of the caller's
     // owned diagrams. One JOIN answers that (LIMIT 1 on the first
     // owned match). On the failure path we fall back to listing the

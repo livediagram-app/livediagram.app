@@ -54,7 +54,7 @@ export async function handleDiagramPlacement(ctx: RouteContext): Promise<Respons
       // Clerk id every teammate can read, and `isOwner` below decides whether
       // the caller may change the diagram's SCOPE — including moving it out of
       // the team into their own library, which transfers ownership.
-      const isOwner = ownsDiagram(ctx, existing);
+      const isOwner = await ownsDiagram(ctx, existing);
       const caller = ctx.verifiedUserId;
 
       if (teamId !== existing.teamId) {

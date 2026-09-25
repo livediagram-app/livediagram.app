@@ -7,7 +7,7 @@
 // doesn't recognise (preserving the original fall-through-to-404).
 
 import { canEditDiagram, canReadDiagram } from '../auth/diagram-access';
-import { getDiagram } from '../db';
+import { getDiagram, getMembership } from '../db';
 import { forbidden, missingAuth, notFound } from '../responses';
 import type { DiagramDTO, Env } from '../types';
 
@@ -154,11 +154,21 @@ export function requireOwner(ctx: RouteContext): string | Response {
 //
 // This is the same trust boundary auth/diagram-access.ts draws for the
 // read/edit gates; it belongs here too rather than only there.
-export function ownsDiagram(
+//
+// And the owner of a team diagram must still BE in the team. A member who
+// leaves or is removed has their team work handed on (handTeamWorkToHeir),
+// but rows from before that existed are still owned by people who have gone,
+// and ownership is what the share-link, password, delete and move-out routes
+// check first.
+export async function ownsDiagram(
   ctx: RouteContext,
   diagram: Pick<DiagramDTO, 'ownerId' | 'teamId'>,
-): boolean {
-  if (diagram.teamId) return ctx.verifiedUserId != null && ctx.verifiedUserId === diagram.ownerId;
+): Promise<boolean> {
+  if (diagram.teamId) {
+    if (ctx.verifiedUserId == null || ctx.verifiedUserId !== diagram.ownerId) return false;
+    const membership = await getMembership(ctx.env, diagram.teamId, ctx.verifiedUserId);
+    return membership?.status === 'joined';
+  }
   return ctx.resolveOwner() === diagram.ownerId;
 }
 
@@ -177,7 +187,7 @@ export async function requireOwnedDiagram(
   if (!owner) return missingAuth();
   const existing = await getDiagram(ctx.env, diagramId);
   if (!existing) return notFound();
-  if (!ownsDiagram(ctx, existing)) return forbidden();
+  if (!(await ownsDiagram(ctx, existing))) return forbidden();
   return existing;
 }
 

@@ -285,7 +285,7 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       // (see routes/context.ts). The membership leg below already worked that
       // way; this leg didn't, so a stale member holding the owner's id could
       // delete a team diagram.
-      let allowed = ownsDiagram(ctx, existing);
+      let allowed = await ownsDiagram(ctx, existing);
       if (!allowed && existing.teamId && ctx.verifiedUserId) {
         const membership = await getMembership(env, existing.teamId, ctx.verifiedUserId);
         allowed = membership?.status === 'joined';

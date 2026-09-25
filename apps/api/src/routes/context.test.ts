@@ -7,7 +7,7 @@ import type { Env } from '../types';
 // a deliberate access-trust property (a foreign id can't be distinguished
 // from a missing one until ownership is proven), so it's worth pinning.
 
-const { db } = vi.hoisted(() => ({ db: { getDiagram: vi.fn() } }));
+const { db } = vi.hoisted(() => ({ db: { getDiagram: vi.fn(), getMembership: vi.fn() } }));
 vi.mock('../db', () => db);
 
 const { access } = vi.hoisted(() => ({
@@ -110,8 +110,18 @@ describe('requireOwnedDiagram', () => {
   it('returns a TEAM diagram to its owner on a VERIFIED account id', async () => {
     const diagram = { id: 'd1', ownerId: 'user_owner', teamId: 'team-1' };
     db.getDiagram.mockResolvedValue(diagram);
+    db.getMembership.mockResolvedValue({ status: 'joined' });
     const ctx = { ...makeCtx({ owner: 'user_owner' }), verifiedUserId: 'user_owner' };
     expect(await requireOwnedDiagram(ctx, 'd1')).toBe(diagram);
+  });
+
+  it('403s a TEAM diagram to an owner who is no longer in the team (spec/35)', async () => {
+    // Removed (or left) before their work was handed on: owning the row must
+    // not keep the share-link, password and delete routes open to them.
+    db.getDiagram.mockResolvedValue({ id: 'd1', ownerId: 'user_owner', teamId: 'team-1' });
+    db.getMembership.mockResolvedValue(null);
+    const ctx = { ...makeCtx({ owner: 'user_owner' }), verifiedUserId: 'user_owner' };
+    expect(((await requireOwnedDiagram(ctx, 'd1')) as Response).status).toBe(403);
   });
 
   it('403s a TEAM diagram for a verified caller who is not its owner', async () => {
@@ -131,23 +141,32 @@ describe('requireOwnedDiagram', () => {
 });
 
 describe('ownsDiagram', () => {
-  it('requires a verified account id for a team diagram, not the header', () => {
+  it('requires a verified account id for a team diagram, not the header', async () => {
+    db.getMembership.mockResolvedValue({ status: 'joined' });
     const team = { ownerId: 'user_owner', teamId: 'team-1' };
-    expect(ownsDiagram(makeCtx({ owner: 'user_owner' }), team)).toBe(false);
-    expect(ownsDiagram({ ...makeCtx({ owner: null }), verifiedUserId: 'user_owner' }, team)).toBe(
-      true,
-    );
+    expect(await ownsDiagram(makeCtx({ owner: 'user_owner' }), team)).toBe(false);
+    expect(
+      await ownsDiagram({ ...makeCtx({ owner: null }), verifiedUserId: 'user_owner' }, team),
+    ).toBe(true);
   });
 
-  it('accepts the hybrid identity for a personal diagram', () => {
+  it('requires the owner of a team diagram to still be a joined member', async () => {
+    db.getMembership.mockResolvedValue(null);
+    const team = { ownerId: 'user_owner', teamId: 'team-1' };
+    expect(
+      await ownsDiagram({ ...makeCtx({ owner: null }), verifiedUserId: 'user_owner' }, team),
+    ).toBe(false);
+  });
+
+  it('accepts the hybrid identity for a personal diagram', async () => {
     const personal = { ownerId: 'guest-uuid', teamId: null };
-    expect(ownsDiagram(makeCtx({ owner: 'guest-uuid' }), personal)).toBe(true);
-    expect(ownsDiagram(makeCtx({ owner: 'someone-else' }), personal)).toBe(false);
+    expect(await ownsDiagram(makeCtx({ owner: 'guest-uuid' }), personal)).toBe(true);
+    expect(await ownsDiagram(makeCtx({ owner: 'someone-else' }), personal)).toBe(false);
   });
 
-  it('is false when neither identity resolves', () => {
-    expect(ownsDiagram(makeCtx({ owner: null }), { ownerId: 'x', teamId: null })).toBe(false);
-    expect(ownsDiagram(makeCtx({ owner: null }), { ownerId: 'x', teamId: 't' })).toBe(false);
+  it('is false when neither identity resolves', async () => {
+    expect(await ownsDiagram(makeCtx({ owner: null }), { ownerId: 'x', teamId: null })).toBe(false);
+    expect(await ownsDiagram(makeCtx({ owner: null }), { ownerId: 'x', teamId: 't' })).toBe(false);
   });
 });
 

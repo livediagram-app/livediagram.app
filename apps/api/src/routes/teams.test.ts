@@ -27,6 +27,7 @@ const { db } = vi.hoisted(() => ({
     listTeamMembers: vi.fn(),
     listTeamsByUser: vi.fn(),
     removeTeamMember: vi.fn(),
+    handTeamWorkToHeir: vi.fn(),
     setTeamInviteLink: vi.fn(),
     teamHasEmail: vi.fn(),
     updateTeam: vi.fn(),
@@ -482,6 +483,18 @@ describe('DELETE /api/teams/:id/members/:memberId (remove / leave)', () => {
     const res = await handleTeams(makeCtx('DELETE', '/api/teams/t1/members/m2'));
     expect(res.status).toBe(204);
     expect(db.removeTeamMember).toHaveBeenCalledWith({}, 'm2');
+  });
+
+  it("hands a removed member's team work to the team before the row goes", async () => {
+    // Every access gate honours owner_id before membership, so diagrams left
+    // owned by the removed member would stay open to them (spec/35).
+    db.getMembership.mockResolvedValue(member());
+    db.getTeamMember.mockResolvedValue(member({ id: 'm2', userId: 'user-2', role: 'member' }));
+    await handleTeams(makeCtx('DELETE', '/api/teams/t1/members/m2'));
+    expect(db.handTeamWorkToHeir).toHaveBeenCalledWith({}, 't1', 'user-2');
+    expect(db.handTeamWorkToHeir.mock.invocationCallOrder[0]!).toBeLessThan(
+      db.removeTeamMember.mock.invocationCallOrder[0]!,
+    );
   });
 
   it('a member may remove their own row (leave)', async () => {
