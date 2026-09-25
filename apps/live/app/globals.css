@@ -106,6 +106,10 @@
   --animate-pop-out: pop-out 220ms cubic-bezier(0.4, 0, 1, 1) forwards;
   --animate-fade-in: fade-in 260ms ease-out;
   --animate-fly-up-in: fly-up-in 420ms cubic-bezier(0.16, 1, 0.3, 1);
+  /* A sheet rising from the bottom edge of the screen. Distinct from
+     fly-up-in's 16px lift: this one travels its own full height, so it reads
+     as arriving from off-screen rather than settling into place. */
+  --animate-sheet-up: sheet-up 340ms cubic-bezier(0.16, 1, 0.3, 1);
   --animate-slide-row-in: slide-row-in 220ms cubic-bezier(0.16, 1, 0.3, 1);
   --animate-slide-row-out: slide-row-out 220ms cubic-bezier(0.4, 0, 1, 1) forwards;
   --animate-slide-in-left: slide-in-left 240ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -236,6 +240,17 @@
   }
   to {
     transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes sheet-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
     opacity: 1;
   }
 }

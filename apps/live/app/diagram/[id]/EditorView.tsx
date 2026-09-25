@@ -14,7 +14,7 @@ import { TabBar } from '@/components/chrome/TabBar';
 import { SignInBanner, SIGNIN_BANNER_DISMISS_KEY } from '@/components/chrome/SignInBanner';
 import { EmptyCanvasBanner } from '@/components/canvas/EmptyCanvasBanner';
 import { EditorModals } from '@/components/dialogs/EditorModals';
-import { PollPromptDialog } from '@/components/dialogs/PollPromptDialog';
+import { PollPromptSheet } from '@/components/panels/PollPromptSheet';
 import { FocusInviteDialog } from '@/components/dialogs/FocusInviteDialog';
 import { EditorTabDialogs } from '@/components/dialogs/EditorTabDialogs';
 import { CollaboratorsHost } from '@/components/dialogs/CollaboratorsHost';
@@ -393,7 +393,7 @@ export function EditorView() {
           including view-role; the results panel unlocks once you've
           responded (or if you're the host). Both vanish with the poll —
           nothing here is persisted. */}
-        <PollPromptDialog
+        <PollPromptSheet
           // Keyed on the poll so a second poll starts with a clean free-text
           // box rather than inheriting the first one's half-typed answer.
           key={livePoll.poll?.id ?? 'no-poll'}
