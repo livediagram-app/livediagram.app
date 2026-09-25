@@ -25,10 +25,16 @@ export function findTour(tourId: string): HTMLElement | null {
 // Click a tour anchor via a synthetic .click(). Deliberately NOT a full
 // pointer sequence: pointerdown-based outside-close listeners (dropdowns,
 // mobile panel auto-collapse) must not fire from a tour-driven click.
+//
+// An anchor that WRAPS its button (the Toolbar layout's Explorer menu button,
+// spec/148, anchors on its card so the ring frames the card) is pressed
+// through that button: a click dispatched on the wrapper never reaches the
+// child's onClick, so the menu silently stayed shut.
 export function clickTour(tourId: string): boolean {
   const el = findTour(tourId);
   if (!el) return false;
-  el.click();
+  const target = el.matches('button') ? el : (el.querySelector<HTMLElement>('button') ?? el);
+  target.click();
   return true;
 }
 

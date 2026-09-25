@@ -52,4 +52,16 @@ describe('tour DOM anchors', () => {
     expect(clickTour('dock-palette')).toBe(true);
     expect(clicks).toBe(1);
   });
+
+  // The Toolbar layout's Explorer menu button anchors on its card, not the
+  // button inside (spec/148); a click on the card alone never opened it.
+  it('presses the button inside a wrapping anchor', () => {
+    const el = anchor('dock-explorer', true);
+    const button = document.createElement('button');
+    el.append(button);
+    let clicks = 0;
+    button.addEventListener('click', () => clicks++);
+    expect(clickTour('dock-explorer')).toBe(true);
+    expect(clicks).toBe(1);
+  });
 });
