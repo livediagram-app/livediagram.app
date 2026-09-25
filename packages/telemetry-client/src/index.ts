@@ -19,7 +19,15 @@
 // they must not each decide for themselves is WHERE the opt-out is
 // stored and which way it defaults; those are below.
 
-import type { TelemetryAction, TelemetryCategory, TelemetryEvent } from '@livediagram/api-schema';
+import {
+  errorNameToken,
+  errorPageToken,
+  errorTypeToken,
+  pageViewPath,
+  type TelemetryAction,
+  type TelemetryCategory,
+  type TelemetryEvent,
+} from '@livediagram/api-schema';
 
 const FLUSH_DELAY_MS = 10_000;
 const MAX_BUFFER = 25;
@@ -217,17 +225,34 @@ export function createLazyTrack(opts: {
 // Client error tracking (spec/22 'Error' category)
 // ---------------------------------------------------------------------
 //
-// Window-level uncaught exceptions + unhandled promise rejections,
-// counted GENERICALLY: only the fixed kind token is emitted — never the
-// message, stack, or URL. Capped per kind per page load so a render /
-// retry loop that throws every frame can't flood the pipeline (the
-// count signal saturates at the cap; the dashboard reads presence +
-// order of magnitude, not exact storm size). Shared by the editor and
-// the help centre; each passes its own policy-wrapped track().
+// Window-level uncaught exceptions + unhandled promise rejections. The
+// type says WHERE and WHAT, from closed vocabularies only:
+// `<Kind>.<Page>.<ErrorName>`, e.g. `Uncaught.Diagram.TypeError`. The page
+// is the spec/150 page-view path's first segment (ids already stripped) and
+// the error name comes from a fixed list (`Other` / `NonError` otherwise):
+// never the message, stack, or URL. A stack's function names would say
+// more, but production bundles are minified, so they'd be noise that could
+// still leak code shape; the editor's area error boundaries name the part
+// of the UI instead (`Render.<Area>.*`).
+//
+// Capped per distinct type per page load so a render / retry loop that
+// throws every frame can't flood the pipeline (the count signal saturates
+// at the cap; the dashboard reads presence + order of magnitude, not exact
+// storm size), and per-type so one noisy page can't hide another.
+// Shared by the editor and the help centre; each passes its own
+// policy-wrapped track().
 
-const ERROR_EMIT_CAP_PER_KIND = 10;
+const ERROR_EMIT_CAP_PER_TYPE = 10;
 
 let errorTrackingInstalled = false;
+
+function currentErrorPage(): string | null {
+  try {
+    return errorPageToken(pageViewPath(window.location.pathname));
+  } catch {
+    return null;
+  }
+}
 
 export function installClientErrorTracking(
   track: (category: 'Error', action: 'Client', type: string) => void,
@@ -235,12 +260,13 @@ export function installClientErrorTracking(
   if (errorTrackingInstalled || typeof window === 'undefined') return;
   errorTrackingInstalled = true;
   const emitted: Record<string, number> = {};
-  const emit = (kind: 'Uncaught' | 'UnhandledRejection') => {
-    const n = emitted[kind] ?? 0;
-    if (n >= ERROR_EMIT_CAP_PER_KIND) return;
-    emitted[kind] = n + 1;
+  const emit = (kind: 'Uncaught' | 'UnhandledRejection', thrown: unknown) => {
     try {
-      track('Error', 'Client', kind);
+      const type = errorTypeToken(kind, currentErrorPage(), errorNameToken(thrown));
+      const n = emitted[type] ?? 0;
+      if (n >= ERROR_EMIT_CAP_PER_TYPE) return;
+      emitted[type] = n + 1;
+      track('Error', 'Client', type);
     } catch {
       // Telemetry must never throw into the host app's error path —
       // doubly so here, where we ARE the error path.
@@ -248,6 +274,8 @@ export function installClientErrorTracking(
   };
   // Bubble-phase 'error' on window sees uncaught JS exceptions only
   // (resource-load errors don't bubble), which is exactly the scope.
-  window.addEventListener('error', () => emit('Uncaught'));
-  window.addEventListener('unhandledrejection', () => emit('UnhandledRejection'));
+  window.addEventListener('error', (e: ErrorEvent) => emit('Uncaught', e?.error));
+  window.addEventListener('unhandledrejection', (e: PromiseRejectionEvent) =>
+    emit('UnhandledRejection', e?.reason),
+  );
 }

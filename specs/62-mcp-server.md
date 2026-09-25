@@ -354,9 +354,12 @@ finer grants stay deferred (spec/61 §7).
 
 Genuine tool failures reach the public **Exceptions** dashboard (spec/22 Error
 category), so we see WHERE the MCP breaks. `apiJson` reports a **5xx** from the
-api worker (`Error·Api·Http5xx`) and a **network fault** (the service binding
-threw — `Error·Api·Internal`), then rethrows; the `delete_diagram` raw-fetch
-path reports a 5xx too. A **4xx is deliberately NOT reported** — a bad id or
+api worker (`Error·Api·Http5xx.<Tool>`) and a **network fault** (the service
+binding threw — `Error·Api·Internal.<Tool>`), then rethrows; the
+`delete_diagram` raw-fetch path reports a 5xx too. `<Tool>` is the running
+tool's PascalCase name (`Http503.UpdateDiagram`), the same token as its
+`Mcp·Used` event, carried by the `AsyncLocalStorage` scope `registerTool` wraps
+every handler in (`tool-scope.ts`), so the dashboard says which tool broke. A **4xx is deliberately NOT reported** — a bad id or
 malformed elements is expected, model-correctable input, not a fault, and
 reporting it would flood the view (an empty Exceptions view is the goal).
 Fire-and-forget, generic tokens only — never a message, stack, or user content.

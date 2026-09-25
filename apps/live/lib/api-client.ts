@@ -31,10 +31,10 @@ export type {
 // catch it to branch on `err.status` / `err.code` (the api worker's
 // snake_case error token), so it belongs in the public surface.
 export { ApiError } from './api/core';
+export { setApiErrorReporter } from './api/error-report';
 export {
   API_BASE,
   DIAGRAM_LIST_LOAD_SAFETY_MS,
-  setApiErrorReporter,
   setTokenProvider,
   setSessionSharePassword,
   getSessionSharePassword,

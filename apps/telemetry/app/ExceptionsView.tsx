@@ -5,12 +5,14 @@ import { MetricGroups, type MetricGroup } from './MetricCards';
 import { RankCard, rank } from './RankCard';
 import { windowLabel } from './windows';
 
-// Exceptions view (spec/22): error health. API failures observed by the
-// editor's api-client (`Error·Api·Http<status>`), server-side crashes
-// the api worker self-reports (`Error·Api·Internal`), and client-side
-// uncaught exceptions / unhandled rejections from the editor + help
-// centre (`Error·Client·*`). Every count is generic by construction —
-// the closed vocabulary carries only status tokens and fixed kinds, so
+// Exceptions view (spec/22): error health, each row saying where it
+// failed. API failures observed by the editor's api-client
+// (`Error·Api·Http<status>.<Action>`, `Network.<Method>.<Route>`), server-side
+// crashes the api worker self-reports (`Internal.<Method>.<Route>`), MCP
+// failures by tool (`Http503.<Tool>`), and client-side exceptions from the
+// editor + help centre (`Error·Client·Uncaught.<Page>.<ErrorName>`,
+// `Render.<Area>.<ErrorName>`). Every count is generic by construction —
+// statuses, route words, pages, areas and a closed list of error names, so
 // there is nothing personal to show. An empty view is the goal state.
 export const GROUPS: MetricGroup[] = [
   {
@@ -22,7 +24,7 @@ export const GROUPS: MetricGroup[] = [
         allTypes: true,
         title: 'API Errors',
         blurb:
-          'Requests that failed: non-2xx responses seen by the editor, plus internal crashes the server reports about itself.',
+          'Requests that failed: non-2xx responses and dropped requests seen by the editor, MCP tool failures, and internal crashes the server reports about itself.',
       },
       {
         category: 'Error',
@@ -30,7 +32,7 @@ export const GROUPS: MetricGroup[] = [
         allTypes: true,
         title: 'Client Exceptions',
         blurb:
-          'Uncaught exceptions and unhandled promise rejections in the editor and help centre.',
+          'Uncaught exceptions, unhandled promise rejections, and editor areas that failed to render, in the editor and help centre.',
       },
     ],
   },
@@ -50,16 +52,16 @@ export function ExceptionsView({
   return (
     <div className="mt-8">
       <p className="text-sm text-slate-500 dark:text-slate-400">
-        Error health for <span className="font-medium">{windowLabel(active)}</span>: what failed,
-        counted generically — a status or a kind, never a message, stack, or anything personal. An
-        empty view here is the goal.
+        Error health for <span className="font-medium">{windowLabel(active)}</span>: what failed and
+        where, counted generically (a status or kind plus the request, route, page, or area), never
+        a message, stack, or anything personal. An empty view here is the goal.
       </p>
       <MetricGroups groups={GROUPS} summary={summary} active={active} />
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <RankCard
           title="API failures"
-          subtitle="By HTTP status as the editor saw it, plus server-reported internal crashes"
+          subtitle="By status and the request, route, or MCP tool that failed"
           category="Error"
           action="Api"
           items={api}
@@ -68,7 +70,7 @@ export function ExceptionsView({
         />
         <RankCard
           title="Client exceptions"
-          subtitle="Uncaught exceptions vs unhandled promise rejections"
+          subtitle="By kind, the page or editor area it happened in, and the error type"
           category="Error"
           action="Client"
           items={client}

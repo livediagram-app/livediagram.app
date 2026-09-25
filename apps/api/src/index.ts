@@ -10,7 +10,7 @@ import {
   deleteOldUnusedImages,
   resolveApiToken,
 } from './db';
-import { TIMELINE_RETENTION_MS } from '@livediagram/api-schema';
+import { apiRouteLabel, errorTypeToken, TIMELINE_RETENTION_MS } from '@livediagram/api-schema';
 import { isApiTokenFormat } from './auth/api-token';
 import { verifyOwnerId } from './auth/owner-signature';
 import { guestSignatureEnforced, OWNER_SCOPED_SEGMENTS } from './auth/guest-rest';
@@ -289,11 +289,13 @@ export default {
       // exception counts even when no client survives to report it.
       // Same TELEMETRY_ENABLED gate as the ingest; off the response's
       // critical path (waitUntil), and its own failure is swallowed —
-      // the 500 must still go out.
+      // the 500 must still go out. The type names the endpoint by its
+      // route words only (`Internal.Put.Diagrams.Tabs`), never an id.
       if (env.TELEMETRY_ENABLED === 'true') {
+        const type = errorTypeToken('Internal', apiRouteLabel(request.method, url.pathname));
         const report = insertTelemetryEvents(
           env,
-          [{ category: 'Error', action: 'Api', type: 'Internal' }],
+          [{ category: 'Error', action: 'Api', type }],
           Date.now(),
         ).catch(() => {});
         executionCtx?.waitUntil?.(report);

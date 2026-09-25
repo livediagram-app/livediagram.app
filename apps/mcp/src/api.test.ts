@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { ApiError, apiFetch, apiJson } from './api';
 import type { Env } from './env';
+import { runInTool } from './tool-scope';
 
 function envWith(handler: (req: Request) => Response): { env: Env; calls: Request[] } {
   const calls: Request[] = [];
@@ -67,6 +68,22 @@ describe('apiJson error telemetry (spec/62 §4.12)', () => {
     const { env, calls } = envWith(() => new Response('nope', { status: 404 }));
     await expect(apiJson(env, 't', '/diagrams/bad')).rejects.toBeInstanceOf(ApiError);
     expect(eventsPosted(calls)).toBe(false);
+  });
+
+  // Spec/22: a bare `Http503` can't say which tool broke. The label comes
+  // from the tool scope registerTool sets up, not from each call site.
+  it('labels the failure with the running tool', async () => {
+    const { env, calls } = envWith((req) =>
+      new URL(req.url).pathname === '/api/events'
+        ? new Response(null, { status: 204 })
+        : new Response('boom', { status: 503 }),
+    );
+    await expect(
+      runInTool('update_diagram', () => apiJson(env, 't', '/diagrams/x/tabs/y')),
+    ).rejects.toBeInstanceOf(ApiError);
+    const event = calls.find((r) => new URL(r.url).pathname === '/api/events')!;
+    const body = (await event.json()) as { events: Array<{ type: string }> };
+    expect(body.events[0]!.type).toBe('Http503.UpdateDiagram');
   });
 
   it('reports a network failure (binding threw) as Internal, then rethrows', async () => {
