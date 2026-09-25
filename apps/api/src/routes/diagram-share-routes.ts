@@ -121,6 +121,11 @@ export async function handleDiagramShareRoutes(ctx: RouteContext): Promise<Respo
     if (access instanceof Response) return access;
 
     if (request.method === 'DELETE') {
+      // The ownership check above is on the URL's diagram; the delete is by
+      // code alone. Without this, owning ANY diagram let you revoke any link
+      // whose code you had seen. Same guard as /extend below.
+      const existing = await getShareLinkIncludingExpired(env, code);
+      if (!existing || existing.diagramId !== id) return notFound();
       await deleteShareLink(env, code);
       // Same retraction as the bulk revoke above. Deliberately not conditional
       // on this being the diagram's LAST expiring link: the warning is per
