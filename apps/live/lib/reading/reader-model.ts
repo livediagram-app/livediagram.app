@@ -1,5 +1,6 @@
 import type { NoteCrop } from '@livediagram/api-schema';
 import { downloadProgress, type ModelDownload, type ModelProgressEvent } from './download-progress';
+import { tooSmallToRead } from './floor';
 import type { ReaderBackend } from './reader-protocol';
 
 // Reading the handwriting with a model that runs HERE (spec/139 Phase 9).
@@ -85,9 +86,21 @@ export async function loadReader(
   })();
 }
 
-export async function readOne(loaded: Loaded, crop: NoteCrop): Promise<string> {
+// `floor: true` skips a crop too small in the photo to read (floor.ts): the
+// editor's worker always sets it; the bench leaves it off, because it measures
+// where the floor belongs.
+export async function readOne(
+  loaded: Loaded,
+  crop: NoteCrop,
+  opts: { floor?: boolean } = {},
+): Promise<string> {
   const { RawImage } = await import('@huggingface/transformers');
   const image = await RawImage.fromURL(crop.image);
+  // Too small in the photo to read: asking only invents words (floor.ts).
+  if (opts.floor === true && tooSmallToRead(image.width, image.height)) {
+    console.info(`[reader] crop ${crop.id} is ${image.width}x${image.height}: too small to read`);
+    return '';
+  }
   // A multimodal turn is a LIST of parts (an image and a question), which is
   // how the library's own vision examples call it — but its published `Message`
   // type still says `content: string`, from the text-only days. The cast is

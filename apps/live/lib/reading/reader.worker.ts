@@ -85,7 +85,7 @@ scope.addEventListener('message', async ({ data: request }) => {
     if (cancelled.has(request.id)) break;
     let text = '';
     try {
-      text = await readOne(loaded, crop);
+      text = await readOne(loaded, crop, { floor: true });
     } catch (err) {
       // One crop the model chokes on is one blank note, not a broken read.
       console.warn(`[reader] crop ${crop.id} failed:`, err);

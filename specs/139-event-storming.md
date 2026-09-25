@@ -1268,6 +1268,17 @@ Decisions from the operator:
   warning, not an error: the author still gets their words — but a run of
   them says the hosted budget is spent, which nothing else would.
 
+- **A note too small to read is not asked about.** The in-browser reader
+  skips a crop whose SHORT edge is under 48 pixels (`READ_MIN_EDGE_PX`), in
+  the photo's full resolution: the note is left unread, and the unread tip
+  rightly says a closer photo would help. Measured on the 86 notes with known
+  words, each crop shrunk to a given size: at 48 px as many answers are
+  invented as are useful, at 56 px useful ones outnumber invented three to
+  one, at 32 px inventions win 42 to 2. A whiteboard shot from across the
+  room puts every note at 12-41 px, which is where every reading was
+  invented; no note on the two worded walls is under 70 px, so the floor costs
+  them nothing. The hosted reader has no floor.
+
 - **An answer shaped like chat is not a reading.** The small in-browser model
   sometimes answers like a chatbot instead of reading the note: "Yes.", "I'm
   not.", "The answer is 1.", "The text is written in black marker.". A note
