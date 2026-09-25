@@ -1,12 +1,12 @@
 import type { NoteCrop } from '@livediagram/api-schema';
-import { BLANK_ANSWERS } from './reader-model';
+import { toRead } from './answer';
 import type {
   ProcessorReason,
   ReaderBackend,
   ReaderRequest,
   ReaderResponse,
 } from './reader-protocol';
-import { normaliseRead, type ReadOptions, type ReadText } from './types';
+import type { ReadOptions, ReadText } from './types';
 
 // Reading the handwriting with a model that runs HERE, in this browser
 // (spec/139 Phase 9) — the reader a deployment with no model key gets, which
@@ -71,13 +71,6 @@ export async function readCropsInBrowser(
     return { textById: result.textById, failure: 'reader_unavailable', detail: result.detail };
   }
   return { textById: result.textById };
-}
-
-// The model's own answer, as a note's words: a line break is layout, and the
-// model's "no writing" is a blank note.
-function toRead(text: string): ReadText {
-  const read = normaliseRead(text);
-  return BLANK_ANSWERS.test(read.text) ? { text: '', legible: false } : read;
 }
 
 type Attempt = { textById: Map<number, ReadText>; failedBackend?: ReaderBackend; detail?: string };

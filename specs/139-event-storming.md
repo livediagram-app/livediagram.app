@@ -1253,6 +1253,18 @@ Decisions from the operator:
   warning, not an error: the author still gets their words — but a run of
   them says the hosted budget is spent, which nothing else would.
 
+- **An answer shaped like chat is not a reading.** The small in-browser model
+  sometimes answers like a chatbot instead of reading the note: "Yes.", "I'm
+  not.", "The answer is 1.", "The text is written in black marker.". A note
+  is a short phrase (at most eight words across 86 labelled notes, none
+  opening like that), so an answer that is a bare yes / no / sure, opens by
+  talking about the picture or itself ("The text…", "This is…", "I'm…", "It
+  says…", "Looks like…"), or runs past twelve words leaves the note UNREAD for
+  the author to type. Whole openers only, never a lone first word: a note may
+  begin "The order…". Measured: flags none of the 86 true notes, takes no
+  correct reading away, and drops 4 of the 17 invented answers on the
+  full-size crops. The hosted reader is not filtered; it does not do this.
+
 - **"On the processor" says why.** The in-browser reader runs on the graphics
   card when it can, and when it cannot the reading pill says which of four
   reasons stopped it, since reading on the processor is minutes on a big

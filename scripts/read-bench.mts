@@ -161,14 +161,14 @@ function cropsOf(full: ImageBuffer, stickies: DetectedSticky[], scale: number) {
 // Scoring. Case- and punctuation-insensitive: what a note MEANS is the point,
 // not whether the model capitalised it the way the pen did.
 
-const norm = (s: string) =>
+export const norm = (s: string) =>
   s
     .toLowerCase()
     .replace(/[^a-z0-9\s]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 
-function levenshtein(a: string, b: string): number {
+export function levenshtein(a: string, b: string): number {
   const d = Array.from({ length: a.length + 1 }, (_, i) => [
     i,
     ...new Array<number>(b.length).fill(0),

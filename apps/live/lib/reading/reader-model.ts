@@ -23,7 +23,7 @@ import type { ReaderBackend } from './reader-protocol';
 // handwriting; the 500M variant is twice the download for about two points of
 // accuracy, which is the wrong trade on a phone. q4 for the decoder is what
 // makes it ~190MB rather than a gigabyte.
-const MODEL_ID = 'HuggingFaceTB/SmolVLM-256M-Instruct';
+export const MODEL_ID = 'HuggingFaceTB/SmolVLM-256M-Instruct';
 
 // Ask for the words and nothing else. Deliberately plain: a firmer
 // instruction ("reply with only the words, nothing else") made the model drop
@@ -31,11 +31,6 @@ const MODEL_ID = 'HuggingFaceTB/SmolVLM-256M-Instruct';
 // measurement, so it is not to be "improved" without re-running the bench.
 const PROMPT =
   'Read the handwriting on this sticky note. Reply with only the words written, exactly as written. If there is no writing, reply with nothing.';
-
-// What the model says when the paper is blank. It answers this consistently on
-// an empty crop, which is a better blank-detector than asking it for a
-// sentinel token (asking changed how it read real text).
-export const BLANK_ANSWERS = /^(no|none|nothing|n\/a|blank|no writing|no text)\b[.!]?$/i;
 
 // A note is a phrase. Past this the model is repeating itself, which small
 // models do when they cannot read the image.
