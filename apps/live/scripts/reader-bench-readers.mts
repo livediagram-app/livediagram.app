@@ -226,6 +226,22 @@ function paddle(files: PaddleFiles): BenchReader {
   };
 }
 
+// PP-OCR's text detector alone, for the gate (reader-bench-gate.mts): its
+// "read" is how many lines of text it found in the crop, not any words.
+function paddleDetector(files: PaddleFiles): BenchReader {
+  return {
+    load: async () => {
+      const ort = fromTransformers('onnxruntime-node') as OrtNode;
+      const det = await ort.InferenceSession.create(
+        await weights(files.det, `paddleocr-onnx/${cacheName(files.det)}`),
+      );
+      const settings = files.settings;
+      return async (image) =>
+        String((await paddleDetect({ ort, det, settings }, await rgbOf(image))).flat().length);
+    },
+  };
+}
+
 // A handwriting line recogniser needs lines: PP-OCR's detector finds them,
 // TrOCR reads each one. Every line is kept (TrOCR gives no confidence).
 function linesThenTrocr(files: PaddleFiles, modelId: string): BenchReader {
@@ -290,6 +306,7 @@ export const READERS: Record<string, BenchReader> = {
   'paddleocr-v4-mobile': paddle(PADDLE_V4),
   'paddleocr-v5-mobile': paddle(PADDLE_V5),
   'ppocr-v6-tiny': paddle(ppocrV6('tiny')),
+  'ppocr-v6-tiny-det': paddleDetector(ppocrV6('tiny')),
   'ppocr-v6-small': paddle(ppocrV6('small')),
   'ppocr-v6-medium': paddle(ppocrV6('medium')),
   'doctr-db-mobilenet-parseq': doctr(DOCTR_FP32),
