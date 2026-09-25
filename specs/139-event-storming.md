@@ -453,7 +453,7 @@ record who asked for what.
 | **A multi-selection**                | Snapped by the NOTE IN HAND: the offers are asked of the note the drag began on, exactly as if it were dragged alone, and every other note moves by the one delta, so the selection keeps its spacing exactly. The preview is that note’s footprint.                                                                                                                                                                 |
 | **Dropped ON a note in the row**     | Resolved to the nearest slot, however far it is. Sliding a note back until it touches the one before it is how an author says "right behind this", and the gesture overshoots by nature; a footprint lying on another note is not a resting place on a board of paper.                                                                                                                                               |
 | **The gutter**                       | Always `ES_NOTE_GAP` (16). Not measured from the board any more: one number, relative to the notes in the row, is what makes the places predictable.                                                                                                                                                                                                                                                                 |
-| **Capture**                          | Half a standard note (100px) on x, the lane tolerance on y; the note OWN row ranks first and distance decides within a rank (an aligned column and a brick stay equals); the slot is drawn before the drop.                                                                                                                                                                                                          |
+| **Capture**                          | Half a standard note (100px) on x, the lane tolerance on y. Offers rank in three tiers and distance decides within a tier: (1) the note’s OWN row, at most one square left empty from a neighbour (`k ≤ 1`); (2) the lanes above and below, whose aligned columns and bricks stay equals; (3) the own row further along (`k ≥ 2`). The slot is drawn before the drop.                                                |
 | **Precedence**                       | An open Alt slot, then Cmd/Ctrl free placement, then these rules.                                                                                                                                                                                                                                                                                                                                                    |
 
 **Non-square stationery** (provisional, awaiting a ruling): a wide or small note
@@ -501,6 +501,13 @@ of it lives in `rhythmSlots` and `gutterCentres` in
   notes now places the selection as one block against its own outline (left
   edge to a left-edge offer, right edge to a right-edge one) and moves every
   note by the one delta, so notes that were already aligned stay aligned.
+- **2026-09-25 — "when both happen, the lanes above and below no longer snap"**:
+  own-row rhythm slots outranked every cross-lane offer, and with a slot every
+  216px and a 100px radius almost every x had one in reach, so a note beside a
+  row could never line up with the note above or below it. The own row now
+  outranks the lanes next door only up to one empty place from a neighbour;
+  beyond that the lanes above and below come first (the operator’s variant 2,
+  one sticky in between).
 - **2026-09-25 — "snap to the sticky that is dragged from, not the box as a whole"**:
   a selection is no longer placed by its outline. The note the drag began on
   takes the offers, as it would alone, and the rest follow by the same delta.

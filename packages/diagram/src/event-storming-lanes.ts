@@ -143,6 +143,9 @@ export type LaneCandidate = {
   //   staggered — the brick pattern: centred under that note's gutter.
   kind: 'gutter' | 'aligned' | 'staggered';
   neighbourId?: string;
+  // For a gutter slot: how many squares of empty wall it leaves between the
+  // note and its neighbour (0 = one gutter along).
+  step?: number;
 };
 
 const sameRow = (a: { y: number; height: number }, b: { y: number; height: number }): boolean =>
@@ -160,14 +163,22 @@ const sameRow = (a: { y: number; height: number }, b: { y: number; height: numbe
 // places in a row are the same places whichever sticky you are holding.
 const RHYTHM_SLOTS_EACH_WAY = 4;
 
-function rhythmSlots(neighbour: { x: number; width: number }, width: number): number[] {
-  const step = ES_NOTE_SIZE_PX.square.width + ES_NOTE_GAP;
+// How many squares of empty wall a row's own slot may leave before the lanes
+// above and below outrank it (spec/139 Phase 6: the operator's "one sticky in
+// between").
+export const ES_OWN_ROW_FIRST_STEPS = 1;
+
+function rhythmSlots(
+  neighbour: { x: number; width: number },
+  width: number,
+): { x: number; step: number }[] {
+  const pitch = ES_NOTE_SIZE_PX.square.width + ES_NOTE_GAP;
   const firstRight = neighbour.x + neighbour.width + ES_NOTE_GAP;
   const firstLeft = neighbour.x - ES_NOTE_GAP - width;
-  const out: number[] = [];
+  const out: { x: number; step: number }[] = [];
   for (let k = 0; k < RHYTHM_SLOTS_EACH_WAY; k += 1) {
-    out.push(firstRight + k * step);
-    out.push(firstLeft - k * step);
+    out.push({ x: firstRight + k * pitch, step: k });
+    out.push({ x: firstLeft - k * pitch, step: k });
   }
   return out;
 }
@@ -216,7 +227,7 @@ export function laneCandidates(
   const live = notes.filter((n) => !(n.id && opts.exclude?.has(n.id)));
 
   const out: LaneCandidate[] = [];
-  const offer = (x: number, kind: LaneCandidate['kind'], neighbourId?: string) => {
+  const offer = (x: number, kind: LaneCandidate['kind'], neighbourId?: string, step?: number) => {
     // A slot whose footprint lands on a note that is already there is not a
     // slot. Opening the row to make one is the Alt insertion (Phase 5), a
     // different verb with a different gesture — so the space BETWEEN two
@@ -226,7 +237,7 @@ export function laneCandidates(
         n.id !== neighbourId && sameRow(bounds, n) && x < n.x + n.width && x + bounds.width > n.x,
     );
     if (clashes) return;
-    out.push({ x, kind, neighbourId });
+    out.push({ x, kind, neighbourId, ...(step === undefined ? {} : { step }) });
   };
 
   for (const note of live) {
@@ -234,7 +245,9 @@ export function laneCandidates(
     if (sameRow(bounds, note)) {
       // ALONG THE ROW: the rhythm, and only the rhythm. Nothing touching,
       // nothing at half a pitch — in one row there is no such position.
-      for (const x of rhythmSlots(note, bounds.width)) offer(x, 'gutter', note.id);
+      for (const slot of rhythmSlots(note, bounds.width)) {
+        offer(slot.x, 'gutter', note.id, slot.step);
+      }
       continue;
     }
     // THE ROW NEXT DOOR: edges line up — exactly above the note, or ONE STEP
@@ -293,12 +306,23 @@ export function capturePlacement(
     // answer is this ROW's rhythm at any distance — not the nearest column or
     // brick from the row next door, which is how a row of events came out at
     // 72, 72, 36, 12 while the row below it looked perfectly tidy.
+    // Nearest wins here, whatever its step: the tiers below are about which
+    // OFFER takes a note held in open space, not about where a row resumes.
     const rhythm = candidates.filter((c) => c.kind === 'gutter');
-    return (
-      captureCandidate(bounds, rhythm, Infinity) ?? captureCandidate(bounds, candidates, Infinity)
-    );
+    return nearestCandidate(bounds, rhythm) ?? captureCandidate(bounds, candidates, Infinity);
   }
   return captureCandidate(bounds, candidates, opts.radius);
+}
+
+function nearestCandidate(
+  bounds: { x: number },
+  candidates: readonly LaneCandidate[],
+): LaneCandidate | null {
+  let best: LaneCandidate | null = null;
+  for (const c of candidates) {
+    if (!best || Math.abs(c.x - bounds.x) < Math.abs(best.x - bounds.x)) best = c;
+  }
+  return best;
 }
 
 export function captureCandidate(
@@ -306,18 +330,24 @@ export function captureCandidate(
   candidates: readonly LaneCandidate[],
   radius: number = ES_CANDIDATE_RADIUS_X,
 ): LaneCandidate | null {
-  // THE ROW THIS NOTE IS IN COMES FIRST.
+  // THREE TIERS, then distance.
   //
-  // A note joining a row that already has notes in it wants that row's rhythm,
-  // full stop — "place a few events behind each other and they should simply
-  // take the regular gap". The columns and bricks offered by the row NEXT DOOR
-  // are real places too, but when both are in reach they were winning on raw
-  // distance and leaving the row itself irregular: gaps of 36 and 12 in a row
-  // whose own rhythm is 72.
+  // 1. The row this note is in, close to a neighbour (at most one square of
+  //    empty wall between): "place a few events behind each other and they
+  //    should simply take the regular gap". When the row next door won on raw
+  //    distance here, rows came out irregular (gaps of 36 and 12).
+  // 2. The lanes above and below: an edge lined up, or a brick. Further along
+  //    a row, a note is usually being lined up with the one above or below it,
+  //    and the row's own slots (one every 216px) would otherwise always be in
+  //    reach and win.
+  // 3. The row's own rhythm further along.
   //
-  // So: rank first (own row beats next door), distance second. Within a rank
-  // nothing outranks anything — an aligned column and a brick are still equals.
-  const rank = (candidate: LaneCandidate) => (candidate.kind === 'gutter' ? 0 : 1);
+  // Within a tier nothing outranks anything: an aligned column and a brick are
+  // still equals.
+  const rank = (candidate: LaneCandidate) => {
+    if (candidate.kind !== 'gutter') return 1;
+    return (candidate.step ?? 0) <= ES_OWN_ROW_FIRST_STEPS ? 0 : 2;
+  };
   let best: LaneCandidate | null = null;
   let bestDistance = Infinity;
   for (const candidate of candidates) {

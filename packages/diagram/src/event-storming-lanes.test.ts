@@ -352,6 +352,33 @@ describe('capturing a suggested slot', () => {
     expect(placed!.x).toBe(200 + ES_NOTE_GAP);
   });
 
+  // The own row's rhythm, k steps out from a neighbour: k = 0 is one gutter
+  // along, k = 1 leaves one square empty, k = 2 two.
+  const rhythm = (k: number) => 200 + ES_NOTE_GAP + k * (200 + ES_NOTE_GAP);
+
+  it('keeps the own row first up to one empty place from a neighbour', () => {
+    const ownRow = [note({ id: 'own', x: 0, y: 0 })];
+    const nextDoor = [note({ id: 'below', x: rhythm(1) + 8, y: ES_LANE_PITCH })];
+    // Nearer the column below (4px) than the own row's slot (12px): the row wins.
+    const placed = capturePlacement({ x: rhythm(1) + 12, y: 0, width: 200, height: 200 }, [
+      ...ownRow,
+      ...nextDoor,
+    ]);
+    expect(placed).toMatchObject({ kind: 'gutter', x: rhythm(1) });
+  });
+
+  it('lets the lanes above and below win further along the row', () => {
+    const ownRow = [note({ id: 'own', x: 0, y: 0 })];
+    const nextDoor = [note({ id: 'below', x: rhythm(2) + 12, y: ES_LANE_PITCH })];
+    // Nearer the own row's slot (4px) than the column below (8px): the column
+    // wins, because the row next door outranks the rhythm from two places out.
+    const placed = capturePlacement({ x: rhythm(2) + 4, y: 0, width: 200, height: 200 }, [
+      ...ownRow,
+      ...nextDoor,
+    ]);
+    expect(placed).toMatchObject({ kind: 'aligned', x: rhythm(2) + 12 });
+  });
+
   it('still uses the row next door when this row has nothing to offer', () => {
     const nextDoor = [note({ id: 'below', x: 300, y: ES_LANE_PITCH })];
     const placed = capturePlacement({ x: 290, y: 0, width: 200, height: 200 }, nextDoor);
