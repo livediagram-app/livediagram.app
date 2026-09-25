@@ -161,7 +161,6 @@ export function PortalMenu({
     const observer = new ResizeObserver(clamp);
     observer.observe(node);
     return () => observer.disconnect();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pos, adjust]);
 
   useEffect(() => {
