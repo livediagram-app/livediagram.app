@@ -4,16 +4,17 @@ import { useMemo, useState } from 'react';
 import { EmptyState } from '@livediagram/ui';
 import type { TelemetryDaily, TelemetryWindow, TelemetryWindowKey } from '@livediagram/api-schema';
 import { categoryColor, eventExplanation } from './event-vocab';
-import { ActivityGlyph, SearchGlyph } from './glyphs';
+import { ActivityGlyph } from './glyphs';
 import { buildMetrics, type Metric } from './metrics';
+import { MetricCloud } from './MetricCloud';
 import { MetricPicker } from './MetricPicker';
 import { EventIcon } from './telemetry-event-icon';
 import { TrendChart } from './TrendChart';
 import { buildWindowCounts, WINDOW_META, windowHighlightFrom } from './windows';
 
-// The Search view (spec/22): find one specific event — by typing a query
-// or by drilling category → action → type in the MetricPicker — then see
-// just that metric charted over time. The metric universe is exactly the
+// The Search view (spec/22): find one specific event, by typing a query in
+// the MetricPicker or by clicking through the word cloud below it (category,
+// then action, then type), then see just that metric charted over time. The metric universe is exactly the
 // keys of `daily.byMetric`, so anything offered has a line to draw.
 
 export function MetricSearch({
@@ -48,20 +49,23 @@ export function MetricSearch({
       <MetricPicker metrics={metrics} onSelect={setSelected} />
 
       {selected ? (
-        <SelectedMetric
-          metric={selected}
-          windowCounts={windowCounts}
-          daily={daily}
-          active={active}
-        />
-      ) : (
-        <div className="mt-6">
-          <EmptyState
-            icon={<SearchGlyph />}
-            title="Pick a metric to chart it"
-            description="Search any single event above, or browse by category, then select it to see its last 30 days as a trend line."
+        <>
+          <button
+            type="button"
+            onClick={() => setSelected(null)}
+            className="mt-4 cursor-pointer text-sm text-sky-600 hover:underline dark:text-sky-400"
+          >
+            ← Browse all events
+          </button>
+          <SelectedMetric
+            metric={selected}
+            windowCounts={windowCounts}
+            daily={daily}
+            active={active}
           />
-        </div>
+        </>
+      ) : (
+        <MetricCloud metrics={metrics} counts={windowCounts[active]} onSelect={setSelected} />
       )}
     </div>
   );
