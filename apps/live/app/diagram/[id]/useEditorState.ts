@@ -2577,6 +2577,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     selectedId,
     multiSelectedIds,
     editingId,
+    setEditingId,
     activeTab,
     commit,
     setSelectedId,

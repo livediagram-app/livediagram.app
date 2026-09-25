@@ -281,3 +281,34 @@ test('a next-note button adds a command before an event, and nothing ties them',
 
   expectNoPageErrors(pageErrors);
 });
+
+// Copied notes pasted while a note is open for typing (spec/09 clipboard).
+// The clipboard holds them as JSON text, and the note used to take that JSON
+// as its words. They belong on the board.
+test('pasting copied notes into a note open for typing puts them on the board', async ({
+  page,
+  context,
+  pageErrors,
+}) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await startTemplateDiagram(page, /Browse Technical templates/, /^Event storming/i);
+  const canvas = page.locator('[data-canvas-a11y-root]');
+  await dismissQuickTour(page);
+  const notes = canvas.getByRole('img', { name: /^Sticky note/ });
+  await expect(notes).toHaveCount(3);
+  await page.waitForTimeout(500);
+
+  // Copy one event.
+  await notes.nth(1).click();
+  await page.keyboard.press('ControlOrMeta+c');
+  // Add the next note: it arrives open for typing.
+  await page.getByRole('button', { name: /add a command before/i }).click();
+  await expect(notes).toHaveCount(4);
+  await page.keyboard.press('ControlOrMeta+v');
+  await expect(notes).toHaveCount(5);
+
+  const tab = await boardTab(page);
+  const labels = stickies(tab).map((el) => (el as BoardNote & { label?: string }).label ?? '');
+  expect(labels.some((l) => l.includes('schemaVersion'))).toBe(false);
+  expectNoPageErrors(pageErrors);
+});

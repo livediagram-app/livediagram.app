@@ -53,6 +53,9 @@ type ClipboardDeps = {
   selectedId: string | null;
   multiSelectedIds: Set<string>;
   editingId: string | null;
+  // Ends typing in a label: pasting copied elements while a note is open for
+  // typing puts them on the canvas, not in the note.
+  setEditingId: (id: string | null) => void;
   activeTab: Tab;
   commit: (mapElements: (els: Element[]) => Element[]) => void;
   setSelectedId: (id: string | null) => void;
@@ -80,6 +83,7 @@ export function useClipboard(deps: ClipboardDeps) {
     selectedId,
     multiSelectedIds,
     editingId,
+    setEditingId,
     activeTab,
     commit,
     setSelectedId,
@@ -342,6 +346,30 @@ export function useClipboard(deps: ClipboardDeps) {
     document.addEventListener('paste', onPaste);
     return () => document.removeEventListener('paste', onPaste);
   }, [isReadOnly, editingId]);
+
+  // Copied ELEMENTS pasted while a label on the canvas is open for typing. The
+  // clipboard carries them as JSON text, and every label editor pastes plain
+  // text — so without this the JSON was typed into the note. Claimed in the
+  // CAPTURE phase, before the editor sees it: typing ends and the elements
+  // land on the canvas, exactly as if the note had not been open.
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    if (isReadOnly || editingId === null) return;
+    const onPasteIntoLabel = (e: ClipboardEvent) => {
+      if (anyModalOpen()) return;
+      const target = e.target as Element | null;
+      if (!(target instanceof HTMLElement) || !target.isContentEditable) return;
+      if (!target.closest('[data-canvas-a11y-root]')) return;
+      const elements = parseElementsPayload(e.clipboardData?.getData('text/plain'));
+      if (!elements) return;
+      e.preventDefault();
+      e.stopPropagation();
+      setEditingId(null);
+      pasteRef.current.pasteFromClipboard(elements);
+    };
+    document.addEventListener('paste', onPasteIntoLabel, true);
+    return () => document.removeEventListener('paste', onPasteIntoLabel, true);
+  }, [isReadOnly, editingId, setEditingId]);
 
   // `hasClipboard` backs the canvas menu's Paste row (spec/09): the row is
   // always THERE — a menu that changes shape with invisible state is a menu
