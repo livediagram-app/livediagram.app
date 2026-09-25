@@ -8,12 +8,12 @@ import {
   type TelemetrySummary,
   type TelemetryWindowKey,
 } from '@livediagram/api-schema';
-import { CANVAS_CONTROLS, categoryColor } from './event-vocab';
+import { categoryColor } from './event-vocab';
+import { CUSTOM_THEME_TYPES, NON_PATTERN_CANVAS_TYPES, THEME_ALIASES } from './look-feel-types';
 import { ActivityGlyph } from './glyphs';
 import { MiniSparkline } from './MiniSparkline';
 import { CardColumns } from './CardColumns';
 import { RankCard, rank } from './RankCard';
-import type { TypeAliases } from './rank';
 import { windowLabel } from './windows';
 
 // Look & Feel view (spec/22): which visual presets get picked, most to
@@ -29,26 +29,7 @@ import { windowLabel } from './windows';
 // template picker both fire it for the theme they start the tab with, so the
 // Themes card counts themes CHOSEN, at creation or later, and says so.
 
-// Theme·Changed types that are NOT built-in theme picks, so the theme
-// ranking excludes them: the custom-theme builder's applied/edited
-// variants, and the one-shot "reset elements to theme" recolour
-// (`ResetElements`), which would otherwise compete in the leaderboard.
-export const CUSTOM_THEME_TYPES: ReadonlySet<string> = new Set([
-  'Custom',
-  'CustomEdited',
-  'ResetElements',
-]);
-
-// The built-in brand theme was labelled Basic until #73 renamed it Default
-// (packages/diagram themes-data.ts), and the token follows the label. Rows
-// stored before the rename fold into Default so one theme ranks once.
-export const THEME_ALIASES: TypeAliases = { Basic: 'Default' };
-
-// Canvas·Changed types that are NOT a background pattern: the colour /
-// opacity / scale / animation-speed controls in the canvas panel
-// (CANVAS_CONTROLS). The Canvas Styles ranking is patterns only, so these
-// stay out of it.
-export const NON_PATTERN_CANVAS_TYPES: readonly string[] = Object.keys(CANVAS_CONTROLS);
+export { CUSTOM_THEME_TYPES, NON_PATTERN_CANVAS_TYPES, THEME_ALIASES } from './look-feel-types';
 
 export function LookAndFeelView({
   summary,

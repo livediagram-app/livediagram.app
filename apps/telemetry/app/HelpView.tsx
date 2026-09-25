@@ -1,6 +1,13 @@
 'use client';
 
 import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
+import {
+  ARTICLE_VIEWS,
+  DRY_HELP_SEARCHES,
+  HELP_SEARCHES,
+  MARKED_HELPFUL,
+  MARKED_NOT_HELPFUL,
+} from './metric-catalogue';
 import { MetricGroups, type MetricGroup } from './MetricCards';
 import { CardColumns } from './CardColumns';
 import { RankCard, rank } from './RankCard';
@@ -20,30 +27,7 @@ import { windowLabel } from './windows';
 export const GROUPS: MetricGroup[] = [
   {
     title: 'Help engagement',
-    metrics: [
-      {
-        category: 'Help',
-        action: 'View',
-        allTypes: true,
-        title: 'Article Views',
-        blurb: 'Help-centre articles opened, across every article.',
-      },
-      {
-        category: 'Help',
-        action: 'Helpful',
-        allTypes: true,
-        title: 'Marked Helpful',
-        blurb: 'Readers who tapped "yes, this helped" on an article.',
-      },
-      {
-        category: 'Help',
-        action: 'Unhelpful',
-        allTypes: true,
-        rising: 'bad',
-        title: 'Marked Not Helpful',
-        blurb: 'Readers who tapped "not really"; the articles worth rewriting.',
-      },
-    ],
+    metrics: [ARTICLE_VIEWS, MARKED_HELPFUL, MARKED_NOT_HELPFUL, HELP_SEARCHES, DRY_HELP_SEARCHES],
   },
 ];
 

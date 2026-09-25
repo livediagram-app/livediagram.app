@@ -4,7 +4,7 @@ import { PALETTE_TELEMETRY_TYPES } from '@livediagram/api-schema';
 import type { TelemetryCount, TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
 import { CardColumns } from './CardColumns';
 import { RankCard, rank } from './RankCard';
-import { PALETTE_TYPE_ALIASES } from './palette-types';
+import { PALETTE_TYPE_ALIASES, SELECTION_MODES } from './palette-types';
 import { windowLabel } from './windows';
 
 // Palette view (spec/22): what people reach for in the editor's creation
@@ -30,21 +30,7 @@ const {
   icons: ICONS,
 } = PALETTE_TELEMETRY_TYPES;
 
-export { PALETTE_TYPE_ALIASES } from './palette-types';
-
-// The canvas selection modes (useCanvasTool's `Canvas·Used` tokens). Other
-// Canvas·Used events are not modes a person selects: InsertBetween is a drag
-// gesture and FollowMe is pinning your view to a peer's (it has its own card
-// on the Collaboration tab), so the ranking names the modes it counts.
-export const SELECTION_MODES: readonly string[] = [
-  'Laser',
-  'Spotlight',
-  'Eraser',
-  'Highlighter',
-  'FormatPainter',
-  'Isometric',
-  'AvatarMode',
-];
+export { PALETTE_TYPE_ALIASES, SELECTION_MODES } from './palette-types';
 
 const addedIn = (kinds: readonly string[]) => (r: TelemetryCount) =>
   r.category === 'Element' && r.action === 'Added' && kinds.includes(r.type ?? '');

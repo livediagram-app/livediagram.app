@@ -15,6 +15,10 @@ export type Rising = 'good' | 'bad' | 'neutral';
 export type Metric = {
   category: string;
   action: string;
+  // Further actions the metric also counts, beside `action` (a Settings
+  // category spans Toggled rows and Changed rows). `action` stays the one its
+  // icon and label show.
+  actionIn?: readonly string[];
   type?: string | null; // specific type; ignored when allTypes
   allTypes?: boolean; // sum across every type of category·action
   // Sum across the types this picks (e.g. the page paths one app serves,
@@ -65,8 +69,9 @@ export const metricKey = (m: Metric): string =>
   `${m.category}|${m.action}|${isAggregate(m) ? `*${m.title}` : (m.type ?? '')}`;
 
 // Does an event (category, action, type) belong to this metric?
-function matches(m: Metric, category: string, action: string, type: string | null): boolean {
-  if (category !== m.category || action !== m.action) return false;
+export function matches(m: Metric, category: string, action: string, type: string | null): boolean {
+  if (category !== m.category) return false;
+  if (action !== m.action && !m.actionIn?.includes(action)) return false;
   if (m.typeIn) return m.typeIn(type);
   return m.allTypes ? true : type === (m.type ?? null);
 }

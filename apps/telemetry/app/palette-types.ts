@@ -33,3 +33,17 @@ export type PaletteTab = keyof typeof PALETTE_TELEMETRY_TYPES;
 export const PALETTE_KINDS: ReadonlySet<string> = new Set(
   Object.values(PALETTE_TELEMETRY_TYPES).flat(),
 );
+
+// The canvas selection modes (useCanvasTool's `Canvas·Used` tokens). Other
+// Canvas·Used events are not modes a person selects: InsertBetween is a drag
+// gesture and FollowMe is pinning your view to a peer's (it has its own card
+// on the Collaboration tab), so the ranking names the modes it counts.
+export const SELECTION_MODES: readonly string[] = [
+  'Laser',
+  'Spotlight',
+  'Eraser',
+  'Highlighter',
+  'FormatPainter',
+  'Isometric',
+  'AvatarMode',
+];

@@ -3,44 +3,54 @@
 import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
 import {
   ACCOUNT_ACTIVITY,
-  COUNTDOWNS,
-  DISCUSSION,
-  LIVE_TOGETHER,
-  POLLS,
-  SHARING_AND_JOINING,
-  STOPWATCHES,
-  TEAM_ACTIVITY,
-  VOTING,
   AI_ASSISTANCE,
+  ALL_VISITORS,
   API_TOKEN_ACTIVITY,
-  ELEMENTS_ADDED,
-  EXCEPTIONS,
-  LAYERS_FEATURE,
-  DASHBOARD_PAGES,
+  COUNTDOWNS,
   DIAGRAM_ACTIONS,
+  DISCUSSION,
+  EDITOR_CHROME,
+  EDITOR_SEARCH,
+  ELEMENT_EDITING,
+  ELEMENTS_ADDED,
   EMAILS_SENT,
-  HELP_PAGES,
-  LIVE_PAGES,
+  EXCEPTIONS,
+  EXPORT_AND_IMPORT,
+  HELP_CENTRE,
+  LAYERS_FEATURE,
+  LIVE_TOGETHER,
+  LOOK_AND_FEEL,
   MCP_TOOL_CALLS,
-  MARKETING_PAGES,
-  NEW_VISITORS,
-  RETURNING_VISITORS,
+  PAGE_VIEWS_BY_APP,
+  PALETTE_USE,
+  PANELS_OPENED,
+  POLLS,
+  PRESENTATIONS,
+  SETTINGS_CHANGED,
+  SHARING_AND_JOINING,
+  SIGN_IN_PROMPTS,
+  STOPWATCHES,
   TAB_ACTIONS,
+  TEAM_ACTIVITY,
+  TIMELINE_AND_ACTIVITY,
+  UNDO_AND_REVERT,
+  VOTING,
+  WELCOME_TOUR,
 } from './metric-catalogue';
 import { MetricGroups, type MetricGroup } from './MetricCards';
 import type { ViewKey } from './view-keys';
 import { windowLabel } from './windows';
 
-// The Dashboard view (spec/22, default tab): the key product metrics we
-// most want to watch. Being rebuilt one tab at a time: for now it carries
-// only Visitors, as three chart stacks (All Visitors: New + Returning;
-// Account Activity: Sign-Ups + Sign-Ins + Sign-Outs + Accounts Deleted; Page
-// Views by App: views per app, moved here from the Pages tab), plus Emails
-// Sent (moved from the removed Acquisition tab) and Diagram / Tab Actions
-// (moved from the removed Content tab), each a
-// combined chart that fans out into its members' cards. Charts come from the
-// shared catalogue, so a stack only references them; more are added back
-// from the other tabs as each one is reviewed.
+// The Dashboard view (spec/22, default tab): every event the product sends,
+// as chart stacks grouped by the question they answer, each a combined chart
+// that opens into its members' cards. Charts come from the shared catalogue,
+// so a stack only references them. Every emitted event lands in some chart
+// (metric-emitters.test), so nothing is visible only in Search.
+//
+// Groups run as a funnel: who arrives, what they make, which features carry
+// the work, how they work together, how machines connect, then health and
+// the email behind it all. A stack that goes deeper than it can links to its
+// Detail tab.
 //
 // Deliberately a FIXED list, not "top by volume": a first-time visitor
 // (`Participant·Created`) is low volume but high signal, so it must always be
@@ -50,51 +60,50 @@ import { windowLabel } from './windows';
 export const GROUPS: MetricGroup[] = [
   {
     title: 'Visitors',
-    metrics: [
-      {
-        stack: true,
-        title: 'All Visitors',
-        blurb:
-          'Every browser that opened the app: first-timers and those back on a later day, counted once per day each.',
-        members: [NEW_VISITORS, RETURNING_VISITORS],
-      },
-      ACCOUNT_ACTIVITY,
-      {
-        stack: true,
-        title: 'Page Views by App',
-        blurb:
-          'Every page viewed across the site, by full load or in-app navigation, split by the app that serves it.',
-        members: [MARKETING_PAGES, LIVE_PAGES, HELP_PAGES, DASHBOARD_PAGES],
-        seeAlso: { view: 'pages', label: 'See Every Page on the Pages Tab' },
-      },
-    ],
+    metrics: [ALL_VISITORS, ACCOUNT_ACTIVITY, PAGE_VIEWS_BY_APP, SIGN_IN_PROMPTS, WELCOME_TOUR],
   },
   {
     title: 'Content',
-    metrics: [DIAGRAM_ACTIONS, TAB_ACTIONS, ELEMENTS_ADDED],
+    metrics: [
+      DIAGRAM_ACTIONS,
+      TAB_ACTIONS,
+      ELEMENTS_ADDED,
+      ELEMENT_EDITING,
+      UNDO_AND_REVERT,
+      EXPORT_AND_IMPORT,
+    ],
   },
   {
     title: 'Features',
-    metrics: [AI_ASSISTANCE, LAYERS_FEATURE],
+    metrics: [
+      AI_ASSISTANCE,
+      LAYERS_FEATURE,
+      PALETTE_USE,
+      LOOK_AND_FEEL,
+      EDITOR_SEARCH,
+      PANELS_OPENED,
+      EDITOR_CHROME,
+      SETTINGS_CHANGED,
+    ],
   },
   // Live Together is the only stack that counts two people on one canvas at
   // the same moment; the rest of Collaboration counts invitations to be there,
-  // so read them against it. Moved here with the Collaboration tab's removal.
+  // so read them against it.
   {
     title: 'Collaboration',
-    metrics: [LIVE_TOGETHER, SHARING_AND_JOINING, DISCUSSION],
+    metrics: [LIVE_TOGETHER, SHARING_AND_JOINING, DISCUSSION, TIMELINE_AND_ACTIVITY],
   },
   {
     title: 'Teams & facilitation',
-    metrics: [TEAM_ACTIVITY, VOTING, POLLS, COUNTDOWNS, STOPWATCHES],
+    metrics: [TEAM_ACTIVITY, VOTING, POLLS, COUNTDOWNS, STOPWATCHES, PRESENTATIONS],
   },
   {
     title: 'Connections',
     metrics: [API_TOKEN_ACTIVITY, MCP_TOOL_CALLS],
   },
   {
-    title: 'Health',
-    metrics: [EXCEPTIONS],
+    title: 'Health & support',
+    metrics: [EXCEPTIONS, HELP_CENTRE],
   },
   {
     // Written server-side by the api worker: nothing about a send reaches a

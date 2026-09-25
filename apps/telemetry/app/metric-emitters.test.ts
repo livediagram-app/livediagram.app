@@ -14,7 +14,7 @@ import {
   THEME_ALIASES,
 } from './LookAndFeelView';
 import * as CATALOGUE from './metric-catalogue';
-import { groupMetrics, isStack, type MetricGroup } from './metric-series';
+import { groupMetrics, isStack, matches, type MetricGroup } from './metric-series';
 import { SELECTION_MODES } from './PaletteView';
 
 // Every card and every hard-coded ranking type on the dashboard must be an
@@ -214,5 +214,40 @@ describe('the Settings tab', () => {
         ),
     );
     expect(missing.map((e) => `${e.category}·${e.action}·${String(e.type)}`)).toEqual([]);
+  });
+});
+
+// The pattern's promise (spec/22): every event the repo can send lands in a
+// chart on some tab, so nothing is reachable only through Search. A new
+// emitter with no chart fails here; give it one (usually a member of an
+// existing stack) or, if it is genuinely not worth a chart, list it below with
+// the reason.
+const NO_CHART: Record<string, string> = {};
+
+describe('every event has a chart', () => {
+  const charts = ALL.flatMap(groupMetrics);
+  const home = (e: Known) =>
+    charts.some((m) =>
+      e.type === COMPUTED
+        ? // A computed type (an email template, an MCP tool) can't be read by
+          // the scan; any chart on its category·action counts, and those
+          // families have their own completeness tests (metric-series.test).
+          matches({ ...m, allTypes: true, typeIn: undefined }, e.category, e.action, null)
+        : matches(m, e.category, e.action, e.type as string | null),
+    );
+  const orphans = KNOWN.filter(
+    (e) => !home(e) && !(`${e.category}·${e.action}·${String(e.type)}` in NO_CHART),
+  );
+  it('finds a chart for every event an emitter can send', () => {
+    expect(
+      [
+        ...new Set(
+          orphans.map(
+            (e) =>
+              `${e.category}·${e.action}·${e.type === COMPUTED ? '<computed>' : String(e.type)}  (${e.path.split('/').slice(-2).join('/')})`,
+          ),
+        ),
+      ].sort(),
+    ).toEqual([]);
   });
 });
