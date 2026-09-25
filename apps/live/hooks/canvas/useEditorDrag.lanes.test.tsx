@@ -254,7 +254,7 @@ describe('useEditorDrag — timeline lanes (spec/139)', () => {
     expect(preview!.originY).toBe(0);
   });
 
-  it('snaps a MULTI-SELECTION as one block, keeping its spacing', () => {
+  it('snaps a MULTI-SELECTION by the note in hand, keeping its spacing', () => {
     // Two notes already a gutter apart, dragged together: the block takes a
     // place on the board and the pair stays a pair.
     const h = harness({ multiSelected: ['drag', 'a'] });

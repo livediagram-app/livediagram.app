@@ -131,6 +131,57 @@ describe('resolveBoxedMove — timeline lanes', () => {
     expect(out).toEqual({ tx: 9, ty: 7, guides: [], distGuides: [], lane: null });
   });
 
+  describe('a multi-selection', () => {
+    // Three notes dragged together by the MIDDLE one. The note in hand is what
+    // meets the board's places; the others ride along by the same delta.
+    const selection = new Map<string, ShapeBounds>([
+      ['left', { x: 600, y: 1000, width: 200, height: 200 }],
+      ['drag', { x: 1000, y: 1000, width: 200, height: 200 }],
+      ['right', { x: 1400, y: 1000, width: 200, height: 200 }],
+    ]);
+    const members = [...selection].map(([id, b]) => note(id, b.x, b.y));
+
+    function resolveSelection(dx: number, dy: number, others: Element[]) {
+      return resolveBoxedMove({
+        elements: [...members, ...others],
+        startBounds: selection,
+        primaryId: 'drag',
+        dx,
+        dy,
+        noSnap: false,
+        guidesOn: true,
+        timeline: TIMELINE,
+      });
+    }
+
+    it('snaps the note in hand, not the outline of the selection', () => {
+      // Held 5px off the column of the note in the lane below. The outline's
+      // edges are nowhere near any place, so only the grabbed note can take it.
+      const out = resolveSelection(505 - 1000, 7 - 1000, [note('below', 500, ES_LANE_PITCH)]);
+      expect(1000 + out.tx).toBe(500);
+      expect(1000 + out.ty).toBe(laneCentre(0, TIMELINE) - 100);
+    });
+
+    it('keeps every note of the selection at its own distance from the one in hand', () => {
+      const out = resolveSelection(505 - 1000, 7 - 1000, [note('below', 500, ES_LANE_PITCH)]);
+      // One delta for all: the selection's spacing is untouched.
+      expect(600 + out.tx).toBe(100);
+      expect(1400 + out.tx).toBe(900);
+    });
+
+    it('ignores places offered only to the outline', () => {
+      // The outline's LEFT edge lands 4px off the note below; the note in hand
+      // is far from any place, so the selection stays where the hand put it.
+      const out = resolveSelection(504 - 600, 7 - 1000, [note('below', 500, ES_LANE_PITCH)]);
+      expect(1000 + out.tx).toBe(904);
+    });
+
+    it('previews the footprint of the note in hand', () => {
+      const out = resolveSelection(505 - 1000, 7 - 1000, [note('below', 500, ES_LANE_PITCH)]);
+      expect(out.lane!.ghost).toEqual({ x: 500, y: 0, width: 200, height: 200 });
+    });
+  });
+
   it('is absent when the caller passes no timeline', () => {
     const out = resolve(305 - START.x, ES_LANE_PITCH + 7 - START.y, { timeline: null });
     expect(out.lane).toBeNull();

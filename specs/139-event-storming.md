@@ -449,7 +449,7 @@ record who asked for what.
 | **Same lane — never offered**        | Touching (`n.x ± w`). One gap plus one sticky (`n.x + n.width + gutter + w`) — that is a note's edge, not a place. Half a pitch. Anything landing on a note that is already there (opening a row is the Alt insertion, a different verb).                                                                                                                                                                            |
 | **Adjacent lane**                    | EDGES LINE UP, in three columns: exactly above/below the note, and ONE rhythm step (216) to either side — the diagonal, a note sitting against its neighbour one place along. Same silhouette lines up on the left edge and, for two SQUARES, the brick as well (centred on the gap beside the note). Different silhouettes line up on the left edge or the right edge, in the same three columns, and get no brick. |
 | **Every other x snap**               | Stands down. On an event-storming board the lane resolver is the only source of x — the ordinary alignment and distribution rungs were adding exactly the positions the rules above exclude.                                                                                                                                                                                                                         |
-| **A multi-selection**                | Placed as ONE BLOCK: the offers are asked of the selection’s outline, so its LEFT edge takes a left-edge offer and its RIGHT edge takes a right-edge one, and every note moves by the one delta — a row dragged together keeps its spacing exactly.                                                                                                                                                                  |
+| **A multi-selection**                | Snapped by the NOTE IN HAND: the offers are asked of the note the drag began on, exactly as if it were dragged alone, and every other note moves by the one delta, so the selection keeps its spacing exactly. The preview is that note’s footprint.                                                                                                                                                                 |
 | **Dropped ON a note in the row**     | Resolved to the nearest slot, however far it is. Sliding a note back until it touches the one before it is how an author says "right behind this", and the gesture overshoots by nature; a footprint lying on another note is not a resting place on a board of paper.                                                                                                                                               |
 | **The gutter**                       | Always `ES_NOTE_GAP` (16). Not measured from the board any more: one number, relative to the notes in the row, is what makes the places predictable.                                                                                                                                                                                                                                                                 |
 | **Capture**                          | Half a standard note (100px) on x, the lane tolerance on y; the note OWN row ranks first and distance decides within a rank (an aligned column and a brick stay equals); the slot is drawn before the drop.                                                                                                                                                                                                          |
@@ -493,6 +493,9 @@ of it lives in `rhythmSlots` and `gutterCentres` in
   notes now places the selection as one block against its own outline (left
   edge to a left-edge offer, right edge to a right-edge one) and moves every
   note by the one delta, so notes that were already aligned stay aligned.
+- **2026-09-25 — "snap to the sticky that is dragged from, not the box as a whole"**:
+  a selection is no longer placed by its outline. The note the drag began on
+  takes the offers, as it would alone, and the rest follow by the same delta.
 - **2026-09-17 — "a palette tile stays armed after a drag creates a note"**:
   landing a palette drag now disarms the tile it armed (), so
   the next click on the canvas does not silently mint a second note.
@@ -566,7 +569,7 @@ of it lives in `rhythmSlots` and `gutterCentres` in
   the bands span the viewport because the lanes are infinite. Everything goes on release. There are no column marks:
   the board draws the SLOT it is offering instead, which says the same thing
   about x and says it where the note is actually going.
-- **Notes only** — one or many. A selection of notes is placed as one block
+- **Notes only** — one or many. A selection of notes snaps by the note in hand
   (see the rules table); a shape, an icon, an arrow or an image drags exactly as
   it does on every other board. The Alt insertion and the dock still want
   exactly one note, which is their own rule.

@@ -205,7 +205,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       isSingleNoteDrag(depsRef.current.activeTab.elements, drag.primaryId, drag.startBounds);
     setInsertionDragInHand(movingOneNote && depsRef.current.insertGate.esBoard);
     // Timeline lanes (spec/139 Phase 6) apply to ANY notes being moved on one
-    // of these boards, one or many: a selection travels as a block and still
+    // of these boards, one or many: a selection snaps by the note in hand and still
     // meets the board's places. The insertion gesture and the dock still want
     // exactly one note, so they keep their own flag.
     const laneEligible = movingOneNote && depsRef.current.insertGate.esBoard;
