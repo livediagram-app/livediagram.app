@@ -100,7 +100,7 @@ export const TELEMETRY_CATEGORIES = [
   // retried. Never an action name, comment text, or diagram name.
   'Activity',
   // Page views (spec/150): 'View' with `type` the normalised page path
-  // ('/help/canvas/the-canvas', '/diagram/[id]'), reported by every
+  // ('/help/canvas/the-canvas', '/diagram'), reported by every
   // frontend on each path change. The one category whose `type` is a path,
   // so it validates against PAGE_VIEW_PATH_PATTERN instead of the token
   // pattern, and only ever pairs with 'View'.

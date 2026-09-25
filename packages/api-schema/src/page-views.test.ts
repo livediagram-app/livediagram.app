@@ -17,16 +17,18 @@ describe('pageViewPath', () => {
     expect(pageViewPath('/index.html')).toBe('/');
   });
 
-  it('collapses every diagram URL to one page, whatever follows', () => {
-    expect(pageViewPath('/diagram/3f2b8c1e-9a4d-4e7b-8c21-0d5e6f7a8b9c')).toBe('/diagram/[id]');
-    expect(pageViewPath('/diagram/offline-abc')).toBe('/diagram/[id]');
-    expect(pageViewPath('/diagram/abc/extra/Weird Stuff!')).toBe('/diagram/[id]');
+  it('counts every diagram as the one /diagram page, whatever follows', () => {
+    expect(pageViewPath('/diagram/3f2b8c1e-9a4d-4e7b-8c21-0d5e6f7a8b9c')).toBe('/diagram');
+    expect(pageViewPath('/diagram/offline-abc')).toBe('/diagram');
+    expect(pageViewPath('/diagram/abc/extra/Weird Stuff!')).toBe('/diagram');
+    expect(pageViewPath('/diagram/a/b/c/d/e/f/g')).toBe('/diagram');
     expect(pageViewPath('/diagram')).toBe('/diagram');
   });
 
-  it('collapses id-looking segments anywhere else', () => {
-    expect(pageViewPath('/embed/3f2b8c1e-9a4d-4e7b-8c21-0d5e6f7a8b9c')).toBe('/embed/[id]');
-    expect(pageViewPath('/x/a1b2c3d4e5f6g7h8')).toBe('/x/[id]');
+  it('drops an id-looking segment, and everything after it, anywhere else', () => {
+    expect(pageViewPath('/embed/3f2b8c1e-9a4d-4e7b-8c21-0d5e6f7a8b9c')).toBe('/embed');
+    expect(pageViewPath('/x/a1b2c3d4e5f6g7h8/more')).toBe('/x');
+    expect(pageViewPath('/a1b2c3d4e5f6g7h8')).toBeNull();
     // Slugs are not ids, however long.
     expect(pageViewPath('/help/tips-and-tricks/keyboard-shortcuts')).toBe(
       '/help/tips-and-tricks/keyboard-shortcuts',
@@ -42,7 +44,7 @@ describe('pageViewPath', () => {
   });
 
   it('only ever produces paths the ingest accepts', () => {
-    for (const p of ['/', '/help/tabs', '/diagram/x', '/embed/0123456789abcdef', '/FAQ/']) {
+    for (const p of ['/', '/help/tabs', '/diagram/x', '/embed/0123456789abcdef/x', '/FAQ/']) {
       const out = pageViewPath(p);
       expect(out).not.toBeNull();
       expect(isValidPageViewPath(out!)).toBe(true);
@@ -58,7 +60,7 @@ describe('pageViewApp', () => {
     expect(pageViewApp('/help/canvas/the-canvas')).toBe('Help');
     expect(pageViewApp('/telemetry')).toBe('Dashboard');
     expect(pageViewApp('/explorer/recent')).toBe('Editor');
-    expect(pageViewApp('/diagram/[id]')).toBe('Editor');
+    expect(pageViewApp('/diagram')).toBe('Editor');
     expect(pageViewApp('/new')).toBe('Editor');
   });
 });
@@ -66,7 +68,7 @@ describe('pageViewApp', () => {
 describe('Page·View validation', () => {
   it('accepts a normalised path', () => {
     expect(isValidTelemetryEvent({ category: 'Page', action: 'View', type: '/' })).toBe(true);
-    expect(isValidTelemetryEvent({ category: 'Page', action: 'View', type: '/diagram/[id]' })).toBe(
+    expect(isValidTelemetryEvent({ category: 'Page', action: 'View', type: '/diagram' })).toBe(
       true,
     );
   });
@@ -77,6 +79,7 @@ describe('Page·View validation', () => {
       { category: 'Page', action: 'View', type: '/join?token=abc' },
       { category: 'Page', action: 'View', type: '/Help' },
       { category: 'Page', action: 'View', type: 'help' },
+      { category: 'Page', action: 'View', type: '/diagram/[id]' },
       { category: 'Page', action: 'View', type: `/${'a'.repeat(200)}` },
       { category: 'Page', action: 'Opened', type: '/' },
     ];

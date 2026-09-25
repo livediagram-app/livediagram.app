@@ -40,7 +40,7 @@ router stays pure routing.
 
 A page view is an ordinary spec/22 event: **`Page` · `View` · `<path>`**. The
 `type` is the normalised page path, e.g. `/`, `/alternatives/miro`,
-`/help/canvas/the-canvas`, `/explorer/recent`, `/diagram/[id]`.
+`/help/canvas/the-canvas`, `/explorer/recent`, `/diagram`.
 
 Carrying it as an event rather than a new table or endpoint means it rides the
 whole existing pipeline unchanged: the buffered emitter, the page-hide beacon,
@@ -55,9 +55,13 @@ it is reduced to _which page_, never _which thing on it_:
 
 - **Query string and hash dropped.** Never sent. This is where invites
   (`/join?token=`), share codes and folder ids live.
-- **Ids collapsed.** `/diagram/<anything>` becomes `/diagram/[id]`, and any
-  other segment that looks like an id (a UUID, or a long token containing a
-  digit) becomes `[id]`. A diagram id never leaves the browser.
+- **Ids dropped, not replaced.** `/diagram/<anything>` becomes `/diagram`: the
+  dashboard shows hits to the diagram route, not to any one diagram. Any other
+  segment that looks like an id (a UUID, or a long token containing a digit)
+  is cut off along with everything after it, since what follows an id is about
+  that one thing. There is no `[id]` placeholder either: it read as though an
+  id were being stored, so the stored path carries nothing id-shaped at all,
+  and the ingest rejects one. A diagram id never leaves the browser.
 - **Canonical form.** Lower-cased, trailing slash and `.html` / `index.html`
   removed, so `/help/tabs/` and `/help/tabs` are one page.
 - **Anything else is dropped, not sent.** A segment with characters outside
@@ -84,7 +88,7 @@ A page that doesn't exist is still a page view, and is counted under whatever
 path was asked for, within the grammar above. That is useful (it shows broken
 links arriving), bounded by the same deny-by-default normaliser, and cannot
 carry anything the grammar rejects. The editor's not-found slot renders the
-editor (spec/14), so every `/diagram/...` URL is counted as `/diagram/[id]`
+editor (spec/14), so every `/diagram/...` URL is counted as `/diagram`
 whether or not the diagram exists.
 
 ### Counting

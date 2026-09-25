@@ -32,7 +32,7 @@ The same rules apply to error tracking. When something breaks, the event records
 Every page on livediagram.app (the landing pages, the help centre, the Explorer, the editor and the dashboard) also counts a view when you open it. The event is the same three fields, with the page's address as the type, reduced in your browser before it is sent to just _which page_ it was:
 
 - **No query string or link fragment.** Anything after a `?` or `#`, which is where invite and share codes live, is dropped.
-- **No ids.** Every diagram is counted as the same page, `/diagram/[id]`. Any other part of the address that looks like an id is replaced the same way.
+- **No ids.** Every diagram is counted as the same page, `/diagram`. Any other part of the address that looks like an id is cut off the same way.
 - **Deny by default.** An address that doesn't reduce cleanly to a plain page name is not sent at all.
 
 There is no referrer, no record of which pages one person visited in what order, and no cookie. The same Settings switch below turns page views off along with everything else.
