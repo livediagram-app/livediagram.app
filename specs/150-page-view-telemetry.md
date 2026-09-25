@@ -10,8 +10,8 @@ marketing pages, each help article, the Explorer's pages, the editor, and the
 full load (typed URL, shared link, refresh) or as a client-side navigation
 inside a Next app (Explorer → a diagram, one help article → another).
 
-The dashboard gets a **Pages** tab ranking pages by views for the selected
-window, filterable by app.
+The dashboard gets a **Pages** tab of page-view insights for the selected
+window, broken down by app (Marketing, Live, Help, Dashboard).
 
 ## Why
 
@@ -123,15 +123,29 @@ article say so.
 
 ## Dashboard
 
-A **Pages** tab (`PagesView`):
+A **Pages** tab (`PagesView`) reads page views **by app**: Marketing, Live
+(the editor app), Help and Dashboard. The app is derived from the path's first
+segment using the same live route-segment list the router routes by (shared
+from `@livediagram/api-schema`, so the dashboard and router can't disagree
+about which app serves a path). Top to bottom:
 
-- A headline card: total page views for the window, with its 30-day trend.
-- App filter chips (All / Marketing / Editor / Help / Dashboard). The app is
-  derived from the path's first segment, using the same live route-segment list
-  the router routes by (shared from `@livediagram/api-schema` so the dashboard
-  and router can't disagree about which app a path belongs to).
-- The ranked list of pages, most viewed first, each with its share bar and
-  30-day sparkline (the shared `RankCard`), labelled with the raw path.
+- **Views by app.** An All Pages card plus one per app: the window's views,
+  that app's share of all page views, and its 30-day trend (the shared metric
+  card, matching a set of paths rather than one type).
+- **Insights.** Derived numbers for the window, each a ratio of page views
+  per 100 page views, never of people (nothing links one view to another):
+  Landing to New Diagram (`/new` per 100 `/`), Explorer to Diagram (`/diagram`
+  per 100 Explorer pages), Help per Diagram (help pages per 100 `/diagram`),
+  and Pages Viewed (distinct pages with a view).
+- **Top pages by app.** Each app's ten most-viewed pages, side by side.
+- **Rising pages.** The pages with the biggest gain in views over the last 7
+  days against the 7 before, read from the 30-day series (so independent of
+  the selected window). A flat or falling page isn't listed.
+- **All pages.** Every page, most viewed first, with its share bar and 30-day
+  sparkline, labelled with the raw path (not title-cased).
+
+The arithmetic lives in `apps/telemetry/app/page-insights.ts`, pure and
+tested apart from the view.
 
 Page views are events, so they also count toward the window totals and the Raw
 view like any other category.

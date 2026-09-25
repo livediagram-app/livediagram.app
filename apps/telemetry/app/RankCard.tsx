@@ -13,13 +13,9 @@ import { MiniSparkline } from './MiniSparkline';
 // Shared by the Look & Feel and Palette views so both render their rankings
 // identically (the colour follows the row's telemetry category).
 
-// Filter rows to a predicate (with a non-empty type) and sort by count desc.
-export function rank(
-  rows: TelemetryCount[],
-  predicate: (r: TelemetryCount) => boolean,
-): TelemetryCount[] {
-  return rows.filter((r) => predicate(r) && r.type).sort((a, b) => b.count - a.count);
-}
+// `rank` lives in its own pure module so non-view code (page-insights) can
+// use it without importing a component; re-exported for the views.
+export { rank } from './rank';
 
 export function RankCard({
   title,

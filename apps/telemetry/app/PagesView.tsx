@@ -1,38 +1,37 @@
 'use client';
 
-import { useState } from 'react';
 import {
   pageViewApp,
   type PageViewApp,
   type TelemetrySummary,
   type TelemetryWindowKey,
 } from '@livediagram/api-schema';
-import { MetricGroups, type MetricGroup } from './MetricCards';
-import { RankCard, rank } from './RankCard';
+import { MetricGroups, type Metric, type MetricGroup } from './MetricCards';
+import { RankCard } from './RankCard';
+import { PAGE_VIEW_APPS, pageViewRows, per100, risingPages, viewsOf } from './page-insights';
+import { PageInsightTile, RisingPagesCard } from './PageInsights';
 import { windowLabel } from './windows';
 
-// Pages view (spec/150): which pages across the whole site get viewed. Every
-// frontend emits `Page·View·<path>` on each path change, full load or in-app
-// navigation, with ids and query strings stripped in the browser. A headline
-// total, then the ranking, filterable by the app that serves the page (the
-// split the router routes by, shared from api-schema).
-const GROUPS: MetricGroup[] = [
-  {
-    title: 'Page views',
-    metrics: [
-      {
-        category: 'Page',
-        action: 'View',
-        allTypes: true,
-        title: 'Page Views',
-        blurb: 'Pages viewed across the site, by full load or in-app navigation.',
-      },
-    ],
-  },
-];
+// Pages view (spec/150): which pages across the site get viewed, broken down
+// by the app that serves them. Every frontend emits `Page·View·<path>` on
+// each path change (full load or in-app navigation), with ids and query
+// strings stripped in the browser. Top to bottom: views per app, a few
+// derived insights, the top pages of each app, then every page.
 
-type AppFilter = 'All' | PageViewApp;
-const FILTERS: AppFilter[] = ['All', 'Marketing', 'Editor', 'Help', 'Dashboard'];
+const APP_BLURBS: Record<PageViewApp, string> = {
+  Marketing: 'The landing page, features, alternatives, FAQ and legal pages.',
+  Live: 'The Explorer, the New Diagram wizard, sign-in, and every diagram.',
+  Help: 'The help centre: its home, categories and every article.',
+  Dashboard: 'This public telemetry dashboard.',
+};
+
+const isApp = (app: PageViewApp) => (type: string | null) =>
+  type !== null && pageViewApp(type) === app;
+
+const isLanding = (p: string) => p === '/';
+const isNew = (p: string) => p === '/new';
+const isExplorer = (p: string) => p === '/explorer' || p.startsWith('/explorer/');
+const isDiagram = (p: string) => p === '/diagram';
 
 export function PagesView({
   summary,
@@ -41,49 +40,107 @@ export function PagesView({
   summary: TelemetrySummary;
   active: TelemetryWindowKey;
 }) {
-  const [app, setApp] = useState<AppFilter>('All');
-  const pages = rank(
-    summary.windows[active].rows,
-    (r) =>
-      r.category === 'Page' &&
-      r.action === 'View' &&
-      (app === 'All' || (r.type !== null && pageViewApp(r.type) === app)),
-  );
+  const rows = summary.windows[active].rows;
+  const total = viewsOf(rows, () => true);
+  const share = (app: PageViewApp) => {
+    const n = viewsOf(rows, (p) => pageViewApp(p) === app);
+    return total === 0 ? '' : ` ${Math.round((n / total) * 100)}% of page views.`;
+  };
+
+  const groups: MetricGroup[] = [
+    {
+      title: 'Views by app',
+      metrics: [
+        {
+          category: 'Page',
+          action: 'View',
+          allTypes: true,
+          title: 'All Pages',
+          blurb: 'Every page viewed across the site, by full load or in-app navigation.',
+        },
+        ...PAGE_VIEW_APPS.map((app): Metric => ({
+          category: 'Page',
+          action: 'View',
+          typeIn: isApp(app),
+          title: app,
+          blurb: APP_BLURBS[app] + share(app),
+        })),
+      ],
+    },
+  ];
+
+  const allPages = pageViewRows(rows, 'All');
+  const risers = summary.daily ? risingPages(summary.daily) : [];
 
   return (
     <div className="mt-8">
       <p className="text-sm text-slate-500 dark:text-slate-400">
-        Which pages people view, for <span className="font-medium">{windowLabel(active)}</span>. Ids
-        and query strings never leave the browser, so every diagram counts as one page.
+        Which pages people view, for <span className="font-medium">{windowLabel(active)}</span>, by
+        the app that serves them. Ids and query strings never leave the browser, so every diagram
+        counts as one page, <code>/diagram</code>.
       </p>
-      <MetricGroups groups={GROUPS} summary={summary} active={active} />
+      <MetricGroups groups={groups} summary={summary} active={active} />
 
-      <div className="mt-6 flex flex-wrap gap-2" role="group" aria-label="Filter by app">
-        {FILTERS.map((f) => (
-          <button
-            key={f}
-            type="button"
-            onClick={() => setApp(f)}
-            aria-pressed={app === f}
-            className={
-              'cursor-pointer rounded-full px-4 py-1.5 text-sm font-semibold transition ' +
-              (app === f
-                ? 'bg-brand-500 text-white shadow-sm'
-                : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800')
-            }
-          >
-            {f}
-          </button>
-        ))}
-      </div>
+      <section className="mt-8">
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-400">Insights</h3>
+        <div className="mt-3 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <PageInsightTile
+            title="Landing to New Diagram"
+            value={per100(rows, isLanding, isNew)}
+            unit="per 100"
+            detail="Views of /new for every 100 views of the landing page."
+          />
+          <PageInsightTile
+            title="Explorer to Diagram"
+            value={per100(rows, isExplorer, isDiagram)}
+            unit="per 100"
+            detail="Diagrams opened for every 100 views of an Explorer page."
+          />
+          <PageInsightTile
+            title="Help per Diagram"
+            value={per100(rows, isDiagram, (p) => pageViewApp(p) === 'Help')}
+            unit="per 100"
+            detail="Help-centre page views for every 100 diagram views."
+          />
+          <PageInsightTile
+            title="Pages Viewed"
+            value={allPages.length}
+            detail="Distinct pages with at least one view in this window."
+          />
+        </div>
+        <p className="mt-2 text-xs text-slate-400">
+          Ratios compare page views, not people: nothing links one view to another.
+        </p>
+      </section>
 
-      <div className="mt-4">
+      <section className="mt-8">
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+          Top pages by app
+        </h3>
+        <div className="mt-3 grid gap-6 lg:grid-cols-2">
+          {PAGE_VIEW_APPS.map((app) => (
+            <RankCard
+              key={app}
+              title={app}
+              subtitle="Its ten most-viewed pages"
+              category="Page"
+              action="View"
+              items={pageViewRows(rows, app).slice(0, 10)}
+              daily={summary.daily}
+              emptyLabel={`No ${app} page views in this window yet.`}
+            />
+          ))}
+        </div>
+      </section>
+
+      <div className="mt-8 grid gap-6 lg:grid-cols-2">
+        <RisingPagesCard risers={risers} />
         <RankCard
-          title="Most-viewed pages"
-          subtitle="Pages by views, most to least"
+          title="All pages"
+          subtitle="Every page by views, most to least"
           category="Page"
           action="View"
-          items={pages}
+          items={allPages}
           daily={summary.daily}
           emptyLabel="No page views in this window yet."
         />

@@ -19,7 +19,8 @@ export const LIVE_ROUTE_SEGMENTS: ReadonlySet<string> = new Set([
   'sso-callback',
 ]);
 
-export type PageViewApp = 'Marketing' | 'Editor' | 'Help' | 'Dashboard';
+// Named after the apps (`apps/live` is the editor).
+export type PageViewApp = 'Marketing' | 'Live' | 'Help' | 'Dashboard';
 
 const SEGMENT = /^[a-z0-9._-]{1,60}$/;
 const MAX_SEGMENTS = 6;
@@ -85,6 +86,6 @@ export function pageViewApp(path: string): PageViewApp {
   const first = path.split('/')[1] ?? '';
   if (first === 'help') return 'Help';
   if (first === 'telemetry') return 'Dashboard';
-  if (LIVE_ROUTE_SEGMENTS.has(first)) return 'Editor';
+  if (LIVE_ROUTE_SEGMENTS.has(first)) return 'Live';
   return 'Marketing';
 }

@@ -16,6 +16,9 @@ export type Metric = {
   action: string;
   type?: string | null; // specific type; ignored when allTypes
   allTypes?: boolean; // sum across every type of category·action
+  // Sum across the types this picks (e.g. the page paths one app serves,
+  // spec/150). Takes precedence over `type` / `allTypes`.
+  typeIn?: (type: string | null) => boolean;
   title: string;
   blurb?: string; // overrides eventExplanation (needed for aggregates)
 };
@@ -25,6 +28,7 @@ export type MetricGroup = { title: string; metrics: Metric[] };
 // Does an event (category, action, type) belong to this metric?
 function matches(m: Metric, category: string, action: string, type: string | null): boolean {
   if (category !== m.category || action !== m.action) return false;
+  if (m.typeIn) return m.typeIn(type);
   return m.allTypes ? true : type === (m.type ?? null);
 }
 
@@ -67,7 +71,7 @@ export function MetricGroups({
           <div className="mt-3 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {group.metrics.map((m) => (
               <MetricCard
-                key={`${m.category}|${m.action}|${m.allTypes ? '*' : (m.type ?? '')}`}
+                key={`${m.category}|${m.action}|${m.allTypes || m.typeIn ? `*${m.title}` : (m.type ?? '')}`}
                 metric={m}
                 count={windowCount(summary, active, m)}
                 series={daily ? dailySeries(daily, m) : undefined}
@@ -97,7 +101,7 @@ function MetricCard({
 }) {
   const color = categoryColor(m.category);
   // An aggregate has no single type, so the icon + label drop the type.
-  const iconType = m.allTypes ? null : (m.type ?? null);
+  const iconType = m.allTypes || m.typeIn ? null : (m.type ?? null);
   return (
     // `flex h-full flex-col` + `mt-auto` on the chart pins every trend line to
     // the bottom of the card. Grid rows already stretch cards to equal height,

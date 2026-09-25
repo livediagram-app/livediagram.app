@@ -6,6 +6,7 @@ import {
   eventExplanation,
   eventLabel,
   groupByCategory,
+  typeLabel,
 } from './event-vocab';
 
 // The dashboard's vocabulary layer (spec/22): pure grouping + labelling
@@ -41,6 +42,14 @@ describe('eventLabel', () => {
 
   it('falls back to the action alone when there is no type', () => {
     expect(eventLabel({ action: 'Opened', type: null })).toBe('Opened');
+  });
+
+  it('shows a page path exactly as stored, not title-cased (spec/150)', () => {
+    expect(eventLabel({ action: 'View', type: '/help/the-canvas' })).toBe(
+      'View · /help/the-canvas',
+    );
+    expect(typeLabel('/alternatives/miro')).toBe('/alternatives/miro');
+    expect(typeLabel('square')).toBe('Square');
   });
 });
 

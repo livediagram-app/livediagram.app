@@ -59,9 +59,9 @@ describe('pageViewApp', () => {
     expect(pageViewApp('/help')).toBe('Help');
     expect(pageViewApp('/help/canvas/the-canvas')).toBe('Help');
     expect(pageViewApp('/telemetry')).toBe('Dashboard');
-    expect(pageViewApp('/explorer/recent')).toBe('Editor');
-    expect(pageViewApp('/diagram')).toBe('Editor');
-    expect(pageViewApp('/new')).toBe('Editor');
+    expect(pageViewApp('/explorer/recent')).toBe('Live');
+    expect(pageViewApp('/diagram')).toBe('Live');
+    expect(pageViewApp('/new')).toBe('Live');
   });
 });
 
