@@ -5,6 +5,7 @@ import {
   ACCOUNT_ACTIVITY,
   AI_ASSISTANCE,
   ELEMENTS_ADDED,
+  EXCEPTIONS,
   LAYERS_FEATURE,
   DASHBOARD_PAGES,
   DIAGRAM_ACTIONS,
@@ -65,6 +66,10 @@ export const GROUPS: MetricGroup[] = [
   {
     title: 'Features',
     metrics: [AI_ASSISTANCE, LAYERS_FEATURE],
+  },
+  {
+    title: 'Health',
+    metrics: [EXCEPTIONS],
   },
   {
     // Written server-side by the api worker: nothing about a send reaches a

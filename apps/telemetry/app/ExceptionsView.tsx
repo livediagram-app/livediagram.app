@@ -3,6 +3,13 @@
 import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
 import { MetricGroups, type MetricGroup } from './MetricCards';
 import { CardColumns } from './CardColumns';
+import { isRecovery, isServerCrash } from './error-kinds';
+import {
+  CLIENT_EXCEPTIONS,
+  FAILED_REQUESTS,
+  REALTIME_RESYNCS,
+  SERVER_CRASHES,
+} from './metric-catalogue';
 import { RankCard, rank } from './RankCard';
 import { windowLabel } from './windows';
 
@@ -17,74 +24,12 @@ import { windowLabel } from './windows';
 // and a closed list of error names), so there is nothing personal to show. An
 // empty view is the goal state.
 //
-// Types took their `<Kind>.<Where>` shape in #112; rows stored before that are
-// the bare kind (`Http500`, `Internal`, `Uncaught`). The predicates below read
-// the kind as the first dot-part, so both shapes land in the same card.
-
-const kindOf = (type: string | null) => (type ?? '').split('.')[0] ?? '';
-
-// Error·Client types that are not exceptions. RealtimeResync is the editor
-// recovering on its own: the realtime room told it it had missed updates and
-// it refetched (useRoomResync). Worth watching, since a lot of them means the
-// room is dropping ops, but it is a recovery, not a crash, so it gets its own
-// card instead of inflating Client Exceptions.
-export const RECOVERY_TYPES: readonly string[] = ['RealtimeResync'];
-export const isRecovery = (type: string | null) => RECOVERY_TYPES.includes(kindOf(type));
-
-// The api worker's own crash report: `Internal.<Method>.<Route>`, where the
-// second part is an HTTP method (apiRouteLabel). The MCP worker also reports
-// `Internal.<Tool>` when its call to the api never completed; that is a
-// request a caller saw fail, like the editor's Network kind, so it stays with
-// the failed requests. A bare `Internal` predates #112 and is counted as a
-// server crash, the api worker having been its main source.
-const HTTP_METHODS = new Set(['Get', 'Post', 'Put', 'Patch', 'Delete', 'Head', 'Options']);
-export function isServerCrash(type: string | null): boolean {
-  const [kind, second] = (type ?? '').split('.');
-  return kind === 'Internal' && (second === undefined || HTTP_METHODS.has(second));
-}
+export { RECOVERY_TYPES, isRecovery, isServerCrash } from './error-kinds';
 
 export const GROUPS: MetricGroup[] = [
   {
     title: 'Error volume',
-    metrics: [
-      // One side of each failure only. A server crash is reported twice: the
-      // api worker writes Internal.<Method>.<Route>, and the editor that sent
-      // the request sees an Http500.<Action>. Summing Error·Api counted every
-      // crash twice, so the caller-observed failures and the worker's own
-      // crash reports are separate cards, not to be added together.
-      {
-        category: 'Error',
-        action: 'Api',
-        typeIn: (type) => !isServerCrash(type),
-        title: 'Failed Requests',
-        blurb:
-          'Requests a caller saw fail: non-2xx responses and dropped requests in the editor, failed api calls inside MCP tools, and failed email sends. A server crash appears here as the Http500 its caller saw.',
-      },
-      {
-        category: 'Error',
-        action: 'Api',
-        typeIn: isServerCrash,
-        title: 'Server Crashes',
-        blurb:
-          'Unhandled exceptions the api worker reported about itself, by route. Most also appear as an Http500 in Failed Requests, so read the two side by side rather than adding them.',
-      },
-      {
-        category: 'Error',
-        action: 'Client',
-        typeIn: (type) => !isRecovery(type),
-        title: 'Client Exceptions',
-        blurb:
-          'Uncaught exceptions, unhandled promise rejections, and editor areas that failed to render, in the editor and help centre.',
-      },
-      {
-        category: 'Error',
-        action: 'Client',
-        typeIn: isRecovery,
-        title: 'Realtime Resyncs',
-        blurb:
-          'Not an exception: the editor noticed it had missed live updates and refetched the diagram to catch up. A rising line means the realtime room is dropping updates.',
-      },
-    ],
+    metrics: [FAILED_REQUESTS, SERVER_CRASHES, CLIENT_EXCEPTIONS, REALTIME_RESYNCS],
   },
 ];
 

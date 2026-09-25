@@ -1,4 +1,5 @@
 import { PALETTE_TELEMETRY_TYPES, pageViewApp, type PageViewApp } from '@livediagram/api-schema';
+import { isRecovery, isServerCrash } from './error-kinds';
 import { canonicalElementType, PALETTE_KINDS, type PaletteTab } from './palette-types';
 import type { Metric, MetricStack } from './metric-series';
 
@@ -511,4 +512,54 @@ export const LAYERS_FEATURE: MetricStack = {
   title: 'Layers Feature',
   blurb: 'Every layer interaction: layers made, toggled, filled, deleted, and the panel opened.',
   members: [LAYERS_CREATED, LAYER_TOGGLES, LAYER_MOVES, LAYERS_DELETED, LAYERS_PANEL_OPENED],
+};
+
+// Error health (Exceptions tab). One side of each failure only: a server crash
+// is reported twice, the api worker's Internal.<Method>.<Route> and the Http500
+// its caller saw, so Failed Requests and Server Crashes are read side by side,
+// never added.
+export const FAILED_REQUESTS: Metric = {
+  category: 'Error',
+  action: 'Api',
+  typeIn: (type) => !isServerCrash(type),
+  title: 'Failed Requests',
+  blurb:
+    'Requests a caller saw fail: non-2xx responses and dropped requests in the editor, failed api calls inside MCP tools, and failed email sends. A server crash appears here as the Http500 its caller saw.',
+};
+export const SERVER_CRASHES: Metric = {
+  category: 'Error',
+  action: 'Api',
+  typeIn: isServerCrash,
+  title: 'Server Crashes',
+  blurb:
+    'Unhandled exceptions the api worker reported about itself, by route. Most also appear as an Http500 in Failed Requests, so read the two side by side rather than adding them.',
+};
+export const CLIENT_EXCEPTIONS: Metric = {
+  category: 'Error',
+  action: 'Client',
+  typeIn: (type) => !isRecovery(type),
+  title: 'Client Exceptions',
+  blurb:
+    'Uncaught exceptions, unhandled promise rejections, and editor areas that failed to render, in the editor and help centre.',
+};
+export const REALTIME_RESYNCS: Metric = {
+  category: 'Error',
+  action: 'Client',
+  typeIn: isRecovery,
+  title: 'Realtime Resyncs',
+  blurb:
+    'Not an exception: the editor noticed it had missed live updates and refetched the diagram to catch up. A rising line means the realtime room is dropping updates.',
+};
+
+// Headed by the errors someone actually hit, each once: failed requests plus
+// client exceptions. Server crashes would count those failures a second time
+// and resyncs are recoveries, so neither joins the headline.
+export const EXCEPTIONS: MetricStack = {
+  stack: true,
+  title: 'Exceptions',
+  blurb:
+    'Errors people hit, from failed requests and client exceptions, beside the server crashes behind them and the realtime resyncs that recovered. Zero is the goal.',
+  members: [FAILED_REQUESTS, SERVER_CRASHES, CLIENT_EXCEPTIONS, REALTIME_RESYNCS],
+  headline: [FAILED_REQUESTS, CLIENT_EXCEPTIONS],
+  seeAlso: { view: 'exceptions', label: 'See Each Error on the Exceptions Tab' },
 };

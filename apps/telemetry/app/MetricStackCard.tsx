@@ -25,10 +25,11 @@ export function MetricStackCard({
   // Hands back the head element, which gets focus back when the modal closes.
   onToggle: (anchor: HTMLElement) => void;
 }) {
-  // The members' sum, or the named headline member's own count when the
-  // others are subsets of it or a different unit.
-  const headlineAt = stack.headline ? stack.members.indexOf(stack.headline) : -1;
-  const total = headlineAt >= 0 ? (counts[headlineAt] ?? 0) : counts.reduce((sum, n) => sum + n, 0);
+  // The members' sum, or just the headline members' when the stack names them.
+  const headline = stack.headline === undefined ? null : [stack.headline].flat();
+  const total = counts
+    .filter((_, i) => headline === null || headline.includes(stack.members[i]!))
+    .reduce((sum, n) => sum + n, 0);
   const { chart, legend, hidden } = headView(stack.title, series, counts);
 
   return (

@@ -59,7 +59,8 @@ describe('stack headlines', () => {
   it('name one of their own members', async () => {
     const catalogue = await import('./metric-catalogue');
     for (const item of Object.values(catalogue).flat()) {
-      if (isStack(item) && item.headline) expect(item.members).toContain(item.headline);
+      if (!isStack(item) || !item.headline) continue;
+      for (const m of [item.headline].flat()) expect(item.members).toContain(m);
     }
   });
 });
