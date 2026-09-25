@@ -118,4 +118,38 @@ describe('noteAuthSighting (per-isolate memo)', () => {
     );
     expect(waitUntil).not.toHaveBeenCalled();
   });
+
+  it('does nothing with no waitUntil to schedule onto', () => {
+    // The worker passes `executionCtx?.waitUntil`, which is optional — the
+    // sighting is background work, so with nowhere to put it there is nothing
+    // to do. Notably it must NOT memo the session in that case, or the id
+    // would be burned without the write ever running.
+    const d = db({ newSession: true, newAccount: false });
+    noteAuthSighting(d.env, identity({ sessionId: 'sess_no_ctx' }), undefined);
+    expect(d.calls).toHaveLength(0);
+    const waitUntil = vi.fn();
+    noteAuthSighting(d.env, identity({ sessionId: 'sess_no_ctx' }), waitUntil);
+    expect(waitUntil).toHaveBeenCalledTimes(1);
+  });
+
+  it('clears the memo at its cap rather than growing forever', () => {
+    // A long-lived isolate must not accumulate every session id it has ever
+    // seen. The memo is dropped wholesale at the cap, and the cost of that is
+    // one more idempotent write for an id that had already been counted —
+    // never a missed count, which is why clearing is safe.
+    const d = db({ newSession: true, newAccount: false });
+    const waitUntil = vi.fn();
+    const early = identity({ sessionId: 'sess_cap_early' });
+    noteAuthSighting(d.env, early, waitUntil);
+    expect(waitUntil).toHaveBeenCalledTimes(1);
+    // Past the cap (10_000) with distinct ids, so at least one clear happens
+    // and `early` is never re-added.
+    for (let i = 0; i <= 10_000; i++) {
+      noteAuthSighting(d.env, identity({ sessionId: `sess_cap_${i}` }), waitUntil);
+    }
+    waitUntil.mockClear();
+    // Cleared, so the pre-cap id reads as new again and schedules once more.
+    noteAuthSighting(d.env, early, waitUntil);
+    expect(waitUntil).toHaveBeenCalledTimes(1);
+  });
 });
