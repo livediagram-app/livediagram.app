@@ -3,6 +3,8 @@
 // don't exist and each app is a plain HTTP origin to proxy instead.
 // See specs/08-router-app.md.
 
+import { LIVE_ROUTE_SEGMENTS } from '@livediagram/api-schema';
+
 export interface Env {
   // Production service bindings (absent in the `local` env).
   MARKETING?: Fetcher;
@@ -34,17 +36,8 @@ const HELP_PATH = '/help';
 // `/alternatives`, `/faq`, ...) and there's no overlap with this set.
 // `/live/*` still exists ONLY for the bundled `_next` assets (the live
 // app's `assetPrefix`), which ARE stripped in production — see isLivePath.
-const LIVE_ROUTE_SEGMENTS = new Set([
-  'diagram',
-  'embed',
-  'explorer',
-  'get-started',
-  'join',
-  'new',
-  'oauth',
-  'sign-in',
-  'sso-callback',
-]);
+// The set is shared from api-schema so the telemetry dashboard's per-app
+// page-view split (spec/150) reads the same list this routes by.
 
 // Root-served live assets that don't ride the `assetPrefix` (Next's
 // metadata icon). Routed to the live worker by exact path.

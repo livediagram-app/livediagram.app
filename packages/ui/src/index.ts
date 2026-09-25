@@ -15,6 +15,7 @@ export { Tooltip } from './Tooltip';
 export { EmptyState } from './EmptyState';
 export { BreadcrumbTrail, type BreadcrumbItem } from './Breadcrumb';
 export { JsonLd } from './JsonLd';
+export { PageViewTracker } from './PageViewTracker';
 export { POPOVER_VIEWPORT_MARGIN, clampIntoRange } from './popover';
 export { useMediaQuery, PREFERS_REDUCED_MOTION } from './useMediaQuery';
 export { useCopiedFlash } from './useCopiedFlash';

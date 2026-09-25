@@ -17,12 +17,14 @@ import {
   SearchGlyph,
   ShareGlyph,
   SparkGlyph,
+  WindowGlyph,
 } from './glyphs';
 import { WindowPanel } from './WindowPanel';
 import { StickyWindowBar } from './StickyWindowBar';
 import { ViewTabs } from './ViewTabs';
 import { HighlightsView } from './HighlightsView';
 import { AcquisitionView } from './AcquisitionView';
+import { PagesView } from './PagesView';
 import { ContentView } from './ContentView';
 import { RawView } from './RawView';
 import { LookAndFeelView } from './LookAndFeelView';
@@ -42,7 +44,8 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 // Three ways to read the same summary payload (spec/22). The timeframe
 // window is global (the WindowPanel above the tabs), so it lives here
 // alongside the active tab and is passed into whichever view renders.
-// Tab order follows the product funnel: who arrives (Acquisition), what they
+// Tab order follows the product funnel: who arrives (Acquisition), which pages
+// they read (Pages), what they
 // open + make (Content), what they build (Palette / Look & Feel), how they
 // organise it (Editing), how they work
 // together (Collaboration), how they get unstuck (Help), how machines connect
@@ -50,6 +53,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 type ViewKey =
   | 'highlights'
   | 'acquisition'
+  | 'pages'
   | 'content'
   | 'palette'
   | 'lookfeel'
@@ -63,6 +67,7 @@ type ViewKey =
 const VIEWS: { key: ViewKey; label: string; icon: ReactNode }[] = [
   { key: 'highlights', label: 'Highlights', icon: <SparkGlyph /> },
   { key: 'acquisition', label: 'Acquisition', icon: <PersonAddGlyph /> },
+  { key: 'pages', label: 'Pages', icon: <WindowGlyph /> },
   { key: 'content', label: 'Content', icon: <DiagramGlyph /> },
   { key: 'palette', label: 'Palette', icon: <PaletteGlyph /> },
   { key: 'lookfeel', label: 'Look & Feel', icon: <BrushGlyph /> },
@@ -170,6 +175,8 @@ export default function TelemetryDashboard() {
               <HighlightsView summary={summary} active={active} />
             ) : view === 'acquisition' ? (
               <AcquisitionView summary={summary} active={active} />
+            ) : view === 'pages' ? (
+              <PagesView summary={summary} active={active} />
             ) : view === 'content' ? (
               <ContentView summary={summary} active={active} />
             ) : view === 'palette' ? (

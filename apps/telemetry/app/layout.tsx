@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import './globals.css';
+import { PageViewBoot } from './PageViewBoot';
 
 // The public transparency dashboard (spec/22). Indexable: it's part of
 // the open, "here's exactly what we measure" story, not a private app.
@@ -36,7 +37,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en-GB">
-      <body className="bg-slate-50 text-slate-800 antialiased">{children}</body>
+      <body className="bg-slate-50 text-slate-800 antialiased">
+        <PageViewBoot />
+        {children}
+      </body>
     </html>
   );
 }

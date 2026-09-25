@@ -94,3 +94,32 @@ describe('handleEvents rate limiting', () => {
     expect(db.insertTelemetryEvents).not.toHaveBeenCalled();
   });
 });
+
+describe('handleEvents page views (spec/150)', () => {
+  it('stores a normalised path and drops anything that is not one', async () => {
+    const ctx = makeTestRouteContext('POST', '/api/events', {
+      body: {
+        events: [
+          { category: 'Page', action: 'View', type: '/help/canvas/the-canvas' },
+          { category: 'Page', action: 'View', type: '/diagram' },
+          // A raw URL with a query, an un-normalised id, the old id placeholder
+          // and a bare token.
+          { category: 'Page', action: 'View', type: '/join?token=abc' },
+          { category: 'Page', action: 'View', type: '/Diagram/ABC' },
+          { category: 'Page', action: 'View', type: '/diagram/[id]' },
+          { category: 'Page', action: 'View', type: 'help' },
+        ],
+      },
+      env: { TELEMETRY_ENABLED: 'true' } as Env,
+    });
+    await handleEvents(ctx);
+    expect(db.insertTelemetryEvents).toHaveBeenCalledWith(
+      expect.anything(),
+      [
+        { category: 'Page', action: 'View', type: '/help/canvas/the-canvas' },
+        { category: 'Page', action: 'View', type: '/diagram' },
+      ],
+      expect.any(Number),
+    );
+  });
+});

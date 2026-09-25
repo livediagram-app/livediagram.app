@@ -1,4 +1,5 @@
 import { ErrorTelemetryBoot } from '@/components/ErrorTelemetryBoot';
+import { PageViewBoot } from '@/components/PageViewBoot';
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import { Header } from '@/components/Header';
@@ -49,6 +50,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body className="flex min-h-screen flex-col bg-slate-50 text-slate-800 antialiased">
         <JsonLd data={webSiteJsonLd()} />
         <ErrorTelemetryBoot />
+        <PageViewBoot />
         <Header />
         <main className="flex-1 pb-16">{children}</main>
         <Footer />

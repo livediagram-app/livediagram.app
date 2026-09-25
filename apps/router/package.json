@@ -15,6 +15,7 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20260916.1",
+    "@livediagram/api-schema": "workspace:*",
     "@livediagram/eslint-config": "workspace:*",
     "@livediagram/help-registry": "workspace:*",
     "@livediagram/vitest-config": "workspace:*",

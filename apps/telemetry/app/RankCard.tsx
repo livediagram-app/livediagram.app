@@ -3,7 +3,7 @@
 import { EmptyState } from '@livediagram/ui';
 import { metricKey, type TelemetryCount, type TelemetryDaily } from '@livediagram/api-schema';
 import { pct } from './chart-utils';
-import { categoryColor, titleCase } from './event-vocab';
+import { categoryColor, typeLabel } from './event-vocab';
 import { ActivityGlyph } from './glyphs';
 import { MiniSparkline } from './MiniSparkline';
 
@@ -13,13 +13,9 @@ import { MiniSparkline } from './MiniSparkline';
 // Shared by the Look & Feel and Palette views so both render their rankings
 // identically (the colour follows the row's telemetry category).
 
-// Filter rows to a predicate (with a non-empty type) and sort by count desc.
-export function rank(
-  rows: TelemetryCount[],
-  predicate: (r: TelemetryCount) => boolean,
-): TelemetryCount[] {
-  return rows.filter((r) => predicate(r) && r.type).sort((a, b) => b.count - a.count);
-}
+// `rank` lives in its own pure module so non-view code (page-insights) can
+// use it without importing a component; re-exported for the views.
+export { rank } from './rank';
 
 export function RankCard({
   title,
@@ -63,7 +59,7 @@ export function RankCard({
                   <div className="flex items-baseline justify-between gap-2 text-sm">
                     <span className="flex min-w-0 items-center gap-2">
                       <span className="truncate text-slate-700 dark:text-slate-200">
-                        {titleCase(row.type ?? '')}
+                        {typeLabel(row.type ?? '')}
                       </span>
                       {isTop ? <RankTag /> : null}
                     </span>

@@ -40,6 +40,7 @@ export const CATEGORY_DESCRIPTIONS: Record<TelemetryCategory, string> = {
   Participant:
     'Visitor arrivals: a new browser identity minted (once per fresh visitor), and a returning browser reopening the app (once per day, split guest vs signed-in).',
   Help: 'Help-centre articles: views and per-article helpful / not-really feedback.',
+  Page: 'Pages viewed across the whole site (marketing, editor, help centre, this dashboard), by path, with ids and query strings stripped.',
   Timeline:
     "The Explorer's activity feed: opening it (split by whether it was the landing view or a deliberate visit), switching between the list and calendar views, toggling a filter chip, expanding a collapsed run of same-day events, and paging further back.",
   Activity:
@@ -78,6 +79,8 @@ const CATEGORY_COLORS: Record<TelemetryCategory, string> = {
   Team: '#2563eb',
   Participant: '#dc2626',
   Help: '#14b8a6',
+  // Deep pink: apart from Canvas's lighter pink and every blue it sits near.
+  Page: '#9d174d',
   // Distinct from Diagram's sky (#0ea5e9) and Session's slate: the
   // Timeline sits next to both in the stacked bar.
   Timeline: '#0369a1',
@@ -113,8 +116,15 @@ export function groupByCategory(rows: TelemetryCount[]): Group[] {
 // resolving; one definition now backs both this app and the editor.
 export { titleCase };
 
+// How a `type` reads on screen. Tokens are title-cased ('square' ->
+// 'Square'); a page path (spec/150) is shown exactly as stored, since
+// '/help/the-canvas' is only recognisable as the URL it is.
+export function typeLabel(type: string): string {
+  return type.startsWith('/') ? type : titleCase(type);
+}
+
 export function eventLabel(row: Pick<TelemetryCount, 'action' | 'type'>): string {
-  return row.type ? `${titleCase(row.action)} · ${titleCase(row.type)}` : titleCase(row.action);
+  return row.type ? `${titleCase(row.action)} · ${typeLabel(row.type)}` : titleCase(row.action);
 }
 
 // Short plain-language explanation for a single event row, shown as
@@ -127,6 +137,9 @@ export function eventLabel(row: Pick<TelemetryCount, 'action' | 'type'>): string
 // vocabulary (spec/22), so unknown branches really are unusual.
 export function eventExplanation(category: string, action: string, type: string | null): string {
   // Category + action + type (the most user-recognisable combos).
+  if (category === 'Page' && action === 'View' && type) {
+    return `Someone viewed ${type}, by loading it or navigating to it within the site.`;
+  }
   if (category === 'Element' && action === 'Added' && type) {
     return `Someone dropped a ${type.toLowerCase()} onto the canvas.`;
   }
