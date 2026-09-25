@@ -370,7 +370,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Templates & themes',
         title: 'Forty-eight starter templates',
         description:
-          'Mind maps (radial, tree, and bubble), org charts, retrospectives, flowcharts — plus swimlane, decision-tree, approval, and data-flow variants — Kanban, roadmaps, user story maps, affinity maps, RACI matrices, SWOT, empathy maps, Business Model Canvases, funnels, timelines (plain, plus horizontal and vertical milestone), Gantt, Venn, user journeys, fishbone, pyramids, OKR trees, sitemaps, flywheels, prioritization matrices, comparison tables, storyboards, ER / sequence / class / state-machine / system- and cloud-architecture diagrams, event storming, logo design, a live card, a to-scale floor plan, and mobile / laptop / web-page / slide-deck wireframes. Pick one, edit it, or start blank.',
+          'Start from a board that already makes sense: flowcharts and mind maps, retrospectives and Kanban, roadmaps and org charts, wireframes, architecture and UML, even a to-scale floor plan. Browse them by category in the picker, edit one, or start blank.',
       },
       {
         art: <ThemesArt />,
