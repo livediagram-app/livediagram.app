@@ -558,6 +558,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
         <NextNoteButtons
           elements={elements}
           selectedId={selectedId}
+          editingId={editingId}
           blocked={readOnly || tabLocked || props.createBlocked === true || insertShift.animates}
           zoom={viewportZoom}
           onAdd={props.onAddNextNote}

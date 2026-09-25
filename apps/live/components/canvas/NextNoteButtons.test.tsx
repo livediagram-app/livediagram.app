@@ -44,6 +44,7 @@ function draw(
     <NextNoteButtons
       elements={elements}
       selectedId={over.selectedId ?? null}
+      editingId={null}
       blocked={over.blocked === true}
       zoom={1}
       onAdd={over.onAdd ?? (() => {})}
@@ -92,6 +93,44 @@ describe('NextNoteButtons', () => {
   it('offers nothing on a locked note', () => {
     draw([{ ...event, locked: true } as Element], { selectedId: 'e' });
     expect(anchors()).toHaveLength(0);
+  });
+
+  it('hides while the selected note is open for typing', () => {
+    render(
+      <NextNoteButtons
+        elements={[event]}
+        selectedId="e"
+        editingId="e"
+        blocked={false}
+        zoom={1}
+        onAdd={() => {}}
+      />,
+    );
+    expect(anchors()).toHaveLength(0);
+  });
+
+  it('shows again once typing ends and the note is still selected', () => {
+    const c = render(
+      <NextNoteButtons
+        elements={[event]}
+        selectedId="e"
+        editingId="e"
+        blocked={false}
+        zoom={1}
+        onAdd={() => {}}
+      />,
+    );
+    c.rerender(
+      <NextNoteButtons
+        elements={[event]}
+        selectedId="e"
+        editingId={null}
+        blocked={false}
+        zoom={1}
+        onAdd={() => {}}
+      />,
+    );
+    expect(anchors()).toHaveLength(2);
   });
 
   it('offers nothing when the session cannot create', () => {
@@ -163,6 +202,7 @@ describe('NextNoteButtons', () => {
       <NextNoteButtons
         elements={[event]}
         selectedId="e"
+        editingId={null}
         blocked={false}
         zoom={0.25}
         onAdd={() => {}}

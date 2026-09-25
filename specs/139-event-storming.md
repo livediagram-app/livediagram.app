@@ -679,7 +679,8 @@ then just two notes: the board keeps no relation between them.
   would land; keyboard focus shows it too. It is only a picture: nothing moves
   until the click, even when the spot is taken and the click will make room.
 - **The buttons earn their place.** At most two, only on the SELECTED note
-  (never on a note merely pointed at), and each names its act ("Add a command
+  (never on a note merely pointed at, and not while the note is open for
+  typing: they come back when typing ends and the note is still selected), and each names its act ("Add a command
   before this domain event"). Spec/139 retired the four quick-connect pluses on
   this board as chrome; these are different in kind, because each one is a
   sentence of the notation rather than a generic "connect something here".

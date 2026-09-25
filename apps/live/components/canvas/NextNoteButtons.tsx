@@ -73,12 +73,16 @@ function tabsFor(elements: Element[], selectedId: string | null): Tab[] {
 export function NextNoteButtons({
   elements,
   selectedId,
+  editingId,
   blocked,
   zoom,
   onAdd,
 }: {
   elements: Element[];
   selectedId: string | null;
+  // The note open for typing, if any. The tabs stand down while the selected
+  // note is being typed in, and come back when typing ends.
+  editingId: string | null;
   // No buttons where the add would be refused anyway: a view-only session, a
   // locked tab, a hidden or locked active layer — or any drag in hand, which
   // owns the board while it lasts.
@@ -87,7 +91,7 @@ export function NextNoteButtons({
   onAdd: (fromId: string, side: EsSide) => void;
 }) {
   const [previewKey, setPreviewKey] = useState<string | null>(null);
-  if (blocked) return null;
+  if (blocked || (selectedId !== null && editingId === selectedId)) return null;
   const tabs = tabsFor(elements, selectedId);
   if (tabs.length === 0) return null;
   const previewing = tabs.find((t) => t.key === previewKey) ?? null;
