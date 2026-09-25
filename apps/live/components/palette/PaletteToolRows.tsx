@@ -26,7 +26,12 @@ import type { PaletteTileDef } from './palette-tile-defs';
 import { tileCaption } from './tile-caption';
 // The SAME star the Explorer's favourites use, so one glyph means one thing.
 import { StarIcon } from '@/components/panels/explorer-icons';
-import { tileHandler, tileActive, visibleTiles, type PaletteTileActions } from './PaletteTileGrid';
+import {
+  tileActive,
+  useTileHandler,
+  visibleTiles,
+  type PaletteTileActions,
+} from './PaletteTileGrid';
 
 function PaletteToolRow({
   def,
@@ -56,6 +61,7 @@ function PaletteToolRow({
     if (highlighted) rowRef.current?.scrollIntoView({ block: 'nearest' });
   }, [highlighted]);
 
+  const onClick = useTileHandler(def, actions);
   // Built first, then wrapped when the list offers favouriting, so the row's
   // own markup has exactly one shape.
   const row = (
@@ -65,7 +71,7 @@ function PaletteToolRow({
       type="button"
       role="option"
       aria-selected={highlighted}
-      onClick={tileHandler(def, actions)}
+      onClick={onClick}
       // Rows drag onto the canvas exactly like the grid tiles do. They did
       // not, and since the categories moved to rows that was most of the
       // palette: Behaviour, Collaborate, Build, Write, Draw, Data. Sticky

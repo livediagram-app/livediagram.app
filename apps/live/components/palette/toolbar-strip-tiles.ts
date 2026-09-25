@@ -1,6 +1,7 @@
 import { getLineArtIconCatalog } from '@/lib/icons';
 import { searchStickers } from '@/lib/stickers';
 import { searchTechIcons } from '@/lib/tech-icons';
+import { orderByRecent } from '@/lib/toolbar-recent-tiles';
 import { tilesForCategory, type PaletteTileDef } from './palette-tile-defs';
 import {
   iconTileDef,
@@ -12,7 +13,8 @@ import { visibleTiles } from './PaletteTileGrid';
 
 // Which tiles the Toolbar layout's strip shows for a category (spec/148):
 // the first STRIP_TILE_LIMIT of it, and whether a More button is needed to
-// reach the rest.
+// reach the rest. "First" is by use: recently-used tiles lead, most recent
+// first, and the rest follow in the category's own order.
 //
 // Pure so the rule is testable without rendering the strip. The catalogues
 // it reads for Icons / Stickers / Technology are async (lib/icon-registry),
@@ -39,6 +41,26 @@ export function phoneStripTileLimit(viewportWidth: number): number {
 // when the tiles alone would fit, because the rest of the body can only be
 // reached through it.
 const ALWAYS_MORE = new Set(['favourites', 'icons', 'stickers', 'technology', 'behaviour']);
+
+// The id prefix each searchable catalogue's tiles carry (palette-dynamic-tiles).
+const CATALOGUE_PREFIX: Record<string, string> = {
+  icons: 'icon:',
+  stickers: 'sticker:',
+  technology: 'tech:',
+};
+
+// A catalogue category's recently-used tiles. The catalogue itself is sliced
+// to the strip's length before tiles are built, so a used glyph from further
+// down would never be in the slice to be promoted: it is resolved by id
+// instead and put in front of it.
+function recentCatalogueTiles(categoryId: string, recent: readonly string[]): PaletteTileDef[] {
+  const prefix = CATALOGUE_PREFIX[categoryId];
+  if (!prefix) return [];
+  return recent
+    .filter((id) => id.startsWith(prefix))
+    .map(resolveFavouriteTile)
+    .filter((t): t is PaletteTileDef => t !== undefined);
+}
 
 function allTilesFor(categoryId: string, favouriteIds: readonly string[]): PaletteTileDef[] {
   switch (categoryId) {
@@ -72,9 +94,19 @@ export function stripTilesFor(
     favouriteIds,
     hasImage,
     limit = STRIP_TILE_LIMIT,
-  }: { favouriteIds: readonly string[]; hasImage: boolean; limit?: number },
+    recent = [],
+  }: {
+    favouriteIds: readonly string[];
+    hasImage: boolean;
+    limit?: number;
+    recent?: readonly string[];
+  },
 ): { tiles: PaletteTileDef[]; hasMore: boolean } {
-  const all = visibleTiles(allTilesFor(categoryId, favouriteIds), hasImage);
+  const base = allTilesFor(categoryId, favouriteIds);
+  const extra = recentCatalogueTiles(categoryId, recent).filter(
+    (t) => !base.some((b) => b.id === t.id),
+  );
+  const all = orderByRecent(visibleTiles([...extra, ...base], hasImage), recent);
   return {
     tiles: all.slice(0, limit),
     hasMore: all.length > limit || ALWAYS_MORE.has(categoryId),

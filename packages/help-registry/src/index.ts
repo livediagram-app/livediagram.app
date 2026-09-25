@@ -1139,7 +1139,7 @@ export const articles: Article[] = [
     title: 'Toolbar Layout',
     description: 'The palette as one strip across the top of the canvas.',
     keywords:
-      'toolbar strip top bar excalidraw panel layout floating minimal menu button explorer more tiles',
+      'toolbar strip top bar excalidraw panel layout floating minimal menu button explorer more tiles recent recently used order reorder',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Palette Settings',

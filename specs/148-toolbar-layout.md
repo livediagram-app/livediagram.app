@@ -45,8 +45,38 @@ more than tiles (search, group browsing, Edit / Reorder). It sits outside the
 animated tile rail, so it rides the rail's width change.
 
 For Icons / Stickers / Technology the strip's ten are the first ten of the
-catalogue in its own order: a placeholder until usage says which ones people
-reach for.
+catalogue in its own order, after any the user has used (below).
+
+In the Favourites body, More shows no **Reorder / Edit** footer: the order
+is by use (below), so a hand-made one would be overridden on the next use.
+Its search results keep their favourite star, which is how a tile joins or
+leaves Favourites from this layout. The Floating Palette's Favourites body is
+unchanged.
+
+## Tiles by use
+
+Using a tile brings it to the **first slot** of the strip: it animates in
+there, the others slide right one, and the tile pushed past the last slot
+shrinks away and lives behind More until it is used again. Using a tile from
+More that wasn't on the strip does the same.
+
+- **One recently-used list** of tile ids, most recent first, across every
+  category (`lib/toolbar-recent-tiles.ts`, capped at 40). Each category shows
+  its used tiles first, in that order, then the rest in the category's own
+  order. A tile used from another category, or not in this one, changes
+  nothing here.
+- **What counts as a use:** a click on a tile or a search-result row, Enter
+  on a Favourites search, a drag that lands on the canvas (one dropped
+  nowhere doesn't), and placing a glyph from the Icons / Stickers /
+  Technology bodies. Keyboard shortcuts don't: they don't go through the
+  strip.
+- **Toolbar layout only.** It is not the Favourites list: the floating
+  Palette and its Favourites order are untouched, and switching back finds
+  them as they were.
+- Per browser, in `localStorage` (`livediagram:v1:toolbar-recent-tiles`),
+  like the palette's other UI state. Not synced.
+- The More body for Favourites follows the same order, so the strip is
+  always the first tiles of what More shows.
 
 The chosen category lasts the page load: the strip is hidden rather than
 unmounted while zen or the welcome flow hides the chrome. Nothing is stored,
@@ -136,6 +166,10 @@ ringed, so the difference is visible before switching (spec/20).
 
 ## Motion
 
+- **A reorder animates** (`ToolbarStripRail`, FLIP): tiles that moved slide
+  from their old slot to their new one over 200ms, a tile new to the strip
+  pops in, and the one pushed off the end pops out where it stood. Reduced
+  motion collapses it to instant.
 - **Switching category animates.** The tile rail eases its width to the new
   set (the strip is centred, so it grows and shrinks evenly), the new tiles
   pop in a 22ms beat apart, and the outgoing ones shrink away on a layer over

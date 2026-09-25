@@ -59,6 +59,9 @@ type IconButtonProps = {
   // unset the button isn't draggable.
   draggable?: boolean;
   onDragStart?: (e: React.DragEvent) => void;
+  // Called when a drag from this tile ends, dropped or not (the event's
+  // dropEffect says which). The drag ghost is cleared either way.
+  onDragEnd?: (e: React.DragEvent) => void;
   // Suppress the hover/focus tooltip. The icon-picker grid sets this:
   // its tiles already read as a labelled gallery and a tooltip on every
   // one of ~60 glyphs is noise. `label` is still applied as the button's
@@ -106,6 +109,7 @@ export function IconButton({
   draggable,
   dragChoice,
   onDragStart,
+  onDragEnd,
   hideTooltip,
   hideCaption,
   caption: captionOverride,
@@ -181,7 +185,10 @@ export function IconButton({
         if (dragKind) suppressNativeDragImage(e);
         effectiveDragStart?.(e);
       }}
-      onDragEnd={() => setPaletteDragPreview(null)}
+      onDragEnd={(e) => {
+        setPaletteDragPreview(null);
+        onDragEnd?.(e);
+      }}
       className={
         hideCaption
           ? `relative flex h-9 w-9 items-center justify-center rounded-md transition disabled:cursor-not-allowed disabled:opacity-50 ${tone}`

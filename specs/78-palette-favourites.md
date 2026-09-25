@@ -34,7 +34,8 @@ spirit of customising iOS Control Centre.
   disappears rather than dead-ends in sessions without image support.
 - An empty favourites set (everything removed) shows a short hint ("No
   favourites yet — Edit to add some") instead of a bare panel.
-- An **Edit** affordance renders as a full-width **footer band** at the
+- An **Edit** affordance (absent in the Toolbar layout's More popover, which
+  orders Favourites by use, spec/148) renders as a full-width **footer band** at the
   bottom of the tab (pencil glyph + "Edit"), flush with the panel's edges
   and set off by a top hairline — panel chrome, not a floating button in
   the grid's corner. It opens the edit modal.

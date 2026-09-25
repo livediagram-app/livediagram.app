@@ -24,6 +24,8 @@ import { PaletteToolRows } from './PaletteToolRows';
 import { SearchInput } from '@/components/primitives/SearchInput';
 import { PaletteFavouritesDialog } from '@/components/dialogs/PaletteFavouritesDialog';
 import { PaletteFavouritesReorder } from './PaletteFavouritesReorder';
+import { orderByRecent } from '@/lib/toolbar-recent-tiles';
+import { usePaletteRecent } from './palette-recent-context';
 
 // The Favourites category (spec/78): the user's go-to creation tiles in one
 // grid, the palette's default landing. The grid renders the saved tiles
@@ -100,6 +102,11 @@ export function PaletteFavouritesTab({
   // icon catalogues; subscribing re-renders this grid when the chunk lands
   // so they pop in rather than silently missing until a later re-render.
   const iconCatalogsLoaded = useIconCatalogs();
+  // The Toolbar layout (spec/148) orders Favourites by use rather than by
+  // hand: the grid follows the strip, used tiles first, and the Reorder /
+  // Edit footer is gone, since a hand-made order would be overridden on the
+  // next use anyway.
+  const recent = usePaletteRecent();
 
   // Capability-filtered like the grid itself renders (PaletteTileGrid
   // applies visibleTiles internally), so the empty-state check below sees
@@ -108,12 +115,13 @@ export function PaletteFavouritesTab({
   // not a silently empty grid. While the icon catalogues are still loading,
   // unresolved dynamic ids are simply absent for a moment; the empty hint
   // is suppressed then so it can't flash over a set that's about to appear.
-  const favouriteTiles = visibleTiles(
+  const savedTiles = visibleTiles(
     (reorderDraft ?? favourites)
       .map(resolveFavouriteTile)
       .filter((t): t is PaletteTileDef => t !== undefined),
     actions.hasImage,
   );
+  const favouriteTiles = recent ? orderByRecent(savedTiles, recent.recent) : savedTiles;
   const favouriteSet = useMemo(() => new Set(favourites), [favourites]);
   const showEmptyHint =
     favouriteTiles.length === 0 && (iconCatalogsLoaded || favourites.length === 0);
@@ -199,6 +207,7 @@ export function PaletteFavouritesTab({
       const pick = matches[active >= 0 ? active : 0];
       if (!pick) return;
       e.preventDefault();
+      recent?.onUse(pick.id);
       tileHandler(pick, actions)();
       setQuery('');
       setActive(-1);
@@ -264,7 +273,7 @@ export function PaletteFavouritesTab({
       ) : favouriteTiles.length === 0 ? (
         showEmptyHint ? (
           <p className="px-1 py-2 text-center text-[11px] text-slate-400 dark:text-slate-500">
-            No favourites yet — Edit to add some.
+            {recent ? 'No favourites yet.' : 'No favourites yet — Edit to add some.'}
           </p>
         ) : null
       ) : (
@@ -281,10 +290,11 @@ export function PaletteFavouritesTab({
           Gone entirely while searching. Search replaces the favourites grid
           with cross-category results, so both verbs would act on a grid that
           is not on screen — Reorder on a list you cannot see, Edit on a set
-          the results are not from. */}
+          the results are not from. And gone in the Toolbar layout, whose
+          order is by use (see `recent` above). */}
       <div
         className={`-mx-2 -mb-2.5 mt-2.5 self-stretch border-t border-slate-200 dark:border-slate-700 ${
-          matches ? 'hidden' : 'flex'
+          matches || recent ? 'hidden' : 'flex'
         }`}
       >
         {reordering ? (

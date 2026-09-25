@@ -50,4 +50,23 @@ describe('ToolbarStripRail', () => {
     expect(layer.textContent).toBe('one');
     expect(layer.querySelector('.animate-pop-out')).not.toBeNull();
   });
+
+  it("keeps a reordered tile's node and pops in only the tile new to the rail", () => {
+    const view = render(
+      <ToolbarStripRail railKey="a" items={items('one', 'two', 'three')} leavingItems={null} />,
+    );
+    const two = view.getByText('two');
+    view.rerender(
+      <ToolbarStripRail railKey="a" items={items('four', 'one', 'two')} leavingItems={null} />,
+    );
+    expect(view.getByText('two')).toBe(two);
+    const byLabel = (l: string) => view.getByText(l).parentElement!.className;
+    expect(byLabel('four')).toContain('animate-pop-in');
+    expect(byLabel('one')).not.toContain('animate-pop-in');
+    // The tile pushed off the end leaves on an inert layer.
+    const leaving = [...view.container.querySelectorAll('[aria-hidden] button')].map(
+      (b) => b.textContent,
+    );
+    expect(leaving).toEqual(['three']);
+  });
 });

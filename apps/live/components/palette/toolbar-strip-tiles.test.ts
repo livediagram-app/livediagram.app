@@ -44,6 +44,21 @@ describe('stripTilesFor', () => {
     expect(strip.tiles.map((t) => t.id)).toEqual([b!.id, a!.id]);
   });
 
+  it('brings a used tile to the front, pushing the last one behind More', () => {
+    const favouriteIds = tilesForCategory('shapes')
+      .slice(0, STRIP_TILE_LIMIT + 1)
+      .map((t) => t.id);
+    const used = favouriteIds[STRIP_TILE_LIMIT]!;
+    const strip = stripTilesFor('favourites', { favouriteIds, hasImage: true, recent: [used] });
+    expect(strip.tiles.map((t) => t.id)).toEqual([used, ...favouriteIds.slice(0, -2)]);
+  });
+
+  it('ignores a used tile that is not in the category', () => {
+    const shapes = stripTilesFor('shapes', NONE).tiles.map((t) => t.id);
+    const strip = stripTilesFor('shapes', { ...NONE, recent: ['tools:session-timer'] });
+    expect(strip.tiles.map((t) => t.id)).toEqual(shapes);
+  });
+
   it('drops image tiles when uploads are unavailable', () => {
     for (const c of PALETTE_CATEGORIES) {
       const strip = stripTilesFor(c.id, { favouriteIds: [], hasImage: false });

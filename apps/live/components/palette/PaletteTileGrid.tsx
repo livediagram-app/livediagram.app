@@ -14,6 +14,7 @@ import { ICON_DND_MIME, PALETTE_DND_MIME } from '@/lib/icons';
 import { TECH_ICON_DND_MIME } from '@/lib/tech-icons';
 import { setPaletteDragPreview, suppressNativeDragImage } from '@/lib/palette-drag-preview';
 import type { PaletteTileDef, PaletteTileSection } from './palette-tile-defs';
+import { usePaletteRecent } from './palette-recent-context';
 import { tilesInSection } from './palette-tile-defs';
 
 // Renders palette tiles from the shared catalogue (palette-tile-defs,
@@ -175,6 +176,19 @@ export function visibleTiles(defs: PaletteTileDef[], hasImage: boolean): Palette
 // Toolbar layout's strip (spec/148): icon only, name in the tooltip, and the
 // shortcut letter always showing in the corner rather than only while the
 // modifier is held, the way a tool bar reads.
+// A tile's click handler, which in the Toolbar layout also records the use,
+// so the strip can bring the tile to its front (spec/148). Everywhere else it
+// is exactly tileHandler.
+export function useTileHandler(def: PaletteTileDef, actions: PaletteTileActions): () => void {
+  const recent = usePaletteRecent();
+  const handler = tileHandler(def, actions);
+  if (!recent) return handler;
+  return () => {
+    recent.onUse(def.id);
+    handler();
+  };
+}
+
 export function PaletteTile({
   def,
   actions,
@@ -187,6 +201,8 @@ export function PaletteTile({
   compact?: boolean;
 }) {
   const a = def.action;
+  const onClick = useTileHandler(def, actions);
+  const recent = usePaletteRecent();
   // Icon favourites keep their home tabs' drag affordance: a line icon drags
   // onto a shape to set its inline icon, a tech icon drags onto the canvas.
   const iconDrag =
@@ -215,7 +231,16 @@ export function PaletteTile({
       label={def.label}
       caption={def.caption}
       description={def.description}
-      onClick={tileHandler(def, actions)}
+      onClick={onClick}
+      // A drag that lands on the canvas is a use too; one dropped nowhere is
+      // not.
+      onDragEnd={
+        recent
+          ? (e) => {
+              if (e.dataTransfer.dropEffect !== 'none') recent.onUse(def.id);
+            }
+          : undefined
+      }
       dragKind={a.type === 'shape' ? a.kind : undefined}
       dragChoice={
         a.type === 'shape' ? (a.session ?? a.reaction ?? a.mode ?? a.estimateScale) : undefined
