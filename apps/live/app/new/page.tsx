@@ -18,6 +18,7 @@ import { markTourPending } from '@/lib/tour-pending';
 import { randomColor, randomName, type Participant } from '@/lib/identity';
 import { titleCaseType, track } from '@/lib/telemetry';
 import { trackDailyReturn } from '@/lib/daily-return';
+import { accepted } from '@/lib/accepted';
 import { ensureGuestSelfId, markNameConfirmed } from '@/lib/local-identity';
 import { buildTemplatedTab } from '@/lib/template-builders';
 import { untitledNameForTemplate, type TemplateKind } from '@livediagram/templates';
@@ -277,12 +278,13 @@ export default function NewDiagramPage() {
     // folder / team placement — skip it.
     if (!offline) {
       if (settings.teamId) {
-        await apiSetDiagramFolder(
-          who.id,
-          diagramId,
-          settings.folderId ?? null,
-          settings.teamId,
-        ).catch(() => {});
+        // Created straight into a team library: the same Team·Added·Diagram
+        // an Explorer move into a team sends (spec/22), and only once the
+        // placement landed (a failed PUT leaves it personal).
+        const placed = await accepted(
+          apiSetDiagramFolder(who.id, diagramId, settings.folderId ?? null, settings.teamId),
+        );
+        if (placed) track('Team', 'Added', 'Diagram');
       } else if (settings.folderId) {
         await apiSetDiagramFolder(who.id, diagramId, settings.folderId).catch(() => {});
       }

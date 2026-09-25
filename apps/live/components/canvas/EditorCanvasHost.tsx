@@ -655,7 +655,8 @@ export function EditorCanvasHost() {
         // Emit only the open transition (minimized -> expanded);
         // closing isn't a feature-reach signal. The closure read is
         // safe because this is a single user click, not a rapid
-        // race, so no stale-state risk.
+        // race, so no stale-state risk. The dock / popover layouts
+        // open Activity through useCanvasMobileDock, which counts there.
         if (activityMinimized) track('UI', 'Opened', 'Activity');
         setActivityMinimized((v) => !v);
       }}
@@ -740,7 +741,8 @@ export function EditorCanvasHost() {
       // +1 for the local participant: livePresence is the REMOTE roster.
       participantCount={livePresence.length + 1}
       onToggleLayersMinimized={() => {
-        // Emit only the open transition, matching the Activity dock.
+        // Emit only the open transition, matching the Activity dock
+        // (the dock / popover layouts count in useCanvasMobileDock).
         if (layersMinimized) track('Layer', 'Opened', 'Panel');
         setLayersMinimized((v) => !v);
       }}

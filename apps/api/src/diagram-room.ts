@@ -1,5 +1,7 @@
 import { isPresenceOpKind, isSystemOpKind } from '@livediagram/api-schema';
-import type { ClientMessage, ParticipantPresence, ServerMessage } from './types';
+import type { ClientMessage, Env, ParticipantPresence, ServerMessage } from './types';
+import { reportServerEvent } from './server-telemetry';
+import { multiplayerDecision } from './room-multiplayer';
 import {
   type LoggedOp,
   MAX_TAB_ID_LEN,
@@ -121,6 +123,10 @@ type SessionAttachment = {
   //     always take it back"), and carrying it as a bit keeps spec/61 §6's
   //     promise that no real identity reaches the room.
   isOwner?: boolean;
+  //   - `multiplayer`: this session belongs to a multiplayer session the
+  //     room has already counted (Diagram·Used·Multiplayer, spec/22). See
+  //     room-multiplayer.ts for why the mark lives here.
+  multiplayer?: boolean;
 };
 
 export class DiagramRoom implements DurableObject {
@@ -167,8 +173,14 @@ export class DiagramRoom implements DurableObject {
   // Who is running the session (spec/149), restored in the constructor.
   facilitator: FacilitatorState = FREE_BATON;
 
-  constructor(state: DurableObjectState) {
+  // The worker env, for the one server-side telemetry emit the room owns
+  // (Diagram·Used·Multiplayer). Optional so unit tests can build a room
+  // from a fake state alone; without it the emit is skipped.
+  env: Env | undefined;
+
+  constructor(state: DurableObjectState, env?: Env) {
     this.state = state;
+    this.env = env;
     // Restore before any request can observe `epoch`/`seq`. A wake re-runs
     // the constructor, so without this gate a socket could be handed the
     // freshly-minted field values above and defeat the whole point.
@@ -356,6 +368,7 @@ export class DiagramRoom implements DurableObject {
       const presence = helloPresence(msg.participant, session);
       ws.serializeAttachment({ ...session, presence } satisfies SessionAttachment);
       this.broadcastPresence();
+      this.noteMultiplayer();
       // Judge the baton BEFORE honouring a token: one that ran out of time is
       // free, whether or not an alarm happened to fire while the room was
       // awake. Otherwise whether a returning holder got their baton back would
@@ -656,6 +669,36 @@ export class DiagramRoom implements DurableObject {
     // runtime prunes it from getWebSockets(), it could otherwise still
     // appear in the roster of this very broadcast.
     this.broadcastPresence(ws);
+  }
+
+  // Count the room's multiplayer session once, from the one place that sees
+  // every participant (spec/22). Runs after each hello, the only moment the
+  // hello'd roster can grow; the decision and its session rule live in
+  // room-multiplayer.ts.
+  private noteMultiplayer(): void {
+    const sockets = this.state.getWebSockets();
+    const sessions = sockets.map((ws) => this.readSession(ws));
+    const decision = multiplayerDecision(
+      sessions.map((s) => ({ present: Boolean(s?.presence), multiplayer: s?.multiplayer })),
+    );
+    for (const i of decision.mark) {
+      const session = sessions[i];
+      if (!session) continue;
+      try {
+        sockets[i]!.serializeAttachment({
+          ...session,
+          multiplayer: true,
+        } satisfies SessionAttachment);
+      } catch {
+        // A socket that died mid-loop: the runtime reaps it, nothing to mark.
+      }
+    }
+    const env = this.env;
+    if (decision.report && env) {
+      const write = reportServerEvent(env, 'Diagram', 'Used', 'Multiplayer');
+      // Keep the DO alive until the row lands; the write swallows its own error.
+      this.state.waitUntil(write);
+    }
   }
 
   broadcastPresence(except?: WebSocket): void {

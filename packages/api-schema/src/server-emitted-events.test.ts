@@ -7,6 +7,7 @@ describe('server-emitted telemetry pairs (spec/22)', () => {
     expect(isServerEmittedEvent({ category: 'Session', action: 'SignedUp' })).toBe(true);
     expect(isServerEmittedEvent({ category: 'Session', action: 'SignedIn' })).toBe(true);
     expect(isServerEmittedEvent({ category: 'Diagram', action: 'Joined' })).toBe(true);
+    expect(isServerEmittedEvent({ category: 'Diagram', action: 'Used' })).toBe(true);
     expect(isServerEmittedEvent({ category: 'Email', action: 'Sent' })).toBe(true);
   });
 

@@ -518,7 +518,7 @@ function ExplorerImpl({
                   if (dest.teamId === null && moveTarget.teamId === null) {
                     onMoveDiagramToFolder?.(moveTarget.id, dest.folderId);
                   } else {
-                    onMoveDiagramTo?.(moveTarget.id, dest);
+                    onMoveDiagramTo?.(moveTarget.id, dest, moveTarget.teamId);
                   }
                 }}
                 onClose={() => setMoveTarget(null)}

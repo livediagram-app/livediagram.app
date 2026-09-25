@@ -7,6 +7,7 @@ import {
   SYSTEM_OP_KINDS,
 } from '@livediagram/api-schema';
 import { DiagramRoom } from './diagram-room';
+import type { Env } from './types';
 
 // PRESENCE_OP_KINDS is a readonly array (it has to be, to derive the type), so
 // membership reads through this rather than `.has`.
@@ -76,6 +77,7 @@ type FakeState = {
     setAlarm: (when: number) => Promise<void>;
   };
   blockConcurrencyWhile: (fn: () => Promise<void>) => Promise<void>;
+  waitUntil: (promise: Promise<unknown>) => void;
 };
 
 const asWs = (s: FakeSocket) => s as unknown as WebSocket;
@@ -118,6 +120,7 @@ function makeState(store: Map<string, unknown> = new Map()): FakeState {
       },
     },
     blockConcurrencyWhile: (fn) => fn(),
+    waitUntil: () => {},
   };
   return state;
 }
@@ -1290,5 +1293,67 @@ describe('DiagramRoom facilitator', () => {
 
     await room.alarm();
     expect(room.facilitator.holder).toBe('p-a2');
+  });
+});
+
+describe('DiagramRoom multiplayer telemetry (spec/22)', () => {
+  // A fake D1 that records every telemetry row the room writes.
+  function envWithRows(): { env: Env; rows: unknown[][] } {
+    const rows: unknown[][] = [];
+    const DB = {
+      prepare: () => ({ bind: (...args: unknown[]) => args }),
+      batch: (stmts: unknown[][]) => {
+        rows.push(...stmts);
+        return Promise.resolve([]);
+      },
+    };
+    return { env: { TELEMETRY_ENABLED: 'true', DB } as unknown as Env, rows };
+  }
+
+  function join(room: DiagramRoom, name: string): FakeSocket {
+    const ws = makeSocket();
+    room.acceptSession(asWs(ws), 'edit');
+    sendFrame(room, ws, { kind: 'hello', participant: { id: name, name, color: '#000' } });
+    return ws;
+  }
+
+  const multiplayerRows = (rows: unknown[][]) =>
+    rows.filter((r) => r[0] === 'Diagram' && r[1] === 'Used' && r[2] === 'Multiplayer');
+
+  it('counts a five-person session once, not once per participant', async () => {
+    const { env, rows } = envWithRows();
+    const room = new DiagramRoom(makeState() as unknown as DurableObjectState, env);
+    join(room, 'a');
+    await Promise.resolve();
+    expect(multiplayerRows(rows)).toHaveLength(0);
+    for (const name of ['b', 'c', 'd', 'e']) join(room, name);
+    await Promise.resolve();
+    expect(multiplayerRows(rows)).toHaveLength(1);
+  });
+
+  it('counts a new session once the room has emptied and filled again', async () => {
+    const { env, rows } = envWithRows();
+    const state = makeState();
+    const room = new DiagramRoom(state as unknown as DurableObjectState, env);
+    join(room, 'a');
+    join(room, 'b');
+    // Everybody leaves: the runtime drops closed sockets from the set.
+    state.sockets.length = 0;
+    join(room, 'c');
+    join(room, 'd');
+    await Promise.resolve();
+    expect(multiplayerRows(rows)).toHaveLength(2);
+  });
+
+  it('writes nothing when telemetry is off', async () => {
+    const { env, rows } = envWithRows();
+    const room = new DiagramRoom(makeState() as unknown as DurableObjectState, {
+      ...env,
+      TELEMETRY_ENABLED: undefined,
+    });
+    join(room, 'a');
+    join(room, 'b');
+    await Promise.resolve();
+    expect(rows).toHaveLength(0);
   });
 });

@@ -276,8 +276,17 @@ export function useTabSession(deps: TabSessionDeps) {
 
   // Add one of MY dots to an element, if a vote is open and I have budget
   // left. No history, no activity-log line (too frequent).
+  //
+  // Whether a dot lands is decided OUTSIDE the state updater, from the
+  // rendered tab: a press with the budget spent (or a second dot on a
+  // one-per-item vote) casts nothing and must not count as Element·Voted
+  // (spec/22), and a flag set inside an updater is unreliable (React may run
+  // it later, or twice). The updater keeps its own guard so the write can
+  // never exceed the budget either way.
   const castVote = (elementId: string) => {
     if (editsBlocked) return;
+    const current = deps.activeTab.vote;
+    if (!current || !canCastVote(current, selfId, elementId)) return;
     patchActive((t) => {
       const vote = t.vote;
       if (!vote || !canCastVote(vote, selfId, elementId)) return t;
@@ -299,10 +308,12 @@ export function useTabSession(deps: TabSessionDeps) {
     patchActive((t) => (t.vote ? { ...t, vote: { ...t.vote, reviewIndex: index } } : t));
   };
 
-  // Remove ONE of my dots from an element (if any).
+  // Remove ONE of my dots from an element (if any). Decided from the rendered
+  // tab for the same reason as castVote.
   const retractVote = (elementId: string) => {
     if (editsBlocked) return;
-    let retracted = false;
+    const mine = deps.activeTab.vote?.votes[elementId] ?? [];
+    if (!mine.includes(selfId)) return;
     patchActive((t) => {
       const vote = t.vote;
       if (!vote) return t;
@@ -311,12 +322,11 @@ export function useTabSession(deps: TabSessionDeps) {
       const idx = existing.lastIndexOf(selfId);
       if (idx === -1) return t;
       const next = [...existing.slice(0, idx), ...existing.slice(idx + 1)];
-      retracted = true;
       return { ...t, vote: { ...vote, votes: { ...vote.votes, [elementId]: next } } };
     });
     // The counterpart to Element·Voted, so "dots cast" can be read net of
     // second thoughts. Only when a dot actually came off.
-    if (retracted) track('Element', 'Removed', 'Vote');
+    track('Element', 'Removed', 'Vote');
   };
 
   return {

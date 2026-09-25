@@ -51,6 +51,11 @@ export function useLivePoll(deps: {
   // state; doing that inside a setPoll updater would make the updater
   // impure and double-fire under StrictMode.
   const pollRef = useRef<LivePoll | null>(null);
+  // The poll id we have already counted a response to (Tab·Voted·Poll,
+  // spec/22). A participant can change their answer, and the room replaces
+  // it, so the card counts people who responded, not presses: a change of
+  // mind is not a second response.
+  const countedPollRef = useRef<string | null>(null);
   const setActivePoll = useCallback((next: LivePoll | null) => {
     pollRef.current = next;
     setPoll(next);
@@ -142,7 +147,10 @@ export function useLivePoll(deps: {
         kind: 'op',
         op: { kind: 'poll-answer', pollId: current.id, value: clean },
       });
-      track('Tab', 'Voted', 'Poll');
+      if (countedPollRef.current !== current.id) {
+        countedPollRef.current = current.id;
+        track('Tab', 'Voted', 'Poll');
+      }
     },
     [roomRef],
   );

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type Ref } from 'react';
 import { computeDockAnchor, type DockAnchor } from '@/lib/canvas-chrome';
+import { track } from '@/lib/telemetry';
 
 // Mobile dock: a compact button row that replaces the four full-width
 // collapse banners on small screens. This hook owns its state — which
@@ -45,6 +46,19 @@ export type MobilePanel =
 
 export type { DockAnchor };
 
+// The panel-open counts (spec/22) for panels that ALSO open on desktop by
+// un-minimising a floating card (EditorCanvasHost's toggles emit there). In
+// the dock layouts (minimal panels, phones, the Toolbar layout) the same
+// panel opens here instead, as a popover, and a click takes one path or the
+// other (the cluster button calls either its popover toggle or its expand,
+// never both), so each surface counts its own opens and none counts twice.
+// Only on the open transition: re-opening the panel already showing is not
+// a new open.
+function trackDockPanelOpened(id: MobilePanel): void {
+  if (id === 'layers') track('Layer', 'Opened', 'Panel');
+  else if (id === 'activity') track('UI', 'Opened', 'Activity');
+}
+
 export function useCanvasMobileDock(mainRef: Ref<HTMLElement>) {
   const [activeMobilePanel, setActiveMobilePanel] = useState<MobilePanel | null>(null);
   const dockButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
@@ -62,6 +76,7 @@ export function useCanvasMobileDock(mainRef: Ref<HTMLElement>) {
   // `above` (with `ownButton`) opens the popover up from a button in the
   // bottom-right cluster instead of down from one at the top.
   const openDockPanel = (id: MobilePanel, ownButton?: HTMLElement, above = false) => {
+    if (id !== activeMobilePanel) trackDockPanelOpened(id);
     setActiveMobilePanel(id);
     const btn = ownButton ?? dockButtonRefs.current[id];
     const canvas = mainRef && 'current' in mainRef ? mainRef.current : null;

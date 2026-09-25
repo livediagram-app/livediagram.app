@@ -528,6 +528,9 @@ export type CanvasProps = {
   onMoveDiagramTo?: (
     diagramId: string,
     dest: { teamId: string | null; folderId: string | null },
+    // Where the diagram is coming from (null = the personal tree), so a
+    // personal -> team move counts as Team·Added·Diagram (spec/22).
+    fromTeamId?: string | null,
   ) => void;
   onDeselect: () => void;
   onSelect: (id: string) => void;

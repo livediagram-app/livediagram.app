@@ -3,7 +3,9 @@
 // honestly: an email sent from a cron (Email·Sent), a first visit to a shared
 // diagram (Diagram·Joined, once per visitor and diagram), a new Clerk session
 // or account (Session·SignedIn / SignedUp, once per authentication whatever
-// the method).
+// the method), a realtime room first holding two people (Diagram·Used, the
+// Multiplayer count, once per session by the diagram room rather than once
+// per participant).
 //
 // POST /api/events drops these, so an old cached editor bundle that still
 // emits them (or anyone posting by hand) can't double count what the worker
@@ -11,6 +13,7 @@
 // editor's telemetry manifest.
 export const SERVER_EMITTED_EVENT_PAIRS: readonly string[] = [
   'Diagram·Joined',
+  'Diagram·Used',
   'Email·Sent',
   'Session·SignedIn',
   'Session·SignedUp',

@@ -15,7 +15,6 @@ import {
 } from '@/lib/api-client';
 import { parseLaserConfig } from '@/lib/laser-config';
 import { createPresenceCoalescer, type CursorPos, type LaserTrail } from './presence-coalescer';
-import { reportMultiplayerPresence } from './multiplayer-telemetry';
 import type { RemoteSelection } from '@/lib/presence-rows';
 import { pruneMapToPresent } from './editor-page-helpers';
 
@@ -154,9 +153,6 @@ export function useRoomConnection(opts: {
     const handlers: RoomHandlers = {
       onPresence: (participants) => {
         const now = Date.now();
-        // Somebody else is in the room with us (spec/22). Self-guarded to
-        // one emit per diagram per page load.
-        reportMultiplayerPresence(diagramId, participants.length);
         setLivePresence(
           participants.map((p) => ({
             id: p.id,

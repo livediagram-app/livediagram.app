@@ -144,3 +144,50 @@ describe('while somebody else is facilitating (spec/149)', () => {
     expect(tab().timer?.running).toBe(true);
   });
 });
+
+describe('dot-vote telemetry (spec/22)', () => {
+  const votedCalls = () =>
+    vi.mocked(track).mock.calls.filter(([c, a]) => c === 'Element' && a === 'Voted');
+  const retractedCalls = () =>
+    vi
+      .mocked(track)
+      .mock.calls.filter(([c, a, t]) => c === 'Element' && a === 'Removed' && t === 'Vote');
+
+  it('counts only the dots that were actually cast', () => {
+    const h = harness();
+    h.session().startVote(2, { hideCursors: false, hideCounts: false });
+    h.session().castVote('a');
+    h.session().castVote('b');
+    // Budget spent: these presses cast nothing.
+    h.session().castVote('c');
+    h.session().castVote('a');
+    expect(h.tab().vote?.votes).toEqual({ a: ['me'], b: ['me'] });
+    expect(votedCalls()).toHaveLength(2);
+  });
+
+  it('does not count a second dot refused on a one-per-item vote', () => {
+    const h = harness();
+    h.session().startVote(3, { hideCursors: false, hideCounts: false, onePerElement: true });
+    h.session().castVote('a');
+    h.session().castVote('a');
+    expect(votedCalls()).toHaveLength(1);
+  });
+
+  it('does not count a press with no vote open', () => {
+    const h = harness();
+    h.session().castVote('a');
+    expect(votedCalls()).toHaveLength(0);
+  });
+
+  it('counts a retraction only when one of my dots came off', () => {
+    const h = harness();
+    h.session().startVote(3, { hideCursors: false, hideCounts: false });
+    h.session().retractVote('a');
+    expect(retractedCalls()).toHaveLength(0);
+    h.session().castVote('a');
+    h.session().retractVote('a');
+    h.session().retractVote('a');
+    expect(retractedCalls()).toHaveLength(1);
+    expect(h.tab().vote?.votes.a ?? []).toEqual([]);
+  });
+});
