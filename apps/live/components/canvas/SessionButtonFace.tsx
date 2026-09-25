@@ -20,6 +20,10 @@ import { PollIcon, TimerIcon, VoteIcon } from '@/components/palette/palette-icon
 
 const TOOL_ICON: Record<SessionPlan['tool'], React.ReactNode> = {
   timer: <TimerIcon />,
+  // The same clock face: a stopwatch is the other thing that clock does, and a
+  // second timepiece glyph would be a distinction without a difference at
+  // 22px. The label is what separates them.
+  stopwatch: <TimerIcon />,
   vote: <VoteIcon />,
   poll: <PollIcon />,
 };
@@ -39,6 +43,11 @@ export function sessionButtonText(
     if (timerState === 'paused') return { kicker: 'Continue', action: 'the timer' };
     return { kicker: 'Start', action: `${plan.minutes} min timer` };
   }
+  if (plan.tool === 'stopwatch') {
+    if (timerState === 'running') return { kicker: 'Pause', action: 'the stopwatch' };
+    if (timerState === 'paused') return { kicker: 'Continue', action: 'the stopwatch' };
+    return { kicker: 'Start', action: 'a stopwatch' };
+  }
   if (plan.tool === 'vote') {
     return {
       kicker: 'Start vote',
@@ -53,6 +62,7 @@ export type TimerState = 'none' | 'running' | 'paused';
 
 const TOOL_BLURB: Record<SessionPlan['tool'], string> = {
   timer: 'Starts a countdown everyone in the room can see.',
+  stopwatch: 'Counts up from zero for everyone, until you stop it.',
   vote: 'Starts a dot vote on this tab for everyone.',
   poll: 'Opens this poll on everyone’s screen; answers are anonymous.',
 };

@@ -20,9 +20,9 @@ import {
   type LivePoll,
   type PollStyle,
 } from '@livediagram/api-schema';
-import { POLL_STYLE_LABEL, pollStyleTokens, pollStyleUsesRoster } from '@livediagram/diagram';
+import { POLL_STYLE_LABEL, pollStyleUsesRoster } from '@livediagram/diagram';
 import { pollCollaboratorOptions } from '@/lib/poll-collaborators';
-import { PollStyleTiles } from '@/components/palette/PollAnswerStyleRow';
+import { PollStyleTiles } from './PollStyleTiles';
 import type { SessionToolsProps } from '@/components/chrome/session-tools-props';
 import { StudioButton, StudioCallout, StudioLabel } from './studio-ui';
 
@@ -50,17 +50,56 @@ export function PollPane({
   );
 }
 
-function PollComposer({
-  onStartPoll,
-  hasAudience,
-  collaborators,
-}: Pick<PollPaneProps, 'onStartPoll'> & {
-  hasAudience: boolean;
-  collaborators: PollPaneProps['pollCollaborators'];
-}) {
+function PollComposer(
+  props: Pick<PollPaneProps, 'onStartPoll'> & {
+    hasAudience: boolean;
+    collaborators: PollPaneProps['pollCollaborators'];
+  },
+) {
   const [question, setQuestion] = useState('');
   const [style, setStyle] = useState<PollStyle>('yesNo');
   const [options, setOptions] = useState<string[]>(['', '']);
+  return (
+    <PollComposerBody
+      {...props}
+      question={question}
+      onQuestionChange={setQuestion}
+      style={style}
+      onStyleChange={setStyle}
+      options={options}
+      onOptionsChange={setOptions}
+    />
+  );
+}
+
+/**
+ * The poll composer, CONTROLLED on question / style / answers (spec/88).
+ *
+ * Exported so a poll element's `…` menu and its right-click Session category
+ * render this exact composer rather than their own take on it. In the Studio
+ * the three live in local state; on an element they are the element's stored
+ * config, so composing the poll IS configuring the button, and Ask runs it now.
+ */
+export function PollComposerBody({
+  onStartPoll,
+  hasAudience,
+  collaborators,
+  question,
+  onQuestionChange: setQuestion,
+  style,
+  onStyleChange: setStyle,
+  options,
+  onOptionsChange: setOptions,
+}: Pick<PollPaneProps, 'onStartPoll'> & {
+  hasAudience: boolean;
+  collaborators: PollPaneProps['pollCollaborators'];
+  question: string;
+  onQuestionChange: (q: string) => void;
+  style: PollStyle;
+  onStyleChange: (s: PollStyle) => void;
+  options: string[];
+  onOptionsChange: (next: string[]) => void;
+}) {
   const optionRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const trimmed = options.map((o) => o.trim()).filter((o) => o.length > 0);
@@ -91,7 +130,7 @@ function PollComposer({
     if (options.length >= POLL_OPTIONS_MAX) return;
     // Flushed so the new field exists before focus moves to it: deferring the
     // focus a frame let quick typing land in the answer you just left.
-    flushSync(() => setOptions((prev) => [...prev, '']));
+    flushSync(() => setOptions([...options, '']));
     if (focus) optionRefs.current[options.length]?.focus();
   };
 
@@ -155,7 +194,7 @@ function PollComposer({
                 value={opt}
                 onChange={(e) => {
                   const value = e.target.value.slice(0, POLL_OPTION_MAX);
-                  setOptions((prev) => prev.map((o, j) => (j === i ? value : o)));
+                  setOptions(options.map((o, j) => (j === i ? value : o)));
                 }}
                 onKeyDown={(e) => {
                   e.stopPropagation();
@@ -175,7 +214,7 @@ function PollComposer({
                 <button
                   type="button"
                   aria-label={`Remove answer ${i + 1}`}
-                  onClick={() => setOptions((prev) => prev.filter((_, j) => j !== i))}
+                  onClick={() => setOptions(options.filter((_, j) => j !== i))}
                   className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-500/10"
                 >
                   ×
@@ -194,7 +233,6 @@ function PollComposer({
           ) : null}
         </div>
       ) : null}
-      <PromptPreview question={question.trim()} style={style} options={trimmed} />
       <StudioButton variant="primary" onClick={start} disabled={missing !== null}>
         {missing ?? 'Ask everyone'}
       </StudioButton>
@@ -235,53 +273,6 @@ function RosterPreview({ options }: { options: string[] }) {
       <p className="text-[10px] text-slate-400 dark:text-slate-500">
         Taken when you ask, so anyone who joins after won&rsquo;t be on the list.
       </p>
-    </div>
-  );
-}
-
-// What each participant's prompt will look like, drawn from the same token
-// list the real prompt reads (`pollStyleTokens`), so the two can't disagree.
-function PromptPreview({
-  question,
-  style,
-  options,
-}: {
-  question: string;
-  style: PollStyle;
-  options: string[];
-}) {
-  const tokens = pollStyleTokens(style, options);
-  return (
-    <div className="flex flex-col gap-1.5">
-      <StudioLabel>What people see</StudioLabel>
-      <div className="flex flex-col gap-2 rounded-xl border border-dashed border-slate-200 bg-slate-50/70 p-2.5 dark:border-slate-700 dark:bg-slate-800/40">
-        <span
-          className={`text-[12px] font-semibold leading-snug ${
-            question ? 'text-slate-800 dark:text-slate-100' : 'italic text-slate-400'
-          }`}
-        >
-          {question || 'Your question'}
-        </span>
-        {style === 'text' ? (
-          <span className="rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] text-slate-400 dark:border-slate-700 dark:bg-slate-900">
-            Type an answer…
-          </span>
-        ) : (
-          <span className={`flex flex-wrap gap-1 ${style === 'choice' ? 'flex-col' : ''}`}>
-            {(tokens.length ? tokens : ['Answer A', 'Answer B']).map((t, i) => (
-              <span
-                key={`${t}-${i}`}
-                className={`rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-medium text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 ${
-                  style === 'rating' ? 'min-w-7 text-center' : ''
-                } ${tokens.length ? '' : 'italic text-slate-400'}`}
-              >
-                {t}
-              </span>
-            ))}
-          </span>
-        )}
-        <span className="text-[10px] text-slate-400">Skip</span>
-      </div>
     </div>
   );
 }

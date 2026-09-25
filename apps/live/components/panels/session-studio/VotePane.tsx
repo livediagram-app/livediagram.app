@@ -37,13 +37,34 @@ export function VotePane(props: VotePaneProps) {
   return props.vote ? <LiveVote {...props} vote={props.vote} /> : <VoteSetupForm {...props} />;
 }
 
+function VoteSetupForm(props: VotePaneProps) {
+  const [dots, setDots] = useState(3);
+  return <VoteSetupBody {...props} dots={dots} onDotsChange={setDots} />;
+}
+
 const STACKING_OPTIONS = [
   { value: 'stack', label: 'Any number' },
   { value: 'one', label: 'One each' },
 ] as const;
 
-function VoteSetupForm({ voteLayers, activeLayerId, onStartVote }: VotePaneProps) {
-  const [dots, setDots] = useState(3);
+/**
+ * The vote's setup UI, CONTROLLED on the dot budget (spec/39).
+ *
+ * Exported so a vote element's `…` menu and its right-click Session category
+ * render this exact form rather than their own take on it. In the Studio
+ * `dots` is local state; on an element it is the element's stored budget, so
+ * picking a number sets the button and Start runs it now with that number.
+ */
+export function VoteSetupBody({
+  voteLayers,
+  activeLayerId,
+  onStartVote,
+  dots,
+  onDotsChange,
+}: Pick<VotePaneProps, 'voteLayers' | 'activeLayerId' | 'onStartVote'> & {
+  dots: number;
+  onDotsChange: (dots: number) => void;
+}) {
   // Cursors hidden by default: the leak they cause is invisible to the
   // facilitator, so it's the safer default. Running counts shown by default,
   // because live tallies are how ordinary dot-voting works (spec/39).
@@ -60,7 +81,7 @@ function VoteSetupForm({ voteLayers, activeLayerId, onStartVote }: VotePaneProps
     <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-1.5">
         <StudioLabel aside={`${dots} each`}>Dots per person</StudioLabel>
-        <DotBudgetPicker value={dots} onChange={setDots} />
+        <DotBudgetPicker value={dots} onChange={onDotsChange} />
       </div>
       {/* With a single dot there is nothing to stack, so the choice would be
           a question with one answer. */}

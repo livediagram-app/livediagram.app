@@ -19,80 +19,21 @@ import {
   REACTIONS,
   type Reaction,
   DEFAULT_PICKER_SOURCE,
-  DEFAULT_SESSION_POLL_STYLE,
   DEFAULT_SESSION_TOOL,
-  DEFAULT_TIMER_MINUTES,
-  DEFAULT_VOTE_DOTS,
-  isPollStyle,
   PICKER_MAX_OPTIONS,
-  pollStyleNeedsOptions,
-  POLL_OPTIONS_MAX,
-  TIMER_MINUTES_RANGE,
-  VOTE_DOTS_RANGE,
   type PickerSource,
   type SessionButtonConfig,
   type ShapeElement,
 } from '@livediagram/diagram';
 import { MenuAccordionSection, MenuTile, MenuTileGrid } from '@/components/primitives/PortalMenu';
+import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
+import { SessionElementSettings } from '@/components/canvas/SessionElementSettings';
 import { ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
-import { PollAnswerStyleRow } from '@/components/palette/PollAnswerStyleRow';
 import { PickerIcon, RevealIcon } from '@/components/palette/palette-icons';
 
 const fieldClass =
   'mt-1 w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] text-slate-700 outline-none placeholder:text-slate-400 focus:border-brand-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200';
 const labelClass = 'text-[10px] font-medium text-slate-500 dark:text-slate-400';
-
-// A number field that commits on blur / Enter and clamps to the tool's range,
-// so a typed 0 or 999 lands as the nearest legal value rather than being
-// rejected or silently kept.
-function NumberRow({
-  label,
-  value,
-  range,
-  suffix,
-  onCommit,
-}: {
-  label: string;
-  value: number;
-  range: { min: number; max: number };
-  suffix: string;
-  onCommit: (next: number) => void;
-}) {
-  const [draft, setDraft] = useState(String(value));
-  useEffect(() => setDraft(String(value)), [value]);
-  const commit = () => {
-    const parsed = Number.parseInt(draft, 10);
-    const next = Number.isFinite(parsed) ? Math.min(range.max, Math.max(range.min, parsed)) : value;
-    setDraft(String(next));
-    if (next !== value) onCommit(next);
-  };
-  return (
-    <div className="px-3 pt-2">
-      <label className={labelClass}>
-        {label}
-        <span className="flex items-center gap-1">
-          <input
-            type="number"
-            min={range.min}
-            max={range.max}
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onBlur={commit}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                commit();
-              }
-              e.stopPropagation();
-            }}
-            className={`${fieldClass} w-20`}
-          />
-          <span className="mt-1 text-[10px] text-slate-500 dark:text-slate-400">{suffix}</span>
-        </span>
-      </label>
-    </div>
-  );
-}
 
 // A textarea of one-per-line entries, committed on blur. Used by both the
 // poll's answers and the picker's options — the same shape of list, so the
@@ -151,8 +92,6 @@ export function SessionMenuSection({
 }) {
   const config = element.session;
   const tool = config?.tool ?? DEFAULT_SESSION_TOOL;
-  const pollStyle = isPollStyle(config?.style) ? config.style : DEFAULT_SESSION_POLL_STYLE;
-  const patch = (next: Partial<SessionButtonConfig>) => onSetSession({ ...config, tool, ...next });
 
   // This section is the button's SETTINGS, not a tool picker. It used to lead
   // with a Timer / Vote / Poll tile grid, which was a second way to choose
@@ -162,57 +101,15 @@ export function SessionMenuSection({
   // cost every session button three tiles of height to re-ask a settled
   // question.
   return (
-    <MenuAccordionSection title="Session" icon={<ToolsMenuGlyph />} {...sectionProps}>
-      {tool === 'timer' ? (
-        <NumberRow
-          label="Length"
-          value={config?.minutes ?? DEFAULT_TIMER_MINUTES}
-          range={TIMER_MINUTES_RANGE}
-          suffix="minutes"
-          onCommit={(minutes) => patch({ minutes })}
-        />
-      ) : null}
-      {tool === 'vote' ? (
-        <NumberRow
-          label="Dots each"
-          value={config?.dots ?? DEFAULT_VOTE_DOTS}
-          range={VOTE_DOTS_RANGE}
-          suffix="per person"
-          onCommit={(dots) => patch({ dots })}
-        />
-      ) : null}
-      {tool === 'poll' ? (
-        <>
-          <div className="px-3 pt-2">
-            <label className={labelClass}>
-              Question
-              <input
-                value={config?.question ?? ''}
-                onChange={(e) => patch({ question: e.target.value })}
-                onKeyDown={(e) => e.stopPropagation()}
-                placeholder="Quick question"
-                className={fieldClass}
-              />
-            </label>
-          </div>
-          <PollAnswerStyleRow style={pollStyle} onChange={(style) => patch({ style })} />
-          {/* Only the Choices style reads a written list — the rest answer
-              with a fixed set, so a box of answers they ignore would be a
-              box that lies. The list SURVIVES a trip through another style
-              (it is still on the config), so trying Yes / No and coming back
-              doesn't cost you what you typed. */}
-          {pollStyleNeedsOptions(pollStyle) ? (
-            <LinesRow
-              label="Choices"
-              hint={'Option A\nOption B'}
-              lines={config?.options ?? []}
-              max={POLL_OPTIONS_MAX}
-              onCommit={(options) => patch({ options })}
-            />
-          ) : null}
-        </>
-      ) : null}
-    </MenuAccordionSection>
+    // A side PANEL, not an inline accordion. The body is the Session Studio's
+    // own (see SessionElementSettings), which is 286px wide, and the context
+    // menu is narrower than that — inline, a poll's answer tiles and its
+    // choice fields ran off the right-hand edge and were simply cut off. The
+    // Studio itself is reached the same way, as the tab menu's Collaborate
+    // flyout, so this also makes the two open alike.
+    <MenuFlyoutSection title="Session" icon={<ToolsMenuGlyph />} panel {...sectionProps}>
+      <SessionElementSettings config={{ ...config, tool }} onChange={onSetSession} />
+    </MenuFlyoutSection>
   );
 }
 

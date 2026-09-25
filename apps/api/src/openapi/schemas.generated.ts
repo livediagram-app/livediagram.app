@@ -3444,6 +3444,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "SessionTool": {
     "enum": [
       "timer",
+      "stopwatch",
       "vote",
       "poll"
     ],

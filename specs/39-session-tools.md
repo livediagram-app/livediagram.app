@@ -49,6 +49,34 @@ the usual reason to come back mid-session is to drive what is running. Each
 tool gets a purpose-built pane (`components/panels/session-studio/`), described
 under its section below and in spec/88 for the poll.
 
+## One UI per tool, in three places
+
+A session tool's controls are ONE component, rendered in the Session Studio
+pane, in the element's `…` quick menu, and in that element's right-click
+**Session** category. They used to be three separate implementations of the
+same question — a dial in the Studio, eight stacked "N minutes" rows in the
+popover, a number field in the context menu — and they drifted exactly as you
+would expect: different controls, different wording, and for polls a different
+answer cap.
+
+The bodies are CONTROLLED (`TimerSetupBody`, `VoteSetupBody`,
+`PollComposerBody`), which is what lets one component serve both jobs: in the
+Studio the value is local state and means "what I am about to start"; on an
+element it is the element's stored config, so setting it configures the button
+AND the Start button runs it now with that value. One number doing both, so no
+mode flag is needed.
+
+The element menus read the session verbs off `EditorContext` rather than taking
+them as props, because threading them would mean new props on `Canvas` and
+every element face, and the faces are memoised so a canvas of a hundred
+elements does not re-render on unrelated state. That is safe because of WHERE
+the bodies mount: `ElementEllipsisMenu` invokes its children only while the
+popover is open, so nothing subscribes until somebody asks to see it.
+
+The element popover matches the Studio pane's width (286px). Not cosmetic: the
+poll's answer tiles wrap differently at 240px, which is how a label came to be
+truncated in one surface and not the other.
+
 ## Timer
 
 `tab.timer: { mode: 'countdown' | 'stopwatch'; running; durationMs?; anchorAt?; frozenMs? }`.

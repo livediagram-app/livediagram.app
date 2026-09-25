@@ -106,7 +106,12 @@ export const MODE_BUTTON_SKIN = { fill: '#ffffff', stroke: '#cbd5e1', text: '#0f
 // Which session tool a `session-button` starts when pressed. The vocabulary
 // lives here with the other Behaviour-element data (rather than in the editor)
 // because a saved element carries it, so validation has to reach it.
-export const SESSION_TOOLS = ['timer', 'vote', 'poll'] as const;
+// `stopwatch` is its own tool rather than a mode of `timer` (spec/105). The
+// two share a clock and nothing else: a countdown is placed with a LENGTH and
+// the question is "how long", a stopwatch has no length and the question is
+// only "start it". Folding them together meant a timer element's settings
+// offered to turn it into a different element, which is not a setting.
+export const SESSION_TOOLS = ['timer', 'stopwatch', 'vote', 'poll'] as const;
 export type SessionTool = (typeof SESSION_TOOLS)[number];
 
 // What a button with no configuration does. A timer is the safest default: it
@@ -166,6 +171,8 @@ export type SessionButtonConfig = {
  * config would place a button that cannot be pressed.
  */
 export function defaultSessionConfig(tool: SessionTool): SessionButtonConfig {
+  // A stopwatch has nothing to configure — that is the whole difference.
+  if (tool === 'stopwatch') return { tool };
   if (tool === 'vote') return { tool, dots: DEFAULT_VOTE_DOTS };
   if (tool === 'poll') {
     return {
@@ -188,6 +195,8 @@ export function isSessionTool(value: unknown): value is SessionTool {
 // than a broken one, so the face goes inert and says so.
 export type SessionPlan =
   | { tool: 'timer'; minutes: number }
+  // No length: a stopwatch counts up until somebody stops it.
+  | { tool: 'stopwatch' }
   | { tool: 'vote'; dots: number }
   // `options` is empty for every style but `choice`, matching `LivePoll`: the
   // other styles' answers are fixed, so carrying a stale written list would
@@ -212,6 +221,7 @@ export function sessionButtonPlan(config: SessionButtonConfig | undefined): Sess
   if (tool === 'timer') {
     return { tool, minutes: clamp(config?.minutes, DEFAULT_TIMER_MINUTES, TIMER_MINUTES_RANGE) };
   }
+  if (tool === 'stopwatch') return { tool };
   if (tool === 'vote') {
     return { tool, dots: clamp(config?.dots, DEFAULT_VOTE_DOTS, VOTE_DOTS_RANGE) };
   }

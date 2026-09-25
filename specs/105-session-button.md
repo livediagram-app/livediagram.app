@@ -33,6 +33,24 @@ Right-click → **Session**: the button's one setting — minutes for a timer, d
 
 **It does not choose the tool.** The section used to lead with a Timer / Vote / Poll tile grid, which asked a second time a question the palette already asks once: it offers a tile per tool (see "One tile per tool in the palette" below), so the button lands as the thing you picked. Wanting a different one is wanting a different element — drag it out — and the grid cost every session button three tiles of menu height to re-open a settled decision. `session.tool` is still a field, still validated, still what everything reads; there is simply no control that rewrites it.
 
+### A stopwatch is its own tool, not a timer mode
+
+`SESSION_TOOLS` is `timer | stopwatch | vote | poll`. The Session Studio keeps
+one Timer tool with a Countdown / Stopwatch toggle, because the Studio is where
+you choose which kind of clock to run. An ELEMENT is not: it is a countdown you
+placed on a board, with a length, and the question its `…` answers is "how
+long".
+
+Offering the toggle there offered to turn one element into a different element,
+which is not a setting — and it put a control in the popover that the element's
+own label then contradicted. So a stopwatch is its own palette tile and its own
+element, and it has nothing to configure, which is precisely the difference: a
+countdown is placed WITH a length, a stopwatch has none.
+
+Pressing either is the same three-way control as before (start, then pause,
+then continue), because a tab runs one clock and pressing mid-run means "hold
+on", never a silent restart.
+
 ### One answer cap, not two
 
 The button's answer list is capped by `POLL_OPTIONS_MAX` — the same number the

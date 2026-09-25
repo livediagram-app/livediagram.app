@@ -76,6 +76,14 @@ export function useBehaviourElements({
       else resumeTimer();
       return;
     }
+    if (plan.tool === 'stopwatch') {
+      // Same three-way control as the countdown: pressing mid-run means "hold
+      // on", never a silent restart.
+      if (!activeTimer) startTimer('stopwatch');
+      else if (activeTimer.running) pauseTimer();
+      else resumeTimer();
+      return;
+    }
     if (plan.tool === 'vote') {
       startVote(plan.dots);
       return;

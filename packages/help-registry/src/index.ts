@@ -1043,9 +1043,9 @@ export const articles: Article[] = [
     slug: 'behaviour',
     title: 'Behaviours',
     description:
-      'Every element that comes alive with the room: comment and action panels, estimates, temperature checks, idea boxes, Done checks, pickers, session buttons, agendas, decisions, roll calls, reactions, mode buttons, portals and Bring Focus.',
+      'Every element that comes alive with the room: comment and action panels, estimates, temperature checks, idea boxes, Done checks, pickers, session buttons (timer, stopwatch, vote, poll), agendas, decisions, roll calls, reactions, mode buttons, portals and Bring Focus.',
     keywords:
-      'behaviour behavior behaviours behaviors interactive button portal session timer vote poll reveal hide cover picker random spinner control mode switch chair seat link card bookmark preview url bring focus look here attention gather reaction pad confetti celebrate sparkles hearts applause fireworks emoji burst done check finished ready waiting who progress everyone mark complete collaborate collaboration estimate temperature idea box agenda decision roll call ask the room keep a record run the room facilitate facilitation runtime live',
+      'behaviour behavior behaviours behaviors interactive button portal session timer stopwatch countdown count up elapsed vote poll reveal hide cover picker random spinner control mode switch chair seat link card bookmark preview url bring focus look here attention gather reaction pad confetti celebrate sparkles hearts applause fireworks emoji burst done check finished ready waiting who progress everyone mark complete collaborate collaboration estimate temperature idea box agenda decision roll call ask the room keep a record run the room facilitate facilitation runtime live',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',

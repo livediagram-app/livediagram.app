@@ -952,6 +952,20 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     icon: <TimerIcon />,
   },
   {
+    id: 'tools:session-stopwatch',
+    tileGroup: 'facilitate',
+    blurb: 'Counts up from zero',
+    caption: 'Stopwatch',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add stopwatch button',
+    description:
+      'A button that starts a stopwatch for everyone in the room, counting up from zero. Pressing it again pauses, and again continues. Nothing to set — a stopwatch has no length.',
+    filled: true,
+    action: { type: 'shape', kind: 'session-button', session: 'stopwatch' },
+    icon: <TimerIcon />,
+  },
+  {
     id: 'tools:session-vote',
     tileGroup: 'ask',
     blurb: 'Dot voting, a few dots each',

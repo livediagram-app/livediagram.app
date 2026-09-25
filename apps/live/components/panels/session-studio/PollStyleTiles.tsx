@@ -1,23 +1,29 @@
 'use client';
 
-// How a poll's answers are shaped, as a grid of DRAWN tiles (spec/88).
+// The answer-shape picker: a grid of drawn tiles, one per poll style.
 //
-// There are two places you compose a poll — the Session Studio and a Session
-// button's own `…` menu — and they used to disagree about what this question
-// looks like. The Studio drew each shape: two pills for Yes / No, five dots for
-// a rating, ruled lines for free text. The `…` menu listed the same six styles
-// as a column of bordered rectangles, each with a title and a grey subtitle,
-// which is six near-identical boxes you have to READ to tell apart, stacked
-// inside a menu that is already a column of bordered rectangles.
+// Rendered wherever a poll is composed — the Session Studio pane, a poll
+// element's `…` popover, and that element's right-click Session category —
+// because those are one composer now (spec/39). It has been three things on
+// the way here, and each was wrong for a reason worth keeping:
 //
-// So the drawing moved here and both surfaces use it. A rating is recognisable
-// by its five dots without reading a word, the picker takes about a third of
-// the height it did, and the two composers can no longer drift into describing
-// one product two ways — the exact drift POLL_STYLE_LABEL's own comment warns
-// about.
+//   - a column of bordered cards with a title and a grey subtitle each, which
+//     is six near-identical boxes you have to READ to tell apart, stacked
+//     inside a popover that is already a column of boxes;
+//   - these tiles at THREE across, which fitted the Studio pane and not a
+//     240px popover: `Collaborators` filled its box edge to edge and
+//     `Rating 1-5` broke at its hyphen, so text sat outside the tile;
+//   - plain menu rows, which fitted everywhere and said nothing — choosing
+//     between six different SHAPES of answer is a visual question.
 //
-// The art is CSS boxes rather than icons on purpose: each tile is a small
-// picture of the answers themselves, so it stays truthful when a style's
+// So: tiles, TWO across, at one width everywhere. Two columns give each label
+// ~98px, which is a single line for the longest of them in the narrowest place
+// this renders. There is no `columns` prop, deliberately — the whole point of
+// the surfaces sharing a composer is that they are the same UI, and a knob for
+// how it looks in each is how they drifted apart before.
+//
+// The art is CSS boxes rather than icons: each tile is a
+// small picture of the answers themselves, so it stays truthful when a style's
 // answers change, and a new style has to draw what it actually offers rather
 // than pick a glyph that gestures at it.
 
@@ -34,8 +40,7 @@ function PillRow({ count }: { count: number }) {
   );
 }
 
-// A thumbnail of the answer shape. Keyed on the style union, so a new style
-// cannot ship without one.
+// Keyed on the style union, so a new style cannot ship without a drawing.
 const STYLE_ART: Record<PollStyle, ReactNode> = {
   yesNo: <PillRow count={2} />,
   yesNoAbstain: <PillRow count={3} />,
@@ -76,7 +81,7 @@ const STYLE_ART: Record<PollStyle, ReactNode> = {
   ),
 };
 
-export function PollStyleTile({
+function PollStyleTile({
   style,
   selected,
   onPick,
@@ -97,14 +102,19 @@ export function PollStyleTile({
       // `leading-none` and content-sized rows a wrapped one collided with
       // itself and pushed past the border, leaving text sitting outside its
       // box. Sized for the worst label rather than the ones that happen to fit.
-      className={`flex h-full min-h-[3.75rem] cursor-pointer flex-col items-center justify-center gap-1.5 rounded-lg border px-1 py-2 text-center transition ${
+      // `overflow-hidden` + a truncating label: the tile is the box, and text
+      // must never leave it. At the widths both callers use nothing truncates
+      // today — this is the guarantee, not the everyday behaviour.
+      className={`flex h-full min-h-[3.5rem] cursor-pointer flex-col items-center justify-center gap-1.5 overflow-hidden rounded-lg border px-1.5 py-2 text-center transition ${
         selected
           ? 'border-brand-400 bg-brand-50 text-brand-700 dark:border-brand-500/60 dark:bg-brand-500/15 dark:text-brand-200'
           : 'border-slate-200 bg-white text-slate-500 hover:border-brand-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400'
       }`}
     >
       <span className="flex h-4 w-8 items-center justify-center">{STYLE_ART[style]}</span>
-      <span className="text-[10px] font-semibold leading-tight">{POLL_STYLE_LABEL[style]}</span>
+      <span className="w-full truncate text-[10px] font-semibold leading-tight">
+        {POLL_STYLE_LABEL[style]}
+      </span>
     </button>
   );
 }
@@ -121,7 +131,7 @@ export function PollStyleTiles({
     // Equal rows: a tile whose label wraps cannot make its row taller than the
     // one above and leave the grid ragged.
     <div
-      className="grid grid-cols-3 gap-1 [grid-auto-rows:1fr]"
+      className="grid grid-cols-2 gap-1 [grid-auto-rows:1fr]"
       role="radiogroup"
       aria-label="Answer style"
     >
@@ -133,22 +143,6 @@ export function PollStyleTiles({
           onPick={() => onChange(option)}
         />
       ))}
-    </div>
-  );
-}
-
-/** The picker with the `…` menu's own label above it. */
-export function PollAnswerStyleRow({
-  style,
-  onChange,
-}: {
-  style: PollStyle;
-  onChange: (next: PollStyle) => void;
-}) {
-  return (
-    <div className="flex flex-col gap-1 px-3 pt-2">
-      <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400">Answers</span>
-      <PollStyleTiles style={style} onChange={onChange} />
     </div>
   );
 }
