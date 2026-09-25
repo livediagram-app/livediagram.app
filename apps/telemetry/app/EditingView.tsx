@@ -45,7 +45,7 @@ export const GROUPS: MetricGroup[] = [
         blurb: 'Tidy-the-tab runs, the one mode that changes the canvas.',
       },
       {
-        category: 'UI',
+        category: 'AI',
         action: 'Toggled',
         type: 'AiOn',
         title: 'AI Turned On',

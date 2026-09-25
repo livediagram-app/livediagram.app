@@ -92,3 +92,17 @@ describe('trackDuplicated', () => {
     ]);
   });
 });
+
+describe('shapeTelemetryToken', () => {
+  // Every shape kind reports a token the Palette tab ranks. A kind whose token
+  // is missing from the catalogue is counted nowhere on the dashboard: that is
+  // how 'Session-button' and friends read zero while being drawn every day.
+  it('maps every shape kind to a token the palette catalogue knows', async () => {
+    const { SHAPE_KINDS } = await import('@livediagram/diagram');
+    const { ALL_PALETTE_TELEMETRY_TYPES } = await import('@livediagram/api-schema');
+    const { shapeTelemetryToken } = await import('./element-telemetry');
+    const known = new Set(ALL_PALETTE_TELEMETRY_TYPES);
+    const unknown = [...SHAPE_KINDS].filter((k) => !known.has(shapeTelemetryToken(k)));
+    expect(unknown).toEqual([]);
+  });
+});

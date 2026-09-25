@@ -76,6 +76,13 @@ const SHAPE_TOKENS: Record<string, string> = {
   'site-header': 'Header',
 };
 
+// The Element token for a shape kind. Every path that reports a shape (the
+// draw tool, a copy, a duplicate) goes through here so one feature cannot end
+// up under two spellings.
+export function shapeTelemetryToken(kind: string): string {
+  return SHAPE_TOKENS[kind] ?? titleCaseType(kind);
+}
+
 export function elementTelemetryType(element: Element): string {
   switch (element.type) {
     case 'arrow':
@@ -107,7 +114,7 @@ export function elementTelemetryType(element: Element): string {
       // A brand mark reports as TechIcon rather than by its shape, matching
       // both the click-to-add and drag-to-draw paths.
       if (element.iconId && isTechIconId(element.iconId)) return 'TechIcon';
-      return SHAPE_TOKENS[element.shape] ?? titleCaseType(element.shape);
+      return shapeTelemetryToken(element.shape);
     }
   }
 }

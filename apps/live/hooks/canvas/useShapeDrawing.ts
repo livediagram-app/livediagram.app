@@ -25,7 +25,7 @@ import { isTechIconId } from '@/lib/tech-icons';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { buildDrawnArrow, buildDrawnBoxed, buildDrawnComponent } from '@/lib/draw-commit';
 import type { CanvasTool } from '@/components/palette/CommandPalette';
-import { componentTelemetryType } from '@/lib/element-telemetry';
+import { componentTelemetryType, shapeTelemetryToken } from '@/lib/element-telemetry';
 import { makeCommitFreehand } from '@/hooks/canvas/commit-freehand';
 
 // The armed marker gesture. One frozen object so the effect below can compare
@@ -209,12 +209,9 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
             ? // Stickers are their own element kind (spec/116), so their own
               // dashboard token rather than riding Icon's.
               'Sticker'
-            : intent.kind === 'code-block'
-              ? // titleCase would emit 'Code-Block' (it capitalises at the
-                // hyphen), splitting the feature across two dashboard tokens:
-                // the Changed events already report 'CodeBlock' (spec/82).
-                'CodeBlock'
-              : titleCaseType(intent.kind)
+            : // Hyphenated kinds ('mind-node', 'session-button', ...) need
+              // their spelled-out token or they split from the copy path's.
+              shapeTelemetryToken(intent.kind)
         : intent.type === 'text'
           ? 'Text'
           : intent.type === 'sticky'
