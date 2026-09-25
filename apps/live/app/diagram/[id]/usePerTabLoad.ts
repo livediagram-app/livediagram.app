@@ -67,6 +67,11 @@ export function usePerTabLoad(opts: {
   useEffect(() => {
     resetTabsRef.current = resetTabs;
   });
+  // Read by the search sweep when a fetch fails (see loadAllTabs).
+  const activeIdRef = useRef(activeId);
+  useEffect(() => {
+    activeIdRef.current = activeId;
+  });
 
   // The attempt that last failed, keyed on everything that makes a fetch
   // worth repeating. A failed load stays failed (the error overlay stays up)
@@ -204,6 +209,16 @@ export function usePerTabLoad(opts: {
   const loadAllTabs = useCallback(async () => {
     if (!hydrated || !diagramId) return;
     const loadedTabIds = loadedTabIdsRef.current;
+    // A failed sweep fetch is silent for a tab nobody is looking at. But if
+    // the user switched to it while the sweep was in flight, the visit-time
+    // effect saw the id already claimed and did nothing, and won't run again
+    // on its own: the tab sat on its loader with no error and no Retry. So
+    // for the ACTIVE tab, raise the same error overlay the visit path does.
+    const failed = (targetId: string) => {
+      loadedTabIds.delete(targetId);
+      if (targetId !== activeIdRef.current) return;
+      setTabLoadErrors((prev) => (prev.has(targetId) ? prev : new Set(prev).add(targetId)));
+    };
     const pending = tabsRef.current.map((t) => t.id).filter((id) => !loadedTabIds.has(id));
     if (pending.length === 0) return;
     pending.forEach((id) => loadedTabIds.add(id));
@@ -219,7 +234,7 @@ export function usePerTabLoad(opts: {
             // the real row with an empty body (X-Allow-Empty). Drop the
             // optimistic id so the normal visit-time load (with its error
             // overlay) retries when the user actually opens the tab.
-            loadedTabIds.delete(targetId);
+            failed(targetId);
             return;
           }
           let didMerge = false;
@@ -235,7 +250,7 @@ export function usePerTabLoad(opts: {
           if (didMerge) remoteUpdateRef.current = true;
           setLoadedTabIds((prev) => (prev.has(targetId) ? prev : new Set(prev).add(targetId)));
         } catch {
-          loadedTabIds.delete(targetId);
+          failed(targetId);
         }
       }),
     );

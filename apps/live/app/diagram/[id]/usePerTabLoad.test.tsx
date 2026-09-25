@@ -103,3 +103,57 @@ describe('usePerTabLoad after a failed load', () => {
     expect(apiLoadTab).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('usePerTabLoad search sweep failing on the tab being viewed', () => {
+  beforeEach(() => {
+    apiLoadTab.mockReset();
+  });
+
+  it('raises the error overlay instead of leaving the tab on its loader', async () => {
+    // The sweep claims every unloaded tab up front. Switch to one while its
+    // fetch is in flight and the visit-time load bails (already claimed); if
+    // the sweep's fetch then fails, nothing else would ever surface it.
+    let rejectT2: (e: Error) => void = () => {};
+    apiLoadTab.mockImplementation((_self: string, _d: string, tabId: string) =>
+      tabId === 't2'
+        ? new Promise((_, reject) => {
+            rejectT2 = reject;
+          })
+        : Promise.resolve({ id: tabId, name: tabId, elements: [] }),
+    );
+    const loadedTabIdsRef = { current: new Set<string>(['t1']) };
+    let errors = new Set<string>();
+    const setTabLoadErrors = vi.fn((u: Set<string> | ((p: Set<string>) => Set<string>)) => {
+      errors = typeof u === 'function' ? u(errors) : u;
+    });
+    const hook = renderHook(
+      ({ activeId }: { activeId: string }) =>
+        usePerTabLoad({
+          hydrated: true,
+          diagramId: 'd1',
+          activeId,
+          selfId: 'me',
+          sessionShareCode: null,
+          tabsRef: { current: [{ id: 't1' }, { id: 't2' }] as Tab[] },
+          loadedTabIdsRef,
+          setLoadedTabIds: vi.fn(),
+          setTabLoadErrors,
+          retryNonce: 0,
+          remoteUpdateRef: { current: false },
+          resetTabs: () => {},
+        }),
+      { initialProps: { activeId: 't1' } },
+    );
+    let sweep: Promise<void> = Promise.resolve();
+    act(() => {
+      sweep = hook.result.current.loadAllTabs();
+    });
+    hook.rerender({ activeId: 't2' });
+    await flush();
+    await act(async () => {
+      rejectT2(new Error('500'));
+      await sweep;
+    });
+    expect(errors.has('t2')).toBe(true);
+  });
+});
