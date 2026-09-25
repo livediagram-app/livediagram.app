@@ -473,6 +473,8 @@ export function EditorView() {
             readerBackend={photoDraft.state.readerBackend}
             readerWhy={photoDraft.state.readerWhy}
             readerFallback={photoDraft.state.readerFallback}
+            rereading={photoDraft.rereading}
+            onReread={photoDraft.reread}
             onConfirm={photoDraft.confirm}
             onCancel={photoDraft.cancelReview}
             // "Try another photo": leave this review and open the picker

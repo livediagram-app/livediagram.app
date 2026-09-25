@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, cleanup, renderHook } from '@testing-library/react';
+import { act, cleanup, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
@@ -16,14 +16,19 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn(), titleCaseType: (s: string) =
 vi.mock('@/lib/reading/select', () => ({ selectReader: vi.fn() }));
 vi.mock('@/lib/photo-detect', async () => {
   const actual = await vi.importActual<typeof import('@/lib/photo-detect')>('@/lib/photo-detect');
-  return { ...actual, detectAndCrop: vi.fn() };
+  return { ...actual, detectAndCrop: vi.fn(), cropBoxes: vi.fn() };
 });
 
 import { selectReader } from '@/lib/reading/select';
 
 // The hook asks `selectReader` who reads; the tests drive that reader directly.
 const readCrops = vi.fn();
-import { detectAndCrop, PhotoDetectFailed, type PhotoDetection } from '@/lib/photo-detect';
+import {
+  cropBoxes,
+  detectAndCrop,
+  PhotoDetectFailed,
+  type PhotoDetection,
+} from '@/lib/photo-detect';
 import type { DetectedSticky } from '@livediagram/sticky-vision';
 import { track } from '@/lib/telemetry';
 
@@ -731,5 +736,66 @@ describe('where the in-browser reader runs', () => {
     const h = await reviewed();
     expect(h.api().state.readerBackend).toBe('wasm');
     expect(h.api().state.readerWhy).toBe('no-f16');
+  });
+});
+
+// A box the author moved, resized or drew is read again (spec/139 Phase 9):
+// cut afresh from the full-resolution photo, sent to the same reader, and its
+// words replace the old ones when they arrive.
+describe('reading a changed box again', () => {
+  const moved = () => sticky({ x: 300 });
+  const newCrop = { id: 0, image: 'data:image/jpeg;base64,NEW' };
+
+  it('cuts the new rectangle from the photo and reads it', async () => {
+    const h = await reviewed();
+    vi.mocked(cropBoxes).mockResolvedValue([newCrop]);
+    readCrops.mockResolvedValue(read([{ id: 0, text: 'Order shipped' }]));
+    act(() => h.api().reread([moved()]));
+    expect(h.api().rereading).toBe(1);
+    await waitFor(() => expect(h.api().rereading).toBe(0));
+    expect(cropBoxes).toHaveBeenCalledWith(expect.any(File), [moved()], {
+      width: 1000,
+      height: 1000,
+    });
+    expect(readCrops).toHaveBeenLastCalledWith([newCrop], expect.anything());
+    expect(h.api().review?.textById.get(0)).toEqual({ text: 'Order shipped', legible: true });
+  });
+
+  it('says how many are being read while it runs', async () => {
+    const h = await reviewed();
+    vi.mocked(cropBoxes).mockResolvedValue([newCrop]);
+    let answer!: (r: ReturnType<typeof read>) => void;
+    readCrops.mockReturnValue(new Promise((resolve) => (answer = resolve)));
+    act(() => h.api().reread([moved()]));
+    await waitFor(() => expect(readCrops).toHaveBeenCalledTimes(2));
+    expect(h.api().rereading).toBe(1);
+    answer(read([{ id: 0, text: 'Order shipped' }]));
+    await waitFor(() => expect(h.api().rereading).toBe(0));
+  });
+
+  it('waits for the first read to finish: one model, one queue', async () => {
+    let first!: (r: ReturnType<typeof read>) => void;
+    readCrops.mockReturnValueOnce(new Promise((resolve) => (first = resolve)));
+    const h = await reviewed();
+    vi.mocked(cropBoxes).mockResolvedValue([newCrop]);
+    act(() => h.api().reread([moved()]));
+    await new Promise((r) => setTimeout(r, 20));
+    expect(cropBoxes).not.toHaveBeenCalled();
+    first(read([{ id: 0, text: 'Order placed' }]));
+    await waitFor(() => expect(h.api().rereading).toBe(0));
+    expect(cropBoxes).toHaveBeenCalled();
+  });
+
+  it('drops the answer when the review was left meanwhile', async () => {
+    const h = await reviewed();
+    vi.mocked(cropBoxes).mockResolvedValue([newCrop]);
+    let answer!: (r: ReturnType<typeof read>) => void;
+    readCrops.mockReturnValue(new Promise((resolve) => (answer = resolve)));
+    act(() => h.api().reread([moved()]));
+    await waitFor(() => expect(readCrops).toHaveBeenCalledTimes(2));
+    act(() => h.api().cancelReview());
+    answer(read([{ id: 0, text: 'Order shipped' }]));
+    await new Promise((r) => setTimeout(r, 20));
+    expect(h.api().review).toBeNull();
   });
 });

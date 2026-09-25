@@ -135,14 +135,10 @@ export async function detectAndCrop(
   }
 
   // Back up to the full-resolution bitmap to cut: 1 / ratio is exactly how far.
-  const rects = cropRects(stickies, 1 / ratio);
-  const crops: NoteCrop[] = [];
-  for (const rect of rects) {
-    if (opts.signal?.aborted) break;
-    const image = encodeCrop(bitmap, rect);
-    if (!image) continue;
-    if (decodedBytes(image) > CROP_MAX_BYTES) throw new PhotoDetectFailed('crops_too_large');
-    crops.push({ id: rect.id, image });
+  const crops = cutCrops(bitmap, stickies, 1 / ratio, opts.signal);
+  if (crops.some((c) => decodedBytes(c.image) > CROP_MAX_BYTES)) {
+    bitmap.close?.();
+    throw new PhotoDetectFailed('crops_too_large');
   }
   bitmap.close?.();
   return {
@@ -154,6 +150,45 @@ export async function detectAndCrop(
     dropped,
     detector,
   };
+}
+
+// One crop per box, cut from the full-resolution bitmap; `scale` takes a box
+// from working pixels to the bitmap's.
+function cutCrops(
+  bitmap: ImageBitmap,
+  boxes: DetectedSticky[],
+  scale: number,
+  signal?: AbortSignal,
+): NoteCrop[] {
+  const crops: NoteCrop[] = [];
+  for (const rect of cropRects(boxes, scale)) {
+    if (signal?.aborted) break;
+    const image = encodeCrop(bitmap, rect);
+    if (image) crops.push({ id: rect.id, image });
+  }
+  return crops;
+}
+
+// Crops for boxes the author moved, resized or drew in the review (spec/139
+// Phase 9): the photo is decoded again and each box cut from its FULL
+// resolution, exactly as the first read's crops were. `workingSize` is the
+// size the boxes are measured in. Never throws: a photo that cannot be decoded,
+// or a crop too large to send, is simply not read again.
+export async function cropBoxes(
+  file: Blob,
+  boxes: DetectedSticky[],
+  workingSize: { width: number; height: number },
+): Promise<NoteCrop[]> {
+  let bitmap: ImageBitmap;
+  try {
+    bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
+  } catch (err) {
+    console.warn('[photo-detect] the photo could not be decoded again for a re-read', String(err));
+    return [];
+  }
+  const crops = cutCrops(bitmap, boxes, bitmap.width / workingSize.width);
+  bitmap.close?.();
+  return crops.filter((c) => decodedBytes(c.image) <= CROP_MAX_BYTES);
 }
 
 // The model's cues for this image, or the reason there are none. Never throws:

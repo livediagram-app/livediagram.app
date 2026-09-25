@@ -16,6 +16,7 @@ import { truthArmed } from '@/lib/photo-truth';
 import { useBoxDrag } from './photo/useBoxDrag';
 import { useDrawBox } from './photo/useDrawBox';
 import { useReviewBoxes } from './photo/useReviewBoxes';
+import { useRereadOnChange } from './photo/useRereadOnChange';
 import { usePhotoView } from './photo/usePhotoView';
 import { kindOfBox } from './photo/kindOfBox';
 
@@ -61,6 +62,8 @@ export function PhotoReviewOverlay({
   readerBackend,
   readerWhy,
   readerFallback,
+  rereading = 0,
+  onReread,
   onConfirm,
   onCancel,
   onRetake,
@@ -77,6 +80,10 @@ export function PhotoReviewOverlay({
   readerWhy?: ProcessorReason;
   // Set when the hosted budget was spent and this device reads instead.
   readerFallback?: ReaderFallback;
+  // Boxes being read again after a move, resize or draw, and the way to ask
+  // for that (spec/139 Phase 9).
+  rereading?: number;
+  onReread?: (boxes: DetectedSticky[]) => void;
   // The boxes to land AS THEY STAND — ticked, corrected, drawn — and the
   // words on each.
   onConfirm: (
@@ -113,6 +120,14 @@ export function PhotoReviewOverlay({
   // review as the words arrive.
   const [edited, setEdited] = useState<Map<number, string>>(() => new Map());
   const [revealed, setRevealed] = useState(0);
+  // A moved, resized or drawn box is read again, 8 s after the last change;
+  // never one whose words the author typed.
+  useRereadOnChange({
+    boxes: notes,
+    initial: detected,
+    skip: (id) => edited.has(id),
+    onReread: (boxes) => onReread?.(boxes),
+  });
   useEffect(() => {
     setRevealed(0);
     if (detected.length === 0) return;
@@ -383,6 +398,7 @@ export function PhotoReviewOverlay({
           readerBackend={readerBackend}
           readerWhy={readerWhy}
           readerFallback={readerFallback}
+          rereading={rereading}
         />
       </div>
 

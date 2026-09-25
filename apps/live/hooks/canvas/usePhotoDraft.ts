@@ -16,6 +16,8 @@ import {
 } from '@livediagram/diagram';
 import { toNormalised, type DetectedSticky } from '@livediagram/sticky-vision';
 import { selectReader } from '@/lib/reading/select';
+import type { ReadOptions } from '@/lib/reading/types';
+import { usePhotoReread } from './usePhotoReread';
 import type { ModelDownload } from '@/lib/reading/download-progress';
 import type { ProcessorReason, ReaderBackend } from '@/lib/reading/reader-protocol';
 import type { ReaderFallback } from '@/lib/reading/types';
@@ -160,6 +162,11 @@ export type PhotoDraftApi = {
   accept: () => void;
   discard: () => void;
   cancelReading: () => void;
+  // Read these boxes again, from their rectangles as they stand now (a box
+  // the author moved, resized or drew). Queued behind any read in flight.
+  reread: (boxes: DetectedSticky[]) => void;
+  // How many boxes are queued or being read again.
+  rereading: number;
 };
 
 const ERROR_TOASTS: Record<string, string> = {
@@ -186,6 +193,9 @@ export const BUSY_TOASTS = {
   blocked: 'This board cannot take new notes right now.',
 } as const;
 
+export const REREAD_FAILED_TOAST =
+  'The changed notes could not be read again. Type their words in yourself.';
+
 export const NO_NOTES_TOAST =
   'No stickies found in this photo. Fill the frame with the wall, shoot straight on, and give it good light.';
 
@@ -208,6 +218,16 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
   const beforeRef = useRef<Element[] | null>(null);
   const live = useRef(deps);
   live.current = deps;
+  // The photo as picked, kept for the review's life: a box the author moves
+  // is cut again from it, at full resolution.
+  const fileRef = useRef<File | null>(null);
+  // One model, one queue: the first read and every re-read take turns.
+  const queueRef = useRef<Promise<void>>(Promise.resolve());
+  const enqueue = useCallback((job: () => Promise<void>) => {
+    queueRef.current = queueRef.current.then(job).catch((err) => {
+      console.warn('[photo] a queued read failed', err);
+    });
+  }, []);
 
   const draftOpen = draftNotesOf(deps.activeTab.elements).length > 0;
 
@@ -222,6 +242,7 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
       URL.revokeObjectURL(photoUrlRef.current);
       photoUrlRef.current = null;
     }
+    fileRef.current = null;
     setReview(null);
   }, []);
 
@@ -269,6 +290,29 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
   // The words arrive AFTER the review is already on screen: the crops are read
   // in the background and the text fields fill in batch by batch. A failure
   // leaves the fields blank and says why; the photo and boxes stay.
+  // What any read tells the review besides the words: where it runs, why,
+  // the model download, and a budget failover (spec/139 Phase 9).
+  const readerCallbacks = useCallback((run: number): ReadOptions => {
+    const current = () => runRef.current === run;
+    return {
+      onModelDownload: (modelDownload) => {
+        if (!current()) return;
+        setState((s) => (s.stage === 'review' ? { ...s, modelDownload } : s));
+      },
+      onBackend: (readerBackend, readerWhy) => {
+        if (!current()) return;
+        setState((s) => (s.stage === 'review' ? { ...s, readerBackend, readerWhy } : s));
+      },
+      // The hosted budget is spent: say so on the review, and warn the
+      // error telemetry once, with closed values only (spec/22).
+      onFallback: (readerFallback) => {
+        if (!current()) return;
+        track('Error', 'Warning', 'AiQuota.BrowserReader');
+        setState((s) => (s.stage === 'review' ? { ...s, readerFallback } : s));
+      },
+    };
+  }, []);
+
   const readWords = useCallback(
     async (detection: PhotoDetection, controller: AbortController, run: number) => {
       const current = () => runRef.current === run;
@@ -283,21 +327,7 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
             if (!current()) return;
             setState((s) => (s.stage === 'review' ? { ...s, readSoFar } : s));
           },
-          onModelDownload: (modelDownload) => {
-            if (!current()) return;
-            setState((s) => (s.stage === 'review' ? { ...s, modelDownload } : s));
-          },
-          onBackend: (readerBackend, readerWhy) => {
-            if (!current()) return;
-            setState((s) => (s.stage === 'review' ? { ...s, readerBackend, readerWhy } : s));
-          },
-          // The hosted budget is spent: say so on the review, and warn the
-          // error telemetry once, with closed values only (spec/22).
-          onFallback: (readerFallback) => {
-            if (!current()) return;
-            track('Error', 'Warning', 'AiQuota.BrowserReader');
-            setState((s) => (s.stage === 'review' ? { ...s, readerFallback } : s));
-          },
+          ...readerCallbacks(run),
           // Each note's words as they are read: the photo fills in note by
           // note, rather than a wall of blanks until the last one is done.
           onText: (cropId, read) => {
@@ -346,8 +376,29 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
         if (abortRef.current === controller) abortRef.current = null;
       }
     },
-    [],
+    [readerCallbacks],
   );
+
+  // A box the author moved, resized or drew, read again (spec/139 Phase 9).
+  const { rereading, reread, cancelRereads } = usePhotoReread({
+    source: () => {
+      const imageSize = reviewRef.current?.detection?.imageSize;
+      const file = fileRef.current;
+      return file && imageSize ? { run: runRef.current, file, imageSize } : null;
+    },
+    isCurrent: (run) => runRef.current === run,
+    enqueue,
+    reader: () =>
+      selectReader({ aiEnabled: live.current.aiEnabled, ownerId: live.current.ownerId }).read,
+    readOptions: readerCallbacks,
+    onText: (run, id, read) => {
+      if (runRef.current !== run) return;
+      setReview((prev) =>
+        prev ? { ...prev, textById: new Map(prev.textById).set(id, read) } : prev,
+      );
+    },
+    onError: () => live.current.toastError(REREAD_FAILED_TOAST),
+  });
 
   const startFromFile = useCallback(
     async (file: File) => {
@@ -390,6 +441,7 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
       // the wall they just picked while the detector is still walking it.
       const photoUrl = URL.createObjectURL(file);
       photoUrlRef.current = photoUrl;
+      fileRef.current = file;
       setReview({
         photoUrl,
         photoName: file.name,
@@ -439,9 +491,9 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
         return;
       }
 
-      void readWords(detection, controller, run);
+      enqueue(() => readWords(detection, controller, run));
     },
-    [closeReview, fail, nextPaint, readWords],
+    [closeReview, enqueue, fail, nextPaint, readWords],
   );
 
   // Add the ticked boxes as the on-canvas draft. The one write of the review:
@@ -492,6 +544,10 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
         ),
         read: found.stickies.length,
       });
+      // The words on screen are what landed: a re-read still pending is moot.
+      runRef.current += 1;
+      cancelRereads();
+      fileRef.current = null;
       setReview(null);
       setState({
         stage: 'draft',
@@ -500,7 +556,7 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
         error: null,
       });
     },
-    [review, frameElements],
+    [review, frameElements, cancelRereads],
   );
 
   const cancelReview = useCallback(() => {
@@ -508,9 +564,10 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
     runRef.current += 1;
     abortRef.current?.abort();
     abortRef.current = null;
+    cancelRereads();
     closeReview();
     setState(EMPTY);
-  }, [closeReview]);
+  }, [closeReview, cancelRereads]);
 
   const accept = useCallback(() => {
     const d = live.current;
@@ -551,8 +608,9 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
     runRef.current += 1;
     abortRef.current?.abort();
     abortRef.current = null;
+    cancelRereads();
     setState(EMPTY);
-  }, []);
+  }, [cancelRereads]);
 
   return {
     state,
@@ -565,6 +623,8 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
     accept,
     discard,
     cancelReading,
+    rereading,
+    reread,
   };
 }
 

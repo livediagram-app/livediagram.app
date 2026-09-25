@@ -913,8 +913,9 @@ Decisions from the operator:
   you can type the words in yourself." with two buttons, **Try another photo**
   (closes this review and opens the photo picker again) and **I'll type
   them** (dismisses the tip, for the rest of this review). Never decided for
-  the author, never blocking Add, never shown for boxes the author drew (those
-  were never sent to be read), and not shown when the reader failed outright —
+  the author, never blocking Add, counted over the detector's boxes only (a box
+  the author drew is read too, but it is the author's own box, not the
+  photo's), and not shown when the reader failed outright —
   that already has its own note. Detection and reading are separate: a wall
   whose notes are all FOUND is a success even when many are unread, and the
   tip is the one place that says a better photo would read better.
@@ -927,8 +928,22 @@ Decisions from the operator:
   Escape leaves the review). The controls keep their size on screen at any
   zoom, like the tick and the words. This is for every author, not only for
   labelling: a box that caught half of a note is fixed where it is, rather
-  than landed wrong and fixed on the board. Words already read stay with a
-  moved box; the reader is not asked again.
+  than landed wrong and fixed on the board.
+
+  **A box that changes is read again.** Moving or resizing a box changes
+  what is under it, so its words are read again: the crop is cut afresh from
+  the FULL-resolution photograph for the box's new rectangle and sent to the
+  same reader (with the same budget failover). Corrections come in runs, so
+  this waits until 8 seconds after the LAST move or resize, and then reads
+  every box that changed in one batch; a box moved and put back where it was
+  read is not read again. A box the author DREW is read the same way, 8
+  seconds after it is drawn. Words the author TYPED are never overwritten:
+  a box with typed words is not re-read, and words typed while a re-read is
+  in flight win over its answer. Changing a box's kind does not re-read it.
+  Until the new words arrive the old ones stay, and a pill says "Reading _N_
+  changed notes…". Re-reads wait for the first read to finish (one model, one
+  queue). Add does not wait for a pending re-read: the words on screen are
+  what lands.
 
   **What Add hands over is the boxes as they stand** — positions, sizes and
   kinds as corrected, the unticked and deleted ones left out — so a moved box

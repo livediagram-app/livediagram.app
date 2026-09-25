@@ -530,9 +530,11 @@ test('the photo zooms and pans, and the boxes stay on their stickies', async ({
   const wantX = zImg.x + ((700 + 30) / 900) * zImg.width;
   expect(Math.abs(zoomedBlue.x + zoomedBlue.width / 2 - wantX)).toBeLessThan(6);
 
-  // The word pill does NOT grow with the photo.
+  // The word pill does NOT grow with the photo: at most two lines of text at
+  // its largest size (it may shrink, as a wider box fits the words on one).
   const pillZoomed = (await overlay.getByTestId('note-words-1').boundingBox())!;
-  expect(Math.abs(pillZoomed.height - pillAtFit.height)).toBeLessThan(2);
+  expect(pillZoomed.height).toBeLessThanOrEqual(pillAtFit.height + 2);
+  expect(pillZoomed.height).toBeLessThan(2 * 11 * 1.25 + 6);
 
   // A MIDDLE-button drag moves the photo, and draws nothing.
   await page.mouse.move(cursor.x, cursor.y);
@@ -765,5 +767,45 @@ test('a spent budget reads on this device instead, and says so', async ({ page, 
   await expect(page.getByTestId('photo-reader-unavailable')).toBeVisible({ timeout: 90_000 });
   // The quota toast is not shown: the author was carried through, not stopped.
   await expect(page.getByText(/used up its quota/i)).toHaveCount(0);
+  expectNoPageErrors(pageErrors);
+});
+
+// A box that is moved is read again (spec/139 Phase 9): 8 seconds after the
+// last change, its crop is cut afresh and sent to the same reader, and the new
+// words replace the old.
+test('a moved box is read again, 8 seconds after the move', async ({ page, pageErrors }) => {
+  await openPhotoBoard(page, { boundaryModel: false });
+  const asked: number[][] = [];
+  await page.route('**/api/ai/read-notes', async (route) => {
+    const crops = (JSON.parse(route.request().postData() ?? '{}').crops ?? []) as { id: number }[];
+    asked.push(crops.map((c) => c.id));
+    const again = asked.length > 1;
+    await route.fulfill({
+      json: {
+        texts: crops.map((c) => ({ id: c.id, text: again ? 'Read again' : '', legible: again })),
+      },
+    });
+  });
+  await importToReview(page, [
+    { fill: ORANGE, x: 200, y: 120, w: 180, h: 180 },
+    { fill: BLUE, x: 500, y: 120, w: 180, h: 180 },
+  ]);
+  const overlay = page.locator('[data-testid="photo-review-overlay"]');
+  await expect(overlay.getByTestId('photo-reading')).toHaveCount(0, { timeout: 20_000 });
+  expect(asked).toHaveLength(1);
+
+  const body = overlay.locator('[data-testid^="note-body-"]').first();
+  const box = (await body.boundingBox())!;
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width / 2 + 20, box.y + box.height / 2 + 10, { steps: 5 });
+  await page.mouse.up();
+
+  // Nothing yet: it waits for the last change.
+  await page.waitForTimeout(5000);
+  expect(asked).toHaveLength(1);
+  await expect(overlay.getByText('Read again')).toBeVisible({ timeout: 10_000 });
+  expect(asked).toHaveLength(2);
+  expect(asked[1]).toHaveLength(1);
   expectNoPageErrors(pageErrors);
 });

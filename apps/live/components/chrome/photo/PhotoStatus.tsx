@@ -52,6 +52,7 @@ export function PhotoStatus({
   readerBackend,
   readerWhy,
   readerFallback,
+  rereading = 0,
   revealed,
   detected,
   reading,
@@ -73,6 +74,8 @@ export function PhotoStatus({
   readerWhy?: ProcessorReason;
   // The hosted reader's budget was spent and this device reads instead.
   readerFallback?: ReaderFallback;
+  // Boxes being read again after the author moved, resized or drew them.
+  rereading?: number;
   revealed: number;
   detected: number;
   reading: boolean;
@@ -120,6 +123,15 @@ export function PhotoStatus({
               {readerWhy ? `: ${PROCESSOR_WHY[readerWhy]}` : null}
             </span>
           ) : null}
+        </Pill>
+      ) : null}
+      {rereading > 0 ? (
+        <Pill testId="photo-rereading">
+          <span
+            aria-hidden
+            className="h-3 w-3 shrink-0 animate-spin rounded-full border-2 border-slate-500 border-t-brand-400"
+          />
+          Reading {rereading} changed {rereading === 1 ? 'note' : 'notes'}…
         </Pill>
       ) : null}
       {readerFallback === 'budget' ? (

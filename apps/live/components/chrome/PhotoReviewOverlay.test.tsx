@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DetectedSticky } from '@livediagram/sticky-vision';
 import type { PhotoReview } from '@/hooks/canvas/usePhotoDraft';
 import { PhotoReviewOverlay } from './PhotoReviewOverlay';
@@ -805,5 +805,73 @@ describe('reading progress', () => {
   it('warns that the processor is slower, when that is where it runs', () => {
     open({ readSoFar: 1, readTotal: 263, readerBackend: 'wasm' });
     expect(screen.getByTestId('photo-reading').textContent).toMatch(/processor.*slower/i);
+  });
+});
+
+// A box that is moved is read again, 8 seconds after the last change
+// (spec/139 Phase 9); a box whose words the author typed never is.
+describe('reading a moved box again', () => {
+  beforeEach(() => vi.useFakeTimers());
+  afterEach(() => vi.useRealTimers());
+
+  const drag = (id: number) => {
+    const picture = screen.getByTestId('photo-picture');
+    picture.getBoundingClientRect = () =>
+      ({ left: 0, top: 0, width: 500, height: 500, right: 500, bottom: 500 }) as DOMRect;
+    fireEvent.pointerDown(screen.getByTestId(`note-body-${id}`), {
+      button: 0,
+      pointerId: 1,
+      clientX: 100,
+      clientY: 100,
+    });
+    fireEvent.pointerMove(window, { pointerId: 1, clientX: 150, clientY: 100 });
+    fireEvent.pointerUp(window, { pointerId: 1 });
+  };
+
+  const open = (onReread: (boxes: DetectedSticky[]) => void) =>
+    render(
+      <PhotoReviewOverlay
+        review={review({ detection: found([sticky(0), { ...sticky(1), x: 60 }]) })}
+        reading={false}
+        onConfirm={noop}
+        onCancel={noop}
+        onReread={onReread}
+      />,
+    );
+
+  it('hands the moved box over to be read, 8 seconds later', () => {
+    const onReread = vi.fn();
+    open(onReread);
+    drag(0);
+    act(() => vi.advanceTimersByTime(7999));
+    expect(onReread).not.toHaveBeenCalled();
+    act(() => vi.advanceTimersByTime(1));
+    expect(onReread).toHaveBeenCalledTimes(1);
+    expect(onReread.mock.calls[0]![0].map((b: DetectedSticky) => b.id)).toEqual([0]);
+  });
+
+  it('never re-reads a box whose words the author typed', () => {
+    const onReread = vi.fn();
+    open(onReread);
+    fireEvent.click(screen.getByTestId('note-words-0'));
+    const input = screen.getByRole('textbox', { name: /the words on this note/i });
+    fireEvent.change(input, { target: { value: 'Order placed' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    drag(0);
+    act(() => vi.advanceTimersByTime(8000));
+    expect(onReread).not.toHaveBeenCalled();
+  });
+
+  it('says how many changed notes are being read', () => {
+    render(
+      <PhotoReviewOverlay
+        review={review({ detection: found([sticky(0)]) })}
+        reading={false}
+        rereading={2}
+        onConfirm={noop}
+        onCancel={noop}
+      />,
+    );
+    expect(screen.getByTestId('photo-rereading').textContent).toMatch(/reading 2 changed notes/i);
   });
 });

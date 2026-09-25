@@ -2,7 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { PHOTO_MAX_EDGE_PX } from '@livediagram/api-schema';
 import { eventStormingNote } from '@livediagram/diagram';
-import { detectAndCrop, photoTypeError, PhotoDetectFailed } from './photo-detect';
+import { cropBoxes, detectAndCrop, photoTypeError, PhotoDetectFailed } from './photo-detect';
 import { boundaryCuesFor } from './photo-model/client';
 
 // The boundary model runs in a worker jsdom does not have; its answer is
@@ -244,3 +244,34 @@ async function withStub(
   stubImaging(bitmap, painted);
   return detectAndCrop(file());
 }
+
+// A box the author moved, resized or drew is read again (spec/139 Phase 9):
+// its crop is cut afresh from the FULL-resolution photo, not the working copy.
+describe('cropBoxes', () => {
+  const box = {
+    id: 7,
+    kind: 'domain-event',
+    size: 'square',
+    x: 100,
+    y: 50,
+    w: 100,
+    h: 80,
+    row: 0,
+    order: 0,
+    confidence: 1,
+  } as const;
+
+  it('cuts each box from the full-resolution photo, upright', async () => {
+    const { created, encoded } = stubImaging({ width: 4000, height: 2000 });
+    const crops = await cropBoxes(file(), [box], { width: 1000, height: 500 });
+    expect(created[0]).toEqual({ imageOrientation: 'from-image' });
+    expect(crops.map((c) => c.id)).toEqual([7]);
+    // 4x the working box, padded 6% a side: 448 x 358 at full resolution.
+    expect(encoded[0]).toEqual({ w: 448, h: 358 });
+  });
+
+  it('hands back nothing for a photo it cannot decode', async () => {
+    stubImaging('throw');
+    await expect(cropBoxes(file(), [box], { width: 1000, height: 500 })).resolves.toEqual([]);
+  });
+});
