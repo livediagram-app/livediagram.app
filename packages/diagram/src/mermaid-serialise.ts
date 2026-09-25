@@ -121,7 +121,10 @@ export function mermaidFromTab(tab: { elements: Element[]; layers?: Layer[] }): 
     }
     const op = edgeOperator(el, ends);
     const label = typeof el.label === 'string' ? el.label.trim() : '';
-    lines.push(`  ${from} ${op}${label ? `|${escapeLabel(label)}|` : ''} ${to}`);
+    // `|` delimits the label, so one inside it is written as Mermaid's entity
+    // code: raw, `yes|no` closed the label early and the rest parsed as a node.
+    const edgeLabel = escapeLabel(label).replace(/\|/g, '#124;');
+    lines.push(`  ${from} ${op}${label ? `|${edgeLabel}|` : ''} ${to}`);
   }
 
   // URL element links round-trip as `click` lines (spec/73). Other link
