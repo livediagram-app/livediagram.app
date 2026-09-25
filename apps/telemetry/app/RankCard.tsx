@@ -1,12 +1,14 @@
 'use client';
 
 import { EmptyState } from '@livediagram/ui';
-import type { TelemetryCount, TelemetryDaily } from '@livediagram/api-schema';
+import { metricKey, type TelemetryCount, type TelemetryDaily } from '@livediagram/api-schema';
 import { pct } from './chart-utils';
 import { categoryColor, typeLabel } from './event-vocab';
 import { ActivityGlyph } from './glyphs';
 import { MiniSparkline } from './MiniSparkline';
-import { aliasedSeries, type TypeAliases } from './rank';
+import { aliasedSeries, foldAliases, type TypeAliases } from './rank';
+import { TrendBadge } from './TrendBadge';
+import type { RankTrend } from './windows';
 
 // A ranked usage list: rows sorted most-to-least, each with a share bar and
 // (on desktop) a mini trend line, the top row tagged Most used. (No "least
@@ -14,22 +16,28 @@ import { aliasedSeries, type TypeAliases } from './rank';
 // Shared by the Look & Feel and Palette views so both render their rankings
 // identically (the colour follows the row's telemetry category).
 
-// `rank` lives in its own pure module so non-view code (page-insights) can
+// `rank` lives in its own pure module so non-view code (page-views) can
 // use it without importing a component; re-exported for the views.
 export { rank } from './rank';
 
 export function RankCard({
   title,
   subtitle,
-  category,
-  action,
-  items,
-  daily,
-  emptyLabel,
-  aliases,
+  ...list
 }: {
   title: string;
   subtitle: string;
+} & RankListProps) {
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-900">
+      <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">{title}</h3>
+      <p className="mt-0.5 text-xs text-slate-400">{subtitle}</p>
+      <RankList {...list} />
+    </div>
+  );
+}
+
+type RankListProps = {
   category: string;
   action: string;
   items: TelemetryCount[];
@@ -38,65 +46,81 @@ export function RankCard({
   // The same old-spelling map the items were ranked with, so a folded row's
   // trend line includes the history stored under its old spelling.
   aliases?: TypeAliases;
-}) {
-  const color = categoryColor(category);
+  // The previous window, for each row's trend arrow (rankTrend). Omitted when
+  // the api sent no previous windows.
+  trend?: RankTrend;
+};
 
+// The ranked rows, inside RankCard's frame.
+function RankList({ category, action, items, daily, emptyLabel, aliases, trend }: RankListProps) {
+  const color = categoryColor(category);
+  // Each row's count in the previous window, folded like the items were.
+  const before = new Map<string, number>();
+  if (trend) {
+    const rows = aliases ? foldAliases(trend.rows, aliases) : trend.rows;
+    for (const r of rows) before.set(metricKey(r.category, r.action, r.type), r.count);
+  }
+  if (items.length === 0) {
+    return (
+      <div className="mt-4">
+        <EmptyState icon={<ActivityGlyph />} title="Nothing yet" description={emptyLabel} />
+      </div>
+    );
+  }
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-900">
-      <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">{title}</h3>
-      <p className="mt-0.5 text-xs text-slate-400">{subtitle}</p>
-      {items.length === 0 ? (
-        <div className="mt-4">
-          <EmptyState icon={<ActivityGlyph />} title="Nothing yet" description={emptyLabel} />
-        </div>
-      ) : (
-        <ul className="mt-4 flex flex-col gap-3">
-          {items.map((row, i) => {
-            // Only the top row is tagged. We deliberately don't tag a "least
-            // used" — features with zero usage have no row at all, so the
-            // bottom of this list isn't truly the least used, just the lowest
-            // among those that have any data.
-            const isTop = items.length > 1 && i === 0;
-            const series = daily
-              ? aliasedSeries(daily.byMetric, category, action, row.type, aliases)
-              : undefined;
-            return (
-              <li key={row.type} className="flex items-center gap-3">
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-baseline justify-between gap-2 text-sm">
-                    <span className="flex min-w-0 items-center gap-2">
-                      <span className="truncate text-slate-700 dark:text-slate-200">
-                        {typeLabel(row.type ?? '')}
-                      </span>
-                      {isTop ? <RankTag /> : null}
-                    </span>
-                    <span className="shrink-0 font-semibold tabular-nums text-slate-900 dark:text-slate-100">
-                      {row.count.toLocaleString()}
-                    </span>
-                  </div>
-                  <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-                    <div
-                      className="h-full rounded-full"
-                      style={{
-                        width: `${pct(row.count, items[0]!.count)}%`,
-                        backgroundColor: color,
-                      }}
+    <ul className="mt-4 flex flex-col gap-3">
+      {items.map((row, i) => {
+        // Only the top row is tagged. We deliberately don't tag a "least
+        // used" — features with zero usage have no row at all, so the
+        // bottom of this list isn't truly the least used, just the lowest
+        // among those that have any data.
+        const isTop = items.length > 1 && i === 0;
+        const series = daily
+          ? aliasedSeries(daily.byMetric, category, action, row.type, aliases)
+          : undefined;
+        return (
+          <li key={row.type} className="flex items-center gap-3">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-baseline justify-between gap-2 text-sm">
+                <span className="flex min-w-0 items-center gap-2">
+                  <span className="truncate text-slate-700 dark:text-slate-200">
+                    {typeLabel(row.type ?? '')}
+                  </span>
+                  {isTop ? <RankTag /> : null}
+                </span>
+                <span className="flex shrink-0 items-center gap-2">
+                  {trend ? (
+                    <TrendBadge
+                      now={row.count}
+
+                      before={before.get(metricKey(row.category, row.action, row.type)) ?? 0}
+
+                      against={trend.against}
                     />
-                  </div>
-                </div>
-                {series ? (
-                  <MiniSparkline
-                    values={series}
-                    color={color}
-                    className="hidden h-6 w-20 sm:block"
-                  />
-                ) : null}
-              </li>
-            );
-          })}
-        </ul>
-      )}
-    </div>
+                  ) : null}
+
+                  <span className="font-semibold tabular-nums text-slate-900 dark:text-slate-100">
+                    {row.count.toLocaleString()}
+                  </span>
+                </span>
+              </div>
+              <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                <div
+                  className="h-full rounded-full"
+                  style={{
+                    width: `${pct(row.count, items[0]!.count)}%`,
+                    backgroundColor: color,
+                  }}
+                />
+              </div>
+            </div>
+            {series ? (
+              <MiniSparkline values={series} color={color} className="hidden h-6 w-20 sm:block" />
+            ) : null}
+          </li>
+        );
+      })}
+    </ul>
   );
 }
 

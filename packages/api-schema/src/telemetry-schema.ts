@@ -385,6 +385,11 @@ export type TelemetrySummary = {
   enabled: boolean;
   generatedAt: number;
   windows: Record<TelemetryWindowKey, TelemetryWindow>;
+  // Each window's counts over the same number of days just before it (the
+  // day before today, the 7 days before the last 7, the 30 before the last
+  // 30), for the dashboard's trend arrows. Optional so a client talking to an
+  // older api still parses; it falls back to what the daily series can reach.
+  previousWindows?: Record<TelemetryWindowKey, TelemetryWindow>;
   // Optional so older clients (and the disabled-state response) still
   // parse. Present whenever `enabled` is true.
   daily?: TelemetryDaily;

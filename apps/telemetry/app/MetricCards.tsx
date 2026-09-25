@@ -1,66 +1,63 @@
 'use client';
 
-import type { TelemetryDaily, TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
-import { categoryColor, eventExplanation, eventLabel } from './event-vocab';
-import { EventIcon } from './telemetry-event-icon';
-import { TrendChart } from './TrendChart';
-import { windowHighlightFrom } from './windows';
+import { Fragment, useState } from 'react';
+import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
+import { MetricCard } from './MetricCard';
+import { MetricStackCard } from './MetricStackCard';
+import { StackModal } from './StackModal';
+import {
+  dailySeries,
+  isStack,
+  metricKey,
+  stackDrawsLines,
+  stackSeriesColor,
+  previousCount,
+  windowCount,
+  type Metric,
+} from './metric-series';
+import type { ViewKey } from './view-keys';
+import { previousSpanLabel, windowDays, windowHighlightFrom } from './windows';
 
-// A curated metric rendered as a card: the selected-window count + a 30-day
-// trend line. Either a single typed event, or an AGGREGATE over every type of
-// a `category·action` (`allTypes`) where the type split is arbitrary for the
-// lens. Shared by the Highlights, Acquisition, and External Connections views
-// so each is just a list of metric groups rendered identically.
-export type Metric = {
-  category: string;
-  action: string;
-  type?: string | null; // specific type; ignored when allTypes
-  allTypes?: boolean; // sum across every type of category·action
-  // Sum across the types this picks (e.g. the page paths one app serves,
-  // spec/150). Takes precedence over `type` / `allTypes`.
-  typeIn?: (type: string | null) => boolean;
-  title: string;
-  blurb?: string; // overrides eventExplanation (needed for aggregates)
-};
+export type { Metric, MetricGroup, MetricStack } from './metric-series';
+import type { MetricGroup } from './metric-series';
 
-export type MetricGroup = { title: string; metrics: Metric[] };
+// Curated metrics rendered as cards: the selected-window count + a 30-day
+// trend line each (MetricCard), or a chart stack (MetricStackCard) whose
+// members open in a modal over the page (StackModal). Shared by every
+// metric-card view so each is just a list of metric groups rendered
+// identically.
 
-// Does an event (category, action, type) belong to this metric?
-function matches(m: Metric, category: string, action: string, type: string | null): boolean {
-  if (category !== m.category || action !== m.action) return false;
-  if (m.typeIn) return m.typeIn(type);
-  return m.allTypes ? true : type === (m.type ?? null);
-}
+// Slower than a page cascade: an expansion is a deliberate act on a handful
+// of cards, so the fan is worth seeing (the Timeline's rate, spec/138 §2.6).
+const EXPAND_STAGGER_MS = 60;
 
-// Selected-window count: sum the window's rows that belong to the metric (one
-// row for a single typed metric, several for an aggregate).
-function windowCount(summary: TelemetrySummary, active: TelemetryWindowKey, m: Metric): number {
-  return summary.windows[active].rows
-    .filter((r) => matches(m, r.category, r.action, r.type))
-    .reduce((sum, r) => sum + r.count, 0);
-}
+const GRID = 'grid gap-4 sm:grid-cols-2 xl:grid-cols-3';
 
-// Element-wise sum of the 30-day series for every event in the metric.
-function dailySeries(daily: TelemetryDaily, m: Metric): number[] {
-  const out = new Array(daily.days.length).fill(0);
-  for (const [key, series] of Object.entries(daily.byMetric)) {
-    const [category = '', action = '', rawType = ''] = key.split('|');
-    if (!matches(m, category, action, rawType === '' ? null : rawType)) continue;
-    for (let i = 0; i < out.length; i++) out[i] += series[i] ?? 0;
-  }
-  return out;
-}
+type OpenStack = { key: string; anchor: HTMLElement };
 
 export function MetricGroups({
   groups,
   summary,
   active,
+  onOpenView,
 }: {
   groups: MetricGroup[];
   summary: TelemetrySummary;
   active: TelemetryWindowKey;
+  // Follows a stack's See also link. Views that host no linking stack omit it.
+  onOpenView?: (view: ViewKey) => void;
 }) {
   const daily = summary.daily;
+  const highlightFromIndex = daily ? windowHighlightFrom(daily, active) : null;
+  // Trend arrows compare each count with the same span just before the window.
+  const against = previousSpanLabel(summary, active);
+  const span = windowDays(active);
+  const previousOf = (m: Metric) => (against ? previousCount(summary, active, m, span) : null);
+  // The one open stack, and its head card (focus returns there on close). Opening
+  // another stack replaces it. View state only: nothing persists it.
+  const [open, setOpen] = useState<OpenStack | null>(null);
+  const close = () => setOpen(null);
+
   return (
     <div className="mt-6 flex flex-col gap-8">
       {groups.map((group) => (
@@ -68,17 +65,89 @@ export function MetricGroups({
           <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-400">
             {group.title}
           </h3>
-          <div className="mt-3 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {group.metrics.map((m) => (
-              <MetricCard
-                key={`${m.category}|${m.action}|${m.allTypes || m.typeIn ? `*${m.title}` : (m.type ?? '')}`}
-                metric={m}
-                count={windowCount(summary, active, m)}
-                series={daily ? dailySeries(daily, m) : undefined}
-                days={daily?.days}
-                highlightFromIndex={daily ? windowHighlightFrom(daily, active) : null}
-              />
-            ))}
+          <div className={`mt-3 ${GRID}`}>
+            {group.metrics.map((item) => {
+              if (!isStack(item)) {
+                return (
+                  <MetricCard
+                    key={metricKey(item)}
+                    metric={item}
+                    count={windowCount(summary, active, item)}
+                    series={daily ? dailySeries(daily, item) : undefined}
+                    days={daily?.days}
+                    highlightFromIndex={highlightFromIndex}
+                    previous={previousOf(item)}
+                    against={against}
+                  />
+                );
+              }
+              const key = `${group.title}|${item.title}`;
+              const opened = open?.key === key ? open : null;
+              const counts = item.members.map((m) => windowCount(summary, active, m));
+              const lines = stackDrawsLines(item.members.length);
+              const series = item.members.map((m, i) => ({
+                label: m.title,
+                color: stackSeriesColor(i),
+                values: daily ? dailySeries(daily, m) : [],
+              }));
+              // The modal is portalled to <body>, so rendering it beside
+              // the head adds nothing to the grid.
+              return (
+                <Fragment key={`stack:${item.title}`}>
+                  <MetricStackCard
+                    stack={item}
+                    series={series}
+                    counts={counts}
+                    days={daily?.days}
+                    highlightFromIndex={highlightFromIndex}
+                    previousCounts={item.members.map(previousOf)}
+                    against={against}
+                    expanded={opened !== null}
+                    onToggle={(anchor) => setOpen(opened ? null : { key, anchor })}
+                  />
+                  {opened ? (
+                    <StackModal
+                      anchor={opened.anchor}
+                      title={item.title}
+                      subtitle={`${item.members.length} charts`}
+                      count={item.members.length}
+                      onClose={close}
+                      footer={
+                        item.seeAlso && onOpenView ? (
+                          <SeeAlsoLink
+                            label={item.seeAlso.label}
+                            onClick={() => {
+                              const view = item.seeAlso!.view;
+                              close();
+                              onOpenView(view);
+                            }}
+                          />
+                        ) : undefined
+                      }
+                    >
+                      {item.members.map((m, i) => (
+                        <div
+                          key={metricKey(m)}
+                          className="tl-fan-out"
+                          style={{ animationDelay: `${i * EXPAND_STAGGER_MS}ms` }}
+                        >
+                          <MetricCard
+                            metric={m}
+                            count={counts[i] ?? 0}
+                            series={series[i]?.values}
+                            days={daily?.days}
+                            highlightFromIndex={highlightFromIndex}
+                            previous={previousOf(m)}
+                            against={against}
+                            color={lines ? series[i]?.color : undefined}
+                          />
+                        </div>
+                      ))}
+                    </StackModal>
+                  ) : null}
+                </Fragment>
+              );
+            })}
           </div>
         </section>
       ))}
@@ -86,63 +155,25 @@ export function MetricGroups({
   );
 }
 
-function MetricCard({
-  metric: m,
-  count,
-  series,
-  days,
-  highlightFromIndex,
-}: {
-  metric: Metric;
-  count: number;
-  series: number[] | undefined;
-  days: number[] | undefined;
-  highlightFromIndex: number | null;
-}) {
-  const color = categoryColor(m.category);
-  // An aggregate has no single type, so the icon + label drop the type.
-  const iconType = m.allTypes || m.typeIn ? null : (m.type ?? null);
+// The full-width link at the foot of a stack's modal into a tab that goes
+// deeper (spec/22 See also).
+function SeeAlsoLink({ label, onClick }: { label: string; onClick: () => void }) {
   return (
-    // `flex h-full flex-col` + `mt-auto` on the chart pins every trend line to
-    // the bottom of the card. Grid rows already stretch cards to equal height,
-    // so without this a longer blurb (e.g. an aggregate's) would push its chart
-    // down and misalign it with the shorter cards beside it in the same row.
-    <div className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-900">
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-start gap-2.5">
-          <span
-            className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
-            style={{ backgroundColor: `${color}1a`, color }}
-          >
-            <EventIcon category={m.category} action={m.action} type={iconType} />
-          </span>
-          <div>
-            <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{m.title}</p>
-            <p className="text-xs text-slate-400">
-              {m.category} · {eventLabel({ action: m.action, type: iconType })}
-            </p>
-          </div>
-        </div>
-        <span className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
-          {count.toLocaleString()}
-        </span>
-      </div>
-      {/* Plain-language meaning. Aggregates carry their own blurb; single
-          metrics reuse the Raw view's row tooltip copy. */}
-      <p className="mt-3 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-        {m.blurb ?? eventExplanation(m.category, m.action, iconType)}
-      </p>
-      {days ? (
-        <div className="mt-auto pt-4">
-          <TrendChart
-            days={days}
-            values={series ?? new Array(days.length).fill(0)}
-            color={color}
-            highlightFromIndex={highlightFromIndex}
-            heightClassName="h-20"
-          />
-        </div>
-      ) : null}
-    </div>
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-sky-600 transition-colors hover:border-sky-300 hover:bg-sky-50 dark:border-slate-700 dark:bg-slate-900 dark:text-sky-400 dark:hover:border-sky-700 dark:hover:bg-sky-950"
+    >
+      {label}
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden>
+        <path
+          d="M5 12h14M13 6l6 6-6 6"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </button>
   );
 }

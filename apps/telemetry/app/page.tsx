@@ -7,31 +7,26 @@ import {
   ActivityGlyph,
   AlertGlyph,
   BrushGlyph,
-  DiagramGlyph,
   FileGlyph,
-  LinkGlyph,
+  GearGlyph,
   LayersGlyph,
-  ListGlyph,
   PaletteGlyph,
-  PersonAddGlyph,
+  PointerGlyph,
   SearchGlyph,
-  ShareGlyph,
   SparkGlyph,
   WindowGlyph,
 } from './glyphs';
 import { WindowPanel } from './WindowPanel';
 import { StickyWindowBar } from './StickyWindowBar';
 import { ViewTabs } from './ViewTabs';
-import { HighlightsView } from './HighlightsView';
-import { AcquisitionView } from './AcquisitionView';
+import { DashboardView } from './DashboardView';
+import type { ViewKey } from './view-keys';
+import { ModesView } from './ModesView';
 import { PagesView } from './PagesView';
-import { ContentView } from './ContentView';
-import { RawView } from './RawView';
+import { SettingsView } from './SettingsView';
 import { LookAndFeelView } from './LookAndFeelView';
 import { PaletteView } from './PaletteView';
 import { HelpView } from './HelpView';
-import { ExternalConnectionsView } from './ExternalConnectionsView';
-import { CollaborationView } from './CollaborationView';
 import { EditingView } from './EditingView';
 import { ExceptionsView } from './ExceptionsView';
 import { MetricSearch } from './MetricSearch';
@@ -44,46 +39,38 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 // Three ways to read the same summary payload (spec/22). The timeframe
 // window is global (the WindowPanel above the tabs), so it lives here
 // alongside the active tab and is passed into whichever view renders.
-// Tab order follows the product funnel: who arrives (Acquisition), which pages
-// they read (Pages), what they
-// open + make (Content), what they build (Palette / Look & Feel), how they
-// organise it (Editing), how they work
-// together (Collaboration), how they get unstuck (Help), how machines connect
-// (External Connections), then the power-user lenses (Search / Raw).
-type ViewKey =
-  | 'highlights'
-  | 'acquisition'
-  | 'pages'
-  | 'content'
-  | 'palette'
-  | 'lookfeel'
-  | 'editing'
-  | 'help'
-  | 'external'
-  | 'collaboration'
-  | 'exceptions'
-  | 'search'
-  | 'raw';
+// Tab order follows the product funnel: who arrives, signs up, opens and
+// makes things (Dashboard), which pages they read (Pages), what they build
+// (Palette / Look & Feel), how they organise it (Editing), how they get
+// unstuck (Help), error health (Exceptions), then the power-user lens
+// (Search).
 const VIEWS: { key: ViewKey; label: string; icon: ReactNode }[] = [
-  { key: 'highlights', label: 'Highlights', icon: <SparkGlyph /> },
-  { key: 'acquisition', label: 'Acquisition', icon: <PersonAddGlyph /> },
+  { key: 'dashboard', label: 'Dashboard', icon: <SparkGlyph /> },
   { key: 'pages', label: 'Pages', icon: <WindowGlyph /> },
-  { key: 'content', label: 'Content', icon: <DiagramGlyph /> },
   { key: 'palette', label: 'Palette', icon: <PaletteGlyph /> },
+  { key: 'modes', label: 'Modes', icon: <PointerGlyph /> },
   { key: 'lookfeel', label: 'Look & Feel', icon: <BrushGlyph /> },
   { key: 'editing', label: 'Editing', icon: <LayersGlyph /> },
   { key: 'help', label: 'Help', icon: <FileGlyph /> },
-  { key: 'external', label: 'External Connections', icon: <LinkGlyph /> },
-  { key: 'collaboration', label: 'Collaboration', icon: <ShareGlyph /> },
+  { key: 'settings', label: 'Settings', icon: <GearGlyph /> },
   { key: 'exceptions', label: 'Exceptions', icon: <AlertGlyph /> },
   { key: 'search', label: 'Search', icon: <SearchGlyph /> },
-  { key: 'raw', label: 'Raw', icon: <ListGlyph /> },
 ];
 
 export default function TelemetryDashboard() {
   const [summary, setSummary] = useState<TelemetrySummary | null>(null);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
-  const [view, setView] = useState<ViewKey>('highlights');
+  const [view, setView] = useState<ViewKey>('dashboard');
+  // A link into another view (a stack's See also): switch, then bring the tab
+  // row back into sight so the reader sees where they landed.
+  const openView = (next: ViewKey) => {
+    setView(next);
+    requestAnimationFrame(() =>
+      document
+        .querySelector('[role="tablist"]')
+        ?.scrollIntoView({ block: 'start', behavior: 'smooth' }),
+    );
+  };
   const [active, setActive] = useState<TelemetryWindowKey>('last7');
   // Watched by the StickyWindowBar: once this panel scrolls under the header,
   // the condensed timeframe selector fades in.
@@ -145,7 +132,7 @@ export default function TelemetryDashboard() {
           <>
             {/* Global timeframe selector + 30-day trend line. Shared by every
               tab and always visible, so the window the cards pick drives
-              the counts in Highlights / Raw / Search below. */}
+              the counts in every view below. */}
             <div ref={panelRef} className="mt-10">
               <WindowPanel
                 totals={{
@@ -169,16 +156,17 @@ export default function TelemetryDashboard() {
 
             {/* View tabs — a single-line carousel; chevrons appear when the
               full set overflows the column (see ViewTabs). */}
-            <ViewTabs views={VIEWS} view={view} onSelect={setView} />
+            <ViewTabs
+              views={VIEWS}
+              leads={['dashboard', 'search']}
+              view={view}
+              onSelect={setView}
+            />
 
-            {view === 'highlights' ? (
-              <HighlightsView summary={summary} active={active} />
-            ) : view === 'acquisition' ? (
-              <AcquisitionView summary={summary} active={active} />
+            {view === 'dashboard' ? (
+              <DashboardView summary={summary} active={active} onOpenView={openView} />
             ) : view === 'pages' ? (
               <PagesView summary={summary} active={active} />
-            ) : view === 'content' ? (
-              <ContentView summary={summary} active={active} />
             ) : view === 'palette' ? (
               <PaletteView summary={summary} active={active} />
             ) : view === 'lookfeel' ? (
@@ -187,14 +175,12 @@ export default function TelemetryDashboard() {
               <EditingView summary={summary} active={active} />
             ) : view === 'help' ? (
               <HelpView summary={summary} active={active} />
-            ) : view === 'external' ? (
-              <ExternalConnectionsView summary={summary} active={active} />
-            ) : view === 'collaboration' ? (
-              <CollaborationView summary={summary} active={active} />
+            ) : view === 'modes' ? (
+              <ModesView summary={summary} active={active} />
+            ) : view === 'settings' ? (
+              <SettingsView summary={summary} active={active} />
             ) : view === 'exceptions' ? (
               <ExceptionsView summary={summary} active={active} />
-            ) : view === 'raw' ? (
-              <RawView summary={summary} active={active} />
             ) : summary.daily ? (
               <div className="mt-8">
                 <MetricSearch windows={summary.windows} daily={summary.daily} active={active} />

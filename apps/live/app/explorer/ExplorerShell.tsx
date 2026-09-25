@@ -329,7 +329,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
 
       {/* Guest sign-in encouragement (spec/36): Explorer only, never
           the editor. Dismissal persists per device. */}
-      {showSignInBanner ? <SignInBanner onDismiss={dismissBanner} /> : null}
+      {showSignInBanner ? <SignInBanner surface="Explorer" onDismiss={dismissBanner} /> : null}
     </div>
   );
 }

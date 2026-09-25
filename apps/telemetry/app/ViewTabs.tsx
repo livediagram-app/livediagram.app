@@ -2,12 +2,21 @@
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 
-// The dashboard's view selector as a single-line carousel. The full set of
-// tabs is wider than the column on a phone (and even on some laptops), and
-// both wrapping to two rows and a bare scrollbar read as messy — so the row
-// stays on ONE line inside a hidden-overflow scroller, with left/right
-// chevrons that appear only when there's more to reach. Picking a tab also
-// scrolls it into view, so the active one is never clipped at an edge.
+// The dashboard's view selector (spec/22). The `leads` (the Dashboard, then
+// Search) stand on their own to the left: the overview and the way to find any
+// one metric. Every other view is a closer look at one area, so those sit
+// together in a bar titled "Detail".
+// Both halves are one tablist, so keyboard and screen-reader users still get a
+// single set of tabs. Always one row: the Detail bar takes the rest of the
+// width and becomes a carousel when its tabs outgrow it (a second row read as
+// a separate control).
+//
+// The Detail bar is a single-line carousel. Its tabs are wider than the column
+// on a phone (and even on some laptops), and both wrapping to two rows and a
+// bare scrollbar read as messy, so the row stays on ONE line inside a
+// hidden-overflow scroller, with left/right chevrons that appear only when
+// there's more to reach. Picking a tab also scrolls it into view, so the
+// active one is never clipped at an edge.
 
 type TabOption<K extends string> = { key: K; label: string; icon: ReactNode };
 
@@ -27,13 +36,17 @@ function Chevron({ dir }: { dir: 'left' | 'right' }) {
 
 export function ViewTabs<K extends string>({
   views,
+  leads,
   view,
   onSelect,
 }: {
   views: TabOption<K>[];
+  leads: K[]; // the views that stand apart, left of the Detail bar, in order
   view: K;
   onSelect: (key: K) => void;
 }) {
+  const leadViews = leads.flatMap((key) => views.filter((v) => v.key === key));
+  const detail = views.filter((v) => !leads.includes(v.key));
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [overflow, setOverflow] = useState(false);
   const [canLeft, setCanLeft] = useState(false);
@@ -86,9 +99,45 @@ export function ViewTabs<K extends string>({
       ? 'cursor-pointer hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-800'
       : 'cursor-default opacity-30');
 
+  const tabClass = (selected: boolean) =>
+    'flex shrink-0 cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition ' +
+    (selected
+      ? 'bg-brand-500 text-white shadow-sm'
+      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800');
+  const bar =
+    'flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm dark:border-slate-700 dark:bg-slate-900';
+
   return (
-    <div className="mt-8 flex justify-center">
-      <div className="flex max-w-full items-center gap-1 rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+    <div role="tablist" aria-label="Telemetry views" className="mt-8 flex items-center gap-3">
+      {leadViews.length > 0 ? (
+        <div className={`${bar} shrink-0`}>
+          {leadViews.map((v) => (
+            <button
+              key={v.key}
+              type="button"
+              role="tab"
+              aria-selected={view === v.key}
+              aria-label={v.label}
+              onClick={() => onSelect(v.key)}
+              className={tabClass(view === v.key)}
+            >
+              <span aria-hidden className="shrink-0 [&_svg]:h-3.5 [&_svg]:w-3.5">
+                {v.icon}
+              </span>
+              {/* Icon-only on a phone, so the Detail carousel beside it has
+                  room for its tabs; the aria-label keeps the name. */}
+              <span className="hidden sm:inline">{v.label}</span>
+            </button>
+          ))}
+        </div>
+      ) : null}
+      <div className={`${bar} min-w-0 flex-1`}>
+        <span
+          aria-hidden
+          className="hidden shrink-0 pl-2 pr-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400 sm:inline"
+        >
+          Detail
+        </span>
         {overflow ? (
           <button
             type="button"
@@ -103,24 +152,19 @@ export function ViewTabs<K extends string>({
 
         <div
           ref={scrollerRef}
-          role="tablist"
-          aria-label="Telemetry views"
+          role="group"
+          aria-label="Detail"
           onScroll={measure}
           className="flex min-w-0 gap-1 overflow-x-auto scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
-          {views.map((v) => (
+          {detail.map((v) => (
             <button
               key={v.key}
               type="button"
               role="tab"
               aria-selected={view === v.key}
               onClick={() => onSelect(v.key)}
-              className={
-                'flex shrink-0 cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-3.5 py-1.5 text-sm font-medium transition ' +
-                (view === v.key
-                  ? 'bg-brand-500 text-white shadow-sm'
-                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800')
-              }
+              className={tabClass(view === v.key)}
             >
               <span aria-hidden className="shrink-0 [&_svg]:h-3.5 [&_svg]:w-3.5">
                 {v.icon}
