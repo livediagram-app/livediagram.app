@@ -41,7 +41,12 @@ export function TextImportPanel({
     if (busy) return;
     setBusy(true);
     setError(null);
-    const outcome = await runner();
+    // A runner that throws must still hand the panel back: an uncaught
+    // rejection here left `busy` set, every control disabled, and no message.
+    const outcome = await runner().catch((): ImportOutcome => ({
+      status: 'error',
+      error: "Couldn't import that. Check the file and try again.",
+    }));
     if (outcome.status === 'done') {
       onDone();
     } else {

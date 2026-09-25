@@ -1,10 +1,10 @@
 // The selection's duplicate family, lifted out of
 // useElementSelectionActions into a sibling hook: the single-element
-// duplicate and the marquee-cluster duplicate that clones boxed elements + arrows and
-// re-pins copied endpoints onto the copies. The host mounts this and
+// duplicate and the marquee-cluster duplicate (duplicateElements). The host mounts this and
 // folds the two handlers into its return, so callers are unchanged.
 
 import {
+  duplicateElements,
   freshCopyFields,
   isBoxed,
   type ArrowElement,
@@ -25,54 +25,17 @@ export function useElementDuplication(deps: {
   const { selectedId, multiSelectedIds, activeTab, commit, setSelectedId, setMultiSelectedIds } =
     deps;
 
-  // Multi-select duplicate: clones every multi-selected boxed element
-  // with a small diagonal offset, then clones every multi-selected
-  // arrow and rewires pinned endpoints onto the new boxed copies
-  // when the source was also duplicated. Pinned ends that referenced
-  // an element OUTSIDE the selection keep pointing at the original
-  // (user can rewire); free ends shift by the same offset so the
-  // visual layout of the duplicated cluster matches the source.
+  // Multi-select duplicate (Cmd+D on a marquee, the command palette): the same
+  // duplicateElements paste and quick-add use, offset diagonally. It used to be
+  // a hand-rolled copy of it that remapped arrow pins and nothing else, so a
+  // duplicated mind-map subtree re-parented itself onto the ORIGINAL tree,
+  // copied portals stepped through to the originals, an arrow hung off a
+  // copied arrow stayed on the original line, and a connector between two
+  // copied boxes was left behind unless it was in the marquee too.
   const duplicateMultiSelected = () => {
     if (multiSelectedIds.size === 0) return;
-    const offset = 24;
-    const boxedSources = activeTab.elements.filter(
-      (el): el is BoxedElement => multiSelectedIds.has(el.id) && isBoxed(el),
-    );
-    const arrowSources = activeTab.elements.filter(
-      (el): el is ArrowElement => multiSelectedIds.has(el.id) && el.type === 'arrow',
-    );
-    if (boxedSources.length === 0 && arrowSources.length === 0) return;
-    const boxedIdMap = new Map<string, string>();
-    const boxedCopies: BoxedElement[] = boxedSources.map((s) => {
-      const newId = crypto.randomUUID();
-      boxedIdMap.set(s.id, newId);
-      return {
-        ...s,
-        id: newId,
-        x: s.x + offset,
-        y: s.y + offset,
-        // Whatever a copy regenerates rather than inherits (spec/139 tilt).
-        ...freshCopyFields(s),
-      };
-    });
-    const remapEndpoint = (e: ArrowElement['from']): ArrowElement['from'] => {
-      if (e.kind === 'pinned') {
-        const next = boxedIdMap.get(e.elementId);
-        if (next) return { ...e, elementId: next };
-        return e;
-      }
-      // Connected to another arrow's line (spec/50): keep the copy attached to
-      // the same line (arrow ids aren't remapped in this boxed-only copy path).
-      if (e.kind === 'on-arrow') return e;
-      return { kind: 'free', x: e.x + offset, y: e.y + offset };
-    };
-    const arrowCopies: ArrowElement[] = arrowSources.map((s) => ({
-      ...s,
-      id: crypto.randomUUID(),
-      from: remapEndpoint(s.from),
-      to: remapEndpoint(s.to),
-    }));
-    const copies: Element[] = [...boxedCopies, ...arrowCopies];
+    const { newElements: copies } = duplicateElements(activeTab.elements, multiSelectedIds, 24, 24);
+    if (copies.length === 0) return;
     commit((els) => [...els, ...copies]);
     trackDuplicated(copies);
     setMultiSelectedIds(new Set(copies.map((c) => c.id)));

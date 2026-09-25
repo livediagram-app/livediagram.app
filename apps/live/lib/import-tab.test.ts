@@ -89,3 +89,20 @@ describe('parseImportedTab — rejections (never throws)', () => {
     expect(result.ok).toBe(false);
   });
 });
+
+describe('parseImportedTab — malformed elements', () => {
+  it('drops elements that would crash the re-mint or land as junk', () => {
+    const good = { id: 's', type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10 };
+    const result = parse(
+      envelope({
+        tab: {
+          id: 'a',
+          name: 'b',
+          elements: [null, {}, { id: 'x', type: 'arrow' }, good],
+        } as unknown as Tab,
+      }),
+    );
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.tab.elements.map((e) => e.id)).toEqual(['s']);
+  });
+});
