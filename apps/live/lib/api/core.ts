@@ -18,6 +18,9 @@ import { stampTabKind, type Tab } from '@livediagram/diagram';
 import { readLocalStorageSafe, writeLocalStorageSafe } from '../local-storage-safe';
 import { getGuestSelfSig } from '../local-identity';
 import { notifyApiWrite } from './write-signal';
+// Every non-2xx the expectOk* helpers throw, and every fetch that rejects in
+// apiFetch, is reported through here (spec/22 'Error').
+import { reportApiError, reportNetworkError } from './error-report';
 
 // `API_BASE` resolution:
 //   1. `NEXT_PUBLIC_API_BASE` env var if set — used for local dev (e.g.
@@ -66,8 +69,15 @@ export function wsUrl(path: string): string {
 // Transparent otherwise: same arguments, same Response, and a network
 // failure still throws to the caller before any signal is raised.
 export async function apiFetch(input: string, init?: RequestInit): Promise<Response> {
-  const res = await fetch(input, init);
   const method = (init?.method ?? 'GET').toUpperCase();
+  let res: Response;
+  try {
+    res = await fetch(input, init);
+  } catch (err) {
+    // The one place that sees a request fail before any response exists.
+    reportNetworkError(method, input, err);
+    throw err;
+  }
   if (method !== 'GET' && res.ok && !isTimelinePath(input)) notifyApiWrite();
   return res;
 }
@@ -250,29 +260,6 @@ export async function apiHeaders(
   // protected + accessed via a share code. Owners never set it.
   if (sessionSharePassword) h['X-Share-Password'] = sessionSharePassword;
   return { ...h, ...opts.extra };
-}
-
-// Error telemetry hook (spec/22 'Error' category). This module can't
-// import lib/telemetry directly — it sits under the user-preferences ->
-// api-client import cycle that already forced the emitter lazy — so the
-// editor's boot registers a reporter instead (same module-level pattern
-// as setTokenProvider above). Reports the HTTP status of every ApiError
-// the helpers below throw; a no-op while unwired (SSR, tests, other
-// hosts of this lib).
-let apiErrorReporter: ((status: number, action: string) => void) | null = null;
-export function setApiErrorReporter(fn: ((status: number, action: string) => void) | null): void {
-  apiErrorReporter = fn;
-}
-// `action` is the caller's own intent string ('save tab', 'create folder'),
-// forwarded so the reported error says WHICH request failed. Reporting only
-// the status made a spike unattributable: 297 `Http403` in a day tells you
-// something is being refused and nothing about what.
-function reportApiError(status: number, action: string): void {
-  try {
-    apiErrorReporter?.(status, action);
-  } catch {
-    // Telemetry can never throw into the caller's error handling.
-  }
 }
 
 // The error every non-2xx response throws. Carries the HTTP `status`

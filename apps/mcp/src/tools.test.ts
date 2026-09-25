@@ -154,7 +154,12 @@ describe('registerTools', () => {
     await readDiagram.handler(ARGS, AUTHED).catch(() => undefined);
     await flush();
     expect(emitted).toContainEqual({ category: 'Mcp', action: 'Used', type: 'ReadDiagram' });
-    expect(emitted.some((e) => e.category === 'Error')).toBe(true);
+    // Labelled with the tool it came from (spec/22), via registerTool's scope.
+    expect(emitted).toContainEqual({
+      category: 'Error',
+      action: 'Api',
+      type: 'Internal.ReadDiagram',
+    });
   });
 
   it('reports nothing for an unauthenticated call', async () => {

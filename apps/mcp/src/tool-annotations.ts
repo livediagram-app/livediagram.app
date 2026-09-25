@@ -12,6 +12,7 @@
 import type { McpServer, ToolCallback } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { ZodRawShapeCompat } from '@modelcontextprotocol/sdk/server/zod-compat.js';
 import type { ToolAnnotations } from '@modelcontextprotocol/sdk/types.js';
+import { runInTool } from './tool-scope';
 
 // Three behaviours cover every tool. The split mirrors spec/62 §4.11's
 // read-only-token boundary: what a `read_only = 1` token can still reach is
@@ -56,5 +57,11 @@ export function registerTool<InputArgs extends ZodRawShapeCompat>(
   { behaviour, ...config }: ToolConfig<InputArgs>,
   handler: ToolCallback<InputArgs>,
 ): void {
-  server.registerTool(name, { ...config, annotations: TOOL_ANNOTATIONS[behaviour] }, handler);
+  // The handler runs inside the tool's scope so an api failure anywhere below
+  // it reports which tool it came from (tool-scope.ts).
+  const scoped = ((...args: unknown[]) =>
+    runInTool(name, () =>
+      (handler as (...a: unknown[]) => unknown)(...args),
+    )) as unknown as ToolCallback<InputArgs>;
+  server.registerTool(name, { ...config, annotations: TOOL_ANNOTATIONS[behaviour] }, scoped);
 }

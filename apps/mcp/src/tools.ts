@@ -13,7 +13,7 @@ import {
   type Tab,
 } from '@livediagram/diagram';
 import { TEMPLATES, TEMPLATE_CATEGORIES, templateCategory } from '@livediagram/templates';
-import { apiFetch, apiJson, postTelemetry } from './api';
+import { apiFetch, apiJson, postTelemetry, reportApiFailure } from './api';
 import type { Env } from './env';
 import { fetchTeamLibraries, matchDiagrams } from './find-diagrams';
 import {
@@ -484,7 +484,7 @@ export function registerTools(server: McpServer, env: Env): void {
       if (!res.ok) {
         // A 5xx is a real failure worth surfacing on the Exceptions dashboard;
         // a 4xx (bad id, last tab) is model-correctable and not reported.
-        if (res.status >= 500) postTelemetry(env, 'Error', 'Api', `Http${res.status}`);
+        if (res.status >= 500) reportApiFailure(env, `Http${res.status}`);
         return errorResult(
           `Could not delete (${res.status}). ` +
             (args.tabId

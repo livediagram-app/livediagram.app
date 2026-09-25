@@ -1,8 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { TELEMETRY_TYPE_PATTERN } from '@livediagram/api-schema';
-import { __testing } from './ErrorTelemetryBoot';
-
-const { apiErrorType } = __testing;
+import { apiErrorType, networkErrorType, setApiErrorReporter } from './error-report';
+import { apiFetch } from './core';
 
 // Attribution for api failures (spec/22). Reporting the bare status made a
 // spike unreadable: 297 `Http403` in one day says something is being refused
@@ -53,5 +52,44 @@ describe('apiErrorType', () => {
   it('falls back to the bare status when the action has no usable characters', () => {
     expect(apiErrorType(500, '')).toBe('Http500');
     expect(apiErrorType(500, '---')).toBe('Http500');
+  });
+});
+
+// A request that never got a response (spec/22 `Network.*`). apiFetch sees the
+// URL, not the caller's action, so the label is the route with ids stripped.
+describe('network failures', () => {
+  afterEach(() => {
+    setApiErrorReporter(null);
+    vi.unstubAllGlobals();
+  });
+
+  it('labels the route without ids', () => {
+    expect(networkErrorType('PUT', 'http://localhost:8787/api/diagrams/abc-123/tabs/t9')).toBe(
+      'Network.Put.Diagrams.Tabs',
+    );
+    expect(networkErrorType('GET', '/api/share/SEKRIT')).toBe('Network.Get.Share');
+  });
+
+  it('reports a rejected fetch through apiFetch, then rethrows', async () => {
+    const seen: string[] = [];
+    setApiErrorReporter((t) => seen.push(t));
+    vi.stubGlobal('fetch', () => Promise.reject(new TypeError('Failed to fetch')));
+    await expect(apiFetch('/api/folders/f1', { method: 'DELETE' })).rejects.toThrow(
+      'Failed to fetch',
+    );
+    expect(seen).toEqual(['Network.Delete.Folders']);
+  });
+
+  it('ignores an abort and a browser that knows it is offline', async () => {
+    const seen: string[] = [];
+    setApiErrorReporter((t) => seen.push(t));
+    const abort = new Error('aborted');
+    abort.name = 'AbortError';
+    vi.stubGlobal('fetch', () => Promise.reject(abort));
+    await expect(apiFetch('/api/timeline')).rejects.toThrow();
+    vi.stubGlobal('navigator', { onLine: false });
+    vi.stubGlobal('fetch', () => Promise.reject(new TypeError('Failed to fetch')));
+    await expect(apiFetch('/api/timeline')).rejects.toThrow();
+    expect(seen).toEqual([]);
   });
 });
