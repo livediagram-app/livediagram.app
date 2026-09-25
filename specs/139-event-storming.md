@@ -659,8 +659,9 @@ then just two notes: the board keeps no relation between them.
 - **The buttons are paper tabs.** A small tab in the NEXT note's own colour
   peeks from the note's edge with a "+": the colour says which note it adds
   before a word is read. It is sized in proportion to the note (a quarter of
-  its height tall and a tenth of its height wide, in canvas units, so it scales
-  with the note and the zoom and keeps one shape on every kind), sits slightly translucent until pointed at, and keeps a hit
+  its height tall and 6% of its height wide, in canvas units, so it scales with
+  the note and the zoom and keeps one shape on every kind), and sits centred
+  in the gutter, so it never lies on a note beside it, sits slightly translucent until pointed at, and keeps a hit
   target of at least 24 screen px whatever the zoom (WCAG 2.2 target size).
 - **Hovering a tab previews the note-to-be.** A dashed outline in the next
   note's colour, with its kind named inside, is drawn exactly where the note
@@ -704,7 +705,9 @@ the tabs and their preview are `components/canvas/NextNoteButtons.tsx`.
   chevron, ghost preview), the tab won, with the ghost as its hover state. The
   tab is proportional to the note and quieter than the first draft, and the
   buttons show on the selected note only; hovering a note no longer shows
-  them.
+  them. A first cut at a tenth of the height was wider than the 16px gutter
+  and lay on the neighbouring note (blue on blue beside a command), so the
+  tab is 6% wide and centred in the gutter.
 
 ## Phase 8 (shipped): import a photo of the wall
 

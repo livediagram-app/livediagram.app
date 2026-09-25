@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import {
+  ES_NOTE_GAP,
   eventStormingKindOf,
   eventStormingNote,
   nextNoteBounds,
@@ -23,9 +24,12 @@ import {
 // something here".
 
 // The tab is sized from the note's HEIGHT, in canvas units, so it scales with
-// the note and the zoom and keeps one shape on every kind.
+// the note and the zoom and keeps one shape on every kind. Narrow enough to sit
+// in the gutter between two notes, so it never lies on the note beside.
 const TAB_HEIGHT_RATIO = 0.25;
-const TAB_WIDTH_RATIO = 0.1;
+const TAB_WIDTH_RATIO = 0.06;
+// The plus keeps its size however narrow the tab: 6% of the note's height.
+const PLUS_RATIO = 0.06;
 // The smallest hit target, in SCREEN px, whatever the zoom (WCAG 2.2 target
 // size); the tab is the picture, the button can be bigger.
 const MIN_HIT_PX = 24;
@@ -99,6 +103,8 @@ export function NextNoteButtons({
         // Rounded on the outside, near-square where it meets the paper.
         const inner = t.tabWidth * 0.2;
         const outer = t.tabWidth * 0.5;
+        // Centred in the gutter beside the note.
+        const inset = Math.max(0, (ES_NOTE_GAP - t.tabWidth) / 2);
         return (
           <button
             key={t.key}
@@ -129,10 +135,11 @@ export function NextNoteButtons({
             <span
               aria-hidden
               data-next-note-tab={t.side}
-              className="flex items-center justify-center text-slate-800/80 opacity-70 shadow-sm ring-1 ring-black/10 transition duration-150 group-hover:text-slate-900 group-hover:opacity-100 group-hover:shadow group-focus-visible:opacity-100 group-focus-visible:ring-2 group-focus-visible:ring-brand-500"
+              className="flex items-center justify-center overflow-visible text-slate-800/80 opacity-50 ring-1 ring-black/5 transition duration-150 group-hover:text-slate-900 group-hover:opacity-100 group-hover:shadow-sm group-focus-visible:opacity-100 group-focus-visible:ring-2 group-focus-visible:ring-brand-500"
               style={{
                 width: t.tabWidth,
                 height: t.tabHeight,
+                ...(outward ? { marginLeft: inset } : { marginRight: inset }),
                 background: eventStormingNote(t.next).fill,
                 borderRadius: outward
                   ? `${inner}px ${outer}px ${outer}px ${inner}px`
@@ -141,8 +148,9 @@ export function NextNoteButtons({
             >
               <svg
                 aria-hidden
-                width={t.tabWidth * 0.6}
-                height={t.tabWidth * 0.6}
+                width={t.tabHeight * (PLUS_RATIO / TAB_HEIGHT_RATIO)}
+                height={t.tabHeight * (PLUS_RATIO / TAB_HEIGHT_RATIO)}
+                className="shrink-0"
                 viewBox="0 0 16 16"
                 fill="none"
               >

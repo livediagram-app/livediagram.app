@@ -109,10 +109,23 @@ describe('NextNoteButtons', () => {
   it('is a tab in the colour of the NEXT note, sized from the height of this one', () => {
     const c = draw([event], { selectedId: 'e' });
     const tab = c.container.querySelector<HTMLElement>('[data-next-note-tab="before"]')!;
-    // A command is blue; the event is 200 tall, so the tab is 50 x 20.
+    // A command is blue; the event is 200 tall, so the tab is 50 x 12.
     expect(tab.style.background).toBe('rgb(147, 197, 253)');
     expect(tab.style.height).toBe('50px');
-    expect(tab.style.width).toBe('20px');
+    expect(tab.style.width).toBe('12px');
+  });
+
+  it('keeps the plus as large as the first design, 6% of the height of the note', () => {
+    const c = draw([event], { selectedId: 'e' });
+    const plus = c.container.querySelector('[data-next-note-tab="before"] svg')!;
+    expect(plus.getAttribute('width')).toBe('12');
+  });
+
+  it('is quiet until pointed at', () => {
+    const c = draw([event], { selectedId: 'e' });
+    const tab = c.container.querySelector('[data-next-note-tab="before"]')!;
+    expect(tab.className).toContain('opacity-50');
+    expect(tab.className).toContain('group-hover:opacity-100');
   });
 
   it('scales the tab with the note', () => {
@@ -120,7 +133,7 @@ describe('NextNoteButtons', () => {
     const tab = c.container.querySelector<HTMLElement>('[data-next-note-tab="after"]')!;
     // A policy is 180 tall.
     expect(tab.style.height).toBe('45px');
-    expect(tab.style.width).toBe('18px');
+    expect(parseFloat(tab.style.width)).toBeCloseTo(10.8, 6);
   });
 
   it('peeks from the edge of the note, on its centre line', () => {
@@ -129,6 +142,20 @@ describe('NextNoteButtons', () => {
     // Starts at the note's right edge and is centred on its middle (y 600).
     expect(parseFloat(after.style.left)).toBe(1200);
     expect(parseFloat(after.style.top) + parseFloat(after.style.height) / 2).toBe(600);
+  });
+
+  it('fits inside the gutter, clear of a note beside it', () => {
+    const c = draw([event, command], { selectedId: 'e' });
+    const tab = c.container.querySelector<HTMLElement>('[data-next-note-tab="before"]')!;
+    const button = tab.parentElement!;
+    // The command sits one gutter to the left (its right edge at 984); the
+    // tab's left edge must stay right of it.
+    const tabLeft =
+      parseFloat(button.style.left) +
+      parseFloat(button.style.width) -
+      parseFloat(tab.style.width) -
+      parseFloat(tab.style.marginRight || '0');
+    expect(tabLeft).toBeGreaterThan(984);
   });
 
   it('keeps a hit target of at least 24 screen px when zoomed out', () => {
