@@ -33,7 +33,12 @@ export type LivePoll = {
 export const POLL_QUESTION_MAX = 200;
 export const POLL_OPTION_MAX = 60;
 export const POLL_OPTIONS_MIN = 2;
-export const POLL_OPTIONS_MAX = 6;
+// Ten. Six was the original guess and it ran out in ordinary use — a poll over
+// the people in the room, or a shortlist of films, passes six without being an
+// unreasonable poll. Nothing downstream is keyed to the count (the results bars
+// are laid out from the list, not from a fixed palette), so the cap is purely
+// about what a sane poll looks like and what the compose UI can show.
+export const POLL_OPTIONS_MAX = 10;
 export const POLL_TEXT_ANSWER_MAX = 280;
 
 // Every answer token a poll can receive, in display order. Empty for a

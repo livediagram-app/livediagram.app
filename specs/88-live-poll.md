@@ -68,13 +68,13 @@ across that line:
 `LivePoll.style`, all reducing to a single string `value` on the wire so one
 tally path serves them all:
 
-| Style          | Options                     |
-| -------------- | --------------------------- |
-| `yesNo`        | Yes / No                    |
-| `yesNoAbstain` | Yes / No / Abstain          |
-| `choice`       | 2–6 creator-defined options |
-| `rating`       | 1–5                         |
-| `text`         | free text                   |
+| Style          | Options                      |
+| -------------- | ---------------------------- |
+| `yesNo`        | Yes / No                     |
+| `yesNoAbstain` | Yes / No / Abstain           |
+| `choice`       | 2–10 creator-defined options |
+| `rating`       | 1–5                          |
+| `text`         | free text                    |
 
 The union lives in **`@livediagram/diagram`** (`poll-style.ts`), not beside
 `LivePoll` here, because a Session button ([spec/105](105-session-button.md))
@@ -89,7 +89,7 @@ Caps (the issue's other open question), enforced at the input and re-checked
 when an op arrives so a hand-crafted frame can't blow up a peer's panel:
 
 - question ≤ 200 chars
-- ≤ 6 choice options, each ≤ 60 chars, minimum 2
+- ≤ 10 choice options, each ≤ 60 chars, minimum 2 (`POLL_OPTIONS_MAX`; was 6, which ran out on ordinary polls like the people in the room or a film shortlist — nothing downstream is keyed to the count, the results bars come off the list)
 - free-text answer ≤ 280 chars
 
 ## Lifecycle
