@@ -1,4 +1,5 @@
 import { getClerkIdentity } from './auth/clerk';
+import { noteAuthSighting } from './auth/session-telemetry';
 import { emailEnabled } from './email/client';
 import { runLifecycleSweep, welcomeOnSighting } from './email/lifecycle';
 import { runTokenExpirySweep } from './email/token-expiry';
@@ -6,6 +7,7 @@ import { runTimelineExpirySweep } from './timeline';
 import {
   deleteOldChangeLogEntries,
   deleteOldEvents,
+  deleteOldSessionSightings,
   deleteOldTimelineEvents,
   deleteOldUnusedImages,
   resolveApiToken,
@@ -91,6 +93,10 @@ export default {
     // session token (dashboard → Sessions → Customize session token →
     // `{"email": "{{user.primary_email_address}}"}`); see auth/clerk.ts.
     const clerkEmail = clerkIdentity?.email ?? null;
+    // spec/22: Session·SignedUp / SignedIn are counted here, server-side, on
+    // the first request of each new Clerk session, so every auth method
+    // (email code, Google OAuth) counts once. Off the response path.
+    noteAuthSighting(env, clerkIdentity, executionCtx?.waitUntil?.bind(executionCtx));
     // spec/64: first authenticated sighting => sign-up. Fire-and-forget (the
     // sighting + welcome run in the background) so it never delays the response;
     // a no-op when RESEND_API_KEY is unset.
@@ -341,6 +347,15 @@ export default {
         deleteOldChangeLogEntries,
       );
       scheduleSweep(ctx, env, 'events', 'rows', now - EVENTS_RETENTION_MS, deleteOldEvents);
+      // spec/22: session ids seen for the sign-in count (auth/session-telemetry.ts).
+      scheduleSweep(
+        ctx,
+        env,
+        'auth_sessions',
+        'rows',
+        now - AUTH_SESSION_RETENTION_MS,
+        deleteOldSessionSightings,
+      );
       // spec/138 §3.5: the Timeline feed keeps a year, where the
       // element-level change_log above keeps 90 days.
       scheduleSweep(
@@ -405,6 +420,10 @@ function scheduleSweep(
 // scheduled handler is the only caller and naming it makes the
 // intent obvious from the dispatch site.
 const CHANGE_LOG_RETENTION_MS = 90 * 24 * 60 * 60 * 1000;
+
+// 90 days in ms: how long a seen Clerk session id is kept for the sign-in
+// count (spec/22). Longer than any session Clerk keeps alive by default.
+const AUTH_SESSION_RETENTION_MS = 90 * 24 * 60 * 60 * 1000;
 
 // 60 days in ms. The /telemetry dashboard's longest window is
 // "Last 30 days", so anything past 60 days is dead storage (twice

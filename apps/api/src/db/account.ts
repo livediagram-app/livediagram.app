@@ -91,6 +91,8 @@ export async function deleteAccount(
   // email_lifecycle (spec/64): drop the onboarding-email row so the address
   // isn't retained and a re-signup starts the series fresh.
   await env.DB.prepare('DELETE FROM email_lifecycle WHERE owner_id = ?').bind(ownerId).run();
+  // auth_accounts (spec/22): the first-seen row the sign-up count keys on.
+  await env.DB.prepare('DELETE FROM auth_accounts WHERE owner_id = ?').bind(ownerId).run();
   // shared_with rows POINTING AT this owner's diagrams die with the
   // diagrams (FK cascade), but the rows this owner accumulated by
   // visiting OTHER people's diagrams are keyed on their owner_id and

@@ -19,19 +19,37 @@ import {
   ensureGuestSelfId,
   getGuestSelfId,
   getGuestSelfSig,
+  reportParticipantCreated,
   setGuestIdentity,
 } from './local-identity';
 import { apiMintGuestId, apiUpgradeGuestId } from './api/self';
-import { track } from './telemetry';
 
-export async function ensureSignedGuestIdentity(): Promise<{ id: string; sig: string | null }> {
+type GuestIdentity = { id: string; sig: string | null };
+
+// Concurrent callers (the Explorer and its panels, a StrictMode double
+// effect) share one resolution instead of each minting a different id, and
+// each counting a new visitor, before the first one lands in storage.
+let inflight: Promise<GuestIdentity> | null = null;
+
+export function ensureSignedGuestIdentity(): Promise<GuestIdentity> {
+  if (!inflight) {
+    inflight = resolveSignedGuestIdentity().finally(() => {
+      inflight = null;
+    });
+  }
+  return inflight;
+}
+
+async function resolveSignedGuestIdentity(): Promise<GuestIdentity> {
   const existingId = getGuestSelfId();
   const existingSig = getGuestSelfSig();
   if (existingId && existingSig) return { id: existingId, sig: existingSig };
   // No id at all → this browser has never had a participant: the
   // daily new-visitors signal (spec/22). Emitted per adopted branch
   // below rather than up here so the offline fallback doesn't double
-  // count (ensureGuestSelfId fires its own event when IT mints).
+  // count (ensureGuestSelfId reports its own mint), and through the
+  // once-per-load reportParticipantCreated so a local mint that raced
+  // this one's network round-trip doesn't count the browser twice.
   const isNewVisitor = !existingId;
 
   const minted = await apiMintGuestId();
@@ -44,7 +62,7 @@ export async function ensureSignedGuestIdentity(): Promise<{ id: string; sig: st
     // adopt the freshly generated (unsigned) one.
     const id = existingId ?? minted.ownerId;
     setGuestIdentity(id, null);
-    if (isNewVisitor) track('Participant', 'Created');
+    if (isNewVisitor) reportParticipantCreated();
     return { id, sig: null };
   }
   // Worker returned a SIGNED id. Upgrade legacy data onto it if needed.
@@ -57,6 +75,6 @@ export async function ensureSignedGuestIdentity(): Promise<{ id: string; sig: st
     }
   }
   setGuestIdentity(minted.ownerId, minted.ownerSig);
-  if (isNewVisitor) track('Participant', 'Created');
+  if (isNewVisitor) reportParticipantCreated();
   return { id: minted.ownerId, sig: minted.ownerSig };
 }

@@ -22,6 +22,7 @@ export * from './api-tokens';
 export * from './email-lifecycle';
 export * from './notification-prefs';
 export * from './account';
+export * from './auth-sightings';
 export * from './images';
 export * from './telemetry';
 export * from './timeline';

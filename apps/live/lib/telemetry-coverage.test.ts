@@ -1,7 +1,11 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { TELEMETRY_ACTIONS, TELEMETRY_CATEGORIES } from '@livediagram/api-schema';
+import {
+  SERVER_EMITTED_EVENT_PAIRS,
+  TELEMETRY_ACTIONS,
+  TELEMETRY_CATEGORIES,
+} from '@livediagram/api-schema';
 import { EMITTED_EVENT_PAIRS } from './telemetry-manifest';
 
 // Event-completeness guard (spec/22, issue #30).
@@ -129,5 +133,12 @@ describe('telemetry coverage', () => {
     // An event outside the enums is dropped by the api worker's validator,
     // so this would be a silent total loss for that event.
     expect(invalid).toEqual([]);
+  });
+
+  it('never emits a pair the api worker counts itself', () => {
+    // Session·SignedUp / SignedIn and Diagram·Joined are counted server-side
+    // (spec/22) and dropped at the ingest; an editor emit would be dead code
+    // at best, and a double count if the ingest filter ever went away.
+    expect(emitted.filter((pair) => SERVER_EMITTED_EVENT_PAIRS.includes(pair))).toEqual([]);
   });
 });

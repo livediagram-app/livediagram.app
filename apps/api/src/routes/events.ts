@@ -1,6 +1,6 @@
 // /api/events — anonymous telemetry ingest (spec/22).
 
-import { isValidTelemetryEvent } from '@livediagram/api-schema';
+import { isServerEmittedEvent, isValidTelemetryEvent } from '@livediagram/api-schema';
 import { insertTelemetryEvents } from '../db';
 import { isLocalhostPair } from '../origin-check';
 import { noContent, notFound } from '../responses';
@@ -65,7 +65,13 @@ export async function handleEvents(ctx: RouteContext): Promise<Response> {
   // Validate against the shared schema and cap the batch so one
   // request can't bulk-insert. Unknown categories/actions/types
   // are dropped, never stored.
-  const valid = raw.filter(isValidTelemetryEvent).slice(0, 100);
+  // Pairs the worker counts itself (Session·SignedUp / SignedIn,
+  // Diagram·Joined, Email·Sent) are dropped here too, so a stale editor
+  // bundle that still emits them can't double count (spec/22).
+  const valid = raw
+    .filter(isValidTelemetryEvent)
+    .filter((e) => !isServerEmittedEvent(e))
+    .slice(0, 100);
   try {
     await insertTelemetryEvents(
       env,

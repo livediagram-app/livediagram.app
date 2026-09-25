@@ -123,3 +123,28 @@ describe('handleEvents page views (spec/150)', () => {
     );
   });
 });
+
+describe('handleEvents server-emitted pairs (spec/22)', () => {
+  it('drops the pairs the worker counts itself, keeping the rest of the batch', async () => {
+    // Session·SignedUp / SignedIn and Diagram·Joined moved server-side; an
+    // old cached editor bundle still posting them must not double count.
+    const ctx = makeTestRouteContext('POST', '/api/events', {
+      body: {
+        events: [
+          { category: 'Session', action: 'SignedUp' },
+          { category: 'Session', action: 'SignedIn' },
+          { category: 'Diagram', action: 'Joined', type: 'Edit' },
+          { category: 'Email', action: 'Sent', type: 'Welcome' },
+          { category: 'Session', action: 'SignedOut' },
+        ],
+      },
+      env: { TELEMETRY_ENABLED: 'true' } as Env,
+    });
+    await handleEvents(ctx);
+    expect(db.insertTelemetryEvents).toHaveBeenCalledWith(
+      expect.anything(),
+      [{ category: 'Session', action: 'SignedOut', type: null }],
+      expect.any(Number),
+    );
+  });
+});

@@ -105,6 +105,8 @@ describe('getClerkIdentity (verified session, spec/04 + spec/32)', () => {
     expect(await getClerkIdentity(makeEnv(JWKS_URL), request)).toEqual({
       userId: 'user_abc',
       email: null,
+      sessionId: null,
+      firstFactorAgeMinutes: null,
     });
   });
 
@@ -119,7 +121,7 @@ describe('getClerkIdentity (verified session, spec/04 + spec/32)', () => {
     // Team invites match on email (spec/32); the session token is the only
     // email the worker trusts, and it has to compare equal to the stored one.
     const request = verifiedWith({ sub: 'user_abc', email: '  Ada@Example.COM ' });
-    expect(await getClerkIdentity(makeEnv(JWKS_URL), request)).toEqual({
+    expect(await getClerkIdentity(makeEnv(JWKS_URL), request)).toMatchObject({
       userId: 'user_abc',
       email: 'ada@example.com',
     });
@@ -129,14 +131,30 @@ describe('getClerkIdentity (verified session, spec/04 + spec/32)', () => {
     // Deployments that never customised the session token send no email at
     // all; invite auto-connection degrades rather than breaking sign-in.
     const env = makeEnv(JWKS_URL);
-    expect(await getClerkIdentity(env, verifiedWith({ sub: 'u', email: '' }))).toEqual({
+    expect(await getClerkIdentity(env, verifiedWith({ sub: 'u', email: '' }))).toMatchObject({
       userId: 'u',
       email: null,
     });
-    expect(await getClerkIdentity(env, verifiedWith({ sub: 'u', email: 42 }))).toEqual({
+    expect(await getClerkIdentity(env, verifiedWith({ sub: 'u', email: 42 }))).toMatchObject({
       userId: 'u',
       email: null,
     });
+  });
+
+  it('carries the sid and first-factor age claims for the sign-in count (spec/22)', async () => {
+    // Session·SignedUp / SignedIn are counted server-side per new session id,
+    // and a session whose first factor was verified long ago is not a fresh
+    // sign-in. Both claims are optional; anything malformed reads as absent.
+    const env = makeEnv(JWKS_URL);
+    expect(
+      await getClerkIdentity(env, verifiedWith({ sub: 'u', sid: 'sess_1', fva: [3, -1] })),
+    ).toMatchObject({ sessionId: 'sess_1', firstFactorAgeMinutes: 3 });
+    expect(
+      await getClerkIdentity(env, verifiedWith({ sub: 'u', sid: 42, fva: [-1, -1] })),
+    ).toMatchObject({ sessionId: null, firstFactorAgeMinutes: null });
+    expect(
+      await getClerkIdentity(env, verifiedWith({ sub: 'u', sid: '', fva: 'x' })),
+    ).toMatchObject({ sessionId: null, firstFactorAgeMinutes: null });
   });
 
   it('asserts iss and aud only when the deployment configures them', async () => {

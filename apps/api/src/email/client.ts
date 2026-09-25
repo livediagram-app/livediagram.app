@@ -6,7 +6,7 @@
 // run sends inside ctx.waitUntil or the daily cron).
 
 import type { Env } from '../types';
-import { insertTelemetryEvents } from '../db/telemetry';
+import { reportServerEvent } from '../server-telemetry';
 import type { EmailKind } from './templates';
 
 const RESEND_ENDPOINT = 'https://api.resend.com/emails';
@@ -66,34 +66,25 @@ export async function sendEmail(env: Env, msg: EmailMessage): Promise<{ sent: bo
         ...(msg.unsubscribeUrl ? { headers } : {}),
       }),
     });
+    // One anonymous telemetry row per outcome (spec/22), written server-side
+    // because nothing about an email reaches a browser: the send happens in a
+    // cron or a waitUntil after the response has gone. Without it the lifecycle
+    // series (spec/64) was unmeasurable and a dead RESEND_API_KEY was invisible.
+    // reportServerEvent gates on TELEMETRY_ENABLED and swallows its own failure.
     if (!res.ok) {
       console.error(
         `[email] send failed (${res.status}) subject="${msg.subject}" to=${redact(msg.to)}`,
       );
-      await report(env, 'Error', 'Api', `Http${res.status}.SendEmail`);
+      await reportServerEvent(env, 'Error', 'Api', `Http${res.status}.SendEmail`);
       return { sent: false };
     }
-    await report(env, 'Email', 'Sent', msg.kind);
+    await reportServerEvent(env, 'Email', 'Sent', msg.kind);
     return { sent: true };
   } catch (err) {
     console.error(`[email] send threw subject="${msg.subject}" to=${redact(msg.to)}`, err);
-    await report(env, 'Error', 'Api', 'Network.SendEmail');
+    await reportServerEvent(env, 'Error', 'Api', 'Network.SendEmail');
     return { sent: false };
   }
-}
-
-// One anonymous telemetry row, written straight to the events table (spec/22).
-// Server-side rather than through POST /api/events because nothing about an
-// email reaches a browser: the send happens in a cron or a waitUntil after the
-// response has gone, so this is the only place that can count it. Without it
-// the lifecycle series (spec/64) was unmeasurable and a dead RESEND_API_KEY
-// was invisible — every failure went to console.error and nowhere else.
-//
-// Gated on TELEMETRY_ENABLED like every other emit, and its own failure is
-// swallowed: telemetry must never turn a delivered email into a thrown send.
-async function report(env: Env, category: string, action: string, type: string): Promise<void> {
-  if (env.TELEMETRY_ENABLED !== 'true') return;
-  await insertTelemetryEvents(env, [{ category, action, type }], Date.now()).catch(() => {});
 }
 
 // Log addresses partially so `wrangler tail` stays useful without dumping full

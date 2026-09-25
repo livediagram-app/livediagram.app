@@ -10,30 +10,31 @@ import type { Env, ShareRole } from '../types';
 // diagram via a share link shouldn't show up in their own
 // "Shared with you" list).
 //
-// Returns whether this was a FIRST visit (no prior row), which the share
-// route uses to fire the "someone joined your diagram" notification
-// (spec/65) once per person rather than per reload. The existence check +
-// upsert aren't atomic, but a rare double / missed notification on a true
-// race is harmless for a best-effort email.
+// Returns whether this was a FIRST visit (no prior row). The share route
+// uses it to fire the "someone joined your diagram" notification (spec/65)
+// and the Diagram·Joined telemetry count (spec/22) once per (visitor,
+// diagram) rather than per reload. Decided by an INSERT OR IGNORE's row
+// count, so two concurrent first opens can't both read as first; a repeat
+// visit then refreshes role + last_seen.
 export async function recordSharedAccess(
   env: Env,
   ownerId: string,
   diagramId: string,
   role: ShareRole,
 ): Promise<boolean> {
-  const existing = await env.DB.prepare(
-    'SELECT 1 AS one FROM shared_with WHERE owner_id = ? AND diagram_id = ? LIMIT 1',
-  )
-    .bind(ownerId, diagramId)
-    .first<{ one: number }>();
   const now = Date.now();
-  await env.DB.prepare(
-    `INSERT INTO shared_with (owner_id, diagram_id, role, last_seen) VALUES (?, ?, ?, ?)
-       ON CONFLICT (owner_id, diagram_id) DO UPDATE SET role = excluded.role, last_seen = excluded.last_seen`,
+  const inserted = await env.DB.prepare(
+    'INSERT OR IGNORE INTO shared_with (owner_id, diagram_id, role, last_seen) VALUES (?, ?, ?, ?)',
   )
     .bind(ownerId, diagramId, role, now)
     .run();
-  return existing === null;
+  if (inserted.meta.changes === 1) return true;
+  await env.DB.prepare(
+    'UPDATE shared_with SET role = ?, last_seen = ? WHERE owner_id = ? AND diagram_id = ?',
+  )
+    .bind(role, now, ownerId, diagramId)
+    .run();
+  return false;
 }
 
 // Whether this owner has ever opened the diagram through a share link

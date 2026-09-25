@@ -21,7 +21,6 @@ import { randomColor, randomName, type Participant } from '@/lib/identity';
 import { ensureCollabKey, hasConfirmedName } from '@/lib/local-identity';
 import { ensureSignedGuestIdentity } from '@/lib/guest-identity';
 import { trackDailyReturn } from '@/lib/daily-return';
-import { track } from '@/lib/telemetry';
 import { resolveDiagramSession } from './editor-page-helpers';
 import { makeSeedFetchedDiagram } from './seed-fetched-diagram';
 
@@ -403,12 +402,9 @@ export function useIdentityBootstrap(opts: {
                   ],
             );
           }
-          // A visitor joined a shared diagram. Owners opening their own
-          // share URL don't count as a join. `type` is the share role
-          // (Edit / View), a preset.
-          if (!isOwnerVisit) {
-            track('Diagram', 'Joined', role === 'edit' ? 'Edit' : 'View');
-          }
+          // Diagram·Joined is counted by the api worker when it resolves
+          // the share code, once per (visitor, diagram) (spec/22). Emitting
+          // here counted every refresh and return visit.
         }
       } else if (id) {
         let fetched;

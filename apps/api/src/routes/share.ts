@@ -9,6 +9,7 @@ import {
 } from '../db';
 import { notifyDiagramJoin } from '../email/notifications';
 import { json, notFound, svgImage } from '../responses';
+import { reportServerEvent } from '../server-telemetry';
 import { timingSafeEqual } from '../auth/timing-safe';
 import { getDiagramTabImageSvg, getDiagramThumbnailSvg } from '../thumbnail';
 import type { DiagramDTO } from '../types';
@@ -72,6 +73,13 @@ export async function handleShare(ctx: RouteContext): Promise<Response> {
         // they've opted out. Resolve the joiner's display name (shown to
         // the owner already in presence) for a friendlier subject.
         if (firstVisit) {
+          // spec/22: Diagram·Joined counts once per (visitor, diagram), here,
+          // because only the server knows a visit is the first. The editor
+          // used to emit it on every open of the share URL, so refreshes and
+          // return visits inflated the count.
+          ctx.waitUntil?.(
+            reportServerEvent(env, 'Diagram', 'Joined', link.role === 'edit' ? 'Edit' : 'View'),
+          );
           ctx.waitUntil?.(
             getParticipant(env, visitor)
               .catch(() => null)

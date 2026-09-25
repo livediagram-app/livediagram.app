@@ -34,9 +34,17 @@ function getJWKS(url: string): ReturnType<typeof createRemoteJWKSet> {
 // because it rides inside the JWKS-verified payload. Null when the
 // session token doesn't carry it; teams' invite auto-connection
 // degrades gracefully in that case.
-type ClerkIdentity = {
+//
+// `sessionId` (the `sid` claim) and `firstFactorAgeMinutes` (the first entry
+// of the `fva` claim: minutes since the user last verified their first
+// factor) feed the server-side Session·SignedUp / SignedIn count only
+// (auth/session-telemetry.ts, spec/22). Both are default Clerk session-token
+// claims; null when absent or malformed, and nothing authorises on them.
+export type ClerkIdentity = {
   userId: string;
   email: string | null;
+  sessionId: string | null;
+  firstFactorAgeMinutes: number | null;
 };
 
 // Verify a Clerk session token from `Authorization: Bearer <token>`
@@ -79,7 +87,14 @@ export async function getClerkIdentity(env: Env, request: Request): Promise<Cler
       typeof payload.email === 'string' && payload.email.length > 0
         ? payload.email.trim().toLowerCase()
         : null;
-    return { userId: payload.sub, email };
+    const sessionId =
+      typeof payload.sid === 'string' && payload.sid.length > 0 ? payload.sid : null;
+    const fva = (payload as { fva?: unknown }).fva;
+    const firstFactorAgeMinutes =
+      Array.isArray(fva) && typeof fva[0] === 'number' && Number.isFinite(fva[0]) && fva[0] >= 0
+        ? fva[0]
+        : null;
+    return { userId: payload.sub, email, sessionId, firstFactorAgeMinutes };
   } catch {
     return null;
   }
