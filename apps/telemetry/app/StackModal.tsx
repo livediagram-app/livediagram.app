@@ -108,7 +108,7 @@ export function StackModal({
             type="button"
             onClick={onClose}
             aria-label={`Close ${title}`}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-200 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-slate-400 hover:bg-slate-200 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
           >
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden>
               <path

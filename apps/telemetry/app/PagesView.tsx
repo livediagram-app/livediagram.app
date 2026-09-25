@@ -1,28 +1,21 @@
 'use client';
 
-import {
-  pageViewApp,
-  type TelemetrySummary,
-  type TelemetryWindowKey,
-} from '@livediagram/api-schema';
+import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
+import { PAGE_INSIGHTS } from './page-insight-defs';
+import { PAGE_VIEW_APPS, pageViewRows, readInsight } from './page-insights';
+import { InsightTile } from './PageInsights';
 import { RankCard } from './RankCard';
-import { PAGE_VIEW_APPS, pageViewRows, per100 } from './page-insights';
-import { PageInsightTile } from './PageInsights';
-import { windowLabel } from './windows';
+import { WINDOW_META, windowHighlightFrom, windowLabel } from './windows';
 
 // Pages view (spec/150): which pages across the site get viewed, broken down
 // by the app that serves them. Every frontend emits `Page·View·<path>` on
 // each path change (full load or in-app navigation), with ids and query
-// strings stripped in the browser. Top to bottom: a few derived insights,
-// then the ten most-viewed pages overall and each app's own top ten.
+// strings stripped in the browser. Top to bottom: insights (one count over
+// another, each with its change and trend), then the ten most-viewed pages
+// overall and each app's own top ten.
 
 // Each ranking card shows its top ten.
 const TOP = 10;
-
-const isLanding = (p: string) => p === '/';
-const isNew = (p: string) => p === '/new';
-const isExplorer = (p: string) => p === '/explorer' || p.startsWith('/explorer/');
-const isDiagram = (p: string) => p === '/diagram';
 
 export function PagesView({
   summary,
@@ -33,7 +26,38 @@ export function PagesView({
 }) {
   const rows = summary.windows[active].rows;
 
-  const allPages = pageViewRows(rows, 'All');
+  const windowDays = WINDOW_META.find((w) => w.key === active)?.days ?? 30;
+  const highlightFromIndex = summary.daily ? windowHighlightFrom(summary.daily, active) : null;
+  // The span each insight's change is measured against: the same number of
+  // days just before the window. The 30 days of series can't reach behind the
+  // 30-day window itself, so that one shows no change.
+  const previousLabel =
+    windowDays * 2 <= (summary.daily?.days.length ?? 0)
+      ? windowDays === 1
+        ? 'the day before'
+        : `the ${windowDays} days before`
+      : null;
+
+  // The ranking cards, longest first, packed into columns (masonry) rather
+  // than a grid: apps serve very different numbers of pages (Live has many,
+  // Help and Dashboard few), and grid rows stretch every card to the tallest
+  // beside it, leaving short ones mostly empty.
+  const rankings = [
+    {
+      key: 'all',
+      title: 'Top 10 Pages',
+      subtitle: 'The most-viewed pages across every app',
+      items: pageViewRows(rows, 'All').slice(0, TOP),
+      emptyLabel: 'No page views in this window yet.',
+    },
+    ...PAGE_VIEW_APPS.map((app) => ({
+      key: app,
+      title: app,
+      subtitle: 'Its ten most-viewed pages',
+      items: pageViewRows(rows, app).slice(0, TOP),
+      emptyLabel: `No ${app} page views in this window yet.`,
+    })),
+  ].sort((a, b) => b.items.length - a.items.length);
 
   return (
     <div className="mt-8">
@@ -45,30 +69,16 @@ export function PagesView({
       </p>
       <section className="mt-8">
         <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-400">Insights</h3>
-        <div className="mt-3 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <PageInsightTile
-            title="Landing to New Diagram"
-            value={per100(rows, isLanding, isNew)}
-            unit="per 100"
-            detail="Views of /new for every 100 views of the landing page."
-          />
-          <PageInsightTile
-            title="Explorer to Diagram"
-            value={per100(rows, isExplorer, isDiagram)}
-            unit="per 100"
-            detail="Diagrams opened for every 100 views of an Explorer page."
-          />
-          <PageInsightTile
-            title="Help per Diagram"
-            value={per100(rows, isDiagram, (p) => pageViewApp(p) === 'Help')}
-            unit="per 100"
-            detail="Help-centre page views for every 100 diagram views."
-          />
-          <PageInsightTile
-            title="Pages Viewed"
-            value={allPages.length}
-            detail="Distinct pages with at least one view in this window."
-          />
+        <div className="mt-3 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {PAGE_INSIGHTS.map((def) => (
+            <InsightTile
+              key={def.id}
+              def={def}
+              reading={readInsight(def, rows, summary.daily, windowDays)}
+              highlightFromIndex={highlightFromIndex}
+              previousLabel={previousLabel}
+            />
+          ))}
         </div>
         <p className="mt-2 text-xs text-slate-400">
           Ratios compare page views, not people: nothing links one view to another.
@@ -77,27 +87,19 @@ export function PagesView({
 
       <section className="mt-8">
         <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-400">Top pages</h3>
-        <div className="mt-3 grid gap-6 lg:grid-cols-2">
-          <RankCard
-            title="Top 10 Pages"
-            subtitle="The most-viewed pages across every app"
-            category="Page"
-            action="View"
-            items={allPages.slice(0, TOP)}
-            daily={summary.daily}
-            emptyLabel="No page views in this window yet."
-          />
-          {PAGE_VIEW_APPS.map((app) => (
-            <RankCard
-              key={app}
-              title={app}
-              subtitle="Its ten most-viewed pages"
-              category="Page"
-              action="View"
-              items={pageViewRows(rows, app).slice(0, TOP)}
-              daily={summary.daily}
-              emptyLabel={`No ${app} page views in this window yet.`}
-            />
+        <div className="mt-3 gap-6 lg:columns-2">
+          {rankings.map((r) => (
+            <div key={r.key} className="mb-6 break-inside-avoid">
+              <RankCard
+                title={r.title}
+                subtitle={r.subtitle}
+                category="Page"
+                action="View"
+                items={r.items}
+                daily={summary.daily}
+                emptyLabel={r.emptyLabel}
+              />
+            </div>
           ))}
         </div>
       </section>

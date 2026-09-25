@@ -135,14 +135,29 @@ about which app serves a path). Top to bottom:
   of paths rather than one type). The per-card "N% of page views" line went
   with the move, since catalogue charts are fixed definitions and the share
   depends on the selected window; each app's count sits in the head's legend.
-- **Insights.** Derived numbers for the window, each a ratio of page views
-  per 100 page views, never of people (nothing links one view to another):
-  Landing to New Diagram (`/new` per 100 `/`), Explorer to Diagram (`/diagram`
-  per 100 Explorer pages), Help per Diagram (help pages per 100 `/diagram`),
-  and Pages Viewed (distinct pages with a view).
+- **Insights.** One count over another for the window, in funnel order:
+  Landing to New Diagram (`/new` per 100 `/`), Wizard Completion (diagrams
+  created per 100 `/new`), Explorer to Diagram (`/diagram` per 100 Explorer
+  pages), Sign-Up Conversion (sign-ups per 100 `/get-started`), Help per
+  Diagram (help pages per 100 `/diagram`), and Pages per Visitor (page views
+  per visitor-day, a browser's first day or a later day it returned). Each
+  tile shows the from → to flow, the rate, the two counts behind it, the
+  change against the same span just before the window (green or rose where a
+  rise is plainly good; slate for Help per Diagram, which could mean engaged
+  or stuck), and a 30-day trend of the rolling 7-day rate. **Both sides count
+  only from the day page views began** on this deployment: page-view
+  telemetry is newer than the other events, and setting a month of diagrams
+  created against two days of wizard views read 500 per 100. The tile says
+  "since page views began" when that cuts into the window, the change only
+  shows once page views cover the span before, and the trend waits for two
+  days of rates. Counts over counts, never people. (A Pages Viewed tile,
+  distinct pages with a view, was dropped as not useful.)
 - **Top pages.** The ten most-viewed pages across every app, then each app's
-  own top ten, as ranking cards side by side, each row labelled with the raw
-  path (not title-cased) with its share bar and 30-day sparkline.
+  own top ten, as ranking cards, each row labelled with the raw path (not
+  title-cased) with its share bar and 30-day sparkline. Ordered longest first
+  and packed into two columns (masonry) rather than a grid: apps serve very
+  different numbers of pages, and grid rows stretched each short card to the
+  tallest beside it.
 
 Removed in September 2026: a **Rising pages** card (biggest gain over the
 last 7 days against the 7 before), and the **All pages** list of every page

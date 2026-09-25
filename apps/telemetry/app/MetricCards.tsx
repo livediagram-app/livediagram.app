@@ -150,7 +150,7 @@ function SeeAlsoLink({ label, onClick }: { label: string; onClick: () => void })
     <button
       type="button"
       onClick={onClick}
-      className="flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-sky-600 transition-colors hover:border-sky-300 hover:bg-sky-50 dark:border-slate-700 dark:bg-slate-900 dark:text-sky-400 dark:hover:border-sky-700 dark:hover:bg-sky-950"
+      className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-sky-600 transition-colors hover:border-sky-300 hover:bg-sky-50 dark:border-slate-700 dark:bg-slate-900 dark:text-sky-400 dark:hover:border-sky-700 dark:hover:bg-sky-950"
     >
       {label}
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden>
