@@ -156,6 +156,10 @@ export function useEditorCommands(): {
         setShareDialogOpen(true);
         track('UI', 'Opened', 'Share');
       },
+      // No focusId: search is "show me everyone", not "show me this person",
+      // which is what the presence-stack entry point passes. The opener tracks
+      // its own UI·Opened·Collaborators, so this adds none.
+      openCollaborators: () => ctx.openCollaborators(null),
       // The remaining handlers track internally (undo/redo, zen, fit,
       // auto layout/align) or have untracked entry points everywhere
       // (export / import / templates), so no extra telemetry here.

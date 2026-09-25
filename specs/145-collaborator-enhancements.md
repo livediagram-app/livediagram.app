@@ -57,6 +57,14 @@ result for a click whose obvious meaning is "tell me about this person".
 - Available wherever the presence stack is, which is only a shared or team
   diagram (a private diagram has no stack, spec/07). Hidden in embed mode, like
   the tab bar.
+- **Also reachable by name from the search panel** ([spec/09](09-context-menus.md)),
+  as the `collaborators` command. The presence stack is the discoverable entry
+  point but it is easy to miss and, on a private diagram, absent — so the modal
+  had exactly one door and no way in by typing. The command is in the
+  **view-safe** set: it opens a panel and changes nothing, so a view-only
+  visitor gets it too, and it is not gated on the diagram being shared or on
+  anyone else being present — "Just you so far" is a real answer to "who is
+  here", and the same subtitle already says it.
 
 ### Implementation notes
 

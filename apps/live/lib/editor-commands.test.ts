@@ -22,6 +22,7 @@ function handlers(): CommandHandlers {
     openTheme: vi.fn(),
     openCanvasOptions: vi.fn(),
     openShare: vi.fn(),
+    openCollaborators: vi.fn(),
     undo: vi.fn(),
     redo: vi.fn(),
     toggleZen: vi.fn(),
@@ -220,6 +221,8 @@ describe('buildEditorCommands — app-level commands (spec/70)', () => {
       'zen',
       'fit-to-screen',
       'export',
+      // Reads the room, writes nothing — a viewer may ask who else is here.
+      'collaborators',
       'tool:pan',
       'tool:laser',
       'tool:spotlight',
@@ -227,6 +230,27 @@ describe('buildEditorCommands — app-level commands (spec/70)', () => {
       'tool:slide-deck',
       'tool:isometric',
     ]);
+  });
+
+  it('offers Collaborators to everyone, shared or not, owner or not', () => {
+    // The panel answers "who is in this diagram" — a question that is just as
+    // valid alone, on someone else's link, or on an offline diagram.
+    for (const over of [
+      {},
+      { isOwner: false },
+      { isOffline: true },
+      { isReadOnly: true },
+    ] as Partial<CommandContext>[]) {
+      expect(ids({ ...base, ...over })).toContain('collaborators');
+    }
+  });
+
+  it('runs the collaborators handler', () => {
+    const h = handlers();
+    buildEditorCommands(base, h)
+      .find((c) => c.id === 'collaborators')!
+      .run();
+    expect(h.openCollaborators).toHaveBeenCalledOnce();
   });
 
   it('names the zen command by its direction', () => {
