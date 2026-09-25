@@ -128,6 +128,8 @@ export async function handleAi(ctx: RouteContext): Promise<Response> {
     return badRequest('invalid JSON');
   }
 
+  // `null` / a bare string parse as JSON too, and destructuring them throws.
+  if (!body || typeof body !== 'object') return badRequest('invalid body');
   const { mode, prompt, elements, tabName, focusIds = [], history = [] } = body;
 
   if (!mode || !['clean', 'ask'].includes(mode)) return badRequest('invalid mode');
@@ -146,6 +148,7 @@ export async function handleAi(ctx: RouteContext): Promise<Response> {
     return badRequest('invalid focusIds');
   }
   if (typeof tabName === 'string' && tabName.length > 200) return badRequest('tabName too long');
+  if (!Array.isArray(history)) return badRequest('history must be an array');
 
   const model = env.OPENAI_MODEL ?? 'gpt-4o';
   const isTextMode = mode === 'ask';
@@ -173,7 +176,7 @@ export async function handleAi(ctx: RouteContext): Promise<Response> {
 
   const safeHistory = history
     .slice(-MAX_HISTORY_TURNS)
-    .filter((t) => t.role === 'user' || t.role === 'assistant')
+    .filter((t) => t && (t.role === 'user' || t.role === 'assistant'))
     .map((t) => ({ role: t.role, content: String(t.content).slice(0, 2000) }));
 
   const messages = [

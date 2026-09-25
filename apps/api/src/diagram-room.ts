@@ -641,6 +641,10 @@ export class DiagramRoom implements DurableObject {
    * which presence ids are live.
    */
   private releaseSelectionLock(asker: Asker, target: string, elementId: string): void {
+    // A view-role visitor can't select, edit or hold the baton, so it has no
+    // business freeing an editor's hold either. The client hides the menu
+    // from them; this is the room refusing a hand-sent frame.
+    if (asker.role !== 'edit') return;
     if (!mayReleaseLock(this.facilitator, asker.presenceId)) return;
     if (target === asker.presenceId) return;
     if (typeof elementId !== 'string' || elementId.length === 0) return;

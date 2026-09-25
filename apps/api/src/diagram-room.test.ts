@@ -1416,6 +1416,16 @@ describe('DiagramRoom freeing a selection lock (spec/07 + spec/149)', () => {
     expect(released(host)).toEqual([]);
   });
 
+  it('refuses a view-role visitor, even while nobody is facilitating', () => {
+    const { room, state } = newRoom();
+    const viewer = makeSocket();
+    const holder = makeSocket();
+    seedSession(state, viewer, presence('viewer', 'view'));
+    seedSession(state, holder, presence('holder', 'edit'));
+    sendFrame(room, viewer, unlock());
+    expect(released(holder)).toEqual([]);
+  });
+
   it('refuses somebody who is not running the session', () => {
     const { room, host, holder, bystander } = room3();
     // Give the baton to `host`, then have a bystander try to use it.

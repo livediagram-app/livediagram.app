@@ -41,6 +41,7 @@ function makeCtx(opts: {
   env: Partial<Env>;
   origin?: string | null;
   clerkUserId?: string | null;
+  body?: string;
 }): RouteContext {
   const headers = new Headers();
   if (opts.origin !== null && opts.origin !== undefined) {
@@ -49,7 +50,7 @@ function makeCtx(opts: {
   const request = new Request('https://api.example.com/api/ai', {
     method: 'POST',
     headers,
-    body: JSON.stringify({ mode: 'clean', prompt: 'p', elements: [], tabName: 't' }),
+    body: opts.body ?? JSON.stringify({ mode: 'clean', prompt: 'p', elements: [], tabName: 't' }),
   });
   return {
     request,
@@ -135,4 +136,26 @@ describe('handleAi Clerk-only gate (AI_REQUIRE_CLERK)', () => {
     const res = await handleAi(ctx);
     expect(res.status).not.toBe(401);
   });
+});
+
+describe('handleAi malformed bodies', () => {
+  // A well-formed JSON value of the wrong shape is a 400, not a thrown 500.
+  const bad = [
+    ['null', 'null'],
+    ['a bare string', '"hello"'],
+    [
+      'a non-array history',
+      JSON.stringify({ mode: 'ask', prompt: 'p', elements: [], history: 'x' }),
+    ],
+    [
+      'a null history turn',
+      JSON.stringify({ mode: 'ask', prompt: 'p', elements: [], history: [null] }),
+    ],
+  ] as const;
+  for (const [name, body] of bad) {
+    it(`answers ${name} without throwing`, async () => {
+      const res = await handleAi(makeCtx({ env: {}, body }));
+      expect(res.status).toBeLessThan(500);
+    });
+  }
 });
