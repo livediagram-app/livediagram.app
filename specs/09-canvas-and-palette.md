@@ -1363,10 +1363,12 @@ element count after, runs every element through `isValidElement` (dropping
 failures individually rather than refusing the whole paste), and de-duplicates
 ids.
 
-**Identity does not travel.** `commentThread` and `responses` (spec/122) are
-stripped on the way out: a thread is a conversation about the original element
-and a vote is cast in a session, so re-attaching either to a copy in another
-diagram misrepresents it — and a copy can cross accounts.
+**Identity does not travel.** `commentThread`, `responses` (spec/122) and an
+assigned `action` (spec/68) are stripped on the way out, on the OS clipboard and
+the in-app buffer alike: a thread is a conversation about the original element,
+a vote is cast in a session, and an action is work handed to a person, so
+re-attaching any of them to a copy misrepresents it — and a copy can cross
+accounts.
 
 **Three sources compete on paste, in order:** an image file on the system
 clipboard (a screenshot, routed to the image-upload pipeline), our own
@@ -1378,6 +1380,14 @@ Whether that write **landed** is remembered, and it settles the ambiguous case:
 foreign text on the clipboard after a successful write means the user copied
 something else afterwards, so the stale buffer must NOT paste; after a refused
 write, the buffer is the only record of the copy and still does.
+
+**Copied elements pasted into a label being typed in land on the canvas.** Every
+label editor pastes plain text, and our payload IS plain text, so without a rule
+the JSON envelope would be typed into the element. While a label on the canvas
+is open for typing, a capture-phase listener in `useClipboard` recognises the
+envelope before the editor sees the paste: typing ends and the elements paste
+exactly as if no label were open. Ordinary text still pastes into the label, and
+a text field outside the canvas is left alone.
 
 Pasting foreign text as a text element is the obvious next step and is
 deliberately not built: it needs the viewport centre in canvas coordinates,
