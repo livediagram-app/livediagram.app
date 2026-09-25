@@ -66,4 +66,8 @@ export const OWNER_SCOPED_SEGMENTS = new Set([
   // The feed is keyed on the resolved owner id and returns diagram
   // names + comment text, so a harvested guest id must not read it.
   'timeline',
+  // Same shape as the timeline: actions + comment threads (names, text)
+  // keyed on the resolved owner, and the owner's starred diagrams.
+  'activity',
+  'favourites',
 ]);

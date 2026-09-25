@@ -191,6 +191,31 @@ describe('handleDiagrams metadata PUT (PUT /diagrams/:id)', () => {
     expect(db.setDiagramPresentation).toHaveBeenCalledWith({}, 'd1', deck);
   });
 
+  it('blanks ownerId in the response for an edit-role share visitor (spec/04)', async () => {
+    // gateEdit admits an edit-role share code, so the PUT reply reaches the
+    // same audience the GET redacts for.
+    db.getDiagram.mockResolvedValue(fakeDiagram('0f5ca4af-9a8a-4a60-be5e-1179e5555880'));
+    canEditDiagram.mockResolvedValue(true);
+    const res = await handleDiagrams(
+      makeCtx('PUT', '/api/diagrams/d1', {
+        owner: 'visitor-1',
+        body: { name: 'Doc' },
+        headers: { 'X-Share-Code': 'CODE1234' },
+      }),
+    );
+    expect(res.status).toBe(200);
+    const { diagram } = (await res.json()) as { diagram: DiagramDTO };
+    expect(diagram.ownerId).toBe('');
+  });
+
+  it('returns the real ownerId to the owner', async () => {
+    db.getDiagram.mockResolvedValue(fakeDiagram('owner-1'));
+    canEditDiagram.mockResolvedValue(true);
+    const res = await handleDiagrams(makeCtx('PUT', '/api/diagrams/d1', { body: { name: 'Doc' } }));
+    const { diagram } = (await res.json()) as { diagram: DiagramDTO };
+    expect(diagram.ownerId).toBe('owner-1');
+  });
+
   it('clears the deck on an explicit null', async () => {
     db.getDiagram.mockResolvedValue(fakeDiagram('owner-1'));
     canEditDiagram.mockResolvedValue(true);

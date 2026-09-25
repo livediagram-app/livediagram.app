@@ -59,6 +59,9 @@ describe('OWNER_SCOPED_SEGMENTS', () => {
       'participants',
       'preferences',
       'shared',
+      'timeline',
+      'activity',
+      'favourites',
     ])
       expect(OWNER_SCOPED_SEGMENTS.has(s)).toBe(true);
   });

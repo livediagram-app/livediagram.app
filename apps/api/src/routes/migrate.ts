@@ -1,6 +1,7 @@
 // /api/migrate — guest -> authed (and legacy guest -> signed-guest)
 // ownership migration.
 
+import { guestSignatureEnforced, isClerkIdShape } from '../auth/guest-rest';
 import { verifyOwnerId } from '../auth/owner-signature';
 import { migrateOwnerId } from '../db';
 import { badRequest, forbidden, json, missingAuth, notFound } from '../responses';
@@ -62,6 +63,20 @@ export async function handleMigrate(ctx: RouteContext): Promise<Response> {
   const fromOwnerId = resolveOwner();
   const toOwnerId = body?.toOwnerId?.trim();
   if (!fromOwnerId) return missingAuth();
+  // The source here is only the unsigned bearer header, so it must never be
+  // an account id: Clerk ids are harvestable (team member lists), and this
+  // path would otherwise move a signed-up user's whole workspace to whoever
+  // names it. The global Clerk-shape refusal in index.ts only covers
+  // OWNER_SCOPED_SEGMENTS, which deliberately leaves `migrate` out.
+  if (isClerkIdShape(fromOwnerId)) return forbidden();
+  // Once enforcement is armed the legacy window is over: an unsigned source
+  // can no longer reach its own data, so it can't move it either.
+  if (
+    guestSignatureEnforced(env, Date.now()) &&
+    !(await verifyOwnerId(secret, fromOwnerId, request.headers.get('X-Owner-Sig')))
+  ) {
+    return forbidden();
+  }
   if (!toOwnerId) return badRequest('toOwnerId is required');
   if (fromOwnerId === toOwnerId) return json({ migrated: ZERO });
   if (!(await verifyOwnerId(secret, toOwnerId, body?.toSignature))) return forbidden();

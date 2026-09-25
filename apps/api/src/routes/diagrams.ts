@@ -249,7 +249,9 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       if (diagram && typeof body.name === 'string' && body.name !== existing.name) {
         ctx.waitUntil?.(recordDiagramRenamed(env, diagram, existing.name, owner));
       }
-      return json({ diagram });
+      // Redacted like the GET: an edit-role share visitor passes gateEdit, and
+      // a guest owner's id is a credential (see redact-owner.ts).
+      return json({ diagram: diagram ? redactOwnerId(diagram, owner) : diagram });
     }
     if (request.method === 'DELETE') {
       // Owner, OR a joined member of the diagram's team (spec/35:
