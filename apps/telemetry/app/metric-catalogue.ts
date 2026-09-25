@@ -33,3 +33,48 @@ export const SIGN_INS: Metric = {
   type: null,
   title: 'Sign-Ins',
 };
+
+export const SIGN_OUTS: Metric = {
+  category: 'Session',
+  action: 'SignedOut',
+  type: null,
+  title: 'Sign-Outs',
+};
+
+export const ACCOUNTS_DELETED: Metric = {
+  category: 'Session',
+  action: 'Deleted',
+  type: 'Account',
+  title: 'Accounts Deleted',
+  blurb: 'Signed-in users who deleted their account and all of its data.',
+};
+
+// Parked: cleared from Highlights (September 2026) while it is rebuilt, and on
+// no other tab as a card, so kept here with their wording ready to add back.
+// Search and Raw still show the underlying events.
+
+export const ELEMENTS_ADDED: Metric = {
+  category: 'Element',
+  action: 'Added',
+  allTypes: true,
+  title: 'Elements Added',
+  blurb:
+    'Every shape, text, sticky, arrow, or image put on a canvas, across all kinds. Copies count too: a duplicate or paste adds one per element it creates.',
+};
+
+export const EXPORTS: Metric = {
+  category: 'Diagram',
+  action: 'Exported',
+  allTypes: true,
+  title: 'Exports',
+  blurb:
+    'A tab or selection exported, across every format (PNG, SVG, PDF, JSON, Mermaid, Markdown, Excalidraw). For the text formats, copying to the clipboard counts as an export too.',
+};
+
+export const DARK_MODE_SWITCHES: Metric = {
+  category: 'UI',
+  action: 'Toggled',
+  type: 'Dark',
+  title: 'Dark-Mode Switches',
+  blurb: 'Someone set the editor appearance to Dark, from the header toggle or Settings.',
+};

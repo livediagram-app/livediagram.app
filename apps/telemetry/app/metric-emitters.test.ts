@@ -15,6 +15,7 @@ import {
   NON_PATTERN_CANVAS_TYPES,
   THEME_ALIASES,
 } from './LookAndFeelView';
+import * as CATALOGUE from './metric-catalogue';
 import { groupMetrics, type MetricGroup } from './metric-series';
 import { SELECTION_MODES } from './PaletteView';
 
@@ -91,7 +92,9 @@ const ALL: MetricGroup[] = [
   ...EXTERNAL,
   ...HELP,
 ];
-const METRICS = ALL.flatMap(groupMetrics);
+// Plus every catalogue chart, including ones parked off every tab, so a chart
+// waiting to be added back can't rot while it is out of view.
+const METRICS = [...ALL.flatMap(groupMetrics), ...Object.values(CATALOGUE)];
 const UNTYPED = METRICS.filter((m) => !m.allTypes && !m.typeIn && (m.type ?? null) === null);
 const TYPED = METRICS.filter((m) => !m.allTypes && !m.typeIn && typeof m.type === 'string');
 

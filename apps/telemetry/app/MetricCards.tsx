@@ -4,14 +4,8 @@ import { useState } from 'react';
 import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
 import { MetricCard } from './MetricCard';
 import { MetricStackCard } from './MetricStackCard';
-import {
-  dailySeries,
-  isStack,
-  metricKey,
-  stackSeriesColor,
-  windowCount,
-  type MetricStack,
-} from './metric-series';
+import { StackTray } from './StackTray';
+import { dailySeries, isStack, metricKey, stackSeriesColor, windowCount } from './metric-series';
 import { windowHighlightFrom } from './windows';
 
 export type { Metric, MetricGroup, MetricStack } from './metric-series';
@@ -26,7 +20,9 @@ import type { MetricGroup } from './metric-series';
 // of cards, so the fan is worth seeing (the Timeline's rate, spec/138 §2.6).
 const EXPAND_STAGGER_MS = 60;
 
-const stackKey = (group: MetricGroup, stack: MetricStack) => `${group.title}|${stack.title}`;
+// The card grid, shared by a group and an open stack's tray so the tray's
+// cards line up with the columns around it.
+const GRID = 'grid gap-4 sm:grid-cols-2 xl:grid-cols-3';
 
 export function MetricGroups({
   groups,
@@ -39,13 +35,14 @@ export function MetricGroups({
 }) {
   const daily = summary.daily;
   const highlightFromIndex = daily ? windowHighlightFrom(daily, active) : null;
-  // Which stacks are fanned out. View state only: nothing persists it.
-  const [open, setOpen] = useState<ReadonlySet<string>>(new Set());
-  const toggle = (key: string) =>
+  // The open stack in each group, by group title. One per group: two open
+  // trays would sit one under the other, and the second's caret would point
+  // across the first at a head it isn't under. View state only.
+  const [open, setOpen] = useState<Readonly<Record<string, string>>>({});
+  const toggle = (group: string, stack: string) =>
     setOpen((prev) => {
-      const next = new Set(prev);
-      if (!next.delete(key)) next.add(key);
-      return next;
+      const { [group]: current, ...rest } = prev;
+      return current === stack ? rest : { ...rest, [group]: stack };
     });
 
   return (
@@ -55,7 +52,10 @@ export function MetricGroups({
           <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-400">
             {group.title}
           </h3>
-          <div className="mt-3 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {/* Dense packing: an open stack's tray spans a full row, and without
+              it the cards after the head would drop below the tray instead of
+              finishing the head's row. */}
+          <div className={`mt-3 grid-flow-row-dense ${GRID}`}>
             {group.metrics.map((item) => {
               if (!isStack(item)) {
                 return (
@@ -69,31 +69,32 @@ export function MetricGroups({
                   />
                 );
               }
-              const key = stackKey(group, item);
-              const expanded = open.has(key);
+              const expanded = open[group.title] === item.title;
               const counts = item.members.map((m) => windowCount(summary, active, m));
               const series = item.members.map((m, i) => ({
                 label: m.title,
                 color: stackSeriesColor(i),
                 values: daily ? dailySeries(daily, m) : [],
               }));
-              // A fragment, so the head and its fanned-out members are each
-              // their own grid cell rather than one oversized item.
+              // A pair of siblings, not a wrapper: the head keeps its own cell
+              // (so opening never moves it, and never remounts it to replay
+              // its arrival), and the tray takes the row beneath.
               return [
                 <MetricStackCard
-                  key={`stack:${key}`}
+                  key={`stack:${item.title}`}
                   stack={item}
                   series={series}
                   counts={counts}
                   days={daily?.days}
                   highlightFromIndex={highlightFromIndex}
                   expanded={expanded}
-                  onToggle={() => toggle(key)}
+                  onToggle={() => toggle(group.title, item.title)}
                 />,
-                ...(expanded
-                  ? item.members.map((m, i) => (
+                expanded ? (
+                  <StackTray key={`tray:${item.title}`} grid={GRID}>
+                    {item.members.map((m, i) => (
                       <div
-                        key={`stack:${key}:${metricKey(m)}`}
+                        key={metricKey(m)}
                         className="tl-fan-out"
                         style={{ animationDelay: `${i * EXPAND_STAGGER_MS}ms` }}
                       >
@@ -106,8 +107,9 @@ export function MetricGroups({
                           color={series[i]?.color}
                         />
                       </div>
-                    ))
-                  : []),
+                    ))}
+                  </StackTray>
+                ) : null,
               ];
             })}
           </div>

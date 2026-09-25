@@ -1,7 +1,14 @@
 'use client';
 
 import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
-import { NEW_VISITORS, RETURNING_VISITORS, SIGN_INS, SIGN_UPS } from './metric-catalogue';
+import {
+  ACCOUNTS_DELETED,
+  NEW_VISITORS,
+  RETURNING_VISITORS,
+  SIGN_INS,
+  SIGN_OUTS,
+  SIGN_UPS,
+} from './metric-catalogue';
 import { MetricGroups, type MetricGroup } from './MetricCards';
 import { windowLabel } from './windows';
 
@@ -44,16 +51,7 @@ export const GROUPS: MetricGroup[] = [
   },
   {
     title: 'Account lifecycle',
-    metrics: [
-      { category: 'Session', action: 'SignedOut', type: null, title: 'Sign-Outs' },
-      {
-        category: 'Session',
-        action: 'Deleted',
-        type: 'Account',
-        title: 'Accounts Deleted',
-        blurb: 'Signed-in users who deleted their account and all of its data.',
-      },
-    ],
+    metrics: [SIGN_OUTS, ACCOUNTS_DELETED],
   },
   // Lifecycle + transactional email (spec/64), written server-side by the api
   // worker — nothing about a send reaches a browser, so this is the only place

@@ -10,8 +10,9 @@ import { StackTrendChart, type StackSeries } from './StackTrendChart';
 // behind it so it reads as a deck (the Timeline stack's look, spec/138 §2.1).
 //
 // It is the stack's toggle in both states. Collapsed it reads "click to
-// expand"; open it stays in its cell at the head of the fanned-out member
-// cards, ringed, its layers gone, reading "click to collapse". The caller
+// expand"; open it stays in its cell, its layers gone, ringed in the colour of
+// the tray its members are dealt into below it (StackTray), reading "click to
+// collapse". The caller
 // renders it unconditionally so toggling never remounts it and replays its
 // arrival.
 //
@@ -48,7 +49,9 @@ export function MetricStackCard({
 
   return (
     // The layers step down and right into the grid gap; `mb-2 mr-2` keeps
-    // the deepest one inside this cell rather than under the next.
+    // the deepest one inside this cell rather than under the next. Kept while
+    // open too, though the layers are gone: dropping it would widen the head
+    // as it opens, and opening a stack must not move or resize anything.
     <div className="tl-fan-out-up relative mb-2 mr-2 flex h-full flex-col">
       {deep && <div aria-hidden className={`${layer} translate-x-2 translate-y-2 opacity-50`} />}
       {!expanded && (
@@ -62,7 +65,7 @@ export function MetricStackCard({
         onKeyDown={onKeyDown}
         className={`relative flex flex-1 cursor-pointer flex-col rounded-2xl border bg-white p-5 transition-colors hover:border-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 dark:bg-slate-900 dark:hover:border-slate-600 ${
           expanded
-            ? 'border-sky-400 ring-2 ring-sky-400/40 dark:border-sky-500'
+            ? 'border-sky-300 ring-4 ring-sky-100 dark:border-sky-700 dark:ring-sky-950'
             : 'border-slate-200 dark:border-slate-700'
         }`}
       >
