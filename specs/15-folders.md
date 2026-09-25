@@ -174,18 +174,23 @@ layouts because they're solving different problems.
 This is the docked side-panel on the editor and the new-diagram
 flow. Space is tight; the user is mid-task; "find this thing fast"
 beats "browse my whole library." The panel header carries a single
-compact **New** chip (plus icon + a small chevron) whose popover menu
-offers both header actions — **New diagram** and **Open Explorer**
-(the full-page Explorer's Recent list, `/explorer/recent`) — merged
-from the two separate New / Open chips so the title row holds one
-piece of chrome. When the host passes no new-diagram handler the chip
-falls back to the plain **Open** link (one action needs no menu).
-The popover **opens on mouse hover** (click-to-open read as friction
-for a two-item menu); a ~260ms grace timer on hover-out covers the
-pointer's travel into the portalled menu and closes it once the
-pointer has left both the chip and the menu. Click remains the touch
-/ keyboard path, and is open-only for mouse so a habitual click right
-after the hover-open doesn't snap the menu shut.
+**⋯** button, left of the help `?`, whose click-open menu of full-width
+icon-left rows holds the diagram's and the app's verbs in three bands
+split by separators:
+
+1. **New Diagram**, **Open Explorer** (the full-page Explorer's Recent
+   list, `/explorer/recent`).
+2. **Share** (owners only, the header Share button's gate) and
+   **Export** (the active tab, as the tab menu's Export).
+3. **Search**, **GitHub** (the open-source repo, new tab), **Settings**.
+
+A row whose handler the host doesn't pass is absent, and a band left
+empty takes its separator with it (the Explorer behind an error screen
+has no diagram, so no Share / Export). This replaced a **+ New** chip
+whose hover-open popover held only band 1, and took GitHub off the
+editor's bottom bar, which keeps Search, Settings and the appearance
+toggle (spec/07). The full-page Explorer's bottom bar keeps its GitHub
+link.
 
 - The existing "Current Diagram" and "Recent Diagrams" sections stay
   unchanged at the top.

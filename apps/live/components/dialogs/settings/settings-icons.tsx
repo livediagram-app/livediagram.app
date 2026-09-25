@@ -15,6 +15,7 @@ export type SettingsCategoryId =
   | 'editor'
   | 'appearance'
   | 'controls'
+  | 'keyboard'
   | 'panels'
   | 'notifications'
   | 'accessibility'
@@ -30,6 +31,7 @@ const TILE: Record<SettingsCategoryId, string> = {
   editor: 'bg-blue-500',
   appearance: 'bg-sky-600',
   controls: 'bg-slate-500',
+  keyboard: 'bg-orange-500',
   panels: 'bg-amber-500',
   notifications: 'bg-rose-500',
   accessibility: 'bg-indigo-500',
@@ -83,6 +85,15 @@ const ControlsGlyph = (
   <Svg>
     <path d="M4.5 3.2 15 9.4l-4.3 1.1-1.5 4.4L4.5 3.2Z" />
     <path d="m11.4 12.1 3.6 4.2" />
+  </Svg>
+);
+
+// Keyboard: a keyboard, keys over a space bar. The shortcut list and its
+// on/off switch are the whole group, so the device itself is the mark.
+const KeyboardGlyph = (
+  <Svg>
+    <rect x="2" y="5" width="16" height="10.5" rx="2" />
+    <path d="M5.5 8.5h.01M8.5 8.5h.01M11.5 8.5h.01M14.5 8.5h.01M7 12.2h6" />
   </Svg>
 );
 
@@ -151,6 +162,7 @@ const GLYPHS: Record<SettingsCategoryId, ReactNode> = {
   editor: EditorGlyph,
   appearance: AppearanceGlyph,
   controls: ControlsGlyph,
+  keyboard: KeyboardGlyph,
   panels: PanelsGlyph,
   notifications: NotificationsGlyph,
   accessibility: AccessibilityGlyph,

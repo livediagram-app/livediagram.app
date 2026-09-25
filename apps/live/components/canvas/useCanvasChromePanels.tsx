@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useCallback, type ReactNode } from 'react';
+import { useCallback, useMemo, type ReactNode } from 'react';
 import { track } from '@/lib/telemetry';
 import { useStableCallbacks } from '@/hooks/ui/useStableCallbacks';
 import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
@@ -156,6 +156,7 @@ export function useCanvasChromePanels({
     onMoveExplorer,
     onMovePalette,
     onNewDiagram,
+    explorerMenuActions,
     onOpenActionForElement,
     onOpenCommentsForElement,
     onOpenDiagram,
@@ -218,7 +219,27 @@ export function useCanvasChromePanels({
     onDeleteFolder,
     onMoveDiagramToFolder,
     onMoveDiagramTo,
+    onMenuShare: explorerMenuActions?.onShare,
+    onMenuExport: explorerMenuActions?.onExport,
+    onMenuSearch: explorerMenuActions?.onSearch,
+    onMenuSettings: explorerMenuActions?.onOpenSettings,
   });
+  // The ⋯ menu's rows, stable like the rest; a row stays absent while its
+  // handler is, since the stable wrapper alone would always look present.
+  const hasShare = !!explorerMenuActions?.onShare;
+  const hasExport = !!explorerMenuActions?.onExport;
+  const hasSearch = !!explorerMenuActions?.onSearch;
+  const hasSettings = !!explorerMenuActions?.onOpenSettings;
+  const explorerMenu = useMemo(
+    () => ({
+      onShare: hasShare ? explorerHandlers.onMenuShare : undefined,
+      onExport: hasExport ? explorerHandlers.onMenuExport : undefined,
+      onSearch: hasSearch ? explorerHandlers.onMenuSearch : undefined,
+      onOpenSettings: hasSettings ? explorerHandlers.onMenuSettings : undefined,
+    }),
+    [explorerHandlers, hasShare, hasExport, hasSearch, hasSettings],
+  );
+
   const activityHandlers = useStableCallbacks({
     onUndo,
     onRedo,
@@ -320,6 +341,7 @@ export function useCanvasChromePanels({
       dock={explorerWiring.dock}
       onOpenDiagram={explorerHandlers.onOpenDiagram}
       onNewDiagram={explorerHandlers.onNewDiagram}
+      menuActions={explorerMenu}
       onRenameCurrent={explorerHandlers.onRenameCurrent}
       onDeleteDiagram={explorerHandlers.onDeleteDiagram}
       onDuplicateDiagram={explorerHandlers.onDuplicateDiagram}

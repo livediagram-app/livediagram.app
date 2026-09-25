@@ -42,7 +42,8 @@ view-only visitors (focusing is read-only).
 - **Keyboard:** `Z` toggles it on and off; `Escape` exits when active.
   The binding obeys the per-device keyboard-shortcuts toggle and the
   usual text-input / label-edit bailouts (so typing a `z` into a label
-  never flips the mode). Listed in the shortcuts dialog under Tools.
+  never flips the mode). Listed under Tools in the shortcut catalogue
+  (Settings' Keyboard category, spec/20).
 
 ## Telemetry
 

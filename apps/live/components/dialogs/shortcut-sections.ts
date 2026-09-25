@@ -1,11 +1,11 @@
-// The shortcut catalogue the Shortcuts dialog renders (spec/07).
+// The shortcut catalogue the Settings Keyboard category lists (spec/07).
 //
 // Data only, in its own module so `shortcut-sections.test.ts` can read the
-// real rows without importing the dialog component: the tests run in the node
-// environment, and pulling in the modal would drag React and DOM helpers along
+// real rows without importing the settings component: the tests run in the node
+// environment, and pulling in React components would drag React and DOM helpers along
 // for a list of strings.
 //
-// The dialog is the reference users are told to trust ("every binding the
+// The list is the reference users are told to trust ("every binding the
 // editor knows"), and it is a hand-kept list beside the hand-kept key maps in
 // hooks/canvas/editor-shortcut-keys.ts. The test pins the two together.
 

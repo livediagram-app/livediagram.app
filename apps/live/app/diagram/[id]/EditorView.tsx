@@ -128,7 +128,6 @@ export function EditorView() {
     setShareDialogOpen,
     renameDiagramNonce,
     renameTabNonce,
-    setShortcutsOpen,
     tabs,
     toggleActiveTabLock,
     zenMode,
@@ -349,10 +348,6 @@ export function EditorView() {
               participantsByTab={participantsByTab}
               selfId={selfParticipant.id}
               selfRole={sessionRole}
-              onOpenShortcuts={() => {
-                setShortcutsOpen(true);
-                track('UI', 'Opened', 'Shortcuts');
-              }}
               onOpenSettings={() => {
                 // Preferences are user-scoped, not diagram-scoped, so
                 // view-role visitors can still flip them for their own

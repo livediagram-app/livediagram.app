@@ -2,15 +2,13 @@ import { useCallback, useEffect, useState } from 'react';
 import type { CanvasThemeTab } from '@/components/dialogs/CanvasThemeDialog';
 import { track } from '@/lib/telemetry';
 
-// Top-level modal/dialog visibility for the editor: Search, Shortcuts,
-// Settings, the Share dialog, the per-tab Export / Import dialogs, and the
+// Top-level modal/dialog visibility for the editor: Search, Settings, the Share dialog, the per-tab Export / Import dialogs, and the
 // Collaborators modal.
 // Pure open/closed UI flags with no diagram-data coupling — a self-
 // contained slice composed into useEditorState and spread into its
 // view-model.
 export function useEditorDialogs() {
   const [searchOpen, setSearchOpen] = useState(false);
-  const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   // Where Settings should land when it is opened from a search result
   // (spec/20): the setting itself, not the dialog's front door. Cleared on
@@ -23,9 +21,18 @@ export function useEditorDialogs() {
     setSettingsFocus({ categoryId, rowKey });
     setSettingsOpen(true);
   }, []);
+  // Category to open on WITHOUT ringing a row: the `?` key lands on the
+  // Keyboard category, where the shortcut list lives now that it has no
+  // window of its own.
+  const [settingsCategory, setSettingsCategory] = useState<string | null>(null);
+  const openSettingsOn = useCallback((categoryId: string) => {
+    setSettingsCategory(categoryId);
+    setSettingsOpen(true);
+  }, []);
   const closeSettings = useCallback(() => {
     setSettingsOpen(false);
     setSettingsFocus(null);
+    setSettingsCategory(null);
   }, []);
   // `?share=1` deep-link (the Explorer's "Manage Sharing…" row opens the
   // diagram with this param): land with the Share dialog already open.
@@ -76,12 +83,12 @@ export function useEditorDialogs() {
   return {
     searchOpen,
     setSearchOpen,
-    shortcutsOpen,
-    setShortcutsOpen,
     settingsOpen,
     setSettingsOpen,
     settingsFocus,
     openSettingsAt,
+    settingsCategory,
+    openSettingsOn,
     closeSettings,
     shareDialogOpen,
     setShareDialogOpen,

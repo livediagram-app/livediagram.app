@@ -208,6 +208,10 @@ export function EditorCanvasHost() {
     identityOnlyScreenOpen,
     imageContext,
     isOwner,
+    setSearchOpen,
+    setShareDialogOpen,
+    setSettingsOpen,
+    loadAllTabs,
     facilitator,
     isPinchingRef,
     isReadOnly,
@@ -805,6 +809,30 @@ export function EditorCanvasHost() {
         currentDiagramId={diagramId}
         onOpenDiagram={openDiagram}
         onNewDiagram={newDiagram}
+        explorerMenuActions={{
+          // The header's Share gate: owners only (spec/15, spec/11).
+          onShare:
+            isOwner && hydrated
+              ? () => {
+                  setShareDialogOpen(true);
+                  track('UI', 'Opened', 'Share');
+                }
+              : undefined,
+          onExport: () => {
+            setExportScope('tab');
+            setExportOpen(true);
+          },
+          onSearch: () => {
+            setSearchOpen(true);
+            // Same prefetch as the bottom bar's Search: element matches
+            // cover tabs not yet visited (spec/09).
+            void loadAllTabs();
+          },
+          onOpenSettings: () => {
+            setSettingsOpen(true);
+            track('UI', 'Opened', 'Settings');
+          },
+        }}
         onRenameCurrent={(next) => {
           const prev = diagramName.trim();
           const nextTrim = next.trim();

@@ -512,6 +512,8 @@ export type CanvasProps = {
   currentDiagramId: string | null;
   onOpenDiagram: (id: string, shareCode?: string) => void;
   onNewDiagram: () => void;
+  // The Explorer panel's ⋯ menu verbs beyond new / open (spec/15).
+  explorerMenuActions?: import('@/components/panels/Explorer.types').ExplorerMenuActions;
   onRenameCurrent: (name: string) => void;
   onDeleteDiagram: (id: string) => void;
   onDuplicateDiagram: (id: string) => void;

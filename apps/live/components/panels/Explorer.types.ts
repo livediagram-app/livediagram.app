@@ -94,6 +94,9 @@ export type ExplorerProps = {
     // personal -> team move counts as Team·Added·Diagram (spec/22).
     fromTeamId?: string | null,
   ) => void;
+  // The header ⋯ menu's verbs beyond new / open (spec/15). Each optional:
+  // an absent handler drops its row.
+  menuActions?: ExplorerMenuActions;
   // Callback the Canvas wires up to track Explorer's bottom edge so
   // the Palette can stack beneath it on mobile (where Explorer
   // banner-pins to the top of the viewport rather than the left
@@ -108,4 +111,11 @@ export type ExplorerProps = {
   mobileDockAnchor?: DockAnchor;
   forceDockMode?: boolean;
   dismissOnOutside?: boolean;
+};
+
+export type ExplorerMenuActions = {
+  onShare?: () => void;
+  onExport?: () => void;
+  onSearch?: () => void;
+  onOpenSettings?: () => void;
 };

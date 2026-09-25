@@ -1,6 +1,7 @@
 import { useAppearance, nextAppearanceSetting } from '@/hooks/ui/useAppearance';
 import type { AppearanceSetting } from '@/hooks/ui/appearance-store';
 import { Tooltip } from '@/components/primitives/Tooltip';
+import { CHROME_BTN, CHROME_BTN_LABELLED, ChromeLabel } from '@/components/chrome/chrome-button';
 
 // The Appearance control: one button that CYCLES Light → Dark → System.
 // A self-contained feature (its own hook + icons) that the tab bar
@@ -27,7 +28,7 @@ const DESCRIPTION: Record<AppearanceSetting, string> = {
   system: 'The editor chrome follows your device setting.',
 };
 
-export function AppearanceToggle() {
+export function AppearanceToggle({ labelled = false }: { labelled?: boolean }) {
   const { setting, cycle } = useAppearance();
   const next = nextAppearanceSetting(setting);
   const label = `Appearance: ${LABEL[setting]}. Switch to ${LABEL[next]}.`;
@@ -37,9 +38,10 @@ export function AppearanceToggle() {
         type="button"
         onClick={cycle}
         aria-label={label}
-        className="ml-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 sm:ml-1 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+        className={labelled ? `${CHROME_BTN} ${CHROME_BTN_LABELLED}` : CHROME_BTN}
       >
         {setting === 'dark' ? <MoonIcon /> : setting === 'system' ? <SystemIcon /> : <SunIcon />}
+        <ChromeLabel show={labelled}>{LABEL[setting]}</ChromeLabel>
       </button>
     </Tooltip>
   );

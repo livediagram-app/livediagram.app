@@ -79,8 +79,8 @@ arrows alike). Shift release mid-drag (or a no-move release) filters the
 clones out, translates the originals to the cursor, and restores the
 selection; a shift-drop just clears the swap bookkeeping. Everything
 flows through the gesture's tick stream (one undo step; Escape's
-cancel-to-checkpoint covers it). Listed in the shortcuts dialog beside
-the other drag modifiers.
+cancel-to-checkpoint covers it). Listed in the shortcut catalogue
+(Settings' Keyboard category, spec/20) beside the other drag modifiers.
 
 ## References
 

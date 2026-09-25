@@ -84,7 +84,8 @@ Available to everyone, including view-only visitors (looking is read-only).
 - **Keyboard:** `I` selects it (free letter; `S`/`P`/`L` are the other tools,
   `E` eraser, `Z` zen). Obeys the per-device keyboard-shortcuts toggle and the
   text-input / label-edit bailouts so typing `i` into a label never flips the
-  mode. Listed in the shortcuts dialog under Tools.
+  mode. Listed under Tools in the shortcut catalogue (Settings' Keyboard
+  category, spec/20).
 - Switching to any other tool (or `S` for Select) returns to the flat 2D view.
 
 ## Telemetry

@@ -127,6 +127,11 @@ export type SettingsNoteRowSpec = RowBase & { kind: 'note'; note: string };
 // carries no read/write pair and is rendered against its own store.
 export type SettingsShortcutsRowSpec = RowBase & { kind: 'shortcuts' };
 
+// The shortcut catalogue itself (shortcut-sections.ts), rendered as the
+// collapsible reference list that used to be its own Keyboard Shortcuts
+// window. Read-only, so no read/write pair either.
+export type SettingsShortcutListRowSpec = RowBase & { kind: 'shortcutList' };
+
 // Account identity, read from Clerk, and account deletion. Neither is a
 // preference: they moved here from /explorer/profile (spec/65) when that page
 // was retired, because everything else it held was already in this dialog.
@@ -141,6 +146,7 @@ export type SettingsRowSpec =
   | SettingsTokensRowSpec
   | SettingsNoteRowSpec
   | SettingsShortcutsRowSpec
+  | SettingsShortcutListRowSpec
   | SettingsIdentityRowSpec
   | SettingsDeleteAccountRowSpec;
 
@@ -285,14 +291,31 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         write: (p, v) => ({ ...p, middleMousePan: v }),
         event: { category: 'UI', on: 'MiddleMousePanOn', off: 'MiddleMousePanOff' },
       },
+    ],
+  },
+  {
+    // The shortcuts master switch first, then every binding it gates. This
+    // replaced the Keyboard Shortcuts window and its tab-bar button: the
+    // list and the switch that turns it off belong on one screen, and the
+    // `?` key now opens Settings here.
+    id: 'keyboard',
+    label: 'Keyboard',
+    rows: [
       {
         kind: 'shortcuts',
         key: 'shortcutsEnabled',
         keywords: 'hotkeys keybindings keys accelerators cmd ctrl',
         label: 'Keyboard Shortcuts',
         description:
-          'Binds the editor’s keyboard shortcuts, undo, delete, Escape to cancel a mode, and the rest. Turn off if you dictate into this browser, or share it with something that needs the keys. The full list is in the Keyboard Shortcuts window. Stored on this device only, so it does not sync with your other settings.',
+          'Binds the editor’s keyboard shortcuts, undo, delete, Escape to cancel a mode, and the rest. Turn off if you dictate into this browser, or share it with something that needs the keys. Stored on this device only, so it does not sync with your other settings.',
         helpArticle: 'keyboardShortcuts',
+      },
+      {
+        kind: 'shortcutList',
+        key: 'shortcutList',
+        keywords: 'hotkeys keybindings list reference cheat sheet keys cmd ctrl',
+        label: 'All Shortcuts',
+        description: '⌘ = Cmd on Mac, Ctrl on Windows / Linux.',
       },
     ],
   },
