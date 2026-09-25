@@ -19,7 +19,7 @@ import { windowLabel } from './windows';
 // than meaningful (Edit vs View share links; the Dark UI toggle, which
 // shares `UI·Toggled` with unrelated setting flips).
 
-const GROUPS: MetricGroup[] = [
+export const GROUPS: MetricGroup[] = [
   {
     title: 'Visitors',
     metrics: [
@@ -39,7 +39,14 @@ const GROUPS: MetricGroup[] = [
   {
     title: 'Creation',
     metrics: [
-      { category: 'Diagram', action: 'Created', type: null, title: 'Diagrams Created' },
+      {
+        category: 'Diagram',
+        action: 'Created',
+        allTypes: true,
+        title: 'Diagrams Created',
+        blurb:
+          'New diagrams from the New Diagram wizard, stored in the cloud or offline in this browser.',
+      },
       { category: 'Tab', action: 'Created', type: null, title: 'Tabs Created' },
       {
         category: 'Element',

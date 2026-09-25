@@ -12,7 +12,7 @@ import { windowLabel } from './windows';
 // room — voting, polls, timers. High-signal for retention / network effects: a
 // diagram that gets shared and joined is worth far more than one that
 // never leaves a single browser.
-const GROUPS: MetricGroup[] = [
+export const GROUPS: MetricGroup[] = [
   // Everything else in this view counts an INVITATION — a link made, a member
   // added, a poll opened. This group is the only one that counts two people
   // being on the same canvas at the same moment, which is the thing all of

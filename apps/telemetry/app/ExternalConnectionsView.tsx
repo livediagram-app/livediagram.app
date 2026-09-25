@@ -9,7 +9,7 @@ import { windowLabel } from './windows';
 // API tokens (minted by hand or via the MCP OAuth flow, then revoked) and the
 // MCP server's actual tool usage. Token lifecycle comes from `Token`; MCP tool
 // calls from `Mcp·Used·<tool>`, both the headline count and a per-tool ranking.
-const GROUPS: MetricGroup[] = [
+export const GROUPS: MetricGroup[] = [
   {
     title: 'API tokens',
     metrics: [

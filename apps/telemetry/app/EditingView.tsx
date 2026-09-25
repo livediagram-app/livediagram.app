@@ -18,7 +18,7 @@ import { windowLabel } from './windows';
 // Aggregates where the type split is arbitrary for this lens (all AI modes,
 // all layer visibility toggles), specific where the type carries the meaning
 // (the AI panel opt-in is On vs Off, and only On belongs beside usage).
-const GROUPS: MetricGroup[] = [
+export const GROUPS: MetricGroup[] = [
   {
     title: 'AI assistance',
     metrics: [
@@ -88,7 +88,7 @@ const GROUPS: MetricGroup[] = [
       {
         category: 'Layer',
         action: 'Opened',
-        type: null,
+        allTypes: true,
         title: 'Layers Panel Opened',
         blurb: 'Read against the layer counts: a panel opened far more often than used is a hint.',
       },
@@ -141,13 +141,15 @@ const GROUPS: MetricGroup[] = [
       {
         category: 'Folder',
         action: 'Created',
-        type: null,
+        // Explorer folders plus team-library ones; tab folders have their own card below.
+        typeIn: (type) => type !== 'Tab',
         title: 'Folders Created',
+        blurb: 'Folders of diagrams, in your own Explorer or a team library.',
       },
       {
         category: 'Folder',
         action: 'Moved',
-        type: null,
+        allTypes: true,
         title: 'Folders Re-parented',
         blurb: 'A folder nested under another, or promoted back to the root.',
       },

@@ -11,7 +11,7 @@ import { windowLabel } from './windows';
 // the article slug). Headline totals as cards, then rankings: which articles
 // get read, which earn a thumbs-up, and which ones leave people unsatisfied
 // (the last is the useful one; those articles are the ones to rewrite).
-const GROUPS: MetricGroup[] = [
+export const GROUPS: MetricGroup[] = [
   {
     title: 'Help engagement',
     metrics: [

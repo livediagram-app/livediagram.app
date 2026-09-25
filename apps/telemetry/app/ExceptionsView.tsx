@@ -12,7 +12,7 @@ import { windowLabel } from './windows';
 // centre (`Error·Client·*`). Every count is generic by construction —
 // the closed vocabulary carries only status tokens and fixed kinds, so
 // there is nothing personal to show. An empty view is the goal state.
-const GROUPS: MetricGroup[] = [
+export const GROUPS: MetricGroup[] = [
   {
     title: 'Error volume',
     metrics: [

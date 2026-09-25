@@ -10,7 +10,7 @@ import { windowLabel } from './windows';
 // existing diagram / every tab whose content is fetched), distinct from
 // the once-per-object Created. Two groups, one per object type, sharing
 // the same MetricGroups renderer as Highlights / Acquisition.
-const GROUPS: MetricGroup[] = [
+export const GROUPS: MetricGroup[] = [
   {
     title: 'Diagram',
     metrics: [
@@ -22,10 +22,24 @@ const GROUPS: MetricGroup[] = [
         blurb:
           'An existing diagram was opened, counted on every open (including a page refresh), not just the first time.',
       },
-      { category: 'Diagram', action: 'Created', type: null, title: 'Diagrams Created' },
+      {
+        category: 'Diagram',
+        action: 'Created',
+        allTypes: true,
+        title: 'Diagrams Created',
+        blurb:
+          'New diagrams from the New Diagram wizard, stored in the cloud or offline in this browser.',
+      },
       { category: 'Diagram', action: 'Renamed', type: null, title: 'Diagrams Renamed' },
       { category: 'Diagram', action: 'Deleted', type: null, title: 'Diagrams Deleted' },
-      { category: 'Diagram', action: 'Duplicated', type: null, title: 'Diagrams Duplicated' },
+      {
+        category: 'Diagram',
+        action: 'Duplicated',
+        allTypes: true,
+        title: 'Diagrams Duplicated',
+        blurb:
+          'A diagram copied from the Explorer, or a shared diagram cloned into your own account.',
+      },
     ],
   },
   {
