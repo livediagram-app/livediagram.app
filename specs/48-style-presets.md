@@ -160,8 +160,10 @@ multi-selection the preset applies to every selected arrow at once.
   context menu wires the tiles' click → commit and pointer enter/leave →
   preview/revert (mouse pointers only).
 - Telemetry (spec/22): applying / resetting a preset fires
-  `track('Element', 'Changed', …)` with a `StylePreset` / `BorderPreset` /
-  `ArrowPreset` / `StyleReset` type token.
+  `track('Element', 'Changed', …)` with a `StylePreset` / `ArrowPreset` /
+  `StyleReset` type token. (A `BorderPreset` token was listed here too. There
+  are no border presets, in this spec or in the code, so nothing ever emitted
+  it.)
 
 ## Sticky-note presets
 
