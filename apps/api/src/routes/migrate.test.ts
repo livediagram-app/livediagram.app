@@ -60,7 +60,7 @@ describe('POST /api/migrate flow 2 (legacy guest upgrade)', () => {
     const res = await flow2(
       LEGACY,
       { GUEST_SIG_ENFORCE_AFTER: '0' },
-      { 'X-Owner-Sig': await signOwnerId(SECRET, LEGACY) },
+      { 'X-Owner-Sig': (await signOwnerId(SECRET, LEGACY))! },
     );
     expect(res.status).toBe(200);
   });
