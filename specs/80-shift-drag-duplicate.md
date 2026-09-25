@@ -42,8 +42,8 @@ platforms.
   still curates the selection, and shift-drag duplicates it.
 - **What clones**: exactly the dragged set — the selection's members plus
   any follower arrows the move carried (a frame section's connectors),
-  via the same `duplicateGroupedElements` machinery as the toolbar's
-  Duplicate: fresh ids, groups remapped, internal connectors ride along,
+  via the same `duplicateElements` machinery as the toolbar's
+  Duplicate: fresh ids, internal references remapped, internal connectors ride along,
   external pins stay pinned to the untouched outside elements.
 - **One undo step**: the copies are materialised (and dissolved) through
   the gesture's own tick stream, so Cmd-Z removes both the move and the
@@ -67,7 +67,7 @@ platforms.
 ## Implementation
 
 `useEditorDrag`'s pointer-move: for a `boxed` move gesture with
-`shiftKey`, build `duplicateGroupedElements(els, draggedIds, 0, 0)`
+`shiftKey`, build `duplicateElements(els, draggedIds, 0, 0)`
 clones once (plus copies of boundary arrows, re-pinned via the returned
 `idMap`), park the originals back at the start with
 `translateBoxedSelection(..., 0, 0)`, and RE-KEY the live drag state to

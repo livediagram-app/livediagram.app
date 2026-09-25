@@ -337,9 +337,8 @@ board's behaviour changes at all.
   right.
 - **Everything to the right moves, not just the row.** A command above
   its event and a policy below it stay lined up with the event they
-  annotate. Boxed elements move by `x`; a group moves whole when its
-  CENTRE is at or after the point (a group is never torn in half); a
-  free arrow entirely at or after the point travels, one that straddles
+  annotate. Boxed elements move by `x` (a docked cluster moves whole with
+  its host, see Phase 7); a free arrow entirely at or after the point travels, one that straddles
   it stretches (each endpoint keeps the note it was drawn between);
   pinned arrows need no help at all. **Locked elements do not move** —
   the board opens around them, because a locked element is one the
@@ -640,7 +639,7 @@ side }`), and the host holds nothing. So deleting a host needs no write to its
   neighbours, a copy of a docked note alone is simply a new piece of paper, and
   every reader derives the cluster the same way. A docked note whose host has
   gone becomes standalone on the next commit that notices
-  (`stripDanglingDocks`, the `freezeDanglingGroupEnds` precedent).
+  (`stripDanglingDocks`, run by `afterElementsRemoved` on every removal path).
 - **Magnets, not connectors.** The two dots in the seam say "these two are one
   phrase"; nothing is drawn between them. A line would be an arrow, and an arrow
   on this board means something else.
@@ -665,7 +664,7 @@ side }`), and the host holds nothing. So deleting a host needs no write to its
 - **Lanes and docking agree by construction**: a docked note takes its y from
   its HOST (centred on it), so the host is what lands on the lane and the
   cluster stays one row.
-- **The insertion ripple treats a cluster as one thing** (the group precedent):
+- **The insertion ripple treats a cluster as one thing**:
   it travels whole when the HOST's left edge is at or after the insertion
   point, and the seam is never offered as a gap to insert into — it is not a
   gap, it is a join.
