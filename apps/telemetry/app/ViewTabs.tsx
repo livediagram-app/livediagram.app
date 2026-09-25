@@ -2,9 +2,10 @@
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 
-// The dashboard's view selector (spec/22). The `lead` view (the Dashboard)
-// stands on its own to the left: it is the overview, and every other view is
-// a closer look at one area, so those sit together in a bar titled "Detail".
+// The dashboard's view selector (spec/22). The `leads` (the Dashboard, then
+// Search) stand on their own to the left: the overview and the way to find any
+// one metric. Every other view is a closer look at one area, so those sit
+// together in a bar titled "Detail".
 // Both halves are one tablist, so keyboard and screen-reader users still get a
 // single set of tabs.
 //
@@ -33,17 +34,17 @@ function Chevron({ dir }: { dir: 'left' | 'right' }) {
 
 export function ViewTabs<K extends string>({
   views,
-  lead,
+  leads,
   view,
   onSelect,
 }: {
   views: TabOption<K>[];
-  lead: K; // the view that stands apart, left of the Detail bar
+  leads: K[]; // the views that stand apart, left of the Detail bar, in order
   view: K;
   onSelect: (key: K) => void;
 }) {
-  const leadView = views.find((v) => v.key === lead);
-  const detail = views.filter((v) => v.key !== lead);
+  const leadViews = leads.flatMap((key) => views.filter((v) => v.key === key));
+  const detail = views.filter((v) => !leads.includes(v.key));
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [overflow, setOverflow] = useState(false);
   const [canLeft, setCanLeft] = useState(false);
@@ -108,22 +109,25 @@ export function ViewTabs<K extends string>({
     <div
       role="tablist"
       aria-label="Telemetry views"
-      className="mt-8 flex flex-wrap items-center justify-center gap-3"
+      className="mt-8 flex flex-wrap items-center gap-3"
     >
-      {leadView ? (
+      {leadViews.length > 0 ? (
         <div className={bar}>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={view === leadView.key}
-            onClick={() => onSelect(leadView.key)}
-            className={tabClass(view === leadView.key)}
-          >
-            <span aria-hidden className="shrink-0 [&_svg]:h-3.5 [&_svg]:w-3.5">
-              {leadView.icon}
-            </span>
-            {leadView.label}
-          </button>
+          {leadViews.map((v) => (
+            <button
+              key={v.key}
+              type="button"
+              role="tab"
+              aria-selected={view === v.key}
+              onClick={() => onSelect(v.key)}
+              className={tabClass(view === v.key)}
+            >
+              <span aria-hidden className="shrink-0 [&_svg]:h-3.5 [&_svg]:w-3.5">
+                {v.icon}
+              </span>
+              {v.label}
+            </button>
+          ))}
         </div>
       ) : null}
       <div className={`${bar} min-w-0 max-w-full`}>

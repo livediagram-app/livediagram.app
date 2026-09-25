@@ -150,7 +150,12 @@ export default function TelemetryDashboard() {
 
             {/* View tabs — a single-line carousel; chevrons appear when the
               full set overflows the column (see ViewTabs). */}
-            <ViewTabs views={VIEWS} lead="dashboard" view={view} onSelect={setView} />
+            <ViewTabs
+              views={VIEWS}
+              leads={['dashboard', 'search']}
+              view={view}
+              onSelect={setView}
+            />
 
             {view === 'dashboard' ? (
               <DashboardView summary={summary} active={active} onOpenView={openView} />
