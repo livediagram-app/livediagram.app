@@ -19,3 +19,17 @@ export const RETURNING_VISITORS: Metric = {
   blurb:
     'Browsers that came back on a later day than their first visit, counted once per day. Sum of guests and signed-in users.',
 };
+
+export const SIGN_UPS: Metric = {
+  category: 'Session',
+  action: 'SignedUp',
+  type: null,
+  title: 'Sign-Ups',
+};
+
+export const SIGN_INS: Metric = {
+  category: 'Session',
+  action: 'SignedIn',
+  type: null,
+  title: 'Sign-Ins',
+};

@@ -1,7 +1,7 @@
 'use client';
 
 import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
-import { NEW_VISITORS, RETURNING_VISITORS } from './metric-catalogue';
+import { NEW_VISITORS, RETURNING_VISITORS, SIGN_INS, SIGN_UPS } from './metric-catalogue';
 import { MetricGroups, type MetricGroup } from './MetricCards';
 import { windowLabel } from './windows';
 
@@ -20,9 +20,9 @@ import { windowLabel } from './windows';
 // than meaningful (Edit vs View share links; the Dark UI toggle, which
 // shares `UI·Toggled` with unrelated setting flips).
 //
-// New + Returning Visitors are one chart stack (spec/22): a combined chart that
-// fans out into the two cards. Both charts come from the shared catalogue, so
-// the stack only references them.
+// New + Returning Visitors, and Sign-Ups + Sign-Ins, are chart stacks
+// (spec/22): a combined chart that fans out into the two cards. Their charts
+// come from the shared catalogue, so each stack only references them.
 
 export const GROUPS: MetricGroup[] = [
   {
@@ -35,8 +35,13 @@ export const GROUPS: MetricGroup[] = [
           'Every browser that opened the app: first-timers and those back on a later day, counted once per day each.',
         members: [NEW_VISITORS, RETURNING_VISITORS],
       },
-      { category: 'Session', action: 'SignedUp', type: null, title: 'Sign-Ups' },
-      { category: 'Session', action: 'SignedIn', type: null, title: 'Sign-Ins' },
+      {
+        stack: true,
+        title: 'Sign-Ups & Sign-Ins',
+        blurb:
+          'Visitors who made an account or signed back into one. Only fires where sign-in is configured.',
+        members: [SIGN_UPS, SIGN_INS],
+      },
     ],
   },
   {

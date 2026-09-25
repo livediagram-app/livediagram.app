@@ -1,7 +1,7 @@
 'use client';
 
 import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
-import { NEW_VISITORS, RETURNING_VISITORS } from './metric-catalogue';
+import { NEW_VISITORS, RETURNING_VISITORS, SIGN_INS, SIGN_UPS } from './metric-catalogue';
 import { MetricGroups, type MetricGroup } from './MetricCards';
 import { windowLabel } from './windows';
 
@@ -13,11 +13,7 @@ import { windowLabel } from './windows';
 export const GROUPS: MetricGroup[] = [
   {
     title: 'Arrivals & conversion',
-    metrics: [
-      NEW_VISITORS,
-      { category: 'Session', action: 'SignedUp', type: null, title: 'Sign-Ups' },
-      { category: 'Session', action: 'SignedIn', type: null, title: 'Sign-Ins' },
-    ],
+    metrics: [NEW_VISITORS, SIGN_UPS, SIGN_INS],
   },
   {
     // Returning visitors, spec/22: the combined sum first (allTypes over
