@@ -5,12 +5,21 @@ import { pickBackend } from './pick-backend';
 // WHY (spec/139 Phase 9): reading there is minutes on a big wall, not seconds,
 // and the author should know it is the machine, not the import.
 describe('pickBackend', () => {
-  const adapter = (features: string[]) => ({
-    requestAdapter: async () => ({ features: new Set(features) }),
+  const adapter = (features: string[], info: Record<string, unknown> = {}, extra = {}) => ({
+    requestAdapter: async () => ({ features: new Set(features), info, ...extra }),
   });
 
-  it('reads on the graphics card when it can run half-precision maths', async () => {
-    expect(await pickBackend(adapter(['shader-f16']))).toEqual({ backend: 'webgpu' });
+  it('reads on the graphics card in half precision when it has it', async () => {
+    expect(await pickBackend(adapter(['shader-f16']))).toEqual({ backend: 'webgpu', f16: true });
+  });
+
+  it('reads on the graphics card in full precision when it has no half precision', async () => {
+    // Measured on an RTX 4090 in Linux Chromium (no shader-f16): the same
+    // answers as the processor, 18 times faster.
+    expect(await pickBackend(adapter([], { vendor: 'nvidia', architecture: 'lovelace' }))).toEqual({
+      backend: 'webgpu',
+      f16: false,
+    });
   });
 
   it('says the browser has no WebGPU', async () => {
@@ -33,7 +42,13 @@ describe('pickBackend', () => {
     expect(await pickBackend(gpu)).toEqual({ backend: 'wasm', why: 'no-adapter' });
   });
 
-  it('says the graphics card cannot run the half-precision maths', async () => {
-    expect(await pickBackend(adapter([]))).toEqual({ backend: 'wasm', why: 'no-f16' });
+  // A software adapter emulates a GPU on the processor, far slower than the
+  // processor path itself: not one note in 13 minutes, measured.
+  it.each([
+    ['a fallback adapter', adapter([], { isFallbackAdapter: true })],
+    ['an adapter that calls itself a fallback', adapter([], {}, { isFallbackAdapter: true })],
+    ['SwiftShader', adapter([], { vendor: 'google', architecture: 'swiftshader' })],
+  ])('counts %s as no graphics card', async (_, gpu) => {
+    expect(await pickBackend(gpu)).toEqual({ backend: 'wasm', why: 'no-adapter' });
   });
 });

@@ -53,6 +53,8 @@ export type LoadedReader = Loaded;
 export async function loadReader(
   onDownload: (d: ModelDownload) => void,
   backend: ReaderBackend,
+  // On a graphics card: whether it has half precision (`shader-f16`).
+  gpu: { f16: boolean } = { f16: true },
 ): Promise<Loaded> {
   return (async () => {
     const { AutoProcessor, AutoModelForVision2Seq } = await import('@huggingface/transformers');
@@ -73,11 +75,17 @@ export async function loadReader(
     const model = await AutoModelForVision2Seq.from_pretrained(
       MODEL_ID,
       backend === 'webgpu'
-        ? {
-            device: 'webgpu',
-            dtype: { embed_tokens: 'fp16', vision_encoder: 'fp16', decoder_model_merged: 'q4' },
-            progress_callback,
-          }
+        ? gpu.f16
+          ? {
+              device: 'webgpu',
+              dtype: { embed_tokens: 'fp16', vision_encoder: 'fp16', decoder_model_merged: 'q4' },
+              progress_callback,
+            }
+          : // No half precision: the q4 weights in full precision. The same
+            // answers as the processor on the labelled notes, 0.53 s a note
+            // on an RTX 4090 against ~10 s. Not the q8 embedding: on the
+            // graphics card it produced garbage.
+            { device: 'webgpu', dtype: 'q4', progress_callback }
         : // On the processor the embedding is q8: its q4 file is the fp32
           // table, so q8 is 85 MB less to download for the same answers
           // (docs/vision/handwriting-readers.md).

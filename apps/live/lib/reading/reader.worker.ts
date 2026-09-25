@@ -25,6 +25,8 @@ const cancelled = new Set<number>();
 // Kept for the worker's life: a later read on the same worker says the same.
 let backendInUse: ReaderBackend = 'wasm';
 let whyProcessor: ProcessorReason | undefined;
+// On a graphics card: whether it has half precision.
+let gpuF16 = true;
 
 const gpuOf = () =>
   (
@@ -44,6 +46,7 @@ function pick(forced?: ReaderBackend, forcedWhy?: ProcessorReason): Promise<void
       const choice = await pickBackend(gpuOf());
       backendInUse = choice.backend;
       whyProcessor = choice.backend === 'wasm' ? choice.why : undefined;
+      gpuF16 = choice.backend === 'webgpu' ? choice.f16 : true;
     }
   })();
   return picking;
@@ -51,10 +54,12 @@ function pick(forced?: ReaderBackend, forcedWhy?: ProcessorReason): Promise<void
 
 function load(): Promise<LoadedReader> {
   loading ??= (async () => {
-    console.info(`[reader] loading on ${backendInUse}${whyProcessor ? ` (${whyProcessor})` : ''}`);
+    const detail = backendInUse === 'wasm' ? (whyProcessor ?? 'forced') : gpuF16 ? 'f16' : 'fp32';
+    console.info(`[reader] loading on ${backendInUse} (${detail})`);
     return loadReader(
       (download) => scope.postMessage({ type: 'download', download }),
       backendInUse,
+      { f16: gpuF16 },
     );
   })().then((loaded) => {
     console.info(`[reader] ready on ${loaded.backend}`);

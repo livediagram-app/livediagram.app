@@ -7,9 +7,9 @@ import type { ModelDownload } from './download-progress';
 export type ReaderBackend = 'webgpu' | 'wasm';
 
 // Why the reader runs on the processor rather than the graphics card: the
-// browser has no WebGPU, no adapter is available, the adapter cannot run
-// half-precision maths, or the graphics card failed to start the model.
-export type ProcessorReason = 'no-webgpu' | 'no-adapter' | 'no-f16' | 'gpu-failed';
+// browser has no WebGPU, no (hardware) graphics card is available to it, or
+// the graphics card failed to start the model.
+export type ProcessorReason = 'no-webgpu' | 'no-adapter' | 'gpu-failed';
 
 export type ReaderRequest =
   // `backend` forces one engine, and `why` says why it was forced; absent,

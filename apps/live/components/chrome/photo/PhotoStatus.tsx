@@ -9,7 +9,6 @@ import type { ReaderFallback } from '@/lib/reading/types';
 const PROCESSOR_WHY: Record<ProcessorReason, string> = {
   'no-webgpu': 'this browser has no WebGPU',
   'no-adapter': 'no graphics card is available to the browser',
-  'no-f16': 'your graphics card can’t run the model’s half-precision maths',
   'gpu-failed': 'the graphics card failed to start the model',
 };
 
@@ -38,6 +37,22 @@ function Pill({
     >
       {children}
     </p>
+  );
+}
+
+// The sign that reading is under way. A spinning spinner keeps the browser's
+// compositor drawing every frame, and while the model reads on the graphics
+// card that starved it: 42 notes took 200 s with a spinner on screen and 25 s
+// without. On the card it is a still dot, and the count ticking up is the
+// sign of life; on the processor, where it costs the reader nothing, it spins.
+function Busy({ still }: { still: boolean }) {
+  return still ? (
+    <span aria-hidden className="h-2 w-2 shrink-0 rounded-full bg-brand-400" />
+  ) : (
+    <span
+      aria-hidden
+      className="h-3 w-3 shrink-0 animate-spin rounded-full border-2 border-slate-500 border-t-brand-400"
+    />
   );
 }
 
@@ -102,10 +117,7 @@ export function PhotoStatus({
       ) : null}
       {reading ? (
         <Pill testId="photo-reading">
-          <span
-            aria-hidden
-            className="h-3 w-3 shrink-0 animate-spin rounded-full border-2 border-slate-500 border-t-brand-400"
-          />
+          <Busy still={readerBackend === 'webgpu'} />
           {/* Whole phrases: only the engine's reason may wrap. */}
           <span className="shrink-0 whitespace-nowrap">Reading the words…</span>
           {readTotal > 0 ? (
@@ -127,10 +139,7 @@ export function PhotoStatus({
       ) : null}
       {rereading > 0 ? (
         <Pill testId="photo-rereading">
-          <span
-            aria-hidden
-            className="h-3 w-3 shrink-0 animate-spin rounded-full border-2 border-slate-500 border-t-brand-400"
-          />
+          <Busy still={readerBackend === 'webgpu'} />
           Reading {rereading} changed {rereading === 1 ? 'note' : 'notes'}…
         </Pill>
       ) : null}

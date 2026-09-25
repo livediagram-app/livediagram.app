@@ -118,19 +118,79 @@ Invention has two causes, and each has a guard (spec/139 Phase 9):
 
 Neither guard applies to the hosted reader, which does not invent this way.
 
+## The in-browser bake-off (86 labelled notes)
+
+Every free, MIT-compatible reader that runs in onnxruntime-web or
+transformers.js and fits a phone download, scored through the same bench
+(`apps/live/scripts/reader-bench.mts`): crops cut as the editor cuts them,
+`words` = 86 notes with true words, `tiny` = 272 whiteboard notes too small
+to read (every non-blank answer there is invented). Exact, CER and invented
+(CER over 60%) are after the editor's answer guard; the guard never removed
+a correct reading for any reader. Browser WASM is single-threaded, as the
+editor runs it; GPU is an RTX 4090 without `shader-f16`.
+
+| Reader                                          | Exact /86 | Words | CER     | Invented | Invented on tiny | WASM s/note | GPU s/note | Download  | Licence    |
+| ----------------------------------------------- | --------- | ----- | ------- | -------- | ---------------- | ----------- | ---------- | --------- | ---------- |
+| **SmolVLM-256M q4 (the default)**               | 37        | 60%   | 28%     | 13       | 33%              | 10.2        | 0.53       | 268 MB    | Apache-2.0 |
+| SmolVLM-256M q4, q8 embedding (shipped on WASM) | 37        | 60%   | 28%     | 12       | 31%              | 8.1         | garbage    | 182 MB    | Apache-2.0 |
+| SmolVLM-500M q4                                 | 39        | 65%   | 25%     | 16       | 93%              | 12.1        | 0.67       | 489 MB    | Apache-2.0 |
+| SmolVLM2-256M q4                                | 17        | 45%   | 57%     | 28       | 32%              | -           | -          | 268 MB    | Apache-2.0 |
+| SmolVLM2-500M q4, q8 embedding                  | 33        | 57%   | 34%     | 21       | 75%              | -           | -          | 347 MB    | Apache-2.0 |
+| PP-OCRv6 medium (det + rec)                     | 32        | 55%   | 34%     | 15       | 26%              | 2.2         | 0.09       | 139 MB    | Apache-2.0 |
+| PP-OCRv6 small                                  | 25        | 49%   | 34%     | 16       | 16%              | 0.33        | 0.09       | 31 MB     | Apache-2.0 |
+| PP-OCRv6 tiny                                   | 12        | 33%   | 40%     | 13       | 14%              | 0.09        | 0.08       | 6 MB      | Apache-2.0 |
+| PP-OCRv5 mobile                                 | 22        | 42%   | 36%     | 13       | 25%              | -           | -          | 13 MB     | Apache-2.0 |
+| PP-OCRv4 mobile                                 | 10        | 32%   | 44%     | 17       | 25%              | -           | -          | 12 MB     | Apache-2.0 |
+| Florence-2-base `<OCR_WITH_REGION>`             | 8         | 33%   | 39%     | 28       | 62%              | -           | -          | 278 MB    | MIT        |
+| Florence-2-base `<OCR>`                         | 0         | 5%    | 45%     | 30       | 44%              | -           | -          | 278 MB    | MIT        |
+| docTR db_mobilenet + PARSeq                     | 0         | 6%    | 84%     | 18       | 13%              | -           | -          | 113 MB    | Apache-2.0 |
+| TrOCR small / base handwritten, small printed   | 0         | 0%    | 93-105% | 57-79    | 62-84%           | -           | -          | 68-340 MB | MIT        |
+
+Not in the table: Florence-2-large (793 MB), Moondream2 (over 1 GB) and
+Qwen3.5-0.8B (716 MB, an architecture transformers.js 3.8 lacks) are over the
+download a phone tolerates; LFM2-VL-450M (non-commercial licence) and
+FastVLM-0.5B (research-only) are not MIT-compatible; granite-docling-258M
+produced repetition on a clean printed card. TrOCR is a single-line model and
+a note is several lines of marker: per-line detection did not rescue it.
+
+**The default stays SmolVLM-256M.** The bar was to switch only for a clear
+win on accuracy AND invention without a worse download for everyone, and
+nothing clears it:
+
+- SmolVLM-500M reads a little more (39 exact, 65% of words) but invents on
+  93% of the too-small notes against 33%, at 1.8 times the download.
+- PP-OCRv6 invents far less, downloads far less and runs far faster, but
+  reads less (32 exact at best, CER 34% against 28%); swapping trades five
+  exact notes in 86 for fewer inventions, which is a product choice, not a
+  measured win.
+
+Two changes did clear it and shipped: the q8 embedding on the processor path
+(85 MB less for the same answers) and the graphics card without half
+precision (above). One option is left open: gating SmolVLM on a 6 MB
+PP-OCRv6-tiny detector (blank the answer when it finds no text) cuts
+inventions on the too-small notes from 91 to 22, for two exact notes fewer
+(37 to 35) and CER 28% to 38% on the labelled ones. With the size floor in
+place those notes are no longer asked about at all, so its remaining value is
+on notes above the floor.
+
 ## Browser feasibility, honestly
 
 - transformers.js runs SmolVLM in **WASM** correctly (matches the Node
   numbers). Single-threaded it is ~7 s per crop for 256M; threads need the
   page to be cross-origin isolated (COOP/COEP headers), which is a whole-app
   decision because it affects every iframe and third-party script.
-- **WebGPU** loads in ~5-9 s and reads in ~0.5 s per crop, but on this Linux /
-  NVIDIA / Vulkan box Dawn does not expose `shader-f16`, and with the fp32
-  vision encoder the decoder never sees the image (every answer is "No
-  writing"). HF's own SmolVLM-WebGPU demo relies on f16, which Chrome exposes
-  on Windows and macOS. Unverified here; treat WebGPU as an accelerator with a
-  WASM fallback, never as the only path.
-- The model must be fetched once (190-360 MB) and cached (Cache Storage);
+- **WebGPU** without `shader-f16` works now. Linux Chromium on an RTX 4090
+  exposes no `shader-f16`, and an older transformers.js ran the fp32 vision
+  encoder blind there (every answer "No writing"). With transformers.js 3.8.1
+  the q4 weights in full precision read all 86 labelled notes with the
+  processor's own score (37 exact, CER 28%, 12 invented after the guard) at
+  0.53 s a note against ~10 s single-threaded WASM, so any real graphics card
+  now reads (spec/139 Phase 9). The q8 embedding that saves the WASM path 85
+  MB produces garbage on that card, so the GPU path keeps q4. A software
+  adapter (SwiftShader) did not finish one note in 13 minutes: it counts as no
+  graphics card.
+- The model must be fetched once (~180 MB on the processor path, ~270 MB on
+  a graphics card without half precision) and cached (Cache Storage);
   first use on a phone over mobile data is the cost to design around.
 
 ## When to revisit this

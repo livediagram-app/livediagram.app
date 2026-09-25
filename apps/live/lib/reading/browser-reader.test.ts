@@ -174,7 +174,7 @@ describe('a slow reading is not a stall', () => {
       const make = () =>
         fakeWorker((req, reply) => {
           if (req.type !== 'read') return;
-          reply({ type: 'backend', backend: 'wasm', why: 'no-f16' });
+          reply({ type: 'backend', backend: 'wasm', why: 'no-adapter' });
           reply({ type: 'ready' });
           setTimeout(() => {
             reply({ type: 'text', id: req.id, cropId: 0, text: 'Order placed' });

@@ -28,13 +28,22 @@ describe('loadReader', () => {
   });
 
   it('keeps half precision on a graphics card that has it', async () => {
-    await loadReader(() => {}, 'webgpu');
+    await loadReader(() => {}, 'webgpu', { f16: true });
     expect(fromPretrained).toHaveBeenCalledWith(
       MODEL_ID,
       expect.objectContaining({
         device: 'webgpu',
         dtype: { embed_tokens: 'fp16', vision_encoder: 'fp16', decoder_model_merged: 'q4' },
       }),
+    );
+  });
+
+  it('runs the q4 weights in full precision on a card without half precision', async () => {
+    // Not the q8 embedding: on the graphics card it produced garbage.
+    await loadReader(() => {}, 'webgpu', { f16: false });
+    expect(fromPretrained).toHaveBeenCalledWith(
+      MODEL_ID,
+      expect.objectContaining({ device: 'webgpu', dtype: 'q4' }),
     );
   });
 });

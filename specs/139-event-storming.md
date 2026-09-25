@@ -1291,14 +1291,27 @@ Decisions from the operator:
   correct reading away, and drops 4 of the 17 invented answers on the
   full-size crops. The hosted reader is not filtered; it does not do this.
 
-- **"On the processor" says why.** The in-browser reader runs on the graphics
-  card when it can, and when it cannot the reading pill says which of four
-  reasons stopped it, since reading on the processor is minutes on a big
-  wall rather than seconds: this browser has no WebGPU; no graphics card is
-  available to the browser; the graphics card cannot run the model's
-  half-precision maths (no `shader-f16`); or the graphics card failed to
-  start the model (the WebGPU load failed and a fresh worker read on the
-  processor instead). The worker decides the engine, so the worker says the
+- **Any real graphics card reads, with or without half precision.** With
+  `shader-f16` the model runs in half precision; without it (an RTX 4090 in
+  Linux Chromium has none) the same q4 weights run in full precision, which
+  on the 86 labelled notes gives the processor's own answers (37 exact, CER
+  28%) at 0.53 s a note against ~10 s. A SOFTWARE adapter (SwiftShader, a
+  "fallback" adapter) emulates a GPU on the processor, slower than the
+  processor path itself, and counts as no graphics card.
+
+  While the model reads on the graphics card, the reading pills show a
+  STILL dot, not a spinner: a spinning spinner keeps the browser's compositor
+  drawing every frame, and that starved the reader (42 notes took 200 s with
+  a spinner on screen and 25 s without, measured on the RTX 4090). The count
+  ticking up is the sign of life. On the processor the spinner stays; there
+  it costs the reader nothing.
+
+- **"On the processor" says why.** When the reader cannot use a graphics
+  card, the reading pill says which of three reasons stopped it, since
+  reading on the processor is minutes on a big wall rather than seconds: this
+  browser has no WebGPU; no graphics card is available to the browser (none,
+  or only a software one); or the graphics card failed to start the model
+  (the WebGPU load failed and a fresh worker read on the processor instead). The worker decides the engine, so the worker says the
   reason, and it travels with the engine in the reader protocol.
 
 - **A stalled download is told; a slow note is waited out.** While the model
