@@ -746,3 +746,24 @@ test('an unread wall offers another photo, and the picker opens', async ({ page,
 
   expectNoPageErrors(pageErrors);
 });
+
+// The hosted reader's free budget is spent (spec/139 Phase 9): the notes go to
+// the in-browser reader instead, and the review says so without saying whose
+// budget it was. The model download is blocked here, so the device reader then
+// says it could not start: both notes are on screen, in that order of events.
+test('a spent budget reads on this device instead, and says so', async ({ page, pageErrors }) => {
+  await openPhotoBoard(page, { boundaryModel: false });
+  // Registered after the fixture's own stub, so it wins.
+  await page.route('**/api/ai/read-notes', (route) =>
+    route.fulfill({ status: 429, json: { error: 'ai_quota' } }),
+  );
+  await importToReview(page, [{ fill: ORANGE, x: 300, y: 120, w: 180, h: 180 }]);
+  await expect(page.getByTestId('photo-reader-fallback')).toHaveText(
+    /free monthly budget reached\. reading on this device instead/i,
+    { timeout: 20_000 },
+  );
+  await expect(page.getByTestId('photo-reader-unavailable')).toBeVisible({ timeout: 90_000 });
+  // The quota toast is not shown: the author was carried through, not stopped.
+  await expect(page.getByText(/used up its quota/i)).toHaveCount(0);
+  expectNoPageErrors(pageErrors);
+});

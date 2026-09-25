@@ -17,7 +17,8 @@ import {
 import { toNormalised, type DetectedSticky } from '@livediagram/sticky-vision';
 import { selectReader } from '@/lib/reading/select';
 import type { ModelDownload } from '@/lib/reading/download-progress';
-import type { ReaderBackend } from '@/lib/reading/reader-protocol';
+import type { ProcessorReason, ReaderBackend } from '@/lib/reading/reader-protocol';
+import type { ReaderFallback } from '@/lib/reading/types';
 import { buildEventStormingNote } from '@/lib/draw-commit';
 import { setPhotoDraftView } from '@/lib/photo-draft-preview';
 import {
@@ -62,6 +63,10 @@ export type PhotoDraftState = {
   modelDownload?: ModelDownload;
   // Where an in-browser reader runs: the graphics card, or the processor.
   readerBackend?: ReaderBackend;
+  // Why it runs on the processor, when it does.
+  readerWhy?: ProcessorReason;
+  // Set when the hosted reader's budget was spent and this device read instead.
+  readerFallback?: ReaderFallback;
   // The last failure's token, for the toast. Cleared by the next attempt.
   error: string | null;
 };
@@ -282,9 +287,16 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
             if (!current()) return;
             setState((s) => (s.stage === 'review' ? { ...s, modelDownload } : s));
           },
-          onBackend: (readerBackend) => {
+          onBackend: (readerBackend, readerWhy) => {
             if (!current()) return;
-            setState((s) => (s.stage === 'review' ? { ...s, readerBackend } : s));
+            setState((s) => (s.stage === 'review' ? { ...s, readerBackend, readerWhy } : s));
+          },
+          // The hosted budget is spent: say so on the review, and warn the
+          // error telemetry once, with closed values only (spec/22).
+          onFallback: (readerFallback) => {
+            if (!current()) return;
+            track('Error', 'Warning', 'AiQuota.BrowserReader');
+            setState((s) => (s.stage === 'review' ? { ...s, readerFallback } : s));
           },
           // Each note's words as they are read: the photo fills in note by
           // note, rather than a wall of blanks until the last one is done.

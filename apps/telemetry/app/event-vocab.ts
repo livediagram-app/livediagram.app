@@ -45,7 +45,7 @@ export const CATEGORY_DESCRIPTIONS: Record<TelemetryCategory, string> = {
   Email:
     'Transactional and lifecycle email leaving the api worker (welcome, onboarding, team invites, notifications). The template kind only, never a recipient.',
   Error:
-    'Failures, counted generically: API responses that errored (by HTTP status, plus worker-reported internal crashes) and client-side uncaught exceptions. Never a message, stack, or URL.',
+    'Failures, counted generically: API responses that errored (by HTTP status, plus worker-reported internal crashes) client-side uncaught exceptions, and warnings (a degradation the author was carried through, such as a spent AI budget failing over to the in-browser reader). Never a message, stack, or URL.',
 };
 
 // Per-category colour used by every chart so the category-share bar,

@@ -6,14 +6,21 @@ import type { ModelDownload } from './download-progress';
 
 export type ReaderBackend = 'webgpu' | 'wasm';
 
+// Why the reader runs on the processor rather than the graphics card: the
+// browser has no WebGPU, no adapter is available, the adapter cannot run
+// half-precision maths, or the graphics card failed to start the model.
+export type ProcessorReason = 'no-webgpu' | 'no-adapter' | 'no-f16' | 'gpu-failed';
+
 export type ReaderRequest =
-  // `backend` forces one engine; absent, the worker picks (see reader.worker.ts).
-  | { type: 'read'; id: number; crops: NoteCrop[]; backend?: ReaderBackend }
+  // `backend` forces one engine, and `why` says why it was forced; absent,
+  // the worker picks (see pick-backend.ts).
+  | { type: 'read'; id: number; crops: NoteCrop[]; backend?: ReaderBackend; why?: ProcessorReason }
   | { type: 'cancel'; id: number };
 
 export type ReaderResponse =
   | { type: 'download'; download: ModelDownload }
-  | { type: 'backend'; backend: ReaderBackend }
+  // `why` is present exactly when the engine is the processor.
+  | { type: 'backend'; backend: ReaderBackend; why?: ProcessorReason }
   // The raw answer for one crop; the page normalises it.
   | { type: 'text'; id: number; cropId: number; text: string }
   | { type: 'done'; id: number }

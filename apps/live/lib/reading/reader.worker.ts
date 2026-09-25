@@ -1,5 +1,11 @@
 import { loadReader, readOne, type LoadedReader } from './reader-model';
-import type { ReaderBackend, ReaderRequest, ReaderResponse } from './reader-protocol';
+import { pickBackend } from './pick-backend';
+import type {
+  ProcessorReason,
+  ReaderBackend,
+  ReaderRequest,
+  ReaderResponse,
+} from './reader-protocol';
 
 // The in-browser reader's worker (spec/139 Phase 9). The model reads one crop
 // at a time — a full generation each, hundreds on a big wall — and on the
@@ -15,30 +21,29 @@ const scope = self as unknown as {
 let loading: Promise<LoadedReader> | null = null;
 const cancelled = new Set<number>();
 
-// The graphics card only when it can run the half-precision weights the
-// WebGPU path asks for; the adapter reports a GPU either way, so ask for the
-// feature. Everything else reads on the processor.
-async function pickBackend(): Promise<ReaderBackend> {
-  const gpu = (
+// Where the model runs, and why when it is the processor (pick-backend.ts).
+// Kept for the worker's life: a later read on the same worker says the same.
+let backendInUse: ReaderBackend = 'wasm';
+let whyProcessor: ProcessorReason | undefined;
+
+const gpuOf = () =>
+  (
     navigator as Navigator & {
       gpu?: { requestAdapter(): Promise<{ features: Set<string> } | null> };
     }
   ).gpu;
-  if (!gpu) return 'wasm';
-  try {
-    const adapter = await gpu.requestAdapter();
-    return adapter?.features.has('shader-f16') ? 'webgpu' : 'wasm';
-  } catch {
-    return 'wasm';
-  }
-}
 
-let backendInUse: ReaderBackend = 'wasm';
-
-function load(forced?: ReaderBackend): Promise<LoadedReader> {
+function load(forced?: ReaderBackend, forcedWhy?: ProcessorReason): Promise<LoadedReader> {
   loading ??= (async () => {
-    backendInUse = forced ?? (await pickBackend());
-    console.info(`[reader] loading on ${backendInUse}`);
+    if (forced) {
+      backendInUse = forced;
+      whyProcessor = forced === 'wasm' ? forcedWhy : undefined;
+    } else {
+      const choice = await pickBackend(gpuOf());
+      backendInUse = choice.backend;
+      whyProcessor = choice.backend === 'wasm' ? choice.why : undefined;
+    }
+    console.info(`[reader] loading on ${backendInUse}${whyProcessor ? ` (${whyProcessor})` : ''}`);
     return loadReader(
       (download) => scope.postMessage({ type: 'download', download }),
       backendInUse,
@@ -57,7 +62,7 @@ scope.addEventListener('message', async ({ data: request }) => {
   }
   let loaded: LoadedReader;
   try {
-    loaded = await load(request.backend);
+    loaded = await load(request.backend, request.why);
   } catch (err) {
     // Let the next read try the download again.
     loading = null;
@@ -70,7 +75,11 @@ scope.addEventListener('message', async ({ data: request }) => {
     });
     return;
   }
-  scope.postMessage({ type: 'backend', backend: loaded.backend });
+  scope.postMessage({
+    type: 'backend',
+    backend: loaded.backend,
+    ...(loaded.backend === 'wasm' && whyProcessor ? { why: whyProcessor } : {}),
+  });
   const started = performance.now();
   for (const crop of request.crops) {
     if (cancelled.has(request.id)) break;

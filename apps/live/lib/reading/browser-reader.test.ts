@@ -53,7 +53,7 @@ describe('reading crops through the worker', () => {
     expect(out.get(1)).toEqual({ text: '', legible: false });
     expect(onText).toHaveBeenCalledWith(0, { text: 'Order placed', legible: true });
     expect(onProgress).toHaveBeenLastCalledWith(2);
-    expect(onBackend).toHaveBeenCalledWith('webgpu');
+    expect(onBackend).toHaveBeenCalledWith('webgpu', undefined);
   });
 
   it('passes the model download on to the review', async () => {
@@ -106,7 +106,7 @@ describe('when the model will not start', () => {
           reply({ type: 'failed', id: req.id, detail: 'webgpu: no fp16', backend: 'webgpu' });
           return;
         }
-        reply({ type: 'backend', backend: 'wasm' });
+        reply({ type: 'backend', backend: 'wasm', why: req.why });
         reply({ type: 'text', id: req.id, cropId: 0, text: 'Order placed' });
         reply({ type: 'text', id: req.id, cropId: 1, text: 'Paid' });
         reply({ type: 'done', id: req.id });
@@ -114,9 +114,12 @@ describe('when the model will not start', () => {
       made.push(w);
       return w;
     };
-    const result = await readCropsInBrowser(crops, {}, make);
+    const onBackend = vi.fn();
+    const result = await readCropsInBrowser(crops, { onBackend }, make);
     expect(made).toHaveLength(2);
-    expect(made[1]!.posted[0]).toMatchObject({ type: 'read', backend: 'wasm' });
+    expect(onBackend).toHaveBeenCalledWith('wasm', 'gpu-failed');
+    // The fresh worker is told WHY it reads on the processor, so it can say so.
+    expect(made[1]!.posted[0]).toMatchObject({ type: 'read', backend: 'wasm', why: 'gpu-failed' });
     expect(result.textById.get(0)).toEqual({ text: 'Order placed', legible: true });
     expect(result.failure).toBeUndefined();
   });

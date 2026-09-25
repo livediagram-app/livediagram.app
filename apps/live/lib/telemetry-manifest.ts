@@ -68,6 +68,9 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Element·Voted',
   'Error·Api',
   'Error·Client',
+  // The hosted reader's budget was spent and the photo import failed over to
+  // the in-browser reader (spec/139 Phase 9).
+  'Error·Warning',
   'Folder·Created',
   'Folder·Deleted',
   'Folder·Moved',

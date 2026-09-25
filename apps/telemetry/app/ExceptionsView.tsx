@@ -9,7 +9,9 @@ import { windowLabel } from './windows';
 // editor's api-client (`Error·Api·Http<status>`), server-side crashes
 // the api worker self-reports (`Error·Api·Internal`), and client-side
 // uncaught exceptions / unhandled rejections from the editor + help
-// centre (`Error·Client·*`). Every count is generic by construction —
+// centre (`Error·Client·*`), and warnings (`Error·Warning·*`): a degradation
+// the author was carried through, such as a spent AI budget failing over to
+// the in-browser reader. Every count is generic by construction —
 // the closed vocabulary carries only status tokens and fixed kinds, so
 // there is nothing personal to show. An empty view is the goal state.
 const GROUPS: MetricGroup[] = [
@@ -46,6 +48,7 @@ export function ExceptionsView({
   const rows = summary.windows[active].rows;
   const api = rank(rows, (r) => r.category === 'Error' && r.action === 'Api');
   const client = rank(rows, (r) => r.category === 'Error' && r.action === 'Client');
+  const warning = rank(rows, (r) => r.category === 'Error' && r.action === 'Warning');
 
   return (
     <div className="mt-8">
@@ -74,6 +77,15 @@ export function ExceptionsView({
           items={client}
           daily={summary.daily}
           emptyLabel="No client exceptions in this window. Good."
+        />
+        <RankCard
+          title="Warnings"
+          subtitle="Degradations the author was carried through, such as a spent AI budget reading on the device"
+          category="Error"
+          action="Warning"
+          items={warning}
+          daily={summary.daily}
+          emptyLabel="No warnings in this window."
         />
       </div>
     </div>

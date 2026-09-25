@@ -2,7 +2,16 @@
 
 import type { ModelDownload as Download } from '@/lib/reading/download-progress';
 import { ModelDownload } from './ModelDownload';
-import type { ReaderBackend } from '@/lib/reading/reader-protocol';
+import type { ProcessorReason, ReaderBackend } from '@/lib/reading/reader-protocol';
+import type { ReaderFallback } from '@/lib/reading/types';
+
+// Why the reader is on the processor, said in the author's terms.
+const PROCESSOR_WHY: Record<ProcessorReason, string> = {
+  'no-webgpu': 'this browser has no WebGPU',
+  'no-adapter': 'no graphics card is available to the browser',
+  'no-f16': 'your graphics card can’t run the model’s half-precision maths',
+  'gpu-failed': 'the graphics card failed to start the model',
+};
 
 // What the surface is doing, said ON the photograph (spec/139 Phase 9).
 //
@@ -41,6 +50,8 @@ export function PhotoStatus({
   readSoFar = 0,
   readTotal = 0,
   readerBackend,
+  readerWhy,
+  readerFallback,
   revealed,
   detected,
   reading,
@@ -58,6 +69,10 @@ export function PhotoStatus({
   readSoFar?: number;
   readTotal?: number;
   readerBackend?: ReaderBackend;
+  // Why a reader that runs HERE is on the processor.
+  readerWhy?: ProcessorReason;
+  // The hosted reader's budget was spent and this device reads instead.
+  readerFallback?: ReaderFallback;
   revealed: number;
   detected: number;
   reading: boolean;
@@ -88,9 +103,10 @@ export function PhotoStatus({
             aria-hidden
             className="h-3 w-3 shrink-0 animate-spin rounded-full border-2 border-slate-500 border-t-brand-400"
           />
-          Reading the words…
+          {/* Whole phrases: only the engine's reason may wrap. */}
+          <span className="shrink-0 whitespace-nowrap">Reading the words…</span>
           {readTotal > 0 ? (
-            <span className="tabular-nums text-slate-300">
+            <span className="shrink-0 whitespace-nowrap tabular-nums text-slate-300">
               {readSoFar} of {readTotal}
             </span>
           ) : null}
@@ -99,8 +115,18 @@ export function PhotoStatus({
           ) : readerBackend === 'wasm' ? (
             // A big wall is minutes here, not seconds: say so, rather than
             // let a slow bar pass for a stuck one.
-            <span className="text-slate-300">· on the processor, which is slower</span>
+            <span className="text-slate-300">
+              · on the processor, which is slower
+              {readerWhy ? `: ${PROCESSOR_WHY[readerWhy]}` : null}
+            </span>
           ) : null}
+        </Pill>
+      ) : null}
+      {readerFallback === 'budget' ? (
+        // Whose budget it was (the deployment's key, or the author's free
+        // share) is deliberately not said.
+        <Pill tone="warn" testId="photo-reader-fallback">
+          Free monthly budget reached. Reading on this device instead.
         </Pill>
       ) : null}
       {readError === 'reader_unavailable' ? (

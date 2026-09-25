@@ -1,6 +1,11 @@
 import type { NoteCrop } from '@livediagram/api-schema';
 import { BLANK_ANSWERS } from './reader-model';
-import type { ReaderBackend, ReaderRequest, ReaderResponse } from './reader-protocol';
+import type {
+  ProcessorReason,
+  ReaderBackend,
+  ReaderRequest,
+  ReaderResponse,
+} from './reader-protocol';
 import { normaliseRead, type ReadOptions, type ReadText } from './types';
 
 // Reading the handwriting with a model that runs HERE, in this browser
@@ -57,7 +62,7 @@ export async function readCropsInBrowser(
     );
     shared.terminate?.();
     shared = make();
-    result = await readCropsWith(shared, crops, { ...opts, backend: 'wasm' });
+    result = await readCropsWith(shared, crops, { ...opts, backend: 'wasm', why: 'gpu-failed' });
   }
   if (result.failedBackend) {
     console.warn(`[reader] the reading model could not start: ${result.detail}`);
@@ -80,7 +85,7 @@ type Attempt = { textById: Map<number, ReadText>; failedBackend?: ReaderBackend;
 export function readCropsWith(
   worker: ReaderWorker,
   crops: NoteCrop[],
-  opts: ReadOptions & { backend?: ReaderBackend } = {},
+  opts: ReadOptions & { backend?: ReaderBackend; why?: ProcessorReason } = {},
 ): Promise<Attempt> {
   const out = new Map<number, ReadText>();
   if (crops.length === 0) return Promise.resolve({ textById: out });
@@ -121,7 +126,7 @@ export function readCropsWith(
       if (message.type === 'download') {
         opts.onModelDownload?.(message.download);
       } else if (message.type === 'backend') {
-        opts.onBackend?.(message.backend);
+        opts.onBackend?.(message.backend, message.why);
       } else if (message.id !== id) {
         return;
       } else if (message.type === 'text') {
@@ -145,6 +150,7 @@ export function readCropsWith(
       id,
       crops,
       ...(opts.backend ? { backend: opts.backend } : {}),
+      ...(opts.why ? { why: opts.why } : {}),
     });
   });
 }

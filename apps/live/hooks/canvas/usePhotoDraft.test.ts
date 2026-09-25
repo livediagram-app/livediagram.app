@@ -696,3 +696,40 @@ describe('when the reading model cannot start', () => {
     expect(h.toasts.at(-1)).toMatch(/stalled/);
   });
 });
+
+// The hosted reader's budget ran out and this device read instead (spec/139
+// Phase 9): the review says so, and the editor's error telemetry gets ONE
+// warning with closed values only.
+describe('when the free budget is spent', () => {
+  it('says the device is reading, and reports one warning', async () => {
+    vi.mocked(readCrops).mockImplementation(async (_crops, opts) => {
+      opts.onFallback?.('budget');
+      return { ...read([{ id: 0, text: 'Order placed' }]), fallback: 'budget' };
+    });
+    const h = await reviewed({ aiEnabled: true });
+    expect(h.api().state.readerFallback).toBe('budget');
+    const warnings = vi.mocked(track).mock.calls.filter((c) => c[1] === 'Warning');
+    expect(warnings).toEqual([['Error', 'Warning', 'AiQuota.BrowserReader']]);
+    // The author got their words: nothing to toast.
+    expect(h.toasts).toEqual([]);
+  });
+
+  it('never mentions a budget when the reader did not fail over', async () => {
+    const h = await reviewed({ aiEnabled: true });
+    expect(h.api().state.readerFallback).toBeUndefined();
+    expect(vi.mocked(track).mock.calls.filter((c) => c[1] === 'Warning')).toEqual([]);
+  });
+});
+
+// Reading on the processor says WHY (spec/139 Phase 9).
+describe('where the in-browser reader runs', () => {
+  it('carries the reason it is the processor', async () => {
+    vi.mocked(readCrops).mockImplementation(async (_crops, opts) => {
+      opts.onBackend?.('wasm', 'no-f16');
+      return read([{ id: 0, text: 'Order placed' }]);
+    });
+    const h = await reviewed();
+    expect(h.api().state.readerBackend).toBe('wasm');
+    expect(h.api().state.readerWhy).toBe('no-f16');
+  });
+});

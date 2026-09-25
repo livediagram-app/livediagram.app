@@ -1230,6 +1230,35 @@ Decisions from the operator:
   stay blank and are counted ("6 notes could not be read"). Only a run where
   every batch failed is a failure.
 
+- **When the free budget is spent, this device reads instead.** A server
+  reader whose provider refuses for quota (`ai_quota`, a 429), for every
+  batch or for some, hands the notes it did not read to the in-browser
+  reader, automatically, and the review says so: "Free monthly budget
+  reached. Reading on this device instead." Whose budget it was (the
+  deployment's key, or the author's free share) is deliberately not said. The
+  words the server did read stay; only the unread crops are read here, and the
+  progress bar carries on from where the server stopped. If the in-browser
+  reader cannot start either, that is told the way it always is ("The reading
+  model couldn't start in this browser"). A keyless self-host never sees the
+  budget note: it has no budget, and its reader is the in-browser one from the
+  start. Any other server failure is not a failover: it is told as before.
+
+- **A failover is reported as a warning.** Each one sends one event to the
+  editor's error telemetry, `Error`·`Warning`·`AiQuota.BrowserReader`
+  (spec/22): closed values, never a crop, a word or a count of notes. It is a
+  warning, not an error: the author still gets their words — but a run of
+  them says the hosted budget is spent, which nothing else would.
+
+- **"On the processor" says why.** The in-browser reader runs on the graphics
+  card when it can, and when it cannot the reading pill says which of four
+  reasons stopped it, since reading on the processor is minutes on a big
+  wall rather than seconds: this browser has no WebGPU; no graphics card is
+  available to the browser; the graphics card cannot run the model's
+  half-precision maths (no `shader-f16`); or the graphics card failed to
+  start the model (the WebGPU load failed and a fresh worker read on the
+  processor instead). The worker decides the engine, so the worker says the
+  reason, and it travels with the engine in the reader protocol.
+
 The plans live in `plans/event-storming-photo-review.md`,
 `plans/event-storming-photo-surface-and-shade.md` and
 `plans/event-storming-photo-precision.md`.

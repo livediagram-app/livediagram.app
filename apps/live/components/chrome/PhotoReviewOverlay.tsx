@@ -9,7 +9,8 @@ import { TruthExport } from './photo/TruthExport';
 import { UNREAD_TIP_SHARE, UnreadTip } from './photo/UnreadTip';
 import { ZoomControls } from './photo/ZoomControls';
 import type { ModelDownload as Download } from '@/lib/reading/download-progress';
-import type { ReaderBackend } from '@/lib/reading/reader-protocol';
+import type { ProcessorReason, ReaderBackend } from '@/lib/reading/reader-protocol';
+import type { ReaderFallback } from '@/lib/reading/types';
 import { withKind } from '@/lib/photo-boxes';
 import { truthArmed } from '@/lib/photo-truth';
 import { useBoxDrag } from './photo/useBoxDrag';
@@ -58,6 +59,8 @@ export function PhotoReviewOverlay({
   readSoFar,
   readTotal,
   readerBackend,
+  readerWhy,
+  readerFallback,
   onConfirm,
   onCancel,
   onRetake,
@@ -71,6 +74,9 @@ export function PhotoReviewOverlay({
   readSoFar?: number;
   readTotal?: number;
   readerBackend?: ReaderBackend;
+  readerWhy?: ProcessorReason;
+  // Set when the hosted budget was spent and this device reads instead.
+  readerFallback?: ReaderFallback;
   // The boxes to land AS THEY STAND — ticked, corrected, drawn — and the
   // words on each.
   onConfirm: (
@@ -375,6 +381,8 @@ export function PhotoReviewOverlay({
           readSoFar={readSoFar}
           readTotal={readTotal}
           readerBackend={readerBackend}
+          readerWhy={readerWhy}
+          readerFallback={readerFallback}
         />
       </div>
 

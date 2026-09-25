@@ -102,3 +102,83 @@ describe('whitespace is normalised whoever read it', () => {
     expect(out.get(0)).toEqual({ text: '', legible: false });
   });
 });
+
+// When the hosted reader's budget is spent, the notes it did not read are read
+// HERE instead (spec/139 Phase 9), and the review is told so. Whose budget it
+// was is not the reader's business, and not said.
+describe('when the free budget is spent', () => {
+  const two = [
+    { id: 0, image: 'data:image/jpeg;base64,AAA' },
+    { id: 1, image: 'data:image/jpeg;base64,BBB' },
+  ];
+  afterEach(() => vi.clearAllMocks());
+
+  it('reads every note on this device when no batch was read', async () => {
+    vi.mocked(apiAiReadNotes).mockRejectedValue(new Error('ai_quota'));
+    vi.mocked(readCropsInBrowser).mockResolvedValue({
+      textById: new Map([
+        [0, { text: 'Order placed', legible: true }],
+        [1, { text: 'Paid', legible: true }],
+      ]),
+    });
+    const onFallback = vi.fn();
+    const result = await selectReader({ aiEnabled: true, ownerId: 'o' }).read(two, { onFallback });
+    expect(readCropsInBrowser).toHaveBeenCalledWith(two, expect.anything());
+    expect(onFallback).toHaveBeenCalledWith('budget');
+    expect(result.fallback).toBe('budget');
+    expect(result.failure).toBeUndefined();
+    expect(result.textById.get(1)).toEqual({ text: 'Paid', legible: true });
+  });
+
+  it('keeps what the server read and reads only the rest here, carrying the count on', async () => {
+    vi.mocked(apiAiReadNotes).mockResolvedValue({
+      texts: [{ id: 0, text: 'Order placed', legible: true }],
+      unread: 1,
+      failure: 'ai_quota',
+    });
+    vi.mocked(readCropsInBrowser).mockImplementation(async (_crops, opts) => {
+      opts?.onProgress?.(1);
+      return { textById: new Map([[1, { text: 'Paid', legible: true }]]) };
+    });
+    const onProgress = vi.fn();
+    const result = await selectReader({ aiEnabled: true, ownerId: 'o' }).read(two, { onProgress });
+    expect(readCropsInBrowser).toHaveBeenCalledWith([two[1]], expect.anything());
+    // One read by the server, one here: the bar says two, not one.
+    expect(onProgress).toHaveBeenLastCalledWith(2);
+    expect(result.textById.get(0)).toEqual({ text: 'Order placed', legible: true });
+    expect(result.textById.get(1)).toEqual({ text: 'Paid', legible: true });
+    expect(result.fallback).toBe('budget');
+  });
+
+  it('says the device reader could not start when it cannot', async () => {
+    vi.mocked(apiAiReadNotes).mockRejectedValue(new Error('ai_quota'));
+    vi.mocked(readCropsInBrowser).mockResolvedValue({
+      textById: new Map([
+        [0, { text: '', legible: false }],
+        [1, { text: '', legible: false }],
+      ]),
+      failure: 'reader_unavailable',
+      detail: 'blocked CDN',
+    });
+    const result = await selectReader({ aiEnabled: true, ownerId: 'o' }).read(two, {});
+    expect(result.fallback).toBe('budget');
+    expect(result.failure).toBe('reader_unavailable');
+    expect(result.detail).toBe('blocked CDN');
+  });
+
+  it('does not fail over for any other server failure', async () => {
+    vi.mocked(apiAiReadNotes).mockRejectedValue(new Error('ai_error'));
+    await expect(selectReader({ aiEnabled: true, ownerId: 'o' }).read(two, {})).rejects.toThrow(
+      'ai_error',
+    );
+    expect(readCropsInBrowser).not.toHaveBeenCalled();
+  });
+
+  it('never mentions a budget on a keyless deployment', async () => {
+    vi.mocked(readCropsInBrowser).mockResolvedValue({ textById: new Map() });
+    const onFallback = vi.fn();
+    const result = await selectReader({ aiEnabled: false, ownerId: 'o' }).read(two, { onFallback });
+    expect(onFallback).not.toHaveBeenCalled();
+    expect(result.fallback).toBeUndefined();
+  });
+});

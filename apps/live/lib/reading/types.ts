@@ -1,6 +1,6 @@
 import type { NoteCrop } from '@livediagram/api-schema';
 import type { ModelDownload } from './download-progress';
-import type { ReaderBackend } from './reader-protocol';
+import type { ProcessorReason, ReaderBackend } from './reader-protocol';
 
 // What a reader gives back for one crop: the words on it, and whether it could
 // read them at all. An illegible crop still becomes a note — the PAPER was
@@ -16,7 +16,11 @@ export type ReadOptions = {
   onModelDownload?: (download: ModelDownload) => void;
   // Where a reader that runs HERE runs: the graphics card or the processor —
   // a minute or half an hour on a big wall, which the author should be told.
-  onBackend?: (backend: ReaderBackend) => void;
+  // `why` says what kept it off the graphics card, when it is the processor.
+  onBackend?: (backend: ReaderBackend, why?: ProcessorReason) => void;
+  // The hosted reader ran out of budget and this device reads the rest
+  // (spec/139 Phase 9). Called once, as the failover begins.
+  onFallback?: (reason: ReaderFallback) => void;
   // One note's words, as soon as they are read, so the photo fills in note by
   // note rather than all at once at the end.
   onText?: (cropId: number, read: ReadText) => void;
@@ -34,7 +38,13 @@ export type ReadResult = {
   failure?: string;
   // What went wrong, in the reader's own words, for the log and the author.
   detail?: string;
+  // Set when some or all of the notes were read on this device because the
+  // hosted reader's budget was spent.
+  fallback?: ReaderFallback;
 };
+
+// Why a server reader handed notes to the in-browser one. One reason today.
+export type ReaderFallback = 'budget';
 
 // Every reader has the same shape, so the photo import does not care which one
 // it got: crops in, words out.

@@ -33,8 +33,12 @@ const API_PORT = Number(process.env.E2E_API_PORT ?? 8787);
 //   E2E_NO_AI=1      answer /api/capabilities with aiEnabled: false, as a
 //                    deployment with no AI key does — so the photo import
 //                    reads with the in-browser model.
+//   E2E_AI_BUDGET_SPENT=1  answer /api/ai/read-notes with 429 `ai_quota`, as a
+//                    hosted reader whose free budget is spent does — so the
+//                    photo import fails over to the in-browser model.
 const LIVE_ONLY = process.env.E2E_LIVE_ONLY === '1';
 const NO_AI = process.env.E2E_NO_AI === '1';
+const AI_BUDGET_SPENT = process.env.E2E_AI_BUDGET_SPENT === '1';
 
 const children = [];
 function run(cmd, args, opts = {}) {
@@ -170,6 +174,15 @@ function startLiveServer() {
         });
       return;
     }
+    if (AI_BUDGET_SPENT && pathname === '/api/ai/read-notes') {
+      // Drain the body first, as a real server would, then refuse for quota.
+      req.resume();
+      req.on('end', () => {
+        res.writeHead(429, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'ai_quota' }));
+      });
+      return;
+    }
     if (pathname === '/api' || pathname.startsWith('/api/')) return proxyApi(req, res);
     // Match the worker's /explorer → /explorer/recent redirect.
     if (pathname === '/explorer' || pathname === '/explorer/') {
@@ -207,7 +220,7 @@ async function main() {
   }
   if (LIVE_ONLY) {
     console.log(
-      `[e2e] static editor only, proxying to the api on :${API_PORT}${NO_AI ? ', AI reported off' : ''}`,
+      `[e2e] static editor only, proxying to the api on :${API_PORT}${NO_AI ? ', AI reported off' : ''}${AI_BUDGET_SPENT ? ', AI budget spent' : ''}`,
     );
     startLiveServer();
     return;

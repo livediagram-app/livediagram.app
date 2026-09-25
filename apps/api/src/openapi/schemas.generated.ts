@@ -4422,7 +4422,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Returned",
       "Sent",
       "Api",
-      "Client"
+      "Client",
+      "Warning"
     ],
     "type": "string"
   },
