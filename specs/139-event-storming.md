@@ -250,6 +250,17 @@ The notes behave like the physical kit:
   "add a note, type, drag" is a distraction. Canvas tools stay reachable
   by keyboard shortcut and the command palette (spec/70).
 - **Auto-fit, centred text.** Every ES note is created with `textSize: 'scale'` and centred both ways: a workshop note is one short phrase that should fill its paper and sit in the middle, like a marker-written sticky. It also closes the loop with fixed silhouettes — the note cannot be resized, so the TEXT adapting is what keeps a long phrase legible.
+- **Stacking follows the paper.** Actors are always in FRONT of every other
+  note, and hotspots in front of actors: an actor is stuck on top of the note
+  it acts on, and a hotspot flags whatever it covers. Everything else keeps
+  its own order. It is a paint-order rule rather than a stored one: the note
+  kind decides the tier inside each layer band (`layerBands`, beside the
+  rule that puts frames behind their band), so the canvas, clicks, the SVG
+  and PNG export and the layer thumbnails all agree, nothing is rewritten on
+  save, and a note that changes kind changes tier at once. Bring to front and
+  send to back still reorder notes WITHIN a tier; an event cannot be brought in
+  front of an actor. Ruled 2026-09-25 ("actors must always be in front of
+  other stickies, hotspots go even in front of that").
 - **Drag to the board.** Sticky tiles (the plain note and the whole ES
   category, rows and Favourites grid alike) drag onto the canvas like
   shape tiles (spec/58 ghost included, sized to the silhouette). The
