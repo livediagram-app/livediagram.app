@@ -53,6 +53,8 @@ const DYNAMIC_EMITTERS: Record<string, string> = {
   'apps/live/components/dialogs/settings/SettingsCategoryPane.tsx':
     'emits each Settings catalogue row; the rows themselves are scanned',
   'apps/api/src/routes/events.ts': 'the ingest endpoint, writing validated client events',
+  'apps/api/src/server-telemetry.ts':
+    'reportServerEvent, the api worker helper; its callers are scanned as emitters',
 };
 
 // Card or ranking types that only a computed emitter produces, so the scan
@@ -63,7 +65,7 @@ const COMPUTED_TYPES: Record<string, string> = {
   'Theme·Changed·Default': "packages/diagram themes-data.ts, the brand theme's label",
   // Custom theme ids all map to one token in themeTelemetryLabel.
   'Theme·Changed·Custom': 'custom-theme-registry.ts themeTelemetryLabel',
-  // report(env, 'Email', 'Sent', msg.kind): each template's `kind`.
+  // reportServerEvent(env, 'Email', 'Sent', msg.kind): each template's `kind`.
   'Email·Sent·Welcome': 'apps/api email/templates.ts, the welcome message',
   'Email·Sent·TeamInvite': 'apps/api email/templates.ts, the team invite',
   'Email·Sent·ActionAssigned': 'apps/api email/templates.ts, the action notification',
@@ -105,8 +107,12 @@ describe('the emitter scan', () => {
     expect(has('Tab', 'Moved', 'Folder')).toBe(true); // ternary action
     expect(has('Tab', 'Removed', 'Folder')).toBe(true);
     expect(has('Diagram', 'Created', 'Offline')).toBe(true); // ternary type
-    expect(has('Canvas', 'Changed', 'BackgroundColor')).toBe(true); // forwarding helper
-    expect(has('Email', 'Sent', COMPUTED as never)).toBe(true); // api report(env, ...)
+    expect(has('Canvas', 'Changed', 'BackgroundColor')).toBe(true); // returned closure
+    // A callback's parameter, bound through the calls createVoteTally makes.
+    expect(has('Help', 'Helpful', COMPUTED as never)).toBe(true);
+    expect(has('Help', 'Unhelpful', COMPUTED as never)).toBe(true);
+    expect(has('Session', 'SignedUp', null)).toBe(true); // reportServerEvent(env, ...), const action
+    expect(has('Email', 'Sent', COMPUTED as never)).toBe(true);
     expect(KNOWN.some((e) => e.category === 'Error' && e.path.startsWith('apps/mcp/'))).toBe(true);
     expect(KNOWN.some((e) => e.category === 'Error' && e.path === 'apps/api/src/index.ts')).toBe(
       true,
