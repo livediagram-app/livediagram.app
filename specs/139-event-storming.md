@@ -863,7 +863,11 @@ Decisions from the operator:
     KIND is the box's colour — colour is the notation's own alphabet here — so
     printing "Domain event" over the writing only hid the one thing the author
     has to check. Before the words arrive the chip is a quiet ellipsis, never a
-    kind name. Confidence is not shown: a note's box is one line of small text
+    kind name. The words FIT THE BOX: the chip is the box's width, its font steps
+    down from 11px to a 7px floor until the words take at most two lines, and
+    past the floor the second line is cut (the full words are in its tooltip).
+    Its first line sits inside the box's bottom edge; a second hangs BELOW the
+    box, never up over the handwriting. Confidence is not shown: a note's box is one line of small text
     wide, and the number was the least actionable thing on it.
   - **click-to-edit, in place.** The words become an input over the photo;
     Enter or blur commits, Escape reverts.
