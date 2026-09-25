@@ -17,6 +17,7 @@ import { parseLaserConfig } from '@/lib/laser-config';
 import { createPresenceCoalescer, type CursorPos, type LaserTrail } from './presence-coalescer';
 import type { RemoteSelection } from '@/lib/presence-rows';
 import { pruneMapToPresent } from './editor-page-helpers';
+import { mergeRemoteTab } from './tab-broadcast-ops';
 
 // Realtime room: one WebSocket per diagram, opened only while the
 // diagram is shared. Lifted out of editor-page.tsx verbatim — the
@@ -264,11 +265,9 @@ export function useRoomConnection(opts: {
             const existing = prev.findIndex((t) => t.id === op.tabId);
             if (existing === -1) return [...prev, op.tab];
             const next = [...prev];
-            // `folder` is per-diagram link metadata owned by the
-            // diagram-meta op (spec/30), not by content. Keep the
-            // local membership so a content edit can't clobber a
-            // concurrent folder change.
-            next[existing] = { ...op.tab, folder: next[existing]!.folder };
+            // Keeps our folder membership and in-flight dots; see
+            // mergeRemoteTab.
+            next[existing] = mergeRemoteTab(next[existing]!, op.tab);
             return next;
           });
         } else if (op.kind === 'el') {

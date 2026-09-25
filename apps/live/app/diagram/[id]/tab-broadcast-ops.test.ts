@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { Element, Tab, TabVote } from '@livediagram/diagram';
-import { EL_OP_BROADCAST_LIMIT, tabBroadcastOps } from './tab-broadcast-ops';
+import { EL_OP_BROADCAST_LIMIT, mergeRemoteTab, tabBroadcastOps } from './tab-broadcast-ops';
 
 const el = (id: string, over: Partial<Element> = {}): Element =>
   ({ id, type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10, ...over }) as Element;
@@ -118,6 +118,23 @@ describe('the vote field (spec/39)', () => {
     expect(tabBroadcastOps(before, after)).toEqual([
       { kind: 'tab-meta', tabId: 't1', patch: { vote: after.vote } },
     ]);
+  });
+
+  it('a whole-tab op keeps our dots, which may include ones in flight to the sender', () => {
+    // The host clears the timer (a whole-tab op) with a snapshot taken before
+    // Ariel's dot reached them; Ariel's dot must survive on every receiver.
+    const local = tab({ vote: vote({ votes: { a: ['ariel'] } }), folder: 'mine' });
+    const incoming = tab({ name: 'Renamed', vote: vote({ votes: {} }), folder: 'theirs' });
+    const merged = mergeRemoteTab(local, incoming);
+    expect(merged.vote).toBe(local.vote);
+    expect(merged.name).toBe('Renamed');
+    expect(merged.folder).toBe('mine');
+  });
+
+  it('a whole-tab op still replaces the vote on a lifecycle change', () => {
+    const local = tab({ vote: vote({ votes: { a: ['ariel'] } }) });
+    const incoming = tab({ vote: vote({ active: false, votes: {} }) });
+    expect(mergeRemoteTab(local, incoming).vote).toBe(incoming.vote);
   });
 
   it('leaves other meta changes alone while dots move', () => {

@@ -368,6 +368,9 @@ export class DiagramRoom implements DurableObject {
       // see the size note on SessionAttachment.
       const presence = helloPresence(msg.participant, session);
       ws.serializeAttachment({ ...session, presence } satisfies SessionAttachment);
+      // Where the ordered stream stands as this session joins, so a later
+      // reconnect asks for what came after it, not for the whole log.
+      this.sendTo(ws, { kind: 'cursor', epoch: this.epoch, seq: this.seq });
       this.broadcastPresence();
       this.noteMultiplayer();
       // Judge the baton BEFORE honouring a token: one that ran out of time is
@@ -486,6 +489,9 @@ export class DiagramRoom implements DurableObject {
         this.opLog.push({ seq, from: sender.id, op: msg.op });
         if (this.opLog.length > OP_LOG_LIMIT) this.opLog.shift();
         this.broadcast({ kind: 'op', from: sender.id, op: msg.op, seq, epoch: this.epoch }, ws);
+        // The relay skips the sender, so tell it the seq its op took: its own
+        // ops are already applied, and a reconnect must not replay them.
+        this.sendTo(ws, { kind: 'cursor', epoch: this.epoch, seq });
       }
     }
   }

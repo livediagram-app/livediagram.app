@@ -891,6 +891,28 @@ describe('DiagramRoom op ordering + reconnect catch-up (spec/75, Level 1)', () =
     expect(received[1].epoch).toBe(room.epoch);
   });
 
+  it('tells the sender the seq its own op took, and a joiner where the stream stands', () => {
+    // The relay skips the sender, so without this a client only learned seqs
+    // from other people's ops and a reconnect replayed its own `vote` deltas
+    // back at it, counting each dot twice.
+    const { room } = newRoom();
+    const { editor, peer } = editorAndPeer(room);
+    sendFrame(room, editor, {
+      kind: 'op',
+      op: { kind: 'el', tabId: 't', op: { kind: 'remove', id: 'a' } },
+    });
+    const cursors = (ws: FakeSocket) =>
+      ws.sent.map((s) => JSON.parse(s)).filter((m) => m.kind === 'cursor');
+    expect(cursors(editor)).toEqual([{ kind: 'cursor', epoch: room.epoch, seq: 1 }]);
+    // Peers learn the seq from the op itself, not a cursor.
+    expect(cursors(peer)).toEqual([]);
+
+    const late = makeSocket();
+    room.acceptSession(asWs(late), 'view');
+    sendFrame(room, late, { kind: 'hello', participant: { id: 'l', name: 'L', color: '#333' } });
+    expect(cursors(late)).toEqual([{ kind: 'cursor', epoch: room.epoch, seq: 1 }]);
+  });
+
   it('never stamps a seq on an ephemeral presence op', () => {
     const { room } = newRoom();
     const { editor, peer } = editorAndPeer(room);

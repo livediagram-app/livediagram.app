@@ -147,7 +147,15 @@ export function connectRoom(
         else if (msg.kind === 'facilitator') handlers.onFacilitator?.(msg);
         else if (msg.kind === 'selection-released') handlers.onSelectionReleased?.(msg);
         else if (msg.kind === 'op') applyOp(msg.from, msg.op, msg.seq, msg.epoch);
-        else if (msg.kind === 'catchup') {
+        else if (msg.kind === 'cursor') {
+          // Our own op's seq, or where the stream stood when we joined. A
+          // different epoch is a restarted room: leave the cursor for the
+          // sync / catchup exchange to reconcile.
+          if (lastEpoch === null || lastEpoch === msg.epoch) {
+            lastEpoch = msg.epoch;
+            if (msg.seq > lastSeq) lastSeq = msg.seq;
+          }
+        } else if (msg.kind === 'catchup') {
           if (msg.resync) {
             // Adopt the room's cursor first so we don't loop on the same
             // gap, then hand off to the caller's full re-hydrate.

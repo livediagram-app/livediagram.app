@@ -250,7 +250,16 @@ export type ServerMessage =
   // The receiver drops the selection and re-broadcasts its own `select` op, so
   // every other peer's lock clears through the ordinary path and the room needs
   // to tell nobody else anything.
-  | { kind: 'selection-released'; elementId: string; by: string };
+  | { kind: 'selection-released'; elementId: string; by: string }
+  // The ordering cursor this session has reached (spec/75, Level 1), sent on
+  // `hello` and to the SENDER of each ordered op, which the relay skips. Without
+  // it a client only learned seqs from other people's ops, so a reconnect
+  // replayed its own ops back at it (and, having heard nothing, the whole log).
+  // Harmless for idempotent element ops; a `vote` op is a delta, so every
+  // replayed dot was counted twice.
+  | CursorMessage;
+
+export type CursorMessage = { kind: 'cursor'; epoch: string; seq: number };
 
 // Incoming WebSocket frames clients send to the room.
 // `hello` identifies the participant on connect; `op` is any local
@@ -480,4 +489,5 @@ export type RoomIncoming =
       token?: string;
     }
   // Addressed by being sent at all — see ServerMessage above.
-  | { kind: 'selection-released'; elementId: string; by: string };
+  | { kind: 'selection-released'; elementId: string; by: string }
+  | CursorMessage;
