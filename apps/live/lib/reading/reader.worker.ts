@@ -33,8 +33,10 @@ const gpuOf = () =>
     }
   ).gpu;
 
-function load(forced?: ReaderBackend, forcedWhy?: ProcessorReason): Promise<LoadedReader> {
-  loading ??= (async () => {
+// The engine, picked once for the worker's life (or forced by the page).
+let picking: Promise<void> | null = null;
+function pick(forced?: ReaderBackend, forcedWhy?: ProcessorReason): Promise<void> {
+  picking ??= (async () => {
     if (forced) {
       backendInUse = forced;
       whyProcessor = forced === 'wasm' ? forcedWhy : undefined;
@@ -43,6 +45,12 @@ function load(forced?: ReaderBackend, forcedWhy?: ProcessorReason): Promise<Load
       backendInUse = choice.backend;
       whyProcessor = choice.backend === 'wasm' ? choice.why : undefined;
     }
+  })();
+  return picking;
+}
+
+function load(): Promise<LoadedReader> {
+  loading ??= (async () => {
     console.info(`[reader] loading on ${backendInUse}${whyProcessor ? ` (${whyProcessor})` : ''}`);
     return loadReader(
       (download) => scope.postMessage({ type: 'download', download }),
@@ -62,7 +70,15 @@ scope.addEventListener('message', async ({ data: request }) => {
   }
   let loaded: LoadedReader;
   try {
-    loaded = await load(request.backend, request.why);
+    // The engine is said BEFORE the download: the page's pill names it, and
+    // its stall watchdog knows which engine stalled.
+    await pick(request.backend, request.why);
+    scope.postMessage({
+      type: 'backend',
+      backend: backendInUse,
+      ...(backendInUse === 'wasm' && whyProcessor ? { why: whyProcessor } : {}),
+    });
+    loaded = await load();
   } catch (err) {
     // Let the next read try the download again.
     loading = null;
@@ -75,11 +91,8 @@ scope.addEventListener('message', async ({ data: request }) => {
     });
     return;
   }
-  scope.postMessage({
-    type: 'backend',
-    backend: loaded.backend,
-    ...(loaded.backend === 'wasm' && whyProcessor ? { why: whyProcessor } : {}),
-  });
+  // Loaded: from here a long silence is a slow note, not a stall.
+  scope.postMessage({ type: 'ready' });
   const started = performance.now();
   for (const crop of request.crops) {
     if (cancelled.has(request.id)) break;

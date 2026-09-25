@@ -1301,6 +1301,17 @@ Decisions from the operator:
   processor instead). The worker decides the engine, so the worker says the
   reason, and it travels with the engine in the reader protocol.
 
+- **A stalled download is told; a slow note is waited out.** While the model
+  downloads and loads, a minute without any word from the reader is a stall:
+  the reader gives up on that engine (a fresh worker retries on the processor
+  only when the stalled engine was the graphics card) and, if nothing
+  starts, says the model could not start. Once the model has loaded, a long
+  silence is a slow machine reading a note (a phone, a busy laptop), and it
+  is waited out; the author can still cancel. The worker names its engine as
+  soon as it picks one, before the download, so the pill says where it will
+  run and a stall is blamed on the right engine. The review never calls the
+  notes read while a retry is still going.
+
 The plans live in `plans/event-storming-photo-review.md`,
 `plans/event-storming-photo-surface-and-shade.md` and
 `plans/event-storming-photo-precision.md`.

@@ -19,8 +19,11 @@ export type ReaderRequest =
 
 export type ReaderResponse =
   | { type: 'download'; download: ModelDownload }
+  // The engine, said as soon as it is picked, before the model downloads.
   // `why` is present exactly when the engine is the processor.
   | { type: 'backend'; backend: ReaderBackend; why?: ProcessorReason }
+  // The model is loaded: from here the worker is reading.
+  | { type: 'ready' }
   // The raw answer for one crop; the page normalises it.
   | { type: 'text'; id: number; cropId: number; text: string }
   | { type: 'done'; id: number }

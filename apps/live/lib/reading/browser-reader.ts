@@ -27,7 +27,10 @@ type ReaderWorker = {
 };
 
 // One worker for the page, created on first use and kept: it holds the model.
+// Keyed by the factory that made it, so a caller with its own factory (a
+// test) never inherits another's worker.
 let shared: ReaderWorker | null = null;
+let sharedBy: (() => ReaderWorker) | null = null;
 let nextId = 1;
 
 const newWorker = (): ReaderWorker =>
@@ -54,6 +57,11 @@ export async function readCropsInBrowser(
   opts: ReadOptions = {},
   make: () => ReaderWorker = newWorker,
 ): Promise<BrowserRead> {
+  if (sharedBy !== make) {
+    shared?.terminate?.();
+    shared = null;
+  }
+  sharedBy = make;
   shared ??= make();
   let result = await readCropsWith(shared, crops, opts);
   if (result.failedBackend === 'webgpu') {
@@ -68,6 +76,14 @@ export async function readCropsInBrowser(
     console.warn(`[reader] the reading model could not start: ${result.detail}`);
     shared.terminate?.();
     shared = null;
+    // The paper was still found: every note lands blank for the author to
+    // type, rather than the whole import failing. Said only now, after any
+    // retry, so the review never calls the notes read while one is running.
+    for (const c of crops) {
+      if (!result.textById.has(c.id)) result.textById.set(c.id, { text: '', legible: false });
+    }
+    opts.onProgress?.(crops.length);
+    opts.onModelDownload?.({ loaded: 0, total: 0, done: true });
     return { textById: result.textById, failure: 'reader_unavailable', detail: result.detail };
   }
   return { textById: result.textById };
@@ -91,23 +107,22 @@ export function readCropsWith(
       clearTimeout(stall);
       worker.removeEventListener('message', listen);
       opts.signal?.removeEventListener('abort', cancel);
-      if (attempt.failedBackend) {
-        // The paper was still found: every note lands blank for the author
-        // to type, rather than the whole import failing.
-        for (const c of crops) if (!out.has(c.id)) out.set(c.id, { text: '', legible: false });
-        opts.onProgress?.(crops.length);
-        opts.onModelDownload?.({ loaded: 0, total: 0, done: true });
-      }
       resolve({ textById: out, ...attempt });
     };
     const finish = () => settle();
-    // Any word from the worker is life; silence for `stallMs` is a stall.
+    // The engine the worker picked, and whether the model has loaded.
+    let picked: ReaderBackend | undefined = opts.backend;
+    let ready = false;
+    // WHILE THE MODEL LOADS, any word from the worker is life and silence for
+    // `stallMs` is a stall. Once it has loaded, silence is a slow note (a
+    // phone, a busy machine) and is waited out; the author can still cancel.
     const watch = () => {
       clearTimeout(stall);
+      if (ready) return;
       stall = setTimeout(
         () =>
           settle({
-            failedBackend: opts.backend ?? 'webgpu',
+            failedBackend: picked ?? 'webgpu',
             detail: `the model download stalled (no progress for ${Math.round(stallMs / 1000)} s)`,
           }),
         stallMs,
@@ -119,7 +134,11 @@ export function readCropsWith(
       if (message.type === 'download') {
         opts.onModelDownload?.(message.download);
       } else if (message.type === 'backend') {
+        picked = message.backend;
         opts.onBackend?.(message.backend, message.why);
+      } else if (message.type === 'ready') {
+        ready = true;
+        clearTimeout(stall);
       } else if (message.id !== id) {
         return;
       } else if (message.type === 'text') {

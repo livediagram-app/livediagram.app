@@ -68,11 +68,12 @@ describe('reading crops through the worker', () => {
   });
 
   it('lands every note blank when the model cannot load, rather than failing the import', async () => {
-    const worker = fakeWorker((req, reply) => {
-      if (req.type === 'read')
-        reply({ type: 'failed', id: req.id, detail: 'blocked CDN', backend: 'wasm' });
-    });
-    const { textById: out } = await readCropsWith(worker, crops, {});
+    const make = () =>
+      fakeWorker((req, reply) => {
+        if (req.type === 'read')
+          reply({ type: 'failed', id: req.id, detail: 'blocked CDN', backend: 'wasm' });
+      });
+    const { textById: out } = await readCropsInBrowser(crops, {}, make);
     expect([...out.values()]).toEqual([
       { text: '', legible: false },
       { text: '', legible: false },
@@ -146,8 +147,9 @@ describe('when the model will not start', () => {
     try {
       const make = () =>
         fakeWorker((req, reply) => {
-          if (req.type === 'read')
-            reply({ type: 'download', download: { loaded: 231, total: 252, done: false } });
+          if (req.type !== 'read') return;
+          reply({ type: 'backend', backend: req.backend ?? 'webgpu' });
+          reply({ type: 'download', download: { loaded: 231, total: 252, done: false } });
           // …and then nothing more, ever.
         });
       const done = readCropsInBrowser(crops, { stallMs: 60_000 }, make);
@@ -160,5 +162,82 @@ describe('when the model will not start', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+});
+
+// The watchdog is for the DOWNLOAD. Once the model is loaded, a slow note is
+// a slow machine (a phone, a busy laptop), not a stall.
+describe('a slow reading is not a stall', () => {
+  it('waits as long as a note takes once the model is ready', async () => {
+    vi.useFakeTimers();
+    try {
+      const make = () =>
+        fakeWorker((req, reply) => {
+          if (req.type !== 'read') return;
+          reply({ type: 'backend', backend: 'wasm', why: 'no-f16' });
+          reply({ type: 'ready' });
+          setTimeout(() => {
+            reply({ type: 'text', id: req.id, cropId: 0, text: 'Order placed' });
+            reply({ type: 'text', id: req.id, cropId: 1, text: 'Paid' });
+            reply({ type: 'done', id: req.id });
+          }, 300_000);
+        });
+      const done = readCropsInBrowser(crops, { stallMs: 60_000 }, make);
+      await vi.advanceTimersByTimeAsync(301_000);
+      const result = await done;
+      expect(result.failure).toBeUndefined();
+      expect(result.textById.get(1)).toEqual({ text: 'Paid', legible: true });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('does not retry on the processor a download that stalled ON the processor', async () => {
+    vi.useFakeTimers();
+    try {
+      const made: ReturnType<typeof fakeWorker>[] = [];
+      const make = () => {
+        const w = fakeWorker((req, reply) => {
+          if (req.type !== 'read') return;
+          reply({ type: 'backend', backend: 'wasm', why: 'no-adapter' });
+          reply({ type: 'download', download: { loaded: 5, total: 250, done: false } });
+        });
+        made.push(w);
+        return w;
+      };
+      const onProgress = vi.fn();
+      const done = readCropsInBrowser(crops, { stallMs: 60_000, onProgress }, make);
+      await vi.advanceTimersByTimeAsync(61_000);
+      const result = await done;
+      expect(made).toHaveLength(1);
+      expect(result.failure).toBe('reader_unavailable');
+      expect(onProgress).toHaveBeenLastCalledWith(2);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('does not call the notes read before the processor retry has read them', async () => {
+    const progress: number[] = [];
+    const make = (() => {
+      let n = 0;
+      return () =>
+        fakeWorker((req, reply) => {
+          if (req.type !== 'read') return;
+          n += 1;
+          if (n === 1) {
+            reply({ type: 'backend', backend: 'webgpu' });
+            reply({ type: 'failed', id: req.id, detail: 'no fp16', backend: 'webgpu' });
+            return;
+          }
+          reply({ type: 'backend', backend: 'wasm', why: req.why });
+          reply({ type: 'ready' });
+          reply({ type: 'text', id: req.id, cropId: 0, text: 'Order placed' });
+          reply({ type: 'text', id: req.id, cropId: 1, text: 'Paid' });
+          reply({ type: 'done', id: req.id });
+        });
+    })();
+    await readCropsInBrowser(crops, { onProgress: (n) => progress.push(n) }, make);
+    expect(progress).toEqual([1, 2]);
   });
 });
