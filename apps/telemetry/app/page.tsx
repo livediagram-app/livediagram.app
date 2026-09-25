@@ -8,7 +8,6 @@ import {
   AlertGlyph,
   BrushGlyph,
   FileGlyph,
-  LinkGlyph,
   LayersGlyph,
   ListGlyph,
   PaletteGlyph,
@@ -27,7 +26,6 @@ import { RawView } from './RawView';
 import { LookAndFeelView } from './LookAndFeelView';
 import { PaletteView } from './PaletteView';
 import { HelpView } from './HelpView';
-import { ExternalConnectionsView } from './ExternalConnectionsView';
 import { CollaborationView } from './CollaborationView';
 import { EditingView } from './EditingView';
 import { ExceptionsView } from './ExceptionsView';
@@ -45,8 +43,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 // makes things (Highlights), which pages they read (Pages), what they build
 // (Palette / Look & Feel), how they
 // organise it (Editing), how they work
-// together (Collaboration), how they get unstuck (Help), how machines connect
-// (External Connections), then the power-user lenses (Search / Raw).
+// together (Collaboration), how they get unstuck (Help), then the power-user lenses (Search / Raw).
 const VIEWS: { key: ViewKey; label: string; icon: ReactNode }[] = [
   { key: 'highlights', label: 'Highlights', icon: <SparkGlyph /> },
   { key: 'pages', label: 'Pages', icon: <WindowGlyph /> },
@@ -54,7 +51,6 @@ const VIEWS: { key: ViewKey; label: string; icon: ReactNode }[] = [
   { key: 'lookfeel', label: 'Look & Feel', icon: <BrushGlyph /> },
   { key: 'editing', label: 'Editing', icon: <LayersGlyph /> },
   { key: 'help', label: 'Help', icon: <FileGlyph /> },
-  { key: 'external', label: 'External Connections', icon: <LinkGlyph /> },
   { key: 'collaboration', label: 'Collaboration', icon: <ShareGlyph /> },
   { key: 'exceptions', label: 'Exceptions', icon: <AlertGlyph /> },
   { key: 'search', label: 'Search', icon: <SearchGlyph /> },
@@ -174,8 +170,6 @@ export default function TelemetryDashboard() {
               <EditingView summary={summary} active={active} />
             ) : view === 'help' ? (
               <HelpView summary={summary} active={active} />
-            ) : view === 'external' ? (
-              <ExternalConnectionsView summary={summary} active={active} />
             ) : view === 'collaboration' ? (
               <CollaborationView summary={summary} active={active} />
             ) : view === 'exceptions' ? (

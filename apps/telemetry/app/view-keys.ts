@@ -7,7 +7,6 @@ export type ViewKey =
   | 'lookfeel'
   | 'editing'
   | 'help'
-  | 'external'
   | 'collaboration'
   | 'exceptions'
   | 'search'

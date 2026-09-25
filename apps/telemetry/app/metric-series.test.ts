@@ -85,3 +85,17 @@ describe('the Elements Added stack', () => {
     }
   });
 });
+
+describe('the MCP Tool Calls stack', () => {
+  it('has one chart per tool the MCP server registers', async () => {
+    const { MCP_TOOL_METRICS } = await import('./metric-catalogue');
+    const { pascalToken } = await import('@livediagram/api-schema');
+    const source = readFileSync(resolve(__dirname, '../../mcp/src/tools.ts'), 'utf8');
+    // registerTool(server, env, '<name>', ...
+    const names = [...source.matchAll(/registerTool\(\s*server,\s*env,\s*'([a-z_]+)'/g)].map(
+      (m) => m[1]!,
+    );
+    expect(names.length).toBeGreaterThan(5);
+    expect(MCP_TOOL_METRICS.map((m) => m.type).sort()).toEqual(names.map(pascalToken).sort());
+  });
+});

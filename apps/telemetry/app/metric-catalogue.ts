@@ -370,7 +370,7 @@ export const AI_ASSISTANCE: MetricStack = {
   headline: AI_REQUESTS,
 };
 
-// Programmatic access (External Connections tab): the API-token lifecycle and
+// Programmatic access (Highlights, Connections): the API-token lifecycle and
 // what the MCP server's tools actually get used for.
 export const TOKENS_CREATED: Metric = {
   category: 'Token',
@@ -393,21 +393,46 @@ export const TOKENS_REVOKED: Metric = {
   title: 'Tokens Revoked',
   blurb: 'API tokens revoked, whether minted by hand or by an AI tool.',
 };
-export const MCP_TOOL_CALLS: Metric = {
-  category: 'Mcp',
-  action: 'Used',
-  allTypes: true,
-  title: 'MCP Tool Calls',
-  blurb: 'AI assistants calling the livediagram MCP server tools, across every tool.',
+
+export const API_TOKENS: MetricStack = {
+  stack: true,
+  title: 'API Tokens',
+  blurb: 'Tokens minted by hand or by an AI tool connecting over MCP, and tokens revoked.',
+  members: [TOKENS_CREATED, AI_TOOLS_CONNECTED, TOKENS_REVOKED],
+  // Tokens minted; revocations are the same tokens leaving, not more of them.
+  headline: [TOKENS_CREATED, AI_TOOLS_CONNECTED],
 };
 
-export const API_TOKENS_AND_MCP: MetricStack = {
+// MCP tool calls, one chart per tool the MCP server registers (apps/mcp
+// tools.ts), by the `Mcp·Used·<Tool>` token it reports on a call that
+// succeeded. Together they are every tool call, so the stack's sum is the
+// total; `metric-series.test` fails if a registered tool has no chart here.
+const mcpTool = (type: string, title: string, blurb: string): Metric => ({
+  category: 'Mcp',
+  action: 'Used',
+  type,
+  title,
+  blurb,
+});
+
+export const MCP_TOOL_METRICS: readonly Metric[] = [
+  mcpTool('FindDiagrams', 'Find Diagrams', 'Searching the user’s diagrams by name.'),
+  mcpTool('ReadDiagram', 'Read Diagram', 'Reading one diagram’s tabs and elements.'),
+  mcpTool('ListTemplates', 'List Templates', 'Listing the templates a diagram can start from.'),
+  mcpTool('CreateDiagram', 'Create Diagram', 'Making a new diagram.'),
+  mcpTool('AddTab', 'Add Tab', 'Adding a tab to an existing diagram.'),
+  mcpTool('UpdateDiagram', 'Update Diagram', 'Editing a diagram’s elements.'),
+  mcpTool('ShareDiagram', 'Share Diagram', 'Creating a share link for a diagram.'),
+  mcpTool('RenameDiagram', 'Rename Diagram', 'Renaming a diagram.'),
+  mcpTool('DeleteDiagram', 'Delete Diagram', 'Deleting a diagram.'),
+];
+
+export const MCP_TOOL_CALLS: MetricStack = {
   stack: true,
-  title: 'API Tokens & MCP',
+  title: 'MCP Tool Calls',
   blurb:
-    'Tokens minted by hand or by an AI tool connecting, tokens revoked, and the MCP tool calls those connections make.',
-  members: [TOKENS_CREATED, AI_TOOLS_CONNECTED, TOKENS_REVOKED, MCP_TOOL_CALLS],
-  headline: MCP_TOOL_CALLS,
+    'AI assistants calling the livediagram MCP server, by tool. Only calls that succeeded count.',
+  members: [...MCP_TOOL_METRICS],
 };
 
 // Elements added, one chart per palette tab (Palette tab ranks inside each),

@@ -4,7 +4,6 @@ import { GROUPS as COLLABORATION } from './CollaborationView';
 import { GROUPS as EDITING } from './EditingView';
 import { COMPUTED, scanEmitters, type Emit } from './emitter-scan';
 import { GROUPS as EXCEPTIONS, RECOVERY_TYPES } from './ExceptionsView';
-import { GROUPS as EXTERNAL } from './ExternalConnectionsView';
 import { GROUPS as HELP } from './HelpView';
 import { GROUPS as HIGHLIGHTS } from './HighlightsView';
 import {
@@ -79,6 +78,16 @@ const COMPUTED_TYPES: Record<string, string> = {
   'Email·Sent·CommentNotification': 'apps/api email/templates.ts, the new-comment notice',
   'Email·Sent·TokenExpiring': 'apps/api email/templates.ts, the API token expiry warning',
   'Email·Sent·AccountDeleted': 'apps/api email/templates.ts, the deletion confirmation',
+  // postTelemetry(env, 'Mcp', 'Used', pascalToken(name)): each registered tool.
+  'Mcp·Used·FindDiagrams': 'apps/mcp tools.ts, find_diagrams',
+  'Mcp·Used·ReadDiagram': 'apps/mcp tools.ts, read_diagram',
+  'Mcp·Used·ListTemplates': 'apps/mcp tools.ts, list_templates',
+  'Mcp·Used·CreateDiagram': 'apps/mcp tools.ts, create_diagram',
+  'Mcp·Used·AddTab': 'apps/mcp tools.ts, add_tab',
+  'Mcp·Used·UpdateDiagram': 'apps/mcp tools.ts, update_diagram',
+  'Mcp·Used·ShareDiagram': 'apps/mcp tools.ts, share_diagram',
+  'Mcp·Used·RenameDiagram': 'apps/mcp tools.ts, rename_diagram',
+  'Mcp·Used·DeleteDiagram': 'apps/mcp tools.ts, delete_diagram',
 };
 
 function sendable(category: string, action: string, type: string | null): boolean {
@@ -91,14 +100,7 @@ function sendable(category: string, action: string, type: string | null): boolea
   );
 }
 
-const ALL: MetricGroup[] = [
-  ...HIGHLIGHTS,
-  ...COLLABORATION,
-  ...EDITING,
-  ...EXCEPTIONS,
-  ...EXTERNAL,
-  ...HELP,
-];
+const ALL: MetricGroup[] = [...HIGHLIGHTS, ...COLLABORATION, ...EDITING, ...EXCEPTIONS, ...HELP];
 // Plus every catalogue chart, including ones parked off every tab, so a chart
 // waiting to be added back can't rot while it is out of view.
 const METRICS = [

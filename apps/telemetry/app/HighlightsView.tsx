@@ -4,6 +4,7 @@ import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-sche
 import {
   ACCOUNT_ACTIVITY,
   AI_ASSISTANCE,
+  API_TOKENS,
   ELEMENTS_ADDED,
   EXCEPTIONS,
   LAYERS_FEATURE,
@@ -12,6 +13,7 @@ import {
   EMAILS_SENT,
   HELP_PAGES,
   LIVE_PAGES,
+  MCP_TOOL_CALLS,
   MARKETING_PAGES,
   NEW_VISITORS,
   RETURNING_VISITORS,
@@ -66,6 +68,10 @@ export const GROUPS: MetricGroup[] = [
   {
     title: 'Features',
     metrics: [AI_ASSISTANCE, LAYERS_FEATURE],
+  },
+  {
+    title: 'Connections',
+    metrics: [API_TOKENS, MCP_TOOL_CALLS],
   },
   {
     title: 'Health',
