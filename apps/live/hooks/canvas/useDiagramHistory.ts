@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { graftLiveTabState, type Tab } from '@livediagram/diagram';
 
 // Bounded undo/redo over the tabs array. See specs/09 ("Undo / Redo").
@@ -154,9 +154,13 @@ export function useDiagramHistory(initialTabs: Tab[]): DiagramHistory {
   // genuine context switches (hydrating on mount, opening a different
   // diagram, loading a tab) where prior undo states no longer apply.
   // Remote peer merges use `applyRemote` instead, to keep history.
-  const reset = (tabs: Tab[] | ((prev: Tab[]) => Tab[])) => {
+  // Stable identity (setHistory never changes): the per-tab load effect
+  // (usePerTabLoad) reaches this through resetTabs, and a fresh function
+  // every render once made that effect refetch a failed tab on every
+  // re-render (spec/22).
+  const reset = useCallback((tabs: Tab[] | ((prev: Tab[]) => Tab[])) => {
     setHistory((h) => historyReset(h, tabs));
-  };
+  }, []);
 
   // Merge a remote peer's change into the present, preserving undo/redo.
   const applyRemote = (tabs: Tab[] | ((prev: Tab[]) => Tab[])) => {

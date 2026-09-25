@@ -1,6 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { TELEMETRY_TYPE_PATTERN } from '@livediagram/api-schema';
-import { apiErrorType, networkErrorType, setApiErrorReporter } from './error-report';
+import { ERROR_EMIT_CAP_PER_TYPE } from '@livediagram/telemetry-client';
+import {
+  apiErrorType,
+  networkErrorType,
+  reportApiError,
+  setApiErrorReporter,
+} from './error-report';
 import { apiFetch } from './core';
 
 // Attribution for api failures (spec/22). Reporting the bare status made a
@@ -91,5 +97,38 @@ describe('network failures', () => {
     vi.stubGlobal('fetch', () => Promise.reject(new TypeError('Failed to fetch')));
     await expect(apiFetch('/api/timeline')).rejects.toThrow();
     expect(seen).toEqual([]);
+  });
+});
+
+// The per-type budget (spec/22). One editor stuck refetching a forbidden tab
+// once made `Http403.LoadTab` nearly half of every stored event; whatever
+// loops next, a page load can only ever send the cap.
+describe('per-type report cap', () => {
+  afterEach(() => setApiErrorReporter(null));
+
+  it('reports each type at most the shared cap per page load', () => {
+    const seen: string[] = [];
+    setApiErrorReporter((t) => seen.push(t));
+    for (let i = 0; i < ERROR_EMIT_CAP_PER_TYPE * 5; i++) reportApiError(403, 'load tab');
+    expect(seen).toHaveLength(ERROR_EMIT_CAP_PER_TYPE);
+    expect(new Set(seen)).toEqual(new Set(['Http403.LoadTab']));
+  });
+
+  it('keeps a separate budget per type, so one storm cannot hide another', () => {
+    const seen: string[] = [];
+    setApiErrorReporter((t) => seen.push(t));
+    for (let i = 0; i < ERROR_EMIT_CAP_PER_TYPE * 2; i++) reportApiError(403, 'load tab');
+    reportApiError(500, 'save tab');
+    reportApiError(403, 'save tab');
+    expect(seen.slice(-2)).toEqual(['Http500.SaveTab', 'Http403.SaveTab']);
+  });
+
+  it('does not spend the budget while no reporter is wired', () => {
+    setApiErrorReporter(null);
+    for (let i = 0; i < ERROR_EMIT_CAP_PER_TYPE * 2; i++) reportApiError(403, 'load tab');
+    const seen: string[] = [];
+    setApiErrorReporter((t) => seen.push(t));
+    reportApiError(403, 'load tab');
+    expect(seen).toEqual(['Http403.LoadTab']);
   });
 });

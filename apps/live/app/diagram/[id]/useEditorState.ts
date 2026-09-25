@@ -220,12 +220,18 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     rawMarkCheckpoint();
     return token;
   };
-  const resetTabs = (tabs: Tab[] | ((prev: Tab[]) => Tab[])) => {
-    // reset clears the snapshot stacks (context switch), so the
-    // markers must go with them or the pairing skews.
-    entryHistoryRef.current = emptyEntryHistory();
-    rawResetTabs(tabs);
-  };
+  // Stable identity: usePerTabLoad takes this, and an identity that changed
+  // every render once turned a failed tab load into a refetch on every
+  // re-render (the 30s presence tick included), each one an Error report.
+  const resetTabs = useCallback(
+    (tabs: Tab[] | ((prev: Tab[]) => Tab[])) => {
+      // reset clears the snapshot stacks (context switch), so the
+      // markers must go with them or the pairing skews.
+      entryHistoryRef.current = emptyEntryHistory();
+      rawResetTabs(tabs);
+    },
+    [rawResetTabs],
+  );
   // Escape-cancel for an in-flight drag: restore the gesture's
   // checkpoint and DISCARD the step (no redo entry — a cancelled drag
   // never happened), popping its marker in step.

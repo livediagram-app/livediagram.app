@@ -16,17 +16,29 @@
 //     (`Network.Put.Diagrams.Tabs`), since apiFetch sees the URL but not the
 //     caller's action. The route label keeps only the api's fixed route words,
 //     never an id or share code.
+//
+// Each type reports at most ERROR_EMIT_CAP_PER_TYPE times per page load, the
+// same budget the uncaught-error path has (spec/22). A request that fails in
+// a loop floods as hard as a throw that does: one editor stuck refetching a
+// forbidden tab sent `Http403.LoadTab` every 15 to 65 seconds for weeks,
+// nearly half of every stored event.
 import { apiRouteLabel, errorTypeToken } from '@livediagram/api-schema';
+import { createPerTypeCap } from '@livediagram/telemetry-client';
 
 let apiErrorReporter: ((type: string) => void) | null = null;
+let allowReport = createPerTypeCap();
 
+// Wiring a reporter (or clearing it) starts a fresh budget, so a test, or a
+// host that re-registers, isn't charged for reports made before it.
 export function setApiErrorReporter(fn: ((type: string) => void) | null): void {
   apiErrorReporter = fn;
+  allowReport = createPerTypeCap();
 }
 
 function report(type: string): void {
   try {
-    apiErrorReporter?.(type);
+    if (!apiErrorReporter || !allowReport(type)) return;
+    apiErrorReporter(type);
   } catch {
     // Telemetry can never throw into the caller's error handling.
   }

@@ -240,9 +240,25 @@ export function createLazyTrack(opts: {
 // at the cap; the dashboard reads presence + order of magnitude, not exact
 // storm size), and per-type so one noisy page can't hide another.
 // Shared by the editor and the help centre; each passes its own
-// policy-wrapped track().
+// policy-wrapped track(). The editor's api-client error reports
+// (`Error.Api`) take the same cap through `createPerTypeCap`, because a
+// request that fails in a loop floods just as hard as a throw that does.
 
-const ERROR_EMIT_CAP_PER_TYPE = 10;
+export const ERROR_EMIT_CAP_PER_TYPE = 10;
+
+// A per-page-load budget of `cap` emits per distinct type: the returned
+// function answers whether this `type` may still emit, and counts it when
+// it may. One counter per caller, so the uncaught-error path and the api
+// error path each get their own budget.
+export function createPerTypeCap(cap: number = ERROR_EMIT_CAP_PER_TYPE): (type: string) => boolean {
+  const emitted = new Map<string, number>();
+  return (type) => {
+    const n = emitted.get(type) ?? 0;
+    if (n >= cap) return false;
+    emitted.set(type, n + 1);
+    return true;
+  };
+}
 
 let errorTrackingInstalled = false;
 
@@ -259,13 +275,11 @@ export function installClientErrorTracking(
 ): void {
   if (errorTrackingInstalled || typeof window === 'undefined') return;
   errorTrackingInstalled = true;
-  const emitted: Record<string, number> = {};
+  const allow = createPerTypeCap();
   const emit = (kind: 'Uncaught' | 'UnhandledRejection', thrown: unknown) => {
     try {
       const type = errorTypeToken(kind, currentErrorPage(), errorNameToken(thrown));
-      const n = emitted[type] ?? 0;
-      if (n >= ERROR_EMIT_CAP_PER_TYPE) return;
-      emitted[type] = n + 1;
+      if (!allow(type)) return;
       track('Error', 'Client', type);
     } catch {
       // Telemetry must never throw into the host app's error path —

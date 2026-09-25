@@ -388,3 +388,20 @@ describe('createLazyTrack', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 });
+
+// The shared per-type budget: installClientErrorTracking uses it, and so does
+// the editor's api error reporter (spec/22).
+describe('createPerTypeCap', () => {
+  it('allows each type up to the cap, independently, then refuses', () => {
+    const allow = mod.createPerTypeCap(2);
+    expect([allow('A'), allow('A'), allow('A')]).toEqual([true, true, false]);
+    expect(allow('B')).toBe(true);
+  });
+
+  it('defaults to the client error cap, and each instance counts alone', () => {
+    const one = mod.createPerTypeCap();
+    for (let i = 0; i < mod.ERROR_EMIT_CAP_PER_TYPE; i++) expect(one('X')).toBe(true);
+    expect(one('X')).toBe(false);
+    expect(mod.createPerTypeCap()('X')).toBe(true);
+  });
+});

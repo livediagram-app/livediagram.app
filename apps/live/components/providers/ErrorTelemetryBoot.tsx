@@ -15,7 +15,7 @@ import { track } from '@/lib/telemetry';
 //     (lib/api can't import lib/telemetry itself — import cycle — so the
 //     wiring happens here, mirroring setTokenProvider). The api client
 //     builds the type (`Http<status>.<Action>`, `Network.<Method>.<Route>`;
-//     see lib/api/error-report.ts).
+//     see lib/api/error-report.ts), capped per type per page load the same way.
 //
 // Render crashes inside an editor area are reported by AreaErrorBoundary.
 // Only generic tokens ever leave: never a message, stack, URL, or user

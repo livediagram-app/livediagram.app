@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useRef,
   type Dispatch,
   type MutableRefObject,
   type SetStateAction,
@@ -55,8 +56,32 @@ export function usePerTabLoad(opts: {
     resetTabs,
   } = opts;
 
+  // resetTabs is read through a ref, not listed as an effect dep. The load
+  // effect must re-run only for a genuine reason (the tab, the diagram, the
+  // identity, or the Retry nonce). When it listed resetTabs and the caller
+  // passed a fresh function each render, every re-render (the 30s presence
+  // tick among them) tore the effect down and refetched; on a tab whose load
+  // had FAILED that meant a refetch, and an Error telemetry report, twice a
+  // minute for as long as the tab stayed open (spec/22).
+  const resetTabsRef = useRef(resetTabs);
+  useEffect(() => {
+    resetTabsRef.current = resetTabs;
+  });
+
+  // The attempt that last failed, keyed on everything that makes a fetch
+  // worth repeating. A failed load stays failed (the error overlay stays up)
+  // until that key changes: Retry bumps the nonce, or the user moves to
+  // another tab / diagram / identity. Belt and braces over the dep list, so
+  // an unstable dep can never again turn a failure into a refetch loop.
+  const failedAttemptRef = useRef<string | null>(null);
+
   useEffect(() => {
     if (!hydrated || !diagramId) return;
+    const attemptKey = JSON.stringify([diagramId, activeId, selfId, sessionShareCode, retryNonce]);
+    if (failedAttemptRef.current === attemptKey) return;
+    // Any other key forgets the failure, even when this run then bails on an
+    // already-loaded tab: switching away and back to the failed tab retries.
+    failedAttemptRef.current = null;
     if (loadedTabIdsRef.current.has(activeId)) return;
     let cancelled = false;
     loadedTabIdsRef.current.add(activeId);
@@ -102,6 +127,7 @@ export function usePerTabLoad(opts: {
           // a wrong 404 can never wipe content; merged stays false so the
           // cleanup drops the optimistic id and Retry refetches.
           loadedTabIds.delete(targetId);
+          failedAttemptRef.current = attemptKey;
           setTabLoadErrors((prev) => (prev.has(targetId) ? prev : new Set(prev).add(targetId)));
           return;
         }
@@ -114,7 +140,7 @@ export function usePerTabLoad(opts: {
         // emit: it's a background sweep, not a user viewing a tab.
         track('Tab', 'Loaded');
         let didMerge = false;
-        resetTabs((prev) =>
+        resetTabsRef.current((prev) =>
           prev.map((t) => {
             if (t.id !== tab.id) return t;
             const userHasEdited = t.elements.length > 0 || t.templateChosen === true;
@@ -146,8 +172,10 @@ export function usePerTabLoad(opts: {
         // Network / 5xx. Drop the id from the loaded-set so a later tab
         // switch (or the Retry button via retryNonce) refetches, and
         // flag it so the canvas shows the blocking error overlay instead
-        // of an editable blank canvas.
+        // of an editable blank canvas. Only those refetch: the attempt
+        // key below stops a mere re-render from retrying.
         loadedTabIds.delete(targetId);
+        failedAttemptRef.current = attemptKey;
         setTabLoadErrors((prev) => (prev.has(targetId) ? prev : new Set(prev).add(targetId)));
       });
     return () => {
@@ -160,9 +188,10 @@ export function usePerTabLoad(opts: {
       // here so the next run actually fetches.
       if (!merged) loadedTabIds.delete(targetId);
     };
-    // Omitted deps are all refs + state setters (stable by React's guarantee).
+    // Omitted deps are all refs + state setters (stable by React's guarantee);
+    // resetTabs is read through resetTabsRef on purpose (see above).
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hydrated, diagramId, activeId, selfId, sessionShareCode, retryNonce, resetTabs]);
+  }, [hydrated, diagramId, activeId, selfId, sessionShareCode, retryNonce]);
 
   // One-shot parallel fetch of every not-yet-loaded tab, so element
   // search covers the whole diagram instead of just the tabs the user
@@ -194,7 +223,7 @@ export function usePerTabLoad(opts: {
             return;
           }
           let didMerge = false;
-          resetTabs((prev) =>
+          resetTabsRef.current((prev) =>
             prev.map((t) => {
               if (t.id !== tab.id) return t;
               const userHasEdited = t.elements.length > 0 || t.templateChosen === true;
@@ -211,7 +240,7 @@ export function usePerTabLoad(opts: {
       }),
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hydrated, diagramId, selfId, sessionShareCode, resetTabs]);
+  }, [hydrated, diagramId, selfId, sessionShareCode]);
 
   return { loadAllTabs };
 }
