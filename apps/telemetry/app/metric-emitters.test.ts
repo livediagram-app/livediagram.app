@@ -1,6 +1,8 @@
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { GROUPS as EDITING } from './EditingView';
+import { SETTINGS_STACKS } from './metric-catalogue';
+import { GROUPS as SETTINGS } from './SettingsView';
 import { COMPUTED, scanEmitters, type Emit } from './emitter-scan';
 import { GROUPS as EXCEPTIONS, RECOVERY_TYPES } from './ExceptionsView';
 import { GROUPS as HELP } from './HelpView';
@@ -99,7 +101,7 @@ function sendable(category: string, action: string, type: string | null): boolea
   );
 }
 
-const ALL: MetricGroup[] = [...DASHBOARD, ...EDITING, ...EXCEPTIONS, ...HELP];
+const ALL: MetricGroup[] = [...DASHBOARD, ...EDITING, ...SETTINGS, ...EXCEPTIONS, ...HELP];
 // Plus every catalogue chart, including ones parked off every tab, so a chart
 // waiting to be added back can't rot while it is out of view.
 const METRICS = [
@@ -196,5 +198,21 @@ describe('hard-coded ranking types', () => {
   ];
   it.each(triples)('%s: %s·%s·%s is an event something sends', (_where, c, a, t) => {
     expect(sendable(c, a, t)).toBe(true);
+  });
+});
+
+describe('the Settings tab', () => {
+  it('has a chart for every Settings row the editor emits', () => {
+    const charts = SETTINGS_STACKS.flatMap((s) => s.members);
+    const rows = KNOWN.filter((e) => e.path.endsWith('settings-catalogue.ts'));
+    expect(rows.length).toBeGreaterThan(20);
+    const missing = rows.filter(
+      (e) =>
+        typeof e.type === 'string' &&
+        !charts.some(
+          (m) => m.category === e.category && m.action === e.action && m.typeIn?.(e.type as string),
+        ),
+    );
+    expect(missing.map((e) => `${e.category}·${e.action}·${String(e.type)}`)).toEqual([]);
   });
 });

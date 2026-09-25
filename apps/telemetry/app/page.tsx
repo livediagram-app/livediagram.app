@@ -8,6 +8,7 @@ import {
   AlertGlyph,
   BrushGlyph,
   FileGlyph,
+  GearGlyph,
   LayersGlyph,
   PaletteGlyph,
   SearchGlyph,
@@ -20,6 +21,7 @@ import { ViewTabs } from './ViewTabs';
 import { DashboardView } from './DashboardView';
 import type { ViewKey } from './view-keys';
 import { PagesView } from './PagesView';
+import { SettingsView } from './SettingsView';
 import { LookAndFeelView } from './LookAndFeelView';
 import { PaletteView } from './PaletteView';
 import { HelpView } from './HelpView';
@@ -47,6 +49,7 @@ const VIEWS: { key: ViewKey; label: string; icon: ReactNode }[] = [
   { key: 'lookfeel', label: 'Look & Feel', icon: <BrushGlyph /> },
   { key: 'editing', label: 'Editing', icon: <LayersGlyph /> },
   { key: 'help', label: 'Help', icon: <FileGlyph /> },
+  { key: 'settings', label: 'Settings', icon: <GearGlyph /> },
   { key: 'exceptions', label: 'Exceptions', icon: <AlertGlyph /> },
   { key: 'search', label: 'Search', icon: <SearchGlyph /> },
 ];
@@ -169,6 +172,8 @@ export default function TelemetryDashboard() {
               <EditingView summary={summary} active={active} />
             ) : view === 'help' ? (
               <HelpView summary={summary} active={active} />
+            ) : view === 'settings' ? (
+              <SettingsView summary={summary} active={active} />
             ) : view === 'exceptions' ? (
               <ExceptionsView summary={summary} active={active} />
             ) : summary.daily ? (
