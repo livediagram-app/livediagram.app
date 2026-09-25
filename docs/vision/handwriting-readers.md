@@ -226,9 +226,9 @@ Cost, had it paid: the detector alone is 1.8 MB, runs on the onnxruntime-web
 the reader already loads, and takes 28 ms a crop on WASM (about 0.3% of the
 reader's ~10 s) and 39 ms on the RTX 4090 (about 6% of its 0.6 s).
 
-**Recommendation: leave it out** (the operator decides): the size floor
-already removed the inventions the gate was for, and above it the gate trades
-real readings for fewer inventions.
+**Decided: left out** (operator, 2026-09-25): above the 48 px floor it blanks
+25 good readings for 9 made-up ones; the floor already removed the inventions
+the gate was for.
 
 ## Browser feasibility, honestly
 

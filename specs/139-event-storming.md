@@ -1277,7 +1277,9 @@ Decisions from the operator:
   one, at 32 px inventions win 42 to 2. A whiteboard shot from across the
   room puts every note at 12-41 px, which is where every reading was
   invented; no note on the two worded walls is under 70 px, so the floor costs
-  them nothing. The hosted reader has no floor.
+  them nothing. The hosted reader has no floor. A PP-OCRv6 text-detector gate
+  (blank the answer when it finds no text) is decided OUT: above the floor it
+  blanks 25 good readings for 9 made-up ones (docs/vision/handwriting-readers.md).
 
 - **An answer shaped like chat is not a reading.** The small in-browser model
   sometimes answers like a chatbot instead of reading the note: "Yes.", "I'm
