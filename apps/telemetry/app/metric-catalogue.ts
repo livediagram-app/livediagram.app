@@ -277,7 +277,7 @@ export const TABS_DUPLICATED: Metric = {
   title: 'Tabs Duplicated',
 };
 
-// Parked: cleared from Highlights (September 2026) while it is rebuilt, and on
+// Parked: cleared from the Dashboard (September 2026) while it is rebuilt, and on
 // no other tab as a card, so kept here with their wording ready to add back.
 // Search still shows the underlying events. (Elements Added came back
 // as a stack.)
@@ -317,7 +317,7 @@ export const RETURNING_SIGNED_IN: Metric = {
   blurb: 'Returning visitors who are signed in with an account.',
 };
 
-// The diagram + tab lifecycle as stacks (Highlights). Loaded is the opens
+// The diagram + tab lifecycle as stacks (Dashboard). Loaded is the opens
 // signal (every open, including a new diagram's first), read against the
 // once-per-object Created beside it.
 export const DIAGRAM_ACTIONS: MetricStack = {
@@ -381,7 +381,7 @@ export const AI_ASSISTANCE: MetricStack = {
   headline: AI_REQUESTS,
 };
 
-// Programmatic access (Highlights, Connections): the API-token lifecycle and
+// Programmatic access (Dashboard, Connections): the API-token lifecycle and
 // what the MCP server's tools actually get used for.
 export const TOKENS_CREATED: Metric = {
   category: 'Token',
@@ -944,7 +944,7 @@ export const ACTIONS_EMAILED: Metric = {
   type: 'EmailOn',
   title: 'Actions Emailed',
   blurb:
-    'Actions assigned with the notify-by-email box ticked. Part of Actions Assigned. Counts the box, not a sent email: sends are Action Notifications in the Emails Sent stack on Highlights.',
+    'Actions assigned with the notify-by-email box ticked. Part of Actions Assigned. Counts the box, not a sent email: sends are Action Notifications in the Emails Sent stack on the Dashboard.',
 };
 export const ACTIONS_COMPLETED: Metric = {
   category: 'Action',

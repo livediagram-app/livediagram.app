@@ -1,5 +1,5 @@
 // How the dashboard reads error events (spec/22), shared by the Exceptions
-// tab and the Exceptions stack on Highlights so both split failures the same
+// tab and the Exceptions stack on the Dashboard so both split failures the same
 // way.
 //
 // Types took their `<Kind>.<Where>` shape in #112; rows stored before that are

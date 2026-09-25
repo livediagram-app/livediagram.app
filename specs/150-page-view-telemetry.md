@@ -129,7 +129,7 @@ segment using the same live route-segment list the router routes by (shared
 from `@livediagram/api-schema`, so the dashboard and router can't disagree
 about which app serves a path). Top to bottom:
 
-- **Views by app** now lives on **Highlights** as the **Page Views by App**
+- **Views by app** now lives on **Dashboard** as the **Page Views by App**
   chart stack (spec/22): a head plotting each app's line with the combined
   count, opening into one card per app (the shared metric card, matching a set
   of paths rather than one type). The per-card "N% of page views" line went

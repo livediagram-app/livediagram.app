@@ -23,7 +23,7 @@ type ViewOption = { key: string; label: string; icon: ReactNode };
 // changeable while the reader is deep in a long list. An IntersectionObserver
 // on the panel drives the show/hide; no scroll listener.
 //
-// To its right, an ellipsis menu switches the active view (Highlights,
+// To its right, an ellipsis menu switches the active view (Dashboard,
 // Pages, Search, …) — the tab row also scrolls away, so this keeps the
 // "which lens" control reachable too. The timeframe buttons stay inline
 // (out of the menu); only the view picker collapses into the ellipsis.

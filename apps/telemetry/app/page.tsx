@@ -17,7 +17,7 @@ import {
 import { WindowPanel } from './WindowPanel';
 import { StickyWindowBar } from './StickyWindowBar';
 import { ViewTabs } from './ViewTabs';
-import { HighlightsView } from './HighlightsView';
+import { DashboardView } from './DashboardView';
 import type { ViewKey } from './view-keys';
 import { PagesView } from './PagesView';
 import { LookAndFeelView } from './LookAndFeelView';
@@ -36,12 +36,12 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 // window is global (the WindowPanel above the tabs), so it lives here
 // alongside the active tab and is passed into whichever view renders.
 // Tab order follows the product funnel: who arrives, signs up, opens and
-// makes things (Highlights), which pages they read (Pages), what they build
+// makes things (Dashboard), which pages they read (Pages), what they build
 // (Palette / Look & Feel), how they organise it (Editing), how they get
 // unstuck (Help), error health (Exceptions), then the power-user lens
 // (Search).
 const VIEWS: { key: ViewKey; label: string; icon: ReactNode }[] = [
-  { key: 'highlights', label: 'Highlights', icon: <SparkGlyph /> },
+  { key: 'dashboard', label: 'Dashboard', icon: <SparkGlyph /> },
   { key: 'pages', label: 'Pages', icon: <WindowGlyph /> },
   { key: 'palette', label: 'Palette', icon: <PaletteGlyph /> },
   { key: 'lookfeel', label: 'Look & Feel', icon: <BrushGlyph /> },
@@ -54,7 +54,7 @@ const VIEWS: { key: ViewKey; label: string; icon: ReactNode }[] = [
 export default function TelemetryDashboard() {
   const [summary, setSummary] = useState<TelemetrySummary | null>(null);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
-  const [view, setView] = useState<ViewKey>('highlights');
+  const [view, setView] = useState<ViewKey>('dashboard');
   // A link into another view (a stack's See also): switch, then bring the tab
   // row back into sight so the reader sees where they landed.
   const openView = (next: ViewKey) => {
@@ -150,10 +150,10 @@ export default function TelemetryDashboard() {
 
             {/* View tabs — a single-line carousel; chevrons appear when the
               full set overflows the column (see ViewTabs). */}
-            <ViewTabs views={VIEWS} view={view} onSelect={setView} />
+            <ViewTabs views={VIEWS} lead="dashboard" view={view} onSelect={setView} />
 
-            {view === 'highlights' ? (
-              <HighlightsView summary={summary} active={active} onOpenView={openView} />
+            {view === 'dashboard' ? (
+              <DashboardView summary={summary} active={active} onOpenView={openView} />
             ) : view === 'pages' ? (
               <PagesView summary={summary} active={active} />
             ) : view === 'palette' ? (

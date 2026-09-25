@@ -31,7 +31,7 @@ import { MetricGroups, type MetricGroup } from './MetricCards';
 import type { ViewKey } from './view-keys';
 import { windowLabel } from './windows';
 
-// The Highlights view (spec/22, default tab): the key product metrics we
+// The Dashboard view (spec/22, default tab): the key product metrics we
 // most want to watch. Being rebuilt one tab at a time: for now it carries
 // only Visitors, as three chart stacks (All Visitors: New + Returning;
 // Account Activity: Sign-Ups + Sign-Ins + Sign-Outs + Accounts Deleted; Page
@@ -107,7 +107,7 @@ export const GROUPS: MetricGroup[] = [
   },
 ];
 
-export function HighlightsView({
+export function DashboardView({
   summary,
   active,
   onOpenView,

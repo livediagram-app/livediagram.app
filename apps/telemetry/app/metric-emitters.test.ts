@@ -4,7 +4,7 @@ import { GROUPS as EDITING } from './EditingView';
 import { COMPUTED, scanEmitters, type Emit } from './emitter-scan';
 import { GROUPS as EXCEPTIONS, RECOVERY_TYPES } from './ExceptionsView';
 import { GROUPS as HELP } from './HelpView';
-import { GROUPS as HIGHLIGHTS } from './HighlightsView';
+import { GROUPS as DASHBOARD } from './DashboardView';
 import {
   CUSTOM_THEME_METRICS,
   CUSTOM_THEME_TYPES,
@@ -99,7 +99,7 @@ function sendable(category: string, action: string, type: string | null): boolea
   );
 }
 
-const ALL: MetricGroup[] = [...HIGHLIGHTS, ...EDITING, ...EXCEPTIONS, ...HELP];
+const ALL: MetricGroup[] = [...DASHBOARD, ...EDITING, ...EXCEPTIONS, ...HELP];
 // Plus every catalogue chart, including ones parked off every tab, so a chart
 // waiting to be added back can't rot while it is out of view.
 const METRICS = [

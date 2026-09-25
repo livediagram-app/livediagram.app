@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { GROUPS as HIGHLIGHTS } from './HighlightsView';
+import { GROUPS as DASHBOARD } from './DashboardView';
 import { EMAIL_KIND_METRICS, NEW_VISITORS, RETURNING_VISITORS } from './metric-catalogue';
 import { groupMetrics, isStack, stackSeriesColor, type MetricGroup } from './metric-series';
 
@@ -47,8 +47,8 @@ describe('the Emails Sent stack', () => {
     expect([...charted].sort()).toEqual([...kinds].sort());
   });
 
-  it('is what Highlights stacks', () => {
-    const stack = HIGHLIGHTS.flatMap((g) => g.metrics).find(
+  it('is what Dashboard stacks', () => {
+    const stack = DASHBOARD.flatMap((g) => g.metrics).find(
       (item) => isStack(item) && item.title === 'Emails Sent',
     );
     expect(stack && isStack(stack) ? stack.members : []).toEqual(EMAIL_KIND_METRICS);

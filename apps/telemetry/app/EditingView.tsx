@@ -7,7 +7,7 @@ import { windowLabel } from './windows';
 
 // Editing view (spec/22): the in-editor tools that organise work rather than
 // draw it: the AI opt-in, notes, folders, assigned actions. AI usage and
-// layers moved to Highlights as the AI Assistance and Layers Feature stacks.
+// layers moved to the Dashboard as the AI Assistance and Layers Feature stacks.
 //
 // Every metric here was already being emitted, validated, and stored, and none
 // of it was rendered anywhere: `AI·Used` had no card on any tab, and the whole
@@ -39,7 +39,7 @@ export function EditingView({
       <p className="text-sm text-slate-500 dark:text-slate-400">
         The tools that organise the work rather than draw it, for{' '}
         <span className="font-medium">{windowLabel(active)}</span>: the AI opt-in, notes, assigned
-        actions, and folders. AI Assistance and Layers are stacks on Highlights.
+        actions, and folders. AI Assistance and Layers are stacks on the Dashboard.
       </p>
       <MetricGroups groups={GROUPS} summary={summary} active={active} />
     </div>

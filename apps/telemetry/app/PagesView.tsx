@@ -49,7 +49,7 @@ export function PagesView({
         Which pages people view, for <span className="font-medium">{windowLabel(active)}</span>, by
         the app that serves them. Ids and query strings never leave the browser, so every diagram
         counts as one page, <code>/diagram</code>. Views per app are the Page Views by App stack on
-        Highlights.
+        Dashboard.
       </p>
 
       <section className="mt-8">
