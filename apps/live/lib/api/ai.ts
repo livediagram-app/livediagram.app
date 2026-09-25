@@ -333,7 +333,7 @@ async function readBatch(
   crops: NoteCrop[],
   opts: { signal?: AbortSignal },
 ): Promise<ReadNotesResponse> {
-  const res = await fetch(`${API_BASE}/ai/read-notes`, {
+  const res = await apiFetch(`${API_BASE}/ai/read-notes`, {
     method: 'POST',
     headers: await apiHeaders(ownerId, { body: true }),
     body: JSON.stringify({ crops } satisfies ReadNotesRequest),
