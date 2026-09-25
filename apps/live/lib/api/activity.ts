@@ -8,7 +8,7 @@
 // the worker, so it has no rows to show.
 
 import type { ActivityReadResult } from '@livediagram/api-schema';
-import { API_BASE, apiHeaders } from './core';
+import { API_BASE, apiFetch, apiHeaders } from './core';
 
 // Null means the read FAILED (offline, a lapsed token, a worker 500),
 // as opposed to an empty result, which means nothing is outstanding.
@@ -16,7 +16,9 @@ import { API_BASE, apiHeaders } from './core';
 // not render as "you have nothing to do".
 export async function apiListActivity(ownerId: string): Promise<ActivityReadResult | null> {
   try {
-    const res = await fetch(`${API_BASE}/activity`, { headers: await apiHeaders(ownerId) });
+    const res = await apiFetch(`${API_BASE}/activity`, {
+      headers: await apiHeaders(ownerId),
+    });
     if (!res.ok) return null;
     const body = (await res.json()) as Partial<ActivityReadResult>;
     return {
