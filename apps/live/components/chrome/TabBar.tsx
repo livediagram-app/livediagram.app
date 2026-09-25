@@ -46,11 +46,8 @@ export type CanvasMenuActions = {
 export type CanvasMenuTarget = { x: number; y: number; openUp?: boolean };
 
 type TabBarProps = {
-  // Optional callback that pops the keyboard-shortcuts modal. Lives
-  // alongside the dark-mode toggle on the right edge of the bar.
-  onOpenShortcuts?: () => void;
   // Optional callback that pops the user-preferences dialog
-  // (spec/20). The gear sits between Shortcuts and the dark-mode
+  // (spec/20). The gear sits between GitHub and the dark-mode
   // toggle. Available in every role: even view-role visitors can
   // adjust their own browser-local preferences.
   onOpenSettings?: () => void;
@@ -182,7 +179,6 @@ export function TabBar({
   selfRole,
   followingId,
   onOpenCollaborators,
-  onOpenShortcuts,
   onOpenSettings,
   onOpenSearch,
   canvasMenu,
@@ -362,14 +358,17 @@ export function TabBar({
             </button>
           )}
         </div>
-        {/* Shared right-hand cluster (search / shortcuts / GitHub / settings
-            / dark-mode), reused by the Explorer's bottom bar (spec/07). */}
+        {/* Shared right-hand cluster (search / settings / dark-mode; GitHub
+            lives in the Explorer panel's ⋯ menu here),
+            reused by the Explorer's bottom bar (spec/07). Labelled here on
+            desktop; icon-only on a phone. */}
         <ChromeControls
           onOpenSearch={onOpenSearch}
-          onOpenShortcuts={onOpenShortcuts}
           onOpenSettings={onOpenSettings}
           settingsLabel="Application settings"
           settingsDescription="Your editor preferences — they follow your account, not this diagram."
+          labelled
+          github={false}
         />
       </div>
       {canvasMenu && !readOnly && activeTab && onCloseCanvasMenu && canvasActions ? (

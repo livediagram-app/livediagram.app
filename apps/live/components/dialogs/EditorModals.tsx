@@ -5,9 +5,6 @@ import { DEFAULT_BACKGROUND_COLOR, DEFAULT_PATTERN_COLOR } from '@livediagram/di
 
 import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
 
-const ShortcutsDialog = dynamic(() =>
-  import('@/components/dialogs/ShortcutsDialog').then((m) => m.ShortcutsDialog),
-);
 const SettingsDialog = dynamic(() =>
   import('@/components/dialogs/SettingsDialog').then((m) => m.SettingsDialog),
 );
@@ -15,20 +12,16 @@ const CanvasThemeDialog = dynamic(() =>
   import('@/components/dialogs/CanvasThemeDialog').then((m) => m.CanvasThemeDialog),
 );
 
-// The editor's global modal dialogs (keyboard shortcuts, settings, canvas
-// theme). Each is gated on its own open flag and reads everything it needs
+// The editor's global modal dialogs (settings, canvas theme). Each is gated on its own open flag and reads everything it needs
 // straight from EditorContext, so EditorView just drops <EditorModals /> in
 // rather than carrying ~45 lines of dialog wiring. Comment/link/image
 // popovers stay inline in EditorView — they're anchored to canvas elements,
 // not global modals.
 export function EditorModals() {
   const {
-    shortcutsOpen,
-    shortcutsEnabled,
-    setShortcutsEnabled,
-    setShortcutsOpen,
     settingsOpen,
     settingsFocus,
+    settingsCategory,
     closeSettings,
     userPreferences,
     setUserPreferences,
@@ -54,13 +47,6 @@ export function EditorModals() {
 
   return (
     <>
-      {shortcutsOpen ? (
-        <ShortcutsDialog
-          enabled={shortcutsEnabled}
-          onToggleEnabled={setShortcutsEnabled}
-          onClose={() => setShortcutsOpen(false)}
-        />
-      ) : null}
       {settingsOpen ? (
         <SettingsDialog
           settings={userPreferences}
@@ -75,6 +61,7 @@ export function EditorModals() {
           }}
           onClose={closeSettings}
           focus={settingsFocus}
+          initialCategoryId={settingsCategory}
           aiCapable={aiCapable}
         />
       ) : null}

@@ -39,12 +39,29 @@ export async function insertChangeLogEntry(env: Env, entry: ChangeLogEntryDTO): 
   // Post-migration 0013: participant_name + _color columns are gone.
   // The DTO still carries them so the WebSocket op + UI can keep
   // showing the author cheaply — we just don't write them to D1.
+  //
+  // An id that already exists is an upsert, not a crash. The editor
+  // legitimately re-posts an id: redo re-appends the entry its undo
+  // deleted, and a coalesced edit is a delete + re-append under the same
+  // id, and either delete can lose the race or fail. A plain INSERT threw
+  // a UNIQUE violation there, which surfaced as an unhandled 500. The
+  // overwrite is limited to the same author on the same tab, so an id
+  // collision can never rewrite someone else's row (it just no-ops).
   await env.DB.prepare(
     `INSERT INTO change_log (
        id, tab_id, participant_id,
        kind, summary, element_ids, before_state, after_state, created_at
      )
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+     ON CONFLICT (id) DO UPDATE SET
+       kind = excluded.kind,
+       summary = excluded.summary,
+       element_ids = excluded.element_ids,
+       before_state = excluded.before_state,
+       after_state = excluded.after_state,
+       created_at = excluded.created_at
+     WHERE change_log.participant_id = excluded.participant_id
+       AND change_log.tab_id IS excluded.tab_id`,
   )
     .bind(
       entry.id,

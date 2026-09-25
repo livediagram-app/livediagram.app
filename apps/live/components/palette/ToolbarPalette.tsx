@@ -237,7 +237,6 @@ export function ToolbarPalette(props: Props) {
     <div
       ref={rootRef}
       data-toolbar-palette=""
-      data-tour-id="palette"
       // `hidden` (zen, the welcome flow) hides rather than unmounts, so the
       // chosen category survives the chrome going away and back.
       //
@@ -258,7 +257,12 @@ export function ToolbarPalette(props: Props) {
             {/* Whole-pixel wide, and the same parity as the canvas, so centring
               it can't leave the strip on a half pixel (see SnapWidth). */}
             <SnapWidth matchParentParity>
-              <div className="flex items-center gap-0.5 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40">
+              {/* The tour's Palette anchor (spec/79) is the card, not the
+                full-width row around it, so the ring frames the strip. */}
+              <div
+                data-tour-id="palette"
+                className="flex items-center gap-0.5 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
+              >
                 {/* Event-storming boards hide the selection mode (spec/139): the
                 notation is the palette there. */}
                 {leading ? (

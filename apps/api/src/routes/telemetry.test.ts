@@ -9,7 +9,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 const { db } = vi.hoisted(() => ({ db: { telemetryDailyCountsSince: vi.fn() } }));
 vi.mock('../db', () => db);
 
-import { buildTelemetrySummary, handleTelemetry, telemetrySeriesStart } from './telemetry';
+import {
+  buildTelemetrySummary,
+  handleTelemetry,
+  telemetryQueryStart,
+  telemetrySeriesStart,
+} from './telemetry';
 import type { RouteContext } from './context';
 import type { Env } from '../types';
 
@@ -82,6 +87,42 @@ describe('telemetry window boundaries', () => {
   });
 });
 
+describe('previous windows (trend arrows)', () => {
+  const prev = (s: ReturnType<typeof buildTelemetrySummary>, key: 'today' | 'last7' | 'last30') =>
+    s.previousWindows?.[key].total;
+
+  it('reads the query one series further back than the series', () => {
+    expect(telemetryQueryStart(NOW)).toBe(telemetrySeriesStart(NOW) - 30 * DAY);
+  });
+
+  it('counts the day before for today, and the 7 days before for the last 7', () => {
+    const s = buildTelemetrySummary(NOW, [
+      at(MIDNIGHT), // today
+      at(MIDNIGHT - DAY), // yesterday: previous today, inside last 7
+      at(MIDNIGHT - 7 * DAY), // the week before: previous last 7
+      at(MIDNIGHT - 13 * DAY), // still the week before
+      at(MIDNIGHT - 14 * DAY), // neither
+    ]);
+    expect(prev(s, 'today')).toBe(1);
+    expect(prev(s, 'last7')).toBe(2);
+    expect(count(s, 'last7')).toBe(2);
+  });
+
+  it('counts the 30 days before the last 30 from the rows before the series', () => {
+    const seriesStart = telemetrySeriesStart(NOW);
+    const s = buildTelemetrySummary(NOW, [
+      at(seriesStart), // inside the last 30
+      at(seriesStart - DAY), // the 30 before
+      at(seriesStart - 30 * DAY), // the first day of the 30 before
+      at(seriesStart - 31 * DAY), // too old to count
+    ]);
+    expect(count(s, 'last30')).toBe(1);
+    expect(prev(s, 'last30')).toBe(2);
+    // Rows before the series never leak into the daily series.
+    expect(s.daily?.totals.reduce((a, b) => a + b, 0)).toBe(1);
+  });
+});
+
 describe('handleTelemetry', () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -101,10 +142,11 @@ describe('handleTelemetry', () => {
     } as unknown as RouteContext;
   };
 
-  it('reads the per-day counts once, from the series start', async () => {
+  it('reads the per-day counts once, one series before the series start', async () => {
     const res = await handleTelemetry(ctx({ TELEMETRY_ENABLED: 'true' }));
     expect(db.telemetryDailyCountsSince).toHaveBeenCalledTimes(1);
-    expect(db.telemetryDailyCountsSince.mock.calls[0]![1]).toBe(MIDNIGHT - 29 * DAY);
+    // 30 days of series plus the 30 before, for the last-30 trend arrow.
+    expect(db.telemetryDailyCountsSince.mock.calls[0]![1]).toBe(MIDNIGHT - 59 * DAY);
     const body = (await res.json()) as ReturnType<typeof buildTelemetrySummary>;
     expect(body.windows.today.total).toBe(1);
   });

@@ -1,9 +1,17 @@
 'use client';
 
 import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
+import {
+  ARTICLE_VIEWS,
+  DRY_HELP_SEARCHES,
+  HELP_SEARCHES,
+  MARKED_HELPFUL,
+  MARKED_NOT_HELPFUL,
+} from './metric-catalogue';
 import { MetricGroups, type MetricGroup } from './MetricCards';
+import { CardColumns } from './CardColumns';
 import { RankCard, rank } from './RankCard';
-import { windowLabel } from './windows';
+import { rankTrend, windowLabel } from './windows';
 
 // Help view (spec/22): how the help centre (apps/help) is doing. Article reads
 // and the per-article helpful / not-really feedback. The help app emits
@@ -19,29 +27,7 @@ import { windowLabel } from './windows';
 export const GROUPS: MetricGroup[] = [
   {
     title: 'Help engagement',
-    metrics: [
-      {
-        category: 'Help',
-        action: 'View',
-        allTypes: true,
-        title: 'Article Views',
-        blurb: 'Help-centre articles opened, across every article.',
-      },
-      {
-        category: 'Help',
-        action: 'Helpful',
-        allTypes: true,
-        title: 'Marked Helpful',
-        blurb: 'Readers who tapped "yes, this helped" on an article.',
-      },
-      {
-        category: 'Help',
-        action: 'Unhelpful',
-        allTypes: true,
-        title: 'Marked Not Helpful',
-        blurb: 'Readers who tapped "not really"; the articles worth rewriting.',
-      },
-    ],
+    metrics: [ARTICLE_VIEWS, MARKED_HELPFUL, MARKED_NOT_HELPFUL, HELP_SEARCHES, DRY_HELP_SEARCHES],
   },
 ];
 
@@ -53,6 +39,7 @@ export function HelpView({
   active: TelemetryWindowKey;
 }) {
   const rows = summary.windows[active].rows;
+  const trend = rankTrend(summary, active);
   const viewed = rank(rows, (r) => r.category === 'Help' && r.action === 'View');
   const helpful = rank(rows, (r) => r.category === 'Help' && r.action === 'Helpful');
   const unhelpful = rank(rows, (r) => r.category === 'Help' && r.action === 'Unhelpful');
@@ -69,34 +56,39 @@ export function HelpView({
       </p>
       <MetricGroups groups={GROUPS} summary={summary} active={active} />
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <RankCard
-          title="Most-read articles"
-          subtitle="Which help articles get opened, most to least"
-          category="Help"
-          action="View"
-          items={viewed}
-          daily={summary.daily}
-          emptyLabel="No articles were read in this window yet."
-        />
-        <RankCard
-          title="Found helpful"
-          subtitle="Articles readers said helped them, most to least"
-          category="Help"
-          action="Helpful"
-          items={helpful}
-          daily={summary.daily}
-          emptyLabel="No helpful votes in this window yet."
-        />
-        <RankCard
-          title="Left people stuck"
-          subtitle="Articles voted not-really helpful, the ones to rewrite"
-          category="Help"
-          action="Unhelpful"
-          items={unhelpful}
-          daily={summary.daily}
-          emptyLabel="No not-really votes in this window yet."
-        />
+      <div className="mt-6">
+        <CardColumns>
+          <RankCard
+            trend={trend}
+            title="Most-read articles"
+            subtitle="Which help articles get opened, most to least"
+            category="Help"
+            action="View"
+            items={viewed}
+            daily={summary.daily}
+            emptyLabel="No articles were read in this window yet."
+          />
+          <RankCard
+            trend={trend}
+            title="Found helpful"
+            subtitle="Articles readers said helped them, most to least"
+            category="Help"
+            action="Helpful"
+            items={helpful}
+            daily={summary.daily}
+            emptyLabel="No helpful votes in this window yet."
+          />
+          <RankCard
+            trend={trend}
+            title="Left people stuck"
+            subtitle="Articles voted not-really helpful, the ones to rewrite"
+            category="Help"
+            action="Unhelpful"
+            items={unhelpful}
+            daily={summary.daily}
+            emptyLabel="No not-really votes in this window yet."
+          />
+        </CardColumns>
       </div>
     </div>
   );

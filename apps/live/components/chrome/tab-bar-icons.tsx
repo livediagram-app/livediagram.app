@@ -159,26 +159,6 @@ export function SearchGlyph() {
   );
 }
 
-// Keyboard - the shortcuts-dialog button.
-export function KeyboardIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 20 20"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <rect x="2" y="5.5" width="16" height="10" rx="1.5" />
-      <path d="M5 9h.01M8 9h.01M11 9h.01M14 9h.01M5 12.5h10" />
-    </svg>
-  );
-}
-
 // GitHub mark - the open-source repo link in the footer (spec/03).
 export function GithubIcon() {
   return (

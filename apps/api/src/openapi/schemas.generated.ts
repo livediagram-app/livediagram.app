@@ -5008,6 +5008,26 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "generatedAt": {
         "type": "number"
       },
+      "previousWindows": {
+        "additionalProperties": false,
+        "properties": {
+          "last30": {
+            "$ref": "#/components/schemas/TelemetryWindow"
+          },
+          "last7": {
+            "$ref": "#/components/schemas/TelemetryWindow"
+          },
+          "today": {
+            "$ref": "#/components/schemas/TelemetryWindow"
+          }
+        },
+        "required": [
+          "today",
+          "last7",
+          "last30"
+        ],
+        "type": "object"
+      },
       "windows": {
         "additionalProperties": false,
         "properties": {

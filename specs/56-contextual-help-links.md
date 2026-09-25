@@ -35,7 +35,7 @@ is the only way the editor links to a help article. It:
   chrome (reset / minimise) uses. It is never a ring or a bordered circle
   around the mark — an outlined `?` in a dialog header beside a bare `?` on a
   panel reads as two different controls for the same thing, and the drift is
-  self-propagating: `ShortcutsDialog` had already grown a row of `!important`
+  self-propagating: the since-removed `ShortcutsDialog` had already grown a row of `!important`
   overrides to cancel the ring locally. Only the hit box varies, via
   `size` (`sm`, the default, for panel chrome and inline control labels;
   `md` for a dialog header, matching `DialogCloseButton`'s `h-7`);
@@ -123,7 +123,7 @@ Grouped by priority; each links the keyed article.
 
 - Empty-canvas Quick Start banner -> `your-first-diagram`
 - Template picker -> `templates`
-- Shortcuts dialog -> `keyboard-shortcuts`
+- Settings - Keyboard category (was the Shortcuts dialog) -> `keyboard-shortcuts`
 - Sign-in reasons modal -> `guest-vs-account`
 
 The set can grow; new placements reuse `HelpArticleLink` + a `HELP_ARTICLES`

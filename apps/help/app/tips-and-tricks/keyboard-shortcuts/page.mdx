@@ -9,13 +9,13 @@ export const metadata = helpMetadata({
   path: '/help/tips-and-tricks/keyboard-shortcuts/',
 });
 
-<ArticleLayout title="Keyboard Shortcuts" description="Work faster on the canvas with single-key tools and the shortcuts dialog, and switch shortcuts off whenever you need to." categoryTitle="Tips and Tricks" categorySlug="tips-and-tricks">
+<ArticleLayout title="Keyboard Shortcuts" description="Work faster on the canvas with single-key tools and the shortcut reference in Settings, and switch shortcuts off whenever you need to." categoryTitle="Tips and Tricks" categorySlug="tips-and-tricks">
 
-Keyboard shortcuts let you switch tools and run common actions without reaching for the palette. The canvas tools all sit on single keys, so you can move between selecting, panning, and pointing in a single tap, and a built-in shortcuts dialog lists everything in one place.
+Keyboard shortcuts let you switch tools and run common actions without reaching for the palette. The canvas tools all sit on single keys, so you can move between selecting, panning, and pointing in a single tap, and the built-in shortcut reference in Settings lists everything in one place.
 
-## The shortcuts dialog
+## The shortcut reference
 
-A Shortcuts button lives in the row of controls at the bottom-right of the editor, beside Search. Opening it brings up a reference card of every binding the editor knows, grouped by purpose, so you never have to memorise the full set. The button is hidden on a phone, where the bottom bar is tight and there is no keyboard to reference.
+Run **Keyboard shortcuts** from [search](/help/search-panel/) and [Settings](/help/user-interface/settings/) opens on its **Keyboard** category. Below the on/off switch is a reference of every binding the editor knows, in collapsible groups by purpose, so you never have to memorise the full set. You can also get there yourself: open **Settings** from the gear at the bottom-right of the editor and pick **Keyboard**.
 
 The most useful canvas-tool keys are:
 
@@ -29,7 +29,7 @@ The most useful canvas-tool keys are:
 
 Two more switch mode rather than tool, and have articles of their own: `I` for [Isometric mode](/help/selection-modes/isometric-mode/) and `W` for [Avatar mode](/help/selection-modes/avatar-mode/).
 
-The shortcuts dialog stays available in every role, so view-only visitors can see the same reference.
+The reference stays available in every role, so view-only visitors can see the same list.
 
 ## Editing shortcuts
 
@@ -89,7 +89,7 @@ The digits are deliberately laid out to mirror Excalidraw's tool row, so if you 
 
 `9` needs somewhere to put the file, so it is absent on a self-hosted deploy running without the api worker.
 
-<Figure caption="The shortcuts dialog pairs each single-key tool with the action it triggers.">
+<Figure caption="The shortcut reference pairs each single-key tool with the action it triggers.">
   <KeyboardShortcuts />
 </Figure>
 
@@ -121,9 +121,9 @@ A running [slide deck](/help/selection-modes/slide-deck/) has its own set, and o
 
 ## Turning shortcuts off
 
-Single-key shortcuts are handy, but they are not for everyone. You can switch them off entirely with the toggle at the bottom of the shortcuts dialog itself: open it from the Shortcuts button in the editor footer and flip the switch.
+Single-key shortcuts are handy, but they are not for everyone. You can switch them off entirely with the **Keyboard Shortcuts** switch at the top of the **Keyboard** category in **Settings**: open **Settings** from the gear in the editor footer, pick **Keyboard**, and flip the switch.
 
-<Figure caption="Flip the toggle at the bottom of the shortcuts dialog so a stray key press never changes your tool.">
+<Figure caption="Flip the Keyboard Shortcuts switch in Settings so a stray key press never changes your tool.">
   <ShortcutsToggle />
 </Figure>
 
@@ -132,8 +132,8 @@ When shortcuts are turned off, the editor stops responding to the single-key bin
 The editor is also careful about context: even with shortcuts on, typing into a text label or an input never triggers a tool key. A `z` typed into a label is just a `z`, never a jump into Zen mode.
 
 <Tip>
-  If a single key keeps switching your tool while you work, open the shortcuts dialog from the
-  footer and flip the toggle at the bottom to turn shortcuts off. You can turn them back on the
+  If a single key keeps switching your tool while you work, open **Settings** on the **Keyboard**
+  category and flip the switch at the top to turn shortcuts off. You can turn them back on the
   moment you want the speed again.
 </Tip>
 

@@ -366,7 +366,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     tokenUsable: true,
     requestSchema: 'ChangeLogEntry',
     responseSchema: wrap('entry', 'ChangeLogEntry'),
-    statuses: [201, 400, 401, 403, 404],
+    statuses: [201, 400, 401, 403, 404, 409, 413],
   },
   {
     method: 'DELETE',

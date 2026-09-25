@@ -24,8 +24,8 @@ forks, no drifted telemetry):
 - **View:** Toggle zen mode, Fit to screen.
 - **Cleanup:** Auto Layout, Auto-align (the tab menu's Cleanup band,
   [spec/47](47-layout-cleanup.md)).
-- **Dialogs:** Export…, Import…, Settings, Keyboard shortcuts, Browse
-  templates.
+- **Dialogs:** Export…, Import…, Settings, Keyboard shortcuts (opens
+  Settings on its Keyboard category, spec/20), Browse templates.
 
 ## Read-only visitors
 

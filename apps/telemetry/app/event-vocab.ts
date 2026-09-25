@@ -1,5 +1,5 @@
 // Plain-language vocabulary + grouping helpers for the telemetry
-// dashboard. Extracted from the page shell so the Raw breakdown and the
+// dashboard. Extracted from the page shell so the metric cards and the
 // Search view share one definition of what each event means, what
 // colour a category gets, and how rows roll up into category groups.
 // (The closed event vocabulary itself lives in spec/22 + the api-schema
@@ -93,24 +93,6 @@ const CATEGORY_COLORS: Record<TelemetryCategory, string> = {
 };
 export const categoryColor = (c: string) => CATEGORY_COLORS[c as TelemetryCategory] ?? '#94a3b8';
 
-export type Group = { category: string; subtotal: number; items: TelemetryCount[] };
-
-export function groupByCategory(rows: TelemetryCount[]): Group[] {
-  const map = new Map<string, TelemetryCount[]>();
-  for (const row of rows) {
-    const arr = map.get(row.category) ?? [];
-    arr.push(row);
-    map.set(row.category, arr);
-  }
-  return [...map.entries()]
-    .map(([category, items]) => ({
-      category,
-      items: [...items].sort((a, b) => b.count - a.count),
-      subtotal: items.reduce((sum, i) => sum + i.count, 0),
-    }))
-    .sort((a, b) => b.subtotal - a.subtotal);
-}
-
 // Re-exported from the shared api-schema helper so the dashboard's
 // existing `./event-vocab` import surface (MetricPicker, RankCard) keeps
 // resolving; one definition now backs both this app and the editor.
@@ -122,7 +104,7 @@ export { titleCase };
 // Canvas·Changed types that are a canvas-panel control rather than a
 // background pattern (useTabCanvas's debounced emits), with the words for it.
 // The Look & Feel Canvas Styles ranking is patterns only, so it leaves these
-// out; the Raw table explains them instead of calling them a pattern.
+// out; their explanation copy says what they are instead of calling them a pattern.
 export const CANVAS_CONTROLS: Readonly<Record<string, string>> = {
   BackgroundColor: 'background colour',
   BackgroundOpacity: 'background opacity',

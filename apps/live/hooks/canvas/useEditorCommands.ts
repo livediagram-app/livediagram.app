@@ -69,7 +69,7 @@ export function useEditorCommands(): {
     setExportScope,
     setImportOpen,
     setSettingsOpen,
-    setShortcutsOpen,
+    openSettingsOn,
     openTemplatePicker,
     canvasTool,
     setCanvasTool,
@@ -185,7 +185,7 @@ export function useEditorCommands(): {
         track('UI', 'Opened', 'Settings');
       },
       openShortcuts: () => {
-        setShortcutsOpen(true);
+        openSettingsOn('keyboard');
         track('UI', 'Opened', 'Shortcuts');
       },
       openTemplates: openTemplatePicker,

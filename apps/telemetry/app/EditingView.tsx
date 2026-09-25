@@ -1,187 +1,36 @@
 'use client';
 
 import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
+import { CardColumns } from './CardColumns';
+import { ASSIGNED_ACTIONS, NOTES, ORGANISATION } from './metric-catalogue';
 import { MetricGroups, type MetricGroup } from './MetricCards';
-import { windowLabel } from './windows';
+import { RankCard, rank } from './RankCard';
+import { rankTrend, windowLabel } from './windows';
 
 // Editing view (spec/22): the in-editor tools that organise work rather than
-// draw it — AI assistance, layers, notes, folders, assigned actions.
+// draw it: notes, assigned actions, folders. AI usage and layers moved to
+// the Dashboard as the AI Assistance and Layers Feature stacks; the AI opt-in
+// is a setting, so it lives on the Settings tab.
 //
 // Every metric here was already being emitted, validated, and stored, and none
 // of it was rendered anywhere: `AI·Used` had no card on any tab, and the whole
 // `Layer` category (spec/74), plus Note, Folder and Action, appeared only in
-// the vocabulary labeller the Raw table uses. Data arriving and nobody reading
+// the vocabulary labeller the old Raw table used. Data arriving and nobody reading
 // it is the same blind spot as data never sent, one step further along — the
 // Palette catalogue drifting out of the dashboard is exactly how four element
 // kinds came to count zero (spec/22, "How completeness is tested").
 //
-// Aggregates where the type split is arbitrary for this lens (all AI modes,
-// all layer visibility toggles), specific where the type carries the meaning
-// (the AI panel opt-in is On vs Off, and only On belongs beside usage).
+// Aggregates where the type split is arbitrary for this lens, specific where
+// the type carries the meaning.
+//
+// Below the stacks, the breakdowns the Dashboard's totals hide: which
+// formatting controls people use (Element·Changed by control), which export
+// formats they pick, and which dialogs they open. The Element Editing, Export
+// & Import, and Dialogs & Panels stacks link here.
 export const GROUPS: MetricGroup[] = [
   {
-    title: 'AI assistance',
-    metrics: [
-      {
-        category: 'AI',
-        action: 'Used',
-        allTypes: true,
-        title: 'AI Requests',
-        blurb:
-          'A completed request in the editor AI panel, across both modes (Ask, Clean). Refusals and failures are not counted (spec/25).',
-      },
-      {
-        category: 'AI',
-        action: 'Used',
-        type: 'Ask',
-        title: 'Of Those, Ask',
-        blurb: 'Read-only questions about the diagram. A subset of the count beside it.',
-      },
-      {
-        category: 'AI',
-        action: 'Used',
-        type: 'Clean',
-        title: 'Of Those, Clean',
-        blurb: 'Tidy-the-tab runs, the one mode that changes the canvas.',
-      },
-      {
-        category: 'AI',
-        action: 'Toggled',
-        type: 'AiOn',
-        title: 'AI Turned On',
-        blurb:
-          'The Settings opt-in being switched on. AI is off until someone turns it on, so every request above comes from people who did this.',
-      },
-    ],
-  },
-  {
-    title: 'Layers',
-    metrics: [
-      {
-        category: 'Layer',
-        action: 'Added',
-        type: null,
-        title: 'Layers Created',
-        blurb: 'A new layer on a tab (spec/74).',
-      },
-      {
-        category: 'Layer',
-        action: 'Toggled',
-        allTypes: true,
-        title: 'Visibility & Lock Toggles',
-        blurb:
-          'The eye and the padlock, across hide / show / lock / unlock. The gesture layers are actually for.',
-      },
-      {
-        category: 'Layer',
-        action: 'Moved',
-        type: null,
-        title: 'Selections Moved to a Layer',
-        blurb: 'Elements sent to another layer: layers being used to organise, not just to hide.',
-      },
-      {
-        category: 'Layer',
-        action: 'Deleted',
-        type: null,
-        title: 'Layers Deleted',
-      },
-      {
-        category: 'Layer',
-        action: 'Opened',
-        allTypes: true,
-        title: 'Layers Panel Opened',
-        blurb: 'Read against the layer counts: a panel opened far more often than used is a hint.',
-      },
-    ],
-  },
-  {
-    title: 'Notes & actions',
-    metrics: [
-      {
-        category: 'Note',
-        action: 'Added',
-        type: null,
-        title: 'Notes Added',
-        blurb: "An element's note went from empty to written (spec/22).",
-      },
-      {
-        category: 'Note',
-        action: 'Opened',
-        type: null,
-        title: 'Notes Opened',
-        blurb: 'The note popover was opened, to read as well as to write.',
-      },
-      {
-        category: 'Action',
-        action: 'Created',
-        allTypes: true,
-        title: 'Actions Assigned',
-        blurb:
-          'Element-level work assigned to a teammate (spec/68), with or without the email notification.',
-      },
-      {
-        category: 'Action',
-        action: 'Created',
-        type: 'EmailOn',
-        title: 'Of Those, Emailed',
-        blurb:
-          'Assigned with the notify-by-email box ticked. A subset of the count beside it. Counts the box, not a sent email: sends are Action Notifications on the Acquisition tab.',
-      },
-      {
-        category: 'Action',
-        action: 'Resolved',
-        type: null,
-        title: 'Actions Completed',
-        blurb: 'Read against actions assigned: the follow-through rate on the feature.',
-      },
-    ],
-  },
-  {
-    title: 'Organisation',
-    metrics: [
-      {
-        category: 'Folder',
-        action: 'Created',
-        // Explorer folders plus team-library ones; tab folders have their own card below.
-        typeIn: (type) => type !== 'Tab',
-        title: 'Folders Created',
-        blurb: 'Folders of diagrams, in your own Explorer or a team library.',
-      },
-      {
-        category: 'Folder',
-        action: 'Moved',
-        allTypes: true,
-        title: 'Folders Re-parented',
-        blurb: 'A folder nested under another, or promoted back to the root.',
-      },
-      // Tab folders (spec/30) are the same instinct one level down, so they read
-      // beside diagram filing. Both are typed rather than bare because the bare
-      // Tab/Folder events belong to different subjects: see the type note in
-      // spec/22's Folder entry.
-      {
-        category: 'Folder',
-        action: 'Created',
-        type: 'Tab',
-        title: 'Tab Folders Created',
-        blurb: 'A collapsible folder of tab pills created inside one diagram.',
-      },
-      {
-        category: 'Tab',
-        action: 'Moved',
-        type: 'Folder',
-        title: 'Tabs Filed',
-        blurb:
-          'A tab filed into a tab folder, by the ellipsis menu or by a drag (both report identically).',
-      },
-      {
-        category: 'Diagram',
-        action: 'Moved',
-        allTypes: true,
-        title: 'Diagrams Filed',
-        blurb:
-          'A diagram moved into a folder, back to Unsorted, or between the cloud and offline storage (spec/76).',
-      },
-    ],
+    title: 'Editing tools',
+    metrics: [NOTES, ASSIGNED_ACTIONS, ORGANISATION],
   },
 ];
 
@@ -192,14 +41,53 @@ export function EditingView({
   summary: TelemetrySummary;
   active: TelemetryWindowKey;
 }) {
+  const rows = summary.windows[active].rows;
+  const trend = rankTrend(summary, active);
+  const of = (category: string, action: string) =>
+    rank(rows, (r) => r.category === category && r.action === action);
   return (
     <div className="mt-8">
       <p className="text-sm text-slate-500 dark:text-slate-400">
         The tools that organise the work rather than draw it, for{' '}
-        <span className="font-medium">{windowLabel(active)}</span>: AI assistance, layers, notes,
-        assigned actions, and folders.
+        <span className="font-medium">{windowLabel(active)}</span>: notes, assigned actions, and
+        folders, then which formatting controls, export formats and dialogs get used. AI Assistance
+        and Layers are stacks on the Dashboard; the AI opt-in is on Settings.
       </p>
       <MetricGroups groups={GROUPS} summary={summary} active={active} />
+      <div className="mt-8">
+        <CardColumns>
+          <RankCard
+            title="Formatting Controls"
+            subtitle="What people change on an element, most to least: presets, arrow ends, text, colour and more"
+            category="Element"
+            action="Changed"
+            items={of('Element', 'Changed')}
+            daily={summary.daily}
+            trend={trend}
+            emptyLabel="No elements were changed in this window yet."
+          />
+          <RankCard
+            title="Export Formats"
+            subtitle="Which formats diagrams leave in: PNG, SVG, PDF, JSON, Mermaid, Markdown, Excalidraw"
+            category="Diagram"
+            action="Exported"
+            items={of('Diagram', 'Exported')}
+            daily={summary.daily}
+            trend={trend}
+            emptyLabel="Nothing was exported in this window yet."
+          />
+          <RankCard
+            title="Dialogs Opened"
+            subtitle="Which dialogs, panels and in-editor help articles people open"
+            category="UI"
+            action="Opened"
+            items={of('UI', 'Opened')}
+            daily={summary.daily}
+            trend={trend}
+            emptyLabel="No dialogs were opened in this window yet."
+          />
+        </CardColumns>
+      </div>
     </div>
   );
 }

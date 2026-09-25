@@ -21,9 +21,16 @@ import { describe, expect, it } from 'vitest';
 // strings, so the coupling is real and worth failing on.
 const ROOT = fileURLToPath(new URL('../../..', import.meta.url));
 
-function uiLabels(): Map<string, string> {
+// Every printed spelling per lowercase key: two surfaces can print one name
+// in different case (the Explorer page's "New diagram" button, the Explorer
+// panel's "New Diagram" menu row), and an article matching either is right.
+function uiLabels(): Map<string, Set<string>> {
   const skip = new Set(['node_modules', '.next', '.next-dev', 'out', 'dist', '.turbo']);
-  const byLower = new Map<string, string>();
+  const byLower = new Map<string, Set<string>>();
+  const add = (label: string) => {
+    const key = label.toLowerCase();
+    byLower.set(key, (byLower.get(key) ?? new Set()).add(label));
+  };
   const walk = (dir: string) => {
     for (const entry of readdirSync(dir)) {
       if (skip.has(entry)) continue;
@@ -37,10 +44,8 @@ function uiLabels(): Map<string, string> {
         // what a sighted reader is hunting for: the Tab Appearance dialog is
         // headed "Tab Appearance" while its aria-label reads "Tab appearance",
         // and taking the latter as truth flags a correct article.
-        for (const m of src.matchAll(/(?<![\w-])label="([^"]{3,30})"/g))
-          byLower.set(m[1]!.toLowerCase(), m[1]!);
-        for (const m of src.matchAll(/menuLabel: '([^']{3,30})'/g))
-          byLower.set(m[1]!.toLowerCase(), m[1]!);
+        for (const m of src.matchAll(/(?<![\w-])label="([^"]{3,30})"/g)) add(m[1]!);
+        for (const m of src.matchAll(/menuLabel: '([^']{3,30})'/g)) add(m[1]!);
       }
     }
   };
@@ -103,9 +108,9 @@ describe('bold control names in articles match the editor', () => {
         // Those are lowercase, and a control name a reader hunts for is not.
         if (labels.has(bold.toLowerCase()) === false) continue;
         const real = labels.get(bold.toLowerCase())!;
-        if (bold === real || bold === bold.toLowerCase()) continue;
+        if (real.has(bold) || bold === bold.toLowerCase()) continue;
         wrong.push(
-          `${path.replace(`${ROOT}/apps/help/app/`, '')}: **${bold}** but the UI says "${real}"`,
+          `${path.replace(`${ROOT}/apps/help/app/`, '')}: **${bold}** but the UI says "${[...real].join('" / "')}"`,
         );
       }
     }

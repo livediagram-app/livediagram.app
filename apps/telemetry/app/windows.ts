@@ -1,13 +1,14 @@
 // Everything about the three fixed dashboard windows (Today / Last 7 days /
 // Last 30 days, spec/22): their labels, their span in days, how a window
 // maps onto a slice of the 30-day trend line, and a per-metric count
-// lookup. Shared so the global timeframe panel, the Highlights grid, and
+// lookup. Shared so the global timeframe panel, the Dashboard grid, and
 // the Search view all agree instead of each hard-coding the windows.
 
 import {
   metricKey,
   TELEMETRY_WINDOW_DAYS,
   type TelemetryDaily,
+  type TelemetrySummary,
   type TelemetryWindow,
   type TelemetryWindowKey,
 } from '@livediagram/api-schema';
@@ -61,4 +62,40 @@ export function buildWindowCounts(
     out[key] = map;
   }
   return out;
+}
+
+/** How many whole UTC days the window spans. */
+export function windowDays(active: TelemetryWindowKey): number {
+  return WINDOW_META.find((w) => w.key === active)?.days ?? 30;
+}
+
+/**
+ * What a trend arrow compares against: the same number of days just before
+ * the window, named for its tooltip. Null when there's nothing to compare
+ * against: no `previousWindows` from the api and a 30-day series that can't
+ * reach behind the window (the 30-day one).
+ */
+export function previousSpanLabel(
+  summary: TelemetrySummary,
+  active: TelemetryWindowKey,
+): string | null {
+  const days = windowDays(active);
+  const reachable =
+    summary.previousWindows !== undefined || days * 2 <= (summary.daily?.days.length ?? 0);
+  if (!reachable) return null;
+  return days === 1 ? 'the day before' : `the ${days} days before`;
+}
+
+// What a ranking needs for its per-row trend arrows: the previous window's
+// rows and that span's name. Only from the api's previousWindows; without them
+// rankings show no arrows.
+export type RankTrend = { rows: TelemetryWindow['rows']; against: string };
+
+export function rankTrend(
+  summary: TelemetrySummary,
+  active: TelemetryWindowKey,
+): RankTrend | undefined {
+  const previous = summary.previousWindows?.[active];
+  const against = previousSpanLabel(summary, active);
+  return previous && against ? { rows: previous.rows, against } : undefined;
 }

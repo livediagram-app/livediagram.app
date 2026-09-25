@@ -13,6 +13,9 @@ export type TourApi = {
   // Mobile viewport OR the minimal-panels preference: panels live behind
   // the dock button row, so steps open them by tapping dock buttons.
   compact: boolean;
+  // The Toolbar panel layout (spec/148): the Explorer is a popover behind
+  // the top-left menu button rather than a corner panel.
+  toolbar: boolean;
   // Select an element for the context-menu step, adding a theme-coloured
   // square at the viewport centre when the tab is empty. Resolves once the
   // element's menu is open (or null if it couldn't be).
@@ -54,6 +57,10 @@ export type TourStep = {
   ringAboveModal?: boolean;
   prepare?: (api: TourApi) => void | Promise<void>;
   cleanup?: (api: TourApi) => void;
+  // Overrides for the Toolbar panel layout (spec/148), merged in by
+  // tourStepsFor: a step whose chrome moves there (the Explorer behind its
+  // menu button) retells its copy and widens its highlight to match.
+  toolbar?: Partial<Pick<TourStep, 'body' | 'alsoHighlight'>>;
 };
 
 // The steps this surface actually has chrome for. Filtering up front (not
@@ -62,11 +69,15 @@ export type TourStep = {
 export function tourStepsFor({
   mobile,
   esBoard,
+  toolbar = false,
 }: {
   mobile: boolean;
   esBoard: boolean;
+  toolbar?: boolean;
 }): TourStep[] {
-  return TOUR_STEPS.filter((step) => !(step.mobileSkip && mobile) && !(step.boardSkip && esBoard));
+  return TOUR_STEPS.filter(
+    (step) => !(step.mobileSkip && mobile) && !(step.boardSkip && esBoard),
+  ).map((step) => (toolbar && step.toolbar ? { ...step, ...step.toolbar } : step));
 }
 
 // Telemetry `type` token for a step-viewed event (spec/22: preset tokens
@@ -141,10 +152,17 @@ export const TOUR_STEPS: TourStep[] = [
     title: 'The Explorer',
     body: 'Find your diagrams and folders, without leaving the editor. Open, create, and organise from here.',
     target: 'explorer',
+    // Toolbar layout (spec/148): no corner panel to point at, the Explorer
+    // opens as a popover under the top-left menu button, so the step opens it
+    // there and rings the button + popover as one region.
+    toolbar: {
+      body: 'The menu button opens the Explorer: find your diagrams and folders without leaving the editor. Open, create, and organise from here.',
+      alsoHighlight: 'dock-explorer',
+    },
     prepare: async (api) => {
-      if (api.compact) {
-        // The dock shows one panel at a time, so this also puts the
-        // palette away.
+      if (api.compact || api.toolbar) {
+        // The dock (and the Toolbar menu button) shows one panel at a time,
+        // so on a phone this also puts the palette away.
         if (!findTour('explorer')) clickTour('dock-explorer');
       } else {
         expandPanelIfCollapsed('explorer', 'Explorer');
@@ -152,7 +170,7 @@ export const TOUR_STEPS: TourStep[] = [
       await waitForSelector('[data-tour-id="explorer"]');
     },
     cleanup: (api) => {
-      if (api.compact && findTour('explorer')) clickTour('dock-explorer');
+      if ((api.compact || api.toolbar) && findTour('explorer')) clickTour('dock-explorer');
     },
   },
   {

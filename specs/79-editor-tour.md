@@ -118,6 +118,16 @@ alone.
   matching dock button (`data-tour-id="dock-*"`), and the popover clamps to
   the viewport with the shared edge margins. Collapsed desktop panels are
   expanded via their header toggle the same way.
+- **Toolbar panel layout** ([spec/148](148-toolbar-layout.md), desktop and
+  phone): there is no Explorer panel to point at, so the Explorer step
+  presses the top-left menu button (`data-tour-id="dock-explorer"`, whose
+  card wraps the button; `clickTour` presses the button inside a wrapping
+  anchor), rings the button and its popover as one region, and swaps its
+  copy for one that names the menu button (`TourStep.toolbar`, merged by
+  `tourStepsFor`). Leaving the step closes the popover. The Palette step
+  anchors to the strip's card, not the full-width row it is centred in; the
+  selection-mode and category steps use the strip's own pickers. Every other
+  step is the same in all layouts.
 - Advancing closes whatever the previous step opened (dropdowns, context
   menu, dock popovers); finishing or skipping restores a quiet editor.
 

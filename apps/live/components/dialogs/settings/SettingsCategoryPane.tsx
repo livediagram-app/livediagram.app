@@ -6,6 +6,7 @@ import { SettingsChoiceRow } from './SettingsChoiceRow';
 import { SettingsRow } from './SettingsRow';
 import { SettingsDeleteAccountRow, SettingsIdentityRow } from './SettingsAccountRows';
 import { SettingsShortcutsRow } from './SettingsShortcutsRow';
+import { SettingsShortcutListRow } from './SettingsShortcutListRow';
 import { SettingsSliderRow } from './SettingsSliderRow';
 import { SettingsNoteRow } from './SettingsNoteRow';
 import { SettingsTokensRow } from './SettingsTokensRow';
@@ -122,6 +123,8 @@ export function SettingsCategoryPane({
         return <SettingsNoteRow row={row} />;
       case 'shortcuts':
         return <SettingsShortcutsRow row={row} />;
+      case 'shortcutList':
+        return <SettingsShortcutListRow row={row} />;
       case 'identity':
         return <SettingsIdentityRow row={row} />;
       case 'deleteAccount':

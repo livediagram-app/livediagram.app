@@ -8,12 +8,13 @@ import {
   type TelemetrySummary,
   type TelemetryWindowKey,
 } from '@livediagram/api-schema';
-import { CANVAS_CONTROLS, categoryColor } from './event-vocab';
+import { categoryColor } from './event-vocab';
+import { CUSTOM_THEME_TYPES, NON_PATTERN_CANVAS_TYPES, THEME_ALIASES } from './look-feel-types';
 import { ActivityGlyph } from './glyphs';
 import { MiniSparkline } from './MiniSparkline';
+import { CardColumns } from './CardColumns';
 import { RankCard, rank } from './RankCard';
-import type { TypeAliases } from './rank';
-import { windowLabel } from './windows';
+import { rankTrend, windowLabel } from './windows';
 
 // Look & Feel view (spec/22): which visual presets get picked, most to
 // least, plus how much the custom-theme builder gets used. The presets
@@ -28,26 +29,7 @@ import { windowLabel } from './windows';
 // template picker both fire it for the theme they start the tab with, so the
 // Themes card counts themes CHOSEN, at creation or later, and says so.
 
-// Theme·Changed types that are NOT built-in theme picks, so the theme
-// ranking excludes them: the custom-theme builder's applied/edited
-// variants, and the one-shot "reset elements to theme" recolour
-// (`ResetElements`), which would otherwise compete in the leaderboard.
-export const CUSTOM_THEME_TYPES: ReadonlySet<string> = new Set([
-  'Custom',
-  'CustomEdited',
-  'ResetElements',
-]);
-
-// The built-in brand theme was labelled Basic until #73 renamed it Default
-// (packages/diagram themes-data.ts), and the token follows the label. Rows
-// stored before the rename fold into Default so one theme ranks once.
-export const THEME_ALIASES: TypeAliases = { Basic: 'Default' };
-
-// Canvas·Changed types that are NOT a background pattern: the colour /
-// opacity / scale / animation-speed controls in the canvas panel
-// (CANVAS_CONTROLS). The Canvas Styles ranking is patterns only, so these
-// stay out of it.
-export const NON_PATTERN_CANVAS_TYPES: readonly string[] = Object.keys(CANVAS_CONTROLS);
+export { CUSTOM_THEME_TYPES, NON_PATTERN_CANVAS_TYPES, THEME_ALIASES } from './look-feel-types';
 
 export function LookAndFeelView({
   summary,
@@ -57,6 +39,7 @@ export function LookAndFeelView({
   active: TelemetryWindowKey;
 }) {
   const rows = summary.windows[active].rows;
+  const trend = rankTrend(summary, active);
   const templates = rank(rows, (r) => r.category === 'Template' && r.action === 'Used');
   const themes = rank(
     rows,
@@ -79,36 +62,41 @@ export function LookAndFeelView({
         <span className="font-medium">{windowLabel(active)}</span>, most to least picked.
       </p>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <RankCard
-          title="Templates"
-          subtitle="Scaffolds picked when starting a diagram or seeding a tab"
-          category="Template"
-          action="Used"
-          items={templates}
-          daily={summary.daily}
-          emptyLabel="No templates were used in this window yet."
-        />
-        <RankCard
-          title="Themes Chosen"
-          subtitle="Built-in palettes picked for a tab, including the one chosen when a diagram or template is created"
-          category="Theme"
-          action="Changed"
-          items={themes}
-          daily={summary.daily}
-          aliases={THEME_ALIASES}
-          emptyLabel="No themes were chosen in this window yet."
-        />
-        <RankCard
-          title="Canvas Styles"
-          subtitle="Background patterns picked for the canvas (colour, opacity and scale tweaks are not counted)"
-          category="Canvas"
-          action="Changed"
-          items={canvas}
-          daily={summary.daily}
-          emptyLabel="No canvas-style changes in this window yet."
-        />
-        <CustomThemeCard rows={rows} daily={summary.daily} />
+      <div className="mt-6">
+        <CardColumns>
+          <RankCard
+            trend={trend}
+            title="Templates"
+            subtitle="Scaffolds picked when starting a diagram or seeding a tab"
+            category="Template"
+            action="Used"
+            items={templates}
+            daily={summary.daily}
+            emptyLabel="No templates were used in this window yet."
+          />
+          <RankCard
+            trend={trend}
+            title="Themes Chosen"
+            subtitle="Built-in palettes picked for a tab, including the one chosen when a diagram or template is created"
+            category="Theme"
+            action="Changed"
+            items={themes}
+            daily={summary.daily}
+            aliases={THEME_ALIASES}
+            emptyLabel="No themes were chosen in this window yet."
+          />
+          <RankCard
+            trend={trend}
+            title="Canvas Styles"
+            subtitle="Background patterns picked for the canvas (colour, opacity and scale tweaks are not counted)"
+            category="Canvas"
+            action="Changed"
+            items={canvas}
+            daily={summary.daily}
+            emptyLabel="No canvas-style changes in this window yet."
+          />
+          <CustomThemeCard rows={rows} daily={summary.daily} />
+        </CardColumns>
       </div>
     </div>
   );

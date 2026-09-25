@@ -285,3 +285,40 @@
     outline-offset: 2px;
   }
 }
+
+/*
+ * Slim scrollbar, shared by every app. Used by the editor's TabBar when there
+ * are too many tabs to fit, its dense panels and dialogs, and the telemetry
+ * dashboard's stack popovers and modals: anywhere the OS default scrollbar
+ * would dominate the chrome. Firefox gets `scrollbar-width: thin`;
+ * Chromium/Safari get a thin pseudo-element track with a rounded thumb. The
+ * colours sit at the slate-300/-400 level (slate-600/-500 in dark mode) so the
+ * scrollbar reads as neutral chrome, not content.
+ */
+.scrollbar-slim {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-slate-300) transparent;
+}
+.scrollbar-slim::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.scrollbar-slim::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-slim::-webkit-scrollbar-thumb {
+  background-color: var(--color-slate-300);
+  border-radius: 9999px;
+}
+.scrollbar-slim::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-slate-400);
+}
+.dark .scrollbar-slim {
+  scrollbar-color: var(--color-slate-600) transparent;
+}
+.dark .scrollbar-slim::-webkit-scrollbar-thumb {
+  background-color: var(--color-slate-600);
+}
+.dark .scrollbar-slim::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-slate-500);
+}

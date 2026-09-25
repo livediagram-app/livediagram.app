@@ -103,10 +103,23 @@ are the substance.
 Anonymous events only (spec/22), reusing the closed enums (no new
 category/action needed):
 
-- `UI` / `Opened` / `SignInReasons`: Learn more opened the modal.
-- `UI` / `Selected` / `SignInBanner`: a Sign in CTA (banner or modal)
-  was clicked.
-- `UI` / `Closed` / `SignInBanner`: the banner was dismissed.
+Every banner event names the **surface** it happened on, Explorer or
+editor, since the same banner mounts on both and the two audiences differ
+(someone browsing their library vs someone five minutes into drawing). The
+host passes `surface` to `SignInBanner`; the type carries it as a suffix:
+
+- `UI` / `Opened` / `SignInReasonsExplorer` | `SignInReasonsEditor`: Learn
+  more opened the modal.
+- `UI` / `Selected` / `SignInBannerExplorer` | `SignInBannerEditor`: a Sign in
+  CTA (on the banner, or in the reasons modal it opened) was clicked.
+- `UI` / `Closed` / `SignInBannerExplorer` | `SignInBannerEditor`: the banner
+  was dismissed.
+
+Before September 2026 these were sent without the surface (`SignInReasons`,
+`SignInBanner`); those rows age out with the 60-day retention. The Assign
+Action dialog's guest nudge is its own event, `UI` / `Opened` /
+`ActionSignInNudge` (spec/68). The dashboard's Sign-In Prompts stack charts
+each of these by surface (spec/22).
 
 No "shown" event: it would fire on nearly every guest Explorer load and
 drown the signal (spec/22 noise rule).

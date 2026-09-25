@@ -334,10 +334,11 @@ and the dialog stays as the one complete, browsable index of them.
 
 - **Settings dialog**: `apps/live/components/dialogs/SettingsDialog.tsx`,
   lazy-loaded via `next/dynamic` (matches the other on-demand
-  modals: ShareDialog, ExportTabDialog, ShortcutsDialog,
-  ImagePicker). Trigger: a gear-icon button in the TabBar footer,
-  sitting between the existing Shortcuts button and the dark-mode
-  toggle. Visible in every role: view-role visitors can still
+  modals: ShareDialog, ExportTabDialog, ImagePicker). Trigger: a
+  gear-icon button in the TabBar footer, sitting between Search and the
+  dark-mode toggle. The "Keyboard shortcuts" command in search
+  (spec/70) opens it on the **Keyboard** category; that category replaced the standalone
+  Shortcuts dialog and the footer's keyboard button. Visible in every role: view-role visitors can still
   flip their own telemetry preference and (harmlessly) their own
   auto-rebind preference, even though they can't edit elements.
   **Shaped like the iOS Settings app**, in both of that app's forms, because
@@ -363,7 +364,9 @@ and the dialog stays as the one complete, browsable index of them.
   **It is the central place to find every preference.** Categories:
   **Editor** (quick-add on hover, alignment guides, auto-attach arrows),
   **Appearance** (theme; minimal panel layout, minimap, panel opacity),
-  **Controls** (middle-mouse pan), **Panels** (Layers, Activity and minimap
+  **Controls** (middle-mouse pan), **Keyboard** (the Keyboard Shortcuts
+  on/off switch, then the full shortcut catalogue as collapsible groups),
+  **Panels** (Layers, Activity and minimap
   settings), **Notifications** (in-editor, plus the six email preferences),
   **Accessibility** (reduce motion, show welcome tour), **AI Tools** (assistant,
   suggested prompts, API tokens), **Account** (identity, delete account, see
@@ -450,6 +453,12 @@ and the dialog stays as the one complete, browsable index of them.
   middle mouse button drags the canvas in both axes from anywhere, over
   empty space or elements, whatever tool is active — off leaves the middle
   button to the browser. The
+  **Keyboard** group holds the **Keyboard Shortcuts** switch, which is
+  per-device (localStorage, not `UserPreferences`) so shortcuts can be on at
+  a full keyboard and off on a tablet; it used to sit in Controls, and
+  before that at the foot of the Shortcuts dialog. Below it, the shortcut
+  catalogue renders as collapsible groups, the same content the old dialog
+  listed. The
   Notifications group holds `notificationsEnabled`, whose description
   notes that errors are always shown regardless. The
   Accessibility group holds `reduceMotion`, noting the OS setting is

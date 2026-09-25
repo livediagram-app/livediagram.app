@@ -307,7 +307,7 @@ export const articles: Article[] = [
     slug: 'quick-controls',
     title: 'Quick Controls',
     description: 'The always-available actions tucked into the corner of the editor.',
-    keywords: 'corner buttons actions settings shortcuts share help github bottom bar cluster',
+    keywords: 'corner buttons actions settings share help github bottom bar cluster appearance',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -316,7 +316,7 @@ export const articles: Article[] = [
     title: 'Settings',
     description: 'Every preference toggle, what it does, and which device it follows you to.',
     keywords:
-      'settings preferences options config configure gear cog toggles minimal panels minimap welcome tour notifications toasts reduce motion animation accessibility ai assistant telemetry anonymous usage events privacy sync account device per device defaults turn off',
+      'settings preferences options config configure gear cog toggles minimal panels minimap welcome tour notifications toasts reduce motion animation accessibility ai assistant telemetry anonymous usage events privacy sync account device per device defaults turn off keyboard shortcuts hotkeys keybindings',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -432,7 +432,7 @@ export const articles: Article[] = [
     title: 'Keyboard Shortcuts',
     description: 'The full shortcut reference and how to toggle shortcuts off.',
     keywords:
-      'hotkey hotkeys keybinding cheat sheet reference keys bindings number numbers digit digits tool row excalidraw muscle memory single key letter',
+      'hotkey hotkeys keybinding cheat sheet reference keys bindings number numbers digit digits tool row excalidraw muscle memory single key letter question mark settings keyboard category',
     category: 'Tips and Tricks',
     categorySlug: 'tips-and-tricks',
   },
@@ -1326,7 +1326,8 @@ export const articles: Article[] = [
     title: 'Explorer Panel',
     description:
       'The compact in-editor Explorer for switching diagrams without leaving the canvas.',
-    keywords: 'sidebar switch diagrams files library in editor open',
+    keywords:
+      'sidebar switch diagrams files library in editor open more menu new share export github',
     category: 'Explorer',
     categorySlug: 'explorer',
   },

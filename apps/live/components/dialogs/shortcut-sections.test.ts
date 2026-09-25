@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { EDIT_KEYS, VIEW_TOOL_KEYS } from '@/hooks/canvas/editor-shortcut-keys';
 import { SHORTCUT_SECTIONS } from './shortcut-sections';
 
-// The Shortcuts dialog and the key maps are two hand-kept lists of one thing.
-// The dialog calls itself "a reference card of every binding the editor knows"
+// The Keyboard settings list and the key maps are two hand-kept lists of one thing.
+// The list calls itself "a reference card of every binding the editor knows"
 // and the help centre tells users to trust it, so a row for a key nothing
 // handles is a documented lie, and a handled key with no row is a feature
 // nobody can find. Neither shows up in a render, a typecheck, or a lint.
@@ -43,7 +43,7 @@ const singleKeyRows = EDITOR_SECTIONS.flatMap((section) =>
     })),
 );
 
-describe('the Shortcuts dialog matches the keys the editor binds', () => {
+describe('the Keyboard settings list matches the keys the editor binds', () => {
   it('reads real rows (guard against this test going blind)', () => {
     expect(SHORTCUT_SECTIONS.length).toBeGreaterThan(3);
     expect(singleKeyRows.length).toBeGreaterThan(15);

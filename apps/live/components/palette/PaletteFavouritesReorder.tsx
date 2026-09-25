@@ -122,16 +122,16 @@ export function PaletteFavouritesReorder({
               // Without this a touch-drag scrolls the panel instead of moving
               // the tile, and the pointermove stream stops at the first scroll.
               style={{ touchAction: 'none' }}
-              className={`flex w-full cursor-grab flex-col items-center justify-start gap-1 rounded-md border px-0.5 py-1.5 transition select-none ${
+              className={`group flex w-full cursor-grab flex-col items-center justify-start gap-1 rounded-md border px-0.5 py-1.5 transition select-none ${
                 isDragging
                   ? 'border-brand-400 bg-brand-50 opacity-60 dark:border-brand-500/60 dark:bg-brand-500/15'
-                  : 'border-slate-200 bg-white hover:border-brand-300 hover:bg-brand-50/50 dark:border-slate-700 dark:bg-slate-800/60 dark:hover:border-brand-500/50'
+                  : 'border-slate-200 bg-white hover:border-brand-300 hover:bg-brand-50/50 dark:border-slate-700 dark:bg-slate-800/60 dark:hover:border-brand-400 dark:hover:bg-brand-500/20'
               }`}
             >
-              <span className="pointer-events-none flex h-5 items-center justify-center text-slate-600 dark:text-slate-300">
+              <span className="pointer-events-none flex h-5 items-center justify-center text-slate-600 group-hover:text-brand-700 dark:text-slate-300 dark:group-hover:text-white">
                 {def.icon}
               </span>
-              <span className="pointer-events-none w-full truncate text-center text-[9px] leading-none text-slate-500 dark:text-slate-400">
+              <span className="pointer-events-none w-full truncate text-center text-[9px] leading-none text-slate-500 group-hover:text-brand-700 dark:text-slate-400 dark:group-hover:text-brand-100">
                 {tileDisplayName(def)}
               </span>
             </button>

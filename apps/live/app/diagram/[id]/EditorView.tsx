@@ -138,7 +138,6 @@ export function EditorView() {
     setShareDialogOpen,
     renameDiagramNonce,
     renameTabNonce,
-    setShortcutsOpen,
     tabs,
     toggleActiveTabLock,
     zenMode,
@@ -363,10 +362,6 @@ export function EditorView() {
               participantsByTab={participantsByTab}
               selfId={selfParticipant.id}
               selfRole={sessionRole}
-              onOpenShortcuts={() => {
-                setShortcutsOpen(true);
-                track('UI', 'Opened', 'Shortcuts');
-              }}
               onOpenSettings={() => {
                 // Preferences are user-scoped, not diagram-scoped, so
                 // view-role visitors can still flip them for their own
@@ -448,6 +443,7 @@ export function EditorView() {
           the 48px tab bar (pb-16) and over the canvas chrome (z-[var(--z-overlay)]). */}
         {showSignInBanner ? (
           <SignInBanner
+            surface="Editor"
             onDismiss={dismissSignIn}
             placementClassName="bottom-0 z-[var(--z-overlay)] pb-16"
           />

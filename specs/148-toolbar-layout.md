@@ -163,6 +163,9 @@ ringed, so the difference is visible before switching (spec/20).
 - Read-only sessions have no palette, so no strip. The menu button still
   shows.
 - Zen hides the strip and the menu button along with the rest of the chrome.
+- The editor tour (spec/79) follows the layout: its Palette step rings the
+  strip's card, and its Explorer step opens the Explorer from the menu button
+  and rings both, with copy that names the button.
 
 ## Motion
 

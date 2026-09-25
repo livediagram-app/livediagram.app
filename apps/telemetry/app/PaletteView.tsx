@@ -2,17 +2,17 @@
 
 import { PALETTE_TELEMETRY_TYPES } from '@livediagram/api-schema';
 import type { TelemetryCount, TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
+import { CardColumns } from './CardColumns';
 import { RankCard, rank } from './RankCard';
-import type { TypeAliases } from './rank';
-import { windowLabel } from './windows';
+import { PALETTE_TYPE_ALIASES } from './palette-types';
+import { rankTrend, windowLabel } from './windows';
 
 // Palette view (spec/22): what people reach for in the editor's creation
 // palette, most to least, broken out by the palette's own tabs. Element adds
-// (`Element·Added·<type>`) are bucketed into the catalogue categories below;
-// the canvas Selection Modes are a separate concept (`Canvas·Used·<mode>`,
-// restricted to SELECTION_MODES), not palette elements, so they get their own
-// card. Only items with events in
-// the selected window appear.
+// (`Element·Added·<type>`) are bucketed into the catalogue categories below.
+// The canvas selection modes are a separate concept, not elements, so they
+// have their own tab (ModesView). Only items with events in the selected
+// window appear.
 
 // The palette tabs come from the SHARED catalogue in @livediagram/api-schema
 // (spec/22), not a local copy. They used to be hand-mirrored here with a
@@ -29,36 +29,7 @@ const {
   icons: ICONS,
 } = PALETTE_TELEMETRY_TYPES;
 
-// Element·Added types the editor used to send hyphenated, before it settled on
-// the catalogue tokens. Stored rows keep their old spelling until the 60-day
-// retention sweep drops them, so the ranking folds them into today's token
-// rather than showing each thing twice (or, for a kind the catalogue lists
-// only under its new name, not at all). Safe to delete once no stored row is
-// older than the emitter fix.
-export const PALETTE_TYPE_ALIASES: TypeAliases = {
-  'Mind-node': 'MindNode',
-  'Session-button': 'SessionButton',
-  'Comment-pin': 'CommentPin',
-  'Done-check': 'DoneCheck',
-  'Reaction-pad': 'ReactionPad',
-  'Mode-button': 'ModeButton',
-  'Action-card': 'ActionPanel',
-  'Code-block': 'CodeBlock',
-};
-
-// The canvas selection modes (useCanvasTool's `Canvas·Used` tokens). Other
-// Canvas·Used events are not modes a person selects: InsertBetween is a drag
-// gesture and FollowMe is pinning your view to a peer's (it has its own card
-// on the Collaboration tab), so the ranking names the modes it counts.
-export const SELECTION_MODES: readonly string[] = [
-  'Laser',
-  'Spotlight',
-  'Eraser',
-  'Highlighter',
-  'FormatPainter',
-  'Isometric',
-  'AvatarMode',
-];
+export { PALETTE_TYPE_ALIASES, SELECTION_MODES } from './palette-types';
 
 const addedIn = (kinds: readonly string[]) => (r: TelemetryCount) =>
   r.category === 'Element' && r.action === 'Added' && kinds.includes(r.type ?? '');
@@ -71,16 +42,13 @@ export function PaletteView({
   active: TelemetryWindowKey;
 }) {
   const rows = summary.windows[active].rows;
+  const trend = rankTrend(summary, active);
   const shapes = rank(rows, addedIn(SHAPES), PALETTE_TYPE_ALIASES);
   const tools = rank(rows, addedIn(TOOLS), PALETTE_TYPE_ALIASES);
   const collaborate = rank(rows, addedIn(COLLABORATE), PALETTE_TYPE_ALIASES);
   const components = rank(rows, addedIn(COMPONENTS), PALETTE_TYPE_ALIASES);
   const devices = rank(rows, addedIn(DEVICES), PALETTE_TYPE_ALIASES);
   const icons = rank(rows, addedIn(ICONS), PALETTE_TYPE_ALIASES);
-  const modes = rank(
-    rows,
-    (r) => r.category === 'Canvas' && r.action === 'Used' && SELECTION_MODES.includes(r.type ?? ''),
-  );
 
   return (
     <div className="mt-8">
@@ -89,76 +57,75 @@ export function PaletteView({
         <span className="font-medium">{windowLabel(active)}</span>, most to least used.
       </p>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <RankCard
-          title="Shapes"
-          subtitle="Boxes, circles, flowchart symbols and other primitives"
-          category="Element"
-          action="Added"
-          items={shapes}
-          daily={summary.daily}
-          aliases={PALETTE_TYPE_ALIASES}
-          emptyLabel="No shapes were added in this window yet."
-        />
-        <RankCard
-          title="Collaborate"
-          subtitle="Estimate cards, temperature checks, idea boxes, agendas, decisions and roll calls"
-          category="Element"
-          action="Added"
-          items={collaborate}
-          daily={summary.daily}
-          aliases={PALETTE_TYPE_ALIASES}
-          emptyLabel="No collaboration elements were added in this window yet."
-        />
-        <RankCard
-          title="Tools"
-          subtitle="Text, arrows, stickies, tables, charts and other building blocks"
-          category="Element"
-          action="Added"
-          items={tools}
-          daily={summary.daily}
-          aliases={PALETTE_TYPE_ALIASES}
-          emptyLabel="No tools were added in this window yet."
-        />
-        <RankCard
-          title="Components"
-          subtitle="Pre-built blocks: banners, heroes, callouts, stat rows and more"
-          category="Element"
-          action="Added"
-          items={components}
-          daily={summary.daily}
-          aliases={PALETTE_TYPE_ALIASES}
-          emptyLabel="No components were added in this window yet."
-        />
-        <RankCard
-          title="Devices"
-          subtitle="Wireframe frames: browser, phone, laptop and friends"
-          category="Element"
-          action="Added"
-          items={devices}
-          daily={summary.daily}
-          aliases={PALETTE_TYPE_ALIASES}
-          emptyLabel="No device frames were added in this window yet."
-        />
-        <RankCard
-          title="Icons"
-          subtitle="Line-art icons and brand / technology marks"
-          category="Element"
-          action="Added"
-          items={icons}
-          daily={summary.daily}
-          aliases={PALETTE_TYPE_ALIASES}
-          emptyLabel="No icons were added in this window yet."
-        />
-        <RankCard
-          title="Selection Modes"
-          subtitle="Canvas modes picked from the palette: laser, spotlight, eraser, highlighter, format painter, isometric, avatar"
-          category="Canvas"
-          action="Used"
-          items={modes}
-          daily={summary.daily}
-          emptyLabel="No selection modes were used in this window yet."
-        />
+      <div className="mt-6">
+        <CardColumns>
+          <RankCard
+            trend={trend}
+            title="Shapes"
+            subtitle="Boxes, circles, flowchart symbols and other primitives"
+            category="Element"
+            action="Added"
+            items={shapes}
+            daily={summary.daily}
+            aliases={PALETTE_TYPE_ALIASES}
+            emptyLabel="No shapes were added in this window yet."
+          />
+          <RankCard
+            trend={trend}
+            title="Collaborate"
+            subtitle="Estimate cards, temperature checks, idea boxes, agendas, decisions and roll calls"
+            category="Element"
+            action="Added"
+            items={collaborate}
+            daily={summary.daily}
+            aliases={PALETTE_TYPE_ALIASES}
+            emptyLabel="No collaboration elements were added in this window yet."
+          />
+          <RankCard
+            trend={trend}
+            title="Tools"
+            subtitle="Text, arrows, stickies, tables, charts and other building blocks"
+            category="Element"
+            action="Added"
+            items={tools}
+            daily={summary.daily}
+            aliases={PALETTE_TYPE_ALIASES}
+            emptyLabel="No tools were added in this window yet."
+          />
+          <RankCard
+            trend={trend}
+            title="Components"
+            subtitle="Pre-built blocks: banners, heroes, callouts, stat rows and more"
+            category="Element"
+            action="Added"
+            items={components}
+            daily={summary.daily}
+            aliases={PALETTE_TYPE_ALIASES}
+            emptyLabel="No components were added in this window yet."
+          />
+          <RankCard
+            trend={trend}
+            title="Devices"
+            subtitle="Wireframe frames: browser, phone, laptop and friends"
+            category="Element"
+            action="Added"
+            items={devices}
+            daily={summary.daily}
+            aliases={PALETTE_TYPE_ALIASES}
+            emptyLabel="No device frames were added in this window yet."
+          />
+          <RankCard
+            trend={trend}
+            title="Icons"
+            subtitle="Line-art icons and brand / technology marks"
+            category="Element"
+            action="Added"
+            items={icons}
+            daily={summary.daily}
+            aliases={PALETTE_TYPE_ALIASES}
+            emptyLabel="No icons were added in this window yet."
+          />
+        </CardColumns>
       </div>
     </div>
   );

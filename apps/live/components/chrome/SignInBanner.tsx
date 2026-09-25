@@ -37,13 +37,20 @@ export const SIGNIN_BANNER_DISMISS_KEY = 'livediagram:signin-banner-dismissed:v1
 const EXPLORER_PLACEMENT = 'bottom-0 z-[var(--z-chrome)] pb-16';
 
 export function SignInBanner({
+  surface,
   onDismiss,
   placementClassName = EXPLORER_PLACEMENT,
 }: {
+  // Which host mounted it, carried on every telemetry type (spec/36) so the
+  // dashboard can tell an Explorer prompt from an editor one.
+  surface: 'Explorer' | 'Editor';
   onDismiss: () => void;
   placementClassName?: string;
 }) {
   const [reasonsOpen, setReasonsOpen] = useState(false);
+  const editor = surface === 'Editor';
+  const trackSignIn = () =>
+    track('UI', 'Selected', editor ? 'SignInBannerEditor' : 'SignInBannerExplorer');
   const { signInHref } = useAuthHrefs();
 
   return (
@@ -72,7 +79,7 @@ export function SignInBanner({
             <button
               type="button"
               onClick={() => {
-                track('UI', 'Opened', 'SignInReasons');
+                track('UI', 'Opened', editor ? 'SignInReasonsEditor' : 'SignInReasonsExplorer');
                 setReasonsOpen(true);
               }}
               className="rounded-lg border border-white/40 px-3 py-2 text-sm font-medium text-white transition hover:bg-white/15"
@@ -81,7 +88,7 @@ export function SignInBanner({
             </button>
             <Link
               href={signInHref}
-              onClick={() => track('UI', 'Selected', 'SignInBanner')}
+              onClick={trackSignIn}
               className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-brand-700 shadow-sm transition hover:bg-brand-50"
             >
               <SignInIcon size={14} />
@@ -90,7 +97,7 @@ export function SignInBanner({
             <button
               type="button"
               onClick={() => {
-                track('UI', 'Closed', 'SignInBanner');
+                track('UI', 'Closed', editor ? 'SignInBannerEditor' : 'SignInBannerExplorer');
                 onDismiss();
               }}
               aria-label="Dismiss"
@@ -105,11 +112,7 @@ export function SignInBanner({
       {/* Only mount once opened so the dynamic chunk fetches on the
           first Learn more click, not on every Explorer load. */}
       {reasonsOpen ? (
-        <SignInReasonsModal
-          open
-          onClose={() => setReasonsOpen(false)}
-          onSignIn={() => track('UI', 'Selected', 'SignInBanner')}
-        />
+        <SignInReasonsModal open onClose={() => setReasonsOpen(false)} onSignIn={trackSignIn} />
       ) : null}
     </>
   );

@@ -1,7 +1,7 @@
 'use client';
 
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { apiMigrateGuestData, setTokenProvider } from '@/lib/api-client';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { clearGuestSelfId, getGuestSelfId, getGuestSelfSig } from '@/lib/local-identity';
@@ -94,7 +94,16 @@ function useClerkApiBootstrapEnabled(): BootstrapResult {
   // 1. Token provider registration. The signed-in user's email is no
   // longer forwarded as a header — team-invite matching trusts only the
   // verified `email` session-token claim server-side (spec/32).
-  useEffect(() => {
+  //
+  // A LAYOUT effect on purpose. React runs a child's passive effects before
+  // its parent's, and the render that flips `isSignedIn` is the same one that
+  // hands children the Clerk id as their owner (the Explorer's
+  // CustomThemeProvider, say). With a plain useEffect, that child's first
+  // fetch went out before the provider existed, so apiHeaders fell back to
+  // `X-Owner-Id: <Clerk id>`, which the worker refuses with a 401 (a Clerk id
+  // is never a guest credential). Every layout effect runs before any
+  // passive one, so the provider is in place by the time a child fetches.
+  useLayoutEffect(() => {
     if (isSignedIn) {
       setTokenProvider(() => getToken());
     } else {

@@ -91,7 +91,7 @@ The bulk tab-cascade DELETE stays owner-only — destructive bulk
 ops shouldn't ride a visitor's share code.
 
 - `GET    /api/diagrams/:id/log` → `{ entries: ChangeLogEntry[] }` newest-first, capped at 30 (`CHANGE_LOG_LIST_LIMIT`, defined in `@livediagram/api-schema` and applied server-side in `apps/api/src/db/change-log.ts`). (owner or edit visitor)
-- `POST   /api/diagrams/:id/log` → append. Body: the new entry. (owner or edit visitor)
+- `POST   /api/diagrams/:id/log` → append. Body: the new entry. (owner or edit visitor) The entry's `tabId`, when set, must be a tab linked to **this** diagram, otherwise `409 { error: 'tab_not_saved' }` (`CHANGE_LOG_TAB_NOT_SAVED` in `@livediagram/api-schema`). That closes two things: an editor of one diagram writing rows into another diagram's log (the list joins through `diagram_tabs`, so a foreign tab id would surface there), and the foreign-key 500 a brand-new tab's first edit used to hit, because the editor logs the edit immediately while the tab row only lands on the 600ms debounced autosave. The client retries that 409 quietly (3 tries, 1.5s apart) and reports only if the tab never arrives. Re-posting an id that already exists is an **upsert** limited to the same author on the same tab (redo re-appends the entry its undo deleted, and a coalesce is a delete + re-append, so either delete losing the race used to be a UNIQUE-violation 500); an id collision with anyone else's row is a no-op.
 - `DELETE /api/diagrams/:id/log/:entryId` → drop one entry (revert / undo). (owner or edit visitor)
 - `DELETE /api/diagrams/:id/log/tab/:tabId` → drop entries for one tab. (owner only)
 

@@ -12,6 +12,7 @@ import {
   TOUR_RELAUNCH_EVENT,
 } from '@/lib/tour-pending';
 import { track } from '@/lib/telemetry';
+import { resolvePanelLayout } from '@/lib/user-preferences';
 import { deriveNewBoxedColours } from '@/lib/themes';
 import { computeViewportCenter } from '@/lib/viewport';
 import { findTour, waitForSelector, waitForTour } from './tour-dom';
@@ -63,7 +64,14 @@ export function TourHost() {
   // theme dock button), an event-storming board drops the palette-header
   // dropdowns it doesn't render (spec/139).
   const esBoard = ctx.esBoard === true;
-  const steps = useMemo(() => tourStepsFor({ mobile: isMobile, esBoard }), [isMobile, esBoard]);
+  // The Toolbar layout (spec/148) moves the Explorer behind a menu button,
+  // honoured on a phone too; the minimal layout docks panels like a phone.
+  const panelLayout = resolvePanelLayout(ctx.userPreferences ?? {});
+  const toolbar = panelLayout === 'toolbar';
+  const steps = useMemo(
+    () => tourStepsFor({ mobile: isMobile, esBoard, toolbar }),
+    [isMobile, esBoard, toolbar],
+  );
   const [pending, setPending] = useState(false);
   const [active, setActive] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
@@ -86,7 +94,8 @@ export function TourHost() {
   // always see fresh editor-context handlers (never stale closures).
   const apiRef = useRef<TourApi>(null as unknown as TourApi);
   apiRef.current = {
-    compact: isMobile || ctx.userPreferences?.minimalPanels === true,
+    compact: isMobile || panelLayout === 'minimal',
+    toolbar,
     openElementContextMenu: async () => {
       // Reuse the first boxed element (template diagrams come populated);
       // add a theme-coloured square at the viewport centre when empty.

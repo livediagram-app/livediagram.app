@@ -10,19 +10,13 @@ import { apiCreateFolder } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
 import { SignInPrompt } from '@/components/chrome/SignInPrompt';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
-import { OpenIcon, PlusIcon } from '@/components/panels/explorer-icons';
-import { MenuTile, MenuTileGrid, PortalMenu } from '@/components/primitives/PortalMenu';
+import { ExplorerHeaderMenu } from '@/components/panels/ExplorerHeaderMenu';
 import { DiagramRow } from '@/components/panels/explorer-views';
 import { ExplorerSections } from '@/components/panels/ExplorerSections';
 
 import type { ExplorerProps } from './Explorer.types';
 import { useExplorerViewModel } from './useExplorerViewModel';
 import { useExplorerRowDelete } from './useExplorerRowDelete';
-import { useHoverCloseTimer } from '@/hooks/ui/useHoverCloseTimer';
-
-// How long the New menu stays open after the pointer leaves, so crossing the
-// gap between the button and the menu does not close it.
-const NEW_MENU_CLOSE_DELAY_MS = 260;
 
 // Floating "Explorer" panel pinned to the top-left of the canvas by
 // default. Symmetric to the Palette in shape and behaviour.
@@ -42,6 +36,7 @@ function ExplorerImpl({
   onReset,
   onOpenDiagram,
   onNewDiagram,
+  menuActions,
   onRenameCurrent,
   onDeleteDiagram,
   onDuplicateDiagram,
@@ -177,20 +172,6 @@ function ExplorerImpl({
     }
   };
 
-  // Anchor for the header's combined New / Open menu (spec/15): the two
-  // separate header chips merged into one button whose popover offers
-  // both actions, so the title row carries a single piece of chrome.
-  // Mouse HOVER opens it (clicking felt like needless friction); a short
-  // grace timer on hover-out covers the pointer's travel into the
-  // portalled menu, and closes it when the pointer leaves both. Click
-  // stays as the touch / keyboard path (open-only for mouse, so a
-  // habitual click right after the hover-open doesn't snap it shut).
-  const [newOpenAnchor, setNewOpenAnchor] = useState<HTMLElement | null>(null);
-  const { cancel: cancelNewOpenClose, scheduleClose: scheduleNewOpenClose } = useHoverCloseTimer(
-    () => setNewOpenAnchor(null),
-    NEW_MENU_CLOSE_DELAY_MS,
-  );
-
   // The anchor argument survives in the row-callback signature (the
   // delete flow's ConfirmPopover still anchors), but the move flow is
   // a centred modal now (spec/15) and ignores it.
@@ -212,105 +193,10 @@ function ExplorerImpl({
       width={isMobile ? 'w-auto' : 'w-64'}
       onReset={onReset}
       onMoveTo={onMoveTo}
-      // New-diagram + Open actions live in the header, just left of
-      // the reset-position button (mr-1 spaces it away from that
-      // cluster), merged into ONE chip whose popover offers both
-      // (spec/15) so the title row carries a single piece of chrome.
-      // Icon + text match the panel title's slate (not brand) so the
-      // chip reads as quiet header chrome; a subtle border + hover
-      // tint keep it recognisably a button. Open navigates to the
-      // full-page Explorer's Recent list (the same destination the
-      // /new page's "Open Explorer" footer uses).
-      headerActions={
-        onNewDiagram ? (
-          <>
-            <button
-              type="button"
-              aria-label="New or open a diagram"
-              aria-haspopup="menu"
-              aria-expanded={newOpenAnchor !== null}
-              onClick={(e) => setNewOpenAnchor(e.currentTarget)}
-              onPointerEnter={(e) => {
-                if (e.pointerType !== 'mouse') return;
-                cancelNewOpenClose();
-                setNewOpenAnchor(e.currentTarget);
-              }}
-              onPointerLeave={(e) => {
-                if (e.pointerType !== 'mouse') return;
-                scheduleNewOpenClose();
-              }}
-              className="mr-1 inline-flex h-5 items-center gap-1 rounded border border-slate-200 px-1.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-            >
-              <PlusIcon />
-              New
-              <svg
-                width="8"
-                height="8"
-                viewBox="0 0 12 12"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden
-              >
-                <path d="M3 4.5 6 7.5 9 4.5" />
-              </svg>
-            </button>
-            {newOpenAnchor ? (
-              <PortalMenu anchor={newOpenAnchor} onClose={() => setNewOpenAnchor(null)}>
-                {/* Entering the (portalled) menu keeps the hover-open
-                    session alive; leaving it re-arms the grace close. */}
-                <div
-                  onPointerEnter={(e) => {
-                    if (e.pointerType === 'mouse') cancelNewOpenClose();
-                  }}
-                  onPointerLeave={(e) => {
-                    if (e.pointerType === 'mouse') scheduleNewOpenClose();
-                  }}
-                >
-                  <MenuTileGrid cols={2}>
-                    <MenuTile
-                      icon={
-                        <span className="[&_svg]:h-5 [&_svg]:w-5">
-                          <PlusIcon />
-                        </span>
-                      }
-                      label="New diagram"
-                      onClick={() => {
-                        setNewOpenAnchor(null);
-                        onNewDiagram();
-                      }}
-                    />
-                    <MenuTile
-                      icon={
-                        <span className="[&_svg]:h-5 [&_svg]:w-5">
-                          <OpenIcon />
-                        </span>
-                      }
-                      label="Open Explorer"
-                      onClick={() => {
-                        setNewOpenAnchor(null);
-                        window.location.href = '/explorer';
-                      }}
-                    />
-                  </MenuTileGrid>
-                </div>
-              </PortalMenu>
-            ) : null}
-          </>
-        ) : (
-          // No new-diagram handler (types allow it) → a single action
-          // doesn't need a menu; keep the plain Open link.
-          <a
-            href="/explorer"
-            className="mr-1 inline-flex h-5 items-center gap-1 rounded border border-slate-200 px-1.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-          >
-            <OpenIcon />
-            Open
-          </a>
-        )
-      }
+      // The ⋯ menu (spec/15): new / open, share / export, then search /
+      // GitHub / settings. It replaced a "+ New" chip whose popover held
+      // only the first two.
+      headerActions={<ExplorerHeaderMenu onNewDiagram={onNewDiagram} actions={menuActions} />}
       {...dock}
       onSize={onSize}
       mobileOpenOverride={mobileOpenOverride}

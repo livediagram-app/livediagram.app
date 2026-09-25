@@ -1,21 +1,27 @@
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { GROUPS as ACQUISITION } from './AcquisitionView';
-import { GROUPS as COLLABORATION } from './CollaborationView';
-import { GROUPS as CONTENT } from './ContentView';
 import { GROUPS as EDITING } from './EditingView';
+import { SETTINGS_CHANGED, SETTINGS_STACKS } from './metric-catalogue';
+import { GROUPS as SETTINGS } from './SettingsView';
 import { COMPUTED, scanEmitters, type Emit } from './emitter-scan';
 import { GROUPS as EXCEPTIONS, RECOVERY_TYPES } from './ExceptionsView';
-import { GROUPS as EXTERNAL } from './ExternalConnectionsView';
 import { GROUPS as HELP } from './HelpView';
-import { GROUPS as HIGHLIGHTS } from './HighlightsView';
+import { GROUPS as DASHBOARD } from './DashboardView';
 import {
   CUSTOM_THEME_METRICS,
   CUSTOM_THEME_TYPES,
   NON_PATTERN_CANVAS_TYPES,
   THEME_ALIASES,
 } from './LookAndFeelView';
-import type { MetricGroup } from './MetricCards';
+import * as CATALOGUE from './metric-catalogue';
+import {
+  groupMetrics,
+  headlineMembers,
+  isStack,
+  matches,
+  type Metric,
+  type MetricGroup,
+} from './metric-series';
 import { SELECTION_MODES } from './PaletteView';
 
 // Every card and every hard-coded ranking type on the dashboard must be an
@@ -69,6 +75,27 @@ const COMPUTED_TYPES: Record<string, string> = {
   'Email·Sent·Welcome': 'apps/api email/templates.ts, the welcome message',
   'Email·Sent·TeamInvite': 'apps/api email/templates.ts, the team invite',
   'Email·Sent·ActionAssigned': 'apps/api email/templates.ts, the action notification',
+  'Email·Sent·Week1': 'apps/api email/templates.ts, onboarding week 1',
+  'Email·Sent·Week2': 'apps/api email/templates.ts, onboarding week 2',
+  'Email·Sent·Activation': 'apps/api email/templates.ts, the zero-diagram nudge',
+  'Email·Sent·WinBack': 'apps/api email/templates.ts, the quiet-account win-back',
+  'Email·Sent·Milestone': 'apps/api email/templates.ts, the diagram-count milestone',
+  'Email·Sent·FirstShare': 'apps/api email/templates.ts, the first share link',
+  'Email·Sent·InviteResponse': 'apps/api email/templates.ts, the invite accepted/declined notice',
+  'Email·Sent·DiagramJoined': 'apps/api email/templates.ts, the shared-diagram opened notice',
+  'Email·Sent·CommentNotification': 'apps/api email/templates.ts, the new-comment notice',
+  'Email·Sent·TokenExpiring': 'apps/api email/templates.ts, the API token expiry warning',
+  'Email·Sent·AccountDeleted': 'apps/api email/templates.ts, the deletion confirmation',
+  // postTelemetry(env, 'Mcp', 'Used', pascalToken(name)): each registered tool.
+  'Mcp·Used·FindDiagrams': 'apps/mcp tools.ts, find_diagrams',
+  'Mcp·Used·ReadDiagram': 'apps/mcp tools.ts, read_diagram',
+  'Mcp·Used·ListTemplates': 'apps/mcp tools.ts, list_templates',
+  'Mcp·Used·CreateDiagram': 'apps/mcp tools.ts, create_diagram',
+  'Mcp·Used·AddTab': 'apps/mcp tools.ts, add_tab',
+  'Mcp·Used·UpdateDiagram': 'apps/mcp tools.ts, update_diagram',
+  'Mcp·Used·ShareDiagram': 'apps/mcp tools.ts, share_diagram',
+  'Mcp·Used·RenameDiagram': 'apps/mcp tools.ts, rename_diagram',
+  'Mcp·Used·DeleteDiagram': 'apps/mcp tools.ts, delete_diagram',
 };
 
 function sendable(category: string, action: string, type: string | null): boolean {
@@ -81,17 +108,15 @@ function sendable(category: string, action: string, type: string | null): boolea
   );
 }
 
-const ALL: MetricGroup[] = [
-  ...HIGHLIGHTS,
-  ...ACQUISITION,
-  ...CONTENT,
-  ...COLLABORATION,
-  ...EDITING,
-  ...EXCEPTIONS,
-  ...EXTERNAL,
-  ...HELP,
+const ALL: MetricGroup[] = [...DASHBOARD, ...EDITING, ...SETTINGS, ...EXCEPTIONS, ...HELP];
+// Plus every catalogue chart, including ones parked off every tab, so a chart
+// waiting to be added back can't rot while it is out of view.
+const METRICS = [
+  ...ALL.flatMap(groupMetrics),
+  ...Object.values(CATALOGUE)
+    .flat()
+    .flatMap((item) => (isStack(item) ? item.members : [item])),
 ];
-const METRICS = ALL.flatMap((g) => g.metrics);
 const UNTYPED = METRICS.filter((m) => !m.allTypes && !m.typeIn && (m.type ?? null) === null);
 const TYPED = METRICS.filter((m) => !m.allTypes && !m.typeIn && typeof m.type === 'string');
 
@@ -180,5 +205,97 @@ describe('hard-coded ranking types', () => {
   ];
   it.each(triples)('%s: %s·%s·%s is an event something sends', (_where, c, a, t) => {
     expect(sendable(c, a, t)).toBe(true);
+  });
+});
+
+describe('the Settings tab', () => {
+  it('has a chart for every Settings row the editor emits', () => {
+    const charts = SETTINGS_STACKS.flatMap((s) => s.members);
+    const rows = KNOWN.filter((e) => e.path.endsWith('settings-catalogue.ts'));
+    expect(rows.length).toBeGreaterThan(20);
+    const missing = rows.filter(
+      (e) =>
+        typeof e.type === 'string' &&
+        !charts.some(
+          (m) => m.category === e.category && m.action === e.action && m.typeIn?.(e.type as string),
+        ),
+    );
+    expect(missing.map((e) => `${e.category}·${e.action}·${String(e.type)}`)).toEqual([]);
+  });
+});
+
+// The pattern's promise (spec/22): every event the repo can send lands in a
+// chart on some tab, so nothing is reachable only through Search. A new
+// emitter with no chart fails here; give it one (usually a member of an
+// existing stack) or, if it is genuinely not worth a chart, list it below with
+// the reason.
+const NO_CHART: Record<string, string> = {
+  // The scan follows endTour's outcome into track('UI', 'Ended', outcome) but
+  // can't see the `if` in front of it: a decline is sent as UI·Closed·TourOffer
+  // (the Tours Declined chart), never as UI·Ended·TourDeclined.
+  'UI·Ended·TourDeclined': 'apps/live TourHost.tsx endTour, routed to UI·Closed·TourOffer',
+};
+
+describe('every event has a chart', () => {
+  const charts = ALL.flatMap(groupMetrics);
+  const home = (e: Known) =>
+    charts.some((m) =>
+      e.type === COMPUTED
+        ? // A computed type (an email template, an MCP tool) can't be read by
+          // the scan; any chart on its category·action counts, and those
+          // families have their own completeness tests (metric-series.test).
+          matches({ ...m, allTypes: true, typeIn: undefined }, e.category, e.action, null)
+        : matches(m, e.category, e.action, e.type as string | null),
+    );
+  const orphans = KNOWN.filter(
+    (e) => !home(e) && !(`${e.category}·${e.action}·${String(e.type)}` in NO_CHART),
+  );
+  it('finds a chart for every event an emitter can send', () => {
+    expect(
+      [
+        ...new Set(
+          orphans.map(
+            (e) =>
+              `${e.category}·${e.action}·${e.type === COMPUTED ? '<computed>' : String(e.type)}  (${e.path.split('/').slice(-2).join('/')})`,
+          ),
+        ),
+      ].sort(),
+    ).toEqual([]);
+  });
+});
+
+// One event counted by two different charts is how the dashboard double
+// counts (Tabs Cleared once caught every discarded vote; Share Links Copied
+// caught team invite copies). Two overlaps are by design, and only these:
+//  - a Settings Changed category chart rolls up the setting charts in it;
+//  - inside one stack, a chart and its subset, with the headline counting
+//    only one of them (AI Requests over Ask / Clean, Returning Visitors over
+//    its guest / signed-in split), so the head never adds them together.
+describe('no event is counted by two unrelated charts', () => {
+  const stacks = ALL.flatMap((g) => g.metrics).filter(isStack);
+  const rollups = new Set<Metric>(SETTINGS_CHANGED.members);
+  const subsetPair = (a: Metric, b: Metric) =>
+    stacks.some((s) => {
+      const i = s.members.indexOf(a);
+      const j = s.members.indexOf(b);
+      if (i < 0 || j < 0) return false;
+      const inHead = headlineMembers(s);
+      return s.headline !== undefined && inHead[i] !== inHead[j];
+    });
+  const charts = [...new Set(ALL.flatMap(groupMetrics))];
+  const clashes = KNOWN.filter((e) => e.type !== COMPUTED).flatMap((e) => {
+    const hits = charts.filter((m) => matches(m, e.category, e.action, e.type as string | null));
+    const bad: string[] = [];
+    for (let i = 0; i < hits.length; i++) {
+      for (let j = i + 1; j < hits.length; j++) {
+        const [a, b] = [hits[i]!, hits[j]!];
+        if (rollups.has(a) || rollups.has(b) || subsetPair(a, b)) continue;
+        bad.push(`${e.category}·${e.action}·${String(e.type)}: ${a.title} + ${b.title}`);
+      }
+    }
+    return bad;
+  });
+  it('finds only the rollups and headline subsets that are meant to overlap', () => {
+    expect([...new Set(clashes)].sort()).toEqual([]);
   });
 });
