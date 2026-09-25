@@ -7,7 +7,13 @@
 // odd but not our call to forbid, and the author picks from a menu that names
 // each one.
 
-import { isPollStyle, pollStyleNeedsOptions, type PollStyle } from './poll-style';
+import {
+  isPollStyle,
+  POLL_OPTIONS_MAX,
+  POLL_OPTIONS_MIN,
+  pollStyleNeedsOptions,
+  type PollStyle,
+} from './poll-style';
 
 export const SELECTION_MODES = [
   'select',
@@ -124,7 +130,6 @@ export const TIMER_MINUTES_RANGE = { min: 1, max: 120 } as const;
  */
 export const TIMER_MINUTE_PRESETS = [1, 2, 3, 5, 10, 15, 20, 30] as const;
 export const VOTE_DOTS_RANGE = { min: 1, max: 10 } as const;
-export const SESSION_POLL_MAX_OPTIONS = 6;
 
 // The answer shape a poll button takes when it carries none. `choice` rather
 // than `yesNo` because the author writes the answers here in advance — the
@@ -221,12 +226,12 @@ export function sessionButtonPlan(config: SessionButtonConfig | undefined): Sess
     ? (config?.options ?? [])
         .map((option) => (typeof option === 'string' ? option.trim() : ''))
         .filter((option) => option.length > 0)
-        .slice(0, SESSION_POLL_MAX_OPTIONS)
+        .slice(0, POLL_OPTIONS_MAX)
     : [];
   // Two written answers is the floor for a `choice` poll only — that is the
   // one style with nothing to press below it. A Yes/No or rating button is
   // startable the moment it has a question.
-  if (pollStyleNeedsOptions(style) && options.length < 2) return null;
+  if (pollStyleNeedsOptions(style) && options.length < POLL_OPTIONS_MIN) return null;
   return { tool, style, question: (config?.question ?? '').trim() || 'Quick question', options };
 }
 

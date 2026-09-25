@@ -8,12 +8,12 @@ import {
   isPickerSource,
   isSessionTool,
   sessionButtonPlan,
-  SESSION_POLL_MAX_OPTIONS,
   TIMER_MINUTES_RANGE,
   VOTE_DOTS_RANGE,
   isFixedSizeShape,
   isFixedSizeElement,
 } from './selection-mode';
+import { POLL_OPTIONS_MAX } from './poll-style';
 
 describe('fixed-size shapes', () => {
   it('names the controls that never take resize handles', () => {
@@ -154,7 +154,7 @@ describe('sessionButtonPlan', () => {
       options: Array.from({ length: 20 }, (_, i) => `Option ${i}`),
     });
     expect(plan?.tool).toBe('poll');
-    expect(plan && 'options' in plan && plan.options).toHaveLength(SESSION_POLL_MAX_OPTIONS);
+    expect(plan && 'options' in plan && plan.options).toHaveLength(POLL_OPTIONS_MAX);
     expect(plan && 'question' in plan && plan.question).toBe('Quick question');
   });
 });

@@ -21,6 +21,22 @@ export const POLL_STYLES = [
 
 export type PollStyle = (typeof POLL_STYLES)[number];
 
+// How many answers a poll that carries its own list may hold (spec/88).
+//
+// HERE rather than beside the other poll caps in @livediagram/api-schema, for
+// exactly the reason `PollStyle` moved down: a Session button (spec/105) stores
+// a draft poll on the element, so `SessionButtonConfig` — a `Tab` field — needs
+// the cap too, and api-schema depends on diagram, never the reverse.
+// api-schema re-exports both, so every existing import keeps resolving.
+//
+// It used to be two numbers: this one, and a `SESSION_POLL_MAX_OPTIONS = 6`
+// that the button's own editor enforced. They drifted the moment the poll cap
+// went to 10 — the Studio offered ten answers and the element's ellipsis menu
+// silently stopped at six, which is exactly the bug two constants for one idea
+// are always going to produce. One number now.
+export const POLL_OPTIONS_MIN = 2;
+export const POLL_OPTIONS_MAX = 10;
+
 // `choice` is the only style whose answers the author WRITES; every other
 // style's answers come from somewhere else — a fixed set (Yes / No, 1-5),
 // the room (`collaborators`), or nowhere (`text`). Callers use this to decide

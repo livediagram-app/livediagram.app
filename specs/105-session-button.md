@@ -33,6 +33,17 @@ Right-click → **Session**: the button's one setting — minutes for a timer, d
 
 **It does not choose the tool.** The section used to lead with a Timer / Vote / Poll tile grid, which asked a second time a question the palette already asks once: it offers a tile per tool (see "One tile per tool in the palette" below), so the button lands as the thing you picked. Wanting a different one is wanting a different element — drag it out — and the grid cost every session button three tiles of menu height to re-open a settled decision. `session.tool` is still a field, still validated, still what everything reads; there is simply no control that rewrites it.
 
+### One answer cap, not two
+
+The button's answer list is capped by `POLL_OPTIONS_MAX` — the same number the
+Session Studio uses. It used to have its own `SESSION_POLL_MAX_OPTIONS = 6`,
+and the two drifted the instant the poll cap went to 10: the Studio offered ten
+answers while this menu silently stopped at six, with no hint which number was
+real. Two constants for one idea will always produce that, so there is one now,
+declared beside `PollStyle` in `@livediagram/diagram` for the same reason that
+union lives there — a `SessionButtonConfig` is a `Tab` field, and api-schema
+depends on diagram rather than the reverse.
+
 ### A poll button carries its ANSWER STYLE, not just its answers
 
 `session.style` is a [spec/88](88-live-poll.md) `PollStyle` — the same five the

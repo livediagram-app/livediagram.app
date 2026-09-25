@@ -13,9 +13,18 @@
 // element and `SessionButtonConfig` is a `Tab` field. Re-exported here so
 // every existing `import { PollStyle } from '@livediagram/api-schema'`
 // keeps resolving and there is still only one list.
-import { pollStyleCarriesOptions, pollStyleTokens, type PollStyle } from '@livediagram/diagram';
+import {
+  POLL_OPTIONS_MAX,
+  POLL_OPTIONS_MIN,
+  pollStyleCarriesOptions,
+  pollStyleTokens,
+  type PollStyle,
+} from '@livediagram/diagram';
 
 export type { PollStyle };
+// Re-exported, not redefined: the numbers live one package down so the Session
+// button's editor reads the same two the Studio does. See poll-style.ts.
+export { POLL_OPTIONS_MAX, POLL_OPTIONS_MIN };
 
 export type LivePoll = {
   id: string;
@@ -33,13 +42,6 @@ export type LivePoll = {
 // panel with a 10k-character question or fifty options.
 export const POLL_QUESTION_MAX = 200;
 export const POLL_OPTION_MAX = 60;
-export const POLL_OPTIONS_MIN = 2;
-// Ten. Six was the original guess and it ran out in ordinary use — a poll over
-// the people in the room, or a shortlist of films, passes six without being an
-// unreasonable poll. Nothing downstream is keyed to the count (the results bars
-// are laid out from the list, not from a fixed palette), so the cap is purely
-// about what a sane poll looks like and what the compose UI can show.
-export const POLL_OPTIONS_MAX = 10;
 export const POLL_TEXT_ANSWER_MAX = 280;
 
 // Every answer token a poll can receive, in display order. Empty for a

@@ -136,11 +136,29 @@ when an op arrives so a hand-crafted frame can't blow up a peer's panel:
    runs locally, just for the host (rehearsing one, or asking a room you are
    presenting to), and the composer shows a note that only you will get it.
    The canvas Session button behaves the same way.
-2. **Prompt.** Every connected participant gets a modal with the question and
-   a **Skip** escape (Escape and a backdrop click both skip, so dismissing is
-   an answer of "no opinion" rather than a silent drop). Answering or skipping
-   both count as responding. The dialog is keyed on the poll id so a second
-   poll never inherits the first one's half-typed free-text answer.
+2. **Prompt.** Every connected participant gets a **sheet rising from the
+   bottom of the screen** (`PollPromptSheet`), with the question and a **Skip**
+   escape. Answering or skipping both count as responding, and the sheet is
+   keyed on the poll id so a second poll never inherits the first one's
+   half-typed free-text answer.
+
+   **Not a modal, deliberately.** It was one — a centred dialog with a backdrop
+   — and that stopped the room dead. A poll is a question asked DURING the work,
+   and the thing people most want while answering "which of these?" is to look
+   at the thing being asked about; the scrim covered exactly that. The canvas
+   now stays live behind the sheet: you can pan, point, read the board, and
+   answer without dismissing anything.
+
+   What follows from not blocking:
+   - **No focus trap and no autofocus.** Focus stays where the person was
+     working. Stealing it would be the modal's rudeness without the modal.
+   - **Escape still skips**, because the keyboard way out of a prompt should not
+     depend on whether it happens to be modal — except while a free-text answer
+     has focus, where Escape belongs to the field.
+   - **There is still no close button.** Skip IS the escape, and it is a real
+     answer (counted separately) rather than a silent dodge. There is no
+     backdrop left to click, so Skip and Escape are the whole of it.
+
 3. **Results.** A **`PollPanel`** built on the shared `MovablePanel`, like
    Collaborate / Layers / Activity: draggable, resettable, and dockable
    into a corner stack, homed **top-right directly under the Palette**
