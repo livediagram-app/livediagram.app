@@ -50,8 +50,18 @@ Each AI request optionally includes a `history` array of prior `{ role, content 
   must carry an `Origin` header whose value matches one of the entries; otherwise the
   worker returns `403 { error: 'origin_not_allowed' }` before reaching OpenAI. Unset =
   no origin check (preserves the historical behaviour). The hosted deployment locks this
-  down to `https://livediagram.app`; self-hosters set it to their own hostname (plus dev
-  origins like `http://localhost:3002` if they want local dev to keep working).
+  down in `apps/api/wrangler.toml`'s `[vars]` — **not** the Cloudflare dashboard, because
+  a dashboard-only var is wiped by the next `wrangler deploy` ([spec/140](140-staging-environment.md)
+  predicted exactly this) and is invisible to code review either way. It was in fact unset
+  in production for an unknown period, so the endpoint served any origin while this spec
+  described it as locked down; a probe (`POST /api/ai` with no `Origin` answering
+  `400 invalid mode` instead of `403 origin_not_allowed`) is how to tell.
+  The value is **`https://www.livediagram.app,https://livediagram.app`**, and the `www`
+  entry is the load-bearing one: the apex 301-redirects to `www`, so `www` is the origin a
+  real browser sends. The apex-only value this spec used to recommend would have returned
+  403 for every genuine request from the editor. Self-hosters set their own hostname —
+  whichever one the browser actually lands on after redirects — plus dev origins like
+  `http://localhost:3002`.
 - Optional Clerk-only gate (`AI_REQUIRE_CLERK`). When set to `"true"`, `/api/ai` rejects
   any request without a verified Clerk Bearer JWT with `401 { error: 'sign_in_required' }`;
   the legacy `X-Owner-Id` guest path still works for every OTHER endpoint, just not for

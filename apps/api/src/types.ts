@@ -133,7 +133,12 @@ export type Env = {
   // header exactly matches one of the entries (trimmed for
   // whitespace). Unset = no check, matching the historical
   // behaviour so self-host upgrades don't break. Hosted
-  // livediagram.app sets this to "https://livediagram.app".
+  // livediagram.app sets this in apps/api/wrangler.toml [vars] (NOT the
+  // dashboard, which a deploy wipes) to BOTH
+  // "https://www.livediagram.app" and "https://livediagram.app" — `www`
+  // first because the apex 301s to it, so `www` is what a browser sends.
+  // This comment previously named the apex alone, which as an actual
+  // value would 403 every request the editor makes.
   AI_ALLOWED_ORIGINS?: string;
   // When the literal string "true", POST /api/ai requires a verified
   // Clerk Bearer JWT and rejects the X-Owner-Id guest path with 401

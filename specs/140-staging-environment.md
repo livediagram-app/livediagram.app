@@ -268,6 +268,19 @@ deploy unless `keep_vars = true`. This already applies to production
 (`IMAGE_MAX_PER_OWNER`, `AI_REQUIRE_CLERK`, and friends are documented as
 dashboard-settable but are not in `wrangler.toml`). Staging declares the ones it needs
 **in `[env.staging.vars]`** so the environment is reproducible from the repo alone.
-Production's arrangement is left exactly as found — changing it is a separate decision
-with a production blast radius, and is noted here only so the difference between the two
-blocks isn't read as an accident.
+
+**This prediction came true, and it cost a security control.** `AI_ALLOWED_ORIGINS` was
+documented as production-set but was measurably unset when probed — `POST /api/ai` with no
+`Origin` answered `400 invalid mode` rather than `403 origin_not_allowed` — so the endpoint,
+which fronts a live OpenAI key, accepted requests from any origin. Whether it was never set
+or set once and wiped by a deploy is now unknowable, which is the point: a dashboard var
+leaves no trace either way, and no amount of reading the repo would have revealed it.
+`AI_ALLOWED_ORIGINS` is therefore now declared in production's `[vars]` too. The remaining
+dashboard-only vars (`IMAGE_MAX_PER_OWNER`, `IMAGE_MAX_BYTES_PER_OWNER`, `AI_REQUIRE_CLERK`)
+should be assumed absent until probed, not trusted because a comment says the hosted
+deployment sets them.
+
+The general lesson, worth more than the specific fix: **an optional guard that fails open is
+untestable from the source tree.** Every file can read as though a protection is active while
+production runs without it. Where a guard is config-gated, the audit step is a probe against
+the deployment, not a code review.
