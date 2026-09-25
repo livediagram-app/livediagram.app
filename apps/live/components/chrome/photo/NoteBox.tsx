@@ -5,6 +5,7 @@ import { EVENT_STORMING_NOTES } from '@livediagram/diagram';
 import type { DetectedSticky } from '@livediagram/sticky-vision';
 import type { Corner } from '@/lib/photo-boxes';
 import { BoxEditControls } from './BoxEditControls';
+import { lineHeightPx, useFitText, WORDS_FONT } from './fitText';
 
 // One sticky, drawn on the photograph it was found in (spec/139 Phase 9).
 //
@@ -60,6 +61,9 @@ export function NoteBox({
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(text);
   const input = useRef<HTMLInputElement | null>(null);
+  const chip = useRef<HTMLButtonElement | null>(null);
+  // The words' font, fitted to the box: at most two lines (fitText.ts).
+  const [fontPx, setFontPx] = useState<number>(WORDS_FONT.max);
 
   useEffect(() => {
     if (editing) input.current?.focus();
@@ -86,6 +90,11 @@ export function NoteBox({
   // word that is not the note's own words would only have to be unlearned.
   const words = text.trim() === '' ? (reading ? '…' : '') : text;
   const label = words === '' || words === '…' ? 'this note' : words;
+  useFitText(chip, words, setFontPx);
+  // The chip's FIRST line sits inside the box's bottom edge; a second hangs
+  // below it, never up over the handwriting. Its offset is on-screen pixels,
+  // so it is divided by the zoom like the rest of the controls.
+  const chipTop = `calc(100% - ${lineHeightPx(fontPx) / zoom}px)`;
 
   return (
     <div
@@ -179,17 +188,20 @@ export function NoteBox({
         />
       ) : (
         <button
+          ref={chip}
           type="button"
           data-testid={`note-words-${note.id}`}
           title={words === '' ? 'Type the words on this note' : words}
           onClick={open}
           onPointerDown={(e) => e.stopPropagation()}
-          style={
-            chrome
-              ? { transform: chrome, transformOrigin: 'bottom left', width: `${zoom * 100}%` }
-              : undefined
-          }
-          className={`pointer-events-auto absolute inset-x-0 bottom-0 z-10 block w-full truncate rounded-b-sm bg-slate-900/85 px-1 py-0.5 text-left text-[11px] leading-tight text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-white ${
+          style={{
+            top: chipTop,
+            fontSize: fontPx,
+            ...(chrome
+              ? { transform: chrome, transformOrigin: 'top left', width: `${zoom * 100}%` }
+              : {}),
+          }}
+          className={`pointer-events-auto absolute inset-x-0 z-10 block w-full line-clamp-2 break-words rounded-b-sm bg-slate-900/85 px-1 py-0.5 text-left leading-tight text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-white ${
             ticked ? '' : 'opacity-40'
           }`}
         >

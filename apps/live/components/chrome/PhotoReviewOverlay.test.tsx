@@ -442,6 +442,17 @@ describe('zooming into the photo', () => {
     expect(screen.getByTestId('photo-zoom-level').textContent).toBe('100%');
   });
 
+  it('hangs the words from the box bottom, two lines at most, never up over the note', () => {
+    // One line sits inside the box's bottom edge, as before; a second line
+    // extends BELOW the box rather than climbing over the handwriting.
+    open();
+    const words = screen.getByTestId('note-words-0');
+    expect(words.style.top).toMatch(/^calc\(100% - [\d.]+px\)$/);
+    expect(words.style.bottom).toBe('');
+    expect(words.className).toContain('line-clamp-2');
+    expect(words.className).not.toContain('truncate');
+  });
+
   it('keeps the tick and the words the same size on screen at any zoom', () => {
     // Everything on the photo scales with it — except the controls on each
     // box, or at 400% a word pill is four times as big and covers the very
