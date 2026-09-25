@@ -27,3 +27,32 @@ export function buildReadNotesPrompt(): string {
     'One entry per crop, using the id each crop was labelled with.',
   ].join('\n');
 }
+
+// The answer's shape, for a provider that can be held to it (spec/25). JSON
+// mode alone let the model break its own quoting or stop after `{"texts":[`,
+// failing every note in the batch; a strict schema constrains the output as it
+// is written. The route still validates every field regardless.
+export const READ_NOTES_SCHEMA = {
+  name: 'read_notes',
+  strict: true,
+  schema: {
+    type: 'object',
+    properties: {
+      texts: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            id: { type: 'integer' },
+            text: { type: 'string' },
+            legible: { type: 'boolean' },
+          },
+          required: ['id', 'text', 'legible'],
+          additionalProperties: false,
+        },
+      },
+    },
+    required: ['texts'],
+    additionalProperties: false,
+  },
+} as const;

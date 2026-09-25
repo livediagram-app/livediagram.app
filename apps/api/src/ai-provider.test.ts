@@ -27,6 +27,7 @@ describe('the presets', () => {
       apiKey: 'k',
       model: GOOGLE_DEFAULT_MODEL,
       visionModel: GOOGLE_DEFAULT_VISION_MODEL,
+      strictSchema: true,
     });
   });
 

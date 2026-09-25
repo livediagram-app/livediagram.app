@@ -23,6 +23,10 @@ export type ResolvedAiProvider = {
   model: string;
   // The model the crop reader uses; defaults to `model`.
   visionModel: string;
+  // Whether the endpoint honours `response_format: json_schema` with
+  // `strict: true`. Known for the google and openai presets; unknown for a
+  // generic endpoint, which keeps JSON mode.
+  strictSchema: boolean;
 };
 
 // Google's OpenAI-compatible surface. Fixed: it is a property of the provider,
@@ -57,6 +61,7 @@ type Preset = {
   defaultModel?: string;
   // What the crop READER uses when the operator has not named a model at all.
   defaultVisionModel?: string;
+  strictSchema: boolean;
 };
 
 const PRESETS: Preset[] = [
@@ -66,17 +71,19 @@ const PRESETS: Preset[] = [
     baseUrl: GOOGLE_BASE_URL,
     defaultModel: GOOGLE_DEFAULT_MODEL,
     defaultVisionModel: GOOGLE_DEFAULT_VISION_MODEL,
+    strictSchema: true,
   },
   {
     provider: 'openai',
     keyVar: 'OPENAI_API_KEY',
     baseUrl: OPENAI_BASE_URL,
     defaultModel: OPENAI_DEFAULT_MODEL,
+    strictSchema: true,
   },
   // Anything else that speaks the same wire: Mistral, OpenRouter, a local
   // llama.cpp or Ollama. No default model, because there is no knowing what is
   // loaded on the other end.
-  { provider: 'generic', keyVar: 'AI_API_KEY' },
+  { provider: 'generic', keyVar: 'AI_API_KEY', strictSchema: false },
 ];
 
 // Trailing slashes off a base URL, WITHOUT a regex.
@@ -134,5 +141,6 @@ export function resolveAiProvider(env: Env): ResolvedAiProvider | null {
     // default. `AI_VISION_MODEL` beats both.
     visionModel:
       env.AI_VISION_MODEL ?? (env.AI_MODEL ? model : (preset.defaultVisionModel ?? model)),
+    strictSchema: preset.strictSchema,
   };
 }

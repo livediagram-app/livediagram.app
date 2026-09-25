@@ -230,6 +230,32 @@ reader's ~10 s) and 39 ms on the RTX 4090 (about 6% of its 0.6 s).
 25 good readings for 9 made-up ones; the floor already removed the inventions
 the gate was for.
 
+## JSON mode against a strict schema (2026-09-26)
+
+The server reader used JSON mode (`response_format: json_object`). In real use
+`gemini-2.5-flash-lite` answered about 6% of batches with JSON that does not
+parse: broken quoting, a dropped field, or an answer that stops after
+`{"texts":[`. One such answer fails all six notes of its batch as `ai_error`
+(the api logs `[ai/read-notes] unparseable content`). Across the api's logs:
+500 answered batches, 30 unparseable, none truncated.
+
+A strict schema (`response_format: json_schema`, `strict: true`) constrains
+the answer as it is written. `pnpm bench:readers --schema json|strict`, same
+walls, same crops:
+
+| wall                   | mode   | failed batches | exact          | words  | CER      |
+| ---------------------- | ------ | -------------- | -------------- | ------ | -------- |
+| 38 labelled notes      | json   | 0/7 ×3         | 29, 30, 31 /38 | 89–90% | 2.3–3.4% |
+| 38 labelled notes      | strict | 0/7 ×2         | 30, 27 /38     | 86–90% | 3.8%     |
+| dense board, 272 notes | json   | 5/41           | –              | –      | –        |
+| dense board, 272 notes | strict | 0/41 ×3        | –              | –      | –        |
+
+The strict schema removed the failures (0 of 123 batches against 5 of 41).
+Accuracy is the same within the noise of five runs; a small cost in character
+error is possible and not established. A failed batch loses six notes outright,
+so the worker now asks google and openai for the strict schema, and keeps JSON
+mode only for a generic endpoint whose support is unknown (spec/25).
+
 ## Browser feasibility, honestly
 
 - transformers.js runs SmolVLM in **WASM** correctly (matches the Node

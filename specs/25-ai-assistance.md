@@ -204,7 +204,8 @@ the visible output alone comes back `finish_reason: length` with nothing in it.
 
 Requests use `response_format: { type: 'json_object' }` plus our own strict
 validation — the strict `json_schema` form is not universally supported, and we
-validate every field regardless.
+validate every field regardless. The crop reader is the exception below: it
+asks the two known providers for a strict schema.
 
 ## POST /api/ai/read-notes — reading the text on sticky crops
 
@@ -223,6 +224,15 @@ asked only to read the handwriting on the crops that came out of that.
   markedly better.
 - **Never the whole photo.** A crop is one sticky; whoever is standing in front
   of the wall stays in the browser.
+- **A strict schema where the provider has one.** The google and openai presets
+  send `response_format: { type: 'json_schema', strict: true }` with the answer
+  shape, so the model is constrained to valid JSON of that shape as it writes.
+  JSON mode alone was not enough: `gemini-2.5-flash-lite` failed two batches of
+  seven in one run (12 of 42 notes) with broken quoting (`{'id':20`, `{"id':21`), a dropped field,
+  or an answer that stopped after `{"texts":[`, and one bad answer fails all six
+  notes of its batch (`ai_error`, logged as `unparseable content`). The generic
+  preset keeps JSON mode, because what a self-hosted endpoint supports is
+  unknown; the validation below applies to every provider regardless.
 - **Answer**: `{ texts: { id, text, legible }[] }`. `legible: false` with empty
   text is a real answer — the paper was there, the words were not readable — and
   it still becomes a note, empty, for the author to fill in.
@@ -237,14 +247,14 @@ fires it, because the route cannot know whether the author kept the result).
 
 ## Environment variables
 
-| Variable             | Where                 | Purpose                                                                                                                                                                                                                              |
-| -------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `AI_API_KEY`         | Worker secret         | Required to enable AI. Absent = every AI surface hidden.                                                                                                                                                                             |
-| `AI_BASE_URL`        | Worker var (optional) | The OpenAI-COMPATIBLE chat-completions base. Defaults to `https://api.openai.com/v1`. The hosted site points it at Gemini (`https://generativelanguage.googleapis.com/v1beta/openai`); a laptop can point it at llama.cpp or Ollama. |
-| `AI_MODEL`           | Worker var (optional) | Model id for the assistant. Defaults to `gpt-4o`.                                                                                                                                                                                    |
-| `AI_VISION_MODEL`    | Worker var (optional) | Model id for reading note crops (`/api/ai/read-notes`, spec/139 Phase 8). Defaults to `AI_MODEL`, so a deployment only sets it to split the two apart.                                                                               |
-| `AI_ALLOWED_ORIGINS` | Worker var (optional) | Comma-separated `Origin` values that may call `/api/ai`. Unset = no check. Example: `https://livediagram.app,http://localhost:3002`. Entries are matched case-sensitive against the request's `Origin` header verbatim.              |
-| `AI_REQUIRE_CLERK`   | Worker var (optional) | Set to `"true"` to require a verified Clerk JWT on `/api/ai` (rejects the `X-Owner-Id` guest path with 401). Unset / any other value = guests allowed.                                                                               |
+| Variable                                                     | Where                     | Purpose                                                                                                                                                                                                                 |
+| ------------------------------------------------------------ | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GOOGLE_AI_STUDIO_API_KEY` / `OPENAI_API_KEY` / `AI_API_KEY` | Worker secret             | The model key; exactly one enables AI, and which one names the provider (see "Whose model? The key says."). None = every AI surface hidden.                                                                             |
+| `AI_BASE_URL`                                                | Worker var (generic only) | The OpenAI-COMPATIBLE chat-completions base for `AI_API_KEY`: a laptop points it at llama.cpp or Ollama. The google and openai keys bring their own.                                                                    |
+| `AI_MODEL`                                                   | Worker var (optional)     | Model id for the assistant. Defaults per provider (table above); required for the generic key.                                                                                                                          |
+| `AI_VISION_MODEL`                                            | Worker var (optional)     | Model id for reading note crops (`/api/ai/read-notes`, spec/139 Phase 8). Defaults to `AI_MODEL`, so a deployment only sets it to split the two apart.                                                                  |
+| `AI_ALLOWED_ORIGINS`                                         | Worker var (optional)     | Comma-separated `Origin` values that may call `/api/ai`. Unset = no check. Example: `https://livediagram.app,http://localhost:3002`. Entries are matched case-sensitive against the request's `Origin` header verbatim. |
+| `AI_REQUIRE_CLERK`                                           | Worker var (optional)     | Set to `"true"` to require a verified Clerk JWT on `/api/ai` (rejects the `X-Owner-Id` guest path with 401). Unset / any other value = guests allowed.                                                                  |
 
 Set via `wrangler secret put <the key var>` for production; drop into `apps/api/.dev.vars`
 for local dev (gitignored). The two `AI_*` flags are plain `[vars]` (no secret value), so

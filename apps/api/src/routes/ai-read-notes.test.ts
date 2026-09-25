@@ -255,6 +255,38 @@ describe('when the provider answers', () => {
   });
 });
 
+describe('the answer shape the provider is held to', () => {
+  const sentBody = async (env: Partial<Env>) => {
+    globalThis.fetch = providerSays({ texts: [{ id: 1, text: 'Order placed', legible: true }] });
+    await handleAiReadNotes(makeCtx({ env }));
+    return JSON.parse(
+      (vi.mocked(globalThis.fetch).mock.calls[0]![1] as RequestInit).body as string,
+    ) as {
+      response_format: { type: string; json_schema?: { strict?: boolean; schema?: unknown } };
+    };
+  };
+
+  it.each([
+    ['google', { OPENAI_API_KEY: undefined, GOOGLE_AI_STUDIO_API_KEY: 'k' }],
+    ['openai', {}],
+  ])('asks %s for a strict schema of the answer', async (_name, env) => {
+    const sent = await sentBody(env as Partial<Env>);
+    expect(sent.response_format.type).toBe('json_schema');
+    expect(sent.response_format.json_schema?.strict).toBe(true);
+    expect(JSON.stringify(sent.response_format.json_schema?.schema)).toContain('legible');
+  });
+
+  it('keeps JSON mode for a generic endpoint, whose support is unknown', async () => {
+    const sent = await sentBody({
+      OPENAI_API_KEY: undefined,
+      AI_API_KEY: 'k',
+      AI_BASE_URL: 'http://localhost:8080/v1',
+      AI_MODEL: 'local',
+    });
+    expect(sent.response_format).toEqual({ type: 'json_object' });
+  });
+});
+
 describe('what leaves this worker', () => {
   it('sends the crops labelled by id, and writes none of them down', async () => {
     const log = vi.spyOn(console, 'log').mockImplementation(() => {});
@@ -265,7 +297,6 @@ describe('what leaves this worker', () => {
     );
     expect(JSON.stringify(sent)).toContain('Crop 7:');
     expect(JSON.stringify(sent)).toContain(TINY_JPEG);
-    expect(sent.response_format).toEqual({ type: 'json_object' });
     expect(sent.stream).toBeUndefined();
     for (const call of log.mock.calls) {
       expect(String(call[0])).not.toContain('base64');

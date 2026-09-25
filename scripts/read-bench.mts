@@ -28,6 +28,7 @@ import { dirname, resolve } from 'node:path';
 import { deflateSync, inflateSync } from 'node:zlib';
 import { cropRects, detectStickies, type DetectedSticky } from '../packages/sticky-vision/src';
 import type { ImageBuffer } from '../packages/sticky-vision/src/colour';
+import { READ_NOTES_SCHEMA } from '../apps/api/src/routes/ai-read-prompt';
 
 const arg = (name: string): string | undefined => {
   const i = process.argv.indexOf(`--${name}`);
@@ -329,12 +330,15 @@ function pngDataUrl(image: ImageBuffer): string {
 
 async function readViaEndpoint(
   crops: { id: number; image: ImageBuffer }[],
-  opts: { baseUrl: string; model: string; key?: string; batch: number },
-): Promise<Record<string, string>> {
+  opts: { baseUrl: string; model: string; key?: string; batch: number; strict: boolean },
+): Promise<{ texts: Record<string, string>; failedBatches: number; batches: number }> {
   const prompt = workerPrompt();
   const out: Record<string, string> = {};
+  let failedBatches = 0;
+  let batches = 0;
   for (let i = 0; i < crops.length; i += opts.batch) {
     const batch = crops.slice(i, i + opts.batch);
+    batches += 1;
     const content: unknown[] = [];
     for (const crop of batch) {
       content.push({ type: 'text', text: `Crop id ${crop.id}:` });
@@ -351,7 +355,11 @@ async function readViaEndpoint(
         // The worker's own budget. A thinking model spends part of it on
         // reasoning, so a tight one truncates the answer (finish_reason=length).
         max_tokens: 2000,
-        response_format: { type: 'json_object' },
+        // The worker's own choice per provider (spec/25): a strict schema for
+        // the known ones, JSON mode for a generic endpoint.
+        response_format: opts.strict
+          ? { type: 'json_schema', json_schema: READ_NOTES_SCHEMA }
+          : { type: 'json_object' },
         messages: [
           { role: 'system', content: prompt },
           { role: 'user', content },
@@ -373,10 +381,11 @@ async function readViaEndpoint(
         out[String(t.id)] = t.legible === false ? '' : (t.text ?? '');
       }
     } catch {
+      failedBatches += 1;
       console.warn(`  batch ${i / opts.batch}: unparseable answer`);
     }
   }
-  return out;
+  return { texts: out, failedBatches, batches };
 }
 
 // ---------------------------------------------------------------------------
@@ -449,12 +458,19 @@ async function main() {
   const keyVar = arg('key-var') ?? 'GOOGLE_AI_STUDIO_API_KEY';
   const key = process.env[keyVar];
   const batch = Number(arg('batch') ?? 6);
+  // `--schema json` reproduces JSON mode; the default is the worker's strict
+  // schema for a known provider.
+  const strict = (arg('schema') ?? 'strict') !== 'json';
 
   console.log(`reading ${crops.length} crops with ${model} (batches of ${batch})…`);
   const started = Date.now();
-  const got = await readViaEndpoint(
+  const read = await readViaEndpoint(
     crops.filter((c) => String(c.id) in truthById),
-    { baseUrl: base, model, key, batch },
+    { baseUrl: base, model, key, batch, strict },
+  );
+  const got = read.texts;
+  console.log(
+    `schema=${strict ? 'strict' : 'json'} unparseable batches: ${read.failedBatches}/${read.batches}`,
   );
   const seconds = (Date.now() - started) / 1000;
   const s = score(truthById, got);

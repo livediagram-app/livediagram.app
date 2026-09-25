@@ -9,7 +9,7 @@ import {
 import { CORS_HEADERS, json } from '../responses';
 import { chatCompletions, providerOf } from '../ai-client';
 import { aiGate } from './ai-gate';
-import { buildReadNotesPrompt } from './ai-read-prompt';
+import { buildReadNotesPrompt, READ_NOTES_SCHEMA } from './ai-read-prompt';
 import type { RouteContext } from './context';
 
 // Enough for 16 short phrases with room to spare; a sticky holds a few words.
@@ -73,10 +73,12 @@ export async function handleAiReadNotes(ctx: RouteContext): Promise<Response> {
         { role: 'system', content: buildReadNotesPrompt() },
         { role: 'user', content },
       ],
-      // JSON mode rather than a strict schema: not every OpenAI-compatible
-      // provider supports the strict form, and we validate every field below
-      // in any case — a promise from a provider is not a check.
-      response_format: { type: 'json_object' },
+      // A strict schema where the provider is known to honour one; JSON mode
+      // for a generic endpoint. Every field is validated below either way — a
+      // promise from a provider is not a check.
+      response_format: provider.strictSchema
+        ? { type: 'json_schema', json_schema: READ_NOTES_SCHEMA }
+        : { type: 'json_object' },
     });
   } catch (err) {
     console.error(

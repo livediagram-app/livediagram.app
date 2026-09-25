@@ -18,6 +18,7 @@ const provider = {
   apiKey: 'secret-key',
   model: 'm',
   visionModel: 'm',
+  strictSchema: true,
 };
 
 describe('chatCompletionsUrl', () => {
