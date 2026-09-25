@@ -18,6 +18,10 @@ vi.mock('@/lib/api-client', () => ({
   }),
   apiLoadDiagram: vi.fn(async () => ({ id: 'd1', name: 'Roadmap', tabs: [{ id: 't1' }] })),
   apiLoadTab: vi.fn(async () => ({ id: 't1', name: 'Tab 1', elements: [] })),
+  apiListFavourites: vi.fn(async () => [] as string[]),
+  apiSetFavourite: vi.fn(async () => {
+    calls.push('apiSetFavourite');
+  }),
 }));
 
 vi.mock('@/lib/api/core', () => ({
@@ -85,6 +89,24 @@ describe('saveOfflineToCloud (offline -> cloud)', () => {
     expect(store.offlineDeleteDiagram).not.toHaveBeenCalled();
   });
 
+  it('carries the star to the server once the local copy is gone', async () => {
+    // Before the delete, the id still routes stars to the offline store.
+    vi.mocked(store.offlineGetRecord).mockResolvedValueOnce({
+      id: 'd1',
+      name: 'Roadmap',
+      tabs: [],
+      favourite: true,
+    } as never);
+    await saveOfflineToCloud('d1', 'owner');
+    expect(calls).toEqual(['apiCreateDiagram', 'offlineDeleteDiagram', 'apiSetFavourite']);
+    expect(apiClient.apiSetFavourite).toHaveBeenCalledWith('owner', 'd1', true);
+  });
+
+  it('stars nothing for an unstarred diagram', async () => {
+    await saveOfflineToCloud('d1', 'owner');
+    expect(apiClient.apiSetFavourite).not.toHaveBeenCalled();
+  });
+
   it('refuses a diagram that is not in the local store', async () => {
     vi.mocked(store.offlineGetRecord).mockResolvedValueOnce(undefined as never);
     await expect(saveOfflineToCloud('missing', 'owner')).rejects.toThrow(/not found/i);
@@ -93,6 +115,12 @@ describe('saveOfflineToCloud (offline -> cloud)', () => {
 });
 
 describe('takeCloudOffline (cloud -> offline)', () => {
+  it('keeps a starred diagram starred on the offline record', async () => {
+    vi.mocked(apiClient.apiListFavourites).mockResolvedValueOnce(['d1']);
+    await takeCloudOffline('d1', 'owner');
+    expect(vi.mocked(store.offlinePutRecord).mock.calls[0]![0]).toMatchObject({ favourite: true });
+  });
+
   it('writes the local copy before deleting the server one', async () => {
     await takeCloudOffline('d1', 'owner');
     expect(calls).toEqual(['offlinePutRecord', 'apiDelete']);

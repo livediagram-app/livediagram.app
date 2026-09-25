@@ -6,7 +6,13 @@
 // destructive on the server (the whole point — it must leave the account and
 // every other device), so the UI gates it behind a confirmation.
 
-import { apiCreateDiagram, apiLoadDiagram, apiLoadTab } from '@/lib/api-client';
+import {
+  apiCreateDiagram,
+  apiListFavourites,
+  apiLoadDiagram,
+  apiLoadTab,
+  apiSetFavourite,
+} from '@/lib/api-client';
 import { DIAGRAM_CONVERSION_HEADER } from '@livediagram/api-schema';
 import { API_BASE, ApiError, apiDelete } from '@/lib/api/core';
 import { embedTabImages, isDataImageId, uploadEmbeddedImages } from './offline-images';
@@ -34,6 +40,10 @@ export async function saveOfflineToCloud(offlineId: string, ownerId: string): Pr
   // reporting a brand-new diagram (spec/76 + spec/138).
   await apiCreateDiagram(ownerId, { id: rec.id, name: rec.name, tabs }, { conversion: 'sync' });
   await offlineDeleteDiagram(rec.id);
+  // The star lived on the offline record (spec/95), which just went. Re-star
+  // on the server AFTER the delete: while the id is still registered offline,
+  // apiSetFavourite would route the star straight back to the local store.
+  if (rec.favourite) await apiSetFavourite(ownerId, rec.id, true);
   return rec.id;
 }
 
@@ -83,6 +93,10 @@ export async function takeCloudOffline(
   );
   if (unembedded) throw new Error('image embed incomplete');
 
+  // The cloud star is a row keyed on the diagram, so the server delete below
+  // takes it too; carry it onto the offline record (spec/95). Best-effort:
+  // apiListFavourites answers [] rather than throwing when the fetch fails.
+  const starred = (await apiListFavourites(ownerId)).includes(diagram.id);
   const now = Date.now();
   const rec: OfflineDiagramRecord = {
     id: diagram.id,
@@ -91,6 +105,7 @@ export async function takeCloudOffline(
     createdAt: diagram.createdAt ?? now,
     savedAt: now,
     tabs,
+    ...(starred ? { favourite: true } : {}),
   };
   await offlinePutRecord(rec);
   // Raw server delete — the id is now in the offline index, so the dispatching
