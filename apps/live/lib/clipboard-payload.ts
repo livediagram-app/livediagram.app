@@ -49,13 +49,21 @@ export type ClipboardEnvelope = {
 // about the original element, and re-attaching it to a copy in another diagram
 // misrepresents it whether or not the names survive. `responses` (spec/122) go
 // for the same reason — a vote is cast in a session, not a property of a shape.
-function stripIdentity(el: Element): Element {
+// An assigned `action` (spec/68) is work handed to a person, and carries its own
+// id into the Activity index: a pasted copy made a second action under the
+// same id rather than a second piece of work anybody had assigned.
+//
+// Exported for the in-app buffer, which a paste falls back to when the OS
+// clipboard write is refused, so both routes carry the same thing.
+export function stripIdentity(el: Element): Element {
   const out = { ...el } as Element & {
     commentThread?: unknown;
     responses?: unknown;
+    action?: unknown;
   };
   delete out.commentThread;
   delete out.responses;
+  delete out.action;
   return out;
 }
 

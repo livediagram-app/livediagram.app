@@ -32,7 +32,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { duplicateElements, type Element, type Tab } from '@livediagram/diagram';
 import { anyModalOpen } from '@/lib/modal-guard';
-import { parseElementsPayload, serialiseElements } from '@/lib/clipboard-payload';
+import { parseElementsPayload, serialiseElements, stripIdentity } from '@/lib/clipboard-payload';
 import { addImageFileForDiagram } from '@/lib/upload-image';
 import { track } from '@/lib/telemetry';
 import { trackDuplicated } from '@/lib/element-telemetry';
@@ -108,7 +108,11 @@ export function useClipboard(deps: ClipboardDeps) {
       .filter((el) => idSet.has(el.id))
       // Deep clone so a later edit to the originals doesn't bleed
       // into a future paste.
-      .map((el) => JSON.parse(JSON.stringify(el)) as Element);
+      .map((el) => JSON.parse(JSON.stringify(el)) as Element)
+      // Same stripping as the OS clipboard copy: the in-app buffer is the
+      // fallback paste, and it used to carry comments, poll answers and
+      // assigned actions onto the copies.
+      .map(stripIdentity);
     if (snapshot.length === 0) return;
     setClipboard(snapshot);
     // The elements themselves onto the OS clipboard, so another window can

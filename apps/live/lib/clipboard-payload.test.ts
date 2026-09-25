@@ -67,6 +67,16 @@ describe('serialiseElements', () => {
     expect(back.responses).toBeUndefined();
   });
 
+  it('strips an assigned action, which would otherwise duplicate its id', () => {
+    const assigned = shape('a', {
+      action: { id: 'act-1', assignerId: 'u1', title: 'Do it' },
+    } as unknown as Partial<ShapeElement>);
+    const back = parseElementsPayload(serialiseElements([assigned]))![0] as ShapeElement & {
+      action?: unknown;
+    };
+    expect(back.action).toBeUndefined();
+  });
+
   it('leaves the source element untouched', () => {
     const el = shape('a', {
       commentThread: { comments: [], resolved: false },
