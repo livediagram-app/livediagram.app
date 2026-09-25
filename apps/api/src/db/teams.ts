@@ -275,6 +275,11 @@ export async function detachUserFromTeams(env: Env, userId: string): Promise<voi
       await env.DB.prepare('UPDATE diagrams SET owner_id = ? WHERE owner_id = ? AND team_id = ?')
         .bind(heir.user_id, userId, m.team_id)
         .run();
+      // The team's folders they created go to the same heir, so no team row
+      // is left owned by an account that no longer exists.
+      await env.DB.prepare('UPDATE folders SET owner_id = ? WHERE owner_id = ? AND team_id = ?')
+        .bind(heir.user_id, userId, m.team_id)
+        .run();
     }
     await env.DB.prepare('DELETE FROM team_members WHERE id = ?').bind(m.id).run();
     if (heir && !remaining.some((r) => r.role === 'admin')) {

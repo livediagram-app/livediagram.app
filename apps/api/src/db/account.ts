@@ -74,7 +74,14 @@ export async function deleteAccount(
   const diagramsRes = await env.DB.prepare('DELETE FROM diagrams WHERE owner_id = ?')
     .bind(ownerId)
     .run();
-  const foldersRes = await env.DB.prepare('DELETE FROM folders WHERE owner_id = ?')
+  // Personal folders only. A team folder carries its creator's owner_id but
+  // belongs to the team (access is by membership), and teammates' diagrams
+  // sit in it: deleting it dropped them out of the team library behind a
+  // dangling folder_id. That includes teams this user LEFT earlier, which
+  // detachUserFromTeams no longer sees.
+  const foldersRes = await env.DB.prepare(
+    'DELETE FROM folders WHERE owner_id = ? AND team_id IS NULL',
+  )
     .bind(ownerId)
     .run();
   await env.DB.prepare('DELETE FROM participants WHERE id = ?').bind(ownerId).run();
