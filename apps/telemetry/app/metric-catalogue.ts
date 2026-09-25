@@ -356,15 +356,6 @@ export const AI_CLEAN: Metric = {
   blurb:
     'AI requests in Clean mode: tidy-the-tab runs, the one mode that changes the canvas. Part of AI Requests.',
 };
-export const AI_TURNED_ON: Metric = {
-  category: 'AI',
-  action: 'Toggled',
-  type: 'AiOn',
-  title: 'AI Turned On',
-  blurb:
-    'The Settings opt-in being switched on. AI is off until someone turns it on, so every request comes from people who did this.',
-};
-
 export const AI_ASSISTANCE: MetricStack = {
   stack: true,
   title: 'AI Assistance',
@@ -1216,7 +1207,7 @@ export const AI_SETTINGS = settingsStack(
       'AiOn',
       'AiOff',
       'AI Assistant',
-      'The AI assistant opt-in, both ways. AI Turned On on Editing counts only the on.',
+      'The AI assistant opt-in, switched on or off. AI is off until someone turns it on, so every AI request comes from people who did.',
     ),
     toggle(
       'AI',

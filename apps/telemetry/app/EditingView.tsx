@@ -1,13 +1,14 @@
 'use client';
 
 import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
-import { AI_TURNED_ON, ASSIGNED_ACTIONS, NOTES, ORGANISATION } from './metric-catalogue';
+import { ASSIGNED_ACTIONS, NOTES, ORGANISATION } from './metric-catalogue';
 import { MetricGroups, type MetricGroup } from './MetricCards';
 import { windowLabel } from './windows';
 
 // Editing view (spec/22): the in-editor tools that organise work rather than
-// draw it: the AI opt-in, notes, folders, assigned actions. AI usage and
-// layers moved to the Dashboard as the AI Assistance and Layers Feature stacks.
+// draw it: notes, assigned actions, folders. AI usage and layers moved to
+// the Dashboard as the AI Assistance and Layers Feature stacks; the AI opt-in
+// is a setting, so it lives on the Settings tab.
 //
 // Every metric here was already being emitted, validated, and stored, and none
 // of it was rendered anywhere: `AI·Used` had no card on any tab, and the whole
@@ -18,12 +19,11 @@ import { windowLabel } from './windows';
 // kinds came to count zero (spec/22, "How completeness is tested").
 //
 // Aggregates where the type split is arbitrary for this lens, specific where
-// the type carries the meaning (the AI opt-in is On vs Off, and only On is
-// the signal).
+// the type carries the meaning.
 export const GROUPS: MetricGroup[] = [
   {
     title: 'Editing tools',
-    metrics: [AI_TURNED_ON, NOTES, ASSIGNED_ACTIONS, ORGANISATION],
+    metrics: [NOTES, ASSIGNED_ACTIONS, ORGANISATION],
   },
 ];
 
@@ -38,8 +38,8 @@ export function EditingView({
     <div className="mt-8">
       <p className="text-sm text-slate-500 dark:text-slate-400">
         The tools that organise the work rather than draw it, for{' '}
-        <span className="font-medium">{windowLabel(active)}</span>: the AI opt-in, notes, assigned
-        actions, and folders. AI Assistance and Layers are stacks on the Dashboard.
+        <span className="font-medium">{windowLabel(active)}</span>: notes, assigned actions, and
+        folders. AI Assistance and Layers are stacks on the Dashboard; the AI opt-in is on Settings.
       </p>
       <MetricGroups groups={GROUPS} summary={summary} active={active} />
     </div>
