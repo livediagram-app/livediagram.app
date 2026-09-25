@@ -9,6 +9,7 @@ import {
   isOfflineIdSync,
   offlineDeleteTab,
   offlineLoadTab,
+  offlineSaveDiagramMeta,
   offlineSaveTab,
 } from '../offline/offline-store';
 import {
@@ -128,6 +129,15 @@ export function flushDiagramSavesBeacon(args: {
     const now = Date.now();
     for (const t of args.changedTabs) void offlineSaveTab(args.diagramId, t, now);
     for (const tabId of args.deletedIds) void offlineDeleteTab(args.diagramId, tabId, now);
+    // The rename / tab order too, like the cloud branch below: returning
+    // before it lost a rename or reorder made in the last debounce window.
+    if (args.orderChanged || args.nameChanged) {
+      void offlineSaveDiagramMeta(
+        args.diagramId,
+        { name: args.name, tabs: args.tabs.map((t) => ({ id: t.id, folder: t.folder })) },
+        now,
+      );
+    }
     return;
   }
   // Identity, synchronously (a beforeunload handler can't await):

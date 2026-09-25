@@ -1,6 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Tab } from '@livediagram/diagram';
 import { flushDiagramSavesBeacon } from './tabs';
+import * as offlineStore from '../offline/offline-store';
+
+vi.mock('../offline/offline-store', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../offline/offline-store')>()),
+  isOfflineIdSync: vi.fn(() => false),
+  offlineSaveTab: vi.fn(async () => {}),
+  offlineDeleteTab: vi.fn(async () => {}),
+  offlineSaveDiagramMeta: vi.fn(async () => {}),
+}));
 
 // flushDiagramSavesBeacon is the beforeunload flush (spec/13), now a pure
 // function at the persistence boundary instead of inline raw fetch in
@@ -40,6 +49,29 @@ describe('flushDiagramSavesBeacon', () => {
     nameChanged: false,
     name: 'My diagram',
   };
+
+  it('flushes an offline rename / reorder to IndexedDB, not just its tabs', () => {
+    vi.mocked(offlineStore.isOfflineIdSync).mockReturnValueOnce(true);
+    flushDiagramSavesBeacon({
+      ...base,
+      nameChanged: true,
+      changedTabs: [],
+      deletedIds: [],
+      tabs: [makeTab('t1', { folder: 'f' }), makeTab('t2')],
+    });
+    expect(offlineStore.offlineSaveDiagramMeta).toHaveBeenCalledWith(
+      'diag-1',
+      {
+        name: 'My diagram',
+        tabs: [
+          { id: 't1', folder: 'f' },
+          { id: 't2', folder: undefined },
+        ],
+      },
+      expect.any(Number),
+    );
+    expect(calls).toHaveLength(0);
+  });
 
   it('PUTs each changed tab with keepalive and the owner header', () => {
     flushDiagramSavesBeacon({
