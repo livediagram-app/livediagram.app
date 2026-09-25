@@ -19,7 +19,7 @@ import {
   type ShapeMarker,
   type TextSize,
 } from '@livediagram/diagram';
-import { clearDockHoveredId, setDockHoveredId } from '@/lib/dock-preview';
+import { clearHoveredNoteId, setHoveredNoteId } from '@/lib/note-hover';
 import { renderLabel } from '@/components/canvas/element-labels';
 import { ElementFaceRouter } from '@/components/canvas/ElementFaceRouter';
 import { LaneGutter } from '@/components/canvas/LaneGutter';
@@ -184,11 +184,11 @@ function BoxedElementViewImpl({
   // engine's click-vs-drag test) opens the editable note popover.
   const isAnnotation = element.type === 'annotation';
   const [hovering, setHovering] = useState(false);
-  // A workshop note (spec/139) reports the pointer being over it, so its host
-  // can offer its free docking faces on hover as well as on selection. It is
-  // published rather than held here because the affordances are drawn by the
-  // elements layer, beside the note rather than inside it — docking is board
-  // grammar, and this view is every board's.
+  // A workshop note (spec/139) reports the pointer being over it, so it can
+  // offer its next-note buttons on hover as well as on selection. It is
+  // published rather than held here because the buttons are drawn by the
+  // elements layer, beside the note rather than inside it — the notation is
+  // board grammar, and this view is every board's.
   const isEsNote = isEventStormingNote(element);
   const reportsHover = isAnnotation || isEsNote;
 
@@ -357,7 +357,7 @@ function BoxedElementViewImpl({
         reportsHover
           ? () => {
               if (isAnnotation) setHovering(true);
-              if (isEsNote) setDockHoveredId(element.id);
+              if (isEsNote) setHoveredNoteId(element.id);
             }
           : undefined
       }
@@ -365,7 +365,7 @@ function BoxedElementViewImpl({
         reportsHover
           ? () => {
               if (isAnnotation) setHovering(false);
-              if (isEsNote) clearDockHoveredId(element.id);
+              if (isEsNote) clearHoveredNoteId(element.id);
             }
           : undefined
       }

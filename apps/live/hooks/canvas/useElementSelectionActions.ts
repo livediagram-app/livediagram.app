@@ -11,7 +11,6 @@
 
 import {
   arrowReferencesAny,
-  afterElementsRemoved,
   createText,
   bringManyToFront,
   duplicateElements,
@@ -95,7 +94,7 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     const targetIds = deletableIds(ids);
     if (targetIds.size === 0) return;
     commit((els) => {
-      const survivors = els.filter((el) => {
+      return els.filter((el) => {
         // Belt-and-suspenders: never drop a locked element, even via the
         // arrow cascade (a locked arrow survives its endpoint going).
         // A locked LAYER protects its elements the same way (spec/74).
@@ -104,9 +103,6 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
         if (el.type === 'arrow' && arrowReferencesAny(el, targetIds)) return false;
         return true;
       });
-      // One healing pass for everything a delete leaves dangling: notes
-      // docked to a host that just went (spec/139 Phase 7).
-      return afterElementsRemoved(survivors);
     });
     setSelectedId(null);
     setEditingId(null);
@@ -185,14 +181,12 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     track('Element', 'Deleted'); // parity with single-element deleteSelected
     announceDeleted(targetIds);
     commit((els) => {
-      const survivors = els.filter((el) => {
+      return els.filter((el) => {
         if (el.locked === true || layerLockedIds.has(el.id)) return true;
         if (targetIds.has(el.id)) return false;
         if (el.type === 'arrow' && arrowReferencesAny(el, targetIds)) return false;
         return true;
       });
-      // See deleteSelected: the same healing pass.
-      return afterElementsRemoved(survivors);
     });
     setMultiSelectedIds(new Set());
     setEditingId(null);

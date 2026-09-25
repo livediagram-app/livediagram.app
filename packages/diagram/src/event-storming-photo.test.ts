@@ -6,7 +6,6 @@ import {
   draftNotesOf,
   hasDraftNotes,
   onlyDraftNotesChanged,
-  detectDockings,
   fitPhotoTransform,
   matchDetectedNotes,
   normaliseNoteText,
@@ -18,7 +17,6 @@ import {
   type PhotoAddition,
   type PhotoNote,
 } from './event-storming-photo';
-import { ES_DOCK_SEAM_PX } from './event-storming-dock';
 import type { Element } from './index';
 import { ES_LANE_PITCH, laneCentre, type EsTimeline } from './event-storming-lanes';
 
@@ -270,19 +268,6 @@ describe('placeNewNotes', () => {
     expect(out[1]!.x).toBeGreaterThanOrEqual(out[0]!.x + 200);
   });
 
-  it('closes a docked pair to its seam rather than the row gap', () => {
-    const host = addition({ detectedId: 1, x: 0, y: 0, kind: 'policy' });
-    const docked = addition({
-      detectedId: 2,
-      x: 40,
-      y: 0,
-      kind: 'command',
-      dock: { hostDetectedId: 1, side: 'after' },
-    });
-    const out = placeNewNotes([host, docked], transform, []);
-    expect(out[1]!.x).toBe(out[0]!.x + out[0]!.width + ES_DOCK_SEAM_PX);
-  });
-
   it('lands on the lanes when the board has them on, without moving x', () => {
     const timeline: EsTimeline = { originY: 0 };
     const out = placeNewNotes(
@@ -294,69 +279,6 @@ describe('placeNewNotes', () => {
     // Rows are tidied; x is left exactly where the wall had it.
     expect(out[0]!.x).toBe(307);
     expect(out[0]!.y).toBe(laneCentre(1, timeline) - 100);
-  });
-});
-
-describe('detectDockings', () => {
-  const addition = (id: number, kind: PhotoAddition['kind']): PhotoAddition => ({
-    detectedId: id,
-    kind,
-    text: 't',
-    x: 0,
-    y: 0,
-    width: 200,
-    height: 200,
-  });
-
-  it('sees a command pressed against the event it triggers', () => {
-    const detected = [
-      photo({ id: 1, kind: 'command', cx: 0.2, cy: 0.5, w: 0.1, h: 0.1 }),
-      photo({ id: 2, kind: 'domain-event', cx: 0.31, cy: 0.5, w: 0.1, h: 0.1 }),
-    ];
-    const out = detectDockings([addition(1, 'command')], detected, new Map());
-    expect(out[0]!.dock).toEqual({ hostDetectedId: 2, side: 'before' });
-  });
-
-  it('sees a policy after the event it reacts to', () => {
-    const detected = [
-      photo({ id: 1, kind: 'domain-event', cx: 0.2, cy: 0.5, w: 0.1, h: 0.1 }),
-      photo({ id: 2, kind: 'policy', cx: 0.31, cy: 0.5, w: 0.1, h: 0.1 }),
-    ];
-    const out = detectDockings([addition(2, 'policy')], detected, new Map());
-    expect(out[0]!.dock).toEqual({ hostDetectedId: 1, side: 'after' });
-  });
-
-  it('docks an addition to a note the board ALREADY has', () => {
-    const detected = [
-      photo({ id: 1, kind: 'command', cx: 0.2, cy: 0.5, w: 0.1, h: 0.1 }),
-      photo({ id: 2, kind: 'domain-event', cx: 0.31, cy: 0.5, w: 0.1, h: 0.1 }),
-    ];
-    const out = detectDockings([addition(1, 'command')], detected, new Map([[2, 'board-event']]));
-    expect(out[0]!.dock).toEqual({ hostBoardId: 'board-event', side: 'before' });
-  });
-
-  it('leaves notes that are merely in the same row alone', () => {
-    const detected = [
-      photo({ id: 1, kind: 'command', cx: 0.1, cy: 0.5, w: 0.1, h: 0.1 }),
-      photo({ id: 2, kind: 'domain-event', cx: 0.6, cy: 0.5, w: 0.1, h: 0.1 }),
-    ];
-    expect(detectDockings([addition(1, 'command')], detected, new Map())[0]!.dock).toBeUndefined();
-  });
-
-  it('leaves notes in different rows alone', () => {
-    const detected = [
-      photo({ id: 1, kind: 'command', cx: 0.2, cy: 0.1, w: 0.1, h: 0.1 }),
-      photo({ id: 2, kind: 'domain-event', cx: 0.31, cy: 0.8, w: 0.1, h: 0.1 }),
-    ];
-    expect(detectDockings([addition(1, 'command')], detected, new Map())[0]!.dock).toBeUndefined();
-  });
-
-  it('invents no pairing the notation does not have', () => {
-    const detected = [
-      photo({ id: 1, kind: 'actor', cx: 0.2, cy: 0.5, w: 0.1, h: 0.1 }),
-      photo({ id: 2, kind: 'domain-event', cx: 0.31, cy: 0.5, w: 0.1, h: 0.1 }),
-    ];
-    expect(detectDockings([addition(1, 'actor')], detected, new Map())[0]!.dock).toBeUndefined();
   });
 });
 
@@ -441,24 +363,6 @@ describe('reconcilePhoto', () => {
     );
     expect(out.additions[0]!.y).toBe(laneCentre(0, timeline) - out.additions[0]!.height / 2);
   });
-
-  it('carries a docked pair in as a docked pair', () => {
-    const detected = [
-      photo({ id: 1, kind: 'command', text: 'Place order', cx: 0.2, cy: 0.5, w: 0.1, h: 0.1 }),
-      photo({
-        id: 2,
-        kind: 'domain-event',
-        text: 'Order placed',
-        cx: 0.31,
-        cy: 0.5,
-        w: 0.1,
-        h: 0.1,
-      }),
-    ];
-    const out = reconcilePhoto(detected, []);
-    const command = out.additions.find((a) => a.kind === 'command')!;
-    expect(command.dock).toEqual({ hostDetectedId: 2, side: 'before' });
-  });
 });
 
 // The draft lifecycle (spec/139 Phase 8). The notes are IN the document while
@@ -515,15 +419,6 @@ describe('the photo draft', () => {
     const after = discardDraft(board);
     expect(after).toHaveLength(1);
     expect(after[0]).toBe(board[0]);
-  });
-
-  it('frees a settled note docked to a draft note that is being discarded', () => {
-    const board = [
-      draft('host'),
-      { ...(settled('c') as object), esDock: { hostId: 'host', side: 'before' } } as Element,
-    ];
-    const after = discardDraft(board);
-    expect('esDock' in (after[0] as object)).toBe(false);
   });
 });
 

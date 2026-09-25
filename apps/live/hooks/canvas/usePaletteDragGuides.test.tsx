@@ -4,7 +4,6 @@ import { afterEach, describe, expect, it } from 'vitest';
 import {
   ES_LANE_PITCH,
   laneCentre,
-  dockedBounds,
   type Element,
   type EsTimeline,
   type EventStormingNoteKind,
@@ -16,7 +15,6 @@ import {
 } from '@/lib/palette-drag-preview';
 import { getInsertionSlot, setInsertionSlot } from '@/lib/insertion-preview';
 import { getLanePreview, setLanePreview } from '@/lib/lane-preview';
-import { getDockCandidate, setDockCandidate } from '@/lib/dock-preview';
 import { usePaletteDragGuides } from './usePaletteDragGuides';
 
 // A row of three 200x200 notes with 72 gaps: 0..200, 272..472, 544..744.
@@ -95,7 +93,6 @@ afterEach(() => {
   setInsertionSlot(null);
   setPaletteDragSnap(null);
   setLanePreview(null);
-  setDockCandidate(null);
   document.body.innerHTML = '';
 });
 
@@ -302,56 +299,5 @@ describe('usePaletteDragGuides — insert between (spec/139)', () => {
     // A fresh drag that never hovers a gap keeps it that way.
     altDragOver(second.wrapperRef.current, 100, 100);
     expect(getInsertionSlot()).toBeNull();
-  });
-});
-
-// Anchor docking on the palette path (spec/139 Phase 7): the same magnets the
-// note-drag path offers, resolved from the tile's own kind.
-describe('usePaletteDragGuides — anchor docking', () => {
-  const event = {
-    id: 'e',
-    type: 'sticky',
-    esKind: 'domain-event',
-    fixedSize: true,
-    x: 1000,
-    y: 500,
-    width: 200,
-    height: 200,
-  } as Element;
-  const face = dockedBounds({ x: 1000, y: 500, width: 200, height: 200 }, 'before', 'command');
-
-  it('offers a host’s free face to a compatible tile', () => {
-    const { wrapperRef } = render({
-      esBoard: true,
-      elements: [event],
-      esKind: 'command',
-    });
-    dragOver(wrapperRef.current, face.x + 100 + 6, face.y + 100 + 6);
-    expect(getDockCandidate()).toMatchObject({ hostId: 'e', side: 'before' });
-    // The ghost and the drop follow the same offset, onto the face exactly.
-    const snap = getPaletteDragSnap()!;
-    expect(face.x + 100 + 6 + snap.dx - 100).toBe(face.x);
-  });
-
-  it('offers nothing for a tile whose kind docks nowhere', () => {
-    const { wrapperRef } = render({ esBoard: true, elements: [event], esKind: 'actor' });
-    dragOver(wrapperRef.current, face.x + 100 + 6, face.y + 100 + 6);
-    expect(getDockCandidate()).toBeNull();
-  });
-
-  it('offers nothing for a plain sticky tile', () => {
-    const { wrapperRef } = render({ esBoard: true, elements: [event] });
-    dragOver(wrapperRef.current, face.x + 100 + 6, face.y + 100 + 6);
-    expect(getDockCandidate()).toBeNull();
-  });
-
-  it('clears the offer when the drag leaves the canvas', () => {
-    const { wrapperRef } = render({ esBoard: true, elements: [event], esKind: 'command' });
-    dragOver(wrapperRef.current, face.x + 100, face.y + 100);
-    expect(getDockCandidate()).not.toBeNull();
-    act(() => {
-      document.dispatchEvent(new Event('dragleave', { bubbles: true }));
-    });
-    expect(getDockCandidate()).toBeNull();
   });
 });

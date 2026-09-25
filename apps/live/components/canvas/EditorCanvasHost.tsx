@@ -105,7 +105,7 @@ export function EditorCanvasHost() {
     addStatRow,
     addSticky,
     esBoard,
-    addDockedNote,
+    addNextNote,
     photoImportAvailable,
     photoImportBlocked,
     openPhotoImport,
@@ -633,7 +633,7 @@ export function EditorCanvasHost() {
               }
             : {}),
         }}
-        onAddDockedNote={createBlocked ? undefined : addDockedNote}
+        onAddNextNote={createBlocked ? undefined : addNextNote}
         onDropPhoto={readPhotoFile}
         createBlocked={createBlocked}
         onAddImage={addImage}

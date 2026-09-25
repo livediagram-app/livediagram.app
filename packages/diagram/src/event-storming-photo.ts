@@ -16,12 +16,6 @@ import {
   type EventStormingNoteKind,
 } from './event-storming';
 import type { Element, StickyElement } from './index';
-import {
-  dockingFor,
-  ES_DOCK_SEAM_PX,
-  stripDanglingDocks,
-  type EsDockSide,
-} from './event-storming-dock';
 import { activeTimeline, snapToLane, type EsTimeline } from './event-storming-lanes';
 import {
   applyPhotoTransform,
@@ -55,9 +49,6 @@ export type PhotoAddition = {
   y: number;
   width: number;
   height: number;
-  // Set when the photo shows this note docked to something: another addition,
-  // or a note already on the board.
-  dock?: { hostDetectedId?: number; hostBoardId?: string; side: EsDockSide };
 };
 
 export type PhotoDifference = { detectedId: number; boardId: string; boardText: string };
@@ -142,8 +133,7 @@ export function placeNewNotes(
     }
     let candidate = { ...note, x, y };
     // Push right until the spot is free. Existing notes and already-settled
-    // additions both count; the gap is the row's own rhythm, or a seam when
-    // the two are a docked pair (a seam is a join, not a gap).
+    // additions both count; the gap is the row's own rhythm.
     const blockers = [
       ...existing.map((n) => ({ x: n.x, y: n.y, width: n.width, height: n.height, id: n.id })),
       ...settled.map((n) => ({ x: n.x, y: n.y, width: n.width, height: n.height, id: undefined })),
@@ -151,56 +141,11 @@ export function placeNewNotes(
     for (let guard = 0; guard < blockers.length + 1; guard += 1) {
       const hit = blockers.find((b) => overlapsX(candidate, b) && overlapsY(candidate, b));
       if (!hit) break;
-      const docked =
-        note.dock !== undefined &&
-        (note.dock.hostBoardId === hit.id ||
-          settled.some((s) => s.detectedId === note.dock?.hostDetectedId));
-      candidate = { ...candidate, x: hit.x + hit.width + (docked ? ES_DOCK_SEAM_PX : gap) };
+      candidate = { ...candidate, x: hit.x + hit.width + gap };
     }
     settled.push(candidate);
   }
   return settled;
-}
-
-// Which additions the PHOTO shows docked to something. Read in photo space,
-// where the evidence actually is: a command pressed up against the left edge
-// of an event is the author saying they belong together, and the notation says
-// which side that is (the catalogue, never a guess).
-export function detectDockings(
-  additions: PhotoAddition[],
-  detected: PhotoNote[],
-  existingByDetectedId: Map<number, string>,
-): PhotoAddition[] {
-  const byId = new Map(detected.map((n) => [n.id, n]));
-  // "Immediately beside" in photo space: within a quarter of the note's own
-  // width, or overlapping it (stickies on a wall lap over each other).
-  const isBeside = (a: PhotoNote, b: PhotoNote, side: EsDockSide): boolean => {
-    if (Math.abs(a.cy - b.cy) > Math.max(a.h, b.h) * 0.6) return false;
-    const gap =
-      side === 'before' ? b.cx - b.w / 2 - (a.cx + a.w / 2) : a.cx - a.w / 2 - (b.cx + b.w / 2);
-    return gap <= a.w * 0.25;
-  };
-
-  return additions.map((addition) => {
-    const note = byId.get(addition.detectedId);
-    if (!note) return addition;
-    const kind = kindOf(note);
-    for (const other of detected) {
-      if (other.id === note.id) continue;
-      const hostKind = other.kind === 'unknown' ? UNKNOWN_KIND_FALLBACK : other.kind;
-      const docking = dockingFor(kind, hostKind);
-      if (!docking) continue;
-      if (!isBeside(note, other, docking.side)) continue;
-      const boardId = existingByDetectedId.get(other.id);
-      return {
-        ...addition,
-        dock: boardId
-          ? { hostBoardId: boardId, side: docking.side }
-          : { hostDetectedId: other.id, side: docking.side },
-      };
-    }
-    return addition;
-  });
 }
 
 // The whole reconciliation, in one call: what the photo shows that the board
@@ -248,8 +193,7 @@ export function reconcilePhoto(
       };
     });
 
-  const docked = detectDockings(additions, detected, matchedDetected);
-  const placed = placeNewNotes(docked, transform, existing, {
+  const placed = placeNewNotes(additions, transform, existing, {
     timeline: activeTimeline(opts.tab),
   });
 
@@ -320,13 +264,10 @@ export function acceptDraft(elements: Element[]): Element[] {
   });
 }
 
-// Discard: the draft never happened. Anything a draft note was hosting is
-// freed on the way out, so a relation can't point at a note that just left.
+// Discard: the draft never happened.
 export function discardDraft(elements: Element[]): Element[] {
   if (!hasDraftNotes(elements)) return elements;
-  return stripDanglingDocks(
-    elements.filter((el) => !(el.type === 'sticky' && el.esDraft === true)),
-  );
+  return elements.filter((el) => !(el.type === 'sticky' && el.esDraft === true));
 }
 
 // Does this change touch ONLY the notes a photo draft brought in?

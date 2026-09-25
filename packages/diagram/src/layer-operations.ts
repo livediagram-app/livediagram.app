@@ -1,6 +1,5 @@
 import type { Element, ElementId, Tab } from './index';
 import { bringManyToFront, sendManyToBack } from './layer-order';
-import { afterElementsRemoved } from './element-removal';
 import { arrowReferencesAny } from './arrow-rebind';
 import {
   DEFAULT_LAYER_ID,
@@ -170,14 +169,11 @@ function withoutLayerElements(tab: Tab, layerId: string): Element[] {
     tab.elements.filter((el) => resolveLayerId(el.layerId, ls) === layerId).map((el) => el.id),
   );
   if (doomed.size === 0) return tab.elements;
-  const survivors = tab.elements.filter((el) => {
+  return tab.elements.filter((el) => {
     if (doomed.has(el.id)) return false;
     if (el.type === 'arrow' && arrowReferencesAny(el, doomed)) return false;
     return true;
   });
-  // Everything the removed elements leave dangling, healed in one pass
-  // (spec/139 docked notes).
-  return afterElementsRemoved(survivors);
 }
 
 // Merge a layer into its neighbour (spec/74): every element on `layerId`

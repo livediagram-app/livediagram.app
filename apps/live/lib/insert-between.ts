@@ -1,4 +1,4 @@
-import { ES_NOTE_GAP, dockOf, isBoxed, type Element, type ElementId } from '@livediagram/diagram';
+import { ES_NOTE_GAP, isBoxed, type Element, type ElementId } from '@livediagram/diagram';
 
 // Inserting a note BETWEEN two notes (spec/139). An event-storming wall is a
 // left-to-right timeline, so "this happened before that" is the whole
@@ -81,9 +81,7 @@ type FindArgs = {
   // new from the palette. They are the thing being INSERTED, so they are out
   // of the reckoning entirely: they neither define the row (they are sitting
   // under the cursor, where they would otherwise be their own neighbours) nor
-  // get pushed aside to make room for their own arrival. More than one when a
-  // host is dragging the notes docked to it (spec/139 Phase 7) — a cluster is
-  // one thing in this grammar.
+  // get pushed aside to make room for their own arrival.
   excludeIds?: ReadonlySet<ElementId>;
   // The slot currently on offer, if any. Passed back in so the offer sticks
   // through a shaky hand (see SLOT_HYSTERESIS).
@@ -106,11 +104,6 @@ const SLOT_HYSTERESIS = 32;
 // The vertical padding on the insertion marker, so it reads as a line THROUGH
 // the board rather than one that stops at the outermost note.
 const MARKER_PADDING = 40;
-
-// Are these two the halves of a docked pair, in either order?
-function isSeam(a: Element, b: Element): boolean {
-  return dockOf(a)?.hostId === b.id || dockOf(b)?.hostId === a.id;
-}
 
 function rowContains(el: Element & { y: number; height: number }, cursorY: number): boolean {
   const slack = el.height * ROW_TOLERANCE_RATIO;
@@ -173,19 +166,13 @@ function stillInside(slot: InsertionSlot, cursorX: number, cursorY: number, elem
 // board opens there. Boxed elements answer with their left edge; an arrow
 // travels exactly when both its ends do. A locked element never travels — the board opens around it.
 //
-// Shared by the Alt insertion (spec/139 Phase 5) and the anchor-add ripple
+// Shared by the Alt insertion (spec/139 Phase 5) and the next-note ripple
 // (Phase 7), which are the same act seen twice: make room HERE, by this much.
 export function travellingIdsFrom(elements: Element[], atX: number): Set<ElementId> {
   const movingIds = new Set<ElementId>();
   for (const el of elements) {
     if (!movable(el) || !isBoxed(el)) continue;
-    // A docked note answers with its HOST's left edge (spec/139 Phase 7): the
-    // pair travels whole or stays whole, and is never torn in half by a point
-    // that falls inside its seam.
-    const host = dockOf(el)?.hostId;
-    const hostEl = host ? elements.find((h) => h.id === host) : undefined;
-    const anchorX = hostEl && isBoxed(hostEl) ? hostEl.x : el.x;
-    if (anchorX >= atX) movingIds.add(el.id);
+    if (el.x >= atX) movingIds.add(el.id);
   }
   // Arrows resolve after the boxes, because a pinned arrow travels exactly
   // when the elements it connects do.
@@ -221,15 +208,7 @@ export function findInsertionSlot({
   // has no "between" to speak of, you can just drop there.
   const pair = row
     .map((el, i) => ({ left: row[i - 1], right: el }))
-    .find(
-      ({ left, right }) =>
-        !!left &&
-        cursorX >= left.x + left.width &&
-        cursorX <= right.x &&
-        // A seam is a JOIN, not a gap (spec/139 Phase 7): the two halves of a
-        // docked pair are one phrase, and nothing goes between them.
-        !isSeam(left, right),
-    );
+    .find(({ left, right }) => !!left && cursorX >= left.x + left.width && cursorX <= right.x);
   const left = pair?.left;
   const right = pair?.right;
   if (!left || !right) return null;

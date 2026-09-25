@@ -81,29 +81,26 @@ nothing to switch on.
 - **One gap, always the same.** Stickies sit a finger's width apart, and the
   notes already there never move to make room. Drop a note somewhere with
   nothing near it and it stays exactly where you put it.
-- **Drag several notes together** and they travel as one block: whatever place
-  the block takes, the notes keep the spacing they already had.
+- **Drag several notes together** and the note you grabbed takes the place,
+  just as it would alone; the others follow and keep the spacing they already
+  had.
 - Hold **Cmd / Ctrl** while dragging to ignore the lanes for that one note.
 
 Lanes are never exported: they are there to help you place a note, not to be
 part of the picture.
 
-## Anchoring a command to its event
+## Adding the next note
 
-The notation has adjacencies of its own, and the board knows them:
+The notation reads left to right, and some notes have an obvious neighbour:
 
-- a **command** belongs before the **domain event** it triggers,
-- a **command** belongs after the **policy** that issues it,
-- a **policy** belongs after the **domain event** it reacts to.
+- a **command** comes before the **domain event** it triggers,
+- a **policy** comes after the **domain event** it reacts to,
+- a **command** comes after the **policy** that issues it.
 
-Hover or select a note and any free face it has offers a small hollow dot.
-Click it and the matching note arrives already anchored, open for typing. You
-can also drag a loose note near a compatible face — it snaps into place and two
-small dots appear in the seam to show the two are one phrase. Drag it away
-again to let it go, or right-click it and choose **Undock**.
-
-Move the note a command is anchored to and the command travels with it. Delete
-it and the command simply becomes a note again — nothing is lost.
+Hover or select a note and a button appears on each side that has one. Click
+it and the matching note is added right beside it, one gap away, open for
+typing. If something is already there, the board makes room. The new note is an
+ordinary note: move it, delete it or change its kind like any other.
 
 ## Adding notes from a photo of the wall
 

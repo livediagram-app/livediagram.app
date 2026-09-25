@@ -1487,28 +1487,6 @@ export function PasteMenuIcon() {
   );
 }
 
-// Undock (spec/139 Phase 7): two panels pulling apart, with the seam's dots
-// between them — the relation being let go, not a note being deleted.
-export function UndockMenuIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.7"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <rect x="2.5" y="7" width="7" height="10" rx="1" />
-      <rect x="14.5" y="7" width="7" height="10" rx="1" />
-      <circle cx="10.6" cy="12" r="0.9" fill="currentColor" stroke="none" />
-      <circle cx="13.4" cy="12" r="0.9" fill="currentColor" stroke="none" />
-    </svg>
-  );
-}
-
 // Colour-category marks (spec/09 Colours). "Text", "Background", "Border" and
 // "Heading" are four labels of similar length and shape; in a dense menu the
 // glyph is what separates them at a glance, before anyone reads a word. Each

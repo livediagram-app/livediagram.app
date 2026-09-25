@@ -96,10 +96,7 @@ type Tab = {
 //                            / document / stadium / actor / cloud / browser / monitor / laptop
 //                            / phone / tablet)
 //   TextElement
-//   StickyElement    (optionally esKind — the event-storming note kind — and
-//                     esDock { hostId, side }: the note this one is docked to
-//                     on an event-storming board, spec/139 Phase 7. Stored on
-//                     the DOCKED note; the host carries no back-reference.)
+//   StickyElement    (optionally esKind — the event-storming note kind, spec/139)
 //   ImageElement     (boxed, references an R2-stored bitmap by imageId, see spec/19)
 //   ArrowElement     (from + to Endpoints, arrowStyle, arrowheadSize, optional label)
 //   FreehandElement  (boxed, carries a normalised polyline + optional auto-close flag for

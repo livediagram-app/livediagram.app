@@ -25,8 +25,7 @@ import { BoxedElementView } from '@/components/canvas/BoxedElementView';
 import { LaserOverlay } from '@/components/canvas/LaserOverlay';
 import { UnionResizeHandles } from '@/components/canvas/element-parts';
 import { QuickConnectRing } from '@/components/canvas/QuickConnectRing';
-import { DockSeams } from '@/components/canvas/DockSeams';
-import { DockAnchors } from '@/components/canvas/DockAnchors';
+import { NextNoteButtons } from '@/components/canvas/NextNoteButtons';
 import { usePhotoDraftView } from '@/lib/photo-draft-preview';
 import { RemoteCursor } from '@/components/canvas/RemoteCursor';
 import { useInsertShift } from '@/hooks/canvas/useInsertShift';
@@ -175,7 +174,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     showUnionResize,
     tabFont,
     tabLocked,
-    tabThemeId,
     tabSummaries,
     unionResizeBounds,
     unionResizePrimaryId,
@@ -316,14 +314,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
         <svg className="absolute" style={{ width: 0, height: 0, overflow: 'visible' }} aria-hidden>
           <ArrowDefs />
         </svg>
-      ) : null}
-
-      {/* Anchor docking (spec/139 Phase 7): the two dots in every docked
-          pair's seam, plus the pair a drag is currently offering. Drawn
-          BEFORE the notes so a note that overlaps one covers it, which is the
-          truth — the dots live in the seam, not on the paper. */}
-      {props.esBoard ? (
-        <DockSeams elements={elements} tabThemeId={tabThemeId} insertShift={insertShift} />
       ) : null}
 
       {/* Render elements in their natural array order so
@@ -561,16 +551,16 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
         />
       ) : null}
 
-      {/* …and the affordances on the host you are pointing at or have
-          selected. They stand down while any drag is in hand: the board is
-          the drag's for the duration. */}
-      {props.esBoard && props.onAddDockedNote ? (
-        <DockAnchors
+      {/* The next-note buttons on the note you are pointing at or have
+          selected (spec/139 Phase 7). They stand down while any drag is in
+          hand: the board is the drag's for the duration. */}
+      {props.esBoard && props.onAddNextNote ? (
+        <NextNoteButtons
           elements={elements}
           selectedId={selectedId}
           blocked={readOnly || tabLocked || props.createBlocked === true || insertShift.animates}
           zoom={viewportZoom}
-          onAdd={props.onAddDockedNote}
+          onAdd={props.onAddNextNote}
         />
       ) : null}
 

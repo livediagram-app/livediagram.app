@@ -2,8 +2,8 @@
 import { cleanup, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
-  dockedBounds,
-  ES_DOCK_SEAM_PX,
+  ES_NOTE_GAP,
+  nextNoteBounds,
   type BoxedElement,
   type Element,
   type StickyElement,
@@ -11,14 +11,15 @@ import {
 } from '@livediagram/diagram';
 import { track } from '@/lib/telemetry';
 import { insertElementAt, type InsertionSlot } from '@/lib/insert-between';
-import { useDockActions } from './useDockActions';
+import { useNoteActions } from './useNoteActions';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn(), titleCaseType: (s: string) => s }));
 
-// The three acts of docking (spec/139 Phase 7), through the hook that commits
-// them. The placement rules are pinned in lib/dock-add.test.ts; what is tested
-// here is the ACT: what the catalogue decides, what the board commits, what
-// the gate refuses, and that a note arrives through the one builder.
+// The note acts on an event-storming board (spec/139), through the hook that
+// commits them. Next-note placement is pinned in lib/next-note-add.test.ts;
+// what is tested here is the ACT: what the catalogue decides, what the board
+// commits, what the gate refuses, and that a note arrives through the one
+// builder.
 
 function note(id: string, kind: string, x: number, y = 500): StickyElement {
   return {
@@ -36,12 +37,12 @@ function note(id: string, kind: string, x: number, y = 500): StickyElement {
 function harness(elements: Element[], over: { createBlocked?: boolean } = {}) {
   let live = elements;
   // One "commit" per undoable step, counted: the whole claim is that an
-  // anchor-add (ripple included) is ONE.
+  // add (ripple included) is ONE.
   let steps = 0;
   const edited: string[] = [];
   const tab = { id: 't', name: 'Board', kind: 'event-storming', elements: live } as Tab;
   const view = renderHook(() =>
-    useDockActions({
+    useNoteActions({
       activeTab: {
         ...tab,
         get elements() {
@@ -80,41 +81,45 @@ function harness(elements: Element[], over: { createBlocked?: boolean } = {}) {
   };
 }
 
-const host = note('e', 'domain-event', 1000);
+const event = note('e', 'domain-event', 1000);
 
 afterEach(() => {
   cleanup();
   vi.mocked(track).mockClear();
 });
 
-describe('addDockedNote', () => {
-  it('adds the note the FACE names, docked and open for typing', () => {
-    const h = harness([host]);
-    h.api().addDockedNote('e', 'before');
+describe('addNextNote', () => {
+  it('adds the note the SIDE names, one gutter beside and open for typing', () => {
+    const h = harness([event]);
+    h.api().addNextNote('e', 'before');
     const added = h.added();
     expect(added.esKind).toBe('command');
-    expect(added.esDock).toEqual({ hostId: 'e', side: 'before' });
-    expect(added).toMatchObject(dockedBounds(host, 'before', 'command'));
+    expect(added).toMatchObject(nextNoteBounds(event, 'before', 'command'));
     expect(h.edited).toEqual([added.id]);
   });
 
-  it('adds a policy on the other face of the same event', () => {
-    const h = harness([host]);
-    h.api().addDockedNote('e', 'after');
+  it('keeps no relation between the two notes', () => {
+    const h = harness([event]);
+    h.api().addNextNote('e', 'before');
+    expect(h.added()).not.toHaveProperty('esDock');
+  });
+
+  it('adds a policy on the other side of the same event', () => {
+    const h = harness([event]);
+    h.api().addNextNote('e', 'after');
     expect(h.added().esKind).toBe('policy');
   });
 
   it('adds a command after a policy', () => {
     const policy = { ...note('p', 'policy', 2000), width: 300, height: 180 } as StickyElement;
     const h = harness([policy]);
-    h.api().addDockedNote('p', 'after');
+    h.api().addNextNote('p', 'after');
     expect(h.added().esKind).toBe('command');
-    expect(h.added().esDock).toEqual({ hostId: 'p', side: 'after' });
   });
 
   it('mints the note through the ONE builder — stationery and all', () => {
-    const h = harness([host]);
-    h.api().addDockedNote('e', 'after');
+    const h = harness([event]);
+    h.api().addNextNote('e', 'after');
     const added = h.added();
     // A policy is WIDE, fixed, auto-fitting, centred, tilted, and carries the
     // notation's colour — none of which this hook decides.
@@ -130,86 +135,57 @@ describe('addDockedNote', () => {
     expect(Math.abs(added.rotation ?? 0)).toBeLessThanOrEqual(1.1);
   });
 
-  it('refuses a face that is already taken', () => {
-    const taken = note('c', 'command', dockedBounds(host, 'before', 'command').x);
-    const h = harness([host, { ...taken, esDock: { hostId: 'e', side: 'before' } } as Element]);
-    h.api().addDockedNote('e', 'before');
-    // The affordance is only offered on a free face, but a peer can take one
-    // between the render and the click — so the ACT refuses too, rather than
-    // stacking a second note on the same spot.
-    expect(h.steps()).toBe(0);
-  });
-
-  it('refuses to dock a second note onto an occupied face', () => {
-    const taken = note('c', 'command', dockedBounds(host, 'before', 'command').x);
-    const h = harness([
-      host,
-      { ...taken, esDock: { hostId: 'e', side: 'before' } } as Element,
-      note('c2', 'command', 0, 0),
-    ]);
-    h.api().dockTo('c2', 'e', 'before');
-    expect(h.steps()).toBe(0);
-  });
-
   it('opens the board in the SAME step when the spot is taken', () => {
-    const face = dockedBounds(host, 'after', 'policy');
-    const squatter = note('sq', 'domain-event', face.x);
-    const h = harness([host, squatter]);
-    h.api().addDockedNote('e', 'after');
+    const spot = nextNoteBounds(event, 'after', 'policy');
+    const squatter = note('sq', 'domain-event', spot.x);
+    const h = harness([event, squatter]);
+    h.api().addNextNote('e', 'after');
     expect(h.steps()).toBe(1);
-    expect(h.byId('sq').x).toBe(face.x + face.width + ES_DOCK_SEAM_PX);
-    expect(h.added()).toMatchObject({ x: face.x, y: face.y });
+    expect(h.byId('sq').x).toBe(spot.x + spot.width + ES_NOTE_GAP);
+    expect(h.added()).toMatchObject({ x: spot.x, y: spot.y });
   });
 
-  it('does nothing on a host that is not a workshop note', () => {
+  it('does nothing on a side the notation has no next note for', () => {
+    const h = harness([event, note('c', 'command', 0, 0)]);
+    h.api().addNextNote('c', 'before');
+    expect(h.steps()).toBe(0);
+  });
+
+  it('does nothing on an element that is not a workshop note', () => {
     const h = harness([
       { id: 's', type: 'shape', shape: 'square', x: 0, y: 0, width: 9, height: 9 } as Element,
     ]);
-    h.api().addDockedNote('s', 'before');
+    h.api().addNextNote('s', 'before');
     expect(h.steps()).toBe(0);
   });
 
   it('refuses in a read-only / locked / blocked-layer session', () => {
-    const h = harness([host], { createBlocked: true });
-    h.api().addDockedNote('e', 'before');
+    const h = harness([event], { createBlocked: true });
+    h.api().addNextNote('e', 'before');
     expect(h.steps()).toBe(0);
     expect(track).not.toHaveBeenCalled();
   });
 
   it('reports the act and the note', () => {
-    const h = harness([host]);
-    h.api().addDockedNote('e', 'before');
-    expect(track).toHaveBeenCalledWith('Canvas', 'Used', 'DockAdd');
+    const h = harness([event]);
+    h.api().addNextNote('e', 'before');
+    expect(track).toHaveBeenCalledWith('Canvas', 'Used', 'AddNextNote');
     expect(track).toHaveBeenCalledWith('Element', 'Added', 'Sticky');
   });
 });
 
-describe('dockTo / undock', () => {
-  const loose = note('c', 'command', 0, 0);
-
-  it('docks a note already on the board, in one step', () => {
-    const h = harness([host, loose]);
-    h.api().dockTo('c', 'e', 'before');
+describe('setEsKindOf', () => {
+  it('changes the kind of a note in one step', () => {
+    const h = harness([event]);
+    h.api().setEsKindOf('e', 'hotspot');
     expect(h.steps()).toBe(1);
-    expect(h.byId('c').esDock).toEqual({ hostId: 'e', side: 'before' });
-    expect(h.byId('c')).toMatchObject(dockedBounds(host, 'before', 'command'));
-    expect(track).toHaveBeenCalledWith('Canvas', 'Used', 'Dock');
+    expect(h.byId('e').esKind).toBe('hotspot');
+    expect(track).toHaveBeenCalledWith('Canvas', 'Used', 'ChangeNoteKind');
   });
 
-  it('undocks one, leaving it exactly where it sits', () => {
-    const h = harness([host, loose]);
-    h.api().dockTo('c', 'e', 'before');
-    const at = h.byId('c').x;
-    h.api().undock('c');
-    expect('esDock' in h.byId('c')).toBe(false);
-    expect(h.byId('c').x).toBe(at);
-    expect(track).toHaveBeenCalledWith('Canvas', 'Used', 'Undock');
-  });
-
-  it('refuses both when the session cannot edit', () => {
-    const h = harness([host, loose], { createBlocked: true });
-    h.api().dockTo('c', 'e', 'before');
-    h.api().undock('c');
+  it('refuses when the session cannot edit', () => {
+    const h = harness([event], { createBlocked: true });
+    h.api().setEsKindOf('e', 'hotspot');
     expect(h.steps()).toBe(0);
   });
 });

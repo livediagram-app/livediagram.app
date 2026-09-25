@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { type Element, type StickyElement } from '@livediagram/diagram';
 import type { ShapeBounds } from '@/lib/canvas';
-import { landNoteInSlot, resolveNoteInsertion } from './note-insertion-drag';
+import { isSingleNoteDrag, landNoteInSlot, resolveNoteInsertion } from './note-insertion-drag';
 
 function note(id: string, x: number, y = 0): StickyElement {
   return { id, type: 'sticky', x, y, width: 200, height: 200, label: id } as StickyElement;
@@ -40,6 +40,21 @@ function resolve(overrides: Partial<Parameters<typeof resolveNoteInsertion>[0]> 
     ...overrides,
   });
 }
+
+describe('isSingleNoteDrag', () => {
+  it('is one note dragged alone', () => {
+    expect(isSingleNoteDrag(BOARD, 'drag', boundsOf(BOARD, 'drag'))).toBe(true);
+  });
+
+  it('is not a selection of notes', () => {
+    expect(isSingleNoteDrag(BOARD, 'drag', boundsOf(BOARD, 'drag', 'a'))).toBe(false);
+  });
+
+  it('is not a shape', () => {
+    const shape = { id: 's', type: 'shape', x: 0, y: 0, width: 10, height: 10 } as Element;
+    expect(isSingleNoteDrag([shape], 's', boundsOf([shape], 's'))).toBe(false);
+  });
+});
 
 describe('resolveNoteInsertion', () => {
   it('offers the gap the dragged note is aiming at', () => {

@@ -500,11 +500,10 @@ describe('findInsertionSlot — on a lanes-on board', () => {
   });
 });
 
-// Anchor docking (spec/139 Phase 7) meets the ripple. A docked pair is one
-// phrase: the seam between the two notes is a JOIN, not a gap you can insert
-// into, and the pair travels whole or not at all.
-describe('findInsertionSlot — docked pairs', () => {
-  const esNote = (id: string, kind: string, x: number, over: Record<string, unknown> = {}) =>
+// Two notes one gutter apart are two notes (spec/139 Phase 7: docking is
+// retired), so the gap between them is a gap like any other.
+describe('findInsertionSlot — notes a gutter apart', () => {
+  const esNote = (id: string, kind: string, x: number) =>
     ({
       id,
       type: 'sticky',
@@ -514,72 +513,15 @@ describe('findInsertionSlot — docked pairs', () => {
       y: 0,
       width: 200,
       height: 200,
-      ...over,
     }) as Element;
 
-  // command 784..984 | seam | event 1000..1200, then a loose event at 1472.
-  const CLUSTER: Element[] = [
-    esNote('c', 'command', 784, { esDock: { hostId: 'e', side: 'before' } }),
-    esNote('e', 'domain-event', 1000),
-    esNote('far', 'domain-event', 1472),
-  ];
-
-  it('never offers the seam as a gap', () => {
+  it('offers the gutter between a command and its event as a gap', () => {
     const slot = findInsertionSlot({
       cursorX: 992,
       cursorY: 100,
       incomingWidth: 200,
-      elements: CLUSTER,
+      elements: [esNote('c', 'command', 784), esNote('e', 'domain-event', 1000)],
     });
-    expect(slot).toBeNull();
-  });
-
-  it('still offers the real gap after the pair', () => {
-    const slot = findInsertionSlot({
-      cursorX: 1300,
-      cursorY: 100,
-      incomingWidth: 200,
-      elements: CLUSTER,
-    });
-    expect(slot?.leftId).toBe('e');
-    expect(slot?.rightId).toBe('far');
-  });
-
-  it('moves a whole cluster when its HOST is at or after the point', () => {
-    // Insert before the pair: the host is after the point, so both halves go.
-    const before: Element[] = [esNote('first', 'domain-event', 400), ...CLUSTER];
-    const slot = findInsertionSlot({
-      cursorX: 700,
-      cursorY: 100,
-      incomingWidth: 200,
-      elements: before,
-    })!;
-    // The point is the command's left edge, which is BEFORE the host — but the
-    // pair answers with the host, so both travel and neither is torn off.
-    expect(new Set(slot.shiftedIds)).toEqual(new Set(['c', 'e', 'far']));
-  });
-
-  it('leaves a whole cluster behind when its host is before the point', () => {
-    const slot = findInsertionSlot({
-      cursorX: 1300,
-      cursorY: 100,
-      incomingWidth: 200,
-      elements: CLUSTER,
-    })!;
-    expect(new Set(slot.shiftedIds)).toEqual(new Set(['far']));
-  });
-
-  it('takes a whole cluster out of the reckoning when the host is the one dragged', () => {
-    const board = [...CLUSTER, esNote('x', 'domain-event', 1700)];
-    const slot = findInsertionSlot({
-      cursorX: 1300,
-      cursorY: 100,
-      incomingWidth: 200,
-      elements: board,
-      excludeIds: new Set(['e', 'c']),
-    });
-    // With the pair out of it, the only notes left are `far` and `x`, and the
-    // cursor is not between them.
-    expect(slot).toBeNull();
+    expect(slot).toMatchObject({ leftId: 'c', rightId: 'e' });
   });
 });

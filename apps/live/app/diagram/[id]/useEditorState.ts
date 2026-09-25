@@ -57,7 +57,7 @@ import { useFavourites } from '@/hooks/persistence/useFavourites';
 import { useShortcutsEnabled } from '@/hooks/ui/useShortcutsEnabled';
 import { useEditorComments } from '@/hooks/collab/useEditorComments';
 import { useEditorDrag } from '@/hooks/canvas/useEditorDrag';
-import { useDockActions } from '@/hooks/canvas/useDockActions';
+import { useNoteActions } from '@/hooks/canvas/useNoteActions';
 import { usePhotoPicker } from '@/hooks/canvas/usePhotoPicker';
 import { warmBoundaryModel } from '@/lib/photo-model/client';
 import { usePhotoDraft } from '@/hooks/canvas/usePhotoDraft';
@@ -1733,9 +1733,9 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const photoPickerRef = photoPicker.inputRef;
   const openPhotoImport = photoPicker.open;
 
-  // Anchor docking (spec/139 Phase 7): add a note already docked to a host's
-  // free face, dock a loose one, undock one.
-  const dockActions = useDockActions({
+  // Note acts on an event-storming board (spec/139): add the next note beside
+  // one, change a note's kind.
+  const noteActions = useNoteActions({
     activeTab,
     createBlocked,
     layerInertIds,
@@ -2714,8 +2714,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     // insert-between preview (spec/139) never offers a slot the drop
     // would refuse.
     createBlocked,
-    // Anchor docking (spec/139 Phase 7).
-    ...dockActions,
+    // Note acts on an event-storming board (spec/139).
+    ...noteActions,
     // Photo import (spec/139 Phase 8): the draft run, whether the entry
     // points may be offered, and the hidden file input they open.
     photoDraft,

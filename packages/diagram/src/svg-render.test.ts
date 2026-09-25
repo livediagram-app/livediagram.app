@@ -660,53 +660,6 @@ describe('renderElementsToSvg — element shadows (spec/86)', () => {
     );
     expect(svg).not.toContain('feDropShadow');
   });
-
-  // Anchor docking (spec/139 Phase 7). Notation paints wherever a note paints
-  // — the caps precedent — so an exported picture of the board carries the
-  // relation rather than two notes that merely happen to be near each other.
-  describe('docked pairs', () => {
-    const esNote = (id: string, o: Record<string, unknown> = {}) =>
-      ({
-        id,
-        type: 'sticky',
-        esKind: 'domain-event',
-        fixedSize: true,
-        x: 0,
-        y: 0,
-        width: 200,
-        height: 200,
-        ...o,
-      }) as Tab['elements'][number];
-
-    it('draws the two seam dots for a docked pair', () => {
-      const svg = renderElementsToSvg(
-        tab([
-          esNote('h', { x: 1000, y: 500 }),
-          esNote('d', {
-            esKind: 'command',
-            x: 1000 - 16 - 200,
-            y: 500,
-            esDock: { hostId: 'h', side: 'before' },
-          }),
-        ]),
-      );
-      // One on each facing edge, at the pair's shared centre line.
-      expect(svg).toContain('cx="984" cy="600"');
-      expect(svg).toContain('cx="1000" cy="600"');
-    });
-
-    it('draws nothing for undocked notes', () => {
-      const svg = renderElementsToSvg(tab([esNote('a'), esNote('b', { x: 400 })]));
-      expect(svg).not.toContain('<circle');
-    });
-
-    it('draws nothing for a dock whose host is not in the export', () => {
-      const svg = renderElementsToSvg(
-        tab([esNote('d', { esKind: 'command', esDock: { hostId: 'gone', side: 'before' } })]),
-      );
-      expect(svg).not.toContain('<circle');
-    });
-  });
 });
 
 // The arrow caption (spec/09). The export used to emit a fixed 12px near-black

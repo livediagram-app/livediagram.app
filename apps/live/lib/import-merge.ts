@@ -1,4 +1,4 @@
-import { stripDanglingDocks, type Tab } from '@livediagram/diagram';
+import { migrateStoredElements, type Tab } from '@livediagram/diagram';
 
 // How an imported tab lands on top of the tab receiving it (spec/27).
 //
@@ -11,14 +11,12 @@ import { stripDanglingDocks, type Tab } from '@livediagram/diagram';
 // were all there, but the palette, the stationery and the note menu were
 // gone, with nothing to say why (spec/139). Without `layers`, every imported
 // element's `layerId` dangles and the bands it was organised into are lost.
-// Element-to-element references are the other half of "what must travel". A
-// file can arrive with a dock pointing at a host it does not contain (a
-// hand-edited export, a partial paste), and a relation to nothing is worse
-// than no relation — so the notes come in standalone instead.
+// A file is a stored tab like any other, so its elements take the same
+// migrations on the way in (retired groups and docks).
 export function mergeImportedTab(receiving: Tab, imported: Tab): Tab {
   return {
     ...receiving,
-    elements: stripDanglingDocks(imported.elements),
+    elements: migrateStoredElements(imported.elements),
     kind: imported.kind ?? receiving.kind,
     layers: imported.layers ?? receiving.layers,
     theme: imported.theme ?? receiving.theme,

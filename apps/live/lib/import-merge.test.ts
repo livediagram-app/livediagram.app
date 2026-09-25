@@ -38,9 +38,9 @@ describe('mergeImportedTab', () => {
   });
 
   // Timeline lanes are BOARD state (spec/139 Phase 6): a board exported with
-  // A dock pointing at a host the file does not contain (a hand-edited
-  // export, a partial paste) must not come in as a relation to nothing.
-  it('frees a docked note whose host is not in the file', () => {
+  // Anchor docking is retired (spec/139 Phase 7): a file exported while it
+  // existed brings its relations in, and they are dropped on the way.
+  it('drops a stored dock relation', () => {
     const imported = tab({
       elements: [
         {
@@ -51,32 +51,11 @@ describe('mergeImportedTab', () => {
           y: 0,
           width: 200,
           height: 200,
-          esDock: { hostId: 'missing', side: 'before' },
+          esDock: { hostId: 'h', side: 'before' },
         },
-      ] as Tab['elements'],
+      ] as unknown as Tab['elements'],
     });
     const out = mergeImportedTab(tab(), imported);
-    expect('esDock' in (out.elements[0] as { esDock?: unknown })).toBe(false);
-  });
-
-  it('keeps a dock whose host came with it', () => {
-    const elements = [
-      { id: 'h', type: 'sticky', esKind: 'domain-event', x: 0, y: 0, width: 200, height: 200 },
-      {
-        id: 'd',
-        type: 'sticky',
-        esKind: 'command',
-        x: -216,
-        y: 0,
-        width: 200,
-        height: 200,
-        esDock: { hostId: 'h', side: 'before' },
-      },
-    ] as Tab['elements'];
-    const out = mergeImportedTab(tab(), tab({ elements }));
-    expect((out.elements[1] as { esDock?: unknown }).esDock).toEqual({
-      hostId: 'h',
-      side: 'before',
-    });
+    expect(out.elements[0]).not.toHaveProperty('esDock');
   });
 });

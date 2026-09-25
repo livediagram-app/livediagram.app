@@ -1,5 +1,4 @@
-import { isBoxed, type Element } from '@livediagram/diagram';
-import { dragClusterIds, isSingleNoteDrag } from './note-dock-drag';
+import { isBoxed, type Element, type ElementId } from '@livediagram/diagram';
 import type { ShapeBounds } from '@/lib/canvas';
 import {
   canInsertBetweenOn,
@@ -7,6 +6,19 @@ import {
   type InsertionGate,
   type InsertionSlot,
 } from '@/lib/insert-between';
+
+// Is this drag ONE workshop note? The note grammar's single-note gestures
+// (insert between, the lanes' insertion flag) all ask this same question, so
+// they all get the same answer.
+export function isSingleNoteDrag(
+  elements: Element[],
+  primaryId: ElementId,
+  startBounds: ReadonlyMap<string, ShapeBounds>,
+): boolean {
+  if (startBounds.size !== 1 || !startBounds.has(primaryId)) return false;
+  const primary = elements.find((el) => el.id === primaryId);
+  return primary?.type === 'sticky';
+}
 
 // Inserting a note that is ALREADY on the board between two others (spec/139)
 // — the second entry point of the Alt gesture, beside the palette drag. The
@@ -55,8 +67,7 @@ export function resolveNoteInsertion({
   // Drag-duplicate is already holding this gesture; two meanings on one drag
   // would make both unpredictable.
   if (shiftHeld) return null;
-  // One note at a time — alone, or carrying what is docked to it. A
-  // multi-selection has no single thing to insert, and the gesture is about
+  // One note at a time. A multi-selection has no single thing to insert, and the gesture is about
   // the note grammar rather than the canvas at large: a shape, an icon or an
   // arrow drags exactly as it always has.
   if (!isSingleNoteDrag(elements, primaryId, startBounds)) return null;
@@ -75,8 +86,7 @@ export function resolveNoteInsertion({
     incomingWidth: start.width,
     elements,
     inertIds,
-    // A host drags its cluster, and a cluster is one thing to insert.
-    excludeIds: dragClusterIds(elements, primaryId),
+    excludeIds: new Set([primaryId]),
     active,
   });
 }

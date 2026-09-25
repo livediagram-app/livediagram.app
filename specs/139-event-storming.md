@@ -337,8 +337,7 @@ board's behaviour changes at all.
   right.
 - **Everything to the right moves, not just the row.** A command above
   its event and a policy below it stay lined up with the event they
-  annotate. Boxed elements move by `x` (a docked cluster moves whole with
-  its host, see Phase 7); a free arrow entirely at or after the point travels, one that straddles
+  annotate. Boxed elements move by `x`; a free arrow entirely at or after the point travels, one that straddles
   it stretches (each endpoint keeps the note it was drawn between);
   pinned arrows need no help at all. **Locked elements do not move** —
   the board opens around them, because a locked element is one the
@@ -453,7 +452,7 @@ record who asked for what.
 | **Dropped ON a note in the row**     | Resolved to the nearest slot, however far it is. Sliding a note back until it touches the one before it is how an author says "right behind this", and the gesture overshoots by nature; a footprint lying on another note is not a resting place on a board of paper.                                                                                                                                               |
 | **The gutter**                       | Always `ES_NOTE_GAP` (16). Not measured from the board any more: one number, relative to the notes in the row, is what makes the places predictable.                                                                                                                                                                                                                                                                 |
 | **Capture**                          | Half a standard note (100px) on x, the lane tolerance on y; the note OWN row ranks first and distance decides within a rank (an aligned column and a brick stay equals); the slot is drawn before the drop.                                                                                                                                                                                                          |
-| **Precedence**                       | An open Alt slot, then Cmd/Ctrl free placement, then a dock candidate, then these rules.                                                                                                                                                                                                                                                                                                                             |
+| **Precedence**                       | An open Alt slot, then Cmd/Ctrl free placement, then these rules.                                                                                                                                                                                                                                                                                                                                                    |
 
 **Non-square stationery** (provisional, awaiting a ruling): a wide or small note
 takes a slot like any other. The first slot after a neighbour is that
@@ -571,13 +570,13 @@ of it lives in `rhythmSlots` and `gutterCentres` in
   about x and says it where the note is actually going.
 - **Notes only** — one or many. A selection of notes snaps by the note in hand
   (see the rules table); a shape, an icon, an arrow or an image drags exactly as
-  it does on every other board. The Alt insertion and the dock still want
-  exactly one note, which is their own rule.
+  it does on every other board. The Alt insertion still wants exactly one
+  note, which is its own rule.
 - **Precedence** (top rung wins): an open insertion slot (Alt, Phase 5) → free
-  placement (Cmd/Ctrl, spec/60) → a dock candidate (Phase 7) → the lane (y) and
+  placement (Cmd/Ctrl, spec/60) → the lane (y) and
   the neighbours (x) → the ordinary alignment / distribution snap for whichever
   axis is left. Shift-duplicate (spec/80)
-  suppresses the slot and the dock, and the clone still lands on a lane.
+  suppresses the slot, and the clone still lands on a lane.
 - **The preview never touches the document** (the Phase 5 rule): the lit lane
   is published on a module-level store and rendered as an overlay; the drop is
   the first thing that writes.
@@ -613,86 +612,69 @@ overlay's ink is the ALIGNMENT GUIDES' own derivation
 (`elementStroke ?? deriveTextColorForBg(backgroundColor)`) rather than a second
 vocabulary, which is also what keeps it legible on a dark wall.
 
-## Phase 7 (shipped): anchor docking
+## Phase 7 (shipped, re-ruled): next-note buttons
 
-The notation's own adjacencies become something the board KNOWS, rather than
-something the eye infers from two notes being near each other. A **Command** can
-be added standalone, **docked to the Domain Event it triggers**, or **docked to
-the Policy that issues it**; a **Policy** can be standalone or **docked to the
-Domain Event it reacts to**. A docked pair sits with a small seam between the
-two notes and two anchor dots — one on each facing edge — in that seam.
+A hovered or selected note offers a button on each side that has a **next
+note**: the note the notation most likely puts there. Click it and that note is
+added beside this one, on the row's rhythm, open for typing. The two notes are
+then just two notes: the board keeps no relation between them.
 
-- **The three pairings, and their sides, are a CATALOGUE** (`ES_DOCKINGS`), one
-  row per pairing, because the sides are notation rather than geometry and a
-  workshop that reads its wall the other way should cost one line:
+- **The pairs, and their sides, are a CATALOGUE** (`ES_NEXT_NOTES`), one row per
+  pair, because the sides are notation rather than geometry and a workshop that
+  reads its wall the other way should cost one line:
 
-  | docked note | host         | side   | reads as                                 |
-  | ----------- | ------------ | ------ | ---------------------------------------- |
-  | Command     | Domain event | before | the intent, then what happened           |
-  | Command     | Policy       | after  | "whenever X then Y", Y being the command |
-  | Policy      | Domain event | after  | the event, then the reaction it fires    |
+  | on this note | side   | the next note | reads as                                 |
+  | ------------ | ------ | ------------- | ---------------------------------------- |
+  | Domain event | before | Command       | the intent, then what happened           |
+  | Domain event | after  | Policy        | the event, then the reaction it fires    |
+  | Policy       | after  | Command       | "whenever X then Y", Y being the command |
 
   Those are Brandolini's own placements: a command sits to the LEFT of the event
-  it causes (cause before effect, along the same left-to-right time axis the
-  board already means), and both a policy and the command a policy issues sit to
-  the RIGHT of what they follow.
+  it causes (cause before effect, along the left-to-right time axis the board
+  already means), and both a policy and the command a policy issues sit to the
+  RIGHT of what they follow. Where the notation allows several next notes, the
+  catalogue holds only the most likely one.
 
-- **The docked note holds the relation** (`StickyElement.esDock = { hostId,
-side }`), and the host holds nothing. So deleting a host needs no write to its
-  neighbours, a copy of a docked note alone is simply a new piece of paper, and
-  every reader derives the cluster the same way. A docked note whose host has
-  gone becomes standalone on the next commit that notices
-  (`stripDanglingDocks`, run by `afterElementsRemoved` on every removal path).
-- **Magnets, not connectors.** The two dots in the seam say "these two are one
-  phrase"; nothing is drawn between them. A line would be an arrow, and an arrow
-  on this board means something else.
-- **Three ways to dock, one result.** Click a host's anchor affordance and the
-  compatible note is added already docked and open for typing; drag a note
-  within `ES_DOCK_SNAP_PX` of a compatible free face and it docks on the drop;
-  drag a docked note away and it undocks on the drop. All three commit as ONE
-  undoable step through the ordinary choke point.
-- **The affordances earn their place.** A hollow dot on each FREE dockable face
-  of a hovered or selected host — at most two per host, never more, each naming
-  its act ("Add a command before this event"). Spec/139 retired the four
-  quick-connect pluses on this board as chrome; these are different in kind,
-  because each one is a sentence of the notation rather than a generic "connect
-  something here".
-- **A host carries its cluster.** Moving a host moves everything docked to it;
-  a docked note moved on its own leaves the host where it is (and undocks if it
-  goes far enough). A multi-selection that already contains both never
-  double-moves the docked note.
-- **Precedence**: a dock candidate sits BELOW an open insertion slot and below
-  free placement (Cmd/Ctrl), and ABOVE the lanes and the alignment snap. Shift
-  (drag-duplicate) suppresses docking entirely.
-- **Lanes and docking agree by construction**: a docked note takes its y from
-  its HOST (centred on it), so the host is what lands on the lane and the
-  cluster stays one row.
-- **The insertion ripple treats a cluster as one thing**:
-  it travels whole when the HOST's left edge is at or after the insertion
-  point, and the seam is never offered as a gap to insert into — it is not a
-  gap, it is a join.
-- **Exports paint the seam** (the caps precedent: notation paints wherever a
-  note paints), so an SVG or PNG of the board carries the relation. Mermaid /
-  Markdown / Excalidraw ignore it.
-- **Telemetry:** `Canvas / Used / DockAdd` (added from an anchor),
-  `Canvas / Used / Dock` and `Canvas / Used / Undock` (by drag or menu),
-  alongside the ordinary `Element / Added / Sticky` when a note is minted.
-  **What shipped, in numbers.** `ES_DOCK_SEAM_PX` 16, `ES_DOCK_SNAP_PX` 40,
-  `ES_DOCK_DOT_R` 4. The model is
-  `packages/diagram/src/event-storming-dock.ts` (catalogue, geometry, cluster,
-  `dock` / `undock` / `stripDanglingDocks`); the acts are
-  `hooks/canvas/useDockActions.ts` with the placement decision in
-  `lib/dock-add.ts`; the drag rung is `hooks/canvas/note-dock-drag.ts` published
-  through `lib/dock-preview.ts`; the surfaces are
-  `components/canvas/DockSeams.tsx` (the dots, and the pair a drag is offering)
-  and `components/canvas/DockAnchors.tsx` (the affordances). The export draws the
-  same dots through the same `seamDots`.
+- **The added note is an ordinary note.** It lands one gutter (`ES_NOTE_GAP`)
+  beside the note it was added from and CENTRED on it vertically, so the 180-tall
+  prose kinds sit against a 200-tall square and still read as one row. If that
+  footprint is taken, the insertion ripple makes room in the same commit, so
+  the author sees the board behave exactly as the Alt gesture taught them. One
+  click is ONE undoable step through the ordinary choke point.
+- **The buttons earn their place.** At most two per note, only on the note you
+  are pointing at or have selected, and each names its act ("Add a command
+  before this domain event"). Spec/139 retired the four quick-connect pluses on
+  this board as chrome; these are different in kind, because each one is a
+  sentence of the notation rather than a generic "connect something here".
+- **No affordance where the add would be refused**: a view-only session, a
+  locked tab or note, a hidden or locked active layer, or any drag in hand.
+- **Telemetry:** `Canvas / Used / AddNextNote`, alongside the ordinary
+  `Element / Added / Sticky`.
+- **Not in v1:** the further next notes the notation has (an actor under a
+  command, a read model before it, an external system before an event, and the
+  second and third choices where there are several).
 
-- **Not in v1:** the further pairings the notation has (actor under a command,
-  read model before it, aggregate above a command–event pair, external system
-  before an event, hotspot on a corner) — each needs a `side` the geometry
-  does not know yet, and the aggregate needs a two-host relation. They are
-  listed in the plan so nobody re-derives them.
+**Where it lives.** The catalogue and the geometry are
+`packages/diagram/src/event-storming-next.ts` (`ES_NEXT_NOTES`,
+`nextNoteSides`, `nextNoteKind`, `nextNoteBounds`); the placement decision is
+`apps/live/lib/next-note-add.ts`; the act is `hooks/canvas/useNoteActions.ts`;
+the buttons are `components/canvas/NextNoteButtons.tsx`, lit by the hovered
+note published through `lib/note-hover.ts`.
+
+**Rulings:**
+
+- **2026-09-25 — "remove the drag-together feature and break the connectors
+  between the different types"**: anchor DOCKING is retired. It stored a
+  relation on the docked note (`esDock = { hostId, side }`), drew two dots in
+  the seam, docked a note dragged near a compatible face, undocked it when
+  pulled away, and made a host carry its docked notes when it moved. All of
+  that is gone: a note moves alone, a drag is placed by the lanes only, the
+  ripple treats every note as its own, the photo import lands notes unrelated,
+  and the export draws no dots. Relations already stored are dropped where a
+  stored tab enters the editor (`dropLegacyDocks`, beside
+  `migrateLegacyGroups` in the api worker's `rowToTab`, the offline store's tab
+  load and a file import), so no board keeps one. The buttons that added a
+  note already docked stay, and add an ordinary note.
 
 ## Phase 8 (shipped): import a photo of the wall
 
@@ -774,9 +756,7 @@ low-threshold capture surface can least afford.
   key; only the handwriting reading may use a server model, and only when one
   is configured.)_
 
-- **Placement composes the other two phases.** New notes land on the lanes when
-  lanes are on, and a pair the photo shows adjacent in a notation pairing lands
-  DOCKED. That is why photo import was built third: doing it first would have
+- **Placement composes the other two phases.** New notes land on the lanes. That is why photo import was built third: doing it first would have
   meant building its placement twice.
 - **A review step, then one undoable commit.** The dialog shows each note found
   over the photo and in a list, badged NEW / ON BOARD, with the text and kind

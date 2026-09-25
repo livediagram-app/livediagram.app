@@ -27,7 +27,7 @@ import { isCollabPanelShape } from './collab-shapes';
 import { isSelfDrawingShape } from './data-shapes';
 import { svgHeroCaption } from './svg-render-web';
 import { isWebComponentShape } from './web-components';
-import { defaultTextColor, deriveTextColorForBg, SELF_PAINTING_SHAPES } from './colors';
+import { defaultTextColor, SELF_PAINTING_SHAPES } from './colors';
 // Text/number primitives shared with the per-element emitters — re-exported
 // below so existing importers of this module keep resolving.
 import { labelMeasure, r2, wrapLabel, xmlEscape } from './svg-render-primitives';
@@ -102,8 +102,6 @@ import {
 import { googleFontsHref } from './fonts';
 import { getBuiltInTheme } from './themes';
 import { themeChartPalette } from './theme-presets';
-// Anchor docking (spec/139 Phase 7): the seam dots a docked pair carries.
-import { dockOf, ES_DOCK_DOT_R, seamDots } from './event-storming-dock';
 
 // Bounding box of the visible content. Arrows count via free endpoints; boxed
 // elements via their rectangle. Empty / degenerate tabs default to a page.
@@ -513,30 +511,6 @@ export function renderElementsToSvg(
       opacity < 1 ? `<g opacity="${r2(opacity)}">${inner.join('\n')}</g>` : inner.join('\n'),
     );
   }
-  // Anchor docking (spec/139 Phase 7): the two dots in each docked pair's
-  // seam. Notation paints wherever a note paints (the caps precedent), so an
-  // exported picture of the board carries the relation rather than showing two
-  // notes that merely happen to be close. Drawn last, over the bands, because
-  // a seam sits between notes and belongs to neither.
-  const dots = svgDockSeams(visible, bg);
-  if (dots) parts.push(dots);
   parts.push('</svg>');
   return parts.join('\n');
-}
-
-function svgDockSeams(elements: Element[], background: string): string {
-  const ink = deriveTextColorForBg(background);
-  const out: string[] = [];
-  for (const el of elements) {
-    const d = dockOf(el);
-    if (!d) continue;
-    const host = elements.find((h) => h.id === d.hostId);
-    if (!host || host.type === 'arrow' || el.type === 'arrow') continue;
-    for (const dot of seamDots(host, el, d.side)) {
-      out.push(
-        `<circle cx="${r2(dot.x)}" cy="${r2(dot.y)}" r="${ES_DOCK_DOT_R}" fill="${xmlEscape(ink)}" fill-opacity="0.55"/>`,
-      );
-    }
-  }
-  return out.join('\n');
 }

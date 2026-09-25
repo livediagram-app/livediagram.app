@@ -629,11 +629,9 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
 }
 
 // Every draft note is minted through the ONE builder, then takes the position
-// the reconciliation worked out and the relation the photo showed. Ids are
-// minted here so a pair the photo showed docked can point at each other.
+// the reconciliation worked out.
 function buildDraftNotes(additions: PhotoAddition[], activeTab: Tab): StickyElement[] {
-  const idByDetected = new Map<number, string>();
-  const built = additions.map((addition) => {
+  return additions.map((addition) => {
     const size = eventStormingNoteSize(addition.kind);
     const note = buildEventStormingNote(
       addition.kind,
@@ -648,16 +646,6 @@ function buildDraftNotes(additions: PhotoAddition[], activeTab: Tab): StickyElem
       height: size.height,
       esDraft: true,
     };
-    idByDetected.set(addition.detectedId, el.id);
     return el;
-  });
-
-  return built.map((el, i) => {
-    const dock = additions[i]!.dock;
-    if (!dock) return el;
-    const hostId =
-      dock.hostBoardId ??
-      (dock.hostDetectedId !== undefined ? idByDetected.get(dock.hostDetectedId) : undefined);
-    return hostId ? { ...el, esDock: { hostId, side: dock.side } } : el;
   });
 }

@@ -30,7 +30,6 @@ type BoardNote = {
   width: number;
   height: number;
   esKind?: string;
-  esDock?: { hostId: string; side: string };
 };
 type BoardTab = {
   elements: BoardNote[];
@@ -231,11 +230,10 @@ test('an ordinary diagram has no timeline lanes', async ({ page, pageErrors }) =
   expectNoPageErrors(pageErrors);
 });
 
-// Anchor docking (spec/139 Phase 7). The model is unit-tested to death; what
-// only a browser can answer is whether the affordance a host shows leads to a
-// docked note, whether a real drag docks and undocks one, and whether the
-// relation survives a round trip through the api.
-test('a command docks to the event it triggers, and survives a reload', async ({
+// The next-note buttons (spec/139 Phase 7). What only a browser can answer is
+// whether the button a note shows really adds the note beside it, and whether
+// the two stay two ordinary notes: dragging one leaves the other where it is.
+test('a next-note button adds a command before an event, and nothing ties them', async ({
   page,
   pageErrors,
 }) => {
@@ -246,50 +244,42 @@ test('a command docks to the event it triggers, and survives a reload', async ({
   await expect(notes).toHaveCount(3);
   await page.waitForTimeout(500);
 
-  // Select an event: its two free faces offer themselves. The MIDDLE one,
+  // Select an event: both of its sides offer a next note. The MIDDLE one,
   // because the first sits under the Explorer panel at this viewport and a
   // floating panel would swallow the click.
   await notes.nth(1).click();
   const before = page.getByRole('button', { name: /add a command before/i });
-  const after = page.getByRole('button', { name: /add a policy after/i });
   await expect(before).toBeVisible();
-  await expect(after).toBeVisible();
+  await expect(page.getByRole('button', { name: /add a policy after/i })).toBeVisible();
 
-  // Click the west face: a command arrives already docked, open for typing.
+  const start = await boardTab(page);
   await before.click();
   await expect(notes).toHaveCount(4);
   await page.keyboard.type('Place order');
   await page.keyboard.press('Escape');
 
-  const docked = await boardTab(page);
-  const command = stickies(docked).find((el) => el.esKind === 'command')!;
-  expect(command.esDock?.side).toBe('before');
-  // Seam dots are painted for the pair.
-  await expect(page.locator('[data-testid="dock-seams"] circle')).toHaveCount(2);
+  const added = await boardTab(page);
+  const command = stickies(added).find((el) => el.esKind === 'command')!;
+  // One gutter to the left of the event it was added from, the same height.
+  const event = stickies(added).find(
+    (el) => el.esKind === 'domain-event' && el.x === command.x + command.width + 16,
+  );
+  expect(event).toBeDefined();
+  expect(stickies(added)).toHaveLength(stickies(start).length + 1);
+  expect(command).not.toHaveProperty('esDock');
 
-  // The relation is board data: it comes back with the board.
-  await page.reload();
-  await canvas.waitFor();
-  await expect(page.locator('[data-testid="dock-seams"] circle')).toHaveCount(2);
-
-  // Dragging the host carries the command with it.
+  // Drag the event away: the command stays exactly where it was.
   await page.waitForTimeout(500);
-  const hostId = command.esDock!.hostId;
-  const hostBox = (await notes.nth(1).boundingBox())!;
-  await page.mouse.move(hostBox.x + hostBox.width / 2, hostBox.y + hostBox.height / 2);
+  const box = (await notes.nth(1).boundingBox())!;
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
   await page.mouse.down();
-  await page.mouse.move(hostBox.x + hostBox.width / 2, hostBox.y + hostBox.height / 2 + 260, {
-    steps: 10,
-  });
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2 + 260, { steps: 10 });
   await page.mouse.up();
   const moved = await boardTab(page);
-  const movedHost = stickies(moved).find((el) => el.id === hostId)!;
   const movedCommand = stickies(moved).find((el) => el.id === command.id)!;
-  expect(movedCommand.y - movedHost.y).toBeCloseTo(
-    command.y - stickies(docked).find((el) => el.id === hostId)!.y,
-    3,
-  );
-  expect(movedCommand.esDock).toEqual(command.esDock);
+  const movedEvent = stickies(moved).find((el) => el.id === event!.id)!;
+  expect(movedEvent.y).not.toBe(event!.y);
+  expect({ x: movedCommand.x, y: movedCommand.y }).toEqual({ x: command.x, y: command.y });
 
   expectNoPageErrors(pageErrors);
 });

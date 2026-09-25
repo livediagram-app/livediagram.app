@@ -153,7 +153,6 @@ type NoteBox = {
   y: number;
   width: number;
   height: number;
-  esDock?: { hostId: string };
 };
 
 const stickyBoxes = (elements: readonly Element[]): NoteBox[] =>

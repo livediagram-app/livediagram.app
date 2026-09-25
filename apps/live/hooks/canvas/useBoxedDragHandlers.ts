@@ -2,7 +2,6 @@ import type { Dispatch, PointerEvent as ReactPointerEvent, RefObject, SetStateAc
 import { anchorPosition, isBoxed, type Anchor, type ArrowElement } from '@livediagram/diagram';
 import { getTheme } from '@/lib/themes';
 import { track } from '@/lib/telemetry';
-import { withDockedNotes } from '@/hooks/canvas/note-dock-drag';
 import { withFrameContents, type DragMode, type DragState, type ShapeBounds } from '@/lib/canvas';
 import type { EditorDragDeps } from './useEditorDrag.types';
 
@@ -70,15 +69,7 @@ export function useBoxedDragHandlers({
     // within a frame being moved (pinned arrows between them follow via
     // the rebind pass). Resizing is deliberately excluded — a frame
     // resize re-sizes the section outline and leaves its contents put.
-    // Anchor docking (spec/139 Phase 7): MOVING a host carries the notes
-    // docked to it — the pair is one phrase, and half a phrase moving is not
-    // an edit anyone means. A docked note dragged on its own travels alone:
-    // pulling it away IS how you undock it. Skipped when the selection
-    // already contains the docked note, or it would move twice.
-    const ids =
-      mode === 'move'
-        ? withDockedNotes(d.activeTab.elements, withFrameContents(d.activeTab.elements, baseIds))
-        : baseIds;
+    const ids = mode === 'move' ? withFrameContents(d.activeTab.elements, baseIds) : baseIds;
 
     const startBounds = new Map<string, ShapeBounds>();
     // Free endpoints of any arrows the frame-section expansion pulled in, so

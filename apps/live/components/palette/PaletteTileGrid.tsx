@@ -226,7 +226,6 @@ export function PaletteTile({
             kind: 'square',
             ...size,
             note: true,
-            ...(a.esKind ? { esKind: a.esKind as EventStormingNoteKind } : {}),
           });
           suppressNativeDragImage(e);
         }

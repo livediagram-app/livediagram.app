@@ -3,7 +3,7 @@
 // via inline import('...') so this file only needs the bare-named
 // types as top-level imports.
 import type { PointerEvent as ReactPointerEvent, Ref } from 'react';
-import type { EmbedProvider, EsDockSide, EventStormingNoteKind } from '@livediagram/diagram';
+import type { EmbedProvider, EsSide, EventStormingNoteKind } from '@livediagram/diagram';
 import type {
   AlignmentGuide,
   BackgroundPattern,
@@ -317,9 +317,9 @@ export type CanvasProps = {
   // Board-level switches for the palette's Event Storming category
   // (spec/139 Phase 6: timeline lanes). Supplied only on such a board.
   esBoardControls?: EsBoardControls;
-  // Add a note already docked to a host's free face (spec/139 Phase 7), from
-  // that face's anchor affordance. Absent when the session cannot create.
-  onAddDockedNote?: (hostId: string, side: EsDockSide) => void;
+  // Add the next note beside a note (spec/139 Phase 7), from its next-note
+  // button. Absent when the session cannot create.
+  onAddNextNote?: (fromId: string, side: EsSide) => void;
   // Read a photograph of the wall dropped on the canvas (spec/139 Phase 8).
   // Present only on an event-storming board with the model configured.
   onDropPhoto?: (file: File) => void;
