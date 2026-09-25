@@ -15,7 +15,7 @@ import {
   NON_PATTERN_CANVAS_TYPES,
   THEME_ALIASES,
 } from './LookAndFeelView';
-import type { MetricGroup } from './MetricCards';
+import { groupMetrics, type MetricGroup } from './metric-series';
 import { SELECTION_MODES } from './PaletteView';
 
 // Every card and every hard-coded ranking type on the dashboard must be an
@@ -91,7 +91,7 @@ const ALL: MetricGroup[] = [
   ...EXTERNAL,
   ...HELP,
 ];
-const METRICS = ALL.flatMap((g) => g.metrics);
+const METRICS = ALL.flatMap(groupMetrics);
 const UNTYPED = METRICS.filter((m) => !m.allTypes && !m.typeIn && (m.type ?? null) === null);
 const TYPED = METRICS.filter((m) => !m.allTypes && !m.typeIn && typeof m.type === 'string');
 

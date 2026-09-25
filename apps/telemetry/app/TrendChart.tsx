@@ -17,15 +17,15 @@ import { fmtDay } from './chart-utils';
 // shaded), the earlier context in muted slate. Pass null to treat the
 // whole line as active (the Search view, which always shows 30 days).
 
-const VIEW_W = 100;
-const VIEW_H = 100;
+export const VIEW_W = 100;
+export const VIEW_H = 100;
 // Vertical breathing room (in viewBox units) so the peak doesn't touch the
 // top edge and a flat line doesn't sit exactly on the baseline.
 const PAD_TOP = 8;
 
-type Point = { x: number; y: number };
+export type Point = { x: number; y: number };
 
-function plot(values: number[], max: number): Point[] {
+export function plot(values: number[], max: number): Point[] {
   const n = values.length;
   return values.map((v, i) => ({
     x: n > 1 ? (i / (n - 1)) * VIEW_W : VIEW_W / 2,
@@ -33,7 +33,7 @@ function plot(values: number[], max: number): Point[] {
   }));
 }
 
-function linePath(points: Point[]): string {
+export function linePath(points: Point[]): string {
   return points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
 }
 

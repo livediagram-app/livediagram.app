@@ -1,6 +1,7 @@
 'use client';
 
 import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
+import { NEW_VISITORS, RETURNING_VISITORS } from './metric-catalogue';
 import { MetricGroups, type MetricGroup } from './MetricCards';
 import { windowLabel } from './windows';
 
@@ -13,7 +14,7 @@ export const GROUPS: MetricGroup[] = [
   {
     title: 'Arrivals & conversion',
     metrics: [
-      { category: 'Participant', action: 'Created', type: null, title: 'New Visitors' },
+      NEW_VISITORS,
       { category: 'Session', action: 'SignedUp', type: null, title: 'Sign-Ups' },
       { category: 'Session', action: 'SignedIn', type: null, title: 'Sign-Ins' },
     ],
@@ -25,10 +26,7 @@ export const GROUPS: MetricGroup[] = [
     title: 'Returning visitors',
     metrics: [
       {
-        category: 'Participant',
-        action: 'Returned',
-        allTypes: true,
-        title: 'Returning Visitors',
+        ...RETURNING_VISITORS,
         blurb:
           'Browsers that came back on a later day than their first visit, counted once per day. Sum of guests and signed-in users below.',
       },

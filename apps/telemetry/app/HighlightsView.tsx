@@ -1,6 +1,7 @@
 'use client';
 
 import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
+import { NEW_VISITORS, RETURNING_VISITORS } from './metric-catalogue';
 import { MetricGroups, type MetricGroup } from './MetricCards';
 import { windowLabel } from './windows';
 
@@ -18,19 +19,21 @@ import { windowLabel } from './windows';
 // arbitrary for this lens (any shape added, any export format) rather
 // than meaningful (Edit vs View share links; the Dark UI toggle, which
 // shares `UI·Toggled` with unrelated setting flips).
+//
+// New + Returning Visitors are one chart stack (spec/22): a combined chart that
+// fans out into the two cards. Both charts come from the shared catalogue, so
+// the stack only references them.
 
 export const GROUPS: MetricGroup[] = [
   {
     title: 'Visitors',
     metrics: [
-      { category: 'Participant', action: 'Created', type: null, title: 'New Visitors' },
       {
-        category: 'Participant',
-        action: 'Returned',
-        allTypes: true,
-        title: 'Returning Visitors',
+        stack: true,
+        title: 'All Visitors',
         blurb:
-          'Browsers that came back on a later day than their first visit, counted once per day. Sum of guests and signed-in users.',
+          'Every browser that opened the app: first-timers and those back on a later day, counted once per day each.',
+        members: [NEW_VISITORS, RETURNING_VISITORS],
       },
       { category: 'Session', action: 'SignedUp', type: null, title: 'Sign-Ups' },
       { category: 'Session', action: 'SignedIn', type: null, title: 'Sign-Ins' },
