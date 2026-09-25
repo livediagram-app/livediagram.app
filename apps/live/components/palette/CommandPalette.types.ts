@@ -4,6 +4,7 @@ import type { PendingDraw } from '@/lib/draw-mode';
 import type { UserPreferences } from '@/lib/user-preferences';
 import type { PaletteTint } from '@/components/palette/palette-controls';
 import type { MovablePanelDockProps } from '@/components/primitives/MovablePanel';
+import type { DockAnchor } from '@/lib/canvas-chrome';
 
 export type CanvasTool =
   | 'pan'
@@ -143,7 +144,7 @@ export type CommandPaletteProps = {
   // freehand) is armed FROM the palette in dock mode, so the parent can
   // reopen the palette once the draw finishes.
   onDrawArmed?: () => void;
-  mobileDockAnchor?: { left: number; top: number; arrowOffset: number };
+  mobileDockAnchor?: DockAnchor;
   forceDockMode?: boolean;
   // Active tab theme's element colours, so the palette tiles preview the
   // theme: shape / device / annotation tiles render filled in the theme's

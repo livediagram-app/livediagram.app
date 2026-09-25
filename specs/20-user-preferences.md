@@ -409,10 +409,18 @@ and the dialog stays as the one complete, browsable index of them.
   dimmed light editor reads grey on a dark dialog. A test holds every
   illustrated choice row to drawing exactly its options.
 
+  **Clicking a picture picks it.** Clicking the drawing of the state you
+  want is the obvious move, so each state of an illustration is a click
+  target: a choice row's option, or a toggle row's Off / On half. The one in
+  force and any option that can't be picked right now (a desktop-only one
+  on a phone) take no click and show no pointer. It is a pointer
+  convenience: the radios and the switch stay the keyboard and screen-reader
+  control, so the SVG keeps `role="img"` and its states aren't focusable.
+
   A choice option can be **desktop only** (`desktopOnly` in the catalogue).
   On a phone-sized viewport it stays visible but can't be picked, and a note
-  under the row says why. Panel Layout's Floating and Toolbar are desktop
-  only: a phone always uses the button bar.
+  under the row says why. Panel Layout's Floating is desktop only: a phone
+  uses the button bar instead. Toolbar works on a phone (spec/148).
 
   **Show Welcome Tour** is inverted against the stored `tourSeen`: the row
   asks "show me the tour?", the preference records "already seen". Because

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { GAP, H, PANEL, StateFrame, W, Window } from './settings-illustration-kit';
+import { GAP, H, PANEL, StateFrame, W, Window, pickable } from './settings-illustration-kit';
 
 // One small drawing per OPTION of a pick-one setting, side by side, the one
 // in force ringed. The toggle drawings (settings-illustrations.tsx) show a
@@ -133,7 +133,18 @@ export const CHOICE_ILLUSTRATIONS: Record<ChoiceIllustrationId, ChoiceDrawing> =
   },
 };
 
-export function ChoiceStates({ id, value }: { id: ChoiceIllustrationId; value: string }) {
+export function ChoiceStates({
+  id,
+  value,
+  onPick,
+  disabledIds = [],
+}: {
+  id: ChoiceIllustrationId;
+  value: string;
+  // Clicking a state picks it (see pickable); `disabledIds` can't be picked.
+  onPick?: (id: string) => void;
+  disabledIds?: readonly string[];
+}) {
   const drawing = CHOICE_ILLUSTRATIONS[id];
   const n = drawing.states.length;
   // A tighter gap than the toggle pair's: there is no arrow to fit between.
@@ -147,7 +158,14 @@ export function ChoiceStates({ id, value }: { id: ChoiceIllustrationId; value: s
       aria-label={drawing.label}
     >
       {drawing.states.map((state, i) => (
-        <g key={state.id} transform={`translate(${i * (W + gap)} 0)`}>
+        <g
+          key={state.id}
+          transform={`translate(${i * (W + gap)} 0)`}
+          {...pickable(
+            onPick ? () => onPick(state.id) : undefined,
+            state.id !== value && !disabledIds.includes(state.id),
+          )}
+        >
           <StateFrame
             art={state.art}
             caption={state.caption}

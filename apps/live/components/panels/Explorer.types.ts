@@ -1,6 +1,7 @@
 import type { DiagramListItem, Folder, SharedWithItem } from '@/lib/api-client';
 import type { MovablePanelDockProps } from '@/components/primitives/MovablePanel';
 import type { TeamDiagramRow, TeamFolderRow } from '@/hooks/persistence/useTeamLibrariesSweep';
+import type { DockAnchor } from '@/lib/canvas-chrome';
 
 // Folder mutations inside a team library, for the panel's team tree.
 // Create returns the new folder so the tree can open its parent and
@@ -101,6 +102,7 @@ export type ExplorerProps = {
   mobileOpenOverride?: boolean;
   mobileTopOverridePx?: number;
   onMobileClose?: () => void;
-  mobileDockAnchor?: { left: number; top: number; arrowOffset: number };
+  mobileDockAnchor?: DockAnchor;
   forceDockMode?: boolean;
+  dismissOnOutside?: boolean;
 };

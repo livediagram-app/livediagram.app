@@ -1,5 +1,4 @@
 import type { ReactNode, RefObject } from 'react';
-import { LayersStackIcon } from '@/components/panels/layers-panel-icons';
 import { PollMenuIcon, VoteMenuIcon } from '@/components/palette/context-menu-icons';
 import {
   AvatarModeIcon,
@@ -19,6 +18,7 @@ import type { MobilePanel } from '@/hooks/canvas/useCanvasMobileDock';
 // popover bodies + anchoring stay in Canvas, this is just the button row.
 export function CanvasMobileDock({
   welcomeOpen,
+  toolbarLayout,
   minimalPanels,
   readOnly,
   hasCollaborate,
@@ -37,6 +37,9 @@ export function CanvasMobileDock({
   onDockButtonClick,
 }: {
   welcomeOpen: boolean;
+  // Toolbar layout (spec/148): the strip, the menu button and the
+  // bottom-right cluster carry everything, on a phone as on desktop.
+  toolbarLayout?: boolean;
   minimalPanels?: boolean;
   readOnly: boolean;
   // True when the active tab has at least one comment thread or action —
@@ -66,7 +69,7 @@ export function CanvasMobileDock({
   dockButtonRefs: RefObject<Record<string, HTMLButtonElement | null>>;
   onDockButtonClick: (id: MobilePanel) => void;
 }) {
-  if (welcomeOpen) return null;
+  if (welcomeOpen || toolbarLayout) return null;
   return (
     <div
       data-mobile-dock
@@ -155,15 +158,6 @@ export function CanvasMobileDock({
                       />
                     </svg>
                   ),
-                },
-              ]
-            : []),
-          ...(!readOnly
-            ? [
-                {
-                  id: 'layers' as const,
-                  label: 'Layers',
-                  icon: <LayersStackIcon size={16} />,
                 },
               ]
             : []),

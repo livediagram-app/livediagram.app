@@ -72,7 +72,7 @@ export function TopCenterStack({
     // instead of them punching through it. Desktop keeps z-chrome, where the
     // stack is centred and nothing overlaps it.
     <div
-      className={`pointer-events-none absolute right-3 top-[4.75rem] z-[var(--z-panel)] flex max-w-[calc(100%-1.5rem)] flex-col items-end gap-2 sm:left-1/2 sm:right-auto ${belowToolbar ? 'sm:top-[4.25rem]' : 'sm:top-3'} sm:z-[var(--z-chrome)] sm:-translate-x-1/2 sm:items-center`}
+      className={`pointer-events-none absolute right-3 z-[var(--z-panel)] flex max-w-[calc(100%-1.5rem)] flex-col items-end gap-2 sm:left-1/2 sm:right-auto ${belowToolbar ? 'top-[4.25rem]' : 'top-[4.75rem] sm:top-3'} sm:z-[var(--z-chrome)] sm:-translate-x-1/2 sm:items-center`}
     >
       {children}
     </div>

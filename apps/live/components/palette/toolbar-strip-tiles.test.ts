@@ -3,7 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import { PALETTE_CATEGORIES } from './palette-categories';
 import { tilesForCategory } from './palette-tile-defs';
-import { STRIP_TILE_LIMIT, stripTilesFor } from './toolbar-strip-tiles';
+import { STRIP_TILE_LIMIT, phoneStripTileLimit, stripTilesFor } from './toolbar-strip-tiles';
 
 const NONE = { favouriteIds: [], hasImage: true };
 
@@ -52,5 +52,26 @@ describe('stripTilesFor', () => {
         c.id,
       ).toBe(false);
     }
+  });
+});
+
+describe('phoneStripTileLimit', () => {
+  it('fits the strip to the phone', () => {
+    expect(phoneStripTileLimit(390)).toBe(3);
+    expect(phoneStripTileLimit(430)).toBe(4);
+  });
+
+  it('never drops below three tiles, even on a very narrow screen', () => {
+    expect(phoneStripTileLimit(320)).toBe(3);
+  });
+
+  it('caps at the desktop limit however wide it gets', () => {
+    expect(phoneStripTileLimit(2000)).toBe(STRIP_TILE_LIMIT);
+  });
+
+  it('shows no more tiles than fit', () => {
+    // The strip's measured overhead at 390px (menu button, pickers, More,
+    // dividers, padding) was 220px, tiles ~38px: the count must fit 390 - 24.
+    expect(220 + phoneStripTileLimit(390) * 38).toBeLessThanOrEqual(390 - 24);
   });
 });

@@ -17,20 +17,33 @@
 // popover would open the Explorer on the far side of the canvas from the
 // button that asked for it, so it hangs from the button's own left edge
 // instead, still kept on the canvas.
+//
+// `from: 'above'` is for a button in the bottom-right cluster (Layers, Activity
+// in every layout but Floating): the popover opens UP from it, hanging from
+// the button's left edge like 'button' does, and `bottom` (the distance from the
+// canvas's bottom edge to the button's top) tells the panel to hang there.
+// Where a dock-controlled popover hangs, canvas-relative. `bottom` set =
+// it opens UP from the button (see 'above' below); unset = down from `top`.
+export type DockAnchor = { left: number; top: number; arrowOffset: number; bottom?: number };
+
 export function computeDockAnchor(
-  btnRect: { left: number; bottom: number; width: number },
-  canvasRect: { left: number; top: number; width: number },
+  btnRect: { left: number; top?: number; bottom: number; width: number },
+  canvasRect: { left: number; top: number; width: number; height?: number },
   popoverWidth: number,
-  from: 'dock' | 'button' = 'dock',
-): { left: number; top: number; arrowOffset: number } {
+  from: 'dock' | 'button' | 'above' = 'dock',
+): DockAnchor {
   const centerX = btnRect.left + btnRect.width / 2 - canvasRect.left;
   const bottomY = btnRect.bottom - canvasRect.top;
   const rightTucked = canvasRect.width - popoverWidth - 8;
   const left = Math.max(
     8,
-    from === 'button' ? Math.min(btnRect.left - canvasRect.left, rightTucked) : rightTucked,
+    from === 'dock' ? rightTucked : Math.min(btnRect.left - canvasRect.left, rightTucked),
   );
   const arrowOffset = Math.max(14, Math.min(popoverWidth - 14, centerX - left));
+  if (from === 'above') {
+    const bottom = (canvasRect.height ?? 0) - ((btnRect.top ?? btnRect.bottom) - canvasRect.top);
+    return { left, top: bottomY, arrowOffset, bottom };
+  }
   return { left, top: bottomY, arrowOffset };
 }
 

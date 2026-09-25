@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { track } from '@/lib/telemetry';
 import { loadPaletteFavourites } from '@/lib/palette-favourites';
 import { Tooltip } from '@/components/primitives/Tooltip';
@@ -11,7 +11,9 @@ import { PaletteDropdown, TOOLBAR_TRIGGER_TONE } from './PaletteDropdown';
 import { CATEGORY_BANDS } from './PaletteTabBar';
 import { PaletteTile } from './PaletteTileGrid';
 import { PALETTE_TILES } from './palette-tile-defs';
-import { stripTilesFor } from './toolbar-strip-tiles';
+import { STRIP_TILE_LIMIT, phoneStripTileLimit, stripTilesFor } from './toolbar-strip-tiles';
+import { useViewportWidth } from '@/hooks/ui/useViewportWidth';
+import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { RAIL_LEAVE_MS, ToolbarStripRail } from './ToolbarStripRail';
 import { usePaletteCatalogue } from './usePaletteCatalogue';
 import type { CommandPaletteProps } from './CommandPalette.types';
@@ -41,6 +43,9 @@ type Props = Pick<
     // The chrome is hidden (zen, the welcome flow). Hidden rather than
     // unmounted, so the strip keeps its state for the page load.
     hidden?: boolean;
+    // Rendered at the far left of the strip, before the selection mode: the
+    // Explorer menu button on a phone, which has no room for it in a corner.
+    leading?: ReactNode;
   };
 // Clicks inside these don't count as "outside" the More popover: the icon
 // filter's portalled dropdown menus, and the Edit Favourites dialog that the
@@ -52,7 +57,7 @@ function Divider() {
 }
 
 export function ToolbarPalette(props: Props) {
-  const { canvasTool, esBoard, themeTint, pendingDraw, hidden } = props;
+  const { canvasTool, esBoard, themeTint, pendingDraw, hidden, leading } = props;
   const [moreOpen, setMoreOpen] = useState(false);
   const { tabs, tileActions, canvasToolOptions, onCanvasToolChange } = usePaletteCatalogue({
     ...props,
@@ -78,9 +83,14 @@ export function ToolbarPalette(props: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- re-read on close
     [validIds, moreOpen, categoryId],
   );
+  // A phone gets a shorter strip; the rest of the category is behind More.
+  const isMobile = useIsMobileViewport();
+  const viewportWidth = useViewportWidth();
+  const stripLimit = isMobile ? phoneStripTileLimit(viewportWidth) : STRIP_TILE_LIMIT;
   const { tiles, hasMore } = stripTilesFor(category?.id ?? defaultId, {
     favouriteIds,
     hasImage: tileActions.hasImage,
+    limit: stripLimit,
   });
 
   // The category being switched AWAY from, while its tiles animate out
@@ -106,7 +116,7 @@ export function ToolbarPalette(props: Props) {
     track('UI', 'Changed', 'ToolbarCategory');
   };
   const leaving = leavingId
-    ? stripTilesFor(leavingId, { favouriteIds, hasImage: tileActions.hasImage })
+    ? stripTilesFor(leavingId, { favouriteIds, hasImage: tileActions.hasImage, limit: stripLimit })
     : null;
 
   // Outside pointer-down closes the More popover.
@@ -116,16 +126,20 @@ export function ToolbarPalette(props: Props) {
     const onDown = (e: PointerEvent) => {
       const t = e.target;
       if (!(t instanceof Element)) return;
-      if (rootRef.current?.contains(t) || t.closest(INSIDE_SELECTOR)) return;
+      // Only the popover and its own button count as inside: pressing the
+      // selection mode, the category picker or a tile elsewhere on the strip
+      // closes it, so two strip menus are never open at once.
+      if (t.closest('[data-toolbar-more], [data-toolbar-more-button]')) return;
+      if (t.closest(INSIDE_SELECTOR)) return;
       setMoreOpen(false);
     };
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setMoreOpen(false);
     };
-    document.addEventListener('pointerdown', onDown);
+    document.addEventListener('pointerdown', onDown, true);
     document.addEventListener('keydown', onKey);
     return () => {
-      document.removeEventListener('pointerdown', onDown);
+      document.removeEventListener('pointerdown', onDown, true);
       document.removeEventListener('keydown', onKey);
     };
   }, [moreOpen]);
@@ -145,6 +159,7 @@ export function ToolbarPalette(props: Props) {
   const moreButton = (
     <button
       type="button"
+      data-toolbar-more-button=""
       aria-label={`More ${category?.label ?? ''}`.trim()}
       aria-expanded={moreOpen}
       onClick={(e) => {
@@ -194,7 +209,7 @@ export function ToolbarPalette(props: Props) {
       // -translate-x-1/2`: a translate of half an odd width leaves the whole
       // strip on a half pixel, and every icon in it soft. The row itself lets
       // clicks through; the card and the popover take them.
-      className={`pointer-events-none absolute inset-x-0 top-3 z-[var(--z-toolbar)] hidden flex-col items-center [&>*]:pointer-events-auto ${hidden ? '' : 'sm:flex'}`}
+      className={`pointer-events-none absolute inset-x-0 top-3 z-[var(--z-toolbar)] flex-col items-center [&>*]:pointer-events-auto ${hidden ? 'hidden' : 'flex'}`}
       onPointerDown={(e) => e.stopPropagation()}
       onContextMenu={(e) => {
         e.preventDefault();
@@ -209,6 +224,12 @@ export function ToolbarPalette(props: Props) {
             <div className="flex items-center gap-0.5 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40">
               {/* Event-storming boards hide the selection mode (spec/139): the
                 notation is the palette there. */}
+              {leading ? (
+                <>
+                  {leading}
+                  <Divider />
+                </>
+              ) : null}
               {esBoard ? null : (
                 <>
                   <PaletteDropdown
@@ -237,6 +258,9 @@ export function ToolbarPalette(props: Props) {
                       dataTourId="palette-category"
                       value={category?.id ?? defaultId}
                       variant="toolbar"
+                      // A phone shows the category's icon alone, so the
+                      // strip has room for more tiles.
+                      iconOnly={isMobile}
                       autoHeight
                       grid
                       menuClassName=""
@@ -311,8 +335,10 @@ export function ToolbarPalette(props: Props) {
               data-toolbar-more=""
               // Hangs from the More button, not the middle of the strip. Wide
               // rather than tall, so a category body rarely has to scroll.
-              style={{ right: moreRight }}
-              className="absolute top-full mt-2 max-h-[calc(100dvh-14rem)] w-[26rem] origin-top-right animate-dropdown-down overflow-y-auto overflow-x-hidden rounded-xl border border-slate-200 bg-white px-2 py-2.5 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
+              // A phone has no room to hang it from the button: it spans the
+              // screen between the side gutters instead.
+              style={isMobile ? undefined : { right: moreRight }}
+              className={`absolute top-full mt-2 max-h-[calc(100dvh-14rem)] ${isMobile ? 'inset-x-3' : 'w-[26rem]'} origin-top-right animate-dropdown-down overflow-y-auto overflow-x-hidden rounded-xl border border-slate-200 bg-white px-2 py-2.5 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40`}
             >
               <div className="mb-2 px-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
                 {category.label}

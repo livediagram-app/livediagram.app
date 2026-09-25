@@ -40,6 +40,17 @@ export function Window({ children }: { children?: ReactNode }) {
 // The ring and caption every state drawing wears, whichever registry it is
 // in. `current` rings it: glance at the picture and you know which way the
 // setting is set without reading the control.
+// Click-to-pick for one state of a drawing: a pointer cursor and the handler
+// when it can be picked, nothing when it can't (no handler wired, already in
+// force, or not allowed right now) so a disabled state doesn't look live.
+export function pickable(
+  onPick: (() => void) | undefined,
+  enabled: boolean,
+): { onClick?: () => void; className?: string } {
+  if (!onPick || !enabled) return {};
+  return { onClick: onPick, className: 'cursor-pointer' };
+}
+
 export function StateFrame({
   art,
   caption,

@@ -12,11 +12,16 @@ import { Tooltip } from '@/components/primitives/Tooltip';
 // `data-mobile-dock` is what MovablePanel's outside-click check skips, so
 // pressing this button while the Explorer is open closes it via the toggle
 // rather than closing it on pointer-down and reopening it on click.
+//
+// `inline` drops the corner card so the button can sit at the far left of
+// the Palette strip instead, which is where a phone puts it.
 export function ToolbarExplorerButton({
   open,
   onToggle,
+  inline = false,
 }: {
   open: boolean;
+  inline?: boolean;
   // Given the button itself, which the popover anchors to.
   onToggle: (button: HTMLElement) => void;
 }) {
@@ -52,8 +57,13 @@ export function ToolbarExplorerButton({
   return (
     <div
       data-mobile-dock=""
+      data-tour-id="dock-explorer"
       data-toolbar-menu=""
-      className="pointer-events-auto absolute left-3 top-3 z-[var(--z-toolbar)] hidden rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 sm:block dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
+      className={
+        inline
+          ? 'flex'
+          : 'pointer-events-auto absolute left-3 top-3 z-[var(--z-toolbar)] rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40'
+      }
       onPointerDown={(e) => e.stopPropagation()}
       onContextMenu={(e) => {
         e.preventDefault();

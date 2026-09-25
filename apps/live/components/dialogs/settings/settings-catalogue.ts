@@ -226,13 +226,13 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         section: 'Layout',
         label: 'Panel Layout',
         description:
-          'Floating shows the Explorer, Palette and other panels over the canvas. Minimal collapses them into a compact button bar that opens each as a popover. Toolbar keeps the floating panels but puts the Palette in one strip across the top of the canvas, and opens the Explorer from a button in the top-left. Mobile always uses the button bar.',
+          'Floating shows the Explorer, Palette and other panels over the canvas. Minimal collapses them into a compact button bar that opens each as a popover. Toolbar keeps the floating panels but puts the Palette in one strip across the top of the canvas, and opens the Explorer from a button in the top-left. On a phone, Floating falls back to the button bar.',
         helpArticle: 'toolbarLayout',
         illustration: 'panelLayout',
         options: [
           { id: 'floating', label: 'Floating', desktopOnly: true },
           { id: 'minimal', label: 'Minimal' },
-          { id: 'toolbar', label: 'Toolbar', desktopOnly: true },
+          { id: 'toolbar', label: 'Toolbar' },
         ],
         read: (p) => resolvePanelLayout(p),
         write: (p, v) => withPanelLayout(p, v as PanelLayout),

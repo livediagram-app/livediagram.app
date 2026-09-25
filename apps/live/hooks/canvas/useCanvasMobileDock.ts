@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type Ref } from 'react';
-import { computeDockAnchor } from '@/lib/canvas-chrome';
+import { computeDockAnchor, type DockAnchor } from '@/lib/canvas-chrome';
 
 // Mobile dock: a compact button row that replaces the four full-width
 // collapse banners on small screens. This hook owns its state — which
@@ -15,6 +15,9 @@ const POPOVER_WIDTH = 256;
 // on a phone the one panel that matters during a live session was the one you
 // could not get back to once it was dismissed.
 export type MobilePanel =
+  // Opened from the bottom-right cluster in the dock layouts (spec/12), not
+  // from a dock-row button.
+  | 'activity'
   | 'explorer'
   | 'palette'
   | 'collaborate'
@@ -40,7 +43,7 @@ export type MobilePanel =
   // 'slide-deck' (spec/31): the deck builder, while the tool is picked.
   | 'slide-deck';
 
-export type DockAnchor = { left: number; top: number; arrowOffset: number };
+export type { DockAnchor };
 
 export function useCanvasMobileDock(mainRef: Ref<HTMLElement>) {
   const [activeMobilePanel, setActiveMobilePanel] = useState<MobilePanel | null>(null);
@@ -56,7 +59,9 @@ export function useCanvasMobileDock(mainRef: Ref<HTMLElement>) {
   // button measures as a zero rect in the corner. It also switches the popover
   // to hang from the button (computeDockAnchor's 'button') rather than tuck
   // against the dock's right edge.
-  const openDockPanel = (id: MobilePanel, ownButton?: HTMLElement) => {
+  // `above` (with `ownButton`) opens the popover up from a button in the
+  // bottom-right cluster instead of down from one at the top.
+  const openDockPanel = (id: MobilePanel, ownButton?: HTMLElement, above = false) => {
     setActiveMobilePanel(id);
     const btn = ownButton ?? dockButtonRefs.current[id];
     const canvas = mainRef && 'current' in mainRef ? mainRef.current : null;
@@ -66,20 +71,20 @@ export function useCanvasMobileDock(mainRef: Ref<HTMLElement>) {
           btn.getBoundingClientRect(),
           canvas.getBoundingClientRect(),
           POPOVER_WIDTH,
-          ownButton ? 'button' : 'dock',
+          ownButton ? (above ? 'above' : 'button') : 'dock',
         ),
       );
     }
   };
 
-  const handleDockButtonClick = (id: MobilePanel, ownButton?: HTMLElement) => {
+  const handleDockButtonClick = (id: MobilePanel, ownButton?: HTMLElement, above = false) => {
     // Tapping the open panel's button closes it.
     if (activeMobilePanel === id) {
       setActiveMobilePanel(null);
       setActiveDockAnchor(null);
       return;
     }
-    openDockPanel(id, ownButton);
+    openDockPanel(id, ownButton, above);
   };
 
   return {

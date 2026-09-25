@@ -54,6 +54,37 @@ describe('computeDockAnchor', () => {
     expect(a.left).toBe(rightAligned); // width - popover - 8, offset-independent
     expect(a.arrowOffset).toBe(800 - rightAligned); // centre 880 + 20 - 100 = 800
   });
+
+  it("opens a cluster button's popover up from the button", () => {
+    // Activity / Layers in the bottom-right cluster: hang from the button's
+    // left, and `bottom` is the canvas bottom edge to the button's top.
+    const a = computeDockAnchor(
+      { left: 600, top: 700, bottom: 744, width: 44 },
+      { left: 0, top: 50, width: 1000, height: 750 },
+      popover,
+      'above',
+    );
+    expect(a.left).toBe(600);
+    expect(a.bottom).toBe(750 - (700 - 50)); // 100
+    expect(a.arrowOffset).toBe(22); // button centre 622
+  });
+
+  it("keeps a cluster button's popover on the canvas near the right edge", () => {
+    const a = computeDockAnchor(
+      { left: 900, top: 700, bottom: 744, width: 44 },
+      { left: 0, top: 0, width: 1000, height: 800 },
+      popover,
+      'above',
+    );
+    expect(a.left).toBe(rightAligned);
+    expect(a.arrowOffset).toBe(922 - rightAligned);
+  });
+
+  it('leaves `bottom` unset for a popover that opens down', () => {
+    expect(computeDockAnchor({ left: 900, bottom: 40, width: 40 }, canvas, popover).bottom).toBe(
+      undefined,
+    );
+  });
 });
 
 describe('canvasCursorClass', () => {

@@ -20,6 +20,19 @@ import { visibleTiles } from './PaletteTileGrid';
 // for More, which is where their loading note lives.
 
 export const STRIP_TILE_LIMIT = 10;
+// A phone's strip fits as many tiles as its width allows once the side
+// gutters, the Explorer menu button, the icon-only selection mode + category
+// picker, More, the dividers and the card's padding are paid for: three on a
+// 390px phone, four from about 410px.
+const PHONE_GUTTERS_PX = 24;
+const PHONE_STRIP_CHROME_PX = 220;
+const STRIP_TILE_PX = 38;
+const PHONE_MIN_TILES = 3;
+
+export function phoneStripTileLimit(viewportWidth: number): number {
+  const room = viewportWidth - PHONE_GUTTERS_PX - PHONE_STRIP_CHROME_PX;
+  return Math.min(STRIP_TILE_LIMIT, Math.max(PHONE_MIN_TILES, Math.floor(room / STRIP_TILE_PX)));
+}
 
 // Categories whose body carries more than tiles: a search box, a group
 // browser, or Favourites' Edit / Reorder footer. They always get More, even
@@ -55,11 +68,15 @@ function allTilesFor(categoryId: string, favouriteIds: readonly string[]): Palet
 
 export function stripTilesFor(
   categoryId: string,
-  { favouriteIds, hasImage }: { favouriteIds: readonly string[]; hasImage: boolean },
+  {
+    favouriteIds,
+    hasImage,
+    limit = STRIP_TILE_LIMIT,
+  }: { favouriteIds: readonly string[]; hasImage: boolean; limit?: number },
 ): { tiles: PaletteTileDef[]; hasMore: boolean } {
   const all = visibleTiles(allTilesFor(categoryId, favouriteIds), hasImage);
   return {
-    tiles: all.slice(0, STRIP_TILE_LIMIT),
-    hasMore: all.length > STRIP_TILE_LIMIT || ALWAYS_MORE.has(categoryId),
+    tiles: all.slice(0, limit),
+    hasMore: all.length > limit || ALWAYS_MORE.has(categoryId),
   };
 }

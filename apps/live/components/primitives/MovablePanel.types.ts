@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import type { PanelCorner, PanelDragGeometry } from '@/lib/panel-layout';
+import type { DockAnchor } from '@/lib/canvas-chrome';
 
 export type MovablePanelDockProps = {
   docked?: boolean;
@@ -40,11 +41,15 @@ export type MovablePanelPlacementProps = {
   // with its own dock button opens as a popover there, so it hides unless the
   // dock has it open.
   mobileOpenOverride?: boolean;
-  mobileDockAnchor?: { left: number; top: number; arrowOffset: number };
+  mobileDockAnchor?: DockAnchor;
   // The minimal-layout preference: dock behaviour on desktop too. A panel
   // that forwards the two above but not this floats freely in minimal
   // layout and ignores its own dock button.
   forceDockMode?: boolean;
+  // Close the dock popover on any press outside it, as a menu does, at every
+  // viewport. The Toolbar layout's Explorer (spec/148) is a menu off its
+  // button, so opening another strip menu puts it away.
+  dismissOnOutside?: boolean;
   onMobileClose?: () => void;
 };
 
@@ -151,10 +156,12 @@ export type MovablePanelProps = {
   // "minimal panel layout" user preference). The dock in Canvas.tsx
   // stays visible and panels render as popovers regardless of viewport.
   forceDockMode?: boolean;
+  // See MovablePanelPlacementProps.dismissOnOutside.
+  dismissOnOutside?: boolean;
   // Called when the user taps the collapse/minimize button while the
   // panel is dock-controlled. The dock should deactivate this panel.
   onMobileClose?: () => void;
-  mobileDockAnchor?: { left: number; top: number; arrowOffset: number };
+  mobileDockAnchor?: DockAnchor;
   // Drop the body's default top padding so the first child sits flush
   // against the panel header (floating) or the popover's top edge (dock).
   // Used by the palette, whose first child is a full-width tab band meant

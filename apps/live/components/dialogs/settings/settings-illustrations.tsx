@@ -4,7 +4,17 @@ import {
   ChoiceStates,
   type ChoiceIllustrationId,
 } from './settings-choice-illustrations';
-import { GAP, H, PANEL, PAPER, SHAPE, StateFrame, W, Window } from './settings-illustration-kit';
+import {
+  GAP,
+  H,
+  PANEL,
+  PAPER,
+  SHAPE,
+  StateFrame,
+  W,
+  Window,
+  pickable,
+} from './settings-illustration-kit';
 
 // Small before/after drawings for the settings whose effect is VISUAL, the
 // ones whose four-line description is really trying to describe a picture. A
@@ -38,10 +48,13 @@ function StatePair({
   active,
   labels = ['Off', 'On'],
   label,
+  onPick,
 }: {
   off: ReactNode;
   on: ReactNode;
   active: boolean;
+  // Clicking a half sets the switch to it (see pickable).
+  onPick?: (on: boolean) => void;
   labels?: [string, string];
   label: string;
 }) {
@@ -58,7 +71,11 @@ function StatePair({
       aria-label={label}
     >
       {halves.map(([art, caption, current], i) => (
-        <g key={caption} transform={`translate(${i * (W + GAP)} 0)`}>
+        <g
+          key={caption}
+          transform={`translate(${i * (W + GAP)} 0)`}
+          {...pickable(onPick ? () => onPick(i === 1) : undefined, !current)}
+        >
           <StateFrame art={art} caption={caption} current={current} />
         </g>
       ))}
@@ -243,17 +260,25 @@ export function SettingsIllustration({
   id,
   active = false,
   value = '',
+  onToggle,
+  onChoose,
+  disabledValues,
 }: {
   id: SettingsIllustrationId;
   // Toggle drawings: which half is in force, so the drawing rings it.
   active?: boolean;
   // Choice drawings: the option in force, likewise ringed.
   value?: string;
+  // Clicking a state picks it: a toggle's half, or a choice's option (except
+  // `disabledValues`, the ones that can't be picked right now).
+  onToggle?: (on: boolean) => void;
+  onChoose?: (value: string) => void;
+  disabledValues?: readonly string[];
 }) {
   if (isChoiceIllustration(id)) {
     return (
       <div className="mt-2.5 px-3.5">
-        <ChoiceStates id={id} value={value} />
+        <ChoiceStates id={id} value={value} onPick={onChoose} disabledIds={disabledValues} />
       </div>
     );
   }
@@ -266,6 +291,7 @@ export function SettingsIllustration({
         active={active}
         labels={drawing.labels}
         label={drawing.label}
+        onPick={onToggle}
       />
     </div>
   );
