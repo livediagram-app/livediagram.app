@@ -47,14 +47,16 @@ describe('isFlatImage', () => {
     expect(isFlatImage(drawn(200, 120))).toBe(true);
   });
 
-  it('calls the generator’s flat walls flat and its photographs not', () => {
-    for (let seed = 1; seed <= 12; seed += 1) {
+  // One test per seed, so each gets its own time budget on a slow runner.
+  it.each(Array.from({ length: 12 }, (_, i) => i + 1))(
+    'calls the generator’s flat wall flat and its photograph not (seed %i)',
+    (seed) => {
       const flat = syntheticWall(seed, 256, 256, { style: 'flat' });
       const photo = syntheticWall(seed, 256, 256, { style: 'photo' });
-      expect(isFlatImage(rgbaOf(256, 256, flat.rgb)), `flat ${seed}`).toBe(true);
-      expect(isFlatImage(rgbaOf(256, 256, photo.rgb)), `photo ${seed}`).toBe(false);
-    }
-  });
+      expect(isFlatImage(rgbaOf(256, 256, flat.rgb))).toBe(true);
+      expect(isFlatImage(rgbaOf(256, 256, photo.rgb))).toBe(false);
+    },
+  );
 
   it('draws its line between the two, well clear of both', () => {
     expect(FLAT_IMAGE_SHARE).toBeGreaterThan(0.4);

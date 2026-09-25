@@ -87,7 +87,7 @@ scope.addEventListener('message', async ({ data: request }) => {
   } catch (err) {
     // Let the next read try the download again.
     loading = null;
-    console.warn(`[reader] the model could not load on ${backendInUse}:`, err);
+    console.warn('[reader] the model could not load on %s:', backendInUse, err);
     scope.postMessage({
       type: 'failed',
       id: request.id,
@@ -106,7 +106,7 @@ scope.addEventListener('message', async ({ data: request }) => {
       text = await readOne(loaded, crop, { floor: true });
     } catch (err) {
       // One crop the model chokes on is one blank note, not a broken read.
-      console.warn(`[reader] crop ${crop.id} failed:`, err);
+      console.warn('[reader] crop %s failed:', crop.id, err);
     }
     scope.postMessage({ type: 'text', id: request.id, cropId: crop.id, text });
   }
