@@ -301,9 +301,10 @@ APP_BASE_URL = "https://staging.livediagram.app"
 RESEND_FROM = "livediagram staging <hello@livediagram.app>"
 
 # Lock the AI endpoint to the staging origin so the OpenAI key behind it
-# can't be spent from a third-party page (spec/25). Production sets the
-# equivalent in the dashboard; staging states it here so the environment is
-# reproducible from the repo alone — see spec/140 "Known sharp edge".
+# can't be spent from a third-party page (spec/25). Production states the
+# equivalent in the top-level [vars] above, for the same reason: the
+# environment is reproducible from the repo alone — see spec/140 "Known sharp
+# edge".
 AI_ALLOWED_ORIGINS = "https://staging.livediagram.app"
 AI_REQUIRE_CLERK = "true"
 

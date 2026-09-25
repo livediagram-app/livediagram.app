@@ -241,6 +241,11 @@ async function main() {
       '--local',
       '--port',
       String(API_PORT),
+      // Production's origin allow-list lives in wrangler.toml [vars], which
+      // `wrangler dev` reads too; it would 403 every AI call from this
+      // localhost editor. Blank it, as `pnpm dev` does (spec/25).
+      '--var',
+      'AI_ALLOWED_ORIGINS:',
     ],
     {
       cwd: ROOT,
