@@ -46,9 +46,16 @@ const WORKSPACE_ROOTS = [
   'packages/telemetry-client/',
 ];
 
-// Placeholders and globs the specs use on purpose: a migration filename yet to
-// be minted, an elided route segment, a two-files-in-one shorthand.
-const DELIBERATE = [/00NN_/, /\/\.\.\.\//, /-1\/2\.ts$/];
+// Placeholders and globs the specs use on purpose: an elided route segment, a
+// two-files-in-one shorthand.
+//
+// `00NN_` used to sit here too, for a migration filename not yet minted. It
+// outlived its reason: spec/44's migration shipped as 0026_custom_themes.sql
+// and the spec kept quoting the placeholder for the whole of that time,
+// because the exemption is exactly what stops this test noticing. A
+// placeholder is only honest before the file exists, so it does not get a
+// standing pass.
+const DELIBERATE = [/\/\.\.\.\//, /-1\/2\.ts$/];
 
 const QUOTED_PATH = /`([a-zA-Z0-9_.@/[\]-]+\.(?:ts|tsx|mjs|cjs|js|css|sql|toml|json))`/g;
 

@@ -1,6 +1,6 @@
 # 148 — Toolbar layout
 
-Status: in review (branch `editor-ui-flat`)
+Status: shipped
 
 ## What
 
