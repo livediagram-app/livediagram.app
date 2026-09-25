@@ -103,7 +103,17 @@ export async function apiSaveDiagramMeta(
 // per-tab fetch lands on a populated row.
 export async function apiCreateDiagram(
   ownerId: string,
-  d: { id: string; name: string; tabs?: Tab[] },
+  // `folderId` / `createdAt` / `presentation` are for an Offline Mode sync
+  // (spec/76), which must carry what the offline record held: the server
+  // copy is all that is left once the local one is deleted.
+  d: {
+    id: string;
+    name: string;
+    tabs?: Tab[];
+    folderId?: string | null;
+    createdAt?: number;
+    presentation?: string | null;
+  },
   // Set by the Offline Mode sync path (spec/76). A sync is a plain POST, so
   // without this the worker records it as a brand-new diagram being created.
   opts: { conversion?: DiagramConversion } = {},
@@ -118,6 +128,9 @@ export async function apiCreateDiagram(
       id: d.id,
       name: d.name,
       tabs: (d.tabs ?? []).map(tabForWire),
+      ...(d.folderId ? { folderId: d.folderId } : {}),
+      ...(d.createdAt !== undefined ? { createdAt: d.createdAt } : {}),
+      ...(d.presentation ? { presentation: d.presentation } : {}),
     }),
   });
   const { diagram } = await expectOk<DiagramResponse>(res, 'create diagram');

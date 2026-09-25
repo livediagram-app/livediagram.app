@@ -115,6 +115,10 @@ Share dialog gate).
   the returned R2 id, so the cloud copy carries real gallery images instead of
   bloated tab JSON. A failed transfer keeps the data URI (it still renders
   anywhere); the per-tab byte cap surfaces a hard failure to the caller.
+- **Everything on the record travels**, not just tabs: the slide deck
+  (spec/31), the created date, the folder (kept only when it is one of the
+  caller's own personal folders, else Unsorted) and the star (spec/95). The
+  local copy is deleted next, so anything the create leaves behind is gone.
 - On success the **local copy is removed** from IndexedDB so there's one source
   of truth; the diagram is now a cloud diagram (Share / AI / Teams reappear). The
   id is unchanged, so the route stays the same: the editor reloads to re-hydrate
@@ -134,6 +138,9 @@ confirmation:
   as `data:` URIs BEFORE the server copy is deleted (the deletion would make
   them "unused" and the retention reaper would eventually take the bytes); an
   incomplete embed aborts the conversion and the diagram stays on the server.
+- **The deck, star and personal folder come along** for the same reason: the
+  server row they live on is about to be deleted. A team diagram's folder is a
+  team folder, which has no place in the personal tree, so it lands in Unsorted.
 - **Every tab, or nothing.** If any tab fails to download the conversion aborts
   before anything is written locally and before the server delete, so the cloud
   copy stays authoritative. This is the one failure in this direction that

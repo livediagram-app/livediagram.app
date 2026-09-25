@@ -23,6 +23,7 @@ import {
   deleteChangeLogForTab,
   deleteDiagram,
   getDiagram,
+  getFolder,
   countDiagramsByOwner,
   getMembership,
   getParticipant,
@@ -103,6 +104,19 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       // through PUT, which gates on edit access).
       const clash = await getDiagram(env, body.id);
       if (clash && clash.ownerId !== owner) return forbidden();
+      if (typeof body.presentation === 'string' && body.presentation.length > MAX_DECK_LEN) {
+        return badRequest('presentation too large');
+      }
+      // A seeded folder must be one of the caller's own personal folders, the
+      // same scope rule PUT /folder applies. Anything else (a folder deleted
+      // since an offline diagram was filed in it, someone else's) lands the
+      // diagram in Unsorted rather than failing the create: this is how an
+      // Offline Mode sync carries its placement (spec/76).
+      let folderId = typeof body.folderId === 'string' ? body.folderId : null;
+      if (folderId !== null) {
+        const folder = await getFolder(env, folderId);
+        if (!folder || folder.teamId !== null || folder.ownerId !== owner) folderId = null;
+      }
       const now = Date.now();
       // Diagram meta first so the FK in tabs can resolve.
       await upsertDiagramMeta(env, {
@@ -111,12 +125,13 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
         name: body.name,
         shareable: body.shareable ?? false,
         shareCode: body.shareCode ?? null,
-        folderId: body.folderId ?? null,
+        folderId,
         // Diagrams are always created personal; they move into a
         // team library via PUT /folder afterwards (spec/35).
         teamId: null,
-        // A new diagram has no deck; one is built later through PUT.
-        presentation: null,
+        // Usually none. An Offline Mode sync carries the deck it built
+        // offline (spec/76), which would otherwise be lost with the local copy.
+        presentation: typeof body.presentation === 'string' ? body.presentation : null,
         // Provenance (spec/15): only the closed set of generated sources
         // is accepted; anything else (or absent) is a user-made diagram.
         source: body.source === 'ai' || body.source === 'mcp' ? body.source : null,

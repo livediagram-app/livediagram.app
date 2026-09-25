@@ -38,7 +38,20 @@ export async function saveOfflineToCloud(offlineId: string, ownerId: string): Pr
   const tabs = await uploadEmbeddedImages(ownerId, rec.tabs);
   // Declare the conversion so the feed says "Synced to the Cloud" rather than
   // reporting a brand-new diagram (spec/76 + spec/138).
-  await apiCreateDiagram(ownerId, { id: rec.id, name: rec.name, tabs }, { conversion: 'sync' });
+  // Everything the record holds besides tabs travels too: the local copy is
+  // deleted next, so a deck or placement left behind is gone for good.
+  await apiCreateDiagram(
+    ownerId,
+    {
+      id: rec.id,
+      name: rec.name,
+      tabs,
+      folderId: rec.folderId,
+      createdAt: rec.createdAt,
+      presentation: rec.presentation ?? null,
+    },
+    { conversion: 'sync' },
+  );
   await offlineDeleteDiagram(rec.id);
   // The star lived on the offline record (spec/95), which just went. Re-star
   // on the server AFTER the delete: while the id is still registered offline,
@@ -101,10 +114,14 @@ export async function takeCloudOffline(
   const rec: OfflineDiagramRecord = {
     id: diagram.id,
     name: diagram.name,
-    folderId: null,
+    // Keep its place and its deck: the server row, the only other copy, is
+    // deleted below. A team folder isn't a place in the personal tree the
+    // offline record lives in, so a team diagram lands in Unsorted.
+    folderId: diagram.teamId ? null : (diagram.folderId ?? null),
     createdAt: diagram.createdAt ?? now,
     savedAt: now,
     tabs,
+    ...(diagram.presentation ? { presentation: diagram.presentation } : {}),
     ...(starred ? { favourite: true } : {}),
   };
   await offlinePutRecord(rec);

@@ -652,3 +652,32 @@ describe('handleDiagrams gated change-log (GET/POST /diagrams/:id/log)', () => {
     });
   });
 });
+
+describe('POST /diagrams carrying an Offline Mode sync (spec/76)', () => {
+  // The offline record is deleted once the create succeeds, so the deck and
+  // folder have to arrive with it.
+  const create = (body: Record<string, unknown>) =>
+    handleDiagrams(makeCtx('POST', '/api/diagrams', { body: { id: 'd1', name: 'Doc', ...body } }));
+  const stored = () => db.upsertDiagramMeta.mock.calls[0]![1] as Record<string, unknown>;
+
+  it('stores the deck it was sent', async () => {
+    db.getDiagram.mockResolvedValue(null);
+    await create({ presentation: '{"decks":[]}' });
+    expect(stored().presentation).toBe('{"decks":[]}');
+  });
+
+  it("keeps a folder that is the caller's own personal folder", async () => {
+    db.getDiagram.mockResolvedValue(null);
+    db.getFolder.mockResolvedValue({ id: 'f1', ownerId: 'owner-1', teamId: null });
+    await create({ folderId: 'f1' });
+    expect(stored().folderId).toBe('f1');
+  });
+
+  it("files into Unsorted rather than a folder that isn't theirs", async () => {
+    db.getDiagram.mockResolvedValue(null);
+    db.getFolder.mockResolvedValue({ id: 'f1', ownerId: 'someone-else', teamId: null });
+    const res = await create({ folderId: 'f1' });
+    expect(res.status).toBe(201);
+    expect(stored().folderId).toBeNull();
+  });
+});
