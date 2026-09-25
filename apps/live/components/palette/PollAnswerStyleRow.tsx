@@ -91,14 +91,20 @@ export function PollStyleTile({
       role="radio"
       aria-checked={selected}
       onClick={onPick}
-      className={`flex cursor-pointer flex-col items-center gap-1.5 rounded-lg border px-1 py-2 transition ${
+      // `h-full` + the grid's equal rows below, `justify-center`, and room for
+      // TWO lines of label. Labels are not all short — "Collaborators" nearly
+      // fills the tile and "Rating 1-5" wraps at its hyphen — and with
+      // `leading-none` and content-sized rows a wrapped one collided with
+      // itself and pushed past the border, leaving text sitting outside its
+      // box. Sized for the worst label rather than the ones that happen to fit.
+      className={`flex h-full min-h-[3.75rem] cursor-pointer flex-col items-center justify-center gap-1.5 rounded-lg border px-1 py-2 text-center transition ${
         selected
           ? 'border-brand-400 bg-brand-50 text-brand-700 dark:border-brand-500/60 dark:bg-brand-500/15 dark:text-brand-200'
           : 'border-slate-200 bg-white text-slate-500 hover:border-brand-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400'
       }`}
     >
       <span className="flex h-4 w-8 items-center justify-center">{STYLE_ART[style]}</span>
-      <span className="text-[10px] font-semibold leading-none">{POLL_STYLE_LABEL[style]}</span>
+      <span className="text-[10px] font-semibold leading-tight">{POLL_STYLE_LABEL[style]}</span>
     </button>
   );
 }
@@ -112,7 +118,13 @@ export function PollStyleTiles({
   onChange: (next: PollStyle) => void;
 }) {
   return (
-    <div className="grid grid-cols-3 gap-1" role="radiogroup" aria-label="Answer style">
+    // Equal rows: a tile whose label wraps cannot make its row taller than the
+    // one above and leave the grid ragged.
+    <div
+      className="grid grid-cols-3 gap-1 [grid-auto-rows:1fr]"
+      role="radiogroup"
+      aria-label="Answer style"
+    >
       {POLL_STYLES.map((option) => (
         <PollStyleTile
           key={option}

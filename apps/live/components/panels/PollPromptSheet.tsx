@@ -62,8 +62,15 @@ export function PollPromptSheet({
         // fight it (see the note by the animation tokens in globals.css).
         //
         // Above the toast layer: a poll is the one interruption that is waiting
-        // on the person, so nothing should sit over it. `pb-[env(...)]` keeps it
-        // clear of an iOS home indicator.
+        // on the person, so nothing should sit over it. The inline safe-area
+        // padding below keeps it clear of an iOS home indicator.
+        //
+        // That padding is an inline style rather than an arbitrary Tailwind
+        // class on purpose, and this comment names no class either: Tailwind's
+        // scanner reads whole FILES, comments included, so writing a
+        // class-shaped string here is enough to make it compile one. Spelling
+        // the safe-area utility out in prose generated a rule whose value was
+        // the literal ellipsis, and the stylesheet failed to parse.
         className="animate-sheet-up fixed inset-x-0 bottom-0 z-[calc(var(--z-toast,60)+1)] mx-auto w-full max-w-lg overflow-hidden rounded-t-2xl border border-b-0 border-slate-200 bg-white shadow-[0_-8px_40px_-12px_rgb(0_0_0/0.25)] dark:border-slate-700 dark:bg-slate-900 sm:mb-3 sm:rounded-2xl sm:border-b"
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
