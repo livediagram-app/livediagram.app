@@ -166,12 +166,69 @@ nothing clears it:
 
 Two changes did clear it and shipped: the q8 embedding on the processor path
 (85 MB less for the same answers) and the graphics card without half
-precision (above). One option is left open: gating SmolVLM on a 6 MB
-PP-OCRv6-tiny detector (blank the answer when it finds no text) cuts
-inventions on the too-small notes from 91 to 22, for two exact notes fewer
-(37 to 35) and CER 28% to 38% on the labelled ones. With the size floor in
-place those notes are no longer asked about at all, so its remaining value is
-on notes above the floor.
+precision (above).
+
+### The PP-OCRv6 detector gate, measured above the floor
+
+The option left open: blank SmolVLM-256M's answer when PP-OCRv6-tiny's text
+detector finds no line of text in the crop. On the too-small notes it cut
+inventions from 91 to 22, but the 48 px floor now keeps those from being asked
+at all, so the gate was measured ONLY at or above the floor: the 86 worded
+notes at their full size and shrunk to each edge the sweep used from 48 px up
+(`reader-bench.mts --reader ppocr-v6-tiny-det`, combined by
+`reader-bench-gate.ts`). The editor's answer filter and chat guard apply in
+every row, as they do in the editor.
+
+| short edge | exact (gate off → on) | words     | CER       | invented | blank   |
+| ---------- | --------------------- | --------- | --------- | -------- | ------- |
+| full       | 37 → 35               | 60% → 55% | 28% → 34% | 13 → 12  | 6 → 13  |
+| 128        | 38 → 37               | 63% → 57% | 27% → 34% | 11 → 9   | 6 → 15  |
+| 96         | 32 → 29               | 60% → 54% | 31% → 39% | 9 → 8    | 7 → 16  |
+| 64         | 23 → 22               | 47% → 43% | 47% → 54% | 17 → 15  | 8 → 18  |
+| 56         | 14 → 13               | 37% → 33% | 52% → 58% | 11 → 10  | 17 → 25 |
+| 48         | 10 → 10               | 24% → 20% | 64% → 70% | 26 → 24  | 17 → 27 |
+
+The same, raw (the model's answer before the editor's filter and guard):
+
+| short edge | exact   | words     | CER       | invented | blank  |
+| ---------- | ------- | --------- | --------- | -------- | ------ |
+| full       | 37 → 35 | 60% → 55% | 27% → 33% | 17 → 15  | 2 → 10 |
+| 128        | 38 → 37 | 63% → 57% | 28% → 35% | 16 → 14  | 1 → 10 |
+| 96         | 32 → 29 | 62% → 55% | 36% → 44% | 14 → 13  | 2 → 11 |
+| 64         | 23 → 22 | 48% → 45% | 47% → 54% | 22 → 19  | 3 → 14 |
+| 56         | 14 → 13 | 38% → 34% | 63% → 64% | 23 → 19  | 5 → 16 |
+| 48         | 10 → 10 | 24% → 20% | 92% → 98% | 39 → 33  | 4 → 18 |
+
+What the gate takes away, answer by answer (an answer it blanks, judged
+against the true words):
+
+| short edge | blanked | exact | useful (CER ≤ 30%) | middling | invented (CER > 60%) |
+| ---------- | ------- | ----- | ------------------ | -------- | -------------------- |
+| full       | 7       | 2     | 4                  | 2        | 1                    |
+| 128        | 9       | 1     | 4                  | 3        | 2                    |
+| 96         | 9       | 3     | 7                  | 1        | 1                    |
+| 64         | 10      | 1     | 3                  | 5        | 2                    |
+| 56         | 8       | 1     | 3                  | 4        | 1                    |
+| 48         | 10      | 0     | 4                  | 4        | 2                    |
+
+Across the six sizes the gate blanks 53 answers: 25 useful (8 of them
+exact) against 9 invented. Above the floor the detector misses faint marker
+far more often than the reader invents, so the gate costs more real readings
+than it saves inventions at every size.
+
+The labels hold no note above the floor that is KNOWN to be blank or
+unreadable: the 9 notes on the two worded walls without words are unlabelled,
+not blank (the detector finds text on 8 of them), so their answers cannot be
+scored as invented; the gate changes none of them anyway (6 answered either
+way).
+
+Cost, had it paid: the detector alone is 1.8 MB, runs on the onnxruntime-web
+the reader already loads, and takes 28 ms a crop on WASM (about 0.3% of the
+reader's ~10 s) and 39 ms on the RTX 4090 (about 6% of its 0.6 s).
+
+**Recommendation: leave it out** (the operator decides): the size floor
+already removed the inventions the gate was for, and above it the gate trades
+real readings for fewer inventions.
 
 ## Browser feasibility, honestly
 
