@@ -77,6 +77,45 @@ in the photo.
   per batch of six), and it now logs the cut-off by name rather than calling it
   unparseable.
 
+## Guarding the in-browser reader against invention
+
+The table above was one wall without every word known. Two walls now carry
+the true words of 86 notes (at most eight words each, 95% five or fewer), and
+`apps/live/scripts/reader-bench.mts` scores the in-browser reader on them
+through the editor's own `readOne` (same prompt, same q4 weights, node CPU
+standing in for WASM). SmolVLM-256M at the size the photo gives: 37/86 exact,
+60% of words, CER 27%, and 17 answers that are mostly not the note.
+
+Invention has two causes, and each has a guard (spec/139 Phase 9):
+
+- **A note too small to read.** Each crop shrunk to a given short edge,
+  counting answers within 30% CER of the truth ("useful") against answers
+  over 60% ("invented"):
+
+  | short edge | full | 128 | 96  | 64  | 56  | 48  | 40  | 32  | 24  |
+  | ---------- | ---- | --- | --- | --- | --- | --- | --- | --- | --- |
+  | exact      | 37   | 38  | 32  | 23  | 14  | 10  | 3   | 1   | 0   |
+  | useful     | 57   | 58  | 51  | 40  | 33  | 24  | 8   | 2   | 0   |
+  | invented   | 13   | 11  | 9   | 17  | 11  | 26  | 28  | 42  | 5   |
+
+  48 px is the crossing, so a crop whose short edge is under 48 px is not
+  asked about (`READ_MIN_EDGE_PX`, `apps/live/lib/reading/floor.ts`). A
+  whiteboard shot from across the room puts every note at 12-41 px, which is
+  where the browser reader answered "The answer is 1.", "Yes." and the like on
+  every note; with the floor the whole wall is left unread in 12 seconds
+  instead of half an hour, and the review's unread tip suggests a closer
+  photo. (At 24 px the model mostly answers nothing at all: it is the band
+  just above that invents.)
+
+- **An answer shaped like chat.** "Yes.", "I'm not.", "The text is written in
+  black marker.": a bare yes / no / sure, an opener that talks about the
+  picture or itself, or more than twelve words leaves the note unread
+  (`apps/live/lib/reading/answer.ts`). It flags none of the 86 true notes and
+  takes no correct reading away; on full-size crops it turns 4 of the 17
+  inventions into unread notes (and 5 of 16 at 128 px).
+
+Neither guard applies to the hosted reader, which does not invent this way.
+
 ## Browser feasibility, honestly
 
 - transformers.js runs SmolVLM in **WASM** correctly (matches the Node
@@ -144,9 +183,20 @@ index silently rots the moment the detector finds one sticky more than last time
 — which is exactly the run where you are trying to learn whether something
 helped. A label that matches no detection is reported, not quietly scored.
 
-In-browser readers are measured IN a browser (node cannot stand in for WebGPU):
-point a Playwright run at the editor with no model configured on the api, which
-is the path that selects them.
+In-browser readers are scored in node against the labelled walls, through the
+editor's own reading code:
+
+```sh
+cd apps/live
+npx tsx scripts/reader-bench.mts --reader smolvlm-256m --set words [--edge 48]
+npx tsx scripts/reader-bench-score.mts /tmp/reader-bench-*.json
+```
+
+`--set words` is the notes with true words, `--set tiny` a whiteboard of
+notes too small for any reader, `--edge N` shrinks every crop to an N px short
+edge. The words stay in `/tmp`; only numbers are printed. Speed is measured IN
+a browser (node cannot stand in for WebGPU): point a Playwright run at the
+editor with no model configured on the api, or with `E2E_AI_BUDGET_SPENT=1`.
 
 Real photographs never enter the repo — keep the wall PNG and its labels
 outside it.
