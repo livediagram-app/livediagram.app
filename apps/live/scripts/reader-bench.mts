@@ -18,20 +18,17 @@
 //
 // Node runs the models on onnxruntime-node (CPU). The answers match the
 // browser's WASM path; the speed does not, so time in-browser separately.
-import { mkdirSync, writeFileSync } from 'node:fs';
-import { createRequire } from 'node:module';
+import { mkdirSync, renameSync, writeFileSync } from 'node:fs';
 import { CROP_MAX_EDGE_PX } from '@livediagram/api-schema';
 import { cropRects, type DetectedSticky } from '../../../packages/sticky-vision/src';
 import { photoDir, truthFor } from '../../../packages/sticky-vision/scripts/truth';
 import { READERS, type BenchReader } from './reader-bench-readers.mts';
+import { sharp } from './reader-bench-sharp.mts';
 
 const arg = (name: string, fallback?: string): string | undefined => {
   const i = process.argv.indexOf(`--${name}`);
   return i === -1 ? fallback : process.argv[i + 1];
 };
-
-type Sharp = typeof import('sharp');
-const sharp = createRequire(import.meta.resolve('@huggingface/transformers'))('sharp') as Sharp;
 
 // The walls whose notes carry their true words, and the one whose notes are too
 // small for any reader (a whiteboard shot from across the room: ~25 px notes).
@@ -87,7 +84,10 @@ async function cropsOf(wall: string, edge: number | undefined): Promise<BenchCro
       .toBuffer();
     const note = truth.notes[r.id]!;
     const file = `${CROP_DIR}/${wall}-${r.id}-${edge ?? 'full'}.jpg`;
-    writeFileSync(file, jpeg);
+    // Written aside and renamed in: a second bench cutting the same crops must
+    // never truncate one while this one's reader has it open.
+    writeFileSync(`${file}.${process.pid}`, jpeg);
+    renameSync(`${file}.${process.pid}`, file);
     out.push({
       wall,
       index: r.id,
