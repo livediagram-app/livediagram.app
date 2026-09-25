@@ -185,8 +185,52 @@ Enforcement is therefore uneven, and deliberately so:
   payloads. Adding that inspection would buy nothing against an actor who can
   already save the whole document over REST.
 
+- **Room-side for freeing a lock**, which is arbitrated for the same reason the
+  baton is: see below.
+
 If the role ever needs to be a real permission, that is a different feature:
 verified identity inside the room, and field-level guards on the save path.
+
+## Freeing somebody's lock
+
+The concurrent-selection lock ([spec/07](07-live-app.md)) makes an element
+somebody else has selected un-editable for everyone else. Usually that resolves
+itself — they click away, or they leave and their presence goes with them. What
+does not resolve is the person who is still connected and has wandered off with
+something selected, and the session stops on an element nobody can touch.
+
+So the facilitator can free it: right-click the locked element, and the one
+thing there is to do is offered. Right-clicking a locked element used to open
+nothing at all, and it still opens nothing for everybody else — the element is
+still locked, and a full element menu would be a menu of dead rows with one
+live one, so this is a small menu of its own (`LockedElementMenu`).
+
+**Who may.** The same rule as the session tools (`mayReleaseLock` is
+`mayRunSession`): yours while somebody is facilitating, everybody's while the
+baton is free. A stricter "must hold the baton" would hide the affordance in
+the ordinary room — most sessions never claim a baton, and the moment you need
+this is precisely a moment nobody was thinking about facilitation. It is also
+the least invasive session verb: it drops a selection. The holder loses no
+work, because an edit in flight is their own local state and the element itself
+is not touched.
+
+**Why it is arbitrated rather than relayed.** Exactly the argument that makes
+the baton a message and not an op. A relayed "let go of that" would be a command
+any peer could issue against any other, and the whole point is that only the
+person running the session can.
+
+**How the target is addressed.** The room sends `selection-released` to the
+holder's socket ALONE, and being sent it is the entire addressing: a client is
+never told which presence id is its own ([spec/61](61-public-api-and-tokens.md)
+§6), so a broadcast naming a target would arrive at nobody able to recognise
+itself in it. The same trick as the baton token. The holder then clears its
+selection and re-broadcasts its ordinary `select` op, so every other peer's
+lock falls away through the path that already existed and the room tells nobody
+else anything.
+
+Refusals are silent — a caller without the baton, a target who has already
+left, an unlock aimed at yourself. Answering any of them would tell a peer
+which presence ids are live.
 
 ## The wire
 

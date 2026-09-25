@@ -6,6 +6,7 @@ import {
   FREE_BATON,
   graceExpired,
   grantBaton,
+  mayReleaseLock,
   mayRunSession,
   reclaimBaton,
   releaseBaton,
@@ -165,5 +166,32 @@ describe('a baton nobody came back for', () => {
     // both read paths in the room sweep before they answer.
     const away = beginGrace(held('gone'), 'gone', 0)!;
     expect(mayRunSession(away, 'somebody-else')).toBe(false);
+  });
+});
+
+describe("freeing somebody else's selection lock", () => {
+  it('is allowed while nobody is facilitating', () => {
+    // The ordinary room: no baton was ever claimed, and a stuck lock is
+    // exactly the moment nobody has thought about facilitation. A stricter
+    // rule would make the affordance invisible when it is most needed.
+    expect(mayReleaseLock(FREE_BATON, 'anyone')).toBe(true);
+  });
+
+  it("is the holder's alone once somebody IS facilitating", () => {
+    const held = { holder: 'host', token: 't' };
+    expect(mayReleaseLock(held, 'host')).toBe(true);
+    expect(mayReleaseLock(held, 'someone-else')).toBe(false);
+  });
+
+  it('is the same rule as the session tools, deliberately', () => {
+    // Freeing a selection is less invasive than starting a timer or a poll —
+    // it drops a selection and destroys no work — so it earns no separate,
+    // stricter rule. Pinned so the two cannot drift apart silently.
+    const states = [FREE_BATON, { holder: 'host', token: 't' }];
+    for (const state of states) {
+      for (const who of ['host', 'other']) {
+        expect(mayReleaseLock(state, who)).toBe(mayRunSession(state, who));
+      }
+    }
   });
 });

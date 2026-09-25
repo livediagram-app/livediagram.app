@@ -88,6 +88,9 @@ export function useRoomConnection(opts: {
     token?: string;
   }) => void;
   readFacilitatorToken: () => string | null;
+  // The facilitator freed an element we were holding (spec/07 lock). Only our
+  // socket is sent this, so there is nothing to check it against.
+  receiveSelectionReleased: (msg: { elementId: string; by: string }) => void;
   receivePoll: (poll: LivePoll) => void;
   receivePollAnswer: (from: string, pollId: string, value: string | null) => void;
   receivePollEnd: (pollId: string) => void;
@@ -123,6 +126,7 @@ export function useRoomConnection(opts: {
     receiveReaction,
     receiveFocusHere,
     receiveFacilitator,
+    receiveSelectionReleased,
     readFacilitatorToken,
     receivePoll,
     receivePollAnswer,
@@ -441,6 +445,7 @@ export function useRoomConnection(opts: {
         }
       },
       onFacilitator: (msg) => receiveFacilitator(msg),
+      onSelectionReleased: (msg) => receiveSelectionReleased(msg),
       onResync: () => {
         // The room couldn't bridge our reconnect gap from its op log
         // (spec/75, Level 1) -- we fell too far behind or it restarted.

@@ -1357,3 +1357,84 @@ describe('DiagramRoom multiplayer telemetry (spec/22)', () => {
     expect(rows).toHaveLength(0);
   });
 });
+
+describe('DiagramRoom freeing a selection lock (spec/07 + spec/149)', () => {
+  // Sent frames as the fake socket recorded them.
+  const framesOf = (ws: FakeSocket) => ws.sent.map((raw) => JSON.parse(raw) as { kind: string });
+  const released = (ws: FakeSocket) => framesOf(ws).filter((f) => f.kind === 'selection-released');
+
+  function room3() {
+    const { room, state } = newRoom();
+    const host = makeSocket();
+    const holder = makeSocket();
+    const bystander = makeSocket();
+    seedSession(state, host, presence('host', 'edit'));
+    seedSession(state, holder, presence('holder', 'edit'));
+    seedSession(state, bystander, presence('bystander', 'edit'));
+    return { room, host, holder, bystander };
+  }
+
+  const unlock = (target = 'holder', elementId = 'el-1') => ({
+    kind: 'facilitator',
+    action: 'unlock',
+    target,
+    elementId,
+  });
+
+  it('tells the holder alone, and nobody else', () => {
+    // The addressing IS the delivery: a client is never told its own presence
+    // id (spec/61 §6), so a broadcast naming a target would reach nobody able
+    // to recognise itself in it.
+    const { room, host, holder, bystander } = room3();
+    sendFrame(room, host, unlock());
+    expect(released(holder)).toEqual([
+      { kind: 'selection-released', elementId: 'el-1', by: 'host' },
+    ]);
+    expect(released(bystander)).toEqual([]);
+    expect(released(host)).toEqual([]);
+  });
+
+  it('refuses somebody who is not running the session', () => {
+    const { room, host, holder, bystander } = room3();
+    // Give the baton to `host`, then have a bystander try to use it.
+    sendFrame(room, host, { kind: 'facilitator', action: 'claim' });
+    sendFrame(room, bystander, unlock());
+    expect(released(holder)).toEqual([]);
+  });
+
+  it('lets the facilitator use it once they hold the baton', () => {
+    const { room, host, holder } = room3();
+    sendFrame(room, host, { kind: 'facilitator', action: 'claim' });
+    sendFrame(room, host, unlock());
+    expect(released(holder)).toHaveLength(1);
+  });
+
+  it('ignores an unlock aimed at yourself', () => {
+    const { room, host } = room3();
+    sendFrame(room, host, unlock('host'));
+    expect(released(host)).toEqual([]);
+  });
+
+  it('ignores a target who has already left, silently', () => {
+    // Answering would tell a peer which presence ids are live.
+    const { room, host, holder, bystander } = room3();
+    sendFrame(room, host, unlock('ghost'));
+    expect(released(holder)).toEqual([]);
+    expect(released(bystander)).toEqual([]);
+    expect(released(host)).toEqual([]);
+  });
+
+  it('ignores a missing or empty elementId', () => {
+    const { room, host, holder } = room3();
+    sendFrame(room, host, { kind: 'facilitator', action: 'unlock', target: 'holder' });
+    sendFrame(room, host, unlock('holder', ''));
+    expect(released(holder)).toEqual([]);
+  });
+
+  it('moves no baton — it uses one', () => {
+    const { room, host, holder } = room3();
+    sendFrame(room, host, unlock());
+    // A facilitator frame would have gone out had the baton changed hands.
+    expect(framesOf(holder).some((f) => f.kind === 'facilitator')).toBe(false);
+  });
+});

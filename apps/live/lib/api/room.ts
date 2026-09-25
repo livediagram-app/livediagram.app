@@ -25,6 +25,10 @@ export type RoomHandlers = {
     reason: FacilitatorReason;
     token?: string;
   }) => void;
+  // The facilitator has freed an element we were holding (spec/07 lock). Sent
+  // to this socket alone, so being called IS the addressing — there is no id to
+  // check against our own, which we do not know (spec/61 §6).
+  onSelectionReleased?: (msg: { elementId: string; by: string }) => void;
   onClose?: () => void;
   // The room could not bridge our reconnect gap from its op log (spec/75,
   // Level 1): we're too far behind, or it restarted. The caller re-hydrates
@@ -141,6 +145,7 @@ export function connectRoom(
         const msg = JSON.parse(e.data) as RoomIncoming;
         if (msg.kind === 'presence') handlers.onPresence(msg.participants);
         else if (msg.kind === 'facilitator') handlers.onFacilitator?.(msg);
+        else if (msg.kind === 'selection-released') handlers.onSelectionReleased?.(msg);
         else if (msg.kind === 'op') applyOp(msg.from, msg.op, msg.seq, msg.epoch);
         else if (msg.kind === 'catchup') {
           if (msg.resync) {

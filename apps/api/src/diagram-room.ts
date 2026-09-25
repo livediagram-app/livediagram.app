@@ -15,6 +15,7 @@ import {
   FREE_BATON,
   graceExpired,
   grantBaton,
+  mayReleaseLock,
   mayRunSession,
   reclaimBaton,
   releaseBaton,
@@ -608,9 +609,41 @@ export class DiagramRoom implements DurableObject {
       );
     } else if (msg.action === 'release') {
       move = releaseBaton(this.facilitator, asker);
+    } else if (msg.action === 'unlock') {
+      // Uses the baton rather than moving it, so it returns here instead of
+      // falling through to setFacilitator: there is no BatonMove to make.
+      this.releaseSelectionLock(asker, msg.target, msg.elementId);
+      return;
     }
     if (!move) return;
     this.setFacilitator(move.next, { reason: move.reason, by: asker.presenceId });
+  }
+
+  /**
+   * Tell one peer to let go of an element (spec/07 lock, spec/149 facilitator).
+   *
+   * Sent to the holder's socket ALONE, which is the entire addressing scheme:
+   * a client is never told its own presence id (spec/61 §6), so a broadcast
+   * naming a target would arrive at nobody who could recognise it. The holder
+   * then drops the selection and re-broadcasts its own `select`, which clears
+   * the lock everywhere through the path that already exists — so the room
+   * announces nothing to anybody else.
+   *
+   * Silent on every refusal. A caller without the baton, a target who has
+   * already left, or somebody asking to unlock themselves all reach the same
+   * "nothing to do", and a room that answered them would be telling a peer
+   * which presence ids are live.
+   */
+  private releaseSelectionLock(asker: Asker, target: string, elementId: string): void {
+    if (!mayReleaseLock(this.facilitator, asker.presenceId)) return;
+    if (target === asker.presenceId) return;
+    if (typeof elementId !== 'string' || elementId.length === 0) return;
+    if (!this.socketByPresence(target)) return;
+    this.sendToPresence(target, {
+      kind: 'selection-released',
+      elementId,
+      by: asker.presenceId,
+    });
   }
 
   /** The target of a grant, as the rules need it. Null when they have left. */

@@ -790,6 +790,32 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   });
   sessionBlockedRef.current = facilitator.sessionToolsBlocked;
 
+  // The facilitator has freed an element we were holding (spec/07 lock,
+  // spec/149). Only our socket is sent this, so there is no target id to check.
+  //
+  // Clearing `selectedId` is the whole of it: usePresenceBroadcast already
+  // fires a `select` op on every change, so peers' locks fall away through the
+  // path that was there before this feature, and the room announces nothing to
+  // anyone else. Editing is dropped too — the lock exists precisely so two
+  // people don't type into one element, and leaving an open editor behind
+  // would hand back the thing the release was meant to take away.
+  const receiveSelectionReleased = useCallback(
+    ({ elementId }: { elementId: string; by: string }) => {
+      setSelectedId((current) => (current === elementId ? null : current));
+      setEditingId((current) => (current === elementId ? null : current));
+      setMultiSelectedIds((prev) => {
+        if (!prev.has(elementId)) return prev;
+        const next = new Set(prev);
+        next.delete(elementId);
+        return next;
+      });
+      // Said plainly, because an element vanishing from under you with no
+      // explanation reads as a bug rather than as somebody running a session.
+      toast.info('The facilitator freed an element you were holding');
+    },
+    [setSelectedId, setEditingId, setMultiSelectedIds],
+  );
+
   useRoomConnection({
     hydrated,
     diagramId,
@@ -820,6 +846,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     // still). Same knot, and the same ref, as the portal's travel callback.
     receiveFocusHere: (from, tabId, at, zoom) => receiveFocusRef.current?.(from, tabId, at, zoom),
     receiveFacilitator: facilitator.receiveFacilitator,
+    receiveSelectionReleased,
     readFacilitatorToken: facilitator.readFacilitatorToken,
     receivePoll: livePoll.receivePoll,
     receivePollAnswer: livePoll.receiveAnswer,

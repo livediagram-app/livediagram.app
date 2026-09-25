@@ -140,3 +140,24 @@ export function graceExpired(state: FacilitatorState, now: number): boolean {
 export function mayRunSession(state: FacilitatorState, presenceId: string): boolean {
   return state.holder === null || state.holder === presenceId;
 }
+
+/**
+ * May this session free an element somebody else is holding (spec/07's
+ * concurrent-selection lock)?
+ *
+ * Deliberately the SAME rule as `mayRunSession` rather than a stricter
+ * "must hold the baton". A stricter rule would make the affordance invisible
+ * in the ordinary case, because most sessions never claim a baton at all — and
+ * the moment you need it (somebody wandered off with an element selected) is
+ * exactly a moment nobody has thought about facilitation. While the baton is
+ * free the session is everyone's, which is already how starting a timer or a
+ * poll works; once somebody IS facilitating, freeing a lock is theirs alone,
+ * like every other session verb.
+ *
+ * It is also the least destructive of those verbs: it drops a selection. The
+ * holder loses no work — an edit in flight is their own local state, and the
+ * element is not modified — they simply stop holding it.
+ */
+export function mayReleaseLock(state: FacilitatorState, presenceId: string): boolean {
+  return mayRunSession(state, presenceId);
+}

@@ -44,8 +44,9 @@ export const TELEMETRY_CATEGORIES = [
   // The facilitator baton (spec/149): who is running a live session.
   // 'Started' when somebody takes a free one, 'Changed' when it is handed on
   // or taken back, 'Ended' when the holder steps down. `type` is the shape of
-  // the move ('Claimed' / 'Granted' / 'Released'), never a name: the question
-  // is whether rooms use the role at all, not who held it.
+  // the move ('Claimed' / 'Granted' / 'Released'), or 'Unlocked' when the
+  // facilitator frees an element somebody was holding (spec/07 lock) — never a
+  // name: the question is whether rooms use the role at all, not who held it.
   'Facilitator',
   'AI',
   'Team',

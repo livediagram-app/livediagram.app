@@ -56,6 +56,18 @@ export type FacilitatorApi = {
   grantFacilitator: (presenceId: string) => void;
   /** Step down. */
   releaseFacilitator: () => void;
+  /**
+   * Free an element a peer is holding through the concurrent-selection lock
+   * (spec/07), so the session can get on with it. The room arbitrates: it
+   * refuses unless the baton is ours or free, and tells the holder alone.
+   */
+  releaseSelectionLock: (presenceId: string, elementId: string) => void;
+  /**
+   * May we free somebody's lock right now? The same rule the session tools
+   * use — ours, or nobody's — so the affordance is not invisible in the
+   * ordinary room where no baton was ever claimed.
+   */
+  canReleaseSelectionLock: boolean;
   /** Feed the room's answer in (wired to the socket handler). */
   receiveFacilitator: (msg: {
     holder: string | null;
@@ -73,7 +85,8 @@ export function useFacilitator(deps: {
   send: (
     msg:
       | { kind: 'facilitator'; action: 'claim' | 'release' }
-      | { kind: 'facilitator'; action: 'grant'; to: string },
+      | { kind: 'facilitator'; action: 'grant'; to: string }
+      | { kind: 'facilitator'; action: 'unlock'; target: string; elementId: string },
   ) => void;
   /** Announce a change to this user, gated by their notification preference. */
   onNotice: (message: string) => void;
@@ -154,6 +167,11 @@ export function useFacilitator(deps: {
     track('Facilitator', 'Ended', 'Released');
   }, []);
 
+  const releaseSelectionLock = useCallback((presenceId: string, elementId: string) => {
+    ref.current.send({ kind: 'facilitator', action: 'unlock', target: presenceId, elementId });
+    track('Facilitator', 'Changed', 'Unlocked');
+  }, []);
+
   return {
     facilitatorId,
     isFacilitator,
@@ -161,6 +179,8 @@ export function useFacilitator(deps: {
     claimFacilitator,
     grantFacilitator,
     releaseFacilitator,
+    releaseSelectionLock,
+    canReleaseSelectionLock: facilitatorId === null || isFacilitator,
     receiveFacilitator,
     readFacilitatorToken,
   };

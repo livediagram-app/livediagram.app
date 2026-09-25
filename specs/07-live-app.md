@@ -63,6 +63,7 @@ To cut down on two people fighting over the same element, an element another par
 - **Self is never locked out.** Only OTHER participants' selections lock an element; your own selection never blocks you.
 - **Auto-releases.** The lock is purely a function of live presence, so it clears the moment the holder deselects, switches tabs, or leaves the room — there's no sticky server state to clean up.
 - **Where it's enforced.** All local selection choke points respect it: single-click select, shift multi-select, and marquee (which filters locked ids out of its hit set), plus the element's own pointer-down / double-click-to-edit. A locked element shows a `not-allowed` cursor and the existing remote-selector badge's hover tooltip reads "Locked to <name>".
+- **The facilitator can free one.** "Auto-releases" covers the holder deselecting or leaving, but not the person still connected who wandered off with something selected — and a session can stop dead on an element nobody may touch. Right-clicking a locked element opens a one-item menu for whoever is running the session (spec/149 "Freeing somebody's lock"); it still opens nothing for everybody else. The room tells the holder alone, the holder drops the selection, and the lock then clears everywhere through the ordinary `select` op — so this adds no server-side enforcement and leaves the lock exactly as advisory as it was.
 - The user-set element **lock** (`element.locked`, the padlock badge) is a separate, persisted feature; this concurrent-selection lock is ephemeral and presence-only.
 
 ## SEO and indexing

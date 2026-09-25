@@ -186,7 +186,15 @@ export type FacilitatorAction =
   // Hand it to a presence id: the owner, or the holder passing it on.
   | { action: 'grant'; to: string }
   // Step down.
-  | { action: 'release' };
+  | { action: 'release' }
+  // Free an element somebody else is holding through the concurrent-selection
+  // lock (spec/07), so the room can get on. USING the baton rather than moving
+  // it, but it rides the same arbitrated channel for the same reason the
+  // others do: relayed, it would be a command any peer could issue against any
+  // other, and the point is that only the person running the session can.
+  //
+  // `target` is the holder's presence id, `elementId` what they are holding.
+  | { action: 'unlock'; target: string; elementId: string };
 
 // Outgoing WebSocket frames the room sends to clients.
 // `presence` is the full participant list refreshed on join / leave;
@@ -228,7 +236,17 @@ export type ServerMessage =
       by?: string;
       reason: FacilitatorReason;
       token?: string;
-    };
+    }
+  // "Your hold on this element has been released" (spec/07 + spec/149), sent
+  // to the HOLDER'S SOCKET ALONE. Being sent it is the whole of the addressing:
+  // the room mints a presence id per socket and never tells a client which one
+  // is its own (spec/61 §6), so a broadcast carrying a target id would reach
+  // nobody able to recognise themselves in it. Same trick as the baton token.
+  //
+  // The receiver drops the selection and re-broadcasts its own `select` op, so
+  // every other peer's lock clears through the ordinary path and the room needs
+  // to tell nobody else anything.
+  | { kind: 'selection-released'; elementId: string; by: string };
 
 // Incoming WebSocket frames clients send to the room.
 // `hello` identifies the participant on connect; `op` is any local
@@ -439,4 +457,6 @@ export type RoomIncoming =
       by?: string;
       reason: FacilitatorReason;
       token?: string;
-    };
+    }
+  // Addressed by being sent at all — see ServerMessage above.
+  | { kind: 'selection-released'; elementId: string; by: string };
