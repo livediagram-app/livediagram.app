@@ -1,50 +1,82 @@
-import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { GROUPS as ACQUISITION } from './AcquisitionView';
 import { GROUPS as COLLABORATION } from './CollaborationView';
 import { GROUPS as CONTENT } from './ContentView';
 import { GROUPS as EDITING } from './EditingView';
-import { GROUPS as EXCEPTIONS } from './ExceptionsView';
+import { COMPUTED, scanEmitters, type Emit } from './emitter-scan';
+import { GROUPS as EXCEPTIONS, RECOVERY_TYPES } from './ExceptionsView';
 import { GROUPS as EXTERNAL } from './ExternalConnectionsView';
 import { GROUPS as HELP } from './HelpView';
 import { GROUPS as HIGHLIGHTS } from './HighlightsView';
+import {
+  CUSTOM_THEME_METRICS,
+  CUSTOM_THEME_TYPES,
+  NON_PATTERN_CANVAS_TYPES,
+  THEME_ALIASES,
+} from './LookAndFeelView';
 import type { MetricGroup } from './MetricCards';
+import { SELECTION_MODES } from './PaletteView';
 
-// A card that asks for `type: null` counts ONLY the bare event. When an
-// emitter starts sending a type for that category·action, the card silently
-// drops those events: "Diagrams Created" read 0 for months after the New
-// Diagram wizard began typing it `Cloud` / `Offline`. So every such card must
-// have no typed emitter anywhere; a card that wants the typed ones too says
-// `allTypes` or `typeIn`.
+// Every card and every hard-coded ranking type on the dashboard must be an
+// event something in the repo can actually send. Two ways that went wrong:
+//
+//  - A card that asks for `type: null` counts ONLY the bare event. When an
+//    emitter started typing Diagram·Created `Cloud` / `Offline`, "Diagrams
+//    Created" silently read 0 for months. So an untyped card must have no
+//    emitter that can send a type (a card that wants them says `allTypes` or
+//    `typeIn`).
+//  - A card that asks for a specific type counts nothing if the emitter sends
+//    it under another category: "AI Turned On" read UI·Toggled·AiOn while the
+//    Settings row sends AI·Toggled·AiOn. So a typed card must have an emitter
+//    that can send exactly that category·action·type.
+//
+// emitter-scan.ts resolves literals, ternaries, lookup tables, forwarding
+// helpers, the api worker's own inserts, and the Settings catalogue. What it
+// cannot resolve is COMPUTED, and a card may only lean on a computed emitter
+// when it is listed in COMPUTED_TYPES below with the reason.
 
 const REPO = resolve(__dirname, '../../..');
-const SOURCE_ROOTS = ['apps', 'packages'].map((d) => join(REPO, d));
-const SKIP_DIRS = new Set(['node_modules', '.next', '.next-dev', 'out', 'dist', '.wrangler']);
 // The dashboard reads events, it never emits them.
-const DASHBOARD = join(REPO, 'apps', 'telemetry');
+const EMITS = scanEmitters(REPO, ['apps', 'packages'], join(REPO, 'apps', 'telemetry'));
 
-function sourceFiles(dir: string, out: string[] = []): string[] {
-  for (const name of readdirSync(dir)) {
-    const path = join(dir, name);
-    if (SKIP_DIRS.has(name) || path === DASHBOARD) continue;
-    if (statSync(path).isDirectory()) sourceFiles(path, out);
-    else if (/\.tsx?$/.test(name) && !/\.test\.tsx?$/.test(name)) out.push(path);
-  }
-  return out;
-}
+type Known = Emit & { category: string; action: string };
+const KNOWN = EMITS.filter(
+  (e): e is Known => typeof e.category === 'string' && typeof e.action === 'string',
+);
 
-const SOURCES = SOURCE_ROOTS.flatMap((root) => sourceFiles(root)).map((path) => ({
-  path: path.slice(REPO.length + 1),
-  text: readFileSync(path, 'utf8'),
-}));
+// Emit sites whose category or action is itself a variable. Each is a generic
+// pass-through whose real events are scanned at their source instead; a new
+// file here means an emitter the scan can't see, so extend the scan (or add it
+// here with the reason) rather than let its events go unchecked.
+const DYNAMIC_EMITTERS: Record<string, string> = {
+  'apps/live/components/dialogs/settings/SettingsCategoryPane.tsx':
+    'emits each Settings catalogue row; the rows themselves are scanned',
+  'apps/api/src/routes/events.ts': 'the ingest endpoint, writing validated client events',
+};
 
-// The emit helpers: `track` (browser), `report` (api worker), `postTelemetry` (mcp worker).
-function typedEmitters(category: string, action: string): string[] {
-  const call = new RegExp(
-    String.raw`\b(?:track|report|postTelemetry)\(\s*(?:env\s*,\s*)?'${category}'\s*,\s*'${action}'\s*,\s*(?!undefined\s*\))`,
+// Card or ranking types that only a computed emitter produces, so the scan
+// can't see the string. Each names where the value comes from; a typo here
+// still fails, because a computed emitter for the category·action must exist.
+const COMPUTED_TYPES: Record<string, string> = {
+  // themeTelemetryLabel(themeId): a built-in theme's catalogue label.
+  'Theme·Changed·Default': "packages/diagram themes-data.ts, the brand theme's label",
+  // Custom theme ids all map to one token in themeTelemetryLabel.
+  'Theme·Changed·Custom': 'custom-theme-registry.ts themeTelemetryLabel',
+  // report(env, 'Email', 'Sent', msg.kind): each template's `kind`.
+  'Email·Sent·Welcome': 'apps/api email/templates.ts, the welcome message',
+  'Email·Sent·TeamInvite': 'apps/api email/templates.ts, the team invite',
+  'Email·Sent·ActionAssigned': 'apps/api email/templates.ts, the action notification',
+};
+
+function sendable(category: string, action: string, type: string | null): boolean {
+  const pair = KNOWN.filter((e) => e.category === category && e.action === action);
+  if (pair.some((e) => e.type === type)) return true;
+  return (
+    type !== null &&
+    `${category}·${action}·${type}` in COMPUTED_TYPES &&
+    pair.some((e) => e.type === COMPUTED)
   );
-  return SOURCES.filter((s) => call.test(s.text)).map((s) => s.path);
 }
 
 const ALL: MetricGroup[] = [
@@ -57,21 +89,90 @@ const ALL: MetricGroup[] = [
   ...EXTERNAL,
   ...HELP,
 ];
-const UNTYPED = ALL.flatMap((g) => g.metrics).filter(
-  (m) => !m.allTypes && !m.typeIn && (m.type ?? null) === null,
-);
+const METRICS = ALL.flatMap((g) => g.metrics);
+const UNTYPED = METRICS.filter((m) => !m.allTypes && !m.typeIn && (m.type ?? null) === null);
+const TYPED = METRICS.filter((m) => !m.allTypes && !m.typeIn && typeof m.type === 'string');
 
-describe('untyped metric cards', () => {
-  it('finds the emitters it scans', () => {
-    // Guards the scan itself: a path or regex slip would pass every card below.
-    expect(typedEmitters('Diagram', 'Exported').length).toBeGreaterThan(0);
+describe('the emitter scan', () => {
+  it('sees each emitter form the dashboard depends on', () => {
+    // Guards the scan itself: a path or parser slip would pass every card below.
+    const has = (c: string, a: string, t: string | null) =>
+      KNOWN.some((e) => e.category === c && e.action === a && e.type === t);
+    expect(has('Diagram', 'Exported', COMPUTED as never) || has('Diagram', 'Exported', 'PNG')).toBe(
+      true,
+    );
+    expect(has('AI', 'Toggled', 'AiOn')).toBe(true); // Settings catalogue row
+    expect(has('Tab', 'Moved', 'Folder')).toBe(true); // ternary action
+    expect(has('Tab', 'Removed', 'Folder')).toBe(true);
+    expect(has('Diagram', 'Created', 'Offline')).toBe(true); // ternary type
+    expect(has('Canvas', 'Changed', 'BackgroundColor')).toBe(true); // forwarding helper
+    expect(has('Email', 'Sent', COMPUTED as never)).toBe(true); // api report(env, ...)
+    expect(KNOWN.some((e) => e.category === 'Error' && e.path.startsWith('apps/mcp/'))).toBe(true);
+    expect(KNOWN.some((e) => e.category === 'Error' && e.path === 'apps/api/src/index.ts')).toBe(
+      true,
+    );
     expect(UNTYPED.length).toBeGreaterThan(0);
+    expect(TYPED.length).toBeGreaterThan(0);
   });
+
+  it('has no unexplained dynamic emitter', () => {
+    const dynamic = [
+      ...new Set(EMITS.filter((e) => !KNOWN.includes(e as Known)).map((e) => e.path)),
+    ];
+    expect(dynamic.sort()).toEqual(Object.keys(DYNAMIC_EMITTERS).sort());
+  });
+});
+
+describe('metric cards', () => {
+  it.each(METRICS.map((m) => [m.title, m.category, m.action] as const))(
+    '%s (%s·%s) has an emitter',
+    (_title, category, action) => {
+      expect(KNOWN.some((e) => e.category === category && e.action === action)).toBe(true);
+    },
+  );
 
   it.each(UNTYPED.map((m) => [m.title, m.category, m.action] as const))(
     '%s (%s·%s) has no typed emitter the card would miss',
     (_title, category, action) => {
-      expect(typedEmitters(category, action)).toEqual([]);
+      const typed = KNOWN.filter(
+        (e) => e.category === category && e.action === action && e.type !== null,
+      );
+      expect(typed.map((e) => e.path)).toEqual([]);
     },
   );
+
+  it.each(TYPED.map((m) => [m.title, m.category, m.action, m.type as string] as const))(
+    '%s (%s·%s·%s) is an event something sends',
+    (_title, category, action, type) => {
+      expect(sendable(category, action, type)).toBe(true);
+    },
+  );
+});
+
+describe('hard-coded ranking types', () => {
+  const triples: [string, string, string, string][] = [
+    ...SELECTION_MODES.map(
+      (t) => ['Selection modes', 'Canvas', 'Used', t] as [string, string, string, string],
+    ),
+    ...NON_PATTERN_CANVAS_TYPES.map(
+      (t) =>
+        ['Canvas styles exclusion', 'Canvas', 'Changed', t] as [string, string, string, string],
+    ),
+    ...[...CUSTOM_THEME_TYPES].map(
+      (t) => ['Themes exclusion', 'Theme', 'Changed', t] as [string, string, string, string],
+    ),
+    ...Object.values(THEME_ALIASES).map(
+      (t) => ['Themes alias target', 'Theme', 'Changed', t] as [string, string, string, string],
+    ),
+    ...CUSTOM_THEME_METRICS.map(
+      (m) =>
+        ['Custom theme builder', m.category, m.action, m.type] as [string, string, string, string],
+    ),
+    ...RECOVERY_TYPES.map(
+      (t) => ['Exceptions recovery', 'Error', 'Client', t] as [string, string, string, string],
+    ),
+  ];
+  it.each(triples)('%s: %s·%s·%s is an event something sends', (_where, c, a, t) => {
+    expect(sendable(c, a, t)).toBe(true);
+  });
 });

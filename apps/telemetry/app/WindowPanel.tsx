@@ -6,8 +6,8 @@ import { WINDOW_META, windowHighlightFrom, windowLabel } from './windows';
 
 // The global timeframe control (spec/22), shown above the view tabs and
 // shared by all of them. It merges what used to be three separate pieces
-// — the Today / Last 7 / Last month toggle, the per-window stat cards,
-// and the standalone daily sparkline — into one component. The three
+// (the Today / Last 7 days / Last 30 days toggle, the per-window stat cards,
+// and the standalone daily sparkline) into one component. The three
 // cards ARE the filter: clicking one selects that window (driving every
 // tab below) and highlights the matching span of the 30-day trend line
 // directly underneath, so the reader controls the filter and sees the
@@ -60,6 +60,9 @@ export function WindowPanel({
               <span className="mt-1 block text-2xl font-semibold text-slate-900 dark:text-slate-100">
                 {totals[w.key].toLocaleString()}
               </span>
+              <span className="mt-0.5 block text-xs text-slate-500 dark:text-slate-400">
+                {w.hint}
+              </span>
             </button>
           );
         })}
@@ -69,7 +72,7 @@ export function WindowPanel({
         <div className="mt-5 border-t border-slate-100 pt-5 dark:border-slate-800">
           <div className="flex items-baseline justify-between">
             <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-              Daily volume — last 30 days
+              Daily Volume, Last 30 Days (UTC)
             </p>
             <p className="text-xs text-slate-500 dark:text-slate-400">
               {windowLabel(active)} highlighted

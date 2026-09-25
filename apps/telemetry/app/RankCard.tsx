@@ -1,11 +1,12 @@
 'use client';
 
 import { EmptyState } from '@livediagram/ui';
-import { metricKey, type TelemetryCount, type TelemetryDaily } from '@livediagram/api-schema';
+import type { TelemetryCount, TelemetryDaily } from '@livediagram/api-schema';
 import { pct } from './chart-utils';
 import { categoryColor, typeLabel } from './event-vocab';
 import { ActivityGlyph } from './glyphs';
 import { MiniSparkline } from './MiniSparkline';
+import { aliasedSeries, type TypeAliases } from './rank';
 
 // A ranked usage list: rows sorted most-to-least, each with a share bar and
 // (on desktop) a mini trend line, the top row tagged Most used. (No "least
@@ -25,6 +26,7 @@ export function RankCard({
   items,
   daily,
   emptyLabel,
+  aliases,
 }: {
   title: string;
   subtitle: string;
@@ -33,6 +35,9 @@ export function RankCard({
   items: TelemetryCount[];
   daily: TelemetryDaily | undefined;
   emptyLabel: string;
+  // The same old-spelling map the items were ranked with, so a folded row's
+  // trend line includes the history stored under its old spelling.
+  aliases?: TypeAliases;
 }) {
   const color = categoryColor(category);
 
@@ -52,7 +57,9 @@ export function RankCard({
             // bottom of this list isn't truly the least used, just the lowest
             // among those that have any data.
             const isTop = items.length > 1 && i === 0;
-            const series = daily?.byMetric[metricKey(category, action, row.type)];
+            const series = daily
+              ? aliasedSeries(daily.byMetric, category, action, row.type, aliases)
+              : undefined;
             return (
               <li key={row.type} className="flex items-center gap-3">
                 <div className="min-w-0 flex-1">

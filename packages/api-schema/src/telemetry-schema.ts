@@ -220,6 +220,17 @@ export function isValidTelemetryEvent(value: unknown): value is TelemetryEvent {
 // stay simple and the summary response is cacheable.
 export type TelemetryWindowKey = 'today' | 'last7' | 'last30';
 
+// How many UTC calendar days each window spans, ending with today (so
+// `last7` is today plus the six days before it, each from UTC midnight).
+// Shared by the api, which counts each window over exactly these days, and
+// the dashboard, which highlights the same span of the 30-day trend line:
+// one definition, so the number on a card and the line under it agree.
+export const TELEMETRY_WINDOW_DAYS: Record<TelemetryWindowKey, number> = {
+  today: 1,
+  last7: 7,
+  last30: 30,
+};
+
 export type TelemetryCount = {
   category: string;
   action: string;

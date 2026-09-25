@@ -50,7 +50,7 @@ export const GROUPS: MetricGroup[] = [
         type: 'AiOn',
         title: 'AI Turned On',
         blurb:
-          'The Settings opt-in. AI is off until a user asks for it, so this is the population every request above comes from.',
+          'The Settings opt-in being switched on. AI is off until someone turns it on, so every request above comes from people who did this.',
       },
     ],
   },
@@ -77,7 +77,7 @@ export const GROUPS: MetricGroup[] = [
         action: 'Moved',
         type: null,
         title: 'Selections Moved to a Layer',
-        blurb: 'Elements sent to another layer — layers being used to organise, not just to hide.',
+        blurb: 'Elements sent to another layer: layers being used to organise, not just to hide.',
       },
       {
         category: 'Layer',
@@ -109,7 +109,7 @@ export const GROUPS: MetricGroup[] = [
         action: 'Opened',
         type: null,
         title: 'Notes Opened',
-        blurb: 'The note popover was opened — reading as well as writing.',
+        blurb: 'The note popover was opened, to read as well as to write.',
       },
       {
         category: 'Action',
@@ -124,7 +124,8 @@ export const GROUPS: MetricGroup[] = [
         action: 'Created',
         type: 'EmailOn',
         title: 'Of Those, Emailed',
-        blurb: 'Assigned with the notify-by-email box ticked. A subset of the count beside it.',
+        blurb:
+          'Assigned with the notify-by-email box ticked. A subset of the count beside it. Counts the box, not a sent email: sends are Action Notifications on the Acquisition tab.',
       },
       {
         category: 'Action',
@@ -170,7 +171,7 @@ export const GROUPS: MetricGroup[] = [
         type: 'Folder',
         title: 'Tabs Filed',
         blurb:
-          'A tab filed into a tab folder, by the ellipsis menu or by a drag — both report identically.',
+          'A tab filed into a tab folder, by the ellipsis menu or by a drag (both report identically).',
       },
       {
         category: 'Diagram',
@@ -195,7 +196,7 @@ export function EditingView({
     <div className="mt-8">
       <p className="text-sm text-slate-500 dark:text-slate-400">
         The tools that organise the work rather than draw it, for{' '}
-        <span className="font-medium">{windowLabel(active)}</span> — AI assistance, layers, notes,
+        <span className="font-medium">{windowLabel(active)}</span>: AI assistance, layers, notes,
         assigned actions, and folders.
       </p>
       <MetricGroups groups={GROUPS} summary={summary} active={active} />

@@ -3,13 +3,15 @@
 import { PALETTE_TELEMETRY_TYPES } from '@livediagram/api-schema';
 import type { TelemetryCount, TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
 import { RankCard, rank } from './RankCard';
+import type { TypeAliases } from './rank';
 import { windowLabel } from './windows';
 
 // Palette view (spec/22): what people reach for in the editor's creation
 // palette, most to least, broken out by the palette's own tabs. Element adds
 // (`Element·Added·<type>`) are bucketed into the catalogue categories below;
-// the canvas Selection modes are a separate concept (`Canvas·Used·<mode>`),
-// not palette elements, so they get their own card. Only items with events in
+// the canvas Selection Modes are a separate concept (`Canvas·Used·<mode>`,
+// restricted to SELECTION_MODES), not palette elements, so they get their own
+// card. Only items with events in
 // the selected window appear.
 
 // The palette tabs come from the SHARED catalogue in @livediagram/api-schema
@@ -27,6 +29,37 @@ const {
   icons: ICONS,
 } = PALETTE_TELEMETRY_TYPES;
 
+// Element·Added types the editor used to send hyphenated, before it settled on
+// the catalogue tokens. Stored rows keep their old spelling until the 60-day
+// retention sweep drops them, so the ranking folds them into today's token
+// rather than showing each thing twice (or, for a kind the catalogue lists
+// only under its new name, not at all). Safe to delete once no stored row is
+// older than the emitter fix.
+export const PALETTE_TYPE_ALIASES: TypeAliases = {
+  'Mind-node': 'MindNode',
+  'Session-button': 'SessionButton',
+  'Comment-pin': 'CommentPin',
+  'Done-check': 'DoneCheck',
+  'Reaction-pad': 'ReactionPad',
+  'Mode-button': 'ModeButton',
+  'Action-card': 'ActionPanel',
+  'Code-block': 'CodeBlock',
+};
+
+// The canvas selection modes (useCanvasTool's `Canvas·Used` tokens). Other
+// Canvas·Used events are not modes a person selects: InsertBetween is a drag
+// gesture and FollowMe is pinning your view to a peer's (it has its own card
+// on the Collaboration tab), so the ranking names the modes it counts.
+export const SELECTION_MODES: readonly string[] = [
+  'Laser',
+  'Spotlight',
+  'Eraser',
+  'Highlighter',
+  'FormatPainter',
+  'Isometric',
+  'AvatarMode',
+];
+
 const addedIn = (kinds: readonly string[]) => (r: TelemetryCount) =>
   r.category === 'Element' && r.action === 'Added' && kinds.includes(r.type ?? '');
 
@@ -38,13 +71,16 @@ export function PaletteView({
   active: TelemetryWindowKey;
 }) {
   const rows = summary.windows[active].rows;
-  const shapes = rank(rows, addedIn(SHAPES));
-  const tools = rank(rows, addedIn(TOOLS));
-  const collaborate = rank(rows, addedIn(COLLABORATE));
-  const components = rank(rows, addedIn(COMPONENTS));
-  const devices = rank(rows, addedIn(DEVICES));
-  const icons = rank(rows, addedIn(ICONS));
-  const modes = rank(rows, (r) => r.category === 'Canvas' && r.action === 'Used');
+  const shapes = rank(rows, addedIn(SHAPES), PALETTE_TYPE_ALIASES);
+  const tools = rank(rows, addedIn(TOOLS), PALETTE_TYPE_ALIASES);
+  const collaborate = rank(rows, addedIn(COLLABORATE), PALETTE_TYPE_ALIASES);
+  const components = rank(rows, addedIn(COMPONENTS), PALETTE_TYPE_ALIASES);
+  const devices = rank(rows, addedIn(DEVICES), PALETTE_TYPE_ALIASES);
+  const icons = rank(rows, addedIn(ICONS), PALETTE_TYPE_ALIASES);
+  const modes = rank(
+    rows,
+    (r) => r.category === 'Canvas' && r.action === 'Used' && SELECTION_MODES.includes(r.type ?? ''),
+  );
 
   return (
     <div className="mt-8">
@@ -61,6 +97,7 @@ export function PaletteView({
           action="Added"
           items={shapes}
           daily={summary.daily}
+          aliases={PALETTE_TYPE_ALIASES}
           emptyLabel="No shapes were added in this window yet."
         />
         <RankCard
@@ -70,6 +107,7 @@ export function PaletteView({
           action="Added"
           items={collaborate}
           daily={summary.daily}
+          aliases={PALETTE_TYPE_ALIASES}
           emptyLabel="No collaboration elements were added in this window yet."
         />
         <RankCard
@@ -79,6 +117,7 @@ export function PaletteView({
           action="Added"
           items={tools}
           daily={summary.daily}
+          aliases={PALETTE_TYPE_ALIASES}
           emptyLabel="No tools were added in this window yet."
         />
         <RankCard
@@ -88,6 +127,7 @@ export function PaletteView({
           action="Added"
           items={components}
           daily={summary.daily}
+          aliases={PALETTE_TYPE_ALIASES}
           emptyLabel="No components were added in this window yet."
         />
         <RankCard
@@ -97,6 +137,7 @@ export function PaletteView({
           action="Added"
           items={devices}
           daily={summary.daily}
+          aliases={PALETTE_TYPE_ALIASES}
           emptyLabel="No device frames were added in this window yet."
         />
         <RankCard
@@ -106,11 +147,12 @@ export function PaletteView({
           action="Added"
           items={icons}
           daily={summary.daily}
+          aliases={PALETTE_TYPE_ALIASES}
           emptyLabel="No icons were added in this window yet."
         />
         <RankCard
-          title="Selection modes"
-          subtitle="Canvas modes: laser, spotlight, eraser, format painter, isometric"
+          title="Selection Modes"
+          subtitle="Canvas modes picked from the palette: laser, spotlight, eraser, highlighter, format painter, isometric, avatar"
           category="Canvas"
           action="Used"
           items={modes}

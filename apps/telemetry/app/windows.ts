@@ -1,21 +1,38 @@
-// Everything about the three fixed dashboard windows (Today / Last 7 /
-// Last month, spec/22): their labels, their span in days, how a window
+// Everything about the three fixed dashboard windows (Today / Last 7 days /
+// Last 30 days, spec/22): their labels, their span in days, how a window
 // maps onto a slice of the 30-day trend line, and a per-metric count
 // lookup. Shared so the global timeframe panel, the Highlights grid, and
 // the Search view all agree instead of each hard-coding the windows.
 
 import {
   metricKey,
+  TELEMETRY_WINDOW_DAYS,
   type TelemetryDaily,
   type TelemetryWindow,
   type TelemetryWindowKey,
 } from '@livediagram/api-schema';
 
-export const WINDOW_META: { key: TelemetryWindowKey; label: string; days: number }[] = [
-  { key: 'today', label: 'Today', days: 1 },
-  { key: 'last7', label: 'Last 7 days', days: 7 },
-  { key: 'last30', label: 'Last month', days: 30 },
-];
+// Whole UTC calendar days ending today (TELEMETRY_WINDOW_DAYS, shared with
+// the api, which counts each window over exactly these days). `hint` says so
+// on the card: "Last 7 days" read as a rolling 168 hours otherwise, and the
+// count only matched the highlighted span of the trend line once both were
+// the same calendar days.
+export const WINDOW_META: { key: TelemetryWindowKey; label: string; hint: string; days: number }[] =
+  [
+    { key: 'today', label: 'Today', hint: 'Since midnight UTC', days: TELEMETRY_WINDOW_DAYS.today },
+    {
+      key: 'last7',
+      label: 'Last 7 days',
+      hint: 'Today and the 6 days before, UTC',
+      days: TELEMETRY_WINDOW_DAYS.last7,
+    },
+    {
+      key: 'last30',
+      label: 'Last 30 days',
+      hint: 'Today and the 29 days before, UTC',
+      days: TELEMETRY_WINDOW_DAYS.last30,
+    },
+  ];
 
 export function windowLabel(key: TelemetryWindowKey): string {
   return WINDOW_META.find((w) => w.key === key)?.label ?? key;
@@ -30,7 +47,7 @@ export function windowHighlightFrom(daily: TelemetryDaily, active: TelemetryWind
 }
 
 // Per-window count lookup keyed by metricKey, so any view can read a
-// single metric's Today / Last 7 / Last month totals without rescanning
+// single metric's Today / Last 7 days / Last 30 days totals without rescanning
 // the window rows each render.
 export function buildWindowCounts(
   windows: Record<TelemetryWindowKey, TelemetryWindow>,

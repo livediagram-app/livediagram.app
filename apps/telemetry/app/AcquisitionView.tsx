@@ -78,7 +78,7 @@ export const GROUPS: MetricGroup[] = [
         allTypes: true,
         title: 'Emails Sent',
         blurb:
-          'Every transactional and lifecycle email that left the worker, across all templates. The kind only — never a recipient.',
+          'Every transactional and lifecycle email that left the worker, across all templates. The kind only, never a recipient.',
       },
       {
         category: 'Email',

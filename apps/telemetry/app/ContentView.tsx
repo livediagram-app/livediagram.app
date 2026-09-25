@@ -20,7 +20,7 @@ export const GROUPS: MetricGroup[] = [
         type: null,
         title: 'Diagrams Loaded',
         blurb:
-          'An existing diagram was opened, counted on every open (including a page refresh), not just the first time.',
+          'A diagram was opened, counted on every open (including a page refresh), not just the first time. Includes the first open of every new diagram, straight after it is created.',
       },
       {
         category: 'Diagram',
@@ -73,7 +73,7 @@ export function ContentView({
       <p className="text-sm text-slate-500 dark:text-slate-400">
         The diagram and tab lifecycle, for{' '}
         <span className="font-medium">{windowLabel(active)}</span>. Loaded counts every open of an
-        existing one; Created counts the first time it&rsquo;s made.
+        one, including a new one&rsquo;s first open; Created counts the first time it&rsquo;s made.
       </p>
       <MetricGroups groups={GROUPS} summary={summary} active={active} />
     </div>

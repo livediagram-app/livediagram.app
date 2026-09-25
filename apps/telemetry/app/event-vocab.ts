@@ -119,6 +119,18 @@ export { titleCase };
 // How a `type` reads on screen. Tokens are title-cased ('square' ->
 // 'Square'); a page path (spec/150) is shown exactly as stored, since
 // '/help/the-canvas' is only recognisable as the URL it is.
+// Canvas·Changed types that are a canvas-panel control rather than a
+// background pattern (useTabCanvas's debounced emits), with the words for it.
+// The Look & Feel Canvas Styles ranking is patterns only, so it leaves these
+// out; the Raw table explains them instead of calling them a pattern.
+export const CANVAS_CONTROLS: Readonly<Record<string, string>> = {
+  BackgroundColor: 'background colour',
+  BackgroundOpacity: 'background opacity',
+  PatternColor: 'pattern colour',
+  BackgroundPatternScale: 'pattern scale',
+  BackgroundAnimationSpeed: 'background animation speed',
+};
+
 export function typeLabel(type: string): string {
   return type.startsWith('/') ? type : titleCase(type);
 }
@@ -150,7 +162,7 @@ export function eventExplanation(category: string, action: string, type: string 
     return `Someone generated a ${type.toLowerCase()}-role share link for a diagram.`;
   }
   if (category === 'Diagram' && action === 'Joined' && type) {
-    return `Someone opened a diagram via a ${type.toLowerCase()}-role share link.`;
+    return `Someone came into a diagram through a ${type.toLowerCase()}-role share link. Counted once per person per diagram, not on every revisit.`;
   }
   if (category === 'Element' && action === 'Linked' && type) {
     return `Someone linked an element to another ${type.toLowerCase()}.`;
@@ -167,10 +179,13 @@ export function eventExplanation(category: string, action: string, type: string 
     return `Someone imported a tab from a ${type} file.`;
   }
   if (category === 'Theme' && action === 'Changed' && type) {
-    return `Someone switched a tab to the ${type} theme.`;
+    return `A tab was given the ${type} theme: switched to it, or picked when a diagram or template was created with it.`;
   }
   if (category === 'Canvas' && action === 'Changed' && type) {
-    return `Someone switched a tab's background pattern to ${type}.`;
+    const control = CANVAS_CONTROLS[type];
+    return control
+      ? `Someone adjusted a tab's ${control} in the canvas panel.`
+      : `Someone switched a tab's background pattern to ${type}.`;
   }
   if (category === 'Canvas' && action === 'Used' && type === 'FollowMe') {
     return "Someone pinned their canvas to a peer's viewport (spec/131), following their pan, zoom and tab until they take it back.";
@@ -191,7 +206,9 @@ export function eventExplanation(category: string, action: string, type: string 
     return `Someone picked a ${type.toLowerCase()} match from the global search results.`;
   }
   if (category === 'UI' && action === 'Toggled' && type) {
-    return `Someone switched the editor chrome to ${type.toLowerCase()} mode.`;
+    if (type === 'Light' || type === 'Dark' || type === 'System')
+      return `Someone set the editor appearance to ${type}.`;
+    return `Someone flipped an editor setting: ${typeLabel(type)}.`;
   }
   if (category === 'UI' && action === 'Opened' && type) {
     if (type === 'Settings') return 'Someone opened the Settings dialog.';
@@ -210,7 +227,7 @@ export function eventExplanation(category: string, action: string, type: string 
   // Category + action.
   if (category === 'Diagram') {
     if (action === 'Loaded')
-      return 'An existing diagram was opened, counted on every open (including a page refresh).';
+      return 'A diagram was opened, counted on every open (including a page refresh and the first open of a diagram just created).';
     if (action === 'Created') return 'A brand-new diagram was created.';
     if (action === 'Duplicated') return 'A diagram was duplicated into a new one.';
     if (action === 'Deleted') return 'A diagram was deleted.';
