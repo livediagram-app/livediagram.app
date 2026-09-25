@@ -62,3 +62,22 @@ export function buildWindowCounts(
   }
   return out;
 }
+
+/** How many whole UTC days the window spans. */
+export function windowDays(active: TelemetryWindowKey): number {
+  return WINDOW_META.find((w) => w.key === active)?.days ?? 30;
+}
+
+/**
+ * What a trend arrow compares against: the same number of days just before
+ * the window, named for its tooltip. Null when the 30-day series can't reach
+ * that far back (behind the 30-day window), so no arrow is drawn.
+ */
+export function previousSpanLabel(
+  daily: TelemetryDaily | undefined,
+  active: TelemetryWindowKey,
+): string | null {
+  const days = windowDays(active);
+  if (!daily || days * 2 > daily.days.length) return null;
+  return days === 1 ? 'the day before' : `the ${days} days before`;
+}

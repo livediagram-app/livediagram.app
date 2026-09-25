@@ -11,10 +11,12 @@ import {
   metricKey,
   stackDrawsLines,
   stackSeriesColor,
+  previousCount,
   windowCount,
+  type Metric,
 } from './metric-series';
 import type { ViewKey } from './view-keys';
-import { windowHighlightFrom } from './windows';
+import { previousSpanLabel, windowDays, windowHighlightFrom } from './windows';
 
 export type { Metric, MetricGroup, MetricStack } from './metric-series';
 import type { MetricGroup } from './metric-series';
@@ -47,6 +49,10 @@ export function MetricGroups({
 }) {
   const daily = summary.daily;
   const highlightFromIndex = daily ? windowHighlightFrom(daily, active) : null;
+  // Trend arrows compare each count with the same span just before the window.
+  const against = previousSpanLabel(daily, active);
+  const span = windowDays(active);
+  const previousOf = (m: Metric) => (daily && against ? previousCount(daily, m, span) : null);
   // The one open stack, and its head card (focus returns there on close). Opening
   // another stack replaces it. View state only: nothing persists it.
   const [open, setOpen] = useState<OpenStack | null>(null);
@@ -70,6 +76,8 @@ export function MetricGroups({
                     series={daily ? dailySeries(daily, item) : undefined}
                     days={daily?.days}
                     highlightFromIndex={highlightFromIndex}
+                    previous={previousOf(item)}
+                    against={against}
                   />
                 );
               }
@@ -92,6 +100,8 @@ export function MetricGroups({
                     counts={counts}
                     days={daily?.days}
                     highlightFromIndex={highlightFromIndex}
+                    previousCounts={item.members.map(previousOf)}
+                    against={against}
                     expanded={opened !== null}
                     onToggle={(anchor) => setOpen(opened ? null : { key, anchor })}
                   />
@@ -127,6 +137,8 @@ export function MetricGroups({
                             series={series[i]?.values}
                             days={daily?.days}
                             highlightFromIndex={highlightFromIndex}
+                            previous={previousOf(m)}
+                            against={against}
                             color={lines ? series[i]?.color : undefined}
                           />
                         </div>

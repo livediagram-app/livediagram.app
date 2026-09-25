@@ -110,6 +110,7 @@ export const GROUPS: MetricGroup[] = [
         category: 'Team',
         action: 'Declined',
         type: 'Invite',
+        rising: 'neutral',
         title: 'Invites Declined',
         blurb: 'The recipient turned an invitation down. Read against accepted, not against sent.',
       },
@@ -157,6 +158,7 @@ export const GROUPS: MetricGroup[] = [
         category: 'Element',
         action: 'Removed',
         type: 'Vote',
+        rising: 'neutral',
         title: 'Dots Retracted',
         blurb:
           'A participant took a dot back. Read against dots cast to see how much reconsidering happens.',
@@ -173,6 +175,7 @@ export const GROUPS: MetricGroup[] = [
         category: 'Tab',
         action: 'Cleared',
         type: 'Vote',
+        rising: 'neutral',
         title: 'Votes Discarded',
         blurb:
           'The whole round was thrown away, dots and all. Distinct from ending it, which keeps the tallies.',
@@ -227,6 +230,7 @@ export const GROUPS: MetricGroup[] = [
         category: 'Tab',
         action: 'Toggled',
         type: 'TimerPaused',
+        rising: 'neutral',
         title: 'Timers Paused',
         blurb:
           'Paused mid-run. Heavy pausing suggests the timebox rarely survives contact with the meeting.',
@@ -235,6 +239,7 @@ export const GROUPS: MetricGroup[] = [
         category: 'Tab',
         action: 'Changed',
         type: 'TimerReset',
+        rising: 'neutral',
         title: 'Timers Reset',
         blurb: 'Returned to its starting value, usually for a second round of the same exercise.',
       },

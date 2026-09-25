@@ -10,6 +10,7 @@ import {
   type TelemetryCount,
   type TelemetryDaily,
 } from '@livediagram/api-schema';
+import type { Rising } from './metric-series';
 import { rank } from './rank';
 
 export const PAGE_VIEW_APPS: PageViewApp[] = ['Marketing', 'Live', 'Help', 'Dashboard'];
@@ -51,7 +52,7 @@ export type InsightDef = {
   unit: string; // "per 100", "pages"
   // Whether a rise is good news, which colours the change. Neutral where it
   // could read either way (more help per diagram: engaged, or stuck?).
-  rising: 'good' | 'neutral';
+  rising: Rising;
 };
 
 export type InsightReading = {

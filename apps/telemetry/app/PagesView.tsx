@@ -6,7 +6,7 @@ import { PAGE_VIEW_APPS, pageViewRows, readInsight } from './page-insights';
 import { CardColumns } from './CardColumns';
 import { InsightTile } from './PageInsights';
 import { RankCard } from './RankCard';
-import { WINDOW_META, windowHighlightFrom, windowLabel } from './windows';
+import { previousSpanLabel, windowDays, windowHighlightFrom, windowLabel } from './windows';
 
 // Pages view (spec/150): which pages across the site get viewed, broken down
 // by the app that serves them. Every frontend emits `Page·View·<path>` on
@@ -27,17 +27,10 @@ export function PagesView({
 }) {
   const rows = summary.windows[active].rows;
 
-  const windowDays = WINDOW_META.find((w) => w.key === active)?.days ?? 30;
+  const days = windowDays(active);
   const highlightFromIndex = summary.daily ? windowHighlightFrom(summary.daily, active) : null;
-  // The span each insight's change is measured against: the same number of
-  // days just before the window. The 30 days of series can't reach behind the
-  // 30-day window itself, so that one shows no change.
-  const previousLabel =
-    windowDays * 2 <= (summary.daily?.days.length ?? 0)
-      ? windowDays === 1
-        ? 'the day before'
-        : `the ${windowDays} days before`
-      : null;
+  // The span each insight's change is measured against.
+  const previousLabel = previousSpanLabel(summary.daily, active);
 
   // The ranking cards, for CardColumns to balance: apps serve very different
   // numbers of pages (Live has many, Help and Dashboard few).
@@ -73,7 +66,7 @@ export function PagesView({
             <InsightTile
               key={def.id}
               def={def}
-              reading={readInsight(def, rows, summary.daily, windowDays)}
+              reading={readInsight(def, rows, summary.daily, days)}
               highlightFromIndex={highlightFromIndex}
               previousLabel={previousLabel}
             />

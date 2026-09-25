@@ -3,6 +3,7 @@
 import { categoryColor, eventExplanation, eventLabel } from './event-vocab';
 import { isAggregate, type Metric } from './metric-series';
 import { EventIcon } from './telemetry-event-icon';
+import { TrendBadge } from './TrendBadge';
 import { TrendChart } from './TrendChart';
 
 // One curated metric as a card: the selected-window count + a 30-day trend
@@ -14,6 +15,8 @@ export function MetricCard({
   series,
   days,
   highlightFromIndex,
+  previous,
+  against,
   color = categoryColor(m.category),
 }: {
   metric: Metric;
@@ -21,6 +24,10 @@ export function MetricCard({
   series: number[] | undefined;
   days: number[] | undefined;
   highlightFromIndex: number | null;
+  // The count over the span just before the window, and that span's name, for
+  // the trend arrow. Null when there's nothing to compare against.
+  previous: number | null;
+  against: string | null;
   color?: string;
 }) {
   // An aggregate has no single type, so the icon + label drop the type.
@@ -46,9 +53,14 @@ export function MetricCard({
             </p>
           </div>
         </div>
-        <span className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
-          {count.toLocaleString()}
-        </span>
+        <div className="flex shrink-0 items-center gap-2">
+          {previous !== null && against ? (
+            <TrendBadge now={count} before={previous} rising={m.rising} against={against} />
+          ) : null}
+          <span className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
+            {count.toLocaleString()}
+          </span>
+        </div>
       </div>
       {/* Plain-language meaning. Aggregates carry their own blurb; single
           metrics reuse the Raw view's row tooltip copy. */}

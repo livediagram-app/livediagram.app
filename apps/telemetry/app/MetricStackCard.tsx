@@ -4,6 +4,7 @@ import { fmtDay } from './chart-utils';
 import { stackDrawsLines, type MetricStack } from './metric-series';
 import { StackDeck } from './StackDeck';
 import { StackTrendChart, type StackSeries } from './StackTrendChart';
+import { TrendBadge } from './TrendBadge';
 
 // The head card of a chart stack (spec/22): the members' combined count and
 // their lines on one chart, in the shared deck frame (StackDeck).
@@ -13,6 +14,8 @@ export function MetricStackCard({
   counts,
   days,
   highlightFromIndex,
+  previousCounts,
+  against,
   expanded,
   onToggle,
 }: {
@@ -21,15 +24,21 @@ export function MetricStackCard({
   counts: number[]; // selected-window count per member, same order as series
   days: number[] | undefined;
   highlightFromIndex: number | null;
+  // Each member's count over the span before the window (same order), and
+  // that span's name, for the trend arrow; null when there's none.
+  previousCounts: (number | null)[];
+  against: string | null;
   expanded: boolean;
   // Hands back the head element, which gets focus back when the modal closes.
   onToggle: (anchor: HTMLElement) => void;
 }) {
   // The members' sum, or just the headline members' when the stack names them.
   const headline = stack.headline === undefined ? null : [stack.headline].flat();
-  const total = counts
-    .filter((_, i) => headline === null || headline.includes(stack.members[i]!))
-    .reduce((sum, n) => sum + n, 0);
+  const inHeadline = (i: number) => headline === null || headline.includes(stack.members[i]!);
+  const total = counts.filter((_, i) => inHeadline(i)).reduce((sum, n) => sum + n, 0);
+  const before = previousCounts.some((n, i) => inHeadline(i) && n === null)
+    ? null
+    : previousCounts.filter((_, i) => inHeadline(i)).reduce<number>((sum, n) => sum + (n ?? 0), 0);
   const { chart, legend, hidden } = headView(stack.title, series, counts);
 
   return (
@@ -40,9 +49,14 @@ export function MetricStackCard({
       expanded={expanded}
       onToggle={onToggle}
       aside={
-        <span className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
-          {total.toLocaleString()}
-        </span>
+        <div className="flex shrink-0 items-center gap-2">
+          {before !== null && against ? (
+            <TrendBadge now={total} before={before} rising={stack.rising} against={against} />
+          ) : null}
+          <span className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
+            {total.toLocaleString()}
+          </span>
+        </div>
       }
     >
       <p className="mt-3 text-xs leading-relaxed text-slate-500 dark:text-slate-400">

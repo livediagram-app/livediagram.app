@@ -2,6 +2,7 @@
 
 import { fmtDay } from './chart-utils';
 import type { InsightDef, InsightReading } from './page-insights';
+import { TrendBadge } from './TrendBadge';
 
 // One insight tile on the Pages tab (spec/150): the rate, the counts it is
 // made of, how it moved against the span before, and its 30-day trend.
@@ -31,7 +32,16 @@ export function InsightTile({
       <div className="flex items-start justify-between gap-3">
         <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{def.title}</p>
         {value !== null && previous !== null && previousLabel ? (
-          <Change def={def} now={value} before={previous} against={previousLabel} />
+          <TrendBadge
+            now={value}
+            before={previous}
+            rising={def.rising}
+            against={previousLabel}
+            difference={{
+              format: (n) => fmt(n, def.scale),
+              flatBelow: def.scale === 1 ? 0.05 : 0.5,
+            }}
+          />
         ) : null}
       </div>
       {/* The flow the rate measures, so the ratio reads without the sentence. */}
@@ -76,39 +86,6 @@ function Chip({ children }: { children: string }) {
   return (
     <span className="rounded-md bg-slate-100 px-1.5 py-0.5 font-mono text-[11px] text-slate-600 dark:bg-slate-800 dark:text-slate-300">
       {children}
-    </span>
-  );
-}
-
-// The move against the span before: green up / rose down where a rise is
-// good news, slate either way where it isn't clearly either.
-function Change({
-  def,
-  now,
-  before,
-  against,
-}: {
-  def: InsightDef;
-  now: number;
-  before: number;
-  against: string;
-}) {
-  const delta = now - before;
-  const flat = Math.abs(delta) < (def.scale === 1 ? 0.05 : 0.5);
-  const tone =
-    flat || def.rising === 'neutral'
-      ? 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
-      : delta > 0
-        ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400'
-        : 'bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400';
-  const arrow = flat ? '→' : delta > 0 ? '▲' : '▼';
-  return (
-    <span
-      className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium tabular-nums ${tone}`}
-      title={`Against ${against}: ${fmt(before, def.scale)}`}
-    >
-      {arrow} {flat ? 'flat' : fmt(Math.abs(delta), def.scale)}
-      <span className="sr-only"> against {against}</span>
     </span>
   );
 }

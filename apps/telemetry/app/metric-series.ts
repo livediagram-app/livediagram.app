@@ -4,6 +4,11 @@ import type { ViewKey } from './view-keys';
 // The curated-metric model shared by every MetricGroups view (spec/22), plus
 // the pure maths that turn one into a window count and a 30-day series.
 //
+// Whether a metric going up is good news, bad news, or neither. Drives the
+// colour of its trend arrow (TrendBadge): green good, red bad, yellow neutral.
+// Unset means good: most counts here are usage, and more usage is the aim.
+export type Rising = 'good' | 'bad' | 'neutral';
+
 // A curated metric is either a single typed event, or an AGGREGATE over every
 // type of a `category·action` (`allTypes`) where the type split is arbitrary
 // for the lens.
@@ -17,6 +22,7 @@ export type Metric = {
   typeIn?: (type: string | null) => boolean;
   title: string;
   blurb?: string; // overrides eventExplanation (needed for aggregates)
+  rising?: Rising;
 };
 
 // A chart stack (spec/22): one head card plotting its members together, which
@@ -37,6 +43,9 @@ export type MetricStack = {
   // A tab that goes deeper than the stack can (Page Views by App -> Pages),
   // linked from a full-width footer in the stack's modal.
   seeAlso?: { view: ViewKey; label: string };
+  // How the head's number going up reads. Unset means good; a stack that
+  // mixes good and bad members (sign-ups beside deletions) says neutral.
+  rising?: Rising;
 };
 
 export type MetricGroupItem = Metric | MetricStack;
@@ -83,6 +92,18 @@ export function dailySeries(daily: TelemetryDaily, m: Metric): number[] {
     for (let i = 0; i < out.length; i++) out[i] += series[i] ?? 0;
   }
   return out;
+}
+
+/**
+ * The metric's count over the same number of days just before the window, from
+ * the 30-day series, or null when the series doesn't reach back that far (the
+ * 30-day window itself).
+ */
+export function previousCount(daily: TelemetryDaily, m: Metric, windowDays: number): number | null {
+  const series = dailySeries(daily, m);
+  const n = series.length;
+  if (n - 2 * windowDays < 0) return null;
+  return series.slice(n - 2 * windowDays, n - windowDays).reduce((a, b) => a + b, 0);
 }
 
 // One colour per stack member, in order. Owned by the stack's rendering, not

@@ -39,6 +39,7 @@ export const GROUPS: MetricGroup[] = [
         category: 'Help',
         action: 'Unhelpful',
         allTypes: true,
+        rising: 'bad',
         title: 'Marked Not Helpful',
         blurb: 'Readers who tapped "not really"; the articles worth rewriting.',
       },

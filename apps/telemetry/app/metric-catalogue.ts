@@ -1,7 +1,7 @@
 import { PALETTE_TELEMETRY_TYPES, pageViewApp, type PageViewApp } from '@livediagram/api-schema';
 import { isRecovery, isServerCrash } from './error-kinds';
 import { canonicalElementType, PALETTE_KINDS, type PaletteTab } from './palette-types';
-import type { Metric, MetricStack } from './metric-series';
+import type { Metric, MetricStack, Rising } from './metric-series';
 
 // Charts defined once and reused (spec/22). A chart stack references these
 // rather than declaring its own copies, so one chart can sit in several
@@ -38,6 +38,7 @@ export const SIGN_INS: Metric = {
 };
 
 export const SIGN_OUTS: Metric = {
+  rising: 'neutral',
   category: 'Session',
   action: 'SignedOut',
   type: null,
@@ -45,6 +46,7 @@ export const SIGN_OUTS: Metric = {
 };
 
 export const ACCOUNTS_DELETED: Metric = {
+  rising: 'bad',
   category: 'Session',
   action: 'Deleted',
   type: 'Account',
@@ -54,6 +56,7 @@ export const ACCOUNTS_DELETED: Metric = {
 
 // Stacks shared by more than one tab, defined once like the charts above.
 export const ACCOUNT_ACTIVITY: MetricStack = {
+  rising: 'neutral',
   stack: true,
   title: 'Account Activity',
   blurb:
@@ -91,12 +94,13 @@ export const DASHBOARD_PAGES = pagesOf('Dashboard', 'This public telemetry dashb
 // about other people's activity, then account notices. `metric-series.test`
 // fails if a template has no chart here, so the Emails Sent stack's total can
 // never quietly miss one.
-const email = (type: string, title: string, blurb: string): Metric => ({
+const email = (type: string, title: string, blurb: string, rising?: Rising): Metric => ({
   category: 'Email',
   action: 'Sent',
   type,
   title,
   blurb,
+  rising,
 });
 
 export const WELCOME_EMAILS = email(
@@ -118,11 +122,13 @@ export const ACTIVATION_EMAILS = email(
   'Activation',
   'Activation Nudges',
   'A new account with no diagrams yet, about three days after sign-up.',
+  'neutral',
 );
 export const WIN_BACK_EMAILS = email(
   'WinBack',
   'Win-Back Emails',
   'An account that has gone quiet for about four weeks.',
+  'neutral',
 );
 export const MILESTONE_EMAILS = email(
   'Milestone',
@@ -163,11 +169,13 @@ export const TOKEN_EXPIRING_EMAILS = email(
   'TokenExpiring',
   'Token Expiry Warnings',
   'An API token is within a week of its six-month expiry. Once per token.',
+  'neutral',
 );
 export const ACCOUNT_DELETED_EMAILS = email(
   'AccountDeleted',
   'Account Deleted Emails',
   'The confirmation sent after someone deletes their account.',
+  'bad',
 );
 
 export const EMAIL_KIND_METRICS: readonly Metric[] = [
@@ -188,6 +196,7 @@ export const EMAIL_KIND_METRICS: readonly Metric[] = [
 ];
 
 export const EMAILS_SENT: MetricStack = {
+  rising: 'neutral',
   stack: true,
   title: 'Emails Sent',
   blurb:
@@ -219,6 +228,7 @@ export const DIAGRAMS_RENAMED: Metric = {
   title: 'Diagrams Renamed',
 };
 export const DIAGRAMS_DELETED: Metric = {
+  rising: 'neutral',
   category: 'Diagram',
   action: 'Deleted',
   type: null,
@@ -254,6 +264,7 @@ export const TABS_RENAMED: Metric = {
   title: 'Tabs Renamed',
 };
 export const TABS_DELETED: Metric = {
+  rising: 'neutral',
   category: 'Tab',
   action: 'Deleted',
   type: null,
@@ -387,6 +398,7 @@ export const AI_TOOLS_CONNECTED: Metric = {
   blurb: 'AI assistants that connected through the MCP OAuth consent screen.',
 };
 export const TOKENS_REVOKED: Metric = {
+  rising: 'neutral',
   category: 'Token',
   action: 'Removed',
   type: null,
@@ -394,7 +406,8 @@ export const TOKENS_REVOKED: Metric = {
   blurb: 'API tokens revoked, whether minted by hand or by an AI tool.',
 };
 
-export const API_TOKENS: MetricStack = {
+export const API_TOKEN_ACTIVITY: MetricStack = {
+  rising: 'neutral',
   stack: true,
   title: 'API Token Activity',
   blurb:
@@ -518,6 +531,7 @@ export const LAYER_MOVES: Metric = {
   blurb: 'Elements sent to another layer: layers being used to organise, not just to hide.',
 };
 export const LAYERS_DELETED: Metric = {
+  rising: 'neutral',
   category: 'Layer',
   action: 'Deleted',
   type: null,
@@ -543,6 +557,7 @@ export const LAYERS_FEATURE: MetricStack = {
 // its caller saw, so Failed Requests and Server Crashes are read side by side,
 // never added.
 export const FAILED_REQUESTS: Metric = {
+  rising: 'bad',
   category: 'Error',
   action: 'Api',
   typeIn: (type) => !isServerCrash(type),
@@ -551,6 +566,7 @@ export const FAILED_REQUESTS: Metric = {
     'Requests a caller saw fail: non-2xx responses and dropped requests in the editor, failed api calls inside MCP tools, and failed email sends. A server crash appears here as the Http500 its caller saw.',
 };
 export const SERVER_CRASHES: Metric = {
+  rising: 'bad',
   category: 'Error',
   action: 'Api',
   typeIn: isServerCrash,
@@ -559,6 +575,7 @@ export const SERVER_CRASHES: Metric = {
     'Unhandled exceptions the api worker reported about itself, by route. Most also appear as an Http500 in Failed Requests, so read the two side by side rather than adding them.',
 };
 export const CLIENT_EXCEPTIONS: Metric = {
+  rising: 'bad',
   category: 'Error',
   action: 'Client',
   typeIn: (type) => !isRecovery(type),
@@ -567,6 +584,7 @@ export const CLIENT_EXCEPTIONS: Metric = {
     'Uncaught exceptions, unhandled promise rejections, and editor areas that failed to render, in the editor and help centre.',
 };
 export const REALTIME_RESYNCS: Metric = {
+  rising: 'bad',
   category: 'Error',
   action: 'Client',
   typeIn: isRecovery,
@@ -579,6 +597,7 @@ export const REALTIME_RESYNCS: Metric = {
 // client exceptions. Server crashes would count those failures a second time
 // and resyncs are recoveries, so neither joins the headline.
 export const EXCEPTIONS: MetricStack = {
+  rising: 'bad',
   stack: true,
   title: 'Exceptions',
   blurb:
