@@ -21,15 +21,21 @@ export { rank } from './rank';
 export function RankCard({
   title,
   subtitle,
-  category,
-  action,
-  items,
-  daily,
-  emptyLabel,
-  aliases,
+  ...list
 }: {
   title: string;
   subtitle: string;
+} & RankListProps) {
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-900">
+      <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">{title}</h3>
+      <p className="mt-0.5 text-xs text-slate-400">{subtitle}</p>
+      <RankList {...list} />
+    </div>
+  );
+}
+
+type RankListProps = {
   category: string;
   action: string;
   items: TelemetryCount[];
@@ -38,65 +44,60 @@ export function RankCard({
   // The same old-spelling map the items were ranked with, so a folded row's
   // trend line includes the history stored under its old spelling.
   aliases?: TypeAliases;
-}) {
-  const color = categoryColor(category);
+};
 
+// The ranked rows, inside RankCard's frame.
+function RankList({ category, action, items, daily, emptyLabel, aliases }: RankListProps) {
+  const color = categoryColor(category);
+  if (items.length === 0) {
+    return (
+      <div className="mt-4">
+        <EmptyState icon={<ActivityGlyph />} title="Nothing yet" description={emptyLabel} />
+      </div>
+    );
+  }
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-900">
-      <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">{title}</h3>
-      <p className="mt-0.5 text-xs text-slate-400">{subtitle}</p>
-      {items.length === 0 ? (
-        <div className="mt-4">
-          <EmptyState icon={<ActivityGlyph />} title="Nothing yet" description={emptyLabel} />
-        </div>
-      ) : (
-        <ul className="mt-4 flex flex-col gap-3">
-          {items.map((row, i) => {
-            // Only the top row is tagged. We deliberately don't tag a "least
-            // used" — features with zero usage have no row at all, so the
-            // bottom of this list isn't truly the least used, just the lowest
-            // among those that have any data.
-            const isTop = items.length > 1 && i === 0;
-            const series = daily
-              ? aliasedSeries(daily.byMetric, category, action, row.type, aliases)
-              : undefined;
-            return (
-              <li key={row.type} className="flex items-center gap-3">
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-baseline justify-between gap-2 text-sm">
-                    <span className="flex min-w-0 items-center gap-2">
-                      <span className="truncate text-slate-700 dark:text-slate-200">
-                        {typeLabel(row.type ?? '')}
-                      </span>
-                      {isTop ? <RankTag /> : null}
-                    </span>
-                    <span className="shrink-0 font-semibold tabular-nums text-slate-900 dark:text-slate-100">
-                      {row.count.toLocaleString()}
-                    </span>
-                  </div>
-                  <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-                    <div
-                      className="h-full rounded-full"
-                      style={{
-                        width: `${pct(row.count, items[0]!.count)}%`,
-                        backgroundColor: color,
-                      }}
-                    />
-                  </div>
-                </div>
-                {series ? (
-                  <MiniSparkline
-                    values={series}
-                    color={color}
-                    className="hidden h-6 w-20 sm:block"
-                  />
-                ) : null}
-              </li>
-            );
-          })}
-        </ul>
-      )}
-    </div>
+    <ul className="mt-4 flex flex-col gap-3">
+      {items.map((row, i) => {
+        // Only the top row is tagged. We deliberately don't tag a "least
+        // used" — features with zero usage have no row at all, so the
+        // bottom of this list isn't truly the least used, just the lowest
+        // among those that have any data.
+        const isTop = items.length > 1 && i === 0;
+        const series = daily
+          ? aliasedSeries(daily.byMetric, category, action, row.type, aliases)
+          : undefined;
+        return (
+          <li key={row.type} className="flex items-center gap-3">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-baseline justify-between gap-2 text-sm">
+                <span className="flex min-w-0 items-center gap-2">
+                  <span className="truncate text-slate-700 dark:text-slate-200">
+                    {typeLabel(row.type ?? '')}
+                  </span>
+                  {isTop ? <RankTag /> : null}
+                </span>
+                <span className="shrink-0 font-semibold tabular-nums text-slate-900 dark:text-slate-100">
+                  {row.count.toLocaleString()}
+                </span>
+              </div>
+              <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                <div
+                  className="h-full rounded-full"
+                  style={{
+                    width: `${pct(row.count, items[0]!.count)}%`,
+                    backgroundColor: color,
+                  }}
+                />
+              </div>
+            </div>
+            {series ? (
+              <MiniSparkline values={series} color={color} className="hidden h-6 w-20 sm:block" />
+            ) : null}
+          </li>
+        );
+      })}
+    </ul>
   );
 }
 

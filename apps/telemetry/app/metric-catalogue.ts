@@ -185,7 +185,15 @@ export const EMAIL_KIND_METRICS: readonly Metric[] = [
   ACCOUNT_DELETED_EMAILS,
 ];
 
-// Diagram lifecycle (Content tab).
+export const EMAILS_SENT: MetricStack = {
+  stack: true,
+  title: 'Emails Sent',
+  blurb:
+    'Every transactional and lifecycle email that left the worker, one chart per template. The kind only, never a recipient.',
+  members: [...EMAIL_KIND_METRICS],
+};
+
+// Diagram lifecycle.
 export const DIAGRAMS_LOADED: Metric = {
   category: 'Diagram',
   action: 'Loaded',
@@ -222,7 +230,7 @@ export const DIAGRAMS_DUPLICATED: Metric = {
   blurb: 'A diagram copied from the Explorer, or a shared diagram cloned into your own account.',
 };
 
-// Tab lifecycle (Content tab).
+// Tab lifecycle.
 export const TABS_LOADED: Metric = {
   category: 'Tab',
   action: 'Loaded',
@@ -284,4 +292,126 @@ export const DARK_MODE_SWITCHES: Metric = {
   type: 'Dark',
   title: 'Dark-Mode Switches',
   blurb: 'Someone set the editor appearance to Dark, from the header toggle or Settings.',
+};
+
+// The returning-visitor split by sign-in state, parked when the Acquisition
+// tab was removed (September 2026): Returning Visitors sums both.
+export const RETURNING_GUESTS: Metric = {
+  category: 'Participant',
+  action: 'Returned',
+  type: 'Anonymous',
+  title: 'Returning Guests',
+  blurb: 'Returning visitors who are not signed in.',
+};
+
+export const RETURNING_SIGNED_IN: Metric = {
+  category: 'Participant',
+  action: 'Returned',
+  type: 'Authenticated',
+  title: 'Returning Signed-In',
+  blurb: 'Returning visitors who are signed in with an account.',
+};
+
+// The diagram + tab lifecycle as stacks (Highlights). Loaded is the opens
+// signal (every open, including a new diagram's first), read against the
+// once-per-object Created beside it.
+export const DIAGRAM_ACTIONS: MetricStack = {
+  stack: true,
+  title: 'Diagram Actions',
+  blurb: 'Diagrams opened, made, renamed, deleted and duplicated.',
+  members: [
+    DIAGRAMS_LOADED,
+    DIAGRAMS_CREATED,
+    DIAGRAMS_RENAMED,
+    DIAGRAMS_DELETED,
+    DIAGRAMS_DUPLICATED,
+  ],
+};
+
+export const TAB_ACTIONS: MetricStack = {
+  stack: true,
+  title: 'Tab Actions',
+  blurb: 'Tabs opened, made, renamed, deleted and duplicated.',
+  members: [TABS_LOADED, TABS_CREATED, TABS_RENAMED, TABS_DELETED, TABS_DUPLICATED],
+};
+
+// AI assistance (Editing tab). Ask and Clean split AI Requests by mode.
+export const AI_REQUESTS: Metric = {
+  category: 'AI',
+  action: 'Used',
+  allTypes: true,
+  title: 'AI Requests',
+  blurb:
+    'A completed request in the editor AI panel, across both modes (Ask, Clean). Refusals and failures are not counted (spec/25).',
+};
+export const AI_ASK: Metric = {
+  category: 'AI',
+  action: 'Used',
+  type: 'Ask',
+  title: 'Ask Requests',
+  blurb: 'AI requests in Ask mode: read-only questions about the diagram. Part of AI Requests.',
+};
+export const AI_CLEAN: Metric = {
+  category: 'AI',
+  action: 'Used',
+  type: 'Clean',
+  title: 'Clean Requests',
+  blurb:
+    'AI requests in Clean mode: tidy-the-tab runs, the one mode that changes the canvas. Part of AI Requests.',
+};
+export const AI_TURNED_ON: Metric = {
+  category: 'AI',
+  action: 'Toggled',
+  type: 'AiOn',
+  title: 'AI Turned On',
+  blurb:
+    'The Settings opt-in being switched on. AI is off until someone turns it on, so every request comes from people who did this.',
+};
+
+export const AI_ASSISTANCE: MetricStack = {
+  stack: true,
+  title: 'AI Assistance',
+  blurb: 'Requests in the editor AI panel, and how they split between Ask and Clean.',
+  members: [AI_REQUESTS, AI_ASK, AI_CLEAN],
+  headline: AI_REQUESTS,
+};
+
+// Programmatic access (External Connections tab): the API-token lifecycle and
+// what the MCP server's tools actually get used for.
+export const TOKENS_CREATED: Metric = {
+  category: 'Token',
+  action: 'Created',
+  type: 'Manual',
+  title: 'Tokens Created',
+  blurb: 'Personal API tokens minted by hand from the Explorer.',
+};
+export const AI_TOOLS_CONNECTED: Metric = {
+  category: 'Token',
+  action: 'Created',
+  type: 'MCP',
+  title: 'AI Tools Connected',
+  blurb: 'AI assistants that connected through the MCP OAuth consent screen.',
+};
+export const TOKENS_REVOKED: Metric = {
+  category: 'Token',
+  action: 'Removed',
+  type: null,
+  title: 'Tokens Revoked',
+  blurb: 'API tokens revoked, whether minted by hand or by an AI tool.',
+};
+export const MCP_TOOL_CALLS: Metric = {
+  category: 'Mcp',
+  action: 'Used',
+  allTypes: true,
+  title: 'MCP Tool Calls',
+  blurb: 'AI assistants calling the livediagram MCP server tools, across every tool.',
+};
+
+export const API_TOKENS_AND_MCP: MetricStack = {
+  stack: true,
+  title: 'API Tokens & MCP',
+  blurb:
+    'Tokens minted by hand or by an AI tool connecting, tokens revoked, and the MCP tool calls those connections make.',
+  members: [TOKENS_CREATED, AI_TOOLS_CONNECTED, TOKENS_REVOKED, MCP_TOOL_CALLS],
+  headline: MCP_TOOL_CALLS,
 };

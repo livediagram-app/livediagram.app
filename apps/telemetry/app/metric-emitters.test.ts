@@ -1,8 +1,6 @@
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { GROUPS as ACQUISITION } from './AcquisitionView';
 import { GROUPS as COLLABORATION } from './CollaborationView';
-import { GROUPS as CONTENT } from './ContentView';
 import { GROUPS as EDITING } from './EditingView';
 import { COMPUTED, scanEmitters, type Emit } from './emitter-scan';
 import { GROUPS as EXCEPTIONS, RECOVERY_TYPES } from './ExceptionsView';
@@ -95,8 +93,6 @@ function sendable(category: string, action: string, type: string | null): boolea
 
 const ALL: MetricGroup[] = [
   ...HIGHLIGHTS,
-  ...ACQUISITION,
-  ...CONTENT,
   ...COLLABORATION,
   ...EDITING,
   ...EXCEPTIONS,

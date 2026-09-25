@@ -7,13 +7,11 @@ import {
   ActivityGlyph,
   AlertGlyph,
   BrushGlyph,
-  DiagramGlyph,
   FileGlyph,
   LinkGlyph,
   LayersGlyph,
   ListGlyph,
   PaletteGlyph,
-  PersonAddGlyph,
   SearchGlyph,
   ShareGlyph,
   SparkGlyph,
@@ -23,9 +21,8 @@ import { WindowPanel } from './WindowPanel';
 import { StickyWindowBar } from './StickyWindowBar';
 import { ViewTabs } from './ViewTabs';
 import { HighlightsView } from './HighlightsView';
-import { AcquisitionView } from './AcquisitionView';
+import type { ViewKey } from './view-keys';
 import { PagesView } from './PagesView';
-import { ContentView } from './ContentView';
 import { RawView } from './RawView';
 import { LookAndFeelView } from './LookAndFeelView';
 import { PaletteView } from './PaletteView';
@@ -44,31 +41,15 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 // Three ways to read the same summary payload (spec/22). The timeframe
 // window is global (the WindowPanel above the tabs), so it lives here
 // alongside the active tab and is passed into whichever view renders.
-// Tab order follows the product funnel: who arrives (Acquisition), which pages
-// they read (Pages), what they
-// open + make (Content), what they build (Palette / Look & Feel), how they
+// Tab order follows the product funnel: who arrives, signs up, opens and
+// makes things (Highlights), which pages they read (Pages), what they build
+// (Palette / Look & Feel), how they
 // organise it (Editing), how they work
 // together (Collaboration), how they get unstuck (Help), how machines connect
 // (External Connections), then the power-user lenses (Search / Raw).
-type ViewKey =
-  | 'highlights'
-  | 'acquisition'
-  | 'pages'
-  | 'content'
-  | 'palette'
-  | 'lookfeel'
-  | 'editing'
-  | 'help'
-  | 'external'
-  | 'collaboration'
-  | 'exceptions'
-  | 'search'
-  | 'raw';
 const VIEWS: { key: ViewKey; label: string; icon: ReactNode }[] = [
   { key: 'highlights', label: 'Highlights', icon: <SparkGlyph /> },
-  { key: 'acquisition', label: 'Acquisition', icon: <PersonAddGlyph /> },
   { key: 'pages', label: 'Pages', icon: <WindowGlyph /> },
-  { key: 'content', label: 'Content', icon: <DiagramGlyph /> },
   { key: 'palette', label: 'Palette', icon: <PaletteGlyph /> },
   { key: 'lookfeel', label: 'Look & Feel', icon: <BrushGlyph /> },
   { key: 'editing', label: 'Editing', icon: <LayersGlyph /> },
@@ -84,6 +65,16 @@ export default function TelemetryDashboard() {
   const [summary, setSummary] = useState<TelemetrySummary | null>(null);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [view, setView] = useState<ViewKey>('highlights');
+  // A link into another view (a stack's See also): switch, then bring the tab
+  // row back into sight so the reader sees where they landed.
+  const openView = (next: ViewKey) => {
+    setView(next);
+    requestAnimationFrame(() =>
+      document
+        .querySelector('[role="tablist"]')
+        ?.scrollIntoView({ block: 'start', behavior: 'smooth' }),
+    );
+  };
   const [active, setActive] = useState<TelemetryWindowKey>('last7');
   // Watched by the StickyWindowBar: once this panel scrolls under the header,
   // the condensed timeframe selector fades in.
@@ -172,13 +163,9 @@ export default function TelemetryDashboard() {
             <ViewTabs views={VIEWS} view={view} onSelect={setView} />
 
             {view === 'highlights' ? (
-              <HighlightsView summary={summary} active={active} />
-            ) : view === 'acquisition' ? (
-              <AcquisitionView summary={summary} active={active} />
+              <HighlightsView summary={summary} active={active} onOpenView={openView} />
             ) : view === 'pages' ? (
               <PagesView summary={summary} active={active} />
-            ) : view === 'content' ? (
-              <ContentView summary={summary} active={active} />
             ) : view === 'palette' ? (
               <PaletteView summary={summary} active={active} />
             ) : view === 'lookfeel' ? (

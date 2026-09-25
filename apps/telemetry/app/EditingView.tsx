@@ -1,6 +1,7 @@
 'use client';
 
 import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
+import { AI_ASSISTANCE, AI_TURNED_ON } from './metric-catalogue';
 import { MetricGroups, type MetricGroup } from './MetricCards';
 import { windowLabel } from './windows';
 
@@ -21,38 +22,7 @@ import { windowLabel } from './windows';
 export const GROUPS: MetricGroup[] = [
   {
     title: 'AI assistance',
-    metrics: [
-      {
-        category: 'AI',
-        action: 'Used',
-        allTypes: true,
-        title: 'AI Requests',
-        blurb:
-          'A completed request in the editor AI panel, across both modes (Ask, Clean). Refusals and failures are not counted (spec/25).',
-      },
-      {
-        category: 'AI',
-        action: 'Used',
-        type: 'Ask',
-        title: 'Of Those, Ask',
-        blurb: 'Read-only questions about the diagram. A subset of the count beside it.',
-      },
-      {
-        category: 'AI',
-        action: 'Used',
-        type: 'Clean',
-        title: 'Of Those, Clean',
-        blurb: 'Tidy-the-tab runs, the one mode that changes the canvas.',
-      },
-      {
-        category: 'AI',
-        action: 'Toggled',
-        type: 'AiOn',
-        title: 'AI Turned On',
-        blurb:
-          'The Settings opt-in being switched on. AI is off until someone turns it on, so every request above comes from people who did this.',
-      },
-    ],
+    metrics: [AI_ASSISTANCE, AI_TURNED_ON],
   },
   {
     title: 'Layers',
@@ -125,7 +95,7 @@ export const GROUPS: MetricGroup[] = [
         type: 'EmailOn',
         title: 'Of Those, Emailed',
         blurb:
-          'Assigned with the notify-by-email box ticked. A subset of the count beside it. Counts the box, not a sent email: sends are Action Notifications on the Acquisition tab.',
+          'Assigned with the notify-by-email box ticked. A subset of the count beside it. Counts the box, not a sent email: sends are Action Notifications in the Emails Sent stack on Highlights.',
       },
       {
         category: 'Action',

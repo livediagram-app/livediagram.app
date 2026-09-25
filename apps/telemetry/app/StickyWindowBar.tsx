@@ -24,7 +24,7 @@ type ViewOption = { key: string; label: string; icon: ReactNode };
 // on the panel drives the show/hide; no scroll listener.
 //
 // To its right, an ellipsis menu switches the active view (Highlights,
-// Acquisition, Raw, …) — the tab row also scrolls away, so this keeps the
+// Pages, Raw, …) — the tab row also scrolls away, so this keeps the
 // "which lens" control reachable too. The timeframe buttons stay inline
 // (out of the menu); only the view picker collapses into the ellipsis.
 export function StickyWindowBar({

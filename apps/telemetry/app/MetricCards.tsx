@@ -4,7 +4,7 @@ import { Fragment, useState } from 'react';
 import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
 import { MetricCard } from './MetricCard';
 import { MetricStackCard } from './MetricStackCard';
-import { StackPopover } from './StackPopover';
+import { StackModal } from './StackModal';
 import {
   dailySeries,
   isStack,
@@ -13,6 +13,7 @@ import {
   stackSeriesColor,
   windowCount,
 } from './metric-series';
+import type { ViewKey } from './view-keys';
 import { windowHighlightFrom } from './windows';
 
 export type { Metric, MetricGroup, MetricStack } from './metric-series';
@@ -20,7 +21,7 @@ import type { MetricGroup } from './metric-series';
 
 // Curated metrics rendered as cards: the selected-window count + a 30-day
 // trend line each (MetricCard), or a chart stack (MetricStackCard) whose
-// members open in a popover over the page (StackPopover). Shared by every
+// members open in a modal over the page (StackModal). Shared by every
 // metric-card view so each is just a list of metric groups rendered
 // identically.
 
@@ -36,14 +37,17 @@ export function MetricGroups({
   groups,
   summary,
   active,
+  onOpenView,
 }: {
   groups: MetricGroup[];
   summary: TelemetrySummary;
   active: TelemetryWindowKey;
+  // Follows a stack's See also link. Views that host no linking stack omit it.
+  onOpenView?: (view: ViewKey) => void;
 }) {
   const daily = summary.daily;
   const highlightFromIndex = daily ? windowHighlightFrom(daily, active) : null;
-  // The one open stack and the head card its popover anchors to. Opening
+  // The one open stack, and its head card (focus returns there on close). Opening
   // another stack replaces it. View state only: nothing persists it.
   const [open, setOpen] = useState<OpenStack | null>(null);
   const close = () => setOpen(null);
@@ -70,7 +74,7 @@ export function MetricGroups({
                 );
               }
               const key = `${group.title}|${item.title}`;
-              const popover = open?.key === key ? open : null;
+              const opened = open?.key === key ? open : null;
               const counts = item.members.map((m) => windowCount(summary, active, m));
               const lines = stackDrawsLines(item.members.length);
               const series = item.members.map((m, i) => ({
@@ -78,7 +82,7 @@ export function MetricGroups({
                 color: stackSeriesColor(i),
                 values: daily ? dailySeries(daily, m) : [],
               }));
-              // The popover is portalled to <body>, so rendering it beside
+              // The modal is portalled to <body>, so rendering it beside
               // the head adds nothing to the grid.
               return (
                 <Fragment key={`stack:${item.title}`}>
@@ -88,16 +92,28 @@ export function MetricGroups({
                     counts={counts}
                     days={daily?.days}
                     highlightFromIndex={highlightFromIndex}
-                    expanded={popover !== null}
-                    onToggle={(anchor) => setOpen(popover ? null : { key, anchor })}
+                    expanded={opened !== null}
+                    onToggle={(anchor) => setOpen(opened ? null : { key, anchor })}
                   />
-                  {popover ? (
-                    <StackPopover
-                      anchor={popover.anchor}
+                  {opened ? (
+                    <StackModal
+                      anchor={opened.anchor}
                       title={item.title}
                       subtitle={`${item.members.length} charts`}
                       count={item.members.length}
                       onClose={close}
+                      footer={
+                        item.seeAlso && onOpenView ? (
+                          <SeeAlsoLink
+                            label={item.seeAlso.label}
+                            onClick={() => {
+                              const view = item.seeAlso!.view;
+                              close();
+                              onOpenView(view);
+                            }}
+                          />
+                        ) : undefined
+                      }
                     >
                       {item.members.map((m, i) => (
                         <div
@@ -115,7 +131,7 @@ export function MetricGroups({
                           />
                         </div>
                       ))}
-                    </StackPopover>
+                    </StackModal>
                   ) : null}
                 </Fragment>
               );
@@ -124,5 +140,28 @@ export function MetricGroups({
         </section>
       ))}
     </div>
+  );
+}
+
+// The full-width link at the foot of a stack's modal into a tab that goes
+// deeper (spec/22 See also).
+function SeeAlsoLink({ label, onClick }: { label: string; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-sky-600 transition-colors hover:border-sky-300 hover:bg-sky-50 dark:border-slate-700 dark:bg-slate-900 dark:text-sky-400 dark:hover:border-sky-700 dark:hover:bg-sky-950"
+    >
+      {label}
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden>
+        <path
+          d="M5 12h14M13 6l6 6-6 6"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </button>
   );
 }

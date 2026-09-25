@@ -1,6 +1,6 @@
-import type { TelemetryCount, TelemetryDaily } from '@livediagram/api-schema';
+import type { TelemetryCount } from '@livediagram/api-schema';
 import { describe, expect, it } from 'vitest';
-import { pageViewRows, per100, risingPages, viewsOf } from './page-insights';
+import { pageViewRows, per100, viewsOf } from './page-insights';
 
 // The Pages tab's arithmetic (spec/150): only page views count, split by the
 // app that serves each path, and ratios are views over views.
@@ -81,37 +81,5 @@ describe('viewsOf and per100', () => {
         (p) => p === '/new',
       ),
     ).toBeNull();
-  });
-});
-
-describe('risingPages', () => {
-  // 14 days: the first 7 are "prev", the last 7 are "last".
-  const series = (prev: number, last: number) => [
-    ...new Array(7).fill(prev / 7),
-    ...new Array(7).fill(last / 7),
-  ];
-  const daily = {
-    days: new Array(14).fill(0),
-    totals: new Array(14).fill(0),
-    byCategory: {},
-    byMetric: {
-      'Page|View|/': series(70, 140),
-      'Page|View|/faq': series(7, 70),
-      'Page|View|/help': series(70, 35),
-      'Page|View|/new': series(14, 14),
-      // Not a page view, however much it rose.
-      'Help|View|the-canvas': series(0, 700),
-    },
-  } as TelemetryDaily;
-
-  it('ranks pages by their gain, week on week, and skips flat or falling ones', () => {
-    expect(risingPages(daily)).toEqual([
-      { path: '/', last7: 140, prev7: 70 },
-      { path: '/faq', last7: 70, prev7: 7 },
-    ]);
-  });
-
-  it('caps the list', () => {
-    expect(risingPages(daily, 1)).toHaveLength(1);
   });
 });

@@ -1,4 +1,5 @@
 import type { TelemetryDaily, TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
+import type { ViewKey } from './view-keys';
 
 // The curated-metric model shared by every MetricGroups view (spec/22), plus
 // the pure maths that turn one into a window count and a 30-day series.
@@ -26,6 +27,14 @@ export type MetricStack = {
   title: string;
   blurb: string;
   members: Metric[];
+  // The head's big number. By default the members' sum, which is right when
+  // they partition one thing (new + returning visitors). Name a member here
+  // when the others are subsets of it or a different unit (AI Requests over
+  // its own Ask / Clean split), so the head never double counts.
+  headline?: Metric;
+  // A tab that goes deeper than the stack can (Page Views by App -> Pages),
+  // linked from a full-width footer in the stack's modal.
+  seeAlso?: { view: ViewKey; label: string };
 };
 
 export type MetricGroupItem = Metric | MetricStack;

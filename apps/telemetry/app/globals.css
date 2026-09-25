@@ -22,3 +22,13 @@
     opacity: 1;
   }
 }
+
+/* The dim behind an open stack's modal (spec/22), fading in with it. */
+.stack-dim {
+  background: rgb(15 23 42 / 0.45);
+  animation: fade-in 200ms ease-out;
+}
+
+.dark .stack-dim {
+  background: rgb(2 6 23 / 0.65);
+}

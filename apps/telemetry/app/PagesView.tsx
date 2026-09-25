@@ -6,16 +6,18 @@ import {
   type TelemetryWindowKey,
 } from '@livediagram/api-schema';
 import { RankCard } from './RankCard';
-import { PAGE_VIEW_APPS, pageViewRows, per100, risingPages } from './page-insights';
-import { PageInsightTile, RisingPagesCard } from './PageInsights';
+import { PAGE_VIEW_APPS, pageViewRows, per100 } from './page-insights';
+import { PageInsightTile } from './PageInsights';
 import { windowLabel } from './windows';
 
 // Pages view (spec/150): which pages across the site get viewed, broken down
 // by the app that serves them. Every frontend emits `Page·View·<path>` on
 // each path change (full load or in-app navigation), with ids and query
-// strings stripped in the browser. Top to bottom: a few derived insights, the
-// top pages of each app, then every page. Views per app moved to Highlights
-// as the Page Views by App stack.
+// strings stripped in the browser. Top to bottom: a few derived insights,
+// then the ten most-viewed pages overall and each app's own top ten.
+
+// Each ranking card shows its top ten.
+const TOP = 10;
 
 const isLanding = (p: string) => p === '/';
 const isNew = (p: string) => p === '/new';
@@ -32,7 +34,6 @@ export function PagesView({
   const rows = summary.windows[active].rows;
 
   const allPages = pageViewRows(rows, 'All');
-  const risers = summary.daily ? risingPages(summary.daily) : [];
 
   return (
     <div className="mt-8">
@@ -75,10 +76,17 @@ export function PagesView({
       </section>
 
       <section className="mt-8">
-        <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-          Top pages by app
-        </h3>
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-400">Top pages</h3>
         <div className="mt-3 grid gap-6 lg:grid-cols-2">
+          <RankCard
+            title="Top 10 Pages"
+            subtitle="The most-viewed pages across every app"
+            category="Page"
+            action="View"
+            items={allPages.slice(0, TOP)}
+            daily={summary.daily}
+            emptyLabel="No page views in this window yet."
+          />
           {PAGE_VIEW_APPS.map((app) => (
             <RankCard
               key={app}
@@ -86,26 +94,13 @@ export function PagesView({
               subtitle="Its ten most-viewed pages"
               category="Page"
               action="View"
-              items={pageViewRows(rows, app).slice(0, 10)}
+              items={pageViewRows(rows, app).slice(0, TOP)}
               daily={summary.daily}
               emptyLabel={`No ${app} page views in this window yet.`}
             />
           ))}
         </div>
       </section>
-
-      <div className="mt-8 grid gap-6 lg:grid-cols-2">
-        <RisingPagesCard risers={risers} />
-        <RankCard
-          title="All pages"
-          subtitle="Every page by views, most to least"
-          category="Page"
-          action="View"
-          items={allPages}
-          daily={summary.daily}
-          emptyLabel="No page views in this window yet."
-        />
-      </div>
     </div>
   );
 }

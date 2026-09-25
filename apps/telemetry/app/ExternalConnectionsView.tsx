@@ -1,52 +1,20 @@
 'use client';
 
 import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
+import { API_TOKENS_AND_MCP } from './metric-catalogue';
 import { MetricGroups, type MetricGroup } from './MetricCards';
 import { RankCard, rank } from './RankCard';
 import { windowLabel } from './windows';
 
 // External Connections view (spec/22): programmatic access into livediagram.
 // API tokens (minted by hand or via the MCP OAuth flow, then revoked) and the
-// MCP server's actual tool usage. Token lifecycle comes from `Token`; MCP tool
-// calls from `Mcp·Used·<tool>`, both the headline count and a per-tool ranking.
+// MCP server's actual tool usage, as one chart stack (spec/22). Token
+// lifecycle comes from `Token`; MCP tool calls from `Mcp·Used·<tool>`, both
+// in the stack and as a per-tool ranking.
 export const GROUPS: MetricGroup[] = [
   {
-    title: 'API tokens',
-    metrics: [
-      {
-        category: 'Token',
-        action: 'Created',
-        type: 'Manual',
-        title: 'Tokens Created',
-        blurb: 'Personal API tokens minted by hand from the Explorer.',
-      },
-      {
-        category: 'Token',
-        action: 'Created',
-        type: 'MCP',
-        title: 'AI Tools Connected',
-        blurb: 'AI assistants that connected through the MCP OAuth consent screen.',
-      },
-      {
-        category: 'Token',
-        action: 'Removed',
-        type: null,
-        title: 'Tokens Revoked',
-        blurb: 'API tokens revoked, whether minted by hand or by an AI tool.',
-      },
-    ],
-  },
-  {
-    title: 'MCP usage',
-    metrics: [
-      {
-        category: 'Mcp',
-        action: 'Used',
-        allTypes: true,
-        title: 'MCP Tool Calls',
-        blurb: 'AI assistants calling the livediagram MCP server tools, across every tool.',
-      },
-    ],
+    title: 'Connections',
+    metrics: [API_TOKENS_AND_MCP],
   },
 ];
 

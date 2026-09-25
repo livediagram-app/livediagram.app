@@ -140,12 +140,15 @@ about which app serves a path). Top to bottom:
   Landing to New Diagram (`/new` per 100 `/`), Explorer to Diagram (`/diagram`
   per 100 Explorer pages), Help per Diagram (help pages per 100 `/diagram`),
   and Pages Viewed (distinct pages with a view).
-- **Top pages by app.** Each app's ten most-viewed pages, side by side.
-- **Rising pages.** The pages with the biggest gain in views over the last 7
-  days against the 7 before, read from the 30-day series (so independent of
-  the selected window). A flat or falling page isn't listed.
-- **All pages.** Every page, most viewed first, with its share bar and 30-day
-  sparkline, labelled with the raw path (not title-cased).
+- **Top pages.** The ten most-viewed pages across every app, then each app's
+  own top ten, as ranking cards side by side, each row labelled with the raw
+  path (not title-cased) with its share bar and 30-day sparkline.
+
+Removed in September 2026: a **Rising pages** card (biggest gain over the
+last 7 days against the 7 before), and the **All pages** list of every page
+(the Raw tab and Search still reach any single page). The ten most-viewed
+pages were briefly a stack opening into the per-app lists; a set of rankings
+read side by side on the page is not a stack.
 
 The arithmetic lives in `apps/telemetry/app/page-insights.ts`, pure and
 tested apart from the view.
