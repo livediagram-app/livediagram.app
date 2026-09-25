@@ -10,7 +10,7 @@ marketing pages, each help article, the Explorer's pages, the editor, and the
 full load (typed URL, shared link, refresh) or as a client-side navigation
 inside a Next app (Explorer → a diagram, one help article → another).
 
-The dashboard gets a **Pages** tab of page-view insights for the selected
+The dashboard gets a **Pages** tab of page views for the selected
 window, broken down by app (Marketing, Live, Help, Dashboard).
 
 ## Why
@@ -135,23 +135,6 @@ about which app serves a path). Top to bottom:
   of paths rather than one type). The per-card "N% of page views" line went
   with the move, since catalogue charts are fixed definitions and the share
   depends on the selected window; each app's count sits in the head's legend.
-- **Insights.** One count over another for the window, in funnel order:
-  Landing to New Diagram (`/new` per 100 `/`), Wizard Completion (diagrams
-  created per 100 `/new`), Explorer to Diagram (`/diagram` per 100 Explorer
-  pages), Sign-Up Conversion (sign-ups per 100 `/get-started`), Help per
-  Diagram (help pages per 100 `/diagram`), and Pages per Visitor (page views
-  per visitor-day, a browser's first day or a later day it returned). Each
-  tile shows the from → to flow, the rate, the two counts behind it, the
-  change against the same span just before the window (green or rose where a
-  rise is plainly good; slate for Help per Diagram, which could mean engaged
-  or stuck), and a 30-day trend of the rolling 7-day rate. **Both sides count
-  only from the day page views began** on this deployment: page-view
-  telemetry is newer than the other events, and setting a month of diagrams
-  created against two days of wizard views read 500 per 100. The tile says
-  "since page views began" when that cuts into the window, the change only
-  shows once page views cover the span before, and the trend waits for two
-  days of rates. Counts over counts, never people. (A Pages Viewed tile,
-  distinct pages with a view, was dropped as not useful.)
 - **Top pages.** The ten most-viewed pages across every app, then each app's
   own top ten, as ranking cards, each row labelled with the raw path (not
   title-cased) with its share bar and 30-day sparkline, balanced across two
@@ -159,17 +142,19 @@ about which app serves a path). Top to bottom:
   numbers of pages, and grid rows stretched each short card to the tallest
   beside it.
 
-Removed in September 2026: a **Rising pages** card (biggest gain over the
+Removed in September 2026: an **Insights** row (landing, wizard, explorer,
+sign-up and help rates plus pages per visitor, each counted from the day page
+views began), a **Rising pages** card (biggest gain over the
 last 7 days against the 7 before), and the **All pages** list of every page
-(the Raw tab and Search still reach any single page). The ten most-viewed
+(Search still reaches any single page; the Raw tab that also did was removed). The ten most-viewed
 pages were briefly a stack opening into the per-app lists; a set of rankings
 read side by side on the page is not a stack.
 
-The arithmetic lives in `apps/telemetry/app/page-insights.ts`, pure and
+The page-view helpers live in `apps/telemetry/app/page-insights.ts`, pure and
 tested apart from the view.
 
-Page views are events, so they also count toward the window totals and the Raw
-view like any other category.
+Page views are events, so they also count toward the window totals and Search
+like any other category.
 
 ## Out of scope
 

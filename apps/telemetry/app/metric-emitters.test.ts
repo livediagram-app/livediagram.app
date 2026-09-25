@@ -1,6 +1,5 @@
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { GROUPS as COLLABORATION } from './CollaborationView';
 import { GROUPS as EDITING } from './EditingView';
 import { COMPUTED, scanEmitters, type Emit } from './emitter-scan';
 import { GROUPS as EXCEPTIONS, RECOVERY_TYPES } from './ExceptionsView';
@@ -100,7 +99,7 @@ function sendable(category: string, action: string, type: string | null): boolea
   );
 }
 
-const ALL: MetricGroup[] = [...HIGHLIGHTS, ...COLLABORATION, ...EDITING, ...EXCEPTIONS, ...HELP];
+const ALL: MetricGroup[] = [...HIGHLIGHTS, ...EDITING, ...EXCEPTIONS, ...HELP];
 // Plus every catalogue chart, including ones parked off every tab, so a chart
 // waiting to be added back can't rot while it is out of view.
 const METRICS = [

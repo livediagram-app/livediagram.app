@@ -1,19 +1,16 @@
 'use client';
 
 import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
-import { PAGE_INSIGHTS } from './page-insight-defs';
-import { PAGE_VIEW_APPS, pageViewRows, readInsight } from './page-insights';
+import { PAGE_VIEW_APPS, pageViewRows } from './page-insights';
 import { CardColumns } from './CardColumns';
-import { InsightTile } from './PageInsights';
 import { RankCard } from './RankCard';
-import { previousSpanLabel, windowDays, windowHighlightFrom, windowLabel } from './windows';
+import { windowLabel } from './windows';
 
 // Pages view (spec/150): which pages across the site get viewed, broken down
 // by the app that serves them. Every frontend emits `Page·View·<path>` on
 // each path change (full load or in-app navigation), with ids and query
-// strings stripped in the browser. Top to bottom: insights (one count over
-// another, each with its change and trend), then the ten most-viewed pages
-// overall and each app's own top ten.
+// strings stripped in the browser: the ten most-viewed pages overall and
+// each app's own top ten.
 
 // Each ranking card shows its top ten.
 const TOP = 10;
@@ -26,11 +23,6 @@ export function PagesView({
   active: TelemetryWindowKey;
 }) {
   const rows = summary.windows[active].rows;
-
-  const days = windowDays(active);
-  const highlightFromIndex = summary.daily ? windowHighlightFrom(summary.daily, active) : null;
-  // The span each insight's change is measured against.
-  const previousLabel = previousSpanLabel(summary.daily, active);
 
   // The ranking cards, for CardColumns to balance: apps serve very different
   // numbers of pages (Live has many, Help and Dashboard few).
@@ -59,23 +51,6 @@ export function PagesView({
         counts as one page, <code>/diagram</code>. Views per app are the Page Views by App stack on
         Highlights.
       </p>
-      <section className="mt-8">
-        <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-400">Insights</h3>
-        <div className="mt-3 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {PAGE_INSIGHTS.map((def) => (
-            <InsightTile
-              key={def.id}
-              def={def}
-              reading={readInsight(def, rows, summary.daily, days)}
-              highlightFromIndex={highlightFromIndex}
-              previousLabel={previousLabel}
-            />
-          ))}
-        </div>
-        <p className="mt-2 text-xs text-slate-400">
-          Ratios compare page views, not people: nothing links one view to another.
-        </p>
-      </section>
 
       <section className="mt-8">
         <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-400">Top pages</h3>

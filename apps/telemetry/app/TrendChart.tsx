@@ -4,7 +4,7 @@ import { Tooltip } from '@livediagram/ui';
 import { fmtDay } from './chart-utils';
 
 // A standalone inline-SVG line chart for a 30-day daily series, shared by
-// the Raw view's timeframe panel and the Search view's per-metric trend.
+// the timeframe panel, the metric cards and the Search view's per-metric trend.
 // No charting library: the path is plotted into a 0..100 viewBox and
 // stretched to the container with `preserveAspectRatio="none"`, while
 // `vector-effect="non-scaling-stroke"` keeps the stroke an even width

@@ -63,7 +63,7 @@ export function MetricCard({
         </div>
       </div>
       {/* Plain-language meaning. Aggregates carry their own blurb; single
-          metrics reuse the Raw view's row tooltip copy. */}
+          metrics reuse the shared event explanation copy. */}
       <p className="mt-3 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
         {m.blurb ?? eventExplanation(m.category, m.action, iconType)}
       </p>

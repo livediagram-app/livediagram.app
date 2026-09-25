@@ -279,7 +279,7 @@ export const TABS_DUPLICATED: Metric = {
 
 // Parked: cleared from Highlights (September 2026) while it is rebuilt, and on
 // no other tab as a card, so kept here with their wording ready to add back.
-// Search and Raw still show the underlying events. (Elements Added came back
+// Search still shows the underlying events. (Elements Added came back
 // as a stack.)
 
 export const EXPORTS: Metric = {
@@ -605,4 +605,409 @@ export const EXCEPTIONS: MetricStack = {
   members: [FAILED_REQUESTS, SERVER_CRASHES, CLIENT_EXCEPTIONS, REALTIME_RESYNCS],
   headline: [FAILED_REQUESTS, CLIENT_EXCEPTIONS],
   seeAlso: { view: 'exceptions', label: 'See Each Error on the Exceptions Tab' },
+};
+
+// ---- Collaboration tab -------------------------------------------------------
+// Everything but Live Together counts an INVITATION (a link made, a member
+// added, a poll opened); Live Together counts two people on one canvas at the
+// same moment, which is what the rest is FOR, so read the rest against it. The
+// facilitation tools (spec/39 + spec/88) are read by their drop-off: votes
+// started vs revealed, dots cast vs retracted, timers started vs finished.
+
+export const MULTIPLAYER_SESSIONS: Metric = {
+  category: 'Diagram',
+  action: 'Used',
+  type: 'Multiplayer',
+  title: 'Multiplayer Sessions',
+  blurb:
+    'A diagram was open with at least one other person live in the room. Counted once per diagram per visit, however many people turn up.',
+};
+export const VIEWPORTS_FOLLOWED: Metric = {
+  category: 'Canvas',
+  action: 'Used',
+  type: 'FollowMe',
+  title: 'Viewports Followed',
+  blurb:
+    "Someone pinned their canvas to a peer's (spec/131): the strongest signal that a session is being presented rather than just co-edited.",
+};
+export const EDIT_LINKS_SHARED: Metric = {
+  category: 'Diagram',
+  action: 'Shared',
+  type: 'Edit',
+  title: 'Edit Links Shared',
+};
+export const VIEW_LINKS_SHARED: Metric = {
+  category: 'Diagram',
+  action: 'Shared',
+  type: 'View',
+  title: 'View Links Shared',
+};
+export const COLLABORATORS_JOINED: Metric = {
+  category: 'Diagram',
+  action: 'Joined',
+  type: 'Edit',
+  title: 'Collaborators Joined',
+  blurb:
+    'People who came into a diagram through an edit link. Counted once per person per diagram, not on every revisit.',
+};
+export const VIEWERS_JOINED: Metric = {
+  category: 'Diagram',
+  action: 'Joined',
+  type: 'View',
+  title: 'Viewers Joined',
+  blurb:
+    'People who came into a diagram through a view-only link. Counted once per person per diagram, not on every revisit.',
+};
+export const COMMENTS_ADDED: Metric = {
+  category: 'Comment',
+  action: 'Added',
+  type: null,
+  title: 'Comments Added',
+};
+export const COMMENT_POPOVERS_OPENED: Metric = {
+  category: 'Comment',
+  action: 'Opened',
+  type: null,
+  title: 'Comment Popovers Opened',
+  blurb:
+    "Someone opened an element's comments to read or reply. Not a new thread: a new comment is Comments Added.",
+};
+export const COMMENTS_RESOLVED: Metric = {
+  category: 'Comment',
+  action: 'Resolved',
+  type: null,
+  title: 'Comments Resolved',
+};
+export const TEAMS_CREATED: Metric = {
+  category: 'Team',
+  action: 'Created',
+  type: null,
+  title: 'Teams Created',
+  blurb: 'A new team workspace was created.',
+};
+export const INVITES_SENT: Metric = {
+  category: 'Team',
+  action: 'Added',
+  type: 'Member',
+  title: 'Invites Sent',
+  blurb:
+    'An admin invited someone to a team by email. The invitation, not the acceptance: that is the next card.',
+};
+export const INVITES_ACCEPTED: Metric = {
+  category: 'Team',
+  action: 'Joined',
+  type: null,
+  title: 'Invites Accepted',
+  blurb: 'Someone joined a team, by accepting an email invite or opening an invite link.',
+};
+export const INVITES_DECLINED: Metric = {
+  category: 'Team',
+  action: 'Declined',
+  type: 'Invite',
+  rising: 'neutral',
+  title: 'Invites Declined',
+  blurb: 'The recipient turned an invitation down. Read against accepted, not against sent.',
+};
+export const DIAGRAMS_SHARED_TO_A_TEAM: Metric = {
+  category: 'Team',
+  action: 'Added',
+  type: 'Diagram',
+  title: 'Diagrams Shared to a Team',
+  blurb: "A diagram was moved into a team's shared library for everyone on the team.",
+};
+export const VOTES_STARTED: Metric = {
+  category: 'Tab',
+  action: 'Started',
+  type: 'Vote',
+  title: 'Votes Started',
+  blurb: 'A facilitator opened a dot-vote on a tab.',
+};
+export const PRIVATE_VOTES: Metric = {
+  category: 'Tab',
+  action: 'Started',
+  type: 'PrivateVote',
+  title: 'Private Votes',
+  blurb:
+    'Votes started with hidden cursors or hidden running counts. Part of Votes Started, not a separate vote.',
+};
+export const DOTS_CAST: Metric = {
+  category: 'Element',
+  action: 'Voted',
+  type: null,
+  title: 'Dots Cast',
+  blurb: 'A participant placed a dot on an element.',
+};
+export const DOTS_RETRACTED: Metric = {
+  category: 'Element',
+  action: 'Removed',
+  type: 'Vote',
+  rising: 'neutral',
+  title: 'Dots Retracted',
+  blurb:
+    'A participant took a dot back. Read against dots cast to see how much reconsidering happens.',
+};
+export const RESULTS_REVEALED: Metric = {
+  category: 'Tab',
+  action: 'Revealed',
+  type: 'Vote',
+  title: 'Results Revealed',
+  blurb:
+    'The facilitator showed the tallies. A vote started but never revealed is one that fizzled.',
+};
+export const VOTES_DISCARDED: Metric = {
+  category: 'Tab',
+  action: 'Cleared',
+  type: 'Vote',
+  rising: 'neutral',
+  title: 'Votes Discarded',
+  blurb:
+    'The whole round was thrown away, dots and all. Distinct from ending it, which keeps the tallies.',
+};
+export const POLLS_STARTED: Metric = {
+  category: 'Tab',
+  action: 'Started',
+  type: 'Poll',
+  title: 'Polls Started',
+  blurb: 'A live pulse-check was opened on a tab (spec/88). Nothing about a poll is persisted.',
+};
+export const POLL_ANSWERS: Metric = {
+  category: 'Tab',
+  action: 'Voted',
+  type: 'Poll',
+  title: 'Poll Answers',
+  blurb: 'A participant answered. Read against polls started for average turnout.',
+};
+export const POLLS_ENDED: Metric = {
+  category: 'Tab',
+  action: 'Ended',
+  type: 'Poll',
+  title: 'Polls Ended',
+  blurb: 'The facilitator closed the poll.',
+};
+export const COUNTDOWNS_STARTED: Metric = {
+  category: 'Tab',
+  action: 'Started',
+  type: 'CountdownTimer',
+  title: 'Countdowns Started',
+  blurb: 'A timebox was set running on a tab.',
+};
+export const STOPWATCHES_STARTED: Metric = {
+  category: 'Tab',
+  action: 'Started',
+  type: 'StopwatchTimer',
+  title: 'Stopwatches Started',
+  blurb: 'A count-up timer was set running.',
+};
+export const TIMERS_PAUSED: Metric = {
+  category: 'Tab',
+  action: 'Toggled',
+  type: 'TimerPaused',
+  rising: 'neutral',
+  title: 'Timers Paused',
+  blurb:
+    'Countdowns and stopwatches together: the editor does not say which. Paused mid-run. Heavy pausing suggests the timebox rarely survives contact with the meeting.',
+};
+export const TIMERS_RESET: Metric = {
+  category: 'Tab',
+  action: 'Changed',
+  type: 'TimerReset',
+  rising: 'neutral',
+  title: 'Timers Reset',
+  blurb:
+    'Countdowns and stopwatches together: the editor does not say which. Returned to its starting value, usually for a second round of the same exercise.',
+};
+export const TIMERS_EXTENDED: Metric = {
+  category: 'Tab',
+  action: 'Changed',
+  type: 'TimerExtended',
+  title: 'Timers Extended',
+  blurb:
+    'More time added to a running countdown. Frequent extensions mean the timebox was set too tight.',
+};
+export const COUNTDOWNS_FINISHED: Metric = {
+  category: 'Tab',
+  action: 'Ended',
+  type: 'CountdownTimer',
+  title: 'Countdowns Finished',
+  blurb: 'Dismissed from the tab. Read against countdowns started to see how many get abandoned.',
+};
+export const STOPWATCHES_FINISHED: Metric = {
+  category: 'Tab',
+  action: 'Ended',
+  type: 'StopwatchTimer',
+  title: 'Stopwatches Finished',
+  blurb: 'Dismissed from the tab.',
+};
+
+export const LIVE_TOGETHER: MetricStack = {
+  stack: true,
+  title: 'Live Together',
+  blurb: 'Two or more people on one canvas at the same moment, and sessions being presented.',
+  members: [MULTIPLAYER_SESSIONS, VIEWPORTS_FOLLOWED],
+  headline: MULTIPLAYER_SESSIONS,
+};
+export const SHARING_AND_JOINING: MetricStack = {
+  stack: true,
+  title: 'Sharing & Joining',
+  blurb: 'Edit and view links made, and the people who came in through them.',
+  members: [EDIT_LINKS_SHARED, VIEW_LINKS_SHARED, COLLABORATORS_JOINED, VIEWERS_JOINED],
+};
+export const DISCUSSION: MetricStack = {
+  stack: true,
+  title: 'Discussion',
+  blurb: 'Comments left on elements, opened to read or reply, and resolved.',
+  members: [COMMENTS_ADDED, COMMENT_POPOVERS_OPENED, COMMENTS_RESOLVED],
+  headline: COMMENTS_ADDED,
+};
+export const TEAM_ACTIVITY: MetricStack = {
+  stack: true,
+  title: 'Team Activity',
+  blurb: 'Teams made, the invite funnel (sent, accepted, declined), and diagrams shared to a team.',
+  members: [
+    TEAMS_CREATED,
+    INVITES_SENT,
+    INVITES_ACCEPTED,
+    INVITES_DECLINED,
+    DIAGRAMS_SHARED_TO_A_TEAM,
+  ],
+};
+export const VOTING: MetricStack = {
+  stack: true,
+  title: 'Voting',
+  blurb: 'Dot-votes run on a tab: started, private, dots cast and taken back, revealed, discarded.',
+  members: [
+    VOTES_STARTED,
+    PRIVATE_VOTES,
+    DOTS_CAST,
+    DOTS_RETRACTED,
+    RESULTS_REVEALED,
+    VOTES_DISCARDED,
+  ],
+  headline: VOTES_STARTED,
+};
+export const POLLS: MetricStack = {
+  stack: true,
+  title: 'Polls',
+  blurb: 'Live pulse-checks opened, answered, and closed.',
+  members: [POLLS_STARTED, POLL_ANSWERS, POLLS_ENDED],
+  headline: POLLS_STARTED,
+};
+// Countdowns and stopwatches are different tools, so different stacks. The
+// editor reports Paused and Reset without saying which kind (useTabSession
+// tracks the gesture, not the mode), so those two sit in both stacks, each
+// saying so; the headlines count starts, so nothing is summed twice.
+export const COUNTDOWNS: MetricStack = {
+  stack: true,
+  title: 'Countdowns',
+  blurb: 'Timeboxes set running on a tab, extended, and finished.',
+  members: [COUNTDOWNS_STARTED, TIMERS_EXTENDED, COUNTDOWNS_FINISHED, TIMERS_PAUSED, TIMERS_RESET],
+  headline: COUNTDOWNS_STARTED,
+};
+export const STOPWATCHES: MetricStack = {
+  stack: true,
+  title: 'Stopwatches',
+  blurb: 'Count-up timers set running on a tab, and finished.',
+  members: [STOPWATCHES_STARTED, STOPWATCHES_FINISHED, TIMERS_PAUSED, TIMERS_RESET],
+  headline: STOPWATCHES_STARTED,
+};
+
+// ---- Editing tab -------------------------------------------------------------
+// Tools that organise the work rather than draw it. Tab folders (spec/30) are
+// typed rather than bare because the bare Tab/Folder events belong to
+// different subjects: see the type note in spec/22's Folder entry.
+
+export const NOTES_ADDED: Metric = {
+  category: 'Note',
+  action: 'Added',
+  type: null,
+  title: 'Notes Added',
+  blurb: "An element's note went from empty to written (spec/22).",
+};
+export const NOTES_OPENED: Metric = {
+  category: 'Note',
+  action: 'Opened',
+  type: null,
+  title: 'Notes Opened',
+  blurb: 'The note popover was opened, to read as well as to write.',
+};
+export const ACTIONS_ASSIGNED: Metric = {
+  category: 'Action',
+  action: 'Created',
+  allTypes: true,
+  title: 'Actions Assigned',
+  blurb:
+    'Element-level work assigned to a teammate (spec/68), with or without the email notification.',
+};
+export const ACTIONS_EMAILED: Metric = {
+  category: 'Action',
+  action: 'Created',
+  type: 'EmailOn',
+  title: 'Actions Emailed',
+  blurb:
+    'Actions assigned with the notify-by-email box ticked. Part of Actions Assigned. Counts the box, not a sent email: sends are Action Notifications in the Emails Sent stack on Highlights.',
+};
+export const ACTIONS_COMPLETED: Metric = {
+  category: 'Action',
+  action: 'Resolved',
+  type: null,
+  title: 'Actions Completed',
+  blurb: 'Read against actions assigned: the follow-through rate on the feature.',
+};
+export const FOLDERS_CREATED: Metric = {
+  category: 'Folder',
+  action: 'Created',
+  typeIn: (type) => type !== 'Tab',
+  title: 'Folders Created',
+  blurb: 'Folders of diagrams, in your own Explorer or a team library.',
+};
+export const FOLDERS_RE_PARENTED: Metric = {
+  category: 'Folder',
+  action: 'Moved',
+  allTypes: true,
+  title: 'Folders Re-parented',
+  blurb: 'A folder nested under another, or promoted back to the root.',
+};
+export const TAB_FOLDERS_CREATED: Metric = {
+  category: 'Folder',
+  action: 'Created',
+  type: 'Tab',
+  title: 'Tab Folders Created',
+  blurb: 'A collapsible folder of tab pills created inside one diagram.',
+};
+export const TABS_FILED: Metric = {
+  category: 'Tab',
+  action: 'Moved',
+  type: 'Folder',
+  title: 'Tabs Filed',
+  blurb:
+    'A tab filed into a tab folder, by the ellipsis menu or by a drag (both report identically).',
+};
+export const DIAGRAMS_FILED: Metric = {
+  category: 'Diagram',
+  action: 'Moved',
+  allTypes: true,
+  title: 'Diagrams Filed',
+  blurb:
+    'A diagram moved into a folder, back to Unsorted, or between the cloud and offline storage (spec/76).',
+};
+
+export const NOTES: MetricStack = {
+  stack: true,
+  title: 'Notes',
+  blurb: 'Notes written on elements, and opened to read or edit.',
+  members: [NOTES_ADDED, NOTES_OPENED],
+  headline: NOTES_ADDED,
+};
+export const ASSIGNED_ACTIONS: MetricStack = {
+  stack: true,
+  title: 'Assigned Actions',
+  blurb: 'Element-level work assigned to a teammate (spec/68), emailed about, and completed.',
+  members: [ACTIONS_ASSIGNED, ACTIONS_EMAILED, ACTIONS_COMPLETED],
+  headline: ACTIONS_ASSIGNED,
+};
+export const ORGANISATION: MetricStack = {
+  stack: true,
+  title: 'Organisation',
+  blurb: 'Folders made and nested, tab folders, and tabs and diagrams filed.',
+  members: [FOLDERS_CREATED, FOLDERS_RE_PARENTED, TAB_FOLDERS_CREATED, TABS_FILED, DIAGRAMS_FILED],
 };

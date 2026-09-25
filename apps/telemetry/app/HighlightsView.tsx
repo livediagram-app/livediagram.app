@@ -3,6 +3,14 @@
 import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
 import {
   ACCOUNT_ACTIVITY,
+  COUNTDOWNS,
+  DISCUSSION,
+  LIVE_TOGETHER,
+  POLLS,
+  SHARING_AND_JOINING,
+  STOPWATCHES,
+  TEAM_ACTIVITY,
+  VOTING,
   AI_ASSISTANCE,
   API_TOKEN_ACTIVITY,
   ELEMENTS_ADDED,
@@ -68,6 +76,17 @@ export const GROUPS: MetricGroup[] = [
   {
     title: 'Features',
     metrics: [AI_ASSISTANCE, LAYERS_FEATURE],
+  },
+  // Live Together is the only stack that counts two people on one canvas at
+  // the same moment; the rest of Collaboration counts invitations to be there,
+  // so read them against it. Moved here with the Collaboration tab's removal.
+  {
+    title: 'Collaboration',
+    metrics: [LIVE_TOGETHER, SHARING_AND_JOINING, DISCUSSION],
+  },
+  {
+    title: 'Teams & facilitation',
+    metrics: [TEAM_ACTIVITY, VOTING, POLLS, COUNTDOWNS, STOPWATCHES],
   },
   {
     title: 'Connections',

@@ -9,10 +9,8 @@ import {
   BrushGlyph,
   FileGlyph,
   LayersGlyph,
-  ListGlyph,
   PaletteGlyph,
   SearchGlyph,
-  ShareGlyph,
   SparkGlyph,
   WindowGlyph,
 } from './glyphs';
@@ -22,11 +20,9 @@ import { ViewTabs } from './ViewTabs';
 import { HighlightsView } from './HighlightsView';
 import type { ViewKey } from './view-keys';
 import { PagesView } from './PagesView';
-import { RawView } from './RawView';
 import { LookAndFeelView } from './LookAndFeelView';
 import { PaletteView } from './PaletteView';
 import { HelpView } from './HelpView';
-import { CollaborationView } from './CollaborationView';
 import { EditingView } from './EditingView';
 import { ExceptionsView } from './ExceptionsView';
 import { MetricSearch } from './MetricSearch';
@@ -41,9 +37,9 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 // alongside the active tab and is passed into whichever view renders.
 // Tab order follows the product funnel: who arrives, signs up, opens and
 // makes things (Highlights), which pages they read (Pages), what they build
-// (Palette / Look & Feel), how they
-// organise it (Editing), how they work
-// together (Collaboration), how they get unstuck (Help), then the power-user lenses (Search / Raw).
+// (Palette / Look & Feel), how they organise it (Editing), how they get
+// unstuck (Help), error health (Exceptions), then the power-user lens
+// (Search).
 const VIEWS: { key: ViewKey; label: string; icon: ReactNode }[] = [
   { key: 'highlights', label: 'Highlights', icon: <SparkGlyph /> },
   { key: 'pages', label: 'Pages', icon: <WindowGlyph /> },
@@ -51,10 +47,8 @@ const VIEWS: { key: ViewKey; label: string; icon: ReactNode }[] = [
   { key: 'lookfeel', label: 'Look & Feel', icon: <BrushGlyph /> },
   { key: 'editing', label: 'Editing', icon: <LayersGlyph /> },
   { key: 'help', label: 'Help', icon: <FileGlyph /> },
-  { key: 'collaboration', label: 'Collaboration', icon: <ShareGlyph /> },
   { key: 'exceptions', label: 'Exceptions', icon: <AlertGlyph /> },
   { key: 'search', label: 'Search', icon: <SearchGlyph /> },
-  { key: 'raw', label: 'Raw', icon: <ListGlyph /> },
 ];
 
 export default function TelemetryDashboard() {
@@ -132,7 +126,7 @@ export default function TelemetryDashboard() {
           <>
             {/* Global timeframe selector + 30-day trend line. Shared by every
               tab and always visible, so the window the cards pick drives
-              the counts in Highlights / Raw / Search below. */}
+              the counts in every view below. */}
             <div ref={panelRef} className="mt-10">
               <WindowPanel
                 totals={{
@@ -170,12 +164,8 @@ export default function TelemetryDashboard() {
               <EditingView summary={summary} active={active} />
             ) : view === 'help' ? (
               <HelpView summary={summary} active={active} />
-            ) : view === 'collaboration' ? (
-              <CollaborationView summary={summary} active={active} />
             ) : view === 'exceptions' ? (
               <ExceptionsView summary={summary} active={active} />
-            ) : view === 'raw' ? (
-              <RawView summary={summary} active={active} />
             ) : summary.daily ? (
               <div className="mt-8">
                 <MetricSearch windows={summary.windows} daily={summary.daily} active={active} />
