@@ -22,9 +22,17 @@ afterEach(cleanup);
 // The menu as the canvas mounts it: inside an element face that listens for the
 // gestures the canvas cares about. The handlers stand in for select / enter
 // text-edit-mode.
-function mountInFace(handlers: { onClick?: () => void; onDoubleClick?: () => void }) {
+function mountInFace(handlers: {
+  onClick?: () => void;
+  onDoubleClick?: () => void;
+  onContextMenu?: () => void;
+}) {
   return render(
-    <div onClick={handlers.onClick} onDoubleClick={handlers.onDoubleClick}>
+    <div
+      onClick={handlers.onClick}
+      onDoubleClick={handlers.onDoubleClick}
+      onContextMenu={handlers.onContextMenu}
+    >
       <ElementEllipsisMenu label="Poll options">
         {(close) => (
           <>
@@ -61,6 +69,17 @@ describe('ElementEllipsisMenu event containment', () => {
     expect(onDoubleClick).not.toHaveBeenCalled();
     // And the panel is still open, which is the half the user actually feels.
     expect(screen.getByRole('menu')).toBeTruthy();
+  });
+
+  it('does not leak a right-click in a field, and leaves the browser menu alone', () => {
+    // The element's own handler would arm its context menu (and suppress the
+    // browser's), so right-click-to-paste in a choice field opened the wrong menu.
+    const onContextMenu = vi.fn();
+    mountInFace({ onContextMenu });
+    openMenu();
+    const notPrevented = fireEvent.contextMenu(screen.getByLabelText('Choice'));
+    expect(onContextMenu).not.toHaveBeenCalled();
+    expect(notPrevented).toBe(true);
   });
 
   it('does not leak a click on the panel background', () => {

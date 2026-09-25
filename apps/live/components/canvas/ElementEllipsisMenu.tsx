@@ -111,6 +111,12 @@ export function ElementEllipsisMenu({
             // so nothing inside loses anything.
             onClick={(e) => e.stopPropagation()}
             onDoubleClick={(e) => e.stopPropagation()}
+            // And right-click: the element's handler would arm its context
+            // menu and swallow the browser's own (the paste menu in a choice
+            // field). Only propagation stops, not the default, so the
+            // browser's menu still opens. contextmenu is what arms it, so
+            // pointerup can keep bubbling to the window-level drag listeners.
+            onContextMenu={(e) => e.stopPropagation()}
             className="fixed z-[var(--z-popover,60)] min-w-[10rem] max-h-[60vh] overflow-y-auto overflow-x-hidden rounded-lg border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-900"
             style={{
               top: at.y,

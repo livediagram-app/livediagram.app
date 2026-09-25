@@ -687,6 +687,11 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       if (!(drag?.kind === 'arrow-endpoint' && drag.following)) return;
       e.preventDefault();
       e.stopPropagation();
+      // Land the last pointermove first, as onUp does: it can still be
+      // waiting on the next frame, and the cleanup that ending the gesture
+      // triggers would cancel it, leaving the endpoint a frame behind (and
+      // unsnapped from the element under the cursor).
+      flushMove();
       // The landed arrow gets the one-shot collision-avoiding bow
       // (spec/77), same as the press-drag end in onUp above.
       if (drag.end === 'to' && !drag.reposition) {
