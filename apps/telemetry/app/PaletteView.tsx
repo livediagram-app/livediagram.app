@@ -3,7 +3,7 @@
 import { PALETTE_TELEMETRY_TYPES } from '@livediagram/api-schema';
 import type { TelemetryCount, TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
 import { RankCard, rank } from './RankCard';
-import type { TypeAliases } from './rank';
+import { PALETTE_TYPE_ALIASES } from './palette-types';
 import { windowLabel } from './windows';
 
 // Palette view (spec/22): what people reach for in the editor's creation
@@ -29,22 +29,7 @@ const {
   icons: ICONS,
 } = PALETTE_TELEMETRY_TYPES;
 
-// Element·Added types the editor used to send hyphenated, before it settled on
-// the catalogue tokens. Stored rows keep their old spelling until the 60-day
-// retention sweep drops them, so the ranking folds them into today's token
-// rather than showing each thing twice (or, for a kind the catalogue lists
-// only under its new name, not at all). Safe to delete once no stored row is
-// older than the emitter fix.
-export const PALETTE_TYPE_ALIASES: TypeAliases = {
-  'Mind-node': 'MindNode',
-  'Session-button': 'SessionButton',
-  'Comment-pin': 'CommentPin',
-  'Done-check': 'DoneCheck',
-  'Reaction-pad': 'ReactionPad',
-  'Mode-button': 'ModeButton',
-  'Action-card': 'ActionPanel',
-  'Code-block': 'CodeBlock',
-};
+export { PALETTE_TYPE_ALIASES } from './palette-types';
 
 // The canvas selection modes (useCanvasTool's `Canvas·Used` tokens). Other
 // Canvas·Used events are not modes a person selects: InsertBetween is a drag

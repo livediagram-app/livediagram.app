@@ -3,6 +3,9 @@
 import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
 import {
   ACCOUNT_ACTIVITY,
+  AI_ASSISTANCE,
+  ELEMENTS_ADDED,
+  LAYERS_FEATURE,
   DASHBOARD_PAGES,
   DIAGRAM_ACTIONS,
   EMAILS_SENT,
@@ -57,7 +60,11 @@ export const GROUPS: MetricGroup[] = [
   },
   {
     title: 'Content',
-    metrics: [DIAGRAM_ACTIONS, TAB_ACTIONS],
+    metrics: [DIAGRAM_ACTIONS, TAB_ACTIONS, ELEMENTS_ADDED],
+  },
+  {
+    title: 'Features',
+    metrics: [AI_ASSISTANCE, LAYERS_FEATURE],
   },
   {
     // Written server-side by the api worker: nothing about a send reaches a

@@ -1,4 +1,5 @@
-import { pageViewApp, type PageViewApp } from '@livediagram/api-schema';
+import { PALETTE_TELEMETRY_TYPES, pageViewApp, type PageViewApp } from '@livediagram/api-schema';
+import { canonicalElementType, PALETTE_KINDS, type PaletteTab } from './palette-types';
 import type { Metric, MetricStack } from './metric-series';
 
 // Charts defined once and reused (spec/22). A chart stack references these
@@ -266,16 +267,8 @@ export const TABS_DUPLICATED: Metric = {
 
 // Parked: cleared from Highlights (September 2026) while it is rebuilt, and on
 // no other tab as a card, so kept here with their wording ready to add back.
-// Search and Raw still show the underlying events.
-
-export const ELEMENTS_ADDED: Metric = {
-  category: 'Element',
-  action: 'Added',
-  allTypes: true,
-  title: 'Elements Added',
-  blurb:
-    'Every shape, text, sticky, arrow, or image put on a canvas, across all kinds. Copies count too: a duplicate or paste adds one per element it creates.',
-};
+// Search and Raw still show the underlying events. (Elements Added came back
+// as a stack.)
 
 export const EXPORTS: Metric = {
   category: 'Diagram',
@@ -414,4 +407,108 @@ export const API_TOKENS_AND_MCP: MetricStack = {
     'Tokens minted by hand or by an AI tool connecting, tokens revoked, and the MCP tool calls those connections make.',
   members: [TOKENS_CREATED, AI_TOOLS_CONNECTED, TOKENS_REVOKED, MCP_TOOL_CALLS],
   headline: MCP_TOOL_CALLS,
+};
+
+// Elements added, one chart per palette tab (Palette tab ranks inside each),
+// plus every kind the catalogue doesn't list, so together they cover every
+// Element·Added exactly once and the stack's total is every element added.
+// Copies count: a duplicate or paste adds one per element it creates.
+const addedFrom = (tab: PaletteTab, title: string, blurb: string): Metric => ({
+  category: 'Element',
+  action: 'Added',
+  typeIn: (type) =>
+    (PALETTE_TELEMETRY_TYPES[tab] as readonly string[]).includes(canonicalElementType(type)),
+  title,
+  blurb,
+});
+
+export const SHAPES_ADDED = addedFrom(
+  'shapes',
+  'Shapes Added',
+  'Boxes, circles, flowchart symbols and other primitives.',
+);
+export const TOOLS_ADDED = addedFrom(
+  'tools',
+  'Tools Added',
+  'Text, arrows, stickies, tables, charts and other building blocks.',
+);
+export const COLLABORATE_ADDED = addedFrom(
+  'collaborate',
+  'Collaborate Added',
+  'Estimate cards, temperature checks, idea boxes, agendas, decisions and roll calls.',
+);
+export const COMPONENTS_ADDED = addedFrom(
+  'components',
+  'Components Added',
+  'Web components that lay themselves out: banners, callouts, stat rows, heroes.',
+);
+export const DEVICES_ADDED = addedFrom('devices', 'Devices Added', 'Device frames and mockups.');
+export const ICONS_ADDED = addedFrom('icons', 'Icons Added', 'Line-art and technology icons.');
+export const OTHER_ELEMENTS_ADDED: Metric = {
+  category: 'Element',
+  action: 'Added',
+  typeIn: (type) => !PALETTE_KINDS.has(canonicalElementType(type)),
+  title: 'Other Elements Added',
+  blurb: 'Kinds the palette catalogue does not list, such as pasted images.',
+};
+
+export const ELEMENTS_ADDED: MetricStack = {
+  stack: true,
+  title: 'Elements Added',
+  blurb:
+    'Everything put on a canvas, by the palette tab it comes from. Copies count too: a duplicate or paste adds one per element.',
+  members: [
+    SHAPES_ADDED,
+    TOOLS_ADDED,
+    COLLABORATE_ADDED,
+    COMPONENTS_ADDED,
+    DEVICES_ADDED,
+    ICONS_ADDED,
+    OTHER_ELEMENTS_ADDED,
+  ],
+  seeAlso: { view: 'palette', label: 'See Each Element on the Palette Tab' },
+};
+
+// Layers (spec/74): made, used, and looked at.
+export const LAYERS_CREATED: Metric = {
+  category: 'Layer',
+  action: 'Added',
+  type: null,
+  title: 'Layers Created',
+  blurb: 'A new layer on a tab (spec/74).',
+};
+export const LAYER_TOGGLES: Metric = {
+  category: 'Layer',
+  action: 'Toggled',
+  allTypes: true,
+  title: 'Visibility & Lock Toggles',
+  blurb:
+    'The eye and the padlock, across hide / show / lock / unlock. The gesture layers are actually for.',
+};
+export const LAYER_MOVES: Metric = {
+  category: 'Layer',
+  action: 'Moved',
+  type: null,
+  title: 'Selections Moved to a Layer',
+  blurb: 'Elements sent to another layer: layers being used to organise, not just to hide.',
+};
+export const LAYERS_DELETED: Metric = {
+  category: 'Layer',
+  action: 'Deleted',
+  type: null,
+  title: 'Layers Deleted',
+};
+export const LAYERS_PANEL_OPENED: Metric = {
+  category: 'Layer',
+  action: 'Opened',
+  allTypes: true,
+  title: 'Layers Panel Opened',
+  blurb: 'Read against the layer counts: a panel opened far more often than used is a hint.',
+};
+
+export const LAYERS_FEATURE: MetricStack = {
+  stack: true,
+  title: 'Layers Feature',
+  blurb: 'Every layer interaction: layers made, toggled, filled, deleted, and the panel opened.',
+  members: [LAYERS_CREATED, LAYER_TOGGLES, LAYER_MOVES, LAYERS_DELETED, LAYERS_PANEL_OPENED],
 };

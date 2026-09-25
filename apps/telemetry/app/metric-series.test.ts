@@ -63,3 +63,24 @@ describe('stack headlines', () => {
     }
   });
 });
+
+describe('the Elements Added stack', () => {
+  it('buckets every element type into exactly one chart', async () => {
+    const { ELEMENTS_ADDED } = await import('./metric-catalogue');
+    const { PALETTE_TELEMETRY_TYPES } = await import('@livediagram/api-schema');
+    const samples = [
+      ...Object.values(PALETTE_TELEMETRY_TYPES).flat(),
+      'Code-block', // an old spelling folds into its tab
+      'Image',
+      'SomethingNew',
+      null,
+    ];
+    for (const type of samples) {
+      const hits = ELEMENTS_ADDED.members.filter((m) => m.typeIn?.(type));
+      expect(
+        hits.map((m) => m.title),
+        String(type),
+      ).toHaveLength(1);
+    }
+  });
+});
