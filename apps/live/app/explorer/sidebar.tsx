@@ -5,16 +5,16 @@
 // the left sidebar tree and the right content pane) so each file is
 // scoped to one pane's render surface. The shared cross-file
 // reference (SidebarFolderSubtree opens a folder menu via
-// FolderMenuItems, which lives with the right-pane components since
+// FolderActionsMenu, which lives with the right-pane components since
 // FolderRow uses it too) goes back into views.tsx; the type imports
 // from there cost nothing at runtime.
 
 import { useRef, useState } from 'react';
 import type { Folder } from '@/lib/api-client';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
-import { PortalMenu } from '@/components/primitives/PortalMenu';
 import { ChevronIcon, EllipsisIcon, FolderIcon } from './icons';
-import { FolderMenuItems, type SelectedNode } from './views';
+import { folderMenuHandlers, type SelectedNode } from './views';
+import { FolderActionsMenu } from './folder-actions-menu';
 
 // Indent step per tree level. Matches the Windows Explorer visual
 // of a chevron + folder glyph + name with each child nudged in.
@@ -283,12 +283,12 @@ export function SidebarFolderSubtree({
         }
       />
       {menuOpen ? (
-        <PortalMenu anchor={menuRef.current} placement="below" onClose={() => setMenuOpen(false)}>
-          <FolderMenuItems
-            actions={folderActions(folder, menuRef.current)}
-            close={() => setMenuOpen(false)}
-          />
-        </PortalMenu>
+        <FolderActionsMenu
+          folder={folder}
+          anchor={menuRef.current}
+          onClose={() => setMenuOpen(false)}
+          {...folderMenuHandlers(folderActions(folder, menuRef.current))}
+        />
       ) : null}
       {isOpen
         ? kids.map((k) => (

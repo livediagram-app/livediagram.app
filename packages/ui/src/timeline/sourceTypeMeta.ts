@@ -1,27 +1,12 @@
 // Per-source-type display metadata (spec/138 §7).
 //
-// One place decides what a source type is called, what colour it is,
-// and which glyph it wears, so the bubble, the filter chip, and the
-// calendar dot can never disagree about a kind.
+// One place decides which glyph a source type wears, so the card and
+// the calendar dot can never disagree about a kind.
 //
 // Colour is NOT here: it keys on what happened, not on where it
-// happened, and lives in eventTone.ts. This module is what remains —
-// the label a filter chip shows, and the fallback glyph for an event
-// type the host app hasn't given one.
-
-export const SOURCE_TYPE_LABELS: Record<string, string> = {
-  diagram: 'Diagrams',
-  team: 'Teams',
-  account: 'Account',
-};
-
-export function sourceTypeLabel(sourceType: string): string {
-  const mapped = SOURCE_TYPE_LABELS[sourceType];
-  if (mapped) return mapped;
-  // Title-case the raw value so a source type shipped by a newer
-  // worker reads as a proper noun rather than looking broken.
-  return sourceType.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-}
+// happened, and lives in eventTone.ts. Labels aren't here either —
+// filtering reads categories, not source types (eventCategory.ts), so
+// what remains is the glyph for a source the host app hasn't drawn.
 
 // Heroicons-style 24px outline paths, one per source type. Kept as raw
 // path data rather than components so the calendar's dots can drop the
@@ -36,7 +21,7 @@ const ICON_PATHS: Record<string, string> = {
 };
 
 // A generic dot for anything unmapped — never null, so a new source
-// type from a newer worker renders a bubble that simply looks plain
+// type from a newer worker renders a card that simply looks plain
 // rather than one with a hole where its icon should be.
 const FALLBACK_PATH = 'M12 6a6 6 0 100 12 6 6 0 000-12z';
 

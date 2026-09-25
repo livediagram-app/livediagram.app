@@ -28,14 +28,12 @@ function harness(elements: Element[] = ROW) {
   const { result } = renderHook(() =>
     useElementHelpers({
       selectedId: null,
-      soloSelectedId: null,
       activeId: 't1',
       activeTab: tab,
       editsBlocked: false,
       multiSelectedIds: new Set<string>(),
       formatSourceId: null,
       formatConfig: { mode: 'keep', groups: {} } as never,
-      groupSourceId: null,
       getViewportCenter: () => ({ x: 0, y: 0 }),
       commit: vi.fn(),
       commitTabs,
@@ -43,7 +41,6 @@ function harness(elements: Element[] = ROW) {
       setSelectedId: vi.fn(),
       setEditingId: vi.fn(),
       setFormatSourceId: vi.fn(),
-      setGroupSourceId: vi.fn(),
     }),
   );
   return { helpers: result.current, commitTabs, emitChange, tab };
@@ -100,14 +97,12 @@ describe('addBoxedAt with an insertion slot (spec/139)', () => {
     const { result } = renderHook(() =>
       useElementHelpers({
         selectedId: null,
-        soloSelectedId: null,
         activeId: 't1',
         activeTab: tab,
         editsBlocked: true,
         multiSelectedIds: new Set<string>(),
         formatSourceId: null,
         formatConfig: { mode: 'keep', groups: {} } as never,
-        groupSourceId: null,
         getViewportCenter: () => ({ x: 0, y: 0 }),
         commit: vi.fn(),
         commitTabs,
@@ -115,7 +110,6 @@ describe('addBoxedAt with an insertion slot (spec/139)', () => {
         setSelectedId: vi.fn(),
         setEditingId: vi.fn(),
         setFormatSourceId: vi.fn(),
-        setGroupSourceId: vi.fn(),
       }),
     );
     result.current.addBoxedAt(372, 100, (x) => note('new', x) as StickyElement, {

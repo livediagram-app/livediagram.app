@@ -6,6 +6,7 @@ import {
   defaultTextColor,
   PADDING_PX,
   type ElementLink,
+  type TableCellStyle,
   type TableElement,
 } from '@livediagram/diagram';
 import { isMobileViewportSync } from '@/lib/responsive';
@@ -140,6 +141,10 @@ export function TableView({
     disabled: readOnly || element.locked === true,
     onCommitTable,
   });
+  // Hover-preview for the cell menu's colour rows: a patch shown over the
+  // selected cells until the pointer leaves. Never committed, so a sweep
+  // across a palette costs no undo entries (spec/09 Colours).
+  const [cellPreview, setCellPreview] = useState<Partial<TableCellStyle> | null>(null);
   const {
     resizeWidths,
     resizeHeights,
@@ -313,6 +318,7 @@ export function TableView({
     cols,
     showControls,
     selectedCell,
+    previewStyle: cellPreview,
     extraCells,
     editing,
     editorRef,
@@ -446,6 +452,7 @@ export function TableView({
           position={cellMenuPos}
           onClose={() => setCellMenuPos(null)}
           applyStyle={applyStyleToSelection}
+          onPreviewStyle={setCellPreview}
           onClear={clearSelectionCells}
           onLinkCell={onLinkCell}
           textColor={textColor}

@@ -20,6 +20,27 @@ export const EL_OP_BROADCAST_LIMIT = 20;
 // so a content/meta edit can't clobber a concurrent folder move.
 const META_SKIP = new Set(['id', 'elements', 'folder']);
 
+// Is this `vote` change nothing but dots moving?
+//
+// A dot travels as its own commutative `vote` op now (spec/39), so shipping the
+// votes map in a tab-meta patch as well would put back the very clobber the op
+// exists to remove: the patch replaces the field wholesale, so a peer applying
+// it would drop any dot that reached them from somebody else in the meantime.
+//
+// Every other change to `vote` is a LIFECYCLE event — start, end, reveal,
+// clear, or stepping the results walkthrough — and each of those moves at least
+// one field besides `votes`. Those are the host's alone (`isVoteHost`), so
+// there is exactly one writer and carrying the whole object is right for them.
+// Hence the rule: `votes` changing ALONE is dots and is left to the op;
+// `votes` changing alongside anything else is a lifecycle event and travels
+// whole, votes map included (which is also how a start or a clear resets it).
+function voteChangeIsDotsOnly(before: unknown, after: unknown): boolean {
+  if (!before || !after || typeof before !== 'object' || typeof after !== 'object') return false;
+  const { votes: _b, ...restBefore } = before as { votes?: unknown };
+  const { votes: _a, ...restAfter } = after as { votes?: unknown };
+  return JSON.stringify(restBefore) === JSON.stringify(restAfter);
+}
+
 function tabMetaPatch(before: Tab, after: Tab): Partial<Omit<Tab, 'elements'>> {
   const patch: Record<string, unknown> = {};
   const keys = new Set([...Object.keys(before), ...Object.keys(after)]);
@@ -27,12 +48,19 @@ function tabMetaPatch(before: Tab, after: Tab): Partial<Omit<Tab, 'elements'>> {
     if (META_SKIP.has(k)) continue;
     const b = (before as Record<string, unknown>)[k];
     const a = (after as Record<string, unknown>)[k];
-    // Tab meta fields are all plain scalars/enums, so a stable JSON compare
-    // is both correct and cheap. A key present in `before` but gone in `after`
+    // A stable JSON compare is correct and cheap here. It used to be justified
+    // by "tab meta fields are all plain scalars/enums", which was never true of
+    // `vote` — a nested map every participant writes at once — and that gap is
+    // what let concurrent dots clobber each other. The compare stays; `vote`
+    // now gets the extra rule below. A key present in `before` but gone in `after`
     // yields `patch[k] = undefined`; the caller detects that and falls back to
     // a whole-tab op, because JSON.stringify drops undefined-valued keys on
     // the wire, so a cleared field could never propagate as a patch.
-    if (JSON.stringify(b) !== JSON.stringify(a)) patch[k] = a;
+    if (JSON.stringify(b) === JSON.stringify(a)) continue;
+    // Dots are the one tab-meta field with many concurrent writers, and they
+    // have their own op. See voteChangeIsDotsOnly.
+    if (k === 'vote' && voteChangeIsDotsOnly(b, a)) continue;
+    patch[k] = a;
   }
   return patch as Partial<Omit<Tab, 'elements'>>;
 }
@@ -66,4 +94,20 @@ export function tabBroadcastOps(before: Tab | undefined, after: Tab): RoomOp[] {
   }
   for (const op of elOps) ops.push({ kind: 'el', tabId: after.id, op });
   return ops;
+}
+
+// Apply a peer's whole-`tab` op over our copy of that tab.
+//
+// `folder` is per-diagram link metadata owned by the diagram-meta op (spec/30),
+// so the local membership stays and a content edit can't clobber a concurrent
+// folder change.
+//
+// Dots stay ours too. The whole-tab op is the fallback for a cleared field or a
+// bulk element change (see tabBroadcastOps), and it carries the sender's votes
+// map as it stood at their autosave, without any dot still in flight. Every dot
+// reaches us as its own `vote` op, so our map is already the merged one; only a
+// lifecycle change (start / end / reveal / clear) replaces it.
+export function mergeRemoteTab(local: Tab, incoming: Tab): Tab {
+  const keepVote = voteChangeIsDotsOnly(local.vote, incoming.vote);
+  return { ...incoming, folder: local.folder, ...(keepVote ? { vote: local.vote } : {}) };
 }

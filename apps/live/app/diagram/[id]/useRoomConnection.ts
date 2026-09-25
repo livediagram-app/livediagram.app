@@ -1,6 +1,11 @@
 import { useEffect, type Dispatch, type MutableRefObject, type SetStateAction } from 'react';
-import { applyElementOp, type Tab } from '@livediagram/diagram';
-import { CHANGE_LOG_LIST_LIMIT, type AvatarPresence, type LivePoll } from '@livediagram/api-schema';
+import { applyElementOp, applyVoteDelta, type Tab } from '@livediagram/diagram';
+import {
+  CHANGE_LOG_LIST_LIMIT,
+  type AvatarPresence,
+  type FacilitatorReason,
+  type LivePoll,
+} from '@livediagram/api-schema';
 import { nextFreeColor, type Participant } from '@/lib/identity';
 import {
   apiCreateRoomTicket,
@@ -10,9 +15,9 @@ import {
 } from '@/lib/api-client';
 import { parseLaserConfig } from '@/lib/laser-config';
 import { createPresenceCoalescer, type CursorPos, type LaserTrail } from './presence-coalescer';
-import { reportMultiplayerPresence } from './multiplayer-telemetry';
 import type { RemoteSelection } from '@/lib/presence-rows';
 import { pruneMapToPresent } from './editor-page-helpers';
+import { mergeRemoteTab } from './tab-broadcast-ops';
 
 // Realtime room: one WebSocket per diagram, opened only while the
 // diagram is shared. Lifted out of editor-page.tsx verbatim — the
@@ -68,6 +73,25 @@ export function useRoomConnection(opts: {
   // A peer set off a reaction pad (spec/135). Purely visual: nothing is
   // written, so there is nothing here to persist, order, or undo.
   receiveReaction: (elementId: string, reaction: string) => void;
+  // Bring Focus (spec/144): somebody is asking the room to come and look.
+  receiveFocusHere: (
+    from: string,
+    tabId: string,
+    at: { x: number; y: number },
+    zoom: number,
+  ) => void;
+  // The facilitator baton (spec/149): the room's answer, and the token we
+  // present on every hello so a refresh keeps it.
+  receiveFacilitator: (msg: {
+    holder: string | null;
+    by?: string;
+    reason: FacilitatorReason;
+    token?: string;
+  }) => void;
+  readFacilitatorToken: () => string | null;
+  // The facilitator freed an element we were holding (spec/07 lock). Only our
+  // socket is sent this, so there is nothing to check it against.
+  receiveSelectionReleased: (msg: { elementId: string; by: string }) => void;
   receivePoll: (poll: LivePoll) => void;
   receivePollAnswer: (from: string, pollId: string, value: string | null) => void;
   receivePollEnd: (pollId: string) => void;
@@ -101,6 +125,10 @@ export function useRoomConnection(opts: {
     setSelfParticipant,
     receiveAvatarPush,
     receiveReaction,
+    receiveFocusHere,
+    receiveFacilitator,
+    receiveSelectionReleased,
+    readFacilitatorToken,
     receivePoll,
     receivePollAnswer,
     receivePollEnd,
@@ -130,9 +158,6 @@ export function useRoomConnection(opts: {
     const handlers: RoomHandlers = {
       onPresence: (participants) => {
         const now = Date.now();
-        // Somebody else is in the room with us (spec/22). Self-guarded to
-        // one emit per diagram per page load.
-        reportMultiplayerPresence(diagramId, participants.length);
         setLivePresence(
           participants.map((p) => ({
             id: p.id,
@@ -240,11 +265,9 @@ export function useRoomConnection(opts: {
             const existing = prev.findIndex((t) => t.id === op.tabId);
             if (existing === -1) return [...prev, op.tab];
             const next = [...prev];
-            // `folder` is per-diagram link metadata owned by the
-            // diagram-meta op (spec/30), not by content. Keep the
-            // local membership so a content edit can't clobber a
-            // concurrent folder change.
-            next[existing] = { ...op.tab, folder: next[existing]!.folder };
+            // Keeps our folder membership and in-flight dots; see
+            // mergeRemoteTab.
+            next[existing] = mergeRemoteTab(next[existing]!, op.tab);
             return next;
           });
         } else if (op.kind === 'el') {
@@ -266,6 +289,26 @@ export function useRoomConnection(opts: {
             if (elements === tab.elements) return prev;
             const next = [...prev];
             next[i] = { ...tab, elements };
+            return next;
+          });
+        } else if (op.kind === 'vote') {
+          // ONE dot from a peer (spec/39). Applied as a DELTA to our own map,
+          // not as a replacement, which is the whole point: two people casting
+          // in the same instant commute, so both dots survive whatever order
+          // they arrive in. Ignored when the tab has no vote open — a dot for a
+          // round that has since been cleared has nowhere to land.
+          remoteUpdateRef.current = true;
+          applyRemoteTabs((prev) => {
+            const i = prev.findIndex((t) => t.id === op.tabId);
+            if (i === -1) return prev;
+            const tab = prev[i]!;
+            if (!tab.vote) return prev;
+            const vote = applyVoteDelta(tab.vote, op.elementId, op.voter, op.delta);
+            // Same object back = a retraction of a dot we never had. Keep tab
+            // identity so the autosave's content diff sees no phantom change.
+            if (vote === tab.vote) return prev;
+            const next = [...prev];
+            next[i] = { ...tab, vote };
             return next;
           });
         } else if (op.kind === 'tab-meta') {
@@ -367,6 +410,11 @@ export function useRoomConnection(opts: {
           // burst for a pad on another tab has nothing to draw itself on and
           // expires quietly.
           receiveReaction(op.elementId, op.reaction);
+        } else if (op.kind === 'focus-here') {
+          // No tab check: the invitation names its own tab and taking it is
+          // what switches you, so one sent from another tab is exactly the
+          // case this element exists for.
+          receiveFocusHere(from, op.tabId, op.at, op.zoom);
         } else if (op.kind === 'tab-focus') {
           setRemoteTabFocus((prev) => {
             const next = new Map(prev);
@@ -415,6 +463,8 @@ export function useRoomConnection(opts: {
           }
         }
       },
+      onFacilitator: (msg) => receiveFacilitator(msg),
+      onSelectionReleased: (msg) => receiveSelectionReleased(msg),
       onResync: () => {
         // The room couldn't bridge our reconnect gap from its op log
         // (spec/75, Level 1) -- we fell too far behind or it restarted.
@@ -461,6 +511,7 @@ export function useRoomConnection(opts: {
           // role comes from the code.
           ownerId: selfParticipant.id,
         },
+        readFacilitatorToken,
       );
       roomRef.current = openedRoom;
     })();

@@ -17,7 +17,7 @@ import type { ReactNode } from 'react';
 //
 // Headers that are a different shape keep their own markup on purpose: the
 // delete-account confirm has no close button, the password gate leads with a
-// lock icon, and the profile pane's is an avatar row.
+// lock icon.
 //
 // MoveToFolder / PaletteFavourites / TabOrganise share the same tree but a
 // tighter `px-5 pb-3 pt-5`. All three agree with each other, so that reads as
@@ -41,7 +41,7 @@ export function DialogHeader({
           <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">{subtitle}</p>
         ) : null}
       </div>
-      {children ? <div className="flex shrink-0 items-center gap-0.5">{children}</div> : null}
+      {children ? <div className="-mt-1 flex shrink-0 items-center gap-0.5">{children}</div> : null}
     </div>
   );
 }

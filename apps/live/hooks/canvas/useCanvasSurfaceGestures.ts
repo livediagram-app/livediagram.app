@@ -1,4 +1,3 @@
-import { useRef } from 'react';
 import type { PointerEvent as ReactPointerEvent, MouseEvent as ReactMouseEvent } from 'react';
 import { pointerToCanvas } from '@/lib/canvas';
 import { peerPushTarget } from '@/lib/avatar-walk';
@@ -9,6 +8,7 @@ import type { useIsometricCamera } from '@/hooks/canvas/useIsometricCamera';
 import type { useSpotlight } from '@/hooks/canvas/useSpotlight';
 import type { useAvatarWalk } from '@/hooks/canvas/useAvatarWalk';
 import type { useLongPress } from '@/hooks/ui/useLongPress';
+import { useRightClickRelease } from '@/hooks/canvas/useRightClickRelease';
 
 type PanAndMarquee = ReturnType<typeof useCanvasPanAndMarquee>;
 
@@ -87,6 +87,14 @@ export function useCanvasSurfaceGestures({
   const focusCanvas = () => {
     const node = mainRef && 'current' in mainRef ? mainRef.current : null;
     node?.focus({ preventScroll: true });
+  };
+
+  // Drop a marquee / pan the press armed. Their release handlers deselect on
+  // a sub-4px "drag", and deselecting closes the context menu, so a press
+  // that turned out to open the menu must not leave one live.
+  const cancelPressGesture = () => {
+    setMarquee(null);
+    setPan(null);
   };
 
   // The shared tail of both pointerdown handlers: tool decides the
@@ -260,8 +268,14 @@ export function useCanvasSurfaceGestures({
     spotlight.shrink();
   };
 
-  // Set by onContextMenu, consumed by the pointerup that opens the tab menu.
-  const rmbArmedRef = useRef(false);
+  // The tab menu opens on RELEASE, like an element's, through the same hook:
+  // it copes with contextmenu arriving before the release (macOS / X11) OR
+  // after it (Windows), which the old arm-then-wait ref here did not.
+  const rightClick = useRightClickRelease(
+    (e) => onCanvasContextMenu?.(e.clientX, e.clientY),
+    // The canvas is the last stop for a right-click; nothing above it cares.
+    { stopPropagation: false },
+  );
 
   const onContextMenu = (e: ReactMouseEvent) => {
     // BoxedElementView's onContextMenu calls e.stopPropagation()
@@ -276,17 +290,15 @@ export function useCanvasSurfaceGestures({
     // the orbit gesture. Avatar mode (spec/101) is read-only and mid-
     // narration: a menu popping open would interrupt the tour.
     if (canvasTool === 'spotlight' || canvasTool === 'isometric' || canvasTool === 'avatar') return;
-    // Arm only — the tab menu opens on RELEASE, like an element's
-    // (useRightClickRelease). X11 fires `contextmenu` on press, so opening
-    // here put the menu under a held button.
-    rmbArmedRef.current = true;
+    // A macOS Ctrl+click is a context click on the PRIMARY button, so its
+    // pointerdown already armed a marquee (or pan) whose release would
+    // deselect, and deselecting closes the menu this click is opening.
+    // The press is a context click now, not a select: drop it.
+    cancelPressGesture();
+    rightClick.onContextMenu(e);
   };
 
-  const onContextMenuPointerUp = (e: ReactPointerEvent) => {
-    if (e.button !== 2 || !rmbArmedRef.current) return;
-    rmbArmedRef.current = false;
-    onCanvasContextMenu?.(e.clientX, e.clientY);
-  };
+  const onContextMenuPointerUp = rightClick.onPointerUp;
 
   const onPointerDown = (e: ReactPointerEvent) => {
     // Touch press-and-hold on the empty canvas opens the context menu

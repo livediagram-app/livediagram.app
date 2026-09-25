@@ -18,13 +18,17 @@ import type {
 // "alongside, or under on mobile" behaviour the timer needs next to a
 // banner.
 
-type BannerTone = 'neutral' | 'brand' | 'danger';
+type BannerTone = 'neutral' | 'brand' | 'live' | 'danger';
 
 const TONE_CLASS: Record<BannerTone, string> = {
   neutral:
     'border-slate-200 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100',
   brand:
     'border-brand-200 bg-brand-50 text-brand-800 dark:border-brand-500/40 dark:bg-brand-500/15 dark:text-brand-100',
+  // Solid, for a pill that reports something HAPPENING to your view right now
+  // (being followed along, spec/131) rather than a mode you turned on. It is
+  // meant to be the loudest thing on the canvas until you stop it.
+  live: 'border-brand-500 bg-brand-500 text-white',
   danger:
     'border-rose-300 bg-rose-50 text-rose-700 dark:border-rose-500/40 dark:bg-rose-500/15 dark:text-rose-200',
 };
@@ -36,7 +40,15 @@ const TONE_CLASS: Record<BannerTone, string> = {
 // centres (`sm:left-1/2 -translate-x-1/2`). `pointer-events-none` so the
 // gaps between pills stay click-through; each pill re-enables pointer
 // events for itself.
-export function TopCenterStack({ children }: { children: ReactNode }) {
+export function TopCenterStack({
+  children,
+  belowToolbar = false,
+}: {
+  children: ReactNode;
+  // The Toolbar layout's strip (spec/148) owns top-3 on desktop, so the
+  // stack starts under it instead of on top of it.
+  belowToolbar?: boolean;
+}) {
   return (
     // On mobile this stack starts BELOW the dock rather than beside it. Both
     // used to sit at top-3, and the stack spans the full width, so anything
@@ -59,7 +71,9 @@ export function TopCenterStack({ children }: { children: ReactNode }) {
     // popovers' z-toolbar) so opening a panel simply covers the banners
     // instead of them punching through it. Desktop keeps z-chrome, where the
     // stack is centred and nothing overlaps it.
-    <div className="pointer-events-none absolute right-3 top-[4.75rem] z-[var(--z-panel)] flex max-w-[calc(100%-1.5rem)] flex-col items-end gap-2 sm:left-1/2 sm:right-auto sm:top-3 sm:z-[var(--z-chrome)] sm:-translate-x-1/2 sm:items-center">
+    <div
+      className={`pointer-events-none absolute right-3 z-[var(--z-panel)] flex max-w-[calc(100%-1.5rem)] flex-col items-end gap-2 sm:left-1/2 sm:right-auto ${belowToolbar ? 'top-[4.25rem]' : 'top-[4.75rem] sm:top-3'} sm:z-[var(--z-chrome)] sm:-translate-x-1/2 sm:items-center`}
+    >
       {children}
     </div>
   );

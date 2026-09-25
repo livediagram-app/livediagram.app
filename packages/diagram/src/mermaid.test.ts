@@ -423,6 +423,21 @@ describe('mermaidFromTab', () => {
     expect(back.graph.nodes[0]!.label).toBe('Line 1\nSay "hi"');
   });
 
+  it('round-trips an edge label containing the pipe that delimits it', () => {
+    const els = graphToElements({
+      nodes: [
+        { id: 'a', label: 'A' },
+        { id: 'b', label: 'B' },
+      ],
+      edges: [{ from: 'a', to: 'b', label: 'yes|no' }],
+    });
+    const back = parseMermaid(mermaidFromTab({ elements: els }));
+    expect(back.ok).toBe(true);
+    if (!back.ok) return;
+    expect(back.graph.nodes).toHaveLength(2);
+    expect(back.graph.edges.map((e) => e.label)).toEqual(['yes|no']);
+  });
+
   it('round-trips a clustered, styled flowchart through layout and back', () => {
     const src = `flowchart LR
   subgraph s1["Backend"]

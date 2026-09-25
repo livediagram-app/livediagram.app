@@ -28,25 +28,25 @@ export type ExplorerViewProps = {
   ownerId: string | null;
   // Adds the desktop Owner column (Recent: "You" vs the team name).
   showOwner?: boolean;
-  // True on the "All diagrams" (My Work) view: the synthetic Unsorted
+  // True on the "All diagrams" (Personal Space) view: the synthetic Unsorted
   // row renders at the very top so the root has the same "folder row per
   // child" feel as any non-root folder. Always shown there now (even
-  // empty, badge hidden at zero) so My Work isn't bare before anything
+  // empty, badge hidden at zero) so Personal Space isn't bare before anything
   // is filed; Generated renders next to it the same way (spec/15).
   showUnsortedRow: boolean;
   unsortedCount: number;
   onOpenUnsorted: () => void;
-  // The Generated synthetic folder row, shown on the My Work (/all) list
+  // The Generated synthetic folder row, shown on the Personal Space (/all) list
   // beside Unsorted (spec/15). Optional: defaults to hidden.
   showGeneratedRow?: boolean;
   generatedCount?: number;
   onOpenGenerated?: () => void;
   // The Offline synthetic folder row (spec/76): diagrams saved only in this
-  // browser. Shown on the My Work (/all) list beside Generated.
+  // browser. Shown on the Personal Space (/all) list beside Generated.
   showOfflineRow?: boolean;
   offlineCount?: number;
   onOpenOffline?: () => void;
-  // The "Dynamic" parent folder row on My Work (/all): opens the
+  // The "Dynamic" parent folder row on Personal Space (/all): opens the
   // /explorer/dynamic view listing the three synthetic folders.
   showDynamicRow?: boolean;
   dynamicCount?: number;

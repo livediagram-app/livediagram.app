@@ -102,11 +102,24 @@ export function ensureGuestSelfId(): string {
   setGuestSelfId(fresh);
   // A fresh mint means a browser we've never seen: the daily
   // new-visitors signal (spec/22). Returning visitors hit the
-  // `stored` early-return above and never re-emit. The signed-mint
-  // path (guest-identity.ts) emits its own event only when it
-  // doesn't fall back to this helper, so a visitor counts once.
-  track('Participant', 'Created');
+  // `stored` early-return above and never re-emit.
+  reportParticipantCreated();
   return fresh;
+}
+
+// Set once this page load has counted a new visitor. Two mints can race
+// inside one load: the signed mint (guest-identity.ts) awaits the network
+// while a synchronous caller (TeamInviteJoin, /new's commit fallback) mints
+// a local id, and with storage unavailable every call re-mints. Either way
+// it is one browser, so it counts once.
+let participantCreatedReported = false;
+
+// The single emit point for `Participant`/`Created` (spec/22), shared by the
+// local mint above and the signed mint in guest-identity.ts.
+export function reportParticipantCreated(): void {
+  if (participantCreatedReported) return;
+  participantCreatedReported = true;
+  track('Participant', 'Created');
 }
 
 // Read the existing document-write key, or mint + persist a fresh one

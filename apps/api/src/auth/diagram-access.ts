@@ -79,7 +79,9 @@ export async function canEditDiagram(
   callerId: string | null = null,
 ): Promise<boolean> {
   if (teamId) {
-    if (callerId && callerId === ownerId) return true;
+    // Membership alone. The owner of a team diagram is a joined member while
+    // they're in the team; once they leave or are removed, owning the row
+    // must not keep it open to them (spec/35).
     if (await isJoinedTeamMember(env, teamId, callerId)) return true;
   } else if (owner && owner === ownerId) {
     return true;
@@ -103,7 +105,9 @@ export async function canReadDiagram(
   callerId: string | null = null,
 ): Promise<boolean> {
   if (teamId) {
-    if (callerId && callerId === ownerId) return true;
+    // Membership alone. The owner of a team diagram is a joined member while
+    // they're in the team; once they leave or are removed, owning the row
+    // must not keep it open to them (spec/35).
     if (await isJoinedTeamMember(env, teamId, callerId)) return true;
   } else if (owner && owner === ownerId) {
     return true;

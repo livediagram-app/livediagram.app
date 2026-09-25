@@ -96,6 +96,26 @@ This implements the OAuth flow Manager Toolkit uses:
    redirects to a **consent page in `apps/live`** (e.g. `/oauth/authorize` or an
    Explorer "Connect an app" screen), passing the session id. The user is
    already signed in there via Clerk.
+   **What the consent screen may believe.** `/oauth/authorize` also passes the
+   client name and the redirect host as query params for display, and the screen
+   must **not** render those. It is the only thing standing between a user and a
+   full-access token, and its one anti-phishing line ("Access will be sent to
+   `<host>`. Only continue if you recognise this.") is forgeable by exactly the
+   party it exists to expose: registration is open by design, so an attacker can
+   register a client, start a real authorize to obtain a session id, then hand
+   the victim a hand-written `/oauth/consent?session=…&client=Notion&to=notion.so`
+   whose code lands on their own `redirect_uri`. The screen reads
+   **`GET /oauth/session/<id>`** instead → `{ clientName, redirectHost }`, taken
+   from the stored session where `redirectUri` was checked against the client's
+   registered list before it was written. The session id is the read capability
+   (10-minute TTL, held by the browser in the flow); the response carries no
+   token, code or PKCE material and does not consume the session, so answering
+   grants a holder nothing it could not get by completing the flow. Client
+   **name** is never a trust signal either way (it is whatever was registered) —
+   the host is the fact to check, which is why it must come from the server. A
+   session that is unknown or expired is a blocking screen, never a screen with
+   an approve button and a blank destination. See
+   `apps/live/lib/mcp-consent-session.ts`.
 4. **Consent + mint** — on approve, `apps/live` calls a **new
    `POST /api/oauth/exchange`** on the api worker. This is the one api change: an
    endpoint that requires a verified Clerk identity (gated exactly like
@@ -354,12 +374,19 @@ finer grants stay deferred (spec/61 §7).
 
 Genuine tool failures reach the public **Exceptions** dashboard (spec/22 Error
 category), so we see WHERE the MCP breaks. `apiJson` reports a **5xx** from the
-api worker (`Error·Api·Http5xx`) and a **network fault** (the service binding
-threw — `Error·Api·Internal`), then rethrows; the `delete_diagram` raw-fetch
-path reports a 5xx too. A **4xx is deliberately NOT reported** — a bad id or
+api worker (`Error·Api·Http5xx.<Tool>`) and a **network fault** (the service
+binding threw — `Error·Api·Internal.<Tool>`), then rethrows; the
+`delete_diagram` raw-fetch path reports a 5xx too. `<Tool>` is the running
+tool's PascalCase name (`Http503.UpdateDiagram`), the same token as its
+`Mcp·Used` event, carried by the `AsyncLocalStorage` scope `registerTool` wraps
+every handler in (`tool-scope.ts`), so the dashboard says which tool broke. A **4xx is deliberately NOT reported** — a bad id or
 malformed elements is expected, model-correctable input, not a fault, and
 reporting it would flood the view (an empty Exceptions view is the goal).
 Fire-and-forget, generic tokens only — never a message, stack, or user content.
+Every post (these reports and `Mcp·Used`) is handed to the request's
+`ctx.waitUntil` (`request-scope.ts`) so it outlives the response, and
+`Mcp·Used` is sent by `registerTool` only after a tool call succeeds
+(spec/22 Mcp).
 
 ### 4.13 Worker configuration
 

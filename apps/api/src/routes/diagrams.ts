@@ -23,6 +23,7 @@ import {
   deleteChangeLogForTab,
   deleteDiagram,
   getDiagram,
+  getFolder,
   countDiagramsByOwner,
   getMembership,
   getParticipant,
@@ -37,12 +38,11 @@ import {
 } from '../db';
 import { badRequest, forbidden, json, noContent, notFound, svgImage } from '../responses';
 import { getDiagramThumbnailSvg } from '../thumbnail';
+import { redactOwnerId } from '../redact-owner';
 import { emailEnabled } from '../email/client';
 import { notifyMilestone } from '../email/notifications';
 import {
-  audienceForDiagram,
   recordDiagramCreated,
-  recordDiagramDeleted,
   recordDiagramDuplicated,
   recordDiagramOffline,
   recordDiagramRenamed,
@@ -57,6 +57,7 @@ import type { ChangeLogEntryDTO, DiagramDTO } from '../types';
 import {
   gateEdit,
   gateRead,
+  ownsDiagram,
   requireDiagramAccess,
   requireOwnedDiagram,
   requireOwner,
@@ -103,6 +104,19 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       // through PUT, which gates on edit access).
       const clash = await getDiagram(env, body.id);
       if (clash && clash.ownerId !== owner) return forbidden();
+      if (typeof body.presentation === 'string' && body.presentation.length > MAX_DECK_LEN) {
+        return badRequest('presentation too large');
+      }
+      // A seeded folder must be one of the caller's own personal folders, the
+      // same scope rule PUT /folder applies. Anything else (a folder deleted
+      // since an offline diagram was filed in it, someone else's) lands the
+      // diagram in Unsorted rather than failing the create: this is how an
+      // Offline Mode sync carries its placement (spec/76).
+      let folderId = typeof body.folderId === 'string' ? body.folderId : null;
+      if (folderId !== null) {
+        const folder = await getFolder(env, folderId);
+        if (!folder || folder.teamId !== null || folder.ownerId !== owner) folderId = null;
+      }
       const now = Date.now();
       // Diagram meta first so the FK in tabs can resolve.
       await upsertDiagramMeta(env, {
@@ -111,12 +125,13 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
         name: body.name,
         shareable: body.shareable ?? false,
         shareCode: body.shareCode ?? null,
-        folderId: body.folderId ?? null,
+        folderId,
         // Diagrams are always created personal; they move into a
         // team library via PUT /folder afterwards (spec/35).
         teamId: null,
-        // A new diagram has no deck; one is built later through PUT.
-        presentation: null,
+        // Usually none. An Offline Mode sync carries the deck it built
+        // offline (spec/76), which would otherwise be lost with the local copy.
+        presentation: typeof body.presentation === 'string' ? body.presentation : null,
         // Provenance (spec/15): only the closed set of generated sources
         // is accepted; anything else (or absent) is a user-made diagram.
         source: body.source === 'ai' || body.source === 'mcp' ? body.source : null,
@@ -169,7 +184,12 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       const d = await getDiagram(env, id);
       if (!d) return notFound();
       const allowed = await gateRead(ctx, id, d.ownerId, d.teamId);
-      return allowed ? json({ diagram: d }) : notFound();
+      // Redacted for every non-owner, exactly as the share-code resolver
+      // does (spec/04): the gate above admits any valid share code, view
+      // or edit, so this is the same audience — and a guest owner's id IS
+      // their credential. This door was returning it intact while the
+      // share door blanked it. See redact-owner.ts.
+      return allowed ? json({ diagram: redactOwnerId(d, ctx.resolveOwner()) }) : notFound();
     }
     if (request.method === 'PUT') {
       // Metadata-only PUT now that tabs live in their own table.
@@ -244,7 +264,9 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       if (diagram && typeof body.name === 'string' && body.name !== existing.name) {
         ctx.waitUntil?.(recordDiagramRenamed(env, diagram, existing.name, owner));
       }
-      return json({ diagram });
+      // Redacted like the GET: an edit-role share visitor passes gateEdit, and
+      // a guest owner's id is a credential (see redact-owner.ts).
+      return json({ diagram: diagram ? redactOwnerId(diagram, owner) : diagram });
     }
     if (request.method === 'DELETE') {
       // Owner, OR a joined member of the diagram's team (spec/35:
@@ -257,35 +279,32 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       if (owner instanceof Response) return owner;
       const existing = await getDiagram(env, id);
       if (!existing) return notFound();
-      let allowed = owner === existing.ownerId;
+      // `ownsDiagram`, not `owner === existing.ownerId`: a TEAM diagram's
+      // owner id is a Clerk id every teammate can read, so proving ownership
+      // of one needs a verified account id rather than the X-Owner-Id header
+      // (see routes/context.ts). The membership leg below already worked that
+      // way; this leg didn't, so a stale member holding the owner's id could
+      // delete a team diagram.
+      let allowed = await ownsDiagram(ctx, existing);
       if (!allowed && existing.teamId && ctx.verifiedUserId) {
         const membership = await getMembership(env, existing.teamId, ctx.verifiedUserId);
         allowed = membership?.status === 'joined';
       }
       if (!allowed) return forbidden();
-      // spec/138 §3.5: resolve the audience BEFORE the row goes, since
-      // the team link disappears with it; cascade this diagram's
-      // history; THEN write the tombstone, so the diagram collapses to
-      // exactly one bubble saying it was deleted rather than a run of
-      // events pointing at a 404.
-      const audience = await audienceForDiagram(env, existing);
+      // spec/138 §3.5: a deleted diagram leaves NO trace on the Timeline.
+      // Its history is swept and no tombstone is written — from the feed's
+      // point of view it never existed. (There used to be a "Diagram
+      // Deleted" card; it was noise the reader had asked to be rid of.)
+      //
       // "Take offline" (spec/76) reaches this same DELETE — the server copy
       // really does go — but the diagram is not gone, it moved into the
-      // caller's browser. Undeclared it recorded `diagram_deleted`, so the feed
-      // told the owner in danger red that a diagram they still had was deleted.
-      // The cascade above still applies either way: whatever the server held is
-      // gone, so its prior events would point at a 404.
-      //
-      // Honoured for the OWNER only, and that is the load-bearing half. This
-      // DELETE is also reachable by any joined member of the diagram's team
-      // (see the gate above, spec/35), and the Explorer offers Take Offline on
-      // a team-library row without checking who owns it. When a teammate does
-      // it the diagram moves into THEIR browser and leaves the owner's account
-      // for good — from the owner's and the team's side that is a deletion,
-      // not a diagram they can still reach. Recording `diagram_offline` there
-      // would also scope the only event to the actor (the emitter is
-      // deliberately owner-scoped), so the owner and the team would be told
-      // nothing at all while the row and its whole history disappeared.
+      // caller's browser, and THAT is worth a card. Honoured for the OWNER
+      // only: the DELETE is also reachable by any joined member of the
+      // diagram's team (see the gate above, spec/35), and the Explorer
+      // offers Take Offline on a team-library row without checking who owns
+      // it. When a teammate does it the diagram moves into THEIR browser and
+      // leaves the owner's account for good — from the owner's and the
+      // team's side that is a deletion, and a deletion records nothing.
       const conversion =
         owner === existing.ownerId
           ? readDiagramConversion(request.headers.get(DIAGRAM_CONVERSION_HEADER))
@@ -298,7 +317,7 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
               ? // Owner-only: an offline diagram exists in exactly one browser,
                 // so no teammate has a stake in it.
                 recordDiagramOffline(env, existing, owner)
-              : recordDiagramDeleted(env, existing, owner, audience),
+              : undefined,
           )
           .catch((err) => console.error('timeline diagram delete failed', err)),
       );

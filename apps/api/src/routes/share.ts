@@ -9,20 +9,11 @@ import {
 } from '../db';
 import { notifyDiagramJoin } from '../email/notifications';
 import { json, notFound, svgImage } from '../responses';
+import { reportServerEvent } from '../server-telemetry';
 import { timingSafeEqual } from '../auth/timing-safe';
 import { getDiagramTabImageSvg, getDiagramThumbnailSvg } from '../thumbnail';
-import type { DiagramDTO } from '../types';
+import { redactOwnerId } from '../redact-owner';
 import { sharePasswordOf, type RouteContext } from './context';
-
-// A share-link visitor never needs the owner's id, and exposing it here
-// is what lets an observer learn a guest's owner-id and (formerly) claim
-// its data via /api/migrate. Blank it for everyone but the owner opening
-// their own link. The client only reads ownerId to compute isOwner, which
-// is correctly false for a blanked id. Defence-in-depth on top of the
-// signature requirement on /api/migrate (spec/04).
-function redactOwner(d: DiagramDTO, visitor: string | null): DiagramDTO {
-  return visitor && visitor === d.ownerId ? d : { ...d, ownerId: '' };
-}
 
 // Resolve a share code to its diagram + role. Used by visitors
 // landing on /live/diagram/shared?s=<code>. Returns 404 if the
@@ -72,6 +63,13 @@ export async function handleShare(ctx: RouteContext): Promise<Response> {
         // they've opted out. Resolve the joiner's display name (shown to
         // the owner already in presence) for a friendlier subject.
         if (firstVisit) {
+          // spec/22: Diagram·Joined counts once per (visitor, diagram), here,
+          // because only the server knows a visit is the first. The editor
+          // used to emit it on every open of the share URL, so refreshes and
+          // return visits inflated the count.
+          ctx.waitUntil?.(
+            reportServerEvent(env, 'Diagram', 'Joined', link.role === 'edit' ? 'Edit' : 'View'),
+          );
           ctx.waitUntil?.(
             getParticipant(env, visitor)
               .catch(() => null)
@@ -80,7 +78,7 @@ export async function handleShare(ctx: RouteContext): Promise<Response> {
           );
         }
       }
-      return json({ diagram: redactOwner(d, visitor), role: link.role });
+      return json({ diagram: redactOwnerId(d, visitor), role: link.role });
     }
     // No active link resolves this code: expired, revoked, or never
     // existed. `getShareLink` (above) is the single authority — it

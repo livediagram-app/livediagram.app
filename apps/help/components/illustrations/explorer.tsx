@@ -85,7 +85,7 @@ export function ExplorerPanel() {
       <SidebarRow x={28} y={66} w={188} label="Recent" count={8} active glyph="recent" />
       <DiagramRow x={40} y={92} w={164} title="Onboarding flow" meta="edited 2m ago" active />
       <DiagramRow x={40} y={126} w={164} title="Data model" meta="edited today" />
-      <SidebarRow x={28} y={162} w={188} label="My Work" glyph="folder" />
+      <SidebarRow x={28} y={162} w={188} label="Personal Space" glyph="folder" />
       <SidebarRow x={28} y={184} w={188} label="Shared with you" count={3} glyph="shared" />
     </Scene>
   );
@@ -173,8 +173,8 @@ export function SharedWithYou() {
   );
 }
 
-/** The My Work folder tree: an Unsorted bucket plus nested project folders. */
-export function MyWorkTree() {
+/** The Personal Space folder tree: an Unsorted bucket plus nested project folders. */
+export function PersonalSpaceTree() {
   const row = (
     y: number,
     label: string,
@@ -219,7 +219,7 @@ export function MyWorkTree() {
         strokeWidth={1.5}
       />
       <Label x={40} y={32} size={11} weight={700} tone="strong">
-        My Work
+        Personal Space
       </Label>
       <line x1={24} y1={44} x2={396} y2={44} className="stroke-slate-200" strokeWidth={1.5} />
       {row(56, 'Unsorted', 0, { glyph: 'folder' })}
@@ -460,7 +460,7 @@ export function ThemesLibrary() {
 }
 
 /** The Unsorted folder: the synthetic home for diagrams not filed anywhere,
- *  shown highlighted at the top of My Work with a couple of loose docs in it. */
+ *  shown highlighted at the top of Personal Space with a couple of loose docs in it. */
 export function UnsortedFolder() {
   return (
     <Scene w={420} h={214} bg="plain">
@@ -474,7 +474,7 @@ export function UnsortedFolder() {
         strokeWidth={1.5}
       />
       <Label x={40} y={32} size={11} weight={700} tone="strong">
-        My Work
+        Personal Space
       </Label>
       <line x1={24} y1={44} x2={396} y2={44} className="stroke-slate-200" strokeWidth={1.5} />
       <SidebarRow x={40} y={54} w={336} label="Unsorted" glyph="folder" active count={2} />
@@ -564,6 +564,130 @@ export function TimelineStacking() {
 
 /** One event bubble: the tinted icon strip on the left, title and meta beside
  *  it. Shared by the two Timeline scenes above so they stay identical. */
+/** The Activity page (spec/142): titled sections of rows, each a kind glyph,
+ *  a name over where it is from, and the person on the right. */
+export function ActivityList() {
+  return (
+    <Scene w={420} h={250} bg="plain">
+      <rect
+        x={24}
+        y={14}
+        width={372}
+        height={222}
+        rx={10}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1.5}
+      />
+      <Label x={40} y={30} size={11} weight={700} tone="strong">
+        Activity
+      </Label>
+      <line x1={24} y1={44} x2={396} y2={44} className="stroke-slate-200" strokeWidth={1.5} />
+
+      <Label x={40} y={60} size={8} weight={700} tone="muted">
+        ASSIGNED TO YOU
+      </Label>
+      <rect x={72} y={53} width={12} height={12} rx={6} className="fill-slate-200" />
+      <Label x={78} y={60} anchor="middle" size={7} weight={700} tone="muted">
+        2
+      </Label>
+      <ActivityRowGlyph
+        y={68}
+        kind="action"
+        title="Confirm the retry budget"
+        meta="Payments · Checkout · Flow"
+        who="Y"
+        tint="brand"
+      />
+      <ActivityRowGlyph
+        y={100}
+        kind="action"
+        title="Add the audit table"
+        meta="Platform · Ledger · Data"
+        who="Y"
+        tint="brand"
+      />
+
+      <Label x={40} y={146} size={8} weight={700} tone="muted">
+        OPEN COMMENT THREADS
+      </Label>
+      <rect x={140} y={139} width={12} height={12} rx={6} className="fill-slate-200" />
+      <Label x={146} y={146} anchor="middle" size={7} weight={700} tone="muted">
+        1
+      </Label>
+      <ActivityRowGlyph
+        y={154}
+        kind="comment"
+        title="Checkout"
+        meta="Can we retry on 502 as well?"
+        who="P"
+        tint="emerald"
+      />
+
+      <Label x={40} y={206} size={8} weight={700} tone="muted">
+        YOU ASSIGNED
+      </Label>
+      <ActivityRowGlyph
+        y={214}
+        kind="action"
+        title="Draft the rollout note"
+        meta="Payments · Release · Plan"
+        who="S"
+        tint="slate"
+      />
+    </Scene>
+  );
+}
+
+function ActivityRowGlyph({
+  y,
+  kind,
+  title,
+  meta,
+  who,
+  tint,
+}: {
+  y: number;
+  kind: 'action' | 'comment';
+  title: string;
+  meta: string;
+  who: string;
+  tint: 'brand' | 'emerald' | 'slate';
+}) {
+  return (
+    <g>
+      <rect
+        x={40}
+        y={y}
+        width={340}
+        height={26}
+        rx={6}
+        className="fill-slate-50 stroke-slate-200"
+        strokeWidth={1}
+      />
+      {kind === 'action' ? (
+        <g className="stroke-slate-400" strokeWidth={1.4} fill="none" strokeLinecap="round">
+          <rect x={48} y={y + 7} width={9} height={12} rx={1.5} />
+          <path d={`M50.5 ${y + 13.5}l1.7 1.7 3-3.3`} />
+        </g>
+      ) : (
+        <path
+          d={`M48 ${y + 8}h10a2 2 0 012 2v5a2 2 0 01-2 2h-5l-3 2.5v-2.5h-2a2 2 0 01-2-2v-5a2 2 0 012-2z`}
+          className="stroke-slate-400"
+          strokeWidth={1.4}
+          fill="none"
+        />
+      )}
+      <Label x={68} y={y + 10} size={9} weight={700} tone="strong">
+        {title}
+      </Label>
+      <Label x={68} y={y + 20} size={8} tone="muted">
+        {meta}
+      </Label>
+      <Avatar cx={362} cy={y + 13} r={7} initial={who} colour={tint} />
+    </g>
+  );
+}
+
 function TimelineEventBubble({
   y,
   tint,

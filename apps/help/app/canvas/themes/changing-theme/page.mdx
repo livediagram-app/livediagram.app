@@ -4,52 +4,50 @@ import { helpMetadata } from '@/lib/seo';
 import { ThemePicker } from '@/components/illustrations/canvas';
 
 export const metadata = helpMetadata({
-  title: 'Changing the Colour Scheme',
+  title: 'Changing the Theme',
   description:
-    'Open the Tab Look & Feel dialog, browse colour schemes by category, and apply one live to recolour the whole tab.',
+    'Open the Tab Look & Feel dialog, browse themes by category, and apply one live to recolour the whole tab.',
   path: '/help/canvas/themes/changing-theme/',
 });
 
 <ArticleLayout
-  title="Changing the Colour Scheme"
-  description="Use the Tab Look & Feel dialog to browse colour schemes by category and apply one live to the active tab."
+  title="Changing the Theme"
+  description="Use the Tab Look & Feel dialog to browse themes by category and apply one live to the active tab."
   categoryTitle="Canvas"
   categorySlug="canvas"
-  parentArticle={{ title: "Colour Schemes", slug: "colour schemes" }}
-  subArticles={getSubArticles("colour schemes").filter((a) => a.slug !== "changing-colour scheme")}
+  parentArticle={{ title: "Themes", slug: "themes" }}
+  subArticles={getSubArticles("themes").filter((a) => a.slug !== "changing-theme")}
 >
 
-Changing a diagram's look is a matter of picking a new colour scheme and watching the canvas update. livediagram brings the colour scheme picker front and centre in a dedicated dialog, with the same category browse you see when starting a new diagram, so there is plenty of room to compare looks.
+Changing a diagram's look is a matter of picking a new theme and watching the canvas update. livediagram brings the theme picker front and centre in a dedicated dialog, with the same category browse you see when starting a new diagram, so there is plenty of room to compare looks.
 
-<Figure caption="The Tab Look & Feel dialog's Colour scheme tab, a grid of swatch cards with the applied colour scheme outlined.">
+<Figure caption="The Tab Look & Feel dialog's Theme tab, a grid of swatch cards with the applied theme outlined.">
   <ThemePicker />
 </Figure>
 
 ## Opening the dialog
 
-Right-click an empty patch of canvas and choose **Change colour scheme**, or click the **paintbrush button** in the bottom-right corner of the editor (it's there on every screen size, phones included). Either opens the **Tab Look & Feel** dialog on its **Colour scheme** tab. The dialog also has a **Canvas** tab for the backdrop pattern and colours, and you can switch between the two from the tab strip below the header. The same controls also live in the floating palette, but the dialog gives them more room.
+Click the **paintbrush button** in the bottom-right corner of the editor (it's there on every screen size, phones included). Either opens the **Tab Look & Feel** dialog on its **Theme** tab. The dialog also has a **Canvas** tab for the backdrop pattern and colours, and you can switch between the two from the tab strip below the header. The same controls also live in the floating palette, but the dialog gives them more room.
 
 The dialog is an editor, not a wizard: there is no Apply or Cancel. Every change applies live to the active tab, and closing it (with the X, the Escape key, or a click on the backdrop) simply dismisses it without rolling anything back.
 
 ## Browsing by category
 
-The Colour scheme tab opens on an overview: a **Default** quick-pick plus a card for each category, such as Cool, Warm, Dark, Multi-colour, and Formal, alongside a **Custom** category for your own [saved colour schemes](/help/canvas/themes/custom-themes/). Click a category to drill into its colour schemes, with an "All colour schemes" affordance to step back out.
+The Theme tab opens on an overview: a **Default** quick-pick plus a card for each category, such as Cool, Warm, Dark, Multi-colour, and Formal, alongside a **Custom** category for your own [saved themes](/help/canvas/themes/custom-themes/). Click a category to drill into its themes, with an "All themes" affordance to step back out.
 
-<Step n={1}>
-  Right-click the canvas and choose **Change colour scheme** to open the dialog on the Colour scheme tab.
-</Step>
+<Step n={1}></Step>
 
 <Step n={2}>
-  Pick a category, then click a colour scheme to apply it live. Double-click a colour scheme to apply it and close
+  Pick a category, then click a theme to apply it live. Double-click a theme to apply it and close
   the dialog in one move.
 </Step>
 
 ## Recolouring elements
 
-Applying a colour scheme keeps colours you have hand-set on individual shapes and text, so deliberate customisations survive the switch. Arrows are the one exception: every arrow's stroke always snaps to the new colour scheme's colour, because connectors left on an old hue read as broken. If you want a clean slate, the **Reset elements to colour scheme** action repaints every element on the tab to the new colour scheme's defaults, overriding your customisations.
+Applying a theme keeps colours you have hand-set on individual shapes and text, so deliberate customisations survive the switch. Arrows are the one exception: every arrow's stroke always snaps to the new theme's colour, because connectors left on an old hue read as broken. If you want a clean slate, the **Reset elements to theme** action repaints every element on the tab to the new theme's defaults, overriding your customisations.
 
 <Tip>
-  Use double-click to apply and close once you have found the colour scheme you want, and single clicks
+  Use double-click to apply and close once you have found the theme you want, and single clicks
   while you are still comparing options.
 </Tip>
 

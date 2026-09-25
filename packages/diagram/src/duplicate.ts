@@ -1,6 +1,5 @@
-// Selection duplication (spec/09 groups + spec/50 arrow-to-arrow):
-// copy a set of elements with fresh ids, preserved-but-remapped group
-// membership, and arrows re-pinned to the copies. Split from
+// Selection duplication (spec/09 + spec/50 arrow-to-arrow): copy a set
+// of elements with fresh ids, and arrows re-pinned to the copies. Split from
 // factories.ts so that file stays purely the per-element creation
 // factories; re-exported from ./index so the public surface is
 // unchanged.
@@ -20,7 +19,7 @@ import {
 // thing a real wall never shows. Scoped to the fixed-size sticky (the ES
 // stamp) so a deliberately-rotated element anywhere else keeps its angle.
 //
-// EVERY copy path must spread this: the grouped duplication below, and the
+// EVERY copy path must spread this: the set duplication below, and the
 // editor's hand-rolled single / multi duplicate paths. It exists precisely
 // because "the one place copies happen" turned out to be three places.
 export function freshCopyFields(el: Element): { rotation?: number } {
@@ -32,17 +31,10 @@ export function freshCopyFields(el: Element): { rotation?: number } {
 // - Boxed elements get fresh ids and a position offset of (dx, dy).
 // - Arrows whose both endpoints are pinned to ids inside the set get fresh
 //   ids with endpoints remapped to the duplicates.
-// - Grouping is PRESERVED, not invented: each distinct source `groupId`
-//   is remapped to a fresh one, so a duplicated group stays a (distinct)
-//   group while loose elements stay loose. A new group left with only one
-//   member (e.g. a marquee that caught part of a group) is dropped, so we
-//   never mint a lone group. (Previously every multi-element duplication
-//   was forced into one shared group, which surprised users pasting a
-//   loose marquee selection — see useClipboard.)
 //
 // Returns the new elements plus a map of old → new ids so callers can wire
 // extra arrows (e.g. a connector from the original to the duplicate).
-export function duplicateGroupedElements(
+export function duplicateElements(
   elements: Element[],
   ids: Set<ElementId>,
   dx: number,
@@ -64,38 +56,6 @@ export function duplicateGroupedElements(
     });
   }
 
-  // Remap each distinct source groupId to a fresh one so copied groups
-  // stay grouped (and distinct from the originals) without welding loose
-  // elements together. newBoxed already carries the source groupId via
-  // the spread above.
-  const groupIdMap = new Map<string, string>();
-  const remapped: BoxedElement[] = newBoxed.map((el) => {
-    if (el.groupId === undefined) return el;
-    let next = groupIdMap.get(el.groupId);
-    if (next === undefined) {
-      next = crypto.randomUUID();
-      groupIdMap.set(el.groupId, next);
-    }
-    return { ...el, groupId: next };
-  });
-  // Drop any new group that ended up with a single member — a group of
-  // one is degenerate (happens when only part of a source group was in
-  // the duplicated set).
-  const groupCounts = new Map<string, number>();
-  for (const el of remapped) {
-    if (el.groupId !== undefined) {
-      groupCounts.set(el.groupId, (groupCounts.get(el.groupId) ?? 0) + 1);
-    }
-  }
-  const finalBoxed: Element[] = remapped.map((el) => {
-    if (el.groupId !== undefined && (groupCounts.get(el.groupId) ?? 0) < 2) {
-      const lone = { ...el };
-      delete lone.groupId;
-      return lone;
-    }
-    return el;
-  });
-
   const existingIds = new Set(elements.map((e) => e.id));
 
   // Decide which arrows copy, and mint their new ids into idMap BEFORE
@@ -105,10 +65,9 @@ export function duplicateGroupedElements(
   // arrow-less, so every copied arrow-on-arrow connection stayed pinned
   // to the ORIGINAL arrow — or, cross-tab, to a dangling id.)
   // An arrow copies when it's explicitly in the duplicated set, OR when
-  // both endpoints pin to elements that were duplicated — the latter is
-  // the group / quick-connect case where an internal connector should
-  // ride along with its group even if the marquee didn't catch the
-  // arrow itself.
+  // both endpoints pin to elements that were duplicated — so a connector
+  // between two copied elements rides along even if the marquee didn't
+  // catch the arrow itself.
   let arrowsToCopy: ArrowElement[] = [];
   for (const el of elements) {
     if (el.type !== 'arrow') continue;
@@ -132,10 +91,6 @@ export function duplicateGroupedElements(
   const endpointResolvable = (end: ArrowElement['from']): boolean => {
     if (end.kind === 'free') return true;
     if (end.kind === 'on-arrow') return idMap.has(end.arrowId) || existingIds.has(end.arrowId);
-    // Group-pinned: the referenced group either came along (remapped to the
-    // copies' fresh group id) or still exists on the originals — never an
-    // orphan either way.
-    if (end.kind === 'pinned-group') return true;
     return idMap.has(end.elementId) || existingIds.has(end.elementId);
   };
   for (;;) {
@@ -158,12 +113,6 @@ export function duplicateGroupedElements(
   // whole arrow is skipped rather than left dangling.
   const remapEndpoint = (end: ArrowElement['from']): ArrowElement['from'] | null => {
     if (end.kind === 'free') return { kind: 'free', x: end.x + dx, y: end.y + dy };
-    // Group-pinned: when the group's members were copied too, follow the
-    // copies' fresh group id; otherwise stay pinned to the original group.
-    if (end.kind === 'pinned-group') {
-      const dupGroup = groupIdMap.get(end.groupId);
-      return dupGroup ? { ...end, groupId: dupGroup } : end;
-    }
     // Connected to another arrow's line (spec/50): follow the duplicate when
     // the target arrow was copied too, else keep the original, else drop.
     if (end.kind === 'on-arrow') {
@@ -216,7 +165,7 @@ export function duplicateGroupedElements(
   // A reference to something OUTSIDE the copied set is left alone: copying one
   // child of a mind map and pasting it back should still hang off that parent.
   // Only references whose target was itself copied follow the copy.
-  const rewired = finalBoxed.map((el) => {
+  const rewired = newBoxed.map((el) => {
     let next = { ...el };
     // mindParentId (spec/118) and portalTarget (spec/104) live on the shape
     // element only, so narrow before reaching for them.

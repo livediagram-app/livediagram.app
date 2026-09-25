@@ -1,5 +1,12 @@
+import type { LaneGutterEdge, LaneLike } from '@/components/canvas/LaneGutter';
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import type { BoxedElement, IconPosition, TextRun } from '@livediagram/diagram';
+import type {
+  BoxedElement,
+  HeroCaption,
+  IconPosition,
+  TextRun,
+  WebRows,
+} from '@livediagram/diagram';
 import type { DragMode } from '@/lib/canvas';
 
 export type BoxedElementViewProps = {
@@ -60,6 +67,20 @@ export type BoxedElementViewProps = {
     x: import('@livediagram/diagram').TextAlignX,
     y: import('@livediagram/diagram').TextAlignY,
   ) => void;
+  // A lane's title gutter, resized by dragging its seam (spec/119). One
+  // commit per gesture, so a drag is one undo step.
+  onCommitHeaderSize?: (elementId: string, px: number) => void;
+  // Resolve a dragged lane seam against its snap targets (spec/119): the
+  // alignment grid, and the seams of other lanes so a stack of swimlanes can
+  // be lined up exactly. Supplied by the elements layer, which is where the
+  // sibling elements live.
+  onSnapSeam?: (
+    candidate: number,
+    axis: 'x' | 'y',
+    excludeId: string,
+    edgeOf: (el: LaneLike) => LaneGutterEdge,
+    sizeOf: (el: LaneLike) => number,
+  ) => number;
   onCommitTable: (
     id: string,
     patch: Partial<
@@ -79,6 +100,10 @@ export type BoxedElementViewProps = {
   // the mode the element carries. Optional — a surface that can't change tools
   // (the read-only embed) leaves the face inert.
   onPressModeButton?: (element: import('@livediagram/diagram').ShapeElement) => void;
+  // Bring Focus (spec/144): ask everyone else in the room to come and look at
+  // this element. Absent on a surface with nobody to ask (an export, a solo
+  // board), which renders the face inert.
+  onPressFocusButton?: (element: import('@livediagram/diagram').ShapeElement) => void;
   // Session button (spec/105): press it to start the tool it carries. Absent
   // on a surface with no session to run; `sessionStartBlocked` is the softer
   // case — there IS a session, but this viewer may not start things (view
@@ -101,6 +126,14 @@ export type BoxedElementViewProps = {
     remove?: (commentId: string) => void;
     resolve?: () => void;
     unresolve?: () => void;
+  };
+  // Action panel (spec/146): who I am, and the action mutators for THIS
+  // element, bound by id the way commentActions are.
+  actionSelfId?: string | null;
+  actionActions?: {
+    configure: () => void;
+    complete: () => void;
+    reopen: () => void;
   };
   // Per-element session settings from the element's own `…` menu (spec/105).
   onSetSessionConfig?: (
@@ -199,8 +232,12 @@ export type BoxedElementViewProps = {
   // outlive the offset itself: were the transition removed in the same commit
   // as the transform, the board would snap shut instead of easing.
   insertShiftAnimates?: boolean;
-  // The Page masthead (spec/100).
+  // The Page masthead (spec/100), and the banner / callout lines (spec/147).
   onSetPageHeading: (elementId: string, field: 'pageTitle' | 'pageSubtitle', value: string) => void;
+  // The web components' rows and a hero's caption lines, edited in place
+  // (spec/147). Omitted in read-only.
+  onSetWebRows?: (elementId: string, rows: WebRows) => void;
+  onSetHeroCaptionLine?: (elementId: string, field: keyof HeroCaption, value: string) => void;
   // Live dot-vote (spec/39). `vote` is the active tab's vote session
   // (undefined when none). `selfId` is the local participant (for "my
   // dots"); `voteMax` is the highest dot count on the tab (for the

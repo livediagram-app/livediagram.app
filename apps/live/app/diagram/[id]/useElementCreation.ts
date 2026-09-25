@@ -6,6 +6,7 @@ import {
   createAnnotation,
   type EmbedProvider,
   createShape,
+  defaultIconAnimation,
   growMindChild,
   growMindSibling,
   isMindNode,
@@ -53,7 +54,11 @@ export function useElementCreation(opts: {
   setSelectedId: SetState<string | null>;
   setEditingId: SetState<string | null>;
   addBoxed: <T extends BoxedElement>(make: (x: number, y: number) => T) => void;
-  placePrebuilt: (added: Element[], primaryId: string) => void;
+  placePrebuilt: (
+    added: Element[],
+    primaryId: string,
+    shifts?: readonly { id: string; dy: number }[],
+  ) => void;
   addBoxedAt: <T extends BoxedElement>(
     canvasX: number,
     canvasY: number,
@@ -356,6 +361,11 @@ export function useElementCreation(opts: {
           ? {
               ...createShape('icon', x, y),
               iconId,
+              // The four animated glyphs arrive already moving (spec/09),
+              // same as the draw path.
+              ...(defaultIconAnimation(iconId)
+                ? { iconAnimation: defaultIconAnimation(iconId) }
+                : {}),
               // Tech icons land self-describing (S3, EKS, ...) on drag too,
               // matching the click-to-add addTechIcon path — and unlocked:
               // the mark renders at a fixed size (spec/41), so the aspect
@@ -448,7 +458,11 @@ export function useElementCreation(opts: {
         : growMindSibling(activeTab.elements, from);
     // Through the shared placer so the node picks up the tab's theme colours
     // and the add reaches the activity log, exactly like a palette add.
-    placePrebuilt(grown.arrow ? [grown.node, grown.arrow] : [grown.node], grown.node.id);
+    placePrebuilt(
+      grown.arrow ? [grown.node, grown.arrow] : [grown.node],
+      grown.node.id,
+      grown.shifts,
+    );
     setEditingId(grown.node.id);
     track('Element', 'Added', 'MindNode');
   };

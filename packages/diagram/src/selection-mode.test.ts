@@ -8,10 +8,26 @@ import {
   isPickerSource,
   isSessionTool,
   sessionButtonPlan,
-  SESSION_POLL_MAX_OPTIONS,
   TIMER_MINUTES_RANGE,
   VOTE_DOTS_RANGE,
+  isFixedSizeShape,
+  isFixedSizeElement,
 } from './selection-mode';
+import { POLL_OPTIONS_MAX } from './poll-style';
+
+describe('fixed-size shapes', () => {
+  it('names the controls that never take resize handles', () => {
+    // The Done check (spec/137) joined the two buttons (spec/103): a roster
+    // and a button laid out for their own content, so a bigger box only
+    // spreads them over empty card.
+    for (const kind of ['mode-button', 'session-button', 'done-check']) {
+      expect(isFixedSizeShape(kind)).toBe(true);
+    }
+    expect(isFixedSizeShape('rectangle')).toBe(false);
+    expect(isFixedSizeElement({ type: 'shape', shape: 'done-check' })).toBe(true);
+    expect(isFixedSizeElement({ type: 'shape', shape: 'rectangle' })).toBe(false);
+  });
+});
 
 describe('isSessionTool / isPickerSource', () => {
   it('accepts the known tokens and nothing else', () => {
@@ -138,7 +154,7 @@ describe('sessionButtonPlan', () => {
       options: Array.from({ length: 20 }, (_, i) => `Option ${i}`),
     });
     expect(plan?.tool).toBe('poll');
-    expect(plan && 'options' in plan && plan.options).toHaveLength(SESSION_POLL_MAX_OPTIONS);
+    expect(plan && 'options' in plan && plan.options).toHaveLength(POLL_OPTIONS_MAX);
     expect(plan && 'question' in plan && plan.question).toBe('Quick question');
   });
 });

@@ -1,6 +1,8 @@
 // MCP tool annotations (spec/62 §4.14): the behaviour hints every tool ships
 // beside its title and description, plus the `registerTool` wrapper that makes
-// declaring one unavoidable.
+// declaring one unavoidable. The same wrapper is the one place a tool reports
+// its `Mcp·Used` telemetry (spec/22), so no tool can forget to, and each
+// reports only a call that succeeded.
 //
 // A client reads these hints to decide whether a call needs a per-use
 // permission prompt (read-only tools run without interrupting the user,
@@ -12,6 +14,10 @@
 import type { McpServer, ToolCallback } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { ZodRawShapeCompat } from '@modelcontextprotocol/sdk/server/zod-compat.js';
 import type { ToolAnnotations } from '@modelcontextprotocol/sdk/types.js';
+import { pascalToken } from '@livediagram/api-schema';
+import { postTelemetry } from './api';
+import type { Env } from './env';
+import { runInTool } from './tool-scope';
 
 // Three behaviours cover every tool. The split mirrors spec/62 §4.11's
 // read-only-token boundary: what a `read_only = 1` token can still reach is
@@ -52,9 +58,30 @@ type ToolConfig<InputArgs extends ZodRawShapeCompat> = {
  */
 export function registerTool<InputArgs extends ZodRawShapeCompat>(
   server: McpServer,
+  env: Env,
   name: string,
   { behaviour, ...config }: ToolConfig<InputArgs>,
   handler: ToolCallback<InputArgs>,
 ): void {
-  server.registerTool(name, { ...config, annotations: TOOL_ANNOTATIONS[behaviour] }, handler);
+  // The handler runs inside the tool's scope so an api failure anywhere below
+  // it reports which tool it came from (tool-scope.ts).
+  const scoped = ((...args: unknown[]) =>
+    runInTool(name, async () => {
+      const result = await (handler as (...a: unknown[]) => unknown)(...args);
+      // `Mcp·Used·<Tool>` counts calls that SUCCEEDED (spec/22's success-path
+      // rule): a thrown error (no token, api down) or an `isError` result
+      // (bad input the model has to correct) isn't a use. A 5xx underneath is
+      // still visible, as its own `Error·Api` report.
+      if (!isErrorResult(result)) postTelemetry(env, 'Mcp', 'Used', pascalToken(name));
+      return result;
+    })) as unknown as ToolCallback<InputArgs>;
+  server.registerTool(name, { ...config, annotations: TOOL_ANNOTATIONS[behaviour] }, scoped);
+}
+
+function isErrorResult(result: unknown): boolean {
+  return (
+    typeof result === 'object' &&
+    result !== null &&
+    (result as { isError?: unknown }).isError === true
+  );
 }

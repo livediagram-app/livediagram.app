@@ -30,6 +30,8 @@ export {
   ChecklistRowsEditor,
   EntityFieldsEditor,
   CodeSummary,
+  LegendDataEditor,
+  MindFlowTiles,
   LineDataSummary,
   PieDataEditor,
 } from './context-menu-data-editors';

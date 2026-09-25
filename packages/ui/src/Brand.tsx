@@ -63,7 +63,13 @@ export function Brand({
 // square) ringed by a rotational sync arc. Single-colour via currentColor so
 // it tints with the accent; sized by the caller. The multiplayer cursors from
 // the full logo are dropped here as they'd be illegible at header size.
-function BrandMark({ className, style }: { className?: string; style?: React.CSSProperties }) {
+export function BrandMark({
+  className,
+  style,
+}: {
+  className?: string;
+  style?: React.CSSProperties;
+}) {
   return (
     <svg viewBox="0 0 24 24" className={className} style={style} fill="none" aria-hidden="true">
       <g stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity="0.3">

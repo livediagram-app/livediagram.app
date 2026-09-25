@@ -20,7 +20,7 @@ const ICON_FAVOURITE_PREFIX = 'icon:';
 const TECH_FAVOURITE_PREFIX = 'tech:';
 const STICKER_FAVOURITE_PREFIX = 'sticker:';
 
-function iconTileDef(icon: IconDef): PaletteTileDef {
+export function iconTileDef(icon: IconDef): PaletteTileDef {
   return {
     id: `${ICON_FAVOURITE_PREFIX}${icon.id}`,
     section: 'icons',
@@ -45,7 +45,7 @@ function iconTileDef(icon: IconDef): PaletteTileDef {
   };
 }
 
-function techTileDef(icon: TechIconDef): PaletteTileDef {
+export function techTileDef(icon: TechIconDef): PaletteTileDef {
   return {
     id: `${TECH_FAVOURITE_PREFIX}${icon.id}`,
     section: 'technology',
@@ -63,7 +63,7 @@ function techTileDef(icon: TechIconDef): PaletteTileDef {
   };
 }
 
-function stickerTileDef(sticker: StickerDef): PaletteTileDef {
+export function stickerTileDef(sticker: StickerDef): PaletteTileDef {
   return {
     id: `${STICKER_FAVOURITE_PREFIX}${sticker.id}`,
     section: 'stickers',

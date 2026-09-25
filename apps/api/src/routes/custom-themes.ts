@@ -15,6 +15,7 @@ import { badRequest, forbidden, json, noContent, notFound } from '../responses';
 import { requireOwner, type RouteContext } from './context';
 import { MAX_NAME_LEN, MAX_THEME_DEF_BYTES, byteLength } from '../limits';
 import { recordThemeDeleted, recordThemeSaved } from '../timeline';
+import { markTimelineEventsDeletedBySource } from '../db/timeline';
 
 // Reject an over-long name or an oversized definition JSON. Returns the
 // rejection Response, or null when both are within bounds.
@@ -84,7 +85,13 @@ export async function handleCustomThemes(ctx: RouteContext): Promise<Response> {
       const doomed = await getCustomTheme(env, id);
       await deleteCustomTheme(env, id);
       if (doomed) {
-        ctx.waitUntil?.(recordThemeDeleted(env, { id, name: doomed.name }, owner));
+        // Cascade, then tombstone (spec/138 §3.5): every "Theme Saved"
+        // card for this theme goes, and "Theme Deleted" is what's left.
+        ctx.waitUntil?.(
+          markTimelineEventsDeletedBySource(env, 'account', id)
+            .then(() => recordThemeDeleted(env, { id, name: doomed.name }, owner))
+            .catch((err) => console.error('timeline theme delete failed', err)),
+        );
       }
       return noContent();
     }

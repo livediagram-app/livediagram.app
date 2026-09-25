@@ -123,22 +123,6 @@ function movable(el: Element): boolean {
   return el.locked !== true;
 }
 
-// The x that decides whether an element is "at or after" the insertion point.
-// Boxed elements answer with their left edge; a group answers with the centre
-// of its union bounds, so a group straddling the point travels whole instead
-// of being torn in half.
-function groupBounds(elements: Element[]): Map<string, { minX: number; maxX: number }> {
-  const bounds = new Map<string, { minX: number; maxX: number }>();
-  for (const el of elements) {
-    if (!isBoxed(el) || !el.groupId) continue;
-    const seen = bounds.get(el.groupId);
-    const minX = Math.min(seen?.minX ?? Infinity, el.x);
-    const maxX = Math.max(seen?.maxX ?? -Infinity, el.x + el.width);
-    bounds.set(el.groupId, { minX, maxX });
-  }
-  return bounds;
-}
-
 // Does this arrow travel whole? Its free ends must all be at or after the
 // point, and any element it is pinned to must be travelling too — otherwise
 // one end is anchored to something that isn't moving and the arrow stretches
@@ -154,7 +138,7 @@ function arrowTravelsWhole(el: Element, atX: number, movingIds: Set<ElementId>):
       if (!movingIds.has(end.elementId)) return false;
       anchored = true;
     } else {
-      // on-arrow / pinned-group resolve from other elements, which either
+      // on-arrow ends resolve from other arrows, which either
       // move or don't; leave those arrows to follow rather than guess.
       return false;
     }
@@ -186,29 +170,21 @@ function stillInside(slot: InsertionSlot, cursorX: number, cursorY: number, elem
 }
 
 // Everything at or after a point on the x axis that travels WHOLE when the
-// board opens there. Boxed elements answer with their left edge; a group
-// answers with the centre of its union bounds, so a group straddling the point
-// travels rather than being torn in half; an arrow travels exactly when both
-// its ends do. A locked element never travels — the board opens around it.
+// board opens there. Boxed elements answer with their left edge; an arrow
+// travels exactly when both its ends do. A locked element never travels — the board opens around it.
 //
 // Shared by the Alt insertion (spec/139 Phase 5) and the anchor-add ripple
 // (Phase 7), which are the same act seen twice: make room HERE, by this much.
 export function travellingIdsFrom(elements: Element[], atX: number): Set<ElementId> {
-  const groups = groupBounds(elements);
   const movingIds = new Set<ElementId>();
   for (const el of elements) {
     if (!movable(el) || !isBoxed(el)) continue;
-    const group = el.groupId ? groups.get(el.groupId) : undefined;
-    // A docked note answers with its HOST's left edge (spec/139 Phase 7, the
-    // group precedent): the pair travels whole or stays whole, and is never
-    // torn in half by a point that falls inside its seam.
+    // A docked note answers with its HOST's left edge (spec/139 Phase 7): the
+    // pair travels whole or stays whole, and is never torn in half by a point
+    // that falls inside its seam.
     const host = dockOf(el)?.hostId;
     const hostEl = host ? elements.find((h) => h.id === host) : undefined;
-    const anchorX = group
-      ? (group.minX + group.maxX) / 2
-      : hostEl && isBoxed(hostEl)
-        ? hostEl.x
-        : el.x;
+    const anchorX = hostEl && isBoxed(hostEl) ? hostEl.x : el.x;
     if (anchorX >= atX) movingIds.add(el.id);
   }
   // Arrows resolve after the boxes, because a pinned arrow travels exactly

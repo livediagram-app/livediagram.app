@@ -32,7 +32,7 @@ only job is to hold a `commentThread`, so:
 - Resolve / unresolve, author identity and the API redaction of `authorId` all
   apply unchanged.
 
-`CommentPinFace` is therefore a glyph and a click handler. If it ever grows a
+`CommentPanelFace` is therefore a glyph and a click handler. If it ever grows a
 second way to store a comment, that is the bug.
 
 ## A panel, joined by an arrow
@@ -47,13 +47,17 @@ The element is a **card on the board**, not a marker.
   want to see this right now" is already answered by the anchored popover —
   you simply don't add a panel.
 
-**Attached with an ordinary arrow.** `Collaborate › Comment Panel` on any
-element drops a panel clear to its right and pins a normal arrow from the
-element to it. Not a bespoke link: the panel is _about_ the element, and
-"about" is what an arrow already says on this canvas. A second kind of
-connection would be a second thing to lay out, export and explain. It also
-means the pair behaves like anything else — move the element and the arrow
-follows; delete the arrow and the panel is a note that floated free.
+**Attached with an ordinary arrow.** A panel that is _about_ an element is
+joined to it with a normal pinned arrow, drawn the way any arrow is: "about"
+is what an arrow already says on this canvas. Not a bespoke link: a second
+kind of connection would be a second thing to lay out, export and explain.
+It also means the pair behaves like anything else — move the element and the
+arrow follows; delete the arrow and the panel is a note that floated free.
+The panel is added from the palette's Collaborate category only. The
+element menu's Collaborate section once offered a `Comment Panel` tile that
+dropped the panel and the arrow in one go; it was removed, since a second
+way in from every element's menu was one more tile to read past on the way
+to the thread (the menu keeps `Add Comment`, the anchored popover).
 
 ### Why not the pin
 
@@ -75,7 +79,7 @@ card gets.
 - **Excluded from `isSvgRenderedShape`**, which is allow-by-default: a new
   CSS-drawn kind left off that list renders as a transparent nothing.
 - **Keeps its own colours** (the Behaviour set in `themes.ts`): a pin is board
-  chrome, not a node in the diagram's colour scheme.
+  chrome, not a node in the diagram's theme.
 - **Aspect-locked and square by default**, 40×40. A stretched pin reads as a
   shape rather than a marker.
 - **Not votable** (spec/39): a comment pin IS a remark, so a dot on one means

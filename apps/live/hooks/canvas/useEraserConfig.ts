@@ -9,7 +9,6 @@ const TELEMETRY_TYPE: Record<keyof EraserConfig, string> = {
   mode: 'EraserMode',
   size: 'EraserSize',
   target: 'EraserTarget',
-  groups: 'EraserGroups',
 };
 
 export function useEraserConfig() {

@@ -57,11 +57,13 @@ export function themePresetColors(theme: ThemeDefinition): string[] {
     push(text);
   }
 
-  // Neutral ramp — always useful (white → light grey → slate → ink).
+  // Neutral ramp — always useful (white → light grey → slate → ink). Four,
+  // not five: with a single-accent theme's six swatches that is ten, and
+  // the pipette + custom "+" make twelve, two full rows of six in the
+  // menu. A fifth neutral pushed the "+" onto a row of its own.
   push('#ffffff');
   push('#e2e8f0');
   push('#94a3b8');
-  push('#475569');
   push('#0f172a');
   return out.slice(0, 20);
 }
@@ -77,11 +79,13 @@ export type ShapeColorPreset = {
   // Stable identity for the preset, independent of the theme it's rendered
   // for (spec/48). Stored on a shape's `colorPreset` so a theme change can
   // re-derive the same variant for the new theme. The variants are fixed
-  // tokens ('theme', the emphasis ramp 'ghost' | 'muted' | 'soft' | 'tinted' |
-  // 'solid' | 'bold' | 'inked', the border treatments 'outline' | 'dotted' |
-  // 'frame', and the semantic set 'info' | 'success' | 'warning' | 'danger');
-  // multi-colour themes' per-branch cards are 'branch-<i>'. (A legacy 'pill'
-  // binding from before radius left the presets simply stops re-deriving.)
+  // tokens: the theme tier 'theme' | 'soft' | 'tinted' | 'solid' | 'bold'
+  // (multi-colour themes' per-branch cards are 'branch-<i>'), the neutral
+  // tier 'ghost' | 'paper' | 'muted' | 'slate' | 'inked', the border tier
+  // 'hairline' | 'outline' | 'dotted' | 'dash-dot' | 'frame', and the status
+  // tier 'info' | 'success' | 'warning' | 'danger' | 'highlight'. (A legacy
+  // 'pill' binding from before radius left the presets simply stops
+  // re-deriving.)
   id: string;
   name: string;
   fill: string;
@@ -95,19 +99,21 @@ export type ShapeColorPreset = {
   borderStyle: BorderStyle;
 };
 
-// The on-theme style presets for a shape — each a complete look (colour +
-// matching border weight/pattern), ordered hierarchically so the grid reads
-// as tiers:
-//   1. Theme — the current theme's own look (plus a card per branch hue on
-//      multi-colour themes).
-//   2. The emphasis ramp, quietest → loudest: Ghost, Muted, Soft, Tinted,
-//      Solid, Bold, Inked.
-//   3. Border treatments: Outline, Dotted, Frame.
-//   4. Semantic status colours (theme-independent): Info, Success, Warning,
-//      Danger.
+// The style presets for a shape — each a complete look (colour + matching
+// border weight/pattern), one flat grid ordered in four tiers, each tier
+// quiet → loud so the grid reads as a run of ramps (the tiers are an
+// ordering only: headings over them cost more menu height than they earned):
+//   1. Theme — the accent at rising intensity: Theme (the theme's own look,
+//      plus a card per branch hue on multi-colour themes), Soft, Tinted,
+//      Solid, Bold.
+//   2. Neutral — theme-independent greys: Ghost, Paper, Muted, Slate, Inked.
+//   3. Border — line treatments: Hairline, Outline, Dotted, Dash-Dot, Frame.
+//   4. Status — semantic colours, the same under every theme: Info, Success,
+//      Warning, Danger, Highlight.
 // Filled variants pick a contrasting label colour (white on dark, a deep
 // shade on light) so text stays readable. Deduped on the exact
-// fill+stroke+text triple, capped at 20 (five 4-wide grid rows).
+// fill+stroke+text triple; not capped, so no group is ever cut short (a
+// six-branch theme shows 26 tiles).
 export function shapeColorPresets(theme: ThemeDefinition): ShapeColorPreset[] {
   const accent = theme.elementStroke ?? DEFAULT_SHAPE_STROKE;
   const baseFill = theme.elementFill ?? DEFAULT_SHAPE_FILL;
@@ -117,6 +123,7 @@ export function shapeColorPresets(theme: ThemeDefinition): ShapeColorPreset[] {
   const labelOn = (fill: string) => (isLightColor(fill) ? shade(fill, 0.6) : '#ffffff');
 
   const pool: ShapeColorPreset[] = [];
+  // ── Theme: the accent, quiet → loud ──
   // Lead with the theme's own look so "the current theme" is one click away.
   pool.push({
     id: 'theme',
@@ -142,25 +149,6 @@ export function shapeColorPresets(theme: ThemeDefinition): ShapeColorPreset[] {
     });
   }
   pool.push(
-    // ── The emphasis ramp, quietest → loudest ──
-    {
-      id: 'ghost',
-      name: 'Ghost',
-      fill: '#f8fafc',
-      stroke: '#cbd5e1',
-      text: '#64748b',
-      borderStroke: 'thin',
-      borderStyle: 'dashed',
-    },
-    {
-      id: 'muted',
-      name: 'Muted',
-      fill: '#f1f5f9',
-      stroke: '#94a3b8',
-      text: '#475569',
-      borderStroke: 'thin',
-      borderStyle: 'solid',
-    },
     {
       id: 'soft',
       name: 'Soft',
@@ -197,6 +185,46 @@ export function shapeColorPresets(theme: ThemeDefinition): ShapeColorPreset[] {
       borderStroke: 'thick',
       borderStyle: 'solid',
     },
+    // ── Neutral: greys, quiet → loud ──
+    {
+      id: 'ghost',
+      name: 'Ghost',
+      fill: '#f8fafc',
+      stroke: '#cbd5e1',
+      text: '#64748b',
+      borderStroke: 'thin',
+      borderStyle: 'dashed',
+    },
+    {
+      // A plain white card with a hairline grey edge: the quietest solid look.
+      id: 'paper',
+      name: 'Paper',
+      fill: '#ffffff',
+      stroke: '#cbd5e1',
+      text: '#334155',
+      borderStroke: 'thin',
+      borderStyle: 'solid',
+    },
+    {
+      id: 'muted',
+      name: 'Muted',
+      fill: '#f1f5f9',
+      stroke: '#94a3b8',
+      text: '#475569',
+      borderStroke: 'thin',
+      borderStyle: 'solid',
+    },
+    {
+      // A filled mid-grey: emphasis without the accent, between Muted and
+      // Inked.
+      id: 'slate',
+      name: 'Slate',
+      fill: '#64748b',
+      stroke: '#475569',
+      text: '#ffffff',
+      borderStroke: 'medium',
+      borderStyle: 'solid',
+    },
     {
       id: 'inked',
       name: 'Inked',
@@ -206,7 +234,19 @@ export function shapeColorPresets(theme: ThemeDefinition): ShapeColorPreset[] {
       borderStroke: 'medium',
       borderStyle: 'solid',
     },
-    // ── Border treatments ──
+    // ── Border: line treatments ──
+    {
+      // The accent as a thin line and the label in the same colour: a line
+      // drawing. Its text is the accent itself (Outline's is a shade of it), so
+      // the two never dedupe into one.
+      id: 'hairline',
+      name: 'Hairline',
+      fill: '#ffffff',
+      stroke: accent,
+      text: accent,
+      borderStroke: 'thin',
+      borderStyle: 'solid',
+    },
     {
       id: 'outline',
       name: 'Outline',
@@ -226,6 +266,15 @@ export function shapeColorPresets(theme: ThemeDefinition): ShapeColorPreset[] {
       borderStyle: 'dotted',
     },
     {
+      id: 'dash-dot',
+      name: 'Dash-Dot',
+      fill: tint(accent, 0.92),
+      stroke: accent,
+      text: shade(accent, 0.4),
+      borderStroke: 'medium',
+      borderStyle: 'dash-dot',
+    },
+    {
       id: 'frame',
       name: 'Frame',
       fill: '#ffffff',
@@ -234,7 +283,7 @@ export function shapeColorPresets(theme: ThemeDefinition): ShapeColorPreset[] {
       borderStroke: 'thick',
       borderStyle: 'solid',
     },
-    // ── Semantic status colours (theme-independent, spec/48) ──
+    // ── Status: semantic colours (theme-independent, spec/48) ──
     {
       id: 'info',
       name: 'Info',
@@ -271,6 +320,17 @@ export function shapeColorPresets(theme: ThemeDefinition): ShapeColorPreset[] {
       borderStroke: 'medium',
       borderStyle: 'solid',
     },
+    {
+      // Violet: "look here", for a callout that is none of the four
+      // states above.
+      id: 'highlight',
+      name: 'Highlight',
+      fill: '#ede9fe',
+      stroke: '#7c3aed',
+      text: '#4c1d95',
+      borderStroke: 'medium',
+      borderStyle: 'solid',
+    },
   );
 
   const seen = new Set<string>();
@@ -281,7 +341,7 @@ export function shapeColorPresets(theme: ThemeDefinition): ShapeColorPreset[] {
     seen.add(key);
     out.push(p);
   }
-  return out.slice(0, 20);
+  return out;
 }
 
 // Resolve a stored `colorPreset` id (spec/48) to its colours UNDER A GIVEN
@@ -344,4 +404,196 @@ export function themeChartPalette(theme: ThemeDefinition): string[] {
   push(tint(accent, 0.2));
   if (theme.elementText) push(theme.elementText);
   return out;
+}
+
+// ── Sticky-note presets (spec/48) ───────────────────────────────────────
+//
+// A pad of note colours, and NOT theme-derived: a sticky is exempt from theme
+// recolouring (spec/139) precisely because the colour of a note is the user's
+// own shorthand, not the board's palette. It had no presets at all, so
+// recolouring one meant opening Colours and picking a fill and then a matching
+// text colour by hand, which is two decisions for what is really one.
+//
+// Each carries a readable ink for its paper, and NO border: a sticky's edge
+// against its peel shadow is its border, so `stroke` is transparent and the
+// weight is 'none'. Applying one clears any hand-set border with it.
+export const STICKY_PRESETS: readonly ShapeColorPreset[] = (
+  [
+    // Warm half of the pad, the colours a physical block of notes comes in.
+    ['classic', 'Classic', '#fde68a', '#451a03'],
+    ['lemon', 'Lemon', '#fef08a', '#422006'],
+    ['peach', 'Peach', '#fed7aa', '#431407'],
+    ['rose', 'Rose', '#fecdd3', '#4c0519'],
+    // Cool half.
+    ['lilac', 'Lilac', '#e9d5ff', '#3b0764'],
+    ['sky', 'Sky', '#bae6fd', '#082f49'],
+    ['mint', 'Mint', '#bbf7d0', '#052e16'],
+    ['teal', 'Teal', '#99f6e4', '#042f2e'],
+    // Neutrals, for the notes that are structure rather than content.
+    ['slate', 'Slate', '#e2e8f0', '#0f172a'],
+    ['paper', 'Paper', '#ffffff', '#0f172a'],
+    ['charcoal', 'Charcoal', '#334155', '#f1f5f9'],
+    ['ink', 'Ink', '#0f172a', '#e2e8f0'],
+  ] as const
+).map(([id, name, fill, text]) => ({
+  id: `sticky-${id}`,
+  name,
+  fill,
+  stroke: 'transparent',
+  text,
+  borderStroke: 'none' as const,
+  borderStyle: 'solid' as const,
+}));
+
+// ── Table presets (spec/48) ─────────────────────────────────────────────
+
+/** One complete table look: the four surfaces a table paints, plus the
+ *  banding, which is a look rather than structure. */
+export type TablePreset = {
+  id: string;
+  name: string;
+  /** Cell background, grid lines, cell text. */
+  fill: string;
+  stroke: string;
+  text: string;
+  /** The header band. Its fill is the shared `headerFill`, since a table's
+   *  header row and a lane's title gutter are one idea (spec/119). */
+  headerFill: string;
+  headerText: string;
+  /** Alternating body-row tint. */
+  zebra: boolean;
+};
+
+/**
+ * Table looks, theme-derived like the shape presets.
+ *
+ * A table has FOUR colours that only read well in certain combinations (cells,
+ * grid, header band, header text), so picking them one swatch at a time meant
+ * four decisions and a fair chance of a header you cannot read. The tiers
+ * mirror the shape grid: the theme's own accent first, then neutrals that are
+ * the same under every theme.
+ *
+ * `headerRow` / `headerColumn` are deliberately untouched: which cells ARE
+ * headers is data, not a look, and a preset flipping it would silently
+ * re-read the first row of somebody's table as a heading.
+ */
+export function tableColorPresets(theme: ThemeDefinition): TablePreset[] {
+  const accent = theme.elementStroke ?? DEFAULT_SHAPE_STROKE;
+  const baseFill = theme.elementFill ?? DEFAULT_SHAPE_FILL;
+  const baseText = theme.elementText ?? DEFAULT_SHAPE_TEXT;
+  const labelOn = (fill: string) => (isLightColor(fill) ? shade(fill, 0.6) : '#ffffff');
+  return [
+    // ── Theme: the accent, quiet to loud ──
+    {
+      id: 'table-theme',
+      name: 'Theme',
+      fill: baseFill,
+      stroke: accent,
+      text: baseText,
+      headerFill: tint(accent, 0.7),
+      headerText: shade(accent, 0.5),
+      zebra: false,
+    },
+    {
+      id: 'table-banded',
+      name: 'Banded',
+      fill: baseFill,
+      stroke: tint(accent, 0.4),
+      text: baseText,
+      headerFill: tint(accent, 0.7),
+      headerText: shade(accent, 0.5),
+      zebra: true,
+    },
+    {
+      id: 'table-bold',
+      name: 'Bold Head',
+      fill: baseFill,
+      stroke: tint(accent, 0.4),
+      text: baseText,
+      headerFill: accent,
+      headerText: labelOn(accent),
+      zebra: false,
+    },
+    {
+      // Grid lines and nothing else: the table reads as structure over
+      // whatever it sits on, which is what you want over a frame or a photo.
+      id: 'table-minimal',
+      name: 'Minimal',
+      fill: 'transparent',
+      stroke: tint(accent, 0.55),
+      text: baseText,
+      headerFill: 'transparent',
+      headerText: shade(accent, 0.45),
+      zebra: false,
+    },
+    // ── Neutral: the same under every theme ──
+    {
+      id: 'table-plain',
+      name: 'Plain',
+      fill: '#ffffff',
+      stroke: '#cbd5e1',
+      text: '#0f172a',
+      headerFill: '#f1f5f9',
+      headerText: '#0f172a',
+      zebra: false,
+    },
+    {
+      id: 'table-paper',
+      name: 'Paper',
+      fill: '#f8fafc',
+      stroke: '#e2e8f0',
+      text: '#334155',
+      headerFill: '#e2e8f0',
+      headerText: '#0f172a',
+      zebra: true,
+    },
+    {
+      id: 'table-slate',
+      name: 'Slate',
+      fill: '#f1f5f9',
+      stroke: '#94a3b8',
+      text: '#0f172a',
+      headerFill: '#475569',
+      headerText: '#f8fafc',
+      zebra: false,
+    },
+    {
+      id: 'table-inked',
+      name: 'Inked',
+      fill: '#1e293b',
+      stroke: '#475569',
+      text: '#e2e8f0',
+      headerFill: '#0f172a',
+      headerText: '#f8fafc',
+      zebra: false,
+    },
+  ];
+}
+
+/**
+ * Re-derive a table's colours from its bound look for `theme`, the way
+ * `rederiveColorPresetForTheme` does for a shape.
+ *
+ * A table preset writes resolved colours (four surfaces plus the banding), so
+ * without the stored id a theme change sees four hand-picked colours and
+ * preserves them as customs: the table kept the OLD theme's header band while
+ * every shape around it moved. The id is what tells the two apart.
+ *
+ * A table with no binding, or one whose look the theme cannot express, is
+ * returned untouched so the caller can fall back to the ordinary preserve-
+ * customs walk.
+ */
+export function rederiveTablePresetForTheme(el: Element, theme: ThemeDefinition): Element {
+  if (el.type !== 'table' || !el.tablePreset) return el;
+  const preset = tableColorPresets(theme).find((p) => p.id === el.tablePreset);
+  if (!preset) return el;
+  return {
+    ...el,
+    fillColor: preset.fill,
+    strokeColor: preset.stroke,
+    textColor: preset.text,
+    headerFill: preset.headerFill,
+    headerTextColor: preset.headerText,
+    zebra: preset.zebra,
+  };
 }

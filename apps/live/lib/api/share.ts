@@ -13,6 +13,7 @@ import {
   type ShareLinkResponse,
   type ShareLinksResponse,
   type SharePasswordResponse,
+  apiFetch,
 } from './core';
 
 // Resolve a share code to a full diagram + the role granted by that
@@ -28,7 +29,7 @@ async function _apiLoadShared(
   code: string,
   ownerId: string,
 ): Promise<SharedDiagramResolution | null> {
-  const res = await fetch(`${API_BASE}/share/${code}`, {
+  const res = await apiFetch(`${API_BASE}/share/${code}`, {
     headers: await apiHeaders(ownerId, { share: null }),
   });
   // Password gate (spec/24): 401 = the diagram is protected and we sent
@@ -60,7 +61,7 @@ async function _apiListShareLinks(
   ownerId: string,
   id: string,
 ): Promise<{ links: ShareLink[]; password: string | null }> {
-  const res = await fetch(`${API_BASE}/diagrams/${id}/share`, {
+  const res = await apiFetch(`${API_BASE}/diagrams/${id}/share`, {
     headers: await apiHeaders(ownerId),
   });
   const { links, password } = await expectOk<ShareLinksResponse>(res, 'list share links');
@@ -78,7 +79,7 @@ export async function apiSetSharePassword(
   id: string,
   password: string | null,
 ): Promise<string | null> {
-  const res = await fetch(`${API_BASE}/diagrams/${id}/share-password`, {
+  const res = await apiFetch(`${API_BASE}/diagrams/${id}/share-password`, {
     method: 'PUT',
     headers: await apiHeaders(ownerId, { body: true }),
     body: JSON.stringify({ password }),
@@ -93,7 +94,7 @@ export async function apiCreateShareLink(
   role: ShareRole,
   expiry: ShareLinkExpiry = 'never',
 ): Promise<ShareLink> {
-  const res = await fetch(`${API_BASE}/diagrams/${id}/share`, {
+  const res = await apiFetch(`${API_BASE}/diagrams/${id}/share`, {
     method: 'POST',
     headers: await apiHeaders(ownerId, { body: true }),
     body: JSON.stringify({ role, expiry }),
@@ -109,7 +110,7 @@ export async function apiExtendShareLink(
   id: string,
   code: string,
 ): Promise<ShareLink> {
-  const res = await fetch(`${API_BASE}/diagrams/${id}/share/${code}/extend`, {
+  const res = await apiFetch(`${API_BASE}/diagrams/${id}/share/${code}/extend`, {
     method: 'POST',
     headers: await apiHeaders(ownerId),
   });

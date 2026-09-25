@@ -8,6 +8,7 @@ import { clerkEnabled } from '@/lib/clerk-config';
 import { useExplorer } from './ExplorerContext';
 import { useMemo, useState } from 'react';
 import {
+  ActivityIcon,
   ClockIcon,
   DynamicFolderIcon,
   ImageIcon,
@@ -37,7 +38,7 @@ import {
 // goes through `go` (a route push) so picking a section on a phone
 // also closes the drawer; search closes it too. Layout: the "Quick
 // find" section (Timeline, Recent, Favourites, Shared with you) at the
-// top, then the My Work tree, Teams (spec/32), and the Library.
+// top, then the Personal Space tree, Teams (spec/32), and the Library.
 export function ExplorerSidebar() {
   const {
     clerkDisplayName,
@@ -45,6 +46,7 @@ export function ExplorerSidebar() {
     selected,
     go,
     setSearchOpen,
+    setSettingsOpen,
     setMobileNavOpen,
     rootFolders,
     childrenByParent,
@@ -68,6 +70,7 @@ export function ExplorerSidebar() {
     tokens,
     recentCount,
     timelineUnread,
+    activity,
     createFolder,
     setTeamModalOpen,
   } = useExplorer();
@@ -104,13 +107,14 @@ export function ExplorerSidebar() {
           have no profile, so theirs is plain text. */}
       <SidebarSectionLabel first>
         {clerkUserId ? (
-          <Tooltip title="Profile" description="Your account, email notifications, and more.">
+          <Tooltip
+            title="Account"
+            description="Your account, email notifications, and everything else, in Settings."
+          >
             <button
               type="button"
-              onClick={() => go({ kind: 'profile' })}
-              className={`rounded transition hover:text-brand-700 hover:underline dark:hover:text-brand-300 ${
-                selected.kind === 'profile' ? 'text-brand-700 dark:text-brand-300' : ''
-              }`}
+              onClick={() => setSettingsOpen(true)}
+              className="rounded transition hover:text-brand-700 hover:underline dark:hover:text-brand-300"
             >
               Hi {clerkDisplayName ?? 'there'}
             </button>
@@ -148,6 +152,17 @@ export function ExplorerSidebar() {
         depth={0}
         badge={timelineUnread.count > 0 ? timelineUnread.count : undefined}
       />
+      {/* What's outstanding for the reader (spec/142). The badge counts
+          only the open actions ASSIGNED TO them — work waiting on them,
+          not work they handed out — and hides at zero. */}
+      <SidebarRow
+        icon={<ActivityIcon />}
+        label="Activity"
+        selected={selected.kind === 'activity'}
+        onClick={() => go({ kind: 'activity' })}
+        depth={0}
+        badge={activity.assignedToMe.length > 0 ? activity.assignedToMe.length : undefined}
+      />
       <SidebarRow
         icon={<ClockIcon />}
         label="Recent"
@@ -156,7 +171,7 @@ export function ExplorerSidebar() {
         depth={0}
         badge={recentCount > 0 ? recentCount : undefined}
       />
-      {/* Favourites lives in Quick find rather than under My Work >
+      {/* Favourites lives in Quick find rather than under Personal Space >
           Dynamic (spec/138 §8.2): it's the user's own curated shortlist,
           not a synthetic view of where a diagram happens to sit, so it
           belongs beside Recent rather than a level down among Unsorted /
@@ -171,24 +186,24 @@ export function ExplorerSidebar() {
       />
       <SidebarRow
         icon={<ShareIcon />}
-        label="Shared with you"
+        label="Shared with You"
         selected={selected.kind === 'shared'}
         onClick={() => go({ kind: 'shared' })}
         depth={0}
         badge={shared.length > 0 ? shared.length : undefined}
       />
 
-      {/* My Work lists the personal tree directly — Unsorted and the
+      {/* Personal Space lists the personal tree directly — Unsorted and the
           root folders, no separate "All diagrams" parent row (spec/35).
           The /explorer/all route still backs the breadcrumb. The plus
           mirrors the Teams section: add a root-level folder. */}
       <SidebarSectionLabel
         action={
-          <Tooltip title="New folder" description="Add a root-level folder.">
+          <Tooltip title="New Folder" description="Add a root-level folder.">
             <button
               type="button"
               onClick={() => void createFolder(null)}
-              aria-label="New folder"
+              aria-label="New Folder"
               className="-m-1.5 flex h-7 w-7 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-brand-700 dark:text-slate-500 dark:hover:bg-slate-700 dark:hover:text-brand-300"
             >
               <PlusIcon />
@@ -196,10 +211,10 @@ export function ExplorerSidebar() {
           </Tooltip>
         }
       >
-        My Work
+        Personal Space
       </SidebarSectionLabel>
       {/* The synthetic ("dynamic") folders live under one collapsible
-          Dynamic parent so My Work leads with the user's own folders:
+          Dynamic parent so Personal Space leads with the user's own folders:
           Unsorted (folder_id IS NULL), Generated (AI-made, spec/15), and
           Offline (browser-only, spec/76). All are live views, always
           present even when empty; badges hide at zero. Clicking the
@@ -272,14 +287,14 @@ export function ExplorerSidebar() {
           {/* New-team lives as a plus on the section label, with a tooltip. */}
           <SidebarSectionLabel
             action={
-              <Tooltip title="New team" description="Create a team and invite people by email.">
+              <Tooltip title="New Team" description="Create a team and invite people by email.">
                 <button
                   type="button"
                   onClick={() => {
                     setTeamModalOpen(true);
                     setMobileNavOpen(false);
                   }}
-                  aria-label="New team"
+                  aria-label="New Team"
                   className="-m-1.5 flex h-7 w-7 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-brand-700 dark:text-slate-500 dark:hover:bg-slate-700 dark:hover:text-brand-300"
                 >
                   <PlusIcon />
@@ -287,7 +302,7 @@ export function ExplorerSidebar() {
               </Tooltip>
             }
           >
-            Teams
+            Team Spaces
           </SidebarSectionLabel>
           {teams.map((t) => {
             const byParent = teamTree.get(t.id);
@@ -347,14 +362,14 @@ export function ExplorerSidebar() {
       <SidebarSectionLabel>Library</SidebarSectionLabel>
       <SidebarRow
         icon={<ImageIcon />}
-        label="Image gallery"
+        label="Image Gallery"
         selected={selected.kind === 'gallery'}
         onClick={() => go({ kind: 'gallery' })}
         depth={0}
       />
       <SidebarRow
         icon={<PaletteIcon />}
-        label="Colour schemes"
+        label="Themes"
         selected={selected.kind === 'themes'}
         onClick={() => go({ kind: 'themes' })}
         depth={0}
@@ -366,7 +381,7 @@ export function ExplorerSidebar() {
           <SidebarSectionLabel>External connections</SidebarSectionLabel>
           <SidebarRow
             icon={<KeyIcon />}
-            label="API tokens"
+            label="API Tokens"
             selected={selected.kind === 'tokens'}
             onClick={() => go({ kind: 'tokens' })}
             depth={0}

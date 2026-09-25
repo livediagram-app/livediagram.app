@@ -66,14 +66,6 @@ describe('buildStacks', () => {
     expect(stacks.every((s) => s.events.length === 1)).toBe(true);
   });
 
-  it('never stacks a deletion, so a tombstone cannot hide in a run', () => {
-    const stacks = buildStacks([
-      event({ eventType: 'diagram_deleted' }),
-      event({ eventType: 'diagram_deleted' }),
-    ]);
-    expect(stacks).toHaveLength(2);
-  });
-
   it('folds join and leave into one membership bucket', () => {
     const stacks = buildStacks([
       event({ sourceType: 'team', eventType: 'team_member_joined' }),

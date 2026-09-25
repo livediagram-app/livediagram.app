@@ -4,6 +4,7 @@
 import type { Tab } from '@livediagram/diagram';
 import { rowToTab, type TabRow } from '../tab-row';
 import type { Env, TabDTO } from '../types';
+import { collabIndexStatements } from './collab-index';
 
 export async function getTab(env: Env, diagramId: string, tabId: string): Promise<TabDTO | null> {
   // Resolve via the diagram_tabs link table (spec/17) so linked
@@ -105,6 +106,10 @@ export async function upsertTab(
     // Bump the diagram's saved_at so the Explorer's "Updated X ago"
     // line stays accurate. Pure metadata write — no element JSON.
     env.DB.prepare('UPDATE diagrams SET saved_at = ? WHERE id = ?').bind(now, diagramId),
+    // The collaboration index (spec/142 §2.1): the tab's action + thread
+    // rows, replaced in the SAME batch as the blob they mirror so the two
+    // can never drift. After the tabs upsert, which the rows' FK needs.
+    ...collabIndexStatements(env, id, tab.elements),
   ]);
 }
 
@@ -138,6 +143,9 @@ export async function seedTabs(env: Env, diagramId: string, tabs: Tab[]): Promis
     ];
   });
   stmts.push(env.DB.prepare('UPDATE diagrams SET saved_at = ? WHERE id = ?').bind(now, diagramId));
+  // Index rows for every seeded tab (spec/142 §2.1): a JSON import or a
+  // copy from a share link can carry actions and threads in on create.
+  for (const tab of tabs) stmts.push(...collabIndexStatements(env, tab.id, tab.elements));
   await env.DB.batch(stmts);
 }
 

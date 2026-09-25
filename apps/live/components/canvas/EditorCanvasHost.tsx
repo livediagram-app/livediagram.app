@@ -1,17 +1,20 @@
 'use client';
 
 import { dropThenDisarm } from '@/lib/palette-drop';
+import { resolvePanelLayout } from '@/lib/user-preferences';
 import { describeOne } from '@/lib/element-names';
 import { DEFAULT_BUTTON_MODE } from '@livediagram/diagram';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { isVoteHost } from '@livediagram/diagram';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
+import { LockedElementMenu, type LockHolder } from '@/components/canvas/LockedElementMenu';
 import { participantKey } from '@/lib/identity';
 import { resolveOwnerBadge } from '@/lib/presence-rows';
 import { usePreferenceHandlers } from '@/hooks/ui/usePreferenceHandlers';
 import { useQuickConnectStart } from '@/hooks/canvas/useQuickConnectStart';
 import { useEditModeContextMenu } from '@/hooks/canvas/useEditModeContextMenu';
 import { track } from '@/lib/telemetry';
+import { useTeamFolderActions } from '@/hooks/ui/useTeamFolderActions';
 import { getTheme, resolveTabBackdrop, themeChartPalette, type ThemeId } from '@/lib/themes';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { Canvas } from '@/components/canvas/Canvas';
@@ -133,7 +136,6 @@ export function EditorCanvasHost() {
     beginFreehand,
     beginShapePen,
     beginPolygon,
-    beginGroup,
     highlighterColor,
     highlighterWidth,
     setHighlighterColor,
@@ -142,6 +144,7 @@ export function EditorCanvasHost() {
     broadcastAvatarPush,
     avatarShove,
     fireReaction,
+    pressFocusButton,
     reactionBursts,
     clearReactionBurst,
     broadcastCursor,
@@ -170,6 +173,7 @@ export function EditorCanvasHost() {
     commitPolygon,
     commitLabel,
     commitTable,
+    commitHeaderSize,
     createFolder,
     deleteCurvePoint,
     deleteDiagram,
@@ -200,20 +204,18 @@ export function EditorCanvasHost() {
     endVote,
     exitFormatPainter,
     exitFormatTool,
-    exitGroupMode,
     explorerPosition,
     fitToScreen,
     folders,
     followLink,
     formatSourceId,
-    groupMultiSelected,
-    groupSourceId,
     handleActivityRowClick,
     handleCanvasDoubleClick,
     hydrated,
     identityOnlyScreenOpen,
     imageContext,
     isOwner,
+    facilitator,
     isPinchingRef,
     isReadOnly,
     laserTrailRows,
@@ -226,6 +228,9 @@ export function EditorCanvasHost() {
     narrowMultiSelection,
     newDiagram,
     openActionPopover,
+    openAssignActionDialog,
+    completeAction,
+    reopenAction,
     openCellLinkPicker,
     openComments,
     openDiagram,
@@ -256,6 +261,7 @@ export function EditorCanvasHost() {
     selectedId,
     selectElement,
     selectMarquee,
+    confirm,
     selfParticipant,
     setActivityMinimized,
     setActivityPosition,
@@ -274,7 +280,7 @@ export function EditorCanvasHost() {
     pickerFor,
     collabElements,
     followMe,
-    endPollKeepingResults,
+    keepPollResults,
     tabs,
     setCanvasTool,
     setCanvasThemeTab,
@@ -288,7 +294,6 @@ export function EditorCanvasHost() {
     setExportScope,
     setCodeEditOpenForId,
     setFormatSourceId,
-    setGroupSourceId,
     setLinkPickerOpenForId,
     setMapPosition,
     setMultiSelectedIds,
@@ -297,8 +302,10 @@ export function EditorCanvasHost() {
     setSelectedId,
     toggleChecklistItem,
     setPageHeading,
+    setWebRows,
+    appendWebRowTo,
+    setHeroCaptionLine,
     growMindNode,
-    setShareDialogOpen,
     setTextAlignSelected,
     setUserPreferences,
     setViewportOffset,
@@ -308,7 +315,6 @@ export function EditorCanvasHost() {
     skipTemplatePicker,
     snapGuides,
     snapTargets,
-    soloSelectedId,
     spawnConnectSelected,
     startTimer,
     startVote,
@@ -316,6 +322,7 @@ export function EditorCanvasHost() {
     teamDiagrams,
     teamFolders,
     teams,
+    refreshTeamLibraries,
     templateGridOpen,
     toggleAspectLockSelected,
     toggleInMultiSelect,
@@ -323,19 +330,43 @@ export function EditorCanvasHost() {
     toggleLockSelected,
     toggleZenMode,
     undo,
-    ungroupSelected,
     userPreferences,
     viewportOffset,
     viewportZoom,
     zenMode,
   } = useEditorContext();
+
+  // Somebody else is running this session (spec/149). The facilitator verbs
+  // below fall away for everybody else, exactly as they do on a read-only
+  // surface; the responses beside them stay, because answering is the point.
+  const runBlocked = facilitator.sessionToolsBlocked;
+  // The facilitator's menu on an element somebody else is holding (spec/07).
+  // Null when closed. Holders are captured at open time rather than re-read on
+  // render: if the holder lets go while the menu is up it closes on the next
+  // outside click anyway, and a list that emptied underneath would leave a
+  // menu with nothing in it.
+  const [lockedMenu, setLockedMenu] = useState<{
+    elementId: string;
+    at: { x: number; y: number };
+    holders: LockHolder[];
+  } | null>(null);
   // Stable references for the two list-shaped props the Explorer +
   // Activity panels take, so those (React.memo'd) panels don't
   // re-render on every drag frame just because the editor re-rendered.
   // Both recompute only when their real inputs change, not per frame.
   const explorerTeams = useMemo(() => teams.map((t) => ({ id: t.id, name: t.name })), [teams]);
+  // Team-library folder mutations for the Explorer panel's team tree
+  // (spec/35) - see useTeamFolderActions.
+  const viewerId = selfParticipant?.id ?? null;
+  const onTeamFolders = useTeamFolderActions({
+    clerkUserId,
+    viewerId,
+    teamFolders,
+    refreshTeamLibraries,
+    confirm,
+  });
   // The canvas paints the backdrop the VIEWER resolves, not blindly the one
-  // the tab stores: a tab on the Default colour scheme follows this browser's
+  // the tab stores: a tab on the Default theme follows this browser's
   // appearance (spec/07). Subscribing to the appearance here is what makes the
   // canvas repaint when it changes — resolveTabBackdrop would otherwise read a
   // module store nothing re-renders for.
@@ -353,7 +384,7 @@ export function EditorCanvasHost() {
   // can't disagree); consumed here for the overlay.
   const tabLoadState = activeTabLoadState;
   // Quick add + connect Arrow starter (spec/09) — see useQuickConnectStart.
-  const { handleStartArrow } = useQuickConnectStart({ selectedId, activeTab, beginAnchorDrag });
+  const { handleStartArrow } = useQuickConnectStart({ selectedId, beginAnchorDrag });
 
   // While a label is being edited, ride the element context menu alongside
   // the editor (spec/09) — see useEditModeContextMenu.
@@ -379,623 +410,676 @@ export function EditorCanvasHost() {
     : null;
 
   return (
-    <Canvas
-      tabName={activeTab.name}
-      tabSummaries={tabSummaries}
-      // Portals (spec/104) can lead to another tab; see Canvas.enterPortal.
-      portalTabs={tabs}
-      activeTabId={activeTab.id}
-      tabLocked={activeTabLocked}
-      readOnly={isReadOnly}
-      // Three-tier owner-badge resolution (self / live presence row /
-      // joined fetch fallback) — see resolveOwnerBadge in presence-rows.
-      ownerParticipant={resolveOwnerBadge({
-        isOwner,
-        selfParticipant,
-        livePresence,
-        diagramOwnerId,
-        diagramOwnerName,
-        diagramOwnerColor,
-      })}
-      isOwner={isOwner}
-      diagramName={diagramName}
-      tabBackgroundPattern={backdrop.backgroundPattern ?? 'grid'}
-      tabBackgroundColor={backdrop.backgroundColor}
-      tabBackgroundOpacity={backdrop.backgroundOpacity ?? 1}
-      tabBackgroundPatternScale={activeTab.backgroundPatternScale ?? 1}
-      tabBackgroundAnimationSpeed={activeTab.backgroundAnimationSpeed ?? 1}
-      tabPatternColor={backdrop.patternColor}
-      tabFont={activeTab.font}
-      mainRef={canvasMainRef}
-      isPinchingRef={isPinchingRef}
-      viewportZoom={viewportZoom}
-      setViewportZoom={setViewportZoom}
-      onFitToScreen={() => {
-        fitToScreen();
-        track('Canvas', 'Zoomed', 'Fit');
-      }}
-      viewportOffset={viewportOffset}
-      setViewportOffset={setViewportOffset}
-      // Presenting (spec/31) narrows the canvas to one slide's elements. The
-      // real canvas still draws them — a slide has to respond to clicks and
-      // carry live element state, and there is then exactly one thing that
-      // knows how an element looks.
-      elements={presentingElements ?? activeTab.elements}
-      tabLayers={activeTab.layers}
-      tabKind={activeTab.kind}
-      layerInertIds={layerInertIds}
-      shiftDupGhostIds={shiftDupGhostIds}
-      snapGuides={snapGuides}
-      distGuides={distGuides}
-      snapTargets={snapTargets}
-      selectedId={selectedId}
-      soloSelectedId={soloSelectedId}
-      multiSelectedIds={multiSelectedIds}
-      remoteSelectionsByElement={remoteSelectionsByElement}
-      remoteCursors={remoteCursorRows}
-      remoteAvatars={remoteAvatarRows}
-      onAvatarPresence={broadcastAvatar}
-      // Avatar mode (spec/101): clicking a peer's character walks over and
-      // shoves it; their own client decides what to do with the request.
-      onAvatarPush={broadcastAvatarPush}
-      avatarShove={avatarShove}
-      onFireReaction={isReadOnly ? undefined : fireReaction}
-      reactionBursts={reactionBursts}
-      onReactionBurstDone={clearReactionBurst}
-      laserTrails={laserTrailRows}
-      onCanvasPointerMove={(x, y) => {
-        if (canvasTool === 'laser' && x !== null && y !== null) {
-          // The pen rides the sample so peers draw MY laser (spec/111).
-          broadcastLaser(x, y, laserConfig);
-          // Laser mode hides the cursor indicator on peer screens —
-          // the laser dot is the cursor. Clear any prior position.
-          broadcastCursor(null);
-          return;
+    <>
+      <Canvas
+        tabName={activeTab.name}
+        tabSummaries={tabSummaries}
+        // Portals (spec/104) can lead to another tab; see Canvas.enterPortal.
+        portalTabs={tabs}
+        activeTabId={activeTab.id}
+        tabLocked={activeTabLocked}
+        readOnly={isReadOnly}
+        // Three-tier owner-badge resolution (self / live presence row /
+        // joined fetch fallback) — see resolveOwnerBadge in presence-rows.
+        ownerParticipant={resolveOwnerBadge({
+          isOwner,
+          selfParticipant,
+          livePresence,
+          diagramOwnerId,
+          diagramOwnerName,
+          diagramOwnerColor,
+        })}
+        isOwner={isOwner}
+        diagramName={diagramName}
+        tabBackgroundPattern={backdrop.backgroundPattern ?? 'grid'}
+        tabBackgroundColor={backdrop.backgroundColor}
+        tabBackgroundOpacity={backdrop.backgroundOpacity ?? 1}
+        tabBackgroundPatternScale={activeTab.backgroundPatternScale ?? 1}
+        tabBackgroundAnimationSpeed={activeTab.backgroundAnimationSpeed ?? 1}
+        tabPatternColor={backdrop.patternColor}
+        tabFont={activeTab.font}
+        mainRef={canvasMainRef}
+        isPinchingRef={isPinchingRef}
+        viewportZoom={viewportZoom}
+        setViewportZoom={setViewportZoom}
+        onFitToScreen={() => {
+          fitToScreen();
+          track('Canvas', 'Zoomed', 'Fit');
+        }}
+        viewportOffset={viewportOffset}
+        setViewportOffset={setViewportOffset}
+        // Presenting (spec/31) narrows the canvas to one slide's elements. The
+        // real canvas still draws them — a slide has to respond to clicks and
+        // carry live element state, and there is then exactly one thing that
+        // knows how an element looks.
+        elements={presentingElements ?? activeTab.elements}
+        tabLayers={activeTab.layers}
+        tabKind={activeTab.kind}
+        layerInertIds={layerInertIds}
+        shiftDupGhostIds={shiftDupGhostIds}
+        snapGuides={snapGuides}
+        distGuides={distGuides}
+        snapTargets={snapTargets}
+        selectedId={selectedId}
+        multiSelectedIds={multiSelectedIds}
+        remoteSelectionsByElement={remoteSelectionsByElement}
+        remoteCursors={remoteCursorRows}
+        remoteAvatars={remoteAvatarRows}
+        onAvatarPresence={broadcastAvatar}
+        // Avatar mode (spec/101): clicking a peer's character walks over and
+        // shoves it; their own client decides what to do with the request.
+        onAvatarPush={broadcastAvatarPush}
+        avatarShove={avatarShove}
+        onFireReaction={isReadOnly ? undefined : fireReaction}
+        // Bring Focus (spec/144) is live for view-role visitors too: it mutates
+        // nothing, which makes it the same read-only act as following somebody,
+        // and the person who spots the thing worth looking at is often not the
+        // one with edit rights.
+        // Bring Focus (spec/144) is the facilitator's while somebody holds the
+        // baton (spec/149): "everybody look here" is the same act as "everybody
+        // stop and listen". Undefined renders the face inert, which is what a
+        // read-only surface already gets.
+        onPressFocusButton={runBlocked ? undefined : pressFocusButton}
+        reactionBursts={reactionBursts}
+        onReactionBurstDone={clearReactionBurst}
+        laserTrails={laserTrailRows}
+        onCanvasPointerMove={(x, y) => {
+          if (canvasTool === 'laser' && x !== null && y !== null) {
+            // The pen rides the sample so peers draw MY laser (spec/111).
+            broadcastLaser(x, y, laserConfig);
+            // Laser mode hides the cursor indicator on peer screens —
+            // the laser dot is the cursor. Clear any prior position.
+            broadcastCursor(null);
+            return;
+          }
+          broadcastCursor(x !== null && y !== null ? { x, y } : null);
+        }}
+        onSelectMarquee={selectMarquee}
+        canvasTool={canvasTool}
+        onSetCanvasTool={setCanvasTool}
+        onExitAvatarMode={exitAvatarTool}
+        // Mode button (spec/103): pressing one is exactly picking that mode from
+        // the palette, so it goes through the same setter — telemetry, the
+        // selection clear, and the empty-canvas guard all included. Pressing it
+        // again, while already in that mode, hands you back your previous one.
+        onPressModeButton={(element) => pressModeButton(element.mode ?? DEFAULT_BUTTON_MODE)}
+        // Session button (spec/105) / Reveal zone (spec/106) / Picker (spec/107):
+        // see useBehaviourElements — the press resolves what to do from the
+        // element and calls the tool that already exists.
+        onPressSessionButton={pressSessionButton}
+        sessionStartBlocked={isReadOnly || runBlocked}
+        timerState={activeTab.timer ? (activeTab.timer.running ? 'running' : 'paused') : 'none'}
+        revealedIds={revealedIds}
+        // A cover is the facilitator's to lift while one is running the session
+        // (spec/149); with nobody facilitating it stays the private peek it has
+        // always been (spec/106).
+        onToggleReveal={runBlocked ? undefined : toggleRevealForMe}
+        onSetSessionConfig={isReadOnly || runBlocked ? undefined : setSessionConfigFor}
+        // The `…` on a Behaviours element's face (spec/09). Anchored from the
+        // ELEMENT's rect, not the trigger's, so it lands exactly where a
+        // right-click on the same element would — one menu, one position,
+        // whichever way you asked for it.
+        onOpenElementSettings={
+          isReadOnly
+            ? undefined
+            : (elementId) => {
+                const node = document.querySelector(`[data-element-id="${elementId}"]`);
+                if (!(node instanceof HTMLElement)) return;
+                const { x, y } = elementMenuAnchor(node.getBoundingClientRect());
+                setContextMenu({ mode: 'element', elementId, x, y });
+              }
         }
-        broadcastCursor(x !== null && y !== null ? { x, y } : null);
-      }}
-      onSelectMarquee={selectMarquee}
-      canvasTool={canvasTool}
-      onSetCanvasTool={setCanvasTool}
-      onExitAvatarMode={exitAvatarTool}
-      // Mode button (spec/103): pressing one is exactly picking that mode from
-      // the palette, so it goes through the same setter — telemetry, the
-      // selection clear, and the empty-canvas guard all included. Pressing it
-      // again, while already in that mode, hands you back your previous one.
-      onPressModeButton={(element) => pressModeButton(element.mode ?? DEFAULT_BUTTON_MODE)}
-      // Session button (spec/105) / Reveal zone (spec/106) / Picker (spec/107):
-      // see useBehaviourElements — the press resolves what to do from the
-      // element and calls the tool that already exists.
-      onPressSessionButton={pressSessionButton}
-      sessionStartBlocked={isReadOnly}
-      timerState={activeTab.timer ? (activeTab.timer.running ? 'running' : 'paused') : 'none'}
-      revealedIds={revealedIds}
-      onToggleReveal={toggleRevealForMe}
-      onSetSessionConfig={isReadOnly ? undefined : setSessionConfigFor}
-      // The `…` on a Behaviours element's face (spec/09). Anchored from the
-      // ELEMENT's rect, not the trigger's, so it lands exactly where a
-      // right-click on the same element would — one menu, one position,
-      // whichever way you asked for it.
-      onOpenElementSettings={
-        isReadOnly
-          ? undefined
-          : (elementId) => {
-              const node = document.querySelector(`[data-element-id="${elementId}"]`);
-              if (!(node instanceof HTMLElement)) return;
-              const { x, y } = elementMenuAnchor(node.getBoundingClientRect());
-              setContextMenu({ mode: 'element', elementId, x, y });
-            }
-      }
-      // Comment panels (spec/136) drive the SAME thread machinery the anchored
-      // popover does — it is all keyed by element id already.
-      commentSelfId={selfParticipant.id}
-      commentPanelActions={
-        isReadOnly
-          ? undefined
-          : {
-              add: (id, text) => addComment(id, text),
-              remove: deleteComment,
-              resolve: resolveThread,
-              unresolve: unresolveThread,
-            }
-      }
-      onRollPicker={pickerFor}
-      // Follow-me (spec/131): resolved to a NAME here, where presence lives,
-      // so the pill doesn't have to look one up.
-      followingName={
-        followMe.followingId
-          ? (livePresence.find((p) => p.id === followMe.followingId)?.name ?? 'someone')
-          : null
-      }
-      onStopFollowing={followMe.stopFollowing}
-      // The collaboration elements (spec/123 to spec/129). One prop for all
-      // five faces; the write handlers drop out entirely for a view-role
-      // visitor, so the faces render readable but inert rather than offering
-      // presses the room would discard.
-      collab={{
-        // The document-write key, not the owner id — see CollabApi.selfKey.
-        selfKey: participantKey(selfParticipant),
-        // Ourselves first: livePresence is the REMOTE roster, and an estimate
-        // card that can't show your own avatar is showing the wrong room.
-        participants: [selfParticipant, ...livePresence],
-        tabTimer: activeTab.timer,
-        respond: isReadOnly ? undefined : collabElements.respond,
-        setResponsesRevealed: isReadOnly ? undefined : collabElements.setResponsesRevealed,
-        clearResponses: isReadOnly ? undefined : collabElements.clearResponses,
-        addIdea: isReadOnly ? undefined : collabElements.addIdea,
-        revealIdeas: isReadOnly ? undefined : collabElements.revealIdeas,
-        clearIdeas: isReadOnly ? undefined : collabElements.clearIdeas,
-        scatterIdeas: isReadOnly ? undefined : collabElements.scatterIdeas,
-        pressAgendaItem: isReadOnly ? undefined : collabElements.pressAgendaItem,
-        takeRoll: isReadOnly ? undefined : collabElements.takeRoll,
-      }}
-      onEraseStart={isReadOnly ? undefined : beginErase}
-      onDuplicateMultiSelected={duplicateMultiSelected}
-      onDeleteMultiSelected={deleteMultiSelected}
-      onGroupMultiSelected={groupMultiSelected}
-      onToggleLockMultiSelected={toggleLockMultiSelected}
-      onFilterMultiSelected={narrowMultiSelection}
-      onExportMultiSelected={() => {
-        setExportScope('selection');
-        setExportOpen(true);
-      }}
-      editingId={editingId}
-      editCursorAtEnd={editCursorAtEnd}
-      formatSourceId={formatSourceId}
-      groupSourceId={groupSourceId}
-      palettePosition={palettePosition}
-      explorerPosition={explorerPosition}
-      canUndo={canUndo && !activeTabLocked}
-      canRedo={canRedo && !activeTabLocked}
-      onAddShape={addShape}
-      onAddIcon={addIcon}
-      onAddSticker={addSticker}
-      onAddTechIcon={addTechIcon}
-      onDropIcon={isReadOnly ? undefined : dropIconOnElement}
-      onLinkCell={isReadOnly ? undefined : openCellLinkPicker}
-      onAddTable={addTable}
-      onAddAnnotation={addAnnotation}
-      onAddLinkCard={addLinkCard}
-      onAddVideo={addVideo}
-      onAddBanner={addBanner}
-      onAddHero={addHero}
-      onAddHeader={addHeader}
-      onAddCallout={addCallout}
-      onAddStatRow={addStatRow}
-      onAddProcess={addProcess}
-      onAddAvatar={addAvatar}
-      onAddText={addText}
-      onAddSticky={addSticky}
-      esBoard={esBoard}
-      esBoardControls={{
-        ...(photoImportAvailable
-          ? {
-              onImportPhoto: openPhotoImport,
-              photoDisabled: photoImportBlocked,
-              photoDisabledReason: photoDraft.draftOpen
-                ? 'Finish the current draft first'
-                : undefined,
-            }
-          : {}),
-      }}
-      onAddDockedNote={createBlocked ? undefined : addDockedNote}
-      onDropPhoto={readPhotoFile}
-      createBlocked={createBlocked}
-      onAddImage={addImage}
-      onAddArrow={addArrow}
-      onBeginFreehand={beginFreehand}
-      onBeginShapePen={beginShapePen}
-      onBeginPolygon={beginPolygon}
-      highlighterColor={highlighterColor}
-      highlighterWidth={highlighterWidth}
-      onSetHighlighterColor={setHighlighterColor}
-      onSetHighlighterWidth={setHighlighterWidth}
-      pendingDraw={pendingDraw}
-      onCommitDraw={commitDraw}
-      onCommitFreehand={commitFreehand}
-      onCommitPolygon={commitPolygon}
-      settings={userPreferences}
-      onChangeSettings={onChangeSettings}
-      minimalPanels={userPreferences.minimalPanels === true}
-      onToggleMinimalPanels={onToggleMinimalPanels}
-      onCancelDraw={cancelDrawShape}
-      onUndo={undo}
-      onRedo={redo}
-      onMovePalette={(x, y) => setPalettePosition({ x, y })}
-      onResetPalette={() => setPalettePosition(null)}
-      onMoveExplorer={(x, y) => setExplorerPosition({ x, y })}
-      onResetExplorer={() => setExplorerPosition(null)}
-      diagramList={diagramList}
-      folders={folders}
-      sharedDiagrams={sharedDiagrams}
-      teams={explorerTeams}
-      teamFolders={teamFolders}
-      teamDiagrams={teamDiagrams}
-      onDismissShared={dismissSharedDiagram}
-      diagramListLoading={diagramListLoading}
-      changeLog={activeTabChangeLog}
-      changeLogLoading={changeLogLoading}
-      activityPosition={activityPosition}
-      activityMinimized={activityMinimized}
-      mapPosition={mapPosition}
-      onMoveMap={(x, y) =>
-        // Equality-guarded so a drag tick that resolves to the same spot
-        // doesn't spin the render loop (max update depth).
-        setMapPosition((p) => (p && p.x === x && p.y === y ? p : { x, y }))
-      }
-      onResetMap={() => setMapPosition((p) => (p === null ? p : null))}
-      onMoveActivity={(x, y) => setActivityPosition({ x, y })}
-      onToggleActivityMinimized={() => {
-        // Emit only the open transition (minimized -> expanded);
-        // closing isn't a feature-reach signal. The closure read is
-        // safe because this is a single user click, not a rapid
-        // race, so no stale-state risk.
-        if (activityMinimized) track('UI', 'Opened', 'Activity');
-        setActivityMinimized((v) => !v);
-      }}
-      onResetActivity={() => setActivityPosition(null)}
-      layers={layers}
-      activeLayerId={activeLayerId}
-      layerCounts={layerCounts}
-      layersPanelPosition={layersPanelPosition}
-      layersMinimized={layersMinimized}
-      onMoveLayersPanel={(x, y) => setLayersPanelPosition({ x, y })}
-      onResetLayersPanel={() => setLayersPanelPosition(null)}
-      pollPanel={
-        // Results are for the host and for anyone who has responded
-        // (spec/88) — answering is what buys you the tally. A local
-        // Dismiss hides it without ending the poll for everyone.
-        livePoll.poll && !livePoll.dismissed && (livePoll.isHost || livePoll.myAnswer)
-          ? {
-              poll: livePoll.poll,
-              answers: livePoll.answers,
-              isHost: livePoll.isHost,
-              onEnd: livePoll.endPoll,
-              // spec/126: ends the poll for the room exactly as End does (the
-              // same op), and additionally drops the tallies onto the canvas.
-              // Read-only visitors never see it — they are never the host.
-              onEndAndKeep: isReadOnly ? undefined : endPollKeepingResults,
-              onDismiss: livePoll.dismissPoll,
-            }
-          : null
-      }
-      pollPanelPosition={pollPanelPosition}
-      onMovePollPanel={(x, y) => setPollPanelPosition({ x, y })}
-      onResetPollPanel={() => setPollPanelPosition(null)}
-      userPreferences={userPreferences}
-      onToggleRecentExclusion={toggleRecentExclusion}
-      favouriteIds={favouriteIds}
-      onToggleFavourite={toggleFavourite}
-      votePanelPosition={votePanelPosition}
-      onMoveVotePanel={(x, y) => setVotePanelPosition({ x, y })}
-      onResetVotePanel={() => setVotePanelPosition(null)}
-      avatarPanelPosition={avatarPanelPosition}
-      laserPanelPosition={laserPanelPosition}
-      spotlightPanelPosition={spotlightPanelPosition}
-      eraserPanelPosition={eraserPanelPosition}
-      eraserConfig={eraserConfig}
-      onChangeEraserField={onChangeEraserField}
-      formatConfig={formatConfig}
-      onToggleFormatGroup={onToggleFormatGroup}
-      onSetFormatMode={onSetFormatMode}
-      // What the brush holds, described for the panel's preview (spec/116):
-      // the loaded element's name and the three colours the swatch draws.
-      formatBrushSource={
-        formatSource
-          ? {
-              name: describeOne(formatSource),
-              fill: 'fillColor' in formatSource ? formatSource.fillColor : undefined,
-              stroke: 'strokeColor' in formatSource ? formatSource.strokeColor : undefined,
-              textColor: 'textColor' in formatSource ? formatSource.textColor : undefined,
-            }
-          : null
-      }
-      formatPanelPosition={formatPanelPosition}
-      onMoveFormatPanel={(x, y) => setFormatPanelPosition({ x, y })}
-      onResetFormatPanel={() => setFormatPanelPosition(null)}
-      // Slide Deck (spec/31): the deck itself plus its panel's placement.
-      slideDeck={slideDeck}
-      slideDeckPanelPosition={slideDeckPanelPosition}
-      onMoveSlideDeckPanel={(x, y) => setSlideDeckPanelPosition({ x, y })}
-      onResetSlideDeckPanel={() => setSlideDeckPanelPosition(null)}
-      onMoveEraserPanel={(x, y) => setEraserPanelPosition({ x, y })}
-      onResetEraserPanel={() => setEraserPanelPosition(null)}
-      onMoveSpotlightPanel={(x, y) => setSpotlightPanelPosition({ x, y })}
-      onResetSpotlightPanel={() => setSpotlightPanelPosition(null)}
-      laserConfig={laserConfig}
-      onChangeLaserField={onChangeLaserField}
-      onMoveLaserPanel={(x, y) => setLaserPanelPosition({ x, y })}
-      onResetLaserPanel={() => setLaserPanelPosition(null)}
-      onMoveAvatarPanel={(x, y) => setAvatarPanelPosition({ x, y })}
-      onResetAvatarPanel={() => setAvatarPanelPosition(null)}
-      voteResults={voteResults}
-      onJumpToVoteResult={jumpToVoteResult}
-      isVoteHost={isVoteHost(activeTab.vote, selfParticipant.id)}
-      // +1 for the local participant: livePresence is the REMOTE roster.
-      participantCount={livePresence.length + 1}
-      onToggleLayersMinimized={() => {
-        // Emit only the open transition, matching the Activity dock.
-        if (layersMinimized) track('Layer', 'Opened', 'Panel');
-        setLayersMinimized((v) => !v);
-      }}
-      // Bottom-dock paintbrush (spec/42): the same CanvasThemeDialog the
-      // canvas right-click menu opens, one click from the chrome. Opens on
-      // the Theme tab; the dialog's tab strip reaches Canvas from there.
-      onOpenCanvasTheme={
-        isReadOnly || embedMode
-          ? undefined
-          : () => {
-              setCanvasThemeTab('theme');
-              track('UI', 'Opened', 'ThemePicker');
-            }
-      }
-      onSelectLayer={setActiveLayer}
-      onAddLayer={addLayer}
-      onRemoveLayer={removeLayer}
-      onRenameLayer={renameLayer}
-      onToggleLayerVisibility={toggleLayerVisibility}
-      onToggleLayerLock={toggleLayerLock}
-      onReorderLayer={reorderLayer}
-      onMergeLayer={mergeActiveLayer}
-      onSetLayerOpacity={setLayerOpacityLive}
-      onClearLayer={clearLayer}
-      onHideOtherLayers={hideOtherLayersOp}
-      layerPreviewId={layerPreviewId}
-      onPreviewLayer={setLayerPreviewId}
-      commentRows={commentRows}
-      commentsPanelPosition={commentsPanelPosition}
-      onMoveCommentsPanel={(x, y) => setCommentsPanelPosition({ x, y })}
-      onResetCommentsPanel={() => setCommentsPanelPosition(null)}
-      onOpenCommentsForElement={(id) => {
-        setSelectedId(id);
-        openComments(id);
-      }}
-      actionRows={actionRows}
-      onOpenActionForElement={(id) => {
-        setSelectedId(id);
-        openActionPopover(id);
-      }}
-      onRevertChange={revertChange}
-      onPreviewRevert={previewRevert}
-      onClearRevertPreview={clearRevertPreview}
-      onActivityRowClick={handleActivityRowClick}
-      onClearActivity={isReadOnly ? undefined : clearActivityForActiveTab}
-      saveStatus={saveStatus}
-      savedAt={savedAt}
-      currentDiagramId={diagramId}
-      onOpenDiagram={openDiagram}
-      onNewDiagram={newDiagram}
-      onRenameCurrent={(next) => {
-        const prev = diagramName.trim();
-        const nextTrim = next.trim();
-        setDiagramName(next);
-        if (nextTrim && diagramId)
-          setDiagramList((prev) =>
-            prev.map((d) => (d.id === diagramId ? { ...d, name: nextTrim } : d)),
-          );
-        if (nextTrim && nextTrim !== prev) track('Diagram', 'Renamed');
-      }}
-      onOpenShareCurrent={() => setShareDialogOpen(true)}
-      onDeleteDiagram={deleteDiagram}
-      onDuplicateDiagram={(id) => void duplicateDiagram(id)}
-      onCreateFolder={createFolder}
-      onRenameFolder={renameFolder}
-      onDeleteFolder={deleteFolder}
-      onMoveDiagramToFolder={moveDiagramToFolder}
-      onMoveDiagramTo={moveDiagramTo}
-      onDeselect={() => {
-        // Clicking empty canvas also cancels an armed arrow-connect, and
-        // wraps up the Format tool — restoring the pre-Format tool — so a
-        // background click is the quick way out of paint mode (spec/09).
-        if (canvasTool === 'format') exitFormatTool();
-        cancelConnect();
-        setSelectedId(null);
-        setMultiSelectedIds(new Set());
-        setEditingId(null);
-        setFormatSourceId(null);
-        setGroupSourceId(null);
-        setContextMenu(null);
-      }}
-      onSelect={selectElement}
-      onElementContextMenu={
-        isReadOnly
-          ? undefined
-          : (id, sx, sy) => {
-              // Concurrent-selection lock (spec/07): a peer holds this element,
-              // so it can't be selected, dragged, or edited — don't pop a dead
-              // context menu on it either. Same gate as selectElement.
-              if (lockedByOther(id)) return;
-              // Right-clicking the element that already owns the menu AT THE
-              // SAME ANCHOR is a no-op: return the SAME state object so React
-              // re-renders nothing. Re-opening would restart the entrance
-              // animation and flash the selection popover in the gap, for a
-              // gesture that asked for the menu already on screen.
-              //
-              // The anchor has to be part of that comparison: selectElement
-              // runs first and retargets an open menu's elementId in place
-              // (keeping the old x / y), so an id-only check would see 'same
-              // element' for a right-click on a DIFFERENT one and strand the
-              // menu at the previous element's position.
-              setContextMenu((cur) =>
-                cur &&
-                cur.mode === 'element' &&
-                cur.elementId === id &&
-                cur.x === sx &&
-                cur.y === sy
-                  ? cur
-                  : { mode: 'element', elementId: id, x: sx, y: sy },
-              );
-            }
-      }
-      onMultiContextMenu={
-        isReadOnly
-          ? undefined
-          : // Right-click on a group / multi-selection always OPENS at the
-            // cursor (a direct set, like onElementContextMenu). A toggle here
-            // meant a lingering multi menu — which clicking elsewhere doesn't
-            // dismiss, since element pointerdown stops propagation — got
-            // closed by the next right-click instead of reopening, so the
-            // group menu "wouldn't open".
-            (sx, sy) => setContextMenu({ mode: 'multi', x: sx, y: sy })
-      }
-      onOpenMultiContextMenu={
-        isReadOnly
-          ? undefined
-          : (sx, sy) =>
-              // Toggle: the selection toolbar's ⋯ button closes an
-              // already-open multi menu instead of reopening it.
-              setContextMenu((cur) =>
-                cur && cur.mode === 'multi' ? null : { mode: 'multi', x: sx, y: sy },
-              )
-      }
-      onOpenElementContextMenu={
-        isReadOnly
-          ? undefined
-          : (id, sx, sy) =>
-              // Ellipsis is a toggle: clicking it while its menu is already
-              // open for this element closes it (the ContextMenu ignores the
-              // trigger's mousedown so this onClick gets to decide).
-              setContextMenu((cur) =>
-                cur && cur.mode === 'element' && cur.elementId === id
-                  ? null
-                  : { mode: 'element', elementId: id, x: sx, y: sy },
-              )
-      }
-      onCanvasContextMenu={
-        isReadOnly
-          ? undefined
-          : (sx, sy) =>
-              setContextMenu({
-                mode: 'canvas',
-                x: sx,
-                y: sy,
-                // Open upward when the click is in the bottom fifth of the
-                // viewport so the canvas menu's categories don't run
-                // off-screen (matching the tab menu).
-                openUp: typeof window !== 'undefined' && sy > window.innerHeight * 0.8,
-              })
-      }
-      onBeginDrag={beginDrag}
-      onBeginEdit={beginEdit}
-      onCommitLabel={commitLabel}
-      onCommitTable={commitTable}
-      onAddRailPoint={addRailPointSelected}
-      onAddTableRow={appendTableRowSelected}
-      onAddTableColumn={appendTableColumnSelected}
-      onSetRailLabel={isReadOnly ? undefined : setRailLabelSelected}
-      onToggleChecklistItem={isReadOnly ? undefined : toggleChecklistItem}
-      onSetPageHeading={setPageHeading}
-      onGrowMindNode={growMindNode}
-      chartPalette={themeChartPalette(getTheme(activeTab.theme))}
-      onCancelEdit={cancelEdit}
-      onBeginEndpointDrag={beginEndpointDrag}
-      onBeginArrowTranslate={beginArrowTranslate}
-      onBeginArrowCurveDrag={beginArrowCurveDrag}
-      onBeginArrowCurvePointDrag={beginArrowCurvePointDrag}
-      onAddCurvePoint={addCurvePoint}
-      onDeleteCurvePoint={deleteCurvePoint}
-      onBeginArrowLabelDrag={beginArrowLabelDrag}
-      onBeginArrowElbowDrag={beginArrowElbowDrag}
-      onShiftSelect={toggleInMultiSelect}
-      onBeginFormatPainter={beginFormatPainter}
-      onCancelFormatPainter={exitFormatPainter}
-      onExitFormatTool={exitFormatTool}
-      onBeginGroup={beginGroup}
-      onCancelGroup={exitGroupMode}
-      onUngroup={ungroupSelected}
-      onSetTextAlign={setTextAlignSelected}
-      onFollowLink={followLink}
-      onOpenComments={openComments}
-      onOpenAction={openActionPopover}
-      onOpenNote={openNote}
-      onEditLink={isReadOnly ? undefined : setLinkPickerOpenForId}
-      onEditCode={isReadOnly ? undefined : setCodeEditOpenForId}
-      imageContext={imageContext}
-      showTemplatePicker={
-        // The identity / join card (name entry) shows for EVERYONE
-        // including view-role visitors: it only writes their own
-        // participant row, so there's no 403, and they should set a
-        // name before others see them in presence.
-        identityOnlyScreenOpen ||
-        // The template-CHOOSING variant (Quick Start) stays editor-only: a
-        // viewer can't commit a template (every write 403s). It opens only on
-        // an explicit request (adding a tab or the empty-canvas button, both
-        // of which set templatePickerMode='templates' -> templateGridOpen),
-        // never automatically just because a tab is empty.
-        (!isReadOnly && hydrated && templateGridOpen)
-      }
-      hydrated={hydrated}
-      templatePickerMode={effectiveTemplatePickerMode}
-      // Visitor on someone else's diagram + signed in → lock the
-      // identity input to their Clerk name. Owner branch never
-      // shows the identity prompt so `lockedName` is moot there;
-      // pure guests pass null and keep the editable name field.
-      templatePickerLockedName={!isOwner && clerkUserId ? clerkDisplayName : null}
-      welcomeOpen={anyWelcomeOpen}
-      selfParticipant={selfParticipant}
-      onChooseTemplate={chooseTemplate}
-      onSkipTemplatePicker={skipTemplatePicker}
-      onOpenTemplatePicker={openTemplatePicker}
-      tabThemeId={(activeTab.theme as ThemeId | undefined) ?? 'brand'}
-      tabTimer={activeTab.timer}
-      tabVote={activeTab.vote}
-      onStartTimer={startTimer}
-      onPauseTimer={pauseTimer}
-      onResumeTimer={resumeTimer}
-      onResetTimer={resetTimer}
-      onClearTimer={clearTimer}
-      onSetTimerDuration={setTimerDuration}
-      onStartVote={startVote}
-      onEndVote={endVote}
-      onRevealVote={revealVote}
-      onClearVote={clearVote}
-      onCastVote={castVote}
-      onRetractVote={retractVote}
-      voteReview={voteReview}
-      onNextVoteResult={nextVoteResult}
-      onPrevVoteResult={prevVoteResult}
-      onDoneVoteReview={doneVoteReview}
-      onToggleAspectLock={toggleAspectLockSelected}
-      onDropPalette={dropThenDisarm(dropPaletteItem, cancelDrawShape)}
-      onSpawnConnect={spawnConnectSelected}
-      onStartArrow={handleStartArrow}
-      onStartPencil={beginFreehand}
-      onToggleLockSelected={toggleLockSelected}
-      onDeleteSelected={deleteSelected}
-      // One gesture, one answer: while the element menu is open the
-      // selection popover stands down (see deriveCanvasSelection).
-      elementMenuOpen={contextMenu?.mode === 'element'}
-      onDuplicateSelected={duplicateSelected}
-      onBringSelectedToFront={stackSelectedFront}
-      onSendSelectedToBack={stackSelectedBack}
-      onCanvasDoubleClick={handleCanvasDoubleClick}
-      tabLoadState={tabLoadState}
-      onRetryTabLoad={retryActiveTabLoad}
-      // Embeds (spec/33) ride the zen chrome-hide gates: every panel
-      // and badge zen hides, embeds hide too. The zen TOGGLE is
-      // withheld so the ZoomControls dock doesn't offer an exit
-      // from a mode the embed can't actually leave.
-      zenMode={zenMode || embedMode}
-      onToggleZen={embedMode ? undefined : toggleZenMode}
-      aiPanel={
-        aiCapable && userPreferences.aiAssistanceEnabled && aiPanelVisible && !isReadOnly
-          ? {
-              position: aiPanelPosition,
-              onMove: (x, y) => setAiPanelPosition({ x, y }),
-              onReset: () => setAiPanelPosition(null),
-              contextElements: activeTab.elements,
-              focusIds:
-                multiSelectedIds.size > 0
-                  ? [...multiSelectedIds]
-                  : selectedId !== null
-                    ? [selectedId]
-                    : [],
-              onApplyElements: applyAiElements,
-              ownerId: selfParticipant.id,
-              tabId: activeTab.id,
-            }
-          : undefined
-      }
-    />
+        // Comment panels (spec/136) drive the SAME thread machinery the anchored
+        // popover does — it is all keyed by element id already.
+        commentSelfId={selfParticipant.id}
+        commentPanelActions={
+          isReadOnly
+            ? undefined
+            : {
+                add: (id, text) => addComment(id, text),
+                remove: deleteComment,
+                resolve: resolveThread,
+                unresolve: unresolveThread,
+              }
+        }
+        // Action panels (spec/146) drive the SAME action machinery the popover
+        // and the Assign Action dialog do. The viewer identity is the one the
+        // popover uses: the Clerk account, else the guest participant.
+        actionSelfId={clerkUserId ?? selfParticipant.id}
+        actionPanelActions={
+          isReadOnly
+            ? undefined
+            : {
+                configure: openAssignActionDialog,
+                complete: completeAction,
+                reopen: reopenAction,
+              }
+        }
+        onRollPicker={pickerFor}
+        // Follow-me (spec/131): resolved to a NAME here, where presence lives,
+        // so the pill doesn't have to look one up.
+        followingName={
+          followMe.followingId
+            ? (livePresence.find((p) => p.id === followMe.followingId)?.name ?? 'someone')
+            : null
+        }
+        onStopFollowing={followMe.stopFollowing}
+        // The collaboration elements (spec/123 to spec/129). One prop for all
+        // five faces; the write handlers drop out entirely for a view-role
+        // visitor, so the faces render readable but inert rather than offering
+        // presses the room would discard.
+        collab={{
+          // The document-write key, not the owner id — see CollabApi.selfKey.
+          selfKey: participantKey(selfParticipant),
+          // Ourselves first: livePresence is the REMOTE roster, and an estimate
+          // card that can't show your own avatar is showing the wrong room.
+          participants: [selfParticipant, ...livePresence],
+          tabTimer: activeTab.timer,
+          respond: isReadOnly ? undefined : collabElements.respond,
+          setResponsesRevealed:
+            isReadOnly || runBlocked ? undefined : collabElements.setResponsesRevealed,
+          clearResponses: isReadOnly || runBlocked ? undefined : collabElements.clearResponses,
+          addIdea: isReadOnly ? undefined : collabElements.addIdea,
+          revealIdeas: isReadOnly || runBlocked ? undefined : collabElements.revealIdeas,
+          clearIdeas: isReadOnly || runBlocked ? undefined : collabElements.clearIdeas,
+          scatterIdeas: isReadOnly || runBlocked ? undefined : collabElements.scatterIdeas,
+          pressAgendaItem: isReadOnly || runBlocked ? undefined : collabElements.pressAgendaItem,
+          takeRoll: isReadOnly || runBlocked ? undefined : collabElements.takeRoll,
+        }}
+        onEraseStart={isReadOnly ? undefined : beginErase}
+        onDuplicateMultiSelected={duplicateMultiSelected}
+        onDeleteMultiSelected={deleteMultiSelected}
+        onToggleLockMultiSelected={toggleLockMultiSelected}
+        onFilterMultiSelected={narrowMultiSelection}
+        onExportMultiSelected={() => {
+          setExportScope('selection');
+          setExportOpen(true);
+        }}
+        editingId={editingId}
+        editCursorAtEnd={editCursorAtEnd}
+        formatSourceId={formatSourceId}
+        palettePosition={palettePosition}
+        explorerPosition={explorerPosition}
+        canUndo={canUndo && !activeTabLocked}
+        canRedo={canRedo && !activeTabLocked}
+        onAddShape={addShape}
+        onAddIcon={addIcon}
+        onAddSticker={addSticker}
+        onAddTechIcon={addTechIcon}
+        onDropIcon={isReadOnly ? undefined : dropIconOnElement}
+        onLinkCell={isReadOnly ? undefined : openCellLinkPicker}
+        onAddTable={addTable}
+        onAddAnnotation={addAnnotation}
+        onAddLinkCard={addLinkCard}
+        onAddVideo={addVideo}
+        onAddBanner={addBanner}
+        onAddHero={addHero}
+        onAddHeader={addHeader}
+        onAddCallout={addCallout}
+        onAddStatRow={addStatRow}
+        onAddProcess={addProcess}
+        onAddAvatar={addAvatar}
+        onAddText={addText}
+        onAddSticky={addSticky}
+        esBoard={esBoard}
+        esBoardControls={{
+          ...(photoImportAvailable
+            ? {
+                onImportPhoto: openPhotoImport,
+                photoDisabled: photoImportBlocked,
+                photoDisabledReason: photoDraft.draftOpen
+                  ? 'Finish the current draft first'
+                  : undefined,
+              }
+            : {}),
+        }}
+        onAddDockedNote={createBlocked ? undefined : addDockedNote}
+        onDropPhoto={readPhotoFile}
+        createBlocked={createBlocked}
+        onAddImage={addImage}
+        onAddArrow={addArrow}
+        onBeginFreehand={beginFreehand}
+        onBeginShapePen={beginShapePen}
+        onBeginPolygon={beginPolygon}
+        highlighterColor={highlighterColor}
+        highlighterWidth={highlighterWidth}
+        onSetHighlighterColor={setHighlighterColor}
+        onSetHighlighterWidth={setHighlighterWidth}
+        pendingDraw={pendingDraw}
+        onCommitDraw={commitDraw}
+        onCommitFreehand={commitFreehand}
+        onCommitPolygon={commitPolygon}
+        settings={userPreferences}
+        onChangeSettings={onChangeSettings}
+        // Only Minimal docks the panels. Toolbar (spec/148) keeps Floating's
+        // panels and swaps the Palette + Explorer for the strip and menu button.
+        minimalPanels={resolvePanelLayout(userPreferences) === 'minimal'}
+        toolbarLayout={resolvePanelLayout(userPreferences) === 'toolbar'}
+        onToggleMinimalPanels={onToggleMinimalPanels}
+        onCancelDraw={cancelDrawShape}
+        onUndo={undo}
+        onRedo={redo}
+        onMovePalette={(x, y) => setPalettePosition({ x, y })}
+        onResetPalette={() => setPalettePosition(null)}
+        onMoveExplorer={(x, y) => setExplorerPosition({ x, y })}
+        onResetExplorer={() => setExplorerPosition(null)}
+        diagramList={diagramList}
+        folders={folders}
+        sharedDiagrams={sharedDiagrams}
+        teams={explorerTeams}
+        teamFolders={teamFolders}
+        teamDiagrams={teamDiagrams}
+        onDismissShared={dismissSharedDiagram}
+        diagramListLoading={diagramListLoading}
+        changeLog={activeTabChangeLog}
+        changeLogLoading={changeLogLoading}
+        activityPosition={activityPosition}
+        activityMinimized={activityMinimized}
+        mapPosition={mapPosition}
+        onMoveMap={(x, y) =>
+          // Equality-guarded so a drag tick that resolves to the same spot
+          // doesn't spin the render loop (max update depth).
+          setMapPosition((p) => (p && p.x === x && p.y === y ? p : { x, y }))
+        }
+        onResetMap={() => setMapPosition((p) => (p === null ? p : null))}
+        onMoveActivity={(x, y) => setActivityPosition({ x, y })}
+        onToggleActivityMinimized={() => {
+          // Emit only the open transition (minimized -> expanded);
+          // closing isn't a feature-reach signal. The closure read is
+          // safe because this is a single user click, not a rapid
+          // race, so no stale-state risk. The dock / popover layouts
+          // open Activity through useCanvasMobileDock, which counts there.
+          if (activityMinimized) track('UI', 'Opened', 'Activity');
+          setActivityMinimized((v) => !v);
+        }}
+        onResetActivity={() => setActivityPosition(null)}
+        layers={layers}
+        activeLayerId={activeLayerId}
+        layerCounts={layerCounts}
+        layersPanelPosition={layersPanelPosition}
+        layersMinimized={layersMinimized}
+        onMoveLayersPanel={(x, y) => setLayersPanelPosition({ x, y })}
+        onResetLayersPanel={() => setLayersPanelPosition(null)}
+        pollPanel={
+          // Results are for the host and for anyone who has responded
+          // (spec/88) — answering is what buys you the tally. A local
+          // Dismiss hides it without ending the poll for everyone.
+          livePoll.poll && !livePoll.dismissed && (livePoll.isHost || livePoll.myAnswer)
+            ? {
+                poll: livePoll.poll,
+                answers: livePoll.answers,
+                isHost: livePoll.isHost,
+                onEnd: livePoll.endPoll,
+                // spec/126: drops the tallies so far onto the canvas without
+                // ending the poll. Read-only visitors never see it — they are
+                // never the host.
+                onKeepResults: isReadOnly ? undefined : keepPollResults,
+                onDismiss: livePoll.dismissPoll,
+              }
+            : null
+        }
+        pollPanelPosition={pollPanelPosition}
+        onMovePollPanel={(x, y) => setPollPanelPosition({ x, y })}
+        onResetPollPanel={() => setPollPanelPosition(null)}
+        userPreferences={userPreferences}
+        onToggleRecentExclusion={toggleRecentExclusion}
+        favouriteIds={favouriteIds}
+        onToggleFavourite={toggleFavourite}
+        votePanelPosition={votePanelPosition}
+        onMoveVotePanel={(x, y) => setVotePanelPosition({ x, y })}
+        onResetVotePanel={() => setVotePanelPosition(null)}
+        avatarPanelPosition={avatarPanelPosition}
+        laserPanelPosition={laserPanelPosition}
+        spotlightPanelPosition={spotlightPanelPosition}
+        eraserPanelPosition={eraserPanelPosition}
+        eraserConfig={eraserConfig}
+        onChangeEraserField={onChangeEraserField}
+        formatConfig={formatConfig}
+        onToggleFormatGroup={onToggleFormatGroup}
+        onSetFormatMode={onSetFormatMode}
+        // What the brush holds, described for the panel's preview (spec/116):
+        // the loaded element's name and the three colours the swatch draws.
+        formatBrushSource={
+          formatSource
+            ? {
+                name: describeOne(formatSource),
+                fill: 'fillColor' in formatSource ? formatSource.fillColor : undefined,
+                stroke: 'strokeColor' in formatSource ? formatSource.strokeColor : undefined,
+                textColor: 'textColor' in formatSource ? formatSource.textColor : undefined,
+              }
+            : null
+        }
+        formatPanelPosition={formatPanelPosition}
+        onMoveFormatPanel={(x, y) => setFormatPanelPosition({ x, y })}
+        onResetFormatPanel={() => setFormatPanelPosition(null)}
+        // Slide Deck (spec/31): the deck itself plus its panel's placement.
+        slideDeck={slideDeck}
+        slideDeckPanelPosition={slideDeckPanelPosition}
+        onMoveSlideDeckPanel={(x, y) => setSlideDeckPanelPosition({ x, y })}
+        onResetSlideDeckPanel={() => setSlideDeckPanelPosition(null)}
+        onMoveEraserPanel={(x, y) => setEraserPanelPosition({ x, y })}
+        onResetEraserPanel={() => setEraserPanelPosition(null)}
+        onMoveSpotlightPanel={(x, y) => setSpotlightPanelPosition({ x, y })}
+        onResetSpotlightPanel={() => setSpotlightPanelPosition(null)}
+        laserConfig={laserConfig}
+        onChangeLaserField={onChangeLaserField}
+        onMoveLaserPanel={(x, y) => setLaserPanelPosition({ x, y })}
+        onResetLaserPanel={() => setLaserPanelPosition(null)}
+        onMoveAvatarPanel={(x, y) => setAvatarPanelPosition({ x, y })}
+        onResetAvatarPanel={() => setAvatarPanelPosition(null)}
+        voteResults={voteResults}
+        onJumpToVoteResult={jumpToVoteResult}
+        isVoteHost={isVoteHost(activeTab.vote, selfParticipant.id)}
+        // +1 for the local participant: livePresence is the REMOTE roster.
+        participantCount={livePresence.length + 1}
+        onToggleLayersMinimized={() => {
+          // Emit only the open transition, matching the Activity dock
+          // (the dock / popover layouts count in useCanvasMobileDock).
+          if (layersMinimized) track('Layer', 'Opened', 'Panel');
+          setLayersMinimized((v) => !v);
+        }}
+        // Bottom-dock paintbrush (spec/42): the same CanvasThemeDialog the
+        // canvas right-click menu opens, one click from the chrome. Opens on
+        // the Theme tab; the dialog's tab strip reaches Canvas from there.
+        onOpenCanvasTheme={
+          isReadOnly || embedMode
+            ? undefined
+            : () => {
+                setCanvasThemeTab('theme');
+                track('UI', 'Opened', 'ThemePicker');
+              }
+        }
+        onSelectLayer={setActiveLayer}
+        onAddLayer={addLayer}
+        onRemoveLayer={removeLayer}
+        onRenameLayer={renameLayer}
+        onToggleLayerVisibility={toggleLayerVisibility}
+        onToggleLayerLock={toggleLayerLock}
+        onReorderLayer={reorderLayer}
+        onMergeLayer={mergeActiveLayer}
+        onSetLayerOpacity={setLayerOpacityLive}
+        onClearLayer={clearLayer}
+        onHideOtherLayers={hideOtherLayersOp}
+        layerPreviewId={layerPreviewId}
+        onPreviewLayer={setLayerPreviewId}
+        commentRows={commentRows}
+        commentsPanelPosition={commentsPanelPosition}
+        onMoveCommentsPanel={(x, y) => setCommentsPanelPosition({ x, y })}
+        onResetCommentsPanel={() => setCommentsPanelPosition(null)}
+        onOpenCommentsForElement={(id) => {
+          setSelectedId(id);
+          openComments(id);
+        }}
+        actionRows={actionRows}
+        onOpenActionForElement={(id) => {
+          setSelectedId(id);
+          openActionPopover(id);
+        }}
+        onRevertChange={revertChange}
+        onPreviewRevert={previewRevert}
+        onClearRevertPreview={clearRevertPreview}
+        onActivityRowClick={handleActivityRowClick}
+        onClearActivity={isReadOnly ? undefined : clearActivityForActiveTab}
+        saveStatus={saveStatus}
+        savedAt={savedAt}
+        currentDiagramId={diagramId}
+        onOpenDiagram={openDiagram}
+        onNewDiagram={newDiagram}
+        onRenameCurrent={(next) => {
+          const prev = diagramName.trim();
+          const nextTrim = next.trim();
+          setDiagramName(next);
+          if (nextTrim && diagramId)
+            setDiagramList((prev) =>
+              prev.map((d) => (d.id === diagramId ? { ...d, name: nextTrim } : d)),
+            );
+          if (nextTrim && nextTrim !== prev) track('Diagram', 'Renamed');
+        }}
+        onDeleteDiagram={deleteDiagram}
+        onDuplicateDiagram={(id) => void duplicateDiagram(id)}
+        onCreateFolder={createFolder}
+        onRenameFolder={renameFolder}
+        onDeleteFolder={deleteFolder}
+        onTeamFolders={onTeamFolders}
+        onMoveDiagramToFolder={moveDiagramToFolder}
+        onMoveDiagramTo={moveDiagramTo}
+        onDeselect={() => {
+          // Clicking empty canvas also cancels an armed arrow-connect, and
+          // wraps up the Format tool — restoring the pre-Format tool — so a
+          // background click is the quick way out of paint mode (spec/09).
+          if (canvasTool === 'format') exitFormatTool();
+          cancelConnect();
+          setSelectedId(null);
+          setMultiSelectedIds(new Set());
+          setEditingId(null);
+          setFormatSourceId(null);
+          setContextMenu(null);
+        }}
+        onSelect={selectElement}
+        onElementContextMenu={
+          isReadOnly
+            ? undefined
+            : (id, sx, sy) => {
+                // Concurrent-selection lock (spec/07): a peer holds this
+                // element, so it can't be selected, dragged, or edited — don't
+                // pop a dead context menu on it either. Same gate as
+                // selectElement.
+                //
+                // The one exception is whoever is running the session
+                // (spec/149): for them a locked element has exactly one
+                // available action, freeing it, and that gets its own small menu
+                // rather than the element's real one, whose every other row
+                // would be dead. See LockedElementMenu.
+                if (lockedByOther(id)) {
+                  const holders = remoteSelectionsByElement.get(id);
+                  if (facilitator.canReleaseSelectionLock && holders?.length) {
+                    setLockedMenu({ elementId: id, at: { x: sx, y: sy }, holders });
+                  }
+                  return;
+                }
+                // Right-clicking the element that already owns the menu AT THE
+                // SAME ANCHOR is a no-op: return the SAME state object so React
+                // re-renders nothing. Re-opening would restart the entrance
+                // animation and flash the selection popover in the gap, for a
+                // gesture that asked for the menu already on screen.
+                //
+                // The anchor has to be part of that comparison: selectElement
+                // runs first and retargets an open menu's elementId in place
+                // (keeping the old x / y), so an id-only check would see 'same
+                // element' for a right-click on a DIFFERENT one and strand the
+                // menu at the previous element's position.
+                setContextMenu((cur) =>
+                  cur &&
+                  cur.mode === 'element' &&
+                  cur.elementId === id &&
+                  cur.x === sx &&
+                  cur.y === sy
+                    ? cur
+                    : { mode: 'element', elementId: id, x: sx, y: sy },
+                );
+              }
+        }
+        onMultiContextMenu={
+          isReadOnly
+            ? undefined
+            : // Right-click on a group / multi-selection always OPENS at the
+              // cursor (a direct set, like onElementContextMenu). A toggle here
+              // meant a lingering multi menu — which clicking elsewhere doesn't
+              // dismiss, since element pointerdown stops propagation — got
+              // closed by the next right-click instead of reopening, so the
+              // group menu "wouldn't open".
+              (sx, sy) => setContextMenu({ mode: 'multi', x: sx, y: sy })
+        }
+        onOpenMultiContextMenu={
+          isReadOnly
+            ? undefined
+            : (sx, sy) =>
+                // Toggle: the selection toolbar's ⋯ button closes an
+                // already-open multi menu instead of reopening it.
+                setContextMenu((cur) =>
+                  cur && cur.mode === 'multi' ? null : { mode: 'multi', x: sx, y: sy },
+                )
+        }
+        onOpenElementContextMenu={
+          isReadOnly
+            ? undefined
+            : (id, sx, sy) =>
+                // Ellipsis is a toggle: clicking it while its menu is already
+                // open for this element closes it (the ContextMenu ignores the
+                // trigger's mousedown so this onClick gets to decide).
+                setContextMenu((cur) =>
+                  cur && cur.mode === 'element' && cur.elementId === id
+                    ? null
+                    : { mode: 'element', elementId: id, x: sx, y: sy },
+                )
+        }
+        onCanvasContextMenu={
+          isReadOnly
+            ? undefined
+            : (sx, sy) =>
+                setContextMenu({
+                  mode: 'canvas',
+                  x: sx,
+                  y: sy,
+                  // Open upward when the click is in the bottom fifth of the
+                  // viewport so the canvas menu's categories don't run
+                  // off-screen (matching the tab menu).
+                  openUp: typeof window !== 'undefined' && sy > window.innerHeight * 0.8,
+                })
+        }
+        onBeginDrag={beginDrag}
+        onBeginEdit={beginEdit}
+        onCommitLabel={commitLabel}
+        onCommitTable={commitTable}
+        onCommitHeaderSize={commitHeaderSize}
+        onAddRailPoint={addRailPointSelected}
+        onAddTableRow={appendTableRowSelected}
+        onAddTableColumn={appendTableColumnSelected}
+        onSetRailLabel={isReadOnly ? undefined : setRailLabelSelected}
+        onToggleChecklistItem={isReadOnly ? undefined : toggleChecklistItem}
+        onSetPageHeading={setPageHeading}
+        onSetWebRows={isReadOnly ? undefined : setWebRows}
+        onAppendWebRow={isReadOnly ? undefined : appendWebRowTo}
+        onSetHeroCaptionLine={isReadOnly ? undefined : setHeroCaptionLine}
+        onGrowMindNode={growMindNode}
+        chartPalette={themeChartPalette(getTheme(activeTab.theme))}
+        onCancelEdit={cancelEdit}
+        onBeginEndpointDrag={beginEndpointDrag}
+        onBeginArrowTranslate={beginArrowTranslate}
+        onBeginArrowCurveDrag={beginArrowCurveDrag}
+        onBeginArrowCurvePointDrag={beginArrowCurvePointDrag}
+        onAddCurvePoint={addCurvePoint}
+        onDeleteCurvePoint={deleteCurvePoint}
+        onBeginArrowLabelDrag={beginArrowLabelDrag}
+        onBeginArrowElbowDrag={beginArrowElbowDrag}
+        onShiftSelect={toggleInMultiSelect}
+        onBeginFormatPainter={beginFormatPainter}
+        onCancelFormatPainter={exitFormatPainter}
+        onExitFormatTool={exitFormatTool}
+        onSetTextAlign={setTextAlignSelected}
+        onFollowLink={followLink}
+        onOpenComments={openComments}
+        onOpenAction={openActionPopover}
+        onOpenNote={openNote}
+        onEditLink={isReadOnly ? undefined : setLinkPickerOpenForId}
+        onEditCode={isReadOnly ? undefined : setCodeEditOpenForId}
+        imageContext={imageContext}
+        showTemplatePicker={
+          // The identity / join card (name entry) shows for EVERYONE
+          // including view-role visitors: it only writes their own
+          // participant row, so there's no 403, and they should set a
+          // name before others see them in presence.
+          identityOnlyScreenOpen ||
+          // The template-CHOOSING variant (Quick Start) stays editor-only: a
+          // viewer can't commit a template (every write 403s). It opens only on
+          // an explicit request (adding a tab or the empty-canvas button, both
+          // of which set templatePickerMode='templates' -> templateGridOpen),
+          // never automatically just because a tab is empty.
+          (!isReadOnly && hydrated && templateGridOpen)
+        }
+        hydrated={hydrated}
+        templatePickerMode={effectiveTemplatePickerMode}
+        // Visitor on someone else's diagram + signed in → lock the
+        // identity input to their Clerk name. Owner branch never
+        // shows the identity prompt so `lockedName` is moot there;
+        // pure guests pass null and keep the editable name field.
+        templatePickerLockedName={!isOwner && clerkUserId ? clerkDisplayName : null}
+        welcomeOpen={anyWelcomeOpen}
+        selfParticipant={selfParticipant}
+        onChooseTemplate={chooseTemplate}
+        onSkipTemplatePicker={skipTemplatePicker}
+        onOpenTemplatePicker={openTemplatePicker}
+        tabThemeId={(activeTab.theme as ThemeId | undefined) ?? 'brand'}
+        tabTimer={activeTab.timer}
+        tabVote={activeTab.vote}
+        onStartTimer={startTimer}
+        onPauseTimer={pauseTimer}
+        onResumeTimer={resumeTimer}
+        onResetTimer={resetTimer}
+        onClearTimer={clearTimer}
+        onSetTimerDuration={setTimerDuration}
+        onStartVote={startVote}
+        onEndVote={endVote}
+        onRevealVote={revealVote}
+        onClearVote={clearVote}
+        onCastVote={castVote}
+        onRetractVote={retractVote}
+        voteReview={voteReview}
+        onNextVoteResult={nextVoteResult}
+        onPrevVoteResult={prevVoteResult}
+        onDoneVoteReview={doneVoteReview}
+        onToggleAspectLock={toggleAspectLockSelected}
+        onDropPalette={dropThenDisarm(dropPaletteItem, cancelDrawShape)}
+        onSpawnConnect={spawnConnectSelected}
+        onStartArrow={handleStartArrow}
+        onStartPencil={beginFreehand}
+        onToggleLockSelected={toggleLockSelected}
+        onDeleteSelected={deleteSelected}
+        // One gesture, one answer: while the element menu is open the
+        // selection popover stands down (see deriveCanvasSelection).
+        elementMenuOpen={contextMenu?.mode === 'element'}
+        onDuplicateSelected={duplicateSelected}
+        onBringSelectedToFront={stackSelectedFront}
+        onSendSelectedToBack={stackSelectedBack}
+        onCanvasDoubleClick={handleCanvasDoubleClick}
+        tabLoadState={tabLoadState}
+        onRetryTabLoad={retryActiveTabLoad}
+        // Embeds (spec/33) ride the zen chrome-hide gates: every panel
+        // and badge zen hides, embeds hide too. The zen TOGGLE is
+        // withheld so the ZoomControls dock doesn't offer an exit
+        // from a mode the embed can't actually leave.
+        zenMode={zenMode || embedMode}
+        onToggleZen={embedMode ? undefined : toggleZenMode}
+        aiPanel={
+          aiCapable && userPreferences.aiAssistanceEnabled && aiPanelVisible && !isReadOnly
+            ? {
+                position: aiPanelPosition,
+                onMove: (x, y) => setAiPanelPosition({ x, y }),
+                onReset: () => setAiPanelPosition(null),
+                contextElements: activeTab.elements,
+                focusIds:
+                  multiSelectedIds.size > 0
+                    ? [...multiSelectedIds]
+                    : selectedId !== null
+                      ? [selectedId]
+                      : [],
+                onApplyElements: applyAiElements,
+                ownerId: selfParticipant.id,
+                tabId: activeTab.id,
+              }
+            : undefined
+        }
+      />
+      {lockedMenu ? (
+        <LockedElementMenu
+          at={lockedMenu.at}
+          holders={lockedMenu.holders}
+          onRelease={(presenceId) =>
+            facilitator.releaseSelectionLock(presenceId, lockedMenu.elementId)
+          }
+          onClose={() => setLockedMenu(null)}
+        />
+      ) : null}
+    </>
   );
 }

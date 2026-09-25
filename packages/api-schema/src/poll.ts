@@ -13,16 +13,26 @@
 // element and `SessionButtonConfig` is a `Tab` field. Re-exported here so
 // every existing `import { PollStyle } from '@livediagram/api-schema'`
 // keeps resolving and there is still only one list.
-import { pollStyleTokens, type PollStyle } from '@livediagram/diagram';
+import {
+  POLL_OPTIONS_MAX,
+  POLL_OPTIONS_MIN,
+  pollStyleCarriesOptions,
+  pollStyleTokens,
+  type PollStyle,
+} from '@livediagram/diagram';
 
 export type { PollStyle };
+// Re-exported, not redefined: the numbers live one package down so the Session
+// button's editor reads the same two the Studio does. See poll-style.ts.
+export { POLL_OPTIONS_MAX, POLL_OPTIONS_MIN };
 
 export type LivePoll = {
   id: string;
   question: string;
   style: PollStyle;
-  // Creator-defined answers for `choice`. Empty for every other style,
-  // whose options are fixed (see pollOptionTokens).
+  // The poll's own answer list: written by the author for `choice`, frozen
+  // from the room's roster at start for `collaborators` (spec/88). Empty for
+  // every other style, whose options are fixed (see pollOptionTokens).
   options: string[];
   startedAt: number;
 };
@@ -32,8 +42,6 @@ export type LivePoll = {
 // panel with a 10k-character question or fifty options.
 export const POLL_QUESTION_MAX = 200;
 export const POLL_OPTION_MAX = 60;
-export const POLL_OPTIONS_MIN = 2;
-export const POLL_OPTIONS_MAX = 6;
 export const POLL_TEXT_ANSWER_MAX = 280;
 
 // Every answer token a poll can receive, in display order. Empty for a
@@ -46,19 +54,30 @@ export function pollOptionTokens(poll: LivePoll): string[] {
 }
 
 // Trim a poll to the caps and drop anything unusable. Returns null when
-// the poll can't be salvaged (no question, or a choice poll without at
-// least two options) so callers can ignore a malformed op outright.
+// the poll can't be salvaged (no question, or a poll that carries its own
+// answer list without at least two entries) so callers can ignore a
+// malformed op outright.
+//
+// `pollStyleCarriesOptions`, not `style === 'choice'`: a `collaborators`
+// poll's list is generated from the room rather than typed, but by the time
+// it reaches here it has been frozen into `options` and deserves exactly the
+// same trimming and floor. Asking the narrower question would have let a
+// roster poll through with fifty names and no minimum.
 export function sanitisePoll(poll: LivePoll): LivePoll | null {
   const question = poll.question.trim().slice(0, POLL_QUESTION_MAX);
   if (question.length === 0) return null;
-  const options =
-    poll.style === 'choice'
-      ? poll.options
-          .map((o) => o.trim().slice(0, POLL_OPTION_MAX))
-          .filter((o) => o.length > 0)
-          .slice(0, POLL_OPTIONS_MAX)
-      : [];
-  if (poll.style === 'choice' && options.length < POLL_OPTIONS_MIN) return null;
+  const carriesOptions = pollStyleCarriesOptions(poll.style);
+  const options = carriesOptions
+    ? poll.options
+        .map((o) => o.trim().slice(0, POLL_OPTION_MAX))
+        // An option IS its answer token, so two equal options are one answer
+        // shown twice: each row tallies every vote for it (shares past 100%),
+        // the prompt renders two buttons under one React key, and "A, A"
+        // passed the two-answer floor offering a single choice.
+        .filter((o, i, all) => o.length > 0 && all.indexOf(o) === i)
+        .slice(0, POLL_OPTIONS_MAX)
+    : [];
+  if (carriesOptions && options.length < POLL_OPTIONS_MIN) return null;
   return { ...poll, question, options };
 }
 

@@ -1,6 +1,6 @@
 import {
+  canCastVote,
   voteHidesTallies,
-  votesSpentBy,
   type BoxedElement,
   type TabVote,
 } from '@livediagram/diagram';
@@ -58,10 +58,10 @@ export function ElementVoteOverlay({
   // Once casting closes the buttons go: the tally is a result to read, not
   // a control, and the walkthrough wants the board quiet.
   const showReadOnlyCount = !!vote && !vote.active && voteTotal > 0 && votableInVote === true;
-  // Budget (spec/39). Spent-out disables plus rather than hiding it, so
-  // the control doesn't move under the pointer mid-vote.
-  const spent = vote && selfId ? votesSpentBy(vote, selfId) : 0;
-  const canCast = !!vote && spent < vote.votesPerPerson;
+  // Budget, and the one-dot-per-item rule when the vote has it (spec/39).
+  // Either disables plus rather than hiding it, so the control doesn't move
+  // under the pointer mid-vote.
+  const canCast = !!vote && !!selfId && canCastVote(vote, selfId, element.id);
   return (
     <>
       {isVoteFocus ? (

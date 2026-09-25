@@ -1,4 +1,5 @@
 import { getClerkIdentity } from './auth/clerk';
+import { noteAuthSighting } from './auth/session-telemetry';
 import { emailEnabled } from './email/client';
 import { runLifecycleSweep, welcomeOnSighting } from './email/lifecycle';
 import { runTokenExpirySweep } from './email/token-expiry';
@@ -6,14 +7,15 @@ import { runTimelineExpirySweep } from './timeline';
 import {
   deleteOldChangeLogEntries,
   deleteOldEvents,
+  deleteOldSessionSightings,
   deleteOldTimelineEvents,
   deleteOldUnusedImages,
   resolveApiToken,
 } from './db';
-import { TIMELINE_RETENTION_MS } from '@livediagram/api-schema';
+import { apiRouteLabel, errorTypeToken, TIMELINE_RETENTION_MS } from '@livediagram/api-schema';
 import { isApiTokenFormat } from './auth/api-token';
 import { verifyOwnerId } from './auth/owner-signature';
-import { guestSignatureEnforced, OWNER_SCOPED_SEGMENTS } from './auth/guest-rest';
+import { guestSignatureEnforced, isClerkIdShape, OWNER_SCOPED_SEGMENTS } from './auth/guest-rest';
 import { handleTokens } from './routes/tokens';
 import { handleOauthExchange } from './routes/oauth';
 import { DiagramRoom } from './diagram-room';
@@ -38,6 +40,7 @@ import { handleGuestId } from './routes/guest-id';
 import { handleParticipants } from './routes/participants';
 import { handleFavourites } from './routes/favourites';
 import { handleTimeline } from './routes/timeline';
+import { handleActivity } from './routes/activity';
 import { handlePreferences } from './routes/preferences';
 import { handleShare } from './routes/share';
 import { handleTeams } from './routes/teams';
@@ -91,6 +94,10 @@ export default {
     // session token (dashboard → Sessions → Customize session token →
     // `{"email": "{{user.primary_email_address}}"}`); see auth/clerk.ts.
     const clerkEmail = clerkIdentity?.email ?? null;
+    // spec/22: Session·SignedUp / SignedIn are counted here, server-side, on
+    // the first request of each new Clerk session, so every auth method
+    // (email code, Google OAuth) counts once. Off the response path.
+    noteAuthSighting(env, clerkIdentity, executionCtx?.waitUntil?.bind(executionCtx));
     // spec/64: first authenticated sighting => sign-up. Fire-and-forget (the
     // sighting + welcome run in the background) so it never delays the response;
     // a no-op when RESEND_API_KEY is unset.
@@ -121,6 +128,19 @@ export default {
     // reads (see RouteContext.verifiedUserId); administration surfaces keep
     // reading `clerkUserId` directly.
     const verifiedUserId = clerkUserId ?? tokenAuth?.ownerId ?? null;
+
+    // A Clerk account id presented as the GUEST header is always a replay of
+    // a harvested id, never a real client (see auth/guest-rest.ts): the guest
+    // credential is a server-minted UUID, and a signed-in caller sends
+    // `Authorization` instead. Refused unconditionally, BEFORE the signature
+    // gate below, because that gate is off until an operator arms it — and
+    // this shape needs no grace window, having never been legitimate.
+    if (!clerkUserId && !tokenAuth && OWNER_SCOPED_SEGMENTS.has(segments[1] ?? '')) {
+      const headerOwner = request.headers.get('X-Owner-Id');
+      if (headerOwner && isClerkIdShape(headerOwner)) {
+        return json({ error: 'account_id_not_a_guest_credential' }, { status: 401 });
+      }
+    }
 
     // Guest REST signature gate (spec/61 §4). On owner-scoped routes, a
     // presented `X-Owner-Id` must carry a valid HMAC signature once
@@ -272,6 +292,8 @@ export default {
           return await handleFavourites(ctx);
         case 'timeline':
           return await handleTimeline(ctx);
+        case 'activity':
+          return await handleActivity(ctx);
         case 'preferences':
           return await handlePreferences(ctx);
         case 'migrate':
@@ -291,11 +313,13 @@ export default {
       // exception counts even when no client survives to report it.
       // Same TELEMETRY_ENABLED gate as the ingest; off the response's
       // critical path (waitUntil), and its own failure is swallowed —
-      // the 500 must still go out.
+      // the 500 must still go out. The type names the endpoint by its
+      // route words only (`Internal.Put.Diagrams.Tabs`), never an id.
       if (env.TELEMETRY_ENABLED === 'true') {
+        const type = errorTypeToken('Internal', apiRouteLabel(request.method, url.pathname));
         const report = insertTelemetryEvents(
           env,
-          [{ category: 'Error', action: 'Api', type: 'Internal' }],
+          [{ category: 'Error', action: 'Api', type }],
           Date.now(),
         ).catch(() => {});
         executionCtx?.waitUntil?.(report);
@@ -328,6 +352,15 @@ export default {
         deleteOldChangeLogEntries,
       );
       scheduleSweep(ctx, env, 'events', 'rows', now - EVENTS_RETENTION_MS, deleteOldEvents);
+      // spec/22: session ids seen for the sign-in count (auth/session-telemetry.ts).
+      scheduleSweep(
+        ctx,
+        env,
+        'auth_sessions',
+        'rows',
+        now - AUTH_SESSION_RETENTION_MS,
+        deleteOldSessionSightings,
+      );
       // spec/138 §3.5: the Timeline feed keeps a year, where the
       // element-level change_log above keeps 90 days.
       scheduleSweep(
@@ -392,6 +425,10 @@ function scheduleSweep(
 // scheduled handler is the only caller and naming it makes the
 // intent obvious from the dispatch site.
 const CHANGE_LOG_RETENTION_MS = 90 * 24 * 60 * 60 * 1000;
+
+// 90 days in ms: how long a seen Clerk session id is kept for the sign-in
+// count (spec/22). Longer than any session Clerk keeps alive by default.
+const AUTH_SESSION_RETENTION_MS = 90 * 24 * 60 * 60 * 1000;
 
 // 60 days in ms. The /telemetry dashboard's longest window is
 // "Last 30 days", so anything past 60 days is dead storage (twice

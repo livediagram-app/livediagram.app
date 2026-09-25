@@ -10,19 +10,33 @@
 // would duplicate that and have to re-derive the team-visibility rules the
 // diagram list already applies.
 
-import { API_BASE, apiHeaders } from './core';
+import { API_BASE, apiHeaders, apiFetch } from './core';
+import {
+  isOfflineId,
+  offlineListFavouriteIds,
+  offlineSetFavourite,
+} from '../offline/offline-store';
 
+// Like the diagram list (see api-client), this MERGES rather than
+// dispatches: the Favourites view shows cloud and offline diagrams in one
+// place, so it needs both sets, and the offline ones still answer when the
+// cloud fetch fails.
 export async function apiListFavourites(ownerId: string): Promise<string[]> {
+  // Its own catch: no IndexedDB (SSR, private mode) must not take the cloud
+  // half down with it, which sharing a try block would do.
+  const offline = await offlineListFavouriteIds().catch(() => []);
   try {
-    const res = await fetch(`${API_BASE}/favourites`, { headers: await apiHeaders(ownerId) });
-    if (!res.ok) return [];
+    const res = await apiFetch(`${API_BASE}/favourites`, { headers: await apiHeaders(ownerId) });
+    if (!res.ok) return offline;
     const body = (await res.json()) as { ids?: unknown };
-    if (!Array.isArray(body.ids)) return [];
-    return body.ids.filter((id): id is string => typeof id === 'string');
+    if (!Array.isArray(body.ids)) return offline;
+    const cloud = body.ids.filter((id): id is string => typeof id === 'string');
+    return [...cloud, ...offline];
   } catch {
-    // Offline, or a pure-guest self-host with no /api configured. An empty
-    // list degrades to "no favourites" rather than breaking the Explorer.
-    return [];
+    // Offline, or a pure-guest self-host with no /api configured. The local
+    // stars still stand; the cloud half degrades to "no favourites" rather
+    // than breaking the Explorer.
+    return offline;
   }
 }
 
@@ -34,8 +48,17 @@ export async function apiSetFavourite(
   diagramId: string,
   favourite: boolean,
 ): Promise<void> {
+  // An offline diagram has no row in `diagrams`, and the favourites table's
+  // diagram_id is a foreign key into it (migration 0040), so sending this
+  // star to the server does not just go unused, it is REJECTED with
+  // "FOREIGN KEY constraint failed". Keep it local, as spec/76 requires of
+  // every offline row: no server fetch, "list, thumbnail, or otherwise".
+  if (await isOfflineId(diagramId)) {
+    await offlineSetFavourite(diagramId, favourite).catch(() => {});
+    return;
+  }
   try {
-    await fetch(`${API_BASE}/favourites/${encodeURIComponent(diagramId)}`, {
+    await apiFetch(`${API_BASE}/favourites/${encodeURIComponent(diagramId)}`, {
       method: favourite ? 'PUT' : 'DELETE',
       headers: await apiHeaders(ownerId),
     });

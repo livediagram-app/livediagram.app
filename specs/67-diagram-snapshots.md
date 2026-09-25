@@ -107,7 +107,7 @@ choice is diagram-wide, applying to every share link's image.
 ### Where thumbnails appear
 
 The thumbnail shows on **every** Explorer surface that lists a diagram:
-the full-page `/explorer` rows (Recent / My Work / folders / Unsorted /
+the full-page `/explorer` rows (Recent / Personal Space / folders / Unsorted /
 Generated), the team library page, the "Shared with me" list, and the
 floating in-editor Explorer panel. A single shared `DiagramThumbnail`
 component (`components/panels/DiagramThumbnail.tsx`) backs them all, fed
@@ -118,15 +118,45 @@ of those gets a 404 and the row falls back to its icon.
 
 ### List / card view
 
-The browse views (Recent / My Work / folders / Unsorted / Generated)
+The browse views (Recent / Personal Space / folders / Unsorted / Generated)
 have a **List ↔ Card** toggle at the far right of the header (device-
-local preference, `livediagram:explorer-view`). Card view renders the
+local preference, `livediagram:explorer-view`). **Card is the default**:
+a diagram is a picture, and a wall of names in one typeface makes you read
+every line to find the one you would have recognised on sight. Somebody who
+prefers the density of rows knows where the toggle is; somebody opening the
+Explorer for the first time does not know there is anything to look for, so
+the unchosen view is the one that shows them their work. Card view renders the
 same folders + diagrams as a responsive grid of cards (1 / 2 / 3 columns
 by width), each with a large snapshot and every column the list shows
 (name, owner, visibility badge, updated time, actions menu). List and
 card share one badge + actions-menu module (`diagram-row-shared.tsx`) so
 they can't drift. A real switch (not a click on the already-active side)
 emits `UI / Toggled / ExplorerViewList | ExplorerViewCard` (spec/22).
+
+**The actions menu** (the ⋯ on a row or card, and on a Timeline diagram
+card, spec/138 §2.8) has one shape wherever it opens: a **header row**
+naming the diagram with its visibility badge, because a menu opens away
+from its trigger and on a grid of near-identical cards the menu itself
+has to say which one it belongs to; then **Open on its own, under a
+separator**, unless the row is the diagram already open in this editor
+(the verb people reach for first sits first, and the current diagram's
+row doesn't offer a no-op); then **one full-width row per verb, icon on
+the left** (Rename, Duplicate, Change Folder, Favourite,
+History, Hide from Recent, Open Team, Take Offline / Sync); then
+**Delete last, under a separator, red at rest**. It was an icon-over-
+label tile grid, two columns and then three: eight verbs in a grid read
+in two directions with labels wrapping under their icons, and a list of
+verbs scans down in one. The rows are `MenuActionRow` in its `plain`
+(sentence-case, 13px) form rather than the uppercase category-header
+form the note menu uses, because here the rows are the whole menu. A
+shared-with-you diagram's menu (Open, Dismiss) is the same shape.
+**The floating Explorer panel's rows use this same menu** (both the
+personal rows and a team library's rows). The panel used to carry its
+own toolbar-and-accordion menu with a Share section; sharing is the
+editor header's job, and a menu that looked like no other in the app was
+one people had to learn twice. A row that can't offer a verb (the panel
+has no star or history) simply doesn't pass its handler, and the menu
+leaves that tile out.
 
 The snapshot preview paints its letterbox in the diagram's own
 background colour (parsed client-side from the SVG's background rect)

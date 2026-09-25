@@ -1,7 +1,8 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useState, type ReactNode } from 'react';
+import { usePathname } from 'next/navigation';
+import type { ReactNode } from 'react';
 import { Brand, ProductNav } from '@livediagram/ui';
 import { AuthControls } from '@/components/chrome/AuthControls';
 import { ChromeControls } from '@/components/chrome/ChromeControls';
@@ -11,9 +12,11 @@ import { SettingsDialog } from '@/components/dialogs/SettingsDialog';
 import { SignInBanner, SIGNIN_BANNER_DISMISS_KEY } from '@/components/chrome/SignInBanner';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { HELP_SEARCH_ITEMS } from '@/lib/help-search';
+import { SETTINGS_SEARCH_ITEMS } from '@/lib/settings-search-items';
 import { writeUserPreferences } from '@/lib/user-preferences';
 import { useDismissibleBanner } from '@/hooks/ui/useDismissibleBanner';
 import { CustomThemeProvider } from '@/components/primitives/CustomThemeProvider';
+import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import { ExplorerProvider, useExplorer } from './ExplorerContext';
 import { ExplorerSidebar } from './ExplorerSidebar';
 import { useExplorerState } from './useExplorerState';
@@ -69,6 +72,12 @@ function ShellChrome({ children }: { children: ReactNode }) {
     setMobileNavOpen,
     searchOpen,
     setSearchOpen,
+    settingsOpen,
+    setSettingsOpen,
+    settingsFocus,
+    setSettingsFocus,
+    settingsCategory,
+    setSettingsCategory,
     moveTarget,
     setMoveTarget,
     movePersonalFolders,
@@ -76,6 +85,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
     moveDiagramTo,
     moveFolderToParent,
     createMoveFolder,
+    teamsEnabled,
     teamModalOpen,
     setTeamModalOpen,
     hookCreateTeam,
@@ -84,13 +94,14 @@ function ShellChrome({ children }: { children: ReactNode }) {
     prefs,
     setPrefs,
   } = useExplorer();
+  // Navigating to another section clears a crashed pane's notice.
+  const pathname = usePathname();
 
   // Settings live in the bottom bar's gear (same synced UserPreferences as
   // the editor, spec/20). The prefs themselves are owned by
   // useExplorerState — the pane reads them too (Recent honours the
   // hidden-from-Recent list, spec/93), and a second useState here would
   // drift the moment either wrote.
-  const [settingsOpen, setSettingsOpen] = useState(false);
 
   // Guest sign-in nudge (spec/36): only when Clerk is actually wired
   // up for this deployment, the visitor isn't signed in (a guest owner
@@ -130,7 +141,9 @@ function ShellChrome({ children }: { children: ReactNode }) {
           aria-label="Sections"
         >
           <div className="sticky top-20 rounded-xl border border-slate-200 bg-white px-3 py-5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
-            <ExplorerSidebar />
+            <AreaErrorBoundary area="ExplorerSidebar" fallback="panel">
+              <ExplorerSidebar />
+            </AreaErrorBoundary>
           </div>
         </aside>
 
@@ -158,13 +171,19 @@ function ShellChrome({ children }: { children: ReactNode }) {
                   <CloseIcon />
                 </button>
               </div>
-              <ExplorerSidebar />
+              <AreaErrorBoundary area="ExplorerSidebar" fallback="panel">
+                <ExplorerSidebar />
+              </AreaErrorBoundary>
             </div>
           </div>
         ) : null}
 
         {/* ---------- Right pane: the active section route ---------- */}
-        <section className="min-w-0 flex-1">{children}</section>
+        <section className="min-w-0 flex-1">
+          <AreaErrorBoundary area="ExplorerPane" fallback="panel" resetKey={pathname}>
+            {children}
+          </AreaErrorBoundary>
+        </section>
       </main>
 
       {/* Bottom bar (spec/07): the same strip as the editor's tab bar, minus
@@ -181,7 +200,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
       {/* Move-destination modal (spec/15 + spec/35): the shared
           placement browser (spec/76's Save In UI) for every diagram
           (personal or team) and for folder re-parenting. It offers
-          "My Work" plus each team as a space (for diagram moves);
+          "Personal Space" plus each team as a space (for diagram moves);
           `moveDiagramTo` routes the pick from the subject's current
           placement. Folder moves are personal-only, so they pass no
           teams. The New Folder tile creates in the picked scope. */}
@@ -214,6 +233,16 @@ function ShellChrome({ children }: { children: ReactNode }) {
                 currentTeamId={currentTeamId}
                 currentFolderId={currentFolderId}
                 onCreateFolder={createMoveFolder}
+                // A diagram can be moved into a team made on the spot;
+                // folder moves stay personal, and guests have no teams.
+                onCreateTeam={
+                  teamsEnabled && moveTarget.kind === 'diagram'
+                    ? async (name) => {
+                        const team = await hookCreateTeam({ name });
+                        return team ? { id: team.id, name: team.name } : null;
+                      }
+                    : undefined
+                }
                 onPick={(dest) => {
                   if (moveTarget.kind === 'folder')
                     moveFolderToParent(moveTarget.id, dest.folderId);
@@ -226,7 +255,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
         : null}
       <TeamFormModal
         open={teamModalOpen}
-        title="New team"
+        title="New Team"
         submitLabel="Create team"
         onSubmit={(values) => {
           setTeamModalOpen(false);
@@ -272,6 +301,11 @@ function ShellChrome({ children }: { children: ReactNode }) {
             );
           }}
           helpItems={HELP_SEARCH_ITEMS}
+          settingItems={SETTINGS_SEARCH_ITEMS}
+          onSelectSetting={(categoryId, rowKey) => {
+            setSettingsFocus({ categoryId, rowKey });
+            setSettingsOpen(true);
+          }}
           onClose={() => setSearchOpen(false)}
         />
       ) : null}
@@ -283,7 +317,13 @@ function ShellChrome({ children }: { children: ReactNode }) {
             setPrefs(next);
             writeUserPreferences(next, ownerId);
           }}
-          onClose={() => setSettingsOpen(false)}
+          onClose={() => {
+            setSettingsOpen(false);
+            setSettingsFocus(null);
+            setSettingsCategory(null);
+          }}
+          focus={settingsFocus}
+          initialCategoryId={settingsCategory}
         />
       ) : null}
 

@@ -1,4 +1,9 @@
 import {
+  BorderColourIcon,
+  FillColourIcon,
+  TextColourIcon,
+} from '@/components/palette/context-menu-icons';
+import {
   animLoops,
   DEFAULT_ANIMATION_SPEED,
   defaultArrowStrokeColor,
@@ -170,31 +175,34 @@ export function MultiStyleSections({
           {textSrc ? (
             <ColourRow
               label="Text"
+              icon={<TextColourIcon />}
               value={
                 (textSrc as { textColor?: string }).textColor ??
                 defaultTextColor(textSrc as BoxedElement, surface)
               }
               {...textColorHandlers}
               {...colorProps('m-text')}
-              presets={props.presetColors}
+              {...props.colourPalette}
             />
           ) : null}
           {fillSrc ? (
             <ColourRow
               label="Background"
+              icon={<FillColourIcon />}
               value={fillSrc.fillColor ?? defaultFillColor(fillSrc, surface)}
               {...fillColorHandlers}
               {...colorProps('m-bg')}
-              presets={props.presetColors}
+              {...props.colourPalette}
             />
           ) : null}
           {strokeSrc ? (
             <ColourRow
               label="Border"
+              icon={<BorderColourIcon />}
               value={strokeSrc.strokeColor ?? defaultStrokeColor(strokeSrc, surface)}
               {...strokeColorHandlers}
               {...colorProps('m-border')}
-              presets={props.presetColors}
+              {...props.colourPalette}
             />
           ) : arrowSrc ? (
             // Arrow-only selection: no boxed stroke member, so the stroke
@@ -203,15 +211,16 @@ export function MultiStyleSections({
             // above — its setter recolours the arrows too.
             <ColourRow
               label="Line"
+              icon={<BorderColourIcon />}
               value={arrowSrc.strokeColor ?? defaultArrowStrokeColor(surface)}
               {...strokeColorHandlers}
               {...colorProps('m-border')}
-              presets={props.presetColors}
+              {...props.colourPalette}
             />
           ) : null}
           <div className="px-2 pb-1 pt-1.5">
             <MenuActionButton
-              label="Reset to colour scheme"
+              label="Reset to theme"
               onClick={() => {
                 props.onResetColors();
                 onClose();

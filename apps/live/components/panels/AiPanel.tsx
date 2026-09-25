@@ -135,8 +135,6 @@ export function AiPanelContent({
           article="connectAiTool"
           variant="button"
           label="Connect agent"
-          title="Connect an AI tool"
-          description="Drive your diagrams from Claude, Cursor, and other AI tools over MCP."
           icon={<PlugIcon />}
           className="!gap-1 !px-2 !py-1 !text-[11px]"
         />

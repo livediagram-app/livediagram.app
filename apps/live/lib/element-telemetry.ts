@@ -65,8 +65,23 @@ const SHAPE_TOKENS: Record<string, string> = {
   'session-button': 'SessionButton',
   'reaction-pad': 'ReactionPad',
   'comment-pin': 'CommentPin',
+  'action-card': 'ActionPanel',
   'done-check': 'DoneCheck',
+  // The web components (spec/147) report as their palette component, so a
+  // copied stat row lands in the same dashboard row as a dropped one.
+  banner: 'Banner',
+  callout: 'Callout',
+  'stat-row': 'StatRow',
+  process: 'ProcessSteps',
+  'site-header': 'Header',
 };
+
+// The Element token for a shape kind. Every path that reports a shape (the
+// draw tool, a copy, a duplicate) goes through here so one feature cannot end
+// up under two spellings.
+export function shapeTelemetryToken(kind: string): string {
+  return SHAPE_TOKENS[kind] ?? titleCaseType(kind);
+}
 
 export function elementTelemetryType(element: Element): string {
   switch (element.type) {
@@ -77,7 +92,8 @@ export function elementTelemetryType(element: Element): string {
     case 'sticky':
       return 'Sticky';
     case 'image':
-      return 'Image';
+      // A hero is an image with a caption card (spec/147).
+      return element.heroCaption ? 'Hero' : 'Image';
     case 'table':
       return 'Table';
     case 'link-card':
@@ -98,17 +114,18 @@ export function elementTelemetryType(element: Element): string {
       // A brand mark reports as TechIcon rather than by its shape, matching
       // both the click-to-add and drag-to-draw paths.
       if (element.iconId && isTechIconId(element.iconId)) return 'TechIcon';
-      return SHAPE_TOKENS[element.shape] ?? titleCaseType(element.shape);
+      return shapeTelemetryToken(element.shape);
     }
   }
 }
 
-// The composites (spec/09) drop as a GROUP, not as one element, so they never
-// reach elementTelemetryType — their add is reported straight from the draw
-// path. The token lives here anyway, beside the element one, because it
-// answers the same question and belongs to the same vocabulary: keeping it in
-// the drawing hook is how `Video` came to be missing from the dashboard
-// catalogue, unseen by the test that walks this file.
+// The palette's component tokens (spec/09, spec/147), reported straight from
+// the draw path, which knows the ComponentKind it armed. They agree with what
+// elementTelemetryType says for the element that path builds (see
+// SHAPE_TOKENS), so a dropped and a copied stat row count together. Kept here
+// beside the element tokens because they answer the same question: keeping
+// one in the drawing hook is how `Video` came to be missing from the
+// dashboard catalogue, unseen by the test that walks this file.
 export const COMPONENT_TELEMETRY: Record<ComponentKind, string> = {
   banner: 'Banner',
   hero: 'Hero',

@@ -17,6 +17,7 @@ import {
 } from './selection-mode';
 import {
   CHECKLIST_DEFAULT_ITEMS,
+  LEGEND_DEFAULT_ITEMS,
   LINE_DEFAULT_CATEGORIES,
   LINE_DEFAULT_SERIES,
   PIE_DEFAULT_SLICES,
@@ -31,6 +32,7 @@ import {
   DEFAULT_DECISION_STATUS,
   DEFAULT_ESTIMATE_SCALE,
 } from './collab-shapes';
+import { NAV_DEFAULT_LINKS, PROCESS_DEFAULT_STEPS, STAT_DEFAULTS } from './web-components';
 import type { ShapeElement, ShapeKind } from './index';
 
 // --- Factories -------------------------------------------------------------
@@ -52,8 +54,10 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // reads as a page beside a 120px square without swallowing the canvas.
   page: { width: 420, height: 594 },
   // Mind node (spec/118): a caption-width pill. Wide enough for a phrase,
-  // short enough that a column of siblings stays readable.
-  'mind-node': { width: 170, height: 48 },
+  // short enough that a column of siblings stays readable. 170x48 fitted a
+  // couple of words and made anything longer wrap or overflow, which is not
+  // what people actually type into a mind map.
+  'mind-node': { width: 250, height: 80 },
   // Lane (spec/119): a band, not a box — wide enough to lay a flow across and
   // tall enough for a row of steps.
   lane: { width: 900, height: 200 },
@@ -64,6 +68,9 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // Comment panel: a card, sized for a couple of comments. Collapsed it
   // shrinks to its summary bar (spec/136).
   'comment-pin': { width: 260, height: 190 },
+  // Action panel (spec/146): the Comment panel's size, which fits a name, a
+  // couple of lines of description, the assignee row and the footer.
+  'action-card': { width: 260, height: 190 },
   // Done check: taller than the other room-response panels because it stacks
   // TWO rosters (done and waiting) plus the all-done line. At 190 a two-person
   // room already overflowed by a few pixels and the body grew a scrollbar.
@@ -105,6 +112,10 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   laptop: { width: 240, height: 150 },
   phone: { width: 90, height: 170 },
   tablet: { width: 140, height: 180 },
+  // Foldable, unfolded: the two panels side by side make a nearly square
+  // inner screen, a little wider than it is tall, which is what separates it
+  // at a glance from the portrait phone and tablet above.
+  foldable: { width: 190, height: 170 },
   // Smartwatch: a square-ish face with bands above + below, so portrait.
   smartwatch: { width: 110, height: 150 },
   // Curated glyph. Square + aspect-locked on create (set in createShape) so
@@ -136,10 +147,16 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   'code-block': { width: 320, height: 180 },
   // Checklist: a card of starter rows (spec/83).
   checklist: { width: 240, height: 180 },
+  // Legend (spec/53): narrower than a checklist, because a key is a swatch and
+  // a word, and short enough to sit in a corner beside the thing it explains.
+  legend: { width: 180, height: 132 },
   // Mode button (spec/103): a square-ish tile, sized for an icon ABOVE its
   // label — the shape a toolbar button has, rather than a wide pill that read
   // as just another labelled box.
   'mode-button': { width: 104, height: 96 },
+  // Bring Focus (spec/144): the mode button's shape, a touch wider because its
+  // label is a sentence fragment ("The problem") rather than a mode's one word.
+  'focus-button': { width: 120, height: 96 },
   // Portal (spec/104): portal-shaped — taller than it is wide, like a portal.
   portal: { width: 72, height: 112 },
   // Session button (spec/105): the Selection Mode button's tile, so a row of
@@ -172,6 +189,14 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   decision: { width: 330, height: 220 },
   // Roll call (spec/129): two columns of names, six rows deep.
   'roll-call': { width: 300, height: 260 },
+  // Web components (spec/147), at the sizes the grouped composites they
+  // replace arrived at, so a board built from either reads the same.
+  banner: { width: 440, height: 104 },
+  callout: { width: 380, height: 116 },
+  // Three 150px cards and two 16px gaps.
+  'stat-row': { width: 482, height: 96 },
+  process: { width: 420, height: 110 },
+  'site-header': { width: 640, height: 84 },
 };
 
 // New boxed elements default to Medium text size per spec 09 ("Text size").
@@ -396,6 +421,15 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       label: '',
     };
   }
+  if (kind === 'action-card') {
+    return {
+      ...base,
+      // No label: the Assign Action dialog prefills the action's NAME from the
+      // element's label (spec/68 §2), so a default caption here would become
+      // every new action's name.
+      label: '',
+    };
+  }
   if (kind === 'reaction-pad') {
     return {
       ...base,
@@ -511,6 +545,58 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
   // Checklist: starter rows so the affordance is obvious on drop. See spec/83.
   if (kind === 'checklist') {
     return { ...base, checklistItems: CHECKLIST_DEFAULT_ITEMS.map((i) => ({ ...i })) };
+  }
+  // Web components (spec/147): the starting content each one shows on drop,
+  // so a new one reads as what it is. Colours come from the caller
+  // (createComponent maps the theme); without one the renderer's fallbacks
+  // apply, which is what an MCP- or AI-authored one gets.
+  if (kind === 'banner') {
+    return {
+      ...base,
+      label: 'Banner title',
+      pageSubtitle: 'Subtitle or description',
+      textSize: 'lg',
+      textBold: true,
+      textAlignX: 'center',
+      textAlignY: 'middle',
+      borderRadius: 'lg',
+    };
+  }
+  if (kind === 'callout') {
+    return {
+      ...base,
+      pageTitle: 'Heads up',
+      label: 'A short note with some supporting detail.',
+      textSize: 'sm',
+      textAlignX: 'left',
+      textAlignY: 'top',
+      strokeWidth: 'thin',
+      borderRadius: 'md',
+    };
+  }
+  if (kind === 'stat-row') {
+    return { ...base, stats: STAT_DEFAULTS.map((st) => ({ ...st })), borderRadius: 'md' };
+  }
+  if (kind === 'process') {
+    return { ...base, processSteps: [...PROCESS_DEFAULT_STEPS] };
+  }
+  if (kind === 'site-header') {
+    return {
+      ...base,
+      label: 'Brand',
+      navLinks: [...NAV_DEFAULT_LINKS],
+      textSize: 'md',
+      textBold: true,
+      textAlignX: 'left',
+      textAlignY: 'middle',
+      borderRadius: 'md',
+    };
+  }
+  // Legend: starter rows so the card is not an empty box on drop. Their
+  // colours are left unset, so they take the chart palette by index and a
+  // legend beside a chart matches it without being told to. See spec/53.
+  if (kind === 'legend') {
+    return { ...base, legendItems: LEGEND_DEFAULT_ITEMS.map((i) => ({ ...i })) };
   }
   return base;
 }

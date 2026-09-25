@@ -11,6 +11,7 @@ import {
   expectOkVoid,
   type FolderResponse,
   type FoldersResponse,
+  apiFetch,
 } from './core';
 
 // Same dedupe rationale as apiListDiagrams. useFolders runs once
@@ -19,7 +20,7 @@ import {
 // gated on the same ownerId) would otherwise fire duplicate
 // GET /folders calls.
 async function _apiListFolders(ownerId: string): Promise<Folder[]> {
-  const res = await fetch(`${API_BASE}/folders`, { headers: await apiHeaders(ownerId) });
+  const res = await apiFetch(`${API_BASE}/folders`, { headers: await apiHeaders(ownerId) });
   const { folders } = await expectOk<FoldersResponse>(res, 'list folders');
   return folders;
 }
@@ -29,7 +30,7 @@ export async function apiCreateFolder(
   ownerId: string,
   input: { id: string; name: string; parentId?: string | null; teamId?: string | null },
 ): Promise<Folder> {
-  const res = await fetch(`${API_BASE}/folders`, {
+  const res = await apiFetch(`${API_BASE}/folders`, {
     method: 'POST',
     headers: await apiHeaders(ownerId, { body: true }),
     body: JSON.stringify({
@@ -50,7 +51,7 @@ export async function apiUpdateFolder(
   id: string,
   patch: { name?: string; parentId?: string | null },
 ): Promise<Folder> {
-  const res = await fetch(`${API_BASE}/folders/${id}`, {
+  const res = await apiFetch(`${API_BASE}/folders/${id}`, {
     method: 'PUT',
     headers: await apiHeaders(ownerId, { body: true }),
     body: JSON.stringify(patch),
@@ -60,7 +61,11 @@ export async function apiUpdateFolder(
 }
 
 export async function apiDeleteFolder(ownerId: string, id: string): Promise<void> {
-  return apiDelete(`${API_BASE}/folders/${id}`, ownerId, { action: 'delete folder' });
+  // Folder events are keyed under the 'account' source type (spec/138 §4.5).
+  return apiDelete(`${API_BASE}/folders/${id}`, ownerId, {
+    action: 'delete folder',
+    purge: { sourceType: 'account', sourceId: id },
+  });
 }
 
 // Placement write (spec/15 + spec/35). `teamId` undefined = keep the
@@ -80,7 +85,7 @@ export async function apiSetDiagramFolder(
     if (teamId) throw new Error('offline diagrams cannot join a team');
     return offlineSetDiagramFolder(diagramId, folderId, Date.now());
   }
-  const res = await fetch(`${API_BASE}/diagrams/${diagramId}/folder`, {
+  const res = await apiFetch(`${API_BASE}/diagrams/${diagramId}/folder`, {
     method: 'PUT',
     headers: await apiHeaders(ownerId, { body: true }),
     body: JSON.stringify(teamId === undefined ? { folderId } : { folderId, teamId }),

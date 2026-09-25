@@ -38,16 +38,15 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
   liveRef.current = deps;
 
   // Escape cancels whichever transient editor mode is active:
-  // format-painter, group-source, or a pending draw-to-size shape.
+  // format-painter, or a pending draw-to-size shape.
   // Keeping the narrow deps means the listener only attaches while
   // one of those modes is on, so we pay nothing in the idle case.
   // The setters come through the ref so the same-render values apply.
   useEffect(() => {
-    const { formatSourceId, groupSourceId, pendingDraw, canvasTool, enabled } = liveRef.current;
+    const { formatSourceId, pendingDraw, canvasTool, enabled } = liveRef.current;
     if (!enabled) return;
     if (
       formatSourceId === null &&
-      groupSourceId === null &&
       pendingDraw === null &&
       canvasTool !== 'format' &&
       canvasTool !== 'isometric' &&
@@ -62,8 +61,19 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       // selected-cell layer) — don't double-act on it.
       if (e.defaultPrevented) return;
       if (e.key === 'Escape') {
+        const live = liveRef.current;
+        // Claim the key when it cancelled something, so a later listener
+        // (the non-modal poll sheet's Escape-to-skip) knows it's spoken for.
+        if (
+          live.formatSourceId !== null ||
+          live.pendingDraw !== null ||
+          live.canvasTool === 'format' ||
+          live.canvasTool === 'isometric' ||
+          live.canvasTool === 'avatar'
+        ) {
+          e.preventDefault();
+        }
         liveRef.current.setFormatSourceId(null);
-        liveRef.current.setGroupSourceId(null);
         // Persistent Format tool: Escape exits the tool entirely (back to
         // Select) from either phase, not just disarming the base.
         if (liveRef.current.canvasTool === 'format') liveRef.current.setCanvasTool('select');
@@ -85,7 +95,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [deps.enabled, deps.formatSourceId, deps.groupSourceId, deps.pendingDraw, deps.canvasTool]);
+  }, [deps.enabled, deps.formatSourceId, deps.pendingDraw, deps.canvasTool]);
 
   // Everything else: Delete / Backspace, Cmd-Z / Cmd-Y / Cmd-Shift-Z,
   // Cmd-C / Cmd-V, V / H / L tool switches. One listener for the
@@ -149,7 +159,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       // Escape leaves zen mode. Only when actually in zen, not mid-
       // edit / typing (there Escape cancels the label edit instead),
       // and with nothing MORE transient to peel first: an active mode
-      // (format / group / draw / isometric — the narrow effect above
+      // (format / draw / isometric — the narrow effect above
       // owns those) or a live selection each take their own Escape, so
       // one press exits exactly one layer instead of snapping the whole
       // stack back at once.
@@ -159,7 +169,6 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         !inText &&
         live.editingId === null &&
         live.formatSourceId === null &&
-        live.groupSourceId === null &&
         live.pendingDraw === null &&
         live.canvasTool !== 'format' &&
         live.canvasTool !== 'isometric' &&
@@ -174,7 +183,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
 
       // --- Escape clears the selection ---
       // When Escape has no transient mode to cancel (the narrow first
-      // effect above owns format / group / pending-draw / Format /
+      // effect above owns format / pending-draw / Format /
       // Isometric) and the user isn't typing, a live selection is
       // dropped, mirroring a click on empty canvas. Guarded on the same
       // mode flags so a single Escape does one thing: cancel the mode
@@ -184,7 +193,6 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         !inText &&
         live.editingId === null &&
         live.formatSourceId === null &&
-        live.groupSourceId === null &&
         live.pendingDraw === null &&
         live.canvasTool !== 'format' &&
         live.canvasTool !== 'isometric' &&
@@ -229,8 +237,8 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       //   R = Rectangle, O = Oval, D = Diamond, C = Cylinder,
       //   G = Parallelogram, T = Text, N = Note, A = Arrow (elements)
       //   1-9/0 mirror the same actions (Excalidraw number row).
-      // The plain shape keys never collide with Cmd/Ctrl+C / +G (copy /
-      // group) etc., which are handled in the modifier block above and
+      // The plain shape keys never collide with Cmd/Ctrl+C / +D (copy /
+      // duplicate) etc., which are handled in the modifier block above and
       // return before reaching here.
       // Bail on text-input focus + editing-label state so the user
       // can still type literal letters into a label or comment.

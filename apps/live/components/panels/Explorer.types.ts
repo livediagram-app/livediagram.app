@@ -1,6 +1,16 @@
 import type { DiagramListItem, Folder, SharedWithItem } from '@/lib/api-client';
 import type { MovablePanelDockProps } from '@/components/primitives/MovablePanel';
 import type { TeamDiagramRow, TeamFolderRow } from '@/hooks/persistence/useTeamLibrariesSweep';
+import type { DockAnchor } from '@/lib/canvas-chrome';
+
+// Folder mutations inside a team library, for the panel's team tree.
+// Create returns the new folder so the tree can open its parent and
+// start renaming it, the way the personal tree does.
+export type TeamFolderHandlers = {
+  create: (teamId: string, parentId: string | null) => Promise<{ id: string } | undefined>;
+  rename: (id: string, name: string) => void;
+  delete: (id: string) => void;
+};
 
 export type ExplorerProps = {
   position: { x: number; y: number } | null;
@@ -55,12 +65,6 @@ export type ExplorerProps = {
   // Optional row-level actions. When provided, each row renders an
   // ellipsis menu that delegates to these handlers.
   onRenameCurrent?: (name: string) => void;
-  // Opens the editor's Share dialog in place for the CURRENT diagram's
-  // row (its Share tile would otherwise navigate with `?share=1` and
-  // reload the very editor session the user is in). Optional: surfaces
-  // without a live editor session (status pages, /explorer) omit it and
-  // keep the navigation fallback.
-  onOpenShareCurrent?: () => void;
   // `beforeRemove` runs after the delete is confirmed and before the row is
   // pulled from the list, so the caller (Explorer) can slide it out first.
   // `opts.skipConfirm` is passed by the panel because it confirms inline
@@ -75,6 +79,10 @@ export type ExplorerProps = {
   onCreateFolder?: (input: { name: string; parentId: string | null }) => Promise<Folder | void>;
   onRenameFolder?: (id: string, name: string) => void;
   onDeleteFolder?: (id: string) => void;
+  // The same three for a TEAM's folders (spec/35): the panel's team tree
+  // offers rename / new subfolder / delete like the personal tree. Absent
+  // = the team tree is browse-only.
+  onTeamFolders?: TeamFolderHandlers;
   onMoveDiagramToFolder?: (diagramId: string, folderId: string | null) => void;
   // Scope-aware move (spec/35): routes a pick that involves a team on
   // either side (re-folder within a team, personal -> team, team ->
@@ -82,6 +90,9 @@ export type ExplorerProps = {
   onMoveDiagramTo?: (
     diagramId: string,
     dest: { teamId: string | null; folderId: string | null },
+    // Where the diagram is coming from (null = the personal tree), so a
+    // personal -> team move counts as Team·Added·Diagram (spec/22).
+    fromTeamId?: string | null,
   ) => void;
   // Callback the Canvas wires up to track Explorer's bottom edge so
   // the Palette can stack beneath it on mobile (where Explorer
@@ -94,6 +105,7 @@ export type ExplorerProps = {
   mobileOpenOverride?: boolean;
   mobileTopOverridePx?: number;
   onMobileClose?: () => void;
-  mobileDockAnchor?: { left: number; top: number; arrowOffset: number };
+  mobileDockAnchor?: DockAnchor;
   forceDockMode?: boolean;
+  dismissOnOutside?: boolean;
 };

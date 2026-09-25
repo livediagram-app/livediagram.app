@@ -185,51 +185,6 @@ export function UndoRedoArt() {
 
 /* ──────────────────── Section: refine / reliability extras ────────── */
 
-export function GroupArt() {
-  // Two shapes bound into one group (the dashed group box grows around them).
-  return (
-    <Frame canvas>
-      <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
-        <rect
-          x="58"
-          y="28"
-          width="44"
-          height="22"
-          rx="5"
-          fill={BLUE_FILL}
-          stroke={BLUE_STROKE}
-          strokeWidth="2"
-        />
-        <rect
-          x="118"
-          y="46"
-          width="44"
-          height="22"
-          rx="5"
-          fill={BLUE_FILL}
-          stroke={BLUE_STROKE}
-          strokeWidth="2"
-        />
-        <rect
-          className="fa-grow"
-          x="50"
-          y="22"
-          width="120"
-          height="52"
-          rx="4"
-          fill="rgba(14,165,233,0.06)"
-          stroke={SKY}
-          strokeWidth="1.5"
-          strokeDasharray="5 3"
-        />
-      </svg>
-      <span className="absolute bottom-1.5 right-2 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-slate-500 shadow-sm">
-        grouped
-      </span>
-    </Frame>
-  );
-}
-
 export function LockArt() {
   // A shape switched to read-only, with a padlock popping on.
   return (

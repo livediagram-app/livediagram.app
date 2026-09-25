@@ -6,7 +6,7 @@
 // (Clerk-authed) and hand it to the MCP's /oauth/complete bound to a one-time
 // PKCE code, then bounce the browser to the client's redirect. Signed-in only;
 // absent end-to-end without Clerk.
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Brand } from '@livediagram/ui';
 import { AnimatedLinesBackdrop } from '@/components/canvas/AnimatedLinesBackdrop';
@@ -14,6 +14,7 @@ import { ToggleSwitch } from '@/components/palette/palette-controls';
 import { apiExchangeOauthToken } from '@/lib/api-client';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { MCP_ORIGIN } from '@/lib/mcp-config';
+import { fetchConsentSession, type McpConsentSession } from '@/lib/mcp-consent-session';
 import { track } from '@/lib/telemetry';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 
@@ -64,13 +65,37 @@ function HelpLink() {
 function Consent() {
   const params = useSearchParams();
   const session = params.get('session');
-  const client = params.get('client') || 'An application';
-  const to = params.get('to');
   const { authLoaded, isSignedIn, clerkUserId } = useClerkApiBootstrap();
   const [status, setStatus] = useState<'idle' | 'connecting' | 'error' | 'cancelled'>('idle');
   // Read-only opt-in (spec/62 §4.11): grant the tool view-only access — it can
   // find and read diagrams but not create / edit / delete / share.
   const [readOnly, setReadOnly] = useState(false);
+  // The SERVER's account of this authorize request. Deliberately not the
+  // `client` / `to` query params the redirect also carries: those are writable
+  // by whoever sends the user here, and this screen's whole job is telling the
+  // user WHERE a full-access token is about to go. `undefined` while the
+  // lookup is in flight, `null` once it failed. See lib/mcp-consent-session.ts.
+  const [fetched, setFetched] = useState<McpConsentSession | null | undefined>(undefined);
+  // A missing `session` is not a lookup that failed, it's one that never ran —
+  // so it's derived here rather than written into state from the effect (which
+  // would be a synchronous setState during render's effect pass).
+  const resolved = session ? fetched : null;
+
+  useEffect(() => {
+    if (!session) return;
+    let live = true;
+    void fetchConsentSession(session).then((s) => {
+      if (live) setFetched(s);
+    });
+    return () => {
+      live = false;
+    };
+  }, [session]);
+
+  // Only ever the server's name. Used in the headings AND as the token's label
+  // at /api/oauth/exchange, so the Explorer's token list later names the same
+  // client the user actually approved.
+  const client = resolved?.clientName ?? 'An application';
 
   // Checked first so Cancel works from any state (incl. the sign-in screen,
   // which otherwise returns before the later checks).
@@ -141,15 +166,32 @@ function Consent() {
       </Shell>
     );
   }
-  if (!session) {
+  // The lookup is still in flight. Deliberately a blocking state rather than
+  // rendering the screen with placeholders: an approve button shown before the
+  // destination is known is exactly the screen this lookup exists to prevent.
+  if (resolved === undefined) {
+    return (
+      <Shell>
+        <p className="text-sm text-slate-500 dark:text-slate-400">Checking this request…</p>
+      </Shell>
+    );
+  }
+  // No session in the URL, or the server doesn't recognise it (expired — they
+  // last 10 minutes — or never existed). One message for all three: the fix is
+  // the same, and naming which one would confirm session ids to a prober.
+  if (resolved === null) {
     return (
       <Shell>
         <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-          This link is incomplete
+          This link has expired
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
-          The connection request is missing its session. Start the connection again from your app.
+          We couldn’t find the connection request this link points to. Start the connection again
+          from your app.
         </p>
+        <div>
+          <HelpLink />
+        </div>
       </Shell>
     );
   }
@@ -200,11 +242,16 @@ function Consent() {
           <ToggleSwitch presentational checked={readOnly} label="Read-only access" />
         </span>
       </button>
-      {to ? (
+      {/* The one fact worth checking before approving, and now the server's
+          answer rather than the URL's: the host the authorization code is
+          delivered to, read off the redirect URI this client registered. */}
+      {resolved.redirectHost ? (
         <p className="mt-3 rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-500 dark:bg-slate-800/60 dark:text-slate-400">
           Access will be sent to{' '}
-          <span className="font-medium text-slate-700 dark:text-slate-200">{to}</span>. Only
-          continue if you recognise this.
+          <span className="font-medium text-slate-700 dark:text-slate-200">
+            {resolved.redirectHost}
+          </span>
+          . Only continue if you recognise this.
         </p>
       ) : null}
       {status === 'error' ? (

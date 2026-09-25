@@ -1,5 +1,7 @@
 import { isPresenceOpKind, isSystemOpKind } from '@livediagram/api-schema';
-import type { ClientMessage, ParticipantPresence, ServerMessage } from './types';
+import type { ClientMessage, Env, ParticipantPresence, ServerMessage } from './types';
+import { reportServerEvent } from './server-telemetry';
+import { multiplayerDecision } from './room-multiplayer';
 import {
   type LoggedOp,
   MAX_TAB_ID_LEN,
@@ -7,6 +9,20 @@ import {
   helloPresence,
   resolveCatchup,
 } from './diagram-room-rules';
+import {
+  beginGrace,
+  claimBaton,
+  FREE_BATON,
+  graceExpired,
+  grantBaton,
+  mayReleaseLock,
+  mayRunSession,
+  reclaimBaton,
+  releaseBaton,
+  type Asker,
+  type BatonMove,
+  type FacilitatorState,
+} from './facilitator';
 
 // One Durable Object instance per diagram id. Holds the set of currently
 // connected WebSockets plus their participant identity, and broadcasts
@@ -66,6 +82,11 @@ const OP_LOG_LIMIT = 256;
 // DO storage key holding `{ epoch, seq }` so the room keeps its ordering
 // identity across a hibernation wake (spec/97).
 const ORDER_STATE_KEY = 'order-state';
+// The facilitator baton (spec/149). In storage rather than memory so it
+// survives a hibernation cycle: the holder's refresh must find the same token
+// waiting for it, and a room that forgot the baton every time it went to sleep
+// would drop the role mid-session for no reason the user could see.
+const FACILITATOR_KEY = 'facilitator';
 
 // One entry in the reconnect catch-up log: a mutation op plus the sequence
 // number the room assigned it within the current epoch.
@@ -97,6 +118,16 @@ type SessionAttachment = {
   presenceId: string;
   verifiedRole?: 'edit' | 'view';
   presence: ParticipantPresence | null;
+  //   - `isOwner`: whether the api resolved this upgrade as the diagram's
+  //     OWNER (spec/149). A boolean, never an id: it is the one thing the
+  //     facilitator baton needs that role alone cannot answer ("the owner can
+  //     always take it back"), and carrying it as a bit keeps spec/61 §6's
+  //     promise that no real identity reaches the room.
+  isOwner?: boolean;
+  //   - `multiplayer`: this session belongs to a multiplayer session the
+  //     room has already counted (Diagram·Used·Multiplayer, spec/22). See
+  //     room-multiplayer.ts for why the mark lives here.
+  multiplayer?: boolean;
 };
 
 export class DiagramRoom implements DurableObject {
@@ -140,9 +171,17 @@ export class DiagramRoom implements DurableObject {
   // numbers: a client compares the epoch on an incoming op against the last
   // it saw to know whether the room restarted (seq reset) versus advanced.
   epoch: string = crypto.randomUUID();
+  // Who is running the session (spec/149), restored in the constructor.
+  facilitator: FacilitatorState = FREE_BATON;
 
-  constructor(state: DurableObjectState) {
+  // The worker env, for the one server-side telemetry emit the room owns
+  // (Diagram·Used·Multiplayer). Optional so unit tests can build a room
+  // from a fake state alone; without it the emit is skipped.
+  env: Env | undefined;
+
+  constructor(state: DurableObjectState, env?: Env) {
     this.state = state;
+    this.env = env;
     // Restore before any request can observe `epoch`/`seq`. A wake re-runs
     // the constructor, so without this gate a socket could be handed the
     // freshly-minted field values above and defeat the whole point.
@@ -155,6 +194,7 @@ export class DiagramRoom implements DurableObject {
         // First instantiation for this diagram: adopt the random epoch above.
         await state.storage.put(ORDER_STATE_KEY, { epoch: this.epoch, seq: this.seq });
       }
+      this.facilitator = (await state.storage.get<FacilitatorState>(FACILITATOR_KEY)) ?? FREE_BATON;
     });
   }
 
@@ -206,14 +246,16 @@ export class DiagramRoom implements DurableObject {
     const headerRole = request.headers.get('X-Verified-Role');
     const verifiedRole: 'edit' | 'view' | undefined =
       headerRole === 'edit' || headerRole === 'view' ? headerRole : undefined;
-    this.acceptSession(server, verifiedRole);
+    // Same trust argument as the role: only the worker can set it.
+    const isOwner = request.headers.get('X-Verified-Owner') === '1';
+    this.acceptSession(server, verifiedRole, isOwner);
     return new Response(null, { status: 101, webSocket: client });
   }
 
   // Admit one server-side socket into the room: pin its hibernation-proof
   // session state (attachment) and hand it to the runtime. Split out of
   // fetch so tests can drive sessions without constructing WebSocketPair.
-  acceptSession(ws: WebSocket, verifiedRole?: 'edit' | 'view'): void {
+  acceptSession(ws: WebSocket, verifiedRole?: 'edit' | 'view', isOwner = false): void {
     // Per-session ephemeral presence id (spec/61 §6): the broadcast presence /
     // cursor id is a fresh server-assigned random, NOT the connector's real
     // owner id — so a co-present collaborator (incl. a view-only share
@@ -224,6 +266,7 @@ export class DiagramRoom implements DurableObject {
       presenceId: crypto.randomUUID(),
       verifiedRole,
       presence: null,
+      isOwner,
     } satisfies SessionAttachment);
     // Hibernation-aware accept: the runtime owns the socket's event
     // delivery (webSocketMessage / webSocketClose / webSocketError) and
@@ -325,7 +368,46 @@ export class DiagramRoom implements DurableObject {
       // see the size note on SessionAttachment.
       const presence = helloPresence(msg.participant, session);
       ws.serializeAttachment({ ...session, presence } satisfies SessionAttachment);
+      // Where the ordered stream stands as this session joins, so a later
+      // reconnect asks for what came after it, not for the whole log.
+      this.sendTo(ws, { kind: 'cursor', epoch: this.epoch, seq: this.seq });
       this.broadcastPresence();
+      this.noteMultiplayer();
+      // Judge the baton BEFORE honouring a token: one that ran out of time is
+      // free, whether or not an alarm happened to fire while the room was
+      // awake. Otherwise whether a returning holder got their baton back would
+      // depend on how the room had been sleeping, and the room may already have
+      // told everybody that nobody is facilitating.
+      this.sweepLapsedBaton();
+      // The baton coming home from a refresh (spec/149): the token is the
+      // proof, because the room has no identities to check it against. It is
+      // announced to NOBODY — a refresh is not an event, and the holder's own
+      // screen would otherwise report that somebody had made them the
+      // facilitator every time they reloaded. The frame still goes out, since
+      // their presence id is new and everybody's badge has to follow it.
+      const reclaimed = reclaimBaton(this.facilitator, this.askerOf(session), msg.facilitatorToken);
+      if (reclaimed) {
+        this.setFacilitator(reclaimed, { reason: 'state' });
+        return;
+      }
+      // Otherwise catch this one session up on who is running the session.
+      // `state` announces nothing: nothing happened, they merely arrived.
+      //
+      // The token rides along when this session IS the holder. It is how a
+      // client knows the baton is its own (it cannot recognise its own
+      // presence id), so a tokenless frame to the holder would take their
+      // controls away while the room still had them running the session.
+      const mine = this.facilitator.holder === presence.id ? this.facilitator.token : null;
+      this.sendTo(ws, {
+        kind: 'facilitator',
+        holder: this.facilitator.holder,
+        reason: 'state',
+        ...(mine ? { token: mine } : {}),
+      });
+      return;
+    }
+    if (msg.kind === 'facilitator') {
+      this.handleFacilitator(msg, session);
       return;
     }
     if (msg.kind === 'sync') {
@@ -356,6 +438,19 @@ export class DiagramRoom implements DurableObject {
       if (isSystemOpKind(opKind)) return;
       const isPresenceOp = isPresenceOpKind(opKind);
       if (sender.role !== 'edit' && !isPresenceOp) return;
+      // Running the session belongs to whoever holds the baton (spec/149).
+      // Only these two ops can be enforced here: a poll start / end is its own
+      // kind, while the timer and the dot vote ride the same `tab` /
+      // `tab-meta` ops as every shape move, so telling them apart would mean
+      // inspecting payloads for no gain against somebody who can already save
+      // the whole document over REST. Those stay a client-side rule, which is
+      // what spec/149 says out loud: who is driving, not who is allowed.
+      if (opKind === 'poll-start' || opKind === 'poll-end') {
+        // Same reason the hello path sweeps: a baton whose holder never came
+        // back must not keep refusing polls just because no alarm has fired.
+        this.sweepLapsedBaton();
+        if (!mayRunSession(this.facilitator, sender.id)) return;
+      }
       // Remember the sender's current tab so a future joiner learns it
       // from the presence list (tab-focus ops only fire on a switch, so
       // they're invisible to anyone who joins afterwards). Persisted to
@@ -394,6 +489,9 @@ export class DiagramRoom implements DurableObject {
         this.opLog.push({ seq, from: sender.id, op: msg.op });
         if (this.opLog.length > OP_LOG_LIMIT) this.opLog.shift();
         this.broadcast({ kind: 'op', from: sender.id, op: msg.op, seq, epoch: this.epoch }, ws);
+        // The relay skips the sender, so tell it the seq its op took: its own
+        // ops are already applied, and a reconnect must not replay them.
+        this.sendTo(ws, { kind: 'cursor', epoch: this.epoch, seq });
       }
     }
   }
@@ -429,6 +527,172 @@ export class DiagramRoom implements DurableObject {
     }
   }
 
+  // ── Facilitator (spec/149) ───────────────────────────────────────────
+
+  /** What the baton rules need to know about one session. */
+  private askerOf(session: SessionAttachment): Asker {
+    return {
+      presenceId: session.presence?.id ?? session.presenceId,
+      role: session.verifiedRole,
+      isOwner: session.isOwner === true,
+    };
+  }
+
+  /** Deliver one frame to one socket. */
+  private sendTo(ws: WebSocket, payload: ServerMessage): void {
+    try {
+      ws.send(JSON.stringify(payload));
+    } catch {
+      this.opRates.delete(ws);
+    }
+  }
+
+  /**
+   * Land a decided move: persist it, tell the room, and hand the new token to
+   * its holder alone.
+   *
+   * The token goes in a SECOND frame addressed to the holder rather than in the
+   * broadcast, because a broadcast token is not a secret and the whole model
+   * rests on exactly one socket ever seeing it.
+   */
+  private setFacilitator(
+    next: FacilitatorState,
+    announce: { reason: 'claim' | 'grant' | 'release' | 'left' | 'state'; by?: string },
+  ): void {
+    this.facilitator = next;
+    void this.state.storage.put(FACILITATOR_KEY, next);
+    const frame: ServerMessage = {
+      kind: 'facilitator',
+      holder: next.holder,
+      reason: announce.reason,
+      ...(announce.by ? { by: announce.by } : {}),
+    };
+    // Exactly one frame each, and the holder's is the only one with the token.
+    // That matters beyond secrecy: a client cannot recognise its own presence
+    // id (the room mints it and never says which one is yours), so the token
+    // is also how the holder knows the baton is THEIRS. Two frames to the same
+    // socket would make them briefly somebody else in their own UI.
+    const holderSocket = next.holder ? this.socketByPresence(next.holder) : null;
+    this.broadcast(frame, holderSocket ?? undefined);
+    if (holderSocket && next.token) {
+      this.sendTo(holderSocket, { ...frame, token: next.token });
+    }
+  }
+
+  /**
+   * Release a baton whose grace period ran out while nothing was listening.
+   *
+   * The alarm does this the moment it fires, but an alarm needs a room: if the
+   * DO is evicted before it rings (everybody left, the room went quiet), the
+   * stored baton would still name somebody who has not been here for days, and
+   * the next session would find its session tools held by a ghost. So the two
+   * paths that read the baton sweep it first. Silent on purpose — the frame
+   * the caller is about to send reports the truth, and "Alex left" is not news
+   * to somebody who never saw Alex.
+   */
+  private sweepLapsedBaton(): void {
+    if (!graceExpired(this.facilitator, Date.now())) return;
+    this.facilitator = FREE_BATON;
+    void this.state.storage.put(FACILITATOR_KEY, FREE_BATON);
+  }
+
+  /** A client asked to move the baton. The room decides; silence means no. */
+  private handleFacilitator(
+    msg: Extract<ClientMessage, { kind: 'facilitator' }>,
+    session: SessionAttachment,
+  ): void {
+    this.sweepLapsedBaton();
+    const asker = this.askerOf(session);
+    let move: BatonMove | null = null;
+    if (msg.action === 'claim') {
+      move = claimBaton(this.facilitator, asker, crypto.randomUUID());
+    } else if (msg.action === 'grant') {
+      move = grantBaton(
+        this.facilitator,
+        asker,
+        this.sessionByPresence(msg.to),
+        crypto.randomUUID(),
+      );
+    } else if (msg.action === 'release') {
+      move = releaseBaton(this.facilitator, asker);
+    } else if (msg.action === 'unlock') {
+      // Uses the baton rather than moving it, so it returns here instead of
+      // falling through to setFacilitator: there is no BatonMove to make.
+      this.releaseSelectionLock(asker, msg.target, msg.elementId);
+      return;
+    }
+    if (!move) return;
+    this.setFacilitator(move.next, { reason: move.reason, by: asker.presenceId });
+  }
+
+  /**
+   * Tell one peer to let go of an element (spec/07 lock, spec/149 facilitator).
+   *
+   * Sent to the holder's socket ALONE, which is the entire addressing scheme:
+   * a client is never told its own presence id (spec/61 §6), so a broadcast
+   * naming a target would arrive at nobody who could recognise it. The holder
+   * then drops the selection and re-broadcasts its own `select`, which clears
+   * the lock everywhere through the path that already exists — so the room
+   * announces nothing to anybody else.
+   *
+   * Silent on every refusal. A caller without the baton, a target who has
+   * already left, or somebody asking to unlock themselves all reach the same
+   * "nothing to do", and a room that answered them would be telling a peer
+   * which presence ids are live.
+   */
+  private releaseSelectionLock(asker: Asker, target: string, elementId: string): void {
+    // A view-role visitor can't select, edit or hold the baton, so it has no
+    // business freeing an editor's hold either. The client hides the menu
+    // from them; this is the room refusing a hand-sent frame.
+    if (asker.role !== 'edit') return;
+    if (!mayReleaseLock(this.facilitator, asker.presenceId)) return;
+    if (target === asker.presenceId) return;
+    if (typeof elementId !== 'string' || elementId.length === 0) return;
+    if (!this.socketByPresence(target)) return;
+    this.sendToPresence(target, {
+      kind: 'selection-released',
+      elementId,
+      by: asker.presenceId,
+    });
+  }
+
+  /** The target of a grant, as the rules need it. Null when they have left. */
+  private sessionByPresence(presenceId: string): Asker | null {
+    const ws = this.socketByPresence(presenceId);
+    const attachment = ws ? this.readSession(ws) : null;
+    return attachment ? this.askerOf(attachment) : null;
+  }
+
+  /** The one connected socket wearing this presence id. */
+  private socketByPresence(presenceId: string): WebSocket | null {
+    for (const ws of this.state.getWebSockets()) {
+      if (this.readSession(ws)?.presence?.id === presenceId) return ws;
+    }
+    return null;
+  }
+
+  /**
+   * The holder's socket went away. Start the grace clock rather than ending
+   * their turn: a refresh, a closed lid and a dropped connection all look
+   * exactly like leaving from here, and only one of them means it.
+   */
+  private startFacilitatorGrace(leaving: string): void {
+    const next = beginGrace(this.facilitator, leaving, Date.now());
+    if (!next) return;
+    this.facilitator = next;
+    void this.state.storage.put(FACILITATOR_KEY, next);
+    // The alarm is what turns "away" into "gone" without anybody having to be
+    // connected to notice. A reclaim clears the deadline, so a fired alarm
+    // whose deadline has moved simply does nothing.
+    void this.state.storage.setAlarm(next.graceUntil!);
+  }
+
+  /** The grace clock ran out (or did not, if they came back). */
+  async alarm(): Promise<void> {
+    if (!graceExpired(this.facilitator, Date.now())) return;
+    this.setFacilitator(FREE_BATON, { reason: 'left', by: this.facilitator.holder ?? undefined });
+  }
+
   // Hibernation event handlers for a session ending. The runtime removes
   // the socket from getWebSockets() itself; our job is only to shed the
   // rate window (so the map can't leak) and re-announce the roster.
@@ -442,10 +706,42 @@ export class DiagramRoom implements DurableObject {
 
   private dropSession(ws: WebSocket): void {
     this.opRates.delete(ws);
+    const presenceId = this.readSession(ws)?.presence?.id;
+    if (presenceId) this.startFacilitatorGrace(presenceId);
     // Exclude the departing socket explicitly: depending on when the
     // runtime prunes it from getWebSockets(), it could otherwise still
     // appear in the roster of this very broadcast.
     this.broadcastPresence(ws);
+  }
+
+  // Count the room's multiplayer session once, from the one place that sees
+  // every participant (spec/22). Runs after each hello, the only moment the
+  // hello'd roster can grow; the decision and its session rule live in
+  // room-multiplayer.ts.
+  private noteMultiplayer(): void {
+    const sockets = this.state.getWebSockets();
+    const sessions = sockets.map((ws) => this.readSession(ws));
+    const decision = multiplayerDecision(
+      sessions.map((s) => ({ present: Boolean(s?.presence), multiplayer: s?.multiplayer })),
+    );
+    for (const i of decision.mark) {
+      const session = sessions[i];
+      if (!session) continue;
+      try {
+        sockets[i]!.serializeAttachment({
+          ...session,
+          multiplayer: true,
+        } satisfies SessionAttachment);
+      } catch {
+        // A socket that died mid-loop: the runtime reaps it, nothing to mark.
+      }
+    }
+    const env = this.env;
+    if (decision.report && env) {
+      const write = reportServerEvent(env, 'Diagram', 'Used', 'Multiplayer');
+      // Keep the DO alive until the row lands; the write swallows its own error.
+      this.state.waitUntil(write);
+    }
   }
 
   broadcastPresence(except?: WebSocket): void {

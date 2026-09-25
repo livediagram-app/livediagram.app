@@ -70,11 +70,7 @@ export function SharePasswordSection({
       <div className="flex flex-col gap-1.5">
         <div className="flex items-center gap-1.5">
           <p className={sectionLabel}>Password</p>
-          <HelpArticleLink
-            article="sharePasswords"
-            title="Share passwords"
-            description="How the optional password gate protects every link."
-          />
+          <HelpArticleLink article="sharePasswords" />
         </div>
         <div className="flex items-center gap-2">
           <input

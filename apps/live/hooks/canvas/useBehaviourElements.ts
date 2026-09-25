@@ -25,6 +25,7 @@ export function useBehaviourElements({
   activeId,
   commitTabs,
   editsBlocked,
+  sessionToolsBlocked,
   selfParticipant,
   livePresence,
   activeTimer,
@@ -40,6 +41,9 @@ export function useBehaviourElements({
   // session tool but not start one (spec/39), and their picker roll is theirs
   // alone rather than a write everyone sees.
   editsBlocked: boolean;
+  // Somebody else is facilitating (spec/149): pressing a session button,
+  // spinning the picker for the room and lifting a cover are theirs.
+  sessionToolsBlocked: boolean;
   selfParticipant: Participant;
   livePresence: Participant[];
   // The tab's timer right now, so a timer button can act on it rather than
@@ -57,7 +61,9 @@ export function useBehaviourElements({
   // the menus use — so the edit gate, the change-log entry, and the telemetry
   // that go with each tool all still happen exactly once, in one place.
   const pressSessionButton = (element: ShapeElement) => {
-    if (editsBlocked) return;
+    // It starts the timer / vote / poll for the room, so it is one of the
+    // facilitator's (spec/149) rather than an ordinary press.
+    if (editsBlocked || sessionToolsBlocked) return;
     const plan = sessionButtonPlan(element.session);
     if (!plan) return;
     if (plan.tool === 'timer') {
@@ -66,6 +72,14 @@ export function useBehaviourElements({
       // silently restarting the countdown would be the one behaviour nobody
       // wants. Clearing a timer stays with the timer's own controls.
       if (!activeTimer) startTimer('countdown', plan.minutes * 60_000);
+      else if (activeTimer.running) pauseTimer();
+      else resumeTimer();
+      return;
+    }
+    if (plan.tool === 'stopwatch') {
+      // Same three-way control as the countdown: pressing mid-run means "hold
+      // on", never a silent restart.
+      if (!activeTimer) startTimer('stopwatch');
       else if (activeTimer.running) pauseTimer();
       else resumeTimer();
       return;
@@ -86,6 +100,11 @@ export function useBehaviourElements({
   // reload, which is right for something whose job is to start closed.
   const [revealedIds, setRevealedIds] = useState<ReadonlySet<string>>(new Set());
   const toggleRevealForMe = (elementId: string) => {
+    // While somebody is facilitating (spec/149) a cover is theirs to lift, and
+    // they lift it for the room through the element's own `revealed` field
+    // rather than peeking privately. The personal lift below is what a board
+    // with no facilitator keeps.
+    if (sessionToolsBlocked) return;
     setRevealedIds((prev) => {
       const next = new Set(prev);
       if (!next.delete(elementId)) next.add(elementId);
@@ -110,14 +129,17 @@ export function useBehaviourElements({
       // Whether OUR roll reaches the element (and so the room). The face needs
       // it to tell its own landing apart from one arriving from a peer, which
       // is what lets everyone watch the same spin (spec/107).
-      shared: !editsBlocked,
+      shared: !editsBlocked && !sessionToolsBlocked,
       roll: () => {
         const picked = rollPicker(candidates);
         if (picked === null) return null;
         const result = picked.label;
         // A view-role visitor still gets their roll — it just stays on their
         // screen. Everyone else writes it, so the room lands on one answer.
-        if (!editsBlocked) {
+        // Under a facilitator (spec/149) the same is true of anybody who is
+        // not them: they may spin for themselves, but the room's answer is the
+        // facilitator's to land.
+        if (!editsBlocked && !sessionToolsBlocked) {
           commitTabs((ts) =>
             ts.map((tab) =>
               tab.id !== activeId
@@ -142,6 +164,10 @@ export function useBehaviourElements({
   // one element; the selection-wide setter in usePortalSetters stays for the
   // context menu, which acts on whatever is selected.
   const setSessionConfigFor = (element: ShapeElement, config: SessionButtonConfig) => {
+    // Its configuration IS the timer's length and the poll's question, so
+    // changing it mid-session changes what the next press does to everybody
+    // (spec/149). The owner who wants to edit it takes the baton back.
+    if (sessionToolsBlocked) return;
     if (editsBlocked) return;
     commitTabs((ts) =>
       ts.map((tab) =>

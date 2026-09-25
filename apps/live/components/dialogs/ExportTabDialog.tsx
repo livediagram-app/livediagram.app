@@ -248,16 +248,13 @@ export function ExportTabDialog({
       className="max-h-[90vh]"
     >
       <DialogHeader title={isSelection ? 'Export selection' : 'Export tab'} subtitle={subtitle}>
-        <HelpArticleLink
-          article="exportingDiagrams"
-          title="Exporting diagrams"
-          description="What each export format is for and how to use it."
-        />
+        <HelpArticleLink article="exportingDiagrams" size="md" />
         <DialogCloseButton onClick={onClose} />
       </DialogHeader>
       <div className="flex-1 overflow-y-auto px-6 py-5">
         {active && isTextFormat(active) ? (
           <TextExportPanel
+            formatTitle={CARDS.find((c) => c.kind === active)?.title ?? ''}
             initialText={TEXT_PANELS[active].getText(tab)}
             blurb={TEXT_PANELS[active].blurb}
             downloadLabel={TEXT_PANELS[active].downloadLabel}

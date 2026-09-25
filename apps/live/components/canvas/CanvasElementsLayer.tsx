@@ -1,16 +1,21 @@
 import { useMemo } from 'react';
 import { useStableHandlers } from '@/hooks/ui/useStableHandlers';
+import { useMindGrow } from '@/components/canvas/MindGrowContext';
 import { useFontsReady } from './useFontsReady';
 import {
   eventStormingNoteFont,
   resolveFontStack,
   isSelectionMode,
+  alignmentCoordinates,
   buildElementIndex,
   isBoxed,
   isRailShape,
+  canAppendWebRow,
   isVotableInVote,
   layerBands,
+  laneSeamCoordinates,
   layerOpacityOf,
+  snapSeamCoordinate,
 } from '@livediagram/diagram';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { type QuickConnectDirection } from '@/lib/canvas';
@@ -39,7 +44,6 @@ const EMPTY_REMOTE_SELECTORS: { id: string; name: string; color: string }[] = []
 // raw props.
 type ElementsExtras = {
   hasArrows: boolean;
-  memberIds: Set<string>;
   showHandles: (id: string) => boolean;
   showAnchorsFor: (id: string) => boolean;
   badgeColor: string;
@@ -49,7 +53,6 @@ type ElementsExtras = {
   unionResizeBounds: Bounds | null;
   unionResizePrimaryId: string | null;
   isPaintMode: boolean;
-  isGroupMode: boolean;
   handleArrowSelect: (id: string, e: ReactPointerEvent) => void;
   handleElementContextSelect: (id: string, sx: number, sy: number) => void;
   // Which quick-connect ring is open (lifted to Canvas so only one opens
@@ -59,6 +62,13 @@ type ElementsExtras = {
 };
 
 type CanvasElementsLayerProps = CanvasProps & ElementsExtras;
+
+// The ring action each row-carrying web component offers (spec/147).
+const WEB_ROW_ACTION: Partial<Record<string, { label: string; description: string }>> = {
+  'stat-row': { label: 'Add stat', description: 'Add another KPI card to the row.' },
+  process: { label: 'Add step', description: 'Add another step to the end of the process.' },
+  'site-header': { label: 'Add link', description: 'Add another link to the header.' },
+};
 
 // The element-rendering layer of the canvas: the shared arrow defs, every
 // element (arrows + boxed views interleaved in z-order), remote cursors,
@@ -77,10 +87,8 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     handleElementContextSelect,
     hasArrows,
     imageContext,
-    isGroupMode,
     isPaintMode,
     laserTrails,
-    memberIds,
     multiSelectedIds,
     onBeginArrowCurveDrag,
     onBeginArrowCurvePointDrag,
@@ -96,18 +104,23 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onCommitLabel,
     onSetTextAlign,
     onCommitTable,
+    onCommitHeaderSize,
     onAddRailPoint,
     onAddTableRow,
     onAddTableColumn,
     onSetRailLabel,
     onToggleChecklistItem,
     onSetPageHeading,
+    onSetWebRows,
+    onAppendWebRow,
+    onSetHeroCaptionLine,
     chartPalette,
     onSpawnConnect,
     onStartArrow,
     onStartPencil,
     onFollowLink,
     onPressModeButton,
+    onPressFocusButton,
     onPressSessionButton,
     sessionStartBlocked,
     timerState,
@@ -120,6 +133,8 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onOpenElementSettings,
     commentSelfId,
     commentPanelActions,
+    actionSelfId,
+    actionPanelActions,
     onPauseTimer,
     onResumeTimer,
     onResetTimer,
@@ -196,11 +211,24 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onRetractVote: readOnly ? undefined : onRetractVote,
     onSetTextAlign: readOnly ? undefined : onSetTextAlign,
     onCommitTable,
+    onCommitHeaderSize: readOnly ? undefined : onCommitHeaderSize,
+    // The seam's snap targets (spec/119). Resolved here because this is where
+    // the sibling elements are: BoxedElementView only ever sees its own.
+    onSnapSeam: readOnly
+      ? undefined
+      : (candidate: number, axis: 'x' | 'y', excludeId: string, edgeOf, sizeOf) =>
+          snapSeamCoordinate(candidate, {
+            seams: laneSeamCoordinates(elements, axis, excludeId, edgeOf, sizeOf),
+            alignment: alignmentCoordinates(elements, axis, excludeId),
+          }).value,
     onSetRailLabel,
     onToggleChecklistItem: readOnly ? undefined : onToggleChecklistItem,
     onSetPageHeading,
+    onSetWebRows: readOnly ? undefined : onSetWebRows,
+    onSetHeroCaptionLine: readOnly ? undefined : onSetHeroCaptionLine,
     onFollowLink,
     onPressModeButton,
+    onPressFocusButton,
     onPressSessionButton,
     onToggleReveal,
     onRollPicker,
@@ -267,6 +295,17 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   const selectedElement = selectedId ? elements.find((e) => e.id === selectedId) : undefined;
   const selectedIsRail = selectedElement?.type === 'shape' && isRailShape(selectedElement.shape);
   const selectedIsTable = selectedElement?.type === 'table';
+  // Web components (spec/147): the ring's "Add stat / step / link", while
+  // there is room for one more.
+  const webRow =
+    selectedElement?.type === 'shape' && onAppendWebRow && canAppendWebRow(selectedElement)
+      ? {
+          ...WEB_ROW_ACTION[selectedElement.shape]!,
+          onAdd: () => onAppendWebRow(selectedElement.id),
+        }
+      : undefined;
+  const selectedIsMind = selectedElement?.type === 'shape' && selectedElement.shape === 'mind-node';
+  const growMind = useMindGrow();
   return (
     <>
       {/* Shared arrowhead defs. Multiple per-arrow <svg>s below
@@ -336,7 +375,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
                 arrow={element}
                 elementIndex={elementIndex!}
                 isSelected={element.id === selectedId || multiSelectedIds.has(element.id)}
-                isPaintMode={isPaintMode || isGroupMode}
+                isPaintMode={isPaintMode}
                 isEditing={element.id === editingId}
                 editCursorAtEnd={element.id === editingId && editCursorAtEnd === true}
                 tabLocked={tabLocked}
@@ -380,13 +419,13 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             photoDraft={isDraftNote}
             photoMatched={draftView?.matchedIds.has(element.id) === true}
             photoReadAs={draftView?.differences.get(element.id)}
-            isSelected={memberIds.has(element.id) || multiSelectedIds.has(element.id)}
+            isSelected={element.id === selectedId || multiSelectedIds.has(element.id)}
             isMultiSelected={multiSelectedIds.has(element.id)}
             multiSelectActive={multiSelectedIds.size > 0}
             remoteSelectors={remoteSelectionsByElement.get(element.id) ?? EMPTY_REMOTE_SELECTORS}
             isEditing={element.id === editingId}
             editCursorAtEnd={element.id === editingId && editCursorAtEnd === true}
-            isPaintMode={isPaintMode || isGroupMode}
+            isPaintMode={isPaintMode}
             showHandles={showHandles(element.id)}
             showAnchors={showAnchorsFor(element.id)}
             zoom={viewportZoom}
@@ -407,13 +446,18 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             onCommitLabel={h.onCommitLabel}
             onSetTextAlign={h.onSetTextAlign}
             onCommitTable={h.onCommitTable}
+            onCommitHeaderSize={h.onCommitHeaderSize}
+            onSnapSeam={h.onSnapSeam}
             onSetRailLabel={h.onSetRailLabel}
             onToggleChecklistItem={h.onToggleChecklistItem}
             onSetPageHeading={h.onSetPageHeading}
+            onSetWebRows={h.onSetWebRows}
+            onSetHeroCaptionLine={h.onSetHeroCaptionLine}
             chartPalette={chartPalette}
             onCancelEdit={h.onCancelEdit}
             onFollowLink={h.onFollowLink}
             onPressModeButton={h.onPressModeButton}
+            onPressFocusButton={h.onPressFocusButton}
             onPressSessionButton={h.onPressSessionButton}
             sessionStartBlocked={sessionStartBlocked}
             timerState={timerState}
@@ -428,6 +472,16 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
                     remove: (id) => commentPanelActions.remove(element.id, id),
                     resolve: () => commentPanelActions.resolve(element.id),
                     unresolve: () => commentPanelActions.unresolve(element.id),
+                  }
+                : undefined
+            }
+            actionSelfId={actionSelfId}
+            actionActions={
+              actionPanelActions
+                ? {
+                    configure: () => actionPanelActions.configure(element.id),
+                    complete: () => actionPanelActions.complete(element.id),
+                    reopen: () => actionPanelActions.reopen(element.id),
                   }
                 : undefined
             }
@@ -562,11 +616,20 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
               // Timeline rail (spec/51): the standard "+" gains an "Add point"
               // action instead of the rail drawing its own competing button.
               onAddRailPoint={selectedIsRail ? onAddRailPoint : undefined}
+              webRow={webRow}
               // Table ring (spec/09): Arrow + this side's structural add.
               variant={selectedIsTable ? 'table' : 'default'}
               onAddTableRow={selectedIsTable && placement === 'below' ? onAddTableRow : undefined}
               onAddTableColumn={
                 selectedIsTable && placement === 'right' ? onAddTableColumn : undefined
+              }
+              // Mind map (spec/118): Add child / Add sibling, each naming its
+              // shortcut in the tooltip. Only on a mind node, and only where
+              // there is a grower (not the share view, embed, or exports).
+              onGrowMind={
+                selectedIsMind && growMind
+                  ? (relation) => growMind(selectedElement.id, relation)
+                  : undefined
               }
             />
           ))

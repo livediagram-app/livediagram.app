@@ -12,7 +12,7 @@ import { DialogFooter } from '@/components/dialogs/DialogFooter';
 // border/shadow stack, button rhythm) but with form fields, so it's
 // its own component rather than a ConfirmDialog contortion. The
 // caller owns open/close and the submit side-effects; `initial`
-// switches it between "New team" and "Edit team" duty.
+// switches it between "New Team" and "Edit Team" duty.
 
 export function TeamFormModal({
   open,
@@ -71,12 +71,7 @@ export function TeamFormModal({
             {/* Help (the old inline "learn more" link, now an icon button) +
                 an explicit close, sat together top-right. */}
             <div className="-mr-1.5 -mt-0.5 flex items-center gap-0.5">
-              <HelpArticleLink
-                article="teamRolesAndInvites"
-                variant="icon"
-                title="Teams"
-                description="Admin and Member roles, and how invites work."
-              />
+              <HelpArticleLink article="teamRolesAndInvites" variant="icon" />
               <button
                 type="button"
                 onClick={onCancel}

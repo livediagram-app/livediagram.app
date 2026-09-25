@@ -1,14 +1,15 @@
 import dynamic from 'next/dynamic';
+import { MenuErrorBoundary } from '@/components/primitives/MenuErrorBoundary';
 import { useEffect, useState, type ReactNode } from 'react';
 import {
   folderNamesInDiagram,
   groupTabsIntoRuns,
   tabFolderName,
   type Tab,
-  type TextSize,
 } from '@livediagram/diagram';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import type { AutoLayoutChoice } from '@/lib/auto-layout-choices';
+import type { CleanupKind } from '@/lib/tab-cleanup';
 import type { Participant } from '@/lib/identity';
 import { TabsLabelIcon } from '@/components/chrome/tab-bar-icons';
 import { TabFolderChip } from '@/components/chrome/TabFolderChip';
@@ -25,30 +26,19 @@ import type { SessionToolsProps } from '@/components/chrome/session-tools-props'
 // theme / background, and tidy the layout. (Add-element actions used to live
 // here too but were removed — the palette + quick-connect cover adding.)
 export type CanvasMenuActions = {
-  onChangeTheme: () => void;
-  onChangeCanvas: () => void;
   // Cleanup category (spec/47): Auto-align grid-snaps current positions;
   // Auto Layout recomputes positions from the arrow graph (Tidy up) in the
   // chosen style (spec/47 "Layout styles"; omitted = smart).
   onAutoAlign: () => void;
   onAutoLayout: (choice?: AutoLayoutChoice) => void;
-  // Tab font + default new-element size (spec/28), surfaced as the menu's Font
-  // category (moved out of the Tab Look & Feel dialog). `font` null = the editor
-  // default; `defaultTextSize` undefined defaults to medium.
-  font: string | null;
-  onSetFont: (font: string | null) => void;
-  defaultTextSize: TextSize | undefined;
-  onSetDefaultTextSize: (size: TextSize) => void;
-  // Push the tab font + default size onto every existing element on the tab
-  // (Font category "Apply to all elements").
-  onApplyFontToAll: () => void;
-  // Paste into this tab from the canvas right-click menu, and whether the
-  // in-app clipboard actually holds anything (the row greys out when not).
+  // Hover-to-preview for those same rows (spec/47), desktop pointers only:
+  // lay the tab out live behind the menu, and put it back on the way out.
+  onPreviewCleanup: (kind: CleanupKind) => void;
+  onEndCleanupPreview: () => void;
+  // Paste straight from the empty-canvas right-click (spec/09); greyed,
+  // not hidden, when the buffer is empty.
   onPaste: () => void;
   canPaste: boolean;
-  // Event-storming board verbs (spec/139). `esBoard` false everywhere else,
-  // where a timeline lane would be a grid for nothing.
-  esBoard: boolean;
 };
 
 // Where the canvas right-click / footer-button menu should open. `openUp`
@@ -139,12 +129,12 @@ type TabBarProps = {
   // when the participant id matches `selfId`.
   selfId: string;
   selfRole: 'edit' | 'view';
-  // Follow-me (spec/131): the presence stack is the entry point, so the two
-  // acts and the current target ride down to it. Optional — a surface with no
-  // room behind it leaves the avatars as plain presence indicators.
+  // Who we follow (spec/131), for the avatar ring, and the Collaborators
+  // modal an avatar click opens (spec/145; Follow itself lives there).
+  // Optional: a surface with no room behind it leaves the avatars as plain
+  // presence indicators.
   followingId?: string | null;
-  onFollow?: (participantId: string) => void;
-  onStopFollowing?: () => void;
+  onOpenCollaborators?: (participantId: string | null) => void;
 } & SessionToolsProps;
 
 export function TabBar({
@@ -162,6 +152,7 @@ export function TabBar({
   onClearContent,
   onImportTab,
   onExportTab,
+  facilitatedBy,
   timer,
   vote,
   onStartTimer,
@@ -169,13 +160,15 @@ export function TabBar({
   onResumeTimer,
   onResetTimer,
   onClearTimer,
+  onExtendTimer,
   onStartVote,
   onEndVote,
   onRevealVote,
   onClearVote,
   livePoll,
-  pollConnected,
+  pollHasAudience,
   onStartPoll,
+  pollCollaborators,
   voteLayers,
   activeLayerId,
   otherDiagrams,
@@ -188,8 +181,7 @@ export function TabBar({
   selfId,
   selfRole,
   followingId,
-  onFollow,
-  onStopFollowing,
+  onOpenCollaborators,
   onOpenShortcuts,
   onOpenSettings,
   onOpenSearch,
@@ -271,6 +263,7 @@ export function TabBar({
       onDelete(tab.id);
       close();
     },
+    facilitatedBy,
     timer,
     vote,
     onStartTimer,
@@ -278,13 +271,15 @@ export function TabBar({
     onResumeTimer,
     onResetTimer,
     onClearTimer,
+    onExtendTimer,
     onStartVote,
     onEndVote,
     onRevealVote,
     onClearVote,
     livePoll,
-    pollConnected,
+    pollHasAudience,
     onStartPoll,
+    pollCollaborators,
     voteLayers,
     activeLayerId,
   });
@@ -308,8 +303,7 @@ export function TabBar({
     selfId,
     selfRole,
     followingId,
-    onFollow,
-    onStopFollowing,
+    onOpenCollaborators,
     canvasActions,
     tabMenuProps,
   };
@@ -351,6 +345,8 @@ export function TabBar({
                 participantsByTab={participantsByTab}
                 selfId={selfId}
                 selfRole={selfRole}
+                followingId={followingId}
+                onOpenCollaborators={onOpenCollaborators}
               />
             ),
           )}
@@ -377,12 +373,15 @@ export function TabBar({
         />
       </div>
       {canvasMenu && !readOnly && activeTab && onCloseCanvasMenu && canvasActions ? (
-        <PortalMenu
-          point={canvasMenu}
-          onClose={onCloseCanvasMenu}
-          canvas={canvasActions}
-          {...tabMenuProps(activeTab, onCloseCanvasMenu)}
-        />
+        // A fault inside the menu closes the menu, not the editor.
+        <MenuErrorBoundary onError={onCloseCanvasMenu}>
+          <PortalMenu
+            point={canvasMenu}
+            onClose={onCloseCanvasMenu}
+            canvas={canvasActions}
+            {...tabMenuProps(activeTab, onCloseCanvasMenu)}
+          />
+        </MenuErrorBoundary>
       ) : null}
     </>
   );

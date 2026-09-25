@@ -343,6 +343,16 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M21 12a8 8 0 01-11.6 7.1L3 21l1.9-6.4A8 8 0 1121 12z" {...s} />
     </Glyph>
   ),
+  // A baton being passed: one hand open, the bar crossing to it. Not a person
+  // (live-presence has the pointer-and-dot) and not a clock (the timer's).
+  facilitator: (
+    <Glyph>
+      <path d="M5 15.5l7-7" {...s} />
+      <circle cx="4.2" cy="16.3" r="1.9" {...s} />
+      <path d="M14.5 5.5l4 4" {...s} />
+      <path d="M19.5 14.5v3.2a1.8 1.8 0 01-1.8 1.8h-3.4" {...s} />
+    </Glyph>
+  ),
   'live-presence': (
     <Glyph>
       <path d="M4 5l7 14 2.2-5.8L19 11 4 5z" {...s} />
@@ -629,6 +639,16 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M6 10.5l4-3 4.5 2.5 5-4" {...s} />
     </Glyph>
   ),
+  // Filled dots beside rules: the key's own shape, and distinct from the
+  // timeline rail below, whose dots sit ON one line rather than down a column.
+  legend: (
+    <Glyph>
+      <circle cx="5.5" cy="6.5" r="2" fill="currentColor" stroke="none" />
+      <circle cx="5.5" cy="12" r="2" fill="currentColor" stroke="none" />
+      <circle cx="5.5" cy="17.5" r="2" fill="currentColor" stroke="none" />
+      <path d="M11 6.5h9.5M11 12h9.5M11 17.5h6" {...s} />
+    </Glyph>
+  ),
   // Horizontal, and posted: the rail is a run of evenly spaced points. The
   // Explorer's `timeline` is a vertical feed, which is why this one lies flat.
   'timeline-rail': (
@@ -644,6 +664,15 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   // someone presses, and the `behaviour` family glyph above already draws that.
   // So none of them draws a button being pressed: each draws what pressing it
   // DOES, which is the only thing that tells them apart.
+  // A reticle: the mark you put over the thing you want looked at. Distinct
+  // from the reveal's eye (about seeing) and the portal's arrow (about going).
+  'bring-focus': (
+    <Glyph>
+      <circle cx="12" cy="12" r="7" {...s} />
+      <circle cx="12" cy="12" r="2" fill="currentColor" stroke="none" />
+      <path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3" {...s} />
+    </Glyph>
+  ),
   'mode-buttons': (
     <Glyph>
       <rect x="3" y="14" width="18" height="7" rx="3.5" {...s} />
@@ -799,9 +828,8 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   ),
   // The four that finish the Palette — the largest category in the help centre.
   //
-  // A labelled container that sits BEHIND its contents. `groups` is brackets with
-  // no container of its own, `lanes` is banded; the label tab is what makes this
-  // one a Frame.
+  // A labelled container that sits BEHIND its contents. `lanes` is banded; the
+  // label tab is what makes this one a Frame.
   frames: (
     <Glyph>
       <path d="M3.5 7.5V6a1.5 1.5 0 011.5-1.5h4.5V7.5" {...s} />
@@ -853,6 +881,17 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
         {...s}
       />
       <path d="M12 16.5h6" {...s} />
+    </Glyph>
+  ),
+  // A clipboard with its one task ticked: an action, owned and done.
+  'action-panels': (
+    <Glyph>
+      <path
+        d="M9 4.5H7a1.5 1.5 0 00-1.5 1.5v13.5A1.5 1.5 0 007 21h10a1.5 1.5 0 001.5-1.5V6A1.5 1.5 0 0017 4.5h-2"
+        {...s}
+      />
+      <rect x="9" y="3" width="6" height="3.5" rx="1" {...s} />
+      <path d="M9 13.5l2.2 2.2 4-4.5" {...s} />
     </Glyph>
   ),
   // Planning poker: a fanned hand with the face card still turned down.
@@ -1081,15 +1120,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M12.5 12h.01M20.5 12h.01M12.5 18h.01M20.5 18h.01" {...s} />
     </Glyph>
   ),
-  // Brackets embracing two elements: bound together, and no container of its own
-  // (a titled container is what a Frame is).
-  groups: (
-    <Glyph>
-      <rect x="7" y="4.5" width="10" height="6" rx="1" {...s} />
-      <rect x="7" y="13.5" width="10" height="6" rx="1" {...s} />
-      <path d="M4.5 3.5h-2v17h2M19.5 3.5h2v17h-2" {...s} />
-    </Glyph>
-  ),
   // A bookmarked URL as a card: its preview, and the title under it.
   'link-cards': (
     <Glyph>
@@ -1219,6 +1249,15 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     <Glyph>
       <rect x="3" y="4" width="18" height="16" rx="2" {...s} />
       <path d="M3 8h18M6 14h4M6 17h7" {...s} />
+    </Glyph>
+  ),
+  // The strip across the top of a window, with the menu button's three bars
+  // in the corner: the two things the layout adds.
+  'toolbar-layout': (
+    <Glyph>
+      <rect x="3" y="4" width="18" height="16" rx="2" {...s} />
+      <rect x="9" y="7" width="9" height="3" rx="1" {...s} />
+      <path d="M5.5 7.5h1.5M5.5 9.5h1.5" {...s} />
     </Glyph>
   ),
   'reset-palette-position': (
@@ -1354,6 +1393,15 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M9.5 12h4" {...s} />
     </Glyph>
   ),
+  // An inbox tray with a tick above it: what is waiting on you, as opposed
+  // to the Timeline's spine of what happened.
+  activity: (
+    <Glyph>
+      <path d="M3 13.5V18a2 2 0 002 2h14a2 2 0 002-2v-4.5" {...s} />
+      <path d="M3 13.5h4.5l1.5 2.5h6l1.5-2.5H21" {...s} />
+      <path d="M8.5 7.5 11 10l4.5-5" {...s} />
+    </Glyph>
+  ),
   // One folder inside another, which is the whole point of a nestable tree.
   folders: (
     <Glyph>
@@ -1399,7 +1447,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M8.2 10.8l6.6-3.4M8.2 13.2l6.6 3.4" {...s} />
     </Glyph>
   ),
-  'my-work': (
+  'personal-space': (
     <Glyph>
       <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" {...s} />
     </Glyph>

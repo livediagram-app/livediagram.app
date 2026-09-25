@@ -92,6 +92,10 @@ export type TabVote = {
   // single-layer tab always gets. Set once at start, like the privacy
   // switches: changing it means ending the vote and starting another.
   voteLayerId?: string;
+  // At most ONE of a participant's dots per element (spec/39). Absent =
+  // stack freely, the classic dot-vote and the behaviour of every vote
+  // persisted before this existed. Set once at start like the rest.
+  onePerElement?: boolean;
   // Which rank the results walkthrough is currently on. SHARED, not local:
   // the host steps the room through the picks together and everyone else
   // follows. Absent until the host reveals results.
@@ -124,6 +128,9 @@ export type VoteSetup = VotePrivacy & {
   // Restrict casting to this layer. Undefined = every layer, which is
   // what a single-layer tab always gets (the picker doesn't even show).
   layerId?: string;
+  // Cap each participant at one dot per element instead of letting them
+  // stack their budget on a favourite.
+  onePerElement?: boolean;
 };
 
 // Should peer cursors / laser trails be withheld right now? Only while
@@ -161,6 +168,8 @@ const NON_VOTABLE_SHAPES = new Set([
   'reaction-pad',
   // A comment pin (spec/136) IS a remark; a dot on one means nothing.
   'comment-pin',
+  // An action panel (spec/146) is a task, not a candidate.
+  'action-card',
 ]);
 
 export function isVotable(element: Element): boolean {
@@ -186,6 +195,43 @@ export function isVotableInVote(
   return resolveLayerId(element.layerId, tabLayers(layers)) === scope;
 }
 
+// Apply ONE dot to a vote: placed (`delta: 1`) or taken back (`delta: -1`).
+//
+// The single place a dot changes hands, so the local cast, the local retract,
+// and a peer's `vote` op all move the map the same way. Returns the SAME vote
+// object when nothing changed (a retraction of a dot that is not there), so
+// callers can skip a render and an autosave on a no-op.
+//
+// Why this exists at all: `votes` is one map that everybody writes at once, and
+// it used to travel between peers as a whole-object replacement. A peer's
+// snapshot, taken before your dot arrived, put the map back the way it was and
+// your dot was gone — see the `vote` op in @livediagram/api-schema. Carrying
+// the CHANGE instead makes concurrent dots commute: apply them in any order and
+// every peer lands on the same map.
+//
+// Deliberately NOT guarded by `canCastVote`. Budget and one-per-element are
+// rules about whether a person may cast, checked where the press happens; a dot
+// that a peer has already cast is a fact, and refusing to apply it here would
+// leave that peer's screen disagreeing with everyone else's forever. The local
+// path checks first and then applies; the remote path only applies.
+export function applyVoteDelta(
+  vote: TabVote,
+  elementId: string,
+  voter: string,
+  delta: 1 | -1,
+): TabVote {
+  const existing = vote.votes[elementId] ?? [];
+  if (delta === 1) {
+    return { ...vote, votes: { ...vote.votes, [elementId]: [...existing, voter] } };
+  }
+  // Remove the LAST of this voter's dots on the element, matching how a
+  // person un-stacks: the dot that comes off is the one most recently put on.
+  const idx = existing.lastIndexOf(voter);
+  if (idx === -1) return vote;
+  const next = [...existing.slice(0, idx), ...existing.slice(idx + 1)];
+  return { ...vote, votes: { ...vote.votes, [elementId]: next } };
+}
+
 // How many dots a given participant has spent across the whole tab.
 export function votesSpentBy(vote: TabVote, participantId: string): number {
   let n = 0;
@@ -193,6 +239,17 @@ export function votesSpentBy(vote: TabVote, participantId: string): number {
     for (const id of ids) if (id === participantId) n++;
   }
   return n;
+}
+
+// Can this participant place one more dot on this element? Out of budget
+// says no everywhere; a one-per-element vote also says no where they have
+// already placed one. The single rule the cast handler and the canvas
+// stepper both read, so the plus can't offer a dot the handler refuses.
+export function canCastVote(vote: TabVote, participantId: string, elementId: string): boolean {
+  if (!vote.active) return false;
+  if (votesSpentBy(vote, participantId) >= vote.votesPerPerson) return false;
+  if (vote.onePerElement && (vote.votes[elementId] ?? []).includes(participantId)) return false;
+  return true;
 }
 
 // Total dot count per element id (collapses the per-participant arrays).

@@ -2,7 +2,10 @@
 // call forwards the caller's Bearer lvd_ token; the api resolves it to the
 // owning account and applies the SAME authorization every route already
 // enforces, so the MCP needs no special privilege and adds no business logic.
+import { errorTypeToken } from '@livediagram/api-schema';
 import type { Env } from './env';
+import { keepAlive } from './request-scope';
+import { currentTool } from './tool-scope';
 
 export class ApiError extends Error {
   readonly status: number;
@@ -36,9 +39,11 @@ export async function apiFetch(
 
 // Fire-and-forget anonymous telemetry to the api's public /api/events (spec/22).
 // No token: the ingest endpoint is unauthenticated and only stores the closed
-// three-field vocabulary. Never awaited and never throws into the tool; a
-// worker-to-worker call sends no Origin header, so the same-origin guard
-// passes. Off unless the api has TELEMETRY_ENABLED.
+// three-field vocabulary. Never awaited and never throws into the tool, but
+// handed to the request's waitUntil (request-scope.ts) so the runtime can't
+// cancel it when the response goes out; a worker-to-worker call sends no
+// Origin header, so the same-origin guard passes. Off unless the api has
+// TELEMETRY_ENABLED.
 export function postTelemetry(env: Env, category: string, action: string, type: string): void {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   // Identifies us as an internal caller so the api worker doesn't put us in
@@ -47,13 +52,19 @@ export function postTelemetry(env: Env, category: string, action: string, type: 
   // in the world contended for one 120/min key and the overflow was dropped
   // as a 204 we can't even see. Optional on both sides.
   if (env.INTERNAL_EVENTS_KEY) headers['X-Internal-Events-Key'] = env.INTERNAL_EVENTS_KEY;
-  void env.API.fetch(
-    new Request(apiUrl('/events'), {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({ events: [{ category, action, type }] }),
-    }),
-  ).catch(() => {});
+  let post: Promise<unknown>;
+  try {
+    post = env.API.fetch(
+      new Request(apiUrl('/events'), {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ events: [{ category, action, type }] }),
+      }),
+    ).catch(() => {});
+  } catch {
+    return;
+  }
+  keepAlive(post);
 }
 
 // Fetch + parse JSON, throwing ApiError on a non-2xx so tools surface a clear,
@@ -74,12 +85,19 @@ export async function apiJson<T>(
   } catch (err) {
     // The request never completed (service binding down, network fault): a real
     // failure, not model-correctable. Report as an internal error, then rethrow.
-    postTelemetry(env, 'Error', 'Api', 'Internal');
+    reportApiFailure(env, 'Internal');
     throw err;
   }
   if (!res.ok) {
-    if (res.status >= 500) postTelemetry(env, 'Error', 'Api', `Http${res.status}`);
+    if (res.status >= 500) reportApiFailure(env, `Http${res.status}`);
     throw new ApiError(res.status, (await res.text().catch(() => '')).slice(0, 500));
   }
   return (await res.json()) as T;
+}
+
+// One MCP-side api failure to the Error category, labelled with the tool that
+// was running (`Http503.UpdateDiagram`, `Internal.FindDiagrams`; spec/22), so
+// the Exceptions dashboard says which tool broke, not only that one did.
+export function reportApiFailure(env: Env, kind: string): void {
+  postTelemetry(env, 'Error', 'Api', errorTypeToken(kind, currentTool()));
 }

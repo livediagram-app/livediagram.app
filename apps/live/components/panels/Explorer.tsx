@@ -43,12 +43,12 @@ function ExplorerImpl({
   onOpenDiagram,
   onNewDiagram,
   onRenameCurrent,
-  onOpenShareCurrent,
   onDeleteDiagram,
   onDuplicateDiagram,
   onCreateFolder,
   onRenameFolder,
   onDeleteFolder,
+  onTeamFolders,
   onMoveDiagramToFolder,
   onMoveDiagramTo,
   shared = [],
@@ -63,6 +63,7 @@ function ExplorerImpl({
   onMobileClose,
   mobileDockAnchor,
   forceDockMode,
+  dismissOnOutside,
   recentExcludedIds,
   onToggleRecentExclusion,
   favouriteIds,
@@ -163,6 +164,15 @@ function ExplorerImpl({
     const folder = await onCreateFolder({ name: 'New folder', parentId });
     if (folder) {
       setExpandedFolders((prev) => ({ ...prev, [parentId]: true }));
+      setPendingRenameFolderId(folder.id);
+    }
+  };
+  // The team tree's New Subfolder: same gesture, the team's library.
+  const handleCreateTeamChild = async (teamId: string, parentId: string | null) => {
+    if (!onTeamFolders) return;
+    const folder = await onTeamFolders.create(teamId, parentId);
+    if (folder) {
+      setExpandedFolders((prev) => ({ ...prev, [parentId ?? teamId]: true }));
       setPendingRenameFolderId(folder.id);
     }
   };
@@ -308,6 +318,7 @@ function ExplorerImpl({
       onMobileClose={onMobileClose}
       mobileDockAnchor={mobileDockAnchor}
       forceDockMode={forceDockMode}
+      dismissOnOutside={dismissOnOutside}
       // Mobile auto-collapse fires on any tap outside the panel's
       // DOM. Ellipsis menus (PortalMenu, role="menu") and confirm
       // modals (ConfirmDialog, role="dialog") render via React
@@ -334,7 +345,6 @@ function ExplorerImpl({
                     draggable={!!onMoveDiagramToFolder}
                     onOpen={() => onOpenDiagram(current.id)}
                     onRename={onRenameCurrent}
-                    onOpenShare={onOpenShareCurrent}
                     onDelete={
                       openDeleteConfirm
                         ? (anchor) => openDeleteConfirm(current.id, anchor)
@@ -356,7 +366,6 @@ function ExplorerImpl({
                     active
                     onOpen={() => onOpenDiagram(currentTeam.id)}
                     onRename={onRenameCurrent}
-                    onOpenShare={onOpenShareCurrent}
                     // Any joined member may delete a team diagram
                     // (spec/35); the api enforces team membership.
                     onDelete={
@@ -365,7 +374,7 @@ function ExplorerImpl({
                         : undefined
                     }
                     // Change Folder for a team diagram (spec/35): opens the
-                    // move picker on this team's tree, with My Work + the
+                    // move picker on this team's tree, with Personal Space + the
                     // other teams one Back away. Routed through the
                     // scope-aware onMoveDiagramTo.
                     onMoveRequest={
@@ -393,10 +402,10 @@ function ExplorerImpl({
           </div>
         ) : null}
 
-        {/* Recent / My Work / Teams as a single tab bar (was three
+        {/* Recent / Personal Space / Teams as a single tab bar (was three
             stacked accordions) so only one list takes vertical space.
             Shared-with-you diagrams interleave into Recent (matching the
-            /explorer page); My Work holds the folder tree + Unsorted
+            /explorer page); Personal Space holds the folder tree + Unsorted
             (spec/15); Teams mirrors it per team (spec/35). The card owns
             its own tab state and hides itself when no section has
             anything to show — see ExplorerSections. */}
@@ -427,9 +436,16 @@ function ExplorerImpl({
           onRenameFolder={onRenameFolder}
           onDeleteFolder={onDeleteFolder}
           onCreateChild={handleCreateChild}
+          onTeamFolders={onTeamFolders}
+          onCreateTeamChild={handleCreateTeamChild}
           onDeleteDiagram={openDeleteConfirm}
           onDuplicateDiagram={onDuplicateDiagram}
           onMoveDiagramRequest={onMoveDiagramToFolder ? openMovePicker : undefined}
+          // A team row's move opens the picker for that team; the pick then
+          // routes through the scope-aware onMoveDiagramTo (spec/35).
+          onMoveTeamDiagramRequest={
+            onMoveDiagramTo ? (id, teamId) => setMoveTarget({ id, teamId }) : undefined
+          }
           onMoveDiagramToFolder={onMoveDiagramToFolder}
         />
 
@@ -440,7 +456,7 @@ function ExplorerImpl({
       {/* Move-destination modal (spec/15), the same shared placement
           browser as the /explorer page. With the scope-aware
           onMoveDiagramTo wired (signed-in sessions with teams), the picker
-          offers every space — My Work plus each team — so a team diagram
+          offers every space — Personal Space plus each team — so a team diagram
           can be re-homed to the personal tree (and vice versa) right from
           the editor. Purely personal picks keep the optimistic
           onMoveDiagramToFolder path. */}
@@ -502,7 +518,7 @@ function ExplorerImpl({
                   if (dest.teamId === null && moveTarget.teamId === null) {
                     onMoveDiagramToFolder?.(moveTarget.id, dest.folderId);
                   } else {
-                    onMoveDiagramTo?.(moveTarget.id, dest);
+                    onMoveDiagramTo?.(moveTarget.id, dest, moveTarget.teamId);
                   }
                 }}
                 onClose={() => setMoveTarget(null)}

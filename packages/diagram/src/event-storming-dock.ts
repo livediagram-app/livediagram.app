@@ -241,10 +241,9 @@ export function undock(elements: Element[], id: ElementId): Element[] {
   });
 }
 
-// A docked note whose host is not on the board becomes standalone — the
-// `freezeDanglingGroupEnds` precedent, but simpler, because a dock needs no
-// geometry from the pre-delete state: the note stays exactly where it is and
-// only loses the relation.
+// A docked note whose host is not on the board becomes standalone. A dock
+// needs no geometry from the pre-delete state: the note stays exactly where it
+// is and only loses the relation.
 //
 // Phrased as "is the host THERE" rather than "was the host just removed", so
 // the one function heals a delete, an import of a hand-edited file, and a

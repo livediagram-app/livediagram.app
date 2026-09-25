@@ -10,12 +10,13 @@ import {
   expectOk,
   type CustomThemeResponse,
   type CustomThemesResponse,
+  apiFetch,
 } from './core';
 
 // Deduped like apiListFolders: the editor boot hook and an open
 // Explorer Themes pane can both ask for the list on the same ownerId.
 async function _apiListCustomThemes(ownerId: string): Promise<CustomTheme[]> {
-  const res = await fetch(`${API_BASE}/custom-themes`, { headers: await apiHeaders(ownerId) });
+  const res = await apiFetch(`${API_BASE}/custom-themes`, { headers: await apiHeaders(ownerId) });
   const { themes } = await expectOk<CustomThemesResponse>(res, 'list custom themes');
   return themes;
 }
@@ -25,7 +26,7 @@ export async function apiCreateCustomTheme(
   ownerId: string,
   input: { id: string; name: string; definition: CustomThemeDefinition },
 ): Promise<CustomTheme> {
-  const res = await fetch(`${API_BASE}/custom-themes`, {
+  const res = await apiFetch(`${API_BASE}/custom-themes`, {
     method: 'POST',
     headers: await apiHeaders(ownerId, { body: true }),
     body: JSON.stringify(input),
@@ -39,7 +40,7 @@ export async function apiUpdateCustomTheme(
   id: string,
   patch: { name?: string; definition?: CustomThemeDefinition },
 ): Promise<CustomTheme> {
-  const res = await fetch(`${API_BASE}/custom-themes/${id}`, {
+  const res = await apiFetch(`${API_BASE}/custom-themes/${id}`, {
     method: 'PUT',
     headers: await apiHeaders(ownerId, { body: true }),
     body: JSON.stringify(patch),
@@ -49,5 +50,9 @@ export async function apiUpdateCustomTheme(
 }
 
 export async function apiDeleteCustomTheme(ownerId: string, id: string): Promise<void> {
-  return apiDelete(`${API_BASE}/custom-themes/${id}`, ownerId, { action: 'delete custom theme' });
+  // Theme events are keyed under the 'account' source type (spec/138 §4.5).
+  return apiDelete(`${API_BASE}/custom-themes/${id}`, ownerId, {
+    action: 'delete custom theme',
+    purge: { sourceType: 'account', sourceId: id },
+  });
 }

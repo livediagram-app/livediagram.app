@@ -17,6 +17,10 @@ import type {
 import { stampTabKind, type Tab } from '@livediagram/diagram';
 import { readLocalStorageSafe, writeLocalStorageSafe } from '../local-storage-safe';
 import { getGuestSelfSig } from '../local-identity';
+import { notifyApiWrite } from './write-signal';
+// Every non-2xx the expectOk* helpers throw, and every fetch that rejects in
+// apiFetch, is reported through here (spec/22 'Error').
+import { reportApiError, reportNetworkError } from './error-report';
 
 // `API_BASE` resolution:
 //   1. `NEXT_PUBLIC_API_BASE` env var if set — used for local dev (e.g.
@@ -53,6 +57,33 @@ export function wsUrl(path: string): string {
   }
   const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
   return `${proto}//${window.location.host}${API_BASE}${path}`;
+}
+
+// Every api request goes through here rather than bare `fetch` so a
+// successful WRITE can be announced (write-signal.ts): the Timeline
+// re-reads itself off that signal, which is what lets a delete or a
+// rename show up on the feed without a browser refresh (spec/138
+// §2.4b). Reads stay silent, and so do the feed's own endpoints —
+// dismissing a card must not make the feed re-read itself to notice.
+//
+// Transparent otherwise: same arguments, same Response, and a network
+// failure still throws to the caller before any signal is raised.
+export async function apiFetch(input: string, init?: RequestInit): Promise<Response> {
+  const method = (init?.method ?? 'GET').toUpperCase();
+  let res: Response;
+  try {
+    res = await fetch(input, init);
+  } catch (err) {
+    // The one place that sees a request fail before any response exists.
+    reportNetworkError(method, input, err);
+    throw err;
+  }
+  if (method !== 'GET' && res.ok && !isTimelinePath(input)) notifyApiWrite();
+  return res;
+}
+
+function isTimelinePath(url: string): boolean {
+  return url.startsWith(`${API_BASE}/timeline`);
 }
 
 // Envelope shapes the API wraps payloads in. The canonical inner
@@ -231,29 +262,6 @@ export async function apiHeaders(
   return { ...h, ...opts.extra };
 }
 
-// Error telemetry hook (spec/22 'Error' category). This module can't
-// import lib/telemetry directly — it sits under the user-preferences ->
-// api-client import cycle that already forced the emitter lazy — so the
-// editor's boot registers a reporter instead (same module-level pattern
-// as setTokenProvider above). Reports the HTTP status of every ApiError
-// the helpers below throw; a no-op while unwired (SSR, tests, other
-// hosts of this lib).
-let apiErrorReporter: ((status: number, action: string) => void) | null = null;
-export function setApiErrorReporter(fn: ((status: number, action: string) => void) | null): void {
-  apiErrorReporter = fn;
-}
-// `action` is the caller's own intent string ('save tab', 'create folder'),
-// forwarded so the reported error says WHICH request failed. Reporting only
-// the status made a spike unattributable: 297 `Http403` in a day tells you
-// something is being refused and nothing about what.
-function reportApiError(status: number, action: string): void {
-  try {
-    apiErrorReporter?.(status, action);
-  } catch {
-    // Telemetry can never throw into the caller's error handling.
-  }
-}
-
 // The error every non-2xx response throws. Carries the HTTP `status`
 // AND the api worker's `error` token (`code`) so callers can branch on
 // the specific rule that fired (`forbidden` vs `admin_required`,
@@ -361,9 +369,15 @@ export async function apiDelete(
     // conversion header — without one the worker cannot tell "take offline"
     // from a real delete and records the wrong timeline event.
     extra?: Record<string, string>;
+    // When this DELETE ends an entity the Timeline narrates (a diagram, a
+    // folder, a theme, a team), name it in the feed's terms so the feed
+    // can drop the entity's earlier cards at once, the way the worker's
+    // cascade does server-side (spec/138 §3.5). Omit for a DELETE that
+    // merely changes something (a share link, a favourite).
+    purge?: { sourceType: string; sourceId: string };
   },
 ): Promise<void> {
-  const res = await fetch(url, {
+  const res = await apiFetch(url, {
     method: 'DELETE',
     headers: await apiHeaders(ownerId, {
       ...(opts.share === undefined ? {} : { share: opts.share }),
@@ -375,6 +389,7 @@ export async function apiDelete(
   } else {
     await expectOkVoid(res, opts.action);
   }
+  if (opts.purge && res.ok) notifyApiWrite({ purge: opts.purge });
 }
 
 // Strip fields that ride on the Tab type for the editor's convenience

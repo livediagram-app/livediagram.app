@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 // The pressable face of a Session button (spec/105): the tool's glyph over
 // what pressing it will do.
 //
@@ -19,6 +20,10 @@ import { PollIcon, TimerIcon, VoteIcon } from '@/components/palette/palette-icon
 
 const TOOL_ICON: Record<SessionPlan['tool'], React.ReactNode> = {
   timer: <TimerIcon />,
+  // The same clock face: a stopwatch is the other thing that clock does, and a
+  // second timepiece glyph would be a distinction without a difference at
+  // 22px. The label is what separates them.
+  stopwatch: <TimerIcon />,
   vote: <VoteIcon />,
   poll: <PollIcon />,
 };
@@ -38,13 +43,18 @@ export function sessionButtonText(
     if (timerState === 'paused') return { kicker: 'Continue', action: 'the timer' };
     return { kicker: 'Start', action: `${plan.minutes} min timer` };
   }
+  if (plan.tool === 'stopwatch') {
+    if (timerState === 'running') return { kicker: 'Pause', action: 'the stopwatch' };
+    if (timerState === 'paused') return { kicker: 'Continue', action: 'the stopwatch' };
+    return { kicker: 'Start', action: 'a stopwatch' };
+  }
   if (plan.tool === 'vote') {
     return {
       kicker: 'Start vote',
       action: `${plan.dots} ${plan.dots === 1 ? 'dot' : 'dots'} each`,
     };
   }
-  return { kicker: 'Ask the room', action: plan.question };
+  return { kicker: 'Ask', action: plan.question };
 }
 
 // A tab's timer is either absent, counting, or held.
@@ -52,6 +62,7 @@ export type TimerState = 'none' | 'running' | 'paused';
 
 const TOOL_BLURB: Record<SessionPlan['tool'], string> = {
   timer: 'Starts a countdown everyone in the room can see.',
+  stopwatch: 'Counts up from zero for everyone, until you stop it.',
   vote: 'Starts a dot vote on this tab for everyone.',
   poll: 'Opens this poll on everyone’s screen; answers are anonymous.',
 };
@@ -89,15 +100,13 @@ export function SessionButtonFace({
   const press = usePressWithoutDrag(onPress);
   const tool = plan?.tool ?? 'poll';
 
-  const inner = (
+  const chipClass = `${ICON_BOX} h-9 w-9 shrink-0 rounded-full bg-black/[0.055] ring-1 ring-inset ring-black/[0.07] dark:bg-white/10 dark:ring-white/15`;
+  // The face: the icon chip, then the label. The chip is passed in because
+  // on a live button it IS the button (see below), and on an inert face
+  // it's a plain span; the label is the same either way.
+  const face = (chip: ReactNode) => (
     <>
-      <span
-        className={`${ICON_BOX} h-9 w-9 shrink-0 rounded-full bg-black/[0.055] ring-1 ring-inset ring-black/[0.07] dark:bg-white/10 dark:ring-white/15`}
-        style={{ color: textColor }}
-        aria-hidden
-      >
-        {TOOL_ICON[tool]}
-      </span>
+      {chip}
       {text ? (
         <span
           className="w-full px-2 text-center text-[12px] font-semibold leading-tight"
@@ -122,6 +131,11 @@ export function SessionButtonFace({
         </span>
       )}
     </>
+  );
+  const inner = face(
+    <span className={chipClass} style={{ color: textColor }} aria-hidden>
+      {TOOL_ICON[tool]}
+    </span>,
   );
 
   // Shared by every state so a read-only render looks identical, minus the
@@ -186,19 +200,26 @@ export function SessionButtonFace({
           question you were reading, or on empty padding while positioning the
           element — started a session for the whole room. The chip is an
           unmistakable press target, and everything around it stays ordinary
-          canvas you can click to select and drag from. */}
-      <span className={`pointer-events-none absolute inset-0 ${layout}`} aria-hidden>
-        {inner}
+          canvas you can click to select and drag from.
+
+          The button is the chip itself, laid out in the face's own column,
+          rather than a second circle positioned over where the chip was
+          guessed to be: that guess (a fixed offset from the top) drifted
+          from the drawn chip as the element's height and label changed, so
+          the hover ring lit up beside the icon instead of on it. */}
+      <span className={`pointer-events-none absolute inset-0 ${layout}`}>
+        {face(
+          <button
+            type="button"
+            aria-label={`${text || `${derived.kicker} ${derived.action}`} — starts this for everyone`}
+            {...press}
+            style={{ color: textColor }}
+            className={`${chipClass} pointer-events-auto cursor-pointer transition duration-100 active:scale-[0.92] sm:hover:scale-105 sm:hover:bg-black/[0.1] sm:hover:ring-2 sm:hover:ring-black/15 dark:sm:hover:bg-white/20 dark:sm:hover:ring-white/25`}
+          >
+            {TOOL_ICON[tool]}
+          </button>,
+        )}
       </span>
-      <button
-        type="button"
-        aria-label={`${text || `${derived.kicker} ${derived.action}`} — starts this for everyone`}
-        {...press}
-        // Positioned over the chip that `inner` draws: same size, same place.
-        // The hover treatment lives on the CHIP, which is where the press
-        // is. On the card it told you the wrong thing was clickable.
-        className="pointer-events-auto absolute left-1/2 top-[14%] h-9 w-9 -translate-x-1/2 cursor-pointer rounded-full transition duration-100 active:scale-[0.92] sm:hover:scale-105 sm:hover:bg-black/[0.06] sm:hover:ring-2 sm:hover:ring-inset sm:hover:ring-black/10 dark:sm:hover:bg-white/10 dark:sm:hover:ring-white/20"
-      />
     </>
   );
 }

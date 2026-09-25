@@ -188,8 +188,15 @@ export function useBoxedElementGestures({
   };
 
   // Right-click opens on release (see useRightClickRelease).
+  //
+  // Deliberately NOT gated on `remotelyLocked` any more: whether a locked
+  // element has a menu now depends on who is asking (spec/149 — the
+  // facilitator gets a one-item menu to free it), and this hook does not know
+  // that. The host's `onElementContextMenu` owns the decision and still
+  // refuses for everybody else, so nothing changed for them. `onContextSelect`
+  // calls `onSelect` on the way through, which the lock already no-ops.
   const rightClick = useRightClickRelease(() => {
-    if (isEditing || remotelyLocked) return;
+    if (isEditing) return;
     openContextMenuBesideElement();
   });
 
@@ -213,7 +220,7 @@ export function useBoxedElementGestures({
   // opens the element's context menu (touch never fires `contextmenu`). Same
   // guards as handleContextMenu; a press that moves becomes a drag instead.
   const longPress = useLongPress(() => {
-    if (isEditing || remotelyLocked) return;
+    if (isEditing) return;
     openContextMenuBesideElement();
   });
 

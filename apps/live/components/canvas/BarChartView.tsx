@@ -7,7 +7,7 @@
 // edited from the context menu's Data category. The slice group carries the
 // `lvd-pie-*` animation (grow / pop / spin / pulse), reduced-motion-safe.
 
-import { type ShapeElement } from '@livediagram/diagram';
+import { legendFontPx, type ShapeElement } from '@livediagram/diagram';
 import { chartAnim, chartFrame } from '@/lib/chart';
 import { useChartHover } from '@/hooks/canvas/useChartHover';
 import { ChartTooltip } from '@/components/primitives/ChartTooltip';
@@ -51,6 +51,7 @@ export function BarChartView({
       legend={legend}
       textColor={textColor}
       fontFamily={fontFamily}
+      fontPx={legendFontPx(element.textSize)}
       tooltip={
         hover !== null && data[hover] ? (
           <ChartTooltip

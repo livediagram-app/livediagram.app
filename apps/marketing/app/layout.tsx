@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import './globals.css';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
 import { JsonLd } from '@livediagram/ui';
+import { PageViewBoot } from '@/components/PageViewBoot';
 
 // SEO and social-card metadata. See spec/16-marketing-site.md
 // for the policy. metadataBase lets the per-page canonical and
@@ -138,6 +139,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en-GB">
       <body className="bg-slate-50 text-slate-800 antialiased">
         <JsonLd data={JSON_LD} />
+        <PageViewBoot />
         {children}
       </body>
     </html>

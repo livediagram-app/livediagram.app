@@ -215,7 +215,7 @@ export function ArrowStyleIcon({ style }: { style: ArrowStyle }) {
   );
 }
 
-// Small circular-arrow glyph used by the "Reset elements to colour scheme"
+// Small circular-arrow glyph used by the "Reset elements to theme"
 // button under the Theme accordion. 12×12 inside a 14×14 box.
 export function ResetIcon() {
   return (
@@ -358,8 +358,8 @@ export function PanIcon() {
   // silhouette still reads as a hand at the 13 px palette size.
   return (
     <svg
-      width="13"
-      height="13"
+      width="14"
+      height="14"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -379,8 +379,8 @@ export function PanIcon() {
 export function SelectIcon() {
   return (
     <svg
-      width="13"
-      height="13"
+      width="14"
+      height="14"
       viewBox="0 0 16 16"
       fill="none"
       stroke="currentColor"
@@ -401,8 +401,8 @@ export function LaserIcon() {
   // bottom-left toward a glowing dot in the top-right.
   return (
     <svg
-      width="13"
-      height="13"
+      width="14"
+      height="14"
       viewBox="0 0 16 16"
       fill="none"
       stroke="currentColor"
@@ -426,8 +426,8 @@ export function LaserIcon() {
 export function IsometricIcon() {
   return (
     <svg
-      width="13"
-      height="13"
+      width="14"
+      height="14"
       viewBox="0 0 16 16"
       fill="none"
       stroke="currentColor"
@@ -455,8 +455,8 @@ export function IsometricIcon() {
 export function HighlighterIcon() {
   return (
     <svg
-      width="13"
-      height="13"
+      width="14"
+      height="14"
       viewBox="0 0 16 16"
       fill="none"
       stroke="currentColor"
@@ -478,8 +478,8 @@ export function HighlighterIcon() {
 export function SlideDeckIcon() {
   return (
     <svg
-      width="13"
-      height="13"
+      width="14"
+      height="14"
       viewBox="0 0 16 16"
       fill="none"
       stroke="currentColor"
@@ -497,8 +497,8 @@ export function SlideDeckIcon() {
 export function EraserIcon() {
   return (
     <svg
-      width="13"
-      height="13"
+      width="14"
+      height="14"
       viewBox="0 0 16 16"
       fill="none"
       stroke="currentColor"
@@ -514,7 +514,7 @@ export function EraserIcon() {
   );
 }
 
-// The bottom-dock "Colour scheme & canvas" button (spec/42): a paintbrush on the
+// The bottom-dock "Theme & canvas" button (spec/42): a paintbrush on the
 // 20-unit dock grid (matching LayersStackIcon's stroke weight) that opens
 // the CanvasThemeDialog. Distinct from FormatPainterIcon below (the
 // element-to-element format tool): this one styles the whole tab.
@@ -544,8 +544,8 @@ export function ThemeBrushIcon({ size = 20 }: { size?: number }) {
 export function FormatPainterIcon() {
   return (
     <svg
-      width="13"
-      height="13"
+      width="14"
+      height="14"
       viewBox="0 0 16 16"
       fill="none"
       stroke="currentColor"
@@ -567,8 +567,8 @@ export function FormatPainterIcon() {
 export function SpotlightIcon() {
   return (
     <svg
-      width="13"
-      height="13"
+      width="14"
+      height="14"
       viewBox="0 0 16 16"
       fill="none"
       stroke="currentColor"
@@ -594,8 +594,8 @@ export function SpotlightIcon() {
 export function AvatarModeIcon() {
   return (
     <svg
-      width="13"
-      height="13"
+      width="14"
+      height="14"
       viewBox="0 0 16 16"
       fill="none"
       stroke="currentColor"
@@ -622,8 +622,8 @@ export function AvatarModeIcon() {
 export function ZenIcon() {
   return (
     <svg
-      width="13"
-      height="13"
+      width="14"
+      height="14"
       viewBox="0 0 16 16"
       fill="none"
       stroke="currentColor"
@@ -758,14 +758,16 @@ export function AlignIcon({ x, y }: { x: TextAlignX; y: TextAlignY }) {
 }
 
 // --- Session tools (spec/105) ------------------------------------------------
+// 14px, not 13, like every small glyph in this file: an odd size centred in
+// an even tile lands on a half pixel and its strokes blur (spec/148).
 // The three glyphs a Session button wears, in the same 16-grid, 1.4-stroke
 // house style as the mode icons above so a row of Behaviour tiles matches.
 
 export function TimerIcon() {
   return (
     <svg
-      width="13"
-      height="13"
+      width="14"
+      height="14"
       viewBox="0 0 16 16"
       fill="none"
       stroke="currentColor"
@@ -787,8 +789,8 @@ export function TimerIcon() {
 export function VoteIcon() {
   return (
     <svg
-      width="13"
-      height="13"
+      width="14"
+      height="14"
       viewBox="0 0 16 16"
       fill="none"
       stroke="currentColor"
@@ -809,8 +811,8 @@ export function VoteIcon() {
 export function PollIcon() {
   return (
     <svg
-      width="13"
-      height="13"
+      width="14"
+      height="14"
       viewBox="0 0 16 16"
       fill="none"
       stroke="currentColor"
@@ -833,8 +835,8 @@ export function PollIcon() {
 export function RevealIcon() {
   return (
     <svg
-      width="13"
-      height="13"
+      width="14"
+      height="14"
       viewBox="0 0 16 16"
       fill="none"
       stroke="currentColor"
@@ -853,8 +855,8 @@ export function RevealIcon() {
 export function PickerIcon() {
   return (
     <svg
-      width="13"
-      height="13"
+      width="14"
+      height="14"
       viewBox="0 0 16 16"
       fill="none"
       stroke="currentColor"
@@ -879,8 +881,8 @@ export function PickerIcon() {
 function CollabGlyph({ children }: { children: React.ReactNode }) {
   return (
     <svg
-      width="13"
-      height="13"
+      width="14"
+      height="14"
       viewBox="0 0 16 16"
       fill="none"
       stroke="currentColor"

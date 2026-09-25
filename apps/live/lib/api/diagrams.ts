@@ -21,6 +21,7 @@ import {
   tabForWire,
   type DiagramResponse,
   type ListResponse,
+  apiFetch,
 } from './core';
 
 // The diagram-list row every list surface renders: the Explorer
@@ -47,7 +48,7 @@ async function _apiLoadDiagram(ownerId: string, id: string): Promise<Diagram | n
   // Offline Mode (spec/76): a diagram registered offline loads from IndexedDB,
   // never the API. Same for the save / delete / list paths below.
   if (await isOfflineId(id)) return offlineLoadDiagram(id);
-  const res = await fetch(`${API_BASE}/diagrams/${id}`, {
+  const res = await apiFetch(`${API_BASE}/diagrams/${id}`, {
     headers: await apiHeaders(ownerId),
   });
   const body = await expectOkOrNull<DiagramResponse>(res, 'load');
@@ -83,7 +84,7 @@ export async function apiSaveDiagramMeta(
     );
     return;
   }
-  const res = await fetch(`${API_BASE}/diagrams/${d.id}`, {
+  const res = await apiFetch(`${API_BASE}/diagrams/${d.id}`, {
     method: 'PUT',
     headers: await apiHeaders(ownerId, { share: shareCode, body: true }),
     body: JSON.stringify({
@@ -102,12 +103,22 @@ export async function apiSaveDiagramMeta(
 // per-tab fetch lands on a populated row.
 export async function apiCreateDiagram(
   ownerId: string,
-  d: { id: string; name: string; tabs?: Tab[] },
+  // `folderId` / `createdAt` / `presentation` are for an Offline Mode sync
+  // (spec/76), which must carry what the offline record held: the server
+  // copy is all that is left once the local one is deleted.
+  d: {
+    id: string;
+    name: string;
+    tabs?: Tab[];
+    folderId?: string | null;
+    createdAt?: number;
+    presentation?: string | null;
+  },
   // Set by the Offline Mode sync path (spec/76). A sync is a plain POST, so
   // without this the worker records it as a brand-new diagram being created.
   opts: { conversion?: DiagramConversion } = {},
 ): Promise<Diagram> {
-  const res = await fetch(`${API_BASE}/diagrams`, {
+  const res = await apiFetch(`${API_BASE}/diagrams`, {
     method: 'POST',
     headers: await apiHeaders(ownerId, {
       body: true,
@@ -117,6 +128,9 @@ export async function apiCreateDiagram(
       id: d.id,
       name: d.name,
       tabs: (d.tabs ?? []).map(tabForWire),
+      ...(d.folderId ? { folderId: d.folderId } : {}),
+      ...(d.createdAt !== undefined ? { createdAt: d.createdAt } : {}),
+      ...(d.presentation ? { presentation: d.presentation } : {}),
     }),
   });
   const { diagram } = await expectOk<DiagramResponse>(res, 'create diagram');
@@ -129,7 +143,10 @@ export async function apiDeleteDiagram(ownerId: string, id: string): Promise<voi
   // identity headers the worker would 400 / 403. apiHeaders prefers
   // the Clerk Bearer when a token provider is registered, falls
   // through to X-Owner-Id otherwise (spec/04, spec/11).
-  return apiDelete(`${API_BASE}/diagrams/${id}`, ownerId, { action: 'delete diagram' });
+  return apiDelete(`${API_BASE}/diagrams/${id}`, ownerId, {
+    action: 'delete diagram',
+    purge: { sourceType: 'diagram', sourceId: id },
+  });
 }
 
 async function _apiListDiagrams(ownerId: string): Promise<DiagramSummary[]> {
@@ -138,7 +155,7 @@ async function _apiListDiagrams(ownerId: string): Promise<DiagramSummary[]> {
   // network), still return those rather than failing the whole Explorer.
   const offline = await offlineListDiagrams().catch(() => [] as DiagramSummary[]);
   try {
-    const res = await fetch(`${API_BASE}/diagrams`, { headers: await apiHeaders(ownerId) });
+    const res = await apiFetch(`${API_BASE}/diagrams`, { headers: await apiHeaders(ownerId) });
     const { diagrams } = await expectOk<ListResponse>(res, 'list');
     // Dedupe by id: legacy data (pre ghost-row fix) can hold BOTH an offline
     // record and a same-id server row. The offline copy wins — it is what the
@@ -183,7 +200,7 @@ export async function apiFetchDiagramThumbnailUrl(
   const qs = params.toString();
   const url = `${API_BASE}/diagrams/${encodeURIComponent(diagramId)}/thumbnail${qs ? `?${qs}` : ''}`;
   const headers = new Headers(await apiHeaders(ownerId, { share: opts.shareCode ?? null }));
-  const res = await fetch(url, { headers });
+  const res = await apiFetch(url, { headers });
   if (!res.ok) return null;
   const svg = await res.text();
   const backgroundColor = svgBackgroundColor(svg);
@@ -214,7 +231,7 @@ export type { SharedWithItem };
 // Same dedupe rationale as apiListDiagrams: editor + /new +
 // /explorer all mount surfaces that fire this on first paint.
 async function _apiListSharedWith(ownerId: string): Promise<SharedWithItem[]> {
-  const res = await fetch(`${API_BASE}/shared`, { headers: await apiHeaders(ownerId) });
+  const res = await apiFetch(`${API_BASE}/shared`, { headers: await apiHeaders(ownerId) });
   const { shared } = await expectOk<{ shared: SharedWithItem[] }>(res, 'list shared');
   return shared;
 }
@@ -247,7 +264,7 @@ export async function apiCreateRoomTicket(
   for (let attempt = 0; attempt < 3; attempt++) {
     if (attempt > 0) await new Promise((r) => setTimeout(r, 500 * attempt));
     try {
-      const res = await fetch(`${API_BASE}/diagrams/${diagramId}/room-ticket`, {
+      const res = await apiFetch(`${API_BASE}/diagrams/${diagramId}/room-ticket`, {
         method: 'POST',
         headers: await apiHeaders(ownerId, { share: shareCode }),
       });
@@ -272,7 +289,7 @@ export async function apiCopyDiagram(
   sourceId: string,
   opts: { name?: string; shareCode?: string | null } = {},
 ): Promise<Diagram> {
-  const res = await fetch(`${API_BASE}/diagrams/${sourceId}/copy`, {
+  const res = await apiFetch(`${API_BASE}/diagrams/${sourceId}/copy`, {
     method: 'POST',
     headers: await apiHeaders(ownerId, { body: true, share: opts.shareCode ?? null }),
     body: JSON.stringify({ name: opts.name }),

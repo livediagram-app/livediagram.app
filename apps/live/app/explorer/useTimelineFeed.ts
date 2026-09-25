@@ -11,7 +11,7 @@
 // (useTokens, useTeams), so visiting Recent doesn't fetch a feed
 // nobody is looking at.
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import {
   useTimelineControls,
   type TimelineCategory,
@@ -24,8 +24,17 @@ import {
   TIMELINE_PAGE_SIZE,
   type TimelineScopeRef,
 } from '@livediagram/api-schema';
-import { apiListTimeline } from '@/lib/api-client';
-import { mergeEvents } from '@/app/explorer/timeline/merge-events';
+import {
+  apiDismissTimelineEvent,
+  apiDismissTimelineEvents,
+  apiListTimeline,
+} from '@/lib/api-client';
+import {
+  mergeEvents,
+  purgeEventsForSource,
+  reconcileEvents,
+} from '@/app/explorer/timeline/merge-events';
+import { useAfterApiWrite } from '@/hooks/persistence/useAfterApiWrite';
 import { useReturnToTab } from '@/hooks/ui/useReturnToTab';
 import { track } from '@/lib/telemetry';
 
@@ -57,6 +66,8 @@ export type TimelineFeed = {
   error: boolean;
   /** Re-read the first page; what the failed state's Try again calls. */
   retry: () => void;
+  /** Take one card, or a whole stack of them, off this reader's feed (spec/138 §2.9). */
+  dismiss: (eventIds: string | string[]) => void;
   /** Watermark from the first read; events past it render as New. */
   lastSeenAt?: number;
   /** Deep-link target from the URL hash, if the page was opened with one. */
@@ -114,20 +125,30 @@ export function useTimelineFeed(
   // that effect's dependencies are the feed's identity, so its re-run is
   // exactly the moment the cache stops applying.
   const fetchedRanges = useRef(new Set<string>());
-  // A stable dependency for the effects: `scope` is an object literal at
-  // most call sites, so depending on it directly would refetch on every
-  // parent render.
-  const scopeKey = scope ? `${scope.scopeType}:${scope.scopeId}` : '';
+  // A stable scope for the effects: `scope` is an object literal at most
+  // call sites, so depending on it directly would refetch on every parent
+  // render. Rebuilt only when its two fields change, so the callbacks can
+  // list it as the dependency it really is.
+  const scopeType = scope?.scopeType;
+  const scopeId = scope?.scopeId;
+  const stableScope = useMemo<TimelineScopeRef | undefined>(
+    () => (scopeType !== undefined && scopeId !== undefined ? { scopeType, scopeId } : undefined),
+    [scopeType, scopeId],
+  );
+  const scopeKey = stableScope ? `${stableScope.scopeType}:${stableScope.scopeId}` : '';
 
-  // The first page, read three ways: on arrival, on Try again, and on
-  // returning to the tab. They differ only in what happens to the list
-  // that's already there.
+  // The first page, read four ways: on arrival, on Try again, on
+  // returning to the tab, and after the reader's own write lands. They
+  // differ only in what happens to the list that's already there.
   //
   //   'replace' — this is a different feed (or the reader asked for it
   //               fresh): show the skeleton and take the new page whole.
   //   'merge'   — same feed, later: keep every loaded page and slot the
   //               new events in at the head, so someone who had
-  //               scrolled a long way down keeps their place.
+  //               scrolled a long way down keeps their place. Within
+  //               the stretch the page covers it is authoritative
+  //               (reconcileEvents), so a card the server has since
+  //               swept or the reader dismissed elsewhere goes too.
   const load = useCallback(
     async (mode: 'replace' | 'merge') => {
       if (!ownerId) return;
@@ -146,7 +167,10 @@ export function useTimelineFeed(
         // nothing was thrown away, so nothing needs re-fetching.
         fetchedRanges.current.clear();
       }
-      const page = await apiListTimeline(ownerId, { limit: TIMELINE_PAGE_SIZE, scope });
+      const page = await apiListTimeline(ownerId, {
+        limit: TIMELINE_PAGE_SIZE,
+        scope: stableScope,
+      });
       if (id !== requestId.current) return;
       if (!page) {
         setError(true);
@@ -169,7 +193,7 @@ export function useTimelineFeed(
         setEvents(page.events);
         setCursor(page.nextCursor);
       } else {
-        setEvents((prev) => mergeEvents(prev, page.events));
+        setEvents((prev) => reconcileEvents(prev, page));
         // The cursor is a keyset position at the TAIL of what's loaded,
         // so events arriving at the head don't invalidate it. Replacing
         // it here would re-page ground the reader already has. The one
@@ -185,7 +209,7 @@ export function useTimelineFeed(
       setLastSeenAt((prev) => prev ?? page.lastSeenAt);
       setLoading(false);
     },
-    [ownerId, scopeKey],
+    [ownerId, stableScope],
   );
 
   useEffect(() => {
@@ -199,6 +223,26 @@ export function useTimelineFeed(
   // "fix" with a browser refresh.
   useReturnToTab(() => void load('merge'), { enabled: enabled && !!ownerId });
 
+  // The reader's own actions (spec/138 §2.4b). Deleting a diagram from a
+  // card's menu used to leave the feed exactly as it was until a browser
+  // refresh: the worker had swept the diagram's cards and written its
+  // tombstone, and nothing on the client asked. Now any successful
+  // write re-reads the first page a beat later (the emit runs after the
+  // response), and a DELETE that ended an entity drops its cards at
+  // once — the client half of the worker's cascade (§3.5), which also
+  // covers loaded pages the re-read won't reach.
+  useAfterApiWrite(
+    (signal) => {
+      if (signal.purge) {
+        const { sourceType, sourceId } = signal.purge;
+        setEvents((prev) => purgeEventsForSource(prev, sourceType, sourceId));
+        return;
+      }
+      void load('merge');
+    },
+    { enabled: enabled && !!ownerId },
+  );
+
   // Once per arrival, not once per fetch: the effect above also re-runs
   // when the owner id changes, and a guest signing in should not read
   // as a second visit.
@@ -209,12 +253,11 @@ export function useTimelineFeed(
     track('Timeline', 'Opened', ARRIVED_ON_TIMELINE ? 'Landing' : 'Nav');
   }, [enabled]);
 
-  // Calendar and week views can be paged to a period the loaded pages
-  // don't reach — a reader clicking back four months would otherwise see
-  // an empty grid and conclude nothing happened. So the visible period
-  // is fetched on demand and MERGED into the same list, which means the
-  // list view picks the events up too rather than the two views holding
-  // different data.
+  // The calendar can be paged to a month the loaded pages don't reach —
+  // a reader clicking back four months would otherwise see an empty grid
+  // and conclude nothing happened. So the visible month is fetched on
+  // demand and MERGED into the same list, which means the list view picks
+  // the events up too rather than the two views holding different data.
   //
   // Ranges already fetched are remembered, so paging back and forth over
   // the same months doesn't re-request them. Scoped to one feed's lifetime:
@@ -222,58 +265,89 @@ export function useTimelineFeed(
   // changes.
   useEffect(() => {
     if (!enabled || !ownerId) return;
-    const mode = controls.mode;
-    if (mode !== 'calendar' && mode !== 'week') return;
-    const period = mode === 'week' ? controls.weekKey : controls.monthKey;
+    if (controls.mode !== 'calendar') return;
+    const period = controls.monthKey;
     if (fetchedRanges.current.has(period)) return;
     fetchedRanges.current.add(period);
-    const { from, to } = periodBounds(mode, period);
-    void apiListTimeline(ownerId, { from, to, limit: TIMELINE_PAGE_MAX, scope }).then((page) => {
-      if (!page) {
-        // Forget the range so paging away and back retries it. Leaving
-        // it in the set would make one failed request look like a month
-        // in which nothing happened, permanently.
-        fetchedRanges.current.delete(period);
-        return;
-      }
-      if (page.events.length === 0) return;
-      // Same merge as the return-to-tab re-read: a fetched range can
-      // predate what's loaded, and the grouping relies on newest-first
-      // input to place a collapsed stack at its most recent member.
-      setEvents((prev) => mergeEvents(prev, page.events));
-    });
-  }, [enabled, ownerId, controls.mode, controls.monthKey, controls.weekKey, scope, scopeKey]);
+    const { from, to } = monthBounds(period);
+    void apiListTimeline(ownerId, { from, to, limit: TIMELINE_PAGE_MAX, scope: stableScope }).then(
+      (page) => {
+        if (!page) {
+          // Forget the range so paging away and back retries it. Leaving
+          // it in the set would make one failed request look like a month
+          // in which nothing happened, permanently.
+          fetchedRanges.current.delete(period);
+          return;
+        }
+        if (page.events.length === 0) return;
+        // Same merge as the return-to-tab re-read: a fetched range can
+        // predate what's loaded, and the grouping relies on newest-first
+        // input to place a collapsed stack at its most recent member.
+        setEvents((prev) => mergeEvents(prev, page.events));
+      },
+    );
+  }, [enabled, ownerId, controls.mode, controls.monthKey, stableScope, scopeKey]);
 
   const loadMore = useCallback(() => {
     if (!cursor || loadingMore || !ownerId) return;
     setLoadingMore(true);
-    void apiListTimeline(ownerId, { cursor, limit: TIMELINE_PAGE_SIZE, scope }).then((page) => {
-      if (!page) {
-        // The cursor is kept, so Show more simply comes back and the
-        // reader can press it again. No error state for this one: the
-        // feed above it is intact, and a failed page is not a claim
-        // that the history ended here.
+    void apiListTimeline(ownerId, { cursor, limit: TIMELINE_PAGE_SIZE, scope: stableScope }).then(
+      (page) => {
+        if (!page) {
+          // The cursor is kept, so Show more simply comes back and the
+          // reader can press it again. No error state for this one: the
+          // feed above it is intact, and a failed page is not a claim
+          // that the history ended here.
+          setLoadingMore(false);
+          return;
+        }
+        setEvents((prev) => {
+          // Dedupe on append. The feed grows at the head while a reader
+          // pages down it, and although the keyset cursor makes a repeat
+          // unlikely, a duplicate React key here would drop bubbles from
+          // the render rather than merely showing one twice.
+          const seen = new Set(prev.map((e) => e.id));
+          return [...prev, ...page.events.filter((e) => !seen.has(e.id))];
+        });
+        setCursor(page.nextCursor);
         setLoadingMore(false);
-        return;
-      }
-      setEvents((prev) => {
-        // Dedupe on append. The feed grows at the head while a reader
-        // pages down it, and although the keyset cursor makes a repeat
-        // unlikely, a duplicate React key here would drop bubbles from
-        // the render rather than merely showing one twice.
-        const seen = new Set(prev.map((e) => e.id));
-        return [...prev, ...page.events.filter((e) => !seen.has(e.id))];
-      });
-      setCursor(page.nextCursor);
-      setLoadingMore(false);
-      track('Timeline', 'Loaded', 'More');
-    });
-  }, [cursor, loadingMore, ownerId, scopeKey]);
+        track('Timeline', 'Loaded', 'More');
+      },
+    );
+  }, [cursor, loadingMore, ownerId, stableScope]);
 
   const retry = useCallback(() => {
     track('Timeline', 'Loaded', 'Retry');
     void load('replace');
   }, [load]);
+
+  // Per-card removal (spec/138 §2.9). Optimistic: the card goes as the
+  // menu closes, and comes back only if the worker refused. Its own
+  // path rather than a write signal — the dismissal endpoint is the
+  // feed's own, and the feed already knows exactly what changed.
+  const dismiss = useCallback(
+    (eventIds: string | string[]) => {
+      if (!ownerId) return;
+      const ids = new Set(typeof eventIds === 'string' ? [eventIds] : eventIds);
+      const removed = events.filter((e) => ids.has(e.id));
+      if (removed.length === 0) return;
+      track('Timeline', 'Removed', 'Entry');
+      setEvents((prev) => prev.filter((e) => !ids.has(e.id)));
+      // A stack goes in one request (spec/138 §6.2a); a single card on
+      // its own endpoint, whose 404 the client already tolerates.
+      const request =
+        removed.length === 1
+          ? apiDismissTimelineEvent(ownerId, removed[0]!.id)
+          : apiDismissTimelineEvents(
+              ownerId,
+              removed.map((e) => e.id),
+            );
+      void request.catch(() => {
+        setEvents((prev) => mergeEvents(prev, removed));
+      });
+    },
+    [ownerId, events],
+  );
 
   return {
     events,
@@ -284,21 +358,16 @@ export function useTimelineFeed(
     loadMore,
     error,
     retry,
+    dismiss,
     lastSeenAt,
     focusEventId: FOCUS_EVENT_ID,
   };
 }
 
-// Epoch-ms bounds of the visible calendar period, in LOCAL time to match
+// Epoch-ms bounds of the visible calendar month, in LOCAL time to match
 // how the grid groups days — a UTC bound would clip an event at either
-// edge into the neighbouring period for readers west of Greenwich.
-function periodBounds(mode: 'calendar' | 'week', period: string): { from: number; to: number } {
-  if (mode === 'week') {
-    const [y, m, d] = period.split('-').map(Number);
-    const start = new Date(y!, m! - 1, d!);
-    const end = new Date(y!, m! - 1, d! + 7);
-    return { from: start.getTime(), to: end.getTime() - 1 };
-  }
+// edge into the neighbouring month for readers west of Greenwich.
+function monthBounds(period: string): { from: number; to: number } {
   const [y, m] = period.split('-').map(Number);
   return { from: new Date(y!, m! - 1, 1).getTime(), to: new Date(y!, m!, 1).getTime() - 1 };
 }

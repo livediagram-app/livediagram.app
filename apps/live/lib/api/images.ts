@@ -2,7 +2,7 @@
 // the authenticated blob-URL fetch for rendering.
 import type { ImageSummary } from '@livediagram/api-schema';
 import { dedupeInFlight } from '../dedupe';
-import { API_BASE, apiDelete, apiHeaders, expectOk } from './core';
+import { API_BASE, apiDelete, apiHeaders, expectOk, apiFetch } from './core';
 
 // Listing the owner's gallery. Returns null when the server reports
 // 503 (R2 not provisioned on this deployment), letting the picker
@@ -16,7 +16,7 @@ import { API_BASE, apiDelete, apiHeaders, expectOk } from './core';
 // for the same gallery; with it, the second+ callers receive the
 // in-flight promise the first one started.
 async function _apiListImages(ownerId: string): Promise<ImageSummary[] | null> {
-  const res = await fetch(`${API_BASE}/images`, {
+  const res = await apiFetch(`${API_BASE}/images`, {
     headers: await apiHeaders(ownerId),
   });
   if (res.status === 503) return null;
@@ -49,7 +49,7 @@ export async function apiUploadImage(
   headers.set('X-Image-Width', String(file.width));
   headers.set('X-Image-Height', String(file.height));
   if (file.originalName) headers.set('X-Image-Original-Name', file.originalName);
-  const res = await fetch(`${API_BASE}/images`, {
+  const res = await apiFetch(`${API_BASE}/images`, {
     method: 'POST',
     headers,
     body: file.bytes,
@@ -84,7 +84,7 @@ export async function apiDeleteImage(ownerId: string, imageId: string): Promise<
 async function _apiImageUsage(
   ownerId: string,
 ): Promise<Record<string, { id: string; name: string }[]>> {
-  const res = await fetch(`${API_BASE}/images/usage`, {
+  const res = await apiFetch(`${API_BASE}/images/usage`, {
     headers: await apiHeaders(ownerId),
   });
   if (res.status === 503) return {};
@@ -142,7 +142,7 @@ async function fetchImage(
     params.toString() ? `?${params.toString()}` : ''
   }`;
   const headers = new Headers(await apiHeaders(ownerId, { share: opts.shareCode ?? null }));
-  const res = await fetch(url, { headers });
+  const res = await apiFetch(url, { headers });
   return res.ok ? res : null;
 }
 

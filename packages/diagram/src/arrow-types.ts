@@ -28,14 +28,7 @@ export type Endpoint =
   // position resolves dynamically from the target arrow's centreline, so it
   // tracks the target as it moves / reshapes (e.g. sequence-diagram messages
   // attached to a lifeline arrow). Resolved by `endpointPosition`.
-  | { kind: 'on-arrow'; arrowId: ElementId; t: number }
-  // Pinned to a GROUP's union bounding box (spec/09 group quick-connect):
-  // resolves dynamically as the `anchor` point of the live union bounds of
-  // every member sharing `groupId`, so the arrow tracks the group as it
-  // moves / resizes / gains or loses members. Ungrouping (or deleting the
-  // group's last member) converts these ends to `free` at their last
-  // position — see `ungroup` / `freezeDanglingGroupEnds` in groups.ts.
-  | { kind: 'pinned-group'; groupId: ElementId; anchor: Anchor };
+  | { kind: 'on-arrow'; arrowId: ElementId; t: number };
 
 // Which endpoint(s) of an arrow get an arrowhead marker. 'to' (default)
 // is the conventional one-way arrow; 'from' flips it; 'both' makes a
@@ -55,6 +48,12 @@ export type ArrowElement = {
   // default arrow slate when unset. There's no fill or text on an
   // arrow so this is the only colour field.
   strokeColor?: string;
+  // Arrowhead colour, when it should differ from the line's. Unset means the
+  // heads take the line's colour, which is the usual case and how every arrow
+  // drawn before this behaved: the shared markers inherit it through SVG's
+  // `context-stroke`. Setting this makes the arrow carry its own marker, so a
+  // red head on a grey line is a colour choice rather than two elements.
+  arrowheadColor?: string;
   opacity?: number; // 0..1, defaults to 1
   link?: ElementLink;
   arrowEnds?: ArrowEnds;
@@ -157,5 +156,11 @@ export type ArrowElement = {
   // Label colour, independent of `strokeColor` (the line). Falls back to
   // the stroke colour when unset so the label matches the line by default.
   textColor?: string;
+  // A plate behind the label (spec/09 "Caption"). Absent = none, which is how
+  // the label has always drawn: straight onto the canvas. A caption crossing
+  // its own line, another arrow, or a busy backdrop is the case this exists
+  // for, and it is a deliberate choice rather than a default because an
+  // opaque plate on an otherwise clean diagram adds a box nobody asked for.
+  labelFill?: string;
   font?: string;
 };

@@ -27,20 +27,30 @@ import {
   type IconSize,
   type Padding,
   type ShapeKind,
+  isChartShape,
+  type ChartPaletteId,
+  type CodeThemeId,
   type ShapeMarker,
   type TextAlignX,
   type TextAlignY,
   type TextSize,
 } from '@livediagram/diagram';
 import type { ShapeColorPreset } from './themes';
+import type { TablePreset } from '@livediagram/diagram';
 
 // Apply a theme-derived style preset to a shape: its colours (fill + stroke +
 // text) AND its border weight / pattern together — a preset is one complete
 // look (spec/48). Border RADIUS is deliberately untouched: it's a silhouette
 // choice the user makes separately, and a preset clobbering it read as the
 // preset breaking the shape. Records the preset id so theme changes can
-// re-derive it. No-op on non-shapes.
+// re-derive it.
 export function applyColorPresetToEl(el: Element, p: ShapeColorPreset): Element {
+  // A sticky takes the paper and the ink and nothing else: its edge against
+  // the peel shadow IS its border, so a stroke here would draw a hairline box
+  // around the note. Any hand-set one is cleared with the pick, which is what
+  // "one complete look" means for a note.
+  if (el.type === 'sticky')
+    return { ...el, fillColor: p.fill, textColor: p.text, strokeColor: undefined };
   if (el.type !== 'shape') return el;
   return {
     ...el,
@@ -53,6 +63,42 @@ export function applyColorPresetToEl(el: Element, p: ShapeColorPreset): Element 
   };
 }
 
+// A table look (spec/48): the four surfaces a table paints, plus the banding,
+// in one history step. `headerRow` / `headerColumn` are untouched: which cells
+// ARE headers is data, not a look. A no-op on anything but a table.
+export function applyTablePresetToEl(el: Element, p: TablePreset): Element {
+  if (el.type !== 'table') return el;
+  return {
+    ...el,
+    fillColor: p.fill,
+    strokeColor: p.stroke,
+    textColor: p.text,
+    headerFill: p.headerFill,
+    headerTextColor: p.headerText,
+    zebra: p.zebra,
+    // Records which look this is, so a theme change can re-derive it the way a
+    // shape's `colorPreset` does. Without it the four resolved colours read as
+    // hand-picked ones and the table strands on the old theme.
+    tablePreset: p.id,
+  };
+}
+
+// A chart's palette (spec/53). One field, like the code block's scheme: the
+// ramp is resolved at render, so this never touches the data and a slice the
+// user coloured deliberately keeps its colour.
+export function applyChartPaletteToEl(el: Element, id: ChartPaletteId): Element {
+  if (el.type !== 'shape' || !isChartShape(el.shape)) return el;
+  return { ...el, chartPalette: id };
+}
+
+// A code block's colour scheme (spec/82). Its own kind of preset: the card
+// paints from the scheme and takes no element colours, so this writes one
+// field and nothing else. A no-op on anything that is not a code block.
+export function applyCodeThemeToEl(el: Element, id: CodeThemeId): Element {
+  if (el.type !== 'shape' || el.shape !== 'code-block') return el;
+  return { ...el, codeTheme: id };
+}
+
 // ── Granular single-field transforms ────────────────────────────────────
 //
 // The individual colour / border / rotation controls in the context menu hover-
@@ -62,26 +108,52 @@ export function applyColorPresetToEl(el: Element, p: ShapeColorPreset): Element 
 // change its click commits. Each MUST match the per-type rules in
 // useElementStyle exactly.
 
-// Hand-editing any colour breaks a shape's colour-preset binding (spec/48), so
-// setting fill / stroke / text on a shape clears `colorPreset` (a no-op field on
-// other types). Fill applies to shapes + sticky / freehand / table.
+// Hand-editing any colour breaks the element's preset binding (spec/48), so
+// setting fill / stroke / text clears `colorPreset` on a shape and
+// `tablePreset` on a table: past that point the colours are the user's, and a
+// theme change must preserve them rather than re-deriving a look they have
+// already edited away from. Fill applies to shapes + sticky / freehand / table.
 export function applyFillColorToEl(el: Element, color: string): Element {
   if (el.type === 'shape') return { ...el, fillColor: color, colorPreset: undefined };
-  if (el.type === 'sticky' || el.type === 'freehand' || el.type === 'table')
-    return { ...el, fillColor: color };
+  if (el.type === 'table') return { ...el, fillColor: color, tablePreset: undefined };
+  if (el.type === 'sticky' || el.type === 'freehand') return { ...el, fillColor: color };
   return el;
 }
 
 export function applyStrokeColorToEl(el: Element, color: string): Element {
   if (el.type === 'shape') return { ...el, strokeColor: color, colorPreset: undefined };
-  if (el.type === 'sticky' || el.type === 'arrow' || el.type === 'freehand' || el.type === 'table')
+  if (el.type === 'table') return { ...el, strokeColor: color, tablePreset: undefined };
+  if (el.type === 'sticky' || el.type === 'arrow' || el.type === 'freehand')
     return { ...el, strokeColor: color };
   return el;
 }
 
 export function applyTextColorToEl(el: Element, color: string): Element {
   if (el.type === 'shape') return { ...el, textColor: color, colorPreset: undefined };
+  if (el.type === 'table') return { ...el, textColor: color, tablePreset: undefined };
   if (isBoxed(el) || el.type === 'arrow') return { ...el, textColor: color };
+  return el;
+}
+
+// The plate behind an arrow's label (spec/09 "Caption"). Arrows only: nothing
+// else paints a caption onto the canvas rather than inside a box.
+export function applyLabelFillToEl(el: Element, color: string): Element {
+  return el.type === 'arrow' ? { ...el, labelFill: color } : el;
+}
+
+// An arrow's arrowhead colour, when it should differ from the line's. Arrows
+// only: nothing else has a pointer to paint.
+export function applyArrowheadColorToEl(el: Element, color: string): Element {
+  return el.type === 'arrow' ? { ...el, arrowheadColor: color } : el;
+}
+
+// The heading band's fill, for the elements that HAVE a heading distinct from
+// their body: a table's header row and a lane's title gutter. A no-op on
+// anything else, so a multi-selection containing a mix only paints the ones
+// with a heading rather than parking a dead field on the rest.
+export function applyHeaderFillToEl(el: Element, color: string): Element {
+  if (el.type === 'table') return { ...el, headerFill: color, tablePreset: undefined };
+  if (el.type === 'shape' && el.shape === 'lane') return { ...el, headerFill: color };
   return el;
 }
 

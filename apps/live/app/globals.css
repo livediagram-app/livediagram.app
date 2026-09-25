@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import '@livediagram/tailwind-config';
+@import '@livediagram/template-previews/preview-art-tile.css';
 
 /* Scan the shared UI package so utility classes used only inside its
  * components (e.g. the <Brand> mark's hover-rotate) are generated here too.
@@ -84,7 +85,7 @@
  * fill so each tile previews the real themed element. `fill` is an inherited
  * SVG property, so paths whose fill lives on the parent <svg> inherit it too.
  * A presentation attribute (`fill="none"`) has lower specificity than any
- * author selector, so this wins; tiles without the class (and the Default colour scheme
+ * author selector, so this wins; tiles without the class (and the Default theme
  * theme, which sets no `--tile-fill`) keep their hollow line-art look.
  */
 .palette-tile-filled [fill='none'] {
@@ -105,6 +106,10 @@
   --animate-pop-out: pop-out 220ms cubic-bezier(0.4, 0, 1, 1) forwards;
   --animate-fade-in: fade-in 260ms ease-out;
   --animate-fly-up-in: fly-up-in 420ms cubic-bezier(0.16, 1, 0.3, 1);
+  /* A sheet rising from the bottom edge of the screen. Distinct from
+     fly-up-in's 16px lift: this one travels its own full height, so it reads
+     as arriving from off-screen rather than settling into place. */
+  --animate-sheet-up: sheet-up 340ms cubic-bezier(0.16, 1, 0.3, 1);
   --animate-slide-row-in: slide-row-in 220ms cubic-bezier(0.16, 1, 0.3, 1);
   --animate-slide-row-out: slide-row-out 220ms cubic-bezier(0.4, 0, 1, 1) forwards;
   --animate-slide-in-left: slide-in-left 240ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -239,6 +244,17 @@
   }
 }
 
+@keyframes sheet-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
 @keyframes fly-up-in {
   from {
     transform: translateY(16px) scale(0.96);
@@ -330,6 +346,28 @@
   animation-iteration-count: 1 !important;
   transition-duration: 0.01ms !important;
   scroll-behavior: auto !important;
+}
+
+/*
+ * Staggered entrance. An item in a list or grid that should arrive one beat
+ * after the one before it: pair with any `animate-*` utility and set
+ * `--stagger-i` to the item's index (and `--stagger-step` to change the
+ * 40ms beat). `backwards` fill keeps a delayed item
+ * at its keyframe start (invisible) until its turn, instead of showing it
+ * and then re-hiding it. Reduced motion zeroes the delay as well as the
+ * duration (above), so nothing waits on a beat it will never see.
+ */
+.stagger-enter {
+  animation-delay: calc(var(--stagger-i, 0) * var(--stagger-step, 40ms));
+  animation-fill-mode: backwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .stagger-enter {
+    animation-delay: 0s !important;
+  }
+}
+:root.reduce-motion .stagger-enter {
+  animation-delay: 0s !important;
 }
 
 /*
@@ -1907,15 +1945,17 @@
   translate: 0 0 calc(var(--iso-z, 0) * 0.01px);
 }
 
-/* The floating chrome gets its OWN compositing layer.
+/* The floating chrome gets its OWN compositing layer while isometric is on.
    Isometric puts a large preserve-3d scene on the page, and the panels sit
    above it in z but shared its repaint region — which is why the palette
    flickered too, not just the diagram. `will-change` is the promotion hint
    that doesn't touch `transform`, which MovablePanel needs for dragging.
-   Unconditional rather than gated on [data-iso]: these are a handful of small
-   panels, promoting them costs almost nothing, and a rule that only applies
-   mid-mode would itself cause a layer churn on every mode switch. */
-[data-floating-panel] {
+   Gated on the scene being there rather than unconditional: a promoted layer
+   loses sub-pixel text anti-aliasing on a 1x display, so every panel's small
+   text (the palette's tile captions most of all) read soft ALL the time to
+   buy a fix that only matters in one mode. The cost is one re-layer on
+   entering and leaving isometric, which is a deliberate, rare switch. */
+:root:has([data-iso]) [data-floating-panel] {
   will-change: transform;
 }
 
@@ -2119,26 +2159,4 @@ html[data-presenting][data-slide-transition='slide'][data-slide-move='back']
   --ld-timeline-create-soft: rgb(52 211 153 / 0.07);
   --ld-timeline-neutral: #94a3b8;
   --ld-timeline-neutral-soft: rgb(148 163 184 / 0.06);
-}
-
-/* Tiles holding light-canvas illustration art (spec/14, spec/48).
-   ---------------------------------------------------------------
-   The ~48 template previews and the export-format glyphs are hand-drawn
-   LIGHT-CANVAS art: white element fills, slate rules, dark ink. They used to
-   keep a light plate in dark chrome so they stayed legible, which left the New
-   Diagram screen as a grid of bright white cards on a near-black dialog - the
-   one place the editor still looked half-converted.
-
-   Re-light the whole tile rather than redraw forty-eight illustrations:
-   inverting lightness and spinning the hue back puts the art on dark paper
-   with its hues intact (a blue node stays blue, an amber sticky stays amber),
-   and it keeps working for previews nobody has drawn yet. The invert stops
-   short of 1 so white lands on a soft near-black rather than pure #000,
-   matching the canvas's own dark paper instead of punching holes in the
-   dialog.
-
-   Deliberately NOT applied to colour-scheme swatches: those are showing you a
-   scheme's actual colours, so re-lighting them would be a lie. */
-.dark .preview-art-tile {
-  filter: invert(0.9) hue-rotate(180deg);
 }

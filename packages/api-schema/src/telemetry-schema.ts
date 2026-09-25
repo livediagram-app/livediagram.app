@@ -15,6 +15,8 @@
 // ingest validator use exactly one definition (and the public
 // dashboard can only ever surface values from this closed vocabulary).
 
+import { isValidPageViewPath } from './page-views';
+
 export const TELEMETRY_CATEGORIES = [
   'Diagram',
   'Element',
@@ -39,6 +41,13 @@ export const TELEMETRY_CATEGORIES = [
   // to-layer, 'Opened' for the panel. Never layer names in `type`.
   'Layer',
   'Session',
+  // The facilitator baton (spec/149): who is running a live session.
+  // 'Started' when somebody takes a free one, 'Changed' when it is handed on
+  // or taken back, 'Ended' when the holder steps down. `type` is the shape of
+  // the move ('Claimed' / 'Granted' / 'Released'), or 'Unlocked' when the
+  // facilitator frees an element somebody was holding (spec/07 lock) — never a
+  // name: the question is whether rooms use the role at all, not who held it.
+  'Facilitator',
   'AI',
   'Team',
   // Participant lifecycle (spec/22): 'Participant'/'Created' fires
@@ -86,6 +95,18 @@ export const TELEMETRY_CATEGORIES = [
   // only signal we get for a feed nobody could load. Never a diagram
   // name, team name, or comment text.
   'Timeline',
+  // Activity page (spec/142): the Explorer's cross-diagram inbox of open
+  // actions + comment threads. 'Opened' once per visit; 'Selected' with
+  // `type` 'Action' | 'Thread' on a row click (which kind of row sends
+  // people back into a diagram); 'Loaded'/'Retry' when a failed read is
+  // retried. Never an action name, comment text, or diagram name.
+  'Activity',
+  // Page views (spec/150): 'View' with `type` the normalised page path
+  // ('/help/canvas/the-canvas', '/diagram'), reported by every
+  // frontend on each path change. The one category whose `type` is a path,
+  // so it validates against PAGE_VIEW_PATH_PATTERN instead of the token
+  // pattern, and only ever pairs with 'View'.
+  'Page',
 ] as const;
 export type TelemetryCategory = (typeof TELEMETRY_CATEGORIES)[number];
 
@@ -107,6 +128,9 @@ export const TELEMETRY_ACTIONS = [
   'Exported',
   'Locked',
   'Unlocked',
+  // HISTORICAL: the editor stopped emitting these when groups were removed
+  // (spec/147). They stay in the vocabulary so the rows already stored keep
+  // their label on the dashboard.
   'Grouped',
   'Ungrouped',
   'Duplicated',
@@ -189,6 +213,10 @@ export function isValidTelemetryEvent(value: unknown): value is TelemetryEvent {
   const e = value as Record<string, unknown>;
   if (!TELEMETRY_CATEGORIES.includes(e.category as TelemetryCategory)) return false;
   if (!TELEMETRY_ACTIONS.includes(e.action as TelemetryAction)) return false;
+  // A page view is only a page view with a path (spec/150).
+  if (e.category === 'Page') {
+    return e.action === 'View' && typeof e.type === 'string' && isValidPageViewPath(e.type);
+  }
   if (e.type === undefined || e.type === null) return true;
   return typeof e.type === 'string' && TELEMETRY_TYPE_PATTERN.test(e.type);
 }
@@ -196,6 +224,17 @@ export function isValidTelemetryEvent(value: unknown): value is TelemetryEvent {
 // The fixed dashboard windows (spec/22): no custom ranges, so queries
 // stay simple and the summary response is cacheable.
 export type TelemetryWindowKey = 'today' | 'last7' | 'last30';
+
+// How many UTC calendar days each window spans, ending with today (so
+// `last7` is today plus the six days before it, each from UTC midnight).
+// Shared by the api, which counts each window over exactly these days, and
+// the dashboard, which highlights the same span of the 30-day trend line:
+// one definition, so the number on a card and the line under it agree.
+export const TELEMETRY_WINDOW_DAYS: Record<TelemetryWindowKey, number> = {
+  today: 1,
+  last7: 7,
+  last30: 30,
+};
 
 export type TelemetryCount = {
   category: string;
@@ -308,12 +347,17 @@ export const PALETTE_TELEMETRY_TYPES = {
     'DoneCheck',
     // Chair (spec/130): a Behaviour element, so it ranks with them.
     'Chair',
+    // Bring Focus (spec/144): likewise Behaviour, in the Navigate group. The
+    // token is what elementTelemetryType actually emits for the kind, which
+    // for a hyphenated one is the hyphen kept (see Pie-chart above).
+    'Focus-button',
     'Pie-chart',
     'Bar-chart',
     'Line-chart',
     'Progress-bar',
     'Progress-ring',
     'Rating',
+    'Legend',
   ],
   // The Collaborate category (spec/123 to spec/129) — its own bucket rather
   // than more entries under `tools`, because the palette gave it its own
@@ -329,9 +373,11 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Roll-call',
     // Comment pin (spec/136).
     'CommentPin',
+    // Action panel (spec/146).
+    'ActionPanel',
   ],
   components: ['Banner', 'Hero', 'Header', 'Callout', 'StatRow', 'ProcessSteps'],
-  devices: ['Browser', 'Monitor', 'Laptop', 'Phone', 'Tablet', 'Smartwatch'],
+  devices: ['Browser', 'Monitor', 'Laptop', 'Phone', 'Tablet', 'Foldable', 'Smartwatch'],
   icons: ['Icon', 'TechIcon', 'Sticker'],
 } as const satisfies Record<string, readonly string[]>;
 

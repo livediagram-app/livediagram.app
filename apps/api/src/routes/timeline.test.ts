@@ -15,6 +15,9 @@ const { store } = vi.hoisted(() => ({
     getScopeState: vi.fn(),
     markScopeSeen: vi.fn(),
     countUnseen: vi.fn(),
+    dismissTimelineEventForScope: vi.fn(),
+    dismissTimelineEventsForScope: vi.fn(),
+    DISMISS_BATCH_MAX: 200,
   },
 }));
 vi.mock('../db/timeline', () => store);
@@ -47,7 +50,7 @@ const makeCtx = (
 };
 
 beforeEach(() => {
-  for (const fn of Object.values(store)) fn.mockReset();
+  for (const fn of Object.values(store)) if (typeof fn === 'function') fn.mockReset();
   emit.backfillUserScope.mockReset();
   db.getMembership.mockReset();
   db.getMembership.mockResolvedValue(null);
@@ -328,5 +331,63 @@ describe('handleTimeline refresh', () => {
   it('400s with no owner', async () => {
     const res = await handleTimeline(makeCtx('POST', '/api/timeline/refresh', { owner: null }));
     expect(res.status).toBe(400);
+  });
+});
+
+// Per-entry dismissal (spec/138 §2.9). The only write on the feed, and
+// it is always against the caller's own scope: there is no parameter
+// that could point it at somebody else's.
+describe('handleTimeline dismiss', () => {
+  it('204 and soft-deletes the membership in the callers own scope', async () => {
+    store.dismissTimelineEventForScope.mockResolvedValue(true);
+    const res = await handleTimeline(makeCtx('DELETE', '/api/timeline/events/ev-1'));
+    expect(res.status).toBe(204);
+    expect(store.dismissTimelineEventForScope).toHaveBeenCalledWith(
+      {},
+      { scopeType: 'user', scopeId: 'owner-1' },
+      'ev-1',
+    );
+  });
+
+  it('404 when the callers feed never held the event', async () => {
+    store.dismissTimelineEventForScope.mockResolvedValue(false);
+    const res = await handleTimeline(makeCtx('DELETE', '/api/timeline/events/ev-x'));
+    expect(res.status).toBe(404);
+  });
+
+  it('400 without an owner — a feed to remove from has to belong to someone', async () => {
+    const res = await handleTimeline(
+      makeCtx('DELETE', '/api/timeline/events/ev-1', { owner: null }),
+    );
+    expect(res.status).toBe(400);
+    expect(store.dismissTimelineEventForScope).not.toHaveBeenCalled();
+  });
+
+  // A whole stack in one call.
+  it('dismisses an id list against the callers own scope and reports the count', async () => {
+    store.dismissTimelineEventsForScope.mockResolvedValue(2);
+    const res = await handleTimeline(
+      makeTestRouteContext('POST', '/api/timeline/events/dismiss', {
+        owner: 'owner-1',
+        body: { ids: ['ev-1', 'ev-2', 'gone'] },
+      }),
+    );
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ dismissed: 2 });
+    expect(store.dismissTimelineEventsForScope).toHaveBeenCalledWith(
+      {},
+      { scopeType: 'user', scopeId: 'owner-1' },
+      ['ev-1', 'ev-2', 'gone'],
+    );
+  });
+
+  it('400s an empty, missing, or oversized id list', async () => {
+    for (const body of [{}, { ids: [] }, { ids: 'ev-1' }, { ids: Array(201).fill('x') }]) {
+      const res = await handleTimeline(
+        makeTestRouteContext('POST', '/api/timeline/events/dismiss', { owner: 'owner-1', body }),
+      );
+      expect(res.status).toBe(400);
+    }
+    expect(store.dismissTimelineEventsForScope).not.toHaveBeenCalled();
   });
 });

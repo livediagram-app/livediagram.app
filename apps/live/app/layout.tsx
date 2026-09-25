@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import { ClerkProvider } from '@/components/providers/ClerkProvider';
 import { ErrorTelemetryBoot } from '@/components/providers/ErrorTelemetryBoot';
+import { PageViewBoot } from '@/components/providers/PageViewBoot';
 import { TruthArmBoot } from '@/components/providers/TruthArmBoot';
 import { ConfirmProvider } from '@/hooks/ui/useConfirm';
 import { ToastProvider } from '@/hooks/ui/useToast';
@@ -108,6 +109,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <script dangerouslySetInnerHTML={{ __html: APPEARANCE_BOOT_SCRIPT }} />
         <script dangerouslySetInnerHTML={{ __html: REDUCE_MOTION_BOOT_SCRIPT }} />
         <ErrorTelemetryBoot />
+        <PageViewBoot />
         <TruthArmBoot />
         <ClerkProvider>
           <ToastProvider>

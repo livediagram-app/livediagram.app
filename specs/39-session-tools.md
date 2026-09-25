@@ -19,6 +19,11 @@ current state for free**, and persistence is automatic.
 isn't undoable. The facilitator lifecycle actions emit a one-shot Activity-log
 line (`emitTabMeta`); the high-frequency vote casts deliberately don't log.
 
+**One exception, learned the hard way: dots needed their own op.** Everything
+above holds for the timer and for a vote's lifecycle, which have a single
+writer. It did not hold for `vote.votes`, which every participant writes at
+once — see "Casting a dot" below.
+
 ## Roles
 
 The realtime room already **drops view-role mutations** (spec/11). So every
@@ -30,26 +35,72 @@ live counts but can't control or vote. No extra gating code.
 
 Both tools can also be started by a [Session button](105-session-button.md) — a canvas element carrying "5 minute timer" or "vote, 3 dots each" — so a board can carry its own facilitation instead of relying on whoever built it. It presses through the same entry points described below, so every rule here still applies, the edit-role gate included.
 
+## The Session Studio
+
+The tab menu's **Collaborate** row opens one side-flyout panel (a
+`MenuFlyoutSection` with `panel`, so it is never promoted inline and is
+drawn wider, `w-72`, scrolling when taller than the screen, and **vertically centred on the host menu** rather than hung from its row, so it grows evenly both ways as a pane changes height; the viewport clamp still wins near a screen edge). It replaced four
+stacked accordions (Timer, Stopwatch, Vote, Poll) that were strips of small
+grey buttons. A segmented switcher across the top, **Timer · Vote ·
+Poll**, carries a status dot per tool (green pulsing = running, amber = set
+up but paused / closed), and the panel **opens on whatever is live**
+(`initialStudioTool`: live beats idle, poll before vote before timer), since
+the usual reason to come back mid-session is to drive what is running. Each
+tool gets a purpose-built pane (`components/panels/session-studio/`), described
+under its section below and in spec/88 for the poll.
+
+## One UI per tool, in three places
+
+A session tool's controls are ONE component, rendered in the Session Studio
+pane, in the element's `…` quick menu, and in that element's right-click
+**Session** category. They used to be three separate implementations of the
+same question — a dial in the Studio, eight stacked "N minutes" rows in the
+popover, a number field in the context menu — and they drifted exactly as you
+would expect: different controls, different wording, and for polls a different
+answer cap.
+
+The bodies are CONTROLLED (`TimerSetupBody`, `VoteSetupBody`,
+`PollComposerBody`), which is what lets one component serve both jobs: in the
+Studio the value is local state and means "what I am about to start"; on an
+element it is the element's stored config, so setting it configures the button
+AND the Start button runs it now with that value. One number doing both, so no
+mode flag is needed.
+
+The element menus read the session verbs off `EditorContext` rather than taking
+them as props, because threading them would mean new props on `Canvas` and
+every element face, and the faces are memoised so a canvas of a hundred
+elements does not re-render on unrelated state. That is safe because of WHERE
+the bodies mount: `ElementEllipsisMenu` invokes its children only while the
+popover is open, so nothing subscribes until somebody asks to see it.
+
+The element popover matches the Studio pane's width (286px). Not cosmetic: the
+poll's answer tiles wrap differently at 240px, which is how a label came to be
+truncated in one surface and not the other.
+
 ## Timer
 
 `tab.timer: { mode: 'countdown' | 'stopwatch'; running; durationMs?; anchorAt?; frozenMs? }`.
 
-- Controlled from the tab menu's **Collaborate** row — a side-flyout
-  parent (`MenuFlyoutSection`, the same parent/child pattern the element
-  menu uses for Style / Text / Tools) that groups every live session tool
-  under one entry instead of four top-level rows: **Timer**,
-  **Stopwatch**, **Vote**, and the ephemeral **Poll** (spec/88). The Timer
-  category was originally labelled "Countdown"; it reads **Timer** in the UI
-  (the countdown/stopwatch split is a mode, not two features), and the
-  telemetry type stays `CountdownTimer` so the series doesn't break.
-  Timer carries a duration (1 / 3 / 5 / 10 min presets); both timers offer
-  **Start / Pause / Resume / Reset / Clear**
-  (`useTabSession`). The open category shows a live big-digit clock with a
-  running/paused status and, for countdowns, a progress track.
-- **One timer per tab**: `tab.timer` is a single value, so starting either
-  tool replaces (resets) the other. When the other tool is running, the
-  Start UI says so before it happens ("Starting resets the running
-  stopwatch/countdown").
+- Controlled from the tab menu's **Collaborate** row, the **Session
+  Studio** (see below). Countdown and Stopwatch are one **Timer** tool with a
+  mode switch, since a tab runs one timer (the telemetry types stay
+  `CountdownTimer` / `StopwatchTimer`). A countdown's length is set on the
+  **dial**: drag the handle round (one lap = an hour, the wedge IS the time),
+  tap a preset (1 / 3 / 5 / 10 / 15 / 30 min), or step a minute with − / +,
+  up to `TIMER_MINUTES_RANGE.max` (2 hours; a length past one lap draws an
+  outer lap ring). The dial is a `role="slider"` and takes arrow keys (±1),
+  Page Up/Down (±5), Home / End. Dragging past twelve **sticks at the pin**
+  rather than wrapping 59 → 1 (`dialDragMinutes`). Running, the same dial is
+  the readout: the wedge drains toward twelve, turning amber in the last
+  minute and red at zero; a stopwatch sweeps a ring once a minute. Under it
+  sit round transport buttons, **Reset / Pause|Resume / End** (and **Again**
+  once a countdown hits zero, which restarts it at its length), plus
+  **+30s / +1 min / +5 min** on a countdown (`extendTimer`: the end instant
+  and the length grow together, so the wedge stays a true fraction instead of
+  jumping back to full; telemetry `Changed TimerExtended`).
+- **One timer per tab**: `tab.timer` is a single value. While one exists the
+  Timer pane shows it instead of the set-up, so there is no way to start a
+  second one by accident; ending it returns to the set-up.
 - Clients tick **locally off an absolute wall-clock anchor** (`anchorAt` =
   countdown end-time or stopwatch start instant), so there is **no per-second
   network chatter** — every client computes the same value via the pure
@@ -72,15 +123,76 @@ Both tools can also be started by a [Session button](105-session-button.md) — 
 `tab.vote: { active; revealed; votesPerPerson; votes: Record<elementId, participantId[]> }`
 — one participant id per dot, so stacking N dots on one element is N entries.
 
-- Controlled from **Tab menu → Collaborate → Vote**: a **dots-per-person**
-  stepper, then **Start vote** → **End vote** → **Show results** → **Clear**,
-  with a live "N cast" readout.
+### Casting a dot: the one thing that is not plain tab state
+
+A dot travels as its own room op, `{ kind: 'vote', tabId, elementId, voter, delta: 1 | -1 }`,
+sent the instant it is cast. Everything else about a vote rides the ordinary
+tab-sync pipeline described above; this one field cannot, and the reason is
+worth keeping because it is easy to re-introduce.
+
+`votes` is a single map that **every participant writes at the same time**, and
+tab meta travelled between peers as a whole-object patch — `{ ...tab, ...patch }`
+on receipt, replacing the field. So a peer's patch, built from a snapshot taken
+before your dot arrived, silently erased it. The window was the full 600 ms
+autosave debounce, because dots waited for the autosave like any other tab
+change. A retro with six voters and six dots each lost votes and saw dots
+retract on their own; with that many people casting at once, collisions were
+close to certain.
+
+It also drifted the budget. `votesSpentBy` counts your remaining dots out of
+that same map, so a clobber did not just lose a dot — it handed it back as
+spendable, and a stale snapshot restoring a retracted dot took one away.
+
+The fix carries the **change**, not the state, so concurrent dots commute: every
+peer applies both in whatever order they land and converges on the same map
+(`applyVoteDelta`, `packages/diagram/src/session.ts`). It is the same move
+[spec/75](75-realtime-conflict-resolution.md) made for elements, on the one
+field where concurrent writers are the whole point rather than the exception.
+
+Two rules keep it honest:
+
+- **`votes` changing ALONE is dots**, and is withheld from the tab-meta patch
+  (`voteChangeIsDotsOnly`). Shipping it there as well would put the clobber
+  straight back.
+- **`votes` changing alongside any other vote field is a lifecycle event** —
+  start, end, reveal, clear, or stepping the results walkthrough. Those are the
+  host's alone, so there is exactly one writer, and the whole object still
+  travels as a patch (which is also how a start or a clear resets the map).
+
+`vote` is a MUTATION op: it gets a seq, lands in the catch-up log so a
+reconnecting peer replays the dots it missed, and is refused from a view-role
+sender, matching the fact that casting already requires edit rights.
+
+`applyVoteDelta` deliberately does **not** check the budget. Whether somebody
+_may_ cast is a rule enforced where the press happens; a dot a peer has already
+cast is a fact, and refusing to apply it would leave that peer's screen
+disagreeing with the room forever.
+
+Residual, stated plainly: two clients still autosave the whole tab, so a save
+that lands before an op is applied can persist a map missing a dot. They
+converge within a round-trip and the next save writes the converged map, so
+this is a much smaller window than the one it replaces rather than none at all.
+Ending a vote persists the host's final state.
+
+- Controlled from **Tab menu → Collaborate → Vote** (the Session
+  Studio): the dot budget is picked as a **row of dots** (tap the fifth for
+  five each, `VOTE_DOTS_RANGE` 1-10, the same range as the Session button),
+  a **Dots per item** choice (**Any number**, the default and classic
+  stacking, or **One each**, which caps each participant at one dot per
+  element so the budget becomes "pick your top N"; hidden when the budget
+  is one dot, and stored as `TabVote.onePerElement`, absent = stacking),
+  the privacy switches are cards that say what the room will not see, then
+  **Start vote** → **End vote** → **Show results** → **Clear vote**. Running,
+  the pane shows a three-step track (Voting · Ended · Results), live counts of
+  dots placed and distinct voters, the rules in force as chips, and ONE
+  primary button for the next step (Clear vote stays available as a
+  secondary until results are shown).
 - **Votable targets** (`isVotable`): shapes, sticky notes, and images — **not**
   the `frame` shape (a section backdrop) and not text / freehand / table /
   arrow / annotation.
 - **Casting**: while `vote.active`, pressing a votable element places one of
   your dots (`BoxedElementView` intercepts the pointer-down before
-  select/drag); your budget (`votesPerPerson`) is enforced via `votesSpentBy`.
+  select/drag); your budget (`votesPerPerson`), and the one-per-item rule when it is on, are enforced by `canCastVote`, the one check the cast handler and the stepper's plus both read.
   Non-votable elements still select normally so the board stays editable.
   Counts are **live**. While casting is open, every votable element carries a
   **stepper** — minus, the count, plus — reading `0` before anything lands.
@@ -88,7 +200,7 @@ Both tools can also be started by a [Session button](105-session-button.md) — 
   click-to-retract count that only appeared once an element already had a
   dot, which made the first dot on a board an act of faith: nothing on
   screen said an element was a target or how to add to it. Minus is
-  disabled at zero and plus once your budget is spent, rather than
+  disabled at zero and plus once your budget is spent (or, on a one-per-item vote, once you have a dot on that element), rather than
   hidden, so the row's width — and so the plus's position — never shifts
   under the pointer mid-vote. The stepper sits INSIDE the element's
   bottom-right corner (clearance from the edge, and from a neighbour's

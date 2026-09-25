@@ -11,8 +11,6 @@
 // yellow / medium on a fresh editor load, the way a real pen cup does. Nothing
 // here is stored on the diagram or sent to the api.
 
-export type HighlighterWidth = number;
-
 // The marker cup: yellow (the default) plus the classic set. Fixed hexes, not
 // theme colours — a highlighter that changed colour with the tab's palette
 // would stop being recognisable as a highlight.

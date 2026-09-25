@@ -2,10 +2,9 @@ import { drawBannerMessage, isMarkerIntent } from '@/lib/draw-mode';
 import { isMobileViewportSync } from '@/lib/responsive';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { ModeBanner } from '@/components/chrome/ModeBanner';
-import { GroupIcon } from '@/components/canvas/selection-popover-icons';
 import { ParticipantAvatar } from '@/components/primitives/ParticipantAvatar';
 import { TimerWidget } from '@/components/chrome/TimerWidget';
-import { TopCenterRow, TopCenterStack } from '@/components/chrome/TopCenter';
+import { TopCenterBanner, TopCenterRow, TopCenterStack } from '@/components/chrome/TopCenter';
 import { VoteBanner } from '@/components/chrome/VoteBanner';
 
 // Everything that floats at the top of the canvas: the owner / role
@@ -17,6 +16,7 @@ import { VoteBanner } from '@/components/chrome/VoteBanner';
 type TopCenterChromeProps = Pick<
   CanvasProps,
   | 'isOwner'
+  | 'toolbarLayout'
   | 'zenMode'
   | 'ownerParticipant'
   | 'selfParticipant'
@@ -27,7 +27,6 @@ type TopCenterChromeProps = Pick<
   | 'onExitFormatTool'
   | 'canvasTool'
   | 'formatSourceId'
-  | 'onCancelGroup'
   | 'tabTimer'
   | 'tabVote'
   | 'onPauseTimer'
@@ -41,7 +40,6 @@ type TopCenterChromeProps = Pick<
 > & {
   // From CanvasChrome's computed ChromeExtras, not CanvasProps.
   isPaintMode: boolean;
-  isGroupMode: boolean;
   // Follow-me (spec/131): who we are following, so the pill can say so and
   // offer the way out. Any canvas gesture also ends it silently — this is the
   // explicit door, not the only one.
@@ -50,6 +48,7 @@ type TopCenterChromeProps = Pick<
 };
 
 export function TopCenterChrome({
+  toolbarLayout,
   isOwner,
   zenMode,
   ownerParticipant,
@@ -61,9 +60,7 @@ export function TopCenterChrome({
   onExitFormatTool,
   canvasTool,
   formatSourceId,
-  onCancelGroup,
   isPaintMode,
-  isGroupMode,
   tabTimer,
   tabVote,
   onPauseTimer,
@@ -78,13 +75,18 @@ export function TopCenterChrome({
   onStopFollowing,
 }: TopCenterChromeProps) {
   return (
-    <TopCenterStack>
+    <TopCenterStack belowToolbar={toolbarLayout === true && !readOnly}>
       {/* Follow-me (spec/131). Shown on every viewport and in Zen mode: being
           moved around by somebody else without being told why is the one state
           this feature must never leave you in. */}
       {followingName ? (
         <TopCenterRow>
-          <div className="flex items-center gap-2 rounded-full bg-brand-500 px-3 py-1 text-[11px] font-medium text-white shadow-sm">
+          {/* A TopCenterBanner rather than a hand-rolled pill, because the
+              stack is `pointer-events-none` and each pill re-enables events
+              for ITSELF. Built by hand, this one never did: Stop could not be
+              clicked and did not even take the pointer cursor, so the only
+              exit from being followed was a canvas gesture. */}
+          <TopCenterBanner tone="live" className="gap-2 px-3 py-1 text-[11px] font-medium">
             <span className="relative flex h-1.5 w-1.5" aria-hidden>
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white/80" />
               <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-white" />
@@ -97,7 +99,7 @@ export function TopCenterChrome({
             >
               Stop
             </button>
-          </div>
+          </TopCenterBanner>
         </TopCenterRow>
       ) : null}
       {/* Visitor-only owner + role badge. Desktop-only: the top row is
@@ -159,15 +161,6 @@ export function TopCenterChrome({
             icon={<PaintIcon />}
             message="Click an element to apply formatting"
             onAction={onCancelFormatPainter}
-          />
-        ) : null}
-
-        {isGroupMode ? (
-          <ModeBanner
-            icon={<GroupIcon size={14} />}
-            message="Click another element to add to the group"
-            actionLabel="Done"
-            onAction={onCancelGroup}
           />
         ) : null}
 

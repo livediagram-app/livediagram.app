@@ -17,7 +17,8 @@
   },
   "peerDependencies": {
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "next": "^16.0.0"
   },
   "devDependencies": {
     "@livediagram/eslint-config": "workspace:*",
@@ -28,6 +29,7 @@
     "@typescript/native": "npm:typescript@^7.0.2",
     "eslint": "^10.10.0",
     "jsdom": "^30.0.1",
+    "next": "^16.3.5",
     "typescript": "npm:@typescript/typescript6@^6.0.2",
     "vitest": "^4.1.11"
   },

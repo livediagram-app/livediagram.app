@@ -129,6 +129,28 @@ export function SearchResultIcon({ item }: { item: SearchResultItem }) {
       </svg>
     );
   }
+  if (item.kind === 'setting') {
+    // Sliders: a Settings row (opens the Settings dialog on it). The same
+    // mark the editor's own settings affordances use, so the result looks
+    // like where it is about to take you.
+    return (
+      <svg
+        width="13"
+        height="13"
+        viewBox="0 0 16 16"
+        fill="none"
+        stroke={stroke}
+        strokeWidth="1.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden
+      >
+        <path d="M2 4.5h7M12.5 4.5H14M2 11.5h3.5M9 11.5H14" />
+        <circle cx="10.5" cy="4.5" r="1.6" />
+        <circle cx="7" cy="11.5" r="1.6" />
+      </svg>
+    );
+  }
   if (item.kind === 'help') {
     // A "?" in a circle: a help-centre article (opens in a new tab).
     return (

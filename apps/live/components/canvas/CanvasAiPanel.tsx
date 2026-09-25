@@ -1,12 +1,11 @@
 'use client';
 
-import { track } from '@/lib/telemetry';
 import { AiPanelContent } from '@/components/panels/AiPanel';
-import { AiSettingsPopover } from '@/components/panels/AiSettingsPopover';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import type { UserPreferences } from '@/lib/user-preferences';
 import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import type { CanvasProps } from './Canvas.types';
+import type { DockAnchor } from '@/lib/canvas-chrome';
 
 // The floating AI Assistant panel (spec/25 + /63 docking), lifted out
 // of useCanvasChromePanels: the MovablePanel shell with the settings
@@ -18,7 +17,6 @@ export function CanvasAiPanel({
   stackBelowY,
   tabName,
   settings,
-  onChangeSettings,
   minimalPanels,
   activeMobilePanel,
   activeDockAnchor,
@@ -29,10 +27,9 @@ export function CanvasAiPanel({
   stackBelowY: number | undefined;
   tabName: string;
   settings: UserPreferences;
-  onChangeSettings: (next: UserPreferences) => void;
   minimalPanels: boolean;
   activeMobilePanel: string | null;
-  activeDockAnchor: { left: number; top: number; arrowOffset: number } | undefined;
+  activeDockAnchor: DockAnchor | undefined;
   onMobileClose: () => void;
 }) {
   return (
@@ -43,25 +40,12 @@ export function CanvasAiPanel({
       stackBelowY={stackBelowY}
       width="w-auto sm:w-64"
       collapsible
-      // No header reset button here (unlike the other panels): the AI
-      // panel's Settings popover already carries a "Reset position" item,
-      // so a second one in the title row was redundant. Drag-to-move still
-      // works via onMoveTo; the popover handles the reset.
       onMoveTo={aiPanel.onMove}
       {...wiring.dock}
-      headerActions={
-        <AiSettingsPopover
-          enabled={settings.aiAssistanceEnabled === true}
-          onSetEnabled={(v) => {
-            track('AI', 'Toggled', v ? 'AiOn' : 'AiOff');
-            onChangeSettings({ ...settings, aiAssistanceEnabled: v });
-          }}
-          showSuggestions={settings.aiSuggestedPrompts !== false}
-          onSetShowSuggestions={(v) => onChangeSettings({ ...settings, aiSuggestedPrompts: v })}
-          onResetPosition={wiring.onReset}
-          resettable={wiring.resettable}
-        />
-      }
+      // Reset-position is the panel header's own button now: the settings
+      // popover that used to carry it, and the two AI preferences inside it,
+      // moved to the Settings dialog (spec/20).
+      onReset={wiring.onReset}
       mobileOpenOverride={activeMobilePanel === 'ai'}
       mobileDockAnchor={activeDockAnchor}
       forceDockMode={minimalPanels}

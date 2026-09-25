@@ -9,7 +9,7 @@ import { windowLabel } from './windows';
 // way out. New visitors are the bare `Participant·Created` count; sign-up /
 // sign-in / sign-out and account deletion come from `Session` (these only fire
 // when Clerk auth is configured, so a pure-guest deploy shows zeroes).
-const GROUPS: MetricGroup[] = [
+export const GROUPS: MetricGroup[] = [
   {
     title: 'Arrivals & conversion',
     metrics: [
@@ -78,7 +78,7 @@ const GROUPS: MetricGroup[] = [
         allTypes: true,
         title: 'Emails Sent',
         blurb:
-          'Every transactional and lifecycle email that left the worker, across all templates. The kind only — never a recipient.',
+          'Every transactional and lifecycle email that left the worker, across all templates. The kind only, never a recipient.',
       },
       {
         category: 'Email',

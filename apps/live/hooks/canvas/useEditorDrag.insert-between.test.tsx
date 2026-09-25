@@ -48,8 +48,6 @@ function harness(
     zoomRef: { current: opts.zoom ?? 1 },
     selectedId: 'drag',
     setSelectedId: vi.fn(),
-    soloSelectedId: null,
-    setSoloSelectedId: vi.fn(),
     multiSelectedIds: new Set<string>(opts.multiSelected ?? []),
     setMultiSelectedIds: vi.fn(),
     editingId: null,
@@ -59,8 +57,6 @@ function harness(
     applyFormatFromSource: vi.fn(),
     formatToolActive: false,
     setFormatSourceId: vi.fn(),
-    groupSourceId: null,
-    completeGrouping: vi.fn(),
     connectSourceId: null,
     connectArrowTo: vi.fn(),
     tick: (m: (els: Element[]) => Element[]) => {
@@ -157,8 +153,19 @@ function key(type: 'keydown' | 'keyup', k: string) {
 
 beforeEach(() => {
   setInsertionSlot(null);
+  // The drag coalesces pointermove commits to one per animation frame (see
+  // useEditorDrag), so a dispatched move lands a frame later. These tests are
+  // about WHAT a move does, not when it is scheduled, so the frame runs
+  // synchronously here and each `move()` reads as one committed move again.
+  // The scheduling itself is covered by useEditorDrag.coalescing.test.tsx.
+  vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => {
+    cb(performance.now());
+    return 0;
+  });
+  vi.stubGlobal('cancelAnimationFrame', () => {});
 });
 afterEach(() => {
+  vi.unstubAllGlobals();
   // A test that ends mid-drag leaves the hook mounted, and a mounted drag
   // keeps its window listeners — so the next test's pointer events would be
   // answered by the previous test's gesture. Unmount first, then clear.

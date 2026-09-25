@@ -1,9 +1,11 @@
 'use client';
 
 // One day on the feed: the rail dot, the connecting line, the date
-// label, and the day's bubbles (spec/138 §2).
+// label, and the day's cards in the same grid the Explorer's Recent
+// view uses (spec/138 §2).
 
 import type { ReactNode } from 'react';
+import { CARD_GRID } from '../cardGrid';
 
 export function TimelineGroup({
   label,
@@ -69,7 +71,7 @@ export function TimelineGroup({
           </p>
           <p className="text-[10px] text-slate-400 dark:text-slate-500">{year}</p>
         </div>
-        <div className="space-y-1.5">{children}</div>
+        <div className={CARD_GRID}>{children}</div>
       </div>
     </div>
   );

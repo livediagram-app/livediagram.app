@@ -1,14 +1,13 @@
 // "Live card" template builder. A collaborative greeting-card lockup:
 // a left panel with a hero image placeholder and a bold title, and a
-// right panel that is a board of four message rows (avatar image +
-// message text, each row grouped so it moves as a unit). Lifted from a
+// right panel that is a board of four message rows (a dashed slot holding
+// an avatar image + message text). Lifted from a
 // hand-built reference diagram and re-centred on the supplied canvas
 // point.
 //
 // The image elements are empty placeholders (imageId: null) so the
 // template ships no bytes: each renders the dashed "drop an image"
-// thumbnail until the user picks one. Group ids are minted fresh per
-// build so two instantiations never share a group.
+// thumbnail until the user picks one.
 
 import { createImage, createShape, createText, type Element } from '@livediagram/diagram';
 
@@ -22,7 +21,7 @@ const RIGHT_PANEL = { x: 7, y: -479, w: 762, h: 958 };
 const HERO = { x: -732, y: -443, w: 690, h: 517 };
 const TITLE = { x: -732, y: 93, w: 690, h: 73 };
 
-// Right-panel message rows: each a grouped (slot + avatar + message).
+// Right-panel message rows: each a slot + avatar + message.
 const ROW = {
   slotX: 34,
   slotW: 708,
@@ -75,9 +74,9 @@ export function buildLiveCard(cx: number, cy: number): Element[] {
     textColor: TEXT,
   });
 
-  // Right panel: four grouped message rows.
+  // Right panel: four message rows, each a dashed slot holding an avatar
+  // image and a message.
   for (const r of ROWS) {
-    const groupId = crypto.randomUUID();
     elements.push({
       ...createShape('square', cx + ROW.slotX, cy + r.slotY),
       width: ROW.slotW,
@@ -87,13 +86,11 @@ export function buildLiveCard(cx: number, cy: number): Element[] {
       textColor: TEXT,
       strokeWidth: 'thin',
       strokeStyle: 'dashed',
-      groupId,
     });
     elements.push({
       ...createImage(cx + ROW.imgX, cy + r.innerY),
       width: ROW.imgW,
       height: ROW.imgH,
-      groupId,
     });
     elements.push({
       ...createText(cx + ROW.txtX, cy + r.innerY),
@@ -102,7 +99,6 @@ export function buildLiveCard(cx: number, cy: number): Element[] {
       label: r.label,
       textSize: 'md',
       textColor: TEXT,
-      groupId,
     });
   }
 

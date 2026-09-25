@@ -87,7 +87,7 @@ describe('windowHighlightFrom', () => {
     expect(windowHighlightFrom(thirtyDays, 'last7')).toBe(23);
   });
 
-  it('highlights the whole line for Last month', () => {
+  it('highlights the whole line for Last 30 days', () => {
     expect(windowHighlightFrom(thirtyDays, 'last30')).toBe(0);
   });
 
@@ -107,7 +107,7 @@ describe('windowLabel', () => {
     expect(WINDOW_META.map((w) => windowLabel(w.key))).toEqual([
       'Today',
       'Last 7 days',
-      'Last month',
+      'Last 30 days',
     ]);
   });
 

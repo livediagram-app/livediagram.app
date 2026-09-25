@@ -5,6 +5,228 @@
 import type { ComponentSchemas } from './types';
 
 export const COMPONENT_SCHEMAS: ComponentSchemas = {
+  "ActivityAction": {
+    "additionalProperties": false,
+    "properties": {
+      "assignedToMe": {
+        "type": "boolean"
+      },
+      "assignee": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "userId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "userId",
+          "name"
+        ],
+        "type": "object"
+      },
+      "assigner": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "type": "object"
+      },
+      "createdAt": {
+        "type": "number"
+      },
+      "createdByMe": {
+        "type": "boolean"
+      },
+      "description": {
+        "type": "string"
+      },
+      "diagramId": {
+        "type": "string"
+      },
+      "diagramName": {
+        "type": "string"
+      },
+      "elementId": {
+        "type": "string"
+      },
+      "elementLabel": {
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "shareCode": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "tabId": {
+        "type": "string"
+      },
+      "tabName": {
+        "type": "string"
+      },
+      "teamId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "updatedAt": {
+        "type": "number"
+      },
+      "via": {
+        "enum": [
+          "own",
+          "team",
+          "shared"
+        ],
+        "type": "string"
+      }
+    },
+    "required": [
+      "assignedToMe",
+      "assignee",
+      "assigner",
+      "createdAt",
+      "createdByMe",
+      "description",
+      "diagramId",
+      "diagramName",
+      "elementId",
+      "elementLabel",
+      "id",
+      "name",
+      "shareCode",
+      "tabId",
+      "tabName",
+      "teamId",
+      "updatedAt",
+      "via"
+    ],
+    "type": "object"
+  },
+  "ActivityThread": {
+    "additionalProperties": false,
+    "properties": {
+      "commentCount": {
+        "type": "number"
+      },
+      "diagramId": {
+        "type": "string"
+      },
+      "diagramName": {
+        "type": "string"
+      },
+      "elementId": {
+        "type": "string"
+      },
+      "elementLabel": {
+        "type": "string"
+      },
+      "firstAt": {
+        "type": "number"
+      },
+      "latest": {
+        "additionalProperties": false,
+        "properties": {
+          "at": {
+            "type": "number"
+          },
+          "authorColor": {
+            "type": "string"
+          },
+          "authorName": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "text",
+          "authorName",
+          "authorColor",
+          "at"
+        ],
+        "type": "object"
+      },
+      "onYourDiagram": {
+        "type": "boolean"
+      },
+      "shareCode": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "tabId": {
+        "type": "string"
+      },
+      "tabName": {
+        "type": "string"
+      },
+      "teamId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "via": {
+        "enum": [
+          "own",
+          "team",
+          "shared"
+        ],
+        "type": "string"
+      },
+      "youCommented": {
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "commentCount",
+      "diagramId",
+      "diagramName",
+      "elementId",
+      "elementLabel",
+      "firstAt",
+      "latest",
+      "onYourDiagram",
+      "shareCode",
+      "tabId",
+      "tabName",
+      "teamId",
+      "via",
+      "youCommented"
+    ],
+    "type": "object"
+  },
   "AgendaItem": {
     "additionalProperties": false,
     "properties": {
@@ -134,8 +356,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "font": {
         "type": "string"
       },
-      "groupId": {
-        "$ref": "#/components/schemas/ElementId"
+      "headerFill": {
+        "type": "string"
       },
       "height": {
         "type": "number"
@@ -271,6 +493,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "arrowStyle": {
         "$ref": "#/components/schemas/ArrowStyle"
       },
+      "arrowheadColor": {
+        "type": "string"
+      },
       "arrowheadShape": {
         "$ref": "#/components/schemas/ArrowheadShape"
       },
@@ -347,6 +572,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "$ref": "#/components/schemas/ElementId"
       },
       "label": {
+        "type": "string"
+      },
+      "labelFill": {
         "type": "string"
       },
       "labelOffset": {
@@ -669,6 +897,19 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "ChartPaletteId": {
+    "enum": [
+      "vivid",
+      "ocean",
+      "forest",
+      "sunset",
+      "berry",
+      "earth",
+      "grey",
+      "contrast"
+    ],
+    "type": "string"
+  },
   "ChecklistItem": {
     "additionalProperties": false,
     "properties": {
@@ -697,6 +938,19 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "html",
       "css",
       "yaml"
+    ],
+    "type": "string"
+  },
+  "CodeThemeId": {
+    "enum": [
+      "midnight",
+      "graphite",
+      "ocean",
+      "forest",
+      "plum",
+      "contrast",
+      "paper",
+      "parchment"
     ],
     "type": "string"
   },
@@ -861,6 +1115,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "shapeColors": {
         "additionalProperties": false,
         "properties": {
+          "action-card": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
           "actor": {
             "additionalProperties": false,
             "properties": {
@@ -891,6 +1160,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
+          "banner": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
           "bar-chart": {
             "additionalProperties": false,
             "properties": {
@@ -907,6 +1191,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "object"
           },
           "browser": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "callout": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -1116,6 +1415,36 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
+          "focus-button": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "foldable": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
           "frame": {
             "additionalProperties": false,
             "properties": {
@@ -1192,6 +1521,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "object"
           },
           "laptop": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "legend": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -1356,6 +1700,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
+          "process": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
           "progress-bar": {
             "additionalProperties": false,
             "properties": {
@@ -1461,6 +1820,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
+          "site-header": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
           "smartwatch": {
             "additionalProperties": false,
             "properties": {
@@ -1522,6 +1896,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "object"
           },
           "star": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "stat-row": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -2110,27 +2499,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "t"
         ],
         "type": "object"
-      },
-      {
-        "additionalProperties": false,
-        "properties": {
-          "anchor": {
-            "$ref": "#/components/schemas/Anchor"
-          },
-          "groupId": {
-            "$ref": "#/components/schemas/ElementId"
-          },
-          "kind": {
-            "const": "pinned-group",
-            "type": "string"
-          }
-        },
-        "required": [
-          "kind",
-          "groupId",
-          "anchor"
-        ],
-        "type": "object"
       }
     ]
   },
@@ -2268,9 +2636,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "font": {
         "type": "string"
       },
-      "groupId": {
-        "$ref": "#/components/schemas/ElementId"
-      },
       "height": {
         "type": "number"
       },
@@ -2395,6 +2760,22 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "HeroCaption": {
+    "additionalProperties": false,
+    "properties": {
+      "subtitle": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "title",
+      "subtitle"
+    ],
+    "type": "object"
+  },
   "IconAnimation": {
     "enum": [
       "spin",
@@ -2466,11 +2847,11 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "font": {
         "type": "string"
       },
-      "groupId": {
-        "$ref": "#/components/schemas/ElementId"
-      },
       "height": {
         "type": "number"
+      },
+      "heroCaption": {
+        "$ref": "#/components/schemas/HeroCaption"
       },
       "id": {
         "$ref": "#/components/schemas/ElementId"
@@ -2625,7 +3006,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "diagram_created",
       "diagram_renamed",
       "diagram_duplicated",
-      "diagram_deleted",
       "diagram_moved",
       "diagram_edited",
       "diagram_offline",
@@ -2688,6 +3068,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "LegendItem": {
+    "additionalProperties": false,
+    "properties": {
+      "color": {
+        "type": "string"
+      },
+      "label": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "label"
+    ],
+    "type": "object"
+  },
   "LineSeries": {
     "additionalProperties": false,
     "properties": {
@@ -2737,8 +3132,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "font": {
         "type": "string"
       },
-      "groupId": {
-        "$ref": "#/components/schemas/ElementId"
+      "headerFill": {
+        "type": "string"
       },
       "height": {
         "type": "number"
@@ -2853,6 +3248,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "url"
     ],
     "type": "object"
+  },
+  "MindFlow": {
+    "enum": [
+      "tree",
+      "balanced",
+      "downward",
+      "bubble"
+    ],
+    "type": "string"
   },
   "NoteCrop": {
     "additionalProperties": false,
@@ -2983,6 +3387,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "yesNo",
       "yesNoAbstain",
       "choice",
+      "collaborators",
       "rating",
       "text"
     ],
@@ -3128,6 +3533,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "SessionTool": {
     "enum": [
       "timer",
+      "stopwatch",
       "vote",
       "poll"
     ],
@@ -3172,6 +3578,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "chartLegendPosition": {
         "$ref": "#/components/schemas/ChartLegendPosition"
       },
+      "chartPalette": {
+        "$ref": "#/components/schemas/ChartPaletteId"
+      },
       "checklistItems": {
         "items": {
           "$ref": "#/components/schemas/ChecklistItem"
@@ -3183,6 +3592,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "codeLanguage": {
         "$ref": "#/components/schemas/CodeLanguage"
+      },
+      "codeTheme": {
+        "$ref": "#/components/schemas/CodeThemeId"
+      },
+      "codeWrap": {
+        "type": "boolean"
       },
       "colorPreset": {
         "type": "string"
@@ -3220,8 +3635,11 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "font": {
         "type": "string"
       },
-      "groupId": {
-        "$ref": "#/components/schemas/ElementId"
+      "headerFill": {
+        "type": "string"
+      },
+      "headerSize": {
+        "type": "number"
       },
       "height": {
         "type": "number"
@@ -3262,6 +3680,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "layerId": {
         "type": "string"
       },
+      "legendItems": {
+        "items": {
+          "$ref": "#/components/schemas/LegendItem"
+        },
+        "type": "array"
+      },
       "lineCategories": {
         "items": {
           "type": "string"
@@ -3286,11 +3710,20 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "markerSize": {
         "$ref": "#/components/schemas/TextSize"
       },
+      "mindFlow": {
+        "$ref": "#/components/schemas/MindFlow"
+      },
       "mindParentId": {
         "$ref": "#/components/schemas/ElementId"
       },
       "mode": {
         "$ref": "#/components/schemas/SelectionMode"
+      },
+      "navLinks": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
       },
       "note": {
         "type": "string"
@@ -3342,6 +3775,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "portalTarget": {
         "$ref": "#/components/schemas/ElementId"
+      },
+      "processSteps": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
       },
       "progress": {
         "type": "number"
@@ -3414,6 +3853,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "shape": {
         "$ref": "#/components/schemas/ShapeKind"
+      },
+      "stats": {
+        "items": {
+          "$ref": "#/components/schemas/StatItem"
+        },
+        "type": "array"
       },
       "stickerId": {
         "type": "string"
@@ -3492,6 +3937,11 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "mind-node",
       "lane",
       "entity",
+      "banner",
+      "callout",
+      "stat-row",
+      "process",
+      "site-header",
       "mode-button",
       "portal",
       "session-button",
@@ -3499,6 +3949,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "picker",
       "reaction-pad",
       "comment-pin",
+      "action-card",
       "done-check",
       "chair",
       "estimate",
@@ -3520,6 +3971,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "laptop",
       "phone",
       "tablet",
+      "foldable",
       "smartwatch",
       "progress-bar",
       "progress-ring",
@@ -3530,6 +3982,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "line-chart",
       "code-block",
       "checklist",
+      "legend",
+      "focus-button",
       "icon",
       "sticker"
     ],
@@ -3638,6 +4092,22 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "StatItem": {
+    "additionalProperties": false,
+    "properties": {
+      "caption": {
+        "type": "string"
+      },
+      "value": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "value",
+      "caption"
+    ],
+    "type": "object"
+  },
   "StickyElement": {
     "additionalProperties": false,
     "properties": {
@@ -3678,8 +4148,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "font": {
         "type": "string"
       },
-      "groupId": {
-        "$ref": "#/components/schemas/ElementId"
+      "headerFill": {
+        "type": "string"
       },
       "height": {
         "type": "number"
@@ -3929,6 +4399,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "hideCursors": {
         "type": "boolean"
       },
+      "onePerElement": {
+        "type": "boolean"
+      },
       "revealed": {
         "type": "boolean"
       },
@@ -4053,9 +4526,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "font": {
         "type": "string"
       },
-      "groupId": {
-        "$ref": "#/components/schemas/ElementId"
-      },
       "headerColumn": {
         "type": "boolean"
       },
@@ -4121,6 +4591,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "strokeWidth": {
         "$ref": "#/components/schemas/BorderStroke"
+      },
+      "tablePreset": {
+        "type": "string"
       },
       "textAlignX": {
         "$ref": "#/components/schemas/TextAlignX"
@@ -4443,6 +4916,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Folder",
       "Layer",
       "Session",
+      "Facilitator",
       "AI",
       "Team",
       "Participant",
@@ -4451,7 +4925,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Mcp",
       "Email",
       "Error",
-      "Timeline"
+      "Timeline",
+      "Activity",
+      "Page"
     ],
     "type": "string"
   },
@@ -4648,8 +5124,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "font": {
         "type": "string"
       },
-      "groupId": {
-        "$ref": "#/components/schemas/ElementId"
+      "headerFill": {
+        "type": "string"
       },
       "height": {
         "type": "number"
@@ -4929,8 +5405,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "font": {
         "type": "string"
       },
-      "groupId": {
-        "$ref": "#/components/schemas/ElementId"
+      "headerFill": {
+        "type": "string"
       },
       "height": {
         "type": "number"

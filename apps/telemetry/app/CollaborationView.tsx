@@ -12,7 +12,7 @@ import { windowLabel } from './windows';
 // room — voting, polls, timers. High-signal for retention / network effects: a
 // diagram that gets shared and joined is worth far more than one that
 // never leaves a single browser.
-const GROUPS: MetricGroup[] = [
+export const GROUPS: MetricGroup[] = [
   // Everything else in this view counts an INVITATION — a link made, a member
   // added, a poll opened. This group is the only one that counts two people
   // being on the same canvas at the same moment, which is the thing all of
@@ -35,7 +35,7 @@ const GROUPS: MetricGroup[] = [
         type: 'FollowMe',
         title: 'Viewports Followed',
         blurb:
-          "Someone pinned their canvas to a peer's (spec/131) — the strongest signal that a session is being presented rather than just co-edited.",
+          "Someone pinned their canvas to a peer's (spec/131): the strongest signal that a session is being presented rather than just co-edited.",
       },
     ],
   },
@@ -44,15 +44,36 @@ const GROUPS: MetricGroup[] = [
     metrics: [
       { category: 'Diagram', action: 'Shared', type: 'Edit', title: 'Edit Links Shared' },
       { category: 'Diagram', action: 'Shared', type: 'View', title: 'View Links Shared' },
-      { category: 'Diagram', action: 'Joined', type: 'Edit', title: 'Collaborators Joined' },
-      { category: 'Diagram', action: 'Joined', type: 'View', title: 'Viewers Joined' },
+      {
+        category: 'Diagram',
+        action: 'Joined',
+        type: 'Edit',
+        title: 'Collaborators Joined',
+        blurb:
+          'People who came into a diagram through an edit link. Counted once per person per diagram, not on every revisit.',
+      },
+      {
+        category: 'Diagram',
+        action: 'Joined',
+        type: 'View',
+        title: 'Viewers Joined',
+        blurb:
+          'People who came into a diagram through a view-only link. Counted once per person per diagram, not on every revisit.',
+      },
     ],
   },
   {
     title: 'Discussion',
     metrics: [
       { category: 'Comment', action: 'Added', type: null, title: 'Comments Added' },
-      { category: 'Comment', action: 'Opened', type: null, title: 'Threads Opened' },
+      {
+        category: 'Comment',
+        action: 'Opened',
+        type: null,
+        title: 'Comment Popovers Opened',
+        blurb:
+          "Someone opened an element's comments to read or reply. Not a new thread: a new comment is Comments Added.",
+      },
       { category: 'Comment', action: 'Resolved', type: null, title: 'Comments Resolved' },
     ],
   },
@@ -76,7 +97,7 @@ const GROUPS: MetricGroup[] = [
         type: 'Member',
         title: 'Invites Sent',
         blurb:
-          'An admin invited someone to a team by email. The invitation, not the acceptance — that is the next card.',
+          'An admin invited someone to a team by email. The invitation, not the acceptance: that is the next card.',
       },
       {
         category: 'Team',
@@ -154,7 +175,7 @@ const GROUPS: MetricGroup[] = [
         type: 'Vote',
         title: 'Votes Discarded',
         blurb:
-          'The whole round was thrown away, dots and all — distinct from ending it, which keeps the tallies.',
+          'The whole round was thrown away, dots and all. Distinct from ending it, which keeps the tallies.',
       },
     ],
   },
@@ -215,7 +236,15 @@ const GROUPS: MetricGroup[] = [
         action: 'Changed',
         type: 'TimerReset',
         title: 'Timers Reset',
-        blurb: 'Returned to its starting value — usually a second round of the same exercise.',
+        blurb: 'Returned to its starting value, usually for a second round of the same exercise.',
+      },
+      {
+        category: 'Tab',
+        action: 'Changed',
+        type: 'TimerExtended',
+        title: 'Timers Extended',
+        blurb:
+          'More time added to a running countdown. Frequent extensions mean the timebox was set too tight.',
       },
       {
         category: 'Tab',
@@ -247,8 +276,8 @@ export function CollaborationView({
     <div className="mt-8">
       <p className="text-sm text-slate-500 dark:text-slate-400">
         How much work happens together rather than solo, for{' '}
-        <span className="font-medium">{windowLabel(active)}</span> — sharing, joining, comment
-        threads, and teams.
+        <span className="font-medium">{windowLabel(active)}</span>: sharing, joining, comments,
+        teams, and the live session tools.
       </p>
       <MetricGroups groups={GROUPS} summary={summary} active={active} />
     </div>

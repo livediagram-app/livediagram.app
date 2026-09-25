@@ -2,7 +2,6 @@
 // the three-field vocabulary + a server-stamped timestamp. No owner /
 // IP column.
 
-import type { TelemetryCount } from '@livediagram/api-schema';
 import type { Env } from '../types';
 
 export async function insertTelemetryEvents(
@@ -28,9 +27,11 @@ export async function deleteOldEvents(env: Env, cutoffMs: number): Promise<numbe
   return result.meta.changes ?? 0;
 }
 
-// Per-day per-event counts since `since`, used to render the
-// dashboard's daily-volume sparkline, the per-category stacked area
-// chart, and the Search view's per-metric trend line. Grouped down to
+// Per-day per-event counts since `since`: the dashboard's ONE query. The
+// daily-volume line, the per-category and per-metric trend lines, AND the
+// Today / Last 7 days / Last 30 days window counts are all folded from these rows
+// (routes/telemetry.ts), so a window covers exactly the days its highlighted
+// trend span shows. Grouped down to
 // (category, action, type) so the caller can fold the rows up into both
 // a per-category and a per-metric 30-day series. SQLite's date() with
 // the 'unixepoch' modifier produces YYYY-MM-DD which is naturally
@@ -53,21 +54,5 @@ export async function telemetryDailyCountsSince(
   )
     .bind(since)
     .all<{ day: string; category: string; action: string; type: string | null; count: number }>();
-  return result.results ?? [];
-}
-
-// Grouped counts for every event at or after `since` (ms epoch). One
-// row per (category, action, type). Drives the dashboard's fixed
-// windows; the events_ts_idx covers the range filter.
-export async function telemetryCountsSince(env: Env, since: number): Promise<TelemetryCount[]> {
-  const result = await env.DB.prepare(
-    `SELECT category, action, type, COUNT(*) AS count
-       FROM events
-      WHERE ts >= ?
-      GROUP BY category, action, type
-      ORDER BY count DESC`,
-  )
-    .bind(since)
-    .all<TelemetryCount>();
   return result.results ?? [];
 }

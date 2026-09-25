@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import type { DiagramListItem, Folder, SharedWithItem } from '@/lib/api-client';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import type { TeamDiagramRow } from '@/hooks/persistence/useTeamLibrariesSweep';
-import type { PaneDiagram, SelectedNode } from './views';
+import { sharedToPaneDiagram, type PaneDiagram, type SelectedNode } from './views';
 
 // "Recent" cap. Big enough for "what was I just working on",
 // small enough that it doesn't drown the list view.
@@ -115,15 +115,7 @@ export function useExplorerPane({
       // by recency. Team rows carry their team (badge + owner column);
       // shared rows carry the sharer + share code so the row links via
       // the share link and shows the "Shared" badge.
-      const sharedRows: PaneDiagram[] = shared.map((s) => ({
-        id: s.id,
-        name: s.name,
-        folderId: null,
-        savedAt: s.savedAt,
-        shareCode: s.shareCode,
-        ownerId: '',
-        shared: { ownerName: s.ownerName, role: s.role, shareCode: s.shareCode },
-      }));
+      const sharedRows: PaneDiagram[] = shared.map(sharedToPaneDiagram);
       const sorted = [...diagrams, ...teamDiagrams, ...sharedRows]
         // Hidden-from-Recent (spec/93). Filtered BEFORE the cap so hiding
         // one diagram promotes the next one in rather than leaving a gap.
@@ -133,11 +125,11 @@ export function useExplorerPane({
     }
     if (
       selected.kind === 'timeline' ||
+      selected.kind === 'activity' ||
       selected.kind === 'shared' ||
       selected.kind === 'gallery' ||
       selected.kind === 'themes' ||
       selected.kind === 'tokens' ||
-      selected.kind === 'profile' ||
       selected.kind === 'team' ||
       selected.kind === 'invites'
     ) {
@@ -213,17 +205,17 @@ export function useExplorerPane({
 
   const paneTitle = useMemo(() => {
     if (selected.kind === 'timeline') return 'Timeline';
+    if (selected.kind === 'activity') return 'Activity';
     if (selected.kind === 'recent') return 'Recent';
-    if (selected.kind === 'shared') return 'Shared with you';
-    if (selected.kind === 'gallery') return 'Image gallery';
+    if (selected.kind === 'shared') return 'Shared with You';
+    if (selected.kind === 'gallery') return 'Image Gallery';
     if (selected.kind === 'themes') return 'Themes';
-    if (selected.kind === 'tokens') return 'API tokens';
-    if (selected.kind === 'profile') return 'Profile';
+    if (selected.kind === 'tokens') return 'API Tokens';
     if (selected.kind === 'team') {
       return teams.find((t) => t.id === selected.id)?.name ?? 'Team';
     }
     if (selected.kind === 'invites') return 'Invites';
-    if (selected.kind === 'all') return 'My Work';
+    if (selected.kind === 'all') return 'Personal Space';
     if (selected.kind === 'unsorted') return 'Unsorted';
     if (selected.kind === 'favourites') return 'Favourites';
     if (selected.kind === 'generated') return 'Generated';
@@ -237,21 +229,21 @@ export function useExplorerPane({
   // text so the user can't navigate to where they already are.
   type Crumb = { name: string; onClick?: () => void };
   const paneCrumbs = useMemo<Crumb[]>(() => {
-    const all: Crumb = { name: 'My Work', onClick: () => go({ kind: 'all' }) };
+    const all: Crumb = { name: 'Personal Space', onClick: () => go({ kind: 'all' }) };
     if (selected.kind === 'timeline') return [{ name: 'Timeline' }];
+    if (selected.kind === 'activity') return [{ name: 'Activity' }];
     if (selected.kind === 'recent') return [{ name: 'Recent' }];
-    if (selected.kind === 'shared') return [{ name: 'Shared with you' }];
-    if (selected.kind === 'gallery') return [{ name: 'Image gallery' }];
+    if (selected.kind === 'shared') return [{ name: 'Shared with You' }];
+    if (selected.kind === 'gallery') return [{ name: 'Image Gallery' }];
     if (selected.kind === 'themes') return [{ name: 'Themes' }];
-    if (selected.kind === 'tokens') return [{ name: 'API tokens' }];
-    if (selected.kind === 'profile') return [{ name: 'Profile' }];
+    if (selected.kind === 'tokens') return [{ name: 'API Tokens' }];
     if (selected.kind === 'team') return [{ name: paneTitle }];
     if (selected.kind === 'invites') return [{ name: 'Invites' }];
-    if (selected.kind === 'all') return [{ name: 'My Work' }];
+    if (selected.kind === 'all') return [{ name: 'Personal Space' }];
     const dynamic: Crumb = { name: 'Dynamic', onClick: () => go({ kind: 'dynamic' }) };
     if (selected.kind === 'dynamic') return [all, { name: 'Dynamic' }];
     if (selected.kind === 'unsorted') return [all, dynamic, { name: 'Unsorted' }];
-    // Favourites sits in Quick find now, not under My Work > Dynamic
+    // Favourites sits in Quick find now, not under Personal Space > Dynamic
     // (spec/138 §8.2), so its trail is a single leaf like Recent's —
     // a crumb that walks up to a parent it no longer has would be a lie.
     if (selected.kind === 'favourites') return [{ name: 'Favourites' }];

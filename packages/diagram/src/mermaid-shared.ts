@@ -44,6 +44,7 @@ export function decodeLabel(s: string): string {
   return t
     .replace(/<br\s*\/?>/gi, '\n')
     .replace(/&quot;/g, '"')
+    .replace(/#124;/g, '|')
     .replace(/&amp;/g, '&');
 }
 

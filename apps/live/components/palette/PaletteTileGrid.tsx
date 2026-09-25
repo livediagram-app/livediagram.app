@@ -14,6 +14,7 @@ import { ICON_DND_MIME, PALETTE_DND_MIME } from '@/lib/icons';
 import { TECH_ICON_DND_MIME } from '@/lib/tech-icons';
 import { setPaletteDragPreview, suppressNativeDragImage } from '@/lib/palette-drag-preview';
 import type { PaletteTileDef, PaletteTileSection } from './palette-tile-defs';
+import { usePaletteRecent } from './palette-recent-context';
 import { tilesInSection } from './palette-tile-defs';
 
 // Renders palette tiles from the shared catalogue (palette-tile-defs,
@@ -171,17 +172,37 @@ export function visibleTiles(defs: PaletteTileDef[], hasImage: boolean): Palette
 
 // One catalogue tile, rendered exactly as its home tab renders it.
 // (Favourites curation happens in the edit-favourites dialog, not by
-// overlaying badges here — see PaletteFavouritesDialog.)
-function PaletteTile({
+// overlaying badges here — see PaletteFavouritesDialog.) `compact` is the
+// Toolbar layout's strip (spec/148): icon only, name in the tooltip, and the
+// shortcut letter always showing in the corner rather than only while the
+// modifier is held, the way a tool bar reads.
+// A tile's click handler, which in the Toolbar layout also records the use,
+// so the strip can bring the tile to its front (spec/148). Everywhere else it
+// is exactly tileHandler.
+export function useTileHandler(def: PaletteTileDef, actions: PaletteTileActions): () => void {
+  const recent = usePaletteRecent();
+  const handler = tileHandler(def, actions);
+  if (!recent) return handler;
+  return () => {
+    recent.onUse(def.id);
+    handler();
+  };
+}
+
+export function PaletteTile({
   def,
   actions,
   pendingDraw,
+  compact,
 }: {
   def: PaletteTileDef;
   actions: PaletteTileActions;
   pendingDraw: PendingDraw | null | undefined;
+  compact?: boolean;
 }) {
   const a = def.action;
+  const onClick = useTileHandler(def, actions);
+  const recent = usePaletteRecent();
   // Icon favourites keep their home tabs' drag affordance: a line icon drags
   // onto a shape to set its inline icon, a tech icon drags onto the canvas.
   const iconDrag =
@@ -215,7 +236,16 @@ function PaletteTile({
       label={def.label}
       caption={def.caption}
       description={def.description}
-      onClick={tileHandler(def, actions)}
+      onClick={onClick}
+      // A drag that lands on the canvas is a use too; one dropped nowhere is
+      // not.
+      onDragEnd={
+        recent
+          ? (e) => {
+              if (e.dataTransfer.dropEffect !== 'none') recent.onUse(def.id);
+            }
+          : undefined
+      }
       dragKind={a.type === 'shape' ? a.kind : undefined}
       dragChoice={
         a.type === 'shape' ? (a.session ?? a.reaction ?? a.mode ?? a.estimateScale) : undefined
@@ -226,6 +256,8 @@ function PaletteTile({
       noTint={def.noTint}
       active={tileActive(def, pendingDraw)}
       shortcut={def.shortcut}
+      hideCaption={compact}
+      shortcutAlwaysVisible={compact}
     >
       {def.icon}
     </IconButton>
@@ -258,7 +290,15 @@ export function PaletteTileGrid({
     // top border of every tile in row one (and the bottom of the last row).
     // One pixel of vertical padding gives the border somewhere to live
     // without changing how the columns pack.
-    <div className="grid grid-cols-3 justify-items-center gap-1 overflow-x-hidden py-px">
+    //
+    // Fixed 76px columns spread edge to edge, not `grid-cols-3`. Three equal
+    // fractions of the palette's body are 76.67px each, which put every tile,
+    // and so every glyph, on a half pixel: a 1.5px stroke straddling a pixel
+    // boundary anti-aliases to a smear. 76 is even, so the 18px glyph centred
+    // in it lands on a whole pixel too; `justify-between` hands the leftover
+    // width to the two gaps, which are whole pixels in every host this grid
+    // renders in (the palette body, the dock popover, the strip's More).
+    <div className="grid grid-cols-[repeat(3,76px)] justify-between gap-y-1 overflow-x-hidden py-px">
       {defs.map((def) => (
         <PaletteTile key={def.id} def={def} actions={actions} pendingDraw={pendingDraw} />
       ))}

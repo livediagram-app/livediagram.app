@@ -129,18 +129,18 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   build: 5,
   write: 4,
   draw: 4,
-  devices: 6,
+  devices: 7,
   icons: 0,
   stickers: 0,
   technology: 0,
   media: 8,
   components: 9,
-  data: 6,
+  data: 7,
   // Behaviours absorbed Collaborate (spec/110), so this is both families:
-  // Ask the room (3 estimate scales + temperature + idea box), Run the
-  // room (3), Session (3), Keep a record (3), Reactions (5), Selection
-  // Mode (8 modes), Get around (2), plus the comment pin loose on top.
-  behaviour: 32,
+  // Ask (3 estimate scales + temperature + idea box), Run the
+  // room (3), Session (3), Record (3), Reactions (5), Selection
+  // Mode (8 modes), Navigate (2), plus the comment pin loose on top.
+  behaviour: 35,
   // The Event Storming notation (spec/139): one tile per note kind.
   'event-storming': 8,
 };

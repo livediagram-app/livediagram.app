@@ -30,6 +30,19 @@ export type ShapeKind =
   | 'lane'
   // Record (spec/120): a UML class / ER entity box — a title over rows.
   | 'entity'
+  // The web components (spec/147): single elements that lay themselves out,
+  // replacing the grouped composites the Components palette used to build.
+  // Banner: an accent bar, title (the label) over a subtitle line.
+  | 'banner'
+  // Callout: a card with an accent badge, a heading line and a body (label).
+  | 'callout'
+  // Stat row: KPI cards, a big value over a caption each, in `stats`.
+  | 'stat-row'
+  // Process steps: numbered circles joined by arrows, captions in
+  // `processSteps`.
+  | 'process'
+  // Header: a website header bar, logo + brand (the label) + `navLinks`.
+  | 'site-header'
   // Mode button (spec/103): a pressable pill that switches whoever clicks it
   // into a selection mode — Avatar by default. Which mode lives in the
   // element's `mode` field.
@@ -55,6 +68,10 @@ export type ShapeKind =
   // to hold one, so a remark can be pinned to a spot on the board rather than
   // to whichever shape happens to be nearest.
   | 'comment-pin'
+  // Action panel (spec/146): the Comment panel's sibling for assigned
+  // actions. A card whose whole job is to carry ONE `action` (spec/68) and
+  // show it on the board, so a follow-up can live where the room can read it.
+  | 'action-card'
   // Done check (spec/137): everyone marks themselves finished, and the card
   // shows who has and who has not. Live: the not-yet list is read from who is
   // actually in the room, so it shrinks as people leave rather than accusing
@@ -101,6 +118,10 @@ export type ShapeKind =
   | 'laptop'
   | 'phone'
   | 'tablet'
+  // A book-style foldable phone, shown OPEN on its inner screen: a
+  // near-square panel with the hinge crease down the middle. Folded it is
+  // just `phone`, so only the unfolded state earns its own frame.
+  | 'foldable'
   | 'smartwatch'
   // Progress elements (spec/46): a horizontal bar + a donut ring that show a
   // 0–100 percentage. They carry `progress` / `progressAnim` (below).
@@ -126,6 +147,12 @@ export type ShapeKind =
   // Checklist (spec/83): checkable to-do rows. Carries `checklistItems`
   // (below); boxes toggle on-canvas like the rating's stars.
   | 'checklist'
+  // Legend (spec/53): a card of colour-coded rows (a swatch + a label), the
+  // key you put beside a chart or a colour-coded board.
+  | 'legend'
+  // Bring Focus (spec/144): press it and everyone else in the room is offered
+  // a jump to it, at your zoom, on your tab.
+  | 'focus-button'
   // Curated single-colour glyph from the icon catalogue. Which glyph
   // is carried by `iconId` (a registry key resolved in the live app's
   // icon catalogue, NOT a closed enum here, so adding icons is a

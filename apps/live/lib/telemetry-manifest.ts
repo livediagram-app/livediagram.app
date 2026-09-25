@@ -24,6 +24,12 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Action·Opened',
   'Action·Resolved',
   'Action·Unresolved',
+  // Activity (spec/142): the Explorer's cross-diagram inbox. 'Opened'
+  // once per visit, 'Selected' with type 'Action' | 'Thread' on a row
+  // click, 'Loaded'/'Retry' after a failed read.
+  'Activity·Loaded',
+  'Activity·Opened',
+  'Activity·Selected',
   'Canvas·Changed',
   'Canvas·Used',
   'Canvas·Zoomed',
@@ -36,7 +42,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Diagram·Deleted',
   'Diagram·Duplicated',
   'Diagram·Exported',
-  'Diagram·Joined',
   'Diagram·Loaded',
   'Diagram·Moved',
   'Diagram·Redone',
@@ -45,22 +50,17 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Diagram·Reverted',
   'Diagram·Shared',
   'Diagram·Undone',
-  // A live peer was present in the room with us (spec/22). The only event
-  // that counts collaboration HAPPENING rather than being offered.
-  'Diagram·Used',
   'Element·Added',
   'Element·Changed',
   'Element·Copied',
   'Element·Deleted',
   'Element·Duplicated',
-  'Element·Grouped',
   'Element·Linked',
   'Element·Locked',
   'Element·Removed',
   'Element·Reordered',
   'Element·Selected',
   'Element·Toggled',
-  'Element·Ungrouped',
   'Element·Unlinked',
   'Element·Unlocked',
   // Playback started on a video element (spec/114).
@@ -71,6 +71,11 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   // The hosted reader's budget was spent and the photo import failed over to
   // the in-browser reader (spec/139 Phase 9).
   'Error·Warning',
+  // The facilitator baton (spec/149): taken, handed on, stepped down. The
+  // question is whether rooms use the role at all, never who held it.
+  'Facilitator·Changed',
+  'Facilitator·Ended',
+  'Facilitator·Started',
   'Folder·Created',
   'Folder·Deleted',
   'Folder·Moved',
@@ -98,9 +103,7 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Search·Selected',
   'Session·Deleted',
   'Session·Opened',
-  'Session·SignedIn',
   'Session·SignedOut',
-  'Session·SignedUp',
   'Tab·Aligned',
   'Tab·Changed',
   'Tab·Cleared',
@@ -140,10 +143,12 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   // — the first two measure the landing-page change, the third tells us
   // whether the stacking thresholds are right. 'Changed' carries the
   // view mode, 'Selected' a filter chip's source type, 'Loaded'/'More'
-  // a Show-more click.
+  // a Show-more click, 'Removed'/'Entry' a card taken off the feed
+  // (spec/138 §2.9).
   'Timeline·Changed',
   'Timeline·Loaded',
   'Timeline·Opened',
+  'Timeline·Removed',
   'Timeline·Selected',
   'Token·Created',
   'Token·Removed',

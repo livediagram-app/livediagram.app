@@ -50,7 +50,7 @@ export function groupByDay(events: TimelineEvent[], now = Date.now()): TimelineD
   // server orders by occurred_at, but a future-dated expiry event can
   // arrive interleaved, and adjacency-based grouping would then emit
   // two groups with the same key — a duplicate React key, and half the
-  // day's bubbles silently dropped from the render.
+  // day's cards silently dropped from the render.
   const byKey = new Map<string, TimelineDayGroup>();
   const order: string[] = [];
 

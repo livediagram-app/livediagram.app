@@ -1,24 +1,24 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { MultiSelect, Groups, FormatPainter } from '@/components/illustrations/canvas';
+import { MultiSelect, FormatPainter } from '@/components/illustrations/canvas';
 
 export const metadata = helpMetadata({
-  title: 'Selecting and Grouping',
+  title: 'Selecting Many Elements',
   description:
-    "Select many elements at once, lock them together as a group, and copy one element's look onto others with the format painter.",
+    "Select many elements at once to move, copy, lock or restyle them together, and copy one element's look onto others with the format painter.",
   path: '/help/canvas/selecting-and-grouping/',
 });
 
 <ArticleLayout
-  title="Selecting and Grouping"
-  description="Work with many elements at once: marquee and multi-select, groups that move as one, and the format painter for copying a look."
+  title="Selecting Many Elements"
+  description="Work with many elements at once: marquee and multi-select, and the format painter for copying a look."
   categoryTitle="Canvas"
   categorySlug="canvas"
   subArticles={getSubArticles("selecting-and-grouping")}
 >
 
-Diagrams rarely come together one shape at a time. Once a few elements are on the canvas you will want to move several at once, keep related pieces together, and make a row of shapes share the same look. livediagram gives you three tools for exactly that: selecting many elements, grouping them, and the format painter. None of them need a sign-in, so you can [open a canvas](/new) and try them straight away.
+Diagrams rarely come together one shape at a time. Once a few elements are on the canvas you will want to move several at once, keep related pieces together, and make a row of shapes share the same look. livediagram gives you the tools for exactly that: selecting many elements, frames, and the format painter. None of them need a sign-in, so you can [open a canvas](/new) and try them straight away.
 
 ## Selecting more than one
 
@@ -30,11 +30,7 @@ The quickest way to grab several elements is the marquee: drag an empty patch of
 
 ## Keeping elements together
 
-When a set of elements belongs together, turn the selection into a [group](/help/canvas/selecting-and-grouping/groups/). A group moves, copies, and selects as one unit, so a labelled box and its caption, or a cluster that makes up a single diagram component, never drift apart by accident. You can ungroup again whenever you need to fine-tune the pieces inside.
-
-<Figure caption="A group binds several elements into one unit that moves and selects together.">
-  <Groups />
-</Figure>
+A selection scatters as soon as you click away. When some elements should keep travelling together, draw a [frame](/help/palette/build/frames/) around them: moving the frame carries everything inside it. And when the thing you are building is really one object, such as a banner, a KPI row or a website header, reach for a [component](/help/palette/components/), which is a single element rather than pieces you have to hold together.
 
 ## Copying a look
 

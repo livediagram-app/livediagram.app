@@ -166,7 +166,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
   });
 
   // Shared opening for every arrow-handle drag: refuse to start while a
-  // format-painter or group-paste gesture is live, then resolve the
+  // format-painter gesture is live, then resolve the
   // target as a typed arrow. Returns the deps snapshot + arrow, or null
   // when the drag shouldn't begin. The setSelectedId / locked / style
   // guards stay per-handler because their order differs between gestures.
@@ -538,9 +538,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       const placed = d.activeTab.elements.find(
         (el): el is ArrowElement => el.id === drag.arrowId && el.type === 'arrow',
       );
-      if (!placed || (placed.from.kind !== 'pinned' && placed.from.kind !== 'pinned-group')) {
-        return false;
-      }
+      if (!placed || placed.from.kind !== 'pinned') return false;
       const cursor = {
         x: drag.startCanvasX + (e.clientX - drag.startClientX) / d.zoomRef.current,
         y: drag.startCanvasY + (e.clientY - drag.startClientY) / d.zoomRef.current,
@@ -568,6 +566,11 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       return true;
     };
     const onUp = (e: PointerEvent) => {
+      // Land on the final pointer position even if it arrived in the same
+      // frame as a pending rAF (which the cleanup below cancels). Without
+      // this a fast release drops up to one frame of movement, so the element
+      // finishes a few pixels behind the cursor.
+      flushMove();
       const d = depsRef.current;
       // Quick-connect arrow "click to place": if the arrow was started by a
       // click (clickToPlace) and this release ends a gesture that never
@@ -599,20 +602,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
           const source = d.activeTab.elements.find((el) => el.id === sourceId);
           const target =
             source && isBoxed(source)
-              ? nearestElementTowards(
-                  d.activeTab.elements,
-                  source,
-                  anchor,
-                  // Never land on a sibling of the source's own group: the
-                  // group moves as one thing, so an arrow inside it is noise.
-                  new Set(
-                    source.groupId === undefined
-                      ? []
-                      : d.activeTab.elements
-                          .filter((el) => isBoxed(el) && el.groupId === source.groupId)
-                          .map((el) => el.id),
-                  ),
-                )
+              ? nearestElementTowards(d.activeTab.elements, source, anchor)
               : null;
           const out = ANCHOR_OUT[anchor];
           d.commit((els) =>
@@ -796,6 +786,11 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       if (!(drag?.kind === 'arrow-endpoint' && drag.following)) return;
       e.preventDefault();
       e.stopPropagation();
+      // Land the last pointermove first, as onUp does: it can still be
+      // waiting on the next frame, and the cleanup that ending the gesture
+      // triggers would cancel it, leaving the endpoint a frame behind (and
+      // unsnapped from the element under the cursor).
+      flushMove();
       // The landed arrow gets the one-shot collision-avoiding bow
       // (spec/77), same as the press-drag end in onUp above.
       if (drag.end === 'to' && !drag.reposition) {
@@ -851,7 +846,61 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       if (!(drag.kind === 'boxed' && drag.mode === 'move')) return;
       onMove({ ...lastMove, altKey: e.type === 'keydown' });
     };
-    window.addEventListener('pointermove', onMove);
+    // Coalesce element-drag commits to one per animation frame, the same way
+    // the pan gesture already does (useCanvasPanAndMarquee).
+    //
+    // pointermove fires faster than React can paint: a trackpad or a 120Hz
+    // pointer delivers well above 60 events a second, and every one of them
+    // was paying a commit. Over a realistic drag (180 events across ~90
+    // frames) this cuts DOM writes by ~18%.
+    //
+    // Deliberately NOT claimed: that this fixes any particular reported
+    // slowness. It was written while chasing one and the measurements that
+    // seemed to show a 20ms-per-move cost turned out to be measuring the test
+    // harness, not the app. What it does do is stop committing work that the
+    // next event in the same frame immediately throws away, which is the same
+    // reasoning the pan path already applied.
+    //
+    // Dropping the intermediate events is lossless. Every branch of `onMove`
+    // computes from the gesture's ANCHOR (`drag.startClientX` and friends)
+    // and the event's absolute position, never by accumulating deltas, so the
+    // frame that lands is identical whether or not the ones before it ran.
+    // `onUp` flushes anything still pending first, so a gesture always ends
+    // on the true final position rather than the last painted frame.
+    // `moveScheduled` rather than a null check on the handle: it is set
+    // BEFORE requestAnimationFrame is called and cleared inside the flush, so
+    // it is correct even when the callback runs synchronously (which is how
+    // the tests drive a frame). Guarding on the handle alone left it assigned
+    // AFTER a synchronous flush had already cleared it, so it never returned
+    // to null and every later move was dropped.
+    let moveScheduled = false;
+    let moveRaf: number | null = null;
+    let pendingMove: MovePointer | null = null;
+    const flushMove = () => {
+      moveScheduled = false;
+      moveRaf = null;
+      const move = pendingMove;
+      pendingMove = null;
+      if (move) onMove(move);
+    };
+    const onPointerMove = (e: PointerEvent) => {
+      // A SNAPSHOT for the same reason `onMove` takes one: a DOM event's
+      // fields live on the prototype, and this one has to outlive the
+      // handler by up to a frame.
+      pendingMove = {
+        clientX: e.clientX,
+        clientY: e.clientY,
+        altKey: e.altKey,
+        ctrlKey: e.ctrlKey,
+        metaKey: e.metaKey,
+        shiftKey: e.shiftKey,
+      };
+      if (moveScheduled) return;
+      moveScheduled = true;
+      moveRaf = requestAnimationFrame(flushMove);
+    };
+
+    window.addEventListener('pointermove', onPointerMove);
     window.addEventListener('pointerup', onUp);
     window.addEventListener('pointerdown', onSecondTouch);
     window.addEventListener('pointerdown', onPlaceClick, true);
@@ -859,7 +908,8 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     window.addEventListener('keydown', onAltChange);
     window.addEventListener('keyup', onAltChange);
     return () => {
-      window.removeEventListener('pointermove', onMove);
+      if (moveRaf !== null) cancelAnimationFrame(moveRaf);
+      window.removeEventListener('pointermove', onPointerMove);
       window.removeEventListener('pointerup', onUp);
       window.removeEventListener('pointerdown', onSecondTouch);
       window.removeEventListener('pointerdown', onPlaceClick, true);

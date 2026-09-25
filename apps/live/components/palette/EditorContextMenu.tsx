@@ -89,6 +89,9 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
     colorProps,
     textColorHandlers,
     fillColorHandlers,
+    headerFillHandlers,
+    labelFillHandlers,
+    arrowheadColorHandlers,
     strokeColorHandlers,
   } = useContextMenuScaffold(props);
   // Session-tool pickers (spec/39): the chosen timer mode + countdown length
@@ -357,6 +360,8 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             colorProps={colorProps}
             textColorHandlers={textColorHandlers}
             fillColorHandlers={fillColorHandlers}
+            headerFillHandlers={headerFillHandlers}
+            arrowheadColorHandlers={arrowheadColorHandlers}
             strokeColorHandlers={strokeColorHandlers}
           />
         )}
@@ -407,6 +412,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
           sectionProps={sectionProps}
           colorProps={colorProps}
           textColorHandlers={textColorHandlers}
+          labelFillHandlers={labelFillHandlers}
         />
       </ContextMenu>
     );

@@ -28,6 +28,15 @@ export type PaletteDropdownOption = {
   fullWidth?: boolean;
 };
 
+// The Toolbar layout's strip (spec/148) sets its dropdown-style controls (the
+// selection mode, the category picker, More) on a faint tint so they read as
+// menus rather than as more tiles beside them. Brand, not slate: the editor
+// retargets the brand ramp to the active tab's theme (useEditorAccent), so the
+// tint follows the theme in both modes. Exported so the strip's More button,
+// which is not a PaletteDropdown, wears exactly the same tone.
+export const TOOLBAR_TRIGGER_TONE =
+  'bg-brand-50 text-brand-700 hover:bg-brand-100 dark:bg-brand-500/15 dark:text-brand-200 dark:hover:bg-brand-500/25';
+
 // Normalises whatever <svg> an option carries to a consistent 14px box so
 // the 13px tool glyphs and the 18px category glyphs render at one size.
 const ICON_WRAP =
@@ -79,6 +88,7 @@ export function PaletteDropdown({
   grid = false,
   groupLabels,
   dataTourId,
+  iconOnly = false,
 }: {
   value: string;
   options: PaletteDropdownOption[];
@@ -104,7 +114,9 @@ export function PaletteDropdown({
   // Trigger appearance. 'bordered' is the standalone pill (icon filter);
   // 'flush' drops the border + rounding so the control sits flush against
   // the top and sides of a header band (the canvas-tool / category row).
-  variant?: 'bordered' | 'flush';
+  // 'toolbar' is the Toolbar layout's strip (spec/148): a borderless 36px
+  // trigger sized like the strip's tiles, with the menu hanging free below it.
+  variant?: 'bordered' | 'flush' | 'toolbar';
   // Drop the menu's max-height + scroll, so it grows to fit its options
   // instead of capping at ~56 and showing a scrollbar. For short, fixed
   // lists (the canvas-tool picker) where every option should always be
@@ -128,6 +140,10 @@ export function PaletteDropdown({
   // trigger and `<id>-menu` on the portalled listbox so tour steps can open
   // this dropdown and anchor to its menu.
   dataTourId?: string;
+  // Trigger shows only the selected option's glyph + chevron (the label is
+  // still the accessible name via aria-label). The strip's canvas-tool
+  // picker uses it, the way Excalidraw's tool bar shows a tool as its icon.
+  iconOnly?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLDivElement>(null);
@@ -150,7 +166,9 @@ export function PaletteDropdown({
 
   // Outside-click closes — but the menu lives in a portal, so a click in it
   // is NOT inside `triggerRef`; check the menu too or selecting an option
-  // would close before its handler runs.
+  // would close before its handler runs. Capture phase, because the toolbar
+  // strip stops pointerdown propagating (to keep it off the canvas), so a
+  // press on another strip control would never reach a bubbling listener.
   useEffect(() => {
     if (!open) return;
     const onDown = (e: PointerEvent) => {
@@ -162,8 +180,8 @@ export function PaletteDropdown({
       if (t instanceof Element && t.closest('[data-tour-popover]')) return;
       setOpen(false);
     };
-    document.addEventListener('pointerdown', onDown);
-    return () => document.removeEventListener('pointerdown', onDown);
+    document.addEventListener('pointerdown', onDown, true);
+    return () => document.removeEventListener('pointerdown', onDown, true);
   }, [open]);
 
   // Position the menu while open, re-running on scroll / resize so it tracks
@@ -179,10 +197,15 @@ export function PaletteDropdown({
       const flipUp = below + menuH > window.innerHeight - EDGE && trig.top - gap - menuH > EDGE;
       const top = flipUp ? trig.top - gap - menuH : below;
       const base = { top, width: trig.width, flipUp };
+      // Kept on screen sideways too: a trigger near an edge (the strip on a
+      // phone, a palette dragged against the window) would otherwise carry a
+      // wide grid menu past it. Clamped once the menu has measured its width.
+      const menuW = menuRef.current?.offsetWidth ?? 0;
+      const maxInset = Math.max(EDGE, window.innerWidth - EDGE - menuW);
       setCoords(
         align === 'right'
-          ? { ...base, right: window.innerWidth - trig.right }
-          : { ...base, left: trig.left },
+          ? { ...base, right: Math.min(Math.max(EDGE, window.innerWidth - trig.right), maxInset) }
+          : { ...base, left: Math.min(Math.max(EDGE, trig.left), maxInset) },
       );
     };
     place();
@@ -205,7 +228,11 @@ export function PaletteDropdown({
   // padding than the bordered filter dropdowns so they're a bigger, easier
   // hit target at the top of the panel.
   const shape =
-    variant === 'flush' ? 'rounded-none border-0 px-3.5 py-3' : 'h-[26px] rounded-md border px-2';
+    variant === 'flush'
+      ? 'rounded-none border-0 px-3.5 py-3'
+      : variant === 'toolbar'
+        ? 'h-9 rounded-md border-0 px-2'
+        : 'h-[26px] rounded-md border px-2';
   const trigger = (
     <button
       type="button"
@@ -214,20 +241,22 @@ export function PaletteDropdown({
       aria-expanded={open}
       aria-label={ariaLabel}
       data-tour-id={dataTourId}
-      className={`flex min-w-0 items-center gap-1.5 ${shape} ${variant === 'flush' ? 'text-xs' : 'text-[11px]'} font-medium transition ${
+      className={`flex min-w-0 items-center gap-1.5 ${shape} ${variant === 'bordered' ? 'text-[11px]' : 'text-xs'} font-medium transition ${
         accent
           ? 'border-brand-300 bg-brand-50 text-brand-700 dark:border-brand-500/50 dark:bg-brand-500/15 dark:text-brand-200'
-          : variant === 'flush'
-            ? // Flush triggers sit directly on the panel header, so they stay
-              // transparent at rest — the bordered pill's bg-white/slate-800
-              // fill read as a stray lighter box on the dark slate-900 panel.
-              'bg-transparent text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
-            : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+          : variant === 'toolbar'
+            ? TOOLBAR_TRIGGER_TONE
+            : variant === 'flush'
+              ? // Flush triggers sit directly on the panel header, so they stay
+                // transparent at rest — the bordered pill's bg-white/slate-800
+                // fill read as a stray lighter box on the dark slate-900 panel.
+                'bg-transparent text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
+              : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
       }`}
     >
       {triggerLeading}
       {selected?.icon ? <span className={ICON_WRAP}>{selected.icon}</span> : null}
-      <span className="truncate">{selected?.label}</span>
+      {iconOnly ? null : <span className="truncate">{selected?.label}</span>}
       <svg
         width="10"
         height="10"
@@ -246,7 +275,9 @@ export function PaletteDropdown({
   );
   return (
     <div className="relative min-w-0" ref={triggerRef}>
-      {tooltipTitle ? (
+      {/* The tooltip steps aside while the menu is open: it would otherwise
+          sit on top of the options it describes. */}
+      {tooltipTitle && !open ? (
         <Tooltip title={tooltipTitle} description={tooltipDescription ?? ''}>
           {trigger}
         </Tooltip>
@@ -296,6 +327,7 @@ export function PaletteDropdown({
               left: coords?.left,
               right: coords?.right,
               top: coords?.top ?? -9999,
+              maxWidth: `calc(100vw - ${EDGE * 2}px)`,
               // Use the trigger width as a FLOOR (so the menu reads as one
               // continuous column with it) but let it grow to fit the option
               // labels — clamping to the trigger width truncated names like

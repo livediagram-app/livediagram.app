@@ -15,7 +15,7 @@ import {
   FolderPlaceIcon,
   NewFolderTile,
   PlacementCard,
-} from '@/components/placement/PlacementBrowser';
+} from '@/components/placement/PlacementCard';
 import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
 import { useEscape } from '@/hooks/ui/useEscape';
 import { matches } from '@/lib/search';
@@ -51,7 +51,9 @@ function OrganiseDialogFrame({
           </h2>
           <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{sub}</p>
         </div>
-        <DialogCloseButton onClick={onClose} />
+        <div className="-mt-1 flex shrink-0 items-center">
+          <DialogCloseButton onClick={onClose} />
+        </div>
       </div>
       <div className="flex-1 overflow-y-auto px-5 py-4">{children}</div>
     </Dialog>

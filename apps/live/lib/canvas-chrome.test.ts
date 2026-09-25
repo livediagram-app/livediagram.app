@@ -34,12 +34,56 @@ describe('computeDockAnchor', () => {
     expect(a.left).toBe(8); // 200 - 256 - 8 = -64, clamped to 8
   });
 
+  it("hangs a lone button's popover from the button itself", () => {
+    // The Toolbar layout's menu button, top-left (spec/148): the Explorer
+    // opens under it, not tucked against the far right edge.
+    const a = computeDockAnchor({ left: 16, bottom: 58, width: 36 }, canvas, popover, 'button');
+    expect(a.left).toBe(16);
+    expect(a.arrowOffset).toBe(34 - 16); // button centre 34
+  });
+
+  it("keeps a lone button's popover on the canvas near the right edge", () => {
+    const a = computeDockAnchor({ left: 900, bottom: 40, width: 40 }, canvas, popover, 'button');
+    expect(a.left).toBe(rightAligned);
+  });
+
   it('subtracts the canvas offset so the anchor is canvas-relative', () => {
     const offsetCanvas = { left: 100, top: 50, width: 1000 };
     const a = computeDockAnchor({ left: 880, bottom: 90, width: 40 }, offsetCanvas, popover);
     expect(a.top).toBe(40); // 90 - 50
     expect(a.left).toBe(rightAligned); // width - popover - 8, offset-independent
     expect(a.arrowOffset).toBe(800 - rightAligned); // centre 880 + 20 - 100 = 800
+  });
+
+  it("opens a cluster button's popover up from the button", () => {
+    // Activity / Layers in the bottom-right cluster: hang from the button's
+    // left, and `bottom` is the canvas bottom edge to the button's top.
+    const a = computeDockAnchor(
+      { left: 600, top: 700, bottom: 744, width: 44 },
+      { left: 0, top: 50, width: 1000, height: 750 },
+      popover,
+      'above',
+    );
+    expect(a.left).toBe(600);
+    expect(a.bottom).toBe(750 - (700 - 50)); // 100
+    expect(a.arrowOffset).toBe(22); // button centre 622
+  });
+
+  it("keeps a cluster button's popover on the canvas near the right edge", () => {
+    const a = computeDockAnchor(
+      { left: 900, top: 700, bottom: 744, width: 44 },
+      { left: 0, top: 0, width: 1000, height: 800 },
+      popover,
+      'above',
+    );
+    expect(a.left).toBe(rightAligned);
+    expect(a.arrowOffset).toBe(922 - rightAligned);
+  });
+
+  it('leaves `bottom` unset for a popover that opens down', () => {
+    expect(computeDockAnchor({ left: 900, bottom: 40, width: 40 }, canvas, popover).bottom).toBe(
+      undefined,
+    );
   });
 });
 
@@ -51,7 +95,6 @@ describe('canvasCursorClass', () => {
     canvasTool: 'pan',
     spaceHeld: false,
     isPaintMode: false,
-    isGroupMode: false,
   };
 
   it('a pending draw wins over everything', () => {
@@ -104,11 +147,8 @@ describe('canvasCursorClass', () => {
     expect(canvasCursorClass({ ...rest, canvasTool: 'pan' })).toBe('cursor-grab');
     expect(canvasCursorClass({ ...rest, canvasTool: 'select' })).toBe('cursor-crosshair');
   });
-  it('format-paint mode shows copy, group mode shows crosshair', () => {
+  it('format-paint mode shows copy', () => {
     expect(canvasCursorClass({ ...rest, canvasTool: 'x', isPaintMode: true })).toBe('cursor-copy');
-    expect(canvasCursorClass({ ...rest, canvasTool: 'x', isGroupMode: true })).toBe(
-      'cursor-crosshair',
-    );
   });
   it('falls back to grab', () => {
     expect(canvasCursorClass({ ...rest, canvasTool: 'x' })).toBe('cursor-grab');

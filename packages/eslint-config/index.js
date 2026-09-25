@@ -32,6 +32,15 @@ export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
+    // A disable directive that no longer suppresses anything is worse than no
+    // comment: it states a rule fires here when it does not, and it keeps
+    // silently covering the line if a real problem appears later. The repo has
+    // 65 of these and they are load-bearing, so the one that had gone stale
+    // (an exhaustive-deps disable in TabPortalMenu, left behind when the deps
+    // were fixed) was invisible until this was switched on.
+    linterOptions: {
+      reportUnusedDisableDirectives: 'error',
+    },
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'module',

@@ -173,7 +173,7 @@ export const categories: Category[] = [
     title: 'Explorer',
     description:
       'Organise everything you build: how the Explorer keeps your diagrams, folders, teams, and assets easy to find and manage.',
-    articleCount: 13,
+    articleCount: 14,
     kind: 'feature',
   },
   {
@@ -189,14 +189,14 @@ export const categories: Category[] = [
     title: 'Palette',
     description:
       'Your launchpad for everything on the canvas: every element and palette setting explained.',
-    articleCount: 25,
+    articleCount: 26,
     kind: 'feature',
   },
   {
     slug: 'canvas',
     title: 'Canvas',
     description:
-      'Master the infinite canvas where diagrams come together: placing, selecting, grouping, linking, annotating, noting, layering, rotating, animating, shadowing, locking, theming, and templating.',
+      'Master the infinite canvas where diagrams come together: placing, selecting, linking, annotating, noting, layering, rotating, animating, shadowing, locking, theming, and templating.',
     articleCount: 20,
     kind: 'feature',
   },
@@ -213,7 +213,7 @@ export const categories: Category[] = [
     title: 'Collaboration',
     description:
       'Work together in real time: comments, assigned actions, live presence, teams, sharing, and session tools.',
-    articleCount: 6,
+    articleCount: 7,
     kind: 'feature',
   },
   {
@@ -472,7 +472,7 @@ export const articles: Article[] = [
   {
     slug: 'fast-theming',
     title: 'Restyle a Diagram Fast',
-    description: 'Restyle an entire diagram in seconds with colour schemes and presets.',
+    description: 'Restyle an entire diagram in seconds with themes and presets.',
     keywords: 'restyle recolour recolor colors colours presets quick style scheme',
     category: 'Tips and Tricks',
     categorySlug: 'tips-and-tricks',
@@ -612,7 +612,7 @@ export const articles: Article[] = [
     slug: 'offline-mode',
     title: 'Offline Mode',
     description: 'Save a diagram only in this browser, and move it to or from your account.',
-    keywords: 'local only browser private no sync device localstorage disconnect',
+    keywords: 'local only browser private no sync device localstorage disconnect save location',
     category: 'Privacy and Security',
     categorySlug: 'privacy-and-security',
     parentSlug: 'privacy-and-security',
@@ -621,7 +621,8 @@ export const articles: Article[] = [
     slug: 'what-we-collect',
     title: 'What We Collect',
     description: 'The anonymous, first-party telemetry we record, and how to opt out.',
-    keywords: 'privacy telemetry analytics tracking data collect opt out anonymous',
+    keywords:
+      'privacy telemetry analytics tracking data collect opt out anonymous page views pageviews visits',
     category: 'Privacy and Security',
     categorySlug: 'privacy-and-security',
     parentSlug: 'privacy-and-security',
@@ -960,8 +961,9 @@ export const articles: Article[] = [
   {
     slug: 'components',
     title: 'Components',
-    description: 'Pre-assembled blocks like banners, callouts, and stat rows.',
-    keywords: 'banner callout stat block prebuilt widgets cards sections hero header masthead',
+    description: 'Web components: banners, callouts, stat rows, steps, heroes and headers.',
+    keywords:
+      'banner callout stat kpi block prebuilt widgets cards sections hero header masthead nav navigation website web page process steps',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',
@@ -980,9 +982,9 @@ export const articles: Article[] = [
     slug: 'collaborate',
     title: 'Collaborate elements',
     description:
-      'The Behaviours groups that collect what the room thinks: comment panels, estimates, temperature checks, idea boxes, agendas, decisions and roll calls.',
+      'The Behaviours groups that collect what the room thinks: comment panels, action panels, estimates, temperature checks, idea boxes, agendas, decisions and roll calls.',
     keywords:
-      'collaborate collaboration comment panel card pin pinned remark note thread reply discuss feedback annotate sticky question estimate estimation planning poker story points fibonacci tshirt t-shirt temperature check fist of five pulse mood vote idea box anonymous brainstorm brainwriting retro retrospective agenda run of show timebox segments decision record adr architecture decision roll call attendance register present room team workshop facilitate facilitation powers of two',
+      'collaborate collaboration comment panel action panel task assign card pin pinned remark note thread reply discuss feedback annotate sticky question estimate estimation planning poker story points fibonacci tshirt t-shirt temperature check fist of five pulse mood vote idea box anonymous brainstorm brainwriting retro retrospective agenda run of show timebox segments decision record adr architecture decision roll call attendance register present room team workshop facilitate facilitation powers of two',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',
@@ -1041,9 +1043,9 @@ export const articles: Article[] = [
     slug: 'behaviour',
     title: 'Behaviours',
     description:
-      'Every element that comes alive with the room: estimates, temperature checks, idea boxes, Done checks, pickers, session buttons, agendas, decisions, roll calls, reactions, mode buttons and portals.',
+      'Every element that comes alive with the room: comment and action panels, estimates, temperature checks, idea boxes, Done checks, pickers, session buttons (timer, stopwatch, vote, poll), agendas, decisions, roll calls, reactions, mode buttons, portals and Bring Focus.',
     keywords:
-      'behaviour behavior behaviours behaviors interactive button portal session timer vote poll reveal hide cover picker random spinner control mode switch chair seat link card bookmark preview url reaction pad confetti celebrate sparkles hearts applause fireworks emoji burst done check finished ready waiting who progress everyone mark complete collaborate collaboration estimate temperature idea box agenda decision roll call ask the room keep a record run the room facilitate facilitation runtime live',
+      'behaviour behavior behaviours behaviors interactive button portal session timer stopwatch countdown count up elapsed vote poll reveal hide cover picker random spinner control mode switch chair seat link card bookmark preview url bring focus look here attention gather reaction pad confetti celebrate sparkles hearts applause fireworks emoji burst done check finished ready waiting who progress everyone mark complete collaborate collaboration estimate temperature idea box agenda decision roll call ask the room keep a record run the room facilitate facilitation runtime live',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',
@@ -1053,7 +1055,7 @@ export const articles: Article[] = [
     title: 'Devices',
     description: 'Browser, phone, laptop and other wireframing frames.',
     keywords:
-      'browser phone laptop wireframe mockup frame window screen monitor smartwatch watch tablet desktop device',
+      'browser phone laptop wireframe mockup frame window screen monitor smartwatch watch tablet foldable fold unfolded desktop device',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',
@@ -1133,6 +1135,16 @@ export const articles: Article[] = [
     group: 'Palette Settings',
   },
   {
+    slug: 'toolbar-layout',
+    title: 'Toolbar Layout',
+    description: 'The palette as one strip across the top of the canvas.',
+    keywords:
+      'toolbar strip top bar excalidraw panel layout floating minimal menu button explorer more tiles recent recently used order reorder',
+    category: 'Palette',
+    categorySlug: 'palette',
+    group: 'Palette Settings',
+  },
+  {
     slug: 'reset-palette-position',
     title: 'Reset Palette Position',
     description: 'Snap the palette back to its default corner.',
@@ -1143,9 +1155,9 @@ export const articles: Article[] = [
   },
   {
     slug: 'selecting-and-grouping',
-    title: 'Selecting and Grouping',
-    description: 'Marquee, multi-select, groups, and the format painter.',
-    keywords: 'multi select marquee group ungroup lasso rubber band combine',
+    title: 'Selecting Many Elements',
+    description: 'Marquee, multi-select, and the format painter.',
+    keywords: 'multi select marquee group ungroup lasso rubber band combine several many',
     category: 'Canvas',
     categorySlug: 'canvas',
   },
@@ -1169,8 +1181,8 @@ export const articles: Article[] = [
   },
   {
     slug: 'themes',
-    title: 'Colour Schemes',
-    description: 'Restyle a whole diagram, including multi-colour and custom colour schemes.',
+    title: 'Themes',
+    description: 'Restyle a whole diagram, including multi-colour and custom themes.',
     keywords: 'color colour scheme restyle recolour recolor appearance style palette',
     category: 'Canvas',
     categorySlug: 'canvas',
@@ -1268,6 +1280,15 @@ export const articles: Article[] = [
     categorySlug: 'collaboration',
   },
   {
+    slug: 'facilitator',
+    title: 'Facilitator',
+    description: 'Give one person the timer, votes and polls for a live session.',
+    keywords:
+      'facilitator facilitate host run the room session lead moderator driver baton timer vote poll control handover take over step down chair meeting workshop',
+    category: 'Collaboration',
+    categorySlug: 'collaboration',
+  },
+  {
     slug: 'assigned-actions',
     title: 'Assigned Actions',
     description: 'Assign work on an element to a teammate and track it until done.',
@@ -1279,7 +1300,8 @@ export const articles: Article[] = [
     slug: 'live-presence',
     title: 'Live Presence',
     description: 'Live cursors, names, selections, and who is on which tab, in real time.',
-    keywords: 'cursors online who viewing realtime collaborators avatars multiplayer',
+    keywords:
+      'cursors online who viewing realtime collaborators avatars multiplayer people participants roster room',
     category: 'Collaboration',
     categorySlug: 'collaboration',
   },
@@ -1321,7 +1343,17 @@ export const articles: Article[] = [
     title: 'Timeline',
     description: 'The Explorer\u2019s landing view: a day-by-day feed of everything that happened.',
     keywords:
-      'feed activity history what happened whats new latest events log stream notifications updates recent changes calendar month view upcoming expiring stacked grouped collapse day colour color red amber green deleted preview thumbnail unread unseen new badge since last visit who did what other people filter local time',
+      'feed activity history what happened whats new latest events log stream notifications updates recent changes calendar month view upcoming expiring stacked grouped collapse day colour color red amber green deleted preview thumbnail card cards grid menu ellipsis rename move duplicate created updated unread unseen new badge since last visit who did what other people filter local time remove dismiss hide clutter tidy clean up refresh live update revoke token accept decline invite leave team edit theme share',
+    category: 'Explorer',
+    categorySlug: 'explorer',
+  },
+  {
+    slug: 'activity',
+    title: 'Activity',
+    description:
+      'What is outstanding for you across every diagram: open actions and comment threads.',
+    keywords:
+      'inbox to do todo tasks my actions assigned to me assigned by me outstanding waiting open threads unresolved comments replies pending work queue what needs me badge count cross diagram all diagrams',
     category: 'Explorer',
     categorySlug: 'explorer',
   },
@@ -1359,12 +1391,12 @@ export const articles: Article[] = [
     categorySlug: 'explorer',
   },
   {
-    slug: 'my-work',
-    title: 'My Work and Folders',
+    slug: 'personal-space',
+    title: 'Personal Space and Folders',
     description:
       'Your own library: the Unsorted and Favourites buckets, and the folders you create.',
     keywords:
-      'personal library your diagrams own files organise organize favourite favorite star starred bookmark pin quick access',
+      'personal library my work your diagrams own files organise organize favourite favorite star starred bookmark pin quick access',
     category: 'Explorer',
     categorySlug: 'explorer',
   },
@@ -1386,18 +1418,18 @@ export const articles: Article[] = [
   },
   {
     slug: 'themes-library',
-    title: 'Saved Colour Schemes',
-    description:
-      'Your custom colour schemes as swatch previews, ready to edit, duplicate, or reuse.',
+    title: 'Saved Themes',
+    description: 'Your custom themes as swatch previews, ready to edit, duplicate, or reuse.',
     keywords: 'custom themes swatches colours colors library reuse manage',
     category: 'Explorer',
     categorySlug: 'explorer',
   },
   {
     slug: 'profile',
-    title: 'Your Profile',
-    description: 'Your account identity, email-notification toggles, and account deletion.',
-    keywords: 'account settings email delete avatar name preferences',
+    title: 'Your Account',
+    description:
+      'Your identity card, email-notification switches, and account deletion, in Settings.',
+    keywords: 'account profile settings email delete avatar name preferences identity danger zone',
     category: 'Explorer',
     categorySlug: 'explorer',
   },
@@ -1685,7 +1717,8 @@ export const articles: Article[] = [
     slug: 'tables',
     title: 'Tables',
     description: 'An editable grid of cells for tabular content on the canvas.',
-    keywords: 'grid cells rows columns spreadsheet matrix data',
+    keywords:
+      'grid cells rows columns spreadsheet matrix data preset presets look looks style banded zebra striped header band recolour recolor',
     category: 'Palette',
     categorySlug: 'palette/tools',
     parentSlug: 'tools',
@@ -1760,6 +1793,16 @@ export const articles: Article[] = [
 
   // ---- Sub-articles: Behaviour ----
   {
+    slug: 'bring-focus',
+    title: 'Bring Focus',
+    description: 'Ask everyone else in the room to come and look at one spot.',
+    keywords:
+      'bring focus look here attention everyone jump navigate gather point show spotlight presenter facilitate big board find lost viewport zoom same view',
+    category: 'Palette',
+    categorySlug: 'palette/behaviour',
+    parentSlug: 'behaviour',
+  },
+  {
     slug: 'mode-buttons',
     title: 'Selection Mode Buttons',
     description: 'A button that hands whoever presses it a selection mode.',
@@ -1827,6 +1870,16 @@ export const articles: Article[] = [
     description: 'A whole comment thread, left out on the board.',
     keywords:
       'comment panel thread remark note reply discuss feedback annotate composer resolve reopen badge popover pinned about an element arrow export',
+    category: 'Palette',
+    categorySlug: 'palette/collaborate',
+    parentSlug: 'collaborate',
+  },
+  {
+    slug: 'action-panels',
+    title: 'Action Panels',
+    description: 'One assigned action as a card on the board, set up from the card.',
+    keywords:
+      'action panel card task todo to-do assign assignee owner follow-up action item complete done reopen email teammate board',
     category: 'Palette',
     categorySlug: 'palette/collaborate',
     parentSlug: 'collaborate',
@@ -1902,15 +1955,6 @@ export const articles: Article[] = [
     categorySlug: 'canvas/selecting-and-grouping',
     parentSlug: 'selecting-and-grouping',
   },
-  {
-    slug: 'groups',
-    title: 'Groups',
-    description: 'Bind elements into a group that moves and styles as one.',
-    keywords: 'group ungroup bind combine together merge unit',
-    category: 'Canvas',
-    categorySlug: 'canvas/selecting-and-grouping',
-    parentSlug: 'selecting-and-grouping',
-  },
 
   // ---- Sub-articles: Text and Fonts ----
   {
@@ -1923,11 +1967,11 @@ export const articles: Article[] = [
     parentSlug: 'text-and-fonts',
   },
 
-  // ---- Sub-articles: Colour Schemes ----
+  // ---- Sub-articles: Themes ----
   {
     slug: 'changing-theme',
-    title: 'Changing the Colour Scheme',
-    description: 'Open the colour scheme dialog and browse colour schemes by category.',
+    title: 'Changing the Theme',
+    description: 'Open the theme dialog and browse themes by category.',
     keywords: 'apply browse switch restyle colours colors dialog pick',
     category: 'Canvas',
     categorySlug: 'canvas/themes',
@@ -1935,7 +1979,7 @@ export const articles: Article[] = [
   },
   {
     slug: 'multicolour-themes',
-    title: 'Multi-Colour Schemes',
+    title: 'Multicolour Themes',
     description: 'Tint each branch of a hierarchy its own hue.',
     keywords: 'multicolor rainbow branch hue tint colorful colourful',
     category: 'Canvas',
@@ -1944,8 +1988,8 @@ export const articles: Article[] = [
   },
   {
     slug: 'custom-themes',
-    title: 'Custom Colour Schemes',
-    description: 'Build, save, and reuse your own colour schemes.',
+    title: 'Custom Themes',
+    description: 'Build, save, and reuse your own themes.',
     keywords: 'own colors colours personalise personalize create save brand',
     category: 'Canvas',
     categorySlug: 'canvas/themes',
@@ -2195,6 +2239,15 @@ export const articles: Article[] = [
     parentSlug: 'data-elements',
   },
   {
+    slug: 'legend',
+    title: 'Legend',
+    description: 'A key of colour-coded rows to explain what your colours mean.',
+    keywords: 'key colour code swatch label caption guide chart key colour key color key',
+    category: 'Palette',
+    categorySlug: 'palette/tools/data-elements',
+    parentSlug: 'data-elements',
+  },
+  {
     slug: 'timeline-rail',
     title: 'Timeline Rail',
     description: 'A horizontal rail of evenly spaced, labelled points for roadmaps and processes.',
@@ -2218,7 +2271,7 @@ export const articles: Article[] = [
     slug: 'auto-layout',
     title: 'Auto Layout',
     description: 'Tidy Up the arrow graph as a flowchart, tree, or mindmap.',
-    keywords: 'arrange flowchart tree mindmap tidy up automatic graph',
+    keywords: 'arrange flowchart tree mindmap tidy up automatic graph preview hover try before',
     category: 'Tools',
     categorySlug: 'tools/layout-cleanup',
     parentSlug: 'layout-cleanup',

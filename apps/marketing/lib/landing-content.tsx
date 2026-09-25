@@ -11,12 +11,14 @@ import {
   AutosaveArt,
   AvatarModeArt,
   BorderStyleArt,
+  BringFocusArt,
   CanvasBackdropArt,
   AssignedActionsArt,
   CommentsArt,
   ComponentsArt,
   EmbedArt,
   EntityArt,
+  ExportArt,
   LanesArt,
   MindMapArt,
   CustomThemesArt,
@@ -25,13 +27,13 @@ import {
   DragDuplicateArt,
   EasyStartArt,
   ExpiryArt,
+  FacilitatorArt,
   FlowingArrowsArt,
   FoldersArt,
   FullScreenSlideArt,
   IsometricArt,
   FontsArt,
   FormatPainterArt,
-  GroupArt,
   IconsArt,
   ImagesArt,
   LaserArt,
@@ -131,7 +133,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         art: <DepthArt />,
         title: 'Looks simple, runs deep',
         description:
-          'A clean canvas hides serious range: groups, locks, the format painter, arrows that track, and links across tabs.',
+          'A clean canvas hides serious range: multi-select, locks, the format painter, arrows that track, and links across tabs.',
       },
       {
         art: <MultiplayerArt />,
@@ -260,6 +262,22 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Facilitate live from the canvas. Drop a timer straight onto the board — the real one, with start, pause, restart and a bar that drains as the time goes — or start a countdown or stopwatch the whole room sees, then open dot-voting to surface the group’s priorities. Everyone votes with a budget of dots; results tally in real time, and revealing them starts a guided walkthrough: each top pick lights up and centres on screen while you step through with Next and Previous. Perfect for retros, workshops, and timeboxed planning.',
       },
       {
+        art: <FacilitatorArt />,
+        href: '/help/collaboration/facilitator/',
+        group: 'Present & facilitate',
+        title: 'One person runs the room',
+        description:
+          'Hand someone the facilitator baton and the tools that run the session answer to them alone: the timer, the votes, the polls, the reveals. No two people starting timers over each other. Nobody holds it by default, anybody can be given it, and the owner can always take it back.',
+      },
+      {
+        art: <BringFocusArt />,
+        href: '/help/palette/behaviour/bring-focus/',
+        group: 'Present & facilitate',
+        title: 'Ask the room to look here',
+        description:
+          'Drop a Bring Focus element, press it, and everyone else is offered a jump to it: your tab, your zoom, the thing you mean. It asks rather than drags, so nobody loses the place they were working in.',
+      },
+      {
         art: <ExpiryArt />,
         href: '/help/collaboration/sharing/share-link-expiry/',
         group: 'Share & access',
@@ -319,7 +337,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <SpotlightArt />,
         href: '/help/selection-modes/spotlight/',
-        group: 'Spotlight',
+        group: 'Presenting modes',
         title: 'Spotlight the room on one thing',
         description:
           'Switch on Spotlight and the canvas dims under a soft shroud, with only a circle of light around your cursor. Walk the room through a busy diagram one piece at a time. Left-click grows the light, right-click shrinks it, and it is a local view aid, so it never gets in a viewer’s way.',
@@ -327,7 +345,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <LaserArt />,
         href: '/help/selection-modes/laser/',
-        group: 'Laser pointer',
+        group: 'Presenting modes',
         title: 'Laser pointer for presenting',
         description:
           'Switch to the laser tool and your cursor leaves a glowing trail everyone can see. Point at the thing you mean while you talk it through. Trails fade on their own.',
@@ -335,7 +353,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <AvatarModeArt />,
         href: '/help/selection-modes/avatar-mode/',
-        group: 'Avatar mode',
+        group: 'Presenting modes',
         title: 'Walk a character through your diagram',
         description:
           'Avatar mode drops a little pixel character onto the canvas. Click to walk it to whatever you are talking about, steer with the arrow keys, and press Space to hop and wave a flag. Dress it how you like — gender, clothing, hair and size, remembered in your browser — and the box it stands on gets a ring. The canvas is read-only while you walk, and on a shared diagram everyone sees everyone else walking about in their own colour.',
@@ -343,7 +361,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <IsometricArt />,
         href: '/help/selection-modes/isometric-mode/',
-        group: 'Isometric',
+        group: 'Presenting modes',
         title: 'Tilt the board into 3D',
         description:
           'Isometric view tips the whole canvas onto an angle and lifts each layer off the one below, so a stack that reads as flat boxes becomes a scene you can see the depth of. Orbit it from the zoom cluster. It is a way of LOOKING at a diagram, not a change to it: nothing moves, and everyone else still sees it flat.',
@@ -351,7 +369,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <ZenModeArt />,
         href: '/help/tools/zen-mode/',
-        group: 'Zen',
+        group: 'Presenting modes',
         title: 'Zen mode for focus',
         description:
           'Hit Z, or the zen button by the laser pointer, and every toolbar, panel, and tab bar drops away, leaving just your canvas. Only the zoom controls stay, with an exit button right beside them. Press Z or Esc to bring it all back.',
@@ -363,31 +381,31 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore customisation',
     title: 'Customise it your way',
     description:
-      'Make every diagram yours: start from a template, recolour with a colour scheme, set the type and the backdrop, and shape every border, arrow, and block the way you want it.',
+      'Make every diagram yours: start from a template, recolour with a theme, set the type and the backdrop, and shape every border, arrow, and block the way you want it.',
     items: [
       {
         art: <TemplatesArt />,
         href: '/help/canvas/templates/',
-        group: 'Templates & colour schemes',
+        group: 'Templates & themes',
         title: 'Forty-eight starter templates',
         description:
-          'Mind maps (radial, tree, and bubble), org charts, retrospectives, flowcharts — plus swimlane, decision-tree, approval, and data-flow variants — Kanban, roadmaps, user story maps, affinity maps, RACI matrices, SWOT, empathy maps, Business Model Canvases, funnels, timelines (plain, plus horizontal and vertical milestone), Gantt, Venn, user journeys, fishbone, pyramids, OKR trees, sitemaps, flywheels, prioritization matrices, comparison tables, storyboards, ER / sequence / class / state-machine / system- and cloud-architecture diagrams, event storming, logo design, a live card, a to-scale floor plan, and mobile / laptop / web-page / slide-deck wireframes. Pick one, edit it, or start blank.',
+          'Start from a board that already makes sense: flowcharts and mind maps, retrospectives and Kanban, roadmaps and org charts, wireframes, architecture and UML, even a to-scale floor plan. Browse them by category in the picker, edit one, or start blank.',
       },
       {
         art: <ThemesArt />,
         href: '/help/canvas/themes/changing-theme/',
-        group: 'Templates & colour schemes',
-        title: 'Twenty-six preset colour schemes',
+        group: 'Templates & themes',
+        title: 'Twenty-six preset themes',
         description:
           'Default, Forest, Ocean, Sunset, Rose, Midnight, Mono and a dozen more — plus multi-colour Rainbow, Pastel, Tropical, Autumn, and Jewel schemes that tint each branch a different hue. One click recolours the canvas, every shape, and every arrow. Default has a light and a dark half, and follows your own appearance.',
       },
       {
         art: <CustomThemesArt />,
         href: '/help/canvas/themes/custom-themes/',
-        group: 'Templates & colour schemes',
-        title: 'Build your own colour scheme',
+        group: 'Templates & themes',
+        title: 'Build your own theme',
         description:
-          'Need your brand palette, a house style, or a notation that is not in the list? Build a custom colour scheme, save it to your account, and reuse it across diagrams just like a built-in one. Edit it any time, and guests get them too.',
+          'Need your brand palette, a house style, or a notation that is not in the list? Build a custom theme, save it to your account, and reuse it across diagrams just like a built-in one. Edit it any time, and guests get them too.',
       },
       {
         art: <CanvasBackdropArt />,
@@ -395,7 +413,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Canvas & type',
         title: 'Set the canvas backdrop',
         description:
-          'Switch the canvas background between fourteen backdrops, from plain, grid, and lines to crosshatch, waves, isometric, and engineering. Each colour scheme and template picks a fitting default.',
+          'Switch the canvas background between fourteen backdrops, from plain, grid, and lines to crosshatch, waves, isometric, and engineering. Each theme and template picks a fitting default.',
       },
       {
         art: <FontsArt />,
@@ -411,7 +429,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Shapes & connectors',
         title: 'A shape for everything',
         description:
-          'Fourteen core shapes — flowchart blocks plus an actor, cloud, triangle, star, and speech bubble — a section frame that carries whatever you draw inside it, and six device frames (browser, monitor, laptop, phone, tablet, smartwatch). Click to drop one, or drag to draw it at the exact size you want, snapped to line up with its neighbours. A flowchart one minute, a screen the next.',
+          'Fourteen core shapes — flowchart blocks plus an actor, cloud, triangle, star, and speech bubble — a section frame that carries whatever you draw inside it, and seven device frames (browser, monitor, laptop, phone, tablet, foldable, smartwatch). Click to drop one, or drag to draw it at the exact size you want, snapped to line up with its neighbours. A flowchart one minute, a screen the next.',
       },
       {
         art: <ArrowsArt />,
@@ -431,7 +449,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       },
       {
         art: <FoldersArt />,
-        href: '/help/explorer/my-work/',
+        href: '/help/explorer/personal-space/',
         group: 'Canvas & type',
         title: 'Organise in folders',
         description:
@@ -465,7 +483,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/canvas/the-canvas/changing-the-background/',
         title: 'A backdrop with motion',
         description:
-          'Swap the static grid for a living pattern: Flow streams diagonal lines, Drift floats rising motes, Aurora drifts colour glows, Ripple expands gentle rings, and Ribbons sweeps curved lines. Each matches the colour scheme, scales with the size slider, runs as fast or as slow as you set the speed slider, and settles when reduced-motion is on.',
+          'Swap the static grid for a living pattern: Flow streams diagonal lines, Drift floats rising motes, Aurora drifts colour glows, Ripple expands gentle rings, and Ribbons sweeps curved lines. Each matches the theme, scales with the size slider, runs as fast or as slow as you set the speed slider, and settles when reduced-motion is on.',
       },
       {
         art: <AnimatedIconsArt />,
@@ -481,12 +499,12 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore the organising tools',
     title: 'Keep your work tidy',
     description:
-      'Work fast and stay organised: select in bulk, group and lock elements, copy a look from one to the next, and keep your canvas focused.',
+      'Work fast and stay organised: select in bulk, lock elements, copy a look from one to the next, and keep your canvas focused.',
     items: [
       {
         art: <MarqueeArt />,
         href: '/help/canvas/selecting-and-grouping/multi-select/',
-        group: 'Select, group & lock',
+        group: 'Select & lock',
         title: 'Multi-select with marquee',
         description:
           'Switch to the Select tool, drag a box, and act on everything inside at once: move, duplicate, or delete in one step, one Cmd-Z. Or grab the eraser and wipe out whatever you drag across, the whole sweep undone in a single step.',
@@ -494,23 +512,15 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <DragDuplicateArt />,
         href: '/help/tips-and-tricks/keyboard-shortcuts/',
-        group: 'Select, group & lock',
+        group: 'Select & lock',
         title: 'Shift-drag to duplicate',
         description:
           'Hold Shift and drag any element, or a whole selection, to peel off a copy: the original stays put, a translucent ghost follows your cursor, and the copy lands where you release, arrows and all.',
       },
       {
-        art: <GroupArt />,
-        href: '/help/canvas/selecting-and-grouping/groups/',
-        group: 'Select, group & lock',
-        title: 'Group elements together',
-        description:
-          'Bundle shapes into a group so they move, lock, and delete as one. Ungroup any time to work on a single piece again.',
-      },
-      {
         art: <LockArt />,
         href: '/help/canvas/locking/',
-        group: 'Select, group & lock',
+        group: 'Select & lock',
         title: 'Lock anything in place',
         description:
           'Lock an element, or a whole tab, and it turns read-only, so a finished part of the diagram cannot be nudged or edited by accident.',
@@ -518,7 +528,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <LayersArt />,
         href: '/help/canvas/layers/',
-        group: 'Select, group & lock',
+        group: 'Select & lock',
         title: 'Photoshop-style layers',
         description:
           'Split a tab into stacking layers with live previews: hide a slice, lock it, dim it, or merge it down, and keep review notes out of the export. Bring to Front quietly does the layering for you.',
@@ -526,7 +536,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <FormatPainterArt />,
         href: '/help/selection-modes/format-painter/',
-        group: 'Select, group & lock',
+        group: 'Select & lock',
         title: 'Format painter',
         description:
           "Copy one element's look, its size, colours, text style, opacity, and padding, then brush it onto the next. Consistent diagrams without re-picking every option.",
@@ -537,15 +547,15 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Your workspace',
         title: 'Light or dark, your call',
         description:
-          'Set the editor to light, dark, or your device setting with one toggle. It starts on your device setting, so a dark machine opens a dark editor. Toolbars, panels, dialogs, and menus all come along, the choice sticks per device, and tabs on the Default colour scheme follow it. The canvas stays crisp either way.',
+          'Set the editor to light, dark, or your device setting with one toggle. It starts on your device setting, so a dark machine opens a dark editor. Toolbars, panels, dialogs, and menus all come along, the choice sticks per device, and tabs on the Default theme follow it. The canvas stays crisp either way.',
       },
       {
         art: <MinimalPanelArt />,
-        href: '/help/palette/minimal-panels/',
+        href: '/help/palette/toolbar-layout/',
         group: 'Your workspace',
         title: 'Panels your way',
         description:
-          'Prefer floating side panels or a clean canvas? Switch on the minimal layout and the palette and tools collapse into a compact dock with pop-out panels, the same tidy chrome you get on mobile. The choice sticks per device.',
+          'Three layouts, one setting. Floating keeps the panels over the canvas. Minimal collapses them into a compact dock with pop-out panels, the same tidy chrome you get on mobile. Toolbar puts the palette in a single strip across the top and the Explorer behind a menu button. The choice sticks per device.',
       },
     ],
   },
@@ -561,7 +571,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/tabs/using-tabs/',
         title: 'Unlimited tabs per diagram',
         description:
-          'Add as many tabs as a diagram needs. Each is its own canvas with its own colour scheme, and nothing slows down as the stack grows.',
+          'Add as many tabs as a diagram needs. Each is its own canvas with its own theme, and nothing slows down as the stack grows.',
       },
       {
         art: <TabsArt />,
@@ -575,7 +585,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/tabs/using-tabs/',
         title: 'Reorder and tell them apart',
         description:
-          'Drag tabs into any order. Each one is colour-coded by its colour scheme, so the right canvas is easy to spot.',
+          'Drag tabs into any order. Each one is colour-coded by its theme, so the right canvas is easy to spot.',
       },
       {
         art: <TabFoldersArt />,
@@ -675,14 +685,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/palette/tools/tables/',
         title: 'Tables, fully editable',
         description:
-          'Drop a table and double-click any cell to type. Insert or delete rows and columns from the cell menu, toggle a header row and a header column, recolour the headers (or reset them to the colour scheme), drag the dividers to set column widths, and pick the cell padding. It lays out and recolours with the rest of the canvas.',
+          'Drop a table and double-click any cell to type. Insert or delete rows and columns from the cell menu, toggle a header row and a header column, recolour the headers (or reset them to the theme), drag the dividers to set column widths, and pick the cell padding. It lays out and recolours with the rest of the canvas.',
       },
       {
         art: <IconsArt />,
         href: '/help/palette/icons/',
         title: 'A library of icons',
         description:
-          'Reach past boxes and arrows: drop a clean single-colour icon, servers, databases, clouds, users, and more, from the icon picker. Each one recolours with the colour scheme and styles like any other shape, so an architecture diagram reads at a glance.',
+          'Reach past boxes and arrows: drop a clean single-colour icon, servers, databases, clouds, users, and more, from the icon picker. Each one recolours with the theme and styles like any other shape, so an architecture diagram reads at a glance.',
       },
       {
         art: <TechIconsArt />,
@@ -724,7 +734,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/palette/components/',
         title: 'Ready-made components',
         description:
-          'Drop in a polished composite and skip the busywork: a banner, a hero, a website-style header, an annotated callout, a row of KPI stats, or numbered process steps. Tap to place it or drag to size it; each one follows the tab colour scheme, then ungroups into plain shapes you can edit like anything else.',
+          'Drop in a polished component and skip the busywork: a banner, a hero, a website-style header, an annotated callout, a row of KPI stats, or numbered process steps. Tap to place it or drag to size it; each one is a single element that follows the tab theme, re-flows as you resize it, and lets you retype any line in place.',
       },
     ],
   },
@@ -808,6 +818,13 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Works with Mermaid',
         description:
           'Paste or open a Mermaid flowchart and livediagram lays it out on the canvas, keeping every connection, not just the outline. Export any tab back to Mermaid to copy or download. It is the diagram-as-code format your READMEs, issues, and AI tools already use, so your diagrams travel.',
+      },
+      {
+        art: <ExportArt />,
+        href: '/help/tabs/export-tabs/',
+        title: 'Export as PNG, SVG, or PDF',
+        description:
+          'Take any tab out as an image for a doc, a PDF to print, or JSON, Markdown and Excalidraw to move it elsewhere. What you exported is what you drew: same sizes, same colours, same marks, in the same places.',
       },
       {
         art: <ApiArt />,

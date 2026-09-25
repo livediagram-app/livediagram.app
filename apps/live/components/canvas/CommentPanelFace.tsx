@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { QuoteRail } from '@/components/canvas/paper-kit';
 
 import { activeCommentCount, type ShapeElement } from '@livediagram/diagram';
 
@@ -60,11 +59,10 @@ export function CommentPanelFace({
       }`}
       style={{ color: textColor }}
     >
-      {/* A QUOTED REMARK (spec/122). The rail down the left edge has meant
-          "somebody else is talking" since email clients invented it, and it
-          says so from inside the border — a speech-bubble tail has to hang
-          outside the element, where the canvas clips it. */}
-      <QuoteRail textColor={textColor} />
+      {/* No quote rail down the left edge any more (spec/122 once gave the
+          panel one to mean "somebody else is talking"): inside a card that
+          already has a header, a thread and a reply box, it read as a stray
+          bar rather than a cue. */}
       {/* A header, not a toggle. Collapsing was built and then dropped: a
           panel you have deliberately put on the board is there to be READ, and
           folding it to a summary line left you with an element whose whole

@@ -1,177 +1,232 @@
 'use client';
 
-import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
-import { useRef, useState, type ReactNode } from 'react';
-import { AccordionSection } from '@/components/primitives/AccordionSection';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Dialog } from '@/components/dialogs/Dialog';
-import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
-import { ToggleSwitch } from '@/components/palette/palette-controls';
+import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
+import { SettingsCategoryList } from '@/components/dialogs/settings/SettingsCategoryList';
+import { SettingsCategoryPane } from '@/components/dialogs/settings/SettingsCategoryPane';
+import { NavChevron } from '@/components/primitives/NavChevron';
+import { SearchInput } from '@/components/primitives/SearchInput';
+import {
+  firstMatchingCategory,
+  searchSettings,
+} from '@/components/dialogs/settings/settings-search';
+import { useCapabilities } from '@/hooks/persistence/useCapabilities';
+import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
+import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import { markTourPending, requestTourRelaunch } from '@/lib/tour-pending';
 import { track } from '@/lib/telemetry';
+import {
+  visibleCategories,
+  type SettingsCategorySpec,
+} from '@/components/dialogs/settings/settings-catalogue';
+import type { SettingsCategoryId } from '@/components/dialogs/settings/settings-icons';
 import type { UserPreferences } from '@/lib/user-preferences';
-import { requestTourRelaunch } from '@/lib/tour-pending';
 
 type SettingsDialogProps = {
   settings: UserPreferences;
   onChange: (next: UserPreferences) => void;
   onClose: () => void;
   aiCapable?: boolean;
+  // Where to land. Set when Settings is opened from a search result: the
+  // setting IS the destination, so we open its category and ring the row
+  // rather than dropping the reader at the dialog's front door.
+  focus?: { categoryId: string; rowKey: string } | null;
+  // Category to open on without ringing a row, for the `?settings=` deep link
+  // that mail and the account menu use.
+  initialCategoryId?: string | null;
 };
 
-export function SettingsDialog({ settings, onChange, onClose, aiCapable }: SettingsDialogProps) {
-  const telemetryOn = settings.telemetryEnabled !== false;
-  const aiEnabled = settings.aiAssistanceEnabled === true;
-  const minimalPanels = settings.minimalPanels === true;
-  const reduceMotion = settings.reduceMotion === true;
-  const notificationsOn = settings.notificationsEnabled !== false;
+// The Settings dialog (spec/20), shaped like the iOS Settings app because it
+// had outgrown a single scrolling accordion: six groups of long paragraphs
+// stacked on one screen, where finding a setting meant opening groups until
+// one of them held it.
+//
+// It takes BOTH of that app's shapes, on the viewport each belongs to:
+//   - phone: a root list of categories that pushes a pane, with a back bar.
+//   - desktop: the iPad split view, categories in a rail, the pane beside
+//     them, so the whole map stays visible and nothing has to be pushed.
+// One catalogue and one pane component feed both, so the two layouts cannot
+// disagree about what a category contains.
+export function SettingsDialog({
+  settings,
+  onChange,
+  onClose,
+  aiCapable,
+  focus,
+  initialCategoryId,
+}: SettingsDialogProps) {
+  const isMobile = useIsMobileViewport();
+  // Email rows need Resend configured AND a signed-in account: a guest has
+  // no address, so those switches could never apply (spec/64).
+  const { emailEnabled } = useCapabilities();
+  const { clerkUserId, isSignedIn } = useClerkApiBootstrap();
+  const signedIn = Boolean(isSignedIn && clerkUserId);
+  const categories = useMemo(
+    () => visibleCategories(aiCapable === true, { emailEnabled, signedIn }),
+    [aiCapable, emailEnabled, signedIn],
+  );
 
-  // Single-open accordion: the title of the one expanded group (or null).
-  // Opening one collapses the rest. Starts on Editor so the dialog lands
-  // with a section showing (the Canvas group's toggles moved to the Palette
-  // settings popover — see spec/20).
-  const [openGroup, setOpenGroup] = useState<string | null>('Editor');
-  const groupProps = (title: string) => ({
-    title,
-    open: openGroup === title,
-    onToggle: () => setOpenGroup((g) => (g === title ? null : title)),
-  });
+  // On desktop a category is ALWAYS open (the pane can't be empty beside the
+  // rail); on the phone, null is the root list. Which is why this is one
+  // piece of state read two ways rather than two.
+  // A targeted open wins over both defaults, including on a phone, where it
+  // lands on the pushed pane rather than the root list.
+  const target = (focus?.categoryId ?? initialCategoryId ?? null) as SettingsCategoryId | null;
+  const [selectedId, setSelectedId] = useState<SettingsCategoryId | null>(
+    target ?? (isMobile ? null : (categories[0]?.id ?? null)),
+  );
 
-  // "I've seen the editor tour" (spec/79): a synced preference like every
-  // other row, so answering the offer once covers all the user's devices.
-  // Unchecking a previously-checked row and closing the dialog relaunches
-  // the tour (from its welcome card); finishing the rerun re-checks it.
+  // Crossing the breakpoint mid-session (a resize, a rotate) must not strand
+  // the dialog: desktop needs a pane, the phone root screen needs none.
+  useEffect(() => {
+    setSelectedId((current) => {
+      if (!isMobile) return current ?? categories[0]?.id ?? null;
+      return current;
+    });
+  }, [isMobile, categories]);
+
+  const [query, setQuery] = useState('');
+  const result = useMemo(() => searchSettings(categories, query), [categories, query]);
+
+  // While searching, the rail shows every category (with a match badge) and
+  // the pane shows only what matched.
+  //
+  // Following the results with the selection is a DESKTOP-only fix, for the
+  // pane sitting empty beside a rail full of hits. On a phone there is no
+  // pane until you tap one, so doing it there would push a category open the
+  // moment you started typing and hide the badges you were searching for.
+  const effectiveId = isMobile ? selectedId : firstMatchingCategory(result, selectedId);
+  const selected: SettingsCategorySpec | null =
+    result.categories.find((c) => c.id === effectiveId) ?? null;
+
+  const select = (id: SettingsCategoryId) => {
+    setSelectedId(id);
+    // Which categories people actually open is the signal for whether this
+    // reorganisation helped, and for what belongs on the first screen next.
+    track('UI', 'Opened', `Settings${id.charAt(0).toUpperCase()}${id.slice(1)}`);
+  };
+
+  // "Show Welcome Tour" (spec/79). The row is ON when the tour has not been
+  // resolved, and promises it will be offered, so closing the dialog has to
+  // MAKE that true. `tourSeen !== true` alone never was: TourHost also needs
+  // the per-tab pending flag, which only /new sets for a brand-new user. A
+  // reader who had simply never taken the tour therefore saw the row sitting
+  // on, promising a tour that would never arrive.
+  //
+  // Marking pending is idempotent, so leaving the row alone just re-arms the
+  // offer it already claims. Turning it on from off additionally relaunches
+  // in place, which is the "run it again" case the row's copy describes.
   const tourSeen = settings.tourSeen === true;
   const tourSeenAtOpen = useRef(tourSeen);
   const close = () => {
-    if (tourSeenAtOpen.current && !tourSeen) requestTourRelaunch();
+    if (!tourSeen) {
+      markTourPending();
+      if (tourSeenAtOpen.current) requestTourRelaunch();
+    }
     onClose();
   };
 
+  // The phone shows the root list until a category is picked; desktop always
+  // shows the split. Only the phone's pushed pane gets a back control.
+  const showBack = isMobile && selected !== null;
+
   return (
-    <Dialog open onClose={close} ariaLabel="Settings" size="md" className="max-h-[calc(100%-2rem)]">
-      <header className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-800">
-        <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Settings</h2>
+    <Dialog
+      open
+      onClose={close}
+      ariaLabel="Settings"
+      // Wide enough for the rail plus a readable pane. Below `sm:` the Dialog
+      // goes edge-to-edge for every size at or above `md`, which is exactly
+      // what the phone layout wants.
+      size="2xl"
+      // The existing see-through backdrop rather than the default dim+blur:
+      // Settings is where you flip things whose effect is ON the canvas
+      // behind it (panel layout, opacity, the minimap), so blurring that
+      // canvas out hides the very thing you are adjusting.
+      backdrop="desktop-light"
+      // Capped on desktop: unbounded, a category with a dozen rows stretched
+      // the dialog from the top of the screen to the bottom, which reads as a
+      // page rather than a modal. The pane scrolls inside instead. The phone
+      // layout still fills its screen, which is what a pushed pane wants.
+      className="max-h-[calc(100%-2rem)] sm:max-h-[min(42rem,calc(100%-6rem))]"
+    >
+      <header className="flex items-center gap-2 border-b border-slate-200 px-4 py-3 dark:border-slate-800">
+        {showBack ? (
+          <button
+            type="button"
+            onClick={() => setSelectedId(null)}
+            className="-ml-1.5 flex items-center gap-0.5 rounded-md py-1 pr-2 pl-1 text-sm font-medium text-brand-600 transition hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-500/15"
+          >
+            <NavChevron direction="back" />
+            Settings
+          </button>
+        ) : null}
+        <h2 className="flex-1 truncate text-sm font-semibold text-slate-800 dark:text-slate-100">
+          {showBack ? selected?.label : 'Settings'}
+        </h2>
         <DialogCloseButton compact onClick={close} />
       </header>
-      <div className="flex flex-col divide-y divide-slate-100 overflow-y-auto dark:divide-slate-800">
-        <SettingsGroup {...groupProps('Editor')}>
-          <ToggleRow
-            label="Minimal panel layout"
-            description="Replaces the floating Explorer, Palette, Editor, and AI panels with a compact button bar that opens each as a popover. Keeps the canvas uncluttered when you want more room to work. Always active on mobile regardless of this setting."
-            checked={minimalPanels}
-            onChange={(v) => {
-              track('UI', 'Toggled', v ? 'MinimalPanelsOn' : 'MinimalPanelsOff');
-              onChange({ ...settings, minimalPanels: v });
-            }}
-            help={
-              <HelpArticleLink
-                article="minimalPanels"
-                variant="text"
-                title="Minimal panels"
-                description="How the compact button bar works."
-              />
+
+      <div className="flex min-h-0 flex-1 overflow-hidden">
+        {/* The rail. On the phone it IS the root screen, so it takes the
+            whole width and disappears once a category is pushed. */}
+        {!isMobile || !selected ? (
+          <div
+            className={
+              isMobile
+                ? 'w-full overflow-y-auto p-4'
+                : 'w-48 shrink-0 overflow-y-auto border-r border-slate-200 dark:border-slate-800'
             }
-          />
-          <ToggleRow
-            label="Show minimap"
-            description="Shows a small overview of the whole canvas in the bottom-left corner once a tab has a few elements and the Activity panel is minimised. Tap or drag it to jump around; scroll on it to zoom. Desktop only."
-            checked={settings.showMinimap !== false}
-            onChange={(v) => {
-              track('UI', 'Toggled', v ? 'MinimapOn' : 'MinimapOff');
-              onChange({ ...settings, showMinimap: v });
-            }}
-          />
-          <ToggleRow
-            label="Welcome Tour Completed"
-            description="Checked once you've taken (or dismissed) the Show me around tour, so it only ever offers itself once. Uncheck it and close Settings to run the tour again."
-            checked={tourSeen}
-            onChange={(v) => {
-              track('UI', 'Toggled', v ? 'TourSeenOn' : 'TourSeenOff');
-              onChange({ ...settings, tourSeen: v });
-            }}
-            help={
-              <HelpArticleLink
-                article="welcomeTour"
-                variant="text"
-                title="The Welcome Tour"
-                description="What the tour covers and how replaying works."
+          >
+            {/* Above the first category, in both layouts: the rail IS the
+                root screen on a phone, so one placement serves both. */}
+            <div className={isMobile ? 'mb-3' : 'px-2 pt-2'}>
+              <SearchInput
+                value={query}
+                onChange={setQuery}
+                placeholder="Search settings"
+                ariaLabel="Search settings"
+                clearAriaLabel="Clear the settings search"
+                clearDescription="Clear the settings search and show every category."
               />
-            }
-          />
-        </SettingsGroup>
-        <SettingsGroup {...groupProps('Controls')}>
-          <ToggleRow
-            label="Middle-mouse pan"
-            description="Hold the middle mouse button and drag to pan the canvas in any direction, from anywhere — over empty space or over elements — whatever tool is active. Turn off to leave the middle button to your browser."
-            checked={settings.middleMousePan !== false}
-            onChange={(v) => {
-              track('UI', 'Toggled', v ? 'MiddleMousePanOn' : 'MiddleMousePanOff');
-              onChange({ ...settings, middleMousePan: v });
-            }}
-          />
-        </SettingsGroup>
-        <SettingsGroup {...groupProps('Notifications')}>
-          <ToggleRow
-            label="Show notifications"
-            description="Shows a brief confirmation when you do something whose result isn't on screen, like moving a diagram to a folder or linking a tab. Errors are always shown so a failure is never hidden. Turn off for a quieter editor."
-            checked={notificationsOn}
-            onChange={(v) => {
-              track('UI', 'Toggled', v ? 'NotificationsOn' : 'NotificationsOff');
-              onChange({ ...settings, notificationsEnabled: v });
-            }}
-          />
-        </SettingsGroup>
-        <SettingsGroup {...groupProps('Accessibility')}>
-          <ToggleRow
-            label="Reduce motion"
-            description="Turns off the editor's decorative animations and transitions (panels, popovers, the snap guides, etc.) so the interface appears instantly instead of sliding or popping. Your device's own 'reduce motion' setting is always respected; this lets you force it on here too, and it syncs across your devices."
-            checked={reduceMotion}
-            onChange={(v) => {
-              track('UI', 'Toggled', v ? 'ReduceMotionOn' : 'ReduceMotionOff');
-              onChange({ ...settings, reduceMotion: v });
-            }}
-          />
-        </SettingsGroup>
-        {aiCapable && (
-          <SettingsGroup {...groupProps('AI')}>
-            <ToggleRow
-              label="AI Assistant"
-              description="Shows an AI panel in the editor with two modes: Ask questions about the active tab, and Clean to tidy up labels, sizes, and styles. Off by default."
-              checked={aiEnabled}
-              onChange={(v) => {
-                track('AI', 'Toggled', v ? 'AiOn' : 'AiOff');
-                onChange({ ...settings, aiAssistanceEnabled: v });
-              }}
-              help={
-                <HelpArticleLink
-                  article="aiTools"
-                  variant="text"
-                  title="AI tools"
-                  description="What the Ask and Clean modes do."
-                />
-              }
+            </div>
+            <SettingsCategoryList
+              categories={result.categories}
+              selected={isMobile ? null : effectiveId}
+              onSelect={select}
+              variant={isMobile ? 'root' : 'sidebar'}
+              searching={result.searching}
             />
-          </SettingsGroup>
-        )}
-        <SettingsGroup {...groupProps('Privacy')}>
-          <ToggleRow
-            label="Send anonymous usage events"
-            description="Sends the small, first-party events listed on /telemetry (no user content, no third-party trackers) so we can see which features actually help. Turn off to keep everything you do strictly on your device."
-            checked={telemetryOn}
-            onChange={(v) => {
-              track('UI', 'Toggled', v ? 'TelemetryOn' : 'TelemetryOff');
-              onChange({ ...settings, telemetryEnabled: v });
-            }}
-            help={
-              <HelpArticleLink
-                article="whatWeCollect"
-                variant="text"
-                title="What we collect"
-                description="Exactly which anonymous events are sent, and what isn't."
-              />
-            }
-          />
-        </SettingsGroup>
+            {isMobile && result.searching && result.totalMatches === 0 ? (
+              <p className="mt-4 text-center text-xs text-slate-500 dark:text-slate-400">
+                No settings match “{query.trim()}”.
+              </p>
+            ) : null}
+          </div>
+        ) : null}
+
+        {selected ? (
+          <div className="min-w-0 flex-1 overflow-y-auto px-4 py-4">
+            <SettingsCategoryPane
+              // Remount on category change so a pane always scrolls from the
+              // top rather than inheriting the previous one's offset.
+              key={selected.id}
+              category={selected}
+              settings={settings}
+              onChange={onChange}
+              focusRowKey={focus?.categoryId === selected.id ? focus.rowKey : null}
+            />
+          </div>
+        ) : result.searching && !isMobile ? (
+          <div className="flex min-w-0 flex-1 items-center justify-center px-6 py-10">
+            <p className="text-center text-xs text-slate-500 dark:text-slate-400">
+              No settings match “{query.trim()}”.
+            </p>
+          </div>
+        ) : null}
       </div>
+
       <footer className="border-t border-slate-200 px-4 py-3 dark:border-slate-800">
         <p className="text-[10px] text-slate-500 dark:text-slate-400">
           Settings sync to your account and apply to every diagram you open, on every device you
@@ -179,73 +234,5 @@ export function SettingsDialog({ settings, onChange, onClose, aiCapable }: Setti
         </p>
       </footer>
     </Dialog>
-  );
-}
-
-function SettingsGroup({
-  title,
-  children,
-  open,
-  onToggle,
-}: {
-  title: string;
-  children: React.ReactNode;
-  // Controlled by the dialog so only one group is open at a time.
-  open: boolean;
-  onToggle: () => void;
-}) {
-  return (
-    <AccordionSection
-      title={title}
-      open={open}
-      onToggle={onToggle}
-      headerClassName="flex w-full items-center justify-between px-4 py-2.5 text-left"
-      bodyClassName="flex flex-col gap-2 px-4 pb-3"
-    >
-      {children}
-    </AccordionSection>
-  );
-}
-
-function ToggleRow({
-  label,
-  description,
-  checked,
-  onChange,
-  help,
-}: {
-  label: string;
-  description: string;
-  checked: boolean;
-  onChange: (next: boolean) => void;
-  // Optional "Learn more" link. Rendered INSIDE the setting card so it's
-  // clearly tied to this setting, but outside the row button so clicking
-  // it doesn't flip the toggle.
-  help?: ReactNode;
-}) {
-  // The whole row is the click target, so the switch is the shared
-  // presentational ToggleSwitch (same pattern as ProfilePane's rows) —
-  // this used to be a native checkbox, the only default-chrome control
-  // in the dialog stack.
-  return (
-    <div className="flex flex-col gap-1.5 rounded-lg border border-slate-200 p-3 transition hover:border-brand-300 dark:border-slate-700 dark:hover:border-brand-500/60">
-      <button
-        type="button"
-        onClick={() => onChange(!checked)}
-        aria-pressed={checked}
-        className="flex w-full cursor-pointer items-start justify-between gap-3 text-left"
-      >
-        <span className="flex min-w-0 flex-col gap-0.5">
-          <span className="text-xs font-semibold text-slate-800 dark:text-slate-100">{label}</span>
-          <span className="text-[11px] leading-snug text-slate-500 dark:text-slate-400">
-            {description}
-          </span>
-        </span>
-        <span className="mt-0.5 shrink-0">
-          <ToggleSwitch presentational checked={checked} label={label} />
-        </span>
-      </button>
-      {help ? <div>{help}</div> : null}
-    </div>
   );
 }

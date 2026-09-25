@@ -11,6 +11,15 @@ type ColorSetterProps = Pick<
   | 'onSetFillColor'
   | 'onPreviewFillColor'
   | 'onCommitFillColor'
+  | 'onSetArrowheadColor'
+  | 'onPreviewArrowheadColor'
+  | 'onCommitArrowheadColor'
+  | 'onSetLabelFill'
+  | 'onPreviewLabelFill'
+  | 'onCommitLabelFill'
+  | 'onSetHeaderFill'
+  | 'onPreviewHeaderFill'
+  | 'onCommitHeaderFill'
   | 'onSetStrokeColor'
   | 'onPreviewStrokeColor'
   | 'onCommitStrokeColor'
@@ -19,7 +28,7 @@ type ColorSetterProps = Pick<
 // Shared accordion + colour-row scaffolding for the editor context menu's
 // element and multi-selection branches: an at-most-one-open accordion
 // (sectionProps), an at-most-one-open colour palette (colorProps), and the
-// three hover-preview handler bundles spread into each ColourRow. Lives in a
+// four hover-preview handler bundles spread into each ColourRow. Lives in a
 // hook so the two menu branches share one implementation instead of each
 // re-spelling it.
 export function useContextMenuScaffold(p: ColorSetterProps) {
@@ -66,6 +75,24 @@ export function useContextMenuScaffold(p: ColorSetterProps) {
     onCommit: p.onCommitFillColor,
     onPreviewEnd: p.onPreviewStyleEnd,
   };
+  const arrowheadColorHandlers = {
+    onChange: p.onSetArrowheadColor,
+    onPreview: p.onPreviewArrowheadColor,
+    onCommit: p.onCommitArrowheadColor,
+    onPreviewEnd: p.onPreviewStyleEnd,
+  };
+  const labelFillHandlers = {
+    onChange: p.onSetLabelFill,
+    onPreview: p.onPreviewLabelFill,
+    onCommit: p.onCommitLabelFill,
+    onPreviewEnd: p.onPreviewStyleEnd,
+  };
+  const headerFillHandlers = {
+    onChange: p.onSetHeaderFill,
+    onPreview: p.onPreviewHeaderFill,
+    onCommit: p.onCommitHeaderFill,
+    onPreviewEnd: p.onPreviewStyleEnd,
+  };
   const strokeColorHandlers = {
     onChange: p.onSetStrokeColor,
     onPreview: p.onPreviewStrokeColor,
@@ -78,6 +105,9 @@ export function useContextMenuScaffold(p: ColorSetterProps) {
     colorProps,
     textColorHandlers,
     fillColorHandlers,
+    arrowheadColorHandlers,
+    headerFillHandlers,
+    labelFillHandlers,
     strokeColorHandlers,
   };
 }

@@ -9,11 +9,11 @@ import {
   defaultFillColor,
   defaultPadding,
   defaultStrokeColor,
-  drawsOwnElementMenu,
+  carriesSharedSettingsMenu,
   elementKindLabel,
-  isBehaviourShape,
   isCollabPanelShape,
   isSelfDrawingShape,
+  isWebComponentShape,
   type ShapeMarker,
   type TextAlignX,
   type TextAlignY,
@@ -23,11 +23,13 @@ import { AnnotationGlyph } from '@/components/canvas/AnnotationMarker';
 import { ElementSettingsButton } from '@/components/canvas/ElementEllipsisMenu';
 import { CollabFaceRouter } from '@/components/canvas/collab/CollabFaceRouter';
 import { CommentPanelFace } from '@/components/canvas/CommentPanelFace';
+import { ActionPanelFace } from '@/components/canvas/ActionPanelFace';
 import { FreehandSvg } from '@/components/canvas/boxed-element-overlays';
 import { ImageElementView } from '@/components/canvas/ImageElementView';
 import { LinkCardView } from '@/components/canvas/LinkCardView';
 import { ModeButtonFace } from '@/components/canvas/ModeButtonFace';
 import { PageMasthead } from '@/components/canvas/PageMasthead';
+import { FocusButtonFace } from '@/components/canvas/FocusButtonFace';
 import { PickerFace } from '@/components/canvas/PickerFace';
 import { PortalFace } from '@/components/canvas/PortalFace';
 import { ReactionPadFace } from '@/components/canvas/ReactionPadFace';
@@ -37,6 +39,8 @@ import { SessionTimerFace } from '@/components/canvas/SessionTimerFace';
 import { ShapeInlineIconLayout } from '@/components/canvas/shape-inline-icon-layout';
 import { TableView } from '@/components/canvas/TableView';
 import { VideoView } from '@/components/canvas/VideoView';
+import { HeroCaptionCard } from '@/components/canvas/web/HeroCaptionCard';
+import { WebComponentFace } from '@/components/canvas/web/WebComponentFace';
 import type { BoxedElementViewProps } from './BoxedElementView.types';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 
@@ -66,6 +70,8 @@ type ElementFaceRouterProps = Pick<
   | 'collab'
   | 'commentActions'
   | 'commentSelfId'
+  | 'actionActions'
+  | 'actionSelfId'
   | 'imageContext'
   | 'tabSummaries'
   | 'tabTimer'
@@ -79,9 +85,12 @@ type ElementFaceRouterProps = Pick<
   | 'onFollowLink'
   | 'onLinkCell'
   | 'onPressModeButton'
+  | 'onPressFocusButton'
   | 'onPressSessionButton'
   | 'onRollPicker'
   | 'onSetPageHeading'
+  | 'onSetWebRows'
+  | 'onSetHeroCaptionLine'
   | 'onSetSessionConfig'
   | 'onOpenElementSettings'
   | 'onToggleReveal'
@@ -112,6 +121,8 @@ export function ElementFaceRouter({
   collab,
   commentActions,
   commentSelfId,
+  actionActions,
+  actionSelfId,
   imageContext,
   tabSummaries,
   tabTimer,
@@ -125,9 +136,12 @@ export function ElementFaceRouter({
   onFollowLink,
   onLinkCell,
   onPressModeButton,
+  onPressFocusButton,
   onPressSessionButton,
   onRollPicker,
   onSetPageHeading,
+  onSetWebRows,
+  onSetHeroCaptionLine,
   onSetSessionConfig,
   onOpenElementSettings,
   onToggleReveal,
@@ -145,17 +159,14 @@ export function ElementFaceRouter({
 }: ElementFaceRouterProps) {
   // The paper under this face, for colours the element doesn't carry (spec/07).
   const surface = useCanvasSurface();
-  // The shared settings `…` (spec/09). Every Behaviours element carries one,
-  // in the same corner, opening that element's own context menu — except the
-  // three that draw a richer `…` of their own, which would otherwise render a
-  // second ellipsis beside the first.
+  // The shared settings `…` (spec/09), in the same corner on every Behaviours
+  // element that has one: see carriesSharedSettingsMenu for who doesn't.
   const settingsMenu =
     element.type === 'shape' &&
     !isEditing &&
     !readOnly &&
     onOpenElementSettings &&
-    isBehaviourShape(element.shape) &&
-    !drawsOwnElementMenu(element.shape) ? (
+    carriesSharedSettingsMenu(element.shape) ? (
       <span className="absolute right-1 top-1 z-10">
         <ElementSettingsButton
           label={`${elementKindLabel(element)} settings`}
@@ -238,6 +249,14 @@ export function ElementFaceRouter({
             onOpenElementSettings ? () => onOpenElementSettings(element.id) : undefined
           }
         />
+      ) : element.type === 'shape' && element.shape === 'focus-button' && !isEditing ? (
+        /* Bring Focus (spec/144): asks everyone else in the room to come and
+           look at this, at your zoom, on your tab. */
+        <FocusButtonFace
+          label={label}
+          textColor={textColor}
+          onPress={onPressFocusButton ? () => onPressFocusButton(element) : undefined}
+        />
       ) : element.type === 'shape' && element.shape === 'reveal' && !isEditing ? (
         /* Reveal zone (spec/106): a cover, off for me / off for everyone. */
         <RevealFace
@@ -287,6 +306,17 @@ export function ElementFaceRouter({
           onResolve={commentActions?.resolve}
           onUnresolve={commentActions?.unresolve}
         />
+      ) : element.type === 'shape' && element.shape === 'action-card' && !isEditing ? (
+        /* Action panel (spec/146): the Comment panel's sibling. It drives the
+           SAME action machinery the popover and the Assign Action dialog do. */
+        <ActionPanelFace
+          element={element}
+          textColor={textColor}
+          selfId={actionSelfId ?? null}
+          onConfigure={actionActions?.configure}
+          onComplete={actionActions?.complete}
+          onReopen={actionActions?.reopen}
+        />
       ) : element.type === 'shape' && element.shape === 'reaction-pad' && !isEditing ? (
         /* Reaction pad (spec/135): a pressable glyph. The burst it throws is
            rendered OUTSIDE this label stack, below, so it can overflow the
@@ -321,13 +351,30 @@ export function ElementFaceRouter({
           onFollow={element.link ? () => onFollowLink(element.link!) : undefined}
         />
       ) : element.type === 'image' && imageContext ? (
-        <ImageElementView
-          element={element}
-          ownerId={imageContext.ownerId}
-          diagramId={imageContext.diagramId}
-          shareCode={imageContext.shareCode}
-          canOpenPicker={!!imageContext.onOpenPicker}
-        />
+        <>
+          <ImageElementView
+            element={element}
+            ownerId={imageContext.ownerId}
+            diagramId={imageContext.diagramId}
+            shareCode={imageContext.shareCode}
+            canOpenPicker={!!imageContext.onOpenPicker}
+          />
+          {/* A hero's caption card (spec/147), over the image. */}
+          {element.heroCaption ? (
+            <HeroCaptionCard
+              element={element}
+              caption={element.heroCaption}
+              editable={isSelected && !readOnly && !isLocked}
+              zoom={zoom}
+              fontFamily={fontFamily}
+              onSetLine={
+                onSetHeroCaptionLine
+                  ? (field, value) => onSetHeroCaptionLine(element.id, field, value)
+                  : undefined
+              }
+            />
+          ) : null}
+        </>
       ) : element.type === 'freehand' ? (
         <>
           <FreehandSvg
@@ -358,6 +405,25 @@ export function ElementFaceRouter({
           onFollowLink={onFollowLink}
           fontFamily={fontFamily}
           zoom={zoom}
+        />
+      ) : element.type === 'shape' && isWebComponentShape(element.shape) ? (
+        /* The web components (spec/147): each lays out its own content and
+           places the label in its own region, so it is edited like any
+           label; the other lines edit in place once it is selected. They draw
+           an inline icon themselves (a header's logo, a callout's badge), so
+           this sits before the generic inline-icon layout. */
+        <WebComponentFace
+          kind={element.shape}
+          element={element}
+          labelNode={labelNode}
+          accent={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)}
+          fill={element.fillColor ?? defaultFillColor(element, surface)}
+          textColor={textColor}
+          fontFamily={fontFamily}
+          zoom={zoom}
+          editable={isSelected && !readOnly && !isLocked && !!onSetWebRows}
+          onSetRows={(rows) => onSetWebRows?.(element.id, rows)}
+          onSetHeading={(field, value) => onSetPageHeading(element.id, field, value)}
         />
       ) : element.type === 'shape' && (inlineIcon || marker) ? (
         <ShapeInlineIconLayout

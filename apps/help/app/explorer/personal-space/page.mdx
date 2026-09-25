@@ -1,0 +1,70 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { PersonalSpaceTree } from '@/components/illustrations/explorer';
+
+export const metadata = helpMetadata({
+  title: 'Personal Space and Folders',
+  description:
+    'Personal Space is your own diagram library: the Dynamic buckets (Unsorted, Generated, Offline) plus the nested folders you create to group diagrams by project, customer, or topic.',
+  path: '/help/explorer/personal-space/',
+});
+
+<ArticleLayout
+  title="Personal Space and Folders"
+  description="Your personal library, the Dynamic buckets plus folders you can nest as deep as you like. Every diagram has an obvious home."
+  categoryTitle="Explorer"
+  categorySlug="explorer"
+>
+
+**Personal Space** is your own library: the [diagrams](/explorer/all) you have created, organised however suits you. It is the tree in the middle of the Explorer sidebar, holding a collapsible **Dynamic** parent for the automatic buckets and whatever folders you have made.
+
+## The Dynamic buckets
+
+At the top of Personal Space, a collapsible **Dynamic** parent groups three live views that file themselves, so your own folders lead the tree:
+
+- **Unsorted** catches diagrams you have not filed anywhere, so a freshly created diagram always has a home without you deciding anything first.
+- **Generated** collects AI-made diagrams you have not filed yet, keeping them apart from the ones you drew.
+- **Offline** collects diagrams saved only in this browser ([Offline Mode](/help/privacy-and-security/offline-mode/)).
+
+**Favourites** is the fourth of that kind and deliberately sits higher, in **Quick find** beside Timeline, Recent and Shared with you: it is a shortlist you curated, not a bucket that fills itself with whatever you left unfiled.
+
+### Favourites
+
+Choose **Favourite** in any diagram's menu to star it, and it collects under **Favourites**. It's the answer to a busy team library: a shared folder fills up with diagrams that aren't all yours to care about, and starring the handful that are gives you one short list to work from. The same menu reads **Unfavourite** to take it back off.
+
+Favourites gathers from everywhere at once, your own folders and every team you're in, so each row shows where the diagram actually lives, its folder for a personal diagram or the team name for a team one. Click that to jump to the real location.
+
+**Starring is yours alone.** Favouriting a diagram in a team folder doesn't favourite it for your teammates, and there's no limit on how many you keep.
+
+None of the buckets can be renamed or deleted, and each shows a count badge only when it holds something. Filing a diagram into a folder of your own moves it out of Unsorted or Generated; Offline is different, listing every browser-only diagram whatever folder it sits in, so there is always one place to find them.
+
+## Folders
+
+Folders give your library structure without forcing it. Every diagram is in exactly one folder, or none, and folders can nest, so you can build something like "Projects / Customer / Engagement" when you want that depth, or keep everything flat under Unsorted when you do not.
+
+<Figure caption="The Dynamic buckets sit above the folders you create, which can nest as deep as a project needs.">
+  <PersonalSpaceTree />
+</Figure>
+
+<Step n={1}>
+  Create a folder with the **New Folder** action (the plus beside the Personal Space heading adds
+  one at the top level). Each folder's own menu offers **New Subfolder** for deeper levels.
+</Step>
+<Step n={2}>
+  Move a diagram with its **Move to folder** menu item, which opens the same destination browser as
+  the new-diagram **Save in** step, or drag a diagram row straight onto a folder.
+</Step>
+<Step n={3}>Rename or delete a folder from its menu.</Step>
+
+Deleting a folder is safe for its contents: the diagrams inside drop to Unsorted and any subfolders move up to the top level, so nothing is ever lost when you tidy up.
+
+## Two places to browse
+
+You will meet Personal Space in two forms: the **full-page Explorer**, modelled on a desktop file browser, and the compact **floating Explorer panel** in the editor for finding a diagram mid-task. Both work whether or not you are signed in: a guest sees the diagrams and folders their own browser owns, and can sign in later to carry that work into an account.
+
+<Tip>
+  Do not over-organise on day one. Start in Unsorted, and pull diagrams into folders once a real
+  grouping emerges. Folders are easy to add and rearrange whenever you need them.
+</Tip>
+
+</ArticleLayout>

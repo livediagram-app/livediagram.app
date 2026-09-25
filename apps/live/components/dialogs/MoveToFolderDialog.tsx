@@ -66,6 +66,9 @@ type MoveToFolderDialogProps = {
     parentId: string | null,
     teamId: string | null,
   ) => Promise<PickerFolder | null>;
+  // Inline team creation on the space overview (signed-in only; absent =
+  // tile hidden).
+  onCreateTeam?: (name: string) => Promise<{ id: string; name: string } | null>;
   onPick: (dest: MoveDestination) => void;
   onClose: () => void;
 };
@@ -78,6 +81,7 @@ export function MoveToFolderDialog({
   currentTeamId = null,
   currentFolderId = null,
   onCreateFolder,
+  onCreateTeam,
   onPick,
   onClose,
 }: MoveToFolderDialogProps) {
@@ -121,7 +125,9 @@ export function MoveToFolderDialog({
                 : 'Pick a destination folder.'}
           </p>
         </div>
-        <DialogCloseButton onClick={onClose} />
+        <div className="-mt-1 flex shrink-0 items-center">
+          <DialogCloseButton onClick={onClose} />
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto px-5 py-4">
@@ -134,6 +140,11 @@ export function MoveToFolderDialog({
           teams={teamList}
           teamFolders={teamFolders}
           onCreateFolder={onCreateFolder}
+          onCreateTeam={onCreateTeam}
+          // Rows, as in the New Diagram wizard: a four-across tile grid in a
+          // dialog this wide clipped a team called "Web Foundations" to
+          // "Web Foundati…", and a row gives every name the full width.
+          layout="list"
         />
       </div>
 

@@ -19,7 +19,7 @@ import { windowLabel } from './windows';
 // than meaningful (Edit vs View share links; the Dark UI toggle, which
 // shares `UI·Toggled` with unrelated setting flips).
 
-const GROUPS: MetricGroup[] = [
+export const GROUPS: MetricGroup[] = [
   {
     title: 'Visitors',
     metrics: [
@@ -39,7 +39,14 @@ const GROUPS: MetricGroup[] = [
   {
     title: 'Creation',
     metrics: [
-      { category: 'Diagram', action: 'Created', type: null, title: 'Diagrams Created' },
+      {
+        category: 'Diagram',
+        action: 'Created',
+        allTypes: true,
+        title: 'Diagrams Created',
+        blurb:
+          'New diagrams from the New Diagram wizard, stored in the cloud or offline in this browser.',
+      },
       { category: 'Tab', action: 'Created', type: null, title: 'Tabs Created' },
       {
         category: 'Element',
@@ -47,7 +54,7 @@ const GROUPS: MetricGroup[] = [
         allTypes: true,
         title: 'Elements Added',
         blurb:
-          'Every shape, text, sticky, arrow, or image dropped onto a canvas, across all kinds.',
+          'Every shape, text, sticky, arrow, or image put on a canvas, across all kinds. Copies count too: a duplicate or paste adds one per element it creates.',
       },
     ],
   },
@@ -55,7 +62,14 @@ const GROUPS: MetricGroup[] = [
     title: 'Collaboration',
     metrics: [
       { category: 'Diagram', action: 'Shared', type: 'Edit', title: 'Edit Links Shared' },
-      { category: 'Diagram', action: 'Joined', type: 'Edit', title: 'Collaborators Joined' },
+      {
+        category: 'Diagram',
+        action: 'Joined',
+        type: 'Edit',
+        title: 'Collaborators Joined',
+        blurb:
+          'People who came into a diagram through an edit link. Counted once per person per diagram, not on every revisit.',
+      },
       { category: 'Comment', action: 'Added', type: null, title: 'Comments Added' },
     ],
   },
@@ -67,9 +81,16 @@ const GROUPS: MetricGroup[] = [
         action: 'Exported',
         allTypes: true,
         title: 'Exports',
-        blurb: 'Tabs exported to a file, across every format (PNG, SVG, JSON, …).',
+        blurb:
+          'A tab or selection exported, across every format (PNG, SVG, PDF, JSON, Mermaid, Markdown, Excalidraw). For the text formats, copying to the clipboard counts as an export too.',
       },
-      { category: 'UI', action: 'Toggled', type: 'Dark', title: 'Dark-Mode Switches' },
+      {
+        category: 'UI',
+        action: 'Toggled',
+        type: 'Dark',
+        title: 'Dark-Mode Switches',
+        blurb: 'Someone set the editor appearance to Dark, from the header toggle or Settings.',
+      },
     ],
   },
 ];

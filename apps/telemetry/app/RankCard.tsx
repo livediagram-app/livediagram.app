@@ -1,11 +1,12 @@
 'use client';
 
 import { EmptyState } from '@livediagram/ui';
-import { metricKey, type TelemetryCount, type TelemetryDaily } from '@livediagram/api-schema';
+import type { TelemetryCount, TelemetryDaily } from '@livediagram/api-schema';
 import { pct } from './chart-utils';
-import { categoryColor, titleCase } from './event-vocab';
+import { categoryColor, typeLabel } from './event-vocab';
 import { ActivityGlyph } from './glyphs';
 import { MiniSparkline } from './MiniSparkline';
+import { aliasedSeries, type TypeAliases } from './rank';
 
 // A ranked usage list: rows sorted most-to-least, each with a share bar and
 // (on desktop) a mini trend line, the top row tagged Most used. (No "least
@@ -13,13 +14,9 @@ import { MiniSparkline } from './MiniSparkline';
 // Shared by the Look & Feel and Palette views so both render their rankings
 // identically (the colour follows the row's telemetry category).
 
-// Filter rows to a predicate (with a non-empty type) and sort by count desc.
-export function rank(
-  rows: TelemetryCount[],
-  predicate: (r: TelemetryCount) => boolean,
-): TelemetryCount[] {
-  return rows.filter((r) => predicate(r) && r.type).sort((a, b) => b.count - a.count);
-}
+// `rank` lives in its own pure module so non-view code (page-insights) can
+// use it without importing a component; re-exported for the views.
+export { rank } from './rank';
 
 export function RankCard({
   title,
@@ -29,6 +26,7 @@ export function RankCard({
   items,
   daily,
   emptyLabel,
+  aliases,
 }: {
   title: string;
   subtitle: string;
@@ -37,6 +35,9 @@ export function RankCard({
   items: TelemetryCount[];
   daily: TelemetryDaily | undefined;
   emptyLabel: string;
+  // The same old-spelling map the items were ranked with, so a folded row's
+  // trend line includes the history stored under its old spelling.
+  aliases?: TypeAliases;
 }) {
   const color = categoryColor(category);
 
@@ -56,14 +57,16 @@ export function RankCard({
             // bottom of this list isn't truly the least used, just the lowest
             // among those that have any data.
             const isTop = items.length > 1 && i === 0;
-            const series = daily?.byMetric[metricKey(category, action, row.type)];
+            const series = daily
+              ? aliasedSeries(daily.byMetric, category, action, row.type, aliases)
+              : undefined;
             return (
               <li key={row.type} className="flex items-center gap-3">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline justify-between gap-2 text-sm">
                     <span className="flex min-w-0 items-center gap-2">
                       <span className="truncate text-slate-700 dark:text-slate-200">
-                        {titleCase(row.type ?? '')}
+                        {typeLabel(row.type ?? '')}
                       </span>
                       {isTop ? <RankTag /> : null}
                     </span>

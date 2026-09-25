@@ -3,10 +3,10 @@
 import { memo } from 'react';
 import type { ChangeLogEntry } from '@/lib/api-client';
 import type { SaveStatus } from '@/components/chrome/EditorHeader';
-import { ActivitySettingsPopover } from '@/components/panels/ActivitySettingsPopover';
 import { TrashIcon } from '@/components/panels/explorer-icons';
 import { MovablePanel, type MovablePanelDockProps } from '@/components/primitives/MovablePanel';
 import { Tooltip } from '@/components/primitives/Tooltip';
+import type { DockAnchor } from '@/lib/canvas-chrome';
 import {
   ActivityRow,
   RedoIcon,
@@ -49,10 +49,6 @@ type ActivityPanelProps = {
   // header gear. False stops rows previewing; the Revert button is
   // unaffected. The setter persists the flag (user-preferences).
   revertHoverPreview: boolean;
-  onSetRevertHoverPreview: (value: boolean) => void;
-  // True when the panel has been moved / docked away from its default
-  // spot, enabling the gear's Reset-position row.
-  resettable: boolean;
   // Click anywhere on a row (outside the Revert button) — used by
   // the editor to jump to the related element (tab-meta entries like
   // "Changed theme to X" just clear the selection).
@@ -72,6 +68,14 @@ type ActivityPanelProps = {
   onToggleMinimized: () => void;
   // Corner-docking bundle (spec/63), forwarded to the inner MovablePanel.
   dock?: MovablePanelDockProps;
+  // Dock layouts (minimal, or a phone outside Toolbar): the panel is a
+  // popover over the cluster's Activity button, open while the dock has it.
+  mobileOpenOverride?: boolean;
+  mobileDockAnchor?: DockAnchor;
+  forceDockMode?: boolean;
+  // Close the popover on a press outside it (see MovablePanelPlacementProps).
+  dismissOnOutside?: boolean;
+  onMobileClose?: () => void;
 };
 
 // Floating "Activity" panel — per-diagram audit of every edit, with a
@@ -93,8 +97,6 @@ function ActivityPanelImpl({
   onPreviewRevert,
   onClearRevertPreview,
   revertHoverPreview,
-  onSetRevertHoverPreview,
-  resettable,
   onRowClick,
   onClearActivity,
   saveStatus,
@@ -103,6 +105,11 @@ function ActivityPanelImpl({
   onReset,
   onToggleMinimized,
   dock,
+  mobileOpenOverride,
+  mobileDockAnchor,
+  forceDockMode,
+  dismissOnOutside,
+  onMobileClose,
 }: ActivityPanelProps) {
   if (minimized) return null;
   return (
@@ -115,16 +122,13 @@ function ActivityPanelImpl({
       onReset={onReset}
       onMoveTo={onMoveTo}
       {...dock}
+      mobileOpenOverride={mobileOpenOverride}
+      mobileDockAnchor={mobileDockAnchor}
+      forceDockMode={forceDockMode}
+      dismissOnOutside={dismissOnOutside}
+      onMobileClose={onMobileClose}
       onMinimize={onToggleMinimized}
       headerExtra={<SaveStatusBadge status={saveStatus} savedAt={savedAt} />}
-      headerActions={
-        <ActivitySettingsPopover
-          revertHoverPreview={revertHoverPreview}
-          onSetRevertHoverPreview={onSetRevertHoverPreview}
-          onResetPosition={onReset}
-          resettable={resettable}
-        />
-      }
     >
       <div className="flex flex-1 flex-col gap-2 px-3 pb-3 pt-1">
         {/* Undo / Redo bar lives at the top so the most common actions

@@ -1,9 +1,10 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { resolveLayerId, selectionMembers } from '@livediagram/diagram';
+import { DEFAULT_MIND_FLOW, isMindNode, mindFlowOf, resolveLayerId } from '@livediagram/diagram';
 import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
-import { getTheme, shapeColorPresets, themePresetColors } from '@/lib/themes';
+import { useColourPalette } from '@/hooks/ui/useColourPalette';
+import { getTheme, shapeColorPresets, tableColorPresets } from '@/lib/themes';
 
 // Lazy like the other heavy editor chrome: the menu's chunk loads on the
 // first right-click, not with the page.
@@ -56,6 +57,21 @@ export function EditorContextMenuHost() {
     previewTextColor,
     commitTextColor,
     previewFillColor,
+    commitCodeTheme,
+    previewCodeTheme,
+    commitTablePreset,
+    previewTablePreset,
+    commitChartPalette,
+    previewChartPalette,
+    setLabelFillSelected,
+    commitLabelFill,
+    previewLabelFill,
+    commitHeaderFill,
+    previewHeaderFill,
+    setHeaderFillSelected,
+    setArrowheadColorSelected,
+    commitArrowheadColor,
+    previewArrowheadColor,
     commitFillColor,
     previewStrokeColor,
     commitStrokeColor,
@@ -87,8 +103,13 @@ export function EditorContextMenuHost() {
     setChartLegendPositionSelected,
     setLineDataOpenForId,
     setCodeEditOpenForId,
+    setCodeWrapSelected,
+    setLegendItemsSelected,
+    setMindFlowSelected,
     setChecklistItemsSelected,
     setEntityFieldsSelected,
+    setWebRowsSelected,
+    setHeroCaptionSelected,
     setEstimateScaleSelected,
     setAgendaItemsSelected,
     setDecisionStatusSelected,
@@ -103,7 +124,6 @@ export function EditorContextMenuHost() {
     setRevealedSelected,
     setPickerSourceSelected,
     setReactionSelected,
-    attachCommentPanel,
     setPickerOptionsSelected,
     tabs,
     commitShapeColorPreset,
@@ -156,23 +176,28 @@ export function EditorContextMenuHost() {
     openAssignAction,
   } = useEditorContext();
 
+  const { swatches } = useColourPalette();
+
   // A view-only session never gets an element context menu at all, so
   // nothing below needs a second `isReadOnly` guard — everything past
   // this line is running for an editor by construction.
   if (!contextMenu || contextMenu.mode === 'canvas' || isReadOnly) return null;
 
-  // Selection-context-menu member resolution (right-click a multi-selection
-  // or group): the marquee set when one is active, else the clicked
-  // element's group expansion.
+  // Selection-context-menu member resolution (right-click a multi-selection):
+  // the marquee set when one is active, else the clicked element.
   const ctxSelectedEl = selectedId
     ? (activeTab.elements.find((e) => e.id === selectedId) ?? null)
     : null;
   const ctxMemberIds =
-    multiSelectedIds.size > 0
-      ? [...multiSelectedIds]
-      : ctxSelectedEl
-        ? selectionMembers(activeTab.elements, ctxSelectedEl.id)
-        : [];
+    multiSelectedIds.size > 0 ? [...multiSelectedIds] : ctxSelectedEl ? [ctxSelectedEl.id] : [];
+
+  // The flow the selected node's MAP grows in (spec/118). Resolved here
+  // because it lives on the tree's root, which the menu cannot walk to from
+  // the node in hand.
+  const menuMindFlow =
+    ctxSelectedEl && isMindNode(ctxSelectedEl)
+      ? mindFlowOf(activeTab.elements, ctxSelectedEl)
+      : DEFAULT_MIND_FLOW;
 
   // The selection's layer for the Layer section's move-to dropdown
   // (spec/74): the single resolved layer every member shares, or null
@@ -249,6 +274,15 @@ export function EditorContextMenuHost() {
       onCommitTextColor={commitTextColor}
       onPreviewFillColor={previewFillColor}
       onCommitFillColor={commitFillColor}
+      onSetArrowheadColor={setArrowheadColorSelected}
+      onPreviewArrowheadColor={previewArrowheadColor}
+      onCommitArrowheadColor={commitArrowheadColor}
+      onSetLabelFill={setLabelFillSelected}
+      onPreviewLabelFill={previewLabelFill}
+      onCommitLabelFill={commitLabelFill}
+      onSetHeaderFill={setHeaderFillSelected}
+      onPreviewHeaderFill={previewHeaderFill}
+      onCommitHeaderFill={commitHeaderFill}
       onPreviewStrokeColor={previewStrokeColor}
       onCommitStrokeColor={commitStrokeColor}
       onPreviewBorderStroke={previewBorderStroke}
@@ -279,8 +313,14 @@ export function EditorContextMenuHost() {
       onSetChartLegendPosition={setChartLegendPositionSelected}
       onEditLineData={setLineDataOpenForId}
       onEditCodeBlock={setCodeEditOpenForId}
+      onSetCodeWrap={setCodeWrapSelected}
+      onSetLegendItems={setLegendItemsSelected}
+      mindFlow={menuMindFlow}
+      onSetMindFlow={setMindFlowSelected}
       onSetChecklistItems={setChecklistItemsSelected}
       onSetEntityFields={setEntityFieldsSelected}
+      onSetWebRows={setWebRowsSelected}
+      onSetHeroCaption={setHeroCaptionSelected}
       onSetEstimateScale={setEstimateScaleSelected}
       onSetAgendaItems={setAgendaItemsSelected}
       onSetDecisionStatus={setDecisionStatusSelected}
@@ -305,6 +345,13 @@ export function EditorContextMenuHost() {
       onApplyArrowPreset={commitArrowPreset}
       onPreviewArrowPreset={previewArrowPreset}
       onPreviewStyleEnd={clearStylePreview}
+      onApplyCodeTheme={commitCodeTheme}
+      onPreviewCodeTheme={previewCodeTheme}
+      tableColorPresets={tableColorPresets(getTheme(activeTab.theme))}
+      onApplyTablePreset={commitTablePreset}
+      onPreviewTablePreset={previewTablePreset}
+      onApplyChartPalette={commitChartPalette}
+      onPreviewChartPalette={previewChartPalette}
       onResetArrowStyle={resetArrowStyleSelected}
       onSetAnimation={commitAnimation}
       onSetArrowFlow={commitArrowFlow}
@@ -345,13 +392,12 @@ export function EditorContextMenuHost() {
       onPreviewShapeKind={previewShapeKind}
       onResetAspectRatio={resetAspectRatioSelected}
       onSetSize={setSizeSelected}
-      presetColors={themePresetColors(getTheme(activeTab.theme))}
+      colourPalette={swatches}
       onToggleTableHeaderRow={setTableHeaderRowSelected}
       onToggleTableHeaderColumn={setTableHeaderColumnSelected}
       onToggleTableZebra={setTableZebraSelected}
       onOpenNote={openNote}
       onOpenComments={openComments}
-      onAttachCommentPanel={attachCommentPanel}
       onAssignAction={openAssignAction}
       selectionElements={ctxMemberIds
         .map((id) => activeTab.elements.find((e) => e.id === id))

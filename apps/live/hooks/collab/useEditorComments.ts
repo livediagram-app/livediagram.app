@@ -10,7 +10,14 @@
 //   typing a comment then Ctrl+Z doesn't blow it away).
 // - `openComments`, `closeComments`, `addComment`, `deleteComment`,
 //   `resolveThread`, `unresolveThread`: the six actions the
-//   selection popover + the comment thread popover bind to.
+//   comment thread popover + the Comment panel bind to.
+//
+// Telemetry (spec/22) lives HERE, not at the call sites: the anchored
+// popover and the Comment panel (spec/136) both drive these actions, and an
+// emit beside one surface silently missed the other. Each action counts once,
+// whichever surface ran it. Added / Deleted with a `persist` callback (the
+// view-role path, which writes through the dedicated comment endpoints rather
+// than the tab autosave) count only once the server accepted the write.
 //
 // History bypass is the key reason this lives in its own hook
 // rather than alongside the main element-CRUD path: every other
@@ -42,22 +49,27 @@ type EditorCommentsDeps = {
   selfParticipant: { id: string; name: string; color: string };
 };
 
+// A view-role write through the dedicated comment endpoints (spec/11). The
+// add resolves to the server's comment (its id replaces the local one).
+type PersistAdd = (localId: string) => Promise<{ id?: string } | null | undefined>;
+type PersistDelete = () => Promise<unknown>;
+
 type EditorCommentsApi = {
   commentThreadOpenId: string | null;
   // Toggle open / closed: clicking the same id again closes the
   // popover (matches the existing behaviour).
   openComments: (elementId: string) => void;
   closeComments: () => void;
-  // Returns the minted comment id so a caller persisting through the
-  // dedicated comment endpoint (view-role visitors) can reconcile it
-  // with the server-minted id via `replaceCommentId`.
-  addComment: (elementId: string, text: string) => string;
+  // Returns the minted comment id. With `persist` (view-role visitors, who
+  // don't autosave the tab), the hook runs it, adopts the server-minted id
+  // via `replaceCommentId`, and counts the add only once the server took it.
+  addComment: (elementId: string, text: string, persist?: PersistAdd) => string;
   // Swap a comment's id in place — the view-role persist path gets the
   // authoritative id back from POST /comments, and without adopting it
   // the visitor's own delete sends an id the server doesn't have (the
   // comment resurrects on refresh).
   replaceCommentId: (elementId: string, oldId: string, newId: string) => void;
-  deleteComment: (elementId: string, commentId: string) => void;
+  deleteComment: (elementId: string, commentId: string, persist?: PersistDelete) => void;
   resolveThread: (elementId: string) => void;
   unresolveThread: (elementId: string) => void;
 };
@@ -103,7 +115,7 @@ export function useEditorComments(deps: EditorCommentsDeps): EditorCommentsApi {
   };
   const closeComments = () => setCommentThreadOpenId(null);
 
-  const addComment = (elementId: string, text: string): string => {
+  const addComment = (elementId: string, text: string, persist?: PersistAdd): string => {
     // Mint OUTSIDE the updater: state updaters must stay pure (strict
     // mode re-invokes them), and the caller needs the id.
     const comment = createComment(text, {
@@ -118,6 +130,18 @@ export function useEditorComments(deps: EditorCommentsDeps): EditorCommentsApi {
       // done.
       resolved: false,
     }));
+    if (persist) {
+      void persist(comment.id)
+        .then((created) => {
+          if (created?.id) replaceCommentId(elementId, comment.id, created.id);
+          track('Comment', 'Added');
+        })
+        .catch(() => {});
+    } else {
+      // Owners / editors persist through the tab autosave, the same path
+      // as every element edit, so the local add is the event.
+      track('Comment', 'Added');
+    }
     return comment.id;
   };
 
@@ -132,20 +156,29 @@ export function useEditorComments(deps: EditorCommentsDeps): EditorCommentsApi {
     );
   };
 
-  const deleteComment = (elementId: string, commentId: string) => {
+  const deleteComment = (elementId: string, commentId: string, persist?: PersistDelete) => {
     updateThread(elementId, (thread) => {
       if (!thread) return undefined;
       const remaining = thread.comments.filter((c) => c.id !== commentId);
       if (remaining.length === 0) return undefined;
       return { ...thread, comments: remaining };
     });
+    if (persist) {
+      void persist()
+        .then(() => track('Comment', 'Deleted'))
+        .catch(() => {});
+    } else {
+      track('Comment', 'Deleted');
+    }
   };
 
   const resolveThread = (elementId: string) => {
     updateThread(elementId, (thread) => (thread ? { ...thread, resolved: true } : undefined));
+    track('Comment', 'Resolved');
   };
   const unresolveThread = (elementId: string) => {
     updateThread(elementId, (thread) => (thread ? { ...thread, resolved: false } : undefined));
+    track('Comment', 'Unresolved');
   };
 
   return {

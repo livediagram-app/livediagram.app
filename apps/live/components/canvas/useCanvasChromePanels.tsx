@@ -11,6 +11,7 @@ import { LayersPanel } from '@/components/panels/LayersPanel';
 import { visibleLayerElements } from '@livediagram/diagram';
 import { CanvasAiPanel } from './CanvasAiPanel';
 import { CommandPalette } from '@/components/palette/CommandPalette';
+import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handlers';
 import { Explorer } from '@/components/panels/Explorer';
 import { Minimap } from '@/components/canvas/Minimap';
 import type { CanvasChromeProps } from './CanvasChrome';
@@ -50,14 +51,31 @@ export function useCanvasChromePanels({
   chromeHidden,
   isMobile,
   dockingActive,
+  toolbarActive,
   panelWiringFor,
 }: {
   props: CanvasChromeProps;
   chromeHidden: boolean;
   isMobile: boolean;
   dockingActive: boolean;
+  // Toolbar layout on desktop (spec/148): the strip stands in for the
+  // Palette, and the Explorer opens as a popover under the menu button
+  // instead of floating in its corner.
+  toolbarActive: boolean;
   panelWiringFor: ReturnType<typeof useCornerDocking>['panelWiringFor'];
-}): { panelEls: Partial<Record<PanelId, ReactNode>> } {
+}): {
+  panelEls: Partial<Record<PanelId, ReactNode>>;
+  // The Explorer, when it belongs to the Toolbar layout's menu button rather
+  // than to a corner (then panelEls.explorer is null).
+  toolbarExplorerEl: ReactNode;
+  // Activity + Layers in the Toolbar layout: popovers over their cluster
+  // buttons, rendered outside the corner layer (then their panelEls are null).
+  toolbarClusterEls: ReactNode;
+  // True when Layers + Activity open as popovers over their cluster buttons
+  // (every layout but desktop Floating).
+  clusterPopovers: boolean;
+  paletteTint: ReturnType<typeof usePaletteChrome>['paletteTint'];
+} {
   const {
     activeDockAnchor,
     activeMobilePanel,
@@ -122,30 +140,8 @@ export function useCanvasChromePanels({
     onHideOtherLayers,
     onPreviewLayer,
     onActivityRowClick,
-    onAddAnnotation,
-    onAddArrow,
-    onAddAvatar,
-    onAddBanner,
-    onAddCallout,
-    onAddHeader,
-    onAddHero,
-    onAddIcon,
-    onAddSticker,
-    onAddImage,
-    onAddLinkCard,
-    onAddVideo,
-    onAddProcess,
-    onAddShape,
-    onAddStatRow,
-    onAddSticky,
     esBoard,
     esBoardControls,
-    onAddTable,
-    onAddTechIcon,
-    onAddText,
-    onBeginFreehand,
-    onBeginShapePen,
-    onBeginPolygon,
     onChangeSettings,
     onClearActivity,
     onClearRevertPreview,
@@ -164,10 +160,10 @@ export function useCanvasChromePanels({
     onOpenActionForElement,
     onOpenCommentsForElement,
     onOpenDiagram,
-    onOpenShareCurrent,
     onRedo,
     onRenameCurrent,
     onRenameFolder,
+    onTeamFolders,
     onResetActivity,
     onResetCommentsPanel,
     onResetExplorer,
@@ -216,7 +212,6 @@ export function useCanvasChromePanels({
     onOpenDiagram,
     onNewDiagram,
     onRenameCurrent,
-    onOpenShareCurrent,
     onDeleteDiagram,
     onDuplicateDiagram,
     onCreateFolder,
@@ -327,20 +322,20 @@ export function useCanvasChromePanels({
       onOpenDiagram={explorerHandlers.onOpenDiagram}
       onNewDiagram={explorerHandlers.onNewDiagram}
       onRenameCurrent={explorerHandlers.onRenameCurrent}
-      // The stable wrapper is always a function, so gate on the real prop
-      // to preserve "absent = navigation fallback" downstream.
-      onOpenShareCurrent={onOpenShareCurrent ? explorerHandlers.onOpenShareCurrent : undefined}
       onDeleteDiagram={explorerHandlers.onDeleteDiagram}
       onDuplicateDiagram={explorerHandlers.onDuplicateDiagram}
       onCreateFolder={explorerHandlers.onCreateFolder}
       onRenameFolder={explorerHandlers.onRenameFolder}
       onDeleteFolder={explorerHandlers.onDeleteFolder}
+      onTeamFolders={onTeamFolders}
       onMoveDiagramToFolder={explorerHandlers.onMoveDiagramToFolder}
       onMoveDiagramTo={onMoveDiagramTo ? explorerHandlers.onMoveDiagramTo : undefined}
       onSize={onExplorerSize}
       mobileOpenOverride={activeMobilePanel === 'explorer'}
       mobileDockAnchor={activeDockAnchor ?? undefined}
-      forceDockMode={!!minimalPanels}
+      // Toolbar layout: a popover under the menu button, the dock's path.
+      forceDockMode={!!minimalPanels || toolbarActive}
+      dismissOnOutside={toolbarActive}
       onMobileClose={closeMobilePanel}
     />
   );
@@ -372,7 +367,6 @@ export function useCanvasChromePanels({
         stackBelowY={stackBelowY}
         tabName={tabName}
         settings={settings}
-        onChangeSettings={onChangeSettings}
         minimalPanels={!!minimalPanels}
         activeMobilePanel={activeMobilePanel}
         activeDockAnchor={activeDockAnchor ?? undefined}
@@ -380,10 +374,18 @@ export function useCanvasChromePanels({
       />
     ) : null;
 
+  // Layers + Activity open as popovers over their bottom-right cluster
+  // buttons in the dock layouts (minimal, a phone outside Toolbar) and in
+  // Toolbar (spec/148); only the desktop Floating layout docks them as
+  // corner panels that minimise into those buttons.
+  const clusterPopovers = !dockingActive || toolbarActive;
+
   const activityEl = chromeHidden ? null : (
     <ActivityPanel
       position={activityWiring.position}
-      minimized={activityMinimized}
+      // As a popover there is no minimised panel to expand: the cluster
+      // button opens it (mobileOpenOverride) instead.
+      minimized={clusterPopovers ? false : activityMinimized}
       tabLocked={tabLocked}
       entries={changeLog}
       loading={changeLogLoading}
@@ -396,26 +398,30 @@ export function useCanvasChromePanels({
       onPreviewRevert={activityHandlers.onPreviewRevert}
       onClearRevertPreview={activityHandlers.onClearRevertPreview}
       revertHoverPreview={settings?.activityRevertHoverPreview !== false}
-      onSetRevertHoverPreview={activityHandlers.onSetRevertHoverPreview}
-      resettable={activityWiring.resettable}
       onRowClick={activityHandlers.onActivityRowClick}
       onClearActivity={activityHandlers.onClearActivity}
       saveStatus={saveStatus}
       savedAt={savedAt}
       onMoveTo={activityHandlers.onMoveActivity}
       onReset={activityWiring.onReset}
-      dock={activityWiring.dock}
+      dock={clusterPopovers ? undefined : activityWiring.dock}
       onToggleMinimized={activityHandlers.onToggleActivityMinimized}
+      mobileOpenOverride={clusterPopovers ? activeMobilePanel === 'activity' : undefined}
+      mobileDockAnchor={activeDockAnchor ?? undefined}
+      forceDockMode={clusterPopovers}
+      // A press on the canvas (anywhere outside) puts the popover away.
+      dismissOnOutside={clusterPopovers}
+      onMobileClose={closeMobilePanel}
     />
   );
 
   // Layers panel (spec/74). Edit sessions only (a viewer can't manage
   // layers; visibility / lock still shape what they see via the render
-  // path). Desktop: hidden while minimised into its bottom-right dock
-  // button. Mobile / minimal: always mounted so the dock button can pop
-  // it open (mobileOpenOverride gates the actual render).
+  // path). Floating: hidden while minimised into its bottom-right cluster
+  // button. As a popover (clusterPopovers): always mounted so that button can
+  // pop it open (mobileOpenOverride gates the actual render).
   const layersEl =
-    !chromeHidden && !readOnly && (isMobile || minimalPanels ? true : !layersMinimized) ? (
+    !chromeHidden && !readOnly && (clusterPopovers ? true : !layersMinimized) ? (
       <LayersPanel
         layers={layers}
         tabFont={props.tabFont}
@@ -425,11 +431,12 @@ export function useCanvasChromePanels({
         position={layersWiring.position}
         onMoveTo={onMoveLayersPanel}
         onReset={layersWiring.onReset}
-        dock={layersWiring.dock}
+        dock={clusterPopovers ? undefined : layersWiring.dock}
         onMinimize={onToggleLayersMinimized}
         mobileOpenOverride={activeMobilePanel === 'layers'}
         mobileDockAnchor={activeDockAnchor ?? undefined}
-        forceDockMode={!!minimalPanels}
+        forceDockMode={clusterPopovers}
+        dismissOnOutside={clusterPopovers}
         onMobileClose={closeMobilePanel}
         onSelectLayer={onSelectLayer}
         onAddLayer={onAddLayer}
@@ -444,27 +451,13 @@ export function useCanvasChromePanels({
         onHideOtherLayers={onHideOtherLayers}
         onPreviewLayer={onPreviewLayer}
         hoverPreviewEnabled={settings?.layerHoverPreview !== false}
-        onSetHoverPreviewEnabled={(v) => {
-          // Settings flip fires BEFORE the persist (spec/22).
-          track('UI', 'Toggled', v ? 'LayerHoverPreviewOn' : 'LayerHoverPreviewOff');
-          onChangeSettings({ ...settings, layerHoverPreview: v });
-        }}
         showPreview={settings?.layersShowPreview !== false}
-        onSetShowPreview={(v) => {
-          track('UI', 'Toggled', v ? 'LayerPreviewOn' : 'LayerPreviewOff');
-          onChangeSettings({ ...settings, layersShowPreview: v });
-        }}
         showCount={settings?.layersShowCount !== false}
-        onSetShowCount={(v) => {
-          track('UI', 'Toggled', v ? 'LayerCountOn' : 'LayerCountOff');
-          onChangeSettings({ ...settings, layersShowCount: v });
-        }}
-        resettable={layersWiring.resettable}
       />
     ) : null;
 
   const paletteEl =
-    chromeHidden || readOnly ? null : (
+    chromeHidden || readOnly || toolbarActive ? null : (
       <CommandPalette
         position={paletteWiring.position}
         canvasTool={canvasTool}
@@ -479,30 +472,9 @@ export function useCanvasChromePanels({
         settings={settings}
         onChangeSettings={onChangeSettings}
         canvasEmpty={elements.length === 0}
-        onAddShape={onAddShape}
-        onAddIcon={onAddIcon}
-        onAddSticker={onAddSticker}
-        onAddTechIcon={onAddTechIcon}
-        onAddTable={onAddTable}
-        onAddAnnotation={onAddAnnotation}
-        onAddLinkCard={onAddLinkCard}
-        onAddVideo={onAddVideo}
-        onAddBanner={onAddBanner}
-        onAddHero={onAddHero}
-        onAddHeader={onAddHeader}
-        onAddCallout={onAddCallout}
-        onAddStatRow={onAddStatRow}
-        onAddProcess={onAddProcess}
-        onAddAvatar={onAddAvatar}
-        onAddText={onAddText}
-        onAddSticky={onAddSticky}
+        {...pickPaletteAddHandlers(props)}
         esBoard={esBoard}
         esBoardControls={esBoardControls}
-        onAddImage={onAddImage}
-        onAddArrow={onAddArrow}
-        onBeginFreehand={onBeginFreehand}
-        onBeginShapePen={onBeginShapePen}
-        onBeginPolygon={onBeginPolygon}
         pendingDraw={pendingDraw}
         themeTint={paletteTint}
         onSize={(size) => setPaletteBottomY(size.bottomY)}
@@ -544,23 +516,9 @@ export function useCanvasChromePanels({
         position={minimapWiring.position}
         onMove={props.onMoveMap}
         onResetPosition={minimapWiring.onReset}
-        resettable={minimapWiring.resettable}
         dock={minimapWiring.dock}
-        enabled={mapEnabled}
-        onSetEnabled={(v) => {
-          track('UI', 'Toggled', v ? 'MinimapOn' : 'MinimapOff');
-          onChangeSettings({ ...settings, showMinimap: v });
-        }}
         dimOutside={settings?.mapDimOutside !== false}
-        onSetDimOutside={(v) => {
-          track('UI', 'Toggled', v ? 'MapDimOn' : 'MapDimOff');
-          onChangeSettings({ ...settings, mapDimOutside: v });
-        }}
         size={settings?.mapSize ?? 'medium'}
-        onSetSize={(v) => {
-          track('UI', 'Changed', 'MapSize');
-          onChangeSettings({ ...settings, mapSize: v });
-        }}
       />
     ) : null;
 
@@ -574,7 +532,7 @@ export function useCanvasChromePanels({
         answers={pollPanel.answers}
         isHost={pollPanel.isHost}
         onEnd={pollPanel.onEnd}
-        onEndAndKeep={pollPanel.onEndAndKeep}
+        onKeepResults={pollPanel.onKeepResults}
         onDismiss={pollPanel.onDismiss}
         position={pollWiring.position}
         stackBelowY={stackBelowY}
@@ -583,6 +541,8 @@ export function useCanvasChromePanels({
         dock={pollWiring.dock}
         mobileOpenOverride={activeMobilePanel === 'poll'}
         mobileDockAnchor={activeDockAnchor ?? undefined}
+        forceDockMode={!!minimalPanels}
+        onMobileClose={closeMobilePanel}
       />
     ) : null;
 
@@ -608,19 +568,21 @@ export function useCanvasChromePanels({
         dock={voteWiring.dock}
         mobileOpenOverride={activeMobilePanel === 'vote'}
         mobileDockAnchor={activeDockAnchor ?? undefined}
+        forceDockMode={!!minimalPanels}
+        onMobileClose={closeMobilePanel}
         readOnly={!!readOnly}
       />
     ) : null;
 
   // Map of panel id → element for the docked-layout distribution.
   const panelEls: Partial<Record<PanelId, ReactNode>> = {
-    explorer: explorerEl,
+    explorer: toolbarActive ? null : explorerEl,
     palette: paletteEl,
     collaborate: collaborateEl,
     ai: aiEl,
-    activity: activityEl,
+    activity: toolbarActive ? null : activityEl,
     minimap: minimapEl,
-    layers: layersEl,
+    layers: toolbarActive ? null : layersEl,
     poll: pollEl,
     vote: voteEl,
     avatar: avatarEl,
@@ -631,5 +593,18 @@ export function useCanvasChromePanels({
     'slide-deck': slideDeckEl,
     format: formatEl,
   };
-  return { panelEls };
+  return {
+    panelEls,
+    toolbarExplorerEl: toolbarActive ? explorerEl : null,
+    // Toolbar's cluster popovers, rendered beside the corner layer rather than
+    // in it (see panelEls).
+    toolbarClusterEls: toolbarActive ? (
+      <>
+        {activityEl}
+        {layersEl}
+      </>
+    ) : null,
+    clusterPopovers,
+    paletteTint,
+  };
 }

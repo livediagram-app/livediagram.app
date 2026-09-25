@@ -87,6 +87,17 @@ that let `viewport` through.
   never loses data.
 - The client (`apps/live/lib/api/room.ts`) gained auto-reconnect with capped
   backoff + seq/epoch tracking.
+- **The cursor must include the client's own ops.** The relay skips the
+  sender, so a client used to learn seqs only from other people's ops: a
+  reconnect asked for its own ops back, and a session that had heard nothing
+  asked for the whole log. Re-applying ops is harmless for element ops (by id),
+  but a dot vote (spec/39) is a delta, so every replayed dot counted twice. The
+  room now sends a `{ kind: 'cursor', epoch, seq }` frame on `hello` and to the
+  sender of each ordered op, and the client folds it into its cursor (ignoring
+  a different epoch, which the `sync` / `catchup` exchange reconciles).
+- **A whole-`tab` op keeps the receiver's dots.** It carries the sender's votes
+  map as of their autosave, without dots still in flight, so the receiver keeps
+  its own map unless the round itself changed (`mergeRemoteTab`).
 
 **Durability is unchanged:** D1 stays the system of record. Persistence is
 client-driven (clients PUT tabs to D1 as before); the op log is a warm catch-up

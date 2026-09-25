@@ -22,7 +22,7 @@ type PaletteTab = {
 // The category dropdown's bands, in order. Tabs are listed in band order in
 // the caller's `tabs` array, so the grid renders them under these headings
 // without a sort here.
-const CATEGORY_BANDS: Record<number, string> = {
+export const CATEGORY_BANDS: Record<number, string> = {
   0: 'Common',
   // Structure (spec/110): the elements you lay a diagram OUT with — Build's
   // containers, the ready-made Components, the device frames. They sit above

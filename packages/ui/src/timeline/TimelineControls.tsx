@@ -11,7 +11,7 @@
 // header already uses, so these sit in that row as peers rather than as
 // a transplant.
 
-import { ModeIcon, TIMELINE_MODES } from './ModeIcon';
+import { MODE_LABELS, ModeIcon, TIMELINE_MODES } from './ModeIcon';
 import { TimelineFilterPopover } from './TimelineFilterPopover';
 import type { TimelineControls as Controls } from './useTimelineControls';
 
@@ -45,14 +45,14 @@ export function TimelineControls({ controls }: { controls: Controls }) {
             type="button"
             aria-pressed={mode === value}
             onClick={() => setMode(value)}
-            className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium capitalize transition ${
+            className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition ${
               mode === value
                 ? 'bg-brand-600 text-white'
                 : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'
             }`}
           >
             <ModeIcon mode={value} />
-            {value}
+            {MODE_LABELS[value]}
           </button>
         ))}
       </div>

@@ -1,11 +1,10 @@
-// The eraser's settings (spec/113): how it erases, how big it is, what it may
-// remove, and what it does with a group — plus the pure helpers the erase
-// gesture uses to apply them.
+// The eraser's settings (spec/113): how it erases, how big it is, and what it
+// may remove — plus the pure helpers the erase gesture uses to apply them.
 //
 // Device-local, like the other tool panels (spec/111, spec/112): it is set for
 // the job in front of you, not stored on the diagram. Never sent to the api.
 
-import { selectionMembers, type Element } from '@livediagram/diagram';
+import type { Element } from '@livediagram/diagram';
 import { readLocalStorageSafe, safeJson, writeLocalStorageSafe } from './local-storage-safe';
 
 export type EraserMode = 'sweep' | 'tap';
@@ -14,23 +13,20 @@ export type EraserSize = 'point' | 'small' | 'medium' | 'large';
 // sketching over a diagram safe; 'arrows' is for rewiring without disturbing
 // the boxes.
 export type EraserTarget = 'anything' | 'drawings' | 'arrows';
-export type EraserGroups = 'piece' | 'group';
 
 export type EraserConfig = {
   mode: EraserMode;
   size: EraserSize;
   target: EraserTarget;
-  groups: EraserGroups;
 };
 
 // Today's eraser exactly: drag across things, one pixel wide, delete whatever
-// it touches, one member at a time. Anyone who never opens the panel sees no
+// it touches, one element at a time. Anyone who never opens the panel sees no
 // change at all.
 export const DEFAULT_ERASER_CONFIG: EraserConfig = {
   mode: 'sweep',
   size: 'point',
   target: 'anything',
-  groups: 'piece',
 };
 
 export const ERASER_MODES: readonly { id: EraserMode; label: string; hint: string }[] = [
@@ -49,11 +45,6 @@ export const ERASER_TARGETS: readonly { id: EraserTarget; label: string; hint: s
   { id: 'anything', label: 'Anything', hint: 'Every element the brush touches' },
   { id: 'drawings', label: 'Drawings', hint: 'Only pencil and highlighter strokes' },
   { id: 'arrows', label: 'Arrows', hint: 'Only connectors — the boxes stay put' },
-];
-
-export const ERASER_GROUPS: readonly { id: EraserGroups; label: string; hint: string }[] = [
-  { id: 'piece', label: 'Just the piece', hint: 'Erase the one element you touched' },
-  { id: 'group', label: 'Whole group', hint: 'Erase everything grouped with it' },
 ];
 
 // --- What the gesture uses --------------------------------------------------
@@ -99,19 +90,6 @@ export function eraserAllows(element: Element, target: EraserTarget): boolean {
   return element.type === 'freehand';
 }
 
-// The ids one touch should remove: just the element, or everything grouped
-// with it. `selectionMembers` is the same helper selection uses to expand a
-// click into its group, so an erase and a select agree on what a group is —
-// including the ungrouped case, where it returns the one id.
-export function eraserIdsFor(
-  element: Element,
-  elements: Element[],
-  groups: EraserGroups,
-): string[] {
-  if (groups === 'piece') return [element.id];
-  return selectionMembers(elements, element.id);
-}
-
 // --- Parsing ----------------------------------------------------------------
 
 function pick<T extends string>(value: unknown, options: readonly { id: T }[], fallback: T): T {
@@ -126,7 +104,6 @@ export function parseEraserConfig(raw: unknown): EraserConfig {
     mode: pick(o.mode, ERASER_MODES, DEFAULT_ERASER_CONFIG.mode),
     size: pick(o.size, ERASER_SIZES, DEFAULT_ERASER_CONFIG.size),
     target: pick(o.target, ERASER_TARGETS, DEFAULT_ERASER_CONFIG.target),
-    groups: pick(o.groups, ERASER_GROUPS, DEFAULT_ERASER_CONFIG.groups),
   };
 }
 

@@ -323,9 +323,17 @@ test.describe('mobile', () => {
     });
     expect(onTop).toBe(true);
 
-    // And the session tools are genuinely reachable, not just painted.
-    await expect(page.getByRole('button', { name: /^timer$/i })).toBeVisible();
-    await expect(page.getByRole('button', { name: /^poll$/i })).toBeVisible();
+    // And the session tools are genuinely reachable, not just painted. Since
+    // the Session Studio (spec/39) they are TABS in its switcher, not a strip
+    // of buttons, and a running tool's status dot joins the tab's name
+    // ("Timer Running"), so match the start of the name, not all of it.
+    // Tapping one proves the tap lands in the flyout rather than behind it.
+    const timerTab = page.getByRole('tab', { name: /^timer\b/i });
+    const pollTab = page.getByRole('tab', { name: /^poll\b/i });
+    await expect(timerTab).toBeVisible();
+    await expect(pollTab).toBeVisible();
+    await pollTab.tap();
+    await expect(pollTab).toHaveAttribute('aria-selected', 'true');
 
     // Covering the parent hides which row is open and the way back, so the
     // mobile panel carries its own header: the category name, and a Close

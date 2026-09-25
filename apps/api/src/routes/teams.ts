@@ -33,6 +33,7 @@ import {
   listInvitesByUser,
   listTeamMembers,
   listTeamsByUser,
+  handTeamWorkToHeir,
   removeTeamMember,
   setTeamInviteLink,
   teamHasEmail,
@@ -67,6 +68,7 @@ import {
   recordTeamDeleted,
   recordTeamRenamed,
 } from '../timeline';
+import { markTimelineEventsDeletedBySource } from '../db/timeline';
 import { handleTeamActionRoutes } from './team-action-routes';
 import type { RouteContext } from './context';
 
@@ -258,7 +260,14 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
       // with the team, so afterwards there is nobody left to tell.
       const audience = await audienceForTeam(env, teamId);
       await deleteTeam(env, teamId);
-      ctx.waitUntil?.(recordTeamDeleted(env, team, userId, audience));
+      // Cascade, then tombstone (spec/138 §3.5): the team's own history
+      // (renames, joins, role changes) goes with it, and "Team Deleted"
+      // is the one card every former member keeps.
+      ctx.waitUntil?.(
+        markTimelineEventsDeletedBySource(env, 'team', teamId)
+          .then(() => recordTeamDeleted(env, team, userId, audience))
+          .catch((err) => console.error('timeline team delete failed', err)),
+      );
       return noContent();
     }
     return notFound();
@@ -390,6 +399,12 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
       // spec/138 §4.4: resolve the audience BEFORE the row goes, or the
       // person leaving never sees their own departure.
       const audience = await audienceForTeam(env, teamId);
+      // What they made stays with the team. Left owned by them, the owner
+      // leg of every access gate would keep it open to somebody the team
+      // just removed (spec/35).
+      if (member.status === 'joined' && member.userId) {
+        await handTeamWorkToHeir(env, teamId, member.userId);
+      }
       await removeTeamMember(env, member.id);
       const who = { userId: member.userId, name: memberDisplayName(member) };
       if (member.status === 'invited' && isSelf) {

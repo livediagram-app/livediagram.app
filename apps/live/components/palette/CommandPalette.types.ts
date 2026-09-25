@@ -5,6 +5,7 @@ import type { UserPreferences } from '@/lib/user-preferences';
 import type { PaletteTint } from '@/components/palette/palette-controls';
 import type { EsBoardControls } from '@/components/palette/EventStormingBoardRows';
 import type { MovablePanelDockProps } from '@/components/primitives/MovablePanel';
+import type { DockAnchor } from '@/lib/canvas-chrome';
 
 export type CanvasTool =
   | 'pan'
@@ -147,12 +148,12 @@ export type CommandPaletteProps = {
   // freehand) is armed FROM the palette in dock mode, so the parent can
   // reopen the palette once the draw finishes.
   onDrawArmed?: () => void;
-  mobileDockAnchor?: { left: number; top: number; arrowOffset: number };
+  mobileDockAnchor?: DockAnchor;
   forceDockMode?: boolean;
   // Active tab theme's element colours, so the palette tiles preview the
   // theme: shape / device / annotation tiles render filled in the theme's
   // fill + stroke, line-art tools + icons tint to the stroke. Undefined (the
-  // Default colour scheme) leaves the palette in its default slate look. See spec/09.
+  // Default theme) leaves the palette in its default slate look. See spec/09.
   themeTint?: PaletteTint;
   // Corner-docking bundle (spec/63), forwarded to the inner MovablePanel.
   dock?: MovablePanelDockProps;

@@ -18,8 +18,6 @@ export type EditorKeyboardShortcutsDeps = {
   // Modal-interaction state. Escape clears whichever is active.
   formatSourceId: string | null;
   setFormatSourceId: (v: string | null) => void;
-  groupSourceId: string | null;
-  setGroupSourceId: (v: string | null) => void;
   // Pending draw-to-size intent, set when the palette was clicked
   // under the drawToAdd user preference. Escape clears it so a
   // user who accidentally entered draw mode (or changed their
@@ -84,10 +82,6 @@ export type EditorKeyboardShortcutsDeps = {
   // S arms the shape pen — the same gesture as the pencil, but the stroke is
   // run through shape recognition on release (spec/115).
   onBeginShapePen: () => void;
-  // Cmd/Ctrl+G: group multi-selected boxed elements, or ungroup the
-  // currently-selected element's group. The callback handles both
-  // cases (caller checks multi vs single selection state).
-  onGroupOrUngroup: () => void;
   // Cmd/Ctrl+Shift+L: toggle lock on the current selection (single or
   // multi). On Shift+L rather than plain Cmd+L so it never fights the
   // browser's "focus the address bar" binding.
@@ -281,11 +275,6 @@ export function runModShortcut(e: KeyboardEvent, live: EditorKeyboardShortcutsDe
   if (lower === 'd') {
     e.preventDefault();
     live.onDuplicate();
-    return true;
-  }
-  if (lower === 'g') {
-    e.preventDefault();
-    live.onGroupOrUngroup();
     return true;
   }
   // Lock on Cmd/Ctrl+Shift+L (not plain Cmd+L, which the browser

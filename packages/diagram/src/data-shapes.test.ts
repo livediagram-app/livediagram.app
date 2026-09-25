@@ -5,6 +5,7 @@ import {
   isBarShape,
   isChartShape,
   isChecklistShape,
+  isLegendShape,
   isCodeBlockShape,
   isLineShape,
   isPieShape,
@@ -40,6 +41,7 @@ const FAMILIES: { name: string; guard: (k: ShapeKind) => boolean }[] = [
   { name: 'chart', guard: isChartShape },
   { name: 'code block', guard: isCodeBlockShape },
   { name: 'checklist', guard: isChecklistShape },
+  { name: 'legend', guard: isLegendShape },
 ];
 
 const kindsMatching = (guard: (k: ShapeKind) => boolean) => ALL.filter(guard).sort();
@@ -49,9 +51,12 @@ describe('the self-drawing shape family', () => {
     expect(ALL.length).toBeGreaterThan(40);
   });
 
-  it('claims exactly the kinds its members claim, plus the sticker', () => {
+  it('claims exactly the kinds its members claim, plus the sticker and the label-less web components', () => {
     const fromMembers = new Set(FAMILIES.flatMap((f) => kindsMatching(f.guard)));
     fromMembers.add('sticker');
+    // spec/147: their text is their rows, so there is no label to edit.
+    fromMembers.add('stat-row');
+    fromMembers.add('process');
     expect(kindsMatching(isSelfDrawingShape)).toEqual([...fromMembers].sort());
   });
 
@@ -67,6 +72,10 @@ describe('the self-drawing shape family', () => {
     expect(isSelfDrawingShape('circle')).toBe(false);
     expect(isSelfDrawingShape('frame')).toBe(false);
     expect(isSelfDrawingShape('icon')).toBe(false);
+    // The web components that DO carry a label keep it (spec/147).
+    expect(isSelfDrawingShape('banner')).toBe(false);
+    expect(isSelfDrawingShape('callout')).toBe(false);
+    expect(isSelfDrawingShape('site-header')).toBe(false);
   });
 });
 

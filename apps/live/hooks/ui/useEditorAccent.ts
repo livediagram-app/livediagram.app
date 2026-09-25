@@ -85,7 +85,7 @@ function darkSurfaceScale(accent: string): Record<(typeof DARK_SURFACE_STOPS)[nu
 }
 
 export function useEditorAccent(themeId: string | undefined): void {
-  // The "brand"/Default colour scheme (and an unthemed tab) has no accent stroke,
+  // The "brand"/Default theme (and an unthemed tab) has no accent stroke,
   // so we leave the built-in light-blue brand + cold-slate dark in place.
   const accent = (themeId ? getTheme(themeId) : null)?.elementStroke ?? null;
 

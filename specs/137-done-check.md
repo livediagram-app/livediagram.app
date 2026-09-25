@@ -15,6 +15,12 @@ The per-participant `responses` array (spec/122) already records **one value
 per participant**, and already replaces rather than stacks. A done check is
 that primitive with a single fixed value: being done is a flag, not a scale.
 
+The element is **fixed-size** like the mode and session buttons
+(`FIXED_SIZE_SHAPES`, spec/103): no resize handles, and a multi-selection
+scale leaves it alone. It is a roster and a button laid out for its own
+content, and stretching it only spread the same three things over empty
+card.
+
 So there is no new storage, no new merge rule, no new realtime path:
 
 - Marking yourself calls the same `respond(element, DONE_VALUE)` the estimate

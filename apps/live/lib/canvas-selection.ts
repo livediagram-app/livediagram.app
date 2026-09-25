@@ -8,7 +8,6 @@ import { isFixedSizeElement } from '@livediagram/diagram';
 import {
   elementBounds,
   isBoxed,
-  selectionMembers,
   unionBoxedBounds,
   unionElementBounds,
   type Element,
@@ -17,19 +16,14 @@ import {
 type Bounds = { x: number; y: number; width: number; height: number };
 
 type CanvasSelection = {
-  // Group-expanded membership of the single selection (the element +
-  // every other element sharing its groupId). Empty when nothing is
-  // singly selected.
-  memberIds: Set<string>;
   // First element (in z-order) of an active marquee multi-selection,
   // promoted so the selection chrome can read shared properties from it.
   multiPrimaryId: string | null;
   // The primary selected element: the single selection, else the multi
   // primary. Null when nothing is selected.
   selected: Element | null;
-  selectionScope: 'single' | 'multi' | 'group';
+  selectionScope: 'single' | 'multi';
   selectedIsBoxed: boolean;
-  selectedIsGrouped: boolean;
   selectionBounds: Bounds | null;
   selectedLocked: boolean;
   // Single-selection popover + plus-button visibility.
@@ -39,7 +33,7 @@ type CanvasSelection = {
   // for both today). Call with an element id.
   showHandlesFor: (id: string) => boolean;
   showAnchorsFor: (id: string) => boolean;
-  // Union (multi / group) resize-handle state.
+  // Union (multi-selection) resize-handle state.
   unionResizeIds: Set<string> | null;
   unionResizeBounds: Bounds | null;
   unionResizePrimaryId: string | null;
@@ -53,15 +47,9 @@ type CanvasSelection = {
 export function deriveCanvasSelection(input: {
   elements: Element[];
   selectedId: string | null;
-  // Drill-in selection (spec/09 groups): when equal to selectedId, the
-  // selection is just that member — the chrome shows single-element
-  // handles / popover instead of the group's union box. Stale values
-  // (≠ selectedId) mean "not solo".
-  soloSelectedId?: string | null;
   multiSelectedIds: Set<string>;
   editingId: string | null;
   isPaintMode: boolean;
-  isGroupMode: boolean;
   tabLocked: boolean;
   readOnly: boolean;
   // Event-storming board (spec/139): a low-threshold capture surface where
@@ -78,22 +66,15 @@ export function deriveCanvasSelection(input: {
   const {
     elements,
     selectedId,
-    soloSelectedId,
     multiSelectedIds,
     editingId,
     isPaintMode,
-    isGroupMode,
     tabLocked,
     readOnly,
     esBoard,
     elementMenuOpen,
   } = input;
 
-  const memberIds = selectedId
-    ? soloSelectedId === selectedId
-      ? new Set([selectedId])
-      : new Set(selectionMembers(elements, selectedId))
-    : new Set<string>();
   const multiPrimaryId =
     multiSelectedIds.size > 0
       ? (elements.find((el) => multiSelectedIds.has(el.id))?.id ?? null)
@@ -102,19 +83,9 @@ export function deriveCanvasSelection(input: {
     (selectedId ? elements.find((el) => el.id === selectedId) : undefined) ??
     (multiPrimaryId ? elements.find((el) => el.id === multiPrimaryId) : undefined) ??
     null;
-  const selectionScope: 'single' | 'multi' | 'group' =
-    multiSelectedIds.size > 0 ? 'multi' : selectedId && memberIds.size > 1 ? 'group' : 'single';
+  const selectionScope: 'single' | 'multi' = multiSelectedIds.size > 0 ? 'multi' : 'single';
   const selectedIsBoxed = selected ? isBoxed(selected) : false;
-  const selectedIsGrouped = !!(selected && isBoxed(selected) && selected.groupId !== undefined);
-
-  let selectionBounds: Bounds | null = null;
-  if (selected) {
-    if (selectedIsBoxed && memberIds.size > 0) {
-      selectionBounds = unionBoxedBounds(elements, memberIds);
-    } else {
-      selectionBounds = elementBounds(selected, elements);
-    }
-  }
+  const selectionBounds: Bounds | null = selected ? elementBounds(selected, elements) : null;
 
   const selectedLocked = selected ? selected.locked === true : false;
   const showPopover = !!(
@@ -122,7 +93,6 @@ export function deriveCanvasSelection(input: {
     !elementMenuOpen &&
     editingId !== selected.id &&
     !isPaintMode &&
-    !isGroupMode &&
     multiSelectedIds.size === 0 &&
     !tabLocked
   );
@@ -132,25 +102,21 @@ export function deriveCanvasSelection(input: {
     selectedIsBoxed &&
     // Never on an event-storming board (spec/139).
     !esBoard &&
-    // Quick-connect works on a single element OR a multi-member group (the
-    // pluses then ring the group's union bounds — spawn is already
-    // group-aware and an arrow pins to the member nearest the picked side).
-    // A marquee multi-select stays suppressed: it's a transient selection,
-    // not a unit you chain from.
+    // Quick-connect works on a single element. A marquee multi-select stays
+    // suppressed: it's a transient selection, not a unit you chain from.
     multiSelectedIds.size === 0 &&
-    // The per-type exclusions apply to a lone element only: an annotation
-    // marker is a note, not a node to chain from, and a frame is a backdrop
-    // you draw around things (its pluses would float far out around the
-    // whole section). See spec/38 + spec/09. Tables DO show the pluses —
-    // with a slimmed table ring (Arrow + Add Row / Add Column, spec/09).
-    // On a group the pluses belong to the union box, not any one member,
-    // so a grouped annotation/frame doesn't suppress them.
-    (memberIds.size > 1 ||
-      (selected.type !== 'annotation' &&
-        !(selected.type === 'shape' && selected.shape === 'frame'))) &&
+    // An annotation marker is a note, not a node to chain from. See spec/38
+    // + spec/09. Tables DO show the pluses, with a slimmed table ring (Arrow
+    // + Add Row / Add Column, spec/09).
+    //
+    // Frames used to be excluded too, on the grounds that a backdrop's
+    // pluses would float far out around the whole section. Lanes are the
+    // same shape of thing and always showed theirs, which made the rule look
+    // arbitrary rather than considered: both are containers you chain from
+    // exactly as often as you chain from a box.
+    selected.type !== 'annotation' &&
     editingId !== selected.id &&
     !isPaintMode &&
-    !isGroupMode &&
     !selectedLocked &&
     !tabLocked &&
     !readOnly
@@ -160,10 +126,9 @@ export function deriveCanvasSelection(input: {
   const handleVisible = (id: string) =>
     selectedIsBoxed &&
     id === selectedId &&
-    memberIds.size === 1 &&
+    multiSelectedIds.size === 0 &&
     editingId !== id &&
     !isPaintMode &&
-    !isGroupMode &&
     !selectedLocked &&
     !tabLocked &&
     !readOnly;
@@ -193,28 +158,21 @@ export function deriveCanvasSelection(input: {
   const anchorVisible = (id: string) =>
     resizeVisible(id) && elements.find((el) => el.id === id)?.type !== 'table';
 
-  const unionResizeIds: Set<string> | null =
-    multiSelectedIds.size > 1 ? multiSelectedIds : memberIds.size > 1 ? memberIds : null;
+  const unionResizeIds: Set<string> | null = multiSelectedIds.size > 1 ? multiSelectedIds : null;
   const unionResizeBounds =
     unionResizeIds && selected ? unionBoxedBounds(elements, unionResizeIds) : null;
-  const unionResizePrimaryId =
-    multiSelectedIds.size > 1
-      ? (multiPrimaryId ?? selectedId)
-      : memberIds.size > 1
-        ? selectedId
-        : null;
+  const unionResizePrimaryId = multiSelectedIds.size > 1 ? (multiPrimaryId ?? selectedId) : null;
   const showUnionResize =
     !!unionResizeBounds &&
     !!unionResizePrimaryId &&
     selectedIsBoxed &&
     editingId !== unionResizePrimaryId &&
     !isPaintMode &&
-    !isGroupMode &&
     !selectedLocked &&
     !tabLocked &&
     !readOnly;
 
-  // The floating multi-selection toolbar (Duplicate / Group / Lock / Export /
+  // The floating multi-selection toolbar (Duplicate / Lock / Export /
   // Delete + the "More" entry into the type-aware formatting menu) is anchored
   // separately from the resize box: it floats over the union of EVERY selected
   // element including arrows, so an arrow-only or mixed marquee still gets the
@@ -223,20 +181,13 @@ export function deriveCanvasSelection(input: {
   const multiToolbarBounds =
     multiSelectedIds.size > 1 ? unionElementBounds(elements, multiSelectedIds) : null;
   const showMultiToolbar =
-    !!multiToolbarBounds &&
-    multiSelectedIds.size > 1 &&
-    !isPaintMode &&
-    !isGroupMode &&
-    !tabLocked &&
-    !readOnly;
+    !!multiToolbarBounds && multiSelectedIds.size > 1 && !isPaintMode && !tabLocked && !readOnly;
 
   return {
-    memberIds,
     multiPrimaryId,
     selected,
     selectionScope,
     selectedIsBoxed,
-    selectedIsGrouped,
     selectionBounds,
     selectedLocked,
     showPopover,

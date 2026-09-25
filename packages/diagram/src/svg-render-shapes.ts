@@ -9,6 +9,11 @@
 import { BORDER_DASH_ARRAY, BORDER_STROKE_PX } from './border-style';
 import type { BoxedElement, FreehandElement, ShapeKind } from './index';
 import { r2, xmlEscape } from './svg-render-primitives';
+import { codeTheme } from './code-themes';
+import { chartPaletteColors } from './chart-palettes';
+import { isLaneBand, laneEdgeOfElement, laneSizeOfElement } from './lane-gutter';
+import { PIE_PALETTE } from './data-shapes';
+import { legendFontPx } from './label-font';
 
 // The kinds this module draws. square / circle / stadium / browser render
 // natively in svgBoxed (plain rects / ellipses); diamond has a native
@@ -29,6 +34,7 @@ const SILHOUETTE_KINDS = new Set<string>([
   'laptop',
   'phone',
   'tablet',
+  'foldable',
   'smartwatch',
   'actor',
 ]);
@@ -153,6 +159,13 @@ function silhouetteMarkup(
         `<rect x="2" y="2" width="96" height="96" rx="6"${main}/>` +
           `<rect x="5" y="6" width="90" height="88" rx="3"${detail}/>`,
       );
+    case 'foldable':
+      return stretch(
+        `<rect x="2" y="2" width="96" height="96" rx="5"${main}/>` +
+          `<rect x="5" y="6" width="90" height="88" rx="3"${detail}/>` +
+          // The crease. It is what says "unfolded" rather than "tablet".
+          `<path d="M 50 6 L 50 94"${detail}/>`,
+      );
     case 'smartwatch':
       return stretch(
         `<rect x="36" y="0" width="28" height="20"${main}/>` +
@@ -233,30 +246,52 @@ export function svgFreehandShape(el: FreehandElement, stroke: string, fill: stri
   );
 }
 
-// Code block (spec/82): the fixed dark editor card + plain monospace lines.
-// No syntax highlighting here — the tokenizer is deliberately a live-editor
-// chunk, and un-highlighted mono is a faithful degrade for a thumbnail.
-const CODE_CARD_FILL = '#0f172a'; // slate-900
-const CODE_CARD_STROKE = '#334155'; // slate-700
-const CODE_TEXT = '#e2e8f0'; // slate-200
-const CODE_MUTED = '#64748b'; // slate-500
+// Code block (spec/82): the editor card + plain monospace lines, in whichever
+// colour scheme the element carries (see code-themes.ts). No syntax
+// highlighting here: the tokenizer is deliberately a live-editor chunk, and
+// un-highlighted mono is a faithful degrade for a thumbnail.
 const CODE_FONT = 'ui-monospace, SFMono-Regular, Menlo, monospace';
 const CODE_FONT_SIZE = 12;
 const CODE_LINE_HEIGHT = 16;
 const CODE_PAD = 12;
 
+// Break one source line to `width` columns, on spaces where there is one and
+// mid-token where there is not (a URL or a minified line has no spaces, and
+// leaving it long would just run off the card again).
+function wrapLine(line: string, width: number): string[] {
+  if (line.length <= width) return [line];
+  const out: string[] = [];
+  let rest = line;
+  while (rest.length > width) {
+    const slice = rest.slice(0, width + 1);
+    const at = slice.lastIndexOf(' ');
+    const cut = at > width * 0.5 ? at : width;
+    out.push(rest.slice(0, cut));
+    rest = rest.slice(at > width * 0.5 ? cut + 1 : cut);
+  }
+  out.push(rest);
+  return out;
+}
+
 export function svgCodeBlockShape(el: BoxedElement & { type: 'shape' }): string {
+  const scheme = codeTheme(el.codeTheme);
   const card =
     `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}"` +
-    ` rx="8" fill="${CODE_CARD_FILL}" stroke="${CODE_CARD_STROKE}" stroke-width="1.5"/>`;
+    ` rx="8" fill="${xmlEscape(scheme.surface)}" stroke="${xmlEscape(scheme.border)}" stroke-width="1.5"/>`;
   const code = (el.code ?? '').replace(/\r\n/g, '\n');
   const empty = code.trim().length === 0;
   // Clip to the card: whole lines vertically, a crude char cap horizontally
   // (12px mono is ~7.2px per char).
   const maxLines = Math.max(1, Math.floor((el.height - CODE_PAD * 2) / CODE_LINE_HEIGHT));
   const maxChars = Math.max(4, Math.floor((el.width - CODE_PAD * 2) / 7.2));
-  const lines = (empty ? ['// double-click to add code'] : code.split('\n')).slice(0, maxLines);
-  const textColor = empty ? CODE_MUTED : CODE_TEXT;
+  const source = empty ? ['// double-click to add code'] : code.split('\n');
+  // Wrapping is the element's default (spec/82), so the still render wraps
+  // too: clipping a wrapped block at the card edge would show a different
+  // amount of code in an export than on the canvas.
+  const lines = (
+    el.codeWrap === false ? source : source.flatMap((l) => wrapLine(l, maxChars))
+  ).slice(0, maxLines);
+  const textColor = xmlEscape(empty ? scheme.muted : scheme.text);
   const lineStr = lines
     .map(
       (line, i) =>
@@ -269,7 +304,7 @@ export function svgCodeBlockShape(el: BoxedElement & { type: 'shape' }): string 
   const lang = el.codeLanguage && el.codeLanguage !== 'plain' ? el.codeLanguage : null;
   const badge = lang
     ? `<text x="${r2(el.x + el.width - CODE_PAD)}" y="${r2(el.y + CODE_PAD + 2)}" font-family="${CODE_FONT}"` +
-      ` font-size="10" fill="${CODE_MUTED}" text-anchor="end">${xmlEscape(lang)}</text>`
+      ` font-size="10" fill="${xmlEscape(scheme.muted)}" text-anchor="end">${xmlEscape(lang)}</text>`
     : '';
   return card + lineStr + badge;
 }
@@ -320,4 +355,120 @@ export function svgChecklistShape(
         ` opacity="0.6" text-anchor="end">${doneCount}/${items.length}</text>`
       : '';
   return card + rows + footer;
+}
+
+// Legend (spec/53): the themed card + one swatch-and-label row per item. The
+// swatch falls back to the chart ramp by index, the same rule the canvas view
+// uses, so a legend beside a chart matches it in an export too.
+const LEGEND_PAD = 12;
+
+export function svgLegendShape(
+  el: BoxedElement & { type: 'shape' },
+  fill: string,
+  stroke: string,
+  textColor: string,
+): string {
+  const card =
+    `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}"` +
+    ` rx="8" fill="${xmlEscape(fill)}" stroke="${xmlEscape(stroke)}" stroke-width="1.5"/>`;
+  const items = el.legendItems ?? [];
+  const colors = chartPaletteColors(el.chartPalette) ?? PIE_PALETTE;
+  // Text Size (spec/53): the row pitch and the dot scale with the words, the
+  // way LegendView's do.
+  const fontPx = legendFontPx(el.textSize);
+  const dotPx = Math.round(fontPx * 0.75);
+  const rowHeight = Math.max(20, Math.round(fontPx * 1.7));
+  const maxRows = Math.max(1, Math.floor((el.height - LEGEND_PAD * 2) / rowHeight));
+  const maxChars = Math.max(4, Math.floor((el.width - LEGEND_PAD * 3 - dotPx) / (fontPx * 0.54)));
+  const rows = items
+    .slice(0, maxRows)
+    .map((item, i) => {
+      const rowY = el.y + LEGEND_PAD + rowHeight * i;
+      const midY = rowY + rowHeight / 2;
+      const dot =
+        `<circle cx="${r2(el.x + LEGEND_PAD + dotPx / 2)}" cy="${r2(midY)}"` +
+        ` r="${dotPx / 2}" fill="${xmlEscape(item.color ?? colors[i % colors.length]!)}"/>`;
+      const text =
+        `<text x="${r2(el.x + LEGEND_PAD * 2 + dotPx)}" y="${r2(midY + fontPx * 0.35)}"` +
+        ` font-family="system-ui, sans-serif" font-size="${fontPx}" fill="${xmlEscape(textColor)}">` +
+        `${xmlEscape(item.label.slice(0, maxChars))}</text>`;
+      return dot + text;
+    })
+    .join('');
+  return card + rows;
+}
+
+// A lane's title gutter (spec/119): the tinted strip behind the title, on
+// whichever edge the title is pinned to, with the rule where it meets the
+// body. Without it an exported swimlane is a plain box with its title
+// floating in the middle of the work.
+export function svgLaneGutter(el: BoxedElement & { type: 'shape' }, stroke: string): string {
+  const edge = laneEdgeOfElement(el);
+  const size = Math.min(laneSizeOfElement(el), (isLaneBand(edge) ? el.height : el.width) - 1);
+  // An explicit heading colour paints at full strength (you picked it, you
+  // get it); with none set it is the 10% wash of the lane's own stroke the
+  // canvas falls back to, so a recoloured lane keeps its gutter in the family.
+  const fill = el.headerFill ?? stroke;
+  const wash = el.headerFill ? '' : ' opacity="0.1"';
+  const strip = (x: number, y: number, w: number, h: number) =>
+    `<rect x="${r2(x)}" y="${r2(y)}" width="${r2(w)}" height="${r2(h)}" fill="${xmlEscape(fill)}"${wash}/>`;
+  const rule = (x1: number, y1: number, x2: number, y2: number) =>
+    `<path d="M ${r2(x1)} ${r2(y1)} L ${r2(x2)} ${r2(y2)}" stroke="${xmlEscape(stroke)}" stroke-width="1"/>`;
+  if (edge === 'left')
+    return (
+      strip(el.x, el.y, size, el.height) + rule(el.x + size, el.y, el.x + size, el.y + el.height)
+    );
+  if (edge === 'right')
+    return (
+      strip(el.x + el.width - size, el.y, size, el.height) +
+      rule(el.x + el.width - size, el.y, el.x + el.width - size, el.y + el.height)
+    );
+  if (edge === 'top')
+    return (
+      strip(el.x, el.y, el.width, size) + rule(el.x, el.y + size, el.x + el.width, el.y + size)
+    );
+  if (edge === 'bottom')
+    return (
+      strip(el.x, el.y + el.height - size, el.width, size) +
+      rule(el.x, el.y + el.height - size, el.x + el.width, el.y + el.height - size)
+    );
+  // A centred strip has two seams with the body, not one.
+  const left = el.x + el.width / 2 - size / 2;
+  return (
+    strip(left, el.y, size, el.height) +
+    rule(left, el.y, left, el.y + el.height) +
+    rule(left + size, el.y, left + size, el.y + el.height)
+  );
+}
+
+// A browser frame's chrome (spec/09 Devices): the fixed-height strip pinned to
+// the top, its three window dots, the nav glyphs and the URL pill. Fixed pixel
+// geometry, like the canvas, so it doesn't deform with the box's aspect ratio.
+const BROWSER_CHROME_PX = 48;
+
+export function svgBrowserChrome(el: BoxedElement, stroke: string): string {
+  const h = Math.min(BROWSER_CHROME_PX, el.height);
+  const c = xmlEscape(stroke);
+  const midY = el.y + h / 2;
+  const dots = [0, 1, 2]
+    .map((i) => `<circle cx="${r2(el.x + 22 + i * 18)}" cy="${r2(midY)}" r="6" fill="${c}"/>`)
+    .join('');
+  const line = ` fill="none" stroke="${c}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"`;
+  // The nav group, on the canvas's own 44x14 grid, placed after the dots.
+  const nx = el.x + 78;
+  const ny = midY - 7;
+  const nav =
+    `<g transform="translate(${r2(nx)} ${r2(ny)}) scale(1.27 1.29)">` +
+    `<path d="M 7 3 L 3 7 L 7 11"${line}/>` +
+    `<path d="M 15 11 L 19 7 L 15 3"${line}/>` +
+    `<path d="M 30 4 A 4 4 0 1 1 27 11 M 30 4 L 33 4 M 30 4 L 30 7"${line}/>` +
+    `</g>`;
+  const pillX = el.x + 150;
+  const pillW = Math.max(0, el.x + el.width - 16 - pillX);
+  const pill =
+    pillW > 8
+      ? `<rect x="${r2(pillX)}" y="${r2(midY - 10)}" width="${r2(pillW)}" height="20" rx="10" fill="none" stroke="${c}" stroke-width="1"/>`
+      : '';
+  const divider = `<path d="M ${r2(el.x)} ${r2(el.y + h)} L ${r2(el.x + el.width)} ${r2(el.y + h)}" stroke="${c}" stroke-width="1"/>`;
+  return dots + nav + pill + divider;
 }

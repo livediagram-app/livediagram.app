@@ -771,6 +771,52 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     responseSchema: { type: 'object', properties: { lastSeenAt: { type: 'number' } } },
     statuses: [200, 400, 401],
   },
+  {
+    method: 'DELETE',
+    path: '/timeline/events/{id}',
+    segment: 'timeline',
+    tag: 'Account',
+    summary:
+      "Remove one event from the caller's own feed. Other readers of the same event keep it. 404 when the feed never held it.",
+    auth: 'guest-or-clerk',
+    statuses: [204, 401, 404],
+  },
+  {
+    method: 'POST',
+    path: '/timeline/events/dismiss',
+    segment: 'timeline',
+    tag: 'Account',
+    summary:
+      "Remove several events (a whole stack) from the caller's own feed in one call. Up to 200 ids; unknown ids are ignored.",
+    auth: 'guest-or-clerk',
+    requestSchema: {
+      type: 'object',
+      required: ['ids'],
+      properties: { ids: { type: 'array', items: { type: 'string' } } },
+    },
+    responseSchema: { type: 'object', properties: { dismissed: { type: 'number' } } },
+    statuses: [200, 400, 401],
+  },
+
+  // ---- Activity (spec/142) ----
+  {
+    method: 'GET',
+    path: '/activity',
+    segment: 'activity',
+    tag: 'Account',
+    summary:
+      'What is outstanding for the caller across every diagram they can open: open actions assigned to them or by them, and unresolved comment threads they are in. Capped at 100 per kind, newest first.',
+    auth: 'guest-or-clerk',
+    responseSchema: {
+      type: 'object',
+      properties: {
+        actions: { type: 'array', items: { $ref: '#/components/schemas/ActivityAction' } },
+        threads: { type: 'array', items: { $ref: '#/components/schemas/ActivityThread' } },
+      },
+      required: ['actions', 'threads'],
+    },
+    statuses: [200, 400, 401],
+  },
 
   // ---- Account ----
   {

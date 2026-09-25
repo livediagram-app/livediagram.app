@@ -9,7 +9,6 @@ import {
 import {
   DEFAULT_ERASER_CONFIG,
   eraserAllows,
-  eraserIdsFor,
   eraserRadius,
   eraserSamplePoints,
   parseEraserConfig,
@@ -22,7 +21,6 @@ describe('the default eraser', () => {
       mode: 'sweep',
       size: 'point',
       target: 'anything',
-      groups: 'piece',
     });
     expect(eraserRadius(DEFAULT_ERASER_CONFIG)).toBe(0);
   });
@@ -80,30 +78,13 @@ describe('eraserAllows', () => {
   });
 });
 
-describe('eraserIdsFor', () => {
-  const a = { ...createShape('square', 0, 0), id: 'a', groupId: 'g1' };
-  const b = { ...createShape('square', 0, 0), id: 'b', groupId: 'g1' };
-  const loner = { ...createShape('square', 0, 0), id: 'c' };
-  const elements: Element[] = [a, b, loner];
-
-  it('takes only the touched element by default', () => {
-    expect(eraserIdsFor(a, elements, 'piece')).toEqual(['a']);
-  });
-
-  it('takes the whole group when asked', () => {
-    expect(eraserIdsFor(a, elements, 'group').sort()).toEqual(['a', 'b']);
-  });
-
-  it('is the same thing for an ungrouped element', () => {
-    expect(eraserIdsFor(loner, elements, 'group')).toEqual(['c']);
-  });
-});
-
 describe('parseEraserConfig', () => {
   it('costs one field, not the whole config, when a token is unknown', () => {
-    expect(
-      parseEraserConfig({ mode: 'nibble', size: 'large', target: 'drawings', groups: 'group' }),
-    ).toEqual({ mode: 'sweep', size: 'large', target: 'drawings', groups: 'group' });
+    expect(parseEraserConfig({ mode: 'nibble', size: 'large', target: 'drawings' })).toEqual({
+      mode: 'sweep',
+      size: 'large',
+      target: 'drawings',
+    });
   });
 
   it('falls back completely for junk', () => {

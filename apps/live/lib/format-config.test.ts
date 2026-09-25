@@ -78,6 +78,22 @@ describe('the field → toggle mapping', () => {
     expect(unmapped).toEqual([]);
   });
 
+  it('assigns every field a table projection can produce', () => {
+    const table = {
+      id: 't',
+      type: 'table',
+      x: 0,
+      y: 0,
+      width: 100,
+      height: 60,
+      cells: [['a']],
+    } as unknown as Parameters<typeof paintableBoxedFields>[0];
+    const unmapped = Object.keys(paintableBoxedFields(table)).filter(
+      (field) => formatGroupOf(field) === undefined,
+    );
+    expect(unmapped).toEqual([]);
+  });
+
   it('assigns every field the arrow projection can produce', () => {
     const unmapped = Object.keys(paintableArrowFields(richArrow)).filter(
       (field) => formatGroupOf(field) === undefined,
@@ -110,6 +126,7 @@ describe('filterPaintedFields', () => {
     expect(Object.keys(painted).sort()).toEqual([
       'arrowEnds',
       'arrowStyle',
+      'arrowheadColor',
       'arrowheadShape',
       'arrowheadSize',
       'routeBehind',

@@ -11,6 +11,30 @@ compatibility_date = "2026-05-29"
 [vars]
 TELEMETRY_ENABLED = "true"
 
+# Origin allow-list for POST /api/ai (spec/25). Stated HERE, not in the
+# Cloudflare dashboard, for the reason spec/140 calls a known sharp edge: a
+# dashboard-only value is invisible to code review, so the repo read as though
+# this endpoint were locked down while production served it wide open. A probe
+# of production (POST /api/ai with no Origin) answered `400 invalid mode`
+# rather than `403 origin_not_allowed`, which is only possible with this unset —
+# so the key behind `aiEnabled: true` was spendable from any page.
+#
+# BOTH hosts, and `www` is the one that matters: livediagram.app 301-redirects
+# to www.livediagram.app, so that is the origin a real browser sends. Listing
+# only the apex — which is what the Env comment in src/types.ts suggested, and
+# what staging does for its own single host — would 403 every genuine AI request
+# in the editor. The apex stays listed so dropping the redirect can't break it.
+#
+# Scope of the protection, honestly: this stops a third-party WEB PAGE spending
+# the key, because a browser sets Origin and cannot forge it. It does NOT stop a
+# non-browser caller, which can send any Origin it likes. Bounding the budget
+# against that needs AI_REQUIRE_CLERK (deliberately NOT set here: the editor
+# offers AI to guests and /api/capabilities reports `aiEnabled` from the key's
+# presence alone, so requiring sign-in would leave guests a visible panel that
+# 401s — see the note in src/routes/capabilities.ts). AI_RATE_LIMITER (20/60s
+# per IP) remains the only other control.
+AI_ALLOWED_ORIGINS = "https://www.livediagram.app,https://livediagram.app"
+
 # D1 database holding diagrams + participants. The local binding name
 # (`DB`) is what `src/db.ts` reads via the Env type. The `database_name`
 # is the Cloudflare-side name (must be created via `wrangler d1 create

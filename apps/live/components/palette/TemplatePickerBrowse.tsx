@@ -1,7 +1,7 @@
 import type { TemplateDescriptor, TemplateCategory, TemplateKind } from '@livediagram/templates';
 import { TEMPLATE_CATEGORIES, templateCategory } from '@livediagram/templates';
 import { AnimatedHeightBox } from '@/components/primitives/AnimatedHeightBox';
-import { BackBar } from '@/components/palette/ThemeCategoryBrowser';
+import { BackBar } from '@/components/primitives/BackBar';
 import { CategoryCard, TemplateCard } from '@/components/palette/template-picker-cards';
 
 // The template step's browse surface, lifted out of TemplatePicker: the

@@ -519,8 +519,12 @@ export type UnfurlResult = {
 };
 
 export * from './image-limits';
+export * from './page-views';
 export * from './read-notes';
 export * from './poll';
 export * from './room-messages';
 export * from './telemetry-schema';
+export * from './server-emitted-events';
+export * from './error-telemetry';
 export * from './timeline';
+export * from './activity';

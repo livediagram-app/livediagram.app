@@ -22,10 +22,8 @@ import {
 import { clearDockHoveredId, setDockHoveredId } from '@/lib/dock-preview';
 import { renderLabel } from '@/components/canvas/element-labels';
 import { ElementFaceRouter } from '@/components/canvas/ElementFaceRouter';
-import { MindNodeHint } from '@/components/canvas/MindNodeHint';
 import { LaneGutter } from '@/components/canvas/LaneGutter';
 import { EntityView } from '@/components/canvas/EntityView';
-import { isMobileViewportSync } from '@/lib/responsive';
 import { elementAriaLabel } from '@/lib/element-names';
 import { captionBandAlignY, captionBandClass } from '@/components/primitives/icon-band';
 import { LockBadge, SelectionChromeLayer } from '@/components/canvas/element-parts';
@@ -85,9 +83,13 @@ function BoxedElementViewImpl({
   onCommitLabel,
   onSetTextAlign,
   onCommitTable,
+  onCommitHeaderSize,
+  onSnapSeam,
   onSetRailLabel,
   onToggleChecklistItem,
   onSetPageHeading,
+  onSetWebRows,
+  onSetHeroCaptionLine,
   isoDepth,
   insertShiftX,
   insertShiftAnimates,
@@ -95,6 +97,7 @@ function BoxedElementViewImpl({
   onCancelEdit,
   onFollowLink,
   onPressModeButton,
+  onPressFocusButton,
   onPressSessionButton,
   sessionStartBlocked,
   timerState,
@@ -104,6 +107,8 @@ function BoxedElementViewImpl({
   onOpenElementSettings,
   commentSelfId,
   commentActions,
+  actionSelfId,
+  actionActions,
   revealedForMe,
   onToggleReveal,
   onRollPicker,
@@ -249,8 +254,10 @@ function BoxedElementViewImpl({
   const isCommentPin = element.type === 'shape' && element.shape === 'comment-pin';
   const commentCount = isCommentPin ? 0 : activeCommentCount(element.commentThread);
   // Assigned action (spec/68): the badge shows only while the action is
-  // open; a done action stays on the element but stops shouting.
-  const hasOpenAction = isOpenAction(element.action);
+  // open; a done action stays on the element but stops shouting. An action
+  // panel (spec/146) shows its action on its face, so it is the badge.
+  const isActionPanel = element.type === 'shape' && element.shape === 'action-card';
+  const hasOpenAction = !isActionPanel && isOpenAction(element.action);
   // Both 'tab' and 'diagram' kinds get the "linked" badge; the
   // follow-handler dispatches off the kind via the parent's
   // onFollowLink callback. 'element' kind is the spec'd
@@ -275,10 +282,8 @@ function BoxedElementViewImpl({
   // Which surface each looping animation rides (wrapper box vs text
   // glyphs vs SVG outline), the pop-in entry class, and the CSS custom
   // properties the keyframes read (spec/09) — see useBoxedElementAnimation.
-  const { labelAnimClass, svgAnim, wrapperAnimClass, animStyle } = useBoxedElementAnimation(
-    element,
-    textColor,
-  );
+  const { labelAnimClass, artAnimClass, svgAnim, wrapperAnimClass, animStyle } =
+    useBoxedElementAnimation(element, textColor);
 
   // An icon element's caption is confined to its own band — the complement
   // of the glyph band (spec/41, iconCaptionBand) — so the text can never
@@ -419,7 +424,7 @@ function BoxedElementViewImpl({
     >
       <ShapeContentRouter
         element={element}
-        labelAnimClass={labelAnimClass}
+        artAnimClass={artAnimClass}
         accent={accent}
         textColor={textColor}
         remoteBorderColor={remoteBorderColor}
@@ -458,12 +463,26 @@ function BoxedElementViewImpl({
       {/* A chair (spec/130): the furniture itself, plus whoever presence says
           is sitting in it. */}
       {element.type === 'shape' && element.shape === 'chair' ? (
-        <ChairView element={element} sitters={chairSitters?.(element.id) ?? []} />
+        <ChairView
+          element={element}
+          sitters={chairSitters?.(element.id) ?? []}
+          animClass={artAnimClass}
+        />
       ) : null}
       {/* A Lane's title gutter (spec/119), behind the label. */}
       {element.type === 'shape' && element.shape === 'lane' ? (
         <LaneGutter
           stroke={element.strokeColor ?? defaultStrokeColor(element, surface)}
+          headerFill={element.headerFill}
+          headerSize={element.headerSize}
+          width={element.width}
+          height={element.height}
+          zoom={zoom}
+          onCommitSize={onCommitHeaderSize ? (px) => onCommitHeaderSize(element.id, px) : undefined}
+          onSnapSeam={onSnapSeam}
+          elementId={element.id}
+          elementX={element.x}
+          elementY={element.y}
           alignX={alignX}
           alignY={alignY}
         />
@@ -501,6 +520,8 @@ function BoxedElementViewImpl({
         activeMode={activeMode}
         collab={collab}
         commentActions={commentActions}
+        actionSelfId={actionSelfId}
+        actionActions={actionActions}
         commentSelfId={commentSelfId}
         imageContext={imageContext}
         tabSummaries={tabSummaries}
@@ -515,9 +536,12 @@ function BoxedElementViewImpl({
         onFollowLink={onFollowLink}
         onLinkCell={onLinkCell}
         onPressModeButton={onPressModeButton}
+        onPressFocusButton={onPressFocusButton}
         onPressSessionButton={onPressSessionButton}
         onRollPicker={onRollPicker}
         onSetPageHeading={onSetPageHeading}
+        onSetWebRows={onSetWebRows}
+        onSetHeroCaptionLine={onSetHeroCaptionLine}
         onSetSessionConfig={onSetSessionConfig}
         onOpenElementSettings={onOpenElementSettings}
         onToggleReveal={onToggleReveal}
@@ -538,21 +562,6 @@ function BoxedElementViewImpl({
           a brand ring + a translucent band on the side the icon will
           land. Cleared on drop / drag-leave. */}
       {dropSide ? <IconDropPreview side={dropSide} /> : null}
-
-      {/* Mind map (spec/118): the keys are the whole feature, and a hint on a
-          palette tile is read once, months before it matters. Suppressed while
-          editing (the keys mean something else in a label) and on touch, where
-          there is no keyboard to hint at. */}
-      {element.type === 'shape' &&
-      element.shape === 'mind-node' &&
-      isSelected &&
-      !isMultiSelected &&
-      !isEditing &&
-      !isLocked &&
-      !readOnly &&
-      !isMobileViewportSync() ? (
-        <MindNodeHint zoom={zoom} />
-      ) : null}
 
       {/* The burst (spec/135), a sibling of the label stack rather than a
           child of it: the particles leave the pad's box on purpose, and the

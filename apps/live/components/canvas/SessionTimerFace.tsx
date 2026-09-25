@@ -3,12 +3,7 @@
 import { useEffect, useState } from 'react';
 import { DialTicks } from '@/components/canvas/paper-kit';
 
-import {
-  formatTimerClock,
-  TIMER_MINUTE_PRESETS,
-  timerDone,
-  type TabTimer,
-} from '@livediagram/diagram';
+import { formatTimerClock, timerDone, type TabTimer } from '@livediagram/diagram';
 
 import {
   TIMER_BUTTON_CLASS,
@@ -18,10 +13,9 @@ import {
 } from '@/components/chrome/timer-pill';
 import {
   ElementEllipsisMenu,
-  ElementMenuItem,
-  ElementMenuLabel,
   ElementMenuSettingsRow,
 } from '@/components/canvas/ElementEllipsisMenu';
+import { SessionTimerSettings } from '@/components/canvas/SessionElementSettings';
 
 // The face of a Timer session element (spec/105) once it is a real timer
 // rather than a button that starts one somewhere else.
@@ -104,19 +98,14 @@ export function SessionTimerFace({
         <ElementEllipsisMenu label="Timer options">
           {(close) => (
             <>
-              <ElementMenuLabel>Length</ElementMenuLabel>
-              {TIMER_MINUTE_PRESETS.map((m) => (
-                <ElementMenuItem
-                  key={m}
-                  active={m === minutes}
-                  onPress={() => {
-                    onSetMinutes(m);
-                    close();
-                  }}
-                >
-                  {m === 1 ? '1 minute' : `${m} minutes`}
-                </ElementMenuItem>
-              ))}
+              {/* The Studio's own timer UI, not a second design of it
+                  (spec/39): dial, presets, and the Start that runs it for the
+                  room. Dragging the dial sets THIS element's length. */}
+              <SessionTimerSettings
+                config={{ tool: 'timer', minutes }}
+                onChange={(next) => onSetMinutes(next.minutes ?? minutes)}
+                onClose={close}
+              />
               {onOpenSettings ? (
                 <ElementMenuSettingsRow
                   onOpen={() => {

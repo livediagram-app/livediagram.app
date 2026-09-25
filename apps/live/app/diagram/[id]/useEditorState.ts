@@ -5,8 +5,6 @@ import {
   isEventStormingTab,
   onlyDraftNotesChanged,
   stampTabKind,
-  createPinnedArrow,
-  createShape,
   isBoxed,
   resolveSlide,
   slideBounds,
@@ -27,6 +25,9 @@ import { usePortalSetters } from '@/hooks/canvas/usePortalSetters';
 import { useBehaviourElements } from '@/hooks/canvas/useBehaviourElements';
 import { useCollabElements } from '@/hooks/canvas/useCollabElements';
 import { useFollowMe } from '@/hooks/collab/useFollowMe';
+import { useFacilitator } from '@/hooks/collab/useFacilitator';
+import { useFocusInvite } from '@/hooks/collab/useFocusInvite';
+import { FOCUS_PRESS_MESSAGE, focusPressOutcome } from '@/lib/focus-audience';
 import type { CanvasTool } from '@/components/palette/CommandPalette';
 import { useCellLinkPicker } from '@/hooks/canvas/useCellLinkPicker';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
@@ -45,6 +46,7 @@ import {
   toggleRecentExcluded,
   writeUserPreferences,
 } from '@/lib/user-preferences';
+import type { PollCandidate } from '@/lib/poll-collaborators';
 import { track } from '@/lib/telemetry';
 import { pollResultElement } from '@/lib/poll-capture';
 import { useActivityLogDebounce } from '@/hooks/collab/useActivityLogDebounce';
@@ -121,7 +123,9 @@ import { useInlineIconMutators } from './useInlineIconMutators';
 import { usePresenceBroadcast } from './usePresenceBroadcast';
 import { useSelectionEditing } from './useSelectionEditing';
 import { useFormatTool } from './useFormatTool';
+import { useCleanupPreview } from '@/hooks/canvas/useCleanupPreview';
 import { useTabEntryEffects } from './useTabEntryEffects';
+import { useCollabDeepLink, useCollabDeepLinkCapture } from './useCollabDeepLink';
 import { useEditorUiState } from './editor-ui-state';
 import { useEditorPersistence } from './editor-persistence';
 import { useEditorRealtime } from './editor-realtime';
@@ -232,12 +236,18 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     rawMarkCheckpoint();
     return token;
   };
-  const resetTabs = (tabs: Tab[] | ((prev: Tab[]) => Tab[])) => {
-    // reset clears the snapshot stacks (context switch), so the
-    // markers must go with them or the pairing skews.
-    entryHistoryRef.current = emptyEntryHistory();
-    rawResetTabs(tabs);
-  };
+  // Stable identity: usePerTabLoad takes this, and an identity that changed
+  // every render once turned a failed tab load into a refetch on every
+  // re-render (the 30s presence tick included), each one an Error report.
+  const resetTabs = useCallback(
+    (tabs: Tab[] | ((prev: Tab[]) => Tab[])) => {
+      // reset clears the snapshot stacks (context switch), so the
+      // markers must go with them or the pairing skews.
+      entryHistoryRef.current = emptyEntryHistory();
+      rawResetTabs(tabs);
+    },
+    [rawResetTabs],
+  );
   // Escape-cancel for an in-flight drag: restore the gesture's
   // checkpoint and DISCARD the step (no redo entry — a cancelled drag
   // never happened), popping its marker in step.
@@ -279,7 +289,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   );
 
   // Ephemeral selection / edit UI (active tab, single + multi selection,
-  // edit + format/group sources, the two transient picker flags). See
+  // edit + format-painter source, the two transient picker flags). See
   // editor-ui-state. Destructured here because the body references these
   // names directly throughout; the whole slice is spread into the
   // returned view-model below (the `...panelLayout` / `...dialogs`
@@ -290,15 +300,11 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setActiveId,
     selectedId,
     setSelectedId,
-    soloSelectedId,
-    setSoloSelectedId,
     editingId,
     setEditingId,
     setEditCursorAtEnd,
     formatSourceId,
     setFormatSourceId,
-    groupSourceId,
-    setGroupSourceId,
     multiSelectedIds,
     setMultiSelectedIds,
     templatePickerMode,
@@ -752,7 +758,19 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // Live poll (spec/88): the ephemeral pulse-check. Declared before the
   // room connection because that's what feeds it inbound ops. Nothing it
   // holds is persisted — no tab field, no autosave, no change log.
-  const livePoll = useLivePoll({ roomRef });
+  // Kept in step with the facilitator hook below, which cannot be declared up
+  // here: it needs the room, and the room needs this.
+  const sessionBlockedRef = useRef(false);
+  // The room's roster, for a `collaborators` poll (spec/88). A ref because the
+  // presence rows it is filled from are derived much further down this file —
+  // they need the room, which needs the poll hook — and because the only
+  // moment its value matters is the instant somebody starts a poll.
+  const pollCollaboratorsRef = useRef<readonly PollCandidate[]>([]);
+  const livePoll = useLivePoll({
+    roomRef,
+    sessionBlockedRef,
+    collaboratorsRef: pollCollaboratorsRef,
+  });
   // In-place recovery when the room can't replay our reconnect gap
   // (spec/97), in place of the page reload this used to do.
   const resyncFromServer = useRoomResync({
@@ -779,6 +797,50 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   }, []);
   // Reaction bursts (spec/135): ephemeral, per-client, never document state.
   const reactions = useReactionBursts();
+  const receiveFocusRef = useRef<
+    ((from: string, tabId: string, at: { x: number; y: number }, zoom: number) => void) | null
+  >(null);
+
+  // Who is running this session (spec/149). Declared before the room
+  // connection because the socket hands it every answer and asks it for the
+  // token on each hello.
+  const facilitator = useFacilitator({
+    diagramId,
+    send: (msg) => roomRef.current?.send(msg),
+    // toast.info, so the Show notifications preference (spec/20) governs these
+    // exactly as it governs every other announcement.
+    onNotice: (message) => toast.info(message),
+    // Names come from the roster we already hold, so a renamed participant's
+    // announcement reads correctly.
+    nameOf: (presenceId) => livePresence.find((p) => p.id === presenceId)?.name ?? 'Somebody',
+  });
+  sessionBlockedRef.current = facilitator.sessionToolsBlocked;
+
+  // The facilitator has freed an element we were holding (spec/07 lock,
+  // spec/149). Only our socket is sent this, so there is no target id to check.
+  //
+  // Clearing `selectedId` is the whole of it: usePresenceBroadcast already
+  // fires a `select` op on every change, so peers' locks fall away through the
+  // path that was there before this feature, and the room announces nothing to
+  // anyone else. Editing is dropped too — the lock exists precisely so two
+  // people don't type into one element, and leaving an open editor behind
+  // would hand back the thing the release was meant to take away.
+  const receiveSelectionReleased = useCallback(
+    ({ elementId }: { elementId: string; by: string }) => {
+      setSelectedId((current) => (current === elementId ? null : current));
+      setEditingId((current) => (current === elementId ? null : current));
+      setMultiSelectedIds((prev) => {
+        if (!prev.has(elementId)) return prev;
+        const next = new Set(prev);
+        next.delete(elementId);
+        return next;
+      });
+      // Said plainly, because an element vanishing from under you with no
+      // explanation reads as a bug rather than as somebody running a session.
+      toast.info('The facilitator freed an element you were holding');
+    },
+    [setSelectedId, setEditingId, setMultiSelectedIds],
+  );
 
   useRoomConnection({
     hydrated,
@@ -805,6 +867,13 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setSelfParticipant,
     receiveAvatarPush,
     receiveReaction: reactions.receive,
+    // Filled by the hook below, which cannot be declared up here because
+    // taking an invitation navigates through the viewport (declared later
+    // still). Same knot, and the same ref, as the portal's travel callback.
+    receiveFocusHere: (from, tabId, at, zoom) => receiveFocusRef.current?.(from, tabId, at, zoom),
+    receiveFacilitator: facilitator.receiveFacilitator,
+    receiveSelectionReleased,
+    readFacilitatorToken: facilitator.readFacilitatorToken,
     receivePoll: livePoll.receivePoll,
     receivePollAnswer: livePoll.receiveAnswer,
     receivePollEnd: livePoll.receivePollEnd,
@@ -882,6 +951,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     broadcastAvatarPush,
     broadcastReaction,
     broadcastViewport,
+    broadcastFocusHere,
     localLaserTrail,
   } = useEditorBroadcast({
     roomRef,
@@ -899,34 +969,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // is invoked further down, once `activeTab` is in scope; it
   // also owns `getViewportCenter` and `fitToScreen`.
 
-  // Attach a comment panel to an element (spec/136): the panel, placed clear
-  // to its right, plus a pinned arrow from the element to it.
-  //
-  // The arrow is an ORDINARY pinned arrow, not a bespoke link. The panel is
-  // about the element, and "about" is what an arrow already says on this
-  // canvas — a second kind of connection would be a second thing to lay out,
-  // export, and explain. It also means the pair behaves like anything else:
-  // move the element and the arrow follows, delete the arrow and the panel is
-  // simply a note that floated free.
-  const attachCommentPanel = useCallback(
-    (element: Element) => {
-      if (!isBoxed(element)) return;
-      const panel = {
-        ...createShape('comment-pin', element.x + element.width + 80, element.y),
-      };
-      const arrow = createPinnedArrow(element.id, 'e', panel.id, 'w');
-      commitTabs((ts) =>
-        ts.map((tab) =>
-          tab.id !== activeId ? tab : { ...tab, elements: [...tab.elements, panel, arrow] },
-        ),
-      );
-      setSelectedId(panel.id);
-      track('Element', 'Added', 'CommentPin');
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [activeId],
-  );
-
   // Open or collapse a comment panel (spec/136). Persisted rather than local,
   // so a facilitator opening the thread they want discussed opens it for the
   // room instead of only for themselves.
@@ -943,6 +985,41 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [reactions.play, broadcastReaction],
+  );
+
+  // Bring Focus (spec/144): ask everyone else to come and look at this
+  // element, at our zoom, on our tab.
+  //
+  // Sends the element's CENTRE rather than our pan: two people rarely have the
+  // same window size, so copying a pan lands the element off-centre for anyone
+  // whose canvas is a different shape. Our own view does not move — we are
+  // already looking at it.
+  const pressFocusButton = useCallback(
+    (element: ShapeElement) => {
+      const at = { x: element.x + element.width / 2, y: element.y + element.height / 2 };
+      const sent = broadcastFocusHere(at, zoomRef.current);
+      const node = canvasMainRef.current;
+      // A press that moves nobody is invisible from this side, so say which
+      // kind of nobody it was: an empty room, or a room already looking at it.
+      // `livePresence` is peers ONLY (the room excludes the asker from every
+      // presence list it sends), so one other person is length 1.
+      toast.info(
+        FOCUS_PRESS_MESSAGE[
+          focusPressOutcome({
+            sent,
+            peerIds: livePresence.map((p) => p.id),
+            viewports: remoteViewports,
+            size: { width: node?.offsetWidth ?? 0, height: node?.offsetHeight ?? 0 },
+            tabId: activeId,
+            at,
+            zoom: zoomRef.current,
+          })
+        ],
+      );
+      track('Element', 'Used', 'BringFocus');
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [broadcastFocusHere, livePresence, remoteViewports, activeId],
   );
 
   // Same trick for selfParticipant — the WS effect intentionally
@@ -973,6 +1050,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     getViewportCenter,
     fitToScreen,
     fitToBounds,
+    centreOn,
+    isCentredOn,
     scrollIntoView,
   } = useEditorViewport({ activeTab, selectedId });
 
@@ -1133,6 +1212,24 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     onNotice: (message) => toast.info(message),
   });
 
+  // A tab we are about to land on already aimed, so the tab-entry
+  // fit-to-screen below leaves it alone (it runs a frame later and would
+  // otherwise snap the view straight back off the element).
+  const skipTabFitRef = useRef<string | null>(null);
+
+  // Bring Focus (spec/144): the invitation somebody else's press leaves on
+  // screen, and what taking it does. Placed after the viewport because taking
+  // one navigates through it.
+  const focusInvite = useFocusInvite({
+    onFollowTab: (tabId) => {
+      if (tabId !== activeId) skipTabFitRef.current = tabId;
+      setActiveId(tabId);
+    },
+    onCentreOn: centreOn,
+    isAlreadyThere: (tabId, at, zoom) => tabId === activeId && isCentredOn(at, zoom),
+  });
+  receiveFocusRef.current = focusInvite.receiveFocusHere;
+
   // Server capabilities (spec/25). Fetched once at mount; determines
   // whether the AI panel option is shown in Settings and rendered.
   const { aiEnabled: aiCapable, emailEnabled } = useCapabilities(sharePasswordGate === null);
@@ -1146,6 +1243,11 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setViewportOffset,
   });
 
+  // Capture an Activity-page element deep link BEFORE the tab-entry
+  // effect below rewrites the hash to the plain #t= pin (spec/142 §1).
+  // Consumed further down by useCollabDeepLink once the tab is ready.
+  const collabDeepLink = useCollabDeepLinkCapture();
+
   // Tab-entry side effects (URL #t= pin + fit-to-screen once per tab
   // entry). See useTabEntryEffects.
   useTabEntryEffects({
@@ -1153,6 +1255,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     activeId,
     elementCount: activeTab.elements.length,
     fitToScreen,
+    skipFitForTabRef: skipTabFitRef,
   });
 
   // Derived realtime presence rows (avatars per tab, remote cursors,
@@ -1183,6 +1286,24 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     selfLaserConfig: laserPen.config,
     cursorsHidden: voteCursorsHidden,
   });
+  // Everyone in the diagram, as poll candidates (spec/88). Self first, then
+  // whoever is present on any tab — the order the Collaborators modal uses, so
+  // a roster poll's ballot reads the way the panel beside it does. Someone on
+  // two tabs appears twice here; de-duplicating is `pollCollaboratorOptions`'s
+  // job, along with numbering shared names and applying the cap, so the
+  // composer's preview and the frozen ballot cannot disagree.
+  const pollCollaborators = useMemo<readonly PollCandidate[]>(
+    () => [
+      { id: selfParticipant.id, name: selfParticipant.name },
+      ...[...participantsByTab.values()].flat().map((p) => ({ id: p.id, name: p.name })),
+    ],
+    [participantsByTab, selfParticipant],
+  );
+  // The poll hook reads the roster through a ref, because it is declared long
+  // before this point (see the note there).
+  useEffect(() => {
+    pollCollaboratorsRef.current = pollCollaborators;
+  }, [pollCollaborators]);
   // Comment-bearing element rows for the floating Comments panel.
   // Only the boxed elements carry threads (arrows can't), so the
   // filter walks `activeTab.elements` and routes the boxed ones
@@ -1363,6 +1484,25 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // checks so a viewer can still select and inspect.
   const editsBlocked = activeTabLocked || isReadOnly || activeTabLoadState !== 'ready';
 
+  // An Activity-page row opened this diagram at one element (spec/142
+  // §1): once the pinned tab is ready, select it, bring it into view and
+  // open its popover. See useCollabDeepLink.
+  useCollabDeepLink({
+    link: collabDeepLink,
+    hydrated,
+    activeId,
+    activeTabLoadState,
+    elements: activeTab.elements,
+    select: (id) => {
+      setSelectedId(id);
+      setMultiSelectedIds(new Set());
+      setEditingId(null);
+    },
+    scrollIntoView,
+    openActionPopover,
+    openComments,
+  });
+
   const commit = (mapElements: (els: Element[]) => Element[]) => {
     if (editsBlocked) return;
     // Read the LIVE elements (via tabsRef), not the render-time `activeTab`
@@ -1500,7 +1640,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
       setEditingId,
       setChangeLog,
       setFormatSourceId,
-      setGroupSourceId,
     },
   });
 
@@ -1517,21 +1656,17 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
 
   // When a boxed element is selected, new elements inherit its size so a
   // user can rapidly build a sequence of similarly-sized nodes.
-  // Selection + placement + format/group helpers. See useElementHelpers.
+  // Selection + placement + format helpers. See useElementHelpers.
   const {
     addBoxed,
     addBoxedAt,
     placePrebuilt,
-    memberIdsOf,
     currentSelectionIds,
     selectionPrimary,
     exitFormatPainter,
-    exitGroupMode,
     applyFormatFromSource,
-    completeGrouping,
   } = useElementHelpers({
     selectedId,
-    soloSelectedId,
     activeId,
     activeTab,
     // Creation-only helpers: additionally blocked while the active layer
@@ -1540,7 +1675,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     multiSelectedIds,
     formatSourceId,
     formatConfig: formatSettings.config,
-    groupSourceId,
     getViewportCenter,
     commit,
     commitTabs,
@@ -1548,7 +1682,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setSelectedId,
     setEditingId,
     setFormatSourceId,
-    setGroupSourceId,
   });
 
   // Photo import (spec/139 Phase 8): reads a photographed wall, reconciles it
@@ -1644,7 +1777,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setSelectedId,
     setEditingId,
     setFormatSourceId,
-    setGroupSourceId,
     setTemplatePickerMode,
     setImportError,
     setChangeLog,
@@ -1809,6 +1941,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     resumeTimer,
     resetTimer,
     setTimerDuration,
+    extendTimer,
     clearTimer,
     startVote,
     endVote,
@@ -1819,6 +1952,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     retractVote,
   } = useTabSession({
     editsBlocked,
+    sessionToolsBlocked: facilitator.sessionToolsBlocked,
     activeId,
     activeTab,
     // The non-history mutator, per spec/39: starting a timer or
@@ -1827,6 +1961,14 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     commitTabs: tickTabs,
     emitTabMeta,
     selfId: selfParticipant.id,
+    // Straight down the socket, ahead of the autosave (spec/39). A no-op
+    // before the room is open, exactly like every other presence-speed send —
+    // a solo vote still works, it just has nobody to tell.
+    emitVote: (tabId, elementId, delta) =>
+      roomRef.current?.send({
+        kind: 'op',
+        op: { kind: 'vote', tabId, elementId, voter: selfParticipant.id, delta },
+      }),
   });
 
   // The interactive Behaviour elements that act on the SESSION rather than the
@@ -1837,6 +1979,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
       activeId,
       commitTabs,
       editsBlocked,
+      sessionToolsBlocked: facilitator.sessionToolsBlocked,
       selfParticipant,
       livePresence,
       activeTimer: activeTab.timer,
@@ -1855,6 +1998,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     activeId,
     commitTabs,
     editsBlocked,
+    sessionToolsBlocked: facilitator.sessionToolsBlocked,
     selfParticipant,
     livePresence,
     startTimer,
@@ -1864,13 +2008,14 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // the SAME `endPoll` the plain End uses — one op, so a participant sees no
   // difference and no new op kind exists — and additionally drops the tallies
   // onto the canvas as an ordinary, undoable element.
-  const endPollKeepingResults = () => {
+  // Keep Results (spec/126): drop a chart of the tallies so far onto the
+  // active tab. The poll keeps running, so it can be kept again later
+  // (a second chart), and End is still the only thing that ends it.
+  const keepPollResults = () => {
     const poll = livePoll.poll;
     if (!poll) return;
-    const answers = livePoll.answers;
-    addBoxed((x, y) => pollResultElement(poll, answers, x, y));
-    livePoll.endPoll();
-    track('Tab', 'Ended', 'Poll');
+    addBoxed((x, y) => pollResultElement(poll, livePoll.answers, x, y));
+    track('Element', 'Added', 'PollResult');
   };
 
   // Image domain (picker state, recent-images list, placement + fill
@@ -1992,14 +2137,13 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const { cellLinkPickerOpenFor, setCellLinkPickerOpenFor, openCellLinkPicker, applyCellLink } =
     useCellLinkPicker({ editsBlocked, commit });
 
-  // Structural element operations (delete, marquee commit, group /
-  // ungroup, and the duplicate family). They change the element set
+  // Structural element operations (delete, marquee commit, lock, and the
+  // duplicate family). They change the element set
   // and/or the selection rather than element fields; see
   // useElementSelectionActions.
   const {
     deleteSelected,
     selectMarquee,
-    groupMultiSelected,
     toggleLockMultiSelected,
     duplicateMultiSelected,
     deleteMultiSelected,
@@ -2008,10 +2152,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     stackSelectedFront,
     stackSelectedBack,
     spawnConnectSelected,
-    ungroupSelected,
   } = useElementSelectionActions({
     currentSelectionIds,
-    memberIdsOf,
     selectedId,
     multiSelectedIds,
     activeTab,
@@ -2020,7 +2162,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setEditingId,
     setMultiSelectedIds,
     setFormatSourceId,
-    setGroupSourceId,
     lockedByOther,
     layerLockedIds,
     layerInertIds,
@@ -2069,7 +2210,9 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setTableHeaderRowSelected,
     setTableHeaderColumnSelected,
     setTableZebraSelected,
-    setTableHeaderFillSelected,
+    setHeaderFillSelected,
+    setArrowheadColorSelected,
+    setLabelFillSelected,
     setTableHeaderTextColorSelected,
     setArrowStyleSelected,
     setArrowStrokeStyleSelected,
@@ -2089,8 +2232,16 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     appendTableColumnSelected,
     setRailLabelSelected,
     setCodeSelected,
+    setCodeWrapSelected,
+    setLegendItemsSelected,
+    setMindFlowSelected,
     toggleChecklistItem,
     setPageHeading,
+    setWebRows,
+    appendWebRowTo,
+    setWebRowsSelected,
+    setHeroCaptionLine,
+    setHeroCaptionSelected,
     setChecklistItemsSelected,
     setEntityFieldsSelected,
     setEstimateScaleSelected,
@@ -2180,7 +2331,19 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     previewIconAnimation,
     commitIconAnimation,
     previewFillColor,
+    previewCodeTheme,
+    commitCodeTheme,
+    previewTablePreset,
+    commitTablePreset,
+    previewChartPalette,
+    commitChartPalette,
+    previewLabelFill,
+    commitLabelFill,
+    previewHeaderFill,
+    previewArrowheadColor,
     commitFillColor,
+    commitHeaderFill,
+    commitArrowheadColor,
     previewStrokeColor,
     commitStrokeColor,
     previewTextColor,
@@ -2224,6 +2387,16 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     previewingRef,
   });
 
+  // The same idea one level up (spec/47): hovering a Cleanup row in the tab
+  // menu lays the whole tab out behind it, and the layout only sticks on click.
+  const { previewCleanup, endCleanupPreview } = useCleanupPreview({
+    editsBlocked,
+    activeId,
+    tabsRef,
+    tickTabs,
+    previewingRef,
+  });
+
   // Element link picker state + the link read/write/follow handlers.
   // See useElementLinks.
   const {
@@ -2241,18 +2414,17 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setSelectedId,
     setEditingId,
     setFormatSourceId,
-    setGroupSourceId,
     openDiagram,
   });
 
-  // Selection-editing handlers (format/group modes, label edit, type-to-
-  // edit, single + shift-click select). See useSelectionEditing.
+  // Selection-editing handlers (format painter, label edit, type-to-edit,
+  // single + shift-click select). See useSelectionEditing.
   const {
     beginFormatPainter,
-    beginGroup,
     beginEdit,
     commitLabel,
     commitTable,
+    commitHeaderSize,
     cancelEdit,
     typeIntoSelected,
     selectElement,
@@ -2264,7 +2436,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     adoptLayerName: layersState.adoptLayerNameFromLabel,
     formatSourceId,
     formatToolActive,
-    groupSourceId,
     multiSelectedIds,
     diagramName,
     tabs,
@@ -2275,9 +2446,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     lockedByOther,
     set: {
       setFormatSourceId,
-      setGroupSourceId,
       setSelectedId,
-      setSoloSelectedId,
       setEditingId,
       setEditCursorAtEnd,
       setMultiSelectedIds,
@@ -2299,6 +2468,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     lockedByOther,
     layerInertIds,
     scrollIntoView,
+    ownsTabKey: canGrowMindNode,
   });
 
   // Vote-results review (spec/39): the local walkthrough of revealed top
@@ -2364,8 +2534,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     zoomRef,
     selectedId,
     setSelectedId,
-    soloSelectedId,
-    setSoloSelectedId,
     multiSelectedIds,
     setMultiSelectedIds,
     editingId,
@@ -2374,8 +2542,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     applyFormatFromSource,
     formatToolActive,
     setFormatSourceId,
-    groupSourceId,
-    completeGrouping,
     connectSourceId,
     connectArrowTo,
     tick,
@@ -2411,7 +2577,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     selectedId,
     multiSelectedIds,
     editingId,
-    memberIdsOf,
     activeTab,
     commit,
     setSelectedId,
@@ -2441,8 +2606,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   useEditorKeyboardShortcuts({
     formatSourceId,
     setFormatSourceId,
-    groupSourceId,
-    setGroupSourceId,
     selectedId,
     multiSelectedIds,
     editingId,
@@ -2468,13 +2631,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     onTypeIntoSelected: typeIntoSelected,
     pendingDraw,
     onCancelDraw: cancelDrawShape,
-    onGroupOrUngroup: () => {
-      if (multiSelectedIds.size > 1) {
-        groupMultiSelected();
-      } else {
-        ungroupSelected();
-      }
-    },
     onToggleLock: () => {
       if (multiSelectedIds.size > 0) {
         toggleLockMultiSelected();
@@ -2525,6 +2681,10 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   });
 
   return {
+    // Re-sweep the team libraries after a team-folder mutation made from
+    // the Explorer panel (spec/35), and the confirm dialog its delete uses.
+    refreshTeamLibraries,
+    confirm,
     // Clipboard copy, also exposed to the event-storming note menu (spec/139),
     // plus paste + its enabled flag for the canvas menu's Paste row.
     copySelection,
@@ -2584,7 +2744,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setLayerPreviewId: layersState.setPreviewLayerId,
     // Event-storming workshop views (spec/139).
     esBoard,
-    // Menu-facing wrapper: moves the CURRENT selection (group-expanded)
+    // Menu-facing wrapper: moves the CURRENT selection
     // onto the picked layer.
     moveSelectedToLayer: (layerId: string) =>
       layersState.moveSelectionToLayer(currentSelectionIds(), layerId),
@@ -2623,6 +2783,10 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     applyImageToElement,
     autoAlignTab,
     autoLayoutTab,
+    // The facilitator baton (spec/149): who is running this session.
+    facilitator,
+    previewCleanup,
+    endCleanupPreview,
     applyTabFontToAll,
     // Live session tools (spec/39)
     startTimer,
@@ -2630,6 +2794,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     resumeTimer,
     resetTimer,
     setTimerDuration,
+    extendTimer,
     clearTimer,
     startVote,
     endVote,
@@ -2653,12 +2818,13 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     beginFreehand,
     beginShapePen,
     beginPolygon,
-    beginGroup,
     bringSelectedToFront,
     broadcastAvatar,
     broadcastAvatarPush,
     avatarShove,
     fireReaction,
+    pressFocusButton,
+    focusInvite,
     reactionBursts: reactions.bursts,
     clearReactionBurst: reactions.clear,
     broadcastCursor,
@@ -2688,6 +2854,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     commitPolygon,
     commitLabel,
     commitTable,
+    commitHeaderSize,
     highlighterColor,
     setHighlighterColor,
     highlighterWidth,
@@ -2717,12 +2884,10 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     templateGridOpen,
     embedMode,
     exitFormatPainter,
-    exitGroupMode,
     extendShareLink,
     fitToScreen,
     folders,
     followLink,
-    groupMultiSelected,
     handleActivityRowClick,
     handleCanvasDoubleClick,
     hydrated,
@@ -2755,7 +2920,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     // Live poll (spec/88) — the whole ephemeral surface in one object
     // rather than a dozen flattened keys, since nothing else reads into it.
     livePoll,
-    endPollKeepingResults,
+    keepPollResults,
     followMe,
     loadAllTabs,
     loadedTabIds,
@@ -2779,6 +2944,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     openTemplatePicker,
     participantsByTab,
     pendingDraw,
+    pollCollaborators,
     redo,
     refreshRecentImages,
     remoteAvatarRows,
@@ -2806,7 +2972,19 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     commitIconAnimation,
     // Granular colour / border / rotation hover preview + click commit.
     previewFillColor,
+    previewCodeTheme,
+    commitCodeTheme,
+    previewTablePreset,
+    commitTablePreset,
+    previewChartPalette,
+    commitChartPalette,
+    previewLabelFill,
+    commitLabelFill,
+    previewHeaderFill,
+    previewArrowheadColor,
     commitFillColor,
+    commitHeaderFill,
+    commitArrowheadColor,
     previewStrokeColor,
     commitStrokeColor,
     previewTextColor,
@@ -2861,7 +3039,9 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setTableHeaderRowSelected,
     setTableHeaderColumnSelected,
     setTableZebraSelected,
-    setTableHeaderFillSelected,
+    setHeaderFillSelected,
+    setArrowheadColorSelected,
+    setLabelFillSelected,
     setTableHeaderTextColorSelected,
     setBackgroundColor,
     setBackgroundOpacity,
@@ -2881,8 +3061,16 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     appendTableColumnSelected,
     setRailLabelSelected,
     setCodeSelected,
+    setCodeWrapSelected,
+    setLegendItemsSelected,
+    setMindFlowSelected,
     toggleChecklistItem,
     setPageHeading,
+    setWebRows,
+    appendWebRowTo,
+    setWebRowsSelected,
+    setHeroCaptionLine,
+    setHeroCaptionSelected,
     growMindNode,
     setChecklistItemsSelected,
     setEntityFieldsSelected,
@@ -2905,7 +3093,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     revealedIds,
     toggleRevealForMe,
     setSessionConfigFor,
-    attachCommentPanel,
     pickerFor,
     collabElements,
     setRatingSelected,
@@ -3005,7 +3192,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     toggleLockSelected,
     toggleTextStyleSelected,
     undo,
-    ungroupSelected,
     unresolveThread,
     updateParticipantName,
     userPreferences,

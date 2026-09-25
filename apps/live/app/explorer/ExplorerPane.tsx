@@ -31,61 +31,21 @@ const BROWSE_KINDS = new Set([
 ]);
 
 // Each Explorer section deep-links its matching help-centre article from a
-// "?" button in the pane header (spec/56). Sections without a guide (team,
-// invites) simply omit it.
-const SECTION_HELP: Partial<
-  Record<string, { article: HelpArticleKey; title: string; description: string }>
-> = {
-  timeline: {
-    article: 'timeline',
-    title: 'Timeline',
-    description: 'Everything that has happened across your diagrams, teams and account.',
-  },
-  recent: {
-    article: 'recentDiagrams',
-    title: 'Recent',
-    description: 'Your most recently opened diagrams, personal and team, in one list.',
-  },
-  shared: {
-    article: 'sharedWithYou',
-    title: 'Shared with you',
-    description: 'Diagrams other people have shared with you, collected here.',
-  },
-  gallery: {
-    article: 'imageGallery',
-    title: 'Image gallery',
-    description: 'How uploaded images are stored and reused across diagrams.',
-  },
-  themes: {
-    article: 'customThemes',
-    title: 'Custom colour schemes',
-    description: 'Build your own palette and reuse it across diagrams.',
-  },
-  tokens: {
-    article: 'apiTokens',
-    title: 'API tokens',
-    description: 'Create tokens to call the livediagram API from your own scripts.',
-  },
-  unsorted: {
-    article: 'unsorted',
-    title: 'The Unsorted folder',
-    description: 'Where diagrams live until you file them into a folder.',
-  },
-  offline: {
-    article: 'offlineMode',
-    title: 'Offline Mode',
-    description: 'Diagrams saved only in this browser, and how to sync them.',
-  },
-  folder: {
-    article: 'folders',
-    title: 'Folders',
-    description: 'Organise diagrams into a nestable tree of folders.',
-  },
-  all: {
-    article: 'folders',
-    title: 'Folders',
-    description: 'Organise diagrams into a nestable tree of folders.',
-  },
+// Help button in the pane header (spec/56); the button's tooltip copy comes
+// from HELP_LINK_COPY. Sections without a guide (team, invites) simply omit
+// it.
+const SECTION_HELP: Partial<Record<string, HelpArticleKey>> = {
+  timeline: 'timeline',
+  activity: 'activity',
+  recent: 'recentDiagrams',
+  shared: 'sharedWithYou',
+  gallery: 'imageGallery',
+  themes: 'customThemes',
+  tokens: 'apiTokens',
+  unsorted: 'unsorted',
+  offline: 'offlineMode',
+  folder: 'folders',
+  all: 'folders',
 };
 
 // Lazy-load the heavier panes — each is only mounted on its own
@@ -103,9 +63,6 @@ const TeamPane = dynamic(() => import('@/components/panels/TeamPane').then((m) =
 const TeamInvitesPane = dynamic(() =>
   import('@/components/panels/TeamInvitesPane').then((m) => m.TeamInvitesPane),
 );
-const ProfilePane = dynamic(() =>
-  import('@/components/panels/ProfilePane').then((m) => m.ProfilePane),
-);
 // The Timeline is the landing route, so it's the one lazy pane most
 // visitors DO load. Split anyway: the calendar grid + filter popover
 // are only reached by someone who switches modes, and holding them out
@@ -113,6 +70,9 @@ const ProfilePane = dynamic(() =>
 // unaffected by a feature they don't use.
 const TimelinePane = dynamic(() =>
   import('@/components/panels/TimelinePane').then((m) => m.TimelinePane),
+);
+const ActivityPane = dynamic(() =>
+  import('@/components/panels/ActivityPane').then((m) => m.ActivityPane),
 );
 
 // The right pane for whichever /explorer/<section> route is active:
@@ -134,6 +94,7 @@ export function ExplorerPane() {
     clerkUserId,
     clerkDisplayName,
     tokens,
+    activity,
     paneTitle,
     paneCrumbs,
     paneContent,
@@ -227,9 +188,7 @@ export function ExplorerPane() {
         title={hideTeamTitle ? '' : paneTitle}
         crumbs={hideTeamTitle ? [] : paneCrumbs}
         onOpenNav={() => setMobileNavOpen(true)}
-        helpArticle={sectionHelp?.article}
-        helpTitle={sectionHelp?.title}
-        helpDescription={sectionHelp?.description}
+        helpArticle={sectionHelp}
         headerActions={
           selected.kind === 'timeline' ? (
             <TimelineControls controls={timeline.controls} />
@@ -246,11 +205,14 @@ export function ExplorerPane() {
           // returning user never sees, and Timeline is now the Explorer
           // landing page (spec/138 §8.1). That made "start a new diagram" a
           // dead end on the first screen of the app.
+          //
+          // Activity does NOT: a new diagram puts nothing on an inbox of
+          // open actions and threads (spec/142 §1).
+          selected.kind === 'activity' ||
           selected.kind === 'shared' ||
           selected.kind === 'gallery' ||
           selected.kind === 'themes' ||
           selected.kind === 'tokens' ||
-          selected.kind === 'profile' ||
           selected.kind === 'team' ||
           selected.kind === 'invites' ||
           // Generated / Offline are read-through dynamic views, not places
@@ -267,11 +229,11 @@ export function ExplorerPane() {
         }
         onCreateFolder={
           selected.kind === 'timeline' ||
+          selected.kind === 'activity' ||
           selected.kind === 'shared' ||
           selected.kind === 'gallery' ||
           selected.kind === 'themes' ||
           selected.kind === 'tokens' ||
-          selected.kind === 'profile' ||
           selected.kind === 'team' ||
           selected.kind === 'invites' ||
           selected.kind === 'recent' ||
@@ -281,7 +243,7 @@ export function ExplorerPane() {
             ? undefined
             : () => createFolder(selected.kind === 'folder' ? selected.id : null)
         }
-        folderLabel={selected.kind === 'folder' ? 'New subfolder' : 'New folder'}
+        folderLabel={selected.kind === 'folder' ? 'New Subfolder' : 'New Folder'}
       />
 
       {/* Dynamic (synthetic) folders explain themselves under the breadcrumb. */}
@@ -293,12 +255,18 @@ export function ExplorerPane() {
           page before the feed's own skeleton. */}
       {selected.kind === 'timeline' ? (
         ownerId ? (
-          <TimelinePane feed={timeline} ownerId={ownerId} />
+          <TimelinePane
+            feed={timeline}
+            ownerId={ownerId}
+            onShowHistory={(id, name) => setHistoryFor({ id, name })}
+          />
         ) : null
+      ) : selected.kind === 'activity' ? (
+        // Like the Timeline, ahead of the diagram-list `loading` gate: the
+        // section reads its own feed (spec/142 §5).
+        <ActivityPane feed={activity} />
       ) : loading ? (
         <SkeletonRows />
-      ) : selected.kind === 'profile' ? (
-        <ProfilePane />
       ) : selected.kind === 'invites' ? (
         <TeamInvitesPane
           invites={invites}
@@ -375,7 +343,7 @@ export function ExplorerPane() {
               diagrams={paneContent.diagrams}
               ownerId={ownerId}
               // The three synthetic folders live inside the Dynamic parent
-              // view; My Work (/all) leads with the single Dynamic row.
+              // view; Personal Space (/all) leads with the single Dynamic row.
               showUnsortedRow={selected.kind === 'dynamic'}
               unsortedCount={unsortedDiagrams.length}
               onOpenUnsorted={() => go({ kind: 'unsorted' })}

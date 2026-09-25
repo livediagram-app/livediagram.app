@@ -3,15 +3,14 @@ import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerBu
 import type { Folder } from '@/lib/api-client';
 import { useRelativeTimeTick } from '@/lib/relative-time';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
-import { MenuTile, MenuTileGrid, PortalMenu } from '@/components/primitives/PortalMenu';
-import { FolderIcon, MenuFolderIcon, MenuPencilIcon, MenuTrashIcon, PlusIcon } from './icons';
+import { FolderActionsMenu } from './folder-actions-menu';
+import { FolderIcon } from './icons';
 import { RelativeTimeChip } from '@/components/primitives/RelativeTimeChip';
 
-// The Explorer's folder row (spec/15) + its shared actions menu, lifted
-// out of views.tsx: the list row (icon, inline rename, child-count
-// badge, relative time, ellipsis / right-click menu) and the
-// FolderMenuItems the sidebar tree reuses so both surfaces offer the
-// same actions. Re-exported from views.tsx so importers keep resolving.
+// The Explorer's folder row (spec/15), lifted out of views.tsx: the list
+// row (icon, inline rename, child-count badge, relative time, ellipsis /
+// right-click menu). The menu itself is the shared FolderActionsMenu,
+// which the cards, the sidebar tree and the floating panel open too.
 
 export function FolderRow({
   folder,
@@ -106,80 +105,28 @@ export function FolderRow({
         />
       )}
       {menuOpen ? (
-        <PortalMenu anchor={menuRef.current} placement="below" onClose={() => setMenuOpen(false)}>
-          <FolderMenuItems
-            actions={getActionsForAnchor(menuRef.current)}
-            close={() => setMenuOpen(false)}
-          />
-        </PortalMenu>
+        <FolderActionsMenu
+          folder={folder}
+          anchor={menuRef.current}
+          onClose={() => setMenuOpen(false)}
+          {...menuHandlers(getActionsForAnchor(menuRef.current))}
+        />
       ) : null}
     </li>
   );
 }
 
-export function FolderMenuItems({
-  actions,
-  close,
-}: {
-  actions: {
-    rename: () => void;
-    newSubfolder: () => void;
-    move: () => void;
-    delete: () => void;
-  };
-  close: () => void;
+// The page's action bundle, as the shared menu's optional handlers.
+export function menuHandlers(actions: {
+  rename: () => void;
+  newSubfolder: () => void;
+  move: () => void;
+  delete: () => void;
 }) {
-  return (
-    <MenuTileGrid cols={2}>
-      <MenuTile
-        icon={
-          <span className="[&_svg]:h-5 [&_svg]:w-5">
-            <MenuPencilIcon />
-          </span>
-        }
-        label="Rename"
-        onClick={() => {
-          actions.rename();
-          close();
-        }}
-      />
-      <MenuTile
-        icon={
-          <span className="[&_svg]:h-5 [&_svg]:w-5">
-            <PlusIcon />
-          </span>
-        }
-        label="New subfolder"
-        onClick={() => {
-          actions.newSubfolder();
-          close();
-        }}
-      />
-      <MenuTile
-        icon={
-          <span className="[&_svg]:h-5 [&_svg]:w-5">
-            <MenuFolderIcon />
-          </span>
-        }
-        label="Change Folder"
-        onClick={() => {
-          actions.move();
-          close();
-        }}
-      />
-      <MenuTile
-        icon={
-          <span className="[&_svg]:h-5 [&_svg]:w-5">
-            <MenuTrashIcon />
-          </span>
-        }
-        label="Delete"
-        danger
-        onClick={() => {
-          actions.delete();
-          close();
-        }}
-      />
-    </MenuTileGrid>
-  );
+  return {
+    onRename: actions.rename,
+    onNewSubfolder: actions.newSubfolder,
+    onMove: actions.move,
+    onDelete: actions.delete,
+  };
 }

@@ -18,7 +18,7 @@ A small Cloudflare Worker that fronts the apex domain (`livediagram.app`) and ro
 | a help category segment with no `/help` prefix (`/canvas/*`, `/policies/*`, ...)                                                               | 308 redirect to `/help/<path>`   |
 | everything else                                                                                                                                | marketing app (`apps/marketing`) |
 
-The live app serves at **clean URLs** — there's no `/live` prefix in the address bar. Marketing owns every other first segment (`/`, `/alternatives`, `/faq`, the legal pages), and the live app's route segments don't overlap any of them, so the router selects the live app by matching its known first segments (`LIVE_ROUTE_SEGMENTS` in the source) and forwards those **as-is** (no strip — the live worker's `out/` files are already prefix-free).
+The live app serves at **clean URLs** — there's no `/live` prefix in the address bar. Marketing owns every other first segment (`/`, `/alternatives`, `/faq`, the legal pages), and the live app's route segments don't overlap any of them, so the router selects the live app by matching its known first segments (`LIVE_ROUTE_SEGMENTS`, exported from `@livediagram/api-schema` so the telemetry dashboard's per-app page-view split, [spec/150](150-page-view-telemetry.md), reads the same list) and forwards those **as-is** (no strip — the live worker's `out/` files are already prefix-free).
 
 The one thing that keeps a `/live` prefix is the live app's bundled **`_next` assets** (its prod `assetPrefix: '/live'`). Both Next static exports want `/_next`, so the live app's assets ride `/live/_next/*` to avoid colliding with marketing's `/_next`. The router **strips** `/live` from those before forwarding (shared `forwardStripped()` helper, same as `/telemetry/*`) so the worker serves them from `out/_next`. (Next's `basePath` used to add the prefix to pages too; that's gone — only `assetPrefix` remains, on assets only.)
 
@@ -67,7 +67,9 @@ export default {
 };
 ```
 
-Adding a new top-level route to the live app means adding its first segment to `LIVE_ROUTE_SEGMENTS` here, or the router will send it to marketing.
+Adding a new top-level route to the live app means adding its first segment to `LIVE_ROUTE_SEGMENTS` (in `packages/api-schema/src/page-views.ts`), or the router will send it to marketing.
+
+The router does **not** count page views. It can't see client-side navigations inside the Next apps, and can't read the per-browser telemetry opt-out, so each frontend reports its own ([spec/150](150-page-view-telemetry.md)).
 
 Service bindings target deployed Workers. The downstream apps deploy as their own units; the router stitches them together.
 

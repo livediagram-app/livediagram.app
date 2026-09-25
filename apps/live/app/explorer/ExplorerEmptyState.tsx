@@ -65,7 +65,7 @@ const CONTENT: Record<
     icon: <OfflineFolderIcon />,
     title: 'No offline diagrams',
     description:
-      'Turn on "Save Offline, This Browser Only" in the New Diagram wizard and browser-only diagrams collect here.',
+      'Choose "Local Browser" as the Save location in the New Diagram wizard and browser-only diagrams collect here.',
     cta: 'New diagram',
   },
   folder: {

@@ -1,28 +1,17 @@
-// Pure layout geometry for arrow labels, split out of ArrowView so the
-// sizing / placement / collision math can be reasoned about (and tested)
-// on its own, away from the SVG rendering. The ArrowLabel component reads
-// `labelSize` + `arrowLabelFontSize`; ArrowView reads `placeLabel` to pick
-// a non-overlapping slot. All stateless; nothing here touches React.
+// Pure PLACEMENT geometry for arrow labels, split out of ArrowView so the
+// collision math can be reasoned about (and tested) on its own, away from
+// the SVG rendering. All stateless; nothing here touches React.
+//
+// The caption's SIZE lives in @livediagram/diagram (`arrowLabelSize` /
+// `arrowLabelFontSize`), because the headless renderer needs the same numbers
+// to draw the same caption. Re-exported here so this module stays the one
+// import an arrow view needs.
 
-import { isBoxed, type ElementIndex, type TextSize } from '@livediagram/diagram';
+import { arrowLabelSize, isBoxed, type ElementIndex } from '@livediagram/diagram';
 
-const LABEL_HEIGHT_PX = 16;
-const LABEL_CHAR_WIDTH_PX = 7;
+export { arrowLabelFontSize, arrowLabelSize as labelSize } from '@livediagram/diagram';
+
 const LABEL_GAP_PX = 8;
-
-// Approximate label dimensions for collision avoidance. The rendered
-// SVG <text> doesn't have a stable width until paint, so we estimate
-// from the text length. The numbers are conservative — slightly
-// overshooting means the placement leaves a comfortable gap rather
-// than colliding.
-export function labelSize(text: string, fontSize = 12): { width: number; height: number } {
-  const trimmed = text || ' ';
-  const scale = fontSize / 12;
-  return {
-    width: Math.max(24, trimmed.length * LABEL_CHAR_WIDTH_PX * scale) + 8,
-    height: LABEL_HEIGHT_PX * scale + 4,
-  };
-}
 
 // Choose a label position that sits OFF the arrow line and doesn't overlap any
 // boxed element. When the arrow's direction is known, the first two candidates
@@ -39,7 +28,7 @@ export function placeLabel(
   fontSize = 12,
   dir?: { dx: number; dy: number },
 ): { x: number; y: number } {
-  const size = labelSize(text, fontSize);
+  const size = arrowLabelSize(text, fontSize);
   const halfH = size.height / 2;
   const halfW = size.width / 2;
   const candidates: { x: number; y: number }[] = [];
@@ -86,20 +75,4 @@ function collidesWithBoxed(
     }
   }
   return false;
-}
-
-// Arrow-label font size by preset, mirroring the boxed-label scale
-// (sm 12 / md 14 / lg 20 / scale 18). Default 'sm' keeps the historic
-// 12px label size for arrows authored before the field existed.
-export function arrowLabelFontSize(size: TextSize | undefined): number {
-  switch (size) {
-    case 'lg':
-      return 20;
-    case 'md':
-      return 14;
-    case 'scale':
-      return 18;
-    default:
-      return 12;
-  }
 }

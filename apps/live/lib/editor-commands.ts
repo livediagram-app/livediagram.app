@@ -91,6 +91,7 @@ export type CommandHandlers = {
   openTheme: () => void;
   openCanvasOptions: () => void;
   openShare: () => void;
+  openCollaborators: () => void;
   undo: () => void;
   redo: () => void;
   toggleZen: () => void;
@@ -230,6 +231,17 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
       keywords: 'export download png svg image markdown save file',
       run: h.openExport,
     },
+    {
+      // View-safe on purpose: it opens a panel and changes nothing, and a
+      // view-only visitor has as much reason to ask who else is here as the
+      // owner does. Not gated on the diagram being shared or on anyone else
+      // being present either — "nobody yet" is a real answer to the question.
+      id: 'collaborators',
+      name: 'Collaborators',
+      keywords:
+        'collaborators people who is here participants presence roster online avatars following follow session',
+      run: h.openCollaborators,
+    },
     ...toolCommands(ctx, h),
   ];
   if (ctx.isReadOnly) return viewSafe;
@@ -299,7 +311,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
   });
   out.push({
     id: 'open-theme',
-    name: 'Open colour scheme',
+    name: 'Open theme',
     keywords: 'theme colour color scheme style appearance palette',
     run: h.openTheme,
   });

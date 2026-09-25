@@ -6,19 +6,19 @@ import { StylePresets } from '@/components/illustrations/palette-shapes-arrows';
 export const metadata = helpMetadata({
   title: 'Style Presets',
   description:
-    'Restyle a shape or arrow in one click with colour scheme-derived colour, border, and animated line presets.',
+    'Restyle a shape or arrow in one click with theme-derived colour, border, and animated line presets.',
   path: '/help/palette/shapes/style-presets/',
 });
 
 <ArticleLayout title="Style Presets" description="Create variety and emphasis on key elements in one click, without dialling each field by hand." categoryTitle="Palette" categorySlug="palette" parentArticle={{ title: "Shapes", slug: "shapes" }} subArticles={getSubArticles("shapes").filter((a) => a.slug !== "style-presets")}>
 
-Sometimes you want a shape to stand out, or a set of arrows to look consistent, without fiddling with fill, border, weight, and pattern one control at a time. Style presets give you a **Presets** section in the selected-element context menu with ready-made looks you can apply in a single click. Presets is the first accordion inside the element's **Style** menu, alongside Colours and Border, and presets always track your active colour scheme so they stay on-brand.
+Sometimes you want a shape to stand out, or a set of arrows to look consistent, without fiddling with fill, border, weight, and pattern one control at a time. Style presets give you a **Presets** section in the selected-element context menu with ready-made looks you can apply in a single click. Presets is the first accordion inside the element's **Style** menu, alongside Colours and Border, and presets always track your active theme so they stay on-brand.
 
 ## Shape presets
 
 Right-click a single shape, open the **Style** menu, and expand **Presets** to find a grid of ready-made looks, plus a reset. Each preset is a complete look: it sets the shape's fill, border, and text colour together with a matching border treatment (weight and pattern), so one click restyles the whole shape. Presets deliberately leave the corner radius alone, so a rounded card stays rounded and a sharp box stays sharp whichever look you pick.
 
-The grid offers up to fifteen colour scheme-derived looks, ordered from quiet to loud: the on-colour scheme default, then ghost, muted, soft, tinted, solid, bold, inked, outline, dotted, and frame variants, and finally four semantic status looks (info, success, warning, and danger). On multi-colour schemes you also get a card per branch hue. Text colour is auto-contrasted on filled variants so labels stay readable. **Reset to default** clears the shape's colour and border overrides, returning it to its colour scheme default in one click.
+The grid offers twenty theme-derived looks on a single-colour theme, ordered in four runs from quiet to loud. First your theme's own colours: the on-theme default, then soft, tinted, solid, and bold variants of its accent (on multicolour themes you also get a card per branch hue). Then the greys: ghost, paper, muted, slate, and inked. Then the line treatments: a hairline, an outline, dotted, dash-dot, and a heavy frame. Last the semantic set that stays the same whatever the theme: info, success, warning, danger, and a violet highlight. Text colour is auto-contrasted on filled variants so labels stay readable. **Reset to default** clears the shape's colour and border overrides, returning it to its theme default in one click.
 
 <Figure caption="One-click style presets restyle a shape without dialling each field by hand.">
   <StylePresets />
@@ -32,11 +32,11 @@ Right-click a single arrow and the **Presets** category offers twelve one-click 
 
 - The Presets category appears only when a single element is selected, and only the matching set shows: shape presets for a shape, arrow presets for an arrow.
 - Each preset applies as one undo step, so you can revert a look in a single press.
-- Because colour presets are colour scheme-derived, switching the diagram's colour scheme refreshes the available colours to match.
+- Because colour presets are theme-derived, switching the diagram's theme refreshes the available colours to match.
 
 <Tip>
   Use a bold or inked colour preset to draw the eye to the one shape that matters, then leave the
-  rest on the colour scheme default for contrast.
+  rest on the theme default for contrast.
 </Tip>
 
 </ArticleLayout>

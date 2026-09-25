@@ -2,7 +2,7 @@
 //
 // Cmd+C puts the selection on the OS CLIPBOARD, serialised (spec/09
 // "Clipboard", lib/clipboard-payload.ts). Cmd+V reads it back, re-mints it
-// through duplicateGroupedElements so ids are remapped and pinned arrows
+// through duplicateElements so ids are remapped and pinned arrows
 // re-wired, and drops the copies on the active tab.
 //
 // It used to be in-app only: the snapshot lived in React state and the OS
@@ -30,9 +30,9 @@
 // internal.
 
 import { useEffect, useRef, useState } from 'react';
-import { duplicateGroupedElements, type Element, type Tab } from '@livediagram/diagram';
+import { duplicateElements, type Element, type Tab } from '@livediagram/diagram';
 import { anyModalOpen } from '@/lib/modal-guard';
-import { parseElementsPayload, serialiseElements } from '@/lib/clipboard-payload';
+import { parseElementsPayload, serialiseElements, stripIdentity } from '@/lib/clipboard-payload';
 import { addImageFileForDiagram } from '@/lib/upload-image';
 import { track } from '@/lib/telemetry';
 import { trackDuplicated } from '@/lib/element-telemetry';
@@ -53,8 +53,6 @@ type ClipboardDeps = {
   selectedId: string | null;
   multiSelectedIds: Set<string>;
   editingId: string | null;
-  // Group members of an element id (the element alone when ungrouped).
-  memberIdsOf: (id: string | null) => Set<string>;
   activeTab: Tab;
   commit: (mapElements: (els: Element[]) => Element[]) => void;
   setSelectedId: (id: string | null) => void;
@@ -82,7 +80,6 @@ export function useClipboard(deps: ClipboardDeps) {
     selectedId,
     multiSelectedIds,
     editingId,
-    memberIdsOf,
     activeTab,
     commit,
     setSelectedId,
@@ -109,14 +106,18 @@ export function useClipboard(deps: ClipboardDeps) {
       multiSelectedIds.size > 0
         ? new Set(multiSelectedIds)
         : selectedId !== null
-          ? memberIdsOf(selectedId)
+          ? new Set([selectedId])
           : null;
     if (!idSet || idSet.size === 0) return;
     const snapshot = activeTab.elements
       .filter((el) => idSet.has(el.id))
       // Deep clone so a later edit to the originals doesn't bleed
       // into a future paste.
-      .map((el) => JSON.parse(JSON.stringify(el)) as Element);
+      .map((el) => JSON.parse(JSON.stringify(el)) as Element)
+      // Same stripping as the OS clipboard copy: the in-app buffer is the
+      // fallback paste, and it used to carry comments, poll answers and
+      // assigned actions onto the copies.
+      .map(stripIdentity);
     if (snapshot.length === 0) return;
     setClipboard(snapshot);
     // The elements themselves onto the OS clipboard, so another window can
@@ -151,14 +152,14 @@ export function useClipboard(deps: ClipboardDeps) {
     const clipIds = new Set(pasting.map((el) => el.id));
     // Clipboard ids may not exist in the current tab (the source
     // was deleted, the user pasted into a different tab, etc.).
-    // Temporarily merge them in so duplicateGroupedElements can do
+    // Temporarily merge them in so duplicateElements can do
     // its id-remap + arrow-rewire. Only the freshly-minted copies
     // get committed back, not the merged sources. The SNAPSHOT copy
     // wins over a live element with the same id — pasting must
     // reproduce what was copied, not the element as it has since
     // been edited (that's what the copy-time deep clone is for).
     const merged = [...activeTab.elements.filter((el) => !clipIds.has(el.id)), ...pasting];
-    const { newElements } = duplicateGroupedElements(merged, clipIds, offset, offset);
+    const { newElements } = duplicateElements(merged, clipIds, offset, offset);
     if (newElements.length === 0) return;
     commit((els) => [...els, ...newElements]);
     if (newElements.length === 1) {

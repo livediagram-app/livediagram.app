@@ -6,13 +6,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 // the tests can fire visibilitychange / pagehide / error deliberately.
 
 function makeTarget() {
-  const handlers: Record<string, Array<() => void>> = {};
+  const handlers: Record<string, Array<(ev?: unknown) => void>> = {};
   return {
-    addEventListener: (type: string, fn: () => void) => {
+    addEventListener: (type: string, fn: (ev?: unknown) => void) => {
       (handlers[type] ??= []).push(fn);
     },
-    fire(type: string) {
-      for (const fn of handlers[type] ?? []) fn();
+    fire(type: string, ev?: unknown) {
+      for (const fn of handlers[type] ?? []) fn(ev);
     },
     count(type: string) {
       return (handlers[type] ?? []).length;
@@ -257,25 +257,51 @@ describe('createTelemetryEmitter', () => {
 });
 
 describe('installClientErrorTracking', () => {
-  it('maps uncaught errors and rejections to their fixed kind tokens', () => {
+  const at = (pathname: string) => Object.assign(windowTarget, { location: { pathname } });
+
+  it('names the kind, the page, and the error constructor', () => {
     const track = vi.fn();
+    at('/diagram/0b7c5f9e-1111-4222-8333-944445555666');
     mod.installClientErrorTracking(track);
-    windowTarget.fire('error');
-    windowTarget.fire('unhandledrejection');
+    windowTarget.fire('error', { error: new TypeError('x is undefined') });
+    windowTarget.fire('unhandledrejection', { reason: new RangeError('bad') });
     expect(track.mock.calls).toEqual([
-      ['Error', 'Client', 'Uncaught'],
-      ['Error', 'Client', 'UnhandledRejection'],
+      ['Error', 'Client', 'Uncaught.Diagram.TypeError'],
+      ['Error', 'Client', 'UnhandledRejection.Diagram.RangeError'],
     ]);
   });
 
-  it('caps each kind per page load so an error storm cannot flood', () => {
+  it('never forwards a message, id, or custom error name', () => {
+    const track = vi.fn();
+    at('/explorer/team/abc123def456ghi789');
+    mod.installClientErrorTracking(track);
+    const odd = new Error('secret diagram name');
+    odd.name = 'MyCustomError';
+    windowTarget.fire('error', { error: odd });
+    windowTarget.fire('unhandledrejection', { reason: 'a string' });
+    expect(track.mock.calls).toEqual([
+      ['Error', 'Client', 'Uncaught.Explorer.Other'],
+      ['Error', 'Client', 'UnhandledRejection.Explorer.NonError'],
+    ]);
+  });
+
+  it('still reports when the page or error is unknown', () => {
     const track = vi.fn();
     mod.installClientErrorTracking(track);
-    for (let i = 0; i < 25; i++) windowTarget.fire('error');
+    windowTarget.fire('error');
+    expect(track.mock.calls).toEqual([['Error', 'Client', 'Uncaught.NonError']]);
+  });
+
+  it('caps each distinct type per page load so an error storm cannot flood', () => {
+    const track = vi.fn();
+    at('/diagram');
+    mod.installClientErrorTracking(track);
+    for (let i = 0; i < 25; i++) windowTarget.fire('error', { error: new TypeError('x') });
     expect(track).toHaveBeenCalledTimes(10);
-    // The cap is per kind: rejections still get through.
-    windowTarget.fire('unhandledrejection');
-    expect(track).toHaveBeenCalledTimes(11);
+    // The cap is per type: a different error, or a rejection, still gets through.
+    windowTarget.fire('error', { error: new RangeError('x') });
+    windowTarget.fire('unhandledrejection', { reason: new TypeError('x') });
+    expect(track).toHaveBeenCalledTimes(12);
   });
 
   it('installs once: a second call must not double-count events', () => {
@@ -335,5 +361,47 @@ describe('telemetry opt-out contract', () => {
     delete store[USER_PREFERENCES_STORAGE_KEY];
     store['livediagram:user-preferences:v2'] = '{"telemetryEnabled":false}';
     expect(readTelemetryOptIn()).toBe(true);
+  });
+});
+
+describe('createLazyTrack', () => {
+  const withPrefs = (raw: string | null) =>
+    Object.assign(windowTarget, { localStorage: { getItem: () => raw } });
+
+  it('sends through the shared engine when enabled and opted in', () => {
+    withPrefs(null);
+    const track = mod.createLazyTrack({ apiBase: '/api', enabled: true });
+    track('Page', 'View', '/faq');
+    vi.advanceTimersByTime(10_000);
+    expect(fetchMock).toHaveBeenCalledOnce();
+    expect(sentEvents(fetchMock.mock.calls[0]!)).toEqual([
+      { category: 'Page', action: 'View', type: '/faq' },
+    ]);
+  });
+
+  it('honours the stored opt-out and the build gate', () => {
+    withPrefs(JSON.stringify({ telemetryEnabled: false }));
+    mod.createLazyTrack({ apiBase: '/api', enabled: true })('Page', 'View', '/');
+    withPrefs(null);
+    mod.createLazyTrack({ apiBase: '/api', enabled: false })('Page', 'View', '/');
+    vi.advanceTimersByTime(10_000);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
+
+// The shared per-type budget: installClientErrorTracking uses it, and so does
+// the editor's api error reporter (spec/22).
+describe('createPerTypeCap', () => {
+  it('allows each type up to the cap, independently, then refuses', () => {
+    const allow = mod.createPerTypeCap(2);
+    expect([allow('A'), allow('A'), allow('A')]).toEqual([true, true, false]);
+    expect(allow('B')).toBe(true);
+  });
+
+  it('defaults to the client error cap, and each instance counts alone', () => {
+    const one = mod.createPerTypeCap();
+    for (let i = 0; i < mod.ERROR_EMIT_CAP_PER_TYPE; i++) expect(one('X')).toBe(true);
+    expect(one('X')).toBe(false);
+    expect(mod.createPerTypeCap()('X')).toBe(true);
   });
 });

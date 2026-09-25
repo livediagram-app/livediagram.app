@@ -81,6 +81,10 @@ type EditorBroadcastApi = {
   broadcastReaction: (elementId: string, reaction: string) => void;
   // Publish where we are looking (spec/131), for anyone following us.
   broadcastViewport: (pan: { x: number; y: number }, zoom: number) => void;
+  // Ask everyone else to come and look at a point (spec/144). Returns whether
+  // it went out, so the presser can be told when nobody is listening rather
+  // than watching a button do nothing.
+  broadcastFocusHere: (at: { x: number; y: number }, zoom: number) => boolean;
   // The local trail buffer (canvas-coords + timestamps), consumed
   // by the LaserOverlay via the laserTrailRows aggregator in
   // editor-page.
@@ -200,6 +204,22 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
     });
   };
 
+  // "Come and look at this" (spec/144). A discrete event like the shove below:
+  // never throttled, because there is only ever one of them per press, and
+  // dropping it would silently do nothing to the room.
+  //
+  // Returns whether it went out, so the presser can be told when they are the
+  // only one here rather than watching a button do nothing.
+  const broadcastFocusHere = (at: { x: number; y: number }, zoom: number): boolean => {
+    if (deps.cursorsHidden) return false;
+    if (!deps.hydrated || !deps.diagramId || (!deps.diagramShareable && !deps.diagramTeamId))
+      return false;
+    const room = deps.roomRef.current;
+    if (!room) return false;
+    room.send({ kind: 'op', op: { kind: 'focus-here', tabId: deps.activeId, at, zoom } });
+    return true;
+  };
+
   // One character shoving another (spec/101). A discrete event, so unlike the
   // avatar snapshot it is never throttled or dropped — but it rides the same
   // presence gate: no room, no push.
@@ -232,6 +252,7 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
     broadcastAvatar,
     broadcastAvatarPush,
     broadcastViewport,
+    broadcastFocusHere,
     localLaserTrail,
   };
 }

@@ -243,29 +243,6 @@ export function MultiSelect() {
   );
 }
 
-/** Several elements bound into one group that moves as a unit. */
-export function Groups() {
-  return (
-    <Scene w={420} h={220}>
-      <rect
-        x={64}
-        y={48}
-        width={228}
-        height={124}
-        rx={10}
-        className="fill-brand-50/50 stroke-brand-400"
-        strokeWidth={1.5}
-        strokeDasharray="6 5"
-      />
-      <Shape x={84} y={72} w={72} h={42} label="A" />
-      <Shape x={200} y={72} w={72} h={42} kind="circle" label="B" />
-      <Arrow from={[156, 93]} to={[200, 93]} />
-      <Shape x={140} y={126} w={76} h={36} accent label="C" />
-      <SelectionBox x={64} y={48} w={228} h={124} />
-    </Scene>
-  );
-}
-
 /** The format painter: copying one element's style onto another. */
 export function FormatPainter() {
   return (

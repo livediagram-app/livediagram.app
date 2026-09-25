@@ -4,7 +4,7 @@
 // fire on every drag tick of a colour / slider control, so they write
 // via the non-history tab mutator and debounce a single log entry —
 // one undoable step per picker gesture. Keeping that policy in one
-// file makes it auditable. `resetColorsSelected` (the "Reset to colour scheme"
+// file makes it auditable. `resetColorsSelected` (the "Reset to theme"
 // action) lives here too since it is the inverse of these writes.
 
 import type { Element, ElementShadow, Tab } from '@livediagram/diagram';
@@ -75,15 +75,33 @@ export function useColorStyleSetters(deps: {
   const setTextColorSelected = (color: string) =>
     commitSelectedStyle('textColor', (el) => applyTextColorToEl(el, color));
 
-  // Table header-band colours (debounced like the other colour
-  // pickers). Apply only to selected tables.
-  const setTableHeaderFillSelected = (color: string) =>
-    commitSelectedStyle('headerFill', (el) =>
-      el.type === 'table' ? { ...el, headerFill: color } : el,
-    );
+  // Heading-band colour (debounced like the other colour pickers), for the
+  // elements that have a heading distinct from their body: a table's header
+  // row and a lane's title gutter (spec/119). One field and one setter,
+  // because it is one idea wearing two silhouettes.
+  const setHeaderFillSelected = (color: string) =>
+    commitSelectedStyle('headerFill', (el) => {
+      // Hand-picking the band breaks a table's preset binding, like every
+      // other colour on it (spec/48).
+      if (el.type === 'table') return { ...el, headerFill: color, tablePreset: undefined };
+      return el.type === 'shape' && el.shape === 'lane' ? { ...el, headerFill: color } : el;
+    });
   const setTableHeaderTextColorSelected = (color: string) =>
     commitSelectedStyle('headerTextColor', (el) =>
-      el.type === 'table' ? { ...el, headerTextColor: color } : el,
+      el.type === 'table' ? { ...el, headerTextColor: color, tablePreset: undefined } : el,
+    );
+
+  // The arrowhead's own colour (spec/09 arrow styles), for a head that should
+  // not match its line.
+  const setArrowheadColorSelected = (color: string) =>
+    commitSelectedStyle('arrowheadColor', (el) =>
+      el.type === 'arrow' ? { ...el, arrowheadColor: color } : el,
+    );
+
+  // The plate behind an arrow's label (spec/09 "Caption").
+  const setLabelFillSelected = (color: string) =>
+    commitSelectedStyle('labelFill', (el) =>
+      el.type === 'arrow' ? { ...el, labelFill: color } : el,
     );
 
   const setOpacitySelected = (opacity: number) =>
@@ -103,7 +121,7 @@ export function useColorStyleSetters(deps: {
   const resetColorsSelected = () => {
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
-    // "Reset to colour scheme" applies the tab's current theme colours when
+    // "Reset to theme" applies the tab's current theme colours when
     // the tab has one set. Plain delete-the-override only works when
     // the theme is the brand default (its `elementFill / Stroke / Text`
     // are all null, so falling back to the type-default produces the
@@ -158,6 +176,9 @@ export function useColorStyleSetters(deps: {
             fillColor: undefined,
             headerFill: undefined,
             headerTextColor: undefined,
+            // The look goes with the colours it painted: this is the
+            // "back to plain theme colours" button, not "this theme's Banded".
+            tablePreset: undefined,
           };
         }
         if (el.type === 'arrow') {
@@ -177,7 +198,9 @@ export function useColorStyleSetters(deps: {
     setFillColorSelected,
     setStrokeColorSelected,
     setTextColorSelected,
-    setTableHeaderFillSelected,
+    setHeaderFillSelected,
+    setArrowheadColorSelected,
+    setLabelFillSelected,
     setTableHeaderTextColorSelected,
     setOpacitySelected,
     setShadowSelected,

@@ -213,7 +213,7 @@ chart`, not `a Pie-chart`).
   (pure translation), `Restyled an Arrow` (head / line presets),
   `Changed the animation on`, `Changed the icon on`, `Edited cells in
 a Table`, `Edited the chart data on`, `Locked` / `Unlocked`,
-  `Grouped` / `Ungrouped`, `Moved X to another layer`, `Added a link
+  `Moved X to another layer`, `Added a link
 to` / `Removed the link from`, `Assigned an action on`, `Updated
 comments on`. Value-bearing changes carry the value: `Renamed
 'Login' to 'Sign in'`, `Labelled a Square 'Login'`, `Set the opacity
@@ -238,6 +238,11 @@ canvas pattern to Dots`, `Changed background opacity to 80%`. A
 
 - Same shape language as Explorer / Palette: floating
   `MovablePanel`, default bottom-left, minimisable to a dock button.
+- **Its button lives in the bottom-right cluster**, with inline Undo /
+  Redo, in every layout (`ActivityClusterStrip`). In desktop Floating the
+  panel minimises into it and the button expands it. In every other
+  layout (Minimal, Toolbar, any phone) the button opens the panel as a
+  popover hanging above it, like Layers (spec/74, spec/07).
 - **Scoped to the active tab.** The panel only renders entries whose
   `tab_id` matches the currently visible tab; switching tabs swaps
   the log. The server still stores every entry under the diagram
@@ -262,12 +267,13 @@ canvas pattern to Dots`, `Changed background opacity to 80%`. A
   `useRevertPreview`). Mouse pointers only (touch has no hover), and
   only on rows whose Revert button is available — tab-meta rows and
   read-only / locked sessions don't preview. The behaviour is a user
-  preference: a gear in the panel header (mirroring the Layers panel's
-  spec/74 gear) opens a settings popover with a "Preview revert on
-  hover" toggle backed by the synced `activityRevertHoverPreview`
-  flag — ON by default; an explicit `false` turns just the hover
-  preview off, never the Revert button. The popover also carries the
-  standard Reset-position row.
+  preference, **Preview Revert on Hover** in the Settings dialog
+  (spec/20, Panels > Activity), backed by the synced
+  `activityRevertHoverPreview` flag. ON by default; an explicit
+  `false` turns just the hover preview off, never the Revert button.
+  It used to live in a gear popover on the panel header; that popover
+  went when the preferences moved to Settings, leaving the header its
+  standard Reset-position button.
 - Empty state: "No edits yet — start drawing."
 
 ## Performance

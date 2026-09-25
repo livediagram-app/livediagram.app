@@ -32,7 +32,6 @@ export function EditorAnchoredPopovers() {
     commentThreadOpenId,
     activeTab,
     addComment,
-    replaceCommentId,
     isReadOnly,
     diagramId,
     selfParticipant,
@@ -79,60 +78,56 @@ export function EditorAnchoredPopovers() {
                 elementId={target.id}
                 thread={target.commentThread}
                 onAddComment={(text) => {
-                  const localId = addComment(target.id, text);
-                  track('Comment', 'Added');
                   // View-role visitors don't autosave the tab, so
                   // their addComment via the local commit alone
                   // would vanish on refresh. Persist via the
                   // dedicated POST /tabs/<id>/comments endpoint
                   // (the only write path open to view-role) so the
                   // viewer's contribution lives in D1 like an
-                  // owner / editor's would — then adopt the
-                  // server-minted id, or the viewer's own delete
-                  // would send an id the server doesn't have and
-                  // the comment would resurrect on refresh.
-                  if (isReadOnly && diagramId) {
-                    void apiAddComment(
-                      selfParticipant.id,
-                      diagramId,
-                      activeTab.id,
-                      target.id,
-                      text,
-                      sessionShareCode,
-                    )
-                      .then((created) => {
-                        if (created?.id) replaceCommentId(target.id, localId, created.id);
-                      })
-                      .catch(() => {});
-                  }
+                  // owner / editor's would. The hook adopts the
+                  // server-minted id (or the viewer's own delete
+                  // would send an id the server doesn't have) and
+                  // counts the add once the server accepted it.
+                  addComment(
+                    target.id,
+                    text,
+                    isReadOnly && diagramId
+                      ? () =>
+                          apiAddComment(
+                            selfParticipant.id,
+                            diagramId,
+                            activeTab.id,
+                            target.id,
+                            text,
+                            sessionShareCode,
+                          )
+                      : undefined,
+                  );
                 }}
                 onDeleteComment={(cid) => {
-                  deleteComment(target.id, cid);
-                  track('Comment', 'Deleted');
                   // View-role visitors don't autosave the tab, so the
                   // local delete alone would resurrect on refresh.
                   // Persist via the dedicated DELETE endpoint (the
                   // server re-checks authorId === caller, so a viewer
                   // can only land their own deletes). Owners / editors
                   // persist via the normal tab autosave.
-                  if (isReadOnly && diagramId) {
-                    void apiDeleteComment(
-                      selfParticipant.id,
-                      diagramId,
-                      activeTab.id,
-                      cid,
-                      sessionShareCode,
-                    ).catch(() => {});
-                  }
+                  deleteComment(
+                    target.id,
+                    cid,
+                    isReadOnly && diagramId
+                      ? () =>
+                          apiDeleteComment(
+                            selfParticipant.id,
+                            diagramId,
+                            activeTab.id,
+                            cid,
+                            sessionShareCode,
+                          )
+                      : undefined,
+                  );
                 }}
-                onResolve={() => {
-                  resolveThread(target.id);
-                  track('Comment', 'Resolved');
-                }}
-                onUnresolve={() => {
-                  unresolveThread(target.id);
-                  track('Comment', 'Unresolved');
-                }}
+                onResolve={() => resolveThread(target.id)}
+                onUnresolve={() => unresolveThread(target.id)}
                 onClose={closeComments}
                 readOnly={isReadOnly}
                 selfId={selfParticipant.id}

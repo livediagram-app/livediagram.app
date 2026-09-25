@@ -1,4 +1,9 @@
-import { SHAPE_KINDS, isCollabPanelShape, type ShapeKind } from '@livediagram/diagram';
+import {
+  SHAPE_KINDS,
+  isCollabPanelShape,
+  isWebComponentShape,
+  type ShapeKind,
+} from '@livediagram/diagram';
 import { useShapeSvgAnimation, type ShapeSvgAnimation } from './useShapeSvgAnimation';
 
 // Shape-shape SVG primitives, used by both BoxedElementView (the
@@ -41,6 +46,11 @@ export function isSvgRenderedShape(kind: ShapeKind): boolean {
     kind !== 'browser' &&
     kind !== 'page' &&
     kind !== 'mode-button' &&
+    // Bring Focus (spec/144) is a filled rounded box with a glyph + label on
+    // top, same as the mode button beside it. This predicate is allow-BY-
+    // DEFAULT, so a new CSS-drawn kind left off it renders as a transparent
+    // nothing.
+    kind !== 'focus-button' &&
     kind !== 'portal' &&
     kind !== 'session-button' &&
     kind !== 'reveal' &&
@@ -50,6 +60,8 @@ export function isSvgRenderedShape(kind: ShapeKind): boolean {
     // A comment pin (spec/136) draws its own bubble; the wrapper box behind it
     // must not also paint a square.
     kind !== 'comment-pin' &&
+    // An action panel (spec/146) is the same card, for an assigned action.
+    kind !== 'action-card' &&
     // A mind node (spec/118) is a rounded filled box with a label, same as
     // the four above. This predicate is allow-BY-DEFAULT, so a new CSS-drawn
     // kind that isn't listed here renders as a transparent nothing.
@@ -64,6 +76,10 @@ export function isSvgRenderedShape(kind: ShapeKind): boolean {
     // kind above. Left off this list they rendered as a transparent nothing,
     // exactly as the mind-node comment above warns.
     !isCollabPanelShape(kind) &&
+    // The web components (spec/147): a callout is a bordered card with its
+    // content on top, and the rest paint their own surfaces (they are
+    // self-painting, so the box path gives them a bare wrapper).
+    !isWebComponentShape(kind) &&
     // A chair (spec/130) draws its own furniture and wants no box behind it.
     kind !== 'chair'
   );
@@ -221,16 +237,22 @@ export function ShapeSvgOverlay({
         />
       ) : null}
       {shape === 'frame' ? (
-        // Section container: outline ONLY (no fill, so the elements drawn
-        // inside show through) with the label in the top-left corner.
-        // Sharp corners avoid the stretched-rx warp the browser frame note
+        // Section container with the label in the top-left corner. Sharp
+        // corners avoid the stretched-rx warp the browser frame note
         // describes below.
+        //
+        // It takes the SAME fill as every other shape rather than a hardcoded
+        // `none`: a frame defaults to transparent (defaultFillColor), so the
+        // see-through look is unchanged, but a background colour picked in the
+        // context menu now actually paints. Frames sort to the front of their
+        // band and so paint BELOW their band-mates (layers.ts), which is what
+        // makes a filled frame a backdrop rather than a lid.
         <rect
           x={1}
           y={1}
           width={98}
           height={98}
-          fill="none"
+          fill={effectiveFill}
           stroke={stroke}
           strokeWidth={strokeWidth}
           strokeDasharray={traceOutline ? traceOutline.strokeDasharray : strokeDasharray}
@@ -296,6 +318,32 @@ export function ShapeSvgOverlay({
             width={90}
             height={88}
             rx={3}
+            fill="none"
+            stroke={stroke}
+            strokeWidth={0.8}
+            vectorEffect="non-scaling-stroke"
+          />
+        </g>
+      ) : null}
+      {/* Foldable, unfolded: a near-square inner screen with the hinge
+          crease down the middle. The crease is the whole tell, without it
+          this is a tablet. */}
+      {shape === 'foldable' ? (
+        <g>
+          <rect x={2} y={2} width={96} height={96} rx={5} {...common} />
+          <rect
+            x={5}
+            y={6}
+            width={90}
+            height={88}
+            rx={3}
+            fill="none"
+            stroke={stroke}
+            strokeWidth={0.8}
+            vectorEffect="non-scaling-stroke"
+          />
+          <path
+            d="M 50 6 L 50 94"
             fill="none"
             stroke={stroke}
             strokeWidth={0.8}

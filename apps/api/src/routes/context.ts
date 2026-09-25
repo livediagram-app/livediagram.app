@@ -7,7 +7,7 @@
 // doesn't recognise (preserving the original fall-through-to-404).
 
 import { canEditDiagram, canReadDiagram } from '../auth/diagram-access';
-import { getDiagram } from '../db';
+import { getDiagram, getMembership } from '../db';
 import { forbidden, missingAuth, notFound } from '../responses';
 import type { DiagramDTO, Env } from '../types';
 
@@ -136,6 +136,42 @@ export function requireOwner(ctx: RouteContext): string | Response {
   return ctx.resolveOwner() ?? missingAuth();
 }
 
+// Is `ctx` the owner of this diagram? The one rule both owner-only guards
+// below share, and the reason it isn't a bare `owner === ownerId`.
+//
+// For a PERSONAL diagram the hybrid identity is safe: the owner id is either
+// a Clerk `sub` the caller proved with a verified JWT, or a guest UUID that
+// is unguessable.
+//
+// For a TEAM diagram it is NOT. A team's owner id is a Clerk id deliberately
+// visible to every teammate (`GET /api/teams/<id>` lists `members[].userId`),
+// so accepting the unsigned `X-Owner-Id` header here would let anyone who
+// ever learned it — a removed member, an invitee who declined — present it as
+// a credential and reach the owner-only surfaces: reading the share password
+// in the clear, minting an edit-role share link, clearing the password,
+// deleting the diagram. So a team diagram's ownership must be proven with a
+// server-VERIFIED account id (Clerk session or API token), never the header.
+//
+// This is the same trust boundary auth/diagram-access.ts draws for the
+// read/edit gates; it belongs here too rather than only there.
+//
+// And the owner of a team diagram must still BE in the team. A member who
+// leaves or is removed has their team work handed on (handTeamWorkToHeir),
+// but rows from before that existed are still owned by people who have gone,
+// and ownership is what the share-link, password, delete and move-out routes
+// check first.
+export async function ownsDiagram(
+  ctx: RouteContext,
+  diagram: Pick<DiagramDTO, 'ownerId' | 'teamId'>,
+): Promise<boolean> {
+  if (diagram.teamId) {
+    if (ctx.verifiedUserId == null || ctx.verifiedUserId !== diagram.ownerId) return false;
+    const membership = await getMembership(ctx.env, diagram.teamId, ctx.verifiedUserId);
+    return membership?.status === 'joined';
+  }
+  return ctx.resolveOwner() === diagram.ownerId;
+}
+
 // Owner-only resource: resolve the caller, load the diagram, and confirm
 // the caller owns it. Returns the diagram, or 400 (no owner) / 404
 // (missing) / 403 (foreign). 404-before-403 means a foreign id can't be
@@ -151,7 +187,7 @@ export async function requireOwnedDiagram(
   if (!owner) return missingAuth();
   const existing = await getDiagram(ctx.env, diagramId);
   if (!existing) return notFound();
-  if (existing.ownerId !== owner) return forbidden();
+  if (!(await ownsDiagram(ctx, existing))) return forbidden();
   return existing;
 }
 

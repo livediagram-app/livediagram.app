@@ -1,5 +1,10 @@
 import { track } from '@/lib/telemetry';
-import { writeUserPreferences, type UserPreferences } from '@/lib/user-preferences';
+import {
+  resolvePanelLayout,
+  withPanelLayout,
+  writeUserPreferences,
+  type UserPreferences,
+} from '@/lib/user-preferences';
 
 // The Canvas's user-preference write handlers (spec/20), lifted out of
 // EditorCanvasHost: the Settings dialog's whole-object save and the two
@@ -23,10 +28,12 @@ export function usePreferenceHandlers({
   const onChangeSettings = (next: UserPreferences) => persist(next);
 
   const onToggleMinimalPanels = () => {
-    const next: UserPreferences = {
-      ...userPreferences,
-      minimalPanels: !(userPreferences.minimalPanels === true),
-    };
+    // Minimal on / off. Off lands on Floating (spec/148); from Toolbar it
+    // turns Minimal on, since Toolbar is not the docked layout.
+    const next = withPanelLayout(
+      userPreferences,
+      resolvePanelLayout(userPreferences) === 'minimal' ? 'floating' : 'minimal',
+    );
     track('UI', 'Toggled', next.minimalPanels ? 'MinimalPanelsOn' : 'MinimalPanelsOff');
     persist(next);
   };

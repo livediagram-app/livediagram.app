@@ -33,13 +33,18 @@ export const CATEGORY_DESCRIPTIONS: Record<TelemetryCategory, string> = {
   Layer:
     'Tab layers (Photoshop-style stacking bands): add, rename, delete, restack, show / hide, lock, move elements between layers, open the panel.',
   Session: 'Account-level events when Clerk auth is configured: sign-in, sign-up, sign-out.',
+  Facilitator:
+    'The live-session baton: somebody taking the timer / votes / polls for a room, handing them on, or stepping down.',
   AI: 'The optional in-editor AI assistant: running its Ask / Clean requests on the current tab.',
   Team: 'Teams: creating and joining, renaming, role changes, member invites and removals, and the shared team library of diagrams.',
   Participant:
     'Visitor arrivals: a new browser identity minted (once per fresh visitor), and a returning browser reopening the app (once per day, split guest vs signed-in).',
   Help: 'Help-centre articles: views and per-article helpful / not-really feedback.',
+  Page: 'Pages viewed across the whole site (marketing, editor, help centre, this dashboard), by path, with ids and query strings stripped.',
   Timeline:
     "The Explorer's activity feed: opening it (split by whether it was the landing view or a deliberate visit), switching between the list and calendar views, toggling a filter chip, expanding a collapsed run of same-day events, and paging further back.",
+  Activity:
+    "The Explorer's Activity page (open actions and comment threads across every diagram): opening it, clicking a row through to the diagram (split by action vs thread), and retrying a failed read.",
   Token: 'API tokens: minted by hand or via an AI tool connecting through MCP, and revoked.',
   Mcp: 'MCP server tool calls made by connected AI assistants.',
   Email:
@@ -69,13 +74,18 @@ const CATEGORY_COLORS: Record<TelemetryCategory, string> = {
   Folder: '#a855f7',
   Layer: '#7c3aed',
   Session: '#64748b',
+  Facilitator: '#a855f7',
   AI: '#eab308',
   Team: '#2563eb',
   Participant: '#dc2626',
   Help: '#14b8a6',
+  // Deep pink: apart from Canvas's lighter pink and every blue it sits near.
+  Page: '#9d174d',
   // Distinct from Diagram's sky (#0ea5e9) and Session's slate: the
   // Timeline sits next to both in the stacked bar.
   Timeline: '#0369a1',
+  // Amber, so the inbox reads apart from the Timeline's deep sky beside it.
+  Activity: '#d97706',
   Token: '#d946ef',
   Mcp: '#f43f5e',
   Email: '#0d9488',
@@ -106,8 +116,27 @@ export function groupByCategory(rows: TelemetryCount[]): Group[] {
 // resolving; one definition now backs both this app and the editor.
 export { titleCase };
 
+// How a `type` reads on screen. Tokens are title-cased ('square' ->
+// 'Square'); a page path (spec/150) is shown exactly as stored, since
+// '/help/the-canvas' is only recognisable as the URL it is.
+// Canvas·Changed types that are a canvas-panel control rather than a
+// background pattern (useTabCanvas's debounced emits), with the words for it.
+// The Look & Feel Canvas Styles ranking is patterns only, so it leaves these
+// out; the Raw table explains them instead of calling them a pattern.
+export const CANVAS_CONTROLS: Readonly<Record<string, string>> = {
+  BackgroundColor: 'background colour',
+  BackgroundOpacity: 'background opacity',
+  PatternColor: 'pattern colour',
+  BackgroundPatternScale: 'pattern scale',
+  BackgroundAnimationSpeed: 'background animation speed',
+};
+
+export function typeLabel(type: string): string {
+  return type.startsWith('/') ? type : titleCase(type);
+}
+
 export function eventLabel(row: Pick<TelemetryCount, 'action' | 'type'>): string {
-  return row.type ? `${titleCase(row.action)} · ${titleCase(row.type)}` : titleCase(row.action);
+  return row.type ? `${titleCase(row.action)} · ${typeLabel(row.type)}` : titleCase(row.action);
 }
 
 // Short plain-language explanation for a single event row, shown as
@@ -120,6 +149,9 @@ export function eventLabel(row: Pick<TelemetryCount, 'action' | 'type'>): string
 // vocabulary (spec/22), so unknown branches really are unusual.
 export function eventExplanation(category: string, action: string, type: string | null): string {
   // Category + action + type (the most user-recognisable combos).
+  if (category === 'Page' && action === 'View' && type) {
+    return `Someone viewed ${type}, by loading it or navigating to it within the site.`;
+  }
   if (category === 'Element' && action === 'Added' && type) {
     return `Someone dropped a ${type.toLowerCase()} onto the canvas.`;
   }
@@ -130,7 +162,7 @@ export function eventExplanation(category: string, action: string, type: string 
     return `Someone generated a ${type.toLowerCase()}-role share link for a diagram.`;
   }
   if (category === 'Diagram' && action === 'Joined' && type) {
-    return `Someone opened a diagram via a ${type.toLowerCase()}-role share link.`;
+    return `Someone came into a diagram through a ${type.toLowerCase()}-role share link. Counted once per person per diagram, not on every revisit.`;
   }
   if (category === 'Element' && action === 'Linked' && type) {
     return `Someone linked an element to another ${type.toLowerCase()}.`;
@@ -147,10 +179,13 @@ export function eventExplanation(category: string, action: string, type: string 
     return `Someone imported a tab from a ${type} file.`;
   }
   if (category === 'Theme' && action === 'Changed' && type) {
-    return `Someone switched a tab to the ${type} theme.`;
+    return `A tab was given the ${type} theme: switched to it, or picked when a diagram or template was created with it.`;
   }
   if (category === 'Canvas' && action === 'Changed' && type) {
-    return `Someone switched a tab's background pattern to ${type}.`;
+    const control = CANVAS_CONTROLS[type];
+    return control
+      ? `Someone adjusted a tab's ${control} in the canvas panel.`
+      : `Someone switched a tab's background pattern to ${type}.`;
   }
   if (category === 'Canvas' && action === 'Used' && type === 'FollowMe') {
     return "Someone pinned their canvas to a peer's viewport (spec/131), following their pan, zoom and tab until they take it back.";
@@ -183,7 +218,9 @@ export function eventExplanation(category: string, action: string, type: string 
     return `Someone picked a ${type.toLowerCase()} match from the global search results.`;
   }
   if (category === 'UI' && action === 'Toggled' && type) {
-    return `Someone switched the editor chrome to ${type.toLowerCase()} mode.`;
+    if (type === 'Light' || type === 'Dark' || type === 'System')
+      return `Someone set the editor appearance to ${type}.`;
+    return `Someone flipped an editor setting: ${typeLabel(type)}.`;
   }
   if (category === 'UI' && action === 'Opened' && type) {
     if (type === 'Settings') return 'Someone opened the Settings dialog.';
@@ -202,7 +239,7 @@ export function eventExplanation(category: string, action: string, type: string 
   // Category + action.
   if (category === 'Diagram') {
     if (action === 'Loaded')
-      return 'An existing diagram was opened, counted on every open (including a page refresh).';
+      return 'A diagram was opened, counted on every open (including a page refresh and the first open of a diagram just created).';
     if (action === 'Created') return 'A brand-new diagram was created.';
     if (action === 'Duplicated') return 'A diagram was duplicated into a new one.';
     if (action === 'Deleted') return 'A diagram was deleted.';
@@ -222,8 +259,10 @@ export function eventExplanation(category: string, action: string, type: string 
   if (category === 'Element') {
     if (action === 'Deleted') return 'An element was removed from the canvas.';
     if (action === 'Duplicated') return 'An element was duplicated.';
-    if (action === 'Grouped') return 'A multi-selection was grouped.';
-    if (action === 'Ungrouped') return 'A group was disbanded back into individual elements.';
+    // Historical: groups were removed (spec/147), so these only label old rows.
+    if (action === 'Grouped') return 'A multi-selection was grouped (before groups were removed).';
+    if (action === 'Ungrouped')
+      return 'A group was disbanded back into individual elements (before groups were removed).';
     if (action === 'Locked') return "An element's lock was turned on (no edits allowed).";
     if (action === 'Unlocked') return "An element's lock was turned off (edits resume).";
     if (action === 'Toggled')

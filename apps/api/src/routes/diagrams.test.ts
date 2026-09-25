@@ -191,6 +191,31 @@ describe('handleDiagrams metadata PUT (PUT /diagrams/:id)', () => {
     expect(db.setDiagramPresentation).toHaveBeenCalledWith({}, 'd1', deck);
   });
 
+  it('blanks ownerId in the response for an edit-role share visitor (spec/04)', async () => {
+    // gateEdit admits an edit-role share code, so the PUT reply reaches the
+    // same audience the GET redacts for.
+    db.getDiagram.mockResolvedValue(fakeDiagram('0f5ca4af-9a8a-4a60-be5e-1179e5555880'));
+    canEditDiagram.mockResolvedValue(true);
+    const res = await handleDiagrams(
+      makeCtx('PUT', '/api/diagrams/d1', {
+        owner: 'visitor-1',
+        body: { name: 'Doc' },
+        headers: { 'X-Share-Code': 'CODE1234' },
+      }),
+    );
+    expect(res.status).toBe(200);
+    const { diagram } = (await res.json()) as { diagram: DiagramDTO };
+    expect(diagram.ownerId).toBe('');
+  });
+
+  it('returns the real ownerId to the owner', async () => {
+    db.getDiagram.mockResolvedValue(fakeDiagram('owner-1'));
+    canEditDiagram.mockResolvedValue(true);
+    const res = await handleDiagrams(makeCtx('PUT', '/api/diagrams/d1', { body: { name: 'Doc' } }));
+    const { diagram } = (await res.json()) as { diagram: DiagramDTO };
+    expect(diagram.ownerId).toBe('owner-1');
+  });
+
   it('clears the deck on an explicit null', async () => {
     db.getDiagram.mockResolvedValue(fakeDiagram('owner-1'));
     canEditDiagram.mockResolvedValue(true);
@@ -233,6 +258,60 @@ describe('handleDiagrams list (GET /diagrams)', () => {
     const res = await handleDiagrams(makeCtx('GET', '/api/diagrams'));
     expect(res.status).toBe(200);
     expect(db.listDiagramsByOwner).toHaveBeenCalledWith({}, 'owner-1');
+  });
+});
+
+describe('GET /diagrams/:id owner-id redaction (spec/04)', () => {
+  // The DTO's ownerId is a credential: for a guest owner it is the
+  // X-Owner-Id bearer value, and /api/migrate moves that owner's whole
+  // workspace to whoever presents it. The share-code resolver has always
+  // blanked it; this door reaches the same DTO for the same audience (the
+  // read gate admits any valid share code, view or edit) and used to hand
+  // it over intact.
+  const GUEST = '0f5ca4af-9a8a-4a60-be5e-1179e5555880';
+
+  it('blanks ownerId for a share-code visitor', async () => {
+    db.getDiagram.mockResolvedValue(fakeDiagram(GUEST));
+    canReadDiagram.mockResolvedValue(true);
+    const res = await handleDiagrams(
+      makeCtx('GET', '/api/diagrams/d1', {
+        owner: 'visitor-1',
+        headers: { 'X-Share-Code': 'CODE1234' },
+      }),
+    );
+    expect(res.status).toBe(200);
+    const { diagram } = (await res.json()) as { diagram: DiagramDTO };
+    expect(diagram.ownerId).toBe('');
+    // The visitor still gets the diagram itself — redaction, not refusal.
+    expect(diagram.id).toBe('d1');
+    expect(diagram.name).toBe('Doc');
+  });
+
+  it('returns the real ownerId to the owner', async () => {
+    db.getDiagram.mockResolvedValue(fakeDiagram('owner-1'));
+    canReadDiagram.mockResolvedValue(true);
+    const res = await handleDiagrams(makeCtx('GET', '/api/diagrams/d1'));
+    const { diagram } = (await res.json()) as { diagram: DiagramDTO };
+    expect(diagram.ownerId).toBe('owner-1');
+  });
+
+  it('blanks it for a joined team member, who is not the owner', async () => {
+    db.getDiagram.mockResolvedValue(fakeDiagram('user_owner', 'team-1'));
+    canReadDiagram.mockResolvedValue(true);
+    const res = await handleDiagrams(
+      makeCtx('GET', '/api/diagrams/d1', { owner: 'user_member', clerkUserId: 'user_member' }),
+    );
+    const { diagram } = (await res.json()) as { diagram: DiagramDTO };
+    // No regression for them: a teammate already computed isOwner=false from
+    // the real id, so they lose nothing they were using.
+    expect(diagram.ownerId).toBe('');
+  });
+
+  it('still 404s a denied reader (redaction is not the gate)', async () => {
+    db.getDiagram.mockResolvedValue(fakeDiagram(GUEST));
+    canReadDiagram.mockResolvedValue(false);
+    const res = await handleDiagrams(makeCtx('GET', '/api/diagrams/d1', { owner: 'stranger' }));
+    expect(res.status).toBe(404);
   });
 });
 
@@ -571,5 +650,34 @@ describe('handleDiagrams gated change-log (GET/POST /diagrams/:id/log)', () => {
       expect(res.status).toBe(201);
       expect(db.insertChangeLogEntry).toHaveBeenCalled();
     });
+  });
+});
+
+describe('POST /diagrams carrying an Offline Mode sync (spec/76)', () => {
+  // The offline record is deleted once the create succeeds, so the deck and
+  // folder have to arrive with it.
+  const create = (body: Record<string, unknown>) =>
+    handleDiagrams(makeCtx('POST', '/api/diagrams', { body: { id: 'd1', name: 'Doc', ...body } }));
+  const stored = () => db.upsertDiagramMeta.mock.calls[0]![1] as Record<string, unknown>;
+
+  it('stores the deck it was sent', async () => {
+    db.getDiagram.mockResolvedValue(null);
+    await create({ presentation: '{"decks":[]}' });
+    expect(stored().presentation).toBe('{"decks":[]}');
+  });
+
+  it("keeps a folder that is the caller's own personal folder", async () => {
+    db.getDiagram.mockResolvedValue(null);
+    db.getFolder.mockResolvedValue({ id: 'f1', ownerId: 'owner-1', teamId: null });
+    await create({ folderId: 'f1' });
+    expect(stored().folderId).toBe('f1');
+  });
+
+  it("files into Unsorted rather than a folder that isn't theirs", async () => {
+    db.getDiagram.mockResolvedValue(null);
+    db.getFolder.mockResolvedValue({ id: 'f1', ownerId: 'someone-else', teamId: null });
+    const res = await create({ folderId: 'f1' });
+    expect(res.status).toBe(201);
+    expect(stored().folderId).toBeNull();
   });
 });

@@ -11,7 +11,7 @@
 // dispatch can answer "is this id offline?" cheaply.
 
 import type { ChangeLogEntry, Diagram, DiagramSummary, TabSummary } from '@livediagram/api-schema';
-import { stampTabKind } from '@livediagram/diagram';
+import { migrateLegacyGroups, stampTabKind } from '@livediagram/diagram';
 import type { Tab } from '@livediagram/diagram';
 
 // Sentinel owner id stamped on offline diagrams. They have no server owner;
@@ -39,6 +39,11 @@ export type OfflineDiagramRecord = {
   // whole product minus the server, not a reduced one. Optional so records
   // written before the field existed stay valid.
   presentation?: string | null;
+  // Starred in the Explorer (spec/95). Cloud stars live in a D1 table whose
+  // diagram_id is a foreign key into `diagrams`, which an offline diagram has
+  // no row in, so its star has to live here instead. Optional so records
+  // written before the field existed stay valid.
+  favourite?: boolean;
 };
 
 // ---------------------------------------------------------------------------
@@ -305,7 +310,10 @@ export async function offlineLoadDiagram(id: string): Promise<Diagram | null> {
 
 export async function offlineLoadTab(id: string, tabId: string): Promise<Tab | null> {
   const rec = await backend.get(id);
-  return rec?.tabs.find((t) => t.id === tabId) ?? null;
+  const tab = rec?.tabs.find((t) => t.id === tabId) ?? null;
+  // The offline twin of the api's rowToTab (spec/147): a diagram kept in
+  // this browser since before groups were removed still carries them.
+  return tab ? { ...tab, elements: migrateLegacyGroups(tab.elements) } : null;
 }
 
 export async function offlineCreateDiagram(
@@ -350,6 +358,23 @@ export async function offlineSetDiagramFolder(
     if (!rec) return;
     await backend.put({ ...rec, folderId, savedAt: now });
   });
+}
+
+// Star / un-star an offline diagram (spec/95). The savedAt stamp is left
+// alone on purpose: a star is a per-user bookmark, not an edit to the
+// diagram, and bumping it would reorder Recent on a click that changed
+// nothing about the content.
+export async function offlineSetFavourite(id: string, favourite: boolean): Promise<void> {
+  await serializeOfflineWrite(async () => {
+    const rec = await backend.get(id);
+    if (!rec) return;
+    await backend.put({ ...rec, favourite });
+  });
+}
+
+export async function offlineListFavouriteIds(): Promise<string[]> {
+  const recs = await backend.all();
+  return recs.filter((r) => r.favourite).map((r) => r.id);
 }
 
 export async function offlineSaveTab(id: string, tab: Tab, now: number): Promise<void> {

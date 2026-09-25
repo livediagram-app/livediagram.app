@@ -6,42 +6,67 @@ import { ComponentsCatalogue } from '@/components/illustrations/palette-catalogu
 export const metadata = helpMetadata({
   title: 'Components',
   description:
-    'The palette Components category holds pre-assembled blocks (banners, callouts, stat rows, process steps, heroes, and headers) that you drop as a unit and then edit like any other elements.',
+    'The palette Components category holds ready-made web components (banners, callouts, stat rows, process steps, heroes, and headers): single elements that re-flow as you resize them, with every line of text editable in place.',
   path: '/help/palette/components/',
 });
 
 <ArticleLayout
   title="Components"
-  description="Pre-assembled, composite blocks you drop as a single unit and then restyle and edit on the canvas."
+  description="Ready-made web components that lay themselves out as you resize them, with every line of text editable in place."
   categoryTitle="Palette"
   categorySlug="palette"
   subArticles={getSubArticles("components")}
 >
 
-The **Components** category holds pre-assembled, composite blocks. Instead of building a layout shape by shape, you drop a ready-made arrangement as a unit and then tailor it to your diagram.
+The **Components** category holds ready-made web components. Instead of building a banner or a KPI row shape by shape, you drop one element that already knows how to lay itself out, then fill in your own words.
 
-<Figure caption="The Components category lists pre-assembled blocks like a banner, a callout, and a stat row as drop-in cards.">
+<Figure caption="The Components category lists ready-made blocks like a banner, a callout, and a stat row as drop-in cards.">
   <ComponentsCatalogue />
 </Figure>
 
 ## What the tab contains
 
-- **Banner** is a themed title block with an accent bar.
-- **Callout** is a soft note box with an icon, a title, and a body.
-- **Stat Row** is a set of three KPI cards side by side.
-- **Process Steps** is a row of numbered circles joined by arrows.
-- **Hero** is a large image with a caption card.
-- **Header** is a website-style bar with an avatar and navigation.
+- **Banner** is a themed title block: an accent bar with a title and a subtitle.
+- **Callout** is a soft note box with an icon badge, a heading, and a body.
+- **Stat Row** is a row of KPI cards, each a big number over a caption.
+- **Process Steps** is a row of numbered circles joined by arrows, with a caption under each.
+- **Hero** is a large image with a caption card over it.
+- **Header** is a website-style bar with a logo, a brand name, and navigation links.
 
-Hero and Header both build on an image (the hero picture, the header's avatar), so they only appear when image upload is available.
+Hero builds on an image, so it only appears when image upload is available.
 
-## How components behave
+## Editing the text
 
-Each component drops as a ready-made arrangement of ordinary elements: the same shapes, text, images, and arrows you would place by hand, just pre-arranged for you. Once it is on the canvas you can restyle it, regroup it, ungroup it to reach the individual pieces, and edit any part exactly as you would anything else. Nothing about a component is locked or special after it lands.
+Every piece of text on a component is editable where it sits:
+
+<Step n={1}>Click the component once to select it.</Step>
+<Step n={2}>
+  Click the line you want to change, such as a stat's number, a step's caption or a nav link, and
+  type.
+</Step>
+<Step n={3}>Press **Enter** to keep the change, or **Escape** to put the old text back.</Step>
+
+The main text (a banner's title, a callout's body, a header's brand name) is the element's ordinary label, so double-clicking edits it like any shape's label, with the usual bold, size and alignment controls.
+
+## Adding and removing rows
+
+A Stat Row, Process Steps and a Header carry rows: stats, steps and links. To add one, select the component and pick **Add stat**, **Add step** or **Add link** from the **+** beside it. To remove, reorder or retype rows in one place, open the right-click menu and use the **Stats**, **Steps** or **Links** section under **Tools**.
+
+## Resizing
+
+Each component is one element that lays itself out, so resizing changes the room it has rather than zooming it:
+
+- Stat cards share the width, and their numbers grow as you make the row taller.
+- Process steps spread across the width, and the circles shrink rather than overlap when you add more.
+- A header keeps its logo and brand on the left and its links on the right. Links that no longer fit a narrowed header are hidden from the end until you widen it again.
+
+## Colours and images
+
+Components follow the tab theme when you drop them. A banner and a header paint their bar in the theme's accent and keep white text through a theme change; pick a **Fill** colour to use your own. Drop an icon on a header to make it the logo, or on a callout to replace its badge. To set a hero's picture, double-click the image; its caption card can be turned off (or added to any image) from the image's right-click menu under **Image**.
 
 <Tip>
-  Drop a component to get the structure right, then recolour it with your colour scheme and swap the
-  placeholder text. It is faster than arranging the pieces from scratch.
+  Drop a component to get the structure right, then retype the placeholder text in place. It is
+  faster than arranging the pieces from scratch.
 </Tip>
 
 </ArticleLayout>

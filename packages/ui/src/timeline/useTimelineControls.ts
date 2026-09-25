@@ -15,7 +15,8 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import { eventCategory, sortCategories, type TimelineCategory } from './eventCategory';
-import { monthKeyOf, weekStartOf } from './monthCells';
+import { monthKeyOf } from './monthCells';
+import { collapseSameDayCreate } from './sameDayCreate';
 import { dateKey } from './useTimelineGrouping';
 import type { TimelineEvent, TimelineMode } from './types';
 
@@ -40,8 +41,6 @@ export type TimelineControls = {
   eventDates: Set<string>;
   monthKey: string;
   setMonthKey: (monthKey: string) => void;
-  weekKey: string;
-  setWeekKey: (weekKey: string) => void;
   /** Anchor rect for the filter popover; null when it's closed. */
   filterAnchor: DOMRect | null;
   setFilterAnchor: (anchor: DOMRect | null) => void;
@@ -68,7 +67,6 @@ export function useTimelineControls(
   const [mode, setModeState] = useState<TimelineMode>('list');
   const [excluded, setExcluded] = useState<Set<TimelineCategory>>(() => new Set());
   const [monthKey, setMonthKey] = useState(() => monthKeyOf(Date.now()));
-  const [weekKey, setWeekKey] = useState(() => weekStartOf(dateKey(Date.now())));
   const [filterAnchor, setFilterAnchor] = useState<DOMRect | null>(null);
   const [pulseDay, setPulseDay] = useState<string | null>(null);
   // Defaults to everything. "What did I miss" is the sharper question,
@@ -87,7 +85,10 @@ export function useTimelineControls(
   }, [events]);
 
   const visibleEvents = useMemo(() => {
-    let out = events;
+    // The create/edit pair on one day reads as one card (spec/138
+    // §2.1a). Applied here so the list, the calendar's dots and the
+    // mini-calendar all see the same events.
+    let out = collapseSameDayCreate(events);
     if (excluded.size > 0) out = out.filter((e) => !excluded.has(eventCategory(e.eventType)));
     if (actorFilter === 'others' && viewerId) {
       // Keeps system events (actorId null): an expiring token is
@@ -157,11 +158,11 @@ export function useTimelineControls(
   // "Take me to this day", from the filter popover's mini-calendar. What that
   // means depends on which view is open, and it used to mean only one of them:
   // the scroll target and the pulse are both rendered by the day groups, which
-  // exist in LIST mode only — calendar and week return their grid before the
-  // groups are reached. So in two of the three modes the control the popover
-  // offers in all three did nothing at all, silently.
+  // exist in LIST mode only — the calendar returns its grid before the
+  // groups are reached. So in one of the two modes the control the popover
+  // offers in both did nothing at all, silently.
   //
-  // Now each mode answers it the way it can: the grids move to the period
+  // Now each mode answers it the way it can: the grid moves to the month
   // holding that day, the list scrolls to the group and pulses it.
   const pickDate = useCallback(
     (key: string) => {
@@ -169,10 +170,6 @@ export function useTimelineControls(
         // A dateKey is `YYYY-MM-DD`, so its month key is the first seven
         // characters — no need to round-trip through a Date.
         setMonthKey(key.slice(0, 7));
-        return;
-      }
-      if (mode === 'week') {
-        setWeekKey(weekStartOf(key));
         return;
       }
       // The group may be far down a long feed, so scroll to it rather
@@ -201,8 +198,6 @@ export function useTimelineControls(
     eventDates,
     monthKey,
     setMonthKey,
-    weekKey,
-    setWeekKey,
     filterAnchor,
     setFilterAnchor,
     pulseDay,

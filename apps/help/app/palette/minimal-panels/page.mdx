@@ -18,15 +18,15 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles("minimal-panels")}
 >
 
-Minimal Panels is a toggle, and it is off by default. You will find it behind the gear (settings) icon in the header of the floating palette, which opens a small settings popover. It is only shown when the layout supports it.
+Minimal is one of three choices in the **Panel Layout** setting (Floating, Minimal, Toolbar); Floating is the default. You will find it in [Settings](/help/user-interface/settings/), under **Appearance**. Toolbar is a third option that keeps the floating panels but puts the palette in one strip across the top of the canvas, and opens the Explorer from a button in the top-left.
 
-<Figure caption="The palette settings popover, with Minimal panels highlighted and switched off.">
+<Figure caption="The Appearance settings, with Minimal panels highlighted and switched off.">
   <PaletteSettings highlight="minimal" />
 </Figure>
 
 ## What it does
 
-When the setting is on, the floating panels (Explorer, Palette, Collaborate, AI, and Layers) are swapped for a compact button bar, a dock. Each panel then opens as a popover from its button instead of floating on the canvas. In the settings popover the hint reads: "Swap floating panels for a compact button bar."
+When the setting is on, the floating panels (Explorer, Palette, Collaborate and AI) are swapped for a compact button bar, a dock. Each panel then opens as a popover from its button instead of floating on the canvas. **Layers** and **Tab Activity** keep their buttons in the bottom-right corner, and each opens as a popover just above its button. Under the switch the description reads: "Swap floating panels for a compact button bar."
 
 <Figure caption="Floating panels on the left versus the compact dock on the right, where each panel opens as a popover.">
   <MinimalPanels />

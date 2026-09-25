@@ -13,17 +13,18 @@
   },
   "dependencies": {
     "@livediagram/api-schema": "workspace:*",
+    "@livediagram/telemetry-client": "workspace:*",
     "@livediagram/ui": "workspace:*",
-    "next": "^16.3.4",
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8"
+    "next": "^16.3.5",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
   },
   "devDependencies": {
     "@livediagram/eslint-config": "workspace:*",
     "@livediagram/tailwind-config": "workspace:*",
     "@livediagram/vitest-config": "workspace:*",
     "@tailwindcss/postcss": "^4.3.3",
-    "@types/node": "^26.1.2",
+    "@types/node": "^26.6.1",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@typescript/native": "npm:typescript@^7.0.2",

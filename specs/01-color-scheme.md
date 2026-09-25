@@ -1,4 +1,4 @@
-# Color scheme
+# Theme
 
 The livediagram brand color is **light blue**. Everything below builds on that.
 

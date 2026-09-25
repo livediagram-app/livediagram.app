@@ -15,7 +15,7 @@
     "clean": "rm -rf .next .next-dev out node_modules .turbo coverage"
   },
   "dependencies": {
-    "@clerk/react": "^6.15.1",
+    "@clerk/react": "^6.16.1",
     "@huggingface/transformers": "^3.8.1",
     "@livediagram/api-schema": "workspace:*",
     "@livediagram/diagram": "workspace:*",
@@ -24,15 +24,16 @@
     "@livediagram/sticky-model": "workspace:*",
     "@livediagram/sticky-vision": "workspace:*",
     "@livediagram/telemetry-client": "workspace:*",
+    "@livediagram/template-previews": "workspace:*",
     "@livediagram/templates": "workspace:*",
     "@livediagram/ui": "workspace:*",
     "@tensorflow/tfjs-backend-wasm": "4.22.0",
     "@tensorflow/tfjs-backend-webgpu": "4.22.0",
     "@tensorflow/tfjs-core": "4.22.0",
     "@tensorflow/tfjs-layers": "4.22.0",
-    "next": "^16.3.4",
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8"
+    "next": "^16.3.5",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
   },
   "devDependencies": {
     "@livediagram/eslint-config": "workspace:*",
@@ -41,7 +42,7 @@
     "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4.3.3",
     "@testing-library/react": "^16.3.3",
-    "@types/node": "^26.1.2",
+    "@types/node": "^26.6.1",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@typescript/native": "npm:typescript@^7.0.2",

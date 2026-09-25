@@ -3,6 +3,7 @@
 // owner, so they live together rather than under any one resource.
 
 import { deleteTimelineForOwner, migrateTimelineOwner } from './timeline';
+import { deleteCollabIndexForOwner, recordOwnerAlias } from './collab-index';
 import { thumbnailKey } from './diagrams';
 import { detachUserFromTeams } from './teams';
 import type { Env } from '../types';
@@ -73,7 +74,14 @@ export async function deleteAccount(
   const diagramsRes = await env.DB.prepare('DELETE FROM diagrams WHERE owner_id = ?')
     .bind(ownerId)
     .run();
-  const foldersRes = await env.DB.prepare('DELETE FROM folders WHERE owner_id = ?')
+  // Personal folders only. A team folder carries its creator's owner_id but
+  // belongs to the team (access is by membership), and teammates' diagrams
+  // sit in it: deleting it dropped them out of the team library behind a
+  // dangling folder_id. That includes teams this user LEFT earlier, which
+  // detachUserFromTeams no longer sees.
+  const foldersRes = await env.DB.prepare(
+    'DELETE FROM folders WHERE owner_id = ? AND team_id IS NULL',
+  )
     .bind(ownerId)
     .run();
   await env.DB.prepare('DELETE FROM participants WHERE id = ?').bind(ownerId).run();
@@ -90,6 +98,8 @@ export async function deleteAccount(
   // email_lifecycle (spec/64): drop the onboarding-email row so the address
   // isn't retained and a re-signup starts the series fresh.
   await env.DB.prepare('DELETE FROM email_lifecycle WHERE owner_id = ?').bind(ownerId).run();
+  // auth_accounts (spec/22): the first-seen row the sign-up count keys on.
+  await env.DB.prepare('DELETE FROM auth_accounts WHERE owner_id = ?').bind(ownerId).run();
   // shared_with rows POINTING AT this owner's diagrams die with the
   // diagrams (FK cascade), but the rows this owner accumulated by
   // visiting OTHER people's diagrams are keyed on their owner_id and
@@ -99,6 +109,9 @@ export async function deleteAccount(
   // and the scope-state row. Hard, not soft — soft delete is a
   // user-facing affordance in this product, never a retention strategy.
   await deleteTimelineForOwner(env, ownerId);
+  // Activity (spec/142): the alias rows + the backfill stamp. The index
+  // rows themselves cascade with the diagrams' tabs above.
+  await deleteCollabIndexForOwner(env, ownerId);
   return {
     diagrams: diagramsRes.meta.changes ?? 0,
     folders: foldersRes.meta.changes ?? 0,
@@ -185,6 +198,11 @@ export async function migrateOwnerId(
   // backfill would run again against the Clerk id and re-seed what
   // just migrated.
   await migrateTimelineOwner(env, fromOwnerId, toOwnerId);
+  // Activity (spec/142 §2.2): the ids INSIDE the tab blobs (comment
+  // authors, self-assigned actions) are not rewritten, so the old
+  // identity is recorded as an alias of the new one and the Activity
+  // read matches both. Cheaper and safer than touching every tab.
+  await recordOwnerAlias(env, toOwnerId, fromOwnerId);
   // images (spec/19). UPDATE OR IGNORE walks the unique (owner_id,
   // sha256) collision case (same bytes on both identities) and
   // leaves those guest rows in place so the image id stays

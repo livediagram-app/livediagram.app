@@ -56,7 +56,8 @@ export const TIMELINE_EVENT_TYPES = [
   'diagram_created',
   'diagram_renamed',
   'diagram_duplicated',
-  'diagram_deleted',
+  // No `diagram_deleted`: a deleted diagram is swept from the feed and
+  // leaves nothing behind (spec/138 §3.5).
   'diagram_moved',
   'diagram_edited',
   'diagram_offline',
@@ -177,10 +178,9 @@ export const TIMELINE_COMMENT_MAX = 240;
 // It has to be declared because the two conversions reuse ordinary endpoints
 // and are indistinguishable from them at the boundary: "Take offline" is a
 // plain DELETE /diagrams/:id, and "Sync diagram" is a plain POST /diagrams. So
-// the worker recorded them as `diagram_deleted` and `diagram_created` — a
-// Timeline that told the owner, in danger red, that a diagram they had just
-// moved into this browser was *deleted*, and that one they had just uploaded
-// was newly *created*. Both `diagram_offline` and `diagram_synced` already
+// the worker recorded them as a deletion and `diagram_created` — a Timeline
+// that told the owner a diagram they had just moved into this browser was
+// gone, and that one they had just uploaded was newly *created*. Both `diagram_offline` and `diagram_synced` already
 // existed above, with tones, icons, renderers and a spec/138 table entry;
 // nothing had ever emitted them.
 //

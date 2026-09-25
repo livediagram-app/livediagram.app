@@ -7,8 +7,17 @@
 // scaffolding via props like the sibling section files.
 
 import {
+  BorderColourIcon,
+  FillColourIcon,
+  HeadingColourIcon,
+  PointerColourIcon,
+  TextColourIcon,
+} from '@/components/palette/context-menu-icons';
+import {
   defaultArrowStrokeColor,
   defaultFillColor,
+  hasHeadingBand,
+  supportsFillColor,
   defaultStrokeColor,
   defaultTextColor,
   supportsBorderRadius,
@@ -44,6 +53,8 @@ export function ElementColourBorderSections({
   colorProps,
   textColorHandlers,
   fillColorHandlers,
+  headerFillHandlers,
+  arrowheadColorHandlers,
   strokeColorHandlers,
 }: {
   props: EditorContextMenuProps;
@@ -57,6 +68,8 @@ export function ElementColourBorderSections({
   colorProps: Scaffold['colorProps'];
   textColorHandlers: Scaffold['textColorHandlers'];
   fillColorHandlers: Scaffold['fillColorHandlers'];
+  headerFillHandlers: Scaffold['headerFillHandlers'];
+  arrowheadColorHandlers: Scaffold['arrowheadColorHandlers'];
   strokeColorHandlers: Scaffold['strokeColorHandlers'];
 }) {
   // A swatch shows the colour the element is ACTUALLY drawn in, so an element
@@ -86,14 +99,27 @@ export function ElementColourBorderSections({
         >
           <ColourRow
             label="Line"
+            icon={<BorderColourIcon />}
             value={target.strokeColor ?? defaultArrowStrokeColor(surface)}
             {...strokeColorHandlers}
             {...colorProps('border')}
-            presets={props.presetColors}
+            {...props.colourPalette}
+          />
+          {/* The heads, separately from the line: a grey connector with a red
+              head is one arrow saying two things, and doing it with a second
+              element would break the moment either end moved. Unset means the
+              heads take the line's colour, as they always have. */}
+          <ColourRow
+            label="Pointer"
+            icon={<PointerColourIcon />}
+            value={target.arrowheadColor ?? target.strokeColor ?? defaultArrowStrokeColor(surface)}
+            {...arrowheadColorHandlers}
+            {...colorProps('pointer')}
+            {...props.colourPalette}
           />
           <div className="px-2 pb-1 pt-1.5">
             <MenuActionButton
-              label="Reset to colour scheme"
+              label="Reset to theme"
               onClick={() => {
                 props.onResetColors();
                 onClose();
@@ -111,24 +137,40 @@ export function ElementColourBorderSections({
           >
             <ColourRow
               label="Text"
+              icon={<TextColourIcon />}
               value={
                 (target as { textColor?: string }).textColor ??
                 defaultTextColor(target as BoxedElement, surface)
               }
               {...textColorHandlers}
               {...colorProps('text')}
-              presets={props.presetColors}
+              {...props.colourPalette}
             />
-            {defaultFillColor(target as BoxedElement) !== 'transparent' ? (
+            {supportsFillColor(target) ? (
               <ColourRow
                 label="Background"
+                icon={<FillColourIcon />}
                 value={
                   (target as { fillColor?: string }).fillColor ??
                   defaultFillColor(target as BoxedElement, surface)
                 }
                 {...fillColorHandlers}
                 {...colorProps('background')}
-                presets={props.presetColors}
+                {...props.colourPalette}
+              />
+            ) : null}
+            {/* Heading band: only for the elements that have one distinct
+                from their body (a lane's title gutter, a table's header
+                row). Unset falls back to each one's historical default, so
+                the row reads as empty until you choose. */}
+            {hasHeadingBand(target) ? (
+              <ColourRow
+                label="Heading"
+                icon={<HeadingColourIcon />}
+                value={(target as { headerFill?: string }).headerFill ?? 'transparent'}
+                {...headerFillHandlers}
+                {...colorProps('heading')}
+                {...props.colourPalette}
               />
             ) : null}
             {/* Stroke swatch: hidden for Technology icons (the brand mark
@@ -139,18 +181,19 @@ export function ElementColourBorderSections({
             !(isIcon && isTechIconId((target as { iconId?: string }).iconId)) ? (
               <ColourRow
                 label={isIcon ? 'Icon' : 'Border'}
+                icon={<BorderColourIcon />}
                 value={
                   (target as { strokeColor?: string }).strokeColor ??
                   defaultStrokeColor(target as BoxedElement, surface)
                 }
                 {...strokeColorHandlers}
                 {...colorProps('border')}
-                presets={props.presetColors}
+                {...props.colourPalette}
               />
             ) : null}
             <div className="px-2 pb-1 pt-1.5">
               <MenuActionButton
-                label="Reset to colour scheme"
+                label="Reset to theme"
                 onClick={() => {
                   props.onResetColors();
                   onClose();

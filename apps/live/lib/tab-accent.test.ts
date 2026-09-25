@@ -25,7 +25,7 @@ describe('legibleColor', () => {
   });
 });
 
-// A tab on a colour scheme that paints no stroke — Default, and any unthemed
+// A tab on a theme that paints no stroke — Default, and any unthemed
 // tab, which between them are most tabs — falls back to the palette accent.
 // That fallback used to be written `rgb(2 132 199)`, which the transform above
 // cannot parse, so it skipped the ONE accent almost every pill uses: on the

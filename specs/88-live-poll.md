@@ -68,13 +68,43 @@ across that line:
 `LivePoll.style`, all reducing to a single string `value` on the wire so one
 tally path serves them all:
 
-| Style          | Options                     |
-| -------------- | --------------------------- |
-| `yesNo`        | Yes / No                    |
-| `yesNoAbstain` | Yes / No / Abstain          |
-| `choice`       | 2–6 creator-defined options |
-| `rating`       | 1–5                         |
-| `text`         | free text                   |
+| Style           | Options                           |
+| --------------- | --------------------------------- |
+| `yesNo`         | Yes / No                          |
+| `yesNoAbstain`  | Yes / No / Abstain                |
+| `choice`        | 2–10 creator-defined options      |
+| `collaborators` | everyone currently in the diagram |
+| `rating`        | 1–5                               |
+| `text`          | free text                         |
+
+### `collaborators` — vote for a person
+
+"Who chose this movie?", "who should take this?", "who explained that best?" —
+the answers are the people in the room, and typing their names into a `choice`
+poll by hand is both tedious and wrong by the time somebody joins.
+
+It is a **snapshot, not a live list.** The roster is read once, when the poll
+starts, and stored in the poll's own `options` exactly as a `choice` poll's
+are. Everything downstream — the wire op, the tally, the bars — is then
+identical to `choice`, which is the point: a poll whose answers moved while
+people were voting would re-target votes already cast, and late joiners would
+see a different ballot from everyone else.
+
+So the style is an **authoring** convenience, not a new answer shape. It earns
+its place in the union rather than being a button that fills the `choice` list
+because the composer has to show the roster it is about to freeze, and because
+a Session button ([spec/105](105-session-button.md)) can be configured with it
+long before the room it will run in exists.
+
+Names are de-duplicated before they are frozen (`poll-collaborators.ts`): two
+guests both called "Guest" would otherwise be one token and their votes would
+merge into a single bar. Repeats are suffixed — `Guest`, `Guest (2)`. The
+roster is capped at `POLL_OPTIONS_MAX` like any other option list, and the
+composer previews exactly what will be sent, so a room bigger than the cap
+shows the truncation before it is asked rather than after.
+
+Precedent: the Picker ([spec/107](107-picker.md)) already draws candidates from
+`participants`, and this is the same idea pointed at a poll.
 
 The union lives in **`@livediagram/diagram`** (`poll-style.ts`), not beside
 `LivePoll` here, because a Session button ([spec/105](105-session-button.md))
@@ -89,30 +119,61 @@ Caps (the issue's other open question), enforced at the input and re-checked
 when an op arrives so a hand-crafted frame can't blow up a peer's panel:
 
 - question ≤ 200 chars
-- ≤ 6 choice options, each ≤ 60 chars, minimum 2
+- ≤ 10 options, each ≤ 60 chars, minimum 2 — for `choice` AND `collaborators`, which are the two styles carrying their own list (`POLL_OPTIONS_MAX`; was 6, which ran out on ordinary polls like the people in the room or a film shortlist — nothing downstream is keyed to the count, the results bars come off the list)
 - free-text answer ≤ 280 chars
 
 ## Lifecycle
 
-1. **Compose.** Tab menu → **Collaborate → Poll**: question, style, options
-   if the style needs them, then **Start poll**. Edit-role only. Collaborate
-   is the side-flyout parent row that groups the live session tools
-   (Countdown / Stopwatch / Vote / Poll) under one entry, the same
-   parent/child pattern the element menu uses.
-2. **Prompt.** Every connected participant gets a modal with the question and
-   a **Skip** escape (Escape and a backdrop click both skip, so dismissing is
-   an answer of "no opinion" rather than a silent drop). Answering or skipping
-   both count as responding. The dialog is keyed on the poll id so a second
-   poll never inherits the first one's half-typed free-text answer.
+1. **Compose.** Tab menu → **Collaborate → Poll** (the Session Studio,
+   spec/39): question, answer style picked from drawn tiles, answers if the
+   style needs them (Enter moves to the next, making one at the end), then
+   **Ask everyone** (or Enter in the question). A **What people see** card
+   previews the exact prompt, built from the same `pollStyleTokens` the real
+   prompt reads, so a typo is caught before it lands on every screen. The
+   button names what is missing while it can't ask ("Write a question to
+   ask", "Add at least 2 answers") instead of sitting greyed out. Edit-role
+   only. A diagram that isn't shared or on a team does NOT block a poll: it
+   runs locally, just for the host (rehearsing one, or asking a room you are
+   presenting to), and the composer shows a note that only you will get it.
+   The canvas Session button behaves the same way.
+2. **Prompt.** Every connected participant gets a **sheet rising from the
+   bottom of the screen** (`PollPromptSheet`), with the question and a **Skip**
+   escape. Answering or skipping both count as responding, and the sheet is
+   keyed on the poll id so a second poll never inherits the first one's
+   half-typed free-text answer.
+
+   **Not a modal, deliberately.** It was one — a centred dialog with a backdrop
+   — and that stopped the room dead. A poll is a question asked DURING the work,
+   and the thing people most want while answering "which of these?" is to look
+   at the thing being asked about; the scrim covered exactly that. The canvas
+   now stays live behind the sheet: you can pan, point, read the board, and
+   answer without dismissing anything.
+
+   What follows from not blocking:
+   - **No focus trap and no autofocus.** Focus stays where the person was
+     working. Stealing it would be the modal's rudeness without the modal.
+   - **Escape still skips**, because the keyboard way out of a prompt should not
+     depend on whether it happens to be modal — except while a text field or
+     label editor has focus, where Escape belongs to the field, and when the
+     work behind the sheet already claimed the press (cancelling a label edit,
+     the format painter, a pending draw, a deselect, or a dialog over the
+     canvas). One Escape does one thing; it never answers the poll by accident.
+   - **There is still no close button.** Skip IS the escape, and it is a real
+     answer (counted separately) rather than a silent dodge. There is no
+     backdrop left to click, so Skip and Escape are the whole of it.
+
 3. **Results.** A **`PollPanel`** built on the shared `MovablePanel`, like
    Collaborate / Layers / Activity: draggable, resettable, and dockable
    into a corner stack, homed **top-right directly under the Palette**
    (the corner the panels you act on live in). It registers as a real
    `PanelId` rather than floating outside the panel system, but it is the
    only panel that isn't always present — it joins and leaves its corner
-   stack with the poll. It carries no mobile-dock entry on purpose: the
-   dock is a row of toggles for panels you go looking for, and a poll
-   presents itself. Shown to the host and to anyone who has responded — so
+   stack with the poll. In the dock layout (a phone, or the minimal panel
+   preference on desktop) it lives under the dock's **Poll** button like
+   every other panel and closes with it, and it **opens by itself** when a
+   poll starts or when you answer one (keyed on the poll id, so it opens
+   once per poll rather than fighting you after you close it). The Vote
+   panel follows the same rule for its **Vote** button. Shown to the host and to anyone who has responded — so
    answering is what buys you the tally, and a participant who hasn't yet
    can't be nudged by the running numbers. The panel updates live and reports
    how many people skipped, separately from the answer counts.

@@ -1,7 +1,7 @@
 // Structural element operations, lifted out of editor-page.tsx.
 // Where useElementStyle mutates *fields* on the selection, these
 // handlers change the element *set* and/or the selection itself:
-// delete, marquee commit, group / ungroup, and the duplicate family
+// delete, marquee commit, lock, and the duplicate family
 // (single, multi-select, and duplicate-and-connect).
 //
 // They all run through the page's history-aware `commit`, and most
@@ -14,11 +14,9 @@ import {
   afterElementsRemoved,
   createText,
   bringManyToFront,
-  duplicateGroupedElements,
+  duplicateElements,
   sendManyToBack,
   isBoxed,
-  ungroup,
-  unionBoxedBounds,
   type Element,
   type Tab,
 } from '@livediagram/diagram';
@@ -31,12 +29,9 @@ import { announce } from '@/lib/announcer';
 import { describeMany, describeOne } from '@/lib/element-names';
 
 type EditorSelectionActionsDeps = {
-  // The active selection resolved to ids (single selection expands to
-  // its group; multi-select returns the marquee bag).
+  // The active selection resolved to ids (the single selection, or the
+  // marquee bag).
   currentSelectionIds: () => Set<string>;
-  // Group members of an element id (the element alone when ungrouped).
-  // Drives the group-aware duplicate paths.
-  memberIdsOf: (id: string | null) => Set<string>;
   // The single-selected element id (null in multi-select / none).
   selectedId: string | null;
   // The marquee multi-selection bag.
@@ -49,7 +44,6 @@ type EditorSelectionActionsDeps = {
   setEditingId: (id: string | null) => void;
   setMultiSelectedIds: (ids: Set<string>) => void;
   setFormatSourceId: (id: string | null) => void;
-  setGroupSourceId: (id: string | null) => void;
   // True when another participant has the element selected (concurrent-
   // selection lock, spec/07). A marquee skips locked elements so a drag
   // box doesn't scoop up something someone else is editing.
@@ -65,7 +59,6 @@ type EditorSelectionActionsDeps = {
 export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
   const {
     currentSelectionIds,
-    memberIdsOf,
     selectedId,
     multiSelectedIds,
     activeTab,
@@ -74,20 +67,18 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     setEditingId,
     setMultiSelectedIds,
     setFormatSourceId,
-    setGroupSourceId,
     lockedByOther,
     layerLockedIds,
     layerInertIds,
   } = deps;
 
-  // The duplicate family (single group-aware + marquee cluster with
-  // arrow re-pinning) — see useElementDuplication (mounted here so the
+  // The duplicate family (single + marquee cluster with arrow
+  // re-pinning) — see useElementDuplication (mounted here so the
   // caller's return shape is unchanged).
   const { duplicateSelected, duplicateMultiSelected } = useElementDuplication({
     selectedId,
     multiSelectedIds,
     activeTab,
-    memberIdsOf,
     commit,
     setSelectedId,
     setMultiSelectedIds,
@@ -113,10 +104,9 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
         if (el.type === 'arrow' && arrowReferencesAny(el, targetIds)) return false;
         return true;
       });
-      // One healing pass for everything a delete leaves dangling: arrows
-      // pinned to a group whose LAST member just went (spec/09), and notes
+      // One healing pass for everything a delete leaves dangling: notes
       // docked to a host that just went (spec/139 Phase 7).
-      return afterElementsRemoved(els, survivors);
+      return afterElementsRemoved(survivors);
     });
     setSelectedId(null);
     setEditingId(null);
@@ -165,36 +155,6 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     }
     setEditingId(null);
     setFormatSourceId(null);
-    setGroupSourceId(null);
-  };
-
-  // Bind every multi-selected boxed element into a single group. Same
-  // groupId across all of them so move / lock / delete propagate
-  // through the selection in the existing group machinery.
-  const groupMultiSelected = () => {
-    if (multiSelectedIds.size < 2) return;
-    // Only boxed elements can carry a groupId. With fewer than two boxed
-    // members (e.g. an arrow-only marquee) the commit below would change
-    // nothing — yet still push an undo step, clear redo, and drop the
-    // selection. Bail before any of that.
-    const boxedCount = activeTab.elements.filter(
-      (el) => multiSelectedIds.has(el.id) && isBoxed(el),
-    ).length;
-    if (boxedCount < 2) return;
-    const groupId = crypto.randomUUID();
-    commit((els) =>
-      els.map((el) => (multiSelectedIds.has(el.id) && isBoxed(el) ? { ...el, groupId } : el)),
-    );
-    // After grouping, transition from marquee multi-select to single
-    // selection on the new group: `selectionMembers` picks up every
-    // member when one is selected, so the user sees the group treated
-    // as one unit. Without this transition the multi-select toolbar
-    // just stayed up looking identical and the Group click felt like
-    // a no-op.
-    const firstBoxed = activeTab.elements.find((el) => multiSelectedIds.has(el.id) && isBoxed(el));
-    if (firstBoxed) setSelectedId(firstBoxed.id);
-    setMultiSelectedIds(new Set());
-    track('Element', 'Grouped');
   };
 
   // Toggle lock across every multi-selected element. If any member is
@@ -232,7 +192,7 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
         return true;
       });
       // See deleteSelected: the same healing pass.
-      return afterElementsRemoved(els, survivors);
+      return afterElementsRemoved(survivors);
     });
     setMultiSelectedIds(new Set());
     setEditingId(null);
@@ -257,21 +217,15 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
   };
 
   // Quick add (spec/09): from the selected element, add a new element to
-  // `direction`. `kind` decides what's added — 'duplicate' clones the source
-  // (group-aware), 'text' drops a caption to the side. Neither draws a
+  // `direction`. `kind` decides what's added — 'duplicate' clones the source,
+  // 'text' drops a caption to the side. Neither draws a
   // connector arrow; the + menu's Arrow action is how you connect them.
   const spawnConnectSelected = (direction: QuickConnectDirection, kind: QuickConnectKind) => {
     if (!selectedId) return;
     const source = activeTab.elements.find((el) => el.id === selectedId);
     if (!source || !isBoxed(source)) return;
-    const ids = memberIdsOf(selectedId);
-    const groupBounds = unionBoxedBounds(activeTab.elements, ids);
-    const baseBounds = groupBounds ?? {
-      x: source.x,
-      y: source.y,
-      width: source.width,
-      height: source.height,
-    };
+    const ids = new Set([selectedId]);
+    const baseBounds = { x: source.x, y: source.y, width: source.width, height: source.height };
     // Nearest in-line gap matching + step-until-clear placement — pure
     // geometry, lifted to lib/quick-add-placement.ts.
     const { dx, dy } = quickAddPlacement({
@@ -284,7 +238,7 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
       // Clone only, no connector arrow. Most duplicates don't need an arrow,
       // so adding one was usually noise to delete; draw one with the + menu's
       // Arrow action on the occasions you do want it.
-      const { newElements, idMap } = duplicateGroupedElements(activeTab.elements, ids, dx, dy);
+      const { newElements, idMap } = duplicateElements(activeTab.elements, ids, dx, dy);
       const sourceCopyId = idMap.get(source.id);
       if (!sourceCopyId) return;
       commit((els) => [...els, ...newElements]);
@@ -295,12 +249,9 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
 
     // Text: drop a text element to the side and open it for editing — but
     // do NOT connect it with an arrow (a caption / label next to a node
-    // isn't a flow edge, so a connector would be noise). Spawned from a
-    // GROUP's plus ring, the text joins the group (spec/09): an element you
-    // grow a group by belongs to it, so it moves / locks with the rest.
+    // isn't a flow edge, so a connector would be noise).
     if (kind === 'text') {
-      const created = createText(baseBounds.x + dx, baseBounds.y + dy);
-      const text = source.groupId !== undefined ? { ...created, groupId: source.groupId } : created;
+      const text = createText(baseBounds.x + dx, baseBounds.y + dy);
       commit((els) => [...els, text]);
       setSelectedId(text.id);
       setEditingId(text.id);
@@ -309,20 +260,11 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     }
   };
 
-  const ungroupSelected = () => {
-    if (!selectedId) return;
-    const source = activeTab.elements.find((el) => el.id === selectedId);
-    if (!source || !isBoxed(source) || source.groupId === undefined) return;
-    const groupId = source.groupId;
-    commit((els) => ungroup(els, groupId));
-    track('Element', 'Ungrouped');
-  };
-
   // Intra-LAYER z-order (selection popover). Distinct from the element
   // menu's Bring to Front, which is a LAYER move (spec/74): these nudge the
   // selection within its own band, so two notes on the same layer can be
-  // stacked without shuffling anyone between layers. Group-aware: the whole
-  // group travels, or overlapping members would separate.
+  // stacked without shuffling anyone between layers. A multi-selection
+  // travels together, keeping its members' relative order.
   const stackSelected = (direction: 'front' | 'back') => {
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
@@ -337,13 +279,11 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     stackSelectedBack: () => stackSelected('back'),
     deleteSelected,
     selectMarquee,
-    groupMultiSelected,
     toggleLockMultiSelected,
     duplicateMultiSelected,
     deleteMultiSelected,
     narrowMultiSelection,
     duplicateSelected,
     spawnConnectSelected,
-    ungroupSelected,
   };
 }

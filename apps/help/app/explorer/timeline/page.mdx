@@ -18,7 +18,7 @@ export const metadata = helpMetadata({
 
 **Timeline** is the view the [Explorer](/explorer) opens on. Where [Recent](/help/explorer/recent/) answers "what did I touch last", the Timeline answers a different question: **what has happened since I was last here**, including the things you did not do yourself.
 
-<Figure caption="One group per day, one bubble per event, colour-coded by the kind of thing that happened.">
+<Figure caption="One group per day, one card per event, colour-coded by the kind of thing that happened.">
   <TimelineFeed />
 </Figure>
 
@@ -29,7 +29,7 @@ Every event on the feed comes from something that actually happened in your acco
 - **Your diagrams** — created, renamed, duplicated, filed into a folder, published to a team, deleted, and a daily summary of the days you worked on one.
 - **Collaboration** — comments added to diagrams you own or share, threads resolved, [actions](/help/collaboration/assigned-actions/) assigned to you or completed by someone else, and share links created.
 - **Teams** — invites you receive, members joining or leaving, people being removed, and role changes, for every [team](/help/explorer/team-spaces/) you belong to.
-- **Your account** — [API tokens](/help/account-and-data/api-tokens/) created, custom colour schemes saved, and images uploaded.
+- **Your account** — [API tokens](/help/account-and-data/api-tokens/) created, custom themes saved, and images uploaded.
 
 If a diagram lives in a team's shared library, everyone in that team sees its events. A personal diagram's events are yours alone.
 
@@ -43,13 +43,23 @@ That is the question the Timeline exists to answer, so it keeps a watermark of w
 
 ## Reading a day
 
-Events are grouped by the day they happened, newest day first, with a dot and a line running down the left. Today's group is marked with a **Today** pill, and each row carries the time it happened.
+Events are grouped by the day they happened, newest day first, with a dot and a line running down the left. Today's group is marked with a **Today** pill, and each day's events are laid out as **cards**, the same cards [Recent](/help/explorer/recent/) uses, so you recognise a diagram by its picture before you read a word.
 
 Days and times are **your local ones**, so an evening's work in Sydney sits under that evening rather than under yesterday.
 
-Each row names **what it happened to first** — "Payments architecture deleted", not "Diagram deleted" with the name underneath — so you can scan the left edge and stop where something matters. Diagrams show a small preview of themselves on the right.
+A card leads with a preview of the diagram, then its name, then **why it is on the timeline**: "Diagram Created", "Diagram Updated", "Comment Added", with the time and, where it matters, who did it. Events with nothing to picture (a team, a folder, an API token) show their glyph in the preview space instead, so every card in a row is the same shape.
 
-Click a row to go to whatever it is about: the diagram, the team, your invites. Rows you cannot open are dimmed, so you can tell at a glance. A deleted diagram is the usual case: there is nothing left to open.
+Click a card to go to whatever it is about: the diagram, the team, your invites. Cards you cannot open are dimmed, so you can tell at a glance. A deleted folder or theme is the usual case: there is nothing left to open.
+
+**A diagram card has the same ⋯ menu as it does in Recent.** Rename, Duplicate, Change Folder, Favourite, History, Hide from Recent, Take Offline or Sync, Delete: if you spot yesterday's diagram on the feed and want to file it, you do it from there rather than finding it again in a folder. Right-clicking the card opens the same menu. **A folder card has the same ⋯ menu as a folder does elsewhere in the Explorer**: Rename, New Subfolder, Change Folder, Delete. Whatever you do from a card shows on the feed straight away, with no need to refresh the page.
+
+**Other cards offer what you can do with that kind of thing.** An API token's card can revoke the token; a team's card can open, edit, leave or delete the team (edit and delete for admins); an invite's card can accept or decline it; a theme's card can edit or delete the theme. A diagram card also has **Share**, which opens the diagram with its Share dialog up. If the thing no longer exists (a revoked token, an answered invite), the card just offers to open that section.
+
+**Deleting a diagram takes it off the Timeline entirely.** Every card about it goes, and nothing is written in its place: from the feed's point of view it never existed. Folders, themes and teams you delete keep one "Deleted" card, since other people may have relied on them.
+
+**Every card's menu ends with "Remove from Timeline".** If today is getting cluttered, take off the cards you don't need to see again. A stack has the same menu, and removing it takes every card in the run off at once. It only tidies _your_ feed: a teammate looking at the same event still has it, and a team's activity feed keeps everything. A removed card stays removed even if the same thing happens again later that day.
+
+A diagram you created and then worked on the same day shows **one card, "Diagram Created"**, rather than a Created and an Updated card with the same picture. Editing a new diagram on the day you made it is not news.
 
 Anything that happened since you last opened the Timeline carries a **New** badge, and the sidebar shows a count of other people's activity waiting for you.
 
@@ -57,7 +67,7 @@ Anything that happened since you last opened the Timeline carries a **New** badg
 
 The colour of a row is about **what happened**, not which part of the product it happened in:
 
-- **Red** — something was destroyed or someone lost access: a diagram deleted, a member removed from a team.
+- **Red** — something was destroyed or someone lost access: a team deleted, a member removed from a team, a token revoked.
 - **Amber** — the shape of things changed: renames, moves, team membership, roles, sharing, and anything about to expire.
 - **Green** — the ordinary business of building: created, edited, commented, completed.
 
@@ -65,13 +75,13 @@ Three colours rather than one per feature, because the question you are asking a
 
 ### Busy days collapse
 
-A day where you renamed six diagrams should not be six lines. When several events of the same kind land on one day, they fold into a single bubble that says how many there were.
+A day where you renamed six diagrams should not be six cards. When several events of the same kind land on one day, they fold into a single stacked card that says how many there were.
 
-<Figure caption="Several events of one kind become one bubble; clicking expands the run in place.">
+<Figure caption="Several events of one kind become one stacked card; clicking expands the run in place.">
   <TimelineStacking />
 </Figure>
 
-Click it to open the run, and **Collapse** at the bottom of it to fold it back up.
+Click it to open the run. The stacked card stays at the front of the run; click it again to fold the run back up.
 
 Two kinds never collapse, because collapsing them would hide the thing you came to read:
 
@@ -87,11 +97,11 @@ Not everything on the feed is in the past. Anything with an expiry — an [API t
   stops working next Tuesday says so this week.
 </Tip>
 
-## Week and calendar views
+## Calendar view
 
-Switch **List** to **Week** or **Calendar** in the header to see the same events as a grid. Each day carries one dot per colour present, with a number when there was more than one — so a red dot tells you something was deleted that day without opening anything. Click a dot to read that day's events of that kind.
+Switch **Cards** to **Calendar** in the header to see the same events as a month grid. Each day carries one dot per colour present, with a number when there was more than one — so a red dot tells you something was deleted that day without opening anything. Click a dot to read that day's events of that kind, as the same cards the list shows.
 
-In month view the arrows skip straight to the next month that actually has something in it, so a quiet stretch does not cost you four clicks. Week view pages one week at a time, empty or not, because the gaps are part of what you are looking at.
+The arrows page one month at a time, empty or not, because the gaps are part of what you are looking at.
 
 ## Filtering
 
@@ -101,7 +111,7 @@ Below it sits a chip per area — Diagrams, Teams, Account — and a small calen
 
 The Timeline is not live. It loads when you open it, so it never shifts under you while you are reading; reopening the page brings anything new.
 
-Filters and the calendar view are per visit. Come back tomorrow and the Timeline opens as a plain list again.
+Filters and the calendar view are per visit. Come back tomorrow and the Timeline opens on Cards again.
 
 ## Guests and signing in
 

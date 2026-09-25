@@ -1,10 +1,9 @@
 import type { Element } from '@livediagram/diagram';
 import { Tooltip } from '@/components/primitives/Tooltip';
 import { buildFilterGroups, SelectionFilterMenu } from '@/components/canvas/SelectionFilterMenu';
-import { GroupIcon } from '@/components/canvas/selection-popover-icons';
 
-// Shared styling for the toolbar's plain icon buttons (More / Duplicate / Group
-// / Export). Lock (active brand fill) and Delete (rose / disabled) compose
+// Shared styling for the toolbar's plain icon buttons (More / Duplicate /
+// Export). Lock (active brand fill) and Delete (rose / disabled) compose
 // their own variants, so they're not on this.
 const TOOLBAR_BTN =
   'flex h-7 w-7 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white';
@@ -22,7 +21,6 @@ type MultiSelectionToolbarProps = {
   selectedElements: Element[];
   onDuplicate: () => void;
   onDelete: () => void;
-  onGroup: () => void;
   onToggleLock: () => void;
   // Narrows the selection to one kind (Filter Selection menu). Omitted for
   // view-role, where the selection can't be edited.
@@ -43,7 +41,6 @@ export function MultiSelectionToolbar({
   selectedElements,
   onDuplicate,
   onDelete,
-  onGroup,
   onToggleLock,
   onFilter,
   onExport,
@@ -93,19 +90,24 @@ export function MultiSelectionToolbar({
         </button>
       </Tooltip>
       {/* Duplicate copies the selection; everything after acts ON it
-          (group / lock / export / delete) — the divider marks that
+          (export, then lock / delete) — the divider marks that
           boundary, same as the one after More above. */}
       <span aria-hidden className="h-5 w-px bg-slate-200 dark:bg-slate-700" />
-      <Tooltip title="Group" description="Bind so they move and lock together.">
+      {/* Lock sits with Delete, past the last divider: they are the two that
+          decide whether these elements can still be touched, and locking is
+          what makes the Delete beside it refuse. A divider between them read
+          as Lock belonging with Export, which it does not. */}
+      <Tooltip title="Export" description="Export just these elements.">
         <button
           type="button"
-          onClick={onGroup}
-          aria-label="Group selected elements"
+          onClick={onExport}
+          aria-label="Export selected elements"
           className={TOOLBAR_BTN}
         >
-          <GroupIcon size={14} />
+          <ExportIcon />
         </button>
       </Tooltip>
+      <span aria-hidden className="h-5 w-px bg-slate-200 dark:bg-slate-700" />
       <Tooltip
         title={anyLocked ? 'Unlock' : 'Lock'}
         description={anyLocked ? 'Unlock so they move again.' : "Lock so they can't move."}
@@ -124,17 +126,6 @@ export function MultiSelectionToolbar({
           <LockIcon closed={anyLocked} />
         </button>
       </Tooltip>
-      <Tooltip title="Export" description="Export just these elements.">
-        <button
-          type="button"
-          onClick={onExport}
-          aria-label="Export selected elements"
-          className={TOOLBAR_BTN}
-        >
-          <ExportIcon />
-        </button>
-      </Tooltip>
-      <span aria-hidden className="h-5 w-px bg-slate-200 dark:bg-slate-700" />
       <Tooltip
         title="Delete"
         description={

@@ -101,9 +101,6 @@ function endpointOn(end: { kind: string; elementId?: string; arrowId?: string },
   if (end.kind === 'pinned') return end.elementId !== undefined && ids.has(end.elementId);
   if (end.kind === 'on-arrow') return end.arrowId !== undefined && ids.has(end.arrowId);
   // A free endpoint pins to nothing, so it can never tie an arrow to a slide.
-  // 'pinned-group' names a group, not an element, and is left out for the same
-  // reason: the slide holds elements, and inferring group membership here
-  // would guess at an intent the author never expressed.
   return false;
 }
 

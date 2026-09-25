@@ -8,6 +8,7 @@ import type { SelectedNode } from './views';
 
 const STATIC_NODES: SelectedNode[] = [
   { kind: 'timeline' },
+  { kind: 'activity' },
   { kind: 'recent' },
   { kind: 'favourites' },
   { kind: 'themes' },
@@ -20,7 +21,6 @@ const STATIC_NODES: SelectedNode[] = [
   { kind: 'shared' },
   { kind: 'gallery' },
   { kind: 'invites' },
-  { kind: 'profile' },
 ];
 
 describe('explorer route mapping', () => {

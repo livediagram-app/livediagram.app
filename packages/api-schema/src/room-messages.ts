@@ -104,6 +104,10 @@ export const PRESENCE_OP_KINDS = [
   // sender, a view-only visitor could not be FOLLOWED at all, contradicting
   // spec/131's "the audience on a view link is exactly who most needs it".
   'viewport',
+  // "Come and look at this" (spec/144). Ephemeral for the same reason a laser
+  // is: a request to look somewhere is about a moment, and one replayed to a
+  // late joiner is answering a sentence nobody is still saying.
+  'focus-here',
 ] as const;
 
 // Room op kinds that DO change the diagram: they get a monotonic `seq` within
@@ -117,6 +121,10 @@ export const MUTATION_OP_KINDS = [
   'tab',
   'tab-meta',
   'el',
+  // One dot placed or taken back (spec/39). A mutation like any other — it
+  // gets a seq, lands in the catch-up log, and is refused from a view-role
+  // sender, because casting already requires edit rights.
+  'vote',
   'diagram-meta',
   'log',
   'log-remove',
@@ -141,8 +149,6 @@ export const ROOM_OP_KINDS = [
 ] as const;
 
 export type PresenceOpKind = (typeof PRESENCE_OP_KINDS)[number];
-export type MutationOpKind = (typeof MUTATION_OP_KINDS)[number];
-export type RoomOpKind = (typeof ROOM_OP_KINDS)[number];
 
 // Membership test for the room's ordering + role gate. Takes a loose string
 // because it reads `op.kind` off an `unknown` wire payload (see ServerMessage
@@ -154,6 +160,45 @@ export function isPresenceOpKind(kind: unknown): kind is PresenceOpKind {
 export function isSystemOpKind(kind: unknown): kind is (typeof SYSTEM_OP_KINDS)[number] {
   return typeof kind === 'string' && (SYSTEM_OP_KINDS as readonly string[]).includes(kind);
 }
+
+// ---------------------------------------------------------------------
+// Facilitator (spec/149)
+// ---------------------------------------------------------------------
+
+// Why this is a MESSAGE and not a room op: an op is relayed, and the baton is
+// arbitrated. Only the room can say who holds it, because only the room can see
+// every socket, and only the room can mint a token no other peer ever receives.
+// A relayed "I am the facilitator now" would be a claim anybody could make.
+
+/** What moved the baton, which is what lets each client word its own toast. */
+export type FacilitatorReason =
+  // Somebody took a free baton.
+  | 'claim'
+  // Somebody handed it to somebody else (or the owner took it back).
+  | 'grant'
+  // The holder stepped down.
+  | 'release'
+  // The holder left and did not come back inside the grace period.
+  | 'left'
+  // The state a joiner is told on connect. Announces nothing: the room is
+  // catching them up, not reporting an event.
+  | 'state';
+
+export type FacilitatorAction =
+  // Take a free baton (or, as the owner, take a held one).
+  | { action: 'claim' }
+  // Hand it to a presence id: the owner, or the holder passing it on.
+  | { action: 'grant'; to: string }
+  // Step down.
+  | { action: 'release' }
+  // Free an element somebody else is holding through the concurrent-selection
+  // lock (spec/07), so the room can get on. USING the baton rather than moving
+  // it, but it rides the same arbitrated channel for the same reason the
+  // others do: relayed, it would be a command any peer could issue against any
+  // other, and the point is that only the person running the session can.
+  //
+  // `target` is the holder's presence id, `elementId` what they are holding.
+  | { action: 'unlock'; target: string; elementId: string };
 
 // Outgoing WebSocket frames the room sends to clients.
 // `presence` is the full participant list refreshed on join / leave;
@@ -180,14 +225,54 @@ export type ServerMessage =
       seq: number;
       ops: { from: string; op: unknown; seq: number }[];
       resync: boolean;
-    };
+    }
+  // Who holds the facilitator baton (spec/149), broadcast on every change and
+  // sent once to each joiner with `reason: 'state'`.
+  //
+  // `token` rides ONLY the copy sent to the new holder, and is the whole
+  // security model: the room knows no identities (spec/61 §6), so the holder
+  // proves itself by presenting the token on its next `hello` rather than by
+  // being anybody in particular. A refresh therefore keeps the baton, and no
+  // other peer can claim it, because no other peer was ever sent it.
+  | {
+      kind: 'facilitator';
+      holder: string | null;
+      by?: string;
+      reason: FacilitatorReason;
+      token?: string;
+    }
+  // "Your hold on this element has been released" (spec/07 + spec/149), sent
+  // to the HOLDER'S SOCKET ALONE. Being sent it is the whole of the addressing:
+  // the room mints a presence id per socket and never tells a client which one
+  // is its own (spec/61 §6), so a broadcast carrying a target id would reach
+  // nobody able to recognise themselves in it. Same trick as the baton token.
+  //
+  // The receiver drops the selection and re-broadcasts its own `select` op, so
+  // every other peer's lock clears through the ordinary path and the room needs
+  // to tell nobody else anything.
+  | { kind: 'selection-released'; elementId: string; by: string }
+  // The ordering cursor this session has reached (spec/75, Level 1), sent on
+  // `hello` and to the SENDER of each ordered op, which the relay skips. Without
+  // it a client only learned seqs from other people's ops, so a reconnect
+  // replayed its own ops back at it (and, having heard nothing, the whole log).
+  // Harmless for idempotent element ops; a `vote` op is a delta, so every
+  // replayed dot was counted twice.
+  | CursorMessage;
+
+export type CursorMessage = { kind: 'cursor'; epoch: string; seq: number };
 
 // Incoming WebSocket frames clients send to the room.
 // `hello` identifies the participant on connect; `op` is any local
 // mutation the client wants rebroadcast to peers.
 export type ClientMessage =
-  | { kind: 'hello'; participant: ParticipantPresence }
+  // `facilitatorToken` (spec/149) is the baton coming home after a refresh:
+  // the room checks it against the one it issued and, if it still matches,
+  // hands the baton to this new socket. Absent on every ordinary hello.
+  | { kind: 'hello'; participant: ParticipantPresence; facilitatorToken?: string }
   | { kind: 'op'; op: unknown }
+  // Ask the room to move the baton (spec/149). The room decides; the client
+  // learns the answer from the `facilitator` frame like everybody else.
+  | ({ kind: 'facilitator' } & FacilitatorAction)
   // Sent right after re-connecting (spec/75, Level 1): "here's the last
   // epoch+seq I applied — tell me what I missed, or that I must re-hydrate".
   // `epoch` is null on a client that hasn't seen an ordered op yet.
@@ -234,6 +319,23 @@ export type RoomOp =
   // the element array is untouched, so this rides alongside `el` ops
   // without shipping the whole tab.
   | { kind: 'tab-meta'; tabId: string; patch: Partial<Omit<Tab, 'elements'>> }
+  // ONE dot, placed (`delta: 1`) or taken back (`delta: -1`) by `voter` on
+  // `elementId` (spec/39).
+  //
+  // Why a dot is not just a `tab-meta` patch, which is what it used to be:
+  // `vote.votes` is a single map that EVERY participant writes at the same
+  // time, and a tab-meta patch replaces a field wholesale. So a peer's patch,
+  // built from a snapshot taken before your dot arrived, silently erased it —
+  // and because the remaining-dots budget is counted out of that same map, the
+  // dot came back to its owner as spendable. A retro with six voters lost dots
+  // and reported votes retracting on their own.
+  //
+  // This op carries the CHANGE rather than the state, so two dots cast in the
+  // same instant commute: each peer applies both, in whatever order they land,
+  // and everybody converges on the same map. It is the same move spec/75 made
+  // for elements, for the same reason, on the one field where concurrent
+  // writers are not the exception but the whole point.
+  | { kind: 'vote'; tabId: string; elementId: string; voter: string; delta: 1 | -1 }
   // Diagram-level metadata changed: rename, tab reorder, tab add /
   // delete. Carries the new ordered list of tab summaries (id + name
   // + order) so receivers can update the TabBar without fetching the
@@ -318,6 +420,20 @@ export type RoomOp =
   // already-throttled channel. The cost is accepted and written down: a room
   // where nobody follows anybody still carries these while people scroll.
   | { kind: 'viewport'; tabId: string; pan: { x: number; y: number }; zoom: number }
+  // --- Bring Focus (spec/144) ----------------------------------------
+  // Somebody pressed a Bring Focus element: offer everyone else a jump to it.
+  //
+  // Carries the element's CENTRE and the presser's zoom, not the presser's
+  // pan. Two people rarely have the same window size, so copying a pan lands
+  // the element off-centre (or off-screen) for anyone whose canvas is a
+  // different shape; centring the point is the correct translation of "come
+  // and look at this", and the zoom is what makes their view show the same
+  // amount of board.
+  //
+  // No sender name: the envelope already identifies the sender and the
+  // receiver resolves the name from the presence list it holds, so a renamed
+  // participant's invitation reads correctly.
+  | { kind: 'focus-here'; tabId: string; at: { x: number; y: number }; zoom: number }
   // --- Live poll (spec/88) -------------------------------------------
   // Deliberately NOT a Tab field like the timer / dot-vote: a poll is
   // ephemeral, so it exists only as these ops and the memory of the
@@ -350,9 +466,10 @@ export type RoomOp =
 // The room itself still operates on `op: unknown` — the agnosticism
 // stays at the worker boundary.
 export type RoomOutgoing =
-  | { kind: 'hello'; participant: ParticipantPresence }
+  | { kind: 'hello'; participant: ParticipantPresence; facilitatorToken?: string }
   | { kind: 'op'; op: RoomOp }
-  | { kind: 'sync'; epoch: string | null; lastSeq: number };
+  | { kind: 'sync'; epoch: string | null; lastSeq: number }
+  | ({ kind: 'facilitator' } & FacilitatorAction);
 
 export type RoomIncoming =
   | { kind: 'presence'; participants: ParticipantPresence[] }
@@ -363,4 +480,14 @@ export type RoomIncoming =
       seq: number;
       ops: { from: string; op: RoomOp; seq: number }[];
       resync: boolean;
-    };
+    }
+  | {
+      kind: 'facilitator';
+      holder: string | null;
+      by?: string;
+      reason: FacilitatorReason;
+      token?: string;
+    }
+  // Addressed by being sent at all — see ServerMessage above.
+  | { kind: 'selection-released'; elementId: string; by: string }
+  | CursorMessage;

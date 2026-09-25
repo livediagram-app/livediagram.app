@@ -4,6 +4,7 @@ vi.mock('./api/self', () => ({
   apiMintGuestId: vi.fn(),
   apiUpgradeGuestId: vi.fn(),
 }));
+vi.mock('./telemetry', () => ({ track: vi.fn() }));
 
 import { apiMintGuestId, apiUpgradeGuestId } from './api/self';
 import { ensureSignedGuestIdentity } from './guest-identity';
@@ -79,5 +80,63 @@ describe('ensureSignedGuestIdentity', () => {
     mockMint.mockResolvedValue({ ownerId: 'fresh', ownerSig: null });
     expect(await ensureSignedGuestIdentity()).toEqual({ id: 'existing', sig: null });
     expect(mockUpgrade).not.toHaveBeenCalled();
+  });
+});
+
+// New Visitors (`Participant`/`Created`, spec/22) must count a browser once.
+// The once-per-load guard is module state, so each case loads the modules
+// fresh rather than inheriting a flag an earlier test already set.
+describe('Participant·Created counts once per browser', () => {
+  async function fresh() {
+    vi.resetModules();
+    const self = await import('./api/self');
+    const telemetry = await import('./telemetry');
+    const guest = await import('./guest-identity');
+    const local = await import('./local-identity');
+    const created = () =>
+      vi
+        .mocked(telemetry.track)
+        .mock.calls.filter(([c, a]) => c === 'Participant' && a === 'Created').length;
+    return { self: vi.mocked(self), guest, local, created };
+  }
+
+  it('shares one mint between concurrent callers', async () => {
+    const { self, guest, created } = await fresh();
+    self.apiMintGuestId.mockResolvedValue({ ownerId: 'new', ownerSig: 'sig' });
+    const [a, b] = await Promise.all([
+      guest.ensureSignedGuestIdentity(),
+      guest.ensureSignedGuestIdentity(),
+    ]);
+    expect(a).toEqual(b);
+    expect(self.apiMintGuestId).toHaveBeenCalledTimes(1);
+    expect(created()).toBe(1);
+  });
+
+  it('counts once when a local mint races the signed mint', async () => {
+    // TeamInviteJoin / the /new fallback mint synchronously while the signed
+    // mint is still waiting on the network: one browser, one count.
+    const { self, guest, local, created } = await fresh();
+    let release: (v: { ownerId: string; ownerSig: string }) => void = () => {};
+    self.apiMintGuestId.mockReturnValue(new Promise((r) => (release = r)));
+    const signed = guest.ensureSignedGuestIdentity();
+    local.ensureGuestSelfId();
+    release({ ownerId: 'new', ownerSig: 'sig' });
+    await signed;
+    expect(created()).toBe(1);
+  });
+
+  it('counts once when storage is unavailable and every call re-mints', async () => {
+    const { local, created } = await fresh();
+    (globalThis as unknown as { window: unknown }).window = {};
+    local.ensureGuestSelfId();
+    local.ensureGuestSelfId();
+    expect(created()).toBe(1);
+  });
+
+  it('does not count a returning browser', async () => {
+    const { local, created } = await fresh();
+    window.localStorage.setItem(ID, 'existing');
+    local.ensureGuestSelfId();
+    expect(created()).toBe(0);
   });
 });

@@ -48,6 +48,8 @@ export function VotePanel({
   dock,
   mobileOpenOverride,
   mobileDockAnchor,
+  forceDockMode,
+  onMobileClose,
   stackBelowY,
   readOnly,
 }: {
@@ -81,6 +83,8 @@ export function VotePanel({
       helpArticle="sessionVoting"
       mobileOpenOverride={mobileOpenOverride}
       mobileDockAnchor={mobileDockAnchor}
+      forceDockMode={forceDockMode}
+      onMobileClose={onMobileClose}
       title="Vote"
       position={position}
       defaultCorner="top-right-stacked"

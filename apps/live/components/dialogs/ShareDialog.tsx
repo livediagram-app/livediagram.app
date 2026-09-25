@@ -146,11 +146,7 @@ export function ShareDialog({
         title="Share this diagram"
         subtitle="Anyone with an editor link joins in real time; a view-only link lets people watch without changing anything."
       >
-        <HelpArticleLink
-          article="sharing"
-          title="Sharing"
-          description="Roles, real-time collaboration, and how share links work."
-        />
+        <HelpArticleLink article="sharing" size="md" />
         <DialogCloseButton onClick={onClose} />
       </DialogHeader>
 
@@ -201,11 +197,7 @@ export function ShareDialog({
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-1.5">
             <p className={sectionLabel}>New link</p>
-            <HelpArticleLink
-              article="shareLinkExpiry"
-              title="Link expiry"
-              description="How link lifetime works and where expired links go."
-            />
+            <HelpArticleLink article="shareLinkExpiry" />
           </div>
           {/* Three controls that do NOT fit one line on a phone: the role
               toggle alone wants most of the width, which squeezed the expiry

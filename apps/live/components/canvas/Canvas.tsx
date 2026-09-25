@@ -10,7 +10,7 @@ import { AnimatedCanvasBackground } from '@/components/canvas/AnimatedCanvasBack
 import { pointerToCanvas } from '@/lib/canvas';
 import { deriveCanvasSelection } from '@/lib/canvas-selection';
 import { canvasCursorClass } from '@/lib/canvas-chrome';
-import { useCanvasMobileDock } from '@/hooks/canvas/useCanvasMobileDock';
+import { useCanvasMobileDock, useOpenDockPanelOnChange } from '@/hooks/canvas/useCanvasMobileDock';
 import { drawIntentCursor } from '@/lib/draw-mode';
 import { useCanvasPanAndMarquee } from '@/hooks/canvas/useCanvasPanAndMarquee';
 import { useQuickRing } from '@/hooks/canvas/useQuickRing';
@@ -57,7 +57,7 @@ import { ReactionBurst } from '@/components/canvas/ReactionBurst';
 const AVATAR_BURST_PX = 120;
 import { useAvatarWalk } from '@/hooks/canvas/useAvatarWalk';
 import { AVATAR_SPAWN_GAP, type AvatarPoint } from '@/lib/avatar-walk';
-import { chairSeatPoint } from '@livediagram/diagram';
+import { CHAIR_SITTER_FACING, DEFAULT_CHAIR_FACING, chairSeatPoint } from '@livediagram/diagram';
 import { useAvatarConfig } from '@/hooks/canvas/useAvatarConfig';
 import { parseAvatarConfig } from '@/lib/avatar-config';
 import { reactionPose } from '@/lib/avatar-reactions';
@@ -93,14 +93,12 @@ export function Canvas(props: CanvasProps) {
     setViewportZoom,
     elements,
     selectedId,
-    soloSelectedId,
     multiSelectedIds,
     onSelectMarquee,
     canvasTool,
     onCanvasPointerMove,
     editingId,
     formatSourceId,
-    groupSourceId,
     pendingDraw,
     onCommitDraw,
     onCommitFreehand,
@@ -117,12 +115,6 @@ export function Canvas(props: CanvasProps) {
     onRetryTabLoad,
   } = props;
 
-  // Touch has no right-click, so a press-and-hold on the empty canvas opens
-  // the tab / canvas context menu (the same one desktop reaches via
-  // right-click). Element presses stopPropagation in their own pointerdown,
-  // so this only arms for the bare canvas. Movement (pan / marquee) cancels it.
-  const canvasLongPress = useLongPress((x, y) => onCanvasContextMenu?.(x, y));
-
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   // Paint mode covers BOTH painter entry points: a single-shot armed source
@@ -130,7 +122,6 @@ export function Canvas(props: CanvasProps) {
   // paint mode from its first click (copy cursor, handles/label-drag/dblclick
   // suppressed on boxed elements AND arrows), not only once a source is armed.
   const isPaintMode = formatSourceId !== null || canvasTool === 'format';
-  const isGroupMode = groupSourceId !== null;
   // Nudge above the Fit button when the whole diagram has scrolled out of view.
   const offscreenContent = useOffscreenContent(elements, viewportOffset, viewportZoom, mainRef);
 
@@ -162,7 +153,12 @@ export function Canvas(props: CanvasProps) {
     activeDockAnchor,
     setActiveDockAnchor,
     handleDockButtonClick,
+    openDockPanel,
   } = useCanvasMobileDock(mainRef);
+  // A session panel opens under its dock button when it arrives (spec/88,
+  // spec/39): a new poll (or the one you just answered), a vote just opened.
+  useOpenDockPanelOnChange(props.pollPanel ? props.pollPanel.poll.id : null, 'poll', openDockPanel);
+  useOpenDockPanelOnChange(props.tabVote ? 'vote' : null, 'vote', openDockPanel);
 
   // Pan + marquee + held-Space machinery lives in
   // useCanvasPanAndMarquee. The hook owns the pointerdown / move
@@ -178,6 +174,22 @@ export function Canvas(props: CanvasProps) {
     onDeselect,
     onSelectMarquee,
     isPinchingRef,
+  });
+
+  // Touch has no right-click, so a press-and-hold on the empty canvas opens
+  // the tab / canvas context menu (the same one desktop reaches via
+  // right-click). Element presses stopPropagation in their own pointerdown,
+  // so this only arms for the bare canvas. Movement (pan / marquee) cancels it.
+  //
+  // The same press also armed a marquee (or a pan), still live under the
+  // finger when the hold fires. Its release reads as a sub-4px "drag", which
+  // deselects, and deselecting closes the context menu: the menu flashed
+  // open on the hold and vanished on the lift (iPhone / iPad). The hold has
+  // claimed the press, so drop whatever the press started.
+  const canvasLongPress = useLongPress((x, y) => {
+    setMarquee(null);
+    setPan(null);
+    onCanvasContextMenu?.(x, y);
   });
 
   // Palette drag-drop onto the canvas (onDragOver / onDrop), lifted into
@@ -205,18 +217,16 @@ export function Canvas(props: CanvasProps) {
 
   // Selection-display derivation (primary element, bounds, and every
   // "show this chrome?" predicate) lives in lib/canvas-selection.ts so
-  // it's unit-tested. Memoised because selectionMembers walks every
-  // element and Canvas re-renders on every drag tick.
+  // it's unit-tested. Memoised because it walks the elements and Canvas
+  // re-renders on every drag tick.
   const canvasSelection = useMemo(
     () =>
       deriveCanvasSelection({
         elements,
         selectedId,
-        soloSelectedId,
         multiSelectedIds,
         editingId,
         isPaintMode,
-        isGroupMode,
         tabLocked,
         readOnly,
         esBoard: isEventStormingTab({ kind: tabKind, layers: tabLayers }),
@@ -225,11 +235,9 @@ export function Canvas(props: CanvasProps) {
     [
       elements,
       selectedId,
-      soloSelectedId,
       multiSelectedIds,
       editingId,
       isPaintMode,
-      isGroupMode,
       tabLocked,
       readOnly,
       tabLayers,
@@ -238,7 +246,6 @@ export function Canvas(props: CanvasProps) {
     ],
   );
   const {
-    memberIds,
     selectionBounds,
     showPlus,
     showHandlesFor: showHandles,
@@ -318,7 +325,14 @@ export function Canvas(props: CanvasProps) {
     onWalkIntoPortal: (element) => enterPortalRef.current(element),
     // Chair (spec/130): walking onto one sits the character down, snapped to
     // the seat point so it sits ON the chair rather than wherever it arrived.
-    onWalkIntoChair: (element) => avatarRef.current?.sitOn(element.id, chairSeatPoint(element)),
+    onWalkIntoChair: (element) => {
+      const facing = element.chairFacing ?? DEFAULT_CHAIR_FACING;
+      avatarRef.current?.sitOn(
+        element.id,
+        chairSeatPoint(element, facing),
+        CHAIR_SITTER_FACING[facing],
+      );
+    },
     // Reaction pad (spec/135): walking onto one is the same act as pressing
     // it, so it runs the same handler.
     onWalkIntoReactionPad: (element) => props.onFireReaction?.(element),
@@ -398,7 +412,6 @@ export function Canvas(props: CanvasProps) {
     canvasTool,
     spaceHeld: spaceHeldRef.current,
     isPaintMode,
-    isGroupMode,
   });
 
   // Colour for the link / comment badges. The active theme's
@@ -436,8 +449,6 @@ export function Canvas(props: CanvasProps) {
   // views — see useCanvasSelectHandlers.
   const { handleElementContextSelect, handleArrowSelect } = useCanvasSelectHandlers({
     inertIds: props.layerInertIds,
-    soloSelectedId: props.soloSelectedId,
-    elements,
     multiSelectedIds,
     onSelect,
     onShiftSelect,
@@ -645,8 +656,8 @@ export function Canvas(props: CanvasProps) {
             // centre: you pressed a thing on the canvas, so the character should
             // appear where you pressed it.
             onPressModeButton={pressModeButton}
+            onPressFocusButton={props.onPressFocusButton}
             hasArrows={hasArrows}
-            memberIds={memberIds}
             showHandles={showHandles}
             showAnchorsFor={showAnchorsFor}
             badgeColor={badgeColor}
@@ -656,7 +667,6 @@ export function Canvas(props: CanvasProps) {
             unionResizeBounds={unionResizeBounds}
             unionResizePrimaryId={unionResizePrimaryId}
             isPaintMode={isPaintMode}
-            isGroupMode={isGroupMode}
             handleArrowSelect={handleArrowSelect}
             handleElementContextSelect={handleElementContextSelect}
             quickRingOpen={quickRingOpen}
@@ -764,7 +774,6 @@ export function Canvas(props: CanvasProps) {
       <CanvasChrome
         {...props}
         isPaintMode={isPaintMode}
-        isGroupMode={isGroupMode}
         avatarConfig={avatarLook.config}
         onChangeAvatarField={avatarLook.setField}
         laserConfig={props.laserConfig}

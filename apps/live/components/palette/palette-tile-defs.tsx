@@ -952,6 +952,20 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     icon: <TimerIcon />,
   },
   {
+    id: 'tools:session-stopwatch',
+    tileGroup: 'facilitate',
+    blurb: 'Counts up from zero',
+    caption: 'Stopwatch',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add stopwatch button',
+    description:
+      'A button that starts a stopwatch for everyone in the room, counting up from zero. Pressing it again pauses, and again continues. Nothing to set — a stopwatch has no length.',
+    filled: true,
+    action: { type: 'shape', kind: 'session-button', session: 'stopwatch' },
+    icon: <TimerIcon />,
+  },
+  {
     id: 'tools:session-vote',
     tileGroup: 'ask',
     blurb: 'Dot voting, a few dots each',
@@ -1116,6 +1130,37 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     icon: <PickerIcon />,
   },
   {
+    // Bring Focus (spec/144): Navigate, beside Portal and Chair, because all
+    // three take somebody somewhere. This is the one that takes everybody.
+    id: 'tools:focus-button',
+    tileGroup: 'move',
+    blurb: 'Ask everyone to look here',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add bring focus',
+    caption: 'Bring Focus',
+    description:
+      'Bring Focus. Press it and everyone else in the room is offered a jump to it, at your zoom, on your tab.',
+    filled: true,
+    action: { type: 'shape', kind: 'focus-button' },
+    icon: (
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        aria-hidden
+      >
+        <circle cx="12" cy="12" r="7.5" />
+        <circle cx="12" cy="12" r="2.2" fill="currentColor" stroke="none" />
+        <path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3" />
+      </svg>
+    ),
+  },
+  {
     // Chair (spec/130): Behaviour, because what it does only happens when
     // somebody interacts with it — here by walking an Avatar-mode character
     // into it rather than by pressing it.
@@ -1163,6 +1208,38 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       >
         <path d="M20.5 12.2c0 3.9-3.8 7-8.5 7-.9 0-1.8-.1-2.6-.3l-5 3.1 1.1-4.5A6.6 6.6 0 0 1 3.5 12.2c0-3.9 3.8-7 8.5-7s8.5 3.1 8.5 7z" />
         <path d="M8.6 11.9h.01M12 11.9h.01M15.4 11.9h.01" />
+      </svg>
+    ),
+  },
+  {
+    // Action panel (spec/146): one assigned action as a card on the board, the
+    // Comment panel's sibling.
+    id: 'collab:action-card',
+    blurb: 'An assigned action as a card on the board',
+    caption: 'Action',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    tileGroup: 'record',
+    label: 'Add action panel',
+    description:
+      'A card that carries one assigned action: what needs doing, who owns it, and whether it is done. Set it up from the card, and join it to what it is about with an arrow.',
+    filled: true,
+    action: { type: 'shape', kind: 'action-card' },
+    icon: (
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden
+      >
+        <path d="M9 4.5H7a1.5 1.5 0 0 0-1.5 1.5v13.5A1.5 1.5 0 0 0 7 21h10a1.5 1.5 0 0 0 1.5-1.5V6A1.5 1.5 0 0 0 17 4.5h-2" />
+        <rect x="9" y="3" width="6" height="3.5" rx="1" />
+        <path d="m9 13.5 2.2 2.2 4-4.5" />
       </svg>
     ),
   },
@@ -1625,7 +1702,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'tools:link-card',
     blurb: 'A clickable preview of a link',
-    // Get around (spec/110), beside Portal and Chair: the group is what an
+    // Navigate (spec/110), beside Portal and Chair: the group is what an
     // element DOES, and all three take you somewhere. A portal moves you to
     // another tab, a chair seats your character, a link card sends you out to
     // the page. It sat under Components, which groups by what a thing looks
@@ -1742,6 +1819,34 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
+    id: 'data:legend',
+    blurb: 'A key for your colours',
+    section: 'data',
+    label: 'Add legend',
+    caption: 'Legend',
+    description:
+      'A key: a colour-coded dot and a label per row. Edit the colours and words from the Legend menu.',
+    filled: true,
+    action: { type: 'shape', kind: 'legend' },
+    icon: (
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        aria-hidden
+      >
+        <circle cx="5" cy="6" r="1.8" fill="currentColor" stroke="none" />
+        <circle cx="5" cy="12" r="1.8" fill="currentColor" stroke="none" />
+        <circle cx="5" cy="18" r="1.8" fill="currentColor" stroke="none" />
+        <path d="M10 6 H20 M10 12 H20 M10 18 H16" />
+      </svg>
+    ),
+  },
+  {
     id: 'data:progress-bar',
     blurb: 'How far along something is',
     section: 'data',
@@ -1800,7 +1905,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       </svg>
     ),
   },
-  // --- Components (spec/09) -------------------------------------------------
+  // --- Components (spec/09, spec/147): each one element that lays itself out -
   {
     id: 'components:banner',
     tileGroup: 'web',
@@ -1809,7 +1914,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     section: 'components',
     label: 'Add banner',
     description:
-      'Banner. A themed title block (accent bar with a title and subtitle) to head your diagram. Tap to drop or drag to size; drops as a group you can recolour, retitle, or ungroup.',
+      'Banner. A themed title block (an accent bar with a title and subtitle) to head your diagram. Tap to drop or drag to size; double-click to edit the title, click the subtitle once it is selected to edit it.',
     noTint: true,
     action: { type: 'component', kind: 'banner' },
     icon: (
@@ -1838,7 +1943,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     section: 'components',
     label: 'Add callout',
     description:
-      'Callout. A soft note box with an icon, title, and body for annotating a diagram. Tap to drop or drag to size.',
+      'Callout. A soft note box with an icon badge, a heading, and a body for annotating a diagram. Tap to drop or drag to size; double-click to edit the body.',
     noTint: true,
     action: { type: 'component', kind: 'callout' },
     icon: (
@@ -1867,7 +1972,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     section: 'components',
     label: 'Add stat row',
     description:
-      'Stat row. Three KPI cards (big number + caption) for dashboards / summaries. Tap to drop or drag to size.',
+      'Stat row. KPI cards (big number + caption) for dashboards and summaries. Resize to spread the cards; click a number to edit it, and add or remove stats from its menu.',
     noTint: true,
     action: { type: 'component', kind: 'stat' },
     icon: (
@@ -1897,7 +2002,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     section: 'components',
     label: 'Add process steps',
     description:
-      'Process steps. Numbered circles joined by arrows with captions, for flows. Tap to drop or drag to size.',
+      'Process steps. Numbered circles joined by arrows with captions, for flows. Resize to spread the steps; click a caption to edit it, and add or remove steps from its menu.',
     noTint: true,
     action: { type: 'component', kind: 'process' },
     icon: (
@@ -1927,7 +2032,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     section: 'components',
     label: 'Add hero',
     description:
-      'Hero. A large image with a title and supporting line on a themed caption card. Tap to drop or drag to size; double-click the image to set it.',
+      'Hero. A large image with a title and supporting line on a themed caption card. Tap to drop or drag to size; double-click the image to set it, click the caption to edit it.',
     noTint: true,
     needsImage: true,
     action: { type: 'component', kind: 'hero' },
@@ -1957,9 +2062,8 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     section: 'components',
     label: 'Add header',
     description:
-      'Header. A website-style bar with a circular avatar, brand title, and nav links. Tap to drop or drag to size; double-click the avatar to set it.',
+      'Header. A website-style bar with a logo, brand name, and nav links. Resize to make room for more links; drop an icon on it to set the logo.',
     noTint: true,
-    needsImage: true,
     action: { type: 'component', kind: 'header' },
     icon: (
       <svg
@@ -2098,6 +2202,31 @@ export const PALETTE_TILES: PaletteTileDef[] = [
         aria-hidden
       >
         <rect x="3" y="2" width="12" height="14" rx="1.2" />
+      </svg>
+    ),
+  },
+  {
+    id: 'devices:foldable',
+    blurb: 'A foldable phone, opened out',
+    section: 'devices',
+    label: 'Add foldable',
+    caption: 'Foldable',
+    description: 'Foldable phone, unfolded. A book-style phone opened to its inner screen.',
+    filled: true,
+    action: { type: 'shape', kind: 'foldable' },
+    icon: (
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 18 18"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+        aria-hidden
+      >
+        <rect x="1.5" y="3" width="15" height="12" rx="1.2" />
+        <path d="M9 3 V15" />
       </svg>
     ),
   },

@@ -2,6 +2,12 @@ import {
   addTableColumn,
   addTableRow,
   CHECKLIST_MAX_ITEMS,
+  isMindNode,
+  mindRootOf,
+  type MindFlow,
+  LEGEND_MAX_ITEMS,
+  LEGEND_MAX_TEXT,
+  type LegendItem,
   CHECKLIST_MAX_TEXT,
   ENTITY_MAX_FIELDS,
   ENTITY_MAX_TEXT,
@@ -31,7 +37,11 @@ import {
 } from '@livediagram/diagram';
 import { track } from '@/lib/telemetry';
 import { useChartSetters } from '@/hooks/canvas/useChartSetters';
+import { useWebComponentSetters } from '@/hooks/canvas/useWebComponentSetters';
 import { makeShapePatcher } from '@/hooks/canvas/shape-patcher';
+
+// The kinds carrying masthead lines (see setPageHeading).
+const MASTHEAD_SHAPES = new Set<string>(['page', 'banner', 'callout']);
 
 type DataShapeSetterDeps = {
   currentSelectionIds: () => Set<string>;
@@ -161,6 +171,63 @@ export function useDataShapeSetters({ currentSelectionIds, commit }: DataShapeSe
     track('Element', 'Changed', 'CodeBlock');
   };
 
+  // Long-line wrapping (spec/82). Its own setter rather than a third argument
+  // to setCodeSelected: that one commits the dialog's Save, and a toggle in
+  // the menu has nothing to do with the snippet's text.
+  // Legend rows (spec/53): the whole array at once, like the checklist's
+  // section, so an add / remove / retitle is one undo step.
+  const setLegendItemsSelected = (items: LegendItem[]) => {
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
+    const clean = items
+      .slice(0, LEGEND_MAX_ITEMS)
+      .map((item) => ({ ...item, label: item.label.slice(0, LEGEND_MAX_TEXT) }));
+    commit((els) =>
+      els.map((el) =>
+        ids.has(el.id) && el.type === 'shape' && el.shape === 'legend'
+          ? { ...el, legendItems: clean }
+          : el,
+      ),
+    );
+    track('Element', 'Changed', 'Legend');
+  };
+
+  // Mind-map flow (spec/118). Written to the tree's ROOT, not the selected
+  // node: the flow is the map's, and a map half tree and half bubble is not a
+  // map anyone meant to draw. Selecting several nodes of one map therefore
+  // sets it once.
+  const setMindFlowSelected = (flow: MindFlow) => {
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
+    commit((all) => {
+      // Resolved inside the updater, against the elements as they stand: the
+      // walk up to the root has to read the same array it writes back.
+      const roots = new Set(
+        all
+          .filter((el) => ids.has(el.id))
+          .filter(isMindNode)
+          .map((el) => mindRootOf(all, el).id),
+      );
+      return roots.size === 0
+        ? all
+        : all.map((el) => (roots.has(el.id) ? { ...el, mindFlow: flow } : el));
+    });
+    track('Element', 'Changed', 'MindFlow');
+  };
+
+  const setCodeWrapSelected = (wrap: boolean) => {
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
+    commit((els) =>
+      els.map((el) =>
+        ids.has(el.id) && el.type === 'shape' && el.shape === 'code-block'
+          ? { ...el, codeWrap: wrap }
+          : el,
+      ),
+    );
+    track('Element', 'Changed', 'CodeWrap');
+  };
+
   // Checklist (spec/83). The on-canvas checkbox toggles one row by element
   // id (like the rail's inline label editor); the context-menu section
   // replaces the whole rows array (add / remove / retitle).
@@ -177,8 +244,10 @@ export function useDataShapeSetters({ currentSelectionIds, commit }: DataShapeSe
     // Box ticks deliberately don't track: high-frequency, low-signal,
     // matching spec/39's vote-cast precedent.
   };
-  // The Page masthead (spec/100). One setter for both lines rather than two
-  // near-identical ones, since the only difference is which field.
+  // The masthead lines (spec/100): a page's heading + subtitle, and the same
+  // two fields on a banner (its subtitle) and a callout (its heading),
+  // spec/147. One setter for both lines rather than two near-identical ones,
+  // since the only difference is which field.
   const setPageHeading = (
     elementId: string,
     field: 'pageTitle' | 'pageSubtitle',
@@ -186,7 +255,7 @@ export function useDataShapeSetters({ currentSelectionIds, commit }: DataShapeSe
   ) => {
     commit((els) =>
       els.map((el) => {
-        if (el.id !== elementId || el.type !== 'shape' || el.shape !== 'page') return el;
+        if (el.id !== elementId || el.type !== 'shape' || !MASTHEAD_SHAPES.has(el.shape)) return el;
         // An empty line stores as undefined rather than '', so a page that was
         // typed into and cleared serialises the same as one never touched.
         return { ...el, [field]: value.trim() ? value : undefined };
@@ -300,9 +369,12 @@ export function useDataShapeSetters({ currentSelectionIds, commit }: DataShapeSe
 
   // Rating (spec/52) + the charts (spec/53) — see useChartSetters.
   const chartSetters = useChartSetters({ currentSelectionIds, commit });
+  // The web components (spec/147) — see useWebComponentSetters.
+  const webSetters = useWebComponentSetters({ currentSelectionIds, commit });
 
   return {
     ...chartSetters,
+    ...webSetters,
     setProgressSelected,
     setProgressAnimSelected,
     setProgressAnimSpeedSelected,
@@ -313,6 +385,9 @@ export function useDataShapeSetters({ currentSelectionIds, commit }: DataShapeSe
     appendTableColumnSelected,
     setRailLabelSelected,
     setCodeSelected,
+    setCodeWrapSelected,
+    setMindFlowSelected,
+    setLegendItemsSelected,
     toggleChecklistItem,
     setPageHeading,
     setChecklistItemsSelected,

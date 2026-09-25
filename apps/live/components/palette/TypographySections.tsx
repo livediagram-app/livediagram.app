@@ -31,6 +31,60 @@ const TEXT_PADDING_OPTIONS: { key: Padding; label: string }[] = [
   { key: 'lg', label: 'Large' },
 ];
 
+// The Size tiles on their own, for a menu section that owns a text size but
+// not a label: a chart's key and a Legend card (spec/53), which have no Text
+// flyout because they have no label to type. `withScale` is off there, since
+// a key has nothing to fit its text to.
+export function TextSizeTiles({
+  current,
+  onSet,
+  onPreview,
+  onPreviewEnd,
+  withScale = true,
+}: {
+  current: TextSize | null;
+  onSet: (size: TextSize) => void;
+  onPreview?: (size: TextSize) => void;
+  onPreviewEnd?: () => void;
+  withScale?: boolean;
+}) {
+  const options = withScale
+    ? TEXT_SIZE_OPTIONS
+    : TEXT_SIZE_OPTIONS.filter((s) => s.key !== 'scale');
+  return (
+    <MenuTileGrid cols={withScale ? 2 : 3}>
+      {options.map((s) => (
+        <MenuTile
+          key={s.key}
+          active={current === s.key}
+          label={s.label}
+          icon={s.icon}
+          {...(onPreview
+            ? {
+                onPointerEnter: onMouseHover(() => onPreview(s.key)),
+                onPointerLeave: onMouseHover(() => onPreviewEnd?.()),
+              }
+            : {})}
+          onClick={() => onSet(s.key)}
+        />
+      ))}
+    </MenuTileGrid>
+  );
+}
+
+// A key's Text Size (spec/53), captioned the way the Chart section captions its
+// Legend placement tiles, so it can sit under them or under a Legend's rows.
+export function LegendTextSize(props: Omit<Parameters<typeof TextSizeTiles>[0], 'withScale'>) {
+  return (
+    <>
+      <p className="px-3 pt-2 text-[10px] font-medium text-slate-500 dark:text-slate-400">
+        Text Size
+      </p>
+      <TextSizeTiles {...props} withScale={false} />
+    </>
+  );
+}
+
 type AccordionProps = {
   open: boolean;
   onToggle: () => void;
@@ -92,18 +146,12 @@ export function TypographySections({
         </MenuTileGrid>
       </MenuAccordionSection>
       <MenuAccordionSection title="Size" icon={<DotsIcon count={2} />} {...sectionProps('size')}>
-        <MenuTileGrid cols={2}>
-          {TEXT_SIZE_OPTIONS.map((s) => (
-            <MenuTile
-              key={s.key}
-              active={currentSize === s.key}
-              label={s.label}
-              icon={s.icon}
-              {...hover(onPreviewSize, s.key)}
-              onClick={() => onSetSize(s.key)}
-            />
-          ))}
-        </MenuTileGrid>
+        <TextSizeTiles
+          current={currentSize}
+          onSet={onSetSize}
+          onPreview={onPreviewSize}
+          onPreviewEnd={onPreviewEnd}
+        />
       </MenuAccordionSection>
       <MenuAccordionSection
         title="Padding"

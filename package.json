@@ -25,10 +25,10 @@
     "@typescript/native": "npm:typescript@^7.0.2",
     "esbuild": "^0.28.2",
     "eslint": "^10.10.0",
-    "prettier": "^3.9.6",
-    "turbo": "^2.10.12",
+    "prettier": "^3.9.7",
+    "turbo": "^2.10.13",
     "typescript": "npm:@typescript/typescript6@^6.0.2",
-    "wrangler": "^4.131.1"
+    "wrangler": "^4.132.0"
   },
   "engines": {
     "node": ">=22",
@@ -40,7 +40,10 @@
       "undici": "^7.28.0",
       "js-yaml": "^4.3.0",
       "esbuild": "^0.28.1",
-      "fast-uri": "^3.1.5",
+      "fast-uri": "^3.1.6",
+      "qs": "^6.16.0",
+      "nanoid": "^3.3.18",
+      "vitest": "^4.1.11",
       "@hono/node-server": "^2.0.5",
       "ws": "^8.21.0",
       "sharp": "^0.35.0",

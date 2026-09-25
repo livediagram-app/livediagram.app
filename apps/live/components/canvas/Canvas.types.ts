@@ -22,6 +22,7 @@ import type { PendingDraw } from '@/lib/draw-mode';
 import type { TemplateKind } from '@livediagram/templates';
 import type { UserPreferences } from '@/lib/user-preferences';
 import type { ChangeLogEntry, DiagramListItem, Folder, SharedWithItem } from '@/lib/api-client';
+import type { TeamFolderHandlers } from '@/components/panels/Explorer.types';
 import type { TeamDiagramRow, TeamFolderRow } from '@/hooks/persistence/useTeamLibrariesSweep';
 import type { CanvasTool } from '@/components/palette/CommandPalette';
 import type { EsBoardControls } from '@/components/palette/EventStormingBoardRows';
@@ -93,9 +94,6 @@ export type CanvasProps = {
   // a shape, so the user can see exactly where it will snap. Empty otherwise.
   snapTargets: SnapTarget[];
   selectedId: string | null;
-  // Drill-in selection (spec/09 groups): when equal to selectedId the
-  // selection is just that member, not its whole group.
-  soloSelectedId: string | null;
   multiSelectedIds: Set<string>;
   onSelectMarquee: (ids: Set<string>) => void;
   canvasTool: CanvasTool;
@@ -104,6 +102,10 @@ export type CanvasProps = {
   // mode the element carries. Optional — the read-only embed has no tool picker
   // to drive, so its buttons render inert.
   onPressModeButton?: (element: import('@livediagram/diagram').ShapeElement) => void;
+  // Bring Focus (spec/144): ask everyone else in the room to come and look at
+  // this element. Absent on a surface with nobody to ask (an export, a solo
+  // board), which renders the face inert.
+  onPressFocusButton?: (element: import('@livediagram/diagram').ShapeElement) => void;
   // Session button (spec/105): starts the tool the pressed element carries.
   onPressSessionButton?: (element: import('@livediagram/diagram').ShapeElement) => void;
   // True when this viewer can't start session tools (view role): the button
@@ -127,6 +129,15 @@ export type CanvasProps = {
     remove: (elementId: string, commentId: string) => void;
     resolve: (elementId: string) => void;
     unresolve: (elementId: string) => void;
+  };
+  // Action panel (spec/146): who I am (for "Assigned to you"), plus the
+  // spec/68 action mutators, keyed by element id like everything else that
+  // drives an action. Absent on a read-only surface: the card renders inert.
+  actionSelfId?: string | null;
+  actionPanelActions?: {
+    configure: (elementId: string) => void;
+    complete: (elementId: string) => void;
+    reopen: (elementId: string) => void;
   };
   onSetSessionConfig?: (
     element: import('@livediagram/diagram').ShapeElement,
@@ -262,7 +273,6 @@ export type CanvasProps = {
   onCanvasPointerMove: (canvasX: number | null, canvasY: number | null) => void;
   onDuplicateMultiSelected: () => void;
   onDeleteMultiSelected: () => void;
-  onGroupMultiSelected: () => void;
   onToggleLockMultiSelected: () => void;
   // Narrows the multi-selection to just `ids` (Filter Selection menu).
   onFilterMultiSelected: (ids: Set<string>) => void;
@@ -274,7 +284,6 @@ export type CanvasProps = {
   // seeded first character isn't replaced by the next keystroke.
   editCursorAtEnd?: boolean;
   formatSourceId: string | null;
-  groupSourceId: string | null;
   palettePosition: { x: number; y: number } | null;
   explorerPosition: { x: number; y: number } | null;
   canUndo: boolean;
@@ -369,6 +378,10 @@ export type CanvasProps = {
   // Minimal panel layout preference (spec/20). When true, the floating
   // panels render as dock popovers on desktop too (always on mobile).
   minimalPanels?: boolean;
+  // Toolbar layout (spec/148): the Palette as a top strip and a menu button
+  // in place of the Explorer. Implies `minimalPanels` for every other panel.
+  // Desktop only; the chrome falls back to the mobile dock below `sm`.
+  toolbarLayout?: boolean;
   // Toggle the minimal-panel layout. Surfaced in the Palette header
   // (desktop) as the one-click normal <-> minimal switch.
   onToggleMinimalPanels?: () => void;
@@ -438,9 +451,9 @@ export type CanvasProps = {
     answers: Map<string, string | null>;
     isHost: boolean;
     onEnd: () => void;
-    // End AND keep the tallies on the canvas (spec/126). Absent for a viewer
-    // who can't add elements.
-    onEndAndKeep?: () => void;
+    // Keep the tallies so far on the canvas as a chart, without ending the
+    // poll (spec/126). Absent for a viewer who can't add elements.
+    onKeepResults?: () => void;
     onDismiss: () => void;
   } | null;
   pollPanelPosition: { x: number; y: number } | null;
@@ -466,7 +479,7 @@ export type CanvasProps = {
   // Everyone in the room right now (remote presence + you), the turnout
   // denominator.
   participantCount: number;
-  // Bottom-dock "Colour scheme & canvas" button (spec/42): opens the
+  // Bottom-dock "Theme & canvas" button (spec/42): opens the
   // CanvasThemeDialog. Omitted in read-only / embed sessions (no button).
   onOpenCanvasTheme?: () => void;
   onSelectLayer: (layerId: string) => void;
@@ -513,14 +526,14 @@ export type CanvasProps = {
   onOpenDiagram: (id: string, shareCode?: string) => void;
   onNewDiagram: () => void;
   onRenameCurrent: (name: string) => void;
-  // Opens the editor's Share dialog in place, for the Explorer's
-  // current-diagram Share tile (avoids the `?share=1` full reload).
-  onOpenShareCurrent?: () => void;
   onDeleteDiagram: (id: string) => void;
   onDuplicateDiagram: (id: string) => void;
   onCreateFolder: (input: { name: string; parentId: string | null }) => Promise<Folder | void>;
   onRenameFolder: (id: string, name: string) => void;
   onDeleteFolder: (id: string) => void;
+  // Team-library folder mutations for the Explorer panel's team tree
+  // (spec/35); absent while signed out or without teams.
+  onTeamFolders?: TeamFolderHandlers;
   onMoveDiagramToFolder: (diagramId: string, folderId: string | null) => void;
   // Scope-crossing move (spec/35): the Explorer panel's move picker routes
   // any pick that involves a team (either side) here — re-folder within a
@@ -528,6 +541,9 @@ export type CanvasProps = {
   onMoveDiagramTo?: (
     diagramId: string,
     dest: { teamId: string | null; folderId: string | null },
+    // Where the diagram is coming from (null = the personal tree), so a
+    // personal -> team move counts as Team·Added·Diagram (spec/22).
+    fromTeamId?: string | null,
   ) => void;
   onDeselect: () => void;
   onSelect: (id: string) => void;
@@ -563,6 +579,9 @@ export type CanvasProps = {
   // Single combined table commit (cells + the parallel colWidths /
   // rowHeights / cellStyles arrays) applied in ONE commit, so structural
   // ops can't drop a side array or clobber each other off a stale base.
+  // A lane's title gutter, resized by dragging its seam (spec/119). One
+  // commit per gesture, so a drag is one undo step.
+  onCommitHeaderSize?: (elementId: string, px: number) => void;
   onCommitTable: (
     id: string,
     patch: Partial<
@@ -589,6 +608,15 @@ export type CanvasProps = {
   // Mind map (spec/118): grows the next node from the label editor.
   onGrowMindNode: (id: string, kind: 'child' | 'sibling') => void;
   onSetPageHeading: (elementId: string, field: 'pageTitle' | 'pageSubtitle', value: string) => void;
+  // The web components (spec/147): a row edited in place, one more row from
+  // the quick-connect ring, and a hero's caption line. Omitted in read-only.
+  onSetWebRows?: (elementId: string, rows: import('@livediagram/diagram').WebRows) => void;
+  onAppendWebRow?: (elementId: string) => void;
+  onSetHeroCaptionLine?: (
+    elementId: string,
+    field: keyof import('@livediagram/diagram').HeroCaption,
+    value: string,
+  ) => void;
   // Default chart slice colours derived from the active theme (spec/53), used
   // by pie charts for slices without an explicit colour.
   chartPalette: readonly string[];
@@ -607,9 +635,6 @@ export type CanvasProps = {
   // single-shot painter): drops back to the Select tool. Drives the
   // format-tool mode banner's "Done" button.
   onExitFormatTool: () => void;
-  onBeginGroup: () => void;
-  onCancelGroup: () => void;
-  onUngroup: () => void;
   onFollowLink: (link: import('@livediagram/diagram').ElementLink) => void;
   onOpenComments: (elementId: string) => void;
   // Open the element's assigned-action popover (spec/68). Available in

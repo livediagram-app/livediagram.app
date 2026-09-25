@@ -37,7 +37,24 @@ export const remintElementIds = (elements: Element[]): Element[] => {
       }
     }
   }
-  return next;
+  // Element-to-element references beyond arrows, remapped the way
+  // duplicateElements does. Missed, a duplicated tab's mind-map nodes
+  // (spec/118) named parents on the SOURCE tab, so collapse and re-layout
+  // found no children, and paired portals (spec/104) lost their partner.
+  //
+  // Element links are left alone: a link names its tab too, and that is still
+  // the source tab, where the original element still is.
+  return next.map((el) => {
+    if (el.type !== 'shape') return el;
+    const parent = el.mindParentId !== undefined ? idMap.get(el.mindParentId) : undefined;
+    const portal = el.portalTarget !== undefined ? idMap.get(el.portalTarget) : undefined;
+    if (!parent && !portal) return el;
+    return {
+      ...el,
+      ...(parent ? { mindParentId: parent } : {}),
+      ...(portal ? { portalTarget: portal } : {}),
+    };
+  });
 };
 
 type TabImportDeps = {
@@ -47,7 +64,6 @@ type TabImportDeps = {
   setSelectedId: (id: string | null) => void;
   setEditingId: (id: string | null) => void;
   setFormatSourceId: (id: string | null) => void;
-  setGroupSourceId: (id: string | null) => void;
   // Surfaces an import parse error in the header (null clears it).
   setImportError: (message: string | null) => void;
 };
@@ -59,7 +75,6 @@ export function useTabImport({
   setSelectedId,
   setEditingId,
   setFormatSourceId,
-  setGroupSourceId,
   setImportError,
 }: TabImportDeps) {
   // Replace the ACTIVE tab's content with an imported tab — its
@@ -73,7 +88,6 @@ export function useTabImport({
     setSelectedId(null);
     setEditingId(null);
     setFormatSourceId(null);
-    setGroupSourceId(null);
   };
 
   // Import TEXT of a given format into the active tab (spec/27 + spec/73).

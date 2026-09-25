@@ -41,9 +41,15 @@ import {
   ENTITY_MAX_FIELDS,
   ENTITY_MAX_TEXT,
   CHECKLIST_MAX_TEXT,
+  LEGEND_MAX_ITEMS,
+  LEGEND_MAX_TEXT,
   CODE_LANGUAGES,
   CODE_MAX_LENGTH,
 } from './data-shapes';
+import { NAV_LINKS_MAX, PROCESS_MAX_STEPS, STATS_MAX, WEB_TEXT_MAX } from './web-components';
+import { isCodeThemeId } from './code-themes';
+import { isChartPaletteId } from './chart-palettes';
+import { isMindFlow } from './mind-flow';
 
 // Bounds. Generous vs any real diagram, tight vs an abuse payload.
 export const MAX_ELEMENTS_PER_TAB = 10_000;
@@ -92,6 +98,12 @@ export const SHAPE_KINDS = new Set<string>([
   'lane',
   // Record (spec/120).
   'entity',
+  // The web components (spec/147).
+  'banner',
+  'callout',
+  'stat-row',
+  'process',
+  'site-header',
   // Mode button (spec/103): a pressable pill that switches whoever clicks it
   // into a selection mode.
   'mode-button',
@@ -107,6 +119,8 @@ export const SHAPE_KINDS = new Set<string>([
   'reaction-pad',
   // Comment pin (spec/136).
   'comment-pin',
+  // Action panel (spec/146).
+  'action-card',
   // Done check (spec/137).
   'done-check',
   // Chair (spec/130): an Avatar-mode character sits down in one.
@@ -131,6 +145,7 @@ export const SHAPE_KINDS = new Set<string>([
   'laptop',
   'phone',
   'tablet',
+  'foldable',
   'smartwatch',
   'progress-bar',
   'progress-ring',
@@ -141,6 +156,8 @@ export const SHAPE_KINDS = new Set<string>([
   'line-chart',
   'code-block',
   'checklist',
+  'legend',
+  'focus-button',
   'icon',
   'sticker',
 ]);
@@ -161,6 +178,14 @@ function isNum(v: unknown): v is number {
 function isNonEmptyStr(v: unknown): v is string {
   return typeof v === 'string' && v.length > 0;
 }
+// A web component's row text (spec/147).
+function isBoundedStr(v: unknown): v is string {
+  return typeof v === 'string' && v.length <= WEB_TEXT_MAX;
+}
+// A single-line heading (the page masthead's bound, spec/100).
+function isHeadingStr(v: unknown): v is string {
+  return typeof v === 'string' && v.length <= PAGE_HEADING_MAX;
+}
 function boundedArray(v: unknown, max: number): v is unknown[] {
   return Array.isArray(v) && v.length <= max;
 }
@@ -177,6 +202,10 @@ function isValidEndpoint(ep: unknown): boolean {
   if (ep.kind === 'free') return isNum(ep.x) && isNum(ep.y);
   if (ep.kind === 'pinned') return isNonEmptyStr(ep.elementId) && ANCHORS.has(ep.anchor as string);
   if (ep.kind === 'on-arrow') return isNonEmptyStr(ep.arrowId) && isNum(ep.t);
+  // LEGACY (spec/147): groups are gone and no current code writes this, but
+  // a browser still running a pre-removal build can. Accepting it keeps that
+  // save from failing; migrateLegacyGroups freezes it to a free end on the
+  // next read (rowToTab / the offline store), so nothing downstream sees it.
   if (ep.kind === 'pinned-group')
     return isNonEmptyStr(ep.groupId) && ANCHORS.has(ep.anchor as string);
   return false;
@@ -246,6 +275,14 @@ export function isValidElement(el: unknown): el is Element {
       !(CODE_LANGUAGES as readonly string[]).includes(el.codeLanguage as string)
     )
       return false;
+    // Colour scheme: a closed set of ids. An unknown one still RENDERS (the
+    // resolver falls back to the default card), but it has no business being
+    // written into a diagram.
+    if (el.codeTheme !== undefined && !isCodeThemeId(el.codeTheme as string)) return false;
+    // Mind flow (spec/118): a closed set, and only meaningful on a root.
+    if (el.mindFlow !== undefined && !isMindFlow(el.mindFlow as string)) return false;
+    // Chart palette (spec/53): likewise a closed set of ids.
+    if (el.chartPalette !== undefined && !isChartPaletteId(el.chartPalette as string)) return false;
     // Embed provider (spec/121): a creation-time hint, one of a closed set.
     if (
       el.embedProvider !== undefined &&
@@ -256,10 +293,10 @@ export function isValidElement(el: unknown): el is Element {
     // id shape is checked — a pointer at a deleted node is legal and simply
     // makes the child a root.
     if (el.mindParentId !== undefined && typeof el.mindParentId !== 'string') return false;
-    // Page masthead (spec/100): two bounded single-line strings.
+    // Masthead lines (spec/100, and the banner / callout of spec/147): two
+    // bounded single-line strings.
     for (const field of [el.pageTitle, el.pageSubtitle]) {
-      if (field !== undefined && (typeof field !== 'string' || field.length > PAGE_HEADING_MAX))
-        return false;
+      if (field !== undefined && !isHeadingStr(field)) return false;
     }
     // Record (spec/120): bounded rows of { name, type? }.
     if (el.entityFields !== undefined) {
@@ -270,6 +307,21 @@ export function isValidElement(el: unknown): el is Element {
         if (f.type !== undefined && (typeof f.type !== 'string' || f.type.length > ENTITY_MAX_TEXT))
           return false;
       }
+    }
+    // Web components (spec/147): bounded rows of short strings.
+    if (el.stats !== undefined) {
+      if (!boundedArray(el.stats, STATS_MAX)) return false;
+      for (const st of el.stats) {
+        if (!isObj(st) || !isBoundedStr(st.value) || !isBoundedStr(st.caption)) return false;
+      }
+    }
+    if (el.processSteps !== undefined) {
+      if (!boundedArray(el.processSteps, PROCESS_MAX_STEPS)) return false;
+      if (!el.processSteps.every(isBoundedStr)) return false;
+    }
+    if (el.navLinks !== undefined) {
+      if (!boundedArray(el.navLinks, NAV_LINKS_MAX)) return false;
+      if (!el.navLinks.every(isBoundedStr)) return false;
     }
     // Chair (spec/130): a closed facing. Occupancy is presence, never a field,
     // so there is nothing else on a chair to check.
@@ -352,6 +404,15 @@ export function isValidElement(el: unknown): el is Element {
         if (typeof item.done !== 'boolean') return false;
       }
     }
+    // Legend (spec/53): bounded rows of { label, color? }.
+    if (el.legendItems !== undefined) {
+      if (!boundedArray(el.legendItems, LEGEND_MAX_ITEMS)) return false;
+      for (const item of el.legendItems) {
+        if (!isObj(item)) return false;
+        if (typeof item.label !== 'string' || item.label.length > LEGEND_MAX_TEXT) return false;
+        if (item.color !== undefined && typeof item.color !== 'string') return false;
+      }
+    }
     return true;
   }
   if (t === 'table') {
@@ -366,7 +427,13 @@ export function isValidElement(el: unknown): el is Element {
     return true;
   }
   if (t === 'image') {
-    return el.imageId === null || typeof el.imageId === 'string';
+    if (el.imageId !== null && typeof el.imageId !== 'string') return false;
+    // Hero caption card (spec/147): two bounded single-line strings.
+    if (el.heroCaption !== undefined) {
+      const c = el.heroCaption;
+      if (!isObj(c) || !isHeadingStr(c.title) || !isHeadingStr(c.subtitle)) return false;
+    }
+    return true;
   }
   if (t === 'freehand') {
     if (typeof el.closed !== 'boolean' || !boundedArray(el.points, MAX_FREEHAND_POINTS))

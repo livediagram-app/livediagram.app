@@ -84,7 +84,7 @@ YOU decide the layout; the server does not override a real arrangement.
   where you place it and never auto-arranged — so put it next to the node it
   describes, not in a loose pile.
 
-## Colour schemes (the look)
+## Themes (the look)
 Set "theme" on create_diagram / add_tab to one of these presets and the server
 paints the whole diagram + canvas with it (you still omit per-element colours):
   ${themeIds}

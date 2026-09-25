@@ -2,26 +2,41 @@
 
 import type { ReactNode } from 'react';
 import { Tooltip } from '@/components/primitives/Tooltip';
-import { helpArticleHref, helpArticleLeaf, type HelpArticleKey } from '@/lib/help-articles';
+import {
+  HELP_LINK_COPY,
+  helpArticleHref,
+  helpArticleTelemetryId,
+  type HelpArticleKey,
+} from '@/lib/help-articles';
 import { track } from '@/lib/telemetry';
 
 type HelpArticleLinkProps = {
   /** Which help article to deep-link (key in HELP_ARTICLES). */
   article: HelpArticleKey;
-  /** Tooltip title (custom Tooltip, never a native `title`). */
+  /**
+   * Tooltip title (custom Tooltip, never a native `title`). Defaults to the
+   * article's entry in HELP_LINK_COPY ("Learn about the Explorer"); pass one
+   * only when the surface needs a different framing.
+   */
   title?: string;
-  /** Optional one-line tooltip elaboration. */
+  /** One-line tooltip elaboration; defaults from HELP_LINK_COPY too. */
   description?: string;
   /**
-   * `icon` (default): a small `?` button to sit beside a control label.
+   * `icon` (default): a bare `?` ghost button to sit beside a control label
+   *   or in a panel's header chrome. ONE look everywhere (see below).
    * `text`: a "Learn more" inline link for dialog headers / empty states.
-   * `chrome`: a `?` ghost icon button sized to match a floating panel's
-   *   header chrome (reset / minimise), for use in `MovablePanel` headers.
    * `button`: a full button (help glyph + "Help" label) that matches a
    *   neighbouring primary button's shape but stays neutral, not brand —
    *   for header action rows (e.g. beside the explorer "+ Create" button).
    */
-  variant?: 'icon' | 'text' | 'chrome' | 'button';
+  variant?: 'icon' | 'text' | 'button';
+  /**
+   * Hit-box for the `icon` variant, mirroring DialogCloseButton's own two
+   * blessed shapes so the `?` and the `×` beside it are the same target:
+   * `sm` (default) for panel header chrome and inline control labels, `md`
+   * for a dialog header sitting next to a DialogCloseButton.
+   */
+  size?: 'sm' | 'md';
   /** Override the visible text for the `text` and `button` variants. */
   label?: string;
   /** Leading icon for the `button` variant (defaults to the help glyph). */
@@ -33,18 +48,19 @@ type HelpArticleLinkProps = {
 // One affordance for every editor -> help-centre deep link (spec/56).
 // Surfaces reference an article key, never a raw URL; the link opens the
 // help centre in a new tab and fires a single UI/Opened telemetry event
-// keyed by the article's leaf slug.
+// keyed by the article's registry telemetry id (spec/22).
 export function HelpArticleLink({
   article,
-  title = 'Learn more',
-  description,
+  title = HELP_LINK_COPY[article].title,
+  description = HELP_LINK_COPY[article].description,
   variant = 'icon',
+  size = 'sm',
   label = 'Learn more',
   icon,
   className,
 }: HelpArticleLinkProps) {
   const href = helpArticleHref(article);
-  const onClick = () => track('UI', 'Opened', helpArticleLeaf(article));
+  const onClick = () => track('UI', 'Opened', helpArticleTelemetryId(article));
   const common = {
     href,
     target: '_blank',
@@ -63,24 +79,6 @@ export function HelpArticleLink({
         >
           {label}
           <ArrowOutIcon />
-        </a>
-      </Tooltip>
-    );
-  }
-
-  if (variant === 'chrome') {
-    // Matches MovablePanel's header buttons (reset / minimise) so a panel's
-    // help affordance reads as a sibling of its chrome, not a stray circle.
-    return (
-      <Tooltip title={title} description={description}>
-        <a
-          {...common}
-          aria-label={title}
-          className={`flex h-5 w-5 items-center justify-center rounded text-[13px] font-semibold leading-none text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100${
-            className ? ` ${className}` : ''
-          }`}
-        >
-          ?
         </a>
       </Tooltip>
     );
@@ -106,12 +104,25 @@ export function HelpArticleLink({
     );
   }
 
+  // ONE `?` everywhere: a bare glyph that picks up a soft rounded hover
+  // background, matching the Palette panel's header chrome (reset /
+  // minimise). The old default drew a bordered circle around the mark, so a
+  // dialog header's `?` and a panel's `?` read as two different affordances
+  // for the same thing, and ShortcutsDialog had already resorted to a row of
+  // `!important` overrides to cancel the ring and size up. Only the box
+  // changes between the two sizes; the look does not.
+  //
+  // `md` is 28px to match DialogCloseButton's h-7, and its glyph runs a point
+  // larger than that button's 14px `×` because a question mark carries less
+  // visual mass than an X at the same type size. `shrink-0` so an inline
+  // placement beside a long control label never squashes it.
+  const box = size === 'md' ? 'h-7 w-7 text-[15px]' : 'h-5 w-5 text-[13px]';
   return (
     <Tooltip title={title} description={description}>
       <a
         {...common}
         aria-label={title}
-        className={`inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-slate-300 text-[10px] font-semibold leading-none text-slate-500 transition hover:border-blue-400 hover:bg-blue-50 hover:text-blue-600 dark:border-slate-600 dark:text-slate-400 dark:hover:border-blue-500 dark:hover:bg-blue-950/40 dark:hover:text-blue-300${
+        className={`inline-flex ${box} shrink-0 items-center justify-center rounded font-semibold leading-none text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100${
           className ? ` ${className}` : ''
         }`}
       >

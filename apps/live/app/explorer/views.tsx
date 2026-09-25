@@ -28,7 +28,7 @@ import { RelativeTimeChip } from '@/components/primitives/RelativeTimeChip';
 // The pane header lives in its own file now; re-exported so callers keep
 // importing it from the views barrel.
 export { PaneHeader } from './PaneHeader';
-export { FolderMenuItems } from './folder-row';
+export { menuHandlers as folderMenuHandlers } from './folder-row';
 export { FolderRow };
 
 // Diagram rows render the api client's DiagramListItem directly
@@ -45,6 +45,22 @@ export type PaneDiagram = DiagramListItem & {
   shared?: { ownerName: string | null; role: 'edit' | 'view'; shareCode: string };
 };
 
+// A diagram shared WITH the viewer, as a pane row. It lives in the
+// sharer's library, not yours, so it carries no folder and an empty
+// owner; the share code is what makes it openable. One helper so Recent
+// and the Timeline's card menus build the same row.
+export function sharedToPaneDiagram(s: SharedWithItem): PaneDiagram {
+  return {
+    id: s.id,
+    name: s.name,
+    folderId: null,
+    savedAt: s.savedAt,
+    shareCode: s.shareCode,
+    ownerId: '',
+    shared: { ownerName: s.ownerName, role: s.role, shareCode: s.shareCode },
+  };
+}
+
 // What the sidebar tree highlights and what the right pane shows.
 // "Special" nodes (`recent`, `all`, `shared`) are virtual buckets
 // with no folder row behind them; `folder` is a real owned folder and
@@ -53,6 +69,9 @@ export type SelectedNode =
   // The landing view (spec/138): a day-grouped feed of everything that
   // happened, rather than a list of files.
   | { kind: 'timeline' }
+  // What is outstanding for the reader across every diagram (spec/142):
+  // open actions assigned to / by them, unresolved threads they're in.
+  | { kind: 'activity' }
   | { kind: 'recent' }
   | { kind: 'all' }
   | { kind: 'unsorted' }
@@ -65,7 +84,6 @@ export type SelectedNode =
   | { kind: 'gallery' }
   | { kind: 'themes' }
   | { kind: 'tokens' }
-  | { kind: 'profile' }
   | { kind: 'folder'; id: string }
   | { kind: 'team'; id: string }
   | { kind: 'invites' };

@@ -9,7 +9,7 @@
 //
 // Custom themes (spec/44) appear as a "Custom" category when the custom
 // props are wired: its drill-in lists the owner's saved themes (apply /
-// edit / delete) plus a "+ New colour scheme" tile that opens the builder. The
+// edit / delete) plus a "+ New theme" tile that opens the builder. The
 // builder itself is owned by the host (CustomThemePicker); this browser
 // only signals "new" / "edit" via callbacks.
 //
@@ -17,6 +17,7 @@
 // means (set local state vs apply live). `onCommit` is the double-click
 // shortcut (defaults to onSelect when not given).
 
+import { BackBar } from '@/components/primitives/BackBar';
 import { useState } from 'react';
 import type { CustomTheme } from '@livediagram/api-schema';
 import { isCustomThemeId, materialiseCustomTheme } from '@/lib/custom-theme-registry';
@@ -193,7 +194,7 @@ export function ThemeCategoryBrowser({
           {customEnabled ? (
             <ThemeCategoryCard
               label="Custom"
-              description="Your saved colour schemes, plus build your own."
+              description="Your saved themes, plus build your own."
               count={custom.length}
               themes={custom.map(materialiseCustomTheme)}
               selected={themeIsCustom}
@@ -207,7 +208,7 @@ export function ThemeCategoryBrowser({
 }
 
 function BackButton({ current, onClick }: { current?: string; onClick: () => void }) {
-  return <BackBar label="All colour schemes" current={current} onClick={onClick} />;
+  return <BackBar label="All themes" current={current} onClick={onClick} />;
 }
 
 // A full-width iOS-style switch prompting the user to match the editor's
@@ -224,7 +225,7 @@ function ModeSwitchRow({ category }: { category: ThemeCategory | 'custom' }) {
   const label = target === 'dark' ? 'Turn on Dark mode' : 'Turn on Light mode';
   const hint =
     target === 'dark'
-      ? 'Match the editor chrome to these dark colour schemes.'
+      ? 'Match the editor chrome to these dark themes.'
       : 'Switch the editor chrome back to light.';
   return (
     <button
@@ -243,54 +244,6 @@ function ModeSwitchRow({ category }: { category: ThemeCategory | 'custom' }) {
       {/* The row owns the click, so the switch is presentational. It's
           always off here (we only render when the target isn't active). */}
       <ToggleSwitch presentational checked={false} label={label} />
-    </button>
-  );
-}
-
-// A full-width "go back to the overview" bar. Far more obvious than a
-// small pill in the corner — the whole row is the target. Shared shape
-// with the template picker's back bar so the two browses match.
-export function BackBar({
-  label,
-  current,
-  onClick,
-}: {
-  label: string;
-  // The category the user has drilled into, shown as a chip on the right
-  // so it's clear which group they're in (and which their selection is).
-  current?: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="group mb-3 flex w-full items-center gap-2.5 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-left text-sm font-semibold text-slate-700 shadow-sm transition hover:border-brand-300 hover:bg-brand-50/50 hover:text-brand-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:border-brand-500/60 dark:hover:bg-slate-800/80 dark:hover:text-brand-200"
-    >
-      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-500 transition group-hover:bg-brand-100 group-hover:text-brand-700 dark:bg-slate-700 dark:text-slate-200 dark:group-hover:bg-brand-500/25 dark:group-hover:text-brand-200">
-        <svg
-          width="13"
-          height="13"
-          viewBox="0 0 12 12"
-          fill="none"
-          aria-hidden
-          className="transition-transform duration-150 group-hover:-translate-x-0.5"
-        >
-          <path
-            d="M7.5 2.5 4 6l3.5 3.5"
-            stroke="currentColor"
-            strokeWidth="1.7"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </span>
-      {label}
-      {current ? (
-        <span className="ml-auto rounded-md bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-200">
-          {current}
-        </span>
-      ) : null}
     </button>
   );
 }

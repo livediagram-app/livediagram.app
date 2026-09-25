@@ -1,5 +1,5 @@
 // Privacy section — mirrors the dark visual treatment of the
-// UseCaseCarousel above so the landing page reads as two distinct
+// TemplateGallery above so the landing page reads as two distinct
 // promises (what you can make, how we handle the data) separated by
 // a darker band. Each card now leads with a dark-friendly animated
 // illustration in the same vocabulary as FeatureArt (Frame + SVG +

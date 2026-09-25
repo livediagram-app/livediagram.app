@@ -70,6 +70,12 @@ Assignee/assigner identity here is informational (who to render), not a
 permission: anyone with edit access can complete, edit, or delete an action,
 the same way they can edit any element content.
 
+**A copy doesn't carry the action.** Copy / paste (both the OS clipboard and
+the in-app fallback buffer) strips `action` along with comment threads and poll
+responses: an action is work somebody handed to a person, with its own id in
+the Activity index, not a property of the shape, so a pasted copy would be a
+second action under the same id that nobody assigned.
+
 ## 2. The context-menu split, the tile, and the dialog
 
 Today's single Collaborate category (`ElementContentSections.tsx`: Add/Edit
@@ -350,10 +356,10 @@ enum-ish tokens, not user content.
 
 ## 9. Out of scope (v1)
 
-- A cross-diagram "my actions" inbox (would want a D1 table rather than
-  blob-scans; the per-element blob model is chosen deliberately to match
-  comments, and a table can be added later without moving the source of
-  truth).
+- ~~A cross-diagram "my actions" inbox~~ — shipped as the Explorer's
+  **Activity** page (spec/142), exactly the way this bullet predicted:
+  a D1 projection (`collab_actions`) written beside every tab save,
+  with the per-element blob still the source of truth.
 - Due dates, priorities, more than one action per element, and multiple
   assignees.
 - Auto-sharing the diagram with the assignee on assign (§4 caveat).

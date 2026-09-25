@@ -53,12 +53,7 @@ export function ShortcutsDialog({ enabled, onToggleEnabled, onClose }: Shortcuts
           </p>
         </div>
         <div className="-mr-2 -mt-1 flex shrink-0 items-center gap-0.5">
-          <HelpArticleLink
-            article="keyboardShortcuts"
-            title="Keyboard shortcuts"
-            description="The full shortcut reference and tips for faster editing."
-            className="!h-7 !w-7 !rounded !border-0 !text-sm !text-slate-400 hover:!bg-slate-100 hover:!text-slate-700 dark:!text-slate-400 dark:hover:!bg-slate-800 dark:hover:!text-slate-200"
-          />
+          <HelpArticleLink article="keyboardShortcuts" size="md" />
           <button
             type="button"
             onClick={onClose}

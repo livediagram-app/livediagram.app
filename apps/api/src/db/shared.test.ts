@@ -19,22 +19,29 @@ const sharedRow = (over: Record<string, unknown> = {}) => ({
   ...over,
 });
 
-describe('recordSharedAccess (spec/65 first-visit signal)', () => {
-  it('reports a first visit, and upserts the row', async () => {
-    const db = fakeD1(({ sql }) => (sql.includes('SELECT 1') ? { first: null } : {}));
+describe('recordSharedAccess (spec/65 + spec/22 first-visit signal)', () => {
+  it('reports a first visit when its insert creates the row, and writes nothing else', async () => {
+    const db = fakeD1(({ sql }) => (sql.includes('INSERT OR IGNORE') ? { changes: 1 } : {}));
     expect(await recordSharedAccess(db.env, 'visitor-1', 'diag-1', 'edit')).toBe(true);
-    const upsert = db.one('INSERT INTO shared_with');
-    expect(upsert.bindings.slice(0, 3)).toEqual(['visitor-1', 'diag-1', 'edit']);
+    const insert = db.one('INSERT OR IGNORE INTO shared_with');
+    expect(insert.bindings.slice(0, 3)).toEqual(['visitor-1', 'diag-1', 'edit']);
+    expect(db.matching('UPDATE shared_with')).toHaveLength(0);
   });
 
   it('reports a repeat visit while still refreshing role and last_seen', async () => {
-    // The email fires once per person (spec/65) but the row has to keep up
-    // with a link that was re-issued at a different role.
-    const db = fakeD1(({ sql }) => (sql.includes('SELECT 1') ? { first: { one: 1 } } : {}));
+    // The email and the Diagram·Joined count fire once per person, but the
+    // row has to keep up with a link that was re-issued at a different role.
+    const db = fakeD1(({ sql }) => (sql.includes('INSERT OR IGNORE') ? { changes: 0 } : {}));
     expect(await recordSharedAccess(db.env, 'visitor-1', 'diag-1', 'view')).toBe(false);
-    const upsert = db.one('INSERT INTO shared_with');
-    expect(upsert.sql).toContain('ON CONFLICT (owner_id, diagram_id) DO UPDATE');
-    expect(upsert.bindings[2]).toBe('view');
+    const update = db.one('UPDATE shared_with');
+    expect(update.bindings[0]).toBe('view');
+    expect(update.bindings.slice(2)).toEqual(['visitor-1', 'diag-1']);
+  });
+
+  it('never reads first-ness from a separate SELECT (a race would double count)', async () => {
+    const db = fakeD1(() => ({ changes: 1 }));
+    await recordSharedAccess(db.env, 'visitor-1', 'diag-1', 'edit');
+    expect(db.matching('SELECT')).toHaveLength(0);
   });
 });
 

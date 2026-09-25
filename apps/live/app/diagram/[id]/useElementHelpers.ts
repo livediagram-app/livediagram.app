@@ -2,8 +2,6 @@ import type { Dispatch, SetStateAction } from 'react';
 import {
   takesTypedLabel,
   isBoxed,
-  joinGroups,
-  selectionMembers,
   type BoxedElement,
   type Element,
   type Tab,
@@ -11,26 +9,21 @@ import {
 import { insertElementAt, type InsertionSlot } from '@/lib/insert-between';
 import { deriveNewBoxedColours } from '@/lib/themes';
 import { inheritedSizeFor } from '@/lib/canvas';
-import { paintableArrowFields, paintableBoxedFields } from '@/lib/format-painter';
+import { applyPaint, paintableArrowFields, paintableBoxedFields } from '@/lib/format-painter';
 import { filterPaintedFields, formatPaintsAnything, type FormatConfig } from '@/lib/format-config';
 import { track } from '@/lib/telemetry';
 import { patchTab } from './editor-page-helpers';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
 
-// Selection + placement + format/group helpers, lifted out of
-// editor-page.tsx. These back the element-creation and selection
-// handlers (addBoxed sizes/colours a new element from the selection +
-// backdrop; memberIdsOf / currentSelectionIds / selectionPrimary resolve
-// the working set; applyFormatFromSource / completeGrouping run the
-// format-painter + group modes). Returned so the still-inline handlers
-// and the Canvas consume them.
+// Selection + placement + format helpers, lifted out of editor-page.tsx.
+// These back the element-creation and selection handlers (addBoxed
+// sizes/colours a new element from the selection + backdrop;
+// currentSelectionIds / selectionPrimary resolve the working set;
+// applyFormatFromSource runs the format painter). Returned so the
+// still-inline handlers and the Canvas consume them.
 export function useElementHelpers(opts: {
   selectedId: string | null;
-  // Drill-in selection (spec/09 groups): when equal to selectedId, the
-  // selection is just that member, so member resolution must NOT expand
-  // to the whole group.
-  soloSelectedId: string | null;
   activeId: string;
   activeTab: Tab;
   editsBlocked: boolean;
@@ -39,7 +32,6 @@ export function useElementHelpers(opts: {
   // The Format Panel's settings (spec/117): which parts of a copied style
   // travel, and whether the brush stays loaded.
   formatConfig: FormatConfig;
-  groupSourceId: string | null;
   getViewportCenter: () => { x: number; y: number };
   commit: (updater: (els: Element[]) => Element[]) => void;
   commitTabs: (updater: (tabs: Tab[]) => Tab[]) => void;
@@ -47,18 +39,15 @@ export function useElementHelpers(opts: {
   setSelectedId: SetState<string | null>;
   setEditingId: SetState<string | null>;
   setFormatSourceId: SetState<string | null>;
-  setGroupSourceId: SetState<string | null>;
 }) {
   const {
     selectedId,
-    soloSelectedId,
     activeId,
     activeTab,
     editsBlocked,
     multiSelectedIds,
     formatSourceId,
     formatConfig,
-    groupSourceId,
     getViewportCenter,
     commit,
     commitTabs,
@@ -66,7 +55,6 @@ export function useElementHelpers(opts: {
     setSelectedId,
     setEditingId,
     setFormatSourceId,
-    setGroupSourceId,
   } = opts;
 
   const addBoxed = <T extends BoxedElement>(make: (x: number, y: number) => T) => {
@@ -178,7 +166,15 @@ export function useElementHelpers(opts: {
   // it has already worked out from the branch, so it needs neither of those —
   // but it needs all of the rest, and re-implementing them at the call site is
   // how an add path ends up missing its activity-log entry.
-  const placePrebuilt = (added: Element[], primaryId: string) => {
+  const placePrebuilt = (
+    added: Element[],
+    primaryId: string,
+    // Existing elements to move out of the way, by id. Mind-map growth
+    // (spec/118) makes room for a new node by sliding whole neighbouring
+    // trees down, and that move has to land in the SAME commit as the add or
+    // it becomes a second undo step for one keystroke.
+    shifts: readonly { id: string; dy: number }[] = [],
+  ) => {
     if (editsBlocked) return;
     const themed = added.map((el) =>
       isBoxed(el)
@@ -201,39 +197,37 @@ export function useElementHelpers(opts: {
     // (spec/118), in the same tick. A snapshot taken at render time predates
     // that commit, so writing it back silently threw the label away — every
     // node in a chain came out blank.
+    const byId = new Map(shifts.map((s) => [s.id, s.dy]));
+    const displace = (els: Element[]): Element[] =>
+      byId.size === 0
+        ? els
+        : els.map((el) => {
+            const dy = byId.get(el.id);
+            return dy === undefined || !isBoxed(el) ? el : { ...el, y: el.y + dy };
+          });
     commitTabs((ts) =>
       ts.map((t) =>
         t.id === activeId
-          ? { ...t, elements: [...t.elements, ...themed], templateChosen: true }
+          ? { ...t, elements: [...displace(t.elements), ...themed], templateChosen: true }
           : t,
       ),
     );
     // The log entry describes the ADD, which is correct even if `before` is a
     // beat stale: any label change committed just now emitted its own entry.
     const before = activeTab.elements;
-    emitChange(activeId, before, [...before, ...themed]);
+    emitChange(activeId, before, [...displace(before), ...themed]);
     setSelectedId(primaryId);
   };
 
   // --- Selection helpers ---------------------------------------------------
 
-  const memberIdsOf = (id: string | null): Set<string> => {
-    if (!id) return new Set();
-    // A drilled-in group member stands alone: setters / delete / duplicate
-    // act on just it, not its whole group.
-    if (id === soloSelectedId && id === selectedId) return new Set([id]);
-    return new Set(selectionMembers(activeTab.elements, id));
-  };
-
-  // Unified "what's the user editing right now?" id set. An active
-  // marquee multi-selection wins; otherwise we fall back to the
-  // single-id member-resolver (which expands a group selection
-  // into its full membership). Every editor setter that used to
-  // operate on `memberIdsOf(selectedId)` now uses this so shared
-  // controls bulk-apply across either flavour of multi-selection.
+  // Unified "what's the user editing right now?" id set: an active
+  // marquee multi-selection, else the single selection. Every editor
+  // setter resolves through this so shared controls bulk-apply across a
+  // multi-selection exactly as they apply to one element.
   const currentSelectionIds = (): Set<string> => {
     if (multiSelectedIds.size > 0) return new Set(multiSelectedIds);
-    return memberIdsOf(selectedId);
+    return selectedId ? new Set([selectedId]) : new Set();
   };
 
   // First element in `activeTab.elements` (DOM/z-order) that's in
@@ -249,7 +243,6 @@ export function useElementHelpers(opts: {
   // --- Modes ---------------------------------------------------------------
 
   const exitFormatPainter = () => setFormatSourceId(null);
-  const exitGroupMode = () => setGroupSourceId(null);
 
   // `keepSource` (set by the persistent Format canvas tool) leaves the
   // source armed after a paint so the user can tap target after target;
@@ -281,38 +274,26 @@ export function useElementHelpers(opts: {
       // above still decides which parts CAN.
       const projection = filterPaintedFields(paintableBoxedFields(source), formatConfig);
       commit((els) =>
-        els.map((el) =>
-          el.id === targetId && isBoxed(el) ? ({ ...el, ...projection } as typeof el) : el,
-        ),
+        els.map((el) => (el.id === targetId && isBoxed(el) ? applyPaint(el, projection) : el)),
       );
     } else if (source.type === 'arrow' && target.type === 'arrow') {
       const projection = filterPaintedFields(paintableArrowFields(source), formatConfig);
       commit((els) =>
         els.map((el) =>
-          el.id === targetId && el.type === 'arrow' ? ({ ...el, ...projection } as typeof el) : el,
+          el.id === targetId && el.type === 'arrow' ? applyPaint(el, projection) : el,
         ),
       );
     }
     if (!keepSource) setFormatSourceId(null);
   };
 
-  const completeGrouping = (targetId: string) => {
-    if (!groupSourceId) return;
-    track('Element', 'Grouped'); // parity with the marquee-group path
-    commit((els) => joinGroups(els, groupSourceId, targetId));
-    setSelectedId(targetId);
-  };
-
   return {
     addBoxed,
     addBoxedAt,
     placePrebuilt,
-    memberIdsOf,
     currentSelectionIds,
     selectionPrimary,
     exitFormatPainter,
-    exitGroupMode,
     applyFormatFromSource,
-    completeGrouping,
   };
 }

@@ -16,9 +16,9 @@ import type { EditorContextMenuState } from '@/components/palette/EditorContextM
 type SetState<T> = Dispatch<SetStateAction<T>>;
 
 // Selection-editing handlers, lifted out of editor-page.tsx: enter
-// format-painter / group modes, begin / commit / cancel inline label
+// format painter, begin / commit / cancel inline label
 // edits (incl. the first-label -> diagram/tab auto-rename), type-to-edit,
-// single-select (with format-paint / group-target interception), and
+// single-select (with format-paint interception), and
 // shift-click multi-select toggling. applyFormatFromSource comes from
 // useElementHelpers and is passed in.
 export function useSelectionEditing(opts: {
@@ -35,7 +35,6 @@ export function useSelectionEditing(opts: {
   // no drag entry for it (their clicks land here via selectElement), so
   // selectElement owns the arm-then-paint cycle for them.
   formatToolActive: boolean;
-  groupSourceId: string | null;
   multiSelectedIds: Set<string>;
   diagramName: string;
   tabs: Tab[];
@@ -53,12 +52,7 @@ export function useSelectionEditing(opts: {
   lockedByOther: (id: string) => boolean;
   set: {
     setFormatSourceId: SetState<string | null>;
-    setGroupSourceId: SetState<string | null>;
     setSelectedId: SetState<string | null>;
-    // Cleared on plain selects: drill-in solo (spec/09 groups) is only
-    // entered by clicking a member of an already-selected group on the
-    // canvas (useBoxedDragHandlers.beginDrag).
-    setSoloSelectedId: SetState<string | null>;
     setEditingId: SetState<string | null>;
     // Type-to-edit (spec/09) seeds the label with the first typed char,
     // so the editor must place the caret at the END rather than
@@ -83,7 +77,6 @@ export function useSelectionEditing(opts: {
     adoptLayerName,
     formatSourceId,
     formatToolActive,
-    groupSourceId,
     multiSelectedIds,
     diagramName,
     tabs,
@@ -96,9 +89,7 @@ export function useSelectionEditing(opts: {
   } = opts;
   const {
     setFormatSourceId,
-    setGroupSourceId,
     setSelectedId,
-    setSoloSelectedId,
     setEditingId,
     setEditCursorAtEnd,
     setMultiSelectedIds,
@@ -109,13 +100,6 @@ export function useSelectionEditing(opts: {
   const beginFormatPainter = () => {
     if (!selectedId) return;
     setFormatSourceId(selectedId);
-    setGroupSourceId(null);
-  };
-
-  const beginGroup = () => {
-    if (!selectedId) return;
-    setGroupSourceId(selectedId);
-    setFormatSourceId(null);
   };
 
   const beginEdit = (elementId: string) => {
@@ -129,7 +113,6 @@ export function useSelectionEditing(opts: {
     // type-to-edit) opens the inline editor for them.
     const el = activeTab.elements.find((e) => e.id === elementId);
     if (el && el.type === 'shape' && isSelfDrawingShape(el.shape)) return;
-    setGroupSourceId(null);
     setSelectedId(elementId);
     // Double-click / Space edit: select-all so a retype replaces the label.
     setEditCursorAtEnd(false);
@@ -150,6 +133,14 @@ export function useSelectionEditing(opts: {
     commit((els) =>
       els.map((el) => (el.id === elementId && el.type === 'table' ? { ...el, ...patch } : el)),
     );
+  };
+
+  // A lane's title gutter, resized by dragging its seam (spec/119). One
+  // commit on release, like the table's dividers: the drag itself is live
+  // local state in the view, so a gesture is one undo step rather than one
+  // per pixel.
+  const commitHeaderSize = (elementId: string, headerSize: number) => {
+    commit((els) => els.map((el) => (el.id === elementId ? { ...el, headerSize } : el)));
   };
 
   const commitLabel = (elementId: string, label: string, runs?: TextRun[]) => {
@@ -248,7 +239,7 @@ export function useSelectionEditing(opts: {
   const selectElement = (id: string) => {
     // Concurrent-selection lock (spec/07): another participant has this
     // element selected, so block it — for plain select AND for format-
-    // paint / group targets, since both would mutate an element someone
+    // paint targets, since painting would mutate an element someone
     // else is working on. The not-allowed cursor + "Locked to <name>"
     // tooltip on the element communicate why. Hidden / locked-layer
     // elements (spec/74) are equally untouchable.
@@ -271,11 +262,6 @@ export function useSelectionEditing(opts: {
       applyFormatFromSource(id);
       return;
     }
-    if (groupSourceId !== null) {
-      setGroupSourceId(null);
-      return;
-    }
-    setSoloSelectedId(null);
     setSelectedId(id);
     // Clicking a single element always collapses any active multi-selection
     // down to that one element — the user's intent is unambiguous.
@@ -304,15 +290,14 @@ export function useSelectionEditing(opts: {
     setMultiSelectedIds(next);
     setEditingId(null);
     setFormatSourceId(null);
-    setGroupSourceId(null);
   };
 
   return {
     beginFormatPainter,
-    beginGroup,
     beginEdit,
     commitLabel,
     commitTable,
+    commitHeaderSize,
     cancelEdit,
     typeIntoSelected,
     selectElement,

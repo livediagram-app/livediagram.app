@@ -64,7 +64,13 @@ dialog**, the mirror of the Export dialog. The user picks the format:
 
 Every format is text, so each card opens the **same two-step panel**
 (`TextImportPanel`, [spec/73](73-mermaid.md)): **paste or write** the
-content, or **import a file instead**. The chosen format drives the
+content, or **import a file instead**. The way back to the format grid is the
+shared **`BackBar`** across the top of that step (the same control the New
+Diagram wizard's location step uses), carrying the chosen format as its chip -
+not a small text link in the footer, which put the way back beside the way
+forward. The export dialog's two second screens (`TextExportPanel`,
+`ImageExportPanel`) use the same bar, so every second screen in both dialogs
+returns the same way. The chosen format drives the
 placeholder, the file-picker's filter, and which parser runs (no content
 auto-detection — the user said which it is). Both the paste and file
 routes go through one `importTextIntoActiveTab(format, text)` so they

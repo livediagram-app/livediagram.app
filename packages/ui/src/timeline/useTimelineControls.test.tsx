@@ -63,24 +63,40 @@ describe('useTimelineControls', () => {
     expect(onActorFilterChange).toHaveBeenLastCalledWith('all');
   });
 
+  describe('visibleEvents', () => {
+    it('hides the edit that shares a day with its create (spec/138 §2.1a)', () => {
+      const noon = new Date(2026, 8, 21, 12, 0).getTime();
+      const created = event({
+        id: 'c',
+        eventType: 'diagram_created',
+        title: 'Diagram Created',
+        occurredAt: noon,
+        snapshot: { diagramId: 'd1', diagramName: 'Payments' },
+      } as Partial<TimelineEvent>);
+      const edited = event({
+        id: 'e',
+        eventType: 'diagram_edited',
+        title: 'Diagram Updated',
+        occurredAt: noon + 3 * 60 * 60 * 1000,
+        snapshot: { diagramId: 'd1', diagramName: 'Payments' },
+      } as Partial<TimelineEvent>);
+      const { result } = renderHook(() => useTimelineControls([edited, created], { viewerId: ME }));
+      expect(result.current.visibleEvents.map((e) => e.id)).toEqual(['c']);
+      // The calendar's marked days come from the same list, so they agree.
+      expect(result.current.eventDates.size).toBe(1);
+    });
+  });
+
   describe('pickDate', () => {
     // The mini-calendar sits in the filter popover, which is reachable from the
     // header in every mode — but the scroll target and the pulse it drove are
     // rendered by the day groups, and only LIST mode renders those. So picking
-    // a date in calendar or week mode silently did nothing.
+    // a date in calendar mode silently did nothing.
     it('moves the calendar grid to the picked day’s month', () => {
       const { result } = renderHook(() => useTimelineControls([event()], { viewerId: ME }));
       act(() => result.current.setMode('calendar'));
       act(() => result.current.pickDate('2026-03-14'));
       expect(result.current.monthKey).toBe('2026-03');
-    });
-
-    it('moves the week grid to the week containing the picked day', () => {
-      const { result } = renderHook(() => useTimelineControls([event()], { viewerId: ME }));
-      act(() => result.current.setMode('week'));
-      // A Saturday: the grid is Monday-first, so this resolves back to the 9th.
-      act(() => result.current.pickDate('2026-03-14'));
-      expect(result.current.weekKey).toBe('2026-03-09');
     });
 
     it('pulses the day group in list mode, and moves no grid', () => {

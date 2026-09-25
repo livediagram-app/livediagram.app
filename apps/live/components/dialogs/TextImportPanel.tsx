@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
+import { BackBar } from '@/components/primitives/BackBar';
 import { Button } from '@livediagram/ui';
 import type { ImportOutcome } from '@/lib/import-tab';
 
@@ -9,13 +10,24 @@ import type { ImportOutcome } from '@/lib/import-tab';
 // text / busy / error so the format grid stays simple. Shared by JSON,
 // Mermaid, and Markdown.
 export function TextImportPanel({
+  formatTitle,
   placeholder,
+  note,
   onImportText,
   onImportFile,
   onDone,
   onBack,
 }: {
+  // The chosen format's name, shown as the bar's chip so the step says
+  // which format is being pasted.
+  formatTitle: string;
   placeholder: string;
+  // Optional footnote for this format (a help link). It rides in the footer's
+  // left slot, level with the action buttons — the conventional spot for a
+  // dialog's help link, and the slot the old "← Back" link vacated when the
+  // way back became the BackBar above. Left to hang under the footer instead,
+  // it read as a stray line that had fallen off the dialog.
+  note?: ReactNode;
   onImportText: (text: string) => Promise<ImportOutcome>;
   onImportFile: () => Promise<ImportOutcome>;
   onDone: () => void;
@@ -29,7 +41,12 @@ export function TextImportPanel({
     if (busy) return;
     setBusy(true);
     setError(null);
-    const outcome = await runner();
+    // A runner that throws must still hand the panel back: an uncaught
+    // rejection here left `busy` set, every control disabled, and no message.
+    const outcome = await runner().catch((): ImportOutcome => ({
+      status: 'error',
+      error: "Couldn't import that. Check the file and try again.",
+    }));
     if (outcome.status === 'done') {
       onDone();
     } else {
@@ -40,6 +57,11 @@ export function TextImportPanel({
 
   return (
     <div>
+      {/* The shared two-level "back to the overview" bar (spec/56 house
+          style), the same control the New Diagram wizard's location step
+          uses — not a small text link buried in the footer beside the
+          commit button, where the way back sat next to the way forward. */}
+      <BackBar label="All formats" current={formatTitle} onClick={onBack} disabled={busy} />
       <textarea
         value={text}
         onChange={(e) => setText(e.target.value)}
@@ -53,14 +75,7 @@ export function TextImportPanel({
         </p>
       ) : null}
       <div className="mt-4 flex items-center justify-between gap-3">
-        <button
-          type="button"
-          onClick={onBack}
-          disabled={busy}
-          className="text-xs font-medium text-slate-500 transition hover:text-slate-700 disabled:opacity-50 dark:text-slate-400 dark:hover:text-slate-200"
-        >
-          ← Back
-        </button>
+        {note ?? <span />}
         <div className="flex items-center gap-2">
           <button
             type="button"

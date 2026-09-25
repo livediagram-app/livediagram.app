@@ -18,7 +18,7 @@ export type ImportOutcome =
 // when we bump the schema we add a `migrate(version, tab)` branch in
 // parseImportedTab that walks old shapes forward.
 
-import type { Tab } from '@livediagram/diagram';
+import { isValidElement, type Tab } from '@livediagram/diagram';
 import { TAB_SCHEMA_VERSION, type ExportedTabEnvelope } from './export-tab';
 
 type ImportResult = { ok: true; tab: Tab } | { ok: false; error: string };
@@ -62,7 +62,12 @@ export function parseImportedTab(text: string): ImportResult {
   }
   // Schema v1 doesn't need migration — passes straight through.
   // Future bumps: insert `if (env.schemaVersion < 2) tab = migrateV1ToV2(tab);` etc here.
-  return { ok: true, tab };
+  //
+  // Each element through the same guard clipboard paste uses. An array check
+  // alone let `null`, `{}` or an arrow with no endpoints through: the last
+  // threw in the id re-mint (leaving the Import dialog stuck on busy), the
+  // others landed on the canvas as junk.
+  return { ok: true, tab: { ...tab, elements: tab.elements.filter(isValidElement) } };
 }
 
 // Open the browser's file picker and resolve with the chosen file's name

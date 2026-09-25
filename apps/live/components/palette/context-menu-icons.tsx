@@ -170,27 +170,6 @@ export function PaletteMenuIcon() {
   );
 }
 
-export function CanvasMenuIcon() {
-  return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <rect x="2.5" y="2.5" width="11" height="11" rx="1.5" />
-      <circle cx="6" cy="6" r="0.6" fill="currentColor" />
-      <circle cx="10" cy="6" r="0.6" fill="currentColor" />
-      <circle cx="6" cy="10" r="0.6" fill="currentColor" />
-      <circle cx="10" cy="10" r="0.6" fill="currentColor" />
-    </svg>
-  );
-}
-
 export function AutoAlignIcon() {
   return (
     <svg
@@ -226,27 +205,6 @@ export function TimerMenuIcon() {
       <path d="M6.5 2h3" />
       <circle cx="8" cy="9.5" r="5" />
       <path d="M8 9.5V6.8M8 9.5l2.1 1.3" />
-    </svg>
-  );
-}
-
-// Hourglass - the Countdown session-tool category glyph (time running out).
-export function CountdownMenuIcon() {
-  return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M4 2h8M4 14h8" />
-      <path d="M5 2v2.5c0 1.8 3 2.7 3 3.5s-3 1.7-3 3.5V14" />
-      <path d="M11 2v2.5c0 1.8-3 2.7-3 3.5s3 1.7 3 3.5V14" />
     </svg>
   );
 }
@@ -450,26 +408,6 @@ export function MindmapMenuIcon() {
       <circle cx="2.8" cy="13" r="1.4" />
       <circle cx="13.2" cy="13" r="1.4" />
       <path d="M6.5 6.6L3.8 4M9.5 6.6L12.2 4M6.5 9.4L3.8 12M9.5 9.4L12.2 12" />
-    </svg>
-  );
-}
-
-// Serif "A" - the Font section glyph.
-export function FontMenuIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="currentColor"
-      aria-hidden
-      fontSize="12"
-      fontWeight="600"
-      fontFamily="Georgia, serif"
-    >
-      <text x="8" y="12.5" textAnchor="middle">
-        A
-      </text>
     </svg>
   );
 }
@@ -1549,28 +1487,6 @@ export function PasteMenuIcon() {
   );
 }
 
-// Timeline lanes (spec/139 Phase 6): three stacked rules with a note sitting
-// on the middle one — the rhythm the switch turns on, not a generic grid.
-export function TimelineLanesMenuIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.7"
-      strokeLinecap="round"
-      aria-hidden
-    >
-      <path d="M3 6h18" strokeOpacity="0.45" />
-      <path d="M3 18h18" strokeOpacity="0.45" />
-      <path d="M3 12h18" />
-      <rect x="8" y="9.4" width="5.2" height="5.2" rx="0.8" strokeOpacity="0.9" />
-    </svg>
-  );
-}
-
 // Undock (spec/139 Phase 7): two panels pulling apart, with the seam's dots
 // between them — the relation being let go, not a note being deleted.
 export function UndockMenuIcon() {
@@ -1589,6 +1505,96 @@ export function UndockMenuIcon() {
       <rect x="14.5" y="7" width="7" height="10" rx="1" />
       <circle cx="10.6" cy="12" r="0.9" fill="currentColor" stroke="none" />
       <circle cx="13.4" cy="12" r="0.9" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+// Colour-category marks (spec/09 Colours). "Text", "Background", "Border" and
+// "Heading" are four labels of similar length and shape; in a dense menu the
+// glyph is what separates them at a glance, before anyone reads a word. Each
+// draws the SURFACE it paints, not a generic paint pot.
+
+/** Text colour: a letterform over a colour bar, the underline-swatch idiom. */
+export function TextColourIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden>
+      <text
+        x="8"
+        y="10.5"
+        textAnchor="middle"
+        fill="currentColor"
+        fontSize="10"
+        fontWeight="700"
+        fontFamily="Georgia, serif"
+      >
+        A
+      </text>
+      <rect x="2.5" y="12.5" width="11" height="2.5" rx="1" fill="currentColor" />
+    </svg>
+  );
+}
+
+/** Background: a filled box, the whole face flooded. */
+export function FillColourIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden>
+      <rect
+        x="2.5"
+        y="3.5"
+        width="11"
+        height="9"
+        rx="2"
+        fill="currentColor"
+        stroke="currentColor"
+        strokeWidth="1.3"
+      />
+    </svg>
+  );
+}
+
+/** Border: the same box with only its edge drawn. */
+export function BorderColourIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden>
+      <rect
+        x="2.5"
+        y="3.5"
+        width="11"
+        height="9"
+        rx="2"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+    </svg>
+  );
+}
+
+/** Heading: the box again, with just its top band filled. */
+export function HeadingColourIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden>
+      <rect
+        x="2.5"
+        y="3.5"
+        width="11"
+        height="9"
+        rx="2"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.3"
+      />
+      <path d="M2.5 5.5a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v1.5h-11Z" fill="currentColor" />
+    </svg>
+  );
+}
+
+/** Pointer: an arrowhead, for the colour of the heads rather than the line. */
+export function PointerColourIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden>
+      <path d="M2 8h7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      <path d="M8.5 4.5 14 8l-5.5 3.5Z" fill="currentColor" />
     </svg>
   );
 }

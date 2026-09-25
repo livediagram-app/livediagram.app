@@ -22,9 +22,12 @@ import { track } from '@/lib/telemetry';
 export function useCornerDocking({
   minimalPanels,
   zenMode,
+  toolbarLayout,
 }: {
   minimalPanels: boolean;
   zenMode: boolean;
+  // The Toolbar layout (spec/148) keeps the desktop corners on a phone too.
+  toolbarLayout: boolean;
 }) {
   // Device-local panel layout + live drag/snap state. Self-contained
   // (reads/writes localStorage itself), so it lives here at the one
@@ -71,7 +74,7 @@ export function useCornerDocking({
     }
     return out;
   }, [dock.drag]);
-  const dockingActive = !isMobile && !minimalPanels && !zenMode;
+  const dockingActive = (!isMobile || toolbarLayout) && !minimalPanels && !zenMode;
   // Build the per-panel wiring: in docking mode, position comes from the
   // layout (free pos, or null when corner-docked → rendered as a flex
   // child), reset snaps back to the default corner, and the dock bundle

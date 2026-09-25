@@ -118,7 +118,20 @@ export async function handleDiagramRoomRoutes(ctx: RouteContext): Promise<Respon
     // another peer's presence (there's no real id to claim). Only the
     // server-resolved role is forwarded; it still gates edit vs view ops.
     const forwarded = new Request(request);
+    // Both trust headers are stamped UNCONDITIONALLY, because `new Request`
+    // copies the client's own headers and the DO believes whatever arrives
+    // under these names. `set` on every path is what makes that belief true:
+    // a `delete`-then-conditional-`set` would be equivalent, but the
+    // always-set form can't regress the way the owner bit did — it was only
+    // ever set on the owner path, so a non-browser client (websocat, curl:
+    // browsers can't put headers on an upgrade) could send
+    // `X-Verified-Owner: 1` itself and have the room seat it as the owner.
     forwarded.headers.set('X-Verified-Role', role);
+    // One more server-resolved bit, and only a bit (spec/149): whether this
+    // upgrade is the diagram's OWNER. The facilitator baton needs it so the
+    // owner can always take the session back, and a boolean answers that
+    // without handing the room an identity it deliberately does not hold.
+    forwarded.headers.set('X-Verified-Owner', isOwnerUpgrade ? '1' : '0');
     return stub.fetch(forwarded);
   }
 

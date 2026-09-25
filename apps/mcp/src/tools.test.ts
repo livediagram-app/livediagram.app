@@ -24,11 +24,12 @@ import type { ToolAnnotations } from '@modelcontextprotocol/sdk/types.js';
 //
 // This drives the real `registerTools`, capturing registrations through a stub
 // server and telemetry through the stub `env.API` the emitter posts to, so it
-// proves the emit RUNS inside the handler rather than that the string appears in
-// the file. Each handler is invoked with a bearer token and an api binding that
-// refuses every non-telemetry request, so it bails immediately after reporting
-// itself — which is where the emit has to be anyway, since a tool that only
-// counted itself on success would under-report exactly the calls worth seeing.
+// proves the emit RUNS rather than that the string appears in the file. The
+// emit lives in `registerTool` and fires only when the tool SUCCEEDED
+// (spec/22's success-path rule), so the harness has two api bindings: one that
+// answers every route plausibly (each tool must then report itself exactly
+// once) and one that refuses everything (no tool may then count a use, while
+// the failure still reaches the Exceptions dashboard as `Error·Api`).
 //
 // Not checked here: that spec/22's Mcp bullet lists the same nine tokens. This
 // workspace targets the Workers runtime and carries no node types, so a test in
@@ -43,7 +44,26 @@ type Registered = {
 
 type Emitted = { category: string; action: string; type: string };
 
-function harness() {
+const TAB = { id: 't_1', name: 'Tab 1', elements: [] };
+const DIAGRAM = { id: 'd_1', name: 'A diagram', tabs: [{ id: 't_1', name: 'Tab 1' }] };
+
+// A plausible api: enough of each route's response shape for every tool to
+// run to its success result.
+function okResponse(request: Request): Response {
+  const path = new URL(request.url).pathname.replace(/^\/api/, '');
+  if (request.method === 'DELETE') return new Response(null, { status: 204 });
+  const json = (body: unknown) => Response.json(body);
+  if (path === '/diagrams' && request.method === 'GET') return json({ diagrams: [] });
+  if (path === '/teams') return json({ teams: [] });
+  if (path.endsWith('/share')) {
+    return json({ link: { code: 'abc', role: 'view', expiresAt: null } });
+  }
+  if (/\/tabs\/[^/]+$/.test(path)) return json({ tab: TAB });
+  if (/^\/diagrams\/[^/]+$/.test(path)) return json({ diagram: DIAGRAM });
+  return json({});
+}
+
+function harness(api: 'ok' | 'down' = 'down') {
   const registered: Registered[] = [];
   const emitted: Emitted[] = [];
   const server = {
@@ -60,7 +80,8 @@ function harness() {
           emitted.push(...body.events);
           return new Response(null, { status: 204 });
         }
-        // Anything else fails, so each handler stops just past its own emit.
+        if (api === 'ok') return okResponse(request);
+        // Anything else fails, so each handler stops at its first api call.
         throw new Error('api unavailable in this test');
       },
     },
@@ -83,22 +104,26 @@ function expectedToken(toolName: string): string {
 
 // A superset of every tool's arguments. The handlers are called directly here,
 // bypassing the SDK's schema validation, so this only has to be plausible
-// enough to reach the emit on the first line or two.
+// enough for each tool to run to its success result against the 'ok' api.
 const ARGS = {
   query: 'anything',
   diagramId: 'd_1',
   tabId: 't_1',
   name: 'A diagram',
   elements: [],
+  tabs: [{ name: 'Tab 1', elements: [] }],
+  mode: 'ops',
+  ops: [],
   limit: 5,
 };
 
 const AUTHED = { authInfo: { token: 'tok_test' } };
 
-// postTelemetry is fire-and-forget (`void env.API.fetch(…)`), so the event lands
-// a microtask or two after the handler returns or throws. Without this the
-// harness reads `emitted` too early and reports a perfectly instrumented tool as
-// missing — a false alarm, not a finding.
+// postTelemetry is fire-and-forget (the post is handed to the request's
+// waitUntil, never awaited), so the event lands a microtask or two after the
+// handler returns or throws. Without this the harness reads `emitted` too
+// early and reports a perfectly instrumented tool as missing: a false alarm,
+// not a finding.
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 describe('registerTools', () => {
@@ -125,16 +150,16 @@ describe('registerTools', () => {
     expect(new Set(names).size).toBe(names.length);
   });
 
-  it('reports every tool under Mcp·Used with its own token', async () => {
-    const { registered, emitted } = harness();
+  it('reports every successful tool call under Mcp·Used with its own token', async () => {
+    const { registered, emitted } = harness('ok');
     const seen: Record<string, Emitted[]> = {};
     for (const tool of registered) {
       const before = emitted.length;
-      await tool.handler(ARGS, AUTHED).catch(() => undefined);
+      const result = (await tool.handler(ARGS, AUTHED)) as { isError?: boolean };
+      // Guards the harness itself: a tool that failed here would pass the
+      // "no emit" half vacuously.
+      expect(result.isError, tool.name).not.toBe(true);
       await flush();
-      // Mcp events only: the stubbed api binding rejects, which correctly also
-      // fires spec/62 §4.12's Error·Api·Internal report. That the failure is
-      // reported too is a good sign, and it is a different assertion.
       seen[tool.name] = emitted.slice(before).filter((e) => e.category === 'Mcp');
     }
     const missing = registered.filter((t) => seen[t.name]!.length === 0).map((t) => t.name);
@@ -146,15 +171,33 @@ describe('registerTools', () => {
     }
   });
 
-  it('reports an api failure separately, without losing the tool event', async () => {
-    // Both facts have to reach the wire: the tool ran, and the call it made
-    // failed (spec/62 §4.12 — a worker-side failure is invisible otherwise).
-    const { registered, emitted } = harness();
-    const readDiagram = registered.find((r) => r.name === 'read_diagram')!;
-    await readDiagram.handler(ARGS, AUTHED).catch(() => undefined);
+  it('counts no use when the tool failed, but reports the api failure', async () => {
+    // spec/22's success-path rule: a call that errored isn't a use. The
+    // failure itself still reaches the Exceptions dashboard (spec/62 §4.12),
+    // labelled with the tool it came from via registerTool's scope.
+    const { registered, emitted } = harness('down');
+    for (const tool of registered) {
+      if (tool.name === 'list_templates') continue; // needs no api, cannot fail here
+      await tool.handler(ARGS, AUTHED).catch(() => undefined);
+    }
     await flush();
-    expect(emitted).toContainEqual({ category: 'Mcp', action: 'Used', type: 'ReadDiagram' });
-    expect(emitted.some((e) => e.category === 'Error')).toBe(true);
+    expect(emitted.filter((e) => e.category === 'Mcp')).toEqual([]);
+    expect(emitted).toContainEqual({
+      category: 'Error',
+      action: 'Api',
+      type: 'Internal.ReadDiagram',
+    });
+  });
+
+  it('counts no use for an isError result (input the model has to correct)', async () => {
+    const { registered, emitted } = harness('ok');
+    const create = registered.find((r) => r.name === 'create_diagram')!;
+    const result = (await create.handler({ name: 'x', tabs: [] }, AUTHED)) as {
+      isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    await flush();
+    expect(emitted).toEqual([]);
   });
 
   it('reports nothing for an unauthenticated call', async () => {

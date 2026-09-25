@@ -9,6 +9,8 @@ import { TableOfContents } from './TableOfContents';
 import { articleHref, articles, categoryHref, type Article } from '@/lib/articles';
 import { articleJsonLd } from '@/lib/structured-data';
 import { track } from '@/lib/telemetry';
+import { helpPathTelemetryId } from '@livediagram/help-registry/telemetry';
+import { useArticleVote } from './useArticleVote';
 import { JsonLd } from '@livediagram/ui';
 
 /** Sidebar card: shows the TOC and/or a "Learn more" list of related
@@ -66,7 +68,6 @@ export function ArticleLayout({
   parentArticle,
   children,
 }: ArticleLayoutProps) {
-  const [feedback, setFeedback] = useState<'yes' | 'no' | null>(null);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [readingTime, setReadingTime] = useState(0);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -79,15 +80,19 @@ export function ArticleLayout({
     }
   }, []);
 
-  // The current article's slug, taken from the last URL path segment. Used
-  // as the telemetry `type` (spec/22): a bounded registry identifier, never
-  // the free-text title (which the ingest validator would reject). One
+  // The current article's telemetry id (spec/22): the registry's unique
+  // per-article token for this path, never the free-text title (which the
+  // ingest validator would reject). Not the bare last path segment: two
+  // articles share one (tips-and-tricks/format-painter beside
+  // selection-modes/format-painter), and that merged their numbers. One
   // Help/View event fires per article view.
   const pathname = usePathname();
-  const slug = (pathname ?? '').split('/').filter(Boolean).pop() ?? '';
+  const articleId = helpPathTelemetryId(pathname ?? '');
   useEffect(() => {
-    if (slug) track('Help', 'View', slug);
-  }, [slug]);
+    if (articleId) track('Help', 'View', articleId);
+  }, [articleId]);
+  // The helpful vote reports only the reader's final choice (C9).
+  const { vote: feedback, cast } = useArticleVote(articleId);
 
   // Build breadcrumb. Skip the category when it duplicates the title or
   // the parent title.
@@ -219,10 +224,7 @@ export function ArticleLayout({
               <p className="mb-3 text-sm text-slate-600">Was this article helpful?</p>
               <div className="flex gap-3">
                 <button
-                  onClick={() => {
-                    if (feedback !== 'yes' && slug) track('Help', 'Helpful', slug);
-                    setFeedback('yes');
-                  }}
+                  onClick={() => cast('yes')}
                   className={`cursor-pointer rounded-xl px-5 py-2.5 text-sm font-semibold transition-all duration-200 ${
                     feedback === 'yes'
                       ? 'bg-emerald-600 text-white'
@@ -232,10 +234,7 @@ export function ArticleLayout({
                   Yes, it helped
                 </button>
                 <button
-                  onClick={() => {
-                    if (feedback !== 'no' && slug) track('Help', 'Unhelpful', slug);
-                    setFeedback('no');
-                  }}
+                  onClick={() => cast('no')}
                   className={`cursor-pointer rounded-xl px-5 py-2.5 text-sm font-semibold transition-all duration-200 ${
                     feedback === 'no'
                       ? 'bg-rose-600 text-white'

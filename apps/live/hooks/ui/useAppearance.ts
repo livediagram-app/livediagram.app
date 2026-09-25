@@ -15,7 +15,7 @@ import {
 import { APPEARANCE_STORAGE_KEY } from './appearance-storage';
 
 // Appearance: the editor's own light / dark chrome. Distinct from the
-// per-tab colour scheme (apps/live/lib/themes.ts): a colour scheme
+// per-tab theme (apps/live/lib/themes.ts): a theme
 // recolours CANVAS content, appearance recolours editor CHROME around
 // it. Persists to localStorage so a refresh keeps the user's pick.
 //

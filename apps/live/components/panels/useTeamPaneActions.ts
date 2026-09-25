@@ -14,7 +14,12 @@ import type { TeamDetailResponse } from '@/lib/api/teams';
 import { useConfirm } from '@/hooks/ui/useConfirm';
 import { track } from '@/lib/telemetry';
 import { memberName } from './team-pane-parts';
-import { teamRemovalCopy, teamRemovalKind, teamRemovalTelemetryType } from './team-removal';
+import {
+  teamDeleteCopy,
+  teamRemovalCopy,
+  teamRemovalKind,
+  teamRemovalTelemetryType,
+} from './team-removal';
 
 // The TeamPane's mutation handlers (spec/32), lifted out of the pane:
 // edit / delete team, email invite, role change, and remove / leave —
@@ -59,11 +64,7 @@ export function useTeamPaneActions({
   };
 
   const deleteTeam = async () => {
-    const ok = await confirm({
-      title: 'Delete team?',
-      message: `"${detail?.team.name}" and its member list will be permanently deleted. Diagrams are not affected.`,
-      confirmLabel: 'Delete team',
-    });
+    const ok = await confirm(teamDeleteCopy(detail?.team.name));
     if (!ok) return;
     // Only navigate away once the delete actually succeeds — a failed delete
     // must not bounce the user out as though the team were gone.

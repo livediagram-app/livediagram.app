@@ -11,12 +11,23 @@ import { iconBandBounds, techIconMarkBounds } from './icon-size';
 import {
   hasShapeSilhouette,
   svgChecklistShape,
+  svgLaneGutter,
+  svgBrowserChrome,
+  svgLegendShape,
   svgCodeBlockShape,
   svgFreehandShape,
   svgShapeSilhouette,
 } from './svg-render-shapes';
 import { canvasSurface } from './colors';
 import { svgTableShape } from './svg-render-table';
+// Which body an element draws, and the list of kinds that have one (spec/143).
+import { shapeHasBespokeBody, svgElementBody } from './svg-render-body';
+import { BEHAVIOUR_FACE_SHAPES } from './svg-render-faces';
+import { isCollabPanelShape } from './collab-shapes';
+import { isSelfDrawingShape } from './data-shapes';
+import { svgHeroCaption } from './svg-render-web';
+import { isWebComponentShape } from './web-components';
+import { defaultTextColor, deriveTextColorForBg, SELF_PAINTING_SHAPES } from './colors';
 // Text/number primitives shared with the per-element emitters — re-exported
 // below so existing importers of this module keep resolving.
 import { labelMeasure, r2, wrapLabel, xmlEscape } from './svg-render-primitives';
@@ -78,6 +89,7 @@ import {
   EXPORT_IMAGE_FILL,
   EXPORT_IMAGE_STROKE,
   EXPORT_PADDING,
+  exportFontFamily,
   exportFontIds,
   type BoxedExportOptions,
   type ExportIconArt,
@@ -88,9 +100,10 @@ import {
 // Typefaces (spec/28): an export paints the face the canvas painted, and
 // declares the ones it used so the file stands on its own.
 import { googleFontsHref } from './fonts';
+import { getBuiltInTheme } from './themes';
+import { themeChartPalette } from './theme-presets';
 // Anchor docking (spec/139 Phase 7): the seam dots a docked pair carries.
 import { dockOf, ES_DOCK_DOT_R, seamDots } from './event-storming-dock';
-import { deriveTextColorForBg } from './colors';
 
 // Bounding box of the visible content. Arrows count via free endpoints; boxed
 // elements via their rectangle. Empty / degenerate tabs default to a page.
@@ -189,6 +202,11 @@ export function svgIconShape(el: BoxedElement, art: ExportIconArt, stroke: strin
 export function svgBoxed(el: BoxedElement, opts: BoxedExportOptions = {}): string {
   const { opacity, shape, label } = describeBoxedExport(el, opts);
   const surface = opts.surface ?? 'light';
+  // What a self-drawing element writes its own text in: the label's resolved
+  // colour and face, so a chart's key and a rail's captions read like every
+  // other label on the board.
+  const labelColor = label?.color ?? defaultTextColor(el, surface);
+  const fontFamily = label?.fontFamily ?? exportFontFamily(el, opts.tabFont);
   const opAttr = opacity !== 1 ? ` opacity="${r2(opacity)}"` : '';
   // Rotation applies to the whole element (body + label) about its centre,
   // exactly like the canvas wrapper's CSS rotate.
@@ -218,6 +236,15 @@ export function svgBoxed(el: BoxedElement, opts: BoxedExportOptions = {}): strin
     // The dark editor card + plain mono lines (spec/82); no label.
     return `<g${opAttr}${rotAttr}${shadowAttr}>${svgCodeBlockShape(el)}</g>`;
   }
+  if (el.type === 'shape' && el.shape === 'legend' && shape.kind === 'rect') {
+    // The key card with its swatch + label rows (spec/53).
+    return `<g${opAttr}${rotAttr}${shadowAttr}>${svgLegendShape(
+      el,
+      shape.fill,
+      shape.stroke,
+      el.textColor ?? '#1e293b',
+    )}</g>`;
+  }
   if (el.type === 'shape' && el.shape === 'checklist' && shape.kind === 'rect') {
     // The themed to-do card with its rows + done-count footer (spec/83).
     return `<g${opAttr}${rotAttr}${shadowAttr}>${svgChecklistShape(
@@ -228,10 +255,13 @@ export function svgBoxed(el: BoxedElement, opts: BoxedExportOptions = {}): strin
     )}</g>`;
   }
   if (shape.kind === 'image') {
-    shapeStr = shape.href
-      ? svgImageShape(el, shape.href, shape.objectFit, shape.radius)
-      : `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="6"` +
-        ` fill="${EXPORT_IMAGE_FILL}" stroke="${EXPORT_IMAGE_STROKE}" stroke-width="1.5" stroke-dasharray="4 4"/>`;
+    shapeStr =
+      (shape.href
+        ? svgImageShape(el, shape.href, shape.objectFit, shape.radius)
+        : `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="6"` +
+          ` fill="${EXPORT_IMAGE_FILL}" stroke="${EXPORT_IMAGE_STROKE}" stroke-width="1.5" stroke-dasharray="4 4"/>`) +
+      // A hero's caption card (spec/147), over the image.
+      (el.type === 'image' ? svgHeroCaption(el, fontFamily) : '');
   } else if (shape.kind === 'ellipse') {
     shapeStr = `<ellipse cx="${r2(cx)}" cy="${r2(cy)}" rx="${r2(el.width / 2)}" ry="${r2(el.height / 2)}" fill="${xmlEscape(shape.fill)}" stroke="${xmlEscape(shape.stroke)}" stroke-width="1.5"/>`;
   } else if (shape.kind === 'diamond') {
@@ -251,10 +281,45 @@ export function svgBoxed(el: BoxedElement, opts: BoxedExportOptions = {}): strin
         : // A sticky is die-cut paper: square corners, matching the canvas.
           el.type === 'sticky'
           ? 0
-          : 6;
-    shapeStr =
+          : // A mind node is a soft-cornered pill-ish box (spec/118), the one
+            // rect kind the canvas rounds further than the usual 6.
+            el.type === 'shape' && el.shape === 'mind-node'
+            ? 12
+            : 6;
+    // What this element draws INSTEAD of (or under) a plain label: its plot,
+    // its value, its rows, its face. See svg-render-body.
+    const face = svgElementBody(el, {
+      labelColor,
+      fontFamily,
+      stroke: shape.stroke,
+      fill: shape.fill,
+      chartPalette: opts.chartPalette,
+      label: label?.text ?? el.label ?? '',
+    });
+    // A SELF-PAINTING element's body is its own: the canvas gives it a
+    // wrapper with no border and no background (element-variant.ts), and the
+    // export drew one anyway, framing every chart, progress element, rating
+    // and rail in a box that is not on the board. Also gated on having drawn
+    // a face, so a self-painting kind the export cannot draw yet (portal, an
+    // unresolved icon) still renders its box rather than nothing at all. A
+    // record and a page are NOT self-painting: their rows and masthead sit
+    // inside a real box, so they keep it. A silhouette always wins: an actor
+    // IS its figure.
+    const selfPainting = el.type === 'shape' && SELF_PAINTING_SHAPES.has(el.shape);
+    const box =
       silhouette ??
-      `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="${r2(rx)}" fill="${xmlEscape(shape.fill)}" stroke="${xmlEscape(shape.stroke)}" stroke-width="1.5"/>`;
+      (selfPainting && face
+        ? ''
+        : `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="${r2(rx)}" fill="${xmlEscape(shape.fill)}" stroke="${xmlEscape(shape.stroke)}" stroke-width="1.5"/>`);
+    // What the canvas draws ON the box: a lane's title gutter (spec/119) and a
+    // browser frame's chrome strip (spec/09).
+    const onBox =
+      el.type === 'shape' && el.shape === 'lane'
+        ? svgLaneGutter(el, shape.stroke)
+        : el.type === 'shape' && el.shape === 'browser'
+          ? svgBrowserChrome(el, shape.stroke)
+          : '';
+    shapeStr = box + onBox + face;
   } else if (shape.kind === 'icon') {
     shapeStr = svgIconShape(el, shape.art, shape.stroke);
   } else if (shape.kind === 'sticker') {
@@ -266,36 +331,48 @@ export function svgBoxed(el: BoxedElement, opts: BoxedExportOptions = {}): strin
       ` viewBox="${shape.art.viewBox}" preserveAspectRatio="xMidYMid meet" overflow="visible">` +
       `${shape.art.markup}</svg>`;
   }
-  const labelStr = !label
-    ? ''
-    : label.runs
-      ? svgRichWrappedLabel(
-          label.runs,
-          label.x,
-          label.y,
-          label.anchor,
-          label.maxWidth,
-          label.valign,
-          label.fontFamily,
-        )
-      : svgWrappedLabel(
-          // Wrapped in the face it paints in, or a wide face breaks at the
-          // wrong words and runs out of its element.
-          wrapLabel(
-            label.text,
+  // A self-drawing element renders NO standard label on the canvas (its own
+  // content is what it shows), so the export must not print one either: a
+  // chart came out with "pie-chart" centred in the middle of it.
+  const labelStr =
+    !label ||
+    (el.type === 'shape' && isSelfDrawingShape(el.shape) && el.shape !== 'legend') ||
+    // A Behaviour / Collaborate face writes its own title where its card puts
+    // it, so the generic centred label would print it a second time.
+    (el.type === 'shape' &&
+      (isCollabPanelShape(el.shape) ||
+        BEHAVIOUR_FACE_SHAPES.has(el.shape) ||
+        // A web component (spec/147) writes its label in its own region.
+        isWebComponentShape(el.shape)))
+      ? ''
+      : label.runs
+        ? svgRichWrappedLabel(
+            label.runs,
+            label.x,
+            label.y,
+            label.anchor,
             label.maxWidth,
-            labelMeasure(label.size, label.bold, label.italic, label.fontFamily),
-          ),
-          label.x,
-          label.y,
-          label.anchor,
-          label.color,
-          label.size,
-          label.bold,
-          label.italic,
-          label.valign,
-          label.fontFamily,
-        );
+            label.valign,
+            label.fontFamily,
+          )
+        : svgWrappedLabel(
+            // Wrapped in the face it paints in, or a wide face breaks at the
+            // wrong words and runs out of its element.
+            wrapLabel(
+              label.text,
+              label.maxWidth,
+              labelMeasure(label.size, label.bold, label.italic, label.fontFamily),
+            ),
+            label.x,
+            label.y,
+            label.anchor,
+            label.color,
+            label.size,
+            label.bold,
+            label.italic,
+            label.valign,
+            label.fontFamily,
+          );
   return `<g${opAttr}${rotAttr}${shadowAttr}>${shapeStr}${labelStr}</g>`;
 }
 
@@ -346,6 +423,12 @@ export function boxedNeedsSvgRaster(
   if (supportsShadow(el) && el.shadow) return true;
   if (el.type === 'table' || el.type === 'freehand') return true;
   if (el.type === 'shape' && (hasShapeSilhouette(el.shape) || el.shape === 'stadium')) return true;
+  // Anything whose BODY this module draws and the canvas drawers cannot: a
+  // chart's plot, a progress value, a card's face, a lane's gutter, a
+  // browser's chrome. Without this the PNG / PDF export kept drawing them as
+  // plain boxes while the SVG export drew them properly, which is the same
+  // inconsistency one file down.
+  if (el.type === 'shape' && shapeHasBespokeBody(el.shape)) return true;
   if (el.type === 'shape' && el.shape === 'icon' && el.iconId && resolveIconArt?.(el.iconId))
     return true;
   // A sticker is drawn art (plate + shadow + emoji or badge text) with no
@@ -394,6 +477,12 @@ export function renderElementsToSvg(
   ];
   // Webfont declarations for the faces this tab uses (spec/28), including
   // the one the event-storming notation asks for on its notes.
+  // The categorical ramp the tab's theme gives its charts (spec/53), which is
+  // what the canvas hands them. Without it every exported chart fell back to
+  // the built-in ramp and came out in different colours to the board.
+  const chartPalette = themeChartPalette(
+    getBuiltInTheme(tab.theme, surface === 'dark' ? 'dark' : 'light'),
+  );
   const fontDefs = svgFontDefs(exportFontIds(visible, tab.font));
   if (fontDefs) parts.push(fontDefs);
   // Element-shadow filter defs (spec/86); empty string when none.
@@ -412,11 +501,12 @@ export function renderElementsToSvg(
             resolveStickerArt: opts.resolveStickerArt,
             tabFont: tab.font,
             surface,
+            chartPalette,
           }),
         );
     }
     for (const el of band.elements) {
-      if (el.type === 'arrow') inner.push(svgArrow(el, tab.elements, surface));
+      if (el.type === 'arrow') inner.push(svgArrow(el, tab.elements, surface, tab.font));
     }
     const opacity = layerOpacityOf(band.layer);
     parts.push(

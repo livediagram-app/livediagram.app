@@ -29,6 +29,10 @@ export const BEHAVIOUR_SHAPES: readonly ShapeKind[] = [
   'decision',
   'roll-call',
   'comment-pin',
+  'action-card',
+  // Bring Focus (spec/144): what it does only happens when somebody presses
+  // it, which is the whole of what makes a kind a Behaviour.
+  'focus-button',
 ];
 
 export function isBehaviourShape(kind: ShapeKind): boolean {
@@ -50,4 +54,23 @@ export function isBehaviourShape(kind: ShapeKind): boolean {
  */
 export function drawsOwnElementMenu(kind: ShapeKind): boolean {
   return kind === 'session-button' || kind === 'done-check' || kind === 'idea-box';
+}
+
+/**
+ * Does this kind carry the shared settings `…` at all (spec/09)?
+ *
+ * Most of the family does, beyond the ones that draw their own richer `…`
+ * above. Two do not:
+ *
+ * - Bring Focus (spec/144) is a button whose whole behaviour is "press me".
+ *   Its colours and label are reached the ordinary way, by right-clicking the
+ *   element like any other, so a `…` would only open the menu that was already
+ *   one click away: one more dot on the card and one more thing to explain.
+ * - A chair (spec/130) is furniture, not a card. Its one setting, which way it
+ *   faces, is set from the element menu, and an ellipsis floating over the
+ *   backrest read as a control on the seat.
+ */
+export function carriesSharedSettingsMenu(kind: ShapeKind): boolean {
+  if (kind === 'focus-button' || kind === 'chair') return false;
+  return isBehaviourShape(kind) && !drawsOwnElementMenu(kind);
 }

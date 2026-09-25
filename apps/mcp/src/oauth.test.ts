@@ -97,6 +97,94 @@ describe('dynamic client registration', () => {
   });
 });
 
+// Start a real authorize and hand back its session id — the same value the
+// consent screen receives in its URL.
+async function startAuthorize(clientId: string): Promise<string> {
+  const challenge = await __test.sha256base64url('x'.repeat(64));
+  const auth = await app.request(
+    `/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(REDIRECT)}` +
+      `&code_challenge=${challenge}&response_type=code`,
+    {},
+    env,
+  );
+  expect(auth.status).toBe(302);
+  return new URL(auth.headers.get('location')!).searchParams.get('session')!;
+}
+
+describe('GET /oauth/session/:id (what the consent screen may believe)', () => {
+  // The consent screen's one anti-phishing line names the host a full-access
+  // token is about to reach. /oauth/authorize also passes that host as a query
+  // param, and the screen used to render THAT — forgeable by anyone who can
+  // write a URL, which is precisely the party the line exists to expose. This
+  // endpoint answers from the stored session, where the redirect URI was
+  // checked against the client's registered list before being written.
+  it('reports the registered redirect host and the client name', async () => {
+    const session = await startAuthorize(await register());
+    const res = await app.request(`/oauth/session/${session}`, {}, env);
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ clientName: 'Claude', redirectHost: 'client.test' });
+  });
+
+  it('404s an unknown or expired session', async () => {
+    const res = await app.request('/oauth/session/nope', {}, env);
+    expect(res.status).toBe(404);
+    expect(await res.json()).toEqual({ error: 'invalid_session' });
+  });
+
+  it('leaks no token, code or PKCE material', async () => {
+    const session = await startAuthorize(await register());
+    const body = (await (await app.request(`/oauth/session/${session}`, {}, env)).json()) as Record<
+      string,
+      unknown
+    >;
+    expect(Object.keys(body).sort()).toEqual(['clientName', 'redirectHost']);
+    expect(JSON.stringify(body)).not.toContain('code_challenge');
+  });
+
+  it('does not consume the session — /oauth/complete still works after a read', async () => {
+    const session = await startAuthorize(await register());
+    expect((await app.request(`/oauth/session/${session}`, {}, env)).status).toBe(200);
+    const comp = await app.request(
+      '/oauth/complete',
+      {
+        method: 'POST',
+        body: JSON.stringify({ session, token: 'lvd_secret' }),
+        headers: { 'Content-Type': 'application/json' },
+      },
+      env,
+    );
+    expect(comp.status).toBe(200);
+  });
+
+  it('reports the REGISTERED host even when the client name is attacker-chosen', async () => {
+    // Registration is open by design, so `client_name` is never a trust signal.
+    // The host is, and it comes from the validated redirect_uri regardless of
+    // what the client called itself.
+    const res = await app.request(
+      '/oauth/register',
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          redirect_uris: ['https://evil.test/cb'],
+          client_name: 'Notion',
+        }),
+        headers: { 'Content-Type': 'application/json' },
+      },
+      env,
+    );
+    const { client_id } = (await res.json()) as { client_id: string };
+    const session = await app.request(
+      `/oauth/authorize?client_id=${client_id}&redirect_uri=${encodeURIComponent('https://evil.test/cb')}` +
+        `&code_challenge=${await __test.sha256base64url('x'.repeat(64))}&response_type=code`,
+      {},
+      env,
+    );
+    const id = new URL(session.headers.get('location')!).searchParams.get('session')!;
+    const body = await (await app.request(`/oauth/session/${id}`, {}, env)).json();
+    expect(body).toEqual({ clientName: 'Notion', redirectHost: 'evil.test' });
+  });
+});
+
 describe('full authorize -> complete -> token flow', () => {
   it('round-trips a PKCE code to the minted token', async () => {
     const clientId = await register();

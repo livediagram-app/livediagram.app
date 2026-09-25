@@ -13,13 +13,16 @@ import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import { usePlacementOptions } from './usePlacementOptions';
 import { apiCreateDiagram, apiLoadSelf, apiSaveSelf, apiSetDiagramFolder } from '@/lib/api-client';
 import { offlineCreateDiagram } from '@/lib/offline/offline-store';
+import { DEFAULT_SAVE_LOCATION, isOfflineLocation } from '@/lib/save-locations';
 import { markTourPending } from '@/lib/tour-pending';
 import { randomColor, randomName, type Participant } from '@/lib/identity';
 import { titleCaseType, track } from '@/lib/telemetry';
 import { trackDailyReturn } from '@/lib/daily-return';
+import { accepted } from '@/lib/accepted';
 import { ensureGuestSelfId, markNameConfirmed } from '@/lib/local-identity';
 import { buildTemplatedTab } from '@/lib/template-builders';
 import { untitledNameForTemplate, type TemplateKind } from '@livediagram/templates';
+import { WIZARD_BYPASS_PARAMS, wizardBypassKind } from '@/lib/new-diagram-params';
 import { getTheme } from '@/lib/themes';
 import { themeTelemetryLabel } from '@/lib/custom-theme-registry';
 
@@ -66,10 +69,12 @@ export default function NewDiagramPage() {
 
   // Where this diagram can be filed, and the inline New Folder the Settings
   // step offers — see usePlacementOptions.
-  const { folders, teams, teamFolders, createPickerFolder } = usePlacementOptions({
-    selfId: self.id,
-    clerkUserId,
-  });
+  const { folders, teams, teamFolders, createPickerFolder, createPickerTeam } = usePlacementOptions(
+    {
+      selfId: self.id,
+      clerkUserId,
+    },
+  );
 
   // Placement context from the URL: /new?folder=<id> (Explorer's "new diagram
   // in this folder") and /new?team=<id>(&folder=<id>) (team library, spec/35)
@@ -87,20 +92,25 @@ export default function NewDiagramPage() {
     return 'unsorted';
   });
 
-  // "Just Draw" (spec/14): /new?blank=1 skips the wizard entirely — the page
-  // commits a blank diagram (Blank template, Default colour scheme, default name) the
-  // moment it mounts and lands on the editor. The ?folder / ?team placement
-  // context above still applies to it.
+  // Wizard bypass (spec/14): /new?blank=1 ("Just Draw") and
+  // /new?template=<kind> (the marketing template gallery) skip the wizard
+  // entirely — the page commits that template (Default theme, the template's
+  // default name) the moment it mounts and lands on the editor. The ?folder /
+  // ?team placement context above still applies.
   //
   // Detected in a layout effect, NOT a window-reading state initializer: the
   // static export prerenders this page without a query string, so an
-  // initializer that returns true on the client makes the hydration render
+  // initializer that returns a kind on the client makes the hydration render
   // disagree with the server HTML. The layout effect flips the state before
   // the post-hydration paint, and the pre-paint window before hydration is
-  // covered by the inline script + style guard rendered below.
-  const [justDraw, setJustDraw] = useState(false);
+  // covered by the inline script + style guard rendered below. That guard
+  // can't validate a template kind, so when the query names one we don't
+  // know the effect lifts the guard and the wizard shows as normal.
+  const [bypassKind, setBypassKind] = useState<TemplateKind | null>(null);
   useLayoutEffect(() => {
-    if (new URLSearchParams(window.location.search).has('blank')) setJustDraw(true);
+    const kind = wizardBypassKind(window.location.search);
+    if (kind) setBypassKind(kind);
+    else document.documentElement.removeAttribute('data-just-draw');
   }, []);
 
   useEffect(() => {
@@ -116,14 +126,14 @@ export default function NewDiagramPage() {
   useEffect(() => {
     const onPageShow = (e: PageTransitionEvent) => {
       if (!e.persisted) return;
-      // Just-Draw mode auto-creates on mount, so a bfcache restore would
+      // A bypass auto-creates on mount, so a bfcache restore would
       // either strand the user on a frozen "Creating…" card or (if we
       // re-fired the create) trap Back behind a page that always navigates
       // forward again. Send them to the wizard instead, keeping the
       // ?folder / ?team placement context and dropping only the blank flag.
-      if (justDraw) {
+      if (bypassKind) {
         const params = new URLSearchParams(window.location.search);
-        params.delete('blank');
+        for (const key of WIZARD_BYPASS_PARAMS) params.delete(key);
         const qs = params.toString();
         window.location.replace(qs ? `/new?${qs}` : '/new');
         return;
@@ -132,7 +142,7 @@ export default function NewDiagramPage() {
     };
     window.addEventListener('pageshow', onPageShow);
     return () => window.removeEventListener('pageshow', onPageShow);
-  }, [justDraw]);
+  }, [bypassKind]);
 
   useLayoutEffect(() => {
     // Wait for Clerk to settle so a signed-in user gets the Clerk
@@ -192,7 +202,8 @@ export default function NewDiagramPage() {
   ) => {
     if (submitting) return;
     setSubmitting(true);
-    const offline = settings.offline;
+    // Save location (spec/141): only Local Browser takes the offline branch.
+    const offline = isOfflineLocation(settings.saveLocation);
     lastCreateArgs.current = { kind: templateKind, name, themeId, settings };
     // The Settings step's name field wins; fall back to the per-template
     // default when it's left blank (spec/76).
@@ -267,12 +278,13 @@ export default function NewDiagramPage() {
     // folder / team placement — skip it.
     if (!offline) {
       if (settings.teamId) {
-        await apiSetDiagramFolder(
-          who.id,
-          diagramId,
-          settings.folderId ?? null,
-          settings.teamId,
-        ).catch(() => {});
+        // Created straight into a team library: the same Team·Added·Diagram
+        // an Explorer move into a team sends (spec/22), and only once the
+        // placement landed (a failed PUT leaves it personal).
+        const placed = await accepted(
+          apiSetDiagramFolder(who.id, diagramId, settings.folderId ?? null, settings.teamId),
+        );
+        if (placed) track('Team', 'Added', 'Diagram');
       } else if (settings.folderId) {
         await apiSetDiagramFolder(who.id, diagramId, settings.folderId).catch(() => {});
       }
@@ -293,21 +305,22 @@ export default function NewDiagramPage() {
   // Mode's double-invoked effects. Note the tour offer (spec/79) can't queue
   // here: the create fires before RecentDiagramsCard reports a count — which
   // is the behaviour we want for someone who asked to just draw.
-  const justDrawFired = useRef(false);
+  const bypassFired = useRef(false);
   useEffect(() => {
-    if (!justDraw || justDrawFired.current) return;
-    justDrawFired.current = true;
-    // Wizard-bypass adoption signal (spec/22): the type is the fixed
-    // 'JustDraw' preset, never user content.
-    track('UI', 'Used', 'JustDraw');
+    if (!bypassKind || bypassFired.current) return;
+    bypassFired.current = true;
+    // Wizard-bypass adoption signal (spec/22): a fixed preset per entry
+    // point, never user content. (The template itself is reported by the
+    // usual Diagram / Created event the commit fires.)
+    track('UI', 'Used', bypassKind === 'blank' ? 'JustDraw' : 'TemplateLink');
     const params = new URLSearchParams(window.location.search);
-    void commitNewDiagram('blank', '', 'brand', {
-      offline: false,
+    void commitNewDiagram(bypassKind, '', 'brand', {
+      saveLocation: DEFAULT_SAVE_LOCATION,
       folderId: params.get('folder'),
       teamId: params.get('team'),
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [justDraw]);
+  }, [bypassKind]);
 
   if (createError) {
     return (
@@ -335,14 +348,14 @@ export default function NewDiagramPage() {
     );
   }
 
-  // Just-Draw mode never shows the wizard: a lightweight creating card
+  // A bypass never shows the wizard: a lightweight creating card
   // holds the screen for the beat between mount and the editor navigation
   // (the auto-create effect above). It carries the shared nodes-and-arrows
   // build animation rather than a spinner — the editor's "Loading your
   // diagram…" screen shows the same illustration, so create → load reads
   // as one continuous moment (spec/14). Create failures fall through to
   // the retryable error card branch before this one.
-  if (justDraw) {
+  if (bypassKind) {
     return (
       <div className="flex h-dvh flex-col">
         <EditorHeader
@@ -368,9 +381,9 @@ export default function NewDiagramPage() {
 
   return (
     <div className="flex h-dvh flex-col">
-      {/* Just-Draw pre-hydration guard (spec/14): this static page's
+      {/* Bypass pre-hydration guard (spec/14): this static page's
           prerendered HTML is the wizard, and React only learns about
-          ?blank=1 at hydration — without this, the wizard paints for the
+          ?blank=1 / ?template= at hydration — without this, the wizard paints for the
           beat until then. The script runs as the HTML parses, BEFORE the
           wizard markup below paints, and flags the root element; the style
           rule hides the wizard-only content under that flag until React
@@ -378,7 +391,7 @@ export default function NewDiagramPage() {
       <script
         dangerouslySetInnerHTML={{
           __html:
-            "try{if(new URLSearchParams(location.search).has('blank'))document.documentElement.setAttribute('data-just-draw','')}catch(e){}",
+            "try{var p=new URLSearchParams(location.search);if(p.has('blank')||p.has('template'))document.documentElement.setAttribute('data-just-draw','')}catch(e){}",
         }}
       />
       <style>{`html[data-just-draw] [data-wizard-only]{visibility:hidden}`}</style>
@@ -415,6 +428,8 @@ export default function NewDiagramPage() {
               teamFolders={teamFolders}
               initialPlacement={initialPlacement}
               onCreateFolder={createPickerFolder}
+              // Teams are Clerk-only (spec/32): a guest gets no New Team tile.
+              onCreateTeam={clerkUserId ? createPickerTeam : undefined}
               onOpenExisting={() => window.location.assign('/explorer/recent')}
               onPick={(kind, name, themeId, settings) =>
                 void commitNewDiagram(kind, name, themeId, settings)
@@ -422,7 +437,9 @@ export default function NewDiagramPage() {
               // Empty name = "keep the resolved participant name" (commit falls
               // back to it); passing self.name here could freeze the
               // pre-bootstrap 'Guest' placeholder into the account.
-              onSkip={() => void commitNewDiagram('blank', '', 'brand', { offline: false })}
+              onSkip={() =>
+                void commitNewDiagram('blank', '', 'brand', { saveLocation: DEFAULT_SAVE_LOCATION })
+              }
             />
           </CustomThemeProvider>
         </div>

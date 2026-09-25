@@ -12,21 +12,25 @@ function fakeEnv(opts: {
   diagramIds?: string[];
   imageIds?: string[];
   images?: { delete: (keys: string[]) => Promise<void> };
+  sqlLog?: string[];
 }): Env {
-  const prepare = (sql: string) => ({
-    bind: () => ({
-      all: async () => {
-        if (sql.includes('FROM images')) {
-          return { results: (opts.imageIds ?? []).map((id) => ({ id })) };
-        }
-        if (sql.includes('FROM diagrams')) {
-          return { results: (opts.diagramIds ?? []).map((id) => ({ id })) };
-        }
-        return { results: [] };
-      },
-      run: async () => ({ meta: { changes: 1 } }),
-    }),
-  });
+  const prepare = (sql: string) => {
+    opts.sqlLog?.push(sql);
+    return {
+      bind: () => ({
+        all: async () => {
+          if (sql.includes('FROM images')) {
+            return { results: (opts.imageIds ?? []).map((id) => ({ id })) };
+          }
+          if (sql.includes('FROM diagrams')) {
+            return { results: (opts.diagramIds ?? []).map((id) => ({ id })) };
+          }
+          return { results: [] };
+        },
+        run: async () => ({ meta: { changes: 1 } }),
+      }),
+    };
+  };
   return { DB: { prepare }, IMAGES: opts.images } as unknown as Env;
 }
 
@@ -56,5 +60,17 @@ describe('deleteAccount snapshot cleanup (spec/67)', () => {
     await deleteAccount(env, 'owner-1');
 
     expect(del).not.toHaveBeenCalled();
+  });
+});
+
+describe('deleteAccount leaves team folders to the team (spec/35)', () => {
+  it('deletes only personal folders', async () => {
+    // A team folder carries its creator's owner_id, but teammates' diagrams
+    // live in it; wiping it on the creator's account delete dropped them out
+    // of the team library.
+    const sqlLog: string[] = [];
+    await deleteAccount(fakeEnv({ sqlLog }), 'owner-1');
+    const folderDeletes = sqlLog.filter((q) => /DELETE FROM folders/.test(q));
+    expect(folderDeletes).toEqual(['DELETE FROM folders WHERE owner_id = ? AND team_id IS NULL']);
   });
 });

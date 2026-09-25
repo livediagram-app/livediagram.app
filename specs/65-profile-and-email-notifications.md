@@ -1,44 +1,54 @@
-# 65 — Profile page & email notifications
+# 65 - Account settings & email notifications
 
-**Status: in progress.** A signed-in user's account home in the Explorer:
-their avatar, name, email, and join date in one place, plus the two
-account actions that previously had no home of their own — **delete my
-account** and **email notification preferences**. Builds on the Resend
-integration (spec/64) and the synced preference store (spec/20).
+**Status: shipped.** A signed-in user's account surface: their avatar, name,
+email, and join date, plus the two account actions that once had no home of
+their own, **delete my account** and **email notification preferences**.
+Builds on the Resend integration (spec/64) and the synced preference store
+(spec/20).
 
 Like spec/64 the email half is **entirely gated on `RESEND_API_KEY`**: when
-email is off, the notification toggles are hidden (they'd do nothing) and no
-notification email is ever sent. Guests have no account, so the whole page is
-signed-in only.
+email is off, the notification toggles are absent (they'd do nothing) and no
+notification email is ever sent.
 
-## 1. The profile page
+## 1. Where it lives
 
-A new Explorer section at **`/explorer/profile`** (`profile` `SelectedNode`
-kind, registered in `app/explorer/routes.ts` like every other section). It
-renders inside the normal Explorer chrome (sidebar + header) via
-`ExplorerPane`, like Tokens / Themes. Signed-in only: a guest who deep-links
-it sees the same "sign in" prompt the Tokens pane shows, never a broken page.
+**In the Settings dialog** (spec/20), under **Account** and **Notifications**.
 
-The page shows, read from Clerk's `useUser()` on the client (no new API):
+It began as its own Explorer section at `/explorer/profile`, which made sense
+when Settings held a handful of editor toggles. Once every preference in the
+product moved into Settings, a separate account page was a second place to
+look for the same kind of thing, and the email toggles in particular were
+findable only by someone who already knew the page existed. The page was
+retired and its three parts redistributed:
 
-- **Avatar** — the same initial-letter + brand-colour bubble the header
-  account button uses (shared look, spec/04). The external Clerk / Google
-  avatar is intentionally not shown so the two surfaces stay consistent.
-- **Name** — `user.fullName ?? username ?? email`.
-- **Email** — `user.primaryEmailAddress.emailAddress`.
-- **Joined** — `user.createdAt`, formatted as a plain date.
+- **Identity** (avatar, name, email, joined) is the `identity` row in the
+  **Account** category. Read from Clerk on the client, never written: names
+  and emails are managed in Clerk itself, so it is a card, not a form. A
+  guest sees a card explaining that they are working as a guest.
+- **Email notifications** are the six rows in **Notifications > Email**
+  (§3). Absent unless Resend is configured AND the reader is signed in, since
+  a guest has no address to send to.
+- **Delete account** is the `deleteAccount` row in **Account > Danger Zone**.
 
-Below the identity card sit two sections: **Email notifications** (§3) and a
-**Danger zone** with **Delete account**.
+### `/explorer/profile` still resolves, deliberately
+
+The route survives as a client-side redirect to
+`/explorer?settings=notifications`, and **must keep doing so**: every
+notification email ever sent carries that URL both as its "Manage your
+notifications" link and as its `List-Unsubscribe` header (spec/64). Those
+messages sit in inboxes indefinitely, and an unsubscribe link that 404s is
+the one dead link a product cannot ship. New mail links at the deep link
+directly.
 
 ### Reaching it
 
-- **Sidebar** — the existing "Hi {name}" greeting at the top of
-  `ExplorerSidebar` becomes a button that navigates to the profile when
-  signed in (plain text for guests, who have no profile).
-- **Header account menu** — `AuthControls`' dropdown gains a **Profile** item
-  (a link to `/explorer/profile`) above Sign out, so the profile is reachable
-  from anywhere the header chrome renders (editor + explorer).
+- **Sidebar** - the "Hi {name}" greeting at the top of `ExplorerSidebar`
+  opens the Settings dialog.
+- **Header account menu** - `AuthControls`' dropdown has an **Account** item
+  deep-linking `/explorer?settings=account`, so it is reachable from anywhere
+  the header chrome renders (editor + explorer).
+- **Search** - every row is findable from the app-wide search panel, which
+  opens Settings on the matching row (spec/20).
 
 ### Delete account moves here
 

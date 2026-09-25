@@ -35,7 +35,6 @@ import {
 } from '@/components/chrome/auth-shared';
 import { Button, TextInput } from '@livediagram/ui';
 import { clerkEnabled, googleOAuthEnabled } from '@/lib/clerk-config';
-import { track } from '@/lib/telemetry';
 
 type Phase = 1 | 2;
 
@@ -118,8 +117,10 @@ function GetStartedContent() {
       // Clerk can complete the sign-up immediately when email
       // verification is configured off — straight to the editor.
       if (res.status === 'complete' && res.createdSessionId) {
+        // Session·SignedUp is counted by the api worker on this new
+        // session's first request (spec/22), so every sign-up method counts
+        // once; no emit here.
         await setActiveSignUp({ session: res.createdSessionId });
-        track('Session', 'SignedUp');
         router.replace(resolvePostAuthDestination(searchParams));
         return;
       }
@@ -159,8 +160,10 @@ function GetStartedContent() {
     try {
       const res = await clerkSignUp.attemptEmailAddressVerification({ code });
       if (res.status === 'complete' && res.createdSessionId) {
+        // Session·SignedUp is counted by the api worker on this new
+        // session's first request (spec/22), so every sign-up method counts
+        // once; no emit here.
         await setActiveSignUp({ session: res.createdSessionId });
-        track('Session', 'SignedUp');
         router.replace(resolvePostAuthDestination(searchParams));
         return;
       }

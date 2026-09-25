@@ -7,6 +7,7 @@ import {
   defaultStrokeColor,
   isBarShape,
   isChecklistShape,
+  isLegendShape,
   isCodeBlockShape,
   isLineShape,
   isPieShape,
@@ -24,6 +25,7 @@ import { RailView } from '@/components/canvas/RailView';
 import { RatingView } from '@/components/canvas/RatingView';
 import { PieChartView } from '@/components/canvas/PieChartView';
 import { CodeBlockView } from '@/components/canvas/CodeBlockView';
+import { LegendView } from '@/components/canvas/LegendView';
 import { ChecklistView } from '@/components/canvas/ChecklistView';
 import { BarChartView } from '@/components/canvas/BarChartView';
 import { LineChartView } from '@/components/canvas/LineChartView';
@@ -46,7 +48,7 @@ type ShapeContentRouterProps = Pick<
   isLocked: boolean;
   svgAnim: 'trace' | 'gradient' | 'pulse' | 'glow' | undefined;
   // Filter-based animation class for silhouette content (a sticker's art).
-  labelAnimClass: string | undefined;
+  artAnimClass: string | undefined;
 };
 
 // The per-shape-type inner content of a boxed element: stickers, tech /
@@ -67,7 +69,7 @@ export function ShapeContentRouter({
   chartPalette,
   fontFamily,
   svgAnim,
-  labelAnimClass,
+  artAnimClass,
 }: ShapeContentRouterProps) {
   // The paper under this shape, for colours it doesn't carry (spec/07).
   const surface = useCanvasSurface();
@@ -78,7 +80,7 @@ export function ShapeContentRouter({
     // `animClass` carries the filter-based glow / pulse / trace (spec/116):
     // a sticker's silhouette needs a drop-shadow, not the wrapper's
     // box-shadow, which would ring its bounding rectangle.
-    <StickerView stickerId={element.stickerId} animClass={labelAnimClass} />
+    <StickerView stickerId={element.stickerId} animClass={artAnimClass} />
   ) : element.type === 'shape' && element.shape === 'icon' && isTechIconId(element.iconId) ? (
     // Technology (brand) icon: a fixed-colour tile + white glyph
     // (spec/41). Same shape kind as a curated icon, but the id
@@ -155,6 +157,16 @@ export function ShapeContentRouter({
     // Code block (spec/82): the fixed dark editor card. Deliberately takes
     // no theme colours — the dark card is its identity.
     <CodeBlockView element={element} />
+  ) : element.type === 'shape' && isLegendShape(element.shape) ? (
+    // Legend (spec/53): a key card of colour-coded rows, edited from the
+    // menu's Legend section.
+    <LegendView
+      element={element}
+      accent={accent}
+      fill={element.fillColor ?? defaultFillColor(element, surface)}
+      textColor={textColor}
+      fontFamily={fontFamily}
+    />
   ) : element.type === 'shape' && isChecklistShape(element.shape) ? (
     // Checklist (spec/83): themed card of checkbox rows; boxes toggle
     // on-canvas for anyone with edit access (no select-first required).

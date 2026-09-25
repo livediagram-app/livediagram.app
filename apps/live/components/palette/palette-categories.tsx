@@ -93,14 +93,15 @@ export const PALETTE_CATEGORIES: {
     label: 'Components',
     group: 1,
     description:
-      'Ready-made composites that follow the tab theme: Banner, Hero, and Header. Each drops as a group you can recolour, retitle, or ungroup.',
+      'Ready-made web components that follow the tab theme: Banner, Callout, Stat row, Process, Hero, and Header. Each is one element that re-flows as you resize it, with every line of text editable in place.',
     icon: <ComponentsTabIcon />,
   },
   {
     id: 'devices',
     label: 'Devices',
     group: 1,
-    description: 'Wireframing device frames: browser, monitor, laptop, phone, tablet, smartwatch.',
+    description:
+      'Wireframing device frames: browser, monitor, laptop, phone, tablet, foldable, smartwatch.',
     icon: <DevicesTabIcon />,
   },
   {
@@ -167,7 +168,7 @@ export const PALETTE_CATEGORIES: {
     label: 'Behaviours',
     group: 3,
     description:
-      'Elements that come alive with the room: ask for an estimate or a temperature, collect ideas, check who is done, run a timer, vote or poll, keep an agenda or a decision, throw a reaction, switch a mode, or jump through a portal.',
+      'Elements that come alive with the room: ask for an estimate or a temperature, leave a comment or an action on the board, collect ideas, check who is done, run a timer or a stopwatch, vote or poll, keep an agenda or a decision, throw a reaction, switch a mode, jump through a portal, or bring everyone to look at one spot.',
     icon: <BehaviourTabIcon />,
   },
 ];

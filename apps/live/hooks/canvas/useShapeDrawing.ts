@@ -18,14 +18,14 @@
 // hook. Verbatim relocation — no behaviour change.
 
 import { useEffect, useRef, useState } from 'react';
-import { createFreehand, isBoxed, type Element, type Tab } from '@livediagram/diagram';
+import { createFreehand, type Element, type Tab } from '@livediagram/diagram';
 import { getTheme } from '@/lib/themes';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { isTechIconId } from '@/lib/tech-icons';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { buildDrawnArrow, buildDrawnBoxed, buildDrawnComponent } from '@/lib/draw-commit';
 import type { CanvasTool } from '@/components/palette/CommandPalette';
-import { componentTelemetryType } from '@/lib/element-telemetry';
+import { componentTelemetryType, shapeTelemetryToken } from '@/lib/element-telemetry';
 import { makeCommitFreehand } from '@/hooks/canvas/commit-freehand';
 
 // The armed marker gesture. One frozen object so the effect below can compare
@@ -172,10 +172,8 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
         endY,
         getTheme(activeTab.theme),
       );
-      commit((els) => [...els, ...placed]);
-      // Selects the group's primary member.
-      const primary = placed.find((el) => isBoxed(el) && el.groupId) ?? placed[0];
-      if (primary) setSelectedId(primary.id);
+      commit((els) => [...els, placed]);
+      setSelectedId(placed.id);
       setPendingDraw(null);
       track('Element', 'Added', componentTelemetryType(intent.kind));
       return;
@@ -211,12 +209,9 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
             ? // Stickers are their own element kind (spec/116), so their own
               // dashboard token rather than riding Icon's.
               'Sticker'
-            : intent.kind === 'code-block'
-              ? // titleCase would emit 'Code-Block' (it capitalises at the
-                // hyphen), splitting the feature across two dashboard tokens:
-                // the Changed events already report 'CodeBlock' (spec/82).
-                'CodeBlock'
-              : titleCaseType(intent.kind)
+            : // Hyphenated kinds ('mind-node', 'session-button', ...) need
+              // their spelled-out token or they split from the copy path's.
+              shapeTelemetryToken(intent.kind)
         : intent.type === 'text'
           ? 'Text'
           : intent.type === 'sticky'

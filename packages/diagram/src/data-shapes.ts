@@ -153,6 +153,26 @@ export function isChecklistShape(kind: ShapeKind): boolean {
   return kind === 'checklist';
 }
 
+// Legend (spec/53). A card of colour-coded rows: a swatch and a label, and
+// nothing else. It is a KEY, not a chart, so it carries no values and no
+// geometry to argue about.
+//
+// A row's colour is optional and falls back to the chart palette by index, so
+// a legend dropped beside a chart already matches it, and adding a row picks
+// up the next colour rather than leaving a blank swatch to go and fill in.
+export type LegendItem = { label: string; color?: string };
+export const LEGEND_MAX_ITEMS = 40;
+export const LEGEND_MAX_TEXT = 120;
+export const LEGEND_DEFAULT_ITEMS: readonly LegendItem[] = [
+  { label: 'First' },
+  { label: 'Second' },
+  { label: 'Third' },
+];
+
+export function isLegendShape(kind: ShapeKind): boolean {
+  return kind === 'legend';
+}
+
 // Pie + bar + line are the "Data" charts: they share the slice animation
 // (`pieAnim`), the legend toggle (`chartLegend`), and the Data / Chart /
 // Animation context-menu categories. Pie + bar share the 1-D `pieSlices`; the
@@ -172,14 +192,21 @@ export function isChartShape(kind: ShapeKind): boolean {
 // The sticker (spec/116) is here for the label half specifically: it says what
 // it says in its own artwork, so there is nothing to type into it — a caption
 // under a die-cut sticker is exactly the icon treatment it exists not to be.
+//
+// So are the two web components with no label (spec/147): a stat row's and a
+// process's text is their rows, each edited in place, and there is no title to
+// type into. The banner, callout and header DO carry a label and are not here.
 export function isSelfDrawingShape(kind: ShapeKind): boolean {
   return (
+    kind === 'stat-row' ||
+    kind === 'process' ||
     isProgressShape(kind) ||
     isRailShape(kind) ||
     isRatingShape(kind) ||
     isChartShape(kind) ||
     isCodeBlockShape(kind) ||
     isChecklistShape(kind) ||
+    isLegendShape(kind) ||
     kind === 'sticker'
   );
 }

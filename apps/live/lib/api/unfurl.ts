@@ -5,11 +5,11 @@
 // bare URL rather than blocking on the network.
 
 import type { UnfurlResult } from '@livediagram/api-schema';
-import { API_BASE } from './core';
+import { API_BASE, apiFetch } from './core';
 
 export async function apiUnfurl(url: string): Promise<UnfurlResult | null> {
   try {
-    const res = await fetch(`${API_BASE}/unfurl?url=${encodeURIComponent(url)}`);
+    const res = await apiFetch(`${API_BASE}/unfurl?url=${encodeURIComponent(url)}`);
     if (!res.ok) return null;
     return (await res.json()) as UnfurlResult;
   } catch {

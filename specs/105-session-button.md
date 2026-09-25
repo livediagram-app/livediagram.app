@@ -33,6 +33,35 @@ Right-click → **Session**: the button's one setting — minutes for a timer, d
 
 **It does not choose the tool.** The section used to lead with a Timer / Vote / Poll tile grid, which asked a second time a question the palette already asks once: it offers a tile per tool (see "One tile per tool in the palette" below), so the button lands as the thing you picked. Wanting a different one is wanting a different element — drag it out — and the grid cost every session button three tiles of menu height to re-open a settled decision. `session.tool` is still a field, still validated, still what everything reads; there is simply no control that rewrites it.
 
+### A stopwatch is its own tool, not a timer mode
+
+`SESSION_TOOLS` is `timer | stopwatch | vote | poll`. The Session Studio keeps
+one Timer tool with a Countdown / Stopwatch toggle, because the Studio is where
+you choose which kind of clock to run. An ELEMENT is not: it is a countdown you
+placed on a board, with a length, and the question its `…` answers is "how
+long".
+
+Offering the toggle there offered to turn one element into a different element,
+which is not a setting — and it put a control in the popover that the element's
+own label then contradicted. So a stopwatch is its own palette tile and its own
+element, and it has nothing to configure, which is precisely the difference: a
+countdown is placed WITH a length, a stopwatch has none.
+
+Pressing either is the same three-way control as before (start, then pause,
+then continue), because a tab runs one clock and pressing mid-run means "hold
+on", never a silent restart.
+
+### One answer cap, not two
+
+The button's answer list is capped by `POLL_OPTIONS_MAX` — the same number the
+Session Studio uses. It used to have its own `SESSION_POLL_MAX_OPTIONS = 6`,
+and the two drifted the instant the poll cap went to 10: the Studio offered ten
+answers while this menu silently stopped at six, with no hint which number was
+real. Two constants for one idea will always produce that, so there is one now,
+declared beside `PollStyle` in `@livediagram/diagram` for the same reason that
+union lives there — a `SessionButtonConfig` is a `Tab` field, and api-schema
+depends on diagram rather than the reverse.
+
 ### A poll button carries its ANSWER STYLE, not just its answers
 
 `session.style` is a [spec/88](88-live-poll.md) `PollStyle` — the same five the
@@ -67,7 +96,7 @@ beside `LivePoll` in `@livediagram/api-schema`: the style is now a `Tab` field,
 api-schema depends on diagram and not the reverse, and re-exporting `PollStyle`
 from api-schema keeps every existing import resolving against one list.
 
-For **Vote and Poll**, the face's derived label follows that setting ("Vote — 3 dots each", "Ask the room"), and an author's own label wins over it, like any shape. A **Timer** has no label to win: `SessionTimerFace` draws the clock, showing the configured minutes until a timer is actually running and the live countdown after. The setting still drives what you see, just as the digits rather than as a sentence about them.
+For **Vote and Poll**, the face's derived label follows that setting ("Vote — 3 dots each", "Ask"), and an author's own label wins over it, like any shape. A **Timer** has no label to win: `SessionTimerFace` draws the clock, showing the configured minutes until a timer is actually running and the live countdown after. The setting still drives what you see, just as the digits rather than as a sentence about them.
 
 ## Telemetry
 

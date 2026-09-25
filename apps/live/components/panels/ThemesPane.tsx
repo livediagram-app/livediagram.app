@@ -8,14 +8,13 @@
 // reactive list + CRUD from CustomThemeProvider, which the Explorer shell
 // mounts.
 
-import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { useState } from 'react';
 import { useConfirm } from '@/hooks/ui/useConfirm';
 import { materialiseCustomTheme } from '@/lib/custom-theme-registry';
 import { useCustomThemes } from '@/components/primitives/CustomThemeProvider';
-import { CustomThemeBuilder, type CustomThemeDraft } from '@/components/palette/CustomThemeBuilder';
+import type { CustomThemeDraft } from '@/components/palette/CustomThemeBuilder';
 import { EmptyState } from '@livediagram/ui';
-import { Dialog } from '@/components/dialogs/Dialog';
+import { ThemeBuilderModal, themeDeleteConfirm } from './ThemeBuilderModal';
 import { ThemeSwatch } from '@/components/primitives/ThemeSwatch';
 import { Tooltip } from '@/components/primitives/Tooltip';
 
@@ -42,14 +41,7 @@ export function ThemesPane() {
   };
 
   const confirmDelete = async (id: string, name: string) => {
-    if (
-      await confirm({
-        title: `Delete "${name}"?`,
-        message: 'Diagrams using it fall back to the Default colour scheme. This cannot be undone.',
-        confirmLabel: 'Delete',
-        variant: 'danger',
-      })
-    ) {
+    if (await confirm(themeDeleteConfirm(name))) {
       deleteTheme(id);
     }
   };
@@ -63,7 +55,7 @@ export function ThemesPane() {
       {themes.length === 0 ? (
         <EmptyState
           icon={<PaletteIcon />}
-          title="No custom colour schemes yet"
+          title="No custom themes yet"
           description="Build your own colour palette and reuse it across every diagram, just like a built-in one."
         >
           <button
@@ -86,22 +78,22 @@ export function ThemesPane() {
                 {t.name}
               </span>
               <div className="flex items-center gap-1">
-                <Tooltip title="Edit" description="Open this colour scheme in the builder.">
+                <Tooltip title="Edit" description="Open this theme in the builder.">
                   <IconBtn label="Edit theme" onClick={() => setBuilding(t.id)}>
                     <EditIcon />
                   </IconBtn>
                 </Tooltip>
-                <Tooltip title="Duplicate" description="Create a copy of this colour scheme.">
+                <Tooltip title="Duplicate" description="Create a copy of this theme.">
                   <IconBtn
-                    label="Duplicate colour scheme"
+                    label="Duplicate theme"
                     onClick={() => void createTheme(`${t.name} copy`, t.definition)}
                   >
                     <DuplicateIcon />
                   </IconBtn>
                 </Tooltip>
-                <Tooltip title="Delete" description="Remove this colour scheme.">
+                <Tooltip title="Delete" description="Remove this theme.">
                   <IconBtn
-                    label="Delete colour scheme"
+                    label="Delete theme"
                     danger
                     onClick={() => void confirmDelete(t.id, t.name)}
                   >
@@ -133,8 +125,8 @@ export function ThemesPane() {
       )}
 
       {building !== null ? (
-        <BuilderModal
-          title={editing ? 'Edit colour scheme' : 'New colour scheme'}
+        <ThemeBuilderModal
+          title={editing ? 'Edit theme' : 'New theme'}
           initial={editing ? { name: editing.name, definition: editing.definition } : undefined}
           saving={saving}
           onSave={handleSave}
@@ -170,38 +162,6 @@ function IconBtn({
     >
       {children}
     </button>
-  );
-}
-
-function BuilderModal({
-  title,
-  initial,
-  saving,
-  onSave,
-  onClose,
-}: {
-  title: string;
-  initial?: CustomThemeDraft;
-  saving: boolean;
-  onSave: (draft: CustomThemeDraft) => void;
-  onClose: () => void;
-}) {
-  return (
-    <Dialog open onClose={onClose} ariaLabel={title} size="lg" className="p-4">
-      {/* Normal modal header (title + close), since the builder's own
-              BackBar is suppressed in modal variant. */}
-      <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">{title}</h2>
-        <DialogCloseButton compact onClick={onClose} />
-      </div>
-      <CustomThemeBuilder
-        variant="modal"
-        initial={initial}
-        saving={saving}
-        onSave={onSave}
-        onCancel={onClose}
-      />
-    </Dialog>
   );
 }
 

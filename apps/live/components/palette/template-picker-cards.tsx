@@ -7,7 +7,7 @@
 
 import type { TemplateDescriptor, TemplateKind } from '@livediagram/templates';
 import { PickerCard } from '@/components/palette/PickerCard';
-import { TemplatePreview } from '@/components/palette/template-preview';
+import { TemplatePreview } from '@livediagram/template-previews';
 
 // A single selectable template tile. Click selects; double-click is the
 // commit shortcut (select + Create in one gesture).

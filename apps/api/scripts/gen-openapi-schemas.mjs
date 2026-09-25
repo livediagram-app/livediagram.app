@@ -39,6 +39,8 @@ export const ROOT_TYPES = [
   'ShareRole',
   'ApiToken',
   'TimelineEvent',
+  'ActivityAction',
+  'ActivityThread',
   'ImageSummary',
   'ChangeLogEntry',
   'ChangeLogKind',

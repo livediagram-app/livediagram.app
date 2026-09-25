@@ -44,7 +44,7 @@ type DiagramActionsDeps = {
   sessionShareCode: string | null;
   // Post-move refreshes for the scope-aware mover below: the team
   // libraries sweep (a row moved within / left a team) and the personal
-  // list (a diagram landed in — or left — My Work).
+  // list (a diagram landed in — or left — Personal Space).
   refreshTeamLibraries: () => void;
   refreshDiagramList: () => Promise<void> | void;
   // Fired after a successful scope-aware move so the editor can sync any
@@ -105,14 +105,26 @@ export function useDiagramActions(deps: DiagramActionsDeps) {
   // personal list refresh so the row surfaces wherever it landed.
   // (Purely personal moves stay on moveDiagramToFolder above — it updates
   // the list optimistically.)
-  const moveDiagramTo = (id: string, dest: { teamId: string | null; folderId: string | null }) => {
+  //
+  // Telemetry (spec/22), on the success path only: a personal diagram
+  // filed into a team is Team·Added·Diagram, the same event the Explorer
+  // page's own move and the New Diagram wizard send; anything else (within
+  // a team, team -> team, team -> personal) is Team·Moved·Diagram. An
+  // unknown source (a caller that doesn't pass `fromTeamId`, e.g. the team
+  // library, whose rows are always team diagrams) reads as a team move.
+  const moveDiagramTo = (
+    id: string,
+    dest: { teamId: string | null; folderId: string | null },
+    fromTeamId?: string | null,
+  ) => {
     void apiSetDiagramFolder(ownerId, id, dest.folderId, dest.teamId)
       .then(() => {
         refreshTeamLibraries();
         void refreshDiagramList();
         onDiagramScopeChanged?.(id, dest.teamId);
-        toast.success(dest.teamId ? 'Moved to the team library' : 'Moved to My Work');
-        track('Team', 'Moved', 'Diagram');
+        toast.success(dest.teamId ? 'Moved to the team library' : 'Moved to Personal Space');
+        if (fromTeamId === null && dest.teamId) track('Team', 'Added', 'Diagram');
+        else track('Team', 'Moved', 'Diagram');
       })
       .catch(() => {
         toast.error('Could not move the diagram. Please try again.');

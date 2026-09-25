@@ -251,6 +251,38 @@ export async function listTeamAdminUserIds(env: Env, teamId: string): Promise<st
 //     shared work survives — mirroring deleteTeam's "never destroy
 //     members' work" rule — their membership row is removed, and the
 //     heir is promoted when no joined admin remains.
+// Move a departing user's team diagrams + team folders onto another member.
+//
+// Ownership of a team diagram is more than an audit field: every access gate
+// honours `owner_id` BEFORE it checks membership (and the owner-only routes,
+// share links and passwords among them, check nothing else), so work left
+// owned by somebody who has gone stays open to them. The folders go too, so
+// no team row is left owned by a departed (or deleted) account.
+async function moveTeamWork(env: Env, teamId: string, fromUserId: string, toUserId: string) {
+  await env.DB.prepare('UPDATE diagrams SET owner_id = ? WHERE owner_id = ? AND team_id = ?')
+    .bind(toUserId, fromUserId, teamId)
+    .run();
+  await env.DB.prepare('UPDATE folders SET owner_id = ? WHERE owner_id = ? AND team_id = ?')
+    .bind(toUserId, fromUserId, teamId)
+    .run();
+}
+
+// A member leaving or being removed (spec/32 + spec/35): hand what they made
+// in the team to the remaining joined member detachUserFromTeams would pick,
+// the earliest admin, else the earliest member. Call BEFORE the membership
+// row goes. A no-op when nobody else has joined.
+export async function handTeamWorkToHeir(env: Env, teamId: string, userId: string): Promise<void> {
+  const heir = await env.DB.prepare(
+    `SELECT user_id FROM team_members
+      WHERE team_id = ? AND user_id != ? AND status = 'joined' AND user_id IS NOT NULL
+      ORDER BY (role = 'admin') DESC, created_at ASC, id ASC
+      LIMIT 1`,
+  )
+    .bind(teamId, userId)
+    .first<{ user_id: string }>();
+  if (heir) await moveTeamWork(env, teamId, userId, heir.user_id);
+}
+
 export async function detachUserFromTeams(env: Env, userId: string): Promise<void> {
   const memberships = await env.DB.prepare(
     'SELECT id, team_id, status FROM team_members WHERE user_id = ?',
@@ -271,11 +303,7 @@ export async function detachUserFromTeams(env: Env, userId: string): Promise<voi
       continue;
     }
     const heir = remaining.find((r) => r.role === 'admin') ?? remaining[0];
-    if (heir) {
-      await env.DB.prepare('UPDATE diagrams SET owner_id = ? WHERE owner_id = ? AND team_id = ?')
-        .bind(heir.user_id, userId, m.team_id)
-        .run();
-    }
+    if (heir) await moveTeamWork(env, m.team_id, userId, heir.user_id);
     await env.DB.prepare('DELETE FROM team_members WHERE id = ?').bind(m.id).run();
     if (heir && !remaining.some((r) => r.role === 'admin')) {
       await env.DB.prepare(`UPDATE team_members SET role = 'admin' WHERE id = ?`)

@@ -9,27 +9,6 @@
 // dimensions diverge in ways that would defeat a shared library
 // today, so a merger waits until a real third caller forces it.
 
-export function SharedDiagramIcon() {
-  return (
-    <svg
-      width="13"
-      height="13"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <rect x="2.5" y="3" width="11" height="10" rx="1.5" />
-      <path d="M2.5 6.5h11" />
-      <path d="M10 9.5l2 2-2 2" />
-      <path d="M12 11.5h-4" />
-    </svg>
-  );
-}
-
 export function RemoveIcon() {
   return (
     <svg

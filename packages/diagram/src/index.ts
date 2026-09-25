@@ -393,9 +393,13 @@ export function elementSupportsText(element: Element): boolean {
 export * from './animation';
 export * from './arrow-avoidance';
 export * from './nearest-towards';
+export * from './mind-flow';
 export * from './mind-map';
 export * from './youtube';
 export * from './arrow-path';
+export * from './arrow-label';
+export * from './label-font';
+export * from './lane-gutter';
 export * from './arrow-style';
 export * from './border-style';
 // Element drop shadows (spec/86): model, presets + render builders.
@@ -410,10 +414,14 @@ export * from './comments';
 // Per-element assigned actions (spec/68).
 export * from './element-action';
 export * from './data-shapes';
+export * from './code-themes';
+export * from './chart-palettes';
+export * from './chart-frame';
 // Per-participant responses (spec/122) + the collaboration element family
 // (spec/123 to spec/130). Both leaf modules, for the factories cycle.
 export * from './responses';
 export * from './collab-shapes';
+export * from './web-components';
 // The Behaviours family (spec/110): which kinds are in it, and which of them
 // draw their own `…` rather than taking the shared settings one.
 export * from './behaviour-shapes';
@@ -465,6 +473,11 @@ export * from './theme-presets';
 // used by selection captions and any surface that names what's selected.
 export * from './element-kind-label';
 
+// The name a boxed element goes by in a list of elements (the Collaborate
+// Panel's rows, the Activity page's rows): its label, a table's first cell,
+// or "Untitled".
+export * from './element-display-label';
+
 export * from './anchor-choice';
 export * from './geometry';
 export * from './arrow-rebind';
@@ -477,7 +490,10 @@ export * from './geometry-snapping';
 export * from './arrow-snapping';
 export * from './geometry-guides';
 
-export * from './groups';
+// Layer order + union bounds, and the load-time migration of diagrams saved
+// while groups existed (spec/147).
+export * from './layer-order';
+export * from './legacy-groups';
 
 // Photoshop-style layers (spec/74): the Layer type used by the Tab field
 // above, band-aware render ordering, and the pure layer operations.
@@ -515,3 +531,4 @@ export * from './fonts';
 // helpers a presentation is built from. Kept here rather than in apps/live
 // because the api and the MCP worker can answer the same questions.
 export * from './slide-deck';
+export * from './lane-seam-snapping';

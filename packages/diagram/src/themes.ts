@@ -9,7 +9,8 @@ import {
   type Element,
   type ShapeKind,
 } from './index';
-import { rederiveColorPresetForTheme } from './theme-presets';
+import { rederiveColorPresetForTheme, rederiveTablePresetForTheme } from './theme-presets';
+import { isAccentBarShape } from './web-components';
 import { DEFAULT_SCHEME_DARK, DEFAULT_SCHEME_LIGHT, LEGACY_THEMES, THEMES } from './themes-data';
 export { THEMES, LEGACY_THEMES, DEFAULT_SCHEME_LIGHT, DEFAULT_SCHEME_DARK };
 
@@ -255,6 +256,13 @@ const THEME_COLOUR_FIELDS: Record<Element['type'], ThemeColourField[]> = {
 // below funnel through this so the opt-out can't apply to one and silently
 // drift from the others. Stroke + text stay themed.
 function themeColourFields(el: Element): ThemeColourField[] {
+  // An accent-bar web component (spec/147) paints its bar in the stroke
+  // (unless a fill is picked) under white text, so only the stroke follows
+  // the theme: the theme's element fill and ink are the pale-card pair, and
+  // writing them into a bar would put pale text on a pale bar.
+  if (el.type === 'shape' && isAccentBarShape(el.shape)) {
+    return [{ element: 'strokeColor', theme: 'elementStroke' }];
+  }
   const fields = THEME_COLOUR_FIELDS[el.type];
   if ((el as { themeLockFill?: boolean }).themeLockFill) {
     return fields.filter((f) => f.element !== 'fillColor');
@@ -402,6 +410,12 @@ export function resetThemeElement(el: Element, theme: ThemeDefinition): Element 
     const rederived = rederiveColorPresetForTheme(el, theme);
     if (rederived !== el) return rederived;
   }
+  // Same for a table's look: "reset" on a Banded table means this theme's
+  // Banded, not a stripped grid.
+  if (el.type === 'table' && el.tablePreset) {
+    const rederived = rederiveTablePresetForTheme(el, theme);
+    if (rederived !== el) return rederived;
+  }
   const fields = themeColourFields(el);
   if (fields.length === 0) return el;
   const patch: Record<string, string | undefined> = {};
@@ -412,6 +426,9 @@ export function resetThemeElement(el: Element, theme: ThemeDefinition): Element 
   // the shape is forced back to the theme look, so the preset no longer holds.
   if (el.type === 'shape' && el.colorPreset) {
     return { ...el, ...patch, colorPreset: undefined } as Element;
+  }
+  if (el.type === 'table' && el.tablePreset) {
+    return { ...el, ...patch, tablePreset: undefined } as Element;
   }
   return { ...el, ...patch } as Element;
 }

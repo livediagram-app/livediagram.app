@@ -20,8 +20,7 @@
 //
 // The Eraser Panel's settings (spec/113) ride on top of that same hit test:
 // a SIZE asks it at a ring of points rather than one, a TARGET filter drops
-// what the brush touched but isn't allowed to remove, GROUPS expands a touch
-// to its group, and TAP mode skips the drag listeners entirely. None of them
+// what the brush touched but isn't allowed to remove, and TAP mode skips the drag listeners entirely. None of them
 // can reach a locked element — that check stays where it was.
 //
 // Canvas only calls beginErase (from its capture-phase pointerdown, so it
@@ -37,7 +36,6 @@ import { elementHostsAtPoint } from '@/lib/dom-hit-test';
 import {
   DEFAULT_ERASER_CONFIG,
   eraserAllows,
-  eraserIdsFor,
   eraserRadius,
   eraserSamplePoints,
   type EraserConfig,
@@ -109,13 +107,8 @@ export function useCanvasEraser(deps: EraserDeps) {
         // And skip what the target filter protects — a sweep set to Drawings
         // passes straight over the diagram underneath.
         if (!eraserAllows(el, config.target)) continue;
-        // A touch takes the element, or its whole group.
-        for (const memberId of eraserIdsFor(el, activeTab.elements, config.groups)) {
-          const member = activeTab.elements.find((e) => e.id === memberId);
-          if (!member || member.locked === true || layerInertIds.has(memberId)) continue;
-          erasedRef.current.add(memberId);
-          changed = true;
-        }
+        erasedRef.current.add(id);
+        changed = true;
       }
     }
     if (!changed) return;

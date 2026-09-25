@@ -318,6 +318,16 @@ describe('DELETE /api/diagrams/:id/share/:code — revoking one link', () => {
     expect((await handleDiagramShareRoutes(ctx))!.status).toBe(204);
     expect(db.deleteShareLink).toHaveBeenCalled();
   });
+
+  it('404s a code that belongs to a different diagram, leaving that link alive', async () => {
+    // Owning d_1 must not let you revoke somebody else's link by its code.
+    db.getShareLinkIncludingExpired.mockResolvedValueOnce({ code: 'c1', diagramId: 'd_other' });
+    const { env, broadcasts } = roomEnv();
+    const { ctx } = ctxFor('DELETE', '/api/diagrams/d_1/share/c1', { env });
+    expect((await handleDiagramShareRoutes(ctx))!.status).toBe(404);
+    expect(db.deleteShareLink).not.toHaveBeenCalled();
+    expect(broadcasts).toEqual([]);
+  });
 });
 
 describe('POST /api/diagrams/:id/share/:code/extend (spec/34)', () => {

@@ -52,8 +52,14 @@ describe('isValidTelemetryEvent', () => {
       // Strong signal that the gate IS reading the same enum the api
       // schema exports; if anyone hand-edits the validator to
       // hard-code a stale list, this catches it.
+      // `Page` is the one category with a required, path-shaped type
+      // (spec/150), so it's checked with a page view instead.
       for (const category of TELEMETRY_CATEGORIES) {
-        expect(isValidTelemetryEvent({ category, action: 'Added' })).toBe(true);
+        const event =
+          category === 'Page'
+            ? { category, action: 'View', type: '/' }
+            : { category, action: 'Added' };
+        expect(isValidTelemetryEvent(event)).toBe(true);
       }
     });
   });

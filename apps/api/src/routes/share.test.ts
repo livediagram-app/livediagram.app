@@ -38,6 +38,12 @@ vi.mock('../email/notifications', () => ({
   notifyDiagramJoin: vi.fn(),
 }));
 
+// spec/22's server-side Diagram·Joined count: a seam, the insert itself is
+// the shared server-telemetry helper.
+vi.mock('../server-telemetry', () => ({
+  reportServerEvent: vi.fn(async () => {}),
+}));
+
 vi.mock('../thumbnail', () => ({
   getDiagramThumbnailSvg: vi.fn(),
   getDiagramTabImageSvg: vi.fn(),
@@ -49,6 +55,7 @@ vi.mock('../thumbnail', () => ({
 import { handleShare, passwordGate } from './share';
 import { getDiagram, getParticipant, getShareLink, recordSharedAccess } from '../db';
 import { notifyDiagramJoin } from '../email/notifications';
+import { reportServerEvent } from '../server-telemetry';
 import { getDiagramTabImageSvg, getDiagramThumbnailSvg } from '../thumbnail';
 import type { RouteContext } from './context';
 
@@ -287,6 +294,7 @@ describe('GET /api/share/<code> (spec/24 + spec/65)', () => {
   const recordSharedAccessMock = vi.mocked(recordSharedAccess);
   const getParticipantMock = vi.mocked(getParticipant);
   const notifyDiagramJoinMock = vi.mocked(notifyDiagramJoin);
+  const reportServerEventMock = vi.mocked(reportServerEvent);
 
   function resolveCtx(opts: { code?: string; visitor?: string | null; password?: string } = {}): {
     ctx: RouteContext;
@@ -321,6 +329,7 @@ describe('GET /api/share/<code> (spec/24 + spec/65)', () => {
     recordSharedAccessMock.mockReset();
     getParticipantMock.mockReset();
     notifyDiagramJoinMock.mockReset();
+    reportServerEventMock.mockClear();
     getShareLinkMock.mockResolvedValue(shareLink('d1'));
     getDiagramMock.mockResolvedValue(diagram('d1'));
     getSharePasswordMock.mockResolvedValue(null);
@@ -389,6 +398,36 @@ describe('GET /api/share/<code> (spec/24 + spec/65)', () => {
     await handleShare(ctx);
     await settled();
     expect(notifyDiagramJoinMock).not.toHaveBeenCalled();
+  });
+
+  it('counts Diagram·Joined once, on the first visit, at the link’s role (spec/22)', async () => {
+    recordSharedAccessMock.mockResolvedValue(true);
+    getShareLinkMock.mockResolvedValue({ ...shareLink('d1'), role: 'edit' });
+    const { ctx, settled } = resolveCtx({ visitor: 'visitor-1' });
+    await handleShare(ctx);
+    await settled();
+    expect(reportServerEventMock).toHaveBeenCalledTimes(1);
+    expect(reportServerEventMock).toHaveBeenCalledWith(FAKE_ENV, 'Diagram', 'Joined', 'Edit');
+  });
+
+  it('does not count Diagram·Joined on a refresh or return visit (spec/22)', async () => {
+    // The editor used to emit on every open of the share URL; a reload
+    // inflated "Collaborators Joined" roughly twofold.
+    recordSharedAccessMock.mockResolvedValue(false);
+    const { ctx, settled } = resolveCtx({ visitor: 'visitor-1' });
+    await handleShare(ctx);
+    await settled();
+    expect(reportServerEventMock).not.toHaveBeenCalled();
+  });
+
+  it('does not count Diagram·Joined for the owner or an unidentified visitor', async () => {
+    recordSharedAccessMock.mockResolvedValue(true);
+    for (const visitor of ['o1', null]) {
+      const { ctx, settled } = resolveCtx({ visitor });
+      await handleShare(ctx);
+      await settled();
+    }
+    expect(reportServerEventMock).not.toHaveBeenCalled();
   });
 
   it('still emails when the joiner has no participant record', async () => {

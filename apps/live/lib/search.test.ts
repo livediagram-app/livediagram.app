@@ -270,7 +270,7 @@ describe('buildSearchResults — shared diagrams + teams (spec/09 Search panel)'
 });
 
 describe('buildSearchResults — team library (spec/35)', () => {
-  it('keeps personal folders in "My Work" and team folders/diagrams in "Teams"', () => {
+  it('keeps personal folders in "Personal Space" and team folders/diagrams in "Teams"', () => {
     const out = buildSearchResults({
       query: 'q3',
       diagrams: [],
@@ -281,11 +281,11 @@ describe('buildSearchResults — team library (spec/35)', () => {
       ],
       teamDiagrams: [{ id: 'td', name: 'Q3 roadmap', teamId: 'team1', teamName: 'Platform' }],
     });
-    // My Work (personal folder) + Teams (team folder + team diagram).
+    // Personal Space (personal folder) + Teams (team folder + team diagram).
     expect(out.map((g) => g.key)).toEqual(['folders', 'teams']);
-    const myWork = out.find((g) => g.key === 'folders')!;
-    expect(myWork.label).toBe('My Work');
-    expect(myWork.items).toEqual([{ kind: 'folder', id: 'pf', name: 'Q3 planning' }]);
+    const personalSpace = out.find((g) => g.key === 'folders')!;
+    expect(personalSpace.label).toBe('Personal Space');
+    expect(personalSpace.items).toEqual([{ kind: 'folder', id: 'pf', name: 'Q3 planning' }]);
     const teamsGroup = out.find((g) => g.key === 'teams')!;
     expect(teamsGroup.items).toEqual([
       { kind: 'folder', id: 'tf', name: 'Marketing / Q3', team: { id: 'team1', name: 'Platform' } },

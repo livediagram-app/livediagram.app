@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 
 import { buildPaletteSearchItems } from '@/lib/palette-search';
 import { HELP_SEARCH_ITEMS } from '@/lib/help-search';
+import { SETTINGS_SEARCH_ITEMS } from '@/lib/settings-search-items';
 import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
 import { useEditorCommands } from '@/hooks/canvas/useEditorCommands';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
@@ -36,6 +37,7 @@ export function EditorSearchPanel() {
     addSticker,
     addTechIcon,
     setSearchOpen,
+    openSettingsAt,
   } = useEditorContext();
   const { commandItems, runCommand } = useEditorCommands();
   // The icon catalogues load async (lib/icon-registry.ts); subscribing here
@@ -111,6 +113,8 @@ export function EditorSearchPanel() {
       commandItems={commandItems}
       onRunCommand={runCommand}
       helpItems={HELP_SEARCH_ITEMS}
+      settingItems={SETTINGS_SEARCH_ITEMS}
+      onSelectSetting={openSettingsAt}
       onClose={() => setSearchOpen(false)}
     />
   );

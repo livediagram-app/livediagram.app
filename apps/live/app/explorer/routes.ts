@@ -23,6 +23,8 @@ export function explorerPathFor(node: SelectedNode): string {
   switch (node.kind) {
     case 'timeline':
       return '/explorer/timeline';
+    case 'activity':
+      return '/explorer/activity';
     case 'recent':
       return '/explorer/recent';
     case 'all':
@@ -45,8 +47,6 @@ export function explorerPathFor(node: SelectedNode): string {
       return '/explorer/themes';
     case 'tokens':
       return '/explorer/tokens';
-    case 'profile':
-      return '/explorer/profile';
     case 'invites':
       return '/explorer/invites';
     case 'folder':
@@ -67,6 +67,8 @@ export function selectedFromRoute(pathname: string, search: URLSearchParams): Se
   switch (path) {
     case '/explorer/timeline':
       return { kind: 'timeline' };
+    case '/explorer/activity':
+      return { kind: 'activity' };
     // Explicit, not left to the default. Recent used to BE the default,
     // so it round-tripped for free; now that the default is the
     // Timeline (spec/138 §8.1), /explorer/recent without its own case
@@ -94,8 +96,6 @@ export function selectedFromRoute(pathname: string, search: URLSearchParams): Se
       return { kind: 'themes' };
     case '/explorer/tokens':
       return { kind: 'tokens' };
-    case '/explorer/profile':
-      return { kind: 'profile' };
     case '/explorer/invites':
       return { kind: 'invites' };
     case '/explorer/folder': {

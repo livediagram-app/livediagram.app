@@ -1,0 +1,91 @@
+// Page view telemetry (spec/150): which page a `Page·View` event names, and
+// which app serves it. The normaliser and the validator live together so the
+// browser can never produce a path the ingest would drop, and the app
+// classifier shares the router's own segment list so the dashboard and the
+// router can't disagree about who serves a path.
+
+// The live app's top-level page route segments. These serve at clean URLs
+// (`/diagram`, `/explorer`, ...), and the router forwards them to the live
+// worker (spec/08). Marketing owns every other first segment.
+export const LIVE_ROUTE_SEGMENTS: ReadonlySet<string> = new Set([
+  'diagram',
+  'embed',
+  'explorer',
+  'get-started',
+  'join',
+  'new',
+  'oauth',
+  'sign-in',
+  'sso-callback',
+]);
+
+// Named after the apps (`apps/live` is the editor).
+export type PageViewApp = 'Marketing' | 'Live' | 'Help' | 'Dashboard';
+
+const SEGMENT = /^[a-z0-9._-]{1,60}$/;
+const MAX_SEGMENTS = 6;
+const MAX_LENGTH = 120;
+
+// What the ingest accepts as a `Page·View` type: `/`, or up to six
+// `/`-separated segments of safe characters. There is no id placeholder:
+// an id is dropped, never stood in for, so nothing id-shaped is stored.
+export const PAGE_VIEW_PATH_PATTERN = /^\/$|^(?:\/[a-z0-9._-]{1,60}){1,6}$/;
+
+export function isValidPageViewPath(value: string): boolean {
+  return value.length <= MAX_LENGTH && PAGE_VIEW_PATH_PATTERN.test(value);
+}
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
+// A segment that names a thing rather than a page: a UUID, or a long token
+// with a digit in it. Slugs (`the-canvas`, `miro`) are neither.
+function looksLikeId(segment: string): boolean {
+  return UUID.test(segment) || (segment.length >= 16 && /\d/.test(segment));
+}
+
+/**
+ * Reduce a browser pathname to the page it is, for a `Page·View` event.
+ * An id, and everything after it, is dropped: what follows an id is about
+ * that one thing, not a different page. So every diagram is `/diagram`.
+ * Returns null when the path can't be expressed safely: deny-by-default, so
+ * an odd path is lost rather than leaked. The query string and hash are never
+ * part of a pathname, so they cannot reach here.
+ */
+export function pageViewPath(pathname: string): string | null {
+  let raw: string;
+  try {
+    raw = decodeURIComponent(pathname);
+  } catch {
+    return null;
+  }
+  let segments = raw
+    .toLowerCase()
+    .split('/')
+    .filter((s) => s !== '');
+  // Every `/diagram/...` URL is the editor on one diagram (spec/14), and
+  // whatever follows the segment is the diagram's id.
+  if (segments[0] === 'diagram') segments = ['diagram'];
+  const last = segments[segments.length - 1];
+  if (last === 'index.html') segments.pop();
+  else if (last?.endsWith('.html')) segments[segments.length - 1] = last.slice(0, -5);
+  if (segments.length > MAX_SEGMENTS) return null;
+  const out: string[] = [];
+  for (const segment of segments) {
+    if (!SEGMENT.test(segment)) return null;
+    if (looksLikeId(segment)) break;
+    out.push(segment);
+  }
+  // A path that is nothing but an id isn't a page anyone navigated to.
+  if (out.length === 0 && segments.length > 0) return null;
+  const path = `/${out.join('/')}`;
+  return isValidPageViewPath(path) ? path : null;
+}
+
+/** Which app serves a normalised page path (the router's routing, spec/08). */
+export function pageViewApp(path: string): PageViewApp {
+  const first = path.split('/')[1] ?? '';
+  if (first === 'help') return 'Help';
+  if (first === 'telemetry') return 'Dashboard';
+  if (LIVE_ROUTE_SEGMENTS.has(first)) return 'Live';
+  return 'Marketing';
+}

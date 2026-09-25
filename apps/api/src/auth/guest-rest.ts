@@ -26,6 +26,29 @@ export function guestSignatureEnforced(env: SigEnv, now: number): boolean {
   return Number.isFinite(cutoff) && now >= cutoff;
 }
 
+// A Clerk user id presented as a GUEST header, which is never legitimate.
+//
+// The guest credential is always a UUID: the server mints it at POST
+// /api/guest-id with `crypto.randomUUID()`, and the editor's local-identity
+// store only ever writes a UUID into `X-Owner-Id` (it sends `Authorization`
+// instead, never both, once Clerk resolves a token). A Clerk `sub` therefore
+// only reaches this header when someone is replaying an account id they
+// harvested — and Clerk ids are harvestable by design: `GET /api/teams/<id>`
+// lists `members[].userId` to every member of the team.
+//
+// Without this check, that replay is a credential for the victim's PERSONAL
+// diagrams, whose ownership legitimately resolves through the hybrid header
+// path (a personal owner id is normally an unguessable UUID, which is what
+// makes that path safe — an account id is not). The team-diagram half of the
+// same hole is closed structurally in routes/context.ts `ownsDiagram`.
+//
+// Unlike the signature gate below this is ALWAYS on: it rejects a shape that
+// no real client sends, so there's no legacy caller to grandfather in and
+// nothing for an operator to roll out.
+export function isClerkIdShape(ownerId: string): boolean {
+  return ownerId.startsWith('user_');
+}
+
 // Resource segments whose access is keyed on the resolved owner id, so a
 // guest-path request to them must prove possession of that id once enforcement
 // is on. Public / auth-bootstrap routes are deliberately excluded: `guest-id`
@@ -43,4 +66,8 @@ export const OWNER_SCOPED_SEGMENTS = new Set([
   // The feed is keyed on the resolved owner id and returns diagram
   // names + comment text, so a harvested guest id must not read it.
   'timeline',
+  // Same shape as the timeline: actions + comment threads (names, text)
+  // keyed on the resolved owner, and the owner's starred diagrams.
+  'activity',
+  'favourites',
 ]);

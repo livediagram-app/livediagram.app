@@ -8,6 +8,7 @@
 // symbolic-key map in help-articles.ts; this module only feeds search.
 
 import { articleHref, articles } from '@livediagram/help-registry';
+import { articleTelemetryId } from '@livediagram/help-registry/telemetry';
 import type { HelpSearchItem } from './search';
 
 /** The built help catalogue passed to the SearchPanel. Static, so built once. */
@@ -18,7 +19,9 @@ export const HELP_SEARCH_ITEMS: HelpSearchItem[] = articles.map((a) => ({
   // articleHref is basePath-relative (the help app prepends /help at render);
   // the editor links cross-app, so it prepends /help itself.
   href: `/help${articleHref(a)}`,
-  // The slash-free slug doubles as the telemetry `type` on click, matching
-  // help-articles.ts's helpArticleLeaf convention.
-  leaf: a.slug,
+  // The telemetry `type` on click (`UI·Opened`): the registry's unique
+  // per-article id, the same one help-articles.ts's helpArticleTelemetryId
+  // and the help centre report. Not the bare slug, which two pairs of
+  // articles share (spec/22).
+  leaf: articleTelemetryId(a),
 }));

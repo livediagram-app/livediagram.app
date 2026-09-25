@@ -6,30 +6,21 @@ import {
   activeCommentCount,
   createAnnotation,
   createArrow,
-  createAvatar,
-  createBanner,
-  createCallout,
   createComment,
   createComponent,
-  createHeader,
-  createHero,
-  createProcessSteps,
-  createStatRow,
   scaleElements,
-  COMPONENT_SIZE,
   createImage,
   createPinnedArrow,
   createShape,
   createSticky,
   createText,
-  duplicateGroupedElements,
+  duplicateElements,
   isBoxed,
   type ArrowElement,
   type CommentThread,
   type Element,
   type ShapeElement,
   type StickyElement,
-  type TextElement,
 } from './index';
 
 describe('boxed-element factories', () => {
@@ -104,157 +95,12 @@ describe('boxed-element factories', () => {
     expect(isBoxed(c)).toBe(true);
   });
 
-  it('createBanner is a composite group: accent bar (first) + title + subtitle (spec/09)', () => {
-    const els = createBanner(100, 50, '#db2777');
-    expect(els).toHaveLength(3);
-    const [bar, title, subtitle] = els as [ShapeElement, TextElement, TextElement];
-
-    // All three share ONE fresh group id so they move / lock / copy as a unit.
-    expect(bar.groupId).toBeDefined();
-    expect(title.groupId).toBe(bar.groupId);
-    expect(subtitle.groupId).toBe(bar.groupId);
-
-    // Bar paints first (lowest z), filled with the accent and borderless.
-    expect(bar.type).toBe('shape');
-    expect(bar.shape).toBe('square');
-    expect(bar).toMatchObject({ fillColor: '#db2777', strokeWidth: 'none', borderRadius: 'lg' });
-
-    // Title + subtitle are white, centred text; subtitle is smaller + muted.
-    expect(title).toMatchObject({
-      type: 'text',
-      textColor: '#ffffff',
-      textBold: true,
-      textSize: 'lg',
-    });
-    expect(title.textAlignX).toBe('center');
-    expect(subtitle).toMatchObject({ type: 'text', textColor: '#ffffff', textSize: 'sm' });
-    expect(subtitle.opacity).toBeLessThan(1);
-
-    // Centred on the drop point.
-    expect(bar.x + bar.width / 2).toBe(100);
-    expect(bar.y + bar.height / 2).toBe(50);
-  });
-
-  it('createBanner mints a distinct group id each call', () => {
-    const a = createBanner(0, 0, '#000')[0] as ShapeElement;
-    const b = createBanner(0, 0, '#000')[0] as ShapeElement;
-    expect(a.groupId).not.toBe(b.groupId);
-  });
-
-  it('createAvatar is a square, circular, cover-fit image (spec/09)', () => {
-    const a = createAvatar(50, 60);
-    expect(a.type).toBe('image');
-    expect(a.width).toBe(a.height); // square so 'full' radius is a perfect circle
-    expect(a).toMatchObject({
-      borderRadius: 'full',
-      objectFit: 'cover',
-      aspectLocked: true,
-      imageId: null,
-    });
-    // Centred on the drop point.
-    expect(a.x + a.width / 2).toBe(50);
-    expect(a.y + a.height / 2).toBe(60);
-  });
-
-  it('createHero is a group: image (cover) + accent overlay + title + body (spec/09)', () => {
-    const els = createHero(100, 50, '#db2777');
-    expect(els).toHaveLength(4);
-    const image = els[0]!;
-    const overlay = els[1]!;
-    const title = els[2]!;
-    const body = els[3]!;
-    // Image paints first (lowest z), fills with cover.
-    expect(image.type).toBe('image');
-    expect(image).toMatchObject({ objectFit: 'cover', borderRadius: 'lg' });
-    // Overlay is the accent at reduced opacity (theme-following + legible text).
-    expect(overlay.type).toBe('shape');
-    expect(overlay).toMatchObject({ fillColor: '#db2777', strokeWidth: 'none' });
-    expect(overlay.opacity).toBeLessThan(1);
-    // White title + body, all sharing one group.
-    expect(title).toMatchObject({ type: 'text', textColor: '#ffffff', textBold: true });
-    expect(body.type).toBe('text');
-    const gid = image.groupId;
-    expect(gid).toBeDefined();
-    expect(els.every((e) => e.groupId === gid)).toBe(true);
-  });
-
-  it('createHeader is a group: accent bar + circular avatar + title + nav links (spec/09)', () => {
-    const els = createHeader(0, 0, '#15803d');
-    // bar + avatar + title + 3 links.
-    expect(els.length).toBe(6);
-    const bar = els[0]!;
-    const avatar = els[1]!;
-    expect(bar).toMatchObject({ type: 'shape', fillColor: '#15803d', strokeWidth: 'none' });
-    expect(avatar).toMatchObject({ type: 'image', borderRadius: 'full', objectFit: 'cover' });
-    // Three nav-link text elements with white text.
-    const links = els.filter((e) => e.type === 'text' && e.textColor === '#ffffff');
-    expect(links.length).toBeGreaterThanOrEqual(3);
-    const gid = bar.groupId;
-    expect(els.every((e) => e.groupId === gid)).toBe(true);
-  });
-
-  it('createCallout is a group: surface box + accent badge + title + body (spec/09)', () => {
-    const els = createCallout(0, 0, { accent: '#be123c', surface: '#ffe4e6', ink: '#881337' });
-    expect(els).toHaveLength(4);
-    const box = els[0]!;
-    const badge = els[1]!;
-    expect(box).toMatchObject({ type: 'shape', fillColor: '#ffe4e6', strokeColor: '#be123c' });
-    expect(badge).toMatchObject({
-      type: 'shape',
-      shape: 'circle',
-      fillColor: '#be123c',
-      label: 'i',
-    });
-    const gid = box.groupId;
-    expect(gid).toBeDefined();
-    expect(els.every((e) => e.groupId === gid)).toBe(true);
-  });
-
-  it('createStatRow is three KPI cards (9 grouped elements) (spec/09)', () => {
-    const els = createStatRow(0, 0, { accent: '#15803d', surface: '#dcfce7', ink: '#14532d' });
-    expect(els).toHaveLength(9); // 3 cards x (card + number + caption)
-    const gid = els[0]!.groupId;
-    expect(els.every((e) => e.groupId === gid)).toBe(true);
-    // The big numbers pop in the accent.
-    const numbers = els.filter((e) => e.type === 'text' && e.textColor === '#15803d');
-    expect(numbers.length).toBe(3);
-  });
-
-  it('createProcessSteps is circles + pinned arrows + captions (spec/09)', () => {
-    const els = createProcessSteps(0, 0, { accent: '#2563eb', surface: '#dbeafe', ink: '#1e3a8a' });
-    const circles = els.filter((e) => e.type === 'shape' && e.shape === 'circle');
-    const arrows = els.filter((e) => e.type === 'arrow');
-    const captions = els.filter((e) => e.type === 'text');
-    expect(circles.length).toBe(3);
-    expect(arrows.length).toBe(2); // connectors between consecutive steps
-    expect(captions.length).toBe(3);
-    // Arrows are pinned to the circles so they track the group.
-    const a0 = arrows[0]!;
-    expect(a0.type).toBe('arrow');
-    if (a0.type === 'arrow') {
-      expect(a0.from.kind).toBe('pinned');
-      expect(a0.to.kind).toBe('pinned');
-    }
-  });
-
-  it('createComponent dispatches by kind and COMPONENT_SIZE covers every kind', () => {
-    const colors = { accent: '#000', surface: '#fff', ink: '#111' };
-    (['banner', 'hero', 'header', 'callout', 'stat', 'process', 'avatar'] as const).forEach((k) => {
-      const els = createComponent(k, 0, 0, colors);
-      expect(els.length).toBeGreaterThan(0);
-      expect(COMPONENT_SIZE[k].width).toBeGreaterThan(0);
-      expect(COMPONENT_SIZE[k].height).toBeGreaterThan(0);
-    });
-    expect(createComponent('avatar', 0, 0, colors)).toHaveLength(1);
-  });
-
   it('scaleElements scales boxed position + size about the origin, 2x', () => {
-    const [shape] = createComponent('banner', 0, 0, {
+    const before = createComponent('banner', 0, 0, {
       accent: '#000',
       surface: '#fff',
       ink: '#111',
     });
-    const before = shape!;
     if (before.type === 'arrow') throw new Error('expected boxed');
     const scaled = scaleElements([before], 0, 0, 2)[0]!;
     if (scaled.type === 'arrow') throw new Error('expected boxed');
@@ -284,7 +130,7 @@ describe('arrow factories', () => {
   });
 });
 
-describe('duplicateGroupedElements', () => {
+describe('duplicateElements', () => {
   const shape = (id: string, overrides: Partial<ShapeElement> = {}): ShapeElement => ({
     id,
     type: 'shape',
@@ -303,12 +149,7 @@ describe('duplicateGroupedElements', () => {
   it('re-parents a copied mind child onto its copied parent', () => {
     const parent = shape('p');
     const child = shape('c', { mindParentId: 'p' });
-    const { newElements, idMap } = duplicateGroupedElements(
-      [parent, child],
-      new Set(['p', 'c']),
-      10,
-      10,
-    );
+    const { newElements, idMap } = duplicateElements([parent, child], new Set(['p', 'c']), 10, 10);
     const dupChild = newElements.find((el) => el.id === idMap.get('c')) as ShapeElement;
     expect(dupChild.mindParentId).toBe(idMap.get('p'));
     expect(dupChild.mindParentId).not.toBe('p');
@@ -326,12 +167,7 @@ describe('duplicateGroupedElements', () => {
       esKind: 'command',
       esDock: { hostId: 'h', side: 'before' },
     } as unknown as Element;
-    const { newElements, idMap } = duplicateGroupedElements(
-      [host, docked],
-      new Set(['h', 'd']),
-      10,
-      10,
-    );
+    const { newElements, idMap } = duplicateElements([host, docked], new Set(['h', 'd']), 10, 10);
     const copy = newElements.find((el) => el.id === idMap.get('d')) as StickyElement;
     expect(copy.esDock).toEqual({ hostId: idMap.get('h'), side: 'before' });
   });
@@ -344,7 +180,7 @@ describe('duplicateGroupedElements', () => {
       esKind: 'command',
       esDock: { hostId: 'h', side: 'before' },
     } as unknown as Element;
-    const { newElements, idMap } = duplicateGroupedElements([host, docked], new Set(['d']), 10, 10);
+    const { newElements, idMap } = duplicateElements([host, docked], new Set(['d']), 10, 10);
     const copy = newElements.find((el) => el.id === idMap.get('d')) as StickyElement;
     expect('esDock' in copy).toBe(false);
   });
@@ -354,14 +190,14 @@ describe('duplicateGroupedElements', () => {
     // — only a reference whose target was itself copied follows the copy.
     const parent = shape('p');
     const child = shape('c', { mindParentId: 'p' });
-    const { newElements } = duplicateGroupedElements([parent, child], new Set(['c']), 10, 10);
+    const { newElements } = duplicateElements([parent, child], new Set(['c']), 10, 10);
     expect((newElements[0] as ShapeElement).mindParentId).toBe('p');
   });
 
   it('links a copied portal to its copied partner', () => {
     const a = shape('a', { shape: 'portal', portalTarget: 'b' });
     const b = shape('b', { shape: 'portal', portalTarget: 'a' });
-    const { newElements, idMap } = duplicateGroupedElements([a, b], new Set(['a', 'b']), 0, 0);
+    const { newElements, idMap } = duplicateElements([a, b], new Set(['a', 'b']), 0, 0);
     const dupA = newElements.find((el) => el.id === idMap.get('a')) as ShapeElement;
     const dupB = newElements.find((el) => el.id === idMap.get('b')) as ShapeElement;
     expect(dupA.portalTarget).toBe(idMap.get('b'));
@@ -373,71 +209,19 @@ describe('duplicateGroupedElements', () => {
     const linker = shape('l', {
       link: { kind: 'element', tabId: 'tab-1', elementId: 't' },
     });
-    const { newElements, idMap } = duplicateGroupedElements(
-      [target, linker],
-      new Set(['t', 'l']),
-      0,
-      0,
-    );
+    const { newElements, idMap } = duplicateElements([target, linker], new Set(['t', 'l']), 0, 0);
     const dup = newElements.find((el) => el.id === idMap.get('l')) as ShapeElement;
     expect(dup.link).toEqual({ kind: 'element', tabId: 'tab-1', elementId: idMap.get('t') });
   });
 
   it('offsets duplicated boxed elements and maps old ids to new', () => {
     const a = shape('a', { x: 0, y: 0 });
-    const { newElements, idMap } = duplicateGroupedElements([a], new Set(['a']), 10, 20);
+    const { newElements, idMap } = duplicateElements([a], new Set(['a']), 10, 20);
     expect(newElements).toHaveLength(1);
     const dup = newElements[0] as ShapeElement;
     expect(dup).toMatchObject({ x: 10, y: 20 });
     expect(dup.id).toBe(idMap.get('a'));
     expect(dup.id).not.toBe('a');
-  });
-
-  it('does NOT group loose (ungrouped) duplicates — they stay loose', () => {
-    // Two elements with no shared groupId (e.g. a marquee multi-select
-    // that was copied + pasted) must not be welded into a new group.
-    const els = [shape('a'), shape('b', { x: 100 })];
-    const { newElements } = duplicateGroupedElements(els, new Set(['a', 'b']), 0, 0);
-    const groups = newElements.map((e) => (e as ShapeElement).groupId);
-    expect(groups[0]).toBeUndefined();
-    expect(groups[1]).toBeUndefined();
-  });
-
-  it('preserves a source group as a fresh, distinct group', () => {
-    const els = [shape('a', { groupId: 'g1' }), shape('b', { x: 100, groupId: 'g1' })];
-    const { newElements } = duplicateGroupedElements(els, new Set(['a', 'b']), 0, 0);
-    const groups = newElements.map((e) => (e as ShapeElement).groupId);
-    expect(groups[0]).toBeDefined();
-    expect(groups[0]).toBe(groups[1]); // copies share one group
-    expect(groups[0]).not.toBe('g1'); // but a NEW group, not the source's
-  });
-
-  it('keeps two distinct source groups distinct in the copies', () => {
-    const els = [
-      shape('a', { groupId: 'g1' }),
-      shape('b', { x: 100, groupId: 'g1' }),
-      shape('c', { x: 200, groupId: 'g2' }),
-      shape('d', { x: 300, groupId: 'g2' }),
-    ];
-    const { newElements } = duplicateGroupedElements(els, new Set(['a', 'b', 'c', 'd']), 0, 0);
-    const g = newElements.map((e) => (e as ShapeElement).groupId);
-    expect(g[0]).toBe(g[1]);
-    expect(g[2]).toBe(g[3]);
-    expect(g[0]).not.toBe(g[2]); // two groups in, two groups out
-  });
-
-  it('drops a lone group member (only part of a group duplicated)', () => {
-    const els = [shape('a', { groupId: 'g1' }), shape('b', { x: 100, groupId: 'g1' })];
-    // Only 'a' is in the duplicated set → its copy would be a group of
-    // one, so the groupId is dropped.
-    const { newElements } = duplicateGroupedElements(els, new Set(['a']), 0, 0);
-    expect(newElements).toHaveLength(1);
-    expect((newElements[0] as ShapeElement).groupId).toBeUndefined();
-  });
-
-  it('does not group a single duplicated element', () => {
-    const { newElements } = duplicateGroupedElements([shape('a')], new Set(['a']), 0, 0);
-    expect((newElements[0] as ShapeElement).groupId).toBeUndefined();
   });
 
   it('remaps a pinned arrow whose both ends are duplicated', () => {
@@ -449,12 +233,7 @@ describe('duplicateGroupedElements', () => {
       from: { kind: 'pinned', elementId: 'a', anchor: 'e' },
       to: { kind: 'pinned', elementId: 'b', anchor: 'w' },
     };
-    const { newElements, idMap } = duplicateGroupedElements(
-      [a, b, arrow],
-      new Set(['a', 'b']),
-      0,
-      0,
-    );
+    const { newElements, idMap } = duplicateElements([a, b, arrow], new Set(['a', 'b']), 0, 0);
     const dupArrow = newElements.find((e): e is ArrowElement => e.type === 'arrow');
     expect(dupArrow).toBeDefined();
     expect(dupArrow!.from).toEqual({ kind: 'pinned', elementId: idMap.get('a'), anchor: 'e' });
@@ -472,7 +251,7 @@ describe('duplicateGroupedElements', () => {
     };
     // Only 'a' selected (NOT the arrow) → the internal-connector rule
     // needs both ends duplicated, so the arrow doesn't ride along.
-    const { newElements } = duplicateGroupedElements([a, b, arrow], new Set(['a']), 0, 0);
+    const { newElements } = duplicateElements([a, b, arrow], new Set(['a']), 0, 0);
     expect(newElements.some((e) => e.type === 'arrow')).toBe(false);
   });
 
@@ -483,7 +262,7 @@ describe('duplicateGroupedElements', () => {
       from: { kind: 'free', x: 10, y: 10 },
       to: { kind: 'free', x: 60, y: 40 },
     };
-    const { newElements } = duplicateGroupedElements([arrow], new Set(['arrow']), 5, 7);
+    const { newElements } = duplicateElements([arrow], new Set(['arrow']), 5, 7);
     const dup = newElements.find((e): e is ArrowElement => e.type === 'arrow');
     expect(dup).toBeDefined();
     expect(dup!.id).not.toBe('arrow');
@@ -502,7 +281,7 @@ describe('duplicateGroupedElements', () => {
     };
     // Only the arrow is selected; a + b stay put → the copy keeps the
     // original pins (still real elements, so no orphan).
-    const { newElements } = duplicateGroupedElements([a, b, arrow], new Set(['arrow']), 0, 0);
+    const { newElements } = duplicateElements([a, b, arrow], new Set(['arrow']), 0, 0);
     const dup = newElements.find((e): e is ArrowElement => e.type === 'arrow');
     expect(dup).toBeDefined();
     expect(dup!.from).toEqual({ kind: 'pinned', elementId: 'a', anchor: 'e' });
@@ -516,10 +295,10 @@ describe('duplicateGroupedElements', () => {
       from: { kind: 'free', x: 0, y: 0 },
       to: { kind: 'pinned', elementId: 'gone', anchor: 'w' },
     };
-    const { newElements } = duplicateGroupedElements([arrow], new Set(['arrow']), 0, 0);
+    const { newElements } = duplicateElements([arrow], new Set(['arrow']), 0, 0);
     expect(newElements.some((e) => e.type === 'arrow')).toBe(false);
     // The skipped arrow must not leave a phantom mapping behind.
-    const { idMap } = duplicateGroupedElements([arrow], new Set(['arrow']), 0, 0);
+    const { idMap } = duplicateElements([arrow], new Set(['arrow']), 0, 0);
     expect(idMap.has('arrow')).toBe(false);
   });
 
@@ -537,7 +316,7 @@ describe('duplicateGroupedElements', () => {
       from: { kind: 'on-arrow', arrowId: 'lifeline', t: 0.4 },
       to: { kind: 'free', x: 200, y: 120 },
     };
-    const { newElements, idMap } = duplicateGroupedElements(
+    const { newElements, idMap } = duplicateElements(
       [a, lifeline, message],
       new Set(['a', 'lifeline', 'message']),
       10,
@@ -568,7 +347,7 @@ describe('duplicateGroupedElements', () => {
       from: { kind: 'free', x: 0, y: 0 },
       to: { kind: 'pinned', elementId: 'gone', anchor: 's' },
     };
-    const { newElements, idMap } = duplicateGroupedElements(
+    const { newElements, idMap } = duplicateElements(
       [messageA, lifelineB],
       new Set(['A', 'B']),
       0,
@@ -595,12 +374,7 @@ describe('duplicateGroupedElements', () => {
       from: { kind: 'on-arrow', arrowId: 'lifeline', t: 0.4 },
       to: { kind: 'free', x: 200, y: 120 },
     };
-    const { newElements } = duplicateGroupedElements(
-      [lifeline, message],
-      new Set(['message']),
-      0,
-      0,
-    );
+    const { newElements } = duplicateElements([lifeline, message], new Set(['message']), 0, 0);
     const dup = newElements.find((e): e is ArrowElement => e.type === 'arrow');
     expect(dup!.from).toEqual({ kind: 'on-arrow', arrowId: 'lifeline', t: 0.4 });
   });
@@ -614,7 +388,7 @@ describe('duplicateGroupedElements', () => {
       from: { kind: 'pinned', elementId: 'a', anchor: 'e', manual: true },
       to: { kind: 'pinned', elementId: 'b', anchor: 'w' },
     };
-    const { newElements, idMap } = duplicateGroupedElements(
+    const { newElements, idMap } = duplicateElements(
       [a, b, arrow],
       new Set(['a', 'b', 'arrow']),
       0,
@@ -642,7 +416,7 @@ describe('duplicateGroupedElements', () => {
       strokeStyle: 'dashed',
       label: 'flow',
     };
-    const { newElements } = duplicateGroupedElements([arrow], new Set(['arrow']), 1, 1);
+    const { newElements } = duplicateElements([arrow], new Set(['arrow']), 1, 1);
     const dup = newElements.find((e): e is ArrowElement => e.type === 'arrow')!;
     expect(dup).toMatchObject({
       strokeColor: '#ff0000',
@@ -654,7 +428,7 @@ describe('duplicateGroupedElements', () => {
 
   it('leaves the source list untouched', () => {
     const a = shape('a', { x: 0, y: 0 });
-    duplicateGroupedElements([a], new Set(['a']), 99, 99);
+    duplicateElements([a], new Set(['a']), 99, 99);
     expect(a).toMatchObject({ x: 0, y: 0 });
   });
 });
@@ -765,7 +539,7 @@ describe('createShape (mode button, spec/103)', () => {
 // fresh hand-placement. Every duplication path in the editor — Ctrl+D,
 // shift-drag duplicate, copy/paste — funnels through this one function, so
 // the rule lives here and can't be missed by one of them.
-describe('duplicateGroupedElements — event-storming notes', () => {
+describe('duplicateElements — event-storming notes', () => {
   const esNote = {
     id: 'n1',
     type: 'sticky',
@@ -780,7 +554,7 @@ describe('duplicateGroupedElements — event-storming notes', () => {
   it('re-rolls the tilt for a workshop note rather than photocopying it', () => {
     const angles = new Set<number>();
     for (let i = 0; i < 30; i++) {
-      const { newElements } = duplicateGroupedElements([esNote], new Set(['n1']), 20, 20);
+      const { newElements } = duplicateElements([esNote], new Set(['n1']), 20, 20);
       const copy = newElements[0] as { rotation?: number; id: string };
       expect(copy.id).not.toBe('n1');
       expect(Math.abs(copy.rotation!)).toBeLessThanOrEqual(1.1);
@@ -797,7 +571,7 @@ describe('duplicateGroupedElements — event-storming notes', () => {
       fixedSize: undefined,
       rotation: 12,
     } as unknown as Element;
-    const { newElements } = duplicateGroupedElements([tilted], new Set(['p1']), 5, 5);
+    const { newElements } = duplicateElements([tilted], new Set(['p1']), 5, 5);
     expect((newElements[0] as { rotation?: number }).rotation).toBe(12);
   });
 });

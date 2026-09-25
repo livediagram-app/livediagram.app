@@ -11,10 +11,7 @@
 // the same debounce hook also feeds `scheduleElementChangeLog` to
 // useElementStyle — one debounce instance, two consumers.
 
-import { useRef } from 'react';
-import { autoAlignElements } from '@/lib/auto-align';
 import {
-  autoLayoutElements,
   isBoxed,
   type BackgroundPattern,
   type Element,
@@ -23,9 +20,11 @@ import {
 } from '@livediagram/diagram';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { AUTO_LAYOUT_CHOICES, type AutoLayoutChoice } from '@/lib/auto-layout-choices';
+import { cleanupElements } from '@/lib/tab-cleanup';
 import { FONTS } from '@livediagram/diagram';
 import { PATTERNS } from '@/components/palette/palette-controls';
 import { useTabTheme } from './useTabTheme';
+import { useDebouncedCanvasTelemetry } from './useDebouncedCanvasTelemetry';
 
 // Human-readable names for the activity log, so an entry reads
 // "Changed default text size to Medium" rather than leaking the raw
@@ -42,15 +41,6 @@ const TEXT_SIZE_LABELS: Record<TextSize, string> = {
 // label entry.
 const patternLabel = (pattern: BackgroundPattern): string =>
   PATTERNS.find((p) => p.id === pattern)?.label ?? pattern;
-
-// Slider-edit debounce window for the canvas colour / opacity
-// telemetry. Spec/22's noise rule excludes "raw colour tweaks", and
-// emitting on every slider tick would absolutely qualify; debouncing
-// at ~800ms means one user dragging a slider end-to-end produces one
-// event instead of dozens, while still capturing "did they actually
-// change the canvas appearance" as a discrete signal. Matches the
-// activity-log debounce in spirit (`scheduleTabMetaLog`).
-const CANVAS_TELEMETRY_DEBOUNCE_MS = 800;
 
 type TabCanvasDeps = {
   // True when edits are disallowed (read-only role / locked tab). Every
@@ -105,21 +95,9 @@ export function useTabCanvas(deps: TabCanvasDeps) {
     tickTabs((ts) => ts.map((t) => (t.id === activeId ? patch(t) : t)));
   };
 
-  // Per-setter debounce timers for the canvas colour / opacity
-  // telemetry emits. Keyed by setter name so a colour drag and an
-  // opacity drag debounce independently and one doesn't cancel the
-  // other. Refs (not state) because changing them mustn't re-render.
-  const telemetryTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
-  const scheduleCanvasTelemetry = (key: string, type: string) => {
-    const timers = telemetryTimersRef.current;
-    const existing = timers.get(key);
-    if (existing !== undefined) clearTimeout(existing);
-    const id = setTimeout(() => {
-      timers.delete(key);
-      track('Canvas', 'Changed', type);
-    }, CANVAS_TELEMETRY_DEBOUNCE_MS);
-    timers.set(key, id);
-  };
+  // Debounced Canvas·Changed emits for the slider setters, flushed on
+  // unmount / page hide so the last drag isn't lost (spec/22).
+  const scheduleCanvasTelemetry = useDebouncedCanvasTelemetry();
 
   const autoAlignTab = () => {
     if (editsBlocked) return;
@@ -128,7 +106,7 @@ export function useTabCanvas(deps: TabCanvasDeps) {
     // AND fires emitChange for the activity log. Adding emitTabMeta
     // on top would duplicate the entry without adding undo coverage;
     // the diff-based summary from emitChange is the canonical line.
-    commit((els) => autoAlignElements(els));
+    commit((els) => cleanupElements(els, 'align'));
     track('Tab', 'Aligned');
   };
 
@@ -142,17 +120,13 @@ export function useTabCanvas(deps: TabCanvasDeps) {
   // the AI-apply path uses). One undoable op via `commit`.
   const autoLayoutTab = (choice: AutoLayoutChoice = 'smart') => {
     if (editsBlocked) return;
-    const els = activeTab.elements;
-    if (els.length === 0) return;
-    const boxed = els.filter(isBoxed);
-    if (boxed.length === 0) return;
-    const originX = Math.min(...boxed.map((b) => b.x));
-    const originY = Math.min(...boxed.map((b) => b.y));
-    const { options, telemetryType } = AUTO_LAYOUT_CHOICES[choice];
-    commit((current) =>
-      autoAlignElements(autoLayoutElements(current, { ...options, originX, originY })),
-    );
-    track('Tab', 'Aligned', telemetryType);
+    if (activeTab.elements.length === 0) return;
+    // Everything the layout needs, including the origin it pins to, is read
+    // inside the updater from the elements it is given: a commit taken while a
+    // hover preview is on screen (spec/47) composes after the preview's revert,
+    // so `current` is the true pre-hover state and undo returns there.
+    commit((current) => cleanupElements(current, choice));
+    track('Tab', 'Aligned', AUTO_LAYOUT_CHOICES[choice].telemetryType);
   };
 
   // Tab default font (spec/28): every text element without its own

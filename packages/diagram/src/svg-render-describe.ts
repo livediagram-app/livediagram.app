@@ -92,6 +92,10 @@ export type BoxedExportOptions = {
   // colours of their own (spec/07). Defaults to light, so a caller that
   // doesn't say gets exactly the output it always got.
   surface?: CanvasSurface;
+  // The tab theme's categorical ramp, for the chart elements (spec/53). The
+  // canvas hands its charts the same list; without it they fall back to the
+  // built-in one, which is what a caller with no theme in hand wants.
+  chartPalette?: readonly string[];
 };
 
 // The face a label paints in: the author's own choice, else the notation's
@@ -227,13 +231,17 @@ export function describeBoxedExport(el: BoxedElement, opts: BoxedExportOptions =
           ? { kind: 'none' }
           : { kind: 'rect', fill, stroke };
   const baseColor = el.textColor ?? defaultTextColor(el, surface);
-  const baseSize = fontSizeFor(el.textSize);
+  // A sticky's label is a block of writing rather than a name, and runs
+  // smaller at every preset. The canvas decides that the same way (its
+  // `multiline` flag is `type === 'sticky'`).
+  const multiline = el.type === 'sticky';
+  const baseSize = fontSizeFor(el.textSize, multiline);
   const richText = (el as { richText?: TextRun[] }).richText;
   const runs: ExportRun[] | undefined = hasRichFormatting(richText)
     ? richText!.map((run) => ({
         text: eventStormingLabelText(el, run.text),
         color: run.color ?? baseColor,
-        size: run.size ? fontSizeFor(run.size) : baseSize,
+        size: run.size ? fontSizeFor(run.size, multiline) : baseSize,
         bold: run.bold ?? !!el.textBold,
         italic: run.italic ?? !!el.textItalic,
       }))

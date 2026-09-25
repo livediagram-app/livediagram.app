@@ -39,7 +39,6 @@ import {
 } from '@/components/chrome/auth-shared';
 import { Button } from '@livediagram/ui';
 import { clerkEnabled, googleOAuthEnabled } from '@/lib/clerk-config';
-import { track } from '@/lib/telemetry';
 
 function SignInContent() {
   const router = useRouter();
@@ -168,8 +167,10 @@ function SignInContent() {
     try {
       const res = await clerkSignIn.attemptFirstFactor({ strategy: 'email_code', code });
       if (res.status === 'complete' && res.createdSessionId) {
+        // Session·SignedIn is counted by the api worker on this new
+        // session's first request (spec/22), the same way a Google sign-in
+        // is; no emit here.
         await setActiveSignIn({ session: res.createdSessionId });
-        track('Session', 'SignedIn');
         router.push(resolvePostSignInDestination());
         return;
       }

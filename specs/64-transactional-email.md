@@ -30,7 +30,7 @@ Five messages, two kinds:
 
 [spec/65](65-profile-and-email-notifications.md) adds two further opt-out
 notifications — **someone joined my diagram** and **someone responded to my team
-invite** — read from the spec/20 preference blob on the new profile page.
+invite** — read from the spec/20 preference blob, set in the Settings dialog.
 
 **Later additions (same gate + best-effort `ctx.waitUntil` contract):**
 
@@ -52,8 +52,8 @@ invite** — read from the spec/20 preference blob on the new profile page.
 
 The three opt-out lifecycle/notification categories (`notifyComments`,
 `notifyTips`, `notifyMilestones`) join the spec/65 pair in `getNotificationPrefs`
-and as toggles on the profile page; every opt-out email's footer links to
-`/explorer/profile` (also emitted as a `List-Unsubscribe` header) so the
+and as switches in Settings > Notifications; every opt-out email's footer links to
+`/explorer?settings=notifications` (also emitted as a `List-Unsubscribe` header; the old `/explorer/profile` URL in already-sent mail redirects there, see spec/65) so the
 recipient can turn it off in one click. `notifyTips` governs **every** tip /
 check-in after the immediate welcome, i.e. week 1, week 2, the activation nudge,
 and win-back all respect it; only the welcome (the first authenticated sighting,
