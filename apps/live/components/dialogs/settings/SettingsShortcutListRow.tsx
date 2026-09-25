@@ -59,9 +59,11 @@ function ShortcutGroup({
       bodyClassName=""
     >
       <ul className="flex flex-col divide-y divide-slate-100 pb-2 dark:divide-slate-700">
-        {section.rows.map((s) => (
+        {/* Keyed by position + label, not keys: one key can do two things
+            (Tab selects the next element, and adds a child on a mind node). */}
+        {section.rows.map((s, i) => (
           <li
-            key={s.keys.join('+')}
+            key={`${i}-${s.label}`}
             className="flex items-center justify-between gap-3 py-1.5 text-xs"
           >
             <span className="text-slate-700 dark:text-slate-200">{s.label}</span>
