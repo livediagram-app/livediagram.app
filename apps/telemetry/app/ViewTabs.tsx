@@ -7,9 +7,9 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 // one metric. Every other view is a closer look at one area, so those sit
 // together in a bar titled "Detail".
 // Both halves are one tablist, so keyboard and screen-reader users still get a
-// single set of tabs. On large screens they share one line, the Detail bar
-// taking the rest of the width and scrolling if its tabs outgrow it; smaller
-// screens stack the two.
+// single set of tabs. Always one row: the Detail bar takes the rest of the
+// width and becomes a carousel when its tabs outgrow it (a second row read as
+// a separate control).
 //
 // The Detail bar is a single-line carousel. Its tabs are wider than the column
 // on a phone (and even on some laptops), and both wrapping to two rows and a
@@ -108,34 +108,33 @@ export function ViewTabs<K extends string>({
     'flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm dark:border-slate-700 dark:bg-slate-900';
 
   return (
-    <div
-      role="tablist"
-      aria-label="Telemetry views"
-      className="mt-8 flex flex-wrap items-center gap-3 lg:flex-nowrap"
-    >
+    <div role="tablist" aria-label="Telemetry views" className="mt-8 flex items-center gap-3">
       {leadViews.length > 0 ? (
-        <div className={bar}>
+        <div className={`${bar} shrink-0`}>
           {leadViews.map((v) => (
             <button
               key={v.key}
               type="button"
               role="tab"
               aria-selected={view === v.key}
+              aria-label={v.label}
               onClick={() => onSelect(v.key)}
               className={tabClass(view === v.key)}
             >
               <span aria-hidden className="shrink-0 [&_svg]:h-3.5 [&_svg]:w-3.5">
                 {v.icon}
               </span>
-              {v.label}
+              {/* Icon-only on a phone, so the Detail carousel beside it has
+                  room for its tabs; the aria-label keeps the name. */}
+              <span className="hidden sm:inline">{v.label}</span>
             </button>
           ))}
         </div>
       ) : null}
-      <div className={`${bar} min-w-0 max-w-full lg:flex-1`}>
+      <div className={`${bar} min-w-0 flex-1`}>
         <span
           aria-hidden
-          className="shrink-0 pl-2 pr-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400"
+          className="hidden shrink-0 pl-2 pr-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400 sm:inline"
         >
           Detail
         </span>
