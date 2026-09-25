@@ -173,3 +173,17 @@ describe('formatPollResults', () => {
     expect(text).not.toContain('sender-1');
   });
 });
+
+describe('sanitisePoll duplicate answers', () => {
+  it('keeps one of each answer, in first-seen order', () => {
+    expect(sanitisePoll(poll('choice', ['A', ' B', 'A', 'B ', 'C']))?.options).toEqual([
+      'A',
+      'B',
+      'C',
+    ]);
+  });
+
+  it('refuses a list that is one answer written twice', () => {
+    expect(sanitisePoll(poll('choice', ['A', 'A']))).toBeNull();
+  });
+});

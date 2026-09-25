@@ -70,7 +70,11 @@ export function sanitisePoll(poll: LivePoll): LivePoll | null {
   const options = carriesOptions
     ? poll.options
         .map((o) => o.trim().slice(0, POLL_OPTION_MAX))
-        .filter((o) => o.length > 0)
+        // An option IS its answer token, so two equal options are one answer
+        // shown twice: each row tallies every vote for it (shares past 100%),
+        // the prompt renders two buttons under one React key, and "A, A"
+        // passed the two-answer floor offering a single choice.
+        .filter((o, i, all) => o.length > 0 && all.indexOf(o) === i)
         .slice(0, POLL_OPTIONS_MAX)
     : [];
   if (carriesOptions && options.length < POLL_OPTIONS_MIN) return null;

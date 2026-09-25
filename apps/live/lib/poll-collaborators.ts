@@ -13,7 +13,7 @@
 // is a wrong result rather than an ugly one, so repeats are disambiguated
 // before the list is frozen.
 
-import { POLL_OPTIONS_MAX } from '@livediagram/api-schema';
+import { POLL_OPTION_MAX, POLL_OPTIONS_MAX } from '@livediagram/api-schema';
 
 // Just enough of a Participant to build a ballot from. Structural rather than
 // the full `Participant`, so the helper can be tested with two-field literals
@@ -51,11 +51,18 @@ export function pollCollaboratorOptions(candidates: readonly PollCandidate[]): s
   for (const candidate of candidates) {
     if (seenIds.has(candidate.id)) continue;
     seenIds.add(candidate.id);
-    const base = candidate.name.trim() || UNNAMED;
+    // Cut to the option cap HERE, suffix included. sanitisePoll trims every
+    // option to POLL_OPTION_MAX afterwards, and names run to 120 characters,
+    // so two long equal names numbered past the cap were cut back to the same
+    // label and their votes merged.
+    const base = (candidate.name.trim() || UNNAMED).slice(0, POLL_OPTION_MAX);
     // First one keeps the bare name; the rest are numbered from 2, which reads
     // as "the second Guest" rather than implying the first was "(1)".
     let label = base;
-    for (let n = 2; taken.has(label); n++) label = `${base} (${n})`;
+    for (let n = 2; taken.has(label); n++) {
+      const suffix = ` (${n})`;
+      label = `${base.slice(0, POLL_OPTION_MAX - suffix.length)}${suffix}`;
+    }
     taken.add(label);
     options.push(label);
     if (options.length >= POLL_OPTIONS_MAX) break;

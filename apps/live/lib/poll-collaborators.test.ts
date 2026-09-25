@@ -5,7 +5,7 @@
 // their votes into one bar. These cases are mostly about that.
 
 import { describe, expect, it } from 'vitest';
-import { POLL_OPTIONS_MAX } from '@livediagram/api-schema';
+import { POLL_OPTION_MAX, POLL_OPTIONS_MAX, sanitisePoll } from '@livediagram/api-schema';
 import { pollCollaboratorOptions } from './poll-collaborators';
 
 const person = (id: string, name: string) => ({ id, name });
@@ -74,5 +74,24 @@ describe('pollCollaboratorOptions', () => {
 
   it('is empty for an empty room', () => {
     expect(pollCollaboratorOptions([])).toEqual([]);
+  });
+});
+
+describe('pollCollaboratorOptions with names past the option cap', () => {
+  it('keeps two long equal names apart after the ballot is trimmed', () => {
+    // Names run to 120 characters but an option to POLL_OPTION_MAX, so the
+    // numbering has to fit inside the cap or the trim cuts it back off.
+    const long = 'x'.repeat(100);
+    const options = pollCollaboratorOptions([person('a', long), person('b', long)]);
+    expect(options.every((o) => o.length <= POLL_OPTION_MAX)).toBe(true);
+    const clean = sanitisePoll({
+      id: 'p',
+      question: 'Who?',
+      style: 'collaborators',
+      options,
+      startedAt: 0,
+    });
+    expect(clean?.options).toHaveLength(2);
+    expect(clean?.options[1]).toMatch(/ \(2\)$/);
   });
 });
