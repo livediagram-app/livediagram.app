@@ -37,6 +37,7 @@ import {
 } from '../db';
 import { badRequest, forbidden, json, noContent, notFound, svgImage } from '../responses';
 import { getDiagramThumbnailSvg } from '../thumbnail';
+import { redactOwnerId } from '../redact-owner';
 import { emailEnabled } from '../email/client';
 import { notifyMilestone } from '../email/notifications';
 import {
@@ -168,7 +169,12 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       const d = await getDiagram(env, id);
       if (!d) return notFound();
       const allowed = await gateRead(ctx, id, d.ownerId, d.teamId);
-      return allowed ? json({ diagram: d }) : notFound();
+      // Redacted for every non-owner, exactly as the share-code resolver
+      // does (spec/04): the gate above admits any valid share code, view
+      // or edit, so this is the same audience — and a guest owner's id IS
+      // their credential. This door was returning it intact while the
+      // share door blanked it. See redact-owner.ts.
+      return allowed ? json({ diagram: redactOwnerId(d, ctx.resolveOwner()) }) : notFound();
     }
     if (request.method === 'PUT') {
       // Metadata-only PUT now that tabs live in their own table.

@@ -236,6 +236,60 @@ describe('handleDiagrams list (GET /diagrams)', () => {
   });
 });
 
+describe('GET /diagrams/:id owner-id redaction (spec/04)', () => {
+  // The DTO's ownerId is a credential: for a guest owner it is the
+  // X-Owner-Id bearer value, and /api/migrate moves that owner's whole
+  // workspace to whoever presents it. The share-code resolver has always
+  // blanked it; this door reaches the same DTO for the same audience (the
+  // read gate admits any valid share code, view or edit) and used to hand
+  // it over intact.
+  const GUEST = '0f5ca4af-9a8a-4a60-be5e-1179e5555880';
+
+  it('blanks ownerId for a share-code visitor', async () => {
+    db.getDiagram.mockResolvedValue(fakeDiagram(GUEST));
+    canReadDiagram.mockResolvedValue(true);
+    const res = await handleDiagrams(
+      makeCtx('GET', '/api/diagrams/d1', {
+        owner: 'visitor-1',
+        headers: { 'X-Share-Code': 'CODE1234' },
+      }),
+    );
+    expect(res.status).toBe(200);
+    const { diagram } = (await res.json()) as { diagram: DiagramDTO };
+    expect(diagram.ownerId).toBe('');
+    // The visitor still gets the diagram itself — redaction, not refusal.
+    expect(diagram.id).toBe('d1');
+    expect(diagram.name).toBe('Doc');
+  });
+
+  it('returns the real ownerId to the owner', async () => {
+    db.getDiagram.mockResolvedValue(fakeDiagram('owner-1'));
+    canReadDiagram.mockResolvedValue(true);
+    const res = await handleDiagrams(makeCtx('GET', '/api/diagrams/d1'));
+    const { diagram } = (await res.json()) as { diagram: DiagramDTO };
+    expect(diagram.ownerId).toBe('owner-1');
+  });
+
+  it('blanks it for a joined team member, who is not the owner', async () => {
+    db.getDiagram.mockResolvedValue(fakeDiagram('user_owner', 'team-1'));
+    canReadDiagram.mockResolvedValue(true);
+    const res = await handleDiagrams(
+      makeCtx('GET', '/api/diagrams/d1', { owner: 'user_member', clerkUserId: 'user_member' }),
+    );
+    const { diagram } = (await res.json()) as { diagram: DiagramDTO };
+    // No regression for them: a teammate already computed isOwner=false from
+    // the real id, so they lose nothing they were using.
+    expect(diagram.ownerId).toBe('');
+  });
+
+  it('still 404s a denied reader (redaction is not the gate)', async () => {
+    db.getDiagram.mockResolvedValue(fakeDiagram(GUEST));
+    canReadDiagram.mockResolvedValue(false);
+    const res = await handleDiagrams(makeCtx('GET', '/api/diagrams/d1', { owner: 'stranger' }));
+    expect(res.status).toBe(404);
+  });
+});
+
 describe('handleDiagrams folder assignment (PUT /diagrams/:id/folder)', () => {
   it('403 on owner mismatch', async () => {
     db.getDiagram.mockResolvedValue(fakeDiagram('someone-else'));
