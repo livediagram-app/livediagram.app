@@ -101,9 +101,11 @@ Invention has two causes, and each has a guard (spec/139 Phase 9):
   48 px is the crossing, so a crop whose short edge is under 48 px is not
   asked about (`READ_MIN_EDGE_PX`, `apps/live/lib/reading/floor.ts`). A
   whiteboard shot from across the room puts every note at 12-41 px, which is
-  where the browser reader answered "The answer is 1.", "Yes." and the like on
-  every note; with the floor the whole wall is left unread in 12 seconds
-  instead of half an hour, and the review's unread tip suggests a closer
+  where the browser reader answered "The answer is 1.", "Yes." and the like:
+  asked about all 272 of its notes, it put words on 149 (91 after the chat
+  guard below); the ones checked by eye were all invented, and the curve
+  above says why. With the floor the whole wall is left unread in 12
+  seconds instead of half an hour, and the review's unread tip suggests a closer
   photo. (At 24 px the model mostly answers nothing at all: it is the band
   just above that invents.)
 
