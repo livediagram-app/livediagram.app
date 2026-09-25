@@ -94,6 +94,23 @@ export function ElementEllipsisMenu({
             ref={popover}
             role="menu"
             onPointerDown={(e) => e.stopPropagation()}
+            // A React portal renders into document.body but its events still
+            // bubble up the REACT tree — so without these, a click or
+            // double-click on this panel arrives at the canvas element that
+            // rendered the `…` trigger, however far away it is on screen.
+            //
+            // Double-click was the one that bit: the poll's panel has text
+            // inputs, and double-clicking to select a word in one put the
+            // element underneath into text-edit mode, which re-rendered the
+            // face and took the panel with it. So the gesture you make to edit
+            // a choice was the gesture that threw the panel away.
+            //
+            // Click is stopped for the same reason, one event name away: a
+            // press on the panel's own padding would otherwise reach the
+            // element's select handler. Rows stop their own clicks before this,
+            // so nothing inside loses anything.
+            onClick={(e) => e.stopPropagation()}
+            onDoubleClick={(e) => e.stopPropagation()}
             className="fixed z-[var(--z-popover,60)] min-w-[10rem] max-h-[60vh] overflow-y-auto overflow-x-hidden rounded-lg border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-900"
             style={{
               top: at.y,
