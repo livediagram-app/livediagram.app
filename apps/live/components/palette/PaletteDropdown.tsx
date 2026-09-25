@@ -166,7 +166,9 @@ export function PaletteDropdown({
 
   // Outside-click closes — but the menu lives in a portal, so a click in it
   // is NOT inside `triggerRef`; check the menu too or selecting an option
-  // would close before its handler runs.
+  // would close before its handler runs. Capture phase, because the toolbar
+  // strip stops pointerdown propagating (to keep it off the canvas), so a
+  // press on another strip control would never reach a bubbling listener.
   useEffect(() => {
     if (!open) return;
     const onDown = (e: PointerEvent) => {
@@ -178,8 +180,8 @@ export function PaletteDropdown({
       if (t instanceof Element && t.closest('[data-tour-popover]')) return;
       setOpen(false);
     };
-    document.addEventListener('pointerdown', onDown);
-    return () => document.removeEventListener('pointerdown', onDown);
+    document.addEventListener('pointerdown', onDown, true);
+    return () => document.removeEventListener('pointerdown', onDown, true);
   }, [open]);
 
   // Position the menu while open, re-running on scroll / resize so it tracks
@@ -195,10 +197,15 @@ export function PaletteDropdown({
       const flipUp = below + menuH > window.innerHeight - EDGE && trig.top - gap - menuH > EDGE;
       const top = flipUp ? trig.top - gap - menuH : below;
       const base = { top, width: trig.width, flipUp };
+      // Kept on screen sideways too: a trigger near an edge (the strip on a
+      // phone, a palette dragged against the window) would otherwise carry a
+      // wide grid menu past it. Clamped once the menu has measured its width.
+      const menuW = menuRef.current?.offsetWidth ?? 0;
+      const maxInset = Math.max(EDGE, window.innerWidth - EDGE - menuW);
       setCoords(
         align === 'right'
-          ? { ...base, right: window.innerWidth - trig.right }
-          : { ...base, left: trig.left },
+          ? { ...base, right: Math.min(Math.max(EDGE, window.innerWidth - trig.right), maxInset) }
+          : { ...base, left: Math.min(Math.max(EDGE, trig.left), maxInset) },
       );
     };
     place();
@@ -320,6 +327,7 @@ export function PaletteDropdown({
               left: coords?.left,
               right: coords?.right,
               top: coords?.top ?? -9999,
+              maxWidth: `calc(100vw - ${EDGE * 2}px)`,
               // Use the trigger width as a FLOOR (so the menu reads as one
               // continuous column with it) but let it grow to fit the option
               // labels — clamping to the trigger width truncated names like

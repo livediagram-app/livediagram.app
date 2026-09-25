@@ -1,8 +1,6 @@
 import { computeDrawGuides } from '@/components/canvas/canvas-draw-guides';
 import { CanvasGuideOverlay } from '@/components/canvas/CanvasGuideOverlay';
 import { CanvasDrawPreview } from '@/components/canvas/CanvasDrawPreview';
-import { ActivityIcon, RedoIcon, UndoIcon } from '@/components/panels/ActivityPanel';
-import { LayersStackIcon } from '@/components/panels/layers-panel-icons';
 import { TopCenterChrome } from '@/components/chrome/TopCenterChrome';
 // Lazy-load TemplatePicker (1163 lines + its theme / share helpers)
 // the same way ExportTabDialog + ShareDialog already are. The picker
@@ -27,6 +25,8 @@ import { CanvasMobileDock } from '@/components/canvas/CanvasMobileDock';
 import { ToolbarPalette } from '@/components/palette/ToolbarPalette';
 import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handlers';
 import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
+import { LayersClusterButton } from '@/components/canvas/LayersClusterButton';
+import { ActivityClusterStrip } from '@/components/canvas/ActivityClusterStrip';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { Fragment, type Dispatch, type RefObject, type SetStateAction } from 'react';
 import type { DockAnchor, MobilePanel } from '@/hooks/canvas/useCanvasMobileDock';
@@ -34,6 +34,7 @@ import { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import { PanelSnapSlot } from '@/components/canvas/PanelSnapSlot';
 import { useCanvasChromePanels } from './useCanvasChromePanels';
 import { usePaletteDragGuides } from '@/hooks/canvas/usePaletteDragGuides';
+import { PhoneDockProvider } from '@/components/primitives/phone-dock-context';
 import { PANEL_CORNERS, PANEL_IDS, cornerBottomInset, type PanelCorner } from '@/lib/panel-layout';
 
 // Values the Canvas computes (selection projection + layout/dock/zoom
@@ -63,7 +64,7 @@ type ChromeExtras = {
   dockButtonRefs: RefObject<Record<string, HTMLButtonElement | null>>;
   activeDockAnchor: DockAnchor | null;
   setActiveDockAnchor: Dispatch<SetStateAction<DockAnchor | null>>;
-  handleDockButtonClick: (id: MobilePanel, ownButton?: HTMLElement) => void;
+  handleDockButtonClick: (id: MobilePanel, ownButton?: HTMLElement, above?: boolean) => void;
   handleZoomIn: () => void;
   handleZoomOut: () => void;
   handleSetZoom: (zoom: number) => void;
@@ -230,7 +231,11 @@ export function CanvasChrome(props: CanvasChromeProps) {
 
   // --- Corner docking (spec/63) — see useCornerDocking. ---
   const { isMobile, dock, dockLayerRef, cornerRefs, dockingActive, panelWiringFor } =
-    useCornerDocking({ minimalPanels: minimalPanels === true, zenMode: zenMode === true });
+    useCornerDocking({
+      minimalPanels: minimalPanels === true,
+      zenMode: zenMode === true,
+      toolbarLayout: toolbarLayout === true,
+    });
   // Alignment guides while a palette tile is being dragged in (spec/139):
   // the same faint lines a move shows, BEFORE the element exists. The hook
   // also publishes the snap the ghost + drop read, so all three agree.
@@ -263,19 +268,31 @@ export function CanvasChrome(props: CanvasChromeProps) {
     snapTargets,
   });
 
-  // Toolbar layout (spec/148) in force: desktop only, so a phone falls back
-  // to the dock whatever the preference says.
-  const toolbarActive = toolbarLayout === true && !isMobile;
+  // Toolbar layout (spec/148) in force: honoured on a phone too, where it
+  // replaces the dock's Palette + Explorer buttons.
+  const toolbarActive = toolbarLayout === true;
+  // The Explorer menu button: top-left on desktop, the far left of the strip
+  // on a phone (no room for both across the top). A read-only visitor has no
+  // strip, so it keeps the corner there.
+  const menuInStrip = isMobile && !readOnly;
+  const explorerMenuButton = (
+    <ToolbarExplorerButton
+      open={activeMobilePanel === 'explorer'}
+      onToggle={(button) => handleDockButtonClick('explorer', button)}
+      inline={menuInStrip}
+    />
+  );
 
   // Floating panel elements + their wiring live in useCanvasChromePanels.
-  const { panelEls, toolbarExplorerEl, paletteTint } = useCanvasChromePanels({
-    props,
-    chromeHidden,
-    isMobile,
-    dockingActive,
-    toolbarActive,
-    panelWiringFor,
-  });
+  const { panelEls, toolbarExplorerEl, toolbarClusterEls, clusterPopovers, paletteTint } =
+    useCanvasChromePanels({
+      props,
+      chromeHidden,
+      isMobile,
+      dockingActive,
+      toolbarActive,
+      panelWiringFor,
+    });
   // Bucketing keys off the persisted placement ONLY (not which panel is
   // mid-drag): a dragged panel must stay in the same DOM parent for the
   // whole gesture — reparenting it would remount the component and drop
@@ -318,7 +335,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
   ) : null;
 
   return (
-    <>
+    <PhoneDockProvider value={!toolbarActive}>
       {/* The empty-canvas hint is now a dismissible bottom banner
           (EmptyCanvasBanner), rendered by EditorView alongside the sign-in /
           theme banners rather than a centre-of-canvas card. */}
@@ -361,7 +378,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
       {/* Top-of-canvas floating chrome (spec/09): owner / role badge, the
           active editor-mode banner, multi-selection toolbar, session timer
           and vote banner — laid out as one non-overlapping stack. */}
-      <TopCenterChrome {...props} />
+      <TopCenterChrome {...props} toolbarLayout={toolbarActive} />
 
       {/* Toolbar layout (spec/148): the menu button stands where the
           Explorer would float and opens it as a popover (zen hides it, the
@@ -369,11 +386,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
           the Palette for edit sessions. */}
       {toolbarActive && !zenMode ? (
         <>
-          <ToolbarExplorerButton
-            open={activeMobilePanel === 'explorer'}
-            onToggle={(button) => handleDockButtonClick('explorer', button)}
-          />
+          {menuInStrip ? null : explorerMenuButton}
           {toolbarExplorerEl}
+          {toolbarClusterEls}
         </>
       ) : null}
       {toolbarActive && !readOnly ? (
@@ -391,12 +406,14 @@ export function CanvasChrome(props: CanvasChromeProps) {
           pendingDraw={pendingDraw}
           esBoard={props.esBoard}
           themeTint={paletteTint}
+          leading={menuInStrip ? explorerMenuButton : undefined}
         />
       ) : null}
 
       <CanvasMobileDock
         welcomeOpen={chromeHidden}
         minimalPanels={minimalPanels}
+        toolbarLayout={toolbarActive}
         readOnly={readOnly}
         hasCollaborate={props.commentRows.length > 0 || props.actionRows.length > 0}
         hasAi={!!aiPanel}
@@ -450,13 +467,11 @@ export function CanvasChrome(props: CanvasChromeProps) {
         </>
       )}
 
-      {/* Bottom dock. Order, left → right: the minimised Activity strip
-          (with inline Undo / Redo), the minimised Layers button, the
-          Theme & Canvas paintbrush, then the Zoom controls.
-          The Palette is banner-collapsed in place (spec/09)
-          so it's not in the dock cluster; the Explorer is hidden
-          on mobile entirely (spec/07) and uses banner-collapse on
-          desktop, so it's also not in the dock cluster. */}
+      {/* Bottom-right cluster. Order, left to right: the Activity strip
+          (with inline Undo / Redo), the Layers button, the Theme & Canvas
+          paintbrush, then the Zoom controls. Activity + Layers minimise into
+          their buttons in desktop Floating and open as popovers above them
+          everywhere else (clusterPopovers, spec/07). */}
       <div
         // Presenting hides this cluster (spec/31): zen keeps the zoom controls
         // as its one way back out, and a deck has its own way out plus no
@@ -467,82 +482,33 @@ export function CanvasChrome(props: CanvasChromeProps) {
         {welcomeOpen ? null : (
           <>
             {offscreenContent ? <OffscreenContentHint onBringBack={onFitToScreen} /> : null}
-            {!zenMode && activityMinimized && !readOnly ? (
-              // Collapsed Activity dock (editor sessions only): a strip
-              // with inline Undo / Redo so the most common history
-              // actions don't require reopening the panel. Leftmost of the
-              // dock pills (before Layers + Theme & Canvas). View-role
-              // visitors don't get this button at all: undo/redo and
-              // the audit trail aren't actionable for them, so the
-              // dock would just be dead chrome.
-              <div
-                onContextMenu={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                }}
-                className="pointer-events-auto flex animate-pop-in items-stretch overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
-              >
-                <Tooltip title="Open Tab Activity" description="Expand the Tab Activity panel.">
-                  <button
-                    type="button"
-                    onPointerDown={(e) => e.stopPropagation()}
-                    onClick={onToggleActivityMinimized}
-                    aria-label="Open Tab Activity"
-                    className="hidden h-11 w-11 items-center justify-center border-r border-slate-200 text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 sm:flex dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
-                  >
-                    <ActivityIcon />
-                  </button>
-                </Tooltip>
-                <Tooltip title="Undo" description="Undo last edit.">
-                  <button
-                    type="button"
-                    onPointerDown={(e) => e.stopPropagation()}
-                    onClick={onUndo}
-                    disabled={!canUndo}
-                    aria-label="Undo"
-                    className="flex h-11 w-11 items-center justify-center text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white dark:disabled:text-slate-600 dark:disabled:hover:bg-transparent"
-                  >
-                    <UndoIcon />
-                  </button>
-                </Tooltip>
-                <Tooltip title="Redo" description="Redo last undone edit.">
-                  <button
-                    type="button"
-                    onPointerDown={(e) => e.stopPropagation()}
-                    onClick={onRedo}
-                    disabled={!canRedo}
-                    aria-label="Redo"
-                    className="flex h-11 w-11 items-center justify-center border-l border-slate-100 text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white dark:disabled:text-slate-600 dark:disabled:hover:bg-transparent"
-                  >
-                    <RedoIcon />
-                  </button>
-                </Tooltip>
-              </div>
+            {/* Activity + Undo / Redo (spec/12): see ActivityClusterStrip. */}
+            {!zenMode && !readOnly && (clusterPopovers ? true : activityMinimized) ? (
+              <ActivityClusterStrip
+                popoverOpen={clusterPopovers && activeMobilePanel === 'activity'}
+                onExpand={onToggleActivityMinimized}
+                onTogglePopover={
+                  !clusterPopovers
+                    ? undefined
+                    : (button) => handleDockButtonClick('activity', button, true)
+                }
+                onUndo={onUndo}
+                onRedo={onRedo}
+                canUndo={canUndo}
+                canRedo={canRedo}
+              />
             ) : null}
-            {/* Collapsed Layers dock (spec/74): the panel ships minimised
-                into this one button, mirroring the Activity strip. Only in
-                the desktop docking layout — mobile / minimal reach Layers
-                through the CanvasMobileDock row instead. */}
-            {!zenMode && dockingActive && layersMinimized && !readOnly ? (
-              <div
-                onContextMenu={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                }}
-                className="pointer-events-auto hidden animate-pop-in items-stretch overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 sm:flex dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
-              >
-                <Tooltip title="Open Layers" description="Expand the Layers panel.">
-                  <button
-                    type="button"
-                    onPointerDown={(e) => e.stopPropagation()}
-                    onClick={onToggleLayersMinimized}
-                    aria-label="Open Layers"
-                    className="flex h-11 w-11 items-center justify-center text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
-                  >
-                    <LayersStackIcon />
-                  </button>
-                </Tooltip>
-              </div>
+            {/* Layers (spec/74): see LayersClusterButton. */}
+            {!zenMode && !readOnly && (clusterPopovers ? true : layersMinimized) ? (
+              <LayersClusterButton
+                popoverOpen={clusterPopovers && activeMobilePanel === 'layers'}
+                onExpand={onToggleLayersMinimized}
+                onTogglePopover={
+                  !clusterPopovers
+                    ? undefined
+                    : (button) => handleDockButtonClick('layers', button, true)
+                }
+              />
             ) : null}
             {/* Theme & Canvas dock button (spec/42): the paintbrush right of
                 the Layers dock opens the CanvasThemeDialog — the same modal
@@ -588,10 +554,11 @@ export function CanvasChrome(props: CanvasChromeProps) {
               // View-only visitors have no palette (so no canvas-tool
               // dropdown); the dock keeps the enter button for them.
               zenEnterHere={readOnly}
+              pinchOnly={isMobile}
             />
           </>
         )}
       </div>
-    </>
+    </PhoneDockProvider>
   );
 }

@@ -238,6 +238,11 @@ canvas pattern to Dots`, `Changed background opacity to 80%`. A
 
 - Same shape language as Explorer / Palette: floating
   `MovablePanel`, default bottom-left, minimisable to a dock button.
+- **Its button lives in the bottom-right cluster**, with inline Undo /
+  Redo, in every layout (`ActivityClusterStrip`). In desktop Floating the
+  panel minimises into it and the button expands it. In every other
+  layout (Minimal, Toolbar, any phone) the button opens the panel as a
+  popover hanging above it, like Layers (spec/74, spec/07).
 - **Scoped to the active tab.** The panel only renders entries whose
   `tab_id` matches the currently visible tab; switching tabs swaps
   the log. The server still stores every entry under the diagram

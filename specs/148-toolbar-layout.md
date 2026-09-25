@@ -4,8 +4,8 @@ Status: shipped
 
 ## What
 
-A third desktop panel layout, next to **Floating** (the default) and
-**Minimal** (spec/09). The Palette becomes a single horizontal strip pinned
+A third panel layout, next to **Floating** (the default) and **Minimal**
+(spec/09). It works on a phone too (see "On a phone"). The Palette becomes a single horizontal strip pinned
 to the top centre of the canvas, the way Excalidraw's tool bar works:
 
 ```
@@ -61,11 +61,23 @@ popover path (`handleDockButtonClick` with the button passed as its own
 anchor, `computeDockAnchor(..., 'button')`), so the popover hangs from the
 button's left edge instead of tucking against the right like the dock's do.
 
-Every other panel (Layers, Activity, Collaborate, AI, the minimap, Poll,
-Vote and the tool panels) behaves exactly as in **Floating**: they dock in
-their corners, and Layers is a button in the bottom row that toggles its
-panel open and minimised. Toolbar is Floating with the Palette and Explorer
-swapped out, not a variant of Minimal.
+Layers and Activity open as **popovers over their bottom-row buttons**, as
+in Minimal (spec/07): they are not corner panels here. Every other panel
+(Collaborate, AI, the minimap, Poll, Vote and the tool panels) behaves exactly
+as in **Floating**, docking in its corner. Layers and Activity render outside
+the corner layer in this layout, since a popover positions against the
+canvas and a corner stack would move it.
+
+## One menu at a time
+
+The strip's menus (selection mode, category, More) and the Explorer popover
+are menus: opening one closes whichever other is open, and a press anywhere
+outside closes it. The strip stops `pointerdown` from reaching the canvas, so
+their outside-press listeners run in the capture phase, before that. The
+Explorer popover gets the same (`dismissOnOutside`), and so do the Layers and
+Activity popovers in every layout that has them (spec/07). The Minimal dock's
+top-right popovers on desktop deliberately don't. The strip's dropdown menus are kept
+on screen sideways as well as vertically, whatever the trigger's position.
 
 ## The setting
 
@@ -78,14 +90,33 @@ replaces the Minimal Panel Layout toggle.
 - Writing it also writes `minimalPanels = layout === 'minimal'`, so any
   reader of the old flag (and an older client on another device) shows the
   toolbar layout as Floating, whose panels it keeps.
-- Telemetry: `UI`/`Changed`/`PanelLayout` (a choice row, spec/22).
+- Telemetry: `UI`/`Changed` with the layout picked in the type,
+  `PanelLayoutFloating` / `PanelLayoutMinimal` / `PanelLayoutToolbar` (a
+  choice row, spec/22), whether picked from the radios or the pictures.
 
-## Desktop only
+## On a phone
 
-Below `sm` the toolbar layout falls back to the mobile dock, the same rule
-as the other two: mobile is always docked. A strip of ten 36px tiles does not
-fit a phone. So on a phone-sized viewport the Settings row greys out Floating
-and Toolbar and says they are desktop only (spec/20).
+Toolbar works below `sm` too, and a phone in Toolbar gets the desktop
+chrome rather than the mobile dock (spec/07): no top-right button bar, panels
+in their corners, Layers and Activity as popovers over their bottom-row
+buttons. Only
+Floating is still desktop only; on a phone it falls back to the button bar,
+and the Settings row greys it out (spec/20). What changes to fit the width:
+
+- **The menu button moves into the strip**, at its far left, before the
+  selection mode. There is no room for a corner button and a strip side by
+  side, and the strip needs the whole top row.
+- **The category picker is icon-only**, like the selection mode.
+- **The tile count follows the width** (`phoneStripTileLimit`): whatever fits
+  between 12px gutters once the menu button, the two pickers, More and the
+  card's padding are paid for, at least three. Three on a 390px phone, four
+  from about 410px. More holds the rest.
+- **More spans the screen** between the gutters instead of hanging from its
+  button.
+- **Zoom drops − and +** (`pinchOnly`), as on every phone (spec/07). Fit
+  stays.
+- Read-only visitors have no strip, so their menu button stays top-left.
+- The minimap stays off, as in every phone layout (spec/59).
 
 ## The setting's pictures
 
@@ -139,7 +170,8 @@ ringed, so the difference is visible before switching (spec/20).
 
 - **The strip opens on Favourites every time**, like the floating Palette
   (spec/78). It does not remember the last category across diagrams.
-- **Ten tiles is enough.** The strip does not adapt to the window width.
+- **Ten tiles is enough** on desktop: the strip does not adapt to the
+  window width there. A phone's strip does (see "On a phone").
 - **Undo / Redo stay where they are**, in the bottom-right dock.
 - **The category picker stays on the bar**, left of the tiles. Folding it
   into More (a category list, then the category behind a BackBar) was tried
@@ -147,12 +179,13 @@ ringed, so the difference is visible before switching (spec/20).
   switch.
 - **The menu button opens the Explorer**, not a menu of its own (an earlier
   cut had New / Recent / Search / Settings entries).
-- **The other panels follow Floating**, not Minimal: Layers is a bottom-row
-  button that toggles its panel, rather than a top-right dock popover.
+- **The other panels follow Floating**, not Minimal: they dock in their
+  corners rather than behind a top-right button bar. Layers and Activity are
+  the exception, popovers over their bottom-row buttons as in Minimal.
 
 ## Help
 
 The [Toolbar Layout](/help/palette/toolbar-layout/) article (Palette →
-Palette Settings) explains the strip, More, the menu button and the phone
-fallback, with two figures. The Panel Layout settings row links to it, and it
+Palette Settings) explains the strip, More, the menu button and how it
+fits a phone, with two figures. The Panel Layout settings row links to it, and it
 links on to Minimal Panels.

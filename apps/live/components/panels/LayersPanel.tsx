@@ -43,6 +43,7 @@ export function LayersPanel({
   mobileOpenOverride,
   mobileDockAnchor,
   forceDockMode,
+  dismissOnOutside,
   onMobileClose,
   onSelectLayer,
   onAddLayer,
@@ -70,6 +71,8 @@ export function LayersPanel({
   tabFont?: string;
   onMinimize: () => void;
   forceDockMode?: boolean;
+  // Close the popover on a press outside it (see MovablePanelPlacementProps).
+  dismissOnOutside?: boolean;
   onMobileClose?: () => void;
   onSelectLayer: (layerId: string) => void;
   onAddLayer: () => void;
@@ -211,6 +214,7 @@ export function LayersPanel({
       mobileOpenOverride={mobileOpenOverride}
       mobileDockAnchor={mobileDockAnchor}
       forceDockMode={forceDockMode}
+      dismissOnOutside={dismissOnOutside}
       onMobileClose={onMobileClose}
     >
       <div className="px-2 pb-2">

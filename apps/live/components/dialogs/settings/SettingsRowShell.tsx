@@ -21,6 +21,12 @@ export function SettingsRowShell({
   illustrationActive = false,
   // Choice rows: the option in force, which their drawing rings instead.
   illustrationValue,
+  // Clicking a state of the drawing sets it, the way clicking the picture of
+  // what you want is the obvious move: a toggle row's half, a choice row's
+  // option (minus the ones it can't pick right now).
+  onIllustrationToggle,
+  onIllustrationChoose,
+  illustrationDisabled,
   // A short info line between the card and the footnote, for a row whose
   // options are limited right now (the desktop-only panel layouts on a
   // phone). Not part of the description, which says what the setting IS.
@@ -39,6 +45,9 @@ export function SettingsRowShell({
   control?: ReactNode;
   illustrationActive?: boolean;
   illustrationValue?: string;
+  onIllustrationToggle?: (on: boolean) => void;
+  onIllustrationChoose?: (value: string) => void;
+  illustrationDisabled?: readonly string[];
   notice?: ReactNode;
   wrapper?: (children: ReactNode) => ReactNode;
 }) {
@@ -68,6 +77,9 @@ export function SettingsRowShell({
           id={row.illustration}
           active={illustrationActive}
           value={illustrationValue}
+          onToggle={onIllustrationToggle}
+          onChoose={onIllustrationChoose}
+          disabledValues={illustrationDisabled}
         />
       ) : null}
       {notice ? (

@@ -6,6 +6,7 @@ import type { SaveStatus } from '@/components/chrome/EditorHeader';
 import { TrashIcon } from '@/components/panels/explorer-icons';
 import { MovablePanel, type MovablePanelDockProps } from '@/components/primitives/MovablePanel';
 import { Tooltip } from '@/components/primitives/Tooltip';
+import type { DockAnchor } from '@/lib/canvas-chrome';
 import {
   ActivityRow,
   RedoIcon,
@@ -67,6 +68,14 @@ type ActivityPanelProps = {
   onToggleMinimized: () => void;
   // Corner-docking bundle (spec/63), forwarded to the inner MovablePanel.
   dock?: MovablePanelDockProps;
+  // Dock layouts (minimal, or a phone outside Toolbar): the panel is a
+  // popover over the cluster's Activity button, open while the dock has it.
+  mobileOpenOverride?: boolean;
+  mobileDockAnchor?: DockAnchor;
+  forceDockMode?: boolean;
+  // Close the popover on a press outside it (see MovablePanelPlacementProps).
+  dismissOnOutside?: boolean;
+  onMobileClose?: () => void;
 };
 
 // Floating "Activity" panel — per-diagram audit of every edit, with a
@@ -96,6 +105,11 @@ function ActivityPanelImpl({
   onReset,
   onToggleMinimized,
   dock,
+  mobileOpenOverride,
+  mobileDockAnchor,
+  forceDockMode,
+  dismissOnOutside,
+  onMobileClose,
 }: ActivityPanelProps) {
   if (minimized) return null;
   return (
@@ -108,6 +122,11 @@ function ActivityPanelImpl({
       onReset={onReset}
       onMoveTo={onMoveTo}
       {...dock}
+      mobileOpenOverride={mobileOpenOverride}
+      mobileDockAnchor={mobileDockAnchor}
+      forceDockMode={forceDockMode}
+      dismissOnOutside={dismissOnOutside}
+      onMobileClose={onMobileClose}
       onMinimize={onToggleMinimized}
       headerExtra={<SaveStatusBadge status={saveStatus} savedAt={savedAt} />}
     >

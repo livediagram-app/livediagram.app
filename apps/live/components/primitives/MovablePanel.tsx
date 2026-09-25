@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useClickOutside } from '@/hooks/ui/useClickOutside';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { MOBILE_BREAKPOINT_PX, isMobileViewportSync } from '@/lib/responsive';
+import { usePhoneDock } from './phone-dock-context';
 
 // The corner-docking props bundle (spec/63). CanvasChrome builds one of
 // these per panel when docking is active and panel wrappers spread it
@@ -44,6 +45,7 @@ export function MovablePanel({
   defaultCollapsed = false,
   mobileOpenOverride,
   forceDockMode = false,
+  dismissOnOutside = false,
   onMobileClose,
   mobileDockAnchor,
   flushTop = false,
@@ -112,17 +114,20 @@ export function MovablePanel({
   });
 
   // forceDockMode extends mobile dock behaviour to desktop (minimal panel preference).
-  const dockActive = isMobile || forceDockMode;
+  // A phone under the Toolbar layout has no dock (usePhoneDock).
+  const layoutDocksOnPhone = usePhoneDock();
+  const phoneDock = isMobile && layoutDocksOnPhone;
+  const dockActive = phoneDock || forceDockMode;
   const dockControlledOpen = dockActive && mobileOpenOverride === true;
   // Dock-controlled: hide when not active, force open when active.
   const effectiveCollapsed = dockControlledOpen ? false : collapsed;
 
-  // Outside-tap auto-close. Active only on actual mobile, where the
-  // small viewport makes tap-away-to-dismiss expected. On DESKTOP the
-  // user is in control of when to close — including the minimal-layout
-  // dock (forceDockMode): a desktop user clicking the canvas to work
-  // shouldn't lose their panel, so they toggle the dock button again
-  // to close it. Also disabled while the parent has locked the panel
+  // Outside-tap auto-close. On a phone's dock, where the small viewport
+  // makes tap-away-to-dismiss expected, and for a popover that opts in with
+  // `dismissOnOutside` (the Toolbar Explorer, the Layers / Activity cluster
+  // popovers: menus off a button). Otherwise a desktop dock popover
+  // (the minimal layout's top-right bar) stays until its button is toggled,
+  // so a click on the canvas to work doesn't lose it. Also disabled while the parent has locked the panel
   // open — the outside-tap is most often a child portal-menu item
   // (Rename, Delete) and treating that as "dismiss the panel" hides
   // the rename input the same tap is about to mount.
@@ -135,16 +140,19 @@ export function MovablePanel({
         setCollapsed(true);
       }
     },
-    isMobile &&
-      (dockControlledOpen ||
-        (collapsible && !effectiveCollapsed && mobileOpenOverride === undefined)),
+    (dismissOnOutside && dockControlledOpen) ||
+      (phoneDock &&
+        (dockControlledOpen ||
+          (collapsible && !effectiveCollapsed && mobileOpenOverride === undefined))),
     // The tour popover (spec/79) is always "inside": it sits next to the
     // panel it's explaining, so tapping its Next button must not dismiss
-    // that panel out from under the highlight.
+    // that panel out from under the highlight. A popover's own portalled
+    // menus and confirms (a layer's row menu, Delete's confirm) are inside
+    // too, or choosing from one would close the popover under it.
     dockControlledOpen
       ? outsideExceptSelector
-        ? `[data-mobile-dock],[data-tour-popover],${outsideExceptSelector}`
-        : '[data-mobile-dock],[data-tour-popover]'
+        ? `[data-mobile-dock],[data-tour-popover],[role="menu"],[role="dialog"],${outsideExceptSelector}`
+        : '[data-mobile-dock],[data-tour-popover],[role="menu"],[role="dialog"]'
       : outsideExceptSelector
         ? `[data-tour-popover],${outsideExceptSelector}`
         : '[data-tour-popover]',
@@ -244,13 +252,27 @@ export function MovablePanel({
           e.preventDefault();
           e.stopPropagation();
         }}
-        style={anchor ? { top: anchor.top + 12, left: anchor.left } : { top: 56, right: 12 }}
+        style={
+          anchor?.bottom !== undefined
+            ? {
+                bottom: anchor.bottom + 12,
+                left: anchor.left,
+                maxHeight: `calc(100% - ${anchor.bottom + 24}px)`,
+              }
+            : anchor
+              ? { top: anchor.top + 12, left: anchor.left }
+              : { top: 56, right: 12 }
+        }
         className="pointer-events-auto absolute z-[var(--z-toolbar)] flex w-64 max-w-[calc(100vw-2rem)] cursor-default flex-col rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 transition-opacity duration-150 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40"
       >
         {anchor ? (
           <div
             style={{ left: anchor.arrowOffset - 7 }}
-            className="absolute -top-[7px] h-3.5 w-3.5 rotate-45 rounded-tl-sm border-l border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900"
+            className={`absolute h-3.5 w-3.5 rotate-45 border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 ${
+              anchor.bottom !== undefined
+                ? '-bottom-[7px] rounded-br-sm border-b border-r'
+                : '-top-[7px] rounded-tl-sm border-l border-t'
+            }`}
           />
         ) : null}
         {/* The minimal/mobile popover has no draggable title row, so the
@@ -271,7 +293,7 @@ export function MovablePanel({
             </div>
           ) : null}
         </div>
-        <div className={`overflow-y-auto overflow-x-hidden ${flushTop ? '' : 'pt-2'}`}>
+        <div className={`min-h-0 overflow-y-auto overflow-x-hidden ${flushTop ? '' : 'pt-2'}`}>
           {children}
         </div>
       </div>

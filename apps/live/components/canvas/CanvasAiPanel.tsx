@@ -5,6 +5,7 @@ import { MovablePanel } from '@/components/primitives/MovablePanel';
 import type { UserPreferences } from '@/lib/user-preferences';
 import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import type { CanvasProps } from './Canvas.types';
+import type { DockAnchor } from '@/lib/canvas-chrome';
 
 // The floating AI Assistant panel (spec/25 + /63 docking), lifted out
 // of useCanvasChromePanels: the MovablePanel shell with the settings
@@ -28,7 +29,7 @@ export function CanvasAiPanel({
   settings: UserPreferences;
   minimalPanels: boolean;
   activeMobilePanel: string | null;
-  activeDockAnchor: { left: number; top: number; arrowOffset: number } | undefined;
+  activeDockAnchor: DockAnchor | undefined;
   onMobileClose: () => void;
 }) {
   return (

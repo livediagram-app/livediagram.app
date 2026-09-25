@@ -23,6 +23,9 @@ type ZoomControlsProps = {
   onToggleZen?: () => void;
   zenActive?: boolean;
   zenEnterHere?: boolean;
+  // A phone (spec/07): the cluster also carries Activity + Layers there, so
+  // the step buttons go (pinch zooms) and Fit stays.
+  pinchOnly?: boolean;
 };
 
 // Floating zoom controls, bottom-right of the canvas. Three
@@ -41,6 +44,7 @@ export function ZoomControls({
   onToggleZen,
   zenActive,
   zenEnterHere,
+  pinchOnly = false,
 }: ZoomControlsProps) {
   return (
     <div
@@ -52,51 +56,57 @@ export function ZoomControls({
       }}
       className="pointer-events-auto flex items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/5 dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-950/40"
     >
-      <Tooltip title="Zoom out" description="Zoom out by 10%.">
-        <IconButton onClick={onZoomOut} label="Zoom out">
-          <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
-            <line
-              x1="3"
-              y1="7"
-              x2="11"
-              y2="7"
-              stroke="currentColor"
-              strokeWidth="1.75"
-              strokeLinecap="round"
-            />
-          </svg>
-        </IconButton>
-      </Tooltip>
+      {pinchOnly ? null : (
+        <Tooltip title="Zoom out" description="Zoom out by 10%.">
+          <IconButton onClick={onZoomOut} label="Zoom out">
+            <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
+              <line
+                x1="3"
+                y1="7"
+                x2="11"
+                y2="7"
+                stroke="currentColor"
+                strokeWidth="1.75"
+                strokeLinecap="round"
+              />
+            </svg>
+          </IconButton>
+        </Tooltip>
+      )}
       <ZoomMenu zoom={zoom} onSetZoom={onSetZoom} onFitToScreen={onFitToScreen} />
-      <Tooltip title="Zoom in" description="Zoom in by 10%.">
-        <IconButton onClick={onZoomIn} label="Zoom in">
-          <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
-            <line
-              x1="3"
-              y1="7"
-              x2="11"
-              y2="7"
-              stroke="currentColor"
-              strokeWidth="1.75"
-              strokeLinecap="round"
-            />
-            <line
-              x1="7"
-              y1="3"
-              x2="7"
-              y2="11"
-              stroke="currentColor"
-              strokeWidth="1.75"
-              strokeLinecap="round"
-            />
-          </svg>
-        </IconButton>
-      </Tooltip>
+      {pinchOnly ? null : (
+        <Tooltip title="Zoom in" description="Zoom in by 10%.">
+          <IconButton onClick={onZoomIn} label="Zoom in">
+            <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
+              <line
+                x1="3"
+                y1="7"
+                x2="11"
+                y2="7"
+                stroke="currentColor"
+                strokeWidth="1.75"
+                strokeLinecap="round"
+              />
+              <line
+                x1="7"
+                y1="3"
+                x2="7"
+                y2="11"
+                stroke="currentColor"
+                strokeWidth="1.75"
+                strokeLinecap="round"
+              />
+            </svg>
+          </IconButton>
+        </Tooltip>
+      )}
       {/* Mobile-only Fit: below `sm` the percentage button (whose click
           is Fit on desktop) is hidden, and hover popovers don't exist on
           touch, so a plain Fit button keeps the action reachable. */}
       <span className="contents sm:hidden">
-        <div className="mx-0.5 h-6 w-px bg-slate-200 dark:bg-slate-700" aria-hidden />
+        {pinchOnly ? null : (
+          <div className="mx-0.5 h-6 w-px bg-slate-200 dark:bg-slate-700" aria-hidden />
+        )}
         <Tooltip title="Fit to screen" description="Pan and zoom so everything on the tab fits.">
           <button
             type="button"

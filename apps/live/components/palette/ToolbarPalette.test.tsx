@@ -144,9 +144,9 @@ describe('ToolbarPalette', () => {
       );
     rerender(true);
     const root = document.querySelector('[data-toolbar-palette]') as HTMLElement;
-    expect(root.className).not.toContain('sm:flex');
+    expect(root.classList.contains('hidden')).toBe(true);
     rerender(false);
-    expect(root.className).toContain('sm:flex');
+    expect(root.classList.contains('hidden')).toBe(false);
     expect(screen.getByRole('button', { name: 'Palette category' }).textContent).toContain(
       'Devices',
     );

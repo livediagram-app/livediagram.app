@@ -24,6 +24,7 @@ export function SettingsRow({
     <SettingsRowShell
       row={row}
       illustrationActive={checked}
+      onIllustrationToggle={onChange}
       wrapper={(children) => (
         // The whole row is the target, so the button carries role=switch and
         // the ToggleSwitch is the picture of that state. `presentational`

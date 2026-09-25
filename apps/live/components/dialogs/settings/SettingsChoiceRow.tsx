@@ -39,6 +39,8 @@ export function SettingsChoiceRow({
     <SettingsRowShell
       row={row}
       illustrationValue={value}
+      onIllustrationChoose={onChange}
+      illustrationDisabled={options.filter((o) => o.disabled).map((o) => o.id)}
       notice={notice}
       control={
         <span

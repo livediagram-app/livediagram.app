@@ -92,12 +92,12 @@ export function SettingsCategoryPane({
               limited
                 ? `${joinLabels(desktopOnly.map((o) => o.label))} ${
                     desktopOnly.length === 1 ? 'is' : 'are'
-                  } desktop only. On a phone the panels always use the button bar.`
+                  } desktop only. On a phone it uses the button bar instead.`
                 : undefined
             }
             value={row.read(settings)}
             onChange={(next) => {
-              track(row.event.category, 'Changed', row.event.changed);
+              track(row.event.category, 'Changed', choiceTelemetryType(row.event.changed, next));
               onChange(row.write(settings, next));
             }}
           />
@@ -174,6 +174,15 @@ function AppearanceRow({ row }: { row: SettingsAppearanceRowSpec }) {
       onChange={(next) => set(next as AppearanceSetting)}
     />
   );
+}
+
+// A choice row's telemetry type carries the option picked, as a toggle's
+// carries its new state (spec/22): 'PanelLayout' + 'toolbar' →
+// 'PanelLayoutToolbar', so the dashboard shows which way people moved, not
+// just that they touched the setting. Option ids are catalogue constants,
+// never user content.
+function choiceTelemetryType(changed: string, optionId: string): string {
+  return `${changed}${optionId.charAt(0).toUpperCase()}${optionId.slice(1)}`;
 }
 
 // "Floating", "Floating and Toolbar", "A, B and C".

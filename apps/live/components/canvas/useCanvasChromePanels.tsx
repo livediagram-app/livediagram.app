@@ -68,6 +68,12 @@ export function useCanvasChromePanels({
   // The Explorer, when it belongs to the Toolbar layout's menu button rather
   // than to a corner (then panelEls.explorer is null).
   toolbarExplorerEl: ReactNode;
+  // Activity + Layers in the Toolbar layout: popovers over their cluster
+  // buttons, rendered outside the corner layer (then their panelEls are null).
+  toolbarClusterEls: ReactNode;
+  // True when Layers + Activity open as popovers over their cluster buttons
+  // (every layout but desktop Floating).
+  clusterPopovers: boolean;
   paletteTint: ReturnType<typeof usePaletteChrome>['paletteTint'];
 } {
   const {
@@ -328,6 +334,7 @@ export function useCanvasChromePanels({
       mobileDockAnchor={activeDockAnchor ?? undefined}
       // Toolbar layout: a popover under the menu button, the dock's path.
       forceDockMode={!!minimalPanels || toolbarActive}
+      dismissOnOutside={toolbarActive}
       onMobileClose={closeMobilePanel}
     />
   );
@@ -366,10 +373,18 @@ export function useCanvasChromePanels({
       />
     ) : null;
 
+  // Layers + Activity open as popovers over their bottom-right cluster
+  // buttons in the dock layouts (minimal, a phone outside Toolbar) and in
+  // Toolbar (spec/148); only the desktop Floating layout docks them as
+  // corner panels that minimise into those buttons.
+  const clusterPopovers = !dockingActive || toolbarActive;
+
   const activityEl = chromeHidden ? null : (
     <ActivityPanel
       position={activityWiring.position}
-      minimized={activityMinimized}
+      // As a popover there is no minimised panel to expand: the cluster
+      // button opens it (mobileOpenOverride) instead.
+      minimized={clusterPopovers ? false : activityMinimized}
       tabLocked={tabLocked}
       entries={changeLog}
       loading={changeLogLoading}
@@ -388,18 +403,24 @@ export function useCanvasChromePanels({
       savedAt={savedAt}
       onMoveTo={activityHandlers.onMoveActivity}
       onReset={activityWiring.onReset}
-      dock={activityWiring.dock}
+      dock={clusterPopovers ? undefined : activityWiring.dock}
       onToggleMinimized={activityHandlers.onToggleActivityMinimized}
+      mobileOpenOverride={clusterPopovers ? activeMobilePanel === 'activity' : undefined}
+      mobileDockAnchor={activeDockAnchor ?? undefined}
+      forceDockMode={clusterPopovers}
+      // A press on the canvas (anywhere outside) puts the popover away.
+      dismissOnOutside={clusterPopovers}
+      onMobileClose={closeMobilePanel}
     />
   );
 
   // Layers panel (spec/74). Edit sessions only (a viewer can't manage
   // layers; visibility / lock still shape what they see via the render
-  // path). Desktop: hidden while minimised into its bottom-right dock
-  // button. Mobile / minimal: always mounted so the dock button can pop
-  // it open (mobileOpenOverride gates the actual render).
+  // path). Floating: hidden while minimised into its bottom-right cluster
+  // button. As a popover (clusterPopovers): always mounted so that button can
+  // pop it open (mobileOpenOverride gates the actual render).
   const layersEl =
-    !chromeHidden && !readOnly && (isMobile || minimalPanels ? true : !layersMinimized) ? (
+    !chromeHidden && !readOnly && (clusterPopovers ? true : !layersMinimized) ? (
       <LayersPanel
         layers={layers}
         tabFont={props.tabFont}
@@ -409,11 +430,12 @@ export function useCanvasChromePanels({
         position={layersWiring.position}
         onMoveTo={onMoveLayersPanel}
         onReset={layersWiring.onReset}
-        dock={layersWiring.dock}
+        dock={clusterPopovers ? undefined : layersWiring.dock}
         onMinimize={onToggleLayersMinimized}
         mobileOpenOverride={activeMobilePanel === 'layers'}
         mobileDockAnchor={activeDockAnchor ?? undefined}
-        forceDockMode={!!minimalPanels}
+        forceDockMode={clusterPopovers}
+        dismissOnOutside={clusterPopovers}
         onMobileClose={closeMobilePanel}
         onSelectLayer={onSelectLayer}
         onAddLayer={onAddLayer}
@@ -556,9 +578,9 @@ export function useCanvasChromePanels({
     palette: paletteEl,
     collaborate: collaborateEl,
     ai: aiEl,
-    activity: activityEl,
+    activity: toolbarActive ? null : activityEl,
     minimap: minimapEl,
-    layers: layersEl,
+    layers: toolbarActive ? null : layersEl,
     poll: pollEl,
     vote: voteEl,
     avatar: avatarEl,
@@ -569,5 +591,18 @@ export function useCanvasChromePanels({
     'slide-deck': slideDeckEl,
     format: formatEl,
   };
-  return { panelEls, toolbarExplorerEl: toolbarActive ? explorerEl : null, paletteTint };
+  return {
+    panelEls,
+    toolbarExplorerEl: toolbarActive ? explorerEl : null,
+    // Toolbar's cluster popovers, rendered beside the corner layer rather than
+    // in it (see panelEls).
+    toolbarClusterEls: toolbarActive ? (
+      <>
+        {activityEl}
+        {layersEl}
+      </>
+    ) : null,
+    clusterPopovers,
+    paletteTint,
+  };
 }

@@ -63,6 +63,7 @@ function ExplorerImpl({
   onMobileClose,
   mobileDockAnchor,
   forceDockMode,
+  dismissOnOutside,
   recentExcludedIds,
   onToggleRecentExclusion,
   favouriteIds,
@@ -317,6 +318,7 @@ function ExplorerImpl({
       onMobileClose={onMobileClose}
       mobileDockAnchor={mobileDockAnchor}
       forceDockMode={forceDockMode}
+      dismissOnOutside={dismissOnOutside}
       // Mobile auto-collapse fires on any tap outside the panel's
       // DOM. Ellipsis menus (PortalMenu, role="menu") and confirm
       // modals (ConfirmDialog, role="dialog") render via React
