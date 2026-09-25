@@ -147,9 +147,20 @@ function release(_h: Harness, dx: number, dy: number) {
 beforeEach(() => {
   setLanePreview(null);
   setInsertionSlot(null);
+  // The drag coalesces pointermove commits to one per animation frame (see
+  // useEditorDrag), so a dispatched move lands a frame later. These tests are
+  // about WHAT a move does, not when it is scheduled, so the frame runs
+  // synchronously here. The scheduling is covered by
+  // useEditorDrag.coalescing.test.tsx.
+  vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => {
+    cb(performance.now());
+    return 0;
+  });
+  vi.stubGlobal('cancelAnimationFrame', () => {});
 });
 afterEach(() => {
   cleanup();
+  vi.unstubAllGlobals();
   setLanePreview(null);
   setInsertionSlot(null);
 });

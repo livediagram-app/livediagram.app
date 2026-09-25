@@ -149,9 +149,22 @@ function release(_h: Harness, dx: number, dy: number) {
 // From (0, 0) onto the event's BEFORE face, a few px shy of exact.
 const TO_FACE = { dx: FACE.x + 6, dy: FACE.y + 6 };
 
-beforeEach(() => setDockCandidate(null));
+beforeEach(() => {
+  setDockCandidate(null);
+  // The drag coalesces pointermove commits to one per animation frame (see
+  // useEditorDrag), so a dispatched move lands a frame later. These tests are
+  // about WHAT a move does, not when it is scheduled, so the frame runs
+  // synchronously here. The scheduling is covered by
+  // useEditorDrag.coalescing.test.tsx.
+  vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => {
+    cb(performance.now());
+    return 0;
+  });
+  vi.stubGlobal('cancelAnimationFrame', () => {});
+});
 afterEach(() => {
   cleanup();
+  vi.unstubAllGlobals();
   setDockCandidate(null);
   vi.mocked(track).mockClear();
 });
