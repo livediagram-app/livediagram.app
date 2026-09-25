@@ -234,7 +234,7 @@ export const ALL_VISITORS: MetricStack = {
   stack: true,
   title: 'All Visitors',
   blurb:
-    'Every browser that opened the app: first-timers and those back on a later day, counted once per day each, with the returners split by sign-in.',
+    'Browser-days: a first visit, or a browser back on a later day, each counted once per day. Over a week someone back on five days counts five times, so this is visits, not people. Returners split by sign-in.',
   members: [NEW_VISITORS, RETURNING_VISITORS, RETURNING_GUESTS, RETURNING_SIGNED_IN],
   // The split is part of Returning Visitors, so it stays out of the total.
   headline: [NEW_VISITORS, RETURNING_VISITORS],

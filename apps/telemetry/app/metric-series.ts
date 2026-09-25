@@ -64,6 +64,12 @@ export const isStack = (item: MetricGroupItem): item is MetricStack => 'stack' i
  * subset or a second view of the same events is never added twice. Null when
  * a count it needs is missing (no earlier span to compare against).
  */
+/** Which members (same order as `members`) the head's number sums. */
+export function headlineMembers(stack: MetricStack): boolean[] {
+  const headline = stack.headline === undefined ? null : [stack.headline].flat();
+  return stack.members.map((m) => headline === null || headline.includes(m));
+}
+
 export function headlineTotal(
   stack: MetricStack,
   counts: readonly (number | null)[],

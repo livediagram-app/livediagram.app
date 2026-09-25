@@ -11,7 +11,7 @@ export const JUST_DRAW = chart(
   'UI',
   'Used',
   'Just Draw',
-  'Straight to a blank canvas from the site header, skipping the wizard.',
+  'Straight to a blank canvas, skipping the wizard: the Just Draw shortcut into /new, or Just Draw in the template picker.',
   { types: ['JustDraw'] },
 );
 
@@ -19,7 +19,7 @@ export const TEMPLATE_LINKS = chart(
   'UI',
   'Used',
   'Template Links',
-  'A diagram started from a template link.',
+  'A diagram made straight from a template link into /new, skipping the wizard.',
   { types: ['TemplateLink'] },
 );
 
@@ -57,11 +57,16 @@ export const TABS_CLEARED = chart(
   'Tab',
   'Cleared',
   'Tabs Cleared',
-  'Everything on a tab removed at once.',
-  { rising: 'neutral' },
+  'Everything on a tab removed at once. (A discarded vote, also sent as Tab·Cleared, is Votes Discarded.)',
+  { typeIn: (t) => t === null, rising: 'neutral' },
 );
 
-export const TABS_LINKED = chart('Tab', 'Linked', 'Tabs Linked', 'A link to another tab added.');
+export const TABS_LINKED = chart(
+  'Tab',
+  'Linked',
+  'Tabs Linked',
+  'A tab linked into another diagram, so both diagrams share it and edits in either show in both.',
+);
 
 export const TABS_LOCKED = chart(
   'Tab',
@@ -169,7 +174,8 @@ export const EXPORTS: Metric = {
 export const DIAGRAM_ACTIONS: MetricStack = {
   stack: true,
   title: 'Diagram Actions',
-  blurb: 'Diagrams opened, made, renamed, deleted and duplicated.',
+  blurb:
+    'Diagrams opened, made, renamed, deleted and duplicated, and how they were started. A Just Draw or template link also counts as Created, so the total leaves those two out.',
   members: [
     DIAGRAMS_LOADED,
     DIAGRAMS_CREATED,
@@ -178,6 +184,13 @@ export const DIAGRAM_ACTIONS: MetricStack = {
     DIAGRAMS_DUPLICATED,
     JUST_DRAW,
     TEMPLATE_LINKS,
+  ],
+  headline: [
+    DIAGRAMS_LOADED,
+    DIAGRAMS_CREATED,
+    DIAGRAMS_RENAMED,
+    DIAGRAMS_DELETED,
+    DIAGRAMS_DUPLICATED,
   ],
 };
 
@@ -310,14 +323,14 @@ export const ELEMENTS_REORDERED = chart(
   'Element',
   'Reordered',
   'Elements Reordered',
-  'Sent to the back or brought to the front.',
+  'Sent to the back or brought to the front, or a table row or column moved.',
 );
 
 export const ELEMENT_OPTIONS_TOGGLED = chart(
   'Element',
   'Toggled',
   'Element Options Toggled',
-  'Per-element switches: aspect lock, strikethrough, table zebra rows and header column.',
+  'Per-element switches: bold, italic and other text styles, aspect lock, table zebra rows and header column.',
 );
 
 export const ELEMENTS_LOCKED = chart(
@@ -332,14 +345,14 @@ export const ELEMENT_ACTIONS_USED = chart(
   'Element',
   'Used',
   'Element Actions Used',
-  'One-off element actions, such as Bring into Focus.',
+  'Using an element in place: a reaction pad, Bring into Focus, playing a video.',
 );
 
 export const KEYBOARD_SELECTIONS = chart(
   'Element',
   'Selected',
-  'Keyboard Selections',
-  'Elements selected from the keyboard.',
+  'Keyboard & Filter Selections',
+  'Elements selected from the keyboard, or by selecting everything matching a filter.',
 );
 
 export const INSERTED_BETWEEN = chart(
@@ -406,7 +419,7 @@ export const TAB_IMPORTS = chart(
   'Tab',
   'Imported',
   'Tabs Imported',
-  'A tab imported from Mermaid, Excalidraw, JSON or Markdown.',
+  'A tab imported from Excalidraw, Mermaid, Markdown or JSON.',
 );
 
 export const EXPORT_AND_IMPORT: MetricStack = {

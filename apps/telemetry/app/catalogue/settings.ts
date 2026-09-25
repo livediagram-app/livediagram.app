@@ -293,7 +293,8 @@ const categoryChart = (stack: MetricStack): Metric => {
 export const SETTINGS_CHANGED: MetricStack = {
   stack: true,
   title: 'Settings Changed',
-  blurb: 'Changes in the editor’s Settings dialog, by category.',
+  blurb:
+    'Settings changed, by Settings category. The theme counts the header toggle as well as the dialog.',
   members: SETTINGS_STACKS.map(categoryChart),
   rising: 'neutral',
   seeAlso: { view: 'settings', label: 'See Each Setting on the Settings Tab' },

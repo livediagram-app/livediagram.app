@@ -32,7 +32,8 @@ export const SHARE_LINKS_COPIED = chart(
   'UI',
   'Copied',
   'Share Links Copied',
-  'A share link, embed code or live image copied.',
+  'A diagram share link, embed code or live image copied. (Team invite links are in Team Activity.)',
+  { typeIn: (t) => t !== 'TeamInviteLink' },
 );
 
 export const SHARE_SETTINGS = chart(
@@ -55,14 +56,14 @@ export const FACILITATOR_CLAIMED = chart(
   'Facilitator',
   'Started',
   'Facilitator Claimed',
-  'Someone took the facilitator role in a session.',
+  'Someone asked to take the facilitator role. Counted on the ask, so a refused claim counts too.',
 );
 
 export const FACILITATOR_RELEASED = chart(
   'Facilitator',
   'Ended',
   'Facilitator Released',
-  'The facilitator role handed back.',
+  'The facilitator handed the role back.',
 );
 
 export const AVATARS_CUSTOMISED = chart(
@@ -122,7 +123,7 @@ export const FACILITATOR_CONTROLS = chart(
   'Facilitator',
   'Changed',
   'Facilitator Controls',
-  'The facilitator granted editing or unlocked the room.',
+  'The facilitator handed the role to someone, or released a participant\u2019s lock on an element. Counted on the ask.',
 );
 
 export const EMBEDS_VIEWED = chart(
@@ -156,7 +157,7 @@ export const TEAM_REMOVALS = chart(
   'Team',
   'Removed',
   'Team Removals',
-  'A member, a diagram or an invite link taken out of a team, or someone leaving.',
+  'A member removed, an invite withdrawn, a diagram or an invite link taken out of a team, or someone leaving.',
   { rising: 'neutral' },
 );
 
@@ -491,6 +492,13 @@ export const DISCUSSION: MetricStack = {
   headline: COMMENTS_ADDED,
 };
 
+export const INVITE_LINKS_COPIED = chart(
+  'UI',
+  'Copied',
+  'Invite Links Copied',
+  'A team invite link copied to share.',
+  { types: ['TeamInviteLink'] },
+);
 export const TEAM_ACTIVITY: MetricStack = {
   stack: true,
   title: 'Team Activity',
@@ -506,6 +514,7 @@ export const TEAM_ACTIVITY: MetricStack = {
     TEAM_CHANGES,
     TEAM_REMOVALS,
     TEAMS_DELETED,
+    INVITE_LINKS_COPIED,
   ],
   headline: INVITES_ACCEPTED,
 };
@@ -582,14 +591,14 @@ export const ACTIVITY_OPENED = chart(
   'Activity',
   'Opened',
   'Activity Opened',
-  'The editor Activity panel opened.',
+  'The editor Activity panel shown, each time it mounts. Expanding it from minimised also counts in Dialogs & Panels.',
 );
 
 export const ACTIVITY_THREADS = chart(
   'Activity',
   'Selected',
   'Activity Items Opened',
-  'An item in the Activity panel opened.',
+  'An action or a comment thread opened from the Activity panel.',
 );
 
 export const TIMELINE_AND_ACTIVITY: MetricStack = {
@@ -609,6 +618,13 @@ export const TIMELINE_AND_ACTIVITY: MetricStack = {
 };
 
 // Presentations (spec/31).
+export const SLIDES_REORDERED = chart(
+  'UI',
+  'Moved',
+  'Slides Reordered',
+  'Slides dragged into a new order in the deck.',
+  { types: ['Slide'] },
+);
 export const PRESENTATIONS_STARTED = chart(
   'UI',
   'Started',
@@ -657,6 +673,7 @@ export const PRESENTATIONS: MetricStack = {
     SLIDES_REMOVED,
     SLIDES_SHOWN_HIDDEN,
     SLIDE_NOTES,
+    SLIDES_REORDERED,
   ],
   headline: PRESENTATIONS_STARTED,
 };

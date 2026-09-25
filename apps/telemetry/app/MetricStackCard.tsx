@@ -1,7 +1,7 @@
 'use client';
 
 import { fmtDay } from './chart-utils';
-import { headlineTotal, stackDrawsLines, type MetricStack } from './metric-series';
+import { headlineMembers, headlineTotal, stackDrawsLines, type MetricStack } from './metric-series';
 import { StackDeck } from './StackDeck';
 import { StackTrendChart, type StackSeries } from './StackTrendChart';
 import { TrendBadge } from './TrendBadge';
@@ -34,7 +34,8 @@ export function MetricStackCard({
 }) {
   const total = headlineTotal(stack, counts) ?? 0;
   const before = headlineTotal(stack, previousCounts);
-  const { chart, legend, hidden } = headView(stack.title, series, counts);
+  const inHeadline = headlineMembers(stack);
+  const { chart, legend, hidden } = headView(stack.title, series, counts, inHeadline);
 
   return (
     <StackDeck
@@ -102,6 +103,7 @@ function headView(
   title: string,
   series: StackSeries[],
   counts: number[],
+  inHeadline: boolean[],
 ): { chart: StackSeries[]; legend: LegendEntry[]; hidden: number } {
   if (stackDrawsLines(series.length)) {
     return {
@@ -111,8 +113,9 @@ function headView(
     };
   }
   const days = series[0]?.values.length ?? 0;
+  // The combined line sums what the head's number sums, so the two agree.
   const combined = Array.from({ length: days }, (_, d) =>
-    series.reduce((sum, s) => sum + (s.values[d] ?? 0), 0),
+    series.reduce((sum, s, i) => (inHeadline[i] ? sum + (s.values[d] ?? 0) : sum), 0),
   );
   const ranked = series
     .map((s, i) => ({ label: s.label, count: counts[i] ?? 0 }))

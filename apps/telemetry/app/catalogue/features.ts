@@ -10,7 +10,7 @@ export const LAYERS_RENAMED = chart(
   'Layer',
   'Renamed',
   'Layers Renamed',
-  'A layer renamed by hand, or adopting a name from its contents.',
+  'A layer renamed by hand, or named automatically from the first labelled element put on it (smart naming).',
 );
 
 export const LAYERS_SELECTED = chart(
@@ -27,9 +27,13 @@ export const LAYERS_REORDERED = chart(
   'Layers dragged into a new order.',
 );
 
-export const FOLDERS_DELETED = chart('Folder', 'Deleted', 'Folders Deleted', 'A folder removed.', {
-  rising: 'neutral',
-});
+export const FOLDERS_DELETED = chart(
+  'Folder',
+  'Deleted',
+  'Folders Deleted',
+  'A folder removed, in your Explorer or a team library.',
+  { rising: 'neutral' },
+);
 
 export const FOLDERS_RENAMED = chart(
   'Folder',
@@ -488,9 +492,13 @@ export const MINIMAL_PANELS = chart(
   { types: ['MinimalPanelsOn', 'MinimalPanelsOff'], rising: 'neutral' },
 );
 
-export const PANELS_DOCKED = chart('UI', 'Moved', 'Panels Docked', 'A panel docked or undocked.', {
-  rising: 'neutral',
-});
+export const PANELS_DOCKED = chart(
+  'UI',
+  'Moved',
+  'Panels Docked',
+  'A panel dragged into a corner dock, or out of one.',
+  { types: ['PanelDock'], rising: 'neutral' },
+);
 
 export const EXPLORER_VIEW = chart(
   'UI',
@@ -548,7 +556,7 @@ export const SHORTCUTS_OPENED = opened(
 
 export const ACTIVITY_PANEL_OPENED = opened(
   'Activity Panel Opened',
-  'The Activity panel opened from the chrome.',
+  'The Activity panel expanded from minimised, or opened from the mobile dock. Its mounting also counts in Timeline & Activity.',
   (t) => t === 'Activity',
 );
 
@@ -652,7 +660,7 @@ export const LOOK_AND_FEEL: MetricStack = {
   stack: true,
   title: 'Look & Feel',
   blurb:
-    'The visual presets people reach for: templates, themes, canvas styles, and their own themes.',
+    'The visual presets people reach for: templates, themes, canvas styles, and their own themes. Headed by themes and canvas styles picked: a template also applies its theme, so adding templates would count that pick twice.',
   members: [
     TEMPLATES_USED,
     THEMES_CHOSEN,
@@ -660,6 +668,6 @@ export const LOOK_AND_FEEL: MetricStack = {
     CANVAS_CONTROLS_TWEAKED,
     CUSTOM_THEMES,
   ],
-  headline: [TEMPLATES_USED, THEMES_CHOSEN, CANVAS_STYLES_PICKED],
+  headline: [THEMES_CHOSEN, CANVAS_STYLES_PICKED],
   seeAlso: { view: 'lookfeel', label: 'See Each Preset on the Look & Feel Tab' },
 };

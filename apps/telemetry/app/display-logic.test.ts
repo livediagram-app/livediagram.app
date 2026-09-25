@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ALL_VISITORS, EXCEPTIONS, NEW_VISITORS } from './metric-catalogue';
-import { headlineTotal, type MetricStack } from './metric-series';
+import { headlineMembers, headlineTotal, type MetricStack } from './metric-series';
 import { readTrend } from './TrendBadge';
 import { previousSpanLabel, rankTrend } from './windows';
 
@@ -55,6 +55,13 @@ describe('headlineTotal', () => {
     expect(headlineTotal(plain, [3, null])).toBeNull();
     // A missing count outside the headline doesn't matter.
     expect(headlineTotal(ALL_VISITORS, [10, 20, null, null])).toBe(30);
+  });
+});
+
+describe('headlineMembers', () => {
+  it('marks what the head sums, so its combined line agrees with its number', () => {
+    expect(headlineMembers(ALL_VISITORS)).toEqual([true, true, false, false]);
+    expect(headlineMembers(EXCEPTIONS)).toEqual([true, false, true, false]);
   });
 });
 

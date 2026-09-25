@@ -1,7 +1,7 @@
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { GROUPS as EDITING } from './EditingView';
-import { SETTINGS_STACKS } from './metric-catalogue';
+import { SETTINGS_CHANGED, SETTINGS_STACKS } from './metric-catalogue';
 import { GROUPS as SETTINGS } from './SettingsView';
 import { COMPUTED, scanEmitters, type Emit } from './emitter-scan';
 import { GROUPS as EXCEPTIONS, RECOVERY_TYPES } from './ExceptionsView';
@@ -14,7 +14,14 @@ import {
   THEME_ALIASES,
 } from './LookAndFeelView';
 import * as CATALOGUE from './metric-catalogue';
-import { groupMetrics, isStack, matches, type MetricGroup } from './metric-series';
+import {
+  groupMetrics,
+  headlineMembers,
+  isStack,
+  matches,
+  type Metric,
+  type MetricGroup,
+} from './metric-series';
 import { SELECTION_MODES } from './PaletteView';
 
 // Every card and every hard-coded ranking type on the dashboard must be an
@@ -254,5 +261,41 @@ describe('every event has a chart', () => {
         ),
       ].sort(),
     ).toEqual([]);
+  });
+});
+
+// One event counted by two different charts is how the dashboard double
+// counts (Tabs Cleared once caught every discarded vote; Share Links Copied
+// caught team invite copies). Two overlaps are by design, and only these:
+//  - a Settings Changed category chart rolls up the setting charts in it;
+//  - inside one stack, a chart and its subset, with the headline counting
+//    only one of them (AI Requests over Ask / Clean, Returning Visitors over
+//    its guest / signed-in split), so the head never adds them together.
+describe('no event is counted by two unrelated charts', () => {
+  const stacks = ALL.flatMap((g) => g.metrics).filter(isStack);
+  const rollups = new Set<Metric>(SETTINGS_CHANGED.members);
+  const subsetPair = (a: Metric, b: Metric) =>
+    stacks.some((s) => {
+      const i = s.members.indexOf(a);
+      const j = s.members.indexOf(b);
+      if (i < 0 || j < 0) return false;
+      const inHead = headlineMembers(s);
+      return s.headline !== undefined && inHead[i] !== inHead[j];
+    });
+  const charts = [...new Set(ALL.flatMap(groupMetrics))];
+  const clashes = KNOWN.filter((e) => e.type !== COMPUTED).flatMap((e) => {
+    const hits = charts.filter((m) => matches(m, e.category, e.action, e.type as string | null));
+    const bad: string[] = [];
+    for (let i = 0; i < hits.length; i++) {
+      for (let j = i + 1; j < hits.length; j++) {
+        const [a, b] = [hits[i]!, hits[j]!];
+        if (rollups.has(a) || rollups.has(b) || subsetPair(a, b)) continue;
+        bad.push(`${e.category}·${e.action}·${String(e.type)}: ${a.title} + ${b.title}`);
+      }
+    }
+    return bad;
+  });
+  it('finds only the rollups and headline subsets that are meant to overlap', () => {
+    expect([...new Set(clashes)].sort()).toEqual([]);
   });
 });
