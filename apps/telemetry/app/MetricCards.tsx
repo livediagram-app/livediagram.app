@@ -50,9 +50,9 @@ export function MetricGroups({
   const daily = summary.daily;
   const highlightFromIndex = daily ? windowHighlightFrom(daily, active) : null;
   // Trend arrows compare each count with the same span just before the window.
-  const against = previousSpanLabel(daily, active);
+  const against = previousSpanLabel(summary, active);
   const span = windowDays(active);
-  const previousOf = (m: Metric) => (daily && against ? previousCount(daily, m, span) : null);
+  const previousOf = (m: Metric) => (against ? previousCount(summary, active, m, span) : null);
   // The one open stack, and its head card (focus returns there on close). Opening
   // another stack replaces it. View state only: nothing persists it.
   const [open, setOpen] = useState<OpenStack | null>(null);

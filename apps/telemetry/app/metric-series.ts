@@ -100,12 +100,25 @@ export function dailySeries(daily: TelemetryDaily, m: Metric): number[] {
 }
 
 /**
- * The metric's count over the same number of days just before the window, from
- * the 30-day series, or null when the series doesn't reach back that far (the
- * 30-day window itself).
+ * The metric's count over the same number of days just before the window, for
+ * its trend arrow. From the api's `previousWindows` when it sends them (every
+ * window, the last 30 included); otherwise from the 30-day series, which can't
+ * reach behind the 30-day window, so that one is null.
  */
-export function previousCount(daily: TelemetryDaily, m: Metric, windowDays: number): number | null {
-  const series = dailySeries(daily, m);
+export function previousCount(
+  summary: TelemetrySummary,
+  active: TelemetryWindowKey,
+  m: Metric,
+  windowDays: number,
+): number | null {
+  const previous = summary.previousWindows?.[active];
+  if (previous) {
+    return previous.rows
+      .filter((r) => matches(m, r.category, r.action, r.type))
+      .reduce((sum, r) => sum + r.count, 0);
+  }
+  if (!summary.daily) return null;
+  const series = dailySeries(summary.daily, m);
   const n = series.length;
   if (n - 2 * windowDays < 0) return null;
   return series.slice(n - 2 * windowDays, n - windowDays).reduce((a, b) => a + b, 0);

@@ -429,6 +429,7 @@ export function EditorView() {
           the 48px tab bar (pb-16) and over the canvas chrome (z-[var(--z-overlay)]). */}
         {showSignInBanner ? (
           <SignInBanner
+            surface="Editor"
             onDismiss={dismissSignIn}
             placementClassName="bottom-0 z-[var(--z-overlay)] pb-16"
           />

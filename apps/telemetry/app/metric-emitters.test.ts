@@ -222,7 +222,12 @@ describe('the Settings tab', () => {
 // emitter with no chart fails here; give it one (usually a member of an
 // existing stack) or, if it is genuinely not worth a chart, list it below with
 // the reason.
-const NO_CHART: Record<string, string> = {};
+const NO_CHART: Record<string, string> = {
+  // The scan follows endTour's outcome into track('UI', 'Ended', outcome) but
+  // can't see the `if` in front of it: a decline is sent as UI·Closed·TourOffer
+  // (the Tours Declined chart), never as UI·Ended·TourDeclined.
+  'UI·Ended·TourDeclined': 'apps/live TourHost.tsx endTour, routed to UI·Closed·TourOffer',
+};
 
 describe('every event has a chart', () => {
   const charts = ALL.flatMap(groupMetrics);

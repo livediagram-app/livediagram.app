@@ -8,6 +8,7 @@ import {
   metricKey,
   TELEMETRY_WINDOW_DAYS,
   type TelemetryDaily,
+  type TelemetrySummary,
   type TelemetryWindow,
   type TelemetryWindowKey,
 } from '@livediagram/api-schema';
@@ -70,14 +71,17 @@ export function windowDays(active: TelemetryWindowKey): number {
 
 /**
  * What a trend arrow compares against: the same number of days just before
- * the window, named for its tooltip. Null when the 30-day series can't reach
- * that far back (behind the 30-day window), so no arrow is drawn.
+ * the window, named for its tooltip. Null when there's nothing to compare
+ * against: no `previousWindows` from the api and a 30-day series that can't
+ * reach behind the window (the 30-day one).
  */
 export function previousSpanLabel(
-  daily: TelemetryDaily | undefined,
+  summary: TelemetrySummary,
   active: TelemetryWindowKey,
 ): string | null {
   const days = windowDays(active);
-  if (!daily || days * 2 > daily.days.length) return null;
+  const reachable =
+    summary.previousWindows !== undefined || days * 2 <= (summary.daily?.days.length ?? 0);
+  if (!reachable) return null;
   return days === 1 ? 'the day before' : `the ${days} days before`;
 }

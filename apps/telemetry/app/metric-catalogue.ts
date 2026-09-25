@@ -550,13 +550,6 @@ export const SLIDE_NOTES = chart(
   'Speaker notes on a slide edited.',
   { types: ['SlideNotes'] },
 );
-export const TOURS_DECLINED = chart(
-  'UI',
-  'Ended',
-  'Tours Declined',
-  'The tour offer turned down.',
-  { types: ['TourDeclined'], rising: 'neutral' },
-);
 export const LIVE_IMAGE_TABS = chart(
   'UI',
   'Selected',
@@ -2040,10 +2033,20 @@ export const SLIDE_DECK_OPENED = opened(
   'The Slide Deck panel or presentation settings opened.',
   (t) => t === 'SlideDeck' || t === 'PresentationSettings',
 );
-export const SIGN_IN_REASONS = opened(
-  'Sign-In Reasons Shown',
-  'Why-sign-in reasons or an action sign-in nudge shown.',
-  (t) => t === 'SignInReasons' || t === 'ActionSignInNudge',
+export const EXPLORER_REASONS_OPENED = opened(
+  'Explorer Banner: Learn More',
+  'The Explorer\u2019s sign-in banner: Learn more opened the reasons to sign in.',
+  (t) => t === 'SignInReasonsExplorer',
+);
+export const EDITOR_REASONS_OPENED = opened(
+  'Editor Banner: Learn More',
+  'The editor\u2019s sign-in banner (shown after about five minutes of drawing as a guest): Learn more opened the reasons.',
+  (t) => t === 'SignInReasonsEditor',
+);
+export const ACTION_SIGN_IN_NUDGE = opened(
+  'Assign Action Nudge',
+  'A guest opened Assign Action and was asked to sign in, since actions need an account.',
+  (t) => t === 'ActionSignInNudge',
 );
 OPENED_HOMES.push(PALETTE_GROUPS_OPENED.typeIn!);
 export const OTHER_OPENED = chart(
@@ -2068,12 +2071,19 @@ export const PANELS_OPENED: MetricStack = {
   ],
 };
 
-// The welcome tour.
+// The first visit: the editor's welcome dialog, then the tour.
+export const WELCOME_DIALOG_CLOSED = chart(
+  'UI',
+  'Closed',
+  'Welcome Dialog Closed',
+  'The editor\u2019s first-visit welcome closed by confirming a display name.',
+  { types: ['Welcome'] },
+);
 export const TOUR_OFFER_DISMISSED = chart(
   'UI',
   'Closed',
-  'Tour Offer Dismissed',
-  'The tour offer closed without starting.',
+  'Tours Declined',
+  'The tour turned down on its welcome card, before it started. (The editor records this decline as closing the offer.)',
   { types: ['TourOffer'], rising: 'neutral' },
 );
 export const TOURS_STARTED = chart('UI', 'Started', 'Tours Started', 'The welcome tour started.', {
@@ -2102,16 +2112,17 @@ export const TOURS_SKIPPED = chart(
 );
 export const WELCOME_TOUR: MetricStack = {
   stack: true,
-  title: 'Welcome Tour',
-  blurb: 'The tour offered, started, stepped through, finished or skipped.',
+  title: 'Welcome & Tour',
+  blurb:
+    'A first visit: the welcome dialog, then the tour offered, started, stepped through, finished or skipped.',
   members: [
+    WELCOME_DIALOG_CLOSED,
     TOUR_OFFERED,
     TOUR_OFFER_DISMISSED,
     TOURS_STARTED,
     TOUR_STEPS_VIEWED,
     TOURS_COMPLETED,
     TOURS_SKIPPED,
-    TOURS_DECLINED,
   ],
   headline: TOURS_STARTED,
 };
@@ -2164,34 +2175,53 @@ export const PRESENTATIONS: MetricStack = {
   headline: PRESENTATIONS_STARTED,
 };
 
-// Sign-in prompts.
-export const SIGN_IN_BANNER_DISMISSED = chart(
-  'UI',
-  'Closed',
-  'Sign-In Banner Dismissed',
-  'The sign-in banner closed.',
-  { types: ['SignInBanner'], rising: 'neutral' },
-);
-export const SIGN_IN_BANNER_CLICKED = chart(
+// Sign-in prompts, by where each one happens (spec/36). The same bottom
+// banner runs in the Explorer and the editor, so every banner event names its
+// surface; the Assign Action dialog has its own nudge.
+export const EXPLORER_BANNER_SIGN_INS = chart(
   'UI',
   'Selected',
-  'Sign-In Banner Clicked',
-  'The sign-in banner followed through.',
-  { types: ['SignInBanner'] },
+  'Explorer Banner: Sign In',
+  'The Explorer\u2019s sign-in banner, or the reasons it opened: Sign in clicked.',
+  { types: ['SignInBannerExplorer'] },
 );
-export const WELCOME_DISMISSED = chart(
+export const EXPLORER_BANNER_DISMISSED = chart(
   'UI',
   'Closed',
-  'Welcome Dismissed',
-  'The first-visit welcome closed.',
-  { types: ['Welcome'], rising: 'neutral' },
+  'Explorer Banner: Dismissed',
+  'The Explorer\u2019s sign-in banner closed. Dismissing it hides it in the editor too.',
+  { types: ['SignInBannerExplorer'], rising: 'neutral' },
+);
+export const EDITOR_BANNER_SIGN_INS = chart(
+  'UI',
+  'Selected',
+  'Editor Banner: Sign In',
+  'The editor\u2019s sign-in banner, or the reasons it opened: Sign in clicked.',
+  { types: ['SignInBannerEditor'] },
+);
+export const EDITOR_BANNER_DISMISSED = chart(
+  'UI',
+  'Closed',
+  'Editor Banner: Dismissed',
+  'The editor\u2019s sign-in banner closed. Dismissing it hides it in the Explorer too.',
+  { types: ['SignInBannerEditor'], rising: 'neutral' },
 );
 export const SIGN_IN_PROMPTS: MetricStack = {
   stack: true,
   title: 'Sign-In Prompts',
-  blurb: 'The nudges to make an account: the banner, the reasons, and the first-visit welcome.',
-  members: [SIGN_IN_BANNER_CLICKED, SIGN_IN_BANNER_DISMISSED, SIGN_IN_REASONS, WELCOME_DISMISSED],
-  headline: SIGN_IN_BANNER_CLICKED,
+  blurb:
+    'The nudges to make an account, by where they appear: the Explorer banner, the editor banner, and the Assign Action dialog.',
+  members: [
+    EXPLORER_BANNER_SIGN_INS,
+    EXPLORER_REASONS_OPENED,
+    EXPLORER_BANNER_DISMISSED,
+    EDITOR_BANNER_SIGN_INS,
+    EDITOR_REASONS_OPENED,
+    EDITOR_BANNER_DISMISSED,
+    ACTION_SIGN_IN_NUDGE,
+  ],
+  // Sign-ins started from either banner: the prompts that worked.
+  headline: [EXPLORER_BANNER_SIGN_INS, EDITOR_BANNER_SIGN_INS],
 };
 
 // Help centre (Help tab has the rankings).

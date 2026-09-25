@@ -99,3 +99,28 @@ describe('the MCP Tool Calls stack', () => {
     expect(MCP_TOOL_METRICS.map((m) => m.type).sort()).toEqual(names.map(pascalToken).sort());
   });
 });
+
+describe('previousCount (trend arrows)', () => {
+  const window = (count: number) => ({
+    total: count,
+    rows: [{ category: 'Participant', action: 'Created', type: null, count }],
+  });
+  const summary = {
+    enabled: true,
+    generatedAt: 0,
+    windows: { today: window(5), last7: window(20), last30: window(90) },
+    previousWindows: { today: window(4), last7: window(10), last30: window(60) },
+  };
+
+  it('reads the api previous window, the last 30 days included', async () => {
+    const { previousCount } = await import('./metric-series');
+    expect(previousCount(summary, 'last30', NEW_VISITORS, 30)).toBe(60);
+    expect(previousCount(summary, 'today', NEW_VISITORS, 1)).toBe(4);
+  });
+
+  it('has nothing to compare the last 30 days against without it', async () => {
+    const { previousCount } = await import('./metric-series');
+    const older = { ...summary, previousWindows: undefined };
+    expect(previousCount(older, 'last30', NEW_VISITORS, 30)).toBeNull();
+  });
+});

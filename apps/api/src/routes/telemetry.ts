@@ -42,8 +42,10 @@ export async function handleTelemetry(ctx: RouteContext): Promise<Response> {
   }
 
   const now = Date.now();
-  const since = telemetrySeriesStart(now);
-  const summary = buildTelemetrySummary(now, await telemetryDailyCountsSince(env, since));
+  const summary = buildTelemetrySummary(
+    now,
+    await telemetryDailyCountsSince(env, telemetryQueryStart(now)),
+  );
   const res = json(summary);
   if (isLocalDev) return res;
   // A few minutes of edge + browser cache. Fixed windows mean the
@@ -61,6 +63,14 @@ export function telemetrySeriesStart(now: number): number {
   const d = new Date(now);
   const midnightUtc = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
   return midnightUtc - (SERIES_DAYS - 1) * DAY_MS;
+}
+
+// The query reaches one series further back than the series itself, so each
+// window can be compared with the span just before it (`previousWindows`):
+// the 30 days before the last 30 end 59 days back, inside the 60-day
+// retention (spec/22).
+export function telemetryQueryStart(now: number): number {
+  return telemetrySeriesStart(now) - SERIES_DAYS * DAY_MS;
 }
 
 // Build the whole summary from ONE per-day query. Each window is the sum of
@@ -88,11 +98,38 @@ export function buildTelemetrySummary(now: number, dailyRows: DailyRow[]): Telem
     dayIndex.set(new Date(ts).toISOString().slice(0, 10), i);
   }
   const keys = Object.keys(TELEMETRY_WINDOW_DAYS) as TelemetryWindowKey[];
-  const windowRows = Object.fromEntries(
-    keys.map((k) => [k, new Map<string, TelemetryCount>()]),
-  ) as Record<TelemetryWindowKey, Map<string, TelemetryCount>>;
+  const emptyWindows = () =>
+    Object.fromEntries(keys.map((k) => [k, new Map<string, TelemetryCount>()])) as Record<
+      TelemetryWindowKey,
+      Map<string, TelemetryCount>
+    >;
+  const windowRows = emptyWindows();
+  const previousRows = emptyWindows();
+  const addTo = (rows: Map<string, TelemetryCount>, key: string, row: DailyRow) => {
+    const prev = rows.get(key);
+    if (prev) prev.count += row.count;
+    else
+      rows.set(key, {
+        category: row.category,
+        action: row.action,
+        type: row.type,
+        count: row.count,
+      });
+  };
 
   for (const row of dailyRows) {
+    const key = metricKey(row.category, row.action, row.type);
+    // Days from the series start: 0..29 inside the series, negative before it.
+    const offset = Math.round((Date.parse(`${row.day}T00:00:00Z`) - since) / DAY_MS);
+    if (offset < 0) {
+      // Only the span just before each window, for the trend arrows.
+      for (const k of keys) {
+        const n = TELEMETRY_WINDOW_DAYS[k];
+        if (offset >= SERIES_DAYS - 2 * n && offset < SERIES_DAYS - n)
+          addTo(previousRows[k], key, row);
+      }
+      continue;
+    }
     const idx = dayIndex.get(row.day);
     if (idx === undefined) continue;
     totals[idx] = (totals[idx] ?? 0) + row.count;
@@ -102,22 +139,14 @@ export function buildTelemetrySummary(now: number, dailyRows: DailyRow[]): Telem
     // Per-event series for the Search view's metric trend line. The
     // grouped query already splits on action/type, so each row maps to
     // exactly one metric bucket.
-    const key = metricKey(row.category, row.action, row.type);
     const metric = byMetric[key] ?? new Array(SERIES_DAYS).fill(0);
     metric[idx] = (metric[idx] ?? 0) + row.count;
     byMetric[key] = metric;
     for (const k of keys) {
-      if (idx < SERIES_DAYS - TELEMETRY_WINDOW_DAYS[k]) continue;
-      const prev = windowRows[k].get(key);
-      if (prev) prev.count += row.count;
-      else {
-        windowRows[k].set(key, {
-          category: row.category,
-          action: row.action,
-          type: row.type,
-          count: row.count,
-        });
-      }
+      const n = TELEMETRY_WINDOW_DAYS[k];
+      if (idx >= SERIES_DAYS - n) addTo(windowRows[k], key, row);
+      // The previous span of a short window sits inside the series.
+      else if (idx >= SERIES_DAYS - 2 * n) addTo(previousRows[k], key, row);
     }
   }
 
@@ -132,6 +161,11 @@ export function buildTelemetrySummary(now: number, dailyRows: DailyRow[]): Telem
       today: toWindow(windowRows.today),
       last7: toWindow(windowRows.last7),
       last30: toWindow(windowRows.last30),
+    },
+    previousWindows: {
+      today: toWindow(previousRows.today),
+      last7: toWindow(previousRows.last7),
+      last30: toWindow(previousRows.last30),
     },
     daily: { days, totals, byCategory, byMetric },
   };
