@@ -14,7 +14,11 @@ import {
   bodyExceedsCap,
   declaredBodyBytes,
 } from '../limits';
-import { DIAGRAM_CONVERSION_HEADER, readDiagramConversion } from '@livediagram/api-schema';
+import {
+  CHANGE_LOG_TAB_NOT_SAVED,
+  DIAGRAM_CONVERSION_HEADER,
+  readDiagramConversion,
+} from '@livediagram/api-schema';
 import { parseChangeLogEntryBody } from '../change-log-body';
 import {} from '../comments';
 import {
@@ -36,7 +40,7 @@ import {
   setDiagramPresentation,
   upsertDiagramMeta,
 } from '../db';
-import { badRequest, forbidden, json, noContent, notFound, svgImage } from '../responses';
+import { badRequest, conflict, forbidden, json, noContent, notFound, svgImage } from '../responses';
 import { getDiagramThumbnailSvg } from '../thumbnail';
 import { redactOwnerId } from '../redact-owner';
 import { emailEnabled } from '../email/client';
@@ -456,6 +460,15 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       }
       const entry = parseChangeLogEntryBody(body);
       if (!entry) return badRequest('missing change_log fields');
+      // The entry's tab must belong to THIS diagram. The log is listed by
+      // joining through diagram_tabs, so an unchecked tab id let an editor of
+      // one diagram write rows into another diagram's activity panel. It is
+      // also what turned a brand-new tab's first edit (logged before the
+      // debounced autosave created the tab row) into a foreign-key 500: that
+      // case now answers a 409 the editor retries.
+      if (entry.tabId && !access.tabs.some((t) => t.id === entry.tabId)) {
+        return conflict(CHANGE_LOG_TAB_NOT_SAVED);
+      }
       // Stamp the author from the resolved caller's participant record
       // rather than trusting the body, so a client can't forge
       // participantId / participantName / participantColor and frame

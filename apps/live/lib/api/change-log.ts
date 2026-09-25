@@ -1,5 +1,5 @@
 // Change log (per-diagram audit) — see specs/12-activity-and-audit.md
-import type { ChangeLogEntry } from '@livediagram/api-schema';
+import { CHANGE_LOG_TAB_NOT_SAVED, type ChangeLogEntry } from '@livediagram/api-schema';
 import { dedupeInFlight } from '../dedupe';
 import {
   offlineAppendChangeLogEntry,
@@ -13,6 +13,7 @@ import {
   apiDelete,
   apiHeaders,
   expectOk,
+  readErrorCode,
   type ChangeLogAppendResponse,
   type ChangeLogListResponse,
   apiFetch,
@@ -48,13 +49,31 @@ export async function apiAppendChangeLogEntry(
   shareCode: string | null = null,
 ): Promise<ChangeLogEntry> {
   if (await isOfflineId(diagramId)) return offlineAppendChangeLogEntry(diagramId, entry);
-  const res = await apiFetch(`${API_BASE}/diagrams/${diagramId}/log`, {
-    method: 'POST',
-    headers: await apiHeaders(ownerId, { share: shareCode, body: true }),
-    body: JSON.stringify(entry),
-  });
+  const post = async () =>
+    apiFetch(`${API_BASE}/diagrams/${diagramId}/log`, {
+      method: 'POST',
+      headers: await apiHeaders(ownerId, { share: shareCode, body: true }),
+      body: JSON.stringify(entry),
+    });
+  let res = await post();
+  // The first edit on a brand-new tab is logged before the debounced
+  // autosave has created the tab, so the server answers 409 tab_not_saved.
+  // Wait for the save and try again, quietly: only a tab that still hasn't
+  // arrived after the last retry reaches expectOk and reports.
+  for (let i = 0; i < APPEND_TAB_RETRIES && (await isTabNotSaved(res)); i++) {
+    await new Promise((resolve) => setTimeout(resolve, APPEND_TAB_RETRY_MS));
+    res = await post();
+  }
   const { entry: stored } = await expectOk<ChangeLogAppendResponse>(res, 'append change log');
   return stored;
+}
+
+// Comfortably past useAutosave's 600ms debounce plus a save round trip.
+const APPEND_TAB_RETRY_MS = 1500;
+const APPEND_TAB_RETRIES = 3;
+
+async function isTabNotSaved(res: Response): Promise<boolean> {
+  return res.status === 409 && (await readErrorCode(res)) === CHANGE_LOG_TAB_NOT_SAVED;
 }
 
 export async function apiDeleteChangeLogForTab(
