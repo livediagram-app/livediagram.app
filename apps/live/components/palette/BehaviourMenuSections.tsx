@@ -26,7 +26,7 @@ import {
   isPollStyle,
   PICKER_MAX_OPTIONS,
   pollStyleNeedsOptions,
-  SESSION_POLL_MAX_OPTIONS,
+  POLL_OPTIONS_MAX,
   TIMER_MINUTES_RANGE,
   VOTE_DOTS_RANGE,
   type PickerSource,
@@ -206,7 +206,7 @@ export function SessionMenuSection({
               label="Choices"
               hint={'Option A\nOption B'}
               lines={config?.options ?? []}
-              max={SESSION_POLL_MAX_OPTIONS}
+              max={POLL_OPTIONS_MAX}
               onCommit={(options) => patch({ options })}
             />
           ) : null}

@@ -6,7 +6,7 @@ import {
   DEFAULT_SESSION_POLL_STYLE,
   isPollStyle,
   pollStyleNeedsOptions,
-  SESSION_POLL_MAX_OPTIONS,
+  POLL_OPTIONS_MAX,
   VOTE_DOTS_RANGE,
   type SessionButtonConfig,
 } from '@livediagram/diagram';
@@ -74,12 +74,21 @@ function PollForm({
       {!pollStyleNeedsOptions(style) ? null : (
         <>
           <ElementMenuLabel>Choices</ElementMenuLabel>
+          {/* Lettered, like the Studio's composer and like the answers people
+              will actually see. A bare column of identical text fields gives
+              you nothing to refer to — "the third one" — and no sense of the
+              list being ordered. */}
           {options.map((opt, i) => (
-            <span key={i} className="flex items-center gap-1">
+            <span key={i} className="flex items-center gap-1.5">
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[10px] font-semibold text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                {String.fromCharCode(65 + i)}
+              </span>
               <input
                 value={opt}
                 onChange={(e) => setOption(i, e.target.value)}
                 onKeyDown={(e) => e.stopPropagation()}
+                placeholder={`Answer ${String.fromCharCode(65 + i)}`}
+                aria-label={`Answer ${i + 1}`}
                 className={field}
               />
               <button
@@ -90,18 +99,21 @@ function PollForm({
                 // press.
                 disabled={options.length <= 2}
                 onClick={() => onChange({ ...config, options: options.filter((_, j) => j !== i) })}
-                className="shrink-0 cursor-pointer rounded px-1 text-xs text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 disabled:cursor-default disabled:opacity-30 dark:hover:bg-slate-800"
+                className="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 disabled:cursor-default disabled:opacity-30 dark:hover:bg-rose-500/10"
               >
                 ✕
               </button>
             </span>
           ))}
-          {options.length < SESSION_POLL_MAX_OPTIONS ? (
+          {options.length < POLL_OPTIONS_MAX ? (
             <button
               type="button"
               onClick={() => onChange({ ...config, options: [...options, ''] })}
-              className="cursor-pointer rounded-md px-1 py-1 text-left text-xs font-medium text-brand-600 transition hover:bg-slate-100 dark:text-brand-300 dark:hover:bg-slate-800"
+              className="ml-6 flex cursor-pointer items-center gap-1 self-start rounded-md px-1.5 py-1 text-left text-xs font-medium text-brand-600 transition hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-500/15"
             >
+              <span aria-hidden className="text-sm leading-none">
+                +
+              </span>
               Add answer
             </button>
           ) : null}

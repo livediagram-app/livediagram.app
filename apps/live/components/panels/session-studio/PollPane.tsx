@@ -10,7 +10,7 @@
 // results and the End control live in the floating Poll panel everyone can
 // see, not behind a menu only the host has open.
 
-import { useRef, useState, type ReactNode } from 'react';
+import { useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import {
   POLL_OPTIONS_MAX,
@@ -20,13 +20,9 @@ import {
   type LivePoll,
   type PollStyle,
 } from '@livediagram/api-schema';
-import {
-  POLL_STYLES,
-  POLL_STYLE_LABEL,
-  pollStyleTokens,
-  pollStyleUsesRoster,
-} from '@livediagram/diagram';
+import { POLL_STYLE_LABEL, pollStyleTokens, pollStyleUsesRoster } from '@livediagram/diagram';
 import { pollCollaboratorOptions } from '@/lib/poll-collaborators';
+import { PollStyleTiles } from '@/components/palette/PollAnswerStyleRow';
 import type { SessionToolsProps } from '@/components/chrome/session-tools-props';
 import { StudioButton, StudioCallout, StudioLabel } from './studio-ui';
 
@@ -142,11 +138,7 @@ function PollComposer({
       </div>
       <div className="flex flex-col gap-1.5">
         <StudioLabel>Answers</StudioLabel>
-        <div className="grid grid-cols-3 gap-1" role="radiogroup" aria-label="Answer style">
-          {POLL_STYLES.map((s) => (
-            <StyleTile key={s} style={s} selected={style === s} onPick={() => setStyle(s)} />
-          ))}
-        </div>
+        <PollStyleTiles style={style} onChange={setStyle} />
       </div>
       {pollStyleUsesRoster(style) ? <RosterPreview options={rosterOptions} /> : null}
       {style === 'choice' ? (
@@ -214,58 +206,6 @@ function PollComposer({
   );
 }
 
-// A thumbnail of the answer shape, drawn rather than described: two pills
-// for Yes / No, five dots for a rating, lines for free text.
-const STYLE_ART: Record<PollStyle, ReactNode> = {
-  yesNo: <PillRow count={2} />,
-  yesNoAbstain: <PillRow count={3} />,
-  choice: (
-    <span className="flex w-full flex-col gap-0.5">
-      {[0, 1, 2].map((i) => (
-        <span key={i} className="flex items-center gap-0.5">
-          <span className="h-1 w-1 rounded-full bg-current opacity-70" />
-          <span className="h-1 flex-1 rounded-full bg-current opacity-30" />
-        </span>
-      ))}
-    </span>
-  ),
-  // Three heads in a row: people, not answers — and deliberately unlike the
-  // rating's evenly-spaced dots, which are the same shape at the same size.
-  collaborators: (
-    <span className="flex items-end justify-center gap-0.5">
-      {[0, 1, 2].map((i) => (
-        <span key={i} className="flex flex-col items-center gap-[1px]">
-          <span className="h-1 w-1 rounded-full bg-current opacity-70" />
-          <span className="h-[3px] w-2 rounded-t-full bg-current opacity-40" />
-        </span>
-      ))}
-    </span>
-  ),
-  rating: (
-    <span className="flex gap-0.5">
-      {[0, 1, 2, 3, 4].map((i) => (
-        <span key={i} className="h-1.5 w-1.5 rounded-full bg-current opacity-60" />
-      ))}
-    </span>
-  ),
-  text: (
-    <span className="flex w-full flex-col gap-0.5">
-      <span className="h-1 w-full rounded-full bg-current opacity-30" />
-      <span className="h-1 w-2/3 rounded-full bg-current opacity-30" />
-    </span>
-  ),
-};
-
-function PillRow({ count }: { count: number }) {
-  return (
-    <span className="flex gap-0.5">
-      {Array.from({ length: count }, (_, i) => (
-        <span key={i} className="h-2 w-3 rounded-full bg-current opacity-50" />
-      ))}
-    </span>
-  );
-}
-
 // The ballot a `collaborators` poll will freeze (spec/88): the room, exactly as
 // it will be asked. Read-only on purpose — these are not answers the author
 // writes, and a list they could edit would be a list that disagrees with who is
@@ -296,33 +236,6 @@ function RosterPreview({ options }: { options: string[] }) {
         Taken when you ask, so anyone who joins after won&rsquo;t be on the list.
       </p>
     </div>
-  );
-}
-
-function StyleTile({
-  style,
-  selected,
-  onPick,
-}: {
-  style: PollStyle;
-  selected: boolean;
-  onPick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      role="radio"
-      aria-checked={selected}
-      onClick={onPick}
-      className={`flex flex-col items-center gap-1.5 rounded-lg border px-1 py-2 transition ${
-        selected
-          ? 'border-brand-400 bg-brand-50 text-brand-700 dark:border-brand-500/60 dark:bg-brand-500/15 dark:text-brand-200'
-          : 'border-slate-200 bg-white text-slate-500 hover:border-brand-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400'
-      }`}
-    >
-      <span className="flex h-4 w-8 items-center justify-center">{STYLE_ART[style]}</span>
-      <span className="text-[10px] font-semibold leading-none">{POLL_STYLE_LABEL[style]}</span>
-    </button>
   );
 }
 
