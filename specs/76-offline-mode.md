@@ -174,12 +174,24 @@ The editor already has a **single persistence boundary**: `apps/live/lib/api-cli
 Mode is implemented **behind that boundary** so the editor is unaware of the
 target:
 
-- Introduce a small **persistence-backend interface** (load / save / list /
-  create / delete / etc. for diagrams + tabs) with two implementations:
-  **`ApiBackend`** (today's `fetch` calls) and **`LocalBackend`** (IndexedDB).
-- Dispatch per diagram: an id in the local index → `LocalBackend`; otherwise
-  `ApiBackend`. Offline ids are client-generated (`crypto.randomUUID`).
-- Only the diagram/tab CRUD path needs the local backend; server-only endpoints
+- **Dispatch per call, not a backend pair.** This was first drafted as two
+  implementations of one interface, an `ApiBackend` and a `LocalBackend`. What
+  shipped is smaller: each load / save / delete in `lib/api/*` opens with
+  `if (await isOfflineId(id))` and hands off to `lib/offline/offline-store.ts`,
+  otherwise it does what it always did. There is no second class to keep in
+  step with the first, and an endpoint that offline has no answer for simply
+  never grows the branch.
+- Offline ids are client-generated (`crypto.randomUUID`) and registered in a
+  local index; `isOfflineId` reads it. The `beforeunload` beacon flush cannot
+  await, so it uses the synchronous `isOfflineIdSync` off the loaded cache.
+- **Listing is the exception that is not a dispatch.** The Explorer shows both
+  sets at once, so it MERGES the api list with the local one, and still returns
+  the offline rows when the cloud fetch fails.
+- **Create is the one caller-decided branch**, because there is no registered id
+  to dispatch on yet: the New Diagram wizard calls `offlineCreateDiagram`
+  directly when the author picked Local Browser, and that call is what registers
+  the id every later operation routes on.
+- Only the diagram/tab CRUD path needs the local store; server-only endpoints
   (share, teams, room ticket, thumbnails) are simply never called for an offline
   diagram (the UI gates them).
 

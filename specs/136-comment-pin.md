@@ -32,7 +32,7 @@ only job is to hold a `commentThread`, so:
 - Resolve / unresolve, author identity and the API redaction of `authorId` all
   apply unchanged.
 
-`CommentPinFace` is therefore a glyph and a click handler. If it ever grows a
+`CommentPanelFace` is therefore a glyph and a click handler. If it ever grows a
 second way to store a comment, that is the bug.
 
 ## A panel, joined by an arrow
