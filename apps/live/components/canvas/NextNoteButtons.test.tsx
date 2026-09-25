@@ -2,7 +2,6 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ES_NOTE_GAP, type Element, type StickyElement } from '@livediagram/diagram';
-import { setHoveredNoteId } from '@/lib/note-hover';
 import { NextNoteButtons } from './NextNoteButtons';
 
 // The next-note buttons (spec/139 Phase 7). At most two per note, only on the
@@ -56,11 +55,10 @@ const anchors = () => screen.queryAllByRole('button');
 
 afterEach(() => {
   cleanup();
-  setHoveredNoteId(null);
 });
 
 describe('NextNoteButtons', () => {
-  it('offers nothing until a note is pointed at or selected', () => {
+  it('offers nothing until a note is selected', () => {
     draw([event]);
     expect(anchors()).toHaveLength(0);
   });
@@ -71,12 +69,6 @@ describe('NextNoteButtons', () => {
       'Add a command before this domain event',
       'Add a policy after this domain event',
     ]);
-  });
-
-  it('offers the same buttons on hover, with no selection at all', () => {
-    setHoveredNoteId('e');
-    draw([event]);
-    expect(anchors()).toHaveLength(2);
   });
 
   it('offers a policy its ONE side', () => {
@@ -107,12 +99,6 @@ describe('NextNoteButtons', () => {
     expect(anchors()).toHaveLength(0);
   });
 
-  it('does not show the same note twice when it is both hovered and selected', () => {
-    setHoveredNoteId('e');
-    draw([event], { selectedId: 'e' });
-    expect(anchors()).toHaveLength(2);
-  });
-
   it('adds the note the side names', () => {
     const onAdd = vi.fn();
     draw([event], { selectedId: 'e', onAdd });
@@ -120,12 +106,80 @@ describe('NextNoteButtons', () => {
     expect(onAdd).toHaveBeenCalledWith('e', 'before');
   });
 
-  it('sits in the gutter beside the note, on its centre line', () => {
-    draw([event], { selectedId: 'e' });
-    const before = screen.getByRole('button', { name: /before/i });
-    // Gutter centre = 8px left of the note, and the note's vertical middle.
-    const style = before.getAttribute('style')!;
-    expect(style).toContain(`left: ${1000 - ES_NOTE_GAP / 2 - 12}px`);
-    expect(style).toContain('top: 588px');
+  it('is a tab in the colour of the NEXT note, sized from the height of this one', () => {
+    const c = draw([event], { selectedId: 'e' });
+    const tab = c.container.querySelector<HTMLElement>('[data-next-note-tab="before"]')!;
+    // A command is blue; the event is 200 tall, so the tab is 50 x 20.
+    expect(tab.style.background).toBe('rgb(147, 197, 253)');
+    expect(tab.style.height).toBe('50px');
+    expect(tab.style.width).toBe('20px');
+  });
+
+  it('scales the tab with the note', () => {
+    const c = draw([policy], { selectedId: 'p' });
+    const tab = c.container.querySelector<HTMLElement>('[data-next-note-tab="after"]')!;
+    // A policy is 180 tall.
+    expect(tab.style.height).toBe('45px');
+    expect(tab.style.width).toBe('18px');
+  });
+
+  it('peeks from the edge of the note, on its centre line', () => {
+    const c = draw([event], { selectedId: 'e' });
+    const after = c.container.querySelector<HTMLElement>('[data-next-note="after"]')!;
+    // Starts at the note's right edge and is centred on its middle (y 600).
+    expect(parseFloat(after.style.left)).toBe(1200);
+    expect(parseFloat(after.style.top) + parseFloat(after.style.height) / 2).toBe(600);
+  });
+
+  it('keeps a hit target of at least 24 screen px when zoomed out', () => {
+    const c = render(
+      <NextNoteButtons
+        elements={[event]}
+        selectedId="e"
+        blocked={false}
+        zoom={0.25}
+        onAdd={() => {}}
+      />,
+    );
+    const button = c.container.querySelector<HTMLElement>('[data-next-note="after"]')!;
+    // 24 screen px at zoom 0.25 is 96 canvas px.
+    expect(parseFloat(button.style.width)).toBeGreaterThanOrEqual(96);
+    expect(parseFloat(button.style.height)).toBeGreaterThanOrEqual(96);
+  });
+
+  it('shows no preview until a tab is pointed at', () => {
+    const c = draw([event], { selectedId: 'e' });
+    expect(c.container.querySelector('[data-testid="next-note-ghost"]')).toBeNull();
+  });
+
+  it('previews the note-to-be where it will land while the tab is hovered', () => {
+    const c = draw([event], { selectedId: 'e' });
+    const after = screen.getByRole('button', { name: /after/i });
+    fireEvent.pointerEnter(after);
+    const ghost = c.container.querySelector<HTMLElement>('[data-testid="next-note-ghost"]')!;
+    expect(ghost).not.toBeNull();
+    expect(ghost.textContent).toContain('Policy');
+    // One gutter right of the event, centred on it: 1216, 510, 300 x 180.
+    expect(ghost.style.left).toBe('1216px');
+    expect(ghost.style.top).toBe('510px');
+    expect(ghost.style.width).toBe('300px');
+    expect(ghost.style.height).toBe('180px');
+    fireEvent.pointerLeave(after);
+    expect(c.container.querySelector('[data-testid="next-note-ghost"]')).toBeNull();
+  });
+
+  it('previews on keyboard focus too', () => {
+    const c = draw([event], { selectedId: 'e' });
+    fireEvent.focus(screen.getByRole('button', { name: /before/i }));
+    expect(c.container.querySelector('[data-testid="next-note-ghost"]')?.textContent).toContain(
+      'Command',
+    );
+  });
+
+  it('previews without moving anything, even when the spot is taken', () => {
+    const onAdd = vi.fn();
+    draw([event, command], { selectedId: 'e', onAdd });
+    fireEvent.pointerEnter(screen.getByRole('button', { name: /before/i }));
+    expect(onAdd).not.toHaveBeenCalled();
   });
 });

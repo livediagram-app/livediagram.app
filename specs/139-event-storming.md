@@ -630,8 +630,7 @@ vocabulary, which is also what keeps it legible on a dark wall.
 
 ## Phase 7 (shipped, re-ruled): next-note buttons
 
-A hovered or selected note offers a button on each side that has a **next
-note**: the note the notation most likely puts there. Click it and that note is
+The SELECTED note offers a button on each side that has a **next note**: the note the notation most likely puts there. Click it and that note is
 added beside this one, on the row's rhythm, open for typing. The two notes are
 then just two notes: the board keeps no relation between them.
 
@@ -657,8 +656,18 @@ then just two notes: the board keeps no relation between them.
   footprint is taken, the insertion ripple makes room in the same commit, so
   the author sees the board behave exactly as the Alt gesture taught them. One
   click is ONE undoable step through the ordinary choke point.
-- **The buttons earn their place.** At most two per note, only on the note you
-  are pointing at or have selected, and each names its act ("Add a command
+- **The buttons are paper tabs.** A small tab in the NEXT note's own colour
+  peeks from the note's edge with a "+": the colour says which note it adds
+  before a word is read. It is sized in proportion to the note (a quarter of
+  its height tall and a tenth of its height wide, in canvas units, so it scales
+  with the note and the zoom and keeps one shape on every kind), sits slightly translucent until pointed at, and keeps a hit
+  target of at least 24 screen px whatever the zoom (WCAG 2.2 target size).
+- **Hovering a tab previews the note-to-be.** A dashed outline in the next
+  note's colour, with its kind named inside, is drawn exactly where the note
+  would land; keyboard focus shows it too. It is only a picture: nothing moves
+  until the click, even when the spot is taken and the click will make room.
+- **The buttons earn their place.** At most two, only on the SELECTED note
+  (never on a note merely pointed at), and each names its act ("Add a command
   before this domain event"). Spec/139 retired the four quick-connect pluses on
   this board as chrome; these are different in kind, because each one is a
   sentence of the notation rather than a generic "connect something here".
@@ -674,8 +683,7 @@ then just two notes: the board keeps no relation between them.
 `packages/diagram/src/event-storming-next.ts` (`ES_NEXT_NOTES`,
 `nextNoteSides`, `nextNoteKind`, `nextNoteBounds`); the placement decision is
 `apps/live/lib/next-note-add.ts`; the act is `hooks/canvas/useNoteActions.ts`;
-the buttons are `components/canvas/NextNoteButtons.tsx`, lit by the hovered
-note published through `lib/note-hover.ts`.
+the tabs and their preview are `components/canvas/NextNoteButtons.tsx`.
 
 **Rulings:**
 
@@ -691,6 +699,12 @@ note published through `lib/note-hover.ts`.
   `migrateLegacyGroups` in the api worker's `rowToTab`, the offline store's tab
   load and a file import), so no board keeps one. The buttons that added a
   note already docked stay, and add an ordinary note.
+- **2026-09-25 — "I like the tab, and hovering it should show the ghost
+  preview"**: of four designs shown in the editor (paper tab, named pill,
+  chevron, ghost preview), the tab won, with the ghost as its hover state. The
+  tab is proportional to the note and quieter than the first draft, and the
+  buttons show on the selected note only; hovering a note no longer shows
+  them.
 
 ## Phase 8 (shipped): import a photo of the wall
 
