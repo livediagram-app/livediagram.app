@@ -10,6 +10,9 @@ import { track } from '@/lib/telemetry';
 // sweep refresh: the swept team libraries are the panel's source, so a
 // mutation re-reads them rather than patching a copy. Teams are Clerk-only,
 // so signed out = no handlers at all, which is what hides the verbs.
+// Every emit carries the `Team` type (spec/22 Folder), the same as the
+// team library's own folder verbs, so a team folder never reads as a
+// personal Explorer one.
 export function useTeamFolderActions({
   clerkUserId,
   viewerId,
@@ -34,7 +37,7 @@ export function useTeamFolderActions({
             parentId,
             teamId,
           });
-          track('Folder', 'Created');
+          track('Folder', 'Created', 'Team');
           refreshTeamLibraries();
           return folder;
         } catch {
@@ -46,7 +49,7 @@ export function useTeamFolderActions({
         if (!trimmed) return;
         void apiUpdateFolder(viewerId, id, { name: trimmed })
           .then(() => {
-            track('Folder', 'Renamed');
+            track('Folder', 'Renamed', 'Team');
             refreshTeamLibraries();
           })
           .catch(() => {});
@@ -65,7 +68,7 @@ export function useTeamFolderActions({
           if (!ok) return;
           void apiDeleteFolder(viewerId, id)
             .then(() => {
-              track('Folder', 'Deleted');
+              track('Folder', 'Deleted', 'Team');
               refreshTeamLibraries();
             })
             .catch(() => {});

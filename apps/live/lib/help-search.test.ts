@@ -13,12 +13,18 @@ describe('HELP_SEARCH_ITEMS', () => {
     expect(new Set(HELP_SEARCH_ITEMS.map((i) => i.id)).size).toBe(articles.length);
   });
 
-  it('builds absolute /help hrefs and slash-free telemetry leaves', () => {
+  it('builds absolute /help hrefs and slash-free telemetry ids', () => {
     for (const item of HELP_SEARCH_ITEMS) {
       expect(item.href).toMatch(/^\/help\/.+\/$/);
       expect(item.leaf).not.toContain('/');
-      expect(item.href.endsWith(`/${item.leaf}/`)).toBe(true);
     }
+  });
+
+  it('reports each article under its own telemetry id', () => {
+    // Two articles on one id read as one on the dashboard (spec/22).
+    expect(new Set(HELP_SEARCH_ITEMS.map((i) => i.leaf)).size).toBe(articles.length);
+    const tips = HELP_SEARCH_ITEMS.find((i) => i.href === '/help/tips-and-tricks/format-painter/');
+    expect(tips?.leaf).toBe('tips-format-painter');
   });
 
   it('finds an article by concept when the title is no exact match', () => {

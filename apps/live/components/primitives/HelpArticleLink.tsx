@@ -5,7 +5,7 @@ import { Tooltip } from '@/components/primitives/Tooltip';
 import {
   HELP_LINK_COPY,
   helpArticleHref,
-  helpArticleLeaf,
+  helpArticleTelemetryId,
   type HelpArticleKey,
 } from '@/lib/help-articles';
 import { track } from '@/lib/telemetry';
@@ -48,7 +48,7 @@ type HelpArticleLinkProps = {
 // One affordance for every editor -> help-centre deep link (spec/56).
 // Surfaces reference an article key, never a raw URL; the link opens the
 // help centre in a new tab and fires a single UI/Opened telemetry event
-// keyed by the article's leaf slug.
+// keyed by the article's registry telemetry id (spec/22).
 export function HelpArticleLink({
   article,
   title = HELP_LINK_COPY[article].title,
@@ -60,7 +60,7 @@ export function HelpArticleLink({
   className,
 }: HelpArticleLinkProps) {
   const href = helpArticleHref(article);
-  const onClick = () => track('UI', 'Opened', helpArticleLeaf(article));
+  const onClick = () => track('UI', 'Opened', helpArticleTelemetryId(article));
   const common = {
     href,
     target: '_blank',

@@ -383,6 +383,10 @@ every handler in (`tool-scope.ts`), so the dashboard says which tool broke. A **
 malformed elements is expected, model-correctable input, not a fault, and
 reporting it would flood the view (an empty Exceptions view is the goal).
 Fire-and-forget, generic tokens only — never a message, stack, or user content.
+Every post (these reports and `Mcp·Used`) is handed to the request's
+`ctx.waitUntil` (`request-scope.ts`) so it outlives the response, and
+`Mcp·Used` is sent by `registerTool` only after a tool call succeeds
+(spec/22 Mcp).
 
 ### 4.13 Worker configuration
 

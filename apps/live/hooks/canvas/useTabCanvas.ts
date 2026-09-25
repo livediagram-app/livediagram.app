@@ -11,7 +11,6 @@
 // the same debounce hook also feeds `scheduleElementChangeLog` to
 // useElementStyle — one debounce instance, two consumers.
 
-import { useRef } from 'react';
 import {
   isBoxed,
   type BackgroundPattern,
@@ -25,6 +24,7 @@ import { cleanupElements } from '@/lib/tab-cleanup';
 import { FONTS } from '@livediagram/diagram';
 import { PATTERNS } from '@/components/palette/palette-controls';
 import { useTabTheme } from './useTabTheme';
+import { useDebouncedCanvasTelemetry } from './useDebouncedCanvasTelemetry';
 
 // Human-readable names for the activity log, so an entry reads
 // "Changed default text size to Medium" rather than leaking the raw
@@ -41,15 +41,6 @@ const TEXT_SIZE_LABELS: Record<TextSize, string> = {
 // label entry.
 const patternLabel = (pattern: BackgroundPattern): string =>
   PATTERNS.find((p) => p.id === pattern)?.label ?? pattern;
-
-// Slider-edit debounce window for the canvas colour / opacity
-// telemetry. Spec/22's noise rule excludes "raw colour tweaks", and
-// emitting on every slider tick would absolutely qualify; debouncing
-// at ~800ms means one user dragging a slider end-to-end produces one
-// event instead of dozens, while still capturing "did they actually
-// change the canvas appearance" as a discrete signal. Matches the
-// activity-log debounce in spirit (`scheduleTabMetaLog`).
-const CANVAS_TELEMETRY_DEBOUNCE_MS = 800;
 
 type TabCanvasDeps = {
   // True when edits are disallowed (read-only role / locked tab). Every
@@ -104,21 +95,9 @@ export function useTabCanvas(deps: TabCanvasDeps) {
     tickTabs((ts) => ts.map((t) => (t.id === activeId ? patch(t) : t)));
   };
 
-  // Per-setter debounce timers for the canvas colour / opacity
-  // telemetry emits. Keyed by setter name so a colour drag and an
-  // opacity drag debounce independently and one doesn't cancel the
-  // other. Refs (not state) because changing them mustn't re-render.
-  const telemetryTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
-  const scheduleCanvasTelemetry = (key: string, type: string) => {
-    const timers = telemetryTimersRef.current;
-    const existing = timers.get(key);
-    if (existing !== undefined) clearTimeout(existing);
-    const id = setTimeout(() => {
-      timers.delete(key);
-      track('Canvas', 'Changed', type);
-    }, CANVAS_TELEMETRY_DEBOUNCE_MS);
-    timers.set(key, id);
-  };
+  // Debounced Canvas·Changed emits for the slider setters, flushed on
+  // unmount / page hide so the last drag isn't lost (spec/22).
+  const scheduleCanvasTelemetry = useDebouncedCanvasTelemetry();
 
   const autoAlignTab = () => {
     if (editsBlocked) return;

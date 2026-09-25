@@ -29,6 +29,8 @@ import {
   type TelemetryEvent,
 } from '@livediagram/api-schema';
 
+export { onPageHide } from './page-hide';
+
 const FLUSH_DELAY_MS = 10_000;
 const MAX_BUFFER = 25;
 

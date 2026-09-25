@@ -1,7 +1,13 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { HELP_ARTICLES, HELP_LINK_COPY, helpArticleHref, helpArticleLeaf } from './help-articles';
+import {
+  HELP_ARTICLES,
+  HELP_LINK_COPY,
+  helpArticleHref,
+  helpArticleTelemetryId,
+  type HelpArticleKey,
+} from './help-articles';
 
 // The editor deep-links into the help centre (apps/help) by the slugs in
 // HELP_ARTICLES, so a stale slug ships a 404 link. The editor depends on
@@ -69,14 +75,28 @@ describe('every key earns its place', () => {
   });
 });
 
-describe('helpArticleHref / helpArticleLeaf', () => {
+describe('helpArticleHref / helpArticleTelemetryId', () => {
   it('builds an absolute /help path with a trailing slash', () => {
     expect(helpArticleHref('sharing')).toBe('/help/collaboration/sharing/');
   });
 
-  it('returns the slash-free leaf slug for telemetry', () => {
-    expect(helpArticleLeaf('shareLinkExpiry')).toBe('share-link-expiry');
-    expect(helpArticleLeaf('palette')).toBe('palette'); // single-segment value
+  it('returns a slash-free telemetry id', () => {
+    expect(helpArticleTelemetryId('shareLinkExpiry')).toBe('share-link-expiry');
+    expect(helpArticleTelemetryId('palette')).toBe('palette'); // single-segment value
+    for (const key of Object.keys(HELP_ARTICLES) as HelpArticleKey[]) {
+      expect(helpArticleTelemetryId(key)).toMatch(/^[a-z0-9-]{1,40}$/);
+    }
+  });
+
+  it('gives two different linked pages two different ids', () => {
+    // A `UI·Opened` row has to name one page, or two links read as one.
+    const idToPath = new Map<string, string>();
+    for (const key of Object.keys(HELP_ARTICLES) as HelpArticleKey[]) {
+      const id = helpArticleTelemetryId(key);
+      const path = HELP_ARTICLES[key];
+      expect(idToPath.get(id) ?? path, id).toBe(path);
+      idToPath.set(id, path);
+    }
   });
 });
 

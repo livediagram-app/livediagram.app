@@ -9,6 +9,7 @@ import { cors } from 'hono/cors';
 import type { Env } from './env';
 import { buildServer } from './server';
 import { registerOauthRoutes } from './oauth';
+import { runInRequest } from './request-scope';
 
 export type { Env };
 
@@ -52,9 +53,26 @@ app.all('/mcp', async (c) => {
     enableJsonResponse: true,
   });
   await server.connect(transport);
-  return transport.handleRequest(c.req.raw, {
-    authInfo: { token, clientId: 'mcp', scopes: [] },
-  });
+  // Tools post telemetry fire-and-forget; the request's waitUntil keeps those
+  // posts alive past the response (request-scope.ts).
+  return runInRequest(requestWaitUntil(c), () =>
+    transport.handleRequest(c.req.raw, {
+      authInfo: { token, clientId: 'mcp', scopes: [] },
+    }),
+  );
 });
+
+// Hono's `executionCtx` throws when the runtime supplied none (a unit test
+// calling app.fetch without one), so read it defensively.
+function requestWaitUntil(c: {
+  readonly executionCtx: { waitUntil(promise: Promise<unknown>): void };
+}): ((promise: Promise<unknown>) => void) | null {
+  try {
+    const ctx = c.executionCtx;
+    return (promise) => ctx.waitUntil(promise);
+  } catch {
+    return null;
+  }
+}
 
 export default app;

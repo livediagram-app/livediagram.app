@@ -1,6 +1,7 @@
 import type { Element } from '@livediagram/diagram';
 
-import { track, titleCaseType } from '@/lib/telemetry';
+import { isTechIconId } from '@/lib/tech-icons';
+import { track } from '@/lib/telemetry';
 
 interface InlineIconMutatorsDeps {
   // True while edits are blocked (read-only share role / locked tab). Every
@@ -35,7 +36,10 @@ export function useInlineIconMutators({ editsBlocked, commit }: InlineIconMutato
           : e,
       ),
     );
-    track('Element', 'Added', titleCaseType('icon'));
+    // A tech icon reports as `TechIcon`, the same type every other way of
+    // adding one uses (useElementCreation's addTechIcon / palette drop), so
+    // architecture-icon usage doesn't vanish into the line-art `Icon` count.
+    track('Element', 'Added', isTechIconId(iconId) ? 'TechIcon' : 'Icon');
   };
 
   // Remove an inline icon from a shape (drops iconId + iconPosition).
@@ -77,7 +81,9 @@ export function useInlineIconMutators({ editsBlocked, commit }: InlineIconMutato
             : e,
         );
     });
-    track('Element', 'Added', titleCaseType('icon'));
+    // No `Element·Added` here: the glyph is an icon that was already counted
+    // when it was first placed on the canvas, and this only moves it into a
+    // shape. Counting it again made every fold-in a second icon (spec/22).
   };
 
   return { dropIconOnElement, removeIconFromElement, dropIconElementOnShape };

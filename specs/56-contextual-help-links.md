@@ -51,10 +51,14 @@ is the only way the editor links to a help article. It:
   when it needs a different framing; none does today. Before this table
   every floating panel's `?` said a bare "Learn more" with no description,
   which told the reader nothing about where it went;
-- fires `track('UI', 'Opened', <leaf-slug>)` on click, reusing the existing
-  `UI`/`Opened` telemetry pair. The `type` is the article's **leaf** slug
-  (e.g. `share-link-expiry`), which fits `TELEMETRY_TYPE_PATTERN`
-  (`[A-Za-z0-9 ._-]{1,40}`, no slashes) - the full nested slug would not.
+- fires `track('UI', 'Opened', <article id>)` on click, reusing the existing
+  `UI`/`Opened` telemetry pair. The `type` is the article's **telemetry id**
+  (`helpArticleTelemetryId`, from `@livediagram/help-registry/telemetry`):
+  its slug (e.g. `share-link-expiry`), or an explicit token where two
+  articles share a slug (spec/22 Help). It fits `TELEMETRY_TYPE_PATTERN`
+  (`[A-Za-z0-9 ._-]{1,40}`, no slashes) - the full nested slug would not -
+  and it is the same id the help centre reports for that page. It used to
+  be the bare last path segment, which two pairs of articles share.
 
 This follows the reuse-over-duplication and no-god-files principles: every
 surface links the same way, and no surface hand-rolls an `<a href="/help/...">`.

@@ -112,7 +112,8 @@ type PaletteItem = { kind: 'palette'; id: string; name: string; add: PaletteAdd 
 // which is now just one command among many.
 type CommandItem = { kind: 'command'; id: string; name: string };
 // A help-centre article result. Picking it opens the article (in a new tab);
-// `href` is the absolute /help path and `leaf` the telemetry-safe slug tail.
+// `href` is the absolute /help path and `leaf` the article's telemetry id
+// (help-registry's articleTelemetryId: unique per article, slash-free).
 type HelpItem = { kind: 'help'; id: string; name: string; href: string; leaf: string };
 
 // A Settings row result. Picking it opens the Settings dialog on that row's

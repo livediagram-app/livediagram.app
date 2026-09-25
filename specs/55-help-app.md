@@ -248,7 +248,8 @@ The editor's global search panel (spec/09) surfaces matching help articles as a
 searchable catalogue (`apps/live/lib/help-search.ts`) is derived from the
 **full `@livediagram/help-registry` registry** — every article, matched on its
 title plus the registry's description + `keywords` synonyms, resolved to an
-absolute `/help` href (the article slug doubles as the telemetry-safe leaf).
+absolute `/help` href, with the article's telemetry id (spec/22 Help) as the
+click's `UI·Opened` type.
 There is no second hand-curated list to keep in sync; adding an article to the
 registry makes it findable in the editor automatically. `buildSearchResults`
 stays catalogue-agnostic (the surface passes `helpItems`, the same pattern as

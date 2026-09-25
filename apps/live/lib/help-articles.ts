@@ -14,6 +14,8 @@
 // help page is a bug, the same way an unregistered help article is - keep
 // these in sync with @livediagram/help-registry.
 
+import { helpPathTelemetryId } from '@livediagram/help-registry/telemetry';
+
 export const HELP_ARTICLES = {
   // Sharing
   sharing: 'collaboration/sharing',
@@ -334,11 +336,12 @@ export function helpArticleHref(key: HelpArticleKey): string {
 }
 
 /**
- * The article's leaf slug, used as the telemetry `type` on a help-link
- * click. The full nested slug contains slashes, which TELEMETRY_TYPE_PATTERN
- * rejects; the leaf (e.g. `share-link-expiry`) is a safe, bounded token.
+ * The article's telemetry id, used as the `type` on a help-link click
+ * (`UI·Opened`). The full nested slug contains slashes, which
+ * TELEMETRY_TYPE_PATTERN rejects; the registry's per-article id (spec/22) is
+ * a bounded token that, unlike the bare leaf segment, is unique per article
+ * and matches what the help centre itself reports for the same page.
  */
-export function helpArticleLeaf(key: HelpArticleKey): string {
-  const slug = HELP_ARTICLES[key];
-  return slug.slice(slug.lastIndexOf('/') + 1);
+export function helpArticleTelemetryId(key: HelpArticleKey): string {
+  return helpPathTelemetryId(HELP_ARTICLES[key]);
 }

@@ -4,6 +4,7 @@
 // enforces, so the MCP needs no special privilege and adds no business logic.
 import { errorTypeToken } from '@livediagram/api-schema';
 import type { Env } from './env';
+import { keepAlive } from './request-scope';
 import { currentTool } from './tool-scope';
 
 export class ApiError extends Error {
@@ -38,9 +39,11 @@ export async function apiFetch(
 
 // Fire-and-forget anonymous telemetry to the api's public /api/events (spec/22).
 // No token: the ingest endpoint is unauthenticated and only stores the closed
-// three-field vocabulary. Never awaited and never throws into the tool; a
-// worker-to-worker call sends no Origin header, so the same-origin guard
-// passes. Off unless the api has TELEMETRY_ENABLED.
+// three-field vocabulary. Never awaited and never throws into the tool, but
+// handed to the request's waitUntil (request-scope.ts) so the runtime can't
+// cancel it when the response goes out; a worker-to-worker call sends no
+// Origin header, so the same-origin guard passes. Off unless the api has
+// TELEMETRY_ENABLED.
 export function postTelemetry(env: Env, category: string, action: string, type: string): void {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   // Identifies us as an internal caller so the api worker doesn't put us in
@@ -49,13 +52,19 @@ export function postTelemetry(env: Env, category: string, action: string, type: 
   // in the world contended for one 120/min key and the overflow was dropped
   // as a 204 we can't even see. Optional on both sides.
   if (env.INTERNAL_EVENTS_KEY) headers['X-Internal-Events-Key'] = env.INTERNAL_EVENTS_KEY;
-  void env.API.fetch(
-    new Request(apiUrl('/events'), {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({ events: [{ category, action, type }] }),
-    }),
-  ).catch(() => {});
+  let post: Promise<unknown>;
+  try {
+    post = env.API.fetch(
+      new Request(apiUrl('/events'), {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ events: [{ category, action, type }] }),
+      }),
+    ).catch(() => {});
+  } catch {
+    return;
+  }
+  keepAlive(post);
 }
 
 // Fetch + parse JSON, throwing ApiError on a non-2xx so tools surface a clear,

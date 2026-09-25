@@ -13,7 +13,7 @@ import {
   type Tab,
 } from '@livediagram/diagram';
 import { TEMPLATES, TEMPLATE_CATEGORIES, templateCategory } from '@livediagram/templates';
-import { apiFetch, apiJson, postTelemetry, reportApiFailure } from './api';
+import { apiFetch, apiJson, reportApiFailure } from './api';
 import type { Env } from './env';
 import { fetchTeamLibraries, matchDiagrams } from './find-diagrams';
 import {
@@ -48,6 +48,7 @@ import {
 export function registerTools(server: McpServer, env: Env): void {
   registerTool(
     server,
+    env,
     'find_diagrams',
     {
       behaviour: 'read',
@@ -61,7 +62,6 @@ export function registerTools(server: McpServer, env: Env): void {
     },
     async (args, extra) => {
       const token = requireToken(extra as Extra);
-      postTelemetry(env, 'Mcp', 'Used', 'FindDiagrams');
       // Personal + team shared libraries (spec/35): a diagram filed into a
       // team leaves the personal list, so both must be swept.
       const [{ diagrams }, teamLibraries] = await Promise.all([
@@ -77,6 +77,7 @@ export function registerTools(server: McpServer, env: Env): void {
 
   registerTool(
     server,
+    env,
     'read_diagram',
     {
       behaviour: 'read',
@@ -88,7 +89,6 @@ export function registerTools(server: McpServer, env: Env): void {
     },
     async (args, extra) => {
       const token = requireToken(extra as Extra);
-      postTelemetry(env, 'Mcp', 'Used', 'ReadDiagram');
       const { diagram } = await apiJson<{ diagram: Diagram }>(
         env,
         token,
@@ -116,6 +116,7 @@ export function registerTools(server: McpServer, env: Env): void {
 
   registerTool(
     server,
+    env,
     'list_templates',
     {
       behaviour: 'read',
@@ -130,7 +131,6 @@ export function registerTools(server: McpServer, env: Env): void {
     },
     async (_args, extra) => {
       requireToken(extra as Extra);
-      postTelemetry(env, 'Mcp', 'Used', 'ListTemplates');
       return textResult({
         categories: TEMPLATE_CATEGORIES,
         // A hidden template is an editor-onboarding artefact, not a scaffold
@@ -148,6 +148,7 @@ export function registerTools(server: McpServer, env: Env): void {
 
   registerTool(
     server,
+    env,
     'create_diagram',
     {
       behaviour: 'write',
@@ -164,7 +165,6 @@ export function registerTools(server: McpServer, env: Env): void {
     },
     async (args, extra) => {
       const token = requireToken(extra as Extra);
-      postTelemetry(env, 'Mcp', 'Used', 'CreateDiagram');
       // Accept either `tabs` (preferred) or a single `tab` alias.
       const inputTabs = args.tabs ?? (args.tab ? [args.tab] : undefined);
       if (!inputTabs || inputTabs.length === 0) {
@@ -228,6 +228,7 @@ export function registerTools(server: McpServer, env: Env): void {
 
   registerTool(
     server,
+    env,
     'add_tab',
     {
       behaviour: 'write',
@@ -242,7 +243,6 @@ export function registerTools(server: McpServer, env: Env): void {
     },
     async (args, extra) => {
       const token = requireToken(extra as Extra);
-      postTelemetry(env, 'Mcp', 'Used', 'AddTab');
       const tabId = crypto.randomUUID();
       // Template tab (spec/62 §4.5): resolved up front so an unknown kind
       // fails before any network round trip.
@@ -304,6 +304,7 @@ export function registerTools(server: McpServer, env: Env): void {
 
   registerTool(
     server,
+    env,
     'update_diagram',
     {
       behaviour: 'destructive',
@@ -316,7 +317,6 @@ export function registerTools(server: McpServer, env: Env): void {
     },
     async (args, extra) => {
       const token = requireToken(extra as Extra);
-      postTelemetry(env, 'Mcp', 'Used', 'UpdateDiagram');
       const { diagram } = await apiJson<{ diagram: Diagram }>(
         env,
         token,
@@ -386,6 +386,7 @@ export function registerTools(server: McpServer, env: Env): void {
 
   registerTool(
     server,
+    env,
     'share_diagram',
     {
       behaviour: 'write',
@@ -398,7 +399,6 @@ export function registerTools(server: McpServer, env: Env): void {
     },
     async (args, extra) => {
       const token = requireToken(extra as Extra);
-      postTelemetry(env, 'Mcp', 'Used', 'ShareDiagram');
       // Default to view (least privilege for an automated share): showing your
       // work shouldn't silently grant edit. The api's own default is edit, so
       // we send the role explicitly.
@@ -420,6 +420,7 @@ export function registerTools(server: McpServer, env: Env): void {
 
   registerTool(
     server,
+    env,
     'rename_diagram',
     {
       behaviour: 'write',
@@ -431,7 +432,6 @@ export function registerTools(server: McpServer, env: Env): void {
     },
     async (args, extra) => {
       const token = requireToken(extra as Extra);
-      postTelemetry(env, 'Mcp', 'Used', 'RenameDiagram');
       if (args.tabId) {
         // No tab-name-only endpoint: read the tab, then write it back with the
         // new name (the api ignores UI-only fields on write).
@@ -463,6 +463,7 @@ export function registerTools(server: McpServer, env: Env): void {
 
   registerTool(
     server,
+    env,
     'delete_diagram',
     {
       behaviour: 'destructive',
@@ -474,7 +475,6 @@ export function registerTools(server: McpServer, env: Env): void {
     },
     async (args, extra) => {
       const token = requireToken(extra as Extra);
-      postTelemetry(env, 'Mcp', 'Used', 'DeleteDiagram');
       const path = args.tabId
         ? `/diagrams/${args.diagramId}/tabs/${args.tabId}`
         : `/diagrams/${args.diagramId}`;
