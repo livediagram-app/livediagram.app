@@ -11,7 +11,7 @@ import {
   SERVER_CRASHES,
 } from './metric-catalogue';
 import { RankCard, rank } from './RankCard';
-import { windowLabel } from './windows';
+import { rankTrend, windowLabel } from './windows';
 
 // Exceptions view (spec/22): error health, each row saying where it
 // failed. API failures observed by the editor's api-client
@@ -41,6 +41,7 @@ export function ExceptionsView({
   active: TelemetryWindowKey;
 }) {
   const rows = summary.windows[active].rows;
+  const trend = rankTrend(summary, active);
   const isApi = (r: { category: string; action: string }) =>
     r.category === 'Error' && r.action === 'Api';
   const failed = rank(rows, (r) => isApi(r) && !isServerCrash(r.type));
@@ -62,6 +63,7 @@ export function ExceptionsView({
       <div className="mt-6">
         <CardColumns>
           <RankCard
+            trend={trend}
             title="Failed Requests"
             subtitle="By status and the request, route, or MCP tool that failed, as the caller saw it"
             category="Error"
@@ -71,6 +73,7 @@ export function ExceptionsView({
             emptyLabel="No failed requests in this window. Good."
           />
           <RankCard
+            trend={trend}
             title="Server Crashes"
             subtitle="By the route the api worker was serving when it threw"
             category="Error"
@@ -80,6 +83,7 @@ export function ExceptionsView({
             emptyLabel="No server crashes in this window. Good."
           />
           <RankCard
+            trend={trend}
             title="Client Exceptions"
             subtitle="By kind, the page or editor area it happened in, and the error type"
             category="Error"

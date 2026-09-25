@@ -14,6 +14,12 @@ const TONES = {
   neutral: 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400',
 };
 
+// A change under half a percent still moved, so it reads "<1%", not "0%".
+const percent = (ratio: number) => {
+  const pct = Math.round(ratio * 100);
+  return pct === 0 ? '<1%' : `${pct.toLocaleString()}%`;
+};
+
 export function TrendBadge({
   now,
   before,
@@ -39,7 +45,7 @@ export function TrendBadge({
     ? 'flat'
     : before === 0
       ? Math.abs(delta).toLocaleString()
-      : `${Math.round((Math.abs(delta) / before) * 100).toLocaleString()}%`;
+      : percent(Math.abs(delta) / before);
   return (
     <span
       className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium tabular-nums ${tone}`}

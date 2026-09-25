@@ -4,6 +4,7 @@ export type ViewKey =
   | 'dashboard'
   | 'pages'
   | 'palette'
+  | 'modes'
   | 'lookfeel'
   | 'editing'
   | 'help'

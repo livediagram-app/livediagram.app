@@ -4,16 +4,15 @@ import { PALETTE_TELEMETRY_TYPES } from '@livediagram/api-schema';
 import type { TelemetryCount, TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
 import { CardColumns } from './CardColumns';
 import { RankCard, rank } from './RankCard';
-import { PALETTE_TYPE_ALIASES, SELECTION_MODES } from './palette-types';
-import { windowLabel } from './windows';
+import { PALETTE_TYPE_ALIASES } from './palette-types';
+import { rankTrend, windowLabel } from './windows';
 
 // Palette view (spec/22): what people reach for in the editor's creation
 // palette, most to least, broken out by the palette's own tabs. Element adds
-// (`Element·Added·<type>`) are bucketed into the catalogue categories below;
-// the canvas Selection Modes are a separate concept (`Canvas·Used·<mode>`,
-// restricted to SELECTION_MODES), not palette elements, so they get their own
-// card. Only items with events in
-// the selected window appear.
+// (`Element·Added·<type>`) are bucketed into the catalogue categories below.
+// The canvas selection modes are a separate concept, not elements, so they
+// have their own tab (ModesView). Only items with events in the selected
+// window appear.
 
 // The palette tabs come from the SHARED catalogue in @livediagram/api-schema
 // (spec/22), not a local copy. They used to be hand-mirrored here with a
@@ -43,16 +42,13 @@ export function PaletteView({
   active: TelemetryWindowKey;
 }) {
   const rows = summary.windows[active].rows;
+  const trend = rankTrend(summary, active);
   const shapes = rank(rows, addedIn(SHAPES), PALETTE_TYPE_ALIASES);
   const tools = rank(rows, addedIn(TOOLS), PALETTE_TYPE_ALIASES);
   const collaborate = rank(rows, addedIn(COLLABORATE), PALETTE_TYPE_ALIASES);
   const components = rank(rows, addedIn(COMPONENTS), PALETTE_TYPE_ALIASES);
   const devices = rank(rows, addedIn(DEVICES), PALETTE_TYPE_ALIASES);
   const icons = rank(rows, addedIn(ICONS), PALETTE_TYPE_ALIASES);
-  const modes = rank(
-    rows,
-    (r) => r.category === 'Canvas' && r.action === 'Used' && SELECTION_MODES.includes(r.type ?? ''),
-  );
 
   return (
     <div className="mt-8">
@@ -64,6 +60,7 @@ export function PaletteView({
       <div className="mt-6">
         <CardColumns>
           <RankCard
+            trend={trend}
             title="Shapes"
             subtitle="Boxes, circles, flowchart symbols and other primitives"
             category="Element"
@@ -74,6 +71,7 @@ export function PaletteView({
             emptyLabel="No shapes were added in this window yet."
           />
           <RankCard
+            trend={trend}
             title="Collaborate"
             subtitle="Estimate cards, temperature checks, idea boxes, agendas, decisions and roll calls"
             category="Element"
@@ -84,6 +82,7 @@ export function PaletteView({
             emptyLabel="No collaboration elements were added in this window yet."
           />
           <RankCard
+            trend={trend}
             title="Tools"
             subtitle="Text, arrows, stickies, tables, charts and other building blocks"
             category="Element"
@@ -94,6 +93,7 @@ export function PaletteView({
             emptyLabel="No tools were added in this window yet."
           />
           <RankCard
+            trend={trend}
             title="Components"
             subtitle="Pre-built blocks: banners, heroes, callouts, stat rows and more"
             category="Element"
@@ -104,6 +104,7 @@ export function PaletteView({
             emptyLabel="No components were added in this window yet."
           />
           <RankCard
+            trend={trend}
             title="Devices"
             subtitle="Wireframe frames: browser, phone, laptop and friends"
             category="Element"
@@ -114,6 +115,7 @@ export function PaletteView({
             emptyLabel="No device frames were added in this window yet."
           />
           <RankCard
+            trend={trend}
             title="Icons"
             subtitle="Line-art icons and brand / technology marks"
             category="Element"
@@ -122,15 +124,6 @@ export function PaletteView({
             daily={summary.daily}
             aliases={PALETTE_TYPE_ALIASES}
             emptyLabel="No icons were added in this window yet."
-          />
-          <RankCard
-            title="Selection Modes"
-            subtitle="Canvas modes picked from the palette: laser, spotlight, eraser, highlighter, format painter, isometric, avatar"
-            category="Canvas"
-            action="Used"
-            items={modes}
-            daily={summary.daily}
-            emptyLabel="No selection modes were used in this window yet."
           />
         </CardColumns>
       </div>

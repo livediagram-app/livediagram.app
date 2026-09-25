@@ -1,12 +1,14 @@
 'use client';
 
 import { EmptyState } from '@livediagram/ui';
-import type { TelemetryCount, TelemetryDaily } from '@livediagram/api-schema';
+import { metricKey, type TelemetryCount, type TelemetryDaily } from '@livediagram/api-schema';
 import { pct } from './chart-utils';
 import { categoryColor, typeLabel } from './event-vocab';
 import { ActivityGlyph } from './glyphs';
 import { MiniSparkline } from './MiniSparkline';
-import { aliasedSeries, type TypeAliases } from './rank';
+import { aliasedSeries, foldAliases, type TypeAliases } from './rank';
+import { TrendBadge } from './TrendBadge';
+import type { RankTrend } from './windows';
 
 // A ranked usage list: rows sorted most-to-least, each with a share bar and
 // (on desktop) a mini trend line, the top row tagged Most used. (No "least
@@ -44,11 +46,20 @@ type RankListProps = {
   // The same old-spelling map the items were ranked with, so a folded row's
   // trend line includes the history stored under its old spelling.
   aliases?: TypeAliases;
+  // The previous window, for each row's trend arrow (rankTrend). Omitted when
+  // the api sent no previous windows.
+  trend?: RankTrend;
 };
 
 // The ranked rows, inside RankCard's frame.
-function RankList({ category, action, items, daily, emptyLabel, aliases }: RankListProps) {
+function RankList({ category, action, items, daily, emptyLabel, aliases, trend }: RankListProps) {
   const color = categoryColor(category);
+  // Each row's count in the previous window, folded like the items were.
+  const before = new Map<string, number>();
+  if (trend) {
+    const rows = aliases ? foldAliases(trend.rows, aliases) : trend.rows;
+    for (const r of rows) before.set(metricKey(r.category, r.action, r.type), r.count);
+  }
   if (items.length === 0) {
     return (
       <div className="mt-4">
@@ -77,8 +88,20 @@ function RankList({ category, action, items, daily, emptyLabel, aliases }: RankL
                   </span>
                   {isTop ? <RankTag /> : null}
                 </span>
-                <span className="shrink-0 font-semibold tabular-nums text-slate-900 dark:text-slate-100">
-                  {row.count.toLocaleString()}
+                <span className="flex shrink-0 items-center gap-2">
+                  {trend ? (
+                    <TrendBadge
+                      now={row.count}
+
+                      before={before.get(metricKey(row.category, row.action, row.type)) ?? 0}
+
+                      against={trend.against}
+                    />
+                  ) : null}
+
+                  <span className="font-semibold tabular-nums text-slate-900 dark:text-slate-100">
+                    {row.count.toLocaleString()}
+                  </span>
                 </span>
               </div>
               <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">

@@ -3,6 +3,7 @@
 import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
 import {
   ACCOUNT_ACTIVITY,
+  CANVAS_MODES,
   AI_ASSISTANCE,
   ALL_VISITORS,
   API_TOKEN_ACTIVITY,
@@ -79,6 +80,7 @@ export const GROUPS: MetricGroup[] = [
       AI_ASSISTANCE,
       LAYERS_FEATURE,
       PALETTE_USE,
+      CANVAS_MODES,
       LOOK_AND_FEEL,
       EDITOR_SEARCH,
       PANELS_OPENED,

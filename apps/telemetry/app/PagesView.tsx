@@ -4,7 +4,7 @@ import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-sche
 import { PAGE_VIEW_APPS, pageViewRows } from './page-insights';
 import { CardColumns } from './CardColumns';
 import { RankCard } from './RankCard';
-import { windowLabel } from './windows';
+import { rankTrend, windowLabel } from './windows';
 
 // Pages view (spec/150): which pages across the site get viewed, broken down
 // by the app that serves them. Every frontend emits `Page·View·<path>` on
@@ -23,6 +23,7 @@ export function PagesView({
   active: TelemetryWindowKey;
 }) {
   const rows = summary.windows[active].rows;
+  const trend = rankTrend(summary, active);
 
   // The ranking cards, for CardColumns to balance: apps serve very different
   // numbers of pages (Live has many, Help and Dashboard few).
@@ -58,6 +59,7 @@ export function PagesView({
           <CardColumns>
             {rankings.map((r) => (
               <RankCard
+                trend={trend}
                 key={r.key}
                 title={r.title}
                 subtitle={r.subtitle}

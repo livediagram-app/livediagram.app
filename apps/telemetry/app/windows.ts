@@ -85,3 +85,17 @@ export function previousSpanLabel(
   if (!reachable) return null;
   return days === 1 ? 'the day before' : `the ${days} days before`;
 }
+
+// What a ranking needs for its per-row trend arrows: the previous window's
+// rows and that span's name. Only from the api's previousWindows; without them
+// rankings show no arrows.
+export type RankTrend = { rows: TelemetryWindow['rows']; against: string };
+
+export function rankTrend(
+  summary: TelemetrySummary,
+  active: TelemetryWindowKey,
+): RankTrend | undefined {
+  const previous = summary.previousWindows?.[active];
+  const against = previousSpanLabel(summary, active);
+  return previous && against ? { rows: previous.rows, against } : undefined;
+}

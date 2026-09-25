@@ -11,6 +11,7 @@ import {
   GearGlyph,
   LayersGlyph,
   PaletteGlyph,
+  PointerGlyph,
   SearchGlyph,
   SparkGlyph,
   WindowGlyph,
@@ -20,6 +21,7 @@ import { StickyWindowBar } from './StickyWindowBar';
 import { ViewTabs } from './ViewTabs';
 import { DashboardView } from './DashboardView';
 import type { ViewKey } from './view-keys';
+import { ModesView } from './ModesView';
 import { PagesView } from './PagesView';
 import { SettingsView } from './SettingsView';
 import { LookAndFeelView } from './LookAndFeelView';
@@ -46,6 +48,7 @@ const VIEWS: { key: ViewKey; label: string; icon: ReactNode }[] = [
   { key: 'dashboard', label: 'Dashboard', icon: <SparkGlyph /> },
   { key: 'pages', label: 'Pages', icon: <WindowGlyph /> },
   { key: 'palette', label: 'Palette', icon: <PaletteGlyph /> },
+  { key: 'modes', label: 'Modes', icon: <PointerGlyph /> },
   { key: 'lookfeel', label: 'Look & Feel', icon: <BrushGlyph /> },
   { key: 'editing', label: 'Editing', icon: <LayersGlyph /> },
   { key: 'help', label: 'Help', icon: <FileGlyph /> },
@@ -172,6 +175,8 @@ export default function TelemetryDashboard() {
               <EditingView summary={summary} active={active} />
             ) : view === 'help' ? (
               <HelpView summary={summary} active={active} />
+            ) : view === 'modes' ? (
+              <ModesView summary={summary} active={active} />
             ) : view === 'settings' ? (
               <SettingsView summary={summary} active={active} />
             ) : view === 'exceptions' ? (

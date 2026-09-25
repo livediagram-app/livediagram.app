@@ -1928,27 +1928,43 @@ export const TOOLBAR_CATEGORY = chart(
   'The Toolbar layout switched to another category.',
   { types: ['ToolbarCategory'] },
 );
-export const SELECTION_MODES_USED = chart(
-  'Canvas',
-  'Used',
-  'Selection Modes Used',
-  'Laser, spotlight, eraser, highlighter, format painter, isometric and avatar modes.',
-  { types: SELECTION_MODES },
-);
 export const PALETTE_USE: MetricStack = {
   stack: true,
   title: 'Palette Use',
   blurb:
-    'How the palette gets used beyond adding elements: favourites, searches, groups, and canvas modes.',
-  members: [
-    PALETTE_FAVOURITES,
-    PALETTE_SEARCHES,
-    PALETTE_GROUPS_OPENED,
-    TOOLBAR_CATEGORY,
-    SELECTION_MODES_USED,
-    MODE_OPTIONS,
-  ],
-  seeAlso: { view: 'palette', label: 'See Each Mode on the Palette Tab' },
+    'How the palette gets used beyond adding elements: favourites, searches, groups, and the toolbar.',
+  members: [PALETTE_FAVOURITES, PALETTE_SEARCHES, PALETTE_GROUPS_OPENED, TOOLBAR_CATEGORY],
+  seeAlso: { view: 'palette', label: 'See Each Element on the Palette Tab' },
+};
+
+// The canvas selection modes, one chart per mode, and the options set inside
+// them (Canvas Modes tab has the rankings).
+const MODE_TITLES: Record<string, string> = {
+  Laser: 'Laser',
+  Spotlight: 'Spotlight',
+  Eraser: 'Eraser',
+  Highlighter: 'Highlighter',
+  FormatPainter: 'Format Painter',
+  Isometric: 'Isometric',
+  AvatarMode: 'Avatar Mode',
+};
+export const MODE_METRICS: readonly Metric[] = SELECTION_MODES.map((mode) =>
+  chart(
+    'Canvas',
+    'Used',
+    MODE_TITLES[mode] ?? mode,
+    `The ${(MODE_TITLES[mode] ?? mode).toLowerCase()} mode switched on from the palette.`,
+    { types: [mode] },
+  ),
+);
+export const CANVAS_MODES: MetricStack = {
+  stack: true,
+  title: 'Canvas Modes',
+  blurb: 'Ways of working on the canvas picked from the palette, and the options set inside them.',
+  members: [...MODE_METRICS, MODE_OPTIONS],
+  // Modes switched into; tweaking an option inside one is not another use.
+  headline: [...MODE_METRICS],
+  seeAlso: { view: 'modes', label: 'See Each Mode on the Modes Tab' },
 };
 
 // Editor chrome: layout and navigation.

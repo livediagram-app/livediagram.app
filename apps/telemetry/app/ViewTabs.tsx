@@ -7,7 +7,9 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 // one metric. Every other view is a closer look at one area, so those sit
 // together in a bar titled "Detail".
 // Both halves are one tablist, so keyboard and screen-reader users still get a
-// single set of tabs.
+// single set of tabs. On large screens they share one line, the Detail bar
+// taking the rest of the width and scrolling if its tabs outgrow it; smaller
+// screens stack the two.
 //
 // The Detail bar is a single-line carousel. Its tabs are wider than the column
 // on a phone (and even on some laptops), and both wrapping to two rows and a
@@ -98,7 +100,7 @@ export function ViewTabs<K extends string>({
       : 'cursor-default opacity-30');
 
   const tabClass = (selected: boolean) =>
-    'flex shrink-0 cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-3.5 py-1.5 text-sm font-medium transition ' +
+    'flex shrink-0 cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition ' +
     (selected
       ? 'bg-brand-500 text-white shadow-sm'
       : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800');
@@ -109,7 +111,7 @@ export function ViewTabs<K extends string>({
     <div
       role="tablist"
       aria-label="Telemetry views"
-      className="mt-8 flex flex-wrap items-center gap-3"
+      className="mt-8 flex flex-wrap items-center gap-3 lg:flex-nowrap"
     >
       {leadViews.length > 0 ? (
         <div className={bar}>
@@ -130,7 +132,7 @@ export function ViewTabs<K extends string>({
           ))}
         </div>
       ) : null}
-      <div className={`${bar} min-w-0 max-w-full`}>
+      <div className={`${bar} min-w-0 max-w-full lg:flex-1`}>
         <span
           aria-hidden
           className="shrink-0 pl-2 pr-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400"

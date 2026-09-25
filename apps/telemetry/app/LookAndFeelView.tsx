@@ -14,7 +14,7 @@ import { ActivityGlyph } from './glyphs';
 import { MiniSparkline } from './MiniSparkline';
 import { CardColumns } from './CardColumns';
 import { RankCard, rank } from './RankCard';
-import { windowLabel } from './windows';
+import { rankTrend, windowLabel } from './windows';
 
 // Look & Feel view (spec/22): which visual presets get picked, most to
 // least, plus how much the custom-theme builder gets used. The presets
@@ -39,6 +39,7 @@ export function LookAndFeelView({
   active: TelemetryWindowKey;
 }) {
   const rows = summary.windows[active].rows;
+  const trend = rankTrend(summary, active);
   const templates = rank(rows, (r) => r.category === 'Template' && r.action === 'Used');
   const themes = rank(
     rows,
@@ -64,6 +65,7 @@ export function LookAndFeelView({
       <div className="mt-6">
         <CardColumns>
           <RankCard
+            trend={trend}
             title="Templates"
             subtitle="Scaffolds picked when starting a diagram or seeding a tab"
             category="Template"
@@ -73,6 +75,7 @@ export function LookAndFeelView({
             emptyLabel="No templates were used in this window yet."
           />
           <RankCard
+            trend={trend}
             title="Themes Chosen"
             subtitle="Built-in palettes picked for a tab, including the one chosen when a diagram or template is created"
             category="Theme"
@@ -83,6 +86,7 @@ export function LookAndFeelView({
             emptyLabel="No themes were chosen in this window yet."
           />
           <RankCard
+            trend={trend}
             title="Canvas Styles"
             subtitle="Background patterns picked for the canvas (colour, opacity and scale tweaks are not counted)"
             category="Canvas"

@@ -11,7 +11,7 @@ import {
 import { MetricGroups, type MetricGroup } from './MetricCards';
 import { CardColumns } from './CardColumns';
 import { RankCard, rank } from './RankCard';
-import { windowLabel } from './windows';
+import { rankTrend, windowLabel } from './windows';
 
 // Help view (spec/22): how the help centre (apps/help) is doing. Article reads
 // and the per-article helpful / not-really feedback. The help app emits
@@ -39,6 +39,7 @@ export function HelpView({
   active: TelemetryWindowKey;
 }) {
   const rows = summary.windows[active].rows;
+  const trend = rankTrend(summary, active);
   const viewed = rank(rows, (r) => r.category === 'Help' && r.action === 'View');
   const helpful = rank(rows, (r) => r.category === 'Help' && r.action === 'Helpful');
   const unhelpful = rank(rows, (r) => r.category === 'Help' && r.action === 'Unhelpful');
@@ -58,6 +59,7 @@ export function HelpView({
       <div className="mt-6">
         <CardColumns>
           <RankCard
+            trend={trend}
             title="Most-read articles"
             subtitle="Which help articles get opened, most to least"
             category="Help"
@@ -67,6 +69,7 @@ export function HelpView({
             emptyLabel="No articles were read in this window yet."
           />
           <RankCard
+            trend={trend}
             title="Found helpful"
             subtitle="Articles readers said helped them, most to least"
             category="Help"
@@ -76,6 +79,7 @@ export function HelpView({
             emptyLabel="No helpful votes in this window yet."
           />
           <RankCard
+            trend={trend}
             title="Left people stuck"
             subtitle="Articles voted not-really helpful, the ones to rewrite"
             category="Help"
