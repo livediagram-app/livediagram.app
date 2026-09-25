@@ -28,7 +28,14 @@ import {
 import { badRequest, conflict, forbidden, json, noContent, notFound } from '../responses';
 import { recordCommentAdded, recordTabSave, recordVisitorOpened } from '../timeline';
 import { handleDiagramShareRoutes } from './diagram-share-routes';
-import { gateEdit, gateRead, requireOwner, shareCodeOf, type RouteContext } from './context';
+import {
+  gateEdit,
+  gateRead,
+  ownsDiagram,
+  requireOwner,
+  shareCodeOf,
+  type RouteContext,
+} from './context';
 
 // Tab-content sub-resource routes for /api/diagrams/<id>/...,
 // split out of diagrams.ts. Returns a Response when it handles the path, or
@@ -352,7 +359,13 @@ export async function handleDiagramSubresources(ctx: RouteContext): Promise<Resp
     if (owner instanceof Response) return owner;
     const existing = await getDiagram(env, id);
     if (!existing) return notFound();
-    if (existing.ownerId !== owner) return forbidden();
+    // `ownsDiagram`, not a bare id compare: on a TEAM diagram the owner id is
+    // a Clerk id every teammate can read, so it must be proven with a verified
+    // account id rather than the X-Owner-Id header (see routes/context.ts).
+    // The second half of this route's auth doesn't help here — it re-uses the
+    // SAME resolved owner, so a forged identity satisfies it with the victim's
+    // own diagrams.
+    if (!ownsDiagram(ctx, existing)) return forbidden();
     // The tab must already live in at least one of the caller's
     // owned diagrams. One JOIN answers that (LIMIT 1 on the first
     // owned match). On the failure path we fall back to listing the

@@ -13,7 +13,7 @@ import {
 import { apiRouteLabel, errorTypeToken, TIMELINE_RETENTION_MS } from '@livediagram/api-schema';
 import { isApiTokenFormat } from './auth/api-token';
 import { verifyOwnerId } from './auth/owner-signature';
-import { guestSignatureEnforced, OWNER_SCOPED_SEGMENTS } from './auth/guest-rest';
+import { guestSignatureEnforced, isClerkIdShape, OWNER_SCOPED_SEGMENTS } from './auth/guest-rest';
 import { handleTokens } from './routes/tokens';
 import { handleOauthExchange } from './routes/oauth';
 import { DiagramRoom } from './diagram-room';
@@ -121,6 +121,19 @@ export default {
     // reads (see RouteContext.verifiedUserId); administration surfaces keep
     // reading `clerkUserId` directly.
     const verifiedUserId = clerkUserId ?? tokenAuth?.ownerId ?? null;
+
+    // A Clerk account id presented as the GUEST header is always a replay of
+    // a harvested id, never a real client (see auth/guest-rest.ts): the guest
+    // credential is a server-minted UUID, and a signed-in caller sends
+    // `Authorization` instead. Refused unconditionally, BEFORE the signature
+    // gate below, because that gate is off until an operator arms it — and
+    // this shape needs no grace window, having never been legitimate.
+    if (!clerkUserId && !tokenAuth && OWNER_SCOPED_SEGMENTS.has(segments[1] ?? '')) {
+      const headerOwner = request.headers.get('X-Owner-Id');
+      if (headerOwner && isClerkIdShape(headerOwner)) {
+        return json({ error: 'account_id_not_a_guest_credential' }, { status: 401 });
+      }
+    }
 
     // Guest REST signature gate (spec/61 §4). On owner-scoped routes, a
     // presented `X-Owner-Id` must carry a valid HMAC signature once

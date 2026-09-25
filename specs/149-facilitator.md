@@ -59,9 +59,22 @@ their `hello`.
 - No D1 migration and no identity plumbing.
 
 For "the owner can always take it back", the api forwards one more
-server-verified bit at upgrade — `X-Verified-Owner: 1`, which the route already
+server-verified bit at upgrade — `X-Verified-Owner`, which the route already
 computes as `isOwnerUpgrade`. A boolean, carrying no identifier, so nothing
 about the anti-spoofing property changes.
+
+**Server-verified means the route must overwrite it, not just set it.** The room
+holds no identities, so it believes this header outright — which makes stamping
+it on **every** path, not only the owner's, part of the contract. It first
+shipped as a conditional `set`, and since the upgrade forwards the client's own
+request (`new Request(request)`), a copy the client sent survived on every
+non-owner path: browsers can't put headers on a WebSocket upgrade, but
+`websocat` / `curl` can, so any edit-role share-link holder could send
+`X-Verified-Owner: 1` and be seated as the owner — enough to seize the baton off
+its holder and end someone else's turn. Both trust headers are now written
+unconditionally (`X-Verified-Owner: '1' | '0'`), which is also why the room reads
+`=== '1'`. `diagram-room-routes.test.ts` asserts the forwarded headers rather
+than the route's intent, with a hostile pre-set pair as the input.
 
 ### Who may take it
 

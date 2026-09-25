@@ -136,6 +136,32 @@ export function requireOwner(ctx: RouteContext): string | Response {
   return ctx.resolveOwner() ?? missingAuth();
 }
 
+// Is `ctx` the owner of this diagram? The one rule both owner-only guards
+// below share, and the reason it isn't a bare `owner === ownerId`.
+//
+// For a PERSONAL diagram the hybrid identity is safe: the owner id is either
+// a Clerk `sub` the caller proved with a verified JWT, or a guest UUID that
+// is unguessable.
+//
+// For a TEAM diagram it is NOT. A team's owner id is a Clerk id deliberately
+// visible to every teammate (`GET /api/teams/<id>` lists `members[].userId`),
+// so accepting the unsigned `X-Owner-Id` header here would let anyone who
+// ever learned it — a removed member, an invitee who declined — present it as
+// a credential and reach the owner-only surfaces: reading the share password
+// in the clear, minting an edit-role share link, clearing the password,
+// deleting the diagram. So a team diagram's ownership must be proven with a
+// server-VERIFIED account id (Clerk session or API token), never the header.
+//
+// This is the same trust boundary auth/diagram-access.ts draws for the
+// read/edit gates; it belongs here too rather than only there.
+export function ownsDiagram(
+  ctx: RouteContext,
+  diagram: Pick<DiagramDTO, 'ownerId' | 'teamId'>,
+): boolean {
+  if (diagram.teamId) return ctx.verifiedUserId != null && ctx.verifiedUserId === diagram.ownerId;
+  return ctx.resolveOwner() === diagram.ownerId;
+}
+
 // Owner-only resource: resolve the caller, load the diagram, and confirm
 // the caller owns it. Returns the diagram, or 400 (no owner) / 404
 // (missing) / 403 (foreign). 404-before-403 means a foreign id can't be
@@ -151,7 +177,7 @@ export async function requireOwnedDiagram(
   if (!owner) return missingAuth();
   const existing = await getDiagram(ctx.env, diagramId);
   if (!existing) return notFound();
-  if (existing.ownerId !== owner) return forbidden();
+  if (!ownsDiagram(ctx, existing)) return forbidden();
   return existing;
 }
 

@@ -55,6 +55,7 @@ import type { ChangeLogEntryDTO, DiagramDTO } from '../types';
 import {
   gateEdit,
   gateRead,
+  ownsDiagram,
   requireDiagramAccess,
   requireOwnedDiagram,
   requireOwner,
@@ -255,7 +256,13 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       if (owner instanceof Response) return owner;
       const existing = await getDiagram(env, id);
       if (!existing) return notFound();
-      let allowed = owner === existing.ownerId;
+      // `ownsDiagram`, not `owner === existing.ownerId`: a TEAM diagram's
+      // owner id is a Clerk id every teammate can read, so proving ownership
+      // of one needs a verified account id rather than the X-Owner-Id header
+      // (see routes/context.ts). The membership leg below already worked that
+      // way; this leg didn't, so a stale member holding the owner's id could
+      // delete a team diagram.
+      let allowed = ownsDiagram(ctx, existing);
       if (!allowed && existing.teamId && ctx.verifiedUserId) {
         const membership = await getMembership(env, existing.teamId, ctx.verifiedUserId);
         allowed = membership?.status === 'joined';

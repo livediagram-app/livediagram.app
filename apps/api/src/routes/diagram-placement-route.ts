@@ -18,7 +18,7 @@ import {
   recordTeamDiagramAdded,
   recordTeamDiagramRemoved,
 } from '../timeline';
-import { requireOwner, type RouteContext } from './context';
+import { ownsDiagram, requireOwner, type RouteContext } from './context';
 
 // Returns null when the request isn't the placement route.
 export async function handleDiagramPlacement(ctx: RouteContext): Promise<Response | null> {
@@ -50,7 +50,11 @@ export async function handleDiagramPlacement(ctx: RouteContext): Promise<Respons
       const body = (await request.json()) as { folderId?: string | null; teamId?: string | null };
       const folderId = body.folderId ?? null;
       const teamId = body.teamId !== undefined ? body.teamId : existing.teamId;
-      const isOwner = existing.ownerId === owner;
+      // `ownsDiagram`, not a bare id compare: a TEAM diagram's owner id is a
+      // Clerk id every teammate can read, and `isOwner` below decides whether
+      // the caller may change the diagram's SCOPE — including moving it out of
+      // the team into their own library, which transfers ownership.
+      const isOwner = ownsDiagram(ctx, existing);
       const caller = ctx.verifiedUserId;
 
       if (teamId !== existing.teamId) {

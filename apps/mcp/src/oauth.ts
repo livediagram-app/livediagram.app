@@ -181,6 +181,41 @@ export function registerOauthRoutes(app: Hono<{ Bindings: Env }>): void {
     );
   });
 
+  // --- Session lookup: what the consent screen must show, read from the
+  // SERVER's record of this authorize request.
+  //
+  // /oauth/authorize also passes the client name + redirect host as query
+  // params to the consent URL, and the screen used to render those. That made
+  // its one anti-phishing line ("Access will be sent to <host>. Only continue
+  // if you recognise this.") forgeable by the party it exists to expose: an
+  // attacker registers a client (registration is open by design), starts a
+  // real authorize to get a session, then sends the victim that session id
+  // under a hand-written `&client=Trusted&to=trusted.example` — and a victim
+  // who recognises the name clicks Connect on a full-access token bound to
+  // the ATTACKER's redirect_uri. The params can't be trusted; this can, because
+  // `redirectUri` on the record was checked against the client's registered
+  // list before the session was ever written.
+  //
+  // Returns only what the screen renders. The session id is the read
+  // capability (10-minute TTL, held by the browser in the flow) and the
+  // response carries no token, no code and no PKCE material, so answering
+  // grants a holder nothing it could not already do by completing the flow.
+  // A GET, and non-consuming: /oauth/complete still needs the record.
+  app.get('/oauth/session/:id', async (c) => {
+    const session = await c.env.OAUTH_KV.get<AuthSession>(`session:${c.req.param('id')}`, 'json');
+    // Same answer for expired and never-existed: nothing here distinguishes
+    // them and the screen's message ("start the connection again") is the same.
+    if (!session) return c.json({ error: 'invalid_session' }, 404);
+    let redirectHost = '';
+    try {
+      redirectHost = new URL(session.redirectUri).host;
+    } catch {
+      // Validated at /oauth/authorize; an unparseable one shows as blank
+      // rather than failing the lookup.
+    }
+    return c.json({ clientName: session.clientName, redirectHost });
+  });
+
   // --- Complete: the Clerk-authed consent page posts the minted token here,
   // bound to a fresh authorization code (one-time, PKCE-gated at /oauth/token).
   app.post('/oauth/complete', async (c) => {

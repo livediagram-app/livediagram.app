@@ -290,6 +290,43 @@ migrated) — the same residual [spec/04](04-auth-and-guest-access.md) /
 population has rotated to signed ids, and keep it short enough to close the
 window. No active user is ever hard-locked.
 
+### 4.1 A Clerk account id in `X-Owner-Id` is refused unconditionally
+
+The "explicit guarantee for signed-up users" above is the most valuable half of
+§4, and it was the half the grace flag was **needlessly** holding hostage.
+
+The compatibility argument for a grace window is entirely about **guest UUIDs**:
+a legacy guest has real data under an unsigned id and rejecting it early locks
+them out, so the cutoff exists to let them self-heal. A Clerk `sub` presented as
+`X-Owner-Id` has no such story. No client has ever sent one:
+
+- The guest credential is always a server-minted `crypto.randomUUID()`
+  (`POST /api/guest-id`), and `apps/live/lib/local-identity.ts` only ever writes
+  a UUID into that header.
+- A signed-in caller sends `Authorization` **instead** — the live app's
+  `lib/api/core.ts` sends one or the other, never both.
+
+So a `user_…` value in that header is only ever a replay of an account id
+someone harvested, and Clerk ids are harvestable by design: `GET /api/teams/<id>`
+lists `members[].userId` to every member of the team, invitees included.
+
+The worker therefore refuses the **shape** outright, on every owner-scoped
+segment, before the signature gate and independent of
+`GUEST_SIG_ENFORCE_AFTER` (`isClerkIdShape`, `apps/api/src/auth/guest-rest.ts`;
+`401 account_id_not_a_guest_credential`). Nothing legitimate is grandfathered
+because nothing legitimate ever had this shape, so there is no window to bound
+and nothing for an operator to arm.
+
+This matters most for **personal** diagrams, whose ownership legitimately
+resolves through the hybrid header path — that path is safe precisely because a
+personal owner id is an unguessable UUID, which an account id is not. The
+**team**-diagram half of the same escalation is closed structurally instead, by
+`ownsDiagram` ([spec/35 §Access](35-team-shared-diagrams.md)), so it holds
+whatever a deployment has configured.
+
+The signature gate keeps its grace flag and its job: proving possession of a
+**guest** id.
+
 ## 5. Input validation (prerequisite — shipped)
 
 Opening the API magnifies the cost of weak input handling, so the validation

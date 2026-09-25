@@ -17,6 +17,7 @@ vi.mock('../auth/diagram-access', () => access);
 
 import type { RouteContext } from './context';
 import {
+  ownsDiagram,
   requireDiagramAccess,
   requireOwnedDiagram,
   requireOwner,
@@ -90,6 +91,63 @@ describe('requireOwnedDiagram', () => {
     db.getDiagram.mockResolvedValue(diagram);
     const out = await requireOwnedDiagram(makeCtx({ owner: 'owner-1' }), 'd1');
     expect(out).toBe(diagram);
+  });
+
+  // A TEAM diagram's owner id is a Clerk id every teammate can read off
+  // `GET /api/teams/<id>` (`members[].userId`), so the hybrid X-Owner-Id path
+  // must not prove ownership of one — otherwise a removed member who kept the
+  // id reaches the owner-only surfaces this guard fronts: the share password
+  // in the clear, minting an edit-role link, clearing the password, wiping a
+  // tab's audit trail.
+  it('403s a TEAM diagram when the owner id arrives only as the guest header', async () => {
+    db.getDiagram.mockResolvedValue({ id: 'd1', ownerId: 'user_owner', teamId: 'team-1' });
+    // resolveOwner() returns the header value; verifiedUserId stays null.
+    const out = await requireOwnedDiagram(makeCtx({ owner: 'user_owner' }), 'd1');
+    expect(out).toBeInstanceOf(Response);
+    expect((out as Response).status).toBe(403);
+  });
+
+  it('returns a TEAM diagram to its owner on a VERIFIED account id', async () => {
+    const diagram = { id: 'd1', ownerId: 'user_owner', teamId: 'team-1' };
+    db.getDiagram.mockResolvedValue(diagram);
+    const ctx = { ...makeCtx({ owner: 'user_owner' }), verifiedUserId: 'user_owner' };
+    expect(await requireOwnedDiagram(ctx, 'd1')).toBe(diagram);
+  });
+
+  it('403s a TEAM diagram for a verified caller who is not its owner', async () => {
+    db.getDiagram.mockResolvedValue({ id: 'd1', ownerId: 'user_owner', teamId: 'team-1' });
+    const ctx = { ...makeCtx({ owner: 'user_other' }), verifiedUserId: 'user_other' };
+    expect(((await requireOwnedDiagram(ctx, 'd1')) as Response).status).toBe(403);
+  });
+
+  // The personal path is unchanged and must stay that way: a guest owner id is
+  // an unguessable server-minted UUID, which is what makes the header safe
+  // there, and every signed-out author depends on it.
+  it('still accepts the guest header for a PERSONAL diagram', async () => {
+    const diagram = { id: 'd1', ownerId: 'guest-uuid', teamId: null };
+    db.getDiagram.mockResolvedValue(diagram);
+    expect(await requireOwnedDiagram(makeCtx({ owner: 'guest-uuid' }), 'd1')).toBe(diagram);
+  });
+});
+
+describe('ownsDiagram', () => {
+  it('requires a verified account id for a team diagram, not the header', () => {
+    const team = { ownerId: 'user_owner', teamId: 'team-1' };
+    expect(ownsDiagram(makeCtx({ owner: 'user_owner' }), team)).toBe(false);
+    expect(ownsDiagram({ ...makeCtx({ owner: null }), verifiedUserId: 'user_owner' }, team)).toBe(
+      true,
+    );
+  });
+
+  it('accepts the hybrid identity for a personal diagram', () => {
+    const personal = { ownerId: 'guest-uuid', teamId: null };
+    expect(ownsDiagram(makeCtx({ owner: 'guest-uuid' }), personal)).toBe(true);
+    expect(ownsDiagram(makeCtx({ owner: 'someone-else' }), personal)).toBe(false);
+  });
+
+  it('is false when neither identity resolves', () => {
+    expect(ownsDiagram(makeCtx({ owner: null }), { ownerId: 'x', teamId: null })).toBe(false);
+    expect(ownsDiagram(makeCtx({ owner: null }), { ownerId: 'x', teamId: 't' })).toBe(false);
   });
 });
 
