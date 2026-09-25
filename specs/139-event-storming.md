@@ -631,8 +631,11 @@ of it lives in `rhythmSlots` and `gutterCentres` in
 - **Never exported.** Lanes are a drag-time aid, not board content: the SVG /
   PNG export draws none of them. Mermaid / Markdown / Excalidraw ignore the
   field entirely.
-- **Telemetry:** `Canvas / Used / TimelineLanesOn` and `…Off`, fired BEFORE the
-  commit so the flip that turns something off still reaches the wire.
+- **Telemetry:** none of its own. Lanes are not a mode (see above), so the
+  `Canvas / Used / TimelineLanesOn` / `…Off` events went with the switch.
+- **The template lands on the lanes.** The event-storming template lays its
+  starter row on the lane nearest the centre it is built at, so a fresh board
+  starts on the lanes every drag snaps to (`buildEventStorming`).
 - **Not in v1:** no keyboard shortcut, no "snap all notes to lanes" verb, no
   vertical lanes (the module is horizontal in fact, axis-shaped in form), and
   no per-lane naming — a lane is a position, not an entity.
@@ -685,7 +688,8 @@ then just two notes: the board keeps no relation between them.
   before a word is read. It is sized in proportion to the note (a quarter of
   its height tall and 6% of its height wide, in canvas units, so it scales with
   the note and the zoom and keeps one shape on every kind), and sits centred
-  in the gutter, so it never lies on a note beside it, sits slightly translucent until pointed at, and keeps a hit
+  in the gutter, so it never lies on a note beside it, sits slightly translucent until pointed at, keeps its "+" at the size it had
+  on the first, wider tab (6% of the note's height), and keeps a hit
   target of at least 24 screen px whatever the zoom (WCAG 2.2 target size).
 - **Hovering a tab previews the note-to-be.** A dashed outline in the next
   note's colour, with its kind named inside, is drawn exactly where the note

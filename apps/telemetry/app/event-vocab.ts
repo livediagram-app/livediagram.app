@@ -196,6 +196,17 @@ export function eventExplanation(category: string, action: string, type: string 
   if (category === 'Canvas' && action === 'Used' && type === 'AddNextNote') {
     return 'Someone clicked a next-note button beside a note on an event-storming board (spec/139) and got the note the notation puts there.';
   }
+  if (category === 'Canvas' && action === 'Used' && type === 'ChangeNoteKind') {
+    return 'Someone changed what kind of note a sticky is on an event-storming board (spec/139), say from a domain event to a hotspot.';
+  }
+  // Retired with the lane switch (spec/139 Phase 6: lanes are what the board
+  // is, not a mode); still described because stored events carry them.
+  if (category === 'Canvas' && action === 'Used' && type === 'TimelineLanesOn') {
+    return 'Someone turned timeline lanes on for an event-storming board (spec/139). Retired: lanes are always on.';
+  }
+  if (category === 'Canvas' && action === 'Used' && type === 'TimelineLanesOff') {
+    return 'Someone turned timeline lanes off for an event-storming board (spec/139). Retired: lanes are always on.';
+  }
   // Retired with anchor docking (spec/139 Phase 7); still described because
   // stored events carry them.
   if (category === 'Canvas' && action === 'Used' && type === 'DockAdd') {
