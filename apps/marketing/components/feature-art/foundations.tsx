@@ -514,3 +514,120 @@ export function AnyDeviceArt() {
     </Frame>
   );
 }
+
+export function ExportArt() {
+  // The board on the left, the same board as a file on the right. The two
+  // panels are deliberately identical: spec/143's whole rule is that an export
+  // is a picture of the diagram, not a lossy version of one.
+  return (
+    <Frame>
+      <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
+        {/* On the canvas. */}
+        <rect
+          x="16"
+          y="22"
+          width="74"
+          height="52"
+          rx="4"
+          fill="#fff"
+          stroke="#e2e8f0"
+          strokeWidth="1.5"
+        />
+        <rect
+          x="28"
+          y="32"
+          width="30"
+          height="15"
+          rx="3"
+          fill={BLUE_FILL}
+          stroke={BLUE_STROKE}
+          strokeWidth="2"
+        />
+        <path d="M43 47 v9" stroke={BLUE_STROKE} strokeWidth="2" />
+        <path d="M39 53 l4 5 4-5" fill="none" stroke={BLUE_STROKE} strokeWidth="2" />
+        <rect
+          x="28"
+          y="56"
+          width="30"
+          height="12"
+          rx="3"
+          fill="#fff"
+          stroke={BLUE_STROKE}
+          strokeWidth="2"
+        />
+        <circle cx="74" cy="60" r="6" fill={PINK} opacity="0.85" />
+
+        {/* Out. */}
+        <path d="M96 48 h22" stroke={SKY} strokeWidth="2" strokeLinecap="round" />
+        <path
+          d="M113 43 l6 5 -6 5"
+          fill="none"
+          stroke={SKY}
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+
+        {/* The file: the same marks, in the same places. */}
+        <rect
+          x="126"
+          y="22"
+          width="74"
+          height="52"
+          rx="4"
+          fill="#fff"
+          stroke={SKY}
+          strokeWidth="2"
+        />
+        <rect
+          x="138"
+          y="32"
+          width="30"
+          height="15"
+          rx="3"
+          fill={BLUE_FILL}
+          stroke={BLUE_STROKE}
+          strokeWidth="2"
+        />
+        <path d="M153 47 v9" stroke={BLUE_STROKE} strokeWidth="2" />
+        <path d="M149 53 l4 5 4-5" fill="none" stroke={BLUE_STROKE} strokeWidth="2" />
+        <rect
+          x="138"
+          y="56"
+          width="30"
+          height="12"
+          rx="3"
+          fill="#fff"
+          stroke={BLUE_STROKE}
+          strokeWidth="2"
+        />
+        <circle cx="184" cy="60" r="6" fill={PINK} opacity="0.85" />
+
+        {/* Formats. */}
+        {['PNG', 'SVG', 'PDF'].map((label, i) => (
+          <g key={label} className="fa-pop" style={{ animationDelay: `${i * 0.25}s` }}>
+            <rect
+              x={126 + i * 26}
+              y="78"
+              width="22"
+              height="13"
+              rx="3"
+              fill="#fff"
+              stroke="#cbd5e1"
+              strokeWidth="1.5"
+            />
+            <text
+              x={137 + i * 26}
+              y="87"
+              textAnchor="middle"
+              fill={BLUE_TEXT}
+              fontSize="7"
+              fontWeight="700"
+            >
+              {label}
+            </text>
+          </g>
+        ))}
+      </svg>
+    </Frame>
+  );
+}

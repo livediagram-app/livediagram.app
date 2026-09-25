@@ -11,12 +11,14 @@ import {
   AutosaveArt,
   AvatarModeArt,
   BorderStyleArt,
+  BringFocusArt,
   CanvasBackdropArt,
   AssignedActionsArt,
   CommentsArt,
   ComponentsArt,
   EmbedArt,
   EntityArt,
+  ExportArt,
   LanesArt,
   MindMapArt,
   CustomThemesArt,
@@ -25,6 +27,7 @@ import {
   DragDuplicateArt,
   EasyStartArt,
   ExpiryArt,
+  FacilitatorArt,
   FlowingArrowsArt,
   FoldersArt,
   FullScreenSlideArt,
@@ -257,6 +260,22 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Run the session: timer + voting',
         description:
           'Facilitate live from the canvas. Drop a timer straight onto the board — the real one, with start, pause, restart and a bar that drains as the time goes — or start a countdown or stopwatch the whole room sees, then open dot-voting to surface the group’s priorities. Everyone votes with a budget of dots; results tally in real time, and revealing them starts a guided walkthrough: each top pick lights up and centres on screen while you step through with Next and Previous. Perfect for retros, workshops, and timeboxed planning.',
+      },
+      {
+        art: <FacilitatorArt />,
+        href: '/help/collaboration/facilitator/',
+        group: 'Present & facilitate',
+        title: 'One person runs the room',
+        description:
+          'Hand someone the facilitator baton and the tools that run the session answer to them alone: the timer, the votes, the polls, the reveals. No two people starting timers over each other. Nobody holds it by default, anybody can be given it, and the owner can always take it back.',
+      },
+      {
+        art: <BringFocusArt />,
+        href: '/help/palette/behaviour/bring-focus/',
+        group: 'Present & facilitate',
+        title: 'Ask the room to look here',
+        description:
+          'Drop a Bring Focus element, press it, and everyone else is offered a jump to it: your tab, your zoom, the thing you mean. It asks rather than drags, so nobody loses the place they were working in.',
       },
       {
         art: <ExpiryArt />,
@@ -532,11 +551,11 @@ export const LANDING_SECTIONS: LandingSection[] = [
       },
       {
         art: <MinimalPanelArt />,
-        href: '/help/palette/minimal-panels/',
+        href: '/help/palette/toolbar-layout/',
         group: 'Your workspace',
         title: 'Panels your way',
         description:
-          'Prefer floating side panels or a clean canvas? Switch on the minimal layout and the palette and tools collapse into a compact dock with pop-out panels, the same tidy chrome you get on mobile. The choice sticks per device.',
+          'Three layouts, one setting. Floating keeps the panels over the canvas. Minimal collapses them into a compact dock with pop-out panels, the same tidy chrome you get on mobile. Toolbar puts the palette in a single strip across the top and the Explorer behind a menu button. The choice sticks per device.',
       },
     ],
   },
@@ -799,6 +818,13 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Works with Mermaid',
         description:
           'Paste or open a Mermaid flowchart and livediagram lays it out on the canvas, keeping every connection, not just the outline. Export any tab back to Mermaid to copy or download. It is the diagram-as-code format your READMEs, issues, and AI tools already use, so your diagrams travel.',
+      },
+      {
+        art: <ExportArt />,
+        href: '/help/tabs/export-tabs/',
+        title: 'Export as PNG, SVG, or PDF',
+        description:
+          'Take any tab out as an image for a doc, a PDF to print, or JSON, Markdown and Excalidraw to move it elsewhere. What you exported is what you drew: same sizes, same colours, same marks, in the same places.',
       },
       {
         art: <ApiArt />,

@@ -6,7 +6,7 @@
 // from a diagram, one slide filling a screen, notes only the presenter opens,
 // the fact that nobody else is dragged along, and the board tilted into 3D.
 
-import { BLUE_FILL, BLUE_STROKE, Frame, SKY } from './shared';
+import { BLUE_FILL, BLUE_STROKE, BLUE_TEXT, Frame, SKY } from './shared';
 
 const SLATE_FILL = '#eef2f7';
 const SLATE_STROKE = '#cbd5e1';
@@ -297,6 +297,142 @@ export function IsometricArt() {
         <g stroke={SKY} strokeWidth="1.6" fill="none" strokeLinecap="round">
           <path d="M188 20a10 10 0 1 0 6 4" />
           <path d="M188 14v6h6" />
+        </g>
+      </svg>
+    </Frame>
+  );
+}
+
+/* ────────────────── Running the room (spec/149, spec/144) ───────────── */
+
+export function FacilitatorArt() {
+  // Three people in the room, one holding the baton, and the tools that answer
+  // to them. The badge is on the holder rather than beside the tools because
+  // the point of the feature is WHO, not what.
+  return (
+    <Frame>
+      <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
+        {/* The room. The holder sits first and carries a ring + star. */}
+        <circle cx="42" cy="30" r="12" fill={BLUE_STROKE} />
+        <circle cx="42" cy="30" r="15.5" fill="none" stroke={SKY} strokeWidth="2" />
+        <text x="42" y="34" textAnchor="middle" fill="#fff" fontSize="10" fontWeight="700">
+          A
+        </text>
+        <path
+          d="M42 10.5 l1.9 3.9 4.3.6 -3.1 3 .7 4.3 -3.8-2 -3.8 2 .7-4.3 -3.1-3 4.3-.6z"
+          fill="#f59e0b"
+        />
+        <circle cx="74" cy="30" r="10" fill="#cbd5e1" />
+        <circle cx="100" cy="30" r="10" fill="#cbd5e1" />
+
+        {/* What the baton controls. */}
+        <line x1="42" y1="48" x2="42" y2="60" stroke={SKY} strokeWidth="2" strokeDasharray="3 3" />
+        <rect
+          x="14"
+          y="60"
+          width="58"
+          height="22"
+          rx="11"
+          fill="#fff"
+          stroke={BLUE_STROKE}
+          strokeWidth="2"
+        />
+        <circle cx="29" cy="71" r="3.5" fill="#f43f5e" className="fa-pulse" />
+        <text x="39" y="75" fill={BLUE_TEXT} fontSize="9" fontWeight="700">
+          2:30
+        </text>
+
+        {/* The same tools, greyed, for everybody else. */}
+        <rect
+          x="86"
+          y="60"
+          width="58"
+          height="22"
+          rx="11"
+          fill="#f8fafc"
+          stroke="#e2e8f0"
+          strokeWidth="2"
+        />
+        <text x="115" y="75" textAnchor="middle" fill="#cbd5e1" fontSize="9" fontWeight="600">
+          2:30
+        </text>
+
+        <text x="160" y="28" fill="#64748b" fontSize="8" fontWeight="600">
+          One person
+        </text>
+        <text x="160" y="40" fill="#64748b" fontSize="8" fontWeight="600">
+          runs it
+        </text>
+      </svg>
+    </Frame>
+  );
+}
+
+export function BringFocusArt() {
+  // An element asking the room to look at it: rings going out, and two other
+  // viewports answering. The rings leave the element rather than arriving at
+  // it, because the invitation travels outward and the jump is theirs to take.
+  return (
+    <Frame canvas>
+      <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
+        <circle cx="110" cy="48" r="24" fill="none" stroke={SKY} strokeWidth="2" opacity="0.45">
+          <animate attributeName="r" values="18;34" dur="2.4s" repeatCount="indefinite" />
+          <animate attributeName="opacity" values="0.5;0" dur="2.4s" repeatCount="indefinite" />
+        </circle>
+        <rect
+          x="86"
+          y="36"
+          width="48"
+          height="24"
+          rx="4"
+          fill={BLUE_FILL}
+          stroke={BLUE_STROKE}
+          strokeWidth="2"
+        />
+        <text x="110" y="51" textAnchor="middle" fill={BLUE_TEXT} fontSize="8" fontWeight="700">
+          Look here
+        </text>
+
+        {/* Two other people's viewports, arriving. */}
+        <g className="fa-fade">
+          <rect
+            x="18"
+            y="26"
+            width="40"
+            height="26"
+            rx="3"
+            fill="#fff"
+            stroke="#94a3b8"
+            strokeWidth="1.5"
+          />
+          <path d="M62 39 h14" stroke={SKY} strokeWidth="2" strokeLinecap="round" />
+          <path
+            d="M72 35 l5 4 -5 4"
+            fill="none"
+            stroke={SKY}
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
+        </g>
+        <g className="fa-fade" style={{ animationDelay: '0.6s' }}>
+          <rect
+            x="162"
+            y="46"
+            width="40"
+            height="26"
+            rx="3"
+            fill="#fff"
+            stroke="#94a3b8"
+            strokeWidth="1.5"
+          />
+          <path d="M158 59 h-14" stroke={SKY} strokeWidth="2" strokeLinecap="round" />
+          <path
+            d="M148 55 l-5 4 5 4"
+            fill="none"
+            stroke={SKY}
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
         </g>
       </svg>
     </Frame>
