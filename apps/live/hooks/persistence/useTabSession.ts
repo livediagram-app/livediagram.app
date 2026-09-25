@@ -12,6 +12,7 @@
 // vote casts deliberately do NOT log.
 
 import {
+  applyVoteDelta,
   canCastVote,
   isVoteHost,
   timerDisplayMs,
@@ -36,10 +37,18 @@ type TabSessionDeps = {
   emitTabMeta: (tabId: string, summary: string, opts?: { undoable?: boolean }) => void;
   // The local participant id — whose dots a cast/retract adds or removes.
   selfId: string;
+  // Broadcast ONE dot the instant it is cast or taken back (spec/39).
+  //
+  // Not left to the autosave like every other tab change: dots are the one
+  // field the whole room writes at once, and the debounced whole-object patch
+  // that used to carry them let a peer's stale snapshot erase a dot somebody
+  // had just placed. This sends the CHANGE, immediately, so concurrent dots
+  // commute instead of racing. No-op before the room is open.
+  emitVote: (tabId: string, elementId: string, delta: 1 | -1) => void;
 };
 
 export function useTabSession(deps: TabSessionDeps) {
-  const { editsBlocked, activeId, commitTabs, emitTabMeta, selfId } = deps;
+  const { editsBlocked, activeId, commitTabs, emitTabMeta, selfId, emitVote } = deps;
   // One flag for every verb that runs the room, so a new one cannot be added
   // without deciding which side of the line it is on.
   const runBlocked = deps.editsBlocked || deps.sessionToolsBlocked;
@@ -290,12 +299,11 @@ export function useTabSession(deps: TabSessionDeps) {
     patchActive((t) => {
       const vote = t.vote;
       if (!vote || !canCastVote(vote, selfId, elementId)) return t;
-      const existing = vote.votes[elementId] ?? [];
-      return {
-        ...t,
-        vote: { ...vote, votes: { ...vote.votes, [elementId]: [...existing, selfId] } },
-      };
+      return { ...t, vote: applyVoteDelta(vote, elementId, selfId, 1) };
     });
+    // Straight out, ahead of the 600ms autosave: the point of the op is that a
+    // dot stops waiting behind a debounce it can lose a race inside.
+    emitVote(activeId, elementId, 1);
     track('Element', 'Voted');
   };
 
@@ -314,16 +322,10 @@ export function useTabSession(deps: TabSessionDeps) {
     if (editsBlocked) return;
     const mine = deps.activeTab.vote?.votes[elementId] ?? [];
     if (!mine.includes(selfId)) return;
-    patchActive((t) => {
-      const vote = t.vote;
-      if (!vote) return t;
-      const existing = vote.votes[elementId];
-      if (!existing || existing.length === 0) return t;
-      const idx = existing.lastIndexOf(selfId);
-      if (idx === -1) return t;
-      const next = [...existing.slice(0, idx), ...existing.slice(idx + 1)];
-      return { ...t, vote: { ...vote, votes: { ...vote.votes, [elementId]: next } } };
-    });
+    patchActive((t) =>
+      t.vote ? { ...t, vote: applyVoteDelta(t.vote, elementId, selfId, -1) } : t,
+    );
+    emitVote(activeId, elementId, -1);
     // The counterpart to Element·Voted, so "dots cast" can be read net of
     // second thoughts. Only when a dot actually came off.
     track('Element', 'Removed', 'Vote');

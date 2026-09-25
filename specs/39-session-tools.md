@@ -19,6 +19,11 @@ current state for free**, and persistence is automatic.
 isn't undoable. The facilitator lifecycle actions emit a one-shot Activity-log
 line (`emitTabMeta`); the high-frequency vote casts deliberately don't log.
 
+**One exception, learned the hard way: dots needed their own op.** Everything
+above holds for the timer and for a vote's lifecycle, which have a single
+writer. It did not hold for `vote.votes`, which every participant writes at
+once — see "Casting a dot" below.
+
 ## Roles
 
 The realtime room already **drops view-role mutations** (spec/11). So every
@@ -89,6 +94,57 @@ under its section below and in spec/88 for the poll.
 
 `tab.vote: { active; revealed; votesPerPerson; votes: Record<elementId, participantId[]> }`
 — one participant id per dot, so stacking N dots on one element is N entries.
+
+### Casting a dot: the one thing that is not plain tab state
+
+A dot travels as its own room op, `{ kind: 'vote', tabId, elementId, voter, delta: 1 | -1 }`,
+sent the instant it is cast. Everything else about a vote rides the ordinary
+tab-sync pipeline described above; this one field cannot, and the reason is
+worth keeping because it is easy to re-introduce.
+
+`votes` is a single map that **every participant writes at the same time**, and
+tab meta travelled between peers as a whole-object patch — `{ ...tab, ...patch }`
+on receipt, replacing the field. So a peer's patch, built from a snapshot taken
+before your dot arrived, silently erased it. The window was the full 600 ms
+autosave debounce, because dots waited for the autosave like any other tab
+change. A retro with six voters and six dots each lost votes and saw dots
+retract on their own; with that many people casting at once, collisions were
+close to certain.
+
+It also drifted the budget. `votesSpentBy` counts your remaining dots out of
+that same map, so a clobber did not just lose a dot — it handed it back as
+spendable, and a stale snapshot restoring a retracted dot took one away.
+
+The fix carries the **change**, not the state, so concurrent dots commute: every
+peer applies both in whatever order they land and converges on the same map
+(`applyVoteDelta`, `packages/diagram/src/session.ts`). It is the same move
+[spec/75](75-realtime-conflict-resolution.md) made for elements, on the one
+field where concurrent writers are the whole point rather than the exception.
+
+Two rules keep it honest:
+
+- **`votes` changing ALONE is dots**, and is withheld from the tab-meta patch
+  (`voteChangeIsDotsOnly`). Shipping it there as well would put the clobber
+  straight back.
+- **`votes` changing alongside any other vote field is a lifecycle event** —
+  start, end, reveal, clear, or stepping the results walkthrough. Those are the
+  host's alone, so there is exactly one writer, and the whole object still
+  travels as a patch (which is also how a start or a clear resets the map).
+
+`vote` is a MUTATION op: it gets a seq, lands in the catch-up log so a
+reconnecting peer replays the dots it missed, and is refused from a view-role
+sender, matching the fact that casting already requires edit rights.
+
+`applyVoteDelta` deliberately does **not** check the budget. Whether somebody
+_may_ cast is a rule enforced where the press happens; a dot a peer has already
+cast is a fact, and refusing to apply it would leave that peer's screen
+disagreeing with the room forever.
+
+Residual, stated plainly: two clients still autosave the whole tab, so a save
+that lands before an op is applied can persist a map missing a dot. They
+converge within a round-trip and the next save writes the converged map, so
+this is a much smaller window than the one it replaces rather than none at all.
+Ending a vote persists the host's final state.
 
 - Controlled from **Tab menu → Collaborate → Vote** (the Session
   Studio): the dot budget is picked as a **row of dots** (tap the fifth for

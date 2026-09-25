@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { Element, Tab } from '@livediagram/diagram';
+import type { Element, Tab, TabVote } from '@livediagram/diagram';
 import { EL_OP_BROADCAST_LIMIT, tabBroadcastOps } from './tab-broadcast-ops';
 
 const el = (id: string, over: Partial<Element> = {}): Element =>
@@ -78,5 +78,62 @@ describe('tabBroadcastOps', () => {
   it('emits nothing when a changed tab turns out identical', () => {
     const before = tab();
     expect(tabBroadcastOps(before, tab())).toEqual([]);
+  });
+});
+
+describe('the vote field (spec/39)', () => {
+  const vote = (over: Partial<TabVote> = {}): TabVote => ({
+    active: true,
+    revealed: false,
+    votesPerPerson: 6,
+    votes: {},
+    ...over,
+  });
+
+  it('does NOT ship the votes map when only dots moved', () => {
+    // Dots travel as their own commutative `vote` op. Shipping the map here
+    // too would put the clobber back: a tab-meta patch replaces the field
+    // wholesale, so a peer applying it drops any dot that reached them from
+    // somebody else in the meantime. That is the retro bug.
+    const before = tab({ vote: vote() });
+    const after = tab({ vote: vote({ votes: { a: ['ariel'] } }) });
+    expect(tabBroadcastOps(before, after)).toEqual([]);
+  });
+
+  it('still ships the whole vote when a lifecycle field changed', () => {
+    // End / reveal / clear / start are the host's alone, so there is one
+    // writer and the whole object is right for them — and carrying `votes`
+    // along is how a start or a clear resets it on every peer.
+    const before = tab({ vote: vote({ votes: { a: ['ariel'] } }) });
+    const after = tab({ vote: vote({ votes: { a: ['ariel'] }, revealed: true }) });
+    expect(tabBroadcastOps(before, after)).toEqual([
+      { kind: 'tab-meta', tabId: 't1', patch: { vote: after.vote } },
+    ]);
+  });
+
+  it('ships the reset when a lifecycle change also empties the votes', () => {
+    // Clearing a round moves `active` AND wipes the map; the peer needs both.
+    const before = tab({ vote: vote({ votes: { a: ['ariel', 'pete'] } }) });
+    const after = tab({ vote: vote({ active: false, votes: {} }) });
+    expect(tabBroadcastOps(before, after)).toEqual([
+      { kind: 'tab-meta', tabId: 't1', patch: { vote: after.vote } },
+    ]);
+  });
+
+  it('leaves other meta changes alone while dots move', () => {
+    // A rename riding the same save still travels; only `vote` is withheld.
+    const before = tab({ vote: vote() });
+    const after = tab({ name: 'Renamed', vote: vote({ votes: { a: ['ariel'] } }) });
+    expect(tabBroadcastOps(before, after)).toEqual([
+      { kind: 'tab-meta', tabId: 't1', patch: { name: 'Renamed' } },
+    ]);
+  });
+
+  it('falls back to a whole-tab op when the vote is cleared off the tab', () => {
+    // `patch.vote = undefined` would vanish on the wire, so the existing
+    // cleared-field rule takes over — unchanged by any of this.
+    const before = tab({ vote: vote() });
+    const after = tab();
+    expect(tabBroadcastOps(before, after)).toEqual([{ kind: 'tab', tabId: 't1', tab: after }]);
   });
 });

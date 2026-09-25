@@ -1868,6 +1868,14 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     commitTabs: tickTabs,
     emitTabMeta,
     selfId: selfParticipant.id,
+    // Straight down the socket, ahead of the autosave (spec/39). A no-op
+    // before the room is open, exactly like every other presence-speed send —
+    // a solo vote still works, it just has nobody to tell.
+    emitVote: (tabId, elementId, delta) =>
+      roomRef.current?.send({
+        kind: 'op',
+        op: { kind: 'vote', tabId, elementId, voter: selfParticipant.id, delta },
+      }),
   });
 
   // The interactive Behaviour elements that act on the SESSION rather than the

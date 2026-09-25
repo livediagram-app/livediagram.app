@@ -121,6 +121,10 @@ export const MUTATION_OP_KINDS = [
   'tab',
   'tab-meta',
   'el',
+  // One dot placed or taken back (spec/39). A mutation like any other — it
+  // gets a seq, lands in the catch-up log, and is refused from a view-role
+  // sender, because casting already requires edit rights.
+  'vote',
   'diagram-meta',
   'log',
   'log-remove',
@@ -306,6 +310,23 @@ export type RoomOp =
   // the element array is untouched, so this rides alongside `el` ops
   // without shipping the whole tab.
   | { kind: 'tab-meta'; tabId: string; patch: Partial<Omit<Tab, 'elements'>> }
+  // ONE dot, placed (`delta: 1`) or taken back (`delta: -1`) by `voter` on
+  // `elementId` (spec/39).
+  //
+  // Why a dot is not just a `tab-meta` patch, which is what it used to be:
+  // `vote.votes` is a single map that EVERY participant writes at the same
+  // time, and a tab-meta patch replaces a field wholesale. So a peer's patch,
+  // built from a snapshot taken before your dot arrived, silently erased it —
+  // and because the remaining-dots budget is counted out of that same map, the
+  // dot came back to its owner as spendable. A retro with six voters lost dots
+  // and reported votes retracting on their own.
+  //
+  // This op carries the CHANGE rather than the state, so two dots cast in the
+  // same instant commute: each peer applies both, in whatever order they land,
+  // and everybody converges on the same map. It is the same move spec/75 made
+  // for elements, for the same reason, on the one field where concurrent
+  // writers are not the exception but the whole point.
+  | { kind: 'vote'; tabId: string; elementId: string; voter: string; delta: 1 | -1 }
   // Diagram-level metadata changed: rename, tab reorder, tab add /
   // delete. Carries the new ordered list of tab summaries (id + name
   // + order) so receivers can update the TabBar without fetching the

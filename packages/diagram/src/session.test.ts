@@ -10,6 +10,7 @@ import {
   voteHidesCursors,
   voteHidesTallies,
   voteTotals,
+  applyVoteDelta,
   votesSpentBy,
   type TabTimer,
   type TabVote,
@@ -248,5 +249,89 @@ describe('canCastVote', () => {
   it('refuses once the budget is spent, and once casting has closed', () => {
     expect(canCastVote({ ...base, votes: { a: ['me', 'me', 'me'] } }, 'me', 'b')).toBe(false);
     expect(canCastVote({ ...base, active: false }, 'me', 'b')).toBe(false);
+  });
+});
+
+describe('applyVoteDelta — concurrent dots must not clobber (spec/39)', () => {
+  const vote = (votes: Record<string, string[]> = {}): TabVote => ({
+    active: true,
+    revealed: false,
+    votesPerPerson: 6,
+    votes,
+  });
+
+  it('adds one dot', () => {
+    expect(applyVoteDelta(vote(), 'e1', 'ariel', 1).votes).toEqual({ e1: ['ariel'] });
+  });
+
+  it('stacks a second dot from the same person', () => {
+    const once = applyVoteDelta(vote(), 'e1', 'ariel', 1);
+    expect(applyVoteDelta(once, 'e1', 'ariel', 1).votes).toEqual({ e1: ['ariel', 'ariel'] });
+  });
+
+  it('removes only the LAST of that person’s dots', () => {
+    const v = vote({ e1: ['ariel', 'pete', 'ariel'] });
+    expect(applyVoteDelta(v, 'e1', 'ariel', -1).votes).toEqual({ e1: ['ariel', 'pete'] });
+  });
+
+  it('returns the SAME object when there is nothing to remove', () => {
+    // Lets the caller skip a render and an autosave on a no-op.
+    const v = vote({ e1: ['pete'] });
+    expect(applyVoteDelta(v, 'e1', 'ariel', -1)).toBe(v);
+    expect(applyVoteDelta(v, 'nothing-here', 'ariel', -1)).toBe(v);
+  });
+
+  it('never mutates the vote it was given', () => {
+    const v = vote({ e1: ['pete'] });
+    applyVoteDelta(v, 'e1', 'ariel', 1);
+    expect(v.votes).toEqual({ e1: ['pete'] });
+  });
+
+  // THE bug: two people casting inside one propagation window used to lose a
+  // dot, because the map travelled as a whole-object replacement built from a
+  // snapshot taken before the other dot arrived. Deltas commute, so applying
+  // them in either order has to reach the same place.
+  it('is order-independent for two people on different elements', () => {
+    const ariel = (v: TabVote) => applyVoteDelta(v, 'e1', 'ariel', 1);
+    const pete = (v: TabVote) => applyVoteDelta(v, 'e2', 'pete', 1);
+    expect(pete(ariel(vote())).votes).toEqual(ariel(pete(vote())).votes);
+    expect(pete(ariel(vote())).votes).toEqual({ e1: ['ariel'], e2: ['pete'] });
+  });
+
+  it('is order-independent for two people on the SAME element', () => {
+    const ariel = (v: TabVote) => applyVoteDelta(v, 'e1', 'ariel', 1);
+    const pete = (v: TabVote) => applyVoteDelta(v, 'e1', 'pete', 1);
+    const a = pete(ariel(vote())).votes.e1!;
+    const b = ariel(pete(vote())).votes.e1!;
+    expect([...a].sort()).toEqual([...b].sort());
+    expect(a).toHaveLength(2);
+  });
+
+  it('keeps everybody’s dots when a whole room votes in any order', () => {
+    // Six voters, six dots each — the retro that lost votes.
+    const casts: { el: string; who: string }[] = [];
+    for (const who of ['a', 'b', 'c', 'd', 'e', 'f']) {
+      for (let i = 0; i < 6; i++) casts.push({ el: `e${i}`, who });
+    }
+    const apply = (order: typeof casts) =>
+      order.reduce((v, c) => applyVoteDelta(v, c.el, c.who, 1), vote());
+    const forwards = apply(casts);
+    const backwards = apply([...casts].reverse());
+    expect(votesSpentBy(forwards, 'a')).toBe(6);
+    // Every dot survives whatever order the ops land in, which is the property
+    // the old whole-object patch did not have.
+    for (const who of ['a', 'b', 'c', 'd', 'e', 'f']) {
+      expect(votesSpentBy(backwards, who), who).toBe(6);
+    }
+    expect(Object.values(forwards.votes).flat()).toHaveLength(36);
+    expect(Object.values(backwards.votes).flat()).toHaveLength(36);
+  });
+
+  it('applies a peer’s dot even when that peer is out of budget locally', () => {
+    // Budget is a rule about whether a person MAY cast, checked where the
+    // press happens. A dot a peer already cast is a fact; refusing it here
+    // would leave that peer's screen disagreeing with the room forever.
+    const spent = vote({ e1: ['ariel', 'ariel', 'ariel', 'ariel', 'ariel', 'ariel'] });
+    expect(votesSpentBy(applyVoteDelta(spent, 'e2', 'ariel', 1), 'ariel')).toBe(7);
   });
 });

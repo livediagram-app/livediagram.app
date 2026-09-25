@@ -195,6 +195,43 @@ export function isVotableInVote(
   return resolveLayerId(element.layerId, tabLayers(layers)) === scope;
 }
 
+// Apply ONE dot to a vote: placed (`delta: 1`) or taken back (`delta: -1`).
+//
+// The single place a dot changes hands, so the local cast, the local retract,
+// and a peer's `vote` op all move the map the same way. Returns the SAME vote
+// object when nothing changed (a retraction of a dot that is not there), so
+// callers can skip a render and an autosave on a no-op.
+//
+// Why this exists at all: `votes` is one map that everybody writes at once, and
+// it used to travel between peers as a whole-object replacement. A peer's
+// snapshot, taken before your dot arrived, put the map back the way it was and
+// your dot was gone — see the `vote` op in @livediagram/api-schema. Carrying
+// the CHANGE instead makes concurrent dots commute: apply them in any order and
+// every peer lands on the same map.
+//
+// Deliberately NOT guarded by `canCastVote`. Budget and one-per-element are
+// rules about whether a person may cast, checked where the press happens; a dot
+// that a peer has already cast is a fact, and refusing to apply it here would
+// leave that peer's screen disagreeing with everyone else's forever. The local
+// path checks first and then applies; the remote path only applies.
+export function applyVoteDelta(
+  vote: TabVote,
+  elementId: string,
+  voter: string,
+  delta: 1 | -1,
+): TabVote {
+  const existing = vote.votes[elementId] ?? [];
+  if (delta === 1) {
+    return { ...vote, votes: { ...vote.votes, [elementId]: [...existing, voter] } };
+  }
+  // Remove the LAST of this voter's dots on the element, matching how a
+  // person un-stacks: the dot that comes off is the one most recently put on.
+  const idx = existing.lastIndexOf(voter);
+  if (idx === -1) return vote;
+  const next = [...existing.slice(0, idx), ...existing.slice(idx + 1)];
+  return { ...vote, votes: { ...vote.votes, [elementId]: next } };
+}
+
 // How many dots a given participant has spent across the whole tab.
 export function votesSpentBy(vote: TabVote, participantId: string): number {
   let n = 0;

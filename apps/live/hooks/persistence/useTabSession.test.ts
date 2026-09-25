@@ -24,6 +24,7 @@ function harness(
         tabs = map(tabs);
       },
       emitTabMeta: vi.fn(),
+      emitVote: vi.fn(),
       selfId: 'me',
     });
   return { session, tab: () => tabs[0]! };

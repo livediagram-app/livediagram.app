@@ -1,5 +1,5 @@
 import { useEffect, type Dispatch, type MutableRefObject, type SetStateAction } from 'react';
-import { applyElementOp, type Tab } from '@livediagram/diagram';
+import { applyElementOp, applyVoteDelta, type Tab } from '@livediagram/diagram';
 import {
   CHANGE_LOG_LIST_LIMIT,
   type AvatarPresence,
@@ -290,6 +290,26 @@ export function useRoomConnection(opts: {
             if (elements === tab.elements) return prev;
             const next = [...prev];
             next[i] = { ...tab, elements };
+            return next;
+          });
+        } else if (op.kind === 'vote') {
+          // ONE dot from a peer (spec/39). Applied as a DELTA to our own map,
+          // not as a replacement, which is the whole point: two people casting
+          // in the same instant commute, so both dots survive whatever order
+          // they arrive in. Ignored when the tab has no vote open — a dot for a
+          // round that has since been cleared has nowhere to land.
+          remoteUpdateRef.current = true;
+          applyRemoteTabs((prev) => {
+            const i = prev.findIndex((t) => t.id === op.tabId);
+            if (i === -1) return prev;
+            const tab = prev[i]!;
+            if (!tab.vote) return prev;
+            const vote = applyVoteDelta(tab.vote, op.elementId, op.voter, op.delta);
+            // Same object back = a retraction of a dot we never had. Keep tab
+            // identity so the autosave's content diff sees no phantom change.
+            if (vote === tab.vote) return prev;
+            const next = [...prev];
+            next[i] = { ...tab, vote };
             return next;
           });
         } else if (op.kind === 'tab-meta') {
