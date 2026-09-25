@@ -58,6 +58,27 @@ export type MetricGroup = { title: string; metrics: MetricGroupItem[] };
 
 export const isStack = (item: MetricGroupItem): item is MetricStack => 'stack' in item;
 
+/**
+ * A stack head's number from its members' counts (same order as `members`):
+ * their sum, or only the headline members' when the stack names them, so a
+ * subset or a second view of the same events is never added twice. Null when
+ * a count it needs is missing (no earlier span to compare against).
+ */
+export function headlineTotal(
+  stack: MetricStack,
+  counts: readonly (number | null)[],
+): number | null {
+  const headline = stack.headline === undefined ? null : [stack.headline].flat();
+  let total = 0;
+  for (let i = 0; i < stack.members.length; i++) {
+    if (headline !== null && !headline.includes(stack.members[i]!)) continue;
+    const n = counts[i];
+    if (n === null || n === undefined) return null;
+    total += n;
+  }
+  return total;
+}
+
 // Every chart a group shows, stacks opened up: what the emitter test checks.
 export const groupMetrics = (group: MetricGroup): Metric[] =>
   group.metrics.flatMap((item) => (isStack(item) ? item.members : [item]));

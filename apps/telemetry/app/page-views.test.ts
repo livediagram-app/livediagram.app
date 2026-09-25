@@ -1,6 +1,6 @@
 import type { TelemetryCount } from '@livediagram/api-schema';
 import { describe, expect, it } from 'vitest';
-import { pageViewRows } from './page-insights';
+import { pageViewRows } from './page-views';
 
 // The Pages tab's arithmetic (spec/150): only page views count, split by the
 // app that serves each path.

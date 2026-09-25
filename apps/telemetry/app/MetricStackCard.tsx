@@ -1,7 +1,7 @@
 'use client';
 
 import { fmtDay } from './chart-utils';
-import { stackDrawsLines, type MetricStack } from './metric-series';
+import { headlineTotal, stackDrawsLines, type MetricStack } from './metric-series';
 import { StackDeck } from './StackDeck';
 import { StackTrendChart, type StackSeries } from './StackTrendChart';
 import { TrendBadge } from './TrendBadge';
@@ -32,13 +32,8 @@ export function MetricStackCard({
   // Hands back the head element, which gets focus back when the modal closes.
   onToggle: (anchor: HTMLElement) => void;
 }) {
-  // The members' sum, or just the headline members' when the stack names them.
-  const headline = stack.headline === undefined ? null : [stack.headline].flat();
-  const inHeadline = (i: number) => headline === null || headline.includes(stack.members[i]!);
-  const total = counts.filter((_, i) => inHeadline(i)).reduce((sum, n) => sum + n, 0);
-  const before = previousCounts.some((n, i) => inHeadline(i) && n === null)
-    ? null
-    : previousCounts.filter((_, i) => inHeadline(i)).reduce<number>((sum, n) => sum + (n ?? 0), 0);
+  const total = headlineTotal(stack, counts) ?? 0;
+  const before = headlineTotal(stack, previousCounts);
   const { chart, legend, hidden } = headView(stack.title, series, counts);
 
   return (

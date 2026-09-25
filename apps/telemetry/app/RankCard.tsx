@@ -16,7 +16,7 @@ import type { RankTrend } from './windows';
 // Shared by the Look & Feel and Palette views so both render their rankings
 // identically (the colour follows the row's telemetry category).
 
-// `rank` lives in its own pure module so non-view code (page-insights) can
+// `rank` lives in its own pure module so non-view code (page-views) can
 // use it without importing a component; re-exported for the views.
 export { rank } from './rank';
 

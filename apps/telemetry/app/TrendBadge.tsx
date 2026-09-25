@@ -20,6 +20,20 @@ const percent = (ratio: number) => {
   return pct === 0 ? '<1%' : `${pct.toLocaleString()}%`;
 };
 
+export type TrendReading = { tone: keyof typeof TONES; arrow: '▲' | '▼' | '→'; amount: string };
+
+/** Which way a count moved, how to colour it, and how to word the change. */
+export function readTrend(now: number, before: number, rising: Rising = 'good'): TrendReading {
+  const delta = now - before;
+  if (delta === 0) return { tone: 'neutral', arrow: '→', amount: 'flat' };
+  const up = delta > 0;
+  return {
+    tone: rising === 'neutral' ? 'neutral' : up === (rising === 'good') ? 'good' : 'bad',
+    arrow: up ? '▲' : '▼',
+    amount: before === 0 ? Math.abs(delta).toLocaleString() : percent(Math.abs(delta) / before),
+  };
+}
+
 export function TrendBadge({
   now,
   before,
@@ -31,24 +45,10 @@ export function TrendBadge({
   rising?: Rising;
   against: string; // "the 7 days before", for the tooltip
 }) {
-  const delta = now - before;
-  const flat = delta === 0;
-  const up = delta > 0;
-  const tone =
-    flat || rising === 'neutral'
-      ? TONES.neutral
-      : up === (rising === 'good')
-        ? TONES.good
-        : TONES.bad;
-  const arrow = flat ? '→' : up ? '▲' : '▼';
-  const amount = flat
-    ? 'flat'
-    : before === 0
-      ? Math.abs(delta).toLocaleString()
-      : percent(Math.abs(delta) / before);
+  const { tone, arrow, amount } = readTrend(now, before, rising);
   return (
     <span
-      className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium tabular-nums ${tone}`}
+      className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium tabular-nums ${TONES[tone]}`}
       title={`Against ${against}: ${before.toLocaleString()}`}
     >
       {arrow} {amount}

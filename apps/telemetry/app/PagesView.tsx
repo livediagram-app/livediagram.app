@@ -1,7 +1,7 @@
 'use client';
 
 import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
-import { PAGE_VIEW_APPS, pageViewRows } from './page-insights';
+import { PAGE_VIEW_APPS, pageViewRows } from './page-views';
 import { CardColumns } from './CardColumns';
 import { RankCard } from './RankCard';
 import { rankTrend, windowLabel } from './windows';
