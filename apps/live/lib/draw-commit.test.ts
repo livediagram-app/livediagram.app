@@ -144,6 +144,28 @@ describe('buildDrawnBoxed', () => {
     });
   });
 
+  // A note of fixed size is STAMPED, not drawn: it lands centred on where the
+  // pointer is released, at its own size (spec/139 Phase 4).
+  it('centres a tapped policy on the tap at its own size', () => {
+    const esTab = tab({ layers: eventStormingLayers() });
+    const policy = buildDrawnBoxed(
+      { type: 'sticky', fill: '#d8b4fe', esKind: 'policy' },
+      1000,
+      500,
+      1000,
+      500,
+      null,
+      esTab,
+    );
+    expect(policy).toMatchObject({ x: 850, y: 410, width: 300, height: 180 });
+  });
+
+  it('centres a fixed-size note on the release point, whatever the drag', () => {
+    const esTab = tab({ layers: eventStormingLayers() });
+    const note = buildDrawnBoxed({ type: 'sticky' }, 0, 0, 500, 400, null, esTab);
+    expect(note).toMatchObject({ x: 400, y: 300, width: 200, height: 200 });
+  });
+
   it('stamps the notation kind on the element (it is domain data, not a colour)', () => {
     const esTab = tab({ layers: eventStormingLayers() });
     const cmd = buildDrawnBoxed(

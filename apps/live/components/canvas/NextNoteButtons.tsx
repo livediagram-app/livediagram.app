@@ -11,6 +11,7 @@ import {
   type EsSide,
   type EventStormingNoteKind,
 } from '@livediagram/diagram';
+import { NoteGhost } from '@/components/canvas/NoteGhost';
 
 // The next-note buttons (spec/139 Phase 7): on each side of the SELECTED note
 // that has a next note in the notation, a small tab in that next note's colour
@@ -99,7 +100,15 @@ export function NextNoteButtons({
 
   return (
     <>
-      {previewing ? <NextNoteGhost tab={previewing} zoom={zoom} /> : null}
+      {previewing ? (
+        <NoteGhost
+          kind={previewing.next}
+          box={previewing.spot}
+          px={1 / zoom}
+          position="absolute"
+          testId="next-note-ghost"
+        />
+      ) : null}
       {tabs.map((t) => {
         const hitWidth = Math.max(t.tabWidth, minHit);
         const hitHeight = Math.max(t.tabHeight, minHit);
@@ -170,43 +179,5 @@ export function NextNoteButtons({
         );
       })}
     </>
-  );
-}
-
-// The note-to-be, drawn where it would land: a dashed outline in its own
-// colour with its kind named inside. Only a picture; nothing on the board
-// moves until the click.
-function NextNoteGhost({ tab, zoom }: { tab: Tab; zoom: number }) {
-  const fill = eventStormingNote(tab.next).fill;
-  const { spot } = tab;
-  return (
-    <div
-      aria-hidden
-      data-testid="next-note-ghost"
-      className="pointer-events-none absolute flex flex-col items-center justify-center font-semibold"
-      style={{
-        left: spot.x,
-        top: spot.y,
-        width: spot.width,
-        height: spot.height,
-        border: `${2 / zoom}px dashed ${fill}`,
-        borderRadius: spot.height * 0.03,
-        background: `${fill}2e`,
-        color: fill,
-        fontSize: spot.height * 0.075,
-        gap: spot.height * 0.02,
-      }}
-    >
-      <svg
-        aria-hidden
-        width={spot.height * 0.12}
-        height={spot.height * 0.12}
-        viewBox="0 0 16 16"
-        fill="none"
-      >
-        <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-      </svg>
-      {noteLabel(tab.next)}
-    </div>
   );
 }

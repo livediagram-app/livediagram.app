@@ -261,6 +261,19 @@ The notes behave like the physical kit:
   send to back still reorder notes WITHIN a tier; an event cannot be brought in
   front of an actor. Ruled 2026-09-25 ("actors must always be in front of
   other stickies, hotspots go even in front of that").
+- **Placed, not drawn.** A tile whose note has a fixed size (every workshop
+  kind, and a plain sticky on an event-storming board) is a STAMP when armed
+  with a click: a ghost of the note, in its colour and at its size, follows the
+  pointer over the canvas (hidden over a panel), snapped to the lanes with the
+  lane lit, exactly as a dragged note is. A press, or a press and drag, lands
+  the note centred where the ghost is, never at the drag's corner and never
+  sized by it; the dashed draw-to-size box and its corner-snap dot stand down.
+  The banner says so ("Click to place a command note"). One placement rule
+  (`stampPlacement`) feeds the ghost, the lane overlay and the drop.
+  Ruled 2026-09-25 ("dragging Event Storming stickies shows as if they can be
+  drawn to a size; it should show a ghost of what would be added"); the same
+  change fixed a tapped wide or small note landing off-centre (it was centred
+  as a square, then resized).
 - **Drag to the board.** Sticky tiles (the plain note and the whole ES
   category, rows and Favourites grid alike) drag onto the canvas like
   shape tiles (spec/58 ghost included, sized to the silhouette). The

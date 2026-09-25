@@ -69,6 +69,7 @@ import { TabLoadOverlay } from '@/components/canvas/TabLoadOverlay';
 import { PaletteDragGhost } from '@/components/canvas/PaletteDragGhost';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { useCanvasDrawGesture } from '@/components/canvas/useCanvasDrawGesture';
+import { useStampGhost } from '@/components/canvas/useStampGhost';
 import { useCanvasPolygonGesture } from '@/components/canvas/useCanvasPolygonGesture';
 import { useCanvasSurfaceGestures } from '@/hooks/canvas/useCanvasSurfaceGestures';
 import { useCanvasSelectHandlers } from '@/hooks/canvas/useCanvasSelectHandlers';
@@ -456,6 +457,17 @@ export function Canvas(props: CanvasProps) {
     onMultiContextMenu,
   });
 
+  // An armed workshop-note tile is a STAMP, not a draw-to-size (spec/139
+  // Phase 4): its ghost follows the pointer, and the draw gesture places by the
+  // same rule.
+  const { stamp, stampAt, showStamp } = useStampGhost({
+    pendingDraw,
+    elements,
+    tabKind: props.tabKind,
+    tabLayers: props.tabLayers,
+    viewportZoom,
+    wrapperRef,
+  });
   const { drawDrag, penPoints, drawHover, beginPendingDrawGesture } = useCanvasDrawGesture({
     pendingDraw,
     elements,
@@ -464,6 +476,8 @@ export function Canvas(props: CanvasProps) {
     isPinchingRef,
     onCommitDraw,
     onCommitFreehand,
+    stampAt,
+    showStamp,
   });
 
   // Polygon click-to-place gesture (spec/84), composed IN FRONT of the
@@ -812,6 +826,7 @@ export function Canvas(props: CanvasProps) {
         marquee={marquee}
         drawDrag={drawDrag}
         drawHover={drawHover}
+        stamp={stamp}
         penPoints={penPoints}
         polygonVertices={polygonVertices}
         polygonCursor={polygonCursor}

@@ -35,6 +35,7 @@ import type { ThemeDefinition } from '@livediagram/diagram';
 import { isTechIconId } from '@/lib/tech-icons';
 import { getSticker, stickerDropSize } from '@/lib/stickers';
 import type { PendingDraw } from '@/lib/draw-mode';
+import { stampSizeFor } from '@/lib/stamp-placement';
 
 // The pure element construction behind commitDraw (spec/09 draw-to-add),
 // lifted out of useShapeDrawing: each builder interprets the gesture's
@@ -254,8 +255,11 @@ export function buildDrawnBoxed(
     isTap && intent.type === 'shape' && intent.kind === 'sticker' && intent.stickerId
       ? stickerDropSize(getSticker(intent.stickerId), { width: drawnWidth, height }).width
       : drawnWidth;
-  const x = isTap ? startX - width / 2 : dragBox.x;
-  const y = isTap ? startY - height / 2 : dragBox.y;
+  // A fixed-size workshop note is STAMPED (spec/139 Phase 4): centred on the
+  // release point at its own final size, whatever the gesture did.
+  const stamp = stampSizeFor(intent, activeTab);
+  const x = stamp ? endX - stamp.width / 2 : isTap ? startX - width / 2 : dragBox.x;
+  const y = stamp ? endY - stamp.height / 2 : isTap ? startY - height / 2 : dragBox.y;
   const colours = deriveNewBoxedColours(base, {
     backgroundColor: activeTab.backgroundColor,
     patternColor: activeTab.patternColor,

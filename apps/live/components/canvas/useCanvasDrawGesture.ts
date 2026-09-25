@@ -2,8 +2,14 @@ import { useEffect, useState, type RefObject } from 'react';
 import { snapResizeBounds, snapToAlignment, snapToArrowPoint } from '@livediagram/diagram';
 import { ARROW_SNAP_THRESHOLD_PX, pointerToCanvas } from '@/lib/canvas';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
+import type { StampPlacement } from '@/lib/stamp-placement';
 
 const EMPTY_ID_SET: Set<string> = new Set();
+
+const stampCentre = (p: StampPlacement) => ({
+  x: p.bounds.x + p.bounds.width / 2,
+  y: p.bounds.y + p.bounds.height / 2,
+});
 
 // The inputs the draw gesture reads, reusing CanvasProps' exact types so the
 // hook can't drift from what Canvas passes.
@@ -15,7 +21,13 @@ type CanvasDrawGestureDeps = Pick<
   | 'isPinchingRef'
   | 'onCommitDraw'
   | 'onCommitFreehand'
-> & { wrapperRef: RefObject<HTMLDivElement | null> };
+> & {
+  wrapperRef: RefObject<HTMLDivElement | null>;
+  // Set while the armed tile is a fixed-size note (useStampGhost): the gesture
+  // then STAMPS the note at this placement instead of drawing a box to size.
+  stampAt: ((canvasX: number, canvasY: number) => StampPlacement) | null;
+  showStamp: (placement: StampPlacement | null) => void;
+};
 
 // Canvas draw-to-size + freehand pen gesture, lifted out of Canvas.tsx. Owns
 // the in-progress draw state (box drag, pen polyline, pre-press snap hover)
@@ -31,6 +43,8 @@ export function useCanvasDrawGesture({
   isPinchingRef,
   onCommitDraw,
   onCommitFreehand,
+  stampAt,
+  showStamp,
 }: CanvasDrawGestureDeps) {
   // Draw-to-size gesture state. Set when the user starts a drag on
   // the canvas while pendingDraw is set; cleared on pointer-up
@@ -88,6 +102,13 @@ export function useCanvasDrawGesture({
       // first corner) so the sketch can begin from an aligned start.
       const start = snapDrawStart(sx, sy);
       setPenPoints([{ x: start.x, y: start.y }]);
+    } else if (stampAt) {
+      // A stamp presses where its ghost is: start and end are both the
+      // placed note's centre, so the commit reads it as a tap there.
+      const placed = stampAt(sx, sy);
+      const c = stampCentre(placed);
+      showStamp(placed);
+      setDrawDrag({ startX: c.x, startY: c.y, currentX: c.x, currentY: c.y });
     } else {
       const start = snapDrawStart(sx, sy);
       setDrawDrag({ startX: start.x, startY: start.y, currentX: start.x, currentY: start.y });
@@ -103,7 +124,9 @@ export function useCanvasDrawGesture({
   // in CanvasChrome) appears exactly when the start would latch.
   const [drawHover, setDrawHover] = useState<{ x: number; y: number } | null>(null);
   useEffect(() => {
-    if (!pendingDraw || drawDrag || penPoints) {
+    // A stamp has its own ghost (useStampGhost); the corner-snap dot is for
+    // shapes drawn to size.
+    if (!pendingDraw || drawDrag || penPoints || stampAt) {
       setDrawHover(null);
       return;
     }
@@ -122,7 +145,7 @@ export function useCanvasDrawGesture({
     };
     window.addEventListener('pointermove', onMove);
     return () => window.removeEventListener('pointermove', onMove);
-  }, [pendingDraw, drawDrag, penPoints, viewportZoom, elements, wrapperRef]);
+  }, [pendingDraw, drawDrag, penPoints, viewportZoom, elements, wrapperRef, stampAt]);
 
   // Window-level move + up listeners for the draw gesture. Attached
   // only while a drag is in flight so the canvas pays nothing in the
@@ -160,6 +183,16 @@ export function useCanvasDrawGesture({
       // pinch-warped pointer (pan + editor-drag bail the same way).
       if (isPinchingRef?.current) return;
       const { x: rawX, y: rawY } = pointerToCanvas(e.clientX, e.clientY, rect, viewportZoom);
+      if (stampAt) {
+        // A stamp is carried, not sized: the ghost follows the pointer and the
+        // drop is its centre.
+        const placed = stampAt(rawX, rawY);
+        const c = stampCentre(placed);
+        showStamp(placed);
+        latest = { startX: c.x, startY: c.y, currentX: c.x, currentY: c.y };
+        setDrawDrag(latest);
+        return;
+      }
       let endX = rawX;
       let endY = rawY;
       // 1:1 aspect lock on shift. Mirrors Figma / Photoshop: hold

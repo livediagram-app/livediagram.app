@@ -312,3 +312,54 @@ test('pasting copied notes into a note open for typing puts them on the board', 
   expect(labels.some((l) => l.includes('schemaVersion'))).toBe(false);
   expectNoPageErrors(pageErrors);
 });
+
+// An armed workshop-note tile is a STAMP (spec/139 Phase 4): a ghost of the
+// note follows the pointer, a drag carries it rather than sizing a box, and it
+// lands centred where the ghost was, on a lane.
+test('an armed note tile shows the note it will add and places it there', async ({
+  page,
+  pageErrors,
+}) => {
+  await startTemplateDiagram(page, /Browse Technical templates/, /^Event storming/i);
+  await dismissQuickTour(page);
+  const notes = page.locator('[data-canvas-a11y-root]').getByRole('img', { name: /^Sticky note/ });
+  await expect(notes).toHaveCount(3);
+  await page.waitForTimeout(500);
+
+  // Aim one lane below the template row, a few px off the lane's centre.
+  const before = await boardTab(page);
+  const rowNote = stickies(before)[0]!;
+  const rowBox = (await notes.nth(0).boundingBox())!;
+  const zoom = rowBox.height / rowNote.height;
+  const aimY = rowBox.y + rowBox.height / 2 + (LANE_PITCH + 7) * zoom;
+
+  await page.getByRole('option', { name: 'Add Command note' }).first().click();
+  await expect(page.getByText('Click to place a command note')).toBeVisible();
+  const ghost = page.getByTestId('stamp-ghost');
+  await page.mouse.move(700, aimY);
+  await expect(ghost).toBeVisible();
+  await expect(ghost).toContainText('Command');
+  const resting = (await ghost.boundingBox())!;
+
+  // Press and drag: the ghost is carried at the note's own size, never drawn.
+  await page.mouse.down();
+  await page.mouse.move(900, aimY + 5, { steps: 8 });
+  // A 200 x 50 drag: a draw-to-size box would be wide and flat. The ghost
+  // keeps the note's own square, the same size it had at rest.
+  const carried = (await ghost.boundingBox())!;
+  expect(carried.width).toBeCloseTo(resting.width, 0);
+  expect(carried.height).toBeCloseTo(carried.width, 0);
+  await page.mouse.up();
+  await expect(notes).toHaveCount(4);
+  await expect(ghost).toHaveCount(0);
+
+  const tab = await boardTab(page);
+  const command = stickies(tab).find((el) => el.esKind === 'command')!;
+  expect({ width: command.width, height: command.height }).toEqual({ width: 200, height: 200 });
+  // On the lane below the row, centred on it.
+  expect(command.y + command.height / 2).toBeCloseTo(
+    rowNote.y + rowNote.height / 2 + LANE_PITCH,
+    6,
+  );
+  expectNoPageErrors(pageErrors);
+});
