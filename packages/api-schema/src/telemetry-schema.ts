@@ -15,6 +15,8 @@
 // ingest validator use exactly one definition (and the public
 // dashboard can only ever surface values from this closed vocabulary).
 
+import { isValidPageViewPath } from './page-views';
+
 export const TELEMETRY_CATEGORIES = [
   'Diagram',
   'Element',
@@ -97,6 +99,12 @@ export const TELEMETRY_CATEGORIES = [
   // people back into a diagram); 'Loaded'/'Retry' when a failed read is
   // retried. Never an action name, comment text, or diagram name.
   'Activity',
+  // Page views (spec/150): 'View' with `type` the normalised page path
+  // ('/help/canvas/the-canvas', '/diagram/[id]'), reported by every
+  // frontend on each path change. The one category whose `type` is a path,
+  // so it validates against PAGE_VIEW_PATH_PATTERN instead of the token
+  // pattern, and only ever pairs with 'View'.
+  'Page',
 ] as const;
 export type TelemetryCategory = (typeof TELEMETRY_CATEGORIES)[number];
 
@@ -200,6 +208,10 @@ export function isValidTelemetryEvent(value: unknown): value is TelemetryEvent {
   const e = value as Record<string, unknown>;
   if (!TELEMETRY_CATEGORIES.includes(e.category as TelemetryCategory)) return false;
   if (!TELEMETRY_ACTIONS.includes(e.action as TelemetryAction)) return false;
+  // A page view is only a page view with a path (spec/150).
+  if (e.category === 'Page') {
+    return e.action === 'View' && typeof e.type === 'string' && isValidPageViewPath(e.type);
+  }
   if (e.type === undefined || e.type === null) return true;
   return typeof e.type === 'string' && TELEMETRY_TYPE_PATTERN.test(e.type);
 }

@@ -3,7 +3,7 @@
 import { EmptyState } from '@livediagram/ui';
 import { metricKey, type TelemetryCount, type TelemetryDaily } from '@livediagram/api-schema';
 import { pct } from './chart-utils';
-import { categoryColor, titleCase } from './event-vocab';
+import { categoryColor, typeLabel } from './event-vocab';
 import { ActivityGlyph } from './glyphs';
 import { MiniSparkline } from './MiniSparkline';
 
@@ -63,7 +63,7 @@ export function RankCard({
                   <div className="flex items-baseline justify-between gap-2 text-sm">
                     <span className="flex min-w-0 items-center gap-2">
                       <span className="truncate text-slate-700 dark:text-slate-200">
-                        {titleCase(row.type ?? '')}
+                        {typeLabel(row.type ?? '')}
                       </span>
                       {isTop ? <RankTag /> : null}
                     </span>

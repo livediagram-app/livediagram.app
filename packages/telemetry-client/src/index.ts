@@ -196,6 +196,23 @@ export function createTelemetryEmitter(opts: {
   return { track };
 }
 
+/**
+ * A track() for a host with no preference plumbing of its own (the help
+ * centre, marketing, the dashboard): the emitter is built on first use, and
+ * the opt-out is read straight through. Deferring construction means a page
+ * that never tracks never builds one.
+ */
+export function createLazyTrack(opts: {
+  apiBase: string;
+  enabled: boolean;
+}): TelemetryEmitter['track'] {
+  let emitter: TelemetryEmitter | null = null;
+  return (category, action, type) => {
+    emitter ??= createTelemetryEmitter({ ...opts, isOptedIn: readTelemetryOptIn });
+    emitter.track(category, action, type);
+  };
+}
+
 // ---------------------------------------------------------------------
 // Client error tracking (spec/22 'Error' category)
 // ---------------------------------------------------------------------

@@ -621,7 +621,8 @@ export const articles: Article[] = [
     slug: 'what-we-collect',
     title: 'What We Collect',
     description: 'The anonymous, first-party telemetry we record, and how to opt out.',
-    keywords: 'privacy telemetry analytics tracking data collect opt out anonymous',
+    keywords:
+      'privacy telemetry analytics tracking data collect opt out anonymous page views pageviews visits',
     category: 'Privacy and Security',
     categorySlug: 'privacy-and-security',
     parentSlug: 'privacy-and-security',

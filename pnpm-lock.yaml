@@ -264,6 +264,9 @@ importers:
 
   apps/marketing:
     dependencies:
+      '@livediagram/telemetry-client':
+        specifier: workspace:*
+        version: link:../../packages/telemetry-client
       '@livediagram/template-previews':
         specifier: workspace:*
         version: link:../../packages/template-previews
@@ -383,6 +386,9 @@ importers:
       '@cloudflare/workers-types':
         specifier: ^5.20260916.1
         version: 5.20260916.1
+      '@livediagram/api-schema':
+        specifier: workspace:*
+        version: link:../../packages/api-schema
       '@livediagram/eslint-config':
         specifier: workspace:*
         version: link:../../packages/eslint-config
@@ -416,6 +422,9 @@ importers:
       '@livediagram/api-schema':
         specifier: workspace:*
         version: link:../../packages/api-schema
+      '@livediagram/telemetry-client':
+        specifier: workspace:*
+        version: link:../../packages/telemetry-client
       '@livediagram/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -712,6 +721,9 @@ importers:
       jsdom:
         specifier: ^30.0.1
         version: 30.0.1
+      next:
+        specifier: ^16.3.5
+        version: 16.3.5(@playwright/test@1.63.0)(@types/node@26.6.1)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       typescript:
         specifier: npm:@typescript/typescript6@^6.0.2
         version: '@typescript/typescript6@6.0.2'

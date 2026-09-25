@@ -337,3 +337,28 @@ describe('telemetry opt-out contract', () => {
     expect(readTelemetryOptIn()).toBe(true);
   });
 });
+
+describe('createLazyTrack', () => {
+  const withPrefs = (raw: string | null) =>
+    Object.assign(windowTarget, { localStorage: { getItem: () => raw } });
+
+  it('sends through the shared engine when enabled and opted in', () => {
+    withPrefs(null);
+    const track = mod.createLazyTrack({ apiBase: '/api', enabled: true });
+    track('Page', 'View', '/faq');
+    vi.advanceTimersByTime(10_000);
+    expect(fetchMock).toHaveBeenCalledOnce();
+    expect(sentEvents(fetchMock.mock.calls[0]!)).toEqual([
+      { category: 'Page', action: 'View', type: '/faq' },
+    ]);
+  });
+
+  it('honours the stored opt-out and the build gate', () => {
+    withPrefs(JSON.stringify({ telemetryEnabled: false }));
+    mod.createLazyTrack({ apiBase: '/api', enabled: true })('Page', 'View', '/');
+    withPrefs(null);
+    mod.createLazyTrack({ apiBase: '/api', enabled: false })('Page', 'View', '/');
+    vi.advanceTimersByTime(10_000);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+});

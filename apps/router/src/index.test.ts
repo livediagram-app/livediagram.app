@@ -134,7 +134,7 @@ describe('live route drift guard', () => {
       if (live.urls.length === 0) missed.push(segment);
     }
     // A segment listed here 404s on marketing in production: add it to
-    // LIVE_ROUTE_SEGMENTS in apps/router/src/index.ts.
+    // LIVE_ROUTE_SEGMENTS in packages/api-schema/src/page-views.ts.
     expect(missed).toEqual([]);
   });
 });

@@ -4827,7 +4827,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Email",
       "Error",
       "Timeline",
-      "Activity"
+      "Activity",
+      "Page"
     ],
     "type": "string"
   },
