@@ -653,6 +653,60 @@ describe('handleDiagrams gated change-log (GET/POST /diagrams/:id/log)', () => {
   });
 });
 
+describe("POST /diagrams/:id/log checks the entry's tab belongs to the diagram", () => {
+  const entryOn = (tabId: string | null) => ({
+    id: 'l1',
+    tabId,
+    participantId: 'p1',
+    participantName: 'Ann',
+    participantColor: '#000000',
+    kind: 'edit',
+    summary: 'Moved 1 element',
+    elementIds: ['e1'],
+    beforeState: {},
+    afterState: {},
+  });
+  const withTabs = (ids: string[]) =>
+    ({ ...fakeDiagram('owner-1'), tabs: ids.map((id) => ({ id })) }) as unknown as DiagramDTO;
+
+  beforeEach(() => {
+    canEditDiagram.mockResolvedValue(true);
+    db.getParticipant.mockResolvedValue(null);
+    db.insertChangeLogEntry.mockResolvedValue(undefined);
+  });
+
+  it('409s tab_not_saved for a tab the diagram does not have yet, without writing', async () => {
+    // The production 500: the editor logs a new tab's first edit before the
+    // debounced autosave has created the tab row, and the insert failed its
+    // foreign key. Also the cross-diagram write: a tab from another diagram
+    // is not linked here either.
+    db.getDiagram.mockResolvedValue(withTabs(['t1']));
+    const res = await handleDiagrams(
+      makeCtx('POST', '/api/diagrams/d1/log', { body: entryOn('t-other') }),
+    );
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ error: 'tab_not_saved' });
+    expect(db.insertChangeLogEntry).not.toHaveBeenCalled();
+  });
+
+  it("writes an entry on one of the diagram's own tabs", async () => {
+    db.getDiagram.mockResolvedValue(withTabs(['t1']));
+    const res = await handleDiagrams(
+      makeCtx('POST', '/api/diagrams/d1/log', { body: entryOn('t1') }),
+    );
+    expect(res.status).toBe(201);
+    expect(db.insertChangeLogEntry).toHaveBeenCalled();
+  });
+
+  it('writes a tab-less entry', async () => {
+    db.getDiagram.mockResolvedValue(withTabs([]));
+    const res = await handleDiagrams(
+      makeCtx('POST', '/api/diagrams/d1/log', { body: entryOn(null) }),
+    );
+    expect(res.status).toBe(201);
+  });
+});
+
 describe('POST /diagrams carrying an Offline Mode sync (spec/76)', () => {
   // The offline record is deleted once the create succeeds, so the deck and
   // folder have to arrive with it.

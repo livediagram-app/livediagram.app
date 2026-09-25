@@ -460,6 +460,13 @@ export type ChangeLogEntry = {
 // Older entries stay in D1 for audit completeness; the UI just pages to N.
 export const CHANGE_LOG_LIST_LIMIT = 30;
 
+// The 409 `error` token `POST .../log` answers when the entry names a tab
+// that isn't (yet) linked to the diagram. The common cause is benign: the
+// editor logs an edit the moment it happens, but a brand-new tab only
+// reaches D1 on the debounced autosave, so the first edit on it can beat
+// its own tab row. The client retries that one quietly (spec/12).
+export const CHANGE_LOG_TAB_NOT_SAVED = 'tab_not_saved';
+
 // Canonical hash function for the X-Image-Sha256 wire-format header.
 // Lives here so the client and server can't drift on the dedup key
 // (see ./sha256.ts for the rationale).

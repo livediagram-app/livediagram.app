@@ -292,7 +292,7 @@ export class ApiError extends Error {
 // Tolerant of empty / non-JSON bodies (503 from a missing binding,
 // network-level failures) — returns null rather than throwing a second
 // error on top of the first.
-async function readErrorCode(res: Response): Promise<string | null> {
+export async function readErrorCode(res: Response): Promise<string | null> {
   try {
     const body = (await res.clone().json()) as { error?: unknown };
     return typeof body?.error === 'string' ? body.error : null;

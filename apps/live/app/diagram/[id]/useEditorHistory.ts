@@ -189,9 +189,9 @@ export function useEditorHistory(opts: {
       setChangeLog((prev) => [shifted, ...prev].slice(0, CHANGE_LOG_LIST_LIMIT));
       if (diagramId) {
         // Same entry id and content — D1 ends up with the same row
-        // it had before the undo. Idempotent under network retries
-        // (the API treats POST as insert; a re-insert of the same id
-        // would fail loudly but we don't double-fire).
+        // it had before the undo. Idempotent: the API upserts an
+        // existing id from the same author (spec/12), so a redo that
+        // beats its undo's DELETE doesn't fail.
         apiAppendChangeLogEntry(selfId, diagramId, shifted, sessionShareCode).catch(() => {});
       }
       roomRef.current?.send({ kind: 'op', op: { kind: 'log', entry: shifted } });
