@@ -61,6 +61,18 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       // selected-cell layer) — don't double-act on it.
       if (e.defaultPrevented) return;
       if (e.key === 'Escape') {
+        const live = liveRef.current;
+        // Claim the key when it cancelled something, so a later listener
+        // (the non-modal poll sheet's Escape-to-skip) knows it's spoken for.
+        if (
+          live.formatSourceId !== null ||
+          live.pendingDraw !== null ||
+          live.canvasTool === 'format' ||
+          live.canvasTool === 'isometric' ||
+          live.canvasTool === 'avatar'
+        ) {
+          e.preventDefault();
+        }
         liveRef.current.setFormatSourceId(null);
         // Persistent Format tool: Escape exits the tool entirely (back to
         // Select) from either phase, not just disarming the base.

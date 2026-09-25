@@ -153,8 +153,11 @@ when an op arrives so a hand-crafted frame can't blow up a peer's panel:
    - **No focus trap and no autofocus.** Focus stays where the person was
      working. Stealing it would be the modal's rudeness without the modal.
    - **Escape still skips**, because the keyboard way out of a prompt should not
-     depend on whether it happens to be modal — except while a free-text answer
-     has focus, where Escape belongs to the field.
+     depend on whether it happens to be modal — except while a text field or
+     label editor has focus, where Escape belongs to the field, and when the
+     work behind the sheet already claimed the press (cancelling a label edit,
+     the format painter, a pending draw, a deselect, or a dialog over the
+     canvas). One Escape does one thing; it never answers the poll by accident.
    - **There is still no close button.** Skip IS the escape, and it is a real
      answer (counted separately) rather than a silent dodge. There is no
      backdrop left to click, so Skip and Escape are the whole of it.

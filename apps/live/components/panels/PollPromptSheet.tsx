@@ -22,6 +22,7 @@
 import { useEffect, useState } from 'react';
 import { POLL_TEXT_ANSWER_MAX, pollOptionTokens, type LivePoll } from '@livediagram/api-schema';
 import { Portal } from '@/components/primitives/Portal';
+import { anyModalOpen } from '@/lib/modal-guard';
 
 export function PollPromptSheet({
   poll,
@@ -39,12 +40,32 @@ export function PollPromptSheet({
       // Not while they are typing an answer — Escape there should be the
       // browser's own "get me out of this field", not an accidental skip.
       if (e.key !== 'Escape') return;
+      // The sheet isn't modal, so this Escape may belong to the work behind
+      // it: cancelling a label edit, the format painter, a pending draw, a
+      // deselect, or a dialog opened over the canvas. Those handlers claim
+      // the key with preventDefault; skipping the poll as well answered it by
+      // accident. Listener order isn't ours to rely on (the format painter's
+      // Escape listener attaches when the mode starts, possibly after this
+      // one), so the decision waits until the whole dispatch has run.
+      if (anyModalOpen()) return;
       const el = document.activeElement;
-      if (el instanceof HTMLTextAreaElement || el instanceof HTMLInputElement) return;
-      onAnswer(null);
+      if (
+        el instanceof HTMLTextAreaElement ||
+        el instanceof HTMLInputElement ||
+        el instanceof HTMLSelectElement ||
+        (el instanceof HTMLElement && el.isContentEditable)
+      )
+        return;
+      timer = window.setTimeout(() => {
+        if (!e.defaultPrevented) onAnswer(null);
+      }, 0);
     };
+    let timer: number | undefined;
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      window.clearTimeout(timer);
+    };
   }, [poll, onAnswer]);
 
   if (!poll) return null;
