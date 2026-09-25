@@ -3,6 +3,7 @@ import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import {
+  ES_LANES,
   ES_LANE_PITCH,
   laneCentre,
   type Element,
@@ -236,22 +237,13 @@ describe('useEditorDrag — timeline lanes (spec/139)', () => {
     expect(h.xOf('drag')).toBe(272);
   });
 
-  it('NEVER drags the timeline along with the note', () => {
-    // The stack is anchored on the board's top-most note (a, at y=0). Dragging
-    // that very note UP into the higher lanes must not re-anchor the stack to
-    // it on every tick — that is the bug where the timeline chased the sticky,
-    // and this asserts the preview stays pinned to the stack the gesture began
-    // with.
-    const h = harness();
-    press(h, 'a');
-    move(h, 0, -60); // into the higher lanes, one tick at a time
-    move(h, 0, -120);
-    move(h, 0, -260);
-    const preview = getLanePreview();
-    expect(preview).not.toBeNull();
-    // a was the top-most note at drag start, so the stack began at y=0 and
-    // must still be there — not at -260 wherever the note has run off to.
-    expect(preview!.originY).toBe(0);
+  it('snaps to the lanes fixed at world zero, not to the top-most note', () => {
+    // The board's top-most note sits OFF a lane. The lanes used to be
+    // anchored on it, so they moved whenever it did; they are fixed now.
+    const h = harness({ elements: [...BOARD(), note('top', 3000, -57)] });
+    press(h, 'drag');
+    move(h, DX, DY);
+    expect(h.yOf('drag')! + 100).toBe(laneCentre(1, ES_LANES));
   });
 
   it('snaps a MULTI-SELECTION by the note in hand, keeping its spacing', () => {

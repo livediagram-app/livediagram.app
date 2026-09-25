@@ -25,7 +25,7 @@
 // functions, so the preview can never disagree with the result (spec/58).
 
 import { ES_NOTE_SIZE_PX } from './event-storming';
-import type { Element, ElementId } from './index';
+import type { Element } from './index';
 
 // Where the lane stack is anchored. ONE number: the canvas y of lane 0's top
 // edge. There is no 'enabled' any more and no x — an event-storming board is
@@ -35,37 +35,10 @@ export type EsTimeline = {
   originY: number;
 };
 
-// The lane stack a board is working to. DERIVED, never stored: anchored on the
-// board's top-most note, so the lanes arrive already lined up with the work
-// that is there, and an empty board starts at zero.
-//
-// Deriving beats storing because the derivation is stable in the way that
-// matters — every snapped note sits on the stack, and moving the anchor by a
-// whole number of pitches leaves exactly the same lane lines. Nothing to
-// toggle, nothing to migrate, nothing to fall out of step with the board.
-//
-// Notes on a hidden or locked layer are ignored: you cannot line a stack up
-// with work you cannot see.
-export function activeTimeline(
-  tab: { elements?: readonly Element[] } | undefined,
-  inertIds?: ReadonlySet<ElementId>,
-): EsTimeline | null {
-  if (!tab) return null;
-  return { originY: laneOriginOf(tab.elements ?? [], inertIds) };
-}
-
-export function laneOriginOf(
-  elements: readonly Element[],
-  inertIds?: ReadonlySet<ElementId>,
-): number {
-  let top: number | null = null;
-  for (const el of elements) {
-    if (el.type !== 'sticky') continue;
-    if (inertIds?.has(el.id)) continue;
-    if (top === null || el.y < top) top = el.y;
-  }
-  return top ?? 0;
-}
+// The lane stack every event-storming board works to: FIXED to the canvas,
+// lane 0 spanning y 0..200. Nothing on the board moves it — deriving it from
+// the notes made the lanes jump whenever the top-most note changed.
+export const ES_LANES: EsTimeline = { originY: 0 };
 
 // A lane is one standard note tall, and the gap between two lanes is the
 // breathing room stickies get when they are pressed onto a wall in rows.

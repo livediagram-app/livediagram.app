@@ -125,10 +125,6 @@ export function resolveBoxedMove({
       lane: laneSnap
         ? {
             laneIndex: laneSnap.laneIndex,
-            // The frozen stack this frame resolved against: the overlay must
-            // draw its bands against the same lines the note landed on, not
-            // the board as it is half a tick later.
-            originY: timeline.originY,
             ...(gutterSnap
               ? {
                   // What the author sees BEFORE dropping: the footprint the

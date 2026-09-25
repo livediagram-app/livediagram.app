@@ -104,7 +104,7 @@ describe('resolveBoxedMove — timeline lanes', () => {
     const out = resolve(937 - START.x, 7 - START.y, { elements: [note('drag', 1000, 1000)] });
     expect(START.x + out.tx).toBe(937);
     expect(START.y + out.ty).toBe(laneCentre(0, TIMELINE) - 100);
-    expect(out.lane).toEqual({ laneIndex: 0, originY: TIMELINE.originY });
+    expect(out.lane).toEqual({ laneIndex: 0 });
   });
 
   it('draws no alignment guides when lane and slot have claimed both axes', () => {

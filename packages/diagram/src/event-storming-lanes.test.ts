@@ -1,13 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
-  activeTimeline,
+  ES_LANES,
   ES_LANE_GAP,
   ES_LANE_HEIGHT,
   ES_LANE_PITCH,
   ES_LANE_SNAP_Y,
   ES_CANDIDATE_RADIUS_X,
   ES_NOTE_GAP,
-  laneOriginOf,
   laneCentre,
   laneIndexAt,
   laneTop,
@@ -368,34 +367,12 @@ describe('capturing a suggested slot', () => {
   });
 });
 
-describe('the lane stack of a board', () => {
-  it('anchors on the board top-most note', () => {
-    const board = [
-      note({ id: 'a', x: 40, y: 300 }),
-      note({ id: 'b', x: 900, y: 120 }),
-      note({ id: 'c', x: 10, y: 540 }),
-    ];
-    expect(laneOriginOf(board)).toBe(120);
-    expect(activeTimeline({ elements: board })).toEqual({ originY: 120 });
-  });
-
-  it('starts at zero on an empty board', () => {
-    expect(laneOriginOf([])).toBe(0);
-    expect(activeTimeline({ elements: [] })).toEqual({ originY: 0 });
-  });
-
-  it('ignores work on a hidden or locked layer', () => {
-    const board = [note({ id: 'hidden', x: 0, y: 0 }), note({ id: 'seen', x: 0, y: 240 })];
-    expect(laneOriginOf(board, new Set(['hidden']))).toBe(240);
-  });
-
-  it('is unmoved by an anchor that steps a whole number of pitches', () => {
-    // The stack repeats, so re-anchoring a pitch higher draws the same lanes.
-    const board = [note({ id: 'a', x: 0, y: 0 })];
-    const higher = [note({ id: 'a', x: 0, y: -ES_LANE_PITCH })];
-    const one = activeTimeline({ elements: board })!;
-    const two = activeTimeline({ elements: higher })!;
-    expect((laneCentre(0, one) - laneCentre(0, two)) % ES_LANE_PITCH).toBe(0);
+describe('the lane stack', () => {
+  it('is fixed to the canvas, lane 0 spanning y 0..200', () => {
+    expect(ES_LANES).toEqual({ originY: 0 });
+    expect(laneTop(0, ES_LANES)).toBe(0);
+    expect(laneCentre(0, ES_LANES)).toBe(100);
+    expect(laneCentre(-1, ES_LANES)).toBe(100 - ES_LANE_PITCH);
   });
 });
 

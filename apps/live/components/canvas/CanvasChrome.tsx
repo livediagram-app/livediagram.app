@@ -1,4 +1,4 @@
-import { activeTimeline } from '@livediagram/diagram';
+import { ES_LANES } from '@livediagram/diagram';
 import { computeDrawGuides } from '@/components/canvas/canvas-draw-guides';
 import { CanvasGuideOverlay } from '@/components/canvas/CanvasGuideOverlay';
 import { TimelineLanesOverlay } from '@/components/canvas/TimelineLanesOverlay';
@@ -261,7 +261,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     inertIds: props.layerInertIds,
     // Every event-storming board is on lanes; the stack is derived from the
     // board itself, so there is nothing to gate beyond "is this that board".
-    timeline: props.esBoard === true ? activeTimeline(props, props.layerInertIds) : null,
+    timeline: props.esBoard === true ? ES_LANES : null,
   });
   const { alignGuides, allSnapTargets } = computeDrawGuides({
     drawDrag,
@@ -363,7 +363,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
           drop — and it publishes through its own store, so it costs nothing
           on every other board. */}
       <TimelineLanesOverlay
-        timeline={props.esBoard === true ? activeTimeline(props, props.layerInertIds) : null}
+        timeline={props.esBoard === true ? ES_LANES : null}
         tabThemeId={tabThemeId}
         viewportZoom={viewportZoom}
         wrapperRef={wrapperRef}

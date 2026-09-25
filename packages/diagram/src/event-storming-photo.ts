@@ -16,7 +16,7 @@ import {
   type EventStormingNoteKind,
 } from './event-storming';
 import type { Element, StickyElement } from './index';
-import { activeTimeline, snapToLane, type EsTimeline } from './event-storming-lanes';
+import { ES_LANES, snapToLane, type EsTimeline } from './event-storming-lanes';
 import {
   applyPhotoTransform,
   defaultPhotoScale,
@@ -154,7 +154,7 @@ export function placeNewNotes(
 export function reconcilePhoto(
   detected: PhotoNote[],
   existing: BoardNote[],
-  opts: { threshold?: number; tab?: { elements?: readonly Element[] } } = {},
+  opts: { threshold?: number } = {},
 ): PhotoReconciliation {
   const matches = matchDetectedNotes(detected, existing, { threshold: opts.threshold });
   const matchedDetected = new Map(matches.map((m) => [m.detectedId, m.boardId]));
@@ -193,9 +193,8 @@ export function reconcilePhoto(
       };
     });
 
-  const placed = placeNewNotes(additions, transform, existing, {
-    timeline: activeTimeline(opts.tab),
-  });
+  // Photo import is an event-storming verb, and every such board has lanes.
+  const placed = placeNewNotes(additions, transform, existing, { timeline: ES_LANES });
 
   const differences: PhotoDifference[] = [];
   for (const m of matches) {

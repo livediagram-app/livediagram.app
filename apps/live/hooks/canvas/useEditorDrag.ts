@@ -24,7 +24,7 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   acceptsInlineIcon,
-  activeTimeline,
+  ES_LANES,
   isBoxed,
   nearestElementTowards,
   opposingAnchor,
@@ -32,7 +32,6 @@ import {
   rebindArrowAnchorsAfterMove,
   type ArrowElement,
   type Element,
-  type EsTimeline,
 } from '@livediagram/diagram';
 import { track } from '@/lib/telemetry';
 import { trackDuplicated } from '@/lib/element-telemetry';
@@ -104,8 +103,6 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
   // start of each gesture (in the move effect below); flipped true once the
   // pointer travels far enough that the press is unambiguously a drag.
   const dragEngagedRef = useRef(false);
-  // The lane stack a gesture resolved against, captured when the drag began.
-  const laneTimelineRef = useRef<EsTimeline | null>(null);
   // A begin* handler ARMS a checkpoint here instead of taking it at
   // pointer-down. It's flushed lazily on the first real `tick` (the first
   // actual mutation) in the move effect below, so a plain click that
@@ -205,15 +202,6 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       [...drag.startBounds.keys()].every(
         (id) => depsRef.current.activeTab.elements.find((el) => el.id === id)?.type === 'sticky',
       );
-    // FREEZE THE LANE STACK FOR THE WHOLE GESTURE.
-    //
-    // The stack is derived from the board's top-most note, and the board is
-    // re-committed on every move. Re-deriving it mid-drag would let a note
-    // dragged into the higher lanes become the new top-most note on each
-    // tick, re-anchoring the stack to the moving note — the timeline then
-    // chases the sticky all the way up, which is a drag, not a placement.
-    // A gesture sees ONE stack: the one it began with.
-    laneTimelineRef.current = notesEligible ? activeTimeline(depsRef.current.activeTab) : null;
     // The last pointer position of this drag, so pressing or releasing Alt
     // without moving the mouse still opens / unwinds the slot (see onAltChange).
     let lastMove: MovePointer | null = null;
@@ -368,7 +356,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
             guidesOn: depsRef.current.alignmentGuidesRef.current ?? true,
             // Free placement (Cmd/Ctrl) skips the lanes with everything else:
             // the modifier means "I know where I want this".
-            timeline: notesEligible && !noSnap ? laneTimelineRef.current : null,
+            timeline: notesEligible && !noSnap ? ES_LANES : null,
           });
           setLanePreview(move.lane);
           scheduleGuides(move.guides, move.distGuides);

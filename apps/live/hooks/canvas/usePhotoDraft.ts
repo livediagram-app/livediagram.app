@@ -515,9 +515,7 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
       };
       if (detection.stickies.length === 0) return;
       const existing = boardNotesOfElements(d.activeTab.elements);
-      const result = reconcilePhoto(toPhotoNotes(detection, texts), existing, {
-        tab: d.activeTab,
-      });
+      const result = reconcilePhoto(toPhotoNotes(detection, texts), existing);
       // Nothing usable in the photo at all: close the review and say so. A
       // photo whose notes are ALL already on the board is not this case — it
       // lands nothing but still publishes what it matched and how it differed.

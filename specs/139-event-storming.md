@@ -425,11 +425,13 @@ axis means anything in particular, so the whole feature is gated on
   menu verb: an event-storming board is a board of lanes, the way it is a board
   of coloured paper. It was a toggle for one afternoon and the toggle was the
   wrong shape — nobody wants half an event-storming board.
-- **The stack is DERIVED, never stored.** `activeTimeline(tab)` answers
-  `{ originY }`, anchored on the board's top-most note (zero on an empty
-  board), ignoring work on a hidden or locked layer. Nothing to persist,
-  nothing to migrate, nothing to fall out of step with the board — and moving
-  the anchor by a whole number of pitches draws exactly the same lanes.
+- **The stack is FIXED to the canvas.** Lane 0 is centred at world y = 100
+  (its band spans y 0..200), and the lanes repeat every pitch in both
+  directions (`ES_LANES`). Nothing on the board moves them: not a note placed
+  higher, not the top-most note being moved, deleted or re-kinded, not an
+  import, a paste, an undo or a peer. Nothing to persist and nothing to
+  migrate; a note that sits off-lane on an older board stays where it is until
+  it is next dragged.
 - **Each axis snaps only within its own tolerance**, and independently: half
   the lane gap (20px) on y, so a note parked deliberately between two lanes
   stays there; 12px on x, a real threshold, so a note placed in open space
@@ -465,6 +467,13 @@ of it lives in `rhythmSlots` and `gutterCentres` in
 
 **Rulings** (each one an operator input, and what changed):
 
+- **2026-09-25 — "a couple of ways move the snapping lanes up and down, which
+  is not expected"**: the stack was anchored on the TOP EDGE of the board's
+  top-most note, so it moved whenever that note changed: a note placed higher
+  (free placement, or parked between lanes), the top note moved, deleted or
+  re-kinded (a 180-tall policy tops out 10px lower than a square), an import,
+  a paste, an undo, a peer, a layer hidden. The stack is now fixed at world
+  y = 0, which also retires the per-gesture freeze below.
 - **2026-09-17 — "dragging in the higher lanes drags the whole timeline"**:
   the stack is derived from the board top-most note, and the board re-commits
   on every move — so a note dragged up into the higher lanes became the new
@@ -605,7 +614,7 @@ gutter, shared with the template and the insertion ripple), y tolerance 20
 (`ES_CANDIDATE_REACH_LANES`). They sit in one constants block at the top of the
 geometry module, because they are a single model and get corrected together. The
 geometry is `packages/diagram/src/event-storming-lanes.ts` (including
-`activeTimeline`, which derives the stack from the board itself); the lit lane is the module store `lib/lane-preview.ts` rendered by
+`ES_LANES`, the one fixed stack); the lit lane is the module store `lib/lane-preview.ts` rendered by
 `components/canvas/TimelineLanesOverlay.tsx`; the two drag paths resolve it in
 `hooks/canvas/boxed-drag-resolve.ts` and `lib/palette-drag-snap.ts`. The
 overlay's ink is the ALIGNMENT GUIDES' own derivation

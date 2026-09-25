@@ -75,7 +75,6 @@ export function paletteDragSnapAt({
       lane: laneSnap
         ? {
             laneIndex: laneSnap.laneIndex,
-            originY: timeline.originY,
             ...(gutterSnap ? { ghost: { x: gutterSnap.x, y: laneSnap.y, width, height } } : {}),
           }
         : null,

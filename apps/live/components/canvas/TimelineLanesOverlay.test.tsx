@@ -44,23 +44,12 @@ describe('TimelineLanesOverlay', () => {
   });
 
   it('draws nothing on a board whose lanes are off', () => {
-    setLanePreview({ laneIndex: 1, originY: 0 });
+    setLanePreview({ laneIndex: 1 });
     expect(draw({ timeline: null }).querySelector('svg')).toBeNull();
   });
 
-  it('draws its bands at the FROZEN stack, not the live board', () => {
-    // Mid-drag, the board's derived stack can drift (the top-most note is
-    // moving); the overlay must draw where the preview resolved, which is the
-    // stack the gesture began with.
-    setLanePreview({ laneIndex: 0, originY: 480 });
-    const live: EsTimeline = { originY: 0 };
-    const c = draw({ timeline: live });
-    expect(Number(bands(c)[0]!.getAttribute('y'))).toBe(laneTop(-1, { originY: 480 }));
-    expect(Number(bands(c)[1]!.getAttribute('y'))).toBe(laneTop(0, { originY: 480 }));
-  });
-
   it('lights the lane plus its two neighbours', () => {
-    setLanePreview({ laneIndex: 1, originY: 0 });
+    setLanePreview({ laneIndex: 1 });
     const c = draw();
     expect(bands(c)).toHaveLength(3);
     expect(bands(c).map((r) => Number(r.getAttribute('y')))).toEqual([
@@ -78,7 +67,7 @@ describe('TimelineLanesOverlay', () => {
     // Lanes are ROWS. The column tick that used to live here described a
     // lattice the board no longer has; x is answered by the neighbours, and
     // the alignment guides already draw that.
-    setLanePreview({ laneIndex: null, originY: 0 });
+    setLanePreview({ laneIndex: null });
     const c = draw();
     expect(bands(c)).toHaveLength(0);
     expect(c.querySelectorAll('line')).toHaveLength(0);
@@ -87,7 +76,6 @@ describe('TimelineLanesOverlay', () => {
   it('draws the slot the note will land in, before it lands', () => {
     setLanePreview({
       laneIndex: 1,
-      originY: 0,
       ghost: { x: 272, y: 240, width: 200, height: 200 },
     });
     const ghost = draw().querySelector('[data-testid="timeline-lane-ghost"]')!;
@@ -100,14 +88,13 @@ describe('TimelineLanesOverlay', () => {
   });
 
   it('draws no slot while x is still the hand own', () => {
-    setLanePreview({ laneIndex: 1, originY: 0 });
+    setLanePreview({ laneIndex: 1 });
     expect(draw().querySelector('[data-testid="timeline-lane-ghost"]')).toBeNull();
   });
 
   it('scales the slot into client space at any zoom', () => {
     setLanePreview({
       laneIndex: 1,
-      originY: 0,
       ghost: { x: 272, y: 240, width: 200, height: 200 },
     });
     const ghost = draw({ zoom: 2 }).querySelector('[data-testid="timeline-lane-ghost"]')!;
@@ -116,7 +103,7 @@ describe('TimelineLanesOverlay', () => {
   });
 
   it('scales into client space at any zoom', () => {
-    setLanePreview({ laneIndex: 1, originY: 0 });
+    setLanePreview({ laneIndex: 1 });
     for (const zoom of [0.5, 2]) {
       cleanup();
       const c = draw({ zoom });
@@ -127,7 +114,7 @@ describe('TimelineLanesOverlay', () => {
   });
 
   it('never takes a pointer event away from the drag it describes', () => {
-    setLanePreview({ laneIndex: 0, originY: 0 });
+    setLanePreview({ laneIndex: 0 });
     expect(draw().querySelector('svg')!.className.baseVal).toContain('pointer-events-none');
   });
 });

@@ -332,10 +332,10 @@ describe('reconcilePhoto', () => {
 
   it('parks a photo with nothing in common clear of the board', () => {
     const detected = [photo({ id: 1, text: 'Refund issued', cx: 0.1, cy: 0.1, w: 0.1, h: 0.1 })];
-    const existing = [board({ id: 'a', text: 'Order placed', x: 0, y: 300 })];
+    const existing = [board({ id: 'a', text: 'Order placed', x: 0, y: 240 })];
     const out = reconcilePhoto(detected, existing);
     expect(out.additions[0]!.x).toBeGreaterThanOrEqual(200 + 200);
-    expect(out.additions[0]!.y).toBe(300);
+    expect(out.additions[0]!.y).toBe(240);
   });
 
   it('shows a text difference without applying it', () => {
@@ -357,9 +357,6 @@ describe('reconcilePhoto', () => {
     const out = reconcilePhoto(
       [photo({ id: 1, text: 'New', cx: 0.1, cy: 0.1, w: 0.1, h: 0.1 })],
       [],
-      {
-        tab: { elements: [] },
-      },
     );
     expect(out.additions[0]!.y).toBe(laneCentre(0, timeline) - out.additions[0]!.height / 2);
   });

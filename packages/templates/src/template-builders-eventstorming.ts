@@ -16,7 +16,10 @@
 
 import {
   createSticky,
+  ES_LANES,
   ES_NOTE_GAP,
+  laneCentre,
+  laneIndexAt,
   createText,
   ES_BOARD_LAYER_ID,
   eventStormingNote,
@@ -40,7 +43,9 @@ export function buildEventStorming(cx: number, cy: number): Element[] {
 
   const totalW = events.length * stickyW + (events.length - 1) * gap;
   const x0 = cx - totalW / 2;
-  const y0 = cy - stickyH / 2;
+  // The row sits on the lane nearest the centre it was asked for, so a fresh
+  // board starts on the lanes every drag will snap to (spec/139 Phase 6).
+  const y0 = laneCentre(laneIndexAt(cy, ES_LANES), ES_LANES) - stickyH / 2;
 
   const elements: Element[] = [];
 

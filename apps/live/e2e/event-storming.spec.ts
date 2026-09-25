@@ -18,9 +18,9 @@ test.use({ colorScheme: 'dark' });
 
 const LANE_PITCH = 240;
 const LANE_HEIGHT = 200;
-// The template lays its starter row out at this gutter, and the lanes now
+// The template lays its starter row out at the board's gutter, and the lanes
 // take their x rhythm from the notes rather than from a lattice.
-const NOTE_GAP = 72;
+const NOTE_GAP = 16;
 
 type BoardNote = {
   id: string;
@@ -80,9 +80,8 @@ test('timeline lanes snap a dragged note without moving anything else', async ({
   await expect(page.getByRole('switch', { name: /timeline lanes/i })).toHaveCount(0);
 
   const before = await boardTab(page);
-  // The stack anchors itself on the board's top-most note.
-  const topMost = [...stickies(before)].sort((a, b) => a.y - b.y)[0]!;
-  const originY = topMost.y;
+  // The lanes are fixed to the canvas, lane 0 spanning y 0..200.
+  const originY = 0;
 
   // Not one note moved: lanes are an aid the next drag can use, not a cage the
   // board is poured into.
@@ -111,7 +110,7 @@ test('timeline lanes snap a dragged note without moving anything else', async ({
   const moved = stickies(after).find((el) => el.id === movedId)!;
   // Its centre is ON a lane and its left edge is EXACTLY where the note it
   // was aimed under sits — the operator's own case, which the old half-note
-  // lattice could not express because the row's gutter is 72.
+  // lattice could not express because the row's gutter is not a multiple of it.
   const byX = stickies(before).sort((a, b) => a.x - b.x);
   const column = byX[byX.length - 2]!;
   expect(moved.x).toBeCloseTo(column.x, 6);
@@ -156,10 +155,9 @@ test('a dragged note takes the slot two events suggest', async ({ page, pageErro
   const row = stickies(before).sort((a, b) => a.x - b.x);
   const zoom = (await notes.nth(0).boundingBox())!.height / (row[0]!.height ?? 200);
   const gutter = row[1]!.x - (row[0]!.x + row[0]!.width);
-  // The lane stack is anchored on the board's own top-left note, so every
-  // target below is measured from the origin rather than from canvas zero.
-  const laneTopY = (index: number) =>
-    [...stickies(before)].sort((a, b) => a.y - b.y)[0]!.y + index * LANE_PITCH;
+  // The template lays its row on a lane, so every target below is measured
+  // from the row's own lane.
+  const laneTopY = (index: number) => row[0]!.y + index * LANE_PITCH;
 
   // The note that will do the travelling is the right-most of the row.
   const travellerId = row[row.length - 1]!.id;
