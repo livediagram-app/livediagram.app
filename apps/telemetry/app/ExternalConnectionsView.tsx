@@ -3,6 +3,7 @@
 import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
 import { API_TOKENS_AND_MCP } from './metric-catalogue';
 import { MetricGroups, type MetricGroup } from './MetricCards';
+import { CardColumns } from './CardColumns';
 import { RankCard, rank } from './RankCard';
 import { windowLabel } from './windows';
 
@@ -36,16 +37,18 @@ export function ExternalConnectionsView({
       </p>
       <MetricGroups groups={GROUPS} summary={summary} active={active} />
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <RankCard
-          title="MCP tools"
-          subtitle="Which MCP server tools AI assistants call, most to least"
-          category="Mcp"
-          action="Used"
-          items={mcpTools}
-          daily={summary.daily}
-          emptyLabel="No MCP tool calls in this window yet."
-        />
+      <div className="mt-6">
+        <CardColumns>
+          <RankCard
+            title="MCP tools"
+            subtitle="Which MCP server tools AI assistants call, most to least"
+            category="Mcp"
+            action="Used"
+            items={mcpTools}
+            daily={summary.daily}
+            emptyLabel="No MCP tool calls in this window yet."
+          />
+        </CardColumns>
       </div>
     </div>
   );

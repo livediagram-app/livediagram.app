@@ -3,6 +3,7 @@
 import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
 import { PAGE_INSIGHTS } from './page-insight-defs';
 import { PAGE_VIEW_APPS, pageViewRows, readInsight } from './page-insights';
+import { CardColumns } from './CardColumns';
 import { InsightTile } from './PageInsights';
 import { RankCard } from './RankCard';
 import { WINDOW_META, windowHighlightFrom, windowLabel } from './windows';
@@ -38,10 +39,8 @@ export function PagesView({
         : `the ${windowDays} days before`
       : null;
 
-  // The ranking cards, longest first, packed into columns (masonry) rather
-  // than a grid: apps serve very different numbers of pages (Live has many,
-  // Help and Dashboard few), and grid rows stretch every card to the tallest
-  // beside it, leaving short ones mostly empty.
+  // The ranking cards, for CardColumns to balance: apps serve very different
+  // numbers of pages (Live has many, Help and Dashboard few).
   const rankings = [
     {
       key: 'all',
@@ -57,7 +56,7 @@ export function PagesView({
       items: pageViewRows(rows, app).slice(0, TOP),
       emptyLabel: `No ${app} page views in this window yet.`,
     })),
-  ].sort((a, b) => b.items.length - a.items.length);
+  ];
 
   return (
     <div className="mt-8">
@@ -87,10 +86,11 @@ export function PagesView({
 
       <section className="mt-8">
         <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-400">Top pages</h3>
-        <div className="mt-3 gap-6 lg:columns-2">
-          {rankings.map((r) => (
-            <div key={r.key} className="mb-6 break-inside-avoid">
+        <div className="mt-3">
+          <CardColumns>
+            {rankings.map((r) => (
               <RankCard
+                key={r.key}
                 title={r.title}
                 subtitle={r.subtitle}
                 category="Page"
@@ -99,8 +99,8 @@ export function PagesView({
                 daily={summary.daily}
                 emptyLabel={r.emptyLabel}
               />
-            </div>
-          ))}
+            ))}
+          </CardColumns>
         </div>
       </section>
     </div>

@@ -2,6 +2,7 @@
 
 import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
 import { MetricGroups, type MetricGroup } from './MetricCards';
+import { CardColumns } from './CardColumns';
 import { RankCard, rank } from './RankCard';
 import { windowLabel } from './windows';
 
@@ -113,34 +114,36 @@ export function ExceptionsView({
       </p>
       <MetricGroups groups={GROUPS} summary={summary} active={active} />
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <RankCard
-          title="Failed Requests"
-          subtitle="By status and the request, route, or MCP tool that failed, as the caller saw it"
-          category="Error"
-          action="Api"
-          items={failed}
-          daily={summary.daily}
-          emptyLabel="No failed requests in this window. Good."
-        />
-        <RankCard
-          title="Server Crashes"
-          subtitle="By the route the api worker was serving when it threw"
-          category="Error"
-          action="Api"
-          items={crashes}
-          daily={summary.daily}
-          emptyLabel="No server crashes in this window. Good."
-        />
-        <RankCard
-          title="Client Exceptions"
-          subtitle="By kind, the page or editor area it happened in, and the error type"
-          category="Error"
-          action="Client"
-          items={client}
-          daily={summary.daily}
-          emptyLabel="No client exceptions in this window. Good."
-        />
+      <div className="mt-6">
+        <CardColumns>
+          <RankCard
+            title="Failed Requests"
+            subtitle="By status and the request, route, or MCP tool that failed, as the caller saw it"
+            category="Error"
+            action="Api"
+            items={failed}
+            daily={summary.daily}
+            emptyLabel="No failed requests in this window. Good."
+          />
+          <RankCard
+            title="Server Crashes"
+            subtitle="By the route the api worker was serving when it threw"
+            category="Error"
+            action="Api"
+            items={crashes}
+            daily={summary.daily}
+            emptyLabel="No server crashes in this window. Good."
+          />
+          <RankCard
+            title="Client Exceptions"
+            subtitle="By kind, the page or editor area it happened in, and the error type"
+            category="Error"
+            action="Client"
+            items={client}
+            daily={summary.daily}
+            emptyLabel="No client exceptions in this window. Good."
+          />
+        </CardColumns>
       </div>
     </div>
   );

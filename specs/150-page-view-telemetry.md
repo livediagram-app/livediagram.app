@@ -154,10 +154,10 @@ about which app serves a path). Top to bottom:
   distinct pages with a view, was dropped as not useful.)
 - **Top pages.** The ten most-viewed pages across every app, then each app's
   own top ten, as ranking cards, each row labelled with the raw path (not
-  title-cased) with its share bar and 30-day sparkline. Ordered longest first
-  and packed into two columns (masonry) rather than a grid: apps serve very
-  different numbers of pages, and grid rows stretched each short card to the
-  tallest beside it.
+  title-cased) with its share bar and 30-day sparkline, balanced across two
+  independent columns (spec/22 `CardColumns`): apps serve very different
+  numbers of pages, and grid rows stretched each short card to the tallest
+  beside it.
 
 Removed in September 2026: a **Rising pages** card (biggest gain over the
 last 7 days against the 7 before), and the **All pages** list of every page

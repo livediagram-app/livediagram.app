@@ -39,7 +39,8 @@ export function RawView({
 
   return (
     <>
-      <div className="mt-8 grid gap-6 lg:grid-cols-2">
+      {/* items-start: the donut and the leaderboard keep their own heights. */}
+      <div className="mt-8 grid items-start gap-6 lg:grid-cols-2">
         <CategoryDonut groups={groups} total={window.total} />
         <TopEvents rows={window.rows} total={window.total} />
       </div>

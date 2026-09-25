@@ -2,6 +2,7 @@
 
 import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
 import { MetricGroups, type MetricGroup } from './MetricCards';
+import { CardColumns } from './CardColumns';
 import { RankCard, rank } from './RankCard';
 import { windowLabel } from './windows';
 
@@ -69,34 +70,36 @@ export function HelpView({
       </p>
       <MetricGroups groups={GROUPS} summary={summary} active={active} />
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <RankCard
-          title="Most-read articles"
-          subtitle="Which help articles get opened, most to least"
-          category="Help"
-          action="View"
-          items={viewed}
-          daily={summary.daily}
-          emptyLabel="No articles were read in this window yet."
-        />
-        <RankCard
-          title="Found helpful"
-          subtitle="Articles readers said helped them, most to least"
-          category="Help"
-          action="Helpful"
-          items={helpful}
-          daily={summary.daily}
-          emptyLabel="No helpful votes in this window yet."
-        />
-        <RankCard
-          title="Left people stuck"
-          subtitle="Articles voted not-really helpful, the ones to rewrite"
-          category="Help"
-          action="Unhelpful"
-          items={unhelpful}
-          daily={summary.daily}
-          emptyLabel="No not-really votes in this window yet."
-        />
+      <div className="mt-6">
+        <CardColumns>
+          <RankCard
+            title="Most-read articles"
+            subtitle="Which help articles get opened, most to least"
+            category="Help"
+            action="View"
+            items={viewed}
+            daily={summary.daily}
+            emptyLabel="No articles were read in this window yet."
+          />
+          <RankCard
+            title="Found helpful"
+            subtitle="Articles readers said helped them, most to least"
+            category="Help"
+            action="Helpful"
+            items={helpful}
+            daily={summary.daily}
+            emptyLabel="No helpful votes in this window yet."
+          />
+          <RankCard
+            title="Left people stuck"
+            subtitle="Articles voted not-really helpful, the ones to rewrite"
+            category="Help"
+            action="Unhelpful"
+            items={unhelpful}
+            daily={summary.daily}
+            emptyLabel="No not-really votes in this window yet."
+          />
+        </CardColumns>
       </div>
     </div>
   );
