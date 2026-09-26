@@ -20,6 +20,18 @@ describe('resolvePanelLayout', () => {
     const fromNewerClient = { panelLayout: 'sidebar', minimalPanels: true } as never;
     expect(resolvePanelLayout(fromNewerClient)).toBe('minimal');
   });
+
+  it('shows Toolbar on a phone where Floating would be, the default included', () => {
+    const mobile = { mobile: true };
+    expect(resolvePanelLayout({}, mobile)).toBe('toolbar');
+    expect(resolvePanelLayout({ panelLayout: 'floating' }, mobile)).toBe('toolbar');
+    // A phone can show Minimal and Toolbar, so a real pick of either stands.
+    expect(resolvePanelLayout({ minimalPanels: true }, mobile)).toBe('minimal');
+    expect(resolvePanelLayout({ panelLayout: 'minimal' }, mobile)).toBe('minimal');
+    expect(resolvePanelLayout({ panelLayout: 'toolbar' }, mobile)).toBe('toolbar');
+    // Desktop is unchanged.
+    expect(resolvePanelLayout({}, { mobile: false })).toBe('floating');
+  });
 });
 
 describe('withPanelLayout', () => {

@@ -33,8 +33,11 @@ export function TemplateCard({
       {/* An illustrative mini-canvas drawn as light-canvas art. In dark
           chrome the whole tile is re-lit by `.preview-art-tile`
           (globals.css) rather than redrawn, so it reads as a dark canvas
-          with its hues intact. */}
-      <div className="preview-art-tile flex h-14 w-full items-center justify-center rounded-md bg-slate-50">
+          with its hues intact. Hovering or focusing the card plays the
+          template's story (`preview-motion`, docs/specs/019-marketing/marketing-site.md), as the landing
+          page's gallery does; the category collages stay still, since four
+          stories at once in one small tile would be noise. */}
+      <div className="preview-art-tile preview-motion flex h-14 w-full items-center justify-center rounded-md bg-slate-50">
         <TemplatePreview kind={template.kind} />
       </div>
     </PickerCard>

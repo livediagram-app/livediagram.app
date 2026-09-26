@@ -34,9 +34,8 @@ describe('tourStepsFor', () => {
     expect(ids({ mobile: false, esBoard: false })).toEqual(TOUR_STEPS.map((s) => s.id));
   });
 
-  it('drops the desktop-only steps on mobile', () => {
+  it('drops the desktop-only step on mobile', () => {
     const mobile = ids({ mobile: true, esBoard: false });
-    expect(mobile).not.toContain('search');
     expect(mobile).not.toContain('theme-canvas');
     expect(mobile).toContain('palette');
   });
@@ -46,10 +45,10 @@ describe('tourStepsFor', () => {
     expect(board).not.toContain('selection-modes');
     expect(board).not.toContain('categories');
     // The rest of the tour still applies: the board has a palette, an
-    // explorer, elements, tabs, a paintbrush, and search.
+    // explorer, elements, tabs, and a paintbrush.
     expect(board).toContain('palette');
     expect(board).toContain('explorer');
-    expect(board).toContain('search');
+    expect(board).toContain('theme-canvas');
   });
 
   // Toolbar layout (docs/specs/007-editor/toolbar-layout.md): the Explorer lives behind the top-left menu

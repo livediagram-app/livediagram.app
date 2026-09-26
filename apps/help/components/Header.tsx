@@ -1,3 +1,4 @@
+import { ctaHref } from '@livediagram/api-schema';
 import { buttonClassName, SiteHeader } from '@livediagram/ui';
 import { SearchInput } from '@/components/SearchInput';
 
@@ -19,7 +20,10 @@ export function Header() {
       shareRail={false}
       wide
       actions={
-        <a href="/new" className={buttonClassName({ size: 'md', className: 'shrink-0 shadow-sm' })}>
+        <a
+          href={ctaHref('/new', 'Help.Header')}
+          className={buttonClassName({ size: 'md', className: 'shrink-0 shadow-sm' })}
+        >
           Start drawing
         </a>
       }

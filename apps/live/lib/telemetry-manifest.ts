@@ -38,6 +38,11 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Comment·Opened',
   'Comment·Resolved',
   'Comment·Unresolved',
+  // Landing funnel (docs/specs/019-marketing/landing-funnel.md): a public-page CTA brought somebody to /new
+  // ('Opened'), and that visit created a diagram ('Created'). `type` is the
+  // CTA's source from the closed CTA_SOURCES table.
+  'Cta·Created',
+  'Cta·Opened',
   'Diagram·Created',
   'Diagram·Deleted',
   'Diagram·Duplicated',

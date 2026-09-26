@@ -113,7 +113,9 @@ on screen sideways as well as vertically, whatever the trigger's position.
 
 `panelLayout?: 'floating' | 'minimal' | 'toolbar'` ([User preferences](user-preferences.md)), shown in
 Settings → Appearance → Layout as a three-way **Panel Layout** choice. It
-replaces the Minimal Panel Layout toggle.
+replaces the Minimal Panel Layout toggle. The editor tour's welcome card ([Interactive editor tour ("Show me around")](editor-tour.md))
+offers the same choice, drawn with the same pictures, so a new user picks a
+layout on their first diagram.
 
 - Missing → derived from the legacy `minimalPanels` flag, so nobody's layout
   changes when this ships.
@@ -130,8 +132,13 @@ Toolbar works below `sm` too, and a phone in Toolbar gets the desktop
 chrome rather than the mobile dock ([Live app](live-app.md)): no top-right button bar, panels
 in their corners, Layers and Activity as popovers over their bottom-row
 buttons. Only
-Floating is still desktop only; on a phone it falls back to the button bar,
-and the Settings row greys it out ([User preferences](user-preferences.md)). What changes to fit the width:
+Floating is still desktop only. **On a phone Floating resolves to Toolbar**
+(`resolvePanelLayout(prefs, { mobile: true })`), so Toolbar is the phone
+default: a user who never chose, or chose Floating, gets the strip there and
+Floating back on a desktop, since the stored value is untouched. A phone
+that picked Minimal keeps the button bar. The Settings row greys Floating
+out and rings Toolbar ([User preferences](user-preferences.md)); the tour's welcome picker leaves Floating
+out ([Interactive editor tour ("Show me around")](editor-tour.md)). What changes to fit the width:
 
 - **The menu button moves into the strip**, at its far left, before the
   selection mode. There is no room for a corner button and a strip side by

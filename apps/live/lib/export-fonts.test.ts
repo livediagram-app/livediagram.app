@@ -29,7 +29,7 @@ const GOOGLE_CSS = `
 function stubFetch() {
   return vi.fn(async (input: RequestInfo | URL) => {
     const url = String(input);
-    if (url.includes('fonts.googleapis.com')) {
+    if (new URL(url).hostname === 'fonts.googleapis.com') {
       return new Response(GOOGLE_CSS, { status: 200 });
     }
     if (url.endsWith('.woff2')) {

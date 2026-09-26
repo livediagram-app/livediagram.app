@@ -13,6 +13,7 @@
     "clean": "rm -rf .next out node_modules .turbo"
   },
   "dependencies": {
+    "@livediagram/api-schema": "workspace:*",
     "@livediagram/telemetry-client": "workspace:*",
     "@livediagram/template-previews": "workspace:*",
     "@livediagram/templates": "workspace:*",

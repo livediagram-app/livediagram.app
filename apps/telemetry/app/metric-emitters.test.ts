@@ -61,6 +61,8 @@ const KNOWN = EMITS.filter(
 const DYNAMIC_EMITTERS: Record<string, string> = {
   'apps/live/components/dialogs/settings/SettingsCategoryPane.tsx':
     'emits each Settings catalogue row; the rows themselves are scanned',
+  'apps/live/components/tour/TourLayoutPicker.tsx':
+    "the welcome tour's panel-layout choice, re-emitting the Settings catalogue's panelLayout row (scanned there)",
   'apps/api/src/routes/events.ts': 'the ingest endpoint, writing validated client events',
   'apps/api/src/server-telemetry.ts':
     'reportServerEvent, the api worker helper; its callers are scanned as emitters',

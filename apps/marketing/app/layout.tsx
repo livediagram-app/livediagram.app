@@ -122,9 +122,20 @@ const JSON_LD = {
   ],
 };
 
+// The cross-page transition opt-in (page-motion.css, docs/specs/019-marketing/marketing-site.md), inline in the
+// <head>. The browser only runs a cross-document view transition if the NEW
+// page has opted in by its first paint; from the bundled stylesheet the rule
+// sometimes landed after that, the transition was skipped, and the old page
+// logged "Transition was skipped". Inline, it is parsed before anything draws.
+const VIEW_TRANSITION_OPT_IN =
+  '@media (prefers-reduced-motion: no-preference) { @view-transition { navigation: auto; } }';
+
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en-GB">
+      <head>
+        <style>{VIEW_TRANSITION_OPT_IN}</style>
+      </head>
       <body className="bg-slate-50 text-slate-800 antialiased">
         <JsonLd data={JSON_LD} />
         <PageViewBoot />

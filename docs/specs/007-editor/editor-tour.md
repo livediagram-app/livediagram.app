@@ -16,6 +16,21 @@ card were removed once this tour proved the better introduction.
   with a centred **welcome offer card**: "Show me around" starts the tour,
   "No thanks" dismisses it. There is no wizard toggle; the offer IS the
   opt-in, and declining must be one obvious, equal-weight click.
+- **The welcome card also picks the panel layout.** Under its copy sit
+  the three Panel Layout drawings from Settings (Floating / Minimal /
+  Toolbar, [Toolbar layout](toolbar-layout.md)), one button each, the one in
+  force ringed. A pick applies at once (the card's backdrop is a light
+  tint, so the editor visibly changes behind it) and is written like the
+  Settings row writes it, so it holds whether the tour is then taken or
+  declined. The tour's steps follow the layout in force when it starts, so
+  the Toolbar variants (below) kick in for a Toolbar pick. The options,
+  the phone restriction (Floating, desktop only, is left out on a phone,
+  where the remaining two keep their desktop size, centred; a stored
+  Floating rings Toolbar there, which is what the phone shows, [Toolbar layout](toolbar-layout.md)),
+  the write, and
+  the telemetry token all come from the Settings row
+  (`choiceRow('panelLayout')`), so the two surfaces cannot disagree
+  (`TourLayoutPicker`).
 - **Once ever per user.** However the offer ends (declined, skipped
   mid-tour, or completed), the synced `tourSeen` user preference
   ([User preferences](user-preferences.md)) stops it ever reappearing — the
@@ -44,16 +59,16 @@ flag, so a mid-rerun reload re-offers the same way.
 
 ## The steps
 
-A welcome offer card, then eight steps in palette → explorer → canvas →
-tabs → theme → search order (six on mobile, where the theme-canvas and
-search steps are skipped; six on an **event-storming board**, which hides
-the palette header and so drops the two dropdown steps — four when it is
-both), and a closing "you're ready" card. The bookend
+A welcome offer card, then seven steps in palette → explorer → canvas →
+tabs → theme order (six on mobile, where the theme-canvas step is skipped;
+five on an **event-storming board**, which hides the palette header and so
+drops the two dropdown steps; four when it is both), and a closing "you're ready" card. The bookend
 cards sit outside the step count. Copy is one or two
 short sentences per step ("concise" is the spec constraint; the exact strings
 live in `apps/live/components/tour/tour-steps.ts`):
 
-0. **Welcome** (the offer): centred card, "Show me around" / "No thanks".
+0. **Welcome** (the offer): centred card, the panel layout picker, then
+   "Show me around" / "No thanks".
 1. **The Palette**: the floating panel where every element comes from.
 2. **Selection modes**: opens the canvas-tool dropdown (Select / Hand /
    Eraser / ...) and explains mode switching. No "default" claim in the
@@ -74,12 +89,10 @@ live in `apps/live/components/tour/tour-steps.ts`):
    button ([Canvas + Theme dialog](../011-theme/canvas-and-theme-dialog.md)) that opens the tab's theme + canvas background
    dialog. No prepare needed: the button is always in the desktop chrome
    for an editable session. Mobile reaches the same dialog through the
-   canvas menu, so the step is skipped there.
-8. **Search** (desktop only): opens the Cmd/Ctrl+K search panel — find
-   diagrams, elements, help articles, and run actions. The panel brings
-   its own modal backdrop, so this step's ring lifts above the modal
-   layer.
-9. **Outro** (card): "You're ready to go" — a help-article illustration,
+   canvas menu, so the step is skipped there. A **Search** step (opening
+   the Cmd/Ctrl+K panel) followed it until it was cut to keep the tour
+   short; the search panel has its own help article.
+8. **Outro** (card): "You're ready to go" — a help-article illustration,
    a help-centre link (new tab), and a "Start creating" button that
    completes the tour.
 
@@ -138,11 +151,14 @@ Existing enums only, covering the whole funnel:
 - **Offer**: `'UI'/'Opened'/'TourOffer'` when the welcome card shows
   (first run and Settings relaunch alike); `'UI'/'Closed'/'TourOffer'` on
   "No thanks".
+- **Layout pick** on the welcome card: the Settings row's own
+  `'UI'/'Changed'/'PanelLayout<Option>'` ([Toolbar layout](toolbar-layout.md)), fired before the
+  write.
 - **Start**: `'UI'/'Started'/'Tour'` on accept.
 - **Stage views**: `'UI'/'View'/'TourStep<Id>'` once per step entry
   (`TourStepPalette`, `TourStepSelectionModes`, `TourStepCategories`,
   `TourStepExplorer`, `TourStepContextMenu`, `TourStepTabs`,
-  `TourStepThemeCanvas`, `TourStepSearch`, `TourStepOutro` — derived from
+  `TourStepThemeCanvas`, `TourStepOutro` — derived from
   the fixed step ids,
   never content; a Back re-entry counts as a view). The last View before
   an `Ended/TourSkipped` marks the drop-off stage.

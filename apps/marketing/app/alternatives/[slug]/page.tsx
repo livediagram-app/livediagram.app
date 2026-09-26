@@ -1,3 +1,4 @@
+import { ctaHref } from '@livediagram/api-schema';
 import { CtaLink } from '@/components/CtaLink';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
@@ -62,7 +63,7 @@ export default async function AlternativePage({ params }: { params: Promise<{ sl
           { name: `${alt.name} alternative`, path: `/alternatives/${slug}` },
         ]}
       />
-      <Header />
+      <Header surface="Compare" />
       <main className="mx-auto max-w-3xl px-6 py-16 sm:py-20">
         <p className="text-sm font-semibold uppercase tracking-wide text-brand-600">
           livediagram vs {alt.name}
@@ -189,7 +190,7 @@ export default async function AlternativePage({ params }: { params: Promise<{ sl
         {/* CTA */}
         <div className="mt-12 rounded-lg border border-slate-200 bg-slate-50 p-6 text-center">
           <p className="text-slate-700">See how it feels, no sign-up required.</p>
-          <CtaLink href="/new" size="sm" className="mt-3">
+          <CtaLink href={ctaHref('/new', 'Compare.Card')} size="sm" className="mt-3">
             Start drawing
           </CtaLink>
         </div>

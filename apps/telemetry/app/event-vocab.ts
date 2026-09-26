@@ -41,6 +41,7 @@ export const CATEGORY_DESCRIPTIONS: Record<TelemetryCategory, string> = {
     'Visitor arrivals: a first-time visitor (once per new browser), and a returning browser reopening the app (once per day, split guest vs signed-in).',
   Help: 'Help-centre articles: views and per-article helpful / not-really feedback.',
   Page: 'Pages viewed across the whole site (marketing, editor, help centre, this dashboard), by path, with ids and query strings stripped.',
+  Cta: 'The landing funnel: a call to action on a public page (the landing hero, a template card, a header button) brought somebody to the New Diagram page, and whether that visit created a diagram. Named by which button it was, never who pressed it.',
   Timeline:
     "The Explorer's activity feed: opening it (split by whether it was the landing view or a deliberate visit), switching between the list and calendar views, toggling a filter chip, expanding a collapsed run of same-day events, and paging further back.",
   Activity:
@@ -81,6 +82,9 @@ const CATEGORY_COLORS: Record<TelemetryCategory, string> = {
   Help: '#14b8a6',
   // Deep pink: apart from Canvas's lighter pink and every blue it sits near.
   Page: '#9d174d',
+  // Deep green, the funnel's colour: apart from Element's emerald and the
+  // lime of Comment and Action.
+  Cta: '#15803d',
   // Distinct from Diagram's sky (#0ea5e9) and Session's slate: the
   // Timeline sits next to both in the stacked bar.
   Timeline: '#0369a1',

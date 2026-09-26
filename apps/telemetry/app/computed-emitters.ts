@@ -15,7 +15,7 @@
 
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { pascalToken } from '@livediagram/api-schema';
+import { ALL_CTA_SOURCES, pascalToken } from '@livediagram/api-schema';
 import { CANVAS_CONTROLS } from './event-vocab';
 
 export type ComputedValues = {
@@ -155,6 +155,9 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   },
   'apps/live/app/new/page.tsx Theme·Changed': { values: THEMES, open: THEME_WHY },
   'apps/live/app/new/page.tsx Template·Used': { values: TEMPLATES, open: TEMPLATE_WHY },
+  // The landing funnel (docs/specs/019-marketing/landing-funnel.md): the CTA a /new visit came from.
+  'apps/live/app/new/useCtaAttribution.ts Cta·Opened': { values: ALL_CTA_SOURCES },
+  'apps/live/app/new/useCtaAttribution.ts Cta·Created': { values: ALL_CTA_SOURCES },
   'apps/live/components/dialogs/SettingsDialog.tsx UI·Opened': {
     values: ['SettingsAppearance', 'SettingsEditor', 'SettingsAccount', 'SettingsPrivacy'],
     open: 'Settings<Category>, one per Settings category',

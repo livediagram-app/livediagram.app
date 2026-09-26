@@ -1,3 +1,4 @@
+import { ctaHref, type CtaSurface } from '@livediagram/api-schema';
 import type { ReactNode } from 'react';
 import { Brand } from './Brand';
 import { buttonClassName } from './Button';
@@ -25,14 +26,21 @@ import { ShareRail } from './ShareRail';
 // The bar has a fixed height (h-18, 72px) rather than padding around its
 // content, so a surface that sticks something under it (help's breadcrumb
 // bar, `top-18`) can rely on the number at every breakpoint.
+//
+// `ctaSurface` names the page for the landing funnel (docs/specs/019-marketing/landing-funnel.md): the default
+// pair's hrefs carry `via=<surface>.Header` / `.HeaderDraw` so the editor can
+// count which page's header brought somebody in. A surface passing its own
+// `actions` tags those links itself (help's Start drawing is `Help.Header`).
 export function SiteHeader({
   productNav,
+  ctaSurface,
   center,
   actions,
   shareRail = true,
   wide = false,
 }: {
   productNav?: ProductNavKey;
+  ctaSurface?: Exclude<CtaSurface, 'Help'>;
   center?: ReactNode;
   actions?: ReactNode;
   shareRail?: boolean;
@@ -40,7 +48,7 @@ export function SiteHeader({
 }) {
   return (
     <>
-      <header className="sticky top-0 z-50 h-18 border-y border-slate-200/70 bg-slate-50/80 backdrop-blur">
+      <header className="sticky top-0 z-50 h-18 border-y border-slate-200/70 bg-slate-50/80 backdrop-blur [view-transition-name:site-header]">
         {/* gap-* guarantees breathing room between the left cluster and the CTA
             even when justify-between collapses to zero on a narrow phone (where
             Brand + the apps-menu dropdown + CTA otherwise sit flush). Mobile
@@ -61,7 +69,9 @@ export function SiteHeader({
               <div className="w-full max-w-sm">{center}</div>
             </div>
           ) : null}
-          <div className="flex shrink-0 items-center gap-2">{actions ?? <DefaultActions />}</div>
+          <div className="flex shrink-0 items-center gap-2">
+            {actions ?? <DefaultActions ctaSurface={ctaSurface} />}
+          </div>
         </div>
       </header>
       {shareRail ? <ShareRail /> : null}
@@ -72,11 +82,11 @@ export function SiteHeader({
 // The default CTA pair. Just Draw is hidden on mobile: Brand + dropdown + the
 // primary already fill a narrow bar, and the wizard's own Skip covers the
 // escape. `max-sm:hidden` (a variant, so it wins over the base inline-flex).
-function DefaultActions() {
+function DefaultActions({ ctaSurface }: { ctaSurface?: Exclude<CtaSurface, 'Help'> }) {
   return (
     <>
       <a
-        href="/new?blank=1"
+        href={ctaSurface ? ctaHref('/new?blank=1', `${ctaSurface}.HeaderDraw`) : '/new?blank=1'}
         className={buttonClassName({
           variant: 'secondary',
           size: 'md',
@@ -85,7 +95,10 @@ function DefaultActions() {
       >
         Just Draw
       </a>
-      <a href="/new" className={buttonClassName({ size: 'md', className: 'shrink-0 shadow-sm' })}>
+      <a
+        href={ctaSurface ? ctaHref('/new', `${ctaSurface}.Header`) : '/new'}
+        className={buttonClassName({ size: 'md', className: 'shrink-0 shadow-sm' })}
+      >
         Choose Template
       </a>
     </>

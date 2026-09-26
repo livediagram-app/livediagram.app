@@ -544,6 +544,7 @@ export type UnfurlResult = {
 };
 
 export * from './image-limits';
+export * from './cta-sources';
 export * from './page-views';
 export * from './read-notes';
 export * from './poll';
