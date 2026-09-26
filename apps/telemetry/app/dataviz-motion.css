@@ -1,8 +1,9 @@
 /*
- * Data-viz reveals (docs/specs/004-interface-design/motion.md "Kinds of motion"):
- * the word cloud, the charted metric's rise and line wipe, and the funnel bars.
- * They draw the data in, so they are listed as content in motion-budget.test.ts
- * and keep their own pace. All of it stops under reduced motion.
+ * Data-viz reveals (docs/specs/004-interface-design/motion.md): the word cloud,
+ * the charted metric's rise and line wipe, and the funnel bars. Chrome, so
+ * held to the motion budget: the cloud and the rise are cascades of micro
+ * items, the wipe and the bars settle at short. All of it stops under reduced
+ * motion.
  */
 
 /* Search's word cloud (docs/specs/017-telemetry/telemetry.md): each level's words float in, staggered by an
@@ -16,7 +17,7 @@
 }
 
 .cloud-word {
-  animation: cloud-word-in 420ms cubic-bezier(0.2, 0.85, 0.25, 1) both;
+  animation: cloud-word-in var(--transition-duration-micro) cubic-bezier(0.2, 0.85, 0.25, 1) both;
 }
 
 /* A charted metric in the Search view easing in (docs/specs/017-telemetry/telemetry.md): its heading,
@@ -42,16 +43,16 @@
 }
 
 .metric-rise {
-  animation: metric-rise 420ms cubic-bezier(0.2, 0.85, 0.25, 1) both;
+  animation: metric-rise var(--transition-duration-micro) cubic-bezier(0.2, 0.85, 0.25, 1) both;
 }
 
 .metric-reveal {
-  animation: metric-reveal 800ms cubic-bezier(0.45, 0, 0.2, 1) backwards;
+  animation: metric-reveal var(--transition-duration-short) cubic-bezier(0.45, 0, 0.2, 1) backwards;
 }
 
 /* A funnel stage's bar eases to its new width when the window changes. */
 .funnel-bar {
-  transition: width 500ms;
+  transition: width var(--transition-duration-short);
 }
 
 @media (prefers-reduced-motion: reduce) {

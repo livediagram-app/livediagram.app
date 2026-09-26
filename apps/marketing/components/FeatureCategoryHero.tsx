@@ -1,5 +1,6 @@
 import { ctaHref } from '@livediagram/api-schema';
 import type { CSSProperties } from 'react';
+import { cascadeDelayMs } from '@livediagram/tailwind-config/motion';
 import { CtaLink } from '@/components/CtaLink';
 import type { LandingSection } from '@/lib/landing-content';
 import { SectionShowcase } from '@/components/SectionShowcase';
@@ -12,7 +13,9 @@ import { SectionShowcase } from '@/components/SectionShowcase';
 
 // The hero eases in piece by piece on arrival (page-motion.css `.enter`), so
 // landing here from the home page reads as a continuation, not a cut.
-const delay = (ms: number) => ({ '--enter-delay': `${ms}ms` }) as CSSProperties;
+// The hero's pieces enter as one cascade (docs/specs/004-interface-design/motion.md).
+const delay = (index: number) =>
+  ({ '--enter-delay': `${cascadeDelayMs(index)}ms` }) as CSSProperties;
 
 export function FeatureCategoryHero({ section }: { section: LandingSection }) {
   return (
@@ -27,21 +30,21 @@ export function FeatureCategoryHero({ section }: { section: LandingSection }) {
           </p>
           <h1
             className="enter mt-3 text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl"
-            style={delay(70)}
+            style={delay(1)}
           >
             {section.title}
           </h1>
-          <p className="enter mt-5 text-lg leading-relaxed text-slate-600" style={delay(140)}>
+          <p className="enter mt-5 text-lg leading-relaxed text-slate-600" style={delay(2)}>
             {section.description}
           </p>
-          <div className="enter mt-8" style={delay(210)}>
+          <div className="enter mt-8" style={delay(3)}>
             <CtaLink href={ctaHref('/new', 'Feature.Hero')}>Start drawing</CtaLink>
           </div>
         </div>
 
         {/* Hidden below the two-column breakpoint: on mobile the showcase eats
             the screen and just restates the pitch above it. */}
-        <div className="enter hidden lg:block" style={delay(260)}>
+        <div className="enter hidden lg:block" style={delay(4)}>
           <SectionShowcase section={section} />
         </div>
       </div>

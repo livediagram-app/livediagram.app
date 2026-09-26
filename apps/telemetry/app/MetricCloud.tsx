@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, type CSSProperties } from 'react';
+import { cascadeDelayMs } from '@livediagram/tailwind-config/motion';
 import { categoryColor, typeLabel } from './event-vocab';
 import { MetricBreadcrumb, metricCrumbs, type CloudPath } from './MetricBreadcrumb';
 import type { Metric } from './metrics';
@@ -28,8 +29,6 @@ import type { Metric } from './metrics';
 
 const MIN_PX = 14;
 const MAX_PX = 48;
-const STAGGER_MS = 22;
-const STAGGER_CAP_MS = 500;
 
 type Word = { key: string; label: string; count: number; color: string; activate: () => void };
 
@@ -146,7 +145,7 @@ export function MetricCloud({
               fontWeight: Math.round(500 + 300 * t),
               color: w.color,
               '--o': w.count === 0 ? 0.3 : 0.6 + 0.4 * t,
-              animationDelay: `${Math.min(i * STAGGER_MS, STAGGER_CAP_MS)}ms`,
+              animationDelay: `${cascadeDelayMs(i)}ms`,
             };
             return (
               <button
