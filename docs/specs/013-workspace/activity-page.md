@@ -362,5 +362,5 @@ Never an action name, comment text, diagram name, or any identity.
   keywords ("inbox", "to do", "todo", "assigned to me", "my actions",
   "outstanding", "waiting", "open threads"), a card glyph + hue, and
   an `ActivityList` illustration.
-- README / `docs/development/architecture.md` / `docs/product/what-is-livediagram.md` gain
+- README / `docs/development/architecture.md` / `docs/specs/005-project-roadmap/prototype-scope.md` gain
   the section; [Assigned actions](../012-collaboration/assigned-actions.md) §9 and [Folders](folders.md)'s sidebar list point here.

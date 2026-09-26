@@ -106,7 +106,7 @@ describe('the model overrides', () => {
   // cheap model does it BETTER than the big one (99% of words vs 95%) at about
   // a quarter the cost and four times the speed — the reasoning a bigger model
   // adds is spent on a job that does not need it. See
-  // docs/vision/handwriting-readers.md.
+  // docs/research/vision/handwriting-readers.md.
   it('reads with the cheap fast model by default, and talks with the other one', () => {
     const out = resolveAiProvider(env({ GOOGLE_AI_STUDIO_API_KEY: 'k' }));
     expect(out).toMatchObject({

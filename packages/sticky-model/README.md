@@ -5,14 +5,14 @@ plans/0006-event-storming-photo-95-experiments.md):
 can a tiny learned boundary model find the sticky notes on a wall better than
 the classical pipeline in `@livediagram/sticky-vision`, above all where notes
 touch? Results and verdicts:
-[docs/vision/experiments/e-model.md](../../docs/vision/experiments/e-model.md).
+[docs/research/vision/experiments/e-model.md](../../docs/research/vision/experiments/e-model.md).
 
 The editor imports only `src/index.ts`, the browser-safe part (cues, decode,
 mask, `stride.ts`, `flatness.ts`): no TensorFlow.js, no Node. It runs the network itself, in a
 Web Worker (`apps/live/lib/photo-model/`), on the uint8 weights shipped there
 (`scripts/hybrid/quantise.ts --min-elements 0` over the synthetic-only
 `synth-v1` model), and hands the cues to `sticky-vision`'s hybrid rules
-([docs/vision/experiments/m-editor-model.md](../../docs/vision/experiments/m-editor-model.md)).
+([docs/research/vision/experiments/m-editor-model.md](../../docs/research/vision/experiments/m-editor-model.md)).
 
 ## What is in it
 

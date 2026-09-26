@@ -335,7 +335,7 @@ describe('before the photograph itself has painted', () => {
   });
 });
 
-// Exporting ground truth (docs/vision/sticky-detection.md). The corrected
+// Exporting ground truth (docs/research/vision/sticky-detection.md). The corrected
 // review IS a labelling of the photograph, and the detector is tuned against
 // labelled photographs — so the work the author does here for real can be
 // handed back as a file instead of being done twice.

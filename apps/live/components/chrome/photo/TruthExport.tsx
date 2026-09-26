@@ -5,7 +5,7 @@ import type { DetectedSticky } from '@livediagram/sticky-vision';
 import { downloadTruth, truthArmed, truthOf } from '@/lib/photo-truth';
 
 // "Save as truth": the corrected review, handed back as a label file
-// (docs/vision/sticky-detection.md).
+// (docs/research/vision/sticky-detection.md).
 //
 // The detector is tuned by hand against photographs somebody has labelled note
 // by note, and labelling a wall from a blank slate is work nobody finishes.

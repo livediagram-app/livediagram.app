@@ -51,7 +51,7 @@ export const OPENAI_DEFAULT_MODEL = 'gpt-4o';
 // That is not a paradox: reading a scrawl verbatim is literal work, and the
 // reasoning a larger model brings is spent on a task with nothing to reason
 // about (it also has to be paid for out of `max_tokens`). See
-// docs/vision/handwriting-readers.md for the run.
+// docs/research/vision/handwriting-readers.md for the run.
 export const GOOGLE_DEFAULT_VISION_MODEL = 'gemini-2.5-flash-lite';
 
 type Preset = {

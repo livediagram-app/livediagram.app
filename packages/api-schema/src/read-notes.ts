@@ -54,7 +54,7 @@ export const CROP_MAX_BYTES = 512 * 1024;
 // 600 to 2500px on the eight labelled walls, 1000 scores best, larger sizes
 // lose a little (the whiteboard most), and below 1000 the night wall's note
 // size is mismeasured and it collapses. Time grows with the pixel count
-// (docs/vision/experiments/d-resolution.md). This only ever feeds detection —
+// (docs/research/vision/experiments/d-resolution.md). This only ever feeds detection —
 // the handwriting crops are cut from the full-resolution bitmap, so reading
 // loses nothing.
 export const PHOTO_MAX_EDGE_PX = 1000;

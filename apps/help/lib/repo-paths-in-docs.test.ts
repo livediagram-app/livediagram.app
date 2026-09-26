@@ -66,9 +66,9 @@ function docFiles(): string[] {
   const walk = (dir: string) => {
     for (const f of readdirSync(`${ROOT}/${dir}`)) {
       const rel = `${dir}/${f}`;
-      // docs/vision holds dated experiment reports that quote the code as it
-      // stood during each experiment; they are records, not current contracts.
-      if (rel === 'docs/vision') continue;
+      // docs/research/vision holds dated experiment reports that quote the code
+      // as it stood during each experiment; they are records, not contracts.
+      if (rel === 'docs/research/vision') continue;
       if (statSync(`${ROOT}/${rel}`).isDirectory()) walk(rel);
       else if (f.endsWith('.md')) out.push(rel);
     }

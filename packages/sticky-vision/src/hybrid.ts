@@ -194,7 +194,7 @@ export function combineWithModel(
 }
 
 // The rules that won the sweep on the eight labelled walls, with group E's
-// synthetic-only boundary model (docs/vision/experiments/j-hybrid.md).
+// synthetic-only boundary model (docs/research/vision/experiments/j-hybrid.md).
 //
 // ADD: a note the model is sure of (mean core probability 0.75; the plateau
 // runs 0.7-0.8), at least 0.3 of the median box (0.2-0.4), half on paper

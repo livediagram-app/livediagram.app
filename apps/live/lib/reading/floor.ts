@@ -1,7 +1,7 @@
 // The smallest crop the in-browser reader is asked about (docs/specs/021-event-storming/event-storming.md Phase 9).
 //
 // Measured on 86 notes with known words (scripts/reader-bench.mts, shrinking
-// each crop to a given short edge): see docs/vision/handwriting-readers.md.
+// each crop to a given short edge): see docs/research/vision/handwriting-readers.md.
 // 48 px is where the curve crosses: there, as many answers are invented (CER
 // over 60%) as are useful (CER up to 30%); at 56 px useful ones outnumber
 // invented three to one, at 32 px inventions win 42 to 2. Below the floor the

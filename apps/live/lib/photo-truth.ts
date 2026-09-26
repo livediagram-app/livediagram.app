@@ -1,6 +1,6 @@
 import { truthFrom, type Truth } from '@livediagram/sticky-vision';
 
-// EXPORTING GROUND TRUTH from the review surface (docs/vision/sticky-detection.md).
+// EXPORTING GROUND TRUTH from the review surface (docs/research/vision/sticky-detection.md).
 //
 // The detector is tuned by hand against labelled photographs, and labelling a
 // wall by drawing fifty boxes from scratch is work nobody finishes. The review

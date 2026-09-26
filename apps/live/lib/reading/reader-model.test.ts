@@ -8,7 +8,7 @@ vi.mock('@huggingface/transformers', () => ({
 
 import { loadReader, MODEL_ID } from './reader-model';
 
-// Which weights each engine loads (docs/vision/handwriting-readers.md). On the
+// Which weights each engine loads (docs/research/vision/handwriting-readers.md). On the
 // processor the embedding table is loaded at q8: its q4 file is the fp32 table,
 // so q8 is 85 MB less to download for the same answers (78 of 86 identical,
 // the same score). On the graphics card q8 embedding produced garbage, so it

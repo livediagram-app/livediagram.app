@@ -19,7 +19,7 @@ import {
 //
 // The server wins when it exists because it is markedly better — measured on a
 // real wall, a hosted model reads 99% of the words against ~80% for the
-// largest model worth downloading (docs/vision/handwriting-readers.md). The
+// largest model worth downloading (docs/research/vision/handwriting-readers.md). The
 // browser reader is what makes the import work with NO key at all, which is
 // the case every self-host starts in.
 //

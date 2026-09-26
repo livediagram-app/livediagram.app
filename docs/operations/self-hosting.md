@@ -214,7 +214,7 @@ refused rather than guessed at.
 - `AI_VISION_MODEL`: model id for reading sticky-note crops
   (`POST /api/ai/read-notes`, [Event storming](../specs/021-event-storming/event-storming.md)). On Google this defaults to
   `gemini-2.5-flash-lite` rather than the assistant's model — it reads
-  handwriting better AND costs less (docs/vision/handwriting-readers.md). If you
+  handwriting better AND costs less (docs/research/vision/handwriting-readers.md). If you
   set `AI_MODEL` yourself, the reader uses that unless you set this too.
 - `AI_ALLOWED_ORIGINS`: comma-separated `Origin` allow-list for `POST /api/ai` (e.g. `https://your-host,http://localhost:3002`). Unset = no origin check. Matched verbatim, case-sensitive.
 - `AI_REQUIRE_CLERK`: set to `"true"` to reject the guest (`X-Owner-Id`) path on `/api/ai` only, requiring a verified Clerk JWT. Unset = guests can use AI (so a Clerk-less fork still works).

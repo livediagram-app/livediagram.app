@@ -22,7 +22,7 @@
 // rather than quietly scored against the wrong note.
 //
 // Results are appended to the truth file's folder as `read-bench-results.md`.
-// Record what you learn in docs/vision/handwriting-readers.md.
+// Record what you learn in docs/research/vision/handwriting-readers.md.
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { deflateSync, inflateSync } from 'node:zlib';
@@ -263,7 +263,7 @@ export function score(truth: Record<string, string>, got: Record<string, string>
 // The one reader this script can drive without a browser: any OpenAI-compatible
 // endpoint, through the api worker's OWN prompt and request shape, so the
 // number describes what ships. The in-browser readers are measured in a browser
-// (see docs/vision/handwriting-readers.md) — node cannot stand in for WebGPU.
+// (see docs/research/vision/handwriting-readers.md) — node cannot stand in for WebGPU.
 
 const PROMPT_SOURCE = 'apps/api/src/routes/ai-read-prompt.ts';
 

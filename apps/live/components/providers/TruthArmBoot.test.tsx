@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { TRUTH_ARMED_KEY } from '@/lib/photo-truth';
 import { TruthArmBoot } from './TruthArmBoot';
 
-// Arming the ground-truth export (docs/vision/sticky-detection.md). It has to
+// Arming the ground-truth export (docs/research/vision/sticky-detection.md). It has to
 // happen at APP LOAD, on whatever page the parameter was typed on: the editor
 // is reached from /new, and by the time a photo has been imported and the
 // review has boxes on it the URL is /diagram/<id>/ with no parameter on it at

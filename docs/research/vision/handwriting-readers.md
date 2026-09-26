@@ -1,12 +1,12 @@
 # Reading the handwriting: readers measured
 
 Which reader can turn a sticky-note crop into words, measured on one real wall
-([Event storming](../specs/021-event-storming/event-storming.md) Phase 8/9). The detector found 32 crops in the operator's kraft-wall
+([Event storming](../../specs/021-event-storming/event-storming.md) Phase 8/9). The detector found 32 crops in the operator's kraft-wall
 photo; 24 were labelled by eye (verbatim, casing as written) and 4 were
 labelled blank (two pieces of tape, the photographer's two shoes). Every reader
 got the same crops, cut exactly as `apps/live/lib/photo-detect.ts` cuts them.
 
-**What shipped** ([Event storming](../specs/021-event-storming/event-storming.md) Phase 9): the reader is pluggable. A model configured
+**What shipped** ([Event storming](../../specs/021-event-storming/event-storming.md) Phase 9): the reader is pluggable. A model configured
 on the api reads the crops — Google defaults to `gemini-2.5-flash-lite` for this
 route, the cheapest tier and, measured here, also the most accurate. With no
 model configured the browser reads them with SmolVLM-256M, which keeps the photo
@@ -86,7 +86,7 @@ through the editor's own `readOne` (same prompt, same q4 weights, node CPU
 standing in for WASM). SmolVLM-256M at the size the photo gives: 37/86 exact,
 60% of words, CER 27%, and 17 answers that are mostly not the note.
 
-Invention has two causes, and each has a guard ([Event storming](../specs/021-event-storming/event-storming.md) Phase 9):
+Invention has two causes, and each has a guard ([Event storming](../../specs/021-event-storming/event-storming.md) Phase 9):
 
 - **A note too small to read.** Each crop shrunk to a given short edge,
   counting answers within 30% CER of the truth ("useful") against answers
@@ -254,7 +254,7 @@ The strict schema removed the failures (0 of 123 batches against 5 of 41).
 Accuracy is the same within the noise of five runs; a small cost in character
 error is possible and not established. A failed batch loses six notes outright,
 so the worker now asks google and openai for the strict schema, and keeps JSON
-mode only for a generic endpoint whose support is unknown ([AI Assistance](../specs/007-editor/ai-assistance.md)).
+mode only for a generic endpoint whose support is unknown ([AI Assistance](../../specs/007-editor/ai-assistance.md)).
 
 ## Browser feasibility, honestly
 
@@ -268,7 +268,7 @@ mode only for a generic endpoint whose support is unknown ([AI Assistance](../sp
   the q4 weights in full precision read all 86 labelled notes with the
   processor's own score (37 exact, CER 28%, 12 invented after the guard) at
   0.53 s a note against ~10 s single-threaded WASM, so any real graphics card
-  now reads ([Event storming](../specs/021-event-storming/event-storming.md) Phase 9). The q8 embedding that saves the WASM path 85
+  now reads ([Event storming](../../specs/021-event-storming/event-storming.md) Phase 9). The q8 embedding that saves the WASM path 85
   MB produces garbage on that card, so the GPU path keeps q4. A software
   adapter (SwiftShader) did not finish one note in 13 minutes: it counts as no
   graphics card.

@@ -1101,7 +1101,7 @@ Decisions from the operator:
   a crop it cannot read lands a BLANK note rather than a guess, and if a reader
   fails entirely every note still lands (the paper was found) with the reason in
   a toast. Crops keep the ORIGINAL resolution up to `CROP_MAX_EDGE_PX` (1024).
-  See `docs/vision/handwriting-readers.md` for the measurements.
+  See `docs/research/vision/handwriting-readers.md` for the measurements.
 
   _(This REVERSES Phase 9's first ruling, "the reader is Tesseract.js in WASM".
   Tesseract was measured on hand-picked clear crops; across a whole wall it read
@@ -1133,7 +1133,7 @@ Decisions from the operator:
   least 7 a*b* units from it to be paper. Paper off the wall's hue is left to
   the saturation floor. Blown-out pixels (every channel ≥ 250: a lamp, a
   window, glare) are no evidence of the wall and are left out of every cell's
-  measurement. See `docs/vision/experiments/a-colour.md` for what was measured
+  measurement. See `docs/research/vision/experiments/a-colour.md` for what was measured
   and what was rejected (illumination flattening, CLAHE, a per-photo palette).
 
 - **A run of notes is never thrown away whole.** On a real wall the stickies
@@ -1192,7 +1192,7 @@ Decisions from the operator:
     size HERE, not the wall's: the median of the notes around it, weighed by
     how near they are, so a pad of small notes stuck in a lattice, or the far
     end of a wide photograph, is cut at its own scale. See
-    `docs/vision/experiments/b-separation.md`, `b2-separation.md`,
+    `docs/research/vision/experiments/b-separation.md`, `b2-separation.md`,
     `i-separation.md` and `k-geometry.md`.
 
 - **A note stands out from the wall it is stuck to.** Colour floors alone
@@ -1233,7 +1233,7 @@ Decisions from the operator:
   says so (`classical (flat-image)`). Teaching the model flat walls instead was
   measured and rejected: every retrain that learnt them also let a window pane
   of the night wall through the drop rule. See
-  `docs/vision/experiments/j-hybrid.md`, `m-editor-model.md` and `o-flat.md`.
+  `docs/research/vision/experiments/j-hybrid.md`, `m-editor-model.md` and `o-flat.md`.
 
 - **Paper is smooth.** Standing out is not enough on its own: cardboard,
   furniture and a window frame at night differ from the wall as much as any
@@ -1326,7 +1326,7 @@ Decisions from the operator:
   invented; no note on the two worded walls is under 70 px, so the floor costs
   them nothing. The hosted reader has no floor. A PP-OCRv6 text-detector gate
   (blank the answer when it finds no text) is decided OUT: above the floor it
-  blanks 25 good readings for 9 made-up ones (docs/vision/handwriting-readers.md).
+  blanks 25 good readings for 9 made-up ones (docs/research/vision/handwriting-readers.md).
 
 - **An answer shaped like chat is not a reading.** The small in-browser model
   sometimes answers like a chatbot instead of reading the note: "Yes.", "I'm
