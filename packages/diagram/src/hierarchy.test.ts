@@ -2,6 +2,7 @@ import { createPinnedArrow, createShape } from './factories';
 import type { Element } from './index';
 import { describe, expect, it } from 'vitest';
 import { assignBranches, branchOfArrow, ROOT_BRANCH } from './hierarchy';
+import { MAX_ELEMENTS_PER_TAB } from './validate';
 
 // Helper: a square with a fixed id so tests can assert on the branch map.
 function box(id: string): Element {
@@ -128,5 +129,87 @@ describe('branchOfArrow', () => {
       to: { kind: 'free', x: 1, y: 1 } as const,
     };
     expect(branchOfArrow(arrow, branches)).toBe(ROOT_BRANCH);
+  });
+});
+
+// docs/specs/011-theme/blueprints/multicolour-themes.md, E2 / E4 / E8 / E10 and I1-I3.
+describe('assignBranches edge cases', () => {
+  it('ignores an arrow pinned to another arrow or to an element not on the tab', () => {
+    const connector = createPinnedArrow('a', 's', 'b', 'n');
+    const elements: Element[] = [
+      box('a'),
+      box('b'),
+      connector,
+      createPinnedArrow('a', 's', connector.id, 'n'),
+      createPinnedArrow('a', 's', 'gone', 'n'),
+    ];
+    const branches = assignBranches(elements);
+    // Only a -> b counts, so a is the root and b its one limb.
+    expect(branches.get('a')).toBe(ROOT_BRANCH);
+    expect(branches.get('b')).toBe(0);
+    expect(branches.has('gone')).toBe(false);
+  });
+
+  it('continues the branch counter for loose elements after the limbs', () => {
+    const elements: Element[] = [
+      box('root'),
+      box('a'),
+      box('b'),
+      box('loose'),
+      createPinnedArrow('root', 's', 'a', 'n'),
+      createPinnedArrow('root', 's', 'b', 'n'),
+    ];
+    expect(assignBranches(elements).get('loose')).toBe(2);
+  });
+
+  it('paints a loop with no root in the trunk colour', () => {
+    const elements: Element[] = [
+      box('a'),
+      box('b'),
+      box('c'),
+      createPinnedArrow('a', 's', 'b', 'n'),
+      createPinnedArrow('b', 's', 'c', 'n'),
+      createPinnedArrow('c', 's', 'a', 'n'),
+    ];
+    const branches = assignBranches(elements);
+    expect([branches.get('a'), branches.get('b'), branches.get('c')]).toEqual([
+      ROOT_BRANCH,
+      ROOT_BRANCH,
+      ROOT_BRANCH,
+    ]);
+  });
+
+  it('walks a single chain as long as a tab allows without exhausting the stack', () => {
+    const count = MAX_ELEMENTS_PER_TAB / 2;
+    const elements: Element[] = [];
+    for (let i = 0; i < count; i++) elements.push(box(`n${i}`));
+    for (let i = 0; i < count - 1; i++) {
+      elements.push(createPinnedArrow(`n${i}`, 's', `n${i + 1}`, 'n'));
+    }
+    const branches = assignBranches(elements);
+    expect(branches.get('n0')).toBe(ROOT_BRANCH);
+    expect(branches.get(`n${count - 1}`)).toBe(0);
+  });
+
+  it('gives every boxed element one in-range entry, no arrow any, and the same result twice', () => {
+    const elements: Element[] = [
+      box('root'),
+      box('a'),
+      box('a1'),
+      box('b'),
+      box('loose'),
+      createPinnedArrow('root', 's', 'a', 'n'),
+      createPinnedArrow('root', 's', 'b', 'n'),
+      createPinnedArrow('a', 's', 'a1', 'n'),
+    ];
+    const branches = assignBranches(elements);
+    const boxedIds = elements.filter((el) => el.type !== 'arrow').map((el) => el.id);
+    expect([...branches.keys()].sort()).toEqual([...boxedIds].sort());
+    const issued = 3; // a, b, loose
+    for (const value of branches.values()) {
+      expect(value).toBeGreaterThanOrEqual(ROOT_BRANCH);
+      expect(value).toBeLessThan(issued);
+    }
+    expect([...assignBranches(elements)]).toEqual([...branches]);
   });
 });

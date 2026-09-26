@@ -58,13 +58,17 @@ export function assignBranches(elements: Element[]): Map<ElementId, number> {
 
   // Depth-first paint of a subtree with one branch index. `visited`
   // guards cycles + shared (diamond) descendants — the first index to
-  // reach a node wins.
-  const paint = (id: ElementId, branch: number, visited: Set<ElementId>) => {
-    if (visited.has(id)) return;
-    visited.add(id);
-    branches.set(id, branch);
-    for (const child of children.get(id) ?? []) {
-      paint(child, branch, visited);
+  // reach a node wins. An explicit stack, not recursion: a single chain
+  // as long as a tab allows would exhaust the call stack. The whole
+  // subtree takes one index, so visiting order cannot change the result.
+  const paint = (start: ElementId, branch: number, visited: Set<ElementId>) => {
+    const stack = [start];
+    while (stack.length > 0) {
+      const id = stack.pop()!;
+      if (visited.has(id)) continue;
+      visited.add(id);
+      branches.set(id, branch);
+      for (const child of children.get(id) ?? []) stack.push(child);
     }
   };
 
