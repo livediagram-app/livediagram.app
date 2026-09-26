@@ -6,6 +6,7 @@ import {
   isBoxed,
   isLayoutCandidate,
   remapElementRefs,
+  unionRects,
   type Element,
   type Tab,
 } from '@livediagram/diagram';
@@ -299,9 +300,7 @@ export function mergeAiElements(
 // Top-left for a freshly generated diagram: below the existing content (left
 // edges aligned) with a gap, or a sensible corner on an empty canvas.
 function freePlacement(existing: Element[]): { originX: number; originY: number } {
-  const boxed = existing.filter(isBoxed);
-  if (boxed.length === 0) return { originX: 120, originY: 100 };
-  const minX = Math.min(...boxed.map((b) => b.x));
-  const maxY = Math.max(...boxed.map((b) => b.y + b.height));
-  return { originX: minX, originY: maxY + 120 };
+  const b = unionRects(existing.filter(isBoxed));
+  if (!b) return { originX: 120, originY: 100 };
+  return { originX: b.x, originY: b.y + b.height + 120 };
 }

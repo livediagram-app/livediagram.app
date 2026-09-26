@@ -1,6 +1,6 @@
 import { classMaskOf, closeRadiusFor } from '../src/detect';
 import { closePaperMask, labelComponents } from '../src/components';
-import { estimateNoteSize, noiseFloorFor } from '../src/boxes';
+import { boxOf, estimateNoteSize, noiseFloorFor } from '../src/boxes';
 import { writeFileSync } from 'node:fs';
 import { loadPhoto, workDirFor } from './photos';
 import { encodePng } from './png';
@@ -27,17 +27,7 @@ const [x0, y0, w, h] = rest.map(Number) as [number, number, number, number];
 const image = loadPhoto(photoDir(), name);
 const mask = classMaskOf(image);
 const imageSize = Math.max(image.width, image.height);
-const noteSize = estimateNoteSize(
-  labelComponents(mask).map((c) => ({
-    classId: c.classId,
-    x: c.minX,
-    y: c.minY,
-    w: c.maxX - c.minX + 1,
-    h: c.maxY - c.minY + 1,
-    pixels: c.pixels,
-  })),
-  noiseFloorFor(imageSize),
-);
+const noteSize = estimateNoteSize(labelComponents(mask).map(boxOf), noiseFloorFor(imageSize));
 // The detector's own radius (a hand-copied 0.04 closed twice as hard).
 const radius = closeRadiusFor(noteSize, imageSize);
 const closed = closePaperMask(mask, { radius });

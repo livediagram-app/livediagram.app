@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, type ReactNode } from 'react';
-import { CloseIcon } from '@livediagram/ui';
+import { CloseIcon, useEscape } from '@livediagram/ui';
 import { createPortal } from 'react-dom';
 
 // The modal an open stack deals its members into (spec/22): centred over the
@@ -71,13 +71,7 @@ export function StackModal({
     };
   }, []);
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  useEscape(onClose);
 
   return createPortal(
     // The dim takes a click on the page and closes, so closing never also

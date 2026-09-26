@@ -78,15 +78,17 @@ export function simplifyPolyline(
 // the neighbouring p0 and p3 using Catmull-Rom tangents (alpha=0.5,
 // uniform tension). Endpoints reuse themselves as the missing
 // neighbour. Pure: no allocations beyond the output strings, no
-// time-dependence.
+// time-dependence. `fmt` shapes every number written (the SVG export
+// rounds to keep its files small); the canvas writes them raw.
 export function catmullRomToBezierPath(
   points: { x: number; y: number }[],
   closed: boolean,
+  fmt: (n: number) => number = (n) => n,
 ): string {
   if (points.length === 0) return '';
   if (points.length === 1) {
     const p = points[0]!;
-    return `M ${p.x} ${p.y}`;
+    return `M ${fmt(p.x)} ${fmt(p.y)}`;
   }
   const n = points.length;
   const get = (i: number): { x: number; y: number } => {
@@ -96,7 +98,7 @@ export function catmullRomToBezierPath(
     return points[i]!;
   };
   const out: string[] = [];
-  out.push(`M ${points[0]!.x} ${points[0]!.y}`);
+  out.push(`M ${fmt(points[0]!.x)} ${fmt(points[0]!.y)}`);
   const last = closed ? n : n - 1;
   for (let i = 0; i < last; i++) {
     const p0 = get(i - 1);
@@ -110,7 +112,7 @@ export function catmullRomToBezierPath(
     const c1y = p1.y + (p2.y - p0.y) / 6;
     const c2x = p2.x - (p3.x - p1.x) / 6;
     const c2y = p2.y - (p3.y - p1.y) / 6;
-    out.push(`C ${c1x} ${c1y}, ${c2x} ${c2y}, ${p2.x} ${p2.y}`);
+    out.push(`C ${fmt(c1x)} ${fmt(c1y)}, ${fmt(c2x)} ${fmt(c2y)}, ${fmt(p2.x)} ${fmt(p2.y)}`);
   }
   if (closed) out.push('Z');
   return out.join(' ');

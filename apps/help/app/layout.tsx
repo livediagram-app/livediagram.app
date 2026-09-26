@@ -1,22 +1,22 @@
 import { ErrorTelemetryBoot } from '@/components/ErrorTelemetryBoot';
-import { PageViewBoot } from '@/components/PageViewBoot';
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { BackToTop } from '@/components/BackToTop';
 import { webSiteJsonLd } from '@/lib/structured-data';
-import { SITE_URL } from '@/lib/site';
 import './globals.css';
-import { JsonLd } from '@livediagram/ui';
+import { JsonLd, PageViewBoot, PUBLIC_VIEWPORT, SITE_URL } from '@livediagram/ui';
 
 // The livediagram help centre (spec/55). Indexable static site served
 // under /help by the router. No third-party scripts, it stays
 // self-host-clean (spec/03).
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  // Consistent page titles across the help centre: every page reads
-  // "<Page Title> | livediagram"; the bare help home is "Help | livediagram".
+  // Consistent document titles across the help centre: every page reads
+  // "<Page Title> | livediagram" (the template reaches every child segment;
+  // the root index spells the suffix out itself). Link previews carry the
+  // bare title, per the shared pageMetadata rule (spec/55 "SEO").
   title: {
     default: 'Help | livediagram',
     template: '%s | livediagram',
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     locale: 'en_GB',
   },
   twitter: {
-    card: 'summary',
+    card: 'summary_large_image',
   },
   robots: { index: true, follow: true },
   // Favicon is served BY this app: `app/icon.svg` (Next auto-injects it,
@@ -39,10 +39,7 @@ export const metadata: Metadata = {
   // worker (which 404s in standalone dev).
 };
 
-export const viewport: Viewport = {
-  themeColor: '#0EA5E9',
-  colorScheme: 'light',
-};
+export const viewport: Viewport = PUBLIC_VIEWPORT;
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (

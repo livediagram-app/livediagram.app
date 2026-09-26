@@ -38,9 +38,11 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   MenuIcon,
+  PREFERS_REDUCED_MOTION,
   PrivateDotIcon,
   SharedDotIcon,
   TabsLabelIcon,
+  useMediaQuery,
 } from '@livediagram/ui';
 import {
   ArchitectureDiagram,
@@ -209,16 +211,10 @@ const LAYER_ROWS: { name: string; swatch: string; hidden: boolean }[] = [
 ];
 
 // Window width as a % of the stage: narrower peek (wider window) on phones.
+// Phrased as the phone query so the static render (where a media query reads
+// false) keeps the wide layout, as before.
 function useCardWidth() {
-  const [card, setCard] = useState(CARD_WIDE);
-  useEffect(() => {
-    const mq = window.matchMedia('(min-width: 640px)');
-    const apply = () => setCard(mq.matches ? CARD_WIDE : CARD_NARROW);
-    apply();
-    mq.addEventListener('change', apply);
-    return () => mq.removeEventListener('change', apply);
-  }, []);
-  return card;
+  return useMediaQuery('(max-width: 639px)') ? CARD_NARROW : CARD_WIDE;
 }
 
 export function HeroIllustration() {
@@ -227,12 +223,13 @@ export function HeroIllustration() {
 
   // Auto-advance one window per build cycle; reset whenever `active` changes
   // (so a click gives the clicked window a full cycle). Skipped under reduced
-  // motion.
+  // motion (and stops if the visitor turns it on mid-visit).
+  const reduceMotion = useMediaQuery(PREFERS_REDUCED_MOTION);
   useEffect(() => {
-    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+    if (reduceMotion) return;
     const id = window.setInterval(() => setActive((a) => (a + 1) % CARDS.length), 16000);
     return () => window.clearInterval(id);
-  }, [active]);
+  }, [active, reduceMotion]);
 
   const tx = (100 - card) / 2 - active * (card + GAP);
 

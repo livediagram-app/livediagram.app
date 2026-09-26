@@ -24,7 +24,7 @@ import { guestSignatureEnforced, isClerkIdShape, OWNER_SCOPED_SEGMENTS } from '.
 import { handleTokens } from './routes/tokens';
 import { handleOauthExchange } from './routes/oauth';
 import { DiagramRoom } from './diagram-room';
-import { CORS_HEADERS, json, notFound, rateLimited } from './responses';
+import { CORS_HEADERS, forbidden, json, notFound, payloadTooLarge, rateLimited } from './responses';
 import { insertTelemetryEvents } from './db/telemetry';
 import { clientIp } from './client-ip';
 import { MAX_BODY_BYTES, MAX_IMAGE_BYTES } from './limits';
@@ -192,7 +192,7 @@ export default {
     // changes. Clerk sessions and full tokens are unaffected (tokenAuth is null
     // or readOnly false). Guest header requests carry no tokenAuth either.
     if (tokenAuth?.readOnly && isWrite) {
-      return json({ error: 'read_only_token' }, { status: 403 });
+      return forbidden('read_only_token');
     }
     // Reject oversized bodies up front (cheap Content-Length gate) so a hostile
     // payload never reaches a route's req.json(). The per-field / per-tab caps
@@ -203,7 +203,7 @@ export default {
       // the route re-checks it and answers with file_too_large + limitBytes.
       const cap = segments[1] === 'images' ? MAX_IMAGE_BYTES : MAX_BODY_BYTES;
       if (Number.isFinite(len) && len > cap) {
-        return json({ error: 'payload_too_large' }, { status: 413 });
+        return payloadTooLarge();
       }
     }
     // Room-ticket mints (spec/11) are exempt like /api/events: the mint

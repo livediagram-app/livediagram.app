@@ -1,9 +1,15 @@
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import './globals.css';
-import { SITE_NAME, SITE_URL } from '@/lib/site';
-import { JsonLd } from '@livediagram/ui';
-import { PageViewBoot } from '@/components/PageViewBoot';
+import {
+  BRAND_ICONS,
+  JsonLd,
+  PageViewBoot,
+  PUBLIC_VIEWPORT,
+  REPO_URL,
+  SITE_NAME,
+  SITE_URL,
+} from '@livediagram/ui';
 
 // SEO and social-card metadata. See spec/16-marketing-site.md
 // for the policy. metadataBase lets the per-page canonical and
@@ -39,32 +45,15 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
-  // Favicon set: the SVG mark (app/icon.svg) plus a raster PNG fallback
-  // for browsers that ignore SVG favicons (older Safari would otherwise
-  // show a blank tab), and the opaque iOS tile from app/apple-icon.tsx.
-  // The PNGs already ship in public/. NB: declaring `icons` explicitly
-  // overrides Next's file-based auto-discovery, so the apple tile must
-  // be listed here too or its <link> stops being emitted.
-  icons: {
-    icon: [
-      { url: '/icon.svg', type: 'image/svg+xml' },
-      { url: '/livediagram-icon-256.png', type: 'image/png', sizes: '256x256' },
-    ],
-    apple: '/apple-icon',
-  },
+  // Favicon set: the SVG mark (app/icon.svg), a raster PNG fallback and the
+  // opaque iOS tile from app/apple-icon.tsx. Shared with telemetry + the
+  // editor; see BRAND_ICONS in @livediagram/ui for why each entry is there.
+  icons: BRAND_ICONS,
 };
 
-// Mobile chrome + colour-scheme signal. Brand-500 tints Android
-// Chrome's URL bar, the iOS PWA status bar, and Windows' tile when
-// the site is installed; declaring colorScheme: 'light' avoids a
-// flash of dark-mode default styling on browsers that would
-// otherwise auto-toggle. The viewport object is the Next 15
-// metadata API's replacement for hand-rolled <meta> tags, see
-// spec/16-marketing-site.md "SEO and metadata".
-export const viewport: Viewport = {
-  themeColor: '#0EA5E9',
-  colorScheme: 'light',
-};
+// Brand-tinted mobile chrome + light colour scheme, shared with the help
+// centre and the dashboard (spec/16 "SEO and metadata").
+export const viewport: Viewport = PUBLIC_VIEWPORT;
 
 // JSON-LD structured data, see spec/16-marketing-site.md "SEO and
 // metadata". Two schemas under one @graph: WebSite for brand-name
@@ -78,7 +67,6 @@ export const viewport: Viewport = {
 // preview when the WebSite / SoftwareApplication entities surface
 // in search.
 const OG_IMAGE = `${SITE_URL}/opengraph-image`;
-const REPO_URL = 'https://github.com/livediagram-app/livediagram.app';
 // The brand mark, served from public/ at the origin root. Used as the
 // Organization logo so a brand SERP / Knowledge Graph can show it.
 const LOGO_URL = `${SITE_URL}/livediagram-icon-512.png`;

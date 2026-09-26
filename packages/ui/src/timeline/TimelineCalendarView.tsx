@@ -8,10 +8,12 @@
 // card implementation rather than a calendar flavour that drifts from
 // it.
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { dateKey } from './useTimelineGrouping';
 import { buildMonthCells, formatMonth, monthKeyOf, shiftMonth } from './monthCells';
 import { CARD_GRID } from '../cardGrid';
+import { useClickOutside } from '../useClickOutside';
+import { useEscape } from '../useEscape';
 import { TONE_LABELS, eventTone, toneColor, type TimelineTone } from './eventTone';
 import { pickRenderer } from './renderers';
 import { TimelineCard } from './TimelineCard';
@@ -105,24 +107,11 @@ export function TimelineCalendarView({
   const cells = useMemo(() => buildMonthCells(monthKey), [monthKey]);
   const todayKey = dateKey(now ?? mountedAt);
 
-  // Close the popover on any click outside it and on Escape. Listeners
+  // Close the popover on any press outside the grid and on Escape. Listeners
   // are only mounted while one is open, so a closed calendar costs
   // nothing on every document click.
-  useEffect(() => {
-    if (!openCell) return;
-    const onDown = (e: MouseEvent) => {
-      if (!gridRef.current?.contains(e.target as Node)) setOpenCell(null);
-    };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpenCell(null);
-    };
-    document.addEventListener('mousedown', onDown);
-    document.addEventListener('keydown', onKey);
-    return () => {
-      document.removeEventListener('mousedown', onDown);
-      document.removeEventListener('keydown', onKey);
-    };
-  }, [openCell]);
+  useClickOutside(gridRef, () => setOpenCell(null), openCell !== null);
+  useEscape(() => setOpenCell(null), { enabled: openCell !== null });
 
   const openEvents = openCell ? (byDayAndTone.get(openCell) ?? []) : [];
 

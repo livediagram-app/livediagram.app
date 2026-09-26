@@ -6,8 +6,7 @@ import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 import { ALTERNATIVE_SLUGS, ALTERNATIVES_LAST_UPDATED, getAlternative } from '@/lib/alternatives';
-import { subpageMetadata } from '@/lib/subpage-metadata';
-import { JsonLd } from '@livediagram/ui';
+import { JsonLd, pageMetadata } from '@livediagram/ui';
 
 // One page per competitor at /alternatives/<slug> (see
 // specs/21-comparison-pages.md). Static export: only the known slugs are
@@ -26,7 +25,7 @@ export async function generateMetadata({
   const { slug } = await params;
   const alt = getAlternative(slug);
   if (!alt) return {};
-  return subpageMetadata({
+  return pageMetadata({
     title: alt.title,
     description: alt.description,
     path: `/alternatives/${slug}`,

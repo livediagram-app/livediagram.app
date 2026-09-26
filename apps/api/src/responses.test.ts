@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  aiError,
   badRequest,
   CORS_HEADERS,
   forbidden,
@@ -8,7 +9,9 @@ import {
   methodNotAllowed,
   missingAuth,
   notFound,
+  payloadTooLarge,
   rateLimited,
+  signInRequired,
 } from './responses';
 
 // Every endpoint in the worker funnels its non-streaming responses
@@ -121,6 +124,30 @@ describe('rateLimited', () => {
     const res = rateLimited();
     expect(res.status).toBe(429);
     expect(await readJson(res)).toEqual({ error: 'rate_limited' });
+  });
+});
+
+describe('payloadTooLarge', () => {
+  it('returns a 413 with the canonical { error: "payload_too_large" } envelope', async () => {
+    const res = payloadTooLarge();
+    expect(res.status).toBe(413);
+    expect(await readJson(res)).toEqual({ error: 'payload_too_large' });
+  });
+});
+
+describe('aiError', () => {
+  it('returns a 502 with the canonical { error: "ai_error" } envelope', async () => {
+    const res = aiError();
+    expect(res.status).toBe(502);
+    expect(await readJson(res)).toEqual({ error: 'ai_error' });
+  });
+});
+
+describe('signInRequired', () => {
+  it('returns a 401 with the canonical { error: "sign_in_required" } envelope', async () => {
+    const res = signInRequired();
+    expect(res.status).toBe(401);
+    expect(await readJson(res)).toEqual({ error: 'sign_in_required' });
   });
 });
 

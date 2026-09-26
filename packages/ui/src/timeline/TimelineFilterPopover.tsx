@@ -11,6 +11,8 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { POPOVER_VIEWPORT_MARGIN, clampIntoRange } from '../popover';
+import { useClickOutside } from '../useClickOutside';
+import { useEscape } from '../useEscape';
 import { buildMonthCells, formatMonth, shiftMonth } from './monthCells';
 import { CATEGORY_LABELS, type TimelineCategory } from './eventCategory';
 import { MODE_LABELS, ModeIcon, TIMELINE_MODES } from './ModeIcon';
@@ -76,22 +78,15 @@ export function TimelineFilterPopover({
     });
   }, [anchor]);
 
+  // Outside press closes in the capture phase (useClickOutside's default):
+  // the trigger button's own click handler would otherwise toggle the
+  // popover straight back open.
+  useClickOutside(ref, onClose);
+  useEscape(onClose);
   useEffect(() => {
-    const onDown = (e: MouseEvent) => {
-      if (!ref.current?.contains(e.target as Node)) onClose();
-    };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    // Capture phase: the trigger button's own click handler would
-    // otherwise toggle the popover straight back open.
-    document.addEventListener('mousedown', onDown, true);
-    document.addEventListener('keydown', onKey);
     window.addEventListener('scroll', onClose, true);
     window.addEventListener('resize', onClose);
     return () => {
-      document.removeEventListener('mousedown', onDown, true);
-      document.removeEventListener('keydown', onKey);
       window.removeEventListener('scroll', onClose, true);
       window.removeEventListener('resize', onClose);
     };

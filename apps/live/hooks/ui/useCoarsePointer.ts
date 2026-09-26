@@ -1,22 +1,15 @@
-// Is this a touch device? Used where the COPY has to name the gesture — "double-
-// tap" vs "double-click" on the Reveal zone (spec/106) — which a viewport
+'use client';
+
+import { useMediaQuery } from '@livediagram/ui';
+
+// Is this a touch device? Used where the COPY has to name the gesture ("double-
+// tap" vs "double-click" on the Reveal zone, spec/106), which a viewport
 // breakpoint can't answer: a tablet is wide and still touch-only.
 //
-// Starts false and settles after mount, so the static-export render and the
-// first client paint agree (a media query read during render would differ
-// between the two and trip hydration).
-
-import { useEffect, useState } from 'react';
-
+// The shared useMediaQuery's server snapshot is false, so the static-export
+// render and the first hydrated paint agree (no hydration mismatch) and it
+// settles to the real answer straight after, as the hand-rolled effect here
+// used to.
 export function useCoarsePointer(): boolean {
-  const [coarse, setCoarse] = useState(false);
-  useEffect(() => {
-    const query = window.matchMedia?.('(hover: none)');
-    if (!query) return;
-    setCoarse(query.matches);
-    const onChange = (e: MediaQueryListEvent) => setCoarse(e.matches);
-    query.addEventListener('change', onChange);
-    return () => query.removeEventListener('change', onChange);
-  }, []);
-  return coarse;
+  return useMediaQuery('(hover: none)');
 }

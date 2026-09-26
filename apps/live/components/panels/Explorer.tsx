@@ -1,9 +1,9 @@
 'use client';
 
-import { memo, useEffect, useState } from 'react';
+import { memo, useState } from 'react';
 import { DiagramRowShell } from './DiagramRowShell';
 import { useRelativeTimeTick } from '@/lib/relative-time';
-import { MOBILE_BREAKPOINT_PX, isMobileViewportSync } from '@/lib/responsive';
+import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { MoveToFolderDialog } from '@/components/dialogs/MoveToFolderDialog';
 import { apiCreateFolder } from '@/lib/api-client';
@@ -67,27 +67,17 @@ function ExplorerImpl({
   // Mobile viewport ⇒ render nothing. Mobile users reach the
   // Explorer from the AuthControls "Explorer" menu item (spec/07)
   // instead, freeing the small canvas of the floating panel and
-  // its bottom-dock entry point. Tracked in state + a media-query
-  // listener so a desktop → mobile resize / device-rotate flips
-  // the panel without a page reload. Initial value reads sync so
-  // the static-export build doesn't paint a desktop-shaped panel
-  // a tick before the effect runs.
-  // Mobile-aware flag, kept up-to-date via a matchMedia listener so a
-  // device rotation / desktop-to-mobile resize repositions correctly.
+  // its bottom-dock entry point. The shared useIsMobileViewport hook
+  // re-renders on a desktop → mobile resize / device-rotate, so the
+  // panel flips without a page reload, and a client mount reads the
+  // query synchronously, so it never paints a desktop-shaped panel a
+  // tick before correcting.
   // Previously Explorer was hidden entirely on mobile (the canvas is
   // small enough that the panel ate the whole screen), but signed-out
   // users had no other way to switch diagrams, so the panel now also
   // shows on mobile, banner-collapsed at the very top of the viewport
   // above the Palette.
-  const [isMobile, setIsMobile] = useState(isMobileViewportSync);
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const mq = window.matchMedia?.(`(max-width: ${MOBILE_BREAKPOINT_PX - 1}px)`);
-    if (!mq) return;
-    const onChange = () => setIsMobile(mq.matches);
-    mq.addEventListener('change', onChange);
-    return () => mq.removeEventListener('change', onChange);
-  }, []);
+  const isMobile = useIsMobileViewport();
   // Re-render every 30s so the "Updated X ago" strings stay fresh
   // while the panel is open. Cheap when the panel is minimised (this
   // function returns early below before the interval is set up).

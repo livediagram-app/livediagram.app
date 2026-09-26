@@ -57,7 +57,7 @@ export function FeatureCategoryBlock({
             ))}
           </ul>
 
-          <CtaLink href={`/features/${section.id}`} className="group mt-8 gap-2">
+          <CtaLink href={`/features/${section.id}`} className="group mt-8">
             {section.cta}
             <ChevronRightIcon
               size={16}

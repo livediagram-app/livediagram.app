@@ -1,4 +1,5 @@
 import { fillRatio, type Box } from './boxes';
+import { iou, overlapArea as intersection } from './rect';
 
 // Pads of small notes (spec/139 Phase 9). A wall's size floor throws away
 // what is much smaller than its notes, and that is right for a scrap of tape
@@ -38,17 +39,6 @@ const FUSED_SIZE_RATIO = 1.5;
 const SAME_BOX_IOU = 0.5;
 // A refused box lying this much over a kept note is part of that note.
 const MAX_KEPT_OVERLAP = 0.25;
-
-function intersection(a: Box, b: Box): number {
-  const ix = Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x));
-  const iy = Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y));
-  return ix * iy;
-}
-
-function iou(a: Box, b: Box): number {
-  const i = intersection(a, b);
-  return i / Math.max(1, a.w * a.h + b.w * b.h - i);
-}
 
 const shortOf = (b: Box) => Math.min(b.w, b.h);
 const isSquare = (b: Box) => Math.max(b.w, b.h) / Math.max(1, shortOf(b)) <= PAD_MAX_ASPECT;

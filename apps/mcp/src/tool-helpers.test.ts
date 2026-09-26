@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import type { Env } from './env';
 import {
   deepLink,
   errorResult,
+  loadTab,
   requireToken,
   shareUrl,
   textResult,
@@ -103,5 +105,47 @@ describe('shareUrl', () => {
     // an unescaped `&` would silently truncate the code.
     expect(shareUrl('a&b=c')).toBe('https://livediagram.app/diagram/shared?s=a%26b%3Dc');
     expect(shareUrl('a b')).toBe('https://livediagram.app/diagram/shared?s=a%20b');
+  });
+});
+
+describe('loadTab', () => {
+  // An api double that answers the diagram and tab reads, recording the paths
+  // it was asked for so each case can see which tab was fetched.
+  function apiEnv(tabs: Array<{ id: string }>) {
+    const paths: string[] = [];
+    const env = {
+      API: {
+        fetch: async (req: Request) => {
+          const path = new URL(req.url).pathname;
+          paths.push(path);
+          const tab = path.match(/\/tabs\/([^/]+)$/)?.[1];
+          return Response.json(
+            tab ? { tab: { id: tab, name: tab, elements: [] } } : { diagram: { id: 'd1', tabs } },
+          );
+        },
+      },
+    } as unknown as Env;
+    return { env, paths };
+  }
+
+  it('defaults to the first tab when none is named', async () => {
+    const { env, paths } = apiEnv([{ id: 't1' }, { id: 't2' }]);
+    const loaded = await loadTab(env, 'tok', 'd1');
+    expect(loaded?.tab.id).toBe('t1');
+    expect(paths).toEqual(['/api/diagrams/d1', '/api/diagrams/d1/tabs/t1']);
+  });
+
+  it('loads the named tab', async () => {
+    const { env, paths } = apiEnv([{ id: 't1' }, { id: 't2' }]);
+    const loaded = await loadTab(env, 'tok', 'd1', 't2');
+    expect(loaded?.diagram.id).toBe('d1');
+    expect(loaded?.tab.id).toBe('t2');
+    expect(paths.at(-1)).toBe('/api/diagrams/d1/tabs/t2');
+  });
+
+  it('is null for a diagram with no tabs, without a tab read', async () => {
+    const { env, paths } = apiEnv([]);
+    expect(await loadTab(env, 'tok', 'd1')).toBeNull();
+    expect(paths).toEqual(['/api/diagrams/d1']);
   });
 });

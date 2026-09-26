@@ -8,7 +8,7 @@ import { getLandingSection, LANDING_SECTION_IDS } from '@/lib/landing-content';
 // a shared category link shows a distinctive preview rather than the generic
 // brand card. Pre-rendered to a static PNG per slug at build time (the same
 // force-static gate the other image routes use). The page's metadata omits an
-// explicit openGraph image (subpageMetadata `ownOgImage: true`) so this
+// explicit openGraph image (pageMetadata `ownOgImage: true`) so this
 // file-convention image is the one Next attaches.
 
 export const dynamic = 'force-static';

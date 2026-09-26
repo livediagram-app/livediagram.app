@@ -5,7 +5,7 @@ import { useState, type ReactNode } from 'react';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import { MenuActionRow, MenuGroupSeparator, PortalMenu } from '@/components/primitives/PortalMenu';
 import { GearIcon, GithubIcon, SearchGlyph } from '@/components/chrome/tab-bar-icons';
-import { GITHUB_REPO_URL } from '@/lib/github';
+import { REPO_URL } from '@livediagram/ui';
 import type { ExplorerMenuActions } from './Explorer.types';
 
 // The Explorer panel header's ⋯ menu (spec/15): the diagram-level verbs that
@@ -94,7 +94,7 @@ export function ExplorerHeaderMenu({
           icon={<GithubIcon />}
           label="GitHub"
           onClick={run(() => {
-            window.open(GITHUB_REPO_URL, '_blank', 'noopener,noreferrer');
+            window.open(REPO_URL, '_blank', 'noopener,noreferrer');
           })}
         />,
         actions.onOpenSettings ? (

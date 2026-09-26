@@ -1,4 +1,4 @@
-import { classMaskOf, detectStickies } from '../../../sticky-vision/src/detect';
+import { classMaskOf, detectStickies, overlapArea } from '@livediagram/sticky-vision';
 import { CUE_OPTIONS, cuesOf } from '../../src/cues';
 import { loadHybridWalls } from './walls';
 
@@ -19,10 +19,10 @@ const minCore = Number(arg('min-core', '12'));
 type R = { x: number; y: number; w: number; h: number };
 const cx = (r: R) => r.x + r.w / 2;
 const cy = (r: R) => r.y + r.h / 2;
+// The share of `a` that `b` covers.
 const overlap = (a: R, b: R) => {
-  const w = Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x);
-  const h = Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y);
-  return w > 0 && h > 0 ? (w * h) / (a.w * a.h) : 0;
+  const i = overlapArea(a, b);
+  return i > 0 ? i / (a.w * a.h) : 0;
 };
 const matches = (m: R, l: R) =>
   Math.hypot(cx(m) - cx(l), cy(m) - cy(l)) <= Math.max(l.w, l.h) * 0.5 &&

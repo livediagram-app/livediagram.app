@@ -3,7 +3,12 @@
 // filed into a team leaves its owner's personal list entirely (spec/35), so
 // without the team sweep it would be invisible to the MCP — the personal
 // GET /diagrams alone is not "the user's diagrams".
-import type { DiagramSummary, TeamListItem } from '@livediagram/api-schema';
+import type {
+  DiagramSummary,
+  TeamLibraryResponse,
+  TeamListItem,
+  TeamsResponse,
+} from '@livediagram/api-schema';
 import { apiJson } from './api';
 import type { Env } from './env';
 
@@ -26,14 +31,14 @@ type FoundDiagram = {
 export async function fetchTeamLibraries(env: Env, token: string): Promise<TeamLibrary[]> {
   let teams: TeamListItem[];
   try {
-    ({ teams } = await apiJson<{ teams: TeamListItem[] }>(env, token, '/teams'));
+    ({ teams } = await apiJson<TeamsResponse>(env, token, '/teams'));
   } catch {
     return [];
   }
   const libraries = await Promise.all(
     teams.map(async (t) => {
       try {
-        const { diagrams } = await apiJson<{ diagrams: DiagramSummary[] }>(
+        const { diagrams } = await apiJson<TeamLibraryResponse>(
           env,
           token,
           `/teams/${t.id}/library`,

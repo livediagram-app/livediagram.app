@@ -1,6 +1,10 @@
-import { detectStickies, type DetectDropReason } from '../../../sticky-vision/src/detect';
-import type { Box } from '../../../sticky-vision/src/boxes';
-import { HYBRID_RULES } from '../../../sticky-vision/src/hybrid';
+import {
+  detectStickies,
+  holdsPoint,
+  HYBRID_RULES,
+  type Box,
+  type DetectDropReason,
+} from '@livediagram/sticky-vision';
 import { score } from '../../../sticky-vision/scripts/truth';
 import { CUE_OPTIONS, cuesOf } from '../../src/cues';
 import { loadHybridWalls } from './walls';
@@ -16,8 +20,6 @@ import { loadHybridWalls } from './walls';
 type R = { x: number; y: number; w: number; h: number };
 const cx = (r: R) => r.x + r.w / 2;
 const cy = (r: R) => r.y + r.h / 2;
-const holds = (b: R, x: number, y: number) =>
-  x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h;
 // The sweep's own match: centre within half the label's longer side, areas
 // within 2x.
 const matches = (d: R, l: R) =>
@@ -43,9 +45,9 @@ for (const wall of await loadHybridWalls()) {
     h: m.h * height,
   }));
   for (const { box, reason } of drops) {
-    if (found.some((f) => holds(f, cx(box), cy(box)))) continue;
+    if (found.some((f) => holdsPoint(f, cx(box), cy(box)))) continue;
     const core = cues.notes
-      .filter((n) => holds(box, cx(n.core), cy(n.core)))
+      .filter((n) => holdsPoint(box, cx(n.core), cy(n.core)))
       .sort((a, b) => b.confidence - a.confidence)[0];
     const band = core ? `${(Math.floor(core.confidence * 10) / 10).toFixed(1)}` : 'none';
     const key = `${reason.padEnd(16)} core ${band}`;

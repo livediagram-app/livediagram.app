@@ -237,6 +237,19 @@ a before/after, a spatial relationship), not to every section; reference-only or
 purely conceptual sections stay text. Scenes are reused across articles wherever
 the same surface recurs rather than redrawn.
 
+## Header
+
+The help centre's header is the shared `SiteHeader` from `@livediagram/ui`, the same bar marketing and the telemetry dashboard render, so the three read as one product: Brand + the apps menu (keyed to Help) on the left, the article search (`SearchInput`) in the header's centre slot from `sm` up, and one primary **Start drawing** CTA (`/new`) on the right in place of marketing's Just Draw / Choose Template pair. It leaves the page-edge ShareRail off: the rail sits in the gutter beside a `max-w-6xl` page, and help's pages run `max-w-7xl`, so on an `xl` screen it would cover the article sidebar. It passes `wide`, which gives the bar help's own `max-w-7xl` / `md:px-8` column, so the logo lines up with the breadcrumb and article content below. The bar is a fixed 72px (`h-18`) at every breakpoint, which the sticky breadcrumb bar (`top-18`) and the article sidebar's sticky offset rely on.
+
+## SEO
+
+One rule for every public page, shared with the marketing site ([spec/16](16-marketing-site.md) "SEO and metadata"): per-page metadata comes from `pageMetadata` in `@livediagram/ui`, which help wraps as `helpMetadata({ title, description, path })` only to name itself (`siteName: 'livediagram Help'`).
+
+- **The title passes through as given.** Link previews (`og:title`, `twitter:title`) carry the bare article title, with the site name beside it. The document `<title>` still reads "<Title> | livediagram": the root layout's `title.template` adds the suffix to every child segment, and the help home (the root index, which the template doesn't reach) spells it out as `Help | livediagram`.
+- **Canonical and `og:url` are the page's path**, `/help/<categorySlug>/<slug>/`, resolved against the shared origin; `seo-canonical.test.ts` checks every article's path matches its route.
+- **The card is the large brand card**: `og:type` article, Twitter `summary_large_image`, with the image marketing generates (`/opengraph-image`, `/twitter-image`), referenced by absolute URL because help has no card of its own.
+- **Breadcrumb structured data** is a `BreadcrumbList` rooted at the help home, built by the shared `breadcrumbJsonLd` (the one marketing's `BreadcrumbJsonLd` uses) and rendered through `JsonLd` from the `Breadcrumb` component.
+
 ## In-editor entry point
 
 The editor's `TabBar` gains a **Help** link on its right edge, beside the existing GitHub link — a plain `<a href="/help/" target="_blank">` (same convention as the GitHub link, no editor-page wiring). It fires `track('UI', 'Opened', 'Help')` (see [spec/22](22-telemetry.md); reuses existing `UI`/`Opened` enum pair). A "Help" link also lives in the help app's own header/footer.
@@ -261,7 +274,7 @@ but only for surfaces that link ONE article contextually — see spec/56.)
 
 ## Analytics
 
-The help app is a static site outside the editor, so it does not use the editor's first-party telemetry pipeline. It emits nothing by default (no third-party scripts), keeping it self-host-clean. The in-editor Help link is the only telemetry touchpoint, via the existing pipeline.
+The help centre emits through the first-party pipeline ([spec/22](22-telemetry.md)): `Help·View·<slug>` per article read, the settled search outcome, article votes, window-level errors, and page views ([spec/150](150-page-view-telemetry.md)). It uses the public sites' shared `siteTrack` from `@livediagram/telemetry-client` (the `NEXT_PUBLIC_TELEMETRY_ENABLED` build gate plus the spec/20 opt-out), the same instance the shared `PageViewBoot` reports page views through, so it runs one buffer. No third-party scripts; off by default, which keeps it self-host-clean.
 
 ## Deployment
 

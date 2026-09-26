@@ -102,34 +102,25 @@ import {
 // Typefaces (spec/28): an export paints the face the canvas painted, and
 // declares the ones it used so the file stands on its own.
 import { googleFontsHref } from './fonts';
+import { boundsOfPoints, type Point } from './geometry-primitives';
 import { getBuiltInTheme } from './themes';
 import { themeChartPalette } from './theme-presets';
 
 // Bounding box of the visible content. Arrows count via free endpoints; boxed
 // elements via their rectangle. Empty / degenerate tabs default to a page.
 export function contentBounds(elements: Element[]): { x: number; y: number; w: number; h: number } {
-  if (elements.length === 0) return { x: 0, y: 0, w: 600, h: 400 };
-  let minX = Number.POSITIVE_INFINITY;
-  let minY = Number.POSITIVE_INFINITY;
-  let maxX = Number.NEGATIVE_INFINITY;
-  let maxY = Number.NEGATIVE_INFINITY;
-  const consider = (x: number, y: number) => {
-    if (x < minX) minX = x;
-    if (y < minY) minY = y;
-    if (x > maxX) maxX = x;
-    if (y > maxY) maxY = y;
-  };
+  const points: Point[] = [];
   for (const el of elements) {
     if (el.type === 'arrow') {
-      if (el.from.kind === 'free') consider(el.from.x, el.from.y);
-      if (el.to.kind === 'free') consider(el.to.x, el.to.y);
+      if (el.from.kind === 'free') points.push(el.from);
+      if (el.to.kind === 'free') points.push(el.to);
     } else {
-      consider(el.x, el.y);
-      consider(el.x + el.width, el.y + el.height);
+      points.push({ x: el.x, y: el.y }, { x: el.x + el.width, y: el.y + el.height });
     }
   }
-  if (!Number.isFinite(minX)) return { x: 0, y: 0, w: 600, h: 400 };
-  return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
+  const b = boundsOfPoints(points);
+  if (!b || !Number.isFinite(b.x)) return { x: 0, y: 0, w: 600, h: 400 };
+  return { x: b.x, y: b.y, w: b.width, h: b.height };
 }
 
 // Resolve a boxed element to its export descriptor: branch decision + resolved

@@ -11,7 +11,9 @@ import { useEffect, useRef, type RefObject } from 'react';
 // document+bubble, `target as Node` cast vs `instanceof Node`
 // guard, an accident of order, not intent. Any modal / popover that
 // dismisses on an outside press should reach for it rather than
-// rebuilding the listener from scratch.
+// rebuilding the listener from scratch. It lives in @livediagram/ui because
+// the public sites' popovers (ProductNav, the timeline popovers, help's
+// search dropdown) close the same way.
 //
 // Listener is registered on `window` in the capture phase: that
 // fires before any descendant React `onClick` handlers, so we get

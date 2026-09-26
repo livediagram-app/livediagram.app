@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next';
-import { SITE_URL } from '@/lib/site';
+import { SITE_URL } from '@livediagram/ui';
 
 // Required for `output: 'export'`: route handlers must declare
 // themselves fully static so Next can resolve them at build time

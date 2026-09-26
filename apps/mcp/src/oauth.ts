@@ -4,7 +4,7 @@
 // apps/live) and hands it to the client through the standard code+PKCE exchange.
 // All transient state lives in OAUTH_KV with short TTLs; no parallel credential
 // model — the heavy lifting (verify, revoke, caps, expiry) is the token's.
-import { isLoopbackHostname } from '@livediagram/api-schema';
+import { bytesToBase64Url, isLoopbackHostname } from '@livediagram/api-schema';
 import type { Hono } from 'hono';
 import type { Env } from './env';
 
@@ -35,15 +35,9 @@ function randomId(): string {
   return crypto.randomUUID().replace(/-/g, '');
 }
 
-function base64url(bytes: Uint8Array): string {
-  let bin = '';
-  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]!);
-  return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-}
-
 async function sha256base64url(s: string): Promise<string> {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
-  return base64url(new Uint8Array(buf));
+  return bytesToBase64Url(buf);
 }
 
 function isHttpsOrLocalhost(uri: string): boolean {
@@ -281,4 +275,4 @@ export function registerOauthRoutes(app: Hono<{ Bindings: Env }>): void {
 }
 
 // Exported for unit tests.
-export const __test = { sha256base64url, base64url, isHttpsOrLocalhost };
+export const __test = { sha256base64url, isHttpsOrLocalhost };

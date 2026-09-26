@@ -4,7 +4,7 @@ import { wallFloorsOf } from '../src/floors';
 import { rgbToHsv, type ImageBuffer } from '../src/colour';
 import { classMaskOf, detectStickies, type DetectedSticky } from '../src/detect';
 import { labelComponents } from '../src/components';
-import { fitBoxes, mergeFragments } from '../src/boxes';
+import { boxOf, fitBoxes, mergeFragments } from '../src/boxes';
 import { encodePng } from './png';
 import { chromeCacheOf, listPhotos, loadPhoto, workDirFor, workingEdgeFrom } from './photos';
 import { renderWorkingImages } from './chrome';
@@ -197,14 +197,7 @@ function report(name: string) {
   // The shape of the size distribution, which is what every threshold below
   // the mask is derived from.
   const merged = mergeFragments(
-    components.map((c) => ({
-      classId: c.classId,
-      x: c.minX,
-      y: c.minY,
-      w: c.maxX - c.minX + 1,
-      h: c.maxY - c.minY + 1,
-      pixels: c.pixels,
-    })),
+    components.map(boxOf),
     Math.max(2, Math.round(Math.max(image.width, image.height) * 0.006)) / 0.12,
   );
   const mins = merged.map((b) => Math.min(b.w, b.h)).sort((a, b) => a - b);

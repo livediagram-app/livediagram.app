@@ -4,10 +4,10 @@
 // pass `name`/`path`; deeper pages (e.g. Home > Alternatives > Miro) pass a
 // `trail` array. Kept in one place so callers can't drift apart on subtle
 // things like trailing slashes or @id formats, which Google's structured-data
-// validator is strict about.
+// validator is strict about. The BreadcrumbList shape itself comes from the
+// shared breadcrumbJsonLd builder, which the help centre uses too.
 
-import { SITE_URL } from '@/lib/site';
-import { JsonLd } from '@livediagram/ui';
+import { breadcrumbJsonLd, JsonLd, SITE_URL } from '@livediagram/ui';
 
 type Crumb = { name: string; path: string };
 
@@ -24,20 +24,11 @@ type BreadcrumbJsonLdProps = {
 
 export function BreadcrumbJsonLd({ name, path, trail }: BreadcrumbJsonLdProps) {
   const crumbs: Crumb[] = trail ?? (name && path ? [{ name, path }] : []);
-  const json = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      // Home uses the slash-less canonical origin to match the homepage's
-      // own canonical / og:url (see app/sitemap.ts).
-      { '@type': 'ListItem', position: 1, name: 'Home', item: SITE_URL },
-      ...crumbs.map((c, i) => ({
-        '@type': 'ListItem',
-        position: i + 2,
-        name: c.name,
-        item: `${SITE_URL}${c.path}`,
-      })),
-    ],
-  };
+  const json = breadcrumbJsonLd([
+    // Home uses the slash-less canonical origin to match the homepage's own
+    // canonical / og:url (see app/sitemap.ts).
+    { name: 'Home', url: SITE_URL },
+    ...crumbs.map((c) => ({ name: c.name, url: `${SITE_URL}${c.path}` })),
+  ]);
   return <JsonLd data={json} />;
 }

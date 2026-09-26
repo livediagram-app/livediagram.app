@@ -1,7 +1,15 @@
 'use client';
 
 import { useMemo, useRef, type Ref } from 'react';
-import { endpointPosition, isBoxed, svgArrow, svgBoxed, type Element } from '@livediagram/diagram';
+import {
+  boundsOfPoints,
+  endpointPosition,
+  isBoxed,
+  svgArrow,
+  svgBoxed,
+  type Element,
+  type Point,
+} from '@livediagram/diagram';
 import { framesFirst, ZOOM_MAX, ZOOM_MIN } from '@/lib/canvas';
 import { resolveIconArtLoaded, resolveStickerArtLoaded } from '@/lib/icon-registry';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
@@ -111,18 +119,7 @@ export function Minimap({
   // overlay below. The markup is our own renderer's output (user text is
   // xmlEscaped inside it), so injecting it is safe.
   const { markup, bounds } = useMemo(() => {
-    let minX = Infinity;
-    let minY = Infinity;
-    let maxX = -Infinity;
-    let maxY = -Infinity;
-    let found = false;
-    const acc = (px: number, py: number) => {
-      found = true;
-      if (px < minX) minX = px;
-      if (py < minY) minY = py;
-      if (px > maxX) maxX = px;
-      if (py > maxY) maxY = py;
-    };
+    const corners: Point[] = [];
     const parts: string[] = [];
     // Boxed first (frames behind their contents), then arrows on top —
     // matching the canvas z-order.
@@ -136,20 +133,16 @@ export function Minimap({
           tabFont,
         }),
       );
-      acc(el.x, el.y);
-      acc(el.x + el.width, el.y + el.height);
+      corners.push({ x: el.x, y: el.y }, { x: el.x + el.width, y: el.y + el.height });
     }
     for (const el of elements) {
       if (el.type !== 'arrow') continue;
       parts.push(svgArrow(el, elements));
-      const a = endpointPosition(el.from, elements);
-      const b = endpointPosition(el.to, elements);
-      acc(a.x, a.y);
-      acc(b.x, b.y);
+      corners.push(endpointPosition(el.from, elements), endpointPosition(el.to, elements));
     }
     return {
       markup: parts.join(''),
-      bounds: found ? { x: minX, y: minY, width: maxX - minX, height: maxY - minY } : null,
+      bounds: boundsOfPoints(corners),
     };
     // iconsLoaded re-runs the build when the catalogue chunk lands.
     // eslint-disable-next-line react-hooks/exhaustive-deps

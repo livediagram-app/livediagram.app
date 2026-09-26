@@ -1,4 +1,5 @@
 import { Brand } from './Brand';
+import { REPO_URL } from './site';
 
 // The public site footer shared by the marketing landing page and the
 // telemetry dashboard. Brand + tagline on the left, the site nav + GitHub on
@@ -36,7 +37,7 @@ export function SiteFooter() {
             Contact
           </a>
           <a
-            href="https://github.com/livediagram-app/livediagram.app"
+            href={REPO_URL}
             target="_blank"
             rel="noopener noreferrer"
             aria-label="livediagram on GitHub"

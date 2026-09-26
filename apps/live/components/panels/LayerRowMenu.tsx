@@ -16,8 +16,7 @@ import {
 } from '@/components/primitives/PortalMenu';
 import { OpacityRow } from '@/components/palette/context-menu-rows';
 import { LayerDownIcon, LayersGlyph, LayerUpIcon } from '@/components/palette/context-menu-icons';
-import { useClickOutside } from '@/hooks/ui/useClickOutside';
-import { useEscape } from '@/hooks/ui/useEscape';
+import { useClickOutside, useEscape } from '@livediagram/ui';
 
 // Right-click menu for a Layers-panel row (spec/74), styled like the tab
 // menu: a quick-verbs toolbar (Rename / Delete) over collapsible

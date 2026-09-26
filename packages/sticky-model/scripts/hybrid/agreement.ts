@@ -1,4 +1,4 @@
-import { detectStickies } from '../../../sticky-vision/src/detect';
+import { detectStickies, iou } from '@livediagram/sticky-vision';
 import { score } from '../../../sticky-vision/scripts/truth';
 import { CUE_OPTIONS, cuesOf } from '../../src/cues';
 import { loadHybridWalls } from './walls';
@@ -13,12 +13,6 @@ import { loadHybridWalls } from './walls';
 const i = process.argv.indexOf('--c');
 const minConf = i === -1 ? 0.7 : Number(process.argv[i + 1]);
 type R = { x: number; y: number; w: number; h: number };
-const iou = (a: R, b: R) => {
-  const ix = Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x));
-  const iy = Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y));
-  const n = ix * iy;
-  return n / (a.w * a.h + b.w * b.h - n || 1);
-};
 const bins = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.01];
 const binOf = (v: number) => bins.findIndex((b, k) => v >= b && v < bins[k + 1]!);
 console.log(`best IoU with a sure note (conf >= ${minConf}); bins ${bins.slice(0, -1).join(' ')}`);

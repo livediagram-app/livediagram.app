@@ -2,8 +2,7 @@
 
 import { useRef, type ReactNode } from 'react';
 import { Portal } from '@/components/primitives/Portal';
-import { useEscape } from '@/hooks/ui/useEscape';
-import { useFocusTrap } from '@/hooks/ui/useFocusTrap';
+import { useEscape, useFocusTrap } from '@livediagram/ui';
 import { useModalGuard } from '@/hooks/ui/useModalGuard';
 
 // The shared modal shell. Every editor dialog (ConfirmDialog,

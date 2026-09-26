@@ -7,6 +7,7 @@ import { TruthArmBoot } from '@/components/providers/TruthArmBoot';
 import { ConfirmProvider } from '@/hooks/ui/useConfirm';
 import { ToastProvider } from '@/hooks/ui/useToast';
 import { googleFontsHref } from '@livediagram/diagram';
+import { BRAND_ICONS } from '@livediagram/ui';
 import { APPEARANCE_BOOT_SCRIPT, REDUCE_MOTION_BOOT_SCRIPT } from './pre-hydration-scripts';
 import './globals.css';
 
@@ -31,19 +32,10 @@ export const metadata: Metadata = {
   // resolves them to the marketing worker.
   manifest: '/manifest.webmanifest',
   // Favicon set: the SVG mark (app/icon.svg, served by the live worker
-  // via the router's LIVE_ROOT_ASSETS) plus a raster PNG fallback for
-  // browsers that ignore SVG favicons (older Safari would otherwise
-  // show a blank tab). The PNG + apple tile are literal origin-root
-  // hrefs the marketing worker serves, so Next leaves them un-prefixed
-  // by the `/live` assetPrefix and the router resolves them to
-  // marketing (same pattern as the manifest above).
-  icons: {
-    icon: [
-      { url: '/icon.svg', type: 'image/svg+xml' },
-      { url: '/livediagram-icon-256.png', type: 'image/png', sizes: '256x256' },
-    ],
-    apple: '/apple-icon',
-  },
+  // via the router's LIVE_ROOT_ASSETS) plus the PNG fallback + apple tile
+  // the marketing worker serves, all literal origin-root hrefs (same
+  // pattern as the manifest above). Shared as BRAND_ICONS.
+  icons: BRAND_ICONS,
   robots: {
     index: false,
     follow: false,

@@ -11,3 +11,5 @@ export * from './detect';
 export * from './hybrid';
 export * from './model-cues';
 export * from './working-size';
+export * from './rect';
+export * from './stats';

@@ -4,7 +4,12 @@
 // the elements; these tools validate, lay out, persist, and render. The
 // shared result / auth / tab-building plumbing lives in tool-helpers.ts.
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import type { Diagram, DiagramSummary, ShareLink, TabRecord } from '@livediagram/api-schema';
+import type {
+  DiagramListResponse,
+  DiagramResponse,
+  ShareLinkResponse,
+  TabResponse,
+} from '@livediagram/api-schema';
 import {
   coerceShapeKind,
   graphToElements,
@@ -19,6 +24,7 @@ import { fetchTeamLibraries, matchDiagrams } from './find-diagrams';
 import {
   deepLink,
   errorResult,
+  loadTab,
   requireToken,
   shareUrl,
   textResult,
@@ -65,7 +71,7 @@ export function registerTools(server: McpServer, env: Env): void {
       // Personal + team shared libraries (spec/35): a diagram filed into a
       // team leaves the personal list, so both must be swept.
       const [{ diagrams }, teamLibraries] = await Promise.all([
-        apiJson<{ diagrams: DiagramSummary[] }>(env, token, '/diagrams'),
+        apiJson<DiagramListResponse>(env, token, '/diagrams'),
         fetchTeamLibraries(env, token),
       ]);
       const matched = matchDiagrams(diagrams, teamLibraries, args.query, args.limit ?? 20).map(
@@ -89,18 +95,9 @@ export function registerTools(server: McpServer, env: Env): void {
     },
     async (args, extra) => {
       const token = requireToken(extra as Extra);
-      const { diagram } = await apiJson<{ diagram: Diagram }>(
-        env,
-        token,
-        `/diagrams/${args.diagramId}`,
-      );
-      const tabId = args.tabId ?? diagram.tabs[0]?.id;
-      if (!tabId) return errorResult('That diagram has no tabs.');
-      const { tab } = await apiJson<{ tab: TabRecord }>(
-        env,
-        token,
-        `/diagrams/${args.diagramId}/tabs/${tabId}`,
-      );
+      const loaded = await loadTab(env, token, args.diagramId, args.tabId);
+      if (!loaded) return errorResult('That diagram has no tabs.');
+      const { diagram, tab } = loaded;
       return imageResult(
         {
           id: diagram.id,
@@ -267,20 +264,8 @@ export function registerTools(server: McpServer, env: Env): void {
       let themeId = args.theme;
       if (!themeId) {
         try {
-          const { diagram } = await apiJson<{ diagram: Diagram }>(
-            env,
-            token,
-            `/diagrams/${args.diagramId}`,
-          );
-          const firstTabId = diagram.tabs[0]?.id;
-          if (firstTabId) {
-            const { tab: existing } = await apiJson<{ tab: TabRecord }>(
-              env,
-              token,
-              `/diagrams/${args.diagramId}/tabs/${firstTabId}`,
-            );
-            themeId = existing.theme;
-          }
+          const loaded = await loadTab(env, token, args.diagramId);
+          if (loaded) themeId = loaded.tab.theme;
         } catch {
           /* keep buildTab's default */
         }
@@ -317,18 +302,10 @@ export function registerTools(server: McpServer, env: Env): void {
     },
     async (args, extra) => {
       const token = requireToken(extra as Extra);
-      const { diagram } = await apiJson<{ diagram: Diagram }>(
-        env,
-        token,
-        `/diagrams/${args.diagramId}`,
-      );
-      const tabId = args.tabId ?? diagram.tabs[0]?.id;
-      if (!tabId) return errorResult('That diagram has no tabs.');
-      const { tab } = await apiJson<{ tab: TabRecord }>(
-        env,
-        token,
-        `/diagrams/${args.diagramId}/tabs/${tabId}`,
-      );
+      const loaded = await loadTab(env, token, args.diagramId, args.tabId);
+      if (!loaded) return errorResult('That diagram has no tabs.');
+      const { tab } = loaded;
+      const tabId = tab.id;
 
       let nextElements: unknown[];
       // Graph-first replace (spec/62 §4.7): a node/edge graph the server builds
@@ -403,7 +380,7 @@ export function registerTools(server: McpServer, env: Env): void {
       // work shouldn't silently grant edit. The api's own default is edit, so
       // we send the role explicitly.
       const role = args.role === 'edit' ? 'edit' : 'view';
-      const { link } = await apiJson<{ link: ShareLink }>(
+      const { link } = await apiJson<ShareLinkResponse>(
         env,
         token,
         `/diagrams/${args.diagramId}/share`,
@@ -435,7 +412,7 @@ export function registerTools(server: McpServer, env: Env): void {
       if (args.tabId) {
         // No tab-name-only endpoint: read the tab, then write it back with the
         // new name (the api ignores UI-only fields on write).
-        const { tab } = await apiJson<{ tab: TabRecord }>(
+        const { tab } = await apiJson<TabResponse>(
           env,
           token,
           `/diagrams/${args.diagramId}/tabs/${args.tabId}`,
@@ -446,7 +423,7 @@ export function registerTools(server: McpServer, env: Env): void {
         });
         return textResult({ renamed: 'tab', tabId: args.tabId, name: args.name });
       }
-      const { diagram } = await apiJson<{ diagram: Diagram }>(
+      const { diagram } = await apiJson<DiagramResponse>(
         env,
         token,
         `/diagrams/${args.diagramId}`,

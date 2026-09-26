@@ -5,6 +5,8 @@
 // (tiny windows). Cross-axis position is clamped into the viewport with
 // the shared 8px edge margin (packages/ui popover convention).
 
+import { clamp } from '@livediagram/diagram';
+
 export type TourRect = { left: number; top: number; width: number; height: number };
 type TourSize = { width: number; height: number };
 type TourViewport = { width: number; height: number };
@@ -17,9 +19,6 @@ type TourPlacement = {
 
 export const TOUR_POPOVER_GAP = 12;
 export const TOUR_EDGE_MARGIN = 8;
-
-const clamp = (v: number, min: number, max: number) =>
-  Math.min(Math.max(v, min), Math.max(min, max));
 
 export function placeTourPopover(
   target: TourRect,

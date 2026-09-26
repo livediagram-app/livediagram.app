@@ -3,6 +3,7 @@ import {
   eventStormingKindOf,
   isBoxed,
   nextNoteBounds,
+  rectsIntersect,
   type Element,
   type ElementId,
   type EsSide,
@@ -26,13 +27,6 @@ export type NextNotePlan = {
   ripple: InsertionSlot | null;
 };
 
-function overlaps(
-  a: { x: number; y: number; width: number; height: number },
-  b: { x: number; y: number; width: number; height: number },
-): boolean {
-  return a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
-}
-
 export function planNextNote(
   elements: Element[],
   fromId: ElementId,
@@ -48,7 +42,7 @@ export function planNextNote(
   const bounds = nextNoteBounds(from, side, kind);
 
   const collides = elements.some(
-    (el) => isBoxed(el) && el.id !== fromId && !inertIds.has(el.id) && overlaps(bounds, el),
+    (el) => isBoxed(el) && el.id !== fromId && !inertIds.has(el.id) && rectsIntersect(bounds, el),
   );
   if (!collides) return { kind, bounds, ripple: null };
 

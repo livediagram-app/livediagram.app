@@ -15,6 +15,7 @@ import {
   placeMindChild,
   type MindFlow,
 } from './mind-flow';
+import { rectsIntersect as overlaps, unionRects, type Rect } from './geometry-primitives';
 import type { Anchor, ArrowElement, Element, ElementId, ShapeElement } from './index';
 
 export { MIND_CHILD_GAP_X, MIND_SIBLING_GAP_Y };
@@ -64,21 +65,8 @@ export type MindGrowth = {
 /** How far down one existing node moves to make room. */
 export type MindShift = { id: ElementId; dy: number };
 
-type Rect = { x: number; y: number; width: number; height: number };
-
-const overlaps = (a: Rect, b: Rect): boolean =>
-  a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
-
-const boundsOf = (nodes: readonly ShapeElement[]): Rect => {
-  const x = Math.min(...nodes.map((n) => n.x));
-  const y = Math.min(...nodes.map((n) => n.y));
-  return {
-    x,
-    y,
-    width: Math.max(...nodes.map((n) => n.x + n.width)) - x,
-    height: Math.max(...nodes.map((n) => n.y + n.height)) - y,
-  };
-};
+// A tree always has at least its root, so the union is never null.
+const boundsOf = (nodes: readonly ShapeElement[]): Rect => unionRects(nodes)!;
 
 /**
  * The topmost node of `node`'s own tree.

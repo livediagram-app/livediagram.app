@@ -19,9 +19,8 @@
 // bowed clear at draw time simply never crosses anything, so the two
 // don't fight.
 
+import { pointInRect, rectsIntersect, type Rect } from './geometry-primitives';
 import { isBoxed, type ArrowElement, type BoxedElement, type Element } from './index';
-
-export type Rect = { x: number; y: number; width: number; height: number };
 
 // How far the break extends beyond the box, in canvas units. Fixed rather
 // than scaled to the box or the stroke: every arrow crossing a given box
@@ -51,14 +50,6 @@ function isOccluder(el: Element): el is BoxedElement {
   if (!isBoxed(el)) return false;
   if (el.type === 'text' || el.type === 'annotation') return false;
   return !(el.type === 'shape' && el.shape === 'frame');
-}
-
-function intersects(a: Rect, b: Rect): boolean {
-  return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
-}
-
-function contains(r: Rect, p: { x: number; y: number }): boolean {
-  return p.x >= r.x && p.x <= r.x + r.width && p.y >= r.y && p.y <= r.y + r.height;
 }
 
 // The rects to punch out of an arrow, already inflated by the margin.
@@ -99,8 +90,8 @@ export function routeBehindHoles(
     // margin ring — and the arrowhead lives at that endpoint, so punching
     // the hole erased the head and left the line running into nothing.
     // Whatever we would cut is exactly what must not contain an endpoint.
-    if (contains(hole, from) || contains(hole, to)) continue;
-    if (!intersects(hole, bounds)) continue;
+    if (pointInRect(hole, from) || pointInRect(hole, to)) continue;
+    if (!rectsIntersect(hole, bounds)) continue;
     holes.push(hole);
   }
   return holes;

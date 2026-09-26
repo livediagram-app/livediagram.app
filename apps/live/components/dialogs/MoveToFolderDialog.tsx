@@ -19,7 +19,7 @@
 // drops the personal space entirely and opens straight inside the team.
 
 import { useState } from 'react';
-import { Button } from '@livediagram/ui';
+import { Button, useEscape } from '@livediagram/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import {
@@ -28,7 +28,6 @@ import {
   placementValue,
   type PickerFolder,
 } from '@/components/placement/PlacementBrowser';
-import { useEscape } from '@/hooks/ui/useEscape';
 
 // One folder in a tree. The caller passes a flat list; the browser
 // rebuilds the hierarchy from `parentId`.

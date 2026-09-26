@@ -5,6 +5,8 @@
 // no low-entropy value to time-attack, unlike a password). Tokens authenticate
 // signed-in (Clerk) accounts only; see spec/61.
 
+import { bytesToBase64Url, sha256Hex } from '@livediagram/api-schema';
+
 const TOKEN_PREFIX = 'lvd_';
 const TOKEN_RANDOM_BYTES = 32; // 256 bits
 
@@ -14,10 +16,7 @@ const TOKEN_RANDOM_BYTES = 32; // 256 bits
 export function generateApiToken(): string {
   const bytes = new Uint8Array(TOKEN_RANDOM_BYTES);
   crypto.getRandomValues(bytes);
-  let bin = '';
-  for (const b of bytes) bin += String.fromCharCode(b);
-  const b64url = btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-  return TOKEN_PREFIX + b64url;
+  return TOKEN_PREFIX + bytesToBase64Url(bytes);
 }
 
 // True for a string shaped like one of our tokens — lets the request resolver
@@ -28,8 +27,7 @@ export function isApiTokenFormat(value: string): boolean {
 
 // SHA-256 hex of the token — what we store and look up by.
 export async function hashApiToken(token: string): Promise<string> {
-  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(token));
-  return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('');
+  return sha256Hex(new TextEncoder().encode(token));
 }
 
 // Token lifetime: a fixed six calendar months from creation (spec/61). Returns

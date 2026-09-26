@@ -1,13 +1,13 @@
 import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
-import { subpageMetadata } from '@/lib/subpage-metadata';
+import { pageMetadata, REPO_URL } from '@livediagram/ui';
 
 const STATUS_TITLE = 'Status · livediagram';
 const STATUS_DESCRIPTION =
   'Operational status of the livediagram services: editor, API, realtime room, marketing site, telemetry dashboard, help centre, and database.';
 
-export const metadata = subpageMetadata({
+export const metadata = pageMetadata({
   title: STATUS_TITLE,
   description: STATUS_DESCRIPTION,
   path: '/status',
@@ -128,7 +128,7 @@ export default function StatusPage() {
           </a>{' '}
           or file an issue on{' '}
           <a
-            href="https://github.com/livediagram-app/livediagram.app/issues"
+            href={`${REPO_URL}/issues`}
             target="_blank"
             rel="noopener noreferrer"
             className="underline hover:text-slate-800"

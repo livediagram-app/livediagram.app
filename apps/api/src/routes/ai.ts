@@ -1,4 +1,4 @@
-import { badRequest, CORS_HEADERS, json } from '../responses';
+import { aiError, badRequest, CORS_HEADERS } from '../responses';
 import { aiGate } from './ai-gate';
 import { chatCompletions, providerOf } from '../ai-client';
 import { buildSystemPrompt, diagramTypeHint, extractExistingStyle } from '../ai-prompt';
@@ -153,7 +153,7 @@ export async function handleAi(ctx: RouteContext): Promise<Response> {
   if (!oaiRes.ok || !oaiRes.body) {
     const errText = await oaiRes.text().catch(() => '');
     console.error('[ai] provider error:', oaiRes.status, errText);
-    return json({ error: 'ai_error' }, { status: 502 });
+    return aiError();
   }
 
   return new Response(oaiRes.body, {

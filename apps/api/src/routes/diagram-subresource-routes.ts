@@ -25,7 +25,15 @@ import {
   tabLinkedToOwnedDiagram,
   upsertTab,
 } from '../db';
-import { badRequest, conflict, forbidden, json, noContent, notFound } from '../responses';
+import {
+  badRequest,
+  conflict,
+  forbidden,
+  json,
+  noContent,
+  notFound,
+  payloadTooLarge,
+} from '../responses';
 import { recordCommentAdded, recordTabSave, recordVisitorOpened } from '../timeline';
 import { handleDiagramShareRoutes } from './diagram-share-routes';
 import { handleQaBoardRoute } from './qa-board-routes';
@@ -120,7 +128,7 @@ export async function handleDiagramSubresources(ctx: RouteContext): Promise<Resp
       // routes" for the rest. See bodyExceedsCap for why the header alone
       // isn't enough.
       if (bodyExceedsCap(request, body, MAX_TAB_BYTES)) {
-        return json({ error: 'payload_too_large' }, { status: 413 });
+        return payloadTooLarge();
       }
       // Find the existing order index; append if new.
       const existingTab = await getTab(env, id, tabId);

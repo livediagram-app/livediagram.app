@@ -4,7 +4,7 @@ import { NameEditor } from '@/components/primitives/NameEditor';
 import type { Tab } from '@livediagram/diagram';
 import type { Participant } from '@/lib/identity';
 import { TabPresenceStack } from '@/components/chrome/TabPresenceStack';
-import { useEscape } from '@/hooks/ui/useEscape';
+import { useEscape } from '@livediagram/ui';
 
 // One folder group in the tab bar (spec/30). The folder renders as a
 // compact chip (glyph + name + count) plus, when the ACTIVE tab lives in

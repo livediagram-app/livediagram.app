@@ -1,5 +1,4 @@
-import { detectStickies } from '../../../sticky-vision/src/detect';
-import { HYBRID_RULES } from '../../../sticky-vision/src/hybrid';
+import { detectStickies, HYBRID_RULES, iou } from '@livediagram/sticky-vision';
 import { CUE_OPTIONS, cuesOf } from '../../src/cues';
 import { isFlatImage } from '../../src/flatness';
 import { predictProbs } from '../model/infer';
@@ -20,13 +19,6 @@ import { drawnBoards, type Board, type DrawnNote } from './boards';
 // mean background over its middle half and its best core probability.
 
 type Rect = { x: number; y: number; w: number; h: number };
-
-const iou = (a: Rect, b: Rect) => {
-  const ix = Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x));
-  const iy = Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y));
-  const i = ix * iy;
-  return i / (a.w * a.h + b.w * b.h - i);
-};
 
 const found = (notes: DrawnNote[], boxes: Rect[]) =>
   notes.map((n) => boxes.some((b) => iou(n, b) >= 0.5));

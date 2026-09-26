@@ -18,14 +18,12 @@
 // with data they can recover from; Clerk-first would leave orphan
 // rows behind that the user could no longer reach.
 
-import { Button } from '@livediagram/ui';
+import { Button, useEscape, useFocusTrap } from '@livediagram/ui';
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import { Portal } from '@/components/primitives/Portal';
 import { useEffect, useRef, useState } from 'react';
 import { apiDeleteAccount } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
-import { useEscape } from '@/hooks/ui/useEscape';
-import { useFocusTrap } from '@/hooks/ui/useFocusTrap';
 import { useModalGuard } from '@/hooks/ui/useModalGuard';
 import { messageOf } from '@/components/chrome/auth-shared';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';

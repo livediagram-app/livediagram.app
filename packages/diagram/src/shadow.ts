@@ -7,6 +7,7 @@
 // Type-only import from the barrel (no runtime cycle) — the Element
 // union itself lives in index.ts, same pattern as element-types.ts.
 import type { Element } from './index';
+import { clamp } from './geometry-primitives';
 
 export type ElementShadow = {
   // Horizontal / vertical offset in px, clamped to ±SHADOW_LIMITS.offset.
@@ -26,8 +27,6 @@ export const SHADOW_LIMITS = { offset: 24, blur: 48 } as const;
 // colour keeps shadows reading as shade under every theme and keeps the
 // model to four sliders (spec/86 leaves a colour picker as follow-up).
 export const SHADOW_COLOR_RGB = '15, 23, 42';
-
-const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 
 export function clampShadow(s: ElementShadow): ElementShadow {
   return {

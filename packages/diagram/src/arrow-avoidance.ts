@@ -13,8 +13,7 @@
 // for a single-bow curve, so "clears the obstacle" here means the drawn
 // line clears it too.
 
-type Pt = { x: number; y: number };
-type Rect = { x: number; y: number; width: number; height: number };
+import { pointInRect, type Point as Pt, type Rect } from './geometry-primitives';
 
 // An obstacle rect plus its relationship to the arrow being drawn. The
 // arrow's own endpoint elements are obstacles too (that's what makes the
@@ -45,10 +44,6 @@ function inflated(r: Rect): Rect {
   };
 }
 
-function contains(r: Rect, p: Pt): boolean {
-  return p.x >= r.x && p.x <= r.x + r.width && p.y >= r.y && p.y <= r.y + r.height;
-}
-
 // Quadratic bezier point for control C.
 function bezier(from: Pt, c: Pt, to: Pt, t: number): Pt {
   const u = 1 - t;
@@ -67,7 +62,7 @@ function blocked(from: Pt, to: Pt, c: Pt, obstacles: AvoidanceObstacle[]): boole
     for (const o of obstacles) {
       if (o.role === 'from' && Math.hypot(p.x - from.x, p.y - from.y) <= END_EXEMPT_PX) continue;
       if (o.role === 'to' && Math.hypot(p.x - to.x, p.y - to.y) <= END_EXEMPT_PX) continue;
-      if (contains(inflated(o), p)) return true;
+      if (pointInRect(inflated(o), p)) return true;
     }
   }
   return false;
@@ -178,7 +173,8 @@ export function collisionAvoidingCurveOffset(
   // curve must touch that point); drop them rather than searching forever.
   const withStrips = [...obstacles, ...collinearEdgeStrips(from, to, obstacles)];
   const relevant = withStrips.filter(
-    (o) => !(o.role === 'other' && (contains(inflated(o), from) || contains(inflated(o), to))),
+    (o) =>
+      !(o.role === 'other' && (pointInRect(inflated(o), from) || pointInRect(inflated(o), to))),
   );
   if (relevant.length === 0) return null;
 

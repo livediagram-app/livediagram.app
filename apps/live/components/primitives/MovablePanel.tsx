@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { useClickOutside } from '@/hooks/ui/useClickOutside';
+import { useRef, useState } from 'react';
+import { useClickOutside } from '@livediagram/ui';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
-import { MOBILE_BREAKPOINT_PX, isMobileViewportSync } from '@/lib/responsive';
+import { isMobileViewportSync } from '@/lib/responsive';
+import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { usePhoneDock } from './phone-dock-context';
 
 // The corner-docking props bundle (spec/63). CanvasChrome builds one of
@@ -72,17 +73,10 @@ export function MovablePanel({
     () => collapsible && (defaultCollapsed || isMobileViewportSync()),
   );
   // Reactive mobile flag so a viewport rotation / desktop->mobile
-  // resize re-applies the mobileTopOverridePx inline-style. Initial
-  // value reads sync to avoid a one-frame flicker.
-  const [isMobile, setIsMobile] = useState(isMobileViewportSync);
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const mq = window.matchMedia?.(`(max-width: ${MOBILE_BREAKPOINT_PX - 1}px)`);
-    if (!mq) return;
-    const onChange = () => setIsMobile(mq.matches);
-    mq.addEventListener('change', onChange);
-    return () => mq.removeEventListener('change', onChange);
-  }, []);
+  // resize re-applies the mobileTopOverridePx inline-style. A client
+  // mount reads the media query synchronously (useSyncExternalStore),
+  // so there's no one-frame flicker.
+  const isMobile = useIsMobileViewport();
 
   // Header drag machinery (legacy free-move + corner docking) lives in
   // useMovablePanelDrag; the header mounts beginDrag below.

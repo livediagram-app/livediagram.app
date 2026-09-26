@@ -26,25 +26,9 @@
 //   the image route applies (a share code for the diagram,
 //   regardless of role).
 
-import { getDiagramSharePassword, getMembership, getShareLink } from '../db';
+import { getMembership } from '../db';
 import type { Env } from '../types';
-import { timingSafeEqual } from './timing-safe';
-
-// Share-password gate (spec/24). When a diagram has a password, every
-// share-code-based access must carry the matching X-Share-Password.
-// Owners never reach here (their identity short-circuits both helpers
-// above this call). The `sharePassword` arg defaults to null so the
-// 5-arg call sites + existing tests fail CLOSED on a protected diagram
-// rather than silently bypassing the gate.
-async function sharePasswordOk(
-  env: Env,
-  diagramId: string,
-  provided: string | null,
-): Promise<boolean> {
-  const required = await getDiagramSharePassword(env, diagramId);
-  if (!required) return true;
-  return provided != null && (await timingSafeEqual(provided, required));
-}
+import { isPersonalOwner, shareLinkForDiagram, sharePasswordOk } from './share-access';
 
 // Joined-member check for team diagrams (spec/35). `caller` MUST be the
 // VERIFIED Clerk user id (never the unsigned X-Owner-Id header): a team
@@ -68,6 +52,34 @@ async function isJoinedTeamMember(
 // an unguessable UUID). For a TEAM diagram the identity must be verified,
 // because owner/member ids are Clerk ids shared among the team — so the
 // header path is disabled there and only `callerId` + share codes count.
+// The two exported checks differ only in the share-link role they accept:
+// edit needs an edit-role link, read takes either role.
+async function canAccessDiagram(
+  needsEdit: boolean,
+  env: Env,
+  diagramId: string,
+  owner: string | null,
+  shareCode: string | null,
+  ownerId: string,
+  sharePassword: string | null,
+  teamId: string | null,
+  callerId: string | null,
+): Promise<boolean> {
+  // Membership alone for a team diagram. The owner of a team diagram is a
+  // joined member while they're in the team; once they leave or are removed,
+  // owning the row must not keep it open to them (spec/35).
+  if (isPersonalOwner(owner, ownerId, teamId)) return true;
+  if (await isJoinedTeamMember(env, teamId, callerId)) return true;
+  const link = await shareLinkForDiagram(env, shareCode, diagramId);
+  if (!link) return false;
+  if (needsEdit && link.role !== 'edit') return false;
+  // Share-password gate (spec/24): every share-code-based access must carry
+  // the matching X-Share-Password. `sharePassword` defaults to null so the
+  // 5-arg call sites + existing tests fail CLOSED on a protected diagram
+  // rather than silently bypassing the gate.
+  return sharePasswordOk(env, diagramId, sharePassword);
+}
+
 export async function canEditDiagram(
   env: Env,
   diagramId: string,
@@ -78,20 +90,17 @@ export async function canEditDiagram(
   teamId: string | null = null,
   callerId: string | null = null,
 ): Promise<boolean> {
-  if (teamId) {
-    // Membership alone. The owner of a team diagram is a joined member while
-    // they're in the team; once they leave or are removed, owning the row
-    // must not keep it open to them (spec/35).
-    if (await isJoinedTeamMember(env, teamId, callerId)) return true;
-  } else if (owner && owner === ownerId) {
-    return true;
-  }
-  if (!shareCode) return false;
-  const link = await getShareLink(env, shareCode);
-  if (!link) return false;
-  if (link.diagramId !== diagramId) return false;
-  if (link.role !== 'edit') return false;
-  return sharePasswordOk(env, diagramId, sharePassword);
+  return canAccessDiagram(
+    true,
+    env,
+    diagramId,
+    owner,
+    shareCode,
+    ownerId,
+    sharePassword,
+    teamId,
+    callerId,
+  );
 }
 
 export async function canReadDiagram(
@@ -104,16 +113,15 @@ export async function canReadDiagram(
   teamId: string | null = null,
   callerId: string | null = null,
 ): Promise<boolean> {
-  if (teamId) {
-    // Membership alone. The owner of a team diagram is a joined member while
-    // they're in the team; once they leave or are removed, owning the row
-    // must not keep it open to them (spec/35).
-    if (await isJoinedTeamMember(env, teamId, callerId)) return true;
-  } else if (owner && owner === ownerId) {
-    return true;
-  }
-  if (!shareCode) return false;
-  const link = await getShareLink(env, shareCode);
-  if (!link || link.diagramId !== diagramId) return false;
-  return sharePasswordOk(env, diagramId, sharePassword);
+  return canAccessDiagram(
+    false,
+    env,
+    diagramId,
+    owner,
+    shareCode,
+    ownerId,
+    sharePassword,
+    teamId,
+    callerId,
+  );
 }

@@ -1,4 +1,5 @@
-import { isBoxed, type Element, type ElementId } from './index';
+import { unionRects, type Rect } from './geometry-primitives';
+import { isBoxed, type BoxedElement, type Element, type ElementId } from './index';
 
 // Layer order: moving one element, or a set, to the top or bottom of the
 // paint order. (This module used to hold groups too; spec/147 removed them.)
@@ -29,23 +30,6 @@ export function sendManyToBack(elements: Element[], ids: Set<ElementId>): Elemen
 
 // Union bounding box of multiple boxed elements. Returns null if no boxed
 // elements were found.
-export function unionBoxedBounds(
-  elements: Element[],
-  ids: Set<ElementId>,
-): { x: number; y: number; width: number; height: number } | null {
-  let minX = Infinity,
-    minY = Infinity,
-    maxX = -Infinity,
-    maxY = -Infinity;
-  let found = false;
-  for (const el of elements) {
-    if (!ids.has(el.id) || !isBoxed(el)) continue;
-    found = true;
-    if (el.x < minX) minX = el.x;
-    if (el.y < minY) minY = el.y;
-    if (el.x + el.width > maxX) maxX = el.x + el.width;
-    if (el.y + el.height > maxY) maxY = el.y + el.height;
-  }
-  if (!found) return null;
-  return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
+export function unionBoxedBounds(elements: Element[], ids: Set<ElementId>): Rect | null {
+  return unionRects(elements.filter((el): el is BoxedElement => ids.has(el.id) && isBoxed(el)));
 }

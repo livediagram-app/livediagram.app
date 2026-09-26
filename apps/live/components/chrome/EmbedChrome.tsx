@@ -14,10 +14,8 @@
 // diagram has many tabs.
 
 import { useRef, useState } from 'react';
-import { MenuIcon } from '@livediagram/ui';
+import { MenuIcon, useClickOutside, useEscape } from '@livediagram/ui';
 import type { Tab } from '@livediagram/diagram';
-import { useClickOutside } from '@/hooks/ui/useClickOutside';
-import { useEscape } from '@/hooks/ui/useEscape';
 
 function OpenExternalIcon() {
   return (

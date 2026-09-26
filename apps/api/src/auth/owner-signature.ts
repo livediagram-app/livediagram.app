@@ -20,6 +20,7 @@
 // null and migrate skips the check — mirroring how `CLERK_JWKS_URL` makes
 // auth optional. Production sets the secret and is protected.
 
+import { bytesToBase64Url } from '@livediagram/api-schema';
 import { timingSafeEqual } from './timing-safe';
 
 const enc = new TextEncoder();
@@ -34,20 +35,13 @@ async function hmacKey(secret: string): Promise<CryptoKey> {
   );
 }
 
-function toBase64Url(bytes: ArrayBuffer): string {
-  const u = new Uint8Array(bytes);
-  let s = '';
-  for (let i = 0; i < u.length; i++) s += String.fromCharCode(u[i]!);
-  return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-}
-
 // The signature itself, for a secret the caller has already established.
 // Split out so `verifyOwnerId` doesn't have to re-handle a null it cannot
 // receive: with the "no secret" case answered once, both callers below work
 // in terms of a string.
 async function hmacSign(secret: string, ownerId: string): Promise<string> {
   const key = await hmacKey(secret);
-  return toBase64Url(await crypto.subtle.sign('HMAC', key, enc.encode(ownerId)));
+  return bytesToBase64Url(await crypto.subtle.sign('HMAC', key, enc.encode(ownerId)));
 }
 
 // Sign `ownerId`; returns null when no secret is configured (signing off).

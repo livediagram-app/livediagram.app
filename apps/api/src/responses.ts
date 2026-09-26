@@ -76,6 +76,21 @@ export function methodNotAllowed(): Response {
   return json({ error: 'method_not_allowed' }, { status: 405 });
 }
 
+// 413 for a body over a route's size cap. Canonical home for the
+// `{ error: 'payload_too_large' }` literal the body gate in index.ts and the
+// per-field / per-tab caps in the diagram, tab, and custom-theme routes share.
+// Image uploads answer with their own `file_too_large` + `limitBytes` instead.
+export function payloadTooLarge(): Response {
+  return json({ error: 'payload_too_large' }, { status: 413 });
+}
+
+// 502 when the upstream AI provider fails or returns something unusable
+// (spec/25). One token for every failure mode so the client shows a single
+// "try again" state; the specific cause goes to the worker log instead.
+export function aiError(): Response {
+  return json({ error: 'ai_error' }, { status: 502 });
+}
+
 export function imagesUnavailable(): Response {
   return json({ error: 'images_unavailable' }, { status: 503 });
 }

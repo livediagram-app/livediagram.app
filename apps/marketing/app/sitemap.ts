@@ -2,7 +2,7 @@ import type { MetadataRoute } from 'next';
 
 import { ALTERNATIVE_SLUGS, ALTERNATIVES_LAST_UPDATED } from '@/lib/alternatives';
 import { LANDING_SECTION_IDS } from '@/lib/landing-content';
-import { SITE_URL } from '@/lib/site';
+import { SITE_URL } from '@livediagram/ui';
 
 // Required for `output: 'export'` (same reason as robots.ts):
 // route handlers must declare themselves fully static so Next

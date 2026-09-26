@@ -1,8 +1,11 @@
 import type { Metadata } from 'next';
-import { SITE_URL } from './site';
+import { pageMetadata } from '@livediagram/ui';
 
-const SITE_NAME = 'livediagram Help';
-const LOCALE = 'en_GB';
+// The help centre's name in link previews (the OG siteName); everything else
+// about a page's metadata follows the shared pageMetadata rule (spec/55 "SEO"):
+// the title passes through as given, the canonical and OG url are the page's
+// path, and the card is the large brand card.
+const HELP_SITE_NAME = 'livediagram Help';
 
 interface SeoInput {
   title: string;
@@ -13,34 +16,14 @@ interface SeoInput {
    *  disagrees with the route points the canonical and the OG url at a
    *  different page, which nothing at runtime notices.
    *  (`seo-canonical.test.ts` checks every article page.) */
-  path: string;
+  path: `/${string}`;
 }
 
-/** Build per-page metadata with a complete Open Graph block so each help
- *  page carries its own canonical + OG title/url rather than inheriting the
- *  layout's homepage block. */
+/** Per-page metadata with a complete Open Graph block, so each help page
+ *  carries its own canonical + OG title/url rather than inheriting the
+ *  layout's. The document <title> still reads "<Title> | livediagram": the
+ *  root layout's title template adds the suffix, so link previews get the
+ *  bare title and the siteName beside it. */
 export function helpMetadata({ title, description, path }: SeoInput): Metadata {
-  const url = `${SITE_URL}${path}`;
-  // Final document/OG title, consistent everywhere: "<Page Title> | livediagram".
-  // `absolute` bypasses the layout title template (which only applies to child
-  // segments, not the root index), so the home page gets the suffix too.
-  const fullTitle = `${title} | livediagram`;
-  return {
-    title: { absolute: fullTitle },
-    description,
-    alternates: { canonical: path },
-    openGraph: {
-      type: 'article',
-      locale: LOCALE,
-      siteName: SITE_NAME,
-      title: fullTitle,
-      description,
-      url,
-    },
-    twitter: {
-      card: 'summary',
-      title: fullTitle,
-      description,
-    },
-  };
+  return pageMetadata({ title, description, path, siteName: HELP_SITE_NAME });
 }

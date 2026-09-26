@@ -259,7 +259,7 @@ export function ArticleLayout({
           </article>
 
           <aside className="hidden shrink-0 lg:block lg:w-80">
-            <div className="sticky top-[120px] max-h-[calc(100vh-140px)] overflow-y-auto rounded-xl">
+            <div className="sticky top-[128px] max-h-[calc(100vh-148px)] overflow-y-auto rounded-xl">
               <SidebarCard subArticles={subArticles} />
             </div>
           </aside>

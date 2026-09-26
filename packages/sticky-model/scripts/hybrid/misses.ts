@@ -1,10 +1,12 @@
 import {
   classMaskOf,
   detectStickies,
+  holdsPoint,
+  HYBRID_RULES,
+  iou,
+  type Box,
   type DetectDropReason,
-} from '../../../sticky-vision/src/detect';
-import type { Box } from '../../../sticky-vision/src/boxes';
-import { HYBRID_RULES } from '../../../sticky-vision/src/hybrid';
+} from '@livediagram/sticky-vision';
 import { score } from '../../../sticky-vision/scripts/truth';
 import { CUE_OPTIONS, cuesOf } from '../../src/cues';
 import { loadHybridWalls } from './walls';
@@ -30,17 +32,9 @@ const t = Number(arg('t') ?? CUE_OPTIONS.coreThreshold);
 type R = { x: number; y: number; w: number; h: number };
 const cx = (r: R) => r.x + r.w / 2;
 const cy = (r: R) => r.y + r.h / 2;
-const holds = (b: R, x: number, y: number) =>
-  x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h;
-const centreIn = (r: R, b: R) => holds(b, cx(r), cy(r));
+const centreIn = (r: R, b: R) => holdsPoint(b, cx(r), cy(r));
 const at = (r: R) =>
   `${Math.round(cx(r))},${Math.round(cy(r))} ${Math.round(r.w)}x${Math.round(r.h)}`;
-const iou = (a: R, b: R) => {
-  const ix = Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x));
-  const iy = Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y));
-  const i = ix * iy;
-  return i / (a.w * a.h + b.w * b.h - i || 1);
-};
 
 for (const wall of await loadHybridWalls()) {
   if (only && !only.some((o) => wall.name.includes(o))) continue;

@@ -35,6 +35,8 @@
 // detector's internal reject points. Previous values: 0.72 (too
 // strict), 0.55 (still too strict per user feedback).
 
+import { distToSegment, type Point } from './geometry-primitives';
+
 export type RecognisedShapeKind = 'square' | 'circle' | 'diamond' | 'triangle' | 'star' | 'line';
 
 export type RecognisedShape = {
@@ -47,8 +49,6 @@ export type RecognisedShape = {
   from?: { x: number; y: number };
   to?: { x: number; y: number };
 };
-
-type Point = { x: number; y: number };
 
 function aabb(points: Point[]): { x: number; y: number; width: number; height: number } {
   let minX = points[0]!.x;
@@ -72,24 +72,6 @@ function polylineLength(points: Point[]): number {
   return total;
 }
 
-// Perpendicular distance from a point to a line segment. Returns 0
-// when the segment is degenerate (start === end). Used to score how
-// closely a freehand polyline tracks an idealised shape's edges.
-function pointToSegmentDistance(p: Point, a: Point, b: Point): number {
-  const dx = b.x - a.x;
-  const dy = b.y - a.y;
-  const lenSq = dx * dx + dy * dy;
-  if (lenSq === 0) return Math.hypot(p.x - a.x, p.y - a.y);
-  // Clamp t to [0, 1] so the distance is to the segment, not the
-  // infinite line.
-  let t = ((p.x - a.x) * dx + (p.y - a.y) * dy) / lenSq;
-  if (t < 0) t = 0;
-  else if (t > 1) t = 1;
-  const projX = a.x + t * dx;
-  const projY = a.y + t * dy;
-  return Math.hypot(p.x - projX, p.y - projY);
-}
-
 // Min distance from a point to any edge in a closed polygon (the
 // edges define a shape's outline). Used by the rectangle / diamond
 // scorers: if every freehand sample sits close to one of the shape's
@@ -99,7 +81,7 @@ function meanEdgeDistance(points: Point[], edges: [Point, Point][]): number {
   for (const p of points) {
     let best = Infinity;
     for (const [a, b] of edges) {
-      const d = pointToSegmentDistance(p, a, b);
+      const d = distToSegment(p, a, b);
       if (d < best) best = d;
     }
     total += best;

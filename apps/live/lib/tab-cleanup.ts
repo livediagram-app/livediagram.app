@@ -10,7 +10,7 @@
 // handed rather than from a render closure, so a commit taken while a preview
 // is on screen still starts from the real pre-hover state.
 
-import { autoLayoutElements, isBoxed, type Element } from '@livediagram/diagram';
+import { autoLayoutElements, isBoxed, unionRects, type Element } from '@livediagram/diagram';
 import { autoAlignElements } from '@/lib/auto-align';
 import { AUTO_LAYOUT_CHOICES, type AutoLayoutChoice } from '@/lib/auto-layout-choices';
 
@@ -32,10 +32,9 @@ export type CleanupKind = 'align' | AutoLayoutChoice;
 export function cleanupElements(elements: Element[], kind: CleanupKind): Element[] {
   if (elements.length === 0) return elements;
   if (kind === 'align') return autoAlignElements(elements);
-  const boxed = elements.filter(isBoxed);
-  if (boxed.length === 0) return elements;
-  const originX = Math.min(...boxed.map((b) => b.x));
-  const originY = Math.min(...boxed.map((b) => b.y));
+  const block = unionRects(elements.filter(isBoxed));
+  if (!block) return elements;
+  const { x: originX, y: originY } = block;
   const { options } = AUTO_LAYOUT_CHOICES[kind];
   return autoAlignElements(autoLayoutElements(elements, { ...options, originX, originY }));
 }
