@@ -32,13 +32,16 @@ export function Brand({
   const classes =
     `group inline-flex items-center gap-1.5 ${sizeClasses[size]} text-slate-900 dark:text-slate-100 ${className}`.trim();
   const accentStyle: React.CSSProperties = accentColor
-    ? { color: accentColor, transition: 'color 200ms ease-out' }
-    : { transition: 'color 200ms ease-out' };
+    ? { color: accentColor, transition: 'color var(--transition-duration-micro) ease-out' }
+    : { transition: 'color var(--transition-duration-micro) ease-out' };
   const content = (
     <>
       <BrandMark
         className={`${size === 'sm' ? 'h-4 w-4' : 'h-5 w-5'} shrink-0`}
-        style={{ color: accentColor ?? BRAND_500, transition: 'color 200ms ease-out' }}
+        style={{
+          color: accentColor ?? BRAND_500,
+          transition: 'color var(--transition-duration-micro) ease-out',
+        }}
       />
       <span className={wordmarkClassName}>
         live
@@ -108,7 +111,7 @@ export function BrandMark({
       </g>
       {/* The two connected nodes spin 45° about the icon centre on hover.
           transform-box:view-box makes `origin-center` resolve to (12,12). */}
-      <g className="origin-center transition-transform duration-300 ease-out [transform-box:view-box] group-hover:[transform:rotate(45deg)] motion-reduce:transition-none">
+      <g className="origin-center transition-transform duration-micro ease-out [transform-box:view-box] group-hover:[transform:rotate(45deg)] motion-reduce:transition-none">
         <path
           d={BRAND_MARK.link}
           stroke="currentColor"

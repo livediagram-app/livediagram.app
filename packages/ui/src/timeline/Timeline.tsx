@@ -14,6 +14,7 @@
 // to fetch.
 
 import { Fragment, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { cascadeDelayMs } from '@livediagram/tailwind-config/motion';
 import { TimelineGroup } from './TimelineGroup';
 import { TimelineCard } from './TimelineCard';
 import { StackedCard } from './StackedCard';
@@ -31,17 +32,6 @@ import type {
   TimelineStackSlotsFor,
 } from './types';
 import { CARD_GRID } from '../cardGrid';
-
-// Per-card delay in the arrival cascade — large enough that cards
-// read as arriving in sequence rather than all at once.
-const STAGGER_MS = 35;
-
-// …and a ceiling on the total, because the cascade is only worth
-// watching for the cards a reader can actually see. Ungapped, a 50-event
-// page would start its last card 1.7s in, so the bottom of the feed
-// sits blank long after the top has settled. Past the cap the remaining
-// cards arrive together, which is invisible: they're below the fold.
-const MAX_STAGGER_MS = 700;
 
 export type TimelineProps = {
   /** Shared with <TimelineControls>; see useTimelineControls. */
@@ -77,10 +67,6 @@ export type TimelineProps = {
   /** Event id to scroll to and highlight — the deep-link target. */
   focusEventId?: string;
 };
-
-function staggerFor(index: number | undefined): number {
-  return Math.min((index ?? 0) * STAGGER_MS, MAX_STAGGER_MS);
-}
 
 export function Timeline({
   controls,
@@ -239,7 +225,7 @@ export function Timeline({
                 <div
                   key={event.id}
                   className="tl-fan-out"
-                  style={{ animationDelay: `${staggerFor(fanIndex.get(event.id))}ms` }}
+                  style={{ animationDelay: `${cascadeDelayMs(fanIndex.get(event.id) ?? 0)}ms` }}
                 >
                   <TimelineCard
                     event={event}
@@ -264,7 +250,7 @@ export function Timeline({
                   ctx={ctx}
                   expanded={open}
                   isNew={stack.events.some((e) => isNew(e.occurredAt))}
-                  stagger={staggerFor(fanIndex.get(stack.events[0]!.id))}
+                  stagger={cascadeDelayMs(fanIndex.get(stack.events[0]!.id) ?? 0)}
                   slots={stackSlots?.(stack)}
                   onToggle={() => {
                     toggleStack(stack.key);

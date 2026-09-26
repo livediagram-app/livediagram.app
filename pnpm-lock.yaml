@@ -811,6 +811,9 @@ importers:
       '@livediagram/api-schema':
         specifier: workspace:*
         version: link:../api-schema
+      '@livediagram/tailwind-config':
+        specifier: workspace:*
+        version: link:../tailwind-config
       '@livediagram/telemetry-client':
         specifier: workspace:*
         version: link:../telemetry-client

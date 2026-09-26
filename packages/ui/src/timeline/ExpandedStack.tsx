@@ -12,6 +12,7 @@
 // feed renders <StackedCard> unconditionally and mounts this after it
 // only while the run is open.
 
+import { cascadeDelayMs } from '@livediagram/tailwind-config/motion';
 import { TimelineCard } from './TimelineCard';
 import type { TimelineStack } from './stacking';
 import { pickRenderer } from './renderers';
@@ -20,11 +21,6 @@ import type {
   TimelineRendererContext,
   TimelineRendererRegistry,
 } from './types';
-
-// Slower than the first-load cascade: an expansion is a deliberate act
-// on a handful of cards, so the fan is worth seeing. A whole page at
-// this rate would drag.
-const EXPAND_STAGGER_MS = 60;
 
 export function ExpandedStack({
   stack,
@@ -51,7 +47,7 @@ export function ExpandedStack({
         <div
           key={event.id}
           className="tl-fan-out"
-          style={{ animationDelay: `${index * EXPAND_STAGGER_MS}ms` }}
+          style={{ animationDelay: `${cascadeDelayMs(index)}ms` }}
         >
           <TimelineCard
             event={event}

@@ -35,6 +35,7 @@
   },
   "dependencies": {
     "@livediagram/api-schema": "workspace:*",
+    "@livediagram/tailwind-config": "workspace:*",
     "@livediagram/telemetry-client": "workspace:*"
   }
 }
