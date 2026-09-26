@@ -32,6 +32,7 @@
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import { duplicateElements, type Element, type Tab } from '@livediagram/diagram';
 import { anyModalOpen } from '@/lib/modal-guard';
+import { watchPrimarySelectionPaste } from '@/lib/primary-selection-paste';
 import { parseElementsPayload, serialiseElements, stripIdentity } from '@/lib/clipboard-payload';
 import { landPastedCopies, pasteTranslation } from '@/lib/paste-placement';
 import { addImageFileForDiagram } from '@/lib/upload-image';
@@ -229,6 +230,20 @@ export function useClipboard(deps: ClipboardDeps) {
   const pasteRef = useRef({ pasteFromClipboard, pasteImageFile, onPastePhoto });
   pasteRef.current = { pasteFromClipboard, pasteImageFile, onPastePhoto };
 
+  // A middle-button release pastes the Linux primary selection. It is never a
+  // request to paste on the canvas: with an empty selection it used to drop
+  // the in-app buffer, often right at the end of a middle-drag pan.
+  const primaryPaste = useRef<ReturnType<typeof watchPrimarySelectionPaste> | null>(null);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const watch = watchPrimarySelectionPaste(window);
+    primaryPaste.current = watch;
+    return () => {
+      watch.dispose();
+      primaryPaste.current = null;
+    };
+  }, []);
+
   // System-clipboard paste handler. Cmd/Ctrl+V triggers the browser's
   // native `paste` event, which carries whatever the OS clipboard
   // holds (text, files, images). When the user has an image on
@@ -249,6 +264,7 @@ export function useClipboard(deps: ClipboardDeps) {
       // selected-cell paste runs in the capture phase) — don't also drop
       // the element clipboard on the canvas.
       if (e.defaultPrevented) return;
+      if (primaryPaste.current?.isPrimarySelectionPaste()) return;
       const target = e.target as Element | null;
       if (
         target instanceof HTMLInputElement ||
@@ -367,6 +383,7 @@ export function useClipboard(deps: ClipboardDeps) {
     if (isReadOnly || editingId === null) return;
     const onPasteIntoLabel = (e: ClipboardEvent) => {
       if (anyModalOpen()) return;
+      if (primaryPaste.current?.isPrimarySelectionPaste()) return;
       const target = e.target as Element | null;
       if (!(target instanceof HTMLElement) || !target.isContentEditable) return;
       if (!target.closest('[data-canvas-a11y-root]')) return;

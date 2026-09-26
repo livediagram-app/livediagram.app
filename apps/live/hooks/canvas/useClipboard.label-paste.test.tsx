@@ -68,6 +68,38 @@ function paste(target: HTMLElement, text: string): Event {
   return event;
 }
 
+// Linux browsers paste the primary selection on a middle-button release. That
+// is never a request to paste on the canvas, however the clipboard looks.
+describe('middle-click paste on the canvas', () => {
+  function middleClickPaste(text: string): Event {
+    window.dispatchEvent(new MouseEvent('pointerup', { button: 1 }));
+    return paste(document.body, text);
+  }
+
+  it('does not paste the in-app buffer when the selection is empty', () => {
+    const h = harness(null);
+    paste(document.body, serialiseElements([copied]));
+    expect(h.elements()).toHaveLength(2);
+    const event = middleClickPaste('');
+    expect(event.defaultPrevented).toBe(false);
+    expect(h.elements()).toHaveLength(2);
+  });
+
+  it('does not paste elements held in the primary selection', () => {
+    const h = harness(null);
+    middleClickPaste(serialiseElements([copied]));
+    expect(h.elements()).toHaveLength(1);
+  });
+
+  it('still pastes on the keyboard shortcut straight after', async () => {
+    const h = harness(null);
+    middleClickPaste('');
+    await new Promise((r) => setTimeout(r, 0));
+    paste(document.body, serialiseElements([copied]));
+    expect(h.elements()).toHaveLength(2);
+  });
+});
+
 afterEach(() => {
   cleanup();
   document.body.innerHTML = '';
@@ -94,6 +126,15 @@ describe('pasting copied elements into a note open for typing', () => {
     expect(event.defaultPrevented).toBe(false);
     expect(h.elements()).toHaveLength(1);
     expect(h.setEditingId).not.toHaveBeenCalled();
+  });
+
+  it('ignores a middle-click paste of copied elements', () => {
+    const h = harness('open');
+    window.dispatchEvent(new MouseEvent('pointerup', { button: 1 }));
+    const event = paste(editor(true), serialiseElements([copied]));
+    expect(h.elements()).toHaveLength(1);
+    expect(h.setEditingId).not.toHaveBeenCalled();
+    expect(event.defaultPrevented).toBe(false);
   });
 
   it('leaves a text field outside the canvas alone', () => {

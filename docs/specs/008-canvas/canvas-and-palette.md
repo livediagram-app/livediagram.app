@@ -1380,6 +1380,14 @@ envelope before the editor sees the paste: typing ends and the elements paste
 exactly as if no label were open. Ordinary text still pastes into the label, and
 a text field outside the canvas is left alone.
 
+**A middle-click never pastes on the canvas.** Linux browsers paste the primary
+selection when the middle button is released, as a `paste` event that looks
+exactly like `⌘V`. On the canvas that button pans, so the paste would drop the
+in-app buffer (or selected element JSON) at the end of a pan. `useClipboard`
+ignores any paste fired in the same task as a middle-button `pointerup`
+(`apps/live/lib/primary-selection-paste.ts`), for the canvas and label handlers
+alike; a text field still takes its primary-selection paste from the browser.
+
 Pasting foreign text as a text element is the obvious next step and is
 deliberately not built: it needs the viewport centre in canvas coordinates,
 which lives in `Canvas` rather than in the clipboard hook.
