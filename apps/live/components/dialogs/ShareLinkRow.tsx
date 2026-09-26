@@ -7,7 +7,7 @@ import { formatTimeLeftCompact } from '@/lib/relative-time';
 import { track } from '@/lib/telemetry';
 import { Tooltip } from '@/components/primitives/Tooltip';
 import { ShareCopyMenu } from './ShareCopyMenu';
-import { CodeGlyph, EXPIRY_LABELS, ImageGlyph } from './share-dialog-parts';
+import { CodeGlyph, EXPIRY_LABELS, ImageGlyph, ScopeOptions } from './share-dialog-parts';
 
 // One ACTIVE share-link card (docs/specs/014-identity/auth-and-guest-access.md + docs/specs/013-workspace/embeds.md + docs/specs/013-workspace/share-link-expiry.md + docs/specs/013-workspace/live-image-share.md),
 // lifted out of ShareDialog: the role + time-left badges and the
@@ -29,6 +29,7 @@ export function ActiveShareLinkRow({
   shareUrlFor,
   onCopy,
   onRevoke,
+  onRescope,
 }: {
   link: ShareLink;
   now: number;
@@ -47,7 +48,14 @@ export function ActiveShareLinkRow({
   shareUrlFor: (code: string) => string;
   onCopy: (code: string) => void;
   onRevoke: (code: string) => void;
+  // Change which tabs this link opens (docs/specs/013-workspace/tab-scoped-share-links.md). Null on a
+  // single-tab diagram, where there is nothing to choose between.
+  onRescope: ((code: string, tabId: string | null) => void) | null;
 }) {
+  // A scoped link's live image is always its own tab: the server picks it,
+  // so the URL carries no `?tab=` and the picker has nothing to offer.
+  const scoped = link.tabId !== null;
+  const imageTabParam = scoped ? undefined : liveImageTabParam;
   return (
     <li
       key={link.code}
@@ -136,7 +144,7 @@ export function ActiveShareLinkRow({
               // when there's more than one tab. Selecting the
               // first tab clears back to the cached default
               // (null → no `?tab=`).
-              tabs.length > 1 ? (
+              tabs.length > 1 && !scoped ? (
                 <label className="flex items-center gap-2 text-[11px] font-medium text-slate-500 dark:text-slate-400">
                   Tab
                   <Select
@@ -163,25 +171,42 @@ export function ActiveShareLinkRow({
               {
                 label: 'Copy image URL',
                 icon: <ImageGlyph />,
-                text: liveImageUrlFor(origin, link.code, liveImageTabParam),
+                text: liveImageUrlFor(origin, link.code, imageTabParam),
                 what: 'image URL',
               },
               {
                 label: 'Copy Markdown',
                 icon: <ImageGlyph />,
-                text: liveImageMarkdown(origin, link.code, liveImageTabParam),
+                text: liveImageMarkdown(origin, link.code, imageTabParam),
                 what: 'Markdown',
               },
               {
                 label: 'Copy HTML',
                 icon: <ImageGlyph />,
-                text: liveImageHtml(origin, link.code, liveImageTabParam),
+                text: liveImageHtml(origin, link.code, imageTabParam),
                 what: 'HTML',
               },
             ]}
           />
         )}
         <span className="flex-1" />
+        {onRescope ? (
+          <Tooltip
+            title="Tabs"
+            description="Which tabs this link opens. Changing it takes effect at once: anyone using the link reloads into the new choice."
+          >
+            <Select
+              size="sm"
+              value={link.tabId ?? ''}
+              onChange={(e) => onRescope(link.code, e.target.value || null)}
+              disabled={busy}
+              aria-label={`Tabs link ${link.code} opens`}
+              className="max-w-36"
+            >
+              <ScopeOptions tabs={tabs} />
+            </Select>
+          </Tooltip>
+        ) : null}
         <Tooltip
           title="Revoke link"
           description="The URL stops working immediately for everyone holding it."

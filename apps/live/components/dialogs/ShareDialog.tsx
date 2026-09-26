@@ -11,7 +11,7 @@ import { useRelativeTimeTick } from '@/lib/relative-time';
 import { track } from '@/lib/telemetry';
 import { useToast } from '@/hooks/ui/useToast';
 import { Tooltip } from '@/components/primitives/Tooltip';
-import { EXPIRY_LABELS, RoleButton } from './share-dialog-parts';
+import { EXPIRY_LABELS, RoleButton, ScopeOptions } from './share-dialog-parts';
 import { ActiveShareLinkRow } from './ShareLinkRow';
 import type { ShareDialogProps } from './ShareDialog.types';
 import { SharePasswordSection } from './SharePasswordSection';
@@ -42,6 +42,7 @@ export function ShareDialog({
   onSaveName,
   onCreateLink,
   onRevokeLink,
+  onRescopeLink,
   onExtendLink,
   onSetPassword,
   offline,
@@ -60,6 +61,10 @@ export function ShareDialog({
   // Lifetime for the next link (docs/specs/013-workspace/share-link-expiry.md). Never = the pre-expiry
   // default: the link works until revoked.
   const [newExpiry, setNewExpiry] = useState<ShareLinkExpiry>('never');
+  // Which tabs the next link opens (docs/specs/013-workspace/tab-scoped-share-links.md): '' = All tabs, else a
+  // tab id. Only offered when there is more than one tab to choose between.
+  const [newScope, setNewScope] = useState('');
+  const multiTab = tabs.length > 1;
   // Which tab the Live image renders (docs/specs/013-workspace/live-image-share.md). null = the first tab,
   // which the server serves from its cached snapshot, so the URL omits
   // `?tab=`. Diagram-wide: the same choice applies to every share link's
@@ -84,7 +89,7 @@ export function ShareDialog({
     setBusy(true);
     try {
       if (effectiveName !== participant.name) await onSaveName(effectiveName);
-      await onCreateLink(newRole, newExpiry);
+      await onCreateLink(newRole, newExpiry, multiTab && newScope ? newScope : null);
     } finally {
       setBusy(false);
     }
@@ -94,6 +99,15 @@ export function ShareDialog({
     setBusy(true);
     try {
       await onRevokeLink(code);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const rescope = async (code: string, tabId: string | null) => {
+    setBusy(true);
+    try {
+      await onRescopeLink(code, tabId);
     } finally {
       setBusy(false);
     }
@@ -205,20 +219,45 @@ export function ShareDialog({
               edge. Below sm: it becomes two rows — role on its own, then
               expiry (growing) beside Create. From sm: up it is the single row
               it always was. */}
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-            <div className="flex flex-1 items-stretch gap-1 rounded-md border border-slate-200 bg-slate-50 p-0.5 dark:border-slate-700 dark:bg-slate-800">
-              <RoleButton
-                active={newRole === 'edit'}
-                onClick={() => setNewRole('edit')}
-                label="Edit"
-                description="Full read / write access: visitors can change anything."
-              />
-              <RoleButton
-                active={newRole === 'view'}
-                onClick={() => setNewRole('view')}
-                label="View only"
-                description="Read-only: visitors can look but not edit."
-              />
+          {/* With more than one tab a fourth control, the scope, joins in and
+              the row no longer fits the dialog: role + scope take the first
+              line, expiry + Create the second. */}
+          <div
+            className={
+              multiTab ? 'flex flex-col gap-2' : 'flex flex-col gap-2 sm:flex-row sm:items-center'
+            }
+          >
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <div className="flex flex-1 items-stretch gap-1 rounded-md border border-slate-200 bg-slate-50 p-0.5 dark:border-slate-700 dark:bg-slate-800">
+                <RoleButton
+                  active={newRole === 'edit'}
+                  onClick={() => setNewRole('edit')}
+                  label="Edit"
+                  description="Full read / write access: visitors can change anything."
+                />
+                <RoleButton
+                  active={newRole === 'view'}
+                  onClick={() => setNewRole('view')}
+                  label="View only"
+                  description="Read-only: visitors can look but not edit."
+                />
+              </div>
+              {multiTab ? (
+                <Tooltip
+                  title="Tabs"
+                  description="Share every tab, or just one. Visitors on a one-tab link see the other tabs locked, and never receive their content."
+                  className="min-w-0 sm:w-44"
+                >
+                  <Select
+                    value={newScope}
+                    onChange={(e) => setNewScope(e.target.value)}
+                    aria-label="Tabs this link opens"
+                    className="w-full"
+                  >
+                    <ScopeOptions tabs={tabs} />
+                  </Select>
+                </Tooltip>
+              ) : null}
             </div>
             <div className="flex items-center gap-2">
               {/* The growth goes on the TOOLTIP, which is the actual flex
@@ -227,7 +266,7 @@ export function ShareDialog({
               <Tooltip
                 title="Link lifetime"
                 description="The link stops working after this long and moves to Inactive, where you can extend or delete it. Never keeps it working until you revoke it."
-                className="min-w-0 flex-1 sm:flex-none"
+                className={multiTab ? 'min-w-0 flex-1' : 'min-w-0 flex-1 sm:flex-none'}
               >
                 <Select
                   value={newExpiry}
@@ -282,6 +321,7 @@ export function ShareDialog({
                   shareUrlFor={shareUrlFor}
                   onCopy={copy}
                   onRevoke={revoke}
+                  onRescope={multiTab ? rescope : null}
                 />
               ))}
             </ul>

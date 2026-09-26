@@ -49,6 +49,7 @@ export function EditorTabDialogs() {
     createShareLink,
     revokeShareLink,
     extendShareLink,
+    rescopeShareLink,
     setDiagramSharePassword,
     setShareDialogOpen,
   } = useEditorContext();
@@ -107,6 +108,7 @@ export function EditorTabDialogs() {
           onSaveName={updateParticipantName}
           onCreateLink={createShareLink}
           onRevokeLink={revokeShareLink}
+          onRescopeLink={rescopeShareLink}
           onExtendLink={extendShareLink}
           onSetPassword={setDiagramSharePassword}
           offline={isOffline}
