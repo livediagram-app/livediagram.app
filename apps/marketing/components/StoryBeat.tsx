@@ -1,4 +1,5 @@
 import { ChevronRightIcon } from '@livediagram/ui';
+import { CATEGORY_ICONS } from '@/components/category-icons';
 import { CtaLink } from '@/components/CtaLink';
 import { Showcase } from '@/components/Showcase';
 import { beatSections, beatShowcase, type LandingBeat } from '@/lib/landing-beats';
@@ -43,19 +44,25 @@ export function StoryBeat({ beat, index }: { beat: LandingBeat; index: number })
           {/* A chip per category this beat covers, each into its own page,
               with how many features wait there. */}
           <ul className="mt-6 flex flex-wrap gap-2" aria-label={`Inside ${beat.title}`}>
-            {sections.map((section) => (
-              <li key={section.id}>
-                <a
-                  href={`/features/${section.id}`}
-                  className="group inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 py-1 pr-2 pl-3 text-sm text-slate-700 shadow-xs transition hover:border-brand-300 hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
-                >
-                  {section.label}
-                  <span className="rounded-full bg-slate-100 px-1.5 text-xs text-slate-500 tabular-nums transition group-hover:bg-brand-50 group-hover:text-brand-700">
-                    {section.items.length}
-                  </span>
-                </a>
-              </li>
-            ))}
+            {sections.map((section) => {
+              const Icon = CATEGORY_ICONS[section.id];
+              return (
+                <li key={section.id}>
+                  <a
+                    href={`/features/${section.id}`}
+                    className="group inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/80 py-1 pr-2 pl-2.5 text-sm text-slate-700 shadow-xs transition hover:border-brand-300 hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
+                  >
+                    {Icon ? (
+                      <Icon className="text-brand-500 transition group-hover:text-brand-600" />
+                    ) : null}
+                    {section.label}
+                    <span className="rounded-full bg-slate-100 px-1.5 text-xs text-slate-500 tabular-nums transition group-hover:bg-brand-50 group-hover:text-brand-700">
+                      {section.items.length}
+                    </span>
+                  </a>
+                </li>
+              );
+            })}
           </ul>
 
           <CtaLink href={`/features/${lead.id}`} className="group mt-8">
