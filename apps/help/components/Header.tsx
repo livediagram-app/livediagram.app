@@ -22,7 +22,8 @@ export function Header() {
       actions={
         <a
           href={ctaHref('/new', 'Help.Header')}
-          className={buttonClassName({ size: 'md', className: 'shrink-0 shadow-sm' })}>
+          className={buttonClassName({ size: 'md', className: 'shrink-0 shadow-sm' })}
+        >
           Start drawing
         </a>
       }

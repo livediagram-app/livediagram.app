@@ -771,6 +771,10 @@ export const EXACT: Readonly<Record<string, string>> = {
 };
 
 export const BY_ACTION: Readonly<Record<string, string>> = {
+  'Cta|Opened':
+    'Someone followed a call to action on a public page (the landing page, a feature or comparison page, the help centre) and reached the New Diagram page.',
+  'Cta|Created':
+    'Someone who arrived from a call to action on a public page went on to create a diagram. Counted once per arrival.',
   'AI|Toggled': 'Someone turned an AI setting on or off in Settings under AI Tools.',
   'AI|Used':
     'Someone used a feature of the AI Assistant panel, or another AI-powered tool in the editor.',

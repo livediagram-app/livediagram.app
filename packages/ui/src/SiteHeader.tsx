@@ -69,7 +69,9 @@ export function SiteHeader({
               <div className="w-full max-w-sm">{center}</div>
             </div>
           ) : null}
-          <div className="flex shrink-0 items-center gap-2">{actions ?? <DefaultActions ctaSurface={ctaSurface} />}</div>
+          <div className="flex shrink-0 items-center gap-2">
+            {actions ?? <DefaultActions ctaSurface={ctaSurface} />}
+          </div>
         </div>
       </header>
       {shareRail ? <ShareRail /> : null}

@@ -32,8 +32,18 @@ export function templatePreviewGroup3(kind: TemplateKind): ReactElement | null {
             stroke="rgb(14 165 233)"
             strokeWidth="1"
           />
+          {/* Hover story: a vote lands on the third topic and it climbs
+              above the second as the board re-sorts itself. */}
           {[0, 1, 2, 3].map((i) => (
-            <g key={i}>
+            <g
+              key={i}
+              className={i === 1 || i === 2 ? 'pv-shift' : undefined}
+              style={
+                i === 1 || i === 2
+                  ? pv({ '--pv-dy': i === 2 ? '-8.5px' : '8.5px', '--pv-at': '1500ms' })
+                  : undefined
+              }
+            >
               <rect
                 x="24"
                 y={11 + i * 8.5}
@@ -42,6 +52,19 @@ export function templatePreviewGroup3(kind: TemplateKind): ReactElement | null {
                 rx="1.2"
                 fill={i === 0 ? 'rgb(14 165 233)' : 'rgb(224 242 254)'}
               />
+              {i === 2 ? (
+                <rect
+                  className="pv-new"
+                  opacity="0"
+                  x="24"
+                  y={11 + i * 8.5}
+                  width="5"
+                  height="6"
+                  rx="1.2"
+                  fill="rgb(14 165 233)"
+                  style={pv({ '--pv-at': '900ms' })}
+                />
+              ) : null}
               <path
                 d={`M 31 ${14 + i * 8.5} L ${45 - i * 3} ${14 + i * 8.5}`}
                 stroke="rgb(100 116 139)"
@@ -59,14 +82,24 @@ export function templatePreviewGroup3(kind: TemplateKind): ReactElement | null {
             stroke="rgb(14 165 233)"
             strokeWidth="0.9"
           />
-          <path
-            d="M 58 9.5 L 58 12 L 60 13.2"
-            fill="none"
-            stroke="rgb(14 165 233)"
-            strokeWidth="0.9"
-            strokeLinecap="round"
-          />
-          {/* Takeaways checklist. */}
+          {/* ...while the timebox's hand sweeps round... */}
+          <g
+            className="pv-spin"
+            style={pv({
+              '--pv-origin': '58px 12px',
+              '--pv-at': '900ms',
+              '--pv-dur': '2400ms',
+            })}
+          >
+            <path
+              d="M 58 9.5 L 58 12 L 60 13.2"
+              fill="none"
+              stroke="rgb(14 165 233)"
+              strokeWidth="0.9"
+              strokeLinecap="round"
+            />
+          </g>
+          {/* Takeaways checklist; the story ticks them off in turn. */}
           {[25, 32, 39].map((y, i) => (
             <g key={y}>
               <rect
@@ -78,6 +111,17 @@ export function templatePreviewGroup3(kind: TemplateKind): ReactElement | null {
                 fill="white"
                 stroke="rgb(100 116 139)"
                 strokeWidth="0.8"
+              />
+              <path
+                className="pv-new"
+                opacity="0"
+                d={`M 53.9 ${y - 0.6} L 54.8 ${y + 0.4} L 56.3 ${y - 1.6}`}
+                fill="none"
+                stroke="rgb(34 197 94)"
+                strokeWidth="0.9"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={pv({ '--pv-at': `${2300 + i * 350}ms` })}
               />
               <path
                 d={`M 59.5 ${y - 0.5} L ${67 - i * 2} ${y - 0.5}`}
@@ -144,14 +188,26 @@ export function templatePreviewGroup3(kind: TemplateKind): ReactElement | null {
             stroke="rgb(14 165 233)"
             strokeWidth="0.8"
           />
+          {/* Hover story: the spotlit question is answered and clears, the top
+              of the queue slides up into the spotlight, the rest move up
+              behind it, and a follow-up is ticked. */}
           <path
+            className="pv-leave"
             d="M 29.5 11.5 L 44.5 11.5"
             stroke="rgb(14 165 233)"
             strokeWidth="1.3"
             strokeLinecap="round"
+            style={pv({ '--pv-at': '1000ms' })}
           />
           {[0, 1, 2].map((i) => (
-            <g key={i}>
+            <g
+              key={i}
+              className="pv-shift"
+              style={pv({
+                '--pv-dy': i === 0 ? '-11.5px' : '-8.5px',
+                '--pv-at': i === 0 ? '1400ms' : '1900ms',
+              })}
+            >
               <rect
                 x="27"
                 y={20 + i * 8.5}
@@ -181,6 +237,19 @@ export function templatePreviewGroup3(kind: TemplateKind): ReactElement | null {
                 stroke="rgb(100 116 139)"
                 strokeWidth="0.8"
               />
+              {i === 0 ? (
+                <path
+                  className="pv-new"
+                  opacity="0"
+                  d={`M 54.9 ${y - 0.6} L 55.8 ${y + 0.4} L 57.3 ${y - 1.6}`}
+                  fill="none"
+                  stroke="rgb(34 197 94)"
+                  strokeWidth="0.9"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  style={pv({ '--pv-at': '2500ms' })}
+                />
+              ) : null}
               <path
                 d={`M 60.5 ${y - 0.5} L ${67 - i * 2} ${y - 0.5}`}
                 stroke="rgb(148 163 184)"
