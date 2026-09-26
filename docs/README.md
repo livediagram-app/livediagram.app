@@ -1,22 +1,24 @@
 # Docs
 
+Follow the references below only as needed; never upfront.
+
 Documentation for livediagram, the open-source real-time diagram editor.
 
 These docs are the practical guide: what the app does, how to run it locally, how to host it on your own Cloudflare account, and how to contribute. For the why-behind-the-what (product decisions, constraints, behaviour contracts), read the [specs](specs/). Specs are normative; these docs explain.
 
 ## Contents
 
-| Doc                                                        | Covers                                                                                                                                           |
-| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [What is livediagram?](product/what-is-livediagram.md)     | The product: what it does, who it's for, what's built and what's still ahead.                                                                    |
-| [Architecture](development/architecture.md)                | The repo shape: seven apps, thirteen packages, the Cloudflare-only deployment model.                                                             |
-| [Local development](development/local-development.md)      | Clone, install, run all apps locally, scope commands to a single workspace.                                                                      |
-| [Self-hosting](operations/self-hosting.md)                 | Run your own copy on Cloudflare Workers + D1. Optional Clerk auth.                                                                               |
-| [Contributing](development/contributing.md)                | How to propose changes: specs-first workflow, code style, tests, PR expectations.                                                                |
-| [Sticky detection](vision/sticky-detection.md)             | How a photograph of a wall becomes sticky notes: the pipeline, its constants, its limits.                                                        |
-| [Handwriting readers](vision/handwriting-readers.md)       | Which reader can read marker handwriting on a sticky crop: Tesseract, TrOCR, Florence-2, SmolVLM, Qwen-VL and cloud, measured on one real wall.  |
-| [Boundary model experiment](vision/experiments/e-model.md) | Whether a tiny learned model trained on synthetic walls finds stickies better than the classical pipeline, measured on the eight labelled walls. |
-| [Resolution](vision/experiments/d-resolution.md)           | Whether more pixels per note (a bigger working image, or tiles) help the sticky detector: measured, and why 1000px stays.                        |
+- ./specs/README.md - when building or changing product behaviour: the specs are the source of truth
+- ./instructions/README.md - when repeating a known process, such as registering a help article
+- ./product/what-is-livediagram.md - when you need what the product does, who it is for, and what is built
+- ./development/architecture.md - when you need the repo shape: seven apps, thirteen packages, Cloudflare-only deploys
+- ./development/local-development.md - when cloning, installing, and running the apps locally
+- ./development/contributing.md - when proposing a change: specs-first workflow, code style, tests, PRs
+- ./operations/self-hosting.md - when running your own copy on Cloudflare Workers + D1, optionally with Clerk
+- ./vision/sticky-detection.md - when working on how a wall photo becomes sticky notes: pipeline, constants, limits
+- ./vision/handwriting-readers.md - when choosing a reader for marker handwriting on a sticky crop
+- ./vision/experiments/e-model.md - when weighing a tiny learned boundary model against the classical pipeline
+- ./vision/experiments/d-resolution.md - when asking whether more pixels per note help the sticky detector
 
 ## How docs relate to specs
 

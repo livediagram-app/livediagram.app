@@ -10,7 +10,7 @@ Every product decision, constraint, and rule lives in [`docs/specs/`](../specs/)
 - If specs and code disagree, that's a bug, and the spec usually wins. If the spec is wrong, fix it first.
 - Specs are terse and unambiguous, not chatty.
 
-Start by reading [`docs/specs/README.md`](../specs/README.md) for the index and the numeric read order.
+Start by reading [`docs/specs/README.md`](../specs/README.md) for the category index.
 
 ## Setting up
 

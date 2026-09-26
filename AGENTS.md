@@ -6,6 +6,154 @@ Monorepo for the livediagram product. Multiple apps share code through internal 
 
 - `git fetch` latest from origin
 
+## Organisation process
+
+This section describes the process of organising and layering empirical information.
+It guides the engineering efforts by having agents specify with sufficient detail.
+The goal is for agents to become increasingly self-sufficient when working on systems they already know.
+
+This is achieved by iteratively capturing contextual information about the domain and documenting intentions from humans.
+
+This section is exclusively human-hand-written; agents MUST NOT edit this section directly.
+
+### Structure
+
+Use the following structure and rationale.
+
+- `AGENTS.md` instructs us about **how we work**.
+- `plans/` contains plans; **exhaustive list of checkboxed steps**.
+- `docs/` holds all **documentation** files.
+- `docs/README.md` is the entry point.
+
+Within `docs/` are the following special categories:
+
+- `specs/` contains **specifications**: _what a thing IS_.
+- `specs/[...]/blueprints/` contains **blueprints**: _exhaustively documented implementation details_.
+- `instructions/` contains **instruction sets**: _empirically built repeatable processes_.
+
+**Indexes** are held inside `README.md` files. Entries look like: `- ./<file>.md - when <trigger>`.
+`README.md` files open with `Follow the references below only as needed; never upfront.`
+
+Further details below.
+
+### Docs
+
+- Docs are structured as `docs/<category>/<topic>.md`
+- They are indexed under `docs/README.md`.
+- The docs index includes entry points to `specs` and `instructions`.
+- Docs convey information in scope of the project.
+- All docs SHOULD be treated as persistent documents that can be iterated on.
+- Stay cognizant of the deltas of each change.
+- Reuse documents where it makes sense.
+- Folders of substance SHOULD hold a `README.md` with an index.
+- Docs, indexes and references **MUST be continuously kept-up-to-date** throughout all work.
+
+### Plans
+
+- Plans live as a single Markdown file in the project's `plans/` folder, numbered `0001-<topic>.md`.
+- They live inside the `plans/` folder, which MAY be **gitignored** (recommended).
+- Plans describe **work**, split into sequenced **phases** of checkboxed **steps**:.
+  - **work** includes research, specification, building, testing, verification, definition of done, and anything else that's needed.
+  - **phases** are logical increments, warranting a commit each.
+  - **steps** MUST be performed with full focus, and in the highest qualitative and idiomatic way.
+  - **checkboxes** MUST be checked off immediately upon completion of any step, and before starting the next step.
+- A plan MAY link to blueprints and specs (encouraged), but SHALL NOT restate them.
+- The last step of every plan MUST be **fold-back**; to let the documentation reflect reality, and to verify all symbols/files/references.
+- Fold-back reconciles the spec to what actually shipped, then re-derives the blueprint from it.
+- Plans SHALL NOT be renumbered.
+
+**When to use plans?**
+
+- Default to no plan. Just do the work for tasks that fit in a single sitting.
+- Create a plan when asked or when work is likely to exceed one or two days.
+- Surface ambiguities and gaps before implementing, and keep refining the plan as new information arrives.
+
+**Work plans one task at a time**
+
+1. Read the step,
+2. Do it the best, highest qualitative and idiomatic way possible
+3. Upon completion immediately tick the checkbox; never batch ticks at the end.
+4. Then move to the next step.
+
+_Note:_ There is no need to stop in between phases; just keep going.
+
+### Specs
+
+- Specs live inside numbered **category folders** `docs/specs/NNN-<category>/`.
+- They are indexed under `docs/specs/README.md`.
+- Specs are where design decisions are made and recorded.
+- Specs describe **what a thing IS** within the domain; the definitions and specifications of **systems** or **domain concepts**.
+- Specs are written in the present tense.
+- Specs themselves are unnumbered.
+- Specs are never task lists and carry no checkboxes.
+- Spec files SHOULD be unnumbered and named by subject; a category MAY hold several related specs.
+- Write the spec BEFORE implementing anything non-trivial, and keep it true afterwards.
+- Iterate the existing spec rather than adding a new one on the same subject; stay cognizant of the delta each change makes.
+
+**Category folders**
+
+- The first five categories are reserved:
+  - `001-project-vision` - the "why": problem, target audience, value proposition.
+  - `002-project-scope` - the "what" and "what-not": features, high-level outline, technical constraints, non-goals.
+  - `003-system-architecture` - the "how" under the hood: data flow, infrastructure, state management, and the language and runtime boundaries.
+  - `004-interface-design` - the "how" at the surface: UX/UI, wireframes, user journeys, visual language.
+  - `005-project-roadmap` - the "when": milestones as outcomes, phases, launch strategy.
+- Further category folders MUST BE named after a **system** or, preferably, a **domain concept**.
+- Renumbering is discouraged, but allowed when every reference to it is updated in the same change.
+
+### Blueprints
+
+- Blueprints live in a `blueprints/` folder inside their spec's category folder `docs/specs/NNN-<category>/blueprints/`,
+- They are indexed under `docs/specs/NNN-<category>/blueprints/README.md`.
+- Blueprints are the meticulously detailed natural language source holding all implementation details, written before the code exists.
+- Derive the blueprint mechanically from the spec before building; it adds engineering precision, not new design.
+- Derivation is one-directional and deterministic: the spec is the input, the blueprint the output.
+- Change flows in one-direction and is deterministic: a spec change updates the blueprint and then the code.
+- Any changes outside that are folded back into the spec and blueprint.
+- Blueprints do not invent design; if the spec is ambiguous, fix the spec first rather than guess.
+- Iterate the existing blueprints rather than rewriting them: change only what the spec changed, and stay cognizant of the delta.
+- Blueprints SHOULD apply documented defaults, recorded as one row per default in the category's `blueprints/DEFAULTS.md`.
+- A blueprint is complete only when every applicable **completeness category** is covered and checked off in `blueprints/COMPLETENESS.md`
+
+**Completeness categories**
+
+- **Domain and naming** - every domain term maps to one canonical identifier; synonyms are banned.
+- **Behaviour and state** - every state, transition, guard, and invariant is named and reachable.
+- **Interfaces and contracts** - every input and output is typed and validated, with a named rejection per failure.
+- **Data and persistence** - every field is classified; snapshot, restore, and migration are defined.
+- **Errors and edge cases** - every failure mode and boundary case is named with its handling; no silent path.
+- **Security and trust** - trust boundaries, abuse cases, guards, rate limits etc. are stated.
+- **Performance and limits** - worst-case sizes and hot-path budgets are computed against the platform limits.
+- **Presentation and UX** (UI only) - layout, empty, loading, and error states, and final copy are defined.
+- **Accessibility** (UI only) - contrast, ARIA, keyboard, and reduced motion meet WCAG 2.2 AA.
+- **Web Experience** (Web only) - Core Web Vitals, including LCP, INP and CLS are explicitly addressed.
+- **Observability** - every decision point and failure emits a log with a recognisable fingerprint.
+- **Testing** - every spec rule maps to a deterministic test, traceably.
+- **Constants and configuration** - every magic number is a named constant with provenance and a safe range.
+- **Assets and external resources** - every asset has a source, a licence, a path, and reproducible generation.
+- **Defaults ledger** - every default applied for a silent or qualitative spec has a ledger row.
+
+For each blueprint, record the applicable categories in the topic's committed `blueprints/COMPLETENESS.md`, a simple list, one line each:
+
+- [x] Domain and naming
+- [x] Behaviour and state
+- [x] Testing
+- [x] Defaults
+
+Leave out any category that does not apply; unchecked means applicable but not covered.
+
+### Instruction sets
+
+- Instruction sets live in `docs/instructions/<process>.md`, unnumbered and named after the process they encode.
+- They are indexed under `docs/instructions/README.md`.
+- Instruction sets are **reusable process memory**: _how a process is done_, not scoped to one piece of work like a plan.
+- Instruction sets carry no checkboxes; a plan MAY link to one, and progress is ticked in the plan.
+- Steps are **chronological**; ordered the way the work is actually done, not grouped by theme.
+- Steps are **granular**; each is small enough that "did it happen?" has a yes or no answer.
+- Steps are **opinionated**; taste, preferences and domain specifics are woven in, not left to model defaults.
+- Only **genuine forks** (taste, preference, business knowledge) are surfaced; every other decision is written down once.
+- Instruction sets grow **empirically**; gotchas, hard gained knowledge, user input or missed steps are folded back in.
+
 ## Specs are the source of truth
 
 Before building or proposing anything, **check `docs/specs/`**. Every product decision, feature, constraint, and rule lives there. The index is at [`docs/specs/README.md`](docs/specs/README.md).
@@ -13,13 +161,13 @@ Before building or proposing anything, **check `docs/specs/`**. Every product de
 Workflow:
 
 - New feature, scope change, or rule → write or update a spec **first**, code second.
-- When a user request lands, capture it in a spec before writing code, and keep specs organised under their numbered prefixes.
+- When a user request lands, capture it in a spec before writing code, and keep specs organised in their category folders (see Organisation process above).
 - Reference specs by filename in PRs and discussions.
 - If specs and code disagree, that's a bug — usually the spec is right; if not, fix the spec first.
 
 ## Keep docs and the README current
 
-The root [`README.md`](README.md) and the [`docs/`](docs/) folder (`architecture.md`, `contributing.md`, `local-development.md`, `self-hosting.md`, `what-is-livediagram.md`) are developer- and user-facing documentation, distinct from the product specs in `docs/specs/`.
+The root [`README.md`](README.md) and the [`docs/`](docs/) folder (indexed in [`docs/README.md`](docs/README.md)) are developer- and user-facing documentation, distinct from the product specs in `docs/specs/`.
 
 Treat them as part of the change, not an afterthought:
 
@@ -30,17 +178,7 @@ Treat them as part of the change, not an afterthought:
 
 ## Help centre articles must stay registered
 
-The help centre (`apps/help`, [Help app](docs/specs/018-help/help-app.md)) has a hand-curated registry in the [`@livediagram/help-registry`](packages/help-registry/src/index.ts) package (re-exported by `apps/help/lib/articles.ts` so the help app keeps its `@/lib/articles` import path). It is the **single source for the help search** (`SearchInput` → `searchArticles`), **the category/browse listings**, **and the live editor's search-panel Help group** (`apps/live/lib/help-search.ts` derives its catalogue from it). The article's MDX page renders from the filesystem, but it is **invisible to search and browse unless it's in that registry** — there is no filesystem auto-discovery.
-
-So, whenever you add (or remove/rename) a help article:
-
-- Add (or update) its entry in the `articles` array in `packages/help-registry/src/index.ts` — `slug`, `title`, `description`, `keywords`, `category`, `categorySlug` (the full nested path, e.g. `canvas/the-canvas`), and `parentSlug` for a sub-article — **in the same change** as the new `apps/help/app/.../page.mdx`.
-- Bump the matching `categories[].articleCount` (and add a `categories` entry if it's a brand-new top-level category).
-- The registry `description` is the **short search-card summary** and is intentionally separate from the MDX `helpMetadata` description (the longer SEO/OG meta) — write a concise one, don't just copy the meta.
-- `keywords` is **required**: space-separated, lowercase search synonyms — the words a user would type when they don't know the title ("transparency" for opacity, "hotkey" for keyboard shortcuts), plus adjacent spellings ("color" beside "colour"). Both the help search and the editor's search panel match on them; a test fails if they're missing.
-- **Draw the card.** For an article in one of the ten **feature** categories, add an entry to BOTH `FEATURE_ICONS` (`apps/help/lib/featureIcons.tsx`) and `FEATURE_ENTITY_HEX` (`apps/help/lib/featureColours.ts`); for a **support** category, add one to `SUPPORT_ARTICLE_ICONS` (`apps/help/lib/articleIcons.tsx`), which needs no hue. Every card in both halves has its own glyph, and `feature-icons.test.ts` / `article-icons.test.ts` keep it that way — a card with no entry silently falls back to a shared glyph and looks like every other undrawn card, which nothing at runtime can notice. (Getting Started is the exception: its cards lead with a numbered step badge instead of an icon, and the test reads that off the page rather than assuming it.) [Help app](docs/specs/018-help/help-app.md) has the house style and the one rule that matters: draw what the card is _about_, and check the result doesn't land on a glyph either set already uses.
-
-Treat this exactly like the specs / docs rules above: a new article that isn't registered is a bug, the same way an out-of-date spec is. (`categorySlug`/`slug` in the registry must match the `page.mdx` path, so the search result link resolves.)
+Whenever you add, remove or rename a help article, follow [`docs/instructions/register-a-help-article.md`](docs/instructions/register-a-help-article.md) in the same change; an unregistered article is a bug.
 
 ## Repo layout
 
@@ -67,7 +205,9 @@ packages/
   prettier-config/# shared Prettier config
   tailwind-config/# shared Tailwind theme (brand palette)
   vitest-config/  # shared Vitest defaults (extended per workspace)
-docs/specs/          # product specs — read these first
+docs/           # developer docs, indexed in docs/README.md
+  specs/        # product specs — read these first
+  instructions/ # repeatable processes (e.g. registering a help article)
 ```
 
 Workspaces are managed with **pnpm** (`pnpm-workspace.yaml`). Tasks are orchestrated with **Turborepo** (`turbo.json`). Node `>=22` (wrangler 4 requirement), pnpm `>=9`.
