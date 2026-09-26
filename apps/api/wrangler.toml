@@ -306,7 +306,9 @@ RESEND_FROM = "livediagram staging <hello@livediagram.app>"
 # environment is reproducible from the repo alone — see spec/140 "Known sharp
 # edge".
 AI_ALLOWED_ORIGINS = "https://staging.livediagram.app"
-AI_REQUIRE_CLERK = "true"
+# No AI_REQUIRE_CLERK, matching production: the editor offers AI to guests, so
+# requiring sign-in here made staging refuse what production allows (the photo
+# reader stopped with "sign in required"), which is drift, not a staging test.
 
 # Own database, created 2026-09-17. Empty until the first staging deploy
 # applies the migrations in `migrations/` against it — which is the whole
