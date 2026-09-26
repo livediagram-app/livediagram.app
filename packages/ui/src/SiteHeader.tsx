@@ -18,7 +18,9 @@ import { ShareRail } from './ShareRail';
 // `center` is an optional slot between the two clusters, shown from `sm` up
 // (the help centre's search box). `actions` replaces the default CTA pair
 // (help keeps its single "Start drawing"). `shareRail` (default true) mounts
-// the page-edge ShareRail; help leaves it off.
+// the page-edge ShareRail; help leaves it off. `wide` matches a surface whose
+// pages run max-w-7xl with md:px-8 (help), so the logo lines up with the
+// breadcrumb and content below instead of sitting inside a narrower column.
 //
 // The bar has a fixed height (h-18, 72px) rather than padding around its
 // content, so a surface that sticks something under it (help's breadcrumb
@@ -28,11 +30,13 @@ export function SiteHeader({
   center,
   actions,
   shareRail = true,
+  wide = false,
 }: {
   productNav?: ProductNavKey;
   center?: ReactNode;
   actions?: ReactNode;
   shareRail?: boolean;
+  wide?: boolean;
 }) {
   return (
     <>
@@ -43,7 +47,11 @@ export function SiteHeader({
             also trims the side padding to reclaim width, and the CTA is shrink-0
             so it never squishes. The dropdown drops its text label on mobile
             (see ProductNav) so the three never crowd. */}
-        <div className="mx-auto flex h-full max-w-6xl items-center justify-between gap-2 px-4 sm:gap-4 sm:px-6">
+        <div
+          className={`mx-auto flex h-full items-center justify-between gap-2 px-4 sm:gap-4 ${
+            wide ? 'max-w-7xl md:px-8' : 'max-w-6xl sm:px-6'
+          }`}
+        >
           <div className="flex shrink-0 items-center gap-2.5">
             <Brand href="/" size="md" />
             {productNav ? <ProductNav current={productNav} showOnMobile /> : null}

@@ -9,12 +9,15 @@ import { SearchInput } from '@/components/SearchInput';
 // origin as the rest of livediagram, so these are plain absolute links. No
 // ShareRail: it sits in the gutter beside a max-w-6xl page, and help's pages
 // run max-w-7xl, so on an xl screen it would cover the article sidebar.
+// `wide` gives the bar help's own max-w-7xl / md:px-8 column, so the logo
+// lines up with the breadcrumb and article below.
 export function Header() {
   return (
     <SiteHeader
       productNav="help"
       center={<SearchInput />}
       shareRail={false}
+      wide
       actions={
         <a href="/new" className={buttonClassName({ size: 'md', className: 'shrink-0 shadow-sm' })}>
           Start drawing
