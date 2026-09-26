@@ -7,32 +7,32 @@ engineering precision. Defaults applied where the spec is silent are ledgered in
 
 Scope, by file:
 
-| File                                                          | Role                                                                    |
-| ------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| `packages/diagram/src/arrow-types.ts`                         | `Anchor` (16 ids), `ALL_ANCHORS`, `Endpoint`                            |
-| `packages/diagram/src/anchors.ts`                             | The anchor table: side, position class, box fraction, outward vector    |
-| `packages/diagram/src/shape-outline.ts`                       | Anchoring outlines, outline projection, point-inside test               |
-| `packages/diagram/src/shape-geometry.ts`                      | `ACTOR_HULL`, the actor's anchoring hull (D8)                           |
-| `packages/diagram/src/geometry.ts`                            | `anchorPosition`                                                        |
-| `packages/diagram/src/anchor-choice.ts`                       | `exitSideTowards`, `anchorAimPoint`, `bestAnchorTowards`                |
-| `packages/diagram/src/arrow-path.ts`                          | `arrowPathPolyline` (exported centreline), side-aware curve/elbow rules |
-| `packages/diagram/src/arrow-path-hits.ts`                     | `arrowPolyline`, `pathPassesThrough`, `pathsCross`                      |
-| `packages/diagram/src/arrow-rebind.ts`                        | `rebindArrowAnchorsAfterMove`, `arrowReferencesAny`                     |
-| `packages/diagram/src/arrow-rebind-swap.ts`                   | `swapCrossingEnds`                                                      |
-| `packages/diagram/src/arrow-endpoint-spread.ts`               | Quarter fans                                                            |
-| `packages/diagram/src/validate.ts`                            | `ANCHORS` derived from `ALL_ANCHORS`                                    |
-| `packages/diagram/src/legacy-groups.ts`                       | Legacy group anchors resolved through the table                         |
-| `packages/diagram/src/duplicate.ts`                           | Endpoint copy without `manual`                                          |
-| `apps/live/lib/user-preferences.ts`                           | `autoRebindArrowsEnabled`: on unless `false`                            |
-| `apps/live/hooks/canvas/useEditorDrag.ts`                     | Live rebind per drag frame                                              |
-| `apps/live/hooks/canvas/useNudgeSelection.ts`                 | Rebind per nudge                                                        |
-| `apps/live/app/diagram/[id]/useArrowConnect.ts`               | Click-to-connect: creation anchors only, no rebind                      |
-| `apps/live/hooks/canvas/arrow-endpoint-resolve.ts`            | Stops writing `manual`                                                  |
-| `apps/live/hooks/canvas/useBoxedDragHandlers.ts`              | Tap-placed arrow direction from `anchorOutward`                         |
-| `apps/live/components/dialogs/settings/settings-catalogue.ts` | Setting copy                                                            |
-| `apps/help/app/palette/auto-attach-arrows/page.mdx`           | Help article                                                            |
-| `apps/api/src/ai-prompt.ts`                                   | Anchor list for the AI                                                  |
-| `apps/api/src/openapi/schemas.generated.ts`                   | Regenerated `Anchor` enum and pinned endpoint schema                    |
+| File                                                          | Role                                                                                               |
+| ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `packages/diagram/src/arrow-types.ts`                         | `Anchor` (16 ids), `ALL_ANCHORS`, `Endpoint`                                                       |
+| `packages/diagram/src/anchors.ts`                             | The anchor table: side, position class, box fraction, outward vector                               |
+| `packages/diagram/src/shape-outline.ts`                       | Anchoring outlines, outline projection, point-inside test                                          |
+| `packages/diagram/src/shape-geometry.ts`                      | `ACTOR_HULL`, the actor's anchoring hull (D8)                                                      |
+| `packages/diagram/src/geometry.ts`                            | `anchorPosition`                                                                                   |
+| `packages/diagram/src/anchor-choice.ts`                       | `exitSideTowards`, `anchorAimPoint`, `bestAnchorTowards`                                           |
+| `packages/diagram/src/arrow-path.ts`                          | `arrowPathPolyline` (exported centreline), side-aware curve/elbow rules                            |
+| `packages/diagram/src/arrow-path-hits.ts`                     | `arrowPolyline`, `pathPassesThrough`, `pathsCross`, `pinnedBoxedElement`, `passesThroughOwnShapes` |
+| `packages/diagram/src/arrow-rebind.ts`                        | `rebindArrowAnchorsAfterMove`, `arrowReferencesAny`                                                |
+| `packages/diagram/src/arrow-rebind-swap.ts`                   | `swapCrossingEnds`                                                                                 |
+| `packages/diagram/src/arrow-endpoint-spread.ts`               | Quarter fans                                                                                       |
+| `packages/diagram/src/validate.ts`                            | `ANCHORS` derived from `ALL_ANCHORS`                                                               |
+| `packages/diagram/src/legacy-groups.ts`                       | Legacy group anchors resolved through the table                                                    |
+| `packages/diagram/src/duplicate.ts`                           | Endpoint copy without `manual`                                                                     |
+| `apps/live/lib/user-preferences.ts`                           | `autoRebindArrowsEnabled`: on unless `false`                                                       |
+| `apps/live/hooks/canvas/useEditorDrag.ts`                     | Live rebind per drag frame                                                                         |
+| `apps/live/hooks/canvas/useNudgeSelection.ts`                 | Rebind per nudge                                                                                   |
+| `apps/live/app/diagram/[id]/useArrowConnect.ts`               | Click-to-connect: creation anchors only, no rebind                                                 |
+| `apps/live/hooks/canvas/arrow-endpoint-resolve.ts`            | Stops writing `manual`                                                                             |
+| `apps/live/hooks/canvas/useBoxedDragHandlers.ts`              | Tap-placed arrow direction from `anchorOutward`                                                    |
+| `apps/live/components/dialogs/settings/settings-catalogue.ts` | Setting copy                                                                                       |
+| `apps/help/app/palette/auto-attach-arrows/page.mdx`           | Help article                                                                                       |
+| `apps/api/src/ai-prompt.ts`                                   | Anchor list for the AI                                                                             |
+| `apps/api/src/openapi/schemas.generated.ts`                   | Regenerated `Anchor` enum and pinned endpoint schema                                               |
 
 ## Domain and naming
 
@@ -180,7 +180,9 @@ State lives only inside one call. Steps:
    5. Take the first candidate whose `held` count on `el` is zero, else the first candidate.
    6. Write `{ kind: 'pinned', elementId, anchor }` (a fresh object, D12), move one `held` count
       from `a` to the new anchor, update `index` for the arrow, log O1.
-5. **Swap.** `swapCrossingEnds(next, considered, index, held)`.
+5. **Swap.** `swapCrossingEnds(elements, considered, index, changed)`: it works on the same `index`
+   and records its trades in the same `changed` map; `held` is not needed, as a trade keeps the
+   counts.
 6. **Result.** The input array when nothing changed (D11), else a new array with only the changed
    arrows replaced.
 
@@ -196,7 +198,7 @@ Invariants, each asserted by a test:
 
 ### Swap (`arrow-rebind-swap.ts`)
 
-`swapCrossingEnds(elements, considered, index, held): Element[]`:
+`swapCrossingEnds(elements, considered, index, changed): void`:
 
 1. Collect pinned ends of every arrow that is not a self-loop, grouped by element id.
 2. For each element in document order that holds an end of a considered arrow, repeat passes until
@@ -254,6 +256,14 @@ export type AnchorOutline =
 export function anchorOutline(el: BoxedElement): AnchorOutline | null;
 export function projectOntoOutline(o: AnchorOutline, centre: Point, p: Point): Point | null;
 export function pointInsideOutline(el: BoxedElement, p: Point, inset: number): boolean;
+// The same test for a local (unrotated) point with the outline computed once.
+export function pointInsideLocalOutline(
+  el: BoxedElement,
+  outline: AnchorOutline | null,
+  local: Point,
+  inset: number,
+): boolean;
+export function connectorBox(el: BoxedElement): Rect;
 
 // anchor-choice.ts
 export function exitSideTowards(el: BoxedElement, towards: Point): Side | null;
@@ -276,6 +286,12 @@ export function arrowPathPolyline(
 export function arrowPolyline(arrow: ArrowElement, index: ElementIndex): Point[];
 export function pathPassesThrough(path: readonly Point[], el: BoxedElement): boolean;
 export function pathsCross(p: readonly Point[], q: readonly Point[]): boolean;
+export function pinnedBoxedElement(ep: Endpoint, index: ElementIndex): BoxedElement | null;
+export function passesThroughOwnShapes(
+  arrow: ArrowElement,
+  path: readonly Point[],
+  index: ElementIndex,
+): boolean;
 
 // arrow-rebind.ts (signature unchanged)
 export function rebindArrowAnchorsAfterMove(
@@ -338,8 +354,9 @@ existing validator). The api, the MCP tools and every import path validate throu
 PATH_MAX_SAMPLES_PER_SEGMENT)` samples × 2 shapes × outline edges (≤ 34, the stadium). A straight
   arrow between two 160 px boxes costs ≈ 2 × 90 samples × 4 checks.
 - **Swap.** Pairs per side ≤ `32² / 2`; each pair ≤ 25 × 25 segment tests; ≤ `SWAP_MAX_PASSES`.
-- **Budget.** The run stays under 4 ms for 100 considered arrows (measured in the fold-back), inside
-  a 16 ms drag frame.
+- **Budget.** The run stays under 4 ms for 100 considered arrows, inside a 16 ms drag frame.
+  Measured (node 24, one hub with 100 arrows, a quarter of them curved, 60 drag frames): median
+  0.95 ms, p95 2.9 ms; the first frame pays JIT warm-up.
 - **Cap.** `MAX_ELEMENTS_PER_TAB` (10,000) bounds everything else.
 
 ## Presentation and UX
@@ -381,16 +398,16 @@ swaps log, never a quiet frame.
 | -------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- | ---------------------------------------- |
 | 16 anchors, clockwise, old 8 kept                                                                        | ids, order, uniqueness                                                             | `anchors.test.ts`                        |
 | Class, sides, primary side, `anchorsOf`                                                                  | whole table                                                                        | `anchors.test.ts`                        |
-| Box positions                                                                                            | all 16 on a square                                                                 | `anchor-geometry.test.ts`                |
+| Box positions                                                                                            | all 16 on a box                                                                    | `anchor-geometry.test.ts`                |
 | Outline projection incl. quarters                                                                        | circle, diamond, star, stadium, actor points lie on the outline                    | `anchor-geometry.test.ts`                |
 | Rotation                                                                                                 | a quarter on a 90° element                                                         | `anchor-geometry.test.ts`                |
 | Caption push by side                                                                                     | `ssw`, `s`, `sse` pushed for a bottom caption                                      | `anchor-geometry.test.ts`                |
-| Inside test                                                                                              | box, ellipse, polygon, inset, rotated                                              | `shape-outline.test.ts`                  |
+| Inside test                                                                                              | box, ellipse, polygon, inset, rotated                                              | `anchor-geometry.test.ts`                |
 | Validation accepts 16, rejects others                                                                    | `nne` valid, `nnn` invalid                                                         | `validate.test.ts`                       |
-| Snapping reaches quarters                                                                                | cursor near `nne` snaps to it                                                      | `snap.test.ts`                           |
+| Snapping reaches quarters                                                                                | cursor near `nne` snaps to it                                                      | `anchor-geometry.test.ts`                |
 | Curve / elbow orientation for quarters                                                                   | `ene` horizontal-first, `nne` vertical-first                                       | `arrow-path.test.ts`                     |
 | Quarter fan                                                                                              | centred, half-edge room, `ene` fans on y                                           | `arrow-endpoint-spread.test.ts`          |
-| Creation anchor                                                                                          | facing middles, aspect, rotation                                                   | `anchor-choice.test.ts`                  |
+| Creation anchor                                                                                          | facing middles, aspect, rotation, zero direction                                   | `anchor-geometry.test.ts`                |
 | Path hits                                                                                                | straight / curved / angled through, grazing, clip; crossing, shared end, collinear | `arrow-path-hits.test.ts`                |
 | No trigger, no change (I1)                                                                               | a "better" side exists, path clear                                                 | `arrow-rebind.test.ts`                   |
 | Trigger through own shape; middle stays middle                                                           | box moved past its partner                                                         | `arrow-rebind.test.ts`                   |
@@ -408,7 +425,10 @@ swaps log, never a quiet frame.
 | O1                                                                                                       | spy `console.debug`                                                                | `arrow-rebind.test.ts`                   |
 | Swap: crossing same side, uncross only, pass-through guard, different sides, not considered, cap, O2, O3 | eight cases                                                                        | `arrow-rebind-swap.test.ts`              |
 | Default on                                                                                               | `{}` → true, `false` → false                                                       | `apps/live/lib/user-preferences.test.ts` |
-| Live drag re-anchors in the browser                                                                      | playwright-cli run, screenshots in the PR                                          | manual verification                      |
+| Live drag re-anchors in the browser                                                                      | seeded diagram, path read with the drag held open, O1                              | `apps/live/e2e/arrow-rebind.spec.ts`     |
+| The first crossing frame decides a quarter                                                               | drag past the quarter: `ene`, not `ese`                                            | `apps/live/e2e/arrow-rebind.spec.ts`     |
+| Setting off: nothing moves                                                                               | flip the Settings switch, drag                                                     | `apps/live/e2e/arrow-rebind.spec.ts`     |
+| Snap-target markers show 16                                                                              | `computeSnapTargets` length                                                        | `apps/live/lib/drag-geometry.test.ts`    |
 
 ## Constants and configuration
 

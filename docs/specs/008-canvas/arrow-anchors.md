@@ -98,6 +98,9 @@ where it was.
 - Resizing, rotating and editing do not run it.
 - Every run starts from the anchors as they are now. There is no memory of earlier anchors: once
   an end has moved, its new anchor is the truth, and the rule never returns it to where it was.
+- Because a drag runs it on every frame, an end is decided at the first frame where its path runs
+  through a shape, with the geometry of that frame; the rest of the drag keeps that anchor while
+  the path stays clear.
 
 ### Which arrows it considers
 
