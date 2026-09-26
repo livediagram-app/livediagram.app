@@ -98,7 +98,7 @@ which was its own jolt.
 **Motion.** Drilling into a space or folder, or backing out, swaps the whole
 level, and a level that lands in one frame is a jolt. So the bar eases in
 when the browser mounts (fade, short slide, height from zero) and the rows
-beneath it enter as a **cascade**, each a beat (40 ms) after the one above: list rows slide in and
+beneath it enter as a **cascade**, each a beat (10 ms) after the one above, the whole cascade settling within the 250ms budget of [Motion](../004-interface-design/motion.md): list rows slide in and
 grow from zero height so the rows below ease down with them; tiles fade,
 since a grid track already holds their place. The cascade runs on every level
 change and on first appearance; a folder created in place only animates its

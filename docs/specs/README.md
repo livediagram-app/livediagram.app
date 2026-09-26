@@ -11,7 +11,7 @@ Specs live in numbered category folders: the reserved `001`–`005` first (visio
 - ./001-project-vision/README.md - when you need the why: the problem, audience and value proposition
 - ./002-project-scope/README.md - when deciding what is in or out: licence, distribution, hard constraints
 - ./003-system-architecture/README.md - when touching source layout, the test setup, or cross-cutting code structure
-- ./004-interface-design/README.md - when working on the visual language: colour, fonts, accessibility, shared UI mechanics
+- ./004-interface-design/README.md - when working on the visual language: colour, fonts, motion, accessibility, shared UI mechanics
 - ./005-project-roadmap/README.md - when asking where the product is now and what is still ahead
 - ./006-diagram/README.md - when working on the diagram model: tabs, layers, storage, snapshots, offline diagrams
 - ./007-editor/README.md - when working on the live editor shell: routes, preferences, panels, tours, AI, command palette

@@ -180,12 +180,12 @@ ringed, so the difference is visible before switching ([User preferences](user-p
 ## Motion
 
 - **A reorder animates** (`ToolbarStripRail`, FLIP): tiles that moved slide
-  from their old slot to their new one over 200ms, a tile new to the strip
+  from their old slot to their new one over 200ms (the `short` token of [Motion](../004-interface-design/motion.md)), a tile new to the strip
   pops in, and the one pushed off the end pops out where it stood. Reduced
   motion collapses it to instant.
 - **Switching category animates.** The tile rail eases its width to the new
   set (the strip is centred, so it grows and shrinks evenly), the new tiles
-  pop in a 22ms beat apart, and the outgoing ones shrink away on a layer over
+  pop in a 10ms beat apart (a cascade, settling within 250ms), and the outgoing ones shrink away on a layer over
   the top. Only a real switch animates; the first set is simply there.
   Reduced motion collapses it to instant (`ToolbarStripRail`).
 
