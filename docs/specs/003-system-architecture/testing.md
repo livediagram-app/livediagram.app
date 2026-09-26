@@ -103,9 +103,10 @@ the "decides who may see this" set.
 
 ## CI
 
-CI runs two parallel jobs (`.github/workflows/ci.yml`): **Checks** runs lint →
-format → typecheck → **test** → **coverage thresholds**, while **Build** runs the
-build and the staging config check. No CI change is needed to start running
+CI runs three parallel jobs (`.github/workflows/ci.yml`): **Checks** runs lint →
+format → typecheck; **Tests** runs **test** → **coverage thresholds**, each
+suite exactly once (a workspace with `test:coverage` runs only that); **Build**
+runs the build and the staging config check. No CI change is needed to start running
 tests; adding a `test` script to a workspace is enough for Turborepo to pick
 it up.
 

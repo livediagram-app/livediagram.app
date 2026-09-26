@@ -15,8 +15,8 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
-# Two parallel jobs, so a PR waits for the slower one rather than the sum.
-# Neither needs the other: only the apps build, and nothing depends on an app.
+# Three parallel jobs, so a PR waits for the slowest one rather than the sum.
+# None needs another: only the apps build, and nothing depends on an app.
 jobs:
   checks:
     name: Checks
@@ -49,11 +49,38 @@ jobs:
       - name: Type check
         run: pnpm typecheck
 
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 9.15.0
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Every workspace runs its suite exactly once. Those with test:coverage run
+      # it in the coverage step, so plain `test` skips them; the filters come
+      # from the manifests (scripts/ci-test-filters.mjs), not a list kept here.
       # Two packages at a time: each vitest already fills the runner's cores,
       # and turbo's default fan-out starved the CPU-heavy sticky-vision suite
       # into timeouts.
       - name: Test
-        run: pnpm turbo run test --concurrency=2
+        run: |
+          set -euo pipefail
+          node scripts/ci-test-filters.mjs | xargs pnpm turbo run test --concurrency=2
 
       # Coverage runs as its own step because it ENFORCES something: the
       # per-file 100% thresholds on the api worker's identity / token /

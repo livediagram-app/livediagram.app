@@ -30,12 +30,13 @@ The marketing worker serves files from `apps/marketing/out/` (`output: 'export'`
 
 `.github/workflows/ci.yml` runs on **every PR** and **every push to `main`**.
 
-Two jobs run in parallel, each after its own `pnpm install --frozen-lockfile`, so a PR waits for the slower of the two rather than their sum:
+Three jobs run in parallel, each after its own `pnpm install --frozen-lockfile`, so a PR waits for the slowest rather than their sum:
 
-- **Checks**: `pnpm lint`, `pnpm format:check`, `pnpm typecheck`, `pnpm turbo run test --concurrency=2`, then `pnpm turbo run test:coverage --concurrency=2` (enforces the per-file coverage thresholds).
+- **Checks**: `pnpm lint`, `pnpm format:check`, `pnpm typecheck`.
+- **Tests**: `pnpm turbo run test --concurrency=2` for every workspace without `test:coverage`, then `pnpm turbo run test:coverage --concurrency=2` for those with it (enforcing the per-file coverage thresholds). Each suite runs exactly once; `scripts/ci-test-filters.mjs` derives the exclusions from the manifests, so adding or removing a coverage script needs no CI edit.
 - **Build**: `pnpm build`, then `pnpm staging:check`.
 
-Neither job needs the other's output: only the seven apps have a `build` script, and no workspace depends on an app, so the checks build nothing. The `main` ruleset requires both checks by name.
+No job needs another's output: only the seven apps have a `build` script, and no workspace depends on an app, so checks and tests build nothing. The `main` ruleset requires all three checks by name.
 
 The two test steps run two packages at a time. Each package's Vitest already fills the runner's cores, and turbo's default fan-out on the 4-vCPU runner slowed the CPU-heavy `sticky-vision` suite about 70x, into timeouts. `pnpm test` cannot carry the flag: it is pnpm's built-in test command, so CI calls turbo directly.
 
