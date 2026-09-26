@@ -573,9 +573,9 @@ nothing already on the board moves in any of them:
 5. **Along a lane.** Notes that overlap on one lane (lapped paper, or a
    policy's wide silhouette where the wall had a square) slide right, one
    gutter clear of the note before them, in the photo's left-to-right order,
-   and past any board note they would land on (provisional, awaiting a ruling:
-   the literal cascade would push them down a lane instead, and on the
-   labelled walls that turns an 11-lane photograph into 21 lanes).
+   and past any board note they would land on. Only notes of DIFFERENT rows
+   cascade: pushing a row-mate down a lane would staircase every lapped row
+   (on one labelled wall, 21 lanes for a photograph spanning 11 instead of 13).
 
 A photo with nothing in common with the board lines its top ROW up with the
 board's top, clear to its right (it used to line up the photograph's top edge,
@@ -583,6 +583,12 @@ so a photo of a wall with bare paper above the notes landed lanes too low).
 
 **Rulings** (each one an operator input, and what changed):
 
+- **2026-09-26 — "slide row-mates along the lane; cascade only across rows"**:
+  of two placements shown on a labelled wall, notes of one photo row that
+  overlap slide right along their lane (13 lanes), rather than every overlap
+  pushing the note and everything below down a lane (21 lanes, rows broken into
+  staircases). The cascade stays for notes of different rows, which is what
+  keeps a dense photo's row order.
 - **2026-09-26 — "event-storming stickies always land on lanes"** (fourteen
   decisions, all final): the lanes stop being an aid a note can ignore and
   become where a workshop note IS. Drag y has no tolerance for a workshop note;
