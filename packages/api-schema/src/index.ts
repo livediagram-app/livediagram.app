@@ -493,7 +493,7 @@ export { titleCase } from './title-case';
 
 // Bearer-token and loopback-host reading, shared by the api and mcp workers
 // so the two can't disagree on what a request presented (see ./request-auth.ts).
-export { bearerTokenOf, isLoopbackHostname } from './request-auth';
+export { bearerTokenOf, isClerkIdShape, isLoopbackHostname } from './request-auth';
 
 export type AiMode = 'clean' | 'ask';
 

@@ -87,6 +87,20 @@ describe('flushDiagramSavesBeacon', () => {
     expect((calls[0]!.init.headers as Record<string, string>)['X-Owner-Id']).toBe('owner-1');
   });
 
+  it('skips the flush for a signed-in owner with no cached token, since every write would 401', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    flushDiagramSavesBeacon({
+      ...base,
+      ownerId: 'user_abc',
+      changedTabs: [makeTab('t1')],
+      deletedIds: ['t2'],
+      tabs: [makeTab('t1')],
+    });
+    expect(calls).toHaveLength(0);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('[save] unload flush skipped'));
+    warn.mockRestore();
+  });
+
   it('sends X-Allow-Empty only for tabs whose content was authoritatively loaded', () => {
     flushDiagramSavesBeacon({
       ...base,

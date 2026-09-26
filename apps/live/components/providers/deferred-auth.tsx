@@ -37,8 +37,9 @@ export type DeferredAuthState = {
   userId: string | null;
   user: DeferredAuthUser | null;
   // Clerk's session-token getter; resolves null when signed out /
-  // disabled. Identity is stable once published.
-  getToken: () => Promise<string | null>;
+  // disabled. Identity is stable once published. `skipCache` mints a fresh
+  // token instead of returning the cached one.
+  getToken: (opts?: { skipCache?: boolean }) => Promise<string | null>;
   signOut: (opts?: { redirectUrl?: string }) => Promise<void>;
   // Reverified account self-deletion (Clerk step-up auth modal +
   // user.delete). Null until the bridge publishes it / when disabled.

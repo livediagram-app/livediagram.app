@@ -4,7 +4,7 @@ import type { Env } from '../types';
 // jose does the cryptography; what needs covering here is what this worker
 // does with its verdict. Stubbed so the verified branch is reachable without
 // a live JWKS host — the early-exit cases below never reach it either way.
-type VerifyOptions = { issuer?: string; audience?: string };
+type VerifyOptions = { issuer?: string; audience?: string; clockTolerance?: number };
 type VerifyResult = Promise<{ payload: Record<string, unknown> }>;
 const jwtVerifyMock =
   vi.fn<(token: string, jwks: unknown, options: VerifyOptions) => VerifyResult>();
@@ -161,7 +161,7 @@ describe('getClerkIdentity (verified session, docs/specs/014-identity/auth-and-g
     // Unset is the self-host default and must stay permissive; set, they stop
     // a validly-signed token from another Clerk tenant being replayed here.
     await getClerkIdentity(makeEnv(JWKS_URL), verifiedWith({ sub: 'u' }));
-    expect(jwtVerifyMock.mock.calls[0]?.[2]).toEqual({});
+    expect(jwtVerifyMock.mock.calls[0]?.[2]).toEqual({ clockTolerance: 5 });
 
     const strict = {
       CLERK_JWKS_URL: JWKS_URL,
@@ -170,6 +170,7 @@ describe('getClerkIdentity (verified session, docs/specs/014-identity/auth-and-g
     } as unknown as Env;
     await getClerkIdentity(strict, verifiedWith({ sub: 'u' }));
     expect(jwtVerifyMock.mock.calls[1]?.[2]).toEqual({
+      clockTolerance: 5,
       issuer: 'https://clerk.example',
       audience: 'livediagram',
     });
@@ -181,6 +182,35 @@ describe('getClerkIdentity (verified session, docs/specs/014-identity/auth-and-g
     jwtVerifyMock.mockRejectedValue(new Error('signature verification failed'));
     const result = await getClerkIdentity(makeEnv(JWKS_URL), makeRequest('Bearer bad-token'));
     expect(result).toBeNull();
+  });
+
+  // The same few seconds of skew Clerk's own backend SDK allows, so a token
+  // minted a moment "ahead" of the worker's clock isn't refused as not-yet-valid.
+  it('allows a few seconds of clock skew', async () => {
+    await getClerkIdentity(makeEnv(JWKS_URL), verifiedWith({ sub: 'u' }));
+    expect(jwtVerifyMock.mock.calls[0]?.[2]).toMatchObject({ clockTolerance: 5 });
+  });
+
+  // A rejected token used to vanish without trace. The reason is jose's own
+  // error code: never the token, and nothing a caller supplied.
+  it('logs why a token was rejected, without the token', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const expired = Object.assign(new Error('"exp" claim timestamp check failed'), {
+      code: 'ERR_JWT_EXPIRED',
+    });
+    jwtVerifyMock.mockRejectedValue(expired);
+    await getClerkIdentity(makeEnv(JWKS_URL), makeRequest('Bearer secret-token'));
+    expect(warn).toHaveBeenCalledWith('[auth] clerk_jwt_rejected reason=ERR_JWT_EXPIRED');
+    expect(JSON.stringify(warn.mock.calls)).not.toContain('secret-token');
+    warn.mockRestore();
+  });
+
+  it('logs an unknown reason when the failure carries no jose code', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    jwtVerifyMock.mockRejectedValue(new Error('boom'));
+    await getClerkIdentity(makeEnv(JWKS_URL), makeRequest('Bearer t'));
+    expect(warn).toHaveBeenCalledWith('[auth] clerk_jwt_rejected reason=unknown');
+    warn.mockRestore();
   });
 
   it('builds one JWKS fetcher per URL and reuses it', async () => {

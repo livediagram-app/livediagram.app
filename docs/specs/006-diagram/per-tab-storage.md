@@ -165,6 +165,28 @@ The user still loses the unsaved work, and no client-side design can prevent
 that once the server has withdrawn write access. What it can do is say so
 immediately and clearly, instead of an hour later.
 
+### An unauthenticated save names the sign-in
+
+A **401**, or a signed-in client with no session token to send
+(`SessionTokenUnavailableError`, see [Auth + guest access](../014-identity/auth-and-guest-access.md)), is neither a
+connection problem nor a refusal: the server couldn't tie the save to the
+signed-in account. Production showed it as `Http401.SaveTab` bursts, each
+toasting "Check your connection" on a wired fibre line.
+
+So it gets its own `unauthenticated` save status (`saveFailureStatus` in
+`save-failure.ts` maps every failure to exactly one status):
+
+- The toast reads "Couldn't confirm you're signed in, so your changes aren't
+  saving. Sign in again to keep them."
+- The Activity panel badge reads **Signed out**.
+- The autosave keeps retrying on the next edit, unlike `forbidden`: the
+  session can come back, and when it does the next save lands.
+
+Every failed save also reaches error telemetry exactly once
+(`reportSaveFailure`): a failure the api client already reported
+(`Http*`, `Network.*`, `Auth.NoSessionToken`) isn't counted again, and
+anything else thrown on the save path reports as `SaveFailed.<Kind>`.
+
 ### Autosave guard: never persist an unloaded tab
 
 The loading overlay above protects the **active** tab. A separate, subtler

@@ -13,8 +13,10 @@ import { Tooltip } from '@/components/primitives/Tooltip';
 // blip, a 5xx). 'forbidden' is a save the server refused outright — the
 // share link was revoked, we were removed from the team — which no amount
 // of retrying fixes, so it gets its own state and its own wording rather
-// than telling the user to check a connection that is fine.
-export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error' | 'forbidden';
+// than telling the user to check a connection that is fine. 'unauthenticated'
+// is a save the server could not tie to the signed-in account (a 401, or no
+// session token to send); it is retried, since the session can come back.
+export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error' | 'unauthenticated' | 'forbidden';
 
 // Full-height, edge-flush header action button: the icon stacked over a small
 // label, a left divider, hugging the top + bottom of the bar so the right-edge

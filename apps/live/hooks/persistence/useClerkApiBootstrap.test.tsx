@@ -14,8 +14,12 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { apiHeaders, setTokenProvider } from '@/lib/api/core';
 
 vi.mock('@/lib/clerk-config', () => ({ clerkEnabled: true }));
+const { getToken } = vi.hoisted(() => ({
+  getToken: vi.fn(async (opts?: { skipCache?: boolean }): Promise<string | null> =>
+    opts?.skipCache ? 'jwt-fresh' : 'jwt-1',
+  ),
+}));
 vi.mock('@/components/providers/deferred-auth', () => {
-  const getToken = async () => 'jwt-1';
   return {
     useDeferredAuth: () => ({
       authLoaded: true,
@@ -54,5 +58,19 @@ describe('useClerkApiBootstrap token provider', () => {
     const sent = (await headers!) as Record<string, string>;
     expect(sent['Authorization']).toBe('Bearer jwt-1');
     expect(sent['X-Owner-Id']).toBeUndefined();
+  });
+
+  // Clerk's getToken() can resolve null for a moment on a live session; the
+  // retry must reach Clerk as a cache bypass, not another cached read.
+  it('passes the cache bypass through to Clerk', async () => {
+    function Probe() {
+      useClerkApiBootstrap();
+      return null;
+    }
+    render(<Probe />);
+    getToken.mockResolvedValueOnce(null);
+    const sent = (await apiHeaders('user_abc')) as Record<string, string>;
+    expect(getToken).toHaveBeenLastCalledWith({ skipCache: true });
+    expect(sent['Authorization']).toBe('Bearer jwt-fresh');
   });
 });
