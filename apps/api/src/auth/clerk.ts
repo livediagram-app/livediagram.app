@@ -13,6 +13,17 @@ import type { Env } from '../types';
 // rotation; the cache is purely so a single Worker isolate doesn't
 // allocate a new fetcher per request.
 
+// Seconds of clock skew allowed on exp / nbf: the default Clerk's own backend
+// SDK applies (`clockSkewInMs: 5000`), so the worker is no stricter than Clerk.
+const CLERK_CLOCK_SKEW_SECONDS = 5;
+
+// jose tags every verification failure with a stable `code`
+// (ERR_JWT_EXPIRED, ERR_JWKS_TIMEOUT, ...). Only that shape is logged.
+function rejectionReason(err: unknown): string {
+  const code = (err as { code?: unknown } | null)?.code;
+  return typeof code === 'string' && /^ERR_[A-Z_]+$/.test(code) ? code : 'unknown';
+}
+
 const jwksCache = new Map<string, ReturnType<typeof createRemoteJWKSet>>();
 
 function getJWKS(url: string): ReturnType<typeof createRemoteJWKSet> {
@@ -71,14 +82,16 @@ export async function getClerkIdentity(env: Env, request: Request): Promise<Cler
 
   try {
     // jose enforces the JWKS signature (rejecting alg:none / unsigned)
-    // and exp/nbf by default. When CLERK_ISSUER / CLERK_AUDIENCE are
+    // and exp/nbf (within CLERK_CLOCK_SKEW_SECONDS) by default. When CLERK_ISSUER / CLERK_AUDIENCE are
     // configured we also assert the `iss` / `aud` claims, so a validly-signed
     // token from a different Clerk instance/tenant sharing the JWKS host — or
     // one minted for a different audience/app — can't be replayed here. Both
     // are left optional (unset → current behaviour) so self-host keeps working;
     // production should set CLERK_ISSUER (and CLERK_AUDIENCE if configured in
     // Clerk).
-    const verifyOptions: { issuer?: string; audience?: string } = {};
+    const verifyOptions: { clockTolerance: number; issuer?: string; audience?: string } = {
+      clockTolerance: CLERK_CLOCK_SKEW_SECONDS,
+    };
     if (env.CLERK_ISSUER) verifyOptions.issuer = env.CLERK_ISSUER;
     if (env.CLERK_AUDIENCE) verifyOptions.audience = env.CLERK_AUDIENCE;
     const { payload } = await jwtVerify(token, getJWKS(jwksUrl), verifyOptions);
@@ -95,7 +108,10 @@ export async function getClerkIdentity(env: Env, request: Request): Promise<Cler
         ? fva[0]
         : null;
     return { userId: payload.sub, email, sessionId, firstFactorAgeMinutes };
-  } catch {
+  } catch (err) {
+    // Still a guest fall-through, but no longer a silent one: an expired or
+    // unverifiable token otherwise surfaces only as a 400/401 further on.
+    console.warn(`[auth] clerk_jwt_rejected reason=${rejectionReason(err)}`);
     return null;
   }
 }
