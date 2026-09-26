@@ -1,8 +1,8 @@
-// The help centre's canonical origin and its `/help` base. The app is
-// served under /help by the router, so HELP_URL is the prefix every
-// absolute help URL builds on. Defined once here instead of hardcoding
-// 'https://livediagram.app' across the layout metadata, robots, sitemap,
-// breadcrumb JSON-LD, and the seo / structured-data builders (mirrors
-// apps/marketing/lib/site.ts).
-export const SITE_URL = 'https://livediagram.app';
+import { SITE_URL } from '@livediagram/ui';
+
+// The help centre's `/help` base on the shared site origin. The app is served
+// under /help by the router, so HELP_URL is the prefix every absolute help URL
+// builds on (robots, sitemap, breadcrumb JSON-LD, the structured-data
+// builders). The origin itself is SITE_URL in @livediagram/ui, shared with
+// every other app.
 export const HELP_URL = `${SITE_URL}/help`;

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useMemo } from 'react';
 import Link from 'next/link';
+import { useClickOutside } from '@livediagram/ui';
 import { articleHref, searchArticles } from '@/lib/articles';
 import { reportHelpSearch, SEARCH_SETTLE_MS } from '@/lib/search-telemetry';
 
@@ -32,15 +33,9 @@ export function SearchInput({ large = false }: { large?: boolean }) {
     return () => clearTimeout(timer);
   }, [hasQuery, trimmed, results.length]);
 
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
-        setDismissed(true);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  // A press outside dismisses the open dropdown. Only listening while it's
+  // open is equivalent: typing or focusing clears `dismissed` anyway.
+  useClickOutside(wrapperRef, () => setDismissed(true), isOpen);
 
   return (
     <div ref={wrapperRef} className="relative w-full text-left">

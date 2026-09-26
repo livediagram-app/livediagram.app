@@ -4,14 +4,13 @@ import type { ReactNode } from 'react';
 import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
-import { subpageMetadata } from '@/lib/subpage-metadata';
-import { JsonLd } from '@livediagram/ui';
+import { JsonLd, pageMetadata, REPO_URL } from '@livediagram/ui';
 
 const FAQ_TITLE = 'FAQ · livediagram';
 const FAQ_DESCRIPTION =
   'Common questions about livediagram: accounts, collaboration, self-hosting, and more.';
 
-export const metadata = subpageMetadata({
+export const metadata = pageMetadata({
   title: FAQ_TITLE,
   description: FAQ_DESCRIPTION,
   path: '/faq',
@@ -107,11 +106,7 @@ const FAQS: { q: string; a: ReactNode; aText?: string }[] = [
     a: (
       <>
         Yes. It is MIT-licensed and the source is{' '}
-        <a
-          href="https://github.com/livediagram-app/livediagram.app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
+        <a href={REPO_URL} target="_blank" rel="noopener noreferrer">
           on GitHub
         </a>
         . Deploy the static frontend plus the Cloudflare Workers backend on your own account and you

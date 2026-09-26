@@ -1,13 +1,12 @@
 import type { ReactNode } from 'react';
+import { buttonClassName } from '@livediagram/ui';
 
-// The marketing pages' primary CTA link: the px-5 brand pill sitting
-// between the ui package's md and lg Button sizes, so it can't compose
-// buttonClassName without a visible resize. Five pages hand-rolled it
-// and had already drifted (the FAQ copy lost its focus-visible
-// outline), hence one shared component. `size` picks the type scale —
-// `base` for the feature-category hero/blocks, `sm` for the
-// comparison / FAQ footer cards; layout extras (mt-3, group gap) come
-// in via className.
+// The marketing pages' primary CTA link: the brand pill at the ui package's
+// `cta` Button size (between md and lg). Five pages hand-rolled it and had
+// already drifted (the FAQ copy lost its focus-visible outline), hence one
+// shared component. `size` picks the type scale: `base` for the
+// feature-category hero/blocks, `sm` for the comparison / FAQ footer cards;
+// layout extras (mt-3, group) come in via className.
 export function CtaLink({
   href,
   size = 'base',
@@ -22,9 +21,10 @@ export function CtaLink({
   return (
     <a
       href={href}
-      className={`inline-flex items-center justify-center rounded-md bg-brand-500 px-5 py-2.5 font-medium text-white shadow-sm transition hover:bg-brand-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 ${
-        size === 'base' ? 'text-base' : 'text-sm'
-      }${className ? ` ${className}` : ''}`}
+      className={buttonClassName({
+        size: size === 'base' ? 'cta' : 'cta-sm',
+        className: `shadow-sm${className ? ` ${className}` : ''}`,
+      })}
     >
       {children}
     </a>

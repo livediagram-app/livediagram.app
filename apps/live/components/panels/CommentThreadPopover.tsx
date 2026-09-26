@@ -1,13 +1,11 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Button, CloseIcon, TrashIcon } from '@livediagram/ui';
+import { Button, CloseIcon, TrashIcon, useClickOutside, useEscape } from '@livediagram/ui';
 import { Portal } from '@/components/primitives/Portal';
 import { useReposition } from '@/hooks/canvas/useReposition';
 import type { Comment, CommentThread } from '@livediagram/diagram';
 import { initialsOf } from '@/lib/identity';
-import { useClickOutside } from '@/hooks/ui/useClickOutside';
-import { useEscape } from '@/hooks/ui/useEscape';
 import { isMobileViewportSync } from '@/lib/responsive';
 import { formatRelativeTimeCompact } from '@/lib/relative-time';
 import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@/lib/clamp-to-viewport';

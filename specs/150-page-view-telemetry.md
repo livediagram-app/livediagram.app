@@ -94,8 +94,12 @@ whether or not the diagram exists.
 ### Counting
 
 - One view per **path change**, from the shared `PageViewTracker` component
-  (`@livediagram/ui`) mounted in each app's root layout through a tiny client
-  adapter (`PageViewBoot`) that hands it the app's own `track()`, that reacts to Next's `usePathname`. A query-only change
+  (`@livediagram/ui`), which reacts to Next's `usePathname`, mounted in each
+  app's root layout through a client adapter that hands it a `track()`. The
+  public sites (marketing, help, the dashboard) all mount the shared
+  `PageViewBoot` from `@livediagram/ui`, wired to their one shared emitter
+  (`siteTrack` in `@livediagram/telemetry-client`); the editor mounts its own
+  `PageViewBoot` with its own emitter. A query-only change
   (a tab switch in the editor, a folder switch in the Explorer) is not a new
   page and does not count.
 - The same path twice in a row is not counted twice. This suppresses React
@@ -113,7 +117,9 @@ preferences key.
 
 - **editor** (`apps/live`) and **help centre** (`apps/help`): already emitting.
 - **marketing** (`apps/marketing`) and **the dashboard** (`apps/telemetry`):
-  new emitters. Their _only_ event is the page view.
+  new emitters. Their _only_ event is the page view: they mount the shared
+  `PageViewBoot` and nothing else, and deliberately no error tracking (the
+  privacy policy promises page views only).
 
 This changes spec/22's "never the static marketing site" rule: the marketing
 site now reports page views, and nothing else. It is still first-party, sent to

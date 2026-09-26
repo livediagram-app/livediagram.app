@@ -14,7 +14,7 @@ import {
   groupSectionFeatures,
   LANDING_SECTION_IDS,
 } from '@/lib/landing-content';
-import { subpageMetadata } from '@/lib/subpage-metadata';
+import { pageMetadata } from '@livediagram/ui';
 
 // One detail page per feature category at /features/<id>, reading the matching
 // LANDING_SECTIONS entry (see specs/16-marketing-site.md "Feature category
@@ -35,7 +35,7 @@ export async function generateMetadata({
   const { slug } = await params;
   const section = getLandingSection(slug);
   if (!section) return {};
-  return subpageMetadata({
+  return pageMetadata({
     title: `${section.title} | livediagram`,
     description: section.description,
     path: `/features/${slug}`,

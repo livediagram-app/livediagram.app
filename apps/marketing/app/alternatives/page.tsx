@@ -3,13 +3,11 @@ import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 import { ALTERNATIVES, ALTERNATIVES_LAST_UPDATED } from '@/lib/alternatives';
-import { subpageMetadata } from '@/lib/subpage-metadata';
-import { SITE_URL } from '@/lib/site';
-import { JsonLd } from '@livediagram/ui';
+import { JsonLd, pageMetadata, SITE_URL } from '@livediagram/ui';
 
 // Hub page for the comparison set (see specs/21-comparison-pages.md): a
 // crawlable parent that links to every /alternatives/<slug> page.
-export const metadata = subpageMetadata({
+export const metadata = pageMetadata({
   title: 'How livediagram compares · alternatives',
   description:
     'How livediagram stacks up against Miro, XMind, Excalidraw, draw.io, and Google Slides for diagrams. Honest, side-by-side comparisons.',

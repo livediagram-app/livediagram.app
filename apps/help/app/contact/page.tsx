@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Breadcrumb } from '@/components/Breadcrumb';
 import { helpMetadata } from '@/lib/seo';
+import { buttonClassName, REPO_URL } from '@livediagram/ui';
 
 export const metadata: Metadata = helpMetadata({
   title: 'Contact',
@@ -43,10 +44,7 @@ export default function ContactPage() {
               Questions, feedback, or trouble with a feature? Email the team and we will get back to
               you.
             </p>
-            <a
-              href="mailto:hello@livediagram.app"
-              className="inline-flex items-center gap-2 rounded-xl bg-brand-500 px-5 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:bg-brand-600"
-            >
+            <a href="mailto:hello@livediagram.app" className={buttonClassName({ size: 'cta-sm' })}>
               hello@livediagram.app
             </a>
           </div>
@@ -60,10 +58,10 @@ export default function ContactPage() {
               or follow along with development.
             </p>
             <a
-              href="https://github.com/livediagram-app/livediagram.app/issues"
+              href={`${REPO_URL}/issues`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition-all duration-200 hover:border-slate-400 hover:bg-slate-50"
+              className={buttonClassName({ variant: 'secondary', size: 'cta-sm' })}
             >
               Open an issue on GitHub
               {ExternalIcon}

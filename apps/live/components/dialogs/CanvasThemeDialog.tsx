@@ -16,8 +16,7 @@
 import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { useRef } from 'react';
 import type { BackgroundPattern } from '@livediagram/diagram';
-import { useEscape } from '@/hooks/ui/useEscape';
-import { useFocusTrap } from '@/hooks/ui/useFocusTrap';
+import { useEscape, useFocusTrap } from '@livediagram/ui';
 import { CanvasStyleControls } from '@/components/canvas/CanvasStyleControls';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { CustomThemePicker } from '@/components/palette/CustomThemePicker';
