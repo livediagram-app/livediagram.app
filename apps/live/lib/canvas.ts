@@ -2,6 +2,7 @@ import {
   isBoxed,
   isFixedSizeShape,
   type Anchor,
+  type BendPlan,
   type BoxedElement,
   type Element,
   type IconPosition,
@@ -286,6 +287,15 @@ export type DragState =
       // as opposed to drawing a new arrow (which alone gets the draw-time
       // collision curve and the modifier hint).
       reposition?: boolean;
+    }
+  | {
+      // Bending an arrow by dragging its line (docs/specs/008-canvas/arrow-bending.md): the plan is made
+      // once at the press, each move applies it to the total delta.
+      kind: 'arrow-bend';
+      arrowId: string;
+      startClientX: number;
+      startClientY: number;
+      plan: BendPlan;
     }
   | {
       // Whole-arrow translation. Only fires for arrows with both

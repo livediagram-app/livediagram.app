@@ -33,8 +33,9 @@ type ArrowLabelProps = {
   // box + move cursor and can be dragged along / across the line.
   draggable?: boolean;
   onStartDrag?: (e: ReactPointerEvent) => void;
-  // Double-click the label to re-edit its text.
-  onEdit?: () => void;
+  // Records the press; true when it completed a double-press, which opens
+  // the editor (docs/specs/008-canvas/arrow-bending.md), so nothing else may happen.
+  guardPress?: (e: ReactPointerEvent) => boolean;
   // Every keystroke, so the arrow can re-lay out the label (and its knockout) live.
   onDraft?: (text: string) => void;
   onCommit: (label: string) => void;
@@ -64,7 +65,7 @@ export function ArrowLabel({
   fill,
   draggable = false,
   onStartDrag,
-  onEdit,
+  guardPress,
   onDraft,
   onCommit,
   onCancel,
@@ -191,7 +192,7 @@ export function ArrowLabel({
       ) : null}
       {/* Transparent catcher, always on: when draggable it grabs the drag
           (slide the label along / across the line); otherwise a press selects
-          the arrow. Double-click edits, right-click opens the arrow menu — so
+          the arrow. A double-press edits, right-click opens the arrow menu, so
           a click on the label never falls through to the canvas. */}
       <rect
         x={left - pad}
@@ -201,14 +202,15 @@ export function ArrowLabel({
         rx={5}
         fill="transparent"
         onPointerDown={(e) => {
+          // Never let a press on the label reach the canvas; only the primary
+          // button selects or drags (right-click opens the menu below).
           e.stopPropagation();
+          if (e.button !== 0) return;
+          if (guardPress?.(e)) return;
           if (draggable && onStartDrag) onStartDrag(e);
           else onSelect?.(e);
         }}
-        onDoubleClick={(e) => {
-          e.stopPropagation();
-          onEdit?.();
-        }}
+        onDoubleClick={(e) => e.stopPropagation()}
         onContextMenu={(e) => {
           e.preventDefault();
           e.stopPropagation();

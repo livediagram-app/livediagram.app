@@ -5,12 +5,12 @@ import {
   arrowStyleOf,
   curveAnchorPoints,
   curveControlPoint,
-  distToSegment,
   endpointPosition,
+  planArrowBend,
   type ArrowElement,
 } from '@livediagram/diagram';
 import { track } from '@/lib/telemetry';
-import type { ArrowEnd, DragState } from '@/lib/canvas';
+import { pointerToCanvas, type ArrowEnd, type DragState } from '@/lib/canvas';
 import type { EditorDragDeps } from './useEditorDrag.types';
 
 type ArrowDragHandlerDeps = {
@@ -21,7 +21,7 @@ type ArrowDragHandlerDeps = {
 };
 
 // The arrow-specific drag gesture starters (translate / endpoint / curve /
-// curve-point / elbow / label) plus the curve-point add / delete commits.
+// curve-point / elbow / label / bend-by-the-line) plus the curve-point delete.
 // Each resolves the live arrow off depsRef, arms a history checkpoint, and
 // sets the drag state the shared move effect in useEditorDrag then advances.
 // Split out of useEditorDrag to keep that hook focused on the move loop.
@@ -185,63 +185,32 @@ export function useArrowDragHandlers({
   // bend doesn't cling to the box the arrow connects to. Returns the snapped
   // point + the guide lines now in effect (for the alignment overlay).
 
-  // Insert a control point at a clicked canvas position, so clicking an
-  // arrow's line adds a bend. Works on ANY arrow style: a straight or angled
-  // arrow is switched to a smooth curve at the same time (the user clicked
-  // the line to bend it). A curve with an existing bow keeps its shape (the
-  // bow is seeded as a point first). The new point lands in the nearest
-  // segment of the from -> points -> to polyline so it inserts where clicked.
-  const addCurvePoint = (arrowId: string, canvasX: number, canvasY: number) => {
+  // Bend an arrow by dragging its line (docs/specs/008-canvas/arrow-bending.md). The press plans the
+  // bend from the arrow as it stands; nothing changes until the pointer
+  // travels (useEditorDrag's engage threshold), so a click only selects.
+  const beginArrowBend = (arrowId: string, e: ReactPointerEvent<SVGElement>) => {
     const r = resolveArrowDrag(arrowId);
     if (!r) return;
     const { d, arrow } = r;
     if (arrow.locked === true || d.layerInertIds.has(arrowId) || d.isReadOnly) return;
-    const els = d.activeTab.elements;
-    const from = endpointPosition(arrow.from, els);
-    const to = endpointPosition(arrow.to, els);
-    const mx = (from.x + to.x) / 2;
-    const my = (from.y + to.y) / 2;
-    const currentStyle = arrowStyleOf(arrow);
-    // Preserve the arrow's style: an angled arrow gains another bend (stays a
-    // polyline), a curved arrow gains a smooth control point. Only a straight
-    // arrow has no bend concept, so it becomes a curve. Seed from the existing
-    // single bend (bow / elbow) so adding a point doesn't reset the shape.
-    const seeded =
-      arrow.curvePoints && arrow.curvePoints.length > 0
-        ? arrow.curvePoints.slice()
-        : currentStyle === 'curved'
-          ? (() => {
-              const c = curveControlPoint(from, to, arrow.curveOffset, arrow.from, arrow.to);
-              return [{ dx: c.x - mx, dy: c.y - my }];
-            })()
-          : currentStyle === 'angled'
-            ? (() => {
-                const elb = angledElbow(from, to, arrow.from, arrow.to, arrow.elbowOffset);
-                return [{ dx: elb.x - mx, dy: elb.y - my }];
-              })()
-            : [];
-    const nextStyle = currentStyle === 'straight' ? 'curved' : currentStyle;
-    const anchors = [from, ...curveAnchorPoints(from, to, seeded), to];
-    // Nearest segment of the anchor polyline → insert index in `seeded`.
-    let best = 0;
-    let bestDist = Infinity;
-    for (let i = 0; i < anchors.length - 1; i++) {
-      const dist = distToSegment({ x: canvasX, y: canvasY }, anchors[i]!, anchors[i + 1]!);
-      if (dist < bestDist) {
-        bestDist = dist;
-        best = i;
-      }
-    }
-    const next = seeded.slice();
-    next.splice(best, 0, { dx: canvasX - mx, dy: canvasY - my });
-    d.commit((all) =>
-      all.map((el) =>
-        el.id === arrowId && el.type === 'arrow'
-          ? { ...el, arrowStyle: nextStyle, curvePoints: next }
-          : el,
-      ),
+    // The arrow's <svg> spans the transformed canvas wrapper, so its rect maps
+    // the pointer into canvas coordinates exactly as the wrapper's does.
+    const svg = e.currentTarget.ownerSVGElement;
+    if (!svg) return;
+    const grab = pointerToCanvas(
+      e.clientX,
+      e.clientY,
+      svg.getBoundingClientRect(),
+      d.zoomRef.current,
     );
-    d.setSelectedId(arrowId);
+    checkpointPendingRef.current = true;
+    setDrag({
+      kind: 'arrow-bend',
+      arrowId,
+      startClientX: e.clientX,
+      startClientY: e.clientY,
+      plan: planArrowBend(arrow, d.activeTab.elements, grab),
+    });
   };
 
   // Remove a control point (right-click a point handle). Drops the slot from
@@ -352,7 +321,7 @@ export function useArrowDragHandlers({
     beginEndpointDrag,
     beginArrowCurveDrag,
     beginArrowCurvePointDrag,
-    addCurvePoint,
+    beginArrowBend,
     deleteCurvePoint,
     beginArrowElbowDrag,
     beginArrowLabelDrag,

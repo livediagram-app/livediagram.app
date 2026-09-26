@@ -18,11 +18,7 @@
 
 import { useRef, type PointerEvent as ReactPointerEvent, type MouseEvent } from 'react';
 import { isDragTravel } from '@/lib/press-gestures';
-
-// Milliseconds between two presses that still count as one double-press. The
-// platform default sits around 500ms; a touch below that keeps a deliberate
-// double-tap comfortable without pairing two unrelated clicks.
-export const DOUBLE_PRESS_MS = 450;
+import { DOUBLE_PRESS_MS } from '@/lib/double-press';
 
 // Pure so the window itself is testable: was this press the second half of a
 // double? `last` is the previous press time, or null when there wasn't one.

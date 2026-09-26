@@ -93,7 +93,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     multiSelectedIds,
     onBeginArrowCurveDrag,
     onBeginArrowCurvePointDrag,
-    onAddCurvePoint,
+    onBeginArrowBend,
     onDeleteCurvePoint,
     onBeginArrowElbowDrag,
     onBeginArrowLabelDrag,
@@ -201,7 +201,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onBeginArrowTranslate,
     onBeginArrowCurveDrag,
     onBeginArrowCurvePointDrag,
-    onAddCurvePoint,
+    onBeginArrowBend,
     onDeleteCurvePoint,
     onBeginArrowElbowDrag,
     onBeginArrowLabelDrag,
@@ -386,7 +386,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
                 onBeginTranslate={h.onBeginArrowTranslate}
                 onBeginCurveDrag={h.onBeginArrowCurveDrag}
                 onBeginCurvePointDrag={h.onBeginArrowCurvePointDrag}
-                onAddCurvePoint={h.onAddCurvePoint}
+                onBeginArrowBend={h.onBeginArrowBend}
                 onDeleteCurvePoint={h.onDeleteCurvePoint}
                 onBeginElbowDrag={h.onBeginArrowElbowDrag}
                 onBeginLabelDrag={h.onBeginArrowLabelDrag}
