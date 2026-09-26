@@ -1163,7 +1163,7 @@ Each is one more `ES_DOCKINGS` row plus, where the face is not west / east, a
 - [x] PR description names the deploy step: `wrangler secret put GOOGLE_AI_STUDIO_API_KEY`,
       delete the old `OPENAI_API_KEY` secret, drop the `OPENAI_MODEL` var (the
       provider is inferred from whichever key var is set).
-- [x] `packages/sticky-vision` in the repo layout block of `CLAUDE.md` and in
+- [x] `packages/sticky-vision` in the repo layout block of `AGENTS.md` and in
       `README.md` / `docs/architecture.md`.
 - [x] `docs/` wiki page `docs/vision/sticky-detection.md`: how the detector
       works, its calibration constants and why, the limits — a durable
