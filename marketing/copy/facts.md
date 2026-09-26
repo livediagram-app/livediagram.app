@@ -2,7 +2,7 @@
 
 The canonical, true-today facts all marketing copy is built from. If something
 below stops being true, fix it here first, then propagate to the taglines and
-descriptions. Mirrors [docs/product/what-is-livediagram.md](../../docs/product/what-is-livediagram.md)
+descriptions. Mirrors [Build phase](../../docs/specs/005-project-roadmap/prototype-scope.md)
 and [Purpose](../../docs/specs/001-project-vision/purpose.md).
 
 ## One line

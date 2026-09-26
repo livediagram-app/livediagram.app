@@ -16,7 +16,7 @@ marketing/   off-site copy + media for listings and promotion (see docs/specs/01
 
 | If you want to...                                     | Read                                                                           |
 | ----------------------------------------------------- | ------------------------------------------------------------------------------ |
-| Understand what livediagram does and where it's going | [docs/product/what-is-livediagram.md](docs/product/what-is-livediagram.md)     |
+| Understand what livediagram does and where it's going | [docs/README.md](docs/README.md)                                               |
 | Run it on your machine                                | [docs/development/local-development.md](docs/development/local-development.md) |
 | Host it on your own Cloudflare account                | [docs/operations/self-hosting.md](docs/operations/self-hosting.md)             |
 | See the repo's shape (apps, packages, deploy)         | [docs/development/architecture.md](docs/development/architecture.md)           |

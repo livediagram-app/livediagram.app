@@ -8,7 +8,7 @@ developer docs stay in [`docs/`](../docs/).
 Every claim here must map to a shipped feature. If a feature changes, fix the
 copy in the same change, the same way [Marketing site](../docs/specs/019-marketing/marketing-site.md)
 governs the landing page. When in doubt about what is true today, read
-[docs/product/what-is-livediagram.md](../docs/product/what-is-livediagram.md).
+[Build phase](../docs/specs/005-project-roadmap/prototype-scope.md).
 
 ## Layout
 
