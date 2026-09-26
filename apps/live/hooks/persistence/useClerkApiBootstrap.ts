@@ -105,7 +105,7 @@ function useClerkApiBootstrapEnabled(): BootstrapResult {
   // passive one, so the provider is in place by the time a child fetches.
   useLayoutEffect(() => {
     if (isSignedIn) {
-      setTokenProvider(() => getToken());
+      setTokenProvider((opts) => getToken(opts));
     } else {
       setTokenProvider(null);
     }

@@ -12,6 +12,7 @@ import type {
   ShareLink,
   ShareRole,
 } from '@livediagram/api-schema';
+import { isClerkIdShape } from '@livediagram/api-schema';
 import { stampTabKind, type Tab } from '@livediagram/diagram';
 import { readLocalStorageSafe, writeLocalStorageSafe } from '../local-storage-safe';
 import { getGuestSelfSig } from '../local-identity';
@@ -131,8 +132,8 @@ export type SharedDiagramResolution =
 // Module-level state (rather than threading a tokenProvider through
 // 22 function signatures) because livediagram ships only as a static
 // export — single browser tab, single-threaded, single Clerk session
-// per page load. The editor wires it up once in a `useEffect`
-// (`setTokenProvider(() => getToken())`) and clears on unmount.
+// per page load. useClerkApiBootstrap wires it up once in a layout effect
+// (`setTokenProvider((opts) => getToken(opts))`) and clears on unmount.
 // Tests reset between cases via the same setter.
 //
 // Visitors on a share URL include their own participant id PLUS the
@@ -143,7 +144,9 @@ export type SharedDiagramResolution =
 //
 // `body: true` adds `Content-Type: application/json` for write
 // requests; GETs / DELETEs omit it.
-type TokenProvider = () => Promise<string | null>;
+// `skipCache` mirrors Clerk's `getToken({ skipCache })`: mint a fresh token
+// rather than return the cached one.
+type TokenProvider = (opts?: { skipCache?: boolean }) => Promise<string | null>;
 
 let currentTokenProvider: TokenProvider | null = null;
 
@@ -156,11 +159,7 @@ let currentTokenProvider: TokenProvider | null = null;
 // signed-out tab can't flush with a dead identity.
 let lastKnownToken: string | null = null;
 
-// Register / clear the Clerk token provider. Call sites:
-//   - `apps/live/app/diagram/[id]/editor-page.tsx`: useEffect with
-//     `setTokenProvider(() => getToken())` and a cleanup that clears
-//     it.
-//   - `apps/live/app/new/page.tsx`: same pattern.
+// Register / clear the Clerk token provider (hooks/persistence/useClerkApiBootstrap.ts).
 // Pass `null` to clear (sign-out / unmount).
 export function setTokenProvider(provider: TokenProvider | null): void {
   currentTokenProvider = provider;
@@ -224,30 +223,51 @@ export function writeCachedSharePassword(shareCode: string, password: string | n
 // , which is fine for happy paths but leaves a confusing footprint in
 // audit logs). Internal callers still get the same return type, so
 // the export is additive.
+// Thrown instead of sending a request that is certain to be refused: a
+// signed-in client (its owner id is a Clerk account id) that has no session
+// token to prove it. The worker rejects an account id in the guest header
+// (401 account_id_not_a_guest_credential), so sending it only turns an auth
+// problem into what looks like a network one.
+export class SessionTokenUnavailableError extends Error {
+  constructor() {
+    super('no session token for a signed-in owner');
+    this.name = 'SessionTokenUnavailableError';
+  }
+}
+
+// The identity half of every request, shared by apiHeaders (async) and the
+// unload beacon (sync, off the cached token). Bearer and X-Owner-Id are
+// mutually exclusive, and an account id never rides as the guest header.
+export function identityHeaders(ownerId: string, token: string | null): Record<string, string> {
+  if (token) return { Authorization: `Bearer ${token}` };
+  if (isClerkIdShape(ownerId)) throw new SessionTokenUnavailableError();
+  // Proof of possession for the guest id (docs/specs/015-api/public-api-and-tokens.md
+  // section 4): the api worker can require a valid signature on owner-scoped
+  // routes, which a harvested id wouldn't have. Absent for legacy unsigned
+  // guests and self-hosts with signing disabled.
+  const sig = getGuestSelfSig();
+  return sig ? { 'X-Owner-Id': ownerId, 'X-Owner-Sig': sig } : { 'X-Owner-Id': ownerId };
+}
+
+// Clerk's getToken() can resolve null for a moment on a live session, so a
+// null gets one fresh attempt that bypasses Clerk's token cache.
+async function resolveToken(): Promise<string | null> {
+  if (!currentTokenProvider) return null;
+  return (await currentTokenProvider()) ?? (await currentTokenProvider({ skipCache: true }));
+}
+
 export async function apiHeaders(
   ownerId: string,
   // `extra` is merged last, for the handful of routes that carry a declarative
   // header of their own (X-Allow-Empty, the Offline Mode conversion marker).
   opts: { share?: string | null; body?: boolean; extra?: Record<string, string> } = {},
 ): Promise<HeadersInit> {
-  const h: Record<string, string> = {};
-  const token = currentTokenProvider ? await currentTokenProvider() : null;
+  const token = await resolveToken();
   // Mirror into the sync cache for the unload beacon (see
-  // getLastKnownToken) — including null, so a session that lapsed
+  // getLastKnownToken), including null, so a session that lapsed
   // mid-page doesn't leave a stale Bearer for the flush.
   lastKnownToken = token;
-  if (token) {
-    h['Authorization'] = `Bearer ${token}`;
-  } else {
-    h['X-Owner-Id'] = ownerId;
-    // Proof of possession for the guest id (docs/specs/015-api/public-api-and-tokens.md §4): the api worker can
-    // require a valid signature on owner-scoped routes, which a harvested id
-    // wouldn't have. Sent whenever we hold one for this id; absent for legacy
-    // unsigned guests (accepted during the grace window) and self-hosts with
-    // signing disabled.
-    const sig = getGuestSelfSig();
-    if (sig) h['X-Owner-Sig'] = sig;
-  }
+  const h = identityHeaders(ownerId, token);
   if (opts.body) h['Content-Type'] = 'application/json';
   if (opts.share) h['X-Share-Code'] = opts.share;
   // Share password (docs/specs/013-workspace/share-password.md) rides on every request once the visitor
