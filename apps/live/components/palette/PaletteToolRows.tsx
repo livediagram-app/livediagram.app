@@ -14,17 +14,12 @@
 
 import { StarIcon } from '@/components/primitives/explorer-icons';
 import { useEffect, useRef } from 'react';
-import {
-  eventStormingNoteSize,
-  SHAPE_DEFAULT_SIZE,
-  type EventStormingNoteKind,
-  type ShapeKind,
-} from '@livediagram/diagram';
-import { PALETTE_DND_MIME } from '@/lib/icons';
-import { setPaletteDragPreview, suppressNativeDragImage } from '@/lib/palette-drag-preview';
+import { setPaletteDragPreview } from '@/lib/palette-drag-preview';
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { PaletteTileDef } from './palette-tile-defs';
 import { tileCaption } from './tile-caption';
+import { tileDragStart } from './palette-tile-drag';
+import { usePaletteRecent } from './palette-recent-context';
 // The SAME star the Explorer's favourites use, so one glyph means one thing.
 import {
   tileActive,
@@ -62,6 +57,8 @@ function PaletteToolRow({
   }, [highlighted]);
 
   const onClick = useTileHandler(def, actions);
+  const dragStart = tileDragStart(def.action);
+  const recent = usePaletteRecent();
   // Built first, then wrapped when the list offers favouriting, so the row's
   // own markup has exactly one shape.
   const row = (
@@ -72,57 +69,18 @@ function PaletteToolRow({
       role="option"
       aria-selected={highlighted}
       onClick={onClick}
-      // Rows drag onto the canvas exactly like the grid tiles do. They did
-      // not, and since the categories moved to rows that was most of the
-      // palette: Behaviour, Collaborate, Build, Write, Draw, Data. Sticky
-      // rows (the plain note + the Event Storming notation, docs/specs/021-event-storming/event-storming.md) drag
-      // too, carrying their kind so the drop routes + sizes like a tap.
-      draggable={def.action.type === 'shape' || def.action.type === 'sticky'}
-      onDragStart={
-        def.action.type === 'shape'
-          ? (e) => {
-              const a = def.action as {
-                kind: ShapeKind;
-                session?: string;
-                reaction?: string;
-                mode?: string;
-                estimateScale?: string;
-              };
-              const choice = a.session ?? a.reaction ?? a.mode ?? a.estimateScale;
-              e.dataTransfer.setData(PALETTE_DND_MIME, choice ? `${a.kind}|${choice}` : a.kind);
-              e.dataTransfer.effectAllowed = 'copy';
-              const { width, height } = SHAPE_DEFAULT_SIZE[a.kind];
-              setPaletteDragPreview({ kind: a.kind, width, height });
-              // The browser's own drag image is suppressed in favour of the
-              // canvas ghost, exactly as the grid tiles do it.
-              suppressNativeDragImage(e);
-            }
-          : def.action.type === 'sticky'
-            ? (e) => {
-                const a = def.action as { esKind?: string };
-                e.dataTransfer.setData(
-                  PALETTE_DND_MIME,
-                  a.esKind ? `sticky|${a.esKind}` : 'sticky',
-                );
-                e.dataTransfer.effectAllowed = 'copy';
-                const size = a.esKind
-                  ? eventStormingNoteSize(a.esKind as EventStormingNoteKind)
-                  : { width: 200, height: 200 };
-                // The ghost draws by shape kind; a square footprint at the
-                // note's real size reads as the sticky it will become.
-                setPaletteDragPreview({
-                  kind: 'square',
-                  ...size,
-                  note: true,
-                });
-                suppressNativeDragImage(e);
-              }
-            : undefined
-      }
+      // Rows drag onto the canvas exactly like the tile they stand for: shapes, sticky notes, icons and
+      // stickers alike, including the rows a search turns up (the Toolbar strip's More popover).
+      draggable={dragStart !== undefined}
+      onDragStart={dragStart}
       // Clearing the preview is NOT optional: it is what removes the canvas
       // ghost. Without it every dragged row left its placemarker behind after
       // the element landed, on the drop AND on a cancelled drag.
-      onDragEnd={() => setPaletteDragPreview(null)}
+      // A drop on the canvas is a use too (the Toolbar strip's ordering); a cancelled drag is not.
+      onDragEnd={(e) => {
+        setPaletteDragPreview(null);
+        if (recent && e.dataTransfer.dropEffect !== 'none') recent.onUse(def.id);
+      }}
       aria-label={def.label}
       aria-pressed={armed}
       className={`flex w-full items-center gap-2.5 rounded-lg border py-1.5 pl-2 text-left transition ${
