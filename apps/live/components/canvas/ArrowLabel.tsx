@@ -4,13 +4,22 @@ import {
   type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
 } from 'react';
-import type { TextSize } from '@livediagram/diagram';
-import { arrowLabelFontSize, labelSize } from '@/lib/arrow-label-geometry';
+import {
+  BLANK_LINE,
+  LABEL_PAD_X_PX,
+  LABEL_PAD_Y_PX,
+  type ArrowLabelLayout,
+} from '@livediagram/diagram';
 import { BRAND_600 } from './arrow-handle-style';
 
+// Browsers and the canvas measure text a hair apart; the editor gets this
+// much extra width so it never wraps a line the layout kept whole.
+const EDITOR_SLACK_PX = 2;
+
 type ArrowLabelProps = {
-  x: number;
-  y: number;
+  // Where and how the label renders (docs/specs/008-canvas/arrow-labels.md), from the
+  // shared layout engine. While editing, the layout of the draft text.
+  layout: ArrowLabelLayout;
   text: string;
   color: string;
   isEditing: boolean;
@@ -18,23 +27,22 @@ type ArrowLabelProps = {
   cursorAtEnd?: boolean;
   // Resolved CSS font-family for the label text + editor (docs/specs/004-interface-design/fonts.md).
   fontFamily?: string;
-  // Label-text formatting (docs/specs/008-canvas/canvas-and-palette.md): size preset + inline styles, applied
-  // to the rendered <text>. Absent → default small / unstyled.
-  textSize?: TextSize;
   textBold?: boolean;
   textItalic?: boolean;
   textUnderline?: boolean;
   textStrikethrough?: boolean;
   // The plate behind the text (docs/specs/008-canvas/canvas-and-palette.md "Caption"). Absent / transparent
-  // leaves the label sitting straight on the canvas, which is how it has
-  // always drawn.
+  // leaves the label on the canvas, framed by the line's knockout.
   fill?: string;
   // When true (arrow selected + editable) the label shows a dashed
   // box + move cursor and can be dragged along / across the line.
   draggable?: boolean;
   onStartDrag?: (e: ReactPointerEvent) => void;
-  // Double-click the label to re-edit its text.
-  onEdit?: () => void;
+  // Records the press; true when it completed a double-press, which opens
+  // the editor (docs/specs/008-canvas/arrow-bending.md), so nothing else may happen.
+  guardPress?: (e: ReactPointerEvent) => boolean;
+  // Every keystroke, so the arrow can re-lay out the label (and its knockout) live.
+  onDraft?: (text: string) => void;
   onCommit: (label: string) => void;
   onCancel: () => void;
   // Left-click the label to select the arrow (when it isn't draggable yet),
@@ -44,20 +52,17 @@ type ArrowLabelProps = {
   onContextMenu?: (e: ReactMouseEvent) => void;
 };
 
-// The label lives inside the per-arrow SVG so it stays in canvas
-// space (and therefore inherits the zoom/pan transform). When the
-// arrow is in edit mode we render an HTML input via <foreignObject>
-// — that gives us native text-selection / IME / cursor behaviour
-// instead of reinventing it in pure SVG.
+// The label lives inside the per-arrow SVG so it stays in canvas space (and
+// inherits the zoom/pan transform). Editing swaps in an HTML textarea via
+// <foreignObject>, for native selection / IME / caret behaviour, sized and
+// wrapped exactly as the label will render so committing never jumps.
 export function ArrowLabel({
-  x,
-  y,
+  layout,
   text,
   color,
   isEditing,
   cursorAtEnd = false,
   fontFamily,
-  textSize,
   textBold,
   textItalic,
   textUnderline,
@@ -65,13 +70,14 @@ export function ArrowLabel({
   fill,
   draggable = false,
   onStartDrag,
-  onEdit,
+  guardPress,
+  onDraft,
   onCommit,
   onCancel,
   onSelect,
   onContextMenu,
 }: ArrowLabelProps) {
-  const inputRef = useRef<HTMLInputElement | null>(null);
+  const inputRef = useRef<HTMLTextAreaElement | null>(null);
   useEffect(() => {
     if (isEditing && inputRef.current) {
       const node = inputRef.current;
@@ -88,8 +94,9 @@ export function ArrowLabel({
     // not a dep.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isEditing]);
-  const fontSize = arrowLabelFontSize(textSize);
-  const size = labelSize(text, fontSize);
+  const { center, width, height, lines, fontPx, lineHeightPx } = layout;
+  const left = center.x - width / 2;
+  const top = center.y - height / 2;
   // Underline + strikethrough combine into one text-decoration value.
   const decoration =
     [textUnderline ? 'underline' : '', textStrikethrough ? 'line-through' : '']
@@ -98,75 +105,89 @@ export function ArrowLabel({
   if (isEditing) {
     return (
       <foreignObject
-        x={x - size.width / 2}
-        y={y - size.height / 2}
-        width={size.width}
-        height={size.height}
+        x={left - EDITOR_SLACK_PX / 2}
+        y={top}
+        width={width + EDITOR_SLACK_PX}
+        height={height}
         style={{ overflow: 'visible', pointerEvents: 'auto' }}
       >
-        <input
+        <textarea
           ref={inputRef}
           defaultValue={text}
+          aria-label="Arrow label"
+          placeholder="Label"
+          rows={1}
           onPointerDown={(e) => e.stopPropagation()}
+          onInput={(e) => onDraft?.(e.currentTarget.value)}
           onBlur={(e) => onCommit(e.currentTarget.value.trim())}
           onKeyDown={(e) => {
-            if (e.key === 'Enter') {
+            // Enter commits; Shift+Enter is a line break. Never mid-composition.
+            if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
               e.preventDefault();
-              onCommit((e.target as HTMLInputElement).value.trim());
+              onCommit(e.currentTarget.value.trim());
             } else if (e.key === 'Escape') {
               e.preventDefault();
               onCancel();
             }
             e.stopPropagation();
           }}
-          style={{ fontFamily }}
-          className="h-full w-full rounded bg-white px-1 text-center text-xs text-slate-800 shadow-sm outline-none ring-2 ring-sky-400"
+          style={{
+            fontFamily,
+            fontSize: fontPx,
+            lineHeight: `${lineHeightPx}px`,
+            padding: `${LABEL_PAD_Y_PX}px ${LABEL_PAD_X_PX}px`,
+            fontWeight: textBold ? 600 : undefined,
+            fontStyle: textItalic ? 'italic' : undefined,
+            color,
+          }}
+          className="block h-full w-full resize-none overflow-hidden whitespace-pre-wrap rounded bg-white text-center shadow-sm outline-none ring-2 ring-sky-400 dark:bg-slate-900"
         />
       </foreignObject>
     );
   }
-  // A touch of padding so the dashed box + drag area sit just outside
-  // the label text.
+  // A touch of padding so the dashed box + drag area sit just outside the plate.
   const pad = 2;
   const plate = fill && fill !== 'transparent' ? fill : null;
+  const firstY = center.y - ((lines.length - 1) * lineHeightPx) / 2;
   return (
     <g>
-      {/* The plate, when the caption has been given one. Drawn a touch wider
-          than the text so the words are not flush against its edge, and only
-          when set: with no fill the label sits straight on the canvas, which
-          is how it has always drawn. */}
       {plate ? (
         <rect
-          x={x - size.width / 2 - 4}
-          y={y - size.height / 2 - 1}
-          width={size.width + 8}
-          height={size.height + 2}
+          x={left}
+          y={top}
+          width={width}
+          height={height}
           rx={4}
           fill={plate}
           style={{ pointerEvents: 'none' }}
         />
       ) : null}
       <text
-        x={x}
-        y={y}
+        x={center.x}
+        y={firstY}
         textAnchor="middle"
         dominantBaseline="central"
-        fontSize={fontSize}
+        fontSize={fontPx}
         fontWeight={textBold ? 600 : undefined}
         fontStyle={textItalic ? 'italic' : undefined}
         textDecoration={decoration}
         fill={color}
         style={{ pointerEvents: 'none', userSelect: 'none', fontFamily }}
       >
-        {text}
+        {lines.map((line, i) => (
+          // A blank line keeps its height as a no-break space (see svgWrappedLabel).
+          <tspan key={i} x={center.x} dy={i === 0 ? 0 : lineHeightPx}>
+            {line || BLANK_LINE}
+          </tspan>
+        ))}
       </text>
       {/* Dashed box signals the label is draggable (only when selected). */}
       {draggable ? (
         <rect
-          x={x - size.width / 2 - pad}
-          y={y - size.height / 2 - pad}
-          width={size.width + pad * 2}
-          height={size.height + pad * 2}
+          x={left - pad}
+          y={top - pad}
+          width={width + pad * 2}
+          height={height + pad * 2}
           rx={5}
           fill="none"
           stroke={BRAND_600}
@@ -177,24 +198,25 @@ export function ArrowLabel({
       ) : null}
       {/* Transparent catcher, always on: when draggable it grabs the drag
           (slide the label along / across the line); otherwise a press selects
-          the arrow. Double-click edits, right-click opens the arrow menu — so
+          the arrow. A double-press edits, right-click opens the arrow menu, so
           a click on the label never falls through to the canvas. */}
       <rect
-        x={x - size.width / 2 - pad}
-        y={y - size.height / 2 - pad}
-        width={size.width + pad * 2}
-        height={size.height + pad * 2}
+        x={left - pad}
+        y={top - pad}
+        width={width + pad * 2}
+        height={height + pad * 2}
         rx={5}
         fill="transparent"
         onPointerDown={(e) => {
+          // Never let a press on the label reach the canvas; only the primary
+          // button selects or drags (right-click opens the menu below).
           e.stopPropagation();
+          if (e.button !== 0) return;
+          if (guardPress?.(e)) return;
           if (draggable && onStartDrag) onStartDrag(e);
           else onSelect?.(e);
         }}
-        onDoubleClick={(e) => {
-          e.stopPropagation();
-          onEdit?.();
-        }}
+        onDoubleClick={(e) => e.stopPropagation()}
         onContextMenu={(e) => {
           e.preventDefault();
           e.stopPropagation();

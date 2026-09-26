@@ -1,6 +1,6 @@
 // Applies one pointer-move tick of an ARROW-handle drag (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/008-canvas/arrow-to-arrow.md).
 //
-// The five arrow drag kinds — curve, elbow, label, translate, endpoint —
+// The arrow drag kinds — curve, elbow, label, bend, scale, translate, endpoint —
 // are siblings: each takes the gesture's canvas-space delta, asks a
 // `resolve*` helper for the new geometry, and writes it back through a
 // single element mapper. Their bodies lived inline in `useEditorDrag`'s
@@ -21,7 +21,13 @@
 
 import type { DragState } from '@/lib/canvas';
 import type { SnapTarget } from '@/components/canvas/Canvas.types';
-import type { AlignmentGuide, DistributionGuide, Element } from '@livediagram/diagram';
+import {
+  applyArrowBend,
+  scaleFreeArrow,
+  type AlignmentGuide,
+  type DistributionGuide,
+  type Element,
+} from '@livediagram/diagram';
 import { resolveArrowEndpointDrag } from './arrow-endpoint-resolve';
 import { resolveArrowControlFrame, resolveArrowLabelFrame } from './arrow-control-resolve';
 
@@ -37,6 +43,8 @@ export type ArrowDragMoveArgs = {
   dy: number;
   // Cmd / Ctrl held: place freely, skipping the endpoint snap ladder.
   noSnap: boolean;
+  // Shift held: a frame scale keeps the arrow's proportions.
+  shiftHeld: boolean;
   // Mutable rather than readonly to match the `resolve*` helpers' existing
   // signatures; nothing here writes to it.
   elements: Element[];
@@ -56,6 +64,7 @@ export function applyArrowDragMove(args: ArrowDragMoveArgs): void {
     dx,
     dy,
     noSnap,
+    shiftHeld,
     elements,
     guidesOn,
     tick,
@@ -137,6 +146,23 @@ export function applyArrowDragMove(args: ArrowDragMoveArgs): void {
       els.map((el) =>
         el.id === drag.arrowId && el.type === 'arrow' ? { ...el, labelOffset } : el,
       ),
+    );
+    return;
+  }
+
+  if (drag.kind === 'arrow-bend') {
+    // The plan was made at the press; this applies it to the total delta.
+    const patch = applyArrowBend(drag.plan, { x: dx, y: dy });
+    tick((els) =>
+      els.map((el) => (el.id === drag.arrowId && el.type === 'arrow' ? { ...el, ...patch } : el)),
+    );
+    return;
+  }
+
+  if (drag.kind === 'arrow-scale') {
+    const patch = scaleFreeArrow(drag.start, drag.box, drag.handle, { x: dx, y: dy }, shiftHeld);
+    tick((els) =>
+      els.map((el) => (el.id === drag.arrowId && el.type === 'arrow' ? { ...el, ...patch } : el)),
     );
     return;
   }

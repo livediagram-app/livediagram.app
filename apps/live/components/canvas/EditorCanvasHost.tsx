@@ -93,7 +93,8 @@ export function EditorCanvasHost() {
     addAvatar,
     addBanner,
     addCallout,
-    addCurvePoint,
+    beginArrowBend,
+    beginArrowScale,
     addHeader,
     addHero,
     addIcon,
@@ -1021,7 +1022,8 @@ export function EditorCanvasHost() {
         onBeginArrowTranslate={beginArrowTranslate}
         onBeginArrowCurveDrag={beginArrowCurveDrag}
         onBeginArrowCurvePointDrag={beginArrowCurvePointDrag}
-        onAddCurvePoint={addCurvePoint}
+        onBeginArrowBend={beginArrowBend}
+        onBeginArrowScale={beginArrowScale}
         onDeleteCurvePoint={deleteCurvePoint}
         onBeginArrowLabelDrag={beginArrowLabelDrag}
         onBeginArrowElbowDrag={beginArrowElbowDrag}

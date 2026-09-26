@@ -1,15 +1,18 @@
-import { memo, useMemo, useRef, type PointerEvent as ReactPointerEvent } from 'react';
+import { memo, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import {
   arrowheadShapeOf,
   arrowheadSizeOf,
   BORDER_DASH_ARRAY,
   DEFAULT_BORDER_STYLE,
   defaultArrowStrokeColor,
+  KNOCKOUT_RADIUS_PX,
   routeBehindHoles,
   ROUTE_BEHIND_MARGIN,
   type ArrowElement,
+  type ArrowLabelLayout,
   type ElementIndex,
 } from '@livediagram/diagram';
+import { sameLabelRender, type ArrowLabelRender } from '@/hooks/canvas/useArrowLabelLayouts';
 import type { ArrowEnd } from '@/lib/canvas';
 import { deriveArrowViewFrame } from './arrow-view-frame';
 import { useRightClickRelease } from '@/hooks/canvas/useRightClickRelease';
@@ -22,8 +25,10 @@ import { ArrowFlowOverlays, useArrowFlow } from './arrow-flow';
 import { BRAND_600 } from './arrow-handle-style';
 import { useLongPress } from '@/hooks/ui/useLongPress';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { pressLedger } from '@/lib/double-press';
 
-// The mask region + backdrop for route-behind (docs/specs/008-canvas/arrow-route-behind.md). Deliberately vast
+// The mask region + backdrop for route-behind (docs/specs/008-canvas/arrow-route-behind.md) and label
+// knockouts (docs/specs/008-canvas/arrow-labels.md). Deliberately vast
 // rather than fitted to the arrow: a curve can bow well outside its chord,
 // and a region that ends where the geometry does clips the drawing instead
 // of the boxes.
@@ -35,6 +40,12 @@ type ArrowViewProps = {
   // arrow resolves its endpoints / label collisions with O(1) lookups
   // instead of scanning the whole element array twice per arrow.
   elementIndex: ElementIndex;
+  // This arrow's label layout + the knockouts its line takes, from the
+  // layer's one label pass (docs/specs/008-canvas/arrow-labels.md).
+  labelRender: ArrowLabelRender;
+  // Lays the label out for text being typed, so the editor sits and wraps
+  // where the label will land.
+  draftLayout: (arrow: ArrowElement, text: string) => ArrowLabelLayout | null;
   isSelected: boolean;
   isPaintMode: boolean;
   isEditing: boolean;
@@ -67,20 +78,15 @@ type ArrowViewProps = {
   onBeginEdit: (id: string) => void;
   onCommitLabel: (id: string, label: string) => void;
   onCancelEdit: () => void;
-  // Fires when the user drags the body of a fully-floating arrow
-  // (both endpoints `kind === 'free'`). Pinned arrows are anchored
-  // to their elements so the body isn't draggable. The handler is
-  // responsible for the gesture's pointer-move + pointer-up plumbing.
-  onBeginTranslate?: (id: string, e: ReactPointerEvent) => void;
   // Begin the curve drag gesture, when the arrow is curved and the
   // selected user grabs the curve handle. Receives the original
   // pointer event so the caller can hook up move/up listeners.
   onBeginCurveDrag?: (id: string, e: ReactPointerEvent) => void;
   // Drag one control point of a multi-bend curve (curvePoints[index]).
   onBeginCurvePointDrag?: (id: string, index: number, e: ReactPointerEvent) => void;
-  // Add a control point at a canvas position (fired by the "+" segment
-  // handles shown while the arrow is selected).
-  onAddCurvePoint?: (id: string, canvasX: number, canvasY: number) => void;
+  // Press on the line: bend the arrow where it was grabbed once the pointer
+  // travels (docs/specs/008-canvas/arrow-bending.md).
+  onBeginArrowBend?: (id: string, e: ReactPointerEvent<SVGElement>) => void;
   // Remove the control point at `index` (right-click a point handle).
   onDeleteCurvePoint?: (id: string, index: number) => void;
   // Same shape as curve drag, but for angled arrows: the elbow
@@ -105,6 +111,8 @@ type ArrowViewProps = {
 function ArrowViewImpl({
   arrow,
   elementIndex,
+  labelRender,
+  draftLayout,
   isSelected,
   isPaintMode,
   isEditing,
@@ -117,10 +125,9 @@ function ArrowViewImpl({
   onBeginEdit,
   onCommitLabel,
   onCancelEdit,
-  onBeginTranslate,
   onBeginCurveDrag,
   onBeginCurvePointDrag,
-  onAddCurvePoint,
+  onBeginArrowBend,
   onDeleteCurvePoint,
   onBeginElbowDrag,
   onBeginLabelDrag,
@@ -156,9 +163,28 @@ function ArrowViewImpl({
   const markerUrl = `url(#${ownMarkerId ?? arrowheadMarkerId(headShape, headSize)})`;
   // Endpoints / path / midpoint / handle points / label placement — the
   // pure per-render frame, resolved in arrow-view-frame.ts.
-  const { from, to, pathD, curveAnchors, curveControl, elbowPoint, labelText, labelPos } =
-    deriveArrowViewFrame(arrow, elementIndex, isEditing);
-  const showLabel = isEditing || labelText.length > 0;
+  const { from, to, pathD, curveAnchors, curveControl, elbowPoint } = deriveArrowViewFrame(
+    arrow,
+    elementIndex,
+  );
+  // While editing, the label follows the draft text: laid out live so the
+  // editor, its wrap and the knockout move as you type.
+  const [draft, setDraft] = useState<string | null>(null);
+  const [draftSession, setDraftSession] = useState(isEditing);
+  if (draftSession !== isEditing) {
+    setDraftSession(isEditing);
+    setDraft(null);
+  }
+  const draftText = draft ?? arrow.label ?? '';
+  // An empty draft still needs a box to type into; size it for the placeholder.
+  const editLayout = isEditing ? draftLayout(arrow, draftText.trim() ? draftText : 'Label') : null;
+  const labelLayout = isEditing ? editLayout : labelRender.layout;
+  const knockouts = isEditing
+    ? [
+        ...labelRender.knockouts.filter((k) => k !== labelRender.layout?.knockout),
+        ...(editLayout?.knockout ? [editLayout.knockout] : []),
+      ]
+    : labelRender.knockouts;
   // Route behind boxes (docs/specs/008-canvas/arrow-route-behind.md). Where the line would cross an unrelated
   // box it breaks a little before it and resumes past it, so a fan of
   // arrows to nearby children doesn't draw over the children in between.
@@ -173,7 +199,11 @@ function ArrowViewImpl({
   );
   // Only mint a mask when something actually cuts this arrow — the common
   // case is nothing in the way, and an empty mask is pure overhead.
-  const behindMaskId = behindHoles.length > 0 ? `lvd-behind-${arrow.id}` : null;
+  const maskHoles = [
+    ...behindHoles.map((h) => ({ ...h, rx: ROUTE_BEHIND_MARGIN })),
+    ...knockouts.map((k) => ({ ...k, rx: KNOCKOUT_RADIUS_PX })),
+  ];
+  const behindMaskId = maskHoles.length > 0 ? `lvd-behind-${arrow.id}` : null;
   const behindMask = behindMaskId ? `url(#${behindMaskId})` : undefined;
   // Flow derivations + the phase-sync pinning (docs/specs/008-canvas/canvas-and-palette.md) live in
   // useArrowFlow; the visible path below mounts flowPathRef and the
@@ -193,6 +223,43 @@ function ArrowViewImpl({
   const baseStrokeWidth = arrow.strokeWidth ?? 2;
   const strokeWidth = isSelected ? baseStrokeWidth + 0.5 : baseStrokeWidth;
   const hitCursor = isPaintMode ? 'copy' : 'pointer';
+  // The line bends where it is grabbed, so an editable line says so.
+  const bendCursor = isPaintMode || isLocked || readOnly ? hitCursor : 'grab';
+  // Every press on this arrow (line, label, handles, move frame) passes the
+  // double-press rule (docs/specs/008-canvas/arrow-bending.md): a press that pairs with the one
+  // before never drags, and opens the label editor instead.
+  const pairsWithLast = (e: ReactPointerEvent): boolean =>
+    pressLedger.press({
+      id: arrow.id,
+      t: e.timeStamp,
+      x: e.clientX,
+      y: e.clientY,
+      wasSelected: isSelected,
+    }).pairs;
+  // Opened on the RELEASE of the second press, not its pointerdown: the
+  // browser moves focus as that press's default action, which would blur (and
+  // so commit) an editor opened a moment earlier.
+  const openEditor = () => {
+    if (isLocked || isPaintMode) return;
+    const done = () => {
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', done);
+    };
+    // A cancelled press (a pinch, a lost pointer) opens nothing.
+    const onUp = () => {
+      done();
+      onBeginEdit(arrow.id);
+    };
+    window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', done);
+  };
+  // For presses that do not select (label, handles, frame): true when it was
+  // the second of a double, which then opens the editor.
+  const guardPress = (e: ReactPointerEvent): boolean => {
+    if (!pairsWithLast(e)) return false;
+    openEditor();
+    return true;
+  };
   const opacity = arrow.opacity ?? 1;
 
   // The shared marker def uses `fill="context-stroke"` which resolves to
@@ -235,7 +302,7 @@ function ArrowViewImpl({
             height={MASK_SPAN.size}
             fill="white"
           />
-          {behindHoles.map((h, i) => (
+          {maskHoles.map((h, i) => (
             <rect
               key={i}
               x={h.x}
@@ -243,7 +310,7 @@ function ArrowViewImpl({
               width={h.width}
               height={h.height}
               fill="black"
-              rx={ROUTE_BEHIND_MARGIN}
+              rx={h.rx}
             />
           ))}
         </mask>
@@ -337,25 +404,21 @@ function ArrowViewImpl({
           // pan. Mirrors boxed elements, which never select on right-click.
           if (e.button !== 0) return;
           e.stopPropagation();
+          const doubled = pairsWithLast(e);
           onSelect(arrow.id, e);
-          // Translate gesture only fires when both ends are
-          // unpinned (a pinned end is anchored to its element so
-          // there's nothing meaningful to drag).
-          const bothFree = arrow.from.kind === 'free' && arrow.to.kind === 'free';
-          if (bothFree && !isLocked && onBeginTranslate) onBeginTranslate(arrow.id, e);
+          // Select first: selecting resets the edit state, so the editor opens after.
+          if (doubled) openEditor();
+          // Pressing the line bends it once the pointer travels
+          // (docs/specs/008-canvas/arrow-bending.md); a plain click only selects, and the second
+          // press of a double-click never drags.
+          if (!doubled && !isLocked && !isPaintMode && onBeginArrowBend) {
+            onBeginArrowBend(arrow.id, e);
+          }
         }}
-        onDoubleClick={(e) => {
-          e.stopPropagation();
-          if (isLocked || isPaintMode) return;
-          onBeginEdit(arrow.id);
-        }}
-        style={{
-          pointerEvents: 'stroke',
-          cursor:
-            arrow.from.kind === 'free' && arrow.to.kind === 'free' && !isLocked
-              ? 'move'
-              : hitCursor,
-        }}
+        // Double-press is detected from presses (guardPress), which works for
+        // touch too; the DOM dblclick only has to stay off the canvas.
+        onDoubleClick={(e) => e.stopPropagation()}
+        style={{ pointerEvents: 'stroke', cursor: bendCursor }}
       />
 
       <ArrowFlowOverlays
@@ -368,26 +431,25 @@ function ArrowViewImpl({
         cometRef={flowCometRef}
       />
 
-      {showLabel ? (
+      {labelLayout ? (
         <ArrowLabel
-          x={labelPos.x}
-          y={labelPos.y}
-          text={labelText}
+          layout={labelLayout}
+          text={arrow.label ?? ''}
           fill={arrow.labelFill}
           color={arrow.textColor ?? baseStroke}
           isEditing={isEditing}
           cursorAtEnd={editCursorAtEnd}
           fontFamily={fontFamily}
-          textSize={arrow.textSize}
           textBold={arrow.textBold}
           textItalic={arrow.textItalic}
           textUnderline={arrow.textUnderline}
           textStrikethrough={arrow.textStrikethrough}
           draggable={labelDraggable && !!onBeginLabelDrag}
           onStartDrag={(e) => onBeginLabelDrag?.(arrow.id, e)}
-          onEdit={() => onBeginEdit(arrow.id)}
+          onDraft={setDraft}
           onCommit={(next) => onCommitLabel(arrow.id, next)}
           onCancel={onCancelEdit}
+          guardPress={guardPress}
           onSelect={(e) => onSelect(arrow.id, e)}
           onContextMenu={(e) => contextSelectBeside(e.clientX, e.clientY)}
         />
@@ -402,10 +464,10 @@ function ArrowViewImpl({
           curveAnchors={curveAnchors}
           elbowPoint={elbowPoint}
           isLocked={isLocked}
+          guardPress={guardPress}
           onBeginEndpointDrag={onBeginEndpointDrag}
           onBeginCurveDrag={onBeginCurveDrag}
           onBeginCurvePointDrag={onBeginCurvePointDrag}
-          onAddCurvePoint={onAddCurvePoint}
           onDeleteCurvePoint={onDeleteCurvePoint}
           onBeginElbowDrag={onBeginElbowDrag}
         />
@@ -414,9 +476,17 @@ function ArrowViewImpl({
   );
 }
 
-// Default shallow-prop comparison is sufficient: `arrow` is
-// reference-stable across renders that don't touch it, `elements`
-// is reference-stable for the same reason (commit/commitTabs only
-// returns a new array when something actually changed), and every
-// other prop is a primitive or a stable id-bearing callback.
-export const ArrowView = memo(ArrowViewImpl);
+// `arrow` and `elementIndex` are reference-stable across renders that don't
+// touch them, and every other prop but the label render is a primitive or a
+// stable id-bearing callback, so a shallow compare suffices for those.
+export const ArrowView = memo(ArrowViewImpl, arrowViewPropsEqual);
+
+// The label render is compared by value: the layer lays every label out
+// afresh on each element change (docs/specs/008-canvas/arrow-labels.md).
+export function arrowViewPropsEqual(a: ArrowViewProps, b: ArrowViewProps): boolean {
+  const keys = Object.keys(a) as (keyof ArrowViewProps)[];
+  if (keys.length !== Object.keys(b).length) return false;
+  return keys.every((k) =>
+    k === 'labelRender' ? sameLabelRender(a.labelRender, b.labelRender) : Object.is(a[k], b[k]),
+  );
+}

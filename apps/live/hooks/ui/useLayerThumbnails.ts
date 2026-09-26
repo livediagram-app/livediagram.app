@@ -7,6 +7,8 @@ import {
   layerBands,
   layerOpacityOf,
   r2,
+  arrowLabelFontStack,
+  arrowLabelPass,
   svgArrow,
   svgBoxed,
   type Element,
@@ -36,6 +38,9 @@ export function useLayerThumbnails(
       return { thumbMarkup: new Map<string, string>(), thumbViewBox: null };
     }
     const markup = new Map<string, string>();
+    const labels = arrowLabelPass(elements, {
+      fontFamilyOf: (a) => arrowLabelFontStack(a, tabFont),
+    });
     for (const band of layerBands(elements, layers, { includeHidden: true })) {
       const parts: string[] = [];
       for (const el of band.elements) {
@@ -50,7 +55,10 @@ export function useLayerThumbnails(
         }
       }
       for (const el of band.elements) {
-        if (el.type === 'arrow') parts.push(svgArrow(el, elements));
+        if (el.type === 'arrow')
+          parts.push(
+            svgArrow(el, elements, 'light', tabFont, labels, `lvd-layer-${band.layer.id}-ko-`),
+          );
       }
       const opacity = layerOpacityOf(band.layer);
       markup.set(

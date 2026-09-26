@@ -1,6 +1,7 @@
 // Canvas 2D element drawing for tab export (PNG/PDF rasteriser): boxed
-// shapes (incl. isometric extrusion + silhouette) and arrows, drawn into a
-// CanvasRenderingContext2D. Split out of export-tab.ts.
+// shapes (incl. isometric extrusion + silhouette), drawn into a
+// CanvasRenderingContext2D. Arrows rasterise from svgArrow instead (export-tab.ts),
+// so their captions lay out exactly as the canvas lays them out.
 // Tab export helpers — one entry per format the user can pick from
 // the Export overlay. All four return a Promise<Blob> so the caller
 // can plug them into a single download helper without branching on
@@ -12,24 +13,11 @@
 // omitted in the visual ones (PNG, PDF) where they have no natural
 // rendering.
 
-import {
-  arrowLabelAnchor,
-  arrowPathD,
-  arrowStyleOf,
-  BORDER_DASH_ARRAY,
-  defaultArrowStrokeColor,
-  type CanvasSurface,
-  endpointPosition,
-  shade,
-  type ArrowElement,
-  type BoxedElement,
-  type Element,
-} from '@livediagram/diagram';
+import { type CanvasSurface, shade, type BoxedElement } from '@livediagram/diagram';
 // Shared SVG render helpers (docs/specs/015-api/mcp-server.md §5): moved into the diagram package so the
 // MCP worker reuses the same element drawing. The canvas / isometric / backdrop
 // orchestration below stays here and imports the per-element drawers + helpers.
 import {
-  arrowHeadRefs,
   describeBoxedExport,
   EXPORT_DEFAULT_FONT,
   EXPORT_IMAGE_FILL,
@@ -270,93 +258,6 @@ function roundedRect(
   ctx.lineTo(x, y + rr);
   ctx.arcTo(x, y, x + rr, y, rr);
   ctx.closePath();
-}
-
-// The point that precedes each endpoint along the rendered path, so the
-// arrowhead can point along a curved / angled line instead of the straight
-// from→to chord (the reported "curves export straight" bug). Mirrors the
-// tangent the editor's <ArrowView> draws its heads along.
-export function drawArrow(
-  ctx: CanvasRenderingContext2D,
-  arrow: ArrowElement,
-  elements: Element[],
-  alpha = 1,
-  surface: CanvasSurface = 'light',
-): void {
-  const from = endpointPosition(arrow.from, elements);
-  const to = endpointPosition(arrow.to, elements);
-  const stroke = arrow.strokeColor ?? defaultArrowStrokeColor(surface);
-  const lineWidth = arrow.strokeWidth ?? 2;
-  const style = arrowStyleOf(arrow);
-  ctx.save();
-  ctx.globalAlpha = (arrow.opacity ?? 1) * alpha;
-  ctx.strokeStyle = stroke;
-  ctx.fillStyle = stroke;
-  ctx.lineWidth = lineWidth;
-  ctx.lineJoin = 'round';
-  ctx.lineCap = 'round';
-  // Honour the line pattern (dashed / dotted / …) like the editor does.
-  const dash = BORDER_DASH_ARRAY[arrow.strokeStyle ?? 'solid'];
-  if (dash) ctx.setLineDash(dash.split(' ').map(Number));
-  // Stroke the SAME path the editor renders (straight / curved / angled,
-  // honouring drag handles) via its shared SVG path data.
-  const d = arrowPathD(
-    style,
-    from,
-    to,
-    arrow.from,
-    arrow.to,
-    arrow.curveOffset,
-    arrow.elbowOffset,
-    arrow.curvePoints,
-  );
-  ctx.stroke(new Path2D(d));
-  ctx.setLineDash([]);
-  // Arrowheads — small triangles pointing along the path's end tangents.
-  const { toRef, fromRef } = arrowHeadRefs(arrow, from, to);
-  const ends = arrow.arrowEnds ?? 'to';
-  if (ends === 'to' || ends === 'both') drawArrowhead(ctx, toRef, to);
-  if (ends === 'from' || ends === 'both') drawArrowhead(ctx, fromRef, from);
-  if (arrow.label) {
-    const anchor = arrowLabelAnchor(
-      style,
-      from,
-      to,
-      arrow.from,
-      arrow.to,
-      arrow.curveOffset,
-      arrow.elbowOffset,
-      arrow.labelOffset,
-      arrow.curvePoints,
-    );
-    ctx.fillStyle = '#0f172a';
-    ctx.font = '500 12px system-ui, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'bottom';
-    ctx.fillText(arrow.label, anchor.x, anchor.y - 4);
-  }
-  ctx.restore();
-}
-
-function drawArrowhead(
-  ctx: CanvasRenderingContext2D,
-  from: { x: number; y: number },
-  to: { x: number; y: number },
-): void {
-  const angle = Math.atan2(to.y - from.y, to.x - from.x);
-  const size = 8;
-  ctx.beginPath();
-  ctx.moveTo(to.x, to.y);
-  ctx.lineTo(
-    to.x - size * Math.cos(angle - Math.PI / 6),
-    to.y - size * Math.sin(angle - Math.PI / 6),
-  );
-  ctx.lineTo(
-    to.x - size * Math.cos(angle + Math.PI / 6),
-    to.y - size * Math.sin(angle + Math.PI / 6),
-  );
-  ctx.closePath();
-  ctx.fill();
 }
 
 // ---------------------------------------------------------------------

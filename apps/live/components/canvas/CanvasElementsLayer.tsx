@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { Fragment, useMemo } from 'react';
 import { participantKey } from '@/lib/identity';
 import { useStableHandlers } from '@/hooks/ui/useStableHandlers';
 import { useMindGrow } from '@/components/canvas/MindGrowContext';
@@ -17,11 +17,14 @@ import {
   laneSeamCoordinates,
   layerOpacityOf,
   snapSeamCoordinate,
+  arrowRoutePoints,
 } from '@livediagram/diagram';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { type QuickConnectDirection } from '@/lib/canvas';
 import { ArrowDefs } from '@/components/canvas/arrow-defs';
 import { ArrowView } from '@/components/canvas/ArrowView';
+import { useArrowLabelLayouts } from '@/hooks/canvas/useArrowLabelLayouts';
+import { FreeArrowSelection } from '@/components/canvas/FreeArrowSelection';
 import { BoxedElementView } from '@/components/canvas/BoxedElementView';
 import { LaserOverlay } from '@/components/canvas/LaserOverlay';
 import { UnionResizeHandles } from '@/components/canvas/element-parts';
@@ -92,7 +95,8 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     multiSelectedIds,
     onBeginArrowCurveDrag,
     onBeginArrowCurvePointDrag,
-    onAddCurvePoint,
+    onBeginArrowBend,
+    onBeginArrowScale,
     onDeleteCurvePoint,
     onBeginArrowElbowDrag,
     onBeginArrowLabelDrag,
@@ -200,7 +204,8 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onBeginArrowTranslate,
     onBeginArrowCurveDrag,
     onBeginArrowCurvePointDrag,
-    onAddCurvePoint,
+    onBeginArrowBend,
+    onBeginArrowScale,
     onDeleteCurvePoint,
     onBeginArrowElbowDrag,
     onBeginArrowLabelDrag,
@@ -242,7 +247,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   // Auto-fit measures the face it paints, and webfonts land after first
   // paint — re-render this layer once they are in so every fitted label
   // re-measures in its real face (see useFontsReady).
-  useFontsReady();
+  const fontsReady = useFontsReady();
   // Resolved tab default font once; per-element falls back to it (docs/specs/004-interface-design/fonts.md).
   const tabFontStack = resolveFontStack(tabFont);
   // Highest dot count on the tab (docs/specs/012-collaboration/session-tools.md), computed once so each element's
@@ -261,6 +266,9 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     () => (hasArrows ? buildElementIndex(elements) : null),
     [hasArrows, elements],
   );
+  // Every arrow label laid out once per element change, avoiding each other
+  // (docs/specs/008-canvas/arrow-labels.md).
+  const arrowLabels = useArrowLabelLayouts(elements, hasArrows, tabFont, fontsReady);
   // Insert-between preview (docs/specs/021-event-storming/event-storming.md): while a palette drag hovers a gap on an
   // event-storming board, the elements at and after the insertion point RENDER
   // shifted right to show the slot opening — see useInsertShift.
@@ -336,57 +344,80 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
         const draftFade = draftView && !isDraftNote ? 0.5 : 1;
         const effOpacity = ghostFactor * layerOpacity * draftFade;
         if (element.type === 'arrow') {
+          // A selected free arrow wears a box's selection: ring + scale handles
+          // (docs/specs/008-canvas/arrow-bending.md). HTML, beside its <svg>, so it is the same chrome.
+          const framed =
+            element.id === selectedId &&
+            multiSelectedIds.size === 0 &&
+            element.from.kind === 'free' &&
+            element.to.kind === 'free' &&
+            element.locked !== true &&
+            element.id !== editingId &&
+            !readOnly &&
+            !tabLocked &&
+            !isPaintMode;
           return (
-            <svg
-              key={element.id}
-              className="absolute inset-0 h-full w-full"
-              // Tagged so isometric mode can lift arrows just off the base
-              // plane (globals.css [data-iso] rule): an arrow's surface is
-              // coplanar with the boxes it crosses under preserve-3d, and
-              // coplanar layers z-fight — which is what made a FLOWING arrow
-              // shimmer in isometric while a static one looked fine (the
-              // animation repaints every frame, so the fight is visible
-              // continuously rather than only while the camera orbits).
-              data-arrow-svg=""
-              // An arrow travels whole or not at all in the preview (see
-              // insert-between.ts): one that straddles the insertion point
-              // stretches, which a transform cannot express, so it waits for
-              // the drop.
-              data-insert-shift={insertShift.animates ? '' : undefined}
-              style={{
-                pointerEvents: 'none',
-                overflow: 'visible',
-                ...(effOpacity < 1 ? { opacity: effOpacity } : {}),
-                ...(insertShift.xFor(element.id)
-                  ? { transform: `translateX(${insertShift.xFor(element.id)}px)` }
-                  : {}),
-              }}
-            >
-              <ArrowView
-                arrow={element}
-                elementIndex={elementIndex!}
-                isSelected={element.id === selectedId || multiSelectedIds.has(element.id)}
-                isPaintMode={isPaintMode}
-                isEditing={element.id === editingId}
-                editCursorAtEnd={element.id === editingId && editCursorAtEnd === true}
-                tabLocked={tabLocked}
-                readOnly={readOnly}
-                onSelect={h.handleArrowSelect}
-                onContextSelect={h.handleElementContextSelect}
-                onBeginEndpointDrag={h.onBeginEndpointDrag}
-                onBeginEdit={h.onBeginEdit}
-                onCommitLabel={h.onCommitLabel}
-                onCancelEdit={h.onCancelEdit}
-                onBeginTranslate={h.onBeginArrowTranslate}
-                onBeginCurveDrag={h.onBeginArrowCurveDrag}
-                onBeginCurvePointDrag={h.onBeginArrowCurvePointDrag}
-                onAddCurvePoint={h.onAddCurvePoint}
-                onDeleteCurvePoint={h.onDeleteCurvePoint}
-                onBeginElbowDrag={h.onBeginArrowElbowDrag}
-                onBeginLabelDrag={h.onBeginArrowLabelDrag}
-                fontFamily={tabFontStack}
-              />
-            </svg>
+            <Fragment key={element.id}>
+              <svg
+                className="absolute inset-0 h-full w-full"
+                // Tagged so isometric mode can lift arrows just off the base
+                // plane (globals.css [data-iso] rule): an arrow's surface is
+                // coplanar with the boxes it crosses under preserve-3d, and
+                // coplanar layers z-fight — which is what made a FLOWING arrow
+                // shimmer in isometric while a static one looked fine (the
+                // animation repaints every frame, so the fight is visible
+                // continuously rather than only while the camera orbits).
+                data-arrow-svg=""
+                // An arrow travels whole or not at all in the preview (see
+                // insert-between.ts): one that straddles the insertion point
+                // stretches, which a transform cannot express, so it waits for
+                // the drop.
+                data-insert-shift={insertShift.animates ? '' : undefined}
+                style={{
+                  pointerEvents: 'none',
+                  overflow: 'visible',
+                  ...(effOpacity < 1 ? { opacity: effOpacity } : {}),
+                  ...(insertShift.xFor(element.id)
+                    ? { transform: `translateX(${insertShift.xFor(element.id)}px)` }
+                    : {}),
+                }}
+              >
+                <ArrowView
+                  arrow={element}
+                  elementIndex={elementIndex!}
+                  labelRender={arrowLabels.renderOf(element.id)}
+                  draftLayout={arrowLabels.draftLayout}
+                  isSelected={element.id === selectedId || multiSelectedIds.has(element.id)}
+                  isPaintMode={isPaintMode}
+                  isEditing={element.id === editingId}
+                  editCursorAtEnd={element.id === editingId && editCursorAtEnd === true}
+                  tabLocked={tabLocked}
+                  readOnly={readOnly}
+                  onSelect={h.handleArrowSelect}
+                  onContextSelect={h.handleElementContextSelect}
+                  onBeginEndpointDrag={h.onBeginEndpointDrag}
+                  onBeginEdit={h.onBeginEdit}
+                  onCommitLabel={h.onCommitLabel}
+                  onCancelEdit={h.onCancelEdit}
+                  onBeginCurveDrag={h.onBeginArrowCurveDrag}
+                  onBeginCurvePointDrag={h.onBeginArrowCurvePointDrag}
+                  onBeginArrowBend={h.onBeginArrowBend}
+                  onDeleteCurvePoint={h.onDeleteCurvePoint}
+                  onBeginElbowDrag={h.onBeginArrowElbowDrag}
+                  onBeginLabelDrag={h.onBeginArrowLabelDrag}
+                  fontFamily={resolveFontStack(element.font) ?? tabFontStack}
+                />
+              </svg>
+              {framed ? (
+                <FreeArrowSelection
+                  arrowId={element.id}
+                  points={arrowRoutePoints(element, elements)}
+                  zoom={viewportZoom}
+                  onBeginMove={(e) => h.onBeginArrowTranslate(element.id, e)}
+                  onBeginScale={(handle, e) => h.onBeginArrowScale(element.id, handle, e)}
+                />
+              ) : null}
+            </Fragment>
           );
         }
         if (!isBoxed(element)) return null;

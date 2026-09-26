@@ -47,6 +47,7 @@ import { svgRichWrappedLabel, svgWrappedLabel } from './svg-render-labels';
 
 export {
   EXPORT_DEFAULT_FONT,
+  BLANK_LINE,
   svgFontFamilyAttr,
   svgLabel,
   svgRichLabel,
@@ -56,9 +57,10 @@ export {
   type ExportLabel,
   type ExportRun,
 } from './svg-render-labels';
-import { svgArrow } from './svg-render-arrows';
+import { arrowLabelFontStack, svgArrow } from './svg-render-arrows';
+import { arrowLabelPass, arrowRoutePoints, type ArrowLabelPass } from './arrow-label-layout';
 
-export { arrowHeadRefs, svgArrow, svgArrowhead } from './svg-render-arrows';
+export { arrowHeadRefs, arrowLabelFontStack, svgArrow, svgArrowhead } from './svg-render-arrows';
 import type { BoxedElement, Element, Tab } from './index';
 import { layerBands, layerOpacityOf, visibleLayerElements } from './layers';
 // Element drop shadows (docs/specs/008-canvas/element-shadows.md): gate + deterministic filter defs.
@@ -108,12 +110,23 @@ import { themeChartPalette } from './theme-presets';
 
 // Bounding box of the visible content. Arrows count via free endpoints; boxed
 // elements via their rectangle. Empty / degenerate tabs default to a page.
-export function contentBounds(elements: Element[]): { x: number; y: number; w: number; h: number } {
+// Arrows count by their drawn route (a bow can swing well outside the boxes
+// it joins) and, when a label pass is given, by their label plates.
+export function contentBounds(
+  elements: Element[],
+  labels?: ArrowLabelPass,
+): { x: number; y: number; w: number; h: number } {
   const points: Point[] = [];
   for (const el of elements) {
     if (el.type === 'arrow') {
-      if (el.from.kind === 'free') points.push(el.from);
-      if (el.to.kind === 'free') points.push(el.to);
+      points.push(...arrowRoutePoints(el, elements));
+      const l = labels?.layouts.get(el.id);
+      if (l) {
+        points.push(
+          { x: l.center.x - l.width / 2, y: l.center.y - l.height / 2 },
+          { x: l.center.x + l.width / 2, y: l.center.y + l.height / 2 },
+        );
+      }
     } else {
       points.push({ x: el.x, y: el.y }, { x: el.x + el.width, y: el.y + el.height });
     }
@@ -453,7 +466,11 @@ export function renderElementsToSvg(
 ): string {
   const padding = opts.padding ?? EXPORT_PADDING;
   const visible = visibleLayerElements(tab.elements, tab.layers);
-  const bounds = contentBounds(visible);
+  // Every caption laid out once, in document order, so labels see each other.
+  const labels = arrowLabelPass(tab.elements, {
+    fontFamilyOf: (a) => arrowLabelFontStack(a, tab.font),
+  });
+  const bounds = contentBounds(visible, labels);
   const vbX = bounds.x - padding;
   const vbY = bounds.y - padding;
   const vbW = bounds.w + padding * 2;
@@ -498,7 +515,7 @@ export function renderElementsToSvg(
         );
     }
     for (const el of band.elements) {
-      if (el.type === 'arrow') inner.push(svgArrow(el, tab.elements, surface, tab.font));
+      if (el.type === 'arrow') inner.push(svgArrow(el, tab.elements, surface, tab.font, labels));
     }
     const opacity = layerOpacityOf(band.layer);
     parts.push(

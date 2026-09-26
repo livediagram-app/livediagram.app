@@ -78,6 +78,9 @@ function blockFirstY(
   return y - ((lineCount - 1) * lineH) / 2;
 }
 
+// What a blank line renders as, so it keeps its height (see svgWrappedLabel).
+export const BLANK_LINE = '\u00a0';
+
 // A word-wrapped plain label: one anchored <text> with a <tspan> per line.
 export function svgWrappedLabel(
   lines: string[],
@@ -95,7 +98,10 @@ export function svgWrappedLabel(
   const firstY = blockFirstY(y, lines.length, lineH, valign);
   const tspans = lines
     .map(
-      (line, i) => `<tspan x="${r2(x)}" dy="${i === 0 ? 0 : r2(lineH)}">${xmlEscape(line)}</tspan>`,
+      // A blank line is a no-break space: an empty <tspan> has no glyph, so SVG
+      // drops its dy and the next line moves up into the gap.
+      (line, i) =>
+        `<tspan x="${r2(x)}" dy="${i === 0 ? 0 : r2(lineH)}">${xmlEscape(line || BLANK_LINE)}</tspan>`,
     )
     .join('');
   return (

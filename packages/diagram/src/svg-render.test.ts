@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { ArrowElement, ImageElement, ShapeElement, Tab } from './index';
-import { renderElementsToSvg } from './svg-render';
+import { contentBounds, renderElementsToSvg } from './svg-render';
+import { arrowLabelFontStack } from './svg-render-arrows';
+import { arrowLabelPass, layoutArrowLabels } from './arrow-label-layout';
 
 const shape = (id: string, o: Partial<ShapeElement> = {}): ShapeElement => ({
   id,
@@ -734,6 +736,24 @@ describe('arrow captions in an export', () => {
     // Transparent is the same as none: the label sits on the canvas.
     expect(captioned({ labelFill: 'transparent' })).not.toContain('fill="transparent"');
   });
+
+  // docs/specs/008-canvas/arrow-labels.md: the export lays labels out with the canvas engine.
+  it('breaks the line open behind an on-line caption', () => {
+    const svg = captioned({});
+    expect(svg).toContain('<mask id="lvd-ko-arr"');
+    expect(svg).toContain('mask="url(#lvd-ko-arr)"');
+  });
+
+  it('wraps a long caption onto the same lines the layout engine chose', () => {
+    const label = 'Context summarisation for the whole team and then some';
+    const t = tab([shape('a'), shape('b', { y: 600 }), pinnedArrow('arr', 'a', 'b', { label })]);
+    const layout = layoutArrowLabels(t.elements, {
+      fontFamilyOf: (a) => arrowLabelFontStack(a, t.font),
+    }).get('arr')!;
+    expect(layout.lines.length).toBeGreaterThan(1);
+    const svg = renderElementsToSvg(t);
+    for (const line of layout.lines) expect(svg).toContain(`>${line}</tspan>`);
+  });
 });
 
 // Drawn-on-the-box chrome (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/009-elements/lane.md). The export drew the box and
@@ -774,5 +794,38 @@ describe('chrome the canvas draws on a box', () => {
   it('rounds a mind node the way the canvas does', () => {
     const svg = renderElementsToSvg(tab([shape('mn', { shape: 'mind-node' })]));
     expect(svg).toContain('rx="12"');
+  });
+});
+
+// A bow can swing well outside the boxes it joins; the export used to size
+// itself to the boxes and free arrow ends only, clipping the curve and its label.
+describe('contentBounds', () => {
+  it('includes the drawn route of a bowed arrow', () => {
+    const els = [
+      shape('a', { y: 200 }),
+      shape('b', { x: 500, y: 200 }),
+      pinnedArrow('arr', 'a', 'b', { arrowStyle: 'curved', curveOffset: { dx: 0, dy: -400 } }),
+    ];
+    expect(contentBounds(els).y).toBeLessThan(100);
+  });
+
+  it('includes label plates when given the label pass', () => {
+    const els = [pinnedArrow('arr', 'a', 'b', { label: 'x' }), shape('a'), shape('b', { x: 40 })];
+    const labels = arrowLabelPass(els);
+    const l = labels.layouts.get('arr')!;
+    const b = contentBounds(els, labels);
+    expect(b.y).toBeLessThanOrEqual(l.center.y - l.height / 2);
+  });
+});
+
+// An empty <tspan> carries no glyph, so SVG drops its `dy` with it: a blank
+// line the author typed collapsed, and the text below it moved up a line.
+describe('blank lines in a wrapped label', () => {
+  it('keep their height as a non-breaking space', () => {
+    const svg = renderElementsToSvg(
+      tab([shape('a'), shape('b', { x: 400 }), pinnedArrow('arr', 'a', 'b', { label: '1\n\n2' })]),
+    );
+    const tspans = [...svg.matchAll(/<tspan[^>]*>([^<]*)<\/tspan>/g)].map((m) => m[1]);
+    expect(tspans).toEqual(['1', '\u00a0', '2']);
   });
 });

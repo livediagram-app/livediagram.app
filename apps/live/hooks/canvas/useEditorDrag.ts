@@ -153,7 +153,8 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     beginEndpointDrag,
     beginArrowCurveDrag,
     beginArrowCurvePointDrag,
-    addCurvePoint,
+    beginArrowBend,
+    beginArrowScale,
     deleteCurvePoint,
     beginArrowElbowDrag,
     beginArrowLabelDrag,
@@ -442,8 +443,22 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
         return;
       }
 
+      // Arrow drags engage like a body move: until the pointer travels past
+      // DRAG_ENGAGE_PX a press is a click, so a quick double-click never nudges
+      // a handle, pins a label or bends a line (docs/specs/008-canvas/arrow-bending.md). Drawing a
+      // new arrow's endpoint is the exception: it follows the pointer at once.
+      const engages = drag.kind !== 'arrow-endpoint' || drag.reposition === true;
+      if (engages && !dragEngagedRef.current) {
+        const travelled = Math.hypot(e.clientX - drag.startClientX, e.clientY - drag.startClientY);
+        if (travelled < DRAG_ENGAGE_PX) return;
+        dragEngagedRef.current = true;
+        if (drag.kind === 'arrow-bend') {
+          console.debug('[arrow-bend]', drag.arrowId, drag.plan.kind);
+          track('Element', 'Changed', 'ArrowBend');
+        }
+      }
       // Every remaining kind is an arrow-handle drag (curve / elbow /
-      // label / translate, and arrow-endpoint as the fall-through), all
+      // label / bend / translate, and arrow-endpoint as the fall-through), all
       // of which apply the same way: delta in, resolved geometry out
       // through `tick`. See arrow-drag-apply.ts.
       applyArrowDragMove({
@@ -451,6 +466,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
         dx,
         dy,
         noSnap,
+        shiftHeld: e.shiftKey,
         elements: activeTab.elements,
         guidesOn: depsRef.current.alignmentGuidesRef.current ?? true,
         tick,
@@ -862,7 +878,8 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     beginEndpointDrag,
     beginArrowCurveDrag,
     beginArrowCurvePointDrag,
-    addCurvePoint,
+    beginArrowBend,
+    beginArrowScale,
     deleteCurvePoint,
     beginArrowElbowDrag,
     beginArrowLabelDrag,

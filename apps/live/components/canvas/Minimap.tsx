@@ -5,6 +5,8 @@ import {
   boundsOfPoints,
   endpointPosition,
   isBoxed,
+  arrowLabelFontStack,
+  arrowLabelPass,
   svgArrow,
   svgBoxed,
   type Element,
@@ -121,6 +123,9 @@ export function Minimap({
   const { markup, bounds } = useMemo(() => {
     const corners: Point[] = [];
     const parts: string[] = [];
+    const labels = arrowLabelPass(elements, {
+      fontFamilyOf: (a) => arrowLabelFontStack(a, tabFont),
+    });
     // Boxed first (frames behind their contents), then arrows on top —
     // matching the canvas z-order.
     for (const el of framesFirst(elements)) {
@@ -137,7 +142,7 @@ export function Minimap({
     }
     for (const el of elements) {
       if (el.type !== 'arrow') continue;
-      parts.push(svgArrow(el, elements));
+      parts.push(svgArrow(el, elements, 'light', tabFont, labels, 'lvd-minimap-ko-'));
       corners.push(endpointPosition(el.from, elements), endpointPosition(el.to, elements));
     }
     return {

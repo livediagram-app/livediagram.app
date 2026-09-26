@@ -19,7 +19,19 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles("arrows").filter((a) => a.slug !== "curve-and-elbow-handles")}
 >
 
-Straight lines are not always enough. When two connectors would overlap, or a line needs to route around a shape, a curved or angled arrow gives you a path you can shape by hand. Both styles expose a draggable handle on the line that controls how it bends.
+Straight lines are not always enough. When two connectors would overlap, or a line needs to route around a shape, you can bend an arrow by hand: drag the line itself, or drag the handle a curved or angled arrow shows once it is selected.
+
+## Bending by dragging the line
+
+Press anywhere on an arrow's line and drag. The arrow bends where you grabbed it:
+
+- A **straight** arrow becomes a smooth curve that passes through your pointer.
+- A **curved** arrow reshapes its bow the same way. If it already has bend points, dragging the line adds a new one where you grabbed it.
+- An **angled** arrow slides the segment you grabbed sideways, adding a short jog where needed so its ends stay put.
+
+A click without dragging only selects the arrow, and a quick double-click always opens its label, however fast you click.
+
+An arrow attached to nothing at either end shows a selection frame like a shape's when selected. Drag the frame's edge to move the whole arrow (dragging its line bends it), or a corner or side handle to scale it.
 
 ## Choosing a bendable style
 

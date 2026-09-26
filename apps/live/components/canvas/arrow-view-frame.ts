@@ -1,7 +1,6 @@
 import {
   angledElbow,
   arrowEndpointSpread,
-  arrowLabelAnchor,
   arrowPathD,
   arrowPathMidpoint,
   arrowStyleOf,
@@ -11,17 +10,13 @@ import {
   type ArrowElement,
   type ElementIndex,
 } from '@livediagram/diagram';
-import { arrowLabelFontSize, placeLabel } from '@/lib/arrow-label-geometry';
 
 // The pure per-render frame of an arrow view, lifted out of ArrowView
 // (following the boxed-drag-resolve / arrow-*-resolve pattern):
 // resolved endpoints, the path + visual midpoint, the curve / elbow
-// handle points, and the label's placement.
-export function deriveArrowViewFrame(
-  arrow: ArrowElement,
-  elementIndex: ElementIndex,
-  isEditing: boolean,
-) {
+// handle points. Labels are laid out for the whole layer at once
+// (useArrowLabelLayouts), since they avoid each other.
+export function deriveArrowViewFrame(arrow: ArrowElement, elementIndex: ElementIndex) {
   // Resolve the true endpoints, then apply the converging-fan offset: when
   // several arrows pin to the same anchor, each end slides a few px along
   // the target edge so the heads don't pile up (arrow-endpoint-spread.ts).
@@ -74,36 +69,6 @@ export function deriveArrowViewFrame(
     style === 'angled' && !curveAnchors
       ? angledElbow(from, to, arrow.from, arrow.to, arrow.elbowOffset)
       : null;
-  const labelText = arrow.label ?? '';
-  const showLabel = isEditing || labelText.length > 0;
-  // When the user has dragged the label, anchor it to their chosen
-  // {t, offset} on the line; otherwise auto-place it around the
-  // midpoint dodging nearby boxes.
-  const labelPos = !showLabel
-    ? { x: midpoint.x, y: midpoint.y }
-    : arrow.labelOffset
-      ? arrowLabelAnchor(
-          style,
-          from,
-          to,
-          arrow.from,
-          arrow.to,
-          arrow.curveOffset,
-          arrow.elbowOffset,
-          arrow.labelOffset,
-          arrow.curvePoints,
-        )
-      : placeLabel(
-          midpoint,
-          labelText,
-          elementIndex,
-          arrow.id,
-          arrowLabelFontSize(arrow.textSize),
-          {
-            dx: to.x - from.x,
-            dy: to.y - from.y,
-          },
-        );
   return {
     from,
     to,
@@ -113,7 +78,5 @@ export function deriveArrowViewFrame(
     curveAnchors,
     curveControl,
     elbowPoint,
-    labelText,
-    labelPos,
   };
 }
