@@ -138,7 +138,8 @@ function directionAt(r: Route, s: number): Pt {
   return len > 1e-9 ? { x: (b.x - a.x) / len, y: (b.y - a.y) / len } : { x: 1, y: 0 };
 }
 
-function resolvedEnds(arrow: ArrowElement, elements: Element[]): { from: Pt; to: Pt } {
+// Endpoints as both renderers draw them: resolved, plus the converging-fan spread.
+export function arrowResolvedEnds(arrow: ArrowElement, elements: Element[]): { from: Pt; to: Pt } {
   const rawFrom = endpointPosition(arrow.from, elements);
   const rawTo = endpointPosition(arrow.to, elements);
   const fs = arrowEndpointSpread(arrow.id, 'from', elements);
@@ -150,7 +151,7 @@ function resolvedEnds(arrow: ArrowElement, elements: Element[]): { from: Pt; to:
 }
 
 function arrowRoute(arrow: ArrowElement, elements: Element[]): { route: Route; from: Pt; to: Pt } {
-  const { from, to } = resolvedEnds(arrow, elements);
+  const { from, to } = arrowResolvedEnds(arrow, elements);
   const pts = arrowPathPolyline(
     arrowStyleOf(arrow),
     from,
