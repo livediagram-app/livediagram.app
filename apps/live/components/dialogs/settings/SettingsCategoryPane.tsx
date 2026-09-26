@@ -13,6 +13,7 @@ import { SettingsTokensRow } from './SettingsTokensRow';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { track } from '@/lib/telemetry';
+import { SETTINGS_ROW_ATTRIBUTE } from './settings-scroll-anchor';
 import type { AppearanceSetting } from '@/hooks/ui/appearance-store';
 import {
   choiceTelemetryType,
@@ -60,7 +61,7 @@ export function SettingsCategoryPane({
             </h3>
           ) : null}
           {group.rows.map((row) => (
-            <FocusRing key={row.key} focused={row.key === focusRowKey}>
+            <FocusRing key={row.key} rowKey={row.key} focused={row.key === focusRowKey}>
               {renderRow(row)}
             </FocusRing>
           ))}
@@ -141,7 +142,16 @@ export function SettingsCategoryPane({
 // wrapper for every row kind: the highlight is about WHERE the reader landed,
 // not about what the control is, so threading a `focused` prop through six
 // components would have been six copies of the same idea.
-function FocusRing({ focused, children }: { focused: boolean; children: ReactNode }) {
+// It also names the row for the dialog's scroll memory.
+function FocusRing({
+  rowKey,
+  focused,
+  children,
+}: {
+  rowKey: string;
+  focused: boolean;
+  children: ReactNode;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!focused) return;
@@ -150,6 +160,7 @@ function FocusRing({ focused, children }: { focused: boolean; children: ReactNod
   return (
     <div
       ref={ref}
+      {...{ [SETTINGS_ROW_ATTRIBUTE]: rowKey }}
       className={
         focused
           ? 'rounded-2xl ring-2 ring-brand-400 ring-offset-4 ring-offset-white dark:ring-offset-slate-900'
