@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { participantKey } from '@/lib/identity';
 import { useStableHandlers } from '@/hooks/ui/useStableHandlers';
 import { useMindGrow } from '@/components/canvas/MindGrowContext';
 import { useFontsReady } from './useFontsReady';
@@ -426,7 +427,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             onBeginDrag={h.onBeginDrag}
             onShiftSelect={h.onShiftSelect}
             vote={tabVote}
-            selfId={selfParticipant.id}
+            selfId={participantKey(selfParticipant)}
             voteMax={voteMax}
             voteReviewActive={voteReview != null}
             isVoteFocus={voteReview?.focusId === element.id}

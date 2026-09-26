@@ -11,12 +11,20 @@ import type { ParticipantDTO } from './types';
 // visitor could otherwise stamp another participant's name +
 // colour onto a comment, or relabel someone else's existing one).
 //
+// A save can also carry SOMEBODY ELSE's new comment: it reached the saver
+// live, and their save landed in D1 before the author's own. That comment is
+// credited by `roomAuthors`, the name the room stamped it with when it was
+// posted (spec/152), not to the saver, which is what used to happen. Its
+// author id stays empty (the saver's copy has none: it is stripped from every
+// room op) until the author's own save claims it; see below.
+//
 // Pure helper, exported so the api worker's PUT-tab handler and
 // the colocated tests both consume the same implementation.
 export function rewriteCommentAuthors(
   nextElements: Element[],
   prevElements: Element[],
   writer: ParticipantDTO,
+  roomAuthors: ReadonlyMap<string, { authorName: string; authorColor: string }> = new Map(),
 ): Element[] {
   // Index existing comments by id so the lookup per new comment is
   // O(1). A comment id collision across two different elements is
@@ -46,12 +54,26 @@ export function rewriteCommentAuthors(
         // used for delete-own checks) to whatever was stored. Stops a
         // malicious edit-role visitor from mutating someone else's
         // already-posted comment author or reassigning its ownership.
+        //
+        // The one opening: a comment stored WITHOUT an author id (credited
+        // from the room, above) is claimed by the save that carries the
+        // writer's own id on it, which only the author's copy does. What it
+        // grants is delete-own over REST, and an edit-role writer can already
+        // delete any comment through this very PUT.
+        const claimed = prior.authorId === undefined && c.authorId === writer.id;
         return {
           ...c,
           authorName: prior.authorName,
           authorColor: prior.authorColor,
-          authorId: prior.authorId,
+          authorId: claimed ? writer.id : prior.authorId,
         };
+      }
+      // Somebody else's comment, arriving in this writer's save before
+      // their own: credited as the room saw it posted.
+      const posted = roomAuthors.get(c.id);
+      if (posted && c.authorId !== writer.id) {
+        const { authorId: _none, ...rest } = c;
+        return { ...rest, authorName: posted.authorName, authorColor: posted.authorColor };
       }
       // New comment: server-authoritative author (name, colour, and the
       // stable id that later authorises delete-own).
@@ -83,10 +105,18 @@ export function removeComment(elements: Element[], commentId: string): Element[]
 // Find a comment by id across all elements and return it (with its
 // author id), or null. Used to authorise delete-own before mutating.
 export function findComment(elements: Element[], commentId: string): Comment | null {
+  return findCommentHost(elements, commentId)?.comment ?? null;
+}
+
+// The comment and the element whose thread holds it.
+export function findCommentHost(
+  elements: Element[],
+  commentId: string,
+): { comment: Comment; elementId: string } | null {
   for (const el of elements) {
     const thread = (el as { commentThread?: { comments?: Comment[] } }).commentThread;
     const hit = thread?.comments?.find((c) => c.id === commentId);
-    if (hit) return hit;
+    if (hit) return { comment: hit, elementId: el.id };
   }
   return null;
 }

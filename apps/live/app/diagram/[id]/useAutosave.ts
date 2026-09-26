@@ -20,6 +20,12 @@ import type { SaveStatus } from '@/components/chrome/EditorHeader';
 import { isDiagramDeleted } from '@/lib/diagram-tombstones';
 import { computeTabSaveDiff } from './editor-page-helpers';
 import { tabBroadcastOps } from './tab-broadcast-ops';
+import {
+  baselineAfterSave,
+  closeSaveWindow,
+  openSaveWindow,
+  type RemoteOpJournal,
+} from './save-baseline';
 
 // Per-tab autosave (spec/13), lifted out of editor-page.tsx. Two effects:
 // a debounced (600ms) save and a beforeunload flush so a fast edit ->
@@ -41,7 +47,9 @@ export function useAutosave(opts: {
   // fetched / locally-created). Gates the content-write diff so a never-
   // opened placeholder can't be PUT back as empty — see computeTabSaveDiff.
   loadedTabIdsRef: MutableRefObject<Set<string>>;
-  remoteUpdateRef: MutableRefObject<boolean>;
+  // Peer ops that arrive while a save is in flight, so the save's success
+  // doesn't roll the baseline back to before them (spec/152, save-baseline.ts).
+  remoteOpJournalRef: MutableRefObject<RemoteOpJournal>;
   // True while a hover-preview is on screen. Previews mutate `tabs` (so they
   // render live) but must never be persisted; the debounced save below skips
   // while this is set, and the click-commit clears it and saves normally.
@@ -62,7 +70,7 @@ export function useAutosave(opts: {
     lastSavedTabsRef,
     lastSavedNameRef,
     loadedTabIdsRef,
-    remoteUpdateRef,
+    remoteOpJournalRef,
     previewingRef,
     roomRef,
     setSaveStatus,
@@ -78,6 +86,19 @@ export function useAutosave(opts: {
   // seeing only a toast blaming their connection — and each edit fired another
   // doomed PUT, which is what produced hundreds of 403s in a single day.
   const writesForbiddenRef = useRef(false);
+
+  // Saves can overlap (a PUT slower than the debounce). Only the NEWEST one to
+  // land may move the baseline, or a slow older save would roll it back.
+  const saveGenRef = useRef(0);
+  const baselineGenRef = useRef(0);
+
+  // How many peer ops the `tabs` of THIS render already include. A peer's op
+  // reaches the baseline at once but the screen only at the next render, so a
+  // timer firing in between would diff a pre-op screen against a post-op
+  // baseline and broadcast the peer's element back in its older form. The
+  // timer below stands down when more ops have arrived than this render has;
+  // applying one always re-renders, and this value in the deps re-arms it.
+  const opsInRender = remoteOpJournalRef.current.next;
 
   // A different diagram gets a clean slate: the block is about THIS one.
   useEffect(() => {
@@ -134,11 +155,12 @@ export function useAutosave(opts: {
     // The commit/revert flips this ref off and re-runs the effect, which then
     // saves the committed state (or finds nothing changed after a revert).
     if (previewingRef.current) return;
-    if (remoteUpdateRef.current) {
-      remoteUpdateRef.current = false;
-      return;
-    }
+    // No "was that a remote update?" skip here any more (spec/152). A peer's
+    // op is folded into the baseline as well as the screen, so it simply
+    // isn't a difference. The skip it replaced cancelled any local save still
+    // waiting out its debounce when a peer's op arrived.
     const handle = window.setTimeout(() => {
+      if (remoteOpJournalRef.current.next !== opsInRender) return;
       // Bail if the diagram was just deleted (the debounce can still be
       // pending when the delete fires) so we don't re-create it.
       if (isDiagramDeleted(diagramId)) return;
@@ -149,11 +171,28 @@ export function useAutosave(opts: {
         diagramName,
         loadedTabIdsRef.current,
       );
-      if (!hasChanges) return;
+      if (!hasChanges) {
+        // Same content, different objects (a peer's op applied to both
+        // sides): adopt ours so the next diff is an identity check again.
+        lastSavedTabsRef.current = tabs;
+        return;
+      }
 
       setSaveStatus('saving');
+      const journal = remoteOpJournalRef.current;
+      const mark = openSaveWindow(journal);
+      const gen = ++saveGenRef.current;
+      // What this client had seen of the room at the snapshot (spec/152 phase
+      // 3): the api merges in only the answers and ticks it hadn't.
+      const roomCursor = roomRef.current?.cursor() ?? null;
       const writes: Promise<unknown>[] = [];
       for (const t of changedTabs) {
+        // The ops are derived NOW, against what peers have at the snapshot,
+        // not when the PUT lands: by then the baseline may hold a peer's
+        // newer copy of an element, and diffing our snapshot against it would
+        // broadcast our older copy over theirs.
+        const before = lastSavedTabsRef.current.find((s) => s.id === t.id);
+        const ops = tabBroadcastOps(before, t);
         writes.push(
           apiSaveTab(selfId, diagramId, t, sessionShareCode, {
             // A loaded tab's content is authoritative, so an empty body is
@@ -161,14 +200,13 @@ export function useAutosave(opts: {
             // backstop should accept; an unloaded placeholder is never in
             // the set, so it can't authorise its own wipe (spec/13).
             allowEmpty: loadedTabIdsRef.current.has(t.id),
+            roomCursor,
           }).then(() => {
             // Broadcast granular element ops (spec/75, Level 0) derived from
-            // the last state peers saw (lastSavedTabsRef, the "before") so
-            // concurrent different-element edits merge instead of the whole
-            // tab clobbering. Falls back to a whole-`tab` op for a new tab or
-            // a bulk change (see tabBroadcastOps).
-            const before = lastSavedTabsRef.current.find((s) => s.id === t.id);
-            for (const op of tabBroadcastOps(before, t)) {
+            // the last state peers saw so concurrent different-element edits
+            // merge instead of the whole tab clobbering. Falls back to a
+            // whole-`tab` op for a new tab or a bulk change (tabBroadcastOps).
+            for (const op of ops) {
               roomRef.current?.send({ kind: 'op', op });
             }
           }),
@@ -206,8 +244,15 @@ export function useAutosave(opts: {
       }
       Promise.all(writes)
         .then(() => {
-          lastSavedTabsRef.current = tabs;
-          lastSavedNameRef.current = diagramName;
+          // The snapshot is saved; peers' ops that arrived since go back on
+          // top of it (spec/152). An older save landing after a newer one
+          // leaves the baseline alone.
+          if (gen > baselineGenRef.current) {
+            baselineGenRef.current = gen;
+            const next = baselineAfterSave(journal, mark, tabs, diagramName);
+            lastSavedTabsRef.current = next.tabs;
+            lastSavedNameRef.current = next.name;
+          }
           setSaveStatus('saved');
           const now = Date.now();
           setSavedAt(now);
@@ -225,10 +270,11 @@ export function useAutosave(opts: {
             return;
           }
           setSaveStatus('error');
-        });
+        })
+        .finally(() => closeSaveWindow(journal));
     }, 600);
     return () => window.clearTimeout(handle);
     // Omitted deps are all refs + state setters (stable by React's guarantee).
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hydrated, diagramId, tabs, diagramName, selfId, isReadOnly, sessionShareCode]);
+  }, [hydrated, diagramId, tabs, diagramName, selfId, isReadOnly, sessionShareCode, opsInRender]);
 }

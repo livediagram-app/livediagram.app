@@ -93,14 +93,24 @@ describe('computeTabSaveDiff (autosave decision kernel)', () => {
     expect(diff.nameChanged).toBe(false);
   });
 
-  it('flags a content-changed tab by identity (new reference), skipping untouched ones', () => {
+  it('flags a content-changed tab, skipping untouched ones', () => {
     const a = tab('a');
     const b = tab('b');
-    const aEdited = { ...a, elements: [...a.elements] }; // new reference for a
+    const aEdited = { ...a, name: 'a (edited)' }; // new reference, new content
     const diff = computeTabSaveDiff([a, b], [aEdited, b], 'Doc', 'Doc');
     expect(diff.changedTabs.map((t) => t.id)).toEqual(['a']);
     expect(diff.hasChanges).toBe(true);
     expect(diff.orderChanged).toBe(false);
+  });
+
+  // spec/152: a peer's op is applied to the screen and to the baseline
+  // separately, so the two hold equal content in different objects. That is
+  // not a local change and must not be saved (or broadcast) back.
+  it('does not flag a new reference whose content is unchanged', () => {
+    const a = tab('a');
+    const diff = computeTabSaveDiff([a], [{ ...a, elements: [...a.elements] }], 'Doc', 'Doc');
+    expect(diff.changedTabs).toEqual([]);
+    expect(diff.hasChanges).toBe(false);
   });
 
   it('flags a diagram rename via nameChanged', () => {
@@ -170,8 +180,8 @@ describe('computeTabSaveDiff (autosave decision kernel)', () => {
     // the guard the autosave PUTs the empty body over the real server row.
     const a = tab('a'); // loaded + edited
     const b = tab('b'); // never opened: empty placeholder
-    const aEdited = { ...a, elements: [...a.elements] };
-    const bBumped = { ...b }; // new reference, still empty, still unloaded
+    const aEdited = { ...a, name: 'a (edited)' };
+    const bBumped = { ...b, name: 'b (renamed)' }; // bumped, still empty, still unloaded
     const loaded = new Set(['a']);
     const diff = computeTabSaveDiff([a, b], [aEdited, bBumped], 'Doc', 'Doc', loaded);
     expect(diff.changedTabs.map((t) => t.id)).toEqual(['a']);
@@ -194,7 +204,7 @@ describe('computeTabSaveDiff (autosave decision kernel)', () => {
         height: 1,
       } as Tab['elements'][number],
     ]);
-    const peerEdited = { ...peer, elements: [...peer.elements] };
+    const peerEdited = { ...peer, name: 'p (edited)' };
     const diff = computeTabSaveDiff([a, peer], [a, peerEdited], 'Doc', 'Doc', new Set(['a']));
     expect(diff.changedTabs.map((t) => t.id)).toEqual(['p']);
   });

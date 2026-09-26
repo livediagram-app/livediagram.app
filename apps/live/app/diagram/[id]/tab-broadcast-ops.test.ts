@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { opForTheWire } from '@livediagram/diagram';
 import type { Element, Tab, TabVote } from '@livediagram/diagram';
 import { EL_OP_BROADCAST_LIMIT, mergeRemoteTab, tabBroadcastOps } from './tab-broadcast-ops';
 
@@ -66,13 +67,15 @@ describe('tabBroadcastOps', () => {
     expect(tabBroadcastOps(before, after)).toEqual([{ kind: 'tab', tabId: 't1', tab: after }]);
   });
 
-  it('falls back to a whole-tab op when a meta field is cleared', () => {
+  it('names a cleared meta field in `clear` rather than resending the tab (spec/152)', () => {
     // Clearing a field yields patch[k] = undefined, which JSON.stringify drops
-    // on the wire, so a granular tab-meta op could never carry the clear. The
-    // whole-tab op carries the field's absence instead.
+    // on the wire. It used to force a whole-tab op, which replaced every
+    // element on every receiver; the clear now travels by name.
     const before = tab({ backgroundColor: '#111' });
     const after = tab(); // backgroundColor removed
-    expect(tabBroadcastOps(before, after)).toEqual([{ kind: 'tab', tabId: 't1', tab: after }]);
+    expect(tabBroadcastOps(before, after)).toEqual([
+      { kind: 'tab-meta', tabId: 't1', patch: {}, clear: ['backgroundColor'] },
+    ]);
   });
 
   it('emits nothing when a changed tab turns out identical', () => {
@@ -146,11 +149,37 @@ describe('the vote field (spec/39)', () => {
     ]);
   });
 
-  it('falls back to a whole-tab op when the vote is cleared off the tab', () => {
-    // `patch.vote = undefined` would vanish on the wire, so the existing
-    // cleared-field rule takes over — unchanged by any of this.
+  it('clears the vote by name, leaving elements alone (spec/152)', () => {
     const before = tab({ vote: vote() });
     const after = tab();
-    expect(tabBroadcastOps(before, after)).toEqual([{ kind: 'tab', tabId: 't1', tab: after }]);
+    expect(tabBroadcastOps(before, after)).toEqual([
+      { kind: 'tab-meta', tabId: 't1', patch: {}, clear: ['vote'] },
+    ]);
+  });
+});
+
+describe('comment author ids stay off the wire (spec/152)', () => {
+  it("strips every comment's author id from element and tab ops", () => {
+    const thread = {
+      comments: [
+        {
+          id: 'c1',
+          text: 'hi',
+          createdAt: 1,
+          authorName: 'A',
+          authorColor: '#000',
+          authorId: 'owner-secret',
+        },
+      ],
+      resolved: false,
+    };
+    const before = tab();
+    const after = tab({
+      elements: [el('a', { x: 5, commentThread: thread } as Partial<Element>), el('b')],
+    });
+    // What the socket actually sends: every op through `opForTheWire` (room.ts).
+    const wire = (ops: unknown[]) => JSON.stringify(ops.map(opForTheWire));
+    expect(wire(tabBroadcastOps(before, after))).not.toContain('owner-secret');
+    expect(wire(tabBroadcastOps(undefined, after))).not.toContain('owner-secret');
   });
 });

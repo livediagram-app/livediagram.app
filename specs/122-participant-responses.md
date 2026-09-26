@@ -95,9 +95,19 @@ The estimate card uses it; the temperature check deliberately does not.
   should evaporate, an estimate is a record of what the team decided.
 - **Edit-role only.** The room drops view-role mutations (spec/11), so casting
   is gated with no extra code, exactly like a dot-vote.
-- **Casting does NOT push undo history.** Same call as `commitTabs` makes for a
-  vote cast (spec/39). Undo is a personal control, and one person pressing
-  Ctrl+Z should never retract another person's answer.
+- **Casting does NOT push undo history.** It writes through the non-history
+  `tickTabs`, the same call a vote cast makes (spec/39). Undo is a personal
+  control, and one person pressing Ctrl+Z should never retract another
+  person's answer. This was once claimed but not true: the writes went
+  through the history-pushing `commitTabs` (spec/152).
+- **An answer travels as a delta** (spec/152): one `el-delta` op per cast
+  or withdraw, applied by the same `applyElementDelta` everywhere, so two
+  people answering at once both land. A whole-element update from a peer
+  keeps the receiver's `responses`, unless it starts a new round (a Clear).
+- **Undo keeps everybody's answers.** Not pushing history is only half of
+  it: a snapshot restored by undo predates answers cast since, so
+  `responses` (and the other collaborative fields, spec/152) are re-grafted
+  from the present onto it, exactly as comment threads are.
 
 ## Limit, stated plainly
 

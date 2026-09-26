@@ -35,7 +35,7 @@ function setup() {
         setLoadedTabIds: vi.fn(),
         setTabLoadErrors,
         retryNonce,
-        remoteUpdateRef: { current: false },
+        lastSavedTabsRef: { current: [] },
         // A fresh function every render, like the caller used to pass.
         resetTabs: () => {},
       }),
@@ -139,7 +139,7 @@ describe('usePerTabLoad search sweep failing on the tab being viewed', () => {
           setLoadedTabIds: vi.fn(),
           setTabLoadErrors,
           retryNonce: 0,
-          remoteUpdateRef: { current: false },
+          lastSavedTabsRef: { current: [] },
           resetTabs: () => {},
         }),
       { initialProps: { activeId: 't1' } },

@@ -50,6 +50,7 @@ export function PortalMenu({
   onToggleLock,
   locked,
   selfId,
+  voteSelfId,
   otherDiagrams,
   folderNames,
   currentFolder,
@@ -79,6 +80,9 @@ export function PortalMenu({
   locked: boolean;
   // Viewer identity for the Add to Diagram dialog's thumbnail fetches.
   selfId: string;
+  // Who the dot-vote knows us by (spec/152): the collab key, never the owner
+  // id. Falls back to `selfId` for a caller that doesn't run a vote.
+  voteSelfId?: string;
   otherDiagrams: { id: string; name: string; savedAt?: number }[];
   folderNames: string[];
   currentFolder: string | null;
@@ -441,7 +445,7 @@ export function PortalMenu({
             >
               <SessionStudio
                 {...session}
-                selfId={selfId}
+                selfId={voteSelfId ?? selfId}
                 // Starting a poll puts the question on screen for everyone,
                 // including the facilitator, and this menu sits right on top
                 // of it. Close on start: the poll panel carries the results

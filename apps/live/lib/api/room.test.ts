@@ -109,3 +109,103 @@ describe('connectRoom reconnect cursor', () => {
     ).toEqual({ kind: 'sync', epoch: 'E', lastSeq: 3 });
   });
 });
+
+describe('connectRoom outbox (spec/152)', () => {
+  class FakeSocket {
+    static OPEN = 1;
+    static all: FakeSocket[] = [];
+    readyState = 0;
+    sent: { kind: string; op?: { kind: string } }[] = [];
+    private listeners: Record<string, ((e: { data?: string }) => void)[]> = {};
+    constructor() {
+      FakeSocket.all.push(this);
+    }
+    addEventListener(type: string, fn: (e: { data?: string }) => void) {
+      (this.listeners[type] ??= []).push(fn);
+    }
+    send(data: string) {
+      this.sent.push(JSON.parse(data));
+    }
+    close() {}
+    fire(type: string) {
+      if (type === 'open') this.readyState = 1;
+      if (type === 'close') this.readyState = 3;
+      for (const fn of this.listeners[type] ?? []) fn({});
+    }
+  }
+
+  beforeEach(() => {
+    FakeSocket.all = [];
+    vi.stubGlobal('WebSocket', FakeSocket);
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
+  it('holds changes made while the socket is down and sends them, in order, on reconnect', () => {
+    const room = connectRoom(
+      'd1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {} },
+    );
+    const first = FakeSocket.all[0]!;
+    first.fire('open');
+    first.fire('close');
+    const dot = (delta: 1 | -1) =>
+      ({
+        kind: 'op',
+        op: { kind: 'vote', tabId: 't', elementId: 'e', voter: 'k', delta },
+      }) as const;
+    room.send(dot(1));
+    room.send({ kind: 'op', op: { kind: 'cursor', x: 1, y: 2 } } as never);
+    room.send(dot(-1));
+    vi.runOnlyPendingTimers();
+    const second = FakeSocket.all[1]!;
+    second.fire('open');
+    expect(second.sent.map((m) => m.op?.kind ?? m.kind)).toEqual(['hello', 'sync', 'vote', 'vote']);
+    expect(second.sent.slice(2).map((m) => (m.op as unknown as { delta: number }).delta)).toEqual([
+      1, -1,
+    ]);
+  });
+
+  it("never sends a comment's author id", () => {
+    const room = connectRoom(
+      'd1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {} },
+    );
+    const socket = FakeSocket.all[0]!;
+    socket.fire('open');
+    room.send({
+      kind: 'op',
+      op: {
+        kind: 'el-delta',
+        tabId: 't',
+        elementId: 'e',
+        delta: {
+          kind: 'comment-add',
+          comment: {
+            id: 'c',
+            text: 'hi',
+            createdAt: 1,
+            authorName: 'A',
+            authorColor: '#000',
+            authorId: 'owner-secret',
+          },
+        },
+      },
+    });
+    expect(JSON.stringify(socket.sent)).not.toContain('owner-secret');
+  });
+
+  it('reports no cursor while the socket is down', () => {
+    const room = connectRoom(
+      'd1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {} },
+    );
+    expect(room.cursor()).toBeNull();
+  });
+});

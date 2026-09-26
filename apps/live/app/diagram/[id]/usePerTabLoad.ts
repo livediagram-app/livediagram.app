@@ -21,6 +21,12 @@ import { track } from '@/lib/telemetry';
 // "Search panel"): element search walks local tab state, so unvisited
 // placeholders would silently miss; opening search pulls every
 // remaining tab's content in one parallel sweep.
+// A tab the user has already drawn on (or picked a template for) keeps its
+// local content over a late fetch.
+function userHasEdited(t: Tab): boolean {
+  return t.elements.length > 0 || t.templateChosen === true;
+}
+
 export function usePerTabLoad(opts: {
   hydrated: boolean;
   diagramId: string | null;
@@ -38,7 +44,10 @@ export function usePerTabLoad(opts: {
   // effect for the same active tab (the Retry button).
   setTabLoadErrors: Dispatch<SetStateAction<Set<string>>>;
   retryNonce: number;
-  remoteUpdateRef: MutableRefObject<boolean>;
+  // The autosave's baseline. Content fetched from D1 is by definition saved,
+  // so it lands here too, or the next save would PUT and broadcast the whole
+  // tab back as if we had just drawn it (spec/152).
+  lastSavedTabsRef: MutableRefObject<Tab[]>;
   resetTabs: (updater: (prev: Tab[]) => Tab[]) => void;
 }) {
   const {
@@ -52,7 +61,7 @@ export function usePerTabLoad(opts: {
     setLoadedTabIds,
     setTabLoadErrors,
     retryNonce,
-    remoteUpdateRef,
+    lastSavedTabsRef,
     resetTabs,
   } = opts;
 
@@ -72,6 +81,25 @@ export function usePerTabLoad(opts: {
   useEffect(() => {
     activeIdRef.current = activeId;
   });
+
+  // Put a fetched tab in place: on screen, over a placeholder the user hasn't
+  // touched (a tab they already drew on keeps its local content), and in the
+  // autosave's baseline under the same rule, since content fetched from D1 is
+  // by definition saved (spec/152). Either way the local folder stays: it's
+  // per-diagram link metadata (spec/30) owned by the meta path, not the
+  // content fetch. The baseline decision reads the last render (tabsRef), not
+  // the state updater, which React may run late or twice.
+  const adoptLoadedTab = (tab: Tab) => {
+    const onScreen = tabsRef.current.find((t) => t.id === tab.id);
+    if (onScreen && !userHasEdited(onScreen)) {
+      lastSavedTabsRef.current = lastSavedTabsRef.current.map((t) =>
+        t.id === tab.id ? { ...tab, folder: t.folder } : t,
+      );
+    }
+    resetTabsRef.current((prev) =>
+      prev.map((t) => (t.id !== tab.id || userHasEdited(t) ? t : { ...tab, folder: t.folder })),
+    );
+  };
 
   // The attempt that last failed, keyed on everything that makes a fetch
   // worth repeating. A failed load stays failed (the error overlay stays up)
@@ -144,21 +172,7 @@ export function usePerTabLoad(opts: {
         // The search prefetch (loadAllTabs below) deliberately doesn't
         // emit: it's a background sweep, not a user viewing a tab.
         track('Tab', 'Loaded');
-        let didMerge = false;
-        resetTabsRef.current((prev) =>
-          prev.map((t) => {
-            if (t.id !== tab.id) return t;
-            const userHasEdited = t.elements.length > 0 || t.templateChosen === true;
-            if (userHasEdited) return t;
-            didMerge = true;
-            // Keep the local folder: it's per-diagram link metadata
-            // (spec/30) owned by the meta path, not the content fetch,
-            // so a content load must never overwrite a folder the user
-            // just set on this not-yet-opened tab.
-            return { ...tab, folder: t.folder };
-          }),
-        );
-        if (didMerge) remoteUpdateRef.current = true;
+        adoptLoadedTab(tab);
         // Either way the load is now committed — local state has been
         // consulted. Keep the id in the loaded-set so subsequent
         // tab switches don't refetch.
@@ -237,17 +251,7 @@ export function usePerTabLoad(opts: {
             failed(targetId);
             return;
           }
-          let didMerge = false;
-          resetTabsRef.current((prev) =>
-            prev.map((t) => {
-              if (t.id !== tab.id) return t;
-              const userHasEdited = t.elements.length > 0 || t.templateChosen === true;
-              if (userHasEdited) return t;
-              didMerge = true;
-              return { ...tab, folder: t.folder };
-            }),
-          );
-          if (didMerge) remoteUpdateRef.current = true;
+          adoptLoadedTab(tab);
           setLoadedTabIds((prev) => (prev.has(targetId) ? prev : new Set(prev).add(targetId)));
         } catch {
           failed(targetId);

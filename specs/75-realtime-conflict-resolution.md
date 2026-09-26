@@ -41,8 +41,11 @@ op: ElementOp }` and `{ kind: 'tab-meta'; tabId; patch }` alongside the kept
   the same element still last-writer-wins per element — which the selection lock
   covers.
 - The emit side is `tabBroadcastOps` (in the autosave path); it falls back to a
-  whole-`tab` op for a new tab, a bulk change, or when a meta field is _cleared_
-  (a cleared field serialises to `undefined`, which JSON drops on the wire).
+  whole-`tab` op for a new tab or a bulk change. A meta field that was
+  _cleared_ serialises to `undefined`, which JSON drops on the wire, so it
+  travels by name in the `tab-meta` op's `clear` list. It used to force a
+  whole-`tab` op too, and Clear Timer / Clear Vote then replaced every element
+  on every receiver (spec/152).
 
 ### Ordered room + reconnect catch-up
 
@@ -98,6 +101,16 @@ that let `viewport` through.
 - **A whole-`tab` op keeps the receiver's dots.** It carries the sender's votes
   map as of their autosave, without dots still in flight, so the receiver keeps
   its own map unless the round itself changed (`mergeRemoteTab`).
+- **The save baseline follows remote ops** (spec/152). `lastSavedTabsRef` is
+  the "before" for both the D1 save diff and the broadcast diff, so it must
+  hold what peers already have. Every applied remote op is folded into it
+  through the same pure `applyRoomOpToTabs` the receiver uses, and a save
+  that lands re-folds any op that arrived while it was in flight. The save
+  diff compares tab content when identity differs, so a remote-only change
+  is not mistaken for a local one. This replaced a `remoteUpdateRef` flag
+  that skipped the autosave's next run: a peer's op arriving within the
+  600 ms debounce cancelled the local save outright, and the stale baseline
+  made the next save re-broadcast peers' elements in their older form.
 
 **Durability is unchanged:** D1 stays the system of record. Persistence is
 client-driven (clients PUT tabs to D1 as before); the op log is a warm catch-up

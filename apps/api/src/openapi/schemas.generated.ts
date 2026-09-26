@@ -3647,6 +3647,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "codeWrap": {
         "type": "boolean"
       },
+      "collabRound": {
+        "type": "string"
+      },
       "colorPreset": {
         "type": "string"
       },
@@ -4462,6 +4465,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "reviewIndex": {
         "type": "number"
+      },
+      "round": {
+        "type": "string"
       },
       "startedBy": {
         "type": "string"

@@ -1,4 +1,4 @@
-import type { ElementOp, QaNote, Tab } from '@livediagram/diagram';
+import type { ElementDelta, ElementOp, QaNote, Tab } from '@livediagram/diagram';
 import type { ChangeLogEntry, ParticipantPresence } from './index';
 import type { AvatarConfig } from './avatar';
 import type { LivePoll } from './poll';
@@ -125,6 +125,9 @@ export const MUTATION_OP_KINDS = [
   // gets a seq, lands in the catch-up log, and is refused from a view-role
   // sender, because casting already requires edit rights.
   'vote',
+  // One answer, idea, checklist tick or comment change on one element
+  // (spec/152). A mutation for the same reasons as a dot.
+  'el-delta',
   'diagram-meta',
   'log',
   'log-remove',
@@ -159,6 +162,10 @@ export type PresenceOpKind = (typeof PRESENCE_OP_KINDS)[number];
 // Membership test for the room's ordering + role gate. Takes a loose string
 // because it reads `op.kind` off an `unknown` wire payload (see ServerMessage
 // below on why the op itself stays untyped).
+export function isMutationOpKind(kind: unknown): kind is (typeof MUTATION_OP_KINDS)[number] {
+  return typeof kind === 'string' && (MUTATION_OP_KINDS as readonly string[]).includes(kind);
+}
+
 export function isPresenceOpKind(kind: unknown): kind is PresenceOpKind {
   return typeof kind === 'string' && (PRESENCE_OP_KINDS as readonly string[]).includes(kind);
 }
@@ -324,7 +331,17 @@ export type RoomOp =
   // A tab's non-element metadata changed (name, background, font, …) —
   // the element array is untouched, so this rides alongside `el` ops
   // without shipping the whole tab.
-  | { kind: 'tab-meta'; tabId: string; patch: Partial<Omit<Tab, 'elements'>> }
+  //
+  // `clear` names fields the sender REMOVED (Clear Timer, Clear Vote, a reset
+  // background). A removed field serialises to nothing inside `patch`, so it
+  // used to force a whole-`tab` op, which replaced every element on every
+  // receiver and wiped their unsaved presses (spec/152).
+  | {
+      kind: 'tab-meta';
+      tabId: string;
+      patch: Partial<Omit<Tab, 'elements'>>;
+      clear?: string[];
+    }
   // ONE dot, placed (`delta: 1`) or taken back (`delta: -1`) by `voter` on
   // `elementId` (spec/39).
   //
@@ -341,7 +358,23 @@ export type RoomOp =
   // and everybody converges on the same map. It is the same move spec/75 made
   // for elements, for the same reason, on the one field where concurrent
   // writers are not the exception but the whole point.
-  | { kind: 'vote'; tabId: string; elementId: string; voter: string; delta: 1 | -1 }
+  //
+  // `round` names the vote the dot was cast in (spec/152): a receiver drops a
+  // dot for any other round, or for a vote that has closed. Optional so a
+  // peer on an older client still parses.
+  // ONE change to a field many people write at once: an answer, an idea, a
+  // checklist tick, a comment (spec/152). The `vote` op's reasoning, applied to
+  // element fields: a whole-element `el` update replaced a peer's copy with the
+  // sender's snapshot, so two people pressing the same done check lost a mark.
+  | { kind: 'el-delta'; tabId: string; elementId: string; delta: ElementDelta }
+  | {
+      kind: 'vote';
+      tabId: string;
+      elementId: string;
+      voter: string;
+      delta: 1 | -1;
+      round?: string;
+    }
   // Diagram-level metadata changed: rename, tab reorder, tab add /
   // delete. Carries the new ordered list of tab summaries (id + name
   // + order) so receivers can update the TabBar without fetching the
@@ -455,7 +488,11 @@ export type RoomOp =
   // on receipt, so re-sending REPLACES that person's earlier answer
   // rather than stacking a second one. Allowed from view-role senders
   // too (spec/88) — polling an audience on a view link is the point.
-  | { kind: 'poll-answer'; pollId: string; value: string | null }
+  //
+  // `key` is the answerer's collab key (spec/152): answers used to be keyed
+  // by the per-socket presence id, so re-answering after a reconnect counted
+  // twice. Optional so an older client still parses.
+  | { kind: 'poll-answer'; pollId: string; value: string | null; key?: string }
   // The host ended the poll: drop the question, the answers, and the
   // panel everywhere. Edit-role only, like poll-start.
   | { kind: 'poll-end'; pollId: string }

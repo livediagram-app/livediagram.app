@@ -1,4 +1,11 @@
-import { diffToElementOps, preferNewerQaAll, type Tab } from '@livediagram/diagram';
+import {
+  diffToElementOps,
+  elementChangeIsDeltaOnly,
+  mergeIncomingElement,
+  mergeIncomingVote,
+  preferNewerQa,
+  type Tab,
+} from '@livediagram/diagram';
 import type { RoomOp } from '@livediagram/api-schema';
 
 // Turn the before/after of an autosaved tab into the realtime ops to
@@ -18,7 +25,7 @@ export const EL_OP_BROADCAST_LIMIT = 20;
 // Tab keys that never ride a `tab-meta` patch: `id` is immutable, `elements`
 // travels as `el` ops, and `folder` is owned by the diagram-meta op (spec/30)
 // so a content/meta edit can't clobber a concurrent folder move.
-const META_SKIP = new Set(['id', 'elements', 'folder']);
+export const META_SKIP: ReadonlySet<string> = new Set(['id', 'elements', 'folder']);
 
 // Is this `vote` change nothing but dots moving?
 //
@@ -53,9 +60,9 @@ function tabMetaPatch(before: Tab, after: Tab): Partial<Omit<Tab, 'elements'>> {
     // `vote` — a nested map every participant writes at once — and that gap is
     // what let concurrent dots clobber each other. The compare stays; `vote`
     // now gets the extra rule below. A key present in `before` but gone in `after`
-    // yields `patch[k] = undefined`; the caller detects that and falls back to
-    // a whole-tab op, because JSON.stringify drops undefined-valued keys on
-    // the wire, so a cleared field could never propagate as a patch.
+    // yields `patch[k] = undefined`; the caller moves it into the op's `clear`
+    // list, because JSON.stringify drops undefined-valued keys on the wire, so
+    // a cleared field could never propagate as a patch value.
     if (JSON.stringify(b) === JSON.stringify(a)) continue;
     // Dots are the one tab-meta field with many concurrent writers, and they
     // have their own op. See voteChangeIsDotsOnly.
@@ -74,26 +81,50 @@ function tabMetaPatch(before: Tab, after: Tab): Partial<Omit<Tab, 'elements'>> {
 export function tabBroadcastOps(before: Tab | undefined, after: Tab): RoomOp[] {
   if (!before) return [{ kind: 'tab', tabId: after.id, tab: after }];
 
-  const elOps = diffToElementOps(before.elements, after.elements);
+  // An element whose only change rode a delta (an answer, an idea, a tick, a
+  // comment: spec/152) has already been said; a whole-element update on top
+  // would hand every receiver a snapshot to be wrong with.
+  const beforeById = new Map(before.elements.map((e) => [e.id, e]));
+  const elOps = diffToElementOps(before.elements, after.elements).filter((op) => {
+    if (op.kind !== 'update') return true;
+    const prev = beforeById.get(op.element.id);
+    return !prev || !elementChangeIsDeltaOnly(prev, op.element);
+  });
   if (elOps.length > EL_OP_BROADCAST_LIMIT) {
     return [{ kind: 'tab', tabId: after.id, tab: after }];
   }
 
   const ops: RoomOp[] = [];
-  const patch = tabMetaPatch(before, after);
+  const patch = tabMetaPatch(before, after) as Record<string, unknown>;
   const patchKeys = Object.keys(patch);
   if (patchKeys.length > 0) {
-    // A cleared field is `patch[k] = undefined`, and JSON.stringify drops
-    // undefined-valued keys, so the peer would never see the clear. Fall back
-    // to a whole-`tab` op (which carries the field's absence) whenever any
-    // field was cleared; ordinary value changes still ride the granular patch.
-    if (patchKeys.some((k) => (patch as Record<string, unknown>)[k] === undefined)) {
-      return [{ kind: 'tab', tabId: after.id, tab: after }];
-    }
-    ops.push({ kind: 'tab-meta', tabId: after.id, patch });
+    // A cleared field is `patch[k] = undefined`, which JSON.stringify drops,
+    // so the clear travels by NAME in `clear` (spec/152). It used to force a
+    // whole-`tab` op, and Clear Timer / Clear Vote then replaced every element
+    // on every receiver, wiping their unsaved presses.
+    const clear = patchKeys.filter((k) => patch[k] === undefined);
+    for (const k of clear) delete patch[k];
+    ops.push({
+      kind: 'tab-meta',
+      tabId: after.id,
+      patch: patch as Partial<Omit<Tab, 'elements'>>,
+      ...(clear.length ? { clear } : {}),
+    });
   }
   for (const op of elOps) ops.push({ kind: 'el', tabId: after.id, op });
   return ops;
+}
+
+// Fold a peer's whole `vote` object into ours, wherever one arrives (a
+// tab-meta patch or a whole-tab op). A round-stamped vote follows the round
+// rule (`mergeIncomingVote`, spec/152): within one round only delta ops move
+// the dots, so the receiver keeps its map. A vote from before rounds keeps the
+// older rule: the map is ours unless something besides the dots changed.
+export function mergeRemoteVote(local: Tab['vote'], incoming: Tab['vote']): Tab['vote'] {
+  if (local?.round !== undefined && incoming?.round !== undefined) {
+    return mergeIncomingVote(local, incoming);
+  }
+  return voteChangeIsDotsOnly(local, incoming) ? local : incoming;
 }
 
 // Apply a peer's whole-`tab` op over our copy of that tab.
@@ -102,18 +133,28 @@ export function tabBroadcastOps(before: Tab | undefined, after: Tab): RoomOp[] {
 // so the local membership stays and a content edit can't clobber a concurrent
 // folder change.
 //
-// Dots stay ours too. The whole-tab op is the fallback for a cleared field or a
-// bulk element change (see tabBroadcastOps), and it carries the sender's votes
+// Dots stay ours too. The whole-tab op is the fallback for a new tab or a bulk
+// element change (see tabBroadcastOps), and it carries the sender's votes
 // map as it stood at their autosave, without any dot still in flight. Every dot
 // reaches us as its own `vote` op, so our map is already the merged one; only a
-// lifecycle change (start / end / reveal / clear) replaces it.
+// new round or a clear replaces it (mergeRemoteVote).
+//
+// And the same for every element's delta-carried fields (answers, ideas,
+// ticks, comments: spec/152), which reached us one delta at a time.
 export function mergeRemoteTab(local: Tab, incoming: Tab): Tab {
-  const keepVote = voteChangeIsDotsOnly(local.vote, incoming.vote);
+  const vote = mergeRemoteVote(local.vote, incoming.vote);
+  const { vote: _incomingVote, ...rest } = incoming;
+  const localById = new Map(local.elements.map((e) => [e.id, e]));
+  const elements = incoming.elements.map((el) => {
+    const mine = localById.get(el.id);
+    // Delta-carried fields stay ours (spec/152); a Q&A board keeps the newer
+    // rev's notes (spec/151), the same rule as an `el` op.
+    return mine ? preferNewerQa(mine, mergeIncomingElement(mine, el)) : el;
+  });
   return {
-    ...incoming,
-    // Q&A boards keep the newer rev's notes (spec/151), same rule as `el`.
-    elements: preferNewerQaAll(local.elements, incoming.elements),
+    ...rest,
+    elements,
     folder: local.folder,
-    ...(keepVote ? { vote: local.vote } : {}),
+    ...(vote !== undefined ? { vote } : {}),
   };
 }

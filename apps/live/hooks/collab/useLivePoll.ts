@@ -10,6 +10,7 @@
 
 import { useCallback, useRef, useState } from 'react';
 import {
+  pollSupersedes,
   sanitisePoll,
   sanitisePollAnswer,
   type LivePoll,
@@ -39,8 +40,14 @@ export function useLivePoll(deps: {
   // hook is created before the facilitator hook (which needs the room, which
   // needs this), and the value is only ever read at press time.
   sessionBlockedRef?: React.RefObject<boolean>;
+  // Our collab key (spec/152); see `selfKey` below.
+  selfKeyRef?: React.RefObject<string>;
 }) {
-  const { roomRef, sessionBlockedRef, collaboratorsRef } = deps;
+  const { roomRef, sessionBlockedRef, collaboratorsRef, selfKeyRef } = deps;
+  // Our collab key (spec/152): what our own answer is keyed by, and how a poll
+  // we started is known as ours after a refresh. Read at call time: identity
+  // hydrates after this hook, and its handlers must stay stable.
+  const selfKey = useCallback(() => selfKeyRef?.current || 'self', [selfKeyRef]);
   const [poll, setPoll] = useState<LivePoll | null>(null);
   const [answers, setAnswers] = useState<PollAnswers>(() => new Map());
   // Have we responded yet? Answering or skipping both count, and both
@@ -99,22 +106,35 @@ export function useLivePoll(deps: {
       // A malformed poll (no question, a choice poll with one option) is
       // dropped rather than rendered — see sanitisePoll.
       if (!clean) return;
-      hostedPollRef.current = null;
+      // The poll already on screen (the room replays it to every session on
+      // hello, spec/152): keep its answers. And when two polls start at once,
+      // the rule the room and every peer share picks the one we stay on;
+      // otherwise the starter of one ends up answering the other.
+      if (!pollSupersedes(clean, pollRef.current)) return;
+      hostedPollRef.current = clean.hostKey && clean.hostKey === selfKey() ? clean.id : null;
       openPoll(clean);
     },
-    [openPoll],
+    [openPoll, selfKey],
   );
 
-  // One participant answered. Keyed by sender, so re-answering replaces
-  // their earlier answer instead of stacking a second one.
-  const receiveAnswer = useCallback((from: string, pollId: string, value: string | null) => {
-    const current = pollRef.current;
-    // Ignore an answer for a poll we don't have, or a stale one aimed at a
-    // poll that's already been replaced.
-    if (!current || current.id !== pollId) return;
-    const clean = sanitisePollAnswer(current, value);
-    setAnswers((prev) => new Map(prev).set(from, clean));
-  }, []);
+  // One participant answered. Keyed by WHO answered (their collab key), so
+  // re-answering replaces their earlier answer instead of stacking a second
+  // one, including across a reconnect, which mints a new presence id (spec/152).
+  // The sender id is only the fallback for a client too old to send a key.
+  const receiveAnswer = useCallback(
+    (from: string, pollId: string, value: string | null, key?: string) => {
+      const current = pollRef.current;
+      // Ignore an answer for a poll we don't have, or a stale one aimed at a
+      // poll that's already been replaced.
+      if (!current || current.id !== pollId) return;
+      const clean = sanitisePollAnswer(current, value);
+      const who = key ?? from;
+      setAnswers((prev) => new Map(prev).set(who, clean));
+      // Our own answer, coming back in the room's replay after a refresh.
+      if (who === selfKey()) setMyAnswer({ value: clean });
+    },
+    [selfKey],
+  );
 
   const receivePollEnd = useCallback(
     (pollId: string) => {
@@ -146,6 +166,7 @@ export function useLivePoll(deps: {
         options,
         id: crypto.randomUUID(),
         startedAt: Date.now(),
+        hostKey: selfKey(),
       });
       if (!next) return;
       hostedPollRef.current = next.id;
@@ -153,29 +174,29 @@ export function useLivePoll(deps: {
       roomRef.current?.send({ kind: 'op', op: { kind: 'poll-start', poll: next } });
       track('Tab', 'Started', 'Poll');
     },
-    [roomRef, openPoll, sessionBlockedRef, collaboratorsRef],
+    [roomRef, openPoll, sessionBlockedRef, collaboratorsRef, selfKey],
   );
 
-  // Answer (or skip, with `null`). Applied locally under a fixed 'self'
-  // key: the room fans ops out to peers but not back to the sender, so our
-  // own answer would otherwise be missing from our own tally.
+  // Answer (or skip, with `null`). Applied locally under our own key: the room
+  // fans ops out to peers but not back to the sender, so our own answer would
+  // otherwise be missing from our own tally.
   const answerPoll = useCallback(
     (value: string | null) => {
       const current = pollRef.current;
       if (!current) return;
       const clean = sanitisePollAnswer(current, value);
       setMyAnswer({ value: clean });
-      setAnswers((prev) => new Map(prev).set('self', clean));
+      setAnswers((prev) => new Map(prev).set(selfKey(), clean));
       roomRef.current?.send({
         kind: 'op',
-        op: { kind: 'poll-answer', pollId: current.id, value: clean },
+        op: { kind: 'poll-answer', pollId: current.id, value: clean, key: selfKey() },
       });
       if (countedPollRef.current !== current.id) {
         countedPollRef.current = current.id;
         track('Tab', 'Voted', 'Poll');
       }
     },
-    [roomRef],
+    [roomRef, selfKey],
   );
 
   const endPoll = useCallback(() => {

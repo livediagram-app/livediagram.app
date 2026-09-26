@@ -51,6 +51,13 @@ wrong?").
   in `validate.ts` like every other list field.
 - **`ShapeElement.ideasRevealed`** — shared, false by default.
 
+## Posting at once
+
+Two people posting in the same second both land: a card travels as one
+`idea` delta (spec/152), with no author on the wire either, and a peer's
+whole-element update never replaces the box's cards unless it empties the
+box (a new round). A full box refuses the next card at the press.
+
 ## Closed and open
 
 **Closed**, the box shows the prompt, an **Add idea** field, and a count —

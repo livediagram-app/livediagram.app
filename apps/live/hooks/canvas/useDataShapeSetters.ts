@@ -228,22 +228,6 @@ export function useDataShapeSetters({ currentSelectionIds, commit }: DataShapeSe
     track('Element', 'Changed', 'CodeWrap');
   };
 
-  // Checklist (spec/83). The on-canvas checkbox toggles one row by element
-  // id (like the rail's inline label editor); the context-menu section
-  // replaces the whole rows array (add / remove / retitle).
-  const toggleChecklistItem = (elementId: string, index: number) => {
-    commit((els) =>
-      els.map((el) => {
-        if (el.id !== elementId || el.type !== 'shape' || el.shape !== 'checklist') return el;
-        const items = (el.checklistItems ?? []).map((item, i) =>
-          i === index ? { ...item, done: !item.done } : item,
-        );
-        return { ...el, checklistItems: items };
-      }),
-    );
-    // Box ticks deliberately don't track: high-frequency, low-signal,
-    // matching spec/39's vote-cast precedent.
-  };
   // The masthead lines (spec/100): a page's heading + subtitle, and the same
   // two fields on a banner (its subtitle) and a callout (its heading),
   // spec/147. One setter for both lines rather than two near-identical ones,
@@ -388,7 +372,6 @@ export function useDataShapeSetters({ currentSelectionIds, commit }: DataShapeSe
     setCodeWrapSelected,
     setMindFlowSelected,
     setLegendItemsSelected,
-    toggleChecklistItem,
     setPageHeading,
     setChecklistItemsSelected,
     setEntityFieldsSelected,

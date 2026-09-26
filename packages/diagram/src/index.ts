@@ -509,6 +509,14 @@ export * from './layer-operations';
 // diff/apply functions the realtime room uses to merge concurrent edits.
 export * from './element-ops';
 
+// Per-element deltas for the fields many participants write at once
+// (spec/152): answers, ideas, checklist ticks, comments.
+export * from './element-deltas';
+
+// The room's record of those deltas, merged into each save so D1 keeps what
+// the room saw (spec/152 phase 3).
+export * from './collab-ledger';
+
 // Tab-folder grouping + order normalization (specs/30). One home
 // shared by the tab-bar renderer, the client save path, and the
 // server route so the contiguous-run invariant has a single

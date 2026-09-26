@@ -83,7 +83,7 @@ import { useSlideDeck } from './useSlideDeck';
 import { slideMaxZoom } from '@/lib/presentation-config';
 import { useCanvasPinchZoom } from '@/hooks/canvas/useCanvasPinchZoom';
 import { useCapabilities } from '@/hooks/persistence/useCapabilities';
-import { type Participant } from '@/lib/identity';
+import { participantKey, type Participant } from '@/lib/identity';
 import { markNameConfirmed } from '@/lib/local-identity';
 import {
   apiNotifyActionAssigned,
@@ -105,6 +105,8 @@ import {
 import { useEditorActions } from '@/hooks/collab/useEditorActions';
 import { createTab, deriveTabLoadState, mergeAiElements, patchTab } from './editor-page-helpers';
 import { useAutosave } from './useAutosave';
+import { createRemoteOpJournal, type RemoteOpJournal } from './save-baseline';
+import { useElementDeltas } from '@/hooks/collab/useElementDeltas';
 import { usePerTabLoad } from './usePerTabLoad';
 import { useReactionBursts } from '@/hooks/canvas/useReactionBursts';
 import { useRoomConnection } from './useRoomConnection';
@@ -423,22 +425,9 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     color: '#0ea5e9',
     status: 'online',
   });
-  // Comment-thread state + handlers. The open-id drives the
-  // dynamic <CommentThreadPopover> JSX gate further down; the
-  // action callbacks bind to the selection popover + the popover
-  // itself. Mutations bypass the history hook (no Ctrl+Z eats a
-  // half-typed comment), see apps/live/hooks/useEditorComments.ts.
-  const {
-    commentThreadOpenId,
-    openComments,
-    closeComments,
-    addComment,
-    replaceCommentId,
-    deleteComment,
-    resolveThread,
-    unresolveThread,
-  } = useEditorComments({ activeId, tickTabs, selfParticipant });
-
+  // Who "I" am in a dot vote (spec/152): the collab key, which is stable and
+  // safe to publish, rather than the owner id, which is a guest's credential.
+  const voteSelfId = participantKey(selfParticipant);
   // Keyboard-shortcut catalog modal + per-device disable toggle.
   // The toggle gates EVERY shortcut in useEditorKeyboardShortcuts
   // below; the modal opens from a button in the TabBar.
@@ -446,14 +435,13 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // Sharing, session-permission and realtime-room infrastructure: the
   // shareable / team / share-code flags that gate the WS room, owner +
   // owner-badge info, the share-link list + password, the granted
-  // session role + session share code, and the room / echo-guard refs.
+  // session role + session share code, and the room ref.
   // See editor-realtime. Declared early so the preferences + capabilities
   // gates below can read `sharePasswordGate`. The slice is spread into
   // the returned view-model below, so the explicit return doesn't
   // re-list these.
   const realtime = useEditorRealtime();
   const {
-    remoteUpdateRef,
     roomRef,
     diagramShareable,
     setDiagramShareable,
@@ -478,6 +466,26 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setSessionShareCode,
     sessionShareCodeRef,
   } = realtime;
+  // One answer / idea / tick / comment, applied here and sent to the room as
+  // a delta ahead of the autosave (spec/152). Shared by the comments, the
+  // checklist and the collaboration elements below.
+  const applyElementDelta = useElementDeltas({ activeId, tickTabs, roomRef });
+  // Comment-thread state + handlers. The open-id drives the
+  // dynamic <CommentThreadPopover> JSX gate further down; the
+  // action callbacks bind to the selection popover + the popover
+  // itself. Mutations bypass the history hook (no Ctrl+Z eats a
+  // half-typed comment) and travel as deltas; see
+  // apps/live/hooks/collab/useEditorComments.ts.
+  const {
+    commentThreadOpenId,
+    openComments,
+    closeComments,
+    addComment,
+    replaceCommentId,
+    deleteComment,
+    resolveThread,
+    unresolveThread,
+  } = useEditorComments({ applyElementDelta, selfParticipant });
   // Per-user editor preferences (spec/20): the state, the ref mirrors
   // the drag hook reads, and the localStorage read + D1 sync effects.
   // See useEditorPreferences.
@@ -651,6 +659,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // Spec/13 has the design.
   const lastSavedTabsRef = useRef<Tab[]>([]);
   const lastSavedNameRef = useRef<string>('');
+  // Peer ops that land while a save is in flight (spec/152); see save-baseline.
+  const remoteOpJournalRef = useRef<RemoteOpJournal>(createRemoteOpJournal());
 
   // True while a hover-preview is on screen (set by useStylePreview). Style
   // previews mutate `tabs` via tickTabs so they render live, but they must
@@ -681,7 +691,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     lastSavedTabsRef,
     lastSavedNameRef,
     loadedTabIdsRef,
-    remoteUpdateRef,
+    remoteOpJournalRef,
     previewingRef,
     roomRef,
     setSaveStatus,
@@ -767,10 +777,15 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // they need the room, which needs the poll hook — and because the only
   // moment its value matters is the instant somebody starts a poll.
   const pollCollaboratorsRef = useRef<readonly PollCandidate[]>([]);
+  // Our collab key, for the poll's answers and host (spec/152). A ref: the poll
+  // hook's handlers stay stable while identity hydrates.
+  const pollSelfKeyRef = useRef(voteSelfId);
+  pollSelfKeyRef.current = voteSelfId;
   const livePoll = useLivePoll({
     roomRef,
     sessionBlockedRef,
     collaboratorsRef: pollCollaboratorsRef,
+    selfKeyRef: pollSelfKeyRef,
   });
   // In-place recovery when the room can't replay our reconnect gap
   // (spec/97), in place of the page reload this used to do.
@@ -782,7 +797,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     loadedTabIdsRef,
     applyRemoteTabs,
     lastSavedTabsRef,
-    remoteUpdateRef,
     setTabLoadErrors,
   });
   // Realtime room: WebSocket per shared diagram (presence + ops). See
@@ -852,7 +866,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     sessionShareCode,
     applyRemoteTabs,
     commitTabs,
-    remoteUpdateRef,
+    lastSavedTabsRef,
     onError: (message) => toast.error(message),
   });
 
@@ -865,7 +879,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     sessionShareCode,
     lastSeenRef,
     selfParticipantRef,
-    remoteUpdateRef,
+    saveBaseline: { tabs: lastSavedTabsRef, name: lastSavedNameRef, journal: remoteOpJournalRef },
     sessionShareCodeRef,
     roomRef,
     applyRemoteTabs,
@@ -920,7 +934,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setLoadedTabIds,
     setTabLoadErrors,
     retryNonce: tabLoadRetryNonce,
-    remoteUpdateRef,
+    lastSavedTabsRef,
     resetTabs,
   });
 
@@ -1975,14 +1989,24 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     // from the bounded undo stack).
     commitTabs: tickTabs,
     emitTabMeta,
-    selfId: selfParticipant.id,
+    // Dots and the host are keyed by the collab key, not the owner id: the
+    // owner id is a guest's credential, and a dot op broadcasts its voter to
+    // every socket in the room (spec/152, spec/122).
+    selfId: voteSelfId,
     // Straight down the socket, ahead of the autosave (spec/39). A no-op
     // before the room is open, exactly like every other presence-speed send —
     // a solo vote still works, it just has nobody to tell.
-    emitVote: (tabId, elementId, delta) =>
+    emitVote: (tabId, elementId, delta, round) =>
       roomRef.current?.send({
         kind: 'op',
-        op: { kind: 'vote', tabId, elementId, voter: selfParticipant.id, delta },
+        op: {
+          kind: 'vote',
+          tabId,
+          elementId,
+          voter: voteSelfId,
+          delta,
+          ...(round ? { round } : {}),
+        },
       }),
   });
 
@@ -1993,11 +2017,13 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     useBehaviourElements({
       activeId,
       commitTabs,
+      tickTabs,
       editsBlocked,
       sessionToolsBlocked: facilitator.sessionToolsBlocked,
       selfParticipant,
       livePresence,
       activeTimer: activeTab.timer,
+      activeVote: activeTab.vote,
       startTimer,
       pauseTimer,
       resumeTimer,
@@ -2006,18 +2032,23 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     });
 
   // The collaboration elements (spec/122 to spec/129). Sibling of the
-  // behaviour hook above: these write to the document, so they take
-  // `commitTabs` (which does NOT push undo history — one person's Ctrl+Z must
-  // never retract another person's answer).
+  // behaviour hook above: these write to the document through `tickTabs`,
+  // which does NOT push undo history, so one person's Ctrl+Z can never
+  // retract another person's answer (spec/152). Scatter alone commits.
   const collabElements = useCollabElements({
     activeId,
     commitTabs,
+    tickTabs,
+    applyElementDelta,
+    activeElements: activeTab.elements,
     editsBlocked,
     sessionToolsBlocked: facilitator.sessionToolsBlocked,
     selfParticipant,
     livePresence,
     startTimer,
   });
+  // A checklist tick is a room press like an answer (spec/152).
+  const { toggleChecklistItem } = collabElements;
 
   // Keeping a poll's results (spec/126). Ends the poll for the room through
   // the SAME `endPoll` the plain End uses — one op, so a participant sees no
@@ -2250,7 +2281,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setCodeWrapSelected,
     setLegendItemsSelected,
     setMindFlowSelected,
-    toggleChecklistItem,
     setPageHeading,
     setWebRows,
     appendWebRowTo,
@@ -2497,7 +2527,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     doneVoteReview,
   } = useVoteReview({
     activeTab,
-    selfId: selfParticipant.id,
+    selfId: voteSelfId,
     scrollIntoView,
     clearVote,
     setVoteReviewIndex,
@@ -2697,6 +2727,9 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   });
 
   return {
+    // The id the dot-vote knows us by (spec/152): every vote reader compares
+    // against this, never the owner id.
+    voteSelfId,
     // Re-sweep the team libraries after a team-folder mutation made from
     // the Explorer panel (spec/35), and the confirm dialog its delete uses.
     refreshTeamLibraries,

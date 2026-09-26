@@ -247,6 +247,12 @@ export type ShapeElement = {
   // (preferNewerQa). Only the qa endpoint writes these.
   qaNotes?: QaNote[];
   qaRev?: number;
+  // Which round of answers / ideas this card is on (spec/152): a random id
+  // minted by each clear or reset. Answers and ideas travel as their own
+  // element deltas stamped with it, so one cast before a clear can't land in
+  // the round after, and an element update for the SAME round leaves the
+  // receiver's answers alone. Absent until the first clear.
+  collabRound?: string;
   // Agenda (spec/127): the ordered segments, and the index of the one the room
   // is in (absent = not started). Only meaningful on 'agenda'.
   agendaItems?: AgendaItem[];

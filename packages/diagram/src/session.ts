@@ -100,6 +100,13 @@ export type TabVote = {
   // the host steps the room through the picks together and everyone else
   // follows. Absent until the host reveals results.
   reviewIndex?: number;
+  // Which round this is: a random id minted at start (spec/152). Every `vote`
+  // op carries it, so a dot cast for one round can never land in another, and
+  // a lifecycle change (end / reveal / walkthrough) that names the SAME round
+  // leaves the receiver's dots alone instead of replacing them with the
+  // sender's snapshot. Optional: a vote persisted before rounds existed has
+  // none and keeps the pre-round behaviour.
+  round?: string;
 };
 
 // May this participant drive the vote (end / reveal / clear it, and move
@@ -230,6 +237,33 @@ export function applyVoteDelta(
   if (idx === -1) return vote;
   const next = [...existing.slice(0, idx), ...existing.slice(idx + 1)];
   return { ...vote, votes: { ...vote.votes, [elementId]: next } };
+}
+
+// Does a peer's dot belong on this vote? Only while casting is open, and only
+// for the round it was cast in (spec/152). A dot that reaches us after End has
+// nowhere to go, and one from the previous round would otherwise be counted
+// against the new one while its caster's own map had been reset. A dot or a
+// vote with no round (a peer or a vote from before rounds) falls back to the
+// "open" check alone.
+export function voteDeltaApplies(vote: TabVote | null | undefined, round?: string): boolean {
+  if (!vote || !vote.active) return false;
+  if (round === undefined || vote.round === undefined) return true;
+  return round === vote.round;
+}
+
+// Fold a peer's whole `vote` object (a tab-meta patch or a whole-tab op) into
+// ours (spec/152). Within one round the dots move ONLY by delta ops, so a
+// lifecycle change for the same round (End, Reveal, stepping the walkthrough)
+// takes the incoming fields and keeps OUR map: the sender's snapshot was taken
+// at their autosave and would erase every dot still in flight. A different
+// round, a clear, or a vote from before rounds replaces it outright.
+export function mergeIncomingVote(
+  local: TabVote | undefined,
+  incoming: TabVote | undefined,
+): TabVote | undefined {
+  if (!local || !incoming) return incoming;
+  if (incoming.round === undefined || incoming.round !== local.round) return incoming;
+  return { ...incoming, votes: local.votes };
 }
 
 // How many dots a given participant has spent across the whole tab.

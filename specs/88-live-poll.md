@@ -19,19 +19,19 @@ So a poll lives **only in the realtime room**. It is carried by three new
 D1, nothing enters the change log, nothing is undoable, and no migration or
 schema change is needed anywhere.
 
-The costs are real and accepted:
+**The room remembers it while it runs** (spec/152). The Durable Object keeps
+the running poll and every answer in its own storage (never D1) and replays
+them to each session on hello, so:
 
-- **Late joiners are not prompted.** Someone opening the diagram mid-poll sees
-  nothing; the poll reaches whoever is connected when it starts. (This answers
-  the issue's open question: present-at-trigger-time only.)
-- **A reload loses your prompt and your answer.** The poll is memory-only, so
-  refreshing drops you out of it. You are not re-prompted.
-- **If the host disconnects, nobody can end the poll globally.** Every
-  participant can dismiss their own panel, and the poll dies with the last
-  connected client, so this self-heals rather than wedging the diagram.
+- **A late joiner is prompted**, and sees the answers so far.
+- **A reload keeps your prompt and your answer**: yours comes back keyed by
+  your collab key.
+- **A host who refreshes can still end it**: the poll carries its starter's
+  collab key (`hostKey`).
 
-These are acceptable for a pulse-check that lasts a minute. They would not be
-acceptable for the dot-vote, which is why the dot-vote is on the Tab.
+This used to be memory-only in the clients, and all three were accepted costs
+("present-at-trigger-time only"). Ending the poll still removes every trace of
+it, from the room too.
 
 ## Op vocabulary
 
@@ -40,15 +40,18 @@ Durable Object keeps `op: unknown` and just relays, so the room needs no
 knowledge of any of them.
 
 - `{ kind: 'poll-start'; poll: LivePoll }` — the question, style, and options.
-- `{ kind: 'poll-answer'; pollId: string; value: string | null }` — one
-  participant's answer; `null` means they skipped. Re-sending replaces the
-  sender's previous answer (last write wins per sender).
+- `{ kind: 'poll-answer'; pollId: string; value: string | null; key?: string }`
+  — one participant's answer; `null` means they skipped. Keyed by `key`, the
+  answerer's collab key (the sender's presence id only for an old client), so
+  re-sending replaces their previous answer, across a reconnect too.
 - `{ kind: 'poll-end'; pollId: string }` — tear it down everywhere.
 
-All three are **unordered and unlogged**, like cursor / select / laser: they
-mutate no diagram state, so they carry no `seq` and are not replayed to a
-reconnecting client. That is the mechanism behind "late joiners are not
-prompted" above.
+None of them touches the diagram. `poll-answer` relays unordered like cursor /
+select / laser (it is open to view-role); `poll-start` / `poll-end` are
+edit-role mutations. What a joiner needs comes from the room's replay on
+hello, not from the op log. Two polls started in the same moment converge on
+the newer (`pollSupersedes`): the room and every client apply the same rule,
+since a starter never receives its own poll-start back.
 
 ## Roles
 

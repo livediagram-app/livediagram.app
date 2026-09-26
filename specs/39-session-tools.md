@@ -168,11 +168,29 @@ _may_ cast is a rule enforced where the press happens; a dot a peer has already
 cast is a fact, and refusing to apply it would leave that peer's screen
 disagreeing with the room forever.
 
+**Dots are keyed by the collab key** (spec/152), `participantKey`, not the
+owner id: the owner id is a guest's credential, and a dot op broadcasts its
+voter to every socket. The budget and the host (`startedBy`) use it too.
+
+**A vote has a round** (spec/152). `TabVote.round` is a random id minted at
+Start, and every `vote` op carries it. A receiver drops a dot whose round is
+not the open vote's, or that arrives when no vote is open, so a dot cast just
+before End or before a new Start cannot land in the wrong round. Within one
+round the map moves ONLY by deltas: a tab-meta patch or whole-tab op whose
+vote has the same round (End, Reveal, stepping the walkthrough) takes the
+other fields and keeps the receiver's `votes` (`mergeIncomingVote`). Only a
+new round or a clear replaces the map. Before the round, a lifecycle patch
+carried the host's map as of their save and erased every dot still in
+flight, and each participant's first save after Start re-sent the whole map.
+A vote persisted before the round shipped has none and keeps the old
+behaviour.
+
 Residual, stated plainly: two clients still autosave the whole tab, so a save
 that lands before an op is applied can persist a map missing a dot. They
 converge within a round-trip and the next save writes the converged map, so
 this is a much smaller window than the one it replaces rather than none at all.
-Ending a vote persists the host's final state.
+Ending a vote persists the host's final state. Server-side merge of the map is
+spec/152 phase 3.
 
 - Controlled from **Tab menu → Collaborate → Vote** (the Session
   Studio): the dot budget is picked as a **row of dots** (tap the fifth for

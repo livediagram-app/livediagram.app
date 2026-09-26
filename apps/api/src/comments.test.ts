@@ -217,3 +217,37 @@ describe('hasNewComments (spec/64 #1)', () => {
     expect(hasNewComments([mkShape('e1', [])], [])).toBe(false);
   });
 });
+
+describe('rewriteCommentAuthors with the room ledger (spec/152)', () => {
+  const posted = new Map([['c1', { authorName: 'Bea', authorColor: '#f00' }]]);
+  const commentsOf = (els: Element[]) => (els[0] as ShapeElement).commentThread!.comments;
+
+  // THE bug: Bea's comment reached the writer live, and the writer's save
+  // landed first, crediting it to the writer.
+  it("credits somebody else's comment as the room saw it posted, not to the saver", () => {
+    const next = [mkShape('a', [mkComment('c1', 'Whatever', '#000')])];
+    const [c] = commentsOf(rewriteCommentAuthors(next, [], writer, posted));
+    expect(c).toMatchObject({ authorName: 'Bea', authorColor: '#f00' });
+    expect(c!.authorId).toBeUndefined();
+  });
+
+  it('stamps the writer on their OWN new comment even when the room knows it', () => {
+    const next = [mkShape('a', [mkComment('c1', 'x', '#000', 't', writer.id)])];
+    const [c] = commentsOf(rewriteCommentAuthors(next, [], writer, posted));
+    expect(c).toMatchObject({ authorName: writer.name, authorId: writer.id });
+  });
+
+  it('lets the author claim a stored comment that has no author id yet', () => {
+    const prev = [mkShape('a', [mkComment('c1', 'Bea', '#f00')])];
+    const next = [mkShape('a', [mkComment('c1', 'Bea', '#f00', 't', writer.id)])];
+    const [c] = commentsOf(rewriteCommentAuthors(next, prev, writer));
+    expect(c!.authorId).toBe(writer.id);
+  });
+
+  it('never lets anyone take over a comment that already has an author', () => {
+    const prev = [mkShape('a', [mkComment('c1', 'Bea', '#f00', 't', 'bea-id')])];
+    const next = [mkShape('a', [mkComment('c1', 'Bea', '#f00', 't', writer.id)])];
+    const [c] = commentsOf(rewriteCommentAuthors(next, prev, writer));
+    expect(c!.authorId).toBe('bea-id');
+  });
+});

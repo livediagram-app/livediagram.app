@@ -4,10 +4,11 @@
 // under a diagram id lives here.
 
 import type { Tab } from '@livediagram/diagram';
-import { isValidTab, preferNewerQaAll } from '@livediagram/diagram';
+import { applyElementDelta, isValidTab, preferNewerQaAll } from '@livediagram/diagram';
+import { mergeRoomLedger, relayElementDelta } from '../room-client';
 import { MAX_TAB_BYTES, bodyExceedsCap } from '../limits';
 import {
-  findComment,
+  findCommentHost,
   hasNewComments,
   redactCommentAuthorIds,
   removeComment,
@@ -115,10 +116,10 @@ export async function handleDiagramSubresources(ctx: RouteContext): Promise<Resp
     const allowed = await gateEdit(ctx, id, existing.ownerId, existing.teamId);
     if (!allowed) return forbidden();
     if (request.method === 'PUT') {
-      const body = (await request.json()) as Tab;
+      const received = (await request.json()) as Tab;
       // Structural schema gate (shared with the app, @livediagram/diagram):
       // discriminant, required fields, endpoints, array bounds + unique ids.
-      if (!isValidTab(body)) {
+      if (!isValidTab(received)) {
         return badRequest('invalid tab');
       }
       // Byte cap on the single tab (the body cap bounds the whole request;
@@ -127,11 +128,24 @@ export async function handleDiagramSubresources(ctx: RouteContext): Promise<Resp
       // Content-Length check too and defers to "the per-tab caps in the
       // routes" for the rest. See bodyExceedsCap for why the header alone
       // isn't enough.
-      if (bodyExceedsCap(request, body, MAX_TAB_BYTES)) {
+      if (bodyExceedsCap(request, received, MAX_TAB_BYTES)) {
         return payloadTooLarge();
       }
-      // Find the existing order index; append if new.
-      const existingTab = await getTab(env, id, tabId);
+      // Fold in whatever answers, ideas, ticks and dots the room holds that
+      // this client hadn't seen when it snapshotted, so a stale save can't
+      // erase them from D1 (spec/152 phase 3). A no-op for a diagram with no
+      // room, or a save with no room cursor.
+      // In parallel with the stored tab it doesn't depend on.
+      const [{ tab: body, commentAuthors }, existingTab] = await Promise.all([
+        mergeRoomLedger(
+          env,
+          existing,
+          { ...received, id: tabId },
+          request.headers.get('X-Room-Cursor'),
+        ),
+        getTab(env, id, tabId),
+      ]);
+      // (existingTab, read above) gives the order index; append if new.
       // Data-loss backstop (spec/13). Refuse to blank a tab that
       // currently holds content unless the client explicitly marks the
       // empty write intentional via `X-Allow-Empty: 1`. The live editor
@@ -185,6 +199,7 @@ export async function handleDiagramSubresources(ctx: RouteContext): Promise<Resp
               body.elements,
               existingTab?.elements ?? [],
               writerParticipant,
+              commentAuthors,
             ),
           }
         : body;
@@ -288,21 +303,25 @@ export async function handleDiagramSubresources(ctx: RouteContext): Promise<Resp
       // never read from the client.
       authorId: owner,
     };
-    const updatedElements = tab.elements.map((el) => {
-      if (el.id !== elementId || el.type === 'arrow') return el;
-      const thread = (el as { commentThread?: { comments: (typeof comment)[]; resolved: boolean } })
-        .commentThread ?? { comments: [], resolved: false };
-      return {
-        ...el,
-        commentThread: {
-          comments: [...thread.comments, comment],
-          // Adding a comment unresolves a resolved thread; same
-          // rule as the editor's local addComment.
-          resolved: false,
-        },
-      };
-    });
+    // The same append the editor makes (it unresolves a resolved thread),
+    // through the one shared definition of it.
+    const updatedElements = tab.elements.map((el) =>
+      el.id === elementId ? applyElementDelta(el, { kind: 'comment-add', comment }) : el,
+    );
     await upsertTab(env, id, { ...tab, elements: updatedElements }, tab.orderIndex);
+    // Tell the room, so editors see it now and their next save keeps it
+    // (spec/152). Off the response path. WITHOUT the author id: it is the
+    // visitor's owner id, which a GET redacts for everyone but its author
+    // (redactCommentAuthors), and the room would hand it to every socket.
+    // Nothing is lost by leaving it out: a save restores a stored comment's
+    // author fields from D1 (rewriteCommentAuthors).
+    const { authorId: _authorId, ...publicComment } = comment;
+    ctx.waitUntil?.(
+      relayElementDelta(env, existing, tabId, elementId, {
+        kind: 'comment-add',
+        comment: publicComment,
+      }),
+    );
     // spec/138 §4.3: the OTHER comment write path. A view-role visitor
     // can't autosave, so this endpoint is their only way to persist a
     // comment — and without an emit here their comments would be the
@@ -344,8 +363,9 @@ export async function handleDiagramSubresources(ctx: RouteContext): Promise<Resp
     const tab = await getTab(env, id, tabId);
     if (!tab) return notFound();
     // Locate the comment + confirm authorship before mutating anything.
-    const found = findComment(tab.elements, commentId);
-    if (!found) return notFound();
+    const host = findCommentHost(tab.elements, commentId);
+    if (!host) return notFound();
+    const found = host.comment;
     // Delete-own only. The diagram owner may also delete their own
     // comments here; removing other people's requires the edit-gated
     // tab PUT. Mismatched author is forbidden (not 404) — the caller
@@ -353,6 +373,13 @@ export async function handleDiagramSubresources(ctx: RouteContext): Promise<Resp
     if (found.authorId !== owner) return forbidden();
     const updatedElements = removeComment(tab.elements, commentId);
     await upsertTab(env, id, { ...tab, elements: updatedElements }, tab.orderIndex);
+    // Same as the add: without it, an editor's next save put it back.
+    ctx.waitUntil?.(
+      relayElementDelta(env, existing, tabId, host.elementId, {
+        kind: 'comment-remove',
+        commentId,
+      }),
+    );
     return noContent();
   }
 

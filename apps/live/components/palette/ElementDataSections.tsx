@@ -379,6 +379,11 @@ export function ElementDataSections({
               <ChecklistRowsEditor
                 items={shapeTarget?.checklistItems ?? []}
                 onChange={props.onSetChecklistItems}
+                onToggle={
+                  shapeTarget && props.onToggleChecklistItem
+                    ? (index) => props.onToggleChecklistItem!(shapeTarget.id, index)
+                    : undefined
+                }
               />
             </MenuAccordionSection>
           ) : null}

@@ -5,13 +5,15 @@
 // (eventually) any other client share one definition. `RoomHandlers`
 // below is the client-side callback shape only — not on the wire —
 // so it stays here next to the connect helper.
-import type {
-  ParticipantPresence,
-  FacilitatorReason,
-  RoomIncoming,
-  RoomOp,
-  RoomOutgoing,
+import {
+  isMutationOpKind,
+  type ParticipantPresence,
+  type FacilitatorReason,
+  type RoomIncoming,
+  type RoomOp,
+  type RoomOutgoing,
 } from '@livediagram/api-schema';
+import { opForTheWire } from '@livediagram/diagram';
 import { getSessionSharePassword, wsUrl } from './core';
 
 export type RoomHandlers = {
@@ -75,6 +77,20 @@ export function roomQueryString(options: RoomAuthOptions, sharePassword: string 
 // delay so a hard-rejected upgrade (revoked share, lost membership) stops
 // retrying rather than hammering the worker forever.
 const MAX_RECONNECT_ATTEMPTS = 6;
+
+// Ops held while the socket is down (spec/152). A change made in that window
+// used to be dropped on the floor: the save still carried it to D1, but no
+// peer saw it until they reloaded, and a dot or an answer never reached the
+// room's ledger at all. Only what changes the diagram or a poll is held: a
+// cursor or a selection from a minute ago means nothing. Bounded, so a long
+// outage can't grow it without end; past the bound, newer ops are dropped
+// and the next save still carries the state to D1.
+const OUTBOX_MAX = 500;
+export function isOutboxOp(msg: RoomOutgoing): boolean {
+  if (msg.kind !== 'op') return false;
+  const kind = (msg.op as { kind?: unknown }).kind;
+  return kind === 'poll-answer' || isMutationOpKind(kind);
+}
 const RECONNECT_BASE_MS = 500;
 const RECONNECT_MAX_MS = 15_000;
 
@@ -94,6 +110,7 @@ export function connectRoom(
 ): {
   send: (msg: RoomOutgoing) => void;
   close: () => void;
+  cursor: () => { epoch: string; seq: number } | null;
 } {
   // Auth identifiers ride on the query string (see roomQueryString). The
   // share password is read from the same session state apiHeaders uses, so
@@ -112,6 +129,9 @@ export function connectRoom(
   // room, which replays what we missed or tells us to re-hydrate.
   let lastEpoch: string | null = null;
   let lastSeq = 0;
+  // See OUTBOX_MAX. Flushed, in order, once a (re)opened socket has said
+  // hello and asked for what it missed.
+  let outbox: RoomOutgoing[] = [];
 
   const applyOp = (from: string, op: RoomOp, seq?: number, epoch?: string) => {
     if (typeof seq === 'number') lastSeq = seq;
@@ -139,6 +159,9 @@ export function connectRoom(
         ws.send(JSON.stringify({ kind: 'sync', epoch: lastEpoch, lastSeq } satisfies RoomOutgoing));
       }
       opened = true;
+      const held = outbox;
+      outbox = [];
+      for (const msg of held) ws.send(JSON.stringify(msg));
     });
     ws.addEventListener('message', (e) => {
       try {
@@ -184,11 +207,26 @@ export function connectRoom(
   open();
 
   return {
-    send: (msg) => {
+    send: (raw) => {
+      // No comment author id leaves this browser: it is its author's owner
+      // id, a guest's credential, and the room hands every op to every socket
+      // (spec/152). One choke point for every send path.
+      const msg: RoomOutgoing =
+        raw.kind === 'op' ? { ...raw, op: opForTheWire(raw.op) as RoomOp } : raw;
       if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(msg));
+      else if (!closed && isOutboxOp(msg) && outbox.length < OUTBOX_MAX) outbox.push(msg);
     },
+    // Where this client stands in the room's ordered stream, for a save to
+    // tell the api what it has seen (spec/152 phase 3). Null while the socket
+    // is down: a save made then is not merged with the room's ledger, because
+    // what the client changed offline must not be overruled by the room.
+    cursor: (): { epoch: string; seq: number } | null =>
+      ws.readyState === WebSocket.OPEN && lastEpoch !== null
+        ? { epoch: lastEpoch, seq: lastSeq }
+        : null,
     close: () => {
       closed = true;
+      outbox = [];
       if (reconnectTimer !== null) clearTimeout(reconnectTimer);
       ws.close();
     },

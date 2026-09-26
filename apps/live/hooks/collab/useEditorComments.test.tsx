@@ -10,13 +10,13 @@ vi.mock('@/lib/telemetry', () => ({
 const { useEditorComments } = await import('./useEditorComments');
 
 // The hook owns the Comment telemetry (spec/22) so the anchored popover and
-// the Comment panel (spec/136) both count, once each. `tickTabs` is a no-op
-// here: the emits are what's under test, not the thread mutation.
+// the Comment panel (spec/136) both count, once each. The delta sink is a
+// spy: the emits are under test here, plus which delta each action sends.
+const applyElementDelta = vi.fn();
 function setup() {
   return renderHook(() =>
     useEditorComments({
-      activeId: 'tab-1',
-      tickTabs: () => {},
+      applyElementDelta,
       selfParticipant: { id: 'me', name: 'Me', color: '#000' },
     }),
   );
@@ -25,7 +25,30 @@ function setup() {
 const flush = () => new Promise((r) => setTimeout(r, 0));
 
 describe('useEditorComments telemetry', () => {
-  beforeEach(() => trackMock.mockReset());
+  beforeEach(() => {
+    trackMock.mockReset();
+    applyElementDelta.mockReset();
+  });
+
+  // spec/152: every thread change is ONE delta, so two replies at once both
+  // land instead of the whole thread riding a whole-element update.
+  it('sends each thread change as its own delta', () => {
+    const { result } = setup();
+    let id = '';
+    act(() => {
+      id = result.current.addComment('el', 'hi');
+      result.current.deleteComment('el', 'c1');
+      result.current.resolveThread('el');
+      result.current.replaceCommentId('el', 'a', 'b');
+    });
+    expect(applyElementDelta.mock.calls.map((c) => [c[0], c[1].kind])).toEqual([
+      ['el', 'comment-add'],
+      ['el', 'comment-remove'],
+      ['el', 'comment-resolve'],
+      ['el', 'comment-rekey'],
+    ]);
+    expect(applyElementDelta.mock.calls[0]![1].comment).toMatchObject({ id, text: 'hi' });
+  });
 
   it('counts a local add, delete, resolve and unresolve once each', () => {
     const { result } = setup();

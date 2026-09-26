@@ -125,6 +125,8 @@ type TabBarProps = {
   // broadcast role per ParticipantPresence), so the badge only appears
   // when the participant id matches `selfId`.
   selfId: string;
+  // Who the dot-vote knows us by (spec/152), for the tab menu's vote controls.
+  voteSelfId?: string;
   selfRole: 'edit' | 'view';
   // Who we follow (spec/131), for the avatar ring, and the Collaborators
   // modal an avatar click opens (spec/145; Follow itself lives there).
@@ -176,6 +178,7 @@ export function TabBar({
   renameActiveNonce = 0,
   participantsByTab,
   selfId,
+  voteSelfId,
   selfRole,
   followingId,
   onOpenCollaborators,
@@ -216,6 +219,7 @@ export function TabBar({
     canClearContent: activeTabHasContent && !tab.locked,
     locked: tab.locked === true,
     selfId,
+    voteSelfId,
     otherDiagrams,
     folderNames,
     currentFolder: tabFolderName(tab),

@@ -1,5 +1,5 @@
 import { useEffect, type Dispatch, type MutableRefObject, type SetStateAction } from 'react';
-import { applyElementOp, applyVoteDelta, type QaNote, type Tab } from '@livediagram/diagram';
+import type { QaNote, Tab } from '@livediagram/diagram';
 import {
   CHANGE_LOG_LIST_LIMIT,
   type AvatarPresence,
@@ -17,7 +17,8 @@ import { parseLaserConfig } from '@/lib/laser-config';
 import { createPresenceCoalescer, type CursorPos, type LaserTrail } from './presence-coalescer';
 import type { RemoteSelection } from '@/lib/presence-rows';
 import { pruneMapToPresent } from './editor-page-helpers';
-import { mergeRemoteTab } from './tab-broadcast-ops';
+import { applyRoomOpToTabs } from './room-op-apply';
+import { foldRemoteOpIntoBaseline, type SaveBaselineRefs } from './save-baseline';
 
 // Realtime room: one WebSocket per diagram, opened only while the
 // diagram is shared. Lifted out of editor-page.tsx verbatim — the
@@ -39,7 +40,10 @@ export function useRoomConnection(opts: {
   sessionShareCode: string | null;
   lastSeenRef: MutableRefObject<Map<string, number>>;
   selfParticipantRef: MutableRefObject<Participant>;
-  remoteUpdateRef: MutableRefObject<boolean>;
+  // The autosave's baseline (spec/152): every document op a peer sends is
+  // folded into it as well as into the tabs on screen, so the next local save
+  // neither mistakes it for ours nor ships it back out.
+  saveBaseline: SaveBaselineRefs;
   sessionShareCodeRef: MutableRefObject<string | null>;
   roomRef: MutableRefObject<ReturnType<typeof connectRoom> | null>;
   // Merge a peer's tab / diagram-meta change into the present, PRESERVING
@@ -93,7 +97,7 @@ export function useRoomConnection(opts: {
   // socket is sent this, so there is nothing to check it against.
   receiveSelectionReleased: (msg: { elementId: string; by: string }) => void;
   receivePoll: (poll: LivePoll) => void;
-  receivePollAnswer: (from: string, pollId: string, value: string | null) => void;
+  receivePollAnswer: (from: string, pollId: string, value: string | null, key?: string) => void;
   receivePollEnd: (pollId: string) => void;
   // A Q&A board's authoritative state after a server write (spec/151).
   // Stable, like the poll handlers, so it can't reopen the socket.
@@ -112,7 +116,7 @@ export function useRoomConnection(opts: {
     sessionShareCode,
     lastSeenRef,
     selfParticipantRef,
-    remoteUpdateRef,
+    saveBaseline,
     sessionShareCodeRef,
     roomRef,
     applyRemoteTabs,
@@ -260,104 +264,24 @@ export function useRoomConnection(opts: {
         // derivation. Cursor packets are the most frequent so this
         // doubles as a perfectly fine activity heartbeat.
         lastSeenRef.current.set(from, Date.now());
-        if (op.kind === 'tab') {
-          // Peer updated a single tab's contents. Merge by id; if the
-          // tab isn't local yet (new tab the peer just added), append
-          // it so the receiver picks it up without a refetch.
-          remoteUpdateRef.current = true;
-          applyRemoteTabs((prev) => {
-            const existing = prev.findIndex((t) => t.id === op.tabId);
-            if (existing === -1) return [...prev, op.tab];
-            const next = [...prev];
-            // Keeps our folder membership and in-flight dots; see
-            // mergeRemoteTab.
-            next[existing] = mergeRemoteTab(next[existing]!, op.tab);
-            return next;
-          });
-        } else if (op.kind === 'el') {
-          // Peer changed a SINGLE element on a tab (spec/75, Level 0):
-          // add / update / remove / reorder, applied by id. Two peers
-          // editing different elements on the same tab now merge instead
-          // of the whole-tab `tab` op clobbering (see element-ops.ts). An
-          // op for a tab we don't have yet is dropped — a follow-up `tab`
-          // or `diagram-meta` op will bring the tab in whole.
-          remoteUpdateRef.current = true;
-          applyRemoteTabs((prev) => {
-            const i = prev.findIndex((t) => t.id === op.tabId);
-            if (i === -1) return prev;
-            const tab = prev[i]!;
-            const elements = applyElementOp(tab.elements, op.op);
-            // applyElementOp returns the same array reference on a no-op
-            // (e.g. update for an already-removed id); keep tab identity
-            // so the autosave content diff doesn't see a phantom change.
-            if (elements === tab.elements) return prev;
-            const next = [...prev];
-            next[i] = { ...tab, elements };
-            return next;
-          });
-        } else if (op.kind === 'vote') {
-          // ONE dot from a peer (spec/39). Applied as a DELTA to our own map,
-          // not as a replacement, which is the whole point: two people casting
-          // in the same instant commute, so both dots survive whatever order
-          // they arrive in. Ignored when the tab has no vote open — a dot for a
-          // round that has since been cleared has nowhere to land.
-          remoteUpdateRef.current = true;
-          applyRemoteTabs((prev) => {
-            const i = prev.findIndex((t) => t.id === op.tabId);
-            if (i === -1) return prev;
-            const tab = prev[i]!;
-            if (!tab.vote) return prev;
-            const vote = applyVoteDelta(tab.vote, op.elementId, op.voter, op.delta);
-            // Same object back = a retraction of a dot we never had. Keep tab
-            // identity so the autosave's content diff sees no phantom change.
-            if (vote === tab.vote) return prev;
-            const next = [...prev];
-            next[i] = { ...tab, vote };
-            return next;
-          });
-        } else if (op.kind === 'tab-meta') {
-          // Peer changed a tab's non-element metadata (name, background,
-          // font, …) without touching its elements (spec/75, Level 0).
-          // Merge the patch; `folder` stays owned by diagram-meta (spec/30)
-          // so a content/meta edit can't clobber a concurrent folder move.
-          remoteUpdateRef.current = true;
-          applyRemoteTabs((prev) => {
-            const i = prev.findIndex((t) => t.id === op.tabId);
-            if (i === -1) return prev;
-            const tab = prev[i]!;
-            const { folder: _ignored, ...patch } = op.patch;
-            const next = [...prev];
-            next[i] = { ...tab, ...patch, folder: tab.folder };
-            return next;
-          });
-        } else if (op.kind === 'diagram-meta') {
-          // Peer renamed the diagram or reordered tabs (incl. add /
-          // delete). Reorder locally to match; new ids land as
-          // placeholders that a follow-up `tab` op will populate.
-          remoteUpdateRef.current = true;
-          setDiagramName(op.name);
-          applyRemoteTabs((prev) => {
-            const localById = new Map(prev.map((t) => [t.id, t] as const));
-            return op.tabs.map((summary) => {
-              const local = localById.get(summary.id);
-              // diagram-meta owns folder membership (spec/30). Apply
-              // the incoming folder, but only mint a new object when it
-              // actually differs so unchanged tabs keep their identity
-              // (the autosave content diff keys off identity).
-              if (local) {
-                const folder = summary.folder;
-                return (local.folder ?? undefined) === (folder ?? undefined)
-                  ? local
-                  : { ...local, folder };
-              }
-              return {
-                id: summary.id,
-                name: summary.name,
-                elements: [],
-                folder: summary.folder,
-              };
-            });
-          });
+        if (
+          op.kind === 'tab' ||
+          op.kind === 'el' ||
+          op.kind === 'vote' ||
+          op.kind === 'el-delta' ||
+          op.kind === 'tab-meta' ||
+          op.kind === 'diagram-meta'
+        ) {
+          // A document change from a peer: a whole tab, one element (spec/75),
+          // one dot (spec/39), one answer / idea / tick / comment (spec/152),
+          // non-element tab fields, or the diagram's name
+          // and tab list. One pure function applies each (room-op-apply.ts),
+          // to the tabs on screen AND to the autosave's baseline, so the
+          // change is known to be the peer's and is never saved or broadcast
+          // back as if it were ours (spec/152).
+          if (op.kind === 'diagram-meta') setDiagramName(op.name);
+          applyRemoteTabs((prev) => applyRoomOpToTabs(prev, op));
+          foldRemoteOpIntoBaseline(saveBaseline, op);
         } else if (op.kind === 'select') {
           setRemoteSelections((prev) => {
             const next = new Map(prev);
@@ -433,7 +357,7 @@ export function useRoomConnection(opts: {
         } else if (op.kind === 'poll-answer') {
           // `from` keys the answer so a peer changing their mind replaces
           // it. It is never rendered — results carry no identity.
-          receivePollAnswer(from, op.pollId, op.value);
+          receivePollAnswer(from, op.pollId, op.value, op.key);
         } else if (op.kind === 'poll-end') {
           receivePollEnd(op.pollId);
         } else if (op.kind === 'log') {

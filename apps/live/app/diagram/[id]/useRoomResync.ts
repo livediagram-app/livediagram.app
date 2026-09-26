@@ -26,7 +26,6 @@ export function useRoomResync(opts: {
   // next tick diffs fresh server state against a stale mirror and PUTs
   // the pre-resync tabs straight back over it.
   lastSavedTabsRef: MutableRefObject<Tab[]>;
-  remoteUpdateRef: MutableRefObject<boolean>;
   setTabLoadErrors: Dispatch<SetStateAction<Set<string>>>;
 }) {
   const {
@@ -37,7 +36,6 @@ export function useRoomResync(opts: {
     loadedTabIdsRef,
     applyRemoteTabs,
     lastSavedTabsRef,
-    remoteUpdateRef,
     setTabLoadErrors,
   } = opts;
 
@@ -78,10 +76,9 @@ export function useRoomResync(opts: {
         return next ? { ...next, folder: t.folder } : t;
       });
     applyRemoteTabs(overwrite);
+    // Inbound, not a local edit: moving the baseline with it is what keeps
+    // the autosave from pushing the swap back up (spec/152).
     lastSavedTabsRef.current = overwrite(lastSavedTabsRef.current);
-    // Inbound, not a local edit — keeps the autosave from treating the
-    // swap as a change to push back up.
-    remoteUpdateRef.current = true;
     // Any tab we just refetched successfully is no longer in error.
     setTabLoadErrors((prev) => {
       if (prev.size === 0) return prev;
@@ -97,7 +94,6 @@ export function useRoomResync(opts: {
     loadedTabIdsRef,
     applyRemoteTabs,
     lastSavedTabsRef,
-    remoteUpdateRef,
     setTabLoadErrors,
   ]);
 }
