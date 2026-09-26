@@ -63,8 +63,13 @@ export type FeatureProps = {
 export function FeatureGrid({ items }: { items: FeatureProps[] }) {
   return (
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {/* Each card rises in as it scrolls into view (page-motion.css). The
+          entrance is on this wrapper, not the card, whose hover lift is a
+          transform the animation would otherwise pin. */}
       {items.map((item) => (
-        <FeatureCard key={item.title} {...item} />
+        <div key={item.title} className="enter-on-scroll">
+          <FeatureCard {...item} />
+        </div>
       ))}
     </div>
   );

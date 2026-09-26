@@ -1,6 +1,7 @@
 'use client';
 
 import { TemplatePreview } from '@livediagram/template-previews';
+import { ctaHref } from '@livediagram/api-schema';
 import { templateCreateHref, type TemplateCategory } from '@livediagram/templates';
 import { useState, type CSSProperties } from 'react';
 import { TemplateCarousel } from '@/components/TemplateCarousel';
@@ -77,7 +78,10 @@ export function TemplateGallery() {
         {groups.length === 0 ? (
           <p className="mt-12 text-center text-slate-400">
             Nothing matches &ldquo;{query.trim()}&rdquo;. Try a different word, or{' '}
-            <a href="/new?blank=1" className="text-brand-400 underline-offset-2 hover:underline">
+            <a
+              href={ctaHref('/new?blank=1', 'Home.GalleryDraw')}
+              className="text-brand-400 underline-offset-2 hover:underline"
+            >
               start from a blank canvas
             </a>
             .
@@ -94,15 +98,15 @@ export function TemplateGallery() {
                 {group.templates.map((t, i) => (
                   <li key={t.kind} style={{ '--tg-i': i } as CSSProperties}>
                     <a
-                      href={templateCreateHref(t.kind)}
+                      href={ctaHref(templateCreateHref(t.kind), 'Home.Gallery')}
                       aria-label={`Create a ${t.title}`}
-                      className="group flex h-full flex-col rounded-2xl border border-slate-700/80 bg-slate-800/40 p-3 transition hover:border-brand-400 hover:bg-slate-800/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400"
+                      className="preview-motion-host group flex h-full flex-col rounded-2xl border border-slate-700/80 bg-slate-800/40 p-3 transition hover:border-brand-400 hover:bg-slate-800/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400"
                     >
                       {/* The picker's preview, drawn for a light tile and
                           re-lit for this dark band by the same rule the
                           editor's dark chrome uses (preview-art-tile-dark),
                           scaled up from its fixed picker size. */}
-                      <span className="preview-art-tile-dark flex h-24 items-center justify-center rounded-xl bg-slate-50 [&>svg]:h-16 [&>svg]:w-auto">
+                      <span className="preview-art-tile-dark preview-motion flex h-24 items-center justify-center rounded-xl bg-slate-50 [&>svg]:h-16 [&>svg]:w-auto">
                         <TemplatePreview kind={t.kind} />
                       </span>
                       <span className="mt-3 block text-sm font-semibold text-white">{t.title}</span>

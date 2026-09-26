@@ -125,8 +125,9 @@ export function renderSocialCard(opts?: { kicker?: string; title?: string; subti
               <span>{opts.title}</span>
             ) : (
               <>
-                <span>A picture tells a thousand words,&nbsp;</span>
-                <span style={{ color: '#0284c7' }}>tell your story.</span>
+                <span>Diagram together,&nbsp;</span>
+                <span style={{ color: '#0284c7' }}>live</span>
+                <span>.</span>
               </>
             )}
           </div>

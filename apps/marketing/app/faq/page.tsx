@@ -1,3 +1,4 @@
+import { ctaHref } from '@livediagram/api-schema';
 import { CtaLink } from '@/components/CtaLink';
 import type { ReactNode } from 'react';
 
@@ -160,7 +161,7 @@ export default function FaqPage() {
     <>
       <JsonLd data={FAQ_JSON_LD} />
       <BreadcrumbJsonLd name="FAQ" path="/faq" />
-      <Header />
+      <Header surface="Faq" />
       <main className="mx-auto max-w-3xl px-6 py-16 sm:py-20">
         <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
           Frequently asked questions
@@ -178,7 +179,7 @@ export default function FaqPage() {
         </div>
         <div className="mt-12 rounded-lg border border-slate-200 bg-slate-50 p-6 text-center">
           <p className="text-slate-700">Still have a question?</p>
-          <CtaLink href="/new" size="sm" className="mt-3">
+          <CtaLink href={ctaHref('/new', 'Faq.Card')} size="sm" className="mt-3">
             Just start drawing
           </CtaLink>
         </div>

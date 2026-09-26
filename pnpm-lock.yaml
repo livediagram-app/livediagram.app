@@ -103,6 +103,9 @@ importers:
 
   apps/help:
     dependencies:
+      '@livediagram/api-schema':
+        specifier: workspace:*
+        version: link:../../packages/api-schema
       '@livediagram/help-registry':
         specifier: workspace:*
         version: link:../../packages/help-registry
@@ -291,6 +294,9 @@ importers:
 
   apps/marketing:
     dependencies:
+      '@livediagram/api-schema':
+        specifier: workspace:*
+        version: link:../../packages/api-schema
       '@livediagram/telemetry-client':
         specifier: workspace:*
         version: link:../../packages/telemetry-client

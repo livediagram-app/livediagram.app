@@ -7,6 +7,7 @@ import {
   AI_ASSISTANCE,
   ALL_VISITORS,
   API_TOKEN_ACTIVITY,
+  CALLS_TO_ACTION,
   COUNTDOWNS,
   DIAGRAM_ACTIONS,
   DISCUSSION,
@@ -64,7 +65,14 @@ import { windowLabel } from './windows';
 export const GROUPS: MetricGroup[] = [
   {
     title: 'Visitors',
-    metrics: [ALL_VISITORS, ACCOUNT_ACTIVITY, PAGE_VIEWS_BY_APP, SIGN_IN_PROMPTS, WELCOME_TOUR],
+    metrics: [
+      ALL_VISITORS,
+      ACCOUNT_ACTIVITY,
+      PAGE_VIEWS_BY_APP,
+      CALLS_TO_ACTION,
+      SIGN_IN_PROMPTS,
+      WELCOME_TOUR,
+    ],
   },
   {
     title: 'Content',

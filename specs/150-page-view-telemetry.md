@@ -119,7 +119,10 @@ preferences key.
 - **marketing** (`apps/marketing`) and **the dashboard** (`apps/telemetry`):
   new emitters. Their _only_ event is the page view: they mount the shared
   `PageViewBoot` and nothing else, and deliberately no error tracking (the
-  privacy policy promises page views only).
+  privacy policy promises page views only). The landing funnel
+  ([spec/153](153-landing-funnel.md)) measures what those pages lead to
+  without changing that: each CTA's link names its button, and the editor
+  sends the `Cta` events.
 
 This changes spec/22's "never the static marketing site" rule: the marketing
 site now reports page views, and nothing else. It is still first-party, sent to

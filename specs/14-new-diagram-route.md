@@ -389,6 +389,14 @@ default diagram name) without walking the wizard:
   page, its restore cleanup and the guard agree on what counts. This is
   the URL the marketing site's template gallery links every card to
   ([spec/16](16-marketing-site.md)); it fires `UI / Used / TemplateLink`.
+- **`/new?via=<Surface>.<Slot>`**: the landing funnel's source
+  ([spec/153](153-landing-funnel.md)), added by a public page's CTA and
+  combinable with every param above. `useCtaAttribution` reads it once,
+  sends `Cta / Opened / <source>`, and strips it from the address bar with
+  `history.replaceState` (keeping the other params), so a reload or Back
+  can't count the arrival twice. Whichever path commits the diagram (Create,
+  Skip or a bypass) then sends `Cta / Created / <source>`, once. An unknown
+  source is stripped and ignored.
 - **A "Just Draw" button on the wizard's step rail** (welcome mode only):
   far right on the same line as the Template / Theme / Settings chips,
   desktop (`sm+`) only — mobile keeps the footer Skip as the compact

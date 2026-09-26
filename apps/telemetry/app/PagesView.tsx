@@ -3,11 +3,14 @@
 import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
 import { PAGE_VIEW_APPS, pageViewRows } from './page-views';
 import { CardColumns } from './CardColumns';
+import { LandingFunnel } from './LandingFunnel';
 import { RankCard } from './RankCard';
 import { rankTrend, windowLabel } from './windows';
 
 // Pages view (spec/150): which pages across the site get viewed, broken down
-// by the app that serves them. Every frontend emits `Page·View·<path>` on
+// by the app that serves them, opening with the landing funnel (spec/153):
+// how the public pages turn views into diagrams. Every frontend emits
+// `Page·View·<path>` on
 // each path change (full load or in-app navigation), with ids and query
 // strings stripped in the browser: the ten most-viewed pages overall and
 // each app's own top ten.
@@ -53,7 +56,9 @@ export function PagesView({
         Dashboard.
       </p>
 
-      <section className="mt-8">
+      <LandingFunnel summary={summary} active={active} />
+
+      <section className="mt-12">
         <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-400">Top pages</h3>
         <div className="mt-3">
           <CardColumns>

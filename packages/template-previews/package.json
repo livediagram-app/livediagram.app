@@ -8,7 +8,8 @@
   "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./preview-art-tile.css": "./src/preview-art-tile.css"
+    "./preview-art-tile.css": "./src/preview-art-tile.css",
+    "./preview-motion.css": "./src/preview-motion.css"
   },
   "scripts": {
     "lint": "eslint .",

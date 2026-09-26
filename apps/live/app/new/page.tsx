@@ -10,6 +10,7 @@ import { RecentDiagramsCard } from './RecentDiagramsCard';
 import { CustomThemeProvider } from '@/components/primitives/CustomThemeProvider';
 import { AnimatedLinesBackdrop } from '@/components/canvas/AnimatedLinesBackdrop';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
+import { useCtaAttribution } from './useCtaAttribution';
 import { usePlacementOptions } from './usePlacementOptions';
 import { apiCreateDiagram, apiLoadSelf, apiSaveSelf, apiSetDiagramFolder } from '@/lib/api-client';
 import { offlineCreateDiagram } from '@/lib/offline/offline-store';
@@ -66,6 +67,10 @@ export default function NewDiagramPage() {
   // Clerk wiring (token provider + guest to authed migration), the same
   // hook as the editor route; see hooks/useClerkApiBootstrap.ts.
   const { authLoaded, clerkUserId } = useClerkApiBootstrap();
+
+  // Landing funnel (spec/153): the public-page CTA that brought this visit
+  // here, if any. Counts the arrival now and the diagram once it's committed.
+  const cta = useCtaAttribution();
 
   // Where this diagram can be filed, and the inline New Folder the Settings
   // step offers — see usePlacementOptions.
@@ -269,6 +274,7 @@ export default function NewDiagramPage() {
     track('Diagram', 'Created', offline ? 'Offline' : 'Cloud');
     track('Theme', 'Changed', themeTelemetryLabel(themeId));
     if (templateKind) track('Template', 'Used', titleCaseType(templateKind));
+    cta.trackCreated();
     // Placement. The Settings step's picker (spec/76) is authoritative: the
     // URL context (/new?folder=<id>, /new?team=<id>&folder=<id>) pre-seeds it
     // on mount, so what the picker highlighted is exactly what gets filed.

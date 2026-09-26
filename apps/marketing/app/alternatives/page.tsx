@@ -1,3 +1,4 @@
+import { ctaHref } from '@livediagram/api-schema';
 import { CtaLink } from '@/components/CtaLink';
 import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 import { Footer } from '@/components/Footer';
@@ -44,7 +45,7 @@ export default function AlternativesIndexPage() {
     <>
       <JsonLd data={ITEM_LIST_JSON_LD} />
       <BreadcrumbJsonLd name="Alternatives" path="/alternatives" />
-      <Header />
+      <Header surface="Compare" />
       <main className="mx-auto max-w-3xl px-6 py-16 sm:py-20">
         <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
           How livediagram compares
@@ -75,7 +76,7 @@ export default function AlternativesIndexPage() {
         </ul>
         <div className="mt-12 rounded-lg border border-slate-200 bg-slate-50 p-6 text-center">
           <p className="text-slate-700">Or just try it, no sign-up required.</p>
-          <CtaLink href="/new" size="sm" className="mt-3">
+          <CtaLink href={ctaHref('/new', 'Compare.Card')} size="sm" className="mt-3">
             Start drawing
           </CtaLink>
         </div>

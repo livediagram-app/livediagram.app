@@ -15,6 +15,7 @@
 // ingest validator use exactly one definition (and the public
 // dashboard can only ever surface values from this closed vocabulary).
 
+import { isCtaSource } from './cta-sources';
 import { isValidPageViewPath } from './page-views';
 
 export const TELEMETRY_CATEGORIES = [
@@ -107,6 +108,12 @@ export const TELEMETRY_CATEGORIES = [
   // so it validates against PAGE_VIEW_PATH_PATTERN instead of the token
   // pattern, and only ever pairs with 'View'.
   'Page',
+  // Landing funnel (spec/153): a call to action on a public page brought
+  // somebody to /new ('Opened'), and that visit created a diagram
+  // ('Created'). `type` is the CTA's source from the closed CTA_SOURCES
+  // table ('Home.Hero', 'Feature.Closing'), never a visitor or a URL; the
+  // editor sends both, the marketing site still sends only page views.
+  'Cta',
 ] as const;
 export type TelemetryCategory = (typeof TELEMETRY_CATEGORIES)[number];
 
@@ -216,6 +223,10 @@ export function isValidTelemetryEvent(value: unknown): value is TelemetryEvent {
   // A page view is only a page view with a path (spec/150).
   if (e.category === 'Page') {
     return e.action === 'View' && typeof e.type === 'string' && isValidPageViewPath(e.type);
+  }
+  // A CTA event is only ever one of our own buttons (spec/153).
+  if (e.category === 'Cta') {
+    return (e.action === 'Opened' || e.action === 'Created') && isCtaSource(e.type);
   }
   if (e.type === undefined || e.type === null) return true;
   return typeof e.type === 'string' && TELEMETRY_TYPE_PATTERN.test(e.type);
