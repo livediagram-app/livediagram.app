@@ -40,6 +40,13 @@ export const metadata: Metadata = {
     index: false,
     follow: false,
   },
+  // The editor paints its own dark chrome; Dark Reader stands down on sight of
+  // this meta instead of recolouring it (docs/specs/007-editor/live-app.md, Appearance).
+  // Dark Reader keys on the name alone; the content is non-empty because Next
+  // drops a meta whose content is empty.
+  other: {
+    'darkreader-lock': 'true',
+  },
 };
 
 // Pin the viewport so mobile browsers don't auto-zoom the page. The
