@@ -1,7 +1,13 @@
 'use client';
 
 import { fmtDay } from './chart-utils';
-import { headlineMembers, headlineTotal, stackDrawsLines, type MetricStack } from './metric-series';
+import {
+  headlineCaption,
+  headlineMembers,
+  headlineTotal,
+  stackDrawsLines,
+  type MetricStack,
+} from './metric-series';
 import { stackAccent } from './stack-colours';
 import { StackDeck } from './StackDeck';
 import { StackTrendChart, type StackSeries } from './StackTrendChart';
@@ -36,6 +42,7 @@ export function MetricStackCard({
   const total = headlineTotal(stack, counts) ?? 0;
   const before = headlineTotal(stack, previousCounts);
   const inHeadline = headlineMembers(stack);
+  const caption = headlineCaption(stack);
   const accent = stackAccent(stack.members);
   const { chart, legend, hidden } = headView(stack.title, series, counts, inHeadline, accent);
 
@@ -60,6 +67,7 @@ export function MetricStackCard({
     >
       <p className="mt-3 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
         {stack.blurb}
+        {caption ? <span className="text-slate-400"> {caption}</span> : null}
       </p>
       {/* Legend: which line is which, with each member's window count. A
           stack too big to draw one line per member shows its busiest

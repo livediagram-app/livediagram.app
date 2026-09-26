@@ -85,6 +85,26 @@ export function headlineTotal(
   return total;
 }
 
+// What a head's number counts, as a line under its blurb, when that is not
+// simply every member: a headline stack's number would otherwise read as the
+// members' sum ("Account Activity 1" over four charts). Null when it sums
+// them all. Names whichever side is shorter, what it counts or what it leaves
+// out.
+export function headlineCaption(stack: MetricStack): string | null {
+  const inHeadline = headlineMembers(stack);
+  const titles = (keep: boolean) =>
+    stack.members.filter((_, i) => inHeadline[i] === keep).map((m) => m.title);
+  const counted = titles(true);
+  const left = titles(false);
+  if (left.length === 0) return null;
+  return left.length < counted.length
+    ? `The total leaves out ${listOf(left)}.`
+    : `The total counts ${listOf(counted)} only.`;
+}
+
+const listOf = (items: string[]): string =>
+  items.length <= 1 ? (items[0] ?? '') : `${items.slice(0, -1).join(', ')} and ${items.at(-1)}`;
+
 // Every chart a group shows, stacks opened up: what the emitter test checks.
 export const groupMetrics = (group: MetricGroup): Metric[] =>
   group.metrics.flatMap((item) => (isStack(item) ? item.members : [item]));

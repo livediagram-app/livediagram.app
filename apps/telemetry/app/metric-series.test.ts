@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { GROUPS as DASHBOARD } from './DashboardView';
 import { EMAIL_KIND_METRICS, NEW_VISITORS, RETURNING_VISITORS } from './metric-catalogue';
-import { groupMetrics, isStack, type MetricGroup } from './metric-series';
+import { groupMetrics, headlineCaption, isStack, type MetricGroup } from './metric-series';
 
 describe('chart stacks', () => {
   const stack = {
@@ -118,5 +118,28 @@ describe('previousCount (trend arrows)', () => {
     const { previousCount } = await import('./metric-series');
     const older = { ...summary, previousWindows: undefined };
     expect(previousCount(older, 'last30', NEW_VISITORS, 30)).toBeNull();
+  });
+});
+
+describe('headlineCaption', () => {
+  const base = { stack: true as const, title: 'S', blurb: '' };
+  const m = (title: string) => ({ ...NEW_VISITORS, title });
+  const [a, b, c, d] = [m('A'), m('B'), m('C'), m('D')];
+
+  it('says nothing when the number sums every member', () => {
+    expect(headlineCaption({ ...base, members: [a, b] })).toBeNull();
+    expect(headlineCaption({ ...base, members: [a, b], headline: [a, b] })).toBeNull();
+  });
+
+  it('names what the total counts, or what it leaves out when that is shorter', () => {
+    expect(headlineCaption({ ...base, members: [a, b, c, d], headline: a })).toBe(
+      'The total counts A only.',
+    );
+    expect(headlineCaption({ ...base, members: [a, b, c, d], headline: [a, c] })).toBe(
+      'The total counts A and C only.',
+    );
+    expect(headlineCaption({ ...base, members: [a, b, c, d], headline: [a, b, c] })).toBe(
+      'The total leaves out D.',
+    );
   });
 });
