@@ -18,3 +18,15 @@ export function bearerTokenOf(authorization: string | null | undefined): string 
 export function isLoopbackHostname(hostname: string): boolean {
   return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]';
 }
+
+// A Clerk user id, the shape that is never a legitimate GUEST header.
+//
+// The guest credential is always a server-minted UUID (POST /api/guest-id).
+// A Clerk `sub` in `X-Owner-Id` is therefore a replay of a harvested account
+// id (team member lists expose them), and the api worker refuses it outright
+// (apps/api/src/index.ts). The editor applies the same rule from the other
+// side: a signed-in client with no session token never sends its account id
+// as the guest header (apps/live/lib/api/core.ts `apiHeaders`).
+export function isClerkIdShape(ownerId: string): boolean {
+  return ownerId.startsWith('user_');
+}

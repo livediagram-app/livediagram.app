@@ -1,7 +1,8 @@
 // /api/migrate — guest -> authed (and legacy guest -> signed-guest)
 // ownership migration.
 
-import { guestSignatureEnforced, isClerkIdShape } from '../auth/guest-rest';
+import { isClerkIdShape } from '@livediagram/api-schema';
+import { guestSignatureEnforced } from '../auth/guest-rest';
 import { verifyOwnerId } from '../auth/owner-signature';
 import { migrateOwnerId } from '../db';
 import { badRequest, forbidden, json, missingAuth, notFound } from '../responses';
