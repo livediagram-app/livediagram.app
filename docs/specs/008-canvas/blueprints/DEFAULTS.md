@@ -23,7 +23,7 @@ One row per default applied where a spec is silent or qualitative.
 | D17 | arrow-labels  | Order in which labels claim space                         | Arrows in document order; each sees the knockouts placed before it                                                  |
 | D18 | arrow-labels  | Longest segment tie                                       | First in draw order                                                                                                 |
 | D19 | arrow-labels  | "Balanced" lines                                          | Smallest width keeping the greedy line count; 8 binary-search steps                                                 |
-| D20 | arrow-labels  | "Nearest spot that is clear"                              | Twelfths of the open run, middle third only, forward before backward                                                |
+| D20 | arrow-labels  | "Nearest spot that is clear"                              | Twelfths of the open run, middle half only, forward before backward                                                 |
 | D21 | arrow-labels  | Which boxes a label avoids                                | Every boxed element except `frame` and `lane` containers, own endpoints included                                    |
 | D22 | arrow-labels  | A word wider than the cap                                 | Never broken; the line overflows the cap                                                                            |
 | D23 | arrow-labels  | Measure fails (NaN)                                       | 7 px per char at 12 px, scaled by font size                                                                         |

@@ -51,8 +51,8 @@ An arrow with empty text has no entry.
    - `route-middle`: `[0, L]`.
    - `longest-segment`: the longest segment; first in draw order on a tie (D18).
    - `middle-segment`: the segment containing arc length `L / 2`.
-   - `horizontal-preferred`: the longest segment within 20° of horizontal whose open run fits the
-     block laid along it; else `longest-segment`.
+   - `horizontal-preferred`: the longest segment within 20° of horizontal whose open run holds the
+     block on no more lines than the longest segment would; else `longest-segment`.
      A host boundary that is a corner (not a route end) takes `END_STUB_PX` clearance.
 4. **Open run** `[s0, s1]` = host span shrunk by the clearances. Empty (`s1 <= s0`) → beside.
 5. **Local direction** at arc length `s`: unit vector from `pointAt(s - W)` to `pointAt(s + W)`,
@@ -66,16 +66,17 @@ An arrow with empty text has no entry.
    - `footprintAlong(block, u) = min(block.width / |u.x|, block.height / |u.y|)`, with the knockout
      margin included on both sides; a zero component drops its term.
 7. **Slide.** Candidates at `s = sc + k * step` for `k = 0, ±1, ±2, …` with `step = (s1 - s0) / 12`,
-   limited to the middle third `[s0 + (s1 - s0) / 3, s1 - (s1 - s0) / 3]`, ordered by `|k|`, `+`
+   limited to the middle half `[s0 + (s1 - s0) / 4, s1 - (s1 - s0) / 4]`, ordered by `|k|`, `+`
    before `-` (D20). A candidate is taken when the block centred at `pointAt(s)` fits
    (`footprintAlong <= 2 * min(s - s0, s1 - s)`), and its knockout rect hits no obstacle. None
    taken → the centre candidate.
 8. **Obstacles.** Boxed elements except `frame` and `lane` shapes (containers, D21), and knockouts
    already placed. The arrow's own endpoint elements are obstacles too, so a short arrow's label
    does not sit on a box it connects.
-9. **Beside.** Block wrapped at the cap for `u` and balanced. Anchor at the route point at `L / 2`, direction
-   `u`, left normal `n = (-u.y, u.x)`. Offset `d = |n.x| * w/2 + |n.y| * h/2 + BESIDE_GAP_PX`. Try
-   `+n` then `-n`; first without an obstacle hit wins, else `+n`. `knockout: null`.
+9. **Beside.** Anchor at the route point at `L / 2`, direction `u`, left normal `n = (-u.y, u.x)`.
+   Offset `d = |n.x| * w/2 + |n.y| * h/2 + BESIDE_GAP_PX`. Starting at the cap for `u` and narrowing
+   the wrap as in step 6, try `+n` then `-n` at each width; the first plate without an obstacle hit
+   wins, else `+n` at the cap. `knockout: null`.
 10. **Placed.** Centre = `arrowLabelAnchor(..., labelOffset, ...)`. Block wrapped at `cap`,
     balanced. Knockout when `|offset| < |n.x| * w/2 + |n.y| * h/2` (the block overlaps the line),
     else null.
@@ -149,7 +150,7 @@ whitespace; a single word wider than the cap is not broken (D22).
 `arrow-label-layout.test.ts` and `arrow-label-wrap.test.ts`, with an injected fixed-width measure:
 one test per numbered behaviour step and per strategy, plus: horizontal width follows run length,
 vertical width hits the cap, diagonal blends, balance avoids an orphan, explicit newline kept, head
-clearance moves the centre, obstacle slides the anchor, slide stays in the middle third, beside
+clearance moves the centre, obstacle slides the anchor, slide stays in the middle half, beside
 when too short, beside side flips on an obstacle, placed knockout on and off, knockout-others
 toggle. Export parity: `svg-render.test.ts` asserts the export wraps and masks the same lines.
 

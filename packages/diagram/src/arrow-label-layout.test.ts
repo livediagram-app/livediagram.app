@@ -155,12 +155,12 @@ describe('layoutArrowLabels: beside the line', () => {
 describe('layoutArrowLabels: obstacles', () => {
   const line = () => arrow('a', [0, 0], [600, 0], 'UI', { arrowEnds: 'both' });
 
-  it('slides along the line, within the middle third, to clear a box', () => {
+  it('slides along the line, within the middle half, to clear a box', () => {
     const l = layoutOf([box('b', 280, -20, 40, 40), line()], 'a');
     expect(l.center.y).toBe(0);
     expect(l.center.x).not.toBe(300);
-    expect(l.center.x).toBeGreaterThanOrEqual(20 + 560 / 3);
-    expect(l.center.x).toBeLessThanOrEqual(580 - 560 / 3);
+    expect(l.center.x).toBeGreaterThanOrEqual(20 + 560 / 4);
+    expect(l.center.x).toBeLessThanOrEqual(580 - 560 / 4);
   });
 
   it('stays in the middle when nowhere is clear', () => {
@@ -263,5 +263,55 @@ describe('DEFAULT_ARROW_LABEL_LAYOUT_OPTIONS', () => {
     const a = arrow('a', [10, 20], [400, 330], 'Speech to text');
     const l = layoutOf([a], 'a');
     expect(distToSegment(l.center, { x: 10, y: 20 }, { x: 400, y: 330 })).toBeLessThan(0.5);
+  });
+});
+
+describe('layoutArrowLabels: refinements from the bench', () => {
+  it('never lets a knockout bite into the next segment round a corner', () => {
+    // L: 100 across, then 400 down. On the short leg the two-line block's
+    // knockout would reach down the long leg; it must not.
+    const l = layoutOf(
+      [
+        arrow('a', [0, 0], [100, 400], 'after 30 days', {
+          arrowStyle: 'angled',
+          curvePoints: [{ dx: 50, dy: -200 }],
+        }),
+      ],
+      'a',
+      { angledStrategy: 'longest-segment' },
+    );
+    expect(l.center.x).toBeCloseTo(100);
+    const k = l.knockout!;
+    // The corner (100, 0) stays outside the cut.
+    expect(k.y).toBeGreaterThan(0);
+  });
+
+  it('wraps a beside label narrower to clear the boxes either side', () => {
+    const els = [
+      box('a', 0, 0, 160, 80),
+      box('b', 250, 0, 160, 80),
+      arrow('ar', [160, 40], [250, 40], 'Validates the signed request payload'),
+    ];
+    const l = layoutOf(els, 'ar');
+    expect(l.mode).toBe('beside');
+    expect(l.center.x - l.width / 2).toBeGreaterThanOrEqual(160);
+    expect(l.center.x + l.width / 2).toBeLessThanOrEqual(250);
+  });
+
+  it('horizontal-preferred skips a horizontal leg that would need more lines', () => {
+    // 100 across then 400 down: the short leg can only hold the label on two
+    // lines, the long leg on one, so the long leg wins.
+    const l = layoutOf(
+      [
+        arrow('a', [0, 0], [100, 400], 'after 30 days', {
+          arrowStyle: 'angled',
+          curvePoints: [{ dx: 50, dy: -200 }],
+        }),
+      ],
+      'a',
+      { angledStrategy: 'horizontal-preferred' },
+    );
+    expect(l.lines).toEqual(['after 30 days']);
+    expect(l.center.x).toBeCloseTo(100);
   });
 });

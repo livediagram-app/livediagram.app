@@ -17,7 +17,8 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit",
-    "clean": "rm -rf node_modules .turbo coverage"
+    "clean": "rm -rf node_modules .turbo coverage",
+    "bench:labels": "esbuild bench/arrow-labels/main.ts --bundle --outdir=bench/arrow-labels/dist --servedir=bench/arrow-labels --serve=127.0.0.1:5199"
   },
   "devDependencies": {
     "@livediagram/eslint-config": "workspace:*",

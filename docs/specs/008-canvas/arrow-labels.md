@@ -30,7 +30,7 @@ Breaking the line around the label avoids the overlap and keeps the ownership.
 
 - An auto-placed label is centred on the route, at the middle of its open run.
 - If that spot collides with an unrelated box or with another arrow's label, the label anchor
-  slides along the route, staying within the middle third of the open run, to the nearest spot that
+  slides along the route, staying within the middle half of the open run, to the nearest spot that
   is clear. When no spot is clear, the middle wins.
 - Text is always horizontal. A label never rotates with its line.
 - On an **angled** arrow the label sits on one segment rather than straddling a corner. Which

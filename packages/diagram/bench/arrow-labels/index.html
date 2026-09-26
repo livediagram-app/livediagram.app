@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en-GB" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Arrow label bench</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #020617;
+        --panel: #0f172a;
+        --ink: #e2e8f0;
+        --muted: #94a3b8;
+        --line: #1e293b;
+        --brand: #38bdf8;
+        font-family: system-ui, sans-serif;
+      }
+      [data-theme='light'] {
+        color-scheme: light;
+        --bg: #f1f5f9;
+        --panel: #ffffff;
+        --ink: #0f172a;
+        --muted: #475569;
+        --line: #cbd5e1;
+        --brand: #0369a1;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+      }
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        background: var(--bg);
+        padding: 16px 24px 8px;
+        border-bottom: 1px solid var(--line);
+      }
+      h1 {
+        margin: 0 0 8px;
+        font-size: 18px;
+      }
+      #controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+      fieldset {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 4px 8px 8px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+      }
+      legend {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      button {
+        font: inherit;
+        font-size: 13px;
+        color: var(--ink);
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 4px 10px;
+        cursor: pointer;
+      }
+      button:focus-visible {
+        outline: 2px solid var(--brand);
+        outline-offset: 2px;
+      }
+      button[aria-pressed='true'] {
+        border-color: var(--brand);
+        box-shadow: inset 0 0 0 1px var(--brand);
+      }
+      .cells {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        max-width: 1600px;
+      }
+      main {
+        padding: 8px 24px 48px;
+      }
+      .scenario {
+        margin-top: 20px;
+      }
+      .scenario h2 {
+        margin: 0;
+        font-size: 15px;
+      }
+      .scenario p {
+        margin: 2px 0 8px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      figure {
+        margin: 0;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      .cells.single {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .cells.single figure {
+        justify-self: start;
+        max-width: 100%;
+      }
+      figure[data-strategy]::before {
+        content: attr(data-strategy);
+        display: block;
+        padding: 4px 8px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      figure img {
+        display: block;
+        max-width: 100%;
+        height: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Arrow label bench</h1>
+      <div id="controls"></div>
+    </header>
+    <main id="grid"></main>
+    <script src="dist/main.js"></script>
+  </body>
+</html>

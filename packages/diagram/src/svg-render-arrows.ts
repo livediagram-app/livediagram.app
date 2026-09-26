@@ -3,13 +3,7 @@
 // <marker> builder, the per-arrow path + label emitter, and the
 // head-reference resolution that keeps heads tangent to curved / angled
 // paths. svg-render re-exports everything so importers keep resolving.
-import {
-  angledElbow,
-  arrowLabelAnchor,
-  arrowPathD,
-  curveAnchorPoints,
-  curveControlPoint,
-} from './arrow-path';
+import { angledElbow, arrowPathD, curveAnchorPoints, curveControlPoint } from './arrow-path';
 import {
   ARROWHEAD_SIZE_PX,
   arrowheadShapeOf,
@@ -21,8 +15,9 @@ import { BORDER_DASH_ARRAY } from './border-style';
 import { defaultArrowStrokeColor, type CanvasSurface } from './colors';
 import { arrowEndpointSpread } from './arrow-endpoint-spread';
 import { endpointPosition } from './geometry';
-import { svgLabel } from './svg-render-labels';
-import { arrowLabelFontSize, arrowLabelSize } from './arrow-label';
+import { svgWrappedLabel } from './svg-render-labels';
+import { KNOCKOUT_RADIUS_PX, arrowLabelPass, type ArrowLabelPass } from './arrow-label-layout';
+import type { Rect } from './geometry-primitives';
 import { resolveFontStack } from './fonts';
 import { r2, xmlEscape } from './svg-render-primitives';
 import type { ArrowElement, Element } from './index';
@@ -121,6 +116,10 @@ export function svgArrow(
   // The tab's font, for a caption that has not chosen one of its own
   // (docs/specs/004-interface-design/fonts.md), so an exported caption reads in the same face as the board.
   tabFont?: string,
+  // The tab's label pass (layouts + knockouts), computed once per render by the caller.
+  labels: ArrowLabelPass = arrowLabelPass(elements, {
+    fontFamilyOf: (a) => arrowLabelFontStack(a, tabFont),
+  }),
 ): string {
   // Same converging-fan offset the live canvas applies (see
   // arrow-endpoint-spread.ts), so exports match what's on screen.
@@ -148,8 +147,13 @@ export function svgArrow(
   );
   const dash = BORDER_DASH_ARRAY[arrow.strokeStyle ?? 'solid'];
   const dashAttr = dash ? ` stroke-dasharray="${dash}"` : '';
+  const knockouts = labels.knockoutsOf(arrow.id);
+  const maskId =
+    knockouts.length > 0 ? `lvd-ko-${String(arrow.id).replace(/[^a-zA-Z0-9_-]/g, '')}` : null;
+  if (maskId) parts.push(svgKnockoutMask(maskId, knockouts));
+  const maskAttr = maskId ? ` mask="url(#${xmlEscape(maskId)})"` : '';
   parts.push(
-    `<path d="${d}" fill="none" stroke="${xmlEscape(stroke)}" stroke-width="${lw}" stroke-linecap="round" stroke-linejoin="round"${dashAttr}/>`,
+    `<path d="${d}" fill="none" stroke="${xmlEscape(stroke)}" stroke-width="${lw}" stroke-linecap="round" stroke-linejoin="round"${dashAttr}${maskAttr}/>`,
   );
   const { toRef, fromRef } = arrowHeadRefs(arrow, from, to);
   const ends = arrow.arrowEnds ?? 'to';
@@ -159,48 +163,59 @@ export function svgArrow(
     parts.push(svgArrowhead(toRef, to, stroke, headShape, headSize));
   if (ends === 'from' || ends === 'both')
     parts.push(svgArrowhead(fromRef, from, stroke, headShape, headSize));
-  if (arrow.label) {
-    const anchor = arrowLabelAnchor(
-      style,
-      from,
-      to,
-      arrow.from,
-      arrow.to,
-      arrow.curveOffset,
-      arrow.elbowOffset,
-      arrow.labelOffset,
-      arrow.curvePoints,
-    );
-    // The caption as it is actually styled (docs/specs/008-canvas/canvas-and-palette.md): its own size, weight,
-    // slant, colour and plate. This used to emit a fixed 12px near-black
-    // label, so an export showed a different caption to the board every time
-    // one had been styled at all.
-    const fontSize = arrowLabelFontSize(arrow.textSize);
-    const y = anchor.y - 6;
+  const layout = labels.layouts.get(arrow.id);
+  if (layout) {
+    // The caption as it is actually styled (docs/specs/008-canvas/arrow-labels.md): laid out by the
+    // same engine as the canvas, so it wraps at the same words and sits at the same spot.
+    const { center, width, height } = layout;
     if (arrow.labelFill && arrow.labelFill !== 'transparent') {
-      const box = arrowLabelSize(arrow.label, fontSize);
       parts.push(
-        `<rect x="${r2(anchor.x - box.width / 2 - 4)}" y="${r2(y - box.height / 2 - 1)}"` +
-          ` width="${r2(box.width + 8)}" height="${r2(box.height + 2)}" rx="4"` +
+        `<rect x="${r2(center.x - width / 2)}" y="${r2(center.y - height / 2)}"` +
+          ` width="${r2(width)}" height="${r2(height)}" rx="${KNOCKOUT_RADIUS_PX}"` +
           ` fill="${xmlEscape(arrow.labelFill)}"/>`,
       );
     }
     parts.push(
-      svgLabel(
-        arrow.label,
-        anchor.x,
-        y,
+      svgWrappedLabel(
+        layout.lines,
+        center.x,
+        center.y,
         'middle',
         // Falls back to the line's colour, matching the canvas: a caption with
         // no colour of its own belongs to the arrow it labels.
         arrow.textColor ?? stroke,
-        fontSize,
+        layout.fontPx,
         !!arrow.textBold,
         !!arrow.textItalic,
-        resolveFontStack(arrow.font) ?? resolveFontStack(tabFont),
+        'middle',
+        arrowLabelFontStack(arrow, tabFont),
       ),
     );
   }
   parts.push('</g>');
   return parts.join('');
+}
+
+// The font stack a caption paints in: its own face, else the tab's
+// (docs/specs/004-interface-design/fonts.md). The layout measures with the same stack.
+export function arrowLabelFontStack(arrow: ArrowElement, tabFont?: string): string | undefined {
+  return resolveFontStack(arrow.font) ?? resolveFontStack(tabFont);
+}
+
+// A mask that paints the line everywhere except the label knockouts. The
+// region is stated explicitly: the default is the path's bbox plus 10%, which
+// collapses to a hairline on a straight horizontal line.
+const MASK_ORIGIN = -1e6;
+const MASK_SIZE = 2e6;
+function svgKnockoutMask(id: string, rects: Rect[]): string {
+  const holes = rects
+    .map(
+      (k) =>
+        `<rect x="${r2(k.x)}" y="${r2(k.y)}" width="${r2(k.width)}" height="${r2(k.height)}" rx="${KNOCKOUT_RADIUS_PX}" fill="black"/>`,
+    )
+    .join('');
+  return (
+    `<mask id="${xmlEscape(id)}" maskUnits="userSpaceOnUse" x="${MASK_ORIGIN}" y="${MASK_ORIGIN}" width="${MASK_SIZE}" height="${MASK_SIZE}">` +
+    `<rect x="${MASK_ORIGIN}" y="${MASK_ORIGIN}" width="${MASK_SIZE}" height="${MASK_SIZE}" fill="white"/>${holes}</mask>`
+  );
 }

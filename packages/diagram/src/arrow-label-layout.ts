@@ -40,7 +40,7 @@ export const ALONG_CAP_PX = 240;
 export const HORIZONTAL_TOLERANCE_DEG = 20;
 export const CHAR_WIDTH_FALLBACK_PX = 7;
 const WORD_WIDTH_CACHE_MAX = 2000;
-// Slide candidates: twelfths of the open run, kept to its middle third.
+// Slide candidates: twelfths of the open run, kept to its middle half.
 const SLIDE_DIVISIONS = 12;
 
 export type AngledLabelStrategy =
@@ -169,6 +169,11 @@ function arrowRoute(arrow: ArrowElement, elements: Element[]): { route: Route; f
   return { route: routeOf(pts), from, to };
 }
 
+// The drawn route as a polyline, endpoints resolved the way both renderers do.
+export function arrowRoutePoints(arrow: ArrowElement, elements: Element[]): Pt[] {
+  return arrowRoute(arrow, elements).route.pts;
+}
+
 function headLength(arrow: ArrowElement): number {
   const shape = arrowheadShapeOf(arrow);
   const base = (8 / ARROWHEAD_SIZE_PX.medium) * ARROWHEAD_SIZE_PX[arrowheadSizeOf(arrow)];
@@ -273,7 +278,7 @@ function hostSpan(
   arrow: ArrowElement,
   r: Route,
   o: ArrowLabelLayoutOptions,
-  fitsOn: (span: Span) => boolean,
+  linesOn: (span: Span) => number | null,
 ): Span {
   const whole: Span = { start: 0, end: r.length, atRouteStart: true, atRouteEnd: true };
   if (arrowStyleOf(arrow) !== 'angled' || r.pts.length < 3) return whole;
@@ -287,13 +292,17 @@ function hostSpan(
     case 'middle-segment':
       return segs.find((s) => r.length / 2 <= s.end) ?? longest;
     case 'horizontal-preferred': {
+      // A horizontal run wins only if it holds the label on no more lines than
+      // the longest run would.
+      const most = linesOn(longest) ?? Infinity;
       const tol = Math.sin((HORIZONTAL_TOLERANCE_DEG * Math.PI) / 180);
       const horizontal = segs
         .filter((s, i) => {
           const a = r.pts[i]!;
           const b = r.pts[i + 1]!;
           const len = s.end - s.start;
-          return len > 1e-9 && Math.abs(b.y - a.y) / len <= tol && fitsOn(s);
+          const lines = linesOn(s);
+          return len > 1e-9 && Math.abs(b.y - a.y) / len <= tol && lines !== null && lines <= most;
         })
         .sort((a, b) => b.end - b.start - (a.end - a.start));
       return horizontal[0] ?? longest;
@@ -376,24 +385,43 @@ export function layoutArrowLabel(
     };
   }
 
+  // Beside the line at the route middle: each side at the cap, then ever
+  // narrower wraps, until one clears every obstacle; else the first side at the cap.
   const beside = (reason: string): ArrowLabelLayout => {
     const s = route.length / 2;
     const p = pointAt(route, s);
     const u = directionAt(route, s);
     const n = { x: -u.y, y: u.x };
-    const b = blockOf(text, capFor(u, o), measure, lineHeightPx);
-    const d = Math.abs(n.x) * (b.width / 2) + Math.abs(n.y) * (b.height / 2) + BESIDE_GAP_PX;
-    const sides = [1, -1].map((sign) => ({ x: p.x + n.x * d * sign, y: p.y + n.y * d * sign }));
-    const center =
-      sides.find((c) => !hitsAny(rectAround(c, b.width, b.height), obstacles)) ?? sides[0]!;
+    const place = (b: Block, sign: number): Pt => {
+      const d = Math.abs(n.x) * (b.width / 2) + Math.abs(n.y) * (b.height / 2) + BESIDE_GAP_PX;
+      return { x: p.x + n.x * d * sign, y: p.y + n.y * d * sign };
+    };
+    const floor = longestWordWidth(text, measure);
+    let width = Math.max(capFor(u, o), floor);
+    const first = blockOf(text, width, measure, lineHeightPx);
+    let chosen: { b: Block; c: Pt } = { b: first, c: place(first, 1) };
+    search: for (;;) {
+      const b = blockOf(text, width, measure, lineHeightPx);
+      for (const sign of [1, -1]) {
+        const c = place(b, sign);
+        if (!hitsAny(rectAround(c, b.width, b.height), obstacles)) {
+          chosen = { b, c };
+          break search;
+        }
+      }
+      const textWidth = b.width - LABEL_PAD_X_PX * 2;
+      if (textWidth <= floor + 0.01) break;
+      width = Math.max(floor, textWidth - 1);
+    }
     console.debug('[arrow-label]', arrow.id, 'beside', reason);
+    const { b: blk, c: center } = chosen;
     return {
       ...base,
       mode: 'beside',
       center,
-      lines: b.lines,
-      width: b.width,
-      height: b.height,
+      lines: blk.lines,
+      width: blk.width,
+      height: blk.height,
       knockout: null,
     };
   };
@@ -410,7 +438,7 @@ export function layoutArrowLabel(
     return block ? { block, run } : null;
   };
 
-  const span = hostSpan(arrow, route, o, (s) => blockOn(s) !== null);
+  const span = hostSpan(arrow, route, o, (s) => blockOn(s)?.block.lines.length ?? null);
   const [s0, s1] = openRunOf(span, clear);
   if (s1 <= s0) return beside('empty-run');
   const fit = blockOn(span);
@@ -418,8 +446,8 @@ export function layoutArrowLabel(
   const { block } = fit;
   const sc = (s0 + s1) / 2;
   const step = (s1 - s0) / SLIDE_DIVISIONS;
-  const lo = s0 + (s1 - s0) / 3;
-  const hi = s1 - (s1 - s0) / 3;
+  const lo = s0 + (s1 - s0) / 4;
+  const hi = s1 - (s1 - s0) / 4;
   const candidates: number[] = [sc];
   for (let k = 1; k <= SLIDE_DIVISIONS; k++) {
     for (const s of [sc + k * step, sc - k * step])
@@ -505,4 +533,32 @@ function routeCrossesRect(r: Route, rect: Rect): boolean {
       return true;
   }
   return false;
+}
+
+// One tab's labels, laid out once and shared by every arrow a renderer
+// draws: the layouts, plus each arrow's knockouts (resolved lazily, cached).
+export type ArrowLabelPass = {
+  layouts: ReadonlyMap<ElementId, ArrowLabelLayout>;
+  knockoutsOf: (arrowId: ElementId) => Rect[];
+};
+
+export function arrowLabelPass(
+  elements: Element[],
+  options: Partial<ArrowLabelLayoutOptions> = {},
+): ArrowLabelPass {
+  const layouts = layoutArrowLabels(elements, options);
+  const knockoutOthers =
+    options.knockoutOthers ?? DEFAULT_ARROW_LABEL_LAYOUT_OPTIONS.knockoutOthers;
+  const cache = new Map<ElementId, Rect[]>();
+  return {
+    layouts,
+    knockoutsOf: (id) => {
+      let hit = cache.get(id);
+      if (!hit) {
+        hit = arrowKnockouts(id, elements, layouts, knockoutOthers);
+        cache.set(id, hit);
+      }
+      return hit;
+    },
+  };
 }
