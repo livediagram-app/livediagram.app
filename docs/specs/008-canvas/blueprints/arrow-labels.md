@@ -6,17 +6,20 @@ cited as `Dn`.
 
 Scope, by file:
 
-| File                                                  | Role                                                                          |
-| ----------------------------------------------------- | ----------------------------------------------------------------------------- |
-| `packages/diagram/src/arrow-label-layout.ts`          | The layout engine: route, open run, width rule, wrap, slide, beside, knockout |
-| `packages/diagram/src/arrow-label-wrap.ts`            | Word metrics, greedy wrap on cached widths, balanced wrap                     |
-| `packages/diagram/src/arrow-label.ts`                 | `arrowLabelFontSize` (unchanged); the char-width `arrowLabelSize` is removed  |
-| `packages/diagram/src/svg-render-arrows.ts`           | Export: multi-line caption, plate, knockout mask from the same layout         |
-| `apps/live/components/canvas/CanvasElementsLayer.tsx` | One `layoutArrowLabels` pass per element change, handed to each `ArrowView`   |
-| `apps/live/components/canvas/ArrowView.tsx`           | Knockout mask on the line + halo; renders the layout it is given              |
-| `apps/live/components/canvas/ArrowLabel.tsx`          | Multi-line SVG caption; textarea editor laid out by the same engine           |
-| `apps/live/lib/arrow-label-geometry.ts`               | Removed (`placeLabel` is replaced by the engine)                              |
-| `packages/diagram/bench/arrow-labels/`                | The label bench: scenarios, cap + knockout switches, esbuild, seed            |
+| File                                                                                                 | Role                                                                                     |
+| ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `packages/diagram/src/arrow-label-layout.ts`                                                         | The layout engine: route, open run, width rule, wrap, slide, beside, knockout            |
+| `packages/diagram/src/arrow-label-wrap.ts`                                                           | Word metrics, greedy wrap on cached widths, balanced wrap                                |
+| `packages/diagram/src/arrow-label.ts`                                                                | `arrowLabelFontSize`: the caption size presets                                           |
+| `packages/diagram/src/svg-render.ts`                                                                 | `contentBounds` counts routes and label plates; one pass per render                      |
+| `packages/diagram/src/svg-render-arrows.ts`                                                          | Export: multi-line caption, plate, knockout mask from the same layout                    |
+| `apps/live/hooks/canvas/useArrowLabelLayouts.ts`                                                     | One `arrowLabelPass` per element change; `draftLayout` for the editor; `sameLabelRender` |
+| `apps/live/components/canvas/CanvasElementsLayer.tsx`                                                | Calls the hook and hands each `ArrowView` its render                                     |
+| `apps/live/lib/export-tab.ts`                                                                        | PNG / PDF rasterise arrows from `svgArrow`; SVG export shares one pass                   |
+| `apps/live/hooks/ui/useSlideThumbnails.ts`, `useLayerThumbnails.ts`, `components/canvas/Minimap.tsx` | One pass each, with their own mask-id prefix                                             |
+| `apps/live/components/canvas/ArrowView.tsx`                                                          | Knockout mask on the line + halo; renders the layout it is given                         |
+| `apps/live/components/canvas/ArrowLabel.tsx`                                                         | Multi-line SVG caption; textarea editor laid out by the same engine                      |
+| `packages/diagram/bench/arrow-labels/`                                                               | The label bench: scenarios, cap + knockout switches, esbuild, seed                       |
 
 ## Domain and naming
 
