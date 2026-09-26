@@ -177,3 +177,47 @@ describe('handleCustomThemes auth', () => {
     expect(db.deleteCustomTheme).not.toHaveBeenCalled();
   });
 });
+
+// docs/specs/011-theme/custom-themes.md: a palette, when present, is never empty
+// (blueprint E6, O3).
+describe('handleCustomThemes palette validation', () => {
+  const PALETTE = [{ fill: '#fee2e2', stroke: '#dc2626', text: '#7f1d1d' }];
+
+  it('400 when creating a theme with an empty palette, and nothing is written', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const res = await handleCustomThemes(
+      makeCtx('POST', '/api/custom-themes', {
+        body: { id: 'custom:1', name: 'Mine', definition: { ...DEF, palette: [] } },
+      }),
+    );
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: 'bad_request', message: 'empty palette' });
+    expect(db.createCustomTheme).not.toHaveBeenCalled();
+    expect(warn).toHaveBeenCalledWith('[custom-themes] rejected id=custom:1 reason=empty-palette');
+    warn.mockRestore();
+  });
+
+  it('400 when updating a theme to an empty palette, and nothing is written', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    db.getCustomTheme.mockResolvedValue({ id: 'custom:1', ownerId: 'owner-1' });
+    const res = await handleCustomThemes(
+      makeCtx('PUT', '/api/custom-themes/custom:1', {
+        body: { definition: { ...DEF, palette: [] } },
+      }),
+    );
+    expect(res.status).toBe(400);
+    expect(db.updateCustomTheme).not.toHaveBeenCalled();
+    expect(warn).toHaveBeenCalledWith('[custom-themes] rejected id=custom:1 reason=empty-palette');
+    warn.mockRestore();
+  });
+
+  it('201 for a theme with a non-empty palette', async () => {
+    db.createCustomTheme.mockResolvedValue({ id: 'custom:2', name: 'Rainbowish' });
+    const res = await handleCustomThemes(
+      makeCtx('POST', '/api/custom-themes', {
+        body: { id: 'custom:2', name: 'Rainbowish', definition: { ...DEF, palette: PALETTE } },
+      }),
+    );
+    expect(res.status).toBe(201);
+  });
+});

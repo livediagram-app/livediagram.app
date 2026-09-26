@@ -27,9 +27,38 @@ import {
 // path to keep in sync. Single-colour themes skip all of this and fall
 // straight through to the per-element helpers.
 
+// The trunk colour of last resort: a palette theme with no rootColor and a
+// null element colour (Tailwind slate-100 / 600 / 900).
+export const TRUNK_FALLBACK: ThemePaletteEntry = {
+  fill: '#f1f5f9',
+  stroke: '#475569',
+  text: '#0f172a',
+};
+
+type PaletteOp = 'recolour' | 'switch' | 'reset' | 'reset-arrows';
+
+// The branch map for one wrapper call, logged once. The walk itself never
+// logs: it runs inside every wrapper, so the wrapper owns the trace.
+function branchMapFor(
+  op: PaletteOp,
+  theme: ThemeDefinition,
+  elements: Element[],
+): Map<string, number> {
+  const branches = assignBranches(elements);
+  const issued = new Set([...branches.values()].filter((b) => b !== ROOT_BRANCH)).size;
+  console.info(
+    `[theme-graph] ${op} theme=${theme.id} elements=${elements.length} branches=${issued}`,
+  );
+  if (theme.palette?.length === 0) {
+    console.warn(`[theme-graph] empty palette theme=${theme.id}, painting trunk`);
+  }
+  return branches;
+}
+
 // The branch colours a given element should be painted with under a
 // palette theme: the palette entry for its branch, or the trunk colour
-// (rootColor) for root + not-yet-connected elements.
+// (rootColor) for root + not-yet-connected elements, and for every element
+// when the palette is empty.
 function branchEntryFor(
   theme: ThemeDefinition,
   el: Element,
@@ -37,16 +66,14 @@ function branchEntryFor(
 ): ThemePaletteEntry {
   const palette = theme.palette!;
   const root = theme.rootColor ?? {
-    fill: theme.elementFill ?? '#f1f5f9',
-    stroke: theme.elementStroke ?? '#475569',
-    text: theme.elementText ?? '#0f172a',
+    fill: theme.elementFill ?? TRUNK_FALLBACK.fill,
+    stroke: theme.elementStroke ?? TRUNK_FALLBACK.stroke,
+    text: theme.elementText ?? TRUNK_FALLBACK.text,
   };
   const index =
     el.type === 'arrow' ? branchOfArrow(el, branches) : (branches.get(el.id) ?? ROOT_BRANCH);
-  if (index === ROOT_BRANCH) return root;
-  // Guard against an empty palette + negative modulo.
-  const i = ((index % palette.length) + palette.length) % palette.length;
-  return palette[i] ?? root;
+  if (index === ROOT_BRANCH || palette.length === 0) return root;
+  return palette[((index % palette.length) + palette.length) % palette.length]!;
 }
 
 // A per-element theme view: the same theme, but with its single-colour
@@ -107,7 +134,7 @@ function rederivePresetForTheme(el: Element, theme: ThemeDefinition): Element | 
 // these elements" path so single- and multi-colour themes share one
 // entry point.
 export function recolourElementsForTheme(elements: Element[], theme: ThemeDefinition): Element[] {
-  const branches = theme.palette ? assignBranches(elements) : null;
+  const branches = theme.palette ? branchMapFor('recolour', theme, elements) : null;
   return elements.map(
     (el) =>
       // An element bound to a preset (docs/specs/010-palette/style-presets.md) takes the preset's variant for
@@ -119,16 +146,20 @@ export function recolourElementsForTheme(elements: Element[], theme: ThemeDefini
 }
 
 // Graph-aware counterpart to `switchThemeElement`: the in-editor
-// "pick a theme" path. Computes the branch map once per side (only when
-// that side is a palette theme) so the preserve-customs comparison sees
-// the right per-element colours.
+// "pick a theme" path. The branch map depends only on the elements, so one
+// map serves whichever side is a palette theme, and the preserve-customs
+// comparison sees the right per-element colours.
 export function switchThemeElements(
   elements: Element[],
   prev: ThemeDefinition,
   next: ThemeDefinition,
 ): Element[] {
-  const prevBranches = prev.palette ? assignBranches(elements) : null;
-  const nextBranches = next.palette ? assignBranches(elements) : null;
+  const branches =
+    prev.palette || next.palette
+      ? branchMapFor('switch', next.palette ? next : prev, elements)
+      : null;
+  const prevBranches = prev.palette ? branches : null;
+  const nextBranches = next.palette ? branches : null;
   return elements.map(
     (el) =>
       // Preset-bound elements (docs/specs/010-palette/style-presets.md) re-derive their preset for the new
@@ -147,7 +178,7 @@ export function switchThemeElements(
 // Graph-aware counterpart to `resetThemeElement`: the "Reset elements to
 // theme" button. Force-repaints every branch from the palette.
 export function resetThemeElementsToTheme(elements: Element[], theme: ThemeDefinition): Element[] {
-  const branches = theme.palette ? assignBranches(elements) : null;
+  const branches = theme.palette ? branchMapFor('reset', theme, elements) : null;
   return elements.map((el) => resetThemeElement(el, elementThemeView(theme, el, branches)));
 }
 
@@ -160,7 +191,7 @@ export function resetThemeElementsToTheme(elements: Element[], theme: ThemeDefin
 // each arrow snaps to its branch's stroke via the same per-element view
 // every other transform uses, so there's no parallel colour path.
 export function resetArrowsToTheme(elements: Element[], theme: ThemeDefinition): Element[] {
-  const branches = theme.palette ? assignBranches(elements) : null;
+  const branches = theme.palette ? branchMapFor('reset-arrows', theme, elements) : null;
   return elements.map((el) =>
     el.type === 'arrow' ? resetThemeElement(el, elementThemeView(theme, el, branches)) : el,
   );
