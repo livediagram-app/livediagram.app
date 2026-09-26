@@ -155,8 +155,7 @@ describe('spec references', () => {
   it('never use the retired spec numbers', () => {
     const legacy: string[] = [];
     for (const { f, src } of files) {
-      for (const m of src.matchAll(LEGACY_SPEC_REF))
-        legacy.push(`${f}: ${m[0]}`);
+      for (const m of src.matchAll(LEGACY_SPEC_REF)) legacy.push(`${f}: ${m[0]}`);
     }
     expect(legacy).toEqual([]);
   });
