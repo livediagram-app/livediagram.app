@@ -31,9 +31,14 @@ drag image (a snapshot of the tile) and no on-canvas feedback.
   access, plus `suppressNativeDragImage(e)`. Drag state is inherently global
   - transient, so a subscribable module store fits better than threading it
     through the editor's prop tree.
-- Palette tiles (`IconButton` in `palette-controls`, icon tiles in
-  `CommandPalette`) set the preview on `dragstart` (alongside the existing
-  `setData`) and clear it on `dragend`.
+- A catalogue tile's drag payload is defined once, in `tileDragStart`
+  (`components/palette/palette-tile-drag.ts`): shapes (`kind` or `kind|choice`) and sticky notes on
+  the palette mime with the ghost preview, line icons, Technology icons and stickers on their own
+  mimes. Every rendering of a tile uses it: the grid tile, the Toolbar strip's tile, and the list
+  row, including the rows a search turns up (the Floating Palette's search and the Toolbar strip's
+  More popover). Tiles that arm a gesture (Text, the pens, Polygon, Arrow) offer no drag.
+- Every drag source clears the preview on `dragend`; the list row and the strip tile also count a
+  drop on the canvas as a use for the Toolbar layout's ordering.
 - `components/canvas/PaletteDragGhost.tsx` — an overlay rendered by `Canvas`
   that reads the preview + tracks the cursor via a `dragover` listener and
   paints the ghost at the `z-overlay` rung.
