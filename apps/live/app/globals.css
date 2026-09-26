@@ -1,6 +1,7 @@
 @import 'tailwindcss';
 @import '@livediagram/tailwind-config';
 @import '@livediagram/template-previews/preview-art-tile.css';
+@import '@livediagram/template-previews/preview-motion.css';
 @import './qa-board.css';
 
 /* Scan the shared UI package so utility classes used only inside its
@@ -320,6 +321,14 @@
   animation-iteration-count: 1 !important;
   transition-duration: 0.01ms !important;
   scroll-behavior: auto !important;
+}
+
+/* The template previews' hover stories (spec/16) would, under the rule above,
+   jump straight to their last frame (a kanban card teleporting to Done), so
+   with Reduce motion on they don't play at all: the picker shows the static
+   art, as it does with the OS setting (preview-motion.css). */
+:root.reduce-motion .preview-motion * {
+  animation: none !important;
 }
 
 /*
