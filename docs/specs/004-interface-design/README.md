@@ -9,4 +9,5 @@ Follow the references below only as needed; never upfront.
 - ./motion.md - when adding or changing any chrome transition or animation: the 250ms ceiling, 150ms hovers, cascades, motion tokens, and which motion is canvas, content, ambient or a timer
 - ./blueprints/README.md - when implementing a 004-interface-design spec: engineering detail derived from the specs
 - ./tooltips-hover-cards-popovers.md - when adding a hover or focus hint, a `title`, or a click-opened panel: Tooltip (name, 1 s), Hover card (title + description, instant), Popover (click, interactive), and their WCAG 1.4.13 behaviour
+- ./blueprints/README.md - when implementing a 004-interface-design spec: engineering detail derived from the specs
 - ./dropdown-tile-grid.md - when working on Tile grids for the palette dropdowns: The canvas-tool and palette-category pickers lay their options out as an icon-over-label tile grid instead of a long column, matching the context menus' MenuTileGrid
