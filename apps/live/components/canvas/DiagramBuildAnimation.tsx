@@ -8,7 +8,7 @@
 // Pure SVG + CSS keyframes (no JS tick, no extra
 // deps, runs in the static export), and it honours
 // prefers-reduced-motion by sitting on the finished diagram instead of
-// animating. Its own module per CLAUDE.md's no-god-files rule; the
+// animating. Its own module per AGENTS.md's no-god-files rule; the
 // consuming screens just compose it.
 //
 // Every element shares one timeline (a percentage of the same loop) so

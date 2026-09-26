@@ -3,7 +3,7 @@
 // the id set behind `isTechIconId`) so the heavy per-icon SVG markup loads as
 // an async chunk there (via lib/icon-registry.ts) instead of riding the
 // editor's first-load JS. This file is a pure data catalogue — exempt from
-// the file-size budget per CLAUDE.md — and must NOT be imported statically
+// the file-size budget per AGENTS.md — and must NOT be imported statically
 // by anything on the editor's first-load path (only the registry's dynamic
 // import, the Workers' ./resolve, and tests may import it).
 //

@@ -1,6 +1,6 @@
 # Contributing
 
-External contributions are welcome under the [MIT license](../LICENSE). This doc covers the practical workflow; the conceptual rules live in [`CLAUDE.md`](../CLAUDE.md) and [`specs/`](../specs/).
+External contributions are welcome under the [MIT license](../LICENSE). This doc covers the practical workflow; the conceptual rules live in [`AGENTS.md`](../AGENTS.md) and [`specs/`](../specs/).
 
 ## Before you write code: specs first
 
@@ -123,7 +123,7 @@ Keep the suite tiny — add a focused smoke for a browser-risky change, not a br
 
 ## How the architecture stays honest
 
-A few hard rules from [`CLAUDE.md`](../CLAUDE.md) that constrain PRs:
+A few hard rules from [`AGENTS.md`](../AGENTS.md) that constrain PRs:
 
 - **Static-only frontends.** Next.js apps use `output: 'export'`. No SSR, no Node runtime, no Next.js API routes, no server-required image loader. Any server logic goes in the api worker.
 - **Server logic lives in Cloudflare Workers**, not in Next.js. Frontends call those workers.

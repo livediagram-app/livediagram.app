@@ -25,7 +25,7 @@ import { clearGuestSelfId, getGuestSelfId, getGuestSelfSig } from '@/lib/local-i
 //
 // Both Stage 3 (token provider) and Stage 4 (migration) lived as
 // identical copy-paste pairs in editor-page.tsx and new/page.tsx until
-// this hook collapsed them — CLAUDE.md's reuse rule kicks in.
+// this hook collapsed them — AGENTS.md's reuse rule kicks in.
 //
 // Returns the relevant `useAuth` fields so callers don't need to also
 // destructure them — there's exactly one place those values come from

@@ -66,7 +66,7 @@ function docFiles(): string[] {
       if (f.endsWith('.md')) out.push(`${dir}/${f}`);
     }
   }
-  out.push('README.md', 'CLAUDE.md');
+  out.push('README.md', 'AGENTS.md');
   return out;
 }
 
@@ -82,7 +82,7 @@ function resolves(quoted: string): boolean {
 // check above, which only looks at quotes containing a slash. There are ~240 of
 // them, and most that resolve to nothing are deliberate: a file a draft spec
 // plans to write, one a spec records as deleted, a `.d.ts` extension written as
-// if it were a name, the `useXxx.ts` placeholder in CLAUDE.md. Asserting they
+// if it were a name, the `useXxx.ts` placeholder in AGENTS.md. Asserting they
 // all exist would mean an allowlist of judgement calls.
 //
 // So this asserts only the one case that needs no judgement: the name resolves
