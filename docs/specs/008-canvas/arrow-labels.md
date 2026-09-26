@@ -1,6 +1,6 @@
 # Arrow labels
 
-Status: in progress
+Status: shipped (width caps and crossing knockouts at their defaults, pending the bench decision)
 
 An arrow's label names the relationship the arrow draws. It belongs to its line, so it sits **on**
 the line, centred, with the line broken open around it. It wraps onto several lines rather than

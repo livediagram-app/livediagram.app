@@ -1,6 +1,6 @@
 # Bending arrows and the double-press rule
 
-Status: in progress
+Status: shipped
 
 An arrow bends where you grab it. Pressing on the line and dragging reshapes the arrow at that
 point, so there is no separate "+" target to find, and nothing sits in the middle of the line to be

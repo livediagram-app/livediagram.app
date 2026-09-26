@@ -1,11 +1,9 @@
 import type { Page } from '@playwright/test';
-import { dismissQuickTour, expect, expectNoPageErrors, startBlankDiagram, test } from './fixtures';
+import { expect, expectNoPageErrors, seedTab, startBlankDiagram, test } from './fixtures';
 
 // The auto-rebind end to end (docs/specs/008-canvas/arrow-anchors.md): unit
 // tests prove the rule; only the editor proves it runs LIVE during a drag,
 // that it is on by default, and that the Settings switch turns it off.
-
-type Seed = Record<string, unknown>[];
 
 const square = (id: string, label: string, x: number, y: number) => ({
   id,
@@ -18,42 +16,6 @@ const square = (id: string, label: string, x: number, y: number) => ({
   label,
 });
 const pinned = (elementId: string, anchor: string) => ({ kind: 'pinned', elementId, anchor });
-
-// Write the seed into the new diagram's first tab through the api, reload.
-async function seedTab(page: Page, elements: Seed): Promise<void> {
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
-  await page.evaluate(
-    async ({ base, elements }) => {
-      const owner = localStorage.getItem('livediagram:v2:self-id') ?? '';
-      const id = location.pathname.split('/').filter(Boolean).pop()!;
-      const headers = { 'X-Owner-Id': owner, 'Content-Type': 'application/json' };
-      let tab: Record<string, unknown> | null = null;
-      let tabId = '';
-      for (let i = 0; i < 50 && !tab; i += 1) {
-        const diagram = await (await fetch(`${base}/diagrams/${id}`, { headers })).json();
-        tabId = diagram.diagram?.tabs?.[0]?.id ?? '';
-        if (tabId) {
-          const got = await (
-            await fetch(`${base}/diagrams/${id}/tabs/${tabId}`, { headers })
-          ).json();
-          tab = got.tab ?? null;
-        }
-        if (!tab) await new Promise((r) => setTimeout(r, 100));
-      }
-      if (!tab) throw new Error('the new diagram never saved its first tab');
-      const res = await fetch(`${base}/diagrams/${id}/tabs/${tabId}`, {
-        method: 'PUT',
-        headers,
-        body: JSON.stringify({ ...tab, elements }),
-      });
-      if (!res.ok) throw new Error(`seeding failed: ${res.status}`);
-    },
-    { base: apiBase, elements },
-  );
-  await page.reload();
-  await page.locator('[data-canvas-a11y-root]').waitFor();
-  await dismissQuickTour(page);
-}
 
 // The drawn path's end points, in canvas coordinates, off the hit band.
 async function pathEnds(page: Page, arrowId: string): Promise<number[]> {

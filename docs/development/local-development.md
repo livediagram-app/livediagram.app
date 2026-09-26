@@ -169,6 +169,25 @@ To try a hosted reader whose free budget is spent, swap `E2E_NO_AI=1` for
 `/api/ai/read-notes` call answers 429 `ai_quota`, and the import fails over
 to the in-browser model and says so ([Event storming](../specs/021-event-storming/event-storming.md) Phase 9).
 
+## Arrow label bench
+
+Arrow labels are laid out by one engine shared by the canvas and every export
+([Arrow labels](../specs/008-canvas/arrow-labels.md)). The bench renders ten arrow
+shapes through the real export renderer, measured in the browser, with the width
+caps and the crossing-knockout rule switchable:
+
+```bash
+pnpm --filter @livediagram/diagram bench:labels   # http://127.0.0.1:5199
+```
+
+To try the same shapes in the editor, seed them into a running api worker as one
+diagram (a tab per scenario, plus a free arrow), then open it with the same guest
+id in `livediagram:v2:self-id`:
+
+```bash
+cd packages/diagram && bun bench/arrow-labels/seed.ts http://localhost:8787/api <guest-id>
+```
+
 ## Three gotchas
 
 - **All four Next.js dev servers (`marketing`, `live`, `telemetry`, `help`) run through `scripts/next-dev.mjs`.** It frees the port, points dev at an isolated `.next-dev/` cache, and wipes that cache on every start, so a `next build` running in the same checkout can't corrupt the dev server (the recurring "unstyled help page" / `Cannot find module './NNNN.js'` failures) and a crashed restart never inherits a broken cache. All four run on Turbopack, which is also what `next build` uses under Next 16, so dev compiles the same way the deployed bundle does. If a dev server ever does get stuck, stop it and restart — the wipe-on-start clears it.

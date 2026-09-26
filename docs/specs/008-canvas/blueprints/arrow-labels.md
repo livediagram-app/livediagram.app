@@ -123,6 +123,22 @@ whitespace; a single word wider than the cap is not broken (D22).
 - The knockout is a black rounded rect (`rx = KNOCKOUT_RADIUS_PX`) in the arrow's mask, merged with
   the route-behind holes into one mask. The mask region is the explicit vast span already used.
 
+## Presentation and UX
+
+- The editor is a `<textarea>` in a `<foreignObject>` at the plate, 2px wider than the plate
+  (`EDITOR_SLACK_PX`), same font, size, weight, line height and padding as the label, centred,
+  `placeholder="Label"`, white (dark: slate-900) with a sky ring. An empty draft is laid out as the
+  word "Label" so there is always a box to type into.
+- While editing, the label, its wrap and its knockout follow the draft on every keystroke.
+- Selected and editable, the plate shows a dashed brand outline and the `move` cursor (label drag).
+
+## Accessibility
+
+- The editor has `aria-label="Arrow label"`; Enter commits (not mid-IME composition),
+  Shift+Enter breaks the line, Escape cancels.
+- Text colour and contrast are the caption's own, unchanged; the knockout only removes line
+  behind the text, which can only raise contrast. No motion is added.
+
 ## Errors and edge cases
 
 - Zero-length route, empty open run, word wider than cap: handled above; never throws.
@@ -136,6 +152,12 @@ whitespace; a single word wider than the cap is not broken (D22).
 - Per arrow: at most `words` re-wraps, 8 balance wraps, 9 slide candidates × obstacles. 300 arrows
   × 200 boxes stays well under one frame on the hot path, which is a layout pass per element
   change, not per pointer move of an unrelated gesture.
+
+## Web experience
+
+- The pass runs in a `useMemo` on element changes only; pan, zoom, selection and presence renders
+  reuse it, and `ArrowView` compares its label render by value, so an unmoved label does not
+  re-render (INP). Labels are SVG in canvas space: no layout shift outside the canvas (CLS).
 
 ## Observability
 
