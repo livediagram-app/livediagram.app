@@ -13,7 +13,7 @@
 // invalidates the snapshot uniformly because they all bump saved_at.
 
 import { embedTabImages } from '@livediagram/api-schema';
-import { renderElementsToSvg, type Tab } from '@livediagram/diagram';
+import { migrateStoredTab, renderElementsToSvg, type Tab } from '@livediagram/diagram';
 // Static-import icon resolver (bundle size is fine in a Worker) so icon
 // elements render their real glyph in the snapshot / live image instead of
 // the renderer's box-with-label fallback.
@@ -132,7 +132,8 @@ async function renderTabDataToSvg(
   // upsertTab); re-attach them so the value is a complete Tab. The
   // renderer only reads `elements` + `backgroundColor`, both already in
   // the parsed body.
-  const tab = { id: diagram.id, name: diagram.name, ...parsed } as Tab;
+  // Migrated like every other stored-tab read (docs/specs/011-theme/retired-schemes.md).
+  const tab = migrateStoredTab({ id: diagram.id, name: diagram.name, ...parsed } as Tab);
   // Inline referenced image bitmaps (read from R2) so the preview / live
   // image renders the actual photos, matching the in-app PNG/SVG export.
   const images = await loadEmbeddedImages(env, tab);

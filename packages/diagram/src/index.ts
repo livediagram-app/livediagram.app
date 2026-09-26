@@ -514,6 +514,8 @@ export * from './layer-order';
 export * from './legacy-groups';
 export * from './legacy-docks';
 export * from './stored-elements';
+export * from './stored-tab';
+export { retiredSchemeOf, migrateRetiredScheme, type RetiredScheme } from './retired-schemes';
 
 // Photoshop-style layers (docs/specs/006-diagram/layers.md): the Layer type used by the Tab field
 // above, band-aware render ordering, and the pure layer operations.

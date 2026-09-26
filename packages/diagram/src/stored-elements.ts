@@ -1,6 +1,5 @@
-// Everything a stored tab's elements need on the way in, in one call: the
-// api worker's `rowToTab`, the offline store's tab load and a file import all
-// run this, so a new migration is added once and reaches every entry point.
+// Everything a stored tab's elements need on the way in, in one call. Composed
+// into migrateStoredTab (stored-tab.ts), which every stored-tab entry point runs.
 
 import { dropLegacyDocks } from './legacy-docks';
 import { migrateLegacyGroups } from './legacy-groups';

@@ -39,8 +39,6 @@ describe('getTheme under an appearance', () => {
     // get to reinterpret it.
     expect(getTheme('slate').backgroundColor).toBe('#fdf2f8');
     expect(getTheme('midnight').backgroundColor).toBe('#0f172a');
-    // Including the legacy scheme Default absorbed.
-    expect(getTheme('charcoal').elementFill).toBe('#2c2c33');
   });
 
   it('takes an explicit appearance, for callers that are not the viewer', () => {

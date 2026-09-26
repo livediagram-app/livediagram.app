@@ -11,7 +11,7 @@
 // dispatch can answer "is this id offline?" cheaply.
 
 import type { ChangeLogEntry, Diagram, DiagramSummary, TabSummary } from '@livediagram/api-schema';
-import { migrateStoredElements, stampTabKind } from '@livediagram/diagram';
+import { migrateStoredTab, stampTabKind } from '@livediagram/diagram';
 import type { Tab } from '@livediagram/diagram';
 
 // Sentinel owner id stamped on offline diagrams. They have no server owner;
@@ -311,9 +311,9 @@ export async function offlineLoadDiagram(id: string): Promise<Diagram | null> {
 export async function offlineLoadTab(id: string, tabId: string): Promise<Tab | null> {
   const rec = await backend.get(id);
   const tab = rec?.tabs.find((t) => t.id === tabId) ?? null;
-  // The offline twin of the api's rowToTab: a diagram kept in this browser
-  // can still carry retired element fields (docs/specs/009-elements/web-components-and-no-groups.md groups, docs/specs/021-event-storming/event-storming.md docks).
-  return tab ? { ...tab, elements: migrateStoredElements(tab.elements) } : null;
+  // The offline twin of the api's rowToTab: a diagram kept in this browser can
+  // still be on a retired scheme (docs/specs/011-theme/retired-schemes.md) or carry retired element fields.
+  return tab ? migrateStoredTab(tab) : null;
 }
 
 export async function offlineCreateDiagram(

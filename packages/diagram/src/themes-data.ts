@@ -37,27 +37,6 @@ export const DEFAULT_SCHEME_DARK: ThemeDefinition = {
   patternColor: DARK_CANVAS_PATTERN_COLOR,
 };
 
-// Schemes that are no longer OFFERED but must still RESOLVE, because diagrams
-// saved against them are out there and their elements carry baked colours to
-// match. Dropping an id here would silently repaint someone's board.
-export const LEGACY_THEMES: ThemeDefinition[] = [
-  {
-    // Merged into Default as its dark half. The entry survives with the exact
-    // colours it shipped with, so an old Charcoal tab still looks like itself —
-    // including for a viewer in light chrome, since those element colours are
-    // baked and only this backdrop keeps them legible.
-    id: 'charcoal',
-    label: 'Charcoal',
-    backgroundColor: '#2b2b33',
-    backgroundPattern: 'grid',
-    patternColor: '#636373',
-    elementFill: '#2c2c33',
-    elementStroke: '#a1a1aa',
-    elementText: '#e4e4e7',
-    extra: true,
-  },
-];
-
 export const THEMES: ThemeDefinition[] = [
   DEFAULT_SCHEME_LIGHT,
   {

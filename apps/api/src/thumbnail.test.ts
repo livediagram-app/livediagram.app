@@ -176,3 +176,36 @@ describe('getDiagramThumbnailSvg', () => {
     expect(db.markThumbRendered).not.toHaveBeenCalled();
   });
 });
+
+// Retired schemes (docs/specs/011-theme/retired-schemes.md): the thumbnail parses `tabs.data` itself,
+// so it runs the same stored-tab migration as every other read.
+describe('a thumbnail of a Charcoal tab', () => {
+  it('renders the migrated tab, not the colours Charcoal baked', async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const images = r2();
+    images.get.mockResolvedValue(null);
+    db.getThumbRenderedAt.mockResolvedValue(null);
+    db.getFirstTabData.mockResolvedValue(
+      JSON.stringify({
+        theme: 'charcoal',
+        backgroundColor: '#2b2b33',
+        patternColor: '#636373',
+        elements: [
+          {
+            id: 'e1',
+            type: 'shape',
+            shape: 'square',
+            x: 0,
+            y: 0,
+            width: 100,
+            height: 80,
+            fillColor: '#2c2c33',
+          },
+        ],
+      }),
+    );
+    const out = await getDiagramThumbnailSvg({ IMAGES: images } as unknown as Env, diagram());
+    expect(out).not.toContain('#2c2c33');
+    expect(out).toContain('#0d121a');
+  });
+});

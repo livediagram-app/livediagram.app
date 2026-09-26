@@ -31,7 +31,6 @@ const THEME_DESCRIPTIONS: Record<ThemeId, string> = {
   pine: 'Light foliage on forest green.',
   steel: 'Cool greys with a slate edge.',
   mocha: 'Coffee browns on warm cream.',
-  charcoal: 'Neutral greys on near-black.',
   plum: 'Soft violets on deep plum.',
   abyss: 'Aqua tones on deep teal.',
   espresso: 'Warm tan on dark-roast brown.',
@@ -76,7 +75,6 @@ const THEME_CATEGORY: Record<ThemeId, ThemeCategory> = {
   olive: 'warm',
   // Dark: dark-backdrop themes.
   midnight: 'dark',
-  charcoal: 'dark',
   pine: 'dark',
   plum: 'dark',
   abyss: 'dark',
