@@ -125,7 +125,10 @@ Banned synonyms: "snap all", "normalise" (for the settle), "grid" for the lane s
 - `useClipboard` gains `laneBoard` and `canvasPointerRef: RefObject<{ x; y } | null>` (canvas
   coords, null while the pointer is off the canvas). `pasteFromClipboard(source?, at?)`: `at`
   overrides the ref (the canvas menu's Paste passes its right-click point).
-- The pointer ref is written by `EditorCanvasHost.onCanvasPointerMove` (null on leave).
+- The pointer ref is written by `EditorCanvasHost.onCanvasPointerMove` through `pastePointer(x, y, target)`
+  (`lib/canvas-pointer.ts`): null when the pointer left the canvas, and null over a floating panel
+  (`[data-floating-panel]`), which lies on top of the canvas and lets its pointer moves through.
+  The canvas menu stores the pointer at the right-click as `canvasPoint` and passes it as `at`.
 
 ### Duplicate (`useElementDuplication`)
 
@@ -250,21 +253,21 @@ it runs in the editor (so it is undoable), never at the storage boundary.
 
 ## Errors and edge cases
 
-| Case                                                  | Handling                                                             |
-| ----------------------------------------------------- | -------------------------------------------------------------------- |
-| Tab content not loaded yet / load failed              | `editsBlocked`; the settle waits for `'ready'`                       |
-| View-only visitor or locked tab opens an older board  | No settle, no mark; the next editor settles it                       |
-| Undo of the settle                                    | Positions back, mark kept; never offered again                       |
-| Two editors open an older board together              | Both settle to the same positions; the second commit is a no-op diff |
-| Locked workshop note off a lane                       | Left where it is by the settle; a drag cannot move it anyway         |
-| A free-placed (Cmd/Ctrl) note after the mark          | Never re-snapped; arrow up / down moves it to the lane on that side  |
-| Plain sticky selected with workshop notes             | Anchor is the first workshop note; the sticky rides the same delta   |
-| Paste with the pointer over a floating panel          | The canvas saw a pointer leave: staggered                            |
-| Paste of shapes only on an event-storming board       | Unchanged: +24, +24                                                  |
-| A block paste overlapping notes already there         | Allowed; nothing already down moves                                  |
-| A photo row landing on a board note or a row above it | The row goes a lane down; every later row follows, order kept        |
-| Photo placement loop bound reached                    | Settles in place, `console.warn('[es-lanes] photo placement bound')` |
-| MCP moves a workshop note off a lane with `update`    | Landed on its nearest lane                                           |
+| Case                                                  | Handling                                                                  |
+| ----------------------------------------------------- | ------------------------------------------------------------------------- |
+| Tab content not loaded yet / load failed              | `editsBlocked`; the settle waits for `'ready'`                            |
+| View-only visitor or locked tab opens an older board  | No settle, no mark; the next editor settles it                            |
+| Undo of the settle                                    | Positions back, mark kept; never offered again                            |
+| Two editors open an older board together              | Both settle to the same positions; the second commit is a no-op diff      |
+| Locked workshop note off a lane                       | Left where it is by the settle; a drag cannot move it anyway              |
+| A free-placed (Cmd/Ctrl) note after the mark          | Never re-snapped; arrow up / down moves it to the lane on that side       |
+| Plain sticky selected with workshop notes             | Anchor is the first workshop note; the sticky rides the same delta        |
+| Paste with the pointer over a floating panel          | `pastePointer` reads `[data-floating-panel]` as off the canvas: staggered |
+| Paste of shapes only on an event-storming board       | Unchanged: +24, +24                                                       |
+| A block paste overlapping notes already there         | Allowed; nothing already down moves                                       |
+| A photo row landing on a board note or a row above it | The row goes a lane down; every later row follows, order kept             |
+| Photo placement loop bound reached                    | Settles in place, `console.warn('[es-lanes] photo placement bound')`      |
+| MCP moves a workshop note off a lane with `update`    | Landed on its nearest lane                                                |
 
 ## Security and trust
 

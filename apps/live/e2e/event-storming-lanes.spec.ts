@@ -212,6 +212,36 @@ test('paste lands at the pointer over the canvas, and staggers when it is elsewh
   const copies = stickies(tab).filter((n) => n.label === row[0]!.label && n.id !== row[0]!.id);
   const staggered = copies.find((n) => n.id !== pasted[0]!.id)!;
   expect(staggered).toMatchObject({ x: row[0]!.x + 24, y: row[0]!.y });
+
+  // Over a floating panel is not over the canvas either: staggered again.
+  const panelRow = (await page.getByText('Add from photo').first().boundingBox())!;
+  await page.mouse.move(panelRow.x + 10, panelRow.y + 10);
+  await page.keyboard.press('ControlOrMeta+v');
+  await expect(notes).toHaveCount(7);
+  tab = await boardTab(page);
+  const overPanel = stickies(tab).filter(
+    (n) => n.label === row[0]!.label && n.x === row[0]!.x + 24 && n.y === row[0]!.y,
+  );
+  expect(overPanel).toHaveLength(2);
+
+  // The canvas menu's Paste lands where the canvas was right-clicked.
+  // (The menu offers the in-app copy, which the reload above emptied: copy
+  // again, on the note's left edge, clear of the staggered copies over it.)
+  await page.keyboard.press('Escape');
+  await notes.nth(0).click({ position: { x: 6, y: 60 } });
+  await page.keyboard.press('ControlOrMeta+c');
+  const spot = view.toScreen(below.x + 700, below.y + 100 - 20);
+  await page.mouse.click(spot.x, spot.y, { button: 'right' });
+  await page
+    .getByText(/^Paste$/)
+    .first()
+    .click();
+  await expect(notes).toHaveCount(8);
+  tab = await boardTab(page);
+  const fromMenu = stickies(tab).filter((n) => n.label === row[0]!.label && n.y === below.y);
+  // Placed as a drop there: on that lane, and within the capture radius of the
+  // spot (a rhythm slot that close takes it).
+  expect(fromMenu.some((n) => Math.abs(n.x + 100 - (below.x + 700)) <= 100)).toBe(true);
   expectNoPageErrors(pageErrors);
 });
 

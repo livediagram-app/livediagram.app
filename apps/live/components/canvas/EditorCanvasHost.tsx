@@ -1,5 +1,6 @@
 'use client';
 
+import { pastePointer } from '@/lib/canvas-pointer';
 import { dropThenDisarm } from '@/lib/palette-drop';
 import { resolvePanelLayout } from '@/lib/user-preferences';
 import { describeOne } from '@/lib/element-names';
@@ -493,8 +494,8 @@ export function EditorCanvasHost() {
         reactionBursts={reactionBursts}
         onReactionBurstDone={clearReactionBurst}
         laserTrails={laserTrailRows}
-        onCanvasPointerMove={(x, y) => {
-          canvasPointerRef.current = x !== null && y !== null ? { x, y } : null;
+        onCanvasPointerMove={(x, y, target) => {
+          canvasPointerRef.current = pastePointer(x, y, target ?? null);
           if (canvasTool === 'laser' && x !== null && y !== null) {
             // The pen rides the sample so peers draw MY laser (docs/specs/008-canvas/laser-panel.md).
             broadcastLaser(x, y, laserConfig);
