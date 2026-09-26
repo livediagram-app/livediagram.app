@@ -77,43 +77,44 @@ export function anchorOutward(a: Anchor): Point {
   return TABLE[a].outward;
 }
 
-// ANCHOR SETS (docs/specs/008-canvas/arrow-anchors.md "Anchor sets"): the
-// position classes an element offers. Every set holds the middles (the
-// creation anchors and the anchor dots). Kinds absent from the map get the
-// full sixteen.
-export const FULL_ANCHOR_SET: readonly AnchorClass[] = ['corner', 'quarter', 'middle'];
-const COMPASS_ANCHOR_SET: readonly AnchorClass[] = ['corner', 'middle'];
+// ANCHORS PER SHAPE (docs/specs/008-canvas/arrow-anchors.md "Anchors per
+// shape"): which of the sixteen each kind offers, in table order. Kinds
+// absent from the map offer all sixteen. Where face-placed ones sit is
+// anchor-layouts.ts.
+const COMPASS_ANCHORS = ORDER.filter((a) => TABLE[a].cls !== 'quarter');
 
-const ANCHOR_SETS: Partial<Record<ShapeKind, readonly AnchorClass[]>> = {
-  circle: COMPASS_ANCHOR_SET,
+const OFFERED: Partial<Record<ShapeKind, readonly Anchor[]>> = {
+  circle: COMPASS_ANCHORS,
+  diamond: COMPASS_ANCHORS,
+  actor: COMPASS_ANCHORS,
+  // Three per face (left, right, base); no corners, nothing at the apex.
+  triangle: ['ene', 'e', 'ese', 'sse', 's', 'ssw', 'wsw', 'w', 'wnw'],
+  // The wavy bottom edge has no corners worth pinning to.
+  document: ORDER.filter((a) => a !== 'se' && a !== 'sw'),
 };
 
-export function anchorSetOf(el: BoxedElement): readonly AnchorClass[] {
-  return (el.type === 'shape' && ANCHOR_SETS[el.shape]) || FULL_ANCHOR_SET;
-}
-
-const offeredCache = new Map<readonly AnchorClass[], readonly Anchor[]>();
-
-// The anchors an element offers, in table order (clockwise from north).
 export function offeredAnchors(el: BoxedElement): readonly Anchor[] {
-  const set = anchorSetOf(el);
-  let anchors = offeredCache.get(set);
-  if (!anchors) {
-    anchors = ORDER.filter((a) => set.includes(TABLE[a].cls));
-    offeredCache.set(set, anchors);
-  }
-  return anchors;
+  return (el.type === 'shape' && OFFERED[el.shape]) || ORDER;
 }
 
-// The class an end takes on this element: its own when offered, else the
-// nearest offered one. The middle is always offered, so this always lands.
+export function sideOffered(el: BoxedElement, side: Side): boolean {
+  return offeredAnchors(el).some((a) => TABLE[a].sides.includes(side));
+}
+
+// The class an end looks for on a side, then the ones it falls back to.
 const FALLBACK: Record<AnchorClass, readonly AnchorClass[]> = {
   quarter: ['quarter', 'corner', 'middle'],
   corner: ['corner', 'quarter', 'middle'],
   middle: ['middle'],
 };
 
-export function offeredClass(el: BoxedElement, cls: AnchorClass): AnchorClass {
-  const set = anchorSetOf(el);
-  return FALLBACK[cls].find((c) => set.includes(c)) ?? 'middle';
+// The offered anchors of `cls` on `side`, or of the nearest class the side
+// does offer; empty when the side carries nothing.
+export function offeredOnSide(el: BoxedElement, side: Side, cls: AnchorClass): readonly Anchor[] {
+  const offered = offeredAnchors(el);
+  for (const c of FALLBACK[cls]) {
+    const found = offered.filter((a) => TABLE[a].cls === c && TABLE[a].sides.includes(side));
+    if (found.length > 0) return found;
+  }
+  return [];
 }

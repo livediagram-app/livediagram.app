@@ -483,6 +483,7 @@ export * from './element-display-label';
 
 // Anchor table, outlines and side choice (docs/specs/008-canvas/arrow-anchors.md).
 export * from './anchors';
+export * from './anchor-layouts';
 export * from './shape-outline';
 export * from './svg-path-outline';
 export * from './anchor-choice';

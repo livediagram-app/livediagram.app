@@ -5,8 +5,12 @@ import {
   anchorPosition,
   bestAnchorTowards,
   exitSideTowards,
+  facingSideTowards,
+  nearestOfferedAnchor,
+  offeredAnchors,
   pointInsideOutline,
   sampleSvgPath,
+  type Anchor,
   snapToAnchor,
   type ShapeElement,
 } from './index';
@@ -53,19 +57,24 @@ describe('sixteen anchor positions (docs/specs/008-canvas/arrow-anchors.md)', ()
     expect(p.y).toBeLessThan(50);
   });
 
-  it.each(['star', 'stadium', 'actor', 'triangle', 'hexagon'] as const)(
-    'puts every %s anchor on its outline, never inside it',
-    (kind) => {
-      const el = shape({ shape: kind, width: 180, height: 120 });
-      for (const a of ALL_ANCHORS) {
-        const p = anchorPosition(el, a);
-        expect(pointInsideOutline(el, p, 0.01), `${kind} ${a}`).toBe(false);
-        // A point a hair towards the centre is inside: p is on the outline.
-        const inward = { x: p.x + (90 - p.x) * 0.02, y: p.y + (60 - p.y) * 0.02 };
-        expect(pointInsideOutline(el, inward, 0), `${kind} ${a} inward`).toBe(true);
-      }
-    },
-  );
+  it.each([
+    'stadium',
+    'actor',
+    'triangle',
+    'hexagon',
+    'parallelogram',
+    'trapezoid',
+    'cylinder',
+  ] as const)('puts every %s anchor on its outline, never inside it', (kind) => {
+    const el = shape({ shape: kind, width: 180, height: 120 });
+    for (const a of offeredAnchors(el)) {
+      const p = anchorPosition(el, a);
+      expect(pointInsideOutline(el, p, 0.01), `${kind} ${a}`).toBe(false);
+      // A point a hair towards the centre is inside: p is on the outline.
+      const inward = { x: p.x + (90 - p.x) * 0.02, y: p.y + (60 - p.y) * 0.02 };
+      expect(pointInsideOutline(el, inward, 0), `${kind} ${a} inward`).toBe(true);
+    }
+  });
 
   it('keeps the actor corners on the figure rather than the empty box corner', () => {
     const actor = shape({ shape: 'actor', width: 90, height: 130 });
@@ -104,7 +113,8 @@ describe('sixteen anchor positions (docs/specs/008-canvas/arrow-anchors.md)', ()
 describe('anchoring outlines', () => {
   it('has no outline for box-shaped kinds', () => {
     expect(anchorOutline(shape())).toBeNull();
-    expect(anchorOutline(shape({ shape: 'cylinder' }))).toBeNull();
+    expect(anchorOutline(shape({ shape: 'star' }))).toBeNull();
+    expect(anchorOutline(shape({ shape: 'speech-bubble' }))).toBeNull();
   });
 
   it('tests inside a box with an inset', () => {
@@ -182,5 +192,64 @@ describe('anchor sets in snapping and outlines', () => {
     expect(sampleSvgPath('M 0 0 A 5 5 0 0 1 10 0 Z')).toBeNull();
     expect(warn).toHaveBeenCalledWith('[shape-outline] unsupported path command=A');
     warn.mockRestore();
+  });
+});
+
+describe('face-placed anchors (docs/specs/008-canvas/arrow-anchors.md "Anchors per shape")', () => {
+  const at = (kind: ShapeElement['shape'], a: Anchor) => {
+    const p = anchorPosition(shape({ shape: kind }), a);
+    return [Math.round(p.x * 100) / 100, Math.round(p.y * 100) / 100];
+  };
+
+  it("puts a parallelogram's corners on its corners and quarters halfway to the nearer corner", () => {
+    expect(at('parallelogram', 'nw')).toEqual([20, 0]);
+    expect(at('parallelogram', 'n')).toEqual([50, 0]);
+    expect(at('parallelogram', 'nnw')).toEqual([35, 0]);
+    expect(at('parallelogram', 'nne')).toEqual([75, 0]);
+    expect(at('parallelogram', 'sse')).toEqual([65, 100]);
+    expect(at('parallelogram', 'ssw')).toEqual([25, 100]);
+    expect(at('parallelogram', 'ene')).toEqual([95, 25]);
+  });
+
+  it('does the same on a trapezoid', () => {
+    expect(at('trapezoid', 'ne')).toEqual([78, 4]);
+    expect(at('trapezoid', 'nnw')).toEqual([36, 4]);
+    expect(at('trapezoid', 'sse')).toEqual([74, 96]);
+    expect(at('trapezoid', 'e')).toEqual([88, 50]);
+  });
+
+  it('gives a hexagon three on top and splits its slanted faces into thirds', () => {
+    expect(at('hexagon', 'nnw')).toEqual([37.5, 0]);
+    expect(at('hexagon', 'nne')).toEqual([62.5, 0]);
+    expect(at('hexagon', 'ne')).toEqual([83.33, 16.67]);
+    expect(at('hexagon', 'ene')).toEqual([91.67, 33.33]);
+    expect(at('hexagon', 'e')).toEqual([100, 50]);
+    expect(at('hexagon', 'sw')).toEqual([16.67, 83.33]);
+    expect(at('hexagon', 'wsw')).toEqual([8.33, 66.67]);
+  });
+
+  it('gives a triangle a middle and two quarters on each face', () => {
+    expect(at('triangle', 'w')).toEqual([26, 50]);
+    expect(at('triangle', 'wnw')).toEqual([38, 26]);
+    expect(at('triangle', 'wsw')).toEqual([14, 74]);
+    expect(at('triangle', 'ene')).toEqual([62, 26]);
+    expect(at('triangle', 's')).toEqual([50, 98]);
+    expect(at('triangle', 'sse')).toEqual([74, 98]);
+  });
+
+  it('keeps a star on its bounding rectangle and a cylinder on its curved caps', () => {
+    expect(at('star', 'ne')).toEqual([100, 0]);
+    expect(at('star', 'nne')).toEqual([75, 0]);
+    expect(at('cylinder', 'n')[1]).toBeCloseTo(3, 1);
+    expect(at('cylinder', 's')[1]).toBeCloseTo(97, 1);
+  });
+
+  it('faces a triangle away from its anchorless top and never creates an arrow there', () => {
+    const tri = shape({ shape: 'triangle' });
+    expect(facingSideTowards(tri, { x: 50, y: -300 })).not.toBe('n');
+    expect(facingSideTowards(tri, { x: 20, y: -300 })).toBe('w');
+    expect(bestAnchorTowards(tri, { x: 60, y: -300 })).toBe('e');
+    expect(nearestOfferedAnchor(tri, 'n')).toBe('ene');
+    expect(nearestOfferedAnchor(shape(), 'n')).toBe('n');
   });
 });

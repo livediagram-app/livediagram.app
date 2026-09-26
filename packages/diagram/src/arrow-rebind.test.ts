@@ -213,3 +213,16 @@ describe('anchor sets', () => {
     expect(['nw', 'sw']).toContain(from);
   });
 });
+
+describe('sides without anchors', () => {
+  it('moves a triangle end to a face, never to its bare top', () => {
+    // B above the triangle: kept on the base, the line runs up through it.
+    const els = [
+      box('a', 0, 200, { shape: 'triangle' }),
+      box('b', 0, -200),
+      arrow('x', pin('a', 's'), pin('b', 's')),
+    ];
+    const [from] = ends(run(els, ['b']), 'x');
+    expect(['w', 'e']).toContain(from);
+  });
+});

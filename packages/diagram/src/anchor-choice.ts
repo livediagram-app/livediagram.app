@@ -1,5 +1,5 @@
 import type { Anchor, BoxedElement } from './index';
-import type { Side } from './anchors';
+import { sideOffered, type Side } from './anchors';
 import { centreOf } from './geometry';
 import { rotatePoint, type Point } from './geometry-primitives';
 import { connectorBox } from './shape-outline';
@@ -60,8 +60,42 @@ export function anchorAimPoint(other: BoxedElement, fromCentre: Point): Point {
   return { x, y };
 }
 
-// The creation anchor: the middle of the side the connector leaves through
-// towards `towards`. 'e' when the direction is zero (a point on the centre).
+const NORMALS: Record<Side, Point> = {
+  n: { x: 0, y: -1 },
+  e: { x: 1, y: 0 },
+  s: { x: 0, y: 1 },
+  w: { x: -1, y: 0 },
+};
+
+// The side an end faces `towards` among the sides that carry anchors: the
+// sides the ray leaves through, soonest first, then the rest by how directly
+// they face the direction. A triangle's bare top is skipped for the face
+// that points most that way. Null when the direction is zero.
+export function facingSideTowards(element: BoxedElement, towards: Point): Side | null {
+  const c = centreOf(element);
+  let dx = towards.x - c.x;
+  let dy = towards.y - c.y;
+  if (Math.abs(dx) < 1e-9 && Math.abs(dy) < 1e-9) return null;
+  const rotation = element.rotation ?? 0;
+  if (rotation) {
+    const local = rotatePoint({ x: dx, y: dy }, { x: 0, y: 0 }, -rotation);
+    dx = local.x;
+    dy = local.y;
+  }
+  const box = connectorBox(element);
+  const hw = box.width / 2 || 1;
+  const hh = box.height / 2 || 1;
+  const time = (side: Side) => {
+    const d = side === 'n' ? -dy / hh : side === 's' ? dy / hh : side === 'e' ? dx / hw : -dx / hw;
+    return d > 0 ? 1 / d : Infinity;
+  };
+  const facing = (side: Side) => NORMALS[side].x * dx + NORMALS[side].y * dy;
+  const ranked = [...SIDES].sort((a, b) => time(a) - time(b) || facing(b) - facing(a));
+  return ranked.find((side) => sideOffered(element, side)) ?? null;
+}
+
+// The creation anchor: the middle of the side the connector faces towards
+// `towards`. 'e' when the direction is zero (a point on the centre).
 export function bestAnchorTowards(element: BoxedElement, towards: Point): Anchor {
-  return exitSideTowards(element, towards) ?? 'e';
+  return facingSideTowards(element, towards) ?? 'e';
 }

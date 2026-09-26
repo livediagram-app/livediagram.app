@@ -3,6 +3,7 @@ import {
   anchorOutward,
   anchorPosition,
   isBoxed,
+  nearestOfferedAnchor,
   type Anchor,
   type ArrowElement,
 } from '@livediagram/diagram';
@@ -113,7 +114,7 @@ export function useBoxedDragHandlers({
 
   const beginAnchorDrag = (
     elementId: string,
-    anchor: Anchor,
+    sideAnchor: Anchor,
     e: ReactPointerEvent,
     opts?: {
       clickToPlace?: boolean;
@@ -126,6 +127,9 @@ export function useBoxedDragHandlers({
     const element = d.activeTab.elements.find((el) => el.id === elementId);
     if (!element || !isBoxed(element) || element.locked === true || d.isReadOnly) return;
     if (d.layerInertIds.has(elementId)) return;
+    // A side without anchors (a triangle's top) starts from the nearest one
+    // the shape offers (docs/specs/008-canvas/arrow-anchors.md).
+    const anchor = nearestOfferedAnchor(element, sideAnchor);
     const start = anchorPosition(element, anchor);
     const fromEnd: ArrowElement['from'] = { kind: 'pinned', elementId, anchor };
     // A connector drawn FROM a shape takes the TAB THEME's stroke, not the

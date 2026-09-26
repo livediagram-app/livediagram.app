@@ -1,6 +1,6 @@
 import type { Anchor, ArrowElement, BoxedElement, Element, ElementId, Endpoint } from './index';
-import { anchorClass, anchorLiesOn, anchorsOf, offeredClass } from './anchors';
-import { anchorAimPoint, exitSideTowards } from './anchor-choice';
+import { anchorClass, anchorLiesOn, offeredOnSide } from './anchors';
+import { anchorAimPoint, facingSideTowards } from './anchor-choice';
 import { arrowPolyline, pathPassesThrough, pinnedBoxedElement } from './arrow-path-hits';
 import { swapCrossingEnds } from './arrow-rebind-swap';
 import {
@@ -107,7 +107,7 @@ function reanchorEnd(
   const centre = centreOf(el);
   const otherEl = pinnedBoxedElement(other, index);
   const aim = otherEl ? anchorAimPoint(otherEl, centre) : endpointPosition(other, index);
-  const side = exitSideTowards(el, aim);
+  const side = facingSideTowards(el, aim);
   const tag = `[arrow-rebind] trigger arrow=${arrowId} end=${end} element=${el.id}`;
   if (!side) {
     console.debug(`${tag} side=none ${ep.anchor}->${ep.anchor} kept=no-side`);
@@ -118,7 +118,7 @@ function reanchorEnd(
     return ep;
   }
   const reference = otherEl ? centreOf(otherEl) : aim;
-  const candidates = anchorsOf(side, offeredClass(el, anchorClass(ep.anchor)));
+  const candidates = offeredOnSide(el, side, anchorClass(ep.anchor));
   const anchor = pickCandidate(el, ep.anchor, candidates, reference, held);
   moveHeld(held, el.id, ep.anchor, anchor);
   console.debug(`${tag} side=${side} ${ep.anchor}->${anchor}`);

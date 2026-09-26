@@ -8,7 +8,8 @@ import {
   type ElementId,
   type Endpoint,
 } from './index';
-import { anchorFraction, anchorLiesOn } from './anchors';
+import { anchorLayoutPoint } from './anchor-layouts';
+import { anchorFraction, anchorLiesOn, offeredAnchors } from './anchors';
 import { rotatePoint, unionRects, type Point, type Rect } from './geometry-primitives';
 import { anchorOutline, connectorBox, projectOntoOutline } from './shape-outline';
 
@@ -32,11 +33,17 @@ export function anchorPosition(element: BoxedElement, anchor: Anchor): Point {
   const box = connectorBox(element);
   const { fx, fy } = anchorFraction(anchor);
   let local: Point = { x: box.x + fx * box.width, y: box.y + fy * box.height };
+  // A face-placed anchor (triangle, hexagon, parallelogram, trapezoid) sits
+  // at its own point along a drawn face, already on the outline.
+  const placed =
+    box === element && element.type === 'shape' ? anchorLayoutPoint(element.shape, anchor) : null;
   // Project onto the shape's real outline only when the connector box IS the
   // element box: a Technology icon's mark is a plain rounded square, so its
   // box anchors are already on the visible edge.
-  const outline = box === element ? anchorOutline(element) : null;
-  if (outline) {
+  const outline = box === element && !placed ? anchorOutline(element) : null;
+  if (placed) {
+    local = { x: box.x + (placed[0] / 100) * box.width, y: box.y + (placed[1] / 100) * box.height };
+  } else if (outline) {
     const centre = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
     const projected = projectOntoOutline(outline, centre, local);
     if (projected) local = projected;
@@ -67,6 +74,26 @@ export function anchorPosition(element: BoxedElement, anchor: Anchor): Point {
     { x: element.x + element.width / 2, y: element.y + element.height / 2 },
     rotation,
   );
+}
+
+// `anchor` when the element offers it, else the offered anchor nearest its
+// point (first in table order on a tie): what a quick-connect from a side
+// without anchors, such as a triangle's top, pins to.
+export function nearestOfferedAnchor(element: BoxedElement, anchor: Anchor): Anchor {
+  const offered = offeredAnchors(element);
+  if (offered.includes(anchor)) return anchor;
+  const from = anchorPosition(element, anchor);
+  let best = offered[0] ?? anchor;
+  let bestD = Infinity;
+  for (const a of offered) {
+    const p = anchorPosition(element, a);
+    const d = (p.x - from.x) ** 2 + (p.y - from.y) ** 2;
+    if (d < bestD - 1e-9) {
+      bestD = d;
+      best = a;
+    }
+  }
+  return best;
 }
 
 export function centreOf(el: BoxedElement): Point {

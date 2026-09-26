@@ -12,9 +12,10 @@ import { ACTOR_HULL, ACTOR_VIEWBOX, shapePathData, shapePolygonVertices } from '
 import { sampleSvgPath } from './svg-path-outline';
 import type { ShapeKind } from './shape-kind';
 
-// Half circles of a stadium are polygonised with this many segments each:
-// under half a pixel of error on a 200 px tall pill.
-export const STADIUM_ARC_SEGMENTS = 16;
+// Half circles (a stadium's ends) and half ellipses (a cylinder's caps) are
+// polygonised with this many segments each: under half a pixel of error at
+// 200 px.
+export const ARC_SEGMENTS = 16;
 
 export type AnchorOutline =
   | { kind: 'ellipse'; cx: number; cy: number; rx: number; ry: number }
@@ -44,7 +45,6 @@ const POLYGON_KINDS: readonly ShapeKind[] = [
   'hexagon',
   'triangle',
   'trapezoid',
-  'star',
 ];
 // Shapes drawn as one curved path, sampled into a polygon (0..100 box).
 const PATH_KINDS: readonly ShapeKind[] = ['cloud', 'document'];
@@ -61,8 +61,8 @@ function stadiumOutline(x: number, y: number, w: number, h: number): Point[] {
   const points: Point[] = [];
   // Two half circles joined by the straight sides, clockwise.
   const arc = (cx: number, cy: number, from: number) => {
-    for (let i = 0; i <= STADIUM_ARC_SEGMENTS; i++) {
-      const a = from + (Math.PI * i) / STADIUM_ARC_SEGMENTS;
+    for (let i = 0; i <= ARC_SEGMENTS; i++) {
+      const a = from + (Math.PI * i) / ARC_SEGMENTS;
       points.push({ x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) });
     }
   };
@@ -72,6 +72,24 @@ function stadiumOutline(x: number, y: number, w: number, h: number): Point[] {
   } else {
     arc(x + r, y + h - r, 0);
     arc(x + r, y + r, Math.PI);
+  }
+  return points;
+}
+
+// The cylinder as drawn (shape-geometry.ts): a body from y 15 to 85 of its
+// 0..100 box, capped by half ellipses (ry 12) bulging up at the top and down
+// at the bottom.
+function cylinderOutline(x: number, y: number, w: number, h: number): Point[] {
+  const points: Point[] = [];
+  const at = (vx: number, vy: number) =>
+    points.push({ x: x + (vx / 100) * w, y: y + (vy / 100) * h });
+  for (let i = 0; i <= ARC_SEGMENTS; i++) {
+    const a = Math.PI + (Math.PI * i) / ARC_SEGMENTS;
+    at(50 + 50 * Math.cos(a), 15 + 12 * Math.sin(a));
+  }
+  for (let i = 0; i <= ARC_SEGMENTS; i++) {
+    const a = (Math.PI * i) / ARC_SEGMENTS;
+    at(50 + 50 * Math.cos(a), 85 + 12 * Math.sin(a));
   }
   return points;
 }
@@ -95,6 +113,7 @@ export function anchorOutline(el: BoxedElement): AnchorOutline | null {
   }
   if (el.shape === 'stadium') return { kind: 'polygon', points: stadiumOutline(x, y, w, h) };
   if (el.shape === 'actor') return { kind: 'polygon', points: actorOutline(x, y, w, h) };
+  if (el.shape === 'cylinder') return { kind: 'polygon', points: cylinderOutline(x, y, w, h) };
   const poly = POLYGONS[el.shape];
   if (!poly) return null;
   return {
