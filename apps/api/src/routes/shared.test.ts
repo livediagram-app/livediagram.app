@@ -6,7 +6,7 @@ import { makeTestRouteContext } from './test-route-context';
 // which is what stops one visitor listing — or dismissing — another's shared
 // diagrams. The guest path has to keep working too: shared_with rows are keyed
 // off the same resolved string whether it came from a Clerk session or an
-// X-Owner-Id header (spec/04).
+// X-Owner-Id header (docs/specs/014-identity/auth-and-guest-access.md).
 
 const { db } = vi.hoisted(() => ({
   db: {
@@ -44,7 +44,7 @@ describe('GET /api/shared', () => {
   });
 
   it('serves a guest owner exactly as it serves a signed-in one', async () => {
-    // spec/04: the canvas works without signing in, and so does everything
+    // docs/specs/014-identity/auth-and-guest-access.md: the canvas works without signing in, and so does everything
     // hanging off it. A guest id is a first-class owner here.
     await handleShared(makeCtx('GET', '/api/shared', { owner: 'guest-uuid' }));
     expect(db.listSharedWith).toHaveBeenCalledWith(expect.anything(), 'guest-uuid');

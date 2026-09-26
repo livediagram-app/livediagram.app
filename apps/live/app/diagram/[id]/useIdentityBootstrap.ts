@@ -156,7 +156,7 @@ export function useIdentityBootstrap(opts: {
     // subsequent diagram load uses the wrong owner. With this gate
     // the effect re-runs once `authLoaded` flips true.
     if (!authLoaded) return;
-    // Daily-active-returns signal (spec/22): once auth has settled we
+    // Daily-active-returns signal (docs/specs/017-telemetry/telemetry.md): once auth has settled we
     // know whether this open is a guest or a signed-in user. Fire-and-
     // forget, gated to once per browser per UTC day inside the helper,
     // so it's safe to run on every editor mount.
@@ -166,7 +166,7 @@ export function useIdentityBootstrap(opts: {
     // the welcome modal is gated on `hydrated` so it doesn't flash the
     // Guest placeholder name into the input.
     //
-    // Path scheme (spec/14): `/diagram/<id>` is the owner URL.
+    // Path scheme (docs/specs/007-editor/new-diagram-route.md): `/diagram/<id>` is the owner URL.
     // The static export ships a single placeholder file at
     // `out/diagram/placeholder/index.html`; the live worker rewrites
     // `/diagram/<anything>` → that file so the browser receives the
@@ -177,7 +177,7 @@ export function useIdentityBootstrap(opts: {
     // with the real id still in `window.location.pathname`, which
     // we parse out here.
     const initialUrl = new URL(window.location.href);
-    // Clean routing (spec/08): the editor lives at `/diagram/<id>`, no
+    // Clean routing (docs/specs/016-platform/router-app.md): the editor lives at `/diagram/<id>`, no
     // `/live` prefix. Match the id straight off the path.
     const pathMatch = initialUrl.pathname.match(/\/diagram\/([^/?#]+)/);
     const rawPathId = pathMatch ? pathMatch[1]! : null;
@@ -204,13 +204,13 @@ export function useIdentityBootstrap(opts: {
         // Already resolved — skip the network round-trip.
         self = selfParticipant;
       } else {
-        // Two ways in (spec/04): when signed in, the Clerk userId becomes
+        // Two ways in (docs/specs/014-identity/auth-and-guest-access.md): when signed in, the Clerk userId becomes
         // the canonical participant id. When signed out, fall back to the
         // localStorage guest UUID.
         // For a guest, resolve a SERVER-SIGNED id (minting one on first
         // visit, upgrading a legacy unsigned id) so the eventual sign-up
         // migrate can prove possession. Falls back to a local unsigned id
-        // offline. See spec/04 + lib/guest-identity.ts.
+        // offline. See docs/specs/014-identity/auth-and-guest-access.md + lib/guest-identity.ts.
         const selfId = clerkUserId ?? (await ensureSignedGuestIdentity()).id;
         const storedSelf = await apiLoadSelf(selfId).catch(() => null);
         // Signed-in users always use their Clerk-known name on the
@@ -228,7 +228,7 @@ export function useIdentityBootstrap(opts: {
           clerkUserId && clerkDisplayName
             ? { ...baseSelf, name: clerkDisplayName, status: 'online' }
             : { ...baseSelf, status: 'online' };
-        // The document-write key (spec/122) is stamped onto the LOCAL
+        // The document-write key (docs/specs/012-collaboration/participant-responses.md) is stamped onto the LOCAL
         // participant only, never onto `self` as it goes to `apiSaveSelf`
         // below: it belongs to this browser, not to the account. A second
         // device signed in as the same person is a second person as far as
@@ -265,7 +265,7 @@ export function useIdentityBootstrap(opts: {
       // arrivals get full diagram data via the share-code endpoint and
       // are flagged `!isOwner` so the Share button hides.
       if (shareCodeParam) {
-        // Warm-cache the share password (spec/24) before the first
+        // Warm-cache the share password (docs/specs/013-workspace/share-password.md) before the first
         // call so a returning visitor whose password didn't change
         // gets straight to the canvas without the gate. The seed is
         // a no-op when the cache is empty (apiHeaders sees null and
@@ -306,7 +306,7 @@ export function useIdentityBootstrap(opts: {
           return;
         }
         if ('passwordRequired' in resolution) {
-          // The diagram is password-protected (spec/24). Show the gate
+          // The diagram is password-protected (docs/specs/013-workspace/share-password.md). Show the gate
           // instead of hydrating. Deliberately leave `hydrated` false
           // so bumping `passwordRetry` (on submit) re-runs this effect
           // with the password now set on the session. `invalid` marks
@@ -403,7 +403,7 @@ export function useIdentityBootstrap(opts: {
             );
           }
           // Diagram·Joined is counted by the api worker when it resolves
-          // the share code, once per (visitor, diagram) (spec/22). Emitting
+          // the share code, once per (visitor, diagram) (docs/specs/017-telemetry/telemetry.md). Emitting
           // here counted every refresh and return visit.
         }
       } else if (id) {
@@ -440,7 +440,7 @@ export function useIdentityBootstrap(opts: {
         // branch above) — see seed-fetched-diagram.ts. The owner's
         // eager first-tab fetch presents no share code.
         await seedFetchedDiagram(self.id, fetched, null);
-        // An offline diagram (spec/76) is yours by construction — its
+        // An offline diagram (docs/specs/006-diagram/offline-mode.md) is yours by construction — its
         // ownerId is the local sentinel, never a participant id, so
         // without this it would wrongly get visitor chrome (Make a
         // copy, the owner badge row).

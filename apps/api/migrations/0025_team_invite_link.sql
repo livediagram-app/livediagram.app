@@ -1,4 +1,4 @@
--- Shareable team invite link (spec/32): an admin can actively turn on
+-- Shareable team invite link (docs/specs/013-workspace/teams.md): an admin can actively turn on
 -- a per-team join link that expires after a week. Anyone signed in who
 -- opens the link can Join the team as a member. Distinct from the
 -- per-address email invites (team_members rows) — this is one

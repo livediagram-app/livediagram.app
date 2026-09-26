@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { markTimelineEventsDeletedBySource } from './timeline';
 import type { Env } from '../types';
 
-// The source cascade (spec/138 §3.5).
+// The source cascade (docs/specs/013-workspace/timeline.md §3.5).
 //
 // Regression coverage for a bug found driving the real API: only
 // matching `source_id` left a deleted diagram's comment, action, and

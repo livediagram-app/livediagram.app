@@ -1,6 +1,6 @@
 import { labelMeasure, wrapLabel } from '@livediagram/diagram';
 
-// Auto-fit for MULTI-LINE labels (spec/139): the font size at which the
+// Auto-fit for MULTI-LINE labels (docs/specs/021-event-storming/event-storming.md): the font size at which the
 // wrapped text just fills its box. `scale` on a sticky used to mean a fixed
 // 14px — which read as a lie next to the Scale tile, and left an
 // unresizable event-storming note with no way out of overflow. Now it means
@@ -43,11 +43,11 @@ export function fitMultilineFontPx({
   padding: number;
   bold?: boolean;
   italic?: boolean;
-  // The label paints in capitals (an event-storming note, spec/139). Caps
+  // The label paints in capitals (an event-storming note, docs/specs/021-event-storming/event-storming.md). Caps
   // are wider, so the fit must measure THEM — measuring the typed mixed
   // case would hand back a size that overflows the moment it renders.
   uppercase?: boolean;
-  // The CSS stack the label paints in (spec/28) — a workshop note wears the
+  // The CSS stack the label paints in (docs/specs/004-interface-design/fonts.md) — a workshop note wears the
   // marker face, which is much wider than the UI sans at the same px. Same
   // rule as the capitals: measure the text as it will look.
   fontFamily?: string;

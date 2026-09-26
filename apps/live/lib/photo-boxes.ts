@@ -1,7 +1,7 @@
 import { clamp, EVENT_STORMING_NOTES } from '@livediagram/diagram';
 import type { DetectedSticky, Truth } from '@livediagram/sticky-vision';
 
-// Correcting the boxes on a photograph under review (spec/139 Phase 9): move,
+// Correcting the boxes on a photograph under review (docs/specs/021-event-storming/event-storming.md Phase 9): move,
 // resize, change kind, and reopen a saved label. Pure, in WORKING-image
 // pixels — the space the detector found the boxes in — so the overlay only
 // converts the pointer into that space and hands the result back.

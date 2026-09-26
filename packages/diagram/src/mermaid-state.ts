@@ -1,4 +1,4 @@
-// Mermaid state diagram -> DiagramGraph (spec/73). Import-only: states are
+// Mermaid state diagram -> DiagramGraph (docs/specs/020-import-export/mermaid.md). Import-only: states are
 // stadium nodes, transitions are edges, composite states are clusters
 // (frames), so the whole dialect rides the same layoutClusteredGraph path
 // as flowcharts. Notes, concurrency separators and history states are

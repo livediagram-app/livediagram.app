@@ -1,4 +1,4 @@
-// Graph-first authoring (spec/62 §4.7): turn a plain node/edge graph into
+// Graph-first authoring (docs/specs/015-api/mcp-server.md §4.7): turn a plain node/edge graph into
 // canvas Element[] so a caller can express only the CONNECTION GRAPH —
 // which nodes exist and what points at what — and let the layout engine
 // (autoLayoutElements, run by the caller after this) do all positioning.
@@ -30,7 +30,7 @@ export type GraphNode = {
   // (e.g. "rectangle") are coerced to the nearest real kind; omitted =
   // "square", the default box.
   shape?: string;
-  // Optional web address — becomes the element's URL link (spec/73:
+  // Optional web address — becomes the element's URL link (docs/specs/020-import-export/mermaid.md:
   // Mermaid `click A "https://…"`).
   link?: string;
 };
@@ -41,7 +41,7 @@ export type GraphEdge = {
   to: string;
   // Optional edge label rendered on the arrow.
   label?: string;
-  // Stroke flavour (spec/73): 'dashed' → a dashed stroke, 'thick' → the
+  // Stroke flavour (docs/specs/020-import-export/mermaid.md): 'dashed' → a dashed stroke, 'thick' → the
   // thick width preset. Omitted = the default solid medium line.
   line?: 'solid' | 'dashed' | 'thick';
   // Arrowhead placement: which end(s) carry a head. Omitted = 'to', the
@@ -52,7 +52,7 @@ export type GraphEdge = {
   head?: 'triangle' | 'circle' | 'cross';
 };
 
-// A named cluster of nodes (spec/73: a Mermaid subgraph). Rendered as a
+// A named cluster of nodes (docs/specs/020-import-export/mermaid.md: a Mermaid subgraph). Rendered as a
 // `frame` shape drawn around its members and laid out as one block — see
 // layoutClusteredGraph (auto-layout-clusters.ts). Optional and additive:
 // callers that don't speak clusters (the MCP today) ignore it.

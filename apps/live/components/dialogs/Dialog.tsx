@@ -62,7 +62,7 @@ type DialogProps = {
   className?: string;
   // 'desktop-light' keeps the page visible behind the modal on desktop (a
   // faint tint, no blur) so live effects show through — the edit-favourites
-  // dialog uses it so the palette grid updates in view (spec/78). Mobile
+  // dialog uses it so the palette grid updates in view (docs/specs/010-palette/palette-favourites.md). Mobile
   // (below sm) always keeps the full dim: the centred panel covers most of
   // the viewport there anyway, and the dim signals modality.
   backdrop?: 'dim' | 'desktop-light';

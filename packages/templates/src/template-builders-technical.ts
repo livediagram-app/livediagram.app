@@ -5,13 +5,13 @@
 // and sequence diagram (participant lifelines with request / response
 // messages). They share a building-block
 // vocabulary the rest of the catalogue already ships — full-colour
-// Technology icons (spec/41) for the infrastructure nodes, the table
+// Technology icons (docs/specs/010-palette/technology-icons.md) for the infrastructure nodes, the table
 // element for entities, dashed arrows for lifelines / returns — so they
 // slot into the same recolour + theme pipeline as every other template.
 //
 // Each builder is pure: it takes a centre (cx, cy) and returns a fresh
 // Element[]. Sizing constants live inline so each template is
-// self-describing. See spec/09 "Templates" for the catalogue.
+// self-describing. See docs/specs/008-canvas/canvas-and-palette.md "Templates" for the catalogue.
 
 import { createArrow, createPinnedArrow, createShape, type Element } from '@livediagram/diagram';
 import { isTechIconId } from '@livediagram/icons';
@@ -20,7 +20,7 @@ import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './templat
 // A small but complete request path: a client hitting an API gateway
 // that fans out to two services, which in turn read a database and a
 // cache. Each infrastructure node is a full-colour Technology icon tile
-// (spec/41) — Nginx gateway, Docker / Kubernetes services, PostgreSQL
+// (docs/specs/010-palette/technology-icons.md) — Nginx gateway, Docker / Kubernetes services, PostgreSQL
 // database, Redis cache — chosen from the vendor-neutral "Generic" set
 // so the starter reads on any stack rather than pinning one cloud. The
 // caller (the user) hitting the system is a stroke-tinted line glyph
@@ -55,7 +55,7 @@ export function buildSystemArchitecture(cx: number, cy: number): Element[] {
     label,
     iconId,
     textSize: 'sm',
-    // Branded tiles render at a fixed mark size (spec/41), so they drop
+    // Branded tiles render at a fixed mark size (docs/specs/010-palette/technology-icons.md), so they drop
     // unlocked like every other tech icon; the line-art client glyph keeps
     // the lock so it can't warp.
     ...(isTechIconId(iconId) ? { aspectLocked: false } : {}),
@@ -84,7 +84,7 @@ export function buildSystemArchitecture(cx: number, cy: number): Element[] {
 // generic system architecture above: traffic arrives through DNS + CDN,
 // crosses an API gateway into container + serverless compute, and lands
 // in managed data services, with monitoring watching from the side. AWS
-// marks (spec/41) because they're the most widely recognised cloud
+// marks (docs/specs/010-palette/technology-icons.md) because they're the most widely recognised cloud
 // iconography; swapping tiles for another provider is a per-node iconId
 // edit. Same conventions as buildSystemArchitecture: branded tiles keep
 // their own colours, captions ride beneath, pinned arrows wire the
@@ -152,7 +152,7 @@ export function buildCloudArchitecture(cx: number, cy: number): Element[] {
 // as one), wired by relationship arrows carrying their cardinality.
 export function buildErDiagram(cx: number, cy: number): Element[] {
   const tableW = 250;
-  // Entity row + title-band heights (spec/120), not the old table's 34px row:
+  // Entity row + title-band heights (docs/specs/009-elements/entity.md), not the old table's 34px row:
   // an entity draws 11px rows on a 3px gap, so a table-sized row left a band
   // of empty box under the last field.
   const rowH = 26;
@@ -221,7 +221,7 @@ export function buildErDiagram(cx: number, cy: number): Element[] {
   for (const entity of entities) {
     const centerX = cx + (entity.col === 0 ? -colHalfGap : colHalfGap);
     const centerY = cy + (entity.row === 0 ? -rowHalfGap : rowHalfGap);
-    // One ENTITY element per table (spec/120), not a bold text label grouped
+    // One ENTITY element per table (docs/specs/009-elements/entity.md), not a bold text label grouped
     // with a two-column table. That was three objects pretending to be one,
     // held together by a groupId, and the field rows could not be edited as
     // fields — only as table cells that happened to be laid out like fields.
@@ -270,7 +270,7 @@ export function buildSequenceDiagram(cx: number, cy: number): Element[] {
   const elements: Element[] = [];
 
   // Participant headers + their dashed lifelines: the stationary
-  // skeleton, so they ride the scaffold layer (spec/74) while the
+  // skeleton, so they ride the scaffold layer (docs/specs/006-diagram/layers.md) while the
   // messages users add and reorder live on the content layer above.
   participants.forEach((name, i) => {
     const centerX = centerXFor(i);

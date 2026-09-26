@@ -5,7 +5,7 @@
 //
 // Its own module because the mode switch now renders in two places: the
 // header row on a wide screen, and inside the filter popover on a phone
-// where the row has no space for it (spec/138 §2.3). One copy of the
+// where the row has no space for it (docs/specs/013-workspace/timeline.md §2.3). One copy of the
 // icons keeps the two from drifting into different pictures of the same
 // thing.
 

@@ -5,7 +5,7 @@ import type { DetectedSticky } from '@livediagram/sticky-vision';
 import type { PhotoReview } from '@/hooks/canvas/usePhotoDraft';
 import { PhotoReviewOverlay } from './PhotoReviewOverlay';
 
-// The review overlay opens BEFORE the detector has answered (spec/139 Phase
+// The review overlay opens BEFORE the detector has answered (docs/specs/021-event-storming/event-storming.md Phase
 // 9): the photograph is on screen first, and the boxes arrive into it.
 // Everything here is about that gap being handled honestly.
 
@@ -399,7 +399,7 @@ describe('labelling a wall from the review', () => {
   });
 });
 
-// Zooming into the photograph (spec/139 Phase 9). A wall of three hundred
+// Zooming into the photograph (docs/specs/021-event-storming/event-storming.md Phase 9). A wall of three hundred
 // notes puts each sticky at about fifteen pixels when the whole photo fits the
 // window, which is too small to judge, tick or draw round.
 describe('zooming into the photo', () => {
@@ -501,7 +501,7 @@ describe('a wall with more notes than the review holds', () => {
   });
 });
 
-// Correcting a box, not just unticking it (spec/139 Phase 9).
+// Correcting a box, not just unticking it (docs/specs/021-event-storming/event-storming.md Phase 9).
 describe('correcting a box', () => {
   const open = (onConfirm = vi.fn(), onCancel = vi.fn()) => {
     render(
@@ -569,7 +569,7 @@ describe('correcting a box', () => {
   });
 });
 
-// Reopening a saved label to correct it (spec/139 Phase 9).
+// Reopening a saved label to correct it (docs/specs/021-event-storming/event-storming.md Phase 9).
 describe('opening a saved label over the photo', () => {
   afterEach(() => localStorage.clear());
   const label = (photo: string) =>
@@ -651,7 +651,7 @@ describe('the tick of a selected box', () => {
   });
 });
 
-// When too many notes could not be read (spec/139 Phase 9): the review says
+// When too many notes could not be read (docs/specs/021-event-storming/event-storming.md Phase 9): the review says
 // so, politely, and leaves the choice to the author.
 describe('the unread tip', () => {
   const stickies = Array.from({ length: 10 }, (_, i) => ({ ...sticky(i), x: i * 9 }));
@@ -809,7 +809,7 @@ describe('reading progress', () => {
 });
 
 // A box that is moved is read again, 8 seconds after the last change
-// (spec/139 Phase 9); a box whose words the author typed never is.
+// (docs/specs/021-event-storming/event-storming.md Phase 9); a box whose words the author typed never is.
 describe('reading a moved box again', () => {
   beforeEach(() => vi.useFakeTimers());
   afterEach(() => vi.useRealTimers());

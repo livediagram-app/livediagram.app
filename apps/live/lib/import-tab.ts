@@ -1,7 +1,7 @@
 // Counterpart to export-tab.ts — parses an imported `.livediagram-
 // tab.json` envelope back into a Tab. Markdown is also importable
-// (spec/27) via its own module (`markdown-import.ts`). The Import
-// dialog (spec/27) lets the user pick which format; the chosen format
+// (docs/specs/020-import-export/markdown-import.md) via its own module (`markdown-import.ts`). The Import
+// dialog (docs/specs/020-import-export/markdown-import.md) lets the user pick which format; the chosen format
 // drives the picker's file filter + which parser runs. PNG / PDF
 // remain export-only.
 

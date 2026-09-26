@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 
 // Reveal something after `delayMs`, but only while `enabled` is true.
 // Returns false until the timer fires, then true. Used for the
-// editor's sign-in nudge (spec/36), which waits ~5 minutes into a
+// editor's sign-in nudge (docs/specs/014-identity/sign-in-encouragement.md), which waits ~5 minutes into a
 // session before appearing so it never greets someone the instant
 // they open a diagram.
 //

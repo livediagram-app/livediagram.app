@@ -1,7 +1,7 @@
 // Shared domain types for diagrams. Consumed by the live app's canvas today,
 // and (later) by the persistence store, API workers, and any other code that
-// handles diagram data. See specs/05-diagram-structure.md and
-// specs/09-canvas-and-palette.md.
+// handles diagram data. See docs/specs/006-diagram/diagram-structure.md and
+// docs/specs/008-canvas/canvas-and-palette.md.
 
 // Live session-tool types used by the `Tab.timer` / `Tab.vote` fields
 // below. Type-only import (erased at build) so the index <-> session
@@ -14,12 +14,12 @@ import { isSelfDrawingShape } from './data-shapes';
 import type { TabKind } from './tab-kind';
 import type { TabTimer, TabVote } from './session';
 
-// Layer type used by the `Tab.layers` field below (spec/74). Type-only
+// Layer type used by the `Tab.layers` field below (docs/specs/006-diagram/layers.md). Type-only
 // import for the same erasability reason as session; the runtime layer
 // helpers are re-exported lower down via `export * from './layers'`.
 import type { Layer } from './layers';
 
-// Per-range label formatting runs (spec/09). Type-only import so the
+// Per-range label formatting runs (docs/specs/008-canvas/canvas-and-palette.md). Type-only import so the
 // index <-> rich-text relationship stays erasable; the runtime helpers +
 // this type are re-exported lower down via `export * from './rich-text'`.
 // Only the BoxedElement union members are imported for local use; the full set
@@ -99,7 +99,7 @@ export type TextAlignX = 'left' | 'center' | 'right';
 export type TextAlignY = 'top' | 'middle' | 'bottom';
 
 // Where an inline icon sits relative to its shape's text label (the
-// drag-an-icon-onto-a-shape feature, spec/09). The drop-side detection, the
+// drag-an-icon-onto-a-shape feature, docs/specs/008-canvas/canvas-and-palette.md). The drop-side detection, the
 // context-menu placement picker, and the data-model field all speak this.
 export type IconPosition = 'left' | 'right' | 'above' | 'below';
 
@@ -113,7 +113,7 @@ export type IconPosition = 'left' | 'right' | 'above' | 'below';
 // at module-init time without a runtime cycle through this barrel. It is
 // re-exported below, so the public surface is unchanged.
 
-// Flowing-arrow animation (spec/09): 'dashes' marches the dash pattern along
+// Flowing-arrow animation (docs/specs/008-canvas/canvas-and-palette.md): 'dashes' marches the dash pattern along
 // the connector (CSS stroke-dashoffset), 'dots' sends a dot travelling the
 // path (CSS offset-path), 'beads' marches a row of round dots, 'pulse' breathes
 // the line's opacity, 'grow' breathes its thickness, 'glow' pulses a soft halo
@@ -177,7 +177,7 @@ export type BackgroundPattern =
   | 'hexagonal'
   | 'engineering'
   | 'checkerboard'
-  // Animated patterns (spec/09): soft ambient motion rendered as an
+  // Animated patterns (docs/specs/008-canvas/canvas-and-palette.md): soft ambient motion rendered as an
   // overlay layer rather than a CSS background image. They theme off the
   // pattern colour like the static ones. Kept last so the static catalogue
   // ordering is undisturbed.
@@ -226,7 +226,7 @@ export type ElementLink =
   | { kind: 'diagram'; diagramId: string; name: string }
   // An external web address. Followed by opening in a new tab; stored
   // verbatim (the UI normalises a bare host to https:// on entry). Used
-  // by both element links and per-cell table links (spec/09).
+  // by both element links and per-cell table links (docs/specs/008-canvas/canvas-and-palette.md).
   | { kind: 'url'; url: string };
 
 // --- Element union ---------------------------------------------------------
@@ -247,7 +247,7 @@ export type Element = BoxedElement | ArrowElement;
 // kind changes how the editor presents the same underlying tab: an
 // 'event-storming' board opens the palette on its notation, fixes the note
 // silhouettes, blocks resize and swaps the element menu for verbs
-// (spec/139). Absent = an ordinary tab, which is every tab by default.
+// (docs/specs/021-event-storming/event-storming.md). Absent = an ordinary tab, which is every tab by default.
 //
 // This is deliberately a FIRST-CLASS field rather than something inferred
 // from the tab's contents or its layer ids: identity by proxy broke twice
@@ -277,7 +277,7 @@ export type Tab = {
   // smaller (the canvas pattern-size slider). Does not affect the pan
   // phase, so the pattern still tracks panning at any scale.
   backgroundPatternScale?: number;
-  // Motion speed for an ANIMATED background pattern (spec/09), defaults to
+  // Motion speed for an ANIMATED background pattern (docs/specs/008-canvas/canvas-and-palette.md), defaults to
   // 1. A rate multiplier (2 = twice as fast) fed to the animated backdrop's
   // keyframes; ignored by the static patterns. The canvas Speed slider
   // (shown only while an animated pattern is active) writes it.
@@ -308,7 +308,7 @@ export type Tab = {
   // buttons for as long as this tab is active. Toggled from the
   // tab ellipsis menu.
   locked?: boolean;
-  // Per-diagram folder name (specs/30). Tabs sharing a name render
+  // Per-diagram folder name (docs/specs/006-diagram/tab-folders.md). Tabs sharing a name render
   // as a contiguous run under one collapsible chip in the tab bar.
   // This is link metadata, not body content: it's stripped from the
   // persisted tab body and carried on the diagram_tabs row alongside
@@ -316,14 +316,14 @@ export type Tab = {
   // loose in another. Unset / empty = loose. See tab-folders.ts for
   // the normalize + grouping helpers.
   folder?: string;
-  // Live session tools (spec/39), facilitator-run + synced to every
+  // Live session tools (docs/specs/012-collaboration/session-tools.md), facilitator-run + synced to every
   // participant via the normal tab sync. `timer` is a countdown /
   // stopwatch; `vote` is a dot-voting session. Both are edit-role
   // controlled (the room drops view-role mutations) and absent until a
   // facilitator starts one. See session.ts for the pure helpers.
   timer?: TabTimer;
   vote?: TabVote;
-  // Photoshop-style layers (spec/74), ordered BOTTOM -> TOP (index 0
+  // Photoshop-style layers (docs/specs/006-diagram/layers.md), ordered BOTTOM -> TOP (index 0
   // paints lowest). Absent = the tab behaves as one implicit default
   // layer; the array is materialised lazily on the first layer
   // operation (see layers.ts). Elements point in via `layerId`.
@@ -374,7 +374,7 @@ export function elementHasText(element: Element): boolean {
 // (progress / rail / rating / charts), which the inline editor refuses;
 // text / sticky / freehand / arrows all edit `label` too. A link-card is
 // deliberately OUT: its view renders link metadata, never `label`, and its
-// double-click opens the link picker (spec/40) — an Add-text button there
+// double-click opens the link picker (docs/specs/009-elements/link-cards.md) — an Add-text button there
 // entered an edit state with no editor on screen.
 // Drives the selection toolbar's "Edit text" / "Add text" button, which
 // shows on every text-capable element (an empty one included, so the
@@ -402,37 +402,37 @@ export * from './label-font';
 export * from './lane-gutter';
 export * from './arrow-style';
 export * from './border-style';
-// Element drop shadows (spec/86): model, presets + render builders.
+// Element drop shadows (docs/specs/008-canvas/element-shadows.md): model, presets + render builders.
 export * from './shadow';
 export * from './shape-marker';
-// Selection modes a Mode Button can switch to (spec/103).
+// Selection modes a Mode Button can switch to (docs/specs/009-elements/mode-button.md).
 export * from './selection-mode';
-// How a poll's answers are shaped (spec/88), shared by the Session button's
+// How a poll's answers are shaped (docs/specs/012-collaboration/live-poll.md), shared by the Session button's
 // stored config below and by @livediagram/api-schema's wire `LivePoll`.
 export * from './poll-style';
 export * from './comments';
-// Per-element assigned actions (spec/68).
+// Per-element assigned actions (docs/specs/012-collaboration/assigned-actions.md).
 export * from './element-action';
 export * from './data-shapes';
 export * from './code-themes';
 export * from './chart-palettes';
 export * from './chart-frame';
-// Per-participant responses (spec/122) + the collaboration element family
-// (spec/123 to spec/130). Both leaf modules, for the factories cycle.
+// Per-participant responses (docs/specs/012-collaboration/participant-responses.md) + the collaboration element family
+// (docs/specs/012-collaboration/estimate-card.md to docs/specs/009-elements/chair.md). Both leaf modules, for the factories cycle.
 export * from './responses';
 export * from './collab-shapes';
 export * from './shape-geometry';
 export * from './color-wash';
-// The Q&A board (spec/151)
+// The Q&A board (docs/specs/012-collaboration/qa-board.md)
 export * from './qa-board';
 export * from './web-components';
-// The Behaviours family (spec/110): which kinds are in it, and which of them
+// The Behaviours family (docs/specs/010-palette/palette-top-level-categories.md): which kinds are in it, and which of them
 // draw their own `…` rather than taking the shared settings one.
 export * from './behaviour-shapes';
 export * from './colors';
 export * from './icon-size';
 
-// Per-range label formatting (spec/09): the runs-as-delta model + pure
+// Per-range label formatting (docs/specs/008-canvas/canvas-and-palette.md): the runs-as-delta model + pure
 // helpers shared by the canvas renderer and the contentEditable editor.
 export * from './rich-text';
 
@@ -452,22 +452,22 @@ export * from './table';
 // the API uses to vet incoming tabs / diagrams). See validate.ts.
 export * from './validate';
 
-// Deterministic auto-layout for AI-generated diagrams (spec/25).
+// Deterministic auto-layout for AI-generated diagrams (docs/specs/007-editor/ai-assistance.md).
 export * from './auto-layout';
 
-// Cluster-aware graph layout (spec/73): Mermaid subgraphs as frames.
+// Cluster-aware graph layout (docs/specs/020-import-export/mermaid.md): Mermaid subgraphs as frames.
 export * from './auto-layout-clusters';
 
 // Shared by the editor's text export + import and reusable by the api / MCP.
 
-// Headless SVG renderer (spec/62 §5): per-element drawers + renderElementsToSvg,
+// Headless SVG renderer (docs/specs/015-api/mcp-server.md §5): per-element drawers + renderElementsToSvg,
 // shared by the in-app export and the MCP worker's inline image render.
 export * from './svg-render';
 export * from './svg-render-table';
 
-// Theme engine (spec/29, /42, /44, /48): theme catalogue + types + the pure
+// Theme engine (docs/specs/011-theme/multicolour-themes.md, /42, /44, /48): theme catalogue + types + the pure
 // recolour / switch / reset / preset transforms, shared by the editor and the
-// MCP worker (spec/62). Custom-theme resolution stays in apps/live/lib/themes.ts.
+// MCP worker (docs/specs/015-api/mcp-server.md). Custom-theme resolution stays in apps/live/lib/themes.ts.
 export * from './theme-graph';
 export * from './themes';
 export * from './theme-presets';
@@ -485,62 +485,62 @@ export * from './anchor-choice';
 export * from './geometry';
 export * from './arrow-rebind';
 export * from './arrow-endpoint-spread';
-// Arrows breaking around intervening boxes at render time (spec/90).
+// Arrows breaking around intervening boxes at render time (docs/specs/008-canvas/arrow-route-behind.md).
 export * from './arrow-behind';
-// Tab + diagram name length cap (spec/91).
+// Tab + diagram name length cap (docs/specs/006-diagram/name-length.md).
 export * from './names';
 export * from './geometry-snapping';
 export * from './arrow-snapping';
 export * from './geometry-guides';
 
 // Layer order + union bounds, and the load-time migration of diagrams saved
-// while groups existed (spec/147).
+// while groups existed (docs/specs/009-elements/web-components-and-no-groups.md).
 export * from './layer-order';
 export * from './legacy-groups';
 export * from './legacy-docks';
 export * from './stored-elements';
 
-// Photoshop-style layers (spec/74): the Layer type used by the Tab field
+// Photoshop-style layers (docs/specs/006-diagram/layers.md): the Layer type used by the Tab field
 // above, band-aware render ordering, and the pure layer operations.
 export * from './layers';
 export * from './layer-operations';
 
-// Element-level realtime ops (spec/75): the ElementOp type + the pure
+// Element-level realtime ops (docs/specs/012-collaboration/realtime-conflict-resolution.md): the ElementOp type + the pure
 // diff/apply functions the realtime room uses to merge concurrent edits.
 export * from './element-ops';
 
 // Per-element deltas for the fields many participants write at once
-// (spec/152): answers, ideas, checklist ticks, comments.
+// (docs/specs/012-collaboration/collab-race-hardening.md): answers, ideas, checklist ticks, comments.
 export * from './element-deltas';
 
 // The room's record of those deltas, merged into each save so D1 keeps what
-// the room saw (spec/152 phase 3).
+// the room saw (docs/specs/012-collaboration/collab-race-hardening.md phase 3).
 export * from './collab-ledger';
 
-// Tab-folder grouping + order normalization (specs/30). One home
+// Tab-folder grouping + order normalization (docs/specs/006-diagram/tab-folders.md). One home
 // shared by the tab-bar renderer, the client save path, and the
 // server route so the contiguous-run invariant has a single
 // implementation.
 export * from './tab-folders';
 
-// Live session tools (spec/39): the TabTimer / TabVote types used by the
+// Live session tools (docs/specs/012-collaboration/session-tools.md): the TabTimer / TabVote types used by the
 // Tab fields above, plus the pure timer + vote helpers.
 export * from './session';
 
-// Pencil-tool shape recognition (spec/09 Pencil (freehand)
+// Pencil-tool shape recognition (docs/specs/008-canvas/canvas-and-palette.md Pencil (freehand)
 // subsection's recognise mode). Re-exported so callers import
 // from the package root the same way they do every other helper
 // here.
 export { recogniseShape, type RecognisedShape, type RecognisedShapeKind } from './recognise-shape';
 
-// The curated typefaces (spec/28): the catalogue, the id -> CSS stack
+// The curated typefaces (docs/specs/004-interface-design/fonts.md): the catalogue, the id -> CSS stack
 // resolver, and the Google Fonts stylesheet href. Lives here rather than in
 // apps/live because the EXPORTS need it too — the SVG / PNG renderers have
 // to paint a label in the face the canvas painted it in, and they run in the
 // mcp worker as well as the browser.
 export * from './fonts';
 
-// Slide decks (spec/31): the Slide / Deck types plus the pure resolution
+// Slide decks (docs/specs/012-collaboration/presentation-mode.md): the Slide / Deck types plus the pure resolution
 // helpers a presentation is built from. Kept here rather than in apps/live
 // because the api and the MCP worker can answer the same questions.
 export * from './slide-deck';

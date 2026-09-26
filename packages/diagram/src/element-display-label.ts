@@ -1,8 +1,8 @@
 import type { BoxedElement } from './index';
 
 // The one-line name a boxed element goes by in a LIST of elements: the
-// Collaborate Panel's rows (spec/68 §5) and the Activity page's rows
-// (spec/142), both of which name the element an action or comment
+// Collaborate Panel's rows (docs/specs/012-collaboration/assigned-actions.md §5) and the Activity page's rows
+// (docs/specs/013-workspace/activity-page.md), both of which name the element an action or comment
 // thread hangs off. Shared so the in-editor panel and the api worker's
 // collaboration index cannot disagree on what a row is called.
 //

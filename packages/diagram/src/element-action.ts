@@ -1,4 +1,4 @@
-// Per-element assigned actions (spec/68): a named, described piece of work
+// Per-element assigned actions (docs/specs/012-collaboration/assigned-actions.md): a named, described piece of work
 // assigned to a teammate, attached to a boxed element the way a comment
 // thread is. At most one action per element. Split into its own module like
 // comments.ts; re-exported from ./index so the public surface is unchanged.
@@ -10,7 +10,7 @@
 // address server-side from team membership at send time.
 export type ElementActionAssignee = {
   // The stable key: a Clerk user id, or — for a SELF-assignment made
-  // while signed out — the guest participant id (spec/04). Guests can
+  // while signed out — the guest participant id (docs/specs/014-identity/auth-and-guest-access.md). Guests can
   // only pick themselves, so a guest id always means the assigner's own
   // browser identity. Null for an INVITED member the lazy claim hasn't
   // identified with an account yet — `memberId` is their key then.

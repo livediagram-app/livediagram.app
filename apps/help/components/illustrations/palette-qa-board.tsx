@@ -1,4 +1,4 @@
-// The Q&A board's help scene (spec/55, drawing spec/151): the spotlight over a
+// The Q&A board's help scene (docs/specs/018-help/help-app.md, drawing docs/specs/012-collaboration/qa-board.md): the spotlight over a
 // ranked queue, the top row marked Most wanted, a vote of your own filled in,
 // and heat bars measuring each row against the top.
 

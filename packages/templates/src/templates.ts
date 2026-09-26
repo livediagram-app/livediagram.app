@@ -5,14 +5,14 @@ import { templateLayers } from './template-layers';
 export type TemplateKind =
   | 'blank'
   | 'mindmap'
-  // Mind-map variants (spec/09): the radial 'mindmap' plus a left-to-right
+  // Mind-map variants (docs/specs/008-canvas/canvas-and-palette.md): the radial 'mindmap' plus a left-to-right
   // tree and a central bubble map, grouped under the Mind maps category.
   | 'mindmap-tree'
   | 'mindmap-bubble'
   | 'orgchart'
   | 'retrospective'
   | 'flowchart'
-  // Flowchart variants (spec/09): cross-functional lanes, branching decision
+  // Flowchart variants (docs/specs/008-canvas/canvas-and-palette.md): cross-functional lanes, branching decision
   // tree, an approval loop, and a data-flow diagram. Grouped under Flowcharts.
   | 'swimlane'
   | 'decision-tree'
@@ -32,7 +32,7 @@ export type TemplateKind =
   | 'journey'
   | 'fishbone'
   | 'pyramid'
-  // UI wireframes (use the device-frame shapes added in spec/09's
+  // UI wireframes (use the device-frame shapes added in docs/specs/008-canvas/canvas-and-palette.md's
   // Devices accordion). Situational starters for design / product work,
   // which is why they are extras rather than defaults.
   | 'mobile-wireframe'
@@ -55,7 +55,7 @@ export type TemplateKind =
   | 'live-card'
   // Comparison table: a plan-comparison grid (the table element).
   | 'comparison-table'
-  // Technical / developer-diagram starters (spec/09 "Templates"). They
+  // Technical / developer-diagram starters (docs/specs/008-canvas/canvas-and-palette.md "Templates"). They
   // reuse the existing shape vocabulary — cylinders for datastores, the
   // table element for entities, dashed arrows for lifelines / returns —
   // so a dev audience has a first-class starting point. All extras.
@@ -79,10 +79,10 @@ export type TemplateKind =
   // Affinity map: brainstorm stickies clustered into labelled themes,
   // with an unsorted pile still to file.
   | 'affinity-map'
-  // Lean Coffee (spec/151): an agenda-less meeting run on a Q&A board, with
+  // Lean Coffee (docs/specs/012-collaboration/qa-board.md): an agenda-less meeting run on a Q&A board, with
   // a timebox timer, a keep-going poll and a takeaways checklist.
   | 'lean-coffee'
-  // Town Hall Q&A (spec/151): an audience Q&A board beside an agenda, a
+  // Town Hall Q&A (docs/specs/012-collaboration/qa-board.md): an audience Q&A board beside an agenda, a
   // Q&A timer and a follow-ups checklist.
   | 'town-hall'
   // The classic nine-block Business Model Canvas, every block seeded
@@ -106,7 +106,7 @@ export type TemplateKind =
   // Storyboard: numbered scene frames with captions for sketching a
   // narrative sequence.
   | 'storyboard'
-  // Cloud architecture (Technology icons, spec/41): an edge-to-data
+  // Cloud architecture (Technology icons, docs/specs/010-palette/technology-icons.md): an edge-to-data
   // topology with CDN, load balancer, services, queue and stores.
   | 'cloud-architecture'
   // UML class diagram: compartmented classes wired by inheritance /
@@ -120,7 +120,7 @@ export type TemplateKind =
   // geometry means something in the world, so its scale is captioned on
   // the canvas.
   | 'floor-plan'
-  // Event storming (spec/139): the sticky-note workshop grammar for
+  // Event storming (docs/specs/021-event-storming/event-storming.md): the sticky-note workshop grammar for
   // exploring a business domain — orange domain events first, the rest
   // of the notation arrives incrementally. Colours ARE the semantics,
   // so its stickies pin their fills with `themeLockFill`.
@@ -132,15 +132,15 @@ export type TemplateDescriptor = {
   description: string;
   // Catalogue metadata only: it marks the ten starters that shipped first,
   // and nothing gates on it. The picker used to hide extras behind a "Show
-  // more" toggle; it browses by category now (spec/09), so every template is
+  // more" toggle; it browses by category now (docs/specs/008-canvas/canvas-and-palette.md), so every template is
   // reachable and this flag decides nothing about what a user sees.
   extra?: boolean;
   // True for templates that never appear in listings (the picker's browse
   // grids + search, the MCP list_templates catalogue) but stay buildable via
   // buildTemplate, for a dedicated entry point that names the kind directly.
   //
-  // NO template sets it today. Its one user was the spec/69 guided-tour
-  // sample, retired by spec/79's in-editor tour; the flag stays because the
+  // NO template sets it today. Its one user was the docs/specs/007-editor/guided-tour-sample.md guided-tour
+  // sample, retired by docs/specs/007-editor/editor-tour.md's in-editor tour; the flag stays because the
   // listing paths already filter on it, so the next such entry point is a
   // one-word change rather than a new concept. `templates.test.ts` asserts
   // the set is empty, so this stays honest.
@@ -539,7 +539,7 @@ const TEMPLATE_CATEGORY: Record<TemplateKind, TemplateCategory> = {
   'prioritization-matrix': 'planning',
   'user-story-map': 'planning',
   'affinity-map': 'planning',
-  // Live sessions run on a Q&A board (spec/151): meetings, which the Agile
+  // Live sessions run on a Q&A board (docs/specs/012-collaboration/qa-board.md): meetings, which the Agile
   // category's retros already make a home for.
   'lean-coffee': 'planning',
   'town-hall': 'planning',
@@ -587,14 +587,14 @@ export function templateCategory(kind: TemplateKind): TemplateCategory {
 
 // True when `value` names a template in the catalogue. The guard for a kind
 // that arrives as a plain string from outside the type system: the MCP
-// `template` argument, the `/new?template=<kind>` query (spec/14).
+// `template` argument, the `/new?template=<kind>` query (docs/specs/007-editor/new-diagram-route.md).
 export function isTemplateKind(value: unknown): value is TemplateKind {
   return typeof value === 'string' && TEMPLATES.some((t) => t.kind === value);
 }
 
 // The editor URL that creates this template without the wizard and opens it
-// (spec/14): what an outside surface links to, such as the marketing site's
-// template gallery (spec/16). The route is the editor's; the builder lives
+// (docs/specs/007-editor/new-diagram-route.md): what an outside surface links to, such as the marketing site's
+// template gallery (docs/specs/019-marketing/marketing-site.md). The route is the editor's; the builder lives
 // here so every caller spells the query the same way `isTemplateKind` reads.
 export function templateCreateHref(kind: TemplateKind): string {
   return `/new?template=${encodeURIComponent(kind)}`;
@@ -696,7 +696,7 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
 // of whatever theme is selected. Each template carries its preferred
 // backdrop pattern (see TEMPLATE_PATTERNS); Mind map and User journey
 // additionally soften the canvas opacity so the pattern recedes behind
-// the radiating branches / the stage row. Layered templates (spec/74)
+// the radiating branches / the stage row. Layered templates (docs/specs/006-diagram/layers.md)
 // also carry their `Tab.layers` here, matching the `layerId`s their
 // builder pre-stamps, so every application path lands scaffold and
 // layers in one commit.
@@ -713,7 +713,7 @@ export function templateCanvasOverrides(kind: TemplateKind): Partial<Tab> {
     overrides.backgroundOpacity = 0.8;
   const layers = templateLayers(kind);
   if (layers) overrides.layers = layers;
-  // A template can also declare what KIND of board it makes (spec/139).
+  // A template can also declare what KIND of board it makes (docs/specs/021-event-storming/event-storming.md).
   // The kind, not a layer id, is what the editor reads to decide it is a
   // workshop board, so it must land on every application path: the picker,
   // /new, and the MCP worker all go through here.

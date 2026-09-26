@@ -396,7 +396,7 @@ describe('resolveActiveLayerId — the fallback must be usable', () => {
   });
 });
 
-// Event-storming stacking (spec/139 Phase 4): actors in front of every other
+// Event-storming stacking (docs/specs/021-event-storming/event-storming.md Phase 4): actors in front of every other
 // note, hotspots in front of actors. A paint-order rule, applied per band.
 describe('layerBands — event-storming stacking', () => {
   const note = (id: string, esKind?: string) =>

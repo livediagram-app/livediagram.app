@@ -38,7 +38,7 @@ captioned with what it shows so copywriters can match it to a claim in
 ## Guidance
 
 - **Brand color** is sky blue `#0EA5E9` ("livediagram blue"). Page background
-  `#F8FAFC`, canvas white. Full palette in [spec/01](../../specs/01-color-scheme.md).
+  `#F8FAFC`, canvas white. Full palette in [Theme](../../docs/specs/004-interface-design/color-scheme.md).
 - **Show, don't tell.** Screenshots should feature a real diagram with visible
   multiplayer cursors, since "no sign-in, real-time" is the pitch.
 - **Keep claims current.** When the UI changes, retake the affected screenshot:

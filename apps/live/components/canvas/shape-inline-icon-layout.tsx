@@ -47,7 +47,7 @@ export function ShapeInlineIconLayout({
   // Whether an inline icon glyph is present. False for a marker-only shape, so
   // the layout draws just the marker + label.
   showIcon?: boolean;
-  // Optional status marker (spec/49), drawn immediately left of the label.
+  // Optional status marker (docs/specs/009-elements/shape-markers.md), drawn immediately left of the label.
   marker?: ShapeMarker;
   markerSize?: TextSize;
   position: IconPosition;
@@ -117,7 +117,7 @@ export function ShapeInlineIconLayout({
   // the label and shoved the icon to the element edge. min-w-0 lets a
   // long label wrap / shrink instead of overflowing.
   // The wrapper carries the inline base font + colour; the inner content
-  // carries the text styling. Per-range rich text (spec/09) renders one span
+  // carries the text styling. Per-range rich text (docs/specs/008-canvas/canvas-and-palette.md) renders one span
   // per run so an inline icon doesn't drop the formatting — the plain
   // whole-element path below ignored `richText`, which is why bold/italic
   // "didn't apply" once a shape also had an icon. `effectiveRunStyle` only
@@ -160,7 +160,7 @@ export function ShapeInlineIconLayout({
   // both honour the element's alignment. On commit it swaps back to the
   // static `text`.
   const slot = isEditing ? editor : text;
-  // The marker (spec/49) sits immediately left of the label, sized from its
+  // The marker (docs/specs/009-elements/shape-markers.md) sits immediately left of the label, sized from its
   // own bucket: 'scale' tracks the label's font size (capped to the box), the
   // fixed buckets are small / medium / large dots.
   const markerPx = marker

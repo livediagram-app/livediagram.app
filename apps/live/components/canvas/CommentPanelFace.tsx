@@ -6,7 +6,7 @@ import { activeCommentCount, type ShapeElement } from '@livediagram/diagram';
 
 import { relativeSince } from '@/lib/relative-time';
 
-// The face of a Comment panel (spec/136): a card on the board that carries a
+// The face of a Comment panel (docs/specs/012-collaboration/comment-pin.md): a card on the board that carries a
 // comment thread, collapsing to a one-line summary and opening to the thread.
 //
 // It carries NO comment machinery of its own. Every element can already hold a
@@ -59,7 +59,7 @@ export function CommentPanelFace({
       }`}
       style={{ color: textColor }}
     >
-      {/* No quote rail down the left edge any more (spec/122 once gave the
+      {/* No quote rail down the left edge any more (docs/specs/012-collaboration/participant-responses.md once gave the
           panel one to mean "somebody else is talking"): inside a card that
           already has a header, a thread and a reply box, it read as a stray
           bar rather than a cue. */}

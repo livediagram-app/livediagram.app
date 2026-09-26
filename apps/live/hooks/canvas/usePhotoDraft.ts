@@ -33,13 +33,13 @@ import {
 import { detectorTelemetryType } from '@/lib/photo-model/telemetry';
 import { track } from '@/lib/telemetry';
 
-// A photo import, as ONE long gesture (spec/139 Phase 8, Phase 9).
+// A photo import, as ONE long gesture (docs/specs/021-event-storming/event-storming.md Phase 8, Phase 9).
 //
 //   idle → detecting → reading → review → draft → committing → idle
 //                        ↘          ↘
 //                    error (a toast; the entry points come back)
 //
-// The review is a THREE-STEP wizard (spec/139 Phase 9): the photo with every
+// The review is a THREE-STEP wizard (docs/specs/021-event-storming/event-storming.md Phase 9): the photo with every
 // detected box (step 1), the words (step 2), then Add lands the ticked notes
 // on the canvas as the draft (step 3). The review itself never touches the
 // document — a checkpoint is armed only when Add lands, so the whole import is
@@ -122,7 +122,7 @@ type PhotoDraftDeps = {
   ownerId: string;
   // Whether the api has a model configured. Decides WHO reads the handwriting:
   // the server model when there is one, the in-browser model when there is not
-  // (spec/139 Phase 9). Never a gate on the import itself — both read.
+  // (docs/specs/021-event-storming/event-storming.md Phase 9). Never a gate on the import itself — both read.
   aiEnabled: boolean;
   createBlocked: boolean;
   // The gesture's three history verbs, exactly as the eraser and the drag use
@@ -289,7 +289,7 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
   // in the background and the text fields fill in batch by batch. A failure
   // leaves the fields blank and says why; the photo and boxes stay.
   // What any read tells the review besides the words: where it runs, why,
-  // the model download, and a budget failover (spec/139 Phase 9).
+  // the model download, and a budget failover (docs/specs/021-event-storming/event-storming.md Phase 9).
   const readerCallbacks = useCallback((run: number): ReadOptions => {
     const current = () => runRef.current === run;
     return {
@@ -302,7 +302,7 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
         setState((s) => (s.stage === 'review' ? { ...s, readerBackend, readerWhy } : s));
       },
       // The hosted budget is spent: say so on the review, and warn the
-      // error telemetry once, with closed values only (spec/22).
+      // error telemetry once, with closed values only (docs/specs/017-telemetry/telemetry.md).
       onFallback: (readerFallback) => {
         if (!current()) return;
         track('Error', 'Warning', 'AiQuota.BrowserReader');
@@ -377,7 +377,7 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
     [readerCallbacks],
   );
 
-  // A box the author moved, resized or drew, read again (spec/139 Phase 9).
+  // A box the author moved, resized or drew, read again (docs/specs/021-event-storming/event-storming.md Phase 9).
   const { rereading, reread, cancelRereads } = usePhotoReread({
     source: () => {
       const imageSize = reviewRef.current?.detection?.imageSize;

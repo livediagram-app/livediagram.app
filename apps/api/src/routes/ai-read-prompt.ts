@@ -1,4 +1,4 @@
-// What the model is asked of a sticky-note crop (spec/139 Phase 8).
+// What the model is asked of a sticky-note crop (docs/specs/021-event-storming/event-storming.md Phase 8).
 //
 // One question, and a narrow one: what does this piece of paper say. It is not
 // asked what colour the note is (we measured that), where it is (we measured
@@ -28,7 +28,7 @@ export function buildReadNotesPrompt(): string {
   ].join('\n');
 }
 
-// The answer's shape, for a provider that can be held to it (spec/25). JSON
+// The answer's shape, for a provider that can be held to it (docs/specs/007-editor/ai-assistance.md). JSON
 // mode alone let the model break its own quoting or stop after `{"texts":[`,
 // failing every note in the batch; a strict schema constrains the output as it
 // is written. The route still validates every field regardless.

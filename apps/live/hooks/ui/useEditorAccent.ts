@@ -1,6 +1,6 @@
 'use client';
 
-// Make the editor chrome follow the ACTIVE TAB's theme (spec/42), two ways:
+// Make the editor chrome follow the ACTIVE TAB's theme (docs/specs/011-theme/canvas-and-theme-dialog.md), two ways:
 //   1. The brand-* accent (buttons, rings, focus) is retargeted to the theme's
 //      accent — in BOTH light and dark mode.
 //   2. In DARK mode, the neutral slate surfaces (panels, borders, deep

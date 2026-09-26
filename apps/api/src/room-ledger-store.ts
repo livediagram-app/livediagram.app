@@ -8,7 +8,7 @@ import {
   type VoteLedger,
 } from '@livediagram/diagram';
 
-// The room's side of the collaboration ledger (spec/152 phase 3): each answer,
+// The room's side of the collaboration ledger (docs/specs/012-collaboration/collab-race-hardening.md phase 3): each answer,
 // idea, tick, comment and dot the room sequences is noted in DO storage, one
 // key per element (plus the tab's vote), and read back whole when the api
 // merges a save. What the entries hold, and how a save is merged with them,

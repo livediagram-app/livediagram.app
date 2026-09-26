@@ -1,4 +1,4 @@
-// The event-storming sticky grammar (spec/139): the note kinds of
+// The event-storming sticky grammar (docs/specs/021-event-storming/event-storming.md): the note kinds of
 // Brandolini's workshop notation, each with its canonical colour.
 // Colour IS the notation here — orange means "domain event" to anyone
 // who has stood in front of one of these boards — so the fills are
@@ -50,7 +50,7 @@ export type EventStormingNote = {
   // anyone learning the method. (It once chose a layer per stage; that cost
   // more than it paid, because layers paint as bands and two notes on
   // different stages could never be stacked against each other. See
-  // spec/139.)
+  // docs/specs/021-event-storming/event-storming.md.)
   stage: EventStormingStage;
   size: EventStormingNoteSize;
 };
@@ -132,7 +132,7 @@ export function eventStormingNote(kind: EventStormingNoteKind): EventStormingNot
 }
 
 // ---------------------------------------------------------------------
-// Workshop-stage views (spec/139)
+// Workshop-stage views (docs/specs/021-event-storming/event-storming.md)
 // ---------------------------------------------------------------------
 //
 // ONE board, ONE layer. The board used to ship a layer per workshop stage
@@ -148,7 +148,7 @@ export const ES_BOARD_LAYER_ID = 'layer:es:board';
 
 // Legacy stage-layer ids. Boards authored before the collapse still carry
 // them, and they keep working: identity accepts them, and they are ordinary
-// spec/74 layers the facilitator can merge or delete from the panel.
+// docs/specs/006-diagram/layers.md layers the facilitator can merge or delete from the panel.
 export const ES_BIG_PICTURE_LAYER_ID = 'layer:es:big-picture';
 export const ES_PROCESS_LAYER_ID = 'layer:es:process';
 export const ES_DESIGN_LAYER_ID = 'layer:es:design';
@@ -204,7 +204,7 @@ export function isEventStormingNote(el: {
   return eventStormingKindOf(el) !== null;
 }
 
-// Workshop notes are WRITTEN IN CAPITALS (spec/139). On a real wall that is
+// Workshop notes are WRITTEN IN CAPITALS (docs/specs/021-event-storming/event-storming.md). On a real wall that is
 // what a marker on paper produces: caps stay legible from across the room,
 // hold an even colour block, and stop a board reading as a mix of
 // sentence-case handwriting styles. It is a PRESENTATION rule — the typed
@@ -217,7 +217,7 @@ export function eventStormingLabelText(
   return isEventStormingNote(el) ? label.toUpperCase() : label;
 }
 
-// The notation's face (spec/28 font id). A workshop note is written with a
+// The notation's face (docs/specs/004-interface-design/fonts.md font id). A workshop note is written with a
 // marker, and Permanent Marker is the catalogue's marker: chunky, slightly
 // irregular, and at home in the capitals the notes already wear. Like the
 // fill and the caps it is GRAMMAR, not styling — so it is resolved from the
@@ -235,7 +235,7 @@ export function eventStormingNoteFont(el: {
   return isEventStormingNote(el) ? ES_NOTE_FONT : null;
 }
 
-// A workshop note's hand-placement (spec/139). Calibrated by eye: ±1.1°
+// A workshop note's hand-placement (docs/specs/021-event-storming/event-storming.md). Calibrated by eye: ±1.1°
 // reads hand-placed, ±2.5° reads messy. One decimal keeps the stored JSON
 // tidy. Lives here rather than in the editor because every surface that
 // mints a note needs the same feel — dropping one, and COPYING one: a
@@ -252,7 +252,7 @@ export function eventStormingTilt(): number {
 // re-opened diagrams) and never for anything else.
 //
 // ANY of them is enough — the board's own layer, or one of the legacy stage
-// layers a pre-collapse board still carries. Layers are ordinary spec/74
+// layers a pre-collapse board still carries. Layers are ordinary docs/specs/006-diagram/layers.md
 // data: a facilitator renames them, adds their own, and deletes ones they
 // don't use, all legitimate. Requiring a particular set meant deleting one
 // silently stripped the board of its palette and its note routing, with
@@ -277,7 +277,7 @@ export function isEventStormingTab(tab: { kind?: string; layers?: Layer[] } | un
   );
 }
 
-// Change a workshop note's KIND (spec/139). A verb, not styling: the kind IS
+// Change a workshop note's KIND (docs/specs/021-event-storming/event-storming.md). A verb, not styling: the kind IS
 // the notation, so changing it re-paints the paper, re-cuts the silhouette and
 // keeps the note where its author put it — centred on where it was, because a
 // wide policy becoming a square command must not slide sideways.

@@ -3,7 +3,7 @@ import { modeOf, otsu } from './histogram';
 import { BLOWN_OUT, hueOf, measure, wallLabOf, type Surface } from './surface';
 
 // Measuring the wall a photograph was taken of, so the paper on it can be told
-// apart from it (spec/139 Phase 8).
+// apart from it (docs/specs/021-event-storming/event-storming.md Phase 8).
 //
 // Twice over, because a photograph of a wall is rarely lit evenly:
 //

@@ -7,7 +7,7 @@ import { IconPrims } from '@/components/primitives/icon-glyph';
 import { TechIconArt } from '@/components/primitives/tech-icon-glyph';
 import { tileById, type PaletteTileDef } from './palette-tile-defs';
 
-// Dynamic favourite tiles (spec/78): individual Icons / Technology catalogue
+// Dynamic favourite tiles (docs/specs/010-palette/palette-favourites.md): individual Icons / Technology catalogue
 // entries promoted to palette tiles. Unlike the fixed creation tiles these
 // aren't listed in PALETTE_TILES — the catalogues are open-ended and load
 // async (lib/icon-registry) — so a favourited icon persists as a PREFIXED id

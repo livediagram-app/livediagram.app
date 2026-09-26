@@ -1,4 +1,4 @@
-// Follow-me viewport (spec/131): pin your pan / zoom / tab to a peer's until
+// Follow-me viewport (docs/specs/012-collaboration/follow-me-viewport.md): pin your pan / zoom / tab to a peer's until
 // you take the canvas back.
 //
 // "Look at this" is the most common sentence spoken over a shared board, and
@@ -56,7 +56,7 @@ export function useFollowMe({
     // Seeded so the first frame we apply isn't mistaken for a user gesture.
     appliedRef.current = null;
     setFollowingId(participantId);
-    // spec/22: the other "look at this" tools (laser, spotlight, avatar mode)
+    // docs/specs/017-telemetry/telemetry.md: the other "look at this" tools (laser, spotlight, avatar mode)
     // all report as Canvas·Used, so following ranks beside them on the
     // dashboard's Selection-modes list instead of being the one pointing tool
     // nobody can see the usage of. Entering the mode only, never per frame —

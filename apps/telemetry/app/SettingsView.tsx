@@ -8,7 +8,7 @@ import { isSettingsCategory } from './opened-types';
 import { RankCard, rank } from './RankCard';
 import { rankTrend, windowLabel } from './windows';
 
-// Settings view (spec/22): how often each setting in the editor's Settings
+// Settings view (docs/specs/017-telemetry/telemetry.md): how often each setting in the editor's Settings
 // dialog gets changed, one stack per Settings category, one chart per row.
 // Below them, which categories people open inside the dialog
 // (`UI·Opened·Settings<Category>`), the signal for whether the dialog's

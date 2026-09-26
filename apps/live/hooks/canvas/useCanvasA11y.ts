@@ -1,4 +1,4 @@
-// Canvas accessibility baseline (spec/71). Two concerns, both scoped
+// Canvas accessibility baseline (docs/specs/004-interface-design/canvas-accessibility.md). Two concerns, both scoped
 // to the active tab:
 //
 // - **Tab traversal**: while the canvas surface itself is focused,
@@ -48,12 +48,12 @@ type CanvasA11yDeps = {
   editingId: string | null;
   selectElement: (id: string) => void;
   lockedByOther: (id: string) => boolean;
-  // Elements on a hidden or locked layer (spec/74): skipped by the
+  // Elements on a hidden or locked layer (docs/specs/006-diagram/layers.md): skipped by the
   // traversal exactly like remotely-locked ones.
   layerInertIds: Set<string>;
   scrollIntoView: (x: number, y: number, w: number, h: number) => void;
   // Elements that claim Tab for themselves. A selected mind node grows a
-  // child on Tab (spec/118), and both handlers listen on window: this one
+  // child on Tab (docs/specs/009-elements/mind-node.md), and both handlers listen on window: this one
   // is mounted first, so without the check it consumed every Tab and the
   // selection walked the tab instead of the branch growing.
   ownsTabKey: (id: string) => boolean;

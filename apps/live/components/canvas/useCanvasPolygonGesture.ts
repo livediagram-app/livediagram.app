@@ -10,7 +10,7 @@ const EMPTY_ID_SET: Set<string> = new Set();
 // at zoom 1) but slightly tighter since polygon clicks are deliberate.
 export const POLYGON_CLOSE_PX = 12;
 
-// The polygon tool's click-to-place gesture (spec/84), sibling to
+// The polygon tool's click-to-place gesture (docs/specs/008-canvas/polygon-tool.md), sibling to
 // useCanvasDrawGesture. Owns the placed-vertex accumulator, the live
 // rubber-band cursor, and the finish keys (Enter / Backspace /
 // Escape-with-vertices). Canvas composes `beginPolygonPoint` in front
@@ -94,7 +94,7 @@ export function useCanvasPolygonGesture({
     return true;
   };
 
-  // Double-click finishes the open polyline (spec/84). Returns true
+  // Double-click finishes the open polyline (docs/specs/008-canvas/polygon-tool.md). Returns true
   // when consumed so Canvas skips the add-text double-click path.
   const handlePolygonDoubleClick = (): boolean => {
     if (!polygonArmed) return false;

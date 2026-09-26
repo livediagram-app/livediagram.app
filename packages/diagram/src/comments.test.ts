@@ -38,7 +38,7 @@ describe('activeCommentCount', () => {
   });
 });
 
-describe('graftLiveTabState session fields (spec/39)', () => {
+describe('graftLiveTabState session fields (docs/specs/012-collaboration/session-tools.md)', () => {
   const timer = { mode: 'stopwatch', running: true, anchorAt: 123 } as const;
   const vote = { active: true, revealed: false, votesPerPerson: 3, votes: {} } as const;
 
@@ -73,7 +73,7 @@ describe('graftLiveTabState session fields (spec/39)', () => {
   });
 });
 
-describe('graftLiveTabState collaborative fields (spec/152)', () => {
+describe('graftLiveTabState collaborative fields (docs/specs/012-collaboration/collab-race-hardening.md)', () => {
   // A snapshot taken before anybody answered: undoing some earlier edit
   // restores it, and must not take the room's answers with it.
   it('keeps answers, ideas, the roll and the picker result through an undo', () => {

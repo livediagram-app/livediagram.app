@@ -19,7 +19,7 @@ import { getSessionSharePassword, wsUrl } from './core';
 export type RoomHandlers = {
   onPresence: (participants: ParticipantPresence[]) => void;
   onOp: (from: string, op: RoomOp) => void;
-  // Who holds the facilitator baton (spec/149), and the token when it is
+  // Who holds the facilitator baton (docs/specs/012-collaboration/facilitator.md), and the token when it is
   // ours. Arrives on every change and once on connect with reason 'state'.
   onFacilitator?: (msg: {
     holder: string | null;
@@ -27,12 +27,12 @@ export type RoomHandlers = {
     reason: FacilitatorReason;
     token?: string;
   }) => void;
-  // The facilitator has freed an element we were holding (spec/07 lock). Sent
+  // The facilitator has freed an element we were holding (docs/specs/007-editor/live-app.md lock). Sent
   // to this socket alone, so being called IS the addressing — there is no id to
-  // check against our own, which we do not know (spec/61 §6).
+  // check against our own, which we do not know (docs/specs/015-api/public-api-and-tokens.md §6).
   onSelectionReleased?: (msg: { elementId: string; by: string }) => void;
   onClose?: () => void;
-  // The room could not bridge our reconnect gap from its op log (spec/75,
+  // The room could not bridge our reconnect gap from its op log (docs/specs/012-collaboration/realtime-conflict-resolution.md,
   // Level 1): we're too far behind, or it restarted. The caller re-hydrates
   // from D1 (the same recovery the error boundary uses — a full reload).
   onResync?: () => void;
@@ -42,7 +42,7 @@ export type RoomHandlers = {
 type RoomAuthOptions = {
   shareCode?: string | null;
   ownerId?: string | null;
-  // One-time room ticket (spec/11), minted over authenticated REST via
+  // One-time room ticket (docs/specs/015-api/api.md), minted over authenticated REST via
   // apiCreateRoomTicket. The only leg that can admit a team member —
   // the worker doesn't trust a bare `o` for team membership.
   ticket?: string | null;
@@ -53,14 +53,14 @@ type RoomAuthOptions = {
 // api worker reads them, resolves role, and forwards an X-Verified-Role
 // header to the Durable Object before the upgrade reaches it. Empty /
 // missing values are stripped so the URL stays clean.
-//   - `t` one-time room ticket (spec/11) — proof the connector passed
+//   - `t` one-time room ticket (docs/specs/015-api/api.md) — proof the connector passed
 //     the authenticated REST access gates moments ago; required for
 //     team diagrams, where a bare owner id is not trusted.
 //   - `s` share code, `o` owner id (for diagrams the visitor owns)
-//   - `p` share password (spec/24) for a protected diagram's room.
+//   - `p` share password (docs/specs/013-workspace/share-password.md) for a protected diagram's room.
 // (A `g` guest-signature param used to ride along for presence-identity
 // binding; the DO switched to server-random ephemeral presence ids —
-// spec/61 §6 — and the server-side read was removed, so the client
+// docs/specs/015-api/public-api-and-tokens.md §6 — and the server-side read was removed, so the client
 // stopped sending it.)
 // Pure (sharePassword passed in) so the param mapping is unit-tested.
 export function roomQueryString(options: RoomAuthOptions, sharePassword: string | null): string {
@@ -78,7 +78,7 @@ export function roomQueryString(options: RoomAuthOptions, sharePassword: string 
 // retrying rather than hammering the worker forever.
 const MAX_RECONNECT_ATTEMPTS = 6;
 
-// Ops held while the socket is down (spec/152). A change made in that window
+// Ops held while the socket is down (docs/specs/012-collaboration/collab-race-hardening.md). A change made in that window
 // used to be dropped on the floor: the save still carried it to D1, but no
 // peer saw it until they reloaded, and a dot or an answer never reached the
 // room's ledger at all. Only what changes the diagram or a poll is held: a
@@ -96,16 +96,16 @@ const RECONNECT_MAX_MS = 15_000;
 
 export function connectRoom(
   diagramId: string,
-  // `key` is the document-write id (spec/122), relayed to peers verbatim so
+  // `key` is the document-write id (docs/specs/012-collaboration/participant-responses.md), relayed to peers verbatim so
   // an answer saved on the diagram can be joined back to the person in the
   // roster. The room OVERRIDES `id` with its own per-socket presence id
-  // (spec/61 §6), which is why the two are separate fields.
+  // (docs/specs/015-api/public-api-and-tokens.md §6), which is why the two are separate fields.
   participant: { id: string; key?: string; name: string; color: string },
   handlers: RoomHandlers,
   options: RoomAuthOptions = {},
   // Read at every (re)connect rather than captured once: the baton can be
   // taken while this socket is open, and the token we present has to be the
-  // one we hold NOW (spec/149).
+  // one we hold NOW (docs/specs/012-collaboration/facilitator.md).
   readFacilitatorToken?: () => string | null,
 ): {
   send: (msg: RoomOutgoing) => void;
@@ -124,7 +124,7 @@ export function connectRoom(
   let attempts = 0;
   let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 
-  // Ordering cursor for reconnect catch-up (spec/75, Level 1): the last
+  // Ordering cursor for reconnect catch-up (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1): the last
   // epoch + seq we applied off an ordered op. On reopen we hand these to the
   // room, which replays what we missed or tells us to re-hydrate.
   let lastEpoch: string | null = null;
@@ -143,7 +143,7 @@ export function connectRoom(
     ws = new WebSocket(url);
     ws.addEventListener('open', () => {
       attempts = 0;
-      // The baton coming home (spec/149): on a reconnect this is what tells
+      // The baton coming home (docs/specs/012-collaboration/facilitator.md): on a reconnect this is what tells
       // the room we are the same facilitator it granted before the refresh.
       const facilitatorToken = readFacilitatorToken?.();
       ws.send(
@@ -210,14 +210,14 @@ export function connectRoom(
     send: (raw) => {
       // No comment author id leaves this browser: it is its author's owner
       // id, a guest's credential, and the room hands every op to every socket
-      // (spec/152). One choke point for every send path.
+      // (docs/specs/012-collaboration/collab-race-hardening.md). One choke point for every send path.
       const msg: RoomOutgoing =
         raw.kind === 'op' ? { ...raw, op: opForTheWire(raw.op) as RoomOp } : raw;
       if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(msg));
       else if (!closed && isOutboxOp(msg) && outbox.length < OUTBOX_MAX) outbox.push(msg);
     },
     // Where this client stands in the room's ordered stream, for a save to
-    // tell the api what it has seen (spec/152 phase 3). Null while the socket
+    // tell the api what it has seen (docs/specs/012-collaboration/collab-race-hardening.md phase 3). Null while the socket
     // is down: a save made then is not merged with the room's ledger, because
     // what the client changed offline must not be overruled by the room.
     cursor: (): { epoch: string; seq: number } | null =>

@@ -1,4 +1,4 @@
-// Per-event-type glyphs for the Timeline (spec/138 §2).
+// Per-event-type glyphs for the Timeline (docs/specs/013-workspace/timeline.md §2).
 //
 // The shared package draws one icon per SOURCE type, which is enough
 // to tell a diagram bubble from a team one. That's the right default

@@ -1,6 +1,6 @@
 'use client';
 
-// API token state (spec/61), loaded once for a signed-in user so the Explorer
+// API token state (docs/specs/015-api/public-api-and-tokens.md), loaded once for a signed-in user so the Explorer
 // sidebar badge, the New-token header popover, and the list pane all read the
 // SAME source. `enabled` gates the fetch (off for guests / when Clerk is not
 // configured), mirroring useTeams. Tokens are Clerk-only, so `ownerId` here is
@@ -49,7 +49,7 @@ export function useTokens(ownerId: string | null, opts: { enabled: boolean }): T
       setError(null);
       try {
         const res = await apiCreateToken(ownerId, name.trim());
-        // Anonymous telemetry (spec/22): a token was minted by hand from the
+        // Anonymous telemetry (docs/specs/017-telemetry/telemetry.md): a token was minted by hand from the
         // Explorer. The MCP consent flow tracks its own 'MCP' source separately.
         track('Token', 'Created', 'Manual');
         load();
@@ -70,7 +70,7 @@ export function useTokens(ownerId: string | null, opts: { enabled: boolean }): T
       setError(null);
       try {
         await apiRevokeToken(ownerId, id);
-        track('Token', 'Removed'); // spec/22: a token was revoked
+        track('Token', 'Removed'); // docs/specs/017-telemetry/telemetry.md: a token was revoked
         load();
       } catch {
         setError('Could not revoke token.');

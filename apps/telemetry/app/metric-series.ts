@@ -1,7 +1,7 @@
 import type { TelemetryDaily, TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
 import type { ViewKey } from './view-keys';
 
-// The curated-metric model shared by every MetricGroups view (spec/22), plus
+// The curated-metric model shared by every MetricGroups view (docs/specs/017-telemetry/telemetry.md), plus
 // the pure maths that turn one into a window count and a 30-day series.
 //
 // Whether a metric going up is good news, bad news, or neither. Drives the
@@ -22,14 +22,14 @@ export type Metric = {
   type?: string | null; // specific type; ignored when allTypes
   allTypes?: boolean; // sum across every type of category·action
   // Sum across the types this picks (e.g. the page paths one app serves,
-  // spec/150). Takes precedence over `type` / `allTypes`.
+  // docs/specs/017-telemetry/page-view-telemetry.md). Takes precedence over `type` / `allTypes`.
   typeIn?: (type: string | null) => boolean;
   title: string;
   blurb?: string; // overrides eventExplanation (needed for aggregates)
   rising?: Rising;
 };
 
-// A chart stack (spec/22): one head card plotting its members together, which
+// A chart stack (docs/specs/017-telemetry/telemetry.md): one head card plotting its members together, which
 // fans out into the members' own cards. It only REFERENCES its members, so the
 // same Metric can sit in several stacks or stand alone elsewhere.
 export type MetricStack = {

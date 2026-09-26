@@ -12,7 +12,7 @@ import {
 import type { SettingsIllustrationId } from './settings-illustrations';
 
 // The Settings dialog as DATA: the categories, and per category the rows
-// (spec/20). The dialog used to spell every row out as JSX inside one
+// (docs/specs/007-editor/user-preferences.md). The dialog used to spell every row out as JSX inside one
 // accordion, which is why adding a setting meant adding another 20-line block
 // to a file that only ever grew: the thing the reader was then asked to
 // navigate.
@@ -20,12 +20,12 @@ import type { SettingsIllustrationId } from './settings-illustrations';
 // A row declares how to READ and WRITE itself rather than closing over the
 // dialog's state, so the list and the panes stay dumb: they render whatever
 // the catalogue says and hand back a new UserPreferences. That keeps the
-// preference plumbing (spec/20's readUserPreferences / writeUserPreferences
+// preference plumbing (docs/specs/007-editor/user-preferences.md's readUserPreferences / writeUserPreferences
 // round-trip) in exactly one place per setting.
 //
 // EVERY preference has a row here, and for most this is now the ONLY control:
 // the Palette / Layers / Activity / AI / Map gear popovers that used to carry
-// them are gone (spec/20). One setting, one place. The panels kept their
+// them are gone (docs/specs/007-editor/user-preferences.md). One setting, one place. The panels kept their
 // reset-position button, which was the only non-preference thing those
 // popovers held, and the Slide Deck popover stays because its contents are
 // deck state rather than user preferences.
@@ -33,7 +33,7 @@ import type { SettingsIllustrationId } from './settings-illustrations';
 // This is a flat catalogue, so it stays one file however long it gets.
 
 // What a row needs to know about the deployment / session to decide whether
-// it applies at all. Email rows need BOTH: Resend configured (spec/64), or
+// it applies at all. Email rows need BOTH: Resend configured (docs/specs/014-identity/transactional-email.md), or
 // nothing can send, AND a signed-in account, or there is no address to send
 // to. A guest flipping them would be writing preferences that can never
 // apply, so they are absent rather than dead.
@@ -84,7 +84,7 @@ export type SettingsChoiceRowSpec = RowBase & {
   kind: 'choice';
   // `desktopOnly` options are shown but can't be picked on a phone-sized
   // viewport, with a note saying so (the panel layouts: a phone is always
-  // docked, spec/148).
+  // docked, docs/specs/007-editor/toolbar-layout.md).
   options: { id: string; label: string; desktopOnly?: boolean }[];
   // `mobile` asks for the value a phone shows, which can differ when the
   // stored one is desktop only (Floating shows as Toolbar there).
@@ -108,11 +108,11 @@ export type SettingsSliderRowSpec = RowBase & {
 
 // Appearance is the one row that is NOT a UserPreference: it is device-local
 // (`livediagram:v2:ui-mode`), because a pre-hydration script has to apply it
-// before first paint to avoid a theme flash (spec/07). It therefore carries
+// before first paint to avoid a theme flash (docs/specs/007-editor/live-app.md). It therefore carries
 // no read/write here and is rendered against its own store.
 export type SettingsAppearanceRowSpec = RowBase & { kind: 'appearance' };
 
-// API tokens (spec/61): a read-only listing plus a link out to the Explorer's
+// API tokens (docs/specs/015-api/public-api-and-tokens.md): a read-only listing plus a link out to the Explorer's
 // tokens page. Not a preference at all: it reads account state from the api
 //, so like the appearance row it carries no read/write pair.
 export type SettingsTokensRowSpec = RowBase & { kind: 'tokens' };
@@ -124,7 +124,7 @@ export type SettingsTokensRowSpec = RowBase & { kind: 'tokens' };
 export type SettingsNoteRowSpec = RowBase & { kind: 'note'; note: string };
 
 // Keyboard shortcuts, like appearance, are a PER-DEVICE localStorage toggle
-// rather than a synced preference (spec/07): whether you want Cmd-Z bound
+// rather than a synced preference (docs/specs/007-editor/live-app.md): whether you want Cmd-Z bound
 // depends on the keyboard in front of you, not on the account. So it too
 // carries no read/write pair and is rendered against its own store.
 export type SettingsShortcutsRowSpec = RowBase & { kind: 'shortcuts' };
@@ -135,7 +135,7 @@ export type SettingsShortcutsRowSpec = RowBase & { kind: 'shortcuts' };
 export type SettingsShortcutListRowSpec = RowBase & { kind: 'shortcutList' };
 
 // Account identity, read from Clerk, and account deletion. Neither is a
-// preference: they moved here from /explorer/profile (spec/65) when that page
+// preference: they moved here from /explorer/profile (docs/specs/014-identity/profile-and-email-notifications.md) when that page
 // was retired, because everything else it held was already in this dialog.
 export type SettingsIdentityRowSpec = RowBase & { kind: 'identity' };
 export type SettingsDeleteAccountRowSpec = RowBase & { kind: 'deleteAccount' };
@@ -155,7 +155,7 @@ export type SettingsRowSpec =
 export type SettingsCategorySpec = {
   id: SettingsCategoryId;
   label: string;
-  // Only rendered when the api worker advertises AI capability (spec/25).
+  // Only rendered when the api worker advertises AI capability (docs/specs/007-editor/ai-assistance.md).
   requiresAi?: boolean;
   rows: SettingsRowSpec[];
 };
@@ -198,7 +198,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         description:
           'Re-pins an arrow to the nearest face of the shape it connects as that shape moves, so a connection follows its endpoints instead of drifting.',
         helpArticle: 'autoAttachArrows',
-        // Opt-in (spec/20), and the editor gates the rebind on this same
+        // Opt-in (docs/specs/007-editor/user-preferences.md), and the editor gates the rebind on this same
         // helper. Re-deriving it as `!== false` here showed the switch ON for
         // a fresh profile while the feature was off, so the first click
         // "turned it off" and it never ran.
@@ -224,7 +224,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         illustration: 'appearance',
       },
       {
-        // Three layouts, one choice (spec/148). Replaced the Minimal Panel
+        // Three layouts, one choice (docs/specs/007-editor/toolbar-layout.md). Replaced the Minimal Panel
         // Layout toggle when the Toolbar layout arrived; the key is new so
         // the telemetry token is too, and the old On/Off tokens simply stop.
         kind: 'choice',
@@ -649,7 +649,7 @@ export function visibleCategories(
 }
 
 // A choice row by key, for a surface outside Settings that offers the same
-// choice (the welcome tour's layout picker, spec/79) and must read, write
+// choice (the welcome tour's layout picker, docs/specs/007-editor/editor-tour.md) and must read, write
 // and report it exactly as the row does.
 export function choiceRow(key: string): SettingsChoiceRowSpec {
   for (const c of SETTINGS_CATEGORIES) {
@@ -660,7 +660,7 @@ export function choiceRow(key: string): SettingsChoiceRowSpec {
 }
 
 // A choice row's telemetry type carries the option picked, as a toggle's
-// carries its new state (spec/22): 'PanelLayout' + 'toolbar' →
+// carries its new state (docs/specs/017-telemetry/telemetry.md): 'PanelLayout' + 'toolbar' →
 // 'PanelLayoutToolbar', so the dashboard shows which way people moved, not
 // just that they touched the setting. Option ids are catalogue constants,
 // never user content.

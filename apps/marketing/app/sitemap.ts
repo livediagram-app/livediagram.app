@@ -10,7 +10,7 @@ import { SITE_URL } from '@livediagram/ui';
 export const dynamic = 'force-static';
 
 // Next.js convention: app/sitemap.ts → /sitemap.xml at build time.
-// See spec/16-marketing-site.md "SEO and metadata".
+// See docs/specs/019-marketing/marketing-site.md "SEO and metadata".
 //
 // Lists the indexable pages on the marketing origin, plus the two
 // public operational surfaces (/telemetry, /status) that hang off the
@@ -31,7 +31,7 @@ export const dynamic = 'force-static';
 // ALTERNATIVES_LAST_UPDATED lives alongside the ALTERNATIVES array
 // in lib/alternatives.ts so the sitemap, the per-competitor pages'
 // article:modified_time OG meta, and the data revision all share
-// one constant. See spec/21 "Metadata".
+// one constant. See docs/specs/019-marketing/comparison-pages.md "Metadata".
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
@@ -52,7 +52,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'monthly',
       priority: 0.6,
     },
-    // One page per feature category (spec/16 "Feature category pages").
+    // One page per feature category (docs/specs/019-marketing/marketing-site.md "Feature category pages").
     // Derived from LANDING_SECTION_IDS so adding a section to LANDING_SECTIONS
     // sitemaps its page automatically. Build-time `now`: the feature copy
     // moves with product releases, like the landing page. (There is no
@@ -66,7 +66,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // /terms and /privacy are intentionally omitted: both legal pages moved
     // into the help centre (its own sitemap lists the canonical articles), and
     // each marketing route is now a noindex redirect there.
-    // Operational surfaces reachable from the footer (spec/16). Lower
+    // Operational surfaces reachable from the footer (docs/specs/019-marketing/marketing-site.md). Lower
     // priority than the marketing content above: they're transparency
     // pages, not landing destinations, but they're public + indexable
     // (each sets robots index:true and a self-canonical), so listing
@@ -86,7 +86,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'weekly',
       priority: 0.4,
     },
-    // Comparison / "alternative" pages (spec/21). Derived from the same
+    // Comparison / "alternative" pages (docs/specs/019-marketing/comparison-pages.md). Derived from the same
     // ALTERNATIVES list the route + metadata use, so adding a competitor
     // updates the sitemap automatically.
     {

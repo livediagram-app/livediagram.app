@@ -7,7 +7,7 @@ import { BY_ACTION, EXACT } from './event-explanations';
 import * as CATALOGUE from './metric-catalogue';
 
 // Every metric on the dashboard carries a sentence saying what someone did
-// (spec/22). These guard that no event the code can send falls through to the
+// (docs/specs/017-telemetry/telemetry.md). These guard that no event the code can send falls through to the
 // last resort, and that the copy stays readable to someone who has never seen
 // the code.
 

@@ -1,4 +1,4 @@
-// Landing funnel (spec/153): the closed vocabulary of calls to action that
+// Landing funnel (docs/specs/019-marketing/landing-funnel.md): the closed vocabulary of calls to action that
 // link into the editor, and the helpers every end of the funnel shares. A
 // CTA's href carries `via=<Surface>.<Slot>`; the editor's /new page reads it
 // back through `ctaSourceFromSearch` and reports `Cta·Opened` / `Cta·Created`
@@ -67,7 +67,7 @@ export function ctaSourceFromSearch(search: string): CtaSource | null {
 }
 
 /**
- * Which surface a normalised page-view path (spec/150) belongs to, or null for
+ * Which surface a normalised page-view path (docs/specs/017-telemetry/page-view-telemetry.md) belongs to, or null for
  * a page that isn't a CTA surface (the editor, the Explorer, ...). The
  * dashboard reads the funnel's first step, page views, through this.
  */

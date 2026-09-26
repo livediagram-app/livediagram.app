@@ -1,4 +1,4 @@
-// Screen-reader announcement store (spec/71). A module-level pub/sub so
+// Screen-reader announcement store (docs/specs/004-interface-design/canvas-accessibility.md). A module-level pub/sub so
 // any editor action can announce without threading a callback through
 // the hook tree: `announce('Deleted a Square')` here, and the canvas's
 // visually-hidden live region (CanvasLiveRegion) re-renders with the

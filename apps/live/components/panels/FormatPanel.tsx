@@ -1,6 +1,6 @@
 'use client';
 
-// The Format Panel (spec/117): what the painter copies, and whether the brush
+// The Format Panel (docs/specs/008-canvas/format-panel.md): what the painter copies, and whether the brush
 // stays loaded after a paint. The fifth mode panel, on the same terms as the
 // others.
 //

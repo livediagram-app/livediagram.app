@@ -16,7 +16,7 @@ import './globals.css';
 // user data, an auth flow that's worthless to crawlers, or the
 // welcome flow that needs runtime identity to mean anything.
 // `noindex, nofollow` at the root layout cascades through every
-// nested page in the static export. See spec/07 "SEO and indexing".
+// nested page in the static export. See docs/specs/007-editor/live-app.md "SEO and indexing".
 export const metadata: Metadata = {
   title: 'livediagram',
   description: 'Build diagrams and mindmaps. Multiplayer canvas.',
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   // editor PWA showed no icon. livediagram.app is one origin (the router
   // stitches the apps by path), and the marketing worker already serves the
   // origin's web manifest at /manifest.webmanifest and the opaque iOS tile at
-  // /apple-icon (both carrying the brand icon, see spec/16). Reference those
+  // /apple-icon (both carrying the brand icon, see docs/specs/019-marketing/marketing-site.md). Reference those
   // absolute paths so installing from the editor picks up the same icon + name
   // on Android (manifest) and iOS (apple-touch-icon). They are literal hrefs,
   // so Next leaves them un-prefixed by the `/live` assetPrefix and the router
@@ -56,7 +56,7 @@ export const metadata: Metadata = {
 // dense as designed. Accessibility tradeoff: users who relied on
 // browser zoom to read small UI can no longer use it on the editor;
 // the canvas zoom + the editor's dark-mode toggle are the available
-// readability levers. See spec/07 "Mobile / responsive".
+// readability levers. See docs/specs/007-editor/live-app.md "Mobile / responsive".
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
@@ -65,12 +65,12 @@ export const viewport: Viewport = {
 };
 
 // ClerkProvider wraps everything so `useAuth` / `useSignIn` / `useSignUp`
-// work in every page — including the editor. Per spec/04 this is NOT a
+// work in every page — including the editor. Per docs/specs/014-identity/auth-and-guest-access.md this is NOT a
 // route gate: the editor stays open to guests forever. Auth is purely
 // additive (signed-in users get per-account persistence; guests keep
 // the localStorage participant id).
 //
-// The existing app/not-found.tsx → EditorPage mechanism (spec/14, fixes
+// The existing app/not-found.tsx → EditorPage mechanism (docs/specs/007-editor/new-diagram-route.md, fixes
 // the static-export dynamic-segment 404) is unaffected by the provider
 // — ClerkProvider doesn't touch the route tree.
 export default function RootLayout({ children }: { children: ReactNode }) {
@@ -82,7 +82,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     // doesn't cascade to children), so real mismatches elsewhere still warn.
     <html lang="en-GB" suppressHydrationWarning>
       <head>
-        {/* Text fonts (spec/28). One stylesheet defines every option's
+        {/* Text fonts (docs/specs/004-interface-design/fonts.md). One stylesheet defines every option's
             @font-face; browsers only fetch the families actually applied,
             and `display=swap` keeps text visible in the fallback stack
             while a face loads — so the editor still works if these are

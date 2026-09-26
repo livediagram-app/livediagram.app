@@ -14,7 +14,7 @@ import { usePerTabLoad } from './usePerTabLoad';
 // render and sat in the effect's deps, and a failure drops the tab from the
 // loaded-set, so each render started another fetch. The editor re-renders on
 // a 30s presence tick, so one tab left on its error overlay refetched (and
-// reported `Error.Api.Http403.LoadTab`) around the clock (spec/22, spec/13).
+// reported `Error.Api.Http403.LoadTab`) around the clock (docs/specs/017-telemetry/telemetry.md, docs/specs/006-diagram/per-tab-storage.md).
 
 const flush = () => act(async () => {});
 

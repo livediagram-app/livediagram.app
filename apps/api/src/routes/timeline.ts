@@ -1,9 +1,9 @@
-// /api/timeline — the Explorer's landing feed (spec/138).
+// /api/timeline — the Explorer's landing feed (docs/specs/013-workspace/timeline.md).
 //
 // GET    /api/timeline             -> { items, nextCursor?, lastSeenAt? }
 // GET    /api/timeline/unread      -> { count }
 // POST   /api/timeline/refresh     -> { lastSeenAt }
-// DELETE /api/timeline/events/:id      -> 204 (spec/138 §2.9)
+// DELETE /api/timeline/events/:id      -> 204 (docs/specs/013-workspace/timeline.md §2.9)
 // POST   /api/timeline/events/dismiss  -> { dismissed } (a whole stack)
 //
 // Nothing user-AUTHORED lives on this feed: there are no manual entries
@@ -11,10 +11,10 @@
 // write is the dismissal, which takes a card (or a stack of them) off
 // the caller's own feed and nobody else's.
 //
-// Hybrid identity like the rest of the api (spec/04): the Clerk userId
+// Hybrid identity like the rest of the api (docs/specs/014-identity/auth-and-guest-access.md): the Clerk userId
 // when signed in, X-Owner-Id otherwise. Guests get a Timeline too — a
 // thinner one, since team and token events never reach them — and it
-// migrates to their account on sign-up (spec/138 §9).
+// migrates to their account on sign-up (docs/specs/013-workspace/timeline.md §9).
 
 import {
   TIMELINE_PAGE_MAX,
@@ -89,7 +89,7 @@ export async function handleTimeline(ctx: RouteContext): Promise<Response> {
       ctx.waitUntil?.(backfillUserScope(env, ownerId).catch(() => {}));
     }
 
-    // The unread watermark (spec/138 §2.5). The response carries the
+    // The unread watermark (docs/specs/013-workspace/timeline.md §2.5). The response carries the
     // value from BEFORE this read, so the client can mark what was new
     // to the reader on this visit; then it moves forward.
     //
@@ -143,7 +143,7 @@ export async function handleTimeline(ctx: RouteContext): Promise<Response> {
     return json({ lastSeenAt: now });
   }
 
-  // Per-entry dismissal (spec/138 §2.9). Always against the caller's
+  // Per-entry dismissal (docs/specs/013-workspace/timeline.md §2.9). Always against the caller's
   // OWN user scope: a card is removed from "my timeline", never from a
   // team's shared feed, so there is no scope parameter to authorise —
   // the identity that resolved the owner is the whole gate. 404 when
@@ -160,7 +160,7 @@ export async function handleTimeline(ctx: RouteContext): Promise<Response> {
     return found ? noContent() : notFound();
   }
 
-  // A whole stack at once (spec/138 §2.9). A POST with an id list
+  // A whole stack at once (docs/specs/013-workspace/timeline.md §2.9). A POST with an id list
   // rather than N DELETEs: a collapsed run can hold dozens of cards, and
   // it's one action to the reader. Ids the feed never held are ignored
   // rather than refused — the caller is describing a stack it can see,
@@ -219,7 +219,7 @@ async function canReadScope(
   }
   if (scope.scopeType === 'team') {
     // Joined members only — an `invited` row grants no access to the
-    // team's content (spec/32), and its feed is content. Teams are
+    // team's content (docs/specs/013-workspace/teams.md), and its feed is content. Teams are
     // Clerk-only, so a guest never passes this.
     if (!ctx.verifiedUserId) return false;
     const membership = await getMembership(ctx.env, scope.scopeId, ctx.verifiedUserId);

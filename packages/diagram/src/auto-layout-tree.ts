@@ -1,4 +1,4 @@
-// Tree layout style (spec/47 "Layout styles"): a tidy org-chart. Top-to-
+// Tree layout style (docs/specs/008-canvas/layout-cleanup.md "Layout styles"): a tidy org-chart. Top-to-
 // bottom, every parent centred over its own children, the property the
 // layered flow layout can't guarantee (it centres each rank against the
 // widest rank, so a parent can drift off its own reports).

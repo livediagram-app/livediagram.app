@@ -1,6 +1,6 @@
 'use client';
 
-// MCP OAuth consent screen (spec/62 §3). The MCP authorize endpoint redirects
+// MCP OAuth consent screen (docs/specs/015-api/mcp-server.md §3). The MCP authorize endpoint redirects
 // the signed-in user here with a `session` (and a display-only `client` name +
 // `to` redirect host). On approve we mint an lvd_ token via the api
 // (Clerk-authed) and hand it to the MCP's /oauth/complete bound to a one-time
@@ -67,7 +67,7 @@ function Consent() {
   const session = params.get('session');
   const { authLoaded, isSignedIn, clerkUserId } = useClerkApiBootstrap();
   const [status, setStatus] = useState<'idle' | 'connecting' | 'error' | 'cancelled'>('idle');
-  // Read-only opt-in (spec/62 §4.11): grant the tool view-only access — it can
+  // Read-only opt-in (docs/specs/015-api/mcp-server.md §4.11): grant the tool view-only access — it can
   // find and read diagrams but not create / edit / delete / share.
   const [readOnly, setReadOnly] = useState(false);
   // The SERVER's account of this authorize request. Deliberately not the
@@ -206,7 +206,7 @@ function Consent() {
         body: JSON.stringify({ session, token, expiresAt }),
       });
       if (!res.ok) throw new Error('complete failed');
-      // Anonymous telemetry (spec/22): an AI tool was connected via MCP, which
+      // Anonymous telemetry (docs/specs/017-telemetry/telemetry.md): an AI tool was connected via MCP, which
       // mints a token. `type` is the fixed source, never the client name.
       track('Token', 'Created', 'MCP');
       const { redirectTo } = (await res.json()) as { redirectTo: string };

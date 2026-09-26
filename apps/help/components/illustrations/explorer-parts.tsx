@@ -1,4 +1,4 @@
-// The Explorer illustrations' own building blocks (spec/55): a sidebar row and
+// The Explorer illustrations' own building blocks (docs/specs/018-help/help-app.md): a sidebar row and
 // its glyph, a diagram card and its thumbnail, a list row, and the assembled
 // sidebar the wider scenes drop in whole.
 //

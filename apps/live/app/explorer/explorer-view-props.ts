@@ -26,7 +26,7 @@ export type FolderActions = (f: Folder, anchor: HTMLElement | null) => FolderAct
 export type ExplorerViewProps = {
   folders: Folder[];
   diagrams: PaneDiagram[];
-  // Viewer identity, threaded to each row's thumbnail fetch (spec/67).
+  // Viewer identity, threaded to each row's thumbnail fetch (docs/specs/006-diagram/diagram-snapshots.md).
   // Null while a guest id is still resolving.
   ownerId: string | null;
   // Adds the desktop Owner column (Recent: "You" vs the team name).
@@ -35,16 +35,16 @@ export type ExplorerViewProps = {
   // row renders at the very top so the root has the same "folder row per
   // child" feel as any non-root folder. Always shown there now (even
   // empty, badge hidden at zero) so Personal Space isn't bare before anything
-  // is filed; Generated renders next to it the same way (spec/15).
+  // is filed; Generated renders next to it the same way (docs/specs/013-workspace/folders.md).
   showUnsortedRow: boolean;
   unsortedCount: number;
   onOpenUnsorted: () => void;
   // The Generated synthetic folder row, shown on the Personal Space (/all) list
-  // beside Unsorted (spec/15). Optional: defaults to hidden.
+  // beside Unsorted (docs/specs/013-workspace/folders.md). Optional: defaults to hidden.
   showGeneratedRow?: boolean;
   generatedCount?: number;
   onOpenGenerated?: () => void;
-  // The Offline synthetic folder row (spec/76): diagrams saved only in this
+  // The Offline synthetic folder row (docs/specs/006-diagram/offline-mode.md): diagrams saved only in this
   // browser. Shown on the Personal Space (/all) list beside Generated.
   showOfflineRow?: boolean;
   offlineCount?: number;
@@ -66,23 +66,23 @@ export type ExplorerViewProps = {
   onDuplicateDiagram: (id: string) => void;
   onDeleteDiagram: (id: string) => void;
   onMoveDiagram: (id: string, anchor: HTMLElement | null) => void;
-  // Shared-row action (spec/35), used by Recent's "shared with me" rows.
+  // Shared-row action (docs/specs/013-workspace/team-shared-diagrams.md), used by Recent's "shared with me" rows.
   onDismissShared?: (id: string) => void;
-  // Hide / show in Recent (spec/93).
+  // Hide / show in Recent (docs/specs/013-workspace/hide-from-recent.md).
   recentExcludedIds?: string[];
-  // Per-user stars (spec/95).
+  // Per-user stars (docs/specs/013-workspace/favourites.md).
   favouriteIds?: Set<string>;
   onToggleFavourite?: (id: string) => void;
-  // Resolves a row's folder chip (spec/94). Null / omitted = no chip,
+  // Resolves a row's folder chip (docs/specs/013-workspace/recent-folder-chip.md). Null / omitted = no chip,
   // which is every pane except Recent.
   folderChipFor?: (d: PaneDiagram) => { label: string; onOpen: () => void } | null;
   onToggleRecentExclusion?: (id: string) => void;
-  // Opens the diagram's own Timeline (spec/138 §3.4).
+  // Opens the diagram's own Timeline (docs/specs/013-workspace/timeline.md §3.4).
   onShowHistory?: (id: string) => void;
   childrenCount: (id: string) => number;
   diagramsCount: (id: string) => number;
   // What a folder directly contains, for its card's content preview
-  // (spec/99). Omitted = no preview, just the folder glyph.
+  // (docs/specs/013-workspace/folder-content-previews.md). Omitted = no preview, just the folder glyph.
   //
   // Card view only: list rows keep their count badge instead, since four
   // snapshots don't fit a row. ListView accepts and ignores it so
@@ -93,11 +93,11 @@ export type ExplorerViewProps = {
 // CardView's two extras. Both are genuinely card-shaped, so they stay off the
 // shared type rather than being declared-and-ignored by the list.
 export type CardViewProps = ExplorerViewProps & {
-  // Team library cards (spec/35) hide the visibility badge: every diagram
+  // Team library cards (docs/specs/013-workspace/team-shared-diagrams.md) hide the visibility badge: every diagram
   // in that grid is a team diagram, so a per-card "Team"/"Private" badge is
   // noise — its list view omits it too. Defaults on for the Explorer.
   showVisibilityBadge?: boolean;
-  // Where the diagram lives (spec/94). Recent only.
+  // Where the diagram lives (docs/specs/013-workspace/recent-folder-chip.md). Recent only.
   folderChip?: { label: string; onOpen: () => void } | null;
 };
 
@@ -117,7 +117,7 @@ export type CardViewProps = ExplorerViewProps & {
  */
 export type DiagramEntryProps = {
   diagram: PaneDiagram;
-  // Viewer identity for the thumbnail fetch (spec/67). Null while a guest id
+  // Viewer identity for the thumbnail fetch (docs/specs/006-diagram/diagram-snapshots.md). Null while a guest id
   // is still resolving; the thumbnail holds its placeholder.
   ownerId: string | null;
   renaming: boolean;
@@ -127,18 +127,18 @@ export type DiagramEntryProps = {
   onDuplicate: () => void;
   onDelete: () => void;
   onMove: (anchor: HTMLElement | null) => void;
-  // Shared-row menu action (spec/35): drop it from "Shared with me".
+  // Shared-row menu action (docs/specs/013-workspace/team-shared-diagrams.md): drop it from "Shared with me".
   onDismiss?: () => void;
-  // Per-user star (spec/95).
+  // Per-user star (docs/specs/013-workspace/favourites.md).
   favourite?: boolean;
   onToggleFavourite?: () => void;
-  // Hide / show in Recent (spec/93).
+  // Hide / show in Recent (docs/specs/013-workspace/hide-from-recent.md).
   recentExcluded?: boolean;
   onToggleRecentExclusion?: () => void;
   onShowHistory?: () => void;
   // Adds the desktop Owner cell ("You", the team name, or the sharer).
   showOwner?: boolean;
-  // Where the diagram lives (spec/94). Recent only — every other pane IS a
+  // Where the diagram lives (docs/specs/013-workspace/recent-folder-chip.md). Recent only — every other pane IS a
   // folder, so the chip would just repeat its own title.
   folderChip?: { label: string; onOpen: () => void } | null;
   // Hides the visibility badge but keeps its column, so the row still lines

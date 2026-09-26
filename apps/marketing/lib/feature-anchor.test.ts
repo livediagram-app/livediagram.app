@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { LANDING_SECTIONS } from './landing-content';
 import { featureAnchor, featureHref } from './feature-anchor';
 
-describe('featureAnchor (spec/16)', () => {
+describe('featureAnchor (docs/specs/019-marketing/marketing-site.md)', () => {
   it('kebab-cases a title, dropping punctuation', () => {
     expect(featureAnchor('Run the session: timer + voting')).toBe('run-the-session-timer-voting');
     expect(featureAnchor('Your screen, not everyone else’s')).toBe(

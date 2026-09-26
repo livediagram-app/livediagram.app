@@ -4,7 +4,7 @@ import type { TeamInvite } from '@/lib/api-client';
 import { colorForKey, initialsOf } from '@/lib/identity';
 import { Button, EmptyState } from '@livediagram/ui';
 
-// Right-pane Invites view for the Explorer (spec/32 accept/decline):
+// Right-pane Invites view for the Explorer (docs/specs/013-workspace/teams.md accept/decline):
 // one card per pending invite — team monogram, name, organisation,
 // joined-member count — with Accept as the primary action and a
 // quieter Decline. State and the api calls live in useTeams; this is

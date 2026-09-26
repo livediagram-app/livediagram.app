@@ -4,8 +4,8 @@
 //
 // Both were inline in DiagramRoom.webSocketMessage / sendCatchup, wrapped in
 // the socket plumbing that sends the result. Both are also the parts most
-// worth being able to test directly: the first is a trust boundary (spec/61
-// §6), the second is a five-case ladder (spec/75, Level 1) whose branches are
+// worth being able to test directly: the first is a trust boundary (docs/specs/015-api/public-api-and-tokens.md
+// §6), the second is a five-case ladder (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1) whose branches are
 // easy to state and awkward to reach through a live WebSocket.
 //
 // Kept as functions taking plain values, so neither touches `this`, a socket,
@@ -27,7 +27,7 @@ export type ClaimedPresence = Partial<ParticipantPresence> | null | undefined;
 //
 // The server-resolved role and the server-assigned ephemeral id ALWAYS win:
 // the hello frame's own `role` / `id` are not trusted. The id override hides
-// the real owner id (spec/61 §6) and stops a joiner impersonating another
+// the real owner id (docs/specs/015-api/public-api-and-tokens.md §6) and stops a joiner impersonating another
 // peer; the role override is the Viewer / Editor lie-defence. Both come from
 // the socket attachment, the only per-session store that survives hibernation.
 //
@@ -49,7 +49,7 @@ export function helloPresence(
     role: session.verifiedRole,
   };
   if (typeof c.tabId === 'string') presence.tabId = c.tabId.slice(0, MAX_TAB_ID_LEN);
-  // The document-write key (spec/122) is RELAYED, not overridden — the one
+  // The document-write key (docs/specs/012-collaboration/participant-responses.md) is RELAYED, not overridden — the one
   // claimed field on the roster. It has to survive a reconnect to be any use
   // (it is what joins a saved answer to the person who gave it), so the server
   // cannot mint it the way it mints `id`. Nothing is granted by holding it and
@@ -64,7 +64,7 @@ export function helloPresence(
 export type LoggedOp = { seq: number; from: string; op: unknown };
 
 // Decide what a client's `sync` gets back, given the last epoch + seq it
-// applied (spec/75, Level 1):
+// applied (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1):
 //
 //   - Same epoch, caught up (lastSeq >= seq) → empty delta.
 //   - Same epoch, within the log window → replay ops after lastSeq.

@@ -1,7 +1,7 @@
 import { fillRatio, type Box } from './boxes';
 import { iou, overlapArea as intersection } from './rect';
 
-// Pads of small notes (spec/139 Phase 9). A wall's size floor throws away
+// Pads of small notes (docs/specs/021-event-storming/event-storming.md Phase 9). A wall's size floor throws away
 // what is much smaller than its notes, and that is right for a scrap of tape
 // or a corner of cardboard: scraps come alone and in every size. A second,
 // smaller board in the photograph, or a pad of smaller stationery, comes as a

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ExplorerProps } from './Explorer.types';
 
-// The Explorer's row-delete lifecycle (spec/15), lifted out of the
+// The Explorer's row-delete lifecycle (docs/specs/013-workspace/folders.md), lifted out of the
 // panel: the inline ConfirmPopover state + anchor, the slide-out
 // exit-animation id set, the optimistic hide-set for team rows (their
 // library sweep can't prune in time), and the two effects that prune

@@ -1,6 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 
-// E2E smoke suite (spec/72). Chromium only; deliberately small. Runs
+// E2E smoke suite (docs/specs/003-system-architecture/e2e-smoke.md). Chromium only; deliberately small. Runs
 // against the real production build + api worker (scripts/e2e-stack.mjs),
 // or a developer's already-running `pnpm dev` stack when one is up
 // (reuseExistingServer below).

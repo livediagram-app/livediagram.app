@@ -160,7 +160,7 @@ export function FlowchartDiagram() {
 }
 
 // Card 2 diagram: a mind map that builds out from a central node, then (when
-// playing) a Highlighter stroke (spec/81) swipes across the Design node and a
+// playing) a Highlighter stroke (docs/specs/008-canvas/highlighter.md) swipes across the Design node and a
 // laser pointer rings the top-left node, moves to the bottom-right node and
 // rings it. It does not recolour. Reuses the hero-pop / hero-line build
 // keyframes; the highlighter and laser use their own hero-* keyframes.
@@ -360,7 +360,7 @@ export function TimelineDiagram({ theme }: { theme: Theme }) {
   );
 }
 
-// Card 2 diagram: the flowchart presented as a slide deck (spec/31). Four
+// Card 2 diagram: the flowchart presented as a slide deck (docs/specs/012-collaboration/presentation-mode.md). Four
 // slides, each the elements the presenter picked from the same flowchart,
 // step through it a piece at a time and end on the whole picture. Every
 // slide is the subset drawn at the flowchart's own coordinates, then fitted
@@ -450,8 +450,8 @@ export function SlideDeckDiagram() {
 
 // Card 5 diagram: a three-service architecture that gets talked about. The
 // services build in, then a comment pin lands on the API with its thread
-// beside it (spec/136), then an assigned action lands on the database
-// (spec/68) and, near the end of the cycle, gets ticked off. The peeking
+// beside it (docs/specs/012-collaboration/comment-pin.md), then an assigned action lands on the database
+// (docs/specs/012-collaboration/assigned-actions.md) and, near the end of the cycle, gets ticked off. The peeking
 // card settles with both in place and the action done.
 export function ArchitectureDiagram({ theme }: { theme: Theme }) {
   const boxes = [

@@ -24,12 +24,12 @@ export type PaletteDropdownOption = {
   // leading / trailing / doubled. Options without a group never divide.
   group?: number;
   // Grid layout only: span the whole row instead of taking one column. For an
-  // option that belongs above the bands rather than inside one (spec/110 —
+  // option that belongs above the bands rather than inside one (docs/specs/010-palette/palette-top-level-categories.md —
   // Favourites is every category at once, so it has no band of its own).
   fullWidth?: boolean;
 };
 
-// The Toolbar layout's strip (spec/148) sets its dropdown-style controls (the
+// The Toolbar layout's strip (docs/specs/007-editor/toolbar-layout.md) sets its dropdown-style controls (the
 // selection mode, the category picker, More) on a faint tint so they read as
 // menus rather than as more tiles beside them. Brand, not slate: the editor
 // retargets the brand ramp to the active tab's theme (useEditorAccent), so the
@@ -56,7 +56,7 @@ const ICON_WRAP =
 // clipped (or forced the panel to scroll) whenever the palette was short.
 // Portalling escapes that clip and lets the menu flip above the trigger
 // when there's no room below.
-// Each band sits a shade deeper than the one above it (spec/108), so the
+// Each band sits a shade deeper than the one above it (docs/specs/004-interface-design/dropdown-tile-grid.md), so the
 // groups read as separate blocks rather than as one field of tiles with rules
 // through it. Deliberately faint and capped at three steps: this is grouping,
 // not hierarchy — the third band is not more important than the first, and a
@@ -115,7 +115,7 @@ export function PaletteDropdown({
   // Trigger appearance. 'bordered' is the standalone pill (icon filter);
   // 'flush' drops the border + rounding so the control sits flush against
   // the top and sides of a header band (the canvas-tool / category row).
-  // 'toolbar' is the Toolbar layout's strip (spec/148): a borderless 36px
+  // 'toolbar' is the Toolbar layout's strip (docs/specs/007-editor/toolbar-layout.md): a borderless 36px
   // trigger sized like the strip's tiles, with the menu hanging free below it.
   variant?: 'bordered' | 'flush' | 'toolbar';
   // Drop the menu's max-height + scroll, so it grows to fit its options
@@ -124,20 +124,20 @@ export function PaletteDropdown({
   // visible; leave off for long lists (icon categories) that need to scroll.
   autoHeight?: boolean;
   // Lay the options out as an icon-over-label TILE GRID instead of one long
-  // vertical list (spec/108). For pickers whose options are all icon-bearing
+  // vertical list (docs/specs/004-interface-design/dropdown-tile-grid.md). For pickers whose options are all icon-bearing
   // and roughly equal weight — the canvas tool, the palette category — where
   // a nine-item column is a lot of travel and a lot of reading for what is
   // really a flat choice. Matches the context menu's MenuTileGrid, so the two
   // menu systems read alike. Leave off for text-only or long scrolling lists,
   // where a column is genuinely easier to scan.
   grid?: boolean;
-  // Titles for the `group` bands, keyed by group index (spec/108). Grid mode
+  // Titles for the `group` bands, keyed by group index (docs/specs/004-interface-design/dropdown-tile-grid.md). Grid mode
   // only: a band header needs a full row to itself, which a list doesn't
   // have. Given as a map rather than a field on the first option because the
   // SELECTED option is filtered out of the menu — hang the label on an option
   // and it disappears exactly when that option is the current one.
   groupLabels?: Record<number, string>;
-  // Interactive-tour anchor (spec/79): rendered as data-tour-id on the
+  // Interactive-tour anchor (docs/specs/007-editor/editor-tour.md): rendered as data-tour-id on the
   // trigger and `<id>-menu` on the portalled listbox so tour steps can open
   // this dropdown and anchor to its menu.
   dataTourId?: string;
@@ -175,7 +175,7 @@ export function PaletteDropdown({
     const onDown = (e: PointerEvent) => {
       const t = e.target as Node;
       if (triggerRef.current?.contains(t) || menuRef.current?.contains(t)) return;
-      // The tour popover (spec/79) anchors to this menu while explaining it;
+      // The tour popover (docs/specs/007-editor/editor-tour.md) anchors to this menu while explaining it;
       // its Next/Back buttons must not count as an outside click (the tour
       // closes the menu itself when the step ends).
       if (t instanceof Element && t.closest('[data-tour-popover]')) return;
@@ -282,7 +282,7 @@ export function PaletteDropdown({
             // The open animation unfolds the menu toward the trigger
             // (dropdown-down below it, dropdown-up when flipped), so opening
             // reads as motion rather than a pop — including when the editor
-            // tour opens these programmatically (spec/79).
+            // tour opens these programmatically (docs/specs/007-editor/editor-tour.md).
             className={`fixed z-[var(--z-overlay)] w-max border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-900 ${
               // The grid needs its own columns + a floor width; the list keeps
               // hugging its content as before.

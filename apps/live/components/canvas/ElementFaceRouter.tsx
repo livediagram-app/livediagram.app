@@ -157,9 +157,9 @@ export function ElementFaceRouter({
   marker,
   iconCaptionBand,
 }: ElementFaceRouterProps) {
-  // The paper under this face, for colours the element doesn't carry (spec/07).
+  // The paper under this face, for colours the element doesn't carry (docs/specs/007-editor/live-app.md).
   const surface = useCanvasSurface();
-  // The shared settings `…` (spec/09), in the same corner on every Behaviours
+  // The shared settings `…` (docs/specs/008-canvas/canvas-and-palette.md), in the same corner on every Behaviours
   // element that has one: see carriesSharedSettingsMenu for who doesn't.
   const settingsMenu =
     element.type === 'shape' &&
@@ -179,7 +179,7 @@ export function ElementFaceRouter({
   return (
     <>
       {settingsMenu}
-      {/* Mode button (spec/103): a pressable face instead of a plain label —
+      {/* Mode button (docs/specs/009-elements/mode-button.md): a pressable face instead of a plain label —
           the mode's glyph plus the author's call to action. Mid-edit it falls
           through to the normal label editor below, so the text is retyped like
           any other shape's. */}
@@ -196,7 +196,7 @@ export function ElementFaceRouter({
         element.session?.tool === 'timer' &&
         !isEditing &&
         timerControls ? (
-        /* A TIMER session element is the timer (spec/105), not a button that
+        /* A TIMER session element is the timer (docs/specs/012-collaboration/session-button.md), not a button that
            starts one elsewhere: same TabTimer, same tab field, same pure
            display maths as the top-of-page pill, so pausing here pauses
            there. Falls through to the plain button face when the surface has
@@ -232,7 +232,7 @@ export function ElementFaceRouter({
           }
         />
       ) : element.type === 'shape' && element.shape === 'session-button' && !isEditing ? (
-        /* Session button (spec/105): starts a vote / poll for the room. */
+        /* Session button (docs/specs/012-collaboration/session-button.md): starts a vote / poll for the room. */
         <SessionButtonFace
           config={element.session}
           label={label}
@@ -250,7 +250,7 @@ export function ElementFaceRouter({
           }
         />
       ) : element.type === 'shape' && element.shape === 'focus-button' && !isEditing ? (
-        /* Bring Focus (spec/144): asks everyone else in the room to come and
+        /* Bring Focus (docs/specs/012-collaboration/bring-focus.md): asks everyone else in the room to come and
            look at this, at your zoom, on your tab. */
         <FocusButtonFace
           label={label}
@@ -258,7 +258,7 @@ export function ElementFaceRouter({
           onPress={onPressFocusButton ? () => onPressFocusButton(element) : undefined}
         />
       ) : element.type === 'shape' && element.shape === 'reveal' && !isEditing ? (
-        /* Reveal zone (spec/106): a cover, off for me / off for everyone. */
+        /* Reveal zone (docs/specs/009-elements/reveal-zone.md): a cover, off for me / off for everyone. */
         <RevealFace
           label={label}
           textColor={textColor}
@@ -270,7 +270,7 @@ export function ElementFaceRouter({
           onToggleForMe={onToggleReveal ? () => onToggleReveal(element.id) : undefined}
         />
       ) : element.type === 'shape' && element.shape === 'picker' && !isEditing ? (
-        /* Picker (spec/107): rolls a person or an option. */
+        /* Picker (docs/specs/012-collaboration/picker.md): rolls a person or an option. */
         <PickerFace
           label={label}
           result={element.pickerResult}
@@ -280,7 +280,7 @@ export function ElementFaceRouter({
           onRoll={onRollPicker ? () => onRollPicker(element).roll() : undefined}
         />
       ) : element.type === 'shape' && isCollabPanelShape(element.shape) && !isEditing ? (
-        /* The collaboration panels (spec/123 to spec/129): an estimate card,
+        /* The collaboration panels (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md): an estimate card,
            a temperature check, an idea box, an agenda, or a roll call. Like
            every other face above, mid-edit it falls through to the ordinary
            label editor below, so the title is retyped like any shape's. */
@@ -294,7 +294,7 @@ export function ElementFaceRouter({
           }
         />
       ) : element.type === 'shape' && element.shape === 'comment-pin' && !isEditing ? (
-        /* Comment pin (spec/136): opens the SAME thread popover an ordinary
+        /* Comment pin (docs/specs/012-collaboration/comment-pin.md): opens the SAME thread popover an ordinary
            element's comment badge opens — the pin is just an element whose
            only job is to carry a commentThread. */
         <CommentPanelFace
@@ -307,7 +307,7 @@ export function ElementFaceRouter({
           onUnresolve={commentActions?.unresolve}
         />
       ) : element.type === 'shape' && element.shape === 'action-card' && !isEditing ? (
-        /* Action panel (spec/146): the Comment panel's sibling. It drives the
+        /* Action panel (docs/specs/012-collaboration/action-panel.md): the Comment panel's sibling. It drives the
            SAME action machinery the popover and the Assign Action dialog do. */
         <ActionPanelFace
           element={element}
@@ -318,7 +318,7 @@ export function ElementFaceRouter({
           onReopen={actionActions?.reopen}
         />
       ) : element.type === 'shape' && element.shape === 'reaction-pad' && !isEditing ? (
-        /* Reaction pad (spec/135): a pressable glyph. The burst it throws is
+        /* Reaction pad (docs/specs/009-elements/reaction-pad.md): a pressable glyph. The burst it throws is
            rendered OUTSIDE this label stack, below, so it can overflow the
            element's box — a burst confined to the pad is a burst nobody
            notices. */
@@ -329,7 +329,7 @@ export function ElementFaceRouter({
           onFire={onFireReaction ? () => onFireReaction(element) : undefined}
         />
       ) : element.type === 'shape' && element.shape === 'portal' && !isEditing ? (
-        /* Portal (spec/104): the drawn portal + its label, pressable when paired. */
+        /* Portal (docs/specs/009-elements/portal-element.md): the drawn portal + its label, pressable when paired. */
         <PortalFace
           label={label || 'Portal'}
           strokeColor={
@@ -359,7 +359,7 @@ export function ElementFaceRouter({
             shareCode={imageContext.shareCode}
             canOpenPicker={!!imageContext.onOpenPicker}
           />
-          {/* A hero's caption card (spec/147), over the image. */}
+          {/* A hero's caption card (docs/specs/009-elements/web-components-and-no-groups.md), over the image. */}
           {element.heroCaption ? (
             <HeroCaptionCard
               element={element}
@@ -407,7 +407,7 @@ export function ElementFaceRouter({
           zoom={zoom}
         />
       ) : element.type === 'shape' && isWebComponentShape(element.shape) ? (
-        /* The web components (spec/147): each lays out its own content and
+        /* The web components (docs/specs/009-elements/web-components-and-no-groups.md): each lays out its own content and
            places the label in its own region, so it is edited like any
            label; the other lines edit in place once it is selected. They draw
            an inline icon themselves (a header's logo, a callout's badge), so
@@ -448,7 +448,7 @@ export function ElementFaceRouter({
         // they render no standard editable label.
         <></>
       ) : element.type === 'shape' && element.shape === 'page' ? (
-        // A Page stacks a fixed masthead over its body (spec/100). The body
+        // A Page stacks a fixed masthead over its body (docs/specs/009-elements/page-element.md). The body
         // node positions itself `absolute inset-0`, so it gets a `relative`
         // region of its own that starts under the rule rather than the whole
         // box — that is what stops the prose from running up into the title.
@@ -474,7 +474,7 @@ export function ElementFaceRouter({
           </div>
         </div>
       ) : iconCaptionBand ? (
-        // Icon caption band (spec/41): the label (and the inline editor while
+        // Icon caption band (docs/specs/010-palette/technology-icons.md): the label (and the inline editor while
         // typing) fills this positioned container instead of the whole box,
         // so the caption stays clear of the glyph in every alignment combo.
         <div className={`absolute ${iconCaptionBand}`}>{labelNode}</div>

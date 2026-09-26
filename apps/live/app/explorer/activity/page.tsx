@@ -3,7 +3,7 @@ import { ExplorerPane } from '../ExplorerPane';
 
 // /explorer/activity — what is outstanding for the reader across every
 // diagram they can open: open actions assigned to them or by them, and
-// unresolved comment threads they are in (spec/142). The layout's
+// unresolved comment threads they are in (docs/specs/013-workspace/activity-page.md). The layout's
 // ExplorerShell provides the chrome + state; this page only pins the
 // route and the tab title.
 export const metadata: Metadata = {

@@ -1,4 +1,4 @@
-// Tab-folder membership reporting (spec/30 + spec/22).
+// Tab-folder membership reporting (docs/specs/006-diagram/tab-folders.md + docs/specs/017-telemetry/telemetry.md).
 //
 // These assertions are about the exact (category, action, type) triple, which
 // is not a stylistic detail: a dashboard metric card selects rows by an exact

@@ -1,4 +1,4 @@
-// What the Toolbar layout's strip shows per category (spec/148).
+// What the Toolbar layout's strip shows per category (docs/specs/007-editor/toolbar-layout.md).
 
 import { describe, expect, it } from 'vitest';
 import { PALETTE_CATEGORIES } from './palette-categories';

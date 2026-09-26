@@ -6,7 +6,7 @@ import {
   subscribeAnnouncements,
 } from './announcer';
 
-// The screen-reader announcement store (spec/71). Small, pure, and untested —
+// The screen-reader announcement store (docs/specs/004-interface-design/canvas-accessibility.md). Small, pure, and untested —
 // and it carries one property that is easy to break and impossible to notice
 // without assistive tech: the nonce.
 //

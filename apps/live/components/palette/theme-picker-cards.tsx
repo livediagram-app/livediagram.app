@@ -20,7 +20,7 @@ export function ThemeCard({
   onSelect,
   onCommit,
   // When provided, a hover "Copy" button (top-right) opens the theme
-  // builder seeded with this theme's options (spec/44).
+  // builder seeded with this theme's options (docs/specs/011-theme/custom-themes.md).
   onCopy,
 }: {
   theme: ThemeDefinition;
@@ -112,7 +112,7 @@ export function ThemeQuickPickCard({
   );
 }
 
-// A saved custom theme (spec/44) in the Custom category drill-in: its
+// A saved custom theme (docs/specs/011-theme/custom-themes.md) in the Custom category drill-in: its
 // swatch preview + name, click to apply, with hover Edit / Delete
 // affordances. Lives here with the other theme-picker card primitives so
 // the browser and any other host render the exact same tile.

@@ -1,6 +1,6 @@
 import { categoryColor } from './event-vocab';
 
-// A chart stack's colours (spec/22), carried through from the category hues
+// A chart stack's colours (docs/specs/017-telemetry/telemetry.md), carried through from the category hues
 // the word cloud, metric cards and rankings already use, so a stack reads as
 // part of its category at a glance.
 //

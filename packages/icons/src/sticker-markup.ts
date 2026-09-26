@@ -1,4 +1,4 @@
-// The sticker's artwork, built once and shared by every renderer (spec/116):
+// The sticker's artwork, built once and shared by every renderer (docs/specs/010-palette/stickers.md):
 // the editor canvas, the palette tile, the SVG / PNG / PDF export, the api
 // worker's share thumbnail, and the MCP inline render. One builder rather than
 // a React version and a markup version, because the whole point of a sticker

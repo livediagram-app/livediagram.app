@@ -1,6 +1,6 @@
 import { useId } from 'react';
 
-// The SVG-geometry animation adapter (spec/09), lifted out of
+// The SVG-geometry animation adapter (docs/specs/008-canvas/canvas-and-palette.md), lifted out of
 // ShapeSvgOverlay: 'trace' marches the shape's own outline, 'gradient'
 // fills it with a moving gradient between the element's fill + accent,
 // and 'pulse' / 'glow' radiate a drop-shadow off the true silhouette.

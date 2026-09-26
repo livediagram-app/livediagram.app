@@ -23,7 +23,7 @@ export function DiagramLoading() {
   return (
     // This is a whole SCREEN, not a panel: it is the only thing between the
     // click and the editor, so it has to honour the appearance like every
-    // other route does (spec/07). It was light-only, which meant a dark-chrome
+    // other route does (docs/specs/007-editor/live-app.md). It was light-only, which meant a dark-chrome
     // user got a white flash on every diagram open.
     <div className="flex flex-1 items-center justify-center bg-slate-50 dark:bg-slate-950">
       <div className="flex flex-col items-center gap-3">

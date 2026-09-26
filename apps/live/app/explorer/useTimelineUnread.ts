@@ -1,6 +1,6 @@
 'use client';
 
-// The sidebar's unread-Timeline badge (spec/138 §2.5).
+// The sidebar's unread-Timeline badge (docs/specs/013-workspace/timeline.md §2.5).
 //
 // Its own tiny hook, and its own endpoint, because the badge renders on
 // every Explorer section: making it a field on the feed read would mean

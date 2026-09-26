@@ -7,7 +7,7 @@ import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { isOfflineLocation, saveLocationLabel, type SaveLocationId } from '@/lib/save-locations';
 import { SaveLocationPicker } from './SaveLocationPicker';
 
-// The New Diagram wizard's third step (spec/76, spec/141): name the diagram,
+// The New Diagram wizard's third step (docs/specs/006-diagram/offline-mode.md, docs/specs/006-diagram/save-locations.md): name the diagram,
 // choose its save location (livediagram or Local Browser), and where in that
 // location it lives. Placement is the shared
 // PlacementBrowser (components/placement) — the same two-level space -> folder
@@ -54,7 +54,7 @@ export function NewDiagramSettingsStep({
   saveLocation: SaveLocationId;
   onSaveLocation: (v: SaveLocationId) => void;
 }) {
-  // Local Browser is Offline Mode (spec/76): it drives the warning below and
+  // Local Browser is Offline Mode (docs/specs/006-diagram/offline-mode.md): it drives the warning below and
   // removes the folder step (an offline diagram has no server folder / team).
   const offline = isOfflineLocation(saveLocation);
   const folderHeading = `Choose ${saveLocationLabel(saveLocation)} Folder`;
@@ -68,7 +68,7 @@ export function NewDiagramSettingsStep({
         <TextInput
           value={diagramName}
           placeholder={placeholder}
-          // Capped (spec/91), same as every other name field.
+          // Capped (docs/specs/006-diagram/name-length.md), same as every other name field.
           maxLength={NAME_MAX_LENGTH}
           onChange={(e) => onDiagramName(e.target.value)}
           // rounded-lg keeps the wizard's field shape; the rest converges
@@ -77,7 +77,7 @@ export function NewDiagramSettingsStep({
         />
       </label>
 
-      {/* Save location (spec/141): a tile row, not a toggle, so a third store
+      {/* Save location (docs/specs/006-diagram/save-locations.md): a tile row, not a toggle, so a third store
           can join without reshaping the step. Sits above Save In because the
           location decides whether placement applies at all. */}
       <div className="flex flex-col gap-1.5">
@@ -85,7 +85,7 @@ export function NewDiagramSettingsStep({
         <SaveLocationPicker value={saveLocation} onChange={onSaveLocation} />
       </div>
 
-      {/* Data-loss warning (spec/76). Offline diagrams live only in this
+      {/* Data-loss warning (docs/specs/006-diagram/offline-mode.md). Offline diagrams live only in this
           browser's storage, so anything that wipes it takes the diagram with
           it. Only shown while Local Browser is chosen, so the risk is surfaced
           exactly when it applies. */}

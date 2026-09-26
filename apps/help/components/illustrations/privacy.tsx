@@ -1,4 +1,4 @@
-// Privacy and Security category illustrations (spec/55): where diagrams live on
+// Privacy and Security category illustrations (docs/specs/018-help/help-app.md): where diagrams live on
 // Cloudflare, who can read them, the anonymous-telemetry opt-out, share-link
 // controls (password + expiry), and the open-source / public-code motif.
 // Composed only from the shared primitives so the house style holds.

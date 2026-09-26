@@ -1,6 +1,6 @@
 // Copy / paste for the editor, lifted out of editor-page.tsx.
 //
-// Cmd+C puts the selection on the OS CLIPBOARD, serialised (spec/09
+// Cmd+C puts the selection on the OS CLIPBOARD, serialised (docs/specs/008-canvas/canvas-and-palette.md
 // "Clipboard", lib/clipboard-payload.ts). Cmd+V reads it back, re-mints it
 // through duplicateElements so ids are remapped and pinned arrows
 // re-wired, and drops the copies on the active tab.
@@ -47,7 +47,7 @@ type ImageDescriptor = {
 
 type ClipboardDeps = {
   isReadOnly: boolean;
-  // Editable embeds (spec/33) still don't paste-upload images — see
+  // Editable embeds (docs/specs/013-workspace/embeds.md) still don't paste-upload images — see
   // pasteImageFile.
   embedMode: boolean;
   selectedId: string | null;
@@ -67,11 +67,11 @@ type ClipboardDeps = {
   // The local participant id — owner of uploaded paste images.
   ownerId: string;
   // The current diagram id (null before hydration). Offline diagrams embed
-  // pasted images locally instead of uploading (spec/76).
+  // pasted images locally instead of uploading (docs/specs/006-diagram/offline-mode.md).
   diagramId: string | null;
   toast: ReturnType<typeof useToast>;
   // Read a pasted PHOTO as a piece of wall instead of placing it as an image
-  // (spec/139 Phase 8). Supplied only on an event-storming board with the
+  // (docs/specs/021-event-storming/event-storming.md Phase 8). Supplied only on an event-storming board with the
   // reader available; absent everywhere else, where paste is untouched.
   onPastePhoto?: (file: File) => void;
 };
@@ -185,7 +185,7 @@ export function useClipboard(deps: ClipboardDeps) {
   // suffix so the gallery has something to render in the title slot.
   const pasteImageFile = async (file: File) => {
     if (!addImageFromGallery) return;
-    // Embeds never upload (spec/33): the upload endpoint authorises by owner
+    // Embeds never upload (docs/specs/013-workspace/embeds.md): the upload endpoint authorises by owner
     // identity, which inside a partitioned iframe is a throwaway guest.
     if (embedMode) return;
     // Browsers hand inline screenshots over with file.name === ""
@@ -199,7 +199,7 @@ export function useClipboard(deps: ClipboardDeps) {
           });
     try {
       // Cloud diagrams upload; offline diagrams embed the paste locally
-      // as a data URI (spec/76) so no server copy is created.
+      // as a data URI (docs/specs/006-diagram/offline-mode.md) so no server copy is created.
       const { image } = await addImageFileForDiagram(ownerId, diagramId, named);
       addImageFromGallery({
         id: image.id,
@@ -277,7 +277,7 @@ export function useClipboard(deps: ClipboardDeps) {
         if (chosen) {
           e.preventDefault();
           // On an event-storming board a pasted PHOTO is far more likely a
-          // piece of wall than a picture element (spec/139 Phase 8), so it
+          // piece of wall than a picture element (docs/specs/021-event-storming/event-storming.md Phase 8), so it
           // goes to the reader instead. Only for a declared image, only on
           // that board, only when the reader is available: everything else
           // pastes exactly as it always has.
@@ -371,7 +371,7 @@ export function useClipboard(deps: ClipboardDeps) {
     return () => document.removeEventListener('paste', onPasteIntoLabel, true);
   }, [isReadOnly, editingId, setEditingId]);
 
-  // `hasClipboard` backs the canvas menu's Paste row (spec/09): the row is
+  // `hasClipboard` backs the canvas menu's Paste row (docs/specs/008-canvas/canvas-and-palette.md): the row is
   // always THERE — a menu that changes shape with invisible state is a menu
   // you can't learn — and greys out when the buffer is empty. It reports the
   // in-app buffer only; a copy made in another window lives on the OS

@@ -5,7 +5,7 @@ import { BrandMark } from '@livediagram/ui';
 import { PlacementCard } from '@/components/placement/PlacementCard';
 import { SAVE_LOCATIONS, type SaveLocationId } from '@/lib/save-locations';
 
-// The Save location row of the New Diagram wizard (spec/141): one tile per
+// The Save location row of the New Diagram wizard (docs/specs/006-diagram/save-locations.md): one tile per
 // catalogue entry, radio semantics. Built on the Save In row's PlacementCard
 // so the two rows below the name field read as one family. The host step
 // owns the field label; this is just the group.

@@ -1,7 +1,7 @@
 'use client';
 
 // The paper kit: the textures that give each Behaviours element the look of a
-// particular OBJECT rather than of a generic card (spec/122).
+// particular OBJECT rather than of a generic card (docs/specs/012-collaboration/participant-responses.md).
 //
 // Why this exists
 // ---------------
@@ -12,7 +12,7 @@
 //
 // Everything here is built from `tint(textColor, alpha)`, so a card is drawn
 // in ITS OWN colour. That is the constraint the whole kit is designed around:
-// the tab theme still owns the palette (spec/29), and a pink board stays a
+// the tab theme still owns the palette (docs/specs/011-theme/multicolour-themes.md), and a pink board stays a
 // pink board. The distinction between kinds comes from FORM — a folded corner,
 // a torn edge, a punched margin, a rotated stamp — which survives any hue,
 // any theme, and light or dark mode, none of which a per-kind colour would.

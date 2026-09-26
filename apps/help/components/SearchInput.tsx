@@ -24,7 +24,7 @@ export function SearchInput({ large = false }: { large?: boolean }) {
   const results = useMemo(() => (hasQuery ? searchArticles(query) : []), [hasQuery, query]);
   const isOpen = hasQuery && !dismissed;
 
-  // Report the SETTLED query's outcome, not every keystroke (spec/22). The
+  // Report the SETTLED query's outcome, not every keystroke (docs/specs/017-telemetry/telemetry.md). The
   // timer restarts on each change, so only the query the reader stopped on is
   // counted, and the emitter dedupes repeats of it.
   useEffect(() => {

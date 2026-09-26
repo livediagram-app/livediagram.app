@@ -8,8 +8,8 @@ import { ActionMenuIcon } from '@/components/palette/context-menu-icons';
 import { initialsOf } from '@/lib/identity';
 import { relativeSince } from '@/lib/relative-time';
 
-// The face of an Action panel (spec/146): a card on the board that carries ONE
-// assigned action (spec/68) and shows it in place.
+// The face of an Action panel (docs/specs/012-collaboration/action-panel.md): a card on the board that carries ONE
+// assigned action (docs/specs/012-collaboration/assigned-actions.md) and shows it in place.
 //
 // Like the Comment panel it carries NO action machinery of its own. Every boxed
 // element can already hold an `action`, and the Assign Action dialog, complete

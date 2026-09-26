@@ -28,7 +28,7 @@ import { getTheme } from '@/lib/themes';
 import { themeTelemetryLabel } from '@/lib/custom-theme-registry';
 
 // Folder shape the Settings step's placement browser consumes.
-// Dedicated welcome / create-new flow, see specs/14-new-diagram-route.md.
+// Dedicated welcome / create-new flow, see docs/specs/007-editor/new-diagram-route.md.
 // Owns identity bootstrap, template + theme choice (a two-step wizard),
 // and the actual "commit a new diagram" handoff. Once the user picks (or
 // skips), we POST the seeded diagram and navigate to /diagram/<id> where
@@ -47,7 +47,7 @@ export default function NewDiagramPage() {
   const [submitting, setSubmitting] = useState(false);
   // How many diagrams the user owns (null until known). Reported by
   // RecentDiagramsCard's fetch; gates the interactive tour's welcome offer
-  // (spec/79), which is for brand-new (zero-diagram) users only.
+  // (docs/specs/007-editor/editor-tour.md), which is for brand-new (zero-diagram) users only.
   const [diagramCount, setDiagramCount] = useState<number | null>(null);
   // Set when the create POST fails (network / 5xx). Shows a retryable
   // error instead of navigating to the editor for a diagram that was
@@ -58,9 +58,9 @@ export default function NewDiagramPage() {
     kind: TemplateKind | null;
     name: string;
     // string, not ThemeId: the picker can hand back a custom `custom:<uuid>`
-    // theme id (spec/44) as well as a built-in one.
+    // theme id (docs/specs/011-theme/custom-themes.md) as well as a built-in one.
     themeId: string;
-    // The Settings step's choices (spec/76): diagram name, placement, offline.
+    // The Settings step's choices (docs/specs/006-diagram/offline-mode.md): diagram name, placement, offline.
     settings: NewDiagramSettings;
   } | null>(null);
 
@@ -68,7 +68,7 @@ export default function NewDiagramPage() {
   // hook as the editor route; see hooks/useClerkApiBootstrap.ts.
   const { authLoaded, clerkUserId } = useClerkApiBootstrap();
 
-  // Landing funnel (spec/153): the public-page CTA that brought this visit
+  // Landing funnel (docs/specs/019-marketing/landing-funnel.md): the public-page CTA that brought this visit
   // here, if any. Counts the arrival now and the diagram once it's committed.
   const cta = useCtaAttribution();
 
@@ -82,7 +82,7 @@ export default function NewDiagramPage() {
   );
 
   // Placement context from the URL: /new?folder=<id> (Explorer's "new diagram
-  // in this folder") and /new?team=<id>(&folder=<id>) (team library, spec/35)
+  // in this folder") and /new?team=<id>(&folder=<id>) (team library, docs/specs/013-workspace/team-shared-diagrams.md)
   // pre-select the Save In picker, so what the Settings step highlights IS
   // what Create files into. The picker is the single source of truth from
   // here on; there is no separate commit-time fallback (it used to override
@@ -97,7 +97,7 @@ export default function NewDiagramPage() {
     return 'unsorted';
   });
 
-  // Wizard bypass (spec/14): /new?blank=1 ("Just Draw") and
+  // Wizard bypass (docs/specs/007-editor/new-diagram-route.md): /new?blank=1 ("Just Draw") and
   // /new?template=<kind> (the marketing template gallery) skip the wizard
   // entirely — the page commits that template (Default theme, the template's
   // default name) the moment it mounts and lands on the editor. The ?folder /
@@ -153,7 +153,7 @@ export default function NewDiagramPage() {
     // Wait for Clerk to settle so a signed-in user gets the Clerk
     // userId, not a freshly-minted guest UUID.
     if (!authLoaded) return;
-    // Daily-active-returns signal (spec/22): once-per-browser-per-UTC-day,
+    // Daily-active-returns signal (docs/specs/017-telemetry/telemetry.md): once-per-browser-per-UTC-day,
     // gated inside the helper. Auth has settled, so guest vs signed-in is known.
     trackDailyReturn(!!clerkUserId);
     const selfId = clerkUserId ?? ensureGuestSelfId();
@@ -207,12 +207,12 @@ export default function NewDiagramPage() {
   ) => {
     if (submitting) return;
     setSubmitting(true);
-    // Save location (spec/141): only Local Browser takes the offline branch.
+    // Save location (docs/specs/006-diagram/save-locations.md): only Local Browser takes the offline branch.
     const offline = isOfflineLocation(settings.saveLocation);
     lastCreateArgs.current = { kind: templateKind, name, themeId, settings };
     // The Settings step's name field wins; fall back to the per-template
-    // default when it's left blank (spec/76).
-    // spec/91: the wizard's name field goes through the same cap.
+    // default when it's left blank (docs/specs/006-diagram/offline-mode.md).
+    // docs/specs/006-diagram/name-length.md: the wizard's name field goes through the same cap.
     const diagramName =
       truncateName(settings.diagramName ?? '') || untitledNameForTemplate(templateKind);
     // Never create as the 'pending' placeholder — see resolveSelf above.
@@ -249,7 +249,7 @@ export default function NewDiagramPage() {
         };
     try {
       if (offline) {
-        // Offline Mode (spec/76): create the diagram in IndexedDB only. This
+        // Offline Mode (docs/specs/006-diagram/offline-mode.md): create the diagram in IndexedDB only. This
         // also registers its id so every later load / save routes local.
         await offlineCreateDiagram({ id: diagramId, name: diagramName, tabs: [tab] }, Date.now());
       } else {
@@ -268,14 +268,14 @@ export default function NewDiagramPage() {
       setCreateError(true);
       return;
     }
-    // Anonymous telemetry (spec/22): a diagram was created. No id or name is
+    // Anonymous telemetry (docs/specs/017-telemetry/telemetry.md): a diagram was created. No id or name is
     // sent — the `type` records only whether it's an Offline or Cloud diagram
-    // (spec/76). The chosen theme is recorded separately below.
+    // (docs/specs/006-diagram/offline-mode.md). The chosen theme is recorded separately below.
     track('Diagram', 'Created', offline ? 'Offline' : 'Cloud');
     track('Theme', 'Changed', themeTelemetryLabel(themeId));
     if (templateKind) track('Template', 'Used', titleCaseType(templateKind));
     cta.trackCreated();
-    // Placement. The Settings step's picker (spec/76) is authoritative: the
+    // Placement. The Settings step's picker (docs/specs/006-diagram/offline-mode.md) is authoritative: the
     // URL context (/new?folder=<id>, /new?team=<id>&folder=<id>) pre-seeds it
     // on mount, so what the picker highlighted is exactly what gets filed.
     // Done as a follow-up PUT so the create endpoint signature stays stable
@@ -285,7 +285,7 @@ export default function NewDiagramPage() {
     if (!offline) {
       if (settings.teamId) {
         // Created straight into a team library: the same Team·Added·Diagram
-        // an Explorer move into a team sends (spec/22), and only once the
+        // an Explorer move into a team sends (docs/specs/017-telemetry/telemetry.md), and only once the
         // placement landed (a failed PUT leaves it personal).
         const placed = await accepted(
           apiSetDiagramFolder(who.id, diagramId, settings.folderId ?? null, settings.teamId),
@@ -295,7 +295,7 @@ export default function NewDiagramPage() {
         await apiSetDiagramFolder(who.id, diagramId, settings.folderId).catch(() => {});
       }
     }
-    // "Show me around" (spec/79): a brand-new user's (zero owned diagrams)
+    // "Show me around" (docs/specs/007-editor/editor-tour.md): a brand-new user's (zero owned diagrams)
     // first diagram gets the tour's welcome offer once the editor opens —
     // handed across the hard navigation via a sessionStorage flag. The
     // editor gates the offer on the synced `tourSeen` preference.
@@ -305,17 +305,17 @@ export default function NewDiagramPage() {
     window.location.assign(`/diagram/${diagramId}`);
   };
 
-  // Just-Draw fast path (spec/14): fire the Skip-defaults create on mount.
+  // Just-Draw fast path (docs/specs/007-editor/new-diagram-route.md): fire the Skip-defaults create on mount.
   // commitNewDiagram waits out the identity bootstrap itself (resolveSelf),
   // so firing immediately is safe. The ref makes it once-only under Strict
-  // Mode's double-invoked effects. Note the tour offer (spec/79) can't queue
+  // Mode's double-invoked effects. Note the tour offer (docs/specs/007-editor/editor-tour.md) can't queue
   // here: the create fires before RecentDiagramsCard reports a count — which
   // is the behaviour we want for someone who asked to just draw.
   const bypassFired = useRef(false);
   useEffect(() => {
     if (!bypassKind || bypassFired.current) return;
     bypassFired.current = true;
-    // Wizard-bypass adoption signal (spec/22): a fixed preset per entry
+    // Wizard-bypass adoption signal (docs/specs/017-telemetry/telemetry.md): a fixed preset per entry
     // point, never user content. (The template itself is reported by the
     // usual Diagram / Created event the commit fires.)
     track('UI', 'Used', bypassKind === 'blank' ? 'JustDraw' : 'TemplateLink');
@@ -359,7 +359,7 @@ export default function NewDiagramPage() {
   // (the auto-create effect above). It carries the shared nodes-and-arrows
   // build animation rather than a spinner — the editor's "Loading your
   // diagram…" screen shows the same illustration, so create → load reads
-  // as one continuous moment (spec/14). Create failures fall through to
+  // as one continuous moment (docs/specs/007-editor/new-diagram-route.md). Create failures fall through to
   // the retryable error card branch before this one.
   if (bypassKind) {
     return (
@@ -387,7 +387,7 @@ export default function NewDiagramPage() {
 
   return (
     <div className="flex h-dvh flex-col">
-      {/* Bypass pre-hydration guard (spec/14): this static page's
+      {/* Bypass pre-hydration guard (docs/specs/007-editor/new-diagram-route.md): this static page's
           prerendered HTML is the wizard, and React only learns about
           ?blank=1 / ?template= at hydration — without this, the wizard paints for the
           beat until then. The script runs as the HTML parses, BEFORE the
@@ -419,7 +419,7 @@ export default function NewDiagramPage() {
             its own (it no longer remounts on id change, which used to flash
             the card once the real id landed). Mounting CustomThemeProvider
             with a null owner until then just defers the Custom theme list
-            (spec/44). */}
+            (docs/specs/011-theme/custom-themes.md). */}
         {/* display:contents so the guard wrapper adds no box of its own;
             visibility inherits to the wizard card. */}
         <div data-wizard-only className="contents">
@@ -434,7 +434,7 @@ export default function NewDiagramPage() {
               teamFolders={teamFolders}
               initialPlacement={initialPlacement}
               onCreateFolder={createPickerFolder}
-              // Teams are Clerk-only (spec/32): a guest gets no New Team tile.
+              // Teams are Clerk-only (docs/specs/013-workspace/teams.md): a guest gets no New Team tile.
               onCreateTeam={clerkUserId ? createPickerTeam : undefined}
               onOpenExisting={() => window.location.assign('/explorer/recent')}
               onPick={(kind, name, themeId, settings) =>
@@ -450,9 +450,9 @@ export default function NewDiagramPage() {
           </CustomThemeProvider>
         </div>
         {/* The right rail beside the centred wizard (desktop-only, xl+):
-            returning users get "Jump back in" (spec/14, hidden with no
+            returning users get "Jump back in" (docs/specs/007-editor/new-diagram-route.md, hidden with no
             diagrams yet). Its fetch also reports the diagram count that
-            gates the interactive tour's welcome offer (spec/79). The
+            gates the interactive tour's welcome offer (docs/specs/007-editor/editor-tour.md). The
             guided-tour sample card that used to sit under it was removed
             when the interactive tour superseded it. */}
         <div

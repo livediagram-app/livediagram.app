@@ -40,12 +40,12 @@ type ActivityPanelProps = {
   onUndo: () => void;
   onRedo: () => void;
   onRevert: (entry: ChangeLogEntry) => void;
-  // Hover-to-preview a row's revert (spec/12): pointer enter shows the
+  // Hover-to-preview a row's revert (docs/specs/012-collaboration/activity-and-audit.md): pointer enter shows the
   // entry's `before` state live on the canvas, leave restores. Only
   // fired for rows whose Revert button is available.
   onPreviewRevert: (entry: ChangeLogEntry) => void;
   onClearRevertPreview: () => void;
-  // The revert hover-preview preference (spec/12), flipped from the
+  // The revert hover-preview preference (docs/specs/012-collaboration/activity-and-audit.md), flipped from the
   // header gear. False stops rows previewing; the Revert button is
   // unaffected. The setter persists the flag (user-preferences).
   revertHoverPreview: boolean;
@@ -66,7 +66,7 @@ type ActivityPanelProps = {
   onMoveTo: (x: number, y: number) => void;
   onReset: () => void;
   onToggleMinimized: () => void;
-  // Corner-docking bundle (spec/63), forwarded to the inner MovablePanel.
+  // Corner-docking bundle (docs/specs/007-editor/panel-docking.md), forwarded to the inner MovablePanel.
   dock?: MovablePanelDockProps;
   // Dock layouts (minimal, or a phone outside Toolbar): the panel is a
   // popover over the cluster's Activity button, open while the dock has it.
@@ -81,7 +81,7 @@ type ActivityPanelProps = {
 // Floating "Activity" panel — per-diagram audit of every edit, with a
 // surgical Revert button on each row and the Undo / Redo controls
 // docked at the top. Same shape language as Explorer / Palette so the
-// editor's chrome stays consistent. See specs/12-activity-and-audit.md.
+// editor's chrome stays consistent. See docs/specs/012-collaboration/activity-and-audit.md.
 function ActivityPanelImpl({
   position,
   minimized,

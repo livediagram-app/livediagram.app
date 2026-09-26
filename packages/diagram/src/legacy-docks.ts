@@ -1,4 +1,4 @@
-// Loading a board saved while anchor docking existed (spec/139 Phase 7).
+// Loading a board saved while anchor docking existed (docs/specs/021-event-storming/event-storming.md Phase 7).
 //
 // A docked note stored its relation as `esDock = { hostId, side }`. Docking is
 // retired, so this runs where stored tabs enter (the api worker's `rowToTab`,

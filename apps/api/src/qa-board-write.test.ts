@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { QaNote } from '@livediagram/diagram';
 
-// One board write (spec/151): the reducer applied to what D1 holds, the rev
+// One board write (docs/specs/012-collaboration/qa-board.md): the reducer applied to what D1 holds, the rev
 // bumped, and a compare-and-swap that re-reads when another writer (an
 // editor's tab autosave) got to the row first.
 

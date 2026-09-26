@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildReadNotesPrompt } from './ai-read-prompt';
 
-// The model is asked ONE narrow question (spec/139 Phase 8). These pin the two
+// The model is asked ONE narrow question (docs/specs/021-event-storming/event-storming.md Phase 8). These pin the two
 // rules that make the answer usable, because both are the kind of thing a
 // later "improvement" to the wording quietly drops.
 describe('buildReadNotesPrompt', () => {

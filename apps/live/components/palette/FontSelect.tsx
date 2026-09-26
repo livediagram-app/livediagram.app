@@ -1,7 +1,7 @@
 import { FONTS } from '@livediagram/diagram';
 import { SizeButton } from '@/components/palette/palette-controls';
 
-// Shared font picker (spec/28) used by the Tab Look & Feel dialog's Font
+// Shared font picker (docs/specs/004-interface-design/fonts.md) used by the Tab Look & Feel dialog's Font
 // tab. A 3-column grid of tiles rather than a native <select> (twelve
 // options make four even rows, with room for the wider faces to breathe):
 // each tile renders the font's NAME in its own typeface, so the list is a

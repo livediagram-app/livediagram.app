@@ -1,5 +1,5 @@
 // /api/diagrams/<id>/room-ticket + /ws — realtime-room admission
-// (spec/11), split out of diagrams.ts the same way the share family
+// (docs/specs/015-api/api.md), split out of diagrams.ts the same way the share family
 // owns diagram-share-routes.ts: the one-time WS ticket mint and the
 // Durable Object WebSocket upgrade with its role / password trust
 // boundary.
@@ -22,9 +22,9 @@ export async function handleDiagramRoomRoutes(ctx: RouteContext): Promise<Respon
   // code and no auth) — the DO leaves role undefined and the
   // UI hides the badge for that peer.
   // POST /api/diagrams/<id>/room-ticket — mint a one-time WS room ticket
-  // (spec/11). The WS upgrade can't carry the Bearer token, so identified
+  // (docs/specs/015-api/api.md). The WS upgrade can't carry the Bearer token, so identified
   // callers (team members above all: membership MUST be checked against
-  // the VERIFIED Clerk id, spec/35) prove their access here over normal
+  // the VERIFIED Clerk id, docs/specs/013-workspace/team-shared-diagrams.md) prove their access here over normal
   // authenticated REST and hand the resulting short-lived ticket to the
   // upgrade as `?t=`. gateEdit/gateRead run the exact same access policy
   // as every REST read/write, including the share-password gate.
@@ -55,7 +55,7 @@ export async function handleDiagramRoomRoutes(ctx: RouteContext): Promise<Respon
     const claimedOwnerId = url.searchParams.get('o');
     // Gate-only projection — the upgrade uses only ownerId/teamId.
     const diagram = await getDiagramMeta(env, id);
-    // One-time ticket (spec/11): minted seconds ago over authenticated
+    // One-time ticket (docs/specs/015-api/api.md): minted seconds ago over authenticated
     // REST, single-use and diagram-scoped, carrying the server-resolved
     // role. This is the ONLY leg that can admit a team member — the old
     // fallback that granted edit to any `?o=` matching a JOINED member id
@@ -86,7 +86,7 @@ export async function handleDiagramRoomRoutes(ctx: RouteContext): Promise<Respon
     // anyone who learned the diagram id could read live ops; and the DO
     // additionally drops op frames from non-edit sessions.
     if (!role) return forbidden();
-    // Password gate (spec/24): a non-owner joining the realtime room of
+    // Password gate (docs/specs/013-workspace/share-password.md): a non-owner joining the realtime room of
     // a password-protected diagram must carry the matching password on
     // the `p` query param (WS upgrades can't set headers). Owners
     // bypass, and so do ticket holders — the mint already ran the full
@@ -98,7 +98,7 @@ export async function handleDiagramRoomRoutes(ctx: RouteContext): Promise<Respon
       if (!(await sharePasswordOk(env, id, url.searchParams.get('p')))) return forbidden();
     }
     // Presence identity is no longer forwarded: the DO assigns each session a
-    // fresh ephemeral id for its broadcast presence / cursor (spec/61 §6), so
+    // fresh ephemeral id for its broadcast presence / cursor (docs/specs/015-api/public-api-and-tokens.md §6), so
     // the real owner id never reaches the room and a joiner can't spoof
     // another peer's presence (there's no real id to claim). Only the
     // server-resolved role is forwarded; it still gates edit vs view ops.
@@ -112,7 +112,7 @@ export async function handleDiagramRoomRoutes(ctx: RouteContext): Promise<Respon
     // browsers can't put headers on an upgrade) could send
     // `X-Verified-Owner: 1` itself and have the room seat it as the owner.
     forwarded.headers.set('X-Verified-Role', role);
-    // One more server-resolved bit, and only a bit (spec/149): whether this
+    // One more server-resolved bit, and only a bit (docs/specs/012-collaboration/facilitator.md): whether this
     // upgrade is the diagram's OWNER. The facilitator baton needs it so the
     // owner can always take the session back, and a boolean answers that
     // without handing the room an identity it deliberately does not hold.

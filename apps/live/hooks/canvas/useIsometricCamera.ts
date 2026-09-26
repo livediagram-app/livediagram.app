@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { clampElevation, ISO_TILT_DEG } from '@/lib/isometric';
 
-// Isometric camera (spec/45): the orbit-able angle of the isometric view.
+// Isometric camera (docs/specs/008-canvas/isometric-view.md): the orbit-able angle of the isometric view.
 // Local view state — like the spotlight / viewport, it never persists and is
 // not synced to other participants (each viewer orbits independently).
 //

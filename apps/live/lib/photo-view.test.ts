@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { FIT, PHOTO_ZOOM_MAX, clampView, panBy, pinchStep, zoomAt } from './photo-view';
 
-// Zooming and panning the photograph under review (spec/139 Phase 9). The
+// Zooming and panning the photograph under review (docs/specs/021-event-storming/event-storming.md Phase 9). The
 // picture is laid out at its FITTED size; the view is a zoom and an offset on
 // top of that, in fitted-picture pixels, applied as
 // `translate(x, y) scale(zoom)` with the origin at the top-left.

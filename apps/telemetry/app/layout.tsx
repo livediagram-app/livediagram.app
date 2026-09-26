@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import './globals.css';
 import { BRAND_ICONS, PageViewBoot, PUBLIC_VIEWPORT, SITE_URL } from '@livediagram/ui';
 
-// The public transparency dashboard (spec/22). Indexable: it's part of
+// The public transparency dashboard (docs/specs/017-telemetry/telemetry.md). Indexable: it's part of
 // the open, "here's exactly what we measure" story, not a private app.
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
   // The origin-root brand favicons (literal hrefs, so Next leaves them
   // un-prefixed by the `/telemetry` basePath and the router resolves them to
-  // the workers that serve them). See BRAND_ICONS and spec/16.
+  // the workers that serve them). See BRAND_ICONS and docs/specs/019-marketing/marketing-site.md.
   icons: BRAND_ICONS,
 };
 

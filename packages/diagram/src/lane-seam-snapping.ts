@@ -1,6 +1,6 @@
 import { isBoxed, type Element, type ElementId } from './index';
 
-// Snapping for a lane's title seam (spec/119), the line between its heading
+// Snapping for a lane's title seam (docs/specs/009-elements/lane.md), the line between its heading
 // and its body that you drag to resize the heading.
 //
 // The seam is a 1-D problem: it slides along one axis, so it snaps to

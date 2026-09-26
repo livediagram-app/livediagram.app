@@ -79,7 +79,7 @@ export function useElementLinks(deps: ElementLinksDeps) {
         return { ...el, link };
       }),
     );
-    // Link-card unfurl (spec/40): when a URL lands on a link-card, fetch its
+    // Link-card unfurl (docs/specs/009-elements/link-cards.md): when a URL lands on a link-card, fetch its
     // preview ONCE here (the setter) and cache it on the element; peers get
     // it via the normal tab sync. Fails soft — the card shows the bare URL.
     if (link?.kind === 'url') {

@@ -6,7 +6,7 @@
 // will reassign every diagram, folder, image and preference belonging to an
 // owner id to whoever presents it (gated on an HMAC signature only when
 // `GUEST_ID_HMAC_SECRET` is configured; unset, knowing the id is enough).
-// See spec/04 + spec/61 §4.
+// See docs/specs/014-identity/auth-and-guest-access.md + docs/specs/015-api/public-api-and-tokens.md §4.
 //
 // This lived as a private `redactOwner` inside routes/share.ts, applied to the
 // share-code resolver — "the easiest observation vector". It was the only

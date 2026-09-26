@@ -1,4 +1,4 @@
-// The Toolbar layout's by-use tile order (spec/148).
+// The Toolbar layout's by-use tile order (docs/specs/007-editor/toolbar-layout.md).
 import { describe, expect, it } from 'vitest';
 import { orderByRecent, parseRecentTiles, recordTileUse } from './toolbar-recent-tiles';
 

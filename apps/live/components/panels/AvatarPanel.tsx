@@ -1,6 +1,6 @@
 'use client';
 
-// The Avatar Panel (spec/101): the character sheet for Avatar mode. Present
+// The Avatar Panel (docs/specs/008-canvas/avatar-mode.md): the character sheet for Avatar mode. Present
 // only while the mode is active — like the Poll / Vote panels, it joins and
 // leaves its corner stack rather than sitting there — and it is one of the
 // mobile / minimal-layout dock buttons, so a phone reaches it the same way it
@@ -104,7 +104,7 @@ export function AvatarPanel({
   onRandomise: () => void;
   // Make the character perform one of the reactions on the canvas.
   onReaction: (kind: AvatarReactionKind) => void;
-  // Throw one of the Reaction Pad's bursts around the character (spec/135).
+  // Throw one of the Reaction Pad's bursts around the character (docs/specs/009-elements/reaction-pad.md).
   // Absent where the canvas has no burst surface behind it.
   onBurst?: (reaction: Reaction) => void;
   // The local participant's colour, so the preview wears the same shirt the
@@ -184,7 +184,7 @@ export function AvatarPanel({
         {/* Two lists of actions, both behind a disclosure like the settings
             above them. BEHAVIOUR is what the character does with its body —
             jumping jacks, a wave, a spin. REACTIONS is the same five bursts
-            the Reaction Pad throws (spec/135), fired around the character
+            the Reaction Pad throws (docs/specs/009-elements/reaction-pad.md), fired around the character
             instead of around a pad.
             They were one flat row called "Reactions" holding only the poses,
             which named the wrong thing and left no room for the bursts. */}

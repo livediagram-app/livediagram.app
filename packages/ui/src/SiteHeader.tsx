@@ -8,7 +8,7 @@ import { ShareRail } from './ShareRail';
 // The public site header shared by the marketing landing page, the telemetry
 // dashboard and the help centre so the three read as one product. Brand +
 // apps-menu dropdown on the left, the CTA pair on the right (a secondary
-// "Just Draw", straight to a blank canvas at /new?blank=1, spec/14, beside the
+// "Just Draw", straight to a blank canvas at /new?blank=1, docs/specs/007-editor/new-diagram-route.md, beside the
 // primary "Choose Template", /new, the encouraged wizard path), with the
 // ShareRail pinned to the page edge below. Cross-surface navigation (Help,
 // Explorer, Telemetry, ...) lives in the apps menu, so the header itself
@@ -27,7 +27,7 @@ import { ShareRail } from './ShareRail';
 // content, so a surface that sticks something under it (help's breadcrumb
 // bar, `top-18`) can rely on the number at every breakpoint.
 //
-// `ctaSurface` names the page for the landing funnel (spec/153): the default
+// `ctaSurface` names the page for the landing funnel (docs/specs/019-marketing/landing-funnel.md): the default
 // pair's hrefs carry `via=<surface>.Header` / `.HeaderDraw` so the editor can
 // count which page's header brought somebody in. A surface passing its own
 // `actions` tags those links itself (help's Start drawing is `Help.Header`).

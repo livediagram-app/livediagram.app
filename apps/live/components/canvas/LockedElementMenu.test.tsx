@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
-// The facilitator's menu on an element somebody else is holding (spec/07 lock
-// + spec/149). Two things worth pinning: it names whose hold it would break —
+// The facilitator's menu on an element somebody else is holding (docs/specs/007-editor/live-app.md lock
+// + docs/specs/012-collaboration/facilitator.md). Two things worth pinning: it names whose hold it would break —
 // an action you cannot judge otherwise — and, being portalled, it keeps its
 // events off the canvas underneath, the same trap ElementEllipsisMenu carries.
 

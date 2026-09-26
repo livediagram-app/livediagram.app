@@ -1,0 +1,162 @@
+# Live app
+
+The diagram editor — where users actually build diagrams and mindmaps.
+
+- **Workspace:** `apps/live` (`@livediagram/live`).
+- **Public URL:** `https://livediagram.app` — the app serves at **clean routes** (`/diagram/...`, `/explorer/...`, `/new`, ...); the [router app](../016-platform/router-app.md) selects it by route. There's no `/live` URL prefix.
+- **Tech:** Next.js (static export), React, TypeScript, Tailwind. No `basePath` (pages serve at clean root paths). A prod-only `assetPrefix: '/live'` keeps the bundled `_next` assets from colliding with marketing's `/_next`; the router strips `/live` from those asset requests (see [08-router-app.md](../016-platform/router-app.md)). Dev runs standalone with clean asset paths.
+
+## Always available without sign-in
+
+A guest can open `/new`, create a diagram, and use the full canvas without an account. See [04-auth-and-guest-access.md](../014-identity/auth-and-guest-access.md).
+
+## Routes
+
+- `/new` — welcome / template-picker flow for creating a new diagram (the app's entry point). See [14-new-diagram-route.md](new-diagram-route.md).
+- `/diagram/<id>` — the editor itself, scoped to one diagram id. Static-exports a single `/diagram/placeholder` page; the live worker rewrites all `/diagram/<id>` paths to it at the edge, and the client reads the real id from the path.
+- `/explorer/*`, `/sign-in`, `/get-started`, `/sso-callback`, `/embed` — the library, auth, and read-only embed surfaces.
+
+## Persistence
+
+The editor talks to the Cloudflare Worker API documented in [11-api.md](../015-api/api.md). `apps/live/lib/api-client.ts` is the single boundary — the editor never reads or writes diagram state to `localStorage`. D1 holds the durable snapshot; per-tab content is split into its own rows (see [13-per-tab-storage.md](../006-diagram/per-tab-storage.md)) so autosave scope shrinks to the tab being edited.
+
+`localStorage` is still used for **identity bootstrap only** — a `crypto.randomUUID()` participant id under `livediagram:v2:self-id`, plus a `livediagram:v2:name-confirmed` flag once the user has named themselves. Everything else flows through the API.
+
+The diagram shape follows [05-diagram-structure.md](../006-diagram/diagram-structure.md) — a diagram has tabs, and elements can link across tabs.
+
+## Layout
+
+Three regions stacked vertically, filling the viewport:
+
+```
+┌────────────────────────────────────────────────────┐
+│ Header — brand + diagram name + Share              │
+├────────────────────────────────────────────────────┤
+│                                                    │
+│   Canvas area — viewport with zoom + pan + the     │
+│   floating Palette, Explorer, Context,     │
+│   Activity, and selection chrome on top.           │
+│                                                    │
+├────────────────────────────────────────────────────┤
+│  [ Tab 1 ] [ Tab 2 ] [ + ]            Tab bar      │
+└────────────────────────────────────────────────────┘
+```
+
+- **Header:** brand wordmark, diagram-name field (click to rename), and the Share button. The private/shared/team badge sits next to the title (Team when the diagram lives in a team library and has no share links, [Team shared diagrams](../013-workspace/team-shared-diagrams.md)). (The full-page `/explorer` library is reached from the AuthControls menu, the mobile dock, and the **Explorer** link in the marketing site header — not from the editor header itself.)
+- **Canvas:** owns most of the viewport. See [09-canvas-and-palette.md](../008-canvas/canvas-and-palette.md) for the full surface — shapes, arrows, marquee, multi-select, floating palettes, plus the activity / context panels.
+- **Tab bar:** horizontal row of tabs with `+` to add. Click to switch, double-click to rename, drag to reorder. Its right-hand cluster (`ChromeControls`, shared with the Explorer's bottom bar) holds **Search**, **Settings**, and the appearance toggle. In the editor each shows a text label beside its icon from `sm` up ("Search", "Settings", and the appearance in force: "Light" / "Dark" / "System") and is icon-only on a phone; the Explorer's bar stays icon-only. There is no keyboard-shortcuts button: the shortcut reference and the per-device on/off switch live in Settings' **Keyboard** category ([User preferences](user-preferences.md)), which the "Keyboard shortcuts" search command opens directly.
+
+## What the editor supports today
+
+- Boxed elements (shape, text, sticky), arrows (straight / curved / angled, optional label, configurable line thickness + arrowhead size), groups, multi-select via marquee + plain-click + shift-click.
+- Per-element format painter, lock, link-to-tab, comment threads.
+- Real-time presence + selection + cursor broadcast via the per-diagram Durable Object room (see [11-api.md](../015-api/api.md)).
+- Per-tab activity log + surgical revert (see [12-activity-and-audit.md](../012-collaboration/activity-and-audit.md)).
+- Folders in the Explorer (see [15-folders.md](../013-workspace/folders.md)).
+- Themed templates (chosen on the new-diagram route).
+
+## Concurrent-selection lock
+
+To cut down on two people fighting over the same element, an element another participant currently has selected is **locked** for everyone else: you can't select, drag, or edit it while they hold it.
+
+- **Advisory, not authoritative.** The lock is driven entirely by the realtime presence layer (`remoteSelectionsByElement`, built from the room's `select` ops). It is a UX guard that prevents the common accidental clash, **not** a hard mutual-exclusion guarantee — two clients can still race inside the presence-propagation window. True conflict-free concurrent editing waits on the OT / CRDT work that's still ahead (see [AGENTS.md](../../../AGENTS.md)). It deliberately does no server-side enforcement.
+- **Self is never locked out.** Only OTHER participants' selections lock an element; your own selection never blocks you.
+- **Auto-releases.** The lock is purely a function of live presence, so it clears the moment the holder deselects, switches tabs, or leaves the room — there's no sticky server state to clean up.
+- **Where it's enforced.** All local selection choke points respect it: single-click select, shift multi-select, and marquee (which filters locked ids out of its hit set), plus the element's own pointer-down / double-click-to-edit. A locked element shows a `not-allowed` cursor and the existing remote-selector badge's hover tooltip reads "Locked to <name>".
+- **The facilitator can free one.** "Auto-releases" covers the holder deselecting or leaving, but not the person still connected who wandered off with something selected — and a session can stop dead on an element nobody may touch. Right-clicking a locked element opens a one-item menu for whoever is running the session ([Facilitator](../012-collaboration/facilitator.md) "Freeing somebody's lock"); it still opens nothing for everybody else. The room tells the holder alone, the holder drops the selection, and the lock then clears everywhere through the ordinary `select` op — so this adds no server-side enforcement and leaves the lock exactly as advisory as it was.
+- The user-set element **lock** (`element.locked`, the padlock badge) is a separate, persisted feature; this concurrent-selection lock is ephemeral and presence-only.
+
+## SEO and indexing
+
+The live app is the product, not a content surface. Every page the live app serves is one of:
+
+- A signed-in workspace (`/explorer`, `/diagram/[id]`) carrying private user data that must not appear in search results.
+- An auth flow (`/sign-in`, `/get-started`, `/sso-callback`) that's worthless to crawlers and pointless to index.
+- The new-diagram welcome flow (`/new`) that needs the user's runtime identity to mean anything.
+
+`apps/live/app/layout.tsx` declares `robots: { index: false, follow: false }` in the root metadata so every live-app route inherits the directive. Cascades correctly through the static-export pages: each rendered HTML head carries `<meta name="robots" content="noindex,nofollow">`.
+
+This complements the marketing site's SEO policy (see [16-marketing-site.md](../019-marketing/marketing-site.md)): marketing is the indexable surface, the live app is explicitly off-limits to crawlers. The two policies meet at the router worker, which serves them on the same hostname but distinct paths.
+
+## Appearance (light / dark / system)
+
+The editor ships with an **Appearance** control, distinct from the per-tab **themes** (`apps/live/lib/themes.ts`, see [Canvas and palette](../008-canvas/canvas-and-palette.md)). A theme recolours CANVAS content (background, element fill / stroke / text) and is stored in the diagram, so every viewer sees it; Appearance recolours the editor CHROME (tab bar, editor header, panels, body backdrop) around it and lives only in this browser. A Pink-schemed diagram still sits on dark chrome when the control is flipped.
+
+Two words, two owners, and the naming is deliberate: **Appearance** is yours, a **theme** is the diagram's. The stored names stay `theme` (`Tab.theme`, the MCP parameter, the `Theme` telemetry category, and the `livediagram:v2:ui-mode` localStorage key) because they are data on the wire — renaming them would need a migration and would break saved diagrams and existing MCP callers for no user-visible gain.
+
+- **Three settings, one button.** The control lives on the right edge of the TabBar and CYCLES Light → Dark → System (`AppearanceToggle`). The glyph shows the CURRENT setting (sun / moon / monitor), not the next one: as a two-state toggle it could get away with showing the target, but with three states — one of them deferring to the OS — the only readable thing is where you are, so the tooltip and `aria-label` carry where the next click goes.
+- **System follows the OS, live.** `system` resolves through `matchMedia('(prefers-color-scheme: dark)')`, and that query is WATCHED: a machine that turns dark at sunset takes the editor with it without a reload. An explicit Light / Dark ignores the OS entirely and never even reads the query.
+- **System is the default.** A first-time visitor gets the chrome their device asks for, and `DEFAULT_APPEARANCE_SETTING` is the one line that says so; an unreadable or older-build value falls back to it too. The editor was light-by-default for as long as the control was a two-state toggle, on the reasoning that going dark should be asked for — but that reasoning only held while there was no way to say "follow my device". Now there is, and a reader whose machine is dark has already said it. An explicit Light or Dark still outranks the device: System is where the choice STARTS, not a rule.
+- **The Default theme follows it** ([Canvas and palette](../008-canvas/canvas-and-palette.md)). Default is the only scheme with a light and a dark half, resolved per viewer at render time: nothing is written to the diagram when the appearance changes, so a colleague in light chrome reads the light half of the same tab. Every other scheme is stored colour and reads identically for everyone.
+- **Unpainted elements take the canvas's ink.** An element carrying no colour of its own is drawn from `defaultStrokeColor` / `defaultFillColor` / `defaultTextColor`, which take a `CanvasSurface` (`'light' | 'dark'`, derived from the resolved backdrop by `canvasSurface`). That is what lets the Default scheme paint nothing onto elements and still read correctly on a charcoal canvas — and it fixes every dark scheme's unpainted elements as a side effect. The surface reaches the views through `CanvasSurfaceContext` rather than props, because the element views are `React.memo`'d and memo blocks a parent re-render but not a context update; the element MENUS read the same context, so a swatch can't show a light-canvas blue beside a grey shape. Exports derive it from the paper they are exporting onto, so what you export is what you see.
+- **Match nudge.** When the active tab's theme doesn't match the appearance — a dark-backdrop scheme viewed in light chrome, or the reverse — a dismissible floating prompt (`ThemeModeBanner`) appears bottom-centre (above the tab bar, the same slot the sign-in banner uses, and it yields to that banner when both apply). "This tab uses a dark theme → Dark" sets the appearance to match. "Dark vs light" is decided by the resolved scheme's backdrop luminance (`isLightColor`), so it works for built-in and custom schemes alike. Default never triggers it — it already matches, by construction. Hidden in zen / embed. Dismissal is keyed to the specific scheme+appearance mismatch, so dismissing it on one tab still lets it re-offer on a differently styled tab. The colour-scheme picker's category drill-in offers the same switch inline ([Canvas and palette](../008-canvas/canvas-and-palette.md)).
+- Preference persists in `localStorage` under `livediagram:v2:ui-mode` (values `'light'` / `'dark'` / `'system'`; anything else reads as light), across three small modules with one job each. `hooks/ui/appearance-storage.ts` holds just the key and the media query, as a PLAIN module so the server layout can inline them (a client boundary there hands the layout a stub, which broke the pre-hydration script once). `hooks/ui/appearance-store.ts` holds the setting, the resolution, the OS watch, the write and the `.dark` class on `documentElement` — no React, so it is directly testable. `hooks/ui/useAppearance.ts` is the subscription and the cycle, returning both the `setting` (what the user picked, what a control renders) and the resolved `appearance` (what the chrome is painted as, what a colour decision reads).
+- The choice is applied on **every** route by a tiny inline script in the root layout (`app/layout.tsx`) that runs before first paint. This matters for two reasons. React mounts after first paint, so ANY hook-based application flashes light before it lands. And the hook is not mounted everywhere anyway — the TabBar, the match nudge, the appearance toggle and the scheme browser render it, but the standalone `/new` route renders none of them, so without the layout script it would paint light over a dark body and stay that way. The snippet lives in `app/pre-hydration-scripts.ts` as a string a test EXECUTES against stub globals: what matters about it is not its text but which stored value ends up dark before first paint, and a string assertion happily passed while `system` painted light on a dark machine.
+- The `@custom-variant dark (&:where(.dark, .dark *))` declaration in `packages/tailwind-config/theme.css` configures Tailwind v4's `dark:` variant to use the class selector rather than the media query.
+- **Surfaces covered:** body backdrop, TabBar, EditorHeader, the TemplatePicker modal (the welcome / "New Diagram" / "Pick a template" flow) and the `/new` backdrop. Template **preview tiles** and the export-format glyphs are light-canvas art (white fills, slate rules, dark ink). They used to keep a LIGHT plate in dark chrome so they stayed legible, which left the New Diagram screen reading as a grid of bright white cards on a near-black dialog. They are now re-lit instead of redrawn: `.preview-art-tile` in `globals.css` inverts lightness and spins the hue back under `.dark`, so the art lands on dark paper with its hues intact (a blue node stays blue, an amber sticky stays amber) and new previews inherit it for free. Colour-scheme swatches are deliberately EXCLUDED — those show a scheme's actual colours, so re-lighting them would be a lie. The **loading screen** (`DiagramLoading`) is dark-aware for the same reason: it is a whole screen between the click and the editor, and a white flash there is the appearance failing at the one moment the user is waiting. Panel chromes (`MovablePanel`) carry the effect on the outer frame; per-panel content (Palette, Context, Explorer, Activity) lights up incrementally as the `dark:` variants get added to each accordion / row. Until that's done, an open panel reads light over a dark backdrop — usable, not yet polished.
+
+## Share dialog
+
+The "Share this diagram" modal (`apps/live/components/dialogs/ShareDialog.tsx`, opened from the header Share button, owner-only) follows the same dialog conventions as Settings / Export: a dimmed blurred backdrop (`bg-slate-900/40 backdrop-blur-sm`, click-to-close, Esc closes), a centred panel with dark-mode styling, and a scrollable body capped to the viewport.
+
+Its sections are ordered by frequency of use, top to bottom:
+
+1. **Your name** (guests only) — the identity peers see on cursors and comments, placed first so a guest sets it before minting the links that will carry it. Signed-in users' names come from their Clerk account, so the row hides entirely for them.
+2. **New link** — role toggle (Edit / View-only) + lifetime dropdown ([Share-link expiry](../013-workspace/share-link-expiry.md)) + Create. The dialog's primary action; the first-run empty state points up at it.
+3. **Active links** — one card per live link: a first line with the role badge, the countdown chip for expiring links ([Share-link expiry](../013-workspace/share-link-expiry.md)), and the URL; a second line with the actions (Copy link, Embed per [Read-only embeds (`/embed`)](../013-workspace/embeds.md), revoke). Two lines so the URL keeps its space as badges and actions accumulate.
+4. **Inactive links** ([Share-link expiry](../013-workspace/share-link-expiry.md)) — only when non-empty: Expired badge, struck-through URL, Extend + Delete.
+5. **Options band** — the share **password** ([Share password](../013-workspace/share-password.md); applies to every link, with a hint that covers the embed prompt too).
+
+## Destructive actions
+
+Every irreversible flow (delete a diagram, a folder, a tab, or an image gallery row) is gated by a branded confirmation. Two forms:
+
+- **Centre modal** — `apps/live/components/dialogs/ConfirmDialog.tsx`, wired in through the `useConfirm` hook (`apps/live/hooks/ui/useConfirm.tsx`). The provider mounts once at the live root layout so any descendant can `await confirm({ title, message, confirmLabel })` and receive a boolean. Used where the action has no tight on-screen anchor.
+- **Anchored popover** — `apps/live/components/primitives/ConfirmPopover.tsx`: a small popover beside the trigger with an arrow pointing back at it, so you confirm right where you clicked rather than being yanked to the screen centre. Portal-rendered (its `position: fixed` must escape transformed ancestors like the tab menu) and tagged `data-confirm-popover` so a host menu's outside-click handler can ignore it. **First use:** the tab menu's Delete row (the menu's own confirm now lives here; `deleteTab` performs the delete directly). Esc cancels, Enter confirms.
+
+We never fall back to `window.confirm()`: the OS-default chrome reads as a non-livediagram dialog and underplays the consequences.
+
+Non-destructive everyday actions (delete an element, clear a comment, undo a stroke) stay unprompted: undo restores them, and adding a modal at every keystroke would shred the editing flow. The confirmation gate is reserved for actions where one of the following is true:
+
+- The change is persisted to the server and not part of the undo stack.
+- The change cascades (removes child rows, breaks cross-references, invalidates share links).
+- The change is invisible to other participants in the same room.
+
+The modal supports `danger` (rose-tinted confirm button) and `neutral` variants; default is `danger` because the current call sites are all destructive. Esc cancels, Enter confirms, backdrop click cancels, focus lands on the confirm button so keyboard-only users get the same muscle memory as `window.confirm`.
+
+## Toasts
+
+Asynchronous failures that previously fell through to silent `catch` blocks (link-tab, gallery delete, image upload from a background flow) now surface through a bottom-right toast stack: `apps/live/hooks/ui/useToast.tsx` (`ToastProvider` + `useToast`). Three tones: `error` (rose), `success` (emerald), `info` (slate). Each toast auto-dismisses after 4 seconds, can be closed early, and dedupes against an identical message already on-screen so a tight retry loop can't drown the surface.
+
+Toasts are NOT used for:
+
+- Autosave progress / failures: the EditorHeader already carries a dedicated save-status pill.
+- In-context errors that have a sensible place to live near the action (the image picker's inline "Unsupported file type" surface, the gallery's "Could not load your gallery" banner).
+
+They ARE used for actions that finish off-surface from the gesture: clicking "Add to another diagram", duplicating a diagram, or any future flow whose UI has already navigated away by the time the network call resolves.
+
+## Mobile chrome
+
+The editor's floating panels (Palette, Explorer, Editor/Context, Activity) were designed for desktop where they overlap a wide canvas comfortably. On a phone-sized viewport they crowd each other and the canvas. The first responsive pass tightens the chrome so a mobile visitor can at least read the canvas and tap through:
+
+- **A compact mobile dock replaces the per-panel banners** in the Minimal
+  layout. A phone's default layout is Toolbar ([Toolbar layout](toolbar-layout.md)), which has no dock;
+  the dock is what a phone shows once its user picks Minimal. Below `sm:` the floating panels don't render at their desktop corners. A single button row pinned **top-right** of the canvas exposes **Explorer / Palette**, plus **Collaborate** when the active tab has at least one comment thread or action ([Assigned actions](../012-collaboration/assigned-actions.md) §5), plus **AI** when the assistant is enabled and the session is editable, plus **Vote** / **Poll** while a dot-vote or live poll is running on the tab ([Session tools (timer + voting)](../012-collaboration/session-tools.md), [Live poll (ephemeral pulse-check)](../012-collaboration/live-poll.md)). The session buttons go **last** so the permanent ones keep their positions and a poll starting mid-session doesn't shuffle the row under a thumb, and neither is gated on edit access — a view-only participant answers polls and watches vote results.
+
+  Those two panels used to be **unreachable on mobile entirely**, and not for want of a dock button: the non-docking render branch listed its panels by hand and simply never included them, so a live poll or vote had no panel at all below `sm:`. The docked (desktop) branch iterates `PANEL_IDS`, which is why it was only ever broken on the layouts taking the other path. (Per-element + tab formatting lives in the right-click context menus, so there is no Editor panel / dock button.) Tapping a button opens that panel as a popover anchored beneath it; tapping the active button again closes it (and adding a shape or tool from the Palette popover auto-closes it so the user can draw immediately). The Explorer is reachable here too, so it is no longer hidden on mobile; the `/explorer/` page and the AuthControls menu item are alternate routes, open to guests and signed-in users alike. Activity keeps its own minimise path. On desktop nothing changes by default: panels sit at their own corners and collapse to a banner via the header +/- button (see [Canvas and palette](../008-canvas/canvas-and-palette.md) "Collapse to banner"), unless the user opts into the minimal panel layout ([Canvas and palette](../008-canvas/canvas-and-palette.md)), which brings this same dock to desktop. **Layers and Activity are not in the row:** **Layers and Activity** are buttons in the bottom-right cluster in every layout. Only desktop **Floating** docks them as corner panels that minimise into those buttons. Everywhere else (Minimal, Toolbar, and every phone layout) the button opens its panel as a **popover hanging above it** (`computeDockAnchor(..., 'above')`: from the button's left edge, kept on the canvas, arrow on the popover's bottom edge pointing at the button), and a second press closes it, as does a press anywhere outside it such as the canvas (`dismissOnOutside`; its own portalled menus and confirms count as inside). They share the dock's one-open-at-a-time slot, so opening one closes the other (and the Explorer). **A phone's zoom controls drop − and +** in every layout (`pinchOnly`): the cluster carries Activity and Layers, and pinch zooms. Fit stays. **A phone in the Toolbar layout ([Toolbar layout](toolbar-layout.md)) has no dock at all:** it keeps the desktop chrome (panels in their corners, Layers and Activity in the bottom row), with the Explorer behind the strip's menu button. `PhoneDockProvider` tells `MovablePanel` which it is.
+
+- **EditorHeader** drops the `livediagram` wordmark on mobile via the Brand component's new `wordmarkClassName` prop (set to `hidden sm:inline`). The mark stays for orientation. The header's reserved width shrinks accordingly so the diagram title centres correctly.
+- **TabBar** hides the leading `Tabs` label below `sm` and drops the right-hand cluster's text labels to icons only. Tabs themselves, the +-add, Search, Settings and the dark-mode toggle stay. (There is no shortcuts button to hide: the shortcut reference lives in Settings' Keyboard category, [User preferences](user-preferences.md).)
+
+These don't change desktop layout. The mobile dock above is what resolves the old "panels overlap when all four open" case: at most one panel is open at a time, as a popover. The mobile picker ([Dedicated route for new-diagram creation](new-diagram-route.md) responsive section) covers the template / identity surface the same way.
+
+The root layout (`apps/live/app/layout.tsx`) exports a `viewport` config that pins the page at `initialScale: 1` with `maximumScale: 1` + `userScalable: false`, so mobile browsers don't auto-zoom on top of the editor's own canvas zoom. The two paths this blocks: pinch-zoom on the whole page, and iOS Safari's automatic focus-zoom when a focused input's effective font-size is under 16px (every TabBar / Explorer / Palette field is well under). Without this, focusing a text input on iOS zooms the page in and leaves the chrome misaligned with the canvas-transform coordinate space the cursor / selection-ring math expects. The canvas zoom (pinch on the canvas surface, or the bottom-right zoom buttons) is the only zoom the editor wants users to drive.
+
+## Out of scope (next iterations)
+
+- **Comments inbox / mentions** — comment threads exist per-element but there's no aggregated view yet. A cross-diagram inbox is sketched for assigned actions in [Assigned actions](../012-collaboration/assigned-actions.md) and not built either.
+- **Per-user grants** — a diagram is private, shared via a per-link role, or in a team's shared library. Teams shipped ([Teams](../013-workspace/teams.md) + [Team shared diagrams](../013-workspace/team-shared-diagrams.md)), but every member can edit every team diagram; there are no per-diagram per-user grants.
+
+(Four earlier bullets here have shipped. Auth UI landed per [Auth + guest access](../014-identity/auth-and-guest-access.md); the active tab exports as JSON / Markdown / PNG / SVG / PDF via `ExportTabDialog`; transactional + lifecycle email ships through the api worker per [Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md); and realtime is no longer whole-element LWW — [Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md) merges concurrent edits per element. A field-level CRDT for two people editing the SAME element was scoped and deliberately dropped, because the selection lock already prevents that case.)
+
+The image exports (PNG / SVG / PDF) honour the tab's theme: per-element colours, or the same `defaultFillColor` / `defaultStrokeColor` / `defaultTextColor` the canvas uses for elements that defer to the theme, plus the tab's background colour. Two iOS-style toggles in the dialog tune the image output: **Isometric view** (off by default; tilts the scene into the isometric projection, see [Isometric view](../008-canvas/isometric-view.md)) and **Background pattern** (on by default; paints the tab's backdrop pattern — grid / dots / … — via `backgroundPatternTile` in `canvas-backgrounds.ts`, shared by the SVG and the PNG/PDF rasteriser).

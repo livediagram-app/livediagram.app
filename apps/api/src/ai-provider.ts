@@ -1,6 +1,6 @@
 import type { Env } from './types';
 
-// WHOSE model is this, and where does it live (spec/25)?
+// WHOSE model is this, and where does it live (docs/specs/007-editor/ai-assistance.md)?
 //
 // The answer is the KEY. A key belongs to one provider — a Google AI Studio key
 // is useless to OpenAI — so the variable that holds it should say whose it is,
@@ -38,7 +38,7 @@ export const OPENAI_BASE_URL = 'https://api.openai.com/v1';
 // then actually called: newer ids exist (3.7, 3.8) but were answering 503
 // "high demand" when checked, and `gemini-flash-latest` is an alias that would
 // move under a deployment without anyone changing anything. 3.6 answered
-// every time, in JSON mode. See spec/25 for the date. `AI_MODEL` overrides it.
+// every time, in JSON mode. See docs/specs/007-editor/ai-assistance.md for the date. `AI_MODEL` overrides it.
 export const GOOGLE_DEFAULT_MODEL = 'gemini-3.6-flash';
 export const OPENAI_DEFAULT_MODEL = 'gpt-4o';
 

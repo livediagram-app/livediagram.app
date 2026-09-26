@@ -1,4 +1,4 @@
-// Avatar-mode reactions (spec/101): the five one-shot performances the Avatar
+// Avatar-mode reactions (docs/specs/008-canvas/avatar-mode.md): the five one-shot performances the Avatar
 // Panel offers — jumping jacks, a wave, a spin, a cheer, and a dance.
 //
 // Each is a PURE function of elapsed time: `reactionPose` turns "this reaction,

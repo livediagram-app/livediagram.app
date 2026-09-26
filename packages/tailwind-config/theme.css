@@ -1,7 +1,7 @@
 /* UI light / dark mode. The class-selector variant means
  * `dark:bg-slate-900` (etc.) lights up when documentElement carries
  * `.dark`, regardless of the user's OS prefers-color-scheme. See
- * spec/07 "UI light / dark mode" for the policy. */
+ * docs/specs/007-editor/live-app.md "UI light / dark mode" for the policy. */
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
@@ -47,7 +47,7 @@
   }
 }
 
-/* Timeline motion (spec/138 §2.6).
+/* Timeline motion (docs/specs/013-workspace/timeline.md §2.6).
  *
  * Lives in the shared theme beside the empty-state keyframes rather than
  * in one app's globals, for the same reason those do: the components
@@ -125,7 +125,7 @@
   animation: tl-date-pulse 0.7s ease-in-out 2;
 }
 
-/* Explorer list / card arrival (spec/138 §2.6 borrows the idea).
+/* Explorer list / card arrival (docs/specs/013-workspace/timeline.md §2.6 borrows the idea).
  *
  * The Timeline's fan-out comes from the RIGHT because that's where a
  * collapsed stack's card layers sit — it reads as dealing from a deck.

@@ -1,4 +1,4 @@
-// Wording for activity-log entries (spec/12): turns the added /
+// Wording for activity-log entries (docs/specs/012-collaboration/activity-and-audit.md): turns the added /
 // removed / edited element sets a commit produced into the one-line
 // summary the Activity panel shows. Split out of lib/change-log.ts so
 // the diff / revert mechanics and the vocabulary live in separately
@@ -210,7 +210,7 @@ export function summarizeEdits(pairs: EditedPair[]): string {
     return `Resized ${subject}`;
   }
   if (allIn(keys, ['rotation'])) return `Rotated ${subject}`;
-  // A colour-preset apply (spec/48) stamps colours + border + the
+  // A colour-preset apply (docs/specs/010-palette/style-presets.md) stamps colours + border + the
   // preset id in one move. Name the preset when the id is a plain
   // token ('bold' → Bold — the picker shows the same word); the
   // multi-colour themes' 'branch-<i>' ids aren't names, so those get
@@ -250,7 +250,7 @@ export function summarizeEdits(pairs: EditedPair[]): string {
   // strokeWidth / strokeStyle are shared between boxes and arrows, so
   // the box-specific "border" phrase only applies when no arrow is in
   // the set; anything else in this family reads as "Restyled". Arrow
-  // LINE presets (spec/48) set flow / flowSpeed alongside the style
+  // LINE presets (docs/specs/010-palette/style-presets.md) set flow / flowSpeed alongside the style
   // fields, so those ride along for an all-arrow set — but only when
   // a style key is present, so a pure flow toggle still reads as an
   // animation change below.
@@ -311,7 +311,7 @@ export function summarizeEdits(pairs: EditedPair[]): string {
 
 // --- The entry summary -------------------------------------------------------
 
-// Did this commit insert something between two others (spec/139)? The
+// Did this commit insert something between two others (docs/specs/021-event-storming/event-storming.md)? The
 // signature is unmistakable: ONE element added, and every other change is the
 // same purely-horizontal slide right, by at least the width of the thing that
 // arrived, of elements that were sitting where it landed. Reading that as

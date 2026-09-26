@@ -1,6 +1,6 @@
 'use client';
 
-// The note editor (spec/92): a docked toolbar over a contentEditable that
+// The note editor (docs/specs/009-elements/rich-text-notes.md): a docked toolbar over a contentEditable that
 // paints the note's runs. It is the same runs ⇄ DOM machine the element-label
 // editor uses (useRichTextDocument), so newlines stay literal '\n' text and
 // the plain-text mirror the note stores is always the DOM's text content.

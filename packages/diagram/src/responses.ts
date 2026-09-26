@@ -1,13 +1,13 @@
-// Per-participant responses (spec/122): the shared element field that records
+// Per-participant responses (docs/specs/012-collaboration/participant-responses.md): the shared element field that records
 // ONE value per participant, persistently — the primitive under the estimate
-// card (spec/123) and the temperature check (spec/124).
+// card (docs/specs/012-collaboration/estimate-card.md) and the temperature check (docs/specs/012-collaboration/temperature-check.md).
 //
 // A LEAF module (types only, like data-shapes.ts) because factories.ts needs
 // these constants at module-init time, and importing them from './index' would
 // put a runtime read inside the index ⇄ factories cycle.
 
 // One person's answer. `participantId` is the id the room already identifies
-// people by (spec/04); `at` is epoch ms, for ordering and for "who answered
+// people by (docs/specs/014-identity/auth-and-guest-access.md); `at` is epoch ms, for ordering and for "who answered
 // first" without a second clock.
 //
 // `value` is a STRING because the consumers disagree about what an answer is:
@@ -24,7 +24,7 @@ export const RESPONSE_VALUE_MAX = 40;
 
 // Cast (or re-cast) one participant's answer. Casting again REPLACES the
 // earlier answer rather than stacking a second one — the whole contract of
-// spec/122, in one function so no caller can implement it differently.
+// docs/specs/012-collaboration/participant-responses.md, in one function so no caller can implement it differently.
 export function setResponse(
   responses: ParticipantResponse[] | undefined,
   participantId: string,
@@ -54,7 +54,7 @@ export function responseOf(
 }
 
 // Summary of a numeric response set — the temperature check's whole readout
-// (spec/124) and the estimate card's spread (spec/123).
+// (docs/specs/012-collaboration/temperature-check.md) and the estimate card's spread (docs/specs/012-collaboration/estimate-card.md).
 //
 // Non-numeric answers ('?', 'XL') are counted in `count` but excluded from
 // `average` / `min` / `max`: someone who cannot size a story has still
@@ -108,7 +108,7 @@ export function responseTally(
   return values.map((v) => (responses ?? []).filter((r) => r.value === v).length);
 }
 
-// --- Done check (spec/137) -------------------------------------------------
+// --- Done check (docs/specs/012-collaboration/done-check.md) -------------------------------------------------
 //
 // Built on the same per-participant `responses` field as the estimate card and
 // the temperature check, with one fixed value: being done is not a scale, it

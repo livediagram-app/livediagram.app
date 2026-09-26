@@ -1,6 +1,6 @@
 # Experiments, group G: precision, round 3
 
-Group G of [the experiment plan](../../../plans/event-storming-photo-95-experiments.md):
+Group G of the experiment plan:
 precision to 95% on every wall. Owned files: `src/standout.ts`,
 `src/texture.ts`; added `src/spill.ts` and `scripts/spurious.ts`. Earlier
 rounds on the same ground: [c-junk.md](c-junk.md) (the dark-grain and blank

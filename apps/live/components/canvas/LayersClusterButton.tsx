@@ -3,7 +3,7 @@
 import { LayersStackIcon } from '@/components/panels/layers-panel-icons';
 import { Tooltip } from '@/components/primitives/Tooltip';
 
-// The Layers button in the bottom-right cluster (spec/74), in every layout.
+// The Layers button in the bottom-right cluster (docs/specs/006-diagram/layers.md), in every layout.
 //
 // In the desktop docking layout the panel ships minimised into it, mirroring
 // the Activity strip, and the button un-minimises it (`onExpand`). In the dock

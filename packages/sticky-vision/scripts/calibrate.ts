@@ -329,7 +329,7 @@ async function main() {
         : '') +
       '\n',
   );
-  // THE BAR (plans/event-storming-photo-95.md), stated with the table so a
+  // THE BAR (plans/0007-event-storming-photo-95.md), stated with the table so a
   // run is never read against a remembered one.
   console.log(
     `  bar: recall without actors >= ${pc(BAR.recall)}, precision >= ${pc(BAR.precision)}, merged boxes = ${BAR.merged}, on every wall\n`,

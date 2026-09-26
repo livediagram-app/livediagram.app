@@ -59,7 +59,7 @@ type EditorElementStyleDeps = {
   // History-aware element mutator (snapshots + emits the log).
   commit: (mapElements: (els: Element[]) => Element[]) => void;
   // History-aware ACTIVE-TAB mutator, for the layer-aware Bring to
-  // Front / Send to Back (spec/74): they restack `tab.layers` as well
+  // Front / Send to Back (docs/specs/006-diagram/layers.md): they restack `tab.layers` as well
   // as the elements array, which element-level `commit` can't reach.
   commitActiveTab: (mapTab: (t: Tab) => Tab) => void;
   // Non-history tab mutator + one-shot checkpoint for the high-
@@ -211,7 +211,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     track('Element', 'Toggled', 'AspectLock');
   };
 
-  // Bring to Front / Send to Back are LAYER moves (spec/74): the
+  // Bring to Front / Send to Back are LAYER moves (docs/specs/006-diagram/layers.md): the
   // selection lands on the top (resp. bottom) layer, minting a fresh
   // edge layer when the current one holds anything else and pruning any
   // layer the move emptied. These two buttons are how layers accrue for
@@ -237,7 +237,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     track('Element', 'Changed', 'Padding');
   };
 
-  // A Technology icon's fixed tile-size preset (spec/41). Applies to every
+  // A Technology icon's fixed tile-size preset (docs/specs/010-palette/technology-icons.md). Applies to every
   // selected icon element (a no-op field elsewhere).
   const setIconSizeSelected = (iconSize: IconSize) => {
     const ids = currentSelectionIds();
@@ -283,7 +283,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
   const setTableZebraSelected = () => toggleTableFlag('zebra', 'TableZebra');
   const setTableHeaderColumnSelected = () => toggleTableFlag('headerColumn', 'TableHeaderColumn');
 
-  // Animated elements (spec/09). A looping animation on the selected boxed
+  // Animated elements (docs/specs/008-canvas/canvas-and-palette.md). A looping animation on the selected boxed
   // element(s); `null` clears it. Arrows take a separate `flow` (marching
   // dashes / travelling dot).
   const setAnimationSelected = (value: ElementAnimation | null) => {
@@ -296,7 +296,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     );
     track('Element', 'Changed', 'Animation');
   };
-  // Per-icon glyph animation (spec/09), gated to icon shapes — its own set
+  // Per-icon glyph animation (docs/specs/008-canvas/canvas-and-palette.md), gated to icon shapes — its own set
   // instead of the boxed-element animation. The animation + its loop speed
   // differ only in the patched field, so they share one body.
   const setIconFieldSelected = (patch: Partial<ShapeElement>) => {
@@ -325,7 +325,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
   };
   const setFlowSpeedSelected = (value: AnimationSpeed) =>
     setArrowFieldSelected({ flowSpeed: value }, 'FlowSpeed');
-  // Repeat toggles (spec/09): true (the default) loops the animation, false
+  // Repeat toggles (docs/specs/008-canvas/canvas-and-palette.md): true (the default) loops the animation, false
   // plays it once and holds. Stored as `undefined` when true so the common
   // case adds no field to the element.
   const setAnimationRepeatSelected = (value: boolean) => {

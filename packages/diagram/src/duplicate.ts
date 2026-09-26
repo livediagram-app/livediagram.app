@@ -1,4 +1,4 @@
-// Selection duplication (spec/09 + spec/50 arrow-to-arrow): copy a set
+// Selection duplication (docs/specs/008-canvas/canvas-and-palette.md + docs/specs/008-canvas/arrow-to-arrow.md arrow-to-arrow): copy a set
 // of elements with fresh ids, and arrows re-pinned to the copies. Split from
 // factories.ts so that file stays purely the per-element creation
 // factories; re-exported from ./index so the public surface is
@@ -14,7 +14,7 @@ import {
 } from './index';
 
 // What a COPY regenerates rather than inherits. Today: an event-storming
-// note's hand-placement (spec/139) — a duplicate is a new piece of paper, so
+// note's hand-placement (docs/specs/021-event-storming/event-storming.md) — a duplicate is a new piece of paper, so
 // carrying the source's exact angle made it read as a photocopy, the one
 // thing a real wall never shows. Scoped to the fixed-size sticky (the ES
 // stamp) so a deliberately-rotated element anywhere else keeps its angle.
@@ -59,7 +59,7 @@ export function duplicateElements(
   const existingIds = new Set(elements.map((e) => e.id));
 
   // Decide which arrows copy, and mint their new ids into idMap BEFORE
-  // building any copy: an on-arrow endpoint (spec/50) can only follow
+  // building any copy: an on-arrow endpoint (docs/specs/008-canvas/arrow-to-arrow.md) can only follow
   // its target's duplicate if that duplicate's id is already known when
   // the endpoint is remapped. (Minting inline at push time left idMap
   // arrow-less, so every copied arrow-on-arrow connection stayed pinned
@@ -84,7 +84,7 @@ export function duplicateElements(
   // Settle droppability to a FIXPOINT before building any copy: an arrow
   // whose endpoint can't resolve (its pin target neither copies nor
   // exists) is dropped, and dropping it can strand another copied
-  // arrow's on-arrow endpoint (spec/50) that had already resolved to its
+  // arrow's on-arrow endpoint (docs/specs/008-canvas/arrow-to-arrow.md) that had already resolved to its
   // duplicate — which would commit an endpoint pointing at an arrow that
   // never gets created (rendered at the canvas origin, then persisted).
   // Repeat until no arrow drops, so every surviving remap is final.
@@ -113,7 +113,7 @@ export function duplicateElements(
   // whole arrow is skipped rather than left dangling.
   const remapEndpoint = (end: ArrowElement['from']): ArrowElement['from'] | null => {
     if (end.kind === 'free') return { kind: 'free', x: end.x + dx, y: end.y + dy };
-    // Connected to another arrow's line (spec/50): follow the duplicate when
+    // Connected to another arrow's line (docs/specs/008-canvas/arrow-to-arrow.md): follow the duplicate when
     // the target arrow was copied too, else keep the original, else drop.
     if (end.kind === 'on-arrow') {
       const dupArrow = idMap.get(end.arrowId);
@@ -167,7 +167,7 @@ export function duplicateElements(
   // Only references whose target was itself copied follow the copy.
   const rewired = newBoxed.map((el) => {
     let next = { ...el };
-    // mindParentId (spec/118) and portalTarget (spec/104) live on the shape
+    // mindParentId (docs/specs/009-elements/mind-node.md) and portalTarget (docs/specs/009-elements/portal-element.md) live on the shape
     // element only, so narrow before reaching for them.
     if (next.type === 'shape') {
       const shape = { ...next };
@@ -196,8 +196,8 @@ export function duplicateElements(
 
 // Re-point element-to-element references after a caller has renamed some
 // element ids (old → new in `idMap`): arrow endpoints pinned to an element or
-// hung off another arrow (spec/50), a mind-map node's parent (spec/118) and a
-// portal's partner (spec/104). A reference whose target isn't in the map is
+// hung off another arrow (docs/specs/008-canvas/arrow-to-arrow.md), a mind-map node's parent (docs/specs/009-elements/mind-node.md) and a
+// portal's partner (docs/specs/009-elements/portal-element.md). A reference whose target isn't in the map is
 // left alone. Element links are deliberately NOT touched: a link names its
 // tab as well as its element, and that is still the source tab.
 //

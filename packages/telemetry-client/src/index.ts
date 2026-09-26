@@ -1,11 +1,11 @@
-// The shared browser telemetry engine (spec/22), extracted from the
+// The shared browser telemetry engine (docs/specs/017-telemetry/telemetry.md), extracted from the
 // duplicated emitters in apps/live and apps/help: three-field
 // {category, action, type} events buffered and flushed — batched — to
 // POST <apiBase>/events on a short timer and on page-hide (via
 // navigator.sendBeacon). Strictly fire-and-forget: every failure is
 // swallowed, because telemetry must never affect the host app.
 //
-// Privacy (spec/22): only the closed-vocabulary {category, action,
+// Privacy (docs/specs/017-telemetry/telemetry.md): only the closed-vocabulary {category, action,
 // type} ever leaves the browser. NEVER pass user-generated content
 // (names, element text, ids, share codes) as `type` — the api worker
 // also rejects anything outside the allowed vocabulary, but the rule
@@ -13,7 +13,7 @@
 //
 // Each app constructs its emitter with its own build-time `enabled`
 // gate (NEXT_PUBLIC_TELEMETRY_ENABLED) and its own `isOptedIn` read of
-// the shared spec/20 preference — the editor caches it behind its
+// the shared docs/specs/007-editor/user-preferences.md preference — the editor caches it behind its
 // preference-change events, the help centre reads localStorage
 // directly — so the HOW stays app-owned and the plumbing shared. What
 // they must not each decide for themselves is WHERE the opt-out is
@@ -34,7 +34,7 @@ export { onPageHide } from './page-hide';
 const FLUSH_DELAY_MS = 10_000;
 const MAX_BUFFER = 25;
 
-// Where the editor keeps its per-user preferences (spec/20). The help
+// Where the editor keeps its per-user preferences (docs/specs/007-editor/user-preferences.md). The help
 // centre shares the livediagram.app origin, so an opt-out made in the
 // editor has to be visible here — which means both apps read this exact
 // string, and a copy in each is a silent privacy bug waiting to happen:
@@ -50,7 +50,7 @@ const MAX_BUFFER = 25;
 export const USER_PREFERENCES_STORAGE_KEY = 'livediagram:user-preferences:v1';
 
 /**
- * The spec/20 opt-out rule applied to the raw stored preferences JSON:
+ * The docs/specs/007-editor/user-preferences.md opt-out rule applied to the raw stored preferences JSON:
  * telemetry is ON unless `telemetryEnabled` is explicitly `false`. Missing
  * key, unparseable JSON and an absent field all mean on, so a corrupted blob
  * can't silently disable collection — and, more importantly, the one shape
@@ -90,7 +90,7 @@ export function createTelemetryEmitter(opts: {
   apiBase: string;
   // Build-time kill switch: false makes track() a permanent no-op.
   enabled: boolean;
-  // Per-user opt-out (spec/20), consulted on every track() call. The
+  // Per-user opt-out (docs/specs/007-editor/user-preferences.md), consulted on every track() call. The
   // caller owns caching / invalidation if the read is hot.
   isOptedIn: () => boolean;
 }): TelemetryEmitter {
@@ -100,7 +100,7 @@ export function createTelemetryEmitter(opts: {
   // Events from exactly one failed flush, waiting for one more attempt.
   // Kept separate from `buffer` so "has this already been retried?" is a
   // property of which list an event is in, rather than a flag we'd have to
-  // carry on the wire or track by index (spec/22).
+  // carry on the wire or track by index (docs/specs/017-telemetry/telemetry.md).
   let retryBuffer: TelemetryEvent[] = [];
   let flushTimer: ReturnType<typeof setTimeout> | null = null;
   let listenersAttached = false;
@@ -231,7 +231,7 @@ declare const process: { env: Record<string, string | undefined> };
 /**
  * The public sites' one track() (help centre, marketing, the dashboard): a
  * lazy emitter with the shared policy, i.e. the build-time
- * NEXT_PUBLIC_TELEMETRY_ENABLED gate plus the spec/20 opt-out this origin
+ * NEXT_PUBLIC_TELEMETRY_ENABLED gate plus the docs/specs/007-editor/user-preferences.md opt-out this origin
  * shares with the editor. Built once here so the three apps can't drift on
  * it, and a module singleton so a page that emits from several places (help's
  * page views, article views and errors) runs one buffer, not several. The
@@ -244,13 +244,13 @@ export const siteTrack: TelemetryEmitter['track'] = createLazyTrack({
 });
 
 // ---------------------------------------------------------------------
-// Client error tracking (spec/22 'Error' category)
+// Client error tracking (docs/specs/017-telemetry/telemetry.md 'Error' category)
 // ---------------------------------------------------------------------
 //
 // Window-level uncaught exceptions + unhandled promise rejections. The
 // type says WHERE and WHAT, from closed vocabularies only:
 // `<Kind>.<Page>.<ErrorName>`, e.g. `Uncaught.Diagram.TypeError`. The page
-// is the spec/150 page-view path's first segment (ids already stripped) and
+// is the docs/specs/017-telemetry/page-view-telemetry.md page-view path's first segment (ids already stripped) and
 // the error name comes from a fixed list (`Other` / `NonError` otherwise):
 // never the message, stack, or URL. A stack's function names would say
 // more, but production bundles are minified, so they'd be noise that could

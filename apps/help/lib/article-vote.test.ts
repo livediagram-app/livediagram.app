@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { createVoteTally } from './article-vote';
 
-describe('createVoteTally (spec/22 Help votes)', () => {
+describe('createVoteTally (docs/specs/017-telemetry/telemetry.md Help votes)', () => {
   it('sends nothing until the reader leaves', () => {
     const emit = vi.fn();
     const tally = createVoteTally('format-painter', emit);

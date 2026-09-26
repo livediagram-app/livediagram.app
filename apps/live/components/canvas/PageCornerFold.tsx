@@ -1,4 +1,4 @@
-// The bottom-right curl on a Page (spec/100).
+// The bottom-right curl on a Page (docs/specs/009-elements/page-element.md).
 //
 // Two triangles in one SVG: the sheet's corner is cut away, and a smaller
 // leaf is laid back over the cut, slightly darker. That reads as a lifted

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { allDone, doneSplit, DONE_VALUE, isDone, setResponse } from './responses';
 
-// The Done check's rules (spec/137). The interesting ones are about WHO the
+// The Done check's rules (docs/specs/012-collaboration/done-check.md). The interesting ones are about WHO the
 // card is waiting on, because that is what decides when it completes.
 
 const room = ['a', 'b', 'c'];

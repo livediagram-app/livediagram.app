@@ -1,6 +1,6 @@
 # Experiments C: junk rejection
 
-Group C of [the experiment plan](../../../plans/event-storming-photo-95-experiments.md):
+Group C of the experiment plan:
 raise PRECISION by refusing boxes that are not paper (masking tape, cardboard,
 the wall strip above the paper, shadow in paper seams, a window at night)
 without costing recall. Code: `packages/sticky-vision/src/texture.ts`,

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { catmullRomToBezierPath, createFreehand, simplifyPolyline } from './index';
 
-// Three pure helpers underpin the pencil tool (spec/09 Pencil
+// Three pure helpers underpin the pencil tool (docs/specs/008-canvas/canvas-and-palette.md Pencil
 // (freehand) subsection):
 // simplifyPolyline (Ramer-Douglas-Peucker), catmullRomToBezierPath
 // (smooth SVG `d` builder), and createFreehand (bounding box +

@@ -5,7 +5,7 @@
 // Canvas + Pattern colour swatches, and the opacity + size sliders. Lifted
 // out of TabSection so the same block renders in both the palette's Canvas
 // accordion AND the Canvas tab of the right-click CanvasThemeDialog
-// (spec/42) — the two can't drift.
+// (docs/specs/011-theme/canvas-and-theme-dialog.md) — the two can't drift.
 //
 // Purely presentational: every change is a callback prop applied live to
 // the active tab. The "Show more" expansion is local UI state owned here.
@@ -21,7 +21,7 @@ import {
 import { ShowMoreButton } from '@/components/primitives/ShowMoreButton';
 import { Tooltip } from '@/components/primitives/Tooltip';
 
-// Static vs animated split (spec/09): the two render as separate, labelled
+// Static vs animated split (docs/specs/008-canvas/canvas-and-palette.md): the two render as separate, labelled
 // sections so the catalogue reads clearly. Computed once from the single
 // PATTERNS source so adding a pattern still needs no edits here.
 const STATIC_PATTERNS = PATTERNS.filter((p) => !isAnimatedPattern(p.id));
@@ -72,7 +72,7 @@ export function CanvasStyleControls({
   patternColor: string;
   backgroundOpacity: number;
   backgroundPatternScale: number;
-  // Motion rate for an ANIMATED pattern (spec/09), 1 = normal. The Speed
+  // Motion rate for an ANIMATED pattern (docs/specs/008-canvas/canvas-and-palette.md), 1 = normal. The Speed
   // slider renders only while an animated pattern is active.
   backgroundAnimationSpeed: number;
   onSetBackgroundPattern: (pattern: BackgroundPattern) => void;
@@ -168,7 +168,7 @@ export function CanvasStyleControls({
           className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-slate-200 accent-brand-500 dark:bg-slate-700"
         />
       </div>
-      {/* Motion speed (spec/09) — only meaningful for an ANIMATED pattern,
+      {/* Motion speed (docs/specs/008-canvas/canvas-and-palette.md) — only meaningful for an ANIMATED pattern,
           so the row appears exactly when one is active. A rate multiplier:
           100% is each pattern's own tuned pace. */}
       {isAnimatedPattern(backgroundPattern) ? (

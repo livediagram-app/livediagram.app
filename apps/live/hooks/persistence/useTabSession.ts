@@ -1,4 +1,4 @@
-// Per-tab live session tools (spec/39): the facilitator-run TIMER
+// Per-tab live session tools (docs/specs/012-collaboration/session-tools.md): the facilitator-run TIMER
 // (countdown / stopwatch) and dot-VOTING handlers. State lives on the
 // Tab (`timer`, `vote`) so it rides the normal tab sync + persistence +
 // late-joiner replay; the realtime room already drops view-role
@@ -25,7 +25,7 @@ import { track } from '@/lib/telemetry';
 
 type TabSessionDeps = {
   editsBlocked: boolean;
-  // Somebody else is facilitating (spec/149), so the lifecycle verbs below are
+  // Somebody else is facilitating (docs/specs/012-collaboration/facilitator.md), so the lifecycle verbs below are
   // theirs for now. Casting and retracting a dot stay open: answering is what
   // the room is for, and a vote only the facilitator can vote in is not a vote.
   sessionToolsBlocked: boolean;
@@ -37,14 +37,14 @@ type TabSessionDeps = {
   emitTabMeta: (tabId: string, summary: string, opts?: { undoable?: boolean }) => void;
   // The local participant id — whose dots a cast/retract adds or removes.
   selfId: string;
-  // Broadcast ONE dot the instant it is cast or taken back (spec/39).
+  // Broadcast ONE dot the instant it is cast or taken back (docs/specs/012-collaboration/session-tools.md).
   //
   // Not left to the autosave like every other tab change: dots are the one
   // field the whole room writes at once, and the debounced whole-object patch
   // that used to carry them let a peer's stale snapshot erase a dot somebody
   // had just placed. This sends the CHANGE, immediately, so concurrent dots
   // commute instead of racing. No-op before the room is open.
-  // `round` is the open vote's (spec/152), so peers drop a dot meant for
+  // `round` is the open vote's (docs/specs/012-collaboration/collab-race-hardening.md), so peers drop a dot meant for
   // another round.
   emitVote: (tabId: string, elementId: string, delta: 1 | -1, round?: string) => void;
 };
@@ -76,7 +76,7 @@ export function useTabSession(deps: TabSessionDeps) {
     track('Tab', 'Started', mode === 'countdown' ? 'CountdownTimer' : 'StopwatchTimer');
   };
 
-  // Timer telemetry (spec/22) covers the whole lifecycle, not just the
+  // Timer telemetry (docs/specs/017-telemetry/telemetry.md) covers the whole lifecycle, not just the
   // start: how many timers get paused, reset, or abandoned versus run to
   // the end is the thing that says whether the feature actually works in a
   // session. Each is gated on the state actually changing, so a press that
@@ -109,7 +109,7 @@ export function useTabSession(deps: TabSessionDeps) {
     track('Tab', 'Toggled', 'TimerResumed');
   };
 
-  // Change a countdown's LENGTH, restarting it at the new one (spec/105).
+  // Change a countdown's LENGTH, restarting it at the new one (docs/specs/012-collaboration/session-button.md).
   //
   // Called from the Timer element's `…` menu. Changing the length of a timer
   // that is mid-run and leaving it mid-run would be the one thing nobody
@@ -156,7 +156,7 @@ export function useTabSession(deps: TabSessionDeps) {
     track('Tab', 'Changed', 'TimerReset');
   };
 
-  // Give a running countdown more time without restarting it (spec/39):
+  // Give a running countdown more time without restarting it (docs/specs/012-collaboration/session-tools.md):
   // "another minute, everyone". Both the end instant and the length grow by
   // the same amount, so the dial's wedge and the progress track stay a true
   // fraction of the whole instead of jumping back to full. A paused
@@ -200,7 +200,7 @@ export function useTabSession(deps: TabSessionDeps) {
 
   // --- Voting --------------------------------------------------------------
 
-  // Privacy is decided HERE, at start, and baked into the vote — spec/39
+  // Privacy is decided HERE, at start, and baked into the vote — docs/specs/012-collaboration/session-tools.md
   // has no mid-vote toggle, so a participant can trust that what was
   // hidden stayed hidden for the whole vote.
   const startVote = (votesPerPerson: number, setup?: VoteSetup) => {
@@ -212,16 +212,16 @@ export function useTabSession(deps: TabSessionDeps) {
       votes: {},
       hideCursors: setup?.hideCursors === true,
       hideCounts: setup?.hideCounts === true,
-      // Layer scope (spec/96). Undefined = every layer, which is what a
+      // Layer scope (docs/specs/012-collaboration/vote-layer-scope.md). Undefined = every layer, which is what a
       // single-layer tab always gets since the picker never shows there.
       voteLayerId: setup?.layerId,
       // Absent rather than false when off, so an ordinary vote's wire shape
       // is unchanged.
       ...(setup?.onePerElement ? { onePerElement: true } : {}),
-      // A vote is one person's to run (spec/39): the starter is the only
+      // A vote is one person's to run (docs/specs/012-collaboration/session-tools.md): the starter is the only
       // one who can end / reveal / clear it or move the results focus.
       startedBy: selfId,
-      // A fresh round (spec/152): dots in flight from any earlier vote on this
+      // A fresh round (docs/specs/012-collaboration/collab-race-hardening.md): dots in flight from any earlier vote on this
       // tab name a different round, so no peer can count them against this one.
       round: crypto.randomUUID(),
     };
@@ -244,14 +244,14 @@ export function useTabSession(deps: TabSessionDeps) {
     );
     track('Tab', 'Started', 'Vote');
     // A second, separate line for the privacy modes so the vote-start series
-    // stays comparable across the change (spec/22): cursors default ON, so
+    // stays comparable across the change (docs/specs/017-telemetry/telemetry.md): cursors default ON, so
     // folding it into the 'Vote' type would have hollowed out that series.
     if (vote.hideCursors || vote.hideCounts) track('Tab', 'Started', 'PrivateVote');
   };
 
   const endVote = () => {
     if (runBlocked) return;
-    // Host-only (spec/39). Ending is destructive-ish — you can restart a
+    // Host-only (docs/specs/012-collaboration/session-tools.md). Ending is destructive-ish — you can restart a
     // vote but every dot is lost — so a participant can't do it by
     // accident. Re-checked here as well as hidden in the UI, since the
     // handler is reachable from more than one surface.
@@ -294,7 +294,7 @@ export function useTabSession(deps: TabSessionDeps) {
   // Whether a dot lands is decided OUTSIDE the state updater, from the
   // rendered tab: a press with the budget spent (or a second dot on a
   // one-per-item vote) casts nothing and must not count as Element·Voted
-  // (spec/22), and a flag set inside an updater is unreliable (React may run
+  // (docs/specs/017-telemetry/telemetry.md), and a flag set inside an updater is unreliable (React may run
   // it later, or twice). The updater keeps its own guard so the write can
   // never exceed the budget either way.
   const castVote = (elementId: string) => {
@@ -314,7 +314,7 @@ export function useTabSession(deps: TabSessionDeps) {
 
   // Move the shared results walkthrough to a rank. Host-only: the room
   // reviews the picks together, so participants follow rather than each
-  // wandering the list on their own screen (spec/39).
+  // wandering the list on their own screen (docs/specs/012-collaboration/session-tools.md).
   const setVoteReviewIndex = (index: number) => {
     if (runBlocked) return;
     if (!isVoteHost(deps.activeTab.vote, selfId)) return;

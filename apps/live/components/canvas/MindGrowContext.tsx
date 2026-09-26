@@ -2,7 +2,7 @@
 
 import { createContext, useContext } from 'react';
 
-// How the label editor grows the next mind node (spec/118).
+// How the label editor grows the next mind node (docs/specs/009-elements/mind-node.md).
 //
 // A context rather than a prop because of where the two ends sit: the grower
 // lives in editor state, and the consumer is RichTextEditor, five layers down

@@ -4,7 +4,7 @@ import { headlineMembers, headlineTotal, type MetricStack } from './metric-serie
 import { readTrend } from './TrendBadge';
 import { previousSpanLabel, rankTrend } from './windows';
 
-// The dashboard's display decisions (spec/22), kept pure so they are tested
+// The dashboard's display decisions (docs/specs/017-telemetry/telemetry.md), kept pure so they are tested
 // apart from the components that render them.
 
 describe('readTrend', () => {

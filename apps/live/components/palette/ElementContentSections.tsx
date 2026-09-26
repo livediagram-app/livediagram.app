@@ -37,7 +37,7 @@ type Scaffold = ReturnType<typeof useContextMenuScaffold>;
 
 // The lower, content / metadata sections of the single-element context menu:
 // Text (labelled arrow / table cells), Image, Table structure, Link, and the
-// collaboration band's two categories (spec/68) — Collaborate (Assign Action
+// collaboration band's two categories (docs/specs/012-collaboration/assigned-actions.md) — Collaborate (Assign Action
 // + Comments) and Resources (Link + Note). Split out of EditorContextMenu;
 // shares the accordion + colour scaffolding via props so only one section
 // opens at a time across the whole menu.
@@ -146,7 +146,7 @@ export function ElementContentSections({
           ) : null}
         </MenuAccordionSection>
       ) : null}
-      {/* Image — pick / change / clear the bitmap (spec/19). */}
+      {/* Image — pick / change / clear the bitmap (docs/specs/009-elements/images.md). */}
       {target.type === 'image' ? (
         <MenuAccordionSection title="Image" icon={<ImageGlyph />} {...sectionProps('image')}>
           {hasImage ? (
@@ -180,7 +180,7 @@ export function ElementContentSections({
               />
             </div>
           )}
-          {/* The hero's caption card (spec/147): any image can carry one. */}
+          {/* The hero's caption card (docs/specs/009-elements/web-components-and-no-groups.md): any image can carry one. */}
           <ContextMenuDivider />
           <MenuToggleRow
             label="Caption Card"
@@ -215,8 +215,8 @@ export function ElementContentSections({
           />
         </MenuAccordionSection>
       ) : null}
-      {/* Link — set / change / remove a link-card's destination (spec/40), or
-          a video's YouTube URL (spec/114). Both keep their URL in `link`, so
+      {/* Link — set / change / remove a link-card's destination (docs/specs/009-elements/link-cards.md), or
+          a video's YouTube URL (docs/specs/009-elements/youtube-video.md). Both keep their URL in `link`, so
           both use this one section rather than a second URL editor. */}
       {target.type === 'link-card' || target.type === 'video' ? (
         <MenuAccordionSection title="Link" icon={<LinkMenuIcon />} {...sectionProps('link')}>
@@ -253,7 +253,7 @@ export function ElementContentSections({
           )}
         </MenuAccordionSection>
       ) : null}
-      {/* ── Collaboration group (spec/68): two categories — Collaborate
+      {/* ── Collaboration group (docs/specs/012-collaboration/assigned-actions.md): two categories — Collaborate
             (the people tiles: Assign Action + Comments) then Resources
             (the attached-material tiles: Link + Note). Both boxed-only:
             arrows can't be linked, noted, commented on, or assigned. */}
@@ -265,7 +265,7 @@ export function ElementContentSections({
           {...sectionProps('collaborate')}
         >
           {/* Assign Action shows for everyone: signed-out users can
-                assign to themselves (spec/68 §2). */}
+                assign to themselves (docs/specs/012-collaboration/assigned-actions.md §2). */}
           <MenuTileGrid cols={2}>
             <MenuTile
               icon={<ActionMenuIcon />}
@@ -275,7 +275,7 @@ export function ElementContentSections({
                 onClose();
               }}
             />
-            {/* The comment PANEL element (spec/136) is not offered here: it
+            {/* The comment PANEL element (docs/specs/012-collaboration/comment-pin.md) is not offered here: it
                 is a palette tile, and a second way in from every element's
                 menu was one more tile to read past on the way to the thread. */}
             <MenuTile

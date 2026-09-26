@@ -2,7 +2,7 @@ import { ctaHref } from '@livediagram/api-schema';
 import { buttonClassName } from '@livediagram/ui';
 import { HeroIllustration } from './HeroIllustration';
 
-// Each one true today (spec/16's golden rule): no paid tier, the canvas works
+// Each one true today (docs/specs/019-marketing/marketing-site.md's golden rule): no paid tier, the canvas works
 // signed out, edits land live, and the repo is MIT.
 const PROOF_POINTS = [
   'Free for everyone',
@@ -41,7 +41,7 @@ export function Hero() {
         className="pointer-events-none absolute inset-x-0 -top-40 -z-10 h-[600px] bg-gradient-to-b from-brand-100 via-brand-50 to-transparent"
       />
       <div className="mx-auto max-w-6xl px-6 pt-24 pb-20 text-center sm:pt-32 sm:pb-28">
-        {/* Says what it is and the one thing that sets it apart (spec/16). */}
+        {/* Says what it is and the one thing that sets it apart (docs/specs/019-marketing/marketing-site.md). */}
         <h1 className="mx-auto max-w-3xl text-balance text-5xl font-semibold tracking-tight text-slate-900 sm:text-7xl">
           Diagram together, <span className="text-brand-600">live</span>.
         </h1>
@@ -49,9 +49,9 @@ export function Hero() {
           Sketch an idea, start from a template, or map a whole system. Share a link and your team
           builds it with you in real time.
         </p>
-        {/* CTA pair (spec/16): the wizard is the encouraged path, so Choose
+        {/* CTA pair (docs/specs/019-marketing/marketing-site.md): the wizard is the encouraged path, so Choose
             Template is the primary and sits on the right; Just Draw is the
-            straight-to-blank-canvas escape hatch (spec/14). DOM order keeps
+            straight-to-blank-canvas escape hatch (docs/specs/007-editor/new-diagram-route.md). DOM order keeps
             the primary first so the mobile stack leads with it; sm:order-*
             swaps them side by side on desktop. */}
         <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">

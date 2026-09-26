@@ -21,7 +21,7 @@ import {
   type EventStormingNoteKind,
 } from './event-storming';
 
-// The event-storming sticky grammar (spec/139): colour IS the notation, so
+// The event-storming sticky grammar (docs/specs/021-event-storming/event-storming.md): colour IS the notation, so
 // the catalogue is the single source of truth for what each note kind is
 // called and which fill it carries. The palette tiles, the template builder,
 // and any future consumer (MCP, exports) read from here — these tests pin
@@ -64,7 +64,7 @@ describe('EVENT_STORMING_NOTES', () => {
 
   it('every note belongs to a workshop stage (the palette routes notes by it)', () => {
     // The stage decides which layer a palette-dropped note lands on
-    // (spec/139): events, actors and hotspots surface in Big picture;
+    // (docs/specs/021-event-storming/event-storming.md): events, actors and hotspots surface in Big picture;
     // the flow kinds arrive at Process; the aggregate is design-level.
     const byStage = (stage: string) =>
       EVENT_STORMING_NOTES.filter((n) => n.stage === stage).map((n) => n.kind);
@@ -106,8 +106,8 @@ describe('EVENT_STORMING_NOTES', () => {
   });
 });
 
-// The workshop-stage views (spec/139): shared layer-visibility presets over
-// the spec/74 layers the template ships. Switching stage = one tab commit
+// The workshop-stage views (docs/specs/021-event-storming/event-storming.md): shared layer-visibility presets over
+// the docs/specs/006-diagram/layers.md layers the template ships. Switching stage = one tab commit
 // that sets each stage layer's visibility; the rail is an independent
 // see-it-against-a-timeline toggle. Everything here is pure Tab -> Tab.
 describe('event-storming views', () => {
@@ -136,7 +136,7 @@ describe('event-storming views', () => {
 
   it('survives a user editing the layer stack', () => {
     // Board-ness is an identity, not a checklist: layers are ordinary
-    // spec/74 data a facilitator can rename, delete or add to mid-workshop.
+    // docs/specs/006-diagram/layers.md data a facilitator can rename, delete or add to mid-workshop.
     expect(
       isEventStormingTab({
         layers: [{ id: 'own-layer', name: 'Sketches' }, ...eventStormingLayers()],
@@ -147,7 +147,7 @@ describe('event-storming views', () => {
 });
 
 // A copied workshop note is a NEW piece of paper: it gets its own id and its
-// own hand-placement (spec/139). Keeping the source's exact tilt made a
+// own hand-placement (docs/specs/021-event-storming/event-storming.md). Keeping the source's exact tilt made a
 // duplicate read as a photocopy — two notes at identical angles, which is
 // the one thing a real wall never shows.
 describe('event-storming tilt', () => {
@@ -166,7 +166,7 @@ describe('event-storming tilt', () => {
   });
 });
 
-// A workshop note IS a note, whatever it says. The caps rule (spec/139)
+// A workshop note IS a note, whatever it says. The caps rule (docs/specs/021-event-storming/event-storming.md)
 // and any future notation-aware treatment key off this, so it must agree
 // with eventStormingKindOf on every signal — including the legacy fill.
 describe('isEventStormingNote', () => {
@@ -191,7 +191,7 @@ describe('isEventStormingNote', () => {
   });
 });
 
-// The notation writes in marker (spec/139): the face is part of the
+// The notation writes in marker (docs/specs/021-event-storming/event-storming.md): the face is part of the
 // grammar, like the colour, so it is resolved from the note rather than
 // left to whatever font the tab happens to carry.
 describe('eventStormingNoteFont', () => {
@@ -240,7 +240,7 @@ describe('board kind', () => {
   });
 });
 
-// Changing a note's kind (spec/139): a VERB on this board, because the kind is
+// Changing a note's kind (docs/specs/021-event-storming/event-storming.md): a VERB on this board, because the kind is
 // the notation — so it re-paints, re-cuts and stays put.
 describe('changeEventStormingKind', () => {
   const note = {

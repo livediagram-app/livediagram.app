@@ -2,13 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-// Bring Focus (spec/144): the invitation somebody else's press puts on your
+// Bring Focus (docs/specs/012-collaboration/bring-focus.md): the invitation somebody else's press puts on your
 // screen, and what taking it does.
 //
 // The whole of this element's restraint lives here. A press moves NOBODY: it
 // leaves a dialog that says who wants you where, and your view is untouched
 // until you take it. That is the one place this parts company with Follow Me
-// (spec/131), which is unilateral by design: the difference is push versus
+// (docs/specs/012-collaboration/follow-me-viewport.md), which is unilateral by design: the difference is push versus
 // pull. A follower chose to be moved and can stop whenever; a yank arrives
 // unasked, in the middle of whatever you were doing, and a board where anybody
 // can teleport everybody is a board where somebody's half-typed note is lost.

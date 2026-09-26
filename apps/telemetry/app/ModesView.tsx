@@ -6,7 +6,7 @@ import { SELECTION_MODES } from './palette-types';
 import { RankCard, rank } from './RankCard';
 import { rankTrend, windowLabel } from './windows';
 
-// Canvas Modes view (spec/22): the canvas selection modes picked from the
+// Canvas Modes view (docs/specs/017-telemetry/telemetry.md): the canvas selection modes picked from the
 // palette (`Canvas·Used·<mode>`, restricted to SELECTION_MODES), and the
 // options people set inside them (`UI·Changed·<Mode><Option>`). Split from the
 // Palette tab, which ranks the elements people add: a mode is a way of working

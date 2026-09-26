@@ -1,15 +1,15 @@
 'use client';
 
-// One diagram's own Timeline, from the row menu (spec/138 §3.4).
+// One diagram's own Timeline, from the row menu (docs/specs/013-workspace/timeline.md §3.4).
 //
 // A dialog rather than a page, because "what happened to this?" is a
 // question you ask while looking at the row — bouncing to a route and
 // back would lose your place in the library.
 //
-// Distinct from the editor's Activity Panel (spec/12), which is
+// Distinct from the editor's Activity Panel (docs/specs/012-collaboration/activity-and-audit.md), which is
 // element-level, tab-scoped and revertable. This is the diagram-level
 // story: created, renamed, commented on, shared, filed — the events
-// spec/12 explicitly left out of scope.
+// docs/specs/012-collaboration/activity-and-audit.md explicitly left out of scope.
 
 import { Dialog } from '@/components/dialogs/Dialog';
 import { DialogHeader } from '@/components/dialogs/DialogHeader';

@@ -144,7 +144,7 @@ describe('a self-painting element gets no box drawn round it', () => {
 });
 
 describe('a face paints in the element typeface', () => {
-  it('wraps a card in the font its label would use (spec/28)', () => {
+  it('wraps a card in the font its label would use (docs/specs/004-interface-design/fonts.md)', () => {
     const el = { ...createShape('agenda', 0, 0), label: 'Standup', font: 'caveat' };
     // The group carries the face, so every text mark inside inherits it: a
     // card exported in a different typeface to the board is the same bug this

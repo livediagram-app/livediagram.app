@@ -9,7 +9,7 @@ import { LinkIcon } from '@/components/panels/team-pane-parts';
 import { track } from '@/lib/telemetry';
 import { useCopiedFlash } from '@livediagram/ui';
 
-// "Invite by link" (spec/32): the admin actively turns on a shareable
+// "Invite by link" (docs/specs/013-workspace/teams.md): the admin actively turns on a shareable
 // join link that expires after a week. Anyone signed in who opens the
 // URL can Join the team. Visual sibling of TeamFormModal (same backdrop
 // + fly-up panel). The parent owns the inviteLink value (it lives on
@@ -61,7 +61,7 @@ export function TeamInviteLinkDialog({
     setError(null);
     try {
       const link = await apiGenerateTeamInviteLink(ownerId, teamId);
-      track('Team', 'Shared', 'Link'); // spec/22: an invite link was turned on
+      track('Team', 'Shared', 'Link'); // docs/specs/017-telemetry/telemetry.md: an invite link was turned on
       onInviteLinkChange(link);
       resetCopied();
     } catch {
@@ -77,7 +77,7 @@ export function TeamInviteLinkDialog({
     setError(null);
     try {
       await apiRevokeTeamInviteLink(ownerId, teamId);
-      track('Team', 'Removed', 'Link'); // spec/22: invite link turned off
+      track('Team', 'Removed', 'Link'); // docs/specs/017-telemetry/telemetry.md: invite link turned off
       onInviteLinkChange(null);
     } catch {
       setError('Could not turn the link off. Try again.');
@@ -94,7 +94,7 @@ export function TeamInviteLinkDialog({
       // Confirmation + telemetry only on an actual copy — flipping to
       // "Copied" after the catch told the user a blocked clipboard
       // succeeded (mirrors ShareDialog.copy).
-      track('UI', 'Copied', 'TeamInviteLink'); // spec/22: mirrors ShareLink/EmbedCode copies
+      track('UI', 'Copied', 'TeamInviteLink'); // docs/specs/017-telemetry/telemetry.md: mirrors ShareLink/EmbedCode copies
       flash();
     } catch {
       // Clipboard blocked (insecure context / permissions): fall back

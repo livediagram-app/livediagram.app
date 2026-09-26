@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { defaultTextColor, type LinkCardElement } from '@livediagram/diagram';
 
-// Inner content of a link-card element (spec/40): a favicon / glyph + title +
+// Inner content of a link-card element (docs/specs/009-elements/link-cards.md): a favicon / glyph + title +
 // destination row, with the OG image as a top banner when a URL has unfurled.
 // The card border / background come from the BoxedElementView wrapper
 // (describeVariant). The TOP of the card is `pointer-events-none` so dragging /

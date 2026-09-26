@@ -20,7 +20,7 @@ import { tourStepsFor, tourStepTelemetryType, type TourApi } from './tour-steps'
 import { TourLayoutPicker } from './TourLayoutPicker';
 import { TourPopover } from './TourPopover';
 
-// Orchestrates the interactive editor tour (spec/79). Mounted once in
+// Orchestrates the interactive editor tour (docs/specs/007-editor/editor-tour.md). Mounted once in
 // EditorView; renders nothing until either the /new handoff flag is
 // consumed (a brand-new user's first diagram → the welcome offer card) or
 // the Settings dialog requests a relaunch. Each step runs prepare (opening
@@ -63,9 +63,9 @@ export function TourHost() {
   const isMobile = useIsMobileViewport();
   // The effective step list: mobile drops the desktop-only step (the
   // theme dock button), an event-storming board drops the palette-header
-  // dropdowns it doesn't render (spec/139).
+  // dropdowns it doesn't render (docs/specs/021-event-storming/event-storming.md).
   const esBoard = ctx.esBoard === true;
-  // The Toolbar layout (spec/148) moves the Explorer behind a menu button,
+  // The Toolbar layout (docs/specs/007-editor/toolbar-layout.md) moves the Explorer behind a menu button,
   // honoured on a phone too; the minimal layout docks panels like a phone.
   const panelLayout = resolvePanelLayout(ctx.userPreferences ?? {}, { mobile: isMobile });
   const toolbar = panelLayout === 'toolbar';
@@ -141,7 +141,7 @@ export function TourHost() {
   // offer is resolved, so a reload mid-offer or mid-tour re-offers instead
   // of silently swallowing the tour), then wait for the editor to be
   // usable before offering (the small delay lets the fit-to-screen pass
-  // and panel layout settle). The `tourSeen` preference (synced, spec/20)
+  // and panel layout settle). The `tourSeen` preference (synced, docs/specs/007-editor/user-preferences.md)
   // makes the offer once-ever for the user, however it was dismissed —
   // checked again at fire time below in case the preferences fetch lands
   // after mount.
@@ -203,7 +203,7 @@ export function TourHost() {
     if (!active) return;
     const step = steps[stepIndex];
     if (!step) return; // shrunk list; the clamp effect is about to fix the index
-    // Stage-view funnel (spec/22): one event per step entry (Back re-entry
+    // Stage-view funnel (docs/specs/017-telemetry/telemetry.md): one event per step entry (Back re-entry
     // included — it's a real view). The welcome card's view is already
     // covered by Opened/TourOffer; the last View before an
     // Ended/TourSkipped marks the drop-off stage on the dashboard.
@@ -284,7 +284,7 @@ export function TourHost() {
     setActive(false);
     // Safety net beyond the current step's cleanup: never strand an open
     // menu; and never offer again, however the tour ended — via the synced
-    // tourSeen preference (spec/20), so it holds across the user's devices.
+    // tourSeen preference (docs/specs/007-editor/user-preferences.md), so it holds across the user's devices.
     // The offer is now RESOLVED, so the reload-surviving pending flag can
     // finally go.
     apiRef.current.closeContextMenu();

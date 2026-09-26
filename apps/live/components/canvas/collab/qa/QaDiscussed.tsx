@@ -1,4 +1,4 @@
-// The Q&A board's Discussed drawer (spec/151): every closed note, folded away
+// The Q&A board's Discussed drawer (docs/specs/012-collaboration/qa-board.md): every closed note, folded away
 // below the live queue, most recently closed first, counts frozen. Closed by
 // default: the record of what the room covered is kept, not shown off.
 

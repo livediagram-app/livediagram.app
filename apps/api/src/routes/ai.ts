@@ -72,7 +72,7 @@ function sanitiseElements(elements: unknown[]): unknown[] {
 export async function handleAi(ctx: RouteContext): Promise<Response> {
   const { request, env } = ctx;
 
-  // The shared admission sequence (spec/25), one answer for both model routes.
+  // The shared admission sequence (docs/specs/007-editor/ai-assistance.md), one answer for both model routes.
   const refused = await aiGate(ctx);
   if (refused) return refused;
 

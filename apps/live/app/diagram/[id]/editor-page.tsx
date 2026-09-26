@@ -24,12 +24,12 @@ const SharePasswordGate = dynamic(() =>
 const LOAD_ERROR_MESSAGE =
   'We couldn’t load this diagram: the server didn’t respond. Check your connection and try again.';
 
-// `embed` mounts the read-only embed view (spec/33): same state, same
+// `embed` mounts the read-only embed view (docs/specs/013-workspace/embeds.md): same state, same
 // EditorView, with the chrome / identity / edit gates flipped by the
 // flag. The /live/embed route passes it; the /diagram route doesn't.
 export default function LivePage({ embed = false }: { embed?: boolean } = {}) {
   const state = useEditorState({ embed });
-  // Anonymous telemetry (spec/22): one emit per rendered embed iframe
+  // Anonymous telemetry (docs/specs/017-telemetry/telemetry.md): one emit per rendered embed iframe
   // document. Fires once on mount; the /diagram route never sets `embed`.
   useEffect(() => {
     if (embed) track('Session', 'Opened', 'Embed');
@@ -117,7 +117,7 @@ export default function LivePage({ embed = false }: { embed?: boolean } = {}) {
       <ApiErrorPage onRetry={() => window.location.reload()} message={LOAD_ERROR_MESSAGE} />
     );
     // Embed frames get the bare retry card: an app header + Explorer
-    // panel inside someone else's page is noise (spec/33).
+    // panel inside someone else's page is noise (docs/specs/013-workspace/embeds.md).
     return embed ? (
       <EmbedShell>{card}</EmbedShell>
     ) : (
@@ -143,11 +143,11 @@ export default function LivePage({ embed = false }: { embed?: boolean } = {}) {
     );
   }
 
-  // Password gate (spec/24): a visitor opened a protected diagram's
+  // Password gate (docs/specs/013-workspace/share-password.md): a visitor opened a protected diagram's
   // share link and hasn't supplied a valid password yet. Submitting
   // sets the session password and bumps passwordRetry to re-run the
   // bootstrap, which now carries the password on every request. In an
-  // embed the gate renders headerless inside the iframe (spec/33).
+  // embed the gate renders headerless inside the iframe (docs/specs/013-workspace/embeds.md).
   if (sharePasswordGate) {
     return (
       <StatusShell title="Password required" showHeader={!embed}>
@@ -175,7 +175,7 @@ export default function LivePage({ embed = false }: { embed?: boolean } = {}) {
 
   return (
     <EditorContext.Provider value={state}>
-      {/* Owner-scoped custom themes (spec/44): keyed by the current
+      {/* Owner-scoped custom themes (docs/specs/011-theme/custom-themes.md): keyed by the current
           user's id (Clerk or guest self id) so the theme picker /
           builder share one source of truth and getTheme resolves saved
           themes referenced by this diagram's tabs. */}
@@ -225,7 +225,7 @@ function StatusShell({
   );
 }
 
-// The bare embed status surface (spec/33): no header, no Explorer — an
+// The bare embed status surface (docs/specs/013-workspace/embeds.md): no header, no Explorer — an
 // app header + Explorer inside someone else's iframe would be noise.
 function EmbedShell({ children }: { children: ReactNode }) {
   return <main className="relative h-dvh bg-slate-50 dark:bg-slate-950">{children}</main>;

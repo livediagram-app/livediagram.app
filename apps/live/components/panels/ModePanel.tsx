@@ -5,8 +5,8 @@ import type { HelpArticleKey } from '@/lib/help-articles';
 
 // The chrome every MODE panel wears: Avatar, Eraser, Format, Laser, Spotlight.
 //
-// These five are the panels that exist only while their tool does (spec/111 for
-// the Laser, spec/101 for Avatar, and the same shape for the rest). They are
+// These five are the panels that exist only while their tool does (docs/specs/008-canvas/laser-panel.md for
+// the Laser, docs/specs/008-canvas/avatar-mode.md for Avatar, and the same shape for the rest). They are
 // deliberately identical outside their bodies — same corner, same width as the
 // Palette they stack under, same collapse behaviour — because the top-right
 // column has to read as one edge rather than five panels that each drifted a
@@ -32,7 +32,7 @@ export type ModePanelProps = MovablePanelPlacementProps & {
 /** Extras a mode panel may put in its header: a settings gear, a help link. */
 type ModePanelExtras = {
   headerActions?: ReactNode;
-  /** The article explaining this mode (spec/56), shown as `?` in the header. */
+  /** The article explaining this mode (docs/specs/018-help/contextual-help-links.md), shown as `?` in the header. */
   helpArticle?: HelpArticleKey;
 };
 

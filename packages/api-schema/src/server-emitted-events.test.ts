@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { isServerEmittedEvent, SERVER_EMITTED_EVENT_PAIRS } from './server-emitted-events';
 import { TELEMETRY_ACTIONS, TELEMETRY_CATEGORIES } from './telemetry-schema';
 
-describe('server-emitted telemetry pairs (spec/22)', () => {
+describe('server-emitted telemetry pairs (docs/specs/017-telemetry/telemetry.md)', () => {
   it('matches the pairs the api worker owns, by category and action', () => {
     expect(isServerEmittedEvent({ category: 'Session', action: 'SignedUp' })).toBe(true);
     expect(isServerEmittedEvent({ category: 'Session', action: 'SignedIn' })).toBe(true);

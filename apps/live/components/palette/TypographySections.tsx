@@ -32,7 +32,7 @@ const TEXT_PADDING_OPTIONS: { key: Padding; label: string }[] = [
 ];
 
 // The Size tiles on their own, for a menu section that owns a text size but
-// not a label: a chart's key and a Legend card (spec/53), which have no Text
+// not a label: a chart's key and a Legend card (docs/specs/009-elements/pie-chart.md), which have no Text
 // flyout because they have no label to type. `withScale` is off there, since
 // a key has nothing to fit its text to.
 export function TextSizeTiles({
@@ -72,7 +72,7 @@ export function TextSizeTiles({
   );
 }
 
-// A key's Text Size (spec/53), captioned the way the Chart section captions its
+// A key's Text Size (docs/specs/009-elements/pie-chart.md), captioned the way the Chart section captions its
 // Legend placement tiles, so it can sit under them or under a Legend's rows.
 export function LegendTextSize(props: Omit<Parameters<typeof TextSizeTiles>[0], 'withScale'>) {
   return (

@@ -1,6 +1,6 @@
 import type { SearchResultItem } from '@/lib/search';
 
-// The search panel's result-kind glyphs (spec/09 Search panel), lifted
+// The search panel's result-kind glyphs (docs/specs/008-canvas/canvas-and-palette.md Search panel), lifted
 // out of SearchPanel: a compact icon per result kind so users can scan
 // the list by shape without reading labels. The input's magnifier is the
 // shared SearchIcon from @livediagram/ui.

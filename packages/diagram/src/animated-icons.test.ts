@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_ICON_ANIMATION, ICON_ANIMATIONS, defaultIconAnimation } from './animation';
 
-// The catalogue carries four glyphs drawn to MOVE (spec/09): a spinner whose
+// The catalogue carries four glyphs drawn to MOVE (docs/specs/008-canvas/canvas-and-palette.md): a spinner whose
 // arc has a gap so the rotation reads, a gear, a heart, a broadcast signal.
 // The per-element animation is opt-in for every other icon, which left these
 // four sitting still unless you went and found the menu.

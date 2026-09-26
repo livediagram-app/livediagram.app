@@ -79,7 +79,7 @@ describe('noteRuns', () => {
     expect(noteRuns('rich', runs)).toBe(runs);
   });
 
-  it('falls back to the plain mirror for a pre-spec/92 note', () => {
+  it('falls back to the plain mirror for a note from before docs/specs/009-elements/rich-text-notes.md', () => {
     expect(noteRuns('plain', undefined)).toEqual([{ text: 'plain' }]);
     expect(noteRuns('plain', [])).toEqual([{ text: 'plain' }]);
     expect(noteRuns(undefined, undefined)).toEqual([]);

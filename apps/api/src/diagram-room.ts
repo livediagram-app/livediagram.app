@@ -77,7 +77,7 @@ const MAX_MESSAGE_CHARS = 256 * 1024;
 // which owns the clamp it applies to a hello frame's tabId.
 
 // How many recent mutation ops the room keeps for reconnect catch-up
-// (spec/75, Level 1). A reconnecting client within this many ops of the
+// (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1). A reconnecting client within this many ops of the
 // live tail replays the delta; further behind, it re-hydrates from D1.
 // Bounded so an idle-but-connected room can't grow the buffer without end;
 // the log lives in memory (like opRates) and resets on hibernation, which
@@ -85,9 +85,9 @@ const MAX_MESSAGE_CHARS = 256 * 1024;
 const OP_LOG_LIMIT = 256;
 
 // DO storage key holding `{ epoch, seq }` so the room keeps its ordering
-// identity across a hibernation wake (spec/97).
+// identity across a hibernation wake (docs/specs/012-collaboration/resync-without-reload.md).
 const ORDER_STATE_KEY = 'order-state';
-// The facilitator baton (spec/149). In storage rather than memory so it
+// The facilitator baton (docs/specs/012-collaboration/facilitator.md). In storage rather than memory so it
 // survives a hibernation cycle: the holder's refresh must find the same token
 // waiting for it, and a room that forgot the baton every time it went to sleep
 // would drop the role mid-session for no reason the user could see.
@@ -102,7 +102,7 @@ const FACILITATOR_KEY = 'facilitator';
 // every connected peer):
 //
 //   - `presenceId`: the server-assigned ephemeral presence id
-//     (spec/61 §6), minted once at upgrade time.
+//     (docs/specs/015-api/public-api-and-tokens.md §6), minted once at upgrade time.
 //   - `verifiedRole`: the server-resolved role from X-Verified-Role —
 //     the trust boundary. It must never be re-derivable from anything
 //     the client sends, so it's captured at the upgrade and pinned here.
@@ -124,13 +124,13 @@ type SessionAttachment = {
   verifiedRole?: 'edit' | 'view';
   presence: ParticipantPresence | null;
   //   - `isOwner`: whether the api resolved this upgrade as the diagram's
-  //     OWNER (spec/149). A boolean, never an id: it is the one thing the
+  //     OWNER (docs/specs/012-collaboration/facilitator.md). A boolean, never an id: it is the one thing the
   //     facilitator baton needs that role alone cannot answer ("the owner can
-  //     always take it back"), and carrying it as a bit keeps spec/61 §6's
+  //     always take it back"), and carrying it as a bit keeps docs/specs/015-api/public-api-and-tokens.md §6's
   //     promise that no real identity reaches the room.
   isOwner?: boolean;
   //   - `multiplayer`: this session belongs to a multiplayer session the
-  //     room has already counted (Diagram·Used·Multiplayer, spec/22). See
+  //     room has already counted (Diagram·Used·Multiplayer, docs/specs/017-telemetry/telemetry.md). See
   //     room-multiplayer.ts for why the mark lives here.
   multiplayer?: boolean;
 };
@@ -151,9 +151,9 @@ export class DiagramRoom implements DurableObject {
   // in-memory period.
   opRates: Map<WebSocket, { count: number; windowStart: number }> = new Map();
 
-  // Ordering state for reconnect catch-up (spec/75, Level 1).
+  // Ordering state for reconnect catch-up (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1).
   //
-  // `epoch` + `seq` are PERSISTED (spec/97); `opLog` is not. This split used
+  // `epoch` + `seq` are PERSISTED (docs/specs/012-collaboration/resync-without-reload.md); `opLog` is not. This split used
   // to be "all three in memory", on the reasoning that a hibernation wake
   // only ever forces a resync, which is safe and rare. The first half held;
   // the second didn't. Hibernation is routine — it's the whole point of the
@@ -176,10 +176,10 @@ export class DiagramRoom implements DurableObject {
   // numbers: a client compares the epoch on an incoming op against the last
   // it saw to know whether the room restarted (seq reset) versus advanced.
   epoch: string = crypto.randomUUID();
-  // Who is running the session (spec/149), restored in the constructor.
+  // Who is running the session (docs/specs/012-collaboration/facilitator.md), restored in the constructor.
   facilitator: FacilitatorState = FREE_BATON;
-  // The collaboration ledger (spec/152 phase 3) and the running poll
-  // (spec/152), each in its own module; see room-ledger-store / room-live-poll.
+  // The collaboration ledger (docs/specs/012-collaboration/collab-race-hardening.md phase 3) and the running poll
+  // (docs/specs/012-collaboration/collab-race-hardening.md), each in its own module; see room-ledger-store / room-live-poll.
   ledger: RoomLedgerStore;
   poll: RoomLivePoll;
 
@@ -188,7 +188,7 @@ export class DiagramRoom implements DurableObject {
   // from a fake state alone; without it the emit is skipped.
   env: Env | undefined;
 
-  // The Q&A board write queue (spec/151). Every board write for this diagram
+  // The Q&A board write queue (docs/specs/012-collaboration/qa-board.md). Every board write for this diagram
   // runs through here ONE AT A TIME. A Durable Object only serialises the
   // synchronous parts of its handlers: while one write is awaiting D1, the
   // runtime happily starts the next request, and two read-modify-writes of the
@@ -241,7 +241,7 @@ export class DiagramRoom implements DurableObject {
       const op = body?.op;
       if (!op) return new Response('missing op', { status: 400 });
       // `ordered` asks for a seq + a catch-up log slot: a system op that
-      // changes the document (a Q&A board write, spec/151) must replay to a
+      // changes the document (a Q&A board write, docs/specs/012-collaboration/qa-board.md) must replay to a
       // peer whose socket blipped, the same as a peer's own mutation would.
       if (body.ordered === true) this.broadcastOrderedSystemOp(op);
       else this.broadcastSystemOp(op);
@@ -250,7 +250,7 @@ export class DiagramRoom implements DurableObject {
     if (request.method === 'POST' && url.pathname === '/qa') {
       return this.handleQaWrite(request);
     }
-    // Internal: a document change the WORKER made (spec/152), relayed into the
+    // Internal: a document change the WORKER made (docs/specs/012-collaboration/collab-race-hardening.md), relayed into the
     // ordered stream like a peer's mutation: sequenced, logged for catch-up,
     // sent to everybody. A view-role visitor's comment is written by the api,
     // not by a client socket (the room refuses view-role mutations), so
@@ -264,7 +264,7 @@ export class DiagramRoom implements DurableObject {
       this.sequenceMutation('system', opForTheWire(op));
       return new Response(null, { status: 204 });
     }
-    // Internal: a tab's collaboration ledger (spec/152 phase 3), which the
+    // Internal: a tab's collaboration ledger (docs/specs/012-collaboration/collab-race-hardening.md phase 3), which the
     // api merges into a save before writing D1 so a stale snapshot can't
     // erase an answer the room has seen. Same trust argument as /broadcast:
     // only the worker can reach it.
@@ -307,7 +307,7 @@ export class DiagramRoom implements DurableObject {
   // session state (attachment) and hand it to the runtime. Split out of
   // fetch so tests can drive sessions without constructing WebSocketPair.
   acceptSession(ws: WebSocket, verifiedRole?: 'edit' | 'view', isOwner = false): void {
-    // Per-session ephemeral presence id (spec/61 §6): the broadcast presence /
+    // Per-session ephemeral presence id (docs/specs/015-api/public-api-and-tokens.md §6): the broadcast presence /
     // cursor id is a fresh server-assigned random, NOT the connector's real
     // owner id — so a co-present collaborator (incl. a view-only share
     // visitor) never reads an owner id off a presence frame. Being
@@ -347,7 +347,7 @@ export class DiagramRoom implements DurableObject {
   // without the runtime noticing yet, so we just shed its rate entry — the
   // runtime reaps the socket itself.
   // Deliver to the ONE session holding `presenceId`, skipping the sender.
-  // Used by the addressed presence ops (the Avatar-mode shove, spec/101):
+  // Used by the addressed presence ops (the Avatar-mode shove, docs/specs/008-canvas/avatar-mode.md):
   // everyone else has no use for the packet, and fanning it out would leak who
   // is being pushed to the whole room.
   sendToPresence(presenceId: string, payload: ServerMessage, except?: WebSocket): void {
@@ -379,7 +379,7 @@ export class DiagramRoom implements DurableObject {
 
   // Put a mutation into the ordered stream: a seq, the catch-up log, every
   // socket but the sender's, and the ledger. One path for a peer's op and for
-  // one the worker made (spec/152), so the two can't drift. Returns the seq.
+  // one the worker made (docs/specs/012-collaboration/collab-race-hardening.md), so the two can't drift. Returns the seq.
   private sequenceMutation(from: string, op: unknown, except?: WebSocket): number {
     const seq = ++this.seq;
     this.persistOrder();
@@ -397,7 +397,7 @@ export class DiagramRoom implements DurableObject {
   }
 
   // One Q&A board write, queued behind every other one for this diagram
-  // (spec/151). Reached only from the api worker's qa route, which has already
+  // (docs/specs/012-collaboration/qa-board.md). Reached only from the api worker's qa route, which has already
   // checked access and derived the actor, so the body is trusted the same way
   // /broadcast's is. The broadcast happens INSIDE the queued step, so peers
   // receive board states in rev order.
@@ -431,7 +431,7 @@ export class DiagramRoom implements DurableObject {
       : Response.json({ error: 'qa_write_failed' }, { status: result.status });
   }
 
-  // A system op that changes the document (spec/151): sequenced and logged
+  // A system op that changes the document (docs/specs/012-collaboration/qa-board.md): sequenced and logged
   // exactly like a client mutation, so `resolveCatchup` replays it. Nobody is
   // excluded from the relay (there is no sending socket), so there is no
   // separate `cursor` frame to send back either.
@@ -466,7 +466,7 @@ export class DiagramRoom implements DurableObject {
     if (msg.kind === 'hello') {
       // Force the server-resolved role AND the server-assigned ephemeral id
       // onto the stored presence: the hello frame's own `role` / `id` are
-      // not trusted. The id override hides the real owner id (spec/61 §6)
+      // not trusted. The id override hides the real owner id (docs/specs/015-api/public-api-and-tokens.md §6)
       // and stops a joiner impersonating another peer; the role override is
       // the Viewer / Editor lie-defence. Both come from the attachment, the
       // only per-session store that survives hibernation. Fields are built
@@ -478,7 +478,7 @@ export class DiagramRoom implements DurableObject {
       // Where the ordered stream stands as this session joins, so a later
       // reconnect asks for what came after it, not for the whole log.
       this.sendTo(ws, { kind: 'cursor', epoch: this.epoch, seq: this.seq });
-      // The running poll, and every answer so far (spec/152).
+      // The running poll, and every answer so far (docs/specs/012-collaboration/collab-race-hardening.md).
       for (const op of this.poll.replayOps()) this.sendTo(ws, { kind: 'op', from: 'system', op });
       this.broadcastPresence();
       this.noteMultiplayer();
@@ -488,7 +488,7 @@ export class DiagramRoom implements DurableObject {
       // depend on how the room had been sleeping, and the room may already have
       // told everybody that nobody is facilitating.
       this.sweepLapsedBaton();
-      // The baton coming home from a refresh (spec/149): the token is the
+      // The baton coming home from a refresh (docs/specs/012-collaboration/facilitator.md): the token is the
       // proof, because the room has no identities to check it against. It is
       // announced to NOBODY — a refresh is not an event, and the holder's own
       // screen would otherwise report that somebody had made them the
@@ -520,7 +520,7 @@ export class DiagramRoom implements DurableObject {
       return;
     }
     if (msg.kind === 'sync') {
-      // A (re)connecting client asks what it missed (spec/75, Level 1).
+      // A (re)connecting client asks what it missed (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1).
       // Answer from the in-memory op log or tell it to re-hydrate. Costs
       // no state change, so it's allowed from any connected session
       // (a view-only peer needs to catch up too).
@@ -547,13 +547,13 @@ export class DiagramRoom implements DurableObject {
       if (isSystemOpKind(opKind)) return;
       const isPresenceOp = isPresenceOpKind(opKind);
       if (sender.role !== 'edit' && !isPresenceOp) return;
-      // Running the session belongs to whoever holds the baton (spec/149).
+      // Running the session belongs to whoever holds the baton (docs/specs/012-collaboration/facilitator.md).
       // Only these two ops can be enforced here: a poll start / end is its own
       // kind, while the timer and the dot vote ride the same `tab` /
       // `tab-meta` ops as every shape move, so telling them apart would mean
       // inspecting payloads for no gain against somebody who can already save
       // the whole document over REST. Those stay a client-side rule, which is
-      // what spec/149 says out loud: who is driving, not who is allowed.
+      // what docs/specs/012-collaboration/facilitator.md says out loud: who is driving, not who is allowed.
       if (opKind === 'poll-start' || opKind === 'poll-end') {
         // Same reason the hello path sweeps: a baton whose holder never came
         // back must not keep refusing polls just because no alarm has fired.
@@ -576,12 +576,12 @@ export class DiagramRoom implements DurableObject {
       }
       // Presence ops relay unordered (ephemeral, no catch-up). Mutation
       // ops get a monotonic seq within the epoch and land in the catch-up
-      // log so a reconnecting peer can replay the delta (spec/75, Level 1).
+      // log so a reconnecting peer can replay the delta (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1).
       if (isPresenceOp) {
-        // A shove (spec/101) is ADDRESSED, not broadcast: it asks one peer to
+        // A shove (docs/specs/008-canvas/avatar-mode.md) is ADDRESSED, not broadcast: it asks one peer to
         // step aside, and only the room knows which socket that is. Presence
         // ids are server-minted precisely so a client never learns another
-        // peer's real owner id (spec/61 §6) — which also means a receiver can't
+        // peer's real owner id (docs/specs/015-api/public-api-and-tokens.md §6) — which also means a receiver can't
         // recognise its own id in the packet. So the routing happens here, and
         // a client acts on any avatar-push that reaches it.
         if (opKind === 'poll-answer') this.poll.noteAnswer(msg.op, sender.id);
@@ -597,7 +597,7 @@ export class DiagramRoom implements DurableObject {
         // No comment author id leaves the room, whatever a client sent: it is
         // the author's owner id, a guest's credential. And a posted comment
         // carries the name of the session that sent it, the one on its
-        // cursor, not whatever the frame claimed (spec/152).
+        // cursor, not whatever the frame claimed (docs/specs/012-collaboration/collab-race-hardening.md).
         const op = stampCommentAuthor(opForTheWire(msg.op), sender);
         const seq = this.sequenceMutation(sender.id, op, ws);
         // The relay skips the sender, so tell it the seq its op took: its own
@@ -608,7 +608,7 @@ export class DiagramRoom implements DurableObject {
     }
   }
 
-  // Answer a client's `sync` (spec/75, Level 1): given the last epoch+seq it
+  // Answer a client's `sync` (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1): given the last epoch+seq it
   // applied, either replay the ops it missed or tell it to re-hydrate.
   //
   //   - Same epoch, caught up (lastSeq >= seq) → empty delta.
@@ -639,7 +639,7 @@ export class DiagramRoom implements DurableObject {
     }
   }
 
-  // ── Facilitator (spec/149) ───────────────────────────────────────────
+  // ── Facilitator (docs/specs/012-collaboration/facilitator.md) ───────────────────────────────────────────
 
   /** What the baton rules need to know about one session. */
   private askerOf(session: SessionAttachment): Asker {
@@ -738,10 +738,10 @@ export class DiagramRoom implements DurableObject {
   }
 
   /**
-   * Tell one peer to let go of an element (spec/07 lock, spec/149 facilitator).
+   * Tell one peer to let go of an element (docs/specs/007-editor/live-app.md lock, docs/specs/012-collaboration/facilitator.md facilitator).
    *
    * Sent to the holder's socket ALONE, which is the entire addressing scheme:
-   * a client is never told its own presence id (spec/61 §6), so a broadcast
+   * a client is never told its own presence id (docs/specs/015-api/public-api-and-tokens.md §6), so a broadcast
    * naming a target would arrive at nobody who could recognise it. The holder
    * then drops the selection and re-broadcasts its own `select`, which clears
    * the lock everywhere through the path that already exists — so the room
@@ -827,7 +827,7 @@ export class DiagramRoom implements DurableObject {
   }
 
   // Count the room's multiplayer session once, from the one place that sees
-  // every participant (spec/22). Runs after each hello, the only moment the
+  // every participant (docs/specs/017-telemetry/telemetry.md). Runs after each hello, the only moment the
   // hello'd roster can grow; the decision and its session rule live in
   // room-multiplayer.ts.
   private noteMultiplayer(): void {
@@ -858,7 +858,7 @@ export class DiagramRoom implements DurableObject {
 
   broadcastPresence(except?: WebSocket): void {
     // Send each client the roster MINUS its own entry. The broadcast presence
-    // id is a fresh server-random per session (spec/61 §6), so a client can't
+    // id is a fresh server-random per session (docs/specs/015-api/public-api-and-tokens.md §6), so a client can't
     // recognise its own entry by id to filter it out — including it makes the
     // user show up as a participant twice (once from this list, once from the
     // local self entry the editor always renders). The room is the only place

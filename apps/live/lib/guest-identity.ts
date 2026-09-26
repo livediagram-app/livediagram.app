@@ -1,6 +1,6 @@
 // Resolve a guest identity that is SIGNED wherever possible, so the
 // sign-up migrate can later prove possession of the guest id rather than
-// merely knowing it (spec/04 — guest ids leak via DTOs / presence, so
+// merely knowing it (docs/specs/014-identity/auth-and-guest-access.md — guest ids leak via DTOs / presence, so
 // "knows the id" must not be enough to claim its data).
 //
 // States handled:
@@ -45,7 +45,7 @@ async function resolveSignedGuestIdentity(): Promise<GuestIdentity> {
   const existingSig = getGuestSelfSig();
   if (existingId && existingSig) return { id: existingId, sig: existingSig };
   // No id at all → this browser has never had a participant: the
-  // daily new-visitors signal (spec/22). Emitted per adopted branch
+  // daily new-visitors signal (docs/specs/017-telemetry/telemetry.md). Emitted per adopted branch
   // below rather than up here so the offline fallback doesn't double
   // count (ensureGuestSelfId reports its own mint), and through the
   // once-per-load reportParticipantCreated so a local mint that raced

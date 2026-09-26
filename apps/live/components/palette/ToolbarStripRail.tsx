@@ -2,7 +2,7 @@
 
 import { isValidElement, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 
-// The moving part of the Toolbar layout's strip (spec/148): the tiles of the
+// The moving part of the Toolbar layout's strip (docs/specs/007-editor/toolbar-layout.md): the tiles of the
 // current category plus its More button. Switching category can take the
 // strip from three tiles to ten, so rather than snapping to the new size:
 //
@@ -13,7 +13,7 @@ import { isValidElement, useLayoutEffect, useRef, useState, type ReactNode } fro
 //   so they leave from where they were instead of vanishing.
 //
 // Within a category the tiles can also REORDER (a used tile moves to the
-// front, spec/148). Each tile is keyed by its own React key, so a tile that
+// front, docs/specs/007-editor/toolbar-layout.md). Each tile is keyed by its own React key, so a tile that
 // moves keeps its node: it slides from its old slot to its new one (FLIP), a
 // tile new to the strip pops in, and one pushed off the end shrinks away where
 // it stood. Other re-renders (a tile lighting up while its draw is armed)

@@ -1,5 +1,5 @@
 // Month-grid arithmetic, shared by the calendar view and the mini
-// calendar (spec/138 §2.2).
+// calendar (docs/specs/013-workspace/timeline.md §2.2).
 //
 // Pure, and CIVIL rather than UTC: a cell is a calendar square, not an
 // instant. The one function that converts a timestamp (`monthKeyOf`)

@@ -14,7 +14,7 @@ export type TabResponse = { tab: TabRecord };
 export type DiagramListResponse = { diagrams: DiagramSummary[] };
 // POST /api/diagrams/:id/share (+ extend).
 export type ShareLinkResponse = { link: ShareLink };
-// GET /api/teams: the teams the caller belongs to (spec/32).
+// GET /api/teams: the teams the caller belongs to (docs/specs/013-workspace/teams.md).
 export type TeamsResponse = { teams: TeamListItem[] };
-// GET /api/teams/:id/library: a team's shared folders + diagrams (spec/35).
+// GET /api/teams/:id/library: a team's shared folders + diagrams (docs/specs/013-workspace/team-shared-diagrams.md).
 export type TeamLibraryResponse = { folders: Folder[]; diagrams: DiagramSummary[] };

@@ -11,7 +11,7 @@ import {
 } from './palette-dynamic-tiles';
 import { visibleTiles } from './PaletteTileGrid';
 
-// Which tiles the Toolbar layout's strip shows for a category (spec/148):
+// Which tiles the Toolbar layout's strip shows for a category (docs/specs/007-editor/toolbar-layout.md):
 // the first STRIP_TILE_LIMIT of it, and whether a More button is needed to
 // reach the rest. "First" is by use: recently-used tiles lead, most recent
 // first, and the rest follow in the category's own order.
@@ -68,7 +68,7 @@ function allTilesFor(categoryId: string, favouriteIds: readonly string[]): Palet
       return favouriteIds
         .map(resolveFavouriteTile)
         .filter((t): t is PaletteTileDef => t !== undefined);
-    // Catalogue order is a placeholder for "the ones people use" (spec/148).
+    // Catalogue order is a placeholder for "the ones people use" (docs/specs/007-editor/toolbar-layout.md).
     // Sliced BEFORE building tile defs so a 180-glyph catalogue doesn't build
     // 180 JSX glyphs to show ten.
     case 'icons':

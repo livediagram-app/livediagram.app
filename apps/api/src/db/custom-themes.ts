@@ -1,4 +1,4 @@
-// custom_themes — user-built themes, owner-scoped (spec/44). Mirrors
+// custom_themes — user-built themes, owner-scoped (docs/specs/011-theme/custom-themes.md). Mirrors
 // the folders resource: flat owner-keyed rows, newest-first list, plus
 // a JSON `definition` column the row mapper parses.
 
@@ -71,6 +71,6 @@ export async function updateCustomTheme(
 export async function deleteCustomTheme(env: Env, id: string): Promise<void> {
   // Diagrams that reference this theme id keep rendering: the editor's
   // getTheme falls back to the default when an id no longer resolves
-  // (spec/44), so there's nothing to cascade here.
+  // (docs/specs/011-theme/custom-themes.md), so there's nothing to cascade here.
   await env.DB.prepare('DELETE FROM custom_themes WHERE id = ?').bind(id).run();
 }

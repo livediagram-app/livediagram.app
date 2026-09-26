@@ -1,12 +1,12 @@
 // Which BODY an element draws in an export, and the list of kinds that have
-// one (spec/143).
+// one (docs/specs/020-import-export/export-fidelity.md).
 //
 // Two things that must agree, so they live together: the dispatch below picks
 // an element's body, and `shapeHasBespokeBody` names the kinds it picks one
 // for. `boxedNeedsSvgRaster` reads the second to decide what the PNG / PDF
 // path has to rasterise instead of drawing with its canvas-2D drawers, so a
 // kind added to one and not the other is a kind that exports as a chart in an
-// SVG and a plain box in a PNG. That is the exact bug spec/143 exists to stop,
+// SVG and a plain box in a PNG. That is the exact bug docs/specs/020-import-export/export-fidelity.md exists to stop,
 // and keeping the pair in one module is how it is stopped.
 
 import { isCollabPanelShape } from './collab-shapes';
@@ -85,12 +85,12 @@ export function svgElementBody(
   if (isRatingShape(el.shape)) return svgRating(el, stroke);
   if (isRailShape(el.shape)) return svgTimelineRail(el, stroke, labelColor, fontFamily);
   if (el.shape === 'entity') return svgEntityRows(el, labelColor, fontFamily);
-  // The web components (spec/147) lay out their own text, label included.
+  // The web components (docs/specs/009-elements/web-components-and-no-groups.md) lay out their own text, label included.
   if (isWebComponentShape(el.shape))
     return svgWebComponent(el, { stroke, fill, labelColor, label, fontFamily });
   if (el.shape === 'page')
     return svgPageMasthead(el, PADDING_PX[el.padding ?? defaultPadding(el)], fontFamily);
-  // The Behaviour + Collaborate faces (spec/103 to /137), which all exported
+  // The Behaviour + Collaborate faces (docs/specs/009-elements/mode-button.md to /137), which all exported
   // as the same blank labelled box as each other.
   return svgFace(
     svgBehaviourFace(el, label, labelColor, stroke) ?? svgCollabFace(el, label, labelColor) ?? '',

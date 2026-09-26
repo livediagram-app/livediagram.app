@@ -34,7 +34,7 @@ async function _apiLoadTab(
   tabId: string,
   shareCode: string | null,
 ): Promise<Tab | null> {
-  // Offline Mode (spec/76): an offline diagram's tabs come from IndexedDB.
+  // Offline Mode (docs/specs/006-diagram/offline-mode.md): an offline diagram's tabs come from IndexedDB.
   if (await isOfflineId(diagramId)) return offlineLoadTab(diagramId, tabId);
   const res = await apiFetch(`${API_BASE}/diagrams/${diagramId}/tabs/${tabId}`, {
     headers: await apiHeaders(ownerId, { share: shareCode }),
@@ -67,7 +67,7 @@ export const apiLoadTab = dedupeInFlight(
 // instead of shipping every tab on every keystroke.
 //
 // `allowEmpty` opts into overwriting a tab whose stored row has content
-// with an empty one. The server refuses that by default (spec/13
+// with an empty one. The server refuses that by default (docs/specs/006-diagram/per-tab-storage.md
 // data-loss backstop) so a never-loaded placeholder PUT can't wipe a
 // real row. The caller sets it only when the tab's content was
 // authoritatively loaded — i.e. a genuine reset-canvas / delete-all,
@@ -79,7 +79,7 @@ export async function apiSaveTab(
   shareCode: string | null = null,
   // `roomCursor`: where this client stood in the realtime room when it took
   // the snapshot, so the api merges only the room's answers it hadn't seen
-  // (spec/152 phase 3).
+  // (docs/specs/012-collaboration/collab-race-hardening.md phase 3).
   opts: { allowEmpty?: boolean; roomCursor?: { epoch: string; seq: number } | null } = {},
 ): Promise<void> {
   if (await isOfflineId(diagramId)) return offlineSaveTab(diagramId, tab, Date.now());
@@ -96,7 +96,7 @@ export async function apiSaveTab(
   await expectOkVoid(res, 'save tab');
 }
 
-// Last-ditch `beforeunload` flush of pending tab/meta writes (spec/13),
+// Last-ditch `beforeunload` flush of pending tab/meta writes (docs/specs/006-diagram/per-tab-storage.md),
 // so a fast edit -> reload doesn't lose changes. Lives here at the
 // persistence boundary rather than inline in useAutosave so the editor
 // hook holds no raw fetch — the debounced save already goes through
@@ -120,14 +120,14 @@ export function flushDiagramSavesBeacon(args: {
   deletedIds: string[];
   // Tabs whose content is authoritative in memory — only these may
   // authorise an empty-body overwrite (X-Allow-Empty), mirroring the
-  // debounced path's spec/13 data-loss backstop.
+  // debounced path's docs/specs/006-diagram/per-tab-storage.md data-loss backstop.
   loadedTabIds: Set<string>;
   orderChanged: boolean;
   nameChanged: boolean;
   name: string;
   tabs: Tab[];
 }): void {
-  // Offline Mode (spec/76): best-effort flush to IndexedDB. A beforeunload
+  // Offline Mode (docs/specs/006-diagram/offline-mode.md): best-effort flush to IndexedDB. A beforeunload
   // handler can't await, so these writes may not finish — the 600ms debounced
   // autosave covers all but the final edit window. Sync id check off the cache.
   if (isOfflineIdSync(args.diagramId)) {
@@ -164,7 +164,7 @@ export function flushDiagramSavesBeacon(args: {
     if (sig) base['X-Owner-Sig'] = sig;
   }
   if (args.shareCode) base['X-Share-Code'] = args.shareCode;
-  // The share password (spec/24) is a synchronous session read too —
+  // The share password (docs/specs/013-workspace/share-password.md) is a synchronous session read too —
   // without it an edit-role visitor's flush 403s on a protected
   // diagram, losing the final debounce window's edits.
   const sharePassword = getSessionSharePassword();
@@ -266,7 +266,7 @@ export async function apiDeleteComment(
 }
 
 // Link an existing tab into another of the caller's diagrams
-// (spec/17). After this returns, the tab body is shared: edits
+// (docs/specs/006-diagram/tab-diagram-many-to-many.md). After this returns, the tab body is shared: edits
 // from either diagram write to the same `tabs.data` row. Returns
 // the target diagram's summary view of the now-attached tab so
 // the caller can update its TabBar without a full diagram

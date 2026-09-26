@@ -15,7 +15,7 @@ import { useNoteActions } from './useNoteActions';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn(), titleCaseType: (s: string) => s }));
 
-// The note acts on an event-storming board (spec/139), through the hook that
+// The note acts on an event-storming board (docs/specs/021-event-storming/event-storming.md), through the hook that
 // commits them. Next-note placement is pinned in lib/next-note-add.test.ts;
 // what is tested here is the ACT: what the catalogue decides, what the board
 // commits, what the gate refuses, and that a note arrives through the one

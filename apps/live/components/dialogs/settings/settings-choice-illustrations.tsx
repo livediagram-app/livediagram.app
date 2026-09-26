@@ -20,7 +20,7 @@ type ChoiceDrawing = {
   fullColour?: boolean;
 };
 
-// --- Panel layout (spec/09, spec/148) --------------------------------------
+// --- Panel layout (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/007-editor/toolbar-layout.md) --------------------------------------
 
 const FloatingArt = (
   <Window>
@@ -57,7 +57,7 @@ const ToolbarArt = (
   </Window>
 );
 
-// --- Appearance (spec/07) --------------------------------------------------
+// --- Appearance (docs/specs/007-editor/live-app.md) --------------------------------------------------
 
 // The editor in a FIXED mode. Unlike Window these colours do not follow the
 // dialog's own light / dark mode: the drawing is of the mode, so the dark one

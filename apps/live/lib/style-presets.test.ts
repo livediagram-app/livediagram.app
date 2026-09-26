@@ -289,7 +289,7 @@ describe('applyArrowPresetToEl', () => {
 describe('applyShadowToEl', () => {
   const shadow = { offsetX: 0, offsetY: 4, blur: 12, opacity: 0.25 };
 
-  it('sets a clamped shadow on the body-drawing boxed types (spec/86)', () => {
+  it('sets a clamped shadow on the body-drawing boxed types (docs/specs/008-canvas/element-shadows.md)', () => {
     for (const type of ['shape', 'sticky', 'image', 'link-card']) {
       const out = applyShadowToEl(el(type), shadow) as { shadow?: unknown };
       expect(out.shadow, type).toEqual(shadow);

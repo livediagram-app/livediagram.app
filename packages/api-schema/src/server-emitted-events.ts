@@ -1,4 +1,4 @@
-// The telemetry pairs only the api worker writes (spec/22). Each one is
+// The telemetry pairs only the api worker writes (docs/specs/017-telemetry/telemetry.md). Each one is
 // counted server-side because the server is the only party that can count it
 // honestly: an email sent from a cron (Email·Sent), a first visit to a shared
 // diagram (Diagram·Joined, once per visitor and diagram), a new Clerk session

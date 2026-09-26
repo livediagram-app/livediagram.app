@@ -65,7 +65,7 @@ function ExplorerImpl({
   onToggleFavourite,
 }: ExplorerProps) {
   // Mobile viewport ⇒ render nothing. Mobile users reach the
-  // Explorer from the AuthControls "Explorer" menu item (spec/07)
+  // Explorer from the AuthControls "Explorer" menu item (docs/specs/007-editor/live-app.md)
   // instead, freeing the small canvas of the floating panel and
   // its bottom-dock entry point. The shared useIsMobileViewport hook
   // re-renders on a desktop → mobile resize / device-rotate, so the
@@ -164,7 +164,7 @@ function ExplorerImpl({
 
   // The anchor argument survives in the row-callback signature (the
   // delete flow's ConfirmPopover still anchors), but the move flow is
-  // a centred modal now (spec/15) and ignores it.
+  // a centred modal now (docs/specs/013-workspace/folders.md) and ignores it.
   const openMovePicker = (diagramId: string) => {
     setMoveTarget({ id: diagramId, teamId: null });
   };
@@ -183,7 +183,7 @@ function ExplorerImpl({
       width={isMobile ? 'w-auto' : 'w-64'}
       onReset={onReset}
       onMoveTo={onMoveTo}
-      // The ⋯ menu (spec/15): new / open, share / export, then search /
+      // The ⋯ menu (docs/specs/013-workspace/folders.md): new / open, share / export, then search /
       // GitHub / settings. It replaced a "+ New" chip whose popover held
       // only the first two.
       headerActions={<ExplorerHeaderMenu onNewDiagram={onNewDiagram} actions={menuActions} />}
@@ -243,13 +243,13 @@ function ExplorerImpl({
                     onOpen={() => onOpenDiagram(currentTeam.id)}
                     onRename={onRenameCurrent}
                     // Any joined member may delete a team diagram
-                    // (spec/35); the api enforces team membership.
+                    // (docs/specs/013-workspace/team-shared-diagrams.md); the api enforces team membership.
                     onDelete={
                       openDeleteConfirm
                         ? (anchor) => openDeleteConfirm(currentTeam.id, anchor)
                         : undefined
                     }
-                    // Change Folder for a team diagram (spec/35): opens the
+                    // Change Folder for a team diagram (docs/specs/013-workspace/team-shared-diagrams.md): opens the
                     // move picker on this team's tree, with Personal Space + the
                     // other teams one Back away. Routed through the
                     // scope-aware onMoveDiagramTo.
@@ -267,7 +267,7 @@ function ExplorerImpl({
                     ownerId={ownerId}
                     // item.shareCode is nulled (no "has a share link"
                     // badge for a shared-with-me row), so authorise the
-                    // thumbnail via the share code separately (spec/67).
+                    // thumbnail via the share code separately (docs/specs/006-diagram/diagram-snapshots.md).
                     thumbnailShareCode={currentShared.shareCode}
                     active
                     onOpen={() => onOpenDiagram(currentShared.id, currentShared.shareCode)}
@@ -282,7 +282,7 @@ function ExplorerImpl({
             stacked accordions) so only one list takes vertical space.
             Shared-with-you diagrams interleave into Recent (matching the
             /explorer page); Personal Space holds the folder tree + Unsorted
-            (spec/15); Teams mirrors it per team (spec/35). The card owns
+            (docs/specs/013-workspace/folders.md); Teams mirrors it per team (docs/specs/013-workspace/team-shared-diagrams.md). The card owns
             its own tab state and hides itself when no section has
             anything to show — see ExplorerSections. */}
         <ExplorerSections
@@ -318,7 +318,7 @@ function ExplorerImpl({
           onDuplicateDiagram={onDuplicateDiagram}
           onMoveDiagramRequest={onMoveDiagramToFolder ? openMovePicker : undefined}
           // A team row's move opens the picker for that team; the pick then
-          // routes through the scope-aware onMoveDiagramTo (spec/35).
+          // routes through the scope-aware onMoveDiagramTo (docs/specs/013-workspace/team-shared-diagrams.md).
           onMoveTeamDiagramRequest={
             onMoveDiagramTo ? (id, teamId) => setMoveTarget({ id, teamId }) : undefined
           }
@@ -329,7 +329,7 @@ function ExplorerImpl({
         <SignInPrompt />
       </div>
 
-      {/* Move-destination modal (spec/15), the same shared placement
+      {/* Move-destination modal (docs/specs/013-workspace/folders.md), the same shared placement
           browser as the /explorer page. With the scope-aware
           onMoveDiagramTo wired (signed-in sessions with teams), the picker
           offers every space — Personal Space plus each team — so a team diagram

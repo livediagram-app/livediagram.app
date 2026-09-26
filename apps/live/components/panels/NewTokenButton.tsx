@@ -1,6 +1,6 @@
 'use client';
 
-// "New token" header action (spec/61): a button that sits in the Explorer
+// "New token" header action (docs/specs/015-api/public-api-and-tokens.md): a button that sits in the Explorer
 // pane header (right of the help button) and opens a popover to create a
 // token, so the creation form is NOT an inline screen in the list. The popover
 // has two states — the name form, then the one-time secret reveal (Copy + Done

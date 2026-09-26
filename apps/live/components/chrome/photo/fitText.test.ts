@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { fitFontPx, WORDS_FONT } from './fitText';
 
-// The words under a box fit the BOX (spec/139 Phase 9): the largest font, from
+// The words under a box fit the BOX (docs/specs/021-event-storming/event-storming.md Phase 9): the largest font, from
 // the default down to a floor, at which they take at most two lines.
 describe('fitFontPx', () => {
   it('keeps the default size when the words already fit', () => {

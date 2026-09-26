@@ -21,7 +21,7 @@ type TechPickerTabProps = {
   loading?: boolean;
 };
 
-// The command palette's Technology tab (spec/41, spec/109): brand / tech marks
+// The command palette's Technology tab (docs/specs/010-palette/technology-icons.md, docs/specs/010-palette/palette-category-browse.md): brand / tech marks
 // browsed by provider, using the same drill-in navigation as Tools and Icons.
 // Clicking one drops it as a fixed-colour tech-icon shape; each is also
 // drag-droppable.

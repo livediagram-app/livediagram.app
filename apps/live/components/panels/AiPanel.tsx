@@ -17,7 +17,7 @@ type AiPanelProps = {
   tabName: string;
   ownerId: string;
   onApplyElements: (elements: Element[], mode: 'clean') => void;
-  // Show the quick suggested-prompt chips (spec/25). Toggled from the AI
+  // Show the quick suggested-prompt chips (docs/specs/007-editor/ai-assistance.md). Toggled from the AI
   // panel's settings popover; takes vertical space so it can be hidden.
   showSuggestions: boolean;
 };

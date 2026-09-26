@@ -2,7 +2,7 @@ import { makeTestRouteContext } from './test-route-context';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Characterisation tests for handleFolders' authorisation surface
-// (spec/15). The owner-scoped folder tree must reject: an unauthenticated
+// (docs/specs/013-workspace/folders.md). The owner-scoped folder tree must reject: an unauthenticated
 // caller (400), a create/reparent that points at another owner's folder
 // (404 — no existence leak across owners), and a mutation of a folder the
 // caller doesn't own (403). Pins the mapping ahead of the requireOwner /
@@ -20,7 +20,7 @@ const { db } = vi.hoisted(() => ({
 }));
 vi.mock('../db', () => db);
 
-// The Timeline side of a delete (spec/138 §3.5): the cascade and the
+// The Timeline side of a delete (docs/specs/013-workspace/timeline.md §3.5): the cascade and the
 // tombstone, both off the response path.
 const { timeline } = vi.hoisted(() => ({
   timeline: {

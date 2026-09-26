@@ -7,7 +7,7 @@ import {
 } from '@livediagram/api-schema';
 import { COMPONENT_TELEMETRY, elementTelemetryType } from './element-telemetry';
 
-// Completeness guard for the palette census (spec/22, issue #30).
+// Completeness guard for the palette census (docs/specs/017-telemetry/telemetry.md, issue #30).
 //
 // `Element·Added·<type>` is what the public dashboard's Palette ranking is
 // built from, and the two ends have to agree exactly: the editor picks the

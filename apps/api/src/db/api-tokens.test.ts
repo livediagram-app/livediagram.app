@@ -12,9 +12,9 @@ import {
   revokeApiToken,
 } from './api-tokens';
 
-// Minting is the one place spec/61's rules are enforced, now that both ways in
+// Minting is the one place docs/specs/015-api/public-api-and-tokens.md's rules are enforced, now that both ways in
 // share it: `POST /api/tokens` for a person in the Explorer, and the OAuth
-// exchange for an MCP client (spec/62). Each used to carry its own copy of the
+// exchange for an MCP client (docs/specs/015-api/mcp-server.md). Each used to carry its own copy of the
 // cap, the expiry and the hashing, so this is where those are tested rather
 // than twice over in the route suites.
 //
@@ -43,7 +43,7 @@ function envWithTokenCount(count: number): { env: Env; writes: Recorded[] } {
 
 const insert = (writes: Recorded[]) => writes.find((w) => w.sql.includes('INSERT INTO api_tokens'));
 
-describe('mintApiToken (spec/61)', () => {
+describe('mintApiToken (docs/specs/015-api/public-api-and-tokens.md)', () => {
   it('refuses once the owner is at the cap, and writes nothing', async () => {
     const { env, writes } = envWithTokenCount(MAX_API_TOKENS_PER_OWNER);
     expect(await mintApiToken(env, { ownerId: 'u1', name: 'CI' })).toBeNull();
@@ -60,7 +60,7 @@ describe('mintApiToken (spec/61)', () => {
   });
 
   it('stores the HASH and never the secret it returns', async () => {
-    // The whole security posture of spec/61: the plaintext leaves once, in the
+    // The whole security posture of docs/specs/015-api/public-api-and-tokens.md: the plaintext leaves once, in the
     // return value, and the row keeps only a digest of it.
     const { env, writes } = envWithTokenCount(0);
     const minted = await mintApiToken(env, { ownerId: 'u1', name: 'CI' });
@@ -70,7 +70,7 @@ describe('mintApiToken (spec/61)', () => {
   });
 
   it('always sets an expiry, and one in the future', async () => {
-    // spec/61: `expires_at` is never null. A token that never expires is the
+    // docs/specs/015-api/public-api-and-tokens.md: `expires_at` is never null. A token that never expires is the
     // one thing the design refuses.
     const { env } = envWithTokenCount(0);
     const minted = await mintApiToken(env, { ownerId: 'u1', name: null });
@@ -102,9 +102,9 @@ describe('mintApiToken (spec/61)', () => {
 // The rest of the table's life: listing, the cap's counter, the auth hot path
 // that turns a presented secret into an owner, revocation, and the expiry
 // warning sweep. `resolveApiToken` is the one that matters most — it is the
-// whole of "who is this caller" for every programmatic request (spec/61).
+// whole of "who is this caller" for every programmatic request (docs/specs/015-api/public-api-and-tokens.md).
 
-describe('listApiTokensByOwner (spec/61)', () => {
+describe('listApiTokensByOwner (docs/specs/015-api/public-api-and-tokens.md)', () => {
   it('maps live rows to DTOs, newest first, scoped to the owner', async () => {
     const db = fakeD1(() => ({
       all: [
@@ -144,7 +144,7 @@ describe('listApiTokensByOwner (spec/61)', () => {
   });
 });
 
-describe('countLiveApiTokens (the cap, spec/61)', () => {
+describe('countLiveApiTokens (the cap, docs/specs/015-api/public-api-and-tokens.md)', () => {
   it('counts only unrevoked, unexpired tokens', async () => {
     const db = fakeD1(() => ({ first: { n: 3 } }));
     expect(await countLiveApiTokens(db.env, 'u1')).toBe(3);
@@ -160,7 +160,7 @@ describe('countLiveApiTokens (the cap, spec/61)', () => {
   });
 });
 
-describe('resolveApiToken (the auth hot path, spec/61)', () => {
+describe('resolveApiToken (the auth hot path, docs/specs/015-api/public-api-and-tokens.md)', () => {
   it('resolves a live token to its owner and stamps last_used_at', async () => {
     const db = fakeD1(({ sql }) =>
       sql.includes('SELECT') ? { first: { id: 't1', owner_id: 'u1', read_only: 0 } } : {},
@@ -206,7 +206,7 @@ describe('resolveApiToken (the auth hot path, spec/61)', () => {
   });
 });
 
-describe('revokeApiToken (spec/61)', () => {
+describe('revokeApiToken (docs/specs/015-api/public-api-and-tokens.md)', () => {
   it('reports success when a live row was flipped', async () => {
     const db = fakeD1(() => ({ changes: 1 }));
     expect(await revokeApiToken(db.env, 'u1', 't1')).toBe(true);
@@ -235,7 +235,7 @@ describe('revokeApiToken (spec/61)', () => {
   });
 });
 
-describe('apiTokensExpiringSoon (spec/64 heads-up)', () => {
+describe('apiTokensExpiringSoon (docs/specs/014-identity/transactional-email.md heads-up)', () => {
   it('maps rows and bounds the window, the batch and the order', async () => {
     const db = fakeD1(() => ({
       all: [{ id: 't1', owner_id: 'u1', name: 'CI', expires_at: 500 }],
@@ -260,7 +260,7 @@ describe('apiTokensExpiringSoon (spec/64 heads-up)', () => {
   });
 });
 
-describe('markApiTokenExpiryWarned (spec/64)', () => {
+describe('markApiTokenExpiryWarned (docs/specs/014-identity/transactional-email.md)', () => {
   it('stamps the row so the next sweep passes it over', async () => {
     const db = fakeD1();
     await markApiTokenExpiryWarned(db.env, 't1');

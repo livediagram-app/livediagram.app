@@ -1,5 +1,5 @@
 // Feature art for the landing page's "Presentation tools built right in"
-// section (spec/16, spec/31). Small stills, drawn from the same primitives as
+// section (docs/specs/019-marketing/marketing-site.md, docs/specs/012-collaboration/presentation-mode.md). Small stills, drawn from the same primitives as
 // every other art block so the page reads as one hand.
 //
 // Each one shows the IDEA rather than a screenshot: a deck of slides built
@@ -303,7 +303,7 @@ export function IsometricArt() {
   );
 }
 
-/* ────────────────── Running the room (spec/149, spec/144) ───────────── */
+/* ────────────────── Running the room (docs/specs/012-collaboration/facilitator.md, docs/specs/012-collaboration/bring-focus.md) ───────────── */
 
 export function FacilitatorArt() {
   // Three people in the room, one holding the baton, and the tools that answer

@@ -20,7 +20,7 @@ import {
 import { computeSnapTargets, NO_ALIGN_EXCLUDE } from '@/lib/drag-geometry';
 import type { SnapTarget } from '@/components/canvas/Canvas.types';
 
-// Resolve one arrow-endpoint drag frame (spec/09 arrows + spec/50
+// Resolve one arrow-endpoint drag frame (docs/specs/008-canvas/canvas-and-palette.md arrows + docs/specs/008-canvas/arrow-to-arrow.md
 // arrow-to-arrow): pin to an element anchor if the cursor is close,
 // else connect onto another arrow's line, else free with the 45°
 // angle lock and alignment snapping. Pure — the drag hook feeds the
@@ -58,7 +58,7 @@ export function resolveArrowEndpointDrag({
   endpoint: Endpoint;
   guides: AlignmentGuide[];
   snapTargets: SnapTarget[];
-  // True when this frame connected onto another arrow's line (spec/50) —
+  // True when this frame connected onto another arrow's line (docs/specs/008-canvas/arrow-to-arrow.md) —
   // the caller emits the once-per-drag telemetry.
   arrowConnected: boolean;
 } {
@@ -67,7 +67,7 @@ export function resolveArrowEndpointDrag({
   // outcome when both are plausible.
   const anchorSnap = snapToAnchor(cursor, elements, SNAP_THRESHOLD);
   // No element anchor nearby → look for a nearby arrow line to connect to
-  // (spec/50). REVEAL distance shows the line's snap dots as you approach;
+  // (docs/specs/008-canvas/arrow-to-arrow.md). REVEAL distance shows the line's snap dots as you approach;
   // the tighter SNAP distance actually connects. Element anchors win.
   const arrowHit = anchorSnap
     ? null
@@ -112,7 +112,7 @@ export function resolveArrowEndpointDrag({
   }
   if (arrowSnap) {
     // Connect to a point along the target arrow's line; it resolves
-    // dynamically so it tracks the target as it moves (spec/50).
+    // dynamically so it tracks the target as it moves (docs/specs/008-canvas/arrow-to-arrow.md).
     return {
       endpoint: { kind: 'on-arrow', arrowId: arrowSnap.arrowId, t: arrowSnap.t },
       guides: [],

@@ -1,4 +1,4 @@
-// The Tools tab's two-level navigation (spec/09 "Sub-categories"): a grid of
+// The Tools tab's two-level navigation (docs/specs/008-canvas/canvas-and-palette.md "Sub-categories"): a grid of
 // big square CATEGORY tiles you click to open, and a breadcrumb to get back.
 //
 // This replaces a stack of accordion headers. Seven collapsed headers meant the

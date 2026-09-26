@@ -4,7 +4,7 @@ import { trimLaserBuffer, type LaserPoint } from '@/lib/laser-buffer';
 import type { LaserConfig } from '@/lib/laser-config';
 
 export type CursorPos = { tabId: string; x: number; y: number } | null;
-// The pen (spec/111) rides along with the samples so peers render the
+// The pen (docs/specs/008-canvas/laser-panel.md) rides along with the samples so peers render the
 // sender's laser rather than their own default.
 export type LaserTrail = { tabId: string; points: LaserPoint[]; config?: LaserConfig };
 export type AvatarEntry = { tabId: string; avatar: AvatarPresence } | null;
@@ -43,7 +43,7 @@ export function createPresenceCoalescer({
 }): PresenceCoalescer {
   const pendingCursors = new Map<string, CursorPos>();
   const pendingLasers = new Map<string, LaserTrail>();
-  // Avatar mode (spec/101): the latest character snapshot per peer, or null
+  // Avatar mode (docs/specs/008-canvas/avatar-mode.md): the latest character snapshot per peer, or null
   // for "they left the mode". Coalesced exactly like cursors — a walking
   // avatar publishes at the same ~30 Hz.
   const pendingAvatars = new Map<string, AvatarEntry>();
@@ -90,7 +90,7 @@ export function createPresenceCoalescer({
             existing && existing.tabId === incoming.tabId
               ? trimLaserBuffer([...existing.points, ...incoming.points])
               : incoming.points;
-          // spec/111, "Everyone sees your pen": receivers keep the LATEST
+          // docs/specs/008-canvas/laser-panel.md, "Everyone sees your pen": receivers keep the LATEST
           // look per participant, so a presenter's bold amber comet looks
           // the same on every screen. The pen follows the PERSON, not the
           // tab, so a tab switch resets the points above and leaves it be;

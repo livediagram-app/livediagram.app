@@ -1,4 +1,4 @@
-// FLIP reordering for the Q&A board's queue (spec/151): when a vote changes
+// FLIP reordering for the Q&A board's queue (docs/specs/012-collaboration/qa-board.md): when a vote changes
 // the ranking, each row slides from where it was to where it now is, and a row
 // that climbed gets one soft glow.
 //

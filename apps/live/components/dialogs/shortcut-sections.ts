@@ -1,4 +1,4 @@
-// The shortcut catalogue the Settings Keyboard category lists (spec/07).
+// The shortcut catalogue the Settings Keyboard category lists (docs/specs/007-editor/live-app.md).
 //
 // Data only, in its own module so `shortcut-sections.test.ts` can read the
 // real rows without importing the settings component: the tests run in the node
@@ -74,7 +74,7 @@ export const SHORTCUT_SECTIONS: ShortcutSection[] = [
       { keys: ['⌘', '-'], label: 'Zoom out' },
       { keys: ['⌘', '0'], label: 'Reset zoom to 100%' },
       { keys: ['⇧', '1'], label: 'Zoom to fit' },
-      // A selected mind node claims plain Tab for growth (spec/118), so the
+      // A selected mind node claims plain Tab for growth (docs/specs/009-elements/mind-node.md), so the
       // caveat is on the row rather than in a footnote nobody reads.
       { keys: ['Tab'], label: 'Select next element  (Shift: previous)' },
       { keys: ['Tab'], label: 'On a mind node: add a child' },
@@ -90,7 +90,7 @@ export const SHORTCUT_SECTIONS: ShortcutSection[] = [
     ],
   },
   {
-    // Only live while a deck is running (spec/31), which is why they are their
+    // Only live while a deck is running (docs/specs/012-collaboration/presentation-mode.md), which is why they are their
     // own section rather than mixed into Navigate & select: none of them do
     // anything in the editor.
     heading: 'While presenting',

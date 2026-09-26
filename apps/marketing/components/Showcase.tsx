@@ -10,7 +10,7 @@ import { ShowcaseStagger } from '@/components/ShowcaseStagger';
 // the montage reads in turn rather than all moving at once. Scenes render here
 // on the server and are handed to that client cycler as children.
 //
-// Two callers (spec/16): SectionShowcase stacks one category's own features
+// Two callers (docs/specs/019-marketing/marketing-site.md): SectionShowcase stacks one category's own features
 // for its /features/<id> hero, and a landing StoryBeat stacks one feature from
 // each category the beat covers.
 

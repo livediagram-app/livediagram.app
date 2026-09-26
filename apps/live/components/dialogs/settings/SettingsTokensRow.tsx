@@ -5,7 +5,7 @@ import { useTokens } from '@/hooks/persistence/useTokens';
 import { SettingsRowShell } from './SettingsRowShell';
 import type { SettingsTokensRowSpec } from './settings-catalogue';
 
-// API tokens (spec/61) in the AI category: the same account feature the MCP
+// API tokens (docs/specs/015-api/public-api-and-tokens.md) in the AI category: the same account feature the MCP
 // server authenticates with, so a reader who has just switched the AI
 // assistant on is one row away from the credential an external tool needs.
 //
@@ -37,7 +37,7 @@ export function SettingsTokensRow({ row }: { row: SettingsTokensRowSpec }) {
             ) : null}
           </div>
           {!authLoaded ? null : !enabled ? (
-            // Tokens are Clerk-only (spec/61), so a guest gets the reason
+            // Tokens are Clerk-only (docs/specs/015-api/public-api-and-tokens.md), so a guest gets the reason
             // rather than an empty list that looks like a loading failure.
             <p className="text-xs text-slate-500 dark:text-slate-400">
               Sign in to create API tokens.

@@ -17,7 +17,7 @@ import { accepted } from '@/lib/accepted';
 import { track } from '@/lib/telemetry';
 import { indexFolders, folderBreadcrumb, groupDiagramsByFolder } from '@/lib/folder-tree';
 
-// One team's shared library (spec/35): the folder tree + diagrams the
+// One team's shared library (docs/specs/013-workspace/team-shared-diagrams.md): the folder tree + diagrams the
 // "Shared diagrams" section on the team page renders, plus the
 // mutations every joined member may perform. Mirrors useFolders +
 // useExplorerState's derived shapes, scoped to a single team. All
@@ -129,7 +129,7 @@ export function useTeamLibrary(ownerId: string | null, teamId: string) {
   );
 
   // Hard-delete a team diagram. Any joined member may delete it
-  // (spec/35), gated server-side by the team-member delete check.
+  // (docs/specs/013-workspace/team-shared-diagrams.md), gated server-side by the team-member delete check.
   const deleteDiagram = useCallback(
     async (diagramId: string) => {
       if (!ownerId) return;
@@ -140,11 +140,11 @@ export function useTeamLibrary(ownerId: string | null, teamId: string) {
   );
 
   // Rename a team diagram in place. Any joined member may edit it
-  // (spec/35), gated server-side by canEditDiagram.
+  // (docs/specs/013-workspace/team-shared-diagrams.md), gated server-side by canEditDiagram.
   const renameDiagram = useCallback(
     async (diagramId: string, name: string) => {
       if (!ownerId) return;
-      // spec/91.
+      // docs/specs/006-diagram/name-length.md.
       const trimmed = truncateName(name);
       if (!trimmed) return;
       if (await accepted(apiSaveDiagramMeta(ownerId, { id: diagramId, name: trimmed })))
@@ -156,7 +156,7 @@ export function useTeamLibrary(ownerId: string | null, teamId: string) {
 
   // Duplicate a team diagram, keeping the copy IN the team alongside
   // the original (same folder). duplicateDiagramApi mints a personal
-  // copy first; we then file it into this team + folder (spec/35).
+  // copy first; we then file it into this team + folder (docs/specs/013-workspace/team-shared-diagrams.md).
   const duplicateDiagram = useCallback(
     async (diagramId: string) => {
       if (!ownerId) return;

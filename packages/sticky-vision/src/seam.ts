@@ -2,7 +2,7 @@ import type { Box, PaperMask } from './boxes';
 import type { ImageBuffer } from './colour';
 import { median } from './stats';
 
-// The SEAM between two notes that touch (spec/139 Phase 9, experiment B3).
+// The SEAM between two notes that touch (docs/specs/021-event-storming/event-storming.md Phase 9, experiment B3).
 //
 // Two notes of one colour lapped or butted together are one blob to the
 // colour mask, and when they are flush their outline has no notch either. The

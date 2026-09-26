@@ -3,8 +3,8 @@
 Three ideas from the second round of research
 ([research.md](../research.md)), each decided by the sweep over the eight
 labelled walls, for the bar of
-[plans/event-storming-photo-95.md](../../../plans/event-storming-photo-95.md).
-Plan: [plans/event-storming-photo-95-experiments.md](../../../plans/event-storming-photo-95-experiments.md)
+plans/0007-event-storming-photo-95.md.
+Plan: plans/0006-event-storming-photo-95-experiments.md
 (K). Earlier separation rounds: [b-separation.md](b-separation.md),
 [b2-separation.md](b2-separation.md), [i-separation.md](i-separation.md).
 

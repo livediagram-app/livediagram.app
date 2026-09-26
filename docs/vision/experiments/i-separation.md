@@ -1,9 +1,9 @@
 # Experiments, group I: separation, round 3
 
 Telling touching notes apart, third round, for the bar of
-[plans/event-storming-photo-95.md](../../../plans/event-storming-photo-95.md):
+plans/0007-event-storming-photo-95.md:
 no box may hold two labelled notes. Plan:
-[plans/event-storming-photo-95-experiments.md](../../../plans/event-storming-photo-95-experiments.md)
+plans/0006-event-storming-photo-95-experiments.md
 (I). Rounds 1 and 2 are [b-separation.md](b-separation.md) and
 [b2-separation.md](b2-separation.md). The judge is the sweep over the eight
 labelled walls (`packages/sticky-vision/scripts/calibrate.ts`), now scored on

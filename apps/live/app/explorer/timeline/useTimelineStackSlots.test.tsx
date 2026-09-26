@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// The Explorer's menu on a collapsed stack (spec/138 §2.9): one verb
+// The Explorer's menu on a collapsed stack (docs/specs/013-workspace/timeline.md §2.9): one verb
 // that removes every member at once.
 
 import { renderHook } from '@testing-library/react';

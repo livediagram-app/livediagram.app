@@ -1,6 +1,6 @@
 'use client';
 
-// The eraser canvas tool (spec/09). Pressing on the canvas deletes
+// The eraser canvas tool (docs/specs/008-canvas/canvas-and-palette.md). Pressing on the canvas deletes
 // whatever element is under the pointer; holding and dragging deletes
 // everything the drag passes over. The whole press-drag is ONE undo and
 // ONE activity-log entry, however many elements it removes:
@@ -16,9 +16,9 @@
 // every element wrapper (and the arrow hit band) carries data-element-id,
 // so document.elementsFromPoint at the pointer resolves what's underneath
 // (shapes, arrows, text, images — all of them). Locked elements, and
-// everything on a locked tab, are skipped (spec/09 Locking).
+// everything on a locked tab, are skipped (docs/specs/008-canvas/canvas-and-palette.md Locking).
 //
-// The Eraser Panel's settings (spec/113) ride on top of that same hit test:
+// The Eraser Panel's settings (docs/specs/008-canvas/eraser-panel.md) ride on top of that same hit test:
 // a SIZE asks it at a ring of points rather than one, a TARGET filter drops
 // what the brush touched but isn't allowed to remove, and TAP mode skips the drag listeners entirely. None of them
 // can reach a locked element — that check stays where it was.
@@ -44,11 +44,11 @@ import { track } from '@/lib/telemetry';
 
 type EraserDeps = {
   editsBlocked: boolean;
-  // The panel's settings (spec/113). Absent falls back to the original
+  // The panel's settings (docs/specs/008-canvas/eraser-panel.md). Absent falls back to the original
   // eraser: a one-pixel sweep that removes anything it touches, one element
   // at a time.
   config?: EraserConfig;
-  // Elements on a hidden or locked layer (spec/74): the eraser passes
+  // Elements on a hidden or locked layer (docs/specs/006-diagram/layers.md): the eraser passes
   // over them like element-locked ones.
   layerInertIds: Set<string>;
   activeId: string;
@@ -102,7 +102,7 @@ export function useCanvasEraser(deps: EraserDeps) {
         if (erasedRef.current.has(id)) continue;
         const el = activeTab.elements.find((e) => e.id === id);
         // Skip unknown ids (a wrapper for something on another layer) and
-        // locked / hidden-or-locked-LAYER elements (protected, spec/74).
+        // locked / hidden-or-locked-LAYER elements (protected, docs/specs/006-diagram/layers.md).
         if (!el || el.locked === true || layerInertIds.has(id)) continue;
         // And skip what the target filter protects — a sweep set to Drawings
         // passes straight over the diagram underneath.
@@ -140,7 +140,7 @@ export function useCanvasEraser(deps: EraserDeps) {
     setEditingId(null);
     eraseAtPoint(clientX, clientY);
 
-    // Tap mode (spec/113) is one press, one thing: the move listener is what
+    // Tap mode (docs/specs/008-canvas/eraser-panel.md) is one press, one thing: the move listener is what
     // makes a two-pixel wobble take a neighbour with it, so it isn't attached.
     const tapOnly = (depsRef.current.config ?? DEFAULT_ERASER_CONFIG).mode === 'tap';
     const onMove = (ev: PointerEvent) => {

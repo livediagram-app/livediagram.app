@@ -1,6 +1,6 @@
 'use client';
 
-// Explorer sign-in encouragement banner (spec/36). A floating,
+// Explorer sign-in encouragement banner (docs/specs/014-identity/sign-in-encouragement.md). A floating,
 // gradient bottom-of-screen card shown to guest visitors, with a
 // primary Sign in CTA, a Learn more button that opens the reasons
 // modal, and a dismiss control. Visibility (Clerk enabled, not signed
@@ -26,7 +26,7 @@ const SignInReasonsModal = dynamic(() =>
 );
 
 // Per-device dismissal key, shared by every surface that mounts the
-// banner (Explorer + editor, spec/36) so dismissing it in one place
+// banner (Explorer + editor, docs/specs/014-identity/sign-in-encouragement.md) so dismissing it in one place
 // hides it in both.
 export const SIGNIN_BANNER_DISMISS_KEY = 'livediagram:signin-banner-dismissed:v1';
 
@@ -41,7 +41,7 @@ export function SignInBanner({
   onDismiss,
   placementClassName = EXPLORER_PLACEMENT,
 }: {
-  // Which host mounted it, carried on every telemetry type (spec/36) so the
+  // Which host mounted it, carried on every telemetry type (docs/specs/014-identity/sign-in-encouragement.md) so the
   // dashboard can tell an Explorer prompt from an editor one.
   surface: 'Explorer' | 'Editor';
   onDismiss: () => void;

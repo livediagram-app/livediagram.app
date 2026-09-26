@@ -162,7 +162,7 @@ describe('handleDiagramShareRoutes — the owner gate', () => {
 });
 
 describe('GET /api/diagrams/:id/share', () => {
-  it('returns the links with the password in the clear — owner-only (spec/24)', async () => {
+  it('returns the links with the password in the clear — owner-only (docs/specs/013-workspace/share-password.md)', async () => {
     db.listShareLinks.mockResolvedValue([{ code: 'c1', role: 'view' }]);
     db.getDiagramSharePassword.mockResolvedValue('hunter2');
     const { ctx } = ctxFor('GET', '/api/diagrams/d_1/share');
@@ -217,7 +217,7 @@ describe('POST /api/diagrams/:id/share — minting a link', () => {
     expect((await handleDiagramShareRoutes(ctx))!.status).toBe(201);
   });
 
-  it('records the event for the owner only (spec/138 §4.3)', async () => {
+  it('records the event for the owner only (docs/specs/013-workspace/timeline.md §4.3)', async () => {
     const { ctx, settled } = ctxFor('POST', '/api/diagrams/d_1/share', {
       body: { role: 'view' },
       waitUntil: true,
@@ -263,7 +263,7 @@ describe('DELETE /api/diagrams/:id/share — revoking every link', () => {
   });
 });
 
-describe('PUT /api/diagrams/:id/share-password (spec/24)', () => {
+describe('PUT /api/diagrams/:id/share-password (docs/specs/013-workspace/share-password.md)', () => {
   it('stores the password and echoes back what actually gates access', async () => {
     // The echo is the normalised stored value, not the request's — a
     // whitespace-only password clears the gate, and the dialog must show that.
@@ -330,7 +330,7 @@ describe('DELETE /api/diagrams/:id/share/:code — revoking one link', () => {
   });
 });
 
-describe('POST /api/diagrams/:id/share/:code/extend (spec/34)', () => {
+describe('POST /api/diagrams/:id/share/:code/extend (docs/specs/013-workspace/share-link-expiry.md)', () => {
   it('re-arms the link and returns it', async () => {
     const { ctx } = ctxFor('POST', '/api/diagrams/d_1/share/c1/extend', { body: {} });
     const res = await handleDiagramShareRoutes(ctx);

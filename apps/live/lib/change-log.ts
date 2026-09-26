@@ -1,5 +1,5 @@
 // Helpers for the per-diagram audit log. See
-// specs/12-activity-and-audit.md.
+// docs/specs/012-collaboration/activity-and-audit.md.
 //
 // The live app captures a snapshot of the active tab's elements
 // before each undoable commit and a snapshot after. `diffElements`
@@ -94,7 +94,7 @@ export function diffElements(before: Element[], after: Element[]): ChangeDiff | 
   };
 }
 
-// Coalescing support (spec/12): when a fresh diff continues the log's
+// Coalescing support (docs/specs/012-collaboration/activity-and-audit.md): when a fresh diff continues the log's
 // newest entry (same author, same elements, within the merge window),
 // the two collapse into ONE entry spanning the earlier entry's
 // `before` to the fresh diff's `after`. Rebuilding via diffElements

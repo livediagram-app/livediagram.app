@@ -71,7 +71,7 @@ export function DiagramRow(props: DiagramEntryProps) {
         />
         {/* Before the name, so a column of rows shows its stars in one
             vertical line you can scan rather than at ragged name-end
-            positions (spec/95). */}
+            positions (docs/specs/013-workspace/favourites.md). */}
         {favourite ? <FavouriteMarker /> : null}
         {titleNode}
         {folderChip ? (

@@ -1,7 +1,7 @@
-// The shared theme ENGINE (spec/29, /42, /44, /48): theme data, types, and the
+// The shared theme ENGINE (docs/specs/011-theme/multicolour-themes.md, /42, /44, /48): theme data, types, and the
 // pure element/backdrop transforms that take a resolved ThemeDefinition. Lives
 // in the package so both the editor (apps/live) and the MCP worker (apps/mcp,
-// spec/62) theme diagrams identically. Custom-theme (per-owner) resolution +
+// docs/specs/015-api/mcp-server.md) theme diagrams identically. Custom-theme (per-owner) resolution +
 // deriveNewBoxedColours stay in apps/live/lib/themes.ts, which re-exports this.
 import {
   deriveTextColorForBg,
@@ -48,7 +48,7 @@ export type ThemeId =
   | 'plum'
   | 'abyss'
   | 'espresso'
-  // Multi-colour ("rainbow") themes — see spec/29. Each carries a
+  // Multi-colour ("rainbow") themes — see docs/specs/011-theme/multicolour-themes.md. Each carries a
   // `palette` so branches of the hierarchy get distinct hues.
   | 'rainbow'
   | 'pastel'
@@ -56,7 +56,7 @@ export type ThemeId =
   | 'autumn'
   | 'jewel'
   // Formal: standard notations. UML paints each shape kind its
-  // conventional colour (spec/42).
+  // conventional colour (docs/specs/011-theme/canvas-and-theme-dialog.md).
   | 'uml';
 
 // One branch colour for a multi-colour theme: the fill / stroke / text
@@ -84,7 +84,7 @@ export type ThemeDefinition = {
   backgroundPattern: BackgroundPattern;
   patternColor: string;
   // Pattern opacity 0..1. Absent = fully opaque; carried so a (custom)
-  // theme can ship a faded pattern (spec/44). Applied to the tab on theme
+  // theme can ship a faded pattern (docs/specs/011-theme/custom-themes.md). Applied to the tab on theme
   // switch via switchThemeBackdrop.
   backgroundOpacity?: number;
   // Defaults for newly added boxed elements. `null` means "fall through
@@ -93,14 +93,14 @@ export type ThemeDefinition = {
   elementFill: string | null;
   elementStroke: string | null;
   elementText: string | null;
-  // Multi-colour themes (spec/29) carry a palette: an ordered list of
+  // Multi-colour themes (docs/specs/011-theme/multicolour-themes.md) carry a palette: an ordered list of
   // branch colours that the hierarchy cycles through
   // (palette[branchIndex % palette.length]), plus a `rootColor` for the
   // trunk (root nodes + not-yet-connected elements). Absent on
   // single-colour themes, which keep painting via elementFill/Stroke/Text.
   palette?: ThemePaletteEntry[];
   rootColor?: ThemePaletteEntry;
-  // Per-shape-kind colour overrides (spec/42 "Formal themes / UML"). When
+  // Per-shape-kind colour overrides (docs/specs/011-theme/canvas-and-theme-dialog.md "Formal themes / UML"). When
   // a theme assigns a kind its own colours — e.g. UML paints a decision
   // diamond, a datastore cylinder and a process box differently — these
   // win over the single elementFill / -Stroke / -Text for that kind.
@@ -114,7 +114,7 @@ export type ThemeDefinition = {
   // Catalogue metadata only: it marks the twelve that shipped first, and
   // nothing gates on it. All three theme surfaces (the palette accordion, the
   // Tab Appearance modal, the New-diagram picker) render the same
-  // ThemeCategoryBrowser now (spec/09), so every theme is reachable by
+  // ThemeCategoryBrowser now (docs/specs/008-canvas/canvas-and-palette.md), so every theme is reachable by
   // category and there is no "Show more" left to sit behind.
   extra?: boolean;
 };
@@ -127,7 +127,7 @@ export type ThemeDefinition = {
 // THEME_CATEGORIES order and skips empties.
 export type ThemeCategory = 'cool' | 'warm' | 'dark' | 'multicolour' | 'formal';
 
-// Which chrome a viewer is looking at (spec/07). The Default colour scheme is
+// Which chrome a viewer is looking at (docs/specs/007-editor/live-app.md). The Default colour scheme is
 // the only one that reads it: every other scheme paints the same colours for
 // everybody, because those colours are stored in the diagram.
 export type Appearance = 'light' | 'dark';
@@ -234,13 +234,13 @@ const THEME_COLOUR_FIELDS: Record<Element['type'], ThemeColourField[]> = {
   sticky: [],
   image: [],
   // Annotation markers theme their circle fill + ring/glyph stroke like a
-  // shape; no themed text (the note is plain). See spec/38.
+  // shape; no themed text (the note is plain). See docs/specs/009-elements/annotations.md.
   annotation: [
     { element: 'fillColor', theme: 'elementFill' },
     { element: 'strokeColor', theme: 'elementStroke' },
   ],
   // Link cards keep their neutral bookmark-card look regardless of theme
-  // (like sticky / image); the user can still recolour per-card. See spec/40.
+  // (like sticky / image); the user can still recolour per-card. See docs/specs/009-elements/link-cards.md.
   'link-card': [],
   // A video keeps its own look across themes, like image and sticky: the
   // poster frame is the content, and tinting the surround would only fight it.
@@ -256,7 +256,7 @@ const THEME_COLOUR_FIELDS: Record<Element['type'], ThemeColourField[]> = {
 // below funnel through this so the opt-out can't apply to one and silently
 // drift from the others. Stroke + text stay themed.
 function themeColourFields(el: Element): ThemeColourField[] {
-  // An accent-bar web component (spec/147) paints its bar in the stroke
+  // An accent-bar web component (docs/specs/009-elements/web-components-and-no-groups.md) paints its bar in the stroke
   // (unless a fill is picked) under white text, so only the stroke follows
   // the theme: the theme's element fill and ink are the pale-card pair, and
   // writing them into a bar would put pale text on a pale bar.
@@ -401,7 +401,7 @@ export function switchThemeBackdrop(
 // theme is "apply when present", reset is "make match the theme,
 // blank when the theme blanks".
 export function resetThemeElement(el: Element, theme: ThemeDefinition): Element {
-  // A preset-bound shape KEEPS its binding (spec/48): the user chose "Bold",
+  // A preset-bound shape KEEPS its binding (docs/specs/010-palette/style-presets.md): the user chose "Bold",
   // so reset means "this theme's Bold" — re-derive the preset's colours +
   // border under the given theme (view) rather than blanking to the plain
   // look. Only a binding the theme can't express (e.g. a 'branch-3' under a

@@ -12,12 +12,12 @@ type CanvasDrawPreviewProps = {
   penPoints: { x: number; y: number }[] | null;
   polygonVertices: { x: number; y: number }[];
   polygonCursor: { x: number; y: number } | null;
-  // The highlighter banner's live settings (spec/81), so the in-flight
+  // The highlighter banner's live settings (docs/specs/008-canvas/highlighter.md), so the in-flight
   // preview matches what will commit.
   highlighterColor: string;
   highlighterWidth: number;
   pendingDraw: PendingDraw | null;
-  // The armed fixed-size note's ghost (spec/139 Phase 4), when the tile is a
+  // The armed fixed-size note's ghost (docs/specs/021-event-storming/event-storming.md Phase 4), when the tile is a
   // stamp rather than a draw-to-size. It replaces the size box entirely.
   stamp: StampGhost | null;
   viewportZoom: number;
@@ -83,7 +83,7 @@ export function CanvasDrawPreview({
               )
               .join(' ');
             // The highlighter variant previews with the committed
-            // marker recipe (wide translucent yellow, spec/81) so
+            // marker recipe (wide translucent yellow, docs/specs/008-canvas/highlighter.md) so
             // what you see while dragging is what lands.
             const isHighlighter = pendingDraw.variant === 'highlighter';
             return (
@@ -106,7 +106,7 @@ export function CanvasDrawPreview({
           })()
         : null}
 
-      {/* Polygon-tool preview (spec/84): the placed segments, a rubber-band
+      {/* Polygon-tool preview (docs/specs/008-canvas/polygon-tool.md): the placed segments, a rubber-band
           segment to the live cursor, a dot per vertex, and a snap ring on
           the START vertex once the cursor is within closing range. */}
       {pendingDraw?.type === 'polygon' && polygonVertices.length > 0
@@ -192,7 +192,7 @@ export function CanvasDrawPreview({
               );
             }
             // The box the commit will actually mint, not the raw drag: an
-            // embed is fitted to 16:9 inside it (spec/114), so the outline
+            // embed is fitted to 16:9 inside it (docs/specs/009-elements/youtube-video.md), so the outline
             // has to be the fitted one or the user sizes against a rectangle
             // they never get. Shared with buildDrawnBoxed so they can't drift.
             const box = drawnDragBox(

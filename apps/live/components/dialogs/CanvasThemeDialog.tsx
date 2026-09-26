@@ -1,9 +1,9 @@
 'use client';
 
-// The Tab Look & Feel dialog (spec/42), opened from the paintbrush dock
+// The Tab Look & Feel dialog (docs/specs/011-theme/canvas-and-theme-dialog.md), opened from the paintbrush dock
 // button. One modal, three tabs: Theme (the category-browse picker), Canvas
 // (pattern + colours + opacity) and Font (the tab's default font + the size
-// seeded onto new elements, spec/28). Opens on whichever tab the caller
+// seeded onto new elements, docs/specs/004-interface-design/fonts.md). Opens on whichever tab the caller
 // picked; the user can switch freely. Every control applies live to the
 // active tab via its callback — there's no Apply/Cancel, closing just
 // dismisses.
@@ -46,11 +46,11 @@ type CanvasThemeDialogProps = {
   onSetBackgroundPatternScale: (scale: number) => void;
   onSetBackgroundAnimationSpeed: (speed: number) => void;
   // Theme. `themeId` is a built-in ThemeId or a custom `custom:<uuid>`
-  // id (spec/44), so it's widened to string; onSetTheme applies either.
+  // id (docs/specs/011-theme/custom-themes.md), so it's widened to string; onSetTheme applies either.
   themeId: string;
   onSetTheme: (id: string) => void;
   onResetElementsToTheme: () => void;
-  // Font (spec/28). `font` null = the editor default; `defaultTextSize`
+  // Font (docs/specs/004-interface-design/fonts.md). `font` null = the editor default; `defaultTextSize`
   // undefined defaults to medium.
   font: string | null;
   onSetFont: (font: string | null) => void;
@@ -107,7 +107,7 @@ export function CanvasThemeDialog({
         }}
         // No dimming / blur backdrop: every control applies live to the tab, so
         // the user needs to SEE the canvas background + theme change behind the
-        // dialog as they click (spec/42). The full-screen layer stays as a
+        // dialog as they click (docs/specs/011-theme/canvas-and-theme-dialog.md). The full-screen layer stays as a
         // transparent click-catcher (click-outside / right-click guard) so an
         // accidental edit doesn't leak to the canvas while it's open.
         className="fixed inset-0 z-[var(--z-modal)] flex items-center justify-center"
@@ -130,7 +130,7 @@ export function CanvasThemeDialog({
           <div className="flex flex-col gap-3 border-b border-slate-200 px-4 pb-3 pt-3 dark:border-slate-800">
             <div className="flex items-center justify-between gap-3">
               {/* "Appearance" is the VIEWER's own light / dark chrome now
-                  (spec/07), so this dialog — which is the tab's look, shared
+                  (docs/specs/007-editor/live-app.md), so this dialog — which is the tab's look, shared
                   with everyone — takes the name of the section that opens it. */}
               <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">
                 Tab Look &amp; Feel
@@ -243,7 +243,7 @@ export function CanvasThemeDialog({
 }
 
 // The tab's default font and the size seeded onto new elements
-// (spec/28). Every change applies live; "Apply to all elements" pushes
+// (docs/specs/004-interface-design/fonts.md). Every change applies live; "Apply to all elements" pushes
 // the pair onto everything already on the tab.
 function FontTab({
   font,

@@ -13,7 +13,7 @@ import {
   type ShapeElement,
 } from '@livediagram/diagram';
 
-// The reaction pad's model (spec/135).
+// The reaction pad's model (docs/specs/009-elements/reaction-pad.md).
 
 describe('reaction pad', () => {
   it('is a registered shape kind', () => {

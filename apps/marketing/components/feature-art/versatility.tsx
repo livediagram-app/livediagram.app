@@ -135,7 +135,7 @@ export function BorderStyleArt() {
 // Arrows: the three line styles (straight / curved / angled) stacked, with the
 // draggable middle handle shown on the curve (control point) and the elbow
 // (bend vertex). The two handles pulse to read as "grab and drag me"; straight
-// has none (nothing to bend). Mirrors the editor's arrow handle flow (spec/09).
+// has none (nothing to bend). Mirrors the editor's arrow handle flow (docs/specs/008-canvas/canvas-and-palette.md).
 export function ArrowsArt() {
   return (
     <Frame canvas>
@@ -225,7 +225,7 @@ export function ArrowsArt() {
 // Pencil (freehand) + shape recognition: a hand-drawn wobbly stroke draws on
 // the left (fa-draw), an arrow points right, and the recognised clean shape
 // fades in on the right (fa-fade), under a pulsing magic-wand chip. Mirrors the
-// pencil ModeBanner's recognise toggle that mints a real primitive (spec/09).
+// pencil ModeBanner's recognise toggle that mints a real primitive (docs/specs/008-canvas/canvas-and-palette.md).
 export function PencilArt() {
   return (
     <Frame canvas>
@@ -275,7 +275,7 @@ export function PencilArt() {
 
 // Alignment guides: as you drag a shape, faint dashed lines light up along
 // the edges and centres it shares with its neighbours, so it snaps into line
-// on a busy canvas (spec/09). Here the dragged (ringed) shape shares a left
+// on a busy canvas (docs/specs/008-canvas/canvas-and-palette.md). Here the dragged (ringed) shape shares a left
 // edge with the shape above it (the vertical guide) and a top edge with the
 // shape to its right (the horizontal guide); both guides pulse like the real
 // overlay.
@@ -411,7 +411,7 @@ export function CanvasBackdropArt() {
 
 // Optional AI assistant: the floating panel (Build / Ask / Review / Clean
 // tabs + a prompt) sits over the canvas while freshly generated shapes pop in
-// on the left, mirroring the editor's AI Assistant panel (spec/25).
+// on the left, mirroring the editor's AI Assistant panel (docs/specs/007-editor/ai-assistance.md).
 export function AiAssistArt() {
   const tabs = ['Build', 'Ask', 'Review', 'Clean'];
   return (
@@ -489,7 +489,7 @@ export function AiAssistArt() {
 // Shape rotation: a selected shape snapping to a preset 45° angle and back,
 // matching the editor's preset-angle rotation (the Rotation right-click
 // category + the search palette's Rotate actions; no free-drag handle)
-// (spec/09).
+// (docs/specs/008-canvas/canvas-and-palette.md).
 export function RotateArt() {
   return (
     <Frame canvas>
@@ -531,7 +531,7 @@ export function RotateArt() {
 
 // Minimal panel layout: the editor chrome crossfades between the standard
 // floating panels and the compact dock + popover layout, with the toggle —
-// pick how you want to work (always on for mobile) (spec/09, spec/20).
+// pick how you want to work (always on for mobile) (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/007-editor/user-preferences.md).
 export function MinimalPanelArt() {
   return (
     <Frame canvas>
@@ -575,7 +575,7 @@ export function MinimalPanelArt() {
   );
 }
 
-// Zen / focus mode (spec/26): crossfade from a chrome-heavy editor
+// Zen / focus mode (docs/specs/007-editor/zen-mode.md): crossfade from a chrome-heavy editor
 // (header bar + side panels) to a clean canvas with just the zoom dock.
 // The centre shape sits outside the crossfade so the chrome melts away
 // around the content that stays.

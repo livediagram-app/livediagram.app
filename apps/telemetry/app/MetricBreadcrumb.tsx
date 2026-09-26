@@ -3,7 +3,7 @@
 import { typeLabel } from './event-vocab';
 import type { Metric } from './metrics';
 
-// The Search view's breadcrumb (spec/22). It shows over the word cloud while
+// The Search view's breadcrumb (docs/specs/017-telemetry/telemetry.md). It shows over the word cloud while
 // drilling (All events › category › action) and stays over a charted metric,
 // ending in the metric itself, so any crumb steps straight back to that level
 // of the cloud to browse the metric's siblings.

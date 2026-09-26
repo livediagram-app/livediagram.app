@@ -3,7 +3,7 @@ import { LayersGlyph } from '@/components/palette/context-menu-icons';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/PortalMenu';
 import { useLayerThumbnails } from '@/hooks/ui/useLayerThumbnails';
 
-// The context menu's "move selection to layer" control (spec/74), shared
+// The context menu's "move selection to layer" control (docs/specs/006-diagram/layers.md), shared
 // by the single-element and multi-selection Layer sections. One MenuTile
 // per layer (top of the stack first, matching the panel) under a small
 // section label — each tile's icon is that layer's mini preview (the
@@ -23,7 +23,7 @@ export function MoveToLayerRow({
   layers: Layer[];
   // The tab's elements, for the per-tile layer previews.
   elements: Element[];
-  // The tab default face (spec/28), so a preview matches the canvas.
+  // The tab default face (docs/specs/004-interface-design/fonts.md), so a preview matches the canvas.
   tabFont?: string;
   // The selection's resolved layer, or null when members span layers
   // (then no tile is active).

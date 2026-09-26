@@ -1,4 +1,4 @@
-// Data elements in the headless render (spec/46, /51, /52, /100, /120):
+// Data elements in the headless render (docs/specs/009-elements/progress.md, /51, /52, /100, /120):
 // progress bars and rings, ratings, timeline rails, record boxes and a page's
 // masthead.
 //
@@ -147,7 +147,7 @@ export function svgTimelineRail(
 }
 
 /**
- * A record's header rule + field rows (spec/120).
+ * A record's header rule + field rows (docs/specs/009-elements/entity.md).
  *
  * The TITLE is the element's ordinary label, so the generic label emitter
  * still draws it; this is the rule under it and the rows below.
@@ -177,7 +177,7 @@ export function svgEntityRows(el: Data, textColor: string, fontFamily?: string):
   return divider + rows;
 }
 
-/** A page's masthead (spec/100): title, subtitle and the rule under them. */
+/** A page's masthead (docs/specs/009-elements/page-element.md): title, subtitle and the rule under them. */
 export function svgPageMasthead(el: Data, padding: number, fontFamily?: string): string {
   const title = el.pageTitle ?? '';
   const subtitle = el.pageSubtitle ?? '';

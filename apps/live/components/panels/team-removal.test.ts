@@ -1,4 +1,4 @@
-// Removing a row from a team's member list (spec/32 + spec/22).
+// Removing a row from a team's member list (docs/specs/013-workspace/teams.md + docs/specs/017-telemetry/telemetry.md).
 //
 // The list mixes joined members with invitations nobody has accepted, behind one
 // Remove control. These cases pin the three-way split, because collapsing it is

@@ -70,7 +70,7 @@ export function SettingsCategoryPane({
   );
 
   // Fire BEFORE the write so an opt-out event still reaches the wire ahead of
-  // the preference that gates it (spec/22).
+  // the preference that gates it (docs/specs/017-telemetry/telemetry.md).
   function renderRow(row: SettingsCategorySpec['rows'][number]) {
     switch (row.kind) {
       case 'toggle':
@@ -168,7 +168,7 @@ const APPEARANCE_OPTIONS = [
 ];
 
 // Appearance is the one row backed by its own device-local store rather than
-// UserPreferences (spec/07: a pre-hydration script applies it before first
+// UserPreferences (docs/specs/007-editor/live-app.md: a pre-hydration script applies it before first
 // paint, so it cannot wait on a synced fetch). useAppearance emits the
 // telemetry for the change itself, which is why nothing is tracked here.
 function AppearanceRow({ row }: { row: SettingsAppearanceRowSpec }) {

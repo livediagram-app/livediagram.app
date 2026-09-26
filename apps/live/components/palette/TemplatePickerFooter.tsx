@@ -2,7 +2,7 @@ import { Button } from '@livediagram/ui';
 import { ArrowRightIcon, FolderOpenIcon, SparkleIcon, Spinner } from './template-picker-icons';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
 
-// The TemplatePicker's footer row (spec/14), lifted out of the picker:
+// The TemplatePicker's footer row (docs/specs/007-editor/new-diagram-route.md), lifted out of the picker:
 // identity mode keeps a flat Cancel + Join pair; both wizard modes
 // (welcome + templates) swap controls per step. The picker hides it
 // entirely while the theme builder is open (the builder carries its own
@@ -83,7 +83,7 @@ export function TemplatePickerFooter({
             Back button here read ambiguously against the category
             "All templates / All themes" bar, so it's gone. */}
           {isWelcome && step === 'template' ? (
-            /* Skip the wizard: Blank template, Default theme (spec/14).
+            /* Skip the wizard: Blank template, Default theme (docs/specs/007-editor/new-diagram-route.md).
              Only on the first (template) step — once the user has
              reached the theme step, Back / Create are the actions. */
             <Button

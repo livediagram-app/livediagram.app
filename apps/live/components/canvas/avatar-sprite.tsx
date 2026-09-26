@@ -1,4 +1,4 @@
-// The Avatar-mode pixel sprite (spec/101): the figure itself, split out of
+// The Avatar-mode pixel sprite (docs/specs/008-canvas/avatar-mode.md): the figure itself, split out of
 // AvatarWalker so that component keeps to placement (the ring, the name chip,
 // the canvas-coords box) and this one owns the pixel art.
 //
@@ -57,7 +57,7 @@ import {
 // A trousered leg: a column with a shoe at the bottom. `lift` raises the whole
 // leg by a pixel for the mid-stride frame.
 function Leg({ x, lift = 0, seated = false }: { x: number; lift?: number; seated?: boolean }) {
-  // Seated (spec/130): the thigh goes AWAY from the viewer, so from the front
+  // Seated (docs/specs/009-elements/chair.md): the thigh goes AWAY from the viewer, so from the front
   // it is a short stub, and the shin drops in front of it to a foot planted
   // forward. Two rows shorter overall, which is what makes the silhouette read
   // as folded rather than standing.
@@ -128,7 +128,7 @@ function LowerFront({
   airborne: boolean;
   // Mid-jumping-jack: legs splayed rather than striding.
   legsApart: boolean;
-  // Sitting (spec/130): knees apart and the legs drawn folded.
+  // Sitting (docs/specs/009-elements/chair.md): knees apart and the legs drawn folded.
   seated?: boolean;
 }) {
   const strideLift = walking && !airborne;
@@ -346,7 +346,7 @@ function OutfitDetail({
 // The front / back torso with sleeves. `swing` moves the arms in opposition
 // for the walk cycle; the female build narrows the shoulders by a pixel.
 // The arms. Normally two sleeves swinging in opposition with the walk; a
-// reaction (spec/101) can instead throw them straight out to the sides (jumping
+// reaction (docs/specs/008-canvas/avatar-mode.md) can instead throw them straight out to the sides (jumping
 // jacks), raise both (cheer), or raise one and swing it (wave / dance). Only one
 // of those is ever set at a time — reactionPose guarantees it.
 function Arms({
@@ -575,10 +575,10 @@ export function AvatarSprite({
   // Draw as a cropped standing portrait (the Avatar Panel's preview): the box
   // hugs the figure instead of reserving room for the hop and the flag.
   portrait?: boolean;
-  // Active reaction (spec/101): overrides the arms / legs / lean for the length
+  // Active reaction (docs/specs/008-canvas/avatar-mode.md): overrides the arms / legs / lean for the length
   // of the performance. Null when the character is just standing or walking.
   pose?: ReactionPose | null;
-  // Chair (spec/130): drawn sitting. The body drops onto the seat and the legs
+  // Chair (docs/specs/009-elements/chair.md): drawn sitting. The body drops onto the seat and the legs
   // tuck together rather than striding — the same leg treatment the hop
   // already uses, so sitting needs no second set of artwork. It is a pose, not
   // a new sprite: a character who sits down is still the character you built.
@@ -597,7 +597,7 @@ export function AvatarSprite({
   const sitDrop = seated ? 5 : 0;
   const bob = airborne ? 0 : mid ? -1 : 0;
   const swing = airborne ? -1 : walking ? (mid ? 1 : -1) : 0;
-  // Seated (spec/130), `facing` is the CHAIR's: sitting down turns the figure
+  // Seated (docs/specs/009-elements/chair.md), `facing` is the CHAIR's: sitting down turns the figure
   // the way the seat points, so a sitter in profile is in a sideways chair.
   const profile = facing === 'left' || facing === 'right';
   const { base: shirtBase, dark: shirtDark } = shade(shirt);

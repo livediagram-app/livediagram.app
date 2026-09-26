@@ -1,6 +1,6 @@
 // Did the server accept it?
 //
-// The optimistic list actions (spec/15, spec/35) all share a shape: update the
+// The optimistic list actions (docs/specs/013-workspace/folders.md, docs/specs/013-workspace/team-shared-diagrams.md) all share a shape: update the
 // row locally so the UI feels instant, fire the request, and reconcile later.
 // Several of them spelled the "reconcile later" part `await apiThing(…).catch(()
 // => {})` and then carried straight on — which reads as "ignore the failure"

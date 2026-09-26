@@ -1,4 +1,4 @@
-// The Pages tab's page-view helpers (spec/150), kept pure so it is tested apart from
+// The Pages tab's page-view helpers (docs/specs/017-telemetry/page-view-telemetry.md), kept pure so it is tested apart from
 // the view. Everything reads the summary's existing page-view rows; nothing
 // here needs a new query or identifies anybody.
 

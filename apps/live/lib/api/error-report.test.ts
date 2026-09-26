@@ -9,7 +9,7 @@ import {
 } from './error-report';
 import { apiFetch } from './core';
 
-// Attribution for api failures (spec/22). Reporting the bare status made a
+// Attribution for api failures (docs/specs/017-telemetry/telemetry.md). Reporting the bare status made a
 // spike unreadable: 297 `Http403` in one day says something is being refused
 // and nothing about what. The api-client's own intent string supplies the
 // missing half.
@@ -61,7 +61,7 @@ describe('apiErrorType', () => {
   });
 });
 
-// A request that never got a response (spec/22 `Network.*`). apiFetch sees the
+// A request that never got a response (docs/specs/017-telemetry/telemetry.md `Network.*`). apiFetch sees the
 // URL, not the caller's action, so the label is the route with ids stripped.
 describe('network failures', () => {
   afterEach(() => {
@@ -100,7 +100,7 @@ describe('network failures', () => {
   });
 });
 
-// The per-type budget (spec/22). One editor stuck refetching a forbidden tab
+// The per-type budget (docs/specs/017-telemetry/telemetry.md). One editor stuck refetching a forbidden tab
 // once made `Http403.LoadTab` nearly half of every stored event; whatever
 // loops next, a page load can only ever send the cap.
 describe('per-type report cap', () => {

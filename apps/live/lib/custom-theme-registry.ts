@@ -1,4 +1,4 @@
-// Module-level registry of the owner's custom themes (spec/44), keyed
+// Module-level registry of the owner's custom themes (docs/specs/011-theme/custom-themes.md), keyed
 // by theme id (`custom:<uuid>`). `getTheme` in themes.ts consults this
 // FIRST, so a custom theme resolves through the same synchronous path
 // every built-in does — no async hop on the render path, no changes to
@@ -81,7 +81,7 @@ export function isCustomThemeId(id: string | undefined): boolean {
 
 // The telemetry `type` for a theme, and the one place that decides it.
 //
-// spec/22 is categorical: `type` is a preset token, never user content. A
+// docs/specs/017-telemetry/telemetry.md is categorical: `type` is a preset token, never user content. A
 // custom theme's name is user content — someone's client, someone's project —
 // so a custom id reports the fixed 'Custom' and its name never leaves the
 // browser. Three call sites derived this independently (the template picker,

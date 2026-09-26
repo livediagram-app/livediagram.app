@@ -1,6 +1,6 @@
 'use client';
 
-// Card view for the Explorer page (spec/67): the same folders + diagrams
+// Card view for the Explorer page (docs/specs/006-diagram/diagram-snapshots.md): the same folders + diagrams
 // the ListView shows, as a responsive grid of cards with a large SVG
 // snapshot. Takes the SAME props as ListView so ExplorerPane can swap the
 // two on the view toggle without re-wiring callbacks. Badge + actions

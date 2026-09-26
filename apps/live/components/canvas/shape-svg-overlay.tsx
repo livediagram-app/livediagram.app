@@ -37,10 +37,10 @@ export function isSvgRenderedShape(kind: ShapeKind): boolean {
   // routed to the plain HTML box path instead, so it renders a square box rather
   // than an invisible node. Valid kinds keep their existing routing.
   if (!SHAPE_KINDS.has(kind)) return false;
-  // A page (spec/100) is a plain rectangle with a fill and a border, so it
+  // A page (docs/specs/009-elements/page-element.md) is a plain rectangle with a fill and a border, so it
   // belongs on the CSS box path with square — the SVG overlay has no case for
   // it and would draw an invisible element.
-  // A mode button (spec/103) and a portal (spec/104) are likewise plain filled
+  // A mode button (docs/specs/009-elements/mode-button.md) and a portal (docs/specs/009-elements/portal-element.md) are likewise plain filled
   // rounded boxes with their own content drawn on top, so they belong on the CSS
   // box path too. Left on the SVG path they rendered as a TRANSPARENT box — the
   // overlay has no case for either kind, so nothing drew the fill at all.
@@ -51,7 +51,7 @@ export function isSvgRenderedShape(kind: ShapeKind): boolean {
     kind !== 'browser' &&
     kind !== 'page' &&
     kind !== 'mode-button' &&
-    // Bring Focus (spec/144) is a filled rounded box with a glyph + label on
+    // Bring Focus (docs/specs/012-collaboration/bring-focus.md) is a filled rounded box with a glyph + label on
     // top, same as the mode button beside it. This predicate is allow-BY-
     // DEFAULT, so a new CSS-drawn kind left off it renders as a transparent
     // nothing.
@@ -60,32 +60,32 @@ export function isSvgRenderedShape(kind: ShapeKind): boolean {
     kind !== 'session-button' &&
     kind !== 'reveal' &&
     kind !== 'picker' &&
-    // A reaction pad (spec/135) is a filled rounded box with a glyph on top.
+    // A reaction pad (docs/specs/009-elements/reaction-pad.md) is a filled rounded box with a glyph on top.
     kind !== 'reaction-pad' &&
-    // A comment pin (spec/136) draws its own bubble; the wrapper box behind it
+    // A comment pin (docs/specs/012-collaboration/comment-pin.md) draws its own bubble; the wrapper box behind it
     // must not also paint a square.
     kind !== 'comment-pin' &&
-    // An action panel (spec/146) is the same card, for an assigned action.
+    // An action panel (docs/specs/012-collaboration/action-panel.md) is the same card, for an assigned action.
     kind !== 'action-card' &&
-    // A mind node (spec/118) is a rounded filled box with a label, same as
+    // A mind node (docs/specs/009-elements/mind-node.md) is a rounded filled box with a label, same as
     // the four above. This predicate is allow-BY-DEFAULT, so a new CSS-drawn
     // kind that isn't listed here renders as a transparent nothing.
     kind !== 'mind-node' &&
-    // A lane (spec/119) is a filled band with a gutter drawn on top — CSS box
+    // A lane (docs/specs/009-elements/lane.md) is a filled band with a gutter drawn on top — CSS box
     // path, same as the rest of this list.
     kind !== 'lane' &&
-    // A record (spec/120) is a filled box with rows drawn on top.
+    // A record (docs/specs/009-elements/entity.md) is a filled box with rows drawn on top.
     kind !== 'entity' &&
-    // The collaboration elements (spec/123 to spec/129) are filled rounded
+    // The collaboration elements (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md) are filled rounded
     // cards with their own face drawn on top — the CSS box path, like every
     // kind above. Left off this list they rendered as a transparent nothing,
     // exactly as the mind-node comment above warns.
     !isCollabPanelShape(kind) &&
-    // The web components (spec/147): a callout is a bordered card with its
+    // The web components (docs/specs/009-elements/web-components-and-no-groups.md): a callout is a bordered card with its
     // content on top, and the rest paint their own surfaces (they are
     // self-painting, so the box path gives them a bare wrapper).
     !isWebComponentShape(kind) &&
-    // A chair (spec/130) draws its own furniture and wants no box behind it.
+    // A chair (docs/specs/009-elements/chair.md) draws its own furniture and wants no box behind it.
     kind !== 'chair'
   );
 }
@@ -112,7 +112,7 @@ export function ShapeSvgOverlay({
   // screen pixels on all four sides (see laptopGeometry in the table).
   // Defaults to a typical landscape ratio for callers that don't pass it.
   aspect?: number;
-  // Looping animation (spec/09) that has to render against the true SVG
+  // Looping animation (docs/specs/008-canvas/canvas-and-palette.md) that has to render against the true SVG
   // geometry rather than the wrapper: 'trace' marches the shape's own outline
   // (a light running the perimeter), 'gradient' fills it with a moving gradient
   // between the element's fill + accent, and 'pulse' / 'glow' radiate a
@@ -124,7 +124,7 @@ export function ShapeSvgOverlay({
   // elements.
   animation?: ShapeSvgAnimation;
 }) {
-  // Gradient / trace / pulse-glow plumbing (spec/09) — see
+  // Gradient / trace / pulse-glow plumbing (docs/specs/008-canvas/canvas-and-palette.md) — see
   // useShapeSvgAnimation.
   const { effectiveFill, traceOutline, svgClassName, gradientDefs } = useShapeSvgAnimation(
     animation,

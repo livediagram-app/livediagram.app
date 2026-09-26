@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// Pick-one settings draw one picture per option (spec/148): Panel Layout and
+// Pick-one settings draw one picture per option (docs/specs/007-editor/toolbar-layout.md): Panel Layout and
 // Theme. A drawing missing an option would leave that option with nothing to
 // ring, and one drawn for an option that no longer exists would show a choice
 // you can't make.

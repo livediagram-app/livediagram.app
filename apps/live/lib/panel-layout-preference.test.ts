@@ -1,4 +1,4 @@
-// The three-way panel layout preference (spec/148) and its legacy flag.
+// The three-way panel layout preference (docs/specs/007-editor/toolbar-layout.md) and its legacy flag.
 
 import { describe, expect, it } from 'vitest';
 import { PANEL_LAYOUTS, resolvePanelLayout, withPanelLayout } from './user-preferences';

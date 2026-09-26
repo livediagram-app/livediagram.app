@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { API_ROUTE_RESOURCES } from '@livediagram/api-schema';
 
-// A server crash reports `Error·Api·Internal.<Method>.<Route>` (spec/22), and
+// A server crash reports `Error·Api·Internal.<Method>.<Route>` (docs/specs/017-telemetry/telemetry.md), and
 // the route part only names a resource that is in API_ROUTE_RESOURCES:
 // anything else reads `Unknown`. So a resource added to the dispatch switch
 // but not to that list would crash as `Unknown` and nobody would notice

@@ -5,7 +5,7 @@ import { drawBannerMessage, drawIntentCursor, type PendingDraw } from './draw-mo
 // Every pen variant, keyed so the compiler owns the list: `variant` is an
 // optional union on the freehand intent, and adding a member to it fails
 // this Record until a sample is added below. That check is here because the
-// hand-written array underneath it drifted twice — 'shape-pen' (spec/115)
+// hand-written array underneath it drifted twice — 'shape-pen' (docs/specs/008-canvas/two-pens.md)
 // and 'component' both shipped with dedicated branches in BOTH exported
 // functions while the sweeps below walked straight past them.
 type FreehandVariant = NonNullable<Extract<PendingDraw, { type: 'freehand' }>['variant']>;
@@ -50,7 +50,7 @@ const INTENT_SAMPLES: Record<PendingDraw['type'], PendingDraw[]> = {
 const ALL_INTENTS: PendingDraw[] = Object.values(INTENT_SAMPLES).flat();
 
 describe('drawBannerMessage', () => {
-  it('says a workshop note is placed, not drawn (spec/139)', () => {
+  it('says a workshop note is placed, not drawn (docs/specs/021-event-storming/event-storming.md)', () => {
     expect(drawBannerMessage({ type: 'sticky', esKind: 'command' }, false)).toBe(
       'Click to place a command note',
     );
@@ -136,7 +136,7 @@ describe('drawBannerMessage', () => {
 
   it('has the shape pen announce that it converts, shortened on mobile', () => {
     // Recognition used to be a hidden toggle; it is now which pen you picked
-    // (spec/115), so the banner is where that gets said. Distinct from plain
+    // (docs/specs/008-canvas/two-pens.md), so the banner is where that gets said. Distinct from plain
     // freehand on both viewports, or the two pens would read identically.
     expect(drawBannerMessage({ type: 'freehand', variant: 'shape-pen' }, false)).toBe(
       'Draw a rough shape — it snaps to the real one',
@@ -150,7 +150,7 @@ describe('drawBannerMessage', () => {
   });
 
   it('gives the highlighter variant its own copy with no close hint', () => {
-    // The highlighter never closes / fills (spec/81), so both viewports
+    // The highlighter never closes / fills (docs/specs/008-canvas/highlighter.md), so both viewports
     // get the same short copy.
     expect(drawBannerMessage({ type: 'freehand', variant: 'highlighter' }, false)).toBe(
       'Drag to highlight',

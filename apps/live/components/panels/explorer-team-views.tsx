@@ -1,6 +1,6 @@
 'use client';
 
-// The panel's Teams accordion (spec/35): a team expands to its folder tree
+// The panel's Teams accordion (docs/specs/013-workspace/team-shared-diagrams.md): a team expands to its folder tree
 // and the diagrams inside each folder, which open in place (any joined
 // member may open them). The folders are the personal tree's FolderNode,
 // handed this team's rows; a team node adds only the team header and the
@@ -36,9 +36,9 @@ export function TeamNode({
   expanded: Record<string, boolean>;
   onToggleExpanded: (id: string) => void;
   // The team NAME opens the full team page when there is nothing to
-  // expand; otherwise folders + diagrams browse inline (spec/35).
+  // expand; otherwise folders + diagrams browse inline (docs/specs/013-workspace/team-shared-diagrams.md).
   onOpenTeam: (teamId: string) => void;
-  // The rows' verbs. Delete is open to every joined member (spec/35): a
+  // The rows' verbs. Delete is open to every joined member (docs/specs/013-workspace/team-shared-diagrams.md): a
   // team diagram is managed by the whole team, and a diagram shown here
   // means the viewer is a member, so the only gate is a wired handler.
   // Change Folder opens the panel's picker inside this team, so the pick

@@ -1,6 +1,6 @@
 'use client';
 
-// The invitation somebody's Bring Focus press puts on your screen (spec/144).
+// The invitation somebody's Bring Focus press puts on your screen (docs/specs/012-collaboration/bring-focus.md).
 //
 // A dialog rather than a pill in the chrome, for the same reason the poll
 // prompt is one: it is a question addressed to YOU, and the answer decides

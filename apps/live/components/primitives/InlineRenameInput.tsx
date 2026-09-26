@@ -79,7 +79,7 @@ export function InlineRenameInput({
     <input
       ref={ref}
       value={draft}
-      // Names are capped (spec/91). Enforced on the input too, not only on
+      // Names are capped (docs/specs/006-diagram/name-length.md). Enforced on the input too, not only on
       // commit, so the limit is visible as you type rather than silently
       // eating the end of what you wrote.
       maxLength={NAME_MAX_LENGTH}

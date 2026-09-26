@@ -3,7 +3,7 @@ import { ExplorerPane } from '../ExplorerPane';
 
 // /explorer/all — the folder-tree root: root folders + the Unsorted bucket.
 // The layout's ExplorerShell provides the chrome + state; this page
-// only pins the route and the tab title (spec/15, routes.ts).
+// only pins the route and the tab title (docs/specs/013-workspace/folders.md, routes.ts).
 export const metadata: Metadata = {
   title: 'Personal Space | livediagram',
 };

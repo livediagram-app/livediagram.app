@@ -1,7 +1,7 @@
 'use client';
 
 // The timer's length presets as a row of chips, shared by the Session Studio's
-// Timer pane and the Session button's `…` quick settings (spec/39, spec/105).
+// Timer pane and the Session button's `…` quick settings (docs/specs/012-collaboration/session-tools.md, docs/specs/012-collaboration/session-button.md).
 //
 // The `…` menu used to list every preset as its own row — eight of them, "1
 // minute" through "30 minutes", a column taller than the element it belonged

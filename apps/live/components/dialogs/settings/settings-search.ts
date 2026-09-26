@@ -1,6 +1,6 @@
 import type { SettingsCategorySpec, SettingsRowSpec } from './settings-catalogue';
 
-// Search across the settings catalogue (spec/20). Pure, so the matching rules
+// Search across the settings catalogue (docs/specs/007-editor/user-preferences.md). Pure, so the matching rules
 // are testable without rendering a dialog.
 //
 // Now that every preference lives here, the list is long enough that browsing

@@ -1,4 +1,4 @@
-// Which MCP tool is running (spec/22 'Error', spec/62 §4.12). An api failure
+// Which MCP tool is running (docs/specs/017-telemetry/telemetry.md 'Error', docs/specs/015-api/mcp-server.md §4.12). An api failure
 // deep inside a tool (apiJson, a team-library sweep, an image fetch) reports
 // `Error·Api·Http503.UpdateDiagram` rather than a bare `Http503`, so the
 // Exceptions dashboard says which tool broke. Carried in AsyncLocalStorage

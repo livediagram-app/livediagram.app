@@ -1,6 +1,6 @@
 'use client';
 
-// The Timer tool (spec/39). Countdown and Stopwatch are one tool with two
+// The Timer tool (docs/specs/012-collaboration/session-tools.md). Countdown and Stopwatch are one tool with two
 // modes, because a tab runs ONE timer: they used to be two sibling menu
 // categories, each warning that starting it would reset the other, which is
 // the interface admitting it had split one thing in two.

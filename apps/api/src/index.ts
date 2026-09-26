@@ -80,7 +80,7 @@ export default {
     const segments = url.pathname.replace(/^\//, '').split('/');
     if (segments[0] !== 'api') return notFound();
 
-    // Hybrid identity (spec/04). Verify a Clerk Bearer token once at
+    // Hybrid identity (docs/specs/014-identity/auth-and-guest-access.md). Verify a Clerk Bearer token once at
     // the top of the handler — null when `CLERK_JWKS_URL` is unset,
     // no Bearer was sent, or the token failed verification. Every
     // dispatch site below uses `resolveOwner()` instead of the legacy
@@ -89,7 +89,7 @@ export default {
     // legacy `X-Owner-Id` header.
     const clerkIdentity = await getClerkIdentity(env, request);
     const clerkUserId = clerkIdentity?.userId ?? null;
-    // Email used for team-invite matching (spec/32). ONLY the verified
+    // Email used for team-invite matching (docs/specs/013-workspace/teams.md). ONLY the verified
     // `email` claim from the JWKS-checked session token is trusted —
     // never a client-supplied header. A `X-Owner-Email` fallback used to
     // exist here, but it let a signed-in caller forge another address and
@@ -99,11 +99,11 @@ export default {
     // session token (dashboard → Sessions → Customize session token →
     // `{"email": "{{user.primary_email_address}}"}`); see auth/clerk.ts.
     const clerkEmail = clerkIdentity?.email ?? null;
-    // spec/22: Session·SignedUp / SignedIn are counted here, server-side, on
+    // docs/specs/017-telemetry/telemetry.md: Session·SignedUp / SignedIn are counted here, server-side, on
     // the first request of each new Clerk session, so every auth method
     // (email code, Google OAuth) counts once. Off the response path.
     noteAuthSighting(env, clerkIdentity, executionCtx?.waitUntil?.bind(executionCtx));
-    // spec/64: first authenticated sighting => sign-up. Fire-and-forget (the
+    // docs/specs/014-identity/transactional-email.md: first authenticated sighting => sign-up. Fire-and-forget (the
     // sighting + welcome run in the background) so it never delays the response;
     // a no-op when RESEND_API_KEY is unset.
     if (clerkUserId && clerkEmail && emailEnabled(env) && !sightedThisIsolate.has(clerkUserId)) {
@@ -115,7 +115,7 @@ export default {
       sightedThisIsolate.add(clerkUserId);
       executionCtx?.waitUntil(welcomeOnSighting(env, clerkUserId, clerkEmail));
     }
-    // API token (spec/61): a `Bearer lvd_…` resolves to its owner — always a
+    // API token (docs/specs/015-api/public-api-and-tokens.md): a `Bearer lvd_…` resolves to its owner — always a
     // Clerk account — via the hashed-token lookup. Only consulted when no Clerk
     // JWT verified (a token and a JWT can't both be the bearer). The resolved
     // owner is the token's Clerk userId, so a token request flows through the
@@ -146,7 +146,7 @@ export default {
       }
     }
 
-    // Guest REST signature gate (spec/61 §4). On owner-scoped routes, a
+    // Guest REST signature gate (docs/specs/015-api/public-api-and-tokens.md §4). On owner-scoped routes, a
     // presented `X-Owner-Id` must carry a valid HMAC signature once
     // enforcement is on — so a harvested owner id (a guest UUID, or a
     // signed-up user's Clerk `sub` slipped into the header) can't be used as a
@@ -182,11 +182,11 @@ export default {
     // can't burn the global quota. Telemetry ingest (/api/events)
     // is deliberately exempt: it's anonymous, high-frequency, and
     // must never compete with a user's real diagram writes for the
-    // per-owner write budget (spec/22). Client-side batching keeps
+    // per-owner write budget (docs/specs/017-telemetry/telemetry.md). Client-side batching keeps
     // its volume low instead.
     const isWrite =
       request.method === 'POST' || request.method === 'PUT' || request.method === 'DELETE';
-    // Read-only token enforcement (spec/62 §4.11): a token minted read-only may
+    // Read-only token enforcement (docs/specs/015-api/mcp-server.md §4.11): a token minted read-only may
     // only GET/HEAD. Reject every write it presents at this single choke point
     // — so no write route can be reached, present or future, with no per-route
     // changes. Clerk sessions and full tokens are unaffected (tokenAuth is null
@@ -199,14 +199,14 @@ export default {
     // in the routes catch the rest; this is the blunt outer bound.
     if (isWrite) {
       const len = Number(request.headers.get('content-length'));
-      // Image uploads carry raw bytes with their own, larger cap (spec/19);
+      // Image uploads carry raw bytes with their own, larger cap (docs/specs/009-elements/images.md);
       // the route re-checks it and answers with file_too_large + limitBytes.
       const cap = segments[1] === 'images' ? MAX_IMAGE_BYTES : MAX_BODY_BYTES;
       if (Number.isFinite(len) && len > cap) {
         return payloadTooLarge();
       }
     }
-    // Room-ticket mints (spec/11) are exempt like /api/events: the mint
+    // Room-ticket mints (docs/specs/015-api/api.md) are exempt like /api/events: the mint
     // is the auth handshake for opening the realtime room, and a 429 —
     // easily reached because it shares the per-owner budget with the
     // ~600ms autosave PUTs — would silently cost a team member their
@@ -215,13 +215,13 @@ export default {
     // unbounded work, so it isn't a quota-exhaustion vector.
     const isRoomTicketMint = segments[1] === 'diagrams' && segments[3] === 'room-ticket';
     if (isWrite && url.pathname !== '/api/events' && !isRoomTicketMint) {
-      // A token request rate-limits on the TOKEN id (spec/61 §3.5), so a
+      // A token request rate-limits on the TOKEN id (docs/specs/015-api/public-api-and-tokens.md §3.5), so a
       // runaway integration is throttled independently of the owner's
       // interactive app use; everything else keys on the resolved owner.
       const key = tokenAuth ? `token:${tokenAuth.tokenId}` : (resolveOwner() ?? 'anonymous');
       if (await isWriteRateLimited(env, key)) return rateLimited();
     }
-    // Token-authed READS (spec/61 §3.5): GETs under a token aren't covered by
+    // Token-authed READS (docs/specs/015-api/public-api-and-tokens.md §3.5): GETs under a token aren't covered by
     // the write limiter, so an external integration's reads get their own
     // per-token throttle. Optional binding → allow when absent (self-host).
     if (tokenAuth && request.method === 'GET' && env.API_TOKEN_READ_RATE_LIMITER) {
@@ -263,7 +263,7 @@ export default {
         case 'unfurl':
           return await handleUnfurl(ctx);
         case 'ai':
-          // Two model routes, one gate (spec/25 + spec/139 Phase 8): the
+          // Two model routes, one gate (docs/specs/007-editor/ai-assistance.md + docs/specs/021-event-storming/event-storming.md Phase 8): the
           // assistant at /api/ai, and the crop reader one segment deeper.
           if (segments[2] === undefined) return await handleAi(ctx);
           if (segments[2] === 'read-notes') return await handleAiReadNotes(ctx);
@@ -312,7 +312,7 @@ export default {
       // client — internal error text can leak implementation details (table
       // names, stack hints). Return a generic body instead.
       console.error('api error', err);
-      // Self-report the crash to the events table (spec/22 'Error'
+      // Self-report the crash to the events table (docs/specs/017-telemetry/telemetry.md 'Error'
       // category): the worker owns the D1 binding, so a server-side
       // exception counts even when no client survives to report it.
       // Same TELEMETRY_ENABLED gate as the ingest; off the response's
@@ -338,9 +338,9 @@ export default {
   // One worker invocation per `triggers.crons` entry; dispatch on
   // `event.cron` for each pattern. Today's daily 03:00 UTC trigger
   // fires two independent retention sweeps:
-  //   - change_log, 90-day floor (item #16 / spec/12).
-  //   - events,     60-day floor (spec/22 "Retention").
-  //   - images,     30-day floor, unused only (spec/19 "Retention").
+  //   - change_log, 90-day floor (item #16 / docs/specs/012-collaboration/activity-and-audit.md).
+  //   - events,     60-day floor (docs/specs/017-telemetry/telemetry.md "Retention").
+  //   - images,     30-day floor, unused only (docs/specs/009-elements/images.md "Retention").
   // All are no-ops when nothing is over the floor; all use
   // `ctx.waitUntil` so they run concurrently and the worker can
   // exit as soon as the schedule callback returns.
@@ -356,7 +356,7 @@ export default {
         deleteOldChangeLogEntries,
       );
       scheduleSweep(ctx, env, 'events', 'rows', now - EVENTS_RETENTION_MS, deleteOldEvents);
-      // spec/22: session ids seen for the sign-in count (auth/session-telemetry.ts).
+      // docs/specs/017-telemetry/telemetry.md: session ids seen for the sign-in count (auth/session-telemetry.ts).
       scheduleSweep(
         ctx,
         env,
@@ -365,7 +365,7 @@ export default {
         now - AUTH_SESSION_RETENTION_MS,
         deleteOldSessionSightings,
       );
-      // spec/138 §3.5: the Timeline feed keeps a year, where the
+      // docs/specs/013-workspace/timeline.md §3.5: the Timeline feed keeps a year, where the
       // element-level change_log above keeps 90 days.
       scheduleSweep(
         ctx,
@@ -375,12 +375,12 @@ export default {
         now - TIMELINE_RETENTION_MS,
         deleteOldTimelineEvents,
       );
-      // spec/64: send any due onboarding emails (welcome catch-up + week 1 / 2).
+      // docs/specs/014-identity/transactional-email.md: send any due onboarding emails (welcome catch-up + week 1 / 2).
       // No-op when RESEND_API_KEY is unset.
       ctx.waitUntil(runLifecycleSweep(env));
-      // spec/64 (#3): warn owners whose API token is within a week of expiry.
+      // docs/specs/014-identity/transactional-email.md (#3): warn owners whose API token is within a week of expiry.
       ctx.waitUntil(runTokenExpirySweep(env));
-      // spec/138 §4.5: the same window, on the Timeline. Separate from
+      // docs/specs/013-workspace/timeline.md §4.5: the same window, on the Timeline. Separate from
       // the email sweep above because that one no-ops without a Resend
       // key, and a self-host with no email provider still needs to know
       // its integration is about to break.
@@ -431,18 +431,18 @@ function scheduleSweep(
 const CHANGE_LOG_RETENTION_MS = 90 * 24 * 60 * 60 * 1000;
 
 // 90 days in ms: how long a seen Clerk session id is kept for the sign-in
-// count (spec/22). Longer than any session Clerk keeps alive by default.
+// count (docs/specs/017-telemetry/telemetry.md). Longer than any session Clerk keeps alive by default.
 const AUTH_SESSION_RETENTION_MS = 90 * 24 * 60 * 60 * 1000;
 
 // 60 days in ms. The /telemetry dashboard's longest window is
 // "Last 30 days", so anything past 60 days is dead storage (twice
 // the surfaced window, leaving headroom for a future "Last 60
-// days" view to populate). See spec/22 "Retention".
+// days" view to populate). See docs/specs/017-telemetry/telemetry.md "Retention".
 const EVENTS_RETENTION_MS = 60 * 24 * 60 * 60 * 1000;
 
 // 30 days in ms. The unused-image sweep only reaps images this old
 // AND referenced by no diagram, so the floor is the safety margin: a
 // freshly uploaded image not yet placed on the canvas is never reaped
 // out from under the user. Generous on purpose — storage hygiene, not
-// an aggressive GC. See spec/19 "Retention".
+// an aggressive GC. See docs/specs/009-elements/images.md "Retention".
 const UNUSED_IMAGE_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;

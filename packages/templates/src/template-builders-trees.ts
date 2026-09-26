@@ -1,7 +1,7 @@
 import { createPinnedArrow, createShape, type Anchor, type Element } from '@livediagram/diagram';
 
 // Radial mind-map, org chart, and flowchart template builders. Split out
-// of template-builders.ts; each is pure (cx, cy) -> Element[]. See spec/09.
+// of template-builders.ts; each is pure (cx, cy) -> Element[]. See docs/specs/008-canvas/canvas-and-palette.md.
 export function buildMindMap(cx: number, cy: number): Element[] {
   const centerSize = 170;
   const branchW = 170;

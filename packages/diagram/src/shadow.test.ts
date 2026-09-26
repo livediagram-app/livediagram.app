@@ -12,7 +12,7 @@ import {
   type ElementShadow,
 } from './shadow';
 
-// The shadow model (spec/86) feeds three surfaces from one module: the
+// The shadow model (docs/specs/008-canvas/element-shadows.md) feeds three surfaces from one module: the
 // canvas wrapper style (box-shadow / drop-shadow strings), the headless
 // SVG export (feDropShadow defs keyed by deterministic ids), and the
 // Shadow menu section (presets + slider limits). These tests pin the
@@ -33,7 +33,7 @@ describe('SHADOW_PRESETS', () => {
     for (const p of SHADOW_PRESETS) expect(p.label.length).toBeGreaterThan(0);
   });
 
-  it('DEFAULT_SHADOW is a visible shadow (a slider drag on a shadow-less element seeds from it, spec/86)', () => {
+  it('DEFAULT_SHADOW is a visible shadow (a slider drag on a shadow-less element seeds from it, docs/specs/008-canvas/element-shadows.md)', () => {
     expect(DEFAULT_SHADOW.opacity).toBeGreaterThan(0);
     expect(
       DEFAULT_SHADOW.blur + Math.abs(DEFAULT_SHADOW.offsetX) + DEFAULT_SHADOW.offsetY,
@@ -92,7 +92,7 @@ describe('shadowFilterId + svgShadowFilterDef', () => {
     expect(id).toMatch(/^[A-Za-z][A-Za-z0-9_-]*$/);
   });
 
-  it('def markup references its own id and carries the blur/2 stdDeviation (CSS ≈ 2σ parity, spec/86)', () => {
+  it('def markup references its own id and carries the blur/2 stdDeviation (CSS ≈ 2σ parity, docs/specs/008-canvas/element-shadows.md)', () => {
     const s: ElementShadow = { offsetX: 0, offsetY: 4, blur: 12, opacity: 0.25 };
     const def = svgShadowFilterDef(s);
     expect(def).toContain(`id="${shadowFilterId(s)}"`);
@@ -103,7 +103,7 @@ describe('shadowFilterId + svgShadowFilterDef', () => {
 });
 
 describe('supportsShadow', () => {
-  it('accepts the body-drawing boxed types and rejects the rest (spec/86)', () => {
+  it('accepts the body-drawing boxed types and rejects the rest (docs/specs/008-canvas/element-shadows.md)', () => {
     for (const type of ['shape', 'sticky', 'image', 'link-card'] as const) {
       expect(supportsShadow({ type }), type).toBe(true);
     }

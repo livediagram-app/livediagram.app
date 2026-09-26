@@ -1,6 +1,6 @@
 -- Track which diagrams a non-owner has accessed via a share link, so
 -- the live app can render a "Shared with you" accordion in the
--- Explorer (spec/15 / item #8 on the post-prototype feature haul).
+-- Explorer (docs/specs/013-workspace/folders.md / item #8 on the post-prototype feature haul).
 --
 -- Each row says "owner OWNER_ID has opened diagram DIAGRAM_ID at
 -- least once via a share link, most recently at LAST_SEEN, under

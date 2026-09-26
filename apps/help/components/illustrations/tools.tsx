@@ -1,4 +1,4 @@
-// Tools-category illustrations (spec/55): AI assistance, zen mode, light/dark
+// Tools-category illustrations (docs/specs/018-help/help-app.md): AI assistance, zen mode, light/dark
 // mode, Markdown import, and the two layout tidiers (Auto-Align, Auto Layout).
 // Composed only from the shared primitives so the house style holds.
 

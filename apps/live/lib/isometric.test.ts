@@ -124,7 +124,7 @@ describe('isoShapeSilhouette', () => {
   });
 });
 
-describe('isoCanvasMatrix (spec/45 / 48 export projection)', () => {
+describe('isoCanvasMatrix (docs/specs/008-canvas/isometric-view.md / 48 export projection)', () => {
   it('defaults to the on-screen camera angles', () => {
     const m = isoCanvasMatrix();
     const a = (ISO_TILT_DEG.z * Math.PI) / 180;

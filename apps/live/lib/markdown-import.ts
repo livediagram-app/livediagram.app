@@ -1,4 +1,4 @@
-// Markdown → diagram import (spec/27). Turns an arbitrary Markdown
+// Markdown → diagram import (docs/specs/020-import-export/markdown-import.md). Turns an arbitrary Markdown
 // outline (XMind / Obsidian / hand-written notes) into a themed, editable
 // node-link diagram on a new tab.
 //
@@ -334,7 +334,7 @@ export function buildTabFromMarkdown(
 
   const theme = getTheme(themeId);
   // Graph-aware recolour: an imported outline is a tree of pinned
-  // arrows, so a multi-colour theme (spec/29) tints each top-level
+  // arrows, so a multi-colour theme (docs/specs/011-theme/multicolour-themes.md) tints each top-level
   // branch its own hue.
   const themed = recolourElementsForTheme(elements, theme);
 

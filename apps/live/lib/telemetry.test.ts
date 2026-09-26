@@ -1,4 +1,4 @@
-// Tests for the lib/telemetry emitter (spec/22). The module-level
+// Tests for the lib/telemetry emitter (docs/specs/017-telemetry/telemetry.md). The module-level
 // ENABLED constant is captured from process.env at import time, so
 // each test that needs a specific ENABLED value uses vi.resetModules
 // + vi.stubEnv to re-import a fresh copy with the new env, instead
@@ -143,7 +143,7 @@ describe('track gate', () => {
 
   it('treats missing telemetryEnabled key as opted-IN (default on)', async () => {
     // Important: never-touched-settings users should still emit, that's
-    // the spec/20 + spec/22 default. Negative coverage on this branch
+    // the docs/specs/007-editor/user-preferences.md + docs/specs/017-telemetry/telemetry.md default. Negative coverage on this branch
     // is exactly the "telemetry silently disappeared" bug class.
     setUpBrowser();
     mockedReadPrefs.mockReturnValue({}); // no telemetryEnabled key

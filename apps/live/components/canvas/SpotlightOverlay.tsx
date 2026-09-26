@@ -6,7 +6,7 @@ import {
   type SpotlightConfig,
 } from '@/lib/spotlight-config';
 
-// Spotlight presenter overlay (spec/09). A full-bleed, pointer-transparent
+// Spotlight presenter overlay (docs/specs/008-canvas/canvas-and-palette.md). A full-bleed, pointer-transparent
 // shroud over the canvas with a single soft circle of clarity around the
 // cursor. The shroud + the hole are one radial-gradient: transparent at the
 // centre, ramping to a dark fill at the light's radius and holding that fill
@@ -23,7 +23,7 @@ import {
 // capture handlers turn left-click into grow and right-click into shrink.
 
 // The shroud's darkness, the rim's softness, and the light's shape all come
-// from the Spotlight Panel (spec/112) now; the defaults below are exactly what
+// from the Spotlight Panel (docs/specs/008-canvas/spotlight-panel.md) now; the defaults below are exactly what
 // they were before it existed — slate-950 at 82%, a 60px feathered rim, a
 // circle — so someone who never opens the panel sees no change.
 

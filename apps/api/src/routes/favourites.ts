@@ -1,4 +1,4 @@
-// /api/favourites — per-user diagram stars (spec/95).
+// /api/favourites — per-user diagram stars (docs/specs/013-workspace/favourites.md).
 //
 // GET    /api/favourites            -> { ids: string[] }
 // PUT    /api/favourites/:diagramId -> 204, star it

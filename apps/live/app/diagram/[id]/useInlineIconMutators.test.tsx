@@ -8,7 +8,7 @@ vi.mock('@/lib/telemetry', () => ({ track: (...args: unknown[]) => trackMock(...
 
 import { useInlineIconMutators } from './useInlineIconMutators';
 
-// Inline-icon telemetry (spec/22 Element·Added), driven with a commit that
+// Inline-icon telemetry (docs/specs/017-telemetry/telemetry.md Element·Added), driven with a commit that
 // applies the mapper to a fixed element list.
 function setup(elements: Element[]) {
   let current = elements;

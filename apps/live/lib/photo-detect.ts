@@ -19,7 +19,7 @@ import { isFlatImage } from '@livediagram/sticky-model';
 import { boundaryCuesFor } from './photo-model/client';
 import type { BoundaryBackend, BoundaryOutcome, ClassicalReason } from './photo-model/protocol';
 
-// Getting a photograph ready to become notes (spec/139 Phase 8) — all of it in
+// Getting a photograph ready to become notes (docs/specs/021-event-storming/event-storming.md Phase 8) — all of it in
 // the browser.
 //
 // The photo itself never leaves the machine. It is decoded here, the stickies
@@ -63,7 +63,7 @@ export function photoTypeError(type: string): PhotoDetectError | null {
   if (isPhotoAcceptedType(type)) return null;
   // Called out separately because it is the single commonest rejection: HEIC
   // is the iPhone default, and "save as JPEG" is advice the author can act on
-  // (spec/19 makes the same distinction for uploads).
+  // (docs/specs/009-elements/images.md makes the same distinction for uploads).
   if (type === 'image/heic' || type === 'image/heif') return 'photo_unsupported_heic';
   return 'photo_unsupported_type';
 }
@@ -169,7 +169,7 @@ function cutCrops(
   return crops;
 }
 
-// Crops for boxes the author moved, resized or drew in the review (spec/139
+// Crops for boxes the author moved, resized or drew in the review (docs/specs/021-event-storming/event-storming.md
 // Phase 9): the photo is decoded again and each box cut from its FULL
 // resolution, exactly as the first read's crops were. `workingSize` is the
 // size the boxes are measured in. Never throws: a photo that cannot be decoded,

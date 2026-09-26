@@ -29,7 +29,7 @@ const baseRow = (override: Partial<TabRow> = {}): TabRow => ({
 });
 
 describe('rowToTab', () => {
-  it('freezes a legacy group out of the stored elements (spec/147)', () => {
+  it('freezes a legacy group out of the stored elements (docs/specs/009-elements/web-components-and-no-groups.md)', () => {
     const elements = [
       { id: 'a', type: 'shape', shape: 'square', x: 0, y: 0, width: 100, height: 40, groupId: 'g' },
       {
@@ -54,7 +54,7 @@ describe('rowToTab', () => {
     expect(dto.elements[2]).toMatchObject({ from: { kind: 'free', x: 100, y: 50 } });
   });
 
-  it('drops a stored anchor-docking relation (spec/139 Phase 7)', () => {
+  it('drops a stored anchor-docking relation (docs/specs/021-event-storming/event-storming.md Phase 7)', () => {
     const elements = [
       {
         id: 'c',
@@ -92,7 +92,7 @@ describe('rowToTab', () => {
           theme: 'cobalt',
           background: { pattern: 'grid', color: '#ffffff', patternColor: '#cbd5e1' },
           locked: true,
-          // Board kind (spec/139): tab state with no column of its own, so
+          // Board kind (docs/specs/021-event-storming/event-storming.md): tab state with no column of its own, so
           // the blob is the only thing carrying it.
           kind: 'event-storming',
         }),
@@ -134,7 +134,7 @@ describe('rowToTab', () => {
     expect(dto.updatedAt).toBe(1_700_000_000_000);
   });
 
-  it('takes folder from the row column and lets it override a forged data-blob folder (spec/30)', () => {
+  it('takes folder from the row column and lets it override a forged data-blob folder (docs/specs/006-diagram/tab-folders.md)', () => {
     // folder is per-diagram link metadata read from the diagram_tabs
     // JOIN, never from tabs.data (the client strips it before saving).
     // A folder stuffed into the blob must not win.
@@ -180,7 +180,7 @@ describe('rowToTabSummary', () => {
     expect(rowToTabSummary(baseRow({ order_index: 0 })).orderIndex).toBe(0);
   });
 
-  it('carries the per-diagram folder name, mapping NULL to undefined (spec/30)', () => {
+  it('carries the per-diagram folder name, mapping NULL to undefined (docs/specs/006-diagram/tab-folders.md)', () => {
     expect(rowToTabSummary(baseRow({ folder: 'Org' })).folder).toBe('Org');
     expect(rowToTabSummary(baseRow({ folder: null })).folder).toBeUndefined();
   });

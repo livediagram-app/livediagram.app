@@ -1,4 +1,4 @@
-// An arrow caption's size and footprint (spec/09).
+// An arrow caption's size and footprint (docs/specs/008-canvas/canvas-and-palette.md).
 //
 // In the diagram package because BOTH renderers need it: the canvas draws the
 // text and its plate from these numbers, and the headless SVG render (exports,

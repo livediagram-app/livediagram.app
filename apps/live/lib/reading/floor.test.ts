@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { READ_MIN_EDGE_PX, tooSmallToRead } from './floor';
 
-// A note too small in the photo to read is not asked about (spec/139 Phase
+// A note too small in the photo to read is not asked about (docs/specs/021-event-storming/event-storming.md Phase
 // 9): below the floor the model invents far more than it reads. The note is
 // left unread, which the unread tip rightly blames on the photo.
 describe('tooSmallToRead', () => {

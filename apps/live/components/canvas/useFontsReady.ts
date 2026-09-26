@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 
-// Re-render once the webfonts have landed (spec/28 loads them with
+// Re-render once the webfonts have landed (docs/specs/004-interface-design/fonts.md loads them with
 // `display=swap`, so they arrive AFTER first paint).
 //
-// This exists because auto-fit measures the face it paints (spec/139): a
+// This exists because auto-fit measures the face it paints (docs/specs/021-event-storming/event-storming.md): a
 // workshop note is written in marker, and marker is much wider than the
 // fallback the browser swaps in while the file is in flight. Measure during
 // that window and the note keeps a size fitted to the wrong face — text over

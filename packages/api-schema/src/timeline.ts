@@ -1,4 +1,4 @@
-// Timeline wire format (spec/138) — the Explorer's landing feed.
+// Timeline wire format (docs/specs/013-workspace/timeline.md) — the Explorer's landing feed.
 //
 // The api worker emits these; the live app's Timeline pane consumes
 // them. Kept in its own module rather than piled into index.ts: the
@@ -6,12 +6,12 @@
 // both want room to grow without the barrel becoming a catalogue.
 
 // Who a run of events is FOR. v1 emits only 'user', where the id is an
-// owner id (a Clerk `sub`, or a guest participant id per spec/04).
+// owner id (a Clerk `sub`, or a guest participant id per docs/specs/014-identity/auth-and-guest-access.md).
 //
 // Widened with `(string & {})` rather than closed, because the whole
 // point of the scope model is that a later per-diagram or per-team feed
 // is a new value plus a renderer — no schema change, no migration
-// (spec/138 §3.4). The union members still autocomplete.
+// (docs/specs/013-workspace/timeline.md §3.4). The union members still autocomplete.
 export type TimelineScopeType = 'user' | 'diagram' | 'team' | (string & {});
 
 export type TimelineScopeRef = {
@@ -46,18 +46,18 @@ export type TimelineSourceType = 'diagram' | 'team' | 'account' | (string & {});
 // type has a tone and a filter category. They used to be `Record<string, …>`
 // keyed on loose strings, with the only net a hand-copied list of all 38 types
 // in eventTone.test.ts — a copy of the union, in another package, which can
-// only ever prove the copy agrees with itself. (The same lesson spec/22 records
+// only ever prove the copy agrees with itself. (The same lesson docs/specs/017-telemetry/telemetry.md records
 // about the palette telemetry tokens, where the copy had silently drifted.)
 // Adding a type here now fails the build until it has been classified, which is
 // the whole point: an unclassified event renders in a colour that says the
 // wrong thing about what happened.
 export const TIMELINE_EVENT_TYPES = [
-  // Diagram lifecycle + the coalesced editing event (spec/138 §4.2)
+  // Diagram lifecycle + the coalesced editing event (docs/specs/013-workspace/timeline.md §4.2)
   'diagram_created',
   'diagram_renamed',
   'diagram_duplicated',
   // No `diagram_deleted`: a deleted diagram is swept from the feed and
-  // leaves nothing behind (spec/138 §3.5).
+  // leaves nothing behind (docs/specs/013-workspace/timeline.md §3.5).
   'diagram_moved',
   'diagram_edited',
   'diagram_offline',
@@ -84,7 +84,7 @@ export const TIMELINE_EVENT_TYPES = [
   'team_role_changed',
   'team_diagram_added',
   // Pulled back OUT of a team library into somebody's personal files, which
-  // also transfers ownership to the mover (spec/35). Distinct from
+  // also transfers ownership to the mover (docs/specs/013-workspace/team-shared-diagrams.md). Distinct from
   // `diagram_moved`: the team loses the diagram, and if the mover was not the
   // owner the owner loses it too.
   'team_diagram_removed',
@@ -118,7 +118,7 @@ export type TimelineEventType = KnownTimelineEventType | (string & {});
 // the thing a future search would index. The split is load-bearing for
 // stacking: the title is a Title Case category that never carries user
 // content, which is what lets four bubbles collapse into one honest
-// headline (spec/138 §2.1).
+// headline (docs/specs/013-workspace/timeline.md §2.1).
 export type TimelineEvent = {
   id: string;
   sourceType: TimelineSourceType;
@@ -127,7 +127,7 @@ export type TimelineEvent = {
   title: string;
   description: string | null;
   // Epoch ms. May be in the FUTURE for expiry warnings, which is why
-  // the feed renders a future band above Today (spec/138 §4.5).
+  // the feed renders a future band above Today (docs/specs/013-workspace/timeline.md §4.5).
   occurredAt: number;
   // Owner id of whoever did it, or null for a system event. The
   // renderer compares it against the viewer to choose "You" vs a name,
@@ -155,24 +155,24 @@ export type TimelineReadResult = {
 // The page a read serves by default, and the ceiling the endpoint will
 // honour however large a `limit` a caller asks for. The cap is a server
 // guard, not a client convenience: this endpoint is part of the public
-// API (spec/61), so `?limit=100000` has to be bounded here.
+// API (docs/specs/015-api/public-api-and-tokens.md), so `?limit=100000` has to be bounded here.
 export const TIMELINE_PAGE_SIZE = 50;
 export const TIMELINE_PAGE_MAX = 200;
 
 // How far back the feed goes before the daily sweep prunes it. A year,
-// where `change_log` keeps 90 days (spec/12): an element-level audit
+// where `change_log` keeps 90 days (docs/specs/012-collaboration/activity-and-audit.md): an element-level audit
 // trail decays in weeks, but "when did I last touch this" is a question
 // people ask across a year.
 export const TIMELINE_RETENTION_MS = 365 * 24 * 60 * 60 * 1000;
 
 // Comment text rides along in the description so the feed is readable
 // without opening the diagram, truncated so one essay can't dominate a
-// day. Deliberately wider than spec/64's email policy (which never
+// day. Deliberately wider than docs/specs/014-identity/transactional-email.md's email policy (which never
 // includes comment text): an email leaves the product's auth boundary,
 // the Timeline sits behind the same gate as the diagram itself.
 export const TIMELINE_COMMENT_MAX = 240;
 
-// An Offline Mode conversion (spec/76), declared by the editor on the request
+// An Offline Mode conversion (docs/specs/006-diagram/offline-mode.md), declared by the editor on the request
 // that performs it, so the feed can say what actually happened.
 //
 // It has to be declared because the two conversions reuse ordinary endpoints
@@ -181,7 +181,7 @@ export const TIMELINE_COMMENT_MAX = 240;
 // the worker recorded them as a deletion and `diagram_created` — a Timeline
 // that told the owner a diagram they had just moved into this browser was
 // gone, and that one they had just uploaded was newly *created*. Both `diagram_offline` and `diagram_synced` already
-// existed above, with tones, icons, renderers and a spec/138 table entry;
+// existed above, with tones, icons, renderers and a docs/specs/013-workspace/timeline.md table entry;
 // nothing had ever emitted them.
 //
 // Header name + values live here, next to the event types they select, because

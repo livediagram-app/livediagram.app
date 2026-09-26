@@ -1,5 +1,5 @@
-// folders — self-referential tree, personal (owner-scoped, spec/15)
-// or team-scoped (spec/35) via the nullable team_id column.
+// folders — self-referential tree, personal (owner-scoped, docs/specs/013-workspace/folders.md)
+// or team-scoped (docs/specs/013-workspace/team-shared-diagrams.md) via the nullable team_id column.
 
 import { rowToFolder, type FolderRow } from '../folder-row';
 import type { Env, FolderDTO } from '../types';
@@ -7,7 +7,7 @@ import type { Env, FolderDTO } from '../types';
 const FOLDER_COLS = 'id, owner_id, parent_id, team_id, name, created_at, updated_at';
 
 // Personal tree only: team folders never bleed into the owner's
-// Explorer sidebar (they render on the team page instead — spec/35).
+// Explorer sidebar (they render on the team page instead — docs/specs/013-workspace/team-shared-diagrams.md).
 export async function listFoldersByOwner(env: Env, ownerId: string): Promise<FolderDTO[]> {
   const result = await env.DB.prepare(
     `SELECT ${FOLDER_COLS} FROM folders WHERE owner_id = ? AND team_id IS NULL ORDER BY name ASC`,
@@ -17,7 +17,7 @@ export async function listFoldersByOwner(env: Env, ownerId: string): Promise<Fol
   return (result.results ?? []).map(rowToFolder);
 }
 
-// One team's shared folder tree (spec/35).
+// One team's shared folder tree (docs/specs/013-workspace/team-shared-diagrams.md).
 export async function listFoldersByTeam(env: Env, teamId: string): Promise<FolderDTO[]> {
   const result = await env.DB.prepare(
     `SELECT ${FOLDER_COLS} FROM folders WHERE team_id = ? ORDER BY name ASC`,

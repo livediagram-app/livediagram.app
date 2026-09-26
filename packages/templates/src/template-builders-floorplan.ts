@@ -1,5 +1,5 @@
 // Floor plan template: a two-bedroom flat drawn to a real metric scale,
-// with the Furniture icons (spec/09's top-down room symbols) laid out
+// with the Furniture icons (docs/specs/008-canvas/canvas-and-palette.md's top-down room symbols) laid out
 // inside each room.
 //
 // The whole plan is authored in METRES and converted once, at the
@@ -20,7 +20,7 @@
 // lands almost exactly on a real 1.6 x 1.0 m two-seater.
 //
 // Pure like every other builder: takes a centre (cx, cy), returns a
-// fresh Element[]. See spec/09 "Templates" for the catalogue.
+// fresh Element[]. See docs/specs/008-canvas/canvas-and-palette.md "Templates" for the catalogue.
 
 import { createShape, createText, type Element } from '@livediagram/diagram';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';

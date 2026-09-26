@@ -1,4 +1,4 @@
-// Once-per-UTC-day "returning visitor" signal (spec/22).
+// Once-per-UTC-day "returning visitor" signal (docs/specs/017-telemetry/telemetry.md).
 //
 // Emits `Participant`/`Returned` with type `Anonymous` (guest) or
 // `Authenticated` (signed in) at most once per browser per UTC day,
@@ -26,7 +26,7 @@ import { getLastActiveDay, setLastActiveDay } from './local-identity';
 import { track } from './telemetry';
 
 // UTC day (YYYY-MM-DD) so the gate rolls at 00:00 UTC, matching the
-// dashboard's `date(ts/1000,'unixepoch')` day bucketing (spec/22).
+// dashboard's `date(ts/1000,'unixepoch')` day bucketing (docs/specs/017-telemetry/telemetry.md).
 function utcDay(): string {
   return new Date().toISOString().slice(0, 10);
 }

@@ -4,7 +4,7 @@ Group J ([j-hybrid.md](j-hybrid.md)) showed the classical detector corrected by
 group E's learned boundary model scores TOTAL 95.5 against 94.1 in Node. This
 group puts that hybrid into the editor's photo import, in the browser, and
 proves the boxes the running editor shows are the sweep's boxes. Plan:
-[plans/event-storming-photo-95-experiments.md](../../../plans/event-storming-photo-95-experiments.md)
+plans/0006-event-storming-photo-95-experiments.md
 (M). J's "What wiring it into the editor needs" is the specification.
 
 Tables give, per wall, **precision / recall without actors / merged boxes**;

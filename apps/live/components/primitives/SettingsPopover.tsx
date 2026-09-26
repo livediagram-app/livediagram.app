@@ -12,7 +12,7 @@ const GAP = 8; // space between the trigger and the popover
 
 // A gear button that opens a small, portal-rendered settings popover anchored
 // under it (right-aligned, clamped on-screen) and dismissed on outside-click or
-// Escape. Extracted from the Palette / Map / AI panel gear popovers (spec/20,
+// Escape. Extracted from the Palette / Map / AI panel gear popovers (docs/specs/007-editor/user-preferences.md,
 // /25, /59), which were byte-identical bar the label, width, trigger data-attr,
 // and body. Portal-rendered so a panel's overflow / stacking context can't clip
 // it. `children` is a render prop receiving `close`, so a body action (e.g.

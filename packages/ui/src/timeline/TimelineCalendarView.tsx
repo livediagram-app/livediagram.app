@@ -1,6 +1,6 @@
 'use client';
 
-// The month grid (spec/138 §2.2).
+// The month grid (docs/specs/013-workspace/timeline.md §2.2).
 //
 // One coloured dot per tone present on a day, with a count badge above
 // one. Clicking a dot opens a popover listing that day's events of that

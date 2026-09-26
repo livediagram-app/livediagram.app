@@ -1,5 +1,5 @@
 // Localhost-pair detection for the telemetry endpoint's same-origin
-// filter (spec/22). The ingest endpoint rejects requests whose Origin
+// filter (docs/specs/017-telemetry/telemetry.md). The ingest endpoint rejects requests whose Origin
 // header is present and isn't the api worker's own origin so casual
 // drive-by cross-site posters can't inflate the public usage chart,
 // but local dev legitimately serves two different ports (the live

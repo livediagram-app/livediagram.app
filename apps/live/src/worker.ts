@@ -1,7 +1,7 @@
 // Live app worker. Wraps the static-export assets binding with a
 // single path rewrite: any `/diagram/<anything>` request serves the
 // single placeholder HTML built by Next.js, and the client extracts
-// the real diagram id from `window.location.pathname`. See spec/14
+// the real diagram id from `window.location.pathname`. See docs/specs/007-editor/new-diagram-route.md
 // for why we can't enumerate user-minted ids at build time.
 
 type AssetsBinding = { fetch: (request: Request) => Promise<Response> };
@@ -47,7 +47,7 @@ function withSecurityHeaders(res: Response, opts?: { frameable?: boolean }): Res
   // merged headers. Status / body pass through.
   const merged = new Headers(res.headers);
   for (const [k, v] of Object.entries(SECURITY_HEADERS)) merged.set(k, v);
-  // The read-only embed view (spec/33) is the one path that MUST be
+  // The read-only embed view (docs/specs/013-workspace/embeds.md) is the one path that MUST be
   // frameable by third-party sites; it carries no authenticated
   // actions to clickjack, so dropping the header there doesn't
   // reopen the attack the DENY exists for. Every other route keeps
@@ -64,13 +64,13 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
     const frameable = url.pathname === '/embed' || url.pathname.startsWith('/embed/');
-    // /explorer is an index with no content of its own (spec/15):
+    // /explorer is an index with no content of its own (docs/specs/013-workspace/folders.md):
     // every section lives at /explorer/<section>, default Timeline
-    // (spec/138 §8.1). 302 here so the address bar lands on the real
+    // (docs/specs/013-workspace/timeline.md §8.1). 302 here so the address bar lands on the real
     // section before any HTML is served; the page's client-side
     // replace covers dev where this worker isn't in front. The
     // Location is a clean (`/live`-free) path — the router selects the
-    // live app for /explorer routes directly (spec/08).
+    // live app for /explorer routes directly (docs/specs/016-platform/router-app.md).
     if (url.pathname === '/explorer' || url.pathname === '/explorer/') {
       return Response.redirect(`${url.origin}/explorer/timeline`, 302);
     }

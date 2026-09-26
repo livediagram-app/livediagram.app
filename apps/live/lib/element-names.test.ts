@@ -8,7 +8,7 @@ import {
 } from '@livediagram/diagram';
 import { describeMany, describeOne, elementAriaLabel, kindLabel } from './element-names';
 
-// Shared element naming (spec/71 + spec/12): the change log and the
+// Shared element naming (docs/specs/004-interface-design/canvas-accessibility.md + docs/specs/012-collaboration/activity-and-audit.md): the change log and the
 // canvas aria-labels / announcements read the same names. These tests
 // pin the formats both surfaces rely on.
 

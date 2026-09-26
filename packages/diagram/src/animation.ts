@@ -1,4 +1,4 @@
-// The animation vocabulary (spec/09): which looping animations exist for
+// The animation vocabulary (docs/specs/008-canvas/canvas-and-palette.md): which looping animations exist for
 // boxed elements, icon glyphs and progress fills, how fast they run, and
 // whether a given one loops. Lifted out of index.ts, which had grown to
 // 871 lines by accreting every vocabulary in the model side by side.
@@ -11,7 +11,7 @@
 // Arrow flow (ArrowFlow / ARROW_FLOWS) is deliberately NOT here: it is the
 // arrows' own vocabulary and stays beside them.
 
-// Looping element animation (spec/09 "Animated elements"). Applied to a boxed
+// Looping element animation (docs/specs/008-canvas/canvas-and-palette.md "Animated elements"). Applied to a boxed
 // element as a CSS class; deterministic (no broadcast), reduced-motion-safe
 // (the keyframes are disabled under prefers-reduced-motion), and freezes to a
 // static frame on PNG / SVG export. 'pulse' is an attention ping (an
@@ -66,7 +66,7 @@ export const ELEMENT_ANIMATIONS: readonly ElementAnimation[] = [
   'swing',
 ];
 
-// Animation / flow speed (spec/09). A multiplier on each animation's tuned
+// Animation / flow speed (docs/specs/008-canvas/canvas-and-palette.md). A multiplier on each animation's tuned
 // base duration (so every animation keeps its own feel; speed just scales it):
 // 'slowest' quadruples the duration, 'slow' doubles it, 'fast' halves it.
 // Shared by boxed-element animations (`animationSpeed`), arrow flow
@@ -85,7 +85,7 @@ export const ANIMATION_SPEED_FACTOR: Record<AnimationSpeed, number> = {
 };
 export const DEFAULT_ANIMATION_SPEED: AnimationSpeed = 'slow';
 
-// Looping animation for an `icon` shape's glyph (spec/09 "Animated icons").
+// Looping animation for an `icon` shape's glyph (docs/specs/008-canvas/canvas-and-palette.md "Animated icons").
 // A separate, glyph-oriented set from the boxed-element ElementAnimation: any
 // icon can opt into one of these via the icon context menu (they used to be
 // hard-wired to a few icon ids and always-on). 'spin' rotates, 'beat' is the
@@ -133,7 +133,7 @@ export const ICON_ANIMATIONS: readonly IconAnimation[] = [
   'float',
 ];
 
-// The catalogue's four ANIMATED icons (spec/09) arrive moving.
+// The catalogue's four ANIMATED icons (docs/specs/008-canvas/canvas-and-palette.md) arrive moving.
 //
 // They are drawn to move: a spinner that does not spin is an arc with a gap, a
 // heartbeat that does not beat is a heart. Every other glyph is static until
@@ -152,7 +152,7 @@ export function defaultIconAnimation(iconId: string | undefined): IconAnimation 
   return iconId ? DEFAULT_ICON_ANIMATION[iconId] : undefined;
 }
 
-// Progress elements (spec/46): a horizontal bar + a donut ring that display a
+// Progress elements (docs/specs/009-elements/progress.md): a horizontal bar + a donut ring that display a
 // 0–100 `progress` value. `progressAnim` animates HOW the filled portion
 // behaves: 'fill' repeatedly grows it from 0 to the value, 'pulse' breathes its
 // opacity, 'stripes' runs a barber-pole / marching pattern over the fill.

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
-// The Picker's reel (spec/107). Rendered rather than tested as a pure helper
-// for the same reason useTimelineFeed.test.tsx is (spec/18): the behaviour
+// The Picker's reel (docs/specs/012-collaboration/picker.md). Rendered rather than tested as a pure helper
+// for the same reason useTimelineFeed.test.tsx is (docs/specs/003-system-architecture/testing.md): the behaviour
 // under test — "a result arriving from the room replays the spin here, our own
 // does not replay it twice" — lives entirely in effect + ref lifecycle, and no
 // pure function can see it.

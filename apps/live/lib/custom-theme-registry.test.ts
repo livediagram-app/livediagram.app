@@ -30,7 +30,7 @@ const theme = (id: string, name: string): CustomTheme => ({
 
 afterEach(() => clearCustomThemeRegistry());
 
-describe('custom-theme registry (spec/44)', () => {
+describe('custom-theme registry (docs/specs/011-theme/custom-themes.md)', () => {
   it('materialises a CustomTheme into a ThemeDefinition (id + name become id + label)', () => {
     const def = materialiseCustomTheme(theme('custom:1', 'Brandy'));
     expect(def.id).toBe('custom:1');

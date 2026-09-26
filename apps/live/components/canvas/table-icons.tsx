@@ -56,6 +56,6 @@ export function TrashIcon() {
   );
 }
 
-// The element-link chain glyph (spec/09 links), shared with the context
+// The element-link chain glyph (docs/specs/008-canvas/canvas-and-palette.md links), shared with the context
 // menu's Link tile so the two linking surfaces can't drift.
 export { LinkMenuIcon as CellLinkIcon } from '@/components/palette/context-menu-icons';

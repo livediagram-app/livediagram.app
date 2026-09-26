@@ -1,6 +1,6 @@
 'use client';
 
-// The Timeline's own empty state (spec/138 §2.4).
+// The Timeline's own empty state (docs/specs/013-workspace/timeline.md §2.4).
 //
 // Separate from ExplorerEmptyState, which is built around "this folder
 // has no diagrams" and offers a New Diagram CTA per section. A feed
@@ -8,7 +8,7 @@
 // yet, which is a statement about time rather than about a container.
 //
 // Rare in practice. The backfill seeds an existing account's feed from
-// its diagrams and team memberships on first read (spec/138 §5), so
+// its diagrams and team memberships on first read (docs/specs/013-workspace/timeline.md §5), so
 // this is mostly what a genuinely new visitor sees.
 
 import Link from 'next/link';

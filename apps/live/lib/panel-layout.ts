@@ -1,8 +1,8 @@
-// Device-local layout for the editor's floating panels (spec/63).
+// Device-local layout for the editor's floating panels (docs/specs/007-editor/panel-docking.md).
 //
 // Which corner each panel docks into — or where it floats free — is a
 // per-device ergonomic choice (screen size, handedness, external
-// monitor), so unlike the synced user-preferences blob (spec/20) this
+// monitor), so unlike the synced user-preferences blob (docs/specs/007-editor/user-preferences.md) this
 // lives ONLY in localStorage and is NEVER sent to the api / D1. Guests
 // get it for free. Do not fold panel placement into UserPreferences.
 //
@@ -28,19 +28,19 @@ export type PanelId =
   | 'poll'
   | 'vote'
   | 'avatar'
-  // Laser Panel (spec/111): the pen's settings, present only while the Laser
+  // Laser Panel (docs/specs/008-canvas/laser-panel.md): the pen's settings, present only while the Laser
   // tool is, exactly like the avatar's.
   | 'laser'
-  // Spotlight Panel (spec/112): the light's look, on the same terms.
+  // Spotlight Panel (docs/specs/008-canvas/spotlight-panel.md): the light's look, on the same terms.
   | 'spotlight'
-  // Eraser Panel (spec/113): the brush's settings, on the same terms.
+  // Eraser Panel (docs/specs/008-canvas/eraser-panel.md): the brush's settings, on the same terms.
   | 'eraser'
-  // Format Panel (spec/117): what the painter copies, on the same terms.
+  // Format Panel (docs/specs/008-canvas/format-panel.md): what the painter copies, on the same terms.
   | 'format'
-  // Highlighter Panel (spec/81): the marker's colour + strength, on the same
+  // Highlighter Panel (docs/specs/008-canvas/highlighter.md): the marker's colour + strength, on the same
   // terms — the settings that used to hang off the top mode banner.
   | 'highlighter'
-  // Slide Deck panel (spec/31): where a deck is built and started.
+  // Slide Deck panel (docs/specs/012-collaboration/presentation-mode.md): where a deck is built and started.
   | 'slide-deck';
 
 export const PANEL_CORNERS: readonly PanelCorner[] = [
@@ -84,7 +84,7 @@ export type PanelLayout = {
 };
 
 // Each panel's home corner — matches the historical fixed layout from
-// spec/09 so a user who never rearranges anything sees no change,
+// docs/specs/008-canvas/canvas-and-palette.md so a user who never rearranges anything sees no change,
 // including Comments / AI stacking beneath the Palette (top-right).
 export const DEFAULT_PANEL_CORNER: Record<PanelId, PanelCorner> = {
   explorer: 'top-left',
@@ -93,18 +93,18 @@ export const DEFAULT_PANEL_CORNER: Record<PanelId, PanelCorner> = {
   ai: 'top-right',
   activity: 'bottom-left',
   minimap: 'bottom-left',
-  // Layers (spec/74): the one panel homed bottom-right, above the fixed
+  // Layers (docs/specs/006-diagram/layers.md): the one panel homed bottom-right, above the fixed
   // zoom cluster (that corner's inset already clears it).
   layers: 'bottom-right',
-  // Live poll (spec/88): top-right under the Palette, where the panels
+  // Live poll (docs/specs/012-collaboration/live-poll.md): top-right under the Palette, where the panels
   // you act on live. Unlike every other panel it only EXISTS while a poll
   // is running, so it joins and leaves its corner stack rather than
   // sitting there.
   poll: 'top-right',
-  // Live vote (spec/39): beside the poll panel, and like it only present
+  // Live vote (docs/specs/012-collaboration/session-tools.md): beside the poll panel, and like it only present
   // while a vote is running.
   vote: 'top-right',
-  // Avatar mode (spec/101): under the Palette, where the mode picker that
+  // Avatar mode (docs/specs/008-canvas/avatar-mode.md): under the Palette, where the mode picker that
   // opened it lives. Like poll / vote it exists only while its mode does.
   avatar: 'top-right',
   laser: 'top-right',

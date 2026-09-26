@@ -1,4 +1,4 @@
-// A chart's layout (spec/53): the box, the data, the colour accessor, and
+// A chart's layout (docs/specs/009-elements/pie-chart.md): the box, the data, the colour accessor, and
 // where the plot and the legend sit inside it.
 //
 // In the diagram package because BOTH renderers need it. The canvas laid its
@@ -18,7 +18,7 @@ export type ChartLegendRect = ChartRect & {
 };
 
 export function chartFrame(element: ShapeElement, palette?: readonly string[]) {
-  // Three rungs, narrowest first (spec/53): the chart's own palette if it has
+  // Three rungs, narrowest first (docs/specs/009-elements/pie-chart.md): the chart's own palette if it has
   // been given one, then the tab theme's, then the built-in ramp. A per-datum
   // colour beats all three, in `colorAt` below.
   const chosen = chartPaletteColors(element.chartPalette);
@@ -29,7 +29,7 @@ export function chartFrame(element: ShapeElement, palette?: readonly string[]) {
     element.pieSlices && element.pieSlices.length > 0 ? element.pieSlices : PIE_DEFAULT_SLICES;
   const showLegend = element.chartLegend !== false;
   const colorAt = (i: number, d: { color?: string }) => d.color ?? colors[i % colors.length]!;
-  // Legend placement (spec/53). A left/right legend takes a vertical strip; a
+  // Legend placement (docs/specs/009-elements/pie-chart.md). A left/right legend takes a vertical strip; a
   // top/bottom legend a horizontal band. `area` is the rect left for the chart
   // body (each renderer draws inside it); `legend` is the strip the key goes
   // into.

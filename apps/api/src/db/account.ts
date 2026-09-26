@@ -14,7 +14,7 @@ import type { Env } from '../types';
 const R2_DELETE_CHUNK = 1000;
 
 // Wipe every row belonging to a given owner: diagrams, folders, the
-// participant record, AND the R2 image bytes (spec/19). Called from
+// participant record, AND the R2 image bytes (docs/specs/009-elements/images.md). Called from
 // DELETE /api/account when the user opts in via the "Delete account"
 // dialog. Cascade rules take care of dependent D1 tables: `tabs`,
 // `share_links`, and `change_log` all FK to `diagrams.id` with ON
@@ -34,7 +34,7 @@ export async function deleteAccount(
   env: Env,
   ownerId: string,
 ): Promise<{ diagrams: number; folders: number; images: number }> {
-  // Teams first (spec/32/35): transfer the user's team-library diagrams
+  // Teams first (docs/specs/013-workspace/teams.md/35): transfer the user's team-library diagrams
   // to a remaining member, drop their memberships (promoting a new
   // admin when they were the last one), and delete teams they were the
   // last joined member of. MUST run before the diagrams DELETE below —
@@ -57,7 +57,7 @@ export async function deleteAccount(
   const imagesRes = await env.DB.prepare('DELETE FROM images WHERE owner_id = ?')
     .bind(ownerId)
     .run();
-  // Diagram SVG snapshots (spec/67) live in R2 under thumb/<diagramId>,
+  // Diagram SVG snapshots (docs/specs/006-diagram/diagram-snapshots.md) live in R2 under thumb/<diagramId>,
   // keyed off the diagram id rather than carried on a D1 row, so — like
   // the images above — the cascade can't reach them. Enumerate the
   // owner's diagram ids while the rows still exist, then bulk-delete
@@ -85,31 +85,31 @@ export async function deleteAccount(
     .bind(ownerId)
     .run();
   await env.DB.prepare('DELETE FROM participants WHERE id = ?').bind(ownerId).run();
-  // user_preferences (spec/20) holds this owner's editor preference
+  // user_preferences (docs/specs/007-editor/user-preferences.md) holds this owner's editor preference
   // flags (some surfaced in the Settings dialog, some attached to
   // per-tool surfaces like the pencil's recognise-shapes toggle).
   // Wipe along with everything else so a delete-account run leaves
   // no row carrying their flags.
   await env.DB.prepare('DELETE FROM user_preferences WHERE owner_id = ?').bind(ownerId).run();
-  // custom_themes (spec/44): this owner's saved themes go too.
+  // custom_themes (docs/specs/011-theme/custom-themes.md): this owner's saved themes go too.
   await env.DB.prepare('DELETE FROM custom_themes WHERE owner_id = ?').bind(ownerId).run();
-  // api_tokens (spec/61): no API credential outlives the account.
+  // api_tokens (docs/specs/015-api/public-api-and-tokens.md): no API credential outlives the account.
   await env.DB.prepare('DELETE FROM api_tokens WHERE owner_id = ?').bind(ownerId).run();
-  // email_lifecycle (spec/64): drop the onboarding-email row so the address
+  // email_lifecycle (docs/specs/014-identity/transactional-email.md): drop the onboarding-email row so the address
   // isn't retained and a re-signup starts the series fresh.
   await env.DB.prepare('DELETE FROM email_lifecycle WHERE owner_id = ?').bind(ownerId).run();
-  // auth_accounts (spec/22): the first-seen row the sign-up count keys on.
+  // auth_accounts (docs/specs/017-telemetry/telemetry.md): the first-seen row the sign-up count keys on.
   await env.DB.prepare('DELETE FROM auth_accounts WHERE owner_id = ?').bind(ownerId).run();
   // shared_with rows POINTING AT this owner's diagrams die with the
   // diagrams (FK cascade), but the rows this owner accumulated by
   // visiting OTHER people's diagrams are keyed on their owner_id and
   // need their own DELETE — same table migrateOwnerId already handles.
   await env.DB.prepare('DELETE FROM shared_with WHERE owner_id = ?').bind(ownerId).run();
-  // timeline (spec/138 §3.5): the feed, the events this owner authored,
+  // timeline (docs/specs/013-workspace/timeline.md §3.5): the feed, the events this owner authored,
   // and the scope-state row. Hard, not soft — soft delete is a
   // user-facing affordance in this product, never a retention strategy.
   await deleteTimelineForOwner(env, ownerId);
-  // Activity (spec/142): the alias rows + the backfill stamp. The index
+  // Activity (docs/specs/013-workspace/activity-page.md): the alias rows + the backfill stamp. The index
   // rows themselves cascade with the diagrams' tabs above.
   await deleteCollabIndexForOwner(env, ownerId);
   return {
@@ -143,7 +143,7 @@ export async function deleteAccount(
 // identities). The skipped guest row stays at fromOwnerId; the
 // formerly-guest diagrams (now Clerk-owned) still resolve those
 // image ids via the diagram-reference fallback in GET
-// /api/images/:id (spec/19), so the canvas keeps rendering them.
+// /api/images/:id (docs/specs/009-elements/images.md), so the canvas keeps rendering them.
 // Only the gallery list filters by owner_id, so the dedupe loser
 // stops showing up there, which is the right outcome (the Clerk
 // twin is identical bytes anyway).
@@ -176,7 +176,7 @@ export async function migrateOwnerId(
     .bind(toOwnerId, fromOwnerId)
     .run();
   await env.DB.prepare('DELETE FROM shared_with WHERE owner_id = ?').bind(fromOwnerId).run();
-  // user_preferences (spec/20): same INSERT OR IGNORE pattern as
+  // user_preferences (docs/specs/007-editor/user-preferences.md): same INSERT OR IGNORE pattern as
   // shared_with so a Clerk userId who somehow already had a row (an
   // earlier sign-in on a different device) keeps that authoritative
   // copy and the guest row gets dropped. Guest-only is the common
@@ -191,19 +191,19 @@ export async function migrateOwnerId(
     .bind(toOwnerId, fromOwnerId)
     .run();
   await env.DB.prepare('DELETE FROM user_preferences WHERE owner_id = ?').bind(fromOwnerId).run();
-  // timeline (spec/138 §9): a week of drawing as a guest is history
+  // timeline (docs/specs/013-workspace/timeline.md §9): a week of drawing as a guest is history
   // worth keeping, so the feed, the authored events, and the
   // scope-state row all follow the user to their new account. The
   // scope-state row matters as much as the events: without it the
   // backfill would run again against the Clerk id and re-seed what
   // just migrated.
   await migrateTimelineOwner(env, fromOwnerId, toOwnerId);
-  // Activity (spec/142 §2.2): the ids INSIDE the tab blobs (comment
+  // Activity (docs/specs/013-workspace/activity-page.md §2.2): the ids INSIDE the tab blobs (comment
   // authors, self-assigned actions) are not rewritten, so the old
   // identity is recorded as an alias of the new one and the Activity
   // read matches both. Cheaper and safer than touching every tab.
   await recordOwnerAlias(env, toOwnerId, fromOwnerId);
-  // images (spec/19). UPDATE OR IGNORE walks the unique (owner_id,
+  // images (docs/specs/009-elements/images.md). UPDATE OR IGNORE walks the unique (owner_id,
   // sha256) collision case (same bytes on both identities) and
   // leaves those guest rows in place so the image id stays
   // resolvable by every formerly-guest diagram that references it.
@@ -212,7 +212,7 @@ export async function migrateOwnerId(
   )
     .bind(toOwnerId, fromOwnerId)
     .run();
-  // custom_themes (spec/44): move the guest's saved themes onto the
+  // custom_themes (docs/specs/011-theme/custom-themes.md): move the guest's saved themes onto the
   // authed identity so the diagrams that reference them keep their look
   // after sign-up. Plain UPDATE — the id is the PK (no per-owner unique
   // constraint to collide on), so no OR IGNORE needed.

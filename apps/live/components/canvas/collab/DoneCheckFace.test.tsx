@@ -1,11 +1,11 @@
 // @vitest-environment jsdom
 
-// The Done check's join (spec/137, spec/122). Rendered rather than tested
+// The Done check's join (docs/specs/012-collaboration/done-check.md, docs/specs/012-collaboration/participant-responses.md). Rendered rather than tested
 // through `doneSplit` alone, because the bug it pins was never in doneSplit:
 // that function is correct and was being handed the wrong ids.
 //
 // A peer appears in the roster under the room's presence id, which is minted
-// per socket (spec/61 §6) and matches nothing that was ever written down. Their
+// per socket (docs/specs/015-api/public-api-and-tokens.md §6) and matches nothing that was ever written down. Their
 // mark is saved under their document-write key. Joining those two showed every
 // viewer their own mark and nobody else's — which is exactly what the card is
 // for, so the card did nothing.
@@ -109,7 +109,7 @@ describe('DoneCheckFace', () => {
   });
 
   it('ignores a mark from somebody who has left', () => {
-    // spec/137: the waiting list is derived from who is in the room NOW, so a
+    // docs/specs/012-collaboration/done-check.md: the waiting list is derived from who is in the room NOW, so a
     // response from a departed peer is ignored rather than deleted.
     render(
       <DoneCheckFace

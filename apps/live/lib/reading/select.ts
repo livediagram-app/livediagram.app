@@ -9,7 +9,7 @@ import {
   type ReadText,
 } from './types';
 
-// WHO reads the handwriting (spec/139 Phase 9).
+// WHO reads the handwriting (docs/specs/021-event-storming/event-storming.md Phase 9).
 //
 // Two readers, one interface, and the choice is made by what the deployment
 // has rather than by what the author asks for:
@@ -28,7 +28,7 @@ import {
 // was is not said.
 //
 // Detection is in-browser either way: only crops of individual notes are ever
-// sent, never the photograph (spec/139).
+// sent, never the photograph (docs/specs/021-event-storming/event-storming.md).
 
 export type ReaderKind = 'server' | 'browser';
 

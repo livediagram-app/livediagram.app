@@ -15,7 +15,7 @@
 // a "Sign in" link only to swap it for the user pill a tick later.
 //
 // When Clerk is disabled for the deployment (no publishable key set —
-// spec/03 self-host path), the component is a no-op. Same module-load
+// docs/specs/002-project-scope/open-source-and-business-model.md self-host path), the component is a no-op. Same module-load
 // hook-swap pattern as `useClerkApiBootstrap` — calling `useAuth`
 // outside a ClerkProvider would throw, so the disabled branch never
 // touches Clerk.
@@ -33,7 +33,7 @@ import { HEADER_ACTION_BTN } from '@/components/chrome/EditorHeader';
 const HEADER_ACTION_TONE =
   'text-slate-600 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800';
 
-// Account self-deletion now lives on the Explorer profile page (spec/65),
+// Account self-deletion now lives on the Explorer profile page (docs/specs/014-identity/profile-and-email-notifications.md),
 // reachable from the "Profile" item below, so the destructive action has one
 // home rather than hanging off this dropdown too.
 
@@ -101,7 +101,7 @@ function AuthControlsEnabled() {
               ) : null}
             </div>
           ) : null}
-          {/* Account (spec/20): identity, email notifications and account
+          {/* Account (docs/specs/007-editor/user-preferences.md): identity, email notifications and account
               deletion all live in the Settings dialog now, so this deep-links
               at its Account category rather than a separate profile page. */}
           <Link
@@ -142,7 +142,7 @@ function AuthControlsDisabled() {
 // Door-with-arrow glyph — same 13px / 1.6 stroke convention as the
 // other header icons (ShareIcon in EditorHeader, etc.) so the
 // Sign-in pill reads as a peer of those buttons. Exported because the
-// Explorer's "Sign in to use teams" sidebar link (spec/32) renders
+// Explorer's "Sign in to use teams" sidebar link (docs/specs/013-workspace/teams.md) renders
 // the same glyph so the two sign-in affordances read as one action.
 export function SignInIcon({ size = 13 }: { size?: number } = {}) {
   return (

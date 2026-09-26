@@ -14,7 +14,7 @@ vi.mock('@/lib/api-client', () => api);
 
 import { useTeamFolderActions } from './useTeamFolderActions';
 
-// Team-library folder verbs from the Explorer panel (spec/35). spec/22's Folder
+// Team-library folder verbs from the Explorer panel (docs/specs/013-workspace/team-shared-diagrams.md). docs/specs/017-telemetry/telemetry.md's Folder
 // entry types a team folder `Team`; without it these three read as personal
 // Explorer folders on the dashboard.
 function handlers() {

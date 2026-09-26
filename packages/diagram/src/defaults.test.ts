@@ -21,7 +21,7 @@ import { tableKeys } from './table-keys';
 // becomes a different blue, a sticky's amber palette shifts), so
 // the assertions pin the exact hex values they return today. When
 // a default changes intentionally, the failing test is the
-// reminder to update spec/01 (colour scheme) in the same change.
+// reminder to update docs/specs/004-interface-design/color-scheme.md (colour scheme) in the same change.
 
 describe('defaultPadding', () => {
   it('shapes get a small inset so labels read inside the stroke', () => {

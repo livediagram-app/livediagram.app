@@ -1,6 +1,6 @@
-// The Pages tab's landing funnel (spec/153), kept pure so it is tested apart
+// The Pages tab's landing funnel (docs/specs/019-marketing/landing-funnel.md), kept pure so it is tested apart
 // from the view. Three independent counts per public surface, read from rows
-// the summary already carries: page views of its pages (`Page·View`, spec/150),
+// the summary already carries: page views of its pages (`Page·View`, docs/specs/017-telemetry/page-view-telemetry.md),
 // arrivals at /new from its CTAs (`Cta·Opened`), and diagrams those visits
 // created (`Cta·Created`). Nothing links one count to another; the rates are
 // just one divided by the next.

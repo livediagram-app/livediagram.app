@@ -1,6 +1,6 @@
 'use client';
 
-// The folder card's content preview (spec/99): a centred 2x2 mosaic of
+// The folder card's content preview (docs/specs/013-workspace/folder-content-previews.md): a centred 2x2 mosaic of
 // up to four small sheets — the diagrams the folder holds (the same
 // cached SVG snapshot the diagram cards use, so nothing new is fetched
 // or rendered server-side), its subfolders, and a "+N" tile when there

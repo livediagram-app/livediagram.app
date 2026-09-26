@@ -214,7 +214,7 @@ export function shapeGeometry(kind: ShapeKind, aspect = 1.6): ShapeGeometry | nu
   return FIXED_GEOMETRY[kind] ?? null;
 }
 
-// A browser frame's chrome strip (spec/09 Devices), in fixed PIXELS rather
+// A browser frame's chrome strip (docs/specs/008-canvas/canvas-and-palette.md Devices), in fixed PIXELS rather
 // than a stretched viewBox so the dots stay round and the URL pill grows with
 // the width. The strip is pinned to the top: [pad][3 dots][gap][nav][gap][pill][pad].
 export const BROWSER_CHROME = {
@@ -246,7 +246,7 @@ export function browserChromeLayout(): { dotX: number[]; navX: number; pillX: nu
   return { dotX, navX, pillX: navX + c.nav.widthPx + c.groupGapPx };
 }
 
-// The chair (spec/130), on its own 64x72 grid, drawn facing 'n' (back at the
+// The chair (docs/specs/009-elements/chair.md), on its own 64x72 grid, drawn facing 'n' (back at the
 // top) and turned whole for the other facings.
 export const CHAIR_GEOMETRY = {
   viewBox: '0 0 64 72',

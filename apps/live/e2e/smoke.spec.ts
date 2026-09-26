@@ -8,7 +8,7 @@ import {
   startTemplateDiagram,
 } from './fixtures';
 
-// End-to-end smoke suite (spec/72). Small by design: it answers "does
+// End-to-end smoke suite (docs/specs/003-system-architecture/e2e-smoke.md). Small by design: it answers "does
 // the app boot and take input without crashing", the layer the unit
 // tests can't reach. Every test also fails on any uncaught page error
 // (the `pageErrors` fixture).
@@ -42,7 +42,7 @@ test('create a blank diagram, add a shape, and it survives a reload', async ({
   // The palette is open by default on desktop; its shape tiles are
   // aria-labelled ("Add square"). Arm the Square, then drop it on the
   // canvas with a single click. Element views carry a role=img label
-  // (spec/71), so the placed square is addressable without reaching
+  // (docs/specs/004-interface-design/canvas-accessibility.md), so the placed square is addressable without reaching
   // into canvas internals.
   const canvas = page.locator('[data-canvas-a11y-root]');
   const square = page.getByRole('img', { name: 'Square', exact: true });
@@ -62,7 +62,7 @@ test('create a blank diagram, add a shape, and it survives a reload', async ({
 
 // A board KIND is the one thing a unit test can't prove end to end: the
 // template has to build, the tab has to persist its kind, and the editor has
-// to read it back and present differently because of it (spec/139). This
+// to read it back and present differently because of it (docs/specs/021-event-storming/event-storming.md). This
 // walks that whole path in a browser, then reloads to prove the board is
 // still a board after a round trip through the api.
 test('an event-storming board stays a board across a reload', async ({ page, pageErrors }) => {
@@ -73,15 +73,15 @@ test('an event-storming board stays a board across a reload', async ({ page, pag
   // these tiles are behind a category dropdown.
   const notation = page.getByRole('option', { name: /domain event/i });
   await expect(notation.first()).toBeVisible();
-  // The seeded timeline of orange events (spec/139).
+  // The seeded timeline of orange events (docs/specs/021-event-storming/event-storming.md).
   const canvas = page.locator('[data-canvas-a11y-root]');
   const note = canvas.getByRole('img', { name: /sticky/i }).first();
   await expect(note).toBeVisible();
   // The starter is one domain event and nothing else: no text element
-  // (spec/139 Phase 1).
+  // (docs/specs/021-event-storming/event-storming.md Phase 1).
   await expect(canvas.getByRole('img')).toHaveCount(1);
   await expect(canvas.getByRole('img', { name: /Board Created/i })).toHaveCount(1);
-  // Workshop notes are written in capitals (spec/139). Only a browser can
+  // Workshop notes are written in capitals (docs/specs/021-event-storming/event-storming.md). Only a browser can
   // answer this one: the stored label keeps its typed casing, so the caps
   // exist purely as the rendered treatment.
   const painted = await note.evaluate((node) => {
@@ -102,7 +102,7 @@ test('an event-storming board stays a board across a reload', async ({ page, pag
   expectNoPageErrors(pageErrors);
 });
 
-// Inserting a note BETWEEN two notes (spec/139). The unit tests own the
+// Inserting a note BETWEEN two notes (docs/specs/021-event-storming/event-storming.md). The unit tests own the
 // geometry; what only a browser can answer is whether a real HTML5 palette
 // drag over a real gap, WITH ALT HELD, opens a slot, and whether the note the
 // drop lands there is still in the middle of the timeline after a round trip
@@ -190,7 +190,7 @@ test('a note dropped between two notes stays between them', async ({ page, pageE
   expectNoPageErrors(pageErrors);
 });
 
-// The same gesture for a note ALREADY on the board (spec/139) — the drag
+// The same gesture for a note ALREADY on the board (docs/specs/021-event-storming/event-storming.md) — the drag
 // people do most. What only a browser can answer here: a POINTER drag (not a
 // native HTML5 one) carries the live Alt state, the dragged note and the other
 // notes' render-only ripple are visible at once, and the whole gesture is a
@@ -277,7 +277,7 @@ test('a note already on the board inserts between two others', async ({ page, pa
   expectNoPageErrors(pageErrors);
 });
 
-// The one mobile test (spec/72). Not a general phone suite: it guards a
+// The one mobile test (docs/specs/003-system-architecture/e2e-smoke.md). Not a general phone suite: it guards a
 // specific class of bug that a desktop-only run is structurally blind to —
 // a popover that only OVERLAPS its host when the viewport is too narrow to
 // put it alongside, and so only then has to win the stacking contest.
@@ -329,7 +329,7 @@ test.describe('mobile', () => {
     expect(onTop).toBe(true);
 
     // And the session tools are genuinely reachable, not just painted. Since
-    // the Session Studio (spec/39) they are TABS in its switcher, not a strip
+    // the Session Studio (docs/specs/012-collaboration/session-tools.md) they are TABS in its switcher, not a strip
     // of buttons, and a running tool's status dot joins the tab's name
     // ("Timer Running"), so match the start of the name, not all of it.
     // Tapping one proves the tap lands in the flyout rather than behind it.

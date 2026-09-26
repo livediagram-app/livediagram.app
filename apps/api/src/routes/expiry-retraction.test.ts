@@ -1,6 +1,6 @@
 // The expiry sweep writes `token_expiring` and `share_link_expiring`
 // FUTURE-dated, so they land in the timeline band above Today whose whole
-// purpose is telling the owner about breakage BEFORE it happens (spec/138
+// purpose is telling the owner about breakage BEFORE it happens (docs/specs/013-workspace/timeline.md
 // §4.5). Nothing ever took those rows back, so the two actions that make the
 // warning untrue — revoking the credential, or extending the link's deadline —
 // left it standing: the feed counted down to a token expiry directly above its

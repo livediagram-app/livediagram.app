@@ -1,4 +1,4 @@
-/* Page motion for the marketing site (spec/16): moving between pages and
+/* Page motion for the marketing site (docs/specs/019-marketing/marketing-site.md): moving between pages and
    arriving on one feels continuous rather than a hard cut. Pure CSS, layered
    on content that is fully present in the static HTML, so crawlers, reader
    modes and no-JS visitors get the same text: nothing waits on script, and a

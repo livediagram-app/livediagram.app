@@ -4,7 +4,7 @@ import { useSyncExternalStore } from 'react';
 import type { InsertionSlot } from '@/lib/insert-between';
 
 // The insertion an in-flight drag is OFFERING on an event-storming board
-// (spec/139): the gap it would open, and which elements slide right to open
+// (docs/specs/021-event-storming/event-storming.md): the gap it would open, and which elements slide right to open
 // it. THIS CHANNEL NEVER TOUCHES THE DOCUMENT — the canvas renders the ripple
 // as a CSS transform and the drop is the first thing that writes, so a hover
 // can't reach the undo stack, autosave, or a peer's screen.

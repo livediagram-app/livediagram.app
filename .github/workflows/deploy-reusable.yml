@@ -4,7 +4,7 @@ name: Deploy (reusable)
 # no `workflow_dispatch`, so the Actions tab lists it with no Run button. Both
 # `deploy.yml` (production, manual) and `deploy-staging.yml` (staging,
 # automatic on green CI) call it, so the two environments run byte-identical
-# steps and cannot drift (spec/140). The only differences between them are
+# steps and cannot drift (docs/specs/016-platform/staging-environment.md). The only differences between them are
 # this workflow's inputs and which secrets the caller hands over.
 #
 # Builds each app, then deploys to Cloudflare Workers in dependency order:
@@ -101,7 +101,7 @@ jobs:
         # staging sign-in can never touch a production user.
         env:
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
-          # Turn on client-side telemetry emission (spec/22). A plain public
+          # Turn on client-side telemetry emission (docs/specs/017-telemetry/telemetry.md). A plain public
           # flag, not a secret. The api worker's TELEMETRY_ENABLED is the
           # authoritative gate; this just lets the live editor actually send
           # events. Unset (e.g. local builds, OSS forks) keeps emission off.
@@ -112,12 +112,12 @@ jobs:
           # / get-started pages. Plain public flag, not a secret. Only takes
           # effect when the Clerk key above is also set and Google SSO is
           # enabled in the Clerk dashboard (see apps/live/lib/clerk-config.ts
-          # + spec/04).
+          # + docs/specs/014-identity/auth-and-guest-access.md).
           NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED: 'true'
           # Which MCP host the live app points at. Empty in production (the
           # app's own default is the hosted one); staging passes
           # mcp-staging.livediagram.app so a staging OAuth flow stays inside
-          # staging (spec/140).
+          # staging (docs/specs/016-platform/staging-environment.md).
           NEXT_PUBLIC_MCP_ORIGIN: ${{ inputs.mcp_origin }}
         run: pnpm build
 
@@ -360,7 +360,7 @@ jobs:
       # caller it runs against `livediagram-staging`, so every merge
       # to main rehearses the migration against a real remote D1 one
       # deploy before it reaches the database holding real diagrams
-      # (spec/140).
+      # (docs/specs/016-platform/staging-environment.md).
       - name: Apply D1 migrations (remote)
         working-directory: apps/api
         env:
@@ -383,7 +383,7 @@ jobs:
       # secret put` overwrites if the secret already exists, so this
       # step is idempotent — rotating the URL is just editing the
       # GitHub secret + re-running deploy. If the secret is empty
-      # the api falls through to pure-guest mode (spec/04 + spec/11);
+      # the api falls through to pure-guest mode (docs/specs/014-identity/auth-and-guest-access.md + docs/specs/015-api/api.md);
       # skipping the step entirely is safe but leaves an old value
       # in place, so this `if:` keeps the rotation story consistent.
       #
@@ -399,7 +399,7 @@ jobs:
           printf '%s' "$CLERK_JWKS_URL" \
             | pnpm exec wrangler secret put CLERK_JWKS_URL ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
 
-      # Same provisioning story for the guest-id HMAC secret (spec/04):
+      # Same provisioning story for the guest-id HMAC secret (docs/specs/014-identity/auth-and-guest-access.md):
       # when present it makes /api/migrate require a signed guest id;
       # empty/unset leaves the worker on legacy unsigned migrate.
       - name: Sync GUEST_ID_HMAC_SECRET secret
@@ -412,7 +412,7 @@ jobs:
           printf '%s' "$GUEST_ID_HMAC_SECRET" \
             | pnpm exec wrangler secret put GUEST_ID_HMAC_SECRET ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
 
-      # INTERNAL_EVENTS_KEY (spec/22) has to hold the SAME value on the api and
+      # INTERNAL_EVENTS_KEY (docs/specs/017-telemetry/telemetry.md) has to hold the SAME value on the api and
       # mcp workers, and a mismatch is silent — the MCP's telemetry just lands
       # back in the throttled anonymous bucket with no error anywhere. Driving
       # both from one GitHub secret is what makes them agree by construction;
@@ -438,14 +438,14 @@ jobs:
         # must be filled in before the first deploy succeeds. Run
         # `wrangler d1 create livediagram` locally once and commit the
         # resulting id — and again as `livediagram-staging` for the
-        # staging environment (spec/140 "One-time setup"). Migrations
+        # staging environment (docs/specs/016-platform/staging-environment.md "One-time setup"). Migrations
         # run via `pnpm db:migrate:remote` for ad-hoc local runs; the
         # deploy applies them automatically in the step above.
         run: pnpm exec wrangler deploy ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
 
   deploy-mcp:
     name: Deploy mcp
-    # The MCP worker has a service binding to the api worker (spec/62), so api
+    # The MCP worker has a service binding to the api worker (docs/specs/015-api/mcp-server.md), so api
     # must exist first. Not a router dependency — mcp.livediagram.app is its own
     # host, not a path under the main hostname.
     needs: deploy-api
@@ -474,7 +474,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       # The matching half of deploy-api's sync — same GitHub secret, so the two
-      # workers can't disagree (spec/22). Skipped when unset, leaving whatever
+      # workers can't disagree (docs/specs/017-telemetry/telemetry.md). Skipped when unset, leaving whatever
       # is already on the worker in place.
       - name: Sync INTERNAL_EVENTS_KEY secret
         if: ${{ env.INTERNAL_EVENTS_KEY != '' }}

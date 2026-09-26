@@ -215,7 +215,7 @@ describe('the Settings tab', () => {
   });
 });
 
-// The pattern's promise (spec/22): every event the repo can send lands in a
+// The pattern's promise (docs/specs/017-telemetry/telemetry.md): every event the repo can send lands in a
 // chart on some tab, so nothing is reachable only through Search. A new
 // emitter with no chart fails here; give it one (usually a member of an
 // existing stack) or, if it is genuinely not worth a chart, list it below with

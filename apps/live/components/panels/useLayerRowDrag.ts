@@ -3,10 +3,10 @@
 import { useRef, useState, type PointerEvent as ReactPointerEvent, type RefObject } from 'react';
 import type { Layer } from '@livediagram/diagram';
 
-// Drag a layer row onto another to take its slot (spec/74).
+// Drag a layer row onto another to take its slot (docs/specs/006-diagram/layers.md).
 //
 // Deliberately POINTER events, not HTML5 drag-and-drop: the tab bar reorders
-// with the latter (useTabReorderDrag), but spec/74 rules it out here because
+// with the latter (useTabReorderDrag), but docs/specs/006-diagram/layers.md rules it out here because
 // it is unreliable inside the panel and dead on touch. The two look like the
 // same feature and are not the same mechanism, so they stay separate hooks.
 //

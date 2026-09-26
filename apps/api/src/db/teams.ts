@@ -1,4 +1,4 @@
-// teams + team_members (spec/32). Membership doubles as the invite
+// teams + team_members (docs/specs/013-workspace/teams.md). Membership doubles as the invite
 // store: a row with status 'invited' is a pending invite waiting in
 // its owner's Invites section; `connectInvitesByEmail` fills in WHO
 // the person is the first time their address shows up in a verified
@@ -68,7 +68,7 @@ function rowToMember(row: MemberRow): TeamMember {
 
 // Teams the user has JOINED — pending invites live in
 // listInvitesByUser instead, so an un-accepted invite never shows up
-// as a membership (spec/32 accept/decline).
+// as a membership (docs/specs/013-workspace/teams.md accept/decline).
 export async function listTeamsByUser(env: Env, userId: string): Promise<TeamListItem[]> {
   const result = await env.DB.prepare(
     `SELECT t.id, t.name, t.organisation, t.created_at, t.updated_at,
@@ -105,7 +105,7 @@ export async function listTeamMembers(env: Env, teamId: string): Promise<TeamMem
     .all<MemberRow>();
   const members = (result.results ?? []).map(rowToMember);
   // Resolve each connected member's display name from their participant
-  // profile (spec/32) so the list shows real names ("Anna Smith"), not
+  // profile (docs/specs/013-workspace/teams.md) so the list shows real names ("Anna Smith"), not
   // just the prettified invite email. Pending / profile-less rows stay
   // null and the client falls back to the email.
   return Promise.all(
@@ -179,7 +179,7 @@ export async function updateTeam(
 
 export async function deleteTeam(env: Env, id: string): Promise<void> {
   // Re-home the team's diagrams to their owners' personal Unsorted FIRST
-  // (spec/35): deleting a team must never destroy members' work. Each
+  // (docs/specs/013-workspace/team-shared-diagrams.md): deleting a team must never destroy members' work. Each
   // team diagram already carries an owner_id (its creator, or whoever a
   // move-out transferred it to), so clearing team_id + folder_id returns
   // it to that owner's personal library. The team's folders are dropped
@@ -208,7 +208,7 @@ export async function removeTeamMember(env: Env, memberId: string): Promise<void
   await env.DB.prepare('DELETE FROM team_members WHERE id = ?').bind(memberId).run();
 }
 
-// The last-admin guard's input (spec/32): how many JOINED admin rows
+// The last-admin guard's input (docs/specs/013-workspace/teams.md): how many JOINED admin rows
 // the team has. Status-filtered on purpose — a pending invite that
 // was promoted to admin hasn't accepted responsibility for the team,
 // so it must not satisfy the "someone can still manage this" check.
@@ -221,7 +221,7 @@ export async function countTeamAdmins(env: Env, teamId: string): Promise<number>
   return row?.n ?? 0;
 }
 
-// The Clerk user ids of a team's joined admins (spec/65): who gets told
+// The Clerk user ids of a team's joined admins (docs/specs/014-identity/profile-and-email-notifications.md): who gets told
 // when someone responds to an invite. Only `joined` rows with a connected
 // user_id qualify — a pending-admin invite has no identity to email yet,
 // and a member isn't an admin. The notification layer resolves each id to a
@@ -236,7 +236,7 @@ export async function listTeamAdminUserIds(env: Env, teamId: string): Promise<st
   return (results ?? []).map((r) => r.user_id);
 }
 
-// Account deletion (spec/65): detach a user from every team BEFORE
+// Account deletion (docs/specs/014-identity/profile-and-email-notifications.md): detach a user from every team BEFORE
 // their rows are wiped. Without this the dead Clerk id lingered as a
 // ghost member — and when it was the only joined admin, the team
 // became permanently unmanageable (every admin-gated action counted
@@ -267,7 +267,7 @@ async function moveTeamWork(env: Env, teamId: string, fromUserId: string, toUser
     .run();
 }
 
-// A member leaving or being removed (spec/32 + spec/35): hand what they made
+// A member leaving or being removed (docs/specs/013-workspace/teams.md + docs/specs/013-workspace/team-shared-diagrams.md): hand what they made
 // in the team to the remaining joined member detachUserFromTeams would pick,
 // the earliest admin, else the earliest member. Call BEFORE the membership
 // row goes. A no-op when nobody else has joined.

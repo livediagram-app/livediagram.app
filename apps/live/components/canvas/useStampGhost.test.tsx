@@ -6,7 +6,7 @@ import { getLanePreview, setLanePreview } from '@/lib/lane-preview';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { useStampGhost } from './useStampGhost';
 
-// An armed workshop-note tile (spec/139 Phase 4): a ghost of the note follows
+// An armed workshop-note tile (docs/specs/021-event-storming/event-storming.md Phase 4): a ghost of the note follows
 // the pointer over the canvas, on the lanes, and says where a click will put
 // it. The canvas sits at the viewport origin at zoom 1 here, so client coords
 // are canvas coords.

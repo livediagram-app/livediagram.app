@@ -8,7 +8,7 @@ import { track } from '@/lib/telemetry';
 // The options-and-download second screen for an image export format
 // (PNG / SVG / PDF). The isometric + background-pattern toggles used to sit
 // permanently on the main export grid; they only affect image formats, so
-// they now live here, behind the format card (spec/48), above a live preview
+// they now live here, behind the format card (docs/specs/010-palette/style-presets.md), above a live preview
 // of exactly what will be exported. Owns the two toggle states and hands them
 // to the parent's renderer on Download.
 export function ImageExportPanel({
@@ -25,7 +25,7 @@ export function ImageExportPanel({
   label: string;
   busy: boolean;
   error: string | null;
-  // True when the tab has at least one hidden layer (spec/74) — only then
+  // True when the tab has at least one hidden layer (docs/specs/006-diagram/layers.md) — only then
   // does the include-hidden-layers toggle render at all.
   hasHiddenLayers: boolean;
   // Build the preview SVG markup for the given options (same content the
@@ -39,13 +39,13 @@ export function ImageExportPanel({
   onExport: (opts: { isometric: boolean; pattern: boolean; hiddenLayers: boolean }) => void;
   onBack: () => void;
 }) {
-  // Isometric export (spec/45 / 48): tilt the rendered image into the editor's
+  // Isometric export (docs/specs/008-canvas/isometric-view.md / 48): tilt the rendered image into the editor's
   // isometric projection. Off by default — the standard export is flat top-down.
   const [isometric, setIsometric] = useState(false);
-  // Backdrop pattern (spec/48): paint the tab's grid / dots / … pattern. On by
+  // Backdrop pattern (docs/specs/010-palette/style-presets.md): paint the tab's grid / dots / … pattern. On by
   // default so the export matches the canvas; switch off for a clean backdrop.
   const [pattern, setPattern] = useState(true);
-  // Hidden layers (spec/74): include layers the user has hidden. Off by
+  // Hidden layers (docs/specs/006-diagram/layers.md): include layers the user has hidden. Off by
   // default — what you see is what you export.
   const [hiddenLayers, setHiddenLayers] = useState(false);
 
@@ -57,7 +57,7 @@ export function ImageExportPanel({
 
   return (
     <div>
-      {/* The shared two-level "back to the overview" bar (spec/56 house
+      {/* The shared two-level "back to the overview" bar (docs/specs/018-help/contextual-help-links.md house
           style), the same control the New Diagram wizard's location step
           uses — not a small text link buried in the footer beside the
           commit button, where the way back sat next to the way forward. */}
@@ -134,7 +134,7 @@ export function ImageExportPanel({
         </span>
         <ToggleSwitch presentational checked={pattern} label="Export background pattern" />
       </button>
-      {/* Hidden-layers toggle (spec/74) — only offered when a layer is
+      {/* Hidden-layers toggle (docs/specs/006-diagram/layers.md) — only offered when a layer is
           actually hidden, alongside the other image options. */}
       {hasHiddenLayers ? (
         <button

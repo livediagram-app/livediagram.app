@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { meetsBar, score } from './truth';
 
-// The bar of plans/event-storming-photo-95.md, as the sweep measures it.
+// The bar of plans/0007-event-storming-photo-95.md, as the sweep measures it.
 const truth = (notes: { x: number; y: number; kind?: string }[]) => ({
   photo: 'wall',
   labelledOn: { width: 1000, height: 1000 },

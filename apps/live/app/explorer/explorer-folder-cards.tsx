@@ -1,10 +1,10 @@
 'use client';
 
-// The Explorer card grid's folder cards (spec/67), split out of
+// The Explorer card grid's folder cards (docs/specs/006-diagram/diagram-snapshots.md), split out of
 // CardView: the real FolderCard (rename / menu / child count) and the
 // synthetic Unsorted / Generated card. The card shell + preview classes
 // every card shares live in @livediagram/ui, where the Timeline's cards
-// use them too (spec/138 §2).
+// use them too (docs/specs/013-workspace/timeline.md §2).
 
 import type { ReactNode } from 'react';
 import { CARD_PREVIEW as previewArea, CARD_SHELL as cardShell } from '@livediagram/ui';
@@ -19,7 +19,7 @@ import type { FolderActionBundle } from './explorer-view-props';
 import { menuHandlers } from './folder-row';
 
 // The plain folder mark that fills a folder card's preview box when
-// there's nothing inside to preview (spec/99). Exported so FolderPreview
+// there's nothing inside to preview (docs/specs/013-workspace/folder-content-previews.md). Exported so FolderPreview
 // falls back to exactly this glyph for an empty folder rather than
 // leaving the box blank.
 export function FolderCardGlyph() {
@@ -42,7 +42,7 @@ export function FolderCard({
 }: {
   folder: Folder;
   childCount: number;
-  // A content preview of what's inside (spec/99), built by the caller so
+  // A content preview of what's inside (docs/specs/013-workspace/folder-content-previews.md), built by the caller so
   // this card stays presentational. Absent (or an empty folder, which
   // renders as null) falls back to the plain folder glyph.
   preview?: ReactNode;

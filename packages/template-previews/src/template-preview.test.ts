@@ -10,7 +10,7 @@ import { TemplatePreview } from './template-preview';
 // TemplatePreview is pure render (no hooks), so calling it as a plain
 // function is enough to assert the dispatch resolves. A hidden template
 // never renders in a grid, so it ships no preview and is skipped here.
-// None ships today (spec/69's guided-tour sample was the last).
+// None ships today (docs/specs/007-editor/guided-tour-sample.md's guided-tour sample was the last).
 describe('TemplatePreview', () => {
   it('returns an SVG for every listed template in the catalogue', () => {
     for (const template of TEMPLATES.filter((t) => !t.hidden)) {

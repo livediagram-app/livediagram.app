@@ -3,7 +3,7 @@ import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { usePhotoPicker } from './usePhotoPicker';
 
-// Opening the file picker, once (spec/139 Phase 9).
+// Opening the file picker, once (docs/specs/021-event-storming/event-storming.md Phase 9).
 //
 // This exists because of a Linux/GTK behaviour that costs the whole import:
 // DOUBLE-CLICKING a file in the dialog closes it on the first click, and the

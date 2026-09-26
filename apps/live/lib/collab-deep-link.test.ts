@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { ActivityPlace } from '@livediagram/api-schema';
 import { collabDeepLinkHref, parseCollabDeepLink } from './collab-deep-link';
 
-// Both halves of the element deep link (spec/142 §1): the Explorer
+// Both halves of the element deep link (docs/specs/013-workspace/activity-page.md §1): the Explorer
 // builds it, the editor reads it, and they share this module so the
 // parameter names cannot drift. The round trip is the contract.
 

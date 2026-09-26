@@ -165,7 +165,7 @@ describe('uploadImageFile, happy path', () => {
 
   it('maps a gallery_full ApiError token to the friendly cap message (the payoff of surfacing error codes)', async () => {
     // The client-side gate can't see the per-owner gallery cap
-    // (spec/19) — only the server knows. Now that ApiError carries the
+    // (docs/specs/009-elements/images.md) — only the server knows. Now that ApiError carries the
     // worker's snake_case error token, uploadImageFile turns it into a
     // human message instead of a raw "failed: 403".
     apiUploadImageMock.mockRejectedValue(new ApiError('upload image', 403, 'gallery_full'));

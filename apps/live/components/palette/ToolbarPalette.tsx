@@ -22,7 +22,7 @@ import { usePaletteCatalogue } from './usePaletteCatalogue';
 import type { CommandPaletteProps } from './CommandPalette.types';
 import type { PaletteAddHandlers } from './palette-add-handlers';
 
-// The Toolbar layout's Palette (spec/148): one horizontal strip pinned to the
+// The Toolbar layout's Palette (docs/specs/007-editor/toolbar-layout.md): one horizontal strip pinned to the
 // top centre of the canvas, the way Excalidraw's tool bar works. Selection
 // mode on the left, then the category picker, then that category's first
 // tiles, and a More popover holding the category's full Palette body for
@@ -63,7 +63,7 @@ function Divider() {
 export function ToolbarPalette(props: Props) {
   const { canvasTool, esBoard, themeTint, pendingDraw, hidden, leading } = props;
   const [moreOpen, setMoreOpen] = useState(false);
-  // Tiles by use (spec/148): using one brings it to the front of the strip,
+  // Tiles by use (docs/specs/007-editor/toolbar-layout.md): using one brings it to the front of the strip,
   // pushing the rest along, and the last drops back behind More. Read once
   // per page load; written on every use.
   const [recent, setRecent] = useState<readonly string[]>(loadRecentTiles);
@@ -96,7 +96,7 @@ export function ToolbarPalette(props: Props) {
     // draw on. There is no dock to reopen after a draw, so no onDrawArmed.
     onMobileClose: () => setMoreOpen(false),
   });
-  // Same landing rule as the floating Palette (spec/78, spec/139): the user's
+  // Same landing rule as the floating Palette (docs/specs/010-palette/palette-favourites.md, docs/specs/021-event-storming/event-storming.md): the user's
   // Favourites, or the notation on an event-storming board.
   const defaultId = esBoard ? 'event-storming' : 'favourites';
   // Crossing an ES / non-ES tab boundary re-lands on the right default: the
@@ -241,13 +241,13 @@ export function ToolbarPalette(props: Props) {
             {/* Whole-pixel wide, and the same parity as the canvas, so centring
               it can't leave the strip on a half pixel (see SnapWidth). */}
             <SnapWidth matchParentParity>
-              {/* The tour's Palette anchor (spec/79) is the card, not the
+              {/* The tour's Palette anchor (docs/specs/007-editor/editor-tour.md) is the card, not the
                 full-width row around it, so the ring frames the strip. */}
               <div
                 data-tour-id="palette"
                 className="flex items-center gap-0.5 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
               >
-                {/* Event-storming boards hide the selection mode (spec/139): the
+                {/* Event-storming boards hide the selection mode (docs/specs/021-event-storming/event-storming.md): the
                 notation is the palette there. */}
                 {leading ? (
                   <>
@@ -274,7 +274,7 @@ export function ToolbarPalette(props: Props) {
                     />
                     <Divider />
                     {/* The category picker sits between the selection mode and the
-                    tiles it chooses, so it reads as a label for them (spec/148).
+                    tiles it chooses, so it reads as a label for them (docs/specs/007-editor/toolbar-layout.md).
                     Its width follows its label's text, which is fractional:
                     snapped, so the tiles after it stay on whole pixels. */}
                     <SnapWidth>

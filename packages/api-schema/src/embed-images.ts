@@ -1,7 +1,7 @@
 // Inline a tab's uploaded images as base64 data URLs, so a server-side render
 // shows the real picture instead of a placeholder box. Both workers render
-// tabs: the api for the Explorer thumbnail + live share image (spec/67), the
-// mcp for the PNG it hands the model (spec/62 §5). Neither renderer can fetch
+// tabs: the api for the Explorer thumbnail + live share image (docs/specs/006-diagram/diagram-snapshots.md), the
+// mcp for the PNG it hands the model (docs/specs/015-api/mcp-server.md §5). Neither renderer can fetch
 // (resvg is WASM; a cached SVG must be self-contained), so each prefetches the
 // bytes and passes a `resolveImageHref` that reads this map.
 //
@@ -47,7 +47,7 @@ export function tabImageIds(tab: Pick<Tab, 'elements'>): string[] {
 // image/* type the renderer can decode, so a stored type that is missing or
 // generic (`application/octet-stream`, what an R2 object without metadata is
 // served as) is replaced by the type the bytes themselves sniff as. Uploads
-// are sniffed and stored with their real type (spec/19), so this only matters
+// are sniffed and stored with their real type (docs/specs/009-elements/images.md), so this only matters
 // for an object whose metadata was lost; bytes that match no accepted format
 // get no data URL at all.
 function dataUrlType(bytes: Uint8Array, declared: string | null): string | null {

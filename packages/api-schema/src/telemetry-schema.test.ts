@@ -1,4 +1,4 @@
-// Telemetry ingest validator (spec/22). The POST /api/events endpoint
+// Telemetry ingest validator (docs/specs/017-telemetry/telemetry.md). The POST /api/events endpoint
 // filters every incoming batch through `isValidTelemetryEvent` from
 // @livediagram/api-schema before writing to D1. Validation is the
 // last line of defence against a malicious client posting events
@@ -53,8 +53,8 @@ describe('isValidTelemetryEvent', () => {
       // schema exports; if anyone hand-edits the validator to
       // hard-code a stale list, this catches it.
       // `Page` is the one category with a required, path-shaped type
-      // (spec/150), so it's checked with a page view instead; `Cta` takes
-      // only a source from its closed table (spec/153).
+      // (docs/specs/017-telemetry/page-view-telemetry.md), so it's checked with a page view instead; `Cta` takes
+      // only a source from its closed table (docs/specs/019-marketing/landing-funnel.md).
       for (const category of TELEMETRY_CATEGORIES) {
         const event =
           category === 'Page'

@@ -12,10 +12,10 @@ import {
   ElementMenuSettingsRow,
 } from '@/components/canvas/ElementEllipsisMenu';
 
-// The face of a Done check (spec/137): everyone marks themselves finished, and
+// The face of a Done check (docs/specs/012-collaboration/done-check.md): everyone marks themselves finished, and
 // the card shows who has and who has not.
 //
-// Built on the shared per-participant `responses` field (spec/122), the same
+// Built on the shared per-participant `responses` field (docs/specs/012-collaboration/participant-responses.md), the same
 // primitive under the estimate card and the temperature check, with one fixed
 // value — being done is a flag, not a scale. Pressing again withdraws it, so
 // nobody is stuck marked finished on a card they misread.
@@ -26,7 +26,7 @@ import {
 //
 // Both sides of that join run on `participantKey`, never on `Participant.id`.
 // The id is our owner id for ourselves and the room's per-socket presence id
-// for everyone else (spec/61 §6), so it cannot match what was saved: keyed on
+// for everyone else (docs/specs/015-api/public-api-and-tokens.md §6), so it cannot match what was saved: keyed on
 // it, this card showed every viewer their own mark and nobody else's.
 
 function Roster({
@@ -85,13 +85,13 @@ export function DoneCheckFace({
   // The room. Includes ourselves, and is what the waiting list is derived from.
   participants: Participant[];
   // Mark or unmark MYSELF. One handler for both: `respond` already withdraws
-  // when you send the value you already sent (spec/122), so there is no
+  // when you send the value you already sent (docs/specs/012-collaboration/participant-responses.md), so there is no
   // separate un-mark path to keep in step.
   onToggleMine?: () => void;
   // Clear everyone, for the next round. Absent on a surface that can't write,
   // which renders the card readable but inert.
   onResetAll?: () => void;
-  /** The way out of the round controls to the element's full menu (spec/09). */
+  /** The way out of the round controls to the element's full menu (docs/specs/008-canvas/canvas-and-palette.md). */
   onOpenSettings?: () => void;
 }) {
   const keys = participants.map(participantKey);
@@ -105,7 +105,7 @@ export function DoneCheckFace({
       title={label.trim() || 'Everyone done?'}
       textColor={textColor}
       aside={keys.length ? `${done.length}/${keys.length}` : undefined}
-      // A RULED SHEET (spec/122): the running list somebody keeps during a
+      // A RULED SHEET (docs/specs/012-collaboration/participant-responses.md): the running list somebody keeps during a
       // session, feint-ruled behind the rosters.
       //
       // NO hardware holding it on. Two attempts went in and both came out —
@@ -120,7 +120,7 @@ export function DoneCheckFace({
       // styles so the reduced-motion override in globals.css can reach it.
       className={everyone ? 'lvd-done-complete' : undefined}
       headerExtra={
-        // The shared element menu (spec/105), not a second one: it was written
+        // The shared element menu (docs/specs/012-collaboration/session-button.md), not a second one: it was written
         // here first, and the Timer needed the same thing.
         <ElementEllipsisMenu label="Done check options" color={textColor}>
           {(close) => (

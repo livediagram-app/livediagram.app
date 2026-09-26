@@ -1,5 +1,5 @@
 // /api/teams/<id>/access-check + /notify-action — the assigned-actions
-// endpoints (spec/68), split out of teams.ts the same way the diagram
+// endpoints (docs/specs/012-collaboration/assigned-actions.md), split out of teams.ts the same way the diagram
 // route families own their own modules. Both are team-scoped: the
 // caller resolves the team + their own membership row once and passes
 // the scope in.
@@ -11,7 +11,7 @@ import { badRequest, forbidden, json, notFound } from '../responses';
 import { notifyActionAssigned } from '../email/notifications';
 import type { RouteContext } from './context';
 
-// spec/68 notify-action body caps: generous vs any real action, tight vs abuse.
+// docs/specs/012-collaboration/assigned-actions.md notify-action body caps: generous vs any real action, tight vs abuse.
 const ACTION_NAME_MAX = 200;
 const ACTION_DESCRIPTION_MAX = 2000;
 
@@ -24,7 +24,7 @@ export async function handleTeamActionRoutes(
   const { teamId, me, userId } = scope;
 
   // /api/teams/<id>/access-check — can this teammate open that diagram?
-  // (spec/68). Drives the Assign Action dialog's access hint: a REAL
+  // (docs/specs/012-collaboration/assigned-actions.md). Drives the Assign Action dialog's access hint: a REAL
   // answer instead of a client-side guess. Same gates as notify-action
   // below (caller + assignee joined members, caller can access the
   // diagram, 404s that never probe); the answer covers the three legs
@@ -58,7 +58,7 @@ export async function handleTeamActionRoutes(
   }
 
   // /api/teams/<id>/notify-action — email a teammate about an action just
-  // assigned to them on a diagram element (spec/68). A POST, so the shared
+  // assigned to them on a diagram element (docs/specs/012-collaboration/assigned-actions.md). A POST, so the shared
   // mutation gate in teams.ts already required the interactive Clerk
   // session. The server establishes every fact that matters itself: both
   // parties must be JOINED members of this team, the caller must be able
@@ -71,7 +71,7 @@ export async function handleTeamActionRoutes(
     const body = (await request.json().catch(() => null)) as {
       assigneeUserId?: string;
       // The membership row id — the key for an INVITED member the lazy
-      // claim hasn't identified with an account yet (spec/68).
+      // claim hasn't identified with an account yet (docs/specs/012-collaboration/assigned-actions.md).
       assigneeMemberId?: string;
       diagramId?: string;
       actionName?: string;
@@ -91,7 +91,7 @@ export async function handleTeamActionRoutes(
       return badRequest('description too long');
     }
     // The assignee must be a joined OR invited member of this team
-    // (spec/68 — work gets divided while invites are in flight). 404
+    // (docs/specs/012-collaboration/assigned-actions.md — work gets divided while invites are in flight). 404
     // (not 403) so the endpoint can't be used to probe which users
     // exist. An invited member resolves by membership row id.
     const assignee = assigneeUserId

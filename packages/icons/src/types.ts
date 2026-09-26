@@ -1,5 +1,5 @@
-// Shared types for the two icon catalogues (spec/09 "Icons" line art +
-// spec/41 Technology brand marks). Moved here from apps/live so the data
+// Shared types for the two icon catalogues (docs/specs/008-canvas/canvas-and-palette.md "Icons" line art +
+// docs/specs/010-palette/technology-icons.md Technology brand marks). Moved here from apps/live so the data
 // can be consumed by every renderer: the editor (async, via its
 // icon-registry chunk), the api worker's live-image / thumbnail render,
 // and the MCP worker's inline render.
@@ -13,7 +13,7 @@ export type IconPrim =
   | { t: 'polygon'; points: string }
   | { t: 'ellipse'; cx: number; cy: number; rx: number; ry: number }
   // A literal text glyph, centred on (x, y) at `size` px in the 0..24 art
-  // box. Exists for the Emoji catalogue entries (spec/85): colour-emoji
+  // box. Exists for the Emoji catalogue entries (docs/specs/010-palette/emoji-icons.md): colour-emoji
   // font glyphs ignore SVG stroke / fill, so the line-art tint wrapper is
   // a harmless no-op around them. Renderers set stroke="none" on the
   // <text> so a non-emoji character wouldn't render hollow either.

@@ -4,7 +4,7 @@ import { Tooltip } from '@/components/primitives/Tooltip';
 import { track } from '@/lib/telemetry';
 import type { ExplorerViewMode } from './useExplorerViewMode';
 
-// The List / Card segmented toggle in the Explorer header (spec/67).
+// The List / Card segmented toggle in the Explorer header (docs/specs/006-diagram/diagram-snapshots.md).
 // Lets you switch how the browse views render the same folders +
 // diagrams: dense rows, or cards with a large SVG snapshot.
 export function ViewToggle({
@@ -14,7 +14,7 @@ export function ViewToggle({
   mode: ExplorerViewMode;
   onChange: (mode: ExplorerViewMode) => void;
 }) {
-  // Track only real switches (spec/22): clicking the already-active
+  // Track only real switches (docs/specs/017-telemetry/telemetry.md): clicking the already-active
   // side changes nothing, so it isn't a signal worth counting.
   const choose = (next: ExplorerViewMode) => {
     if (next !== mode) {

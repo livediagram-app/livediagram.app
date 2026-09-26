@@ -1,7 +1,7 @@
 // Routes URL paths to the right downstream app. In production each app is
 // a service binding; in local dev (`wrangler dev --env local`) the bindings
 // don't exist and each app is a plain HTTP origin to proxy instead.
-// See specs/08-router-app.md.
+// See docs/specs/016-platform/router-app.md.
 
 import { LIVE_ROUTE_SEGMENTS } from '@livediagram/api-schema';
 
@@ -18,7 +18,7 @@ export interface Env {
   API_ORIGIN?: string;
   TELEMETRY_ORIGIN?: string;
   HELP_ORIGIN?: string;
-  // Set to "staging" on the staging router only (spec/140). Marks every
+  // Set to "staging" on the staging router only (docs/specs/016-platform/staging-environment.md). Marks every
   // response noindex so the public staging mirror can't compete with
   // production in search results. Absent in production and in local dev.
   DEPLOY_ENV?: string;
@@ -37,7 +37,7 @@ const HELP_PATH = '/help';
 // `/live/*` still exists ONLY for the bundled `_next` assets (the live
 // app's `assetPrefix`), which ARE stripped in production — see isLivePath.
 // The set is shared from api-schema so the telemetry dashboard's per-app
-// page-view split (spec/150) reads the same list this routes by.
+// page-view split (docs/specs/017-telemetry/page-view-telemetry.md) reads the same list this routes by.
 
 // Root-served live assets that don't ride the `assetPrefix` (Next's
 // metadata icon). Routed to the live worker by exact path.
@@ -122,7 +122,7 @@ function forward(
   );
 }
 
-// Stamp `X-Robots-Tag: noindex, nofollow` on a staging response (spec/140).
+// Stamp `X-Robots-Tag: noindex, nofollow` on a staging response (docs/specs/016-platform/staging-environment.md).
 //
 // Staging is deliberately public — no auth wall, so a change can be shared
 // with someone before it ships — which makes keeping it out of search results
@@ -168,12 +168,12 @@ async function route(request: Request, env: Env): Promise<Response> {
     return forward(request, url, env.LIVE, env.LIVE_ORIGIN, LIVE_PATH);
   }
   if (hasPrefix(url.pathname, TELEMETRY_PATH)) {
-    // The public transparency dashboard (spec/22), a basePath:'/telemetry'
+    // The public transparency dashboard (docs/specs/017-telemetry/telemetry.md), a basePath:'/telemetry'
     // static app — same prefix-strip as the live app's assets.
     return forward(request, url, env.TELEMETRY, env.TELEMETRY_ORIGIN, TELEMETRY_PATH);
   }
   if (hasPrefix(url.pathname, HELP_PATH)) {
-    // The help centre (spec/55), a basePath:'/help' static app — same
+    // The help centre (docs/specs/018-help/help-app.md), a basePath:'/help' static app — same
     // prefix-strip as telemetry.
     return forward(request, url, env.HELP, env.HELP_ORIGIN, HELP_PATH);
   }

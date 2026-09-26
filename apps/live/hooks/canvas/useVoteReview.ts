@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { isBoxed, isVotable, isVoteHost, type Tab } from '@livediagram/diagram';
 import { track } from '@/lib/telemetry';
 
-// Vote-results review (spec/39). Once a vote's results are revealed, the
+// Vote-results review (docs/specs/012-collaboration/session-tools.md). Once a vote's results are revealed, the
 // HOST walks the voted elements one at a time, most dots first: the
 // current pick pulses an amber focus highlight and every participant's
 // viewport centres on it. Previous / Next in the vote banner and the rows

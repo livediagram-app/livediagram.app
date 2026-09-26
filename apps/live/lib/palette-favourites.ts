@@ -1,12 +1,12 @@
 import { readLocalStorageSafe, writeLocalStorageSafe } from './local-storage-safe';
 
-// Palette Favourites persistence (spec/78): the user's curated tile-id list
+// Palette Favourites persistence (docs/specs/010-palette/palette-favourites.md): the user's curated tile-id list
 // for the palette's Favourites category. Per-browser localStorage, like the
 // palette's other UI state — not synced to the account.
 
 const PALETTE_FAVOURITES_KEY = 'livediagram:v2:palette-favourites';
 
-// The default Favourites grid (spec/78), in order.
+// The default Favourites grid (docs/specs/010-palette/palette-favourites.md), in order.
 //
 // Twelve, which is four rows of three — the grid's natural shape, so the
 // starting state has no ragged last row. The order is deliberate rather than
@@ -15,7 +15,7 @@ const PALETTE_FAVOURITES_KEY = 'livediagram:v2:palette-favourites';
 // table, then the two session elements a facilitated board wants to hand.
 //
 // The Highlighter used to hold the tenth slot. It moved to the tool dropdown
-// when it became a held mode (spec/81), so there is no tile to favourite any
+// when it became a held mode (docs/specs/008-canvas/highlighter.md), so there is no tile to favourite any
 // more, and Table took the slot rather than leaving eleven and a ragged row.
 //
 // Every id here must exist in PALETTE_TILES; a stale one renders nothing and
@@ -35,7 +35,7 @@ export const DEFAULT_PALETTE_FAVOURITES: readonly string[] = [
   'collab:comment-pin',
 ];
 
-// Dynamic icon favourites (`icon:<iconId>` / `tech:<iconId>`, spec/78) are
+// Dynamic icon favourites (`icon:<iconId>` / `tech:<iconId>`, docs/specs/010-palette/palette-favourites.md) are
 // kept VERBATIM rather than checked against validIds: their catalogues load
 // async (lib/icon-registry), so validating here would wrongly drop every
 // icon favourite on any load that runs before the chunk lands — and the

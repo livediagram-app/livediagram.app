@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ES_NOTE_GAP, type Element, type StickyElement } from '@livediagram/diagram';
 import { NextNoteButtons } from './NextNoteButtons';
 
-// The next-note buttons (spec/139 Phase 7). At most two per note, only on the
+// The next-note buttons (docs/specs/021-event-storming/event-storming.md Phase 7). At most two per note, only on the
 // note you are pointing at or have selected, each naming the act it performs —
 // that is what separates them from the four quick-connect pluses this board
 // retired as chrome.

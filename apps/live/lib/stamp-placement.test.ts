@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { ES_LANES, laneCentre, type Element, type Tab } from '@livediagram/diagram';
 import { stampPlacement, stampSizeFor } from './stamp-placement';
 
-// Placing a fixed-size note from an armed tile (spec/139 Phase 4): the note is
+// Placing a fixed-size note from an armed tile (docs/specs/021-event-storming/event-storming.md Phase 4): the note is
 // STAMPED at its own size, centred on the pointer, and on an event-storming
 // board it meets the lanes the way a dragged note does. The ghost, the lane
 // overlay and the drop all read this one answer.

@@ -44,7 +44,7 @@ describe('email templates', () => {
   it('falls back gracefully on a null team name', () =>
     expect(teamInviteEmail(env, null).html).toContain('a team'));
 
-  // spec/65 — someone joined my diagram
+  // docs/specs/014-identity/profile-and-email-notifications.md — someone joined my diagram
   it('diagram-joined names the diagram + joiner and CTAs to the explorer', () => {
     const e = diagramJoinedEmail(env, 'Roadmap', 'Anna');
     expect(e.subject).toMatch(/Anna/);
@@ -65,7 +65,7 @@ describe('email templates', () => {
     expect(e.html).toContain('&lt;img');
   });
 
-  // spec/65 — someone responded to a team invite
+  // docs/specs/014-identity/profile-and-email-notifications.md — someone responded to a team invite
   it('invite-response distinguishes accept from decline', () => {
     const yes = inviteResponseEmail(env, 'Acme', 'a@b.test', true);
     expect(yes.subject).toMatch(/accepted/i);

@@ -58,7 +58,7 @@ export function useMovablePanelMeasure({
       // nothing. Its bottom edge is stable, so measure the space up from
       // there instead. This covers both the legacy CSS bottom corner
       // (position null + a bottom defaultCorner) and a panel DOCKED into a
-      // bottom corner (spec/63), whose live corner is dockedCorner.
+      // bottom corner (docs/specs/007-editor/panel-docking.md), whose live corner is dockedCorner.
       const bottomAnchored = docked
         ? dockedCorner === 'bottom-left' || dockedCorner === 'bottom-right'
         : position === null && defaultCorner.startsWith('bottom');

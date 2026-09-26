@@ -14,13 +14,13 @@ import type { PaneDiagram } from './views';
 const badgeBase =
   'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ring-1';
 
-// The star a favourited diagram carries wherever it's listed (spec/95),
+// The star a favourited diagram carries wherever it's listed (docs/specs/013-workspace/favourites.md),
 // so you can tell a starred diagram from an unstarred one without opening
 // its menu. Amber rather than the brand colour: it's a personal mark on
 // someone else's palette of status badges, and reads as "mine" next to
 // them.
 //
-// Unlike hidden-from-Recent (spec/93), which stays menu-only, this IS
+// Unlike hidden-from-Recent (docs/specs/013-workspace/hide-from-recent.md), which stays menu-only, this IS
 // worth a marker: hiding is a set-and-forget negative you rarely revisit,
 // where a favourite is a positive you actively scan for.
 export function FavouriteMarker() {
@@ -36,7 +36,7 @@ export function FavouriteMarker() {
   );
 }
 
-// Where a diagram lives, shown on Recent rows (spec/94). Recent spans every
+// Where a diagram lives, shown on Recent rows (docs/specs/013-workspace/recent-folder-chip.md). Recent spans every
 // folder, so without this you can't tell a "Q3 plan" in Design from one in
 // Archive without opening it.
 //
@@ -71,7 +71,7 @@ export function FolderChip({ label, onOpen }: { label: string; onOpen: () => voi
   );
 }
 
-// The visibility badge: Offline (saved only in this browser, spec/76), Shared
+// The visibility badge: Offline (saved only in this browser, docs/specs/006-diagram/offline-mode.md), Shared
 // (a shared-with-me row / a share-link owned row), Team, or Private. Each
 // carries a concise hover tooltip explaining what the state means. Offline
 // wins first: an offline diagram is never shared or in a team.

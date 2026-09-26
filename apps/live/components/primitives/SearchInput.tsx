@@ -30,7 +30,7 @@ export function SearchInput({
   clearDescription: string;
   // Optional keyboard passthrough. The box stays generic, what Arrow / Enter
   // MEAN belongs to whichever results list is underneath, so the caller owns
-  // it (spec/110: the Favourites search walks its results this way).
+  // it (docs/specs/010-palette/palette-top-level-categories.md: the Favourites search walks its results this way).
   onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   // The id of the currently walked result, for screen readers: focus stays in
   // the box while the highlight moves, which is the combobox pattern.

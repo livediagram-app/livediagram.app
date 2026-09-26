@@ -7,7 +7,7 @@ import { SearchGlyph } from './glyphs';
 import { EventIcon } from './telemetry-event-icon';
 import type { Metric } from './metrics';
 
-// The metric combobox for the Search view (spec/22). Two ways in, because
+// The metric combobox for the Search view (docs/specs/017-telemetry/telemetry.md). Two ways in, because
 // you can't always name what you want:
 //
 //  - Type a query → flat token-AND matches across every metric's label.

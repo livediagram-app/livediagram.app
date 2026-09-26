@@ -115,7 +115,7 @@ describe('requireOwnedDiagram', () => {
     expect(await requireOwnedDiagram(ctx, 'd1')).toBe(diagram);
   });
 
-  it('403s a TEAM diagram to an owner who is no longer in the team (spec/35)', async () => {
+  it('403s a TEAM diagram to an owner who is no longer in the team (docs/specs/013-workspace/team-shared-diagrams.md)', async () => {
     // Removed (or left) before their work was handed on: owning the row must
     // not keep the share-link, password and delete routes open to them.
     db.getDiagram.mockResolvedValue({ id: 'd1', ownerId: 'user_owner', teamId: 'team-1' });

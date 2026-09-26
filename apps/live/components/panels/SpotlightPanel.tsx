@@ -1,6 +1,6 @@
 'use client';
 
-// The Spotlight Panel (spec/112): size, shroud darkness, edge softness, and
+// The Spotlight Panel (docs/specs/008-canvas/spotlight-panel.md): size, shroud darkness, edge softness, and
 // shape — the Laser Panel's sibling, and mounted on the same terms (present
 // only while the mode is, Palette width, top-right under it, its own dock
 // button in the minimal layout).
@@ -66,7 +66,7 @@ export function SpotlightPanel({
 }: {
   config: SpotlightConfig;
   onChange: <K extends keyof SpotlightConfig>(field: K, value: SpotlightConfig[K]) => void;
-  // The live radius, which clicking the canvas also changes (spec/09) — so the
+  // The live radius, which clicking the canvas also changes (docs/specs/008-canvas/canvas-and-palette.md) — so the
   // Size row reads from it rather than from the stored preset, and says
   // "Custom" when the two have parted company.
   radius: number;

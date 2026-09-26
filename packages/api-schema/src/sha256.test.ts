@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { sha256Hex } from './sha256';
 
-// sha256Hex is the load-bearing primitive for image dedup (spec/19):
+// sha256Hex is the load-bearing primitive for image dedup (docs/specs/009-elements/images.md):
 // the live editor hashes bytes before POSTing them and stamps the
 // digest on `X-Image-Sha256`; the api worker re-hashes the body and
 // rejects any mismatch. If the hex encoding ever drifts (a missing

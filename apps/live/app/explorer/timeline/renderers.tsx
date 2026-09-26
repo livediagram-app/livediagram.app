@@ -1,6 +1,6 @@
 'use client';
 
-// livediagram's timeline renderers (spec/138 §7).
+// livediagram's timeline renderers (docs/specs/013-workspace/timeline.md §7).
 //
 // These are the half of the Timeline that knows about this product:
 // which route a card opens, what its preview shows, and when to say
@@ -9,7 +9,7 @@
 // lets a per-diagram feed reuse them without inheriting the Explorer's
 // copy.
 //
-// Copy rule (spec/138 §2): a card's TITLE is the subject (the diagram,
+// Copy rule (docs/specs/013-workspace/timeline.md §2): a card's TITLE is the subject (the diagram,
 // the team, the token) and its REASON LINE is the stored Title Case
 // category ("Diagram Created"). Renderers therefore set `subject` and
 // leave `label` to fall back to `event.title`, so every card and every
@@ -111,7 +111,7 @@ const diagramRenderer: TimelineRenderer = (event, ctx) => {
       return { ...base, meta: str(event.snapshot, 'teamName') ?? undefined };
     case 'team_diagram_removed': {
       // Who has it now. A non-owner pulling a team diagram out takes
-      // ownership of it (spec/35), so this is the part a reader of the
+      // ownership of it (docs/specs/013-workspace/team-shared-diagrams.md), so this is the part a reader of the
       // TEAM's copy of this event actually needs.
       const owner = str(event.snapshot, 'newOwnerName');
       return {
@@ -172,7 +172,7 @@ const teamRenderer: TimelineRenderer = (event, ctx) => {
       return {
         ...base,
         meta: 'Open Invites to accept or decline',
-        // A pending invite grants no access to the team page (spec/32),
+        // A pending invite grants no access to the team page (docs/specs/013-workspace/teams.md),
         // so this points where the reader can actually act.
         onClick: () => window.location.assign('/explorer/invites'),
       };

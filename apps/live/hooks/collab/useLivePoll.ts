@@ -1,6 +1,6 @@
 'use client';
 
-// Live poll (spec/88): the ephemeral pulse-check. Everything here is
+// Live poll (docs/specs/012-collaboration/live-poll.md): the ephemeral pulse-check. Everything here is
 // MEMORY-ONLY by design — no tab field, no commitTabs, no autosave, no
 // change-log line, nothing that could reach D1. The poll exists as three
 // room ops and the state below, and dies with the last client holding it.
@@ -24,27 +24,27 @@ type RoomHandle = { send: (msg: RoomOutgoing) => void };
 
 // One participant's answer, keyed by the room's sender id. The key is used
 // ONLY to make a person changing their mind replace their earlier answer;
-// it is never rendered (spec/88 — results carry no identity).
+// it is never rendered (docs/specs/012-collaboration/live-poll.md — results carry no identity).
 export type PollAnswers = Map<string, string | null>;
 
 export function useLivePoll(deps: {
   roomRef: React.RefObject<RoomHandle | null>;
-  // The people currently in the diagram, for a `collaborators` poll (spec/88).
+  // The people currently in the diagram, for a `collaborators` poll (docs/specs/012-collaboration/live-poll.md).
   // A ref for the same reason as `sessionBlockedRef` below — the roster changes
   // constantly and is only ever read at the instant a poll starts — and because
   // reading it here is what lets BOTH poll surfaces (the Studio composer and a
-  // Session button, spec/105) get the substitution without either knowing about
+  // Session button, docs/specs/012-collaboration/session-button.md) get the substitution without either knowing about
   // it. Optional so a caller that never starts a roster poll can omit it.
   collaboratorsRef?: React.RefObject<readonly PollCandidate[]>;
-  // Live "somebody else is facilitating" (spec/149). A ref because the poll
+  // Live "somebody else is facilitating" (docs/specs/012-collaboration/facilitator.md). A ref because the poll
   // hook is created before the facilitator hook (which needs the room, which
   // needs this), and the value is only ever read at press time.
   sessionBlockedRef?: React.RefObject<boolean>;
-  // Our collab key (spec/152); see `selfKey` below.
+  // Our collab key (docs/specs/012-collaboration/collab-race-hardening.md); see `selfKey` below.
   selfKeyRef?: React.RefObject<string>;
 }) {
   const { roomRef, sessionBlockedRef, collaboratorsRef, selfKeyRef } = deps;
-  // Our collab key (spec/152): what our own answer is keyed by, and how a poll
+  // Our collab key (docs/specs/012-collaboration/collab-race-hardening.md): what our own answer is keyed by, and how a poll
   // we started is known as ours after a refresh. Read at call time: identity
   // hydrates after this hook, and its handlers must stay stable.
   const selfKey = useCallback(() => selfKeyRef?.current || 'self', [selfKeyRef]);
@@ -68,7 +68,7 @@ export function useLivePoll(deps: {
   // impure and double-fire under StrictMode.
   const pollRef = useRef<LivePoll | null>(null);
   // The poll id we have already counted a response to (Tab·Voted·Poll,
-  // spec/22). A participant can change their answer, and the room replaces
+  // docs/specs/017-telemetry/telemetry.md). A participant can change their answer, and the room replaces
   // it, so the card counts people who responded, not presses: a change of
   // mind is not a second response.
   const countedPollRef = useRef<string | null>(null);
@@ -107,7 +107,7 @@ export function useLivePoll(deps: {
       // dropped rather than rendered — see sanitisePoll.
       if (!clean) return;
       // The poll already on screen (the room replays it to every session on
-      // hello, spec/152): keep its answers. And when two polls start at once,
+      // hello, docs/specs/012-collaboration/collab-race-hardening.md): keep its answers. And when two polls start at once,
       // the rule the room and every peer share picks the one we stay on;
       // otherwise the starter of one ends up answering the other.
       if (!pollSupersedes(clean, pollRef.current)) return;
@@ -119,7 +119,7 @@ export function useLivePoll(deps: {
 
   // One participant answered. Keyed by WHO answered (their collab key), so
   // re-answering replaces their earlier answer instead of stacking a second
-  // one, including across a reconnect, which mints a new presence id (spec/152).
+  // one, including across a reconnect, which mints a new presence id (docs/specs/012-collaboration/collab-race-hardening.md).
   // The sender id is only the fallback for a client too old to send a key.
   const receiveAnswer = useCallback(
     (from: string, pollId: string, value: string | null, key?: string) => {
@@ -147,7 +147,7 @@ export function useLivePoll(deps: {
 
   const startPoll = useCallback(
     (draft: Omit<LivePoll, 'id' | 'startedAt'>) => {
-      // Somebody else is facilitating (spec/149), so the room would refuse the
+      // Somebody else is facilitating (docs/specs/012-collaboration/facilitator.md), so the room would refuse the
       // op anyway: the room gates `poll-start` / `poll-end` itself, because
       // unlike the timer they are their own op kinds. This keeps the local
       // panel from opening on a frame that is going to be dropped.

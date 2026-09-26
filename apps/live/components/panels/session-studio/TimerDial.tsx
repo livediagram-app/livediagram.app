@@ -1,6 +1,6 @@
 'use client';
 
-// The Timer's face (spec/39): a clock dial whose coloured wedge IS the time.
+// The Timer's face (docs/specs/012-collaboration/session-tools.md): a clock dial whose coloured wedge IS the time.
 //
 // Modelled on the workshop "time timer": one lap is an hour, and the wedge
 // shrinks toward twelve as a countdown runs, so the room reads how much is

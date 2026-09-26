@@ -1,5 +1,5 @@
 // Minimal structural types for the OpenAPI 3.1 document the worker serves at
-// GET /api/openapi.json (spec/37). Deliberately loose: a JSON Schema / OpenAPI
+// GET /api/openapi.json (docs/specs/015-api/api-documentation.md). Deliberately loose: a JSON Schema / OpenAPI
 // object is an open recursive shape, and the value is built from the
 // (typechecked) route manifest + the generated component schemas, so a full
 // nominal model would add friction without catching real bugs here. The DTO

@@ -3,7 +3,7 @@ import type { ModelCues } from '@livediagram/sticky-vision';
 import { createBoundaryClient } from './client';
 import type { WorkerRequest, WorkerResponse } from './protocol';
 
-// The page's side of the boundary model (spec/139 Phase 9): one worker,
+// The page's side of the boundary model (docs/specs/021-event-storming/event-storming.md Phase 9): one worker,
 // started once, asked per photo, and never allowed to hold the import up.
 
 class FakeWorker {

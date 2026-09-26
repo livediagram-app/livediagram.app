@@ -1,4 +1,4 @@
-// Benchmarking the IN-BROWSER readers against labelled walls (spec/139 Phase 9,
+// Benchmarking the IN-BROWSER readers against labelled walls (docs/specs/021-event-storming/event-storming.md Phase 9,
 // docs/vision/handwriting-readers.md).
 //
 // A script, not a test: the photographs and their words are somebody's real

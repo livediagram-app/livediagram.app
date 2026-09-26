@@ -1,4 +1,4 @@
-// The OUTLINE of a blob of paper (spec/139 Phase 9, experiments B1–B2).
+// The OUTLINE of a blob of paper (docs/specs/021-event-storming/event-storming.md Phase 9, experiments B1–B2).
 //
 // Two notes lapped over each other are one blob to the colour mask, but not to
 // its outline: where one note's edge meets the other's, the outline turns

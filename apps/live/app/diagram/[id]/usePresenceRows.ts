@@ -36,12 +36,12 @@ type PresenceRowsDeps = {
   remoteCursors: Map<string, { tabId: string; x: number; y: number } | null>;
   remoteSelections: Map<string, RemoteSelection>;
   remoteLaserTrails: Map<string, { tabId: string; points: LaserPoint[] }>;
-  // Peers' Avatar-mode characters (spec/101), latest snapshot each.
+  // Peers' Avatar-mode characters (docs/specs/008-canvas/avatar-mode.md), latest snapshot each.
   remoteAvatars: Map<string, { tabId: string; avatar: AvatarPresence }>;
   localLaserTrail: LaserPoint[];
-  // The local participant's laser pen (spec/111).
+  // The local participant's laser pen (docs/specs/008-canvas/laser-panel.md).
   selfLaserConfig?: LaserConfig;
-  // Vote privacy (spec/39): true while a hide-cursors vote is open on the
+  // Vote privacy (docs/specs/012-collaboration/session-tools.md): true while a hide-cursors vote is open on the
   // active tab. Peer cursors and peer laser trails are withheld from the
   // render so nobody can watch the room converge on a favourite. Our own
   // laser trail still shows, and presence / selection badges are untouched
@@ -65,7 +65,7 @@ export function usePresenceRows(deps: PresenceRowsDeps) {
     remoteLaserTrails,
     remoteAvatars,
     localLaserTrail,
-    // Our own pen (spec/111): peers' arrive with their samples, ours is read
+    // Our own pen (docs/specs/008-canvas/laser-panel.md): peers' arrive with their samples, ours is read
     // from state so our trail never lags a change we just made.
     selfLaserConfig,
     cursorsHidden,
@@ -148,7 +148,7 @@ export function usePresenceRows(deps: PresenceRowsDeps) {
       selfLaserConfig,
     ],
   );
-  // Peer characters for the avatar layer (spec/101). Gated by the same
+  // Peer characters for the avatar layer (docs/specs/008-canvas/avatar-mode.md). Gated by the same
   // hide-cursors vote as cursors: a walking character is a position on the
   // canvas, so withholding cursors while showing avatars would leak exactly
   // what the vote hides.
@@ -169,7 +169,7 @@ export function usePresenceRows(deps: PresenceRowsDeps) {
       ),
     [remoteSelections, livePresenceById, selfParticipant.id, activeId],
   );
-  // Concurrent-selection lock (spec/07): an element another participant
+  // Concurrent-selection lock (docs/specs/007-editor/live-app.md): an element another participant
   // has selected is off-limits to the local user. buildRemoteSelections-
   // ByElement already filters out our own selection, so a hit here always
   // means someone ELSE holds it. The selection hooks consult this to block

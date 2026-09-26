@@ -1,4 +1,4 @@
-// Palette catalogue-tab illustrations (spec/55): the Components, Devices,
+// Palette catalogue-tab illustrations (docs/specs/018-help/help-app.md): the Components, Devices,
 // Icons, Stickers, and Technology tabs of the floating palette. Composed only
 // from the shared primitives so the house style holds; the scenes share one
 // catalogue frame so the palette chrome is drawn once, not redrawn per tab.
@@ -124,7 +124,7 @@ export function ComponentsCatalogue() {
   );
 }
 
-/** The edit-favourites modal (spec/78): search field, a tile grid with
+/** The edit-favourites modal (docs/specs/010-palette/palette-favourites.md): search field, a tile grid with
  *  Control-Centre-style corner badges (red minus = favourited, green
  *  plus = available), and the Done affordance. Drawn without CatalogueGrid —
  *  it's a modal, not a palette tab. (Stylised: the real grid is 5-up.) */
@@ -544,7 +544,7 @@ export function IconsCatalogue() {
 }
 
 /** Stickers tab: die-cut stickers — a white plate with a soft shadow under a
- *  colour emoji, plus the word badges (spec/116). Real emoji characters rather
+ *  colour emoji, plus the word badges (docs/specs/010-palette/stickers.md). Real emoji characters rather
  *  than line art: that IS what the tab holds, and no drawn approximation would
  *  be more honest. */
 export function StickersCatalogue() {

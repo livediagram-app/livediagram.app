@@ -2,7 +2,7 @@
 
 import { useLayoutEffect } from 'react';
 
-// Hard cutover (spec/14): `/live` no longer hosts the editor. The
+// Hard cutover (docs/specs/007-editor/new-diagram-route.md): `/live` no longer hosts the editor. The
 // canonical owner URL is `/diagram/<id>`; `/new` owns the
 // welcome / create-new flow. Anyone landing on bare `/live` gets
 // redirected to `/new` so they start in the right place.

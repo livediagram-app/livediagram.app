@@ -1,4 +1,4 @@
-// Element drop shadows (spec/86). The numeric ElementShadow model, the
+// Element drop shadows (docs/specs/008-canvas/element-shadows.md). The numeric ElementShadow model, the
 // preset catalogue behind the Shadow category's tiles, and the render
 // builders shared by the canvas (CSS box-shadow / drop-shadow filter)
 // and the headless SVG export (feDropShadow defs), so the two surfaces
@@ -19,13 +19,13 @@ export type ElementShadow = {
   opacity: number;
 };
 
-// Slider ranges (spec/86). Clamped on write AND on render so a
+// Slider ranges (docs/specs/008-canvas/element-shadows.md). Clamped on write AND on render so a
 // hand-edited / imported payload can't draw an absurd shadow.
 export const SHADOW_LIMITS = { offset: 24, blur: 48 } as const;
 
 // The fixed shadow ink: slate-900, matching the UI's text ink. A single
 // colour keeps shadows reading as shade under every theme and keeps the
-// model to four sliders (spec/86 leaves a colour picker as follow-up).
+// model to four sliders (docs/specs/008-canvas/element-shadows.md leaves a colour picker as follow-up).
 export const SHADOW_COLOR_RGB = '15, 23, 42';
 
 export function clampShadow(s: ElementShadow): ElementShadow {
@@ -39,7 +39,7 @@ export function clampShadow(s: ElementShadow): ElementShadow {
 
 export type ShadowPresetId = 'soft' | 'drop' | 'lifted' | 'hard';
 
-// The tile presets (spec/86). Soft / Drop / Lifted are elevation steps;
+// The tile presets (docs/specs/008-canvas/element-shadows.md). Soft / Drop / Lifted are elevation steps;
 // Hard is the zero-blur offset "poster" shadow. A separate None tile
 // clears the field, so it isn't an entry here.
 export const SHADOW_PRESETS: { id: ShadowPresetId; label: string; shadow: ElementShadow }[] = [
@@ -50,12 +50,12 @@ export const SHADOW_PRESETS: { id: ShadowPresetId; label: string; shadow: Elemen
 ];
 
 // What a slider drag starts from when the element has no shadow yet
-// (spec/86): the Drop preset's values, so the first drag produces a
+// (docs/specs/008-canvas/element-shadows.md): the Drop preset's values, so the first drag produces a
 // visible shadow instead of a degenerate all-zero one.
 export const DEFAULT_SHADOW: ElementShadow = SHADOW_PRESETS[1]!.shadow;
 
 // The boxed types that draw a visible body a shadow can sit under
-// (spec/86). Text / freehand / annotation / table / arrows are out: a
+// (docs/specs/008-canvas/element-shadows.md). Text / freehand / annotation / table / arrows are out: a
 // bounding-box shadow under a text run or a grid reads as a bug.
 export function supportsShadow(
   el: Pick<Element, 'type'>,
@@ -94,7 +94,7 @@ export function shadowFilterId(s: ElementShadow): string {
   return `elshadow-${enc(c.offsetX)}-${enc(c.offsetY)}-${c.blur}-${Math.round(c.opacity * 100)}`;
 }
 
-// The export-side <filter> def (spec/86). stdDeviation is blur/2 (the
+// The export-side <filter> def (docs/specs/008-canvas/element-shadows.md). stdDeviation is blur/2 (the
 // CSS blur radius ≈ 2σ equivalence) so exports match the canvas. The
 // filter region gets generous margins: the default 10% clips big
 // blurs/offsets on small elements.

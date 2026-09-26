@@ -38,7 +38,7 @@ const { db } = vi.hoisted(() => ({
   },
 }));
 vi.mock('../db', () => db);
-// Observe the spec/68 notify dispatch without exercising the email stack.
+// Observe the docs/specs/012-collaboration/assigned-actions.md notify dispatch without exercising the email stack.
 vi.mock('../email/notifications', () => ({
   notifyActionAssigned: vi.fn().mockResolvedValue(undefined),
   notifyInviteResponse: vi.fn().mockResolvedValue(undefined),
@@ -49,14 +49,14 @@ import { notifyActionAssigned } from '../email/notifications';
 import { handleTeams } from './teams';
 
 // Clerk-session context ('user-1'); verifiedUserId may diverge for the
-// token-caller shape (spec/61). resolveOwner falls back to 'guest-1'.
+// token-caller shape (docs/specs/015-api/public-api-and-tokens.md). resolveOwner falls back to 'guest-1'.
 const makeCtx = (
   method: string,
   path: string,
   opts: {
     clerkUserId?: string | null;
     clerkEmail?: string | null;
-    // A token caller (spec/61): verified account id with NO Clerk session.
+    // A token caller (docs/specs/015-api/public-api-and-tokens.md): verified account id with NO Clerk session.
     verifiedUserId?: string | null;
     body?: unknown;
   } = {},
@@ -97,7 +97,7 @@ beforeEach(() => {
   for (const fn of Object.values(db)) if (typeof fn === 'function') fn.mockReset();
 });
 
-describe('handleTeams Clerk-only gate (spec/32)', () => {
+describe('handleTeams Clerk-only gate (docs/specs/013-workspace/teams.md)', () => {
   it('401 sign_in_required for the guest path, even with an X-Owner-Id-style owner', async () => {
     const res = await handleTeams(makeCtx('GET', '/api/teams', { clerkUserId: null }));
     expect(res.status).toBe(401);
@@ -105,7 +105,7 @@ describe('handleTeams Clerk-only gate (spec/32)', () => {
   });
 });
 
-describe('API-token callers (spec/61 §3.4: read yes, manage no)', () => {
+describe('API-token callers (docs/specs/015-api/public-api-and-tokens.md §3.4: read yes, manage no)', () => {
   // A token request verifies to the Clerk account (verifiedUserId) but
   // carries no interactive session (clerkUserId null).
   const asToken = { clerkUserId: null, verifiedUserId: 'user-1' };
@@ -164,7 +164,7 @@ describe('GET /api/teams (list + lazy invite claim)', () => {
   });
 });
 
-describe('GET /api/teams/invites (spec/32 accept/decline)', () => {
+describe('GET /api/teams/invites (docs/specs/013-workspace/teams.md accept/decline)', () => {
   it('lazy-claims then lists the pending invites', async () => {
     db.listInvitesByUser.mockResolvedValue([
       { memberId: 'm2', team, memberCount: 3, invitedAt: 5 },
@@ -215,7 +215,7 @@ describe('POST /api/teams/:id/members/:memberId/accept', () => {
   });
 });
 
-describe('shareable invite link (spec/32)', () => {
+describe('shareable invite link (docs/specs/013-workspace/teams.md)', () => {
   beforeEach(() => {
     db.getTeam.mockResolvedValue(team);
   });
@@ -487,7 +487,7 @@ describe('DELETE /api/teams/:id/members/:memberId (remove / leave)', () => {
 
   it("hands a removed member's team work to the team before the row goes", async () => {
     // Every access gate honours owner_id before membership, so diagrams left
-    // owned by the removed member would stay open to them (spec/35).
+    // owned by the removed member would stay open to them (docs/specs/013-workspace/team-shared-diagrams.md).
     db.getMembership.mockResolvedValue(member());
     db.getTeamMember.mockResolvedValue(member({ id: 'm2', userId: 'user-2', role: 'member' }));
     await handleTeams(makeCtx('DELETE', '/api/teams/t1/members/m2'));
@@ -521,7 +521,7 @@ describe('DELETE /api/teams/:id/members/:memberId (remove / leave)', () => {
   });
 });
 
-describe('GET /api/teams/:id/access-check (spec/68)', () => {
+describe('GET /api/teams/:id/access-check (docs/specs/012-collaboration/assigned-actions.md)', () => {
   const get = (qs: string, opts: Parameters<typeof makeCtx>[2] = {}) =>
     handleTeams(makeCtx('GET', `/api/teams/t1/access-check?${qs}`, opts));
   const QS = 'assigneeUserId=user-2&diagramId=d1';
@@ -589,7 +589,7 @@ describe('GET /api/teams/:id/access-check (spec/68)', () => {
   });
 });
 
-describe('POST /api/teams/:id/notify-action (spec/68)', () => {
+describe('POST /api/teams/:id/notify-action (docs/specs/012-collaboration/assigned-actions.md)', () => {
   const body = { assigneeUserId: 'user-2', diagramId: 'd1', actionName: 'Review the copy' };
   const post = (b: unknown = body, opts: Parameters<typeof makeCtx>[2] = {}) =>
     handleTeams(makeCtx('POST', '/api/teams/t1/notify-action', { body: b, ...opts }));
@@ -661,7 +661,7 @@ describe('POST /api/teams/:id/notify-action (spec/68)', () => {
     expect(notifyActionAssigned).not.toHaveBeenCalled();
   });
 
-  it('202 for an INVITED assignee — by userId when claimed, by memberId otherwise (spec/68)', async () => {
+  it('202 for an INVITED assignee — by userId when claimed, by memberId otherwise (docs/specs/012-collaboration/assigned-actions.md)', async () => {
     // Claimed invitee: has a userId despite the pending status.
     membershipByUser({
       'user-2': member({ id: 'm2', userId: 'user-2', status: 'invited', email: 'b@x.com' }),

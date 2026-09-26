@@ -1,4 +1,4 @@
-// The forward-looking half of the feed (spec/138 §4.5).
+// The forward-looking half of the feed (docs/specs/013-workspace/timeline.md §4.5).
 //
 // Everything else on the Timeline is emitted by the write that caused
 // it. These two can't be: nothing HAPPENS when a credential drifts
@@ -9,7 +9,7 @@
 // (email/token-expiry.ts), which returns early when RESEND_API_KEY is
 // unset. A self-hosted deployment with no email provider still deserves
 // to be told its integration is about to break — that is exactly the
-// kind of silent change this feed exists to surface (spec/03: never
+// kind of silent change this feed exists to surface (docs/specs/002-project-scope/open-source-and-business-model.md: never
 // degrade the core product on a missing SaaS key).
 //
 // Idempotent by construction: both emits hit the timeline UNIQUE key on

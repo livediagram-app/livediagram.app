@@ -1,4 +1,4 @@
-// Which shape the Explorer header's create affordance takes (spec/15).
+// Which shape the Explorer header's create affordance takes (docs/specs/013-workspace/folders.md).
 //
 // Two actions (New diagram + New subfolder, inside a folder) share one
 // compact "+ Create" dropdown: two shrink-0 buttons squeezed the folder-name
@@ -8,7 +8,7 @@
 // directly, named. Sections offering neither render nothing.
 //
 // Kept pure and separate from PaneHeader.tsx so the branch is unit-testable
-// without mounting the header (spec/18).
+// without mounting the header (docs/specs/003-system-architecture/testing.md).
 
 export type PaneCreateMode =
   { kind: 'none' } | { kind: 'menu' } | { kind: 'single'; action: 'diagram' | 'folder' };

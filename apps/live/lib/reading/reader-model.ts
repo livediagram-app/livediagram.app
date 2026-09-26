@@ -3,7 +3,7 @@ import { downloadProgress, type ModelDownload, type ModelProgressEvent } from '.
 import { tooSmallToRead } from './floor';
 import type { ReaderBackend } from './reader-protocol';
 
-// Reading the handwriting with a model that runs HERE (spec/139 Phase 9).
+// Reading the handwriting with a model that runs HERE (docs/specs/021-event-storming/event-storming.md Phase 9).
 //
 // A small vision-language model, not an OCR engine. That is the finding the
 // whole module rests on: measured on a real workshop wall, Tesseract read ONE

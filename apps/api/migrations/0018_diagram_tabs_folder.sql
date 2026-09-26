@@ -1,8 +1,8 @@
--- Tab folders (specs/30). A diagram's tabs can be grouped into
+-- Tab folders (docs/specs/006-diagram/tab-folders.md). A diagram's tabs can be grouped into
 -- one-level, named folders along the tab bar. Membership is
 -- per-diagram, so it lives on the diagram_tabs link row alongside
 -- order_index (a tab shared into two diagrams can be foldered in
--- one and loose in the other — see specs/17).
+-- one and loose in the other — see docs/specs/006-diagram/tab-diagram-many-to-many.md).
 --
 -- NULL = loose (no folder). No backfill: every existing tab is
 -- loose. No index: folders are derived by a client-side scan over

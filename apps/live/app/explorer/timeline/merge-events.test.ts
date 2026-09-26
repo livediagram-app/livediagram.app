@@ -16,7 +16,7 @@ function event(id: string, occurredAt: number, over: Partial<TimelineEvent> = {}
   } as TimelineEvent;
 }
 
-// What the re-read on returning to a tab (spec/138 §2.4a) and the
+// What the re-read on returning to a tab (docs/specs/013-workspace/timeline.md §2.4a) and the
 // calendar's period fetch both rely on.
 describe('mergeEvents', () => {
   it('brings new events in at the head without dropping loaded pages', () => {
@@ -47,7 +47,7 @@ describe('mergeEvents', () => {
   });
 });
 
-// The first-page re-read after the reader's own write (spec/138 §2.4b):
+// The first-page re-read after the reader's own write (docs/specs/013-workspace/timeline.md §2.4b):
 // authoritative for the stretch it covers, hands off below it.
 describe('reconcileEvents', () => {
   it('drops a loaded event the page no longer holds inside its window', () => {
@@ -105,7 +105,7 @@ describe('reconcileEvents', () => {
   });
 });
 
-// The client half of the delete cascade (spec/138 §3.5): the same
+// The client half of the delete cascade (docs/specs/013-workspace/timeline.md §3.5): the same
 // predicate as markTimelineEventsDeletedBySource.
 describe('purgeEventsForSource', () => {
   it('drops events keyed on the id and events whose snapshot references it', () => {

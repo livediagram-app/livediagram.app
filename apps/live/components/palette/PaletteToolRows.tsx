@@ -1,5 +1,5 @@
 // The Tools tab's LIST layout: one row per tool — glyph, name, and a short
-// line saying what it is (spec/09).
+// line saying what it is (docs/specs/008-canvas/canvas-and-palette.md).
 //
 // Why a list and not the 3-column grid every other category uses: a palette is
 // ~256px wide, and three columns leaves about 70px per tile, which is a caption
@@ -46,7 +46,7 @@ function PaletteToolRow({
   actions: PaletteTileActions;
   pendingDraw: PendingDraw | null | undefined;
   id?: string;
-  // The keyboard-walked row (spec/110). Distinct from `armed`, which means a
+  // The keyboard-walked row (docs/specs/010-palette/palette-top-level-categories.md). Distinct from `armed`, which means a
   // draw gesture is queued: this is only "the arrow keys are pointing here".
   highlighted?: boolean;
   /** Is this tile already a favourite? Absent = no star on this list. */
@@ -75,7 +75,7 @@ function PaletteToolRow({
       // Rows drag onto the canvas exactly like the grid tiles do. They did
       // not, and since the categories moved to rows that was most of the
       // palette: Behaviour, Collaborate, Build, Write, Draw, Data. Sticky
-      // rows (the plain note + the Event Storming notation, spec/139) drag
+      // rows (the plain note + the Event Storming notation, docs/specs/021-event-storming/event-storming.md) drag
       // too, carrying their kind so the drop routes + sizes like a tap.
       draggable={def.action.type === 'shape' || def.action.type === 'sticky'}
       onDragStart={
@@ -226,7 +226,7 @@ export function PaletteToolRows({
   favouriteIds?: ReadonlySet<string>;
   onToggleFavourite?: (id: string) => void;
   // Index of the keyboard-walked row, or -1 / undefined for none. Set by a
-  // search box that owns the arrow keys (spec/110) — the list itself takes no
+  // search box that owns the arrow keys (docs/specs/010-palette/palette-top-level-categories.md) — the list itself takes no
   // focus, so the caller drives it.
   activeIndex?: number;
   // Prefix for the per-row DOM ids the caller points aria-activedescendant at.

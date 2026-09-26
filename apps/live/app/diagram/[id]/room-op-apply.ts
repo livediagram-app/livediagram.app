@@ -13,7 +13,7 @@ import { META_SKIP, mergeRemoteTab, mergeRemoteVote } from './tab-broadcast-ops'
 
 // The document-changing room ops, as a pure function over a tab list.
 //
-// ONE definition, applied twice (spec/152): to the tabs on screen when a
+// ONE definition, applied twice (docs/specs/012-collaboration/collab-race-hardening.md): to the tabs on screen when a
 // peer's op arrives, and to the autosave's baseline (`lastSavedTabsRef`), the
 // record of what peers already have. The baseline used to ignore remote ops,
 // so the next local save diffed against a pre-remote snapshot and re-broadcast
@@ -32,12 +32,12 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp): Tab[] {
       return updateTab(tabs, op.tabId, (tab) => mergeRemoteTab(tab, op.tab));
     }
     case 'el':
-      // ONE element, applied by id (spec/75). An op for a tab we don't have is
+      // ONE element, applied by id (docs/specs/012-collaboration/realtime-conflict-resolution.md). An op for a tab we don't have is
       // dropped: a follow-up `tab` or `diagram-meta` op brings it in whole.
       return updateTab(tabs, op.tabId, (tab) => {
         // An add / update is merged, not swapped in: answers, ideas, ticks and
         // comments reached us as deltas and ours is the merged copy, where the
-        // sender's is a snapshot from their last save (spec/152).
+        // sender's is a snapshot from their last save (docs/specs/012-collaboration/collab-race-hardening.md).
         const elOp =
           op.op.kind === 'update' || op.op.kind === 'add' ? mergeOpOverLocal(tab, op.op) : op.op;
         const elements = applyElementOp(tab.elements, elOp);
@@ -46,16 +46,16 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp): Tab[] {
     case 'el-delta':
       return applyDeltaToTabs(tabs, op.tabId, op.elementId, op.delta);
     case 'vote':
-      // ONE dot, as a delta, so concurrent dots commute (spec/39). Dropped
-      // unless casting is open for the round it was cast in (spec/152).
+      // ONE dot, as a delta, so concurrent dots commute (docs/specs/012-collaboration/session-tools.md). Dropped
+      // unless casting is open for the round it was cast in (docs/specs/012-collaboration/collab-race-hardening.md).
       return updateTab(tabs, op.tabId, (tab) => {
         if (!tab.vote || !voteDeltaApplies(tab.vote, op.round)) return tab;
         const vote = applyVoteDelta(tab.vote, op.elementId, op.voter, op.delta);
         return vote === tab.vote ? tab : { ...tab, vote };
       });
     case 'tab-meta':
-      // Non-element fields (spec/75). `folder` stays owned by diagram-meta
-      // (spec/30); a `vote` in the patch follows the round rule, so an End or
+      // Non-element fields (docs/specs/012-collaboration/realtime-conflict-resolution.md). `folder` stays owned by diagram-meta
+      // (docs/specs/006-diagram/tab-folders.md); a `vote` in the patch follows the round rule, so an End or
       // a Reveal can't erase dots still in flight.
       return updateTab(tabs, op.tabId, (tab) => {
         const { folder: _ignored, ...patch } = op.patch;
@@ -65,7 +65,7 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp): Tab[] {
           if (vote === undefined) delete merged.vote;
           else merged.vote = vote;
         }
-        // Fields the sender removed (spec/152); never one a patch can't touch.
+        // Fields the sender removed (docs/specs/012-collaboration/collab-race-hardening.md); never one a patch can't touch.
         for (const key of Array.isArray(op.clear) ? op.clear : []) {
           if (!META_SKIP.has(key)) delete (merged as Record<string, unknown>)[key];
         }
@@ -92,7 +92,7 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp): Tab[] {
   }
 }
 
-// ONE answer / idea / tick / comment on one element (spec/152), through the
+// ONE answer / idea / tick / comment on one element (docs/specs/012-collaboration/collab-race-hardening.md), through the
 // pure function every peer runs, so concurrent presses on the same card
 // commute. Shared by the receiver above and the sender (useElementDeltas), so
 // the two can't apply a delta differently.

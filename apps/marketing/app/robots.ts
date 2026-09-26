@@ -9,14 +9,14 @@ import { SITE_URL } from '@livediagram/ui';
 export const dynamic = 'force-static';
 
 // Next.js convention: app/robots.ts → /robots.txt at build time.
-// See spec/16-marketing-site.md "SEO and metadata".
+// See docs/specs/019-marketing/marketing-site.md "SEO and metadata".
 //
 // /live/* and /api/* live on the SAME origin as marketing (the
 // router worker stitches all three under one hostname), so a
 // blanket "allow: /" lets crawlers waste budget probing the
 // editor's auth-walled HTML and the API's JSON. Both surfaces
 // also carry their own deterrents (the live app declares
-// noindex/nofollow at the root layout, per spec/07; the API
+// noindex/nofollow at the root layout, per docs/specs/007-editor/live-app.md; the API
 // returns JSON crawlers can't index meaningfully), but a
 // belt-and-braces Disallow stops well-behaved crawlers from
 // even fetching them.
@@ -30,7 +30,7 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: '*',
       allow: '/',
       // The live app serves at clean routes now (no `/live` prefix —
-      // spec/08), so each live route segment is Disallowed by name to
+      // docs/specs/016-platform/router-app.md), so each live route segment is Disallowed by name to
       // keep the editor + auth surfaces out of crawlers' budget. NOT a
       // bare '/' — that would block the marketing site itself.
       disallow: [

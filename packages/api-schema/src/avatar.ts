@@ -1,4 +1,4 @@
-// The Avatar-mode costume vocabulary (spec/101): the four choices the Avatar
+// The Avatar-mode costume vocabulary (docs/specs/008-canvas/avatar-mode.md): the four choices the Avatar
 // Panel offers, as closed sets of preset tokens.
 //
 // It lives in the wire package rather than the editor because both ends need

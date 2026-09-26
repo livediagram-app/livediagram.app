@@ -10,10 +10,10 @@ import { clientIp } from '../client-ip';
 import { resolveAiProvider } from '../ai-provider';
 import type { RouteContext } from './context';
 
-// May this caller use the model at all? (spec/25.)
+// May this caller use the model at all? (docs/specs/007-editor/ai-assistance.md.)
 //
 // Lifted out of `handleAi` verbatim when a SECOND model route arrived (the
-// event-storming photo reader, spec/139 Phase 8). One answer to "who may spend
+// event-storming photo reader, docs/specs/021-event-storming/event-storming.md Phase 8). One answer to "who may spend
 // the operator's model budget", not two that drift — and the order matters as
 // much as the checks: the origin allow-list runs BEFORE auth so a third-party
 // site cannot even probe the endpoint for state, and the rate limiter runs
@@ -28,7 +28,7 @@ export async function aiGate(ctx: RouteContext): Promise<Response | null> {
   // deployment does not do AI.
   if (!resolveAiProvider(env)) return json({ error: 'ai_not_configured' }, { status: 503 });
 
-  // Origin allow-list (spec/25). Optional: unset accepts any Origin, matching
+  // Origin allow-list (docs/specs/007-editor/ai-assistance.md). Optional: unset accepts any Origin, matching
   // the historical OSS self-host story. When set, the request's Origin must
   // match one of the comma-separated entries exactly — case-sensitive against
   // the raw header, because every modern browser sends a canonical lower-case
@@ -43,7 +43,7 @@ export async function aiGate(ctx: RouteContext): Promise<Response | null> {
     }
   }
 
-  // Clerk-only gate (spec/25). When AI_REQUIRE_CLERK="true", reject the legacy
+  // Clerk-only gate (docs/specs/007-editor/ai-assistance.md). When AI_REQUIRE_CLERK="true", reject the legacy
   // X-Owner-Id guest path so an attacker can't mint fresh per-request UUIDs to
   // drain the operator's model budget. Opt-in, so an OSS self-host that runs no
   // Clerk at all keeps the feature usable.

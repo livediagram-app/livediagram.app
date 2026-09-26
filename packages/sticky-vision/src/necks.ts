@@ -1,7 +1,7 @@
 import { erodePaperMask } from './components';
 import type { Box, PaperMask } from './boxes';
 
-// Taking a blob apart at its NECKS (spec/139 Phase 9).
+// Taking a blob apart at its NECKS (docs/specs/021-event-storming/event-storming.md Phase 9).
 //
 // Notes of one colour stuck in a grid with other colours between them — a
 // column of actors beside a column of hotspots, a checkerboard — touch only

@@ -1,4 +1,4 @@
-// The Q&A board's small parts (spec/151): its glyphs, the author chip, the
+// The Q&A board's small parts (docs/specs/012-collaboration/qa-board.md): its glyphs, the author chip, the
 // vote pill and the relative-time label. Shared by the spotlight, the queue
 // rows and the Discussed drawer so the three read as one object.
 
@@ -24,8 +24,8 @@ export const QA_ACCENT_INK = 'var(--qa-accent-ink)';
 
 // Every control on the board stops the pointer at itself: a press on a vote
 // must not also select the board, which would put your name on it through the
-// spec/07 selection ring at the moment you vote (the Idea box's reasoning,
-// spec/125) and take the lock away from whoever is holding it.
+// docs/specs/007-editor/live-app.md selection ring at the moment you vote (the Idea box's reasoning,
+// docs/specs/012-collaboration/idea-box.md) and take the lock away from whoever is holding it.
 export const stopPointer = { onPointerDown: (e: React.PointerEvent) => e.stopPropagation() };
 
 type Glyph = { size?: number };

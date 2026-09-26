@@ -14,7 +14,7 @@ import {
   isoShapeSilhouette,
 } from '@/lib/isometric';
 
-// Isometric extrusion (spec/45). For each boxed element this renders a column
+// Isometric extrusion (docs/specs/008-canvas/isometric-view.md). For each boxed element this renders a column
 // of translateZ-offset copies of the element's rectangle, descending from
 // just under the element to the floor, so it reads as a raised 3-D block.
 //
@@ -23,7 +23,7 @@ import {
 // translateZ stack only becomes visible depth once that ancestor tilts the
 // z-axis into screen space. It paints BEHIND the real element layer, which
 // caps each column at z=0. Arrows and freehand strokes have no box, so they
-// get no column and stay on the base plane (spec/45).
+// get no column and stay on the base plane (docs/specs/008-canvas/isometric-view.md).
 const DEPTH_LAYERS = isoDepthLayers();
 
 // The colour the extruded wall paints in: the element's own accent (its
@@ -40,7 +40,7 @@ function wallColor(el: BoxedElement, surface: CanvasSurface): string {
 
 export function IsometricDepthLayer({ elements }: { elements: Element[] }) {
   // The walls take the element's own colours, and those fall back to the
-  // canvas's ink when the element carries none (spec/07).
+  // canvas's ink when the element carries none (docs/specs/007-editor/live-app.md).
   const surface = useCanvasSurface();
   return (
     <div

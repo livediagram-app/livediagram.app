@@ -11,7 +11,7 @@ import { buildTemplate, buildTemplatedTab } from './template-builders';
 import { isTechIconId } from './tech-icons';
 
 // `buildTemplate` is the dispatch that turns a TemplateKind into the
-// starting elements when the user picks a template (spec/09's
+// starting elements when the user picks a template (docs/specs/008-canvas/canvas-and-palette.md's
 // picker). Each builder is documented as "pure: takes a centre
 // (cx, cy) and returns a fresh array of Element". A regression in
 // any one builder where elements hardcode (0, 0) instead of using
@@ -139,7 +139,7 @@ describe('buildTemplate translation invariance', () => {
   const DX = 137;
   const DY = -421;
 
-  // 'blank' is intentionally empty (no seeded element, spec/14), so it has no
+  // 'blank' is intentionally empty (no seeded element, docs/specs/007-editor/new-diagram-route.md), so it has no
   // coordinates to shift — excluded from this invariance check (it stays in
   // ALL_KINDS above for the exhaustiveness assertion).
   it.each(ALL_KINDS.filter((k) => k !== 'blank'))(
@@ -170,7 +170,7 @@ describe('buildTemplate translation invariance', () => {
           // by exactly (cx, cy) bit-for-bit". Five-decimal precision
           // is well below sub-pixel and well above floating drift.
           expect(cb[j]!.x - ca[j]!.x).toBeCloseTo(DX, 5);
-          // The event-storming row lands on a lane (spec/139 Phase 6), so it
+          // The event-storming row lands on a lane (docs/specs/021-event-storming/event-storming.md Phase 6), so it
           // moves on y by whole lane pitches rather than by exactly DY.
           if (kind !== 'event-storming') expect(cb[j]!.y - ca[j]!.y).toBeCloseTo(DY, 5);
         }
@@ -255,7 +255,7 @@ describe('gantt milestone bars survive theming', () => {
 });
 
 describe('system architecture uses full-colour technology icons', () => {
-  // The infrastructure nodes are Technology icon tiles (spec/41): a
+  // The infrastructure nodes are Technology icon tiles (docs/specs/010-palette/technology-icons.md): a
   // shape==='icon' element whose iconId resolves in the tech-icon
   // registry renders as a branded colour tile rather than a stroke-tinted
   // glyph. A regression that reverted the nodes to plain boxes / line
@@ -276,7 +276,7 @@ describe('system architecture uses full-colour technology icons', () => {
 });
 
 describe('board templates seed per-range rich text', () => {
-  // The label is the plain-text mirror of its runs (spec/09); every
+  // The label is the plain-text mirror of its runs (docs/specs/008-canvas/canvas-and-palette.md); every
   // richText-carrying element must keep `label === runsPlainText(richText)`
   // or legacy readers (search / export / auto-rename) drift from what
   // renders. Asserted across every board element that opts into runs.

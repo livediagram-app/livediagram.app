@@ -11,7 +11,7 @@ import type { SettingsRowSpec } from './settings-catalogue';
 // It takes `options` / `value` / `onChange` directly rather than a
 // preferences-backed row spec, because the two callers disagree about where
 // the value LIVES: the minimap's size is a UserPreference, the appearance
-// theme is device-local (spec/07). Asking for a read/write pair here would
+// theme is device-local (docs/specs/007-editor/live-app.md). Asking for a read/write pair here would
 // force the appearance caller to invent one it never uses.
 //
 // Radios rather than buttons, so a screen reader gets "2 of 3" and the arrow

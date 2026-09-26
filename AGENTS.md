@@ -6,41 +6,179 @@ Monorepo for the livediagram product. Multiple apps share code through internal 
 
 - `git fetch` latest from origin
 
+## Organisation process
+
+This section describes the process of organising and layering empirical information.
+It guides the engineering efforts by having agents specify with sufficient detail.
+The goal is for agents to become increasingly self-sufficient when working on systems they already know.
+
+This is achieved by iteratively capturing contextual information about the domain and documenting intentions from humans.
+
+This section is exclusively human-hand-written; agents MUST NOT edit this section directly.
+
+### Structure
+
+Use the following structure and rationale.
+
+- `AGENTS.md` instructs us about **how we work**.
+- `plans/` contains plans; **exhaustive list of checkboxed steps**.
+- `docs/` holds all **documentation** files.
+- `docs/README.md` is the entry point.
+
+Within `docs/` are the following special categories:
+
+- `specs/` contains **specifications**: _what a thing IS_.
+- `specs/[...]/blueprints/` contains **blueprints**: _exhaustively documented implementation details_.
+- `instructions/` contains **instruction sets**: _empirically built repeatable processes_.
+
+**Indexes** are held inside `README.md` files. Entries look like: `- ./<file>.md - when <trigger>`.
+`README.md` files open with `Follow the references below only as needed; never upfront.`
+
+Further details below.
+
+### Docs
+
+- Docs are structured as `docs/<category>/<topic>.md`
+- They are indexed under `docs/README.md`.
+- The docs index includes entry points to `specs` and `instructions`.
+- Docs convey information in scope of the project.
+- All docs SHOULD be treated as persistent documents that can be iterated on.
+- Stay cognizant of the deltas of each change.
+- Reuse documents where it makes sense.
+- Folders of substance SHOULD hold a `README.md` with an index.
+- Docs, indexes and references **MUST be continuously kept-up-to-date** throughout all work.
+
+### Plans
+
+- Plans live as a single Markdown file in the project's `plans/` folder, numbered `0001-<topic>.md`.
+- They live inside the `plans/` folder, which MAY be **gitignored** (recommended).
+- Plans describe **work**, split into sequenced **phases** of checkboxed **steps**:.
+  - **work** includes research, specification, building, testing, verification, definition of done, and anything else that's needed.
+  - **phases** are logical increments, warranting a commit each.
+  - **steps** MUST be performed with full focus, and in the highest qualitative and idiomatic way.
+  - **checkboxes** MUST be checked off immediately upon completion of any step, and before starting the next step.
+- A plan MAY link to blueprints and specs (encouraged), but SHALL NOT restate them.
+- The last step of every plan MUST be **fold-back**; to let the documentation reflect reality, and to verify all symbols/files/references.
+- Fold-back reconciles the spec to what actually shipped, then re-derives the blueprint from it.
+- Plans SHALL NOT be renumbered.
+
+**When to use plans?**
+
+- Default to no plan. Just do the work for tasks that fit in a single sitting.
+- Create a plan when asked or when work is likely to exceed one or two days.
+- Surface ambiguities and gaps before implementing, and keep refining the plan as new information arrives.
+
+**Work plans one task at a time**
+
+1. Read the step,
+2. Do it the best, highest qualitative and idiomatic way possible
+3. Upon completion immediately tick the checkbox; never batch ticks at the end.
+4. Then move to the next step.
+
+_Note:_ There is no need to stop in between phases; just keep going.
+
+### Specs
+
+- Specs live inside numbered **category folders** `docs/specs/NNN-<category>/`.
+- They are indexed under `docs/specs/README.md`.
+- Specs are where design decisions are made and recorded.
+- Specs describe **what a thing IS** within the domain; the definitions and specifications of **systems** or **domain concepts**.
+- Specs are written in the present tense.
+- Specs themselves are unnumbered.
+- Specs are never task lists and carry no checkboxes.
+- Spec files SHOULD be unnumbered and named by subject; a category MAY hold several related specs.
+- Write the spec BEFORE implementing anything non-trivial, and keep it true afterwards.
+- Iterate the existing spec rather than adding a new one on the same subject; stay cognizant of the delta each change makes.
+
+**Category folders**
+
+- The first five categories are reserved:
+  - `001-project-vision` - the "why": problem, target audience, value proposition.
+  - `002-project-scope` - the "what" and "what-not": features, high-level outline, technical constraints, non-goals.
+  - `003-system-architecture` - the "how" under the hood: data flow, infrastructure, state management, and the language and runtime boundaries.
+  - `004-interface-design` - the "how" at the surface: UX/UI, wireframes, user journeys, visual language.
+  - `005-project-roadmap` - the "when": milestones as outcomes, phases, launch strategy.
+- Further category folders MUST BE named after a **system** or, preferably, a **domain concept**.
+- Renumbering is discouraged, but allowed when every reference to it is updated in the same change.
+
+### Blueprints
+
+- Blueprints live in a `blueprints/` folder inside their spec's category folder `docs/specs/NNN-<category>/blueprints/`,
+- They are indexed under `docs/specs/NNN-<category>/blueprints/README.md`.
+- Blueprints are the meticulously detailed natural language source holding all implementation details, written before the code exists.
+- Derive the blueprint mechanically from the spec before building; it adds engineering precision, not new design.
+- Derivation is one-directional and deterministic: the spec is the input, the blueprint the output.
+- Change flows in one-direction and is deterministic: a spec change updates the blueprint and then the code.
+- Any changes outside that are folded back into the spec and blueprint.
+- Blueprints do not invent design; if the spec is ambiguous, fix the spec first rather than guess.
+- Iterate the existing blueprints rather than rewriting them: change only what the spec changed, and stay cognizant of the delta.
+- Blueprints SHOULD apply documented defaults, recorded as one row per default in the category's `blueprints/DEFAULTS.md`.
+- A blueprint is complete only when every applicable **completeness category** is covered and checked off in `blueprints/COMPLETENESS.md`
+
+**Completeness categories**
+
+- **Domain and naming** - every domain term maps to one canonical identifier; synonyms are banned.
+- **Behaviour and state** - every state, transition, guard, and invariant is named and reachable.
+- **Interfaces and contracts** - every input and output is typed and validated, with a named rejection per failure.
+- **Data and persistence** - every field is classified; snapshot, restore, and migration are defined.
+- **Errors and edge cases** - every failure mode and boundary case is named with its handling; no silent path.
+- **Security and trust** - trust boundaries, abuse cases, guards, rate limits etc. are stated.
+- **Performance and limits** - worst-case sizes and hot-path budgets are computed against the platform limits.
+- **Presentation and UX** (UI only) - layout, empty, loading, and error states, and final copy are defined.
+- **Accessibility** (UI only) - contrast, ARIA, keyboard, and reduced motion meet WCAG 2.2 AA.
+- **Web Experience** (Web only) - Core Web Vitals, including LCP, INP and CLS are explicitly addressed.
+- **Observability** - every decision point and failure emits a log with a recognisable fingerprint.
+- **Testing** - every spec rule maps to a deterministic test, traceably.
+- **Constants and configuration** - every magic number is a named constant with provenance and a safe range.
+- **Assets and external resources** - every asset has a source, a licence, a path, and reproducible generation.
+- **Defaults ledger** - every default applied for a silent or qualitative spec has a ledger row.
+
+For each blueprint, record the applicable categories in the topic's committed `blueprints/COMPLETENESS.md`, a simple list, one line each:
+
+- [x] Domain and naming
+- [x] Behaviour and state
+- [x] Testing
+- [x] Defaults
+
+Leave out any category that does not apply; unchecked means applicable but not covered.
+
+### Instruction sets
+
+- Instruction sets live in `docs/instructions/<process>.md`, unnumbered and named after the process they encode.
+- They are indexed under `docs/instructions/README.md`.
+- Instruction sets are **reusable process memory**: _how a process is done_, not scoped to one piece of work like a plan.
+- Instruction sets carry no checkboxes; a plan MAY link to one, and progress is ticked in the plan.
+- Steps are **chronological**; ordered the way the work is actually done, not grouped by theme.
+- Steps are **granular**; each is small enough that "did it happen?" has a yes or no answer.
+- Steps are **opinionated**; taste, preferences and domain specifics are woven in, not left to model defaults.
+- Only **genuine forks** (taste, preference, business knowledge) are surfaced; every other decision is written down once.
+- Instruction sets grow **empirically**; gotchas, hard gained knowledge, user input or missed steps are folded back in.
+
 ## Specs are the source of truth
 
-Before building or proposing anything, **check `specs/`**. Every product decision, feature, constraint, and rule lives there. The index is at [`specs/README.md`](specs/README.md).
+Before building or proposing anything, **check `docs/specs/`**. Every product decision, feature, constraint, and rule lives there. The index is at [`docs/specs/README.md`](docs/specs/README.md).
 
 Workflow:
 
 - New feature, scope change, or rule → write or update a spec **first**, code second.
-- When a user request lands, capture it in a spec before writing code, and keep specs organised under their numbered prefixes.
+- When a user request lands, capture it in a spec before writing code, and keep specs organised in their category folders (see Organisation process above).
 - Reference specs by filename in PRs and discussions.
 - If specs and code disagree, that's a bug — usually the spec is right; if not, fix the spec first.
 
 ## Keep docs and the README current
 
-The root [`README.md`](README.md) and the [`docs/`](docs/) folder (`architecture.md`, `contributing.md`, `local-development.md`, `self-hosting.md`, `what-is-livediagram.md`) are developer- and user-facing documentation, distinct from the product specs in `specs/`.
+The root [`README.md`](README.md) and the [`docs/`](docs/) folder (indexed in [`docs/README.md`](docs/README.md)) are developer- and user-facing documentation, distinct from the product specs in `docs/specs/`.
 
 Treat them as part of the change, not an afterthought:
 
 - After any change, check whether it makes the README or a `docs/` file **incorrect** (commands, ports, file paths, env vars, app/package names, architecture, deploy steps) or **lacking key information** (a new app, package, env var, command, route, or workflow that a reader would now expect to find). If so, update the affected doc in the **same change** as the code.
-- Adding or removing an app, package, env var, command, route, or build/deploy step is a strong signal that `README.md`, `docs/architecture.md`, `docs/local-development.md`, and `docs/self-hosting.md` may need a matching edit.
+- Adding or removing an app, package, env var, command, route, or build/deploy step is a strong signal that `README.md`, `docs/development/architecture.md`, `docs/development/local-development.md`, and `docs/operations/self-hosting.md` may need a matching edit.
 - Don't let docs drift: an out-of-date doc is worse than a missing one. If you can't fully update it now, note the gap explicitly rather than leaving a confidently wrong instruction.
-- Specs (`specs/`) remain the source of truth for product decisions; `docs/` explains how to understand, run, and contribute to the code. Keep both honest.
+- Specs (`docs/specs/`) remain the source of truth for product decisions; `docs/` explains how to understand, run, and contribute to the code. Keep both honest.
 
 ## Help centre articles must stay registered
 
-The help centre (`apps/help`, spec/55) has a hand-curated registry in the [`@livediagram/help-registry`](packages/help-registry/src/index.ts) package (re-exported by `apps/help/lib/articles.ts` so the help app keeps its `@/lib/articles` import path). It is the **single source for the help search** (`SearchInput` → `searchArticles`), **the category/browse listings**, **and the live editor's search-panel Help group** (`apps/live/lib/help-search.ts` derives its catalogue from it). The article's MDX page renders from the filesystem, but it is **invisible to search and browse unless it's in that registry** — there is no filesystem auto-discovery.
-
-So, whenever you add (or remove/rename) a help article:
-
-- Add (or update) its entry in the `articles` array in `packages/help-registry/src/index.ts` — `slug`, `title`, `description`, `keywords`, `category`, `categorySlug` (the full nested path, e.g. `canvas/the-canvas`), and `parentSlug` for a sub-article — **in the same change** as the new `apps/help/app/.../page.mdx`.
-- Bump the matching `categories[].articleCount` (and add a `categories` entry if it's a brand-new top-level category).
-- The registry `description` is the **short search-card summary** and is intentionally separate from the MDX `helpMetadata` description (the longer SEO/OG meta) — write a concise one, don't just copy the meta.
-- `keywords` is **required**: space-separated, lowercase search synonyms — the words a user would type when they don't know the title ("transparency" for opacity, "hotkey" for keyboard shortcuts), plus adjacent spellings ("color" beside "colour"). Both the help search and the editor's search panel match on them; a test fails if they're missing.
-- **Draw the card.** For an article in one of the ten **feature** categories, add an entry to BOTH `FEATURE_ICONS` (`apps/help/lib/featureIcons.tsx`) and `FEATURE_ENTITY_HEX` (`apps/help/lib/featureColours.ts`); for a **support** category, add one to `SUPPORT_ARTICLE_ICONS` (`apps/help/lib/articleIcons.tsx`), which needs no hue. Every card in both halves has its own glyph, and `feature-icons.test.ts` / `article-icons.test.ts` keep it that way — a card with no entry silently falls back to a shared glyph and looks like every other undrawn card, which nothing at runtime can notice. (Getting Started is the exception: its cards lead with a numbered step badge instead of an icon, and the test reads that off the page rather than assuming it.) [spec/55](specs/55-help-app.md) has the house style and the one rule that matters: draw what the card is _about_, and check the result doesn't land on a glyph either set already uses.
-
-Treat this exactly like the specs / docs rules above: a new article that isn't registered is a bug, the same way an out-of-date spec is. (`categorySlug`/`slug` in the registry must match the `page.mdx` path, so the search result link resolves.)
+Whenever you add, remove or rename a help article, follow [`docs/instructions/register-a-help-article.md`](docs/instructions/register-a-help-article.md) in the same change; an unregistered article is a bug.
 
 ## Repo layout
 
@@ -67,23 +205,25 @@ packages/
   prettier-config/# shared Prettier config
   tailwind-config/# shared Tailwind theme (brand palette)
   vitest-config/  # shared Vitest defaults (extended per workspace)
-specs/          # product specs — read these first
+docs/           # developer docs, indexed in docs/README.md
+  specs/        # product specs — read these first
+  instructions/ # repeatable processes (e.g. registering a help article)
 ```
 
 Workspaces are managed with **pnpm** (`pnpm-workspace.yaml`). Tasks are orchestrated with **Turborepo** (`turbo.json`). Node `>=22` (wrangler 4 requirement), pnpm `>=9`.
 
 ## What's built, what's still ahead
 
-The frontend-only prototype phase ended when the API app landed (see [spec/02](specs/02-prototype-scope.md) and [spec/11](specs/11-api.md)). Today the editor talks to a Cloudflare Worker API backed by D1 (durable diagram storage) + Durable Objects (per-diagram realtime room). A diagram can also live **only in the browser**, in IndexedDB, if the author picks Offline Mode ([spec/76](specs/76-offline-mode.md)) — so there are two stores, not one.
+The frontend-only prototype phase ended when the API app landed (see [Build phase](docs/specs/005-project-roadmap/prototype-scope.md) and [API app](docs/specs/015-api/api.md)). Today the editor talks to a Cloudflare Worker API backed by D1 (durable diagram storage) + Durable Objects (per-diagram realtime room). A diagram can also live **only in the browser**, in IndexedDB, if the author picks Offline Mode ([Offline Mode](docs/specs/006-diagram/offline-mode.md)) — so there are two stores, not one.
 
 `apps/live/lib/api-client.ts` is the single persistence boundary over both: `lib/api/*` sends each load / save / delete to the api or to `lib/offline/offline-store.ts` on `isOfflineId(id)`, so the rest of the editor takes the same code path either way. Listing is the exception that isn't a dispatch — the Explorer shows both sets, so it MERGES them, and still returns the offline ones when the cloud fetch fails. The one caller-decided branch is **create**, which has no registered id to dispatch on yet: the New Diagram wizard calls `offlineCreateDiagram` directly when the author chose offline, and that call is what registers the id every later operation routes on. The editor never reads or writes `localStorage` for diagrams — that is IndexedDB's job, and `localStorage` holds only the participant id and device-local preferences.
 
-- **Built:** the canvas editor (shapes including code blocks + checklists, arrows of every style with draggable curve / elbow handles, freehand sketches via the Freehand + Shape Pen tools (the Shape Pen recognises a rough shape on release; see [spec/115](specs/115-two-pens.md)) plus the Highlighter, which is a held canvas mode rather than a palette tile (see [spec/81](specs/81-highlighter.md)), a multi-point polygon / polyline tool, marquee + multi-select, format painter, web components that lay themselves out (banner / callout / stat row / process / header / hero, see [spec/147](specs/147-web-components-and-no-groups.md), which also removed groups), element drop shadows (see [spec/86](specs/86-element-shadows.md)), comments, assigned actions (assign element-level work to a teammate, with an Actions panel + optional email; see [spec/68](specs/68-assigned-actions.md)), links, themed templates, folders, tabs groupable into one-level collapsible folders, per-tab Photoshop-style layers with a dockable Layers panel (see [spec/74](specs/74-layers.md)), presentation mode: full-screen slide decks built from element sets that can span tabs, run from a Slide Deck panel (see [spec/31](specs/31-presentation-mode.md)), and per-tab import/export covering JSON, Mermaid, Markdown, and Excalidraw (see [spec/73](specs/73-mermaid.md), [spec/87](specs/87-excalidraw-import-export.md))), the api worker (REST + share links + change log + Durable Object realtime room with cursor/select/log ops), per-tab storage, Offline Mode (a diagram kept only in this browser's IndexedDB, convertible both ways with Sync Diagram / Take Offline; see [spec/76](specs/76-offline-mode.md)), anonymous first-party telemetry + the public `/telemetry` dashboard (see [spec/22](specs/22-telemetry.md)), teams with Admin/Member roles + email invites in the Explorer (see [spec/32](specs/32-teams.md)) plus a per-team shared library of diagrams + folders any member can manage (see [spec/35](specs/35-team-shared-diagrams.md)), signed-in-only API tokens for external / programmatic callers (see [spec/61](specs/61-public-api-and-tokens.md)), an MCP server (`apps/mcp`) that connects the editor to AI tools over OAuth (see [spec/62](specs/62-mcp-server.md)), and optional transactional + lifecycle email via Resend (welcome / week-1 / week-2 onboarding series + team-invite + account-deleted, gated on `RESEND_API_KEY`; see [spec/64](specs/64-transactional-email.md)).
-- **Still ahead:** finer-grained team permissions (today every member can edit every team diagram). Realtime conflict resolution shipped (granular element-op merge so concurrent edits to different elements don't clobber + an ordered room with reconnect catch-up; see [spec/75](specs/75-realtime-conflict-resolution.md)). A full field-level CRDT for same-element concurrent editing was scoped and deliberately dropped: the selection lock (spec/07) already prevents two people editing the same element, so it wasn't worth the dependency + second sync path.
+- **Built:** the canvas editor (shapes including code blocks + checklists, arrows of every style with draggable curve / elbow handles, freehand sketches via the Freehand + Shape Pen tools (the Shape Pen recognises a rough shape on release; see [Two pens instead of a pen and a mode](docs/specs/008-canvas/two-pens.md)) plus the Highlighter, which is a held canvas mode rather than a palette tile (see [Highlighter](docs/specs/008-canvas/highlighter.md)), a multi-point polygon / polyline tool, marquee + multi-select, format painter, web components that lay themselves out (banner / callout / stat row / process / header / hero, see [Web components are elements; groups are gone](docs/specs/009-elements/web-components-and-no-groups.md), which also removed groups), element drop shadows (see [Element shadows](docs/specs/008-canvas/element-shadows.md)), comments, assigned actions (assign element-level work to a teammate, with an Actions panel + optional email; see [Assigned actions](docs/specs/012-collaboration/assigned-actions.md)), links, themed templates, folders, tabs groupable into one-level collapsible folders, per-tab Photoshop-style layers with a dockable Layers panel (see [Layers](docs/specs/006-diagram/layers.md)), presentation mode: full-screen slide decks built from element sets that can span tabs, run from a Slide Deck panel (see [Presentation mode](docs/specs/012-collaboration/presentation-mode.md)), and per-tab import/export covering JSON, Mermaid, Markdown, and Excalidraw (see [Mermaid import & export](docs/specs/020-import-export/mermaid.md), [Excalidraw import & export](docs/specs/020-import-export/excalidraw-import-export.md))), the api worker (REST + share links + change log + Durable Object realtime room with cursor/select/log ops), per-tab storage, Offline Mode (a diagram kept only in this browser's IndexedDB, convertible both ways with Sync Diagram / Take Offline; see [Offline Mode](docs/specs/006-diagram/offline-mode.md)), anonymous first-party telemetry + the public `/telemetry` dashboard (see [Telemetry + public transparency dashboard](docs/specs/017-telemetry/telemetry.md)), teams with Admin/Member roles + email invites in the Explorer (see [Teams](docs/specs/013-workspace/teams.md)) plus a per-team shared library of diagrams + folders any member can manage (see [Team shared diagrams](docs/specs/013-workspace/team-shared-diagrams.md)), signed-in-only API tokens for external / programmatic callers (see [Public API and API tokens](docs/specs/015-api/public-api-and-tokens.md)), an MCP server (`apps/mcp`) that connects the editor to AI tools over OAuth (see [MCP server](docs/specs/015-api/mcp-server.md)), and optional transactional + lifecycle email via Resend (welcome / week-1 / week-2 onboarding series + team-invite + account-deleted, gated on `RESEND_API_KEY`; see [Transactional & lifecycle email (Resend)](docs/specs/014-identity/transactional-email.md)).
+- **Still ahead:** finer-grained team permissions (today every member can edit every team diagram). Realtime conflict resolution shipped (granular element-op merge so concurrent edits to different elements don't clobber + an ordered room with reconnect catch-up; see [Realtime conflict resolution](docs/specs/012-collaboration/realtime-conflict-resolution.md)). A full field-level CRDT for same-element concurrent editing was scoped and deliberately dropped: the selection lock ([Live app](docs/specs/007-editor/live-app.md)) already prevents two people editing the same element, so it wasn't worth the dependency + second sync path.
 
 ## Open source
 
-See [specs/03-open-source-and-business-model.md](specs/03-open-source-and-business-model.md).
+See [Open source + distribution](docs/specs/002-project-scope/open-source-and-business-model.md).
 
 - The codebase is **MIT-licensed** and **publicly viewable**. Anyone can self-host.
 - A free hosted version runs alongside at livediagram.app. **No paid tier and no plan to introduce one.**
@@ -92,7 +232,7 @@ See [specs/03-open-source-and-business-model.md](specs/03-open-source-and-busine
 
 ## Secrets policy
 
-See [specs/06-secrets-policy.md](specs/06-secrets-policy.md). **Repo is public — no secrets in source. Ever.**
+See [Secrets policy](docs/specs/002-project-scope/secrets-policy.md). **Repo is public — no secrets in source. Ever.**
 
 - All secrets via env vars: `.env.local` (gitignored) for dev, `wrangler secret put` for Workers, dashboard env vars for Pages.
 - Client bundles only carry values explicitly prefixed `NEXT_PUBLIC_*` and only when documented as publishable (e.g. Clerk publishable key).
@@ -101,7 +241,7 @@ See [specs/06-secrets-policy.md](specs/06-secrets-policy.md). **Repo is public �
 
 ## Auth model
 
-See [specs/04-auth-and-guest-access.md](specs/04-auth-and-guest-access.md).
+See [Auth + guest access](docs/specs/014-identity/auth-and-guest-access.md).
 
 - **The canvas always works without signing in.** Friction-free engagement is the acquisition strategy. Never put a sign-in wall in front of the editor.
 - **Hybrid identity** — the api accepts two equivalent ways of identifying the owner of a request:
@@ -148,7 +288,7 @@ What the product runs on. Items marked ✗ haven't shipped yet — see "What's b
 - **Database:** Cloudflare D1 (via the api worker only) — ✓
 - **Realtime:** Cloudflare Durable Objects (per-diagram room) — ✓
 - **Auth:** Clerk (optional), ✓ (frontend ClerkProvider; api worker JWT verification + hybrid `X-Owner-Id` fallback)
-- **Email:** Resend (optional) — ✓ (transactional + lifecycle email via the api worker; off without `RESEND_API_KEY`, see [spec/64](specs/64-transactional-email.md))
+- **Email:** Resend (optional) — ✓ (transactional + lifecycle email via the api worker; off without `RESEND_API_KEY`, see [Transactional & lifecycle email (Resend)](docs/specs/014-identity/transactional-email.md))
 
 ## Naming conventions
 
@@ -158,7 +298,7 @@ What the product runs on. Items marked ✗ haven't shipped yet — see "What's b
 
 ## Shared config
 
-- **TypeScript:** every workspace's `tsconfig.json` extends `../../tsconfig.base.json`. Two TypeScripts are installed on purpose: `@typescript/native` (an alias for `typescript@7`, the Go compiler) provides the `tsc` that `pnpm typecheck` runs, while `typescript` aliases `@typescript/typescript6` because 7.0 ships no compiler API and typescript-eslint / Next.js / Prettier import one. See [`docs/contributing.md`](docs/contributing.md#two-typescripts).
+- **TypeScript:** every workspace's `tsconfig.json` extends `../../tsconfig.base.json`. Two TypeScripts are installed on purpose: `@typescript/native` (an alias for `typescript@7`, the Go compiler) provides the `tsc` that `pnpm typecheck` runs, while `typescript` aliases `@typescript/typescript6` because 7.0 ships no compiler API and typescript-eslint / Next.js / Prettier import one. See [`docs/development/contributing.md`](docs/development/contributing.md#two-typescripts).
 - **ESLint:** flat config. Each workspace has `eslint.config.js`:
   ```js
   import config from '@livediagram/eslint-config';
@@ -173,13 +313,13 @@ What the product runs on. Items marked ✗ haven't shipped yet — see "What's b
 
 ## Deployment
 
-See [specs/10-deployment.md](specs/10-deployment.md).
+See [Deployment](docs/specs/016-platform/deployment.md).
 
 All deploys happen via **GitHub Actions** to **Cloudflare Workers** (with Static Assets for `marketing`, `live`, `telemetry`, and `help`). CI runs lint / format / typecheck / test / build / `staging:check` on every PR and push.
 
 Either environment builds once, then deploys `marketing` + `live` + `telemetry` + `help` + `api` in parallel, `mcp` once `api` is up, then `router` last (its service bindings depend on the five path-routed workers existing; mcp is its own host).
 
-**Two environments** ([spec/140](specs/140-staging-environment.md)), both running those same jobs out of the reusable `deploy-reusable.yml` so they can't drift:
+**Two environments** ([Staging environment](docs/specs/016-platform/staging-environment.md)), both running those same jobs out of the reusable `deploy-reusable.yml` so they can't drift:
 
 - **Production** (`livediagram.app`) — `deploy.yml`, **manual-only** (`workflow_dispatch`, intentionally not chained to CI): trigger it from the Actions tab (it appears as **Deploy Production**) or `gh workflow run deploy.yml --ref main` once CI on `main` is green and you've decided to ship.
 - **Staging** (`staging.livediagram.app`) — `deploy-staging.yml`, **automatic** on every green CI run on `main`. Wrangler `[env.staging]` blocks give it `-staging` worker names and its own D1 / R2 / KV, so a migration runs against a real remote database one deploy before it reaches the one holding real diagrams. Public but `noindex`, stamped by the router.
@@ -190,7 +330,7 @@ Worker names: `livediagram-marketing`, `livediagram-live`, `livediagram-telemetr
 
 Production is live at **https://livediagram.app** (`/` → marketing; `/diagram`, `/explorer`, `/new`, `/join`, ... → editor at clean routes, with only its `_next` assets under `/live`; `/telemetry` → telemetry dashboard; `/help` → help centre; `/api/*` → api).
 
-Secrets needed in the GitHub repo: `CF_API_TOKEN`, `CF_ACCOUNT_ID`. See [secrets policy](specs/06-secrets-policy.md).
+Secrets needed in the GitHub repo: `CF_API_TOKEN`, `CF_ACCOUNT_ID`. See [secrets policy](docs/specs/002-project-scope/secrets-policy.md).
 
 ## Common commands
 
@@ -217,4 +357,4 @@ Run a script in a single workspace: `pnpm --filter @livediagram/<name> <script>`
 - Worker apps target the Cloudflare Workers runtime — prefer Web APIs (`fetch`, `Request`, `Response`, `crypto.subtle`) over Node-only APIs.
 - D1 schemas and migrations (when they arrive) live with the Worker that owns the binding.
 - The router worker (`apps/router`) holds **no business logic** — only routing. If you're tempted to add logic to it, that logic belongs in the service it forwards to.
-- **Track key new functionality** via the anonymous-events schema (see [`specs/22-telemetry.md`](specs/22-telemetry.md)): when you ship a feature that meaningfully changes user behaviour (a new element kind, a new dialog, a new mode, a new shortcut surface, a new setting toggle), add a one-liner `track(category, action, type)` at the interaction's handler. Reuse the closed `TELEMETRY_CATEGORIES` / `TELEMETRY_ACTIONS` enums in `@livediagram/api-schema`, extending them only when no existing pair fits. The `type` is a preset enum value (e.g., `Square`, `DrawToAddOn`), never user content. The editor (`apps/live`) and the help centre (`apps/help`) emit, both through the shared `@livediagram/telemetry-client` engine with app-owned enable/opt-out policy; settings flips fire BEFORE the change is persisted so an opt-out event still reaches the wire.
+- **Track key new functionality** via the anonymous-events schema (see [`docs/specs/017-telemetry/telemetry.md`](docs/specs/017-telemetry/telemetry.md)): when you ship a feature that meaningfully changes user behaviour (a new element kind, a new dialog, a new mode, a new shortcut surface, a new setting toggle), add a one-liner `track(category, action, type)` at the interaction's handler. Reuse the closed `TELEMETRY_CATEGORIES` / `TELEMETRY_ACTIONS` enums in `@livediagram/api-schema`, extending them only when no existing pair fits. The `type` is a preset enum value (e.g., `Square`, `DrawToAddOn`), never user content. The editor (`apps/live`) and the help centre (`apps/help`) emit, both through the shared `@livediagram/telemetry-client` engine with app-owned enable/opt-out policy; settings flips fire BEFORE the change is persisted so an opt-out event still reaches the wire.

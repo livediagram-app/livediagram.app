@@ -1,6 +1,6 @@
 'use client';
 
-// The Portal element's menu section (spec/104): its name, where it leads, and
+// The Portal element's menu section (docs/specs/009-elements/portal-element.md): its name, where it leads, and
 // a way to make the other end when it doesn't exist yet.
 //
 // Its own file rather than another branch inside ElementDataSections: the

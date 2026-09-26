@@ -20,14 +20,14 @@ import { setPaletteDragSnap, usePaletteDragPreview } from '@/lib/palette-drag-pr
 import { setInsertionSlot } from '@/lib/insertion-preview';
 import { setLanePreview } from '@/lib/lane-preview';
 
-// Alignment guides DURING a palette drag (spec/139) — the single owner of the
+// Alignment guides DURING a palette drag (docs/specs/021-event-storming/event-storming.md) — the single owner of the
 // in-flight snap. It tracks the dragover cursor, converts it to canvas coords
 // through the transformed wrapper (the same inversion the drop uses, so the
 // ghost, the guides and the landed element can't disagree), runs the shared
 // snap geometry, and publishes the offset for the ghost + drop to consume.
 //
 // On an event-storming board, WHILE ALT IS HELD, it also resolves the
-// INSERTION SLOT the drag is offering (spec/139 insert between): the gap it
+// INSERTION SLOT the drag is offering (docs/specs/021-event-storming/event-storming.md insert between): the gap it
 // would open, and which elements slide right to open it. That resolution is
 // pure (lib/insert-between) and its result is published, never committed — the
 // board only really moves on drop.
@@ -60,7 +60,7 @@ export function usePaletteDragGuides({
   elements: Element[];
   viewportZoom: number;
   wrapperRef: RefObject<HTMLElement | null>;
-  // Insert between (spec/139): what the board and session allow. The other
+  // Insert between (docs/specs/021-event-storming/event-storming.md): what the board and session allow. The other
   // half of the gate — the held Alt — is read off each dragover, so an
   // ordinary drag never offers a slot and a preview is never offered for a
   // drop that would be refused.
@@ -68,7 +68,7 @@ export function usePaletteDragGuides({
   // Elements on a hidden or locked layer: they cannot define the row, but
   // they still travel with the ripple.
   inertIds: ReadonlySet<string>;
-  // Timeline lanes (spec/139 Phase 6) when the active tab has them on, else
+  // Timeline lanes (docs/specs/021-event-storming/event-storming.md Phase 6) when the active tab has them on, else
   // null. Read at EVENT time like the board below, so a peer flipping the
   // switch mid-drag is honoured on the next movement.
   timeline: EsTimeline | null;

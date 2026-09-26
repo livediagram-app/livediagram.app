@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { TELEMETRY_TYPE_PATTERN } from '@livediagram/api-schema';
 import { TOUR_STEPS, tourStepsFor, tourStepTelemetryType } from './tour-steps';
 
-// The tour's stage-view telemetry (spec/79 + spec/22): every step id must
+// The tour's stage-view telemetry (docs/specs/007-editor/editor-tour.md + docs/specs/017-telemetry/telemetry.md): every step id must
 // derive a valid preset `type` token, and the funnel only reads cleanly if
 // ids stay unique and the bookends stay at the ends.
 
@@ -24,7 +24,7 @@ describe('tour steps', () => {
   });
 });
 
-// The effective step list per surface (spec/79): a step whose chrome the
+// The effective step list per surface (docs/specs/007-editor/editor-tour.md): a step whose chrome the
 // current surface doesn't render must be dropped up front, so the count
 // reads right and the tour never anchors to hidden chrome.
 describe('tourStepsFor', () => {
@@ -51,7 +51,7 @@ describe('tourStepsFor', () => {
     expect(board).toContain('theme-canvas');
   });
 
-  // Toolbar layout (spec/148): the Explorer lives behind the top-left menu
+  // Toolbar layout (docs/specs/007-editor/toolbar-layout.md): the Explorer lives behind the top-left menu
   // button, so its step retells its copy and rings the button too; every
   // other step is untouched.
   it('points the Explorer step at the menu button in the Toolbar layout', () => {

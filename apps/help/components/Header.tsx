@@ -6,7 +6,7 @@ import { SearchInput } from '@/components/SearchInput';
 // the dashboard's) keyed to Help in the apps menu. Brand links back to the
 // marketing home, the search box sits in the centre slot so it's reachable
 // from every article (not just the home hero), and the one CTA keeps the
-// editor a click away (the canvas works without signing in, spec/04). Same
+// editor a click away (the canvas works without signing in, docs/specs/014-identity/auth-and-guest-access.md). Same
 // origin as the rest of livediagram, so these are plain absolute links. No
 // ShareRail: it sits in the gutter beside a max-w-6xl page, and help's pages
 // run max-w-7xl, so on an xl screen it would cover the article sidebar.

@@ -37,7 +37,7 @@ export type DiagramListItem = Pick<
   DiagramSummary,
   'id' | 'name' | 'folderId' | 'savedAt' | 'shareCode' | 'ownerId'
 > & {
-  // Provenance (spec/15). Present on real list rows from the API; optional
+  // Provenance (docs/specs/013-workspace/folders.md). Present on real list rows from the API; optional
   // so synthetic rows (shared / team placeholders) can omit it. Absent or
   // null means user-made (not in the Generated folder).
   source?: DiagramSummary['source'];
@@ -49,7 +49,7 @@ export type DiagramListItem = Pick<
 // in-flight promise instead of opening a second request to the
 // same diagram.
 async function _apiLoadDiagram(ownerId: string, id: string): Promise<Diagram | null> {
-  // Offline Mode (spec/76): a diagram registered offline loads from IndexedDB,
+  // Offline Mode (docs/specs/006-diagram/offline-mode.md): a diagram registered offline loads from IndexedDB,
   // never the API. Same for the save / delete / list paths below.
   if (await isOfflineId(id)) return offlineLoadDiagram(id);
   const res = await apiFetch(`${API_BASE}/diagrams/${id}`, {
@@ -61,7 +61,7 @@ async function _apiLoadDiagram(ownerId: string, id: string): Promise<Diagram | n
 export const apiLoadDiagram = dedupeInFlight(_apiLoadDiagram, (ownerId, id) => `${ownerId}|${id}`);
 
 // Persist diagram-level metadata: name (rename), tab order, and each
-// tab's per-diagram folder (spec/30). Used for tab reorders + rename
+// tab's per-diagram folder (docs/specs/006-diagram/tab-folders.md). Used for tab reorders + rename
 // + folder ops — anything that doesn't touch element content. Element
 // changes go through apiSaveTab. Callers pass `tabs` (id + order +
 // folder); `tabIds` stays accepted as the legacy folder-less shape.
@@ -72,7 +72,7 @@ export async function apiSaveDiagramMeta(
     name?: string;
     tabs?: { id: string; folder?: string }[];
     tabIds?: string[];
-    // Slide deck (spec/31), serialised. Absent leaves the stored deck alone,
+    // Slide deck (docs/specs/012-collaboration/presentation-mode.md), serialised. Absent leaves the stored deck alone,
     // which is what every save that isn't about the deck sends; null clears
     // it. JSON.stringify drops an undefined field, so "absent" travels as
     // absent rather than as null.
@@ -108,7 +108,7 @@ export async function apiSaveDiagramMeta(
 export async function apiCreateDiagram(
   ownerId: string,
   // `folderId` / `createdAt` / `presentation` are for an Offline Mode sync
-  // (spec/76), which must carry what the offline record held: the server
+  // (docs/specs/006-diagram/offline-mode.md), which must carry what the offline record held: the server
   // copy is all that is left once the local one is deleted.
   d: {
     id: string;
@@ -118,7 +118,7 @@ export async function apiCreateDiagram(
     createdAt?: number;
     presentation?: string | null;
   },
-  // Set by the Offline Mode sync path (spec/76). A sync is a plain POST, so
+  // Set by the Offline Mode sync path (docs/specs/006-diagram/offline-mode.md). A sync is a plain POST, so
   // without this the worker records it as a brand-new diagram being created.
   opts: { conversion?: DiagramConversion } = {},
 ): Promise<Diagram> {
@@ -146,7 +146,7 @@ export async function apiDeleteDiagram(ownerId: string, id: string): Promise<voi
   // Owner-gated server-side as of the security fix — without the
   // identity headers the worker would 400 / 403. apiHeaders prefers
   // the Clerk Bearer when a token provider is registered, falls
-  // through to X-Owner-Id otherwise (spec/04, spec/11).
+  // through to X-Owner-Id otherwise (docs/specs/014-identity/auth-and-guest-access.md, docs/specs/015-api/api.md).
   return apiDelete(`${API_BASE}/diagrams/${id}`, ownerId, {
     action: 'delete diagram',
     purge: { sourceType: 'diagram', sourceId: id },
@@ -154,7 +154,7 @@ export async function apiDeleteDiagram(ownerId: string, id: string): Promise<voi
 }
 
 async function _apiListDiagrams(ownerId: string): Promise<DiagramSummary[]> {
-  // Offline diagrams (spec/76) are browser-local; list them alongside the
+  // Offline diagrams (docs/specs/006-diagram/offline-mode.md) are browser-local; list them alongside the
   // cloud ones. If the cloud fetch fails but offline diagrams exist (e.g. no
   // network), still return those rather than failing the whole Explorer.
   const offline = await offlineListDiagrams().catch(() => [] as DiagramSummary[]);
@@ -175,7 +175,7 @@ async function _apiListDiagrams(ownerId: string): Promise<DiagramSummary[]> {
 export const apiListDiagrams = dedupeInFlight(_apiListDiagrams, (ownerId) => ownerId);
 
 // Pull the snapshot's solid background colour out of the SVG text: it's
-// the first `<rect>`'s fill, since renderElementsToSvg (spec/67) draws a
+// the first `<rect>`'s fill, since renderElementsToSvg (docs/specs/006-diagram/diagram-snapshots.md) draws a
 // full-viewBox background rect before any element, and the snapshot has no
 // backdrop pattern, so the fill is always a plain colour string. Lets a
 // card paint its letterbox to match the diagram instead of a generic
@@ -185,7 +185,7 @@ function svgBackgroundColor(svg: string): string | null {
   return /<rect[^>]*\bfill="([^"]+)"/.exec(svg)?.[1] ?? null;
 }
 
-// Fetch a diagram's cached SVG snapshot (spec/67) and return a blob URL
+// Fetch a diagram's cached SVG snapshot (docs/specs/006-diagram/diagram-snapshots.md) and return a blob URL
 // for an `<img src>` plus the diagram's background colour. Native `<img>`
 // can't send auth headers, so — like apiFetchImageBlobUrl — the bytes
 // come through the authenticated client (Authorization / X-Owner-Id, plus
@@ -249,7 +249,7 @@ export async function apiDismissSharedWith(ownerId: string, diagramId: string): 
   });
 }
 
-// Mint a one-time WebSocket room ticket (spec/11). The WS upgrade
+// Mint a one-time WebSocket room ticket (docs/specs/015-api/api.md). The WS upgrade
 // can't carry the Bearer token, so an identified caller (a signed-in
 // team member above all) proves access over normal authenticated REST
 // and rides the returned ticket on the upgrade URL as `?t=`. Returns

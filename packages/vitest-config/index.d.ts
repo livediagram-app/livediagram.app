@@ -1,6 +1,6 @@
 import type { UserConfig } from 'vitest/config';
 
-/** Shared Vitest defaults for every workspace. See specs/18-testing.md. */
+/** Shared Vitest defaults for every workspace. See docs/specs/003-system-architecture/testing.md. */
 export declare const baseConfig: UserConfig;
 
 /** Merge the shared base config with per-workspace overrides. */

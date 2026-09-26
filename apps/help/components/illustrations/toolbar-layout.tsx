@@ -1,4 +1,4 @@
-// Scenes for the Toolbar Layout article (spec/148): the strip across the top
+// Scenes for the Toolbar Layout article (docs/specs/007-editor/toolbar-layout.md): the strip across the top
 // of the canvas, and More opening a category's full palette under itself.
 // Composed only from the shared primitives, like every other help scene.
 import type { ReactNode } from 'react';

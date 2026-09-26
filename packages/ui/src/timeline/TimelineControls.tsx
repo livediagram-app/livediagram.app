@@ -1,6 +1,6 @@
 'use client';
 
-// The Timeline's controls: view mode and filters (spec/138 §2.3).
+// The Timeline's controls: view mode and filters (docs/specs/013-workspace/timeline.md §2.3).
 //
 // Rendered separately from the feed so the host can place them in its
 // own page-header row alongside its other actions. A second row of
@@ -34,7 +34,7 @@ export function TimelineControls({ controls }: { controls: Controls }) {
           reading as three more of them.
 
           Gone below `sm:`, where it moves into the filter popover
-          (spec/138 §2.3): collapsing the labels to icons bought enough
+          (docs/specs/013-workspace/timeline.md §2.3): collapsing the labels to icons bought enough
           room for a while, but three of them plus Filter, Help and New
           diagram still crowded a phone's header into a scrum of glyphs.
           One button that opens everything beats five that fit. */}

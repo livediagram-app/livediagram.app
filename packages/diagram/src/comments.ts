@@ -64,7 +64,7 @@ export function activeCommentCount(thread: CommentThread | undefined): number {
 // needs it) and a tab GET redacts it for everyone but the author, so the one
 // place it could still escape is the realtime room, which fans every element
 // op out to every socket. Everything the editor sends the room goes through
-// this first (spec/152); the author's own local copy keeps it.
+// this first (docs/specs/012-collaboration/collab-race-hardening.md); the author's own local copy keeps it.
 export function withoutCommentAuthorId(comment: Comment): Comment {
   if (comment.authorId === undefined) return comment;
   const { authorId: _drop, ...rest } = comment;
@@ -82,7 +82,7 @@ export function withoutCommentAuthorIds<E extends Element>(el: E): E {
 
 // A room op with every comment author id taken out, whichever kind carries
 // one: an element add / update, a whole tab, or a posted comment. The ONE
-// definition of what may not reach the wire (spec/152): the editor applies it
+// definition of what may not reach the wire (docs/specs/012-collaboration/collab-race-hardening.md): the editor applies it
 // to everything it sends, and the room to everything it relays, so neither a
 // new send path nor an old client can leak one. Anything else passes through
 // untouched (same object back).
@@ -108,7 +108,7 @@ export function opForTheWire(op: unknown): unknown {
 
 // Stamp a comment an editor posts with the name and colour of the session
 // that sent it, the identity everyone already sees on that person's cursor
-// (spec/152). The room holds no verified identity (spec/61 §6); this makes
+// (docs/specs/012-collaboration/collab-race-hardening.md). The room holds no verified identity (docs/specs/015-api/public-api-and-tokens.md §6); this makes
 // the comment's name agree with the session it came from rather than with
 // whatever the frame said. Run after `opForTheWire`, which has already taken
 // any author id out.
@@ -129,9 +129,9 @@ export function stampCommentAuthor(
 }
 
 // The per-element fields that mutate OUTSIDE undo history and therefore
-// need re-grafting onto restored snapshots: comment threads (spec/09),
-// assigned actions (spec/68: Cmd+Z must never silently unassign work), and
-// everything a collaborative press writes (spec/152): answers, reveals, idea
+// need re-grafting onto restored snapshots: comment threads (docs/specs/008-canvas/canvas-and-palette.md),
+// assigned actions (docs/specs/012-collaboration/assigned-actions.md: Cmd+Z must never silently unassign work), and
+// everything a collaborative press writes (docs/specs/012-collaboration/collab-race-hardening.md): answers, reveals, idea
 // cards, the roll, the agenda's current row and the picker's result. A
 // snapshot from before somebody answered would otherwise take their answer
 // away from the whole room the moment anyone pressed undo.
@@ -146,7 +146,7 @@ const LIVE_ELEMENT_FIELDS = [
   'rollCall',
   'agendaCurrent',
   'pickerResult',
-  // The Q&A board's notes (spec/151) are written by its endpoint, never by
+  // The Q&A board's notes (docs/specs/012-collaboration/qa-board.md) are written by its endpoint, never by
   // an undoable edit, so a snapshot's copy is only ever older.
   'qaNotes',
   'qaRev',
@@ -175,7 +175,7 @@ function applyLiveField<K extends keyof LiveFieldBag>(
 }
 
 // Full live-state graft for undo/redo: comment threads + assigned actions
-// (above) PLUS the per-tab session tools (spec/39 `timer` / `vote`), which
+// (above) PLUS the per-tab session tools (docs/specs/012-collaboration/session-tools.md `timer` / `vote`), which
 // also mutate outside undo history — a timer start or a vote dot isn't
 // undoable, so a restored snapshot predates them and would silently wipe
 // them for the whole room (autosave persists + broadcasts the restored tab).
@@ -211,7 +211,7 @@ export function graftLiveTabState(
         if (next === el) next = { ...el };
         applyLiveField(next as LiveFieldBag, field, liveValue);
       }
-      // Checklist ticks are live too (spec/152), but the rows themselves are
+      // Checklist ticks are live too (docs/specs/012-collaboration/collab-race-hardening.md), but the rows themselves are
       // authored and undoable, so only the `done` flags carry over, row by row.
       const liveEl = srcById.get(el.id);
       if (

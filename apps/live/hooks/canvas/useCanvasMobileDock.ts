@@ -12,11 +12,11 @@ import { track } from '@/lib/telemetry';
 const POPOVER_WIDTH = 256;
 
 // 'poll' and 'vote' only ever appear while a poll / dot-vote is running on the
-// tab (spec/88, spec/39). Without them the dock had no button for either, so
+// tab (docs/specs/012-collaboration/live-poll.md, docs/specs/012-collaboration/session-tools.md). Without them the dock had no button for either, so
 // on a phone the one panel that matters during a live session was the one you
 // could not get back to once it was dismissed.
 export type MobilePanel =
-  // Opened from the bottom-right cluster in the dock layouts (spec/12), not
+  // Opened from the bottom-right cluster in the dock layouts (docs/specs/012-collaboration/activity-and-audit.md), not
   // from a dock-row button.
   | 'activity'
   | 'explorer'
@@ -26,27 +26,27 @@ export type MobilePanel =
   | 'layers'
   | 'poll'
   | 'vote'
-  // 'avatar' (spec/101) appears only while Avatar mode is active, like the
+  // 'avatar' (docs/specs/008-canvas/avatar-mode.md) appears only while Avatar mode is active, like the
   // session-tool panels above it.
   | 'avatar'
-  // 'laser' (spec/111) likewise: the pen's settings, only while the Laser
+  // 'laser' (docs/specs/008-canvas/laser-panel.md) likewise: the pen's settings, only while the Laser
   // tool is active.
   | 'laser'
-  // 'spotlight' (spec/112): the light's look, likewise only while its mode is
+  // 'spotlight' (docs/specs/008-canvas/spotlight-panel.md): the light's look, likewise only while its mode is
   // active.
   | 'spotlight'
-  // 'eraser' (spec/113): the brush's settings, while the Eraser is active.
+  // 'eraser' (docs/specs/008-canvas/eraser-panel.md): the brush's settings, while the Eraser is active.
   | 'eraser'
-  // 'format' (spec/117): the painter's settings, while the Format tool is on.
+  // 'format' (docs/specs/008-canvas/format-panel.md): the painter's settings, while the Format tool is on.
   | 'format'
-  // 'highlighter' (spec/81): the marker's colour + strength, while it is held.
+  // 'highlighter' (docs/specs/008-canvas/highlighter.md): the marker's colour + strength, while it is held.
   | 'highlighter'
-  // 'slide-deck' (spec/31): the deck builder, while the tool is picked.
+  // 'slide-deck' (docs/specs/012-collaboration/presentation-mode.md): the deck builder, while the tool is picked.
   | 'slide-deck';
 
 export type { DockAnchor };
 
-// The panel-open counts (spec/22) for panels that ALSO open on desktop by
+// The panel-open counts (docs/specs/017-telemetry/telemetry.md) for panels that ALSO open on desktop by
 // un-minimising a floating card (EditorCanvasHost's toggles emit there). In
 // the dock layouts (minimal panels, phones, the Toolbar layout) the same
 // panel opens here instead, as a popover, and a click takes one path or the
@@ -67,7 +67,7 @@ export function useCanvasMobileDock(mainRef: Ref<HTMLElement>) {
   // Open a panel under its dock button (never toggles it shut).
   //
   // `ownButton` is a lone button OUTSIDE the dock asking to anchor a panel
-  // (the Toolbar layout's menu button, spec/148). It is passed in rather than
+  // (the Toolbar layout's menu button, docs/specs/007-editor/toolbar-layout.md). It is passed in rather than
   // registered in dockButtonRefs because the dock, hidden on desktop but still
   // mounted, registers its own button under the same panel id, and a hidden
   // button measures as a zero rect in the corner. It also switches the popover

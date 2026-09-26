@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, type ChangeEvent } from 'react';
 
-// Opening the photo picker exactly once per intent (spec/139 Phase 9).
+// Opening the photo picker exactly once per intent (docs/specs/021-event-storming/event-storming.md Phase 9).
 //
 // A file dialog is an OS window, and closing it can hand the page a stray
 // click: it lands on whatever now sits under the cursor, which — since the
@@ -11,7 +11,7 @@ import { useCallback, useEffect, useRef, type ChangeEvent } from 'react';
 // a file, is discarded: no `change` event, no photo, nothing on screen.
 //
 // NOT to be confused with the Chrome-on-Linux double-click fault this was first
-// written to chase (spec/139): that one is Chromium setting its GTK dialog's
+// written to chase (docs/specs/021-event-storming/event-storming.md): that one is Chromium setting its GTK dialog's
 // default response to Cancel, so a double-click activates Cancel and the file
 // never reaches any page. No page code can fix that one; this guard is for the
 // stray click, which page code can.

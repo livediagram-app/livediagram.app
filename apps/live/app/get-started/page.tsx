@@ -8,7 +8,7 @@
 //   Phase 2 — verify: 6-digit email code → redirect to editor
 //
 // Post-verification we hand off to /live/ (which resolves to /live/new
-// via the welcome flow, spec/14). The guest → authed migration of any
+// via the welcome flow, docs/specs/007-editor/new-diagram-route.md). The guest → authed migration of any
 // pre-existing diagrams lives in Stage 4 — out of scope for this page
 // for now.
 
@@ -76,7 +76,7 @@ function GetStartedContent() {
         redirectUrl: '/sso-callback',
         // Honour ?redirect_url so an OAuth sign-up from a protected
         // page lands back where it came from, matching the email-code
-        // path. See spec/04 "Routes" + auth-shared.tsx.
+        // path. See docs/specs/014-identity/auth-and-guest-access.md "Routes" + auth-shared.tsx.
         redirectUrlComplete: resolveOAuthCompleteUrl(searchParams),
       });
     } catch (err: unknown) {
@@ -118,7 +118,7 @@ function GetStartedContent() {
       // verification is configured off — straight to the editor.
       if (res.status === 'complete' && res.createdSessionId) {
         // Session·SignedUp is counted by the api worker on this new
-        // session's first request (spec/22), so every sign-up method counts
+        // session's first request (docs/specs/017-telemetry/telemetry.md), so every sign-up method counts
         // once; no emit here.
         await setActiveSignUp({ session: res.createdSessionId });
         router.replace(resolvePostAuthDestination(searchParams));
@@ -161,7 +161,7 @@ function GetStartedContent() {
       const res = await clerkSignUp.attemptEmailAddressVerification({ code });
       if (res.status === 'complete' && res.createdSessionId) {
         // Session·SignedUp is counted by the api worker on this new
-        // session's first request (spec/22), so every sign-up method counts
+        // session's first request (docs/specs/017-telemetry/telemetry.md), so every sign-up method counts
         // once; no emit here.
         await setActiveSignUp({ session: res.createdSessionId });
         router.replace(resolvePostAuthDestination(searchParams));

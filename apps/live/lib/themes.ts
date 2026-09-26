@@ -1,7 +1,7 @@
 // The shared theme ENGINE (catalogue, types, recolour / switch / reset / preset
-// transforms) now lives in @livediagram/diagram so the MCP worker (spec/62)
+// transforms) now lives in @livediagram/diagram so the MCP worker (docs/specs/015-api/mcp-server.md)
 // themes diagrams identically to the editor. This file re-exports it and adds
-// the LIVE-ONLY layer: custom-theme (per-owner, spec/44) resolution and the
+// the LIVE-ONLY layer: custom-theme (per-owner, docs/specs/011-theme/custom-themes.md) resolution and the
 // new-element colour derivation that depends on it. The ~120 `@/lib/themes`
 // consumers are unchanged — every symbol they imported is still exported here.
 import {
@@ -51,7 +51,7 @@ export type {
 } from '@livediagram/diagram';
 
 // Resolve an id to its real ThemeDefinition, or `undefined` when the id names
-// nothing we know — a deleted custom theme (spec/44), or a custom id whose owner
+// nothing we know — a deleted custom theme (docs/specs/011-theme/custom-themes.md), or a custom id whose owner
 // fetch hasn't landed yet. Callers that must DISTINGUISH "unknown" from "the
 // default theme" (setTheme's preserve-customs diff) branch on undefined; callers
 // that always need something (getTheme) fall back to the default.
@@ -70,7 +70,7 @@ export function resolveTheme(
   return THEMES.find((t) => t.id === id) ?? LEGACY_THEMES.find((t) => t.id === id);
 }
 
-// Custom themes (spec/44) win: the editor registers the owner's saved themes
+// Custom themes (docs/specs/011-theme/custom-themes.md) win: the editor registers the owner's saved themes
 // into the module registry, so a `custom:<uuid>` id resolves here synchronously
 // like any built-in. Falls through to the catalogue (and ultimately the default)
 // when the id isn't a registered custom theme — including a deleted one, so a
@@ -141,7 +141,7 @@ export function deriveNewBoxedColours(
   const patternColor = tab.patternColor ?? DEFAULT_PATTERN_COLOR;
   // The Default scheme paints nothing onto an element, in either appearance:
   // its whole trick is that an element carries no colour, so it can read as
-  // dark ink to one viewer and light ink to another (spec/07). Deriving from
+  // dark ink to one viewer and light ink to another (docs/specs/007-editor/live-app.md). Deriving from
   // the dark half's canvas here would bake one viewer's chrome into the
   // diagram for everybody. A canvas the USER coloured still derives normally —
   // that is their choice, and it is stored.
@@ -151,7 +151,7 @@ export function deriveNewBoxedColours(
   ) {
     return colours;
   }
-  // A page (spec/100) is paper, not a node in the diagram's theme.
+  // A page (docs/specs/009-elements/page-element.md) is paper, not a node in the diagram's theme.
   // Tinting it with the backdrop-derived shape colours is what stopped it
   // reading as a page at all, so it keeps the fill / stroke createShape gave
   // it. The user can still recolour it from the menu like anything else.
@@ -169,7 +169,7 @@ export function deriveNewBoxedColours(
   if (base.type === 'shape' && base.shape === 'portal') return colours;
   if (base.type === 'shape' || base.type === 'annotation') {
     // Annotation markers derive fill + stroke from the backdrop like a shape
-    // does (text isn't used — the note is plain). See spec/38.
+    // does (text isn't used — the note is plain). See docs/specs/009-elements/annotations.md.
     const derived = deriveShapeColours(patternColor, bg);
     if (derived) {
       colours.fillColor = derived.fill;

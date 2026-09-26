@@ -1,4 +1,4 @@
-// What changed on a tab, for timeline emission (spec/138 §4.3).
+// What changed on a tab, for timeline emission (docs/specs/013-workspace/timeline.md §4.3).
 //
 // Comments and assigned actions live INSIDE element JSON
 // (packages/diagram), not in tables — there is no comments table to
@@ -71,7 +71,7 @@ export function newlyResolvedThreads(
 }
 
 // Actions that appeared in this save. An action's id is stable across
-// edits (spec/68: at most one per element, created once), so "not seen
+// edits (docs/specs/012-collaboration/assigned-actions.md: at most one per element, created once), so "not seen
 // before" is exactly "assigned now".
 export function newActions(next: Element[], prev: Element[]): ElementAction[] {
   const seen = new Set<string>();

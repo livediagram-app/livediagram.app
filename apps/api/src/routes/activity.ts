@@ -1,4 +1,4 @@
-// /api/activity — the Explorer's Activity page (spec/142).
+// /api/activity — the Explorer's Activity page (docs/specs/013-workspace/activity-page.md).
 //
 // GET /api/activity -> { actions: ActivityAction[], threads: ActivityThread[] }
 //
@@ -6,10 +6,10 @@
 // reassigning and resolving already exist behind their edit gates. So
 // there is no other verb here in v1.
 //
-// Hybrid identity like the rest of the api (spec/04): the Clerk userId
+// Hybrid identity like the rest of the api (docs/specs/014-identity/auth-and-guest-access.md): the Clerk userId
 // when signed in, X-Owner-Id otherwise. Guests get their own page (their
 // self-assigned to-dos, threads on their diagrams), and it survives
-// sign-up through owner_aliases (spec/142 §2.2).
+// sign-up through owner_aliases (docs/specs/013-workspace/activity-page.md §2.2).
 
 import { ACTIVITY_LIST_MAX } from '@livediagram/api-schema';
 import { getCollabIndexState, readActivity } from '../db';
@@ -25,7 +25,7 @@ export async function handleActivity(ctx: RouteContext): Promise<Response> {
 
   if (segments.length === 2 && request.method === 'GET') {
     const result = await readActivity(env, ownerId, { limit: ACTIVITY_LIST_MAX });
-    // Seed on first sight, off the response path (spec/142 §2.3). The
+    // Seed on first sight, off the response path (docs/specs/013-workspace/activity-page.md §2.3). The
     // reader gets whatever the live saves have indexed so far, and the
     // rest the moment they reopen — better than holding the response
     // while every dormant tab is parsed.

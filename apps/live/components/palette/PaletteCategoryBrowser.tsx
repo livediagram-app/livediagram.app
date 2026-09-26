@@ -5,8 +5,8 @@ import { SearchInput } from '@/components/primitives/SearchInput';
 import { ToolsBreadcrumb, ToolsCategoryGrid, type ToolsCategory } from './palette-tools-nav';
 import { track } from '@/lib/telemetry';
 
-// The palette's drill-in browse pattern, once (spec/09 "Sub-categories",
-// spec/109).
+// The palette's drill-in browse pattern, once (docs/specs/008-canvas/canvas-and-palette.md "Sub-categories",
+// docs/specs/010-palette/palette-category-browse.md).
 //
 // Three tabs hold a catalogue too big for one screen — Tools (~25 tiles),
 // Icons (183 glyphs), Technology (brand marks) — and all three answer the
@@ -39,7 +39,7 @@ type Props<T> = {
     clearDescription: string;
   };
   // Telemetry `type` tokens for the two interactions worth counting: which
-  // categories people open, and whether they search instead (spec/22).
+  // categories people open, and whether they search instead (docs/specs/017-telemetry/telemetry.md).
   telemetry: { openedType: string; searchedType: string };
   emptyMessage: (query: string) => string;
   // True while an async catalogue chunk is still in flight. Without it an

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Box } from './boxes';
 import { findPads } from './pads';
 
-// A pad of small notes on a wall of big ones (spec/139 Phase 9): too small
+// A pad of small notes on a wall of big ones (docs/specs/021-event-storming/event-storming.md Phase 9): too small
 // for the wall's size floor, told apart from scraps by their siblings.
 
 const sq = (x: number, y: number, s = 12, fill = 0.85): Box => ({

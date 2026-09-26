@@ -1,5 +1,5 @@
-// Pure helpers shared by every runs-backed editor (element labels, spec/09;
-// element notes, spec/92): applying a CSSProperties object onto a live DOM
+// Pure helpers shared by every runs-backed editor (element labels, docs/specs/008-canvas/canvas-and-palette.md;
+// element notes, docs/specs/009-elements/rich-text-notes.md): applying a CSSProperties object onto a live DOM
 // style, expanding a caret to the word around it, and computing a toolbar's
 // active format from the current selection.
 //

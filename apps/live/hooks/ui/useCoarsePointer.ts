@@ -3,7 +3,7 @@
 import { useMediaQuery } from '@livediagram/ui';
 
 // Is this a touch device? Used where the COPY has to name the gesture ("double-
-// tap" vs "double-click" on the Reveal zone, spec/106), which a viewport
+// tap" vs "double-click" on the Reveal zone, docs/specs/009-elements/reveal-zone.md), which a viewport
 // breakpoint can't answer: a tablet is wide and still touch-only.
 //
 // The shared useMediaQuery's server snapshot is false, so the static-export

@@ -1,4 +1,4 @@
-// Pure tab builders for the MCP tools (spec/62): turn validated elements, a
+// Pure tab builders for the MCP tools (docs/specs/015-api/mcp-server.md): turn validated elements, a
 // node/edge graph, or a template kind into a finished, themed, persistable
 // Tab. Split out of tool-helpers.ts because those also carry the inline-PNG
 // result helper (imageResult → the resvg WASM renderer), which can't load in
@@ -26,7 +26,7 @@ import {
   isTemplateKind,
 } from '@livediagram/templates';
 
-// Layout is the model's call (spec/62 §4.3). 'preserve' keeps the coordinates
+// Layout is the model's call (docs/specs/015-api/mcp-server.md §4.3). 'preserve' keeps the coordinates
 // it gave (a ring for a cycle, a tree, a grid); 'auto' forces a clean server
 // layout; omitted = preserve a real arrangement, but auto-lay-out when the
 // model left everything piled at one spot. Either way the connected graph is
@@ -42,7 +42,7 @@ export function applyLayout(
 
 // Build a finished, persistable Tab from validated elements: apply the layout,
 // then paint the chosen preset theme onto the elements + the canvas backdrop —
-// the same engine the editor uses (spec/62). `themeId` defaults to brand;
+// the same engine the editor uses (docs/specs/015-api/mcp-server.md). `themeId` defaults to brand;
 // unknown ids fall back to it. `elements` must already be a valid Element[].
 export function buildTab(
   tabId: string,
@@ -70,7 +70,7 @@ export function buildTab(
   };
 }
 
-// Build a tab from a node/edge graph (spec/62 §4.7): translate the graph to
+// Build a tab from a node/edge graph (docs/specs/015-api/mcp-server.md §4.7): translate the graph to
 // elements, then buildTab always auto-lays-it-out — a graph carries no
 // positions, so the server owns placement.
 export function buildGraphTab(
@@ -83,7 +83,7 @@ export function buildGraphTab(
 }
 
 // Resolve a tool's `template` argument against the shared catalogue
-// (spec/62 §4.5). Returns null for an unknown kind — the caller answers
+// (docs/specs/015-api/mcp-server.md §4.5). Returns null for an unknown kind — the caller answers
 // with the valid kinds so the model can self-correct without a round
 // trip to list_templates.
 export function resolveTemplate(kind: string): TemplateKind | null {
@@ -104,7 +104,7 @@ export function buildTemplateTab(
   themeId?: string,
 ): Tab {
   // stampTabKind fills the ordinary 'diagram' for every template that
-  // doesn't declare a board kind of its own (spec/139), so a tab minted
+  // doesn't declare a board kind of its own (docs/specs/021-event-storming/event-storming.md), so a tab minted
   // here is indistinguishable from one the editor commits.
   return stampTabKind({
     ...buildTab(tabId, name, buildTemplate(kind, 0, 0), 'preserve', themeId),

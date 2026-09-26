@@ -2,7 +2,7 @@ import { Button } from '@livediagram/ui';
 import { useState } from 'react';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 
-// The share-password band (spec/24): one optional password that gates every
+// The share-password band (docs/specs/013-workspace/share-password.md): one optional password that gates every
 // link. Owns its own field + "Saved" flash state; the busy flag is shared with
 // the dialog's link actions (passed in) so a save and a link create can't race.
 // Split out of ShareDialog.

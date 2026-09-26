@@ -96,7 +96,7 @@ export function useTabCanvas(deps: TabCanvasDeps) {
   };
 
   // Debounced Canvas·Changed emits for the slider setters, flushed on
-  // unmount / page hide so the last drag isn't lost (spec/22).
+  // unmount / page hide so the last drag isn't lost (docs/specs/017-telemetry/telemetry.md).
   const scheduleCanvasTelemetry = useDebouncedCanvasTelemetry();
 
   const autoAlignTab = () => {
@@ -110,9 +110,9 @@ export function useTabCanvas(deps: TabCanvasDeps) {
     track('Tab', 'Aligned');
   };
 
-  // Auto Layout / "Tidy up" (spec/47, GitHub #12): recompute element
+  // Auto Layout / "Tidy up" (docs/specs/008-canvas/layout-cleanup.md, GitHub #12): recompute element
   // positions from the arrow graph rather than merely grid-snapping current
-  // positions like Auto-align. `choice` picks the layout style (spec/47
+  // positions like Auto-align. `choice` picks the layout style (docs/specs/008-canvas/layout-cleanup.md
   // "Layout styles"): the smart layered default, a forced-direction
   // flowchart, tree, or mindmap. Pins the laid-out block to the diagram's
   // current top-left so it stays where the user is looking instead of
@@ -123,13 +123,13 @@ export function useTabCanvas(deps: TabCanvasDeps) {
     if (activeTab.elements.length === 0) return;
     // Everything the layout needs, including the origin it pins to, is read
     // inside the updater from the elements it is given: a commit taken while a
-    // hover preview is on screen (spec/47) composes after the preview's revert,
+    // hover preview is on screen (docs/specs/008-canvas/layout-cleanup.md) composes after the preview's revert,
     // so `current` is the true pre-hover state and undo returns there.
     commit((current) => cleanupElements(current, choice));
     track('Tab', 'Aligned', AUTO_LAYOUT_CHOICES[choice].telemetryType);
   };
 
-  // Tab default font (spec/28): every text element without its own
+  // Tab default font (docs/specs/004-interface-design/fonts.md): every text element without its own
   // `font` renders in this. null clears it back to the editor default.
   const setTabFont = (font: string | null) => {
     if (editsBlocked) return;
@@ -154,7 +154,7 @@ export function useTabCanvas(deps: TabCanvasDeps) {
     track('Tab', 'Changed', 'Font');
   };
 
-  // "Apply to all elements" in the Font category (spec/28): push the tab's
+  // "Apply to all elements" in the Font category (docs/specs/004-interface-design/fonts.md): push the tab's
   // font + default size onto every existing text-bearing element, so the whole
   // tab reads in one typeface/size. Clears each element's per-element `font`
   // override (elements with no font inherit the tab font at render) and sets
@@ -176,7 +176,7 @@ export function useTabCanvas(deps: TabCanvasDeps) {
     track('Tab', 'Changed', 'Font');
   };
 
-  // Tab default text size (spec/28): seeded onto NEW palette elements.
+  // Tab default text size (docs/specs/004-interface-design/fonts.md): seeded onto NEW palette elements.
   const setTabDefaultTextSize = (size: TextSize) => {
     if (editsBlocked) return;
     commitTabs((ts) => ts.map((t) => (t.id === activeId ? { ...t, defaultTextSize: size } : t)));
@@ -197,7 +197,7 @@ export function useTabCanvas(deps: TabCanvasDeps) {
         ? 'Removed canvas pattern'
         : `Changed canvas pattern to ${patternLabel(pattern)}`,
     );
-    // Telemetry (spec/22): `type` is the pattern preset, never content.
+    // Telemetry (docs/specs/017-telemetry/telemetry.md): `type` is the pattern preset, never content.
     track('Canvas', 'Changed', titleCaseType(pattern));
   };
 
@@ -249,7 +249,7 @@ export function useTabCanvas(deps: TabCanvasDeps) {
     scheduleCanvasTelemetry('backgroundPatternScale', 'BackgroundPatternScale');
   };
 
-  // Motion rate for an animated background pattern (spec/09): 1 = the
+  // Motion rate for an animated background pattern (docs/specs/008-canvas/canvas-and-palette.md): 1 = the
   // pattern's own tuned pace, 2 = twice as fast. Only offered while an
   // animated pattern is active (the Speed slider is gated in
   // CanvasStyleControls); a static pattern simply ignores the field.

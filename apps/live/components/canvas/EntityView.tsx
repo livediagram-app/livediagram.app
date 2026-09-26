@@ -21,7 +21,7 @@ export function entityHeaderHeight(element: ShapeElement): number {
   return Math.max(30, Math.round(fontPx * 1.25) + 10);
 }
 
-// A record box (spec/120): a title bar over a list of `name: Type` rows — a
+// A record box (docs/specs/009-elements/entity.md): a title bar over a list of `name: Type` rows — a
 // UML class, an ER entity, a struct.
 //
 // The UML class template built this out of "two flush-stacked tables sharing a
@@ -47,7 +47,7 @@ export function EntityView({
   return (
     // Inert as a whole: the canvas owns press-drag on an element, and nothing
     // here is a control. Rows are edited from the context menu, like a
-    // checklist's (spec/83).
+    // checklist's (docs/specs/009-elements/checklist.md).
     <div
       className="pointer-events-none absolute inset-0 flex flex-col overflow-hidden rounded-[inherit]"
       style={{ fontFamily }}

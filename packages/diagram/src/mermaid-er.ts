@@ -1,4 +1,4 @@
-// Mermaid ER diagram -> DiagramGraph (spec/73). Import-only: entities are
+// Mermaid ER diagram -> DiagramGraph (docs/specs/020-import-export/mermaid.md). Import-only: entities are
 // square boxes (attribute blocks fold into the label, one `type name` per
 // line), relationships are edges whose cardinality maps onto arrow ends —
 // a "many" side (crow's foot) gets the open-V head on that end, one-to-one

@@ -13,7 +13,7 @@ import { usePanelDock } from '@/hooks/ui/usePanelDock';
 import type { MovablePanelDockProps } from '@/components/primitives/MovablePanel';
 import { track } from '@/lib/telemetry';
 
-// Corner docking wiring (spec/63), lifted out of CanvasChrome: the
+// Corner docking wiring (docs/specs/007-editor/panel-docking.md), lifted out of CanvasChrome: the
 // device-local panel layout + live drag/snap state (usePanelDock), the
 // dock layer / corner-stack measurement refs, and the per-panel wiring
 // builder the chrome host threads into each MovablePanel. Self-contained
@@ -26,7 +26,7 @@ export function useCornerDocking({
 }: {
   minimalPanels: boolean;
   zenMode: boolean;
-  // The Toolbar layout (spec/148) keeps the desktop corners on a phone too.
+  // The Toolbar layout (docs/specs/007-editor/toolbar-layout.md) keeps the desktop corners on a phone too.
   toolbarLayout: boolean;
 }) {
   // Device-local panel layout + live drag/snap state. Self-contained
@@ -90,7 +90,7 @@ export function useCornerDocking({
       onReset: () => void;
       // True when the panel actually sits away from its default corner
       // (free, or docked elsewhere) — drives the "Reset position"
-      // enablement, which spec/59 wants greyed when already home.
+      // enablement, which docs/specs/008-canvas/minimap.md wants greyed when already home.
       resettable: boolean;
       dock?: MovablePanelDockProps;
     } => {

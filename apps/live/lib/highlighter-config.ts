@@ -1,4 +1,4 @@
-// The highlighter's settings (spec/81): the colour and the stroke strength the
+// The highlighter's settings (docs/specs/008-canvas/highlighter.md): the colour and the stroke strength the
 // NEXT marker strokes commit with.
 //
 // Split out of HighlighterBannerControls when the marker became a held tool

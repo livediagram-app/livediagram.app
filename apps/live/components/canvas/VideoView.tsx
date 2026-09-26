@@ -12,7 +12,7 @@ import {
 import { track } from '@/lib/telemetry';
 import { useFrameBlocked } from '@/components/canvas/use-frame-blocked';
 
-// Inner content of a video element (spec/114): a YouTube poster frame with a
+// Inner content of a video element (docs/specs/009-elements/youtube-video.md): a YouTube poster frame with a
 // play button, which swaps for the real player when pressed.
 //
 // The iframe is NOT mounted until play, and that is the whole design:
@@ -25,7 +25,7 @@ import { useFrameBlocked } from '@/components/canvas/use-frame-blocked';
 //   select, or marquee over.
 // - youtube-nocookie.com sets nothing until playback starts, so opening a
 //   diagram that contains a video is not a tracked visit. The repo is public
-//   and self-hostable (spec/03); a self-hoster should not be silently
+//   and self-hostable (docs/specs/002-project-scope/open-source-and-business-model.md); a self-hoster should not be silently
 //   shipping their users to Google on page load.
 
 export function VideoView({ element }: { element: VideoElement }) {
@@ -35,7 +35,7 @@ export function VideoView({ element }: { element: VideoElement }) {
   // Whether the player is taking pointer events. Off by default so dragging
   // the element always works; the user turns it on to seek or change volume.
   const [controls, setControls] = useState(false);
-  // Website embeds can be refused by the site itself (spec/133); the frame
+  // Website embeds can be refused by the site itself (docs/specs/009-elements/website-embed.md); the frame
   // says nothing when that happens, so we watch for it.
   const frame = useFrameBlocked(playing ? target?.embedUrl : undefined);
   // Changing the link tears the player down. Without this, editing the URL of
@@ -62,7 +62,7 @@ export function VideoView({ element }: { element: VideoElement }) {
           // ignored and the user has to press play a second time.
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
           allowFullScreen
-          // Arbitrary websites (spec/133) get a sandbox; the named providers
+          // Arbitrary websites (docs/specs/009-elements/website-embed.md) get a sandbox; the named providers
           // do not, because a sandbox breaks several of them and we chose
           // those hosts deliberately.
           //
@@ -115,7 +115,7 @@ export function VideoView({ element }: { element: VideoElement }) {
 
   return (
     // The card itself is pointer-INERT, exactly like a link card's top half
-    // (spec/40): the canvas owns press-drag-release on an element, and a
+    // (docs/specs/009-elements/link-cards.md): the canvas owns press-drag-release on an element, and a
     // full-size click target here swallowed pointerdown so a drag never
     // started, then swallowed the release so one that did start never ended.
     // Only the play badge below opts back in.
@@ -156,7 +156,7 @@ export function VideoView({ element }: { element: VideoElement }) {
   );
 }
 
-// Shown when a frame produced no load event at all (spec/133) — a hung or
+// Shown when a frame produced no load event at all (docs/specs/009-elements/website-embed.md) — a hung or
 // unreachable site.
 //
 // Deliberately hedged: a REFUSED frame is indistinguishable from a working one
@@ -250,7 +250,7 @@ function PlayerControls({
   controls: boolean;
   onToggleControls: () => void;
   onStop: () => void;
-  // Website embeds only (spec/133): the escape hatch for a site that refuses
+  // Website embeds only (docs/specs/009-elements/website-embed.md): the escape hatch for a site that refuses
   // to be framed. Always offered rather than shown on detection, because a
   // refusal is indistinguishable from a successful load (see use-frame-blocked).
   openUrl?: string;
@@ -362,7 +362,7 @@ function PlayBadge() {
 // with the list of what WOULD work.
 //
 // Neutral glyph, not the YouTube badge: this element carries Figma files and
-// Google Docs too (spec/121), and a red play button on an empty card told the
+// Google Docs too (docs/specs/009-elements/embed-providers.md), and a red play button on an empty card told the
 // user it was a video element and nothing else.
 function EmptyState({
   url,
@@ -372,7 +372,7 @@ function EmptyState({
   provider: EmbedProvider | undefined;
 }) {
   // Name the service this embed was made for, when it was made from one of
-  // the provider tiles (spec/121); the generic list is the fallback.
+  // the provider tiles (docs/specs/009-elements/embed-providers.md); the generic list is the fallback.
   const named = provider ? EMBED_PROVIDER_LABEL[provider] : null;
   return (
     <div className="pointer-events-none flex h-full w-full flex-col items-center justify-center gap-1.5 rounded-[inherit] px-4 text-center">

@@ -11,8 +11,8 @@ import {
 } from '@livediagram/diagram';
 import { makeShapePatcher } from '@/hooks/canvas/shape-patcher';
 
-// THE DATA CATEGORY'S SETTERS: the star rating (spec/52) and the charts
-// (spec/53) — pie slices, line series, the legend and their animations.
+// THE DATA CATEGORY'S SETTERS: the star rating (docs/specs/009-elements/rating.md) and the charts
+// (docs/specs/009-elements/pie-chart.md) — pie slices, line series, the legend and their animations.
 //
 // Split out of useDataShapeSetters, which is a catalogue of "change one field
 // on the selected elements of kind X" and had grown to cover ten kinds. These
@@ -30,7 +30,7 @@ export function useChartSetters({
   currentSelectionIds: () => ReadonlySet<string>;
   commit: (fn: (els: Element[]) => Element[]) => void;
 }) {
-  // Rating (spec/52): the star score + its optional animation, gated to rating
+  // Rating (docs/specs/009-elements/rating.md): the star score + its optional animation, gated to rating
   // shapes. The setters share one body (differing only in the patched field +
   // telemetry type), mirroring the progress setters.
   const setRatingFieldSelected = makeShapePatcher({
@@ -47,7 +47,7 @@ export function useChartSetters({
   const setRatingAnimRepeatSelected = (value: boolean) =>
     setRatingFieldSelected({ ratingAnimRepeat: value }, 'RatingAnim');
 
-  // Data charts (spec/53): the data + slice animation + legend toggle, gated to
+  // Data charts (docs/specs/009-elements/pie-chart.md): the data + slice animation + legend toggle, gated to
   // chart shapes (pie + bar).
   const setPieFieldSelected = makeShapePatcher({
     currentSelectionIds,
@@ -66,11 +66,11 @@ export function useChartSetters({
     setPieFieldSelected({ pieAnimRepeat: value }, 'ChartAnim');
   const setChartLegendSelected = (value: boolean) =>
     setPieFieldSelected({ chartLegend: value }, 'ChartLegend');
-  // Legend placement (spec/53): picking a side also turns the legend on, so the
+  // Legend placement (docs/specs/009-elements/pie-chart.md): picking a side also turns the legend on, so the
   // position tiles double as "on" while the Off tile uses setChartLegendSelected.
   const setChartLegendPositionSelected = (position: ChartLegendPosition) =>
     setPieFieldSelected({ chartLegend: true, chartLegendPosition: position }, 'ChartLegend');
-  // Line chart (spec/53): replace the whole 2-D dataset (the grid editor / CSV
+  // Line chart (docs/specs/009-elements/pie-chart.md): replace the whole 2-D dataset (the grid editor / CSV
   // import builds the next categories + series and commits them together).
   const setLineDataSelected = (categories: string[], series: LineSeries[]) =>
     setPieFieldSelected({ lineCategories: categories, lineSeries: series }, 'LineData');

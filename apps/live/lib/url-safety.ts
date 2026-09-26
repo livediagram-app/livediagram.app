@@ -1,4 +1,4 @@
-// URL safety for user-entered link addresses (spec/04 — security). A `url`
+// URL safety for user-entered link addresses (docs/specs/014-identity/auth-and-guest-access.md — security). A `url`
 // link is stored on an element / table cell / link-card and FOLLOWED by other
 // viewers of a shared diagram, so an unsafe scheme is a stored-XSS vector:
 // `window.open('javascript:...')` executes in our origin (noopener doesn't stop

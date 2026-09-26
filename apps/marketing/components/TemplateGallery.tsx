@@ -7,7 +7,7 @@ import { useState, type CSSProperties } from 'react';
 import { TemplateCarousel } from '@/components/TemplateCarousel';
 import { filterGallery, galleryTemplates, groupGallery } from '@/lib/template-gallery';
 
-// "What do you want to create?" (spec/16): one card per template the editor
+// "What do you want to create?" (docs/specs/019-marketing/marketing-site.md): one card per template the editor
 // ships, each category a four-across carousel (TemplateCarousel), with a
 // search box that filters as you type. Only the first category opens on
 // load; the rest sit folded in a cloud of category chips below it, so the
@@ -15,7 +15,7 @@ import { filterGallery, galleryTemplates, groupGallery } from '@/lib/template-ga
 // category alongside whatever is already open (nothing else folds; an
 // open category stays open for the visit), and a search shows every
 // matching category regardless. Every card is a link that creates that diagram straight away
-// and opens it in the editor (/new?template=<kind>, spec/14), so the
+// and opens it in the editor (/new?template=<kind>, docs/specs/007-editor/new-diagram-route.md), so the
 // landing page is one click from a drawn scaffold. The cards' artwork is
 // the editor picker's own preview (@livediagram/template-previews), so a
 // template looks the same here as it does in the app. Replaced the

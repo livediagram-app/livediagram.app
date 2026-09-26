@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-// Repeatable events get a fresh row each time (spec/138 §3.1).
+// Repeatable events get a fresh row each time (docs/specs/013-workspace/timeline.md §3.1).
 //
 // The regression: a rename carried the default '' dedupe key, so the
 // UNIQUE index on (source_type, source_id, event_type, dedupe_key) took

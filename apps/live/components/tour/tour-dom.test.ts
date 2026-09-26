@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { clickTour, findTour, waitForTour } from './tour-dom';
 
 // A tour anchor has to be something the user can actually SEE: chrome that
-// a surface hides (the event-storming board's palette header, spec/139)
+// a surface hides (the event-storming board's palette header, docs/specs/021-event-storming/event-storming.md)
 // still sits in the DOM with display:none, and anchoring to it put the
 // highlight ring at 0x0 in the top-left corner and clicked a trigger whose
 // menu then opened off-screen. jsdom does no layout, so laid-out nodes are
@@ -54,7 +54,7 @@ describe('tour DOM anchors', () => {
   });
 
   // The Toolbar layout's Explorer menu button anchors on its card, not the
-  // button inside (spec/148); a click on the card alone never opened it.
+  // button inside (docs/specs/007-editor/toolbar-layout.md); a click on the card alone never opened it.
   it('presses the button inside a wrapping anchor', () => {
     const el = anchor('dock-explorer', true);
     const button = document.createElement('button');

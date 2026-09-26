@@ -6,7 +6,7 @@ import {
 } from '@livediagram/diagram';
 import { Tooltip } from '@/components/primitives/Tooltip';
 
-// The dot-vote overlay (spec/39), lifted out of BoxedElementView: the
+// The dot-vote overlay (docs/specs/012-collaboration/session-tools.md), lifted out of BoxedElementView: the
 // tally pill on the element's bottom-right corner — live count,
 // brand-filled when it holds your dots (click to retract one) — and the
 // amber winner ring shown once the vote is revealed. Renders nothing
@@ -27,9 +27,9 @@ export function ElementVoteOverlay({
   vote: TabVote | null | undefined;
   selfId: string | null | undefined;
   voteMax: number | null | undefined;
-  // Kind rule AND the vote's layer scope (spec/96), resolved upstream.
+  // Kind rule AND the vote's layer scope (docs/specs/012-collaboration/vote-layer-scope.md), resolved upstream.
   votableInVote?: boolean;
-  // Vote-results walkthrough (spec/39): while it runs, the static winner
+  // Vote-results walkthrough (docs/specs/012-collaboration/session-tools.md): while it runs, the static winner
   // rings yield to ONE pulsing focus on the currently-reviewed element,
   // so attention lands on a single pick at a time.
   voteReviewActive?: boolean;
@@ -42,7 +42,7 @@ export function ElementVoteOverlay({
   // whether it is a revealed winner.
   const myVotes =
     vote && selfId ? (vote.votes[element.id]?.filter((id) => id === selfId).length ?? 0) : 0;
-  // Vote privacy (spec/39): with "hide running counts" on, the pill counts
+  // Vote privacy (docs/specs/012-collaboration/session-tools.md): with "hide running counts" on, the pill counts
   // only YOUR dots until the results are revealed — so you can still see
   // and retract what you spent, but a climbing total can't snowball the
   // room. "Show results" swaps every pill back to the true tally.
@@ -58,7 +58,7 @@ export function ElementVoteOverlay({
   // Once casting closes the buttons go: the tally is a result to read, not
   // a control, and the walkthrough wants the board quiet.
   const showReadOnlyCount = !!vote && !vote.active && voteTotal > 0 && votableInVote === true;
-  // Budget, and the one-dot-per-item rule when the vote has it (spec/39).
+  // Budget, and the one-dot-per-item rule when the vote has it (docs/specs/012-collaboration/session-tools.md).
   // Either disables plus rather than hiding it, so the control doesn't move
   // under the pointer mid-vote.
   const canCast = !!vote && !!selfId && canCastVote(vote, selfId, element.id);
@@ -95,7 +95,7 @@ export function ElementVoteOverlay({
           className="lvd-vote-stepper absolute bottom-1.5 right-1.5 origin-bottom-right transition-opacity"
           style={{ transform: `scale(${1 / zoom})` }}
           // The stepper sits ON the element, whose own press casts a dot
-          // too (spec/39). Without this a click meant for minus would
+          // too (docs/specs/012-collaboration/session-tools.md). Without this a click meant for minus would
           // bubble into that and immediately re-add what it removed.
           onPointerDown={(e) => e.stopPropagation()}
         >

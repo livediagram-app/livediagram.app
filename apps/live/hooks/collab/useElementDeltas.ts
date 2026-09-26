@@ -3,7 +3,7 @@ import type { ElementDelta, Tab } from '@livediagram/diagram';
 import type { connectRoom } from '@/lib/api-client';
 import { applyDeltaToTabs } from '@/app/diagram/[id]/room-op-apply';
 
-// Send ONE answer / idea / checklist tick / comment change (spec/152).
+// Send ONE answer / idea / checklist tick / comment change (docs/specs/012-collaboration/collab-race-hardening.md).
 //
 // Applied to our own tab through the same `applyDeltaToTabs` every receiver
 // runs, and sent straight down the socket rather than left to the 600 ms
@@ -14,7 +14,7 @@ import { applyDeltaToTabs } from '@/app/diagram/[id]/room-op-apply';
 // the way out (room.ts); our own copy keeps it, for our delete button.
 //
 // Through `tickTabs`, never a history commit: these are the room's answers,
-// and one person's Ctrl+Z must not take them back (spec/122).
+// and one person's Ctrl+Z must not take them back (docs/specs/012-collaboration/participant-responses.md).
 export type ApplyElementDelta = (elementId: string, delta: ElementDelta, tabId?: string) => void;
 
 export function useElementDeltas(deps: {

@@ -32,7 +32,7 @@ export function rowToFolder(row: FolderRow): FolderDTO {
     id: row.id,
     ownerId: row.owner_id,
     parentId: row.parent_id,
-    // Team scope (spec/35): drives which authorisation rule the
+    // Team scope (docs/specs/013-workspace/team-shared-diagrams.md): drives which authorisation rule the
     // folder routes apply (membership vs ownership), so it matters
     // as much as owner_id below.
     teamId: row.team_id ?? null,

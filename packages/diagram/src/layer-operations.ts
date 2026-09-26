@@ -10,7 +10,7 @@ import {
   type Layer,
 } from './layers';
 
-// EVERY WAY A LAYER CHANGES (spec/74), as pure Tab -> Tab functions.
+// EVERY WAY A LAYER CHANGES (docs/specs/006-diagram/layers.md), as pure Tab -> Tab functions.
 //
 // Split from layers.ts along the seam that file already drew between its
 // queries and its operations. The queries answer "what is on this layer, and
@@ -93,7 +93,7 @@ export function setLayerLock(tab: Tab, layerId: string, locked: boolean): Tab {
   });
 }
 
-// Whole-layer opacity (spec/74), clamped to 0..1; the key is dropped at
+// Whole-layer opacity (docs/specs/006-diagram/layers.md), clamped to 0..1; the key is dropped at
 // full opacity so untouched layers stay byte-light.
 export function setLayerOpacity(tab: Tab, layerId: string, opacity: number): Tab {
   const clamped = Math.max(0, Math.min(1, opacity));
@@ -104,7 +104,7 @@ export function setLayerOpacity(tab: Tab, layerId: string, opacity: number): Tab
 }
 
 // Hide every OTHER layer, making `layerId` the only visible one (the
-// row menu's "Hide Other Layers", spec/74).
+// row menu's "Hide Other Layers", docs/specs/006-diagram/layers.md).
 export function hideOtherLayers(tab: Tab, layerId: string): Tab {
   const t = materializeLayers(tab);
   const ls = t.layers!;
@@ -139,7 +139,7 @@ export function moveLayer(tab: Tab, layerId: string, toIndex: number): Tab {
   return { ...tab, layers: next };
 }
 
-// Delete a layer AND everything on it (spec/74: Photoshop's rule, behind
+// Delete a layer AND everything on it (docs/specs/006-diagram/layers.md: Photoshop's rule, behind
 // the panel's confirm dialog). Arrows on OTHER layers that pin to a
 // removed element cascade with it — same rule as delete-selected. The last
 // remaining layer can't be deleted.
@@ -153,7 +153,7 @@ export function deleteLayer(tab: Tab, layerId: string): Tab {
   };
 }
 
-// Empty a layer without removing it (the row menu's "Clear", spec/74).
+// Empty a layer without removing it (the row menu's "Clear", docs/specs/006-diagram/layers.md).
 export function clearLayerElements(tab: Tab, layerId: string): Tab {
   const ls = tab.layers;
   if (!ls?.some((l) => l.id === layerId)) return tab;
@@ -176,7 +176,7 @@ function withoutLayerElements(tab: Tab, layerId: string): Element[] {
   });
 }
 
-// Merge a layer into its neighbour (spec/74): every element on `layerId`
+// Merge a layer into its neighbour (docs/specs/006-diagram/layers.md): every element on `layerId`
 // is restamped onto the layer directly above / below it, and the merged
 // layer disappears (the neighbour survives, keeping its name + state,
 // like Photoshop's Merge Down). The merged-in elements keep their visual
@@ -215,7 +215,7 @@ export function moveElementsToLayer(tab: Tab, ids: ReadonlySet<ElementId>, layer
   return changed ? { ...tab, elements } : tab;
 }
 
-// --- Bring to Front / Send to Back as LAYER moves (spec/74) ----------------
+// --- Bring to Front / Send to Back as LAYER moves (docs/specs/006-diagram/layers.md) ----------------
 //
 // These two buttons power the layers rather than an intra-band z-index:
 // the selection moves onto the top (resp. bottom) layer, and when that
@@ -276,4 +276,4 @@ function layerEdgeMove(tab: Tab, ids: ReadonlySet<ElementId>, edge: 'front' | 'b
 
 // A layer name the user never chose ("Layer 1", "Layer 2", ...). The
 // smart-naming path in the editor (a default-named layer adopts the
-// first label committed onto one of its elements, spec/74) only ever
+// first label committed onto one of its elements, docs/specs/006-diagram/layers.md) only ever

@@ -1,5 +1,5 @@
 // "Which element is straight out that way?" — the target picker behind the
-// touch quick-connect (spec/09).
+// touch quick-connect (docs/specs/008-canvas/canvas-and-palette.md).
 //
 // On a phone the quick-add ring can't be dragged the way a mouse drags it, so
 // tapping the + used to drop an arrow with a free end hanging 50px into space,

@@ -1,4 +1,4 @@
-// Whether a timeline event counts as "New" for this reader (spec/138 §2).
+// Whether a timeline event counts as "New" for this reader (docs/specs/013-workspace/timeline.md §2).
 //
 // Two bounds, and the upper one is the interesting half. Expiry warnings are
 // written FUTURE-dated on purpose — a token lapsing on the 12th is recorded at

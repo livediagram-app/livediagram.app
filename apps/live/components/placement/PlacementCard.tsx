@@ -2,11 +2,11 @@
 
 import { useState, type ReactNode } from 'react';
 
-// The pieces a placement level is built from (spec/76, spec/15, spec/141):
+// The pieces a placement level is built from (docs/specs/006-diagram/offline-mode.md, docs/specs/013-workspace/folders.md, docs/specs/006-diagram/save-locations.md):
 // the selectable destination card, the inline New Folder card, their
 // cascade entrance, and the glyphs. PlacementBrowser composes them into the
-// space -> folder browse; TabOrganiseDialogs (spec/30) and the wizard's Save
-// location row (spec/141) use the cards on their own.
+// space -> folder browse; TabOrganiseDialogs (docs/specs/006-diagram/tab-folders.md) and the wizard's Save
+// location row (docs/specs/006-diagram/save-locations.md) use the cards on their own.
 
 // Tile grid (icon over label) or stacked rows (icon beside label, the
 // file-explorer idiom). One prop, threaded from the browser down to each
@@ -29,7 +29,7 @@ function enterProps(layout: PlacementLayout, index: number | undefined) {
 // place (the popover the flow needs, without portal plumbing inside the
 // modal). Enter creates in the CURRENT level's scope and the browser selects
 // the fresh folder; Escape backs out. Exported for the tab Add-to-Folder
-// dialog (spec/30), which offers the same create-in-place affordance.
+// dialog (docs/specs/006-diagram/tab-folders.md), which offers the same create-in-place affordance.
 // The dashed "create one here" tile: a label at rest, an inline name field
 // once clicked. New Folder and New Team are two skins of it, so the two
 // gestures (click, type, Enter or tap away) are the same wherever a level
@@ -177,7 +177,7 @@ export function NewFolderTile({
   );
 }
 
-// The space overview's "start a team here" (spec/32, spec/141). Signed-in
+// The space overview's "start a team here" (docs/specs/013-workspace/teams.md, docs/specs/006-diagram/save-locations.md). Signed-in
 // only: the host passes the handler only when teams are on, so a guest
 // never sees a tile that would lead to a 401.
 export function NewTeamTile({

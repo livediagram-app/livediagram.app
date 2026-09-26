@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { pickBackend } from './pick-backend';
 
 // Which engine the in-browser reader runs on, and — when it is the processor —
-// WHY (spec/139 Phase 9): reading there is minutes on a big wall, not seconds,
+// WHY (docs/specs/021-event-storming/event-storming.md Phase 9): reading there is minutes on a big wall, not seconds,
 // and the author should know it is the machine, not the import.
 describe('pickBackend', () => {
   const adapter = (features: string[], info: Record<string, unknown> = {}, extra = {}) => ({

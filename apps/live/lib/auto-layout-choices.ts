@@ -1,4 +1,4 @@
-// The editor's Auto Layout style choices (spec/47 "Layout styles"): the one
+// The editor's Auto Layout style choices (docs/specs/008-canvas/layout-cleanup.md "Layout styles"): the one
 // place the UI ids map to `autoLayoutElements` options, display labels, and
 // telemetry types. Consumed by the Cleanup menu tiles, the command palette,
 // and useTabCanvas so the three surfaces can't drift.
@@ -15,7 +15,7 @@ type ChoiceSpec = {
   keywords: string;
   // What the choice asks of `autoLayoutElements`.
   options: Pick<AutoLayoutOptions, 'style' | 'direction'>;
-  // `type` on the Tab/Aligned telemetry event (spec/22: preset token only).
+  // `type` on the Tab/Aligned telemetry event (docs/specs/017-telemetry/telemetry.md: preset token only).
   telemetryType: string;
 };
 

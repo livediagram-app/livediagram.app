@@ -1,4 +1,4 @@
-// MCP prompts (spec/62 §4.10): pre-canned prompt templates the client can
+// MCP prompts (docs/specs/015-api/mcp-server.md §4.10): pre-canned prompt templates the client can
 // surface (as slash commands / quick actions) so a user discovers what the
 // server is for without knowing the tool names. Each returns a single user
 // message that steers the model to the right tools + the graph-first path.

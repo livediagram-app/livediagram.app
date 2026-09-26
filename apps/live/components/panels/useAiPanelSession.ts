@@ -1,6 +1,6 @@
 'use client';
 
-// The AI panel's request session (spec/25), lifted out of AiPanel: the
+// The AI panel's request session (docs/specs/007-editor/ai-assistance.md), lifted out of AiPanel: the
 // mode / prompt / streaming-status / conversation-history state, the
 // per-mode and per-tab reset effects, and the streaming handleSend with
 // its history bookkeeping + telemetry. AiPanel keeps the render.

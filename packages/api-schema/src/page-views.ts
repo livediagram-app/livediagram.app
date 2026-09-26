@@ -1,4 +1,4 @@
-// Page view telemetry (spec/150): which page a `Page·View` event names, and
+// Page view telemetry (docs/specs/017-telemetry/page-view-telemetry.md): which page a `Page·View` event names, and
 // which app serves it. The normaliser and the validator live together so the
 // browser can never produce a path the ingest would drop, and the app
 // classifier shares the router's own segment list so the dashboard and the
@@ -6,7 +6,7 @@
 
 // The live app's top-level page route segments. These serve at clean URLs
 // (`/diagram`, `/explorer`, ...), and the router forwards them to the live
-// worker (spec/08). Marketing owns every other first segment.
+// worker (docs/specs/016-platform/router-app.md). Marketing owns every other first segment.
 export const LIVE_ROUTE_SEGMENTS: ReadonlySet<string> = new Set([
   'diagram',
   'embed',
@@ -62,7 +62,7 @@ export function pageViewPath(pathname: string): string | null {
     .toLowerCase()
     .split('/')
     .filter((s) => s !== '');
-  // Every `/diagram/...` URL is the editor on one diagram (spec/14), and
+  // Every `/diagram/...` URL is the editor on one diagram (docs/specs/007-editor/new-diagram-route.md), and
   // whatever follows the segment is the diagram's id.
   if (segments[0] === 'diagram') segments = ['diagram'];
   const last = segments[segments.length - 1];
@@ -81,7 +81,7 @@ export function pageViewPath(pathname: string): string | null {
   return isValidPageViewPath(path) ? path : null;
 }
 
-/** Which app serves a normalised page path (the router's routing, spec/08). */
+/** Which app serves a normalised page path (the router's routing, docs/specs/016-platform/router-app.md). */
 export function pageViewApp(path: string): PageViewApp {
   const first = path.split('/')[1] ?? '';
   if (first === 'help') return 'Help';

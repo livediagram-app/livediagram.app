@@ -1,4 +1,4 @@
-// Pure placement math for the tour popover (spec/79), split out so the
+// Pure placement math for the tour popover (docs/specs/007-editor/editor-tour.md), split out so the
 // side-picking and clamping rules are testable without a DOM. The popover
 // prefers sitting beside its target (right, then left), falls back to
 // below / above, and finally centres over the viewport when nothing fits

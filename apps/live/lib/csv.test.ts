@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { parseCsvLineData } from './csv';
 
-describe('parseCsvLineData (spec/53)', () => {
+describe('parseCsvLineData (docs/specs/009-elements/pie-chart.md)', () => {
   it('parses a header + rows into categories + series', () => {
     const out = parseCsvLineData('Month,Sales,Costs\nJan,10,5\nFeb,20,8\nMar,15,6');
     expect(out).not.toBeNull();

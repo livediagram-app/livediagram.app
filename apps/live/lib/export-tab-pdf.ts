@@ -1,4 +1,4 @@
-// PDF export (spec/15 export menu). Wraps the rendered canvas into a minimal,
+// PDF export (docs/specs/013-workspace/folders.md export menu). Wraps the rendered canvas into a minimal,
 // hand-rolled single-page PDF (raw RGB pixels, FlateDecode-compressed) so we
 // don't pull in a multi-hundred-KB pdf library for a single-image export.
 // Split out of export-tab.ts: the PDF container format is a self-contained

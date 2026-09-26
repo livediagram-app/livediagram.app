@@ -17,7 +17,7 @@ import {
 } from '@/components/canvas/ElementEllipsisMenu';
 import { SessionTimerSettings } from '@/components/canvas/SessionElementSettings';
 
-// The face of a Timer session element (spec/105) once it is a real timer
+// The face of a Timer session element (docs/specs/012-collaboration/session-button.md) once it is a real timer
 // rather than a button that starts one somewhere else.
 //
 // It is the SAME timer as the pill in the top chrome, in every sense worth
@@ -60,7 +60,7 @@ export function SessionTimerFace({
   /** The element's configured length, which the `…` menu edits. */
   minutes: number;
   onSetMinutes?: (minutes: number) => void;
-  /** The way out of the presets to the element's full menu (spec/09). */
+  /** The way out of the presets to the element's full menu (docs/specs/008-canvas/canvas-and-palette.md). */
   onOpenSettings?: () => void;
 }) {
   // Re-render 4x a second while running so the clock advances, exactly as the
@@ -99,7 +99,7 @@ export function SessionTimerFace({
           {(close) => (
             <>
               {/* The Studio's own timer UI, not a second design of it
-                  (spec/39): dial, presets, and the Start that runs it for the
+                  (docs/specs/012-collaboration/session-tools.md): dial, presets, and the Start that runs it for the
                   room. Dragging the dial sets THIS element's length. */}
               <SessionTimerSettings
                 config={{ tool: 'timer', minutes }}
@@ -118,7 +118,7 @@ export function SessionTimerFace({
           )}
         </ElementEllipsisMenu>
       ) : null}
-      {/* A DIAL (spec/122). Ticks along the edge you read the digits against
+      {/* A DIAL (docs/specs/012-collaboration/participant-responses.md). Ticks along the edge you read the digits against
           say "instrument"; the drain behind them is the hand. */}
       <DialTicks textColor="currentColor" />
       {timer ? (

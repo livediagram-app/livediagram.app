@@ -20,8 +20,8 @@ import { participantBadges } from '@/lib/collaborator-roster';
 // presence-fade animation behaviour is testable in isolation.
 //
 // Clicking any avatar, or the "+N" overflow badge, opens the Collaborators
-// modal (spec/145), which lists everyone by tab and is where Follow lives
-// (spec/131). The avatar used to start following directly.
+// modal (docs/specs/012-collaboration/collaborator-enhancements.md), which lists everyone by tab and is where Follow lives
+// (docs/specs/012-collaboration/follow-me-viewport.md). The avatar used to start following directly.
 
 const POP_OUT_MS = 240;
 
@@ -35,7 +35,7 @@ export function TabPresenceStack({
   participants: Participant[];
   selfId: string;
   selfRole: 'edit' | 'view';
-  // Who we are following (spec/131), for the ring + tooltip chip.
+  // Who we are following (docs/specs/012-collaboration/follow-me-viewport.md), for the ring + tooltip chip.
   followingId?: string | null;
   // Opens the Collaborators modal with the clicked person highlighted (null
   // from the "+N" badge). Absent leaves the avatars as plain indicators.

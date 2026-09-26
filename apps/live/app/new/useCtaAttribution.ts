@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import { CTA_VIA_PARAM, ctaSourceFromSearch, type CtaSource } from '@livediagram/api-schema';
 import { track } from '@/lib/telemetry';
 
-// Landing funnel (spec/153): which public-page CTA brought this visit to /new.
+// Landing funnel (docs/specs/019-marketing/landing-funnel.md): which public-page CTA brought this visit to /new.
 //
 // The CTA's href carries `via=<Surface>.<Slot>`. On arrival this reads it
 // once, sends `Cta·Opened·<source>`, and strips the parameter from the

@@ -1,4 +1,4 @@
-// The next note on an event-storming board (spec/139 Phase 7): the note the
+// The next note on an event-storming board (docs/specs/021-event-storming/event-storming.md Phase 7): the note the
 // notation most likely puts on each side of a note, so a button can add it.
 // The added note is an ordinary note; the board keeps no relation between the
 // two.

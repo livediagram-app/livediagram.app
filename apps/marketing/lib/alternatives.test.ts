@@ -9,7 +9,7 @@ import { ALTERNATIVES, ALTERNATIVE_SLUGS, getAlternative } from './alternatives'
 // break SEO + routing in ways that don't surface during normal
 // page renders.
 //
-// The honesty rules in spec/21 (every claim maps to a shipped
+// The honesty rules in docs/specs/019-marketing/comparison-pages.md (every claim maps to a shipped
 // feature; every competitor gets a real "where they're the better
 // pick" section; comparisons stay qualitative) are not enforceable
 // from a test, but the structural invariants below pin the shape
@@ -67,7 +67,7 @@ describe('ALTERNATIVES catalogue', () => {
   });
 
   it('every entry has at least one usBest and one themBest point', () => {
-    // spec/21 honesty rule: each comparison page MUST include real
+    // docs/specs/019-marketing/comparison-pages.md honesty rule: each comparison page MUST include real
     // reasons to pick the competitor (themBest) alongside the
     // livediagram differentiators (usBest). Both arrays are
     // rendered as bulleted lists; an empty themBest would leave a
@@ -83,7 +83,7 @@ describe('ALTERNATIVES catalogue', () => {
   });
 
   it('every entry has deep-dive sections with a heading and at least one paragraph', () => {
-    // spec/21 "Page shape": each page carries competitor-specific
+    // docs/specs/019-marketing/comparison-pages.md "Page shape": each page carries competitor-specific
     // prose sections expanding the key value themes. The page renders
     // each as an <h2> + <p> block; an empty heading or paragraph list
     // would render a bare heading or an invisible section.
@@ -102,7 +102,7 @@ describe('ALTERNATIVES catalogue', () => {
 
   it('every entry has FAQs with non-empty questions and answers', () => {
     // The faqs feed both the on-page FAQ section and the FAQPage
-    // JSON-LD emitted per detail page (spec/21 "Metadata"). An empty
+    // JSON-LD emitted per detail page (docs/specs/019-marketing/comparison-pages.md "Metadata"). An empty
     // question or answer would produce invalid structured data
     // (Google rejects Question entries with empty acceptedAnswer
     // text) alongside a visibly broken on-page block.

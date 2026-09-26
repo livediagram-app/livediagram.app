@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// The landing funnel's editor end (spec/153): /new reads the CTA source from
+// The landing funnel's editor end (docs/specs/019-marketing/landing-funnel.md): /new reads the CTA source from
 // `via`, counts the arrival once, strips the parameter from the address bar,
 // and counts the diagram at most once per arrival.
 

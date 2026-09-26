@@ -37,14 +37,14 @@ import { getSticker, stickerDropSize } from '@/lib/stickers';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { stampSizeFor } from '@/lib/stamp-placement';
 
-// The pure element construction behind commitDraw (spec/09 draw-to-add),
+// The pure element construction behind commitDraw (docs/specs/008-canvas/canvas-and-palette.md draw-to-add),
 // lifted out of useShapeDrawing: each builder interprets the gesture's
 // raw start + end canvas points for its intent kind (box vs line vs
 // composite) and returns the minted element(s). The hook stays the
 // owner of everything stateful — the functional commit, selection,
 // telemetry, and the image-picker follow-up.
 
-// The board-wide sticky treatment on an event-storming board (spec/139):
+// The board-wide sticky treatment on an event-storming board (docs/specs/021-event-storming/event-storming.md):
 // one size for life (the plain square silhouette — tap-inheritance and
 // drag-sizing both stand down), plus a random hand-placed tilt (±1.1°,
 // one decimal) so a wall of notes reads as a workshop rather than a grid.
@@ -53,7 +53,7 @@ function eventStormingBoardStickyExtras(): Partial<StickyElement> {
     width: 200,
     height: 200,
     fixedSize: true,
-    // Auto-fit, centred both ways (spec/139): a workshop note is one short
+    // Auto-fit, centred both ways (docs/specs/021-event-storming/event-storming.md): a workshop note is one short
     // phrase that should FILL its paper and sit in the middle of it, like a
     // marker-written sticky — never a small line clinging to the top-left.
     // The note can't be resized, so the text adapting is what makes a long
@@ -92,20 +92,20 @@ const isDrawTap = (startX: number, startY: number, endX: number, endY: number): 
   Math.abs(endX - startX) < TAP_TRAVEL_PX && Math.abs(endY - startY) < TAP_TRAVEL_PX;
 
 // Largest box of the given aspect (width / height) that fits inside w x h.
-// Used by the embed draw (spec/114): its 16:9 lock means the drag chooses the
+// Used by the embed draw (docs/specs/009-elements/youtube-video.md): its 16:9 lock means the drag chooses the
 // scale, not the ratio, so the frame is fitted into the drawn box rather than
 // stretched to fill it.
 function fitToAspect(w: number, h: number, aspect: number): { width: number; height: number } {
   return w / h > aspect ? { width: h * aspect, height: h } : { width: w, height: w / aspect };
 }
 
-// The embed's locked ratio (spec/114), read off the factory rather than
+// The embed's locked ratio (docs/specs/009-elements/youtube-video.md), read off the factory rather than
 // written twice — createVideo's 480x270 IS the definition of 16:9 here.
 const EMBED_ASPECT = 16 / 9;
 
 // The box a DRAG lands, in canvas coords: the drawn rectangle as-is for every
 // intent except an aspect-locked embed, which is fitted inside it and centred
-// on it (spec/114). Exported so CanvasDrawPreview outlines exactly the box
+// on it (docs/specs/009-elements/youtube-video.md). Exported so CanvasDrawPreview outlines exactly the box
 // that will commit — previewing the raw drag while the commit fitted it would
 // show the user one rectangle and hand them another.
 export function drawnDragBox(
@@ -137,7 +137,7 @@ export function drawnDragBox(
 // appeared); a real drag uses the dragged endpoints as-is. Y is always
 // anchored at startY for a click (a click wants a flat line). Each
 // drawn endpoint snaps onto a nearby arrow's line at draw time
-// (spec/50) so drawing a message onto another arrow connects
+// (docs/specs/008-canvas/arrow-to-arrow.md) so drawing a message onto another arrow connects
 // immediately; a stray click lays the placeholder free (no snapping).
 export function buildDrawnArrow(
   startX: number,
@@ -166,7 +166,7 @@ export function buildDrawnArrow(
   };
 }
 
-// Component branch (spec/09, spec/147): build the component at the theme's
+// Component branch (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/009-elements/web-components-and-no-groups.md): build the component at the theme's
 // colours, then a tap drops it at its natural size centred on the tap, while
 // a drag sizes it to the dragged box like any shape. A component is one
 // element that lays itself out, so it re-flows into the box rather than
@@ -217,7 +217,7 @@ export function buildDrawnBoxed(
   activeTab: Tab,
 ) {
   const isTap = isDrawTap(startX, startY, endX, endY);
-  // Event-storming stationery (spec/139): on an ES board every sticky has a
+  // Event-storming stationery (docs/specs/021-event-storming/event-storming.md): on an ES board every sticky has a
   // FIXED silhouette (the drag gesture sizes nothing) and a hand-placed
   // tilt; a kinded note additionally carries its own footprint everywhere.
   const esBoardSticky = intent.type === 'sticky' && isEventStormingTab(activeTab);
@@ -233,21 +233,21 @@ export function buildDrawnBoxed(
             : intent.type === 'link-card'
               ? createLinkCard(startX, startY)
               : intent.type === 'video'
-                ? // The Media tab has a tile per service (spec/121), so the
+                ? // The Media tab has a tile per service (docs/specs/009-elements/embed-providers.md), so the
                   // choice arrives on the intent and lands on the element
                   // here rather than leaving a bare embed to re-point.
                   createVideo(startX, startY, intent.provider)
                 : createImage(startX, startY);
   const tapSize = inheritedSizeFor(base, inheritFrom);
-  // A fixed-size kind (spec/103) ignores the drag entirely: dragging one out
+  // A fixed-size kind (docs/specs/009-elements/mode-button.md) ignores the drag entirely: dragging one out
   // still places it, at the one size it is meant to be.
   const fixedSize = (base.type === 'shape' && isFixedSizeShape(base.shape)) || esBoardSticky;
   // Shared with the live preview so the outline the user sizes against is the
-  // box that lands — including the embed's 16:9 fit (spec/114).
+  // box that lands — including the embed's 16:9 fit (docs/specs/009-elements/youtube-video.md).
   const dragBox = drawnDragBox(intent, startX, startY, endX, endY);
   const drawnWidth = fixedSize || isTap ? tapSize.width : dragBox.width;
   const height = fixedSize || isTap ? tapSize.height : dragBox.height;
-  // A tapped sticker (spec/116) takes its flavour's aspect rather than the
+  // A tapped sticker (docs/specs/010-palette/stickers.md) takes its flavour's aspect rather than the
   // per-kind default: emoji stickers are square, badge pills are wide, and
   // both are the one `sticker` kind, so the default-size table can't say it.
   // A DRAGGED one keeps the box the user dragged, like anything else.
@@ -255,7 +255,7 @@ export function buildDrawnBoxed(
     isTap && intent.type === 'shape' && intent.kind === 'sticker' && intent.stickerId
       ? stickerDropSize(getSticker(intent.stickerId), { width: drawnWidth, height }).width
       : drawnWidth;
-  // A fixed-size workshop note is STAMPED (spec/139 Phase 4): centred on the
+  // A fixed-size workshop note is STAMPED (docs/specs/021-event-storming/event-storming.md Phase 4): centred on the
   // release point at its own final size, whatever the gesture did.
   const stamp = stampSizeFor(intent, activeTab);
   const x = stamp ? endX - stamp.width / 2 : isTap ? startX - width / 2 : dragBox.x;
@@ -265,7 +265,7 @@ export function buildDrawnBoxed(
     patternColor: activeTab.patternColor,
     theme: activeTab.theme,
   });
-  // Seed the tab's default text size onto the new element (spec/28).
+  // Seed the tab's default text size onto the new element (docs/specs/004-interface-design/fonts.md).
   return {
     ...base,
     ...colours,
@@ -281,13 +281,13 @@ export function buildDrawnBoxed(
       ? {
           iconId: intent.iconId,
           ...(intent.label ? { label: intent.label } : {}),
-          // The four animated glyphs arrive already moving (spec/09).
+          // The four animated glyphs arrive already moving (docs/specs/008-canvas/canvas-and-palette.md).
           ...(defaultIconAnimation(intent.iconId)
             ? { iconAnimation: defaultIconAnimation(intent.iconId) }
             : {}),
         }
       : {}),
-    // Event-storming sticky (spec/139): the tile's semantic colour lands as
+    // Event-storming sticky (docs/specs/021-event-storming/event-storming.md): the tile's semantic colour lands as
     // the element fill. Stickies are exempt from theme recolouring, so the
     // notation survives every theme without themeLockFill.
     ...(intent.type === 'sticky' && intent.fill ? { fillColor: intent.fill } : {}),
@@ -299,13 +299,13 @@ export function buildDrawnBoxed(
     ...(intent.type === 'sticky' && intent.esKind
       ? {
           // The notation kind is DOMAIN DATA, not a colour coincidence
-          // (spec/139): it names the selection and is what any later
+          // (docs/specs/021-event-storming/event-storming.md): it names the selection and is what any later
           // notation-aware feature reads.
           esKind: intent.esKind,
           ...eventStormingNoteSize(intent.esKind),
         }
       : {}),
-    // Stage routing (spec/139): on an event-storming board the note files
+    // Stage routing (docs/specs/021-event-storming/event-storming.md): on an event-storming board the note files
     // onto its workshop stage's layer — a Command dropped while browsing Big
     // picture still lands under Process. Only when the target layer exists,
     // is visible AND unlocked: stamping onto a hidden layer creates an
@@ -313,19 +313,19 @@ export function buildDrawnBoxed(
     // in both cases the note falls through to the ordinary active-layer
     // stamping at the commit choke point instead.
     ...(intent.type === 'sticky' && intent.esKind ? esBoardLayerStamp(activeTab) : {}),
-    // Technology marks render at a fixed size (spec/41), so warping the
+    // Technology marks render at a fixed size (docs/specs/010-palette/technology-icons.md), so warping the
     // box can't warp the mark — the aspect lock createShape('icon') bakes
     // in would only fight resizing the caption room, so drop it.
     ...(intent.type === 'shape' && intent.iconId && isTechIconId(intent.iconId)
       ? { aspectLocked: false }
       : {}),
-    // The palette offers a tile per session tool and per reaction (spec/105,
-    // spec/135), so the choice arrives with the intent and is applied here
+    // The palette offers a tile per session tool and per reaction (docs/specs/012-collaboration/session-button.md,
+    // docs/specs/009-elements/reaction-pad.md), so the choice arrives with the intent and is applied here
     // rather than left on the factory default for the user to go and change.
     ...(intent.type === 'shape' && intent.kind === 'session-button' && intent.session
       ? {
           session: { ...defaultSessionConfig(intent.session) },
-          // A TIMER renders as the pill from the top chrome (spec/105), which
+          // A TIMER renders as the pill from the top chrome (docs/specs/012-collaboration/session-button.md), which
           // is wide and short; the session button's square-ish default box
           // clipped the kicker off one end and the remove control off the
           // other. Only on a TAP — a deliberate drag is the user saying what
@@ -347,7 +347,7 @@ export function buildDrawnBoxed(
     ...(intent.type === 'shape' && intent.kind === 'reaction-pad' && intent.reaction
       ? { reaction: intent.reaction, label: REACTION_PAD_LABEL[intent.reaction] }
       : {}),
-    // Sticker draw intent (spec/116): carry the chosen art. Lands SQUARE to
+    // Sticker draw intent (docs/specs/010-palette/stickers.md): carry the chosen art. Lands SQUARE to
     // the canvas — an automatic tilt was tried and dropped, see the spec.
     // Rotation is still available by hand, from the element's Rotation menu.
     ...(intent.type === 'shape' && intent.kind === 'sticker' && intent.stickerId
@@ -356,7 +356,7 @@ export function buildDrawnBoxed(
   } as typeof base;
 }
 
-// The ONE way a workshop note is minted (spec/139), for every entry point that
+// The ONE way a workshop note is minted (docs/specs/021-event-storming/event-storming.md), for every entry point that
 // is not a draw gesture: the anchor-add affordance, and a photo import. It
 // goes through `buildDrawnBoxed` rather than beside it, so fill, silhouette,
 // tilt, fixed size, auto-fit, caps and layer routing can never drift between

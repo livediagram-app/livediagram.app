@@ -8,16 +8,16 @@ import {
 
 // Mind-map-tree / bubble-map + process-style template builders (swimlane,
 // decision tree, approval workflow, data flow). Split out of template-
-// builders.ts; each is pure (cx, cy) -> Element[]. See spec/09.
+// builders.ts; each is pure (cx, cy) -> Element[]. See docs/specs/008-canvas/canvas-and-palette.md.
 export function buildBlank(): Element[] {
   return [];
 }
 
-// Tree mind map (spec/09): a left-to-right hierarchy — root, a vertical stack
+// Tree mind map (docs/specs/008-canvas/canvas-and-palette.md): a left-to-right hierarchy — root, a vertical stack
 // of branches, and one leaf per branch — connected by plain lines. Distinct
 // from the radial 'mindmap' for users who think in outlines.
 //
-// Built from MIND NODES (spec/118), not plain squares, so the template hands
+// Built from MIND NODES (docs/specs/009-elements/mind-node.md), not plain squares, so the template hands
 // you a live tree rather than a picture of one: select any node and Tab
 // grows a child, Enter a sibling, each inheriting the size of the node you
 // stood on. Squares looked identical and did nothing.
@@ -76,7 +76,7 @@ export function buildMindMapTree(cx: number, cy: number): Element[] {
   return [...arrows, root, ...branches, ...leaves];
 }
 
-// Bubble map (spec/09): a central topic ringed by descriptive bubbles, joined
+// Bubble map (docs/specs/008-canvas/canvas-and-palette.md): a central topic ringed by descriptive bubbles, joined
 // by plain lines. A flatter alternative to the radial mind map (no
 // sub-branches). Anchors face inward via bestAnchorTowards so the spokes are
 // tidy at every angle.
@@ -129,10 +129,10 @@ export function buildBubbleMap(cx: number, cy: number): Element[] {
   return [...arrows, center, ...bubbles];
 }
 
-// Swimlane flowchart (spec/09): an order fulfilment process flowing across
+// Swimlane flowchart (docs/specs/008-canvas/canvas-and-palette.md): an order fulfilment process flowing across
 // three role lanes.
 //
-// The lanes are LANE elements (spec/119). They used to be a frame plus a
+// The lanes are LANE elements (docs/specs/009-elements/lane.md). They used to be a frame plus a
 // separate square "gutter cell" holding the role name — two elements
 // pretending to be one, because there was nowhere on a frame for a title to
 // live. The lane element has a title gutter built in, so the role is now the
@@ -208,7 +208,7 @@ export function buildSwimlane(cx: number, cy: number): Element[] {
   return [...lanes, ...arrows, order, review, inStock, restock, pick, ship, delivered];
 }
 
-// Decision tree (spec/09): a root question that branches yes / no, with one
+// Decision tree (docs/specs/008-canvas/canvas-and-palette.md): a root question that branches yes / no, with one
 // branch posing a further question — outcomes cascade downward.
 export function buildDecisionTree(cx: number, cy: number): Element[] {
   const dW = 130;
@@ -264,7 +264,7 @@ export function buildDecisionTree(cx: number, cy: number): Element[] {
   return [...arrows, root, a, elseD, b, c];
 }
 
-// Approval workflow (spec/09): a two-stage sign-off with rework as a
+// Approval workflow (docs/specs/008-canvas/canvas-and-palette.md): a two-stage sign-off with rework as a
 // first-class step. Submit request → Manager review → Approved? gates the
 // main row; Yes carries on through Finance sign-off to Done, No drops to a
 // Request changes step below whose edge loops back to Submit — so a
@@ -337,7 +337,7 @@ export function buildApprovalWorkflow(cx: number, cy: number): Element[] {
   return [...arrows, submit, review, approve, signOff, done, rework];
 }
 
-// Data flow diagram (spec/09): an external entity, a process (circle), a data
+// Data flow diagram (docs/specs/008-canvas/canvas-and-palette.md): an external entity, a process (circle), a data
 // store (cylinder) and an output, wired by labelled data flows.
 export function buildDataFlow(cx: number, cy: number): Element[] {
   const entity = {

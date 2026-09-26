@@ -1,5 +1,5 @@
 // Matching a photographed wall against the board it is being imported into
-// (spec/139 Phase 8), and working out where the photo sits on the canvas.
+// (docs/specs/021-event-storming/event-storming.md Phase 8), and working out where the photo sits on the canvas.
 //
 // This is the half the model is NEVER asked about. "Which of these notes are
 // already on the board" is a question about our data: its answer has to be

@@ -64,7 +64,7 @@ type Deps = {
 const COALESCE_WINDOW_MS = 10_000;
 
 // `undoable: false` keeps the entry out of the undo pairing — for
-// emits whose mutation doesn't push history (spec/39 session tools), so
+// emits whose mutation doesn't push history (docs/specs/012-collaboration/session-tools.md session tools), so
 // the entry can't glue itself onto an unrelated step's undo.
 // `fillToken` names the exact history step the entry belongs to (the
 // token its commit/checkpoint returned) — required for the DEBOUNCED
@@ -171,7 +171,7 @@ export function useActivityLogEmitter(deps: Deps): Api {
   // cleanly on undo (skipped for non-undoable emits).
   const appendLogEntry = (entry: ChangeLogEntry, opts?: EmitOpts, coalesceKey?: string) => {
     // Cap the in-session list at the same limit the server hydrates
-    // (spec/12), so the panel shows a consistent "most recent N".
+    // (docs/specs/012-collaboration/activity-and-audit.md), so the panel shows a consistent "most recent N".
     deps.setChangeLog((prev) => [entry, ...prev].slice(0, CHANGE_LOG_LIST_LIMIT));
     if (opts?.undoable !== false) {
       deps.entryHistoryRef.current = entryHistoryFill(

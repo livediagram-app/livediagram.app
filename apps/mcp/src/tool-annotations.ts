@@ -1,7 +1,7 @@
-// MCP tool annotations (spec/62 §4.14): the behaviour hints every tool ships
+// MCP tool annotations (docs/specs/015-api/mcp-server.md §4.14): the behaviour hints every tool ships
 // beside its title and description, plus the `registerTool` wrapper that makes
 // declaring one unavoidable. The same wrapper is the one place a tool reports
-// its `Mcp·Used` telemetry (spec/22), so no tool can forget to, and each
+// its `Mcp·Used` telemetry (docs/specs/017-telemetry/telemetry.md), so no tool can forget to, and each
 // reports only a call that succeeded.
 //
 // A client reads these hints to decide whether a call needs a per-use
@@ -19,7 +19,7 @@ import { postTelemetry } from './api';
 import type { Env } from './env';
 import { runInTool } from './tool-scope';
 
-// Three behaviours cover every tool. The split mirrors spec/62 §4.11's
+// Three behaviours cover every tool. The split mirrors docs/specs/015-api/mcp-server.md §4.11's
 // read-only-token boundary: what a `read_only = 1` token can still reach is
 // exactly what `read` annotates, so the hint a client sees and the rule the
 // api enforces can't drift apart.
@@ -52,7 +52,7 @@ type ToolConfig<InputArgs extends ZodRawShapeCompat> = {
 /**
  * Register an MCP tool with its behaviour annotations attached.
  *
- * Use this instead of `server.registerTool` for every tool (spec/62 §4.14).
+ * Use this instead of `server.registerTool` for every tool (docs/specs/015-api/mcp-server.md §4.14).
  * It is the same call with `behaviour` in place of a hand-written
  * `annotations` block, so the hints stay consistent across the surface.
  */
@@ -68,7 +68,7 @@ export function registerTool<InputArgs extends ZodRawShapeCompat>(
   const scoped = ((...args: unknown[]) =>
     runInTool(name, async () => {
       const result = await (handler as (...a: unknown[]) => unknown)(...args);
-      // `Mcp·Used·<Tool>` counts calls that SUCCEEDED (spec/22's success-path
+      // `Mcp·Used·<Tool>` counts calls that SUCCEEDED (docs/specs/017-telemetry/telemetry.md's success-path
       // rule): a thrown error (no token, api down) or an `isError` result
       // (bad input the model has to correct) isn't a use. A 5xx underneath is
       // still visible, as its own `Error·Api` report.

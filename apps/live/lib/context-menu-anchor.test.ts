@@ -1,4 +1,4 @@
-// Pin the element-menu placement rules (spec/09): beside the element on
+// Pin the element-menu placement rules (docs/specs/008-canvas/canvas-and-palette.md): beside the element on
 // the right, flipping left when the right lacks room, and clamped into
 // the viewport when neither side fully fits (a wide element in a narrow
 // window) so the menu stays reachable. The regression this guards: an

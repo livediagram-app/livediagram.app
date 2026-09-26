@@ -7,7 +7,7 @@ import { isHelpArticleType, isSettingsCategory } from './opened-types';
 import { aliasedSeries, foldAliases, rank } from './rank';
 import { TOUR_STEP_TYPES, tourStepRows } from './tour-steps';
 
-// The read-time rules the rankings apply to stored rows (spec/22): folding old
+// The read-time rules the rankings apply to stored rows (docs/specs/017-telemetry/telemetry.md): folding old
 // spellings into today's token, and keeping events that aren't the thing a
 // card names out of it.
 

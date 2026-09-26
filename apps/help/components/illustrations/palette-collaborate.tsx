@@ -1,5 +1,5 @@
-// Collaborate-category illustrations (spec/55, drawing spec/123 to spec/129 and
-// spec/136): the palette's Collaborate groups, plus one scene per element that
+// Collaborate-category illustrations (docs/specs/018-help/help-app.md, drawing docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md and
+// docs/specs/012-collaboration/comment-pin.md): the palette's Collaborate groups, plus one scene per element that
 // collects what the room thinks — comment panel, estimate card, temperature
 // check, idea box, agenda, decision record and roll call.
 //

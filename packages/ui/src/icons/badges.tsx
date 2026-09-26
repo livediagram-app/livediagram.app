@@ -25,7 +25,7 @@ export function NoteIcon({ size = 12, strokeWidth = 1.5, ...rest }: IconProps) {
   );
 }
 
-// Clipboard with a tick: an assigned action (spec/68).
+// Clipboard with a tick: an assigned action (docs/specs/012-collaboration/assigned-actions.md).
 export function ActionIcon({ size = 12, strokeWidth = 1.5, ...rest }: IconProps) {
   return (
     <Glyph size={size} strokeWidth={strokeWidth} {...rest}>

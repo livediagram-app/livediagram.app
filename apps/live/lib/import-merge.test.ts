@@ -37,8 +37,8 @@ describe('mergeImportedTab', () => {
     expect(out.layers).toEqual([{ id: 'a', name: 'A' }]);
   });
 
-  // Timeline lanes are BOARD state (spec/139 Phase 6): a board exported with
-  // Anchor docking is retired (spec/139 Phase 7): a file exported while it
+  // Timeline lanes are BOARD state (docs/specs/021-event-storming/event-storming.md Phase 6): a board exported with
+  // Anchor docking is retired (docs/specs/021-event-storming/event-storming.md Phase 7): a file exported while it
   // existed brings its relations in, and they are dropped on the way.
   it('drops a stored dock relation', () => {
     const imported = tab({

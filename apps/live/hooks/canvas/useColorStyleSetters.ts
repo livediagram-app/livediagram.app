@@ -62,7 +62,7 @@ export function useColorStyleSetters(deps: {
     );
   };
 
-  // Hand-editing any colour breaks a shape's colour-preset binding (spec/48):
+  // Hand-editing any colour breaks a shape's colour-preset binding (docs/specs/010-palette/style-presets.md):
   // the user has diverged from the preset, so a later theme change must NOT
   // pull the shape back onto the preset's variant. Clearing `colorPreset` on a
   // shape (a no-op field on other types) keeps that invariant in one place.
@@ -77,12 +77,12 @@ export function useColorStyleSetters(deps: {
 
   // Heading-band colour (debounced like the other colour pickers), for the
   // elements that have a heading distinct from their body: a table's header
-  // row and a lane's title gutter (spec/119). One field and one setter,
+  // row and a lane's title gutter (docs/specs/009-elements/lane.md). One field and one setter,
   // because it is one idea wearing two silhouettes.
   const setHeaderFillSelected = (color: string) =>
     commitSelectedStyle('headerFill', (el) => {
       // Hand-picking the band breaks a table's preset binding, like every
-      // other colour on it (spec/48).
+      // other colour on it (docs/specs/010-palette/style-presets.md).
       if (el.type === 'table') return { ...el, headerFill: color, tablePreset: undefined };
       return el.type === 'shape' && el.shape === 'lane' ? { ...el, headerFill: color } : el;
     });
@@ -91,14 +91,14 @@ export function useColorStyleSetters(deps: {
       el.type === 'table' ? { ...el, headerTextColor: color, tablePreset: undefined } : el,
     );
 
-  // The arrowhead's own colour (spec/09 arrow styles), for a head that should
+  // The arrowhead's own colour (docs/specs/008-canvas/canvas-and-palette.md arrow styles), for a head that should
   // not match its line.
   const setArrowheadColorSelected = (color: string) =>
     commitSelectedStyle('arrowheadColor', (el) =>
       el.type === 'arrow' ? { ...el, arrowheadColor: color } : el,
     );
 
-  // The plate behind an arrow's label (spec/09 "Caption").
+  // The plate behind an arrow's label (docs/specs/008-canvas/canvas-and-palette.md "Caption").
   const setLabelFillSelected = (color: string) =>
     commitSelectedStyle('labelFill', (el) =>
       el.type === 'arrow' ? { ...el, labelFill: color } : el,
@@ -107,7 +107,7 @@ export function useColorStyleSetters(deps: {
   const setOpacitySelected = (opacity: number) =>
     commitSelectedStyle('elementOpacity', (el) => ({ ...el, opacity }));
 
-  // Shadow sliders (spec/86): four axes, same one-undo-step-per-gesture
+  // Shadow sliders (docs/specs/008-canvas/element-shadows.md): four axes, same one-undo-step-per-gesture
   // policy as opacity. `null` clears (the Shadow section's None tile
   // commits through the preview path instead, but multi-callers may clear
   // here too).
@@ -143,7 +143,7 @@ export function useColorStyleSetters(deps: {
             ...(theme.elementText !== null
               ? { textColor: theme.elementText }
               : { textColor: undefined }),
-            // Reset-to-theme also drops any colour-preset binding (spec/48).
+            // Reset-to-theme also drops any colour-preset binding (docs/specs/010-palette/style-presets.md).
             colorPreset: undefined,
           };
         }

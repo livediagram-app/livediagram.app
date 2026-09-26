@@ -1,5 +1,5 @@
 /*
- * Q&A board motion (spec/151). The board is a queue the room WATCHES, so its
+ * Q&A board motion (docs/specs/012-collaboration/qa-board.md). The board is a queue the room WATCHES, so its
  * movement carries meaning: a vote pops, a climbing note glows, the spotlight
  * breathes. Every animation here collapses under the reduced-motion rules in
  * globals.css (both the OS setting and the per-user preference), and the

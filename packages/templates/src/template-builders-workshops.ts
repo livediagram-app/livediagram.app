@@ -7,7 +7,7 @@
 //
 // Each builder is pure: it takes a centre (cx, cy) and returns a fresh
 // Element[]. Sizing constants live inline so each template is
-// self-describing. See spec/09 "Templates" for the catalogue.
+// self-describing. See docs/specs/008-canvas/canvas-and-palette.md "Templates" for the catalogue.
 
 import { createShape, createSticky, createText, type Element } from '@livediagram/diagram';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
@@ -195,7 +195,7 @@ export function buildUserStoryMap(cx: number, cy: number): Element[] {
     });
   });
 
-  // Release bands: one LANE per slice (spec/119), sitting behind the stories
+  // Release bands: one LANE per slice (docs/specs/009-elements/lane.md), sitting behind the stories
   // it holds.
   //
   // This used to be a dashed rule with two free-floating text labels off to

@@ -13,7 +13,7 @@ interface InlineIconMutatorsDeps {
   commit: (mapElements: (els: Element[]) => Element[]) => void;
 }
 
-// Inline-icon attach/detach mutators (spec/09 icons). A shape can carry one
+// Inline-icon attach/detach mutators (docs/specs/008-canvas/canvas-and-palette.md icons). A shape can carry one
 // inline icon (`iconId` + `iconPosition`); these three handlers are the only
 // writers of that pair. Lifted out of useEditorState as a cohesive slice —
 // they close over nothing but `editsBlocked` + `commit`.
@@ -83,7 +83,7 @@ export function useInlineIconMutators({ editsBlocked, commit }: InlineIconMutato
     });
     // No `Element·Added` here: the glyph is an icon that was already counted
     // when it was first placed on the canvas, and this only moves it into a
-    // shape. Counting it again made every fold-in a second icon (spec/22).
+    // shape. Counting it again made every fold-in a second icon (docs/specs/017-telemetry/telemetry.md).
   };
 
   return { dropIconOnElement, removeIconFromElement, dropIconElementOnShape };

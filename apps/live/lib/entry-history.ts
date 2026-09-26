@@ -1,4 +1,4 @@
-// The undo-side memory of the activity log (spec/12 §"Client
+// The undo-side memory of the activity log (docs/specs/012-collaboration/activity-and-audit.md §"Client
 // behaviour" 2): which log entry, if any, each undoable history step
 // emitted. Undo must delete the entry for the step it reverts — and
 // ONLY that step's entry.

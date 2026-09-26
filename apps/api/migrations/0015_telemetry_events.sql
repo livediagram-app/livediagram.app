@@ -1,4 +1,4 @@
--- Anonymous product telemetry, per spec/22. Each row is a three-field
+-- Anonymous product telemetry, per docs/specs/017-telemetry/telemetry.md. Each row is a three-field
 -- event (category / action / type) plus a server-stamped timestamp.
 -- There is deliberately NO owner / IP / user-generated-content column:
 -- rows are anonymous by construction, so the public /telemetry

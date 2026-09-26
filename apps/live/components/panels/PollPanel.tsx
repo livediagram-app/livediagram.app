@@ -1,6 +1,6 @@
 'use client';
 
-// The live POLL panel (spec/88): results for a running poll, on the same
+// The live POLL panel (docs/specs/012-collaboration/live-poll.md): results for a running poll, on the same
 // shared MovablePanel every other floating panel uses (Collaborate,
 // Layers, Activity) — draggable, resettable, and dockable into a corner
 // stack, rather than a bespoke fixed card of its own.
@@ -47,7 +47,7 @@ export function PollPanel({
   isHost: boolean;
   onEnd: () => void;
   // Drop a chart of the results so far onto the canvas, leaving the poll
-  // running (spec/126). Absent on a surface that can't add elements, which
+  // running (docs/specs/012-collaboration/poll-result-capture.md). Absent on a surface that can't add elements, which
   // leaves the plain End alone.
   onKeepResults?: () => void;
   onDismiss: () => void;
@@ -112,7 +112,7 @@ export function PollPanel({
         <div className="flex flex-col gap-1">
           {isHost ? (
             <>
-              {/* Keeping the result is the LOUD action (spec/126): a poll that
+              {/* Keeping the result is the LOUD action (docs/specs/012-collaboration/poll-result-capture.md): a poll that
                   leaves no trace is still one press away, but the board is the
                   record of the session and the tallies belong on it. So it
                   gets the primary row. It does not end the poll: keep a chart

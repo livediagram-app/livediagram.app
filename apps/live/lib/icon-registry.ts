@@ -1,5 +1,5 @@
 // Async loader + tiny subscription store for the two icon catalogues: the
-// line-art glyphs (spec/09 "Icons") and the Technology brand marks (spec/41),
+// line-art glyphs (docs/specs/008-canvas/canvas-and-palette.md "Icons") and the Technology brand marks (docs/specs/010-palette/technology-icons.md),
 // both living as data modules in @livediagram/icons (shared with the Workers'
 // headless renders). Together they are ~60 kB of pure data that almost no
 // first paint needs — a diagram with no icon elements never touches them — so
@@ -37,7 +37,7 @@ type LoadedCatalogs = {
   iconById: Map<string, IconDef>;
   techIcons: TechIconDef[];
   techIconById: Map<string, TechIconDef>;
-  // Stickers (spec/116) ride the same chunk: they are a different element
+  // Stickers (docs/specs/010-palette/stickers.md) ride the same chunk: they are a different element
   // kind, but the load timing and the "empty until it lands" contract are
   // identical, and a second loader would be a second thing to get wrong.
   stickers: StickerDef[];

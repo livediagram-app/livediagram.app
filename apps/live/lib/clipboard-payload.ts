@@ -1,5 +1,5 @@
 // The element payload the editor puts on, and takes off, the OS clipboard
-// (spec/09 "Clipboard").
+// (docs/specs/008-canvas/canvas-and-palette.md "Clipboard").
 //
 // Copy used to be in-app only: Cmd+C snapshotted the selection into React
 // state and wrote a sentinel STRING to the system clipboard, purely to displace
@@ -47,9 +47,9 @@ export type ClipboardEnvelope = {
 //
 // Comments go entirely rather than being anonymised: a thread is a conversation
 // about the original element, and re-attaching it to a copy in another diagram
-// misrepresents it whether or not the names survive. `responses` (spec/122) go
+// misrepresents it whether or not the names survive. `responses` (docs/specs/012-collaboration/participant-responses.md) go
 // for the same reason — a vote is cast in a session, not a property of a shape.
-// An assigned `action` (spec/68) is work handed to a person, and carries its own
+// An assigned `action` (docs/specs/012-collaboration/assigned-actions.md) is work handed to a person, and carries its own
 // id into the Activity index: a pasted copy made a second action under the
 // same id rather than a second piece of work anybody had assigned.
 //

@@ -2,7 +2,7 @@ import { codeTheme, type CodeTheme, type ShapeElement } from '@livediagram/diagr
 import { tokenizeLoaded, useCodeTokenizer } from '@/lib/code-highlight-registry';
 import type { CodeTokenKind } from '@/lib/code-tokens';
 
-// The code block's canvas view (spec/82): an editor card with monospace text,
+// The code block's canvas view (docs/specs/009-elements/code-block.md): an editor card with monospace text,
 // a muted language badge, and syntax highlighting once the lazy tokenizer
 // chunk lands (plain mono until then: degrade, never blank).
 //
@@ -43,7 +43,7 @@ export function CodeBlockView({ element }: { element: ShapeElement }) {
       ) : null}
       <pre
         className={`h-full w-full overflow-hidden p-3 font-mono text-xs leading-4 ${
-          // Wrapping is the default (spec/82): the card is usually narrower
+          // Wrapping is the default (docs/specs/009-elements/code-block.md): the card is usually narrower
           // than the code pasted into it, and a line running off the edge
           // reads as truncated content rather than a styling choice.
           // `break-all` as well as wrapping, because code has long unbroken

@@ -1,6 +1,6 @@
 // Pure aggregation of realtime presence state into the row shapes the
 // editor renders: per-tab presence buckets, remote cursor rows, laser-trail
-// rows, peer Avatar-mode characters (spec/101), and the per-element
+// rows, peer Avatar-mode characters (docs/specs/008-canvas/avatar-mode.md), and the per-element
 // remote-selection map. Lifted out of
 // useEditorState so this join logic (presence x tab-focus x idle, scoped
 // to the active tab and filtered to live participants) is unit-testable
@@ -19,7 +19,7 @@ type LaserTrailRow = {
   participantId: string;
   color: string;
   points: LaserPoint[];
-  // The pen this trail was drawn with (spec/111). Absent for a peer on an
+  // The pen this trail was drawn with (docs/specs/008-canvas/laser-panel.md). Absent for a peer on an
   // older client, which draws the original laser.
   config?: LaserConfig;
 };
@@ -32,7 +32,7 @@ type RemoteSelector = { id: string; name: string; color: string };
 // unless idle has dragged them to away/offline. Returns an empty map for
 // private (unshared) diagrams.
 //
-// One person, one avatar (spec/145): the room mints an id per socket, so the
+// One person, one avatar (docs/specs/012-collaboration/collaborator-enhancements.md): the room mints an id per socket, so the
 // same browser open in two tabs arrives as two peers. Every tab in a browser
 // shares one collab key (`participantKey`), so connections are collapsed on
 // it: our own other tabs are dropped (we already sit on our active tab), and
@@ -40,7 +40,7 @@ type RemoteSelector = { id: string; name: string; color: string };
 // which is the tab they are actually looking at.
 export function buildParticipantsByTab(input: {
   diagramShareable: boolean;
-  // A team diagram (spec/35) is collaborative for its members even
+  // A team diagram (docs/specs/013-workspace/team-shared-diagrams.md) is collaborative for its members even
   // with no share link, so tab presence shows there too.
   diagramTeamId: string | null;
   activeId: string;
@@ -128,7 +128,7 @@ export function buildRemoteCursorRows(
   return rows;
 }
 
-// Peer Avatar-mode characters to draw (spec/101), joined with presence so each
+// Peer Avatar-mode characters to draw (docs/specs/008-canvas/avatar-mode.md), joined with presence so each
 // one carries a live name + colour (the wire packet carries neither). Same
 // filters as cursors: never yourself, only the active tab, only participants
 // still in the room.
@@ -158,7 +158,7 @@ export function buildLaserTrailRows(input: {
   selfId: string;
   selfColor: string;
   activeId: string;
-  // Our own pen (spec/111). Peers' pens arrive with their samples; ours is
+  // Our own pen (docs/specs/008-canvas/laser-panel.md). Peers' pens arrive with their samples; ours is
   // read straight from the panel's state, so our trail never lags a change we
   // just made.
   selfLaserConfig?: LaserConfig;
@@ -256,7 +256,7 @@ export type RemoteSelection = { elementId: string | null; tabId?: string };
 // cursors and lasers — entries scoped to a DIFFERENT tab: element ids
 // aren't unique across tabs in older diagrams (tab duplication used to
 // copy them verbatim), so an unscoped badge also LOCKED the same-id
-// element on other tabs via the spec/07 selection lock.
+// element on other tabs via the docs/specs/007-editor/live-app.md selection lock.
 export function buildRemoteSelectionsByElement(
   remoteSelections: Map<string, RemoteSelection>,
   livePresenceById: Map<string, Participant>,

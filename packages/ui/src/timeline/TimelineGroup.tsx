@@ -2,7 +2,7 @@
 
 // One day on the feed: the rail dot, the connecting line, the date
 // label, and the day's cards in the same grid the Explorer's Recent
-// view uses (spec/138 §2).
+// view uses (docs/specs/013-workspace/timeline.md §2).
 
 import type { ReactNode } from 'react';
 import { CARD_GRID } from '../cardGrid';

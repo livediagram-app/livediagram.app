@@ -4,7 +4,7 @@ import { votesSpentBy, type TabVote } from '@livediagram/diagram';
 import type { VoteReview } from '@/hooks/canvas/useVoteReview';
 import { TopCenterBanner } from '@/components/chrome/TopCenter';
 
-// Floating dot-voting status banner (spec/39). While a vote is open it
+// Floating dot-voting status banner (docs/specs/012-collaboration/session-tools.md). While a vote is open it
 // tells each participant how many of their dots remain; once ended it
 // reads as closed. Once results are revealed it becomes the RESULTS
 // WALKTHROUGH bar: the ordered top picks are reviewed one at a time (the
@@ -37,7 +37,7 @@ export function VoteBanner({
           Top result {review.index + 1} of {review.total} &middot; {review.votes}{' '}
           {review.votes === 1 ? 'vote' : 'votes'}
         </span>
-        {/* Only the vote's host drives the walk (spec/39). Everyone else
+        {/* Only the vote's host drives the walk (docs/specs/012-collaboration/session-tools.md). Everyone else
             follows the shared focus, so they get the readout without
             controls rather than buttons that would silently no-op. */}
         {review.canControl ? (
@@ -60,7 +60,7 @@ export function VoteBanner({
   // whole vote, so it states the one thing that changes — dots left — and
   // leaves the rest to the places that own it: how to cast is obvious
   // after the first dot, and which privacy switches are in force is shown
-  // in the tab menu's Vote section (spec/39), not repeated here.
+  // in the tab menu's Vote section (docs/specs/012-collaboration/session-tools.md), not repeated here.
   const message = vote.active
     ? `${remaining} of ${vote.votesPerPerson} ${vote.votesPerPerson === 1 ? 'dot' : 'dots'} left`
     : vote.revealed

@@ -2,7 +2,7 @@
 
 import { useLayoutEffect, type RefObject } from 'react';
 
-// The words under a box fit the BOX (spec/139 Phase 9): as large as the
+// The words under a box fit the BOX (docs/specs/021-event-storming/event-storming.md Phase 9): as large as the
 // default, as small as the floor, at most two lines. Past the floor the
 // two-line clamp cuts what is left; the full words are in the tooltip.
 export const WORDS_FONT = { max: 11, min: 7, step: 0.5, lines: 2, leading: 1.25 } as const;

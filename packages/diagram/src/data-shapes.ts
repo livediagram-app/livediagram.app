@@ -1,5 +1,5 @@
-// The self-drawing "data" shape family (progress spec/46, timeline rail
-// spec/51, rating spec/52, pie / bar / line charts spec/53): kind
+// The self-drawing "data" shape family (progress docs/specs/009-elements/progress.md, timeline rail
+// docs/specs/009-elements/timeline-rail.md, rating docs/specs/009-elements/rating.md, pie / bar / line charts docs/specs/009-elements/pie-chart.md): kind
 // predicates, bounds, default data, animation sets, and the shared
 // clamps. Split out of index.ts as a LEAF module (it imports only types)
 // because factories.ts needs these constants at module-init time —
@@ -19,7 +19,7 @@ export function isProgressShape(kind: ShapeKind): boolean {
 }
 
 // Timeline-rail bounds: a rail always has at least 2 points, and the canvas
-// affordance caps additions so the element stays legible (spec/51).
+// affordance caps additions so the element stays legible (docs/specs/009-elements/timeline-rail.md).
 export const RAIL_MIN_POINTS = 2;
 export const RAIL_MAX_POINTS = 12;
 export const RAIL_DEFAULT_POINTS = 3;
@@ -31,7 +31,7 @@ export function isRailShape(kind: ShapeKind): boolean {
   return kind === 'timeline-rail';
 }
 
-// Rating element (spec/52): a row of stars showing a 1..RATING_MAX score.
+// Rating element (docs/specs/009-elements/rating.md): a row of stars showing a 1..RATING_MAX score.
 // `ratingAnim` animates the filled stars — 'pop' pops them in one-by-one,
 // 'twinkle' sparkles them, 'pulse' breathes their opacity, 'rock' tips them.
 // Undefined = static. Mapped to `lvd-rating-*` classes by RatingView.
@@ -46,7 +46,7 @@ export function isRatingShape(kind: ShapeKind): boolean {
   return kind === 'rating';
 }
 
-// Pie chart (spec/53). A slice is one labelled datum; `color` overrides the
+// Pie chart (docs/specs/009-elements/pie-chart.md). A slice is one labelled datum; `color` overrides the
 // default categorical palette when set. `pieAnim` animates the slices —
 // 'grow' sweeps them in, 'pop' scales them in, 'spin' rotates the whole pie,
 // 'pulse' breathes their opacity. Undefined = static. Mapped to `lvd-pie-*`
@@ -73,7 +73,7 @@ export const PIE_DEFAULT_SLICES: readonly PieSlice[] = [
   { label: 'C', value: 20 },
 ];
 
-// Line chart (spec/53). Unlike the pie / bar single row of data, a line chart
+// Line chart (docs/specs/009-elements/pie-chart.md). Unlike the pie / bar single row of data, a line chart
 // is 2-D: shared x-axis `lineCategories` (e.g. months) and one or more
 // `lineSeries`, each a named line with a value per category (+ an optional
 // colour override). Editable as a grid and importable from CSV. Reuses the
@@ -97,7 +97,7 @@ export function isLineShape(kind: ShapeKind): boolean {
   return kind === 'line-chart';
 }
 
-// Code block (spec/82): a monospace snippet card. The closed language set the
+// Code block (docs/specs/009-elements/code-block.md): a monospace snippet card. The closed language set the
 // lazy tokenizer understands; 'plain' renders unhighlighted. Wire-validated so
 // a saved diagram can't smuggle an arbitrary string into the renderer.
 export const CODE_LANGUAGES = [
@@ -119,16 +119,16 @@ export function isCodeBlockShape(kind: ShapeKind): boolean {
   return kind === 'code-block';
 }
 
-// Checklist (spec/83): checkable to-do rows. Bounds keep the card legible and
+// Checklist (docs/specs/009-elements/checklist.md): checkable to-do rows. Bounds keep the card legible and
 // the wire payload small; the starter rows make the affordance obvious on drop.
 export type ChecklistItem = { text: string; done: boolean };
 export const CHECKLIST_MAX_ITEMS = 30;
 
-// Page masthead (spec/100). A title line, not a paragraph — the renderer
+// Page masthead (docs/specs/009-elements/page-element.md). A title line, not a paragraph — the renderer
 // clamps it to one line anyway, so anything longer is a paste accident.
 export const PAGE_HEADING_MAX = 200;
 
-// Record (spec/120): a UML class / ER entity box. One row per field, each a
+// Record (docs/specs/009-elements/entity.md): a UML class / ER entity box. One row per field, each a
 // name with an optional type. Bounded like the checklist so a paste can't
 // produce an element nobody can scroll.
 export const ENTITY_MAX_FIELDS = 40;
@@ -139,7 +139,7 @@ export const ENTITY_MAX_TEXT = 80;
 // column reads better than a placeholder.
 export type EntityField = { name: string; type?: string };
 export const CHECKLIST_MAX_TEXT = 200;
-// All three seed rows are unchecked, per spec/83. A seeded `done: true` made
+// All three seed rows are unchecked, per docs/specs/009-elements/checklist.md. A seeded `done: true` made
 // a freshly-dropped checklist render its first row ticked and struck through,
 // and tripped the "at least one row is done" rule into showing a "1/3" footer
 // on an element nobody had touched yet.
@@ -153,7 +153,7 @@ export function isChecklistShape(kind: ShapeKind): boolean {
   return kind === 'checklist';
 }
 
-// Legend (spec/53). A card of colour-coded rows: a swatch and a label, and
+// Legend (docs/specs/009-elements/pie-chart.md). A card of colour-coded rows: a swatch and a label, and
 // nothing else. It is a KEY, not a chart, so it carries no values and no
 // geometry to argue about.
 //
@@ -189,11 +189,11 @@ export function isChartShape(kind: ShapeKind): boolean {
 // label, so the editor suppresses markers, text alignment, the inline label
 // editor, morphing, and double-click / type-to-edit for them.
 //
-// The sticker (spec/116) is here for the label half specifically: it says what
+// The sticker (docs/specs/010-palette/stickers.md) is here for the label half specifically: it says what
 // it says in its own artwork, so there is nothing to type into it — a caption
 // under a die-cut sticker is exactly the icon treatment it exists not to be.
 //
-// So are the two web components with no label (spec/147): a stat row's and a
+// So are the two web components with no label (docs/specs/009-elements/web-components-and-no-groups.md): a stat row's and a
 // process's text is their rows, each edited in place, and there is no title to
 // type into. The banner, callout and header DO carry a label and are not here.
 export function isSelfDrawingShape(kind: ShapeKind): boolean {
@@ -230,7 +230,7 @@ export function clampPercent(value: number): number {
   return clampRound(value, 100);
 }
 
-// Reaction pads (spec/135). Five reactions, chosen to cover distinct THINGS
+// Reaction pads (docs/specs/009-elements/reaction-pad.md). Five reactions, chosen to cover distinct THINGS
 // PEOPLE MEAN rather than five ways of saying "nice": celebrate a result,
 // admire an idea, show warmth to a person, thank a speaker, mark the moment a
 // thing shipped. A sixth would be decoration.
@@ -265,7 +265,7 @@ export const REACTION_HINT: Record<Reaction, string> = {
 };
 
 /**
- * The pad's own caption per reaction (spec/135).
+ * The pad's own caption per reaction (docs/specs/009-elements/reaction-pad.md).
  *
  * The palette offers a tile per reaction, so a placed pad should already say
  * what pressing it does — "Celebrate" over a confetti pad, "Thanks" over an

@@ -1,4 +1,4 @@
-// Error telemetry tokens (spec/22 'Error' category): how every error source
+// Error telemetry tokens (docs/specs/017-telemetry/telemetry.md 'Error' category): how every error source
 // says WHERE it failed inside the one `type` token it has. Shared so the
 // editor, the help centre, the api worker and the MCP worker all build the
 // same shape: dot-separated PascalCase parts, `<What>.<Where>[.<Which>]`,
@@ -89,7 +89,7 @@ export function errorNameToken(thrown: unknown): string {
 
 /**
  * The page part of a client error: the first segment of a normalised page
- * path (spec/150 pageViewPath output, so ids are already gone), e.g.
+ * path (docs/specs/017-telemetry/page-view-telemetry.md pageViewPath output, so ids are already gone), e.g.
  * '/diagram' -> 'Diagram', '/explorer/team' -> 'Explorer', '/' -> 'Home',
  * '/help/canvas' -> 'Help'. Null when the path couldn't be normalised.
  */

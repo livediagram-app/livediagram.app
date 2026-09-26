@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import type { QuickConnectKind } from '@/lib/canvas';
 
-// The quick-connect ring's option catalogue + glyphs (spec/09 / 51),
+// The quick-connect ring's option catalogue + glyphs (docs/specs/008-canvas/canvas-and-palette.md / 51),
 // split out of QuickConnectRing the same way the other per-surface
 // icon files are: the ring keeps its geometry + unfold render, this
 // file owns what the menu offers and how each action looks.
@@ -24,7 +24,7 @@ export type Option = {
   icon: ReactNode;
 };
 
-// Rail-only action appended to the menu when onAddRailPoint is set (spec/51).
+// Rail-only action appended to the menu when onAddRailPoint is set (docs/specs/009-elements/timeline-rail.md).
 export const ADD_POINT_OPTION: Option = {
   kind: 'add-point',
   label: 'Add point',
@@ -32,14 +32,14 @@ export const ADD_POINT_OPTION: Option = {
   icon: <AddPointIcon />,
 };
 
-// Web component rows (spec/147): a stat row / process / header gains one
+// Web component rows (docs/specs/009-elements/web-components-and-no-groups.md): a stat row / process / header gains one
 // more stat, step or link. The label names the thing, so the ring says what
 // it will add rather than a generic "Add".
 export function webRowOption(label: string, description: string): Option {
   return { kind: 'add-web-row', label, description, icon: <AddPointIcon /> };
 }
 
-// Table structural adds (spec/09): offered on the matching side's ring.
+// Table structural adds (docs/specs/008-canvas/canvas-and-palette.md): offered on the matching side's ring.
 export const ADD_ROW_OPTION: Option = {
   kind: 'add-row',
   label: 'Add row',
@@ -53,7 +53,7 @@ export const ADD_COLUMN_OPTION: Option = {
   icon: <AddColumnIcon />,
 };
 
-// Mind-map growth (spec/118), offered on a mind node's ring. Tab-for-child
+// Mind-map growth (docs/specs/009-elements/mind-node.md), offered on a mind node's ring. Tab-for-child
 // and Enter-for-sibling ARE the feature, so they need to be discoverable
 // without already knowing them: the shortcut rides in the tooltip, which is
 // where every other shortcut in the ring would be found.

@@ -1,7 +1,7 @@
 import type { TelemetryCount } from '@livediagram/api-schema';
 import { typeLabel } from './event-vocab';
 
-// The welcome tour's steps (spec/79), in the order the tour shows them, as
+// The welcome tour's steps (docs/specs/007-editor/editor-tour.md), in the order the tour shows them, as
 // the `UI·View·TourStep<Step>` tokens each sends when it comes on screen. The
 // welcome card itself sends none (its decision is Tours Started / Declined).
 // The editor derives these from its step ids (apps/live tour-steps.ts,

@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { pageMetadata } from '@livediagram/ui';
 
 // The help centre's name in link previews (the OG siteName); everything else
-// about a page's metadata follows the shared pageMetadata rule (spec/55 "SEO"):
+// about a page's metadata follows the shared pageMetadata rule (docs/specs/018-help/help-app.md "SEO"):
 // the title passes through as given, the canonical and OG url are the page's
 // path, and the card is the large brand card.
 const HELP_SITE_NAME = 'livediagram Help';

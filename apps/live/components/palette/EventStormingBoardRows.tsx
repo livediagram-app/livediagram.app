@@ -1,16 +1,16 @@
 'use client';
 
 // The BOARD-level controls at the top of the palette's Event Storming category
-// (spec/139). Everything below them adds a note; these change what the board
+// (docs/specs/021-event-storming/event-storming.md). Everything below them adds a note; these change what the board
 // itself does, so they sit above the notation with a rule under them rather
 // than pretending to be a ninth sticky.
 //
 // Only rendered on an event-storming board: the category still exists
-// elsewhere (a note kind can be favourited, spec/78), and a board switch shown
+// elsewhere (a note kind can be favourited, docs/specs/010-palette/palette-favourites.md), and a board switch shown
 // on an ordinary diagram would be a switch for nothing.
 
 export type EsBoardControls = {
-  // Photo import (spec/139 Phase 8). Absent when the deployment has no model
+  // Photo import (docs/specs/021-event-storming/event-storming.md Phase 8). Absent when the deployment has no model
   // key: the whole feature is then not a thing this board can do, and a
   // greyed row would advertise something the operator cannot switch on.
   onImportPhoto?: () => void;

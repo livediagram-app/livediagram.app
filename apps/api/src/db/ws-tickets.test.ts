@@ -9,7 +9,7 @@ import { consumeWsTicket, createWsTicket } from './ws-tickets';
 // scope, and a short life — and each is one SQL predicate away from being
 // silently lost.
 
-describe('createWsTicket (spec/07 room auth)', () => {
+describe('createWsTicket (docs/specs/007-editor/live-app.md room auth)', () => {
   it('writes the diagram, the resolved role and an expiry a minute out', async () => {
     const db = fakeD1();
     const ticket = await createWsTicket(db.env, 'diag-1', 'edit', 1_000_000);
@@ -34,7 +34,7 @@ describe('createWsTicket (spec/07 room auth)', () => {
   });
 });
 
-describe('consumeWsTicket (spec/07 room auth)', () => {
+describe('consumeWsTicket (docs/specs/007-editor/live-app.md room auth)', () => {
   it('returns the role the ticket was minted with', async () => {
     const db = fakeD1(() => ({ first: { role: 'edit' } }));
     expect(await consumeWsTicket(db.env, 'tkt', 'diag-1', 5)).toBe('edit');

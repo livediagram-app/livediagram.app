@@ -1,6 +1,6 @@
 // Thin D1 wrapper, split by resource. Diagrams + tabs each have their
 // own table — `diagrams.data` (the legacy single-row JSON blob) was
-// dropped in migration 0006. See spec/13 for the rollout that got us
+// dropped in migration 0006. See docs/specs/006-diagram/per-tab-storage.md for the rollout that got us
 // here.
 //
 // This barrel re-exports every resource module so callers keep

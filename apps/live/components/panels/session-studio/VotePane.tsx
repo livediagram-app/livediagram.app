@@ -1,6 +1,6 @@
 'use client';
 
-// The dot vote tool (spec/39, spec/96).
+// The dot vote tool (docs/specs/012-collaboration/session-tools.md, docs/specs/012-collaboration/vote-layer-scope.md).
 //
 // Setting up, every choice is drawn as the thing it produces: the dot budget
 // is a row of dots you tap, the privacy switches are cards that say what the
@@ -48,7 +48,7 @@ const STACKING_OPTIONS = [
 ] as const;
 
 /**
- * The vote's setup UI, CONTROLLED on the dot budget (spec/39).
+ * The vote's setup UI, CONTROLLED on the dot budget (docs/specs/012-collaboration/session-tools.md).
  *
  * Exported so a vote element's `…` menu and its right-click Session category
  * render this exact form rather than their own take on it. In the Studio
@@ -67,13 +67,13 @@ export function VoteSetupBody({
 }) {
   // Cursors hidden by default: the leak they cause is invisible to the
   // facilitator, so it's the safer default. Running counts shown by default,
-  // because live tallies are how ordinary dot-voting works (spec/39).
+  // because live tallies are how ordinary dot-voting works (docs/specs/012-collaboration/session-tools.md).
   const [hideCursors, setHideCursors] = useState(true);
   const [hideCounts, setHideCounts] = useState(false);
   // Stacking is the classic dot-vote, so it stays the default; one per item
   // turns the budget into "pick your top N" instead of "back your favourite".
   const [stacking, setStacking] = useState<'stack' | 'one'>('stack');
-  // '' is the explicit "all layers" choice (spec/96).
+  // '' is the explicit "all layers" choice (docs/specs/012-collaboration/vote-layer-scope.md).
   const [layerId, setLayerId] = useState(activeLayerId);
   const multiLayer = voteLayers.length > 1;
 

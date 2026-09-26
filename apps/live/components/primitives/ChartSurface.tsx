@@ -1,7 +1,7 @@
 import type { ComponentProps, ReactNode } from 'react';
 import { ChartLegend } from '@/components/primitives/ChartLegend';
 
-// What every chart element is drawn on (spec/53): the positioned box, the
+// What every chart element is drawn on (docs/specs/009-elements/pie-chart.md): the positioned box, the
 // full-bleed SVG the marks live in, the hover tooltip, and the legend strip.
 //
 // The bar, line and pie views each carried their own copy: the same wrapper

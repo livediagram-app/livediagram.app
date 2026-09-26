@@ -175,7 +175,7 @@ describe('boxed element mapping', () => {
       strokeStyle: 'dashed',
       strokeWidth: 'thick',
     });
-    // livediagram has no groups (spec/147): grouped Excalidraw elements
+    // livediagram has no groups (docs/specs/009-elements/web-components-and-no-groups.md): grouped Excalidraw elements
     // arrive as separate elements.
     expect('groupId' in a!).toBe(false);
     expect('groupId' in b!).toBe(false);
@@ -340,7 +340,7 @@ describe('arrow + line mapping', () => {
 
   it('closes a freedraw stroke whose ends coincide', () => {
     // A pencil stroke released near where it started is closed and fills
-    // (spec/09), and our exporter writes that the same way it writes a closed
+    // (docs/specs/008-canvas/canvas-and-palette.md), and our exporter writes that the same way it writes a closed
     // polygon: the first point repeated at the end. Closure was gated on
     // `straightEdges`, which only a `line` sets, so this came back open — the
     // sketch rendered hollow and kept the duplicate point as an extra sample.

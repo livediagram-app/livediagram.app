@@ -1,4 +1,4 @@
-// The Avatar sprite from the neck up (spec/101): hair drawn per facing, the
+// The Avatar sprite from the neck up (docs/specs/008-canvas/avatar-mode.md): hair drawn per facing, the
 // three head views, and the hoodie's hood that sits behind them.
 //
 // Split from avatar-sprite.tsx because hair is where the combinations live.

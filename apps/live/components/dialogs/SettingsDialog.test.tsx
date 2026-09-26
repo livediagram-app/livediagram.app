@@ -5,7 +5,7 @@ import { SettingsDialog } from './SettingsDialog';
 import { visibleCategories } from './settings/settings-catalogue';
 import type { UserPreferences } from '@/lib/user-preferences';
 
-// The dialog takes BOTH iOS Settings shapes, one per viewport (spec/20): the
+// The dialog takes BOTH iOS Settings shapes, one per viewport (docs/specs/007-editor/user-preferences.md): the
 // iPad split view on desktop, the iPhone push navigation on a phone. Which
 // one renders is the whole point of the rework, and it hangs off a media
 // query, so it is worth pinning that a phone never shows the rail and a

@@ -1,4 +1,4 @@
-// Who arrives: visitors, accounts, page views, the sign-in prompts and the first-visit welcome and tour (spec/22).
+// Who arrives: visitors, accounts, page views, the sign-in prompts and the first-visit welcome and tour (docs/specs/017-telemetry/telemetry.md).
 // Part of the metric catalogue: import from ../metric-catalogue.
 
 import { pageViewApp, type PageViewApp } from '@livediagram/api-schema';
@@ -69,7 +69,7 @@ export const ACCOUNT_ACTIVITY: MetricStack = {
   headline: SIGN_UPS,
 };
 
-// Page views by the app that serves them (spec/150). Each app's card sums the
+// Page views by the app that serves them (docs/specs/017-telemetry/page-view-telemetry.md). Each app's card sums the
 // `Page·View·<path>` rows whose path that app serves.
 const pagesOf = (app: PageViewApp, blurb: string): Metric => ({
   category: 'Page',
@@ -176,7 +176,7 @@ export const WELCOME_TOUR: MetricStack = {
   headline: TOURS_STARTED,
 };
 
-// Sign-in prompts, by where each one happens (spec/36). The same bottom
+// Sign-in prompts, by where each one happens (docs/specs/014-identity/sign-in-encouragement.md). The same bottom
 // banner runs in the Explorer and the editor, so every banner event names its
 // surface; the Assign Action dialog has its own nudge.
 export const EXPLORER_BANNER_SIGN_INS = chart(
@@ -249,7 +249,7 @@ export const PAGE_VIEWS_BY_APP: MetricStack = {
   seeAlso: { view: 'pages', label: 'See Every Page on the Pages Tab' },
 };
 
-// The landing funnel (spec/153): arrivals at /new from a public page's call
+// The landing funnel (docs/specs/019-marketing/landing-funnel.md): arrivals at /new from a public page's call
 // to action, and the diagrams those visits created. The Pages tab splits them
 // by page and button against the page views before them.
 export const CTA_ARRIVALS = chart(

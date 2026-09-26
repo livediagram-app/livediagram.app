@@ -27,7 +27,7 @@ import { apiHeaders } from './api/core';
 // down the Bearer branch.
 afterEach(() => {
   setTokenProvider(null);
-  // Clear the session share password (spec/24) so a password-path case
+  // Clear the session share password (docs/specs/013-workspace/share-password.md) so a password-path case
   // doesn't leak X-Share-Password into a later case's headers.
   setSessionSharePassword(null);
 });
@@ -40,7 +40,7 @@ async function call(...args: Parameters<typeof apiHeaders>): Promise<Record<stri
   return (await apiHeaders(...args)) as Record<string, string>;
 }
 
-describe('apiHeaders (hybrid identity gate, spec/04 + spec/11)', () => {
+describe('apiHeaders (hybrid identity gate, docs/specs/014-identity/auth-and-guest-access.md + docs/specs/015-api/api.md)', () => {
   it('guest path: no provider, no token, emits X-Owner-Id', async () => {
     const h = await call('guest-uuid-1');
     expect(h['X-Owner-Id']).toBe('guest-uuid-1');
@@ -100,7 +100,7 @@ describe('apiHeaders (hybrid identity gate, spec/04 + spec/11)', () => {
   it('bearer + share: signed-in visitor on a share URL still carries the share code', async () => {
     // A signed-in user clicking a share link sends Bearer (their
     // Clerk identity) AND X-Share-Code (the link's role gates write
-    // access on the diagram they don't own). spec/04: "Share-code
+    // access on the diagram they don't own). docs/specs/014-identity/auth-and-guest-access.md: "Share-code
     // visitors who happen to also be signed in send Bearer +
     // X-Share-Code; the per-link role still gates write access."
     setTokenProvider(async () => 'jwt-token-xyz');
@@ -120,7 +120,7 @@ describe('apiHeaders (hybrid identity gate, spec/04 + spec/11)', () => {
     expect(h['X-Owner-Id']).toBe('guest-uuid-6');
   });
 
-  it('attaches X-Share-Password once a session password is set (spec/24)', async () => {
+  it('attaches X-Share-Password once a session password is set (docs/specs/013-workspace/share-password.md)', async () => {
     // After the visitor passes the password gate, every request must
     // carry the password automatically so reads/writes stay authorised.
     expect((await call('guest-uuid-7'))['X-Share-Password']).toBeUndefined();
@@ -132,7 +132,7 @@ describe('apiHeaders (hybrid identity gate, spec/04 + spec/11)', () => {
   });
 });
 
-describe('apiLoadShared password gate (spec/24)', () => {
+describe('apiLoadShared password gate (docs/specs/013-workspace/share-password.md)', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
     setSessionSharePassword(null);
@@ -412,7 +412,7 @@ describe('apiDelete (internal, via public DELETE callers)', () => {
   });
 });
 
-describe('apiCreateDiagram persisted body (spec/30)', () => {
+describe('apiCreateDiagram persisted body (docs/specs/006-diagram/tab-folders.md)', () => {
   afterEach(() => vi.unstubAllGlobals());
 
   it('strips UI-only tab fields (templateChosen, folder) before POSTing', async () => {
@@ -424,7 +424,7 @@ describe('apiCreateDiagram persisted body (spec/30)', () => {
     );
     vi.stubGlobal('fetch', fetchSpy);
     // A tab carrying the editor-only fields that must NOT reach tabs.data:
-    // templateChosen (UI state) + folder (per-diagram link, spec/30).
+    // templateChosen (UI state) + folder (per-diagram link, docs/specs/006-diagram/tab-folders.md).
     const tab = {
       id: 't1',
       name: 'Tab',
@@ -446,7 +446,7 @@ describe('apiCreateDiagram persisted body (spec/30)', () => {
   });
 });
 
-describe('apiSaveTab persisted body + allow-empty (spec/30)', () => {
+describe('apiSaveTab persisted body + allow-empty (docs/specs/006-diagram/tab-folders.md)', () => {
   afterEach(() => vi.unstubAllGlobals());
 
   const stubOk = () => {
@@ -531,7 +531,7 @@ describe('apiLoadTab load boundary', () => {
   });
 });
 
-describe('apiListImages (R2 degradation, spec/19)', () => {
+describe('apiListImages (R2 degradation, docs/specs/009-elements/images.md)', () => {
   afterEach(() => vi.unstubAllGlobals());
 
   it('returns null on 503 (R2 not provisioned) instead of throwing', async () => {
@@ -545,7 +545,7 @@ describe('apiListImages (R2 degradation, spec/19)', () => {
   });
 });
 
-describe('apiUploadImage request shape (spec/19)', () => {
+describe('apiUploadImage request shape (docs/specs/009-elements/images.md)', () => {
   afterEach(() => vi.unstubAllGlobals());
 
   const stubOk = () => {
@@ -593,7 +593,7 @@ describe('apiUploadImage request shape (spec/19)', () => {
   });
 });
 
-describe('apiFetchImageBlobUrl request shape (spec/19 + spec/24)', () => {
+describe('apiFetchImageBlobUrl request shape (docs/specs/009-elements/images.md + docs/specs/013-workspace/share-password.md)', () => {
   afterEach(() => vi.unstubAllGlobals());
 
   // Inspect the request the function builds (and confirm the null-on-error

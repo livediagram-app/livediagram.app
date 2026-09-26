@@ -1,5 +1,5 @@
 // tabs — one row per tab, linked to diagrams through the
-// diagram_tabs many-to-many table (migration 0011 / spec/17).
+// diagram_tabs many-to-many table (migration 0011 / docs/specs/006-diagram/tab-diagram-many-to-many.md).
 
 import type { Tab } from '@livediagram/diagram';
 import { rowToTab, type TabRow } from '../tab-row';
@@ -7,7 +7,7 @@ import type { Env, TabDTO } from '../types';
 import { collabIndexStatements } from './collab-index';
 
 export async function getTab(env: Env, diagramId: string, tabId: string): Promise<TabDTO | null> {
-  // Resolve via the diagram_tabs link table (spec/17) so linked
+  // Resolve via the diagram_tabs link table (docs/specs/006-diagram/tab-diagram-many-to-many.md) so linked
   // tabs surface from every diagram that contains them, not just
   // the legacy tabs.diagram_id column (which points only at the
   // tab's original diagram). The link table also carries the
@@ -26,7 +26,7 @@ export async function getTab(env: Env, diagramId: string, tabId: string): Promis
 
 // The raw `tabs.data` JSON for a diagram's first tab (lowest
 // order_index in the diagram_tabs link), or null when the diagram has
-// no tabs. Used by the SVG snapshot render-cache (spec/67), which needs
+// no tabs. Used by the SVG snapshot render-cache (docs/specs/006-diagram/diagram-snapshots.md), which needs
 // only the element body — never the full TabDTO hydration — so this
 // reads the single `data` column rather than going through getTab.
 export async function getFirstTabData(env: Env, diagramId: string): Promise<string | null> {
@@ -48,7 +48,7 @@ export async function getFirstTabData(env: Env, diagramId: string): Promise<stri
 // link (like getTab) so a tab id only renders for a diagram that
 // actually contains it — a share code for diagram A can never coax out
 // a tab that lives only in diagram B. Backs the per-tab live image
-// (spec/54); mirrors getFirstTabData but keyed by tab id instead of the
+// (docs/specs/013-workspace/live-image-share.md); mirrors getFirstTabData but keyed by tab id instead of the
 // lowest order_index.
 export async function getTabData(
   env: Env,
@@ -79,7 +79,7 @@ export async function upsertTab(
   const { id, name, ...rest } = tab;
   const data = JSON.stringify(rest);
   const now = Date.now();
-  // Phase-1 (migration 0011 / spec/17): write to both `tabs` and
+  // Phase-1 (migration 0011 / docs/specs/006-diagram/tab-diagram-many-to-many.md): write to both `tabs` and
   // `diagram_tabs` so the link table is the canonical read path
   // but the legacy denormalised columns stay in sync until a
   // follow-up migration drops them. The two writes are
@@ -106,7 +106,7 @@ export async function upsertTab(
     // Bump the diagram's saved_at so the Explorer's "Updated X ago"
     // line stays accurate. Pure metadata write — no element JSON.
     env.DB.prepare('UPDATE diagrams SET saved_at = ? WHERE id = ?').bind(now, diagramId),
-    // The collaboration index (spec/142 §2.1): the tab's action + thread
+    // The collaboration index (docs/specs/013-workspace/activity-page.md §2.1): the tab's action + thread
     // rows, replaced in the SAME batch as the blob they mirror so the two
     // can never drift. After the tabs upsert, which the rows' FK needs.
     ...collabIndexStatements(env, id, tab.elements),
@@ -143,7 +143,7 @@ export async function seedTabs(env: Env, diagramId: string, tabs: Tab[]): Promis
     ];
   });
   stmts.push(env.DB.prepare('UPDATE diagrams SET saved_at = ? WHERE id = ?').bind(now, diagramId));
-  // Index rows for every seeded tab (spec/142 §2.1): a JSON import or a
+  // Index rows for every seeded tab (docs/specs/013-workspace/activity-page.md §2.1): a JSON import or a
   // copy from a share link can carry actions and threads in on create.
   for (const tab of tabs) stmts.push(...collabIndexStatements(env, tab.id, tab.elements));
   await env.DB.batch(stmts);
@@ -151,13 +151,13 @@ export async function seedTabs(env: Env, diagramId: string, tabs: Tab[]): Promis
 
 // Remove the tab from this diagram (drops the `diagram_tabs` link
 // row). The underlying `tabs` row only goes away when no other
-// diagram still references it: linked tabs (per spec/17) survive
+// diagram still references it: linked tabs (per docs/specs/006-diagram/tab-diagram-many-to-many.md) survive
 // an unlink from one of their containing diagrams so the body
 // stays readable from the rest. Legacy single-link tabs end up
 // fully deleted, matching the prior contract.
 //
 // change_log entries follow the tabs row: they live on the tab id
-// (per #14 in spec/17), so they get dropped only when the tab
+// (per #14 in docs/specs/006-diagram/tab-diagram-many-to-many.md), so they get dropped only when the tab
 // itself goes away. Cascading the log on every unlink would wipe
 // the audit panel for every other diagram that still surfaces the
 // shared tab.
@@ -174,7 +174,7 @@ export async function deleteTabRow(env: Env, diagramId: string, tabId: string): 
   }
 }
 
-// Link an existing tab into another diagram (spec/17). Inserts a
+// Link an existing tab into another diagram (docs/specs/006-diagram/tab-diagram-many-to-many.md). Inserts a
 // `diagram_tabs` row at the end of the target diagram's order,
 // idempotent on conflict so re-linking the same pair returns 200
 // without double-counting. The `tabs` row itself is untouched: the
@@ -242,7 +242,7 @@ export async function diagramsContainingTab(env: Env, tabId: string): Promise<st
 }
 
 // One position in a reorder request: the tab id plus its per-diagram
-// folder (spec/30). Folder rides this path — never the per-tab content
+// folder (docs/specs/006-diagram/tab-folders.md). Folder rides this path — never the per-tab content
 // PUT — so a content save can't clobber membership. `null`/omitted =
 // loose. A plain `string` is accepted for the legacy (pre-folder)
 // payload shape and treated as loose.
@@ -260,7 +260,7 @@ export function normalizeReorderEntry(entry: ReorderEntry): { id: string; folder
 // Update tab order + folder membership. Caller passes the entries in
 // their new positions; we rewrite every order_index (and folder) in
 // one batch. Cheap given the < 20-tab scale we see in practice (see
-// spec/13 "Risk"). Empty / whitespace folder names normalise to NULL
+// docs/specs/006-diagram/per-tab-storage.md "Risk"). Empty / whitespace folder names normalise to NULL
 // so a blank folder can never persist.
 export async function reorderTabs(
   env: Env,
@@ -270,7 +270,7 @@ export async function reorderTabs(
   const now = Date.now();
   // Update the link-table order + folder alongside the legacy
   // order_index column. Phase-1 keeps both order columns in sync per
-  // spec/17; folder lives only on the link (no legacy equivalent).
+  // docs/specs/006-diagram/tab-diagram-many-to-many.md; folder lives only on the link (no legacy equivalent).
   const batch = entries.flatMap((entry, idx) => {
     const { id: tabId, folder } = normalizeReorderEntry(entry);
     return [
@@ -286,7 +286,7 @@ export async function reorderTabs(
   await env.DB.prepare('UPDATE diagrams SET saved_at = ? WHERE id = ?').bind(now, diagramId).run();
 }
 
-// Compare-and-swap one tab's `data` blob (spec/151). Writes `nextData` only
+// Compare-and-swap one tab's `data` blob (docs/specs/012-collaboration/qa-board.md). Writes `nextData` only
 // if the row still holds exactly `expectedData`, the string the caller read,
 // and reports whether it did. The Q&A board's endpoint loops on this so a
 // room voting in the same second can't lose a vote to the read-modify-write
@@ -294,7 +294,7 @@ export async function reorderTabs(
 //
 // Only `data` and `updated_at` move: a board write never renames, reorders or
 // relinks the tab, and it touches no action or thread, so the collaboration
-// index (spec/142) has nothing to mirror.
+// index (docs/specs/013-workspace/activity-page.md) has nothing to mirror.
 export async function swapTabData(
   env: Env,
   diagramId: string,

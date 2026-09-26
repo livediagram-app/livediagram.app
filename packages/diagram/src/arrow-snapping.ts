@@ -8,7 +8,7 @@ import {
   type ElementId,
 } from './index';
 
-// ARROW-TO-ARROW SNAPPING (spec/50).
+// ARROW-TO-ARROW SNAPPING (docs/specs/008-canvas/arrow-to-arrow.md).
 //
 // Split out of geometry-snapping.ts, which had grown to four unrelated snap
 // families under one roof (alignment, arrow endpoints to boxes, resize bounds,

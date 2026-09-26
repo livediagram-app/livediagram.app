@@ -4,7 +4,7 @@ compatibility_date = "2026-05-29"
 
 # The worker fronts the static-export `./out` directory via an assets
 # binding so it can rewrite `/diagram/<id>` paths onto the single
-# placeholder build artefact (spec/14). Static export can't enumerate
+# placeholder build artefact (docs/specs/007-editor/new-diagram-route.md). Static export can't enumerate
 # user-minted diagram ids at build time, so one HTML file backs every
 # `/diagram/*` URL and the client reads the id from the pathname.
 [assets]
@@ -12,7 +12,7 @@ directory = "./out"
 binding = "ASSETS"
 not_found_handling = "404-page"
 
-# Staging (spec/140): same path-rewrite worker, same static `./out`, deployed
+# Staging (docs/specs/016-platform/staging-environment.md): same path-rewrite worker, same static `./out`, deployed
 # as `livediagram-live-staging`. `main` is inheritable; the assets binding is
 # restated so this block describes the staging worker in full.
 # Named explicitly: wrangler would append "-staging" to the top-level

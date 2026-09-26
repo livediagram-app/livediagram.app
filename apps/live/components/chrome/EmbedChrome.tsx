@@ -1,6 +1,6 @@
 'use client';
 
-// The only chrome the read-only embed view renders (spec/33): the
+// The only chrome the read-only embed view renders (docs/specs/013-workspace/embeds.md): the
 // bottom-left "Open in livediagram" badge that links out to the full
 // share view, plus a tab switcher next to it (only when the diagram
 // has more than one tab). Bottom-left specifically because the

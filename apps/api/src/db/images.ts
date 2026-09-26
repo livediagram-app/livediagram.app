@@ -1,4 +1,4 @@
-// images — gallery rows (spec/19). Bytes live in R2; D1 carries the
+// images — gallery rows (docs/specs/009-elements/images.md). Bytes live in R2; D1 carries the
 // metadata + owner. Usage / reference scans parse tab bodies to find
 // which diagrams place each image.
 
@@ -83,7 +83,7 @@ export async function deleteImage(env: Env, id: string): Promise<void> {
   await env.DB.prepare('DELETE FROM images WHERE id = ?').bind(id).run();
 }
 
-// Pure decision behind the daily unused-image sweep (spec/19
+// Pure decision behind the daily unused-image sweep (docs/specs/009-elements/images.md
 // "Retention"). Given the candidate ids (images already filtered to
 // "older than the 30-day floor") and every tab body in the store,
 // return the ids that NO diagram references — the set safe to delete.
@@ -92,7 +92,7 @@ export async function deleteImage(env: Env, id: string): Promise<void> {
 // unit-test surface without a live D1 / R2 binding (the delete loop
 // itself needs one). Same split as the change_log / events sweeps.
 //
-// The scan is store-wide, not owner-scoped: a shared tab (spec/17) can
+// The scan is store-wide, not owner-scoped: a shared tab (docs/specs/006-diagram/tab-diagram-many-to-many.md) can
 // place an image inside another owner's diagram, so a candidate is kept
 // the moment ANY tab references it. An unparseable tab is skipped
 // (treated as no reference) the same way `imageUsageByOwner` does;
@@ -122,7 +122,7 @@ export function unusedImageIds(candidateIds: string[], tabBodies: string[]): str
 // the same chunk as one DB.batch.
 const IMAGE_DELETE_CHUNK = 1000;
 
-// Daily retention sweep (spec/19 "Retention"). Deletes images that are
+// Daily retention sweep (docs/specs/009-elements/images.md "Retention"). Deletes images that are
 // BOTH older than `cutoff` AND referenced by no diagram, from R2 first
 // then D1 (matching DELETE /api/images/:id). Returns the number of
 // images deleted.
@@ -189,7 +189,7 @@ export async function deleteOldUnusedImages(env: Env, cutoff: number): Promise<n
 }
 
 // Total image count + summed byte_size for one owner. Drives the
-// soft-cap enforcement in POST /api/images (spec/19) plus the usage
+// soft-cap enforcement in POST /api/images (docs/specs/009-elements/images.md) plus the usage
 // bar surfaced in the picker. Single grouped query so the worker
 // doesn't pay two D1 round-trips per upload attempt.
 export async function imageTotalsByOwner(
@@ -215,7 +215,7 @@ export async function imageTotalsByOwner(
 // Single pass over the owner's diagrams + their joined tabs: one
 // query, then JSON-parse each tab body and walk its elements.
 // O(diagrams + tabs + elements) per call, with no per-image work.
-// Tabs that share an id across diagrams (per spec/17) get attributed
+// Tabs that share an id across diagrams (per docs/specs/006-diagram/tab-diagram-many-to-many.md) get attributed
 // to every diagram that references them, which is the user-facing
 // truth.
 export async function imageUsageByOwner(
@@ -273,7 +273,7 @@ export async function diagramReferencesImage(
   diagramId: string,
   imageId: string,
 ): Promise<boolean> {
-  // Tabs live behind diagram_tabs (many-to-many per spec/17), so the
+  // Tabs live behind diagram_tabs (many-to-many per docs/specs/006-diagram/tab-diagram-many-to-many.md), so the
   // lookup joins through the link table rather than reading the
   // legacy `tabs.diagram_id` column directly.
   const rows = await env.DB.prepare(

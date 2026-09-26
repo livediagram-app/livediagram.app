@@ -2,7 +2,7 @@ import { Children, isValidElement, type ReactNode } from 'react';
 
 // Variable-height cards (rankings, whose length follows the data) in two
 // independent columns, so each card is only as tall as its own content
-// (spec/22). In a grid every row grows to its tallest card: one long ranking
+// (docs/specs/017-telemetry/telemetry.md). In a grid every row grows to its tallest card: one long ranking
 // (Tools, Live's pages) stretched its short neighbour into a mostly-empty box.
 //
 // Placed, not flowed. CSS `columns` fills top to bottom in source order, so a

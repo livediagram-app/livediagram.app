@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// The Toolbar layout's menu button (spec/148): it toggles the Explorer and
+// The Toolbar layout's menu button (docs/specs/007-editor/toolbar-layout.md): it toggles the Explorer and
 // hands itself over as the popover's anchor.
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';

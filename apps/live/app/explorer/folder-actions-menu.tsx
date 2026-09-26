@@ -1,6 +1,6 @@
 'use client';
 
-// The one folder actions menu (spec/15): the Explorer page's rows, cards
+// The one folder actions menu (docs/specs/013-workspace/folders.md): the Explorer page's rows, cards
 // and sidebar tree, and the floating Explorer panel's personal and team
 // trees all open this. Same shape as the diagram menu in
 // diagram-row-shared.tsx: a header naming the folder, full-width rows
@@ -48,7 +48,7 @@ export function FolderActionsMenu({
   onNewSubfolder?: () => void;
   onMove?: () => void;
   onDelete?: () => void;
-  // Timeline only (spec/138 §2.9): take THIS card off the reader's feed.
+  // Timeline only (docs/specs/013-workspace/timeline.md §2.9): take THIS card off the reader's feed.
   // Says nothing about the folder, so it sits apart from Delete.
   onRemoveFromTimeline?: () => void;
 }) {

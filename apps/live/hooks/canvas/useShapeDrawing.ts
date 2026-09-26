@@ -2,7 +2,7 @@
 // Two related gestures share the `pendingDraw` state machine:
 //
 // - Draw-to-size: picking anything from the palette except the annotation
-//   (spec/09 "Placement on add") stashes the intent in `pendingDraw`. The
+//   (docs/specs/008-canvas/canvas-and-palette.md "Placement on add") stashes the intent in `pendingDraw`. The
 //   canvas intercepts the next pointer-down and calls `commitDraw` with the
 //   drag's start + end points, which mint the element sized to the dragged
 //   box (or the dragged endpoints, for arrows).
@@ -32,7 +32,7 @@ import { makeCommitFreehand } from '@/hooks/canvas/commit-freehand';
 // and re-set it without minting a new intent (and a new render) per pass.
 const MARKER_INTENT = { type: 'freehand', variant: 'highlighter' } as const satisfies PendingDraw;
 
-// Marker yellow (spec/81): the highlighter's default colour regardless
+// Marker yellow (docs/specs/008-canvas/highlighter.md): the highlighter's default colour regardless
 // of theme; the banner's colour popover (and the Colours category on a
 // committed stroke) can override it.
 export const HIGHLIGHTER_DEFAULT_COLOR = '#fde047';
@@ -81,7 +81,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
   // the canvas intercepts the next pointer-down on its surface and uses the
   // drag's bounding box for the element's size. Escape clears it.
   const [pendingDraw, setPendingDraw] = useState<PendingDraw | null>(null);
-  // Highlighter banner settings (spec/81): the colour + stroke width the
+  // Highlighter banner settings (docs/specs/008-canvas/highlighter.md): the colour + stroke width the
   // NEXT marker strokes commit with, adjusted from the mode banner's two
   // popovers. Session-local by design — the marker resets to yellow /
   // medium on a fresh editor load, like a real pen cup.
@@ -189,7 +189,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     );
     // Frames don't need special-casing here: the canvas + exporters
     // route through `framesFirst`, which keeps every frame painted
-    // behind its contents regardless of array position (spec/09).
+    // behind its contents regardless of array position (docs/specs/008-canvas/canvas-and-palette.md).
     commit((els) => [...els, sized]);
     setSelectedId(sized.id);
     // A freshly added text element drops straight into typing mode
@@ -206,7 +206,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
           intent.iconId && isTechIconId(intent.iconId)
           ? 'TechIcon'
           : intent.kind === 'sticker'
-            ? // Stickers are their own element kind (spec/116), so their own
+            ? // Stickers are their own element kind (docs/specs/010-palette/stickers.md), so their own
               // dashboard token rather than riding Icon's.
               'Sticker'
             : // Hyphenated kinds ('mind-node', 'session-button', ...) need
@@ -225,7 +225,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
                   'LinkCard'
                 : intent.type === 'video'
                   ? // One token for all six providers, matching the old click
-                    // path: spec/22's vocabulary is by element kind, and the
+                    // path: docs/specs/017-telemetry/telemetry.md's vocabulary is by element kind, and the
                     // provider is a user choice, not a new kind.
                     'Video'
                   : 'Image';
@@ -262,7 +262,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
   };
   const beginFreehand = () => armFreehand();
 
-  // The highlighter is a MODE now (spec/81), not a one-shot arm: it lives in
+  // The highlighter is a MODE now (docs/specs/008-canvas/highlighter.md), not a one-shot arm: it lives in
   // the tool dropdown beside the Eraser, so picking it holds the marker until
   // you put it down. The gesture underneath is unchanged, so the mode is
   // expressed by keeping the freehand-marker intent armed for as long as the
@@ -285,11 +285,11 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [holdingMarker]);
 
-  // The shape pen (spec/115): the same gesture, but the stroke is run through
+  // The shape pen (docs/specs/008-canvas/two-pens.md): the same gesture, but the stroke is run through
   // shape recognition on release. Which pen you picked IS the setting.
   const beginShapePen = () => armFreehand('shape-pen');
 
-  // Polygon tool entry (spec/84): queues the click-to-place-vertices
+  // Polygon tool entry (docs/specs/008-canvas/polygon-tool.md): queues the click-to-place-vertices
   // intent. The vertex accumulation lives canvas-side
   // (useCanvasPolygonGesture); this just arms the mode.
   const beginPolygon = () => {
@@ -315,7 +315,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     zoomRef,
   });
 
-  // Canvas-driven commit for the polygon tool (spec/84). Receives the
+  // Canvas-driven commit for the polygon tool (docs/specs/008-canvas/polygon-tool.md). Receives the
   // deliberately placed vertices (no RDP simplification — the user
   // chose every point) and whether the loop closed on the start
   // vertex. Under-specified gestures (one stray click, or a 2-vertex

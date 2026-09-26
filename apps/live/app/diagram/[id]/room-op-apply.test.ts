@@ -63,7 +63,7 @@ describe('applyRoomOpToTabs', () => {
     expect(next[0]!.vote?.votes).toEqual({ a: ['pete'] });
   });
 
-  it('drops a dot from another round or for a closed vote (spec/152)', () => {
+  it('drops a dot from another round or for a closed vote (docs/specs/012-collaboration/collab-race-hardening.md)', () => {
     const open = [tab({ vote: vote() })];
     const dot = { kind: 'vote', tabId: 't1', elementId: 'a', voter: 'pete', delta: 1 } as const;
     expect(applyRoomOpToTabs(open, { ...dot, round: 'r0' })).toBe(open);
@@ -94,7 +94,7 @@ describe('applyRoomOpToTabs', () => {
     expect(next[0]!.vote?.votes).toEqual({});
   });
 
-  it("a clear removes the field and keeps everybody's elements (spec/152)", () => {
+  it("a clear removes the field and keeps everybody's elements (docs/specs/012-collaboration/collab-race-hardening.md)", () => {
     const mine = tab({ timer: { mode: 'stopwatch', running: true, anchorAt: 1 } });
     const next = applyRoomOpToTabs([mine], {
       kind: 'tab-meta',
@@ -136,7 +136,7 @@ describe('applyRoomOpToTabs', () => {
   });
 });
 
-// spec/152, end to end: two people press the same done check in the same
+// docs/specs/012-collaboration/collab-race-hardening.md, end to end: two people press the same done check in the same
 // instant, then each of their autosaves runs. Everybody must end up with
 // both marks.
 describe('two people pressing one done check', () => {

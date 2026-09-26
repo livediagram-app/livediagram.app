@@ -15,7 +15,7 @@ const TemplateGallery = dynamic(() =>
   import('@/components/TemplateGallery').then((m) => m.TemplateGallery),
 );
 
-// The page tells one story (spec/16): what it is, one click to a real
+// The page tells one story (docs/specs/019-marketing/marketing-site.md): what it is, one click to a real
 // diagram, then five beats that each cover a few feature categories and link
 // into all of them.
 export default function LandingPage() {

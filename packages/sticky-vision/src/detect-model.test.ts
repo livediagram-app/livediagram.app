@@ -4,7 +4,7 @@ import { hexToRgb, type ImageBuffer } from './colour';
 import { detectStickies, type DetectDropReason } from './detect';
 import type { ModelCues } from './model-cues';
 
-// The detector with a boundary model's cues handed in (spec/139 Phase 9,
+// The detector with a boundary model's cues handed in (docs/specs/021-event-storming/event-storming.md Phase 9,
 // group J): the classical boxes, corrected where the model is sure. The
 // model itself is not here; its cues are drawn, like the image.
 

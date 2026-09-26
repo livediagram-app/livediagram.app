@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// The renderers are the product's half of the Timeline (spec/138 §7):
+// The renderers are the product's half of the Timeline (docs/specs/013-workspace/timeline.md §7):
 // what a card is titled, what its reason line says, what sits under it,
 // and where it goes on click. These pin the copy rules of §2 rather than
 // any one string: subject is the thing, reason is the stored Title Case

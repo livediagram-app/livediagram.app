@@ -5,7 +5,7 @@ import type { PointerEvent as ReactPointerEvent } from 'react';
 
 // Touch long-press detector. Touch devices never fire `contextmenu`, so a
 // press-and-hold is the conventional way to open an element's context menu
-// on a phone / tablet (spec/09). Returns an `onPointerDown` to spread onto
+// on a phone / tablet (docs/specs/008-canvas/canvas-and-palette.md). Returns an `onPointerDown` to spread onto
 // the element: on a TOUCH press it arms a timer and, if the finger neither
 // moves past a small slop nor lifts before it fires, calls `onLongPress`
 // with the press coordinates. Mouse / pen presses are ignored (they have

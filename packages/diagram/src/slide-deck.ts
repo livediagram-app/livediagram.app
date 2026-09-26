@@ -1,4 +1,4 @@
-// Slide decks (spec/31): the data model and the pure helpers a presentation
+// Slide decks (docs/specs/012-collaboration/presentation-mode.md): the data model and the pure helpers a presentation
 // is built from.
 //
 // A slide is an explicit, ordered set of elements you chose, FROM ONE TAB. The
@@ -42,7 +42,7 @@ export type Slide = {
    *
    * The deck deliberately does not enforce a budget — a slide that moved on
    * because its four minutes were up would cut off the answer you were giving.
-   * The agenda element (spec/127) models minutes-per-segment the same way and
+   * The agenda element (docs/specs/012-collaboration/agenda.md) models minutes-per-segment the same way and
    * does not drive the clock either.
    */
   minutes?: number;
@@ -66,7 +66,7 @@ export function slideName(slide: Slide, index: number): string {
  * The elements a slide shows, in the tab's own paint order.
  *
  * Unknown ids are SKIPPED rather than treated as an error, the same policy
- * spec/74 applies to an unknown `layerId`. That is what makes deleting an
+ * docs/specs/006-diagram/layers.md applies to an unknown `layerId`. That is what makes deleting an
  * element behave: the slide quietly shows the rest, and because the slide was
  * never rewritten, undoing the delete puts the element back on it. Cleaning up
  * references at delete time would look tidier and would lose deck structure to
@@ -112,7 +112,7 @@ function endpointsWithin(arrow: Element, ids: Set<string>): boolean {
 /**
  * The rectangle a slide should be framed to, or null when it has nothing on it.
  *
- * A single frame element (spec/09) on the slide wins: a frame IS a bounded
+ * A single frame element (docs/specs/008-canvas/canvas-and-palette.md) on the slide wins: a frame IS a bounded
  * region somebody drew deliberately, so an author who wants exact framing has
  * a way to say so with an element the product already has. Two or more frames
  * are ambiguous, so they fall back to the content bounds like anything else.

@@ -14,7 +14,7 @@ import { TELEMETRY_TYPE_PATTERN, isValidTelemetryEvent } from './telemetry-schem
 describe('CTA_SOURCES', () => {
   // Pinned: renaming a source starts a fresh series on the public dashboard
   // and orphans every stored row, so it should be a deliberate edit here.
-  it('is the table spec/153 documents', () => {
+  it('is the table docs/specs/019-marketing/landing-funnel.md documents', () => {
     expect(ALL_CTA_SOURCES).toEqual([
       'Home.Header',
       'Home.HeaderDraw',

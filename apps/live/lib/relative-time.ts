@@ -9,7 +9,7 @@
 //   formatRelativeTimeShort    — compact ("2 min ago"), Activity panel rows.
 //   formatRelativeTimeCompact  — ultra-compact ("2m ago"), comment threads.
 //   formatTimeLeftCompact      — the forward-looking countdown ("6d left")
-//                                for expiring share links (spec/34).
+//                                for expiring share links (docs/specs/013-workspace/share-link-expiry.md).
 // The first two share their ladder; see relativeLadder below.
 
 import { useSyncExternalStore } from 'react';
@@ -55,7 +55,7 @@ export function relativeSince(timestamp: number): string {
 }
 
 // Forward-looking compact countdown ("6d left" / "3h left"), used by
-// the Share dialog's expiring-link rows (spec/34). Zero or negative
+// the Share dialog's expiring-link rows (docs/specs/013-workspace/share-link-expiry.md). Zero or negative
 // deltas read as 'expired' so a row that lapses while the dialog is
 // open degrades to the truth without a refetch.
 export function formatTimeLeftCompact(deltaMs: number): string {

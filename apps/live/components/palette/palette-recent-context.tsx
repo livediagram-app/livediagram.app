@@ -2,7 +2,7 @@
 
 import { createContext, useContext } from 'react';
 
-// The Toolbar layout's usage ordering (spec/148), handed down to every tile
+// The Toolbar layout's usage ordering (docs/specs/007-editor/toolbar-layout.md), handed down to every tile
 // the strip and its More popover render: the recently-used tile ids, and the
 // call a tile makes when it is used. Null outside the Toolbar layout, so the
 // floating Palette's tiles record nothing and keep their own order.

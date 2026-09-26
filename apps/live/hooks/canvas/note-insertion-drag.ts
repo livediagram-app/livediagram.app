@@ -20,7 +20,7 @@ export function isSingleNoteDrag(
   return primary?.type === 'sticky';
 }
 
-// Inserting a note that is ALREADY on the board between two others (spec/139)
+// Inserting a note that is ALREADY on the board between two others (docs/specs/021-event-storming/event-storming.md)
 // — the second entry point of the Alt gesture, beside the palette drag. The
 // drag people do most is moving a note they have already placed, so this is
 // where the gesture earns its keep.
@@ -34,7 +34,7 @@ type NoteInsertionInput = {
   // What the board and session allow; the modifier is the other half.
   gate: InsertionGate;
   altHeld: boolean;
-  // Shift already means drag-duplicate (spec/80), so it wins outright.
+  // Shift already means drag-duplicate (docs/specs/008-canvas/shift-drag-duplicate.md), so it wins outright.
   shiftHeld: boolean;
   elements: Element[];
   primaryId: string;
@@ -44,7 +44,7 @@ type NoteInsertionInput = {
   // Pointer travel so far, in canvas units.
   dx: number;
   dy: number;
-  // Elements on a hidden or locked layer (spec/74): they can't define the row
+  // Elements on a hidden or locked layer (docs/specs/006-diagram/layers.md): they can't define the row
   // but still travel with the ripple.
   inertIds: ReadonlySet<string>;
   // The slot currently on offer, fed back in so it survives a shaky hand.

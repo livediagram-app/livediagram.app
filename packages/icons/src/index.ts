@@ -8,7 +8,7 @@
 //   - `@livediagram/icons/icon-catalog-1` / `icon-catalog-2` /
 //     `tech-icon-catalog` — the raw data modules; the editor dynamic-imports
 //     them (lib/icon-registry.ts) so they stay out of its first-load JS.
-//   - `@livediagram/icons/sticker-catalog` — the sticker catalogue (spec/116);
+//   - `@livediagram/icons/sticker-catalog` — the sticker catalogue (docs/specs/010-palette/stickers.md);
 //     the editor loads it with the icon chunk, the Workers import it directly.
 //   - `@livediagram/icons/resolve` — a static-import resolver for the
 //     Workers, where bundle size is not user-facing.

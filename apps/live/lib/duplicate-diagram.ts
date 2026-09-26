@@ -52,7 +52,7 @@ export async function duplicateDiagram(
     remappedTabs.push({ ...tab, id: newTabId, elements });
   }
   const newId = crypto.randomUUID();
-  // Offline Mode (spec/76): a copy of an offline diagram is another OFFLINE
+  // Offline Mode (docs/specs/006-diagram/offline-mode.md): a copy of an offline diagram is another OFFLINE
   // diagram. Creating it on the server instead would silently upload content
   // the user explicitly chose to keep in this browser. Tabs are stored whole
   // (per-tab `folder` included), so no follow-up meta write is needed.
@@ -79,7 +79,7 @@ export async function duplicateDiagram(
   } catch {
     return undefined;
   }
-  // Tab-folder structure (spec/30) doesn't ride the create — the seed
+  // Tab-folder structure (docs/specs/006-diagram/tab-folders.md) doesn't ride the create — the seed
   // path strips per-tab `folder` — so it's re-applied via the same meta
   // PUT the autosave uses. Best-effort: a copy with loose tabs beats no
   // copy.

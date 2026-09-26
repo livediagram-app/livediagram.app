@@ -1,4 +1,4 @@
-// The running request's `waitUntil` (spec/22 Mcp, spec/62 §4.12), so a
+// The running request's `waitUntil` (docs/specs/017-telemetry/telemetry.md Mcp, docs/specs/015-api/mcp-server.md §4.12), so a
 // fire-and-forget telemetry post outlives the response.
 //
 // The MCP transport returns its JSON response as soon as the tool resolves,

@@ -7,7 +7,7 @@ import { ActivityGlyph } from './glyphs';
 import { TrendBadge } from './TrendBadge';
 import { rankTrend, windowLabel } from './windows';
 
-// The Pages tab's Landing Funnel (spec/153): from a public page to a diagram.
+// The Pages tab's Landing Funnel (docs/specs/019-marketing/landing-funnel.md): from a public page to a diagram.
 // A headline strip across the whole public site, then one card per surface
 // with every CTA on it. Three independent counts, divided by each other; no
 // event links one visitor's steps.

@@ -1,7 +1,7 @@
 import type { Rising } from './metric-series';
 
 // The arrow beside a number saying which way it moved against the span just
-// before the window (spec/22). Green when that is good news, red when bad,
+// before the window (docs/specs/017-telemetry/telemetry.md). Green when that is good news, red when bad,
 // yellow when neither: a metric that could read either way, or no change.
 //
 // The change shows as a percentage (a number that doubled reads +100% whether

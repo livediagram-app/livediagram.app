@@ -1,11 +1,11 @@
 'use client';
 
 // The tab bar's two organise pickers as proper centred modals: "Add to
-// Folder" (spec/30 — file the tab into a one-level tab-bar folder) and
-// "Add to Diagram" (spec/17 — link the tab into another diagram; the tab is
+// Folder" (docs/specs/006-diagram/tab-folders.md — file the tab into a one-level tab-bar folder) and
+// "Add to Diagram" (docs/specs/006-diagram/tab-diagram-many-to-many.md — link the tab into another diagram; the tab is
 // shared, not copied). They used to be cramped sub-views squeezed inside the
 // tab portal menu; the modal gives them the same tile-grid language as the
-// shared placement browser (spec/15), with room to breathe and a filter for
+// shared placement browser (docs/specs/013-workspace/folders.md), with room to breathe and a filter for
 // long diagram lists. Single-click commits — both are one-shot pickers.
 
 import { useState } from 'react';
@@ -81,7 +81,7 @@ function NoFolderIcon() {
   );
 }
 
-// Add to Folder (spec/30): a tile per existing tab folder, a No Folder tile
+// Add to Folder (docs/specs/006-diagram/tab-folders.md): a tile per existing tab folder, a No Folder tile
 // (the loose end of the bar), and the create-in-place New Folder tile.
 // Picking commits immediately and closes — one-level folders need no browse.
 export function AddTabToFolderDialog({
@@ -130,7 +130,7 @@ export function AddTabToFolderDialog({
         <NewFolderTile
           onCreate={(name) => {
             // Typing an existing name just moves the tab into it (same
-            // name = same folder, spec/30) — exactly what the move does.
+            // name = same folder, docs/specs/006-diagram/tab-folders.md) — exactly what the move does.
             onMoveToFolder(name);
             onClose();
             return Promise.resolve(true);
@@ -141,7 +141,7 @@ export function AddTabToFolderDialog({
   );
 }
 
-// A destination-diagram tile: the diagram's snapshot preview (spec/67) over
+// A destination-diagram tile: the diagram's snapshot preview (docs/specs/006-diagram/diagram-snapshots.md) over
 // its name, so the user picks by recognising the canvas rather than parsing
 // a list of near-identical "Untitled diagram" names. Styled to match the
 // PlacementCard tile grid, but its own component: the preview area is a
@@ -174,7 +174,7 @@ function DiagramPickCard({
   );
 }
 
-// Add to Diagram (spec/17): pick the destination diagram the tab is LINKED
+// Add to Diagram (docs/specs/006-diagram/tab-diagram-many-to-many.md): pick the destination diagram the tab is LINKED
 // into (shared, not copied — one tab, live in both). A filter keeps long
 // libraries manageable; picking commits immediately and closes.
 export function AddTabToDiagramDialog({

@@ -1,4 +1,4 @@
-// The face of a Picker (spec/107): the current choice, large, with a button
+// The face of a Picker (docs/specs/012-collaboration/picker.md): the current choice, large, with a button
 // that rolls a new one.
 //
 // The spin is local theatre over a result that was already decided when the
@@ -127,7 +127,7 @@ export function PickerFace({
 
   return (
     <div className="relative flex h-full w-full flex-col items-center justify-center gap-1 px-3 py-2">
-      {/* A REEL BEHIND A WINDOW (spec/122). The names do not sit on a card,
+      {/* A REEL BEHIND A WINDOW (docs/specs/012-collaboration/participant-responses.md). The names do not sit on a card,
           they pass through an opening: shaded at the lip, clear in the middle,
           so a spin reads as something turning behind the element rather than
           text being swapped out. */}

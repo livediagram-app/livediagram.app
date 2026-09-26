@@ -10,7 +10,7 @@ type ExplorerViewModelDeps = Pick<
   'diagrams' | 'folders' | 'currentDiagramId' | 'shared' | 'teamFolders' | 'teamDiagrams'
 > & {
   deletedTeamIds: Set<string>;
-  // Diagrams this user hid from Recent (spec/93). Recent only — every
+  // Diagrams this user hid from Recent (docs/specs/013-workspace/hide-from-recent.md). Recent only — every
   // other section of the panel still lists them.
   recentExcludedIds: string[];
 };
@@ -64,7 +64,7 @@ export function useExplorerViewModel({
   );
   // Cap the recents list at 5 so the accordion stays compact.
   const RECENT_LIMIT = 5;
-  // Recent mirrors the /explorer page (spec/35): personal + team +
+  // Recent mirrors the /explorer page (docs/specs/013-workspace/team-shared-diagrams.md): personal + team +
   // shared diagrams, interleaved by recency, the current one excluded.
   // Tagged so the render picks the right row component per source.
   const recentExcluded = useMemo(() => new Set(recentExcludedIds), [recentExcludedIds]);
@@ -76,7 +76,7 @@ export function useExplorerViewModel({
           d: DiagramListItem & { team?: { id: string; name: string } };
         }
       | { kind: 'shared'; savedAt: number; s: SharedWithItem };
-    // Hidden-from-Recent (spec/93) drops out alongside the currently-open
+    // Hidden-from-Recent (docs/specs/013-workspace/hide-from-recent.md) drops out alongside the currently-open
     // diagram, and BEFORE the cap, so hiding one promotes the next in.
     const keep = (id: string) => id !== currentDiagramId && !recentExcluded.has(id);
     const own: RecentEntry[] = diagrams
@@ -93,7 +93,7 @@ export function useExplorerViewModel({
       .slice(0, RECENT_LIMIT);
   }, [diagrams, visibleTeamDiagrams, shared, currentDiagramId, recentExcluded]);
   // This team's folder rows and diagrams, indexed by team, for the Teams
-  // accordion, which shows the diagrams inside each team folder (spec/35).
+  // accordion, which shows the diagrams inside each team folder (docs/specs/013-workspace/team-shared-diagrams.md).
   const foldersByTeam = useMemo(() => groupBy(teamFolders, (f) => f.teamId), [teamFolders]);
   const diagramsByTeam = useMemo(
     () => groupBy(visibleTeamDiagrams, (d) => d.team.id),
@@ -104,7 +104,7 @@ export function useExplorerViewModel({
   // can ask for children by id without rescanning the full list.
   const foldersByParent = useMemo(() => indexFolders(folders).childrenByParent, [folders]);
 
-  // Offline diagrams (spec/76) stay out of the root Unsorted bucket: they
+  // Offline diagrams (docs/specs/006-diagram/offline-mode.md) stay out of the root Unsorted bucket: they
   // render under the panel's synthetic Offline node instead.
   const diagramsByFolder = useMemo(
     () =>
@@ -114,7 +114,7 @@ export function useExplorerViewModel({
     [diagrams],
   );
 
-  // Offline diagrams (spec/76): everything saved only in this browser,
+  // Offline diagrams (docs/specs/006-diagram/offline-mode.md): everything saved only in this browser,
   // regardless of any folder placement in the local record, for the panel's
   // always-shown synthetic Offline node (mirrors the /explorer route).
   const offlineDiagrams = useMemo(

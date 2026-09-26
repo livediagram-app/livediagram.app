@@ -32,7 +32,7 @@ type ImageDropZoneProps = {
   heightClass?: string;
   gapClass?: string;
   // What the file input accepts, and the line under the prompt. The photo
-  // import (spec/139 Phase 8) takes a narrower set than an upload does and
+  // import (docs/specs/021-event-storming/event-storming.md Phase 8) takes a narrower set than an upload does and
   // has its own cap, so it overrides both rather than owning a second copy of
   // this component.
   accept?: string;

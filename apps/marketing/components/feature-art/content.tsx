@@ -258,7 +258,7 @@ export function TechIconsArt() {
   );
 }
 
-// Ready-made components (spec/09): drop-in composites (Banner, Stat row, Hero,
+// Ready-made components (docs/specs/008-canvas/canvas-and-palette.md): drop-in composites (Banner, Stat row, Hero,
 // Header, Callout, Process) assembled from primitives, themed and fully
 // editable. Shown as a Banner over a Stat row, dropping in.
 export function ComponentsArt() {

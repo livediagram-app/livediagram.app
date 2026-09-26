@@ -1,11 +1,11 @@
 'use client';
 
-// Hover-to-preview for the tab menu's Cleanup rows (spec/47). On a desktop
+// Hover-to-preview for the tab menu's Cleanup rows (docs/specs/008-canvas/layout-cleanup.md). On a desktop
 // pointer, hovering Auto Layout, Auto-align or one of the explicit layout
 // styles lays the tab out live behind the menu; the change only sticks on
 // click, and pulling the pointer off the row puts everything back.
 //
-// It is the style-preset preview (spec/48) one level up: that one previews a
+// It is the style-preset preview (docs/specs/010-palette/style-presets.md) one level up: that one previews a
 // look on the selected elements, this one previews a POSITION on all of them.
 // The mechanics are the same and matter for the same reasons:
 //

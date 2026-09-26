@@ -1,7 +1,7 @@
 import { bytesToBase64 } from '@livediagram/api-schema';
 import { googleFontsHref } from '@livediagram/diagram';
 
-// Webfonts, EMBEDDED, for an image export (spec/28).
+// Webfonts, EMBEDDED, for an image export (docs/specs/004-interface-design/fonts.md).
 //
 // An exported file leaves the browser that made it, so a `font-family` alone
 // is a promise the reader can't keep: nobody has Permanent Marker installed,

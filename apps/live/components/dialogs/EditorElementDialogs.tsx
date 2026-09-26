@@ -60,18 +60,18 @@ export function EditorElementDialogs() {
     refreshRecentImages,
   } = useEditorContext();
 
-  // A video's link IS its content (spec/114), so its picker is the URL mode
+  // A video's link IS its content (docs/specs/009-elements/youtube-video.md), so its picker is the URL mode
   // only, validated as a YouTube link. Every other element keeps the full
   // tab / diagram / URL choice.
   const linkTarget = activeTab.elements.find((e) => e.id === linkPickerOpenForId);
   // The provider the embed was created for, when it came from one of the
-  // provider tiles (spec/121). Names the dialog; the validator still accepts
+  // provider tiles (docs/specs/009-elements/embed-providers.md). Names the dialog; the validator still accepts
   // ANY supported link, because refusing one that plainly works is pedantry.
   const embedNamed =
     linkTarget?.type === 'video' && linkTarget.embedProvider
       ? EMBED_PROVIDER_LABEL[linkTarget.embedProvider]
       : null;
-  // A website embed (spec/133) is a free address, not a link into a named
+  // A website embed (docs/specs/009-elements/website-embed.md) is a free address, not a link into a named
   // service, so its dialog says so: a YouTube watch-url placeholder under a
   // field labelled "Website link" is just misleading.
   const isWebsiteEmbed = linkTarget?.type === 'video' && linkTarget.embedProvider === 'website';
@@ -158,7 +158,7 @@ export function EditorElementDialogs() {
           onClose={() => setCellLinkPickerOpenFor(null)}
         />
       ) : null}
-      {/* Line-chart data modal (spec/53): edits the chart whose id is open. */}
+      {/* Line-chart data modal (docs/specs/009-elements/pie-chart.md): edits the chart whose id is open. */}
       {lineDataOpenForId !== null && !isReadOnly
         ? (() => {
             const el = activeTab.elements.find((e) => e.id === lineDataOpenForId);
@@ -175,7 +175,7 @@ export function EditorElementDialogs() {
             );
           })()
         : null}
-      {/* Code block edit modal (spec/82): edits the block whose id is open. */}
+      {/* Code block edit modal (docs/specs/009-elements/code-block.md): edits the block whose id is open. */}
       {codeEditOpenForId !== null && !isReadOnly
         ? (() => {
             const el = activeTab.elements.find((e) => e.id === codeEditOpenForId);

@@ -25,7 +25,7 @@ function getJWKS(url: string): ReturnType<typeof createRemoteJWKSet> {
 }
 
 // The identity a verified Clerk session token asserts. `email` is the
-// optional `email` claim (spec/32): present only when the deployment
+// optional `email` claim (docs/specs/013-workspace/teams.md): present only when the deployment
 // has added it to the Clerk SESSION TOKEN (dashboard → Sessions →
 // Customize session token → `{"email": "{{user.primary_email_address}}"}`).
 // It must be on the session token specifically because the frontend
@@ -39,7 +39,7 @@ function getJWKS(url: string): ReturnType<typeof createRemoteJWKSet> {
 // `sessionId` (the `sid` claim) and `firstFactorAgeMinutes` (the first entry
 // of the `fva` claim: minutes since the user last verified their first
 // factor) feed the server-side Session·SignedUp / SignedIn count only
-// (auth/session-telemetry.ts, spec/22). Both are default Clerk session-token
+// (auth/session-telemetry.ts, docs/specs/017-telemetry/telemetry.md). Both are default Clerk session-token
 // claims; null when absent or malformed, and nothing authorises on them.
 export type ClerkIdentity = {
   userId: string;
@@ -57,7 +57,7 @@ export type ClerkIdentity = {
 //         environment — fall through to X-Owner-Id),
 //       * no Bearer header was sent (guest request),
 //       * the token failed verification (caller falls through to
-//         X-Owner-Id — spec/04 keeps the guest path always-available).
+//         X-Owner-Id — docs/specs/014-identity/auth-and-guest-access.md keeps the guest path always-available).
 //
 // Returning null instead of throwing keeps the hybrid model simple:
 // callers just `clerkUserId ?? ownerOf(request)` and never see a

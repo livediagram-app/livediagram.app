@@ -3,7 +3,7 @@ import { SURFACE_LABELS, ctaSourceLabel } from './cta-funnel';
 import { API_OPERATIONS, BY_ACTION, EXACT } from './event-explanations';
 import { articleTitle, CANVAS_CONTROLS, eventLabel, typeLabel } from './event-vocab';
 
-// The plain-language sentence under every metric (spec/22): what someone did
+// The plain-language sentence under every metric (docs/specs/017-telemetry/telemetry.md): what someone did
 // to make the event, for a reader who has never seen the code. Looked up in
 // order:
 //  1. an exact sentence for this category·action·type (event-explanations.ts);
@@ -25,7 +25,7 @@ function pattern(category: string, action: string, type: string): string | null 
   switch (`${category}|${action}`) {
     case 'Page|View':
       return `Someone viewed the page ${type}, by loading it or following a link to it within the site.`;
-    // The landing funnel (spec/153): which public-page button it was.
+    // The landing funnel (docs/specs/019-marketing/landing-funnel.md): which public-page button it was.
     case 'Cta|Opened':
       return isCtaSource(type)
         ? `Someone followed the ${ctaSourceLabel(type)} button on the ${SURFACE_LABELS[ctaSurfaceOf(type)]} and reached the New Diagram page.`

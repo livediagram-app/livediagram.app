@@ -1,7 +1,7 @@
 'use client';
 
-// The one thing you can do to an element somebody else is holding (spec/07
-// concurrent-selection lock + spec/149 facilitator): free it.
+// The one thing you can do to an element somebody else is holding (docs/specs/007-editor/live-app.md
+// concurrent-selection lock + docs/specs/012-collaboration/facilitator.md facilitator): free it.
 //
 // Its own menu rather than a row in the element's real context menu, because
 // the element is still LOCKED. Every other row in that menu edits something,

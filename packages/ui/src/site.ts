@@ -6,15 +6,15 @@ import type { Metadata, Viewport } from 'next';
 // theirs), so the origin and the repo URL lived in five places.
 
 // The canonical origin. livediagram.app is one origin: the router stitches
-// the apps together by path (spec/08), so every app's metadataBase, JSON-LD
-// ids and share links resolve against this one value (spec/16 "SEO and
+// the apps together by path (docs/specs/016-platform/router-app.md), so every app's metadataBase, JSON-LD
+// ids and share links resolve against this one value (docs/specs/019-marketing/marketing-site.md "SEO and
 // metadata").
 export const SITE_URL = 'https://livediagram.app';
 
 // The product / site name: the metadata siteName and the JSON-LD name.
 export const SITE_NAME = 'livediagram';
 
-// The open-source repository (spec/03: the codebase is public + MIT), linked
+// The open-source repository (docs/specs/002-project-scope/open-source-and-business-model.md: the codebase is public + MIT), linked
 // from the footer, the FAQ, the status page, the help centre's contact page,
 // the editor's bottom bar and Explorer menu, and the `sameAs` JSON-LD.
 export const REPO_URL = 'https://github.com/livediagram-app/livediagram.app';
@@ -40,8 +40,8 @@ export const BRAND_ICONS: NonNullable<Metadata['icons']> = {
 // Mobile chrome + colour-scheme signal for the public (light-only) sites:
 // brand-500 tints Android Chrome's URL bar, the iOS PWA status bar and the
 // Windows tile, and colorScheme 'light' avoids a flash of dark-mode default
-// styling on browsers that would otherwise auto-toggle (spec/16). The editor
-// has its own viewport (pinned zoom, spec/07) and doesn't use this.
+// styling on browsers that would otherwise auto-toggle (docs/specs/019-marketing/marketing-site.md). The editor
+// has its own viewport (pinned zoom, docs/specs/007-editor/live-app.md) and doesn't use this.
 export const PUBLIC_VIEWPORT: Viewport = {
   themeColor: '#0EA5E9',
   colorScheme: 'light',

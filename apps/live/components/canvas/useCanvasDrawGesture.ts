@@ -236,7 +236,7 @@ export function useCanvasDrawGesture({
         endY = mode === 'se' || mode === 'sw' ? snapped.y + snapped.height : snapped.y;
       } else {
         // Arrow: first try to latch the moving endpoint onto a nearby ARROW's
-        // line (spec/50), so drawing a message onto another arrow connects as
+        // line (docs/specs/008-canvas/arrow-to-arrow.md), so drawing a message onto another arrow connects as
         // you draw (the dots render in CanvasChrome). That takes precedence
         // over the element edge/centre alignment snap below.
         const arrowHit = snapToArrowPoint(
@@ -323,7 +323,7 @@ export function useCanvasDrawGesture({
       const snapshot = buffer;
       setPenPoints(null);
       if (snapshot.length >= 2) {
-        // Recognition is which PEN you picked, not a preference (spec/115):
+        // Recognition is which PEN you picked, not a preference (docs/specs/008-canvas/two-pens.md):
         // the Shape Pen converts, plain Freehand and the highlighter never do.
         onCommitFreehand(snapshot, pendingDraw?.variant === 'shape-pen');
       }

@@ -1,7 +1,7 @@
 'use client';
 
-// Deferred auth for the whole app tree (spec/04: auth is purely
-// additive; spec/03: Clerk is optional). This provider no longer
+// Deferred auth for the whole app tree (docs/specs/014-identity/auth-and-guest-access.md: auth is purely
+// additive; docs/specs/002-project-scope/open-source-and-business-model.md: Clerk is optional). This provider no longer
 // imports @clerk/react — the ~96 kB library used to ride EVERY
 // route's first load, including embeds and Clerk-less self-hosts.
 // Instead the children render immediately under DeferredAuthContext's

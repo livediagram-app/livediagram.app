@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { nearestElementTowards, opposingAnchor } from './nearest-towards';
 import type { BoxedElement, Element } from './index';
 
-// The touch quick-connect's target picker (spec/09). Tapping the + on a phone
+// The touch quick-connect's target picker (docs/specs/008-canvas/canvas-and-palette.md). Tapping the + on a phone
 // can't be dragged, so it has to guess what the user meant; these pin what
 // "straight out that way" is allowed to mean.
 

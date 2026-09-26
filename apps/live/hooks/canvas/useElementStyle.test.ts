@@ -71,7 +71,7 @@ describe('useElementStyle selection-wide setters on a multi-selection', () => {
   });
 });
 
-describe('useElementStyle shape markers (spec/49)', () => {
+describe('useElementStyle shape markers (docs/specs/009-elements/shape-markers.md)', () => {
   it('sets and clears a marker on the selected shape', () => {
     const a = createShape('square', 0, 0);
     const { style, result } = harness([a], new Set([a.id]));
@@ -92,7 +92,7 @@ describe('useElementStyle shape markers (spec/49)', () => {
   });
 });
 
-describe('useElementStyle timeline rail (spec/51)', () => {
+describe('useElementStyle timeline rail (docs/specs/009-elements/timeline-rail.md)', () => {
   it('sets the point count and resizes to keep spacing constant', () => {
     const a = createShape('timeline-rail', 0, 0);
     const { style, result } = harness([a], new Set([a.id]));
@@ -127,7 +127,7 @@ describe('useElementStyle timeline rail (spec/51)', () => {
   });
 });
 
-describe('useElementStyle rating (spec/52)', () => {
+describe('useElementStyle rating (docs/specs/009-elements/rating.md)', () => {
   it('sets the star score (clamped 0..5) on the rating shape', () => {
     const a = createShape('rating', 0, 0);
     const { style, result } = harness([a], new Set([a.id]));
@@ -154,7 +154,7 @@ describe('useElementStyle rating (spec/52)', () => {
   });
 });
 
-describe('useElementStyle pie chart (spec/53)', () => {
+describe('useElementStyle pie chart (docs/specs/009-elements/pie-chart.md)', () => {
   it('replaces the slice data on the pie shape', () => {
     const a = createShape('pie-chart', 0, 0);
     const { style, result } = harness([a], new Set([a.id]));
@@ -208,7 +208,7 @@ describe('useElementStyle pie chart (spec/53)', () => {
   });
 });
 
-describe('useElementStyle shape style presets (spec/48)', () => {
+describe('useElementStyle shape style presets (docs/specs/010-palette/style-presets.md)', () => {
   it('applies a style preset (colour + matching border) in one step', () => {
     const a = createShape('square', 0, 0);
     const { style, result } = harness([a], new Set([a.id]));
@@ -235,10 +235,10 @@ describe('useElementStyle shape style presets (spec/48)', () => {
     expect(el.fillColor).toBe('#fee2e2');
     expect(el.strokeColor).toBe('#ef4444');
     expect(el.textColor).toBe('#7f1d1d');
-    // A preset is one complete look now: it stamps the border too (spec/48).
+    // A preset is one complete look now: it stamps the border too (docs/specs/010-palette/style-presets.md).
     expect(el.strokeWidth).toBe('thick');
     expect(el.strokeStyle).toBe('solid');
-    // Radius stays the user's own choice (spec/48): presets never stamp it.
+    // Radius stays the user's own choice (docs/specs/010-palette/style-presets.md): presets never stamp it.
     expect(el.borderRadius).toBeUndefined();
     // The preset id is recorded so a theme change can re-derive it.
     expect(el.colorPreset).toBe('bold');
@@ -268,7 +268,7 @@ describe('useElementStyle shape style presets (spec/48)', () => {
     expect(el.strokeWidth).toBeUndefined();
     expect(el.strokeStyle).toBeUndefined();
     expect(el.borderRadius).toBeUndefined();
-    // Reset also drops the colour-preset binding (spec/48).
+    // Reset also drops the colour-preset binding (docs/specs/010-palette/style-presets.md).
     expect(el.colorPreset).toBeUndefined();
   });
 
@@ -293,7 +293,7 @@ describe('useElementStyle shape style presets (spec/48)', () => {
   });
 });
 
-describe('useElementStyle arrow style presets (spec/48)', () => {
+describe('useElementStyle arrow style presets (docs/specs/010-palette/style-presets.md)', () => {
   it('applies an animated line preset (pattern + thickness + flow) in one step', () => {
     const a = createArrow(0, 0, 100, 0);
     const { style, result } = harness([a], new Set([a.id]));
@@ -309,7 +309,7 @@ describe('useElementStyle arrow style presets (spec/48)', () => {
     expect(el.strokeStyle).toBe('dashed');
     expect(el.strokeWidth).toBe(4); // thick → 4px
     expect(el.flow).toBe('dashes');
-    // A fresh flow starts at the shared default speed ('slow', spec/09).
+    // A fresh flow starts at the shared default speed ('slow', docs/specs/008-canvas/canvas-and-palette.md).
     expect(el.flowSpeed).toBe(DEFAULT_ANIMATION_SPEED);
   });
 
@@ -345,7 +345,7 @@ describe('useElementStyle arrow style presets (spec/48)', () => {
   });
 });
 
-describe('useElementStyle bring to front / send to back as layer moves (spec/74)', () => {
+describe('useElementStyle bring to front / send to back as layer moves (docs/specs/006-diagram/layers.md)', () => {
   it('bring to front mints a top layer holding the selection', () => {
     const a = createShape('square', 0, 0);
     const b = createShape('square', 200, 0);

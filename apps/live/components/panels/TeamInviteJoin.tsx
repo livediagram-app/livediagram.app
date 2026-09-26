@@ -9,7 +9,7 @@ import { ensureGuestSelfId } from '@/lib/local-identity';
 import { track } from '@/lib/telemetry';
 import { apiJoinTeamByInviteLink, apiResolveTeamInviteLink } from '@/lib/api-client';
 
-// Landing for a shareable team invite link (spec/32), served at the
+// Landing for a shareable team invite link (docs/specs/013-workspace/teams.md), served at the
 // top-level `/join?token=<token>` route (outside the Explorer chrome so
 // it works the same for signed-out visitors). It resolves the token to
 // a team, then offers Join / Decline to a signed-in user, or a "sign in
@@ -63,7 +63,7 @@ export function TeamInviteJoin() {
         setResolved('invalid');
         return;
       }
-      // Same event the Accept-invite flow fires (spec/22) — a new
+      // Same event the Accept-invite flow fires (docs/specs/017-telemetry/telemetry.md) — a new
       // membership, just via a link instead of an email row.
       if (!result.alreadyMember) track('Team', 'Joined');
       // Land on the team so they see what they just joined.

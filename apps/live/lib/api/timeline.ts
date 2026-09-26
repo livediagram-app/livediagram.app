@@ -1,16 +1,16 @@
-// The Explorer's landing feed (spec/138).
+// The Explorer's landing feed (docs/specs/013-workspace/timeline.md).
 //
 // Nothing user-AUTHORED lives on this feed, so there is no create or
 // update to wrap; the one write is the per-card dismissal (§2.9). There
 // is no refresh wrapper either — the feed loads on mount, re-reads this
-// same GET when the reader returns to the tab (spec/138 §2.4a) or after
+// same GET when the reader returns to the tab (docs/specs/013-workspace/timeline.md §2.4a) or after
 // one of their own writes lands (§2.4b), and the worker seeds a
 // first-time scope off it, so a manual refresh button had nothing to
 // do that reopening the page doesn't. (The `POST /api/timeline/refresh`
 // endpoint stays part of the documented public API for external
 // callers who want to force a seed; the app just doesn't need it.)
 //
-// Offline Mode (spec/76) is a deliberate no-op here rather than a
+// Offline Mode (docs/specs/006-diagram/offline-mode.md) is a deliberate no-op here rather than a
 // dispatch. `isOfflineId` keys on a DIAGRAM id, and this endpoint is
 // scoped to an owner — there is no id to dispatch on, and a
 // browser-only diagram never reaches the worker, so it has no server
@@ -30,7 +30,7 @@ export type TimelinePage = {
 
 // Null means the read FAILED — offline, a lapsed session token, a
 // worker 500 — as opposed to an empty page, which means the feed really
-// is empty (spec/138 §6.4). The two used to be the same value, and the
+// is empty (docs/specs/013-workspace/timeline.md §6.4). The two used to be the same value, and the
 // result was a reader coming back to a sleeping laptop being told
 // nothing had ever happened to them. The caller keeps what it had and
 // offers a retry (§2.4).
@@ -89,7 +89,7 @@ export async function apiTimelineUnread(ownerId: string): Promise<number> {
   }
 }
 
-// Take one card off the reader's own feed (spec/138 §2.9). The
+// Take one card off the reader's own feed (docs/specs/013-workspace/timeline.md §2.9). The
 // membership row is soft-marked server-side, so the event stays on every
 // other reader's feed and can't be re-attached by a later emit. Throws
 // on failure so the caller can put the card back; a 404 counts as done —
@@ -100,7 +100,7 @@ export async function apiDismissTimelineEvent(ownerId: string, eventId: string):
   });
 }
 
-// A whole stack at once (spec/138 §2.9): one request for the run, not
+// A whole stack at once (docs/specs/013-workspace/timeline.md §2.9): one request for the run, not
 // one per member. Ids the feed never held are ignored server-side, so a
 // member that vanished between render and click is not a failure.
 export async function apiDismissTimelineEvents(ownerId: string, eventIds: string[]): Promise<void> {

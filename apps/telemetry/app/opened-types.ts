@@ -1,4 +1,4 @@
-// How the dashboard reads UI·Opened types (spec/22), shared by the Dialogs &
+// How the dashboard reads UI·Opened types (docs/specs/017-telemetry/telemetry.md), shared by the Dialogs &
 // Panels charts and the rankings that break them down (the Settings tab's
 // Categories Opened, the Help tab's Opened From the Editor). Kept out of the
 // catalogue, which exports only charts and stacks.

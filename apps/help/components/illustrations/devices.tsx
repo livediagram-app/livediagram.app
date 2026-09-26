@@ -1,4 +1,4 @@
-// Supported-devices illustrations (spec/55): the editor framed inside a desktop
+// Supported-devices illustrations (docs/specs/018-help/help-app.md): the editor framed inside a desktop
 // monitor, a tablet, and a phone, each with the chrome that screen size brings
 // (full floating palette on desktop, a compact dock on mobile). Composed only
 // from the shared primitives so the house style holds.
@@ -342,7 +342,7 @@ export function MobileEditor() {
       />
       <rect x={188} y={22} width={44} height={5} rx={2.5} className="fill-slate-200" />
       <rect x={158} y={34} width={104} height={172} rx={6} className="fill-slate-50" />
-      {/* The Toolbar strip, a phone's default layout (spec/148): menu button,
+      {/* The Toolbar strip, a phone's default layout (docs/specs/007-editor/toolbar-layout.md): menu button,
           selection mode, category, as many tiles as fit (three here), More. */}
       <rect
         x={162}

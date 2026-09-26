@@ -1,4 +1,4 @@
-// Routes a collaboration element (spec/123 to spec/129) to its face, and holds
+// Routes a collaboration element (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md) to its face, and holds
 // the one prop the canvas threads for all five.
 //
 // One router and one prop rather than five branches and six callbacks on
@@ -29,7 +29,7 @@ import { QaBoardFace } from './qa/QaBoardFace';
 // estimate card in a PNG should still show what the room said.
 export type CollabApi = {
   // Whose answer is "mine" — our `participantKey`, the id these faces are
-  // recorded under in the document (spec/122), not our owner id. See the
+  // recorded under in the document (docs/specs/012-collaboration/participant-responses.md), not our owner id. See the
   // note on Participant.key: the owner id is unpublishable and the room's
   // presence id is per-socket, so neither can join a saved answer to a face.
   selfKey: string;
@@ -49,7 +49,7 @@ export type CollabApi = {
   scatterIdeas?: (element: ShapeElement) => void;
   pressAgendaItem?: (element: ShapeElement, index: number) => void;
   takeRoll?: (element: ShapeElement) => void;
-  // The Q&A board (spec/151). Our OWNER id, only so the board can compute our
+  // The Q&A board (docs/specs/012-collaboration/qa-board.md). Our OWNER id, only so the board can compute our
   // voter id the way the server does (qaVoterId) and know which notes we
   // voted for; the face never renders or sends it. And our name, for the
   // composer's "As …" toggle.
@@ -59,7 +59,7 @@ export type CollabApi = {
   // owns the board and gates these on read access.
   addQaNote?: (element: ShapeElement, text: string, anonymous: boolean) => void;
   voteQaNote?: (element: ShapeElement, noteId: string, on: boolean) => void;
-  // Whoever is running the board (spec/149): absent for everyone else.
+  // Whoever is running the board (docs/specs/012-collaboration/facilitator.md): absent for everyone else.
   discussQaNote?: (element: ShapeElement, noteId: string | null) => void;
   closeQaNote?: (element: ShapeElement, noteId: string) => void;
   reopenQaNote?: (element: ShapeElement, noteId: string) => void;
@@ -80,7 +80,7 @@ export function CollabFaceRouter({
   collab: CollabApi | undefined;
   // The Done check and the Idea box draw their own `…` (their round
   // controls), so the shared settings button is suppressed for them and this
-  // is how their menus still reach the element's full settings (spec/09).
+  // is how their menus still reach the element's full settings (docs/specs/008-canvas/canvas-and-palette.md).
   // Every other card here takes the shared button and never sees this.
   onOpenSettings?: () => void;
 }) {
@@ -91,7 +91,7 @@ export function CollabFaceRouter({
   if (!isCollabPanelShape(element.shape)) return null;
   // No session behind this surface: still render, still readable, inert.
   const api = collab;
-  // The colour showing THROUGH a card's holes and tears (spec/122's paper
+  // The colour showing THROUGH a card's holes and tears (docs/specs/012-collaboration/participant-responses.md's paper
   // kit): its own fill, so a punch reads as an opening rather than a dot.
   const surface = element.fillColor ?? defaultFillColor(element, paper);
 
@@ -104,7 +104,7 @@ export function CollabFaceRouter({
         selfKey={api?.selfKey ?? ''}
         participants={api?.participants ?? []}
         // `respond` already withdraws when you send the value you already
-        // sent (spec/122), so marking and unmarking are the same call.
+        // sent (docs/specs/012-collaboration/participant-responses.md), so marking and unmarking are the same call.
         onToggleMine={api?.respond ? () => api.respond!(element, DONE_VALUE) : undefined}
         onResetAll={api?.clearResponses ? () => api.clearResponses!(element) : undefined}
         onOpenSettings={onOpenSettings}

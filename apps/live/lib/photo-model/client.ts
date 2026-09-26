@@ -1,6 +1,6 @@
 import type { BoundaryFailure, BoundaryOutcome, WorkerRequest, WorkerResponse } from './protocol';
 
-// The page's side of the boundary model (spec/139 Phase 9).
+// The page's side of the boundary model (docs/specs/021-event-storming/event-storming.md Phase 9).
 //
 // The model runs in a Web Worker so its second of WASM on a slow machine never
 // freezes the review, and its runtime (TensorFlow.js, a backend, the weights)

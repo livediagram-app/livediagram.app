@@ -9,7 +9,7 @@ const CollaboratorsDialog = dynamic(() =>
   import('@/components/dialogs/CollaboratorsDialog').then((m) => m.CollaboratorsDialog),
 );
 
-// Mounts the Collaborators modal (spec/145) from EditorContext, so EditorView
+// Mounts the Collaborators modal (docs/specs/012-collaboration/collaborator-enhancements.md) from EditorContext, so EditorView
 // only drops <CollaboratorsHost /> in. Going to a tab or starting a follow
 // closes the modal: both are "take me there", and the modal would sit over
 // exactly what you asked to see.

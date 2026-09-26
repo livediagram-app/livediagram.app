@@ -1,4 +1,4 @@
-// Canvas-category illustrations (spec/55): the infinite canvas, placing and
+// Canvas-category illustrations (docs/specs/018-help/help-app.md): the infinite canvas, placing and
 // selecting elements, grouping, themes, templates, links, and annotations.
 // Composed only from the shared primitives so the house style holds.
 

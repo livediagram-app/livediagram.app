@@ -26,7 +26,7 @@ function setup() {
 const answered = () =>
   trackMock.mock.calls.filter(([c, a, t]) => c === 'Tab' && a === 'Voted' && t === 'Poll');
 
-describe('useLivePoll answer telemetry (spec/22)', () => {
+describe('useLivePoll answer telemetry (docs/specs/017-telemetry/telemetry.md)', () => {
   beforeEach(() => trackMock.mockReset());
 
   it('counts one response per participant per poll, not each change of mind', () => {
@@ -48,7 +48,7 @@ describe('useLivePoll answer telemetry (spec/22)', () => {
   });
 });
 
-describe('starting a collaborators poll (spec/88)', () => {
+describe('starting a collaborators poll (docs/specs/012-collaboration/live-poll.md)', () => {
   beforeEach(() => trackMock.mockReset());
 
   // The op the room would receive, so the assertions are about what peers
@@ -115,7 +115,7 @@ describe('starting a collaborators poll (spec/88)', () => {
   });
 });
 
-describe('surviving reconnects and refreshes (spec/152)', () => {
+describe('surviving reconnects and refreshes (docs/specs/012-collaboration/collab-race-hardening.md)', () => {
   function withKey(key: string) {
     const send = vi.fn();
     const hook = renderHook(() =>

@@ -34,7 +34,7 @@ export function useTextStyleSetters({
     track('Element', 'Changed', 'TextSize');
   };
 
-  // Font (spec/28). Passing a font id sets it on every text-bearing
+  // Font (docs/specs/004-interface-design/fonts.md). Passing a font id sets it on every text-bearing
   // member of the selection; passing null clears the override so they
   // fall back to the tab's default font.
   const setFontSelected = (font: string | null) => {

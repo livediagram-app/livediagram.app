@@ -3,7 +3,7 @@ import { useEffect, useSyncExternalStore } from 'react';
 import type { CodeLanguage } from '@livediagram/diagram';
 import type { CodeToken } from './code-tokens';
 
-// Async loader for the code tokenizer (spec/82), on the icon-registry
+// Async loader for the code tokenizer (docs/specs/009-elements/code-block.md), on the icon-registry
 // pattern: one memoized dynamic import, a useSyncExternalStore pair, and a
 // synchronous lookup that returns undefined pre-load so CodeBlockView
 // degrades to plain monospace text (never blanks) until the chunk lands.

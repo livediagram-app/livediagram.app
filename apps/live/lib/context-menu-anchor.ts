@@ -1,4 +1,4 @@
-// spec/09: where an element's context menu anchors. The menu opens BESIDE the
+// docs/specs/008-canvas/canvas-and-palette.md: where an element's context menu anchors. The menu opens BESIDE the
 // element at its top-right corner (so it never covers what you're editing),
 // flipping to the top-left when the fixed-width menu wouldn't fit to the right,
 // and held a few px off the edge so it clears the element's border. Shared by

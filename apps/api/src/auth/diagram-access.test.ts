@@ -14,10 +14,10 @@ import type { Env } from '../types';
 // helpers' module evaluates its `import { getShareLink } from
 // '../db'`. The stub returns the spy we control per test case.
 const getShareLinkMock = vi.fn<(env: Env, code: string) => Promise<ShareLink | null>>();
-// Share password (spec/24). Defaults to "no password" so every legacy
+// Share password (docs/specs/013-workspace/share-password.md). Defaults to "no password" so every legacy
 // case below is unaffected; the password-specific cases set it.
 const getSharePasswordMock = vi.fn<(env: Env, id: string) => Promise<string | null>>();
-// Team membership (spec/35). Defaults to "not a member" so every
+// Team membership (docs/specs/013-workspace/team-shared-diagrams.md). Defaults to "not a member" so every
 // pre-team case is unaffected; the team cases set it.
 const getMembershipMock =
   vi.fn<(env: Env, teamId: string, userId: string) => Promise<{ status: string } | null>>();
@@ -208,7 +208,7 @@ describe('canReadDiagram', () => {
   });
 });
 
-describe('share password gate (spec/24)', () => {
+describe('share password gate (docs/specs/013-workspace/share-password.md)', () => {
   // A valid edit-role code for diag-1 in every case below; the password
   // is what flips access.
   const editLink: ShareLink = {
@@ -279,7 +279,7 @@ describe('share password gate (spec/24)', () => {
   });
 });
 
-describe('team-library access (spec/35)', () => {
+describe('team-library access (docs/specs/013-workspace/team-shared-diagrams.md)', () => {
   // Membership is checked against the VERIFIED callerId (8th arg), the
   // Clerk user id — NOT the hybrid `owner` (3rd arg, which may be the
   // unsigned X-Owner-Id header). The member here is a guest-shaped
@@ -348,7 +348,7 @@ describe('team-library access (spec/35)', () => {
 
   it('grants the team diagram’s owner access only while they are a joined member', async () => {
     // Owning the row used to be enough on its own, so a member the team
-    // removed kept full access to everything they had created in it (spec/35).
+    // removed kept full access to everything they had created in it (docs/specs/013-workspace/team-shared-diagrams.md).
     getMembershipMock.mockResolvedValue({ status: 'joined' });
     expect(
       await canEditDiagram(FAKE_ENV, 'diag-1', null, null, 'user-1', null, 'team-1', 'user-1'),

@@ -2,7 +2,7 @@
 
 import { useSyncExternalStore } from 'react';
 
-// The timeline lane an in-flight drag is LANDING ON (spec/139 Phase 6), for
+// The timeline lane an in-flight drag is LANDING ON (docs/specs/021-event-storming/event-storming.md Phase 6), for
 // the overlay that lights it. Same discipline as `insertion-preview.ts`: this
 // channel NEVER touches the document — the drop is the first thing that
 // writes, so a hover cannot reach the undo stack, autosave, or a peer's

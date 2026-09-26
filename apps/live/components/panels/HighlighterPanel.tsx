@@ -1,6 +1,6 @@
 'use client';
 
-// The Highlighter Panel (spec/81): the marker's colour and strength, present
+// The Highlighter Panel (docs/specs/008-canvas/highlighter.md): the marker's colour and strength, present
 // only while the Highlighter tool is held — the sixth tool panel, on the same
 // terms as the Eraser, Laser, Spotlight, Format and Avatar ones.
 //

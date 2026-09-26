@@ -1,7 +1,7 @@
-// The collaboration element family: the estimate card (spec/123), the
-// temperature check (spec/124), the idea box (spec/125), the agenda
-// (spec/127), the decision record (spec/128), the roll call (spec/129) and the
-// chair (spec/130) — their kind predicates, closed enums, bounds and defaults.
+// The collaboration element family: the estimate card (docs/specs/012-collaboration/estimate-card.md), the
+// temperature check (docs/specs/012-collaboration/temperature-check.md), the idea box (docs/specs/012-collaboration/idea-box.md), the agenda
+// (docs/specs/012-collaboration/agenda.md), the decision record (docs/specs/012-collaboration/decision-record.md), the roll call (docs/specs/012-collaboration/roll-call.md) and the
+// chair (docs/specs/009-elements/chair.md) — their kind predicates, closed enums, bounds and defaults.
 //
 // A LEAF module (types only) for the same reason data-shapes.ts is one:
 // factories.ts reads these at module-init time, and importing them from
@@ -11,7 +11,7 @@
 import type { ShapeKind } from './index';
 import { isQaBoardShape } from './qa-board';
 
-// --- Estimate card (spec/123) ---------------------------------------------
+// --- Estimate card (docs/specs/012-collaboration/estimate-card.md) ---------------------------------------------
 
 // Which ladder of values the card offers. Every scale ends in '?', which is a
 // real answer ("I can't size this") and often the most useful one on the card.
@@ -43,7 +43,7 @@ export function isEstimateShape(kind: ShapeKind): boolean {
   return kind === 'estimate';
 }
 
-// --- Temperature check (spec/124) -----------------------------------------
+// --- Temperature check (docs/specs/012-collaboration/temperature-check.md) -----------------------------------------
 
 // Fist-of-five, fixed. Not configurable: it is a named ritual with a shared
 // meaning (1 = blocked, 5 = enthusiastic), and a 1-to-7 variant would be a
@@ -54,7 +54,7 @@ export function isTemperatureShape(kind: ShapeKind): boolean {
   return kind === 'temperature';
 }
 
-// --- Idea box (spec/125) ---------------------------------------------------
+// --- Idea box (docs/specs/012-collaboration/idea-box.md) ---------------------------------------------------
 
 // Submissions are STRINGS, with nowhere to put an author. That is the
 // anonymity guarantee expressed in the schema rather than in the UI.
@@ -65,7 +65,7 @@ export function isIdeaBoxShape(kind: ShapeKind): boolean {
   return kind === 'idea-box';
 }
 
-// --- Agenda (spec/127) -----------------------------------------------------
+// --- Agenda (docs/specs/012-collaboration/agenda.md) -----------------------------------------------------
 
 export type AgendaItem = { label: string; minutes: number };
 
@@ -91,7 +91,7 @@ export function isAgendaShape(kind: ShapeKind): boolean {
   return kind === 'agenda';
 }
 
-// --- Decision record (spec/128) -------------------------------------------
+// --- Decision record (docs/specs/012-collaboration/decision-record.md) -------------------------------------------
 
 export type DecisionStatus = 'proposed' | 'accepted' | 'rejected' | 'superseded';
 export const DECISION_STATUSES: readonly DecisionStatus[] = [
@@ -110,7 +110,7 @@ export const DECISION_STATUS_LABELS: Record<DecisionStatus, string> = {
 };
 
 // Chip colours only — never the element's fill, so the theme still owns the
-// box (spec/128). `text` is the chip's foreground on `bg`.
+// box (docs/specs/012-collaboration/decision-record.md). `text` is the chip's foreground on `bg`.
 export const DECISION_STATUS_COLORS: Record<DecisionStatus, { bg: string; text: string }> = {
   proposed: { bg: '#e2e8f0', text: '#334155' }, // slate
   accepted: { bg: '#dcfce7', text: '#166534' }, // green
@@ -125,7 +125,7 @@ export function isDecisionStatus(value: unknown): value is DecisionStatus {
   return (DECISION_STATUSES as readonly string[]).includes(value as string);
 }
 
-// A date, not a timestamp: a decision is taken on a day (spec/128).
+// A date, not a timestamp: a decision is taken on a day (docs/specs/012-collaboration/decision-record.md).
 export function isDecisionDate(value: string): boolean {
   return /^\d{4}-\d{2}-\d{2}$/.test(value);
 }
@@ -134,7 +134,7 @@ export function isDecisionShape(kind: ShapeKind): boolean {
   return kind === 'decision';
 }
 
-// --- Roll call (spec/129) --------------------------------------------------
+// --- Roll call (docs/specs/012-collaboration/roll-call.md) --------------------------------------------------
 
 // A FROZEN snapshot. `name` + `color` are copied at the moment the roll is
 // taken and never re-joined to the live participant — the opposite of the
@@ -150,7 +150,7 @@ export function isRollCallShape(kind: ShapeKind): boolean {
   return kind === 'roll-call';
 }
 
-// --- Chair (spec/130) ------------------------------------------------------
+// --- Chair (docs/specs/009-elements/chair.md) ------------------------------------------------------
 
 // Which way the seat points. 'n' = the chair's back is at the top, so the
 // sitter faces down the board toward the reader.
@@ -212,7 +212,7 @@ export function chairSeatPoint(
 
 // Every collaboration kind that draws a PRESSABLE FACE in place of the plain
 // label — the same shape as the mode button / session button / reveal / picker
-// (spec/103 to spec/107), which each render a face while `!isEditing` and fall
+// (docs/specs/009-elements/mode-button.md to docs/specs/012-collaboration/picker.md), which each render a face while `!isEditing` and fall
 // back to the ordinary label editor mid-edit. So the label is still typed,
 // formatted and exported like any other; it is just drawn by the face.
 //
@@ -222,8 +222,8 @@ export function chairSeatPoint(
 // drivers. Drawing the card itself is what makes the collision impossible.
 //
 // The chair is NOT here — it renders furniture under an ordinary label, the
-// way the record box (spec/120) renders its rows under its title.
-// Done check (spec/137): a room-response card like the rest of this family,
+// way the record box (docs/specs/009-elements/entity.md) renders its rows under its title.
+// Done check (docs/specs/012-collaboration/done-check.md): a room-response card like the rest of this family,
 // so it takes the same panel chrome and the same viewer context.
 export function isDoneCheckShape(kind: ShapeKind): boolean {
   return kind === 'done-check';

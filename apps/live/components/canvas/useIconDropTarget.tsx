@@ -3,7 +3,7 @@ import { acceptsInlineIcon, type Element, type IconPosition } from '@livediagram
 import { iconDropSide } from '@/lib/canvas';
 import { ICON_DND_MIME } from '@/lib/icons';
 
-// Dragging a palette icon ONTO a shape (spec/09 inline icons): the drag
+// Dragging a palette icon ONTO a shape (docs/specs/008-canvas/canvas-and-palette.md inline icons): the drag
 // handlers that mark an icon-capable element as a drop target, tracking
 // the side of the text nearest the cursor. `dropSide` drives the live
 // IconDropPreview below. Lifted out of BoxedElementView as one cohesive

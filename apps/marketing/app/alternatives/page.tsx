@@ -6,7 +6,7 @@ import { Header } from '@/components/Header';
 import { ALTERNATIVES, ALTERNATIVES_LAST_UPDATED } from '@/lib/alternatives';
 import { JsonLd, pageMetadata, SITE_URL } from '@livediagram/ui';
 
-// Hub page for the comparison set (see specs/21-comparison-pages.md): a
+// Hub page for the comparison set (see docs/specs/019-marketing/comparison-pages.md): a
 // crawlable parent that links to every /alternatives/<slug> page.
 export const metadata = pageMetadata({
   title: 'How livediagram compares · alternatives',
@@ -16,7 +16,7 @@ export const metadata = pageMetadata({
   modifiedTime: ALTERNATIVES_LAST_UPDATED,
 });
 
-// ItemList JSON-LD (see spec/16 "JSON-LD structured data", spec/21
+// ItemList JSON-LD (see docs/specs/019-marketing/marketing-site.md "JSON-LD structured data", docs/specs/019-marketing/comparison-pages.md
 // "Metadata"). The schema.org shape Google expects for a curated
 // index of related pages: tells crawlers the hub is a list-of-links
 // page (not editorial content in its own right), pairs each entry

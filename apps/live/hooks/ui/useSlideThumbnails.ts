@@ -13,7 +13,7 @@ import {
 import { resolveIconArtLoaded, resolveStickerArtLoaded } from '@/lib/icon-registry';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 
-// Per-slide preview markup for the Slide Deck panel's rows (spec/31), from
+// Per-slide preview markup for the Slide Deck panel's rows (docs/specs/012-collaboration/presentation-mode.md), from
 // the SAME headless renderer the Map, the exports and the Layers panel's own
 // previews use. A deck row without a picture is a list of names, and the
 // whole point of a slide sorter is seeing the shape of the talk.

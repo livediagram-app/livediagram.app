@@ -1,12 +1,12 @@
 'use client';
 
 // A floating bottom-centre prompt offering to match the editor's UI mode
-// (light / dark chrome, useAppearance / spec/07) to the ACTIVE TAB'S THEME:
+// (light / dark chrome, useAppearance / docs/specs/007-editor/live-app.md) to the ACTIVE TAB'S THEME:
 // viewing a dark-backdrop theme in light mode offers dark, and a
 // light-backdrop theme in dark mode offers light. Only appears on a
 // mismatch; dismissible. The "is this theme dark?" test reads the
 // resolved theme's backdrop luminance, so it works for built-in AND
-// custom themes (spec/44) without a category lookup.
+// custom themes (docs/specs/011-theme/custom-themes.md) without a category lookup.
 //
 // Visual mirrors the sign-in prompt (SignInBanner): a floating rounded
 // card lifted above the tab bar. Self-contained — it reads the UI mode

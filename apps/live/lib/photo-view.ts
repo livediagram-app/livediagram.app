@@ -1,4 +1,4 @@
-// Zooming and panning the photograph under review (spec/139 Phase 9).
+// Zooming and panning the photograph under review (docs/specs/021-event-storming/event-storming.md Phase 9).
 //
 // The picture is laid out at its FITTED size — the whole photo in the window —
 // and the view sits on top of that: a zoom and an offset, both in

@@ -1,4 +1,4 @@
-// Offline Mode (spec/76): diagrams saved only in THIS browser, in IndexedDB,
+// Offline Mode (docs/specs/006-diagram/offline-mode.md): diagrams saved only in THIS browser, in IndexedDB,
 // never to the API. This module is the local counterpart of `lib/api/*` — it
 // produces the same wire shapes (Diagram / DiagramSummary / Tab) so the editor
 // and Explorer render an offline diagram exactly like a cloud one; the
@@ -30,16 +30,16 @@ export type OfflineDiagramRecord = {
   createdAt: number;
   savedAt: number;
   tabs: Tab[];
-  // Activity / change log, newest first (spec/76: local-only, kept in the
+  // Activity / change log, newest first (docs/specs/006-diagram/offline-mode.md: local-only, kept in the
   // diagram record). Optional so records written before the field existed
   // stay valid. Managed by ./offline-change-log.ts.
   log?: ChangeLogEntry[];
-  // Slide deck (spec/31), serialised StoredPresentation. Offline diagrams get
+  // Slide deck (docs/specs/012-collaboration/presentation-mode.md), serialised StoredPresentation. Offline diagrams get
   // decks for the same reason they get everything else: Offline Mode is the
   // whole product minus the server, not a reduced one. Optional so records
   // written before the field existed stay valid.
   presentation?: string | null;
-  // Starred in the Explorer (spec/95). Cloud stars live in a D1 table whose
+  // Starred in the Explorer (docs/specs/013-workspace/favourites.md). Cloud stars live in a D1 table whose
   // diagram_id is a foreign key into `diagrams`, which an offline diagram has
   // no row in, so its star has to live here instead. Optional so records
   // written before the field existed stay valid.
@@ -143,7 +143,7 @@ export function applyMeta(
 // appended; an existing one is replaced in place, preserving order.
 export function upsertTab(rec: OfflineDiagramRecord, tab: Tab, at: number): OfflineDiagramRecord {
   // Stamp the board kind here for the same reason the cloud path stamps it
-  // in tabForWire (spec/139): both stores must agree on what a tab IS, or a
+  // in tabForWire (docs/specs/021-event-storming/event-storming.md): both stores must agree on what a tab IS, or a
   // Sync Diagram would hand the cloud a board that has forgotten itself.
   const stamped = stampTabKind(tab);
   const i = rec.tabs.findIndex((t) => t.id === stamped.id);
@@ -233,7 +233,7 @@ let idCacheLoad: Promise<Set<string>> | null = null;
 // Ids registered before the cache finished loading (a create racing the
 // first lookup). Merged into the cache when it lands and consulted by both
 // checks, so a just-created offline diagram can never read as "not offline"
-// (a miss would leak its writes to the server; see spec/76 and the ghost-row
+// (a miss would leak its writes to the server; see docs/specs/006-diagram/offline-mode.md and the ghost-row
 // bug the meta PUT's create-on-first-write used to turn that into).
 const pendingIds = new Set<string>();
 
@@ -312,7 +312,7 @@ export async function offlineLoadTab(id: string, tabId: string): Promise<Tab | n
   const rec = await backend.get(id);
   const tab = rec?.tabs.find((t) => t.id === tabId) ?? null;
   // The offline twin of the api's rowToTab: a diagram kept in this browser
-  // can still carry retired element fields (spec/147 groups, spec/139 docks).
+  // can still carry retired element fields (docs/specs/009-elements/web-components-and-no-groups.md groups, docs/specs/021-event-storming/event-storming.md docks).
   return tab ? { ...tab, elements: migrateStoredElements(tab.elements) } : null;
 }
 
@@ -345,7 +345,7 @@ export async function offlineSaveDiagramMeta(
   });
 }
 
-// Personal-folder placement for an offline diagram (spec/15). Folders are
+// Personal-folder placement for an offline diagram (docs/specs/013-workspace/folders.md). Folders are
 // server-side rows, but an offline record carries a folderId so its row can
 // sit in the Explorer's personal tree like any other.
 export async function offlineSetDiagramFolder(
@@ -360,7 +360,7 @@ export async function offlineSetDiagramFolder(
   });
 }
 
-// Star / un-star an offline diagram (spec/95). The savedAt stamp is left
+// Star / un-star an offline diagram (docs/specs/013-workspace/favourites.md). The savedAt stamp is left
 // alone on purpose: a star is a per-user bookmark, not an edit to the
 // diagram, and bumping it would reorder Recent on a click that changed
 // nothing about the content.
@@ -408,7 +408,7 @@ export async function offlineDeleteDiagram(id: string): Promise<void> {
   });
 }
 
-// Read the raw record — used by the Offline → Cloud conversion (spec/76) to
+// Read the raw record — used by the Offline → Cloud conversion (docs/specs/006-diagram/offline-mode.md) to
 // upload the whole diagram, and by "take offline" to seed one.
 export async function offlineGetRecord(id: string): Promise<OfflineDiagramRecord | null> {
   return (await backend.get(id)) ?? null;

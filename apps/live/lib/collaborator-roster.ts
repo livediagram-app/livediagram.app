@@ -1,6 +1,6 @@
 import type { Participant, ParticipantStatus } from '@/lib/identity';
 
-// The Collaborators modal's roster (spec/145): everyone in the diagram,
+// The Collaborators modal's roster (docs/specs/012-collaboration/collaborator-enhancements.md): everyone in the diagram,
 // grouped by the tab they are on. Built from the same `participantsByTab`
 // map the tab bar's presence stacks render, so the modal and the stacks can
 // never disagree about who is where.
@@ -61,13 +61,13 @@ export function buildCollaboratorRoster<T extends RosterTab>(input: {
 // The chips beside a participant's name wherever they are listed (the
 // presence-stack tooltip and the Collaborators modal row): "You" plus your
 // role, a peer's role when the room told us it, and "Following" for the
-// person we follow (spec/131).
+// person we follow (docs/specs/012-collaboration/follow-me-viewport.md).
 export function participantBadges(
   p: Participant,
   selfId: string,
   selfRole: 'edit' | 'view',
   followingId?: string | null,
-  // Whether this person holds the facilitator baton (spec/149). Passed in
+  // Whether this person holds the facilitator baton (docs/specs/012-collaboration/facilitator.md). Passed in
   // rather than read off the participant: the holder is a presence id, and
   // your own row cannot be recognised by one.
   opts?: { isFacilitator?: boolean },

@@ -1,4 +1,4 @@
-// The canonical stored form of an element note (spec/92).
+// The canonical stored form of an element note (docs/specs/009-elements/rich-text-notes.md).
 //
 // A note is two fields that must never drift: `note`, the trimmed plain-text
 // mirror every legacy reader uses, and `noteRich`, the formatting runs. This

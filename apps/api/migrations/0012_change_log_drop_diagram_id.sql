@@ -1,4 +1,4 @@
--- Drop change_log.diagram_id (item #14 / spec/17).
+-- Drop change_log.diagram_id (item #14 / docs/specs/006-diagram/tab-diagram-many-to-many.md).
 --
 -- Every change_log entry is keyed on a tab_id today, and a tab now
 -- (post migration 0011) lives in a many-to-many relationship with

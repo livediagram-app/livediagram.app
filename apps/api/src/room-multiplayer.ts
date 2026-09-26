@@ -1,4 +1,4 @@
-// "Did anyone actually work together on this?" (spec/22, Diagram·Used·Multiplayer).
+// "Did anyone actually work together on this?" (docs/specs/017-telemetry/telemetry.md, Diagram·Used·Multiplayer).
 //
 // Counted by the diagram room, not the browsers. It used to be a client emit
 // fired when a tab's presence list first held a peer, which meant EVERY

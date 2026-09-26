@@ -1,11 +1,11 @@
 'use client';
 
-// The Activity page's data (spec/142 §1, §5): one read, split into the
+// The Activity page's data (docs/specs/013-workspace/activity-page.md §1, §5): one read, split into the
 // three sections the pane shows, plus the count the sidebar badge draws.
 //
 // Held in Explorer state (like favourites) rather than gated to the
 // section, because the sidebar badge renders on every Explorer section
-// and reads the same list. The payload is small and capped (spec/142
+// and reads the same list. The payload is small and capped (docs/specs/013-workspace/activity-page.md
 // §3), so one read on mount is cheaper than a second endpoint for the
 // count, and the badge can never disagree with the page.
 
@@ -77,7 +77,7 @@ export function useActivityFeed(ownerId: string | null): ActivityFeed {
     void load('replace');
   }, [load]);
 
-  // The split (spec/142 §1): a self-assignment is "assigned to you" and
+  // The split (docs/specs/013-workspace/activity-page.md §1): a self-assignment is "assigned to you" and
   // only that, so one action never lists twice.
   const assignedToMe = useMemo(() => actions.filter((a) => a.assignedToMe), [actions]);
   const youAssigned = useMemo(

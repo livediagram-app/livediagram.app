@@ -40,10 +40,10 @@ describe('the shape vocabulary', () => {
     expect([...SHAPE_KINDS].filter((k) => !unionMembers.includes(k))).toEqual([]);
   });
 
-  // spec/09-canvas-and-palette.md cites this number in its prose. Themes and
+  // docs/specs/008-canvas/canvas-and-palette.md cites this number in its prose. Themes and
   // templates are pinned the same way, and the counts that stayed accurate
   // are exactly the ones a test held.
-  it('has 61 kinds (matches spec/09)', () => {
+  it('has 61 kinds (matches docs/specs/008-canvas/canvas-and-palette.md)', () => {
     expect(unionMembers).toHaveLength(61);
   });
 });

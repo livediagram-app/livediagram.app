@@ -1,4 +1,4 @@
-// Headless SVG emitter for a TableElement (spec/09 Table): the real grid —
+// Headless SVG emitter for a TableElement (docs/specs/008-canvas/canvas-and-palette.md Table): the real grid —
 // pinned / flexible tracks, header bands, zebra striping, per-cell style
 // overrides, grid lines with the border presets, and wrapped per-cell text —
 // instead of the box-with-nothing the generic renderer used to draw. Shared

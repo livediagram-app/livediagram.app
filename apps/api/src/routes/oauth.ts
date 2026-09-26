@@ -1,6 +1,6 @@
 // /api/oauth/exchange — the single api change for the MCP OAuth flow
-// (spec/62 §3.4). The apps/live consent page (Clerk-authed) calls this when a
-// user approves an MCP client. It mints an ordinary lvd_ API token (spec/61)
+// (docs/specs/015-api/mcp-server.md §3.4). The apps/live consent page (Clerk-authed) calls this when a
+// user approves an MCP client. It mints an ordinary lvd_ API token (docs/specs/015-api/public-api-and-tokens.md)
 // owned by that Clerk user, named for the connecting client, and returns the
 // secret ONCE. The MCP worker binds it to the PKCE flow in its own KV; the
 // token then shows up in the Explorer "API tokens" page and is revocable like
@@ -31,7 +31,7 @@ export async function handleOauthExchange(ctx: RouteContext): Promise<Response> 
   const name = raw || 'MCP client';
 
   const readOnly = body.readOnly === true;
-  // Same mint as the user-facing route, so the cap (spec/61 §3.6), the expiry
+  // Same mint as the user-facing route, so the cap (docs/specs/015-api/public-api-and-tokens.md §3.6), the expiry
   // and the hash-only storage cannot differ between the two ways in.
   const minted = await mintApiToken(env, { ownerId: owner, name, readOnly });
   if (!minted) return json({ error: 'token_limit_reached' }, { status: 409 });

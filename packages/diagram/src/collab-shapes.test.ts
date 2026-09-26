@@ -21,7 +21,7 @@ import { createShape } from './factories';
 import { isValidElement } from './validate';
 
 describe('estimate scales', () => {
-  it('every scale offers "?" as a real answer (spec/123)', () => {
+  it('every scale offers "?" as a real answer (docs/specs/012-collaboration/estimate-card.md)', () => {
     for (const values of Object.values(ESTIMATE_SCALE_VALUES)) {
       expect(values.at(-1)).toBe('?');
     }
@@ -69,7 +69,7 @@ describe('decision record', () => {
     expect(isDecisionStatus('draft')).toBe(false);
   });
 
-  it('accepts a date and refuses a timestamp (spec/128)', () => {
+  it('accepts a date and refuses a timestamp (docs/specs/012-collaboration/decision-record.md)', () => {
     expect(isDecisionDate('2026-07-31')).toBe(true);
     expect(isDecisionDate('2026-07-31T12:00:00Z')).toBe(false);
     expect(isDecisionDate('31/07/2026')).toBe(false);
@@ -116,14 +116,14 @@ describe('isCollabPanelShape', () => {
       'roll-call',
       // The decision has nothing to press, but it owns its layout for the
       // same reason: its label is a sentence, and letting the generic label
-      // flow over the whole box put it under the status chip (spec/128).
+      // flow over the whole box put it under the status chip (docs/specs/012-collaboration/decision-record.md).
       'decision',
     ] as const) {
       expect(isCollabPanelShape(kind)).toBe(true);
     }
   });
 
-  it('excludes the chair, which keeps a plain label (spec/130)', () => {
+  it('excludes the chair, which keeps a plain label (docs/specs/009-elements/chair.md)', () => {
     expect(isCollabPanelShape('chair')).toBe(false);
   });
 });
@@ -216,7 +216,7 @@ describe('validation bounds', () => {
   });
 });
 
-describe('the shared settings ellipsis (spec/09, spec/130)', () => {
+describe('the shared settings ellipsis (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/009-elements/chair.md)', () => {
   it('is on every Behaviours card except the chair and the ones with their own', () => {
     expect(carriesSharedSettingsMenu('chair')).toBe(false);
     expect(carriesSharedSettingsMenu('done-check')).toBe(false);

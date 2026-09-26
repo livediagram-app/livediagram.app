@@ -1,6 +1,6 @@
 // The share-side access rules every diagram gate is built from: who counts
 // as the owner, which share codes belong to a diagram, and the share-password
-// check (spec/24). The REST gates (diagram-access.ts), the share-code resolve
+// check (docs/specs/013-workspace/share-password.md). The REST gates (diagram-access.ts), the share-code resolve
 // (routes/share.ts), and the realtime-room upgrade (routes/diagram-room-routes.ts)
 // all compose these, so a rule change lands in one place rather than drifting
 // between three copies. Kept apart from diagram-access.ts so the room route
@@ -38,7 +38,7 @@ export async function shareLinkForDiagram(
   return link && link.diagramId === diagramId ? link : null;
 }
 
-// Share-password check (spec/24). `ok` when the diagram has no password or the
+// Share-password check (docs/specs/013-workspace/share-password.md). `ok` when the diagram has no password or the
 // provided one matches (compared in constant time); otherwise `missing` (none
 // sent) or `invalid` (sent, wrong). The share-code resolve maps the two
 // failures to 401 / 403 for the client's password gate; every other caller

@@ -18,7 +18,7 @@ const hLine = (id: string, x1: number, x2: number, y: number): ArrowElement => (
   to: { kind: 'free', x: x2, y },
 });
 
-describe('arrow-to-arrow snapping (spec/50)', () => {
+describe('arrow-to-arrow snapping (docs/specs/008-canvas/arrow-to-arrow.md)', () => {
   it('offers evenly-spaced snap points scaled to the arrow length', () => {
     const pts = arrowSnapPoints(hLine('a', 0, 240, 0), []);
     // ~one point every 24px → 10 divisions → 11 points, endpoints included.

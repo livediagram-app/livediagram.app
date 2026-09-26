@@ -54,7 +54,7 @@ export function Spinner() {
   );
 }
 
-// Pencil for the step rail's "Just Draw" shortcut (spec/14).
+// Pencil for the step rail's "Just Draw" shortcut (docs/specs/007-editor/new-diagram-route.md).
 export function PencilIcon() {
   return (
     <svg

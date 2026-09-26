@@ -1,4 +1,4 @@
-// Handoff + relaunch signals for the interactive editor tour (spec/79).
+// Handoff + relaunch signals for the interactive editor tour (docs/specs/007-editor/editor-tour.md).
 //
 // /new marks the tour pending just before hard-navigating to /diagram/<id>
 // for a brand-new (zero-diagram) user; the editor shows the welcome offer
@@ -9,7 +9,7 @@
 // tab-scoped; a URL param would survive into copy-pasted links.
 //
 // The once-ever guard is NOT here: it's the synced `tourSeen` user
-// preference (spec/20), so answering the offer once covers every device
+// preference (docs/specs/007-editor/user-preferences.md), so answering the offer once covers every device
 // the user signs in from.
 const TOUR_PENDING_KEY = 'livediagram:v2:tour-pending';
 

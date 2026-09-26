@@ -1,7 +1,7 @@
 import { isBoxed, type Element, type ElementId } from './index';
 
 // Branch assignment for multi-colour ("rainbow") themes. See
-// specs/29-multicolour-themes.md. The diagram model has no explicit
+// docs/specs/011-theme/multicolour-themes.md. The diagram model has no explicit
 // parent/child field — hierarchy is implicit in PINNED arrows (an
 // arrow whose endpoints anchor to elements). This module turns that
 // arrow graph into a branch index per boxed element so a palette theme

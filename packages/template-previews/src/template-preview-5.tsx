@@ -546,7 +546,7 @@ export function templatePreviewGroup5(kind: TemplateKind): ReactElement | null {
         </svg>
       );
     case 'event-storming':
-      // The starter itself (spec/139 Phase 1): one orange domain event on a
+      // The starter itself (docs/specs/021-event-storming/event-storming.md Phase 1): one orange domain event on a
       // faint timeline, the first thing that happened.
       return (
         <svg width="76" height="40" viewBox="0 0 80 40" aria-hidden>

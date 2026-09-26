@@ -14,18 +14,18 @@ type ArrowLabelProps = {
   text: string;
   color: string;
   isEditing: boolean;
-  // Caret at end instead of select-all on focus (type-to-edit, spec/09).
+  // Caret at end instead of select-all on focus (type-to-edit, docs/specs/008-canvas/canvas-and-palette.md).
   cursorAtEnd?: boolean;
-  // Resolved CSS font-family for the label text + editor (spec/28).
+  // Resolved CSS font-family for the label text + editor (docs/specs/004-interface-design/fonts.md).
   fontFamily?: string;
-  // Label-text formatting (spec/09): size preset + inline styles, applied
+  // Label-text formatting (docs/specs/008-canvas/canvas-and-palette.md): size preset + inline styles, applied
   // to the rendered <text>. Absent → default small / unstyled.
   textSize?: TextSize;
   textBold?: boolean;
   textItalic?: boolean;
   textUnderline?: boolean;
   textStrikethrough?: boolean;
-  // The plate behind the text (spec/09 "Caption"). Absent / transparent
+  // The plate behind the text (docs/specs/008-canvas/canvas-and-palette.md "Caption"). Absent / transparent
   // leaves the label sitting straight on the canvas, which is how it has
   // always drawn.
   fill?: string;

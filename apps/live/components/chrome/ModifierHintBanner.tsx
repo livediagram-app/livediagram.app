@@ -6,7 +6,7 @@ import { useShiftHeld } from '@/hooks/ui/useShiftHeld';
 import { useInsertionDragInHand } from '@/lib/insertion-preview';
 import { usePaletteDragPreview } from '@/lib/palette-drag-preview';
 
-// The modifier hint (spec/09, spec/139): a passive top-centre pill naming what
+// The modifier hint (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/021-event-storming/event-storming.md): a passive top-centre pill naming what
 // a modifier does right now — or, while a drag is in hand, what one COULD do.
 // The chain / branch / lock / multi-select powers are invisible until tried,
 // and a held modifier nobody has heard of is a feature nobody finds. One
@@ -28,7 +28,7 @@ export function ModifierHintBanner({
   // True while a mode banner (paint / group / draw) owns the top slot,
   // or the session is read-only.
   suppressed: boolean;
-  // Insert between (spec/139) is an event-storming gesture only. The
+  // Insert between (docs/specs/021-event-storming/event-storming.md) is an event-storming gesture only. The
   // existing-note half carries its own board check in the store; a palette
   // drag knows only what it is dragging, so the board comes from here.
   esBoard: boolean;
@@ -39,7 +39,7 @@ export function ModifierHintBanner({
   if (suppressed) return null;
   // Insert between: offered while a sticky is on the move on an
   // event-storming board, from the palette or from the board itself. Not while
-  // Shift is down — drag-duplicate (spec/80) already owns that gesture, so
+  // Shift is down — drag-duplicate (docs/specs/008-canvas/shift-drag-duplicate.md) already owns that gesture, so
   // offering a second meaning for the same drag would be a lie.
   const canInsertBetween = !shiftHeld && (movingNote || (esBoard && palette?.note === true));
   if (canInsertBetween) {
@@ -73,7 +73,7 @@ function shiftHintMessage(
   hasElements: boolean,
 ): string | null {
   // Drawing a NEW arrow's endpoint (quick-connect drag or follow mode):
-  // releasing / clicking with Shift chains the next arrow (spec/09).
+  // releasing / clicking with Shift chains the next arrow (docs/specs/008-canvas/canvas-and-palette.md).
   if (drag?.kind === 'arrow-endpoint' && drag.end === 'to' && !drag.reposition) {
     return 'Click places it and starts another arrow';
   }

@@ -1,4 +1,4 @@
-// The format painter's settings (spec/117): which parts of a copied style
+// The format painter's settings (docs/specs/008-canvas/format-panel.md): which parts of a copied style
 // actually get painted, and whether the brush stays loaded afterwards.
 //
 // lib/format-painter.ts stays the single source of truth for WHAT can be

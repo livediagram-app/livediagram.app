@@ -1,4 +1,4 @@
-// Code-block colour schemes (spec/82).
+// Code-block colour schemes (docs/specs/009-elements/code-block.md).
 //
 // The card shipped as one fixed dark look, deliberately: a code block reads as
 // an editor window, so it ignores the element's fill / stroke / theme the way

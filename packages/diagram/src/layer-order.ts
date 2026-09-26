@@ -2,7 +2,7 @@ import { unionRects, type Rect } from './geometry-primitives';
 import { isBoxed, type BoxedElement, type Element, type ElementId } from './index';
 
 // Layer order: moving one element, or a set, to the top or bottom of the
-// paint order. (This module used to hold groups too; spec/147 removed them.)
+// paint order. (This module used to hold groups too; docs/specs/009-elements/web-components-and-no-groups.md removed them.)
 
 export function bringToFront(elements: Element[], id: ElementId): Element[] {
   const el = elements.find((e) => e.id === id);

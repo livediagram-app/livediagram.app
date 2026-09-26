@@ -54,7 +54,7 @@ describe('the self-drawing shape family', () => {
   it('claims exactly the kinds its members claim, plus the sticker and the label-less web components', () => {
     const fromMembers = new Set(FAMILIES.flatMap((f) => kindsMatching(f.guard)));
     fromMembers.add('sticker');
-    // spec/147: their text is their rows, so there is no label to edit.
+    // docs/specs/009-elements/web-components-and-no-groups.md: their text is their rows, so there is no label to edit.
     fromMembers.add('stat-row');
     fromMembers.add('process');
     expect(kindsMatching(isSelfDrawingShape)).toEqual([...fromMembers].sort());
@@ -72,7 +72,7 @@ describe('the self-drawing shape family', () => {
     expect(isSelfDrawingShape('circle')).toBe(false);
     expect(isSelfDrawingShape('frame')).toBe(false);
     expect(isSelfDrawingShape('icon')).toBe(false);
-    // The web components that DO carry a label keep it (spec/147).
+    // The web components that DO carry a label keep it (docs/specs/009-elements/web-components-and-no-groups.md).
     expect(isSelfDrawingShape('banner')).toBe(false);
     expect(isSelfDrawingShape('callout')).toBe(false);
     expect(isSelfDrawingShape('site-header')).toBe(false);

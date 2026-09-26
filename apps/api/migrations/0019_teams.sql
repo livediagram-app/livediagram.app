@@ -1,4 +1,4 @@
--- Teams (spec/32): named groups of signed-in users with Admin/Member
+-- Teams (docs/specs/013-workspace/teams.md): named groups of signed-in users with Admin/Member
 -- roles, plus the member link table that doubles as the invite store.
 --
 -- teams has no owner column: ownership is the 'admin' role on the

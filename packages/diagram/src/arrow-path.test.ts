@@ -101,7 +101,7 @@ describe('curveControlPoint', () => {
     // Fan chord: hub bottom (s) to a child's top (n), down-and-left. The
     // control is the bounding-box corner sharing the head's x and the
     // tail's y — flat exit along the hub's edge, vertical entry into the
-    // child, and no ballooning past the endpoints (spec/09).
+    // child, and no ballooning past the endpoints (docs/specs/008-canvas/canvas-and-palette.md).
     const fromEp = { kind: 'pinned', elementId: 'hub', anchor: 's' } as const;
     const toEp = { kind: 'pinned', elementId: 'kid', anchor: 'n' } as const;
     const c = curveControlPoint({ x: 535, y: 175 }, { x: 110, y: 305 }, undefined, fromEp, toEp);
@@ -155,7 +155,7 @@ describe('curveControlPoint', () => {
 });
 
 describe('angledElbow', () => {
-  // The elbow handle (spec/09 Arrows / Manipulating arrows) lets
+  // The elbow handle (docs/specs/008-canvas/canvas-and-palette.md Arrows / Manipulating arrows) lets
   // the user drag the right-angle corner of an angled arrow to a
   // non-default position. The default corner is at (to.x, from.y)
   // for horizontal-first arrows or (from.x, to.y) for vertical-

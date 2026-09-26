@@ -15,7 +15,7 @@ export type TabRow = {
   order_index: number;
   data: string;
   updated_at: number;
-  // Per-diagram folder name from the diagram_tabs link (spec/30).
+  // Per-diagram folder name from the diagram_tabs link (docs/specs/006-diagram/tab-folders.md).
   // NULL when the tab is loose. Read sites that don't join the link
   // for folder (none today) leave it undefined, which maps the same
   // as NULL.
@@ -43,7 +43,7 @@ export function rowToTab(row: TabRow): TabDTO {
   return {
     ...data,
     // Every tab read passes through here, so this is where retired element
-    // fields are frozen out (spec/147 groups, spec/139 docks). A no-op, same
+    // fields are frozen out (docs/specs/009-elements/web-components-and-no-groups.md groups, docs/specs/021-event-storming/event-storming.md docks). A no-op, same
     // array, for any other tab.
     ...(Array.isArray(data.elements) ? { elements: migrateStoredElements(data.elements) } : {}),
     id: row.id,

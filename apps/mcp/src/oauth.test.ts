@@ -232,7 +232,7 @@ describe('full authorize -> complete -> token flow', () => {
     );
     const token = (await tok.json()) as { access_token: string; expires_in: number };
     expect(token.access_token).toBe('lvd_secret');
-    // expires_in reflects the ~6-month token life (spec/62 §3.5).
+    // expires_in reflects the ~6-month token life (docs/specs/015-api/mcp-server.md §3.5).
     expect(token.expires_in).toBeGreaterThan(60 * 60 * 24 * 179);
   });
 

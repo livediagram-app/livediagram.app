@@ -8,7 +8,7 @@ import { CHROME_BTN, CHROME_BTN_LABELLED, ChromeLabel } from '@/components/chrom
 // happens to host in its trailing controls; kept in its own module so
 // it isn't buried in TabBar. Flips only the editor chrome — a tab's
 // theme is its own setting, except for Default, which follows
-// this one (spec/07).
+// this one (docs/specs/007-editor/live-app.md).
 //
 // The glyph shows the CURRENT setting, not the next one. As a two-state
 // toggle it could get away with showing the target (a moon meaning "go

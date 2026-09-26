@@ -1,4 +1,4 @@
-// What gets made: diagrams, tabs, elements added and edited, undo, export and import (spec/22).
+// What gets made: diagrams, tabs, elements added and edited, undo, export and import (docs/specs/017-telemetry/telemetry.md).
 // Part of the metric catalogue: import from ../metric-catalogue.
 
 import { PALETTE_TELEMETRY_TYPES } from '@livediagram/api-schema';
@@ -7,7 +7,7 @@ import type { Metric, MetricStack } from '../metric-series';
 import { chart } from './helpers';
 
 // The Element types that are a table's rows and columns, not elements, and
-// the table's own switches (spec/22).
+// the table's own switches (docs/specs/017-telemetry/telemetry.md).
 const TABLE_PARTS: readonly string[] = ['TableRow', 'TableColumn'];
 const TABLE_TOGGLES: readonly string[] = ['TableHeaderRow', 'TableHeaderColumn', 'TableZebra'];
 const isTablePart = (type: string | null): boolean => TABLE_PARTS.includes(type ?? '');
@@ -132,7 +132,7 @@ export const DIAGRAMS_DUPLICATED: Metric = {
   blurb: 'A diagram copied from the Explorer, or a shared diagram cloned into your own account.',
 };
 
-// Offline Mode (spec/76): a diagram kept only in this browser, and the two
+// Offline Mode (docs/specs/006-diagram/offline-mode.md): a diagram kept only in this browser, and the two
 // conversions between the stores. Created Offline is a subset of Diagrams
 // Created, so it sits in Diagram Actions outside the headline as well as
 // heading its own stack.
@@ -342,7 +342,7 @@ export const ELEMENTS_ADDED: MetricStack = {
   seeAlso: { view: 'palette', label: 'See Each Element on the Palette Tab' },
 };
 
-// ---- Every other event, so nothing lands only in Search (spec/22) ----------
+// ---- Every other event, so nothing lands only in Search (docs/specs/017-telemetry/telemetry.md) ----------
 // `metric-emitters.test` fails if an event the repo can send has no chart.
 
 // Element editing: everything done to an element after it is placed.

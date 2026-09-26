@@ -88,7 +88,7 @@ export function BadgeStrip({
   linkLabel?: string;
   commentCount: number;
   hasNote: boolean;
-  // Open assigned action (spec/68): shown only while the element's
+  // Open assigned action (docs/specs/012-collaboration/assigned-actions.md): shown only while the element's
   // action has status 'open' — finished work should not shout.
   hasOpenAction?: boolean;
   // Hover tooltip body for the action badge ("Assigned to {name}").

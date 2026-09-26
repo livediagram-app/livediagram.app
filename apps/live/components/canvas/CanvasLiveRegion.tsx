@@ -1,6 +1,6 @@
 'use client';
 
-// The canvas's visually-hidden polite live region (spec/71). Renders
+// The canvas's visually-hidden polite live region (docs/specs/004-interface-design/canvas-accessibility.md). Renders
 // whatever lib/announcer last broadcast; screen readers speak it,
 // sighted users never see it. `aria-atomic` so a changed message is
 // read whole; the alternating no-break-space suffix forces DOM change

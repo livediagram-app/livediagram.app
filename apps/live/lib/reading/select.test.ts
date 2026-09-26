@@ -7,7 +7,7 @@ import { apiAiReadNotes } from '@/lib/api/ai';
 import { readCropsInBrowser } from './browser-reader';
 import { selectReader } from './select';
 
-// Which reader reads the handwriting (spec/139 Phase 9). A configured server
+// Which reader reads the handwriting (docs/specs/021-event-storming/event-storming.md Phase 9). A configured server
 // model is far more accurate than anything that fits in a browser download, so
 // it wins when there is one; without it the in-browser model reads, and the
 // import still works with no key at all.
@@ -104,7 +104,7 @@ describe('whitespace is normalised whoever read it', () => {
 });
 
 // When the hosted reader's budget is spent, the notes it did not read are read
-// HERE instead (spec/139 Phase 9), and the review is told so. Whose budget it
+// HERE instead (docs/specs/021-event-storming/event-storming.md Phase 9), and the review is told so. Whose budget it
 // was is not the reader's business, and not said.
 describe('when the free budget is spent', () => {
   const two = [

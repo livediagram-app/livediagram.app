@@ -138,7 +138,7 @@ describe('BORDER_RADIUS_PX lookup', () => {
   it('keeps "full" far above the size steps, since it is a sentinel not a step', () => {
     // CSS clamps border-radius to 50% of the box, so 'full' works by being
     // larger than any element could be: that is what turns a square into a
-    // circle and a rectangle into a stadium (spec/09). A value merely one
+    // circle and a rectangle into a stadium (docs/specs/008-canvas/canvas-and-palette.md). A value merely one
     // step above 'lg' would round the corners and stop there.
     expect(BORDER_RADIUS_PX.full).toBeGreaterThan(BORDER_RADIUS_PX.lg * 100);
   });

@@ -8,7 +8,7 @@
 //
 // Mirrors the sibling template-builders-* split pattern (boards,
 // wireframes): one file per coherent template family, parent
-// dispatcher imports the public entrypoint by name. See spec/09
+// dispatcher imports the public entrypoint by name. See docs/specs/008-canvas/canvas-and-palette.md
 // "Templates" for the catalogue.
 //
 // Each builder is still pure: takes a centre (cx, cy), returns a

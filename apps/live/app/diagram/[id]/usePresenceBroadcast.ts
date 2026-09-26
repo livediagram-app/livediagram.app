@@ -29,7 +29,7 @@ export function usePresenceBroadcast({
   // Fires whenever `selectedId` changes (including to null). Skipped before
   // the room is open or before hydration; peers learn the initial selection
   // state via their own `select` ops when they happen, not from a snapshot.
-  // Carries the active tab so peers scope the badge (and the spec/07
+  // Carries the active tab so peers scope the badge (and the docs/specs/007-editor/live-app.md
   // selection lock) to the right tab — element ids alone aren't unique
   // across tabs in older diagrams.
   useEffect(() => {

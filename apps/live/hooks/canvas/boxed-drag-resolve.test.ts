@@ -10,7 +10,7 @@ import {
 import type { ShapeBounds } from '@/lib/canvas';
 import { resolveBoxedMove } from './boxed-drag-resolve';
 
-// The move resolver's placement ladder (spec/139 Phase 6). Free placement is
+// The move resolver's placement ladder (docs/specs/021-event-storming/event-storming.md Phase 6). Free placement is
 // the top rung here (an open insertion slot is resolved before this function is
 // reached at all), then the lane (y) and the neighbours (x), then alignment /
 // distribution for whatever is left.

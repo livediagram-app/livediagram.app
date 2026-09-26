@@ -1,4 +1,4 @@
-// The Spotlight's look (spec/112), persisted per browser — the laser pen's
+// The Spotlight's look (docs/specs/008-canvas/spotlight-panel.md), persisted per browser — the laser pen's
 // hook with a different config type, for the same reason: a presenter sets
 // this up once for their screen and expects it next time.
 //

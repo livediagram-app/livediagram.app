@@ -3,7 +3,7 @@ import type { Anchor } from '@livediagram/diagram';
 import type { QuickConnectDirection } from '@/lib/canvas';
 import type { EditorDragApi } from './useEditorDrag.types';
 
-// Quick add + connect Arrow starter (spec/09), lifted out of
+// Quick add + connect Arrow starter (docs/specs/008-canvas/canvas-and-palette.md), lifted out of
 // EditorCanvasHost. Desktop (mouse / pen): make a pinned→free arrow
 // from the picked side's anchor in click-to-place mode — a plain click
 // then has the endpoint trail the cursor until the next click lands it

@@ -16,7 +16,7 @@ import type { PaletteAddHandlers } from './palette-add-handlers';
 // add-handler bundle, the category catalogue with each category's body, the
 // three searchable catalogues' state, and the canvas-tool picker's options.
 // Lifted out of CommandPalette so the floating Palette and the Toolbar
-// layout's top strip (spec/148) are two renderings of one palette rather
+// layout's top strip (docs/specs/007-editor/toolbar-layout.md) are two renderings of one palette rather
 // than two palettes that drift.
 //
 // `onDrawArmed` / `onMobileClose` are the host's hooks into "a tile was
@@ -72,7 +72,7 @@ export function usePaletteCatalogue({
   onDrawArmed,
   onMobileClose,
 }: Deps) {
-  // Spotlight (spec/09) is desktop-only: it relies on hover-tracking the
+  // Spotlight (docs/specs/008-canvas/canvas-and-palette.md) is desktop-only: it relies on hover-tracking the
   // cursor and on left/right-click to resize the light, none of which map to
   // touch — so drop it from the tool picker on mobile viewports. Reactive
   // (the shared useIsMobileViewport, as MovablePanel uses) so the option
@@ -91,7 +91,7 @@ export function usePaletteCatalogue({
   // Draw-to-place tools also signal onDrawArmed so the parent can reopen the
   // palette once the draw lands; immediate drops (icon/table/...) don't.
   // `opts` is the creation-time choice for the kinds that have one: which
-  // session tool, which reaction (spec/105, spec/135). It has to be forwarded
+  // session tool, which reaction (docs/specs/012-collaboration/session-button.md, docs/specs/009-elements/reaction-pad.md). It has to be forwarded
   // rather than dropped — this adapter silently swallowing it is what made
   // every session tile place a timer and every reaction tile place confetti.
   const armed = (fn: () => void) => () => {
@@ -120,7 +120,7 @@ export function usePaletteCatalogue({
   const addSticky = (fill?: string, esKind?: EventStormingNoteKind) =>
     armed(() => onAddSticky(fill, esKind))();
   const addTable = armed(onAddTable);
-  // The annotation is the ONE tile that still places instantly (spec/38): a
+  // The annotation is the ONE tile that still places instantly (docs/specs/009-elements/annotations.md): a
   // fixed 44x44 marker has no box to draw, so there is no armed gesture for
   // the mobile dock to wait on.
   const addAnnotation = () => {
@@ -152,9 +152,9 @@ export function usePaletteCatalogue({
     armed(byKind[kind])();
   };
   // The add-handler bundle every catalogue-driven tile grid consumes
-  // (spec/78). All handlers above already wrap the mobile-close /
+  // (docs/specs/010-palette/palette-favourites.md). All handlers above already wrap the mobile-close /
   // draw-armed behaviour, so a tile behaves the same from any tab.
-  // Avatar mode (spec/101) is read-only, so reaching for a tile means the user
+  // Avatar mode (docs/specs/008-canvas/avatar-mode.md) is read-only, so reaching for a tile means the user
   // wants to edit again: every add leaves the mode first (back to whichever
   // tool preceded it) and then drops as normal. Wrapping the bundle covers
   // every tile, including ones added later.
@@ -192,26 +192,26 @@ export function usePaletteCatalogue({
   // (via `iconCatalogsLoaded`) instead of a false "no matches".
   const iconCatalogsLoaded = useIconCatalogs();
   // Search hits across the WHOLE line-art catalogue — the tab browses by
-  // category (spec/109) rather than filtering by one, so narrowing here would
+  // category (docs/specs/010-palette/palette-category-browse.md) rather than filtering by one, so narrowing here would
   // make a search silently miss the categories you weren't looking at. It is
   // the line-art half specifically: stickers share the catalogue but have
-  // their own category (spec/116), and showing them in both would be the
+  // their own category (docs/specs/010-palette/stickers.md), and showing them in both would be the
   // duplication that move removed.
   const iconResults = getLineArtIconCatalog().filter((i) => {
     const q = iconQuery.trim().toLowerCase();
     if (!q) return true;
     return i.label.toLowerCase().includes(q) || i.keywords.includes(q) || i.id.includes(q);
   });
-  // Stickers tab (spec/116): colour emoji, browsed in ten groups. Same shape
+  // Stickers tab (docs/specs/010-palette/stickers.md): colour emoji, browsed in ten groups. Same shape
   // as the Icons tab — a search box over a drill-in browse.
   const [stickerQuery, setStickerQuery] = useState('');
   const stickerResults = searchStickers(stickerQuery);
-  // Technology tab (spec/41): full-colour brand icons. Mirrors the Icons
+  // Technology tab (docs/specs/010-palette/technology-icons.md): full-colour brand icons. Mirrors the Icons
   // tab — a search box over provider categories.
   const [techQuery, setTechQuery] = useState('');
   const techResults = searchTechIcons(techQuery, 'all');
 
-  // Ordered by BAND (spec/110): Common, then Decorate, then Dynamic
+  // Ordered by BAND (docs/specs/010-palette/palette-top-level-categories.md): Common, then Decorate, then Dynamic
   // (the headings PaletteTabBar's CATEGORY_BANDS actually renders).
   // It renders the dropdown straight from this order, so the array IS
   // the grid layout.

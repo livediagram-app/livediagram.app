@@ -10,7 +10,7 @@ import { track } from '@/lib/telemetry';
 // for it was a bare `Uncaught` that said nothing about where. Wrapping each
 // major area in one of these does both jobs: the fault stays inside the area
 // that threw, and it is reported as `Error·Client·Render.<Area>.<ErrorName>`
-// (spec/22), which is the "which part of the UI broke" signal a minified
+// (docs/specs/017-telemetry/telemetry.md), which is the "which part of the UI broke" signal a minified
 // stack can't give.
 //
 // Two fallbacks, chosen by what the area is:

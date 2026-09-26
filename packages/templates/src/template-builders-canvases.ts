@@ -6,7 +6,7 @@
 //
 // Each builder is pure: it takes a centre (cx, cy) and returns a fresh
 // Element[]. Sizing constants live inline so each template is
-// self-describing. See spec/09 "Templates" for the catalogue.
+// self-describing. See docs/specs/008-canvas/canvas-and-palette.md "Templates" for the catalogue.
 
 import { createShape, createSticky, createText, type Element } from '@livediagram/diagram';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
@@ -317,7 +317,7 @@ export function buildEmpathyMap(cx: number, cy: number): Element[] {
     textSize: 'md',
     textBold: true,
     colorPreset: 'bold',
-    // Content layer (spec/74): the rename target rides with the notes, so
+    // Content layer (docs/specs/006-diagram/layers.md): the rename target rides with the notes, so
     // it stays clickable when the quadrant scaffold is locked.
     layerId: TEMPLATE_CONTENT_LAYER_ID,
   });

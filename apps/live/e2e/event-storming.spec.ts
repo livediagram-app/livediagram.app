@@ -8,7 +8,7 @@ import {
   test,
 } from './fixtures';
 
-// The event-storming board's own gestures (spec/139), in a real browser. The
+// The event-storming board's own gestures (docs/specs/021-event-storming/event-storming.md), in a real browser. The
 // geometry is unit-tested to death; what only a browser can answer is whether
 // a real drag lands where the preview promised, and whether the board is still
 // the same board after a round trip through the api.
@@ -61,7 +61,7 @@ async function boardTab(page: Page): Promise<BoardTab> {
 
 const stickies = (tab: BoardTab) => tab.elements.filter((el) => el.type === 'sticky');
 
-// Timeline lanes (spec/139 Phase 6). An event-storming board is ALWAYS on
+// Timeline lanes (docs/specs/021-event-storming/event-storming.md Phase 6). An event-storming board is ALWAYS on
 // lanes — there is no switch to find — and a note dragged on one lands centred
 // on a lane, in a slot the board suggested, with nothing else stirring.
 test('timeline lanes snap a dragged note without moving anything else', async ({
@@ -231,7 +231,7 @@ test('an ordinary diagram has no timeline lanes', async ({ page, pageErrors }) =
   expectNoPageErrors(pageErrors);
 });
 
-// The next-note buttons (spec/139 Phase 7). What only a browser can answer is
+// The next-note buttons (docs/specs/021-event-storming/event-storming.md Phase 7). What only a browser can answer is
 // whether the button a note shows really adds the note beside it, and whether
 // the two stay two ordinary notes: dragging one leaves the other where it is.
 test('a next-note button adds a command before an event, and nothing ties them', async ({
@@ -285,7 +285,7 @@ test('a next-note button adds a command before an event, and nothing ties them',
   expectNoPageErrors(pageErrors);
 });
 
-// Copied notes pasted while a note is open for typing (spec/09 clipboard).
+// Copied notes pasted while a note is open for typing (docs/specs/008-canvas/canvas-and-palette.md clipboard).
 // The clipboard holds them as JSON text, and the note used to take that JSON
 // as its words. They belong on the board.
 test('pasting copied notes into a note open for typing puts them on the board', async ({
@@ -316,7 +316,7 @@ test('pasting copied notes into a note open for typing puts them on the board', 
   expectNoPageErrors(pageErrors);
 });
 
-// An armed workshop-note tile is a STAMP (spec/139 Phase 4): a ghost of the
+// An armed workshop-note tile is a STAMP (docs/specs/021-event-storming/event-storming.md Phase 4): a ghost of the
 // note follows the pointer, a drag carries it rather than sizing a box, and it
 // lands centred where the ghost was, on a lane.
 test('an armed note tile shows the note it will add and places it there', async ({

@@ -111,7 +111,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
   // pointer-down pushed a no-op snapshot (and cleared the redo stack) on
   // every click, evicting real states under the 3-deep HISTORY_LIMIT.
   const checkpointPendingRef = useRef(false);
-  // One-shot guard so an arrow-to-arrow connection (spec/50) is tracked once
+  // One-shot guard so an arrow-to-arrow connection (docs/specs/008-canvas/arrow-to-arrow.md) is tracked once
   // per endpoint drag, not on every pointer-move tick. Reset on drag start.
   const arrowConnectTrackedRef = useRef(false);
   // True for the duration of a gesture that edits EXISTING elements
@@ -124,7 +124,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
   // The undo-marker token of the current gesture's checkpoint, handed
   // to the debounced log so its flush fills the right step.
   const gestureTokenRef = useRef<number | undefined>(undefined);
-  // Shift-duplicate ghosting (spec/80). Holding Shift during a boxed move
+  // Shift-duplicate ghosting (docs/specs/008-canvas/shift-drag-duplicate.md). Holding Shift during a boxed move
   // swaps identities: the ORIGINAL elements park back at their start
   // position (keeping their ids, so every arrow pinned to them stays put),
   // and a fresh CLONE set takes over the cursor, rendered as a translucent
@@ -136,7 +136,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
   // of CLONE ids to draw translucent.
   const dupSwapRef = useRef<ShiftDupSwap | null>(null);
   const [shiftDupGhostIds, setShiftDupGhostIds] = useState<ReadonlySet<string> | null>(null);
-  // Insert between (spec/139), second entry point: the slot this drag is
+  // Insert between (docs/specs/021-event-storming/event-storming.md), second entry point: the slot this drag is
   // offering while Alt is held. A ref, not state, for the same reason the
   // duplicate swap is one — it changes at pointer rate and only the module
   // store (which the canvas renders from) needs to wake anything up. The
@@ -191,7 +191,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       drag.mode === 'move' &&
       isSingleNoteDrag(depsRef.current.activeTab.elements, drag.primaryId, drag.startBounds);
     setInsertionDragInHand(movingOneNote && depsRef.current.insertGate.esBoard);
-    // Timeline lanes (spec/139 Phase 6) apply to ANY notes being moved on one
+    // Timeline lanes (docs/specs/021-event-storming/event-storming.md Phase 6) apply to ANY notes being moved on one
     // of these boards, one or many: a selection snaps by the note in hand and
     // still meets the board's places. The insertion gesture still wants
     // exactly one note, so it keeps its own flag.
@@ -291,7 +291,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       const dx = (e.clientX - drag.startClientX) / zoomRef.current;
       const dy = (e.clientY - drag.startClientY) / zoomRef.current;
       // Hold Cmd / Ctrl while dragging to place freely: skip alignment +
-      // distribution snapping and its guide lines for this gesture (spec/60).
+      // distribution snapping and its guide lines for this gesture (docs/specs/008-canvas/snap-override.md).
       const noSnap = e.metaKey || e.ctrlKey;
 
       if (drag.kind === 'boxed') {
@@ -308,7 +308,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
             if (travelled < DRAG_ENGAGE_PX) return;
             dragEngagedRef.current = true;
           }
-          // Insert between (spec/139): while Alt is held on an event-storming
+          // Insert between (docs/specs/021-event-storming/event-storming.md): while Alt is held on an event-storming
           // board, a single sticky offers to take its place BETWEEN two notes
           // rather than just land near them. The slot is the placement while
           // it is open, so it wins over the alignment snap and over free
@@ -373,16 +373,16 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
             // Second pass: re-pin connected arrow anchors against
             // the moved positions so an arrow stays visually
             // attached as the user drags. Skipped when the per-
-            // user preference (spec/20) is off, in which case
+            // user preference (docs/specs/007-editor/user-preferences.md) is off, in which case
             // anchors stay frozen at whatever the user originally
             // chose. Read through a ref so a mid-drag flip lands
             // on the next pointermove without re-attaching.
-            // ?? false mirrors spec/20's opt-in default should the
+            // ?? false mirrors docs/specs/007-editor/user-preferences.md's opt-in default should the
             // ref somehow be unset.
             const autoRebind = depsRef.current.autoRebindArrowsRef.current ?? false;
             return autoRebind ? rebindArrowAnchorsAfterMove(moved, drag.startBounds) : moved;
           });
-          // Shift-duplicate identity swap (spec/80): holding Shift turns
+          // Shift-duplicate identity swap (docs/specs/008-canvas/shift-drag-duplicate.md): holding Shift turns
           // this move into a copy by parking the originals and handing the
           // cursor to a fresh clone set, and releasing it swings back. All
           // of that lives in shift-duplicate-swap.ts; a true return means
@@ -464,7 +464,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
         },
       });
     };
-    // Shift-chaining (spec/09 quick-connect): landing a NEW arrow's endpoint
+    // Shift-chaining (docs/specs/008-canvas/canvas-and-palette.md quick-connect): landing a NEW arrow's endpoint
     // with Shift held immediately starts ANOTHER arrow from the same source
     // end, endpoint following the cursor — a hub fans out to several targets
     // in one flow without reopening the ring. Only for freshly drawn arrows
@@ -527,7 +527,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
           return;
         }
       }
-      // Touch quick-connect tap (spec/09): the gesture entered a real drag so
+      // Touch quick-connect tap (docs/specs/008-canvas/canvas-and-palette.md): the gesture entered a real drag so
       // a finger CAN drag to a target, but this release never moved. Attach
       // the far end to whatever sits on that side, or fall back to the short
       // free stub when there's nothing there — either way the user gets a
@@ -575,7 +575,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       // it spawned. The gesture ends at the NEXT placing click, not on up.
       if (drag?.kind === 'arrow-endpoint' && drag.following) return;
       // A freshly DRAWN arrow (never a reposition) gets the one-shot
-      // collision-avoiding bow (spec/77) as its gesture ends, whether it
+      // collision-avoiding bow (docs/specs/008-canvas/arrow-collision-avoidance.md) as its gesture ends, whether it
       // ends here or chains below. Same commit stream as the drag ticks,
       // so it folds into the gesture's single undo step.
       if (drag?.kind === 'arrow-endpoint' && drag.end === 'to' && !drag.reposition) {
@@ -592,7 +592,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
         logGestureRef.current = false;
         return;
       }
-      // Shift-duplicate finalisation (spec/80). The identity swap already
+      // Shift-duplicate finalisation (docs/specs/008-canvas/shift-drag-duplicate.md). The identity swap already
       // happened during the move (originals parked with their arrows, a
       // clone set on the cursor); this either keeps the clones at the drop
       // point (a real shift-drop — they stay selected) or dissolves them
@@ -613,7 +613,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
         if (movedAway && e.shiftKey) {
           // Resolve the clones off the live tab so the per-element Added
           // events report what actually landed, not what was cloned at
-          // press time (spec/22).
+          // press time (docs/specs/017-telemetry/telemetry.md).
           trackDuplicated(
             d.activeTab.elements.filter((el) => swap.cloneIds.has(el.id)),
             'ShiftDrag',
@@ -642,7 +642,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       // released over. Only on a real move (not a click), only when the
       // dragged element is a line-art 'icon' shape, and only when the
       // element directly beneath the cursor (skipping the dragged icon
-      // itself) is a non-icon shape. Technology icons (spec/41) reuse the
+      // itself) is a non-icon shape. Technology icons (docs/specs/010-palette/technology-icons.md) reuse the
       // 'icon' shape but are ALWAYS standalone — a coloured brand tile
       // folded beside a shape's text isn't meaningful and the inline-icon
       // renderer only knows line-art prims — so they're excluded here.
@@ -672,7 +672,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
           }
         }
       }
-      // Insert between (spec/139): the drop. The dragged note is already in
+      // Insert between (docs/specs/021-event-storming/event-storming.md): the drop. The dragged note is already in
       // the slot (the move ticks put it there); this adds the ripple that
       // makes room for it. Both land inside the gesture's single checkpoint,
       // so ONE undo puts the whole board back — including the note's original
@@ -716,14 +716,14 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       // unsnapped from the element under the cursor).
       flushMove();
       // The landed arrow gets the one-shot collision-avoiding bow
-      // (spec/77), same as the press-drag end in onUp above.
+      // (docs/specs/008-canvas/arrow-collision-avoidance.md), same as the press-drag end in onUp above.
       if (drag.end === 'to' && !drag.reposition) {
         const arrowId = drag.arrowId;
         depsRef.current.commit((els) => applyCollisionAvoidance(els, arrowId));
       }
       // The endpoint already tracks the cursor (last pointermove); this
       // click just lands it. Shift chains straight into the next arrow
-      // from the same source (spec/09); otherwise clear and end.
+      // from the same source (docs/specs/008-canvas/canvas-and-palette.md); otherwise clear and end.
       if (chainNextArrow(e)) {
         scheduleGuides([]);
         scheduleSnapTargets([]);
@@ -733,7 +733,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       scheduleGuides([]);
       scheduleSnapTargets([]);
     };
-    // Escape aborts the gesture (spec/09). Capture phase + swallow so
+    // Escape aborts the gesture (docs/specs/008-canvas/canvas-and-palette.md). Capture phase + swallow so
     // the editor-wide Escape handlers (deselect / zen exit) don't ALSO
     // fire on the same press — one Escape does exactly one thing.
     const onKey = (e: KeyboardEvent) => {
@@ -759,7 +759,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       }
       cancelDrag();
     };
-    // Alt pressed or released with the hand held still (spec/139): the slot
+    // Alt pressed or released with the hand held still (docs/specs/021-event-storming/event-storming.md): the slot
     // opens and unwinds at the instant the key moves, not at the next twitch.
     // Replaying the last pointer position with the new modifier state keeps
     // one code path deciding where the note goes. (A native HTML5 drag gets

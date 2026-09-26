@@ -13,7 +13,7 @@ import { StackDeck } from './StackDeck';
 import { StackTrendChart, type StackSeries } from './StackTrendChart';
 import { TrendBadge } from './TrendBadge';
 
-// The head card of a chart stack (spec/22): the members' combined count and
+// The head card of a chart stack (docs/specs/017-telemetry/telemetry.md): the members' combined count and
 // their lines on one chart, in the shared deck frame (StackDeck).
 export function MetricStackCard({
   stack,

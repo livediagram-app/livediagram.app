@@ -1,4 +1,4 @@
-// spec/64 (#3): the daily sweep that warns owners whose API token (spec/61) is
+// docs/specs/014-identity/transactional-email.md (#3): the daily sweep that warns owners whose API token (docs/specs/015-api/public-api-and-tokens.md) is
 // within a week of its 6-month expiry, once per token (the expiry_warned_at
 // stamp makes it idempotent). Transactional, not opt-out: a lapsing token
 // silently breaks a script / connected tool, so the heads-up is account-

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { TEMPLATES } from '@livediagram/templates';
 import { filterGallery, galleryTemplates, groupGallery } from './template-gallery';
 
-describe('galleryTemplates (spec/16)', () => {
+describe('galleryTemplates (docs/specs/019-marketing/marketing-site.md)', () => {
   it('has one card for every listed template except Blank', () => {
     const kinds = galleryTemplates().map((t) => t.kind);
     const expected = TEMPLATES.filter((t) => !t.hidden && t.kind !== 'blank').map((t) => t.kind);

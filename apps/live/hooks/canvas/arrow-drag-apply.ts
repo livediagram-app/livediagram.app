@@ -1,4 +1,4 @@
-// Applies one pointer-move tick of an ARROW-handle drag (spec/09, spec/50).
+// Applies one pointer-move tick of an ARROW-handle drag (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/008-canvas/arrow-to-arrow.md).
 //
 // The five arrow drag kinds — curve, elbow, label, translate, endpoint —
 // are siblings: each takes the gesture's canvas-space delta, asks a
@@ -40,7 +40,7 @@ export type ArrowDragMoveArgs = {
   // Mutable rather than readonly to match the `resolve*` helpers' existing
   // signatures; nothing here writes to it.
   elements: Element[];
-  // The alignment-guides preference (spec/60). Off means no guide lines.
+  // The alignment-guides preference (docs/specs/008-canvas/snap-override.md). Off means no guide lines.
   guidesOn: boolean;
   tick: (mapper: (els: Element[]) => Element[]) => void;
   scheduleGuides: (align: AlignmentGuide[], dist?: DistributionGuide[]) => void;

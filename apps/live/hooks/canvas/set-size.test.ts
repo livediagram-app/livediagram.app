@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { MAX_SIZE_PX, MIN_SIZE_PX } from './useShapeStyleSetters';
 
-// The typed-size rule (spec/134), exercised as the pure function it is. The
+// The typed-size rule (docs/specs/008-canvas/element-size.md), exercised as the pure function it is. The
 // hook itself needs a React tree and a commit handle; what is worth pinning is
 // the arithmetic, which is where a floorplan gets the wrong wall length.
 

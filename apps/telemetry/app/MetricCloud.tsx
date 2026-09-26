@@ -5,7 +5,7 @@ import { categoryColor, typeLabel } from './event-vocab';
 import { MetricBreadcrumb, metricCrumbs, type CloudPath } from './MetricBreadcrumb';
 import type { Metric } from './metrics';
 
-// The Search view's word cloud (spec/22): what shows while no metric is
+// The Search view's word cloud (docs/specs/017-telemetry/telemetry.md): what shows while no metric is
 // picked. Every category as a word, sized by how many events it had in the
 // selected window, so the busy parts of the product are visible at a glance
 // and the quiet ones are still there to find. Clicking a word drills one

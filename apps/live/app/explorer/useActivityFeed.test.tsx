@@ -4,7 +4,7 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ActivityAction, ActivityThread } from '@livediagram/api-schema';
 
-// The Activity page's one read, split three ways (spec/142 §1), and the
+// The Activity page's one read, split three ways (docs/specs/013-workspace/activity-page.md §1), and the
 // error-vs-empty distinction the inbox depends on.
 
 const apiListActivity = vi.hoisted(() => vi.fn());

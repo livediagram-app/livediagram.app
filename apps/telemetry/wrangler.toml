@@ -4,12 +4,12 @@ compatibility_date = "2026-05-29"
 # Static assets only — Cloudflare Workers serves files from `./out`
 # (Next.js static export output). No worker code needed; the router
 # worker forwards `/telemetry/*` here after stripping the prefix (see
-# apps/router + specs/08). Same pattern as the marketing app.
+# apps/router + docs/specs/016-platform/router-app.md). Same pattern as the marketing app.
 [assets]
 directory = "./out"
 not_found_handling = "404-page"
 
-# Staging (spec/140): `wrangler deploy --env staging` deploys the same
+# Staging (docs/specs/016-platform/staging-environment.md): `wrangler deploy --env staging` deploys the same
 # static `./out` as `livediagram-telemetry-staging`. The build that fills
 # `out/` is a different one — staging bakes its own NEXT_PUBLIC_* values —
 # so the two environments never share an artifact.

@@ -14,7 +14,7 @@ type SharePasswordGateProps = {
 };
 
 // Full-screen gate shown when a visitor opens a password-protected
-// diagram's share link (spec/24) and hasn't supplied a valid password.
+// diagram's share link (docs/specs/013-workspace/share-password.md) and hasn't supplied a valid password.
 // Submitting hands the password up; the editor stashes it on the
 // session and re-runs the bootstrap, which either hydrates or re-shows
 // this gate with `invalid` set.

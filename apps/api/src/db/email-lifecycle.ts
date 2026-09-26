@@ -1,4 +1,4 @@
-// spec/64: the email_lifecycle table: one row per authenticated owner, tracking
+// docs/specs/014-identity/transactional-email.md: the email_lifecycle table: one row per authenticated owner, tracking
 // which onboarding emails have been sent. The first sighting creates the row
 // (treated as sign-up); the daily cron drives the welcome / week-1 / week-2
 // stages off the *_sent_at stamps, which keep every send idempotent.
@@ -62,7 +62,7 @@ export async function markStageSent(
 
 // The verified address stored for an authenticated owner at first sighting.
 // The only server-trusted way to reach a Clerk owner by email outside the
-// request that carried their token (spec/65 notifications fire on someone
+// request that carried their token (docs/specs/014-identity/profile-and-email-notifications.md notifications fire on someone
 // else's request). Returns null for a guest owner, an owner with no
 // lifecycle row (email off when they signed in), or a backfilled
 // suppression row carrying the empty-string sentinel.
@@ -74,7 +74,7 @@ export async function getOwnerEmail(env: Env, ownerId: string): Promise<string |
   return email ? email : null;
 }
 
-// spec/64 (#4): owners who signed up at or before `cutoff`, still have ZERO
+// docs/specs/014-identity/transactional-email.md (#4): owners who signed up at or before `cutoff`, still have ZERO
 // diagrams, and haven't yet been nudged or reached week 1. The NOT EXISTS
 // subquery is the "never drew anything" test (guest diagrams migrate in on
 // sign-up, so a real account that drew anything is excluded). Soonest-first.
@@ -101,7 +101,7 @@ export async function markActivationSent(env: Env, ownerId: string): Promise<voi
     .run();
 }
 
-// spec/64 (#5): owners whose most recent diagram activity was at or before
+// docs/specs/014-identity/transactional-email.md (#5): owners whose most recent diagram activity was at or before
 // `cutoff` (active once, now quiet), not yet win-backed. MAX(updated_at) is NULL
 // for a zero-diagram owner and NULL <= ? is false, so they're excluded (the
 // activation nudge handles those). Quietest-longest first.
@@ -127,7 +127,7 @@ export async function markWinbackSent(env: Env, ownerId: string): Promise<void> 
     .run();
 }
 
-// spec/64 (#6): atomically claim the one-time milestone email for an owner.
+// docs/specs/014-identity/transactional-email.md (#6): atomically claim the one-time milestone email for an owner.
 // The conditional UPDATE means only the first caller wins (changes === 1), so a
 // burst of saves at the milestone count can't double-send. False = already
 // claimed, or no row (a guest has none).
@@ -140,7 +140,7 @@ export async function claimMilestone(env: Env, ownerId: string): Promise<boolean
   return res.meta.changes === 1;
 }
 
-// spec/64 (#6): atomically claim the one-time "first shared link" milestone for
+// docs/specs/014-identity/transactional-email.md (#6): atomically claim the one-time "first shared link" milestone for
 // an owner. Conditional UPDATE → only the first share-create wins (changes === 1).
 // False = already claimed, or no row (a guest has none).
 export async function claimFirstShare(env: Env, ownerId: string): Promise<boolean> {

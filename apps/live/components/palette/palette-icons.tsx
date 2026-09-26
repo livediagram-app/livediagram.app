@@ -420,7 +420,7 @@ export function LaserIcon() {
   );
 }
 
-// Isometric view tool (spec/45): a cube drawn in isometric projection —
+// Isometric view tool (docs/specs/008-canvas/isometric-view.md): a cube drawn in isometric projection —
 // a top rhombus plus the two front faces — signalling "see the diagram in
 // 3-D, tilted". The shared vertical edge hints at the extruded depth.
 export function IsometricIcon() {
@@ -445,9 +445,9 @@ export function IsometricIcon() {
   );
 }
 
-// Eraser tool (spec/09): a tilted block eraser sitting on the canvas
+// Eraser tool (docs/specs/008-canvas/canvas-and-palette.md): a tilted block eraser sitting on the canvas
 // baseline. The diagonal band reads as the eraser's two-tone body.
-// The Highlighter tool (spec/81), which is a canvas mode rather than a one-shot
+// The Highlighter tool (docs/specs/008-canvas/highlighter.md), which is a canvas mode rather than a one-shot
 // draw intent. A chisel-tip marker over the band it lays down: the band is what
 // separates it from the pencil at 13px, where the two nibs are the same three
 // strokes. Monochrome (unlike the old palette tile's fixed yellow) because this
@@ -472,7 +472,7 @@ export function HighlighterIcon() {
   );
 }
 
-// Slide Deck (spec/31): a card with a smaller one behind it, which is what a
+// Slide Deck (docs/specs/012-collaboration/presentation-mode.md): a card with a smaller one behind it, which is what a
 // deck IS. Deliberately not a "play" triangle — the tool opens the workbench
 // where you build slides, and only the Start button inside it presents.
 export function SlideDeckIcon() {
@@ -514,7 +514,7 @@ export function EraserIcon() {
   );
 }
 
-// The bottom-dock "Theme & canvas" button (spec/42): a paintbrush on the
+// The bottom-dock "Theme & canvas" button (docs/specs/011-theme/canvas-and-theme-dialog.md): a paintbrush on the
 // 20-unit dock grid (matching LayersStackIcon's stroke weight) that opens
 // the CanvasThemeDialog. Distinct from FormatPainterIcon below (the
 // element-to-element format tool): this one styles the whole tab.
@@ -538,13 +538,13 @@ export function ThemeBrushIcon({ size = 20 }: { size?: number }) {
   );
 }
 
-// Format tool (spec/09): a paintbrush, the same glyph as the top-centre
+// Format tool (docs/specs/008-canvas/canvas-and-palette.md): a paintbrush, the same glyph as the top-centre
 // "Copy formatting" chip (drawn once in @livediagram/ui): picks one
 // element's style and paints it onto others. Two-phase persistent mode
 // (pick a base, then tap targets).
 export { FormatPainterIcon } from '@livediagram/ui';
 
-// Spotlight tool (spec/09): a focus glyph — a bright centre dot ringed
+// Spotlight tool (docs/specs/008-canvas/canvas-and-palette.md): a focus glyph — a bright centre dot ringed
 // by a circle with short rays beaming outward, reading as "the cursor
 // emits light" without copying the laser-pointer beam.
 export function SpotlightIcon() {
@@ -570,7 +570,7 @@ export function SpotlightIcon() {
   );
 }
 
-// Avatar mode (spec/101): a mid-stride walking figure — a head, a body,
+// Avatar mode (docs/specs/008-canvas/avatar-mode.md): a mid-stride walking figure — a head, a body,
 // and legs caught in a step — so the picker entry reads as "a character
 // that walks" rather than a person / profile photo (which is what the
 // palette's Avatar ELEMENT tile means).
@@ -600,7 +600,7 @@ export function AvatarModeIcon() {
   );
 }
 
-// Zen / focus mode (spec/26): an "expand to fullscreen" glyph (four
+// Zen / focus mode (docs/specs/007-editor/zen-mode.md): an "expand to fullscreen" glyph (four
 // corner arrows pushing outward) for the palette enter button.
 export function ZenIcon() {
   return (
@@ -740,9 +740,9 @@ export function AlignIcon({ x, y }: { x: TextAlignX; y: TextAlignY }) {
   );
 }
 
-// --- Session tools (spec/105) ------------------------------------------------
+// --- Session tools (docs/specs/012-collaboration/session-button.md) ------------------------------------------------
 // 14px, not 13, like every small glyph in this file: an odd size centred in
-// an even tile lands on a half pixel and its strokes blur (spec/148).
+// an even tile lands on a half pixel and its strokes blur (docs/specs/007-editor/toolbar-layout.md).
 // The three glyphs a Session button wears, in the same 16-grid, 1.4-stroke
 // house style as the mode icons above so a row of Behaviour tiles matches.
 
@@ -782,7 +782,7 @@ export function VoteIcon() {
       strokeLinejoin="round"
       aria-hidden
     >
-      {/* three dots landing on a card — dot voting, spec/39 */}
+      {/* three dots landing on a card — dot voting, docs/specs/012-collaboration/session-tools.md */}
       <rect x="2" y="8.4" width="12" height="5.6" rx="1.4" />
       <circle cx="5" cy="4.4" r="1.5" fill="currentColor" stroke="none" />
       <circle cx="9" cy="3.2" r="1.5" fill="currentColor" stroke="none" />
@@ -813,7 +813,7 @@ export function PollIcon() {
   );
 }
 
-// --- Reveal zone (spec/106) + Picker (spec/107) ------------------------------
+// --- Reveal zone (docs/specs/009-elements/reveal-zone.md) + Picker (docs/specs/012-collaboration/picker.md) ------------------------------
 
 export function RevealIcon() {
   return (
@@ -857,7 +857,7 @@ export function PickerIcon() {
   );
 }
 
-// --- Chair + the collaboration family (spec/130, spec/123 to spec/129) -----
+// --- Chair + the collaboration family (docs/specs/009-elements/chair.md, docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md) -----
 // One shared frame so the seven read as a set beside PickerIcon above: 13px
 // rendered on a 16-unit grid, 1.4 stroke, round caps.
 
@@ -977,7 +977,7 @@ export function RollCallIcon() {
   );
 }
 
-/** Session tools (spec/105): dot voting, drawn as dots landing on a card. */
+/** Session tools (docs/specs/012-collaboration/session-button.md): dot voting, drawn as dots landing on a card. */
 export function SessionVoteIcon() {
   return (
     <svg
@@ -999,7 +999,7 @@ export function SessionVoteIcon() {
   );
 }
 
-/** Session tools (spec/105): a poll, drawn as answer bars of different lengths. */
+/** Session tools (docs/specs/012-collaboration/session-button.md): a poll, drawn as answer bars of different lengths. */
 export function SessionPollIcon() {
   return (
     <svg

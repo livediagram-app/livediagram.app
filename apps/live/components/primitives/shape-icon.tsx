@@ -3,7 +3,7 @@ import type { ShapeKind } from '@livediagram/diagram';
 
 // Mini glyphs for every ShapeKind on a 16x16 viewBox, shown next to the shape
 // kind picker in SelectedElementSection, the context-menu Shape category, and
-// the style-preset swatches (spec/48) — so a preview tracks the user's actual
+// the style-preset swatches (docs/specs/010-palette/style-presets.md) — so a preview tracks the user's actual
 // shape (a circle previews as a circle, not a square).
 //
 // `ShapeGlyph` is the parameterised renderer (fill / stroke / weight / dash /

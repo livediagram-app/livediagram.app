@@ -3,7 +3,7 @@ import type { ArrowElement } from '@livediagram/diagram';
 import type { ArrowEnd } from '@/lib/canvas';
 import { AddPointHandle, CurveHandle, EndpointHandle } from './arrow-handles';
 
-// The selected arrow's handle layer (spec/09), lifted out of ArrowView:
+// The selected arrow's handle layer (docs/specs/008-canvas/canvas-and-palette.md), lifted out of ArrowView:
 // the two endpoint grips, the single-bow curve handle, the multi-bend
 // control points (right-click deletes), the "+" add-point handles at
 // each segment midpoint, and the angled-arrow elbow handle. ArrowView

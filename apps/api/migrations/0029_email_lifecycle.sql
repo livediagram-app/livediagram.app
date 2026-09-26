@@ -1,4 +1,4 @@
--- spec/64: transactional & lifecycle email (Resend).
+-- docs/specs/014-identity/transactional-email.md: transactional & lifecycle email (Resend).
 -- One row per AUTHENTICATED owner (Clerk user id), created on the first
 -- request we see them when email is enabled. Drives the welcome + the
 -- week-1 / week-2 onboarding series (the *_sent_at stamps make each send

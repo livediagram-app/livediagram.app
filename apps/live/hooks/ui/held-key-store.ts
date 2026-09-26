@@ -6,7 +6,7 @@ import { useSyncExternalStore } from 'react';
 // store per key, so subscribers re-render on the transitions (down -> up, up ->
 // down) and not on every keystroke while the key is down.
 //
-// Two hooks wanted this — Shift (the hint banner, spec/09) and Cmd/Ctrl (the
+// Two hooks wanted this — Shift (the hint banner, docs/specs/008-canvas/canvas-and-palette.md) and Cmd/Ctrl (the
 // palette's shortcut badges) — and each had written the whole store out: the
 // held flag, the listener set, the attached guard, fan-out, subscribe, and both
 // snapshot functions. Byte-identical between them; only the key policy differed.

@@ -1,6 +1,6 @@
-// Team + invite events (spec/138 §4.4).
+// Team + invite events (docs/specs/013-workspace/timeline.md §4.4).
 //
-// Teams are Clerk-only (spec/32), so nothing here ever reaches a guest
+// Teams are Clerk-only (docs/specs/013-workspace/teams.md), so nothing here ever reaches a guest
 // scope. Team events go to the whole joined team rather than just the
 // actor: "who is in this with me" is the question these answer, and it
 // is a question every member has.
@@ -32,7 +32,7 @@ export async function recordTeamCreated(env: Env, team: TeamRef, actorId: string
 // An invite is created against an EMAIL ADDRESS, so at emit time there
 // may be nobody to scope it to — the invitee's owner id is unknown
 // until they sign in and the lazy email-claim step connects the row
-// (spec/32). Hence the null-tolerant signature: with an id we scope it
+// (docs/specs/013-workspace/teams.md). Hence the null-tolerant signature: with an id we scope it
 // now, without one we emit scope-less and `attachInviteToNewMember`
 // below adds the membership later, keeping the ORIGINAL sent-at date so
 // the invite appears on their Timeline dated when it was actually sent.
@@ -211,7 +211,7 @@ function titleCaseRole(role: string): string {
   return role.charAt(0).toUpperCase() + role.slice(1);
 }
 
-// The other half of `recordInviteReceived` (spec/138 §4.4).
+// The other half of `recordInviteReceived` (docs/specs/013-workspace/timeline.md §4.4).
 //
 // An invite is addressed to an EMAIL, so when it's created there may be
 // no owner id to scope the event to. The lazy email-claim step in

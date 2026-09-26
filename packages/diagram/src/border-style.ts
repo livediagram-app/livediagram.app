@@ -54,6 +54,6 @@ export const BORDER_RADIUS_PX: Record<BorderRadius, number> = {
   lg: 24,
   // Pill / circle: a radius far larger than any element half-size. CSS clamps
   // border-radius to 50% of the box, so this renders a square as a circle and
-  // a rectangle as a stadium — what a circular avatar (spec/09) needs.
+  // a rectangle as a stadium — what a circular avatar (docs/specs/008-canvas/canvas-and-palette.md) needs.
   full: 9999,
 };

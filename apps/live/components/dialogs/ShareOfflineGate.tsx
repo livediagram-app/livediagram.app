@@ -10,7 +10,7 @@ import { syncFailureMessage } from '@/lib/offline/offline-convert';
 import { DialogHeader } from './DialogHeader';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
 
-// The Share dialog's offline gate (spec/76). An offline diagram is stored only
+// The Share dialog's offline gate (docs/specs/006-diagram/offline-mode.md). An offline diagram is stored only
 // in this browser, so there are no links to mint until it's synced to the
 // owner's account. Rather than hide the Share button, we keep it and explain
 // the one-step conversion here: sync moves the diagram to the cloud, then the

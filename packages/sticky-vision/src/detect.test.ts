@@ -5,7 +5,7 @@ import { greyWorldBalance, hexToRgb, rgbToHsv, type ImageBuffer } from './colour
 import { standsOut } from './standout';
 import { detectStickies, cropRects, toNormalised } from './detect';
 
-// Finding stickies in a photograph (spec/139 Phase 8). Every image here is
+// Finding stickies in a photograph (docs/specs/021-event-storming/event-storming.md Phase 8). Every image here is
 // DRAWN by the test, which is the point of doing this with classical CV: the
 // input is exactly known, so a failure names its own cause.
 
@@ -106,7 +106,7 @@ describe('the colour classes come from the catalogue', () => {
       // The catalogue's external-system pink and its hotspot red-pink are the
       // same colour to a camera, and the operator's own walls use pink for
       // hotspots. Pink is hotspot; an external system read as one is re-kinded
-      // in the draft, which is a click (spec/139).
+      // in the draft, which is a click (docs/specs/021-event-storming/event-storming.md).
       const expected = note.kind === 'external-system' ? 'hotspot' : note.kind;
       expect(classifyRgb(r, g, b), note.kind).toBe(expected);
     }
@@ -529,7 +529,7 @@ describe('detectStickies', () => {
     // a phone photographs them, are a mid blue — much DARKER than the wall.
     // A rule that paper is never darker than its wall is true on brown kraft
     // and false here; it cost two thirds of the blue notes on a real
-    // whiteboard (spec/139).
+    // whiteboard (docs/specs/021-event-storming/event-storming.md).
     const image = blank(1000, 600, '#f1f3f5');
     const orange = fillOf('domain-event');
     for (let i = 0; i < 4; i += 1) note(image, 80 + i * 120, 100, 70, 70, orange);
@@ -543,7 +543,7 @@ describe('detectStickies', () => {
   it('finds a pad of SMALL notes on a wall of big ones', () => {
     // A wall of orange events with a pad of small pink hotspots among them:
     // two sizes of stationery on one wall. A size floor set by the orange
-    // threw every small note away (spec/139).
+    // threw every small note away (docs/specs/021-event-storming/event-storming.md).
     const image = blank(1000, 700, '#f1f3f5');
     const orange = fillOf('domain-event');
     const pink = fillOf('hotspot');
@@ -590,7 +590,7 @@ describe('detectStickies', () => {
     // whiteboard: greyer and darker than its swatch — rgb(183,183,151),
     // saturation 0.17, measured off the operator's hand-labelled whiteboard.
     // Its hue is nowhere near the board's, so it needs only a little colour to
-    // count; a floor of 0.18 there lost it (spec/139).
+    // count; a floor of 0.18 there lost it (docs/specs/021-event-storming/event-storming.md).
     const image = blank(1000, 600, '#f1f3f5');
     const orange = fillOf('domain-event');
     for (let i = 0; i < 6; i += 1) note(image, 60 + i * 150, 80, 90, 90, orange);
@@ -665,7 +665,7 @@ describe('hue arithmetic', () => {
   });
 });
 
-// Standing out by BRIGHTNESS alone (spec/139): pale paper on a darker wall is
+// Standing out by BRIGHTNESS alone (docs/specs/021-event-storming/event-storming.md): pale paper on a darker wall is
 // barely more coloured than the wall and no different in hue, but it is much
 // brighter. Tuned on the eight hand-labelled walls: a box a third brighter
 // than its wall is a note.

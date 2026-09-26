@@ -7,7 +7,7 @@ import { readLocalStorageSafe, writeLocalStorageSafe } from '@/lib/local-storage
 // localStorage and kept in sync across tabs via the native `storage`
 // event. Generic over the storage key so any one-shot, permanently-
 // dismissible banner can reuse it (today: the Explorer sign-in
-// nudge, spec/36).
+// nudge, docs/specs/014-identity/sign-in-encouragement.md).
 //
 // `dismissed` starts false on the server and the first client paint,
 // then settles to the stored value in an effect, so a static export

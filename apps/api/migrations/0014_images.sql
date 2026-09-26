@@ -1,4 +1,4 @@
--- Image element gallery, per spec/19.
+-- Image element gallery, per docs/specs/009-elements/images.md.
 --
 -- Each row indexes one image whose bytes live in the R2 bucket bound
 -- as IMAGES (key === images.id). The (owner_id, sha256) unique index

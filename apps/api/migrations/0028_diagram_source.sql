@@ -1,4 +1,4 @@
--- Diagram provenance (spec/15 "Generated" dynamic folder, spec/62): a
+-- Diagram provenance (docs/specs/013-workspace/folders.md "Generated" dynamic folder, docs/specs/015-api/mcp-server.md): a
 -- nullable source tag recording how a diagram came to exist. NULL = made
 -- by a person in the editor (every pre-existing row); 'mcp' = created by
 -- an external AI tool through the MCP server; 'ai' = created by the

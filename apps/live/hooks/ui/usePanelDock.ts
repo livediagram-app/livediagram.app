@@ -22,7 +22,7 @@ import {
   type ResolvedPlacement,
 } from '@/lib/panel-layout';
 
-// Owns the device-local floating-panel layout (spec/63): which corner
+// Owns the device-local floating-panel layout (docs/specs/007-editor/panel-docking.md): which corner
 // each panel docks into, where free panels float, and the live drag /
 // snap-candidate state that drives the corner guides.
 //
@@ -102,7 +102,7 @@ export function usePanelDock(): PanelDock {
     // Without the fold, a panel id missing from a user's SAVED layout
     // (any panel shipped after they last dragged one) would never
     // render on desktop — the corner containers draw only from these
-    // stacks (spec/63's "adding a new panel never strands the UI").
+    // stacks (docs/specs/007-editor/panel-docking.md's "adding a new panel never strands the UI").
     const stacks: Record<PanelCorner, PanelId[]> = {
       'top-left': [...layout.corners['top-left']],
       'top-right': [...layout.corners['top-right']],

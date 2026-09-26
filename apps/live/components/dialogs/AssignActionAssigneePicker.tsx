@@ -1,7 +1,7 @@
 import { initialsOf } from '@/lib/identity';
 import { clerkEnabled } from '@/lib/clerk-config';
 
-// One pickable assignee (spec/68): the pinned Myself row, or a joined
+// One pickable assignee (docs/specs/012-collaboration/assigned-actions.md): the pinned Myself row, or a joined
 // member of the diagram's team.
 export type PickableMember = {
   // Null for an invited member the lazy claim hasn't identified with an
@@ -9,7 +9,7 @@ export type PickableMember = {
   userId: string | null;
   // The team membership row id (undefined only for the Myself row).
   memberId?: string;
-  // True while the member hasn't accepted the team invite (spec/32).
+  // True while the member hasn't accepted the team invite (docs/specs/013-workspace/teams.md).
   pending?: boolean;
   name: string;
   email: string | null;
@@ -18,7 +18,7 @@ export type PickableMember = {
   teamName: string | null;
 };
 
-// The Assign Action dialog's assignee picker (spec/68 §2): the pinned
+// The Assign Action dialog's assignee picker (docs/specs/012-collaboration/assigned-actions.md §2): the pinned
 // Myself row, the diagram team's joined members (grouped under a sticky
 // team header), the loading row, and the Myself-only nudges — sign in
 // (guests), move-into-a-team-library (personal diagrams), not-a-member
@@ -49,7 +49,7 @@ export function AssigneePicker({
   onPick: (m: PickableMember) => void;
   signInHref: string;
   // The user's joined teams, for the personal-diagram inline move offer
-  // (spec/68 §2): pick a team and the diagram files into its library
+  // (docs/specs/012-collaboration/assigned-actions.md §2): pick a team and the diagram files into its library
   // root, making that team's members assignable right here.
   teams: { id: string; name: string }[];
   movingToTeamId: string | null;
@@ -135,7 +135,7 @@ export function AssigneePicker({
         // Personal diagram: teammates couldn't open it to complete the
         // action. With teams to offer, fix it INLINE — one click files
         // the diagram into that team's library root and the members
-        // load right here (spec/68 §2). No teams -> create-team link.
+        // load right here (docs/specs/012-collaboration/assigned-actions.md §2). No teams -> create-team link.
         <div className="flex flex-col gap-1.5 rounded-lg border border-dashed border-slate-300 px-3 py-2.5 text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400">
           {teams.length > 0 && onMoveToTeam ? (
             <>

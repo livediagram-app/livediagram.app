@@ -259,7 +259,7 @@ describe('exportTabAsSvg', () => {
   });
 
   // An exported file leaves this browser: the reader hasn't got Permanent
-  // Marker installed, so the download carries the face with it (spec/28).
+  // Marker installed, so the download carries the face with it (docs/specs/004-interface-design/fonts.md).
   it('embeds the webfont bytes a downloaded file needs', async () => {
     const svg = await text(
       exportTabAsSvg(tab({ elements: [shape('s', { label: 'Hi', font: 'caveat' })] }), {

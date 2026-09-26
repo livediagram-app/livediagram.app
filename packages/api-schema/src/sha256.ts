@@ -1,5 +1,5 @@
 // Canonical SHA-256 hex digest used as the image dedupe key (see
-// spec/19): the live editor computes it from the file bytes before
+// docs/specs/009-elements/images.md): the live editor computes it from the file bytes before
 // posting to /api/images, stamps it on the `X-Image-Sha256` request
 // header, and the api worker re-hashes the body to verify. Both
 // sides have to produce byte-for-byte identical output or the

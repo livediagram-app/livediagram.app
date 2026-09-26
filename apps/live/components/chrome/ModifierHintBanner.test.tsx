@@ -53,7 +53,7 @@ describe('ModifierHintBanner', () => {
   // Q4: a held modifier nobody knows about is a feature nobody finds. The
   // offer appears DURING the drag, before Alt is touched — which is also the
   // only wording that works where a window manager claims Alt+press.
-  describe('the insert-between offer (spec/139)', () => {
+  describe('the insert-between offer (docs/specs/021-event-storming/event-storming.md)', () => {
     it('offers the gesture while a note already on the board is dragged', () => {
       show();
       act(() => setInsertionDragInHand(true));

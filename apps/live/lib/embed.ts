@@ -1,11 +1,11 @@
-// Embed-URL + iframe-snippet builders for the embed view (spec/33).
+// Embed-URL + iframe-snippet builders for the embed view (docs/specs/013-workspace/embeds.md).
 // Embeds honour the share link's role: a view link embeds read-only,
 // an edit link embeds an editable canvas. Pure functions so the
 // ShareDialog's "Embed" copy button and the tests share one source
 // of truth for the snippet shape.
 
 // The embed route reads the share code client-side from `?s=`, the
-// same query form the share view uses (spec/33 "URL shape").
+// same query form the share view uses (docs/specs/013-workspace/embeds.md "URL shape").
 export function embedUrlFor(origin: string, code: string): string {
   return `${origin}/embed?s=${encodeURIComponent(code)}`;
 }

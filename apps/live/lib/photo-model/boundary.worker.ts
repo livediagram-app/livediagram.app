@@ -2,7 +2,7 @@ import { CUE_OPTIONS, cuesOf } from '@livediagram/sticky-model';
 import type { WorkerRequest, WorkerResponse } from './protocol';
 import { BoundaryRuntimeError, loadBoundaryRuntime, type BoundaryRuntime } from './runtime';
 
-// The boundary model's worker (spec/139 Phase 9): loads the runtime once, then
+// The boundary model's worker (docs/specs/021-event-storming/event-storming.md Phase 9): loads the runtime once, then
 // turns each working image into the cues the classical detector's hybrid rules
 // read. Only plain numbers go back to the page.
 

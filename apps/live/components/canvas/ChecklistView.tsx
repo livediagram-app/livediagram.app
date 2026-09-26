@@ -1,6 +1,6 @@
 import type { ShapeElement } from '@livediagram/diagram';
 
-// The checklist's canvas view (spec/83): a themed card of checkbox rows.
+// The checklist's canvas view (docs/specs/009-elements/checklist.md): a themed card of checkbox rows.
 // Clicking a box toggles that row's done state (edit-role only, like the
 // rating's stars); row text is edited from the context menu's Checklist
 // section. Done rows tick, strike through, and mute; a done-count footer

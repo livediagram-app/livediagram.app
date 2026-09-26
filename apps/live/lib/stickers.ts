@@ -1,4 +1,4 @@
-// The Stickers palette category (spec/116): the browse groups over the sticker
+// The Stickers palette category (docs/specs/010-palette/stickers.md): the browse groups over the sticker
 // catalogue, plus the lookups the Stickers tab and the canvas need.
 //
 // A sticker is its own element kind (`shape: 'sticker'` carrying a
@@ -365,7 +365,7 @@ export function searchStickers(query: string): StickerDef[] {
   );
 }
 
-// The drop size for a sticker, off its flavour's natural aspect (spec/116):
+// The drop size for a sticker, off its flavour's natural aspect (docs/specs/010-palette/stickers.md):
 // an emoji is square, a badge is a wide pill, and both are one shape kind, so
 // the per-kind default table can't express it alone.
 export function stickerDropSize(

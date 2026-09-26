@@ -1,6 +1,6 @@
 'use client';
 
-// The welcome card's animated hero (spec/79): a miniature canvas scene that
+// The welcome card's animated hero (docs/specs/007-editor/editor-tour.md): a miniature canvas scene that
 // acts out the product in one loop — a square pops in, an arrow draws
 // itself across to a circle, the circle lands, a sticky-diamond floats and
 // a spark twinkles. Pure inline SVG + CSS keyframes (no runtime), themed

@@ -11,7 +11,7 @@ import {
   SITE_URL,
 } from '@livediagram/ui';
 
-// SEO and social-card metadata. See spec/16-marketing-site.md
+// SEO and social-card metadata. See docs/specs/019-marketing/marketing-site.md
 // for the policy. metadataBase lets the per-page canonical and
 // openGraph fields use relative URLs and have Next resolve them
 // against the production origin; without it Next logs a warning
@@ -52,10 +52,10 @@ export const metadata: Metadata = {
 };
 
 // Brand-tinted mobile chrome + light colour scheme, shared with the help
-// centre and the dashboard (spec/16 "SEO and metadata").
+// centre and the dashboard (docs/specs/019-marketing/marketing-site.md "SEO and metadata").
 export const viewport: Viewport = PUBLIC_VIEWPORT;
 
-// JSON-LD structured data, see spec/16-marketing-site.md "SEO and
+// JSON-LD structured data, see docs/specs/019-marketing/marketing-site.md "SEO and
 // metadata". Two schemas under one @graph: WebSite for brand-name
 // search results, SoftwareApplication for "diagramming tool"
 // category browse. Both restate facts already on the page; the
@@ -122,7 +122,7 @@ const JSON_LD = {
   ],
 };
 
-// The cross-page transition opt-in (page-motion.css, spec/16), inline in the
+// The cross-page transition opt-in (page-motion.css, docs/specs/019-marketing/marketing-site.md), inline in the
 // <head>. The browser only runs a cross-document view transition if the NEW
 // page has opted in by its first paint; from the bundled stylesheet the rule
 // sometimes landed after that, the transition was skipped, and the old page

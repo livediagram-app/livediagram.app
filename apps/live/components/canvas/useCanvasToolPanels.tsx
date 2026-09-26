@@ -11,8 +11,8 @@ import { HighlighterPanel } from '@/components/panels/HighlighterPanel';
 import { SlideDeckPanel } from '@/components/panels/SlideDeckPanel';
 import type { CanvasChromeProps } from './CanvasChrome';
 
-// The seven tool-config panels (spec/101, spec/111, spec/112, spec/113,
-// spec/117, spec/81, spec/31), lifted out of useCanvasChromePanels. They are siblings in
+// The seven tool-config panels (docs/specs/008-canvas/avatar-mode.md, docs/specs/008-canvas/laser-panel.md, docs/specs/008-canvas/spotlight-panel.md, docs/specs/008-canvas/eraser-panel.md,
+// docs/specs/008-canvas/format-panel.md, docs/specs/008-canvas/highlighter.md, docs/specs/012-collaboration/presentation-mode.md), lifted out of useCanvasChromePanels. They are siblings in
 // every respect that matters: each is mounted ONLY while its own canvas
 // tool is active, so unlike the standing panels (Explorer, Palette,
 // Activity, ...) they join and leave their corner stack as the tool is
@@ -120,7 +120,7 @@ export function useCanvasToolPanels({
     onResetSlideDeckPanel?.(),
   );
 
-  // Avatar Panel (spec/101): the character sheet, mounted only while Avatar
+  // Avatar Panel (docs/specs/008-canvas/avatar-mode.md): the character sheet, mounted only while Avatar
   // mode is active — so it joins and leaves its corner stack the way the
   // session-tool panels do. Available to view-role too (the mode is), and on
   // mobile / minimal it opens from its dock button like every other panel.
@@ -145,7 +145,7 @@ export function useCanvasToolPanels({
       />
     ) : null;
 
-  // Laser Panel (spec/111): the pen's settings, mounted only while the Laser
+  // Laser Panel (docs/specs/008-canvas/laser-panel.md): the pen's settings, mounted only while the Laser
   // tool is active — the avatar panel's twin in every respect, including the
   // view-role availability (the laser is theirs too) and the dock button.
   const laserEl =
@@ -166,7 +166,7 @@ export function useCanvasToolPanels({
       />
     ) : null;
 
-  // Spotlight Panel (spec/112): the light's look, mounted only while the
+  // Spotlight Panel (docs/specs/008-canvas/spotlight-panel.md): the light's look, mounted only while the
   // Spotlight tool is active — the Laser Panel's sibling in every respect.
   const spotlightEl =
     !chromeHidden && canvasTool === 'spotlight' && spotlightConfig ? (
@@ -187,7 +187,7 @@ export function useCanvasToolPanels({
       />
     ) : null;
 
-  // Eraser Panel (spec/113): the brush's settings, mounted only while the
+  // Eraser Panel (docs/specs/008-canvas/eraser-panel.md): the brush's settings, mounted only while the
   // Eraser tool is active.
   const eraserEl =
     !chromeHidden && canvasTool === 'eraser' && eraserConfig ? (
@@ -206,7 +206,7 @@ export function useCanvasToolPanels({
       />
     ) : null;
 
-  // Format Panel (spec/117): what the painter copies, mounted only while the
+  // Format Panel (docs/specs/008-canvas/format-panel.md): what the painter copies, mounted only while the
   // Format tool is active.
   const formatEl =
     !chromeHidden && canvasTool === 'format' && formatConfig ? (
@@ -227,7 +227,7 @@ export function useCanvasToolPanels({
       />
     ) : null;
 
-  // Highlighter Panel (spec/81): the marker's colour + strength, mounted only
+  // Highlighter Panel (docs/specs/008-canvas/highlighter.md): the marker's colour + strength, mounted only
   // while the Highlighter tool is held. The one tool panel that replaced an
   // existing surface rather than adding one — its two settings used to be
   // popovers on the top mode banner, which covered the toolbar.
@@ -250,7 +250,7 @@ export function useCanvasToolPanels({
       />
     ) : null;
 
-  // Slide Deck panel (spec/31): where a deck is built, ordered, checked and
+  // Slide Deck panel (docs/specs/012-collaboration/presentation-mode.md): where a deck is built, ordered, checked and
   // started, mounted only while its tool is picked. The seventh, and the one
   // whose tool does not itself change the canvas — picking it opens the
   // workbench, and Start is a deliberate second act.

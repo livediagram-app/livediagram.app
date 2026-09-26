@@ -1,6 +1,6 @@
 'use client';
 
-// Explorer empty states (spec/15): a friendly animated illustration per section
+// Explorer empty states (docs/specs/013-workspace/folders.md): a friendly animated illustration per section
 // rather than a lone sentence in a dashed box. A floating gradient icon badge
 // (the section's glyph) over a softly pulsing double ring and a faint
 // mini-diagram motif, with a heading, a one-line explainer, and a contextual
@@ -51,7 +51,7 @@ const CONTENT: Record<
     title: 'No favourites yet',
     // No CTA: a new diagram doesn't land here, starring an existing one
     // does — so the generic "New diagram" button would be a dead end
-    // (spec/95). Same reason Shared and Unsorted carry none.
+    // (docs/specs/013-workspace/favourites.md). Same reason Shared and Unsorted carry none.
     description: 'Mark a diagram as a favourite to show it here.',
   },
   generated: {

@@ -31,7 +31,7 @@ export function NameEditor({
     <input
       ref={ref}
       value={value}
-      // Names are capped (spec/91) — enforced here too so the limit shows
+      // Names are capped (docs/specs/006-diagram/name-length.md) — enforced here too so the limit shows
       // while typing rather than truncating silently on commit.
       maxLength={NAME_MAX_LENGTH}
       onChange={(e) => setValue(e.target.value)}

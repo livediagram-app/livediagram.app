@@ -1,4 +1,4 @@
-// The eraser's settings (spec/113), persisted per browser — the laser and
+// The eraser's settings (docs/specs/008-canvas/eraser-panel.md), persisted per browser — the laser and
 // spotlight hooks with a different config type.
 
 import { useState } from 'react';

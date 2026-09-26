@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { CATEGORY_DESCRIPTIONS, categoryColor, eventLabel, typeLabel } from './event-vocab';
 
-// The dashboard's vocabulary layer (spec/22): pure labelling helpers behind
+// The dashboard's vocabulary layer (docs/specs/017-telemetry/telemetry.md): pure labelling helpers behind
 // the public /telemetry page. First tests for this app.
 
 describe('eventLabel', () => {
@@ -13,7 +13,7 @@ describe('eventLabel', () => {
     expect(eventLabel({ action: 'Opened', type: null })).toBe('Opened');
   });
 
-  it('shows a page path exactly as stored, not title-cased (spec/150)', () => {
+  it('shows a page path exactly as stored, not title-cased (docs/specs/017-telemetry/page-view-telemetry.md)', () => {
     expect(eventLabel({ action: 'View', type: '/help/the-canvas' })).toBe(
       'View · /help/the-canvas',
     );

@@ -33,7 +33,7 @@ const SearchPanel = dynamic(() =>
 // narrow enough that the list view keeps its breathing room.
 const SIDEBAR_WIDTH = 256;
 
-// The Explorer chrome (spec/15): header, desktop sidebar, mobile
+// The Explorer chrome (docs/specs/013-workspace/folders.md): header, desktop sidebar, mobile
 // drawer, and the cross-section overlays (move picker, new-team
 // modal, search), wrapped around whichever /explorer/<section> route
 // page is active. Rendered by app/explorer/layout.tsx so the chrome —
@@ -48,7 +48,7 @@ export function ExplorerShell({ children }: { children: ReactNode }) {
   if (!state.authLoaded) return null;
   return (
     <ExplorerProvider value={state}>
-      {/* Owner-scoped custom themes (spec/44) so the Themes section + its
+      {/* Owner-scoped custom themes (docs/specs/011-theme/custom-themes.md) so the Themes section + its
           builder share one source of truth, keyed by the same owner id
           the rest of the Explorer uses. */}
       <CustomThemeProvider ownerId={state.ownerId}>
@@ -97,12 +97,12 @@ function ShellChrome({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
   // Settings live in the bottom bar's gear (same synced UserPreferences as
-  // the editor, spec/20). The prefs themselves are owned by
+  // the editor, docs/specs/007-editor/user-preferences.md). The prefs themselves are owned by
   // useExplorerState — the pane reads them too (Recent honours the
-  // hidden-from-Recent list, spec/93), and a second useState here would
+  // hidden-from-Recent list, docs/specs/013-workspace/hide-from-recent.md), and a second useState here would
   // drift the moment either wrote.
 
-  // Guest sign-in nudge (spec/36): only when Clerk is actually wired
+  // Guest sign-in nudge (docs/specs/014-identity/sign-in-encouragement.md): only when Clerk is actually wired
   // up for this deployment, the visitor isn't signed in (a guest owner
   // id doesn't count), and they haven't dismissed it. When shown, the
   // pane reserves extra bottom space so the last row clears the
@@ -185,7 +185,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
         </section>
       </main>
 
-      {/* Bottom bar (spec/07): the same strip as the editor's tab bar, minus
+      {/* Bottom bar (docs/specs/007-editor/live-app.md): the same strip as the editor's tab bar, minus
           the tabs — the shared right-hand control cluster (search / GitHub /
           settings / dark-mode). Sticky so it stays in view while the dashboard
           scrolls; the sign-in banner is nudged up to clear it. */}
@@ -196,8 +196,8 @@ function ShellChrome({ children }: { children: ReactNode }) {
         />
       </div>
 
-      {/* Move-destination modal (spec/15 + spec/35): the shared
-          placement browser (spec/76's Save In UI) for every diagram
+      {/* Move-destination modal (docs/specs/013-workspace/folders.md + docs/specs/013-workspace/team-shared-diagrams.md): the shared
+          placement browser (docs/specs/006-diagram/offline-mode.md's Save In UI) for every diagram
           (personal or team) and for folder re-parenting. It offers
           "Personal Space" plus each team as a space (for diagram moves);
           `moveDiagramTo` routes the pick from the subject's current
@@ -294,7 +294,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
           }}
           onSelectTeamFolder={(teamId, folderId) => {
             // Full load rather than go(): the team page reads the
-            // folder deep-link param at mount (spec/35).
+            // folder deep-link param at mount (docs/specs/013-workspace/team-shared-diagrams.md).
             window.location.assign(
               `/explorer/team?id=${encodeURIComponent(teamId)}&folder=${encodeURIComponent(folderId)}`,
             );
@@ -326,7 +326,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
         />
       ) : null}
 
-      {/* Guest sign-in encouragement (spec/36): Explorer only, never
+      {/* Guest sign-in encouragement (docs/specs/014-identity/sign-in-encouragement.md): Explorer only, never
           the editor. Dismissal persists per device. */}
       {showSignInBanner ? <SignInBanner surface="Explorer" onDismiss={dismissBanner} /> : null}
     </div>

@@ -16,7 +16,7 @@ import { useReposition } from '@/hooks/canvas/useReposition';
 import { VIEWPORT_EDGE_MARGIN } from '@/lib/clamp-to-viewport';
 
 // A menu category that opens its contents in a **side flyout** instead of
-// expanding inline (spec/09). The trigger row looks exactly like a
+// expanding inline (docs/specs/008-canvas/canvas-and-palette.md). The trigger row looks exactly like a
 // MenuAccordionSection header (icon · uppercase title · chevron), but clicking
 // it floats a panel to the SIDE — to the right of the menu if there's room,
 // otherwise to the left — so several categories can be grouped under one row
@@ -33,7 +33,7 @@ import { VIEWPORT_EDGE_MARGIN } from '@/lib/clamp-to-viewport';
 const SETTLE_FRAMES = 3;
 
 // A flyout that would hold exactly ONE section is not a flyout at all: the
-// section takes the flyout's place in the host menu (spec/09).
+// section takes the flyout's place in the host menu (docs/specs/008-canvas/canvas-and-palette.md).
 //
 // The children are conditional — a Tools flyout shows Progress, Rail, Rating,
 // Chart, Picker … depending on the element — so on a picker the whole "Tools"
@@ -119,7 +119,7 @@ function Flyout({
   const controlled = controlledOpen !== undefined;
   const open = controlled ? controlledOpen : localOpen;
   // On a phone the flyout COVERS its parent menu instead of sitting beside it
-  // (spec/98): there is no room to the side, so the side layout degenerated
+  // (docs/specs/004-interface-design/flyout-height-stability.md): there is no room to the side, so the side layout degenerated
   // into an unlabelled panel dropped on top of the menu with no way back.
   // `width` is only set in that mode, where the panel matches the menu it
   // replaces; the desktop panel keeps its fixed w-56.
@@ -299,11 +299,11 @@ function Flyout({
       if (panelRef.current?.contains(t) || triggerRef.current?.contains(t)) return;
       // Clicking back into a text-edit session (the editor or its floating
       // toolbar) keeps the flyout open — the context menu stays alongside
-      // the editor while a label is being edited (spec/09), and moving the
+      // the editor while a label is being edited (docs/specs/008-canvas/canvas-and-palette.md), and moving the
       // caret shouldn't collapse the open category.
       if (t instanceof Element && t.closest('[data-rich-text-session]')) return;
       // Clicking a canvas ELEMENT retargets the host menu to it rather than
-      // dismissing it (spec/09 menu-follows-selection), so the open flyout
+      // dismissing it (docs/specs/008-canvas/canvas-and-palette.md menu-follows-selection), so the open flyout
       // must ride along too — collapsing it on every element switch broke
       // the style-several-elements-in-a-row flow. Empty-canvas clicks still
       // close the whole menu (the canvas handler), which unmounts this.

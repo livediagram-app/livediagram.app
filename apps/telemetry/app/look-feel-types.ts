@@ -1,7 +1,7 @@
 import { CANVAS_CONTROLS } from './event-vocab';
 import type { TypeAliases } from './rank';
 
-// How the dashboard reads the look-and-feel events (spec/22), shared by the
+// How the dashboard reads the look-and-feel events (docs/specs/017-telemetry/telemetry.md), shared by the
 // Look & Feel tab's rankings and the Look & Feel stack on the Dashboard.
 
 // Theme·Changed types that are NOT built-in theme picks, so the theme

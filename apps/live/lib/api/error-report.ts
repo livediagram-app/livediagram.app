@@ -1,4 +1,4 @@
-// Error telemetry hook for the api client (spec/22 'Error' category). This
+// Error telemetry hook for the api client (docs/specs/017-telemetry/telemetry.md 'Error' category). This
 // module can't import lib/telemetry directly: it sits under the
 // user-preferences -> api-client import cycle that already forced the emitter
 // lazy, so the editor's boot registers a reporter instead (same module-level
@@ -18,7 +18,7 @@
 //     never an id or share code.
 //
 // Each type reports at most ERROR_EMIT_CAP_PER_TYPE times per page load, the
-// same budget the uncaught-error path has (spec/22). A request that fails in
+// same budget the uncaught-error path has (docs/specs/017-telemetry/telemetry.md). A request that fails in
 // a loop floods as hard as a throw that does: one editor stuck refetching a
 // forbidden tab sent `Http403.LoadTab` every 15 to 65 seconds for weeks,
 // nearly half of every stored event.

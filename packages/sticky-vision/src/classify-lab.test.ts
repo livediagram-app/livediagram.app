@@ -6,7 +6,7 @@ import { localFloorsOf, wallFloorsOf, type PaperFloors } from './floors';
 import { rgbToLab } from './lab';
 
 // The wall's own colour, measured in CIELAB, as a second opinion on paper at
-// the wall's hue (spec/139 Phase 9). HSV saturation climbs as kraft darkens,
+// the wall's hue (docs/specs/021-event-storming/event-storming.md Phase 9). HSV saturation climbs as kraft darkens,
 // so shadowed kraft clears a saturation floor that lit kraft does not; in
 // a*b* it is still the wall.
 

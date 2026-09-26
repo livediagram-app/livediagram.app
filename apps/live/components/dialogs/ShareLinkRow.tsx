@@ -9,7 +9,7 @@ import { Tooltip } from '@/components/primitives/Tooltip';
 import { ShareCopyMenu } from './ShareCopyMenu';
 import { CodeGlyph, EXPIRY_LABELS, ImageGlyph } from './share-dialog-parts';
 
-// One ACTIVE share-link card (spec/04 + spec/33 + spec/34 + spec/54),
+// One ACTIVE share-link card (docs/specs/014-identity/auth-and-guest-access.md + docs/specs/013-workspace/embeds.md + docs/specs/013-workspace/share-link-expiry.md + docs/specs/013-workspace/live-image-share.md),
 // lifted out of ShareDialog: the role + time-left badges and the
 // selectable URL on line 1, then Copy / Embed / Live image (with the
 // per-tab picker) and the far-edge revoke on line 2. All mutations and
@@ -86,14 +86,14 @@ export function ActiveShareLinkRow({
         />
       </div>
       {/* Line 2: actions. Copy is the everyday one and
-                  keeps the filled style; Embed (spec/33) stays a
+                  keeps the filled style; Embed (docs/specs/013-workspace/embeds.md) stays a
                   labelled button so it's discoverable; revoke
                   sits apart at the far edge. */}
       <div className="flex items-center gap-2">
         <Button onClick={() => onCopy(link.code)} size="xs" className="shadow-sm">
           {copiedCode === link.code ? 'Copied' : 'Copy link'}
         </Button>
-        {/* Embed (spec/33): copy the embed as a raw URL or an
+        {/* Embed (docs/specs/013-workspace/embeds.md): copy the embed as a raw URL or an
                     <iframe> snippet. Embeds honour the link's role,
                     so the tooltip says which one this row hands out. */}
         <ShareCopyMenu
@@ -120,7 +120,7 @@ export function ActiveShareLinkRow({
             },
           ]}
         />
-        {/* Live image (spec/54 + spec/67): an <img>-able SVG
+        {/* Live image (docs/specs/013-workspace/live-image-share.md + docs/specs/006-diagram/diagram-snapshots.md): an <img>-able SVG
                     URL. Hidden while a password is set — an <img>
                     can't supply one, so the server refuses an
                     image for gated shares and offering it here
@@ -132,7 +132,7 @@ export function ActiveShareLinkRow({
             tooltipDescription="An <img>-able SVG URL that re-renders this diagram, so an embed in a README, wiki, or doc stays up to date."
             trackType="LiveImage"
             header={
-              // Per-tab picker (spec/54): only worth showing
+              // Per-tab picker (docs/specs/013-workspace/live-image-share.md): only worth showing
               // when there's more than one tab. Selecting the
               // first tab clears back to the cached default
               // (null → no `?tab=`).

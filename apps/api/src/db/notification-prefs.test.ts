@@ -16,7 +16,7 @@ function envWithPrefsRow(prefs: string | null): Env {
   } as unknown as Env;
 }
 
-describe('getNotificationPrefs (spec/65)', () => {
+describe('getNotificationPrefs (docs/specs/014-identity/profile-and-email-notifications.md)', () => {
   it('defaults both flags to true when there is no row', async () => {
     expect(await getNotificationPrefs(envWithPrefsRow(null), 'user_x')).toEqual({
       notifyDiagramJoin: true,

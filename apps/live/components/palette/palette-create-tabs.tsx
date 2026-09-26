@@ -18,15 +18,15 @@ import {
 import { tilesInSection, tilesInToolGroup } from './palette-tile-defs';
 import { EventStormingBoardRows, type EsBoardControls } from './EventStormingBoardRows';
 
-// The palette's creation-category tab bodies. Since spec/78 every tile is
+// The palette's creation-category tab bodies. Since docs/specs/010-palette/palette-favourites.md every tile is
 // a data entry in the shared catalogue (palette-tile-defs.tsx) rendered
 // through PaletteTileGrid, so each tab is just its catalogue slice — the
 // per-tile JSX that used to live here moved into the catalogue. The
 // search-driven tabs (Icons / Technology) stay in CommandPalette since they
-// own their search state; the Favourites tab (spec/78) has its own file
+// own their search state; the Favourites tab (docs/specs/010-palette/palette-favourites.md) has its own file
 // (PaletteFavouritesTab).
 //
-// There is no longer a Tools tab (spec/110): every group it held graduated to
+// There is no longer a Tools tab (docs/specs/010-palette/palette-top-level-categories.md): every group it held graduated to
 // a top-level category, and a tab with no categories left is not a tab.
 
 type TabProps = {
@@ -38,7 +38,7 @@ export function PaletteShapesTab({ pendingDraw, actions }: TabProps) {
   return <PaletteTileGrid section="shapes" actions={actions} pendingDraw={pendingDraw} />;
 }
 
-// The structural elements (spec/132): Mind node, Lane, Frame, Timeline, Table.
+// The structural elements (docs/specs/010-palette/build-category.md): Mind node, Lane, Frame, Timeline, Table.
 // Rows with a blurb rather than a bare icon grid: these are all "a container
 // that holds other work", so the picture alone doesn't separate them — "Tab
 // adds a child, Enter a sibling" vs "A titled band that carries its steps" is
@@ -49,7 +49,7 @@ export function PaletteBuildTab({ pendingDraw, actions }: TabProps) {
   );
 }
 
-// The wordy elements (spec/110): Page, Text, Sticky Note, Annotation.
+// The wordy elements (docs/specs/010-palette/palette-top-level-categories.md): Page, Text, Sticky Note, Annotation.
 export function PaletteWriteTab({ pendingDraw, actions }: TabProps) {
   return (
     <PaletteToolRows
@@ -60,7 +60,7 @@ export function PaletteWriteTab({ pendingDraw, actions }: TabProps) {
   );
 }
 
-// The Event Storming notation (spec/139): one coloured-sticky tile per note
+// The Event Storming notation (docs/specs/021-event-storming/event-storming.md): one coloured-sticky tile per note
 // kind of the workshop grammar, in workshop order. Rows with a blurb, like
 // Behaviour and Data — eight identical squares in different colours don't
 // explain themselves; "Something that happened, past tense" against "An
@@ -72,7 +72,7 @@ export function PaletteEventStormingTab({
 }: TabProps & { board?: EsBoardControls }) {
   return (
     <>
-      {/* Board-level switches first (spec/139 Phase 6), then the notation.
+      {/* Board-level switches first (docs/specs/021-event-storming/event-storming.md Phase 6), then the notation.
           Absent on every other board, where they would control nothing. */}
       {board ? <EventStormingBoardRows controls={board} /> : null}
       <PaletteToolRows
@@ -84,7 +84,7 @@ export function PaletteEventStormingTab({
   );
 }
 
-// The gesture tools (spec/110): Pencil, Highlighter, Polygon, Arrow. Separate
+// The gesture tools (docs/specs/010-palette/palette-top-level-categories.md): Pencil, Highlighter, Polygon, Arrow. Separate
 // from Write because these are things you pick up and drag, not things you
 // drop and type into.
 export function PaletteDrawTab({ pendingDraw, actions }: TabProps) {
@@ -93,7 +93,7 @@ export function PaletteDrawTab({ pendingDraw, actions }: TabProps) {
   );
 }
 
-// Charts, meters and tables (spec/53, spec/110): pie / bar / line charts,
+// Charts, meters and tables (docs/specs/009-elements/pie-chart.md, docs/specs/010-palette/palette-top-level-categories.md): pie / bar / line charts,
 // progress bars and rings, ratings, and the editable grid. Rows with a blurb,
 // like Behaviour: "Pie" and "Donut" name the picture but not the job, and
 // "Proportions of a whole" vs "How far along something is" is the thing you
@@ -104,10 +104,10 @@ export function PaletteDataTab({ pendingDraw, actions }: TabProps) {
   );
 }
 
-// Every element whose content arrives at RUNTIME (spec/110): the ones that do
+// Every element whose content arrives at RUNTIME (docs/specs/010-palette/palette-top-level-categories.md): the ones that do
 // something when pressed and the ones that collect what the room thinks.
 //
-// Browsed by category rather than stacked as accordions (spec/09
+// Browsed by category rather than stacked as accordions (docs/specs/008-canvas/canvas-and-palette.md
 // "Sub-categories"): a column of collapsed headers meant you saw a table of
 // contents where the palette otherwise shows you pictures, and nothing in the
 // tab was visible until you opened one. Same navigation as Icons and
@@ -115,8 +115,8 @@ export function PaletteDataTab({ pendingDraw, actions }: TabProps) {
 //
 // Ordered room-first: the groups a facilitator opens mid-session come before
 // the ones you set up once and forget. Collaborate used to be a separate
-// category (Ask / Record); merging it in is spec/110's
-// reconciliation, which spec/137 called ahead of time when it filed the Done
+// category (Ask / Record); merging it in is docs/specs/010-palette/palette-top-level-categories.md's
+// reconciliation, which docs/specs/012-collaboration/done-check.md called ahead of time when it filed the Done
 // check under Behaviour and said so.
 //
 // There is no **Session** group. It held the Timer, the Dot vote and the Poll
@@ -178,11 +178,11 @@ export function PaletteBehaviourTab({ pendingDraw, actions }: TabProps) {
   );
 }
 
-// Pictures and figures (spec/110): Image and Avatar. Rows with a blurb — two
+// Pictures and figures (docs/specs/010-palette/palette-top-level-categories.md): Image and Avatar. Rows with a blurb — two
 // picture frames look near-identical at 18px, and "an uploaded picture" vs "a
 // picture cropped to a circle" is the whole difference.
 export function PaletteMediaTab({ pendingDraw, actions }: TabProps) {
-  // The embed providers collapse behind one row (spec/121); Media's own two
+  // The embed providers collapse behind one row (docs/specs/009-elements/embed-providers.md); Media's own two
   // elements stay on top where they were.
   const media = tilesInSection('media');
   return (
@@ -207,7 +207,7 @@ export function PaletteMediaTab({ pendingDraw, actions }: TabProps) {
 // The website composites (Banner, Hero, Header, Callout, Stat row, Process)
 // collapse behind one Web Elements row, the same way Media's embeds do: they
 // are six of the eleven tiles here and were crowding out the diagram content
-// that moved in beside them (spec/110).
+// that moved in beside them (docs/specs/010-palette/palette-top-level-categories.md).
 export function PaletteComponentsTab({ pendingDraw, actions }: TabProps) {
   const components = tilesInSection('components');
   return (
@@ -230,7 +230,7 @@ export function PaletteComponentsTab({ pendingDraw, actions }: TabProps) {
 }
 
 // Wireframing device-frame primitives (browser / monitor / laptop / phone /
-// tablet / smartwatch) — see spec/09 "Devices". Rows with a blurb: the frames
+// tablet / smartwatch) — see docs/specs/008-canvas/canvas-and-palette.md "Devices". Rows with a blurb: the frames
 // are six grey rectangles of slightly different proportions, so the name and
 // what it is for do the work the outline cannot.
 export function DevicePickerTab({ pendingDraw, actions }: TabProps) {

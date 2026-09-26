@@ -31,7 +31,7 @@ export function describeVariant(
   isMultiSelected: boolean,
   remoteBorderColor: string | null,
   // The paper the element sits on, for the colours it doesn't carry itself
-  // (spec/07). A parameter rather than a context read because this is a pure
+  // (docs/specs/007-editor/live-app.md). A parameter rather than a context read because this is a pure
   // function the view calls — the view is where the context lives.
   surface: CanvasSurface = 'light',
 ): { className: string; style: CSSProperties } {
@@ -46,7 +46,7 @@ export function describeVariant(
   // and as an actual border on shape / sticky. The local selection ring
   // stays on top so the active user still sees their own selection.
   const remoteBorderWidth = remoteBorderColor ? 3 : 0;
-  // Element drop shadow (spec/86). Two render paths: box-shadow follows
+  // Element drop shadow (docs/specs/008-canvas/element-shadows.md). Two render paths: box-shadow follows
   // the border box + radius (right for opaque rectangular bodies, and
   // cheap; the inline value overrides the cosmetic shadow-sm/md classes
   // since both drive the same property); drop-shadow() follows the drawn
@@ -70,11 +70,11 @@ export function describeVariant(
           style: { borderRadius: '4px', ...filterShadow },
         };
       }
-      // Timeline rail (spec/51) + rating (spec/52) + charts (spec/53) +
-      // code block (spec/82) + checklist (spec/83) paint their own content,
+      // Timeline rail (docs/specs/009-elements/timeline-rail.md) + rating (docs/specs/009-elements/rating.md) + charts (docs/specs/009-elements/pie-chart.md) +
+      // code block (docs/specs/009-elements/code-block.md) + checklist (docs/specs/009-elements/checklist.md) paint their own content,
       // so the wrapper carries no box border / background — just the
       // selection ring.
-      // A portal (spec/104) is in the same family: its ring IS the element, so
+      // A portal (docs/specs/009-elements/portal-element.md) is in the same family: its ring IS the element, so
       // a wrapper box behind it would frame the energy in a rectangle.
       // SELF_PAINTING_SHAPES (@livediagram/diagram) is the single list of
       // kinds that draw their own body. The menu reads the same set to decide
@@ -96,7 +96,7 @@ export function describeVariant(
           ? '50%'
           : element.shape === 'stadium'
             ? '9999px'
-            : // A mind node (spec/118) is a soft-cornered pill-ish box: rounded
+            : // A mind node (docs/specs/009-elements/mind-node.md) is a soft-cornered pill-ish box: rounded
               // enough to read as a node in a tree rather than a flowchart box.
               element.shape === 'mind-node'
               ? '12px'
@@ -164,7 +164,7 @@ export function describeVariant(
       // Borderless paper by default — the sheet's edge against its peel
       // shadow IS the border. Two explicit choices still draw one: a peer's
       // remote-selection highlight, and a user-set strokeColor (the Border
-      // swatch stays functional, spec/09 Colours).
+      // swatch stays functional, docs/specs/008-canvas/canvas-and-palette.md Colours).
       const stickyBorder: CSSProperties = remoteBorderColor
         ? { borderColor: remoteBorderColor, borderWidth: remoteBorderWidth, borderStyle: 'solid' }
         : element.strokeColor
@@ -175,7 +175,7 @@ export function describeVariant(
         // instead of the uniform shadow-md halo: .lvd-sticky-peel
         // (globals.css) hangs a gradient-fill caster behind the note — no
         // mask, no clip, so no hard shadow edge exists — while the note
-        // itself never changes shape. A user-set shadow (spec/86) replaces
+        // itself never changes shape. A user-set shadow (docs/specs/008-canvas/element-shadows.md) replaces
         // the peel outright — an explicit choice wins, so the class is
         // dropped with it.
         className: `text-amber-950 ${shadow ? '' : 'lvd-sticky-peel'} ${ring}`.trim(),
@@ -240,7 +240,7 @@ export function describeVariant(
       };
     }
     case 'annotation': {
-      // A themed circle marker (spec/38): fill + ring from the element's
+      // A themed circle marker (docs/specs/009-elements/annotations.md): fill + ring from the element's
       // colours, fully round. The note glyph paints as the child content.
       const ring = `${singleRing('ring-2 ring-brand-200')} ${multiRing}`.trim();
       return {
@@ -256,7 +256,7 @@ export function describeVariant(
       };
     }
     case 'link-card': {
-      // A bookmark card (spec/40): fill background + 1px border, rounded.
+      // A bookmark card (docs/specs/009-elements/link-cards.md): fill background + 1px border, rounded.
       // The favicon / title / image render as the child content
       // (LinkCardView); overflow-hidden clips the image to the rounded box.
       const ring = `${singleRing('ring-2 ring-brand-200')} ${multiRing}`.trim();
@@ -274,7 +274,7 @@ export function describeVariant(
       };
     }
     case 'video': {
-      // A video (spec/114): the poster / player fills the box edge to edge, so
+      // A video (docs/specs/009-elements/youtube-video.md): the poster / player fills the box edge to edge, so
       // this is a dark rounded frame with a hairline, not a padded card.
       // overflow-hidden clips the poster and the iframe to the radius.
       const ring = `${singleRing('ring-2 ring-brand-200')} ${multiRing}`.trim();

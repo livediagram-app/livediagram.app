@@ -42,7 +42,7 @@ describe('buildParticipantsByTab', () => {
     expect(m.size).toBe(0);
   });
 
-  it('shows presence for a team diagram even when not shared (spec/35)', () => {
+  it('shows presence for a team diagram even when not shared (docs/specs/013-workspace/team-shared-diagrams.md)', () => {
     const m = buildParticipantsByTab({
       ...common,
       diagramShareable: false,
@@ -115,7 +115,7 @@ describe('buildParticipantsByTab', () => {
     expect(m.get('t1')!.some((x) => x.id === 'a')).toBe(true);
   });
 
-  it('drops our own other browser tabs, which share our collab key (spec/145)', () => {
+  it('drops our own other browser tabs, which share our collab key (docs/specs/012-collaboration/collaborator-enhancements.md)', () => {
     const me = p('me', { key: 'k-me' });
     const myOtherTab = p('sock-2', { key: 'k-me' });
     const m = buildParticipantsByTab({

@@ -1,4 +1,4 @@
-// API token calls (spec/61). Signed-in (Clerk) only: the routes reject a
+// API token calls (docs/specs/015-api/public-api-and-tokens.md). Signed-in (Clerk) only: the routes reject a
 // guest, and apiHeaders attaches the Clerk Bearer when signed in. Used by the
 // Explorer "API tokens" library section.
 import type { ApiToken } from '@livediagram/api-schema';

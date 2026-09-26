@@ -1,4 +1,4 @@
-// What KIND of board a tab is (spec/139). A leaf module: the Tab type
+// What KIND of board a tab is (docs/specs/021-event-storming/event-storming.md). A leaf module: the Tab type
 // imports the union, and the editor's commit choke point stamps it.
 //
 // The set is TOTAL — 'diagram' is a real member, not an absence — so code

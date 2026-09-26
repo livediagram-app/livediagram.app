@@ -165,7 +165,7 @@ describe('buildSearchResults', () => {
   });
 });
 
-describe('buildSearchResults — table cells (spec/09 Search panel)', () => {
+describe('buildSearchResults — table cells (docs/specs/008-canvas/canvas-and-palette.md Search panel)', () => {
   const table = (id: string, cells: string[][]): Element =>
     ({ id, type: 'table', x: 0, y: 0, width: 200, height: 100, cells }) as Element;
 
@@ -208,7 +208,7 @@ describe('buildSearchResults — table cells (spec/09 Search panel)', () => {
   });
 });
 
-describe('buildSearchResults — shared diagrams + teams (spec/09 Search panel)', () => {
+describe('buildSearchResults — shared diagrams + teams (docs/specs/008-canvas/canvas-and-palette.md Search panel)', () => {
   it('matches "Shared with you" rows by name and carries the share code for navigation', () => {
     const out = buildSearchResults({
       query: 'road',
@@ -269,7 +269,7 @@ describe('buildSearchResults — shared diagrams + teams (spec/09 Search panel)'
   });
 });
 
-describe('buildSearchResults — team library (spec/35)', () => {
+describe('buildSearchResults — team library (docs/specs/013-workspace/team-shared-diagrams.md)', () => {
   it('keeps personal folders in "Personal Space" and team folders/diagrams in "Teams"', () => {
     const out = buildSearchResults({
       query: 'q3',
@@ -392,7 +392,7 @@ describe('buildSearchResults — commands (action palette)', () => {
   });
 });
 
-describe('buildSearchResults — help articles (spec/55 + spec/56)', () => {
+describe('buildSearchResults — help articles (docs/specs/018-help/help-app.md + docs/specs/018-help/contextual-help-links.md)', () => {
   const helpItems = [
     {
       id: 'help:keyboardShortcuts',

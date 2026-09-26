@@ -1,6 +1,6 @@
 'use client';
 
-// "Why sign in?" modal (spec/36) opened from the Explorer sign-in
+// "Why sign in?" modal (docs/specs/014-identity/sign-in-encouragement.md) opened from the Explorer sign-in
 // banner's Learn more button. Lists the concrete benefits a guest
 // gains by creating an account, each with an icon + one-liner, and
 // repeats the primary Sign in call to action in the footer.

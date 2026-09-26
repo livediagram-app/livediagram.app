@@ -1,5 +1,5 @@
 // Everything about the three fixed dashboard windows (Today / Last 7 days /
-// Last 30 days, spec/22): their labels, their span in days, how a window
+// Last 30 days, docs/specs/017-telemetry/telemetry.md): their labels, their span in days, how a window
 // maps onto a slice of the 30-day trend line, and a per-metric count
 // lookup. Shared so the global timeframe panel, the Dashboard grid, and
 // the Search view all agree instead of each hard-coding the windows.

@@ -3,7 +3,7 @@ import type { ComponentMask } from './components';
 import type { CueRect, ModelCues, ModelNote } from './model-cues';
 import { median } from './stats';
 
-// The classical boxes, corrected by what a boundary model saw (spec/139
+// The classical boxes, corrected by what a boundary model saw (docs/specs/021-event-storming/event-storming.md
 // Phase 9, experiment group J).
 //
 // The two see different things. The classical pipeline reads COLOUR, exactly:

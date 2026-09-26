@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-// The pressable face of a Session button (spec/105): the tool's glyph over
+// The pressable face of a Session button (docs/specs/012-collaboration/session-button.md): the tool's glyph over
 // what pressing it will do.
 //
 // Deliberately the Selection Mode button's twin — same tile, same chip, same
@@ -7,7 +7,7 @@ import type { ReactNode } from 'react';
 // payload: one hands YOU a mode, this one starts a tool for THE ROOM. The one
 // place they differ is that difference: the tooltip says "everyone", and a
 // read-only visitor sees an inert face instead of a control that would do
-// nothing (starting a timer or a vote is edit-role, spec/39).
+// nothing (starting a timer or a vote is edit-role, docs/specs/012-collaboration/session-tools.md).
 
 import {
   sessionButtonPlan,
@@ -87,11 +87,11 @@ export function SessionButtonFace({
   canStart: boolean;
   timerState?: TimerState;
   onPress?: () => void;
-  // Per-element settings from the button's own `…` menu (spec/105): the
+  // Per-element settings from the button's own `…` menu (docs/specs/012-collaboration/session-button.md): the
   // vote's dots, the poll's question and answers. Absent on a read-only
   // surface, where the trigger is not rendered.
   onSetConfig?: (next: SessionButtonConfig) => void;
-  /** The way out of the quick settings to the element's full menu (spec/09). */
+  /** The way out of the quick settings to the element's full menu (docs/specs/008-canvas/canvas-and-palette.md). */
   onOpenSettings?: () => void;
 }) {
   const plan = sessionButtonPlan(config);

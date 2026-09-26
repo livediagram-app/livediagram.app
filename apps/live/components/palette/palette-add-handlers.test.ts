@@ -1,4 +1,4 @@
-// The shared palette add-handler set (spec/148).
+// The shared palette add-handler set (docs/specs/007-editor/toolbar-layout.md).
 import { describe, expect, it } from 'vitest';
 import {
   PALETTE_ADD_HANDLER_KEYS,

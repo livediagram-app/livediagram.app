@@ -34,15 +34,15 @@ type EditorHeaderProps = {
   // via a share URL can't toggle sharing on their host's diagram.
   showShare: boolean;
   shareable: boolean;
-  // The diagram lives in a team's shared library (spec/35). Flips the
+  // The diagram lives in a team's shared library (docs/specs/013-workspace/team-shared-diagrams.md). Flips the
   // title badge to "Team" when the diagram has no share links.
   teamDiagram?: boolean;
-  // Offline Mode (spec/76): saved only in this browser. Flips the title badge
+  // Offline Mode (docs/specs/006-diagram/offline-mode.md): saved only in this browser. Flips the title badge
   // to "Offline" (superseding "Private"); the caller also hides Share.
   offline?: boolean;
   // Counterpart to showShare for visitors: when present we render a
   // "Make a copy" button that duplicates the diagram into the
-  // visitor's own files (item #9 / spec/11). Optional so the owner
+  // visitor's own files (item #9 / docs/specs/015-api/api.md). Optional so the owner
   // view stays unchanged.
   onMakeCopy?: () => void;
   copying?: boolean;

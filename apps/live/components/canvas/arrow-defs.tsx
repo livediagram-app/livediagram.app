@@ -5,7 +5,7 @@ import {
   type ArrowheadSize,
 } from '@livediagram/diagram';
 
-// The arrowhead marker system (spec/09 arrow styles), lifted out of
+// The arrowhead marker system (docs/specs/008-canvas/canvas-and-palette.md arrow styles), lifted out of
 // ArrowView: the shared <defs> block Canvas mounts once, the per-shape
 // marker geometry, and the id scheme each arrow's markerStart / markerEnd
 // references.

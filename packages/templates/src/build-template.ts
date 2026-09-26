@@ -1,9 +1,9 @@
 // Per-template element builders. Each builder is pure: it takes a
 // centre (cx, cy) and returns a fresh array of Element. Sizing
 // constants live inline so each template is self-describing. See
-// spec/09 for the picker UX; the editor applies its theme recolour on
+// docs/specs/008-canvas/canvas-and-palette.md for the picker UX; the editor applies its theme recolour on
 // top (apps/live/lib/template-builders.ts), and the MCP worker
-// materialises these directly (spec/62 §4.5).
+// materialises these directly (docs/specs/015-api/mcp-server.md §4.5).
 
 import type { Element } from '@livediagram/diagram';
 import type { TemplateKind } from './templates';
@@ -169,5 +169,5 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
 }
 
 // The "Blank diagram" template is truly blank — no seeded element. The user
-// starts from an empty canvas (with the empty-canvas hint banner, spec/14) and
+// starts from an empty canvas (with the empty-canvas hint banner, docs/specs/007-editor/new-diagram-route.md) and
 // adds their first element from the palette / Quick Start.

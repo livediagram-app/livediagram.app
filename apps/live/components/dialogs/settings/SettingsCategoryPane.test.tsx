@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
-// Desktop-only choice options on a phone (spec/148): Floating is shown but
+// Desktop-only choice options on a phone (docs/specs/007-editor/toolbar-layout.md): Floating is shown but
 // can't be picked, and a note says why. Toolbar works on a phone too. The
 // drawing under a choice row picks an option when clicked, the same rules.
-// A pick is tracked with the option in the type (spec/22).
+// A pick is tracked with the option in the type (docs/specs/017-telemetry/telemetry.md).
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 

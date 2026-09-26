@@ -11,7 +11,7 @@ import {
 import { memberName } from '@/components/panels/team-pane-parts';
 import type { PickableMember } from '@/components/dialogs/AssignActionAssigneePicker';
 
-// The Assign Action dialog's assignee dataset (spec/68 §2 + §4), lifted
+// The Assign Action dialog's assignee dataset (docs/specs/012-collaboration/assigned-actions.md §2 + §4), lifted
 // out of AssignActionDialog: the pinned Myself row, the diagram team's
 // member list (joined AND invited), the preselect-on-edit resolution,
 // the per-pick server access check, and the by-team grouping the picker
@@ -42,7 +42,7 @@ export function useAssigneeOptions({
   setAssignee: Dispatch<SetStateAction<PickableMember | null>>;
 }) {
   // Whether the picked teammate can actually open this diagram
-  // (spec/68 §4): asked of the server per selection. 'unknown' while in
+  // (docs/specs/012-collaboration/assigned-actions.md §4): asked of the server per selection. 'unknown' while in
   // flight (show nothing); 'error' falls back to the picked-team
   // heuristic with hedged wording.
   const [assigneeAccess, setAssigneeAccess] = useState<
@@ -67,7 +67,7 @@ export function useAssigneeOptions({
   );
 
   // Only the team whose shared library holds this diagram is pickable
-  // (spec/68 §2): members of the user's other teams almost certainly
+  // (docs/specs/012-collaboration/assigned-actions.md §2): members of the user's other teams almost certainly
   // can't open the diagram to complete the action, so offering them
   // just manufactures the access warning. Empty for a personal diagram
   // and for a share-link editor who isn't a member of the team.
@@ -94,7 +94,7 @@ export function useAssigneeOptions({
           const detail = await apiGetTeam(ownerId, team.id);
           return detail.members
             .filter(
-              // Everyone on the team — joined AND invited (spec/68: work
+              // Everyone on the team — joined AND invited (docs/specs/012-collaboration/assigned-actions.md: work
               // gets divided while invites are in flight) — except the
               // assigner themselves, whom the pinned Myself row covers.
               (m: TeamMember) => m.userId !== ownerId,

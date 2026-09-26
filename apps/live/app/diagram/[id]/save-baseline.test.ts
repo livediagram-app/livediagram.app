@@ -51,7 +51,7 @@ function client(start: Tab[]) {
   };
 }
 
-describe('save baseline (spec/152)', () => {
+describe('save baseline (docs/specs/012-collaboration/collab-race-hardening.md)', () => {
   it("a peer's change alone is not a local change: nothing to save or echo", () => {
     const c = client([tab([el('a'), el('b')])]);
     c.receive(peerMoves('b', 50));

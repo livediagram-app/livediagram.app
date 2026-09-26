@@ -1,4 +1,4 @@
-// /api/custom-themes — user-built themes, owner-scoped (spec/44).
+// /api/custom-themes — user-built themes, owner-scoped (docs/specs/011-theme/custom-themes.md).
 // Mirrors /api/folders one-for-one: requireOwner guard, 400/403/404
 // conventions, list / create / update / delete. Guests included (the
 // owner id is the X-Owner-Id header when there's no Clerk token).
@@ -85,7 +85,7 @@ export async function handleCustomThemes(ctx: RouteContext): Promise<Response> {
       const doomed = await getCustomTheme(env, id);
       await deleteCustomTheme(env, id);
       if (doomed) {
-        // Cascade, then tombstone (spec/138 §3.5): every "Theme Saved"
+        // Cascade, then tombstone (docs/specs/013-workspace/timeline.md §3.5): every "Theme Saved"
         // card for this theme goes, and "Theme Deleted" is what's left.
         ctx.waitUntil?.(
           markTimelineEventsDeletedBySource(env, 'account', id)

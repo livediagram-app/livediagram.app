@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { applyQaAction, type QaNote } from '@livediagram/diagram';
 
-// The Q&A board's write queue in the room (spec/151), under the failure the
-// dot vote once had (spec/39): one person's write carried a snapshot from
+// The Q&A board's write queue in the room (docs/specs/012-collaboration/qa-board.md), under the failure the
+// dot vote once had (docs/specs/012-collaboration/session-tools.md): one person's write carried a snapshot from
 // before somebody else's vote and replaced it.
 //
 // The fake D1 below yields on every read and write, so without the queue each

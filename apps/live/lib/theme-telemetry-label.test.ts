@@ -3,7 +3,7 @@ import { THEMES } from '@livediagram/diagram';
 import { TELEMETRY_TYPE_PATTERN } from '@livediagram/api-schema';
 import { themeTelemetryLabel } from './custom-theme-registry';
 
-// spec/22's rule is categorical: a telemetry `type` is a preset token, never
+// docs/specs/017-telemetry/telemetry.md's rule is categorical: a telemetry `type` is a preset token, never
 // user content. A custom theme's name is user content — someone's client,
 // someone's project — so it must never leave the browser.
 //

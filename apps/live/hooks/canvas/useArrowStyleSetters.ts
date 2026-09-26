@@ -72,13 +72,13 @@ export function useArrowStyleSetters({ currentSelectionIds, commit }: ArrowStyle
   const setArrowStrokeStyleSelected = (style: BorderStyle) =>
     setArrowFieldSelected({ strokeStyle: style }, 'ArrowLineStyle');
 
-  // Route behind boxes (spec/90). Stored as an explicit boolean either way:
+  // Route behind boxes (docs/specs/008-canvas/arrow-route-behind.md). Stored as an explicit boolean either way:
   // the field's ABSENCE means on, so writing `false` is what turns it off,
   // and writing `true` back is a deliberate re-enable rather than a delete.
   const setArrowRouteBehindSelected = (routeBehind: boolean) =>
     setArrowFieldSelected({ routeBehind }, 'ArrowRouteBehind');
 
-  // Arrow style presets (spec/48). A one-click line look — pattern + thickness
+  // Arrow style presets (docs/specs/010-palette/style-presets.md). A one-click line look — pattern + thickness
   // + optional flow animation — applied in a single step. A preset without a
   // `flow` clears any existing animation; one with a flow defaults its speed to
   // normal when the arrow had none. Arrows only.

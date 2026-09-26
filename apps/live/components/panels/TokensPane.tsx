@@ -1,6 +1,6 @@
 'use client';
 
-// Explorer "API tokens" list (spec/61). Signed-in only. Creation lives in the
+// Explorer "API tokens" list (docs/specs/015-api/public-api-and-tokens.md). Signed-in only. Creation lives in the
 // header's New-token popover (NewTokenButton); this pane is just the list of
 // existing tokens with a per-row revoke that confirms in a popover first.
 import { useState } from 'react';

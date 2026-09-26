@@ -138,7 +138,7 @@ export function ContextMenu({
         role="menu"
         data-tour-id="context-menu"
         // Marks the menu for the rich-text editor's focus-preservation
-        // capture listener (spec/09): mousedown inside is preventDefaulted
+        // capture listener (docs/specs/008-canvas/canvas-and-palette.md): mousedown inside is preventDefaulted
         // while editing so menu clicks never blur the editor.
         data-context-menu=""
         onPointerDown={(e) => e.stopPropagation()}

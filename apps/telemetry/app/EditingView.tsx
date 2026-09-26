@@ -7,18 +7,18 @@ import { MetricGroups, type MetricGroup } from './MetricCards';
 import { RankCard, rank } from './RankCard';
 import { rankTrend, windowLabel } from './windows';
 
-// Editing view (spec/22): the in-editor tools that organise work rather than
+// Editing view (docs/specs/017-telemetry/telemetry.md): the in-editor tools that organise work rather than
 // draw it: notes, assigned actions, folders. AI usage and layers moved to
 // the Dashboard as the AI Assistance and Layers Feature stacks; the AI opt-in
 // is a setting, so it lives on the Settings tab.
 //
 // Every metric here was already being emitted, validated, and stored, and none
 // of it was rendered anywhere: `AI·Used` had no card on any tab, and the whole
-// `Layer` category (spec/74), plus Note, Folder and Action, appeared only in
+// `Layer` category (docs/specs/006-diagram/layers.md), plus Note, Folder and Action, appeared only in
 // the vocabulary labeller the old Raw table used. Data arriving and nobody reading
 // it is the same blind spot as data never sent, one step further along — the
 // Palette catalogue drifting out of the dashboard is exactly how four element
-// kinds came to count zero (spec/22, "How completeness is tested").
+// kinds came to count zero (docs/specs/017-telemetry/telemetry.md, "How completeness is tested").
 //
 // Aggregates where the type split is arbitrary for this lens, specific where
 // the type carries the meaning.

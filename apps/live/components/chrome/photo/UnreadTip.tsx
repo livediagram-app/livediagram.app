@@ -1,6 +1,6 @@
 'use client';
 
-// "Some notes couldn't be read" (spec/139 Phase 9). Said once the reader has
+// "Some notes couldn't be read" (docs/specs/021-event-storming/event-storming.md Phase 9). Said once the reader has
 // finished and a tenth or more of the notes it was given still have no words:
 // politely, as a suggestion, with the choice left to the author — a better
 // photo, or typing the words in. Never blocking, never decided for them —

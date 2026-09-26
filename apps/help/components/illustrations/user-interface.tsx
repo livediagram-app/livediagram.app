@@ -1,4 +1,4 @@
-// User-Interface-category illustrations (spec/55): the floating panels that
+// User-Interface-category illustrations (docs/specs/018-help/help-app.md): the floating panels that
 // frame the canvas (palette, tab bar, toolbar, zoom controls, quick controls)
 // and the right-click context menus. Composed only from the shared primitives
 // so the house style holds.

@@ -1,4 +1,4 @@
-// Label font sizes (spec/28), in ONE place.
+// Label font sizes (docs/specs/004-interface-design/fonts.md), in ONE place.
 //
 // The canvas and the exporters each had their own table, and they disagreed:
 // the default `md` drew at 22px on the board and 14px in an export, so every
@@ -51,7 +51,7 @@ export function labelFontPx(textSize: TextSize | undefined, multiline = false): 
 
 /**
  * A legend's rows: a chart's key strip and the standalone Legend card
- * (spec/53). One scale for both, so a Legend dropped beside a chart reads at
+ * (docs/specs/009-elements/pie-chart.md). One scale for both, so a Legend dropped beside a chart reads at
  * the same size as the chart's own key.
  *
  * Its own table because a key is not a name: at the label scale a Medium

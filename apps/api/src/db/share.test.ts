@@ -60,7 +60,7 @@ describe('generateShareCode', () => {
   });
 });
 
-describe('listShareLinks (owner-facing, spec/34)', () => {
+describe('listShareLinks (owner-facing, docs/specs/013-workspace/share-link-expiry.md)', () => {
   it('returns expired links too, so the dialog can show Inactive', async () => {
     const db = fakeD1(() => ({
       all: [row(), row({ code: 'EXPIRED1', expiry: 'week', expires_at: 1 })],
@@ -84,7 +84,7 @@ describe('listShareLinks (owner-facing, spec/34)', () => {
   });
 });
 
-describe('getShareLink (the access gate, spec/34)', () => {
+describe('getShareLink (the access gate, docs/specs/013-workspace/share-link-expiry.md)', () => {
   it('resolves a live link to its DTO', async () => {
     const db = fakeD1(() => ({ first: row({ role: 'view' }) }));
     expect(await getShareLink(db.env, 'ABCD2345')).toEqual({
@@ -98,7 +98,7 @@ describe('getShareLink (the access gate, spec/34)', () => {
   });
 
   it('filters expiry in SQL, against now', async () => {
-    // THE regression guard for spec/34: if this predicate is ever lost, every
+    // THE regression guard for docs/specs/013-workspace/share-link-expiry.md: if this predicate is ever lost, every
     // expired link in the database silently starts authorising again.
     atTime(5_000);
     const db = fakeD1(() => ({ first: null }));
@@ -114,7 +114,7 @@ describe('getShareLink (the access gate, spec/34)', () => {
   });
 });
 
-describe('getShareLinkIncludingExpired (owner-side, spec/34)', () => {
+describe('getShareLinkIncludingExpired (owner-side, docs/specs/013-workspace/share-link-expiry.md)', () => {
   it('finds a link precisely because it has expired', async () => {
     const db = fakeD1(() => ({ first: row({ expiry: 'week', expires_at: 1 }) }));
     const link = await getShareLinkIncludingExpired(db.env, 'ABCD2345');
@@ -128,7 +128,7 @@ describe('getShareLinkIncludingExpired (owner-side, spec/34)', () => {
   });
 });
 
-describe('createShareLink (spec/34)', () => {
+describe('createShareLink (docs/specs/013-workspace/share-link-expiry.md)', () => {
   it('stores a never-expiring link with NULL expiry columns', async () => {
     atTime(1_000);
     const db = fakeD1();
@@ -166,7 +166,7 @@ describe('createShareLink (spec/34)', () => {
   });
 });
 
-describe('extendShareLink (spec/34)', () => {
+describe('extendShareLink (docs/specs/013-workspace/share-link-expiry.md)', () => {
   it('re-arms the original duration from now, not from the old deadline', async () => {
     // Extending a link that lapsed a month ago must give a full week from
     // today, not a week from a deadline already in the past.
@@ -193,7 +193,7 @@ describe('extendShareLink (spec/34)', () => {
   });
 });
 
-describe('deleteShareLink (spec/34)', () => {
+describe('deleteShareLink (docs/specs/013-workspace/share-link-expiry.md)', () => {
   it('deletes the link and closes sharing when it was the last one', async () => {
     const db = fakeD1(({ sql }) => {
       if (sql.includes('SELECT'))

@@ -1,4 +1,4 @@
-// The face of an Agenda (spec/127): the run of the session, with each segment
+// The face of an Agenda (docs/specs/012-collaboration/agenda.md): the run of the session, with each segment
 // pressable. Pressing one starts the tab timer for that long, through the same
 // entry point the Current Tab menu and the session button already use.
 
@@ -122,7 +122,7 @@ export function AgendaFace({
       title={label.trim() || 'Agenda'}
       textColor={textColor}
       aside={items.length ? formatMinutes(agendaTotalMinutes(items)) : undefined}
-      // A FOLDED PROGRAMME (spec/122): the running order handed out at the
+      // A FOLDED PROGRAMME (docs/specs/012-collaboration/participant-responses.md): the running order handed out at the
       // door. Ruled behind the segments, with the crease down the middle where
       // it was folded in half to fit in a pocket.
       backdrop={

@@ -61,7 +61,7 @@ const MAX_TABLE_COLS = 1_000;
 const MAX_TABLE_CELLS = 50_000;
 const MAX_DATA_ARRAY = 5_000; // railLabels / lineCategories / pieSlices / lineSeries
 
-// Exported so the MCP schema resource (spec/62 §4.5) lists the real element
+// Exported so the MCP schema resource (docs/specs/015-api/mcp-server.md §4.5) lists the real element
 // types + anchors rather than a hand-maintained copy that can drift.
 export const ELEMENT_TYPES = new Set([
   'shape',
@@ -90,44 +90,44 @@ export const SHAPE_KINDS = new Set<string>([
   'parallelogram',
   'hexagon',
   'document',
-  // Document element (spec/100): a paper-proportioned page you write
+  // Document element (docs/specs/009-elements/page-element.md): a paper-proportioned page you write
   // prose into. Named 'page' internally because the flowchart output symbol
   // above already owns 'document'.
   'page',
-  // Mind node (spec/118).
+  // Mind node (docs/specs/009-elements/mind-node.md).
   'mind-node',
-  // Lane (spec/119).
+  // Lane (docs/specs/009-elements/lane.md).
   'lane',
-  // Record (spec/120).
+  // Record (docs/specs/009-elements/entity.md).
   'entity',
-  // The web components (spec/147).
+  // The web components (docs/specs/009-elements/web-components-and-no-groups.md).
   'banner',
   'callout',
   'stat-row',
   'process',
   'site-header',
-  // Mode button (spec/103): a pressable pill that switches whoever clicks it
+  // Mode button (docs/specs/009-elements/mode-button.md): a pressable pill that switches whoever clicks it
   // into a selection mode.
   'mode-button',
-  // Portal (spec/104): a portal to the portal it is paired with.
+  // Portal (docs/specs/009-elements/portal-element.md): a portal to the portal it is paired with.
   'portal',
-  // Session button (spec/105): starts a timer / vote / poll for the room.
+  // Session button (docs/specs/012-collaboration/session-button.md): starts a timer / vote / poll for the room.
   'session-button',
-  // Reveal zone (spec/106): a cover you click to see what is underneath.
+  // Reveal zone (docs/specs/009-elements/reveal-zone.md): a cover you click to see what is underneath.
   'reveal',
-  // Picker (spec/107): rolls a random person or option.
+  // Picker (docs/specs/012-collaboration/picker.md): rolls a random person or option.
   'picker',
-  // Reaction pad (spec/135).
+  // Reaction pad (docs/specs/009-elements/reaction-pad.md).
   'reaction-pad',
-  // Comment pin (spec/136).
+  // Comment pin (docs/specs/012-collaboration/comment-pin.md).
   'comment-pin',
-  // Action panel (spec/146).
+  // Action panel (docs/specs/012-collaboration/action-panel.md).
   'action-card',
-  // Done check (spec/137).
+  // Done check (docs/specs/012-collaboration/done-check.md).
   'done-check',
-  // Chair (spec/130): an Avatar-mode character sits down in one.
+  // Chair (docs/specs/009-elements/chair.md): an Avatar-mode character sits down in one.
   'chair',
-  // The collaboration family (spec/123 to spec/129).
+  // The collaboration family (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md).
   'estimate',
   'temperature',
   'idea-box',
@@ -181,11 +181,11 @@ function isNum(v: unknown): v is number {
 function isNonEmptyStr(v: unknown): v is string {
   return typeof v === 'string' && v.length > 0;
 }
-// A web component's row text (spec/147).
+// A web component's row text (docs/specs/009-elements/web-components-and-no-groups.md).
 function isBoundedStr(v: unknown): v is string {
   return typeof v === 'string' && v.length <= WEB_TEXT_MAX;
 }
-// A single-line heading (the page masthead's bound, spec/100).
+// A single-line heading (the page masthead's bound, docs/specs/009-elements/page-element.md).
 function isHeadingStr(v: unknown): v is string {
   return typeof v === 'string' && v.length <= PAGE_HEADING_MAX;
 }
@@ -205,7 +205,7 @@ function isValidEndpoint(ep: unknown): boolean {
   if (ep.kind === 'free') return isNum(ep.x) && isNum(ep.y);
   if (ep.kind === 'pinned') return isNonEmptyStr(ep.elementId) && ANCHORS.has(ep.anchor as string);
   if (ep.kind === 'on-arrow') return isNonEmptyStr(ep.arrowId) && isNum(ep.t);
-  // LEGACY (spec/147): groups are gone and no current code writes this, but
+  // LEGACY (docs/specs/009-elements/web-components-and-no-groups.md): groups are gone and no current code writes this, but
   // a browser still running a pre-removal build can. Accepting it keeps that
   // save from failing; migrateLegacyGroups freezes it to a free end on the
   // next read (rowToTab / the offline store), so nothing downstream sees it.
@@ -237,17 +237,17 @@ export function isValidElement(el: unknown): el is Element {
       return false;
     if (el.pieSlices !== undefined && !boundedArray(el.pieSlices, MAX_DATA_ARRAY)) return false;
     if (el.lineSeries !== undefined && !boundedArray(el.lineSeries, MAX_DATA_ARRAY)) return false;
-    // Portal (spec/104): the pairing is an element id, so a non-string is a
+    // Portal (docs/specs/009-elements/portal-element.md): the pairing is an element id, so a non-string is a
     // broken write. An id pointing at something that isn't a portal (or isn't
     // there any more) is NOT a structural error — the portal renders unpaired
     // and the editor resolves the target at press time.
     if (el.portalTarget !== undefined && !isNonEmptyStr(el.portalTarget)) return false;
-    // Mode button (spec/103): the mode it hands out must be one we know how to
+    // Mode button (docs/specs/009-elements/mode-button.md): the mode it hands out must be one we know how to
     // switch to. A junk value is rejected outright rather than coerced — the
     // element still renders (absent = the Avatar default), so silently
     // rewriting someone's configured mode would be the worse failure.
     if (el.mode !== undefined && !isSelectionMode(el.mode)) return false;
-    // Session button (spec/105): same rule as the mode above — the tool it
+    // Session button (docs/specs/012-collaboration/session-button.md): same rule as the mode above — the tool it
     // starts must be one we know how to start. Its settings are NOT validated
     // for range here: an out-of-bounds duration is clamped where it is read
     // (see sessionButtonPlan), because a tab shouldn't fail to load over a
@@ -257,20 +257,20 @@ export function isValidElement(el: unknown): el is Element {
       if (!isSessionTool((el.session as { tool?: unknown }).tool)) return false;
       const options = (el.session as { options?: unknown }).options;
       if (options !== undefined && !boundedArray(options, MAX_DATA_ARRAY)) return false;
-      // The poll's answer shape (spec/88) is deliberately NOT checked here,
+      // The poll's answer shape (docs/specs/012-collaboration/live-poll.md) is deliberately NOT checked here,
       // unlike the tool above: sessionButtonPlan falls back to the default
       // style for anything it doesn't recognise, so a tab written by a newer
       // client still loads and its button still presses to something.
     }
-    // Reveal zone (spec/106): shared-uncovered is a plain flag.
+    // Reveal zone (docs/specs/009-elements/reveal-zone.md): shared-uncovered is a plain flag.
     if (el.revealed !== undefined && typeof el.revealed !== 'boolean') return false;
-    // Picker (spec/107): a known source, and a bounded list. The RESULT is
+    // Picker (docs/specs/012-collaboration/picker.md): a known source, and a bounded list. The RESULT is
     // free text (a name someone typed), so it is only length-checked with the
     // rest of the strings.
     if (el.pickerSource !== undefined && !isPickerSource(el.pickerSource)) return false;
     if (el.pickerOptions !== undefined && !boundedArray(el.pickerOptions, MAX_DATA_ARRAY))
       return false;
-    // Code block (spec/82): bounded snippet + closed language set.
+    // Code block (docs/specs/009-elements/code-block.md): bounded snippet + closed language set.
     if (el.code !== undefined && (typeof el.code !== 'string' || el.code.length > CODE_MAX_LENGTH))
       return false;
     if (
@@ -282,26 +282,26 @@ export function isValidElement(el: unknown): el is Element {
     // resolver falls back to the default card), but it has no business being
     // written into a diagram.
     if (el.codeTheme !== undefined && !isCodeThemeId(el.codeTheme as string)) return false;
-    // Mind flow (spec/118): a closed set, and only meaningful on a root.
+    // Mind flow (docs/specs/009-elements/mind-node.md): a closed set, and only meaningful on a root.
     if (el.mindFlow !== undefined && !isMindFlow(el.mindFlow as string)) return false;
-    // Chart palette (spec/53): likewise a closed set of ids.
+    // Chart palette (docs/specs/009-elements/pie-chart.md): likewise a closed set of ids.
     if (el.chartPalette !== undefined && !isChartPaletteId(el.chartPalette as string)) return false;
-    // Embed provider (spec/121): a creation-time hint, one of a closed set.
+    // Embed provider (docs/specs/009-elements/embed-providers.md): a creation-time hint, one of a closed set.
     if (
       el.embedProvider !== undefined &&
       !EMBED_PROVIDERS.includes(el.embedProvider as (typeof EMBED_PROVIDERS)[number])
     )
       return false;
-    // Mind node (spec/118): a parent pointer, or absent for a root. Only an
+    // Mind node (docs/specs/009-elements/mind-node.md): a parent pointer, or absent for a root. Only an
     // id shape is checked — a pointer at a deleted node is legal and simply
     // makes the child a root.
     if (el.mindParentId !== undefined && typeof el.mindParentId !== 'string') return false;
-    // Masthead lines (spec/100, and the banner / callout of spec/147): two
+    // Masthead lines (docs/specs/009-elements/page-element.md, and the banner / callout of docs/specs/009-elements/web-components-and-no-groups.md): two
     // bounded single-line strings.
     for (const field of [el.pageTitle, el.pageSubtitle]) {
       if (field !== undefined && !isHeadingStr(field)) return false;
     }
-    // Record (spec/120): bounded rows of { name, type? }.
+    // Record (docs/specs/009-elements/entity.md): bounded rows of { name, type? }.
     if (el.entityFields !== undefined) {
       if (!boundedArray(el.entityFields, ENTITY_MAX_FIELDS)) return false;
       for (const f of el.entityFields) {
@@ -311,7 +311,7 @@ export function isValidElement(el: unknown): el is Element {
           return false;
       }
     }
-    // Web components (spec/147): bounded rows of short strings.
+    // Web components (docs/specs/009-elements/web-components-and-no-groups.md): bounded rows of short strings.
     if (el.stats !== undefined) {
       if (!boundedArray(el.stats, STATS_MAX)) return false;
       for (const st of el.stats) {
@@ -326,10 +326,10 @@ export function isValidElement(el: unknown): el is Element {
       if (!boundedArray(el.navLinks, NAV_LINKS_MAX)) return false;
       if (!el.navLinks.every(isBoundedStr)) return false;
     }
-    // Chair (spec/130): a closed facing. Occupancy is presence, never a field,
+    // Chair (docs/specs/009-elements/chair.md): a closed facing. Occupancy is presence, never a field,
     // so there is nothing else on a chair to check.
     if (el.chairFacing !== undefined && !isChairFacing(el.chairFacing)) return false;
-    // Per-participant responses (spec/122): bounded list of
+    // Per-participant responses (docs/specs/012-collaboration/participant-responses.md): bounded list of
     // { participantId, value, at }. The one-per-participant rule is enforced
     // by `setResponse` on write, NOT here — a duplicate arriving from an older
     // client renders as the first entry rather than failing the whole tab to
@@ -345,9 +345,9 @@ export function isValidElement(el: unknown): el is Element {
     }
     if (el.responsesRevealed !== undefined && typeof el.responsesRevealed !== 'boolean')
       return false;
-    // Estimate card (spec/123): a closed scale.
+    // Estimate card (docs/specs/012-collaboration/estimate-card.md): a closed scale.
     if (el.estimateScale !== undefined && !isEstimateScale(el.estimateScale)) return false;
-    // Idea box (spec/125): bounded anonymous strings. There is deliberately no
+    // Idea box (docs/specs/012-collaboration/idea-box.md): bounded anonymous strings. There is deliberately no
     // author to validate.
     if (el.ideaCards !== undefined) {
       if (!boundedArray(el.ideaCards, IDEA_MAX_CARDS)) return false;
@@ -356,7 +356,7 @@ export function isValidElement(el: unknown): el is Element {
       }
     }
     if (el.ideasRevealed !== undefined && typeof el.ideasRevealed !== 'boolean') return false;
-    // Q&A board (spec/151): bounded notes, each with bounded voters. The
+    // Q&A board (docs/specs/012-collaboration/qa-board.md): bounded notes, each with bounded voters. The
     // one-vote-per-person rule is the reducer's (applyQaAction), not a load
     // check, for the same leniency `responses` takes above.
     if (el.qaNotes !== undefined) {
@@ -380,13 +380,13 @@ export function isValidElement(el: unknown): el is Element {
     }
     if (el.qaRev !== undefined && (typeof el.qaRev !== 'number' || !Number.isFinite(el.qaRev)))
       return false;
-    // The answers' round (spec/152): an opaque id.
+    // The answers' round (docs/specs/012-collaboration/collab-race-hardening.md): an opaque id.
     if (
       el.collabRound !== undefined &&
       (typeof el.collabRound !== 'string' || el.collabRound.length > COLLAB_ROUND_MAX)
     )
       return false;
-    // Agenda (spec/127): bounded rows of { label, minutes }. Minutes are
+    // Agenda (docs/specs/012-collaboration/agenda.md): bounded rows of { label, minutes }. Minutes are
     // clamped where they're read (clampAgendaMinutes), not rejected here — a
     // tab shouldn't fail to load over a number someone can fix from the menu,
     // the same rule the session button's duration takes.
@@ -403,7 +403,7 @@ export function isValidElement(el: unknown): el is Element {
       (typeof el.agendaCurrent !== 'number' || !Number.isFinite(el.agendaCurrent))
     )
       return false;
-    // Decision record (spec/128): a closed status, a `YYYY-MM-DD` date, and
+    // Decision record (docs/specs/012-collaboration/decision-record.md): a closed status, a `YYYY-MM-DD` date, and
     // bounded drivers.
     if (el.decisionStatus !== undefined && !isDecisionStatus(el.decisionStatus)) return false;
     if (
@@ -417,7 +417,7 @@ export function isValidElement(el: unknown): el is Element {
         if (typeof d !== 'string' || d.length > DECISION_MAX_TEXT) return false;
       }
     }
-    // Roll call (spec/129): bounded frozen entries of { name, color, at }.
+    // Roll call (docs/specs/012-collaboration/roll-call.md): bounded frozen entries of { name, color, at }.
     if (el.rollCall !== undefined) {
       if (!boundedArray(el.rollCall, ROLL_CALL_MAX)) return false;
       for (const entry of el.rollCall) {
@@ -428,7 +428,7 @@ export function isValidElement(el: unknown): el is Element {
         if (typeof entry.at !== 'number' || !Number.isFinite(entry.at)) return false;
       }
     }
-    // Checklist (spec/83): bounded rows of { text, done }.
+    // Checklist (docs/specs/009-elements/checklist.md): bounded rows of { text, done }.
     if (el.checklistItems !== undefined) {
       if (!boundedArray(el.checklistItems, CHECKLIST_MAX_ITEMS)) return false;
       for (const item of el.checklistItems) {
@@ -437,7 +437,7 @@ export function isValidElement(el: unknown): el is Element {
         if (typeof item.done !== 'boolean') return false;
       }
     }
-    // Legend (spec/53): bounded rows of { label, color? }.
+    // Legend (docs/specs/009-elements/pie-chart.md): bounded rows of { label, color? }.
     if (el.legendItems !== undefined) {
       if (!boundedArray(el.legendItems, LEGEND_MAX_ITEMS)) return false;
       for (const item of el.legendItems) {
@@ -461,7 +461,7 @@ export function isValidElement(el: unknown): el is Element {
   }
   if (t === 'image') {
     if (el.imageId !== null && typeof el.imageId !== 'string') return false;
-    // Hero caption card (spec/147): two bounded single-line strings.
+    // Hero caption card (docs/specs/009-elements/web-components-and-no-groups.md): two bounded single-line strings.
     if (el.heroCaption !== undefined) {
       const c = el.heroCaption;
       if (!isObj(c) || !isHeadingStr(c.title) || !isHeadingStr(c.subtitle)) return false;
@@ -472,7 +472,7 @@ export function isValidElement(el: unknown): el is Element {
     if (typeof el.closed !== 'boolean' || !boundedArray(el.points, MAX_FREEHAND_POINTS))
       return false;
     for (const p of el.points) if (!isObj(p) || !isNum(p.nx) || !isNum(p.ny)) return false;
-    // Optional pen recipe (spec/81) + straight-edge flag (spec/84).
+    // Optional pen recipe (docs/specs/008-canvas/highlighter.md) + straight-edge flag (docs/specs/008-canvas/polygon-tool.md).
     if (el.pen !== undefined && el.pen !== 'highlighter') return false;
     if (el.penWidth !== undefined && (!isNum(el.penWidth) || el.penWidth < 1 || el.penWidth > 100))
       return false;

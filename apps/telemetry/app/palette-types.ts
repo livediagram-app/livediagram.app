@@ -1,7 +1,7 @@
 import { PALETTE_TELEMETRY_TYPES } from '@livediagram/api-schema';
 import type { TypeAliases } from './rank';
 
-// The palette's element kinds as the dashboard reads them (spec/22): the
+// The palette's element kinds as the dashboard reads them (docs/specs/017-telemetry/telemetry.md): the
 // shared catalogue's tabs, plus the old spellings to fold in. Shared by the
 // Palette tab's rankings and the Elements Added stack's per-tab charts, so
 // both bucket an element the same way.

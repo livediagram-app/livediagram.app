@@ -31,14 +31,14 @@ const STYLE_ICONS: Record<Exclude<AutoLayoutChoice, 'smart'>, ReactNode> = {
   mindmap: <MindmapMenuIcon />,
 };
 
-// The tab menu's canvas band (spec/09 + spec/47): the Cleanup (Auto
+// The tab menu's canvas band (docs/specs/008-canvas/canvas-and-palette.md + docs/specs/008-canvas/layout-cleanup.md): the Cleanup (Auto
 // Layout / Auto-align) accordion. Paste sits in the toolbar above. Rendered by PortalMenu
 // whenever canvas actions are available — both entry points (canvas
 // right-click AND the active tab's ellipsis menu) show the same unified
 // band. `sectionProps` is the parent's one-open-at-a-time accordion
 // wiring, shared so these sections fold into the same exclusive set as
 // the rest of the menu. The theme, canvas and font controls live in the
-// Tab Look & Feel dialog (spec/42), reached from the paintbrush dock
+// Tab Look & Feel dialog (docs/specs/011-theme/canvas-and-theme-dialog.md), reached from the paintbrush dock
 // button, not here.
 export function TabCanvasMenuSections({
   canvas,
@@ -49,7 +49,7 @@ export function TabCanvasMenuSections({
   onClose: () => void;
   sectionProps: (id: string) => { open: boolean; onToggle: () => void; flush: boolean };
 }) {
-  // Hovering a cleanup row lays the tab out behind the menu (spec/47). Mouse
+  // Hovering a cleanup row lays the tab out behind the menu (docs/specs/008-canvas/layout-cleanup.md). Mouse
   // pointers only, via onMouseHover: on touch a tap IS the commit, so a
   // preview would be a flicker nobody asked for.
   const hover = (kind: CleanupKind) => ({
@@ -61,10 +61,10 @@ export function TabCanvasMenuSections({
   useRevertOnUnmount(canvas.onEndCleanupPreview);
   return (
     <>
-      {/* ── Cleanup band: layout tidiers (spec/47). Auto-align grid-
+      {/* ── Cleanup band: layout tidiers (docs/specs/008-canvas/layout-cleanup.md). Auto-align grid-
             snaps; Auto Layout recomputes positions from the arrow graph,
             either smart (auto-detected flow) or in an explicit style
-            (spec/47 "Layout styles"): flowchart down / right, tree,
+            (docs/specs/008-canvas/layout-cleanup.md "Layout styles"): flowchart down / right, tree,
             mindmap. */}
       <MenuGroupSeparator />
       <MenuAccordionSection title="Cleanup" icon={<CleanupMenuIcon />} {...sectionProps('cleanup')}>

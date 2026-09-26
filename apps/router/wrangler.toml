@@ -5,7 +5,7 @@ compatibility_date = "2026-05-01"
 # Service bindings to the marketing and live apps.
 # The `service` values must match the deployed Worker names of each downstream app.
 # Production wiring is TBD — these placeholders will be revisited when the apps
-# are first deployed. See specs/08-router-app.md.
+# are first deployed. See docs/specs/016-platform/router-app.md.
 
 [[services]]
 binding = "MARKETING"
@@ -30,7 +30,7 @@ service = "livediagram-help"
 # Local dev (`wrangler dev --env local --port 3000`, the workspace `dev`
 # script): service bindings can't reach the local Next dev servers, so this
 # environment defines none and sets plain HTTP origins instead. The worker
-# falls back to proxying these when a binding is absent. See spec/08.
+# falls back to proxying these when a binding is absent. See docs/specs/016-platform/router-app.md.
 [env.local.vars]
 MARKETING_ORIGIN = "http://127.0.0.1:3001"
 LIVE_ORIGIN = "http://127.0.0.1:3002"
@@ -39,7 +39,7 @@ TELEMETRY_ORIGIN = "http://127.0.0.1:3003"
 HELP_ORIGIN = "http://127.0.0.1:3004"
 
 # ---------------------------------------------------------------------------
-# Staging (spec/140). Deploys as `livediagram-router-staging` and fronts
+# Staging (docs/specs/016-platform/staging-environment.md). Deploys as `livediagram-router-staging` and fronts
 # https://staging.livediagram.app (the custom domain is attached in the
 # Cloudflare dashboard — the deploy token has no zone scope, same as
 # production).
@@ -80,7 +80,7 @@ service = "livediagram-help-staging"
 
 # Marks this router as the staging one. The worker reads it to stamp
 # `X-Robots-Tag: noindex, nofollow` on every response, which is what keeps a
-# public staging mirror out of search results (spec/140). Set ONLY here —
+# public staging mirror out of search results (docs/specs/016-platform/staging-environment.md). Set ONLY here —
 # production's router has no DEPLOY_ENV, so the header is impossible there.
 [env.staging.vars]
 DEPLOY_ENV = "staging"

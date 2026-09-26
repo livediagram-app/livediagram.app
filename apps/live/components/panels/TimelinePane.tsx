@@ -1,6 +1,6 @@
 'use client';
 
-// The Explorer's Timeline section (spec/138 §2, §8).
+// The Explorer's Timeline section (docs/specs/013-workspace/timeline.md §2, §8).
 //
 // Owns the fetch and the paging cursor; the shared <Timeline> owns the
 // layout, the stacking, and the calendar. That split is why this file
@@ -12,7 +12,7 @@
 // header, so their state comes in from above via `useTimelineFeed` and
 // is shared with <TimelineControls> up there.
 //
-// The card menus (spec/138 §2.8) are built here too, because this pane
+// The card menus (docs/specs/013-workspace/timeline.md §2.8) are built here too, because this pane
 // sits inside the Explorer context that holds the diagram lists and the
 // rename / move / delete handlers they need.
 

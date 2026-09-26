@@ -14,7 +14,7 @@ import { autoAlignElements } from '@/lib/auto-align';
 
 export function createTab(name: string): Tab {
   // New tabs (and a new diagram's first tab) default the per-tab text size
-  // to small (spec/28); elements added from the palette inherit it via
+  // to small (docs/specs/004-interface-design/fonts.md); elements added from the palette inherit it via
   // `defaultTextSize`. A new tab added to an existing diagram still inherits
   // the active tab's explicit size where it has one (see useTabActions).
   return { id: crypto.randomUUID(), name, elements: [], defaultTextSize: 'sm' };
@@ -32,7 +32,7 @@ export function placeholdersFromSummaries(
   summaries: { id: string; name: string; folder?: string }[],
 ): Tab[] {
   if (summaries.length === 0) return [createTab('Tab 1')];
-  // Carry `folder` (spec/30) so the tab bar renders folders from the
+  // Carry `folder` (docs/specs/006-diagram/tab-folders.md) so the tab bar renders folders from the
   // first paint; the lazy per-tab content fetch fills `elements` later
   // without touching folder (it's link metadata, not body content).
   return summaries.map((summary) => ({
@@ -44,7 +44,7 @@ export function placeholdersFromSummaries(
 }
 
 // What the canvas should show for the ACTIVE tab while its lazy per-tab
-// fetch (spec/13) is outstanding. Without this gate the canvas paints
+// fetch (docs/specs/006-diagram/per-tab-storage.md) is outstanding. Without this gate the canvas paints
 // the misleading "Empty canvas" card over a tab whose real content
 // hasn't arrived yet — and worse, lets the user edit that blank
 // placeholder, whose autosave then overwrites the real server row.
@@ -103,13 +103,13 @@ export function patchTab(ts: Tab[], id: string, patch: Partial<Tab>): Tab[] {
 // `changedTabs` is identity-based: callers patch tabs immutably
 // (see `patchTab`), so an unchanged tab keeps its reference and is
 // skipped. `orderChanged` covers tab add/remove count, a pure
-// reorder, AND a per-diagram folder change (spec/30) — folder rides
+// reorder, AND a per-diagram folder change (docs/specs/006-diagram/tab-folders.md) — folder rides
 // the same meta-save path as order, so a folder-only edit must flip
 // this even when positions are unchanged. `deletedIds` are tabs
 // present at last save but gone now.
 //
 // `loadedTabIds` (when supplied) is the data-loss guard. Tabs hydrate
-// lazily (spec/13): until a tab is opened its in-memory `elements` is an
+// lazily (docs/specs/006-diagram/per-tab-storage.md): until a tab is opened its in-memory `elements` is an
 // empty placeholder, NOT its real server content. A non-content op that
 // only bumps a background tab's object reference — a folder move, a
 // reorder, a bulk tab edit — would otherwise flag that placeholder as
@@ -130,7 +130,7 @@ export type TabSaveDiff = {
 
 // Is this tab unchanged since the baseline? Identity first (the common case:
 // an untouched tab keeps its object), then content. A peer's op is applied to
-// the tabs on screen and to the baseline separately (spec/152), so the two end
+// the tabs on screen and to the baseline separately (docs/specs/012-collaboration/collab-race-hardening.md), so the two end
 // up as different objects holding the same thing, and that is not a local
 // change. A false "changed" here only costs a redundant save.
 function sameTabContent(prev: Tab | undefined, current: Tab): boolean {
@@ -178,8 +178,8 @@ export function computeTabSaveDiff(
   return { changedTabs, deletedIds, orderChanged, nameChanged, hasChanges };
 }
 
-// Resolve the viewer's session against a fetched diagram (spec/04 +
-// spec/11). Security-critical: it decides whether the caller is the
+// Resolve the viewer's session against a fetched diagram (docs/specs/014-identity/auth-and-guest-access.md +
+// docs/specs/015-api/api.md). Security-critical: it decides whether the caller is the
 // owner (always 'edit', never carries a share code) or a visitor (role
 // + share code come from the link they followed). The same
 // `ownerId === selfId` test was inlined six times in the hydration
@@ -235,7 +235,7 @@ export function pruneMapToPresent<V>(prev: Map<string, V>, present: Set<string>)
 }
 
 // Merge AI-returned elements into the existing element list as one block
-// (spec/25). Lifted out of useEditorState's `applyAiElements` so this
+// (docs/specs/007-editor/ai-assistance.md). Lifted out of useEditorState's `applyAiElements` so this
 // non-trivial logic (id dedup, arrow-endpoint remap, clean-vs-generate
 // merge) is unit-testable; the hook just wraps it in `commit`.
 //
@@ -281,7 +281,7 @@ export function mergeAiElements(
   // existing element; 'generate' replaces the element in place.
   //
   // Clean must never change what an element IS, only how it looks. Its own
-  // prompt and spec/25 scope it to label spelling, sizes, positions, styles,
+  // prompt and docs/specs/007-editor/ai-assistance.md scope it to label spelling, sizes, positions, styles,
   // borderRadius and textSize — `type` and `shape` are not on that list, and
   // letting the patch carry them was destructive rather than merely wrong.
   //
@@ -306,7 +306,7 @@ export function mergeAiElements(
         : (modById.get(el.id) as Element);
 
   // When Generate produced a whole new connected diagram (≥3 linked nodes),
-  // re-lay-it-out deterministically (spec/25): the model decides structure,
+  // re-lay-it-out deterministically (docs/specs/007-editor/ai-assistance.md): the model decides structure,
   // we own the geometry — uniform sizes, layered placement, clean arrow
   // anchors. Placed in free space below existing content so it doesn't land
   // on top of the user's work. Small additive edits keep the model's

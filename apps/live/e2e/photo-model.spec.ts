@@ -3,7 +3,7 @@ import { expect, expectNoPageErrors, test } from './fixtures';
 import { BOUNDARY_WEIGHTS, openPhotoBoard } from './fixtures/photo-board';
 import { wallPhotoPng, type WallNote } from './fixtures/wall-photo';
 
-// The boundary model in the photo import (spec/139 Phase 9). The detector
+// The boundary model in the photo import (docs/specs/021-event-storming/event-storming.md Phase 9). The detector
 // takes a small learned model's corrections when the model can run here, in a
 // worker, on weights the app serves itself; when it cannot, the classical
 // detector runs alone and the import carries on. Only a browser can show

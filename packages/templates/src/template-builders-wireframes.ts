@@ -8,13 +8,13 @@
 //
 // Each function is still pure: takes a centre (cx, cy), returns a
 // fresh Element[]. Sizing constants stay inline so the geometry
-// remains self-describing alongside the shape it draws. See spec/09
+// remains self-describing alongside the shape it draws. See docs/specs/008-canvas/canvas-and-palette.md
 // "Templates" for the catalogue and per-template intent.
 
 import { createShape, type Element } from '@livediagram/diagram';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 
-// All three wireframes ship pre-layered (spec/74 "Layered templates"):
+// All three wireframes ship pre-layered (docs/specs/006-diagram/layers.md "Layered templates"):
 // the device shells sit on a "Frames" scaffold layer, and every inner
 // placeholder box lands on a "UI" content layer, so rearranging the UI
 // never drags the device along. Each builder's local box / pill / dot

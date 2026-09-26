@@ -13,7 +13,7 @@
 // bodyExceedsCap at the bottom of this file.
 export const MAX_BODY_BYTES = 8 * 1024 * 1024; // 8 MB
 
-// A single uploaded image's raw bytes (spec/19). Larger than MAX_BODY_BYTES,
+// A single uploaded image's raw bytes (docs/specs/009-elements/images.md). Larger than MAX_BODY_BYTES,
 // so the pre-dispatch gate must use THIS cap on the image-upload route — an
 // 8 MB outer bound would silently make the documented 10 MB image limit
 // unreachable (and return the generic payload_too_large instead of the image
@@ -31,7 +31,7 @@ export const MAX_TAB_BYTES = 4 * 1024 * 1024;
 // Human-facing names: diagram / folder / theme / tab.
 export const MAX_NAME_LEN = 500;
 
-// A diagram's slide deck (spec/31). Slides hold element REFERENCES, never
+// A diagram's slide deck (docs/specs/012-collaboration/presentation-mode.md). Slides hold element REFERENCES, never
 // element copies, so a deck stays tiny however large the diagram is: a few
 // hundred bytes per slide. 256KB is roughly a thousand slides and exists to
 // bound a hostile payload, not to constrain any real deck.
@@ -40,7 +40,7 @@ export const MAX_DECK_LEN = 256 * 1024;
 // A custom theme's JSON definition (palette + per-shape colours).
 export const MAX_THEME_DEF_BYTES = 256 * 1024;
 
-// One change-log entry's JSON (spec/12). The before/after payloads are
+// One change-log entry's JSON (docs/specs/012-collaboration/activity-and-audit.md). The before/after payloads are
 // per-gesture element diffs — a few KB in practice — so this bounds a
 // hostile near-8MB entry from bloating both storage and the capped list
 // response (30 entries per GET).
@@ -49,7 +49,7 @@ export const MAX_CHANGE_LOG_ENTRY_BYTES = 256 * 1024;
 // Realtime presence identity, broadcast to every connected peer.
 export const MAX_PARTICIPANT_NAME_LEN = 120;
 export const MAX_COLOR_LEN = 64;
-// The client-claimed document-write key relayed on presence (spec/122). Real
+// The client-claimed document-write key relayed on presence (docs/specs/012-collaboration/participant-responses.md). Real
 // ones are UUIDs; the clamp only stops a hostile hello pushing an oversize
 // string into the socket attachment, which has a small hard budget.
 export const MAX_PARTICIPANT_KEY_LEN = 64;

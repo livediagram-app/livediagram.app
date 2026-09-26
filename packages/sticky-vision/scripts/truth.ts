@@ -41,12 +41,12 @@ export type Score = {
   // into one. The bar allows none.
   merged: number;
   // The small yellow actors, reported apart: the one kind the bar lets fall
-  // short of 95% (plans/event-storming-photo-95.md).
+  // short of 95% (plans/0007-event-storming-photo-95.md).
   actors: { truth: number; matched: number };
   recallWithoutActors: number;
 };
 
-// THE BAR (plans/event-storming-photo-95.md): 95% of every kind but actors
+// THE BAR (plans/0007-event-storming-photo-95.md): 95% of every kind but actors
 // found, 95% of what is found real, and not one box holding two notes.
 export const BAR = { recall: 0.95, precision: 0.95, merged: 0 } as const;
 

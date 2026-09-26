@@ -122,7 +122,7 @@ type ElementDataSectionsProps = {
   isReveal: boolean;
   isPicker: boolean;
   isReactionPad: boolean;
-  // The collaboration elements that carry settings (spec/123, 127, 128, 130).
+  // The collaboration elements that carry settings (docs/specs/012-collaboration/estimate-card.md, 127, 128, 130).
   // The temperature check, idea box and roll call have none — they are entirely
   // driven from their own faces — so they get no flag.
   isEstimate: boolean;
@@ -136,7 +136,7 @@ type ElementDataSectionsProps = {
 };
 
 // The mode tiles' glyphs — the palette picker's own icons, so a button's
-// configured mode is recognisable from the same artwork everywhere (spec/103).
+// configured mode is recognisable from the same artwork everywhere (docs/specs/009-elements/mode-button.md).
 const MODE_TILE_ICON: Record<(typeof SELECTION_MODES)[number], React.ReactNode> = {
   select: <SelectIcon />,
   pan: <PanIcon />,
@@ -179,10 +179,10 @@ export function ElementDataSections({
 }: ElementDataSectionsProps) {
   const shapeTarget = target.type === 'shape' ? target : null;
   // What an uncoloured slice / series shows as, so the swatches in the data
-  // rows match the chart. The chart's own palette when it has one (spec/53);
+  // rows match the chart. The chart's own palette when it has one (docs/specs/009-elements/pie-chart.md);
   // otherwise the built-in ramp, which is what these rows have always used.
   const chartFallbackPalette = chartPaletteColors(shapeTarget?.chartPalette) ?? PIE_PALETTE;
-  // The Tools flyout (spec/09): the data-shape-specific controls —
+  // The Tools flyout (docs/specs/008-canvas/canvas-and-palette.md): the data-shape-specific controls —
   // Progress (bar / ring), Timeline rail, Rating, and the chart Data +
   // Chart sections — fold behind one "Tools" row, the same side-flyout
   // pattern as Style and Text, so a data element's menu doesn't grow a
@@ -213,7 +213,7 @@ export function ElementDataSections({
     <>
       {showTools ? (
         <MenuFlyoutSection title="Tools" icon={<ToolsMenuGlyph />} {...flyoutProps('tools')}>
-          {/* Progress (spec/46) — the percentage + how the fill animates. Only
+          {/* Progress (docs/specs/009-elements/progress.md) — the percentage + how the fill animates. Only
             for progress bars / rings. */}
           {isProgress ? (
             <MenuAccordionSection
@@ -236,7 +236,7 @@ export function ElementDataSections({
               />
             </MenuAccordionSection>
           ) : null}
-          {/* Timeline (spec/51) — how many points sit on the rail. The right-end
+          {/* Timeline (docs/specs/009-elements/timeline-rail.md) — how many points sit on the rail. The right-end
             "+" on the canvas adds one too; this is the precise control. */}
           {isRail ? (
             <MenuAccordionSection
@@ -250,7 +250,7 @@ export function ElementDataSections({
               />
             </MenuAccordionSection>
           ) : null}
-          {/* Rating (spec/52) — the star score + a star-specific animation. */}
+          {/* Rating (docs/specs/009-elements/rating.md) — the star score + a star-specific animation. */}
           {isRating ? (
             <MenuAccordionSection
               title="Rating"
@@ -275,7 +275,7 @@ export function ElementDataSections({
               />
             </MenuAccordionSection>
           ) : null}
-          {/* Data (spec/53) — the chart's data. Pie / bar edit a single row of
+          {/* Data (docs/specs/009-elements/pie-chart.md) — the chart's data. Pie / bar edit a single row of
             label+value inline; the line chart's 2-D grid is too wide for the
             menu, so it summarises the series + opens a modal to edit. */}
           {isChart ? (
@@ -302,7 +302,7 @@ export function ElementDataSections({
               )}
             </MenuAccordionSection>
           ) : null}
-          {/* Code (spec/82) — the snippet summary + the modal opener (the
+          {/* Code (docs/specs/009-elements/code-block.md) — the snippet summary + the modal opener (the
             multi-line editor is too big for the menu, like the line grid). */}
           {isCodeBlock ? (
             <MenuAccordionSection title="Code" icon={<DataMenuGlyph />} {...sectionProps('code')}>
@@ -315,7 +315,7 @@ export function ElementDataSections({
               />
             </MenuAccordionSection>
           ) : null}
-          {/* The collaboration elements' settings (spec/123, 127, 128, 130).
+          {/* The collaboration elements' settings (docs/specs/012-collaboration/estimate-card.md, 127, 128, 130).
             Each is a small form of its own — see CollabMenuSections. */}
           {isEstimate ? (
             <EstimateMenuSection
@@ -347,7 +347,7 @@ export function ElementDataSections({
               onSetFacing={props.onSetChairFacing}
             />
           ) : null}
-          {/* Web components (spec/147) — a stat row's cards, a process's
+          {/* Web components (docs/specs/009-elements/web-components-and-no-groups.md) — a stat row's cards, a process's
             steps, a header's links: add / remove / reorder. */}
           {shapeTarget && hasWebRowsSection(shapeTarget) ? (
             <WebRowsMenuSection
@@ -356,7 +356,7 @@ export function ElementDataSections({
               onSetRows={props.onSetWebRows}
             />
           ) : null}
-          {/* Record (spec/120) — the fields: name + optional type, add / remove. */}
+          {/* Record (docs/specs/009-elements/entity.md) — the fields: name + optional type, add / remove. */}
           {isEntity ? (
             <MenuAccordionSection
               title="Fields"
@@ -369,7 +369,7 @@ export function ElementDataSections({
               />
             </MenuAccordionSection>
           ) : null}
-          {/* Checklist (spec/83) — the rows: done toggles, text, add / remove. */}
+          {/* Checklist (docs/specs/009-elements/checklist.md) — the rows: done toggles, text, add / remove. */}
           {isChecklist ? (
             <MenuAccordionSection
               title="Checklist"
@@ -387,7 +387,7 @@ export function ElementDataSections({
               />
             </MenuAccordionSection>
           ) : null}
-          {/* Legend (spec/53): the key's rows, a colour and a word each. */}
+          {/* Legend (docs/specs/009-elements/pie-chart.md): the key's rows, a colour and a word each. */}
           {isLegend ? (
             <MenuAccordionSection
               title="Legend"
@@ -407,7 +407,7 @@ export function ElementDataSections({
               />
             </MenuAccordionSection>
           ) : null}
-          {/* Mind map (spec/118): the shape the whole map grows in. It sets
+          {/* Mind map (docs/specs/009-elements/mind-node.md): the shape the whole map grows in. It sets
             the ROOT's flow, so one pick re-shapes every branch that follows
             rather than leaving half a map in one arrangement. */}
           {isMindNode ? (
@@ -419,7 +419,7 @@ export function ElementDataSections({
               <MindFlowTiles current={props.mindFlow} onSet={props.onSetMindFlow} />
             </MenuAccordionSection>
           ) : null}
-          {/* Mode button (spec/103) — which selection mode pressing it hands
+          {/* Mode button (docs/specs/009-elements/mode-button.md) — which selection mode pressing it hands
             whoever clicked. Tiles rather than a list so the icons match the
             palette's own mode picker. */}
           {isModeButton ? (
@@ -444,7 +444,7 @@ export function ElementDataSections({
               </MenuTileGrid>
             </MenuAccordionSection>
           ) : null}
-          {/* Portal (spec/104) — its name, where it leads (any tab), and a
+          {/* Portal (docs/specs/009-elements/portal-element.md) — its name, where it leads (any tab), and a
             shortcut to create the far end. See PortalMenuSection. */}
           {isPortal && shapeTarget ? (
             <PortalMenuSection
@@ -457,7 +457,7 @@ export function ElementDataSections({
               sectionProps={sectionProps('portal-target')}
             />
           ) : null}
-          {/* Session button (spec/105) — which tool a press starts, and its
+          {/* Session button (docs/specs/012-collaboration/session-button.md) — which tool a press starts, and its
             one setting. See BehaviourMenuSections. */}
           {isSessionButton && shapeTarget ? (
             <SessionMenuSection
@@ -466,7 +466,7 @@ export function ElementDataSections({
               sectionProps={sectionProps('session')}
             />
           ) : null}
-          {/* Reveal zone (spec/106) — off for everyone, or back on. */}
+          {/* Reveal zone (docs/specs/009-elements/reveal-zone.md) — off for everyone, or back on. */}
           {isReveal && shapeTarget ? (
             <RevealMenuSection
               element={shapeTarget}
@@ -474,7 +474,7 @@ export function ElementDataSections({
               sectionProps={sectionProps('reveal')}
             />
           ) : null}
-          {/* Picker (spec/107) — where it draws candidates from. */}
+          {/* Picker (docs/specs/012-collaboration/picker.md) — where it draws candidates from. */}
           {isPicker && shapeTarget ? (
             <PickerMenuSection
               element={shapeTarget}
@@ -483,7 +483,7 @@ export function ElementDataSections({
               sectionProps={sectionProps('picker')}
             />
           ) : null}
-          {/* Reaction pad (spec/135) — which burst it throws. */}
+          {/* Reaction pad (docs/specs/009-elements/reaction-pad.md) — which burst it throws. */}
           {isReactionPad && shapeTarget ? (
             <ReactionMenuSection
               element={shapeTarget}
@@ -491,7 +491,7 @@ export function ElementDataSections({
               sectionProps={sectionProps('reaction')}
             />
           ) : null}
-          {/* Chart (spec/53) — display options. Legend placement: Off + 4 sides. */}
+          {/* Chart (docs/specs/009-elements/pie-chart.md) — display options. Legend placement: Off + 4 sides. */}
           {isChart ? (
             <MenuAccordionSection
               title="Chart"
@@ -519,7 +519,7 @@ export function ElementDataSections({
           ) : null}
         </MenuFlyoutSection>
       ) : null}
-      {/* Animation (spec/09) — a looping attention/status effect on the
+      {/* Animation (docs/specs/008-canvas/canvas-and-palette.md) — a looping attention/status effect on the
             element. None clears it. Pie charts swap the boxed-element set for
             their own slice animations (the chart family's set). */}
       {boxed ? (
@@ -574,7 +574,7 @@ export function ElementDataSections({
           )}
         </MenuAccordionSection>
       ) : null}
-      {/* Animation (spec/09) — animate an arrow to show direction: marching
+      {/* Animation (docs/specs/008-canvas/canvas-and-palette.md) — animate an arrow to show direction: marching
             dashes, a travelling dot, beads, or an in-place pulse / grow / glow.
             None clears it. (Labelled "Animation" to match the boxed-element
             control; the field is still `flow`.) */}

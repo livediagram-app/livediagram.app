@@ -5,7 +5,7 @@ import type { Element, ShapeElement } from './index';
 import { growMindChild, mindFlowOf } from './mind-map';
 import { DEFAULT_MIND_FLOW, MIND_FLOWS, MIND_FLOW_LABEL, type MindFlow } from './mind-flow';
 
-// The flow is the SHAPE a map grows in (spec/118). The keystrokes are the
+// The flow is the SHAPE a map grows in (docs/specs/009-elements/mind-node.md). The keystrokes are the
 // same in all of them, so each test here asks only one thing: did the child
 // land where that shape says it should, relative to its parent.
 //

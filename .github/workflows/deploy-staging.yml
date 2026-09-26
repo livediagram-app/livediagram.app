@@ -1,6 +1,6 @@
 name: Deploy Staging
 
-# Staging deploy (spec/140). Automatic: every merge to `main` that passes CI
+# Staging deploy (docs/specs/016-platform/staging-environment.md). Automatic: every merge to `main` that passes CI
 # lands on https://staging.livediagram.app within a few minutes.
 #
 # Triggered by CI FINISHING, not by the push. Two reasons:
@@ -60,7 +60,7 @@ jobs:
       mcp_origin: https://mcp-staging.livediagram.app
     secrets:
       # Same Cloudflare account as production — the isolation is drawn at the
-      # resource (own D1 / R2 / KV), not the account (spec/140).
+      # resource (own D1 / R2 / KV), not the account (docs/specs/016-platform/staging-environment.md).
       CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
       CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
       # Every value below is staging's OWN. The Clerk pair is a separate test

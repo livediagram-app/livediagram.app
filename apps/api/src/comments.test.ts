@@ -193,7 +193,7 @@ describe('redactCommentAuthorIds', () => {
   });
 });
 
-describe('hasNewComments (spec/64 #1)', () => {
+describe('hasNewComments (docs/specs/014-identity/transactional-email.md #1)', () => {
   const cm = (id: string): Comment => ({
     id,
     text: 't',
@@ -218,7 +218,7 @@ describe('hasNewComments (spec/64 #1)', () => {
   });
 });
 
-describe('rewriteCommentAuthors with the room ledger (spec/152)', () => {
+describe('rewriteCommentAuthors with the room ledger (docs/specs/012-collaboration/collab-race-hardening.md)', () => {
   const posted = new Map([['c1', { authorName: 'Bea', authorColor: '#f00' }]]);
   const commentsOf = (els: Element[]) => (els[0] as ShapeElement).commentThread!.comments;
 

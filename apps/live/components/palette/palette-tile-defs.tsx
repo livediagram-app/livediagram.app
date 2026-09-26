@@ -34,7 +34,7 @@ import {
   TimerIcon,
 } from '@/components/palette/palette-icons';
 
-// The shared palette tile catalogue (spec/78): every creation tile across
+// The shared palette tile catalogue (docs/specs/010-palette/palette-favourites.md): every creation tile across
 // the Shapes / Tools / Data / Components / Devices categories as one data
 // entry — label, glyph, tinting flags, and an action descriptor that
 // PaletteTileGrid maps to the editor's add-handlers. The category tabs and
@@ -49,19 +49,19 @@ import {
 // them, so tilesInSection never returns them.
 export type PaletteTileSection =
   | 'shapes'
-  // Structure (spec/132): the elements you lay a diagram OUT with rather than
+  // Structure (docs/specs/010-palette/build-category.md): the elements you lay a diagram OUT with rather than
   // draw on it — a mind node, a lane, a frame, a timeline, a table. They were
   // scattered across Write, Draw, Data and Components, filed by what they look
   // like; what they have in common is that they hold other work.
   | 'build'
-  // The Event Storming notation (spec/139): a top-level category of the
+  // The Event Storming notation (docs/specs/021-event-storming/event-storming.md): a top-level category of the
   // eight workshop note kinds, each an ordinary sticky in its semantic
   // colour.
   | 'event-storming'
   | 'tools'
   | 'data'
-  // 'collaborate' is GONE (spec/110). The collaboration family (spec/123 to
-  // spec/129) had its own category on the reasoning that Behaviour is
+  // 'collaborate' is GONE (docs/specs/010-palette/palette-top-level-categories.md). The collaboration family (docs/specs/012-collaboration/estimate-card.md to
+  // docs/specs/012-collaboration/roll-call.md) had its own category on the reasoning that Behaviour is
   // "pressing this does something to your session" while these are "the board
   // is collecting an answer from everybody". In the picker that line never
   // held: both are elements whose content arrives at runtime, both are reached
@@ -81,7 +81,7 @@ export type PaletteTileSection =
 type PaletteTileAction =
   // `session` / `reaction` are creation-time choices, not separate kinds: both
   // elements are ONE kind with a mode field, and the palette offers a tile per
-  // mode inside an accordion (spec/105, spec/135) the way Media does for embed
+  // mode inside an accordion (docs/specs/012-collaboration/session-button.md, docs/specs/009-elements/reaction-pad.md) the way Media does for embed
   // providers. Placing "Poll" has to place a poll, not a timer to reconfigure.
   | {
       type: 'shape';
@@ -93,18 +93,18 @@ type PaletteTileAction =
     }
   | { type: 'text' }
   | { type: 'freehand' }
-  // Marker variant of the pencil (spec/81) and the click-to-place
-  // vertex tool (spec/84) — separate action types so each tile maps
+  // Marker variant of the pencil (docs/specs/008-canvas/highlighter.md) and the click-to-place
+  // vertex tool (docs/specs/008-canvas/polygon-tool.md) — separate action types so each tile maps
   // to its own arm-handler and pressed state.
   | { type: 'shape-pen' }
   | { type: 'video'; provider?: EmbedProvider }
   | { type: 'sticker'; stickerId: string }
   | { type: 'polygon' }
   | { type: 'arrow' }
-  // `fill` rides the sticky action for the Event Storming tiles (spec/139):
+  // `fill` rides the sticky action for the Event Storming tiles (docs/specs/021-event-storming/event-storming.md):
   // eight semantic colours over the one sticky type, one tile per note kind.
   // `fill` + `esKind` ride the sticky action for the Event Storming tiles
-  // (spec/139): eight semantic colours over the one sticky type, one tile
+  // (docs/specs/021-event-storming/event-storming.md): eight semantic colours over the one sticky type, one tile
   // per note kind. The kind lets the commit path route the note onto its
   // workshop stage's layer on event-storming boards.
   | { type: 'sticky'; fill?: string; esKind?: EventStormingNoteKind }
@@ -118,7 +118,7 @@ type PaletteTileAction =
   | { type: 'icon'; iconId: string }
   | { type: 'tech-icon'; iconId: string };
 
-// Themed sub-groups within the Tools section (spec/09 "Sub-categories"):
+// Themed sub-groups within the Tools section (docs/specs/008-canvas/canvas-and-palette.md "Sub-categories"):
 // the Tools tab renders one labelled grid per group instead of a flat
 // sixteen-tile wall. Group membership is metadata on the tile — ids stay
 // stable, so favourites persistence and search are untouched.
@@ -140,13 +140,13 @@ export const TOOL_GROUPS: { id: ToolGroupId; label: string }[] = [
     label: 'Write',
   },
   {
-    // Split back out from a combined "Write & Draw" (spec/110): once both were
+    // Split back out from a combined "Write & Draw" (docs/specs/010-palette/palette-top-level-categories.md): once both were
     // one click from the category picker rather than two inside Tools, the
     // pairing bought nothing and the combined list ran to eight rows.
     id: 'draw',
     label: 'Draw',
   },
-  // Behaviour (spec/103): elements that DO something when someone interacts
+  // Behaviour (docs/specs/009-elements/mode-button.md): elements that DO something when someone interacts
   // with them, rather than elements that say something. Last, because a
   // diagram is drawn before it is wired up.
   {
@@ -164,12 +164,12 @@ export type PaletteTileDef = {
   // `section === 'tools'` (a test pins this); meaningless elsewhere.
   toolGroup?: ToolGroupId;
   // Collapses this tile into a named group inside its category, rather than
-  // showing it as a top-level row (spec/121). 'embed' = the Media tab's embed
+  // showing it as a top-level row (docs/specs/009-elements/embed-providers.md). 'embed' = the Media tab's embed
   // providers; 'web' = the Components tab's website composites; 'session' and
   // 'reaction' = the Behaviour tab's session tools and reactions; 'mode' its
   // selection-mode buttons; 'move' / 'facilitate' the rest of Behaviour; and
   // 'ask' / 'record' the two halves of Collaborate.
-  // 'event-storming' = the Write tab's sticky-notation group (spec/139).
+  // 'event-storming' = the Write tab's sticky-notation group (docs/specs/021-event-storming/event-storming.md).
   tileGroup?:
     'embed' | 'web' | 'session' | 'reaction' | 'mode' | 'move' | 'facilitate' | 'ask' | 'record';
   label: string;
@@ -184,7 +184,7 @@ export type PaletteTileDef = {
   blurb?: string;
   icon: React.ReactNode;
   shortcut?: string;
-  // IconButton flags (spec/09 theme tinting): `filled` tiles preview the
+  // IconButton flags (docs/specs/008-canvas/canvas-and-palette.md theme tinting): `filled` tiles preview the
   // theme's element fill; `noTint` tiles keep fixed colours.
   filled?: boolean;
   noTint?: boolean;
@@ -495,7 +495,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
-    // Page (spec/100). Sits first in Write: it is the largest writing
+    // Page (docs/specs/009-elements/page-element.md). Sits first in Write: it is the largest writing
     // surface, and the group reads shortest-to-longest from there. Called
     // Page, not Document, so the palette and the selection toolbar agree —
     // and so it never collides with the Shapes tab's flowchart "document".
@@ -744,7 +744,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
-    // Selection Mode buttons (spec/103): one tile per mode, grouped, so the
+    // Selection Mode buttons (docs/specs/009-elements/mode-button.md): one tile per mode, grouped, so the
     // button lands pointed at the mode you wanted rather than at the default
     // you then have to change.
     id: 'tools:mode-avatar',
@@ -900,7 +900,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     icon: <IsometricIcon />,
   },
   {
-    // Portal (spec/104): step in here, come out of the portal it is linked to.
+    // Portal (docs/specs/009-elements/portal-element.md): step in here, come out of the portal it is linked to.
     // The tile id keeps its original 'door' word because it is persisted in
     // saved favourites — renaming it would silently drop the tile for anyone
     // who had favourited it.
@@ -934,8 +934,8 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
-    // Session button (spec/105): starts a timer / vote / poll for the ro  {
-    // Session tools (spec/105): one tile per tool, grouped, rather than one
+    // Session button (docs/specs/012-collaboration/session-button.md): starts a timer / vote / poll for the ro  {
+    // Session tools (docs/specs/012-collaboration/session-button.md): one tile per tool, grouped, rather than one
     // button you place and then reconfigure. The tools have nothing in common
     // at the moment of choosing — you know whether you want a countdown or a
     // vote before you reach for the palette.
@@ -995,7 +995,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     icon: <SessionPollIcon />,
   },
   {
-    // Reveal zone (spec/106): a cover you click to see what is underneath.
+    // Reveal zone (docs/specs/009-elements/reveal-zone.md): a cover you click to see what is underneath.
     id: 'tools:reveal',
     tileGroup: 'facilitate',
     blurb: 'Double-click to look underneath',
@@ -1010,7 +1010,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     icon: <RevealIcon />,
   },
   {
-    // Done check (spec/137): who has finished, live.
+    // Done check (docs/specs/012-collaboration/done-check.md): who has finished, live.
     id: 'tools:done-check',
     tileGroup: 'facilitate',
     blurb: 'Everyone marks themselves finished',
@@ -1043,7 +1043,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
-    // Reaction pads (spec/135): one tile per reaction, grouped, rather than one
+    // Reaction pads (docs/specs/009-elements/reaction-pad.md): one tile per reaction, grouped, rather than one
     // pad you place and then switch. Which reaction you want is the whole
     // decision — a pad is not useful until it is the right one.
     id: 'tools:reaction-confetti',
@@ -1116,7 +1116,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     icon: <span className="text-[15px] leading-none">{REACTION_EMOJI['fireworks']}</span>,
   },
   {
-    // Picker (spec/107): rolls a person or a written option.
+    // Picker (docs/specs/012-collaboration/picker.md): rolls a person or a written option.
     id: 'tools:picker',
     tileGroup: 'facilitate',
     blurb: 'Pick someone at random',
@@ -1131,7 +1131,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     icon: <PickerIcon />,
   },
   {
-    // Bring Focus (spec/144): Navigate, beside Portal and Chair, because all
+    // Bring Focus (docs/specs/012-collaboration/bring-focus.md): Navigate, beside Portal and Chair, because all
     // three take somebody somewhere. This is the one that takes everybody.
     id: 'tools:focus-button',
     tileGroup: 'move',
@@ -1162,7 +1162,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
-    // Chair (spec/130): Behaviour, because what it does only happens when
+    // Chair (docs/specs/009-elements/chair.md): Behaviour, because what it does only happens when
     // somebody interacts with it — here by walking an Avatar-mode character
     // into it rather than by pressing it.
     id: 'tools:chair',
@@ -1178,12 +1178,12 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     action: { type: 'shape', kind: 'chair' },
     icon: <ChairIcon />,
   },
-  // --- Collaborate (spec/123 to spec/129) ----------------------------------
+  // --- Collaborate (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md) ----------------------------------
   // Elements that collect what the ROOM thinks. Rows with a blurb, like
   // Behaviour: none of these glyphs can say what the element does, and
   // "everyone picks privately, then all at once" is the thing being chosen.
   {
-    // Comment pin (spec/136): a remark about a PLACE rather than a shape.
+    // Comment pin (docs/specs/012-collaboration/comment-pin.md): a remark about a PLACE rather than a shape.
     id: 'collab:comment-pin',
     blurb: 'A comment thread as a card on the board',
     caption: 'Comment',
@@ -1213,7 +1213,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
-    // Action panel (spec/146): one assigned action as a card on the board, the
+    // Action panel (docs/specs/012-collaboration/action-panel.md): one assigned action as a card on the board, the
     // Comment panel's sibling.
     id: 'collab:action-card',
     blurb: 'An assigned action as a card on the board',
@@ -1245,7 +1245,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
-    // Estimate cards (spec/123): one tile per SCALE, grouped. Which scale a
+    // Estimate cards (docs/specs/012-collaboration/estimate-card.md): one tile per SCALE, grouped. Which scale a
     // team estimates on is a standing decision, not something you change per
     // card, so it belongs at the moment you reach for one.
     id: 'collab:estimate-fibonacci',
@@ -1688,7 +1688,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     // Last in Write, and the odd one out in it: an annotation is a MARKER you
     // drop on the diagram that happens to hold text, not a surface you write
     // on like Text, a sticky or a Page. It briefly sat in its own Blocks group
-    // for exactly that reason, but spec/110 emptied Blocks out and deleted it,
+    // for exactly that reason, but docs/specs/010-palette/palette-top-level-categories.md emptied Blocks out and deleted it,
     // so Write is where it lives — ordered last, after the three surfaces,
     // which is the distinction the row order now carries.
     toolGroup: 'write',
@@ -1717,7 +1717,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'tools:link-card',
     blurb: 'A clickable preview of a link',
-    // Navigate (spec/110), beside Portal and Chair: the group is what an
+    // Navigate (docs/specs/010-palette/palette-top-level-categories.md), beside Portal and Chair: the group is what an
     // element DOES, and all three take you somewhere. A portal moves you to
     // another tab, a chair seats your character, a link card sends you out to
     // the page. It sat under Components, which groups by what a thing looks
@@ -1773,7 +1773,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       </svg>
     ),
   },
-  // --- Data (spec/53) -------------------------------------------------------
+  // --- Data (docs/specs/009-elements/pie-chart.md) -------------------------------------------------------
   {
     id: 'data:pie',
     blurb: 'Proportions of a whole',
@@ -1920,7 +1920,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       </svg>
     ),
   },
-  // --- Components (spec/09, spec/147): each one element that lays itself out -
+  // --- Components (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/009-elements/web-components-and-no-groups.md): each one element that lays itself out -
   {
     id: 'components:banner',
     tileGroup: 'web',
@@ -2098,7 +2098,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       </svg>
     ),
   },
-  // --- Devices (spec/09) ------------------------------------------------------
+  // --- Devices (docs/specs/008-canvas/canvas-and-palette.md) ------------------------------------------------------
   {
     id: 'devices:browser',
     blurb: 'A desktop web page frame',
@@ -2270,7 +2270,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       </svg>
     ),
   },
-  // The Event Storming notation (spec/139): one tile per note kind, derived
+  // The Event Storming notation (docs/specs/021-event-storming/event-storming.md): one tile per note kind, derived
   // from the EVENT_STORMING_NOTES catalogue in @livediagram/diagram so the
   // palette can never drift from the colours the template builder (and any
   // future consumer) uses. Each tile arms the ordinary sticky gesture with
@@ -2278,7 +2278,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   // note onto its stage's layer on event-storming boards). Its own top-level
   // category in the Structure band — promoted out of the Write accordion.
   // Tile ids keep their historical 'tools:' prefix: Favourites persist ids,
-  // so a rename would silently drop saved favourites (spec/78).
+  // so a rename would silently drop saved favourites (docs/specs/010-palette/palette-favourites.md).
   ...EVENT_STORMING_NOTES.map((note): PaletteTileDef => ({
     id: `tools:es-${note.kind}`,
     section: 'event-storming',
@@ -2288,7 +2288,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     description: `Event storming: ${note.blurb.charAt(0).toLowerCase()}${note.blurb.slice(1)}.`,
     noTint: true,
     action: { type: 'sticky', fill: note.fill, esKind: note.kind },
-    // The glyph mirrors the note's stationery silhouette (spec/139): a
+    // The glyph mirrors the note's stationery silhouette (docs/specs/021-event-storming/event-storming.md): a
     // standard square, a WIDE rect for the prose kinds, a small square for
     // the actor — so the row's picture says the shape before the blurb does.
     icon:
@@ -2339,7 +2339,7 @@ export function tilesInSection(section: PaletteTileSection): PaletteTileDef[] {
   return PALETTE_TILES.filter((t) => t.section === section);
 }
 
-// The Tools tab's grouped view (spec/09 "Sub-categories"): the tools-section
+// The Tools tab's grouped view (docs/specs/008-canvas/canvas-and-palette.md "Sub-categories"): the tools-section
 // tiles carrying the given group, in catalogue order.
 export function tilesInToolGroup(group: ToolGroupId): PaletteTileDef[] {
   return PALETTE_TILES.filter((t) => t.section === 'tools' && t.toolGroup === group);
@@ -2367,7 +2367,7 @@ export function tileDisplayName(def: PaletteTileDef): string {
  * section id.
  *
  * Most categories are a section. Three are not: Write, Draw and Behaviour are
- * tool GROUPS inside the tools section (spec/110), so `tilesInSection('write')`
+ * tool GROUPS inside the tools section (docs/specs/010-palette/palette-top-level-categories.md), so `tilesInSection('write')`
  * is empty and a caller that assumed otherwise silently showed nothing. The
  * Edit Favourites dialog assumed exactly that and dropped all three.
  *

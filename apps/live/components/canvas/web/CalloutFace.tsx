@@ -4,7 +4,7 @@ import { InlineTextLine } from '@/components/canvas/InlineTextLine';
 import { LabelRegion } from '@/components/canvas/web/LabelRegion';
 import { rectStyle, type WebFaceProps } from '@/components/canvas/web/web-face-props';
 
-// Callout (spec/147): the card is the ordinary bordered box; inside it, an
+// Callout (docs/specs/009-elements/web-components-and-no-groups.md): the card is the ordinary bordered box; inside it, an
 // accent badge (an "i", or the element's inline icon when one is dropped on
 // it), a heading line edited in place, and the body — the label.
 export function CalloutFace({

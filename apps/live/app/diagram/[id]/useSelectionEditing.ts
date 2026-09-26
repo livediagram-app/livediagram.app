@@ -24,13 +24,13 @@ type SetState<T> = Dispatch<SetStateAction<T>>;
 export function useSelectionEditing(opts: {
   selectedId: string | null;
   isReadOnly: boolean;
-  // Elements on a hidden or locked layer (spec/74): never selectable.
+  // Elements on a hidden or locked layer (docs/specs/006-diagram/layers.md): never selectable.
   layerInertIds: Set<string>;
-  // Smart layer naming (spec/74): called with every committed label so a
+  // Smart layer naming (docs/specs/006-diagram/layers.md): called with every committed label so a
   // default-named layer can adopt the first one typed onto it.
   adoptLayerName: (elementId: string, label: string) => void;
   formatSourceId: string | null;
-  // Persistent Format canvas tool (spec/09). Boxed elements route their
+  // Persistent Format canvas tool (docs/specs/008-canvas/canvas-and-palette.md). Boxed elements route their
   // format-tool clicks through useBoxedDragHandlers.beginDrag; arrows have
   // no drag entry for it (their clicks land here via selectElement), so
   // selectElement owns the arm-then-paint cycle for them.
@@ -47,14 +47,14 @@ export function useSelectionEditing(opts: {
   tickTabs: (updater: (tabs: Tab[]) => Tab[]) => void;
   applyFormatFromSource: (targetId: string, opts?: { keepSource?: boolean }) => void;
   // True when ANOTHER participant currently has this element selected
-  // (concurrent-selection lock, spec/07). Blocks select / edit so two
+  // (concurrent-selection lock, docs/specs/007-editor/live-app.md). Blocks select / edit so two
   // people don't fight over the same element. Advisory + presence-only.
   lockedByOther: (id: string) => boolean;
   set: {
     setFormatSourceId: SetState<string | null>;
     setSelectedId: SetState<string | null>;
     setEditingId: SetState<string | null>;
-    // Type-to-edit (spec/09) seeds the label with the first typed char,
+    // Type-to-edit (docs/specs/008-canvas/canvas-and-palette.md) seeds the label with the first typed char,
     // so the editor must place the caret at the END rather than
     // select-all (which would let the next keystroke replace the seed —
     // the "first character gets replaced" bug). beginEdit (double-click /
@@ -135,7 +135,7 @@ export function useSelectionEditing(opts: {
     );
   };
 
-  // A lane's title gutter, resized by dragging its seam (spec/119). One
+  // A lane's title gutter, resized by dragging its seam (docs/specs/009-elements/lane.md). One
   // commit on release, like the table's dividers: the drag itself is live
   // local state in the view, so a gesture is one undo step rather than one
   // per pixel.
@@ -144,7 +144,7 @@ export function useSelectionEditing(opts: {
   };
 
   const commitLabel = (elementId: string, label: string, runs?: TextRun[]) => {
-    // Per-range formatting (spec/09): keep `richText` only when it carries
+    // Per-range formatting (docs/specs/008-canvas/canvas-and-palette.md): keep `richText` only when it carries
     // real overrides, otherwise strip it so a plain label round-trips as
     // plain JSON. `label` stays the plain-text mirror either way.
     const richText = runs ? normalizeRuns(runs) : undefined;
@@ -177,7 +177,7 @@ export function useSelectionEditing(opts: {
     // typing on the welcome rectangle is a strong signal of intent. Once
     // the user has explicitly named the diagram (or named it via another
     // path), we stop tracking.
-    // Capped + whitespace-collapsed (spec/91). This is the path the cap
+    // Capped + whitespace-collapsed (docs/specs/006-diagram/name-length.md). This is the path the cap
     // exists for: paste a paragraph into the welcome rectangle and the whole
     // paragraph used to become the diagram's name, newlines and all.
     const trimmed = truncateName(label);
@@ -193,14 +193,14 @@ export function useSelectionEditing(opts: {
     // Parallel auto-rename for the active tab while its name still matches
     // the default `Tab N` pattern: the first element's label becomes the
     // tab name. Fires at most once per tab (any non-default name stops the
-    // gate, including the auto-renamed value itself). See spec/05.
+    // gate, including the auto-renamed value itself). See docs/specs/006-diagram/diagram-structure.md.
     if (trimmed && /^Tab \d+$/.test(activeTab.name)) {
       const firstEl = activeTab.elements[0];
       if (firstEl && firstEl.id === elementId) {
         tickTabs((ts) => patchTab(ts, activeTab.id, { name: trimmed }));
       }
     }
-    // Layer counterpart (spec/74): a default-named layer adopts the first
+    // Layer counterpart (docs/specs/006-diagram/layers.md): a default-named layer adopts the first
     // label committed onto one of its elements.
     if (trimmed) adoptLayerName(elementId, trimmed);
   };
@@ -237,12 +237,12 @@ export function useSelectionEditing(opts: {
   // --- Selection + drag dispatch ------------------------------------------
 
   const selectElement = (id: string) => {
-    // Concurrent-selection lock (spec/07): another participant has this
+    // Concurrent-selection lock (docs/specs/007-editor/live-app.md): another participant has this
     // element selected, so block it — for plain select AND for format-
     // paint targets, since painting would mutate an element someone
     // else is working on. The not-allowed cursor + "Locked to <name>"
     // tooltip on the element communicate why. Hidden / locked-layer
-    // elements (spec/74) are equally untouchable.
+    // elements (docs/specs/006-diagram/layers.md) are equally untouchable.
     if (lockedByOther(id) || layerInertIds.has(id)) return;
     // Persistent Format tool: first click arms the source, each later click
     // paints onto the target and KEEPS the source armed. Mirrors the boxed
@@ -280,7 +280,7 @@ export function useSelectionEditing(opts: {
   // empty selection.
   const toggleInMultiSelect = (id: string) => {
     // Don't let a shift-click pull a remotely-held element — or a
-    // hidden / locked-layer one (spec/74) — into the set.
+    // hidden / locked-layer one (docs/specs/006-diagram/layers.md) — into the set.
     if (lockedByOther(id) || layerInertIds.has(id)) return;
     const next = new Set(multiSelectedIds);
     if (selectedId && !next.has(selectedId)) next.add(selectedId);

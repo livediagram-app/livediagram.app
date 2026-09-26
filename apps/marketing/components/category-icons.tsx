@@ -1,7 +1,7 @@
 import { Glyph, type IconProps } from '@livediagram/ui';
 import type { ReactElement } from 'react';
 
-// One glyph per feature category (spec/16), shown on the landing beats'
+// One glyph per feature category (docs/specs/019-marketing/marketing-site.md), shown on the landing beats'
 // category chips. Drawn on the shared chrome Glyph (16-unit viewBox, stroke
 // in currentColor) so they sit with the rest of the site's icons. Each draws
 // what the category is ABOUT; category-icons.test.ts pins one per

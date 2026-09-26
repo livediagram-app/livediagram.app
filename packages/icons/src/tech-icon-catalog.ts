@@ -1,4 +1,4 @@
-// Technology-icon catalogue DATA (spec/41), kept separate from the editor's
+// Technology-icon catalogue DATA (docs/specs/010-palette/technology-icons.md), kept separate from the editor's
 // synchronous API surface (apps/live/lib/tech-icons.ts: MIME, provider list,
 // the id set behind `isTechIconId`) so the heavy per-icon SVG markup loads as
 // an async chunk there (via lib/icon-registry.ts) instead of riding the

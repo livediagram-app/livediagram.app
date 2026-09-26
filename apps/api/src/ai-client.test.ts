@@ -3,7 +3,7 @@ import { chatCompletions, chatCompletionsUrl, providerOf } from './ai-client';
 import { GOOGLE_BASE_URL } from './ai-provider';
 import type { Env } from './types';
 
-// The one place the worker talks to a model (spec/25). Whose model that is
+// The one place the worker talks to a model (docs/specs/007-editor/ai-assistance.md). Whose model that is
 // comes from ai-provider.ts; what is pinned here is the joining, the header,
 // and that the body goes through untouched.
 

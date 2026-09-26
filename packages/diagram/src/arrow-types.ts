@@ -23,7 +23,7 @@ export type Endpoint =
   // (`rebindArrowAnchorsAfterMove`) leaves a manual endpoint fixed, so a
   // deliberate correction sticks. Absent === auto-managed (the default).
   | { kind: 'pinned'; elementId: ElementId; anchor: Anchor; manual?: boolean }
-  // Connected to a point ALONG another arrow's line (spec/50) — `t` is the
+  // Connected to a point ALONG another arrow's line (docs/specs/008-canvas/arrow-to-arrow.md) — `t` is the
   // parametric position (0 = the target arrow's `from`, 1 = its `to`). The
   // position resolves dynamically from the target arrow's centreline, so it
   // tracks the target as it moves / reshapes (e.g. sequence-diagram messages
@@ -39,7 +39,7 @@ export type ArrowEnds = 'from' | 'to' | 'both' | 'none';
 export type ArrowElement = {
   id: ElementId;
   type: 'arrow';
-  // Layer membership (spec/74) — see ShapeElement.layerId.
+  // Layer membership (docs/specs/006-diagram/layers.md) — see ShapeElement.layerId.
   layerId?: string;
   from: Endpoint;
   to: Endpoint;
@@ -84,13 +84,13 @@ export type ArrowElement = {
   // 'angled' renders the connector as an axis-aligned L-shape with
   // a single right-angle bend. See `arrowStyleOf`.
   arrowStyle?: ArrowStyle;
-  // Route behind intervening boxes (spec/90): where the line would cross an
+  // Route behind intervening boxes (docs/specs/008-canvas/arrow-route-behind.md): where the line would cross an
   // unrelated box it breaks a short distance before it and resumes on the far
   // side, so a dense parent-to-children fan doesn't draw arrows over the
   // boxes between. Absent = ON: this is the default reading for an arrow, and
   // `false` is the explicit opt-out for the cases where crossing is wanted.
   routeBehind?: boolean;
-  // Flowing-arrow animation (spec/09): marching dashes or a travelling dot
+  // Flowing-arrow animation (docs/specs/008-canvas/canvas-and-palette.md): marching dashes or a travelling dot
   // along the path to show flow direction. Undefined = static.
   flow?: ArrowFlow;
   // Speed of `flow` (multiplier on its base duration). Default 'slow'
@@ -109,7 +109,7 @@ export type ArrowElement = {
   // render unchanged. Setting it back to undefined "resets" the
   // curve to its default shape.
   curveOffset?: { dx: number; dy: number };
-  // Optional extra control points for a multi-bend curve (spec/09). Each is
+  // Optional extra control points for a multi-bend curve (docs/specs/008-canvas/canvas-and-palette.md). Each is
   // a delta from the chord midpoint (canvas coords), like `curveOffset`, so
   // the whole curve translates with the arrow when an endpoint moves. When
   // present (and `arrowStyle === 'curved'`) the curve is a smooth spline
@@ -156,7 +156,7 @@ export type ArrowElement = {
   // Label colour, independent of `strokeColor` (the line). Falls back to
   // the stroke colour when unset so the label matches the line by default.
   textColor?: string;
-  // A plate behind the label (spec/09 "Caption"). Absent = none, which is how
+  // A plate behind the label (docs/specs/008-canvas/canvas-and-palette.md "Caption"). Absent = none, which is how
   // the label has always drawn: straight onto the canvas. A caption crossing
   // its own line, another arrow, or a busy backdrop is the case this exists
   // for, and it is a deliberate choice rather than a default because an

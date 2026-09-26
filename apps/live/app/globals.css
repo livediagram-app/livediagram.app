@@ -115,7 +115,7 @@
    rotation through every frame via --lvd-enter-rot (0deg when unset): a
    keyframe that sets `transform` at all REPLACES the inline
    `transform: rotate(Ndeg)` for its whole duration, so without this a tilted
-   element — a rotated shape, or any sticker (spec/116) — popped in flat and
+   element — a rotated shape, or any sticker (docs/specs/010-palette/stickers.md) — popped in flat and
    then visibly snapped to its angle when the class dropped. */
 @keyframes pop-in {
   0% {
@@ -279,7 +279,7 @@
 }
 
 /*
- * Panel opacity (spec/20). The FULL floating panels render at the user's
+ * Panel opacity (docs/specs/007-editor/user-preferences.md). The FULL floating panels render at the user's
  * chosen opacity so the canvas shows through, then snap back to fully
  * opaque while hovered or focused so they stay readable in use. Only the
  * full panels carry `data-panel-translucent` (set in MovablePanel); the
@@ -296,7 +296,7 @@
 }
 
 /*
- * Reduced motion (accessibility, spec/20). Honour BOTH the operating
+ * Reduced motion (accessibility, docs/specs/007-editor/user-preferences.md). Honour BOTH the operating
  * system's `prefers-reduced-motion` setting AND the per-user "Reduce
  * motion" preference, which adds `.reduce-motion` to <html>. Decorative
  * animations + transitions collapse to ~instant so motion-sensitive users
@@ -323,7 +323,7 @@
   scroll-behavior: auto !important;
 }
 
-/* The template previews' hover stories (spec/16) would, under the rule above,
+/* The template previews' hover stories (docs/specs/019-marketing/marketing-site.md) would, under the rule above,
    jump straight to their last frame (a kanban card teleporting to Done), so
    with Reduce motion on they don't play at all: the picker shows the static
    art, as it does with the OS setting (preview-motion.css). */
@@ -417,7 +417,7 @@
 }
 
 /*
- * Empty-state placeholder for the rich-text label editor (spec/09). A
+ * Empty-state placeholder for the rich-text label editor (docs/specs/008-canvas/canvas-and-palette.md). A
  * contentEditable can't use the native `placeholder` attribute, so when the
  * editor has no children (:empty) we render its `data-rt-placeholder` text
  * as a faded ::before. Typing inserts spans, so :empty stops matching and
@@ -430,7 +430,7 @@
 }
 
 /*
- * Eraser tool cursor (spec/09). A tilted block-eraser glyph so the canvas
+ * Eraser tool cursor (docs/specs/008-canvas/canvas-and-palette.md). A tilted block-eraser glyph so the canvas
  * reads as "in eraser mode"; the hotspot sits at the eraser's lower tip.
  * Falls back to crosshair if the data-URI cursor can't load. Returned as
  * the `cursor-eraser` class by canvasCursorClass.
@@ -456,7 +456,7 @@
 }
 
 /*
- * Spotlight tool cursor (spec/09). The OS cursor is HIDDEN: the glowing dot
+ * Spotlight tool cursor (docs/specs/008-canvas/canvas-and-palette.md). The OS cursor is HIDDEN: the glowing dot
  * is drawn by SpotlightOverlay as a DOM element locked to the light's centre
  * (a data-URI SVG cursor renders inconsistently across browsers and silently
  * falls back). Returned as the `cursor-spotlight` class by canvasCursorClass.
@@ -478,7 +478,7 @@
 }
 
 /*
- * Animated elements (spec/09 "Animated elements"). Looping, decorative
+ * Animated elements (docs/specs/008-canvas/canvas-and-palette.md "Animated elements"). Looping, decorative
  * animations applied as a class on a boxed element's wrapper, an arrow's
  * path, or an animated icon glyph. Deterministic (CSS only, nothing
  * broadcast), and every rule below is disabled under prefers-reduced-motion
@@ -617,7 +617,7 @@
     var(--lvd-anim-iter, infinite);
 }
 
-/* Text-native animations (spec/09). A standalone text element has no fill or
+/* Text-native animations (docs/specs/008-canvas/canvas-and-palette.md). A standalone text element has no fill or
  * border, so the box-shadow / ring / background versions above would animate an
  * invisible bounding rectangle around the words. These variants ride the
  * rendered glyphs instead and are applied to the label content node (not the
@@ -907,7 +907,7 @@
     var(--lvd-anim-iter, infinite);
 }
 
-/* The emphasis set (spec/09): draw the eye in place, no travel. Heartbeat /
+/* The emphasis set (docs/specs/008-canvas/canvas-and-palette.md): draw the eye in place, no travel. Heartbeat /
  * breathe use the independent `scale` property (composing with rotation,
  * like jelly); shimmer / highlight are `filter`-based so they follow any
  * silhouette (CSS-rendered, SVG-rendered, standalone text) with no
@@ -1024,7 +1024,7 @@
   animation-delay: calc(-3.33s * var(--lvd-anim-speed, 1));
 }
 
-/* Vote-results walkthrough focus (spec/39): the currently-reviewed top pick
+/* Vote-results walkthrough focus (docs/specs/012-collaboration/session-tools.md): the currently-reviewed top pick
  * pulses an amber halo so it stands out even on a busy board. Rides the
  * winner-ring overlay div (ring-2 amber), adding the breathing glow. */
 @keyframes lvd-vote-focus {
@@ -1040,7 +1040,7 @@
   animation: lvd-vote-focus 1.4s ease-in-out infinite;
 }
 
-/* Vote stepper (spec/39): translucent at rest so the label underneath stays
+/* Vote stepper (docs/specs/012-collaboration/session-tools.md): translucent at rest so the label underneath stays
  * readable on a small box — during a vote the label is what you're choosing
  * between — and solid on hover so it's clear what you're aiming at. Hover is
  * taken from the ELEMENT (`.group`), not the stepper, which is far too small
@@ -1218,7 +1218,7 @@
     var(--lvd-flow-iter, infinite);
 }
 
-/* The emphasis flows (spec/09): in-place attention rather than busy travel.
+/* The emphasis flows (docs/specs/008-canvas/canvas-and-palette.md): in-place attention rather than busy travel.
  * Heartbeat: a lub-dub thickness double-pump (vs grow's smooth breathe),
  * relative to the arrow's own width via --lvd-flow-w. */
 @keyframes lvd-arrow-heartbeat {
@@ -1292,7 +1292,7 @@
     var(--lvd-flow-iter, infinite);
 }
 
-/* Animated icon glyphs (spec/09): any icon can opt into one of these via the
+/* Animated icon glyphs (docs/specs/008-canvas/canvas-and-palette.md): any icon can opt into one of these via the
  * icon context menu (the element's `iconAnimation`). The whole SVG glyph
  * animates; transform-box: fill-box + transform-origin centre keep spins /
  * scales pinned on the glyph. Speed is fixed (no per-icon speed control). */
@@ -1490,7 +1490,7 @@
     var(--lvd-icon-anim-iter, infinite);
 }
 
-/* The icon emphasis set (spec/09): draw the eye without travelling. Glow /
+/* The icon emphasis set (docs/specs/008-canvas/canvas-and-palette.md): draw the eye without travelling. Glow /
  * ping / shimmer are filter-based (drop-shadow hugs the glyph's painted
  * silhouette; currentColor keeps the halo in the icon's own tint); breathe
  * is a slow gentle scale, calmer than beat's double-pump. */
@@ -1552,7 +1552,7 @@
     var(--lvd-icon-anim-iter, infinite);
 }
 
-/* Progress elements (spec/46): animate HOW the fill behaves. 'fill' grows it
+/* Progress elements (docs/specs/009-elements/progress.md): animate HOW the fill behaves. 'fill' grows it
  * from 0 to the set value on a loop (bar: scaleX; ring: a stroke-dashoffset
  * draw keyed off --lvd-progress), 'pulse' breathes opacity, 'stripes' runs a
  * barber-pole / marching pattern over the fill. */
@@ -1628,7 +1628,7 @@
     var(--lvd-prog-iter, infinite);
 }
 
-/* Rating stars (spec/52): pop / rock play once as an entrance (iter 1 from the
+/* Rating stars (docs/specs/009-elements/rating.md): pop / rock play once as an entrance (iter 1 from the
  * element); twinkle / pulse loop. Speed + iteration come from the inline
  * --lvd-rating-* custom properties; pop/twinkle also carry a per-star delay. */
 @keyframes lvd-rating-pop {
@@ -1691,7 +1691,7 @@
     var(--lvd-rating-iter, 1);
 }
 
-/* Pie chart slices (spec/53): grow / pop play once as an entrance; spin /
+/* Pie chart slices (docs/specs/009-elements/pie-chart.md): grow / pop play once as an entrance; spin /
  * pulse loop. Speed + iteration from the inline --lvd-pie-* custom properties;
  * the group's transform-origin is set to the pie centre inline. */
 @keyframes lvd-pie-grow {
@@ -1802,7 +1802,7 @@
   }
 }
 
-/* Isometric mode (spec/45): frames settle just below the base plane.
+/* Isometric mode (docs/specs/008-canvas/isometric-view.md): frames settle just below the base plane.
    Under preserve-3d every element sits at z=0, and a frame's big surface
    is exactly coplanar with the contents drawn over it — coplanar 3D
    layers z-fight while the camera orbits, which showed as the frame
@@ -1810,7 +1810,7 @@
    GPU a stable depth order. (Frames don't rotate, so overriding the
    wrapper transform is safe; their depth-extrusion column is skipped in
    IsometricDepthLayer for the same reason.) */
-/* Insert-between preview (spec/139): the slot opening and closing.
+/* Insert-between preview (docs/specs/021-event-storming/event-storming.md): the slot opening and closing.
    Only mounted while a palette drag is in flight over an event-storming
    board, so a real move / drag never eases — the drop must land instantly
    where the preview promised. Short and ease-out, so the board reads as
@@ -1820,7 +1820,7 @@
   transition: transform 120ms ease-out;
 }
 
-/* Done check: the all-done flash (spec/137).
+/* Done check: the all-done flash (docs/specs/012-collaboration/done-check.md).
    A pulse of the card's own ring rather than a colour wash, so it reads on a
    card of any theme colour, and it RUNS OUT after a few cycles: a card that
    flashed forever would be noise on a board somebody left open, and the state
@@ -1833,7 +1833,7 @@
   50% {
     box-shadow: 0 0 0 6px rgb(34 197 94 / 0.45);
   }
-} /* Sticky-note paper peel (spec/09): the note is glued along its top strip
+} /* Sticky-note paper peel (docs/specs/008-canvas/canvas-and-palette.md): the note is glued along its top strip
    and the rest of the sheet lifts ever so slightly off the board. The note
    itself never changes — same flat rectangle, same fill — and no mask or
    clip is involved anywhere, so no hard edge can exist: the lift lives in
@@ -1847,10 +1847,10 @@
    ::after repaints the sheet over the caster's interior (only the shadow
    that escapes the note's edges survives) and carries a whisper of
    pressed-glue shading at the top strip. Element rotation on the wrapper
-   rotates sheet and shadow together. A user-set element shadow (spec/86)
+   rotates sheet and shadow together. A user-set element shadow (docs/specs/008-canvas/element-shadows.md)
    replaces the whole treatment — element-variant.ts drops this class when
    one is set. Recipe hand-tuned on a live board against Miro's renderer
-   (the numbers are the winner of a 25-variant bake-off; see spec/09). */
+   (the numbers are the winner of a 25-variant bake-off; see docs/specs/008-canvas/canvas-and-palette.md). */
 .lvd-sticky-peel::before {
   content: '';
   position: absolute;
@@ -1897,7 +1897,7 @@
   }
 }
 
-/* Dropdown tile glyphs lift on hover (spec/108).
+/* Dropdown tile glyphs lift on hover (docs/specs/004-interface-design/dropdown-tile-grid.md).
    The whole tile is the target — pointing at a row should acknowledge the
    row, not just its 18px picture — but it is the GLYPH that moves, because
    moving the tile would shift its own label out from under the cursor.
@@ -1910,7 +1910,7 @@
   transform: translateY(-2px) scale(1.12);
 }
 
-/* Isometric z-fighting, generally (spec/45).
+/* Isometric z-fighting, generally (docs/specs/008-canvas/isometric-view.md).
    Under preserve-3d every element sits at z=0, so ANY two that overlap are
    coplanar and the compositor picks a winner per frame — which reads as
    flicker while the camera orbits, and as flicker on repaint even when it
@@ -1952,7 +1952,7 @@
 /* Arrows get the same treatment in the other direction: an arrow's SVG is
    coplanar with the boxes it crosses under preserve-3d, so the two z-fight.
    On a static arrow that only shows while the camera orbits; on a FLOWING one
-   (spec/09 animated arrows) the path repaints every frame, so the fight is
+   (docs/specs/008-canvas/canvas-and-palette.md animated arrows) the path repaints every frame, so the fight is
    continuous and reads as a shimmer that never settles. +1px puts arrows just
    ABOVE the base plane, which is also where they belong visually — a
    connector should paint over the shapes it joins. Invisible at any tilt, and
@@ -1964,7 +1964,7 @@
   translate: 0 0 calc(1px + var(--iso-z, 0) * 0.01px);
 }
 
-/* Rich-text notes (spec/92): the ink a linked run takes. Declared as a
+/* Rich-text notes (docs/specs/009-elements/rich-text-notes.md): the ink a linked run takes. Declared as a
    variable rather than a Tailwind class because the note editor paints its
    spans imperatively with inline CSS (see note-run-style.ts) and so can't
    carry a `dark:` class; the surface sets the variable, both renderers read
@@ -1976,7 +1976,7 @@
   --note-link-color: var(--color-brand-200);
 }
 
-/* Presenting a slide deck (spec/31).
+/* Presenting a slide deck (docs/specs/012-collaboration/presentation-mode.md).
 
    The SLIDE is the canvas itself, narrowed to one slide's elements and framed
    to their bounds by useEditorState. These rules are only the motion and the
@@ -1991,7 +1991,7 @@
    sliding. */
 
 /* Chrome hiding is NOT done here: presenting reports zenMode, so the editor's
-   own zen treatment (spec/26) takes the header, tab bar, palette and panels
+   own zen treatment (docs/specs/007-editor/zen-mode.md) takes the header, tab bar, palette and panels
    away through the same path a zen user gets. One way to hide the chrome, not
    two that can disagree. The zoom cluster is the one survivor zen keeps, and
    presenting hides it below since a deck has no zoom controls. */
@@ -2101,7 +2101,7 @@ html[data-presenting][data-slide-transition='slide'][data-slide-move='back']
   }
 }
 
-/* Timeline event colours (spec/138 §2).
+/* Timeline event colours (docs/specs/013-workspace/timeline.md §2).
  *
  * Keyed on WHAT HAPPENED, not on which part of the product it happened
  * in: red for destruction and lost access, amber for the shape of

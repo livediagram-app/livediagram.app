@@ -27,7 +27,7 @@ describe('elementKindLabel', () => {
     expect(elementKindLabel(ofType('sticky'))).toBe('Sticky');
     expect(elementKindLabel(ofType('image'))).toBe('Image');
     expect(elementKindLabel(ofType('freehand'))).toBe('Sketch');
-    // Freehand variants (spec/81 highlighter, spec/84 polygon tool).
+    // Freehand variants (docs/specs/008-canvas/highlighter.md highlighter, docs/specs/008-canvas/polygon-tool.md polygon tool).
     const freehand = (extra: object) => ({ type: 'freehand', ...extra }) as unknown as Element;
     expect(elementKindLabel(freehand({ pen: 'highlighter' }))).toBe('Highlight');
     expect(elementKindLabel(freehand({ straightEdges: true }))).toBe('Polyline');
@@ -38,7 +38,7 @@ describe('elementKindLabel', () => {
   });
 });
 
-// An event-storming note IS its kind (spec/139): "Selected Domain Event"
+// An event-storming note IS its kind (docs/specs/021-event-storming/event-storming.md): "Selected Domain Event"
 // tells a facilitator what they picked up; "Selected Sticky" tells them
 // nothing the board didn't already show. The kind is stored on the element
 // from creation; notes authored before that fall back to their canonical

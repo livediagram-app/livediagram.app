@@ -1,4 +1,4 @@
-// The face of a Temperature check (spec/124): fist-of-five. Five pressable
+// The face of a Temperature check (docs/specs/012-collaboration/temperature-check.md): fist-of-five. Five pressable
 // readings over five bars, with the average under them.
 //
 // Deliberately never hidden, the opposite choice from the estimate card:
@@ -46,7 +46,7 @@ export function TemperatureFace({
       title={label.trim() || 'How are we feeling?'}
       textColor={textColor}
       aside={stats.count ? `${stats.count} answered` : undefined}
-      // AN INSTRUMENT (spec/122). A fist-of-five is a READING, not a tally —
+      // AN INSTRUMENT (docs/specs/012-collaboration/participant-responses.md). A fist-of-five is a READING, not a tally —
       // "how does the room feel" has a needle answer — so the card is printed
       // with the graduated plate you read a needle against, under the bars.
       inset={{ bottom: 14 }}
@@ -71,7 +71,7 @@ export function TemperatureFace({
         <>
           {/* The SHAPE of the room, not just its average: a flat 3 across the
               board and a split between 1s and 5s average the same and mean
-              opposite things (spec/124). */}
+              opposite things (docs/specs/012-collaboration/temperature-check.md). */}
           {/* The chart takes whatever height the card has spare (min-h-0 so it
               can also shrink below the tracks' natural size). A fixed 48px
               track left a tall card with a band of dead space under the

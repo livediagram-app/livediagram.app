@@ -1,4 +1,4 @@
-// Tests for the user-preferences helpers (spec/20). These run in the
+// Tests for the user-preferences helpers (docs/specs/007-editor/user-preferences.md). These run in the
 // `node` test environment so `window` is undefined by default;
 // individual tests stub `globalThis.window` with an in-memory
 // Storage shim when they need a real localStorage code path.
@@ -26,7 +26,7 @@ import {
 const mockedGet = vi.mocked(apiGetPreferences);
 const mockedPut = vi.mocked(apiPutPreferences);
 
-// "Auto-attach arrows" is opt-in (spec/20): a fresh profile (missing
+// "Auto-attach arrows" is opt-in (docs/specs/007-editor/user-preferences.md): a fresh profile (missing
 // key) must read as OFF, and only an explicit true enables the on-move
 // rebind pass. This helper is the single home for that default; the
 // palette settings popover and useEditorPreferences both consume it,
@@ -164,7 +164,7 @@ describe('readUserPreferences (with localStorage)', () => {
   });
 
   it('preserves unknown keys so a future-versioned client does not lose flags it has not seen', () => {
-    // Forward-compat guarantee from spec/20: a client that reads a
+    // Forward-compat guarantee from docs/specs/007-editor/user-preferences.md: a client that reads a
     // newer client's write should keep the extra keys intact when it
     // writes back, otherwise an older browser tab would silently
     // strip flags the user set in a newer tab.
@@ -195,7 +195,7 @@ describe('readUserPreferences (with localStorage)', () => {
   });
 });
 
-// Network-sync helpers introduced in spec/20's "preferences live in D1"
+// Network-sync helpers introduced in docs/specs/007-editor/user-preferences.md's "preferences live in D1"
 // rewrite. These cover the two interfaces the editor relies on:
 // writeUserPreferences(prefs, ownerId) firing a PUT when an owner is
 // known (and staying purely local when one isn't), and
@@ -300,7 +300,7 @@ describe('writeUserPreferences quota / failure handling', () => {
   });
 });
 
-// Exclude from Recent (spec/93).
+// Exclude from Recent (docs/specs/013-workspace/hide-from-recent.md).
 describe('recent exclusions', () => {
   it('treats a missing list as nothing excluded', () => {
     expect(isRecentExcluded({}, 'd1')).toBe(false);

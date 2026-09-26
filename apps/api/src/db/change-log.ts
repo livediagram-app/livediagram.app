@@ -11,7 +11,7 @@ import type { ChangeLogEntryDTO, Env } from '../types';
 // diagram_tabs to find every tab currently linked to the diagram
 // and pulls log entries for those tabs. A tab shared between
 // diagrams surfaces in both diagrams' logs — which is the right
-// answer once spec/17's many-to-many tabs land: the change exists
+// answer once docs/specs/006-diagram/tab-diagram-many-to-many.md's many-to-many tabs land: the change exists
 // in every diagram it shows up in.
 export async function listChangeLog(env: Env, diagramId: string): Promise<ChangeLogEntryDTO[]> {
   // LEFT JOIN through participants so rows whose author has been
@@ -79,7 +79,7 @@ export async function insertChangeLogEntry(env: Env, entry: ChangeLogEntryDTO): 
 
 // Bulk-drop every log entry for a tab. Used by the live app when it
 // deletes a tab — the tab no longer exists, its history is dead with
-// it. See specs/12-activity-and-audit.md. The delete is SCOPED to the
+// it. See docs/specs/012-collaboration/activity-and-audit.md. The delete is SCOPED to the
 // caller's diagram (via diagram_tabs): migration 0012 dropped
 // change_log.diagram_id, so a bare `WHERE tab_id = ?` would let an
 // owner of one diagram wipe a foreign diagram's tab log by id (IDOR).
@@ -120,7 +120,7 @@ export async function deleteChangeLogEntry(
 }
 
 // 90-day retention sweep — fired from the scheduled handler (item
-// #16 / spec/12). The Activity Panel only ever surfaces the most
+// #16 / docs/specs/012-collaboration/activity-and-audit.md). The Activity Panel only ever surfaces the most
 // recent CHANGE_LOG_LIST_LIMIT entries, so anything older than the
 // retention window has been invisible since the day it landed.
 // Keeping it around forever was a slow leak.

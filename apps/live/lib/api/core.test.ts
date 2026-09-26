@@ -32,7 +32,7 @@ beforeEach(() => {
   identity.getGuestSelfSig.mockReturnValue(null);
 });
 
-describe('apiHeaders (hybrid identity gate, spec/04)', () => {
+describe('apiHeaders (hybrid identity gate, docs/specs/014-identity/auth-and-guest-access.md)', () => {
   it('sends X-Owner-Id for a guest, no Authorization', async () => {
     const h = H(await apiHeaders('guest-1'));
     expect(h['X-Owner-Id']).toBe('guest-1');
@@ -108,7 +108,7 @@ describe('expectOk / expectOkOrNull / expectOkVoid', () => {
   });
 });
 
-// The write signal the Timeline re-reads off (spec/138 §2.4b). Raised
+// The write signal the Timeline re-reads off (docs/specs/013-workspace/timeline.md §2.4b). Raised
 // from the one place every request passes through, so no call site has
 // to remember it — and only for a write that actually landed.
 describe('apiFetch / apiDelete write signal', () => {
@@ -207,6 +207,6 @@ describe('tabForWire — board kind', () => {
     expect('folder' in out).toBe(false);
   });
 
-  // Timeline lanes (spec/139 Phase 6) are BOARD state, not UI state: the
+  // Timeline lanes (docs/specs/021-event-storming/event-storming.md Phase 6) are BOARD state, not UI state: the
   // facilitator turns them on for the room, so the field has to reach the
 });

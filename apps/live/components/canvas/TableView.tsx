@@ -63,9 +63,9 @@ export function TableView({
   isSelected: boolean;
   readOnly: boolean;
   // This diagram's tabs (id + name), so a linked cell's tooltip can
-  // name the tab/element it points at (spec/09).
+  // name the tab/element it points at (docs/specs/008-canvas/canvas-and-palette.md).
   tabSummaries: { id: string; name: string }[];
-  // Resolved CSS font-family for the table's text (spec/28). Set on the
+  // Resolved CSS font-family for the table's text (docs/specs/004-interface-design/fonts.md). Set on the
   // grid root so every cell + the cell editor inherit it.
   fontFamily?: string;
   // One combined commit for every table field. Structural ops touch
@@ -76,7 +76,7 @@ export function TableView({
     id: string,
     patch: Partial<Pick<TableElement, 'cells' | 'colWidths' | 'rowHeights' | 'cellStyles'>>,
   ) => void;
-  // Open the shared link picker for a cell (spec/09). Undefined for
+  // Open the shared link picker for a cell (docs/specs/008-canvas/canvas-and-palette.md). Undefined for
   // read-only viewers (no editing).
   onLinkCell?: (tableId: string, r: number, c: number) => void;
   // Follow a cell's link when its badge is clicked (tab / diagram / url).
@@ -87,7 +87,7 @@ export function TableView({
   zoom: number;
 }) {
   // The paper under the grid, for the rules and text a table doesn't colour
-  // itself (spec/07).
+  // itself (docs/specs/007-editor/live-app.md).
   const surface = useCanvasSurface();
   const rows = element.cells.length;
   const cols = element.cells[0]?.length ?? 0;
@@ -115,7 +115,7 @@ export function TableView({
   const typeToEditRef = useRef(false);
   const gridRef = useRef<HTMLDivElement>(null);
   const showControls = isSelected && !readOnly && !element.locked;
-  // Multi-cell selection + the per-cell context menu (spec/09) — anchor,
+  // Multi-cell selection + the per-cell context menu (docs/specs/008-canvas/canvas-and-palette.md) — anchor,
   // shift-click extras, menu position, long-press opener, and the
   // whole-selection style / clear commits — live in useTableCellSelection.
   const {
@@ -143,7 +143,7 @@ export function TableView({
   });
   // Hover-preview for the cell menu's colour rows: a patch shown over the
   // selected cells until the pointer leaves. Never committed, so a sweep
-  // across a palette costs no undo entries (spec/09 Colours).
+  // across a palette costs no undo entries (docs/specs/008-canvas/canvas-and-palette.md Colours).
   const [cellPreview, setCellPreview] = useState<Partial<TableCellStyle> | null>(null);
   const {
     resizeWidths,
@@ -250,7 +250,7 @@ export function TableView({
   // remaining width).
   const colTemplate = gridTrackTemplate(cols, resizeWidths ?? element.colWidths);
   const rowTemplate = gridTrackTemplate(rows, resizeHeights ?? element.rowHeights);
-  // The table's quick-connect pluses sit on the edge MIDPOINTS (spec/09),
+  // The table's quick-connect pluses sit on the edge MIDPOINTS (docs/specs/008-canvas/canvas-and-palette.md),
   // right where a centre column / row's ⋯ trigger would land now the
   // triggers live outside the edges. When a trigger's centre falls under
   // the plus, dodge it sideways / downwards by a screen-constant nudge.

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// The welcome card's panel-layout picker (spec/79): picks write the
+// The welcome card's panel-layout picker (docs/specs/007-editor/editor-tour.md): picks write the
 // preference the way the Settings row does (panelLayout + the legacy
 // minimalPanels flag), tracked with the option in the type, and Floating
 // isn't offered on a phone.

@@ -18,7 +18,7 @@ import { useEditorDrag } from './useEditorDrag';
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 import type { EditorDragDeps } from './useEditorDrag.types';
 
-// Timeline lanes on a drag of a note ALREADY on the board (spec/139 Phase 6),
+// Timeline lanes on a drag of a note ALREADY on the board (docs/specs/021-event-storming/event-storming.md Phase 6),
 // driven through the real drag machine: the lit lane, the landing, the rungs
 // above it (an Alt slot, free placement), and the things that never snap.
 
@@ -166,7 +166,7 @@ afterEach(() => {
   setInsertionSlot(null);
 });
 
-describe('useEditorDrag — timeline lanes (spec/139)', () => {
+describe('useEditorDrag — timeline lanes (docs/specs/021-event-storming/event-storming.md)', () => {
   // Aim the note's top-left a few px off lane 1, and a few px off the left
   // edge of the note 'b' already on the board — the column that EXISTS.
   // 9px off, which is past the ordinary alignment threshold (6) and inside

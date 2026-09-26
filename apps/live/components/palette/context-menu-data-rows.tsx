@@ -1,4 +1,4 @@
-// The DATA-shape context-menu rows (spec/46 progress, spec/51 rails,
+// The DATA-shape context-menu rows (docs/specs/009-elements/progress.md progress, docs/specs/009-elements/timeline-rail.md rails,
 // rating, pie / chart): the inline editors (point stepper, star picker,
 // percent slider), their category glyphs, and the shared AnimTiles
 // grid the three per-kind animation pickers ride. Split from
@@ -42,9 +42,9 @@ import { SizeButton } from '@/components/palette/palette-controls';
 import { ProgressAnimKindGlyph } from '@/components/palette/context-menu-icons';
 import { SpeedTiles, TileLabel, withNone } from '@/components/palette/context-menu-tiles';
 
-// Progress percentage slider (spec/46). Mirrors OpacityRow but on a 0–100
+// Progress percentage slider (docs/specs/009-elements/progress.md). Mirrors OpacityRow but on a 0–100
 // integer scale.
-// Timeline-rail point count (spec/51): a − / value / + stepper. The canvas
+// Timeline-rail point count (docs/specs/009-elements/timeline-rail.md): a − / value / + stepper. The canvas
 // "+" affordance adds points too; this also removes them.
 export function RailPointsRow({
   value,
@@ -109,7 +109,7 @@ export function RatingMenuGlyph() {
   );
 }
 
-// Rating star picker (spec/52): click a star to set the 1..RATING_MAX score.
+// Rating star picker (docs/specs/009-elements/rating.md): click a star to set the 1..RATING_MAX score.
 export function RatingPickerRow({
   value,
   onChange,
@@ -140,7 +140,7 @@ export function RatingPickerRow({
   );
 }
 
-// Rating animation tiles (spec/52): None + the star-specific animations, then a
+// Rating animation tiles (docs/specs/009-elements/rating.md): None + the star-specific animations, then a
 // Shared body for the per-element animation pickers (Progress / Rating / Pie):
 // a None-prepended tile grid, then a Speed row + a Repeat toggle once an
 // animation is picked. Each kind passes only its own anim list + tile glyph;
@@ -264,7 +264,7 @@ export function ChartMenuGlyph() {
 // so the context-menu row imports stay a single source.
 export { LineDataSummary, PieDataEditor } from './context-menu-data-editors';
 
-// Pie slice animation tiles (spec/53): None + the chart animations, then Speed
+// Pie slice animation tiles (docs/specs/009-elements/pie-chart.md): None + the chart animations, then Speed
 // + Repeat once one is picked (mirrors ProgressAnimTiles / RatingAnimTiles).
 export function PieAnimTiles(props: AnimTilesProps<PieAnim>) {
   return (
@@ -313,7 +313,7 @@ export function ProgressRow({ value, onChange }: { value: number; onChange: (v: 
   return <PercentSliderRow label="Percentage" pct={clampPercent(value)} onPct={onChange} />;
 }
 
-// Progress fill-animation tiles (spec/46): None / Fill / Pulse / Stripes, plus
+// Progress fill-animation tiles (docs/specs/009-elements/progress.md): None / Fill / Pulse / Stripes, plus
 // a Speed row + a Repeat toggle once an animation is picked. `fill` defaults to
 // playing once and holding (Repeat off); pulse / stripes default to looping.
 // No header (the Progress category title already reads "Animation").

@@ -14,12 +14,12 @@ import {
 } from '@livediagram/diagram';
 import { NoteGhost } from '@/components/canvas/NoteGhost';
 
-// The next-note buttons (spec/139 Phase 7): on each side of the SELECTED note
+// The next-note buttons (docs/specs/021-event-storming/event-storming.md Phase 7): on each side of the SELECTED note
 // that has a next note in the notation, a small tab in that next note's colour
 // peeks from the edge. Pointing at a tab (or focusing it) previews the
 // note-to-be where it would land; clicking adds it, open for typing.
 //
-// Spec/139 retired the four quick-connect pluses on this board as chrome that
+// docs/specs/021-event-storming/event-storming.md retired the four quick-connect pluses on this board as chrome that
 // the capture loop never asks for. These are a different animal: at most TWO,
 // only on the selected note, and each one is a sentence of the notation ("add
 // a command before this domain event") rather than a generic "connect

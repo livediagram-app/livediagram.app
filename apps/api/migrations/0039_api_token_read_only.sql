@@ -1,4 +1,4 @@
--- Read-only API tokens (spec/61 §3.4 + spec/62 §4.11). A token minted with
+-- Read-only API tokens (docs/specs/015-api/public-api-and-tokens.md §3.4 + docs/specs/015-api/mcp-server.md §4.11). A token minted with
 -- read_only = 1 may only make GET/HEAD requests; the api rejects every write
 -- (POST/PUT/DELETE) it presents. The MCP OAuth consent screen offers this so a
 -- cautious user can let an AI tool VIEW their diagrams without granting edit.

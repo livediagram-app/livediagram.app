@@ -7,8 +7,8 @@ import {
   type RoomOp,
 } from '@livediagram/api-schema';
 
-// The poll that is running in a room, and everyone's answer to it (spec/152).
-// A poll is not document state (spec/88), but it has to outlive a socket: a
+// The poll that is running in a room, and everyone's answer to it (docs/specs/012-collaboration/collab-race-hardening.md).
+// A poll is not document state (docs/specs/012-collaboration/live-poll.md), but it has to outlive a socket: a
 // late joiner or a refresh used to see no poll at all, and a host who
 // refreshed could no longer end it. The room feeds it the ops that start, end
 // and answer a poll, and replays it to each session on hello.

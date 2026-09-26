@@ -1,12 +1,12 @@
 // Binds the contextual command catalogue (lib/editor-commands.ts) to the live
-// editor so the SearchPanel can surface a power-user action palette (spec/09
+// editor so the SearchPanel can surface a power-user action palette (docs/specs/008-canvas/canvas-and-palette.md
 // "Search panel"). Reads the selection + the editor's existing action
 // handlers off EditorContext, returns the searchable `commandItems` the
 // panel matches against plus a `runCommand` dispatcher.
 //
 // Each handler delegates to the SAME editor action the context menu / toolbar
 // / header uses (so behaviour + telemetry can't drift); view-only sessions
-// get the view-safe subset only (zen / fit / export, spec/70), with every
+// get the view-safe subset only (zen / fit / export, docs/specs/007-editor/command-palette.md), with every
 // mutating command withheld inside the pure builder.
 
 import { useCallback, useMemo } from 'react';
@@ -75,7 +75,7 @@ export function useEditorCommands(): {
     setCanvasTool,
   } = ctx;
 
-  // Offline diagrams (spec/76) have nothing on the server to share, so the
+  // Offline diagrams (docs/specs/006-diagram/offline-mode.md) have nothing on the server to share, so the
   // Share command is withheld the same way the header hides its button.
   const isOffline = useIsOfflineDiagram(diagramId);
   // Spotlight is desktop-only, so the tool commands need the same viewport
@@ -98,7 +98,7 @@ export function useEditorCommands(): {
     : false;
 
   const commands = useMemo(() => {
-    // Read-only gating happens inside the pure builder (spec/70): view-only
+    // Read-only gating happens inside the pure builder (docs/specs/007-editor/command-palette.md): view-only
     // visitors keep the view-safe subset, editors get the full catalogue.
     const cmdCtx: CommandContext = {
       isReadOnly,

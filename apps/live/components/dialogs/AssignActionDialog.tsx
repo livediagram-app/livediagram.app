@@ -18,7 +18,7 @@ import { clerkEnabled } from '@/lib/clerk-config';
 import { track } from '@/lib/telemetry';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
 
-// Assign Action dialog (spec/68 §2). The picker always offers a pinned
+// Assign Action dialog (docs/specs/012-collaboration/assigned-actions.md §2). The picker always offers a pinned
 // **Myself** row (the feature is not sign-in gated: a signed-out user can
 // assign an action to themselves as a personal to-do), then the joined
 // members of every team the signed-in user has joined. Also serves as the
@@ -30,7 +30,7 @@ import { DialogFooter } from '@/components/dialogs/DialogFooter';
 // The email offer is the shared iOS-style ToggleSwitch, default on, and
 // is hidden entirely for a self-assignment — you don't email yourself
 // about your own action. Picking a teammate also fires a REAL access
-// check (spec/68 §4) so the "can't open this diagram" hint only shows
+// check (docs/specs/012-collaboration/assigned-actions.md §4) so the "can't open this diagram" hint only shows
 // when the server says so.
 
 type AssignActionDialogProps = {
@@ -48,18 +48,18 @@ type AssignActionDialogProps = {
   // Myself-only picker).
   ownerId: string | null;
   // The assigner's identity: the Clerk account, or the guest participant
-  // identity (spec/04). Drives the Myself row.
+  // identity (docs/specs/014-identity/auth-and-guest-access.md). Drives the Myself row.
   selfUserId: string | null;
   selfName: string | null;
   // The diagram's id + team-library team (null team for a personal
   // diagram). Drive the access check: picking a teammate asks the server
-  // whether they can actually open this diagram (spec/68 §4).
+  // whether they can actually open this diagram (docs/specs/012-collaboration/assigned-actions.md §4).
   diagramId: string | null;
   diagramTeamId: string | null;
   // capabilities.emailEnabled — hides the email offer on a self-host
   // without Resend (never advertise a send we can't perform).
   emailEnabled: boolean;
-  // Inline personal-diagram fix (spec/68 §2): file the diagram into the
+  // Inline personal-diagram fix (docs/specs/012-collaboration/assigned-actions.md §2): file the diagram into the
   // picked team's library root so teammates become assignable without an
   // Explorer round-trip. Resolves false on failure (the picker shows a
   // retry-able error line).
@@ -87,7 +87,7 @@ export function AssignActionDialog({
   const [description, setDescription] = useState('');
   const [assignee, setAssignee] = useState<PickableMember | null>(null);
   const [notifyEmail, setNotifyEmail] = useState(true);
-  // The team id mid inline move (spec/68 §2 personal-diagram fix), and
+  // The team id mid inline move (docs/specs/012-collaboration/assigned-actions.md §2 personal-diagram fix), and
   // whether the last attempt failed.
   const [movingToTeamId, setMovingToTeamId] = useState<string | null>(null);
   const [moveFailed, setMoveFailed] = useState(false);
@@ -115,7 +115,7 @@ export function AssignActionDialog({
   // the create defaults), never the previous attempt. Creating defaults
   // the name to the element's own text (selected, so typing replaces it)
   // and preselects Myself — the common self-assignment is zero-click.
-  // The email offer re-defaults to on each time (spec/68: default on; it
+  // The email offer re-defaults to on each time (docs/specs/012-collaboration/assigned-actions.md: default on; it
   // only renders for a non-self assignee anyway).
   // selfRow via a ref so a late identity settle (Clerk name resolving
   // after the dialog opened) can't re-run the seed and wipe mid-typing
@@ -133,14 +133,14 @@ export function AssignActionDialog({
   }, [open, existing, elementLabel]);
 
   // Signed-out impression: the Myself-only picker with the sign-in
-  // nudge. One emit per open so the funnel is measurable (spec/22).
+  // nudge. One emit per open so the funnel is measurable (docs/specs/017-telemetry/telemetry.md).
   useEffect(() => {
     if (open && !signedIn && clerkEnabled) track('UI', 'Opened', 'ActionSignInNudge');
   }, [open, signedIn]);
 
   const editing = existing !== null;
   // The email offer matters on create, and on an edit that picks a NEW
-  // assignee; an edit that keeps the assignee sends nothing (spec/68 §3).
+  // assignee; an edit that keeps the assignee sends nothing (docs/specs/012-collaboration/assigned-actions.md §3).
   // Hidden entirely for a self-assignment: you don't email yourself
   // about your own action.
   const assigneeChanged =
@@ -154,7 +154,7 @@ export function AssignActionDialog({
     assignee.teamId !== null &&
     !(assignee.userId !== null && assignee.userId === selfUserId) &&
     assigneeChanged;
-  // Access hint (spec/68 §4): a definite server "no" gets definite
+  // Access hint (docs/specs/012-collaboration/assigned-actions.md §4): a definite server "no" gets definite
   // wording; a failed check falls back to the picked-team heuristic with
   // hedged wording; in-flight / yes / Myself shows nothing.
   const showAccessHint =

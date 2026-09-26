@@ -34,7 +34,7 @@ type SelectionPopoverProps = {
   // live only in the right-click context menu). Omitted in read-only /
   // view-role mode.
   onDuplicate?: () => void;
-  // Intra-LAYER z-order (spec/74 gained no z-nudge until now): stack this
+  // Intra-LAYER z-order (docs/specs/006-diagram/layers.md gained no z-nudge until now): stack this
   // element in front of / behind its band-mates WITHOUT moving it between
   // layers, which is what the element menu's Bring to Front does.
   onBringToFront?: () => void;

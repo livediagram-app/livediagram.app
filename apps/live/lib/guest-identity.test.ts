@@ -83,7 +83,7 @@ describe('ensureSignedGuestIdentity', () => {
   });
 });
 
-// New Visitors (`Participant`/`Created`, spec/22) must count a browser once.
+// New Visitors (`Participant`/`Created`, docs/specs/017-telemetry/telemetry.md) must count a browser once.
 // The once-per-load guard is module state, so each case loads the modules
 // fresh rather than inheriting a flag an earlier test already set.
 describe('Participant·Created counts once per browser', () => {

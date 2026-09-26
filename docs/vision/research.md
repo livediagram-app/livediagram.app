@@ -1,7 +1,7 @@
 # What else could find the stickies: the research inventory
 
 Fifty-four research agents searched the web for ways to meet the bar of
-[plans/event-storming-photo-95.md](../../plans/event-storming-photo-95.md):
+plans/0007-event-storming-photo-95.md:
 95% recall and precision on every labelled wall, and no merged boxes, free for
 everyone, in the browser, MIT-compatible. This is what came back, de-duplicated
 and judged against our MEASURED failures (151 missed notes on eight walls:
@@ -94,7 +94,7 @@ Mostly confirmation of what the experiment groups had by then measured
 
 ## Where each candidate is tested
 
-[plans/event-storming-photo-95-experiments.md](../../plans/event-storming-photo-95-experiments.md)
+plans/0006-event-storming-photo-95-experiments.md
 turns these into experiments, grouped so they can run in parallel.
 
 Results, one file per group:

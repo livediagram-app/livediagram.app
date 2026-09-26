@@ -9,7 +9,7 @@ import {
 import type { RoomOp } from '@livediagram/api-schema';
 
 // Turn the before/after of an autosaved tab into the realtime ops to
-// broadcast (spec/75, Level 0). The room used to send the whole `Tab` on
+// broadcast (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 0). The room used to send the whole `Tab` on
 // every edit, so two people editing *different* elements on the same tab
 // clobbered each other. Here we ship only what changed: a `tab-meta` patch
 // for non-element fields + one `el` op per changed element, applied by id
@@ -23,13 +23,13 @@ import type { RoomOp } from '@livediagram/api-schema';
 export const EL_OP_BROADCAST_LIMIT = 20;
 
 // Tab keys that never ride a `tab-meta` patch: `id` is immutable, `elements`
-// travels as `el` ops, and `folder` is owned by the diagram-meta op (spec/30)
+// travels as `el` ops, and `folder` is owned by the diagram-meta op (docs/specs/006-diagram/tab-folders.md)
 // so a content/meta edit can't clobber a concurrent folder move.
 export const META_SKIP: ReadonlySet<string> = new Set(['id', 'elements', 'folder']);
 
 // Is this `vote` change nothing but dots moving?
 //
-// A dot travels as its own commutative `vote` op now (spec/39), so shipping the
+// A dot travels as its own commutative `vote` op now (docs/specs/012-collaboration/session-tools.md), so shipping the
 // votes map in a tab-meta patch as well would put back the very clobber the op
 // exists to remove: the patch replaces the field wholesale, so a peer applying
 // it would drop any dot that reached them from somebody else in the meantime.
@@ -82,7 +82,7 @@ export function tabBroadcastOps(before: Tab | undefined, after: Tab): RoomOp[] {
   if (!before) return [{ kind: 'tab', tabId: after.id, tab: after }];
 
   // An element whose only change rode a delta (an answer, an idea, a tick, a
-  // comment: spec/152) has already been said; a whole-element update on top
+  // comment: docs/specs/012-collaboration/collab-race-hardening.md) has already been said; a whole-element update on top
   // would hand every receiver a snapshot to be wrong with.
   const beforeById = new Map(before.elements.map((e) => [e.id, e]));
   const elOps = diffToElementOps(before.elements, after.elements).filter((op) => {
@@ -99,7 +99,7 @@ export function tabBroadcastOps(before: Tab | undefined, after: Tab): RoomOp[] {
   const patchKeys = Object.keys(patch);
   if (patchKeys.length > 0) {
     // A cleared field is `patch[k] = undefined`, which JSON.stringify drops,
-    // so the clear travels by NAME in `clear` (spec/152). It used to force a
+    // so the clear travels by NAME in `clear` (docs/specs/012-collaboration/collab-race-hardening.md). It used to force a
     // whole-`tab` op, and Clear Timer / Clear Vote then replaced every element
     // on every receiver, wiping their unsaved presses.
     const clear = patchKeys.filter((k) => patch[k] === undefined);
@@ -117,7 +117,7 @@ export function tabBroadcastOps(before: Tab | undefined, after: Tab): RoomOp[] {
 
 // Fold a peer's whole `vote` object into ours, wherever one arrives (a
 // tab-meta patch or a whole-tab op). A round-stamped vote follows the round
-// rule (`mergeIncomingVote`, spec/152): within one round only delta ops move
+// rule (`mergeIncomingVote`, docs/specs/012-collaboration/collab-race-hardening.md): within one round only delta ops move
 // the dots, so the receiver keeps its map. A vote from before rounds keeps the
 // older rule: the map is ours unless something besides the dots changed.
 export function mergeRemoteVote(local: Tab['vote'], incoming: Tab['vote']): Tab['vote'] {
@@ -129,7 +129,7 @@ export function mergeRemoteVote(local: Tab['vote'], incoming: Tab['vote']): Tab[
 
 // Apply a peer's whole-`tab` op over our copy of that tab.
 //
-// `folder` is per-diagram link metadata owned by the diagram-meta op (spec/30),
+// `folder` is per-diagram link metadata owned by the diagram-meta op (docs/specs/006-diagram/tab-folders.md),
 // so the local membership stays and a content edit can't clobber a concurrent
 // folder change.
 //
@@ -140,15 +140,15 @@ export function mergeRemoteVote(local: Tab['vote'], incoming: Tab['vote']): Tab[
 // new round or a clear replaces it (mergeRemoteVote).
 //
 // And the same for every element's delta-carried fields (answers, ideas,
-// ticks, comments: spec/152), which reached us one delta at a time.
+// ticks, comments: docs/specs/012-collaboration/collab-race-hardening.md), which reached us one delta at a time.
 export function mergeRemoteTab(local: Tab, incoming: Tab): Tab {
   const vote = mergeRemoteVote(local.vote, incoming.vote);
   const { vote: _incomingVote, ...rest } = incoming;
   const localById = new Map(local.elements.map((e) => [e.id, e]));
   const elements = incoming.elements.map((el) => {
     const mine = localById.get(el.id);
-    // Delta-carried fields stay ours (spec/152); a Q&A board keeps the newer
-    // rev's notes (spec/151), the same rule as an `el` op.
+    // Delta-carried fields stay ours (docs/specs/012-collaboration/collab-race-hardening.md); a Q&A board keeps the newer
+    // rev's notes (docs/specs/012-collaboration/qa-board.md), the same rule as an `el` op.
     return mine ? preferNewerQa(mine, mergeIncomingElement(mine, el)) : el;
   });
   return {

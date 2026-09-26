@@ -4,8 +4,8 @@
 // async; concatenated after part 1 by the editor's lib/icon-registry.ts (or
 // the Workers' ./resolve).
 //
-// The legacy entries are the compatibility half of spec/116. Emoji shipped as
-// icons under spec/85, so saved diagrams hold `iconId: 'emoji-*'` elements;
+// The legacy entries are the compatibility half of docs/specs/010-palette/stickers.md. Emoji shipped as
+// icons under docs/specs/010-palette/emoji-icons.md, so saved diagrams hold `iconId: 'emoji-*'` elements;
 // they are derived from the sticker catalogue (never hand-copied) so the two
 // can't drift, and they keep rendering as the bare tinted glyph those
 // elements have always been. The palette does not offer them — the Stickers
@@ -432,7 +432,7 @@ export const ICON_CATALOG_2: IconDef[] = [
     ],
   },
 
-  // --- Furniture / room (spec/09) -----------------------------------------
+  // --- Furniture / room (docs/specs/008-canvas/canvas-and-palette.md) -----------------------------------------
   // Top-down floor-plan symbols for sketching room layouts: same single-
   // weight 0..24 outline style as the rest, drawn as if looking straight
   // down on the piece. Grouped under the "Furniture" category chip.
@@ -601,7 +601,7 @@ export const ICON_CATALOG_2: IconDef[] = [
       { t: 'line', x1: 5, y1: 15, x2: 19, y2: 15 },
     ],
   },
-  // Animated icons (spec/09 "Animated elements"). Ordinary `icon` glyphs whose
+  // Animated icons (docs/specs/008-canvas/canvas-and-palette.md "Animated elements"). Ordinary `icon` glyphs whose
   // SVG animates via a CSS class (see ANIMATED_ICONS + iconAnimationClass).
   // The prims are the resting frame, so they read fine frozen (reduced-motion
   // / export).

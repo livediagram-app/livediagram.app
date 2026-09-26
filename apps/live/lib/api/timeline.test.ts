@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { apiListTimeline } from './timeline';
 
-// The regression these lock (spec/138 §2.4 / §6.4): a read that FAILED
+// The regression these lock (docs/specs/013-workspace/timeline.md §2.4 / §6.4): a read that FAILED
 // used to come back as an empty page, indistinguishable from a feed
 // with nothing in it. The Timeline then rendered "Nothing has happened
 // yet" at people whose history was intact on the server, and only a

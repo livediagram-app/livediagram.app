@@ -98,7 +98,7 @@ export function MultiSelectionContextMenu({
         const sel = props.selectionElements;
         const boxedSel = sel.filter(isBoxed);
         const arrowSel = sel.filter((el) => el.type === 'arrow');
-        // Presets (spec/48) apply selection-wide: a shape preset to every
+        // Presets (docs/specs/010-palette/style-presets.md) apply selection-wide: a shape preset to every
         // preset-eligible shape, an arrow preset to every arrow. The
         // active-tile highlight reads off the first matching member.
         const presetShapeSrc = sel.find(shapeSupportsPresets);
@@ -121,7 +121,7 @@ export function MultiSelectionContextMenu({
           { strokeWidth?: BorderStroke; strokeStyle?: BorderStyle; type: string } | undefined;
         const radiusSrc = sel.find((el) => supportsBorderRadius(el)) as
           { borderRadius?: BorderRadius } | undefined;
-        // Shadow (spec/86): the section shows when any member supports it;
+        // Shadow (docs/specs/008-canvas/element-shadows.md): the section shows when any member supports it;
         // the sliders/active-tile read off the first such member, and the
         // setters apply selection-wide (unsupported members no-op).
         const shadowSrc = sel.find((el) => supportsShadow(el)) as
@@ -144,7 +144,7 @@ export function MultiSelectionContextMenu({
         // by kind only when both are present; on a single-kind selection the
         // plain "Animation" reads fine.
         const bothAnimated = boxedSel.length > 0 && !!arrowSrc;
-        // Menu parity with the single-element menu (spec/09): everything you
+        // Menu parity with the single-element menu (docs/specs/008-canvas/canvas-and-palette.md): everything you
         // can restyle on ONE element works on a selection / group too. Each
         // section reads its display value off the first matching member and
         // writes selection-wide (the setters already are).
@@ -162,7 +162,7 @@ export function MultiSelectionContextMenu({
             !isRailShape(el.shape) &&
             !isRatingShape(el.shape) &&
             !isChartShape(el.shape) &&
-            // Markers decorate the label (spec/49): only offer them when a
+            // Markers decorate the label (docs/specs/009-elements/shape-markers.md): only offer them when a
             // member actually has text.
             (el.label ?? '').trim().length > 0,
         ) as ShapeElement | undefined;
@@ -177,7 +177,7 @@ export function MultiSelectionContextMenu({
             ((el as { label?: string }).label ?? '').trim().length > 0,
         );
         // The Style flyout shows when any of its children would — the
-        // preset sections, Colours, or Border (spec/09, mirroring the
+        // preset sections, Colours, or Border (docs/specs/008-canvas/canvas-and-palette.md, mirroring the
         // single-element menu's Style band).
         const showStyleFlyout = !!presetShapeSrc || !!arrowSrc || colourable || borderableSel;
         // The Text flyout groups Typography (Font / Size / Padding) +
@@ -197,7 +197,7 @@ export function MultiSelectionContextMenu({
               onClose={onClose}
             />
             <MenuGroupSeparator />
-            {/* ── Style band (spec/09): Presets + Colours + Border behind one
+            {/* ── Style band (docs/specs/008-canvas/canvas-and-palette.md): Presets + Colours + Border behind one
                   "Style" flyout row, matching the single-element menu. ── */}
             {showStyleFlyout ? (
               <MenuFlyoutSection title="Style" icon={<StyleMenuGlyph />} {...flyoutProps('style')}>
@@ -271,7 +271,7 @@ export function MultiSelectionContextMenu({
               techIconSrc={techIconSrc}
               onClose={onClose}
             />
-            {/* ── Text row (spec/09): Typography + Alignment + Markers behind
+            {/* ── Text row (docs/specs/008-canvas/canvas-and-palette.md): Typography + Alignment + Markers behind
                   one "Text" flyout, matching the single-element menu. Sits in
                   the style band (no separator) like its single counterpart. ── */}
             {showTextFlyout ? (
@@ -316,7 +316,7 @@ export function MultiSelectionContextMenu({
                     </div>
                   </MenuAccordionSection>
                 ) : null}
-                {/* Markers (spec/49) — for every marker-capable shape in the
+                {/* Markers (docs/specs/009-elements/shape-markers.md) — for every marker-capable shape in the
                       selection. */}
                 {markerSrc ? (
                   <MenuAccordionSection

@@ -1,6 +1,6 @@
 'use client';
 
-// The ⋯ menu on a collapsed stack (spec/138 §2.9): one verb, Remove
+// The ⋯ menu on a collapsed stack (docs/specs/013-workspace/timeline.md §2.9): one verb, Remove
 // from Timeline, which takes every member of the run off the reader's
 // feed at once. A day's "Diagrams Renamed · 12 events" is one thing to
 // the reader, so it should be one click to be rid of.

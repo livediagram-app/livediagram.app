@@ -100,7 +100,7 @@ export function UnsortedNode({
   );
 }
 
-// Synthetic "Offline" folder (spec/76): every diagram saved only in this
+// Synthetic "Offline" folder (docs/specs/006-diagram/offline-mode.md): every diagram saved only in this
 // browser, mirroring the /explorer route's dynamic Offline folder. Always
 // rendered (even empty) so the local-only bucket stays discoverable. Not a
 // drop target, and its rows are not drag sources: moving a cloud diagram

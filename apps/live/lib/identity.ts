@@ -20,7 +20,7 @@ export type Participant = {
   id: string;
   // The id this person writes into the DOCUMENT for anything recorded
   // per participant — a done check's mark, an estimate, a temperature
-  // (spec/122). Separate from `id` because `id` cannot do that job: for
+  // (docs/specs/012-collaboration/participant-responses.md). Separate from `id` because `id` cannot do that job: for
   // ourselves it is the owner id, which must never be published, and for
   // a peer it is the room's per-socket presence id, which changes on
   // every reconnect and matches nothing that was saved.
@@ -50,7 +50,7 @@ export type Participant = {
   role?: 'edit' | 'view';
 };
 
-// How this participant is recorded in the document (spec/122). Falls back
+// How this participant is recorded in the document (docs/specs/012-collaboration/participant-responses.md). Falls back
 // to `id` for a peer whose client is too old to publish a key: they then
 // match no saved answer, which is no worse than before the key existed and
 // is a great deal better than crashing the join on an undefined.
@@ -134,7 +134,7 @@ export function randomColor(): string {
 }
 
 // Deterministic palette pick for identities that have no persisted
-// colour of their own (e.g. team member rows, spec/32, which are
+// colour of their own (e.g. team member rows, docs/specs/013-workspace/teams.md, which are
 // keyed by email rather than a participant record). Same key, same
 // colour, every render and every device — FNV-1a over the key, mapped
 // onto the curated palette above.

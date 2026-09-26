@@ -17,7 +17,7 @@ import { POLL_OPTIONS_MAX } from './poll-style';
 
 describe('fixed-size shapes', () => {
   it('names the controls that never take resize handles', () => {
-    // The Done check (spec/137) joined the two buttons (spec/103): a roster
+    // The Done check (docs/specs/012-collaboration/done-check.md) joined the two buttons (docs/specs/009-elements/mode-button.md): a roster
     // and a button laid out for their own content, so a bigger box only
     // spreads them over empty card.
     for (const kind of ['mode-button', 'session-button', 'done-check']) {
@@ -161,7 +161,7 @@ describe('sessionButtonPlan', () => {
 
 describe('defaultSessionConfig', () => {
   it('drops a poll button that reads the answers it ships with', () => {
-    // The palette places a working poll (spec/105). It carries two answers,
+    // The palette places a working poll (docs/specs/012-collaboration/session-button.md). It carries two answers,
     // so its style has to be the one that reads them.
     const config = defaultSessionConfig('poll');
     expect(config.style).toBe('choice');

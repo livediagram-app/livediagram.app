@@ -4,7 +4,7 @@ import { CtaLink } from '@/components/CtaLink';
 import { Showcase } from '@/components/Showcase';
 import { beatSections, beatShowcase, type LandingBeat } from '@/lib/landing-beats';
 
-// One beat of the landing page's story (spec/16): the beat's headline with
+// One beat of the landing page's story (docs/specs/019-marketing/marketing-site.md): the beat's headline with
 // its number beside it, its pitch, a chip into every category it covers (so all of
 // them stay one click from home), a primary link into its lead category, and
 // a showcase with one scene from across the beat. Alternates the showcase

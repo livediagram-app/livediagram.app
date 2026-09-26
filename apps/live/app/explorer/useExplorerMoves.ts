@@ -13,7 +13,7 @@ import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { track } from '@/lib/telemetry';
 import type { TeamDiagramRow, TeamFolderRow } from '@/hooks/persistence/useTeamLibrariesSweep';
 
-// The unified move-picker slice (spec/35), lifted out of
+// The unified move-picker slice (docs/specs/013-workspace/team-shared-diagrams.md), lifted out of
 // useExplorerState: the picker's open-target state, the per-placement
 // move handlers (personal folder / into a team / within a team / out
 // of a team), the one routing entry point the picker calls, and the
@@ -53,7 +53,7 @@ export function useExplorerMoves({
   // so the picker can filter (a folder can't be moved into itself
   // or its descendants — the server cycle-checks but the picker
   // hides those rows up-front to make the rejection less surprising).
-  // One modal serves every diagram, personal or team (spec/35): it
+  // One modal serves every diagram, personal or team (docs/specs/013-workspace/team-shared-diagrams.md): it
   // shows the full destination tree and `moveDiagramTo` routes the
   // pick from the subject's current placement.
   const [moveTarget, setMoveTarget] = useState<
@@ -83,7 +83,7 @@ export function useExplorerMoves({
   };
 
   // Send one of the caller's own diagrams into a team's shared
-  // library (spec/35) — straight into a team folder when the move
+  // library (docs/specs/013-workspace/team-shared-diagrams.md) — straight into a team folder when the move
   // picker chose one, else the team's Unsorted. Leaves the personal
   // lists either way, so the local row is dropped optimistically.
   const moveDiagramToTeam = (id: string, teamId: string, folderId: string | null = null) => {
@@ -109,7 +109,7 @@ export function useExplorerMoves({
 
   // Re-folder a team-library diagram WITHIN its team (folderId null =
   // the team's Unsorted), then re-sweep so Recent's rows repaint.
-  // Same call the team page's own move uses (spec/35).
+  // Same call the team page's own move uses (docs/specs/013-workspace/team-shared-diagrams.md).
   const moveTeamDiagramToFolder = (id: string, teamId: string, folderId: string | null) => {
     if (!ownerId) return;
     // .then BEFORE .catch, deliberately: chained the other way round the
@@ -125,7 +125,7 @@ export function useExplorerMoves({
 
   // Move a team-library diagram OUT of its team — either to the
   // caller's personal library (toTeamId null; the server transfers
-  // ownership to the mover, spec/35) or on to another team
+  // ownership to the mover, docs/specs/013-workspace/team-shared-diagrams.md) or on to another team
   // (toTeamId set). Refreshes both the team sweep (the row leaves /
   // moves) and the personal list (it lands there when going personal).
   const moveTeamDiagramOut = (id: string, toTeamId: string | null, folderId: string | null) => {
@@ -139,7 +139,7 @@ export function useExplorerMoves({
       .catch(() => {});
   };
 
-  // One entry point for the unified move picker (spec/35): route a
+  // One entry point for the unified move picker (docs/specs/013-workspace/team-shared-diagrams.md): route a
   // pick to the right handler from the subject's CURRENT placement
   // (personal vs which team) and its destination.
   const moveDiagramTo = (id: string, dest: { teamId: string | null; folderId: string | null }) => {
@@ -180,7 +180,7 @@ export function useExplorerMoves({
   // Team destinations for the move picker (diagram moves only): each
   // team with its folder tree, so a diagram can land in a team folder
   // in one move. Folders carry parentId for the indented tree. An
-  // offline diagram (spec/76) gets none — a team's shared library is
+  // offline diagram (docs/specs/006-diagram/offline-mode.md) gets none — a team's shared library is
   // server-side, so a team move could never land.
   const moveTeamDests = useMemo(() => {
     if (

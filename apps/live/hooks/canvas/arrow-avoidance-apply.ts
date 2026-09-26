@@ -6,7 +6,7 @@ import {
   type Element,
 } from '@livediagram/diagram';
 
-// Apply the collision-avoiding curve (spec/77) to a JUST-DRAWN arrow: if
+// Apply the collision-avoiding curve (docs/specs/008-canvas/arrow-collision-avoidance.md) to a JUST-DRAWN arrow: if
 // its straight chord would cross an unrelated element's clearance ring, or
 // run flush along the boxes it connects, give it the gentle bow the
 // geometry helper picks. One-shot at the end of the creation gesture; the

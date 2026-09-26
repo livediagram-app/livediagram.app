@@ -50,15 +50,15 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   parallelogram: { width: 160, height: 100 },
   hexagon: { width: 140, height: 120 },
   document: { width: 140, height: 110 },
-  // Document (spec/100): 420x594 is the A-series root-2 ratio, at a size that
+  // Document (docs/specs/009-elements/page-element.md): 420x594 is the A-series root-2 ratio, at a size that
   // reads as a page beside a 120px square without swallowing the canvas.
   page: { width: 420, height: 594 },
-  // Mind node (spec/118): a caption-width pill. Wide enough for a phrase,
+  // Mind node (docs/specs/009-elements/mind-node.md): a caption-width pill. Wide enough for a phrase,
   // short enough that a column of siblings stays readable. 170x48 fitted a
   // couple of words and made anything longer wrap or overflow, which is not
   // what people actually type into a mind map.
   'mind-node': { width: 250, height: 80 },
-  // Lane (spec/119): a band, not a box — wide enough to lay a flow across and
+  // Lane (docs/specs/009-elements/lane.md): a band, not a box — wide enough to lay a flow across and
   // tall enough for a row of steps.
   lane: { width: 900, height: 200 },
   // Reaction pad: a press-me square, sized like the other Behaviour buttons.
@@ -66,16 +66,16 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // Comment pin: a marker, deliberately small. It is a place on the board,
   // not a card — the thread it holds opens in the existing popover.
   // Comment panel: a card, sized for a couple of comments. Collapsed it
-  // shrinks to its summary bar (spec/136).
+  // shrinks to its summary bar (docs/specs/012-collaboration/comment-pin.md).
   'comment-pin': { width: 260, height: 190 },
-  // Action panel (spec/146): the Comment panel's size, which fits a name, a
+  // Action panel (docs/specs/012-collaboration/action-panel.md): the Comment panel's size, which fits a name, a
   // couple of lines of description, the assignee row and the footer.
   'action-card': { width: 260, height: 190 },
   // Done check: taller than the other room-response panels because it stacks
   // TWO rosters (done and waiting) plus the all-done line. At 190 a two-person
   // room already overflowed by a few pixels and the body grew a scrollbar.
   'done-check': { width: 280, height: 220 },
-  // Record (spec/120): a class box — wide enough for "name: Type" rows,
+  // Record (docs/specs/009-elements/entity.md): a class box — wide enough for "name: Type" rows,
   // tall enough for a title plus four of them before it needs resizing.
   entity: { width: 240, height: 170 },
   // Stadium / pill — the conventional flowchart "Start / End" terminator
@@ -136,63 +136,63 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   'timeline-rail': { width: RAIL_DEFAULT_POINTS * RAIL_POINT_STEP_PX, height: 96 },
   // Rating: a row of five stars.
   rating: { width: 200, height: 44 },
-  // Charts default their legend BELOW the plot (spec/53), so the starting box
+  // Charts default their legend BELOW the plot (docs/specs/009-elements/pie-chart.md), so the starting box
   // is squarer than it was when the legend took a side strip: the width goes to
   // the plot and the extra height carries the legend band.
   'pie-chart': { width: 260, height: 220 },
   'bar-chart': { width: 260, height: 220 },
   // Line chart: a touch wider for the x-axis labels.
   'line-chart': { width: 300, height: 240 },
-  // Code block: room for a dozen-ish monospace lines (spec/82).
+  // Code block: room for a dozen-ish monospace lines (docs/specs/009-elements/code-block.md).
   'code-block': { width: 320, height: 180 },
-  // Checklist: a card of starter rows (spec/83).
+  // Checklist: a card of starter rows (docs/specs/009-elements/checklist.md).
   checklist: { width: 240, height: 180 },
-  // Legend (spec/53): narrower than a checklist, because a key is a swatch and
+  // Legend (docs/specs/009-elements/pie-chart.md): narrower than a checklist, because a key is a swatch and
   // a word, and short enough to sit in a corner beside the thing it explains.
   legend: { width: 180, height: 132 },
-  // Mode button (spec/103): a square-ish tile, sized for an icon ABOVE its
+  // Mode button (docs/specs/009-elements/mode-button.md): a square-ish tile, sized for an icon ABOVE its
   // label — the shape a toolbar button has, rather than a wide pill that read
   // as just another labelled box.
   'mode-button': { width: 104, height: 96 },
-  // Bring Focus (spec/144): the mode button's shape, a touch wider because its
+  // Bring Focus (docs/specs/012-collaboration/bring-focus.md): the mode button's shape, a touch wider because its
   // label is a sentence fragment ("The problem") rather than a mode's one word.
   'focus-button': { width: 120, height: 96 },
-  // Portal (spec/104): portal-shaped — taller than it is wide, like a portal.
+  // Portal (docs/specs/009-elements/portal-element.md): portal-shaped — taller than it is wide, like a portal.
   portal: { width: 72, height: 112 },
-  // Session button (spec/105): the Selection Mode button's tile, so a row of
+  // Session button (docs/specs/012-collaboration/session-button.md): the Selection Mode button's tile, so a row of
   // Behaviour controls lines up.
   'session-button': { width: 104, height: 96 },
-  // Reveal zone (spec/106): a cover, so it arrives big enough to actually
+  // Reveal zone (docs/specs/009-elements/reveal-zone.md): a cover, so it arrives big enough to actually
   // cover something — a column of notes rather than one sticky.
   reveal: { width: 320, height: 220 },
-  // Picker (spec/107): a card wide enough for a name at a readable size.
+  // Picker (docs/specs/012-collaboration/picker.md): a card wide enough for a name at a readable size.
   picker: { width: 220, height: 132 },
-  // Chair (spec/130): furniture at human scale beside a 40px-wide Avatar-mode
+  // Chair (docs/specs/009-elements/chair.md): furniture at human scale beside a 40px-wide Avatar-mode
   // character — a seat the sprite fits into rather than a throne it rattles
   // around in.
   chair: { width: 76, height: 84 },
-  // Estimate card (spec/123): the eight fibonacci chips wrap to two rows, and
+  // Estimate card (docs/specs/012-collaboration/estimate-card.md): the eight fibonacci chips wrap to two rows, and
   // the card has to hold them PLUS the answered avatars PLUS the two footer
   // buttons without clipping — a card that arrives already cut off is the
   // first thing anybody sees.
   estimate: { width: 360, height: 310 },
-  // Temperature check (spec/124): five buttons over five bars, plus the
+  // Temperature check (docs/specs/012-collaboration/temperature-check.md): five buttons over five bars, plus the
   // average. Narrower than the estimate card — five chips, not eight — but
   // tall enough for all three bands.
   temperature: { width: 300, height: 270 },
-  // Idea box (spec/125): a box that holds a stack of cards, so it arrives
+  // Idea box (docs/specs/012-collaboration/idea-box.md): a box that holds a stack of cards, so it arrives
   // sized like a retro column rather than a sticky.
   'idea-box': { width: 320, height: 340 },
-  // Q&A board (spec/151): a spotlight over a ranked list over the add field,
+  // Q&A board (docs/specs/012-collaboration/qa-board.md): a spotlight over a ranked list over the add field,
   // so it arrives tall enough for five or six notes before it scrolls.
   'qa-board': { width: 360, height: 460 },
-  // Agenda (spec/127): a run of six segments before it needs resizing.
+  // Agenda (docs/specs/012-collaboration/agenda.md): a run of six segments before it needs resizing.
   agenda: { width: 330, height: 300 },
-  // Decision record (spec/128): a card for a sentence plus three drivers.
+  // Decision record (docs/specs/012-collaboration/decision-record.md): a card for a sentence plus three drivers.
   decision: { width: 330, height: 220 },
-  // Roll call (spec/129): two columns of names, six rows deep.
+  // Roll call (docs/specs/012-collaboration/roll-call.md): two columns of names, six rows deep.
   'roll-call': { width: 300, height: 260 },
-  // Web components (spec/147), at the sizes the grouped composites they
+  // Web components (docs/specs/009-elements/web-components-and-no-groups.md), at the sizes the grouped composites they
   // replace arrived at, so a board built from either reads the same.
   banner: { width: 440, height: 104 },
   callout: { width: 380, height: 116 },
@@ -215,7 +215,7 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
     height,
     textSize: 'md',
   };
-  // Mode button (spec/103): looks like a button, so it arrives pill-shaped
+  // Mode button (docs/specs/009-elements/mode-button.md): looks like a button, so it arrives pill-shaped
   // with a call to action already written and pointed at Avatar mode — the
   // walkthrough case it exists for. The author retypes the label like any
   // other shape's, and picks a different mode from the element menu.
@@ -230,7 +230,7 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       // A button has to look pressable BEFORE anyone styles it, and the
       // theme-derived shape fill made it read as one more labelled box on the
       // canvas. So it ships with a real UI button's colours: a light surface, a
-      // hairline border, dark text, and a soft lift off the canvas (spec/86).
+      // hairline border, dark text, and a soft lift off the canvas (docs/specs/008-canvas/element-shadows.md).
       // Deliberately NOT a saturated brand block — a solid slab of colour on
       // the canvas reads as a shape someone drew, not as a control, and it
       // fought every diagram's own palette. These are ELEMENT colours, so they
@@ -246,7 +246,7 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       textBold: true,
     };
   }
-  // Portal (spec/104): ships unlinked (there is nothing to link to until a
+  // Portal (docs/specs/009-elements/portal-element.md): ships unlinked (there is nothing to link to until a
   // second portal exists) with a label the author replaces. It paints its own
   // ring, so the box behind it is transparent, and `strokeColor` is the colour
   // of the energy rather than of a border — electric blue by default, the
@@ -271,7 +271,7 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       aspectLocked: true,
     };
   }
-  // Session button (spec/105): same skin and rules as the Selection Mode
+  // Session button (docs/specs/012-collaboration/session-button.md): same skin and rules as the Selection Mode
   // button — it IS one, pointed at a session tool instead of a mode — with a
   // default five-minute timer so a fresh one already does something.
   if (kind === 'session-button') {
@@ -287,7 +287,7 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       textBold: true,
     };
   }
-  // Reveal zone (spec/106): a frosted cover. It paints itself, so the element
+  // Reveal zone (docs/specs/009-elements/reveal-zone.md): a frosted cover. It paints itself, so the element
   // box carries no fill of its own; the label names what is underneath and
   // sits at the top, out of the way of the middle where the hint goes.
   if (kind === 'reveal') {
@@ -302,7 +302,7 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       textBold: true,
     };
   }
-  // Picker (spec/107): a plain card — the result is the content, so it gets
+  // Picker (docs/specs/012-collaboration/picker.md): a plain card — the result is the content, so it gets
   // the room by default rather than a written list.
   if (kind === 'picker') {
     return {
@@ -316,7 +316,7 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       textSize: 'sm',
     };
   }
-  // Chair (spec/130): furniture, so it paints its own seat and back and the
+  // Chair (docs/specs/009-elements/chair.md): furniture, so it paints its own seat and back and the
   // element box carries no fill. The label (a name, a role) sits UNDER the
   // chair, out of the way of the character that will sit in it.
   if (kind === 'chair') {
@@ -333,7 +333,7 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       aspectLocked: true,
     };
   }
-  // The collaboration panels (spec/123, 124, 125, 127, 129): each paints a
+  // The collaboration panels (docs/specs/012-collaboration/estimate-card.md, 124, 125, 127, 129): each paints a
   // card with its own pressable face, so they share one skin — a white
   // surface, a soft shadow, a small top-aligned title. The label is the
   // question / prompt / session name, which belongs at the top of the card
@@ -381,7 +381,7 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
     }
     return { ...seed, label: 'Roll call' };
   }
-  // Decision record (spec/128): the label IS the decision statement, so it
+  // Decision record (docs/specs/012-collaboration/decision-record.md): the label IS the decision statement, so it
   // reads left-aligned from the top like a sentence rather than centred like a
   // node caption, with the chip and the drivers drawn around it.
   if (kind === 'decision') {
@@ -396,7 +396,7 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       shadow: { offsetX: 0, offsetY: 2, blur: 6, opacity: 0.18 },
     };
   }
-  // Document (spec/100): prose sits TOP-LEFT. Centred body text is the
+  // Document (docs/specs/009-elements/page-element.md): prose sits TOP-LEFT. Centred body text is the
   // strongest tell that something is a label pretending to be a document,
   // and every other shape defaults to centred.
   if (kind === 'entity') {
@@ -430,7 +430,7 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
     return {
       ...base,
       // No label: the Assign Action dialog prefills the action's NAME from the
-      // element's label (spec/68 §2), so a default caption here would become
+      // element's label (docs/specs/012-collaboration/assigned-actions.md §2), so a default caption here would become
       // every new action's name.
       label: '',
     };
@@ -449,7 +449,7 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
   if (kind === 'lane') {
     return {
       ...base,
-      // The title lives in the left gutter (spec/119), so it aligns to the
+      // The title lives in the left gutter (docs/specs/009-elements/lane.md), so it aligns to the
       // leading edge rather than floating over the work.
       textAlignX: 'left',
       textAlignY: 'middle',
@@ -472,7 +472,7 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       fillColor: '#ffffff',
       strokeColor: '#d4d4d8',
       // A soft lift is the other half of "paper": it sits ON the canvas
-      // rather than being drawn into it (spec/86).
+      // rather than being drawn into it (docs/specs/008-canvas/element-shadows.md).
       shadow: { offsetX: 0, offsetY: 2, blur: 8, opacity: 0.18 },
       // Body text wants reading size, not the label size a shape defaults to.
       textSize: 'sm',
@@ -492,7 +492,7 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
   if (kind === 'icon') {
     return { ...base, aspectLocked: true, textAlignY: 'bottom' };
   }
-  // Stickers (spec/116): aspect-locked, because the plate + its content are
+  // Stickers (docs/specs/010-palette/stickers.md): aspect-locked, because the plate + its content are
   // one drawn object and stretching it is never what anyone wants. No label
   // at all — a sticker says what it says in its own art, and the caption band
   // an icon carries would undo the die-cut look.
@@ -520,16 +520,16 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
     return { ...base, progress: 50, progressAnim: 'fill' };
   }
   // Timeline rail: starts with the default number of points; no label inside
-  // (the rail draws its own dots + line). See spec/51.
+  // (the rail draws its own dots + line). See docs/specs/009-elements/timeline-rail.md.
   if (kind === 'timeline-rail') {
     return { ...base, railCount: RAIL_DEFAULT_POINTS, strokeColor: '#64748b' };
   }
-  // Rating: a row of stars, three filled by default, amber accent. See spec/52.
+  // Rating: a row of stars, three filled by default, amber accent. See docs/specs/009-elements/rating.md.
   if (kind === 'rating') {
     return { ...base, rating: RATING_DEFAULT, strokeColor: '#f59e0b' };
   }
   // Pie + bar charts: start with three sample data points; edit from the menu.
-  // See spec/53.
+  // See docs/specs/009-elements/pie-chart.md.
   if (kind === 'pie-chart' || kind === 'bar-chart') {
     return { ...base, pieSlices: PIE_DEFAULT_SLICES.map((s) => ({ ...s })) };
   }
@@ -542,15 +542,15 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
     };
   }
   // Code block: empty snippet, plain language; the view renders a
-  // double-click-to-edit placeholder until code lands. See spec/82.
+  // double-click-to-edit placeholder until code lands. See docs/specs/009-elements/code-block.md.
   if (kind === 'code-block') {
     return { ...base, codeLanguage: 'plain' };
   }
-  // Checklist: starter rows so the affordance is obvious on drop. See spec/83.
+  // Checklist: starter rows so the affordance is obvious on drop. See docs/specs/009-elements/checklist.md.
   if (kind === 'checklist') {
     return { ...base, checklistItems: CHECKLIST_DEFAULT_ITEMS.map((i) => ({ ...i })) };
   }
-  // Web components (spec/147): the starting content each one shows on drop,
+  // Web components (docs/specs/009-elements/web-components-and-no-groups.md): the starting content each one shows on drop,
   // so a new one reads as what it is. Colours come from the caller
   // (createComponent maps the theme); without one the renderer's fallbacks
   // apply, which is what an MCP- or AI-authored one gets.
@@ -598,7 +598,7 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
   }
   // Legend: starter rows so the card is not an empty box on drop. Their
   // colours are left unset, so they take the chart palette by index and a
-  // legend beside a chart matches it without being told to. See spec/53.
+  // legend beside a chart matches it without being told to. See docs/specs/009-elements/pie-chart.md.
   if (kind === 'legend') {
     return { ...base, legendItems: LEGEND_DEFAULT_ITEMS.map((i) => ({ ...i })) };
   }

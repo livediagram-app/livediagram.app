@@ -1,4 +1,4 @@
-// Palette illustrations (spec/55): the category picker, freehand drawing with
+// Palette illustrations (docs/specs/018-help/help-app.md): the category picker, freehand drawing with
 // the Pencil, shape recognition, images and the image picker, sticky notes,
 // and tables. Composed only from the shared primitives so the house style
 // holds. (Data / chart tiles are handled in a sibling file.)
@@ -404,7 +404,7 @@ export function TableElement() {
   );
 }
 
-// A Page element (spec/100): the A-series sheet with its masthead (heading +
+// A Page element (docs/specs/009-elements/page-element.md): the A-series sheet with its masthead (heading +
 // subtitle above a hairline rule), a top-left body of prose, the wide margin,
 // and the turned-back bottom-right corner that marks it as paper laid ON the
 // canvas. A 120px square sits alongside at true relative scale, which is the

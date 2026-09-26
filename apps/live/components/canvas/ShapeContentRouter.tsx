@@ -71,19 +71,19 @@ export function ShapeContentRouter({
   svgAnim,
   artAnimClass,
 }: ShapeContentRouterProps) {
-  // The paper under this shape, for colours it doesn't carry (spec/07).
+  // The paper under this shape, for colours it doesn't carry (docs/specs/007-editor/live-app.md).
   const surface = useCanvasSurface();
   return element.type === 'shape' && element.shape === 'sticker' ? (
-    // Sticker (spec/116): its own die-cut art, drawn edge to edge. Takes no
+    // Sticker (docs/specs/010-palette/stickers.md): its own die-cut art, drawn edge to edge. Takes no
     // element colours and gets no caption band — a sticker says what it says
     // in its own artwork.
-    // `animClass` carries the filter-based glow / pulse / trace (spec/116):
+    // `animClass` carries the filter-based glow / pulse / trace (docs/specs/010-palette/stickers.md):
     // a sticker's silhouette needs a drop-shadow, not the wrapper's
     // box-shadow, which would ring its bounding rectangle.
     <StickerView stickerId={element.stickerId} animClass={artAnimClass} />
   ) : element.type === 'shape' && element.shape === 'icon' && isTechIconId(element.iconId) ? (
     // Technology (brand) icon: a fixed-colour tile + white glyph
-    // (spec/41). Same shape kind as a curated icon, but the id
+    // (docs/specs/010-palette/technology-icons.md). Same shape kind as a curated icon, but the id
     // resolves in the tech catalogue, so it renders coloured rather
     // than stroke-tinted.
     <TechIconGlyph
@@ -108,14 +108,14 @@ export function ShapeContentRouter({
       hasLabel={(element.label ?? '').trim().length > 0}
       labelAlignX={element.textAlignX ?? 'center'}
       labelAlignY={element.textAlignY ?? 'bottom'}
-      // Per-icon looping animation (spec/09). Picked from the icon context
+      // Per-icon looping animation (docs/specs/008-canvas/canvas-and-palette.md). Picked from the icon context
       // menu; undefined = static.
       animation={element.iconAnimation}
       animationSpeed={element.iconAnimationSpeed}
       animationRepeat={element.iconAnimationRepeat}
     />
   ) : element.type === 'shape' && isProgressShape(element.shape) ? (
-    // Progress elements (spec/46): a bar / donut showing element.progress.
+    // Progress elements (docs/specs/009-elements/progress.md): a bar / donut showing element.progress.
     // The fill takes the stroke accent; the track takes the fill colour.
     <ProgressView
       element={element}
@@ -124,7 +124,7 @@ export function ShapeContentRouter({
       textColor={textColor}
     />
   ) : element.type === 'shape' && isRailShape(element.shape) ? (
-    // Timeline rail (spec/51): a line + evenly-spaced points, with an
+    // Timeline rail (docs/specs/009-elements/timeline-rail.md): a line + evenly-spaced points, with an
     // add-point affordance at the right end when selected + editable.
     <RailView
       element={element}
@@ -135,10 +135,10 @@ export function ShapeContentRouter({
       onSetLabel={onSetRailLabel}
     />
   ) : element.type === 'shape' && isRatingShape(element.shape) ? (
-    // Rating (spec/52): a row of stars showing element.rating.
+    // Rating (docs/specs/009-elements/rating.md): a row of stars showing element.rating.
     <RatingView element={element} accent={accent} />
   ) : element.type === 'shape' && isPieShape(element.shape) ? (
-    // Pie chart (spec/53): slices sized by value + a legend.
+    // Pie chart (docs/specs/009-elements/pie-chart.md): slices sized by value + a legend.
     <PieChartView
       element={element}
       fontFamily={fontFamily}
@@ -146,7 +146,7 @@ export function ShapeContentRouter({
       palette={chartPalette}
     />
   ) : element.type === 'shape' && isBarShape(element.shape) ? (
-    // Bar chart (spec/53): bars sized by value + a legend.
+    // Bar chart (docs/specs/009-elements/pie-chart.md): bars sized by value + a legend.
     <BarChartView
       element={element}
       fontFamily={fontFamily}
@@ -154,11 +154,11 @@ export function ShapeContentRouter({
       palette={chartPalette}
     />
   ) : element.type === 'shape' && isCodeBlockShape(element.shape) ? (
-    // Code block (spec/82): the fixed dark editor card. Deliberately takes
+    // Code block (docs/specs/009-elements/code-block.md): the fixed dark editor card. Deliberately takes
     // no theme colours — the dark card is its identity.
     <CodeBlockView element={element} />
   ) : element.type === 'shape' && isLegendShape(element.shape) ? (
-    // Legend (spec/53): a key card of colour-coded rows, edited from the
+    // Legend (docs/specs/009-elements/pie-chart.md): a key card of colour-coded rows, edited from the
     // menu's Legend section.
     <LegendView
       element={element}
@@ -168,7 +168,7 @@ export function ShapeContentRouter({
       fontFamily={fontFamily}
     />
   ) : element.type === 'shape' && isChecklistShape(element.shape) ? (
-    // Checklist (spec/83): themed card of checkbox rows; boxes toggle
+    // Checklist (docs/specs/009-elements/checklist.md): themed card of checkbox rows; boxes toggle
     // on-canvas for anyone with edit access (no select-first required).
     <ChecklistView
       element={element}
@@ -180,7 +180,7 @@ export function ShapeContentRouter({
       onToggle={onToggleChecklistItem}
     />
   ) : element.type === 'shape' && isLineShape(element.shape) ? (
-    // Line chart (spec/53): multi-series lines + a legend.
+    // Line chart (docs/specs/009-elements/pie-chart.md): multi-series lines + a legend.
     <LineChartView
       element={element}
       fontFamily={fontFamily}

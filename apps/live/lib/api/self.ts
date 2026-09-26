@@ -78,7 +78,7 @@ export async function apiMigrateGuestData(
     // server-side for this endpoint but the helper still expects
     // it; pass the guest id to keep signatures uniform.
     headers: await apiHeaders(guestOwnerId, { body: true }),
-    // The signature proves the caller owns this guest id (spec/04). It's
+    // The signature proves the caller owns this guest id (docs/specs/014-identity/auth-and-guest-access.md). It's
     // null for a legacy guest that never got signed — the worker then
     // rejects when signing is enforced, which is why the bootstrap
     // upgrades legacy ids to signed ones before sign-up.
@@ -91,7 +91,7 @@ export async function apiMigrateGuestData(
   return body.migrated;
 }
 
-// Mint a SERVER-signed guest identity (spec/04). The worker generates the
+// Mint a SERVER-signed guest identity (docs/specs/014-identity/auth-and-guest-access.md). The worker generates the
 // id — so a caller can only ever hold a signature for an id it was handed,
 // never for one observed in someone else's DTO / presence — and returns
 // its HMAC signature (`ownerSig` is null when the worker has no
@@ -115,7 +115,7 @@ export async function apiMintGuestId(): Promise<{
 }
 
 // Legacy upgrade: move an existing unsigned guest's data onto a freshly
-// minted signed id (spec/04 migrate flow 2). Authenticated by the OLD id
+// minted signed id (docs/specs/014-identity/auth-and-guest-access.md migrate flow 2). Authenticated by the OLD id
 // as X-Owner-Id (the guest bearer credential, present because no Clerk
 // token is registered for a guest); the NEW id is proven by its
 // signature. Returns true on success.

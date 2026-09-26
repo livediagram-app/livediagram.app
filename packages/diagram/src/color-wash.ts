@@ -1,7 +1,7 @@
 // A translucent wash of a colour, for the surfaces that are derived from an
 // element's own colour rather than written as a fixed grey (a Behaviours
 // card's chips, a chair's seat). Tying them to the element's colour keeps
-// them agreeing with the TAB theme (spec/29), which a Tailwind light / dark
+// them agreeing with the TAB theme (docs/specs/011-theme/multicolour-themes.md), which a Tailwind light / dark
 // pair (that follows the APP's mode) does not. Shared by the editor
 // (apps/live lib/element-tint.ts) and the headless render.
 

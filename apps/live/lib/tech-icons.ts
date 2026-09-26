@@ -1,5 +1,5 @@
 // Full-colour brand icons for the "Technology" palette category
-// (spec/41) — the AWS / Azure / generic-infrastructure marks people put
+// (docs/specs/010-palette/technology-icons.md) — the AWS / Azure / generic-infrastructure marks people put
 // on system-architecture diagrams. They are a DELIBERATELY separate
 // catalogue from the line-art glyphs in `icons.ts`: those are
 // single-weight strokes tinted by the element's stroke colour, whereas
@@ -16,8 +16,8 @@
 // line-art glyph (the AWS resource-icon visual language, applied uniformly
 // for a cohesive palette). It is NOT the verbatim vendor asset pack — that
 // keeps the bundle small, renders crisply at icon size, and avoids
-// redistributing proprietary SVGs from a public MIT repo (spec/03,
-// spec/06). Swapping in a vendor's official SVG later is a per-id edit.
+// redistributing proprietary SVGs from a public MIT repo (docs/specs/002-project-scope/open-source-and-business-model.md,
+// docs/specs/002-project-scope/secrets-policy.md). Swapping in a vendor's official SVG later is a per-id edit.
 //
 // This module is the SYNCHRONOUS API surface only. The heavy per-icon data
 // (colour + SVG markup) lives in @livediagram/icons/tech-icon-catalog and
@@ -50,7 +50,7 @@ export const TECH_PROVIDERS: { id: TechProvider; label: string }[] = [
 
 // The tech-icon id set + `isTechIconId` live in @livediagram/icons
 // (tech-icon-ids.ts) so the diagram package's connector geometry can use
-// them too (a tech icon's arrows attach to its fixed-size mark, spec/41);
+// them too (a tech icon's arrows attach to its fixed-size mark, docs/specs/010-palette/technology-icons.md);
 // re-exported so existing import sites keep resolving. Still a lightweight
 // first-load module — only the colour/glyph data waits on the async chunk.
 export { isTechIconId, TECH_ICON_IDS } from '@livediagram/icons';

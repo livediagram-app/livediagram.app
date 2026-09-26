@@ -116,7 +116,7 @@ export function deriveTextColorForBg(backgroundColor: string): string {
 }
 
 // Which paper an element is being drawn on. NOT the same thing as the
-// viewer's Appearance (spec/07): a Midnight-schemed tab is dark paper in
+// viewer's Appearance (docs/specs/007-editor/live-app.md): a Midnight-schemed tab is dark paper in
 // light chrome, and the Default scheme is whichever paper the viewer's
 // appearance resolves to. The element defaults below take it because an
 // element with no colour of its own has nothing else to read — and a Default
@@ -145,7 +145,7 @@ const DARK_INK = {
 } as const;
 
 export function defaultTextColor(element: BoxedElement, surface: CanvasSurface = 'light'): string {
-  // An accent-bar web component (spec/147) writes white on its bar, on any
+  // An accent-bar web component (docs/specs/009-elements/web-components-and-no-groups.md) writes white on its bar, on any
   // paper: the bar is the accent, not the surface.
   if (element.type === 'shape' && isAccentBarShape(element.shape)) return ACCENT_BAR_TEXT;
   if (surface === 'dark') {
@@ -194,7 +194,7 @@ export function defaultTextAlign(element: BoxedElement): { x: TextAlignX; y: Tex
 // doesn't override them with explicit `fillColor` / `strokeColor` fields.
 // Hex strings so they can also seed the colour picker UI.
 export function defaultFillColor(element: BoxedElement, surface: CanvasSurface = 'light'): string {
-  // A frame is a section BACKDROP you place elements inside (spec/09), so with
+  // A frame is a section BACKDROP you place elements inside (docs/specs/008-canvas/canvas-and-palette.md), so with
   // no explicit fill it is see-through on either surface, whatever the shape
   // default would be. It is still fillable: set `fillColor` and the frame
   // paints that behind its contents, which is safe because frames sort to the
@@ -309,18 +309,18 @@ export function supportsFillColor(element: Element): boolean {
 
 // Whether an element has a HEADING area distinct from its body, and so
 // exposes a heading-background control: a table's header row and a lane's
-// title gutter (spec/119). Everything else is one surface.
+// title gutter (docs/specs/009-elements/lane.md). Everything else is one surface.
 export function hasHeadingBand(element: Element): boolean {
   if (element.type === 'table') return true;
   return element.type === 'shape' && element.shape === 'lane';
 }
 
 export function supportsColours(element: Element): boolean {
-  // A sticker's colours are the sticker (spec/116): a green APPROVED that
+  // A sticker's colours are the sticker (docs/specs/010-palette/stickers.md): a green APPROVED that
   // could be recoloured violet would be a worse APPROVED, and there is no
   // fill or stroke on a die-cut plate to expose anyway.
   if (element.type === 'shape' && element.shape === 'sticker') return false;
-  // A code block is an editor window (spec/82): it paints its card from its
+  // A code block is an editor window (docs/specs/009-elements/code-block.md): it paints its card from its
   // own colour scheme and ignores fill / stroke / theme entirely, so every
   // swatch in the Colours category was inert on one. Picking a scheme is the
   // control it actually has (Presets, see code-themes.ts).
@@ -374,7 +374,7 @@ export function supportsBorder(element: Element): element is ShapeElement | Free
 export const SELF_PAINTING_SHAPES = new Set<string>([
   'actor',
   'icon',
-  // A sticker paints its own plate, shadow and content (spec/116).
+  // A sticker paints its own plate, shadow and content (docs/specs/010-palette/stickers.md).
   'sticker',
   // Progress bar / ring: ProgressView draws the track and the fill itself with
   // its own hardcoded arc stroke, and never reads the element's strokeWidth or
@@ -393,15 +393,15 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   'line-chart',
   'code-block',
   'checklist',
-  // Legend (spec/53): LegendView paints its own card and rows.
+  // Legend (docs/specs/009-elements/pie-chart.md): LegendView paints its own card and rows.
   'legend',
-  // Behaviour elements (spec/104, /106): the ring / cover IS the element.
+  // Behaviour elements (docs/specs/009-elements/portal-element.md, /106): the ring / cover IS the element.
   'portal',
   'reveal',
-  // A chair (spec/130) draws its own furniture and wants no box behind it,
+  // A chair (docs/specs/009-elements/chair.md) draws its own furniture and wants no box behind it,
   // which is what the canvas does too (isSvgRenderedShape excludes it).
   'chair',
-  // Web components (spec/147) that lay out their own surfaces: an accent bar
+  // Web components (docs/specs/009-elements/web-components-and-no-groups.md) that lay out their own surfaces: an accent bar
   // (banner, header), a row of cards, circles and connectors. A callout is
   // NOT here: its card is an ordinary bordered box with content inside.
   'banner',
@@ -420,12 +420,12 @@ export function supportsBorderControls(element: Element): boolean {
 // dropping a palette icon on it (or adding one while it's selected) folds
 // the glyph INTO it. Regular shapes only: the dedicated `icon` shape IS a
 // glyph, and a `frame` is a section container you place elements INSIDE,
-// not decorate (spec/09 + spec/38). An icon dropped on those becomes a
+// not decorate (docs/specs/008-canvas/canvas-and-palette.md + docs/specs/009-elements/annotations.md). An icon dropped on those becomes a
 // standalone `icon` element instead of attaching. One predicate so all
 // three fold paths (palette drag-drop, add-while-selected, drag an
 // existing icon onto a shape) agree.
 //
-// Of the web components (spec/147), the header takes the icon as its logo
+// Of the web components (docs/specs/009-elements/web-components-and-no-groups.md), the header takes the icon as its logo
 // and the callout as its badge glyph; the banner, stat row and process have
 // nowhere to put one, so an icon dropped on them stands alone.
 export function acceptsInlineIcon(element: Element): element is ShapeElement {
@@ -449,7 +449,7 @@ export function acceptsInlineIcon(element: Element): element is ShapeElement {
 // the monitor / laptop / phone / tablet device frames) where a corner
 // radius is meaningless, so the Radius control is hidden for them.
 //
-// The web components with a rectangular surface (spec/147) take it too: the
+// The web components with a rectangular surface (docs/specs/009-elements/web-components-and-no-groups.md) take it too: the
 // banner and header bar, the callout card, and each of a stat row's cards.
 export function supportsBorderRadius(element: Element): element is ShapeElement {
   return element.type === 'shape' && RADIUS_SHAPES.has(element.shape);

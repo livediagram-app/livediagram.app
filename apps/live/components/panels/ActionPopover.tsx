@@ -1,6 +1,6 @@
 'use client';
 
-// The spec/68 clipboard-with-tick action glyph, shared with the context
+// The docs/specs/012-collaboration/assigned-actions.md clipboard-with-tick action glyph, shared with the context
 // menu's Assign Action tile so the two surfaces can't drift.
 import { ActionMenuIcon as ClipboardIcon } from '@/components/palette/context-menu-icons';
 import { CloseIcon, TrashIcon, useClickOutside, useEscape } from '@livediagram/ui';
@@ -12,7 +12,7 @@ import { initialsOf } from '@/lib/identity';
 import { formatRelativeTimeCompact } from '@/lib/relative-time';
 import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@/lib/clamp-to-viewport';
 
-// Portal-rendered assigned-action card (spec/68), anchored to the right
+// Portal-rendered assigned-action card (docs/specs/012-collaboration/assigned-actions.md), anchored to the right
 // edge of the element like CommentThreadPopover. Name + description up
 // top, one calm assignee/assigner meta row, and an icon-button footer:
 // Complete (check) / Reopen (undo), Edit (pencil), Delete (bin, two-step

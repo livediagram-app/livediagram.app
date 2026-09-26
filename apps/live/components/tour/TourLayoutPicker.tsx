@@ -7,12 +7,12 @@ import { H, StateFrame, W } from '@/components/dialogs/settings/settings-illustr
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { track } from '@/lib/telemetry';
 
-// The Settings row this picker mirrors (spec/148): its options, which of
+// The Settings row this picker mirrors (docs/specs/007-editor/toolbar-layout.md): its options, which of
 // them a phone can't use, how it reads and writes the preference, and its
 // telemetry token all come from the row, so the two surfaces can't disagree.
 const ROW = choiceRow('panelLayout');
 
-// The welcome card's panel-layout choice (spec/79): the Settings row's three
+// The welcome card's panel-layout choice (docs/specs/007-editor/editor-tour.md): the Settings row's three
 // layout drawings, one button each, the one in force ringed. Picking applies
 // at once, so the editor behind the card changes as you click and the tour
 // that follows points at the chrome you chose.
@@ -23,12 +23,12 @@ export function TourLayoutPicker() {
   const drawings = CHOICE_ILLUSTRATIONS.panelLayout.states;
   // A phone only offers what it can use: Floating is desktop only, so it
   // isn't shown there, and a stored Floating rings Toolbar, which is what
-  // the phone shows instead (spec/148).
+  // the phone shows instead (docs/specs/007-editor/toolbar-layout.md).
   const options = mobile ? ROW.options.filter((o) => !o.desktopOnly) : ROW.options;
   const value = ROW.read(prefs, { mobile });
 
   const pick = (id: string) => {
-    // Fired before the write, like every settings flip (spec/22).
+    // Fired before the write, like every settings flip (docs/specs/017-telemetry/telemetry.md).
     track(ROW.event.category, 'Changed', choiceTelemetryType(ROW.event.changed, id));
     const next = ROW.write(prefs, id);
     ctx.setUserPreferences(next);

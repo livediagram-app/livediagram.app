@@ -1,8 +1,8 @@
 'use client';
 
-// Read-only rendering of a rich-text note (spec/92). One component for every
+// Read-only rendering of a rich-text note (docs/specs/009-elements/rich-text-notes.md). One component for every
 // place a note is shown without being edited: the read-only popover body for
-// view-role participants, and the annotation hover preview (spec/38).
+// view-role participants, and the annotation hover preview (docs/specs/009-elements/annotations.md).
 //
 // Runs are painted as React elements, never as HTML — there is no
 // dangerouslySetInnerHTML anywhere on this path, so a note that arrived from
@@ -31,7 +31,7 @@ export function runsToLines(runs: TextRun[]): TextRun[][] {
 /**
  * Resolve what to render for an element: its formatted runs when it has
  * them, otherwise its plain `note` as a single unformatted run. Keeps every
- * pre-spec/92 note rendering exactly as it did.
+ * note rendering from before docs/specs/009-elements/rich-text-notes.md exactly as it did.
  */
 export function noteRuns(note: string | undefined, noteRich: TextRun[] | undefined): TextRun[] {
   return noteRich && noteRich.length > 0 ? noteRich : runsFromPlainText(note ?? '');

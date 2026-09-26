@@ -1,13 +1,13 @@
 // Generates the OpenAPI component schemas for `/api/openapi.json` from the
 // `@livediagram/api-schema` TypeScript types — the single source of truth for
-// every wire-format DTO (spec/37). Run `pnpm --filter @livediagram/api
+// every wire-format DTO (docs/specs/015-api/api-documentation.md). Run `pnpm --filter @livediagram/api
 // gen:openapi` after changing a DTO; the output is committed as
 // `src/openapi/schemas.generated.ts` and served verbatim by the worker.
 //
 // The drift test (`src/openapi/manifest.test.ts`) imports
 // `generateComponentSchemas()` from here and asserts the committed file still
 // matches, so a DTO change that isn't regenerated turns CI red — the schemas
-// can never silently desync from the types (the one thing spec/37 most wants to
+// can never silently desync from the types (the one thing docs/specs/015-api/api-documentation.md most wants to
 // avoid). Nothing in the worker runtime imports this file; the heavy generator
 // dependency stays out of the bundle.
 
@@ -131,7 +131,7 @@ function writeGeneratedFile() {
   const banner = `// GENERATED FILE — do not edit by hand.
 // Produced by scripts/gen-openapi-schemas.mjs from @livediagram/api-schema.
 // Regenerate with: pnpm --filter @livediagram/api gen:openapi
-// Served as the \`components.schemas\` of GET /api/openapi.json (spec/37).
+// Served as the \`components.schemas\` of GET /api/openapi.json (docs/specs/015-api/api-documentation.md).
 import type { ComponentSchemas } from './types';
 
 export const COMPONENT_SCHEMAS: ComponentSchemas = ${JSON.stringify(schemas, null, 2)};

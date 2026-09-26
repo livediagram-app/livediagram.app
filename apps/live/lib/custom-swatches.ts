@@ -1,4 +1,4 @@
-// The user's own colour palette (spec/09 Colours): the colours they have
+// The user's own colour palette (docs/specs/008-canvas/canvas-and-palette.md Colours): the colours they have
 // actually used that the theme did not already offer.
 //
 // A theme's presets answer "what goes with this diagram"; this answers "what

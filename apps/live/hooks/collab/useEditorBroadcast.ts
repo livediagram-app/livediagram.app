@@ -7,7 +7,7 @@
 //
 // Throttle: both broadcasters cap at ~30 Hz (33 ms between sends).
 // That matches the cursor / laser packet rates the diagram-room
-// Durable Object expects per spec/11; faster sends would just be
+// Durable Object expects per docs/specs/015-api/api.md; faster sends would just be
 // dropped on the wire.
 
 import { useEffect, useRef, useState } from 'react';
@@ -17,7 +17,7 @@ import { trimLaserBuffer, type LaserPoint } from '@/lib/laser-buffer';
 import type { LaserConfig } from '@/lib/laser-config';
 
 const BROADCAST_THROTTLE_MS = 33;
-// The viewport (spec/131) publishes at ~10 Hz, a third of the cursor's rate: a
+// The viewport (docs/specs/012-collaboration/follow-me-viewport.md) publishes at ~10 Hz, a third of the cursor's rate: a
 // camera is not a pointer, 10 Hz is smooth for a pan, and an idle participant
 // sends nothing at all because this only fires on change.
 const VIEWPORT_THROTTLE_MS = 100;
@@ -38,7 +38,7 @@ type EditorBroadcastDeps = {
   hydrated: boolean;
   diagramId: string | null;
   diagramShareable: boolean;
-  // The diagram's team (spec/35), null for a personal diagram. A team
+  // The diagram's team (docs/specs/013-workspace/team-shared-diagrams.md), null for a personal diagram. A team
   // diagram is a live room for its members even without a share link,
   // so cursor / laser ops broadcast for it too.
   diagramTeamId: string | null;
@@ -50,7 +50,7 @@ type EditorBroadcastDeps = {
   // switches away from 'laser' so a fresh laser session doesn't
   // start from a previous run's tail.
   canvasTool: CanvasTool;
-  // Vote privacy (spec/39): true while a hide-cursors vote is open on the
+  // Vote privacy (docs/specs/012-collaboration/session-tools.md): true while a hide-cursors vote is open on the
   // active tab. Cursor + laser ops stop going out entirely, so a peer
   // can't read positions off the socket even with devtools open — a
   // render-only gate would leave the coordinates on the wire. The
@@ -67,21 +67,21 @@ type EditorBroadcastApi = {
   // local append happens unconditionally; the broadcast respects
   // the gate state + throttle. The overlay's RAF loop is what
   // makes trails visibly decay over the lifetime window.
-  // `look` is the sender's pen (spec/111); omitted by callers that have no
+  // `look` is the sender's pen (docs/specs/008-canvas/laser-panel.md); omitted by callers that have no
   // panel behind them, which draws the original laser.
   broadcastLaser: (x: number, y: number, look?: LaserConfig) => void;
-  // Publish the local Avatar-mode character (spec/101) to the room, or
+  // Publish the local Avatar-mode character (docs/specs/008-canvas/avatar-mode.md) to the room, or
   // `null` to tell peers to drop it. Throttled like the cursor.
   broadcastAvatar: (avatar: AvatarPresence | null) => void;
-  // Ask one peer's character to step aside (spec/101): a unit direction and
+  // Ask one peer's character to step aside (docs/specs/008-canvas/avatar-mode.md): a unit direction and
   // who it is aimed at. Never throttled — it is an event, not a sample.
   broadcastAvatarPush: (targetId: string, dx: number, dy: number) => void;
-  // Reaction pad (spec/135): tell the room a pad went off, so the burst plays
+  // Reaction pad (docs/specs/009-elements/reaction-pad.md): tell the room a pad went off, so the burst plays
   // for everyone rather than only the person who pressed it.
   broadcastReaction: (elementId: string, reaction: string) => void;
-  // Publish where we are looking (spec/131), for anyone following us.
+  // Publish where we are looking (docs/specs/012-collaboration/follow-me-viewport.md), for anyone following us.
   broadcastViewport: (pan: { x: number; y: number }, zoom: number) => void;
-  // Ask everyone else to come and look at a point (spec/144). Returns whether
+  // Ask everyone else to come and look at a point (docs/specs/012-collaboration/bring-focus.md). Returns whether
   // it went out, so the presser can be told when nobody is listening rather
   // than watching a button do nothing.
   broadcastFocusHere: (at: { x: number; y: number }, zoom: number) => boolean;
@@ -166,13 +166,13 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
       return;
     deps.roomRef.current?.send({
       kind: 'op',
-      // The pen rides the sample (spec/111) so peers draw MY laser, not
+      // The pen rides the sample (docs/specs/008-canvas/laser-panel.md) so peers draw MY laser, not
       // their own default.
       op: { kind: 'laser', tabId: deps.activeId, x, y, ...(look ? { look } : {}) },
     });
   };
 
-  // Avatar mode (spec/101): publish the local character so peers can see it
+  // Avatar mode (docs/specs/008-canvas/avatar-mode.md): publish the local character so peers can see it
   // walking. Same gate + throttle as the cursor, because it IS a cursor as far
   // as the wire is concerned. `null` (leaving the mode) always goes out
   // un-throttled, otherwise a peer keeps a ghost standing on their canvas.
@@ -189,7 +189,7 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
     });
   };
 
-  // Viewport (spec/131): where we are looking. Same presence gate as the
+  // Viewport (docs/specs/012-collaboration/follow-me-viewport.md): where we are looking. Same presence gate as the
   // cursor — no room, no publish — on its own slower throttle.
   const broadcastViewport = (pan: { x: number; y: number }, zoom: number) => {
     if (deps.cursorsHidden) return;
@@ -204,7 +204,7 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
     });
   };
 
-  // "Come and look at this" (spec/144). A discrete event like the shove below:
+  // "Come and look at this" (docs/specs/012-collaboration/bring-focus.md). A discrete event like the shove below:
   // never throttled, because there is only ever one of them per press, and
   // dropping it would silently do nothing to the room.
   //
@@ -220,7 +220,7 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
     return true;
   };
 
-  // One character shoving another (spec/101). A discrete event, so unlike the
+  // One character shoving another (docs/specs/008-canvas/avatar-mode.md). A discrete event, so unlike the
   // avatar snapshot it is never throttled or dropped — but it rides the same
   // presence gate: no room, no push.
   const broadcastAvatarPush = (targetId: string, dx: number, dy: number) => {
@@ -233,7 +233,7 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
     });
   };
 
-  // A reaction burst (spec/135). Discrete like the shove above: never
+  // A reaction burst (docs/specs/009-elements/reaction-pad.md). Discrete like the shove above: never
   // throttled, never dropped, same presence gate.
   const broadcastReaction = (elementId: string, reaction: string) => {
     if (deps.cursorsHidden) return;

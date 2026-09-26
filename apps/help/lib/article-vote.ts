@@ -1,4 +1,4 @@
-// The "Was this article helpful?" vote (spec/55), as telemetry (spec/22).
+// The "Was this article helpful?" vote (docs/specs/018-help/help-app.md), as telemetry (docs/specs/017-telemetry/telemetry.md).
 //
 // A reader can change their mind: tap "Not really", read on, tap "Yes, it
 // helped". Emitting on every tap counted that reader twice, once on each
@@ -12,7 +12,7 @@
 // the tab twice with the same vote standing never counts it twice. The one
 // residual double count is a reader who votes, switches tabs (which sends),
 // comes back and flips the vote: that sends the new side too. Rare enough to
-// accept, and documented in spec/22's Help entry.
+// accept, and documented in docs/specs/017-telemetry/telemetry.md's Help entry.
 
 export type ArticleVote = 'yes' | 'no';
 

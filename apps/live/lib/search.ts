@@ -1,4 +1,4 @@
-// Search-result computation for the global SearchPanel (spec/09
+// Search-result computation for the global SearchPanel (docs/specs/008-canvas/canvas-and-palette.md
 // "Search panel"). Pure function so the matcher (case-insensitive
 // substring), the cap rules (8 per section, 12 elements total), the
 // section ordering (diagrams, shared, folders, teams, tabs,
@@ -34,7 +34,7 @@ type SearchInputFolder = { id: string; name: string };
 type SearchInputShared = { id: string; name: string; shareCode: string };
 type SearchInputTeam = { id: string; name: string };
 
-// `team` set = a diagram in a team's library (spec/35): the panel
+// `team` set = a diagram in a team's library (docs/specs/013-workspace/team-shared-diagrams.md): the panel
 // renders an "in <team>" suffix, like team folders. Personal diagrams
 // leave it unset. Either way picking it opens the diagram by id.
 type DiagramItem = {
@@ -43,7 +43,7 @@ type DiagramItem = {
   name: string;
   team?: { id: string; name: string };
 };
-// `team` set = a team-library folder (spec/35): the panel renders an
+// `team` set = a team-library folder (docs/specs/013-workspace/team-shared-diagrams.md): the panel renders an
 // "in <team>" suffix and picking it lands on the team page with that
 // folder open. Personal folders leave it unset.
 type FolderItem = {
@@ -86,7 +86,7 @@ type ElementItem = {
 // the same tap-to-drop / drag-to-size placement the palette uses).
 export type PaletteAdd =
   // `session` / `reaction` are the creation-time choice for the two kinds
-  // that have one (spec/105, spec/135). The palette offers a tile per choice,
+  // that have one (docs/specs/012-collaboration/session-button.md, docs/specs/009-elements/reaction-pad.md). The palette offers a tile per choice,
   // so search has to as well: typing "poll" should place a poll, not a timer.
   | {
       type: 'shape';
@@ -98,7 +98,7 @@ export type PaletteAdd =
     }
   | { type: 'icon'; iconId: string }
   | { type: 'tech'; iconId: string }
-  // A sticker (spec/116) is its own element kind, so it adds through its own
+  // A sticker (docs/specs/010-palette/stickers.md) is its own element kind, so it adds through its own
   // handler rather than the icon one.
   | { type: 'sticker'; stickerId: string };
 type PaletteItem = { kind: 'palette'; id: string; name: string; add: PaletteAdd };
@@ -205,14 +205,14 @@ type SearchInput = {
   // Diagrams shared with the current owner ("Shared with You").
   // Optional: surfaces without the list omit it.
   shared?: SearchInputShared[];
-  // Team-library folders (spec/35), breadcrumb-pathed + tagged with
+  // Team-library folders (docs/specs/013-workspace/team-shared-diagrams.md), breadcrumb-pathed + tagged with
   // their team. Surfaced in the Teams group (not "Personal Space", which is
   // personal-only), with their own cap. Optional: guests have none.
   teamFolders?: { id: string; path: string; teamId: string; teamName: string }[];
-  // Team-library diagrams (spec/35), tagged with their team. Also
+  // Team-library diagrams (docs/specs/013-workspace/team-shared-diagrams.md), tagged with their team. Also
   // surfaced in the Teams group. Optional: guests have none.
   teamDiagrams?: { id: string; name: string; teamId: string; teamName: string }[];
-  // Teams the signed-in user belongs to (spec/32). Optional: guests
+  // Teams the signed-in user belongs to (docs/specs/013-workspace/teams.md). Optional: guests
   // have none and surfaces fetch the list lazily.
   teams?: SearchInputTeam[];
   // Tabs scope is optional: the standalone Explorer page passes
@@ -299,7 +299,7 @@ export function buildSearchResults(input: SearchInput): SearchGroup[] {
   }
 
   // "Teams": the teams themselves, then their folders + diagrams
-  // (spec/35) — everything team-scoped in one place, each list capped
+  // (docs/specs/013-workspace/team-shared-diagrams.md) — everything team-scoped in one place, each list capped
   // separately so one kind can't crowd out the others.
   const teamMatches = (teams ?? []).filter((t) => matches(q, t.name)).slice(0, TEAM_LIMIT);
   const teamFolderMatches = (teamFolders ?? [])

@@ -4,7 +4,7 @@ import { useEffect, useRef, type PointerEvent as ReactPointerEvent, type RefObje
 import type { DetectedSticky } from '@livediagram/sticky-vision';
 import { moveBox, resizeBox, type Corner } from '@/lib/photo-boxes';
 
-// Moving a box by its body, or resizing it by a corner handle (spec/139 Phase
+// Moving a box by its body, or resizing it by a corner handle (docs/specs/021-event-storming/event-storming.md Phase
 // 9). The pointer is converted into WORKING-image pixels through the
 // picture's on-screen rect, which already carries the zoom, so a drag moves
 // the box exactly as far as the pointer went at any zoom.

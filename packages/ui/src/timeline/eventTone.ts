@@ -1,4 +1,4 @@
-// What an event's colour MEANS (spec/138 §2).
+// What an event's colour MEANS (docs/specs/013-workspace/timeline.md §2).
 //
 // Colour keys on what happened, not on which part of the product it
 // happened in. A reader scanning a busy day is asking "is any of this

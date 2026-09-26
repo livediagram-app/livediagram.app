@@ -1,4 +1,4 @@
-// Per-range label formatting — the "rich text" model (spec/09).
+// Per-range label formatting — the "rich text" model (docs/specs/008-canvas/canvas-and-palette.md).
 //
 // A label that carries per-range formatting stores its text as an array
 // of RUNS instead of a single string. Each run is a contiguous slice of
@@ -20,17 +20,17 @@
 // where the EFFECTIVE value matters, see `toggleFormatInRange`).
 
 // Per-run size is the fixed scale only — 'scale' (whole-element auto-fit)
-// has no per-run meaning, see spec/09.
+// has no per-run meaning, see docs/specs/008-canvas/canvas-and-palette.md.
 export type RunSize = 'sm' | 'md' | 'lg';
 
 export type RunBoolKey = 'bold' | 'italic' | 'underline' | 'strikethrough';
 
-// Line-level emphasis (spec/92). Like the list markers below, it rides the
+// Line-level emphasis (docs/specs/009-elements/rich-text-notes.md). Like the list markers below, it rides the
 // FLAT run model rather than introducing block nodes: the attribute is
 // written across every character of the lines the selection touches, which
 // keeps `runsPlainText(runs).length` the single offset space every
 // caller — renderer, contentEditable bridge, selection maths — walks.
-// Three levels (spec/102). Level 3 arrived with the toolbar's block-type
+// Three levels (docs/specs/009-elements/block-type-picker.md). Level 3 arrived with the toolbar's block-type
 // picker, where "Heading 1 / 2 / 3 / Paragraph" is the vocabulary people
 // already expect from a word processor; two levels made the third option
 // conspicuously missing.
@@ -44,7 +44,7 @@ export type TextRun = {
   strikethrough?: boolean;
   size?: RunSize;
   color?: string; // hex
-  // Hyperlink over this slice (spec/92). Stored as the address the user
+  // Hyperlink over this slice (docs/specs/009-elements/rich-text-notes.md). Stored as the address the user
   // entered, already passed through the app's `normaliseUrl` guard
   // (http / https / mailto only); renderers re-check before following.
   link?: string;
@@ -351,7 +351,7 @@ export function applyListStyle(
 /**
  * Drop leading + trailing whitespace, keeping every surviving character's
  * formatting. The runs-level equivalent of `String.trim()`, used where a
- * stored plain-text mirror is trimmed (`element.note`, spec/92) and the runs
+ * stored plain-text mirror is trimmed (`element.note`, docs/specs/009-elements/rich-text-notes.md) and the runs
  * beside it must stay exactly equal to it.
  */
 export function trimRuns(runs: TextRun[]): TextRun[] {

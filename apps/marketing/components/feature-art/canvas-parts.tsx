@@ -121,7 +121,7 @@ export function ClockIcon() {
   );
 }
 
-// Avatar mode (spec/101): a little pixel character stands in the diagram and
+// Avatar mode (docs/specs/008-canvas/avatar-mode.md): a little pixel character stands in the diagram and
 // walks to whatever the presenter is talking about. Two characters here — the
 // presenter's and a peer's, in a second colour — so the art carries the "you
 // can all walk around together" half of the feature. Pure rects on a coarse

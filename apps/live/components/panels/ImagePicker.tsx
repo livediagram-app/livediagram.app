@@ -21,11 +21,11 @@ import { ImageDropZone } from '@/components/canvas/ImageDropZone';
 // drag-drop or file input, runs client-side validation (MIME + size +
 // dimensions) and SHA-256 hashing for dedupe, then POSTs to
 // /api/images. Tab 2 (Gallery) lists every image the owner has
-// uploaded so they can reuse one without re-uploading. Spec/19.
+// uploaded so they can reuse one without re-uploading. docs/specs/009-elements/images.md.
 //
 // Upload validation + hashing + the apiUploadImage call live in
 // lib/upload-image.ts so the Explorer Image Gallery can reuse the
-// same flow (spec/15) without duplicating the rules.
+// same flow (docs/specs/013-workspace/folders.md) without duplicating the rules.
 
 type ImagePickerProps = {
   ownerId: string;
@@ -113,7 +113,7 @@ export function ImagePicker({
     setUploading(true);
     try {
       // Cloud diagrams upload to the gallery; offline diagrams embed the
-      // file locally as a data URI (spec/76) so no server copy is created.
+      // file locally as a data URI (docs/specs/006-diagram/offline-mode.md) so no server copy is created.
       const { image } = await addImageFileForDiagram(ownerId, diagramId, file);
       onSelect(image);
     } catch (e) {
@@ -123,7 +123,7 @@ export function ImagePicker({
     }
   };
 
-  // Gallery picks re-home for offline diagrams (spec/76): a bare gallery id
+  // Gallery picks re-home for offline diagrams (docs/specs/006-diagram/offline-mode.md): a bare gallery id
   // inside an offline diagram would break once the server's 30-day unused-
   // image cleanup reaps it (nothing server-side references it), so the bytes
   // are fetched and embedded as a data URI instead, exactly like Take

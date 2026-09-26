@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { countUnseen } from './timeline';
 import type { Env } from '../types';
 
-// The unread badge (spec/138 §2.5).
+// The unread badge (docs/specs/013-workspace/timeline.md §2.5).
 //
 // Regression coverage for a badge nobody could clear. Expiry warnings are
 // written FUTURE-dated on purpose — a token lapsing on the 12th is recorded at

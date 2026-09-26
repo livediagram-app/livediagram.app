@@ -110,7 +110,7 @@ export function rebindArrowAnchorsAfterMove(
   const leavesThrough = (dir: number, f: Cardinal) =>
     Math.cos(dir) * FACE_NORMALS[f].x + Math.sin(dir) * FACE_NORMALS[f].y > 0.15;
   for (const [elementId, eps] of byElement) {
-    // Sibling consistency vote (spec/09): a fan of arrows from one element
+    // Sibling consistency vote (docs/specs/008-canvas/canvas-and-palette.md): a fan of arrows from one element
     // should leave through ONE face when they can (a tree fans from the
     // hub's bottom), not scatter to whichever face each line's slab-ray
     // grazes. The face most siblings naturally rank first wins, and every
@@ -236,7 +236,7 @@ export function rebindArrowAnchorsAfterMove(
     }
   }
 
-  // Pairing pass (spec/09): a connector reads best when its two faces
+  // Pairing pass (docs/specs/008-canvas/canvas-and-palette.md): a connector reads best when its two faces
   // OPPOSE each other (s -> n, e -> w). When the two ends landed on
   // different axes — a wide tree child's lone arrow ranks its side face
   // first even though the hub end leaves through the bottom — re-align the
@@ -290,8 +290,8 @@ export function rebindArrowAnchorsAfterMove(
 
 // True when either of the arrow's endpoints is attached to one of the given
 // element ids — pinned to a box, or connected to another arrow's line
-// (spec/50). Used by the deletion / cascading-update paths (the editor's
-// delete-selected, the eraser, and layer deletion, spec/74) so arrows
+// (docs/specs/008-canvas/arrow-to-arrow.md). Used by the deletion / cascading-update paths (the editor's
+// delete-selected, the eraser, and layer deletion, docs/specs/006-diagram/layers.md) so arrows
 // attached to a removed box (or a removed arrow) are cleaned up alongside it.
 export function arrowReferencesAny(arrow: ArrowElement, ids: ReadonlySet<string>): boolean {
   return (

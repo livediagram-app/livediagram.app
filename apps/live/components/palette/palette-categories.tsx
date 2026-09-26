@@ -105,7 +105,7 @@ export const PALETTE_CATEGORIES: {
     icon: <DevicesTabIcon />,
   },
   {
-    // Event Storming (spec/139): the workshop notation as a first-class
+    // Event Storming (docs/specs/021-event-storming/event-storming.md): the workshop notation as a first-class
     // kit. Structure band — like Build, it's a set you reach for when
     // deciding how a board is arranged, not a decoration or a behaviour.
     id: 'event-storming',
@@ -154,10 +154,10 @@ export const PALETTE_CATEGORIES: {
     icon: <DataTabIcon />,
   },
   {
-    // Behaviours (spec/110): everything whose content arrives at RUNTIME
+    // Behaviours (docs/specs/010-palette/palette-top-level-categories.md): everything whose content arrives at RUNTIME
     // rather than being drawn by the author — the elements that do something
-    // when pressed (spec/103 to spec/107, spec/135) and the ones that collect
-    // what the room thinks (spec/123 to spec/129, spec/136).
+    // when pressed (docs/specs/009-elements/mode-button.md to docs/specs/012-collaboration/picker.md, docs/specs/009-elements/reaction-pad.md) and the ones that collect
+    // what the room thinks (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md, docs/specs/012-collaboration/comment-pin.md).
     //
     // ONE category, not two. They were split on "pressing this does something
     // to your session" versus "the board is collecting an answer from

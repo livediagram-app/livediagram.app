@@ -49,14 +49,14 @@ export function useBoxedElementGestures({
   | 'onContextSelect'
 > & {
   wrapperRef: RefObject<HTMLDivElement | null>;
-  // Another participant holds this element selected (spec/07): block
+  // Another participant holds this element selected (docs/specs/007-editor/live-app.md): block
   // select / drag / edit outright.
   remotelyLocked: boolean;
   isAnnotation: boolean;
   multiSelectActive: boolean;
   isMultiSelected: boolean;
   // Single-selection state, so a shift press on the selected element can
-  // start the duplicate drag (spec/80) instead of only toggling.
+  // start the duplicate drag (docs/specs/008-canvas/shift-drag-duplicate.md) instead of only toggling.
   isSelected: boolean;
 }) {
   const handleShapeDown = (e: ReactPointerEvent) => {
@@ -77,7 +77,7 @@ export function useBoxedElementGestures({
       return;
     }
     e.stopPropagation();
-    // Dot-voting (spec/39): while a vote is open, pressing a votable
+    // Dot-voting (docs/specs/012-collaboration/session-tools.md): while a vote is open, pressing a votable
     // element casts one of your dots instead of selecting / dragging it.
     // Non-votable elements (text / frame / arrow / …) still select, so
     // the facilitator can keep arranging the board.
@@ -89,7 +89,7 @@ export function useBoxedElementGestures({
     // stays the immediate selection toggle (add to the marquee set), the
     // convention every drawing tool uses. On an element that IS selected
     // (single selection or a multi-select member) the toggle is DEFERRED
-    // so shift can also start the duplicate drag (spec/80): begin a
+    // so shift can also start the duplicate drag (docs/specs/008-canvas/shift-drag-duplicate.md): begin a
     // normal move drag now, and only if the pointer never travels (a
     // true shift-CLICK) apply the toggle on release. A real shift-drag
     // moves the selection and the drag's release duplicates it.
@@ -142,19 +142,19 @@ export function useBoxedElementGestures({
     // so the element-level label editor never applies.
     if (element.type === 'table') return;
     // Neither a link card nor a video has an inline label — double-click
-    // opens the link picker to set / change its URL (spec/40, spec/114).
+    // opens the link picker to set / change its URL (docs/specs/009-elements/link-cards.md, docs/specs/009-elements/youtube-video.md).
     if (element.type === 'link-card' || element.type === 'video') {
       onEditLink?.(element.id);
       return;
     }
     // An annotation has no inline label either — double-click opens its note
-    // editor (spec/38). A single click just selects it now.
+    // editor (docs/specs/009-elements/annotations.md). A single click just selects it now.
     if (isAnnotation) {
       onOpenNote?.(element.id);
       return;
     }
     // A code block has no inline label — double-click opens its edit
-    // dialog (spec/82), the way a link card opens the link picker.
+    // dialog (docs/specs/009-elements/code-block.md), the way a link card opens the link picker.
     if (element.type === 'shape' && element.shape === 'code-block') {
       onEditCode?.(element.id);
       return;
@@ -190,7 +190,7 @@ export function useBoxedElementGestures({
   // Right-click opens on release (see useRightClickRelease).
   //
   // Deliberately NOT gated on `remotelyLocked` any more: whether a locked
-  // element has a menu now depends on who is asking (spec/149 — the
+  // element has a menu now depends on who is asking (docs/specs/012-collaboration/facilitator.md — the
   // facilitator gets a one-item menu to free it), and this hook does not know
   // that. The host's `onElementContextMenu` owns the decision and still
   // refuses for everybody else, so nothing changed for them. `onContextSelect`

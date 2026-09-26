@@ -16,7 +16,7 @@ beforeAll(async () => {
   await ensureIconCatalogs();
 });
 
-describe('sticker catalogue (spec/116)', () => {
+describe('sticker catalogue (docs/specs/010-palette/stickers.md)', () => {
   it('is the size the Stickers tab promises, in both flavours', () => {
     // Floors, not exact counts — adding a sticker shouldn't fail a build, but
     // silently losing half the catalogue should.
@@ -61,7 +61,7 @@ describe('sticker groups', () => {
     // The tab browses BY group with no "All" view, so a sticker in no group is
     // one nobody can reach except by guessing its name in the search box; a
     // sticker in two shows up twice in a browse meant to be a tour of the
-    // catalogue (spec/116).
+    // catalogue (docs/specs/010-palette/stickers.md).
     const seen = new Map<string, string[]>();
     for (const cat of STICKER_CATEGORIES) {
       for (const id of cat.stickerIds) seen.set(id, [...(seen.get(id) ?? []), cat.id]);

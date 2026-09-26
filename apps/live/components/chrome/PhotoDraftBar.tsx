@@ -1,6 +1,6 @@
 'use client';
 
-// The draft bar (spec/139 Phase 8): what the photo read, and the two ways out.
+// The draft bar (docs/specs/021-event-storming/event-storming.md Phase 8): what the photo read, and the two ways out.
 //
 // Shown whenever the active tab HAS draft notes, which is derived from the
 // elements rather than from a session flag — so a reload mid-import comes back

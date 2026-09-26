@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 
-// One category's row of the template gallery (spec/16): a scroll-snapping
+// One category's row of the template gallery (docs/specs/019-marketing/marketing-site.md): a scroll-snapping
 // track that shows four cards across on desktop (two on a tablet, one on a
 // phone; the page size is pure CSS, so the arrows never have to know it),
 // with prev / next arrows in the heading row that page through the rest.

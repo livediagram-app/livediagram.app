@@ -1,4 +1,4 @@
-// The face of a Reveal zone (spec/106): a frosted cover over whatever it
+// The face of a Reveal zone (docs/specs/009-elements/reveal-zone.md): a frosted cover over whatever it
 // overlaps, with the two ways to take it off.
 //
 // The cover is opaque rather than blurred ON PURPOSE. A blur would imply the
@@ -114,7 +114,7 @@ export function RevealFace({
         className="pointer-events-auto relative flex h-full w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-[inherit] border-2 border-dashed bg-slate-100 transition hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700"
         style={{ borderColor: strokeColor }}
       >
-        {/* A SCRATCH PANEL (spec/122). A flat wash read as "this element is
+        {/* A SCRATCH PANEL (docs/specs/012-collaboration/participant-responses.md). A flat wash read as "this element is
             disabled"; hatching reads as a surface laid deliberately OVER
             something, which is the difference between a cover and a blank. */}
         <Hatching textColor={textColor} />

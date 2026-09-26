@@ -7,7 +7,7 @@ import { useToast } from '@/hooks/ui/useToast';
 import { track } from '@/lib/telemetry';
 
 // A labelled Share-dialog button that drops a menu of clipboard-copy
-// actions (spec/33 + spec/54). Shared by the Embed and Live image
+// actions (docs/specs/013-workspace/embeds.md + docs/specs/013-workspace/live-image-share.md). Shared by the Embed and Live image
 // controls: each is the same affordance — a button with a trailing
 // ellipsis (signalling "opens a menu", not "copies on click") that drops
 // a list of "copy this as X" rows — so they live in one component rather
@@ -37,7 +37,7 @@ export function ShareCopyMenu({
   trackType: string;
   items: ShareCopyItem[];
   // Optional controls pinned above the copy rows inside the menu — used
-  // by the Live image control for its per-tab picker (spec/54). Lives
+  // by the Live image control for its per-tab picker (docs/specs/013-workspace/live-image-share.md). Lives
   // inside the PortalMenu so interacting with it doesn't dismiss the menu
   // (the menu only closes on a click outside its own DOM).
   header?: ReactNode;

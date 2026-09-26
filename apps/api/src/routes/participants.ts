@@ -18,7 +18,7 @@ import { MAX_PARTICIPANT_NAME_LEN, MAX_COLOR_LEN } from '../limits';
 // rows store name + colour denormalised at write time, that
 // vandalism would propagate across every diagram they'd
 // collaborated on. The guard requires the caller's resolved
-// owner (Clerk Bearer OR X-Owner-Id, spec/04) to match the
+// owner (Clerk Bearer OR X-Owner-Id, docs/specs/014-identity/auth-and-guest-access.md) to match the
 // participant id being mutated.
 export async function handleParticipants(ctx: RouteContext): Promise<Response> {
   const { request, env, segments } = ctx;

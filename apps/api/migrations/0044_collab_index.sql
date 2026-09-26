@@ -1,16 +1,16 @@
--- Collaboration index (spec/142) — what the Activity page reads.
+-- Collaboration index (docs/specs/013-workspace/activity-page.md) — what the Activity page reads.
 --
--- Assigned actions (spec/68) and comment threads (spec/09) live INSIDE
+-- Assigned actions (docs/specs/012-collaboration/assigned-actions.md) and comment threads (docs/specs/008-canvas/canvas-and-palette.md) live INSIDE
 -- element JSON in `tabs.data`, and that stays the source of truth: the
 -- editor, the realtime room, undo grafting, and export all read them
 -- from there. These two tables are a PROJECTION of that JSON that SQL
 -- can filter ("open actions assigned to me, across every diagram"),
 -- written in the same batch as the tab row so they can never drift
--- from the blob they mirror. Spec/68 §9 named this as the follow-up
+-- from the blob they mirror. docs/specs/012-collaboration/assigned-actions.md §9 named this as the follow-up
 -- shape: a table added later without moving the source of truth.
 --
 -- Keyed by TAB, not diagram: a tab can belong to several diagrams
--- (spec/17), so the diagram is resolved at read time through
+-- (docs/specs/006-diagram/tab-diagram-many-to-many.md), so the diagram is resolved at read time through
 -- `diagram_tabs`. That is also what makes deletion free — a tab's rows
 -- cascade with the tab, and a diagram's tabs cascade with the diagram.
 --
@@ -44,7 +44,7 @@ CREATE TABLE collab_actions (
 );
 
 -- The three involvement lookups the read applies AFTER scoping to the
--- reader's own library (spec/142 §4).
+-- reader's own library (docs/specs/013-workspace/activity-page.md §4).
 CREATE INDEX collab_actions_assignee_idx ON collab_actions (assignee_user_id, status);
 CREATE INDEX collab_actions_assigner_idx ON collab_actions (assigner_id, status);
 CREATE INDEX collab_actions_member_idx   ON collab_actions (assignee_member_id);
@@ -60,7 +60,7 @@ CREATE TABLE collab_threads (
   -- to be: the read is bounded by the reader's library first.
   participant_ids     TEXT    NOT NULL,
   -- What the row shows: the newest comment. Every other comment stays
-  -- in the blob; no email address ever lands here (spec/68 §1).
+  -- in the blob; no email address ever lands here (docs/specs/012-collaboration/assigned-actions.md §1).
   latest_text         TEXT    NOT NULL,
   latest_author_name  TEXT    NOT NULL,
   latest_author_color TEXT    NOT NULL,
@@ -72,7 +72,7 @@ CREATE TABLE collab_threads (
 
 CREATE INDEX collab_threads_open_idx ON collab_threads (resolved, latest_at);
 
--- Identities an owner USED TO BE (spec/142 §2.2). Comment author ids and
+-- Identities an owner USED TO BE (docs/specs/013-workspace/activity-page.md §2.2). Comment author ids and
 -- self-assigned assignee ids are written with whatever identity the
 -- writer had at the time — a guest participant id for anyone signed out
 -- — and the blobs are not rewritten when that guest signs up. Instead
@@ -88,7 +88,7 @@ CREATE TABLE owner_aliases (
 CREATE INDEX owner_aliases_alias_idx ON owner_aliases (alias_id);
 
 -- One row per owner once the index has been seeded from their existing
--- tabs (spec/142 §2.3). Tabs saved after this migration index
+-- tabs (docs/specs/013-workspace/activity-page.md §2.3). Tabs saved after this migration index
 -- themselves; this is for the dormant ones.
 CREATE TABLE collab_index_state (
   owner_id      TEXT    PRIMARY KEY,

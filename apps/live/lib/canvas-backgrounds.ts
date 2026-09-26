@@ -97,7 +97,7 @@ function patternStyleFor(
   switch (pattern) {
     // Blank + the animated patterns paint no static background image: the
     // animated ones draw their motion via the AnimatedCanvasBackground
-    // overlay (spec/09), so here they contribute only the (alpha-applied)
+    // overlay (docs/specs/008-canvas/canvas-and-palette.md), so here they contribute only the (alpha-applied)
     // backdrop colour, exactly like Blank.
     case 'blank':
     case 'flow':
@@ -316,7 +316,7 @@ function wavesBg(stroke: string): string {
   );
 }
 
-// ── Background pattern as an SVG tile, for the image export (spec/48) ─────
+// ── Background pattern as an SVG tile, for the image export (docs/specs/010-palette/style-presets.md) ─────
 //
 // The editor paints the backdrop pattern as a CSS background-image; an export
 // can't capture that, so this returns the SAME pattern as one tile of raw SVG

@@ -30,15 +30,15 @@ vi.mock('../db', () => ({
   recordSharedAccess: vi.fn(),
 }));
 
-// The live-image endpoint (spec/54 + spec/67) delegates the actual
+// The live-image endpoint (docs/specs/013-workspace/live-image-share.md + docs/specs/006-diagram/diagram-snapshots.md) delegates the actual
 // render-cache to ./thumbnail; stub it so this suite pins the route's
 // resolve + password-exclusion wiring, not the rendering.
 vi.mock('../email/notifications', () => ({
-  // spec/65's owner email: a seam here, tested for real in email/*.test.ts.
+  // docs/specs/014-identity/profile-and-email-notifications.md's owner email: a seam here, tested for real in email/*.test.ts.
   notifyDiagramJoin: vi.fn(),
 }));
 
-// spec/22's server-side Diagram·Joined count: a seam, the insert itself is
+// docs/specs/017-telemetry/telemetry.md's server-side Diagram·Joined count: a seam, the insert itself is
 // the shared server-telemetry helper.
 vi.mock('../server-telemetry', () => ({
   reportServerEvent: vi.fn(async () => {}),
@@ -115,7 +115,7 @@ beforeEach(() => {
   getSharePasswordMock.mockReset();
 });
 
-describe('passwordGate (spec/24 status-code mapping)', () => {
+describe('passwordGate (docs/specs/013-workspace/share-password.md status-code mapping)', () => {
   it('returns null when the diagram has no password (gate is a no-op)', async () => {
     getSharePasswordMock.mockResolvedValue(null);
     const result = await passwordGate(FAKE_ENV, 'diag-1', null);
@@ -182,7 +182,7 @@ describe('passwordGate (spec/24 status-code mapping)', () => {
   });
 });
 
-describe('GET /api/share/<code>/image.svg (spec/54 + spec/67 live image)', () => {
+describe('GET /api/share/<code>/image.svg (docs/specs/013-workspace/live-image-share.md + docs/specs/006-diagram/diagram-snapshots.md live image)', () => {
   beforeEach(() => {
     getDiagramMock.mockReset();
     getShareLinkMock.mockReset();
@@ -245,7 +245,7 @@ describe('GET /api/share/<code>/image.svg (spec/54 + spec/67 live image)', () =>
     expect(res.status).toBe(404);
   });
 
-  it('renders the requested tab (not the cached snapshot) when ?tab= is present (spec/54)', async () => {
+  it('renders the requested tab (not the cached snapshot) when ?tab= is present (docs/specs/013-workspace/live-image-share.md)', async () => {
     getShareLinkMock.mockResolvedValue(shareLink('d1'));
     getDiagramMock.mockResolvedValue(diagram('d1'));
     getSharePasswordMock.mockResolvedValue(null);
@@ -290,7 +290,7 @@ describe('GET /api/share/<code>/image.svg (spec/54 + spec/67 live image)', () =>
 // what the worker records about them. This is the only unauthenticated read
 // path into a diagram, so each branch below is either "who may see this" or
 // "what does the owner learn about who looked".
-describe('GET /api/share/<code> (spec/24 + spec/65)', () => {
+describe('GET /api/share/<code> (docs/specs/013-workspace/share-password.md + docs/specs/014-identity/profile-and-email-notifications.md)', () => {
   const recordSharedAccessMock = vi.mocked(recordSharedAccess);
   const getParticipantMock = vi.mocked(getParticipant);
   const notifyDiagramJoinMock = vi.mocked(notifyDiagramJoin);
@@ -392,7 +392,7 @@ describe('GET /api/share/<code> (spec/24 + spec/65)', () => {
   });
 
   it('stays quiet on a repeat visit', async () => {
-    // spec/65 is once per person, not once per reload.
+    // docs/specs/014-identity/profile-and-email-notifications.md is once per person, not once per reload.
     recordSharedAccessMock.mockResolvedValue(false);
     const { ctx, settled } = resolveCtx({ visitor: 'visitor-1' });
     await handleShare(ctx);
@@ -400,7 +400,7 @@ describe('GET /api/share/<code> (spec/24 + spec/65)', () => {
     expect(notifyDiagramJoinMock).not.toHaveBeenCalled();
   });
 
-  it('counts Diagram·Joined once, on the first visit, at the link’s role (spec/22)', async () => {
+  it('counts Diagram·Joined once, on the first visit, at the link’s role (docs/specs/017-telemetry/telemetry.md)', async () => {
     recordSharedAccessMock.mockResolvedValue(true);
     getShareLinkMock.mockResolvedValue({ ...shareLink('d1'), role: 'edit' });
     const { ctx, settled } = resolveCtx({ visitor: 'visitor-1' });
@@ -410,7 +410,7 @@ describe('GET /api/share/<code> (spec/24 + spec/65)', () => {
     expect(reportServerEventMock).toHaveBeenCalledWith(FAKE_ENV, 'Diagram', 'Joined', 'Edit');
   });
 
-  it('does not count Diagram·Joined on a refresh or return visit (spec/22)', async () => {
+  it('does not count Diagram·Joined on a refresh or return visit (docs/specs/017-telemetry/telemetry.md)', async () => {
     // The editor used to emit on every open of the share URL; a reload
     // inflated "Collaborators Joined" roughly twofold.
     recordSharedAccessMock.mockResolvedValue(false);

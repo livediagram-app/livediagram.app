@@ -4,7 +4,7 @@
 // apps/dashboard/app/sign-in/page.tsx — same email-code + Google OAuth
 // flow, livediagram branding, livediagram routes.
 //
-// Per spec/04, this page is never required to use the editor — the
+// Per docs/specs/014-identity/auth-and-guest-access.md, this page is never required to use the editor — the
 // editor stays open to guests forever. Sign-in only unlocks per-account
 // persistence (diagrams travel across devices) and team workspaces.
 // Authenticated users get redirected straight to the editor; guests
@@ -84,7 +84,7 @@ function SignInContent() {
         redirectUrl: '/sso-callback',
         // Honour ?redirect_url so an OAuth sign-in from a protected
         // page lands back where it came from, same as the email-code
-        // path does. See spec/04 "Routes" + auth-shared.tsx.
+        // path does. See docs/specs/014-identity/auth-and-guest-access.md "Routes" + auth-shared.tsx.
         redirectUrlComplete: resolveOAuthCompleteUrl(searchParams, POST_AUTH_SIGNIN_DEFAULT),
       });
     } catch (err: unknown) {
@@ -168,7 +168,7 @@ function SignInContent() {
       const res = await clerkSignIn.attemptFirstFactor({ strategy: 'email_code', code });
       if (res.status === 'complete' && res.createdSessionId) {
         // Session·SignedIn is counted by the api worker on this new
-        // session's first request (spec/22), the same way a Google sign-in
+        // session's first request (docs/specs/017-telemetry/telemetry.md), the same way a Google sign-in
         // is; no emit here.
         await setActiveSignIn({ session: res.createdSessionId });
         router.push(resolvePostSignInDestination());

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// The Toolbar layout's strip (spec/148): what it shows, and that its controls
+// The Toolbar layout's strip (docs/specs/007-editor/toolbar-layout.md): what it shows, and that its controls
 // reach the same handlers the floating Palette's do.
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';

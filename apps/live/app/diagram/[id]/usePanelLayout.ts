@@ -21,31 +21,31 @@ export function usePanelLayout() {
   // Activity defaults to minimised: most users only peek at it
   // occasionally, and the dock button keeps it one click away.
   const [activityMinimized, setActivityMinimized] = useState(true);
-  // Layers panel (spec/74): same pattern — minimised into a bottom-right
+  // Layers panel (docs/specs/006-diagram/layers.md): same pattern — minimised into a bottom-right
   // dock button until the user opts in, so default chrome is unchanged.
   const [layersPanelPosition, setLayersPanelPosition] = useState<Pos | null>(null);
   const [layersMinimized, setLayersMinimized] = useState(true);
-  // Live poll (spec/88): position only. The panel has no minimised state
+  // Live poll (docs/specs/012-collaboration/live-poll.md): position only. The panel has no minimised state
   // because it isn't always there to minimise — it exists only while a
   // poll is running, and the host's End (or a local Dismiss) removes it.
   const [pollPanelPosition, setPollPanelPosition] = useState<Pos | null>(null);
-  // Live vote (spec/39): same deal — present only while a vote is running.
+  // Live vote (docs/specs/012-collaboration/session-tools.md): same deal — present only while a vote is running.
   const [votePanelPosition, setVotePanelPosition] = useState<Pos | null>(null);
-  // Avatar Panel (spec/101): present only while Avatar mode is active, so
+  // Avatar Panel (docs/specs/008-canvas/avatar-mode.md): present only while Avatar mode is active, so
   // position only — there is nothing to minimise when leaving the mode
   // dismisses the panel outright.
   const [avatarPanelPosition, setAvatarPanelPosition] = useState<Pos | null>(null);
-  // Laser Panel (spec/111): the same — present only while the Laser tool is.
+  // Laser Panel (docs/specs/008-canvas/laser-panel.md): the same — present only while the Laser tool is.
   const [laserPanelPosition, setLaserPanelPosition] = useState<Pos | null>(null);
-  // Spotlight Panel (spec/112): the same.
+  // Spotlight Panel (docs/specs/008-canvas/spotlight-panel.md): the same.
   const [spotlightPanelPosition, setSpotlightPanelPosition] = useState<Pos | null>(null);
-  // Eraser Panel (spec/113): the same.
+  // Eraser Panel (docs/specs/008-canvas/eraser-panel.md): the same.
   const [eraserPanelPosition, setEraserPanelPosition] = useState<Pos | null>(null);
   const [highlighterPanelPosition, setHighlighterPanelPosition] = useState<Pos | null>(null);
   const [slideDeckPanelPosition, setSlideDeckPanelPosition] = useState<Pos | null>(null);
-  // Format Panel (spec/117): the same.
+  // Format Panel (docs/specs/008-canvas/format-panel.md): the same.
   const [formatPanelPosition, setFormatPanelPosition] = useState<Pos | null>(null);
-  // Zen / focus mode (spec/26): hide all floating chrome (header, tab
+  // Zen / focus mode (docs/specs/007-editor/zen-mode.md): hide all floating chrome (header, tab
   // bar, panels, docks) so only the canvas content + zoom controls
   // remain. Purely a view flag — not persisted, not synced.
   const [zenMode, setZenMode] = useState(false);

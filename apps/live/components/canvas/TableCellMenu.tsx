@@ -15,7 +15,7 @@ import { TextSizeTiles } from '@/components/palette/context-menu-rows';
 import { MenuAccordionSection, MenuTile, MenuTileGrid } from '@/components/primitives/PortalMenu';
 import { AlignIcon, CellLinkIcon } from '@/components/canvas/table-icons';
 
-// The per-cell context menu (spec/09 Table): right-click / long-press a cell
+// The per-cell context menu (docs/specs/008-canvas/canvas-and-palette.md Table): right-click / long-press a cell
 // opens THIS at the pointer — the same accordion-category menu language as
 // the element/tab context menus, replacing the old floating cell toolbar.
 // Every control applies to the WHOLE cell selection (shift-click builds a
@@ -115,7 +115,7 @@ export function TableCellMenu({
           onSet={(size) => applyStyle({ textSize: size })}
         />
       </MenuAccordionSection>
-      {/* The SAME colour palette every other element gets (spec/09 Colours):
+      {/* The SAME colour palette every other element gets (docs/specs/008-canvas/canvas-and-palette.md Colours):
           theme presets, the colours you have used, transparent, the pipette
           and the OS picker. It used to be two bare `<input type="color">`
           chips, so colouring a cell meant matching a colour off the wheel

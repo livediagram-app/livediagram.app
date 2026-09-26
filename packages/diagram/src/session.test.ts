@@ -74,7 +74,7 @@ describe('isVotable', () => {
     ).toBe(true);
   });
 
-  // Behaviour elements (spec/103-107) DO something when pressed. A votable
+  // Behaviour elements (docs/specs/009-elements/mode-button.md, docs/specs/009-elements/portal-element.md, docs/specs/012-collaboration/session-button.md, docs/specs/009-elements/reveal-zone.md, docs/specs/012-collaboration/picker.md) DO something when pressed. A votable
   // one would give the same tap two meanings, decided by whether a vote
   // happened to be running.
   it('rejects the interactive Behaviour shapes', () => {
@@ -125,7 +125,7 @@ describe('vote tallies', () => {
   });
 });
 
-describe('vote host (spec/39)', () => {
+describe('vote host (docs/specs/012-collaboration/session-tools.md)', () => {
   const base: TabVote = { active: true, revealed: false, votesPerPerson: 3, votes: {} };
 
   it('only the starter drives their vote', () => {
@@ -146,7 +146,7 @@ describe('vote host (spec/39)', () => {
   });
 });
 
-describe('vote privacy (spec/39)', () => {
+describe('vote privacy (docs/specs/012-collaboration/session-tools.md)', () => {
   const open: TabVote = { active: true, revealed: false, votesPerPerson: 3, votes: {} };
 
   it('a vote saved before privacy shipped (flags absent) hides nothing', () => {
@@ -187,7 +187,7 @@ describe('vote privacy (spec/39)', () => {
   });
 });
 
-describe('vote layer scoping (spec/96)', () => {
+describe('vote layer scoping (docs/specs/012-collaboration/vote-layer-scope.md)', () => {
   const vote = (over: Partial<TabVote> = {}): TabVote => ({
     active: true,
     revealed: false,
@@ -215,7 +215,7 @@ describe('vote layer scoping (spec/96)', () => {
   });
 
   it('pre-layers elements resolve to the base layer rather than becoming unvotable', () => {
-    // Everything authored before spec/74 carries no layerId. A raw
+    // Everything authored before docs/specs/006-diagram/layers.md carries no layerId. A raw
     // comparison would drop all of it the moment a scope was set.
     const legacy = shape('a');
     expect(legacy.layerId).toBeUndefined();
@@ -254,7 +254,7 @@ describe('canCastVote', () => {
   });
 });
 
-describe('applyVoteDelta — concurrent dots must not clobber (spec/39)', () => {
+describe('applyVoteDelta — concurrent dots must not clobber (docs/specs/012-collaboration/session-tools.md)', () => {
   const vote = (votes: Record<string, string[]> = {}): TabVote => ({
     active: true,
     revealed: false,
@@ -338,7 +338,7 @@ describe('applyVoteDelta — concurrent dots must not clobber (spec/39)', () => 
   });
 });
 
-describe('vote rounds (spec/152)', () => {
+describe('vote rounds (docs/specs/012-collaboration/collab-race-hardening.md)', () => {
   const vote = (over: Partial<TabVote> = {}): TabVote => ({
     active: true,
     revealed: false,

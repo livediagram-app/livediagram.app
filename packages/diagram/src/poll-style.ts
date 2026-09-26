@@ -1,10 +1,10 @@
-// How a poll's answers are shaped (spec/88).
+// How a poll's answers are shaped (docs/specs/012-collaboration/live-poll.md).
 //
 // A LEAF module holding only the vocabulary — no `LivePoll`, which is a wire
 // DTO and stays in @livediagram/api-schema beside the tally helpers.
 //
 // It lives HERE, one package lower, because the style is no longer only a
-// wire value: a Session button (spec/105) stores its poll's style on the
+// wire value: a Session button (docs/specs/012-collaboration/session-button.md) stores its poll's style on the
 // element, so `SessionButtonConfig` — a `Tab` field — needs the union too,
 // and @livediagram/diagram cannot import from @livediagram/api-schema (the
 // dependency runs the other way). api-schema re-exports `PollStyle` from
@@ -21,10 +21,10 @@ export const POLL_STYLES = [
 
 export type PollStyle = (typeof POLL_STYLES)[number];
 
-// How many answers a poll that carries its own list may hold (spec/88).
+// How many answers a poll that carries its own list may hold (docs/specs/012-collaboration/live-poll.md).
 //
 // HERE rather than beside the other poll caps in @livediagram/api-schema, for
-// exactly the reason `PollStyle` moved down: a Session button (spec/105) stores
+// exactly the reason `PollStyle` moved down: a Session button (docs/specs/012-collaboration/session-button.md) stores
 // a draft poll on the element, so `SessionButtonConfig` — a `Tab` field — needs
 // the cap too, and api-schema depends on diagram, never the reverse.
 // api-schema re-exports both, so every existing import keeps resolving.
@@ -61,8 +61,8 @@ export function pollStyleCarriesOptions(style: PollStyle): boolean {
 }
 
 // Whether the poll's answers are the people currently in the diagram, filled
-// in when the poll STARTS (spec/88). One place to ask, because two surfaces
-// start polls — the Session Studio composer and a Session button (spec/105) —
+// in when the poll STARTS (docs/specs/012-collaboration/live-poll.md). One place to ask, because two surfaces
+// start polls — the Session Studio composer and a Session button (docs/specs/012-collaboration/session-button.md) —
 // and both hand the substitution to the same `startPoll`.
 export function pollStyleUsesRoster(style: PollStyle): boolean {
   return style === 'collaborators';

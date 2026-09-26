@@ -7,7 +7,7 @@ import {
 } from '@/components/primitives/explorer-icons';
 import type { ExplorerViewProps } from './explorer-view-props';
 
-// The synthetic ("dynamic") folders (spec/15, spec/76): live views over
+// The synthetic ("dynamic") folders (docs/specs/013-workspace/folders.md, docs/specs/006-diagram/offline-mode.md): live views over
 // your diagrams rather than rows in the folders table. Unsorted holds
 // what has no folder, Generated what an AI tool made, Offline what exists
 // only in this browser, and Dynamic is the parent the three sit under.

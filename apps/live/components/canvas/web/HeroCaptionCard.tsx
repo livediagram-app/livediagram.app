@@ -8,7 +8,7 @@ import {
 import { InlineTextLine } from '@/components/canvas/InlineTextLine';
 import { rectStyle } from '@/components/canvas/web/web-face-props';
 
-// A hero's caption card (spec/147): inset near the bottom of the image in the
+// A hero's caption card (docs/specs/009-elements/web-components-and-no-groups.md): inset near the bottom of the image in the
 // image's fill (the theme accent when dropped from the palette), with a title
 // and a supporting line edited in place. Inset rather than full-cover, so the
 // image above stays double-clickable to set or change it.

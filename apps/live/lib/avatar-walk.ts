@@ -1,4 +1,4 @@
-// Avatar mode geometry (spec/101): the pure maths behind the walking
+// Avatar mode geometry (docs/specs/008-canvas/avatar-mode.md): the pure maths behind the walking
 // character — one frame's step toward a target, the direction the held
 // arrow keys point, which way the figure faces, the camera nudge that
 // keeps it on screen, and what it is standing on. No React, no DOM, so
@@ -9,15 +9,15 @@ import { isBoxed, type Element } from '@livediagram/diagram';
 // Walk speed in CANVAS px per second. Constant on purpose: an eased
 // glide reads as a camera move, a constant walk reads as a character.
 // How far below a Selection Mode button the character appears when that button
-// is what put you in Avatar mode (spec/103): clear of the button's own box, so
+// is what put you in Avatar mode (docs/specs/009-elements/mode-button.md): clear of the button's own box, so
 // it reads as standing in front of it rather than on top of it.
 export const AVATAR_SPAWN_GAP = 12;
 
-// How far a shoved character slides, in canvas px (spec/101). Far enough to be
+// How far a shoved character slides, in canvas px (docs/specs/008-canvas/avatar-mode.md). Far enough to be
 // unmistakably a push, short enough that nobody gets flung across the diagram.
 export const AVATAR_SHOVE_DISTANCE = 70;
 
-// How often a STANDING character republishes itself to the room (spec/101).
+// How often a STANDING character republishes itself to the room (docs/specs/008-canvas/avatar-mode.md).
 // Presence is published on change, so without this a motionless character is
 // invisible to anyone who joins after it stopped moving. Slow on purpose: it
 // only has to beat "how long before the newcomer wonders where you are".
@@ -31,7 +31,7 @@ export const AVATAR_SPEED = 260;
 
 // Sprite footprint in canvas px at the REGULAR size. The position point is the
 // FEET, so the body is drawn above it and centred on it. The Size choice in the
-// Avatar Panel (spec/101) scales these via avatarBox(scale).
+// Avatar Panel (docs/specs/008-canvas/avatar-mode.md) scales these via avatarBox(scale).
 export const AVATAR_WIDTH = 40;
 export const AVATAR_HEIGHT = 56;
 // Empty space reserved ABOVE the standing sprite so a jump has somewhere to go.
@@ -105,7 +105,7 @@ export type AvatarFacing = 'down' | 'up' | 'left' | 'right';
 
 export type AvatarPoint = { x: number; y: number };
 
-// Jump (Space, spec/101). Impulse + gravity in canvas px/s, tuned so the hop
+// Jump (Space, docs/specs/008-canvas/avatar-mode.md). Impulse + gravity in canvas px/s, tuned so the hop
 // peaks around 70px and lands in a bit over half a second — high enough to
 // read as a jump from across a room, short enough to spam.
 export const AVATAR_JUMP_VELOCITY = 520;
@@ -156,7 +156,7 @@ export function hitTestAvatar(feet: AvatarPoint, point: AvatarPoint, lift = 0, s
   );
 }
 
-// Clicking a PEER's character walks over and shoves it (spec/101). Given the
+// Clicking a PEER's character walks over and shoves it (docs/specs/008-canvas/avatar-mode.md). Given the
 // click point, our own feet, and the peers on screen, this returns who was hit,
 // where to stand to reach them, and which way the shove goes — or null when the
 // click landed on bare canvas.

@@ -1,4 +1,4 @@
-// Setters for the Behaviour elements (spec/104-107), off useEditorState rather
+// Setters for the Behaviour elements (docs/specs/009-elements/portal-element.md, docs/specs/012-collaboration/session-button.md, docs/specs/009-elements/reveal-zone.md, docs/specs/012-collaboration/picker.md), off useEditorState rather
 // than the style hook: a portal link is the one element setting that reaches
 // ACROSS TABS, so these need the whole tab list and a tabs-wide commit, not the
 // active tab's element mapper every other setter uses — and the session button,
@@ -148,9 +148,9 @@ export function usePortalSetters({
   };
 
   // The remaining Behaviour settings are ordinary active-tab patches on the
-  // element the menu is acting on: what a session button starts (spec/105),
-  // whether a cover is off for everyone (spec/106), and where a picker draws
-  // its candidates from (spec/107).
+  // element the menu is acting on: what a session button starts (docs/specs/012-collaboration/session-button.md),
+  // whether a cover is off for everyone (docs/specs/009-elements/reveal-zone.md), and where a picker draws
+  // its candidates from (docs/specs/012-collaboration/picker.md).
   const patchTarget = (patch: Partial<ShapeElement>, kind: string, telemetry: string) => {
     const tab = tabs.find((t) => t.id === activeId);
     const ids = currentSelectionIds();
@@ -182,7 +182,7 @@ export function usePortalSetters({
     patchTarget({ pickerSource }, 'picker', 'Picker');
   const setPickerOptionsSelected = (pickerOptions: string[]) =>
     patchTarget({ pickerOptions }, 'picker', 'Picker');
-  // Reaction pad (spec/135): which burst it throws.
+  // Reaction pad (docs/specs/009-elements/reaction-pad.md): which burst it throws.
   const setReactionSelected = (reaction: Reaction) =>
     patchTarget({ reaction }, 'reaction-pad', 'ReactionPad');
 

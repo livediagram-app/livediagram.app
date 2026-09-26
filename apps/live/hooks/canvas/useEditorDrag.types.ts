@@ -29,13 +29,13 @@ export type EditorDragDeps = {
   selectedId: string | null;
   setSelectedId: (id: string | null) => void;
   multiSelectedIds: Set<string>;
-  // Written by the shift-duplicate identity swap (spec/80): the cursor-
+  // Written by the shift-duplicate identity swap (docs/specs/008-canvas/shift-drag-duplicate.md): the cursor-
   // following set becomes the fresh clones, so the selection must follow
   // them (and swing back if the duplicate is dissolved).
   setMultiSelectedIds: (ids: Set<string>) => void;
   editingId: string | null;
   isReadOnly: boolean;
-  // Elements on a hidden or locked layer (spec/74): every gesture
+  // Elements on a hidden or locked layer (docs/specs/006-diagram/layers.md): every gesture
   // starter treats them as inert — no select, no drag, no new arrow.
   layerInertIds: Set<string>;
   // Modal interaction state. When format-painter is active, a click
@@ -49,7 +49,7 @@ export type EditorDragDeps = {
   // of selecting / dragging. `setFormatSourceId` arms the source.
   formatToolActive: boolean;
   setFormatSourceId: (id: string | null) => void;
-  // Arrow click-to-connect (spec/09): armed source + the action.
+  // Arrow click-to-connect (docs/specs/008-canvas/canvas-and-palette.md): armed source + the action.
   connectSourceId: string | null;
   connectArrowTo: (targetId: string) => void;
   // Element setters from the editor. `tick` writes elements without
@@ -79,7 +79,7 @@ export type EditorDragDeps = {
   ) => void;
   // A standalone icon shape was dragged + released over another (non-
   // icon) shape: fold it INTO that shape as an inline icon on the named
-  // side, removing the standalone element (spec/09). Omitted when icon
+  // side, removing the standalone element (docs/specs/008-canvas/canvas-and-palette.md). Omitted when icon
   // edits are blocked (read-only / locked tab).
   onIconElementDroppedOnShape?: (
     sourceIconId: string,
@@ -87,18 +87,18 @@ export type EditorDragDeps = {
     position: IconPosition,
   ) => void;
   // An annotation marker was pressed + released without moving (a click,
-  // not a drag): open its note editor (spec/38). Distinguished from a drag
+  // not a drag): open its note editor (docs/specs/009-elements/annotations.md). Distinguished from a drag
   // by the same DRAG_ENGAGE_PX travel test the icon-fold uses. Omitted when
   // note edits are blocked (read-only / locked tab).
   onAnnotationClicked?: (id: string) => void;
-  // Per-user preference (spec/20) controlling whether connected
+  // Per-user preference (docs/specs/007-editor/user-preferences.md) controlling whether connected
   // arrows re-pin to the most-natural face as a box is dragged.
   // Defaults to true; setting `false` keeps anchors frozen at
   // whatever the user originally chose. Tracked via ref so a
   // mid-drag toggle takes effect on the next pointermove without
   // re-attaching listeners.
   autoRebindArrowsRef: React.RefObject<boolean>;
-  // Per-user preference (spec/09) controlling whether the faint
+  // Per-user preference (docs/specs/008-canvas/canvas-and-palette.md) controlling whether the faint
   // alignment guides are drawn during a move / resize. Defaults to
   // true; `false` suppresses the guide lines (the snap itself is
   // unaffected). Tracked via ref so a mid-drag toggle takes effect on
@@ -108,7 +108,7 @@ export type EditorDragDeps = {
   // checks this and cancels any in-flight drag so a pinch-to-zoom
   // gesture that starts on an element doesn't also move it.
   isPinchingRef?: React.RefObject<boolean>;
-  // Insert between (spec/139): what the board and session allow. The
+  // Insert between (docs/specs/021-event-storming/event-storming.md): what the board and session allow. The
   // other half of the gate — a held Alt — is read off each pointer
   // event, so an ordinary move never offers a slot.
   insertGate: InsertionGate;
@@ -117,7 +117,7 @@ export type EditorDragDeps = {
 export type EditorDragApi = {
   drag: DragState | null;
   // The dragged element ids to render translucent while a shift-duplicate
-  // is in progress (spec/80): copies already sit at the drag's start
+  // is in progress (docs/specs/008-canvas/shift-drag-duplicate.md): copies already sit at the drag's start
   // position, so the set following the cursor shows as a ghost. Null
   // outside a shift-held move drag.
   shiftDupGhostIds: ReadonlySet<string> | null;
@@ -142,7 +142,7 @@ export type EditorDragApi = {
       clickToPlace?: boolean;
       placeOutPx?: number;
       // Enter a real drag, but remember what a no-movement TAP should do
-      // (touch quick-connect, spec/09).
+      // (touch quick-connect, docs/specs/008-canvas/canvas-and-palette.md).
       tapPlaceOutPx?: number;
     },
   ) => void;

@@ -1,4 +1,4 @@
--- User-built custom themes, per spec/44.
+-- User-built custom themes, per docs/specs/011-theme/custom-themes.md.
 --
 -- Owner-scoped (Clerk sub or the X-Owner-Id guest id, like folders /
 -- diagrams), guests included. `definition` is the JSON-serialised

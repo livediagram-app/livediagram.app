@@ -7,7 +7,7 @@ import { relativeSince, useRelativeTimeTick } from '@/lib/relative-time';
 type RecentItem = { id: string; name: string; savedAt: number | null };
 
 // A small "jump back in" card that pops out to the RIGHT of the new-diagram
-// wizard (spec/14), listing the 5 most recently-saved diagrams the user
+// wizard (docs/specs/007-editor/new-diagram-route.md), listing the 5 most recently-saved diagrams the user
 // owns. Deliberately separate from the create flow: it's a side affordance
 // for returning users, hidden entirely for someone with no diagrams yet
 // (and on narrow viewports where the wizard already fills the width). Each
@@ -18,7 +18,7 @@ export function RecentDiagramsCard({
 }: {
   ownerId: string | null;
   // Reports how many diagrams the owner has, once known. The page uses it
-  // to gate the interactive tour's welcome offer (spec/79, zero-diagram
+  // to gate the interactive tour's welcome offer (docs/specs/007-editor/editor-tour.md, zero-diagram
   // users only); this card already holds the only diagram-list fetch on
   // /new, so it shares the answer rather than the page fetching twice.
   onCount?: (n: number) => void;
@@ -95,7 +95,7 @@ export function RecentDiagramsCard({
       {/* Footer: the card caps at 5 rows, so returning users with more
             history get a way into the full library. Points at the
             Explorer's front door rather than a named section, so the
-            landing view stays decided in one place (spec/138 §8.1). */}
+            landing view stays decided in one place (docs/specs/013-workspace/timeline.md §8.1). */}
       <a
         href="/explorer"
         className="group flex items-center justify-center gap-1.5 rounded-b-2xl border-t border-slate-100 px-4 py-2.5 text-[11px] font-medium text-slate-500 transition hover:bg-brand-50 hover:text-brand-700 dark:border-slate-800 dark:text-slate-400 dark:hover:bg-brand-500/10 dark:hover:text-brand-200"

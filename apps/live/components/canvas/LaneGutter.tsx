@@ -10,7 +10,7 @@ import {
   type TextAlignY,
 } from '@livediagram/diagram';
 
-// A lane's title gutter (spec/119): the tinted strip behind its title, with a
+// A lane's title gutter (docs/specs/009-elements/lane.md): the tinted strip behind its title, with a
 // divider where it meets the body.
 //
 // Only the strip and the rule are drawn here. The TITLE is the element's
@@ -57,7 +57,7 @@ export function LaneGutter({
   elementY,
 }: {
   stroke: string;
-  // An explicit heading background (spec/119). Unset keeps the historical
+  // An explicit heading background (docs/specs/009-elements/lane.md). Unset keeps the historical
   // look: a 10% wash of the lane's own stroke, so a recoloured lane carries
   // its gutter with it.
   headerFill?: string;

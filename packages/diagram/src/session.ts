@@ -1,4 +1,4 @@
-// Per-tab live session tools (spec/39): a facilitator-run TIMER and
+// Per-tab live session tools (docs/specs/012-collaboration/session-tools.md): a facilitator-run TIMER and
 // dot-VOTING, both controlled from the tab settings and synced to every
 // participant. They live as optional `Tab` fields (`timer`, `vote`) so
 // they ride the existing tab-content sync + persistence + late-joiner
@@ -66,7 +66,7 @@ export type TabVote = {
   // elementId -> the participant ids that placed a dot there. A participant
   // id repeats once per dot, so stacking N dots on one element is N entries.
   votes: Record<string, string[]>;
-  // --- Vote privacy (spec/39) ----------------------------------------------
+  // --- Vote privacy (docs/specs/012-collaboration/session-tools.md) ----------------------------------------------
   // Both are set once at startVote and never change mid-vote: to vote under
   // different rules you end the vote and start another. Optional so a vote
   // persisted before privacy shipped decodes unchanged (absent = off), and
@@ -79,7 +79,7 @@ export type TabVote = {
   // Withhold OTHER participants' dots until the results are revealed, so a
   // climbing tally can't snowball. Your own dots always stay visible.
   hideCounts?: boolean;
-  // --- Facilitation (spec/39) --------------------------------------------
+  // --- Facilitation (docs/specs/012-collaboration/session-tools.md) --------------------------------------------
   // The participant id that started this vote. Only they can end / reveal /
   // clear it and drive the results walkthrough — a vote is one person's to
   // run, and an accidental End by a participant mid-round can't be undone
@@ -87,12 +87,12 @@ export type TabVote = {
   // persisted before this shipped has no host, and `isVoteHost` treats that
   // as "anyone may drive" so an in-flight legacy vote can still be ended.
   startedBy?: string;
-  // Restrict voting to ONE layer (spec/96). Absent = every layer is
+  // Restrict voting to ONE layer (docs/specs/012-collaboration/vote-layer-scope.md). Absent = every layer is
   // votable, which is both the pre-layer-scoping behaviour and what a
   // single-layer tab always gets. Set once at start, like the privacy
   // switches: changing it means ending the vote and starting another.
   voteLayerId?: string;
-  // At most ONE of a participant's dots per element (spec/39). Absent =
+  // At most ONE of a participant's dots per element (docs/specs/012-collaboration/session-tools.md). Absent =
   // stack freely, the classic dot-vote and the behaviour of every vote
   // persisted before this existed. Set once at start like the rest.
   onePerElement?: boolean;
@@ -100,7 +100,7 @@ export type TabVote = {
   // the host steps the room through the picks together and everyone else
   // follows. Absent until the host reveals results.
   reviewIndex?: number;
-  // Which round this is: a random id minted at start (spec/152). Every `vote`
+  // Which round this is: a random id minted at start (docs/specs/012-collaboration/collab-race-hardening.md). Every `vote`
   // op carries it, so a dot cast for one round can never land in another, and
   // a lifecycle change (end / reveal / walkthrough) that names the SAME round
   // leaves the receiver's dots alone instead of replacing them with the
@@ -128,7 +128,7 @@ export type VotePrivacy = {
 };
 
 // Everything the facilitator chooses BEFORE starting a vote: the privacy
-// switches plus the optional layer scope (spec/96). One object because
+// switches plus the optional layer scope (docs/specs/012-collaboration/vote-layer-scope.md). One object because
 // they share a lifecycle — all of it is baked into the TabVote at start
 // and none of it can change while the vote runs.
 export type VoteSetup = VotePrivacy & {
@@ -142,7 +142,7 @@ export type VoteSetup = VotePrivacy & {
 
 // Should peer cursors / laser trails be withheld right now? Only while
 // casting is OPEN: ending the vote restores them, ahead of the reveal
-// (spec/39 — "hidden" means exactly "while the vote is open").
+// (docs/specs/012-collaboration/session-tools.md — "hidden" means exactly "while the vote is open").
 export function voteHidesCursors(vote: TabVote | null | undefined): boolean {
   return !!vote && vote.active && vote.hideCursors === true;
 }
@@ -154,10 +154,10 @@ export function voteHidesTallies(vote: TabVote | null | undefined): boolean {
   return !!vote && !vote.revealed && vote.hideCounts === true;
 }
 
-// Which element kinds a dot-vote can land on (spec/39): stickies, images,
+// Which element kinds a dot-vote can land on (docs/specs/012-collaboration/session-tools.md): stickies, images,
 // and shapes — but NOT a `frame` (it's a section backdrop, not content),
 // and not text / freehand / table / arrow / annotation.
-// Interactive Behaviour elements (spec/103, /104, /105, /106, /107): a mode
+// Interactive Behaviour elements (docs/specs/009-elements/mode-button.md, /104, /105, /106, /107): a mode
 // button, portal, session button, reveal, picker or reaction pad DOES
 // something when you
 // press it. Voting turns a press into a dot, so a votable behaviour element
@@ -173,9 +173,9 @@ const NON_VOTABLE_SHAPES = new Set([
   'reveal',
   'picker',
   'reaction-pad',
-  // A comment pin (spec/136) IS a remark; a dot on one means nothing.
+  // A comment pin (docs/specs/012-collaboration/comment-pin.md) IS a remark; a dot on one means nothing.
   'comment-pin',
-  // An action panel (spec/146) is a task, not a candidate.
+  // An action panel (docs/specs/012-collaboration/action-panel.md) is a task, not a candidate.
   'action-card',
 ]);
 
@@ -185,10 +185,10 @@ export function isVotable(element: Element): boolean {
 }
 
 // Can this element take a dot in THIS vote? The kind rule above, plus
-// the vote's optional layer scope (spec/96).
+// the vote's optional layer scope (docs/specs/012-collaboration/vote-layer-scope.md).
 //
 // Layer resolution goes through `resolveLayerId` rather than comparing
-// `element.layerId` directly: elements authored before spec/74 carry no
+// `element.layerId` directly: elements authored before docs/specs/006-diagram/layers.md carry no
 // layerId at all and belong to the base layer, so a raw comparison would
 // make every one of them unvotable the moment a scope was set.
 export function isVotableInVote(
@@ -240,7 +240,7 @@ export function applyVoteDelta(
 }
 
 // Does a peer's dot belong on this vote? Only while casting is open, and only
-// for the round it was cast in (spec/152). A dot that reaches us after End has
+// for the round it was cast in (docs/specs/012-collaboration/collab-race-hardening.md). A dot that reaches us after End has
 // nowhere to go, and one from the previous round would otherwise be counted
 // against the new one while its caster's own map had been reset. A dot or a
 // vote with no round (a peer or a vote from before rounds) falls back to the
@@ -252,7 +252,7 @@ export function voteDeltaApplies(vote: TabVote | null | undefined, round?: strin
 }
 
 // Fold a peer's whole `vote` object (a tab-meta patch or a whole-tab op) into
-// ours (spec/152). Within one round the dots move ONLY by delta ops, so a
+// ours (docs/specs/012-collaboration/collab-race-hardening.md). Within one round the dots move ONLY by delta ops, so a
 // lifecycle change for the same round (End, Reveal, stepping the walkthrough)
 // takes the incoming fields and keeps OUR map: the sender's snapshot was taken
 // at their autosave and would erase every dot still in flight. A different

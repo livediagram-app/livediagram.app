@@ -5,7 +5,7 @@ import { fmtDay } from './chart-utils';
 import { linePath, plot, VIEW_H, VIEW_W } from './TrendChart';
 
 // Several 30-day series on one shared axis: the combined chart on a chart
-// stack's head card (spec/22). Same inline-SVG approach as TrendChart (a
+// stack's head card (docs/specs/017-telemetry/telemetry.md). Same inline-SVG approach as TrendChart (a
 // stretched 0..100 viewBox, non-scaling strokes, transparent hover columns),
 // but one coloured line per series and no fill or average line, which would
 // muddy once lines overlap. Every series shares one max so their heights

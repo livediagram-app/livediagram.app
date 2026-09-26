@@ -7,8 +7,8 @@ import { LandingFunnel } from './LandingFunnel';
 import { RankCard } from './RankCard';
 import { rankTrend, windowLabel } from './windows';
 
-// Pages view (spec/150): which pages across the site get viewed, broken down
-// by the app that serves them, opening with the landing funnel (spec/153):
+// Pages view (docs/specs/017-telemetry/page-view-telemetry.md): which pages across the site get viewed, broken down
+// by the app that serves them, opening with the landing funnel (docs/specs/019-marketing/landing-funnel.md):
 // how the public pages turn views into diagrams. Every frontend emits
 // `Page·View·<path>` on
 // each path change (full load or in-app navigation), with ids and query

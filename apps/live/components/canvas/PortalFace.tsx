@@ -1,4 +1,4 @@
-// The face of a Portal element (spec/104): a standing ring of energy, in the
+// The face of a Portal element (docs/specs/009-elements/portal-element.md): a standing ring of energy, in the
 // shape everyone already knows from the game — a tall oval you step into and
 // come out of somewhere else.
 //
@@ -15,7 +15,7 @@
 // tooltip says why. A portal that silently swallows a click is worse than one
 // that admits it isn't wired up.
 //
-// Interaction rules match the Selection Mode button (spec/103): a real <button>
+// Interaction rules match the Selection Mode button (docs/specs/009-elements/mode-button.md): a real <button>
 // so a click travels rather than only selecting, `pointer-events: auto` so it
 // works inside the pointer-inert Avatar / Spotlight / Isometric layers, and
 // pointer-down left alone so dragging still moves it.

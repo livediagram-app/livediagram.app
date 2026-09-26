@@ -1,4 +1,4 @@
-// Portal linking + travel geometry (spec/104): pure helpers for the portal.
+// Portal linking + travel geometry (docs/specs/009-elements/portal-element.md): pure helpers for the portal.
 //
 // A portal carries `portalTarget`, the id of the portal it leads to. A LINK IS
 // TWO-WAY: whatever you can step into, you can step back out of. Linking from
@@ -31,7 +31,7 @@ export function portalName(elements: Element[], portal: ShapeElement): string {
   return index >= 0 ? `Portal ${index + 1}` : 'Portal';
 }
 
-// A portal together with the tab it lives on. Links cross tabs (spec/104): a
+// A portal together with the tab it lives on. Links cross tabs (docs/specs/009-elements/portal-element.md): a
 // portal on the Overview tab can drop you into the Detail tab, which is the
 // cheapest way to build a walkable multi-tab presentation. Element ids are
 // unique across the whole diagram, so the stored `portalTarget` needs no tab

@@ -2,7 +2,7 @@
 // dashboard. Extracted from the page shell so the metric cards and the
 // Search view share one definition of what each event means, what
 // colour a category gets, and how rows roll up into category groups.
-// (The closed event vocabulary itself lives in spec/22 + the api-schema
+// (The closed event vocabulary itself lives in docs/specs/017-telemetry/telemetry.md + the api-schema
 // enums; this module only turns it into human-readable strings.)
 
 import { titleCase, type TelemetryCategory, type TelemetryCount } from '@livediagram/api-schema';
@@ -103,7 +103,7 @@ export const categoryColor = (c: string) => CATEGORY_COLORS[c as TelemetryCatego
 export { titleCase };
 
 // How a `type` reads on screen. Tokens are title-cased ('square' ->
-// 'Square'); a page path (spec/150) is shown exactly as stored, since
+// 'Square'); a page path (docs/specs/017-telemetry/page-view-telemetry.md) is shown exactly as stored, since
 // '/help/the-canvas' is only recognisable as the URL it is.
 // Canvas·Changed types that are a canvas-panel control rather than a
 // background pattern (useTabCanvas's debounced emits), with the words for it.

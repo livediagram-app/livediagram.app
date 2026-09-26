@@ -28,7 +28,7 @@ import type { MetricGroup } from './metric-series';
 // identically.
 
 // Slower than a page cascade: an expansion is a deliberate act on a handful
-// of cards, so the fan is worth seeing (the Timeline's rate, spec/138 §2.6).
+// of cards, so the fan is worth seeing (the Timeline's rate, docs/specs/013-workspace/timeline.md §2.6).
 const EXPAND_STAGGER_MS = 60;
 
 const GRID = 'grid gap-4 sm:grid-cols-2 xl:grid-cols-3';
@@ -157,7 +157,7 @@ export function MetricGroups({
 }
 
 // The full-width link at the foot of a stack's modal into a tab that goes
-// deeper (spec/22 See also).
+// deeper (docs/specs/017-telemetry/telemetry.md See also).
 function SeeAlsoLink({ label, onClick }: { label: string; onClick: () => void }) {
   return (
     <button

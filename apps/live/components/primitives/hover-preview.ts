@@ -1,7 +1,7 @@
 'use client';
 
 // Shared helpers for the hover-to-preview tiles — the style-preset tiles
-// (spec/48, StylePresets.tsx) and the animation tiles (spec/09,
+// (docs/specs/010-palette/style-presets.md, StylePresets.tsx) and the animation tiles (docs/specs/008-canvas/canvas-and-palette.md,
 // context-menu-tiles.tsx). Both want the same two behaviours, so they live here
 // rather than being copied into each.
 

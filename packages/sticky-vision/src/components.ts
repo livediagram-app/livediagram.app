@@ -1,4 +1,4 @@
-// Connected components over a class mask (spec/139 Phase 8): the pixels that
+// Connected components over a class mask (docs/specs/021-event-storming/event-storming.md Phase 8): the pixels that
 // touch each other and say the same thing become one blob.
 //
 // Two-pass union-find over a typed array rather than a recursive flood fill:

@@ -1,4 +1,4 @@
-// Shared result / auth plumbing for the MCP tools (spec/62): the text and
+// Shared result / auth plumbing for the MCP tools (docs/specs/015-api/mcp-server.md): the text and
 // error result shapes, the deep links, the bearer-token guard every tool
 // uses, and the load-a-tab sequence the read and edit tools share.
 // Deliberately render-free, so it can be unit-tested: the inline-PNG
@@ -20,7 +20,7 @@ export type ToolResult = {
 
 export const deepLink = (id: string) => `https://livediagram.app/diagram/${id}`;
 
-// A share link's public URL (spec/24): visitors land on /diagram/shared?s=<code>
+// A share link's public URL (docs/specs/013-workspace/share-password.md): visitors land on /diagram/shared?s=<code>
 // and the app resolves the code to the diagram + granted role.
 export const shareUrl = (code: string) =>
   `https://livediagram.app/diagram/shared?s=${encodeURIComponent(code)}`;

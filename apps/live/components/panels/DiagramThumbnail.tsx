@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { apiFetchDiagramThumbnailUrl } from '@/lib/api-client';
 
-// A cached SVG snapshot of a diagram (spec/67) so you can recognise it
+// A cached SVG snapshot of a diagram (docs/specs/006-diagram/diagram-snapshots.md) so you can recognise it
 // without opening it. Shared by every Explorer surface that lists
 // diagrams: the full-page rows, the "Shared with me" list, the team
 // library, and the floating in-editor panel.
@@ -44,10 +44,10 @@ export function DiagramThumbnail({
   // The diagram's savedAt, forwarded as the cache-bust version so an
   // edited diagram re-fetches a fresh snapshot.
   version: number;
-  // Present on a "shared with me" row (spec/35): authorises the read via
+  // Present on a "shared with me" row (docs/specs/013-workspace/team-shared-diagrams.md): authorises the read via
   // the share code instead of ownership / team membership.
   shareCode?: string | null;
-  // Offline Mode (spec/76): an offline diagram has no server snapshot, so
+  // Offline Mode (docs/specs/006-diagram/offline-mode.md): an offline diagram has no server snapshot, so
   // show a fixed offline illustration instead of fetching a thumbnail.
   offline?: boolean;
   // Container sizing/appearance. Defaults to the compact row box; a card
@@ -102,7 +102,7 @@ export function DiagramThumbnail({
     };
   }, [offline, visible, ownerId, diagramId, version, shareCode]);
 
-  // Offline Mode (spec/76): a fixed illustration, no fetch, no snapshot.
+  // Offline Mode (docs/specs/006-diagram/offline-mode.md): a fixed illustration, no fetch, no snapshot.
   if (offline) {
     return (
       <span
@@ -121,7 +121,7 @@ export function DiagramThumbnail({
       aria-hidden
       // Paint the box in the diagram's own background colour once the
       // snapshot loads, so the object-contain letterbox blends into the
-      // preview instead of clashing with a generic slate fill (spec/67).
+      // preview instead of clashing with a generic slate fill (docs/specs/006-diagram/diagram-snapshots.md).
       style={
         state.status === 'ready' && state.backgroundColor
           ? { backgroundColor: state.backgroundColor }
@@ -149,7 +149,7 @@ export function DiagramThumbnail({
   );
 }
 
-// Fixed illustration for an offline diagram (spec/76): a "cloud off" mark,
+// Fixed illustration for an offline diagram (docs/specs/006-diagram/offline-mode.md): a "cloud off" mark,
 // amber to match the Offline badge. h-full fits it to small row thumbs, but
 // the height cap keeps it a modest centred glyph inside the big explorer
 // cards — uncapped it scaled to fill the whole card, a giant heavy-stroked

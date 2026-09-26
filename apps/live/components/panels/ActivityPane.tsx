@@ -1,6 +1,6 @@
 'use client';
 
-// The Explorer's Activity section (spec/142): three card-lists of what
+// The Explorer's Activity section (docs/specs/013-workspace/activity-page.md): three card-lists of what
 // is outstanding for the reader — actions assigned to them, actions
 // they assigned, and the comment threads they are in — each hidden
 // when empty, one empty state when all three are.

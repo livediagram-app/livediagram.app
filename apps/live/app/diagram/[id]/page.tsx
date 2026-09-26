@@ -5,7 +5,7 @@ import EditorPage from './editor-page';
 // ids can't be enumerated, so we ship a single placeholder route
 // (`/diagram/placeholder/`) and have the live worker rewrite any
 // `/diagram/<anything>` request to that file. The client then reads
-// the real id from `window.location.pathname`. See spec/14.
+// the real id from `window.location.pathname`. See docs/specs/007-editor/new-diagram-route.md.
 export const generateStaticParams = async () => [{ id: 'placeholder' }];
 
 export default function Page() {

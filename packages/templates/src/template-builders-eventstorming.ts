@@ -1,4 +1,4 @@
-// Event storming (spec/139): the sticky-note workshop notation for
+// Event storming (docs/specs/021-event-storming/event-storming.md): the sticky-note workshop notation for
 // exploring a business domain. The starter is deliberately minimal —
 // the method's first instruction is "write domain events, past tense,
 // on orange stickies, left to right in rough time order", so the seed
@@ -28,14 +28,14 @@ import {
 // drift apart.
 const DOMAIN_EVENT_FILL = eventStormingNote('domain-event').fill;
 
-// The method's opening move and nothing else (spec/139 Phase 1): one domain
+// The method's opening move and nothing else (docs/specs/021-event-storming/event-storming.md Phase 1): one domain
 // event, and it is also the first thing that happened. No text element: the
 // board is paper only.
 export function buildEventStorming(cx: number, cy: number): Element[] {
   const stickyW = 200;
   const stickyH = 200;
   // Centred on the lane nearest the centre it was asked for, so a fresh board
-  // starts on the lanes every drag will snap to (spec/139 Phase 6).
+  // starts on the lanes every drag will snap to (docs/specs/021-event-storming/event-storming.md Phase 6).
   const y = laneCentre(laneIndexAt(cy, ES_LANES), ES_LANES) - stickyH / 2;
   return [
     {
@@ -46,12 +46,12 @@ export function buildEventStorming(cx: number, cy: number): Element[] {
       // A gentle tilt so the note reads as hand-placed.
       rotation: -1.1,
       // Workshop stationery is one size for life, and its text auto-fits
-      // centred on the paper (spec/139).
+      // centred on the paper (docs/specs/021-event-storming/event-storming.md).
       fixedSize: true,
       textSize: 'scale',
       textAlignX: 'center',
       textAlignY: 'middle',
-      // One board, one layer (spec/139).
+      // One board, one layer (docs/specs/021-event-storming/event-storming.md).
       layerId: ES_BOARD_LAYER_ID,
     },
   ];

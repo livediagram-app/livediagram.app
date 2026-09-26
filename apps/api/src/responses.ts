@@ -12,12 +12,12 @@ export const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
   // `Authorization` carries the Clerk Bearer token (Stage 2 hybrid
-  // auth, spec/04, spec/11). Without it in the allow-list every
+  // auth, docs/specs/014-identity/auth-and-guest-access.md, docs/specs/015-api/api.md). Without it in the allow-list every
   // signed-in cross-origin request fails the preflight and surfaces
   // to JS as "Failed to fetch", which was hiding behind DELETE
   // /api/account and any other authed call from localhost:3002 to
   // localhost:8787 in dev.
-  // Image upload uses custom X-Image-* headers (spec/19). The browser
+  // Image upload uses custom X-Image-* headers (docs/specs/009-elements/images.md). The browser
   // rejects the POST preflight if any header the client sends isn't
   // in this list, which surfaces as "Failed to fetch" with no other
   // signal, so each new header has to land here too.
@@ -37,7 +37,7 @@ export function notFound(): Response {
   return json({ error: 'not_found' }, { status: 404 });
 }
 
-// An SVG image body (spec/67 diagram snapshots). Same CORS treatment as
+// An SVG image body (docs/specs/006-diagram/diagram-snapshots.md diagram snapshots). Same CORS treatment as
 // `json` so the live app's blob-URL fetch works cross-origin in dev; the
 // caller picks the `Cache-Control` (private + long for the owner
 // thumbnail, public + short for the live share image).
@@ -85,7 +85,7 @@ export function payloadTooLarge(): Response {
 }
 
 // 502 when the upstream AI provider fails or returns something unusable
-// (spec/25). One token for every failure mode so the client shows a single
+// (docs/specs/007-editor/ai-assistance.md). One token for every failure mode so the client shows a single
 // "try again" state; the specific cause goes to the worker log instead.
 export function aiError(): Response {
   return json({ error: 'ai_error' }, { status: 502 });
@@ -99,7 +99,7 @@ export function rateLimited(): Response {
   return json({ error: 'rate_limited' }, { status: 429 });
 }
 
-// Clerk-only surfaces (teams, spec/32). Unlike missingAuth() below —
+// Clerk-only surfaces (teams, docs/specs/013-workspace/teams.md). Unlike missingAuth() below —
 // which names both identity sources because either is acceptable —
 // this is for endpoints where the guest X-Owner-Id path is
 // structurally insufficient (membership is keyed by Clerk user id +
@@ -118,7 +118,7 @@ export function conflict(reason: string): Response {
 
 // Returned whenever `resolveOwner()` yields null on a mutation /
 // owner-scoped read. Owner can be null for two reasons under hybrid
-// auth (spec/04):
+// auth (docs/specs/014-identity/auth-and-guest-access.md):
 //
 //   1. Pure-guest path with no `X-Owner-Id` header sent.
 //   2. A Bearer token was sent but verification failed silently

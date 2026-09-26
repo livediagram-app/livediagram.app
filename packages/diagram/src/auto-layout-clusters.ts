@@ -1,4 +1,4 @@
-// Cluster-aware graph layout (spec/73): lay out a DiagramGraph whose
+// Cluster-aware graph layout (docs/specs/020-import-export/mermaid.md): lay out a DiagramGraph whose
 // clusters (Mermaid subgraphs) must render as frames drawn around their
 // member nodes. The flow layout (auto-layout.ts) knows nothing about
 // containment, so this module composes it twice: each cluster's members are
@@ -38,7 +38,7 @@ const bbox = (els: BoxedElement[]): Rect => unionRects(els)!;
 // origin (everything starts at 0,0). Sweep them into rows below the placed
 // content instead. Lives here (the import path) on purpose: for the MCP's
 // element authoring, leaving edgeless content alone is load-bearing
-// (spec/62 §4.3) — for a parsed graph there is no hand-placed content.
+// (docs/specs/015-api/mcp-server.md §4.3) — for a parsed graph there is no hand-placed content.
 // `exempt` ids are deliberately-placed nodes the sweep must leave alone but
 // still avoid (frames and their members in the clustered pass).
 export function sweepEdgelessNodes(elements: Element[], exempt?: Set<string>): Element[] {

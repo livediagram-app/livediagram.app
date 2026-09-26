@@ -1,9 +1,9 @@
 'use client';
 
 // The element-menu sections for the Behaviour elements that carry settings:
-// the Session button (spec/105), the Picker (spec/107) and the Reaction pad
-// (spec/135). The Reveal zone
-// (spec/106) has no settings — only the two reveal actions — so it lives here
+// the Session button (docs/specs/012-collaboration/session-button.md), the Picker (docs/specs/012-collaboration/picker.md) and the Reaction pad
+// (docs/specs/009-elements/reaction-pad.md). The Reveal zone
+// (docs/specs/009-elements/reveal-zone.md) has no settings — only the two reveal actions — so it lives here
 // too rather than growing a third file for four rows.
 //
 // Their own file for the same reason PortalMenuSection has one: each is a
@@ -96,7 +96,7 @@ export function SessionMenuSection({
   // This section is the button's SETTINGS, not a tool picker. It used to lead
   // with a Timer / Vote / Poll tile grid, which was a second way to choose
   // something the palette already asks you once: it offers a tile per tool
-  // (spec/105), so the button lands as the thing you picked. Wanting a
+  // (docs/specs/012-collaboration/session-button.md), so the button lands as the thing you picked. Wanting a
   // different one is wanting a different element — drag it out — and the grid
   // cost every session button three tiles of height to re-ask a settled
   // question.
@@ -147,7 +147,7 @@ export function RevealMenuSection({
   );
 }
 
-// Reaction pad (spec/135): which burst the pad throws.
+// Reaction pad (docs/specs/009-elements/reaction-pad.md): which burst the pad throws.
 //
 // A tile grid rather than a dropdown, because the five reactions differ in
 // FEELING rather than in name — the glyph is the thing being chosen, and a

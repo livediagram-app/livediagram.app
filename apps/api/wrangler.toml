@@ -4,15 +4,15 @@ compatibility_date = "2026-05-29"
 
 # Plain (non-secret) vars. TELEMETRY_ENABLED gates the anonymous,
 # first-party product analytics + the public /telemetry dashboard
-# (spec/22). "true" turns it on; anything else (or absent) keeps it
+# (docs/specs/017-telemetry/telemetry.md). "true" turns it on; anything else (or absent) keeps it
 # fully off, which is the self-host / OSS-fork default, so a fork
 # never ingests or serves analytics unless it opts in. Not a secret,
 # so it lives here in the open.
 [vars]
 TELEMETRY_ENABLED = "true"
 
-# Origin allow-list for POST /api/ai (spec/25). Stated HERE, not in the
-# Cloudflare dashboard, for the reason spec/140 calls a known sharp edge: a
+# Origin allow-list for POST /api/ai (docs/specs/007-editor/ai-assistance.md). Stated HERE, not in the
+# Cloudflare dashboard, for the reason docs/specs/016-platform/staging-environment.md calls a known sharp edge: a
 # dashboard-only value is invisible to code review, so the repo read as though
 # this endpoint were locked down while production served it wide open. A probe
 # of production (POST /api/ai with no Origin) answered `400 invalid mode`
@@ -47,12 +47,12 @@ database_id = "79642003-5866-4c5a-9011-7fbeb0de6b58"
 migrations_dir = "migrations"
 
 # R2 bucket holding the bytes of every uploaded image element
-# (spec/19). The binding name `IMAGES` is what `src/index.ts` reads
+# (docs/specs/009-elements/images.md). The binding name `IMAGES` is what `src/index.ts` reads
 # via the Env type. The bucket must be created out of band via
 # `wrangler r2 bucket create livediagram-images` (production) or
 # the dashboard. Leaving the binding absent locally puts the api
 # in "no uploads" mode: the image endpoints return 503 and the
-# editor's palette hides the Image entry. See spec/19 + spec/03
+# editor's palette hides the Image entry. See docs/specs/009-elements/images.md + docs/specs/002-project-scope/open-source-and-business-model.md
 # self-host promise.
 [[r2_buckets]]
 binding = "IMAGES"
@@ -75,7 +75,7 @@ namespace_id = "1001"
 simple = { limit = 300, period = 60 }
 
 # Per-IP limiter for the anonymous telemetry ingest (POST /api/events,
-# spec/22). Separate namespace from the write limiter so abuse of the
+# docs/specs/017-telemetry/telemetry.md). Separate namespace from the write limiter so abuse of the
 # public events endpoint can never eat into a user's diagram-write
 # budget. 120 batches / 60s per IP is generous for a real editor
 # session (which flushes a handful of batches a minute) while bounding
@@ -105,21 +105,21 @@ new_classes = ["DiagramRoom"]
 #
 # `0 3 * * *`: daily at 03:00 UTC. Fires three independent retention
 # sweeps on this trigger:
-#   - change_log, 90-day floor (item #16 / spec/12). Matches what's
+#   - change_log, 90-day floor (item #16 / docs/specs/012-collaboration/activity-and-audit.md). Matches what's
 #     surfaced in the Activity Panel; older entries were never user-
 #     visible, just sitting on the table.
-#   - events, 60-day floor (spec/22 "Retention"). The /telemetry
+#   - events, 60-day floor (docs/specs/017-telemetry/telemetry.md "Retention"). The /telemetry
 #     dashboard surfaces a 30-day max window, so anything past 60
 #     days is dead storage.
-#   - images, 30-day floor for UNUSED images only (spec/19): reaped
+#   - images, 30-day floor for UNUSED images only (docs/specs/009-elements/images.md): reaped
 #     from R2 + D1 once nothing references them.
-# Plus the spec/64 email sweeps (lifecycle onboarding + token-expiry
+# Plus the docs/specs/014-identity/transactional-email.md email sweeps (lifecycle onboarding + token-expiry
 # warnings), both no-ops when RESEND_API_KEY is unset.
 [triggers]
 crons = ["0 3 * * *"]
 
 # Per-IP rate limiter for the AI assistance endpoint (POST /api/ai,
-# spec/25). Separate namespace so AI abuse never eats into diagram-write
+# docs/specs/007-editor/ai-assistance.md). Separate namespace so AI abuse never eats into diagram-write
 # or telemetry budgets. 20 requests / 60s per IP is generous for a
 # real user session while bounding runaway OpenAI spend. Absent binding
 # → helper allows, so self-host still works without this feature.
@@ -141,7 +141,7 @@ type = "ratelimit"
 namespace_id = "1004"
 simple = { limit = 30, period = 60 }
 
-# Per-IP throttle for GET /api/unfurl (spec/40): an unauthenticated outbound
+# Per-IP throttle for GET /api/unfurl (docs/specs/009-elements/link-cards.md): an unauthenticated outbound
 # page fetch for link-card previews. 60/60s is plenty for a user dropping
 # bookmark cards. Separate namespace. Absent binding → check skipped (self-host).
 [[unsafe.bindings]]
@@ -150,7 +150,7 @@ type = "ratelimit"
 namespace_id = "1005"
 simple = { limit = 60, period = 60 }
 
-# Per-token read throttle for token-authed GETs (spec/61 §3.5): an external
+# Per-token read throttle for token-authed GETs (docs/specs/015-api/public-api-and-tokens.md §3.5): an external
 # integration's reads, keyed on the token id, so one runaway script can't hammer
 # reads independently of the owner's app use. Token WRITES ride
 # WRITE_RATE_LIMITER (also keyed on the token id). Absent binding → allow.
@@ -160,7 +160,7 @@ type = "ratelimit"
 namespace_id = "1006"
 simple = { limit = 120, period = 60 }
 
-# The AI features (spec/25) talk to ANY OpenAI-compatible chat-completions
+# The AI features (docs/specs/007-editor/ai-assistance.md) talk to ANY OpenAI-compatible chat-completions
 # endpoint, and WHICH provider is inferred from which key is set — a key is
 # provider-specific, so its name says whose it is (see src/ai-provider.ts):
 #
@@ -175,13 +175,13 @@ simple = { limit = 120, period = 60 }
 # Exactly one may be set: two is refused rather than guessed at, because
 # guessing spends somebody's money. AI_BASE_URL / AI_MODEL / AI_VISION_MODEL
 # are plain [vars]; AI_MODEL overrides the preset's default model and
-# AI_VISION_MODEL overrides it for /api/ai/read-notes only (spec/139 Phase 8).
+# AI_VISION_MODEL overrides it for /api/ai/read-notes only (docs/specs/021-event-storming/event-storming.md Phase 8).
 #
 # With no key the whole surface is hidden: GET /api/capabilities answers
 # { aiEnabled: false }, the editor shows no AI panel and no photo import, and
 # the AI routes answer 503. That is the self-host default.
 
-# Per-owner soft caps on the image gallery (spec/19). Both default to
+# Per-owner soft caps on the image gallery (docs/specs/009-elements/images.md). Both default to
 # "no limit" so OSS self-host operators run their own storage budget;
 # hosted livediagram.app sets both so a single owner can't drain the
 # R2 bucket. POST /api/images returns 403 { error: "gallery-full" }
@@ -199,7 +199,7 @@ simple = { limit = 120, period = 60 }
 # all read as "no limit".
 
 # RESEND_API_KEY + RESEND_FROM + APP_BASE_URL drive transactional &
-# lifecycle email (spec/64). All optional; an absent RESEND_API_KEY makes
+# lifecycle email (docs/specs/014-identity/transactional-email.md). All optional; an absent RESEND_API_KEY makes
 # the whole email feature inert — no sends, and the email_lifecycle table
 # is never touched, so a deployment with email off does zero extra work:
 #
@@ -213,7 +213,7 @@ simple = { limit = 120, period = 60 }
 #     Defaults to "https://livediagram.app".
 
 # CLERK_JWKS_URL is provisioned out-of-band so the value never lands
-# in the public repo (spec/06):
+# in the public repo (docs/specs/002-project-scope/secrets-policy.md):
 #
 #   - Local dev: drop `CLERK_JWKS_URL=https://...` into
 #     `apps/api/.dev.vars` (gitignored). Wrangler reads it on the
@@ -226,7 +226,7 @@ simple = { limit = 120, period = 60 }
 #     persist across deploys independently of this file.
 #
 # When the secret is unset the api worker stays in pure-guest mode
-# and trusts `X-Owner-Id` exclusively (spec/04 + spec/11). Get the
+# and trusts `X-Owner-Id` exclusively (docs/specs/014-identity/auth-and-guest-access.md + docs/specs/015-api/api.md). Get the
 # URL from the Clerk dashboard → API Keys → "Show JWKS URL"; format
 # is `https://<your-instance>.clerk.accounts.dev/.well-known/jwks.json`
 # (test tenant) or `https://clerk.<your-domain>/.well-known/jwks.json`
@@ -237,12 +237,12 @@ simple = { limit = 120, period = 60 }
 # secret in prod; never in [vars] — it's secret material). When set, the
 # worker mints signed guest ids and /api/migrate requires a valid
 # signature, closing the "observe a guest id, claim its data" hole
-# (spec/04). Generate with `openssl rand -hex 32`. Unset = legacy unsigned
+# (docs/specs/014-identity/auth-and-guest-access.md). Generate with `openssl rand -hex 32`. Unset = legacy unsigned
 # migrate (pure-guest / single-user self-host).
 
 # INTERNAL_EVENTS_KEY marks a POST to /api/events as coming from one of our
 # OWN workers over a service binding, rather than from the open internet
-# (spec/22, issue #36). Provisioned out-of-band like the two above; never in
+# (docs/specs/017-telemetry/telemetry.md, issue #36). Provisioned out-of-band like the two above; never in
 # [vars] — it is secret material:
 #
 #   - Local dev: `INTERNAL_EVENTS_KEY=...` in `apps/api/.dev.vars`
@@ -269,7 +269,7 @@ simple = { limit = 120, period = 60 }
 
 
 # ---------------------------------------------------------------------------
-# Staging (spec/140). Deploys as `livediagram-api-staging` via
+# Staging (docs/specs/016-platform/staging-environment.md). Deploys as `livediagram-api-staging` via
 # `wrangler deploy --env staging`.
 #
 # Everything below is restated ON PURPOSE. Wrangler does NOT inherit
@@ -295,15 +295,15 @@ TELEMETRY_ENABLED = "true"
 # Staging emits into its own D1, so the events land on STAGING's /telemetry
 # dashboard and never in production's published numbers.
 
-# Links in staging email point back at staging (spec/64). Without this a
+# Links in staging email point back at staging (docs/specs/014-identity/transactional-email.md). Without this a
 # welcome email sent from a staging test lands someone on production.
 APP_BASE_URL = "https://staging.livediagram.app"
 RESEND_FROM = "livediagram staging <hello@livediagram.app>"
 
 # Lock the AI endpoint to the staging origin so the OpenAI key behind it
-# can't be spent from a third-party page (spec/25). Production states the
+# can't be spent from a third-party page (docs/specs/007-editor/ai-assistance.md). Production states the
 # equivalent in the top-level [vars] above, for the same reason: the
-# environment is reproducible from the repo alone — see spec/140 "Known sharp
+# environment is reproducible from the repo alone — see docs/specs/016-platform/staging-environment.md "Known sharp
 # edge".
 AI_ALLOWED_ORIGINS = "https://staging.livediagram.app"
 # No AI_REQUIRE_CLERK, matching production: the editor offers AI to guests, so
@@ -312,7 +312,7 @@ AI_ALLOWED_ORIGINS = "https://staging.livediagram.app"
 
 # Own database, created 2026-09-17. Empty until the first staging deploy
 # applies the migrations in `migrations/` against it — which is the whole
-# reason this environment exists (spec/140).
+# reason this environment exists (docs/specs/016-platform/staging-environment.md).
 [[env.staging.d1_databases]]
 binding = "DB"
 database_name = "livediagram-staging"
@@ -376,7 +376,7 @@ class_name = "DiagramRoom"
 tag = "v1"
 new_classes = ["DiagramRoom"]
 
-# The daily 03:00 UTC sweeps (retention + the spec/64 email crons) run on
+# The daily 03:00 UTC sweeps (retention + the docs/specs/014-identity/transactional-email.md email crons) run on
 # staging too, against staging's own data. Restated rather than inherited so
 # that reading this block tells you what the staging worker actually does.
 [env.staging.triggers]

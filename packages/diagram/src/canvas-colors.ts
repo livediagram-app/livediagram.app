@@ -8,7 +8,7 @@ export const DEFAULT_BACKGROUND_COLOR = '#ffffff';
 export const DEFAULT_PATTERN_COLOR = '#cbd5e1'; // slate-300
 
 // The same canvas in dark appearance: the Default colour scheme's dark half
-// (spec/07), and before that the Charcoal scheme it absorbed. Neutral zinc
+// (docs/specs/007-editor/live-app.md), and before that the Charcoal scheme it absorbed. Neutral zinc
 // rather than a hue, because this is the un-themed canvas — anything tinted
 // would be a choice, and the tinted darks (Midnight, Pine, Plum) are where a
 // choice belongs. Dots a step up from the backdrop so grid and outlines read

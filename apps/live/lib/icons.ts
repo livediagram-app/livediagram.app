@@ -1,5 +1,5 @@
 // Curated single-colour icon catalogue for the "icon" shape kind
-// (spec/09 "Icons" accordion). Each glyph is a small set of stroke
+// (docs/specs/008-canvas/canvas-and-palette.md "Icons" accordion). Each glyph is a small set of stroke
 // primitives drawn in a 0..24 viewBox, rendered with the element's
 // stroke colour (fill="none") so an icon tints + themes like a line
 // drawing. The geometry is deliberately Feather / Lucide-flavoured:
@@ -59,7 +59,7 @@ export function animClass(prefix: string, anim: string | null | undefined): stri
   return anim ? `lvd-${prefix}-${anim}` : undefined;
 }
 
-// Animated icons (spec/09): any icon can opt into a looping animation via the
+// Animated icons (docs/specs/008-canvas/canvas-and-palette.md): any icon can opt into a looping animation via the
 // icon context menu (the `iconAnimation` field on the element). This maps the
 // chosen IconAnimation to its globals.css class; undefined = a static glyph.
 // (Previously a few icon ids were hard-wired to always animate; that's gone —
@@ -127,7 +127,7 @@ export function getIcon(id: string | undefined): IconDef {
 
 // The line-art catalogue only: everything the Icons tab browses, searches
 // and adds. The shared catalogue also carries the Stickers (colour emoji,
-// spec/116), which have their own palette category and are filtered out here
+// docs/specs/010-palette/stickers.md), which have their own palette category and are filtered out here
 // so neither tab shows the other's entries.
 export function getLineArtIconCatalog(): IconDef[] {
   return getLoadedIconCatalog().filter((i) => !isStickerId(i.id));
@@ -140,8 +140,8 @@ export function getLineArtIconCatalog(): IconDef[] {
 // category. The picker prepends an "All" chip itself.
 //
 // Stickers are deliberately absent: they used to sit here as an "Emoji"
-// category (spec/85) and moved out to their own palette category in
-// spec/116. See lib/stickers.ts for their groups.
+// category (docs/specs/010-palette/emoji-icons.md) and moved out to their own palette category in
+// docs/specs/010-palette/stickers.md. See lib/stickers.ts for their groups.
 type IconCategory = { id: string; label: string; iconIds: string[] };
 
 export const ICON_CATEGORIES: IconCategory[] = [

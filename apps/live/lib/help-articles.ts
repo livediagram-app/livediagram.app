@@ -1,4 +1,4 @@
-// Single source for help-centre deep links used by the editor (spec/56).
+// Single source for help-centre deep links used by the editor (docs/specs/018-help/contextual-help-links.md).
 //
 // This map is the live app's one source for help article slugs: surfaces
 // reference a symbolic key, never a hand-written `/help/...` URL, so a slug
@@ -23,7 +23,7 @@ export const HELP_ARTICLES = {
   sharePasswords: 'collaboration/sharing/share-passwords',
   // Palette behaviour
   autoAttachArrows: 'palette/auto-attach-arrows',
-  // Of the elements added in spec/114 and spec/118-121, only the embed has a
+  // Of the elements added in docs/specs/009-elements/youtube-video.md and docs/specs/009-elements/mind-node.md, docs/specs/009-elements/lane.md, docs/specs/009-elements/entity.md, docs/specs/009-elements/embed-providers.md, only the embed has a
   // surface that links its article (the link picker, when it is restricted to
   // a URL). Mind maps, lanes and entities had keys here and no placement, so
   // they were removed; their articles are still in the help centre.
@@ -33,7 +33,7 @@ export const HELP_ARTICLES = {
   quickAddOnHover: 'palette/quick-add-on-hover',
   isometricMode: 'selection-modes/isometric-mode',
   // One key per tool panel, so every mode's panel can point at the article
-  // that explains it (spec/56). Each of these resolves to a real page — a key
+  // that explains it (docs/specs/018-help/contextual-help-links.md). Each of these resolves to a real page — a key
   // pointing at nothing is a bug, the same way an unregistered article is.
   avatarMode: 'selection-modes/avatar-mode',
   laser: 'selection-modes/laser',
@@ -97,7 +97,7 @@ export const HELP_ARTICLES = {
 export type HelpArticleKey = keyof typeof HELP_ARTICLES;
 
 // The tooltip every help link shows for an article unless a surface passes
-// its own (spec/56): a "Learn about …" title naming the thing the reader is
+// its own (docs/specs/018-help/contextual-help-links.md): a "Learn about …" title naming the thing the reader is
 // looking at, and one line saying what the article will do for them. One
 // table, so a panel, a dialog header and a settings row that all point at
 // the same article say the same thing, and a `?` never falls back to a bare
@@ -338,7 +338,7 @@ export function helpArticleHref(key: HelpArticleKey): string {
 /**
  * The article's telemetry id, used as the `type` on a help-link click
  * (`UI·Opened`). The full nested slug contains slashes, which
- * TELEMETRY_TYPE_PATTERN rejects; the registry's per-article id (spec/22) is
+ * TELEMETRY_TYPE_PATTERN rejects; the registry's per-article id (docs/specs/017-telemetry/telemetry.md) is
  * a bounded token that, unlike the bare leaf segment, is unique per article
  * and matches what the help centre itself reports for the same page.
  */

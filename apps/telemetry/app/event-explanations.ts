@@ -1,5 +1,5 @@
 // What each telemetry event means, in plain words, for the public dashboard
-// (spec/22). Pure data behind `eventExplanation` (event-explanation.ts):
+// (docs/specs/017-telemetry/telemetry.md). Pure data behind `eventExplanation` (event-explanation.ts):
 //
 //  - EXACT: one sentence per `Category|Action|Type` (Type empty for an event
 //    sent with no type). Checked first.

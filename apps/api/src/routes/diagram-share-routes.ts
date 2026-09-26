@@ -1,5 +1,5 @@
-// /api/diagrams/<id>/share* — the share-link family (spec/04 + spec/24
-// + spec/34), split out of diagram-subresource-routes.ts the same way
+// /api/diagrams/<id>/share* — the share-link family (docs/specs/014-identity/auth-and-guest-access.md + docs/specs/013-workspace/share-password.md
+// + docs/specs/013-workspace/share-link-expiry.md), split out of diagram-subresource-routes.ts the same way
 // the placement route owns diagram-placement-route.ts: list / mint /
 // bulk-revoke, the share password, revoking one code (with the room
 // broadcast so hydrated visitors hard-redirect), and re-arming an
@@ -41,7 +41,7 @@ export async function handleDiagramShareRoutes(ctx: RouteContext): Promise<Respo
 
     if (request.method === 'GET') {
       // Owner-only response, so it's safe to return the share password
-      // in the clear — this is how the Share dialog shows it (spec/24).
+      // in the clear — this is how the Share dialog shows it (docs/specs/013-workspace/share-password.md).
       const links = await listShareLinks(env, id);
       const password = await getDiagramSharePassword(env, id);
       return json({ links, password });
@@ -58,7 +58,7 @@ export async function handleDiagramShareRoutes(ctx: RouteContext): Promise<Respo
         return badRequest('invalid role');
       }
       const role: ShareRole = body.role === 'view' ? 'view' : 'edit';
-      // Expiry (spec/34): unknown / missing value falls back to the
+      // Expiry (docs/specs/013-workspace/share-link-expiry.md): unknown / missing value falls back to the
       // pre-expiry behaviour, a link that works until revoked.
       const expiry: ShareLinkExpiry =
         body.expiry === 'week' || body.expiry === 'month' || body.expiry === 'sixMonths'
@@ -66,11 +66,11 @@ export async function handleDiagramShareRoutes(ctx: RouteContext): Promise<Respo
           : 'never';
       const code = generateShareCode();
       const link = await createShareLink(env, id, code, role, expiry);
-      // spec/138 §4.3: owner-only. Who a diagram is shared with is the
+      // docs/specs/013-workspace/timeline.md §4.3: owner-only. Who a diagram is shared with is the
       // owner's business — a team member seeing "a link was created"
       // learns nothing they can act on.
       ctx.waitUntil?.(recordShareLinkCreated(env, access, role, access.ownerId));
-      // spec/64 (#6): a first-ever share link is a milestone. Best-effort,
+      // docs/specs/014-identity/transactional-email.md (#6): a first-ever share link is a milestone. Best-effort,
       // off the response path; claimFirstShare dedups so it fires only once.
       if (emailEnabled(env)) {
         ctx.waitUntil?.(notifyFirstShare(env, access.ownerId));
@@ -93,7 +93,7 @@ export async function handleDiagramShareRoutes(ctx: RouteContext): Promise<Respo
   }
 
   // /api/diagrams/<id>/share-password — owner-only get/set of the
-  // diagram's optional share password (spec/24). PUT body
+  // diagram's optional share password (docs/specs/013-workspace/share-password.md). PUT body
   // { password: string | null }; null / empty clears it.
   if (segments.length === 4 && segments[3] === 'share-password') {
     const id = segments[2]!;
@@ -152,7 +152,7 @@ export async function handleDiagramShareRoutes(ctx: RouteContext): Promise<Respo
   }
 
   // /api/diagrams/<id>/share/<code>/extend — re-arm an expiring link
-  // for another round of its creation-time duration (spec/34).
+  // for another round of its creation-time duration (docs/specs/013-workspace/share-link-expiry.md).
   // Owner-only; works whether the link is currently active or expired
   // (extending an active link pushes the deadline out from now); 400
   // on a never-expiring link (nothing to extend).

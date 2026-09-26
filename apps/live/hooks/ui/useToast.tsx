@@ -22,7 +22,7 @@ import { readUserPreferences } from '@/lib/user-preferences';
 // element, a copy button that flips to "Copied" inline) — toasting
 // those would just be noise.
 //
-// The "Show notifications" preference (spec/20) gates the success +
+// The "Show notifications" preference (docs/specs/007-editor/user-preferences.md) gates the success +
 // info tones: when it's off, those become no-ops. ERROR toasts ignore
 // the preference and always show, so quieting the chatter never hides
 // an actual failure. The gate is read per-push (a cheap synchronous

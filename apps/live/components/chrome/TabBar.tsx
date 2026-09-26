@@ -26,16 +26,16 @@ import type { SessionToolsProps } from '@/components/chrome/session-tools-props'
 // theme / background, and tidy the layout. (Add-element actions used to live
 // here too but were removed — the palette + quick-connect cover adding.)
 export type CanvasMenuActions = {
-  // Cleanup category (spec/47): Auto-align grid-snaps current positions;
+  // Cleanup category (docs/specs/008-canvas/layout-cleanup.md): Auto-align grid-snaps current positions;
   // Auto Layout recomputes positions from the arrow graph (Tidy up) in the
-  // chosen style (spec/47 "Layout styles"; omitted = smart).
+  // chosen style (docs/specs/008-canvas/layout-cleanup.md "Layout styles"; omitted = smart).
   onAutoAlign: () => void;
   onAutoLayout: (choice?: AutoLayoutChoice) => void;
-  // Hover-to-preview for those same rows (spec/47), desktop pointers only:
+  // Hover-to-preview for those same rows (docs/specs/008-canvas/layout-cleanup.md), desktop pointers only:
   // lay the tab out live behind the menu, and put it back on the way out.
   onPreviewCleanup: (kind: CleanupKind) => void;
   onEndCleanupPreview: () => void;
-  // Paste straight from the empty-canvas right-click (spec/09); greyed,
+  // Paste straight from the empty-canvas right-click (docs/specs/008-canvas/canvas-and-palette.md); greyed,
   // not hidden, when the buffer is empty.
   onPaste: () => void;
   canPaste: boolean;
@@ -47,7 +47,7 @@ export type CanvasMenuTarget = { x: number; y: number; openUp?: boolean };
 
 type TabBarProps = {
   // Optional callback that pops the user-preferences dialog
-  // (spec/20). The gear sits between GitHub and the dark-mode
+  // (docs/specs/007-editor/user-preferences.md). The gear sits between GitHub and the dark-mode
   // toggle. Available in every role: even view-role visitors can
   // adjust their own browser-local preferences.
   onOpenSettings?: () => void;
@@ -64,7 +64,7 @@ type TabBarProps = {
   canvasActions?: CanvasMenuActions;
   tabs: Tab[];
   activeId: string;
-  // Folder membership actions (spec/30), menu-only. Move the active tab
+  // Folder membership actions (docs/specs/006-diagram/tab-folders.md), menu-only. Move the active tab
   // into a folder by name (new or existing), make it loose again, or
   // rename a folder (rewrites every member).
   onMoveTabToFolder: (tabId: string, folderName: string) => void;
@@ -90,7 +90,7 @@ type TabBarProps = {
   onExportTab: () => void;
   // The user's other diagrams (excluding the current one). Drives the
   // "Add to Diagram" submenu in the tab ellipsis; savedAt versions the
-  // destination-picker thumbnails (spec/67).
+  // destination-picker thumbnails (docs/specs/006-diagram/diagram-snapshots.md).
   otherDiagrams: { id: string; name: string; savedAt?: number }[];
   // Copy the active tab into another diagram. Callee handles the
   // round-trip to the API. Returns a promise so the menu can dismiss
@@ -125,11 +125,11 @@ type TabBarProps = {
   // broadcast role per ParticipantPresence), so the badge only appears
   // when the participant id matches `selfId`.
   selfId: string;
-  // Who the dot-vote knows us by (spec/152), for the tab menu's vote controls.
+  // Who the dot-vote knows us by (docs/specs/012-collaboration/collab-race-hardening.md), for the tab menu's vote controls.
   voteSelfId?: string;
   selfRole: 'edit' | 'view';
-  // Who we follow (spec/131), for the avatar ring, and the Collaborators
-  // modal an avatar click opens (spec/145; Follow itself lives there).
+  // Who we follow (docs/specs/012-collaboration/follow-me-viewport.md), for the avatar ring, and the Collaborators
+  // modal an avatar click opens (docs/specs/012-collaboration/collaborator-enhancements.md; Follow itself lives there).
   // Optional: a surface with no room behind it leaves the avatars as plain
   // presence indicators.
   followingId?: string | null;
@@ -206,7 +206,7 @@ export function TabBar({
   const isDark = appearance === 'dark';
 
   // Distinct folder names in this diagram, for the "Add to Folder"
-  // menu's pick list (spec/30).
+  // menu's pick list (docs/specs/006-diagram/tab-folders.md).
   const folderNames = folderNamesInDiagram(tabs);
 
   // The tab-menu callbacks for a given tab, shared by the per-tab ellipsis
@@ -364,7 +364,7 @@ export function TabBar({
         </div>
         {/* Shared right-hand cluster (search / settings / dark-mode; GitHub
             lives in the Explorer panel's ⋯ menu here),
-            reused by the Explorer's bottom bar (spec/07). Labelled here on
+            reused by the Explorer's bottom bar (docs/specs/007-editor/live-app.md). Labelled here on
             desktop; icon-only on a phone. */}
         <ChromeControls
           onOpenSearch={onOpenSearch}
@@ -393,4 +393,4 @@ export function TabBar({
 // UI light / dark mode toggle, pinned to the right edge of the
 // TabBar. Distinct from the per-tab diagram theme grid (Palette →
 // Theme accordion): this only flips editor chrome, not the canvas.
-// Spec/07 "UI light / dark mode" documents the full surface.
+// docs/specs/007-editor/live-app.md "UI light / dark mode" documents the full surface.

@@ -1,6 +1,6 @@
 // "Something was just written to the api" — a module-level signal the
 // Timeline listens to so the feed reflects the reader's own actions
-// without a browser refresh (spec/138 §2.4b).
+// without a browser refresh (docs/specs/013-workspace/timeline.md §2.4b).
 //
 // Every write goes out through `apiFetch` (core.ts), which raises this
 // after any successful non-GET, so a subscriber never has to enumerate
@@ -11,7 +11,7 @@
 //
 // A DELETE that ends an entity additionally names it, so the feed can
 // drop that entity's earlier cards on the spot (mirroring the worker's
-// cascade, spec/138 §3.5) instead of waiting for a re-read that only
+// cascade, docs/specs/013-workspace/timeline.md §3.5) instead of waiting for a re-read that only
 // covers the first page anyway.
 //
 // Module-level rather than context: the api client has no React in it,

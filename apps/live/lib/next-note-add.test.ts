@@ -8,7 +8,7 @@ import {
 import { applyInsertionShift } from './insert-between';
 import { planNextNote } from './next-note-add';
 
-// Next-note placement (spec/139 Phase 7): the note lands one gutter beside, and
+// Next-note placement (docs/specs/021-event-storming/event-storming.md Phase 7): the note lands one gutter beside, and
 // where that spot is occupied the board OPENS with the shipped insertion ripple
 // rather than refusing — the same behaviour the Alt gesture already taught.
 

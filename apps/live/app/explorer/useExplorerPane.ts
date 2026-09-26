@@ -11,7 +11,7 @@ import { sharedToPaneDiagram, type PaneDiagram, type SelectedNode } from './view
 // small enough that it doesn't drown the list view.
 const RECENT_LIMIT = 12;
 
-// The right-pane derivations (spec/15), lifted out of useExplorerState:
+// The right-pane derivations (docs/specs/013-workspace/folders.md), lifted out of useExplorerState:
 // everything the pane shows for the current selection — the per-folder
 // diagram buckets, the synthetic Unsorted / Generated folders, the pane
 // content / title / breadcrumb, and the sidebar's Recent badge count.
@@ -38,10 +38,10 @@ export function useExplorerPane({
   teams: { id: string; name: string }[];
   breadcrumb: (folderId: string | null) => Folder[];
   go: (sel: SelectedNode) => void;
-  // Diagrams this user hid from Recent (spec/93). Only Recent honours it;
+  // Diagrams this user hid from Recent (docs/specs/013-workspace/hide-from-recent.md). Only Recent honours it;
   // every other pane still lists them normally.
   recentExcludedIds: string[];
-  // Diagrams this user starred (spec/95). Spans personal AND team rows,
+  // Diagrams this user starred (docs/specs/013-workspace/favourites.md). Spans personal AND team rows,
   // which is why the Favourites branch below reads both lists.
   favouriteIds: Set<string>;
 }) {
@@ -49,21 +49,21 @@ export function useExplorerPane({
 
   // Unsorted is a virtual folder backed by `folder_id IS NULL` —
   // not a row in the folders table, just a synthetic bucket so loose
-  // diagrams have somewhere obvious to live (spec/15). Cached so the
+  // diagrams have somewhere obvious to live (docs/specs/013-workspace/folders.md). Cached so the
   // sidebar + the "All diagrams" list row both reference the same
   // count without re-filtering.
   const unsortedDiagrams = useMemo(
     () =>
       diagrams
         // Generated diagrams (source != null) live in their own synthetic
-        // "Generated" folder, not Unsorted, and offline diagrams (spec/76)
+        // "Generated" folder, not Unsorted, and offline diagrams (docs/specs/006-diagram/offline-mode.md)
         // in the synthetic "Offline" folder, so the buckets don't overlap.
         .filter((d) => d.folderId === null && !d.source && d.ownerId !== OFFLINE_OWNER_ID)
         .sort((a, b) => b.savedAt - a.savedAt),
     [diagrams],
   );
 
-  // Generated diagrams (spec/15): the synthetic folder for AI-made diagrams
+  // Generated diagrams (docs/specs/013-workspace/folders.md): the synthetic folder for AI-made diagrams
   // (source != null) that the user hasn't filed yet. Mirrors Unsorted
   // (folder_id null), so filing a generated diagram into a folder of your
   // own moves it out of Generated, just like Unsorted; the two synthetic
@@ -76,7 +76,7 @@ export function useExplorerPane({
     [diagrams],
   );
 
-  // Offline diagrams (spec/76): the synthetic folder for browser-only
+  // Offline diagrams (docs/specs/006-diagram/offline-mode.md): the synthetic folder for browser-only
   // diagrams. A dynamic view over EVERYTHING offline (regardless of any
   // folder placement stored in the local record), so the one place to find
   // every diagram that exists only in this browser.
@@ -103,13 +103,13 @@ export function useExplorerPane({
   }>(() => {
     if (selected.kind === 'recent') {
       // Recent spans the personal library, every joined team's shared
-      // diagrams (spec/35), AND diagrams shared with you — interleaved
+      // diagrams (docs/specs/013-workspace/team-shared-diagrams.md), AND diagrams shared with you — interleaved
       // by recency. Team rows carry their team (badge + owner column);
       // shared rows carry the sharer + share code so the row links via
       // the share link and shows the "Shared" badge.
       const sharedRows: PaneDiagram[] = shared.map(sharedToPaneDiagram);
       const sorted = [...diagrams, ...teamDiagrams, ...sharedRows]
-        // Hidden-from-Recent (spec/93). Filtered BEFORE the cap so hiding
+        // Hidden-from-Recent (docs/specs/013-workspace/hide-from-recent.md). Filtered BEFORE the cap so hiding
         // one diagram promotes the next one in rather than leaving a gap.
         .filter((d) => !excluded.has(d.id))
         .sort((a, b) => b.savedAt - a.savedAt);
@@ -132,7 +132,7 @@ export function useExplorerPane({
     }
     if (selected.kind === 'favourites') {
       // Aggregates across personal AND team libraries: a star is about the
-      // diagram, not where it happens to live (spec/95). Shared-with-you
+      // diagram, not where it happens to live (docs/specs/013-workspace/favourites.md). Shared-with-you
       // rows are excluded — you can't star what isn't in your library.
       //
       // Ordering matches every other pane (most recently updated first)
@@ -183,11 +183,11 @@ export function useExplorerPane({
     favouriteIds,
   ]);
 
-  // Count for the sidebar "Recent diagrams" badge (spec/35), mirroring
+  // Count for the sidebar "Recent diagrams" badge (docs/specs/013-workspace/team-shared-diagrams.md), mirroring
   // "Shared with me": how many items the Recent list holds, capped.
   const recentCount = useMemo(() => {
     // Counts what Recent will actually SHOW, so the badge can't promise
-    // rows the pane then filters out (spec/93).
+    // rows the pane then filters out (docs/specs/013-workspace/hide-from-recent.md).
     const visible =
       diagrams.filter((d) => !excluded.has(d.id)).length +
       teamDiagrams.filter((d) => !excluded.has(d.id)).length +
@@ -236,7 +236,7 @@ export function useExplorerPane({
     if (selected.kind === 'dynamic') return [all, { name: 'Dynamic' }];
     if (selected.kind === 'unsorted') return [all, dynamic, { name: 'Unsorted' }];
     // Favourites sits in Quick find now, not under Personal Space > Dynamic
-    // (spec/138 §8.2), so its trail is a single leaf like Recent's —
+    // (docs/specs/013-workspace/timeline.md §8.2), so its trail is a single leaf like Recent's —
     // a crumb that walks up to a parent it no longer has would be a lie.
     if (selected.kind === 'favourites') return [{ name: 'Favourites' }];
     if (selected.kind === 'generated') return [all, dynamic, { name: 'Generated' }];

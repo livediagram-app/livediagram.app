@@ -1,5 +1,5 @@
-// Live poll (spec/88): an ephemeral pulse-check carried entirely by the
-// realtime room. Unlike the timer / dot-vote (spec/39) NONE of this is a
+// Live poll (docs/specs/012-collaboration/live-poll.md): an ephemeral pulse-check carried entirely by the
+// realtime room. Unlike the timer / dot-vote (docs/specs/012-collaboration/session-tools.md) NONE of this is a
 // `Tab` field — it never reaches D1, so the types live here beside the
 // other wire DTOs rather than in @livediagram/diagram, and the tally
 // helpers below are pure so the results panel and the clipboard export
@@ -9,7 +9,7 @@
 // on the wire, so one tally path serves all of them.
 //
 // The union itself lives in @livediagram/diagram (`poll-style.ts`), one
-// package down, because a Session button (spec/105) STORES a style on the
+// package down, because a Session button (docs/specs/012-collaboration/session-button.md) STORES a style on the
 // element and `SessionButtonConfig` is a `Tab` field. Re-exported here so
 // every existing `import { PollStyle } from '@livediagram/api-schema'`
 // keeps resolving and there is still only one list.
@@ -31,11 +31,11 @@ export type LivePoll = {
   question: string;
   style: PollStyle;
   // The poll's own answer list: written by the author for `choice`, frozen
-  // from the room's roster at start for `collaborators` (spec/88). Empty for
+  // from the room's roster at start for `collaborators` (docs/specs/012-collaboration/live-poll.md). Empty for
   // every other style, whose options are fixed (see pollOptionTokens).
   options: string[];
   startedAt: number;
-  // The collab key of whoever started it (spec/152), so they can still end it
+  // The collab key of whoever started it (docs/specs/012-collaboration/collab-race-hardening.md), so they can still end it
   // after a refresh: the room replays the poll to them, and without this their
   // new session had no way to know it was theirs. A collab key, not an owner
   // id, because every socket in the room sees the poll.
@@ -45,7 +45,7 @@ export type LivePoll = {
 // Two polls started in the same moment: which one the room is on. EVERY
 // participant, and the room itself, applies the same rule, so they converge
 // even though a sender never receives its own poll-start back. The newer start
-// wins, the id breaking a tie (spec/152).
+// wins, the id breaking a tie (docs/specs/012-collaboration/collab-race-hardening.md).
 export function pollSupersedes(incoming: LivePoll, current: LivePoll | null): boolean {
   if (!current) return true;
   if (incoming.id === current.id) return false;
@@ -70,7 +70,7 @@ export function isLivePollShape(value: unknown): value is LivePoll {
   );
 }
 
-// Input caps (spec/88). Enforced at the compose inputs AND re-checked when
+// Input caps (docs/specs/012-collaboration/live-poll.md). Enforced at the compose inputs AND re-checked when
 // an op arrives, so a hand-crafted frame from a peer can't blow up the
 // panel with a 10k-character question or fifty options.
 export const POLL_QUESTION_MAX = 200;
@@ -145,7 +145,7 @@ export type PollResults = {
 // Tally the collected answers. `answers` is keyed by sender so a
 // participant who changes their mind replaces their earlier answer instead
 // of stacking a second one — the keys are never surfaced in the UI
-// (spec/88: results are not attributed to people).
+// (docs/specs/012-collaboration/live-poll.md: results are not attributed to people).
 export function tallyPoll(poll: LivePoll, answers: Map<string, string | null>): PollResults {
   const tokens = pollOptionTokens(poll);
   const counts = new Map<string, number>(tokens.map((t) => [t, 0]));
@@ -171,7 +171,7 @@ export function tallyPoll(poll: LivePoll, answers: Map<string, string | null>): 
   return { rows, textAnswers, answered, skipped };
 }
 
-// Plain-text results for the host's clipboard copy (spec/88). This is the
+// Plain-text results for the host's clipboard copy (docs/specs/012-collaboration/live-poll.md). This is the
 // only way a poll outlives itself, so it carries the question and the
 // counts — but no participant identity, matching the on-screen panel.
 export function formatPollResults(poll: LivePoll, answers: Map<string, string | null>): string {

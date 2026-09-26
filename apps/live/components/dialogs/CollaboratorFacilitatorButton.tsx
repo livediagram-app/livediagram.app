@@ -1,6 +1,6 @@
 'use client';
 
-// The baton verb on one Collaborators row (spec/149).
+// The baton verb on one Collaborators row (docs/specs/012-collaboration/facilitator.md).
 //
 // One button per row, never two, and its label always says what pressing it
 // does. Its own file because the states are the interesting part and the

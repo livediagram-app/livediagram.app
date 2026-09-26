@@ -32,7 +32,7 @@ function envWith(fetch: (url: string) => Promise<Response>) {
 
 const shared = { id: 'd1', shareable: true, teamId: null };
 
-describe('mergeRoomLedger (spec/152 phase 3)', () => {
+describe('mergeRoomLedger (docs/specs/012-collaboration/collab-race-hardening.md phase 3)', () => {
   it("merges the room's answers the saver hadn't seen", async () => {
     const { env, stubFetch } = envWith(async () => Response.json(ledger));
     const { tab: merged } = await mergeRoomLedger(env, shared, tab, 'ep:4');

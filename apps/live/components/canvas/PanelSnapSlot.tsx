@@ -1,4 +1,4 @@
-// The live drop target for panel docking (spec/63). Rendered as the LAST
+// The live drop target for panel docking (docs/specs/007-editor/panel-docking.md). Rendered as the LAST
 // flex child of the candidate corner's stack container while a panel is
 // being dragged, so flexbox lays it out exactly where the released panel
 // will land — below any panel already in a top corner, above one in a

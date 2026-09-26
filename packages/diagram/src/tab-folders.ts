@@ -1,4 +1,4 @@
-// Tab folders (specs/30). A diagram's tabs are a single flat,
+// Tab folders (docs/specs/006-diagram/tab-folders.md). A diagram's tabs are a single flat,
 // ordered list; a folder is a maximal *run of adjacent tabs* that
 // share a folder name, drawn under one collapsible chip. There is
 // no second ordering dimension and no folder entity — a folder is
@@ -30,7 +30,7 @@ export function tabFolderName(tab: Pick<Tab, 'folder'>): string | null {
 // the minimum original index among all tabs sharing that folder name
 // (loose tabs anchor on their own index). This is what lets membership
 // be menu-only: after any drag-reorder we re-normalize, so a tab
-// dragged out of its run snaps back into it (see specs/30).
+// dragged out of its run snaps back into it (see docs/specs/006-diagram/tab-folders.md).
 //
 // Idempotent. Returns the SAME array reference when the input is
 // already normalized, and always reuses the SAME tab objects — the

@@ -5,8 +5,8 @@ import { StartDrawingArt } from '@/components/StartDrawingArt';
 // (`app/page.tsx`) and every feature category page (`/features/<id>`) so a
 // visitor who drilled into a category can convert without bouncing home, and
 // the CTA copy / styling lives in exactly one place. The primary CTA reads
-// "Start drawing" everywhere (spec/16). `surface` is the page it closes, so
-// the landing funnel (spec/153) can tell the two apart.
+// "Start drawing" everywhere (docs/specs/019-marketing/marketing-site.md). `surface` is the page it closes, so
+// the landing funnel (docs/specs/019-marketing/landing-funnel.md) can tell the two apart.
 export function StartDrawingCta({ surface }: { surface: 'Home' | 'Feature' }) {
   return (
     <section id="get-started" className="border-t border-slate-200/70 bg-brand-500">

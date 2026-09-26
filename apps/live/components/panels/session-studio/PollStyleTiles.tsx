@@ -4,7 +4,7 @@
 //
 // Rendered wherever a poll is composed — the Session Studio pane, a poll
 // element's `…` popover, and that element's right-click Session category —
-// because those are one composer now (spec/39). It has been three things on
+// because those are one composer now (docs/specs/012-collaboration/session-tools.md). It has been three things on
 // the way here, and each was wrong for a reason worth keeping:
 //
 //   - a column of bordered cards with a title and a grey subtitle each, which

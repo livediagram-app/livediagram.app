@@ -37,7 +37,7 @@ export function TemplatePickerBrowse({
   categoryTemplates: (category: TemplateCategory) => TemplateDescriptor[];
   templateKind: TemplateKind;
   // Single-click a template card: select it AND advance to the theme step
-  // (spec/76). The same handler backs double-click, so either gesture works.
+  // (docs/specs/006-diagram/offline-mode.md). The same handler backs double-click, so either gesture works.
   onTemplateCommit: (kind: TemplateKind) => void;
 }) {
   return (

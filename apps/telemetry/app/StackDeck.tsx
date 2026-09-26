@@ -2,9 +2,9 @@
 
 import type { KeyboardEvent, MouseEvent, ReactNode } from 'react';
 
-// The deck frame of a stack's head card (spec/22): one or two faux-card
+// The deck frame of a stack's head card (docs/specs/017-telemetry/telemetry.md): one or two faux-card
 // layers stepping out behind it so it reads as a deck (the Timeline stack's
-// look, spec/138 §2.1), plus the toggle behaviour. It doesn't know what the
+// look, docs/specs/013-workspace/timeline.md §2.1), plus the toggle behaviour. It doesn't know what the
 // head shows; MetricStackCard fills it with the combined chart.
 //
 // Clicking it opens its members in a modal over the page (StackModal). While

@@ -1,4 +1,4 @@
-// A lane's title gutter (spec/119): which edge it hugs and how thick it is.
+// A lane's title gutter (docs/specs/009-elements/lane.md): which edge it hugs and how thick it is.
 //
 // In the diagram package because BOTH renderers need it: the canvas draws the
 // strip, and the headless SVG render (exports, thumbnails, the MCP render) has

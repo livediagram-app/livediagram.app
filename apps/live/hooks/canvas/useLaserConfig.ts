@@ -1,10 +1,10 @@
-// The laser pen's settings (spec/111), loaded from and written back to
+// The laser pen's settings (docs/specs/008-canvas/laser-panel.md), loaded from and written back to
 // per-browser storage so the pen you set up is the one waiting next time you
 // present.
 //
 // Deliberately the same shape as useAvatarConfig: a persisted config object, a
 // field-level setter for the panel's rows, and telemetry naming WHICH setting
-// changed (never a value beyond its preset token, per spec/22).
+// changed (never a value beyond its preset token, per docs/specs/017-telemetry/telemetry.md).
 
 import { useState } from 'react';
 import { loadLaserConfig, saveLaserConfig, type LaserConfig } from '@/lib/laser-config';

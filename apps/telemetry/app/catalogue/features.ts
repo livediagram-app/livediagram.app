@@ -1,4 +1,4 @@
-// Which features carry the work: AI, layers, the palette and canvas modes, look and feel, search, dialogs, chrome, notes, actions, organisation (spec/22).
+// Which features carry the work: AI, layers, the palette and canvas modes, look and feel, search, dialogs, chrome, notes, actions, organisation (docs/specs/017-telemetry/telemetry.md).
 // Part of the metric catalogue: import from ../metric-catalogue.
 
 import { isHelpArticleType, isSettingsCategory } from '../opened-types';
@@ -210,7 +210,7 @@ export const PHOTO_IMPORT: MetricStack = {
   headline: PHOTOS_IMPORTED,
 };
 
-// Layers (spec/74): made, used, and looked at.
+// Layers (docs/specs/006-diagram/layers.md): made, used, and looked at.
 export const LAYERS_CREATED: Metric = {
   category: 'Layer',
   action: 'Added',
@@ -272,9 +272,9 @@ export const LAYERS_FEATURE: MetricStack = {
 };
 
 // ---- Editing tab -------------------------------------------------------------
-// Tools that organise the work rather than draw it. Tab folders (spec/30) are
+// Tools that organise the work rather than draw it. Tab folders (docs/specs/006-diagram/tab-folders.md) are
 // typed rather than bare because the bare Tab/Folder events belong to
-// different subjects: see the type note in spec/22's Folder entry.
+// different subjects: see the type note in docs/specs/017-telemetry/telemetry.md's Folder entry.
 
 export const NOTES_ADDED: Metric = {
   category: 'Note',

@@ -8,7 +8,7 @@ import {
 } from '@livediagram/api-schema';
 import { EMITTED_EVENT_PAIRS } from './telemetry-manifest';
 
-// Event-completeness guard (spec/22, issue #30).
+// Event-completeness guard (docs/specs/017-telemetry/telemetry.md, issue #30).
 //
 // The concern this answers: telemetry drifts silently. An event gets renamed,
 // a call site is deleted with the feature it belonged to, a new one lands
@@ -19,7 +19,7 @@ import { EMITTED_EVENT_PAIRS } from './telemetry-manifest';
 // So the editor's `category·action` vocabulary is pinned to a checked-in
 // manifest. Adding, removing, or renaming an emitted pair fails this test
 // until `telemetry-manifest.ts` is updated — and the manifest's own comment
-// points at spec/22, so the taxonomy gets updated in the same change.
+// points at docs/specs/017-telemetry/telemetry.md, so the taxonomy gets updated in the same change.
 //
 // Scope is deliberately the PAIR, not the `type`. Types are open-ended by
 // design (a shape kind, a template id, an article slug) and pinning them
@@ -86,7 +86,7 @@ function takeArgument(source: string): string {
 // calls `track(row.event.category, ...)` off the catalogue, so the scanner
 // above sees no category literal and the pairs would vanish from this guard
 // the moment a setting's only other call site was deleted, which is exactly
-// what happened when the panel gear popovers were removed (spec/20). The
+// what happened when the panel gear popovers were removed (docs/specs/007-editor/user-preferences.md). The
 // catalogue's `event` declarations ARE the call sites, so read them too:
 // `on`/`off` tokens mean a Toggled, `changed` means a Changed.
 function cataloguePairs(source: string): string[] {
@@ -119,7 +119,7 @@ describe('telemetry coverage', () => {
   it('emits exactly the manifest of category·action pairs', () => {
     // Failing here is not necessarily a bug — it means the editor's event
     // vocabulary changed. Update EMITTED_EVENT_PAIRS in telemetry-manifest.ts
-    // AND the taxonomy in specs/22-telemetry.md, in the same change.
+    // AND the taxonomy in docs/specs/017-telemetry/telemetry.md, in the same change.
     expect(emitted).toEqual([...EMITTED_EVENT_PAIRS].sort());
   });
 
@@ -137,7 +137,7 @@ describe('telemetry coverage', () => {
 
   it('never emits a pair the api worker counts itself', () => {
     // Session·SignedUp / SignedIn and Diagram·Joined are counted server-side
-    // (spec/22) and dropped at the ingest; an editor emit would be dead code
+    // (docs/specs/017-telemetry/telemetry.md) and dropped at the ingest; an editor emit would be dead code
     // at best, and a double count if the ingest filter ever went away.
     expect(emitted.filter((pair) => SERVER_EMITTED_EVENT_PAIRS.includes(pair))).toEqual([]);
   });

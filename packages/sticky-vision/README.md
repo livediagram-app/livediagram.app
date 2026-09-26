@@ -1,6 +1,6 @@
 # @livediagram/sticky-vision
 
-Finds the sticky notes in a photograph of an event-storming wall (spec/139
+Finds the sticky notes in a photograph of an event-storming wall ([Event storming](../../docs/specs/021-event-storming/event-storming.md)
 Phase 8), with classical computer vision. Pure TypeScript over an RGBA buffer:
 no DOM, no canvas, no OpenCV, no wasm. The browser hands it pixels; a test
 draws them.
@@ -14,7 +14,7 @@ hand, which is the friction the import exists to remove. This is also free,
 offline, instant, and testable against images we draw ourselves.
 
 Reading the handwriting on each detected note is a separate job, done by a
-reader the caller picks (spec/139 Phase 9: in-browser OCR in the editor). This
+reader the caller picks ([Event storming](../../docs/specs/021-event-storming/event-storming.md) Phase 9: in-browser OCR in the editor). This
 package never sees text; it only finds paper.
 
 ## The pipeline

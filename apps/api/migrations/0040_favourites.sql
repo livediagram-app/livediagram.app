@@ -1,4 +1,4 @@
--- Per-user diagram favourites (spec/95).
+-- Per-user diagram favourites (docs/specs/013-workspace/favourites.md).
 --
 -- Each row says "owner OWNER_ID starred diagram DIAGRAM_ID at CREATED_AT".
 -- Primary key on (owner_id, diagram_id) makes starring idempotent.
@@ -6,7 +6,7 @@
 -- A TABLE rather than a flag on `diagrams`, because favouriting is
 -- PER-USER: starring a diagram in a shared team folder must not star it
 -- for the rest of the team. It's also a table rather than a key in the
--- user_preferences blob (which is how spec/93 stores hidden-from-Recent
+-- user_preferences blob (which is how docs/specs/013-workspace/hide-from-recent.md stores hidden-from-Recent
 -- ids) because that blob is capped at 4 KB server-side — roughly 100
 -- 36-char UUIDs — and favourites are meant to be unlimited. Blowing that
 -- cap would start failing EVERY preference write, not just this one.

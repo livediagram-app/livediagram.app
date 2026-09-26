@@ -61,7 +61,7 @@ export function NoteMenuIcon() {
   return <NoteIcon />;
 }
 
-// Clipboard-with-tick glyph for the Assign Action tile (spec/68).
+// Clipboard-with-tick glyph for the Assign Action tile (docs/specs/012-collaboration/assigned-actions.md).
 export function ActionMenuIcon() {
   return <ActionIcon />;
 }
@@ -197,7 +197,7 @@ export function CollaborateMenuIcon() {
   );
 }
 
-// Three rising bars - the Poll session-tool category glyph (spec/88, a
+// Three rising bars - the Poll session-tool category glyph (docs/specs/012-collaboration/live-poll.md, a
 // live tally). Distinct from VoteMenuIcon's cast-a-dot check: a poll
 // counts answers from people, not dots on elements.
 // `size` defaults to the 12px the context menus use; the mobile dock passes
@@ -493,7 +493,7 @@ export function BorderGlyph() {
   );
 }
 
-// The "Shadow" category glyph (spec/86) — a box with an offset shade behind.
+// The "Shadow" category glyph (docs/specs/008-canvas/element-shadows.md) — a box with an offset shade behind.
 export function ShadowMenuGlyph() {
   return (
     <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden>
@@ -533,7 +533,7 @@ export function LayersGlyph() {
   );
 }
 
-// Animation section glyph (spec/09): a dot with a couple of "motion" arcs,
+// Animation section glyph (docs/specs/008-canvas/canvas-and-palette.md): a dot with a couple of "motion" arcs,
 // reading as "this element animates".
 export function AnimationMenuGlyph() {
   return (
@@ -555,12 +555,12 @@ export function AnimationMenuGlyph() {
   );
 }
 
-// A magic wand with a sparkle tip — the "Presets" category glyph (spec/48):
+// A magic wand with a sparkle tip — the "Presets" category glyph (docs/specs/010-palette/style-presets.md):
 // one-click styled looks. 12x12 stroke style of the shared context-menu icons.
-// The "Style" flyout row's glyph (spec/09): a paintbrush, distinct from
+// The "Style" flyout row's glyph (docs/specs/008-canvas/canvas-and-palette.md): a paintbrush, distinct from
 // the Colours child's palette and the Presets child's wand so the parent
 // row and its children never wear the same icon side by side.
-// The "Tools" flyout row's glyph (spec/09): slider knobs, for the band
+// The "Tools" flyout row's glyph (docs/specs/008-canvas/canvas-and-palette.md): slider knobs, for the band
 // folding the data-shape controls (progress / rating / chart / rail).
 export function ToolsMenuGlyph() {
   return (
@@ -610,7 +610,7 @@ export function PresetsMenuGlyph() {
   );
 }
 
-// Illustrations for the Animation + Flow context-menu tiles (spec/09), so
+// Illustrations for the Animation + Flow context-menu tiles (docs/specs/008-canvas/canvas-and-palette.md), so
 // each option reads at a glance. 16-unit viewBox, currentColor; filled dots
 // set their own fill since the wrapping <svg> is stroke-only.
 function AnimSvg({ children }: { children: React.ReactNode }) {
@@ -1002,7 +1002,7 @@ export function FlowKindGlyph({ kind }: { kind: ArrowFlow | null }) {
   return <AnimNoneGlyph />;
 }
 
-// Icon-animation tile glyphs (spec/09). Small pictograms hinting at each
+// Icon-animation tile glyphs (docs/specs/008-canvas/canvas-and-palette.md). Small pictograms hinting at each
 // motion: a circular arrow for Spin, a heart for Beat, signal arcs for Pulse,
 // an up-chevron-over-baseline for Bounce, a tilde for Wiggle, a spark for
 // Flash, a burst for Tada.
@@ -1164,7 +1164,7 @@ export function IconAnimKindGlyph({ kind }: { kind: IconAnimation | null }) {
   return <AnimNoneGlyph />;
 }
 
-// Progress section icon (spec/46): a half-filled pill.
+// Progress section icon (docs/specs/009-elements/progress.md): a half-filled pill.
 export function ProgressMenuGlyph() {
   return (
     <svg
@@ -1184,7 +1184,7 @@ export function ProgressMenuGlyph() {
   );
 }
 
-// Progress fill-animation tile glyphs (spec/46): a partly-filled bar for Fill,
+// Progress fill-animation tile glyphs (docs/specs/009-elements/progress.md): a partly-filled bar for Fill,
 // a faded fill for Pulse, diagonal hatching for Stripes.
 function ProgAnimFillGlyph() {
   return (
@@ -1228,7 +1228,7 @@ export function ProgressAnimKindGlyph({ kind }: { kind: ProgressAnim | null }) {
 }
 
 // A box with a double-headed arrow across it - the Size category glyph
-// (spec/134). Reads as "how big", against the aspect-lock mark below which
+// (docs/specs/008-canvas/element-size.md). Reads as "how big", against the aspect-lock mark below which
 // reads as "keep the proportion".
 export function SizeMenuIcon() {
   return (
@@ -1325,7 +1325,7 @@ export function RemoveIconGlyph() {
   );
 }
 
-// Verb glyphs for the event-storming note menu (spec/139): scissors, two
+// Verb glyphs for the event-storming note menu (docs/specs/021-event-storming/event-storming.md): scissors, two
 // sheets, a plus-on-sheet, and a bin. Plain single-stroke marks, matching
 // the rest of the menu's icon weight.
 export function CutIcon() {
@@ -1428,7 +1428,7 @@ export function PasteMenuIcon() {
   );
 }
 
-// Colour-category marks (spec/09 Colours). "Text", "Background", "Border" and
+// Colour-category marks (docs/specs/008-canvas/canvas-and-palette.md Colours). "Text", "Background", "Border" and
 // "Heading" are four labels of similar length and shape; in a dense menu the
 // glyph is what separates them at a glance, before anyone reads a word. Each
 // draws the SURFACE it paints, not a generic paint pot.

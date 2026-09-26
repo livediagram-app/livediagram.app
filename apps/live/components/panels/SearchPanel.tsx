@@ -18,9 +18,9 @@ import { SearchResultIcon } from './search-panel-icons';
 
 // Global search panel: triggered from a footer button, blurs the
 // canvas behind it, pops up near the top-centre. The scope is
-// contextual (spec/09 "Search panel"):
+// contextual (docs/specs/008-canvas/canvas-and-palette.md "Search panel"):
 //   - Always: diagrams (user's list) + folders.
-//   - When supplied: "Shared with you" diagrams + teams (spec/32).
+//   - When supplied: "Shared with you" diagrams + teams (docs/specs/013-workspace/teams.md).
 //   - When inside a diagram: also tabs + elements on the current
 //     diagram (table text matches by cell).
 // Selection navigates to the right surface (open the diagram /
@@ -40,13 +40,13 @@ type SearchPanelProps = {
   // Diagrams shared with the current owner. Optional so surfaces
   // without the list (or guests with an empty one) can omit it.
   shared?: SearchPanelShared[];
-  // Teams the signed-in user belongs to (spec/32). Optional: guests
+  // Teams the signed-in user belongs to (docs/specs/013-workspace/teams.md). Optional: guests
   // have none.
   teams?: SearchPanelTeam[];
-  // Team-library folders (spec/35), rendered in the Teams group with
+  // Team-library folders (docs/specs/013-workspace/team-shared-diagrams.md), rendered in the Teams group with
   // an "in <team>" suffix. Optional: guests have none.
   teamFolders?: SearchPanelTeamFolder[];
-  // Team-library diagrams (spec/35), also in the Teams group with an
+  // Team-library diagrams (docs/specs/013-workspace/team-shared-diagrams.md), also in the Teams group with an
   // "in <team>" suffix. Optional: guests have none.
   teamDiagrams?: SearchPanelTeamDiagram[];
   // When the user is inside a diagram editor these provide the
@@ -80,7 +80,7 @@ type SearchPanelProps = {
   // editor and the Explorer (help is global); picking one opens the article
   // in a new tab.
   helpItems?: HelpSearchItem[];
-  // The settings catalogue (spec/20), and what to do when one is picked:
+  // The settings catalogue (docs/specs/007-editor/user-preferences.md), and what to do when one is picked:
   // open the Settings dialog on that row. Surfaces without a Settings
   // dialog to open simply omit both and get no Settings group.
   settingItems?: SettingSearchItem[];

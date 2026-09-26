@@ -190,7 +190,7 @@ describe('sanitisePoll duplicate answers', () => {
   });
 });
 
-describe('pollSupersedes (spec/152)', () => {
+describe('pollSupersedes (docs/specs/012-collaboration/collab-race-hardening.md)', () => {
   const p = (id: string, startedAt: number): LivePoll => ({
     id,
     question: 'Q?',

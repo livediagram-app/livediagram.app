@@ -21,7 +21,7 @@ import { sharePasswordOf, type RouteContext } from './context';
 export async function handleShare(ctx: RouteContext): Promise<Response> {
   const { request, env, segments, resolveOwner } = ctx;
   if (segments[1] !== 'share') return notFound();
-  // /api/share/<code>/image.svg — live image (spec/54 + spec/67): the
+  // /api/share/<code>/image.svg — live image (docs/specs/013-workspace/live-image-share.md + docs/specs/006-diagram/diagram-snapshots.md): the
   // diagram's cached SVG snapshot, served public-by-share-code so a bare
   // <img> in a README / wiki / Notion can embed it with no auth header.
   if (segments.length === 4 && segments[3] === 'image.svg' && request.method === 'GET') {
@@ -37,7 +37,7 @@ export async function handleShare(ctx: RouteContext): Promise<Response> {
     if (link) {
       const d = await getDiagram(env, link.diagramId);
       if (!d) return notFound();
-      // Password gate (spec/24): a protected diagram won't resolve
+      // Password gate (docs/specs/013-workspace/share-password.md): a protected diagram won't resolve
       // until the visitor supplies the matching X-Share-Password.
       // 401 = none supplied (show the prompt), 403 = wrong one (show
       // an error). We bail BEFORE recording the visit so a failed
@@ -57,13 +57,13 @@ export async function handleShare(ctx: RouteContext): Promise<Response> {
         const firstVisit = await recordSharedAccess(env, visitor, d.id, link.role).catch(
           () => false,
         );
-        // spec/65: tell the owner the first time a new person opens
+        // docs/specs/014-identity/profile-and-email-notifications.md: tell the owner the first time a new person opens
         // their shared diagram. Best-effort + off the response path; the
         // notify layer no-ops when email is off, the owner is a guest, or
         // they've opted out. Resolve the joiner's display name (shown to
         // the owner already in presence) for a friendlier subject.
         if (firstVisit) {
-          // spec/22: Diagram·Joined counts once per (visitor, diagram), here,
+          // docs/specs/017-telemetry/telemetry.md: Diagram·Joined counts once per (visitor, diagram), here,
           // because only the server knows a visit is the first. The editor
           // used to emit it on every open of the share URL, so refreshes and
           // return visits inflated the count.
@@ -92,13 +92,13 @@ export async function handleShare(ctx: RouteContext): Promise<Response> {
   return notFound();
 }
 
-// Live image (spec/54 + spec/67): resolve the share code to its diagram
+// Live image (docs/specs/013-workspace/live-image-share.md + docs/specs/006-diagram/diagram-snapshots.md): resolve the share code to its diagram
 // and stream the cached SVG snapshot. Public — the share code in the URL
 // is the only credential, matching a share link's "anyone with the URL"
 // semantics, since an <img> can't carry a password or auth header.
 //   - 404 on an unknown / revoked / expired code (getShareLink filters
 //     expiry), a missing diagram, or an empty diagram (no snapshot).
-//   - Password-protected shares (spec/24) get NO image: an <img> can't
+//   - Password-protected shares (docs/specs/013-workspace/share-password.md) get NO image: an <img> can't
 //     supply the password, so serving one would bypass the gate. The
 //     Share dialog hides the live-image option while a password is set,
 //     and this is the matching server-side enforcement.
@@ -112,7 +112,7 @@ async function handleShareImage(ctx: RouteContext, code: string): Promise<Respon
   const d = await getDiagram(env, link.diagramId);
   if (!d) return notFound();
   if (await getDiagramSharePassword(env, d.id)) return notFound();
-  // `?tab=<id>` (spec/54) picks a specific tab; without it we serve the
+  // `?tab=<id>` (docs/specs/013-workspace/live-image-share.md) picks a specific tab; without it we serve the
   // cached first-tab snapshot (the default, shared with the Explorer
   // thumbnail). An unknown tab id resolves to null below → 404, same as
   // an empty diagram, so a bad param can't leak another diagram's tab.

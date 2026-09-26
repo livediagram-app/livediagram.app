@@ -9,7 +9,7 @@ import type {
 import type { ReadOptions, ReadText } from './types';
 
 // Reading the handwriting with a model that runs HERE, in this browser
-// (spec/139 Phase 9) — the reader a deployment with no model key gets, which
+// (docs/specs/021-event-storming/event-storming.md Phase 9) — the reader a deployment with no model key gets, which
 // is why the photo import needs no key at all. See reader-model.ts for the
 // model and why it is this one.
 //

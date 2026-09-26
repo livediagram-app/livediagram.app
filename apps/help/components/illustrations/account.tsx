@@ -1,4 +1,4 @@
-// Account-and-data category illustrations (spec/55): the per-browser guest
+// Account-and-data category illustrations (docs/specs/018-help/help-app.md): the per-browser guest
 // identity, signing in and migrating guest work, exporting diagrams, and
 // deleting data. Composed only from the shared primitives so the house style
 // holds.

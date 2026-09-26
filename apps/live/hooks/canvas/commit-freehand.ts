@@ -18,7 +18,7 @@ import { titleCaseType, track } from '@/lib/telemetry';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { HIGHLIGHTER_DEFAULT_WIDTH } from '@/hooks/canvas/useShapeDrawing';
 
-// WHAT A PEN STROKE BECOMES (spec/115's two pens, spec/81's highlighter).
+// WHAT A PEN STROKE BECOMES (docs/specs/008-canvas/two-pens.md's two pens, docs/specs/008-canvas/highlighter.md's highlighter).
 //
 // The largest single branch of useShapeDrawing, and the one that is an
 // algorithm rather than wiring: simplify the raw pointer samples, decide
@@ -50,7 +50,7 @@ export function makeCommitFreehand({
   commit: (fn: (els: Element[]) => Element[]) => void;
   pendingDraw: PendingDraw | null;
   setPendingDraw: (p: PendingDraw | null) => void;
-  // True while the Highlighter TOOL is held (spec/81). A held marker re-arms
+  // True while the Highlighter TOOL is held (docs/specs/008-canvas/highlighter.md). A held marker re-arms
   // after every stroke: a highlighter you have to re-pick between passages is
   // a one-shot arm wearing a mode's clothes.
   holdingMarker?: boolean;
@@ -92,7 +92,7 @@ export function makeCommitFreehand({
     }
     const theme = getTheme(activeTab.theme);
 
-    // Highlighter variant (spec/81): commit the marker recipe and
+    // Highlighter variant (docs/specs/008-canvas/highlighter.md): commit the marker recipe and
     // skip both recognition and close-to-fill — a highlight is an
     // annotation gesture, not a sketch-a-shape one. Colour is fixed
     // marker yellow at creation (recolourable per element after);
@@ -120,7 +120,7 @@ export function makeCommitFreehand({
     // 0.40 leans hard toward "convert it". The bar is low on
     // purpose: turning recognition on is an explicit opt-in (the
     // pencil banner toggle, persisted as a user preference per
-    // spec/20), so the user has already stated they want strokes
+    // docs/specs/007-editor/user-preferences.md), so the user has already stated they want strokes
     // classified. False positives are one Cmd+Z away and the
     // toggle is one click off; false negatives (a wobbly square
     // that stayed a sketch when the user wanted a rectangle) are
@@ -134,7 +134,7 @@ export function makeCommitFreehand({
         if (detected.kind === 'line') {
           const fromPt = detected.from ?? simplified[0]!;
           const toPt = detected.to ?? simplified[simplified.length - 1]!;
-          // Snap each end onto a nearby arrow's line (spec/50), as the arrow
+          // Snap each end onto a nearby arrow's line (docs/specs/008-canvas/arrow-to-arrow.md), as the arrow
           // tool does, so a sketched line connects to an existing one.
           const snapLineEnd = (p: { x: number; y: number }): Endpoint => {
             const hit = snapToArrowPoint(p, activeTab.elements, ARROW_SNAP_THRESHOLD_PX, '');

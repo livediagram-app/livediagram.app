@@ -10,7 +10,7 @@ import {
 } from '@livediagram/diagram';
 import { ALIGN_SNAP_THRESHOLD } from '@/lib/canvas';
 
-// The arrow control-handle frame resolvers (spec/09 arrows), lifted out
+// The arrow control-handle frame resolvers (docs/specs/008-canvas/canvas-and-palette.md arrows), lifted out
 // of useEditorDrag's pointermove switch like resolveArrowEndpointDrag /
 // the boxed resolvers before them: pure functions the drag hook feeds
 // the gesture's captured start state + the live delta, getting back the

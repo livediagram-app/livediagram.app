@@ -3,7 +3,7 @@ import type { CommandPaletteProps } from './CommandPalette.types';
 // The editor add-handlers a palette surface is wired to: one per kind of
 // thing a tile can place or arm. Named once here because two surfaces take
 // the same set (the floating Palette and the Toolbar layout's strip,
-// spec/148), and a handler added to one list but not the other would leave a
+// docs/specs/007-editor/toolbar-layout.md), and a handler added to one list but not the other would leave a
 // tile that silently does nothing in one layout.
 export const PALETTE_ADD_HANDLER_KEYS = [
   'onAddShape',

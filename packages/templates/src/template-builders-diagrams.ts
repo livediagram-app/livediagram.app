@@ -95,7 +95,7 @@ export function buildJourney(cx: number, cy: number): Element[] {
   const stickyY = cardY + cardH + vGap;
 
   // Stage cards + their connectors are the journey's scaffold layer
-  // (spec/74); the feeling stickies users rewrite ride the content layer.
+  // (docs/specs/006-diagram/layers.md); the feeling stickies users rewrite ride the content layer.
   const cards: Element[] = [];
   const stickies: Element[] = [];
   stages.forEach((s, i) => {

@@ -1,6 +1,6 @@
 'use client';
 
-// The Session Studio: the tab menu's Collaborate panel (spec/39, spec/88).
+// The Session Studio: the tab menu's Collaborate panel (docs/specs/012-collaboration/session-tools.md, docs/specs/012-collaboration/live-poll.md).
 //
 // It replaced four stacked accordions (Timer, Stopwatch, Vote, Poll), each a
 // strip of small grey buttons, with one panel: a switcher across the top that
@@ -25,7 +25,7 @@ export function SessionStudio({
   selfId,
   ...session
 }: SessionToolsProps & {
-  // The local participant, matched against a vote's host (spec/39).
+  // The local participant, matched against a vote's host (docs/specs/012-collaboration/session-tools.md).
   selfId: string;
 }) {
   const state = {
@@ -38,7 +38,7 @@ export function SessionStudio({
   const blocked = Boolean(session.facilitatedBy);
   return (
     <div className="flex flex-col gap-3 p-3">
-      {/* Disabled rather than hidden (spec/149): a panel that emptied itself
+      {/* Disabled rather than hidden (docs/specs/012-collaboration/facilitator.md): a panel that emptied itself
           would teach a different editor to every participant, and somebody
           who had never seen the timer would not know there was one. A
           `fieldset` because it disables every control inside it natively,

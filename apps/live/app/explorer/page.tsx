@@ -4,8 +4,8 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 // /explorer is an index with no content of its own: every section
-// lives at /explorer/<section> (spec/15, routes.ts). Default landing
-// is the Timeline (spec/138 §8.1) — what has HAPPENED, rather than a
+// lives at /explorer/<section> (docs/specs/013-workspace/folders.md, routes.ts). Default landing
+// is the Timeline (docs/specs/013-workspace/timeline.md §8.1) — what has HAPPENED, rather than a
 // list of files. In production the live worker 302s this path before
 // any HTML is served (src/worker.ts); this client replace is the
 // dev-server / direct-asset fallback. Both, plus selectedFromRoute's

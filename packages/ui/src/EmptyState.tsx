@@ -1,4 +1,4 @@
-// Reusable illustrated empty state (spec/15): a floating gradient icon badge
+// Reusable illustrated empty state (docs/specs/013-workspace/folders.md): a floating gradient icon badge
 // over a softly pulsing double ring and a faint mini-diagram motif, with a
 // heading, a one-line explainer, and an optional CTA slot (children). CSS-only
 // motion (the `animate-empty-*` utilities + keyframes live in the shared

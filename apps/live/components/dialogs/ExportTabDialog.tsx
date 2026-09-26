@@ -22,7 +22,7 @@ import { track } from '@/lib/telemetry';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { DialogHeader } from './DialogHeader';
 
-// Telemetry (spec/22): map the internal format key to the public label
+// Telemetry (docs/specs/017-telemetry/telemetry.md): map the internal format key to the public label
 // the dashboard shows. 'file' is the portable .json export.
 const EXPORT_LABEL: Record<Format, string> = {
   file: 'JSON',
@@ -54,7 +54,7 @@ type ExportTabDialogProps = {
 export type Format = 'markdown' | 'mermaid' | 'excalidraw' | 'pdf' | 'png' | 'svg' | 'file';
 
 // The four text formats each open a view/edit/copy panel; the three image
-// formats each open an options-and-download panel (spec/48 / 73).
+// formats each open an options-and-download panel (docs/specs/010-palette/style-presets.md / 73).
 type TextFormat = 'file' | 'mermaid' | 'markdown' | 'excalidraw';
 type ImageFormat = 'png' | 'svg' | 'pdf';
 const isTextFormat = (f: Format): f is TextFormat =>
@@ -158,7 +158,7 @@ export function ExportTabDialog({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // Image / avatar bitmaps + icon catalogues loaded for the image-format
-  // preview (spec/48). Loaded once when an image format is picked, then
+  // preview (docs/specs/010-palette/style-presets.md). Loaded once when an image format is picked, then
   // reused for both the live preview and the actual export so nothing is
   // fetched twice. `ready` gates the preview on the (async) load.
   const [previewImages, setPreviewImages] = useState<
@@ -197,7 +197,7 @@ export function ExportTabDialog({
     [tab, previewImages],
   );
 
-  // Render + download an image format with the chosen options (spec/48).
+  // Render + download an image format with the chosen options (docs/specs/010-palette/style-presets.md).
   const runImageExport = async (
     format: ImageFormat,
     opts: { isometric: boolean; pattern: boolean; hiddenLayers: boolean },

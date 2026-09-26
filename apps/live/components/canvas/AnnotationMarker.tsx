@@ -6,7 +6,7 @@ import { NoteRichText } from '@/components/notes/NoteRichText';
 import { Portal } from '@/components/primitives/Portal';
 import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@/lib/clamp-to-viewport';
 
-// The fixed note glyph inside an annotation marker (spec/38). A small
+// The fixed note glyph inside an annotation marker (docs/specs/009-elements/annotations.md). A small
 // speech bubble with text lines, tinted by the marker's stroke colour.
 // Sized as a fraction of the circle so it stays centred at any zoom (the
 // wrapper handles the scaling). Always the same glyph — annotations are
@@ -37,13 +37,13 @@ const GAP = 10;
 const MAX_W = 280;
 
 // Read-only note preview that floats ABOVE every canvas element when an
-// annotation is hovered (spec/38). Portaled to the body with a high
+// annotation is hovered (docs/specs/009-elements/annotations.md). Portaled to the body with a high
 // z-index so it's legible even when other elements are painted on top of
 // the marker. Anchors to the marker's live DOM rect (which already
 // includes the canvas pan + zoom) the same way NotePopover does, so it
 // stays attached as the canvas moves. No interactivity — hovering is a
 // read gesture; clicking the marker opens the editable popover instead. The
-// note is drawn by the shared NoteRichText renderer (spec/92), so headings /
+// note is drawn by the shared NoteRichText renderer (docs/specs/009-elements/rich-text-notes.md), so headings /
 // lists / links read the same here as they do in the popover.
 export function AnnotationHoverNote({
   elementId,

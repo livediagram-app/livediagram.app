@@ -1,4 +1,4 @@
-// DOM <-> runs glue for the rich-text editor (spec/09). Kept separate from
+// DOM <-> runs glue for the rich-text editor (docs/specs/008-canvas/canvas-and-palette.md). Kept separate from
 // the React component so the offset mapping is small, framework-free, and
 // easy to reason about. The pure runs algebra lives in @livediagram/diagram
 // (rich-text.ts); this module only bridges it to a live contentEditable.
@@ -23,7 +23,7 @@ const DATA = {
   strikethrough: 'data-rt-strike',
   size: 'data-rt-size',
   color: 'data-rt-color',
-  // spec/92 (notes): the address of a linked run, and the line-level
+  // docs/specs/009-elements/rich-text-notes.md (notes): the address of a linked run, and the line-level
   // heading level. Carried as data-* like everything else so a typed
   // character inside a heading or a link inherits it.
   link: 'data-rt-link',

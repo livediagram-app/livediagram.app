@@ -1,4 +1,4 @@
-// The safety wrapper every timeline emit goes through (spec/138 §4).
+// The safety wrapper every timeline emit goes through (docs/specs/013-workspace/timeline.md §4).
 //
 // A timeline row is a nice-to-have hanging off someone else's write. If
 // the emit throws — a malformed snapshot, a D1 hiccup, a scope lookup
@@ -25,7 +25,7 @@ export async function record(
     // Logged, not rethrown, and not self-reported to the telemetry
     // Error category: a timeline emit failing is invisible to the user
     // and reporting it would drown the signal the Error category
-    // exists for (spec/22).
+    // exists for (docs/specs/017-telemetry/telemetry.md).
     console.error('timeline emit failed', draft.eventType, err);
   }
 }

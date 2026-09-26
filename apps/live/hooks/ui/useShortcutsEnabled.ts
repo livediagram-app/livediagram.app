@@ -11,7 +11,7 @@ import { track } from '@/lib/telemetry';
 // keyboard may want them; users dictating into the same browser
 // may not).
 //
-// Default is ENABLED. Spec/07 documents the contract; the toggle
+// Default is ENABLED. docs/specs/007-editor/live-app.md documents the contract; the toggle
 // lives in the new keyboard-shortcuts modal so it's discoverable
 // alongside the list it disables.
 
@@ -31,7 +31,7 @@ export function useShortcutsEnabled(): { enabled: boolean; setEnabled: (next: bo
   }, []);
 
   const setEnabled = (next: boolean) => {
-    // Settings flip (spec/22): emit BEFORE persisting so the wire value
+    // Settings flip (docs/specs/017-telemetry/telemetry.md): emit BEFORE persisting so the wire value
     // matches the value the user just chose, like the other UI toggles.
     track('UI', 'Toggled', next ? 'ShortcutsOn' : 'ShortcutsOff');
     writeLocalStorageSafe(STORAGE_KEY, next ? 'true' : 'false');

@@ -9,8 +9,8 @@ vi.mock('@/lib/telemetry', () => ({
 
 const { useEditorComments } = await import('./useEditorComments');
 
-// The hook owns the Comment telemetry (spec/22) so the anchored popover and
-// the Comment panel (spec/136) both count, once each. The delta sink is a
+// The hook owns the Comment telemetry (docs/specs/017-telemetry/telemetry.md) so the anchored popover and
+// the Comment panel (docs/specs/012-collaboration/comment-pin.md) both count, once each. The delta sink is a
 // spy: the emits are under test here, plus which delta each action sends.
 const applyElementDelta = vi.fn();
 function setup() {
@@ -30,7 +30,7 @@ describe('useEditorComments telemetry', () => {
     applyElementDelta.mockReset();
   });
 
-  // spec/152: every thread change is ONE delta, so two replies at once both
+  // docs/specs/012-collaboration/collab-race-hardening.md: every thread change is ONE delta, so two replies at once both
   // land instead of the whole thread riding a whole-element update.
   it('sends each thread change as its own delta', () => {
     const { result } = setup();

@@ -2,11 +2,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { makeTestRouteContext } from './test-route-context';
 import type { DiagramDTO } from '../types';
 
-// A "visitor" is somebody who arrived through a SHARE LINK (spec/138 §4.3).
+// A "visitor" is somebody who arrived through a SHARE LINK (docs/specs/013-workspace/timeline.md §4.3).
 //
 // Both visitor-facing events keyed on `owner !== diagram.ownerId`, which is not
 // that. The read gate also admits any joined member of the diagram's team
-// (spec/35), and a teammate presents no share code — so browsing your own
+// (docs/specs/013-workspace/team-shared-diagrams.md), and a teammate presents no share code — so browsing your own
 // team's library told the diagram's owner "opened by a visitor · Someone with
 // the share link", filed under the sharing filter, for a diagram they had never
 // shared a link for. Once per teammate per day, so up to eleven false bubbles a

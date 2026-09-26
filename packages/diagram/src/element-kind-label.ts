@@ -10,11 +10,11 @@ const SHAPE_LABELS: Partial<Record<ShapeKind, string>> = {
   'progress-bar': 'Progress Bar',
   'progress-ring': 'Progress Ring',
   // Named for what it does, not its internal kind — titleCase would say
-  // 'Mode Button' (spec/103).
+  // 'Mode Button' (docs/specs/009-elements/mode-button.md).
   'mode-button': 'Selection Mode',
   // Both would title-case to a bare noun that says the wrong thing on its own
-  // ('Decision', 'Temperature'), so they carry the full name (spec/124,
-  // spec/128).
+  // ('Decision', 'Temperature'), so they carry the full name (docs/specs/012-collaboration/temperature-check.md,
+  // docs/specs/012-collaboration/decision-record.md).
   decision: 'Decision Record',
   temperature: 'Temperature Check',
 };
@@ -38,7 +38,7 @@ export function elementKindLabel(el: Element): string {
     case 'table':
       return 'Table';
     case 'sticky': {
-      // An event-storming note IS its kind (spec/139) — "Selected Domain
+      // An event-storming note IS its kind (docs/specs/021-event-storming/event-storming.md) — "Selected Domain
       // Event" says what you picked up; "Selected Sticky" says nothing.
       const kind = eventStormingKindOf(el);
       return kind ? titleCase(kind) : 'Sticky';
@@ -46,7 +46,7 @@ export function elementKindLabel(el: Element): string {
     case 'image':
       return 'Image';
     case 'freehand':
-      // The marker pen (spec/81) and polygon tool (spec/84) both commit
+      // The marker pen (docs/specs/008-canvas/highlighter.md) and polygon tool (docs/specs/008-canvas/polygon-tool.md) both commit
       // freehands; name them by what the user drew (matching the live
       // app's kindLabel in element-names.ts).
       if (el.pen === 'highlighter') return 'Highlight';
@@ -58,7 +58,7 @@ export function elementKindLabel(el: Element): string {
       return 'Link';
     case 'video':
       // The kind stays 'video' (it is persisted); the NAME is Embed, since it
-      // carries Figma files and Google Docs as well now (spec/121).
+      // carries Figma files and Google Docs as well now (docs/specs/009-elements/embed-providers.md).
       return 'Embed';
     case 'arrow':
       return 'Arrow';

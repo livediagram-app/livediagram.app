@@ -1,4 +1,4 @@
-// Magic-number sniffing for the accepted raster formats (spec/19). The api
+// Magic-number sniffing for the accepted raster formats (docs/specs/009-elements/images.md). The api
 // runs it at the upload boundary so a declared content-type can't smuggle an
 // SVG past ACCEPTED_IMAGE_TYPES (see apps/api/src/image-sniff.ts for that
 // security rationale), and the image embedder (./embed-images.ts) runs it to

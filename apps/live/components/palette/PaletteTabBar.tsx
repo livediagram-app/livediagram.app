@@ -9,7 +9,7 @@ type PaletteTab = {
   icon: React.ReactNode;
   content: React.ReactNode;
   // Which band of the category dropdown this tab sits in — an index into
-  // CATEGORY_BANDS below (spec/110). Nine equal-weight categories in one grid
+  // CATEGORY_BANDS below (docs/specs/010-palette/palette-top-level-categories.md). Nine equal-weight categories in one grid
   // is a wall; four named bands say what kind of thing each category is.
   //
   // Left unset for Favourites, which is not a kind of thing at all — it is
@@ -24,7 +24,7 @@ type PaletteTab = {
 // without a sort here.
 export const CATEGORY_BANDS: Record<number, string> = {
   0: 'Common',
-  // Structure (spec/110): the elements you lay a diagram OUT with — Build's
+  // Structure (docs/specs/010-palette/palette-top-level-categories.md): the elements you lay a diagram OUT with — Build's
   // containers, the ready-made Components, the device frames. They sit above
   // Decorate because arranging a board comes before dressing it.
   1: 'Structure',
@@ -58,11 +58,11 @@ export function PaletteTabBar({
   // (category removed) falls back to the default.
   storageKey?: string;
   // Hide the whole header band — both the canvas-tool picker and the
-  // category picker. Event-storming boards (spec/139) do this: the board is
+  // category picker. Event-storming boards (docs/specs/021-event-storming/event-storming.md) do this: the board is
   // a low-threshold capture surface, the notation is the only category that
   // matters there, and every control that doesn't serve "add a note, type,
   // drag" is a distraction. Tools stay reachable by keyboard shortcut and
-  // the command palette (spec/70).
+  // the command palette (docs/specs/007-editor/command-palette.md).
   hideHeader?: boolean;
 }) {
   const fallbackId = defaultOpenId ?? tabs[0]?.id ?? '';
@@ -91,7 +91,7 @@ export function PaletteTabBar({
   const bodyRef = useRef<HTMLDivElement | null>(null);
   const [height, setHeight] = useState<number | null>(null);
   const [animate, setAnimate] = useState(false);
-  // How much room is left below the body's top edge (spec/110). A category
+  // How much room is left below the body's top edge (docs/specs/010-palette/palette-top-level-categories.md). A category
   // like Components runs to ten rows, which on a short window ran off the
   // bottom of the screen with no way to reach the last few — the body took
   // its measured content height unconditionally. It is capped here instead,
@@ -175,9 +175,9 @@ export function PaletteTabBar({
           // scrolling — the list is short and fixed, so a scrollbar just
           // looked cramped.
           autoHeight
-          // Tile grid (spec/108): nine equal-weight, icon-bearing categories
+          // Tile grid (docs/specs/004-interface-design/dropdown-tile-grid.md): nine equal-weight, icon-bearing categories
           // read faster as a grid than as a column you scan top to bottom,
-          // and the bands (spec/110) group them by what they are for.
+          // and the bands (docs/specs/010-palette/palette-top-level-categories.md) group them by what they are for.
           grid
           groupLabels={CATEGORY_BANDS}
           onChange={setActiveId}

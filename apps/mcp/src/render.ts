@@ -1,4 +1,4 @@
-// Headless SVG -> PNG rasterisation for inline MCP image content (spec/62 §5).
+// Headless SVG -> PNG rasterisation for inline MCP image content (docs/specs/015-api/mcp-server.md §5).
 // resvg runs as WASM in the Workers runtime; the SVG comes from the shared
 // renderElementsToSvg in packages/diagram, so the MCP and the in-app export draw
 // diagrams identically.

@@ -7,7 +7,7 @@ import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import type { CanvasProps } from './Canvas.types';
 import type { DockAnchor } from '@/lib/canvas-chrome';
 
-// The floating AI Assistant panel (spec/25 + /63 docking), lifted out
+// The floating AI Assistant panel (docs/specs/007-editor/ai-assistance.md + /63 docking), lifted out
 // of useCanvasChromePanels: the MovablePanel shell with the settings
 // popover in its header (which also carries the reset-position item —
 // hence no header reset button) and the AiPanelContent body.
@@ -44,7 +44,7 @@ export function CanvasAiPanel({
       {...wiring.dock}
       // Reset-position is the panel header's own button now: the settings
       // popover that used to carry it, and the two AI preferences inside it,
-      // moved to the Settings dialog (spec/20).
+      // moved to the Settings dialog (docs/specs/007-editor/user-preferences.md).
       onReset={wiring.onReset}
       mobileOpenOverride={activeMobilePanel === 'ai'}
       mobileDockAnchor={activeDockAnchor}

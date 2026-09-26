@@ -6,7 +6,7 @@ import { defineProject } from '@livediagram/vitest-config';
 // (canvas geometry, parsers, config tables) and run faster without a DOM.
 // The few that render a hook or component opt in per file with a
 // `// @vitest-environment jsdom` docblock — see useTimelineFeed.test.tsx and
-// specs/18-testing.md. Flipping the whole workspace would tax every other
+// docs/specs/003-system-architecture/testing.md. Flipping the whole workspace would tax every other
 // suite to serve a handful of files.
 //
 // resolve.alias mirrors tsconfig.json's `"@/*": ["./*"]` so test files
@@ -22,7 +22,7 @@ export default defineProject({
   // preview switches) must be transformed the same way here or it
   // throws "React is not defined" at render time.
   esbuild: { jsx: 'automatic' },
-  // The e2e/ Playwright smoke suite (spec/72) uses the same `.spec.ts`
+  // The e2e/ Playwright smoke suite (docs/specs/003-system-architecture/e2e-smoke.md) uses the same `.spec.ts`
   // extension but runs under Playwright, not Vitest — keep it out of
   // the unit run (it has its own `test:e2e` script).
   test: {

@@ -1,4 +1,4 @@
-// Explorer section ↔ URL mapping (spec/15). Each sidebar section is
+// Explorer section ↔ URL mapping (docs/specs/013-workspace/folders.md). Each sidebar section is
 // its own route under /explorer so sections are linkable, the browser
 // back button works, and new sections keep landing as new pages:
 //
@@ -60,7 +60,7 @@ export function explorerPathFor(node: SelectedNode): string {
 // /live basePath (usePathname strips it); trailing slashes from the
 // static export are tolerated. Unknown paths and id-less folder/team
 // URLs fall back to `timeline` — the section /explorer itself redirects
-// to (spec/138 §8.1) — so a mangled link degrades to the default view,
+// to (docs/specs/013-workspace/timeline.md §8.1) — so a mangled link degrades to the default view,
 // never a crash.
 export function selectedFromRoute(pathname: string, search: URLSearchParams): SelectedNode {
   const path = pathname.replace(/\/+$/, '');
@@ -71,7 +71,7 @@ export function selectedFromRoute(pathname: string, search: URLSearchParams): Se
       return { kind: 'activity' };
     // Explicit, not left to the default. Recent used to BE the default,
     // so it round-tripped for free; now that the default is the
-    // Timeline (spec/138 §8.1), /explorer/recent without its own case
+    // Timeline (docs/specs/013-workspace/timeline.md §8.1), /explorer/recent without its own case
     // would resolve to the Timeline and the sidebar would highlight
     // the wrong row.
     case '/explorer/recent':

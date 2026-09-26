@@ -1,0 +1,49 @@
+# Eraser Panel
+
+Status: **implemented**.
+
+While the **Eraser** tool ([Canvas and palette](canvas-and-palette.md)) is active, an **Eraser** panel is present: how it erases, how big it is, and what it is allowed to remove. The fourth mode panel, after [Avatar](avatar-mode.md), [Laser](laser-panel.md), and [Spotlight](spotlight-panel.md).
+
+## Why
+
+The eraser is the only tool that destroys work, and it has been the bluntest one in the app: press, and whatever is under the exact pixel goes. That fails in both directions.
+
+It is **too precise** when you have sketched over a diagram with the Pencil and want the sketch gone — you trace every stroke back with a one-pixel point. It is **too indiscriminate** when the sketch is over a dense flow: a drag meant for your annotations takes a box, an arrow, and someone's sticky with it, and the only recovery is undo (which takes the lot back, including what you did mean to remove).
+
+A size makes the first case one sweep. A target filter makes the second case impossible. Neither belongs in a settings dialog: you change them for the job in front of you, then move on.
+
+## The settings
+
+Three accordion rows over a live preview of the brush.
+
+- **Mode** — **Sweep** (drag across things to erase them, today's behaviour) or **Tap** (one press, one thing). Tap is for surgical removal on a crowded canvas, where a two-pixel drag currently takes a neighbour with it.
+- **Size** — **Point** (the exact pixel, today) / **Small** (18px) / **Medium** (36px) / **Large** (72px) radius. Anything the brush touches goes, hit-tested by sampling a ring of points around the pointer rather than one — the DOM hit test the eraser already uses, called a few more times.
+- **Erases** — **Anything** (default), **Drawings only** (freehand + highlighter strokes), or **Arrows only**. "Drawings only" is the one that makes sketching over a diagram safe: sweep the whole thing at Large and the diagram underneath is untouched. "Arrows only" is for rewiring without disturbing the boxes.
+
+A fourth row, **Groups** (just the piece, or the whole group), was removed with groups themselves ([Web components are elements; groups are gone](../009-elements/web-components-and-no-groups.md)). A stored config still carrying it parses fine: the unknown field is ignored.
+
+## The brush is visible
+
+While the tool is active with a size above Point, a ring follows the cursor at the brush's true radius, so what will be erased is visible BEFORE the press. An eraser you cannot see the size of is a worse tool than a precise one.
+
+## What it does not change
+
+- **Locked elements, and everything on a locked or hidden layer, are still skipped** ([Canvas and palette](canvas-and-palette.md) Locking, [Layers](../006-diagram/layers.md)). No setting here can erase them; that is what locking is for.
+- **One gesture is still one undo** and one activity-log entry, however much it removes — the existing checkpoint-then-tick pattern is untouched.
+- Arrows pinned to an erased element still go with it, as they always have.
+
+## Persistence
+
+Device-local, in `localStorage` (`livediagram:v2:eraser-config`), like the other tool panels. Never sent to the api, never in the synced preferences blob ([User preferences](../007-editor/user-preferences.md)).
+
+The **Erases** filter is the one setting with a real "wrong at the wrong moment" risk — someone leaves it on Drawings only, comes back tomorrow, and wonders why the eraser is ignoring a shape. The panel keeps the filter visible in its collapsed header for exactly that reason, and the ring turns amber whenever a filter is on, so a restricted eraser never looks like a broken one.
+
+## Telemetry
+
+Per [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md): changing a setting emits `UI·Changed·EraserMode` / `EraserSize` / `EraserTarget`. Erasing itself still reports `Element·Deleted·Eraser`, once per gesture, as before.
+
+## Out of scope
+
+- Erasing PART of a freehand stroke (splitting it where the brush crosses). That is a real feature and a much bigger one: it changes stroke geometry rather than removing elements.
+- A "restore what I just erased" brush. Undo already does it, and the second mechanism would have to disagree with undo somewhere.
+- Erasing across tabs, or on someone else's screen.

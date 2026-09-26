@@ -1,7 +1,7 @@
 import type { FeatureProps } from '@/components/Section';
 import { getLandingSection, type LandingSection } from '@/lib/landing-content';
 
-// The landing page's story (spec/16): five beats, each grouping two to four
+// The landing page's story (docs/specs/019-marketing/marketing-site.md): five beats, each grouping two to four
 // of the LANDING_SECTIONS categories under one idea. A beat only NAMES
 // section ids and feature titles; the copy it shows for a category (its
 // title, feature count, art) is read from LANDING_SECTIONS, so a beat can't

@@ -1,4 +1,4 @@
-// Timeline renderer contracts (spec/138 §7).
+// Timeline renderer contracts (docs/specs/013-workspace/timeline.md §7).
 //
 // The components in this folder know how to lay a feed out; they know
 // nothing about diagrams, teams, or routes. A consumer supplies a
@@ -42,7 +42,7 @@ export type TimelineCardRender = {
   onClick?: () => void;
 };
 
-// The parts a HOST can add to a card that a renderer can't (spec/138
+// The parts a HOST can add to a card that a renderer can't (docs/specs/013-workspace/timeline.md
 // §2.8): the ⋯ menu, which needs more than the event; a right-click
 // handler that opens the same menu; the subject as the host knows it
 // NOW (a diagram renamed since the event still shows its current name);
@@ -59,7 +59,7 @@ export type TimelineCardSlots = {
 
 export type TimelineCardSlotsFor = (event: TimelineEvent) => TimelineCardSlots | undefined;
 
-// The same for a collapsed run (spec/138 §2.9): the host's ⋯ menu on a
+// The same for a collapsed run (docs/specs/013-workspace/timeline.md §2.9): the host's ⋯ menu on a
 // stack card, which acts on every member at once. Only the menu and the
 // right-click apply — a stack's subject is the generic headline and is
 // not the host's to replace.
@@ -82,6 +82,6 @@ export type TimelineRenderer = (
 export type TimelineRendererRegistry = Record<string, TimelineRenderer>;
 
 // List or month grid. There is no week mode (it went with the card
-// redesign, spec/138 §2.2) and no 'favourites' mode: starring is out of
-// scope for v1 (spec/138 non-goals).
+// redesign, docs/specs/013-workspace/timeline.md §2.2) and no 'favourites' mode: starring is out of
+// scope for v1 (docs/specs/013-workspace/timeline.md non-goals).
 export type TimelineMode = 'list' | 'calendar';

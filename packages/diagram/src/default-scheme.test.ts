@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_SCHEME_ID, getBuiltInTheme, THEMES } from './themes';
 
-// The Default colour scheme (spec/09): one scheme, two appearances. It used to
+// The Default colour scheme (docs/specs/008-canvas/canvas-and-palette.md): one scheme, two appearances. It used to
 // be two separate entries — "Basic" leading the catalogue and "Charcoal"
 // leading the Dark category — which forced anyone working in dark chrome to
 // pick a second, differently-named scheme to get a canvas that matched, and
 // then left that pick baked into the diagram for every other viewer.
 //
 // Now the same scheme answers both: the viewer's Appearance decides which half
-// they see (spec/07). Neither half paints an element — the Default scheme is
+// they see (docs/specs/007-editor/live-app.md). Neither half paints an element — the Default scheme is
 // still the un-themed default, so element ink comes from the canvas underneath
 // rather than from stored colours, which is what lets one tab look right to a
 // light viewer and a dark one at the same time.

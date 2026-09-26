@@ -5,7 +5,7 @@ import { MAX_IMAGE_MB } from '@livediagram/api-schema';
 import { MAX_BODY_BYTES, MAX_IMAGE_BYTES, bodyExceedsCap, declaredBodyBytes } from './limits';
 
 // The image cap is one number written in four places a reader will believe:
-// this worker's enforcement, the editor's pre-upload gate, spec/19, and the
+// this worker's enforcement, the editor's pre-upload gate, docs/specs/009-elements/images.md, and the
 // help article. The first two now share the constant from
 // @livediagram/api-schema, so they cannot disagree. Prose cannot import, so it
 // is checked here — this is the app that enforces the cap, so it is the one
@@ -13,9 +13,12 @@ import { MAX_BODY_BYTES, MAX_IMAGE_BYTES, bodyExceedsCap, declaredBodyBytes } fr
 const ROOT = fileURLToPath(new URL('../../..', import.meta.url).href);
 
 describe('image cap', () => {
-  it('is quoted as the same number of MB by spec/19 and the help article', () => {
+  it('is quoted as the same number of MB by docs/specs/009-elements/images.md and the help article', () => {
     const quoted = `${MAX_IMAGE_MB} MB`;
-    for (const doc of ['specs/19-images.md', 'apps/help/app/palette/tools/images/page.mdx']) {
+    for (const doc of [
+      'docs/specs/009-elements/images.md',
+      'apps/help/app/palette/tools/images/page.mdx',
+    ]) {
       const source = readFileSync(`${ROOT}/${doc}`, 'utf8');
       // Guard against passing by absence if a file is ever renamed.
       expect(source.length, doc).toBeGreaterThan(200);
@@ -32,24 +35,24 @@ describe('image cap', () => {
   });
 });
 
-// spec/25 tabulates the AI route's error envelope. It had drifted badly: it
+// docs/specs/007-editor/ai-assistance.md tabulates the AI route's error envelope. It had drifted badly: it
 // listed `ai_parse_error`, a token that exists in that sentence and nowhere
 // else in the repo, and `off_topic`, which is not an envelope at all — an
 // off-topic prompt returns 200 with `"offTopic": true` in the body and the
 // EDITOR raises the error. Both tokens the route really emits for auth
 // failures were missing. Someone building a client from the spec would have
 // handled two errors that never arrive and none of the two that do.
-describe('spec/25 lists the AI route error tokens the route emits', () => {
+describe('docs/specs/007-editor/ai-assistance.md lists the AI route error tokens the route emits', () => {
   it('names each one, and invents none', () => {
     // Every file a caller of a model route can receive an envelope from: the
     // shared admission gate and both handlers. The gate was lifted out of
-    // ai.ts when the second route arrived (spec/139 Phase 8) and took three of
+    // ai.ts when the second route arrived (docs/specs/021-event-storming/event-storming.md Phase 8) and took three of
     // the tokens with it — reading one file would have quietly stopped
     // checking most of them.
     const route = ['ai.ts', 'ai-gate.ts', 'ai-read-notes.ts']
       .map((f) => readFileSync(`${ROOT}/apps/api/src/routes/${f}`, 'utf8'))
       .join('\n');
-    const spec = readFileSync(`${ROOT}/specs/25-ai-assistance.md`, 'utf8');
+    const spec = readFileSync(`${ROOT}/docs/specs/007-editor/ai-assistance.md`, 'utf8');
     // Tokens come from inline envelopes AND the shared helpers in
     // responses.ts: a no-arg helper (`aiError()`) stands for the fixed token
     // its body returns, and `forbidden('x')` / `conflict('x')` carry theirs as
@@ -71,7 +74,9 @@ describe('spec/25 lists the AI route error tokens the route emits', () => {
     expect(new Set(emitted).size).toBeGreaterThan(3);
 
     for (const token of new Set(emitted)) {
-      expect(spec, `spec/25 omits ${token}`).toContain(`\`${token}\``);
+      expect(spec, `docs/specs/007-editor/ai-assistance.md omits ${token}`).toContain(
+        `\`${token}\``,
+      );
     }
     // The spec may only claim tokens the route actually produces. Scoped to
     // the envelope TABLES — the `|`-delimited rows between the error section
@@ -85,7 +90,10 @@ describe('spec/25 lists the AI route error tokens the route emits', () => {
     for (const m of rows.matchAll(/`([a-z]+_[a-z_]+)`/g)) {
       const claimed = m[1]!;
       if (claimed === 'off_topic') continue; // called out as NOT an envelope
-      expect(emitted, `spec/25 claims ${claimed}, which the route never emits`).toContain(claimed);
+      expect(
+        emitted,
+        `docs/specs/007-editor/ai-assistance.md claims ${claimed}, which the route never emits`,
+      ).toContain(claimed);
     }
   });
 });

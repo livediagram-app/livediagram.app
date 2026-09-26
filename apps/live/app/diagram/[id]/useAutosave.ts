@@ -27,7 +27,7 @@ import {
   type RemoteOpJournal,
 } from './save-baseline';
 
-// Per-tab autosave (spec/13), lifted out of editor-page.tsx. Two effects:
+// Per-tab autosave (docs/specs/006-diagram/per-tab-storage.md), lifted out of editor-page.tsx. Two effects:
 // a debounced (600ms) save and a beforeunload flush so a fast edit ->
 // reload doesn't lose changes. Both diff via the tested computeTabSaveDiff
 // kernel. The last-saved mirror refs live in the page (the hydration
@@ -48,7 +48,7 @@ export function useAutosave(opts: {
   // opened placeholder can't be PUT back as empty — see computeTabSaveDiff.
   loadedTabIdsRef: MutableRefObject<Set<string>>;
   // Peer ops that arrive while a save is in flight, so the save's success
-  // doesn't roll the baseline back to before them (spec/152, save-baseline.ts).
+  // doesn't roll the baseline back to before them (docs/specs/012-collaboration/collab-race-hardening.md, save-baseline.ts).
   remoteOpJournalRef: MutableRefObject<RemoteOpJournal>;
   // True while a hover-preview is on screen. Previews mutate `tabs` (so they
   // render live) but must never be persisted; the debounced save below skips
@@ -155,7 +155,7 @@ export function useAutosave(opts: {
     // The commit/revert flips this ref off and re-runs the effect, which then
     // saves the committed state (or finds nothing changed after a revert).
     if (previewingRef.current) return;
-    // No "was that a remote update?" skip here any more (spec/152). A peer's
+    // No "was that a remote update?" skip here any more (docs/specs/012-collaboration/collab-race-hardening.md). A peer's
     // op is folded into the baseline as well as the screen, so it simply
     // isn't a difference. The skip it replaced cancelled any local save still
     // waiting out its debounce when a peer's op arrived.
@@ -182,7 +182,7 @@ export function useAutosave(opts: {
       const journal = remoteOpJournalRef.current;
       const mark = openSaveWindow(journal);
       const gen = ++saveGenRef.current;
-      // What this client had seen of the room at the snapshot (spec/152 phase
+      // What this client had seen of the room at the snapshot (docs/specs/012-collaboration/collab-race-hardening.md phase
       // 3): the api merges in only the answers and ticks it hadn't.
       const roomCursor = roomRef.current?.cursor() ?? null;
       const writes: Promise<unknown>[] = [];
@@ -198,11 +198,11 @@ export function useAutosave(opts: {
             // A loaded tab's content is authoritative, so an empty body is
             // an intentional clear (reset-canvas / delete-all) the server
             // backstop should accept; an unloaded placeholder is never in
-            // the set, so it can't authorise its own wipe (spec/13).
+            // the set, so it can't authorise its own wipe (docs/specs/006-diagram/per-tab-storage.md).
             allowEmpty: loadedTabIdsRef.current.has(t.id),
             roomCursor,
           }).then(() => {
-            // Broadcast granular element ops (spec/75, Level 0) derived from
+            // Broadcast granular element ops (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 0) derived from
             // the last state peers saw so concurrent different-element edits
             // merge instead of the whole tab clobbering. Falls back to a
             // whole-`tab` op for a new tab or a bulk change (tabBroadcastOps).
@@ -245,7 +245,7 @@ export function useAutosave(opts: {
       Promise.all(writes)
         .then(() => {
           // The snapshot is saved; peers' ops that arrived since go back on
-          // top of it (spec/152). An older save landing after a newer one
+          // top of it (docs/specs/012-collaboration/collab-race-hardening.md). An older save landing after a newer one
           // leaves the baseline alone.
           if (gen > baselineGenRef.current) {
             baselineGenRef.current = gen;

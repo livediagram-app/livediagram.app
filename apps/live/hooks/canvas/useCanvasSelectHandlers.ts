@@ -12,7 +12,7 @@ export function useCanvasSelectHandlers({
   onElementContextMenu,
   onMultiContextMenu,
 }: {
-  // Elements on a hidden or locked layer (spec/74): right-click and
+  // Elements on a hidden or locked layer (docs/specs/006-diagram/layers.md): right-click and
   // arrow-click route nowhere for them.
   inertIds: Set<string>;
   multiSelectedIds: Set<string>;

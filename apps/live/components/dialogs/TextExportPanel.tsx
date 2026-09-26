@@ -3,7 +3,7 @@ import { BackBar } from '@/components/primitives/BackBar';
 import { Button } from '@livediagram/ui';
 import { useCopiedFlash } from '@livediagram/ui';
 
-// The view/edit/copy sub-view for a text export format (spec/27 + spec/73):
+// The view/edit/copy sub-view for a text export format (docs/specs/020-import-export/markdown-import.md + docs/specs/020-import-export/mermaid.md):
 // a textarea pre-filled with the tab serialised to text, editable for a
 // quick tweak-and-copy, plus Copy and Download buttons. Edits live only in
 // this textarea — they never touch the tab (a scratch view for getting the
@@ -47,7 +47,7 @@ export function TextExportPanel({
 
   return (
     <div>
-      {/* The shared two-level "back to the overview" bar (spec/56 house
+      {/* The shared two-level "back to the overview" bar (docs/specs/018-help/contextual-help-links.md house
           style), the same control the New Diagram wizard's location step
           uses — not a small text link buried in the footer beside the
           commit button, where the way back sat next to the way forward. */}

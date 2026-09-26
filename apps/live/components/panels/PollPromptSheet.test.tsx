@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// The poll sheet is non-modal (spec/88), so its window-level Escape-to-skip
+// The poll sheet is non-modal (docs/specs/012-collaboration/live-poll.md), so its window-level Escape-to-skip
 // shares the key with the work behind it. An Escape another handler claimed
 // (a label edit, the format painter, a deselect) must not also skip the poll.
 

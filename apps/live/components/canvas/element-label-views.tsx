@@ -1,4 +1,4 @@
-// The four display label renderers (spec/09), split out of
+// The four display label renderers (docs/specs/008-canvas/canvas-and-palette.md), split out of
 // element-labels.tsx: the auto-scaling single-line SVG label, the
 // fixed-size single-line label, the sticky multi-line label, and the
 // per-range RichLabel. renderLabel (the dispatcher the element views
@@ -45,7 +45,7 @@ export function ScalingLabel({
   alignY: TextAlignY;
   padding: number;
   style?: LabelTextStyle;
-  // Text-native animation class (spec/09). Only the drop-shadow variants
+  // Text-native animation class (docs/specs/008-canvas/canvas-and-palette.md). Only the drop-shadow variants
   // (glow / pulse / trace) reach here — see renderLabel — since drop-shadow
   // follows the SVG glyph alpha; the background-clip gradient can't paint SVG
   // <text> fill, so it's withheld for the auto-fit (`scale`) renderer.
@@ -123,7 +123,7 @@ export function FixedSizeLabel({
   alignY: TextAlignY;
   padding: number;
   style?: LabelTextStyle;
-  // Text-native animation class for the glyphs (spec/09); see renderLabel.
+  // Text-native animation class for the glyphs (docs/specs/008-canvas/canvas-and-palette.md); see renderLabel.
   animClass?: string;
 }) {
   if (!text) return null;
@@ -155,7 +155,7 @@ type MultilineLabelProps = {
   alignX: TextAlignX;
   alignY: TextAlignY;
   className?: string;
-  // Auto-fit size (spec/139): when the element's size is 'scale', the
+  // Auto-fit size (docs/specs/021-event-storming/event-storming.md): when the element's size is 'scale', the
   // caller measures the text against the box and passes the px it fits at,
   // so 'scale' means fill-the-note rather than a fixed small size. The
   // editor is handed the SAME number, or the text jumps on double-click.
@@ -204,14 +204,14 @@ export function MultilineLabel({
   );
 }
 
-// --- Per-range rich label (spec/09) ---------------------------------------
+// --- Per-range rich label (docs/specs/008-canvas/canvas-and-palette.md) ---------------------------------------
 
 // Display renderer for a label carrying per-range formatting. Mirrors the
 // FixedSizeLabel / MultilineLabel wrapper (alignment + padding + base font
 // + family) and lays the runs out as styled <span>s. Applying any per-run
 // override opts the label out of SVG auto-fit (`scale`) into fixed-px
 // rendering — mixing per-run sizes with whole-element auto-fit is
-// contradictory; see spec/09.
+// contradictory; see docs/specs/008-canvas/canvas-and-palette.md.
 export function RichLabel({
   runs,
   element,
@@ -233,11 +233,11 @@ export function RichLabel({
   padding: number;
   fontFamily?: string;
   multiline: boolean;
-  // Paint in capitals (an event-storming note, spec/139) — whole-label, so
+  // Paint in capitals (an event-storming note, docs/specs/021-event-storming/event-storming.md) — whole-label, so
   // it sits on the wrapper rather than on each run's style.
   uppercase?: boolean;
   className?: string;
-  // Text-native animation class for the glyphs (spec/09); see renderLabel.
+  // Text-native animation class for the glyphs (docs/specs/008-canvas/canvas-and-palette.md); see renderLabel.
   animClass?: string;
 }) {
   const basePx = multiline

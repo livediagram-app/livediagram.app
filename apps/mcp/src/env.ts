@@ -11,7 +11,7 @@ export type Env = {
   // hosted app; self-hosters point it at their own live origin.
   CONSENT_BASE_URL?: string;
   // Shared secret that marks our telemetry posts as coming from this worker
-  // rather than the open internet (spec/22, issue #36). Optional: without it
+  // rather than the open internet (docs/specs/017-telemetry/telemetry.md, issue #36). Optional: without it
   // the posts still work, they just share the anonymous per-IP rate-limit
   // bucket, which is what was silently dropping them. Must match the api
   // worker's INTERNAL_EVENTS_KEY.

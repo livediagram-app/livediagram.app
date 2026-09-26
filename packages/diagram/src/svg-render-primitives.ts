@@ -64,7 +64,7 @@ export function wrapLabel(
 type MeasureCtx = { measureText: (s: string) => { width: number }; font: string };
 let _labelMeasureCtx: MeasureCtx | null | undefined;
 // `fontFamily` is the CSS stack the text will actually be painted in
-// (spec/28). Faces differ in width at the same px — a marker face is far
+// (docs/specs/004-interface-design/fonts.md). Faces differ in width at the same px — a marker face is far
 // wider than the UI sans — so a caller that knows the family passes it and
 // gets a measurement of the text as it will look, not as system-ui would.
 // Omitted, the historical system-ui measurement applies.

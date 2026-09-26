@@ -1,6 +1,6 @@
 'use client';
 
-// The animated canvas backdrops (spec/09). Five softly-moving patterns
+// The animated canvas backdrops (docs/specs/008-canvas/canvas-and-palette.md). Five softly-moving patterns
 // (Flow / Drift / Aurora / Ripple / Ribbons) that bring an otherwise-static
 // canvas to life. They render as a single full-bleed, pointer-transparent overlay
 // layered behind the diagram content rather than as a CSS `background-image`
@@ -12,7 +12,7 @@
 //     from the `--lvd-pat` custom property the container sets).
 //   - Ambient, not pan-locked: the motion is decorative and independent of
 //     the canvas pan (matching the new-diagram page's AnimatedLinesBackdrop).
-//   - Size-aware: the pattern-size slider (`scale`, spec/09) scales each
+//   - Size-aware: the pattern-size slider (`scale`, docs/specs/008-canvas/canvas-and-palette.md) scales each
 //     motif so "bigger pattern" reads consistently with the static ones.
 //   - Opacity-aware: the whole layer fades with the backdrop-opacity slider.
 //   - Reduced-motion safe: every element's *resting* style is already a
@@ -30,7 +30,7 @@ type AnimatedCanvasBackgroundProps = {
   color: string;
   // Pattern-size slider value (0.5..2), scales each motif.
   scale: number;
-  // Motion-speed slider value (spec/09): a rate multiplier (1 = each
+  // Motion-speed slider value (docs/specs/008-canvas/canvas-and-palette.md): a rate multiplier (1 = each
   // pattern's own tuned pace, 2 = twice as fast). Fed to the keyframes as
   // the --lvd-bg-speed var each animation divides its duration by.
   speed: number;

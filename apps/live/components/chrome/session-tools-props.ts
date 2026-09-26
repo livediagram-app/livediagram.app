@@ -2,7 +2,7 @@ import type { Layer, TabTimer, TabVote, TimerMode, VoteSetup } from '@livediagra
 import type { LivePoll, PollStyle } from '@livediagram/api-schema';
 import type { PollCandidate } from '@/lib/poll-collaborators';
 
-// The session-tools bundle (spec/39, spec/88, spec/96): the running timer, the
+// The session-tools bundle (docs/specs/012-collaboration/session-tools.md, docs/specs/012-collaboration/live-poll.md, docs/specs/012-collaboration/vote-layer-scope.md): the running timer, the
 // dot vote, the live poll, and every verb that drives them.
 //
 // Three chrome surfaces offer the same Session category — the tab bar's
@@ -16,7 +16,7 @@ import type { PollCandidate } from '@/lib/poll-collaborators';
 // state and never becomes one. That is why the poll arrives as three separate
 // props rather than a `poll` slot on the tab beside the other two.
 export type SessionToolsProps = {
-  // Who is running the session, when it is not you (spec/149). The Studio
+  // Who is running the session, when it is not you (docs/specs/012-collaboration/facilitator.md). The Studio
   // shows the name and disables every control in one place, which is the
   // whole reason these sixteen verbs already travel as one bundle.
   facilitatedBy?: string | null;
@@ -39,14 +39,14 @@ export type SessionToolsProps = {
   pollHasAudience: boolean;
   onStartPoll: (draft: { question: string; style: PollStyle; options: string[] }) => void;
   // Everyone currently in the diagram, for the `collaborators` poll style
-  // (spec/88). The composer needs it to PREVIEW the ballot it is about to
+  // (docs/specs/012-collaboration/live-poll.md). The composer needs it to PREVIEW the ballot it is about to
   // freeze; the freeze itself happens in `startPoll`, reading the roster again
   // at the instant the poll starts, so what is sent is never staler than the
   // press. Raw candidates rather than finished option strings: turning them
   // into a ballot (de-duplicating, numbering repeats, capping) is one pure
   // function both sides call, not a list one side prepares for the other.
   pollCollaborators: readonly PollCandidate[];
-  // The tab's layers + the active one, for the vote's layer scope (spec/96).
+  // The tab's layers + the active one, for the vote's layer scope (docs/specs/012-collaboration/vote-layer-scope.md).
   voteLayers: Layer[];
   activeLayerId: string;
 };

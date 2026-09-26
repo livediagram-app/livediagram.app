@@ -114,7 +114,7 @@ describe('snapToLane', () => {
   });
 });
 
-// THE PLACEMENT RULES (spec/139 Phase 6 "Placement rules"), stated by the
+// THE PLACEMENT RULES (docs/specs/021-event-storming/event-storming.md Phase 6 "Placement rules"), stated by the
 // operator and asserted here line by line — including the positions that must
 // NOT be offered, which is where every round of this has gone wrong.
 describe('the slots a lane offers', () => {

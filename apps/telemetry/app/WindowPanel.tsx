@@ -4,7 +4,7 @@ import type { TelemetryDaily, TelemetryWindowKey } from '@livediagram/api-schema
 import { TrendChart } from './TrendChart';
 import { WINDOW_META, windowHighlightFrom, windowLabel } from './windows';
 
-// The global timeframe control (spec/22), shown above the view tabs and
+// The global timeframe control (docs/specs/017-telemetry/telemetry.md), shown above the view tabs and
 // shared by all of them. It merges what used to be three separate pieces
 // (the Today / Last 7 days / Last 30 days toggle, the per-window stat cards,
 // and the standalone daily sparkline) into one component. The three

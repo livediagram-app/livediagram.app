@@ -9,7 +9,7 @@ import {
 import { openPhotoBoard } from './fixtures/photo-board';
 import { wallPhotoPng, type WallNote } from './fixtures/wall-photo';
 
-// Importing a photographed wall (spec/139 Phase 8 + 9). The DETECTOR is real
+// Importing a photographed wall (docs/specs/021-event-storming/event-storming.md Phase 8 + 9). The DETECTOR is real
 // code; the READER is stubbed to answer blank, which is what a drawn wall with
 // no lettering on it would read anyway. Which reader would have run is a
 // capability decision (server model vs in-browser model), covered in unit
@@ -32,7 +32,7 @@ function wall(notes: WallNote[]) {
 async function importToReview(page: Page, notes: WallNote[]) {
   await page.getByRole('button', { name: /add from photo/i }).click();
   await page.setInputFiles('input[type="file"]', wall(notes));
-  // The review wizard (spec/139 Phase 9) appears after detection, unless the
+  // The review wizard (docs/specs/021-event-storming/event-storming.md Phase 9) appears after detection, unless the
   // photo had no paper in it — then a toast comes instead.
   const overlay = page.locator('[data-testid="photo-review-overlay"]');
   const emptyToast = page.getByText(/no stickies found in this photo/i);
@@ -41,7 +41,7 @@ async function importToReview(page: Page, notes: WallNote[]) {
     emptyToast.waitFor({ state: 'visible', timeout: 10_000 }).catch(() => false),
   ]);
   if (!(await overlay.isVisible().catch(() => false))) return;
-  // The photo goes up BEFORE the detector has found anything (spec/139 Phase
+  // The photo goes up BEFORE the detector has found anything (docs/specs/021-event-storming/event-storming.md Phase
   // 9), so wait for the finding phase to END before judging what is in it. By
   // its testid, not its words: the overlay says "finding the stickies" in two
   // places, and a text locator matching both throws strict-mode rather than
@@ -64,7 +64,7 @@ async function importPhoto(page: Page, notes: WallNote[]) {
   const overlay = page.locator('[data-testid="photo-review-overlay"]');
   if (!(await overlay.isVisible().catch(() => false))) return;
   // Nothing found: the overlay stays open with the retake advice, and there is
-  // nothing to add (spec/139).
+  // nothing to add (docs/specs/021-event-storming/event-storming.md).
   if (
     await page
       .locator('[data-testid="photo-found-nothing"]')
@@ -244,7 +244,7 @@ test('a photo with no paper in it says so, and keeps the photo up', async ({
   await importPhoto(page, []);
   await expect(page.getByText(/no stickies found in this photo/i).first()).toBeVisible();
   // The photo STAYS on screen with the advice: it is advice about THIS
-  // photograph, and the author can still draw a box by hand (spec/139).
+  // photograph, and the author can still draw a box by hand (docs/specs/021-event-storming/event-storming.md).
   const overlay = page.locator('[data-testid="photo-review-overlay"]');
   await expect(overlay).toBeVisible();
   await expect(overlay.locator('img')).toBeVisible();
@@ -481,7 +481,7 @@ test('?truth=1 arms the export from /new/, trailing slash and all', async ({
   expectNoPageErrors(pageErrors);
 });
 
-// Zooming into a dense wall (spec/139 Phase 9). At fit, a whiteboard of three
+// Zooming into a dense wall (docs/specs/021-event-storming/event-storming.md Phase 9). At fit, a whiteboard of three
 // hundred notes has stickies fifteen pixels across: too small to judge, tick
 // or draw round. The review zooms and pans with the canvas's own gestures.
 test('the photo zooms and pans, and the boxes stay on their stickies', async ({
@@ -643,7 +643,7 @@ test('a tick under a box the author drew can still be cleared', async ({ page, p
   expectNoPageErrors(pageErrors);
 });
 
-// Correcting boxes, then saving and reopening the label (spec/139 Phase 9).
+// Correcting boxes, then saving and reopening the label (docs/specs/021-event-storming/event-storming.md Phase 9).
 // Real pointer drags, at a zoom, so the pixels-to-photo conversion is proven
 // where it can go wrong.
 test('boxes can be moved, resized, re-kinded, deleted, saved and reopened', async ({
@@ -729,7 +729,7 @@ test('boxes can be moved, resized, re-kinded, deleted, saved and reopened', asyn
 
 // When the reader could not read the notes (here: the stub reads every one
 // blank), the review suggests a better photo or typing — and "Try another
-// photo" really does open the picker again (spec/139 Phase 9).
+// photo" really does open the picker again (docs/specs/021-event-storming/event-storming.md Phase 9).
 test('an unread wall offers another photo, and the picker opens', async ({ page, pageErrors }) => {
   await openPhotoBoard(page, { boundaryModel: false });
   await importToReview(page, [
@@ -749,7 +749,7 @@ test('an unread wall offers another photo, and the picker opens', async ({ page,
   expectNoPageErrors(pageErrors);
 });
 
-// The hosted reader's free budget is spent (spec/139 Phase 9): the notes go to
+// The hosted reader's free budget is spent (docs/specs/021-event-storming/event-storming.md Phase 9): the notes go to
 // the in-browser reader instead, and the review says so without saying whose
 // budget it was. The model download is blocked here, so the device reader then
 // says it could not start: both notes are on screen, in that order of events.
@@ -770,7 +770,7 @@ test('a spent budget reads on this device instead, and says so', async ({ page, 
   expectNoPageErrors(pageErrors);
 });
 
-// A box that is moved is read again (spec/139 Phase 9): 8 seconds after the
+// A box that is moved is read again (docs/specs/021-event-storming/event-storming.md Phase 9): 8 seconds after the
 // last change, its crop is cut afresh and sent to the same reader, and the new
 // words replace the old.
 test('a moved box is read again, 8 seconds after the move', async ({ page, pageErrors }) => {

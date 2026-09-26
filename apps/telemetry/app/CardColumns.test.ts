@@ -2,7 +2,7 @@ import { createElement } from 'react';
 import { describe, expect, it } from 'vitest';
 import { balanceColumns, weightOf } from './CardColumns';
 
-// CardColumns' placement (spec/22): cards go biggest first into the shorter
+// CardColumns' placement (docs/specs/017-telemetry/telemetry.md): cards go biggest first into the shorter
 // column, so one tall ranking doesn't pile onto an already-long column.
 
 describe('balanceColumns', () => {

@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { qaVoterId, type QaNote } from '@livediagram/diagram';
 import type { QaWriteRequest } from '../qa-board-write';
 
-// The Q&A board endpoint (spec/151). What the ROUTE has to get right: the role
+// The Q&A board endpoint (docs/specs/012-collaboration/qa-board.md). What the ROUTE has to get right: the role
 // split (audience verbs on read access, board-running verbs on edit access),
 // an actor derived from the authenticated caller rather than the request, and
 // handing the write to the diagram's room. The write and its serialisation are

@@ -6,7 +6,7 @@ import { Dialog } from '@/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
 
-// Create / edit form for a team (spec/32): name + organisation.
+// Create / edit form for a team (docs/specs/013-workspace/teams.md): name + organisation.
 // Visual sibling of ConfirmDialog (same backdrop, fly-up animation,
 // border/shadow stack, button rhythm) but with form fields, so it's
 // its own component rather than a ConfirmDialog contortion. The

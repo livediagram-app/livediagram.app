@@ -10,7 +10,7 @@ import { usePaletteGroup } from './palette-group-state';
 // A collapsible group of tiles inside a palette category: one row that opens
 // in place to reveal its members.
 //
-// Used by Media's Embed group (spec/121) and Components' Web Elements group.
+// Used by Media's Embed group (docs/specs/009-elements/embed-providers.md) and Components' Web Elements group.
 // The problem is the same in both: a handful of tiles that belong together and
 // would otherwise crowd out the category's other elements. Always-visible rows
 // bury the rest; a single umbrella tile hides what is inside (somebody wanting

@@ -1,4 +1,4 @@
-// A feature's anchor on its category page (spec/16): the landing page's
+// A feature's anchor on its category page (docs/specs/019-marketing/marketing-site.md): the landing page's
 // badge for a feature links to the matching card on /features/<id>, so a
 // visitor jumps straight to the one they care about. The id is the card's
 // title kebab-cased; titles are unique within a section (the grid keys on

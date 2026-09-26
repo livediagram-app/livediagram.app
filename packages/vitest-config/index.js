@@ -4,7 +4,7 @@ import { defineConfig, mergeConfig } from 'vitest/config';
  * Shared Vitest defaults for every workspace. Workspaces extend this
  * via `defineProject` so coverage, reporters, and conventions stay
  * identical across the monorepo — the same reasoning behind the
- * shared eslint / prettier / tailwind configs. See specs/18-testing.md.
+ * shared eslint / prettier / tailwind configs. See docs/specs/003-system-architecture/testing.md.
  */
 export const baseConfig = defineConfig({
   test: {

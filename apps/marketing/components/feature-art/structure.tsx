@@ -1,4 +1,4 @@
-// Feature illustrations for the structural elements added in spec/118-121:
+// Feature illustrations for the structural elements added in docs/specs/009-elements/mind-node.md, docs/specs/009-elements/lane.md, docs/specs/009-elements/entity.md and docs/specs/009-elements/embed-providers.md:
 // the mind node, the lane, the entity box, and canvas embeds. Split into their
 // own file rather than growing content.tsx, which is already the richer-content
 // scenes; see ./shared for Frame + colour constants.
@@ -133,7 +133,7 @@ export function EmbedArt() {
   );
 }
 
-// The Explorer's Timeline (spec/138): a day of events on a spine, one bubble
+// The Explorer's Timeline (docs/specs/013-workspace/timeline.md): a day of events on a spine, one bubble
 // per thing that happened, colour saying WHAT happened rather than where. The
 // New pill is the point of the feature — what landed since you were last here.
 export function TimelineFeedArt() {

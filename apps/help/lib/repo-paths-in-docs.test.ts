@@ -1,13 +1,15 @@
+import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
-// Every repo path quoted in specs/ and docs/ must point at a file that exists.
+// Every repo path quoted in docs/specs/ and docs/ must point at a file that exists.
 //
 // This has been wrong five separate times: a spec naming a component deleted
 // in a refactor, one naming a constant that never existed, a setup step telling
 // you to replace a placeholder absent from the file, and eight paths whose
-// directory changed when apps/live was grouped by domain (spec/57). None of
+// directory changed when apps/live was grouped by domain (docs/specs/003-system-architecture/source-layout.md). None of
 // them failed anything — a spec is prose, and prose does not compile — so each
 // was found by someone going looking, and the eight had been wrong for months.
 //
@@ -20,7 +22,7 @@ import { describe, expect, it } from 'vitest';
 //
 // It lives in apps/help because this is the documentation app and its suite
 // already owns documentation correctness (article-links, the registry guards).
-// specs/ belongs to no workspace, and standing up one for a single check would
+// docs/specs/ belongs to no workspace, and standing up one for a single check would
 // cost more machinery than the check.
 
 const ROOT = fileURLToPath(new URL('../../..', import.meta.url));
@@ -50,7 +52,7 @@ const WORKSPACE_ROOTS = [
 // two-files-in-one shorthand.
 //
 // `00NN_` used to sit here too, for a migration filename not yet minted. It
-// outlived its reason: spec/44's migration shipped as 0026_custom_themes.sql
+// outlived its reason: docs/specs/011-theme/custom-themes.md's migration shipped as 0026_custom_themes.sql
 // and the spec kept quoting the placeholder for the whole of that time,
 // because the exemption is exactly what stops this test noticing. A
 // placeholder is only honest before the file exists, so it does not get a
@@ -61,13 +63,30 @@ const QUOTED_PATH = /`([a-zA-Z0-9_.@/[\]-]+\.(?:ts|tsx|mjs|cjs|js|css|sql|toml|j
 
 function docFiles(): string[] {
   const out: string[] = [];
-  for (const dir of ['specs', 'docs']) {
+  const walk = (dir: string) => {
     for (const f of readdirSync(`${ROOT}/${dir}`)) {
-      if (f.endsWith('.md')) out.push(`${dir}/${f}`);
+      const rel = `${dir}/${f}`;
+      // docs/vision holds dated experiment reports that quote the code as it
+      // stood during each experiment; they are records, not current contracts.
+      if (rel === 'docs/vision') continue;
+      if (statSync(`${ROOT}/${rel}`).isDirectory()) walk(rel);
+      else if (f.endsWith('.md')) out.push(rel);
     }
-  }
+  };
+  walk('docs');
   out.push('README.md', 'AGENTS.md');
   return out;
+}
+
+// Everything git tracks, read as text. Specs are referenced from code comments,
+// OpenAPI descriptions, tests and markdown alike, so the reference checks below
+// cover the whole repo, not just docs/.
+const TEXT_FILE = /\.(?:ts|tsx|mts|js|mjs|cjs|md|mdx|json|toml|ya?ml|css|sql|sh|example)$/;
+
+function trackedTextFiles(): string[] {
+  return execFileSync('git', ['ls-files'], { cwd: ROOT, encoding: 'utf8' })
+    .split('\n')
+    .filter((f) => TEXT_FILE.test(f) && existsSync(`${ROOT}/${f}`));
 }
 
 function resolves(quoted: string): boolean {
@@ -118,6 +137,52 @@ function repoFilenames(): Set<string> {
   walk(ROOT);
   return names;
 }
+
+const LEGACY_SPEC_REF = /(?<![\w/])specs?\/\d+|\/specs\/(?:\d{1,2}|[1-9]\d\d)-/gi;
+
+describe('spec references', () => {
+  const files = trackedTextFiles().map((f) => ({ f, src: readFileSync(`${ROOT}/${f}`, 'utf8') }));
+
+  it('reads the repo at all (guard against this test going blind)', () => {
+    expect(files.length).toBeGreaterThan(1000);
+  });
+
+  // Specs are unnumbered and live in category folders under docs/specs/, so a
+  // bare number no longer names one; references are paths to the spec file.
+  // Category folders are zero-padded (`015-api`); the retired files were not
+  // (`25-ai-assistance.md`, `139-event-storming.md`), which tells them apart
+  // even behind a `${ROOT}/` or `../` prefix.
+  it('never use the retired spec numbers', () => {
+    const legacy: string[] = [];
+    for (const { f, src } of files) {
+      for (const m of src.matchAll(LEGACY_SPEC_REF)) legacy.push(`${f}: ${m[0]}`);
+    }
+    expect(legacy).toEqual([]);
+  });
+
+  it('name spec files that exist', () => {
+    const broken: string[] = [];
+    for (const { f, src } of files) {
+      for (const m of src.matchAll(/\bdocs\/specs\/[\w./-]*?\.md\b/g)) {
+        if (!existsSync(`${ROOT}/${m[0]}`)) broken.push(`${f}: ${m[0]}`);
+      }
+    }
+    expect(broken).toEqual([]);
+  });
+
+  it('link markdown files that exist', () => {
+    const broken: string[] = [];
+    for (const { f, src } of files) {
+      if (!f.endsWith('.md')) continue;
+      for (const m of src.matchAll(/\]\(([^)\s#]+\.md)(?:#[^)]*)?\)/g)) {
+        const href = m[1]!;
+        if (/^[a-z]+:/i.test(href)) continue;
+        if (!existsSync(resolve(ROOT, dirname(f), href))) broken.push(`${f}: ${href}`);
+      }
+    }
+    expect(broken).toEqual([]);
+  });
+});
 
 describe('repo paths quoted in specs and docs', () => {
   const files = docFiles();

@@ -1,6 +1,6 @@
 'use client';
 
-// The full-screen surface Start puts you into (spec/31).
+// The full-screen surface Start puts you into (docs/specs/012-collaboration/presentation-mode.md).
 //
 // The SLIDE is drawn by the real canvas underneath this, not by anything here:
 // a slide has to respond to clicks and carry live element state, which an SVG
@@ -132,7 +132,7 @@ export function PresentationOverlay({
     };
   }, []);
 
-  // Pacing (spec/31). One ticking value drives both readouts, and it only
+  // Pacing (docs/specs/012-collaboration/presentation-mode.md). One ticking value drives both readouts, and it only
   // ticks when something is actually being shown: a deck with the clock and
   // the budget both off must not re-render once a second for nothing.
   //
@@ -151,7 +151,7 @@ export function PresentationOverlay({
     return () => window.clearInterval(id);
   }, [wantsClock]);
 
-  // Say the slide out loud for a screen reader (spec/71's announcer). The deck
+  // Say the slide out loud for a screen reader (docs/specs/004-interface-design/canvas-accessibility.md's announcer). The deck
   // is otherwise an entirely visual surface: driven by the arrow keys, nothing
   // reports that anything changed.
   //
@@ -171,7 +171,7 @@ export function PresentationOverlay({
   }, [at, atEnd, steps]);
 
   // Give the tool back on the way out. Exiting already restores the tab, the
-  // viewport and the chrome (spec/31); a presenter who armed the laser for one
+  // viewport and the chrome (docs/specs/012-collaboration/presentation-mode.md); a presenter who armed the laser for one
   // slide should not land back in the editor still holding it.
   //
   // The ref is read at cleanup only, so remembering the tool at Start costs
@@ -187,7 +187,7 @@ export function PresentationOverlay({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Keep the screen awake for the run (spec/31). A slide you talk over for five
+  // Keep the screen awake for the run (docs/specs/012-collaboration/presentation-mode.md). A slide you talk over for five
   // minutes is a slide the laptop dims, and a presenter waking their own screen
   // mid-sentence is a small indignity a deck should not cause.
   //
@@ -241,8 +241,8 @@ export function PresentationOverlay({
         else onExit();
         return;
       }
-      // The pointing tools (spec/31). Neither touches the diagram, and the
-      // laser was built for exactly this room — spec/111 opens by calling it
+      // The pointing tools (docs/specs/012-collaboration/presentation-mode.md). Neither touches the diagram, and the
+      // laser was built for exactly this room — docs/specs/008-canvas/laser-panel.md opens by calling it
       // "the presenting tool". Pressing the same key again puts the pointer
       // back, so arming one is never a trap.
       if (key === 'l' || key === 'L') {

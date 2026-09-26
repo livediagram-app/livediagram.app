@@ -1,4 +1,4 @@
-// Self-Hosting-category illustrations (spec/55): the stack at a glance, the
+// Self-Hosting-category illustrations (docs/specs/018-help/help-app.md): the stack at a glance, the
 // deploy flow, and how optional configuration (Clerk auth) degrades to a
 // pure-guest fallback. Composed only from the shared primitives so the house
 // style holds.

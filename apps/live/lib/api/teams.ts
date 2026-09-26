@@ -1,4 +1,4 @@
-// Team calls (spec/32): list / create / read / update / delete, plus
+// Team calls (docs/specs/013-workspace/teams.md): list / create / read / update / delete, plus
 // member invite / role change / remove. Clerk-only on the server: every
 // endpoint 401s without a verified Bearer token, so callers gate on
 // `isSignedIn` before reaching for these. The mutations that have
@@ -27,7 +27,7 @@ export type TeamDetailResponse = {
   members: TeamMember[];
   myRole: TeamRole;
   // The shareable invite link, admin-only and null when off / expired
-  // (spec/32). Non-admins always receive null.
+  // (docs/specs/013-workspace/teams.md). Non-admins always receive null.
   inviteLink: TeamInviteLink | null;
 };
 type TeamMemberResponse = { member: TeamMember };
@@ -43,7 +43,7 @@ async function _apiListTeams(ownerId: string): Promise<TeamListItem[]> {
 }
 export const apiListTeams = dedupeInFlight(_apiListTeams, (ownerId) => ownerId);
 
-// The caller's pending invites (spec/32 accept/decline). Deduped for
+// The caller's pending invites (docs/specs/013-workspace/teams.md accept/decline). Deduped for
 // the same concurrent-mount reason as the list.
 async function _apiListTeamInvites(ownerId: string): Promise<TeamInvite[]> {
   const res = await apiFetch(`${API_BASE}/teams/invites`, { headers: await apiHeaders(ownerId) });
@@ -67,7 +67,7 @@ export async function apiAcceptTeamInvite(
   return member;
 }
 
-// The team's shared library (spec/35): folder tree + diagrams in one
+// The team's shared library (docs/specs/013-workspace/team-shared-diagrams.md): folder tree + diagrams in one
 // call, joined members only.
 export async function apiGetTeamLibrary(
   ownerId: string,
@@ -173,7 +173,7 @@ export async function apiRemoveTeamMember(
   return { ok: true };
 }
 
-// Whether a joined teammate can open a diagram (spec/68): drives the
+// Whether a joined teammate can open a diagram (docs/specs/012-collaboration/assigned-actions.md): drives the
 // Assign Action dialog's access hint. Null on any failure so the caller
 // can fall back to its heuristic instead of showing a confident wrong
 // answer.
@@ -198,7 +198,7 @@ export async function apiCheckAssigneeAccess(
   }
 }
 
-// Email a teammate about an action just assigned to them (spec/68).
+// Email a teammate about an action just assigned to them (docs/specs/012-collaboration/assigned-actions.md).
 // Best-effort by contract: the assignment has already persisted via the
 // tab write, so callers fire-and-forget this and swallow failures. The
 // server re-verifies team membership + diagram access and resolves every
@@ -224,7 +224,7 @@ export async function apiNotifyActionAssigned(
   await expectOk<{ ok: boolean }>(res, 'notify assigned action');
 }
 
-// --- Shareable invite link (spec/32) ----------------------------------
+// --- Shareable invite link (docs/specs/013-workspace/teams.md) ----------------------------------
 
 // Admin: turn the link on (or rotate it), getting back the fresh token
 // + its 1-week expiry.

@@ -1,4 +1,4 @@
-// Elements -> Mermaid flowchart text (spec/73). The export direction, lifted
+// Elements -> Mermaid flowchart text (docs/specs/020-import-export/mermaid.md). The export direction, lifted
 // out of ./mermaid, which held both directions in 566 lines. Parsing stays
 // there; the two share only the shape vocabulary and read in opposite
 // directions, so they are separate concerns that happened to live together.
@@ -61,7 +61,7 @@ type BoxedShape = Element & {
 };
 
 export function mermaidFromTab(tab: { elements: Element[]; layers?: Layer[] }): string {
-  // Hidden layers drop out of the export (spec/74): what you see on the
+  // Hidden layers drop out of the export (docs/specs/006-diagram/layers.md): what you see on the
   // canvas is what the flowchart describes. Arrows on hidden layers (or
   // touching hidden nodes) vanish with them, since a hidden node never
   // enters the id map below.
@@ -127,7 +127,7 @@ export function mermaidFromTab(tab: { elements: Element[]; layers?: Layer[] }): 
     lines.push(`  ${from} ${op}${label ? `|${edgeLabel}|` : ''} ${to}`);
   }
 
-  // URL element links round-trip as `click` lines (spec/73). Other link
+  // URL element links round-trip as `click` lines (docs/specs/020-import-export/mermaid.md). Other link
   // kinds (tab / element / diagram) are livediagram-internal and have no
   // Mermaid meaning.
   for (const n of nodes) {

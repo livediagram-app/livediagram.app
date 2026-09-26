@@ -1,6 +1,6 @@
 'use client';
 
-// Per-user diagram favourites (spec/95), shared by the Explorer page and
+// Per-user diagram favourites (docs/specs/013-workspace/favourites.md), shared by the Explorer page and
 // the editor's Explorer panel so the two can't drift on what a star means.
 //
 // The set is fetched once per owner and then kept in memory. Toggling is

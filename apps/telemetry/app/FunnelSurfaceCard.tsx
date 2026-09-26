@@ -2,7 +2,7 @@ import { pct } from './chart-utils';
 import { bestSlot, formatRate, rate, type FunnelSurface } from './cta-funnel';
 import { categoryColor } from './event-vocab';
 
-// One public surface's landing funnel (spec/153): its three counts as a
+// One public surface's landing funnel (docs/specs/019-marketing/landing-funnel.md): its three counts as a
 // shrinking bar, the step rate between each, then every CTA slot on it with
 // its arrivals, diagrams and conversion, so the buttons on one page can be
 // compared directly.

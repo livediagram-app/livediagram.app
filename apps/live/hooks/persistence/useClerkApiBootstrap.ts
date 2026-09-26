@@ -11,14 +11,14 @@ import { clearGuestSelfId, getGuestSelfId, getGuestSelfSig } from '@/lib/local-i
 //
 //   1. Register `() => getToken()` as the api-client's token provider
 //      so every request ships `Authorization: Bearer <jwt>` instead of
-//      the legacy `X-Owner-Id` (spec/04 + spec/11). Clear on sign-out
+//      the legacy `X-Owner-Id` (docs/specs/014-identity/auth-and-guest-access.md + docs/specs/015-api/api.md). Clear on sign-out
 //      / unmount so the guest path resumes cleanly.
 //
 //   2. Run the guest → authed migration the first time the user is
 //      signed in AND `livediagram:v2:self-id` is still in localStorage.
 //      `POST /api/migrate` reassigns every `diagrams.owner_id` +
 //      `folders.owner_id` row from the guest id to the Clerk userId
-//      (spec/04 + spec/11). On success we drop the localStorage key so
+//      (docs/specs/014-identity/auth-and-guest-access.md + docs/specs/015-api/api.md). On success we drop the localStorage key so
 //      subsequent loads skip the call entirely. A ref guards against
 //      React StrictMode's double-render firing two migration calls
 //      in dev.
@@ -31,7 +31,7 @@ import { clearGuestSelfId, getGuestSelfId, getGuestSelfSig } from '@/lib/local-i
 // destructure them — there's exactly one place those values come from
 // per page.
 //
-// When Clerk isn't configured for the deployment (spec/03 self-host
+// When Clerk isn't configured for the deployment (docs/specs/002-project-scope/open-source-and-business-model.md self-host
 // path, `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` unset), the hook returns
 // a stable stub — `useAuth` would throw outside a ClerkProvider, so
 // the disabled branch never touches Clerk at all. The choice between
@@ -93,7 +93,7 @@ function useClerkApiBootstrapEnabled(): BootstrapResult {
 
   // 1. Token provider registration. The signed-in user's email is no
   // longer forwarded as a header — team-invite matching trusts only the
-  // verified `email` session-token claim server-side (spec/32).
+  // verified `email` session-token claim server-side (docs/specs/013-workspace/teams.md).
   //
   // A LAYOUT effect on purpose. React runs a child's passive effects before
   // its parent's, and the render that flips `isSignedIn` is the same one that
@@ -123,7 +123,7 @@ function useClerkApiBootstrapEnabled(): BootstrapResult {
     if (!guestId || guestId === clerkUserId) return;
     migrateAttemptedRef.current = true;
     // Send the guest id's signature so the worker can verify possession
-    // (spec/04). Null for a guest the editor bootstrap never managed to
+    // (docs/specs/014-identity/auth-and-guest-access.md). Null for a guest the editor bootstrap never managed to
     // sign (offline, or worker signing disabled); the worker then accepts
     // it only when signing is off, and otherwise refuses — the safe
     // failure (data stays under the guest id rather than being claimable
