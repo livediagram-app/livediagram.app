@@ -30,8 +30,8 @@ export type {
 // `ApiError`, the error type every call throws on non-2xx: callers
 // catch it to branch on `err.status` / `err.code` (the api worker's
 // snake_case error token), so it belongs in the public surface.
-export { ApiError } from './api/core';
-export { setApiErrorReporter } from './api/error-report';
+export { ApiError, SessionTokenUnavailableError } from './api/core';
+export { reportSaveFailure, setApiErrorReporter } from './api/error-report';
 export {
   API_BASE,
   DIAGRAM_LIST_LOAD_SAFETY_MS,

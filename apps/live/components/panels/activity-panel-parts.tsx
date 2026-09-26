@@ -44,6 +44,22 @@ export function SaveStatusBadge({ status }: { status: SaveStatus; savedAt: numbe
       </Tooltip>
     );
   }
+  if (status === 'unauthenticated') {
+    return (
+      <Tooltip
+        title="Not saved"
+        description="Couldn't confirm you're signed in, so changes aren't saving. Sign in again to keep them."
+      >
+        <span
+          role="status"
+          className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-semibold normal-case tracking-normal text-rose-700 ring-1 ring-rose-200"
+        >
+          <WarningIcon />
+          Signed out
+        </span>
+      </Tooltip>
+    );
+  }
   if (status === 'error') {
     return (
       <Tooltip title="Not saved" description="Couldn't save. Check your network.">

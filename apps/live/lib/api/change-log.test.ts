@@ -63,7 +63,7 @@ describe('apiAppendChangeLogEntry on a tab the autosave has not written yet', ()
     await vi.runAllTimersAsync();
     await settled;
     expect(fetchMock).toHaveBeenCalledTimes(4);
-    expect(reported).toEqual(['Http409.AppendChangeLog']);
+    expect(reported).toEqual(['Http409.AppendChangeLog.TabNotSaved']);
   });
 
   it('does not retry any other failure', async () => {

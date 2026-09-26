@@ -19,7 +19,12 @@ import { getGuestSelfSig } from '../local-identity';
 import { notifyApiWrite } from './write-signal';
 // Every non-2xx the expectOk* helpers throw, and every fetch that rejects in
 // apiFetch, is reported through here (docs/specs/017-telemetry/telemetry.md 'Error').
-import { reportApiError, reportNetworkError } from './error-report';
+import {
+  markReported,
+  reportApiError,
+  reportNetworkError,
+  reportNoSessionToken,
+} from './error-report';
 
 // `API_BASE` resolution:
 //   1. `NEXT_PUBLIC_API_BASE` env var if set — used for local dev (e.g.
@@ -267,7 +272,14 @@ export async function apiHeaders(
   // getLastKnownToken), including null, so a session that lapsed
   // mid-page doesn't leave a stale Bearer for the flush.
   lastKnownToken = token;
-  const h = identityHeaders(ownerId, token);
+  let h: Record<string, string>;
+  try {
+    h = identityHeaders(ownerId, token);
+  } catch (err) {
+    reportNoSessionToken();
+    markReported(err);
+    throw err;
+  }
   if (opts.body) h['Content-Type'] = 'application/json';
   if (opts.share) h['X-Share-Code'] = opts.share;
   // Share password (docs/specs/013-workspace/share-password.md) rides on every request once the visitor
@@ -316,14 +328,22 @@ export async function readErrorCode(res: Response): Promise<string | null> {
   }
 }
 
+// The ApiError for a non-2xx, reported to error telemetry on the way out.
+async function failedResponse(res: Response, action: string): Promise<ApiError> {
+  const code = await readErrorCode(res);
+  reportApiError(res.status, action, code);
+  const err = new ApiError(action, res.status, code);
+  markReported(err);
+  return err;
+}
+
 // Response-handling shape every fetch call here used to inline: throw
 // an `ApiError` (status + the worker's error token) on non-2xx,
 // otherwise parse JSON. The `action` string gets baked into the thrown
 // message so debugging keeps the caller's intent without a stack walk.
 export async function expectOk<T>(res: Response, action: string): Promise<T> {
   if (!res.ok) {
-    reportApiError(res.status, action);
-    throw new ApiError(action, res.status, await readErrorCode(res));
+    throw await failedResponse(res, action);
   }
   return (await res.json()) as T;
 }
@@ -334,8 +354,7 @@ export async function expectOk<T>(res: Response, action: string): Promise<T> {
 export async function expectOkOrNull<T>(res: Response, action: string): Promise<T | null> {
   if (res.status === 404) return null;
   if (!res.ok) {
-    reportApiError(res.status, action);
-    throw new ApiError(action, res.status, await readErrorCode(res));
+    throw await failedResponse(res, action);
   }
   return (await res.json()) as T;
 }
@@ -344,8 +363,7 @@ export async function expectOkOrNull<T>(res: Response, action: string): Promise<
 // error-on-non-ok contract; nothing to return.
 export async function expectOkVoid(res: Response, action: string): Promise<void> {
   if (!res.ok) {
-    reportApiError(res.status, action);
-    throw new ApiError(action, res.status, await readErrorCode(res));
+    throw await failedResponse(res, action);
   }
 }
 
@@ -354,8 +372,7 @@ export async function expectOkVoid(res: Response, action: string): Promise<void>
 // throw.
 async function expectOkOr404Void(res: Response, action: string): Promise<void> {
   if (!res.ok && res.status !== 404) {
-    reportApiError(res.status, action);
-    throw new ApiError(action, res.status, await readErrorCode(res));
+    throw await failedResponse(res, action);
   }
 }
 

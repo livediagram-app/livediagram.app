@@ -8,15 +8,16 @@ import {
 } from 'react';
 import type { Tab } from '@livediagram/diagram';
 import {
-  ApiError,
   apiDeleteTab,
   apiSaveDiagramMeta,
   apiSaveTab,
   connectRoom,
   flushDiagramSavesBeacon,
+  reportSaveFailure,
   type DiagramListItem,
 } from '@/lib/api-client';
 import type { SaveStatus } from '@/components/chrome/EditorHeader';
+import { saveFailureStatus } from './save-failure';
 import { isDiagramDeleted } from '@/lib/diagram-tombstones';
 import { computeTabSaveDiff } from './editor-page-helpers';
 import { tabBroadcastOps } from './tab-broadcast-ops';
@@ -264,12 +265,10 @@ export function useAutosave(opts: {
           );
         })
         .catch((err: unknown) => {
-          if (err instanceof ApiError && err.status === 403) {
-            writesForbiddenRef.current = true;
-            setSaveStatus('forbidden');
-            return;
-          }
-          setSaveStatus('error');
+          reportSaveFailure(err);
+          const status = saveFailureStatus(err);
+          if (status === 'forbidden') writesForbiddenRef.current = true;
+          setSaveStatus(status);
         })
         .finally(() => closeSaveWindow(journal));
     }, 600);

@@ -5,9 +5,10 @@ import {
   apiErrorType,
   networkErrorType,
   reportApiError,
+  reportSaveFailure,
   setApiErrorReporter,
 } from './error-report';
-import { apiFetch } from './core';
+import { apiFetch, apiHeaders, ApiError, expectOkVoid, setTokenProvider } from './core';
 
 // Attribution for api failures (docs/specs/017-telemetry/telemetry.md). Reporting the bare status made a
 // spike unreadable: 297 `Http403` in one day says something is being refused
@@ -53,6 +54,30 @@ describe('apiErrorType', () => {
     const long = apiErrorType(500, 'an extraordinarily long action name that keeps going');
     expect(long.length).toBeLessThanOrEqual(40);
     expect(long).toMatch(TELEMETRY_TYPE_PATTERN);
+  });
+
+  // The status says "refused", the worker's error token says which rule
+  // refused it. Without it, 8 `Http401.SaveTab` could have been any of three.
+  it('appends the worker error token when one came back', () => {
+    expect(apiErrorType(403, 'load tab', 'forbidden')).toBe('Http403.LoadTab.Forbidden');
+    expect(apiErrorType(401, 'save tab', 'sign_in_required')).toBe(
+      'Http401.SaveTab.SignInRequired',
+    );
+  });
+
+  it('truncates a long token to the cap rather than dropping the event', () => {
+    const t = apiErrorType(401, 'save tab', 'account_id_not_a_guest_credential');
+    expect(t).toBe('Http401.SaveTab.AccountIdNotAGuestCreden');
+    expect(t).toMatch(TELEMETRY_TYPE_PATTERN);
+  });
+
+  // A few routes put a sentence in `error` rather than a token. Only a
+  // snake_case token is vocabulary; prose is left out.
+  it('ignores an error body that is prose, not a token', () => {
+    expect(
+      apiErrorType(400, 'save tab', 'authentication required: send a valid Clerk Bearer token'),
+    ).toBe('Http400.SaveTab');
+    expect(apiErrorType(400, 'save tab', null)).toBe('Http400.SaveTab');
   });
 
   it('falls back to the bare status when the action has no usable characters', () => {
@@ -130,5 +155,67 @@ describe('per-type report cap', () => {
     setApiErrorReporter((t) => seen.push(t));
     reportApiError(403, 'load tab');
     expect(seen).toEqual(['Http403.LoadTab']);
+  });
+});
+
+describe('reported response failures', () => {
+  afterEach(() => setApiErrorReporter(null));
+
+  it('reports the status, the action and the worker error token', async () => {
+    const seen: string[] = [];
+    setApiErrorReporter((t) => seen.push(t));
+    const res = new Response(JSON.stringify({ error: 'sign_in_required' }), { status: 401 });
+    await expect(expectOkVoid(res, 'save tab')).rejects.toBeInstanceOf(ApiError);
+    expect(seen).toEqual(['Http401.SaveTab.SignInRequired']);
+  });
+});
+
+// A signed-in owner with no session token: the request is never sent, so no
+// status exists to report. Named on its own so it can't hide among 401s.
+describe('no session token', () => {
+  afterEach(() => {
+    setApiErrorReporter(null);
+    setTokenProvider(null);
+  });
+
+  it('reports Auth.NoSessionToken when apiHeaders refuses to build', async () => {
+    const seen: string[] = [];
+    setApiErrorReporter((t) => seen.push(t));
+    setTokenProvider(() => Promise.resolve(null));
+    await expect(apiHeaders('user_abc')).rejects.toThrow();
+    expect(seen).toEqual(['Auth.NoSessionToken']);
+  });
+});
+
+// The autosave's catch-all: every failure that reaches it is reported
+// exactly once, whether or not the api client already did.
+describe('reportSaveFailure', () => {
+  afterEach(() => {
+    setApiErrorReporter(null);
+    setTokenProvider(null);
+    vi.unstubAllGlobals();
+  });
+
+  it('adds nothing for a failure the api client already reported', async () => {
+    const seen: string[] = [];
+    setApiErrorReporter((t) => seen.push(t));
+    const res = new Response('{}', { status: 500 });
+    const apiErr = await expectOkVoid(res, 'save tab').catch((e: unknown) => e);
+    vi.stubGlobal('fetch', () => Promise.reject(new TypeError('Failed to fetch')));
+    const netErr = await apiFetch('/api/diagrams/d/tabs/t', { method: 'PUT' }).catch(
+      (e: unknown) => e,
+    );
+    const noTokenErr = await apiHeaders('user_abc').catch((e: unknown) => e);
+    seen.length = 0;
+    for (const e of [apiErr, netErr, noTokenErr]) reportSaveFailure(e);
+    expect(seen).toEqual([]);
+  });
+
+  it('names a failure that never reached the api client, by its kind', () => {
+    const seen: string[] = [];
+    setApiErrorReporter((t) => seen.push(t));
+    reportSaveFailure(new TypeError('room.send is not a function'));
+    reportSaveFailure('a string');
+    expect(seen).toEqual(['SaveFailed.TypeError', 'SaveFailed.NonError']);
   });
 });
