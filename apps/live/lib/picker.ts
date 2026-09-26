@@ -1,4 +1,4 @@
-// Picker candidates + the roll (spec/107). Pure, so what a press can possibly
+// Picker candidates + the roll (docs/specs/012-collaboration/picker.md). Pure, so what a press can possibly
 // land on is testable without a room or a canvas.
 //
 // The spin the user watches is animation over a result decided at press time,

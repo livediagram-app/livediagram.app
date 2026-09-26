@@ -1,5 +1,5 @@
 // The contextual command catalogue for the SearchPanel "Actions" group
-// (spec/09 "Search panel"). A pure, handler-injected builder so the
+// (docs/specs/008-canvas/canvas-and-palette.md "Search panel"). A pure, handler-injected builder so the
 // applicability logic (which commands apply to the current selection /
 // diagram) is unit-testable without React; `useEditorCommands` binds the
 // handlers to the live editor and matching/capping happens in `lib/search.ts`.
@@ -24,7 +24,7 @@ export type EditorCommand = CommandSearchItem & { run: () => void };
 // What the builder needs to know about the current editor to decide which
 // commands apply. Kept primitive so the builder stays pure + cheap to test.
 export type CommandContext = {
-  // View-only session (spec/70): only the view-safe subset (zen / fit /
+  // View-only session (docs/specs/007-editor/command-palette.md): only the view-safe subset (zen / fit /
   // export) is offered; every mutating command is withheld.
   isReadOnly: boolean;
   // Gate Undo / Redo on whether there's anything to un/redo.
@@ -48,7 +48,7 @@ export type CommandContext = {
   // Owner-only: the Share command is hidden for non-owners (a visitor with
   // an edit link gets "Make a copy" instead, which isn't a palette command).
   isOwner: boolean;
-  // Offline diagram (spec/76): nothing on the server to share, so the Share
+  // Offline diagram (docs/specs/006-diagram/offline-mode.md): nothing on the server to share, so the Share
   // command is withheld even though the session counts as the owner's.
   isOffline: boolean;
   // The canvas tool in force, so the command for the CURRENT tool is dropped
@@ -61,12 +61,12 @@ export type CommandContext = {
   // Spotlight is desktop-only (hover + click-to-resize don't map to touch),
   // so it is withheld on a phone the same way the dropdown omits it.
   isMobile: boolean;
-  // Event storming (spec/139): the board-level verbs are offered only on one
+  // Event storming (docs/specs/021-event-storming/event-storming.md): the board-level verbs are offered only on one
   // of those boards, where they mean something.
   esBoard: boolean;
-  // Are timeline lanes on right now (spec/139 Phase 6)? Names the verb
+  // Are timeline lanes on right now (docs/specs/021-event-storming/event-storming.md Phase 6)? Names the verb
   // honestly rather than offering a switch whose direction you have to guess.
-  // Can this deployment read a photographed wall (spec/139 Phase 8)? False
+  // Can this deployment read a photographed wall (docs/specs/021-event-storming/event-storming.md Phase 8)? False
   // without a model key, where the verb would be an offer nobody can accept.
   photoImportAvailable: boolean;
 };
@@ -106,9 +106,9 @@ export type CommandHandlers = {
   // Switches the canvas tool — the same setter the palette's tool dropdown
   // calls, so the pressed state and telemetry are identical either way.
   setTool: (tool: string) => void;
-  // Timeline lanes on an event-storming board (spec/139 Phase 6) — the same
+  // Timeline lanes on an event-storming board (docs/specs/021-event-storming/event-storming.md Phase 6) — the same
   // flip the palette's switch runs.
-  // Open the wall-photo reader (spec/139 Phase 8).
+  // Open the wall-photo reader (docs/specs/021-event-storming/event-storming.md Phase 8).
   openPhotoImport: () => void;
 };
 
@@ -146,7 +146,7 @@ const CANVAS_TOOLS: {
     mutates: true,
   },
   {
-    // The marker (spec/81). The one tool here that MAKES content, so unlike
+    // The marker (docs/specs/008-canvas/highlighter.md). The one tool here that MAKES content, so unlike
     // its neighbours it stays offered on an empty canvas.
     id: 'highlighter',
     name: 'Highlighter',
@@ -173,7 +173,7 @@ const CANVAS_TOOLS: {
     needsContent: true,
   },
   {
-    // Slide Deck (spec/31). A presenter tool like the Laser and Spotlight,
+    // Slide Deck (docs/specs/012-collaboration/presentation-mode.md). A presenter tool like the Laser and Spotlight,
     // so it needs content for the same reason: there is nothing to put on a
     // slide on an empty canvas. Picking it opens the panel; Start presents.
     id: 'slide-deck',
@@ -209,7 +209,7 @@ function toolCommands(ctx: CommandContext, h: CommandHandlers): EditorCommand[] 
 }
 
 export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): EditorCommand[] {
-  // The view-safe subset (spec/70): navigation / presentation verbs that
+  // The view-safe subset (docs/specs/007-editor/command-palette.md): navigation / presentation verbs that
   // read-only visitors can run too. Everything below the read-only return
   // mutates the diagram (or opens an edit surface) and stays editor-only.
   const viewSafe: EditorCommand[] = [
@@ -272,7 +272,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
   // --- Diagram / tab commands. Always available in-diagram (independent of
   // the selection), so a power user can share / rename / theme without first
   // clearing what's selected.
-  // Event-storming board verbs (spec/139). Only on such a board: a timeline
+  // Event-storming board verbs (docs/specs/021-event-storming/event-storming.md). Only on such a board: a timeline
   // lane on an ordinary diagram would be a grid for nothing.
   if (ctx.esBoard) {
     if (ctx.photoImportAvailable) {
@@ -330,7 +330,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
     });
   }
 
-  // Cleanup (spec/47's tab-menu band) + the app-level dialogs, then the
+  // Cleanup (docs/specs/008-canvas/layout-cleanup.md's tab-menu band) + the app-level dialogs, then the
   // view-safe verbs last so selection / diagram commands keep the better
   // ranks for ambiguous queries.
   out.push({
@@ -339,7 +339,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
     keywords: AUTO_LAYOUT_CHOICES.smart.keywords,
     run: () => h.autoLayout(),
   });
-  // One command per explicit layout style (spec/47 "Layout styles"), the
+  // One command per explicit layout style (docs/specs/008-canvas/layout-cleanup.md "Layout styles"), the
   // same choices the Cleanup menu offers as tiles.
   for (const styleId of AUTO_LAYOUT_STYLE_IDS) {
     out.push({

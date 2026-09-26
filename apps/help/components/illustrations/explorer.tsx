@@ -1,4 +1,4 @@
-// Explorer-category illustrations (spec/55): the full-page diagram library, the
+// Explorer-category illustrations (docs/specs/018-help/help-app.md): the full-page diagram library, the
 // compact in-editor panel, the sidebar sections (Recent, Shared with you, My
 // Work, Team Spaces) and the Library views (image gallery, saved themes).
 // Composed only from the shared primitives so the house style holds.
@@ -485,7 +485,7 @@ export function UnsortedFolder() {
   );
 }
 
-/** The Timeline feed (spec/138): the day rail on the left, a date header, and
+/** The Timeline feed (docs/specs/013-workspace/timeline.md): the day rail on the left, a date header, and
  *  one tinted bubble per event — the colour telling you the kind of thing that
  *  happened before you read a word of it. */
 export function TimelineFeed() {
@@ -564,7 +564,7 @@ export function TimelineStacking() {
 
 /** One event bubble: the tinted icon strip on the left, title and meta beside
  *  it. Shared by the two Timeline scenes above so they stay identical. */
-/** The Activity page (spec/142): titled sections of rows, each a kind glyph,
+/** The Activity page (docs/specs/013-workspace/activity-page.md): titled sections of rows, each a kind glyph,
  *  a name over where it is from, and the person on the right. */
 export function ActivityList() {
   return (

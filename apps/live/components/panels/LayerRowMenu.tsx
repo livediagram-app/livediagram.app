@@ -18,7 +18,7 @@ import { OpacityRow } from '@/components/palette/context-menu-rows';
 import { LayerDownIcon, LayersGlyph, LayerUpIcon } from '@/components/palette/context-menu-icons';
 import { useClickOutside, useEscape } from '@livediagram/ui';
 
-// Right-click menu for a Layers-panel row (spec/74), styled like the tab
+// Right-click menu for a Layers-panel row (docs/specs/006-diagram/layers.md), styled like the tab
 // menu: a quick-verbs toolbar (Rename / Delete) over collapsible
 // categories — Layer (opacity + restack-to-edge + hide others), Content
 // (lock + clear), Merge (into the neighbour above / below). Anchored to

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { unusedImageIds } from './images';
 
 // unusedImageIds is the pure decision behind the daily unused-image
-// sweep (spec/19 "Retention"): given the candidate ids (already
+// sweep (docs/specs/009-elements/images.md "Retention"): given the candidate ids (already
 // filtered to "older than the 30-day floor") and every tab body in the
 // store, it returns the ids no diagram references — the set safe to
 // delete. The R2 + D1 delete loop needs a live binding to test, but
@@ -35,7 +35,7 @@ describe('unusedImageIds', () => {
   });
 
   it('keeps a candidate referenced by a tab from another owner (store-wide scan)', () => {
-    // The scan is store-wide on purpose: a shared tab (spec/17) can
+    // The scan is store-wide on purpose: a shared tab (docs/specs/006-diagram/tab-diagram-many-to-many.md) can
     // place an image inside another owner's diagram. A referenced image
     // is never reaped, whoever's tab it lives in.
     const tabs = [tabWithImages('a')];

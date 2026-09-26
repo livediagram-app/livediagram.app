@@ -55,12 +55,12 @@ describe('THEMES catalogue', () => {
     }
   });
 
-  // spec/16-marketing-site.md cites the scheme count directly in its
+  // docs/specs/019-marketing/marketing-site.md cites the scheme count directly in its
   // copy. If the catalogue drifts from this the spec stops being
-  // accurate. The extras include the multicolour themes from spec/29.
+  // accurate. The extras include the multicolour themes from docs/specs/011-theme/multicolour-themes.md.
   // Mirrors the equivalent assertions in templates.test.ts.
   // 26, not 27: Charcoal merged into Default and left the catalogue.
-  it('lists exactly 26 themes (matches spec/16)', () => {
+  it('lists exactly 26 themes (matches docs/specs/019-marketing/marketing-site.md)', () => {
     expect(THEMES).toHaveLength(26);
   });
 
@@ -84,7 +84,7 @@ describe('THEMES catalogue', () => {
   });
 });
 
-describe('UML theme (per-shape colours, spec/41)', () => {
+describe('UML theme (per-shape colours, docs/specs/010-palette/technology-icons.md)', () => {
   const uml = getTheme('uml');
 
   it('sits in the Formal category', () => {
@@ -141,7 +141,7 @@ describe('getTheme', () => {
   });
 });
 
-describe('shapeColorPresets (spec/48)', () => {
+describe('shapeColorPresets (docs/specs/010-palette/style-presets.md)', () => {
   it('returns twenty deduped style presets (colour + border) for a single-accent theme', () => {
     const presets = shapeColorPresets(getTheme('slate'));
     // 5 theme + 5 neutral + 5 border + 5 status = 20.
@@ -195,7 +195,7 @@ describe('shapeColorPresets (spec/48)', () => {
   });
 });
 
-describe('colour-preset re-derivation across themes (spec/48)', () => {
+describe('colour-preset re-derivation across themes (docs/specs/010-palette/style-presets.md)', () => {
   it('re-derives a bound shape to the matching preset of the new theme', () => {
     const slate = getTheme('slate');
     const midnight = getTheme('midnight');
@@ -237,7 +237,7 @@ describe('colour-preset re-derivation across themes (spec/48)', () => {
   });
 });
 
-describe('table-preset re-derivation across themes (spec/48)', () => {
+describe('table-preset re-derivation across themes (docs/specs/010-palette/style-presets.md)', () => {
   // The bug this covers: a table preset writes resolved colours, so before the
   // binding existed every one of them read as a hand-picked custom and the
   // table kept the OLD theme's header band while the shapes around it moved.
@@ -304,7 +304,7 @@ describe('resolveTheme (distinguishes unknown from the default)', () => {
     } as Parameters<typeof registerCustomTheme>[0]);
     expect(resolveTheme(id)?.label).toBe('Mine');
     // A deleted custom theme is "unknown" again — the signal setTheme uses
-    // to hard-reset instead of diffing against the wrong baseline (spec/44).
+    // to hard-reset instead of diffing against the wrong baseline (docs/specs/011-theme/custom-themes.md).
     unregisterCustomTheme(id);
     expect(resolveTheme(id)).toBeUndefined();
   });
@@ -828,7 +828,7 @@ describe('resetThemeElement', () => {
   });
 });
 
-describe('resetArrowsToTheme (spec/42: arrows always track the theme)', () => {
+describe('resetArrowsToTheme (docs/specs/011-theme/canvas-and-theme-dialog.md: arrows always track the theme)', () => {
   const theme: ThemeDefinition = {
     id: 'slate',
     label: 'Slate',
@@ -967,7 +967,7 @@ describe('deriveNewBoxedColours', () => {
   it('gives a new element the trunk (rootColor) under a multi-colour theme', () => {
     // A brand-new element isn't in the arrow graph yet, so it should
     // pick up the palette theme's neutral trunk (mirrored into the
-    // single-colour element fields). See spec/29.
+    // single-colour element fields). See docs/specs/011-theme/multicolour-themes.md.
     const rainbow = THEMES.find((t) => t.id === 'rainbow')!;
     const out = deriveNewBoxedColours(shape, { theme: 'rainbow' });
     expect(out.fillColor).toBe(rainbow.rootColor!.fill);
@@ -1096,7 +1096,7 @@ describe('multi-colour (rainbow) themes', () => {
   });
 });
 
-// The Dark category leads with Default (spec/09). It is the NEUTRAL dark
+// The Dark category leads with Default (docs/specs/008-canvas/canvas-and-palette.md). It is the NEUTRAL dark
 // canvas — greys on near-black, no hue — so it is the one a reader compares
 // the tinted darks (Midnight's blue, Pine's green, Plum's purple) against,
 // and the one most people actually want when they ask for "dark". It leads

@@ -59,7 +59,7 @@ export function ColourRow({
   onPreviewEnd,
 }: {
   label: string;
-  // A mark for what this row paints (spec/09 Colours). Every category shows
+  // A mark for what this row paints (docs/specs/008-canvas/canvas-and-palette.md Colours). Every category shows
   // one: "Text", "Background", "Border" and "Heading" are four words of
   // similar length and shape, and at a glance in a dense menu the glyph is
   // what tells them apart, not the reading.
@@ -226,7 +226,7 @@ export function IconPositionGrid({
 }: {
   current: string;
   onPick: (pos: IconPosition) => void;
-  // Optional hover-preview pair (spec/48 flow): hovering a cell shows the
+  // Optional hover-preview pair (docs/specs/010-palette/style-presets.md flow): hovering a cell shows the
   // icon on that side live, leaving reverts.
   onPreview?: (pos: IconPosition) => void;
   onPreviewEnd?: () => void;

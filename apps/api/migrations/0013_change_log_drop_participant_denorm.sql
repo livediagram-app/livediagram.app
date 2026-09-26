@@ -1,5 +1,5 @@
 -- Drop change_log.participant_name + participant_color (item #15 /
--- spec/17). They were copy-on-write snapshots so the UI could render
+-- docs/specs/006-diagram/tab-diagram-many-to-many.md). They were copy-on-write snapshots so the UI could render
 -- "who did this" without needing the participants row to still
 -- exist, but the denormalisation costs us:
 --

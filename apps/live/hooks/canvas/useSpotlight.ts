@@ -1,4 +1,4 @@
-// Spotlight presenter tool state (spec/09), lifted out of Canvas so the
+// Spotlight presenter tool state (docs/specs/008-canvas/canvas-and-palette.md), lifted out of Canvas so the
 // click handlers, the pointer-move tracker, and the overlay all share one
 // source of truth without bloating Canvas.tsx further.
 //
@@ -33,7 +33,7 @@ export function useSpotlight() {
   const [radius, setRadius] = useState(SPOTLIGHT_DEFAULT_RADIUS);
   const grow = () => setRadius((r) => clampRadius(r * SPOTLIGHT_STEP));
   const shrink = () => setRadius((r) => clampRadius(r / SPOTLIGHT_STEP));
-  // The Spotlight Panel's Size row (spec/112) sets the radius outright; the
+  // The Spotlight Panel's Size row (docs/specs/008-canvas/spotlight-panel.md) sets the radius outright; the
   // clamp is shared so a preset can never land outside the click bounds.
   const setRadiusClamped = (r: number) => setRadius(clampRadius(r));
   return { pos, setPos, radius, grow, shrink, setRadius: setRadiusClamped };

@@ -124,7 +124,7 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       // same scope rule PUT /folder applies. Anything else (a folder deleted
       // since an offline diagram was filed in it, someone else's) lands the
       // diagram in Unsorted rather than failing the create: this is how an
-      // Offline Mode sync carries its placement (spec/76).
+      // Offline Mode sync carries its placement (docs/specs/006-diagram/offline-mode.md).
       let folderId = typeof body.folderId === 'string' ? body.folderId : null;
       if (folderId !== null) {
         const folder = await getFolder(env, folderId);
@@ -140,12 +140,12 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
         shareCode: body.shareCode ?? null,
         folderId,
         // Diagrams are always created personal; they move into a
-        // team library via PUT /folder afterwards (spec/35).
+        // team library via PUT /folder afterwards (docs/specs/013-workspace/team-shared-diagrams.md).
         teamId: null,
         // Usually none. An Offline Mode sync carries the deck it built
-        // offline (spec/76), which would otherwise be lost with the local copy.
+        // offline (docs/specs/006-diagram/offline-mode.md), which would otherwise be lost with the local copy.
         presentation: typeof body.presentation === 'string' ? body.presentation : null,
-        // Provenance (spec/15): only the closed set of generated sources
+        // Provenance (docs/specs/013-workspace/folders.md): only the closed set of generated sources
         // is accepted; anything else (or absent) is a user-made diagram.
         source: body.source === 'ai' || body.source === 'mcp' ? body.source : null,
         savedAt: now,
@@ -159,12 +159,12 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
         await seedTabs(env, body.id, body.tabs);
       }
       const diagram = await getDiagram(env, body.id);
-      // spec/138 §4.2: only a GENUINE create earns a timeline event. A
+      // docs/specs/013-workspace/timeline.md §4.2: only a GENUINE create earns a timeline event. A
       // POST that resolved to an existing row is the editor re-committing
       // an id it already owns, and "Diagram Created" twice for one
       // diagram is a lie the feed can't walk back.
       if (diagram && !clash) {
-        // A sync (spec/76) is a POST like any other, so the editor declares it:
+        // A sync (docs/specs/006-diagram/offline-mode.md) is a POST like any other, so the editor declares it:
         // undeclared, moving a diagram from this browser INTO the account was
         // reported as a diagram being created for the first time.
         const conversion = readDiagramConversion(request.headers.get(DIAGRAM_CONVERSION_HEADER));
@@ -174,7 +174,7 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
             : recordDiagramCreated(env, diagram, owner),
         );
       }
-      // spec/64 (#6): on a genuine create (no prior row), check for a diagram
+      // docs/specs/014-identity/transactional-email.md (#6): on a genuine create (no prior row), check for a diagram
       // milestone. Count + send run in the background, off the response path.
       if (emailEnabled(env) && !clash) {
         ctx.waitUntil?.(
@@ -189,7 +189,7 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
   if (segments.length === 3) {
     const id = segments[2]!;
     if (request.method === 'GET') {
-      // Read access (spec/35): the owner, a valid share-code visitor,
+      // Read access (docs/specs/013-workspace/team-shared-diagrams.md): the owner, a valid share-code visitor,
       // OR a joined member of the diagram's team — the same gate the
       // tab-content read below uses, so a team member can open a team
       // diagram by raw id (not just via a share link). A miss returns
@@ -198,7 +198,7 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       if (!d) return notFound();
       const allowed = await gateRead(ctx, id, d.ownerId, d.teamId);
       // Redacted for every non-owner, exactly as the share-code resolver
-      // does (spec/04): the gate above admits any valid share code, view
+      // does (docs/specs/014-identity/auth-and-guest-access.md): the gate above admits any valid share code, view
       // or edit, so this is the same audience — and a guest owner's id IS
       // their credential. This door was returning it intact while the
       // share door blanked it. See redact-owner.ts.
@@ -207,7 +207,7 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
     if (request.method === 'PUT') {
       // Metadata-only PUT now that tabs live in their own table.
       // Body: { name?, tabIds?, tabs? } — name renames the diagram;
-      // `tabs` (preferred, spec/30) reorders AND sets each tab's
+      // `tabs` (preferred, docs/specs/006-diagram/tab-folders.md) reorders AND sets each tab's
       // per-diagram folder; `tabIds` is the legacy folder-less shape,
       // still accepted for older clients. All optional, at least one
       // must be present.
@@ -215,7 +215,7 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
         name?: string;
         tabIds?: string[];
         tabs?: { id: string; folder?: string | null }[];
-        // Slide deck (spec/31): serialised StoredPresentation, or null to
+        // Slide deck (docs/specs/012-collaboration/presentation-mode.md): serialised StoredPresentation, or null to
         // clear. Absent leaves the stored deck alone, so an ordinary rename
         // can never wipe it.
         presentation?: string | null;
@@ -229,7 +229,7 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       // Unknown id: 404. This PUT used to create-on-first-write (the legacy
       // localStorage-sync model), which let any stray meta write mint a
       // permanent zero-tab ghost row, e.g. a client path that missed the
-      // Offline Mode dispatch (spec/76) writing an offline diagram's id to
+      // Offline Mode dispatch (docs/specs/006-diagram/offline-mode.md) writing an offline diagram's id to
       // the server. Diagrams are only ever created via POST /diagrams now.
       if (!existing) return notFound();
       const now = Date.now();
@@ -271,7 +271,7 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
         await reorderTabs(env, id, body.tabIds);
       }
       const diagram = await getDiagram(env, id);
-      // spec/138 §4.2: a rename only. The same PUT also carries tab
+      // docs/specs/013-workspace/timeline.md §4.2: a rename only. The same PUT also carries tab
       // reorders and deck writes, and neither is a timeline moment —
       // the feed would fill with "Renamed X → X" on every save.
       if (diagram && typeof body.name === 'string' && body.name !== existing.name) {
@@ -282,7 +282,7 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       return json({ diagram: diagram ? redactOwnerId(diagram, owner) : diagram });
     }
     if (request.method === 'DELETE') {
-      // Owner, OR a joined member of the diagram's team (spec/35:
+      // Owner, OR a joined member of the diagram's team (docs/specs/013-workspace/team-shared-diagrams.md:
       // members fully manage team diagrams, delete included). NOT a
       // share-link visitor — editing content via a link is one thing,
       // destroying the diagram is owner/team-only. Resolve the caller
@@ -304,16 +304,16 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
         allowed = membership?.status === 'joined';
       }
       if (!allowed) return forbidden();
-      // spec/138 §3.5: a deleted diagram leaves NO trace on the Timeline.
+      // docs/specs/013-workspace/timeline.md §3.5: a deleted diagram leaves NO trace on the Timeline.
       // Its history is swept and no tombstone is written — from the feed's
       // point of view it never existed. (There used to be a "Diagram
       // Deleted" card; it was noise the reader had asked to be rid of.)
       //
-      // "Take offline" (spec/76) reaches this same DELETE — the server copy
+      // "Take offline" (docs/specs/006-diagram/offline-mode.md) reaches this same DELETE — the server copy
       // really does go — but the diagram is not gone, it moved into the
       // caller's browser, and THAT is worth a card. Honoured for the OWNER
       // only: the DELETE is also reachable by any joined member of the
-      // diagram's team (see the gate above, spec/35), and the Explorer
+      // diagram's team (see the gate above, docs/specs/013-workspace/team-shared-diagrams.md), and the Explorer
       // offers Take Offline on a team-library row without checking who owns
       // it. When a teammate does it the diagram moves into THEIR browser and
       // leaves the owner's account for good — from the owner's and the
@@ -343,7 +343,7 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
   // any other "duplicate" path; (b) a visitor with an active
   // `shared_with` row for the source; (c) a visitor providing
   // a valid X-Share-Code for the source. Skips share_links /
-  // change_log on the copy by design (spec/04 + spec/12) so
+  // change_log on the copy by design (docs/specs/014-identity/auth-and-guest-access.md + docs/specs/012-collaboration/activity-and-audit.md) so
   // the new diagram reads as the visitor's own clean workspace.
   if (segments.length === 4 && segments[3] === 'copy') {
     const id = segments[2]!;
@@ -391,14 +391,14 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
     }
   }
 
-  // /api/diagrams/<id>/folder — placement (spec/15 + spec/35); the
+  // /api/diagrams/<id>/folder — placement (docs/specs/013-workspace/folders.md + docs/specs/013-workspace/team-shared-diagrams.md); the
   // scope-change policy lives in diagram-placement-route.ts.
   {
     const placementResp = await handleDiagramPlacement(ctx);
     if (placementResp) return placementResp;
   }
 
-  // /api/diagrams/<id>/thumbnail — cached SVG snapshot (spec/67). Read-
+  // /api/diagrams/<id>/thumbnail — cached SVG snapshot (docs/specs/006-diagram/diagram-snapshots.md). Read-
   // gated exactly like GET /api/diagrams/<id>: the owner, a joined team
   // member, or a valid share-code visitor. A native <img> can't send
   // auth headers, so the live app fetches this with headers and wraps
@@ -422,7 +422,7 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
   const subResp = await handleDiagramSubresources(ctx);
   if (subResp) return subResp;
 
-  // Realtime-room admission (spec/11): the one-time WS ticket mint +
+  // Realtime-room admission (docs/specs/015-api/api.md): the one-time WS ticket mint +
   // the Durable Object upgrade — see diagram-room-routes.ts.
   const roomResp = await handleDiagramRoomRoutes(ctx);
   if (roomResp) return roomResp;
@@ -430,7 +430,7 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
   // /api/diagrams/<id>/log — owner OR edit-role share-code holder.
   //   GET  → newest-first list of audit entries (capped at 200).
   //   POST → append a new entry. Body is a ChangeLogEntryDTO.
-  // See specs/12-activity-and-audit.md.
+  // See docs/specs/012-collaboration/activity-and-audit.md.
   if (segments.length === 4 && segments[3] === 'log') {
     const id = segments[2]!;
     const access = await requireDiagramAccess(ctx, id, 'edit');
@@ -438,7 +438,7 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
 
     if (request.method === 'GET') {
       const entries = await listChangeLog(env, id);
-      // Redact each entry's author owner id for non-owners (spec/61 §6): it's
+      // Redact each entry's author owner id for non-owners (docs/specs/015-api/public-api-and-tokens.md §6): it's
       // the same value a token / X-Owner-Id authenticates with, so a non-owner
       // edit collaborator must not be able to harvest it from the audit trail.
       // The owner still sees the real ids; display name / colour are untouched

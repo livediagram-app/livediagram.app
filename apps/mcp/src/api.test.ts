@@ -49,7 +49,7 @@ describe('apiJson', () => {
   });
 });
 
-describe('apiJson error telemetry (spec/62 §4.12)', () => {
+describe('apiJson error telemetry (docs/specs/015-api/mcp-server.md §4.12)', () => {
   function eventsPosted(calls: Request[]): boolean {
     return calls.some((r) => new URL(r.url).pathname === '/api/events');
   }
@@ -70,7 +70,7 @@ describe('apiJson error telemetry (spec/62 §4.12)', () => {
     expect(eventsPosted(calls)).toBe(false);
   });
 
-  // Spec/22: a bare `Http503` can't say which tool broke. The label comes
+  // docs/specs/017-telemetry/telemetry.md: a bare `Http503` can't say which tool broke. The label comes
   // from the tool scope registerTool sets up, not from each call site.
   it('labels the failure with the running tool', async () => {
     const { env, calls } = envWith((req) =>

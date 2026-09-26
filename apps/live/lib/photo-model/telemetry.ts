@@ -2,7 +2,7 @@ import type { PhotoDetector } from '../photo-detect';
 import type { BoundaryBackend, ClassicalReason } from './protocol';
 
 // Which detector found a photo's boxes, as the one closed telemetry token the
-// photo import sends per photo (spec/22): `AI`·`Used`·`PhotoDetect…`. Whether
+// photo import sends per photo (docs/specs/017-telemetry/telemetry.md): `AI`·`Used`·`PhotoDetect…`. Whether
 // the model runs out there, on which backend, and why not when it does not, is
 // what decides whether it earns its download.
 

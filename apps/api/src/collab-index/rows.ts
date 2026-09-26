@@ -1,4 +1,4 @@
-// What one tab contributes to the collaboration index (spec/142 §2).
+// What one tab contributes to the collaboration index (docs/specs/013-workspace/activity-page.md §2).
 //
 // A pure projection of the tab's elements into the rows `collab_actions`
 // and `collab_threads` hold: one per element carrying an action, one per
@@ -68,8 +68,8 @@ export function collabIndexRowsFromElements(elements: Element[]): CollabIndexRow
   const actions: CollabActionRow[] = [];
   const threads: CollabThreadRow[] = [];
   for (const el of elements) {
-    // Actions and threads only ever hang off boxed elements (spec/68
-    // §1, spec/09), which is also what gives them a display label.
+    // Actions and threads only ever hang off boxed elements (docs/specs/012-collaboration/assigned-actions.md
+    // §1, docs/specs/008-canvas/canvas-and-palette.md), which is also what gives them a display label.
     if (!isBoxed(el)) continue;
     const action = actionOf(el);
     if (action) {

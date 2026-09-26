@@ -1,4 +1,4 @@
-// Reading the text on sticky-note crops (spec/139 Phase 8). The wire contract
+// Reading the text on sticky-note crops (docs/specs/021-event-storming/event-storming.md Phase 8). The wire contract
 // between the api route that asks the model and the editor that cut the crops.
 //
 // The split is the whole design: the stickies are FOUND in the browser, by
@@ -66,7 +66,7 @@ export const PHOTO_MAX_NOTES = 400;
 
 // What a crop may be, on the wire. GIF is absent (animation means nothing here
 // and the first frame is a trap), and SVG is absent for the same reason
-// spec/19 keeps it out of uploads: it is XML that can carry script.
+// docs/specs/009-elements/images.md keeps it out of uploads: it is XML that can carry script.
 export const PHOTO_ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
 export type PhotoAcceptedType = (typeof PHOTO_ACCEPTED_TYPES)[number];
 

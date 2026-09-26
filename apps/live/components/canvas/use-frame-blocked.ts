@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-// Whether a website embed's frame has failed to load (spec/133).
+// Whether a website embed's frame has failed to load (docs/specs/009-elements/website-embed.md).
 //
 // READ THIS BEFORE "improving" the detection. A site that refuses framing via
 // `X-Frame-Options: DENY` or CSP `frame-ancestors` is NOT distinguishable from

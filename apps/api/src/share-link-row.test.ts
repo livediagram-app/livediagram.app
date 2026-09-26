@@ -34,7 +34,7 @@ describe('rowToShareLink', () => {
     expect(dto.expiresAt).toBeNull();
   });
 
-  it('maps the expiry columns through (spec/34)', () => {
+  it('maps the expiry columns through (docs/specs/013-workspace/share-link-expiry.md)', () => {
     const dto = rowToShareLink(row({ expiry: 'week', expires_at: 1717604800000 }));
     expect(dto.expiry).toBe('week');
     expect(dto.expiresAt).toBe(1717604800000);
@@ -62,7 +62,7 @@ describe('rowToShareLink', () => {
   it('defaults to role "edit" when the column carries an unrecognised string', () => {
     // The defensive default: any non-'view' value (a future server
     // role the client doesn't know about yet, a corrupted row, a
-    // typo) lands on 'edit'. spec/04 + spec/11: roles are validated
+    // typo) lands on 'edit'. docs/specs/014-identity/auth-and-guest-access.md + docs/specs/015-api/api.md: roles are validated
     // on write, so reading an unexpected value here is the
     // belt-and-braces path. Edit is the safe default because the
     // alternative (view-only) would silently lock owners out of

@@ -10,7 +10,7 @@ import {
 import { getTheme, type ThemeId } from '@/lib/themes';
 import { useLanePreview } from '@/lib/lane-preview';
 
-// The lane a dragged note is landing on (spec/139 Phase 6), lit while the drag
+// The lane a dragged note is landing on (docs/specs/021-event-storming/event-storming.md Phase 6), lit while the drag
 // is in hand and gone on release.
 //
 // The lanes are INVISIBLE until a note is on the move: permanent rules ruled

@@ -1,4 +1,4 @@
-// Curated text fonts (spec/28). Each text-bearing element and each tab
+// Curated text fonts (docs/specs/004-interface-design/fonts.md). Each text-bearing element and each tab
 // can pick one; the id is stored in the model and mapped to a CSS stack
 // here at render time. Eleven Google Fonts spanning neutral / geometric /
 // rounded / condensed / techy sans, serif / display serif / slab, mono,
@@ -131,7 +131,7 @@ export function googleFontsHref(ids?: readonly string[]): string {
   return `https://fonts.googleapis.com/css2?${families}&display=swap`;
 }
 
-// The font ids a set of elements + their tab actually use (spec/28), in
+// The font ids a set of elements + their tab actually use (docs/specs/004-interface-design/fonts.md), in
 // catalogue order. An export declares exactly these and no more: a
 // downloaded SVG shouldn't pull eleven families to draw a board that used
 // one, and the empty case must stay byte-identical to a font-less export.

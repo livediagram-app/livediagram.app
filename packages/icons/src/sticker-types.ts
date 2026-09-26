@@ -1,4 +1,4 @@
-// Sticker catalogue types (spec/116). A sticker is NOT an icon: it is its own
+// Sticker catalogue types (docs/specs/010-palette/stickers.md). A sticker is NOT an icon: it is its own
 // element kind, with its own catalogue, because the two answer different
 // questions. An icon is a glyph you tint and fold into a shape's label; a
 // sticker is a thing you slap on the board — die-cut, shadowed, tilted, never

@@ -2,7 +2,7 @@
 
 import { useRef, useState, type PointerEvent, type RefObject } from 'react';
 
-// Drawing a box round a sticky the detector missed (spec/139 Phase 9): press
+// Drawing a box round a sticky the detector missed (docs/specs/021-event-storming/event-storming.md Phase 9): press
 // on the photo, drag, let go.
 //
 // Everything here is in PERCENTAGES of the picture, read off the picture's

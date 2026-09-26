@@ -3,7 +3,7 @@ import { EDIT_KEYS, VIEW_TOOL_KEYS, type ShortcutAction } from './useEditorKeybo
 import { runModShortcut } from './editor-shortcut-keys';
 
 // The hook's keydown effect needs jsdom + window event dispatch, which
-// this workspace's node-env vitest doesn't run (see specs/18-testing.md).
+// this workspace's node-env vitest doesn't run (see docs/specs/003-system-architecture/testing.md).
 // What we CAN test in node is the pure key -> action mapping: the lookup
 // tables that the effect dispatches through. These assertions pin the
 // standards-aligned remap (V = Select, H = Hand, K = Laser, P = Pencil,
@@ -180,7 +180,7 @@ describe('runModShortcut (Cmd / Ctrl chords)', () => {
     expect(chord({ key: 'a' }).hit).toBe('select-all');
   });
 
-  it('leaves Cmd+G to the browser now that there are no groups (spec/147)', () => {
+  it('leaves Cmd+G to the browser now that there are no groups (docs/specs/009-elements/web-components-and-no-groups.md)', () => {
     const { hit, prevented } = chord({ key: 'g' });
     expect(hit).toBeNull();
     expect(prevented).toBe(false);

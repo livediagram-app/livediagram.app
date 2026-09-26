@@ -41,7 +41,7 @@ export function iconPrimMarkup(p: IconPrim): string {
     case 'ellipse':
       return `<ellipse cx="${num(p.cx)}" cy="${num(p.cy)}" rx="${num(p.rx)}" ry="${num(p.ry)}"/>`;
     case 'text':
-      // Colour-emoji glyphs (spec/85). Centred anchor + central baseline
+      // Colour-emoji glyphs (docs/specs/010-palette/emoji-icons.md). Centred anchor + central baseline
       // so the character sits on (x, y). The caller's line-art wrapper
       // sets fill="none", which would blank a <text> glyph — override
       // with an explicit fill (colour-emoji glyphs ignore it; a
@@ -55,7 +55,7 @@ export function iconPrimMarkup(p: IconPrim): string {
         // export (sticker-markup.ts). Noto Color Emoji matters: it's the
         // primary emoji font on Linux and Android, so dropping it here made
         // exported SVGs fall back to text glyphs on the platforms where the
-        // canvas had shown colour ones, against spec/86's "exports match the
+        // canvas had shown colour ones, against docs/specs/008-canvas/element-shadows.md's "exports match the
         // canvas".
         ` font-family="system-ui, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Noto Color Emoji&#39;, sans-serif"` +
         ` text-anchor="middle" dominant-baseline="central" fill="currentColor"` +

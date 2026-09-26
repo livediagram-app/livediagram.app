@@ -10,7 +10,7 @@ import {
   type PresentationConfig,
 } from '@/lib/presentation-config';
 
-// Settings for the Slide Deck panel (spec/31): the SAME presenter settings the
+// Settings for the Slide Deck panel (docs/specs/012-collaboration/presentation-mode.md): the SAME presenter settings the
 // cog in the HUD carries, reachable before you start rather than only once you
 // are already in front of the room.
 //

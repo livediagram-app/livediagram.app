@@ -14,7 +14,7 @@ import type { ParticipantDTO } from './types';
 // A save can also carry SOMEBODY ELSE's new comment: it reached the saver
 // live, and their save landed in D1 before the author's own. That comment is
 // credited by `roomAuthors`, the name the room stamped it with when it was
-// posted (spec/152), not to the saver, which is what used to happen. Its
+// posted (docs/specs/012-collaboration/collab-race-hardening.md), not to the saver, which is what used to happen. Its
 // author id stays empty (the saver's copy has none: it is stripped from every
 // room op) until the author's own save claims it; see below.
 //
@@ -140,7 +140,7 @@ export function redactCommentAuthorIds(elements: Element[], viewerId: string | n
   });
 }
 
-// spec/64 (#1): true when `nextElements` adds at least one comment id not in
+// docs/specs/014-identity/transactional-email.md (#1): true when `nextElements` adds at least one comment id not in
 // `prevElements`. Used by the tab-autosave handler to fire the "someone
 // commented on your diagram" notification only when a genuinely new comment
 // landed (not on every autosave).

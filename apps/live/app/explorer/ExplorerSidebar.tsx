@@ -30,12 +30,12 @@ import {
   TeamFolderSubtree,
 } from './sidebar';
 
-// The Explorer's section tree (spec/15), shared by the desktop
+// The Explorer's section tree (docs/specs/013-workspace/folders.md), shared by the desktop
 // sidebar and the mobile drawer in ExplorerShell. Every navigation
 // goes through `go` (a route push) so picking a section on a phone
 // also closes the drawer; search closes it too. Layout: the "Quick
 // find" section (Timeline, Recent, Favourites, Shared with you) at the
-// top, then the Personal Space tree, Teams (spec/32), and the Library.
+// top, then the Personal Space tree, Teams (docs/specs/013-workspace/teams.md), and the Library.
 export function ExplorerSidebar() {
   const {
     clerkDisplayName,
@@ -83,7 +83,7 @@ export function ExplorerSidebar() {
   ).length;
 
   // Per-team folder tree, indexed by parentId, for the expandable
-  // team subtrees (spec/35). Built from the lazy library sweep.
+  // team subtrees (docs/specs/013-workspace/team-shared-diagrams.md). Built from the lazy library sweep.
   const teamTree = useMemo(
     () =>
       new Map(
@@ -97,7 +97,7 @@ export function ExplorerSidebar() {
 
   return (
     <>
-      {/* Signed-in greeting deep-links to the profile page (spec/65); guests
+      {/* Signed-in greeting deep-links to the profile page (docs/specs/014-identity/profile-and-email-notifications.md); guests
           have no profile, so theirs is plain text. */}
       <SidebarSectionLabel first>
         {clerkUserId ? (
@@ -130,7 +130,7 @@ export function ExplorerSidebar() {
       </button>
       <div className="my-4 h-px bg-slate-100 dark:bg-slate-800" aria-hidden />
       <SidebarSectionLabel>Quick find</SidebarSectionLabel>
-      {/* The landing view (spec/138 §8.1), so it leads the tree. The
+      {/* The landing view (docs/specs/013-workspace/timeline.md §8.1), so it leads the tree. The
           badge counts OTHER people's events since the reader last
           opened it — their own work going up a counter would be noise.
           Cleared on navigation rather than after the fetch, so the
@@ -146,7 +146,7 @@ export function ExplorerSidebar() {
         depth={0}
         badge={timelineUnread.count > 0 ? timelineUnread.count : undefined}
       />
-      {/* What's outstanding for the reader (spec/142). The badge counts
+      {/* What's outstanding for the reader (docs/specs/013-workspace/activity-page.md). The badge counts
           only the open actions ASSIGNED TO them — work waiting on them,
           not work they handed out — and hides at zero. */}
       <SidebarRow
@@ -166,7 +166,7 @@ export function ExplorerSidebar() {
         badge={recentCount > 0 ? recentCount : undefined}
       />
       {/* Favourites lives in Quick find rather than under Personal Space >
-          Dynamic (spec/138 §8.2): it's the user's own curated shortlist,
+          Dynamic (docs/specs/013-workspace/timeline.md §8.2): it's the user's own curated shortlist,
           not a synthetic view of where a diagram happens to sit, so it
           belongs beside Recent rather than a level down among Unsorted /
           Generated / Offline. */}
@@ -188,7 +188,7 @@ export function ExplorerSidebar() {
       />
 
       {/* Personal Space lists the personal tree directly — Unsorted and the
-          root folders, no separate "All diagrams" parent row (spec/35).
+          root folders, no separate "All diagrams" parent row (docs/specs/013-workspace/team-shared-diagrams.md).
           The /explorer/all route still backs the breadcrumb. The plus
           mirrors the Teams section: add a root-level folder. */}
       <SidebarSectionLabel
@@ -209,11 +209,11 @@ export function ExplorerSidebar() {
       </SidebarSectionLabel>
       {/* The synthetic ("dynamic") folders live under one collapsible
           Dynamic parent so Personal Space leads with the user's own folders:
-          Unsorted (folder_id IS NULL), Generated (AI-made, spec/15), and
-          Offline (browser-only, spec/76). All are live views, always
+          Unsorted (folder_id IS NULL), Generated (AI-made, docs/specs/013-workspace/folders.md), and
+          Offline (browser-only, docs/specs/006-diagram/offline-mode.md). All are live views, always
           present even when empty; badges hide at zero. Clicking the
           parent opens the /explorer/dynamic overview. Favourites used to
-          sit here too and has moved up to Quick find (spec/138 §8.2), so
+          sit here too and has moved up to Quick find (docs/specs/013-workspace/timeline.md §8.2), so
           the parent's badge no longer counts it. */}
       <SidebarRow
         icon={<SYNTHETIC_FOLDERS.dynamic.Icon />}
@@ -269,7 +269,7 @@ export function ExplorerSidebar() {
         />
       ))}
 
-      {/* Teams (spec/32): signed-in only. Signed-out users see neither this
+      {/* Teams (docs/specs/013-workspace/teams.md): signed-in only. Signed-out users see neither this
           nor External connections inline; they get one bottom-of-sidebar
           sign-in banner instead. A no-auth self-host never has teams. */}
       {teamsEnabled ? (
@@ -301,7 +301,7 @@ export function ExplorerSidebar() {
             const isOpen = expanded.has(t.id);
             // Team folder click opens the team page AT that folder
             // (full load: the team page reads the &folder param at
-            // mount, spec/35) — same as the search panel does.
+            // mount, docs/specs/013-workspace/team-shared-diagrams.md) — same as the search panel does.
             const openTeamFolder = (folderId: string) =>
               window.location.assign(
                 `/explorer/team?id=${encodeURIComponent(t.id)}&folder=${encodeURIComponent(folderId)}`,
@@ -364,7 +364,7 @@ export function ExplorerSidebar() {
         onClick={() => go({ kind: 'themes' })}
         depth={0}
       />
-      {/* External connections (spec/61): API tokens, signed-in only. Hidden
+      {/* External connections (docs/specs/015-api/public-api-and-tokens.md): API tokens, signed-in only. Hidden
           for signed-out users (they get the bottom banner below instead). */}
       {teamsEnabled ? (
         <>

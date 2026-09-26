@@ -1,4 +1,4 @@
-// The Q&A board's one write path (spec/151). Every role sends every board
+// The Q&A board's one write path (docs/specs/012-collaboration/qa-board.md). Every role sends every board
 // action here, view links included: the server owns the board's state, so it
 // is what stamps the author, derives the voter id and sequences the result
 // out through the room.
@@ -9,7 +9,7 @@ import { API_BASE, apiFetch, apiHeaders, expectOk } from './core';
 export type QaBoardState = { notes: QaNote[]; rev: number; voterId: string };
 
 // Resolves to the board's authoritative state after the action, or null for an
-// offline diagram (spec/76), which has no server: the caller applies the
+// offline diagram (docs/specs/006-diagram/offline-mode.md), which has no server: the caller applies the
 // action locally and the ordinary tab save persists it.
 export async function apiQaAction(
   ownerId: string,

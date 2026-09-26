@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 
-// The action panel (spec/146). Like the Comment panel's tests, most of what is
+// The action panel (docs/specs/012-collaboration/action-panel.md). Like the Comment panel's tests, most of what is
 // worth pinning is that it reuses the ORDINARY `action` field and the ordinary
-// spec/68 handlers rather than growing parallel ones.
+// docs/specs/012-collaboration/assigned-actions.md handlers rather than growing parallel ones.
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';

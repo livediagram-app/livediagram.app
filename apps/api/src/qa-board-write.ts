@@ -1,4 +1,4 @@
-// One Q&A board write (spec/151): read the tab, apply the action with the
+// One Q&A board write (docs/specs/012-collaboration/qa-board.md): read the tab, apply the action with the
 // shared reducer, bump `qaRev`, and compare-and-swap it back.
 //
 // Called ONLY from the diagram's room (DiagramRoom's qa queue), which runs
@@ -6,7 +6,7 @@
 // the same second safe: board writes never race each other at all. The CAS
 // here is the second line, against the one other writer of the same row, an
 // editor's tab autosave (whose read-then-write can straddle ours), plus a tab
-// linked into a second diagram (spec/17), whose room queues separately.
+// linked into a second diagram (docs/specs/006-diagram/tab-diagram-many-to-many.md), whose room queues separately.
 
 import {
   applyQaAction,

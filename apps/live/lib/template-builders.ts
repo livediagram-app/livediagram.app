@@ -1,7 +1,7 @@
 // The editor-side seam over @livediagram/templates: the pure builders
-// live in the package (shared with the MCP worker, spec/62); this
+// live in the package (shared with the MCP worker, docs/specs/015-api/mcp-server.md); this
 // wrapper adds what only the app can — resolving the theme id (which
-// may be a custom `custom:<uuid>` id, spec/44) and the graph-aware
+// may be a custom `custom:<uuid>` id, docs/specs/011-theme/custom-themes.md) and the graph-aware
 // theme recolour — to land a picked template as a fully styled tab.
 // editor-page dynamic-imports this module inside the onChooseTemplate
 // callback so the builders stay out of the editor's initial bundle;
@@ -16,7 +16,7 @@ export { buildTemplate } from '@livediagram/templates';
 
 export function buildTemplatedTab(
   kind: TemplateKind,
-  // string, not ThemeId: may be a custom `custom:<uuid>` id (spec/44),
+  // string, not ThemeId: may be a custom `custom:<uuid>` id (docs/specs/011-theme/custom-themes.md),
   // which getTheme resolves via the custom-theme registry.
   themeId: string,
   tabId: string,
@@ -24,7 +24,7 @@ export function buildTemplatedTab(
 ): Tab {
   const theme = getTheme(themeId);
   const rawElements = buildTemplate(kind, 0, 0);
-  // Graph-aware recolour so multi-colour themes (spec/29) can tint each
+  // Graph-aware recolour so multi-colour themes (docs/specs/011-theme/multicolour-themes.md) can tint each
   // branch of the scaffold a distinct hue; single-colour themes fall
   // straight through to the per-element transform.
   const elements = recolourElementsForTheme(rawElements, theme);

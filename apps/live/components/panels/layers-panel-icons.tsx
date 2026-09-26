@@ -1,4 +1,4 @@
-// Glyphs for the Layers panel (spec/74): the row controls (eye / eye-off,
+// Glyphs for the Layers panel (docs/specs/006-diagram/layers.md): the row controls (eye / eye-off,
 // lock, ellipsis, merge up / down) and the footer add / delete, plus the
 // dock-button LayersStackIcon that the CanvasChrome cluster and the mobile
 // dock share. Split out of LayersPanel.tsx so the panel file stays focused

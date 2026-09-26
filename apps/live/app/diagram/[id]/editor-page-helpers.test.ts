@@ -28,7 +28,7 @@ describe('createTab', () => {
     expect(t.id.length).toBeGreaterThan(0);
   });
 
-  it('defaults the per-tab text size to small (spec/28)', () => {
+  it('defaults the per-tab text size to small (docs/specs/004-interface-design/fonts.md)', () => {
     expect(createTab('Tab 1').defaultTextSize).toBe('sm');
   });
 });
@@ -55,7 +55,7 @@ describe('placeholdersFromSummaries', () => {
     expect(out.every((t) => t.elements.length === 0)).toBe(true);
   });
 
-  it('carries folder membership from the summary (spec/30)', () => {
+  it('carries folder membership from the summary (docs/specs/006-diagram/tab-folders.md)', () => {
     const out = placeholdersFromSummaries([
       { id: 'a', name: 'Overview', folder: 'Org' },
       { id: 'b', name: 'Backend' },
@@ -103,7 +103,7 @@ describe('computeTabSaveDiff (autosave decision kernel)', () => {
     expect(diff.orderChanged).toBe(false);
   });
 
-  // spec/152: a peer's op is applied to the screen and to the baseline
+  // docs/specs/012-collaboration/collab-race-hardening.md: a peer's op is applied to the screen and to the baseline
   // separately, so the two hold equal content in different objects. That is
   // not a local change and must not be saved (or broadcast) back.
   it('does not flag a new reference whose content is unchanged', () => {
@@ -148,7 +148,7 @@ describe('computeTabSaveDiff (autosave decision kernel)', () => {
     expect(diff.hasChanges).toBe(true);
   });
 
-  it('flags a folder-only change as orderChanged so it rides the meta save (spec/30)', () => {
+  it('flags a folder-only change as orderChanged so it rides the meta save (docs/specs/006-diagram/tab-folders.md)', () => {
     const a = tab('a');
     const b = tab('b');
     const bFoldered = { ...b, folder: 'Org' };
@@ -365,7 +365,7 @@ describe('deriveTabLoadState', () => {
   });
 });
 
-describe('mergeAiElements (spec/25 AI apply)', () => {
+describe('mergeAiElements (docs/specs/007-editor/ai-assistance.md AI apply)', () => {
   // Grid-aligned coords so autoAlignElements is a no-op and assertions
   // on geometry / structure stay stable.
   const sq = (id: string, o: Partial<ShapeElement> = {}): ShapeElement => ({

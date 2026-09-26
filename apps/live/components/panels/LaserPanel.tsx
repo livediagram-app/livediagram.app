@@ -1,6 +1,6 @@
 'use client';
 
-// The Laser Panel (spec/111): the pen's settings, present only while the Laser
+// The Laser Panel (docs/specs/008-canvas/laser-panel.md): the pen's settings, present only while the Laser
 // tool is active — the same relationship the Avatar Panel has with Avatar mode,
 // down to the width, the corner it homes to, and the mobile dock button.
 //

@@ -5,7 +5,7 @@ import type { DetectedSticky, Truth } from '@livediagram/sticky-vision';
 import { boxesFromLabel } from '@/lib/photo-boxes';
 
 // The boxes on the photograph under review, as the author has corrected them
-// (spec/139 Phase 9): what the detector found, moved, resized, re-kinded,
+// (docs/specs/021-event-storming/event-storming.md Phase 9): what the detector found, moved, resized, re-kinded,
 // deleted, plus the ones drawn round missed notes. Which are TICKED, and which
 // one is SELECTED for correcting.
 //

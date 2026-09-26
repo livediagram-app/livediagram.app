@@ -1,4 +1,4 @@
-// The Avatar-mode character's placement (spec/101): where the sprite sits in
+// The Avatar-mode character's placement (docs/specs/008-canvas/avatar-mode.md): where the sprite sits in
 // canvas coords, the "you are here" ring under it, and a peer's name chip.
 // The pixel art itself lives in avatar-sprite.tsx.
 //
@@ -39,9 +39,9 @@ export function AvatarWalker({
   lift?: number;
   // Flag-wave frame (0..2), or null for no flag.
   wave?: number | null;
-  // Active reaction pose (spec/101), or null when standing / walking.
+  // Active reaction pose (docs/specs/008-canvas/avatar-mode.md), or null when standing / walking.
   pose?: import('@/lib/avatar-reactions').ReactionPose | null;
-  // Chair (spec/130): this character is sitting on one, so it draws seated.
+  // Chair (docs/specs/009-elements/chair.md): this character is sitting on one, so it draws seated.
   seated?: boolean;
   // Shirt colour — the participant's presence colour, so your character on a
   // shared diagram matches your cursor / name chip. Falls back to the brand
@@ -53,7 +53,7 @@ export function AvatarWalker({
   // Peer name, rendered as a small chip above the head. Omitted for your own
   // character (you know who you are).
   name?: string;
-  // Stand up from a chair (spec/130). Absent for peers' characters.
+  // Stand up from a chair (docs/specs/009-elements/chair.md). Absent for peers' characters.
   onStand?: () => void;
 }) {
   const scale = avatarScale(config.size);
@@ -118,7 +118,7 @@ export function AvatarWalker({
           shirt={shirt}
           scale={scale}
         />
-        {/* Stand (spec/130). Arrow keys and a double-click both get you out of
+        {/* Stand (docs/specs/009-elements/chair.md). Arrow keys and a double-click both get you out of
             a chair, and neither exists on a touch device — so the seat carries
             its own press. Only for your OWN character: you cannot stand
             somebody else up. */}

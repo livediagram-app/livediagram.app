@@ -1,6 +1,6 @@
 import type { ListStyle, RunHeading } from '@livediagram/diagram';
 
-// The block type of the current lines, as one closed vocabulary (spec/102).
+// The block type of the current lines, as one closed vocabulary (docs/specs/009-elements/block-type-picker.md).
 //
 // Heading level and list style are two independent run attributes, but to a
 // writer they are one choice: a line is a heading, or a paragraph, or a
@@ -67,7 +67,7 @@ export function blockTypeApplies(type: BlockType): {
  * The list style the FIRST line of `text` is in.
  *
  * A list is literal line-prefix text ("• " / "1. ") rather than a block node
- * (spec/92), so detecting one means reading the prefix — there is no node to
+ * (docs/specs/009-elements/rich-text-notes.md), so detecting one means reading the prefix — there is no node to
  * ask. First line only: the picker shows one value, and a selection spanning
  * a bullet and a paragraph has no single honest answer, so it reports where
  * the selection starts.

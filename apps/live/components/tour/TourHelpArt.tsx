@@ -1,6 +1,6 @@
 'use client';
 
-// The outro card's animated hero (spec/79): finding a help article. A
+// The outro card's animated hero (docs/specs/007-editor/editor-tour.md): finding a help article. A
 // little article card with text lines sits on the dotted canvas; a
 // magnifying glass sweeps across it, each line lighting up brand-blue as
 // the lens passes, with the tour's spark motif twinkling alongside. Same

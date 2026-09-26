@@ -1,4 +1,4 @@
-// The eraser's brush, drawn where the cursor is (spec/113).
+// The eraser's brush, drawn where the cursor is (docs/specs/008-canvas/eraser-panel.md).
 //
 // An eraser you can't see the size of is a worse tool than a precise one: at
 // Large the brush reaches 72px, which is most of a sticky note, and the only

@@ -99,7 +99,7 @@ describe('applyArrowDragMove', () => {
   });
 
   it('suppresses curve guides when the alignment-guides preference is off', () => {
-    // guidesOn is spec/60's preference. Off means the geometry still
+    // guidesOn is docs/specs/008-canvas/snap-override.md's preference. Off means the geometry still
     // updates, but no guide lines are drawn.
     const drag = {
       kind: 'arrow-curve',

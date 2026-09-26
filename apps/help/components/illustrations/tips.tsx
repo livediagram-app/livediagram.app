@@ -1,4 +1,4 @@
-// Tips-and-tricks illustrations (spec/55): keyboard shortcuts and their toggle,
+// Tips-and-tricks illustrations (docs/specs/018-help/help-app.md): keyboard shortcuts and their toggle,
 // the floating palette as a quick-add launchpad, and the presenting surfaces
 // (Zen mode and the laser pointer). Format-painter and theme scenes are reused
 // from canvas.tsx, not redrawn. Composed only from the shared primitives.

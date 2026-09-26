@@ -1,6 +1,6 @@
 // auth_sessions + auth_accounts (migration 0047): first sightings of a Clerk
 // session and of a Clerk account, which is how the api worker counts
-// Session·SignedIn / SignedUp exactly once each (spec/22). Both writes are
+// Session·SignedIn / SignedUp exactly once each (docs/specs/017-telemetry/telemetry.md). Both writes are
 // INSERT OR IGNORE keyed on the id, so "was this the first time?" is answered
 // atomically by the row count: two concurrent requests carrying the same new
 // session can't both claim it.

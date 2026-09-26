@@ -38,7 +38,7 @@ type SetState<T> = Dispatch<SetStateAction<T>>;
 // useShapeDrawing) — the canvas then drops it at default size on a tap or
 // sizes it on a drag. The ANNOTATION alone drops at the viewport centre via
 // addBoxed (from useElementHelpers): a fixed 44x44 marker has no box to size,
-// so there is nothing for the drag to decide (spec/09 "Placement on add").
+// so there is nothing for the drag to decide (docs/specs/008-canvas/canvas-and-palette.md "Placement on add").
 export function useElementCreation(opts: {
   editsBlocked: boolean;
   // Whether image placement is unavailable (embed chrome — see
@@ -85,7 +85,7 @@ export function useElementCreation(opts: {
   // useShapeDrawing.commitDraw), once the tap / drag actually lands the
   // element — not here, where the gesture is only queued.
   // `opts` carries a creation-time choice for the kinds that have one: which
-  // session tool (spec/105), which reaction (spec/135). The palette offers a
+  // session tool (docs/specs/012-collaboration/session-button.md), which reaction (docs/specs/009-elements/reaction-pad.md). The palette offers a
   // tile per choice, so it has to survive the draw gesture and land on the
   // element rather than leaving the factory default in place.
   const addShape = (
@@ -119,7 +119,7 @@ export function useElementCreation(opts: {
     // addBoxed already follows. `acceptsInlineIcon` excludes the dedicated
     // 'icon' shape (an icon-on-an-icon is meaningless) AND frames (a frame
     // is a container — an icon dropped with a frame selected becomes a
-    // standalone element you place inside it, see spec/38).
+    // standalone element you place inside it, see docs/specs/009-elements/annotations.md).
     const sel = selectedId ? activeTab.elements.find((e) => e.id === selectedId) : null;
     if (sel && acceptsInlineIcon(sel)) {
       commitTabs((ts) =>
@@ -148,7 +148,7 @@ export function useElementCreation(opts: {
     beginDraw({ type: 'shape', kind: 'icon', iconId });
   };
 
-  // Sticker (spec/116). Its own shape kind, so unlike addIcon there is no
+  // Sticker (docs/specs/010-palette/stickers.md). Its own shape kind, so unlike addIcon there is no
   // "fold into the selected shape" branch: a sticker never becomes another
   // element's inline glyph, it lands as a sticker wherever it is dropped.
   // Telemetry fires on commit (see useShapeDrawing.commitDraw).
@@ -157,7 +157,7 @@ export function useElementCreation(opts: {
     beginDraw({ type: 'shape', kind: 'sticker', stickerId });
   };
 
-  // Technology (brand) icon (spec/41). Reuses the 'icon' shape kind but is
+  // Technology (brand) icon (docs/specs/010-palette/technology-icons.md). Reuses the 'icon' shape kind but is
   // ALWAYS a standalone element — never dropped inside a selected shape as
   // an inline icon (a coloured brand tile beside a shape's text is not
   // meaningful, and the inline-icon renderer only knows line-art prims). The
@@ -183,7 +183,7 @@ export function useElementCreation(opts: {
     beginDraw({ type: 'table' });
   };
 
-  // A note marker (spec/38) dropped at the viewport centre (no
+  // A note marker (docs/specs/009-elements/annotations.md) dropped at the viewport centre (no
   // draw-to-size: it's a fixed-size marker, not a box you drag out). The
   // user clicks it afterwards to add the note text.
   const addAnnotation = () => {
@@ -192,7 +192,7 @@ export function useElementCreation(opts: {
     track('Element', 'Added', titleCaseType('annotation'));
   };
 
-  // A link-card / bookmark (spec/40), drawn to size. The card starts empty
+  // A link-card / bookmark (docs/specs/009-elements/link-cards.md), drawn to size. The card starts empty
   // ("double-click to add a link"); double-clicking opens the link picker,
   // and setting a URL unfurls a preview.
   const addLinkCard = () => {
@@ -200,7 +200,7 @@ export function useElementCreation(opts: {
     beginDraw({ type: 'link-card' });
   };
 
-  // An embed (spec/114, spec/121), drawn to size and empty. Same shape as the
+  // An embed (docs/specs/009-elements/youtube-video.md, docs/specs/009-elements/embed-providers.md), drawn to size and empty. Same shape as the
   // link card above, and deliberately so: both keep their URL in `link`, and
   // double-clicking either opens the one link picker. The provider rides the
   // intent so the tile the user pressed is the service they get; the 16:9
@@ -210,7 +210,7 @@ export function useElementCreation(opts: {
     beginDraw({ type: 'video', ...(provider ? { provider } : {}) });
   };
 
-  // An empty image placeholder (spec/19), drawn to size. Lives here rather
+  // An empty image placeholder (docs/specs/009-elements/images.md), drawn to size. Lives here rather
   // than in useEditorImages (which owns the picker, the gallery, and the
   // fill/clear mutators) because arming a draw needs `beginDraw`, and that
   // hook runs before useShapeDrawing. The picker opens on commit, once the
@@ -222,7 +222,7 @@ export function useElementCreation(opts: {
     beginDraw({ type: 'image' });
   };
 
-  // Components (spec/09) arm the combined tap-or-drag draw gesture, exactly
+  // Components (docs/specs/008-canvas/canvas-and-palette.md) arm the combined tap-or-drag draw gesture, exactly
   // like shapes: a tap drops the composite at its natural size on the tap
   // point, a drag scales the whole group to the dragged box. The build (theme
   // colours, group assembly, scaling) + telemetry happen on commit in
@@ -263,13 +263,13 @@ export function useElementCreation(opts: {
     beginDraw({ type: 'text' });
   };
   // `fill` + `esKind` = an Event Storming note riding the intent
-  // (spec/139); absent for the plain sticky tile / the N shortcut.
+  // (docs/specs/021-event-storming/event-storming.md); absent for the plain sticky tile / the N shortcut.
   const addSticky = (fill?: string, esKind?: EventStormingNoteKind) => {
     if (editsBlocked) return;
     beginDraw({ type: 'sticky', ...(fill ? { fill } : {}), ...(esKind ? { esKind } : {}) });
   };
 
-  // Click-to-connect (spec/09) — arm from the selection, complete on the next
+  // Click-to-connect (docs/specs/008-canvas/canvas-and-palette.md) — arm from the selection, complete on the next
   // element click, or abandon. See useArrowConnect.
   const { connectSourceId, cancelConnect, addArrow, connectArrowTo } = useArrowConnect({
     editsBlocked,
@@ -281,9 +281,9 @@ export function useElementCreation(opts: {
     commitTabs,
   });
 
-  // Drag-from-palette drop (spec/09): place the dragged kind centred on the
+  // Drag-from-palette drop (docs/specs/008-canvas/canvas-and-palette.md): place the dragged kind centred on the
   // drop point. Shapes / devices use createShape; an icon carries `iconId`,
-  // a sticker `stickerId` (spec/116).
+  // a sticker `stickerId` (docs/specs/010-palette/stickers.md).
   const dropPaletteItem = (
     kind: ShapeKind | 'sticky',
     canvasX: number,
@@ -291,7 +291,7 @@ export function useElementCreation(opts: {
     art?: { iconId?: string; stickerId?: string; choice?: string },
   ) => {
     // The insertion slot the drag was offering on an event-storming board
-    // (spec/139), consumed here so it can never outlive its own drag. Only
+    // (docs/specs/021-event-storming/event-storming.md), consumed here so it can never outlive its own drag. Only
     // ever set while the preview was live, so every other board reads null.
     // The drop point already sits in the slot: the preview publishes its
     // offset through the same snap channel the ghost and the drop follow.
@@ -305,7 +305,7 @@ export function useElementCreation(opts: {
       // the only difference — so it goes through the same builder: fill +
       // stationery silhouette from the note kind, and on an event-storming
       // board the tilt, the fixed size, and the stage-layer routing
-      // (spec/139). placeBoxed re-centres and leaves sticky colours alone.
+      // (docs/specs/021-event-storming/event-storming.md). placeBoxed re-centres and leaves sticky colours alone.
       const esKind = art?.choice as EventStormingNoteKind | undefined;
       const fill = esKind ? eventStormingNote(esKind).fill : undefined;
       addBoxedAt(
@@ -351,14 +351,14 @@ export function useElementCreation(opts: {
           ? {
               ...createShape('icon', x, y),
               iconId,
-              // The four animated glyphs arrive already moving (spec/09),
+              // The four animated glyphs arrive already moving (docs/specs/008-canvas/canvas-and-palette.md),
               // same as the draw path.
               ...(defaultIconAnimation(iconId)
                 ? { iconAnimation: defaultIconAnimation(iconId) }
                 : {}),
               // Tech icons land self-describing (S3, EKS, ...) on drag too,
               // matching the click-to-add addTechIcon path — and unlocked:
-              // the mark renders at a fixed size (spec/41), so the aspect
+              // the mark renders at a fixed size (docs/specs/010-palette/technology-icons.md), so the aspect
               // lock would only fight resizing the caption room.
               ...(isTechIconId(iconId)
                 ? { label: getTechIcon(iconId)?.label ?? '', aspectLocked: false }
@@ -366,7 +366,7 @@ export function useElementCreation(opts: {
             }
           : {
               ...createShape(kind, x, y),
-              // The dragged tile's creation-time choice (spec/103, /105, /123,
+              // The dragged tile's creation-time choice (docs/specs/009-elements/mode-button.md, /105, /123,
               // /135). Applied by the kind that owns the field, so one payload
               // serves all four without the drop path knowing which is which.
               ...(art?.choice && kind === 'session-button'
@@ -424,11 +424,11 @@ export function useElementCreation(opts: {
     setEditingId(el.id);
     // Double-clicking empty canvas is a first-class "make a Text element"
     // path, same as the quick-connect "add text" action — count it so it
-    // isn't invisible to the Element/Added dashboard (spec/22).
+    // isn't invisible to the Element/Added dashboard (docs/specs/017-telemetry/telemetry.md).
     track('Element', 'Added', 'Text');
   };
 
-  // Mind map growth (spec/118). Tab adds a child, Enter a sibling; the new
+  // Mind map growth (docs/specs/009-elements/mind-node.md). Tab adds a child, Enter a sibling; the new
   // node is placed clear of the branch, wired to its parent with a pinned
   // arrow, selected, and put straight into label editing — the whole point is
   // typing a branch without reaching for the mouse.

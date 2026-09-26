@@ -3,7 +3,7 @@ import { DIAGRAM_CONVERSION_HEADER } from '@livediagram/api-schema';
 import { makeTestRouteContext } from './test-route-context';
 import type { DiagramDTO } from '../types';
 
-// Offline Mode conversions must be recorded as themselves (spec/76 + spec/138).
+// Offline Mode conversions must be recorded as themselves (docs/specs/006-diagram/offline-mode.md + docs/specs/013-workspace/timeline.md).
 //
 // Both conversions reuse ordinary endpoints — "take offline" is a plain
 // DELETE /diagrams/:id, "sync" a plain POST /diagrams — so the worker cannot
@@ -11,7 +11,7 @@ import type { DiagramDTO } from '../types';
 // so. It didn't, so the feed reported that a diagram the owner had just moved
 // into this browser was DELETED (in danger red), and that one they had just
 // uploaded was newly CREATED. `diagram_offline` / `diagram_synced` existed the
-// whole time, with tones, icons, renderers and a spec/138 table row; nothing
+// whole time, with tones, icons, renderers and a docs/specs/013-workspace/timeline.md table row; nothing
 // emitted them.
 //
 // The route test next door deliberately leaves `../timeline` unmocked and
@@ -73,7 +73,7 @@ const diagram = {
 } as unknown as DiagramDTO;
 
 // Owned by someone ELSE, filed in a team library. The DELETE is reachable here
-// by any joined member (spec/35), and the Explorer offers Take Offline on a
+// by any joined member (docs/specs/013-workspace/team-shared-diagrams.md), and the Explorer offers Take Offline on a
 // team-library row without checking who owns it.
 const teamDiagram = {
   id: 'd1',
@@ -115,7 +115,7 @@ describe('DELETE /diagrams/:id — take offline vs real delete', () => {
   });
 
   it('records nothing for a real delete: the diagram leaves no card behind', async () => {
-    // spec/138 §3.5: the history is swept and no tombstone follows. From the
+    // docs/specs/013-workspace/timeline.md §3.5: the history is swept and no tombstone follows. From the
     // feed's point of view the diagram never existed.
     db.getDiagram.mockResolvedValue(diagram);
     const { ctx, settle } = ctxWith('DELETE', '/api/diagrams/d1');
@@ -154,7 +154,7 @@ describe("a non-owner cannot convert someone else's diagram", () => {
   // Narrowing the audience to the actor is right when the OWNER takes their
   // own diagram offline. When a teammate does it the diagram lands in THEIR
   // browser and leaves the owner's account for good — that is a deletion from
-  // everyone else's side, and a deletion records nothing (spec/138 §3.5), so
+  // everyone else's side, and a deletion records nothing (docs/specs/013-workspace/timeline.md §3.5), so
   // the teammate must not get an owner-scoped "Taken Offline" card either.
   beforeEach(() => {
     db.getDiagram.mockResolvedValue(teamDiagram);
@@ -212,7 +212,7 @@ describe('POST /diagrams — sync vs genuine create', () => {
   });
 
   it('emits neither when the POST resolved to an existing row', async () => {
-    // spec/138 §4.2: a re-commit of an id the caller already owns is not an
+    // docs/specs/013-workspace/timeline.md §4.2: a re-commit of an id the caller already owns is not an
     // event at all, and declaring a conversion must not smuggle one in.
     db.getDiagram.mockResolvedValue(diagram);
     const { ctx, settle } = ctxWith('POST', '/api/diagrams', { body, ...conversion('sync') });

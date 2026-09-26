@@ -8,7 +8,7 @@ import { TourHelpArt } from './TourHelpArt';
 import { TourWelcomeArt } from './TourWelcomeArt';
 import type { TourTargetRect } from './TourHost';
 
-// The tour's step card (spec/79). Two faces:
+// The tour's step card (docs/specs/007-editor/editor-tour.md). Two faces:
 // - welcome: the centred offer card ("Show me around" / "No thanks"),
 //   no step count, dots, or Back — declining must be one obvious click.
 // - step: step count, title, copy, dots, Back / Next / Skip, anchored to

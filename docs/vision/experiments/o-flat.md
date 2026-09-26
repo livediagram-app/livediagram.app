@@ -7,7 +7,7 @@ drop rule (J3, [j-hybrid.md](j-hybrid.md)) removes a note the colour found. A
 screenshot of a digital board, or a wall drawn in a test, would lose notes.
 Pinned by `apps/live/e2e/photo-model.spec.ts` ("a flat drawn note survives
 the hybrid", `test.fail`). Plan:
-[plans/event-storming-photo-95-experiments.md](../../../plans/event-storming-photo-95-experiments.md)
+plans/0006-event-storming-photo-95-experiments.md
 (round 6, O).
 
 Tables give, per wall, **precision / recall without actors / merged boxes**;

@@ -1,4 +1,4 @@
-// Where a new diagram is stored (spec/141). The New Diagram wizard's Settings
+// Where a new diagram is stored (docs/specs/006-diagram/save-locations.md). The New Diagram wizard's Settings
 // step renders one tile per entry; `/new` branches its create on the id.
 //
 // This used to be a boolean ("Save Offline, This Browser Only"), which could
@@ -30,7 +30,7 @@ export function saveLocationLabel(id: SaveLocationId): string {
 }
 
 // Whether an id resolves to the browser-only IndexedDB store (Offline Mode,
-// spec/76). The only place the wizard's model touches that notion.
+// docs/specs/006-diagram/offline-mode.md). The only place the wizard's model touches that notion.
 export function isOfflineLocation(id: SaveLocationId): boolean {
   return id === 'browser';
 }

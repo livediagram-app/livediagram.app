@@ -1,4 +1,4 @@
-// Session state for the note rich-text editor (spec/92). Thin next to the
+// Session state for the note rich-text editor (docs/specs/009-elements/rich-text-notes.md). Thin next to the
 // label editor's useRichTextSession because a note has no canvas to fight:
 // no zoom counter-scale, no toolbar flip, no context menu riding alongside,
 // and no commit-on-blur (the popover owns the commit, on outside click or

@@ -1,4 +1,4 @@
-// The Avatar-mode character's customisation state (spec/101): gender,
+// The Avatar-mode character's customisation state (docs/specs/008-canvas/avatar-mode.md): gender,
 // clothing, hair, and size, loaded from and written back to per-browser
 // storage so the character you built is the one waiting next time you enter
 // the mode.
@@ -40,7 +40,7 @@ export function useAvatarConfig({ active }: { active: boolean }) {
 
   // Persist on every change (the panel edits one field at a time), and tell
   // telemetry WHICH kind of choice was made — never the value's meaning beyond
-  // the preset token, per spec/22.
+  // the preset token, per docs/specs/017-telemetry/telemetry.md.
   const setConfig = (next: AvatarConfig, changed?: keyof AvatarConfig) => {
     setConfigState(next);
     saveAvatarConfig(next);
@@ -65,7 +65,7 @@ export function useAvatarConfig({ active }: { active: boolean }) {
     setConfig({ ...config, [field]: value }, field);
   };
 
-  // Right-clicking the character on the canvas flips the gender (spec/101) —
+  // Right-clicking the character on the canvas flips the gender (docs/specs/008-canvas/avatar-mode.md) —
   // the one customisation reachable without opening the panel.
   const toggleGender = () => {
     setField('gender', config.gender === 'male' ? 'female' : 'male');

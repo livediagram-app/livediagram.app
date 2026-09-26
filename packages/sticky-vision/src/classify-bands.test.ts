@@ -3,7 +3,7 @@ import { classifyRgb } from './classify';
 import { rgbToHsv } from './colour';
 import type { PaperFloors } from './floors';
 
-// The hue bands tile the circle between green and blue (spec/139 Phase 9):
+// The hue bands tile the circle between green and blue (docs/specs/021-event-storming/event-storming.md Phase 9):
 // a pale mint read model photographed on kraft measures h≈173 to 182, and a
 // hue that belongs to no band is paper that belongs to no note.
 

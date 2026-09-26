@@ -6,7 +6,7 @@ import { SHAPE_DEFAULT_SIZE, type Reaction } from '@livediagram/diagram';
 
 import { drawParticle, spawnBurst, stepParticles, type Particle } from '@/lib/reaction-particles';
 
-// The burst a Reaction Pad throws (spec/135), drawn on a canvas.
+// The burst a Reaction Pad throws (docs/specs/009-elements/reaction-pad.md), drawn on a canvas.
 //
 // It used to be a dozen emoji spans on one CSS keyframe. That could not be
 // made good: every particle followed the same interpolation between the same

@@ -76,7 +76,7 @@ export function useDiagramListActions(deps: DiagramListActionsDeps) {
 
   // Open a diagram from a list row. The current diagram (editor only)
   // is already autosaved, so a hard navigation loses nothing; path
-  // scheme per spec/14. Shared-list rows pass a share code so the
+  // scheme per docs/specs/007-editor/new-diagram-route.md. Shared-list rows pass a share code so the
   // non-owner can actually load the target; without it the editor's
   // hydration goes through the owner-only `/api/diagrams/:id` path
   // and 404s.
@@ -94,7 +94,7 @@ export function useDiagramListActions(deps: DiagramListActionsDeps) {
   // changed.
   const renameDiagram = (id: string, name: string) => {
     if (!ownerId) return;
-    // spec/91: one cap for every rename route.
+    // docs/specs/006-diagram/name-length.md: one cap for every rename route.
     const trimmed = truncateName(name);
     if (!trimmed) return;
     const prev = diagramList.find((d) => d.id === id);
@@ -179,7 +179,7 @@ export function useDiagramListActions(deps: DiagramListActionsDeps) {
     toast.success('Diagram deleted');
   };
 
-  // Delete a folder (spec/15): confirm, re-bucket its direct
+  // Delete a folder (docs/specs/013-workspace/folders.md): confirm, re-bucket its direct
   // diagrams to Unsorted locally, then let useFolders handle the
   // folder rows + the API call. `name` personalises the confirm
   // title when the caller has it. Returns whether the delete went

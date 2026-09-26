@@ -4,12 +4,12 @@ Recall without actors on the three walls furthest from the bar: the night
 wall 201743 (tungsten light, a window, reflections), the whiteboard (19 px
 notes, glare, notes fallen on the floor) and the shaded 201730. Decided by
 both sweeps over the eight labelled walls, for the bar of
-[plans/event-storming-photo-95.md](../../../plans/event-storming-photo-95.md):
+plans/0007-event-storming-photo-95.md:
 the HYBRID one (classical + group E's boundary model, `sticky-model`,
 `npx tsx scripts/hybrid/sweep.ts --kept`) and the CLASSICAL one
 (`sticky-vision`, `npx tsx scripts/calibrate.ts`), because the editor falls
 back to the classical detector when the model cannot run. Plan:
-[plans/event-storming-photo-95-experiments.md](../../../plans/event-storming-photo-95-experiments.md)
+plans/0006-event-storming-photo-95-experiments.md
 (N). The hybrid itself is [j-hybrid.md](j-hybrid.md).
 
 Every table gives, per wall, **F1 / precision / recall without actors /

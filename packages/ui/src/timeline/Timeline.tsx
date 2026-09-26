@@ -1,11 +1,11 @@
 'use client';
 
-// The feed (spec/138 §2).
+// The feed (docs/specs/013-workspace/timeline.md §2).
 //
 // Renders the day rail, the groups, and the cards. It deliberately
 // has NO header of its own: the controls live in <TimelineControls>, so
 // the host can put them in its own page-header row rather than stacking
-// a second toolbar underneath one (spec/138 §2.3). Both halves share
+// a second toolbar underneath one (docs/specs/013-workspace/timeline.md §2.3). Both halves share
 // one `useTimelineControls()` state, so a filter chip and the list it
 // filters can never disagree.
 //
@@ -51,11 +51,11 @@ export type TimelineProps = {
   renderers?: TimelineRendererRegistry;
   /**
    * What the host adds to a card that a renderer can't: the ⋯ menu and
-   * an inline rename (spec/138 §2.8). Omitted on feeds that have no
+   * an inline rename (docs/specs/013-workspace/timeline.md §2.8). Omitted on feeds that have no
    * Explorer context to build them from.
    */
   cardSlots?: TimelineCardSlotsFor;
-  /** The same for a collapsed run: a menu that acts on every member (spec/138 §2.9). */
+  /** The same for a collapsed run: a menu that acts on every member (docs/specs/013-workspace/timeline.md §2.9). */
   stackSlots?: TimelineStackSlotsFor;
   /** True while the first page is still resolving. */
   loading?: boolean;
@@ -64,7 +64,7 @@ export type TimelineProps = {
   emptyState?: ReactNode;
   /**
    * The last read failed. Outranks `isEmpty`, because a feed we
-   * couldn't read is not a feed with nothing in it (spec/138 §2.4).
+   * couldn't read is not a feed with nothing in it (docs/specs/013-workspace/timeline.md §2.4).
    */
   error?: boolean;
   onRetry?: () => void;
@@ -72,7 +72,7 @@ export type TimelineProps = {
   loadingMore?: boolean;
   onLoadMore?: () => void;
   onStackExpand?: () => void;
-  /** Events after this timestamp are marked New (spec/138 §2.5). */
+  /** Events after this timestamp are marked New (docs/specs/013-workspace/timeline.md §2.5). */
   lastSeenAt?: number;
   /** Event id to scroll to and highlight — the deep-link target. */
   focusEventId?: string;
@@ -138,7 +138,7 @@ export function Timeline({
     });
   }, []);
 
-  // Deep link (spec/138 §2.7). A linked event may be inside a collapsed
+  // Deep link (docs/specs/013-workspace/timeline.md §2.7). A linked event may be inside a collapsed
   // stack, so those stacks are forced open — otherwise the reader
   // follows a link to a row that isn't rendered and lands on a generic
   // "4 events" bubble with no idea which one they came for.

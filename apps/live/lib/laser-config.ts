@@ -1,11 +1,11 @@
-// The laser pen's settings (spec/111): width, colour, trail length, effect —
+// The laser pen's settings (docs/specs/008-canvas/laser-panel.md): width, colour, trail length, effect —
 // plus the numbers the overlay draws from and the compact form that rides the
 // wire so peers see the same pen.
 //
-// Device-local by design, like the avatar costume (spec/101) and the panel
-// layout (spec/63): which pen suits you depends on your screen and the room you
+// Device-local by design, like the avatar costume (docs/specs/008-canvas/avatar-mode.md) and the panel
+// layout (docs/specs/007-editor/panel-docking.md): which pen suits you depends on your screen and the room you
 // are presenting in, not on the diagram. It lives ONLY in localStorage and is
-// never sent to the api or folded into the synced preferences blob (spec/20).
+// never sent to the api or folded into the synced preferences blob (docs/specs/007-editor/user-preferences.md).
 // It IS published alongside each laser sample, so peers draw your pen, not
 // theirs.
 

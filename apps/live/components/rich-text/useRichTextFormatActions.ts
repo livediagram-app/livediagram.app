@@ -17,9 +17,9 @@ import { wordRangeAt, type RunDefaults } from '@/components/rich-text/rich-text-
 
 // Formatting command dispatch for a runs-backed contentEditable — the bold /
 // italic / … toggles, run patches, the bullet / numbered list apply, and
-// (spec/92) headings + links. Everything React-shaped (the refs, the version
+// (docs/specs/009-elements/rich-text-notes.md) headings + links. Everything React-shaped (the refs, the version
 // bump that triggers repaint-and-restore) is owned by the host editor and
-// passed in, so this hook is the same for element labels (spec/09) and
+// passed in, so this hook is the same for element labels (docs/specs/008-canvas/canvas-and-palette.md) and
 // element notes.
 //
 // `collapsedScope` decides what a command with NO selection acts on:
@@ -45,7 +45,7 @@ export function useRichTextFormatActions({
   bumpVersion: () => void;
   defaults: RunDefaults;
   collapsedScope: 'all' | 'word';
-  // Emitted once per applied command (spec/22); the host owns the category.
+  // Emitted once per applied command (docs/specs/017-telemetry/telemetry.md); the host owns the category.
   trackFormat: (command: string) => void;
 }) {
   // The live selection, falling back to the last one we saw.
@@ -121,14 +121,14 @@ export function useRichTextFormatActions({
     trackFormat('List');
   };
 
-  // Heading / subheading across the touched lines; `null` clears (spec/92).
+  // Heading / subheading across the touched lines; `null` clears (docs/specs/009-elements/rich-text-notes.md).
   const applyHeading = (level: RunHeading | null) => {
     const range = targetLineRange();
     applyBlock(applyHeadingToLines(runsRef.current, level, range), range);
     trackFormat('Heading');
   };
 
-  // Set / clear a link over the target range (spec/92). The URL must already
+  // Set / clear a link over the target range (docs/specs/009-elements/rich-text-notes.md). The URL must already
   // have been through `normaliseUrl`; `null` unlinks.
   const applyLink = (url: string | null) => {
     const range = targetRange();

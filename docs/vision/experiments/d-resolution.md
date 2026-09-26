@@ -187,7 +187,7 @@ very large image, does not arise at 1000px. The code was not kept.
 
 The comments and docs that still said "at 2048 it found a quarter as many"
 described a detector with absolute thresholds. They now state the measured
-reason instead: `PHOTO_MAX_EDGE_PX`, `apps/live/lib/photo-detect.ts`, spec/139
+reason instead: `PHOTO_MAX_EDGE_PX`, `apps/live/lib/photo-detect.ts`, [Event storming](../../specs/021-event-storming/event-storming.md)
 and [sticky detection](../sticky-detection.md).
 
 ## What to try next (outside this group)

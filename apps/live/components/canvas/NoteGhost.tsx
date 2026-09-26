@@ -2,7 +2,7 @@ import type { CSSProperties } from 'react';
 import { PlusWideIcon } from '@livediagram/ui';
 import { eventStormingNote, type EventStormingNoteKind } from '@livediagram/diagram';
 
-// A note that is about to be added (spec/139): a dashed outline in the note's
+// A note that is about to be added (docs/specs/021-event-storming/event-storming.md): a dashed outline in the note's
 // own colour, its kind named inside. Drawn by the next-note tabs' hover
 // preview and by an armed palette tile's ghost, so both say "this note, here"
 // the same way. Only a picture: pointer events pass through.

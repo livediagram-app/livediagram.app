@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { readLocalStorageSafe, writeLocalStorageSafe } from '@/lib/local-storage-safe';
 
-// List vs card layout for the Explorer browse views (spec/67). Device-
+// List vs card layout for the Explorer browse views (docs/specs/006-diagram/diagram-snapshots.md). Device-
 // local: a view preference, not account data, so it lives in
 // localStorage like the panel-docking / notifications prefs.
 export type ExplorerViewMode = 'list' | 'card';

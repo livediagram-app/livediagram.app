@@ -1,4 +1,4 @@
-// The consent screen's trust boundary (spec/62 §3): what it is allowed to
+// The consent screen's trust boundary (docs/specs/015-api/mcp-server.md §3): what it is allowed to
 // believe about an authorize request, and where that comes from.
 //
 // The screen tells the user which host a full-access API token is about to be

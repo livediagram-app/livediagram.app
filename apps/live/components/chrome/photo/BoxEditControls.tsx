@@ -4,7 +4,7 @@ import type { PointerEvent } from 'react';
 import { EVENT_STORMING_NOTES } from '@livediagram/diagram';
 import type { Corner } from '@/lib/photo-boxes';
 
-// What a SELECTED box offers (spec/139 Phase 9): its tick, a handle on each
+// What a SELECTED box offers (docs/specs/021-event-storming/event-storming.md Phase 9): its tick, a handle on each
 // corner to resize it, the eight paper colours to change its kind, and a way to delete
 // it. Like the tick and the words, all of it keeps its size on SCREEN at any
 // zoom — so each piece is placed on the box and then scaled back down by the

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { looksLikeChat, readAnswer, toRead } from './answer';
 
 // The small in-browser model sometimes answers like a chatbot instead of
-// reading the note (spec/139 Phase 9): a note is a short phrase, and never
+// reading the note (docs/specs/021-event-storming/event-storming.md Phase 9): a note is a short phrase, and never
 // "Yes." or "The answer is 1.". Such an answer is dropped, and the note is
 // unread, for the author to type.
 describe('looksLikeChat', () => {

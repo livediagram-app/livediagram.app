@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import type { TableElement } from '@livediagram/diagram';
 
-// Column / row divider resizing for TableView (spec/09 Table): the
+// Column / row divider resizing for TableView (docs/specs/008-canvas/canvas-and-palette.md Table): the
 // rest-to-arm dividers, the live track overrides while a drag is in
 // flight, and the commit of pinned sizes on release. Extracted from
 // TableView as a cohesive slice — everything about dragging a divider
@@ -42,7 +42,7 @@ export function useTableAxisResize({
   const dragRef = useRef<(number | null)[] | null>(null);
   const dragRowRef = useRef<(number | null)[] | null>(null);
 
-  // Resize dividers arm only after a deliberate hover (spec/09); leaving
+  // Resize dividers arm only after a deliberate hover (docs/specs/008-canvas/canvas-and-palette.md); leaving
   // disarms. See RESIZE_ARM_MS above.
   const [armedResize, setArmedResize] = useState<{ axis: 'col' | 'row'; index: number } | null>(
     null,

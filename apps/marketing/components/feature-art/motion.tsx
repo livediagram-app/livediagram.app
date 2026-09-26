@@ -1,4 +1,4 @@
-// Feature illustrations — motion scenes (spec/09 "Animated elements" +
+// Feature illustrations — motion scenes (docs/specs/008-canvas/canvas-and-palette.md "Animated elements" +
 // animated background patterns). Split from FeatureArt.tsx; see ./shared
 // for Frame + colour constants. Motion is pure CSS (fa-* classes +
 // keyframes in globals.css) so it survives the static export and settles

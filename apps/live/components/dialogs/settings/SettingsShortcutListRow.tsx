@@ -9,7 +9,7 @@ import type { SettingsShortcutListRowSpec } from './settings-catalogue';
 // Every binding the editor knows, as collapsible groups under the Keyboard
 // category's on/off switch. This was the Keyboard Shortcuts window, reached
 // from its own tab-bar button; it moved here so the list and the switch that
-// turns it off share one screen (spec/09).
+// turns it off share one screen (docs/specs/008-canvas/canvas-and-palette.md).
 export function SettingsShortcutListRow({ row }: { row: SettingsShortcutListRowSpec }) {
   // Single-open accordion, starting on the first group, so the (long) list
   // lands with one group showing and stays compact.

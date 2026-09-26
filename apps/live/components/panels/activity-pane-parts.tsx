@@ -1,6 +1,6 @@
 'use client';
 
-// The Activity page's building blocks (spec/142 §1): a titled section
+// The Activity page's building blocks (docs/specs/013-workspace/activity-page.md §1): a titled section
 // of rows, the two row kinds, and the page's empty + failed states.
 // Lifted out of ActivityPane so the pane file keeps the data split and
 // the section order, and each piece here is one cohesive slice.
@@ -104,7 +104,7 @@ export function ActivityThreadRow({
 
 // The shared row: kind glyph far left, title + detail in the middle
 // with the "where" line under them, avatar-over-time far right. The
-// whole row is one link into the editor (spec/142 §1).
+// whole row is one link into the editor (docs/specs/013-workspace/activity-page.md §1).
 function ActivityRowShell({
   place,
   open,

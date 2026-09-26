@@ -1,4 +1,4 @@
-// The editor keyboard-shortcut contract (spec/09): the deps bag the
+// The editor keyboard-shortcut contract (docs/specs/008-canvas/canvas-and-palette.md): the deps bag the
 // hook reads through its live ref, and the plain-key tool / element
 // lookup tables, split at the read-only gate. Lifted out of
 // useEditorKeyboardShortcuts so the hook file holds just the listener
@@ -74,13 +74,13 @@ export type EditorKeyboardShortcutsDeps = {
   // drag), but it lives next to them in the keyboard surface so the
   // user reaches for the same row of letters for every tool.
   onBeginFreehand: () => void;
-  // Mind map (spec/118): whether Tab / Enter should grow from this element,
+  // Mind map (docs/specs/009-elements/mind-node.md): whether Tab / Enter should grow from this element,
   // and the grower itself. Asked per keystroke rather than held as a flag so
   // it can't go stale against the selection.
   canGrowMindNode: (id: string) => boolean;
   onGrowMindNode: (id: string, kind: 'child' | 'sibling') => void;
   // S arms the shape pen — the same gesture as the pencil, but the stroke is
-  // run through shape recognition on release (spec/115).
+  // run through shape recognition on release (docs/specs/008-canvas/two-pens.md).
   onBeginShapePen: () => void;
   // Cmd/Ctrl+Shift+L: toggle lock on the current selection (single or
   // multi). On Shift+L rather than plain Cmd+L so it never fights the
@@ -112,12 +112,12 @@ export type EditorKeyboardShortcutsDeps = {
   // detection; editor-page just hands it the selected-element edit
   // entry point.
   onBeginEditSelected: (elementId: string) => void;
-  // Arrow-key nudge (spec/09 Move): move the current selection by
+  // Arrow-key nudge (docs/specs/008-canvas/canvas-and-palette.md Move): move the current selection by
   // (dx, dy) canvas px. The hook decides the step (1px, or 10px with
   // Shift) and which keys map to which axis; editor-page owns the
   // actual element transform + undo coalescing.
   onNudgeSelection: (dx: number, dy: number) => void;
-  // Type-to-edit (spec/09 Labels): a printable key on a single selected
+  // Type-to-edit (docs/specs/008-canvas/canvas-and-palette.md Labels): a printable key on a single selected
   // element opens its label editor seeded with that character. Returns
   // true when it took over (so the listener swallows the key) and false
   // for a non-labelable selection (image / freehand) so the tool
@@ -129,7 +129,7 @@ export type EditorKeyboardShortcutsDeps = {
   onZoomIn: () => void;
   onZoomOut: () => void;
   onZoomReset: () => void;
-  // Zen / focus mode (spec/26). `Z` toggles it; `Escape` exits when
+  // Zen / focus mode (docs/specs/007-editor/zen-mode.md). `Z` toggles it; `Escape` exits when
   // active. Allowed for view-role too (focusing doesn't mutate the
   // diagram). `zenMode` lets the listener route Escape to exit only
   // while the mode is on.
@@ -157,7 +157,7 @@ export type EditorKeyboardShortcutsDeps = {
 // nullable (guest deploys without an api worker hide it).
 // Exported for the unit test, which asserts the key -> action mapping
 // against a spy `live` (the effect itself needs jsdom, which this
-// workspace's node-env vitest doesn't run; see specs/18-testing.md).
+// workspace's node-env vitest doesn't run; see docs/specs/003-system-architecture/testing.md).
 export type ShortcutAction = (live: EditorKeyboardShortcutsDeps) => void;
 
 export const VIEW_TOOL_KEYS: Record<string, ShortcutAction> = {
@@ -166,9 +166,9 @@ export const VIEW_TOOL_KEYS: Record<string, ShortcutAction> = {
   '1': (l) => l.setCanvasTool('select'),
   h: (l) => l.setCanvasTool('pan'),
   k: (l) => l.setCanvasTool('laser'),
-  i: (l) => l.setCanvasTool('isometric'), // spec/45: pans like Hand, non-mutating
-  w: (l) => l.setCanvasTool('avatar'), // spec/101: walk mode, read-only canvas
-  z: (l) => l.onToggleZen(), // spec/26 focus mode
+  i: (l) => l.setCanvasTool('isometric'), // docs/specs/008-canvas/isometric-view.md: pans like Hand, non-mutating
+  w: (l) => l.setCanvasTool('avatar'), // docs/specs/008-canvas/avatar-mode.md: walk mode, read-only canvas
+  z: (l) => l.onToggleZen(), // docs/specs/007-editor/zen-mode.md focus mode
 };
 
 export const EDIT_KEYS: Record<string, ShortcutAction> = {
@@ -176,7 +176,7 @@ export const EDIT_KEYS: Record<string, ShortcutAction> = {
   '0': (l) => l.setCanvasTool('eraser'),
   p: (l) => l.onBeginFreehand(), // Pencil (P is free now Hand owns H)
   '7': (l) => l.onBeginFreehand(),
-  // Shape pen (spec/115): the same stroke as the pencil, recognised on
+  // Shape pen (docs/specs/008-canvas/two-pens.md): the same stroke as the pencil, recognised on
   // release. A number rather than a letter because `s` is still the legacy
   // Select alias, and 6 is the one gap in the numeric tool row — right beside
   // the pencil's 7.
@@ -239,7 +239,7 @@ export function runModShortcut(e: KeyboardEvent, live: EditorKeyboardShortcutsDe
   // Before the read-only gate — search only navigates. ('.'
   // instead of 'T' because browsers reserve Cmd/Ctrl+T for "new
   // tab" and won't let the page intercept it; 'K' is the
-  // command-palette convention, spec/70.)
+  // command-palette convention, docs/specs/007-editor/command-palette.md.)
   if (key === '.' || lower === 'k') {
     e.preventDefault();
     live.onOpenSearch();

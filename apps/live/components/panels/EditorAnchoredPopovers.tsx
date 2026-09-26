@@ -60,7 +60,7 @@ export function EditorAnchoredPopovers() {
     emailEnabled,
   } = useEditorContext();
 
-  // The assigner/viewer identity for actions (spec/68): the Clerk
+  // The assigner/viewer identity for actions (docs/specs/012-collaboration/assigned-actions.md): the Clerk
   // account, or the guest participant identity — guests can self-assign.
   const actionSelfId = clerkUserId ?? selfParticipant.id;
   const actionSelfName = clerkDisplayName ?? selfParticipant.name;
@@ -135,7 +135,7 @@ export function EditorAnchoredPopovers() {
             );
           })()
         : null}
-      {/* Assigned-action popover (spec/68): read for everyone, mutations
+      {/* Assigned-action popover (docs/specs/012-collaboration/assigned-actions.md): read for everyone, mutations
           gated on edit access. Closes itself if the action vanished (a
           collaborator deleted it, or its element was removed). */}
       {actionPopoverOpenId !== null
@@ -159,7 +159,7 @@ export function EditorAnchoredPopovers() {
             );
           })()
         : null}
-      {/* Assign Action dialog (spec/68 §2): create when the element has
+      {/* Assign Action dialog (docs/specs/012-collaboration/assigned-actions.md §2): create when the element has
           no action, edit (prefilled) when it does. */}
       {assignActionFor !== null
         ? (() => {
@@ -167,7 +167,7 @@ export function EditorAnchoredPopovers() {
               (el) => el.id === assignActionFor && isBoxed(el),
             );
             if (!target || !isBoxed(target)) return null;
-            // Default action name (spec/68 §2): the element's own text —
+            // Default action name (docs/specs/012-collaboration/assigned-actions.md §2): the element's own text —
             // its label, or a table's first non-empty cell. Null when the
             // element is unlabelled (the field just starts empty).
             const targetLabel =
@@ -189,10 +189,10 @@ export function EditorAnchoredPopovers() {
                 diagramId={diagramId}
                 diagramTeamId={diagramTeamId}
                 emailEnabled={emailEnabled}
-                // Inline personal-diagram fix (spec/68 §2): file the diagram
+                // Inline personal-diagram fix (docs/specs/012-collaboration/assigned-actions.md §2): file the diagram
                 // into the picked team's library root so the picker can offer
                 // that team's members without an Explorer round-trip. The
-                // server enforces the spec/35 placement rules; on success the
+                // server enforces the docs/specs/013-workspace/team-shared-diagrams.md placement rules; on success the
                 // local team id flips and the member fetch re-runs.
                 onMoveToTeam={async (teamId) => {
                   if (!clerkUserId || !diagramId) return false;

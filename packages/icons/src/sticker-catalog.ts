@@ -1,4 +1,4 @@
-// The sticker catalogue (spec/116): the art you slap on a board. Two
+// The sticker catalogue (docs/specs/010-palette/stickers.md): the art you slap on a board. Two
 // flavours in one list — colour emoji, and word badges like APPROVED /
 // BLOCKED / WIP that no emoji says. Pure-data catalogue, size-exempt per
 // AGENTS.md.
@@ -6,7 +6,7 @@
 // Stickers are NOT icons and no longer live in the icon catalogue: they are
 // their own element kind with their own artwork (die-cut plate, shadow, tilt).
 // The `emoji-` id prefix is kept anyway, because those ids shipped under
-// spec/85 as icon ids — see ./sticker-ids for how the legacy elements that
+// docs/specs/010-palette/emoji-icons.md as icon ids — see ./sticker-ids for how the legacy elements that
 // still carry them keep rendering.
 //
 // Emoji entries stay at Emoji 13.0 and below, deliberately: a newer codepoint

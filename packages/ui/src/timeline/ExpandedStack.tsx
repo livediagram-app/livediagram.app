@@ -1,6 +1,6 @@
 'use client';
 
-// The members of an expanded run of same-kind events (spec/138 §2.1).
+// The members of an expanded run of same-kind events (docs/specs/013-workspace/timeline.md §2.1).
 //
 // Rendered as a FRAGMENT: the member cards take the cells after the
 // stack card in the day's grid. A wrapper element would make the run

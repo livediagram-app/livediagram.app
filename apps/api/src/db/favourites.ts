@@ -1,4 +1,4 @@
-// favourites — per-user diagram stars (migration 0040, spec/95).
+// favourites — per-user diagram stars (migration 0040, docs/specs/013-workspace/favourites.md).
 
 import type { Env } from '../types';
 

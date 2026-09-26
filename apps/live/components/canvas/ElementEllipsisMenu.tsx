@@ -6,8 +6,8 @@ import { Portal } from '@/components/primitives/Portal';
 
 // A small `…` menu attached to an element's own face.
 //
-// Extracted from the Done check (spec/137) when the Timer element needed the
-// same thing (spec/105): a couple of per-element settings that belong on the
+// Extracted from the Done check (docs/specs/012-collaboration/done-check.md) when the Timer element needed the
+// same thing (docs/specs/012-collaboration/session-button.md): a couple of per-element settings that belong on the
 // element rather than three levels into the right-click menu.
 //
 // PORTALLED, measured from the trigger at open time.
@@ -168,7 +168,7 @@ export function ElementMenuItem({
 /**
  * The `…` for an element whose settings are the CONTEXT MENU'S — no popover of
  * its own, just the same affordance in the same corner, opening the element's
- * own menu beside it (spec/09).
+ * own menu beside it (docs/specs/008-canvas/canvas-and-palette.md).
  *
  * Every Behaviours element carries one. They are the elements you configure
  * most and the ones whose settings are least guessable — "what does this
@@ -179,7 +179,7 @@ export function ElementMenuItem({
  * popover would be a dozen settings surfaces to keep in step with the dozen
  * that already exist, and they would drift; this is one component and one
  * source of truth. It reads well now that a category holding one section is
- * promoted into the menu proper (spec/09), so pressing `…` on a Picker lands
+ * promoted into the menu proper (docs/specs/008-canvas/canvas-and-palette.md), so pressing `…` on a Picker lands
  * you on a menu with PICKER in it rather than on TOOLS.
  */
 export function ElementSettingsButton({

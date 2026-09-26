@@ -1,4 +1,4 @@
-// Mermaid <-> livediagram (spec/73). Pure + reusable: parse Mermaid text
+// Mermaid <-> livediagram (docs/specs/020-import-export/mermaid.md). Pure + reusable: parse Mermaid text
 // into the node/edge graph the cluster-aware layout consumes
 // (layoutClusteredGraph), and serialise a tab back to Mermaid text.
 // parseMermaid dispatches on the diagram type: flowcharts parse here,

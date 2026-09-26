@@ -1,0 +1,414 @@
+# Session tools (timer + voting)
+
+Live, facilitator-run **workshop tools** that make the collaborative templates
+(retro, brainstorm, planning) interactive: a per-tab **timer** and per-tab
+**dot-voting**, both driven from the Current Tab settings and synced to every
+participant in real time.
+
+## Why they need no new infrastructure
+
+Both tools store their state as optional **`Tab` fields** — `tab.timer` and
+`tab.vote` (`packages/diagram/src/index.ts`, helpers in `session.ts`). That
+means they ride the **existing tab-sync pipeline** with zero realtime / API
+changes: a control mutates the tab via `commitTabs` → autosave (`useAutosave`,
+600 ms debounce) `PUT`s the tab to D1 → the `{kind:'tab'}` RoomOp broadcasts it
+to peers (`useRoomConnection` merges it). So **late-joiners and reloads see
+current state for free**, and persistence is automatic.
+
+`commitTabs` does **not** push undo history — starting a timer or placing a dot
+isn't undoable. The facilitator lifecycle actions emit a one-shot Activity-log
+line (`emitTabMeta`); the high-frequency vote casts deliberately don't log.
+
+**One exception, learned the hard way: dots needed their own op.** Everything
+above holds for the timer and for a vote's lifecycle, which have a single
+writer. It did not hold for `vote.votes`, which every participant writes at
+once — see "Casting a dot" below.
+
+## Roles
+
+The realtime room already **drops view-role mutations** ([API app](../015-api/api.md)). So every
+control + every dot cast is naturally **edit-role only** — the facilitator and
+participants share an edit link; **view-role visitors watch** the timer and
+live counts but can't control or vote. No extra gating code.
+
+## Starting one from the canvas
+
+Both tools can also be started by a [Session button](session-button.md) — a canvas element carrying "5 minute timer" or "vote, 3 dots each" — so a board can carry its own facilitation instead of relying on whoever built it. It presses through the same entry points described below, so every rule here still applies, the edit-role gate included.
+
+## The Session Studio
+
+The tab menu's **Collaborate** row opens one side-flyout panel (a
+`MenuFlyoutSection` with `panel`, so it is never promoted inline and is
+drawn wider, `w-72`, scrolling when taller than the screen, and **vertically centred on the host menu** rather than hung from its row, so it grows evenly both ways as a pane changes height; the viewport clamp still wins near a screen edge). It replaced four
+stacked accordions (Timer, Stopwatch, Vote, Poll) that were strips of small
+grey buttons. A segmented switcher across the top, **Timer · Vote ·
+Poll**, carries a status dot per tool (green pulsing = running, amber = set
+up but paused / closed), and the panel **opens on whatever is live**
+(`initialStudioTool`: live beats idle, poll before vote before timer), since
+the usual reason to come back mid-session is to drive what is running. Each
+tool gets a purpose-built pane (`components/panels/session-studio/`), described
+under its section below and in [Live poll (ephemeral pulse-check)](live-poll.md) for the poll.
+
+## One UI per tool, in three places
+
+A session tool's controls are ONE component, rendered in the Session Studio
+pane, in the element's `…` quick menu, and in that element's right-click
+**Session** category. They used to be three separate implementations of the
+same question — a dial in the Studio, eight stacked "N minutes" rows in the
+popover, a number field in the context menu — and they drifted exactly as you
+would expect: different controls, different wording, and for polls a different
+answer cap.
+
+The bodies are CONTROLLED (`TimerSetupBody`, `VoteSetupBody`,
+`PollComposerBody`), which is what lets one component serve both jobs: in the
+Studio the value is local state and means "what I am about to start"; on an
+element it is the element's stored config, so setting it configures the button
+AND the Start button runs it now with that value. One number doing both, so no
+mode flag is needed.
+
+The element menus read the session verbs off `EditorContext` rather than taking
+them as props, because threading them would mean new props on `Canvas` and
+every element face, and the faces are memoised so a canvas of a hundred
+elements does not re-render on unrelated state. That is safe because of WHERE
+the bodies mount: `ElementEllipsisMenu` invokes its children only while the
+popover is open, so nothing subscribes until somebody asks to see it.
+
+The element popover matches the Studio pane's width (286px). Not cosmetic: the
+poll's answer tiles wrap differently at 240px, which is how a label came to be
+truncated in one surface and not the other.
+
+## Timer
+
+`tab.timer: { mode: 'countdown' | 'stopwatch'; running; durationMs?; anchorAt?; frozenMs? }`.
+
+- Controlled from the tab menu's **Collaborate** row, the **Session
+  Studio** (see below). Countdown and Stopwatch are one **Timer** tool with a
+  mode switch, since a tab runs one timer (the telemetry types stay
+  `CountdownTimer` / `StopwatchTimer`). A countdown's length is set on the
+  **dial**: drag the handle round (one lap = an hour, the wedge IS the time),
+  tap a preset (1 / 3 / 5 / 10 / 15 / 30 min), or step a minute with − / +,
+  up to `TIMER_MINUTES_RANGE.max` (2 hours; a length past one lap draws an
+  outer lap ring). The dial is a `role="slider"` and takes arrow keys (±1),
+  Page Up/Down (±5), Home / End. Dragging past twelve **sticks at the pin**
+  rather than wrapping 59 → 1 (`dialDragMinutes`). Running, the same dial is
+  the readout: the wedge drains toward twelve, turning amber in the last
+  minute and red at zero; a stopwatch sweeps a ring once a minute. Under it
+  sit round transport buttons, **Reset / Pause|Resume / End** (and **Again**
+  once a countdown hits zero, which restarts it at its length), plus
+  **+30s / +1 min / +5 min** on a countdown (`extendTimer`: the end instant
+  and the length grow together, so the wedge stays a true fraction instead of
+  jumping back to full; telemetry `Changed TimerExtended`).
+- **One timer per tab**: `tab.timer` is a single value. While one exists the
+  Timer pane shows it instead of the set-up, so there is no way to start a
+  second one by accident; ending it returns to the set-up.
+- Clients tick **locally off an absolute wall-clock anchor** (`anchorAt` =
+  countdown end-time or stopwatch start instant), so there is **no per-second
+  network chatter** — every client computes the same value via the pure
+  `timerDisplayMs(timer, now)`. Pausing freezes the value into `frozenMs`;
+  resuming re-anchors. Minor cross-client clock skew is acceptable for a
+  workshop timer (out of scope: a server-authoritative clock).
+- A floating **`TimerWidget`** pill shows the live clock, ticking ~4×/sec
+  while running; it flashes when a countdown hits 0:00. Edit-role sees inline
+  pause/resume + reset; view-role sees a read-only clock. It renders inside the
+  shared **`TopCenterStack`** (`TopCenter.tsx`), which lays out every floating
+  top pill — owner/role badge, mode banners, multi-selection toolbar, timer,
+  vote — as one non-overlapping column. The stack centres at the top from `sm:`
+  up but anchors to the top **left** on mobile, so it clears the mobile dock
+  buttons (Explorer / Palette) at the top right. The timer shares a row
+  with the active mode banner / selection toolbar: it sits to the **right** of
+  it on desktop and **underneath** it on mobile rather than stacking on top.
+
+## Voting (dot-voting)
+
+`tab.vote: { active; revealed; votesPerPerson; votes: Record<elementId, participantId[]> }`
+— one participant id per dot, so stacking N dots on one element is N entries.
+
+### Casting a dot: the one thing that is not plain tab state
+
+A dot travels as its own room op, `{ kind: 'vote', tabId, elementId, voter, delta: 1 | -1 }`,
+sent the instant it is cast. Everything else about a vote rides the ordinary
+tab-sync pipeline described above; this one field cannot, and the reason is
+worth keeping because it is easy to re-introduce.
+
+`votes` is a single map that **every participant writes at the same time**, and
+tab meta travelled between peers as a whole-object patch — `{ ...tab, ...patch }`
+on receipt, replacing the field. So a peer's patch, built from a snapshot taken
+before your dot arrived, silently erased it. The window was the full 600 ms
+autosave debounce, because dots waited for the autosave like any other tab
+change. A retro with six voters and six dots each lost votes and saw dots
+retract on their own; with that many people casting at once, collisions were
+close to certain.
+
+It also drifted the budget. `votesSpentBy` counts your remaining dots out of
+that same map, so a clobber did not just lose a dot — it handed it back as
+spendable, and a stale snapshot restoring a retracted dot took one away.
+
+The fix carries the **change**, not the state, so concurrent dots commute: every
+peer applies both in whatever order they land and converges on the same map
+(`applyVoteDelta`, `packages/diagram/src/session.ts`). It is the same move
+[Realtime conflict resolution](realtime-conflict-resolution.md) made for elements, on the one
+field where concurrent writers are the whole point rather than the exception.
+
+Two rules keep it honest:
+
+- **`votes` changing ALONE is dots**, and is withheld from the tab-meta patch
+  (`voteChangeIsDotsOnly`). Shipping it there as well would put the clobber
+  straight back.
+- **`votes` changing alongside any other vote field is a lifecycle event** —
+  start, end, reveal, clear, or stepping the results walkthrough. Those are the
+  host's alone, so there is exactly one writer, and the whole object still
+  travels as a patch (which is also how a start or a clear resets the map).
+
+`vote` is a MUTATION op: it gets a seq, lands in the catch-up log so a
+reconnecting peer replays the dots it missed, and is refused from a view-role
+sender, matching the fact that casting already requires edit rights.
+
+`applyVoteDelta` deliberately does **not** check the budget. Whether somebody
+_may_ cast is a rule enforced where the press happens; a dot a peer has already
+cast is a fact, and refusing to apply it would leave that peer's screen
+disagreeing with the room forever.
+
+**Dots are keyed by the collab key** ([Collaboration race hardening](collab-race-hardening.md)), `participantKey`, not the
+owner id: the owner id is a guest's credential, and a dot op broadcasts its
+voter to every socket. The budget and the host (`startedBy`) use it too.
+
+**A vote has a round** ([Collaboration race hardening](collab-race-hardening.md)). `TabVote.round` is a random id minted at
+Start, and every `vote` op carries it. A receiver drops a dot whose round is
+not the open vote's, or that arrives when no vote is open, so a dot cast just
+before End or before a new Start cannot land in the wrong round. Within one
+round the map moves ONLY by deltas: a tab-meta patch or whole-tab op whose
+vote has the same round (End, Reveal, stepping the walkthrough) takes the
+other fields and keeps the receiver's `votes` (`mergeIncomingVote`). Only a
+new round or a clear replaces the map. Before the round, a lifecycle patch
+carried the host's map as of their save and erased every dot still in
+flight, and each participant's first save after Start re-sent the whole map.
+A vote persisted before the round shipped has none and keeps the old
+behaviour.
+
+Residual, stated plainly: two clients still autosave the whole tab, so a save
+that lands before an op is applied can persist a map missing a dot. They
+converge within a round-trip and the next save writes the converged map, so
+this is a much smaller window than the one it replaces rather than none at all.
+Ending a vote persists the host's final state. Server-side merge of the map is
+[Collaboration race hardening](collab-race-hardening.md) phase 3.
+
+- Controlled from **Tab menu → Collaborate → Vote** (the Session
+  Studio): the dot budget is picked as a **row of dots** (tap the fifth for
+  five each, `VOTE_DOTS_RANGE` 1-10, the same range as the Session button),
+  a **Dots per item** choice (**Any number**, the default and classic
+  stacking, or **One each**, which caps each participant at one dot per
+  element so the budget becomes "pick your top N"; hidden when the budget
+  is one dot, and stored as `TabVote.onePerElement`, absent = stacking),
+  the privacy switches are cards that say what the room will not see, then
+  **Start vote** → **End vote** → **Show results** → **Clear vote**. Running,
+  the pane shows a three-step track (Voting · Ended · Results), live counts of
+  dots placed and distinct voters, the rules in force as chips, and ONE
+  primary button for the next step (Clear vote stays available as a
+  secondary until results are shown).
+- **Votable targets** (`isVotable`): shapes, sticky notes, and images — **not**
+  the `frame` shape (a section backdrop) and not text / freehand / table /
+  arrow / annotation.
+- **Casting**: while `vote.active`, pressing a votable element places one of
+  your dots (`BoxedElementView` intercepts the pointer-down before
+  select/drag); your budget (`votesPerPerson`), and the one-per-item rule when it is on, are enforced by `canCastVote`, the one check the cast handler and the stepper's plus both read.
+  Non-votable elements still select normally so the board stays editable.
+  Counts are **live**. While casting is open, every votable element carries a
+  **stepper** — minus, the count, plus — reading `0` before anything lands.
+  Plus casts one of your dots, minus retracts one. It replaced a bare
+  click-to-retract count that only appeared once an element already had a
+  dot, which made the first dot on a board an act of faith: nothing on
+  screen said an element was a target or how to add to it. Minus is
+  disabled at zero and plus once your budget is spent (or, on a one-per-item vote, once you have a dot on that element), rather than
+  hidden, so the row's width — and so the plus's position — never shifts
+  under the pointer mid-vote. The stepper sits INSIDE the element's
+  bottom-right corner (clearance from the edge, and from a neighbour's
+  stepper on a packed board) and stops its own pointer events so a minus
+  can't bubble into the element-body cast and re-add what it just removed.
+  Once casting closes it reverts to a read-only count: a result to read,
+  not a control. A floating **`VoteBanner`**
+  (the same `TopCenterStack`, stacked below the timer row) tells each
+  participant how many dots they have left — and **only** that. It floats
+  over the canvas for the whole vote, so it carries one glanceable phrase
+  ("2 of 3 dots left") rather than instructions or status chips; anything
+  longer turns a status pill into a paragraph parked on the board.
+- **Vote privacy** — two per-vote switches set before **Start vote** (see
+  "Vote privacy" below); they live on the vote, not as a user preference.
+- **End vote** closes casting (tallies stay). **Show results** sets
+  `revealed`; the pill flags joint winners by comparing to the tab-wide max
+  (`voteMax`). **Clear** removes the session.
+- **Results walkthrough** (`useVoteReview`): revealing results starts a
+  guided review of every voted element, most dots first (ties keep element
+  order). The current pick pulses an amber focus highlight
+  (`lvd-vote-focus`) and the viewport **centres it on screen** (always, via
+  `scrollIntoView`'s `center` option, not just an edge-pull pan); the
+  `VoteBanner` swaps to "Top result X of N" with **Previous** / **Next**
+  buttons, and the last pick shows **Done**, which exits the walkthrough
+  **and clears the vote session** (same effect as Clear in the tab menu),
+  removing the banner, pills, and rings. While a walkthrough is active the
+  static winner rings are suppressed so attention lands on the single
+  focused pick.
+- **The walkthrough position is SHARED** (`vote.reviewIndex`), and only the
+  host moves it. It used to be per-participant local state — "everyone
+  reviews at their own pace" — but that meant a facilitator saying "look at
+  this one" had no way to actually put the room on it, which is the whole
+  point of walking results together. Followers get the readout and the
+  focus; the Previous / Next / Done buttons and the Vote panel's clickable
+  rows are hidden for them rather than rendered as no-ops.
+
+## The Vote panel
+
+A **`VotePanel`** on the shared `MovablePanel` (like Poll / Collaborate /
+Layers), homed **top-right under the Palette**. Present only while a vote is
+on the tab, so it joins and leaves its corner stack rather than sitting in
+it. Two phases, one panel:
+
+- **While casting is open — turnout.** Dots cast against dots available, how
+  many people have finished, and one row per voter showing their budget as
+  filled / hollow pips. This exists because the canvas pills answer "what is
+  winning" but never "is everyone done", which is the question that decides
+  when to press End vote. It deliberately counts **people, not just dots**:
+  "8 of 12 dots" reads as nearly finished when one person holds all four
+  remaining, which is exactly when you shouldn't call it.
+- **Once results are revealed — the ranked list.** Every voted element, most
+  dots first, each row clickable to **jump the results walkthrough** straight
+  to that element (`jumpToVoteResult`, the same clamped setter Previous /
+  Next use). The list renders from the SAME `results` array the walkthrough
+  steps through, so the two can never disagree about the ranking. Joint
+  winners are flagged by comparing to the top count, matching the amber rings
+  rather than "index 0".
+
+**Voter rows carry no names, and can't.** Dots are keyed by the local
+participant id, while the room's presence roster is keyed by a server-random
+per-connection id ([Public API and API tokens](../015-api/public-api-and-tokens.md) §6) — the two never match, so a client has no way
+to turn a voter into a person. For a dot-vote that is a happy accident, and
+the turnout numbers answer the facilitator's actual question without it.
+Naming voters would mean writing names alongside the dots, which would make
+every dot trivially attributable in stored data — the opposite of the
+direction "Vote privacy" below takes.
+
+The panel is **read-only for view-role** (the End vote / Show results buttons
+are hidden); viewers still watch turnout and results, matching the rest of
+[Session tools (timer + voting)](session-tools.md).
+
+Turnout stays visible under **hide running counts**: it reports participation
+(who has spent what budget), never which element anyone chose, so it doesn't
+leak what that switch protects. The ranked list is the tallies, so it only
+ever renders after the reveal.
+
+## Who runs a vote
+
+`vote.startedBy` records the participant that started it, and `isVoteHost`
+is the single gate. **Only the host can End / Show results / Clear the vote,
+or move the results focus.** Everyone else casts dots and watches.
+
+Ending is the reason: you can always start another vote, but you cannot get
+the dots back, so an accidental End by a participant costs the room the whole
+round. The same gate covers reveal, clear, and the walkthrough so "whose vote
+is this" has one answer rather than three.
+
+- Enforced in `useTabSession` (the handlers no-op for a non-host) **and** in
+  the UI (the controls aren't rendered for one). This is a facilitation
+  guard, not a security boundary: the vote is an ordinary tab field, so any
+  edit-role peer could still write it directly. That matches the rest of
+  [Session tools (timer + voting)](session-tools.md), where roles are the only real gate.
+- `startedBy` is **optional**, and `isVoteHost` treats its absence as "anyone
+  may drive". A vote persisted before this shipped would otherwise become
+  unendable — nobody matches a missing starter.
+- The host's controls live on the **Vote panel** as well as the tab menu, so
+  running a vote never requires a trip back into the menu: **End vote** while
+  casting, then **Show results**, then **Clear vote** once results are up.
+
+## Vote privacy
+
+Dot-voting is only as honest as what participants can see before it closes.
+Two things leak the room's leaning while casting is open: **where everyone's
+pointer is** (peer cursors and laser trails visibly converge on the sticky
+they like) and **the running tallies** (a count pill that climbs tells you
+what to pile onto). Two independent switches on the vote address them:
+
+`tab.vote` carries `hideCursors?: boolean` and `hideCounts?: boolean`. Both
+are **optional** so a vote persisted before this shipped decodes unchanged
+and behaves as it always did (absent = off).
+
+- **Set once, at start.** Both switches sit in **Tab menu → Collaborate →
+  Vote** above **Start vote**, alongside the dots-per-person stepper, and are
+  written into the `TabVote` by `startVote`. There is **no mid-vote toggle**:
+  to change them, end the vote and start a new one. That keeps the rule a
+  participant can rely on ("cursors were hidden for the whole of this vote")
+  instead of a setting the facilitator can flip once they've seen where
+  people are pointing.
+- **Room-wide, not per-viewer.** The flags ride `tab.vote`, so every client
+  on the tab reads the same values off the synced tab — nobody can opt back
+  into seeing cursors. Late-joiners and reloads get the current setting for
+  free, like the rest of the session state.
+- **Any edit-role participant can start a privacy-mode vote**, exactly as
+  they can start any vote. No owner-only gate ([Session tools (timer + voting)](session-tools.md) has never had one).
+
+### Hide participant cursors (default **on**)
+
+While `vote.active`, peer **cursors**, peer **laser trails**, and peer
+**Avatar-mode characters** ([Avatar mode](../008-canvas/avatar-mode.md)) are neither drawn
+nor sent:
+
+- **Render:** `usePresenceRows` returns empty `remoteCursorRows` and
+  `remoteAvatarRows` and drops remote laser rows, so nothing reaches the canvas
+  overlays.
+- **Wire:** `useEditorBroadcast` stops emitting `cursor`, `laser`, and `avatar`
+  room ops
+  altogether. Suppressing the send (not just the paint) is the point — a
+  render-only gate would still put every participant's coordinates on the
+  socket for anyone with devtools open. It also drops the room's busiest
+  packet stream for the duration of the vote.
+- Your **own** laser trail still draws on your own screen; only what peers
+  send is withheld.
+- **Which switches are in force is shown in the tab menu's Vote section**
+  (a read-only "Cursors hidden · end the vote to change this" line), not on
+  the floating banner. The banner is a status pill, and privacy state
+  doesn't change during a vote — putting it there widened the pill
+  permanently to restate something fixed.
+- **Presence stays**: the tab avatar stack, the "who's on this tab" dots and
+  the per-element **selection badges + selection lock** ([Live app](../007-editor/live-app.md)) are
+  untouched. You can still see who is in the room, and an element someone
+  else holds still names them — silently locking an element with no
+  explanation would read as a bug, and the lock is a correctness mechanism
+  rather than an intent signal.
+- **Restored the moment casting closes** (`vote.active` goes false), i.e. on
+  **End vote** or **Clear**, not at **Show results**. Hidden is exactly
+  "while the vote is open", which is the rule that's easy to state and
+  impossible to get wrong.
+
+### Hide running counts (default **off**)
+
+While the vote is **unrevealed**, the tally pill on each element shows only
+**your own** dots (so you can still see and retract what you spent); other
+participants' dots are excluded from the number and no pill appears on an
+element you haven't voted on. **Show results** reveals the true totals and
+the winner rings as usual — the existing reveal step is the natural gate, so
+this switch changes _when_ counts appear rather than adding a new phase.
+
+It defaults **off** because live counts are load-bearing for ordinary
+dot-voting (see "Counts are **live**" above); a facilitator running a blind
+vote opts in.
+
+## Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))
+
+`track('Tab', 'Started', 'CountdownTimer' | 'StopwatchTimer' | 'Vote')`,
+`track('Tab', 'Ended', 'Vote')`, `track('Tab', 'Revealed', 'Vote')`,
+`track('Tab', 'Ended', 'VoteReview')` when Done exits the results
+walkthrough, and `track('Element', 'Voted')` on each dot. The `Started` /
+`Ended` / `Revealed` / `Voted` actions were added to the closed
+`TELEMETRY_ACTIONS` enum.
+
+## Out of scope (v1)
+
+Poll-style voting (options rather than dots), a server-authoritative clock, a
+timer-end sound, and view-role casting.
+
+Anonymous voting was in this list until the two **Vote privacy** switches
+above shipped. What's still out of scope there: **anonymity in the stored
+data**. `vote.votes` remains `elementId -> participantId[]`, so the switches
+hide who's pointing where and (optionally) the running totals, but a
+determined participant reading the synced tab could still attribute dots.
+Making casts unattributable would mean dropping the participant id, which
+breaks both the per-person budget (`votesSpentBy`) and retraction — a real
+design change, not a toggle.

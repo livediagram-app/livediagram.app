@@ -2,8 +2,8 @@
 
 The canonical, true-today facts all marketing copy is built from. If something
 below stops being true, fix it here first, then propagate to the taglines and
-descriptions. Mirrors [docs/what-is-livediagram.md](../../docs/what-is-livediagram.md)
-and [spec/00](../../specs/00-purpose.md).
+descriptions. Mirrors [docs/product/what-is-livediagram.md](../../docs/product/what-is-livediagram.md)
+and [Purpose](../../docs/specs/001-project-vision/purpose.md).
 
 ## One line
 

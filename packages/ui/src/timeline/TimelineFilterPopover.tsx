@@ -1,7 +1,7 @@
 'use client';
 
 // The filter popover: per-source-type chips plus a mini calendar
-// (spec/138 §2.3).
+// (docs/specs/013-workspace/timeline.md §2.3).
 //
 // Portalled to document.body at fixed coordinates. That is mandatory,
 // not a preference: this popover opens inside a rounded card with
@@ -40,7 +40,7 @@ export function TimelineFilterPopover({
 }: {
   anchor: DOMRect;
   // The view mode renders here only below `sm:`, where the header row
-  // has no space for its own switch (spec/138 §2.3).
+  // has no space for its own switch (docs/specs/013-workspace/timeline.md §2.3).
   mode: TimelineMode;
   onModeChange: (mode: TimelineMode) => void;
   allCategories: TimelineCategory[];
@@ -103,7 +103,7 @@ export function TimelineFilterPopover({
       className="z-[var(--z-popover)] rounded-xl border border-slate-200 bg-white p-3 shadow-lg dark:border-slate-700 dark:bg-slate-900"
     >
       {/* View mode, on a phone only — the header row's own switch is
-          hidden below `sm:` and this is where it goes (spec/138 §2.3).
+          hidden below `sm:` and this is where it goes (docs/specs/013-workspace/timeline.md §2.3).
           It leads the panel because it changes what the feed IS, not
           merely how much of it you're shown; the filters below narrow
           whichever view this picks.

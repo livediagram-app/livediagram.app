@@ -1,11 +1,11 @@
-// The element-schema MCP resource (spec/62 §4.5) + the tools' zod input shapes.
+// The element-schema MCP resource (docs/specs/015-api/mcp-server.md §4.5) + the tools' zod input shapes.
 // Element types + anchors come from packages/diagram (single source of truth);
 // the design rules are curated guidance. The element STRUCTURE is carried inline
 // on every tool argument that takes elements (ELEMENT_SCHEMA_HINT) so the whole
 // format is available from the tool definition itself, with no second lookup to
 // make. It states that completeness as a fact about the tools rather than as a
 // rule for the caller: a description that tells a model how to behave, or steers
-// it away from other tools, is a connector-listing flag (spec/62 §4.15).
+// it away from other tools, is a connector-listing flag (docs/specs/015-api/mcp-server.md §4.15).
 // isValidTab in the diagram package stays the runtime guard, so
 // the structure still lives in one authoritative place (this string is guidance,
 // not a second validator).
@@ -115,9 +115,9 @@ tabs in a create_diagram call.
 }
 
 // Server-level instructions echo the essentials for clients that don't read
-// resources (spec/62 §4.5). Phrased as facts about the server (what it does
+// resources (docs/specs/015-api/mcp-server.md §4.5). Phrased as facts about the server (what it does
 // with what you send, and where the format is written down), not as rules for
-// the calling model (spec/62 §4.15).
+// the calling model (docs/specs/015-api/mcp-server.md §4.15).
 export const SERVER_INSTRUCTIONS = `Tools to find, view, create, add tabs to, edit, share, rename, and delete the user's livediagram diagrams.
 The calling model produces the diagram elements AND decides their layout; this
 server validates, persists, and renders them, and only auto-arranges the graph
@@ -172,7 +172,7 @@ const themeField = z
       'Defaults to "brand".',
   );
 
-// Graph-first authoring (spec/62 §4.7): the LOW-BURDEN path. Give just the
+// Graph-first authoring (docs/specs/015-api/mcp-server.md §4.7): the LOW-BURDEN path. Give just the
 // connection graph — nodes and edges by id — and the server builds the
 // boxes + arrows and lays them out for you. Prefer this over hand-placing
 // elements whenever the diagram is a node/edge graph (flowcharts, org

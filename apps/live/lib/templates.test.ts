@@ -23,8 +23,8 @@ import { getTheme } from './themes';
 
 // The catalogue's shape (count + default/extra split + no kind
 // drift) is load-bearing across both the picker and the marketing
-// site. spec/16 pins "50 templates (10 default + 40 extra)" and
-// spec/09 catalogues the picker UX. These tests pin the array so
+// site. docs/specs/019-marketing/marketing-site.md pins "50 templates (10 default + 40 extra)" and
+// docs/specs/008-canvas/canvas-and-palette.md catalogues the picker UX. These tests pin the array so
 // either the spec or the catalogue can't silently drift away from
 // the other.
 describe('TEMPLATES catalogue', () => {
@@ -86,13 +86,13 @@ describe('TEMPLATES catalogue', () => {
   ];
 
   // Hidden templates are buildable but never listed, so every user-facing
-  // count (spec/16's "50 templates", the picker grids, the MCP catalogue)
+  // count (docs/specs/019-marketing/marketing-site.md's "50 templates", the picker grids, the MCP catalogue)
   // is over the listed subset. The mechanism is generic; nothing ships
-  // hidden today (the spec/69 guided-tour sample used it until the
-  // interactive tour, spec/79, superseded it).
+  // hidden today (the docs/specs/007-editor/guided-tour-sample.md guided-tour sample used it until the
+  // interactive tour, docs/specs/007-editor/editor-tour.md, superseded it).
   const listed = TEMPLATES.filter((t) => !t.hidden);
 
-  it('lists exactly 50 templates (10 default + 40 extra, matches spec/16 and spec/09)', () => {
+  it('lists exactly 50 templates (10 default + 40 extra, matches docs/specs/019-marketing/marketing-site.md and docs/specs/008-canvas/canvas-and-palette.md)', () => {
     expect(listed).toHaveLength(50);
   });
 
@@ -103,7 +103,7 @@ describe('TEMPLATES catalogue', () => {
     expect(extras).toHaveLength(40);
   });
 
-  it('ships no hidden templates (the flag is generic; spec/69 was retired by spec/79)', () => {
+  it('ships no hidden templates (the flag is generic; docs/specs/007-editor/guided-tour-sample.md was retired by docs/specs/007-editor/editor-tour.md)', () => {
     expect(TEMPLATES.filter((t) => t.hidden)).toEqual([]);
   });
 
@@ -130,7 +130,7 @@ describe('TEMPLATES catalogue', () => {
   it('every kind builds without throwing (the buildTemplate switch handles every union member)', () => {
     for (const kind of ALL_KINDS) {
       const tab = buildTemplatedTab(kind, 'brand', `tab-${kind}`, 'name');
-      // 'blank' is intentionally empty (spec/14); every other kind seeds
+      // 'blank' is intentionally empty (docs/specs/007-editor/new-diagram-route.md); every other kind seeds
       // content. Either way the switch must handle the union member.
       expect(tab.elements.length).toBeGreaterThan(kind === 'blank' ? -1 : 0);
     }
@@ -151,7 +151,7 @@ describe('templateCanvasOverrides', () => {
   it('gives alignment-heavy scaffolds a square graph paper backdrop', () => {
     expect(templateCanvasOverrides('flowchart')).toEqual({ backgroundPattern: 'graph' });
     expect(templateCanvasOverrides('orgchart')).toEqual({ backgroundPattern: 'graph' });
-    // Layered templates (spec/74) additionally carry their Tab.layers.
+    // Layered templates (docs/specs/006-diagram/layers.md) additionally carry their Tab.layers.
     expect(templateCanvasOverrides('swot')).toEqual({
       backgroundPattern: 'graph',
       layers: templateLayers('swot'),
@@ -195,7 +195,7 @@ describe('templateCanvasOverrides', () => {
     expect(templateCanvasOverrides('blank')).toEqual({});
   });
 
-  it('ships the kanban board with its Board / Cards layers (spec/74)', () => {
+  it('ships the kanban board with its Board / Cards layers (docs/specs/006-diagram/layers.md)', () => {
     expect(templateCanvasOverrides('kanban')).toEqual({
       backgroundPattern: 'graph',
       layers: [
@@ -206,12 +206,12 @@ describe('templateCanvasOverrides', () => {
   });
 });
 
-// Layered templates (spec/74 "Layered templates"): a layered template's
+// Layered templates (docs/specs/006-diagram/layers.md "Layered templates"): a layered template's
 // builder pre-stamps `layerId` on every element, and the matching
 // `Tab.layers` rides templateCanvasOverrides, so the two can't be
 // allowed to drift apart — an element stamped with an id the layers
 // array doesn't know would silently fall back to the default layer.
-describe('layered templates (spec/74)', () => {
+describe('layered templates (docs/specs/006-diagram/layers.md)', () => {
   it('keeps every builder in lockstep with templateLayers across the catalogue', () => {
     for (const kind of TEMPLATES.map((t) => t.kind)) {
       const layers = templateLayers(kind);
@@ -235,7 +235,7 @@ describe('layered templates (spec/74)', () => {
   it('kanban splits the stationary board from the tickets, cards on top', () => {
     const layers = templateLayers('kanban')!;
     // Cards LAST (top): the default active layer, so new elements land
-    // with the content, never under the scaffold (spec/74).
+    // with the content, never under the scaffold (docs/specs/006-diagram/layers.md).
     expect(layers.map((l) => l.name)).toEqual(['Board', 'Cards']);
     const elements = buildTemplate('kanban', 0, 0);
     const board = elements.filter((el) => el.layerId === TEMPLATE_SCAFFOLD_LAYER_ID);
@@ -289,7 +289,7 @@ describe('layered templates (spec/74)', () => {
     // Every layered kind has a table entry and vice versa, so adding a
     // layered template forces a deliberate row here. Event storming is the
     // one deliberate exception to the two-band shape — it ships FOUR stage
-    // layers for the workshop views (spec/139) and gets its own pin below.
+    // layers for the workshop views (docs/specs/021-event-storming/event-storming.md) and gets its own pin below.
     const layeredKinds = TEMPLATES.map((t) => t.kind).filter(
       (k) => k !== 'event-storming' && templateLayers(k),
     );
@@ -301,7 +301,7 @@ describe('layered templates (spec/74)', () => {
     ][]) {
       const layers = templateLayers(kind)!;
       // Scaffold at the bottom, content LAST (top): the default active
-      // layer, so new elements land with the content (spec/74). Scaffold
+      // layer, so new elements land with the content (docs/specs/006-diagram/layers.md). Scaffold
       // ships unlocked and visible: locking is one click away.
       expect(
         layers.map((l) => l.name),
@@ -324,7 +324,7 @@ describe('layered templates (spec/74)', () => {
     }
   });
 
-  // Event storming (spec/139): three stage layers for the shared workshop
+  // Event storming (docs/specs/021-event-storming/event-storming.md): three stage layers for the shared workshop
   // views — Big picture / Process / Design. The seed lives on Big picture
   // (the workshop's first stage).
   it('event storming ships ONE layer, with the whole seed on it', () => {
@@ -371,10 +371,10 @@ describe('buildTemplatedTab', () => {
 
   it('recolours shape elements with the chosen theme palette', () => {
     // `flowchart` seeds plain shapes (the blank template is now empty,
-    // spec/14), so its first preset-free shape pins the recolouring
+    // docs/specs/007-editor/new-diagram-route.md), so its first preset-free shape pins the recolouring
     // contract: a single-colour theme writes the same fill / stroke / text
     // triple onto it. (Some flowchart shapes now carry a `colorPreset`
-    // (spec/48) whose colours are re-derived from the theme instead, so we
+    // (docs/specs/010-palette/style-presets.md) whose colours are re-derived from the theme instead, so we
     // skip those here and assert the plain-recolour path on a bare shape.)
     const tab = buildTemplatedTab('flowchart', 'slate', 'tab-1', 'name');
     const slate = getTheme('slate');
@@ -390,7 +390,7 @@ describe('buildTemplatedTab', () => {
   it('leaves shape colours untouched when the theme provides no overrides', () => {
     // The brand theme has all three element fields null, so recolouring is a
     // no-op: a preset-free shape keeps exactly the colours the raw builder
-    // gave it. (Preset-carrying shapes (spec/48) DO get re-derived colours
+    // gave it. (Preset-carrying shapes (docs/specs/010-palette/style-presets.md) DO get re-derived colours
     // even under brand, so compare a bare shape to isolate the no-op path.)
     const raw = buildTemplate('flowchart', 0, 0).find(
       (el) => el.type === 'shape' && !el.colorPreset,
@@ -633,7 +633,7 @@ describe('planning + strategy templates', () => {
     // Twelve story stickies: two MVP + one later per activity.
     const stickies = tab.elements.filter((el) => el.type === 'sticky');
     expect(stickies).toHaveLength(12);
-    // The release slices are real LANES (spec/119), titled in their own
+    // The release slices are real LANES (docs/specs/009-elements/lane.md), titled in their own
     // gutters. They used to be a dashed cut line plus two free-floating text
     // labels off to the left, which named a band nothing was attached to.
     const lanes = tab.elements.filter(
@@ -773,7 +773,7 @@ describe('technical templates (later batch)', () => {
 
   it('class diagram drops four entity classes with UML arrowheads', () => {
     const tab = buildTemplatedTab('uml-class', 'brand', 'tab-1', 'uml');
-    // One ENTITY per class (spec/120). It used to be two flush-stacked tables
+    // One ENTITY per class (docs/specs/009-elements/entity.md). It used to be two flush-stacked tables
     // per class sharing a groupId, with the seam standing in for the
     // attribute / method rule.
     const classes = tab.elements.filter(

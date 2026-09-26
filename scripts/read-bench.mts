@@ -1,4 +1,4 @@
-// Benchmarking the HANDWRITING READERS against a real wall (spec/139 Phase 9).
+// Benchmarking the HANDWRITING READERS against a real wall (docs/specs/021-event-storming/event-storming.md Phase 9).
 //
 // A script, not a test: real photographs are somebody's actual workshop and
 // never enter the repo, so nothing here can run in CI. It exists so the choice
@@ -355,7 +355,7 @@ async function readViaEndpoint(
         // The worker's own budget. A thinking model spends part of it on
         // reasoning, so a tight one truncates the answer (finish_reason=length).
         max_tokens: 2000,
-        // The worker's own choice per provider (spec/25): a strict schema for
+        // The worker's own choice per provider (docs/specs/007-editor/ai-assistance.md): a strict schema for
         // the known ones, JSON mode for a generic endpoint.
         response_format: opts.strict
           ? { type: 'json_schema', json_schema: READ_NOTES_SCHEMA }

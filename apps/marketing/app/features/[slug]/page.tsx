@@ -17,7 +17,7 @@ import {
 import { pageMetadata } from '@livediagram/ui';
 
 // One detail page per feature category at /features/<id>, reading the matching
-// LANDING_SECTIONS entry (see specs/16-marketing-site.md "Feature category
+// LANDING_SECTIONS entry (see docs/specs/019-marketing/marketing-site.md "Feature category
 // pages"). The landing page advertises each category in a compact block; the
 // full grid of feature cards lives here. Static export: only the known section
 // ids are generated, so an unknown slug 404s at build rather than rendering.

@@ -92,7 +92,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
     arrowheadColorHandlers,
     strokeColorHandlers,
   } = useContextMenuScaffold(props);
-  // Session-tool pickers (spec/39): the chosen timer mode + countdown length
+  // Session-tool pickers (docs/specs/012-collaboration/session-tools.md): the chosen timer mode + countdown length
   // and the votes-per-person budget, local until the facilitator hits Start
   // (mirrors the old tab editor's Session accordion).
 
@@ -124,7 +124,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
       // Every self-drawing kind carries its own data (progress / rail /
       // rating / charts / code block / checklist), so none of them morph.
       !isSelfDrawingShape(target.shape);
-    // Consistent category grouping (spec/09): placement (Layer / Shape /
+    // Consistent category grouping (docs/specs/008-canvas/canvas-and-palette.md): placement (Layer / Shape /
     // Rotation) · appearance (Progress / Animation / Colours / Border) ·
     // content (Line / Pointer / Text / Icon / Image / Table / Link) ·
     // collaboration. A group divider renders above a group only when that
@@ -138,7 +138,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
       target.type === 'link-card' ||
       target.type === 'video';
     const showCollaborateGroup = boxed;
-    // An event-storming note (spec/139) gets a VERB menu, not a styling one:
+    // An event-storming note (docs/specs/021-event-storming/event-storming.md) gets a VERB menu, not a styling one:
     // its colour, silhouette, text treatment and tilt are the notation, so
     // Colours / Shadow / Animation / Text / Rotation / Layer have nothing
     // meaningful to offer — they would only invite someone to break the
@@ -188,7 +188,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
               label="Send to Back"
               onClick={runAndClose(props.onStackBack)}
             />
-            {/* Change kind (spec/139): the ONE styling-shaped thing this menu
+            {/* Change kind (docs/specs/021-event-storming/event-storming.md): the ONE styling-shaped thing this menu
                 offers, because on this board the kind is not styling — it is
                 what the note MEANS. Re-paints, re-cuts the silhouette and
                 leaves the note centred where it was. */}
@@ -244,7 +244,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
                 onClick={props.onSendToBack}
               />
             </MenuTileGrid>
-            {/* Move to a named layer (spec/74) — only once the tab has
+            {/* Move to a named layer (docs/specs/006-diagram/layers.md) — only once the tab has
               more than one layer (the row renders nothing otherwise). */}
             <MoveToLayerRow
               layers={props.layers}
@@ -262,11 +262,11 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             />
           </MenuAccordionSection>
         )}
-        {/* Size — the exact box (spec/134). Gathers the three controls that
+        {/* Size — the exact box (docs/specs/008-canvas/element-size.md). Gathers the three controls that
             all answer "how big is this": the width / height boxes, the aspect
             lock (which lived in Layer) and the reset (which lived in Shape,
             so it only appeared for morphable kinds). */}
-        {/* Fixed-size elements (spec/103 buttons, spec/139 event-storming
+        {/* Fixed-size elements (docs/specs/009-elements/mode-button.md buttons, docs/specs/021-event-storming/event-storming.md event-storming
             notes) have no size to edit — offering the boxes would advertise
             a resize the drag paths deliberately ignore. */}
         {boxed && !isFixedSizeElement(target) ? (
@@ -332,7 +332,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
         ) : null}
         {/* ── Appearance group: Presets / Progress / Animation / Colours / Border ──
             Skipped entirely for an event-storming note: its colour, text
-            treatment and shadow are the notation (spec/139), so every
+            treatment and shadow are the notation (docs/specs/021-event-storming/event-storming.md), so every
             control in here would only invite breaking the grammar. */}
         {esNote ? null : (
           <ElementAppearanceSections

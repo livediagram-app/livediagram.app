@@ -56,7 +56,7 @@ function ledgerOf(ops: unknown[], startSeq = 1): TabLedger {
 const who = (t: Tab) =>
   ((t.elements[0] as ShapeElement).responses ?? []).map((r) => r.participantId).sort();
 
-describe('collab ledger (spec/152 phase 3)', () => {
+describe('collab ledger (docs/specs/012-collaboration/collab-race-hardening.md phase 3)', () => {
   // THE bug: a save snapshotted before b's mark reached the saver wrote D1
   // without it.
   it("puts back an answer the saver hadn't seen", () => {
@@ -154,7 +154,7 @@ describe('collab ledger (spec/152 phase 3)', () => {
   });
 });
 
-describe('comments in the ledger (spec/152)', () => {
+describe('comments in the ledger (docs/specs/012-collaboration/collab-race-hardening.md)', () => {
   const comment = (id: string, authorName = 'Bea') => ({
     id,
     text: id,

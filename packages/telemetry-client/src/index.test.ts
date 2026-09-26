@@ -118,7 +118,7 @@ describe('createTelemetryEmitter', () => {
     expect(sendBeacon).toHaveBeenCalledTimes(1);
   });
 
-  // --- Retry on a failed flush (spec/22, issue #37) ---------------------
+  // --- Retry on a failed flush (docs/specs/017-telemetry/telemetry.md, issue #37) ---------------------
   //
   // Emitting is fire-and-forget, so a dropped batch is invisible. The losses
   // also aren't evenly spread: they concentrate in flaky-network sessions,
@@ -390,7 +390,7 @@ describe('createLazyTrack', () => {
 });
 
 // The shared per-type budget: installClientErrorTracking uses it, and so does
-// the editor's api error reporter (spec/22).
+// the editor's api error reporter (docs/specs/017-telemetry/telemetry.md).
 describe('createPerTypeCap', () => {
   it('allows each type up to the cap, independently, then refuses', () => {
     const allow = mod.createPerTypeCap(2);

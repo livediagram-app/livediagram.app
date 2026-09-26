@@ -1,4 +1,4 @@
-// The tab's cleanup transforms (spec/47), as pure functions over an element
+// The tab's cleanup transforms (docs/specs/008-canvas/layout-cleanup.md), as pure functions over an element
 // list: Auto-align, and Auto Layout in each of its styles.
 //
 // One module because there are now two callers with one requirement between

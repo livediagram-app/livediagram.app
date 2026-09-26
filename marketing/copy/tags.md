@@ -28,7 +28,7 @@ workspaces, transactional email, CRDT / conflict-free editing): that means no
 ## Judgment calls
 
 - **`whiteboard`** matches the surface and pulls search traffic, but
-  [spec/00](../../specs/00-purpose.md) positions livediagram _against_
+  [Purpose](../../docs/specs/001-project-vision/purpose.md) positions livediagram _against_
   general-purpose whiteboards (Miro / FigJam). Fine as a tag for reach; don't
   lead with it in prose.
 - **Skip** `teams`, `sync`, `crdt`, `email`. They imply features that aren't

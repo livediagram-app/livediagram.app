@@ -341,11 +341,11 @@ export function EditorCanvasHost() {
     zenMode,
   } = useEditorContext();
 
-  // Somebody else is running this session (spec/149). The facilitator verbs
+  // Somebody else is running this session (docs/specs/012-collaboration/facilitator.md). The facilitator verbs
   // below fall away for everybody else, exactly as they do on a read-only
   // surface; the responses beside them stay, because answering is the point.
   const runBlocked = facilitator.sessionToolsBlocked;
-  // The facilitator's menu on an element somebody else is holding (spec/07).
+  // The facilitator's menu on an element somebody else is holding (docs/specs/007-editor/live-app.md).
   // Null when closed. Holders are captured at open time rather than re-read on
   // render: if the holder lets go while the menu is up it closes on the next
   // outside click anyway, and a list that emptied underneath would leave a
@@ -361,7 +361,7 @@ export function EditorCanvasHost() {
   // Both recompute only when their real inputs change, not per frame.
   const explorerTeams = useMemo(() => teams.map((t) => ({ id: t.id, name: t.name })), [teams]);
   // Team-library folder mutations for the Explorer panel's team tree
-  // (spec/35) - see useTeamFolderActions.
+  // (docs/specs/013-workspace/team-shared-diagrams.md) - see useTeamFolderActions.
   const viewerId = selfParticipant?.id ?? null;
   const onTeamFolders = useTeamFolderActions({
     clerkUserId,
@@ -372,7 +372,7 @@ export function EditorCanvasHost() {
   });
   // The canvas paints the backdrop the VIEWER resolves, not blindly the one
   // the tab stores: a tab on the Default theme follows this browser's
-  // appearance (spec/07). Subscribing to the appearance here is what makes the
+  // appearance (docs/specs/007-editor/live-app.md). Subscribing to the appearance here is what makes the
   // canvas repaint when it changes — resolveTabBackdrop would otherwise read a
   // module store nothing re-renders for.
   const { appearance } = useAppearance();
@@ -381,18 +381,18 @@ export function EditorCanvasHost() {
     () => changeLog.filter((entry) => entry.tabId === activeId),
     [changeLog, activeId],
   );
-  // Lazy per-tab load gate (spec/13): show a blocking loader / error over
+  // Lazy per-tab load gate (docs/specs/006-diagram/per-tab-storage.md): show a blocking loader / error over
   // the canvas while the active tab's content is still being fetched, so
   // the user never edits a blank placeholder whose autosave would
   // overwrite the real server row. Derived once in useEditorState (it also
   // gates editsBlocked there, so the pointer overlay and the edit lock
   // can't disagree); consumed here for the overlay.
   const tabLoadState = activeTabLoadState;
-  // Quick add + connect Arrow starter (spec/09) — see useQuickConnectStart.
+  // Quick add + connect Arrow starter (docs/specs/008-canvas/canvas-and-palette.md) — see useQuickConnectStart.
   const { handleStartArrow } = useQuickConnectStart({ selectedId, beginAnchorDrag });
 
   // While a label is being edited, ride the element context menu alongside
-  // the editor (spec/09) — see useEditModeContextMenu.
+  // the editor (docs/specs/008-canvas/canvas-and-palette.md) — see useEditModeContextMenu.
   useEditModeContextMenu({
     editingId,
     elements: activeTab.elements,
@@ -407,7 +407,7 @@ export function EditorCanvasHost() {
     setUserPreferences,
     selfParticipantId: selfParticipant?.id ?? null,
   });
-  // The element the format brush is loaded from (spec/116), for the panel's
+  // The element the format brush is loaded from (docs/specs/010-palette/stickers.md), for the panel's
   // preview. Resolved here rather than in the panel so the panel stays a
   // renderer and never reaches into the tab.
   const formatSource = formatSourceId
@@ -419,7 +419,7 @@ export function EditorCanvasHost() {
       <Canvas
         tabName={activeTab.name}
         tabSummaries={tabSummaries}
-        // Portals (spec/104) can lead to another tab; see Canvas.enterPortal.
+        // Portals (docs/specs/009-elements/portal-element.md) can lead to another tab; see Canvas.enterPortal.
         portalTabs={tabs}
         activeTabId={activeTab.id}
         tabLocked={activeTabLocked}
@@ -453,7 +453,7 @@ export function EditorCanvasHost() {
         }}
         viewportOffset={viewportOffset}
         setViewportOffset={setViewportOffset}
-        // Presenting (spec/31) narrows the canvas to one slide's elements. The
+        // Presenting (docs/specs/012-collaboration/presentation-mode.md) narrows the canvas to one slide's elements. The
         // real canvas still draws them — a slide has to respond to clicks and
         // carry live element state, and there is then exactly one thing that
         // knows how an element looks.
@@ -471,17 +471,17 @@ export function EditorCanvasHost() {
         remoteCursors={remoteCursorRows}
         remoteAvatars={remoteAvatarRows}
         onAvatarPresence={broadcastAvatar}
-        // Avatar mode (spec/101): clicking a peer's character walks over and
+        // Avatar mode (docs/specs/008-canvas/avatar-mode.md): clicking a peer's character walks over and
         // shoves it; their own client decides what to do with the request.
         onAvatarPush={broadcastAvatarPush}
         avatarShove={avatarShove}
         onFireReaction={isReadOnly ? undefined : fireReaction}
-        // Bring Focus (spec/144) is live for view-role visitors too: it mutates
+        // Bring Focus (docs/specs/012-collaboration/bring-focus.md) is live for view-role visitors too: it mutates
         // nothing, which makes it the same read-only act as following somebody,
         // and the person who spots the thing worth looking at is often not the
         // one with edit rights.
-        // Bring Focus (spec/144) is the facilitator's while somebody holds the
-        // baton (spec/149): "everybody look here" is the same act as "everybody
+        // Bring Focus (docs/specs/012-collaboration/bring-focus.md) is the facilitator's while somebody holds the
+        // baton (docs/specs/012-collaboration/facilitator.md): "everybody look here" is the same act as "everybody
         // stop and listen". Undefined renders the face inert, which is what a
         // read-only surface already gets.
         onPressFocusButton={runBlocked ? undefined : pressFocusButton}
@@ -490,7 +490,7 @@ export function EditorCanvasHost() {
         laserTrails={laserTrailRows}
         onCanvasPointerMove={(x, y) => {
           if (canvasTool === 'laser' && x !== null && y !== null) {
-            // The pen rides the sample so peers draw MY laser (spec/111).
+            // The pen rides the sample so peers draw MY laser (docs/specs/008-canvas/laser-panel.md).
             broadcastLaser(x, y, laserConfig);
             // Laser mode hides the cursor indicator on peer screens —
             // the laser dot is the cursor. Clear any prior position.
@@ -503,12 +503,12 @@ export function EditorCanvasHost() {
         canvasTool={canvasTool}
         onSetCanvasTool={setCanvasTool}
         onExitAvatarMode={exitAvatarTool}
-        // Mode button (spec/103): pressing one is exactly picking that mode from
+        // Mode button (docs/specs/009-elements/mode-button.md): pressing one is exactly picking that mode from
         // the palette, so it goes through the same setter — telemetry, the
         // selection clear, and the empty-canvas guard all included. Pressing it
         // again, while already in that mode, hands you back your previous one.
         onPressModeButton={(element) => pressModeButton(element.mode ?? DEFAULT_BUTTON_MODE)}
-        // Session button (spec/105) / Reveal zone (spec/106) / Picker (spec/107):
+        // Session button (docs/specs/012-collaboration/session-button.md) / Reveal zone (docs/specs/009-elements/reveal-zone.md) / Picker (docs/specs/012-collaboration/picker.md):
         // see useBehaviourElements — the press resolves what to do from the
         // element and calls the tool that already exists.
         onPressSessionButton={pressSessionButton}
@@ -516,11 +516,11 @@ export function EditorCanvasHost() {
         timerState={activeTab.timer ? (activeTab.timer.running ? 'running' : 'paused') : 'none'}
         revealedIds={revealedIds}
         // A cover is the facilitator's to lift while one is running the session
-        // (spec/149); with nobody facilitating it stays the private peek it has
-        // always been (spec/106).
+        // (docs/specs/012-collaboration/facilitator.md); with nobody facilitating it stays the private peek it has
+        // always been (docs/specs/009-elements/reveal-zone.md).
         onToggleReveal={runBlocked ? undefined : toggleRevealForMe}
         onSetSessionConfig={isReadOnly || runBlocked ? undefined : setSessionConfigFor}
-        // The `…` on a Behaviours element's face (spec/09). Anchored from the
+        // The `…` on a Behaviours element's face (docs/specs/008-canvas/canvas-and-palette.md). Anchored from the
         // ELEMENT's rect, not the trigger's, so it lands exactly where a
         // right-click on the same element would — one menu, one position,
         // whichever way you asked for it.
@@ -534,7 +534,7 @@ export function EditorCanvasHost() {
                 setContextMenu({ mode: 'element', elementId, x, y });
               }
         }
-        // Comment panels (spec/136) drive the SAME thread machinery the anchored
+        // Comment panels (docs/specs/012-collaboration/comment-pin.md) drive the SAME thread machinery the anchored
         // popover does — it is all keyed by element id already.
         commentSelfId={selfParticipant.id}
         commentPanelActions={
@@ -547,7 +547,7 @@ export function EditorCanvasHost() {
                 unresolve: unresolveThread,
               }
         }
-        // Action panels (spec/146) drive the SAME action machinery the popover
+        // Action panels (docs/specs/012-collaboration/action-panel.md) drive the SAME action machinery the popover
         // and the Assign Action dialog do. The viewer identity is the one the
         // popover uses: the Clerk account, else the guest participant.
         actionSelfId={clerkUserId ?? selfParticipant.id}
@@ -561,7 +561,7 @@ export function EditorCanvasHost() {
               }
         }
         onRollPicker={pickerFor}
-        // Follow-me (spec/131): resolved to a NAME here, where presence lives,
+        // Follow-me (docs/specs/012-collaboration/follow-me-viewport.md): resolved to a NAME here, where presence lives,
         // so the pill doesn't have to look one up.
         followingName={
           followMe.followingId
@@ -569,7 +569,7 @@ export function EditorCanvasHost() {
             : null
         }
         onStopFollowing={followMe.stopFollowing}
-        // The collaboration elements (spec/123 to spec/129). One prop for all
+        // The collaboration elements (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md). One prop for all
         // five faces; the write handlers drop out entirely for a view-role
         // visitor, so the faces render readable but inert rather than offering
         // presses the room would discard.
@@ -590,7 +590,7 @@ export function EditorCanvasHost() {
           scatterIdeas: isReadOnly || runBlocked ? undefined : collabElements.scatterIdeas,
           pressAgendaItem: isReadOnly || runBlocked ? undefined : collabElements.pressAgendaItem,
           takeRoll: isReadOnly || runBlocked ? undefined : collabElements.takeRoll,
-          // The Q&A board (spec/151). Adding and voting stay live for a
+          // The Q&A board (docs/specs/012-collaboration/qa-board.md). Adding and voting stay live for a
           // view-role visitor: the server owns the board and gates them on
           // read access, which is the point of the element. Running it is
           // the facilitator's, else any editor's.
@@ -669,7 +669,7 @@ export function EditorCanvasHost() {
         onCommitPolygon={commitPolygon}
         settings={userPreferences}
         onChangeSettings={onChangeSettings}
-        // Only Minimal docks the panels. Toolbar (spec/148) keeps Floating's
+        // Only Minimal docks the panels. Toolbar (docs/specs/007-editor/toolbar-layout.md) keeps Floating's
         // panels and swaps the Palette + Explorer for the strip and menu button.
         minimalPanels={resolvePanelLayout(userPreferences) === 'minimal'}
         toolbarLayout={resolvePanelLayout(userPreferences) === 'toolbar'}
@@ -720,7 +720,7 @@ export function EditorCanvasHost() {
         onResetLayersPanel={() => setLayersPanelPosition(null)}
         pollPanel={
           // Results are for the host and for anyone who has responded
-          // (spec/88) — answering is what buys you the tally. A local
+          // (docs/specs/012-collaboration/live-poll.md) — answering is what buys you the tally. A local
           // Dismiss hides it without ending the poll for everyone.
           livePoll.poll && !livePoll.dismissed && (livePoll.isHost || livePoll.myAnswer)
             ? {
@@ -728,7 +728,7 @@ export function EditorCanvasHost() {
                 answers: livePoll.answers,
                 isHost: livePoll.isHost,
                 onEnd: livePoll.endPoll,
-                // spec/126: drops the tallies so far onto the canvas without
+                // docs/specs/012-collaboration/poll-result-capture.md: drops the tallies so far onto the canvas without
                 // ending the poll. Read-only visitors never see it — they are
                 // never the host.
                 onKeepResults: isReadOnly ? undefined : keepPollResults,
@@ -755,7 +755,7 @@ export function EditorCanvasHost() {
         formatConfig={formatConfig}
         onToggleFormatGroup={onToggleFormatGroup}
         onSetFormatMode={onSetFormatMode}
-        // What the brush holds, described for the panel's preview (spec/116):
+        // What the brush holds, described for the panel's preview (docs/specs/010-palette/stickers.md):
         // the loaded element's name and the three colours the swatch draws.
         formatBrushSource={
           formatSource
@@ -770,7 +770,7 @@ export function EditorCanvasHost() {
         formatPanelPosition={formatPanelPosition}
         onMoveFormatPanel={(x, y) => setFormatPanelPosition({ x, y })}
         onResetFormatPanel={() => setFormatPanelPosition(null)}
-        // Slide Deck (spec/31): the deck itself plus its panel's placement.
+        // Slide Deck (docs/specs/012-collaboration/presentation-mode.md): the deck itself plus its panel's placement.
         slideDeck={slideDeck}
         slideDeckPanelPosition={slideDeckPanelPosition}
         onMoveSlideDeckPanel={(x, y) => setSlideDeckPanelPosition({ x, y })}
@@ -796,7 +796,7 @@ export function EditorCanvasHost() {
           if (layersMinimized) track('Layer', 'Opened', 'Panel');
           setLayersMinimized((v) => !v);
         }}
-        // Bottom-dock paintbrush (spec/42): the same CanvasThemeDialog the
+        // Bottom-dock paintbrush (docs/specs/011-theme/canvas-and-theme-dialog.md): the same CanvasThemeDialog the
         // canvas right-click menu opens, one click from the chrome. Opens on
         // the Theme tab; the dialog's tab strip reaches Canvas from there.
         onOpenCanvasTheme={
@@ -844,7 +844,7 @@ export function EditorCanvasHost() {
         onOpenDiagram={openDiagram}
         onNewDiagram={newDiagram}
         explorerMenuActions={{
-          // The header's Share gate: owners only (spec/15, spec/11).
+          // The header's Share gate: owners only (docs/specs/013-workspace/folders.md, docs/specs/015-api/api.md).
           onShare:
             isOwner && hydrated
               ? () => {
@@ -859,7 +859,7 @@ export function EditorCanvasHost() {
           onSearch: () => {
             setSearchOpen(true);
             // Same prefetch as the bottom bar's Search: element matches
-            // cover tabs not yet visited (spec/09).
+            // cover tabs not yet visited (docs/specs/008-canvas/canvas-and-palette.md).
             void loadAllTabs();
           },
           onOpenSettings: () => {
@@ -888,7 +888,7 @@ export function EditorCanvasHost() {
         onDeselect={() => {
           // Clicking empty canvas also cancels an armed arrow-connect, and
           // wraps up the Format tool — restoring the pre-Format tool — so a
-          // background click is the quick way out of paint mode (spec/09).
+          // background click is the quick way out of paint mode (docs/specs/008-canvas/canvas-and-palette.md).
           if (canvasTool === 'format') exitFormatTool();
           cancelConnect();
           setSelectedId(null);
@@ -902,13 +902,13 @@ export function EditorCanvasHost() {
           isReadOnly
             ? undefined
             : (id, sx, sy) => {
-                // Concurrent-selection lock (spec/07): a peer holds this
+                // Concurrent-selection lock (docs/specs/007-editor/live-app.md): a peer holds this
                 // element, so it can't be selected, dragged, or edited — don't
                 // pop a dead context menu on it either. Same gate as
                 // selectElement.
                 //
                 // The one exception is whoever is running the session
-                // (spec/149): for them a locked element has exactly one
+                // (docs/specs/012-collaboration/facilitator.md): for them a locked element has exactly one
                 // available action, freeing it, and that gets its own small menu
                 // rather than the element's real one, whose every other row
                 // would be dead. See LockedElementMenu.
@@ -1086,7 +1086,7 @@ export function EditorCanvasHost() {
         onCanvasDoubleClick={handleCanvasDoubleClick}
         tabLoadState={tabLoadState}
         onRetryTabLoad={retryActiveTabLoad}
-        // Embeds (spec/33) ride the zen chrome-hide gates: every panel
+        // Embeds (docs/specs/013-workspace/embeds.md) ride the zen chrome-hide gates: every panel
         // and badge zen hides, embeds hide too. The zen TOGGLE is
         // withheld so the ZoomControls dock doesn't offer an exit
         // from a mode the embed can't actually leave.

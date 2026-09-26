@@ -3,7 +3,7 @@ import { __setOfflineBackend, offlineCreateDiagram } from '../offline/offline-st
 import { memBackend } from '../offline/offline-test-utils';
 import { apiListFavourites, apiSetFavourite } from './favourites';
 
-// Starring an OFFLINE diagram (spec/76) must stay in the browser.
+// Starring an OFFLINE diagram (docs/specs/006-diagram/offline-mode.md) must stay in the browser.
 //
 // The favourites table carries `FOREIGN KEY (diagram_id) REFERENCES
 // diagrams(id)` (migration 0040), and an offline diagram has no row in
@@ -13,7 +13,7 @@ import { apiListFavourites, apiSetFavourite } from './favourites';
 // the toggle is optimistic, so the star appears on click and is gone on the
 // next reload, with nothing logged anywhere the user can see.
 //
-// spec/76 states the rule these lock directly: offline rows never trigger a
+// docs/specs/006-diagram/offline-mode.md states the rule these lock directly: offline rows never trigger a
 // server fetch, "list, thumbnail, or otherwise". A star is an "otherwise".
 
 describe('favourites on an offline diagram', () => {

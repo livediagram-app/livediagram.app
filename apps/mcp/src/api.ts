@@ -1,4 +1,4 @@
-// Thin client for the api worker over the service binding (spec/62 §2). Every
+// Thin client for the api worker over the service binding (docs/specs/015-api/mcp-server.md §2). Every
 // call forwards the caller's Bearer lvd_ token; the api resolves it to the
 // owning account and applies the SAME authorization every route already
 // enforces, so the MCP needs no special privilege and adds no business logic.
@@ -37,7 +37,7 @@ export async function apiFetch(
   return env.API.fetch(new Request(apiUrl(path), { ...init, headers }));
 }
 
-// Fire-and-forget anonymous telemetry to the api's public /api/events (spec/22).
+// Fire-and-forget anonymous telemetry to the api's public /api/events (docs/specs/017-telemetry/telemetry.md).
 // No token: the ingest endpoint is unauthenticated and only stores the closed
 // three-field vocabulary. Never awaited and never throws into the tool, but
 // handed to the request's waitUntil (request-scope.ts) so the runtime can't
@@ -47,7 +47,7 @@ export async function apiFetch(
 export function postTelemetry(env: Env, category: string, action: string, type: string): void {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   // Identifies us as an internal caller so the api worker doesn't put us in
-  // the anonymous per-IP rate-limit bucket (spec/22, issue #36). A service
+  // the anonymous per-IP rate-limit bucket (docs/specs/017-telemetry/telemetry.md, issue #36). A service
   // binding carries no CF-Connecting-IP, so without this every MCP tool call
   // in the world contended for one 120/min key and the overflow was dropped
   // as a 204 we can't even see. Optional on both sides.
@@ -70,7 +70,7 @@ export function postTelemetry(env: Env, category: string, action: string, type: 
 // Fetch + parse JSON, throwing ApiError on a non-2xx so tools surface a clear,
 // model-correctable message. A genuine failure — the api worker 5xx'd, or the
 // request never completed — is reported to the Error telemetry category
-// (spec/62 §4.12) so the public Exceptions dashboard shows where the MCP
+// (docs/specs/015-api/mcp-server.md §4.12) so the public Exceptions dashboard shows where the MCP
 // breaks. A 4xx is NOT reported: it's expected model-correctable input (a bad
 // id, malformed elements), not a fault, and would only flood the dashboard.
 export async function apiJson<T>(
@@ -96,7 +96,7 @@ export async function apiJson<T>(
 }
 
 // One MCP-side api failure to the Error category, labelled with the tool that
-// was running (`Http503.UpdateDiagram`, `Internal.FindDiagrams`; spec/22), so
+// was running (`Http503.UpdateDiagram`, `Internal.FindDiagrams`; docs/specs/017-telemetry/telemetry.md), so
 // the Exceptions dashboard says which tool broke, not only that one did.
 export function reportApiFailure(env: Env, kind: string): void {
   postTelemetry(env, 'Error', 'Api', errorTypeToken(kind, currentTool()));

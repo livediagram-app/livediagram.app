@@ -1,4 +1,4 @@
-// The room's collaboration ledger (spec/152, phase 3).
+// The room's collaboration ledger (docs/specs/012-collaboration/collab-race-hardening.md, phase 3).
 //
 // Every client PUTs whole tabs, and D1 keeps whichever lands last, so a save
 // snapshotted before somebody's answer arrived erased it from D1 even though
@@ -113,7 +113,7 @@ function recordVote(prev: VoteLedger | undefined, op: unknown, seq: number): Vot
     const dots = Object.values(base.votes).reduce((n, ids) => n + ids.length, 0);
     if (dots >= DOTS_MAX) return null;
   }
-  // Borrow the one place a dot changes hands (spec/39).
+  // Borrow the one place a dot changes hands (docs/specs/012-collaboration/session-tools.md).
   const asVote: TabVote = { active: true, revealed: false, votesPerPerson: 0, votes: base.votes };
   const next = applyVoteDelta(asVote, v.elementId, v.voter, v.delta);
   return next === asVote ? base : { round: base.round, votes: next.votes, seq };
@@ -308,7 +308,7 @@ function applyCommentEvents<E extends Tab['elements'][number]>(
 // The name a comment was posted under, for every comment the room has seen
 // posted, by id. The api uses it when a save carries somebody else's comment
 // that D1 doesn't have yet: without it the save credited the comment to
-// whoever happened to save first (spec/152).
+// whoever happened to save first (docs/specs/012-collaboration/collab-race-hardening.md).
 export function ledgerCommentAuthors(
   ledger: TabLedger,
 ): Map<string, { authorName: string; authorColor: string }> {

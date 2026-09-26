@@ -1,4 +1,4 @@
-// The runtime behaviour of the collaboration elements (spec/122 to spec/129):
+// The runtime behaviour of the collaboration elements (docs/specs/012-collaboration/participant-responses.md to docs/specs/012-collaboration/roll-call.md):
 // casting a response, revealing an estimate, dropping an anonymous idea,
 // pressing an agenda segment, and taking a roll call.
 //
@@ -23,7 +23,7 @@ import { participantKey, type Participant } from '@/lib/identity';
 import { track } from '@/lib/telemetry';
 import type { ApplyElementDelta } from '@/hooks/collab/useElementDeltas';
 
-// How far apart scattered ideas land, in canvas px (spec/125).
+// How far apart scattered ideas land, in canvas px (docs/specs/012-collaboration/idea-box.md).
 const SCATTER_STEP = 20;
 const SCATTER_COLS = 4;
 const STICKY_SIZE = 160;
@@ -44,17 +44,17 @@ export function useCollabElements({
   // Undoable: only scatter uses it, because scatter CREATES stickies, which is
   // authoring like any other add.
   commitTabs: (mapTabs: (ts: Tab[]) => Tab[]) => unknown;
-  // Not undoable, and not logged: every press below (spec/152).
+  // Not undoable, and not logged: every press below (docs/specs/012-collaboration/collab-race-hardening.md).
   tickTabs: (mapTabs: (ts: Tab[]) => Tab[]) => void;
   // An answer or an idea: applied here and sent to the room as a delta, so
-  // two people pressing the same card at once both land (spec/152).
+  // two people pressing the same card at once both land (docs/specs/012-collaboration/collab-race-hardening.md).
   applyElementDelta: ApplyElementDelta;
   // The active tab's elements, to read a checklist row before ticking it.
   activeElements: Element[];
   // A view-role visitor / locked tab. The room already drops their mutations
-  // (spec/11), so this is about not lying to them in the UI.
+  // (docs/specs/015-api/api.md), so this is about not lying to them in the UI.
   editsBlocked: boolean;
-  // Somebody else is facilitating (spec/149). Revealing, clearing, scattering,
+  // Somebody else is facilitating (docs/specs/012-collaboration/facilitator.md). Revealing, clearing, scattering,
   // rolling and pressing an agenda item are theirs; responding is everyone's.
   sessionToolsBlocked: boolean;
   selfParticipant: Participant;
@@ -64,7 +64,7 @@ export function useCollabElements({
   // `patchElement`, for a verb that runs the room rather than answering it:
   // reveal, clear, roll, agenda. One helper rather than a flag on every call,
   // so which side of the facilitator line a verb sits on is visible in the
-  // call itself (spec/149).
+  // call itself (docs/specs/012-collaboration/facilitator.md).
   const patchAsFacilitator = (
     elementId: string,
     patch: (el: ShapeElement) => Partial<ShapeElement>,
@@ -75,7 +75,7 @@ export function useCollabElements({
 
   // Patch one element on the active tab, through `tickTabs`: no undo history,
   // because undo is a personal control and one person's Ctrl+Z must never
-  // retract another's answer (spec/122). Undo re-grafts these fields too
+  // retract another's answer (docs/specs/012-collaboration/participant-responses.md). Undo re-grafts these fields too
   // (`LIVE_ELEMENT_FIELDS`), so an older snapshot can't take them back.
   const patchElement = (elementId: string, patch: (el: ShapeElement) => Partial<ShapeElement>) => {
     if (editsBlocked) return;
@@ -93,19 +93,19 @@ export function useCollabElements({
     );
   };
 
-  // --- Responses (spec/122) -------------------------------------------------
+  // --- Responses (docs/specs/012-collaboration/participant-responses.md) -------------------------------------------------
   // Cast, or withdraw by pressing your own answer again — one press, so there
   // is no second control to find.
   //
   // Keyed on `participantKey`, NOT on `selfParticipant.id`. The id is our
   // OWNER id: writing it into a shared diagram publishes an `X-Owner-Id`
   // credential to every co-viewer, and it is also unjoinable — peers see us
-  // under the room's per-socket presence id (spec/61 §6), never under this.
+  // under the room's per-socket presence id (docs/specs/015-api/public-api-and-tokens.md §6), never under this.
   // That mismatch is what made a done check invisible to everyone but the
   // person pressing it.
   const respond = (element: ShapeElement, value: string) => {
     if (editsBlocked) return;
-    // ONE answer, as a delta stamped with the card's round (spec/152): it
+    // ONE answer, as a delta stamped with the card's round (docs/specs/012-collaboration/collab-race-hardening.md): it
     // commutes with everybody else's, and a cast from before a clear is
     // dropped rather than landing in the next round.
     applyElementDelta(
@@ -123,7 +123,7 @@ export function useCollabElements({
     );
   };
 
-  // --- Estimate card (spec/123) --------------------------------------------
+  // --- Estimate card (docs/specs/012-collaboration/estimate-card.md) --------------------------------------------
   const setResponsesRevealed = (element: ShapeElement, revealed: boolean) => {
     patchAsFacilitator(element.id, () => ({ responsesRevealed: revealed }));
     track('Element', 'Changed', 'Estimate');
@@ -133,7 +133,7 @@ export function useCollabElements({
     // Clearing un-reveals as well: the next round starts closed, or the card
     // would collect its first answer in the open. (A done check has nothing to
     // reveal, so the second field is a harmless no-op there.)
-    // A new round (spec/152): an answer cast before this clear names the old
+    // A new round (docs/specs/012-collaboration/collab-race-hardening.md): an answer cast before this clear names the old
     // one, so no peer can let it into the next round.
     patchAsFacilitator(element.id, () => ({
       responses: [],
@@ -143,25 +143,25 @@ export function useCollabElements({
     track('Element', 'Changed', element.shape === 'done-check' ? 'DoneCheck' : 'Estimate');
   };
 
-  // --- Idea box (spec/125) --------------------------------------------------
+  // --- Idea box (docs/specs/012-collaboration/idea-box.md) --------------------------------------------------
   // Anonymity is structural — there is nowhere in `ideaCards` to record an
   // author. Two other routes to a name are closed here rather than in the
   // schema:
   //   * no change-log entry, the same exception the high-frequency vote casts
-  //     take (spec/39) — "Priya edited Idea Box" beside six anonymous cards is
+  //     take (docs/specs/012-collaboration/session-tools.md) — "Priya edited Idea Box" beside six anonymous cards is
   //     a five-second deanonymisation. `tickTabs` is already the non-logging
   //     path, so this comes for free and must STAY free: routing this through
   //     a logging commit would quietly undo the feature.
-  //   * no selection, so the spec/07 concurrent-selection ring doesn't put a
+  //   * no selection, so the docs/specs/007-editor/live-app.md concurrent-selection ring doesn't put a
   //     name on the box at the moment somebody types into it. This function
   //     deliberately never touches the selection.
   const addIdea = (element: ShapeElement, text: string) => {
     const clean = text.trim();
     if (!clean || editsBlocked) return;
     // A full box takes no more: one card past the cap would fail the whole
-    // tab's validation on save (spec/152).
+    // tab's validation on save (docs/specs/012-collaboration/collab-race-hardening.md).
     if ((element.ideaCards ?? []).length >= IDEA_MAX_CARDS) return;
-    // ONE idea, as a delta (spec/152), so two people posting at once both
+    // ONE idea, as a delta (docs/specs/012-collaboration/collab-race-hardening.md), so two people posting at once both
     // land. Still no author: the delta has nowhere to put one either.
     applyElementDelta(element.id, {
       kind: 'idea',
@@ -214,7 +214,7 @@ export function useCollabElements({
     track('Element', 'Added', 'Sticky');
   };
 
-  // --- Agenda (spec/127) ----------------------------------------------------
+  // --- Agenda (docs/specs/012-collaboration/agenda.md) ----------------------------------------------------
   // Pressing a segment starts the tab timer through `startTimer` — the same
   // entry point the Current Tab menu and the session button use, so the
   // edit-role gate, the change-log line and the telemetry all still happen
@@ -233,7 +233,7 @@ export function useCollabElements({
     track('Element', 'Changed', 'Agenda');
   };
 
-  // --- Roll call (spec/129) -------------------------------------------------
+  // --- Roll call (docs/specs/012-collaboration/roll-call.md) -------------------------------------------------
   // Freezes who is here INTO the element: names and colours are copied and
   // never re-joined to the live participant, so someone since renamed or
   // deleted still appears under the name they were in the room under.
@@ -253,18 +253,18 @@ export function useCollabElements({
     track('Element', 'Changed', 'Roll-call');
   };
 
-  // --- Checklist (spec/83) --------------------------------------------------
+  // --- Checklist (docs/specs/009-elements/checklist.md) --------------------------------------------------
   // Not one of the collaboration family, but the same problem: a whole room
   // ticking rows on one shared list. A tick used to replace the whole element
   // (and push undo), so two people ticking different rows lost one of them.
-  // Now it is one delta naming the row by index and text (spec/152).
+  // Now it is one delta naming the row by index and text (docs/specs/012-collaboration/collab-race-hardening.md).
   const toggleChecklistItem = (elementId: string, index: number) => {
     if (editsBlocked) return;
     const element = activeElements.find((el) => el.id === elementId);
     const delta = element ? checklistDeltaFor(element, index) : null;
     if (delta) applyElementDelta(elementId, delta);
     // Box ticks deliberately don't track: high-frequency, low-signal,
-    // matching spec/39's vote-cast precedent.
+    // matching docs/specs/012-collaboration/session-tools.md's vote-cast precedent.
   };
 
   return {

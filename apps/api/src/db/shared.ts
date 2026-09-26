@@ -11,8 +11,8 @@ import type { Env, ShareRole } from '../types';
 // "Shared with you" list).
 //
 // Returns whether this was a FIRST visit (no prior row). The share route
-// uses it to fire the "someone joined your diagram" notification (spec/65)
-// and the Diagram·Joined telemetry count (spec/22) once per (visitor,
+// uses it to fire the "someone joined your diagram" notification (docs/specs/014-identity/profile-and-email-notifications.md)
+// and the Diagram·Joined telemetry count (docs/specs/017-telemetry/telemetry.md) once per (visitor,
 // diagram) rather than per reload. Decided by an INSERT OR IGNORE's row
 // count, so two concurrent first opens can't both read as first; a repeat
 // visit then refreshes role + last_seen.
@@ -38,7 +38,7 @@ export async function recordSharedAccess(
 }
 
 // Whether this owner has ever opened the diagram through a share link
-// (a shared_with row exists). Used by the notify-action route (spec/68)
+// (a shared_with row exists). Used by the notify-action route (docs/specs/012-collaboration/assigned-actions.md)
 // as the "shared-with" leg of its caller-can-access-the-diagram check.
 export async function hasSharedAccess(
   env: Env,

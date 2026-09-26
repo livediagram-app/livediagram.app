@@ -19,10 +19,10 @@ import { statusLabel, type Participant } from '@/lib/identity';
 import { relativeSince, useRelativeTimeTick } from '@/lib/relative-time';
 import { legibleTabAccent } from '@/lib/tab-accent';
 
-// The Collaborators modal (spec/145): everyone in the diagram, grouped by
+// The Collaborators modal (docs/specs/012-collaboration/collaborator-enhancements.md): everyone in the diagram, grouped by
 // the tab they are on, opened by clicking any avatar in a tab's presence
 // stack. Each other tab gets a Go to Tab, each other person a Follow
-// (spec/131 moved here from the avatar click). The person whose avatar was
+// (docs/specs/012-collaboration/follow-me-viewport.md moved here from the avatar click). The person whose avatar was
 // clicked is highlighted and scrolled into view.
 
 type CollaboratorsDialogProps = {
@@ -37,7 +37,7 @@ type CollaboratorsDialogProps = {
   onGoToTab: (tabId: string) => void;
   onFollow: (participantId: string) => void;
   onStopFollowing: () => void;
-  // The facilitator baton (spec/149). `facilitatorId` is a presence id, which
+  // The facilitator baton (docs/specs/012-collaboration/facilitator.md). `facilitatorId` is a presence id, which
   // is why our OWN row reads `isFacilitator` instead: a client cannot
   // recognise its own presence id, so the two answers arrive by different
   // routes and the row asks the one that applies to it.

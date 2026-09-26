@@ -6,7 +6,7 @@ import type { MetadataRoute } from 'next';
 export const dynamic = 'force-static';
 
 // Next.js convention: app/manifest.ts → /manifest.webmanifest at build
-// time. See spec/16-marketing-site.md "SEO and metadata".
+// time. See docs/specs/019-marketing/marketing-site.md "SEO and metadata".
 //
 // What this unlocks:
 //   - Android Chrome "Add to Home Screen" prompt + a proper standalone

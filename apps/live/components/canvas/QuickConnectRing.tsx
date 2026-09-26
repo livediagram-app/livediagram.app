@@ -25,7 +25,7 @@ import { isDragTravel } from '@/lib/press-gestures';
 // the gap between the + and its menu.
 const RING_CLOSE_DELAY_MS = 160;
 
-// Quick add + connect (spec/09). One of these floats on each edge of the
+// Quick add + connect (docs/specs/008-canvas/canvas-and-palette.md). One of these floats on each edge of the
 // selected element. The plus is a click *trigger*: clicking it unfolds a
 // single connected menu strip of five quick actions out of the plus —
 // Duplicate / Arrow / Square / Pencil / Text — each acting on this edge.
@@ -48,7 +48,7 @@ type QuickConnectRingProps = {
   open: boolean;
   onToggle: () => void;
   onClose: () => void;
-  // Quick-add-on-hover preference (spec/09). When true, the menu opens on
+  // Quick-add-on-hover preference (docs/specs/008-canvas/canvas-and-palette.md). When true, the menu opens on
   // hover of the + and closes when the pointer leaves both the + and the
   // menu, instead of needing a click. Click still toggles in either mode.
   openOnHover?: boolean;
@@ -62,19 +62,19 @@ type QuickConnectRingProps = {
   onArrowPointerDown: (e: ReactPointerEvent) => void;
   // Enter freehand (pencil) draw mode.
   onPencil: () => void;
-  // Timeline rail (spec/51): when set (the selected element is a rail), the
+  // Timeline rail (docs/specs/009-elements/timeline-rail.md): when set (the selected element is a rail), the
   // ring gains an "Add point" action that appends a point to the rail.
   onAddRailPoint?: () => void;
-  // Web components (spec/147): when set (the selected element is a stat row,
+  // Web components (docs/specs/009-elements/web-components-and-no-groups.md): when set (the selected element is a stat row,
   // process or header with room for more), the ring gains an action that
   // appends one more stat / step / link, labelled with what it adds.
   webRow?: { label: string; description: string; onAdd: () => void };
-  // Table variant (spec/09): the ring slims down to Arrow plus the
+  // Table variant (docs/specs/008-canvas/canvas-and-palette.md): the ring slims down to Arrow plus the
   // structural add for this side — Add Row on the bottom plus, Add Column
   // on the right one. Duplicate / Pencil / Text don't apply to a grid.
   variant?: 'default' | 'table';
   onAddTableRow?: () => void;
-  // Mind-map growth (spec/118). Set only on a mind node, which is what
+  // Mind-map growth (docs/specs/009-elements/mind-node.md). Set only on a mind node, which is what
   // puts Add child / Add sibling on its ring.
   onGrowMind?: (relation: 'child' | 'sibling') => void;
   onAddTableColumn?: () => void;
@@ -165,7 +165,7 @@ export function QuickConnectRing({
   // The rail "Add point" action only appears when the selected element is a
   // timeline rail (onAddRailPoint set), appended after the standard actions.
   // The table variant slims to Arrow + this side's structural add (Add Row
-  // below, Add Column on the right — spec/09): Duplicate / Pencil / Text
+  // below, Add Column on the right — docs/specs/008-canvas/canvas-and-palette.md): Duplicate / Pencil / Text
   // don't apply to a grid.
   const options =
     variant === 'table'
@@ -202,7 +202,7 @@ export function QuickConnectRing({
     return () => clearTimeout(t);
   }, [open]);
 
-  // Hover-open (quick-add-on-hover, spec/09): open on pointer-enter of the +
+  // Hover-open (quick-add-on-hover, docs/specs/008-canvas/canvas-and-palette.md): open on pointer-enter of the +
   // or its menu, and close on a short delay after leaving both, so crossing
   // the gap between the + and the menu doesn't close it. No-op unless the
   // preference is on; click still toggles in either mode.

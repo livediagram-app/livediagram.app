@@ -1,7 +1,7 @@
 'use client';
 
 // What the Explorer adds to a Timeline card that a renderer can't
-// (spec/138 §2.8, §2.9): the ⋯ menu, and the inline rename that one of
+// (docs/specs/013-workspace/timeline.md §2.8, §2.9): the ⋯ menu, and the inline rename that one of
 // its items starts.
 //
 // Every card gets a menu, because every card can be removed from the
@@ -51,7 +51,7 @@ export function useTimelineCardSlots({
   entityMenu,
 }: {
   onShowHistory: (id: string, name: string) => void;
-  /** Take one card off the reader's feed (spec/138 §2.9). */
+  /** Take one card off the reader's feed (docs/specs/013-workspace/timeline.md §2.9). */
   onDismiss: (eventId: string) => void;
   /** The verbs for a card that isn't a resolved diagram or folder (useTimelineEntityMenus). */
   entityMenu: TimelineEntityMenuFor;
@@ -203,14 +203,14 @@ export function useTimelineCardSlots({
               recentExcluded: recentExcluded.includes(id),
               onToggleRecentExclusion: () => toggleRecentExclusion(id),
               // Offline diagrams never reach the worker, so they have no
-              // server history to show (spec/76).
+              // server history to show (docs/specs/006-diagram/offline-mode.md).
               onShowHistory: isOfflineIdSync(id)
                 ? undefined
                 : () => onShowHistory(id, diagram.name),
               // Straight to the Share dialog (the editor honours
               // `?share=1`): the natural next step from a share-link
               // card, and no worse from any other. Offline diagrams have
-              // nothing to share (spec/76).
+              // nothing to share (docs/specs/006-diagram/offline-mode.md).
               onShare: isOfflineIdSync(id)
                 ? undefined
                 : () => window.location.assign(`/diagram/${encodeURIComponent(id)}?share=1`),

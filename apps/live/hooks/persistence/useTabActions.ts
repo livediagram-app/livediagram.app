@@ -44,11 +44,11 @@ type TabActionsDeps = {
   commitTabs: (mapTabs: (ts: Tab[]) => Tab[]) => void;
   emitTabMeta: (tabId: string, summary: string) => void;
   // Mark a freshly-created tab as loaded so the lazy per-tab fetch
-  // (spec/13) skips it — a locally-created tab has no server row to
+  // (docs/specs/006-diagram/per-tab-storage.md) skips it — a locally-created tab has no server row to
   // pull, so without this the canvas would flash its loading overlay
   // over the new (and never-resolving) tab.
   markTabLoaded: (id: string) => void;
-  // Whether a tab's content has actually been fetched (spec/13).
+  // Whether a tab's content has actually been fetched (docs/specs/006-diagram/per-tab-storage.md).
   // Duplicate must refuse a still-loading source: copying the empty
   // placeholder and marking the copy loaded persists a permanently
   // empty tab.
@@ -113,7 +113,7 @@ export function useTabActions(deps: TabActionsDeps) {
           patternColor: activeTab.patternColor,
           // Carry the font + default text size too so tabs in one diagram
           // stay visually consistent instead of each reverting to default.
-          // Fall back to small (spec/28) when the active tab has no explicit
+          // Fall back to small (docs/specs/004-interface-design/fonts.md) when the active tab has no explicit
           // size, so a new tab still defaults to small rather than md.
           font: activeTab.font,
           defaultTextSize: activeTab.defaultTextSize ?? 'sm',
@@ -166,7 +166,7 @@ export function useTabActions(deps: TabActionsDeps) {
     const previous = tabs.find((t) => t.id === id)?.name ?? '';
     // Capped here rather than at each input, so every route in (the tab
     // pill's inline rename, the command palette, an import) lands under the
-    // same limit (spec/91).
+    // same limit (docs/specs/006-diagram/name-length.md).
     const trimmed = truncateName(name);
     if (trimmed === previous.trim()) return;
     commitTabs((ts) => ts.map((t) => (t.id === id ? { ...t, name: trimmed } : t)));
@@ -177,7 +177,7 @@ export function useTabActions(deps: TabActionsDeps) {
     track('Tab', 'Renamed');
   };
 
-  // Link the active tab into another of the user's diagrams (spec/17).
+  // Link the active tab into another of the user's diagrams (docs/specs/006-diagram/tab-diagram-many-to-many.md).
   // Goes through POST /api/diagrams/<target>/tabs/<tabId>/link so the
   // server inserts one `diagram_tabs` row pointing at the existing
   // tab body. The previous implementation cloned the tab into a fresh
@@ -220,7 +220,7 @@ export function useTabActions(deps: TabActionsDeps) {
       name: `${src.name} copy`,
       // Re-mint ids (arrow endpoints remapped): element ids must be
       // unique per DIAGRAM, not just per tab — verbatim copies made a
-      // peer's selection of the original render (and lock, spec/07) on
+      // peer's selection of the original render (and lock, docs/specs/007-editor/live-app.md) on
       // the copy too, since remote selections resolve by element id.
       elements: remintElementIds(src.elements.map((el) => ({ ...el }))),
     };
@@ -276,7 +276,7 @@ export function useTabActions(deps: TabActionsDeps) {
     // deleteTabRow (apps/api/src/db.ts): it only drops the change_log
     // rows when the underlying `tabs` row is itself dropped, so a
     // shared tab unlinked from this diagram keeps its history in any
-    // diagram that still surfaces it (per spec/17). The previous
+    // diagram that still surfaces it (per docs/specs/006-diagram/tab-diagram-many-to-many.md). The previous
     // client-side apiDeleteChangeLogForTab call wiped the log
     // globally, which silently broke the audit panel for every other
     // diagram sharing the tab.
@@ -294,7 +294,7 @@ export function useTabActions(deps: TabActionsDeps) {
     const srcIdx0 = tabs.findIndex((t) => t.id === sourceId);
     const tgtIdx0 = tabs.findIndex((t) => t.id === targetId);
     if (srcIdx0 < 0 || tgtIdx0 < 0) return;
-    // A drag ADOPTS the drop target's folder membership (spec/30): dropping
+    // A drag ADOPTS the drop target's folder membership (docs/specs/006-diagram/tab-folders.md): dropping
     // a tab among a folder's pills joins that folder, dropping it among
     // loose tabs makes it loose, and dropping onto the folder chip (which
     // targets the run's first member) joins too. So one drag both reorders
@@ -318,7 +318,7 @@ export function useTabActions(deps: TabActionsDeps) {
       const insertBase = next.findIndex((t) => t.id === targetId);
       const insertIdx = placeBefore ? insertBase : insertBase + 1;
       next.splice(insertIdx, 0, { ...moved!, folder: folder ?? undefined });
-      // Re-normalize so every folder stays one contiguous run (spec/30).
+      // Re-normalize so every folder stays one contiguous run (docs/specs/006-diagram/tab-folders.md).
       return normalizeFolderOrder(next);
     });
     // A drag that crosses a folder boundary reports the membership change, not

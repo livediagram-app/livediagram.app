@@ -1,6 +1,6 @@
 'use client';
 
-// The "Presets" accordion sections (spec/48), shared by the single-element
+// The "Presets" accordion sections (docs/specs/010-palette/style-presets.md), shared by the single-element
 // context menu (ElementAppearanceSections) and the multi-selection menu
 // (MultiSelectionContextMenu) so there is one implementation of each. The
 // apply / reset handlers on EditorContextMenuProps are already selection-wide
@@ -41,17 +41,17 @@ export function shapeSupportsPresets(el: Element): el is ShapeElement {
   // A preset is nothing but fill + stroke + text colours, so a shape that
   // takes no element colour has nothing for it to set. Asking the shared
   // predicate rather than keeping a second exclusion list here: a sticker
-  // (spec/116) paints its own plate and showed a full Presets grid where every
+  // (docs/specs/010-palette/stickers.md) paints its own plate and showed a full Presets grid where every
   // tile did nothing, because this list had never heard of stickers.
   if (!supportsColours(el)) return false;
   // The ones that DO take colours but still can't show a preset: an icon is
   // line art with no fill, a chart paints its series from its own palette,
-  // and a reveal (spec/106) is an opaque cover whose whole job is to be
+  // and a reveal (docs/specs/009-elements/reveal-zone.md) is an opaque cover whose whole job is to be
   // unreadable — every preset tile changed nothing a viewer could see.
   return el.shape !== 'icon' && el.shape !== 'reveal' && !isChartShape(el.shape);
 }
 
-// Presets (spec/48) — one-click theme-colour + border looks for a shape, plus a
+// Presets (docs/specs/010-palette/style-presets.md) — one-click theme-colour + border looks for a shape, plus a
 // reset to the theme default.
 export function ShapePresetsSection({
   shape,
@@ -102,7 +102,7 @@ export function ShapePresetsSection({
   );
 }
 
-// Presets (spec/48) — one-click line looks for an arrow (pattern / thickness /
+// Presets (docs/specs/010-palette/style-presets.md) — one-click line looks for an arrow (pattern / thickness /
 // optional flow animation), plus a reset.
 export function ArrowPresetsSection({
   current,
@@ -136,7 +136,7 @@ export function ArrowPresetsSection({
   );
 }
 
-// Code-block schemes (spec/82). A code block paints its own card and takes no
+// Code-block schemes (docs/specs/009-elements/code-block.md). A code block paints its own card and takes no
 // element colours, so its Presets grid is the colour SCHEME rather than the
 // shape looks: same accordion, same hover-preview, different vocabulary.
 export function CodeThemePresetsSection({
@@ -173,7 +173,7 @@ export function hasStylePresets(el: Element): boolean {
   );
 }
 
-// Table looks (spec/48): the four surfaces a table paints plus its banding,
+// Table looks (docs/specs/010-palette/style-presets.md): the four surfaces a table paints plus its banding,
 // theme-derived like the shape presets. Reset goes through the shared
 // reset-colours handler, which is what the Colours section's own reset uses.
 export function TablePresetsSection({
@@ -204,7 +204,7 @@ export function TablePresetsSection({
   );
 }
 
-// Chart palettes (spec/53). A chart styles per slice / series from its Data
+// Chart palettes (docs/specs/009-elements/pie-chart.md). A chart styles per slice / series from its Data
 // category, so its Presets grid is the RAMP those fall back to: one pick for
 // the whole chart, and it keeps applying as rows are added.
 export function ChartPalettePresetsSection({

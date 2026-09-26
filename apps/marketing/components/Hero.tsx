@@ -16,9 +16,9 @@ export function Hero() {
           Turn any idea into a clear diagram in minutes. Build it with your team in real time, then
           share it with a single link.
         </p>
-        {/* CTA pair (spec/16): the wizard is the encouraged path, so Choose
+        {/* CTA pair (docs/specs/019-marketing/marketing-site.md): the wizard is the encouraged path, so Choose
             Template is the primary and sits on the right; Just Draw is the
-            straight-to-blank-canvas escape hatch (spec/14). DOM order keeps
+            straight-to-blank-canvas escape hatch (docs/specs/007-editor/new-diagram-route.md). DOM order keeps
             the primary first so the mobile stack leads with it; sm:order-*
             swaps them side by side on desktop. */}
         <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">

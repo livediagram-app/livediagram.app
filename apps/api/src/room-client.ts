@@ -7,7 +7,7 @@ import {
 } from '@livediagram/diagram';
 import type { Env } from './types';
 
-// The worker's calls into a diagram's realtime room (spec/152): reading its
+// The worker's calls into a diagram's realtime room (docs/specs/012-collaboration/collab-race-hardening.md): reading its
 // collaboration ledger to merge a save, and handing it a change the api made.
 
 // A diagram has a room when it is shared or in a team; anything else has one
@@ -21,7 +21,7 @@ function roomStubFor(
 }
 
 // Merge the room's collaboration ledger into a tab a client is saving
-// (spec/152 phase 3).
+// (docs/specs/012-collaboration/collab-race-hardening.md phase 3).
 //
 // Every client PUTs whole tabs and D1 keeps the last one, so a save
 // snapshotted before somebody's answer, idea, tick or dot reached that client
@@ -82,7 +82,7 @@ export function parseRoomCursor(header: string | null): { epoch: string; seq: nu
 }
 
 // Hand the diagram's realtime room a change the api itself just wrote, so
-// everyone connected sees it (spec/152).
+// everyone connected sees it (docs/specs/012-collaboration/collab-race-hardening.md).
 //
 // The one case today is a view-role visitor's comment. The room refuses
 // mutations from a view-role socket, so the visitor writes through the

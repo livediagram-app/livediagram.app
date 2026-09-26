@@ -1,6 +1,6 @@
 'use client';
 
-// The block-type control (spec/102): Paragraph / Heading 1-3 / Bullet point /
+// The block-type control (docs/specs/009-elements/block-type-picker.md): Paragraph / Heading 1-3 / Bullet point /
 // Numbered point as one closed vocabulary.
 //
 // Heading level and list style are two independent run attributes, but to a
@@ -8,7 +8,7 @@
 // bullet. Both toolbars host this same control so the label editor and the
 // note editor describe a line the same way; only their apply SCOPE differs
 // (the label's collapsed caret means the whole text, the note's means the
-// line — spec/92), and that lives in each editor's session, not here.
+// line — docs/specs/009-elements/rich-text-notes.md), and that lives in each editor's session, not here.
 
 import type { ListStyle, RunHeading } from '@livediagram/diagram';
 import {

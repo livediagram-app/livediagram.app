@@ -1,6 +1,6 @@
 'use client';
 
-// What one element has to say, shown during a presentation (spec/31).
+// What one element has to say, shown during a presentation (docs/specs/012-collaboration/presentation-mode.md).
 //
 // The rule the whole mode runs on is READ ANYTHING, CHANGE NOTHING. Clicking
 // an element mid-presentation opens this: its note, its comment thread, and
@@ -61,7 +61,7 @@ export function PresentationElementPopover({
 }) {
   const note = element.note?.trim();
   const comments = activeCommentCount(element.commentThread);
-  // One assigned action per element (spec/68), not a list.
+  // One assigned action per element (docs/specs/012-collaboration/assigned-actions.md), not a list.
   const action = element.action;
 
   // Clamped so a click near an edge still opens a fully visible card.
@@ -98,7 +98,7 @@ export function PresentationElementPopover({
         <Section title="Note">
           <div className="text-[11px] leading-snug text-slate-600 dark:text-slate-300">
             {/* The same renderer the note popover uses, so formatting made
-                in the editor survives onto the projector (spec/92). */}
+                in the editor survives onto the projector (docs/specs/009-elements/rich-text-notes.md). */}
             <NoteRichText note={element.note} noteRich={element.noteRich} />
           </div>
         </Section>

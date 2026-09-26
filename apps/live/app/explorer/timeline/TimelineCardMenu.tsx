@@ -1,6 +1,6 @@
 'use client';
 
-// The ⋯ menu on a Timeline card (spec/138 §2.8, §2.9).
+// The ⋯ menu on a Timeline card (docs/specs/013-workspace/timeline.md §2.8, §2.9).
 //
 // Three shapes behind one trigger. A card about a diagram the Explorer
 // has loaded gets the same `DiagramActionsMenu` a Recent card uses, and
@@ -71,7 +71,7 @@ type Shared = {
   subject: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** Take this card off the reader's feed (spec/138 §2.9). */
+  /** Take this card off the reader's feed (docs/specs/013-workspace/timeline.md §2.9). */
   onRemove: () => void;
 };
 

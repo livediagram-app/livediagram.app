@@ -8,7 +8,7 @@ import {
 import { isSvgRenderedShape } from '@/components/canvas/shape-svg-overlay';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 
-// The looping-animation slice (spec/09), lifted out of BoxedElementView:
+// The looping-animation slice (docs/specs/008-canvas/canvas-and-palette.md), lifted out of BoxedElementView:
 // which surface each animation kind rides (the wrapper box, the rendered
 // text glyphs, or the shape's true SVG outline), the one-shot pop-in
 // entry class and its drop-off timer, and the CSS custom properties the
@@ -16,7 +16,7 @@ import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 // wrapper and label nodes.
 export function useBoxedElementAnimation(element: BoxedElement, textColor: string) {
   // The gradient animation blends the element's fill, which falls back to the
-  // canvas's own ink when the element carries none (spec/07).
+  // canvas's own ink when the element carries none (docs/specs/007-editor/live-app.md).
   const surface = useCanvasSurface();
   // A standalone text element has no fill or border, so the box-shadow / ring /
   // background animations (glow / pulse / trace / gradient) would animate an
@@ -33,7 +33,7 @@ export function useBoxedElementAnimation(element: BoxedElement, textColor: strin
   // overlay never renders for a sticker, so glow and pulse did nothing at all.
   // Routing it down this same filter path is what makes them appear.
   //
-  // A CHAIR (spec/130) is the same case again: furniture drawn edge to edge in
+  // A CHAIR (docs/specs/009-elements/chair.md) is the same case again: furniture drawn edge to edge in
   // its own svg over a transparent box, so the box-shadow versions ringed and
   // filled an invisible rectangle around it.
   const silhouetteAnim =
@@ -101,7 +101,7 @@ export function useBoxedElementAnimation(element: BoxedElement, textColor: strin
         '--lvd-anim-color': element.strokeColor ?? textColor,
         '--lvd-anim-speed':
           ANIMATION_SPEED_FACTOR[element.animationSpeed ?? DEFAULT_ANIMATION_SPEED],
-        // Repeat off = play once and hold (spec/09). The var inherits into
+        // Repeat off = play once and hold (docs/specs/008-canvas/canvas-and-palette.md). The var inherits into
         // the SVG-overlay / text-native variants, so one knob covers all
         // three surfaces an animation can ride.
         ...(element.animationRepeat === false ? { '--lvd-anim-iter': 1 } : {}),

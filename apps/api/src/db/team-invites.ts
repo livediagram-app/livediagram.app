@@ -1,4 +1,4 @@
-// Team invites (spec/32), split out of teams.ts: the email-invite rows
+// Team invites (docs/specs/013-workspace/teams.md), split out of teams.ts: the email-invite rows
 // (a team_members row with status 'invited'), the lazy claim that
 // connects a verified email to its Clerk user, the accept flip, and the
 // shareable one-week invite link with its token join. Core team /
@@ -8,7 +8,7 @@ import type { Team, TeamInvite, TeamMember } from '@livediagram/api-schema';
 import type { Env } from '../types';
 import { getMembership, JOINED_COUNT, rowToTeam, TEAM_COLS, type TeamRow } from './teams';
 
-// The lazy invite claim (spec/32): connect every pending row for this
+// The lazy invite claim (docs/specs/013-workspace/teams.md): connect every pending row for this
 // verified email to the caller's Clerk user id. Runs at the top of
 // GET /api/teams so an invitee sees the team on their next Explorer
 // visit whether they signed up before or after the invite. Idempotent
@@ -26,7 +26,7 @@ export async function connectInvitesByEmail(
 }
 
 // The caller's pending invites, oldest first: their own 'invited'
-// rows joined with enough of the team to decide on (spec/32).
+// rows joined with enough of the team to decide on (docs/specs/013-workspace/teams.md).
 export async function listInvitesByUser(env: Env, userId: string): Promise<TeamInvite[]> {
   const result = await env.DB.prepare(
     `SELECT t.id, t.name, t.organisation, t.created_at, t.updated_at,
@@ -46,7 +46,7 @@ export async function listInvitesByUser(env: Env, userId: string): Promise<TeamI
   }));
 }
 
-// The explicit yes (spec/32): flips the caller's own invite row to
+// The explicit yes (docs/specs/013-workspace/teams.md): flips the caller's own invite row to
 // 'joined'. Row-level authorisation (own row, currently invited)
 // happens in the route; this is the plain write.
 export async function acceptTeamMember(env: Env, memberId: string): Promise<void> {
@@ -55,7 +55,7 @@ export async function acceptTeamMember(env: Env, memberId: string): Promise<void
     .run();
 }
 
-// --- Shareable team invite link (spec/32) -----------------------------
+// --- Shareable team invite link (docs/specs/013-workspace/teams.md) -----------------------------
 
 // One week — the fixed lifetime of an invite link from when it's turned on.
 export const TEAM_INVITE_LINK_TTL_MS = 7 * 24 * 60 * 60 * 1000;
@@ -103,7 +103,7 @@ export async function getTeamByInviteToken(env: Env, token: string): Promise<Tea
   return row ? rowToTeam(row) : null;
 }
 
-// Join the caller to the team behind a valid invite token (spec/32).
+// Join the caller to the team behind a valid invite token (docs/specs/013-workspace/teams.md).
 // Idempotent: an existing joined member is a no-op; a pending email
 // invite for the caller is accepted in place rather than duplicated.
 // Returns null when the token is invalid / expired.

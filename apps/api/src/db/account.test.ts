@@ -4,7 +4,7 @@ import type { Env } from '../types';
 
 // deleteAccount wipes an owner's D1 rows AND the R2 objects the cascade
 // can't reach: image bytes (keyed by image id) and diagram SVG snapshots
-// (spec/67, keyed thumb/<diagramId>). A bulk `DELETE FROM diagrams` drops
+// (docs/specs/006-diagram/diagram-snapshots.md, keyed thumb/<diagramId>). A bulk `DELETE FROM diagrams` drops
 // the ids, so the snapshot keys must be enumerated + deleted first or
 // they orphan in R2. These pin that cleanup with a fake D1 + R2.
 
@@ -34,7 +34,7 @@ function fakeEnv(opts: {
   return { DB: { prepare }, IMAGES: opts.images } as unknown as Env;
 }
 
-describe('deleteAccount snapshot cleanup (spec/67)', () => {
+describe('deleteAccount snapshot cleanup (docs/specs/006-diagram/diagram-snapshots.md)', () => {
   it("bulk-deletes each diagram's thumb/<id> snapshot from R2", async () => {
     const del = vi.fn().mockResolvedValue(undefined);
     const env = fakeEnv({ diagramIds: ['d1', 'd2'], imageIds: ['i1'], images: { delete: del } });
@@ -63,7 +63,7 @@ describe('deleteAccount snapshot cleanup (spec/67)', () => {
   });
 });
 
-describe('deleteAccount leaves team folders to the team (spec/35)', () => {
+describe('deleteAccount leaves team folders to the team (docs/specs/013-workspace/team-shared-diagrams.md)', () => {
   it('deletes only personal folders', async () => {
     // A team folder carries its creator's owner_id, but teammates' diagrams
     // live in it; wiping it on the creator's account delete dropped them out

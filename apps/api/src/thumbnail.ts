@@ -1,4 +1,4 @@
-// Diagram SVG snapshot render-cache (spec/67). One cached SVG per
+// Diagram SVG snapshot render-cache (docs/specs/006-diagram/diagram-snapshots.md). One cached SVG per
 // diagram, stored in R2 (key `thumb/<diagramId>`), refreshed lazily on
 // read: if the cache is fresh (rendered at or after the diagram's last
 // save) we stream the stored bytes; otherwise we render the first tab
@@ -51,7 +51,7 @@ export async function getDiagramThumbnailSvg(
 ): Promise<string | null> {
   // No object store: nothing to cache into or read from. The endpoints
   // 404 and the Explorer row keeps its generic icon, same graceful
-  // degradation as the image gallery (spec/19) on a binding-less deploy.
+  // degradation as the image gallery (docs/specs/009-elements/images.md) on a binding-less deploy.
   if (!env.IMAGES) return null;
   const key = thumbnailKey(diagram.id);
 
@@ -84,10 +84,10 @@ export async function getDiagramThumbnailSvg(
   return svg;
 }
 
-// Live image for a SPECIFIC tab (spec/54's per-tab picker, now surfaced
+// Live image for a SPECIFIC tab (docs/specs/013-workspace/live-image-share.md's per-tab picker, now surfaced
 // in the Share dialog). Rendered on read and deliberately NOT written to
 // the R2 snapshot cache: `thumb/<diagramId>` is the first-tab artifact
-// shared with the Explorer thumbnail (spec/67) and carries a single
+// shared with the Explorer thumbnail (docs/specs/006-diagram/diagram-snapshots.md) and carries a single
 // per-diagram freshness stamp, so it has no room for a second tab. A
 // non-default tab is a niche embed, and the endpoint's short
 // stale-while-revalidate Cache-Control keeps repeat views cheap without

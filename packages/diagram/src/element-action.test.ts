@@ -58,7 +58,7 @@ describe('isOpenAction', () => {
   });
 });
 
-describe('graftLiveTabState actions (spec/68)', () => {
+describe('graftLiveTabState actions (docs/specs/012-collaboration/assigned-actions.md)', () => {
   it('carries a live action onto a snapshot that predates it (undo keeps the assignment)', () => {
     const live = [tab('t1', [shape('a', action())])];
     const snapshot = [tab('t1', [shape('a')])];

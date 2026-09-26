@@ -1,6 +1,6 @@
 # Experiments F: paper found, no box made
 
-Group F of [the experiment plan](../../../plans/event-storming-photo-95-experiments.md),
+Group F of the experiment plan,
 round 2: notes whose paper IS in the colour mask but for which no box survives.
 It owns `boxes.ts`, `standout.ts`, `texture.ts` and `detect.ts`, and added
 `narrow.ts` and `pads.ts`. Tools: `scripts/nobox.ts` (which gate drops each such

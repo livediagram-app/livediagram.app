@@ -1,7 +1,7 @@
 # Experiments, group A2: colour, round 2
 
-Part of [the experiment plan](../../../plans/event-storming-photo-95-experiments.md)
-towards [the bar](../../../plans/event-storming-photo-95.md), after
+Part of the experiment plan
+towards the bar, after
 [round 1's colour group](a-colour.md). Owned files: `classify.ts`, `floors.ts`,
 `lab.ts`, `colour.ts` (and `surface.ts`, `histogram.ts`, split out of
 `floors.ts` in round 1). Every number is from `scripts/calibrate.ts`, or from

@@ -83,7 +83,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         if (liveRef.current.canvasTool === 'isometric') {
           liveRef.current.setCanvasTool(isMobileViewportSync() ? 'pan' : 'select');
         }
-        // Avatar mode (spec/101): Escape puts the walking character away and
+        // Avatar mode (docs/specs/008-canvas/avatar-mode.md): Escape puts the walking character away and
         // hands editing back, same revert rule as Isometric.
         if (liveRef.current.canvasTool === 'avatar') {
           liveRef.current.setCanvasTool(isMobileViewportSync() ? 'pan' : 'select');
@@ -131,7 +131,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       const key = e.key;
       const lower = key.toLowerCase();
 
-      // --- Mind map growth (spec/118) ---
+      // --- Mind map growth (docs/specs/009-elements/mind-node.md) ---
       // Tab adds a child, Enter a sibling, both off the selected mind node.
       // Placed before every other branch because Tab is otherwise the
       // browser's focus key: left to bubble it would walk the chrome behind
@@ -155,7 +155,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         return;
       }
 
-      // --- Zen mode exit (spec/26) ---
+      // --- Zen mode exit (docs/specs/007-editor/zen-mode.md) ---
       // Escape leaves zen mode. Only when actually in zen, not mid-
       // edit / typing (there Escape cancels the label edit instead),
       // and with nothing MORE transient to peel first: an active mode
@@ -248,14 +248,14 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       if (inText) return;
       if (live.editingId !== null) return;
 
-      // --- Arrow-key nudge (spec/09 Move) ---
+      // --- Arrow-key nudge (docs/specs/008-canvas/canvas-and-palette.md Move) ---
       // Move the selection 1px per press, 10px with Shift. Bails for
       // view-role (no mutation) and when nothing is selected (so the
       // arrows keep their default page behaviour). Placed before the
       // letter shortcuts; arrow keys never collide with them.
       if (key === 'ArrowUp' || key === 'ArrowDown' || key === 'ArrowLeft' || key === 'ArrowRight') {
         if (live.isReadOnly) return;
-        // Avatar mode (spec/101) owns the arrow keys: they steer the walking
+        // Avatar mode (docs/specs/008-canvas/avatar-mode.md) owns the arrow keys: they steer the walking
         // character (useAvatarWalk), and the mode is read-only anyway.
         if (live.canvasTool === 'avatar') return;
         const hasSelection = live.multiSelectedIds.size > 0 || live.selectedId !== null;
@@ -279,7 +279,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         return;
       }
 
-      // --- Type-to-edit (spec/09 Labels) ---
+      // --- Type-to-edit (docs/specs/008-canvas/canvas-and-palette.md Labels) ---
       // A printable key on a single selected, label-bearing element
       // opens its label editor seeded with that character, INSTEAD of
       // firing the tool / add shortcuts below — the user kept selecting
@@ -310,7 +310,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       }
 
       if (live.isReadOnly) return;
-      // Avatar mode (spec/101) is read-only FOR THE PRESENTER too: the
+      // Avatar mode (docs/specs/008-canvas/avatar-mode.md) is read-only FOR THE PRESENTER too: the
       // element-add / Eraser / Pencil keys stay dormant while walking, so a
       // stray keypress can't drop a shape mid-narration. The view tools above
       // already ran, so V / H / K / I / Z remain the way out.

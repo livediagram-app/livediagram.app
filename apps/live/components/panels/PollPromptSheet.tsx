@@ -1,6 +1,6 @@
 'use client';
 
-// The poll prompt every participant sees when a host starts one (spec/88).
+// The poll prompt every participant sees when a host starts one (docs/specs/012-collaboration/live-poll.md).
 // Shown to view-role visitors too — polling an audience on a view link is the
 // main use for this.
 //

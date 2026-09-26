@@ -8,7 +8,7 @@ import { AreaErrorBoundary } from './AreaErrorBoundary';
 // Without this a single bad render in the tab / canvas menu unmounted the
 // whole page (the "page crashes when I open the tab menu" report). The
 // boundary swallows the fault, logs it, reports it as `Render.Menu.*`
-// (spec/22), and asks the owner to close the menu, so the next open starts
+// (docs/specs/017-telemetry/telemetry.md), and asks the owner to close the menu, so the next open starts
 // from a clean mount.
 export function MenuErrorBoundary({
   onError,

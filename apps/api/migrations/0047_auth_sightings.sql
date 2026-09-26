@@ -1,4 +1,4 @@
--- Server-side sign-up / sign-in counting (spec/22, Session).
+-- Server-side sign-up / sign-in counting (docs/specs/017-telemetry/telemetry.md, Session).
 --
 -- Session·SignedUp and Session·SignedIn used to be emitted by the browser on
 -- the email-code paths only, so a Google sign-up or sign-in (the OAuth

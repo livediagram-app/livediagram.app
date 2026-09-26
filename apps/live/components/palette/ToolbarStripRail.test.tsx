@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// The strip's animated rail (spec/148): tiles pop in only on a real category
+// The strip's animated rail (docs/specs/007-editor/toolbar-layout.md): tiles pop in only on a real category
 // switch, and the outgoing set leaves on an inert layer.
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';

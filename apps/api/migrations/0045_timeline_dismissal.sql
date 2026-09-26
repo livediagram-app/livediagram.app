@@ -1,4 +1,4 @@
--- Per-entry dismissal on the Timeline (spec/138 §2.9).
+-- Per-entry dismissal on the Timeline (docs/specs/013-workspace/timeline.md §2.9).
 --
 -- A reader can take one card off THEIR feed from its ⋯ menu. The event
 -- row is shared by everybody it was scoped to (one comment, N

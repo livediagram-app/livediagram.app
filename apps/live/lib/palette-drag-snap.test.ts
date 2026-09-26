@@ -8,7 +8,7 @@ import {
 } from '@livediagram/diagram';
 import { paletteDragSnapAt } from './palette-drag-snap';
 
-// Alignment help BEFORE the drop (spec/139): while a palette tile is dragged
+// Alignment help BEFORE the drop (docs/specs/021-event-storming/event-storming.md): while a palette tile is dragged
 // over the canvas, the ghost snaps to its neighbours' edges / centres and the
 // same faint guide lines a move shows appear. The geometry is pure — the
 // cursor's canvas point + the footprint that will land, against the tab's
@@ -109,7 +109,7 @@ describe('paletteDragSnapAt', () => {
   });
 });
 
-// Timeline lanes (spec/139 Phase 6): the same rungs the note-drag resolver
+// Timeline lanes (docs/specs/021-event-storming/event-storming.md Phase 6): the same rungs the note-drag resolver
 // applies, so a note dragged in from the palette joins the row the board has
 // already committed to and lines up with the notes already in it.
 describe('paletteDragSnapAt — timeline lanes', () => {

@@ -1,6 +1,6 @@
 // The legend shared by the chart-family element views (pie, bar, line): a
 // colour-swatch + label per datum, painted into the strip the chart layout
-// reserves (`legend` from chartFrame — spec/53). A left/right legend stacks in
+// reserves (`legend` from chartFrame — docs/specs/009-elements/pie-chart.md). A left/right legend stacks in
 // a column; a top/bottom legend wraps in a centred row. Renders nothing when
 // the strip is too small to read, so callers can always mount it. `colorAt`
 // resolves each datum's swatch colour (explicit slice colour, else the
@@ -30,7 +30,7 @@ export function ChartLegend({
   legend: LegendRect;
   textColor: string;
   fontFamily?: string;
-  // The row text size, from the chart's Text Size (legendFontPx, spec/53).
+  // The row text size, from the chart's Text Size (legendFontPx, docs/specs/009-elements/pie-chart.md).
   fontPx: number;
 }) {
   // The swatch keeps its proportion to the words beside it.

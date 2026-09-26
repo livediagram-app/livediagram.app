@@ -4,7 +4,7 @@ import { svgPieChart } from './svg-render-charts';
 import { svgLegendShape } from './svg-render-shapes';
 import { createShape } from './factories';
 
-describe('legendFontPx (spec/53)', () => {
+describe('legendFontPx (docs/specs/009-elements/pie-chart.md)', () => {
   it('reads larger than the old fixed 11px chart key by default', () => {
     expect(legendFontPx(undefined)).toBe(LEGEND_FONT_PX.md);
     expect(legendFontPx(undefined)).toBeGreaterThan(11);

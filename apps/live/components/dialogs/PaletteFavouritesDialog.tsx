@@ -1,6 +1,6 @@
 'use client';
 
-// Edit-favourites modal (spec/78). Opened from the Favourites tab's footer
+// Edit-favourites modal (docs/specs/010-palette/palette-favourites.md). Opened from the Favourites tab's footer
 // Edit button: a category picker + a search box over the fixed creation tiles
 // of the picked category (Shapes first — there is deliberately no "All"), laid
 // out as a compact 5-per-row tile grid. Each tile carries a
@@ -43,7 +43,7 @@ type PaletteFavouritesDialogProps = {
 
 // The categories to pick from, DERIVED from the palette's own category
 // catalogue
-// rather than restated (spec/78).
+// rather than restated (docs/specs/010-palette/palette-favourites.md).
 //
 // This used to be its own hand-written list and it drifted the moment the
 // palette changed: by the time anyone noticed, the dialog was offering a
@@ -149,7 +149,7 @@ export function PaletteFavouritesDialog({
       onClose={onClose}
       titleId="favourites-dialog-title"
       // 3xl + a denser desktop grid: long categories (Icons, Technology)
-      // were a narrow five-wide column that scrolled forever (spec/78).
+      // were a narrow five-wide column that scrolled forever (docs/specs/010-palette/palette-favourites.md).
       size="3xl"
       className="max-h-[80vh]"
       backdrop="desktop-light"

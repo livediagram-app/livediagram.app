@@ -1,4 +1,4 @@
-// Excalidraw import (spec/87): parse a `.excalidraw` scene (Excalidraw's
+// Excalidraw import (docs/specs/020-import-export/excalidraw-import-export.md): parse a `.excalidraw` scene (Excalidraw's
 // plain-JSON save format) into livediagram elements for the Import dialog's
 // replace-the-tab flow. Sibling of markdown-import.ts; lazy-loaded by
 // useTabImport. Never throws on bad input — user-supplied JSON is expected
@@ -183,7 +183,7 @@ export function buildElementsFromExcalidraw(text: string): ExcalidrawImportResul
   );
 
   // Fresh ids for everything. Excalidraw's `groupIds` are not carried over:
-  // livediagram has no groups (spec/147), so grouped elements arrive as
+  // livediagram has no groups (docs/specs/009-elements/web-components-and-no-groups.md), so grouped elements arrive as
   // separate elements in the same places.
   const idMap = new Map<string, string>();
   for (const e of src) if (e.id) idMap.set(e.id, crypto.randomUUID());
@@ -289,7 +289,7 @@ export function buildElementsFromExcalidraw(text: string): ExcalidrawImportResul
         break;
       case 'image':
         // Bytes aren't migrated in v1 (they'd need an R2 upload per file);
-        // a placeholder image element keeps the layout slot (spec/87).
+        // a placeholder image element keeps the layout slot (docs/specs/020-import-export/excalidraw-import-export.md).
         el = { id, type: 'image', imageId: null, ...common };
         break;
       default:
@@ -334,7 +334,7 @@ export function buildElementsFromExcalidraw(text: string): ExcalidrawImportResul
     const headShape = ARROWHEAD_MAP[endHead ?? startHead ?? ''];
 
     // Intermediate points bend the connector: stored as deltas from the
-    // chord midpoint (our multi-bend curve model, spec/09).
+    // chord midpoint (our multi-bend curve model, docs/specs/008-canvas/canvas-and-palette.md).
     const mid = { x: (first.x + last.x) / 2, y: (first.y + last.y) / 2 };
     const curvePoints = pts.slice(1, -1).map((p) => {
       const at = absPoint(e, p as [number, number]);
@@ -376,8 +376,8 @@ export function buildElementsFromExcalidraw(text: string): ExcalidrawImportResul
 //
 // Closure is decided GEOMETRICALLY — ends that coincide — and deliberately not
 // from `straightEdges`. It was gated on it originally because closing was
-// thought about as a polygon-tool property (spec/84), but a pencil stroke
-// released near where it started closes and fills too (spec/09), and our own
+// thought about as a polygon-tool property (docs/specs/008-canvas/polygon-tool.md), but a pencil stroke
+// released near where it started closes and fills too (docs/specs/008-canvas/canvas-and-palette.md), and our own
 // exporter treats both kinds identically: it appends the repeated first point
 // and writes the fill whenever `closed` is set, for `freedraw` as much as
 // `line`. Gated, the import read that back as an open stroke, so a filled

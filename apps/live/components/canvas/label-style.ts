@@ -67,12 +67,12 @@ export type LabelTextStyle = {
   italic?: boolean;
   underline?: boolean;
   strikethrough?: boolean;
-  // Resolved CSS font-family stack (spec/28). Undefined = inherit the
+  // Resolved CSS font-family stack (docs/specs/004-interface-design/fonts.md). Undefined = inherit the
   // editor default. Applied to both the committed label and its live
   // editor so there's no font jump on commit.
   fontFamily?: string;
   // Paint in capitals whatever was typed (an event-storming note,
-  // spec/139). A CSS transform, not a rewrite: the stored label keeps the
+  // docs/specs/021-event-storming/event-storming.md). A CSS transform, not a rewrite: the stored label keeps the
   // author's casing, and the live editor wears the same rule so typing
   // shows the note as it will read.
   uppercase?: boolean;
@@ -100,7 +100,7 @@ export function labelTextStyleCss(style: LabelTextStyle): React.CSSProperties {
 // overrides them — otherwise the span inherits the wrapper's base font and
 // the element's resolved text colour (set as `color`/currentColor on the
 // parent element view, same as the legacy label path).
-// Heading levels as multipliers on the inherited size (spec/102).
+// Heading levels as multipliers on the inherited size (docs/specs/009-elements/block-type-picker.md).
 const HEADING_SCALE: Record<RunHeading, { scale: number; weight: number }> = {
   1: { scale: 1.7, weight: 700 },
   2: { scale: 1.35, weight: 700 },
@@ -121,7 +121,7 @@ export function effectiveRunStyle(
   });
   if (run.color) css.color = run.color;
   if (run.size) css.fontSize = `${runSizePx[run.size]}px`;
-  // Headings (spec/102). Expressed as `em` rather than px so a heading scales
+  // Headings (docs/specs/009-elements/block-type-picker.md). Expressed as `em` rather than px so a heading scales
   // with whatever base size the element carries — a label, a sticky and a
   // page all have different bases, and pinning heading px like the note
   // renderer does would make an H1 smaller than the body on a large element.

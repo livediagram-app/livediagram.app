@@ -1,4 +1,4 @@
--- Per-tab storage. See spec/13-per-tab-storage.md.
+-- Per-tab storage. See docs/specs/006-diagram/per-tab-storage.md.
 --
 -- Before this migration tabs lived as a JSON array inside
 -- diagrams.data. Every keystroke serialised every tab on every save.

@@ -1,6 +1,6 @@
 'use client';
 
-// The Slide Deck panel (spec/31): where a deck is built, ordered, checked and
+// The Slide Deck panel (docs/specs/012-collaboration/presentation-mode.md): where a deck is built, ordered, checked and
 // started. The seventh tool panel, on the same contract as the other six —
 // mounted only while its tool is active, docks in the corner stack, gets a
 // mobile dock button.
@@ -259,7 +259,7 @@ export function SlideDeckPanel({
   // Row drag. The order does NOT change while you drag: a caret shows where the
   // row will land and the move commits on release. Reordering live meant the
   // list reshuffled under the pointer, which moved the very row you were aiming
-  // at — the tab bar settled this question already (spec/30) and this follows
+  // at — the tab bar settled this question already (docs/specs/006-diagram/tab-folders.md) and this follows
   // it, with pointer events instead of HTML5 dnd so it works on touch.
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [moving, setMoving] = useState(false);

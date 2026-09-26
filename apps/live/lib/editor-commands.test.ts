@@ -81,7 +81,7 @@ describe('buildEditorCommands — diagram/tab commands', () => {
     expect(ids({ ...base, isOwner: false })).not.toContain('share');
   });
 
-  it('hides Share for offline diagrams (spec/76)', () => {
+  it('hides Share for offline diagrams (docs/specs/006-diagram/offline-mode.md)', () => {
     expect(ids({ ...base, isOffline: true })).not.toContain('share');
   });
 
@@ -190,8 +190,8 @@ describe('buildEditorCommands — dispatch', () => {
   });
 });
 
-// Spec/70: the app-level command palette expansion.
-describe('buildEditorCommands — app-level commands (spec/70)', () => {
+// docs/specs/007-editor/command-palette.md: the app-level command palette expansion.
+describe('buildEditorCommands — app-level commands (docs/specs/007-editor/command-palette.md)', () => {
   it('offers view / cleanup / dialog commands for editors', () => {
     expect(ids(base)).toEqual(
       expect.arrayContaining([
@@ -274,7 +274,7 @@ describe('buildEditorCommands — app-level commands (spec/70)', () => {
     expect(h.openExport).toHaveBeenCalledOnce();
   });
 
-  // Spec/47 "Layout styles": one command per explicit style, each passing
+  // docs/specs/008-canvas/layout-cleanup.md "Layout styles": one command per explicit style, each passing
   // its choice through to the shared autoLayout handler.
   it('offers a command per layout style and passes the choice through', () => {
     const h = handlers();
@@ -293,7 +293,7 @@ describe('buildEditorCommands — app-level commands (spec/70)', () => {
   });
 });
 
-// Canvas-tool switches (spec/09 "Search panel"). The palette's tool dropdown
+// Canvas-tool switches (docs/specs/008-canvas/canvas-and-palette.md "Search panel"). The palette's tool dropdown
 // was the only way to reach Hand / Eraser / Laser / Spotlight / Avatar /
 // Isometric; the search panel offered none of them.
 describe('canvas tool commands', () => {
@@ -347,7 +347,7 @@ describe('canvas tool commands', () => {
 });
 
 // Timeline lanes are not a verb any more: an event-storming board is always on
-// lanes, so there is nothing to turn on or off (spec/139 Phase 6).
+// lanes, so there is nothing to turn on or off (docs/specs/021-event-storming/event-storming.md Phase 6).
 describe('event-storming board commands', () => {
   it('offers no timeline-lanes command anywhere', () => {
     expect(ids(base)).not.toContain('timeline-lanes');
@@ -355,7 +355,7 @@ describe('event-storming board commands', () => {
   });
 });
 
-// Photo import (spec/139 Phase 8) is offered only where it can actually run:
+// Photo import (docs/specs/021-event-storming/event-storming.md Phase 8) is offered only where it can actually run:
 // an event-storming board, on a deployment that has a model key.
 describe('the photo-import command', () => {
   it('is absent on an ordinary diagram', () => {

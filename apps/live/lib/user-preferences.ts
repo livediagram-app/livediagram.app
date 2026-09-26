@@ -1,6 +1,6 @@
 export type MapSize = 'short' | 'medium' | 'tall';
 
-// Per-user editor preference flags. See spec/20.
+// Per-user editor preference flags. See docs/specs/007-editor/user-preferences.md.
 //
 // Storage:
 //   - D1 (`user_preferences` table) is the authoritative store, fetched
@@ -23,7 +23,7 @@ import { readLocalStorageSafe, writeLocalStorageSafe } from './local-storage-saf
 
 export type UserPreferences = {
   // When `true`, the editor runs the auto arrow-rebind pass on
-  // move (spec/20's `rebindArrowAnchorsAfterMove` in
+  // move (docs/specs/007-editor/user-preferences.md's `rebindArrowAnchorsAfterMove` in
   // packages/diagram). Missing / undefined / false === auto-rebind
   // OFF: anchors stay where the user chose them at draw time.
   // Consumers derive the effective value via
@@ -34,13 +34,13 @@ export type UserPreferences = {
   // NEXT_PUBLIC_TELEMETRY_ENABLED gate and the api worker's
   // TELEMETRY_ENABLED gate. Missing / undefined === on.
   telemetryEnabled?: boolean;
-  // DEAD as of spec/115: shape recognition is now which pen you picked
+  // DEAD as of docs/specs/008-canvas/two-pens.md: shape recognition is now which pen you picked
   // (Freehand or Shape Pen), not a persisted mode. Nothing reads this any
   // more. It stays in the type because it is already stored in D1 for
   // existing users, and removing it would make a stored preference fail to
   // parse rather than simply be ignored.
   recogniseShapes?: boolean;
-  // Map panel options (spec/59). Both default ON / medium via `!== false`
+  // Map panel options (docs/specs/008-canvas/minimap.md). Both default ON / medium via `!== false`
   // and `?? 'medium'`, so an existing user's map is unchanged.
   //
   // `mapDimOutside` shades everything outside the current view. It reads as
@@ -50,7 +50,7 @@ export type UserPreferences = {
   // How tall the map is. A big diagram is unreadable in a 144px strip; a
   // small one doesn't need more.
   mapSize?: MapSize;
-  // Layers panel options (spec/74). Both default ON via `!== false`.
+  // Layers panel options (docs/specs/006-diagram/layers.md). Both default ON via `!== false`.
   //
   // The row thumbnail is the quickest way to tell two similarly-named layers
   // apart, but it is also the tallest thing in a row — turning it off gives a
@@ -58,31 +58,31 @@ export type UserPreferences = {
   layersShowPreview?: boolean;
   // The per-layer element count, beside the name.
   layersShowCount?: boolean;
-  // AI Assistance panel (spec/25). When `true`, the AI panel is
+  // AI Assistance panel (docs/specs/007-editor/ai-assistance.md). When `true`, the AI panel is
   // rendered in the editor. Defaults to false (opt-in). Only
   // surfaced in Settings when the api worker reports aiEnabled:true
   // (i.e. a model key is configured). Missing / undefined / false
   // === panel hidden.
   aiAssistanceEnabled?: boolean;
-  // Show the quick suggested-prompt chips in the AI panel (spec/25).
+  // Show the quick suggested-prompt chips in the AI panel (docs/specs/007-editor/ai-assistance.md).
   // Handy but they take vertical space, so the AI panel's settings
   // popover can hide them. Missing / undefined / true === shown (the
   // default); an explicit false hides them.
   aiSuggestedPrompts?: boolean;
-  // Minimal panel layout (spec/09). When `true`, the floating panels
+  // Minimal panel layout (docs/specs/008-canvas/canvas-and-palette.md). When `true`, the floating panels
   // (Explorer, Palette, Editor, AI) are replaced by a compact button
   // row that opens each panel as a popover on click. Always active on
   // mobile regardless of this setting. Missing / undefined / false ===
-  // standard floating panels on desktop. Legacy since spec/148: kept in
+  // standard floating panels on desktop. Legacy since docs/specs/007-editor/toolbar-layout.md: kept in
   // step with `panelLayout` (true only for 'minimal') so older
   // readers still see a sensible layout. Read the layout through
   // `resolvePanelLayout`, never this flag directly.
   minimalPanels?: boolean;
-  // Desktop panel layout (spec/148): 'floating' (default), 'minimal' (the
-  // dock, spec/09) or 'toolbar' (the Palette as a top strip, no Explorer
+  // Desktop panel layout (docs/specs/007-editor/toolbar-layout.md): 'floating' (default), 'minimal' (the
+  // dock, docs/specs/008-canvas/canvas-and-palette.md) or 'toolbar' (the Palette as a top strip, no Explorer
   // panel). Missing → derived from `minimalPanels`.
   panelLayout?: PanelLayout;
-  // Panel opacity (spec/20). The opacity (0..1) of the FULL floating
+  // Panel opacity (docs/specs/007-editor/user-preferences.md). The opacity (0..1) of the FULL floating
   // panels (Explorer, Palette, Editor, AI) at rest, so the canvas shows
   // through; they snap back to fully opaque while hovered / focused.
   // Applied via the `--lvd-panel-opacity` custom property (see
@@ -90,20 +90,20 @@ export type UserPreferences = {
   // dock bar never reads the var, so this leaves the minimal layout
   // untouched. Missing / undefined / 1 === fully opaque, the default.
   panelOpacity?: number;
-  // Quick-add on hover (spec/09). When `true`, an element's quick-add "+"
+  // Quick-add on hover (docs/specs/008-canvas/canvas-and-palette.md). When `true`, an element's quick-add "+"
   // buttons open their menu on hover instead of requiring a click; moving
   // the pointer away closes it. The "+" buttons still only appear on the
   // selected element, and a click still opens the menu either way. Missing /
   // undefined / false === click to open, the default (hover-open can feel
   // twitchy, so it's opt-in).
   quickAddOnHover?: boolean;
-  // Alignment guides (spec/09). When `false`, the editor skips the
+  // Alignment guides (docs/specs/008-canvas/canvas-and-palette.md). When `false`, the editor skips the
   // faint guide lines drawn along the edges / centres a dragged or
   // resized element shares with its neighbours (the snap itself is
   // unaffected; only the visual hint is suppressed). Missing /
   // undefined === guides on, the default.
   alignmentGuides?: boolean;
-  // Reduce motion (accessibility, spec/20). When `true`, the editor adds
+  // Reduce motion (accessibility, docs/specs/007-editor/user-preferences.md). When `true`, the editor adds
   // `.reduce-motion` to <html> so the CSS in globals.css collapses every
   // decorative animation + transition to ~instant. Independent of the OS
   // `prefers-reduced-motion` media query (which is always honoured): this
@@ -111,7 +111,7 @@ export type UserPreferences = {
   // syncs across their devices. Missing / undefined / false === full
   // motion (subject to the OS setting), the default.
   reduceMotion?: boolean;
-  // Toast notifications (spec/20). When `false`, the editor suppresses
+  // Toast notifications (docs/specs/007-editor/user-preferences.md). When `false`, the editor suppresses
   // the confirmation / status toasts (success + info tones) it shows
   // for consequential, otherwise-silent actions (a diagram moved to a
   // folder, a tab linked, etc.). ERROR toasts are NOT gated by this:
@@ -126,26 +126,26 @@ export type UserPreferences = {
   // it mirrors Figma, and the pan works from anywhere on the canvas
   // regardless of the active tool. Lives in the Controls group.
   middleMousePan?: boolean;
-  // Minimap (spec/59). When `false`, the bottom-left canvas minimap is hidden.
+  // Minimap (docs/specs/008-canvas/minimap.md). When `false`, the bottom-left canvas minimap is hidden.
   // Missing / undefined / true === shown, the default (and even then only once
   // the tab has a few elements, the Activity panel is minimised, and on
   // desktop). The minimap's own close button writes an explicit `false`.
   showMinimap?: boolean;
-  // Layers panel hover-solo (spec/74). When `false`, resting the pointer
+  // Layers panel hover-solo (docs/specs/006-diagram/layers.md). When `false`, resting the pointer
   // on a Layers-panel row no longer solos that layer on the canvas.
   // Missing / undefined / true === on, the default. Flipped from the
   // panel's settings gear (desktop-only chrome, like the hover itself).
   layerHoverPreview?: boolean;
-  // Activity panel revert hover-preview (spec/12). When `false`,
+  // Activity panel revert hover-preview (docs/specs/012-collaboration/activity-and-audit.md). When `false`,
   // resting the pointer on a revertable Activity row no longer
   // previews the revert on the canvas (the Revert button itself is
   // unaffected). Missing / undefined / true === on, the default.
   // Flipped from the Activity panel's settings gear, mirroring
   // `layerHoverPreview` above.
   activityRevertHoverPreview?: boolean;
-  // Email notifications (spec/65). Account-level settings flipped from the
+  // Email notifications (docs/specs/014-identity/profile-and-email-notifications.md). Account-level settings flipped from the
   // Settings dialog; the api worker reads them server-side before
-  // sending the matching transactional email (spec/64). Distinct from
+  // sending the matching transactional email (docs/specs/014-identity/transactional-email.md). Distinct from
   // `notificationsEnabled`, which is about in-editor toasts, not email.
   // Missing / undefined / true === notify (opt-out); an explicit false
   // suppresses that email.
@@ -157,9 +157,9 @@ export type UserPreferences = {
   notifyComments?: boolean;
   notifyTips?: boolean;
   notifyMilestones?: boolean;
-  // "A teammate assigned me an action on a diagram element" (spec/68).
+  // "A teammate assigned me an action on a diagram element" (docs/specs/012-collaboration/assigned-actions.md).
   notifyActionAssigned?: boolean;
-  // The interactive editor tour's seen-guard (spec/79). True once the
+  // The interactive editor tour's seen-guard (docs/specs/007-editor/editor-tour.md). True once the
   // tour's welcome offer has been answered (taken, skipped, or declined),
   // so the offer never re-appears for this user — synced, so it follows
   // the account across devices like every other preference. Surfaced in
@@ -167,7 +167,7 @@ export type UserPreferences = {
   // closing Settings replays the tour. Missing / undefined === not seen.
   tourSeen?: boolean;
   // Diagrams this user has hidden from the Explorer's Recent list
-  // (spec/93). PER-USER rather than a field on the diagram: your Recent
+  // (docs/specs/013-workspace/hide-from-recent.md). PER-USER rather than a field on the diagram: your Recent
   // is your view of your own work, and on a shared diagram one
   // collaborator hiding it must not hide it from everyone else.
   //
@@ -175,7 +175,7 @@ export type UserPreferences = {
   // 4 KB server-side cap, which `toggleRecentExcluded` below budgets for.
   // Missing / undefined === nothing excluded.
   // Colours you have used that were not already on the theme's palette
-  // (spec/09 Colours). Picking one off the OS picker or the pipette adds it
+  // (docs/specs/008-canvas/canvas-and-palette.md Colours). Picking one off the OS picker or the pipette adds it
   // here, so the next element can be given the SAME colour with one click
   // instead of being matched by eye. Right-clicking one removes it again.
   // Newest first, capped, and synced like every other preference so a
@@ -212,7 +212,7 @@ export function toggleRecentExcluded(prefs: UserPreferences, diagramId: string):
 export const STORAGE_KEY = USER_PREFERENCES_STORAGE_KEY;
 export const PREFERENCES_CHANGED_EVENT = 'livediagram:preferences-changed';
 
-// The three desktop panel layouts (spec/148), in the order Settings offers
+// The three desktop panel layouts (docs/specs/007-editor/toolbar-layout.md), in the order Settings offers
 // them.
 export const PANEL_LAYOUTS = ['floating', 'minimal', 'toolbar'] as const;
 export type PanelLayout = (typeof PANEL_LAYOUTS)[number];
@@ -233,7 +233,7 @@ export function withPanelLayout(prefs: UserPreferences, layout: PanelLayout): Us
   return { ...prefs, panelLayout: layout, minimalPanels: layout === 'minimal' };
 }
 
-// The effective "Auto-attach arrows" state (spec/20): opt-in, so only
+// The effective "Auto-attach arrows" state (docs/specs/007-editor/user-preferences.md): opt-in, so only
 // an explicit `true` enables the on-move rebind pass. The single home
 // for the default — the palette settings popover and the
 // editor-preferences hook both call this instead of re-deriving it.
@@ -290,7 +290,7 @@ export function writeUserPreferences(prefs: UserPreferences, ownerId?: string | 
 // dispatch `livediagram:preferences-changed` so in-process listeners
 // pick up the merged value. Returns the merged preferences (or null
 // when the fetch failed; the caller can treat that as "stick with
-// the cache"). Called once at editor mount per spec/20's sync flow.
+// the cache"). Called once at editor mount per docs/specs/007-editor/user-preferences.md's sync flow.
 //
 // Server-wins on conflict: the server holds the most-recently-saved
 // state across all of this owner's devices, so any key present on

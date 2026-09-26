@@ -35,9 +35,9 @@ export type MovablePanelPlacementProps = {
   position: { x: number; y: number } | null;
   onMoveTo: (x: number, y: number) => void;
   onReset?: () => void;
-  // Corner-docking bundle (spec/63), forwarded to the inner MovablePanel.
+  // Corner-docking bundle (docs/specs/007-editor/panel-docking.md), forwarded to the inner MovablePanel.
   dock?: MovablePanelDockProps;
-  // Mobile / minimal-layout dock plumbing (spec/07 "Mobile chrome"): a panel
+  // Mobile / minimal-layout dock plumbing (docs/specs/007-editor/live-app.md "Mobile chrome"): a panel
   // with its own dock button opens as a popover there, so it hides unless the
   // dock has it open.
   mobileOpenOverride?: boolean;
@@ -47,7 +47,7 @@ export type MovablePanelPlacementProps = {
   // layout and ignores its own dock button.
   forceDockMode?: boolean;
   // Close the dock popover on any press outside it, as a menu does, at every
-  // viewport. The Toolbar layout's Explorer (spec/148) is a menu off its
+  // viewport. The Toolbar layout's Explorer (docs/specs/007-editor/toolbar-layout.md) is a menu off its
   // button, so opening another strip menu puts it away.
   dismissOnOutside?: boolean;
   onMobileClose?: () => void;
@@ -80,7 +80,7 @@ export type MovablePanelProps = {
   // Palette's settings popover trigger). Only rendered in the desktop
   // floating-panel header; the mobile dock popover has no header.
   headerActions?: ReactNode;
-  // The help article this panel is explained by (spec/56). Rendered as the
+  // The help article this panel is explained by (docs/specs/018-help/contextual-help-links.md). Rendered as the
   // `?` chrome button beside reset / minimise, in BOTH the desktop header and
   // the mobile/minimal band, so the help we already wrote is reachable from
   // the feature it documents rather than only by searching for it.
@@ -138,7 +138,7 @@ export type MovablePanelProps = {
   // starts expanded and stays open until the user clicks the button
   // again. Replaces the dock-button minimise mechanism for opted-in
   // panels: the banner stays in the corner so the affordance is
-  // always visible. See spec/09 "Collapse to banner".
+  // always visible. See docs/specs/008-canvas/canvas-and-palette.md "Collapse to banner".
   collapsible?: boolean;
   // When true, start collapsed on first paint regardless of viewport.
   // Default (undefined / false) preserves the historical behaviour:
@@ -178,7 +178,7 @@ export type MovablePanelProps = {
   // sets it today; a second claimant means the panels need a real focus-raise
   // rather than a second bump.
   elevated?: boolean;
-  // --- Corner docking (spec/63, desktop only) ---
+  // --- Corner docking (docs/specs/007-editor/panel-docking.md, desktop only) ---
   // When true the panel renders as a static flex child of its corner
   // stack container (no absolute positioning / corner class), so the
   // container owns its resting position + reflow. Ignored while a drag
@@ -198,7 +198,7 @@ export type MovablePanelProps = {
   onDockDragStart?: () => void;
   onDockDrag?: (geom: PanelDragGeometry) => void;
   onDockDragEnd?: (geom: PanelDragGeometry) => void;
-  // Stable anchor id for the interactive tour (spec/79), rendered as
+  // Stable anchor id for the interactive tour (docs/specs/007-editor/editor-tour.md), rendered as
   // `data-tour-id` on the panel root in BOTH render paths (floating panel
   // and mobile/minimal dock popover) so tour steps can find the panel
   // whatever the layout.

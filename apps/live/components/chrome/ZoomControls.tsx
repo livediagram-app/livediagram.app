@@ -9,13 +9,13 @@ type ZoomControlsProps = {
   onZoomOut: () => void;
   onSetZoom: (zoom: number) => void;
   onFitToScreen: () => void;
-  // Isometric orbit control (spec/45). When both are set (the isometric
+  // Isometric orbit control (docs/specs/008-canvas/isometric-view.md). When both are set (the isometric
   // tool is active) the orbit button sits between Fit and Zen: drag to
   // orbit the camera, click to reset its angle. Omitted on every other
   // tool → no button.
   onIsoOrbit?: (clientX: number, clientY: number) => void;
   onIsoReset?: () => void;
-  // Zen / focus mode (spec/26). The dock carries the EXIT button, shown
+  // Zen / focus mode (docs/specs/007-editor/zen-mode.md). The dock carries the EXIT button, shown
   // while zen is active (it is the only chrome left in zen). Entering
   // lives in the canvas-tool dropdown under Isometric; `zenEnterHere`
   // restores the old enter button for sessions with no palette (view-only
@@ -23,7 +23,7 @@ type ZoomControlsProps = {
   onToggleZen?: () => void;
   zenActive?: boolean;
   zenEnterHere?: boolean;
-  // A phone (spec/07): the cluster also carries Activity + Layers there, so
+  // A phone (docs/specs/007-editor/live-app.md): the cluster also carries Activity + Layers there, so
   // the step buttons go (pinch zooms) and Fit stays.
   pinchOnly?: boolean;
 };

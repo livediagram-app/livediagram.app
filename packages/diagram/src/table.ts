@@ -133,7 +133,7 @@ export function setCellStyle(
   if (next.underline !== undefined) cleaned.underline = next.underline;
   if (next.textSize !== undefined) cleaned.textSize = next.textSize;
   if (next.alignX !== undefined) cleaned.alignX = next.alignX;
-  // Per-cell link (spec/09). Pass `{ link: undefined }` to clear it.
+  // Per-cell link (docs/specs/008-canvas/canvas-and-palette.md). Pass `{ link: undefined }` to clear it.
   if (next.link !== undefined) cleaned.link = next.link;
   const merged = Object.keys(cleaned).length > 0 ? cleaned : null;
   const cellStyles = Array.from({ length: rows }, (_, ri) =>

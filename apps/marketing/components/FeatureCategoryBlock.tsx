@@ -6,7 +6,7 @@ import { SectionShowcase } from '@/components/SectionShowcase';
 
 // A landing-page advertising block for one feature category. Instead of
 // enumerating every feature card inline (which made the page feel cluttered,
-// see spec/16), each section is pitched as a self-contained band: its
+// see docs/specs/019-marketing/marketing-site.md), each section is pitched as a self-contained band: its
 // headline, one-line positioning, a badge for every feature it covers (so the
 // breadth is scannable at a glance without the heavy cards), a taller
 // animated showcase composed from the section's own feature mocks, and an

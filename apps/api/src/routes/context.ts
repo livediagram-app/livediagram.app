@@ -24,22 +24,22 @@ export type RouteContext = {
   clerkUserId: string | null;
   // The server-verified Clerk account id from EITHER credential: a Clerk
   // session JWT, or an `lvd_` API token (whose owner is always a Clerk
-  // account, spec/61 §3.3). This is the identity for team-membership
+  // account, docs/specs/015-api/public-api-and-tokens.md §3.3). This is the identity for team-membership
   // CONTENT access — gateRead/gateEdit and the teams-surface reads — so a
-  // token reaches the same diagrams the app does (spec/61 §3.4). Account
+  // token reaches the same diagrams the app does (docs/specs/015-api/public-api-and-tokens.md §3.4). Account
   // and team ADMINISTRATION (team mutations, token management, account
   // deletion, migration) keeps requiring `clerkUserId`: a leaked token
   // must not be able to manage membership or mint further credentials.
   verifiedUserId: string | null;
-  // The verified `email` claim from the Clerk JWT (spec/32), or null
+  // The verified `email` claim from the Clerk JWT (docs/specs/013-workspace/teams.md), or null
   // when Clerk is off, the caller is a guest, or the deployment's JWT
   // template doesn't carry the claim. Never read from a header — it
   // drives teams' invite auto-connection so it must be unforgeable.
   clerkEmail: string | null;
-  // Hybrid identity (spec/04): the verified Clerk userId, else the
+  // Hybrid identity (docs/specs/014-identity/auth-and-guest-access.md): the verified Clerk userId, else the
   // legacy X-Owner-Id header, else null. Resolved once in `fetch`.
   resolveOwner: () => string | null;
-  // Schedule background work that may outlive the response (spec/64 email
+  // Schedule background work that may outlive the response (docs/specs/014-identity/transactional-email.md email
   // sends). Forwards to the fetch handler's ExecutionContext.waitUntil.
   // Optional so unit tests can build a RouteContext without a real
   // ExecutionContext; the production `fetch` always provides it. Call sites
@@ -53,13 +53,13 @@ export type RouteContext = {
 // Exported because its PRESENCE is the only honest signal that a caller
 // arrived through a share link. "Isn't the owner" is not that signal: a
 // joined team member reads every diagram in their team's library without a
-// code (spec/35), so the visitor-facing timeline events keyed on
+// code (docs/specs/013-workspace/team-shared-diagrams.md), so the visitor-facing timeline events keyed on
 // `owner !== ownerId` were reporting teammates as strangers with a link.
 export function shareCodeOf(request: Request): string | null {
   return request.headers.get('X-Share-Code');
 }
 
-// Share password (spec/24) carried alongside the share code when the
+// Share password (docs/specs/013-workspace/share-password.md) carried alongside the share code when the
 // diagram the visitor is accessing is password-protected. Owners never
 // send it (their identity short-circuits the check); a non-owner with a
 // share code must, or the access gate denies password-protected diagrams.
@@ -91,7 +91,7 @@ export function gateRead(
     diagramTeamId,
     // Server-verified account id (Clerk session or API token) for the
     // team-membership check — never the unsigned X-Owner-Id header
-    // (spec/35 access trust boundary).
+    // (docs/specs/013-workspace/team-shared-diagrams.md access trust boundary).
     ctx.verifiedUserId,
   );
 }
@@ -112,7 +112,7 @@ export function gateEdit(
     diagramTeamId,
     // Server-verified account id (Clerk session or API token) for the
     // team-membership check — never the unsigned X-Owner-Id header
-    // (spec/35 access trust boundary).
+    // (docs/specs/013-workspace/team-shared-diagrams.md access trust boundary).
     ctx.verifiedUserId,
   );
 }

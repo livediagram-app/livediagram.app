@@ -1,4 +1,4 @@
-// The face of a Q&A board (spec/151): the spotlight over the live queue over
+// The face of a Q&A board (docs/specs/012-collaboration/qa-board.md): the spotlight over the live queue over
 // the Discussed drawer, with the composer at the foot.
 //
 // Built as a queue the room WATCHES rather than a form it fills in: rows slide
@@ -32,7 +32,7 @@ import { useFlipList } from './useFlipList';
 
 // What the board can do for this viewer. Participant verbs are present for
 // anyone in a live session (view links too); the facilitator verbs only for
-// whoever is running the board (spec/149). Everything absent = inert.
+// whoever is running the board (docs/specs/012-collaboration/facilitator.md). Everything absent = inert.
 export type QaFaceActions = {
   add?: (text: string, anonymous: boolean) => void;
   vote?: (noteId: string, on: boolean) => void;

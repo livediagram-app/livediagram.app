@@ -1,8 +1,8 @@
-// The face of a Decision record (spec/128): the statement, a status chip, the
+// The face of a Decision record (docs/specs/012-collaboration/decision-record.md): the statement, a status chip, the
 // drivers, and the date.
 //
 // A PANEL like the other collaboration faces, not a view drawn around the
-// generic label. It started as the latter — the record box (spec/120) renders
+// generic label. It started as the latter — the record box (docs/specs/009-elements/entity.md) renders
 // its rows under its title that way — and the difference is that a record's
 // title is a name and a decision's is a SENTENCE. A free-flowing label sized
 // to the whole box ran straight under the status chip and over the drivers,
@@ -40,7 +40,7 @@ export function DecisionFace({
       element={element}
       title={label.trim() || 'We will …'}
       textColor={textColor}
-      // A FILED RECORD (spec/122): screened like a photocopy, with the corner
+      // A FILED RECORD (docs/specs/012-collaboration/participant-responses.md): screened like a photocopy, with the corner
       // turned up the way the top sheet of a stack sits. A decision is the one
       // element here that outlives the session, so it is drawn as the thing
       // you file rather than as the thing you run.
@@ -52,7 +52,7 @@ export function DecisionFace({
       aside={
         // The chip tints ITSELF and never the element's fill — the theme owns
         // the box, and a card that turned green on accept would fight every
-        // other element on a themed board (spec/128).
+        // other element on a themed board (docs/specs/012-collaboration/decision-record.md).
         <span
           className="rounded-full px-2 py-[3px] text-[9px] font-semibold uppercase tracking-[0.06em]"
           style={{ backgroundColor: chip.bg, color: chip.text }}
@@ -62,7 +62,7 @@ export function DecisionFace({
       }
       footer={
         // An undated decision shows nothing at all: a card reading "no date"
-        // is noise, and mid-discussion cards are commonly undated (spec/128).
+        // is noise, and mid-discussion cards are commonly undated (docs/specs/012-collaboration/decision-record.md).
         element.decisionDate ? (
           <span className="text-[10px] tabular-nums opacity-50" style={{ color: textColor }}>
             {element.decisionDate}

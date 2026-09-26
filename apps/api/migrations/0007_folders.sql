@@ -1,4 +1,4 @@
--- Folders. See spec/15-folders.md.
+-- Folders. See docs/specs/013-workspace/folders.md.
 --
 -- Each diagram belongs to at most one folder (folder_id IS NULL → the
 -- conceptual "Unsorted" bucket). Folders nest via self-referential

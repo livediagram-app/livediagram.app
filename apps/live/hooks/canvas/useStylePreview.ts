@@ -1,7 +1,7 @@
 'use client';
 
-// Hover-to-preview for the style-preset tiles (spec/48) and the animation tiles
-// (spec/09). On a desktop pointer, hovering a colour / border / arrow preset —
+// Hover-to-preview for the style-preset tiles (docs/specs/010-palette/style-presets.md) and the animation tiles
+// (docs/specs/008-canvas/canvas-and-palette.md). On a desktop pointer, hovering a colour / border / arrow preset —
 // or an Animation / Flow / Icon-animation tile — shows it live on the selected
 // element(s); the change only sticks on click. Pulling the mouse off the tile
 // reverts to the pre-hover look.
@@ -211,16 +211,16 @@ export function useStylePreview(deps: {
       previewStyle((el) => applyColorPresetToEl(el, p)),
     commitShapeColorPreset: (p: ShapeColorPreset) =>
       commitStyle((el) => applyColorPresetToEl(el, p), 'StylePreset'),
-    // Table look (spec/48): four surfaces + the banding in one step.
+    // Table look (docs/specs/010-palette/style-presets.md): four surfaces + the banding in one step.
     previewTablePreset: (p: TablePreset) => previewStyle((el) => applyTablePresetToEl(el, p)),
     commitTablePreset: (p: TablePreset) =>
       commitStyle((el) => applyTablePresetToEl(el, p), 'TablePreset'),
-    // Chart palette (spec/53): the chart's flavour of preset.
+    // Chart palette (docs/specs/009-elements/pie-chart.md): the chart's flavour of preset.
     previewChartPalette: (id: ChartPaletteId) =>
       previewStyle((el) => applyChartPaletteToEl(el, id)),
     commitChartPalette: (id: ChartPaletteId) =>
       commitStyle((el) => applyChartPaletteToEl(el, id), 'ChartPalette'),
-    // Code-block scheme (spec/82): the code block's flavour of preset.
+    // Code-block scheme (docs/specs/009-elements/code-block.md): the code block's flavour of preset.
     previewCodeTheme: (id: CodeThemeId) => previewStyle((el) => applyCodeThemeToEl(el, id)),
     commitCodeTheme: (id: CodeThemeId) =>
       commitStyle((el) => applyCodeThemeToEl(el, id), 'CodeTheme'),
@@ -258,7 +258,7 @@ export function useStylePreview(deps: {
     previewBorderRadius: (v: BorderRadius) => previewStyle((el) => applyBorderRadiusToEl(el, v)),
     commitBorderRadius: (v: BorderRadius) =>
       commitStyle((el) => applyBorderRadiusToEl(el, v), 'BorderRadius'),
-    // Shadow preset tiles (spec/86); `null` is the None tile. The sliders
+    // Shadow preset tiles (docs/specs/008-canvas/element-shadows.md); `null` is the None tile. The sliders
     // stay on the debounced useColorStyleSetters path — only tiles preview.
     previewShadow: (v: ElementShadow | null) => previewStyle((el) => applyShadowToEl(el, v)),
     commitShadow: (v: ElementShadow | null) =>
@@ -273,10 +273,10 @@ export function useStylePreview(deps: {
       previewStyle((el) => applyShapeKindToEl(el, kind), new Set(ids)),
     commitShapeKind: (ids: string[], kind: ShapeKind) =>
       commitStyle((el) => applyShapeKindToEl(el, kind), 'ShapeMorph', new Set(ids)),
-    // Tech-icon fixed tile size (spec/41).
+    // Tech-icon fixed tile size (docs/specs/010-palette/technology-icons.md).
     previewIconSize: (v: IconSize) => previewStyle((el) => applyIconSizeToEl(el, v)),
     commitIconSize: (v: IconSize) => commitStyle((el) => applyIconSizeToEl(el, v), 'IconSize'),
-    // Status markers (spec/49) + their size row.
+    // Status markers (docs/specs/009-elements/shape-markers.md) + their size row.
     previewMarker: (v: ShapeMarker | null) => previewStyle((el) => applyMarkerToEl(el, v)),
     commitMarker: (v: ShapeMarker | null) => commitStyle((el) => applyMarkerToEl(el, v), 'Marker'),
     previewMarkerSize: (v: TextSize) => previewStyle((el) => applyMarkerSizeToEl(el, v)),
@@ -295,12 +295,12 @@ export function useStylePreview(deps: {
     commitFont: (v: string | null) => commitStyle((el) => applyFontToEl(el, v), 'Font'),
     previewPadding: (v: Padding) => previewStyle((el) => applyPaddingToEl(el, v)),
     commitPadding: (v: Padding) => commitStyle((el) => applyPaddingToEl(el, v), 'Padding'),
-    // Inline-icon placement (spec/09 icons). Id-scoped like shape morph.
+    // Inline-icon placement (docs/specs/008-canvas/canvas-and-palette.md icons). Id-scoped like shape morph.
     previewInlineIcon: (elementId: string, iconId: string, position: IconPosition) =>
       previewStyle((el) => applyInlineIconToEl(el, iconId, position), new Set([elementId])),
     commitInlineIcon: (elementId: string, iconId: string, position: IconPosition) =>
       commitStyle((el) => applyInlineIconToEl(el, iconId, position), 'Icon', new Set([elementId])),
-    // Animation tiles (spec/09): the same hover-preview / click-commit flow,
+    // Animation tiles (docs/specs/008-canvas/canvas-and-palette.md): the same hover-preview / click-commit flow,
     // each setting a single field on the matching member of the selection
     // (boxed `animation`, arrow `flow`, icon-shape `iconAnimation`). `null` is
     // the "None" tile. Reuses the snapshot/revert/commit machinery above, so a

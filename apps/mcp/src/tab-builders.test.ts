@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { isValidTab, type Element } from '@livediagram/diagram';
 import { applyLayout, buildGraphTab, buildTab } from './tab-builders';
 
-// Graph-first authoring end-to-end (spec/62 §4.7): a node/edge graph must
+// Graph-first authoring end-to-end (docs/specs/015-api/mcp-server.md §4.7): a node/edge graph must
 // come out a valid, themed, auto-laid-out tab.
 describe('buildGraphTab', () => {
   it('builds a valid themed tab from a graph, positioning the nodes', () => {
@@ -49,7 +49,7 @@ describe('buildGraphTab', () => {
   });
 });
 
-// Event-storming board fields (spec/139) reach the MCP whenever a tool writes a
+// Event-storming board fields (docs/specs/021-event-storming/event-storming.md) reach the MCP whenever a tool writes a
 // tab: the notation kind of each note. Nothing here whitelists element fields,
 // so they travel by construction — this pins that, because the day someone
 // adds a whitelist is the day a board quietly loses its notation through a

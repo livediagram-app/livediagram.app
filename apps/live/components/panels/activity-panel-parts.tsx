@@ -1,6 +1,6 @@
 'use client';
 
-// The Activity panel's parts (spec/12), split out of ActivityPanel:
+// The Activity panel's parts (docs/specs/012-collaboration/activity-and-audit.md), split out of ActivityPanel:
 // the save-status badge, the per-entry row with its hover Revert, the
 // Undo / Redo button, and the icon set (Undo / Redo re-used by
 // CanvasChrome's dock, plus the history ActivityIcon).
@@ -97,7 +97,7 @@ export function ActivityRow({
   entry: ChangeLogEntry;
   canRevert: boolean;
   onRevert: () => void;
-  // Hover-to-preview the row's revert (spec/12). Wired on the whole
+  // Hover-to-preview the row's revert (docs/specs/012-collaboration/activity-and-audit.md). Wired on the whole
   // row (so moving onto the Revert button doesn't flicker the
   // preview off) and only for revertable element entries on a mouse
   // pointer — touch has no hover, and tab-meta rows have nothing to

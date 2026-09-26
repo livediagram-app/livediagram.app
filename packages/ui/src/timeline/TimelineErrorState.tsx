@@ -1,7 +1,7 @@
 'use client';
 
 // "We couldn't read the feed" — deliberately NOT the empty state
-// (spec/138 §2.4).
+// (docs/specs/013-workspace/timeline.md §2.4).
 //
 // The feed used to render a failed read as "Nothing has happened yet",
 // which is a lie told to exactly the people it upsets most: someone

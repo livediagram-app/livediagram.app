@@ -21,7 +21,7 @@ import {
   teamRemovalTelemetryType,
 } from './team-removal';
 
-// The TeamPane's mutation handlers (spec/32), lifted out of the pane:
+// The TeamPane's mutation handlers (docs/specs/013-workspace/teams.md), lifted out of the pane:
 // edit / delete team, email invite, role change, and remove / leave —
 // each with its confirm, failure notice, and refresh choreography. The
 // pane keeps the load state and render; this hook owns the notice +

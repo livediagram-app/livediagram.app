@@ -7,7 +7,7 @@ import {
   viewportOffsetCentredOn,
 } from '@/lib/portals';
 
-// What happens when somebody goes through a portal (spec/104).
+// What happens when somebody goes through a portal (docs/specs/009-elements/portal-element.md).
 //
 // Travelling means two things at once: the CAMERA centres on the paired portal,
 // and — if the traveller is walking around in Avatar mode — their character

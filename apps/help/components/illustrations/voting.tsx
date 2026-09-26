@@ -1,4 +1,4 @@
-// Dot-voting illustrations (spec/55, drawing spec/39): the Vote set-up in the
+// Dot-voting illustrations (docs/specs/018-help/help-app.md, drawing docs/specs/012-collaboration/session-tools.md): the Vote set-up in the
 // session panel, the votable-layer picker, the two privacy switches, the Vote
 // panel's turnout view, and the results walkthrough.
 //

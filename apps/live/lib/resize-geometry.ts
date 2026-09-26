@@ -1,4 +1,4 @@
-// Resize geometry for the canvas drag engine (spec/09): projecting a
+// Resize geometry for the canvas drag engine (docs/specs/008-canvas/canvas-and-palette.md): projecting a
 // pointer delta into fresh bounds per drag mode (aspect-locked or
 // free), the union-scaling maths a multi-member resize maps every
 // member through, and the corner / snap-mode lookups. Split from

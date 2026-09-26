@@ -1,6 +1,6 @@
 'use client';
 
-// One-click style presets for the selected-element context menu (spec/48).
+// One-click style presets for the selected-element context menu (docs/specs/010-palette/style-presets.md).
 // Two surfaces:
 //   - ShapePresets — theme-derived style looks in hierarchical tiers (theme /
 //     neutral / border treatments / semantic status), each a complete style:
@@ -8,12 +8,12 @@
 //     that's the user's own silhouette choice) + a reset.
 //   - ArrowPresets — line looks in tiers (solid weights, patterns, animated
 //     flows) + a reset.
-//   - CodeThemePresets: a code block's colour scheme (spec/82), the one
+//   - CodeThemePresets: a code block's colour scheme (docs/specs/009-elements/code-block.md), the one
 //     style choice that element has: it paints its own card and takes no
 //     element colours, so there is nothing to reset it TO but another scheme.
 //   - TablePresets: a table's four surfaces (cells, grid, header band, header
 //     text) plus the banding, which only read well in combination.
-//   - ChartPalettePresets: a chart's categorical ramp (spec/53).
+//   - ChartPalettePresets: a chart's categorical ramp (docs/specs/009-elements/pie-chart.md).
 // Purely presentational: every apply is a callback prop. Shape presets are
 // theme-derived (passed in); arrow presets are the static table below. Lives in
 // its own file so EditorContextMenu doesn't accrete more large categories
@@ -151,7 +151,7 @@ export function ShapePresets({
     fillColor?: string;
     strokeColor?: string;
     textColor?: string;
-    // The bound preset id (spec/48), when the shape was styled from a preset —
+    // The bound preset id (docs/specs/010-palette/style-presets.md), when the shape was styled from a preset —
     // the robust way to highlight the active tile across themes.
     colorPreset?: string;
   };

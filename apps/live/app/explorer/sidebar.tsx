@@ -1,6 +1,6 @@
 'use client';
 
-// Sidebar tree primitives for the Explorer page (spec/15). Lifted out
+// Sidebar tree primitives for the Explorer page (docs/specs/013-workspace/folders.md). Lifted out
 // of views.tsx (was 848 lines, split roughly half-and-half between
 // the left sidebar tree and the right content pane) so each file is
 // scoped to one pane's render surface. The shared cross-file
@@ -52,7 +52,7 @@ export function SidebarSectionLabel({
   // below the last row. Without this the top reads as too padded.
   first?: boolean;
   // Optional right-aligned control on the label row (e.g. the Teams
-  // section's new-team plus, spec/32) so section-level actions don't
+  // section's new-team plus, docs/specs/013-workspace/teams.md) so section-level actions don't
   // need their own row.
   action?: React.ReactNode;
 }) {
@@ -144,7 +144,7 @@ export function SidebarRow({
   );
 }
 
-// A team library's folder subtree in the sidebar (spec/35). Reuses
+// A team library's folder subtree in the sidebar (docs/specs/013-workspace/team-shared-diagrams.md). Reuses
 // the SidebarRow primitive for visual parity with the personal tree,
 // but is navigation-only: a click opens the team page at that folder
 // (rename / move / delete live on the team page, not here), so there's

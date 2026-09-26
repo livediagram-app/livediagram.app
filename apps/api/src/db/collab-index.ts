@@ -1,4 +1,4 @@
-// collab_actions + collab_threads — the collaboration index (spec/142
+// collab_actions + collab_threads — the collaboration index (docs/specs/013-workspace/activity-page.md
 // §2): a SQL-filterable projection of the actions and comment threads
 // that live inside element JSON on `tabs`. Plus `owner_aliases` (the
 // identities an owner used to be, §2.2) and `collab_index_state` (which
@@ -113,7 +113,7 @@ export function collabIndexCopyStatements(
 
 // ---------- Read ------------------------------------------------------
 
-// The scoping every Activity read shares (spec/142 §4). `me` is the
+// The scoping every Activity read shares (docs/specs/013-workspace/activity-page.md §4). `me` is the
 // reader plus every identity they used to be; `visible` is the three
 // sets the Explorer's Recent merges — own, joined-team, shared-with-you
 // (live share only) — with how each is reached and, for a share, the
@@ -227,7 +227,7 @@ const THREADS_SQL = `${SCOPE_CTES}
    ORDER BY ct.latest_at DESC
    LIMIT ?3`;
 
-// A tab linked into two visible diagrams (spec/17) lists once per
+// A tab linked into two visible diagrams (docs/specs/006-diagram/tab-diagram-many-to-many.md) lists once per
 // diagram; keep the one the reader reaches most directly. A 'shared'
 // row whose link has lapsed has nowhere to go and is dropped, the way
 // Shared with You drops it.

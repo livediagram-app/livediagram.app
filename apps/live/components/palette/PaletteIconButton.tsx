@@ -13,8 +13,8 @@ import { createContext, useContext } from 'react';
 // applied via the `palette-tile-filled` rule in globals.css. Both are
 // undefined for the Default theme, where the palette keeps its default look.
 //
-// `shapeColors` carries a per-shape-kind override (spec/42 Formal / UML +
-// spec/44 custom themes): a tile whose `dragKind` has an entry previews
+// `shapeColors` carries a per-shape-kind override (docs/specs/011-theme/canvas-and-theme-dialog.md Formal / UML +
+// docs/specs/011-theme/custom-themes.md custom themes): a tile whose `dragKind` has an entry previews
 // THAT kind's colour instead of the base — so a UML diamond tile shows
 // amber, a cylinder purple, etc., matching what the shape becomes when
 // added. Kinds without an entry fall back to stroke/fill.
@@ -93,7 +93,7 @@ type IconButtonProps = {
   noTint?: boolean;
   // Show the shortcut letter permanently, small in the bottom-right corner,
   // instead of the badge that appears only while Cmd/Ctrl is held. The
-  // Toolbar layout's strip (spec/148) sets it: a tool bar is where people
+  // Toolbar layout's strip (docs/specs/007-editor/toolbar-layout.md) sets it: a tool bar is where people
   // learn the letters, so it shows them the whole time.
   shortcutAlwaysVisible?: boolean;
 };
@@ -124,7 +124,7 @@ export function IconButton({
   const effectiveDragStart = dragKind
     ? (e: React.DragEvent) => {
         // `kind` alone, or `kind|choice` where the tile carries a
-        // creation-time one (spec/103, /105, /123, /135). Without it a
+        // creation-time one (docs/specs/009-elements/mode-button.md, /105, /123, /135). Without it a
         // dragged Poll tile dropped a timer, because every session tile is
         // the same shape kind and the choice lived only on the click path.
         e.dataTransfer.setData(
@@ -132,7 +132,7 @@ export function IconButton({
           dragChoice ? `${dragKind}|${dragChoice}` : dragKind,
         );
         e.dataTransfer.effectAllowed = 'copy';
-        // Publish the footprint so the canvas ghost (spec/58) can preview
+        // Publish the footprint so the canvas ghost (docs/specs/010-palette/palette-drag-ghost.md) can preview
         // where this shape will land.
         const { width, height } = SHAPE_DEFAULT_SIZE[dragKind];
         setPaletteDragPreview({ kind: dragKind, width, height });

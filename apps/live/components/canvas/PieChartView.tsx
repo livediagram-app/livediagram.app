@@ -1,6 +1,6 @@
 'use client';
 
-// Pie chart (spec/53): slices sized by value, in the default categorical
+// Pie chart (docs/specs/009-elements/pie-chart.md): slices sized by value, in the default categorical
 // palette (or per-slice colour), with a legend beside the pie. Rendered inside
 // its boxed element so move / resize / select / group all come for free; the
 // data is edited from the context menu's Data category. `pieAnim` drives a
@@ -23,7 +23,7 @@ export function PieChartView({
   element: ShapeElement;
   fontFamily?: string;
   textColor: string;
-  // Default slice colours (theme-derived, spec/53). Falls back to the built-in
+  // Default slice colours (theme-derived, docs/specs/009-elements/pie-chart.md). Falls back to the built-in
   // categorical palette when absent (e.g. an export with no theme context).
   palette?: readonly string[];
 }) {

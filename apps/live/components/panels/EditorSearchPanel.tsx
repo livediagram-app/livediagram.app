@@ -13,7 +13,7 @@ const SearchPanel = dynamic(() =>
   import('@/components/panels/SearchPanel').then((m) => m.SearchPanel),
 );
 
-// The editor's search panel (spec/09 "Search panel" + spec/70): searches diagrams, folders, shared +
+// The editor's search panel (docs/specs/008-canvas/canvas-and-palette.md "Search panel" + docs/specs/007-editor/command-palette.md): searches diagrams, folders, shared +
 // team diagrams, tabs/elements, and exposes palette adds, commands, and help.
 // Reads everything from EditorContext (commands come from useEditorCommands,
 // itself context-driven), so EditorView just renders <EditorSearchPanel />.

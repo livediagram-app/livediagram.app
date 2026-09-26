@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { Suspense, type ReactNode } from 'react';
 import { ExplorerShell } from './ExplorerShell';
 
-// The /explorer layout (spec/15): every section under /explorer is
+// The /explorer layout (docs/specs/013-workspace/folders.md): every section under /explorer is
 // its own route page, and this layout wraps them all in the shared
 // chrome — header, sidebar tree, mobile drawer, cross-section
 // overlays — via ExplorerShell. App Router keeps the layout mounted
@@ -16,7 +16,7 @@ import { ExplorerShell } from './ExplorerShell';
 //
 // The title here is the fallback for tab chrome (each section page
 // overrides it); `index: false` is inherited from the root layout
-// (spec/07 keeps every /live route out of the index).
+// (docs/specs/007-editor/live-app.md keeps every /live route out of the index).
 export const metadata: Metadata = {
   title: 'Explorer | livediagram',
 };

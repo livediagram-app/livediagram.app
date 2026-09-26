@@ -83,7 +83,7 @@ export function ArrowLineControls({
   thickness: ArrowThickness | null;
   style: ArrowStyle | null;
   strokeStyle: BorderStyle | null;
-  // Route behind boxes (spec/90). Null hides the row (mixed selection).
+  // Route behind boxes (docs/specs/008-canvas/arrow-route-behind.md). Null hides the row (mixed selection).
   routeBehind: boolean | null;
   onSetThickness: (v: ArrowThickness) => void;
   onSetStyle: (v: ArrowStyle) => void;

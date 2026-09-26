@@ -72,7 +72,7 @@ describe('StackedCard', () => {
     expect(onToggle).toHaveBeenCalledTimes(2);
   });
 
-  // The host's menu on a stack (spec/138 §2.9). Opening it must not
+  // The host's menu on a stack (docs/specs/013-workspace/timeline.md §2.9). Opening it must not
   // expand the run: the click stops at the slot.
   it('renders the host menu slot without letting its click toggle the run', () => {
     const onToggle = vi.fn();

@@ -1,4 +1,4 @@
-// The Q&A board (spec/151): its note type, bounds, the pure reducer both the
+// The Q&A board (docs/specs/012-collaboration/qa-board.md): its note type, bounds, the pure reducer both the
 // api worker and the editor run, the view sort, the voter id, and the rev
 // merge every whole-element sync path goes through.
 //
@@ -16,7 +16,7 @@ export type QaNote = {
   // same votes, the one asked first holds its place.
   at: number;
   // Absent = anonymous. Stamped by the SERVER from the caller's participant
-  // record, never read from the request (spec/151, the spec/12 rule).
+  // record, never read from the request (docs/specs/012-collaboration/qa-board.md, the docs/specs/012-collaboration/activity-and-audit.md rule).
   author?: { name: string; color: string };
   // Voter ids (see qaVoterId). One entry per person, so the count is the
   // length.
@@ -51,7 +51,7 @@ export type QaAction =
   | { type: 'clear' };
 
 // The audience's two verbs. Everything else is gated on edit rights by the
-// server and on the facilitator baton by the client (spec/151).
+// server and on the facilitator baton by the client (docs/specs/012-collaboration/qa-board.md).
 export function isParticipantQaAction(action: QaAction): boolean {
   return action.type === 'add' || action.type === 'vote';
 }
@@ -135,7 +135,7 @@ export function applyQaAction(notes: QaNote[], action: QaAction, actor: QaActor)
     }
     case 'vote':
       return mapNote(action.noteId, (n) => {
-        // A closed note's count is frozen (spec/151).
+        // A closed note's count is frozen (docs/specs/012-collaboration/qa-board.md).
         if (n.state === 'done') return n;
         const has = n.voters.includes(actor.voterId);
         if (action.on === has) return n;
@@ -210,7 +210,7 @@ export function qaView(notes: QaNote[] | undefined): QaView {
 
 // --- Voter id -----------------------------------------------------------------
 
-// sha256 of the owner id salted with the board's id, truncated (spec/151).
+// sha256 of the owner id salted with the board's id, truncated (docs/specs/012-collaboration/qa-board.md).
 // Computed by the SERVER from the authenticated caller, so a client can't vote
 // as anyone else, and by the client from itself, so it knows which notes it
 // voted for. One-way and per-board, so the published value is neither a
@@ -226,7 +226,7 @@ export async function qaVoterId(ownerId: string, elementId: string): Promise<str
 // --- Consistency -----------------------------------------------------------------
 
 // Pick the board state from whichever copy of an element has the higher
-// `qaRev`, keeping `current` on a tie (spec/151 §Consistency). Every path that
+// `qaRev`, keeping `current` on a tie (docs/specs/012-collaboration/qa-board.md §Consistency). Every path that
 // lands a WHOLE element over an existing one (the tab autosave on the server,
 // the `el` and `tab` ops on a client) goes through this, so a snapshot taken
 // before a vote landed can't erase it. Returns `incoming` untouched when it

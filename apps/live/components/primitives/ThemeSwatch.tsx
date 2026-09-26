@@ -13,8 +13,8 @@ import type { ThemeDefinition } from '@/lib/themes';
 // Explorer theme surfaces so they can't drift.
 //
 // The scene adapts to the theme kind: a single-colour theme draws one
-// cohesive look; a multi-colour theme (spec/29) gives each node a branch
-// hue; a per-shape theme (UML, spec/42) gives each node its kind's
+// cohesive look; a multi-colour theme (docs/specs/011-theme/multicolour-themes.md) gives each node a branch
+// hue; a per-shape theme (UML, docs/specs/011-theme/canvas-and-theme-dialog.md) gives each node its kind's
 // colour, so the "different colour per shape" idea reads at a glance.
 
 type Tri = { fill: string; stroke: string; text: string };

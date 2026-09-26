@@ -1,4 +1,4 @@
-// A sticker on the canvas (spec/116): the die-cut plate, its shadow, and the
+// A sticker on the canvas (docs/specs/010-palette/stickers.md): the die-cut plate, its shadow, and the
 // emoji or badge on top, filling the element box.
 //
 // Deliberately thin. Every pixel comes from `stickerArt` in

@@ -1,5 +1,5 @@
 // Hover tooltip for a chart mark (pie slice / bar), shared by the chart-family
-// views (spec/53). Shows the hovered datum's label + value. Positioned by
+// views (docs/specs/009-elements/pie-chart.md). Shows the hovered datum's label + value. Positioned by
 // percentage within the chart body (the `absolute inset-0` wrapper), anchored
 // above its point (translate -50% / -100%). pointer-events-none so it never
 // eats the hover that drives it or the element's drag. Independent of the

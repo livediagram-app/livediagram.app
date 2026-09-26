@@ -119,7 +119,7 @@ describe('inheritedSizeFor', () => {
     expect(inheritedSizeFor(newShape, selected)).toEqual({ width: 300, height: 90 });
   });
 
-  it('keeps an annotation at its fixed marker size regardless of selection (spec/38)', () => {
+  it('keeps an annotation at its fixed marker size regardless of selection (docs/specs/009-elements/annotations.md)', () => {
     const marker = createAnnotation(0, 0);
     const bigSelected = { ...createShape('square', 0, 0), width: 400, height: 250 };
     // A marker added while a big shape is selected must NOT balloon.
@@ -127,7 +127,7 @@ describe('inheritedSizeFor', () => {
     expect(inheritedSizeFor(marker, null)).toEqual({ width: 44, height: 44 });
   });
 
-  it('keeps a portal at its intrinsic size regardless of selection (spec/104)', () => {
+  it('keeps a portal at its intrinsic size regardless of selection (docs/specs/009-elements/portal-element.md)', () => {
     const portal = createShape('portal', 0, 0);
     // A wide banner selected when the portal is dropped must not stretch the
     // ring into a letterbox — the silhouette IS the element.

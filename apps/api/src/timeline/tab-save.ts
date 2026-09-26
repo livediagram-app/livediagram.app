@@ -1,4 +1,4 @@
-// Everything one tab save contributes to the Timeline (spec/138 §4.2,
+// Everything one tab save contributes to the Timeline (docs/specs/013-workspace/timeline.md §4.2,
 // §4.3), behind a single call so the hot autosave path in
 // diagram-subresource-routes.ts stays readable.
 //
@@ -29,7 +29,7 @@ export async function recordTabSave(
 ): Promise<void> {
   // The coalesced editing event fires on every save; the dedupe key
   // collapses a day of them into one row that walks its timestamp
-  // forward (spec/138 §4.2).
+  // forward (docs/specs/013-workspace/timeline.md §4.2).
   await recordDiagramEdited(env, diagram, actorId);
 
   for (const comment of newComments(next, prev)) {

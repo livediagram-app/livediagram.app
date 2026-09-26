@@ -1,5 +1,5 @@
 // /api/folders — folder tree CRUD. Personal folders are owner-scoped
-// (spec/15); team folders (spec/35) carry a team_id and authorise by
+// (docs/specs/013-workspace/folders.md); team folders (docs/specs/013-workspace/team-shared-diagrams.md) carry a team_id and authorise by
 // JOINED membership instead: any joined member may create / rename /
 // move / delete them. The two scopes never mix — a team folder's
 // parent must be a folder of the same team, a personal folder's
@@ -23,8 +23,8 @@ import { markTimelineEventsDeletedBySource } from '../db/timeline';
 
 // Joined-member check for team-scoped folder verbs. Membership is
 // keyed by Clerk user id — carried by a session JWT or an API token
-// (both server-verified, spec/61 §3.4) — so the guest path can never
-// manage team folders (consistent with spec/32's Clerk-only teams).
+// (both server-verified, docs/specs/015-api/public-api-and-tokens.md §3.4) — so the guest path can never
+// manage team folders (consistent with docs/specs/013-workspace/teams.md's Clerk-only teams).
 async function canManageTeamFolder(ctx: RouteContext, teamId: string): Promise<boolean> {
   if (!ctx.verifiedUserId) return false;
   const membership = await getMembership(ctx.env, teamId, ctx.verifiedUserId);
@@ -48,7 +48,7 @@ export async function handleFolders(ctx: RouteContext): Promise<Response> {
   if (segments.length === 2) {
     if (request.method === 'GET') {
       // Personal tree only; team folders ship via GET
-      // /api/teams/:id/library (spec/35).
+      // /api/teams/:id/library (docs/specs/013-workspace/team-shared-diagrams.md).
       const folders = await listFoldersByOwner(env, owner);
       return json({ folders });
     }
@@ -126,7 +126,7 @@ export async function handleFolders(ctx: RouteContext): Promise<Response> {
       await deleteFolder(env, id);
       if (doomed) {
         // Cascade first, then the tombstone, exactly as a diagram delete
-        // does (spec/138 §3.5): the folder's own earlier cards go, and
+        // does (docs/specs/013-workspace/timeline.md §3.5): the folder's own earlier cards go, and
         // the one row that answers "what happened to it?" stays.
         ctx.waitUntil?.(
           markTimelineEventsDeletedBySource(env, 'account', id)

@@ -7,7 +7,7 @@ node_modules/
 dist/
 # Anchored to the repo root on purpose. An unanchored `build/` matches a
 # directory of that name at ANY depth, and it silently untracked the palette's
-# Build help article (spec/132) at apps/help/app/palette/build/page.mdx: the
+# Build help article (docs/specs/010-palette/build-category.md) at apps/help/app/palette/build/page.mdx: the
 # site still built locally because the file was on disk, and the
 # registry-to-disk test passed for the same reason, so only a fresh clone would
 # have shown the article missing. Nothing needs the unanchored form — every
@@ -41,7 +41,7 @@ next-env.d.ts
 apps/*/AGENTS.md
 apps/*/CLAUDE.md
 
-# Playwright e2e artifacts (spec/72)
+# Playwright e2e artifacts (docs/specs/003-system-architecture/e2e-smoke.md)
 apps/live/test-results/
 apps/live/playwright-report/
 apps/live/.playwright/
@@ -57,7 +57,7 @@ apps/live/.playwright/
 .env.local
 .env.*.local
 # Wrangler local-dev secrets (mirrors the production secret store but
-# stays on disk for `wrangler dev`). Per spec/06 these must never be
+# stays on disk for `wrangler dev`). Per docs/specs/002-project-scope/secrets-policy.md these must never be
 # committed.
 .dev.vars
 
@@ -84,8 +84,11 @@ coverage/
 .claude/
 
 # Real photographs of somebody's workshop wall, used to calibrate the sticky
-# detector by hand. This repo is public: these never enter it (spec/139).
+# detector by hand. This repo is public: these never enter it (docs/specs/021-event-storming/event-storming.md).
 /packages/sticky-vision/test-files/
 
 # Research agents' raw reports (working notes); distilled into docs/vision/research.md
 /research/
+
+# Plans are working documents (docs/specs holds what ships).
+/plans/

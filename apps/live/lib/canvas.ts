@@ -44,12 +44,12 @@ export function inheritedSizeFor(
   base: BoxedElement,
   selected: Element | null | undefined,
 ): { width: number; height: number } {
-  // Annotations are a fixed marker size (spec/38): never inherit the
+  // Annotations are a fixed marker size (docs/specs/009-elements/annotations.md): never inherit the
   // selection's dimensions, so a marker added while a big shape is selected
   // doesn't balloon. It stays its intrinsic 44×44.
   if (base.type === 'annotation') return { width: base.width, height: base.height };
   // Same for the kinds whose silhouette IS the element: a portal's ring
-  // (spec/104) and the fixed-size Selection Mode button (spec/103). Inheriting
+  // (docs/specs/009-elements/portal-element.md) and the fixed-size Selection Mode button (docs/specs/009-elements/mode-button.md). Inheriting
   // whatever box happened to be selected — a wide banner, a thin rail — hands
   // you something that doesn't read as the thing you asked for, and for a
   // fixed-size control it is simply not resizable afterwards.
@@ -59,7 +59,7 @@ export function inheritedSizeFor(
   ) {
     return { width: base.width, height: base.height };
   }
-  // A CONTAINER never donates its size. A frame or a lane (spec/119) is a big
+  // A CONTAINER never donates its size. A frame or a lane (docs/specs/009-elements/lane.md) is a big
   // backdrop you put things in, so a square added while one is selected came
   // out 900x200 — the size of the lane, which is never what anyone meant. The
   // rule reads the other way round from the guards above: those are about what
@@ -78,7 +78,7 @@ export function inheritedSizeFor(
   return { width, height };
 }
 
-// Frame "section" membership (spec/09): the ids in `ids` plus every element
+// Frame "section" membership (docs/specs/008-canvas/canvas-and-palette.md): the ids in `ids` plus every element
 // OWNED by a frame in `ids`. Used to expand a frame's move set so dragging the
 // frame carries everything sitting inside it. Pinned arrows between two members
 // follow via the post-move rebind regardless; this also catches a FREE-floating
@@ -100,7 +100,7 @@ export function inheritedSizeFor(
 //      closest to the BACK of the canvas (lowest z-order = earliest in the
 //      `elements` array). So it travels only when that backmost owner is the
 //      one being dragged, not when some other overlapping frame is.
-// A CONTAINER shape: the frame section (spec/09) and the lane (spec/119).
+// A CONTAINER shape: the frame section (docs/specs/008-canvas/canvas-and-palette.md) and the lane (docs/specs/009-elements/lane.md).
 // Both carry their contents when moved, and both resolve overlap the same way,
 // so they share one predicate — the check recurs across the containment logic
 // below, and two copies would drift.
@@ -159,7 +159,7 @@ export function withFrameContents(elements: Element[], ids: Set<string>): Set<st
 
 // Stable reorder that puts frames FIRST (lowest paint / z-order): a frame
 // is a section backdrop that must sit behind its contents so they stay
-// visible + clickable (spec/09). Both the on-canvas render layer and the
+// visible + clickable (docs/specs/008-canvas/canvas-and-palette.md). Both the on-canvas render layer and the
 // exporters route element lists through this, so frame ordering is one
 // rule in one place and never depends on array position. Returns the input
 // array unchanged when there are no frames (cheap no-op).
@@ -200,7 +200,7 @@ export {
 
 export type ArrowEnd = 'from' | 'to';
 
-// Quick add + connect (spec/09): the side of a selected element a
+// Quick add + connect (docs/specs/008-canvas/canvas-and-palette.md): the side of a selected element a
 // quick-action targets, and which action the radial ring fired. 'duplicate'
 // clones the source; 'text' drops a label to the side.
 export type QuickConnectDirection = 'right' | 'below' | 'left' | 'above';
@@ -211,7 +211,7 @@ export const SNAP_THRESHOLD = 24;
 // align with another element's edges/centres. Tight enough that nudging
 // off the line takes deliberate motion.
 export const ALIGN_SNAP_THRESHOLD = 6;
-// Arrow-to-arrow snapping (spec/50). REVEAL is the perpendicular distance at
+// Arrow-to-arrow snapping (docs/specs/008-canvas/arrow-to-arrow.md). REVEAL is the perpendicular distance at
 // which a nearby arrow's snap dots appear while dragging an endpoint; THRESHOLD
 // (tighter) is where the endpoint actually connects — also used when committing
 // a freshly-drawn arrow so it can land on a line without a follow-up nudge. Both
@@ -248,7 +248,7 @@ export type DragState =
       >;
       // The full element array as it stood at grab time (a reference to the
       // then-current immutable array, so this is cheap). The shift-duplicate
-      // identity swap (spec/80) restores the dragged elements AND every arrow
+      // identity swap (docs/specs/008-canvas/shift-drag-duplicate.md) restores the dragged elements AND every arrow
       // connected to them from here when it parks the originals — a plain
       // position park would keep the anchor faces the auto-rebind pass
       // re-picked while the originals were still the ones moving, visibly
@@ -276,7 +276,7 @@ export type DragState =
       // is anchored to the element's anchor (not the far-out ring button).
       pressClientX?: number;
       pressClientY?: number;
-      // Touch quick-connect (spec/09). A finger can't drag the + ring the way
+      // Touch quick-connect (docs/specs/008-canvas/canvas-and-palette.md). A finger can't drag the + ring the way
       // a mouse can, so the touch gesture enters a REAL drag (drag to a target
       // and it connects) but a plain tap has to mean something too. This
       // carries the source anchor so the pointer-up can attach the far end to
@@ -285,7 +285,7 @@ export type DragState =
       // True when the user is repositioning an EXISTING arrow's endpoint
       // (a deliberate manual correction), as opposed to drawing a new
       // arrow. A reposition that lands on an anchor marks the endpoint
-      // `manual` so auto-rebind leaves it alone thereafter (spec/20).
+      // `manual` so auto-rebind leaves it alone thereafter (docs/specs/007-editor/user-preferences.md).
       reposition?: boolean;
     }
   | {

@@ -1,4 +1,4 @@
-// Theme actions for the active tab (spec/29 + /42 + /44), lifted out of
+// Theme actions for the active tab (docs/specs/011-theme/multicolour-themes.md + /42 + /44), lifted out of
 // useTabCanvas into a sibling hook: applying a theme with the
 // preserve-customs walk, the hard reset when a custom theme is deleted,
 // and the "Reset elements to theme" button. useTabCanvas mounts this
@@ -42,7 +42,7 @@ export function useTabTheme(deps: {
   // theme-controlled and gets the new theme's value; anything else is
   // the user's choice and survives. Sticky notes are skipped entirely
   // — the amber palette is iconic.
-  // Accepts a built-in ThemeId or a custom `custom:<uuid>` id (spec/44):
+  // Accepts a built-in ThemeId or a custom `custom:<uuid>` id (docs/specs/011-theme/custom-themes.md):
   // getTheme resolves both, so the preserve-customs switch works the same
   // for either. Widened to string for the custom case.
   const setTheme = (id: string) => {
@@ -50,14 +50,14 @@ export function useTabTheme(deps: {
     const theme = getTheme(id);
     // theme.label is the built-in label or the custom theme's name.
     emitTabMeta(activeId, `Changed theme to ${theme.label}`);
-    // Telemetry (spec/22): `type` must stay a preset, never user content,
+    // Telemetry (docs/specs/017-telemetry/telemetry.md): `type` must stay a preset, never user content,
     // so a custom theme reports the fixed 'Custom' rather than its name.
     track('Theme', 'Changed', themeTelemetryLabel(id));
     commitTabs((ts) =>
       ts.map((t) => {
         if (t.id !== activeId) return t;
         // When the tab's PREVIOUS theme can't be resolved (a custom theme
-        // that was deleted, spec/44), there's no baseline to diff against:
+        // that was deleted, docs/specs/011-theme/custom-themes.md), there's no baseline to diff against:
         // the elements carry the dead theme's colours, which match neither
         // the default nor the new theme, so the preserve-customs walk would
         // treat them all as user overrides and recolour nothing — the tab
@@ -87,7 +87,7 @@ export function useTabTheme(deps: {
         // it's unset or still matches the previous theme's value,
         // and kept when the user has set it to something else). The
         // graph-aware wrapper additionally rainbows the branches when
-        // either side is a multi-colour theme (spec/29).
+        // either side is a multi-colour theme (docs/specs/011-theme/multicolour-themes.md).
         // Arrows are the exception to preserve-customs: they ALWAYS snap
         // to the new theme's stroke (resetArrowsToTheme), so a theme pick
         // re-tints every connector instead of leaving hand-coloured ones
@@ -110,7 +110,7 @@ export function useTabTheme(deps: {
     );
   };
 
-  // Called when a custom theme (spec/44) is deleted: every tab in THIS
+  // Called when a custom theme (docs/specs/011-theme/custom-themes.md) is deleted: every tab in THIS
   // diagram still pointing at the now-dead `custom:<uuid>` id falls back
   // to the default theme — backdrop AND element colours — so the deletion
   // is visible immediately instead of stranding the old colours on a dead
@@ -154,7 +154,7 @@ export function useTabTheme(deps: {
         if (t.id !== activeId) return t;
         // Hard reset: blank user overrides too. See `resetThemeElement`
         // in lib/themes.ts for the rule. The graph-aware wrapper
-        // re-rainbows the branches for a multi-colour theme (spec/29).
+        // re-rainbows the branches for a multi-colour theme (docs/specs/011-theme/multicolour-themes.md).
         const elements = resetThemeElementsToTheme(t.elements, theme);
         return { ...t, elements };
       }),

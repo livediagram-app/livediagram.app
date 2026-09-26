@@ -2,7 +2,7 @@ import { cropFromStride, padToStride, rgbOf } from '@livediagram/sticky-model';
 import type { BoundaryBackend, BoundaryFailure } from './protocol';
 import modelJson from './weights/model.json';
 
-// The boundary model's runtime, inside the worker (spec/139 Phase 9): the
+// The boundary model's runtime, inside the worker (docs/specs/021-event-storming/event-storming.md Phase 9): the
 // TensorFlow.js core, its layers API and ONE backend, all imported on demand so
 // only what this browser can run is fetched, and the weights beside them.
 //

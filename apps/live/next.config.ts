@@ -6,7 +6,7 @@ import type { NextConfig } from 'next';
 // resolve arbitrary user-minted ids without needing them enumerated
 // in `generateStaticParams`. The production build still ships a
 // single placeholder file backed by the live worker's path rewrite
-// (spec/14).
+// (docs/specs/007-editor/new-diagram-route.md).
 const isProdBuild = process.env.NODE_ENV === 'production';
 
 // distDir split keeps `next dev` from racing `next build` on
@@ -26,13 +26,13 @@ const nextConfig: NextConfig = {
   ...(isProdBuild ? { output: 'export' } : {}),
   distDir,
   // Pages serve at clean root paths (/diagram, /explorer, /new, ...);
-  // the router selects the live app by route (spec/08), so there's no
+  // the router selects the live app by route (docs/specs/016-platform/router-app.md), so there's no
   // `/live` basePath in the URL any more. Only the bundled `_next`
   // assets keep a `/live` prefix so they don't collide with marketing's
   // `/_next` — the router strips `/live` before forwarding, so the prod
   // worker serves them from `out/_next`. The prefix applies in dev too
   // (Next's dev server serves the prefixed asset paths itself) so the
-  // local router (spec/08) can disambiguate `/_next` the same way prod
+  // local router (docs/specs/016-platform/router-app.md) can disambiguate `/_next` the same way prod
   // does; standalone `localhost:3002` keeps working either way.
   assetPrefix: '/live',
   images: {

@@ -1,6 +1,6 @@
 import { rgbToHsv, type ImageBuffer } from './colour';
 
-// What the SURFACE inside a box looks like (spec/139 Phase 9), for telling a
+// What the SURFACE inside a box looks like (docs/specs/021-event-storming/event-storming.md Phase 9), for telling a
 // sticky from the things that share its colour: cardboard, masking tape, a
 // patch of kraft between two notes. Paper is smooth and ends in a crisp edge
 // on every side; cardboard is grained and printed, and a patch of wall has no

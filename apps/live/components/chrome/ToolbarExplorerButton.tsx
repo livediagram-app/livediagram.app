@@ -3,7 +3,7 @@
 import { track } from '@/lib/telemetry';
 import { Tooltip } from '@/components/primitives/Tooltip';
 
-// The Toolbar layout's menu button (spec/148), top-left of the canvas where
+// The Toolbar layout's menu button (docs/specs/007-editor/toolbar-layout.md), top-left of the canvas where
 // the Explorer panel would float. It toggles that same Explorer panel open as
 // a popover hanging under it, through the dock's popover path (it hands
 // itself to the toggle as the anchor), so it is the real Explorer, not a

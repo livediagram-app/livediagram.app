@@ -3,7 +3,7 @@ import type { QuickConnectDirection } from '@/lib/canvas';
 
 type Bounds = { x: number; y: number; width: number; height: number };
 
-// Placement math for quick add (spec/09), lifted out of
+// Placement math for quick add (docs/specs/008-canvas/canvas-and-palette.md), lifted out of
 // useElementSelectionActions' spawnConnectSelected: given the source
 // selection's union bounds and a direction, resolve the canvas-px
 // offset the new element should land at. Pure geometry — the hook owns

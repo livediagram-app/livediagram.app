@@ -30,8 +30,8 @@ export type TabPillCtx = {
   participantsByTab: Map<string, Participant[]>;
   selfId: string;
   selfRole: 'edit' | 'view';
-  // Threaded to the presence stack: the follow ring (spec/131) and the
-  // Collaborators modal an avatar click opens (spec/145).
+  // Threaded to the presence stack: the follow ring (docs/specs/012-collaboration/follow-me-viewport.md) and the
+  // Collaborators modal an avatar click opens (docs/specs/012-collaboration/collaborator-enhancements.md).
   followingId?: string | null;
   onOpenCollaborators?: (participantId: string | null) => void;
   canvasActions?: CanvasMenuActions;
@@ -72,7 +72,7 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
   return (
     <div
       key={tab.id}
-      // Tour anchor (spec/79): the Tabs step highlights the active pill
+      // Tour anchor (docs/specs/007-editor/editor-tour.md): the Tabs step highlights the active pill
       // together with the add button.
       data-tour-id={isActive ? 'active-tab' : undefined}
       draggable={!isEditing && !readOnly}

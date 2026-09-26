@@ -1,4 +1,4 @@
-// The steps of the interactive editor tour (spec/79), in palette →
+// The steps of the interactive editor tour (docs/specs/007-editor/editor-tour.md), in palette →
 // explorer → canvas → tabs order. Each step names its anchor (`target`, a
 // data-tour-id) and drives the real chrome in `prepare` (opening the panel
 // / dropdown / menu it explains) through the TourApi facade TourHost
@@ -13,7 +13,7 @@ export type TourApi = {
   // Mobile viewport OR the minimal-panels preference: panels live behind
   // the dock button row, so steps open them by tapping dock buttons.
   compact: boolean;
-  // The Toolbar panel layout (spec/148): the Explorer is a popover behind
+  // The Toolbar panel layout (docs/specs/007-editor/toolbar-layout.md): the Explorer is a popover behind
   // the top-left menu button rather than a corner panel.
   toolbar: boolean;
   // Select an element for the context-menu step, adding a theme-coloured
@@ -46,7 +46,7 @@ export type TourStep = {
   // Skip this step entirely on mobile viewports (the search panel is a
   // desktop surface).
   mobileSkip?: boolean;
-  // Skip this step on an event-storming board (spec/139): the board hides
+  // Skip this step on an event-storming board (docs/specs/021-event-storming/event-storming.md): the board hides
   // the palette's header band, so its two dropdowns aren't there to point
   // at. Without this the step anchors to a display:none trigger — a ring
   // measuring 0x0 in the top-left corner and a menu opened off-screen.
@@ -57,7 +57,7 @@ export type TourStep = {
   ringAboveModal?: boolean;
   prepare?: (api: TourApi) => void | Promise<void>;
   cleanup?: (api: TourApi) => void;
-  // Overrides for the Toolbar panel layout (spec/148), merged in by
+  // Overrides for the Toolbar panel layout (docs/specs/007-editor/toolbar-layout.md), merged in by
   // tourStepsFor: a step whose chrome moves there (the Explorer behind its
   // menu button) retells its copy and widens its highlight to match.
   toolbar?: Partial<Pick<TourStep, 'body' | 'alsoHighlight'>>;
@@ -80,7 +80,7 @@ export function tourStepsFor({
   ).map((step) => (toolbar && step.toolbar ? { ...step, ...step.toolbar } : step));
 }
 
-// Telemetry `type` token for a step-viewed event (spec/22: preset tokens
+// Telemetry `type` token for a step-viewed event (docs/specs/017-telemetry/telemetry.md: preset tokens
 // only, never content — step ids are a fixed catalogue, so deriving is
 // safe): 'selection-modes' → 'TourStepSelectionModes'.
 export function tourStepTelemetryType(stepId: string): string {
@@ -152,7 +152,7 @@ export const TOUR_STEPS: TourStep[] = [
     title: 'The Explorer',
     body: 'Find your diagrams and folders, without leaving the editor. Open, create, and organise from here.',
     target: 'explorer',
-    // Toolbar layout (spec/148): no corner panel to point at, the Explorer
+    // Toolbar layout (docs/specs/007-editor/toolbar-layout.md): no corner panel to point at, the Explorer
     // opens as a popover under the top-left menu button, so the step opens it
     // there and rings the button + popover as one region.
     toolbar: {

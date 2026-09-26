@@ -37,7 +37,7 @@ type SettingsDialogProps = {
   initialCategoryId?: string | null;
 };
 
-// The Settings dialog (spec/20), shaped like the iOS Settings app because it
+// The Settings dialog (docs/specs/007-editor/user-preferences.md), shaped like the iOS Settings app because it
 // had outgrown a single scrolling accordion: six groups of long paragraphs
 // stacked on one screen, where finding a setting meant opening groups until
 // one of them held it.
@@ -58,7 +58,7 @@ export function SettingsDialog({
 }: SettingsDialogProps) {
   const isMobile = useIsMobileViewport();
   // Email rows need Resend configured AND a signed-in account: a guest has
-  // no address, so those switches could never apply (spec/64).
+  // no address, so those switches could never apply (docs/specs/014-identity/transactional-email.md).
   const { emailEnabled } = useCapabilities();
   const { clerkUserId, isSignedIn } = useClerkApiBootstrap();
   const signedIn = Boolean(isSignedIn && clerkUserId);
@@ -107,7 +107,7 @@ export function SettingsDialog({
     track('UI', 'Opened', `Settings${id.charAt(0).toUpperCase()}${id.slice(1)}`);
   };
 
-  // "Show Welcome Tour" (spec/79). The row is ON when the tour has not been
+  // "Show Welcome Tour" (docs/specs/007-editor/editor-tour.md). The row is ON when the tour has not been
   // resolved, and promises it will be offered, so closing the dialog has to
   // MAKE that true. `tourSeen !== true` alone never was: TourHost also needs
   // the per-tab pending flag, which only /new sets for a brand-new user. A

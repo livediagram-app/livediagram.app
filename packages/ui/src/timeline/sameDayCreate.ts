@@ -1,4 +1,4 @@
-// Created and updated on the same day (spec/138 §2.1a).
+// Created and updated on the same day (docs/specs/013-workspace/timeline.md §2.1a).
 //
 // A diagram made this morning and worked on this afternoon produces two
 // events: `diagram_created` and the coalesced `diagram_edited`. Shown

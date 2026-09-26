@@ -1,4 +1,4 @@
--- API tokens for external callers (spec/61). Signed-in (Clerk) users only — a
+-- API tokens for external callers (docs/specs/015-api/public-api-and-tokens.md). Signed-in (Clerk) users only — a
 -- token always acts as a Clerk userId, never a guest id. We store only the
 -- SHA-256 hash of the secret (the plaintext is shown once at creation and is
 -- never persisted); lookup is by that unique hash. `expires_at` is NOT NULL

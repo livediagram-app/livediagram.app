@@ -166,7 +166,7 @@ describe('deriveCanvasSelection', () => {
         height: 60,
         cells: [['', '']],
       }) as Element;
-    // A lone table shows the pluses (the slimmed table ring, spec/09).
+    // A lone table shows the pluses (the slimmed table ring, docs/specs/008-canvas/canvas-and-palette.md).
     expect(derive({ elements: [table('t')], selectedId: 't' }).showPlus).toBe(true);
     // A frame shows them as well: it is a container you chain from, the same
     // as a lane, which always did.
@@ -189,7 +189,7 @@ describe('deriveCanvasSelection', () => {
     expect(derive({ elements: [box('a')], selectedId: 'a', readOnly: true }).showPlus).toBe(false);
   });
 
-  it('a single selection is bounded by the element itself (no groups, spec/147)', () => {
+  it('a single selection is bounded by the element itself (no groups, docs/specs/009-elements/web-components-and-no-groups.md)', () => {
     const s = derive({ elements: [box('a'), box('b', { x: 200 })], selectedId: 'a' });
     expect(s.selectionScope).toBe('single');
     expect(s.showHandlesFor('a')).toBe(true);
@@ -204,7 +204,7 @@ describe('deriveCanvasSelection', () => {
   });
 });
 
-// A fixed-size element (spec/103 buttons, spec/139 event-storming notes)
+// A fixed-size element (docs/specs/009-elements/mode-button.md buttons, docs/specs/021-event-storming/event-storming.md event-storming notes)
 // advertises NO resize affordance — and the edge "anchor" grips are resize
 // grips today (arrows are drawn from the quick-connect menu now), so they
 // have to disappear with the corner handles. Leaving them behind is exactly
@@ -234,7 +234,7 @@ describe('deriveCanvasSelection — fixed-size elements', () => {
   });
 });
 
-// Event-storming boards are a low-threshold CAPTURE surface (spec/139):
+// Event-storming boards are a low-threshold CAPTURE surface (docs/specs/021-event-storming/event-storming.md):
 // every control that doesn't serve "add a note, type, drag" is a
 // distraction. The quick-connect pluses ring every selected note with four
 // affordances nobody reaches for mid-workshop, so they stand down there —

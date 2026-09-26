@@ -1,4 +1,4 @@
-// Tabs-category illustrations (spec/55): the tab bar of pill-shaped boards,
+// Tabs-category illustrations (docs/specs/018-help/help-app.md): the tab bar of pill-shaped boards,
 // collapsible tab folders, cross-tab links, the tab ellipsis menu and its
 // Organise / Content / Cleanup sections, and a before/after cleanup.
 // Composed only from the shared primitives so the house style holds.

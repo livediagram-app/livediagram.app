@@ -1,6 +1,6 @@
 // Canvas tool slice, lifted out of useEditorState. Select (default,
 // drag-on-empty marquee-selects) vs Pan (drag-on-empty scrolls) vs
-// Laser (presenter pointer) vs Avatar (walk mode, spec/101). Holding
+// Laser (presenter pointer) vs Avatar (walk mode, docs/specs/008-canvas/avatar-mode.md). Holding
 // Space always pans regardless.
 // Lives in editor state (not Canvas) so other components (e.g. a
 // status bar later) can read it without prop-drilling through Canvas.
@@ -16,7 +16,7 @@ export function useCanvasTool({ defaultPan = false }: { defaultPan?: boolean } =
   // means "scroll the canvas" than "marquee-select", and pinch-zoom
   // pairs naturally with panning. Lazy initial read is safe during the
   // static-export render (see isMobileViewportSync). `defaultPan` forces
-  // Hand on every viewport, used by the read-only embed view (spec/33):
+  // Hand on every viewport, used by the read-only embed view (docs/specs/013-workspace/embeds.md):
   // there's nothing to select / edit, so panning is the only useful
   // drag-on-empty gesture.
   const [canvasTool, setCanvasTool] = useState<CanvasTool>(() =>
@@ -28,12 +28,12 @@ export function useCanvasTool({ defaultPan = false }: { defaultPan?: boolean } =
   // (high frequency), and internal auto-switches (e.g. laser to pan
   // when a draw starts) keep the raw setter so they don't count as
   // "used laser".
-  // The tool that was active before Avatar mode (spec/101) took over, so
+  // The tool that was active before Avatar mode (docs/specs/008-canvas/avatar-mode.md) took over, so
   // picking a palette tile can put the user back exactly where they were
   // rather than guessing Select. Same idea as useFormatTool's preFormatToolRef.
   const preAvatarToolRef = useRef<CanvasTool>('select');
   // The general form of the same idea: whatever tool you were in before the
-  // current one, for any mode. A Selection Mode button (spec/103) presses back
+  // current one, for any mode. A Selection Mode button (docs/specs/009-elements/mode-button.md) presses back
   // out of its own mode with this, so a button that switches you in is never a
   // one-way door.
   const priorToolRef = useRef<CanvasTool>('select');
@@ -44,20 +44,20 @@ export function useCanvasTool({ defaultPan = false }: { defaultPan?: boolean } =
     if (tool === 'spotlight' && canvasTool !== 'spotlight') track('Canvas', 'Used', 'Spotlight');
     if (tool === 'eraser' && canvasTool !== 'eraser') track('Canvas', 'Used', 'Eraser');
     // `AvatarMode`, not `Avatar` — the palette's Avatar photo tile already owns
-    // the `Avatar` token on Element·Added (spec/101).
+    // the `Avatar` token on Element·Added (docs/specs/008-canvas/avatar-mode.md).
     if (tool === 'avatar' && canvasTool !== 'avatar') track('Canvas', 'Used', 'AvatarMode');
     if (tool === 'format' && canvasTool !== 'format') track('Canvas', 'Used', 'FormatPainter');
     if (tool === 'isometric' && canvasTool !== 'isometric') track('Canvas', 'Used', 'Isometric');
     if (tool === 'highlighter' && canvasTool !== 'highlighter')
       track('Canvas', 'Used', 'Highlighter');
-    // Slide Deck (spec/31) is 'UI'/'Opened' rather than 'Canvas'/'Used':
+    // Slide Deck (docs/specs/012-collaboration/presentation-mode.md) is 'UI'/'Opened' rather than 'Canvas'/'Used':
     // picking it opens the deck workbench, it does not change the canvas.
     // Starting the presentation is its own event, fired from the panel.
     if (tool === 'slide-deck' && canvasTool !== 'slide-deck') track('UI', 'Opened', 'SlideDeck');
     setCanvasTool(tool);
   };
   // Leave Avatar mode for the tool that preceded it. Called when the user
-  // reaches for the palette mid-walk (spec/101): a tile is an edit, and the
+  // reaches for the palette mid-walk (docs/specs/008-canvas/avatar-mode.md): a tile is an edit, and the
   // mode is read-only, so the character steps aside instead of swallowing the
   // click. A no-op in every other tool, so callers can fire it blind. The
   // remembered tool can't itself be 'avatar' (selectCanvasTool only records a

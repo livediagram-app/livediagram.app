@@ -1,4 +1,4 @@
-// Getting-started-category illustrations (spec/55): beginner walkthroughs for
+// Getting-started-category illustrations (docs/specs/018-help/help-app.md): beginner walkthroughs for
 // the new-diagram welcome flow, the shape palette, quick-connecting arrows,
 // guest vs account, and the essential keyboard shortcuts. Composed only from
 // the shared primitives so the house style holds.

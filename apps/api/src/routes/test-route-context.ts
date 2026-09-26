@@ -1,7 +1,7 @@
 import type { RouteContext } from './context';
 import type { Env } from '../types';
 
-// Shared test builder for RouteContext (spec/18). Eight route test
+// Shared test builder for RouteContext (docs/specs/003-system-architecture/testing.md). Eight route test
 // files used to hand-roll the same URL → segments → JSON Request →
 // context skeleton, differing only in their surface's identity
 // defaults — so RouteContext growing a field meant eight edits (and
@@ -16,13 +16,13 @@ export function makeTestRouteContext(
   method: string,
   path: string,
   opts: {
-    // What resolveOwner() returns — the hybrid identity (spec/04) the
+    // What resolveOwner() returns — the hybrid identity (docs/specs/014-identity/auth-and-guest-access.md) the
     // route acts as. Wrappers bake their surface's default.
     owner?: string | null;
     clerkUserId?: string | null;
     // Defaults to clerkUserId (a Clerk session carries both); pass
     // explicitly for the token-caller shape (verified account id with
-    // NO Clerk session, spec/61).
+    // NO Clerk session, docs/specs/015-api/public-api-and-tokens.md).
     verifiedUserId?: string | null;
     clerkEmail?: string | null;
     // JSON-encoded into the request body when present.

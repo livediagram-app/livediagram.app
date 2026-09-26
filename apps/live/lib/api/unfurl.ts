@@ -1,4 +1,4 @@
-// Link-card preview fetch (spec/40). Calls the worker's GET /api/unfurl,
+// Link-card preview fetch (docs/specs/009-elements/link-cards.md). Calls the worker's GET /api/unfurl,
 // which server-side-fetches the page and extracts title / site / favicon /
 // og:image (the static client can't read cross-origin page HTML). Fails
 // SOFT — returns null on any error / non-200 so the card just shows the

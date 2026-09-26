@@ -10,14 +10,14 @@ import type { Tab } from '@livediagram/diagram';
 import { apiLoadTab } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
 
-// Lazy per-tab content load (spec/13), lifted out of editor-page.tsx.
+// Lazy per-tab content load (docs/specs/006-diagram/per-tab-storage.md), lifted out of editor-page.tsx.
 // Hydration seeds the first tab; switching to a never-opened tab fires a
 // one-shot GET that merges the elements into local state. Failures fall
 // back to the placeholder so the editor doesn't lock up. The loaded-set
 // ref + its reactive mirror are seeded by hydration and passed in, as is
 // resetTabs (the history reset) and the remote-update guard ref.
 //
-// Also returns `loadAllTabs`, the search panel's prefetch (spec/09
+// Also returns `loadAllTabs`, the search panel's prefetch (docs/specs/008-canvas/canvas-and-palette.md
 // "Search panel"): element search walks local tab state, so unvisited
 // placeholders would silently miss; opening search pulls every
 // remaining tab's content in one parallel sweep.
@@ -40,13 +40,13 @@ export function usePerTabLoad(opts: {
   setLoadedTabIds: Dispatch<SetStateAction<Set<string>>>;
   // Tabs whose lazy fetch FAILED (network / 5xx). Drives the canvas
   // error overlay so the user can't edit a blank placeholder and wipe
-  // the real server row (spec/13). Bumping `retryNonce` re-runs the
+  // the real server row (docs/specs/006-diagram/per-tab-storage.md). Bumping `retryNonce` re-runs the
   // effect for the same active tab (the Retry button).
   setTabLoadErrors: Dispatch<SetStateAction<Set<string>>>;
   retryNonce: number;
   // The autosave's baseline. Content fetched from D1 is by definition saved,
   // so it lands here too, or the next save would PUT and broadcast the whole
-  // tab back as if we had just drawn it (spec/152).
+  // tab back as if we had just drawn it (docs/specs/012-collaboration/collab-race-hardening.md).
   lastSavedTabsRef: MutableRefObject<Tab[]>;
   resetTabs: (updater: (prev: Tab[]) => Tab[]) => void;
 }) {
@@ -71,7 +71,7 @@ export function usePerTabLoad(opts: {
   // passed a fresh function each render, every re-render (the 30s presence
   // tick among them) tore the effect down and refetched; on a tab whose load
   // had FAILED that meant a refetch, and an Error telemetry report, twice a
-  // minute for as long as the tab stayed open (spec/22).
+  // minute for as long as the tab stayed open (docs/specs/017-telemetry/telemetry.md).
   const resetTabsRef = useRef(resetTabs);
   useEffect(() => {
     resetTabsRef.current = resetTabs;
@@ -85,8 +85,8 @@ export function usePerTabLoad(opts: {
   // Put a fetched tab in place: on screen, over a placeholder the user hasn't
   // touched (a tab they already drew on keeps its local content), and in the
   // autosave's baseline under the same rule, since content fetched from D1 is
-  // by definition saved (spec/152). Either way the local folder stays: it's
-  // per-diagram link metadata (spec/30) owned by the meta path, not the
+  // by definition saved (docs/specs/012-collaboration/collab-race-hardening.md). Either way the local folder stays: it's
+  // per-diagram link metadata (docs/specs/006-diagram/tab-folders.md) owned by the meta path, not the
   // content fetch. The baseline decision reads the last render (tabsRef), not
   // the state updater, which React may run late or twice.
   const adoptLoadedTab = (tab: Tab) => {
@@ -165,7 +165,7 @@ export function usePerTabLoad(opts: {
           return;
         }
         clearError();
-        // Telemetry (spec/22): a tab's content was fetched because the
+        // Telemetry (docs/specs/017-telemetry/telemetry.md): a tab's content was fetched because the
         // user switched to it. The first tab of each diagram is counted
         // at hydration (useIdentityBootstrap), and it's already in the
         // loaded-set here so this effect bails for it — no double count.

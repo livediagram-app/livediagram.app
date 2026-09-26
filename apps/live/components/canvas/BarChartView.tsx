@@ -1,6 +1,6 @@
 'use client';
 
-// Bar chart (spec/53): vertical bars sized by value, in the theme-derived
+// Bar chart (docs/specs/009-elements/pie-chart.md): vertical bars sized by value, in the theme-derived
 // palette (or per-datum colour), with an optional legend — the bar sibling of
 // PieChartView, sharing the same data (`pieSlices`), animation (`pieAnim`), and
 // legend toggle (`chartLegend`). Rendered inside its boxed element; the data is

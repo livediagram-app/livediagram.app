@@ -1,4 +1,4 @@
-// spec/64: the five email bodies. Plain, inline-styled, email-client-safe HTML
+// docs/specs/014-identity/transactional-email.md: the five email bodies. Plain, inline-styled, email-client-safe HTML
 // (no external CSS, tables for layout where it matters). Each builder returns
 // { subject, html }; links resolve against APP_BASE_URL via appBaseUrl(env).
 // Content only: never a diagram's contents, only the user's own account facts
@@ -18,14 +18,14 @@ const MUTED = '#475569';
 const ACCOUNT_FOOTER =
   'You’re receiving this because you have a livediagram account. The editor is free and open source.';
 
-// spec/64: footer for an opt-out notification email, the reason plus a link to
+// docs/specs/014-identity/transactional-email.md: footer for an opt-out notification email, the reason plus a link to
 // the settings where the recipient can turn the category off in one click.
 function manageNotificationsFooter(env: Env, reason: string): string {
   const href = profilePath(env);
   return `${reason} <a href="${href}" style="color:${BRAND};text-decoration:underline">Manage your notifications</a> to turn these off.`;
 }
 
-// `kind` is the template's telemetry token (spec/22 'Email' category): it rides
+// `kind` is the template's telemetry token (docs/specs/017-telemetry/telemetry.md 'Email' category): it rides
 // along on the builder's return so it reaches `sendEmail` through the same
 // spread every caller already writes, rather than being re-stated (and
 // forgotten) at each of the fourteen call sites. A fixed literal, never a
@@ -54,8 +54,8 @@ export type RenderedEmail = {
 };
 
 // Where every opt-out category can be turned off: the Settings dialog's
-// Notifications category, deep-linked (spec/20). Used by both the footer link
-// and the List-Unsubscribe header (spec/64). Module-private: only the
+// Notifications category, deep-linked (docs/specs/007-editor/user-preferences.md). Used by both the footer link
+// and the List-Unsubscribe header (docs/specs/014-identity/transactional-email.md). Module-private: only the
 // templates in this file build URLs with it.
 //
 // The old `/explorer/profile` URL still redirects here, which matters because
@@ -221,9 +221,9 @@ export function accountDeletedEmail(env: Env): RenderedEmail {
   };
 }
 
-// spec/65: a new person opened one of the owner's shared diagrams for the
+// docs/specs/014-identity/profile-and-email-notifications.md: a new person opened one of the owner's shared diagrams for the
 // first time. Sent to the diagram OWNER, so the diagram name is their own
-// content coming back to them (not a spec/64 §7 leak). `joinerName` is the
+// content coming back to them (not a docs/specs/014-identity/transactional-email.md §7 leak). `joinerName` is the
 // visitor's display name when known (already visible to the owner in live
 // presence / the Shared list); null falls back to "Someone".
 export function diagramJoinedEmail(
@@ -254,10 +254,10 @@ export function diagramJoinedEmail(
   };
 }
 
-// spec/65: an invitee accepted or declined a team invite. Sent to the team's
+// docs/specs/014-identity/profile-and-email-notifications.md: an invitee accepted or declined a team invite. Sent to the team's
 // admins. The responder address + team name are both already known to the
 // inviting admin (they typed the address, they named the team), so this stays
-// within spec/64 §7.
+// within docs/specs/014-identity/transactional-email.md §7.
 export function inviteResponseEmail(
   env: Env,
   teamName: string | null,
@@ -288,12 +288,12 @@ export function inviteResponseEmail(
   };
 }
 
-// spec/68: someone assigned the recipient an action on a diagram element.
+// docs/specs/012-collaboration/assigned-actions.md: someone assigned the recipient an action on a diagram element.
 // Sent to the assignee (a joined teammate of the assigner). Opt-out
 // (notifyActionAssigned). Everything user-influenced here (assigner name,
 // diagram name, action name, description) is either the assigner's own words
 // being delivered on their behalf or a diagram/team fact the two already
-// share (spec/64 §7), and all of it is escaped.
+// share (docs/specs/014-identity/transactional-email.md §7), and all of it is escaped.
 const ACTION_DESCRIPTION_PREVIEW_CHARS = 200;
 
 export function actionAssignedEmail(
@@ -345,7 +345,7 @@ function escapeText(s: string): string {
   return s.replace(/[\r\n]+/g, ' ').slice(0, 80);
 }
 
-// spec/64 (#3): a one-time heads-up that an API token (spec/61) is within a week
+// docs/specs/014-identity/transactional-email.md (#3): a one-time heads-up that an API token (docs/specs/015-api/public-api-and-tokens.md) is within a week
 // of its 6-month expiry, so a script / connected tool doesn't silently break.
 // Transactional (account-important); not opt-out.
 const EXPIRY_MONTHS = [
@@ -391,7 +391,7 @@ export function tokenExpiringEmail(
   };
 }
 
-// spec/64 (#4): a gentle nudge for someone who signed up but hasn't created a
+// docs/specs/014-identity/transactional-email.md (#4): a gentle nudge for someone who signed up but hasn't created a
 // diagram yet (fires once, ~3 days in). Onboarding, not opt-out.
 export function activationEmail(env: Env): RenderedEmail {
   const base = appBaseUrl(env);
@@ -414,7 +414,7 @@ export function activationEmail(env: Env): RenderedEmail {
   };
 }
 
-// spec/64 (#1): someone other than the owner left a comment on a diagram the
+// docs/specs/014-identity/transactional-email.md (#1): someone other than the owner left a comment on a diagram the
 // recipient owns. Opt-out (notifyComments). Never includes the comment text
 // (privacy): just who, which diagram, and a link to open it.
 export function commentNotificationEmail(
@@ -447,7 +447,7 @@ export function commentNotificationEmail(
   };
 }
 
-// spec/64 (#5): a friendly re-engagement nudge for someone who's been away for
+// docs/specs/014-identity/transactional-email.md (#5): a friendly re-engagement nudge for someone who's been away for
 // a few weeks. Opt-out (notifyTips).
 export function winBackEmail(env: Env): RenderedEmail {
   const base = appBaseUrl(env);
@@ -475,7 +475,7 @@ export function winBackEmail(env: Env): RenderedEmail {
   };
 }
 
-// spec/64 (#6): a small celebration when an owner reaches a diagram-count
+// docs/specs/014-identity/transactional-email.md (#6): a small celebration when an owner reaches a diagram-count
 // milestone. Opt-out (notifyMilestones).
 export function milestoneEmail(env: Env, count: number): RenderedEmail {
   const base = appBaseUrl(env);
@@ -497,7 +497,7 @@ export function milestoneEmail(env: Env, count: number): RenderedEmail {
   };
 }
 
-// spec/64 (#6): the first time an owner creates a share link. Opt-out
+// docs/specs/014-identity/transactional-email.md (#6): the first time an owner creates a share link. Opt-out
 // (notifyMilestones), same category as the diagram-count milestone.
 export function firstShareEmail(env: Env): RenderedEmail {
   const base = appBaseUrl(env);

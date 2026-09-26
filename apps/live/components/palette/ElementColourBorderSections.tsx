@@ -74,7 +74,7 @@ export function ElementColourBorderSections({
 }) {
   // A swatch shows the colour the element is ACTUALLY drawn in, so an element
   // that carries no colour of its own must read the canvas's ink here too
-  // (spec/07) — otherwise the menu offers a light-canvas blue beside a grey
+  // (docs/specs/007-editor/live-app.md) — otherwise the menu offers a light-canvas blue beside a grey
   // shape.
   const surface = useCanvasSurface();
   const borderStrokeVal: BorderStroke =
@@ -223,7 +223,7 @@ export function ElementColourBorderSections({
           </MenuAccordionSection>
         </>
       ) : null}
-      {/* Shadow (spec/86) — presets + sliders, for the body-drawing boxed
+      {/* Shadow (docs/specs/008-canvas/element-shadows.md) — presets + sliders, for the body-drawing boxed
           types. Sits after Border in the style band. */}
       {supportsShadow(target) ? (
         <ShadowSection

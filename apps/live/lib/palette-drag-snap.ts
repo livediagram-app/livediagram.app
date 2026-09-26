@@ -12,7 +12,7 @@ import {
 import { ALIGN_SNAP_THRESHOLD } from '@/lib/canvas';
 import type { LanePreview } from '@/lib/lane-preview';
 
-// Alignment help BEFORE the drop (spec/139): a palette tile dragged over the
+// Alignment help BEFORE the drop (docs/specs/021-event-storming/event-storming.md): a palette tile dragged over the
 // canvas snaps to its neighbours like a moved element does, and shows the
 // same guide lines — so a note lands aligned instead of landing and then
 // needing a nudge. On a low-threshold capture board every correction after
@@ -39,7 +39,7 @@ export function paletteDragSnapAt({
   width: number;
   height: number;
   elements: Element[];
-  // Timeline lanes (spec/139 Phase 6), when this drag is eligible for them: a
+  // Timeline lanes (docs/specs/021-event-storming/event-storming.md Phase 6), when this drag is eligible for them: a
   // note, on an event-storming board, with lanes on. Null otherwise — the
   // caller owns that decision, exactly as the note-drag path's does.
   timeline?: EsTimeline | null;

@@ -38,7 +38,7 @@ function actions() {
 
 const flush = () => new Promise((r) => setTimeout(r, 0));
 
-// spec/22: Team·Added·Diagram counts a diagram ENTERING a team library,
+// docs/specs/017-telemetry/telemetry.md: Team·Added·Diagram counts a diagram ENTERING a team library,
 // whichever surface filed it; Team·Moved·Diagram is every other scope move.
 describe('moveDiagramTo telemetry', () => {
   beforeEach(() => {

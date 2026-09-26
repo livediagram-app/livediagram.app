@@ -55,7 +55,7 @@ export function buildCanvasToolOptions({
       group: 0,
       disabled: canvasEmpty,
     },
-    // The marker (spec/81). An editing tool, in the Edit band with the eraser
+    // The marker (docs/specs/008-canvas/highlighter.md). An editing tool, in the Edit band with the eraser
     // it undoes: unlike everything below it, the highlighter MAKES content, so
     // it is the one tool here that stays live on an empty canvas.
     {
@@ -85,7 +85,7 @@ export function buildCanvasToolOptions({
             disabled: canvasEmpty,
           },
         ]),
-    // Avatar mode (spec/101): a walking character you steer to whatever
+    // Avatar mode (docs/specs/008-canvas/avatar-mode.md): a walking character you steer to whatever
     // you're narrating. A presenter tool like Laser / Spotlight, but it
     // works on touch too (tap-to-walk), so no mobile carve-out.
     {
@@ -96,7 +96,7 @@ export function buildCanvasToolOptions({
       group: 1,
       disabled: canvasEmpty,
     },
-    // Slide Deck (spec/31). In the Present band with the Laser and Spotlight:
+    // Slide Deck (docs/specs/012-collaboration/presentation-mode.md). In the Present band with the Laser and Spotlight:
     // like them it is a tool for showing a diagram to somebody rather than
     // for changing it. Needs content for the same reason they do — there is
     // nothing to put on a slide on an empty canvas.

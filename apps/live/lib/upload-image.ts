@@ -14,7 +14,7 @@ import {
 // to messages safe to render inline in the picker. The client-side
 // gate below already pre-rejects bad type / oversize files, so these
 // fire on the races it can't see — most importantly `gallery_full`,
-// the per-owner cap that only the server knows about (spec/19).
+// the per-owner cap that only the server knows about (docs/specs/009-elements/images.md).
 const UPLOAD_ERROR_MESSAGES: Record<string, string> = {
   gallery_full: 'Your image gallery is full. Delete some images and try again.',
   unsupported_type: `Unsupported file type. Use ${IMAGE_TYPES_LABEL}.`,
@@ -30,7 +30,7 @@ const UPLOAD_ERROR_MESSAGES: Record<string, string> = {
 // UX-shaped (fast feedback before a big upload + a sensible error
 // message), not security.
 
-// The formats and cap the api actually enforces (spec/19), so this gate can
+// The formats and cap the api actually enforces (docs/specs/009-elements/images.md), so this gate can
 // never accept a file the upload will reject. Re-exported under the editor's
 // own names because callers here read them as "what the picker allows".
 export const UPLOAD_ACCEPT_ATTR = IMAGE_ACCEPT_ATTR;
@@ -98,7 +98,7 @@ export async function uploadImageFile(ownerId: string, file: File): Promise<Uplo
   }
 }
 
-// Offline Mode (spec/76): an offline diagram must stay self-contained, so
+// Offline Mode (docs/specs/006-diagram/offline-mode.md): an offline diagram must stay self-contained, so
 // instead of uploading to the server gallery the file is embedded straight
 // into the element as a base64 data URI (the renderer and the exporters
 // treat a data-URI imageId as the bytes themselves, the same shape Take

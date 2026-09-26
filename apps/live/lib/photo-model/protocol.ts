@@ -1,6 +1,6 @@
 import type { ModelCues } from '@livediagram/sticky-vision';
 
-// What the page and the boundary-model worker say to each other (spec/139
+// What the page and the boundary-model worker say to each other (docs/specs/021-event-storming/event-storming.md
 // Phase 9). Closed vocabularies throughout: the backend and the failure reason
 // are logged and counted as they are, so neither may ever carry free text.
 

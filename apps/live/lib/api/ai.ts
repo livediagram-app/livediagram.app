@@ -1,4 +1,4 @@
-// AI Assistance (spec/25): server-capability probe + the unified
+// AI Assistance (docs/specs/007-editor/ai-assistance.md): server-capability probe + the unified
 // streaming request handler that parses elements out of the SSE feed.
 import type {
   AiConversationTurn,
@@ -260,7 +260,7 @@ export async function apiAiStream(
   callbacks.onDone({ elements, offTopic: false, reviewText: '', summary });
 }
 
-// Read the handwriting on sticky-note crops (spec/139 Phase 8).
+// Read the handwriting on sticky-note crops (docs/specs/021-event-storming/event-storming.md Phase 8).
 //
 // Non-streaming, unlike the assistant above: the editor cannot reconcile half
 // a list. Batched, because a wall section is tens of stickies and one enormous

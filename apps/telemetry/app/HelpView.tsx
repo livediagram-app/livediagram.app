@@ -15,7 +15,7 @@ import { RankCard, rank } from './RankCard';
 import { tourStepLabel, tourStepRows } from './tour-steps';
 import { rankTrend, windowLabel } from './windows';
 
-// Help view (spec/22): how the help centre (apps/help) is doing. Article reads
+// Help view (docs/specs/017-telemetry/telemetry.md): how the help centre (apps/help) is doing. Article reads
 // and the per-article helpful / not-really feedback. The help app emits
 // `Help·View·<id>`, `Help·Helpful·<id>`, `Help·Unhelpful·<id>`, where the id
 // is the registry's per-article telemetry id: the slug, or an explicit token

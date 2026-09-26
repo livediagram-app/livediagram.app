@@ -8,7 +8,7 @@ import { tabBackgroundStyle } from './canvas-backgrounds';
 
 // `tabBackgroundStyle` is the single entry point Canvas stamps onto
 // its `<main>` element on every tab change. The catalogue of
-// patterns is part of the user's tab settings (spec/09's Background
+// patterns is part of the user's tab settings (docs/specs/008-canvas/canvas-and-palette.md's Background
 // accordion), so a future change that adds a pattern to the
 // `BackgroundPattern` union must also add a case here. These tests
 // pin the load-bearing invariants: every pattern returns a usable
@@ -69,7 +69,7 @@ describe('tabBackgroundStyle', () => {
   });
 
   it('animated patterns paint no static image — the overlay owns their motion', () => {
-    // Their whole distinction from the static catalogue (spec/09): motion is
+    // Their whole distinction from the static catalogue (docs/specs/008-canvas/canvas-and-palette.md): motion is
     // drawn by AnimatedCanvasBackground, so `tabBackgroundStyle` contributes
     // only the backdrop colour, exactly like Blank. A static branch added
     // here by mistake would double-paint underneath the overlay — and the

@@ -60,7 +60,7 @@ describe('code themes', () => {
   });
 });
 
-// Long-line wrapping in the STILL render (spec/82). The canvas wraps with CSS;
+// Long-line wrapping in the STILL render (docs/specs/009-elements/code-block.md). The canvas wraps with CSS;
 // an export has to lay the lines out itself, and it must land on the same
 // amount of code or a shared thumbnail shows a different snippet than the
 // board does.

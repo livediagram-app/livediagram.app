@@ -1,4 +1,4 @@
-// About-category illustrations (spec/55): the conceptual articles, what
+// About-category illustrations (docs/specs/018-help/help-app.md): the conceptual articles, what
 // livediagram is, who it serves, why use it, and what open source means.
 // Composed only from the shared primitives so the house style holds. Several
 // About figures reuse canvas / collaboration scenes (CanvasOverview,

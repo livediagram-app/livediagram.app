@@ -1,7 +1,7 @@
 # @livediagram/sticky-model
 
-An EXPERIMENT (spec/139 Phase 9, group E of
-[plans/event-storming-photo-95-experiments.md](../../plans/event-storming-photo-95-experiments.md)):
+An EXPERIMENT ([Event storming](../../docs/specs/021-event-storming/event-storming.md) Phase 9, group E of
+plans/0006-event-storming-photo-95-experiments.md):
 can a tiny learned boundary model find the sticky notes on a wall better than
 the classical pipeline in `@livediagram/sticky-vision`, above all where notes
 touch? Results and verdicts:

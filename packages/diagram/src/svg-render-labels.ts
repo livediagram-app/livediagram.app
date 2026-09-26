@@ -1,4 +1,4 @@
-// Export label text emitters (spec/54 label fidelity): the resolved-run
+// Export label text emitters (docs/specs/013-workspace/live-image-share.md label fidelity): the resolved-run
 // types plus the plain / wrapped / rich <text> builders and the greedy
 // style-aware word wrap shared by the SVG emitter and the PNG canvas
 // drawer. Split from svg-render.ts alongside the -primitives / -shapes /
@@ -16,7 +16,7 @@ export type ExportRun = {
 };
 
 // The default face an export paints in when nothing else is asked for — the
-// editor's own default (spec/28's "editor default" rung).
+// editor's own default (docs/specs/004-interface-design/fonts.md's "editor default" rung).
 export const EXPORT_DEFAULT_FONT = 'system-ui, sans-serif';
 
 // `font-family` for a <text>, quoted for XML. Every emitter goes through
@@ -40,7 +40,7 @@ export type ExportLabel = {
   size: number;
   bold: boolean;
   italic: boolean;
-  // The resolved CSS stack the label paints in (spec/28) — element font,
+  // The resolved CSS stack the label paints in (docs/specs/004-interface-design/fonts.md) — element font,
   // else the notation's, else the tab default. Undefined = the UI sans.
   fontFamily?: string;
   runs?: ExportRun[];

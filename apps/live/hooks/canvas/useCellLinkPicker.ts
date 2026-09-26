@@ -1,4 +1,4 @@
-// Per-cell table links (spec/09), lifted out of useEditorState.
+// Per-cell table links (docs/specs/008-canvas/canvas-and-palette.md), lifted out of useEditorState.
 // Tracks which cell's link picker is open (null = closed); the shared
 // LinkPickerDialog renders against it in EditorView and applyCellLink
 // writes the chosen link into that cell's style via setCellStyle

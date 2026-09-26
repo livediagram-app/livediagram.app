@@ -1,4 +1,4 @@
-// What it means to remove a row from a team's member list (spec/32), and how to
+// What it means to remove a row from a team's member list (docs/specs/013-workspace/teams.md), and how to
 // say it — the confirm copy, the failure notice, and the telemetry type.
 //
 // Its own module because the list mixes two genuinely different things behind
@@ -8,7 +8,7 @@
 // that a "member" would be "removed from" the team, when that person had never
 // been in it. And telemetry recorded it as `Team·Removed·Member`, so the count
 // of people who left a team was inflated by invitations that were never taken
-// up — while `Team·Removed·Invite`, which spec/22 defines as exactly this
+// up — while `Team·Removed·Invite`, which docs/specs/017-telemetry/telemetry.md defines as exactly this
 // withdrawal, was being emitted somewhere else entirely (by the RECIPIENT
 // declining, which is now `Team·Declined·Invite`).
 //
@@ -25,7 +25,7 @@ export function teamRemovalKind(isSelf: boolean, status: TeamMemberStatus): Team
   return status === 'invited' ? 'invite' : 'member';
 }
 
-// The `type` slot for `Team·Removed` (spec/22). Deliberately parallel to the
+// The `type` slot for `Team·Removed` (docs/specs/017-telemetry/telemetry.md). Deliberately parallel to the
 // kind rather than derived from it inline, so a new kind can't be added without
 // choosing what it reports as.
 export function teamRemovalTelemetryType(kind: TeamRemovalKind): 'Self' | 'Invite' | 'Member' {

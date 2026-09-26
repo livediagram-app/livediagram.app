@@ -1,5 +1,5 @@
 // The floating WYSIWYG toolbar shown above an element while its label is
-// being edited (spec/09). Per-range bold / italic / underline /
+// being edited (docs/specs/008-canvas/canvas-and-palette.md). Per-range bold / italic / underline /
 // strikethrough + list controls as plain icon buttons, whole-element
 // alignment as a dropdown, and the selection colour swatch. Everything
 // else the old ⋯ overflow menu carried (Font / Size / Padding) lives in
@@ -70,7 +70,7 @@ export function RichTextToolbar({
         </Tooltip>
       ))}
       {TOOLBAR_DIVIDER}
-      {/* Block type (spec/102): heading level and list style are one choice
+      {/* Block type (docs/specs/009-elements/block-type-picker.md): heading level and list style are one choice
           to a writer, so they are one control. Applies to the selected lines,
           or to the whole label when nothing is selected (the session's
           collapsedScope). */}

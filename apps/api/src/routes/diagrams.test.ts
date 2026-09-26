@@ -38,16 +38,16 @@ const { db, canReadDiagram, canEditDiagram } = vi.hoisted(() => ({
     getParticipant: vi.fn(),
     listChangeLog: vi.fn(),
     insertChangeLogEntry: vi.fn(),
-    // Share-link create / extend surface (spec/34).
+    // Share-link create / extend surface (docs/specs/013-workspace/share-link-expiry.md).
     createShareLink: vi.fn(),
     generateShareCode: vi.fn(() => 'CODE2345'),
     getShareLinkIncludingExpired: vi.fn(),
     extendShareLink: vi.fn(),
     // Every share-link change withdraws the diagram's standing
-    // `share_link_expiring` warning (spec/138 §4.5); the retraction itself is
+    // `share_link_expiring` warning (docs/specs/013-workspace/timeline.md §4.5); the retraction itself is
     // covered in expiry-retraction.test.ts.
     retractTimelineWarning: vi.fn(),
-    // Slide deck write (spec/31).
+    // Slide deck write (docs/specs/012-collaboration/presentation-mode.md).
     setDiagramPresentation: vi.fn(),
     reorderTabs: vi.fn(),
   },
@@ -59,7 +59,7 @@ const { db, canReadDiagram, canEditDiagram } = vi.hoisted(() => ({
 vi.mock('../db', () => db);
 vi.mock('../auth/diagram-access', () => ({ canReadDiagram, canEditDiagram }));
 
-// The thumbnail route (spec/67) delegates rendering to ./thumbnail; stub
+// The thumbnail route (docs/specs/006-diagram/diagram-snapshots.md) delegates rendering to ./thumbnail; stub
 // it so these cases pin the ACCESS GATE, and can assert the renderer is
 // never reached for a denied caller (no render, no info leak).
 const getDiagramThumbnailSvg = vi.hoisted(() => vi.fn());
@@ -98,7 +98,7 @@ beforeEach(() => {
   getDiagramThumbnailSvg.mockReset();
 });
 
-describe('GET /diagrams/:id/thumbnail (spec/67 access gate)', () => {
+describe('GET /diagrams/:id/thumbnail (docs/specs/006-diagram/diagram-snapshots.md access gate)', () => {
   it('404s an anonymous caller with no owner / share code / team — and never renders', async () => {
     db.getDiagram.mockResolvedValue(fakeDiagram('someone-else'));
     canReadDiagram.mockResolvedValue(false);
@@ -174,7 +174,7 @@ describe('handleDiagrams owner-only paths (DELETE /diagrams/:id)', () => {
 });
 
 describe('handleDiagrams metadata PUT (PUT /diagrams/:id)', () => {
-  // Slide deck (spec/31). The deck rides the metadata PUT but has its own
+  // Slide deck (docs/specs/012-collaboration/presentation-mode.md). The deck rides the metadata PUT but has its own
   // write, so an ordinary rename can never rewrite it.
   it('leaves the stored deck alone when the field is absent', async () => {
     db.getDiagram.mockResolvedValue(fakeDiagram('owner-1'));
@@ -191,7 +191,7 @@ describe('handleDiagrams metadata PUT (PUT /diagrams/:id)', () => {
     expect(db.setDiagramPresentation).toHaveBeenCalledWith({}, 'd1', deck);
   });
 
-  it('blanks ownerId in the response for an edit-role share visitor (spec/04)', async () => {
+  it('blanks ownerId in the response for an edit-role share visitor (docs/specs/014-identity/auth-and-guest-access.md)', async () => {
     // gateEdit admits an edit-role share code, so the PUT reply reaches the
     // same audience the GET redacts for.
     db.getDiagram.mockResolvedValue(fakeDiagram('0f5ca4af-9a8a-4a60-be5e-1179e5555880'));
@@ -236,7 +236,7 @@ describe('handleDiagrams metadata PUT (PUT /diagrams/:id)', () => {
 
   it('404s an unknown id instead of create-on-first-write (ghost-row guard)', async () => {
     // A stray meta write for an id the server has never seen (e.g. an
-    // Offline Mode diagram id leaking past the client dispatch, spec/76)
+    // Offline Mode diagram id leaking past the client dispatch, docs/specs/006-diagram/offline-mode.md)
     // must NOT mint a zero-tab diagram row. Diagrams are created via POST.
     db.getDiagram.mockResolvedValue(null);
     const res = await handleDiagrams(
@@ -261,7 +261,7 @@ describe('handleDiagrams list (GET /diagrams)', () => {
   });
 });
 
-describe('GET /diagrams/:id owner-id redaction (spec/04)', () => {
+describe('GET /diagrams/:id owner-id redaction (docs/specs/014-identity/auth-and-guest-access.md)', () => {
   // The DTO's ownerId is a credential: for a guest owner it is the
   // X-Owner-Id bearer value, and /api/migrate moves that owner's whole
   // workspace to whoever presents it. The share-code resolver has always
@@ -334,7 +334,7 @@ describe('handleDiagrams folder assignment (PUT /diagrams/:id/folder)', () => {
     expect(db.setDiagramFolder).toHaveBeenCalledWith({}, 'd1', null, null, undefined);
   });
 
-  // spec/35: a team diagram belongs to every joined member, so any of
+  // docs/specs/013-workspace/team-shared-diagrams.md: a team diagram belongs to every joined member, so any of
   // them may move it out into their OWN personal library — and doing so
   // transfers ownership to the mover (folders are owner-scoped).
   it('transfers ownership when a joined member moves a team diagram out to their folder', async () => {
@@ -390,7 +390,7 @@ describe('handleDiagrams gated tab read (GET /diagrams/:id/tabs/:tabId)', () => 
   });
 });
 
-describe('handleDiagrams share-link expiry (spec/34)', () => {
+describe('handleDiagrams share-link expiry (docs/specs/013-workspace/share-link-expiry.md)', () => {
   const link = {
     code: 'CODE2345',
     diagramId: 'd1',
@@ -707,7 +707,7 @@ describe("POST /diagrams/:id/log checks the entry's tab belongs to the diagram",
   });
 });
 
-describe('POST /diagrams carrying an Offline Mode sync (spec/76)', () => {
+describe('POST /diagrams carrying an Offline Mode sync (docs/specs/006-diagram/offline-mode.md)', () => {
   // The offline record is deleted once the create succeeds, so the deck and
   // folder have to arrive with it.
   const create = (body: Record<string, unknown>) =>

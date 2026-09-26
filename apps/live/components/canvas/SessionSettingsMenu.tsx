@@ -1,6 +1,6 @@
 'use client';
 
-// The `…` quick settings on a vote / poll session element (spec/105).
+// The `…` quick settings on a vote / poll session element (docs/specs/012-collaboration/session-button.md).
 //
 // A thin wrapper now. It used to carry its OWN forms — a list of dot presets
 // for a vote, a hand-rolled question-and-answers form for a poll — which were
@@ -28,7 +28,7 @@ export function SessionSettingsMenu({
   config: SessionButtonConfig;
   // Absent on a read-only surface, where the trigger is not rendered at all.
   onChange: (next: SessionButtonConfig) => void;
-  /** The way out of the quick settings to the element's full menu (spec/09). */
+  /** The way out of the quick settings to the element's full menu (docs/specs/008-canvas/canvas-and-palette.md). */
   onOpenSettings?: () => void;
 }) {
   // A timer element has its own face and its own `…` (SessionTimerFace).

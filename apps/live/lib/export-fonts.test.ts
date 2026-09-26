@@ -4,7 +4,7 @@ import { embeddedFontFaceCss, latinFaceBlocks } from './export-fonts';
 // An export leaves the browser that made it: a font-family the reader hasn't
 // got installed paints as the fallback, and the PNG path rasterises through
 // an <img>, where an external @import is blocked outright. So the bytes come
-// with the file (spec/28).
+// with the file (docs/specs/004-interface-design/fonts.md).
 const GOOGLE_CSS = `
 /* cyrillic */
 @font-face {

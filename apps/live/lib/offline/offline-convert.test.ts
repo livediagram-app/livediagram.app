@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DIAGRAM_CONVERSION_HEADER } from '@livediagram/api-schema';
 
-// Offline Mode conversions (spec/76). "Take offline" DELETES the server copy,
+// Offline Mode conversions (docs/specs/006-diagram/offline-mode.md). "Take offline" DELETES the server copy,
 // so the ordering here is the difference between a failed conversion and a lost
 // diagram. The module's header states the rules; nothing checked them.
 //
@@ -230,8 +230,8 @@ describe('conversions declare themselves to the worker', () => {
   // Both conversions reuse ordinary endpoints, so the worker cannot tell them
   // from a real delete / a real create unless the request says so — and
   // undeclared it recorded exactly that, telling the owner in danger red that a
-  // diagram they had just moved into this browser was deleted (spec/76 +
-  // spec/138 §4.2).
+  // diagram they had just moved into this browser was deleted (docs/specs/006-diagram/offline-mode.md +
+  // docs/specs/013-workspace/timeline.md §4.2).
   it('marks the take-offline DELETE as an offline conversion', async () => {
     await takeCloudOffline('d1', 'owner');
     const [, , opts] = vi.mocked(core.apiDelete).mock.calls[0]!;

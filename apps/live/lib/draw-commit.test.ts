@@ -41,7 +41,7 @@ describe('buildDrawnArrow', () => {
     expect(out.to).toEqual({ kind: 'free', x: 150, y: 90 });
   });
 
-  it('snaps a dragged endpoint onto a nearby arrow (spec/50), leaving the far one free', () => {
+  it('snaps a dragged endpoint onto a nearby arrow (docs/specs/008-canvas/arrow-to-arrow.md), leaving the far one free', () => {
     const existing: ArrowElement = {
       id: 'ex',
       type: 'arrow',
@@ -67,7 +67,7 @@ describe('buildDrawnComponent', () => {
     expect(out.y + out.height / 2).toBe(300);
   });
 
-  it('sizes to the dragged box, per axis, so the layout re-flows (spec/147)', () => {
+  it('sizes to the dragged box, per axis, so the layout re-flows (docs/specs/009-elements/web-components-and-no-groups.md)', () => {
     const out = buildDrawnComponent('stat', 10, 20, 910, 220, themed);
     expect(out).toMatchObject({ x: 10, y: 20, width: 900, height: 200 });
   });
@@ -99,14 +99,14 @@ describe('buildDrawnBoxed', () => {
     });
   });
 
-  it("seeds the tab's default text size (spec/28)", () => {
+  it("seeds the tab's default text size (docs/specs/004-interface-design/fonts.md)", () => {
     const seeded = buildDrawnBoxed(shapeIntent, 0, 0, 3, 3, null, tab({ defaultTextSize: 'lg' }));
     expect(seeded.textSize).toBe('lg');
     const unseeded = buildDrawnBoxed(shapeIntent, 0, 0, 3, 3, null, tab());
     expect(unseeded.textSize).toBe('md'); // the shape factory's own default
   });
 
-  it('carries an event-storming fill onto a drawn sticky (spec/139)', () => {
+  it('carries an event-storming fill onto a drawn sticky (docs/specs/021-event-storming/event-storming.md)', () => {
     // The Event Storming palette tiles arm a sticky intent with the note
     // kind's canonical fill; the commit must land it as the element's
     // fillColor (stickies are theme-exempt, so it then survives themes).
@@ -117,7 +117,7 @@ describe('buildDrawnBoxed', () => {
     expect('fillColor' in plain && plain.fillColor != null).toBe(false);
   });
 
-  // The workshop stationery (spec/139): on an event-storming board every
+  // The workshop stationery (docs/specs/021-event-storming/event-storming.md): on an event-storming board every
   // sticky drops with a random hand-placed tilt and a FIXED silhouette —
   // no resizing, and a drag gesture sizes nothing.
   it('gives any sticky on an ES board a tilt and a fixed size; drag sizes nothing', () => {
@@ -145,7 +145,7 @@ describe('buildDrawnBoxed', () => {
   });
 
   // A note of fixed size is STAMPED, not drawn: it lands centred on where the
-  // pointer is released, at its own size (spec/139 Phase 4).
+  // pointer is released, at its own size (docs/specs/021-event-storming/event-storming.md Phase 4).
   it('centres a tapped policy on the tap at its own size', () => {
     const esTab = tab({ layers: eventStormingLayers() });
     const policy = buildDrawnBoxed(
@@ -223,7 +223,7 @@ describe('buildDrawnBoxed', () => {
     expect((offPolicy as { fixedSize?: boolean }).fixedSize).toBeUndefined();
   });
 
-  // Layer routing (spec/139): an event-storming board has ONE layer, and
+  // Layer routing (docs/specs/021-event-storming/event-storming.md): an event-storming board has ONE layer, and
   // every note files onto it whatever its kind — stage bands meant two notes
   // could never be stacked against each other.
   it('routes every event-storming note onto the board layer', () => {
@@ -299,14 +299,14 @@ describe('buildDrawnBoxed', () => {
     ).toBeUndefined();
   });
 
-  it('carries the icon glyph + label, unlocking aspect for a tech mark (spec/41)', () => {
+  it('carries the icon glyph + label, unlocking aspect for a tech mark (docs/specs/010-palette/technology-icons.md)', () => {
     const intent = { type: 'shape', kind: 'square', iconId: 'aws-s3', label: 'S3' } as const;
     const out = buildDrawnBoxed(intent, 0, 0, 100, 100, null, tab());
     expect(out).toMatchObject({ iconId: 'aws-s3', label: 'S3', aspectLocked: false });
   });
 
   // The kinds that used to drop at the viewport centre with no draw gesture
-  // at all (spec/09 "Placement on add"). A tap keeps the factory default, a
+  // at all (docs/specs/008-canvas/canvas-and-palette.md "Placement on add"). A tap keeps the factory default, a
   // drag sizes them like any other box.
   it('taps a table out at its factory default, and drags it to the drawn box', () => {
     const tapped = buildDrawnBoxed({ type: 'table' }, 500, 300, 503, 302, null, tab());
@@ -318,7 +318,7 @@ describe('buildDrawnBoxed', () => {
     expect(drawn.type === 'table' && drawn.cells).toHaveLength(3);
   });
 
-  it('draws a link card to the dragged box (spec/40)', () => {
+  it('draws a link card to the dragged box (docs/specs/009-elements/link-cards.md)', () => {
     const out = buildDrawnBoxed({ type: 'link-card' }, 10, 10, 210, 110, null, tab());
     expect(out).toMatchObject({ type: 'link-card', x: 10, y: 10, width: 200, height: 100 });
   });
@@ -328,7 +328,7 @@ describe('buildDrawnBoxed', () => {
     expect(out).toMatchObject({ type: 'video', embedProvider: 'figma' });
   });
 
-  it('fits an embed to 16:9 inside the drawn box rather than stretching it (spec/114)', () => {
+  it('fits an embed to 16:9 inside the drawn box rather than stretching it (docs/specs/009-elements/youtube-video.md)', () => {
     // A tall, narrow drag: width is the binding constraint.
     const tall = buildDrawnBoxed({ type: 'video' }, 0, 0, 320, 400, null, tab());
     expect(tall.width).toBeCloseTo(320, 5);

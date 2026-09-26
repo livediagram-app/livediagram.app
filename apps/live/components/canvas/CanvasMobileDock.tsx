@@ -11,10 +11,10 @@ import {
 } from '@/components/palette/palette-icons';
 import type { MobilePanel } from '@/hooks/canvas/useCanvasMobileDock';
 
-// Top-right mobile dock (spec/07 "Mobile chrome"): a compact button row
+// Top-right mobile dock (docs/specs/007-editor/live-app.md "Mobile chrome"): a compact button row
 // that replaces the four full-width collapse banners on mobile, opening
 // each panel as a popover. Also shown at all widths when the user opts
-// into the minimal panel layout (spec/09). Split out of Canvas.tsx; the
+// into the minimal panel layout (docs/specs/008-canvas/canvas-and-palette.md). Split out of Canvas.tsx; the
 // popover bodies + anchoring stay in Canvas, this is just the button row.
 export function CanvasMobileDock({
   welcomeOpen,
@@ -37,13 +37,13 @@ export function CanvasMobileDock({
   onDockButtonClick,
 }: {
   welcomeOpen: boolean;
-  // Toolbar layout (spec/148): the strip, the menu button and the
+  // Toolbar layout (docs/specs/007-editor/toolbar-layout.md): the strip, the menu button and the
   // bottom-right cluster carry everything, on a phone as on desktop.
   toolbarLayout?: boolean;
   minimalPanels?: boolean;
   readOnly: boolean;
   // True when the active tab has at least one comment thread or action —
-  // the same gate that mounts the Collaborate panel (spec/68 §5).
+  // the same gate that mounts the Collaborate panel (docs/specs/012-collaboration/assigned-actions.md §5).
   hasCollaborate: boolean;
   hasAi: boolean;
   // A live poll / dot-vote is running on this tab. Both are transient, so
@@ -51,17 +51,17 @@ export function CanvasMobileDock({
   // permanently disabled.
   hasPoll: boolean;
   hasVote: boolean;
-  // Avatar mode (spec/101) is active, so its customisation panel has a dock
+  // Avatar mode (docs/specs/008-canvas/avatar-mode.md) is active, so its customisation panel has a dock
   // button. Same come-and-go treatment as the session tools.
   hasAvatar: boolean;
-  // The Laser tool (spec/111) is active, so its pen panel gets a dock button —
+  // The Laser tool (docs/specs/008-canvas/laser-panel.md) is active, so its pen panel gets a dock button —
   // same come-and-go treatment as Avatar mode's.
   hasLaser: boolean;
-  // The Spotlight tool (spec/112) is active, so its panel gets a dock button.
+  // The Spotlight tool (docs/specs/008-canvas/spotlight-panel.md) is active, so its panel gets a dock button.
   hasSpotlight: boolean;
-  // The Eraser tool (spec/113) is active, so its panel gets a dock button.
+  // The Eraser tool (docs/specs/008-canvas/eraser-panel.md) is active, so its panel gets a dock button.
   hasEraser: boolean;
-  // The Format painter (spec/116) is active, so its panel gets a dock button.
+  // The Format painter (docs/specs/010-palette/stickers.md) is active, so its panel gets a dock button.
   hasFormat: boolean;
   hasHighlighter: boolean;
   hasSlideDeck: boolean;
@@ -164,7 +164,7 @@ export function CanvasMobileDock({
           // Session tools go LAST, so the buttons that are always there keep
           // their positions and a poll starting mid-session doesn't shuffle
           // the row under someone's thumb. Not gated on readOnly: a view-only
-          // participant answers polls and watches vote results (spec/88).
+          // participant answers polls and watches vote results (docs/specs/012-collaboration/live-poll.md).
           ...(hasVote
             ? [
                 {
@@ -277,7 +277,7 @@ export function CanvasMobileDock({
             dockButtonRefs.current[btn.id] = el;
           }}
           type="button"
-          // Tour anchor (spec/79): lets tour steps tap the same dock button a
+          // Tour anchor (docs/specs/007-editor/editor-tour.md): lets tour steps tap the same dock button a
           // user would to open a panel on mobile / minimal layouts.
           data-tour-id={`dock-${btn.id}`}
           onClick={() => onDockButtonClick(btn.id)}

@@ -84,7 +84,7 @@ describe('renderElementsToSvg', () => {
     expect(svg).toContain('viewBox="-32 -32 664 464"');
   });
 
-  describe('arrowhead shapes (spec/09 UML notation)', () => {
+  describe('arrowhead shapes (docs/specs/008-canvas/canvas-and-palette.md UML notation)', () => {
     // The canvas draws all seven head shapes via SVG markers; the export
     // has to reproduce them or a class diagram's hollow-triangle
     // inheritance / hollow-diamond aggregation flattens into generic
@@ -178,7 +178,7 @@ describe('renderElementsToSvg', () => {
     });
   });
 
-  // Fonts (spec/28) used to stop at the canvas: every export painted
+  // Fonts (docs/specs/004-interface-design/fonts.md) used to stop at the canvas: every export painted
   // system-ui, so a downloaded board looked like a different diagram — most
   // obviously an event-storming wall, whose marker face IS the notation.
   describe('fonts', () => {
@@ -250,7 +250,7 @@ describe('renderElementsToSvg', () => {
       );
     });
 
-    // Workshop notes are written in capitals (spec/139) — the export paints
+    // Workshop notes are written in capitals (docs/specs/021-event-storming/event-storming.md) — the export paints
     // what the board shows, or a shared PNG stops being the board.
     it('exports an event-storming note in capitals', () => {
       const svg = renderElementsToSvg(tab([sticky({ esKind: 'domain-event' })]));
@@ -262,7 +262,7 @@ describe('renderElementsToSvg', () => {
       expect(renderElementsToSvg(tab([sticky()]))).toContain('Order placed');
     });
 
-    // The marker face is the notation (spec/139), so it has to survive the
+    // The marker face is the notation (docs/specs/021-event-storming/event-storming.md), so it has to survive the
     // export the same way the colour and the capitals do.
     it('exports an event-storming note in marker', () => {
       const svg = renderElementsToSvg(tab([sticky({ esKind: 'domain-event' })]));
@@ -271,7 +271,7 @@ describe('renderElementsToSvg', () => {
     });
   });
 
-  describe('tables (spec/09)', () => {
+  describe('tables (docs/specs/008-canvas/canvas-and-palette.md)', () => {
     const table = (o: Record<string, unknown> = {}) =>
       ({
         id: 'tb',
@@ -355,7 +355,7 @@ describe('renderElementsToSvg', () => {
       expect(renderElementsToSvg(tab([dot]))).not.toContain('<path');
     });
 
-    it('renders a code block as the dark card + mono lines (spec/82)', () => {
+    it('renders a code block as the dark card + mono lines (docs/specs/009-elements/code-block.md)', () => {
       const svg = renderElementsToSvg(
         tab([
           shape('cb', {
@@ -374,7 +374,7 @@ describe('renderElementsToSvg', () => {
       expect(svg).toContain('ui-monospace');
     });
 
-    it('renders a checklist as rows with ticked boxes + strike-through (spec/83)', () => {
+    it('renders a checklist as rows with ticked boxes + strike-through (docs/specs/009-elements/checklist.md)', () => {
       const svg = renderElementsToSvg(
         tab([
           shape('cl', {
@@ -394,7 +394,7 @@ describe('renderElementsToSvg', () => {
       expect(svg).toContain('1/2'); // done-count footer
     });
 
-    it('renders a highlighter stroke with the marker recipe (spec/81)', () => {
+    it('renders a highlighter stroke with the marker recipe (docs/specs/008-canvas/highlighter.md)', () => {
       const el = {
         id: 'hl',
         type: 'freehand',
@@ -442,7 +442,7 @@ describe('renderElementsToSvg', () => {
     });
   });
 
-  describe('label fidelity (spec/09)', () => {
+  describe('label fidelity (docs/specs/008-canvas/canvas-and-palette.md)', () => {
     it('anchors a top-aligned label at the element top, not its vertical centre', () => {
       // A frame-style label (top + right): the text must export at the
       // frame's top edge — it floated at the vertical centre before.
@@ -530,7 +530,7 @@ describe('renderElementsToSvg', () => {
       expect(svg).toContain('stroke-width="1"');
     });
 
-    it('scales a captioned glyph into the band opposite the label (spec/41 bands)', () => {
+    it('scales a captioned glyph into the band opposite the label (docs/specs/010-palette/technology-icons.md bands)', () => {
       // Bottom caption (the default): the glyph band is the top 6%..64% of
       // the 48px box — y = 48*0.06, height = 48*0.58.
       const svg = renderElementsToSvg(tab([icon({ label: 'API' })]), {
@@ -556,7 +556,7 @@ describe('renderElementsToSvg', () => {
       expect(svg).not.toContain('stroke="#123456"');
     });
 
-    it('draws a Technology mark at its fixed preset size, centred (spec/41)', () => {
+    it('draws a Technology mark at its fixed preset size, centred (docs/specs/010-palette/technology-icons.md)', () => {
       const art = () => ({ markup: '<circle/>', colored: true });
       // Default preset (md = 48px) in a 200x100 box, no label: centred.
       const svg = renderElementsToSvg(tab([icon({ width: 200, height: 100 })]), {
@@ -571,7 +571,7 @@ describe('renderElementsToSvg', () => {
       expect(clamped).toContain('width="60" height="60" viewBox="0 0 24 24"');
     });
 
-    it('sends a top-captioned Technology mark to the bottom band (spec/41)', () => {
+    it('sends a top-captioned Technology mark to the bottom band (docs/specs/010-palette/technology-icons.md)', () => {
       const art = () => ({ markup: '<circle/>', colored: true });
       const svg = renderElementsToSvg(
         tab([icon({ width: 100, height: 100, label: 'EC2', textAlignY: 'top' })]),
@@ -583,7 +583,7 @@ describe('renderElementsToSvg', () => {
       expect(svg).toContain('y="22"'); // el.y + fontSize (default md = 22)
     });
 
-    it('sends a left-captioned mark to the right half, on the caption row (spec/41)', () => {
+    it('sends a left-captioned mark to the right half, on the caption row (docs/specs/010-palette/technology-icons.md)', () => {
       const art = () => ({ markup: '<circle/>', colored: true });
       const svg = renderElementsToSvg(
         tab([
@@ -604,7 +604,7 @@ describe('renderElementsToSvg', () => {
       expect(svg).toContain('text-anchor="start"');
     });
 
-    it('keeps a middle-aligned caption above the glyph band (spec/41 caption band)', () => {
+    it('keeps a middle-aligned caption above the glyph band (docs/specs/010-palette/technology-icons.md caption band)', () => {
       const art = () => ({ markup: '<circle/>', colored: true });
       const svg = renderElementsToSvg(
         tab([icon({ width: 100, height: 100, label: 'EC2', textAlignY: 'middle' })]),
@@ -620,7 +620,7 @@ describe('renderElementsToSvg', () => {
       expect(parseFloat(m![1]!)).toBe(14);
     });
 
-    it('centres a side caption on the glyph row and wraps it at its half (spec/41)', () => {
+    it('centres a side caption on the glyph row and wraps it at its half (docs/specs/010-palette/technology-icons.md)', () => {
       const art = () => ({ markup: '<circle/>', colored: true });
       // Left caption on the top row: both the mark and the caption sit on the
       // 6..64% row — the caption vertically centred on it (y = 6 + 58/2 = 35)
@@ -660,10 +660,10 @@ describe('renderElementsToSvg', () => {
   });
 });
 
-// Element drop shadows (spec/86): a shadowed element references a shared
+// Element drop shadows (docs/specs/008-canvas/element-shadows.md): a shadowed element references a shared
 // feDropShadow def; shadow-less documents carry no <defs> so their output
 // stays byte-identical to before the feature.
-describe('renderElementsToSvg — element shadows (spec/86)', () => {
+describe('renderElementsToSvg — element shadows (docs/specs/008-canvas/element-shadows.md)', () => {
   const shadow = { offsetX: 0, offsetY: 4, blur: 12, opacity: 0.25 };
 
   it('emits one filter def per unique shadow and references it from the element group', () => {
@@ -695,7 +695,7 @@ describe('renderElementsToSvg — element shadows (spec/86)', () => {
   });
 });
 
-// The arrow caption (spec/09). The export used to emit a fixed 12px near-black
+// The arrow caption (docs/specs/008-canvas/canvas-and-palette.md). The export used to emit a fixed 12px near-black
 // label whatever the caption was styled as, so a diagram whose captions had
 // been sized or coloured came out of an export looking like a different
 // diagram. These pin that the styling reaches the file.
@@ -736,7 +736,7 @@ describe('arrow captions in an export', () => {
   });
 });
 
-// Drawn-on-the-box chrome (spec/09, spec/119). The export drew the box and
+// Drawn-on-the-box chrome (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/009-elements/lane.md). The export drew the box and
 // stopped, so a swimlane came out as a plain rectangle with its title floating
 // in the middle of the work, and a browser frame had no window at all.
 describe('chrome the canvas draws on a box', () => {

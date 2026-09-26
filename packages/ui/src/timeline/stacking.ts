@@ -1,4 +1,4 @@
-// Same-day stacking (spec/138 §2.1).
+// Same-day stacking (docs/specs/013-workspace/timeline.md §2.1).
 //
 // A day where you renamed six diagrams should read as one line, not
 // six. Within a day, events sharing a bucket collapse into a single
@@ -90,7 +90,7 @@ export function buildStacks(events: readonly TimelineEvent[]): TimelineStack[] {
 // on a stack that also contains two other diagrams reads as a lie. The
 // per-bucket map below is the honest generic; anything unmapped falls
 // back to the shared title, which is already a generic category by the
-// copy rules (spec/138 §2).
+// copy rules (docs/specs/013-workspace/timeline.md §2).
 const STACK_LABELS: Record<string, string> = {
   'diagram::diagram_edited': 'Diagrams Updated',
   'diagram::diagram_created': 'Diagrams Created',

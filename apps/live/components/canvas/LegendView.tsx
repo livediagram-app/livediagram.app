@@ -5,7 +5,7 @@ import {
   type ShapeElement,
 } from '@livediagram/diagram';
 
-// The legend's canvas view (spec/53): a themed card of colour-coded rows, one
+// The legend's canvas view (docs/specs/009-elements/pie-chart.md): a themed card of colour-coded rows, one
 // dot and one label each. A key, not a chart, so nothing here is clickable:
 // the colours and the words are edited from the context menu's Legend section,
 // which is where every other data shape's rows are edited.
@@ -28,7 +28,7 @@ export function LegendView({
 }) {
   const items = element.legendItems ?? [];
   const colors = chartPaletteColors(element.chartPalette) ?? PIE_PALETTE;
-  // Text Size (spec/53) scales the rows, and the dot keeps its proportion to
+  // Text Size (docs/specs/009-elements/pie-chart.md) scales the rows, and the dot keeps its proportion to
   // the words beside it.
   const fontPx = legendFontPx(element.textSize);
   const dotPx = Math.round(fontPx * 0.75);

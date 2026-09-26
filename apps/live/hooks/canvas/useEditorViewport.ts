@@ -70,7 +70,7 @@ type EditorViewportApi = {
   // viewport. Idempotent (the lastFittedTabRef gate in
   // editor-page.tsx still controls WHEN this runs).
   fitToScreen: () => void;
-  // Frame an ARBITRARY rectangle. Presenting a slide (spec/31) needs this:
+  // Frame an ARBITRARY rectangle. Presenting a slide (docs/specs/012-collaboration/presentation-mode.md) needs this:
   // the deck decides what is on screen, so the box to fit is the slide's
   // rather than the whole tab's.
   fitToBounds: (
@@ -79,10 +79,10 @@ type EditorViewportApi = {
   ) => void;
   // Pan (and zoom out if needed) until the given canvas-coord bounds
   // are fully on screen. Used by the mobile add-element reveal and the
-  // keyboard traversal's focus-follows-selection (spec/71). With
+  // keyboard traversal's focus-follows-selection (docs/specs/004-interface-design/canvas-accessibility.md). With
   // `center: true` it always centres the bounds in the visible band
   // instead of the minimal edge-pull pan; the vote-results walkthrough
-  // (spec/39) uses that so every reviewed pick lands mid-screen.
+  // (docs/specs/012-collaboration/session-tools.md) uses that so every reviewed pick lands mid-screen.
   scrollIntoView: (
     bx: number,
     by: number,
@@ -90,7 +90,7 @@ type EditorViewportApi = {
     bh: number,
     opts?: { center?: boolean },
   ) => void;
-  // Centre a canvas point at somebody else's zoom (spec/144).
+  // Centre a canvas point at somebody else's zoom (docs/specs/012-collaboration/bring-focus.md).
   centreOn: (at: { x: number; y: number }, zoom: number) => void;
   // Is that point already what this view is showing, at about that zoom?
   isCentredOn: (at: { x: number; y: number }, zoom: number) => boolean;
@@ -262,10 +262,10 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
   }, []);
 
   // Frame an ARBITRARY rectangle, which is what presenting a slide needs
-  // (spec/31): the deck decides what is on screen, so the box to fit is the
+  // (docs/specs/012-collaboration/presentation-mode.md): the deck decides what is on screen, so the box to fit is the
   // slide's, not the tab's. Same maths as fitToScreen, which is now the
   // special case "fit everything on this tab".
-  // Centre a canvas point at a given zoom (spec/144). The zoom is somebody
+  // Centre a canvas point at a given zoom (docs/specs/012-collaboration/bring-focus.md). The zoom is somebody
   // else's, so this cannot go through fitToBounds, which derives one; the
   // point of Bring Focus is that everyone ends up seeing the same amount of
   // board as the person who pressed.
@@ -286,7 +286,7 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
   // The inverse question: is this view ALREADY the one centreOn would give?
   // Bring Focus asks it before putting an invitation on screen, so a second
   // press re-asks the people who said no without pestering the ones who came
-  // (spec/144).
+  // (docs/specs/012-collaboration/bring-focus.md).
   // The rule itself is shared with the presser's side of the press, which asks
   // the same thing of everyone else's published viewport.
   const isCentredOn = useCallback((at: { x: number; y: number }, zoom: number) => {
@@ -308,7 +308,7 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
       const node = canvasMainRef.current;
       if (!node || bbox.w <= 0 || bbox.h <= 0) return;
       // offsetWidth/Height, NOT getBoundingClientRect: the latter reports the
-      // TRANSFORMED box, and presenting (spec/31) animates the canvas surface
+      // TRANSFORMED box, and presenting (docs/specs/012-collaboration/presentation-mode.md) animates the canvas surface
       // with a scale on entry. Measuring mid-animation therefore fitted the
       // slide to a shrunken viewport, and it painted off-centre by exactly the
       // difference once the animation finished. The layout size is what the

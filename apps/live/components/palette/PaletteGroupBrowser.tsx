@@ -9,7 +9,7 @@ import type { PaletteTileDef } from './palette-tile-defs';
 import type { PaletteTileActions } from './PaletteTileGrid';
 
 // The drill-in browse for a catalogue tab whose contents are grouped by
-// `tileGroup` — Behaviour and Collaborate (spec/09 "Sub-categories").
+// `tileGroup` — Behaviour and Collaborate (docs/specs/008-canvas/canvas-and-palette.md "Sub-categories").
 //
 // Both tabs were a stack of accordion headers: five collapsed rows for
 // Behaviour, two plus a loose row for Collaborate. Accordions read as a table

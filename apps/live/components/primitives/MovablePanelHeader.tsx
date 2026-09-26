@@ -62,7 +62,7 @@ export function MovablePanelHeader({
             {headerActions}
           </div>
         ) : null}
-        {/* The panel's help article (spec/56), first in the chrome cluster so
+        {/* The panel's help article (docs/specs/018-help/contextual-help-links.md), first in the chrome cluster so
             it sits in the same spot on every panel. stopPropagation because
             the header is the drag handle: pressing `?` must open the article,
             not start moving the panel. */}

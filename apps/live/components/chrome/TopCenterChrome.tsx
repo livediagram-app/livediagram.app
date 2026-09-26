@@ -42,7 +42,7 @@ type TopCenterChromeProps = Pick<
 > & {
   // From CanvasChrome's computed ChromeExtras, not CanvasProps.
   isPaintMode: boolean;
-  // Follow-me (spec/131): who we are following, so the pill can say so and
+  // Follow-me (docs/specs/012-collaboration/follow-me-viewport.md): who we are following, so the pill can say so and
   // offer the way out. Any canvas gesture also ends it silently — this is the
   // explicit door, not the only one.
   followingName?: string | null;
@@ -78,7 +78,7 @@ export function TopCenterChrome({
 }: TopCenterChromeProps) {
   return (
     <TopCenterStack belowToolbar={toolbarLayout === true && !readOnly}>
-      {/* Follow-me (spec/131). Shown on every viewport and in Zen mode: being
+      {/* Follow-me (docs/specs/012-collaboration/follow-me-viewport.md). Shown on every viewport and in Zen mode: being
           moved around by somebody else without being told why is the one state
           this feature must never leave you in. */}
       {followingName ? (
@@ -168,7 +168,7 @@ export function TopCenterChrome({
 
         {/* The banner belongs to a one-shot ARM: "you picked a square, now
             drag one out", with a Cancel because the intent is transient. The
-            highlighter is a held tool now (spec/81), so it is excluded here —
+            highlighter is a held tool now (docs/specs/008-canvas/highlighter.md), so it is excluded here —
             a mode does not need telling you it is on every time you look up,
             and its colour + strength moved off this bar into the Highlighter
             Panel, where every other tool keeps its settings. */}
@@ -180,7 +180,7 @@ export function TopCenterChrome({
           />
         ) : null}
 
-        {/* Session timer (spec/39), ticking locally off the tab timer. */}
+        {/* Session timer (docs/specs/012-collaboration/session-tools.md), ticking locally off the tab timer. */}
         {tabTimer ? (
           <TimerWidget
             timer={tabTimer}
@@ -193,7 +193,7 @@ export function TopCenterChrome({
         ) : null}
       </TopCenterRow>
 
-      {/* Vote status (spec/39), stacked below the timer row. While results
+      {/* Vote status (docs/specs/012-collaboration/session-tools.md), stacked below the timer row. While results
           are under review it becomes the walkthrough bar (Previous / Next /
           Done over the ordered top picks). */}
       {tabVote ? (

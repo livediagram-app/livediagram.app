@@ -1,4 +1,4 @@
-// One definition of "which `Element·Added` type is this element" (spec/22).
+// One definition of "which `Element·Added` type is this element" (docs/specs/017-telemetry/telemetry.md).
 //
 // Creation paths that build an element from scratch each derive this token
 // inline from the thing they're about to build (a draw intent, a palette
@@ -16,7 +16,7 @@ import type { ComponentKind, Element } from '@livediagram/diagram';
 import { isTechIconId } from '@/lib/tech-icons';
 import { titleCaseType, track } from '@/lib/telemetry';
 
-// Telemetry for a copy gesture — duplicate, paste, shift-drag (spec/22).
+// Telemetry for a copy gesture — duplicate, paste, shift-drag (docs/specs/017-telemetry/telemetry.md).
 //
 // Two events, deliberately, because they answer two different questions:
 //
@@ -67,7 +67,7 @@ const SHAPE_TOKENS: Record<string, string> = {
   'comment-pin': 'CommentPin',
   'action-card': 'ActionPanel',
   'done-check': 'DoneCheck',
-  // The web components (spec/147) report as their palette component, so a
+  // The web components (docs/specs/009-elements/web-components-and-no-groups.md) report as their palette component, so a
   // copied stat row lands in the same dashboard row as a dropped one.
   banner: 'Banner',
   callout: 'Callout',
@@ -92,7 +92,7 @@ export function elementTelemetryType(element: Element): string {
     case 'sticky':
       return 'Sticky';
     case 'image':
-      // A hero is an image with a caption card (spec/147).
+      // A hero is an image with a caption card (docs/specs/009-elements/web-components-and-no-groups.md).
       return element.heroCaption ? 'Hero' : 'Image';
     case 'table':
       return 'Table';
@@ -105,7 +105,7 @@ export function elementTelemetryType(element: Element): string {
     case 'freehand':
       // Three tools share this element kind and the draw paths report them
       // separately, so a copy must too. `pen` marks the highlighter and
-      // `straightEdges` the polygon tool (spec/84); a plain pencil stroke
+      // `straightEdges` the polygon tool (docs/specs/008-canvas/polygon-tool.md); a plain pencil stroke
       // has neither.
       if (element.pen === 'highlighter') return 'Highlighter';
       if (element.straightEdges) return element.closed ? 'Polygon' : 'Polyline';
@@ -119,7 +119,7 @@ export function elementTelemetryType(element: Element): string {
   }
 }
 
-// The palette's component tokens (spec/09, spec/147), reported straight from
+// The palette's component tokens (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/009-elements/web-components-and-no-groups.md), reported straight from
 // the draw path, which knows the ComponentKind it armed. They agree with what
 // elementTelemetryType says for the element that path builds (see
 // SHAPE_TOKENS), so a dropped and a copied stat row count together. Kept here

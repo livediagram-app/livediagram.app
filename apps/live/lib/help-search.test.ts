@@ -4,7 +4,7 @@ import { HELP_SEARCH_ITEMS } from './help-search';
 import { buildSearchResults } from './search';
 
 // The SearchPanel's Help group is derived from the FULL shared registry
-// (spec/55): every help article must be findable from the canvas, matched on
+// (docs/specs/018-help/help-app.md): every help article must be findable from the canvas, matched on
 // title + description + keyword synonyms, with a well-formed cross-app href.
 
 describe('HELP_SEARCH_ITEMS', () => {
@@ -21,7 +21,7 @@ describe('HELP_SEARCH_ITEMS', () => {
   });
 
   it('reports each article under its own telemetry id', () => {
-    // Two articles on one id read as one on the dashboard (spec/22).
+    // Two articles on one id read as one on the dashboard (docs/specs/017-telemetry/telemetry.md).
     expect(new Set(HELP_SEARCH_ITEMS.map((i) => i.leaf)).size).toBe(articles.length);
     const tips = HELP_SEARCH_ITEMS.find((i) => i.href === '/help/tips-and-tricks/format-painter/');
     expect(tips?.leaf).toBe('tips-format-painter');

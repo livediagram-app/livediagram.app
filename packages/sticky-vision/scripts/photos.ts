@@ -9,7 +9,7 @@ import { decodePng } from './png';
 // Getting real wall photographs in front of the detector, without any of them
 // — or anything derived from them — ever landing in the repo.
 //
-// The photos are somebody's actual workshop (spec/139), so the cache and the
+// The photos are somebody's actual workshop (docs/specs/021-event-storming/event-storming.md), so the cache and the
 // overlays live under the system temp directory, keyed by the folder they came
 // from. A JPEG straight off a phone is converted once, at the SAME working
 // size the editor detects at, so a number measured here is a number the editor

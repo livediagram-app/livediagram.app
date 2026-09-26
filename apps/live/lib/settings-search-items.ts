@@ -1,4 +1,4 @@
-// The settings catalogue surfaced by the global SearchPanel (spec/20).
+// The settings catalogue surfaced by the global SearchPanel (docs/specs/007-editor/user-preferences.md).
 //
 // Every preference now lives in the Settings dialog, which makes the dialog
 // the place to LOOK, but only once you have thought to open it. Feeding the

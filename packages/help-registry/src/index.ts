@@ -1,6 +1,6 @@
-// The help-centre article registry (spec/55): the single source for the help
+// The help-centre article registry (docs/specs/018-help/help-app.md): the single source for the help
 // app's search + category/browse listings AND the editor's search-panel "Help"
-// group (spec/09 + spec/56). It lives in a shared package because the two
+// group (docs/specs/008-canvas/canvas-and-palette.md + docs/specs/018-help/contextual-help-links.md). It lives in a shared package because the two
 // consumers are separate builds: apps/help renders browse/search/breadcrumbs
 // from it, and apps/live derives its searchable help catalogue from it
 // (lib/help-search.ts), so every article is findable from the canvas without
@@ -159,7 +159,7 @@ export const categories: Category[] = [
   // Feature-guide categories (kind: 'feature'). Rendered under "Feature Guides"
   // on the home page; each has a card-grid index at /help/<slug>/. articleCount
   // counts the feature landings in the category (each landing has its own
-  // sub-guides). See spec/55.
+  // sub-guides). See docs/specs/018-help/help-app.md.
   {
     slug: 'user-interface',
     title: 'User Interface',

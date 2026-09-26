@@ -1,4 +1,4 @@
-// Programmatic access: API tokens and MCP tool calls (spec/22).
+// Programmatic access: API tokens and MCP tool calls (docs/specs/017-telemetry/telemetry.md).
 // Part of the metric catalogue: import from ../metric-catalogue.
 
 import type { Metric, MetricStack } from '../metric-series';

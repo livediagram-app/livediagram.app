@@ -6,7 +6,7 @@ import { STORAGE_KEY as USER_PREFERENCES_STORAGE_KEY } from '@/lib/user-preferen
 import { APPEARANCE_BOOT_SCRIPT, REDUCE_MOTION_BOOT_SCRIPT } from './pre-hydration-scripts';
 
 // The root layout inlines two `<script>` tags that run before hydration: one
-// applies the saved appearance, one applies reduce-motion (spec/07, spec/20).
+// applies the saved appearance, one applies reduce-motion (docs/specs/007-editor/live-app.md, docs/specs/007-editor/user-preferences.md).
 // Both exist to avoid a flash of the wrong chrome on first paint, and both
 // interpolate a localStorage key into a SINGLE-QUOTED JavaScript string.
 //
@@ -128,7 +128,7 @@ describe('the appearance boot script', () => {
   });
 
   it('follows the device when nothing is stored, which is the default', () => {
-    // System is the default (spec/07), so a first-time visitor on a dark
+    // System is the default (docs/specs/007-editor/live-app.md), so a first-time visitor on a dark
     // machine must land dark BEFORE first paint — the one case where getting
     // this script wrong is most visible, because it is everybody's first load.
     expect(runAppearanceBoot({ stored: null, osPrefersDark: true }).classes).toEqual(['dark']);

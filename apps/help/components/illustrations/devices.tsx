@@ -1,4 +1,4 @@
-// Supported-devices illustrations (spec/55): the editor framed inside a desktop
+// Supported-devices illustrations (docs/specs/018-help/help-app.md): the editor framed inside a desktop
 // monitor, a tablet, and a phone, each with the chrome that screen size brings
 // (full floating palette on desktop, a compact dock on mobile). Composed only
 // from the shared primitives so the house style holds.

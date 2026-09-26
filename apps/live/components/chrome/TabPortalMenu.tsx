@@ -80,7 +80,7 @@ export function PortalMenu({
   locked: boolean;
   // Viewer identity for the Add to Diagram dialog's thumbnail fetches.
   selfId: string;
-  // Who the dot-vote knows us by (spec/152): the collab key, never the owner
+  // Who the dot-vote knows us by (docs/specs/012-collaboration/collab-race-hardening.md): the collab key, never the owner
   // id. Falls back to `selfId` for a caller that doesn't run a vote.
   voteSelfId?: string;
   otherDiagrams: { id: string; name: string; savedAt?: number }[];
@@ -93,8 +93,8 @@ export function PortalMenu({
   canClearContent: boolean;
 } & SessionToolsProps) {
   // The menu itself lists the verbs (Rename, Duplicate, Clear…); the two
-  // organise pickers — "copyTo" (spec/17, link the tab into another
-  // diagram) and "folder" (spec/30, file the tab into a tab-bar folder) —
+  // organise pickers — "copyTo" (docs/specs/006-diagram/tab-diagram-many-to-many.md, link the tab into another
+  // diagram) and "folder" (docs/specs/006-diagram/tab-folders.md, file the tab into a tab-bar folder) —
   // open as proper centred MODALS in place of the anchored box, so they
   // get room instead of squeezing into the menu. While a modal is up the
   // anchored box unmounts (`ref` goes null), which conveniently disarms
@@ -203,7 +203,7 @@ export function PortalMenu({
       // marks itself with data-context-menu-trigger and toggles in onClick.
       const onTrigger =
         e.target instanceof Element && e.target.closest('[data-context-menu-trigger]') !== null;
-      // The tour popover (spec/79) anchors to this menu while explaining
+      // The tour popover (docs/specs/007-editor/editor-tour.md) anchors to this menu while explaining
       // it; its buttons must not dismiss the menu they're pointing at.
       const inTour =
         e.target instanceof Element && e.target.closest('[data-tour-popover]') !== null;
@@ -307,7 +307,7 @@ export function PortalMenu({
               />
               {/* Paste in the tab ⋯ menu: one tab verb among several, so an
                   icon. Opened from an empty-canvas right-click (`point`) it
-                  is a labelled row below instead (spec/09). Greyed, not
+                  is a labelled row below instead (docs/specs/008-canvas/canvas-and-palette.md). Greyed, not
                   hidden, when the buffer is empty. */}
               {canvas && !point ? (
                 <MenuToolButton
@@ -358,7 +358,7 @@ export function PortalMenu({
             <MenuGroupSeparator />
             {/* The empty-canvas right-click is usually "put what I copied
                 HERE", so there Paste leads the menu as a labelled row
-                (spec/09 "Canvas menu: Paste"). */}
+                (docs/specs/008-canvas/canvas-and-palette.md "Canvas menu: Paste"). */}
             {canvas && point ? (
               <>
                 <div data-testid="canvas-paste-row">
@@ -431,7 +431,7 @@ export function PortalMenu({
                 sectionProps={sectionProps}
               />
             ) : null}
-            {/* ── Collaborate: the live session tools (spec/39, spec/88) in
+            {/* ── Collaborate: the live session tools (docs/specs/012-collaboration/session-tools.md, docs/specs/012-collaboration/live-poll.md) in
                 ONE side-flyout panel, the Session Studio: a switcher for
                 Timer / Vote / Poll over a purpose-built pane per tool.
                 Timer and vote are per-tab state; the poll lives only in the

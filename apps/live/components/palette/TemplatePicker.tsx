@@ -22,9 +22,9 @@ import { TemplatePickerIdentityRow } from './TemplatePickerIdentityRow';
 import { PencilIcon } from './template-picker-icons';
 import { WizardSteps } from './template-picker-wizard';
 
-// What the welcome wizard's Settings step (spec/76) hands back on Create.
+// What the welcome wizard's Settings step (docs/specs/006-diagram/offline-mode.md) hands back on Create.
 export type NewDiagramSettings = {
-  // Where the diagram is stored (spec/141): the api, or this browser only.
+  // Where the diagram is stored (docs/specs/006-diagram/save-locations.md): the api, or this browser only.
   saveLocation: SaveLocationId;
   diagramName?: string;
   // Personal folder placement, or a team library. At most one is set.
@@ -46,7 +46,7 @@ type TemplatePickerProps = {
   participant: Participant;
   // Theme currently applied to the active tab — used as the initial /
   // only theme in templates-only mode. A string, not ThemeId, because it
-  // can be a custom `custom:<uuid>` id (spec/44).
+  // can be a custom `custom:<uuid>` id (docs/specs/011-theme/custom-themes.md).
   currentThemeId: string;
   // Name of the diagram being joined. Used by the 'identity' mode to
   // greet visitors with the actual diagram name ("Welcome to 'API
@@ -58,7 +58,7 @@ type TemplatePickerProps = {
   // different identity on someone else's diagram. Has no effect in
   // 'welcome' / 'templates' modes (no identity row to lock).
   lockedName?: string | null;
-  // The welcome wizard's Settings step (spec/76) collects these alongside the
+  // The welcome wizard's Settings step (docs/specs/006-diagram/offline-mode.md) collects these alongside the
   // participant name + theme. Other modes pass just the default location (the
   // diagram already exists, so name/folder/team don't apply).
   onPick: (kind: TemplateKind, name: string, themeId: string, settings: NewDiagramSettings) => void;
@@ -96,7 +96,7 @@ type TemplatePickerProps = {
   onOpenExisting?: () => void;
 };
 
-// The browsable catalogue: hidden templates (the guided tour, spec/69) are
+// The browsable catalogue: hidden templates (the guided tour, docs/specs/007-editor/guided-tour-sample.md) are
 // buildable but never listed, so they're filtered out before any grid /
 // search / shuffle sees them.
 const LISTED_TEMPLATES = TEMPLATES.filter((t) => !t.hidden);
@@ -180,12 +180,12 @@ export function TemplatePicker({
   // 'brand' (so Default is pre-selected for a fresh diagram), while a new
   // tab copying an existing one passes that tab's theme.
   const [themeId, setThemeId] = useState<string>(currentThemeId);
-  // Save location (spec/141): livediagram (cloud) or Local Browser (Offline
-  // Mode, spec/76). Welcome wizard only; threaded into every onPick so Skip /
+  // Save location (docs/specs/006-diagram/save-locations.md): livediagram (cloud) or Local Browser (Offline
+  // Mode, docs/specs/006-diagram/offline-mode.md). Welcome wizard only; threaded into every onPick so Skip /
   // guided tour / Create all honour it. Stays at the default in non-welcome
   // modes (the chooser never renders there).
   const [saveLocation, setSaveLocation] = useState<SaveLocationId>(DEFAULT_SAVE_LOCATION);
-  // Settings step (spec/76): diagram name (defaults per template) + placement.
+  // Settings step (docs/specs/006-diagram/offline-mode.md): diagram name (defaults per template) + placement.
   // `placement` is 'unsorted' | `folder:<id>` | `team:<id>` in one control.
   // The default name tracks the chosen template ("Untitled Mind Map", not a
   // flat "Untitled diagram"); we keep syncing the field to it until the user
@@ -207,7 +207,7 @@ export function TemplatePicker({
   };
   const settings = () => settingsFor(placement);
   // Welcome mode is a two-step wizard: pick a template, then a theme
-  // (spec/14). Other modes keep the single-page layout. `themeBuilding`
+  // (docs/specs/007-editor/new-diagram-route.md). Other modes keep the single-page layout. `themeBuilding`
   // tracks whether the theme step's custom-theme builder is open, so the
   // wizard hides its own Back / Create footer while the builder owns the
   // surface (the builder has its own Save / Cancel).
@@ -267,13 +267,13 @@ export function TemplatePicker({
   const showTemplateSection = showTemplates && (!isWizard || step === 'template');
   const showThemeSection = showThemes && (!isWizard || step === 'theme');
   // Skip the wizard entirely: the documented shortcut is Blank template +
-  // Default theme (spec/14), committed straight away. Placement still honours
+  // Default theme (docs/specs/007-editor/new-diagram-route.md), committed straight away. Placement still honours
   // the URL context (/new?folder=…, ?team=…) the picker was pre-seeded with,
   // so skipping doesn't silently drop the diagram into personal Unsorted.
   const skipToDefaults = () =>
     onPick('blank', effectiveName, 'brand', { saveLocation, ...parsePlacement(placement) });
-  // The step rail's "Just Draw" shortcut (spec/14) is the same commit with
-  // its own adoption signal (spec/22).
+  // The step rail's "Just Draw" shortcut (docs/specs/007-editor/new-diagram-route.md) is the same commit with
+  // its own adoption signal (docs/specs/017-telemetry/telemetry.md).
   const justDraw = () => {
     if (busy) return;
     track('UI', 'Used', 'JustDraw');
@@ -352,7 +352,7 @@ export function TemplatePicker({
           {/* Step indicator: a modern two-segment progress rail so the
               wizard reads as 1 of 2 at a glance. Both wizard modes. On the
               welcome flow the rail row also carries the "Just Draw" shortcut
-              (spec/14) far right — straight to a blank canvas, no wizard.
+              (docs/specs/007-editor/new-diagram-route.md) far right — straight to a blank canvas, no wizard.
               Desktop only (sm+); mobile keeps the footer Skip. The hiding
               is on a wrapper: Button's own `inline-flex` outranks a
               `hidden` passed in className (same property, emitted later),
@@ -431,13 +431,13 @@ export function TemplatePicker({
             {/* Colour-scheme picker: a two-level browse (Default quick-pick, a card per
               colour-temperament category, plus a Custom category for the
               owner's saved themes). Reuses the exact picker the right-click
-              Tab Look & Feel dialog renders (spec/42, /44) so the two can't
+              Tab Look & Feel dialog renders (docs/specs/011-theme/canvas-and-theme-dialog.md, /44) so the two can't
               drift. Shown as step 2 of the welcome wizard, or stacked under
               the template grid in templates mode. */}
             {showThemeSection ? (
               <CustomThemePicker
                 themeId={themeId}
-                // Single-click a theme (spec/76): in the welcome wizard,
+                // Single-click a theme (docs/specs/006-diagram/offline-mode.md): in the welcome wizard,
                 // selecting a theme advances straight to the Settings step; in
                 // the in-editor templates flow (no Settings step) it just sets
                 // the theme, leaving Apply to commit.
@@ -454,7 +454,7 @@ export function TemplatePicker({
                 browserClassName="mt-1"
               />
             ) : null}
-            {/* Settings step (spec/76, spec/141): name, save location, placement. */}
+            {/* Settings step (docs/specs/006-diagram/offline-mode.md, docs/specs/006-diagram/save-locations.md): name, save location, placement. */}
             {isWizard && step === 'settings' ? (
               <NewDiagramSettingsStep
                 diagramName={diagramNameInput}

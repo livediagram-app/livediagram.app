@@ -1,7 +1,7 @@
 'use client';
 
 // The Timeline's control state, held apart from the feed that renders
-// under it (spec/138 §2.3).
+// under it (docs/specs/013-workspace/timeline.md §2.3).
 //
 // It lives in its own hook because the two halves are rendered in
 // different places: the buttons belong in the host's page-header row
@@ -85,7 +85,7 @@ export function useTimelineControls(
   }, [events]);
 
   const visibleEvents = useMemo(() => {
-    // The create/edit pair on one day reads as one card (spec/138
+    // The create/edit pair on one day reads as one card (docs/specs/013-workspace/timeline.md
     // §2.1a). Applied here so the list, the calendar's dots and the
     // mini-calendar all see the same events.
     let out = collapseSameDayCreate(events);

@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { Element } from '@livediagram/diagram';
 import { useEditModeContextMenu } from './useEditModeContextMenu';
 
-// The auto-open-menu-on-edit behaviour (spec/09): entering text-edit mode on
+// The auto-open-menu-on-edit behaviour (docs/specs/008-canvas/canvas-and-palette.md): entering text-edit mode on
 // a boxed element opens the element menu beside it. Stickies opt out — a
 // sticky's double-click means "type a note", and a menu popping open beside
 // every note is noise (the user asked for exactly this); right-click still

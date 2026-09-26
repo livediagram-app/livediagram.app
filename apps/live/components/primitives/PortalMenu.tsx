@@ -168,7 +168,7 @@ export function MenuAccordionSection({
 // A plain ACTION row: the same shape and rhythm as an accordion header
 // (fixed icon slot, uppercase label, full width) but it performs a verb
 // instead of expanding. For menus whose entries are things to DO rather than
-// settings to open — e.g. the event-storming note menu (spec/139), which is
+// settings to open — e.g. the event-storming note menu (docs/specs/021-event-storming/event-storming.md), which is
 // six verbs and no styling at all. Horizontal bars rather than a tile grid:
 // a verb list reads down the menu like every other row here.
 export function MenuActionRow({
@@ -185,7 +185,7 @@ export function MenuActionRow({
   icon: ReactNode;
   onClick: () => void;
   // For a row whose result can be SHOWN before it is chosen: the Cleanup
-  // layouts preview on hover (spec/47), the same way the tiles above do.
+  // layouts preview on hover (docs/specs/008-canvas/layout-cleanup.md), the same way the tiles above do.
   // Rows without a preview pass neither, and behave exactly as they did.
   onPointerEnter?: PointerEventHandler<HTMLButtonElement>;
   onPointerLeave?: PointerEventHandler<HTMLButtonElement>;

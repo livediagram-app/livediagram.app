@@ -17,7 +17,7 @@ export function SizeButton({
 }: {
   active: boolean;
   onClick: () => void;
-  // Optional hover handlers — used by the style-preset tiles (spec/48) to
+  // Optional hover handlers — used by the style-preset tiles (docs/specs/010-palette/style-presets.md) to
   // preview a preset live on the canvas while the pointer is over the tile.
   onPointerEnter?: (e: React.PointerEvent) => void;
   onPointerLeave?: (e: React.PointerEvent) => void;
@@ -123,7 +123,7 @@ export function AlignmentGrid({
   alignX: TextAlignX;
   alignY: TextAlignY;
   onChange: (x: TextAlignX, y: TextAlignY) => void;
-  // Optional hover-preview pair (spec/48 flow), used by the context menus:
+  // Optional hover-preview pair (docs/specs/010-palette/style-presets.md flow), used by the context menus:
   // hovering a cell aligns the text live, leaving reverts. The text toolbar
   // omits them (its grid sits over the element being edited).
   onPreview?: (x: TextAlignX, y: TextAlignY) => void;

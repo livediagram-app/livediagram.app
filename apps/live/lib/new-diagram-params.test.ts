@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { templateCreateHref } from '@livediagram/templates';
 import { wizardBypassKind } from './new-diagram-params';
 
-describe('wizardBypassKind (spec/14)', () => {
+describe('wizardBypassKind (docs/specs/007-editor/new-diagram-route.md)', () => {
   it('reads ?blank as the blank template, whatever its value', () => {
     expect(wizardBypassKind('?blank=1')).toBe('blank');
     expect(wizardBypassKind('?blank')).toBe('blank');

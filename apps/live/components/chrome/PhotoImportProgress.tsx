@@ -1,6 +1,6 @@
 'use client';
 
-// What a photo import is doing BEFORE the draft lands (spec/139 Phase 8).
+// What a photo import is doing BEFORE the draft lands (docs/specs/021-event-storming/event-storming.md Phase 8).
 //
 // The first version showed NOTHING between the file picker and the draft bar:
 // the author picked a photo and stared at an unmoving board for however long

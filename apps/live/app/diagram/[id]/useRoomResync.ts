@@ -4,7 +4,7 @@ import { apiLoadTab } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
 
 // Re-hydrating a diagram in place after the room can't bridge our
-// reconnect gap (spec/97). This used to be `window.location.reload()`:
+// reconnect gap (docs/specs/012-collaboration/resync-without-reload.md). This used to be `window.location.reload()`:
 // correct, but it also threw away the viewport, the selection, the whole
 // undo stack, and any tab the user hadn't saved yet — for what is really
 // just "re-read the tab rows from D1".
@@ -71,13 +71,13 @@ export function useRoomResync(opts: {
     const overwrite = (prev: Tab[]): Tab[] =>
       prev.map((t) => {
         const next = byId.get(t.id);
-        // Keep the local folder: per-diagram link metadata (spec/30) owned
+        // Keep the local folder: per-diagram link metadata (docs/specs/006-diagram/tab-folders.md) owned
         // by the meta path, not the content fetch.
         return next ? { ...next, folder: t.folder } : t;
       });
     applyRemoteTabs(overwrite);
     // Inbound, not a local edit: moving the baseline with it is what keeps
-    // the autosave from pushing the swap back up (spec/152).
+    // the autosave from pushing the swap back up (docs/specs/012-collaboration/collab-race-hardening.md).
     lastSavedTabsRef.current = overwrite(lastSavedTabsRef.current);
     // Any tab we just refetched successfully is no longer in error.
     setTabLoadErrors((prev) => {

@@ -25,7 +25,7 @@ describe('pollResultElement', () => {
     ]);
   });
 
-  it('keeps an option nobody picked at zero (spec/126)', () => {
+  it('keeps an option nobody picked at zero (docs/specs/012-collaboration/poll-result-capture.md)', () => {
     // "Nobody chose C" is a result; dropping the empty bar would rewrite it.
     const el = pollResultElement(
       poll({ style: 'choice', options: ['A', 'B', 'C'] }),

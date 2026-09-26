@@ -1,4 +1,4 @@
-// telemetry events (spec/22). Anonymous: the events table stores only
+// telemetry events (docs/specs/017-telemetry/telemetry.md). Anonymous: the events table stores only
 // the three-field vocabulary + a server-stamped timestamp. No owner /
 // IP column.
 
@@ -18,7 +18,7 @@ export async function insertTelemetryEvents(
 
 // Retention sweep: drop rows older than `cutoffMs`. Wired to the
 // daily 03:00 UTC cron via the worker's `scheduled` handler, with a
-// 60-day floor (twice the dashboard's longest window, see spec/22
+// 60-day floor (twice the dashboard's longest window, see docs/specs/017-telemetry/telemetry.md
 // "Retention"). The events_ts_idx supports the range scan. Returns
 // the row count deleted so the handler can log it for observability,
 // mirroring `deleteOldChangeLogEntries`.

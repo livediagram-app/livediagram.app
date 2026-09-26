@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { formatElapsed } from './PresentationHud';
 
-// The presenter's clock (spec/31). It is read at a glance, off a laptop, while
+// The presenter's clock (docs/specs/012-collaboration/presentation-mode.md). It is read at a glance, off a laptop, while
 // talking — so the format is fixed here rather than left to a locale.
 describe('formatElapsed', () => {
   it('counts m:ss with a padded seconds field', () => {

@@ -1,5 +1,5 @@
 // /api/images — per-owner gallery + dedup'd upload + auth-gated byte
-// read (spec/19).
+// read (docs/specs/009-elements/images.md).
 
 import { sha256Hex } from '@livediagram/api-schema';
 import {
@@ -31,7 +31,7 @@ import { gateRead, requireOwner, type RouteContext } from './context';
 // Returns null when the string is missing, blank, non-numeric, or
 // not strictly positive, so callers treat "unset" and "0" and
 // "garbage" identically as "no cap" (the OSS self-host default per
-// spec/19).
+// docs/specs/009-elements/images.md).
 function parsePositiveCap(raw: string | undefined): number | null {
   if (!raw) return null;
   const n = Number.parseInt(raw, 10);
@@ -83,7 +83,7 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
     if (declaredLen > MAX_IMAGE_BYTES) {
       return json({ error: 'file_too_large', limitBytes: MAX_IMAGE_BYTES }, { status: 413 });
     }
-    // Early dedupe via the client-supplied SHA (spec/19). The client
+    // Early dedupe via the client-supplied SHA (docs/specs/009-elements/images.md). The client
     // computes sha256(bytes) before posting and sends it as
     // X-Image-Sha256; if a row already exists at (owner, sha) the
     // server can return the existing image without touching the
@@ -99,7 +99,7 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
         return json({ image: headerDedupe, deduped: true });
       }
     }
-    // Per-owner soft cap (spec/19). Enforcement order: per-file cap
+    // Per-owner soft cap (docs/specs/009-elements/images.md). Enforcement order: per-file cap
     // first (above) so an oversize upload is rejected before any D1
     // round-trip; then this owner-sum check so the body parse only
     // happens for uploads that would actually land. Both caps zero
@@ -176,7 +176,7 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
     // the privacy-sensitive byte segments leave. PNG / WebP
     // / GIF pass through unchanged: real-world leaks via
     // those formats are rare and would need per-format
-    // chunk walkers. See spec/19 + image-strip.ts.
+    // chunk walkers. See docs/specs/009-elements/images.md + image-strip.ts.
     let storedBytes: ArrayBuffer = bytes;
     if (sniffed === 'image/jpeg') {
       try {
@@ -207,7 +207,7 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
       sha256: sha,
       originalName,
     });
-    // spec/138 §4.5: only a genuinely NEW upload. The dedupe branches
+    // docs/specs/013-workspace/timeline.md §4.5: only a genuinely NEW upload. The dedupe branches
     // above return early, so pasting the same screenshot twice is one
     // event, and the day's uploads coalesce into one counted bubble.
     ctx.waitUntil?.(recordImageUploaded(env, owner));
@@ -219,7 +219,7 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
   // [{ id, name }] for every owned diagram that references
   // it. Empty arrays for images that aren't placed on any
   // canvas yet (the entry simply doesn't appear in the map).
-  // See spec/15 + spec/19.
+  // See docs/specs/013-workspace/folders.md + docs/specs/009-elements/images.md.
   if (segments.length === 3 && segments[2] === 'usage' && request.method === 'GET') {
     const owner = requireOwner(ctx);
     if (owner instanceof Response) return owner;

@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import type { DetectedSticky } from '@livediagram/sticky-vision';
 
-// A box that is moved, resized or drawn is read again (spec/139 Phase 9).
+// A box that is moved, resized or drawn is read again (docs/specs/021-event-storming/event-storming.md Phase 9).
 // Corrections come in runs, so it waits until this long after the LAST
 // change, then hands every changed box over in one batch.
 export const REREAD_DELAY_MS = 8000;

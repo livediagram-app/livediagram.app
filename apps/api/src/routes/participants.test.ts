@@ -1,7 +1,7 @@
 import { makeTestRouteContext } from './test-route-context';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-// Characterisation tests for handleParticipants (spec/04). GET is
+// Characterisation tests for handleParticipants (docs/specs/014-identity/auth-and-guest-access.md). GET is
 // deliberately open (ids + display fields already leak through the WS
 // room / change-log). PUT is the security-sensitive path: it must reject
 // an unauthenticated caller (400) and, critically, a caller trying to

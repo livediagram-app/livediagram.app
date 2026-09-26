@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Tab } from '@livediagram/diagram';
 import { embedTabImages, tabImageIds, type EmbedImageSource } from './embed-images';
 
-// The embedder both workers inline tab images with (spec/62 §5, spec/67).
+// The embedder both workers inline tab images with (docs/specs/015-api/mcp-server.md §5, docs/specs/006-diagram/diagram-snapshots.md).
 // Each worker passes its own byte source and limits, so these cases pin the
 // shared rules: which ids are read, what each limit skips, and what type the
 // data URL carries.

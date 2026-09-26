@@ -56,7 +56,7 @@ export type ActionRow = {
   status: 'open' | 'done';
   assigneeName: string;
   // Whether the action is assigned to the CURRENT user — sorts first
-  // and renders as "You" (spec/68 §5: the panel's first job is "what's
+  // and renders as "You" (docs/specs/012-collaboration/assigned-actions.md §5: the panel's first job is "what's
   // mine here").
   mine: boolean;
   createdAt: number;

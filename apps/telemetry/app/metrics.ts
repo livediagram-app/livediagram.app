@@ -1,4 +1,4 @@
-// The searchable metric universe for the Search view (spec/22): one entry
+// The searchable metric universe for the Search view (docs/specs/017-telemetry/telemetry.md): one entry
 // per distinct event the api aggregated a 30-day series for. Shared by the
 // MetricPicker (browse + search) and MetricSearch (the selected-metric
 // visualisation) so they agree on what a "metric" is.

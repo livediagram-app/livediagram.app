@@ -1,4 +1,4 @@
-// OAuth 2.1 + PKCE (S256) + dynamic client registration for the MCP (spec/62
+// OAuth 2.1 + PKCE (S256) + dynamic client registration for the MCP (docs/specs/015-api/mcp-server.md
 // §3). The flow mints an ordinary lvd_ token under the hood (via the api
 // worker's /api/oauth/exchange, called by the Clerk-authed consent page in
 // apps/live) and hands it to the client through the standard code+PKCE exchange.
@@ -23,7 +23,7 @@ type AuthCode = {
   redirectUri: string;
   clientId: string;
   // The token's absolute expiry (epoch ms), so /oauth/token can report a
-  // truthful expires_in (spec/62 §3.5).
+  // truthful expires_in (docs/specs/015-api/mcp-server.md §3.5).
   expiresAt?: number;
 };
 
@@ -81,7 +81,7 @@ export function registerOauthRoutes(app: Hono<{ Bindings: Env }>): void {
 
   // --- Dynamic client registration (RFC 7591) ---
   app.post('/oauth/register', async (c) => {
-    // Per-IP cap (spec/62 §3.2) so an open registration endpoint can't be used
+    // Per-IP cap (docs/specs/015-api/mcp-server.md §3.2) so an open registration endpoint can't be used
     // to flood KV. KV-backed, sliding hour window; good enough for DCR abuse.
     const ip = c.req.header('CF-Connecting-IP') ?? 'unknown';
     const rateKey = `reg-rate:${ip}`;
@@ -264,7 +264,7 @@ export function registerOauthRoutes(app: Hono<{ Bindings: Env }>): void {
     if (challenge !== record.codeChallenge) {
       return c.json({ error: 'invalid_grant', error_description: 'PKCE verification failed' }, 400);
     }
-    // expires_in reflects the token's remaining 6-month life (spec/62 §3.5);
+    // expires_in reflects the token's remaining 6-month life (docs/specs/015-api/mcp-server.md §3.5);
     // fall back to the full window if the consent page didn't pass an expiry.
     const SIX_MONTHS = 60 * 60 * 24 * 180;
     const expiresIn = record.expiresAt

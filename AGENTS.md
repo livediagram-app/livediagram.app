@@ -8,7 +8,7 @@ Monorepo for the livediagram product. Multiple apps share code through internal 
 
 ## Specs are the source of truth
 
-Before building or proposing anything, **check `specs/`**. Every product decision, feature, constraint, and rule lives there. The index is at [`specs/README.md`](specs/README.md).
+Before building or proposing anything, **check `docs/specs/`**. Every product decision, feature, constraint, and rule lives there. The index is at [`docs/specs/README.md`](docs/specs/README.md).
 
 Workflow:
 
@@ -19,18 +19,18 @@ Workflow:
 
 ## Keep docs and the README current
 
-The root [`README.md`](README.md) and the [`docs/`](docs/) folder (`architecture.md`, `contributing.md`, `local-development.md`, `self-hosting.md`, `what-is-livediagram.md`) are developer- and user-facing documentation, distinct from the product specs in `specs/`.
+The root [`README.md`](README.md) and the [`docs/`](docs/) folder (`architecture.md`, `contributing.md`, `local-development.md`, `self-hosting.md`, `what-is-livediagram.md`) are developer- and user-facing documentation, distinct from the product specs in `docs/specs/`.
 
 Treat them as part of the change, not an afterthought:
 
 - After any change, check whether it makes the README or a `docs/` file **incorrect** (commands, ports, file paths, env vars, app/package names, architecture, deploy steps) or **lacking key information** (a new app, package, env var, command, route, or workflow that a reader would now expect to find). If so, update the affected doc in the **same change** as the code.
-- Adding or removing an app, package, env var, command, route, or build/deploy step is a strong signal that `README.md`, `docs/architecture.md`, `docs/local-development.md`, and `docs/self-hosting.md` may need a matching edit.
+- Adding or removing an app, package, env var, command, route, or build/deploy step is a strong signal that `README.md`, `docs/development/architecture.md`, `docs/development/local-development.md`, and `docs/operations/self-hosting.md` may need a matching edit.
 - Don't let docs drift: an out-of-date doc is worse than a missing one. If you can't fully update it now, note the gap explicitly rather than leaving a confidently wrong instruction.
-- Specs (`specs/`) remain the source of truth for product decisions; `docs/` explains how to understand, run, and contribute to the code. Keep both honest.
+- Specs (`docs/specs/`) remain the source of truth for product decisions; `docs/` explains how to understand, run, and contribute to the code. Keep both honest.
 
 ## Help centre articles must stay registered
 
-The help centre (`apps/help`, spec/55) has a hand-curated registry in the [`@livediagram/help-registry`](packages/help-registry/src/index.ts) package (re-exported by `apps/help/lib/articles.ts` so the help app keeps its `@/lib/articles` import path). It is the **single source for the help search** (`SearchInput` → `searchArticles`), **the category/browse listings**, **and the live editor's search-panel Help group** (`apps/live/lib/help-search.ts` derives its catalogue from it). The article's MDX page renders from the filesystem, but it is **invisible to search and browse unless it's in that registry** — there is no filesystem auto-discovery.
+The help centre (`apps/help`, [Help app](docs/specs/018-help/help-app.md)) has a hand-curated registry in the [`@livediagram/help-registry`](packages/help-registry/src/index.ts) package (re-exported by `apps/help/lib/articles.ts` so the help app keeps its `@/lib/articles` import path). It is the **single source for the help search** (`SearchInput` → `searchArticles`), **the category/browse listings**, **and the live editor's search-panel Help group** (`apps/live/lib/help-search.ts` derives its catalogue from it). The article's MDX page renders from the filesystem, but it is **invisible to search and browse unless it's in that registry** — there is no filesystem auto-discovery.
 
 So, whenever you add (or remove/rename) a help article:
 
@@ -38,7 +38,7 @@ So, whenever you add (or remove/rename) a help article:
 - Bump the matching `categories[].articleCount` (and add a `categories` entry if it's a brand-new top-level category).
 - The registry `description` is the **short search-card summary** and is intentionally separate from the MDX `helpMetadata` description (the longer SEO/OG meta) — write a concise one, don't just copy the meta.
 - `keywords` is **required**: space-separated, lowercase search synonyms — the words a user would type when they don't know the title ("transparency" for opacity, "hotkey" for keyboard shortcuts), plus adjacent spellings ("color" beside "colour"). Both the help search and the editor's search panel match on them; a test fails if they're missing.
-- **Draw the card.** For an article in one of the ten **feature** categories, add an entry to BOTH `FEATURE_ICONS` (`apps/help/lib/featureIcons.tsx`) and `FEATURE_ENTITY_HEX` (`apps/help/lib/featureColours.ts`); for a **support** category, add one to `SUPPORT_ARTICLE_ICONS` (`apps/help/lib/articleIcons.tsx`), which needs no hue. Every card in both halves has its own glyph, and `feature-icons.test.ts` / `article-icons.test.ts` keep it that way — a card with no entry silently falls back to a shared glyph and looks like every other undrawn card, which nothing at runtime can notice. (Getting Started is the exception: its cards lead with a numbered step badge instead of an icon, and the test reads that off the page rather than assuming it.) [spec/55](specs/55-help-app.md) has the house style and the one rule that matters: draw what the card is _about_, and check the result doesn't land on a glyph either set already uses.
+- **Draw the card.** For an article in one of the ten **feature** categories, add an entry to BOTH `FEATURE_ICONS` (`apps/help/lib/featureIcons.tsx`) and `FEATURE_ENTITY_HEX` (`apps/help/lib/featureColours.ts`); for a **support** category, add one to `SUPPORT_ARTICLE_ICONS` (`apps/help/lib/articleIcons.tsx`), which needs no hue. Every card in both halves has its own glyph, and `feature-icons.test.ts` / `article-icons.test.ts` keep it that way — a card with no entry silently falls back to a shared glyph and looks like every other undrawn card, which nothing at runtime can notice. (Getting Started is the exception: its cards lead with a numbered step badge instead of an icon, and the test reads that off the page rather than assuming it.) [Help app](docs/specs/018-help/help-app.md) has the house style and the one rule that matters: draw what the card is _about_, and check the result doesn't land on a glyph either set already uses.
 
 Treat this exactly like the specs / docs rules above: a new article that isn't registered is a bug, the same way an out-of-date spec is. (`categorySlug`/`slug` in the registry must match the `page.mdx` path, so the search result link resolves.)
 
@@ -67,23 +67,23 @@ packages/
   prettier-config/# shared Prettier config
   tailwind-config/# shared Tailwind theme (brand palette)
   vitest-config/  # shared Vitest defaults (extended per workspace)
-specs/          # product specs — read these first
+docs/specs/          # product specs — read these first
 ```
 
 Workspaces are managed with **pnpm** (`pnpm-workspace.yaml`). Tasks are orchestrated with **Turborepo** (`turbo.json`). Node `>=22` (wrangler 4 requirement), pnpm `>=9`.
 
 ## What's built, what's still ahead
 
-The frontend-only prototype phase ended when the API app landed (see [spec/02](specs/02-prototype-scope.md) and [spec/11](specs/11-api.md)). Today the editor talks to a Cloudflare Worker API backed by D1 (durable diagram storage) + Durable Objects (per-diagram realtime room). A diagram can also live **only in the browser**, in IndexedDB, if the author picks Offline Mode ([spec/76](specs/76-offline-mode.md)) — so there are two stores, not one.
+The frontend-only prototype phase ended when the API app landed (see [Build phase](docs/specs/005-project-roadmap/prototype-scope.md) and [API app](docs/specs/015-api/api.md)). Today the editor talks to a Cloudflare Worker API backed by D1 (durable diagram storage) + Durable Objects (per-diagram realtime room). A diagram can also live **only in the browser**, in IndexedDB, if the author picks Offline Mode ([Offline Mode](docs/specs/006-diagram/offline-mode.md)) — so there are two stores, not one.
 
 `apps/live/lib/api-client.ts` is the single persistence boundary over both: `lib/api/*` sends each load / save / delete to the api or to `lib/offline/offline-store.ts` on `isOfflineId(id)`, so the rest of the editor takes the same code path either way. Listing is the exception that isn't a dispatch — the Explorer shows both sets, so it MERGES them, and still returns the offline ones when the cloud fetch fails. The one caller-decided branch is **create**, which has no registered id to dispatch on yet: the New Diagram wizard calls `offlineCreateDiagram` directly when the author chose offline, and that call is what registers the id every later operation routes on. The editor never reads or writes `localStorage` for diagrams — that is IndexedDB's job, and `localStorage` holds only the participant id and device-local preferences.
 
-- **Built:** the canvas editor (shapes including code blocks + checklists, arrows of every style with draggable curve / elbow handles, freehand sketches via the Freehand + Shape Pen tools (the Shape Pen recognises a rough shape on release; see [spec/115](specs/115-two-pens.md)) plus the Highlighter, which is a held canvas mode rather than a palette tile (see [spec/81](specs/81-highlighter.md)), a multi-point polygon / polyline tool, marquee + multi-select, format painter, web components that lay themselves out (banner / callout / stat row / process / header / hero, see [spec/147](specs/147-web-components-and-no-groups.md), which also removed groups), element drop shadows (see [spec/86](specs/86-element-shadows.md)), comments, assigned actions (assign element-level work to a teammate, with an Actions panel + optional email; see [spec/68](specs/68-assigned-actions.md)), links, themed templates, folders, tabs groupable into one-level collapsible folders, per-tab Photoshop-style layers with a dockable Layers panel (see [spec/74](specs/74-layers.md)), presentation mode: full-screen slide decks built from element sets that can span tabs, run from a Slide Deck panel (see [spec/31](specs/31-presentation-mode.md)), and per-tab import/export covering JSON, Mermaid, Markdown, and Excalidraw (see [spec/73](specs/73-mermaid.md), [spec/87](specs/87-excalidraw-import-export.md))), the api worker (REST + share links + change log + Durable Object realtime room with cursor/select/log ops), per-tab storage, Offline Mode (a diagram kept only in this browser's IndexedDB, convertible both ways with Sync Diagram / Take Offline; see [spec/76](specs/76-offline-mode.md)), anonymous first-party telemetry + the public `/telemetry` dashboard (see [spec/22](specs/22-telemetry.md)), teams with Admin/Member roles + email invites in the Explorer (see [spec/32](specs/32-teams.md)) plus a per-team shared library of diagrams + folders any member can manage (see [spec/35](specs/35-team-shared-diagrams.md)), signed-in-only API tokens for external / programmatic callers (see [spec/61](specs/61-public-api-and-tokens.md)), an MCP server (`apps/mcp`) that connects the editor to AI tools over OAuth (see [spec/62](specs/62-mcp-server.md)), and optional transactional + lifecycle email via Resend (welcome / week-1 / week-2 onboarding series + team-invite + account-deleted, gated on `RESEND_API_KEY`; see [spec/64](specs/64-transactional-email.md)).
-- **Still ahead:** finer-grained team permissions (today every member can edit every team diagram). Realtime conflict resolution shipped (granular element-op merge so concurrent edits to different elements don't clobber + an ordered room with reconnect catch-up; see [spec/75](specs/75-realtime-conflict-resolution.md)). A full field-level CRDT for same-element concurrent editing was scoped and deliberately dropped: the selection lock (spec/07) already prevents two people editing the same element, so it wasn't worth the dependency + second sync path.
+- **Built:** the canvas editor (shapes including code blocks + checklists, arrows of every style with draggable curve / elbow handles, freehand sketches via the Freehand + Shape Pen tools (the Shape Pen recognises a rough shape on release; see [Two pens instead of a pen and a mode](docs/specs/008-canvas/two-pens.md)) plus the Highlighter, which is a held canvas mode rather than a palette tile (see [Highlighter](docs/specs/008-canvas/highlighter.md)), a multi-point polygon / polyline tool, marquee + multi-select, format painter, web components that lay themselves out (banner / callout / stat row / process / header / hero, see [Web components are elements; groups are gone](docs/specs/009-elements/web-components-and-no-groups.md), which also removed groups), element drop shadows (see [Element shadows](docs/specs/008-canvas/element-shadows.md)), comments, assigned actions (assign element-level work to a teammate, with an Actions panel + optional email; see [Assigned actions](docs/specs/012-collaboration/assigned-actions.md)), links, themed templates, folders, tabs groupable into one-level collapsible folders, per-tab Photoshop-style layers with a dockable Layers panel (see [Layers](docs/specs/006-diagram/layers.md)), presentation mode: full-screen slide decks built from element sets that can span tabs, run from a Slide Deck panel (see [Presentation mode](docs/specs/012-collaboration/presentation-mode.md)), and per-tab import/export covering JSON, Mermaid, Markdown, and Excalidraw (see [Mermaid import & export](docs/specs/020-import-export/mermaid.md), [Excalidraw import & export](docs/specs/020-import-export/excalidraw-import-export.md))), the api worker (REST + share links + change log + Durable Object realtime room with cursor/select/log ops), per-tab storage, Offline Mode (a diagram kept only in this browser's IndexedDB, convertible both ways with Sync Diagram / Take Offline; see [Offline Mode](docs/specs/006-diagram/offline-mode.md)), anonymous first-party telemetry + the public `/telemetry` dashboard (see [Telemetry + public transparency dashboard](docs/specs/017-telemetry/telemetry.md)), teams with Admin/Member roles + email invites in the Explorer (see [Teams](docs/specs/013-workspace/teams.md)) plus a per-team shared library of diagrams + folders any member can manage (see [Team shared diagrams](docs/specs/013-workspace/team-shared-diagrams.md)), signed-in-only API tokens for external / programmatic callers (see [Public API and API tokens](docs/specs/015-api/public-api-and-tokens.md)), an MCP server (`apps/mcp`) that connects the editor to AI tools over OAuth (see [MCP server](docs/specs/015-api/mcp-server.md)), and optional transactional + lifecycle email via Resend (welcome / week-1 / week-2 onboarding series + team-invite + account-deleted, gated on `RESEND_API_KEY`; see [Transactional & lifecycle email (Resend)](docs/specs/014-identity/transactional-email.md)).
+- **Still ahead:** finer-grained team permissions (today every member can edit every team diagram). Realtime conflict resolution shipped (granular element-op merge so concurrent edits to different elements don't clobber + an ordered room with reconnect catch-up; see [Realtime conflict resolution](docs/specs/012-collaboration/realtime-conflict-resolution.md)). A full field-level CRDT for same-element concurrent editing was scoped and deliberately dropped: the selection lock ([Live app](docs/specs/007-editor/live-app.md)) already prevents two people editing the same element, so it wasn't worth the dependency + second sync path.
 
 ## Open source
 
-See [specs/03-open-source-and-business-model.md](specs/03-open-source-and-business-model.md).
+See [Open source + distribution](docs/specs/002-project-scope/open-source-and-business-model.md).
 
 - The codebase is **MIT-licensed** and **publicly viewable**. Anyone can self-host.
 - A free hosted version runs alongside at livediagram.app. **No paid tier and no plan to introduce one.**
@@ -92,7 +92,7 @@ See [specs/03-open-source-and-business-model.md](specs/03-open-source-and-busine
 
 ## Secrets policy
 
-See [specs/06-secrets-policy.md](specs/06-secrets-policy.md). **Repo is public — no secrets in source. Ever.**
+See [Secrets policy](docs/specs/002-project-scope/secrets-policy.md). **Repo is public — no secrets in source. Ever.**
 
 - All secrets via env vars: `.env.local` (gitignored) for dev, `wrangler secret put` for Workers, dashboard env vars for Pages.
 - Client bundles only carry values explicitly prefixed `NEXT_PUBLIC_*` and only when documented as publishable (e.g. Clerk publishable key).
@@ -101,7 +101,7 @@ See [specs/06-secrets-policy.md](specs/06-secrets-policy.md). **Repo is public �
 
 ## Auth model
 
-See [specs/04-auth-and-guest-access.md](specs/04-auth-and-guest-access.md).
+See [Auth + guest access](docs/specs/014-identity/auth-and-guest-access.md).
 
 - **The canvas always works without signing in.** Friction-free engagement is the acquisition strategy. Never put a sign-in wall in front of the editor.
 - **Hybrid identity** — the api accepts two equivalent ways of identifying the owner of a request:
@@ -148,7 +148,7 @@ What the product runs on. Items marked ✗ haven't shipped yet — see "What's b
 - **Database:** Cloudflare D1 (via the api worker only) — ✓
 - **Realtime:** Cloudflare Durable Objects (per-diagram room) — ✓
 - **Auth:** Clerk (optional), ✓ (frontend ClerkProvider; api worker JWT verification + hybrid `X-Owner-Id` fallback)
-- **Email:** Resend (optional) — ✓ (transactional + lifecycle email via the api worker; off without `RESEND_API_KEY`, see [spec/64](specs/64-transactional-email.md))
+- **Email:** Resend (optional) — ✓ (transactional + lifecycle email via the api worker; off without `RESEND_API_KEY`, see [Transactional & lifecycle email (Resend)](docs/specs/014-identity/transactional-email.md))
 
 ## Naming conventions
 
@@ -158,7 +158,7 @@ What the product runs on. Items marked ✗ haven't shipped yet — see "What's b
 
 ## Shared config
 
-- **TypeScript:** every workspace's `tsconfig.json` extends `../../tsconfig.base.json`. Two TypeScripts are installed on purpose: `@typescript/native` (an alias for `typescript@7`, the Go compiler) provides the `tsc` that `pnpm typecheck` runs, while `typescript` aliases `@typescript/typescript6` because 7.0 ships no compiler API and typescript-eslint / Next.js / Prettier import one. See [`docs/contributing.md`](docs/contributing.md#two-typescripts).
+- **TypeScript:** every workspace's `tsconfig.json` extends `../../tsconfig.base.json`. Two TypeScripts are installed on purpose: `@typescript/native` (an alias for `typescript@7`, the Go compiler) provides the `tsc` that `pnpm typecheck` runs, while `typescript` aliases `@typescript/typescript6` because 7.0 ships no compiler API and typescript-eslint / Next.js / Prettier import one. See [`docs/development/contributing.md`](docs/development/contributing.md#two-typescripts).
 - **ESLint:** flat config. Each workspace has `eslint.config.js`:
   ```js
   import config from '@livediagram/eslint-config';
@@ -173,13 +173,13 @@ What the product runs on. Items marked ✗ haven't shipped yet — see "What's b
 
 ## Deployment
 
-See [specs/10-deployment.md](specs/10-deployment.md).
+See [Deployment](docs/specs/016-platform/deployment.md).
 
 All deploys happen via **GitHub Actions** to **Cloudflare Workers** (with Static Assets for `marketing`, `live`, `telemetry`, and `help`). CI runs lint / format / typecheck / test / build / `staging:check` on every PR and push.
 
 Either environment builds once, then deploys `marketing` + `live` + `telemetry` + `help` + `api` in parallel, `mcp` once `api` is up, then `router` last (its service bindings depend on the five path-routed workers existing; mcp is its own host).
 
-**Two environments** ([spec/140](specs/140-staging-environment.md)), both running those same jobs out of the reusable `deploy-reusable.yml` so they can't drift:
+**Two environments** ([Staging environment](docs/specs/016-platform/staging-environment.md)), both running those same jobs out of the reusable `deploy-reusable.yml` so they can't drift:
 
 - **Production** (`livediagram.app`) — `deploy.yml`, **manual-only** (`workflow_dispatch`, intentionally not chained to CI): trigger it from the Actions tab (it appears as **Deploy Production**) or `gh workflow run deploy.yml --ref main` once CI on `main` is green and you've decided to ship.
 - **Staging** (`staging.livediagram.app`) — `deploy-staging.yml`, **automatic** on every green CI run on `main`. Wrangler `[env.staging]` blocks give it `-staging` worker names and its own D1 / R2 / KV, so a migration runs against a real remote database one deploy before it reaches the one holding real diagrams. Public but `noindex`, stamped by the router.
@@ -190,7 +190,7 @@ Worker names: `livediagram-marketing`, `livediagram-live`, `livediagram-telemetr
 
 Production is live at **https://livediagram.app** (`/` → marketing; `/diagram`, `/explorer`, `/new`, `/join`, ... → editor at clean routes, with only its `_next` assets under `/live`; `/telemetry` → telemetry dashboard; `/help` → help centre; `/api/*` → api).
 
-Secrets needed in the GitHub repo: `CF_API_TOKEN`, `CF_ACCOUNT_ID`. See [secrets policy](specs/06-secrets-policy.md).
+Secrets needed in the GitHub repo: `CF_API_TOKEN`, `CF_ACCOUNT_ID`. See [secrets policy](docs/specs/002-project-scope/secrets-policy.md).
 
 ## Common commands
 
@@ -217,4 +217,4 @@ Run a script in a single workspace: `pnpm --filter @livediagram/<name> <script>`
 - Worker apps target the Cloudflare Workers runtime — prefer Web APIs (`fetch`, `Request`, `Response`, `crypto.subtle`) over Node-only APIs.
 - D1 schemas and migrations (when they arrive) live with the Worker that owns the binding.
 - The router worker (`apps/router`) holds **no business logic** — only routing. If you're tempted to add logic to it, that logic belongs in the service it forwards to.
-- **Track key new functionality** via the anonymous-events schema (see [`specs/22-telemetry.md`](specs/22-telemetry.md)): when you ship a feature that meaningfully changes user behaviour (a new element kind, a new dialog, a new mode, a new shortcut surface, a new setting toggle), add a one-liner `track(category, action, type)` at the interaction's handler. Reuse the closed `TELEMETRY_CATEGORIES` / `TELEMETRY_ACTIONS` enums in `@livediagram/api-schema`, extending them only when no existing pair fits. The `type` is a preset enum value (e.g., `Square`, `DrawToAddOn`), never user content. The editor (`apps/live`) and the help centre (`apps/help`) emit, both through the shared `@livediagram/telemetry-client` engine with app-owned enable/opt-out policy; settings flips fire BEFORE the change is persisted so an opt-out event still reaches the wire.
+- **Track key new functionality** via the anonymous-events schema (see [`docs/specs/017-telemetry/telemetry.md`](docs/specs/017-telemetry/telemetry.md)): when you ship a feature that meaningfully changes user behaviour (a new element kind, a new dialog, a new mode, a new shortcut surface, a new setting toggle), add a one-liner `track(category, action, type)` at the interaction's handler. Reuse the closed `TELEMETRY_CATEGORIES` / `TELEMETRY_ACTIONS` enums in `@livediagram/api-schema`, extending them only when no existing pair fits. The `type` is a preset enum value (e.g., `Square`, `DrawToAddOn`), never user content. The editor (`apps/live`) and the help centre (`apps/help`) emit, both through the shared `@livediagram/telemetry-client` engine with app-owned enable/opt-out policy; settings flips fire BEFORE the change is persisted so an opt-out event still reaches the wire.

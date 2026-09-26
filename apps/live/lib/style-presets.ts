@@ -1,4 +1,4 @@
-// Pure element transforms for the one-click style presets (spec/48). Kept
+// Pure element transforms for the one-click style presets (docs/specs/010-palette/style-presets.md). Kept
 // separate from both the commit setters (`hooks/useElementStyle.ts`) and the
 // hover-preview hook (`hooks/useStylePreview.ts`) so the two share ONE
 // definition of what each preset does to an element — the preview a user sees
@@ -40,7 +40,7 @@ import type { TablePreset } from '@livediagram/diagram';
 
 // Apply a theme-derived style preset to a shape: its colours (fill + stroke +
 // text) AND its border weight / pattern together — a preset is one complete
-// look (spec/48). Border RADIUS is deliberately untouched: it's a silhouette
+// look (docs/specs/010-palette/style-presets.md). Border RADIUS is deliberately untouched: it's a silhouette
 // choice the user makes separately, and a preset clobbering it read as the
 // preset breaking the shape. Records the preset id so theme changes can
 // re-derive it.
@@ -63,7 +63,7 @@ export function applyColorPresetToEl(el: Element, p: ShapeColorPreset): Element 
   };
 }
 
-// A table look (spec/48): the four surfaces a table paints, plus the banding,
+// A table look (docs/specs/010-palette/style-presets.md): the four surfaces a table paints, plus the banding,
 // in one history step. `headerRow` / `headerColumn` are untouched: which cells
 // ARE headers is data, not a look. A no-op on anything but a table.
 export function applyTablePresetToEl(el: Element, p: TablePreset): Element {
@@ -83,7 +83,7 @@ export function applyTablePresetToEl(el: Element, p: TablePreset): Element {
   };
 }
 
-// A chart's palette (spec/53). One field, like the code block's scheme: the
+// A chart's palette (docs/specs/009-elements/pie-chart.md). One field, like the code block's scheme: the
 // ramp is resolved at render, so this never touches the data and a slice the
 // user coloured deliberately keeps its colour.
 export function applyChartPaletteToEl(el: Element, id: ChartPaletteId): Element {
@@ -91,7 +91,7 @@ export function applyChartPaletteToEl(el: Element, id: ChartPaletteId): Element 
   return { ...el, chartPalette: id };
 }
 
-// A code block's colour scheme (spec/82). Its own kind of preset: the card
+// A code block's colour scheme (docs/specs/009-elements/code-block.md). Its own kind of preset: the card
 // paints from the scheme and takes no element colours, so this writes one
 // field and nothing else. A no-op on anything that is not a code block.
 export function applyCodeThemeToEl(el: Element, id: CodeThemeId): Element {
@@ -102,13 +102,13 @@ export function applyCodeThemeToEl(el: Element, id: CodeThemeId): Element {
 // ── Granular single-field transforms ────────────────────────────────────
 //
 // The individual colour / border / rotation controls in the context menu hover-
-// preview the same way the presets do (spec/48). These are the pure field
+// preview the same way the presets do (docs/specs/010-palette/style-presets.md). These are the pure field
 // setters behind that flow, shared by the commit setters (useElementStyle) and
 // the preview hook (useStylePreview) so a hovered swatch shows byte-for-byte the
 // change its click commits. Each MUST match the per-type rules in
 // useElementStyle exactly.
 
-// Hand-editing any colour breaks the element's preset binding (spec/48), so
+// Hand-editing any colour breaks the element's preset binding (docs/specs/010-palette/style-presets.md), so
 // setting fill / stroke / text clears `colorPreset` on a shape and
 // `tablePreset` on a table: past that point the colours are the user's, and a
 // theme change must preserve them rather than re-deriving a look they have
@@ -135,7 +135,7 @@ export function applyTextColorToEl(el: Element, color: string): Element {
   return el;
 }
 
-// The plate behind an arrow's label (spec/09 "Caption"). Arrows only: nothing
+// The plate behind an arrow's label (docs/specs/008-canvas/canvas-and-palette.md "Caption"). Arrows only: nothing
 // else paints a caption onto the canvas rather than inside a box.
 export function applyLabelFillToEl(el: Element, color: string): Element {
   return el.type === 'arrow' ? { ...el, labelFill: color } : el;
@@ -171,7 +171,7 @@ export function applyBorderRadiusToEl(el: Element, value: BorderRadius): Element
   return el.type === 'shape' ? { ...el, borderRadius: value } : el;
 }
 
-// Element drop shadow (spec/86). `null` clears the field; values clamp to
+// Element drop shadow (docs/specs/008-canvas/element-shadows.md). `null` clears the field; values clamp to
 // the slider limits so a preview / commit can never write an out-of-range
 // shadow. Gated to the body-drawing boxed types (shape / sticky / image /
 // link-card) via the shared supportsShadow predicate.
@@ -201,12 +201,12 @@ export function applyShapeKindToEl(el: Element, kind: ShapeKind): Element {
   return { ...el, shape: kind };
 }
 
-// A Technology icon's fixed tile-size preset (spec/41). Icon shapes only.
+// A Technology icon's fixed tile-size preset (docs/specs/010-palette/technology-icons.md). Icon shapes only.
 export function applyIconSizeToEl(el: Element, iconSize: IconSize): Element {
   return el.type === 'shape' && el.shape === 'icon' ? { ...el, iconSize } : el;
 }
 
-// Status markers (spec/49): the glyph shown inside the shape, left of its
+// Status markers (docs/specs/009-elements/shape-markers.md): the glyph shown inside the shape, left of its
 // label; `null` clears it. Shapes only.
 export function applyMarkerToEl(el: Element, marker: ShapeMarker | null): Element {
   return el.type === 'shape' ? { ...el, marker: marker ?? undefined } : el;
@@ -245,7 +245,7 @@ export function applyPaddingToEl(el: Element, padding: Padding): Element {
   return isBoxed(el) ? { ...el, padding } : el;
 }
 
-// Re-place a shape's inline icon on another side (spec/09 icons). Regular
+// Re-place a shape's inline icon on another side (docs/specs/008-canvas/canvas-and-palette.md icons). Regular
 // shapes only — the dedicated 'icon' shape has no inline-icon slot. Mirrors
 // dropIconOnElement in useInlineIconMutators.
 export function applyInlineIconToEl(el: Element, iconId: string, position: IconPosition): Element {

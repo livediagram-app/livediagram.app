@@ -1,4 +1,4 @@
-// The face of an Estimate card (spec/123): planning poker. Everyone picks
+// The face of an Estimate card (docs/specs/012-collaboration/estimate-card.md): planning poker. Everyone picks
 // from the scale, the card says WHO has answered but not what, and one Reveal
 // shows every value at once with the spread called out.
 
@@ -9,7 +9,7 @@ import { CollabButton, CollabChip, CollabEmpty, CollabPanel } from './collab-chr
 import { CardBack, Stamp } from '@/components/canvas/paper-kit';
 
 // The spread is the reason the ritual exists, so the card computes the one
-// derived line rather than leaving the room to scan for it (spec/123).
+// derived line rather than leaving the room to scan for it (docs/specs/012-collaboration/estimate-card.md).
 export function spreadLine(element: ShapeElement): string {
   const stats = responseStats(element.responses);
   if (stats.count === 0) return 'No answers';
@@ -63,7 +63,7 @@ export function EstimateFace({
       title={label.trim() || 'Estimate'}
       textColor={textColor}
       aside={responses.length ? `${responses.length}/${inRoom} answered` : undefined}
-      // A HAND OF CARDS (spec/122). Planning poker is played face-down and
+      // A HAND OF CARDS (docs/specs/012-collaboration/participant-responses.md). Planning poker is played face-down and
       // turned over at once, so the card is printed with a crosshatched BACK
       // while the answers are hidden and loses it the moment they are shown —
       // the texture is the state, not decoration on top of it.
@@ -161,7 +161,7 @@ export function EstimateFace({
         ) : (
           // Before the reveal: WHO, deliberately not what. Knowing Sam has
           // answered is what stops the wait; knowing Sam said 13 is the thing
-          // being prevented (spec/123).
+          // being prevented (docs/specs/012-collaboration/estimate-card.md).
           <div>
             <p
               className="mb-1.5 text-[10px] uppercase tracking-[0.06em] opacity-55"

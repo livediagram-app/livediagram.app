@@ -1,6 +1,6 @@
 'use client';
 
-// The presenter's HUD (spec/31): where you are in the deck, what the slide is
+// The presenter's HUD (docs/specs/012-collaboration/presentation-mode.md): where you are in the deck, what the slide is
 // called, your notes, and the way out.
 //
 // It fades out when the pointer is idle and returns on any pointer movement,
@@ -159,7 +159,7 @@ export function PresentationHud({
             </span>
           </>
         ) : null}
-        {/* Pacing (spec/31). Both off by default and both the presenter's, not
+        {/* Pacing (docs/specs/012-collaboration/presentation-mode.md). Both off by default and both the presenter's, not
             the diagram's. The budget is a TARGET: going over is marked, never
             enforced, because a deck that advanced itself mid-answer would be
             worse than no budget at all. */}
@@ -198,7 +198,7 @@ export function PresentationHud({
             read; its absence says "nothing to say here" faster than any dot
             could. The dot it used to carry is gone with it — the button's
             presence IS the signal now. */}
-        {/* Jumping (spec/31). Arrow keys walk the deck, which is everything
+        {/* Jumping (docs/specs/012-collaboration/presentation-mode.md). Arrow keys walk the deck, which is everything
             you need until somebody asks about the slide from nine slides ago
             and you arrow back through nine of them in front of a room. */}
         <HudButton label="Jump to a slide" onPress={onToggleJump} active={jumpOpen}>

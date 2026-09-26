@@ -38,7 +38,7 @@ const comment = (id: string, text = id): Comment => ({
   authorColor: '#f00',
 });
 
-describe('applyElementDelta (spec/152)', () => {
+describe('applyElementDelta (docs/specs/012-collaboration/collab-race-hardening.md)', () => {
   // THE bug: two people pressing the same done check inside one save window.
   // Each receiver used to take the other's whole element and lose a mark.
   it('two marks cast at once both land, whatever order they arrive in', () => {
@@ -139,7 +139,7 @@ describe('applyElementDelta (spec/152)', () => {
   });
 });
 
-describe('mergeIncomingElement (spec/152)', () => {
+describe('mergeIncomingElement (docs/specs/012-collaboration/collab-race-hardening.md)', () => {
   it("keeps our answers over a peer's snapshot from the same round", () => {
     const local = apply(card(), done('a'), done('b'));
     // The peer moved the card; their copy was saved before b's mark arrived.
@@ -178,7 +178,7 @@ describe('mergeIncomingElement (spec/152)', () => {
   });
 });
 
-describe('elementChangeIsDeltaOnly (spec/152)', () => {
+describe('elementChangeIsDeltaOnly (docs/specs/012-collaboration/collab-race-hardening.md)', () => {
   it('is true for an answer, a tick or a comment alone', () => {
     const before = card({ checklistItems: [{ text: 'one', done: false }] });
     expect(elementChangeIsDeltaOnly(before, apply(before, done('a')))).toBe(true);
@@ -219,7 +219,7 @@ describe('responseDeltaFor', () => {
   });
 });
 
-describe('comment-rekey when the server copy arrived first (spec/152)', () => {
+describe('comment-rekey when the server copy arrived first (docs/specs/012-collaboration/collab-race-hardening.md)', () => {
   it('drops the local duplicate and lends the author id to the server copy', () => {
     const mine = { ...comment('local'), authorId: 'me' };
     const serverCopy = { ...comment('server') };

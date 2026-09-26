@@ -19,7 +19,7 @@ describe('setResponse', () => {
     expect(setResponse(undefined, 'a', '5', 10)).toEqual([cast('a', '5', 10)]);
   });
 
-  it('REPLACES the same participant rather than stacking (spec/122)', () => {
+  it('REPLACES the same participant rather than stacking (docs/specs/012-collaboration/participant-responses.md)', () => {
     const once = setResponse(undefined, 'a', '5', 10);
     const twice = setResponse(once, 'a', '8', 20);
     expect(twice).toHaveLength(1);
@@ -63,7 +63,7 @@ describe('responseStats', () => {
 
   it('counts a non-numeric answer as answered but excludes it from the maths', () => {
     // Someone who can't size a story HAS answered; folding their '?' in as a
-    // zero would misreport the room (spec/122).
+    // zero would misreport the room (docs/specs/012-collaboration/participant-responses.md).
     const stats = responseStats([cast('a', '8'), cast('b', '?')]);
     expect(stats.count).toBe(2);
     expect(stats.numericCount).toBe(1);

@@ -1,6 +1,6 @@
 'use client';
 
-// The session settings body as an ELEMENT menu renders it (spec/39, spec/105).
+// The session settings body as an ELEMENT menu renders it (docs/specs/012-collaboration/session-tools.md, docs/specs/012-collaboration/session-button.md).
 //
 // Same components the Session Studio uses, so a timer's `…` popover, that
 // element's right-click Session category, and the Studio pane are one UI

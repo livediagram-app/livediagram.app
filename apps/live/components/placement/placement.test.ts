@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { parsePlacement, placementValue } from './PlacementBrowser';
 
 // The placement string is the browser's selection wire format, shared by
-// the New Diagram wizard (spec/76) and the move-to-folder dialog (spec/15).
+// the New Diagram wizard (docs/specs/006-diagram/offline-mode.md) and the move-to-folder dialog (docs/specs/013-workspace/folders.md).
 // Pin the four shapes and that value -> parse round-trips, so neither
 // consumer can drift from the other.
 describe('placement strings', () => {

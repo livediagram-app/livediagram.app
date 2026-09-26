@@ -9,7 +9,7 @@ import { EmptyState } from '@livediagram/ui';
 import { GalleryImageButton } from '@/components/panels/GalleryImageButton';
 import { ImageDropZone } from '@/components/canvas/ImageDropZone';
 
-// Image Gallery pane on the Explorer page (spec/15). Shows every
+// Image Gallery pane on the Explorer page (docs/specs/013-workspace/folders.md). Shows every
 // image the signed-in user has uploaded, with an inline "Used in"
 // badge derived from /api/images/usage so the user can spot
 // orphaned bytes that are safe to delete.

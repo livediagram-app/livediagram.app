@@ -1,4 +1,4 @@
-// Fixed pixel sizes for Technology icon marks (spec/41). A brand tile
+// Fixed pixel sizes for Technology icon marks (docs/specs/010-palette/technology-icons.md). A brand tile
 // renders at a preset size regardless of its element's box — resizing the
 // element gives the caption room, it doesn't inflate the mark — so a
 // diagram's chips stay a uniform set. Shared by the editor renderer
@@ -25,7 +25,7 @@ function iconSizePx(size: IconSize | undefined, maxW: number, maxH: number): num
 }
 
 // The glyph BAND inside an icon element: the region of the box the glyph
-// may occupy. The band sits OPPOSITE the caption (spec/41), so moving the
+// may occupy. The band sits OPPOSITE the caption (docs/specs/010-palette/technology-icons.md), so moving the
 // text never stacks it over the glyph: a horizontally-centred caption flips
 // the glyph vertically (bottom caption → top band, top/middle → bottom
 // band); a left/right caption flips it horizontally instead (left caption →

@@ -5,7 +5,7 @@ import type { PaperFloors } from './floors';
 
 // In deep shade a pixel's hue is sensor noise: a lilac note there reads
 // anywhere from h 266 to 329, across the line between policy and hotspot, and
-// half its paper would be each (spec/139 Phase 9).
+// half its paper would be each (docs/specs/021-event-storming/event-storming.md Phase 9).
 
 const SHADED_KRAFT: PaperFloors = { saturation: 0.56, value: 0.2, wallHue: 21 };
 

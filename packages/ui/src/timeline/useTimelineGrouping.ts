@@ -1,4 +1,4 @@
-// Day grouping for the feed (spec/138 §2).
+// Day grouping for the feed (docs/specs/013-workspace/timeline.md §2).
 //
 // Pure functions plus a memo hook, so the grouping can be tested
 // directly and reused by a layout that doesn't mount <Timeline>.

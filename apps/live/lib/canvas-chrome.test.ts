@@ -35,7 +35,7 @@ describe('computeDockAnchor', () => {
   });
 
   it("hangs a lone button's popover from the button itself", () => {
-    // The Toolbar layout's menu button, top-left (spec/148): the Explorer
+    // The Toolbar layout's menu button, top-left (docs/specs/007-editor/toolbar-layout.md): the Explorer
     // opens under it, not tucked against the far right edge.
     const a = computeDockAnchor({ left: 16, bottom: 58, width: 36 }, canvas, popover, 'button');
     expect(a.left).toBe(16);

@@ -7,7 +7,7 @@ import type {
   ReaderResponse,
 } from './reader-protocol';
 
-// The in-browser reader's worker (spec/139 Phase 9). The model reads one crop
+// The in-browser reader's worker (docs/specs/021-event-storming/event-storming.md Phase 9). The model reads one crop
 // at a time — a full generation each, hundreds on a big wall — and on the
 // page that took the main thread whole: the review froze mid-reveal and
 // nothing moved. Here it can take as long as it takes while the page stays

@@ -50,14 +50,14 @@ import type {
   TextSize,
 } from './index';
 
-// Where a chart's legend sits relative to the plot (spec/53). 'off' is modelled
+// Where a chart's legend sits relative to the plot (docs/specs/009-elements/pie-chart.md). 'off' is modelled
 // separately by `chartLegend: false`, so this only covers the four placements.
 export type ChartLegendPosition = 'top' | 'right' | 'bottom' | 'left';
 
 export type ShapeElement = {
   id: ElementId;
   type: 'shape';
-  // Layer membership (spec/74): id of the Tab.layers entry this element
+  // Layer membership (docs/specs/006-diagram/layers.md): id of the Tab.layers entry this element
   // renders inside. Absent / unknown = the tab's default layer, so every
   // element authored before layers existed keeps rendering unchanged.
   // Carried by every element variant (arrows included, see index.ts).
@@ -71,17 +71,17 @@ export type ShapeElement = {
   // live app's icon catalogue; an unknown key falls back to a placeholder
   // glyph so a diagram authored against a newer catalogue still renders.
   iconId?: string;
-  // Registry key for a `sticker` shape's art (spec/116) — e.g.
+  // Registry key for a `sticker` shape's art (docs/specs/010-palette/stickers.md) — e.g.
   // 'emoji-thumbs-up', 'badge-blocked'. Only meaningful when
   // `shape === 'sticker'`; the entry resolves in the sticker catalogue
   // (@livediagram/icons), and an unknown key renders nothing rather than
   // guessing, so a diagram authored against a newer catalogue still opens.
   //
   // Kept separate from `iconId` on purpose: an element that predates
-  // spec/116 carries an emoji as an `iconId` on an `icon` shape and must
+  // docs/specs/010-palette/stickers.md carries an emoji as an `iconId` on an `icon` shape and must
   // keep rendering as one. See `isLegacyEmojiIconId`.
   stickerId?: string;
-  // Looping animation for an `icon` shape's glyph (spec/09 "Animated icons").
+  // Looping animation for an `icon` shape's glyph (docs/specs/008-canvas/canvas-and-palette.md "Animated icons").
   // Independent of the boxed-element `animation` field above: icons get their
   // own motion set (the icon context menu swaps in IconAnimationTiles), since
   // a spinning gear / beating heart wants glyph-level motion, not the
@@ -95,7 +95,7 @@ export type ShapeElement = {
   // Whether `iconAnimation` loops. Undefined / true = loop forever (the
   // default); false = play once and hold.
   iconAnimationRepeat?: boolean;
-  // Fixed render size for a Technology (brand) icon's tile (spec/41):
+  // Fixed render size for a Technology (brand) icon's tile (docs/specs/010-palette/technology-icons.md):
   // the mark draws at ICON_SIZE_PX[iconSize] regardless of the element's
   // box, so resizing the element never inflates the chip. Undefined = the
   // default preset ('md'). Ignored by line-art icons, which keep scaling
@@ -106,7 +106,7 @@ export type ShapeElement = {
   // 'left' when unset. Chosen by which side of the shape the icon was
   // dropped on.
   iconPosition?: IconPosition;
-  // Progress elements (spec/46), only meaningful when `shape` is
+  // Progress elements (docs/specs/009-elements/progress.md), only meaningful when `shape` is
   // 'progress-bar' / 'progress-ring'. `progress` is the filled percentage
   // (0–100, defaults to 50); `progressAnim` animates how the fill behaves.
   // Edited from the element's context menu.
@@ -147,8 +147,8 @@ export type ShapeElement = {
   strokeColor?: string;
   textColor?: string;
   // Fill for an element's HEADING area, where it has one distinct from its
-  // body: a table's header row (spec/09) and a lane's title gutter
-  // (spec/119). Unset falls back to each one's own historical default, a
+  // body: a table's header row (docs/specs/008-canvas/canvas-and-palette.md) and a lane's title gutter
+  // (docs/specs/009-elements/lane.md). Unset falls back to each one's own historical default, a
   // tint of the grid stroke for a table and a 10% wash of the lane's stroke
   // for a lane, so an unset heading looks exactly as it always did.
   //
@@ -173,9 +173,9 @@ export type ShapeElement = {
   themeLockFill?: boolean;
   // The element is one size for life: no resize handles, union-scales move
   // it without scaling it, and the menu's Size category stays away. Set at
-  // creation on event-storming notes (spec/139 — the workshop stationery
+  // creation on event-storming notes (docs/specs/021-event-storming/event-storming.md — the workshop stationery
   // has fixed silhouettes); the fixed-size SHAPE kinds (mode-button /
-  // session-button, spec/103) get the same treatment from their kind
+  // session-button, docs/specs/009-elements/mode-button.md) get the same treatment from their kind
   // instead. See isFixedSizeElement.
   fixedSize?: boolean;
   // Border styling (shapes + stickies). Each is a preset bucket so
@@ -186,7 +186,7 @@ export type ShapeElement = {
   strokeWidth?: BorderStroke;
   strokeStyle?: BorderStyle;
   borderRadius?: BorderRadius;
-  // Colour-preset binding (spec/48). When a one-click colour preset is applied
+  // Colour-preset binding (docs/specs/010-palette/style-presets.md). When a one-click colour preset is applied
   // to a shape, we store the preset's stable id (e.g. 'bold', 'soft',
   // 'branch-0') alongside the concrete fill / stroke / text it wrote. This lets
   // a later theme change RE-DERIVE the preset for the new theme (the Bold look
@@ -195,92 +195,92 @@ export type ShapeElement = {
   // moment the user hand-edits a colour or resets to theme, since the binding
   // no longer holds. Only meaningful on shapes.
   colorPreset?: string;
-  // Mode Button (spec/103): which selection mode pressing this element hands
+  // Mode Button (docs/specs/009-elements/mode-button.md): which selection mode pressing this element hands
   // whoever clicked it. Only meaningful on the 'mode-button' kind, and absent
   // means DEFAULT_BUTTON_MODE ('avatar') — so a button authored without one
   // still does the thing it looks like it should.
   mode?: SelectionMode;
-  // Portal (spec/104): the id of the portal this one leads to, on the same tab.
+  // Portal (docs/specs/009-elements/portal-element.md): the id of the portal this one leads to, on the same tab.
   // Only meaningful on the 'portal' kind. Absent = an unpaired portal, which is
   // inert and says so — a portal to nowhere shouldn't silently swallow clicks.
   portalTarget?: ElementId;
-  // Session button (spec/105): which session tool pressing this element starts
+  // Session button (docs/specs/012-collaboration/session-button.md): which session tool pressing this element starts
   // for the room, and its one setting. Only meaningful on 'session-button';
   // absent means a default five-minute timer, so a button authored without one
   // still does something sensible.
   session?: SessionButtonConfig;
-  // Reveal zone (spec/106): whether the cover is off FOR EVERYONE. A viewer
+  // Reveal zone (docs/specs/009-elements/reveal-zone.md): whether the cover is off FOR EVERYONE. A viewer
   // uncovering it for themselves is local and ephemeral and never touches this.
   // Only meaningful on the 'reveal' kind.
   revealed?: boolean;
-  // Picker (spec/107): where the candidates come from, the written list when
+  // Picker (docs/specs/012-collaboration/picker.md): where the candidates come from, the written list when
   // that source is 'options', and the last result — kept on the element so the
   // board still shows it after a reload. Only meaningful on the 'picker' kind.
   pickerSource?: PickerSource;
   pickerOptions?: string[];
   pickerResult?: string;
-  // Chair (spec/130): which way the seat points. Only meaningful on the
+  // Chair (docs/specs/009-elements/chair.md): which way the seat points. Only meaningful on the
   // 'chair' kind; absent = DEFAULT_CHAIR_FACING ('n'). WHO is sitting in it is
   // deliberately NOT here — occupancy rides the avatar presence op, so a chair
   // can't be left stuck by someone who disconnected.
   chairFacing?: ChairFacing;
-  // --- The collaboration family (spec/122 to spec/129) ---------------------
-  // One value per participant (spec/122), shared by the estimate card and the
+  // --- The collaboration family (docs/specs/012-collaboration/participant-responses.md to docs/specs/012-collaboration/roll-call.md) ---------------------
+  // One value per participant (docs/specs/012-collaboration/participant-responses.md), shared by the estimate card and the
   // temperature check. At most one entry per participant: re-casting REPLACES,
   // via `setResponse`. Bounded in validate.ts.
   responses?: ParticipantResponse[];
-  // Whether the values are out, for everyone (spec/123). Only meaningful on
+  // Whether the values are out, for everyone (docs/specs/012-collaboration/estimate-card.md). Only meaningful on
   // 'estimate' — the temperature check is deliberately never hidden.
   responsesRevealed?: boolean;
-  // Estimate card (spec/123): which ladder of values the card offers. Absent =
+  // Estimate card (docs/specs/012-collaboration/estimate-card.md): which ladder of values the card offers. Absent =
   // DEFAULT_ESTIMATE_SCALE ('fibonacci').
   estimateScale?: EstimateScale;
-  // Idea box (spec/125): the anonymous submissions, in submission order, and
+  // Idea box (docs/specs/012-collaboration/idea-box.md): the anonymous submissions, in submission order, and
   // whether the box is open. There is NO author field, and adding one would
   // undo the feature — the anonymity guarantee is that the schema has nowhere
   // to record who wrote a card. Bounded in validate.ts.
   ideaCards?: string[];
   ideasRevealed?: boolean;
-  // Q&A board (spec/151): the notes, in submission order (the sort is a view,
+  // Q&A board (docs/specs/012-collaboration/qa-board.md): the notes, in submission order (the sort is a view,
   // never stored), and the server-bumped revision every whole-element sync
   // path compares so a stale snapshot can't roll the board back
   // (preferNewerQa). Only the qa endpoint writes these.
   qaNotes?: QaNote[];
   qaRev?: number;
-  // Which round of answers / ideas this card is on (spec/152): a random id
+  // Which round of answers / ideas this card is on (docs/specs/012-collaboration/collab-race-hardening.md): a random id
   // minted by each clear or reset. Answers and ideas travel as their own
   // element deltas stamped with it, so one cast before a clear can't land in
   // the round after, and an element update for the SAME round leaves the
   // receiver's answers alone. Absent until the first clear.
   collabRound?: string;
-  // Agenda (spec/127): the ordered segments, and the index of the one the room
+  // Agenda (docs/specs/012-collaboration/agenda.md): the ordered segments, and the index of the one the room
   // is in (absent = not started). Only meaningful on 'agenda'.
   agendaItems?: AgendaItem[];
   agendaCurrent?: number;
-  // Decision record (spec/128): the status chip, the day it was taken
+  // Decision record (docs/specs/012-collaboration/decision-record.md): the status chip, the day it was taken
   // (`YYYY-MM-DD`, a date rather than a timestamp), and the reasons. The
   // element's `label` is the decision STATEMENT, so it needs no extra field.
   decisionStatus?: DecisionStatus;
   decisionDate?: string;
   decisionDrivers?: string[];
-  // Roll call (spec/129): a FROZEN snapshot of who was in the room when the
+  // Roll call (docs/specs/012-collaboration/roll-call.md): a FROZEN snapshot of who was in the room when the
   // roll was taken — names and colours copied, never re-joined to the live
   // participant. Only meaningful on 'roll-call'.
   rollCall?: RollCallEntry[];
-  // Timeline rail (spec/51): how many evenly-spaced points sit above the rail
+  // Timeline rail (docs/specs/009-elements/timeline-rail.md): how many evenly-spaced points sit above the rail
   // line. Only meaningful on the 'timeline-rail' kind; clamped to
   // RAIL_MIN_POINTS..RAIL_MAX_POINTS.
   railCount?: number;
   // Per-point labels, index-aligned to the points (a short / missing entry is
   // an empty label). Edited inline above each point. Only on 'timeline-rail'.
   railLabels?: string[];
-  // Rating (spec/52): the score in filled stars (0..RATING_MAX) + its optional
+  // Rating (docs/specs/009-elements/rating.md): the score in filled stars (0..RATING_MAX) + its optional
   // animation. Only meaningful on the 'rating' kind.
   rating?: number;
   ratingAnim?: RatingAnim;
   ratingAnimSpeed?: AnimationSpeed;
   ratingAnimRepeat?: boolean;
-  // Data charts (spec/53): the labelled data + its optional animation, shared
+  // Data charts (docs/specs/009-elements/pie-chart.md): the labelled data + its optional animation, shared
   // by the pie + bar chart kinds (the `pie*` names are kept for data
   // round-trip). `chartLegend` toggles the legend (default on).
   pieSlices?: PieSlice[];
@@ -288,21 +288,21 @@ export type ShapeElement = {
   pieAnimSpeed?: AnimationSpeed;
   pieAnimRepeat?: boolean;
   chartLegend?: boolean;
-  // Legend placement (spec/53); ignored when `chartLegend` is false. Missing /
+  // Legend placement (docs/specs/009-elements/pie-chart.md); ignored when `chartLegend` is false. Missing /
   // undefined === 'right', the historical default.
   chartLegendPosition?: ChartLegendPosition;
-  // Line chart (spec/53): the shared x-axis categories + one or more named
+  // Line chart (docs/specs/009-elements/pie-chart.md): the shared x-axis categories + one or more named
   // series (CSV-importable). Only meaningful on the 'line-chart' kind.
   lineCategories?: string[];
   lineSeries?: LineSeries[];
-  // Legend (spec/53): the colour-coded rows. Only meaningful on the 'legend'
+  // Legend (docs/specs/009-elements/pie-chart.md): the colour-coded rows. Only meaningful on the 'legend'
   // kind; bounded in validate.ts.
   legendItems?: LegendItem[];
-  // Chart palette (spec/53): which categorical ramp the slices / series take
+  // Chart palette (docs/specs/009-elements/pie-chart.md): which categorical ramp the slices / series take
   // when they carry no colour of their own. Only meaningful on the chart
   // kinds; absent = the tab theme's palette, as before.
   chartPalette?: ChartPaletteId;
-  // Code block (spec/82): the snippet text + its highlight language. Only
+  // Code block (docs/specs/009-elements/code-block.md): the snippet text + its highlight language. Only
   // meaningful on the 'code-block' kind; bounded in validate.ts.
   code?: string;
   codeLanguage?: CodeLanguage;
@@ -315,26 +315,26 @@ export type ShapeElement = {
   // the card is usually narrower than the code someone pastes into it. Set
   // false to keep long lines on one line (and off the card).
   codeWrap?: boolean;
-  // Record (spec/120): the rows of a UML class / ER entity box. Only
+  // Record (docs/specs/009-elements/entity.md): the rows of a UML class / ER entity box. Only
   // meaningful on the 'entity' kind; bounded in validate.ts. The element's
   // `label` is the record's TITLE, so a record needs no extra name field.
   entityFields?: EntityField[];
-  // Reaction pad (spec/135): which burst this pad throws. Absent falls back to
+  // Reaction pad (docs/specs/009-elements/reaction-pad.md): which burst this pad throws. Absent falls back to
   // REACTION_DEFAULT at render, so a pad from an older file still works.
   reaction?: Reaction;
-  // Mind node (spec/118): which node owns this one. Absent = a root.
+  // Mind node (docs/specs/009-elements/mind-node.md): which node owns this one. Absent = a root.
   //
   // A child pointer rather than a `children[]` array: single-valued, so it
   // cannot disagree with itself, and deleting a parent leaves a dangling id
   // (which reads as "this is a root now") rather than a corrupt tree.
   mindParentId?: ElementId;
-  // The shape the map grows in (spec/118). Read off the tree's ROOT and
+  // The shape the map grows in (docs/specs/009-elements/mind-node.md). Read off the tree's ROOT and
   // applied to the whole tree; absent = 'tree', the one arrangement growth
   // shipped with, so every map already drawn keeps its shape.
   mindFlow?: MindFlow;
-  // Page masthead (spec/100): the fixed heading + subtitle above the body.
+  // Page masthead (docs/specs/009-elements/page-element.md): the fixed heading + subtitle above the body.
   // Meaningful on the 'page' kind, and reused by two web components
-  // (spec/147) for the same job — a single-line heading beside the
+  // (docs/specs/009-elements/web-components-and-no-groups.md) for the same job — a single-line heading beside the
   // multi-line label: a banner's subtitle (`pageSubtitle`) and a callout's
   // heading (`pageTitle`). Bounded in validate.ts.
   //
@@ -347,28 +347,28 @@ export type ShapeElement = {
   // Plain strings, not rich runs: a title has one look, set by the element.
   pageTitle?: string;
   pageSubtitle?: string;
-  // Web components (spec/147), bounded in validate.ts: a stat row's KPI
+  // Web components (docs/specs/009-elements/web-components-and-no-groups.md), bounded in validate.ts: a stat row's KPI
   // cards, a process's step captions (one circle each, numbered by position)
   // and a header's nav links. Each only meaningful on its own kind.
   stats?: StatItem[];
   processSteps?: string[];
   navLinks?: string[];
-  // Checklist (spec/83): the checkable rows. Only meaningful on the
+  // Checklist (docs/specs/009-elements/checklist.md): the checkable rows. Only meaningful on the
   // 'checklist' kind; bounded in validate.ts.
   checklistItems?: ChecklistItem[];
-  // Status marker (spec/49): a small glyph (traffic-light dot / checkbox) shown
+  // Status marker (docs/specs/009-elements/shape-markers.md): a small glyph (traffic-light dot / checkbox) shown
   // just left of the label, or centred when the shape has no label. `markerSize`
   // is a TextSize bucket where 'scale' tracks the element's text size.
   marker?: ShapeMarker;
   markerSize?: TextSize;
   aspectLocked?: boolean;
   opacity?: number; // 0..1, defaults to 1
-  // Drop shadow (spec/86). Absent = no shadow; see shadow.ts.
+  // Drop shadow (docs/specs/008-canvas/element-shadows.md). Absent = no shadow; see shadow.ts.
   shadow?: ElementShadow;
   // Clockwise rotation in degrees about the element's centre. Absent
-  // or 0 means unrotated. See specs/09 "Rotation".
+  // or 0 means unrotated. See docs/specs/008-canvas/canvas-and-palette.md "Rotation".
   rotation?: number;
-  // Looping CSS animation (spec/09 "Animated elements"). Undefined = static.
+  // Looping CSS animation (docs/specs/008-canvas/canvas-and-palette.md "Animated elements"). Undefined = static.
   animation?: ElementAnimation;
   // Speed of `animation` (multiplier on its base duration). Default 'slow'
   // (DEFAULT_ANIMATION_SPEED).
@@ -378,7 +378,7 @@ export type ShapeElement = {
   animationRepeat?: boolean;
   link?: ElementLink;
   commentThread?: CommentThread;
-  // Assigned action (spec/68): at most one per element, non-undoable like
+  // Assigned action (docs/specs/012-collaboration/assigned-actions.md): at most one per element, non-undoable like
   // the comment thread. See element-action.ts.
   action?: ElementAction;
   // Optional note. Distinct from `commentThread`: one note per
@@ -387,13 +387,13 @@ export type ShapeElement = {
   // capture private context. Empty string strips the field on commit
   // (see `setNote` in useEditorNotes.ts) so persisted JSON stays clean.
   note?: string;
-  // Per-range note formatting (spec/92): runs carrying bold / italic /
+  // Per-range note formatting (docs/specs/009-elements/rich-text-notes.md): runs carrying bold / italic /
   // underline / heading / link deltas. `note` stays the plain-text mirror,
   // always === runsPlainText(noteRich). Absent = an unformatted note, which
   // renders exactly as it always did.
   noteRich?: TextRun[];
   padding?: Padding;
-  // Per-range label formatting (spec/09): runs storing only the deltas
+  // Per-range label formatting (docs/specs/008-canvas/canvas-and-palette.md): runs storing only the deltas
   // over the whole-element text* fields above. Absent, empty, or a single
   // override-free run => the legacy whole-element render. `label` is
   // always kept === runsPlainText(richText). See rich-text.ts.
@@ -405,7 +405,7 @@ export type ShapeElement = {
 export type TextElement = {
   id: ElementId;
   type: 'text';
-  // Layer membership (spec/74) — see ShapeElement.layerId.
+  // Layer membership (docs/specs/006-diagram/layers.md) — see ShapeElement.layerId.
   layerId?: string;
   x: number;
   y: number;
@@ -434,8 +434,8 @@ export type TextElement = {
   strokeColor?: string;
   textColor?: string;
   // Fill for an element's HEADING area, where it has one distinct from its
-  // body: a table's header row (spec/09) and a lane's title gutter
-  // (spec/119). Unset falls back to each one's own historical default, a
+  // body: a table's header row (docs/specs/008-canvas/canvas-and-palette.md) and a lane's title gutter
+  // (docs/specs/009-elements/lane.md). Unset falls back to each one's own historical default, a
   // tint of the grid stroke for a table and a 10% wash of the lane's stroke
   // for a lane, so an unset heading looks exactly as it always did.
   //
@@ -447,9 +447,9 @@ export type TextElement = {
   aspectLocked?: boolean;
   opacity?: number; // 0..1, defaults to 1
   // Clockwise rotation in degrees about the element's centre. Absent
-  // or 0 means unrotated. See specs/09 "Rotation".
+  // or 0 means unrotated. See docs/specs/008-canvas/canvas-and-palette.md "Rotation".
   rotation?: number;
-  // Looping CSS animation (spec/09 "Animated elements"). Undefined = static.
+  // Looping CSS animation (docs/specs/008-canvas/canvas-and-palette.md "Animated elements"). Undefined = static.
   animation?: ElementAnimation;
   // Speed of `animation` (multiplier on its base duration). Default 'slow'
   // (DEFAULT_ANIMATION_SPEED).
@@ -459,7 +459,7 @@ export type TextElement = {
   animationRepeat?: boolean;
   link?: ElementLink;
   commentThread?: CommentThread;
-  // Assigned action (spec/68): at most one per element, non-undoable like
+  // Assigned action (docs/specs/012-collaboration/assigned-actions.md): at most one per element, non-undoable like
   // the comment thread. See element-action.ts.
   action?: ElementAction;
   // Optional note. Distinct from `commentThread`: one note per
@@ -468,13 +468,13 @@ export type TextElement = {
   // capture private context. Empty string strips the field on commit
   // (see `setNote` in useEditorNotes.ts) so persisted JSON stays clean.
   note?: string;
-  // Per-range note formatting (spec/92): runs carrying bold / italic /
+  // Per-range note formatting (docs/specs/009-elements/rich-text-notes.md): runs carrying bold / italic /
   // underline / heading / link deltas. `note` stays the plain-text mirror,
   // always === runsPlainText(noteRich). Absent = an unformatted note, which
   // renders exactly as it always did.
   noteRich?: TextRun[];
   padding?: Padding;
-  // Per-range label formatting (spec/09); see ShapeElement.richText.
+  // Per-range label formatting (docs/specs/008-canvas/canvas-and-palette.md); see ShapeElement.richText.
   richText?: TextRun[];
 };
 
@@ -500,14 +500,14 @@ export type TableCellStyle = {
   // Optional per-cell link (tab / diagram / element / external URL).
   // Lives on the cell style so it rides the same parallel `cellStyles`
   // grid the table helpers already splice on row / column edits, staying
-  // aligned with no extra bookkeeping (spec/09).
+  // aligned with no extra bookkeeping (docs/specs/008-canvas/canvas-and-palette.md).
   link?: ElementLink;
 };
 
 export type TableElement = {
   id: ElementId;
   type: 'table';
-  // Layer membership (spec/74) — see ShapeElement.layerId.
+  // Layer membership (docs/specs/006-diagram/layers.md) — see ShapeElement.layerId.
   layerId?: string;
   x: number;
   y: number;
@@ -522,7 +522,7 @@ export type TableElement = {
   headerColumn?: boolean;
   // Alternating body-row background tint (a 'zebra' table).
   zebra?: boolean;
-  // The table look this was painted with (spec/48), if any: the id of a
+  // The table look this was painted with (docs/specs/010-palette/style-presets.md), if any: the id of a
   // `tableColorPresets` entry. Stored for the same reason a shape stores
   // `colorPreset` — the colours below are resolved values, so without the id a
   // theme change cannot tell "the theme's Banded" from four hand-picked
@@ -573,8 +573,8 @@ export type TableElement = {
   strokeColor?: string;
   textColor?: string;
   // Fill for an element's HEADING area, where it has one distinct from its
-  // body: a table's header row (spec/09) and a lane's title gutter
-  // (spec/119). Unset falls back to each one's own historical default, a
+  // body: a table's header row (docs/specs/008-canvas/canvas-and-palette.md) and a lane's title gutter
+  // (docs/specs/009-elements/lane.md). Unset falls back to each one's own historical default, a
   // tint of the grid stroke for a table and a 10% wash of the lane's stroke
   // for a lane, so an unset heading looks exactly as it always did.
   //
@@ -588,7 +588,7 @@ export type TableElement = {
   aspectLocked?: boolean;
   opacity?: number; // 0..1, defaults to 1
   rotation?: number;
-  // Looping CSS animation (spec/09 "Animated elements"). Undefined = static.
+  // Looping CSS animation (docs/specs/008-canvas/canvas-and-palette.md "Animated elements"). Undefined = static.
   animation?: ElementAnimation;
   // Speed of `animation` (multiplier on its base duration). Default 'slow'
   // (DEFAULT_ANIMATION_SPEED).
@@ -598,11 +598,11 @@ export type TableElement = {
   animationRepeat?: boolean;
   link?: ElementLink;
   commentThread?: CommentThread;
-  // Assigned action (spec/68): at most one per element, non-undoable like
+  // Assigned action (docs/specs/012-collaboration/assigned-actions.md): at most one per element, non-undoable like
   // the comment thread. See element-action.ts.
   action?: ElementAction;
   note?: string;
-  // Per-range note formatting (spec/92): runs carrying bold / italic /
+  // Per-range note formatting (docs/specs/009-elements/rich-text-notes.md): runs carrying bold / italic /
   // underline / heading / link deltas. `note` stays the plain-text mirror,
   // always === runsPlainText(noteRich). Absent = an unformatted note, which
   // renders exactly as it always did.
@@ -615,7 +615,7 @@ export type TableElement = {
 export type StickyElement = {
   id: ElementId;
   type: 'sticky';
-  // Layer membership (spec/74) — see ShapeElement.layerId.
+  // Layer membership (docs/specs/006-diagram/layers.md) — see ShapeElement.layerId.
   layerId?: string;
   x: number;
   y: number;
@@ -623,16 +623,16 @@ export type StickyElement = {
   height: number;
   label?: string;
   locked?: boolean;
-  // One size for life (spec/139 event-storming notes) — see
+  // One size for life (docs/specs/021-event-storming/event-storming.md event-storming notes) — see
   // ShapeElement.fixedSize / isFixedSizeElement.
   fixedSize?: boolean;
-  // Which event-storming note this IS (spec/139). The colour carries the
+  // Which event-storming note this IS (docs/specs/021-event-storming/event-storming.md). The colour carries the
   // same meaning visually, but the kind is real domain data: it names the
   // selection ("Selected Domain Event"), and anything later that reasons
   // about the notation (filters, legends, exports) reads it rather than
   // matching hexes. Absent on an ordinary sticky.
   esKind?: EventStormingNoteKind;
-  // Photo draft (spec/139 Phase 8): this note landed from a photograph of a
+  // Photo draft (docs/specs/021-event-storming/event-storming.md Phase 8): this note landed from a photograph of a
   // wall and has not been accepted yet. It is an ORDINARY note in every other
   // respect — that is the point, because the author reviews the import by
   // typing into it, dragging it and deleting it with the machinery they
@@ -661,8 +661,8 @@ export type StickyElement = {
   strokeColor?: string;
   textColor?: string;
   // Fill for an element's HEADING area, where it has one distinct from its
-  // body: a table's header row (spec/09) and a lane's title gutter
-  // (spec/119). Unset falls back to each one's own historical default, a
+  // body: a table's header row (docs/specs/008-canvas/canvas-and-palette.md) and a lane's title gutter
+  // (docs/specs/009-elements/lane.md). Unset falls back to each one's own historical default, a
   // tint of the grid stroke for a table and a 10% wash of the lane's stroke
   // for a lane, so an unset heading looks exactly as it always did.
   //
@@ -673,12 +673,12 @@ export type StickyElement = {
   headerFill?: string;
   aspectLocked?: boolean;
   opacity?: number; // 0..1, defaults to 1
-  // Drop shadow (spec/86). Absent = no shadow; see shadow.ts.
+  // Drop shadow (docs/specs/008-canvas/element-shadows.md). Absent = no shadow; see shadow.ts.
   shadow?: ElementShadow;
   // Clockwise rotation in degrees about the element's centre. Absent
-  // or 0 means unrotated. See specs/09 "Rotation".
+  // or 0 means unrotated. See docs/specs/008-canvas/canvas-and-palette.md "Rotation".
   rotation?: number;
-  // Looping CSS animation (spec/09 "Animated elements"). Undefined = static.
+  // Looping CSS animation (docs/specs/008-canvas/canvas-and-palette.md "Animated elements"). Undefined = static.
   animation?: ElementAnimation;
   // Speed of `animation` (multiplier on its base duration). Default 'slow'
   // (DEFAULT_ANIMATION_SPEED).
@@ -688,7 +688,7 @@ export type StickyElement = {
   animationRepeat?: boolean;
   link?: ElementLink;
   commentThread?: CommentThread;
-  // Assigned action (spec/68): at most one per element, non-undoable like
+  // Assigned action (docs/specs/012-collaboration/assigned-actions.md): at most one per element, non-undoable like
   // the comment thread. See element-action.ts.
   action?: ElementAction;
   // Optional note. Distinct from `commentThread`: one note per
@@ -697,19 +697,19 @@ export type StickyElement = {
   // capture private context. Empty string strips the field on commit
   // (see `setNote` in useEditorNotes.ts) so persisted JSON stays clean.
   note?: string;
-  // Per-range note formatting (spec/92): runs carrying bold / italic /
+  // Per-range note formatting (docs/specs/009-elements/rich-text-notes.md): runs carrying bold / italic /
   // underline / heading / link deltas. `note` stays the plain-text mirror,
   // always === runsPlainText(noteRich). Absent = an unformatted note, which
   // renders exactly as it always did.
   noteRich?: TextRun[];
   padding?: Padding;
-  // Per-range label formatting (spec/09); see ShapeElement.richText.
+  // Per-range label formatting (docs/specs/008-canvas/canvas-and-palette.md); see ShapeElement.richText.
   richText?: TextRun[];
 };
 
 // --- Images ---------------------------------------------------------------
 
-// See specs/19-images.md. A boxed element that renders user-uploaded
+// See docs/specs/009-elements/images.md. A boxed element that renders user-uploaded
 // image bytes inside its bounding box. The bytes themselves live in
 // R2 (server-side); the element carries only the opaque id the API
 // resolves to a `GET /api/images/<id>` URL, so the diagram payload
@@ -718,7 +718,7 @@ export type StickyElement = {
 export type ImageElement = {
   id: ElementId;
   type: 'image';
-  // Layer membership (spec/74) — see ShapeElement.layerId.
+  // Layer membership (docs/specs/006-diagram/layers.md) — see ShapeElement.layerId.
   layerId?: string;
   x: number;
   y: number;
@@ -735,10 +735,10 @@ export type ImageElement = {
   naturalHeight?: number;
   // How the bitmap fills its box. Defaults to 'contain' (the whole image
   // shows, letterboxed) which suits screenshots / diagrams. 'cover' fills the
-  // box (cropping) — used by the hero + avatar (spec/09, spec/147) so a
+  // box (cropping) — used by the hero + avatar (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/009-elements/web-components-and-no-groups.md) so a
   // photo fills the area / circle rather than letterboxing.
   objectFit?: 'cover' | 'contain';
-  // Hero caption card (spec/147): a themed card inset near the bottom of the
+  // Hero caption card (docs/specs/009-elements/web-components-and-no-groups.md): a themed card inset near the bottom of the
   // image carrying a title + a supporting line, in `fillColor` with
   // `textColor` (white by default). Present = shown; the palette's Hero is an
   // image created with one, and any image can gain or lose it from the menu.
@@ -782,12 +782,12 @@ export type ImageElement = {
   locked?: boolean;
   aspectLocked?: boolean;
   opacity?: number;
-  // Drop shadow (spec/86). Absent = no shadow; see shadow.ts.
+  // Drop shadow (docs/specs/008-canvas/element-shadows.md). Absent = no shadow; see shadow.ts.
   shadow?: ElementShadow;
   // Clockwise rotation in degrees about the element's centre. Absent
-  // or 0 means unrotated. See specs/09 "Rotation".
+  // or 0 means unrotated. See docs/specs/008-canvas/canvas-and-palette.md "Rotation".
   rotation?: number;
-  // Looping CSS animation (spec/09 "Animated elements"). Undefined = static.
+  // Looping CSS animation (docs/specs/008-canvas/canvas-and-palette.md "Animated elements"). Undefined = static.
   animation?: ElementAnimation;
   // Speed of `animation` (multiplier on its base duration). Default 'slow'
   // (DEFAULT_ANIMATION_SPEED).
@@ -797,18 +797,18 @@ export type ImageElement = {
   animationRepeat?: boolean;
   link?: ElementLink;
   commentThread?: CommentThread;
-  // Assigned action (spec/68): at most one per element, non-undoable like
+  // Assigned action (docs/specs/012-collaboration/assigned-actions.md): at most one per element, non-undoable like
   // the comment thread. See element-action.ts.
   action?: ElementAction;
   note?: string;
-  // Per-range note formatting (spec/92): runs carrying bold / italic /
+  // Per-range note formatting (docs/specs/009-elements/rich-text-notes.md): runs carrying bold / italic /
   // underline / heading / link deltas. `note` stays the plain-text mirror,
   // always === runsPlainText(noteRich). Absent = an unformatted note, which
   // renders exactly as it always did.
   noteRich?: TextRun[];
 };
 
-// Freehand "pencil tool" element (spec/09 Pencil (freehand)
+// Freehand "pencil tool" element (docs/specs/008-canvas/canvas-and-palette.md Pencil (freehand)
 // subsection). A polyline sampled during a pointer drag, simplified
 // + smoothed at commit, rendered as an inline SVG path inside the
 // element's bounding box. Points are stored normalised into [0..1]
@@ -819,7 +819,7 @@ export type ImageElement = {
 export type FreehandElement = {
   id: ElementId;
   type: 'freehand';
-  // Layer membership (spec/74) — see ShapeElement.layerId.
+  // Layer membership (docs/specs/006-diagram/layers.md) — see ShapeElement.layerId.
   layerId?: string;
   x: number;
   y: number;
@@ -832,15 +832,15 @@ export type FreehandElement = {
   // True when the path auto-closes (release-near-start). The
   // renderer adds `Z` + a fill; open paths render stroke-only.
   closed: boolean;
-  // Highlighter strokes (spec/81): the renderers swap the border
+  // Highlighter strokes (docs/specs/008-canvas/highlighter.md): the renderers swap the border
   // presets for the marker recipe — a wide round stroke, translucent
   // multiply blend, never filled. The stroke colour stays
   // user-overridable; the recipe owns translucency.
   pen?: 'highlighter';
-  // Marker stroke width in px (spec/81), chosen from the highlighter
+  // Marker stroke width in px (docs/specs/008-canvas/highlighter.md), chosen from the highlighter
   // banner's strength control at draw time. Absent = the default 14.
   penWidth?: number;
-  // Polygon-tool paths (spec/84): the canvas renderer draws straight
+  // Polygon-tool paths (docs/specs/008-canvas/polygon-tool.md): the canvas renderer draws straight
   // M/L segments instead of Catmull-Rom smoothing, so deliberately
   // placed corners stay corners. Absent on pencil / highlighter
   // strokes (which want the smoothing).
@@ -879,9 +879,9 @@ export type FreehandElement = {
   aspectLocked?: boolean;
   opacity?: number;
   // Clockwise rotation in degrees about the element's centre. Absent
-  // or 0 means unrotated. See specs/09 "Rotation".
+  // or 0 means unrotated. See docs/specs/008-canvas/canvas-and-palette.md "Rotation".
   rotation?: number;
-  // Looping CSS animation (spec/09 "Animated elements"). Undefined = static.
+  // Looping CSS animation (docs/specs/008-canvas/canvas-and-palette.md "Animated elements"). Undefined = static.
   animation?: ElementAnimation;
   // Speed of `animation` (multiplier on its base duration). Default 'slow'
   // (DEFAULT_ANIMATION_SPEED).
@@ -891,11 +891,11 @@ export type FreehandElement = {
   animationRepeat?: boolean;
   link?: ElementLink;
   commentThread?: CommentThread;
-  // Assigned action (spec/68): at most one per element, non-undoable like
+  // Assigned action (docs/specs/012-collaboration/assigned-actions.md): at most one per element, non-undoable like
   // the comment thread. See element-action.ts.
   action?: ElementAction;
   note?: string;
-  // Per-range note formatting (spec/92): runs carrying bold / italic /
+  // Per-range note formatting (docs/specs/009-elements/rich-text-notes.md): runs carrying bold / italic /
   // underline / heading / link deltas. `note` stays the plain-text mirror,
   // always === runsPlainText(noteRich). Absent = an unformatted note, which
   // renders exactly as it always did.
@@ -904,7 +904,7 @@ export type FreehandElement = {
 
 // --- Annotations -----------------------------------------------------------
 
-// See specs/38-annotations.md. A fixed-size themed circle holding a note
+// See docs/specs/009-elements/annotations.md. A fixed-size themed circle holding a note
 // glyph: hover it to read its `note` floating above the canvas, click it to
 // edit the note. It is a boxed element so it flows through every generic
 // path (selection, drag, layering, lock, group, link, colours, comments,
@@ -915,7 +915,7 @@ export type FreehandElement = {
 export type AnnotationElement = {
   id: ElementId;
   type: 'annotation';
-  // Layer membership (spec/74) — see ShapeElement.layerId.
+  // Layer membership (docs/specs/006-diagram/layers.md) — see ShapeElement.layerId.
   layerId?: string;
   x: number;
   y: number;
@@ -924,7 +924,7 @@ export type AnnotationElement = {
   // The note this marker carries. Edited via NotePopover / useEditorNotes,
   // previewed on hover. Empty string strips the field on commit.
   note?: string;
-  // Per-range note formatting (spec/92): runs carrying bold / italic /
+  // Per-range note formatting (docs/specs/009-elements/rich-text-notes.md): runs carrying bold / italic /
   // underline / heading / link deltas. `note` stays the plain-text mirror,
   // always === runsPlainText(noteRich). Absent = an unformatted note, which
   // renders exactly as it always did.
@@ -936,8 +936,8 @@ export type AnnotationElement = {
   strokeColor?: string;
   textColor?: string;
   // Fill for an element's HEADING area, where it has one distinct from its
-  // body: a table's header row (spec/09) and a lane's title gutter
-  // (spec/119). Unset falls back to each one's own historical default, a
+  // body: a table's header row (docs/specs/008-canvas/canvas-and-palette.md) and a lane's title gutter
+  // (docs/specs/009-elements/lane.md). Unset falls back to each one's own historical default, a
   // tint of the grid stroke for a table and a 10% wash of the lane's stroke
   // for a lane, so an unset heading looks exactly as it always did.
   //
@@ -953,7 +953,7 @@ export type AnnotationElement = {
   opacity?: number; // 0..1, defaults to 1
   link?: ElementLink;
   commentThread?: CommentThread;
-  // Assigned action (spec/68): at most one per element, non-undoable like
+  // Assigned action (docs/specs/012-collaboration/assigned-actions.md): at most one per element, non-undoable like
   // the comment thread. See element-action.ts.
   action?: ElementAction;
   // Shared boxed-element fields that the generic union code paths (format
@@ -962,7 +962,7 @@ export type AnnotationElement = {
   // so they stay undefined in practice; declared for parity the same way
   // ImageElement / TableElement declare their always-undefined text fields.
   rotation?: number;
-  // Looping CSS animation (spec/09 "Animated elements"). Undefined = static.
+  // Looping CSS animation (docs/specs/008-canvas/canvas-and-palette.md "Animated elements"). Undefined = static.
   animation?: ElementAnimation;
   // Speed of `animation` (multiplier on its base duration). Default 'slow'
   // (DEFAULT_ANIMATION_SPEED).
@@ -984,7 +984,7 @@ export type AnnotationElement = {
 
 // --- Link cards ------------------------------------------------------------
 
-// See specs/40-link-cards.md. A rectangular bookmark element: the user sets
+// See docs/specs/009-elements/link-cards.md. A rectangular bookmark element: the user sets
 // its URL via the normal element-link UI (`link` with `{ kind: 'url' }`),
 // and the editor fetches a preview (title / site / favicon / image) through
 // the api worker's `/api/unfurl` endpoint and caches it in `meta`. The
@@ -1006,7 +1006,7 @@ export type LinkCardMeta = {
 export type LinkCardElement = {
   id: ElementId;
   type: 'link-card';
-  // Layer membership (spec/74) — see ShapeElement.layerId.
+  // Layer membership (docs/specs/006-diagram/layers.md) — see ShapeElement.layerId.
   layerId?: string;
   x: number;
   y: number;
@@ -1021,8 +1021,8 @@ export type LinkCardElement = {
   strokeColor?: string;
   textColor?: string;
   // Fill for an element's HEADING area, where it has one distinct from its
-  // body: a table's header row (spec/09) and a lane's title gutter
-  // (spec/119). Unset falls back to each one's own historical default, a
+  // body: a table's header row (docs/specs/008-canvas/canvas-and-palette.md) and a lane's title gutter
+  // (docs/specs/009-elements/lane.md). Unset falls back to each one's own historical default, a
   // tint of the grid stroke for a table and a 10% wash of the lane's stroke
   // for a lane, so an unset heading looks exactly as it always did.
   //
@@ -1036,10 +1036,10 @@ export type LinkCardElement = {
   label?: string;
   locked?: boolean;
   opacity?: number;
-  // Drop shadow (spec/86). Absent = no shadow; see shadow.ts.
+  // Drop shadow (docs/specs/008-canvas/element-shadows.md). Absent = no shadow; see shadow.ts.
   shadow?: ElementShadow;
   rotation?: number;
-  // Looping CSS animation (spec/09 "Animated elements"). Undefined = static.
+  // Looping CSS animation (docs/specs/008-canvas/canvas-and-palette.md "Animated elements"). Undefined = static.
   animation?: ElementAnimation;
   // Speed of `animation` (multiplier on its base duration). Default 'slow'
   // (DEFAULT_ANIMATION_SPEED).
@@ -1049,11 +1049,11 @@ export type LinkCardElement = {
   animationRepeat?: boolean;
   aspectLocked?: boolean;
   commentThread?: CommentThread;
-  // Assigned action (spec/68): at most one per element, non-undoable like
+  // Assigned action (docs/specs/012-collaboration/assigned-actions.md): at most one per element, non-undoable like
   // the comment thread. See element-action.ts.
   action?: ElementAction;
   note?: string;
-  // Per-range note formatting (spec/92): runs carrying bold / italic /
+  // Per-range note formatting (docs/specs/009-elements/rich-text-notes.md): runs carrying bold / italic /
   // underline / heading / link deltas. `note` stays the plain-text mirror,
   // always === runsPlainText(noteRich). Absent = an unformatted note, which
   // renders exactly as it always did.
@@ -1073,7 +1073,7 @@ export type LinkCardElement = {
 
 // --- Video -----------------------------------------------------------------
 
-// See specs/114-youtube-video.md. A 16:9 card showing a YouTube video's poster
+// See docs/specs/009-elements/youtube-video.md. A 16:9 card showing a YouTube video's poster
 // frame, which plays inline when pressed. Added through the same new-type
 // surface as the link card above, and shares its URL-editing flow: the user
 // sets the link with the normal element-link UI.
@@ -1083,13 +1083,13 @@ export type LinkCardElement = {
 export type VideoElement = {
   id: ElementId;
   type: 'video';
-  // Layer membership (spec/74) — see ShapeElement.layerId.
+  // Layer membership (docs/specs/006-diagram/layers.md) — see ShapeElement.layerId.
   layerId?: string;
   x: number;
   y: number;
   width: number;
   height: number;
-  // Which provider this embed was created FOR (spec/121). A creation-time
+  // Which provider this embed was created FOR (docs/specs/009-elements/embed-providers.md). A creation-time
   // hint only: it names the empty state and the link dialog, so a Figma embed
   // says "Add a Figma link" rather than something generic. The link itself
   // stays authoritative — paste a Vimeo URL into one made from the Figma tile
@@ -1109,8 +1109,8 @@ export type VideoElement = {
   strokeColor?: string;
   textColor?: string;
   // Fill for an element's HEADING area, where it has one distinct from its
-  // body: a table's header row (spec/09) and a lane's title gutter
-  // (spec/119). Unset falls back to each one's own historical default, a
+  // body: a table's header row (docs/specs/008-canvas/canvas-and-palette.md) and a lane's title gutter
+  // (docs/specs/009-elements/lane.md). Unset falls back to each one's own historical default, a
   // tint of the grid stroke for a table and a 10% wash of the lane's stroke
   // for a lane, so an unset heading looks exactly as it always did.
   //
@@ -1124,10 +1124,10 @@ export type VideoElement = {
   label?: string;
   locked?: boolean;
   opacity?: number;
-  // Drop shadow (spec/86). Absent = no shadow; see shadow.ts.
+  // Drop shadow (docs/specs/008-canvas/element-shadows.md). Absent = no shadow; see shadow.ts.
   shadow?: ElementShadow;
   rotation?: number;
-  // Looping CSS animation (spec/09 "Animated elements"). Undefined = static.
+  // Looping CSS animation (docs/specs/008-canvas/canvas-and-palette.md "Animated elements"). Undefined = static.
   animation?: ElementAnimation;
   // Speed of `animation` (multiplier on its base duration). Default 'slow'
   // (DEFAULT_ANIMATION_SPEED).
@@ -1137,11 +1137,11 @@ export type VideoElement = {
   animationRepeat?: boolean;
   aspectLocked?: boolean;
   commentThread?: CommentThread;
-  // Assigned action (spec/68): at most one per element, non-undoable like
+  // Assigned action (docs/specs/012-collaboration/assigned-actions.md): at most one per element, non-undoable like
   // the comment thread. See element-action.ts.
   action?: ElementAction;
   note?: string;
-  // Per-range note formatting (spec/92): runs carrying bold / italic /
+  // Per-range note formatting (docs/specs/009-elements/rich-text-notes.md): runs carrying bold / italic /
   // underline / heading / link deltas. `note` stays the plain-text mirror,
   // always === runsPlainText(noteRich). Absent = an unformatted note, which
   // renders exactly as it always did.

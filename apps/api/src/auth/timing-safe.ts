@@ -4,7 +4,7 @@
 // time via response timing. We SHA-256 both sides (so length is hidden and
 // the compared buffers are always 32 bytes) and diff the digests without
 // an early exit. The share password is a low-value, anti-URL-guessing
-// secret (spec/24), so this is defence-in-depth, not a crypto guarantee.
+// secret (docs/specs/013-workspace/share-password.md), so this is defence-in-depth, not a crypto guarantee.
 export async function timingSafeEqual(a: string, b: string): Promise<boolean> {
   const enc = new TextEncoder();
   const [da, db] = await Promise.all([

@@ -8,7 +8,7 @@ import {
   type TimelineCategory,
 } from './eventCategory';
 
-// The filter chips (spec/138 §2.3) had no tests at all, while the tone mapping
+// The filter chips (docs/specs/013-workspace/timeline.md §2.3) had no tests at all, while the tone mapping
 // beside them had a whole file. Both answer "what happened", and getting the
 // category wrong is the quieter failure of the two: an event lands under a chip
 // nobody would think to look under, or under Other, where turning the chip off
@@ -96,7 +96,7 @@ describe('categoryToken', () => {
   it('sends the id rather than the label, so telemetry survives a rewording', () => {
     expect(categoryToken('new')).toBe('new');
     expect(categoryToken('new')).not.toBe(CATEGORY_LABELS.new);
-    // spec/22 bounds the telemetry `type` slot to a short safe token.
+    // docs/specs/017-telemetry/telemetry.md bounds the telemetry `type` slot to a short safe token.
     for (const category of Object.keys(CATEGORY_LABELS) as TimelineCategory[]) {
       expect(categoryToken(category)).toMatch(/^[a-z]{1,40}$/);
     }

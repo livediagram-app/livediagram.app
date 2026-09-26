@@ -1,5 +1,5 @@
-// Human-readable element naming, shared by the change log (spec/12)
-// and the canvas accessibility layer (spec/71): aria-labels and live
+// Human-readable element naming, shared by the change log (docs/specs/012-collaboration/activity-and-audit.md)
+// and the canvas accessibility layer (docs/specs/004-interface-design/canvas-accessibility.md): aria-labels and live
 // announcements read the same names the activity log prints, so the
 // two surfaces can't drift. Lifted verbatim from lib/change-log.ts.
 
@@ -16,7 +16,7 @@ export function kindLabel(el: Element): string {
   if (el.type === 'image') return 'Image';
   if (el.type === 'annotation') return 'Annotation';
   if (el.type === 'freehand') {
-    // The marker pen (spec/81) and the polygon tool (spec/84) both
+    // The marker pen (docs/specs/008-canvas/highlighter.md) and the polygon tool (docs/specs/008-canvas/polygon-tool.md) both
     // commit FreehandElements; name them by what the user drew.
     if (el.pen === 'highlighter') return 'Highlight';
     if (el.straightEdges) return el.closed ? 'Polygon' : 'Polyline';
@@ -80,7 +80,7 @@ export function describeMany(elements: Element[]): string {
   return `${parts.slice(0, -1).join(', ')} & ${parts[parts.length - 1]}`;
 }
 
-// The aria-label an element view carries (spec/71): the kind plus the
+// The aria-label an element view carries (docs/specs/004-interface-design/canvas-accessibility.md): the kind plus the
 // quoted label when one exists — 'Square "Login"', 'Sticky note',
 // 'Arrow "yes"'. Unlike describeOne this always leads with the kind,
 // so a screen-reader user hears WHAT the thing is before its text.

@@ -1,4 +1,4 @@
-// What a reader would call a kind of event (spec/138 §2.3).
+// What a reader would call a kind of event (docs/specs/013-workspace/timeline.md §2.3).
 //
 // The filter chips used to slice by SOURCE type — Diagrams, Teams,
 // Account — which sounds reasonable and is nearly useless: comments,
@@ -130,7 +130,7 @@ export function sortCategories(categories: Iterable<TimelineCategory>): Timeline
   return [...categories].sort((a, b) => ORDER.indexOf(a) - ORDER.indexOf(b));
 }
 
-// The telemetry `type` slot is a bounded token (spec/22), so the id is
+// The telemetry `type` slot is a bounded token (docs/specs/017-telemetry/telemetry.md), so the id is
 // sent rather than the label — no spaces, and stable if a label is
 // reworded later.
 export function categoryToken(category: TimelineCategory): string {

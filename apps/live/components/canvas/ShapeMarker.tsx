@@ -1,6 +1,6 @@
 'use client';
 
-// Shape status markers (spec/49): a small glyph rendered inside a shape, just
+// Shape status markers (docs/specs/009-elements/shape-markers.md): a small glyph rendered inside a shape, just
 // left of its label (or centred when there's no label). Three traffic-light
 // dots + a checkbox (unchecked / checked). Shared by the canvas renderer
 // (BoxedElementView) and the context-menu Markers tiles so both draw the same

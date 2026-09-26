@@ -216,7 +216,7 @@ export function LockArt() {
   );
 }
 
-// Shift-drag duplicate (spec/80): the original stays put while a
+// Shift-drag duplicate (docs/specs/008-canvas/shift-drag-duplicate.md): the original stays put while a
 // translucent ghost travels to the drop spot and lands as a solid copy.
 export function DragDuplicateArt() {
   return (
@@ -255,7 +255,7 @@ export function DragDuplicateArt() {
 
 // Three stacked layer planes (bottom -> top), each popping in with its
 // content, then an eye chip: the Layers panel's pitch in one glance —
-// bands you can stack and hide (spec/74).
+// bands you can stack and hide (docs/specs/006-diagram/layers.md).
 export function LayersArt() {
   return (
     <Frame canvas>
@@ -434,7 +434,7 @@ export function SearchArt() {
 
 // Images on the canvas: a placed image element (a framed photo) sits selected
 // on the dot-grid, and the per-owner gallery strip on the right cycles a
-// brand highlight to say "reuse one without re-uploading" (spec/19).
+// brand highlight to say "reuse one without re-uploading" (docs/specs/009-elements/images.md).
 export function ImagesArt() {
   const thumbs = [
     { sky: '#e0f2fe', hill: '#7dd3fc' },
@@ -597,7 +597,7 @@ export function DarkModeArt() {
 }
 
 // Live session tools: a facilitator timer counting down plus dot-votes
-// landing on a card, synced to everyone in the room (spec/39).
+// landing on a card, synced to everyone in the room (docs/specs/012-collaboration/session-tools.md).
 export function SessionToolsArt() {
   return (
     <Frame canvas>

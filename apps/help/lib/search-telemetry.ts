@@ -1,4 +1,4 @@
-// Help-centre search telemetry (spec/22).
+// Help-centre search telemetry (docs/specs/017-telemetry/telemetry.md).
 //
 // The help centre reported article VIEWS and the helpful / not-really vote,
 // but nothing about the search that leads to them — so the most actionable
@@ -8,7 +8,7 @@
 //
 // What goes on the wire is the OUTCOME only — 'Results' or 'NoResults' —
 // never the query. The query is user-generated content and the one thing
-// spec/22 forbids; the outcome is a two-value preset. Which words came up
+// docs/specs/017-telemetry/telemetry.md forbids; the outcome is a two-value preset. Which words came up
 // dry is deliberately not recoverable from this, and that is the trade: the
 // volume of dry searches is the signal we act on.
 

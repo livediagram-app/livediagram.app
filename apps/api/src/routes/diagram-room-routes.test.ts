@@ -72,7 +72,7 @@ beforeEach(() => {
 describe('WebSocket upgrade — trust headers', () => {
   it('overwrites a client-supplied X-Verified-Owner on a NON-owner upgrade', async () => {
     // A view-only share visitor of someone else's PERSONAL diagram, claiming
-    // to be its owner. Owner-ness gates the facilitator baton (spec/149): it
+    // to be its owner. Owner-ness gates the facilitator baton (docs/specs/012-collaboration/facilitator.md): it
     // is what lets a session seize the baton off its current holder and end
     // someone else's turn, so a believed claim here is a real privilege.
     db.getDiagramMeta.mockResolvedValue({ ownerId: 'owner-uuid', teamId: null });

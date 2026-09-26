@@ -6,7 +6,7 @@ import {
   type TourRect,
 } from './tour-position';
 
-// Pure placement rules for the tour popover (spec/79): prefer beside the
+// Pure placement rules for the tour popover (docs/specs/007-editor/editor-tour.md): prefer beside the
 // target (right, then left), fall back to below / above, centre when
 // nothing fits, and always clamp into the viewport with the edge margin.
 

@@ -44,7 +44,7 @@ describe('useOpenDockPanelOnChange', () => {
   });
 });
 
-// spec/22: the dock / popover layouts open Layers and Activity here rather
+// docs/specs/017-telemetry/telemetry.md: the dock / popover layouts open Layers and Activity here rather
 // than through the desktop un-minimise toggle, so they count here.
 describe('useCanvasMobileDock panel-open telemetry', () => {
   beforeEach(() => trackMock.mockReset());

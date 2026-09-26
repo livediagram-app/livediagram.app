@@ -1,4 +1,4 @@
-// Arrows routing BEHIND intervening boxes (spec/90).
+// Arrows routing BEHIND intervening boxes (docs/specs/008-canvas/arrow-route-behind.md).
 //
 // With several boxes packed together — a parent fanning out to children —
 // a straight arrow to a far child draws right over the children in
@@ -13,7 +13,7 @@
 // precision nobody can see. Filtering to the arrow's bounding box is
 // enough to keep the mask small.
 //
-// Related but separate: spec/77 bows a FRESHLY DRAWN arrow around an
+// Related but separate: docs/specs/008-canvas/arrow-collision-avoidance.md bows a FRESHLY DRAWN arrow around an
 // obstacle. That fires once, at creation, and changes the geometry. This
 // is a render-time treatment that never moves the line. An arrow that
 // bowed clear at draw time simply never crosses anything, so the two
@@ -28,7 +28,7 @@ import { isBoxed, type ArrowElement, type BoxedElement, type Element } from './i
 // Because it's canvas units, it scales with zoom like everything else.
 export const ROUTE_BEHIND_MARGIN = 10;
 
-// Is this arrow routing behind? Absent means yes — the default (spec/90),
+// Is this arrow routing behind? Absent means yes — the default (docs/specs/008-canvas/arrow-route-behind.md),
 // so only an explicit `false` opts out.
 export function arrowRoutesBehind(arrow: ArrowElement): boolean {
   return arrow.routeBehind !== false;
@@ -98,7 +98,7 @@ export function routeBehindHoles(
 }
 
 // The element id an arrow end is pinned to, or null for the ends that
-// aren't pinned to one: free points, arrow-to-arrow (spec/50), and group
+// aren't pinned to one: free points, arrow-to-arrow (docs/specs/008-canvas/arrow-to-arrow.md), and group
 // anchors (whose members are covered by the endpoint-containment rule).
 function endpointId(arrow: ArrowElement, end: 'from' | 'to'): string | null {
   const a = arrow[end];

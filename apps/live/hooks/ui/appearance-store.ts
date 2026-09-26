@@ -30,7 +30,7 @@ export const DEFAULT_APPEARANCE_SETTING: AppearanceSetting = 'system';
 // covers a missing key, a value written by an older build, and a hand-edited or
 // corrupted one — none of which should leave the editor in a mode the user
 // cannot explain. An explicit Light or Dark still wins over the device: System
-// is where the choice STARTS, not a rule (spec/07).
+// is where the choice STARTS, not a rule (docs/specs/007-editor/live-app.md).
 export function readAppearanceSetting(): AppearanceSetting {
   const stored = readLocalStorageSafe(APPEARANCE_STORAGE_KEY);
   return stored === 'dark' || stored === 'light' || stored === 'system'

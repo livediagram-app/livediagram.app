@@ -1,4 +1,4 @@
-// Avatar mode state (spec/101), lifted out of Canvas the same way
+// Avatar mode state (docs/specs/008-canvas/avatar-mode.md), lifted out of Canvas the same way
 // useSpotlight is: the click-to-walk handler, the jump, the look toggle, the
 // per-frame animation loop, and the camera nudge all read one source of truth.
 //
@@ -7,7 +7,7 @@
 // with the content. Position is the FEET, so it stands on the point you
 // clicked rather than being centred over it. Nothing here is persisted or
 // written to the change log; the only thing that leaves the browser is the
-// ephemeral presence snapshot handed to `onPresence` for peers (spec/101
+// ephemeral presence snapshot handed to `onPresence` for peers (docs/specs/008-canvas/avatar-mode.md
 // Realtime), which the room relays like a cursor.
 
 import { useEffect, useRef, useState } from 'react';
@@ -37,23 +37,23 @@ import {
 // cadence reads as a walk rather than a shuffle (~6 steps/second at speed).
 const STEP_LENGTH = 22;
 
-// What a peer needs to draw someone else's character (spec/101). Deliberately
+// What a peer needs to draw someone else's character (docs/specs/008-canvas/avatar-mode.md). Deliberately
 // tiny: it rides the presence channel at cursor rates.
 export type AvatarSnapshot = {
   x: number;
   y: number;
   facing: AvatarFacing;
-  // A reaction in progress (spec/101), as the kind plus how far into it the
+  // A reaction in progress (docs/specs/008-canvas/avatar-mode.md), as the kind plus how far into it the
   // sender is: `reactionPose` is pure, so a peer replays the same performance
   // from this rather than us shipping every pose field over the wire.
   reaction?: { kind: AvatarReactionKind; elapsedMs: number };
-  // The whole costume (spec/101), so a peer draws the character you built.
+  // The whole costume (docs/specs/008-canvas/avatar-mode.md), so a peer draws the character you built.
   config: AvatarConfig;
   walking: boolean;
   stepFrame: number;
   // Height above the ground mid-jump, canvas px (0 = standing).
   lift: number;
-  // Chair (spec/130): the chair this character is sitting on, or undefined
+  // Chair (docs/specs/009-elements/chair.md): the chair this character is sitting on, or undefined
   // when standing. Occupancy is presence, never document state, so a chair is
   // vacated for free when its sitter disconnects.
   seatedOn?: string | null;
@@ -92,7 +92,7 @@ export function useAvatarWalk({
   viewportZoom: number;
   setViewportOffset: (offset: AvatarPoint) => void;
   // A one-shot spawn point for the NEXT entry into the mode, in canvas px:
-  // pressing a Selection Mode button (spec/103) puts the character at that
+  // pressing a Selection Mode button (docs/specs/009-elements/mode-button.md) puts the character at that
   // button rather than the viewport centre. A ref, not a value, because it is
   // written during the same interaction that flips `active` and is consumed by
   // the entry effect below — which then clears it, so the palette's own way in
@@ -101,14 +101,14 @@ export function useAvatarWalk({
   // Publishes the local character to the room so peers can see it, and
   // `null` on exit so they drop it. Throttling lives in the broadcaster.
   onPresence?: (snapshot: AvatarSnapshot | null) => void;
-  // Portal (spec/104): the character walked onto a portal element. Fired once on
+  // Portal (docs/specs/009-elements/portal-element.md): the character walked onto a portal element. Fired once on
   // ARRIVAL, not every frame it stands there, and never for the portal it just
   // came out of.
   onWalkIntoPortal?: (element: import('@livediagram/diagram').ShapeElement) => void;
-  // Chair (spec/130): the character walked onto a chair. Fired once on ARRIVAL,
+  // Chair (docs/specs/009-elements/chair.md): the character walked onto a chair. Fired once on ARRIVAL,
   // like the portal above.
   onWalkIntoChair?: (element: import('@livediagram/diagram').ShapeElement) => void;
-  // Reaction pad (spec/135): the character walked onto a pad. Same arrival
+  // Reaction pad (docs/specs/009-elements/reaction-pad.md): the character walked onto a pad. Same arrival
   // hook as the portal and the chair, so a pad costs no third mechanism.
   onWalkIntoReactionPad?: (element: import('@livediagram/diagram').ShapeElement) => void;
 }) {
@@ -126,7 +126,7 @@ export function useAvatarWalk({
   const [wave, setWave] = useState<number | null>(null);
   // The pose of a reaction in progress, or null while just standing / walking.
   const [pose, setPose] = useState<ReactionPose | null>(null);
-  // Chair (spec/130): the chair this character is sitting on, or null when
+  // Chair (docs/specs/009-elements/chair.md): the chair this character is sitting on, or null when
   // standing. Kept in state (the sprite and the presence packet both read it)
   // AND in a ref (the rAF tick and walkTo read it between renders).
   const [seatedOn, setSeatedOn] = useState<string | null>(null);
@@ -143,7 +143,7 @@ export function useAvatarWalk({
   const waveStartRef = useRef<number | null>(null);
   // Which reaction is playing and when it started (performance.now()).
   const reactionRef = useRef<{ kind: AvatarReactionKind; startedAt: number } | null>(null);
-  // Portals (spec/104): the element the feet were on last frame (so a walk-in
+  // Portals (docs/specs/009-elements/portal-element.md): the element the feet were on last frame (so a walk-in
   // fires once, on arrival), and the portal the character was just teleported
   // into — ignored until it steps off, so a portal doesn't ping-pong.
   const lastUnderFeetRef = useRef<string | null>(null);
@@ -277,10 +277,10 @@ export function useAvatarWalk({
   // Click / tap anywhere on the canvas: walk there. Arrow-key steering wins
   // while keys are held (the walk target would fight it). `onArrive` fires once
   // when the character reaches the point — clicking a PEER walks over and
-  // shoves them (spec/101), and the shove has to land on arrival, not on click.
+  // shoves them (docs/specs/008-canvas/avatar-mode.md), and the shove has to land on arrival, not on click.
   const walkTo = (point: AvatarPoint, onArrive?: () => void) => {
     if (arrowDirection(heldRef.current)) return;
-    // Seated (spec/130): clicking elsewhere on the canvas must not drag the
+    // Seated (docs/specs/009-elements/chair.md): clicking elsewhere on the canvas must not drag the
     // character out of its chair by accident. Standing up is a deliberate act
     // — an arrow key, or the seat's own Stand press.
     if (seatedRef.current) return;
@@ -303,7 +303,7 @@ export function useAvatarWalk({
     };
   };
 
-  // Play one of the panel's reactions (spec/101). It performs ON THE SPOT, so
+  // Play one of the panel's reactions (docs/specs/008-canvas/avatar-mode.md). It performs ON THE SPOT, so
   // any walk in progress is dropped — sliding through a routine looks like a
   // bug — and re-clicking restarts it rather than queueing.
   const playReaction = (kind: AvatarReactionKind) => {
@@ -312,7 +312,7 @@ export function useAvatarWalk({
     reactionRef.current = { kind, startedAt: performance.now() };
   };
 
-  // Chair (spec/130): sit down. Snaps the feet to the seat point (so the
+  // Chair (docs/specs/009-elements/chair.md): sit down. Snaps the feet to the seat point (so the
   // figure sits ON the chair rather than wherever it happened to arrive),
   // turns the figure the way the seat points, drops any walk in progress, and
   // remembers the chair so the sprite draws a seated pose and peers see the
@@ -338,7 +338,7 @@ export function useAvatarWalk({
     setSeatedOn(null);
   };
 
-  // Portals (spec/104): drop the character at a point (the far portal's threshold),
+  // Portals (docs/specs/009-elements/portal-element.md): drop the character at a point (the far portal's threshold),
   // without walking there. `arrivedPortalId` is remembered so standing in the exit
   // portal doesn't immediately trigger it again.
   const teleportTo = (point: AvatarPoint, arrivedPortalId?: string) => {
@@ -359,7 +359,7 @@ export function useAvatarWalk({
     waveStartRef.current = performance.now();
   };
 
-  // Right-click ON the character toggles male / female (spec/101). Returns
+  // Right-click ON the character toggles male / female (docs/specs/008-canvas/avatar-mode.md). Returns
   // true when the press actually landed on the figure, so the caller knows
   // whether the right-click was consumed. The hit box follows the Size choice.
   const toggleLookAt = (point: AvatarPoint): boolean => {
@@ -377,7 +377,7 @@ export function useAvatarWalk({
     // directions.
     onSteer: () => {
       targetRef.current = null;
-      // An arrow key is how you stand up (spec/130): a deliberate act, and one
+      // An arrow key is how you stand up (docs/specs/009-elements/chair.md): a deliberate act, and one
       // that leaves the character where the chair put it, free to walk off.
       if (seatedRef.current) {
         seatedRef.current = null;
@@ -409,7 +409,7 @@ export function useAvatarWalk({
           : step!.pos;
         // Target reached — drop it so the avatar goes idle rather than
         // re-arriving on every subsequent frame, and fire whatever was waiting
-        // on the arrival (the shove, spec/101). `stepTowards` already decides
+        // on the arrival (the shove, docs/specs/008-canvas/avatar-mode.md). `stepTowards` already decides
         // this, including the within-a-hair case; re-deriving it here from the
         // coordinates was a second, subtly different definition of "arrived".
         if (!held && targetRef.current && step?.arrived) {
@@ -421,7 +421,7 @@ export function useAvatarWalk({
         const dx = next.x - from.x;
         const dy = next.y - from.y;
         const moved = Math.hypot(dx, dy);
-        // --- Reactions (spec/101) ---
+        // --- Reactions (docs/specs/008-canvas/avatar-mode.md) ---
         // A reaction owns the pose (and its own hop height) for its duration.
         const playing = reactionRef.current;
         if (playing) {
@@ -585,7 +585,7 @@ export function useAvatarWalk({
     return () => window.clearInterval(beat);
   }, [active]);
 
-  // Portals (spec/104): walking a character ONTO a portal travels through it. Fired
+  // Portals (docs/specs/009-elements/portal-element.md): walking a character ONTO a portal travels through it. Fired
   // from an effect on ARRIVAL (the element under the feet changed) rather than
   // every frame it stands there, and skipped for the portal it was just teleported
   // into until it steps off — otherwise the pair would bounce the character back
@@ -606,12 +606,12 @@ export function useAvatarWalk({
     if (standingOnId === previous || standingOnId === arrivedPortalRef.current) return;
     const el = elements.find((e) => e.id === standingOnId);
     if (el && el.type === 'shape' && el.shape === 'portal') portalRef.current?.(el);
-    // Chair (spec/130): the same arrival hook, so sitting down costs no second
+    // Chair (docs/specs/009-elements/chair.md): the same arrival hook, so sitting down costs no second
     // mechanism. Skipped while already seated somewhere.
     if (el && el.type === 'shape' && el.shape === 'chair' && !seatedRef.current) {
       chairRef.current?.(el);
     }
-    // Reaction pad (spec/135). Fires on ARRIVAL like the others, so standing
+    // Reaction pad (docs/specs/009-elements/reaction-pad.md). Fires on ARRIVAL like the others, so standing
     // on a pad throws one burst rather than one per frame; stepping off and
     // back on is a deliberate second press.
     if (el && el.type === 'shape' && el.shape === 'reaction-pad') padRef.current?.(el);

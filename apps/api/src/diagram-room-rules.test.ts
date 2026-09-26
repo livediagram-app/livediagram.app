@@ -12,7 +12,7 @@ const SESSION = { presenceId: 'p-server', verifiedRole: 'view' as const };
 
 describe('helloPresence', () => {
   it('overrides the id and role the client claimed', () => {
-    // The trust boundary (spec/61 §6): a joiner must not be able to announce
+    // The trust boundary (docs/specs/015-api/public-api-and-tokens.md §6): a joiner must not be able to announce
     // itself as somebody else, nor promote itself to an editor.
     const p = helloPresence(
       { id: 'p-someone-else', name: 'Ada', color: '#f00', role: 'edit' },
@@ -28,7 +28,7 @@ describe('helloPresence', () => {
   });
 
   it('relays the document-write key instead of overriding it', () => {
-    // The one claimed field on the roster (spec/122). It has to survive a
+    // The one claimed field on the roster (docs/specs/012-collaboration/participant-responses.md). It has to survive a
     // reconnect to join a saved answer back to the person who gave it, so the
     // server cannot mint it the way it mints `id` — and it grants nothing, so
     // it does not need to.

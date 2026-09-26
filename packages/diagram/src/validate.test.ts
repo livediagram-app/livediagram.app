@@ -41,7 +41,7 @@ describe('isValidElement', () => {
     expect(isValidElement({ id: 'x', type: 'text', ...box })).toBe(true);
   });
 
-  it('bounds the code block + checklist fields (spec/82, spec/83)', () => {
+  it('bounds the code block + checklist fields (docs/specs/009-elements/code-block.md, docs/specs/009-elements/checklist.md)', () => {
     const shape = (o: object) => ({ id: 's', type: 'shape', shape: 'code-block', ...box, ...o });
     expect(isValidElement(shape({ code: 'const x = 1;', codeLanguage: 'ts' }))).toBe(true);
     expect(isValidElement(shape({ code: 'x'.repeat(4001) }))).toBe(false);
@@ -56,7 +56,7 @@ describe('isValidElement', () => {
 
   it('accepts the freehand pen + straightEdges flags, rejects junk values', () => {
     const freehand = { id: 'f', type: 'freehand', closed: false, points: [], ...box };
-    // Highlighter recipe (spec/81) + polygon straight edges (spec/84).
+    // Highlighter recipe (docs/specs/008-canvas/highlighter.md) + polygon straight edges (docs/specs/008-canvas/polygon-tool.md).
     expect(isValidElement({ ...freehand, pen: 'highlighter' })).toBe(true);
     expect(isValidElement({ ...freehand, straightEdges: true })).toBe(true);
     expect(isValidElement({ ...freehand, pen: 'marker' })).toBe(false);
@@ -179,7 +179,7 @@ describe('coerceShapeKind', () => {
   });
 });
 
-describe('mode button validation (spec/103)', () => {
+describe('mode button validation (docs/specs/009-elements/mode-button.md)', () => {
   const button = {
     id: 'b1',
     type: 'shape',

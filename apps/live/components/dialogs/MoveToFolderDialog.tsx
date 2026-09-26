@@ -1,9 +1,9 @@
 'use client';
 
-// Move-destination modal (spec/15 + spec/35): a Dialog shell around the
+// Move-destination modal (docs/specs/013-workspace/folders.md + docs/specs/013-workspace/team-shared-diagrams.md): a Dialog shell around the
 // shared PlacementBrowser, so moving a diagram (or re-parenting a folder)
 // uses the exact same space -> folder tile browse as the New Diagram
-// wizard's Save In step (spec/76). One selection UI everywhere a diagram
+// wizard's Save In step (docs/specs/006-diagram/offline-mode.md). One selection UI everywhere a diagram
 // can change folders.
 //
 // The browser keeps its "always something selected" rule: the picker opens
@@ -50,7 +50,7 @@ type MoveToFolderDialogProps = {
   // excludes its own subtree). Omit entirely to hide the personal
   // space — team-scoped surfaces pass `teams` only.
   personalFolders?: MoveFolderNode[];
-  // Team libraries (spec/35). Omitted / [] = no team spaces.
+  // Team libraries (docs/specs/013-workspace/team-shared-diagrams.md). Omitted / [] = no team spaces.
   teams?: MoveTeamDest[];
   // The subject's current placement: it opens pre-selected and the
   // Move button unlocks once the choice differs. teamId null +

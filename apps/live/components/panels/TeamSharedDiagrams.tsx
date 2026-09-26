@@ -21,7 +21,7 @@ import { track } from '@/lib/telemetry';
 import { useRelativeTimeTick } from '@/lib/relative-time';
 import { folderDescendants } from '@/lib/folder-tree';
 
-// "Shared diagrams" on the team page (spec/35): the team's folder
+// "Shared diagrams" on the team page (docs/specs/013-workspace/team-shared-diagrams.md): the team's folder
 // tree + diagrams, navigated with a small breadcrumb instead of a
 // sidebar. The concept (and most of the row components) is the
 // personal explorer's, just team-scoped: every joined member can
@@ -43,7 +43,7 @@ export function TeamSharedDiagrams({
   teamId: string;
   // Shown by the move picker's Team Library card; falls back to "Team".
   teamName?: string;
-  // Full move destinations (spec/35): the caller's personal folder tree plus
+  // Full move destinations (docs/specs/013-workspace/team-shared-diagrams.md): the caller's personal folder tree plus
   // EVERY team's library, so a diagram can be re-homed anywhere (back to My
   // Work, or on to another team) from this page — the space overview + back
   // bar appear once more than one space exists. Absent = diagram moves stay
@@ -76,7 +76,7 @@ export function TeamSharedDiagrams({
   // "+ Create" dropdown (mirrors the personal pane header): one compact
   // button instead of two, so the breadcrumb keeps its room on mobile.
   const confirm = useConfirm();
-  // List vs card layout — the same device-local preference (spec/67) the
+  // List vs card layout — the same device-local preference (docs/specs/006-diagram/diagram-snapshots.md) the
   // Explorer browse views use, so a card-view user gets cards here too.
   const [viewMode, setViewMode] = useExplorerViewMode();
   useRelativeTimeTick();
@@ -195,7 +195,7 @@ export function TeamSharedDiagrams({
       ) : visibleFolders.length === 0 &&
         visibleDiagrams.length === 0 &&
         !(spot.kind === 'root' && unsorted.length > 0) ? (
-        // The Explorer's empty-state card (spec/15), inset so its border
+        // The Explorer's empty-state card (docs/specs/013-workspace/folders.md), inset so its border
         // sits inside this section's own.
         <div className="p-3">
           {spot.kind === 'root' ? (
@@ -214,7 +214,7 @@ export function TeamSharedDiagrams({
         </div>
       ) : viewMode === 'card' ? (
         // Same folders + diagrams as the list, rendered as the Explorer's
-        // card grid (spec/67). Team diagrams (DiagramSummary) satisfy the
+        // card grid (docs/specs/006-diagram/diagram-snapshots.md). Team diagrams (DiagramSummary) satisfy the
         // grid's PaneDiagram contract; the visibility badge is hidden
         // since every card here is a team diagram.
         <div className="p-3">
@@ -239,7 +239,7 @@ export function TeamSharedDiagrams({
             onMoveDiagram={(id) => setMoveTarget({ kind: 'diagram', id })}
             childrenCount={(id) => lib.childrenByParent.get(id)?.length ?? 0}
             diagramsCount={(id) => lib.diagramsByFolder.get(id)?.length ?? 0}
-            // Folder content previews (spec/99), from the team library's
+            // Folder content previews (docs/specs/013-workspace/folder-content-previews.md), from the team library's
             // own indexes — the same ones the counts above read.
             folderContents={(id) => ({
               folders: lib.childrenByParent.get(id) ?? [],
@@ -289,7 +289,7 @@ export function TeamSharedDiagrams({
       )}
 
       {/* ---------- Move picker ---------- */}
-      {/* Same shared move modal as the personal surfaces (spec/15). With
+      {/* Same shared move modal as the personal surfaces (docs/specs/013-workspace/folders.md). With
           `moveDests` (the explorer page supplies it) a DIAGRAM move offers
           every space — Personal Space plus each team — so a team diagram can be
           re-homed back to the personal tree or on to another team from

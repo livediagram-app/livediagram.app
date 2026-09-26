@@ -8,7 +8,7 @@ import { PortalMenu } from './TabPortalMenu';
 // never moves. Where the menu sits is not what this file is about.
 vi.mock('@/lib/clamp-to-viewport', () => ({ clampToViewport: () => ({ x: 0, y: 0 }) }));
 
-// Paste in the tab / canvas menu (spec/09 "Canvas menu: Paste"). Opened from
+// Paste in the tab / canvas menu (docs/specs/008-canvas/canvas-and-palette.md "Canvas menu: Paste"). Opened from
 // an empty-canvas right-click, Paste is a labelled row at the top: that click
 // is usually "put what I copied HERE". From the tab's ⋯ button it is an icon
 // in the quick-action toolbar, one tab verb among several.

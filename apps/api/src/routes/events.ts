@@ -1,4 +1,4 @@
-// /api/events — anonymous telemetry ingest (spec/22).
+// /api/events — anonymous telemetry ingest (docs/specs/017-telemetry/telemetry.md).
 
 import { isServerEmittedEvent, isValidTelemetryEvent } from '@livediagram/api-schema';
 import { insertTelemetryEvents } from '../db';
@@ -9,7 +9,7 @@ import { timingSafeEqual } from '../auth/timing-safe';
 import type { Env } from '../types';
 import type { RouteContext } from './context';
 
-// Anonymous telemetry ingest (spec/22). Batched POST of
+// Anonymous telemetry ingest (docs/specs/017-telemetry/telemetry.md). Batched POST of
 // { events: TelemetryEvent[] }. No auth, no stored identity: only
 // the closed-vocabulary three-field events (validated here) reach
 // D1, with a server-stamped ts. Off unless TELEMETRY_ENABLED, so
@@ -21,7 +21,7 @@ export async function handleEvents(ctx: RouteContext): Promise<Response> {
   if (request.method !== 'POST') return notFound();
   const noop = noContent();
   if (env.TELEMETRY_ENABLED !== 'true') return noop;
-  // Abuse controls (spec/22). The endpoint is anonymous +
+  // Abuse controls (docs/specs/017-telemetry/telemetry.md). The endpoint is anonymous +
   // unauthenticated, so guard it WITHOUT identifying users:
   //   (1) Same-origin only — drop a request whose Origin header is
   //       present and isn't this site. Stops casual cross-origin /
@@ -34,14 +34,14 @@ export async function handleEvents(ctx: RouteContext): Promise<Response> {
   //       stored. Both degrade to "allow" when unconfigured, so
   //       self-host / OSS forks still work. Cloudflare's edge DDoS
   //       + an optional WAF rate-limit rule on /api/events sit in
-  //       front of all this (see spec/22). Always 204 — telemetry
+  //       front of all this (see docs/specs/017-telemetry/telemetry.md). Always 204 — telemetry
   //       must never surface an error.
   const origin = request.headers.get('Origin');
   if (origin && origin !== url.origin && !isLocalhostPair(origin, url.origin)) return noop;
   // Our own workers reach this over a service binding, which carries no
   // CF-Connecting-IP — so `clientIp` fell back to the literal 'anonymous'
   // and every internal caller in the world shared ONE 120/min bucket,
-  // silently dropping the overflow as a 204 (spec/22, issue #36). A
+  // silently dropping the overflow as a 204 (docs/specs/017-telemetry/telemetry.md, issue #36). A
   // matching secret exempts them: the limiter exists to stop anonymous
   // abuse of a public endpoint, and a caller holding a worker secret is
   // neither anonymous nor unbounded (it's bounded by its own OAuth'd
@@ -67,7 +67,7 @@ export async function handleEvents(ctx: RouteContext): Promise<Response> {
   // are dropped, never stored.
   // Pairs the worker counts itself (Session·SignedUp / SignedIn,
   // Diagram·Joined, Email·Sent) are dropped here too, so a stale editor
-  // bundle that still emits them can't double count (spec/22).
+  // bundle that still emits them can't double count (docs/specs/017-telemetry/telemetry.md).
   const valid = raw
     .filter(isValidTelemetryEvent)
     .filter((e) => !isServerEmittedEvent(e))

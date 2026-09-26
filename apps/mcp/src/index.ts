@@ -1,4 +1,4 @@
-// livediagram MCP server (spec/62) — a standalone Cloudflare Worker fronted by
+// livediagram MCP server (docs/specs/015-api/mcp-server.md) — a standalone Cloudflare Worker fronted by
 // Hono. POST /mcp carries the Streamable-HTTP MCP transport (stateless, JSON
 // responses), Bearer-gated; tools reach the api worker over the API service
 // binding, forwarding the caller's `Authorization: Bearer lvd_…`. OAuth 2.1
@@ -29,7 +29,7 @@ app.use(
 
 app.get('/health', (c) => c.json({ status: 'ok' }));
 
-// OAuth 2.1 discovery / register / authorize / complete / token (spec/62 §3).
+// OAuth 2.1 discovery / register / authorize / complete / token (docs/specs/015-api/mcp-server.md §3).
 registerOauthRoutes(app);
 
 // The MCP Streamable-HTTP transport. Stateless (no session id) with JSON

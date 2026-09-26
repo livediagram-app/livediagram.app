@@ -1,4 +1,4 @@
-// Folder calls (spec/15): list / create / update / delete, plus moving
+// Folder calls (docs/specs/013-workspace/folders.md): list / create / update / delete, plus moving
 // a diagram into (or out of) a folder.
 import type { Folder } from '@livediagram/api-schema';
 import { dedupeInFlight } from '../dedupe';
@@ -37,7 +37,7 @@ export async function apiCreateFolder(
       id: input.id,
       name: input.name,
       parentId: input.parentId ?? null,
-      // Team scope (spec/35): non-null creates a folder in that
+      // Team scope (docs/specs/013-workspace/team-shared-diagrams.md): non-null creates a folder in that
       // team's shared library instead of the personal tree.
       teamId: input.teamId ?? null,
     }),
@@ -61,14 +61,14 @@ export async function apiUpdateFolder(
 }
 
 export async function apiDeleteFolder(ownerId: string, id: string): Promise<void> {
-  // Folder events are keyed under the 'account' source type (spec/138 §4.5).
+  // Folder events are keyed under the 'account' source type (docs/specs/013-workspace/timeline.md §4.5).
   return apiDelete(`${API_BASE}/folders/${id}`, ownerId, {
     action: 'delete folder',
     purge: { sourceType: 'account', sourceId: id },
   });
 }
 
-// Placement write (spec/15 + spec/35). `teamId` undefined = keep the
+// Placement write (docs/specs/013-workspace/folders.md + docs/specs/013-workspace/team-shared-diagrams.md). `teamId` undefined = keep the
 // diagram's current scope (the server defaults to it); null = the
 // owner's personal tree; a team id = that team's shared library.
 export async function apiSetDiagramFolder(
@@ -77,7 +77,7 @@ export async function apiSetDiagramFolder(
   folderId: string | null,
   teamId?: string | null,
 ): Promise<void> {
-  // Offline Mode (spec/76): the placement lives on the IndexedDB record.
+  // Offline Mode (docs/specs/006-diagram/offline-mode.md): the placement lives on the IndexedDB record.
   // A team destination is impossible for an offline diagram (the shared
   // library is server-side); the picker doesn't offer one, and throwing
   // here keeps a stray call from reaching the server.

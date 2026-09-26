@@ -14,7 +14,7 @@ export function memberName(
   clerkDisplayName: string | null,
 ): string {
   if (isSelf && clerkDisplayName) return clerkDisplayName;
-  // Real display name once they've joined + used the app (spec/32),
+  // Real display name once they've joined + used the app (docs/specs/013-workspace/teams.md),
   // resolved server-side from their participant profile. Falls back to
   // the prettified invite email for pending / profile-less rows.
   if (m.name) return m.name;
@@ -67,7 +67,7 @@ export function LinkIcon() {
   );
 }
 
-// One member row (spec/32): avatar bubble, name + you / Invited badges,
+// One member row (docs/specs/013-workspace/teams.md): avatar bubble, name + you / Invited badges,
 // the email identifier line, the admin's role select (or the pinned
 // RolePill), and the hover-reveal remove button. Lifted out of
 // TeamPane's list; every mutation comes through the pane's handlers.
@@ -92,7 +92,7 @@ export function TeamMemberRow({
 }) {
   const isSelf = m.userId !== null && m.userId === clerkUserId;
   const name = memberName(m, isSelf, clerkDisplayName);
-  // Pending = hasn't accepted (spec/32 handshake), regardless
+  // Pending = hasn't accepted (docs/specs/013-workspace/teams.md handshake), regardless
   // of whether the lazy claim has identified them yet.
   const pending = m.status === 'invited';
   const removable = isAdmin && !isSelf && !pinnedAdmin;
@@ -123,7 +123,7 @@ export function TeamMemberRow({
             </span>
           ) : null}
         </span>
-        {/* Email under the name for every member (spec/32) — the
+        {/* Email under the name for every member (docs/specs/013-workspace/teams.md) — the
               recognisable identifier alongside the display name.
               `truncate` keeps long addresses from breaking the row
               layout on mobile. Pending rows that somehow carry no

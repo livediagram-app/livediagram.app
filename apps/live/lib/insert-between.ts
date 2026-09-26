@@ -1,6 +1,6 @@
 import { ES_NOTE_GAP, isBoxed, type Element, type ElementId } from '@livediagram/diagram';
 
-// Inserting a note BETWEEN two notes (spec/139). An event-storming wall is a
+// Inserting a note BETWEEN two notes (docs/specs/021-event-storming/event-storming.md). An event-storming wall is a
 // left-to-right timeline, so "this happened before that" is the whole
 // information content of the x axis and adding a step in the middle is the
 // most common edit in a session. This module is the geometry behind it: which
@@ -46,7 +46,7 @@ export type InsertionGate = {
   esBoard: boolean;
   readOnly: boolean;
   tabLocked: boolean;
-  // The whole creation gate (spec/74): includes a hidden or locked active
+  // The whole creation gate (docs/specs/006-diagram/layers.md): includes a hidden or locked active
   // layer, which blocks creation without locking anything else.
   createBlocked: boolean;
 };
@@ -73,7 +73,7 @@ type FindArgs = {
   // Footprint of the note being dragged in (canvas units).
   incomingWidth: number;
   elements: Element[];
-  // Elements on a hidden or locked layer (spec/74). They cannot define the
+  // Elements on a hidden or locked layer (docs/specs/006-diagram/layers.md). They cannot define the
   // row — you can't aim at a note you can't see — but they still SHIFT, so
   // the board stays consistent the moment their layer comes back.
   inertIds?: ReadonlySet<ElementId>;
@@ -166,7 +166,7 @@ function stillInside(slot: InsertionSlot, cursorX: number, cursorY: number, elem
 // board opens there. Boxed elements answer with their left edge; an arrow
 // travels exactly when both its ends do. A locked element never travels — the board opens around it.
 //
-// Shared by the Alt insertion (spec/139 Phase 5) and the next-note ripple
+// Shared by the Alt insertion (docs/specs/021-event-storming/event-storming.md Phase 5) and the next-note ripple
 // (Phase 7), which are the same act seen twice: make room HERE, by this much.
 export function travellingIdsFrom(elements: Element[], atX: number): Set<ElementId> {
   const movingIds = new Set<ElementId>();

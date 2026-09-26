@@ -6,7 +6,7 @@ import { CardColumns } from './CardColumns';
 import { RankCard } from './RankCard';
 import { rankTrend, windowLabel } from './windows';
 
-// Pages view (spec/150): which pages across the site get viewed, broken down
+// Pages view (docs/specs/017-telemetry/page-view-telemetry.md): which pages across the site get viewed, broken down
 // by the app that serves them. Every frontend emits `Page·View·<path>` on
 // each path change (full load or in-app navigation), with ids and query
 // strings stripped in the browser: the ten most-viewed pages overall and

@@ -1,4 +1,4 @@
-// Per-source-type display metadata (spec/138 §7).
+// Per-source-type display metadata (docs/specs/013-workspace/timeline.md §7).
 //
 // One place decides which glyph a source type wears, so the card and
 // the calendar dot can never disagree about a kind.

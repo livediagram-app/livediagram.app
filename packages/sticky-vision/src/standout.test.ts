@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { hexToRgb, type ImageBuffer } from './colour';
 import { notStandingOut, standoutOf, standsOut, STANDOUT_CALIBRATION } from './standout';
 
-// Does a box hold paper (spec/139 Phase 9)? Every image is drawn here.
+// Does a box hold paper (docs/specs/021-event-storming/event-storming.md Phase 9)? Every image is drawn here.
 
 function wall(hex: string): ImageBuffer {
   const { r, g, b } = hexToRgb(hex);

@@ -13,15 +13,15 @@ import {
   type PlacementLayout,
 } from './PlacementCard';
 
-// The standardised folder-placement browser (spec/76, extended by spec/15):
+// The standardised folder-placement browser (docs/specs/006-diagram/offline-mode.md, extended by docs/specs/013-workspace/folders.md):
 // a two-level tile-grid browse. Pick a SPACE first (Personal Space, or one of your
 // teams), then drill into its folder tree; every level shows a "here" card
 // (Unsorted / Team Library / the open folder itself) plus the folders
 // directly inside it, with an optional inline New Folder tile. One space
 // collapses the overview away and the browser opens straight inside it.
 //
-// Shared by the New Diagram wizard's folder step (spec/76, spec/141) and the
-// Move-to-folder dialog on every move surface (spec/15 + spec/35), so the
+// Shared by the New Diagram wizard's folder step (docs/specs/006-diagram/offline-mode.md, docs/specs/006-diagram/save-locations.md) and the
+// Move-to-folder dialog on every move surface (docs/specs/013-workspace/folders.md + docs/specs/013-workspace/team-shared-diagrams.md), so the
 // product has exactly ONE way to choose where a diagram lives. Two layouts
 // of the same browse: `tiles` (icon over label, a grid) for the move dialog,
 // `list` (icon beside label, stacked rows, the file-explorer idiom) for the
@@ -109,7 +109,7 @@ export function PlacementBrowser({
   ) => Promise<PickerFolder | null>;
   // Inline team creation (the overview's "New Team" tile). Absent = tile
   // hidden; hosts pass it only for signed-in users, since teams are
-  // Clerk-only (spec/32).
+  // Clerk-only (docs/specs/013-workspace/teams.md).
   onCreateTeam?: (name: string) => Promise<{ id: string; name: string } | null>;
   // Tile grid (default) or stacked rows; see the header comment.
   layout?: PlacementLayout;

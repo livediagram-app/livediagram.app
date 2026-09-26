@@ -6,7 +6,7 @@ import type { PaletteTileDef } from './palette-tile-defs';
 import { tileDisplayName } from './palette-tile-defs';
 import { isDragTravel } from '@/lib/press-gestures';
 
-// Reorder mode for the Favourites grid (spec/78): drag the saved tiles into
+// Reorder mode for the Favourites grid (docs/specs/010-palette/palette-favourites.md): drag the saved tiles into
 // the order you want, then Save.
 //
 // A separate grid from PaletteTileGrid rather than a flag on it, because in

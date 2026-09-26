@@ -64,10 +64,10 @@ export function ExplorerSections({
 }: {
   loading: boolean;
   ownerId: string | null;
-  // Hide / show in Recent (spec/93).
+  // Hide / show in Recent (docs/specs/013-workspace/hide-from-recent.md).
   recentExcludedIds?: string[];
   onToggleRecentExclusion?: (diagramId: string) => void;
-  // Per-user stars (spec/95).
+  // Per-user stars (docs/specs/013-workspace/favourites.md).
   favouriteIds?: Set<string>;
   onToggleFavourite?: (diagramId: string) => void;
   currentDiagramId: string | null;
@@ -90,7 +90,7 @@ export function ExplorerSections({
   onRenameFolder?: (id: string, name: string) => void;
   onDeleteFolder?: (id: string) => void;
   onCreateChild: (parentId: string) => void;
-  // Team-library folder verbs for the Teams tab (spec/35); absent = browse-only.
+  // Team-library folder verbs for the Teams tab (docs/specs/013-workspace/team-shared-diagrams.md); absent = browse-only.
   onTeamFolders?: TeamFolderHandlers;
   onCreateTeamChild: (teamId: string, parentId: string | null) => void;
   onDeleteDiagram?: (id: string, anchor: HTMLElement | null) => void;
@@ -219,7 +219,7 @@ export function ExplorerSections({
                     item={entry.d}
                     ownerId={ownerId}
                     active={false}
-                    // Team diagrams (spec/35) open for any joined member
+                    // Team diagrams (docs/specs/013-workspace/team-shared-diagrams.md) open for any joined member
                     // and can be duplicated and re-filed from here; only
                     // rename (the open diagram's) and the owner-gated delete
                     // are narrower than the /explorer page's.
@@ -234,7 +234,7 @@ export function ExplorerSections({
                       onDuplicateDiagram ? () => onDuplicateDiagram(entry.d.id) : undefined
                     }
                     // A team row's move opens the picker inside its team, so
-                    // the pick routes through the scope-aware move (spec/35).
+                    // the pick routes through the scope-aware move (docs/specs/013-workspace/team-shared-diagrams.md).
                     onMoveRequest={
                       entry.kind === 'team'
                         ? onMoveTeamDiagramRequest && entry.d.team
@@ -246,7 +246,7 @@ export function ExplorerSections({
                     }
                     // Hiding from Recent is a per-user view choice, so it
                     // applies to team rows too even though their rename /
-                    // move / delete live on the /explorer page (spec/93).
+                    // move / delete live on the /explorer page (docs/specs/013-workspace/hide-from-recent.md).
                     favourite={favouriteIds?.has(entry.d.id) === true}
                     onToggleFavourite={
                       onToggleFavourite ? () => onToggleFavourite(entry.d.id) : undefined
@@ -293,7 +293,7 @@ export function ExplorerSections({
                     rows={rows}
                   />
                 ) : null}
-                {/* Offline (spec/76): always rendered, even empty, so the
+                {/* Offline (docs/specs/006-diagram/offline-mode.md): always rendered, even empty, so the
                     browser-only bucket stays discoverable. */}
                 <OfflineNode
                   expanded={expandedFolders}
@@ -319,7 +319,7 @@ export function ExplorerSections({
                 window.location.assign(`/explorer/team?id=${encodeURIComponent(teamId)}`)
               }
               // Hard delete on team-library rows, any joined member
-              // (spec/35); the api enforces membership. Change Folder
+              // (docs/specs/013-workspace/team-shared-diagrams.md); the api enforces membership. Change Folder
               // opens the picker inside this team. No drag-and-drop.
               rows={{
                 ...rows,

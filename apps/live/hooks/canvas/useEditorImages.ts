@@ -1,4 +1,4 @@
-// Image domain for the editor (spec/19), lifted out of
+// Image domain for the editor (docs/specs/009-elements/images.md), lifted out of
 // editor-page.tsx. Everything about placing, filling, clearing and
 // listing image elements lives here so the page no longer carries
 // the picker state, the recent-images list, or the six handlers
@@ -49,7 +49,7 @@ type EditorImagesDeps = {
   // Whether the current viewer is a view-only visitor. Gates the
   // recent-images fetch + the onOpenPicker handle on imageContext.
   isReadOnly: boolean;
-  // Read-only embed chrome is gone (spec/33: edit-role embeds are editable),
+  // Read-only embed chrome is gone (docs/specs/013-workspace/embeds.md: edit-role embeds are editable),
   // but IMAGE UPLOADS stay off in embeds: the upload endpoint authorises by
   // owner identity, and inside a partitioned third-party iframe that is a
   // throwaway per-partition guest — uploads would land in an un-owned
@@ -102,7 +102,7 @@ export function useEditorImages(deps: EditorImagesDeps) {
   }, [diagramId, isReadOnly, embedMode]);
 
   // Placing a NEW image lives in useElementCreation.addImage: it arms the
-  // tap-or-drag draw gesture (spec/09, spec/19) rather than dropping a
+  // tap-or-drag draw gesture (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/009-elements/images.md) rather than dropping a
   // placeholder at the viewport centre, and arming needs `beginDraw` from
   // useShapeDrawing, which runs after this hook. The old centre-drop
   // deliberately kept the picker shut so the user could position and resize
@@ -198,7 +198,7 @@ export function useEditorImages(deps: EditorImagesDeps) {
     // embedMode also blocks the clipboard's paste-image upload, which
     // funnels through this handler after uploading.
     if (editsBlocked || embedMode) return;
-    // Offline diagrams must stay self-contained (spec/76): a bare gallery
+    // Offline diagrams must stay self-contained (docs/specs/006-diagram/offline-mode.md): a bare gallery
     // id would break once the server's unused-image cleanup reaps it, so
     // fetch the bytes and place a data-URI embed instead. Re-entry with
     // the data URI as the id lands in the placement branch below.

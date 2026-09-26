@@ -80,7 +80,7 @@ export function ArticleLayout({
     }
   }, []);
 
-  // The current article's telemetry id (spec/22): the registry's unique
+  // The current article's telemetry id (docs/specs/017-telemetry/telemetry.md): the registry's unique
   // per-article token for this path, never the free-text title (which the
   // ingest validator would reject). Not the bare last path segment: two
   // articles share one (tips-and-tricks/format-painter beside
@@ -111,7 +111,7 @@ export function ArticleLayout({
       ? [{ label: categoryTitle, href: categoryHref(categorySlug) }, { label: title }]
       : [{ label: title }];
 
-  // Article structured data (spec/55). The Breadcrumb component already emits
+  // Article structured data (docs/specs/018-help/help-app.md). The Breadcrumb component already emits
   // the BreadcrumbList, so this only adds the TechArticle node. Resolve this
   // page's own URL from the registry ((categorySlug, title) is unique) so the
   // node ships on every guide without each page.mdx passing its slug.

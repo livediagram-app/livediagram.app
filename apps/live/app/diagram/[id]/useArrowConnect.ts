@@ -9,7 +9,7 @@ import {
 import { getTheme } from '@/lib/themes';
 import { track } from '@/lib/telemetry';
 
-// CLICK-TO-CONNECT (spec/09): pick the arrow tool with a shape selected and
+// CLICK-TO-CONNECT (docs/specs/008-canvas/canvas-and-palette.md): pick the arrow tool with a shape selected and
 // the next element you click is joined to it by a pinned arrow.
 //
 // Split out of useElementCreation, which is otherwise a catalogue of small
@@ -39,7 +39,7 @@ export function useArrowConnect({
   beginDraw: (intent: { type: 'arrow' }) => void;
   commitTabs: (fn: (tabs: Tab[]) => Tab[]) => void;
 }) {
-  // Click-to-connect (spec/09): when the arrow tool is picked WITH a
+  // Click-to-connect (docs/specs/008-canvas/canvas-and-palette.md): when the arrow tool is picked WITH a
   // shape selected, the next element click connects the two with a
   // pinned arrow. `connectSourceId` holds that armed source; null when
   // not connecting. The canvas / Escape clear it (see EditorView).
@@ -100,7 +100,7 @@ export function useArrowConnect({
           ? {
               ...t,
               // Run the new arrow through the same distribution pass a move
-              // uses (spec/09), scoped to its target end: a fresh connector
+              // uses (docs/specs/008-canvas/canvas-and-palette.md), scoped to its target end: a fresh connector
               // joins an established fan on the source (sibling vote over
               // the settled arrows' faces) instead of keeping whichever
               // face its own chord grazes first.

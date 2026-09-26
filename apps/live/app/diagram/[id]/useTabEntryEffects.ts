@@ -12,7 +12,7 @@ import { useEffect, useRef, type RefObject } from 'react';
 //    `lastFittedTabRef` gate means subsequent element edits on the same
 //    tab DON'T re-fit, so the user's pan / zoom isn't resnapped every
 //    time they add a shape. A tab entry that ARRIVES already positioned
-//    (a Bring Focus jump, spec/144) names itself in `skipFitForTabRef`
+//    (a Bring Focus jump, docs/specs/012-collaboration/bring-focus.md) names itself in `skipFitForTabRef`
 //    and is left alone: the fit lands a frame after the jump's centring,
 //    so without this it would quietly undo it.
 export function useTabEntryEffects({

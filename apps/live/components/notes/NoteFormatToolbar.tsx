@@ -1,6 +1,6 @@
 'use client';
 
-// The note editor's formatting toolbar (spec/92). Unlike the label editor's
+// The note editor's formatting toolbar (docs/specs/009-elements/rich-text-notes.md). Unlike the label editor's
 // floating toolbar, this one is ALWAYS VISIBLE and docked at the top of the
 // popover: a note is read about as often as it is written, and a toolbar that
 // appears on focus makes the popover jump the moment you click into it.
@@ -35,7 +35,7 @@ export function NoteFormatToolbar({
 }: {
   active: ActiveFormat;
   // The list style of the line the caret sits on, read from the note's plain
-  // text (a list is a literal line prefix, spec/92) — the picker needs it to
+  // text (a list is a literal line prefix, docs/specs/009-elements/rich-text-notes.md) — the picker needs it to
   // show what the current line already is.
   listStyle: ListStyle;
   onToggle: (key: RunBoolKey) => void;
@@ -65,7 +65,7 @@ export function NoteFormatToolbar({
           </Tooltip>
         ))}
         {TOOLBAR_DIVIDER}
-        {/* One block-type picker (spec/102) rather than three heading buttons
+        {/* One block-type picker (docs/specs/009-elements/block-type-picker.md) rather than three heading buttons
             beside bullet / numbered / remove-list: to a writer a line is a
             heading, or a paragraph, or a bullet, and five toggles made that
             one decision look like several. Same control as the label

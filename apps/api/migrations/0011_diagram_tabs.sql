@@ -1,4 +1,4 @@
--- Many-to-many tab ↔ diagram link table. See specs/17 for the full
+-- Many-to-many tab ↔ diagram link table. See docs/specs/006-diagram/tab-diagram-many-to-many.md for the full
 -- model + phasing. This migration is the first of four:
 --
 --   0011 (this) — add diagram_tabs, backfill from tabs.diagram_id /

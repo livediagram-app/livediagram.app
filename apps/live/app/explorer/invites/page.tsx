@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 import { InvitesRedirectGate } from './InvitesRedirectGate';
 
-// /explorer/invites — pending team invites to accept or decline (spec/32).
+// /explorer/invites — pending team invites to accept or decline (docs/specs/013-workspace/teams.md).
 // The layout's ExplorerShell provides the chrome + state; this page
-// pins the route + tab title (spec/15, routes.ts) and gates the pane
+// pins the route + tab title (docs/specs/013-workspace/folders.md, routes.ts) and gates the pane
 // behind sign-in (invites are team-only, so a guest has nothing here).
 export const metadata: Metadata = {
   title: 'Invites | livediagram',

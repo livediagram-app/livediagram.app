@@ -22,7 +22,7 @@ export async function handleAccount(ctx: RouteContext): Promise<Response> {
   if (request.method === 'DELETE') {
     if (!clerkUserId) return missingAuth();
     const deleted = await deleteAccount(env, clerkUserId);
-    // spec/64: a parting confirmation (best-effort, after the rows are gone).
+    // docs/specs/014-identity/transactional-email.md: a parting confirmation (best-effort, after the rows are gone).
     if (clerkEmail && emailEnabled(env)) {
       ctx.waitUntil?.(sendEmail(env, { to: clerkEmail, ...accountDeletedEmail(env) }));
     }

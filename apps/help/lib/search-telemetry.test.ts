@@ -24,7 +24,7 @@ describe('reportHelpSearch', () => {
     expect(trackMock).toHaveBeenCalledExactlyOnceWith('Help', 'Searched', 'NoResults');
   });
 
-  // spec/22 forbids user-generated content on the wire. The query decides
+  // docs/specs/017-telemetry/telemetry.md forbids user-generated content on the wire. The query decides
   // WHICH token is sent and never appears in the payload itself.
   it('never puts the query on the wire', () => {
     reportHelpSearch('my secret project name', 0);

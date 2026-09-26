@@ -1,4 +1,4 @@
-// CSV -> line-chart data (spec/53). The expected layout is a header row whose
+// CSV -> line-chart data (docs/specs/009-elements/pie-chart.md). The expected layout is a header row whose
 // first cell labels the category column and whose remaining cells name the
 // series, then one row per category (its label + a value per series):
 //

@@ -5,7 +5,7 @@ import { timerDone, type TabTimer } from '@livediagram/diagram';
 import { TopCenterBanner } from '@/components/chrome/TopCenter';
 import { TimerPillBody, timerFillStyle } from '@/components/chrome/timer-pill';
 
-// Floating session-timer pill (spec/39). Renders the active tab's
+// Floating session-timer pill (docs/specs/012-collaboration/session-tools.md). Renders the active tab's
 // countdown / stopwatch, ticking LOCALLY off the timer's absolute anchor
 // (no per-second network traffic — all clients compute the same value).
 // Facilitators (edit-role) get pause/resume + reset inline; viewers see a
@@ -45,7 +45,7 @@ export function TimerWidget({
       tone={done ? 'danger' : 'neutral'}
       className={'gap-2 py-1 pl-3 pr-1.5' + (done ? ' animate-pulse' : '')}
       // The drain, the clock and the controls all come from timer-pill, shared
-      // with the Timer session element on the canvas (spec/105) so the two
+      // with the Timer session element on the canvas (docs/specs/012-collaboration/session-button.md) so the two
       // views of one timer cannot drift apart.
       style={timerFillStyle(timer, now)}
     >

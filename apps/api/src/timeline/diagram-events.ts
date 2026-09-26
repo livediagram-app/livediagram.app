@@ -1,10 +1,10 @@
-// Diagram lifecycle + collaboration events (spec/138 §4.2, §4.3).
+// Diagram lifecycle + collaboration events (docs/specs/013-workspace/timeline.md §4.2, §4.3).
 //
 // One exported function per event, so a route's emit is a single line
 // and the copy for a given event lives in exactly one place. The
 // title/description split is load-bearing: titles are Title Case
 // categories that never carry user content, which is what lets four
-// bubbles collapse into one honest stacked headline (spec/138 §2.1).
+// bubbles collapse into one honest stacked headline (docs/specs/013-workspace/timeline.md §2.1).
 
 import { TIMELINE_COMMENT_MAX } from '@livediagram/api-schema';
 import type { TimelineScopeRef } from '@livediagram/api-schema';
@@ -86,7 +86,7 @@ export async function recordDiagramDuplicated(
 }
 
 // There is deliberately no recordDiagramDeleted. A deleted diagram is
-// swept from the feed (spec/138 §3.5) and nothing is written in its
+// swept from the feed (docs/specs/013-workspace/timeline.md §3.5) and nothing is written in its
 // place: from the Timeline's point of view it never existed.
 
 export async function recordDiagramMoved(
@@ -137,7 +137,7 @@ export async function recordTeamDiagramAdded(
 }
 
 // A diagram was pulled back OUT of a team library into personal files
-// (spec/35 + spec/138). Not the same event as `diagram_moved`, which is
+// (docs/specs/013-workspace/team-shared-diagrams.md + docs/specs/013-workspace/timeline.md). Not the same event as `diagram_moved`, which is
 // personal tidying: the team loses the diagram outright, and when the mover
 // isn't the owner they take ownership of it too — so the previous owner loses
 // it as well.
@@ -174,7 +174,7 @@ export async function recordTeamDiagramRemoved(
   );
 }
 
-// The coalesced editing event (spec/138 §4.2).
+// The coalesced editing event (docs/specs/013-workspace/timeline.md §4.2).
 //
 // Emitted from the tab-save path rather than from `change_log`: the log
 // is tab-scoped and 90-day, and reading it back to derive a daily
@@ -259,7 +259,7 @@ export async function recordCommentResolved(
   );
 }
 
-// An action was assigned on an element (spec/68). Reaches the assignee
+// An action was assigned on an element (docs/specs/012-collaboration/assigned-actions.md). Reaches the assignee
 // as well as everyone who can see the diagram — usually overlapping
 // sets, which is what mergeScopes is for. When the assignee is an
 // invited-but-not-joined member they have no owner id yet, so they get
@@ -339,7 +339,7 @@ export async function recordShareLinkCreated(
 }
 
 // Future-dated: occurredAt is the expiry, not now, so this lands in the
-// feed's forward band above Today (spec/138 §4.5). That band is the
+// feed's forward band above Today (docs/specs/013-workspace/timeline.md §4.5). That band is the
 // only reason a user opens the Timeline BEFORE something breaks.
 export async function recordShareLinkExpiring(
   env: Env,
@@ -362,7 +362,7 @@ export async function recordShareLinkExpiring(
   );
 }
 
-// Offline Mode conversions (spec/76). Owner-only: an offline diagram
+// Offline Mode conversions (docs/specs/006-diagram/offline-mode.md). Owner-only: an offline diagram
 // exists in exactly one browser, so nobody else has a stake in it.
 export async function recordDiagramOffline(
   env: Env,

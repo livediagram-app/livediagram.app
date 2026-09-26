@@ -1,4 +1,4 @@
-// Building a `collaborators` poll's ballot from the room (spec/88).
+// Building a `collaborators` poll's ballot from the room (docs/specs/012-collaboration/live-poll.md).
 //
 // The stakes are higher than they look: the tally matches answers to options
 // by STRING, so anything that lets two people share a token silently merges

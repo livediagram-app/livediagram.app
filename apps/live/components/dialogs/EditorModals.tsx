@@ -53,7 +53,7 @@ export function EditorModals() {
           onChange={(next) => {
             setUserPreferences(next);
             // Pass the resolved owner id so the new prefs round-trip
-            // to D1 (spec/20). selfParticipant?.id is null until the
+            // to D1 (docs/specs/007-editor/user-preferences.md). selfParticipant?.id is null until the
             // identity effect resolves it, but settingsOpen can't be
             // true until the user clicks the gear, which only renders
             // after that effect ran, so the id is always set here.

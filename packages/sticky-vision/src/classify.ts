@@ -3,7 +3,7 @@ import { hexToRgb, hueDistance, rgbToHsv, type Hsv } from './colour';
 import { rgbToLabInto, type Lab } from './lab';
 import { DEFAULT_FLOORS, FLOOR_CALIBRATION, VALUE_FLOOR, type PaperFloors } from './floors';
 
-// Which note kind a pixel's colour belongs to (spec/139 Phase 8).
+// Which note kind a pixel's colour belongs to (docs/specs/021-event-storming/event-storming.md Phase 8).
 //
 // The hue CENTRES are derived from the notation's own catalogue — the same
 // `EVENT_STORMING_NOTES` fills the palette tiles and the template read from —
@@ -48,7 +48,7 @@ const HUE_BANDS: HueBand[] = [
   // clear the paper floor at all on a kraft wall. Hotspot wins; an
   // external-system read as a hotspot is re-kinded in the draft, which is one
   // click, and the alternative is a hotspot read as an external system, which
-  // is a risk nobody flagged. See spec/139.
+  // is a risk nobody flagged. See docs/specs/021-event-storming/event-storming.md.
   { kind: 'hotspot', from: 305, to: 12 },
 ];
 

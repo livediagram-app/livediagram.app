@@ -33,7 +33,7 @@ export function DiagramRow({
   // thumbnail fetch — NOT item.ownerId (that's the diagram's owner, and
   // it's blanked for shared rows).
   ownerId: string | null;
-  // Share code used ONLY to authorise the thumbnail fetch (spec/67) when
+  // Share code used ONLY to authorise the thumbnail fetch (docs/specs/006-diagram/diagram-snapshots.md) when
   // it isn't carried on item.shareCode — e.g. the "currently open shared
   // diagram" row, where item.shareCode is intentionally nulled. Falls
   // back to item.shareCode.
@@ -49,14 +49,14 @@ export function DiagramRow({
   // anchored to the supplied element. Stored at the panel level so
   // the portal isn't nested inside another PortalMenu.
   onMoveRequest?: (anchor: HTMLElement | null) => void;
-  // Hide / show in Recent (spec/93). Per-user, so the label reflects THIS
+  // Hide / show in Recent (docs/specs/013-workspace/hide-from-recent.md). Per-user, so the label reflects THIS
   // viewer's state; absent where the surface can't offer it.
   recentExcluded?: boolean;
   onToggleRecentExclusion?: () => void;
-  // Opens this diagram's own Timeline (spec/138 §3.4) — who changed
+  // Opens this diagram's own Timeline (docs/specs/013-workspace/timeline.md §3.4) — who changed
   // what, and when. Absent on surfaces that can't host the dialog.
   onShowHistory?: () => void;
-  // Per-user star (spec/95).
+  // Per-user star (docs/specs/013-workspace/favourites.md).
   favourite?: boolean;
   onToggleFavourite?: () => void;
   // Set true on rows the user can drag into folders. The actual
@@ -77,7 +77,7 @@ export function DiagramRow({
   };
 
   const relative = relativeSince(item.savedAt);
-  // Offline Mode (spec/76): an offline diagram's row carries ownerId
+  // Offline Mode (docs/specs/006-diagram/offline-mode.md): an offline diagram's row carries ownerId
   // 'offline', which drives the fixed offline thumbnail.
   const offline = item.ownerId === OFFLINE_OWNER_ID;
 
@@ -161,7 +161,7 @@ export function DiagramRow({
         />
       ) : null}
       {/* The same actions menu as the Explorer page's rows and cards
-          (spec/67), so a diagram has one menu wherever it's listed. The
+          (docs/specs/006-diagram/diagram-snapshots.md), so a diagram has one menu wherever it's listed. The
           panel used to carry its own toolbar-and-accordion menu with a
           Share section; sharing is the editor header's job, and a menu
           that looked like no other was one people had to learn twice.

@@ -1,5 +1,5 @@
-// Live-image URL + snippet builders for the share dialog (spec/54 +
-// spec/67). The endpoint serves a diagram's cached SVG snapshot scoped
+// Live-image URL + snippet builders for the share dialog (docs/specs/013-workspace/live-image-share.md +
+// docs/specs/006-diagram/diagram-snapshots.md). The endpoint serves a diagram's cached SVG snapshot scoped
 // to a share code, so a bare <img> in a README / wiki / Notion can embed
 // it and it stays close to live (the worker re-renders when the diagram
 // is saved). Pure functions so the dialog's copy buttons and the tests
@@ -9,7 +9,7 @@
 // onto the app's hostname), so the public URL is `<origin>/api/share/...`
 // — matching how embedUrlFor builds its `<origin>/embed?s=` URL.
 
-// `tabId` (spec/54) selects which tab the image renders; omit it for the
+// `tabId` (docs/specs/013-workspace/live-image-share.md) selects which tab the image renders; omit it for the
 // default (first tab), which the server serves from its cached snapshot.
 // A supplied id is appended as `?tab=<id>` so the endpoint renders that
 // specific tab.

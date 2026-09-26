@@ -1,5 +1,5 @@
 // GET /api/unfurl?url=<encoded> — server-side link "unfurl" for the link-card
-// element (spec/40). The static client can't read cross-origin page HTML, so
+// element (docs/specs/009-elements/link-cards.md). The static client can't read cross-origin page HTML, so
 // the worker fetches the page and extracts title / og:image / site name /
 // favicon. PUBLIC + self-hostable repo, so the target URL is validated for
 // SSRF before any fetch and the read is bounded. Always returns 200 with at

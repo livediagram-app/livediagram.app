@@ -90,7 +90,7 @@ describe('concurrent different-element edits merge (the Level 0 win)', () => {
   });
 });
 
-// The dot vote's old failure (spec/39), on the Q&A board (spec/151): a peer
+// The dot vote's old failure (docs/specs/012-collaboration/session-tools.md), on the Q&A board (docs/specs/012-collaboration/qa-board.md): a peer
 // moves the board with a copy taken before a vote reached them, and their
 // `el` update must not send that vote back out of existence.
 describe('applyElementOp on a Q&A board', () => {

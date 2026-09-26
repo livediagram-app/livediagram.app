@@ -54,7 +54,7 @@ export function useElementDuplication(deps: {
         id: crypto.randomUUID(),
         x: source.x + offset,
         y: source.y + offset,
-        // Whatever a copy regenerates rather than inherits (spec/139 tilt).
+        // Whatever a copy regenerates rather than inherits (docs/specs/021-event-storming/event-storming.md tilt).
         ...freshCopyFields(source),
       };
       commit((els) => [...els, copy]);

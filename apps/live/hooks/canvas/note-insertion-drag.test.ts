@@ -102,7 +102,7 @@ describe('resolveNoteInsertion', () => {
     expect(resolve({ elements: withShape })).toBeNull();
   });
 
-  // Shift already means drag-duplicate (spec/80); the gesture is spoken for.
+  // Shift already means drag-duplicate (docs/specs/008-canvas/shift-drag-duplicate.md); the gesture is spoken for.
   it('yields to a drag-duplicate when Shift is also held', () => {
     expect(resolve({ shiftHeld: true })).toBeNull();
   });
@@ -141,7 +141,7 @@ describe('landNoteInSlot', () => {
   });
 });
 
-// Timeline lanes (spec/139 Phase 6): the ripple opens by the incoming note
+// Timeline lanes (docs/specs/021-event-storming/event-storming.md Phase 6): the ripple opens by the incoming note
 // plus the row's own gap, on a lanes board exactly as on any other. It used to
 // round up to a column lattice; the lattice is gone, because it could not
 // express the row's gutter in the first place.

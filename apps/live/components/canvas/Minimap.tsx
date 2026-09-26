@@ -26,7 +26,7 @@ const MAP_HEIGHT: Record<MapSize, string> = {
   tall: 'h-56',
 };
 
-// The "Map" panel (spec/59): a movable floating panel — like the Palette — with
+// The "Map" panel (docs/specs/008-canvas/minimap.md): a movable floating panel — like the Palette — with
 // a zoomed-out, true-to-shape overview of the whole tab. Each boxed element is
 // painted as its real silhouette (a circle reads as a circle) and each arrow as
 // a connecting line; the area outside the current view is dimmed so the lit
@@ -43,7 +43,7 @@ const MAP_HEIGHT: Record<MapSize, string> = {
 
 type MinimapProps = {
   elements: Element[];
-  // The tab default face (spec/28): the miniature paints what the canvas
+  // The tab default face (docs/specs/004-interface-design/fonts.md): the miniature paints what the canvas
   // paints, so a marker board reads as one in the map too.
   tabFont?: string;
   viewportOffset: { x: number; y: number };
@@ -62,9 +62,9 @@ type MinimapProps = {
   // so it sits beside the Enable Map toggle. `resettable` greys it out when
   // the map is already at its default corner.
   onResetPosition: () => void;
-  // Corner-docking bundle (spec/63), forwarded to the inner MovablePanel.
+  // Corner-docking bundle (docs/specs/007-editor/panel-docking.md), forwarded to the inner MovablePanel.
   dock?: MovablePanelDockProps;
-  // Map options (spec/59), all persisted preferences.
+  // Map options (docs/specs/008-canvas/minimap.md), all persisted preferences.
   dimOutside: boolean;
   size: MapSize;
 };
@@ -77,7 +77,7 @@ const PAD_MIN = 48;
 // its h-36 svg). The viewBox is expanded to this aspect ratio so the wireframe
 // fills the panel edge-to-edge rather than letterboxing into white bars under
 // preserveAspectRatio="meet".
-// The panel body's aspect ratio, per map size (spec/59). It has to track
+// The panel body's aspect ratio, per map size (docs/specs/008-canvas/minimap.md). It has to track
 // MAP_HEIGHT below: the viewBox is grown on its short axis to THIS ratio so
 // the map fills the panel edge to edge, and a stale number here letterboxes —
 // picking Tall grew the panel but left the drawing its old shape, so all the

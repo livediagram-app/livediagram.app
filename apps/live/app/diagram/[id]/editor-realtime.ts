@@ -22,7 +22,7 @@ export function useEditorRealtime() {
   // after share / unshare. Drives whether realtime (WS room) is
   // active.
   const [diagramShareable, setDiagramShareable] = useState(false);
-  // Team library placement (spec/35): non-null when the diagram lives
+  // Team library placement (docs/specs/013-workspace/team-shared-diagrams.md): non-null when the diagram lives
   // in a team's shared library. Drives the header badge's "Team"
   // state (shareable still wins with "Shared").
   const [diagramTeamId, setDiagramTeamId] = useState<string | null>(null);
@@ -57,7 +57,7 @@ export function useEditorRealtime() {
   // derived: shareLinks.length > 0 OR diagramShareable from a freshly
   // loaded row.
   const [shareLinks, setShareLinks] = useState<ShareLink[]>([]);
-  // The diagram's optional share password (spec/24), owner-only. Null
+  // The diagram's optional share password (docs/specs/013-workspace/share-password.md), owner-only. Null
   // when unset. The ShareDialog shows + edits this in the clear.
   const [sharePassword, setSharePassword] = useState<string | null>(null);
   // `passwordRetry` bumps to re-run the bootstrap once the visitor

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { nextTraversalIndex } from './useCanvasA11y';
 
-// The Tab-traversal step (spec/71). Pure: elements in render order, the
+// The Tab-traversal step (docs/specs/004-interface-design/canvas-accessibility.md). Pure: elements in render order, the
 // current selection, a direction, and a blocked predicate in; the index
 // to select (or null = fall through to the browser's Tab) out.
 

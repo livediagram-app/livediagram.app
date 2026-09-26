@@ -190,7 +190,7 @@ export function useEditorHistory(opts: {
       if (diagramId) {
         // Same entry id and content — D1 ends up with the same row
         // it had before the undo. Idempotent: the API upserts an
-        // existing id from the same author (spec/12), so a redo that
+        // existing id from the same author (docs/specs/012-collaboration/activity-and-audit.md), so a redo that
         // beats its undo's DELETE doesn't fail.
         apiAppendChangeLogEntry(selfId, diagramId, shifted, sessionShareCode).catch(() => {});
       }

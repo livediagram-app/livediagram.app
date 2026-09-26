@@ -45,7 +45,7 @@ describe('buildPaletteSearchItems', () => {
     for (const kind of ['lane', 'entity', 'mind-node', 'page', 'phone', 'bar-chart', 'portal']) {
       expect(ids.has(`shape:${kind}`)).toBe(true);
     }
-    // And the split kinds, one entry per choice (spec/105, spec/135).
+    // And the split kinds, one entry per choice (docs/specs/012-collaboration/session-button.md, docs/specs/009-elements/reaction-pad.md).
     for (const id of [
       'shape:session-button:timer',
       'shape:session-button:vote',

@@ -274,7 +274,7 @@ export const THEMES: ThemeDefinition[] = [
     elementText: '#f5e9da',
     extra: true,
   },
-  // --- Multi-colour themes (spec/29) ---------------------------------
+  // --- Multi-colour themes (docs/specs/011-theme/multicolour-themes.md) ---------------------------------
   // Each tints a different branch of the hierarchy with its own hue.
   // `elementFill / -Stroke / -Text` mirror the `rootColor` so any code
   // path that reads the single-colour fields (or a non-hierarchy
@@ -401,7 +401,7 @@ export const THEMES: ThemeDefinition[] = [
     extra: true,
   },
   {
-    // UML (spec/42): a formal-notation theme. Instead of one colour for
+    // UML (docs/specs/011-theme/canvas-and-theme-dialog.md): a formal-notation theme. Instead of one colour for
     // every shape, each shape KIND gets its conventional fill / stroke /
     // text so a diagram reads as UML at a glance — a decision diamond is
     // amber, a datastore cylinder is purple, a terminator is green, and

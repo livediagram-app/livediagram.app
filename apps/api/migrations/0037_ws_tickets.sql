@@ -1,4 +1,4 @@
--- One-time WebSocket room tickets (spec/11 "Realtime model"). Browsers
+-- One-time WebSocket room tickets (docs/specs/015-api/api.md "Realtime model"). Browsers
 -- can't put auth headers on a WS upgrade, so the client first asks the
 -- authenticated REST endpoint (POST /api/diagrams/:id/room-ticket) for a
 -- short-lived single-use ticket carrying the server-resolved role, then

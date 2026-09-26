@@ -1,5 +1,5 @@
 // The selection modes a Mode Button element can switch someone into
-// (spec/103). The editor's own `CanvasTool` union is the same vocabulary, but it
+// (docs/specs/009-elements/mode-button.md). The editor's own `CanvasTool` union is the same vocabulary, but it
 // lives in the live app; this is the DATA half — what a saved element may carry
 // — so it belongs with the model, where validation can reach it.
 //
@@ -24,7 +24,7 @@ export const SELECTION_MODES = [
   'eraser',
   'format',
   'isometric',
-  // The marker (spec/81). A mode rather than a one-shot draw intent: you
+  // The marker (docs/specs/008-canvas/highlighter.md). A mode rather than a one-shot draw intent: you
   // highlight a passage, not a single stroke, so it stays until you put it
   // down like the Eraser does.
   'highlighter',
@@ -33,7 +33,7 @@ export const SELECTION_MODES = [
 export type SelectionMode = (typeof SELECTION_MODES)[number];
 
 // The mode a Mode Button switches to when it carries none — the reason the
-// element exists (spec/101 walkthroughs), so it is the default rather than
+// element exists (docs/specs/008-canvas/avatar-mode.md walkthroughs), so it is the default rather than
 // Select.
 export const DEFAULT_BUTTON_MODE: SelectionMode = 'avatar';
 
@@ -45,7 +45,7 @@ export function isSelectionMode(value: unknown): value is SelectionMode {
 // resize handles, ignore a drag-to-draw's size, and are left alone when a
 // multi-selection is scaled — a button that is 40px on one diagram and 400 on
 // another stops looking like part of the product.
-// The Done check (spec/137) is one too: it is a roster and a button, laid
+// The Done check (docs/specs/012-collaboration/done-check.md) is one too: it is a roster and a button, laid
 // out for its own content, and stretching it only spreads the same three
 // things over empty card.
 export const FIXED_SIZE_SHAPES: ReadonlySet<string> = new Set([
@@ -60,7 +60,7 @@ export function isFixedSizeShape(kind: string): boolean {
 
 // The element-level answer to "can this be resized?" — true for the
 // fixed-size shape KINDS above, and for any element stamped `fixedSize` at
-// creation (event-storming notes, spec/139: the workshop stationery has
+// creation (event-storming notes, docs/specs/021-event-storming/event-storming.md: the workshop stationery has
 // fixed silhouettes). Structural param so leaf callers don't need the full
 // Element union.
 export function isFixedSizeElement(el: {
@@ -72,7 +72,7 @@ export function isFixedSizeElement(el: {
   return el.type === 'shape' && el.shape != null && isFixedSizeShape(el.shape);
 }
 
-// The Selection Mode button's original default skin (spec/103): a solid brand
+// The Selection Mode button's original default skin (docs/specs/009-elements/mode-button.md): a solid brand
 // fill with white text. It was replaced by a light button surface, but the
 // colours are stored ON the element, so every button authored before the
 // change would keep the old slab look forever.
@@ -101,12 +101,12 @@ export function isLegacyModeButtonSkin(el: {
 // Today's default skin, for the elements above.
 export const MODE_BUTTON_SKIN = { fill: '#ffffff', stroke: '#cbd5e1', text: '#0f172a' } as const;
 
-// --- Session button (spec/105) ----------------------------------------------
+// --- Session button (docs/specs/012-collaboration/session-button.md) ----------------------------------------------
 
 // Which session tool a `session-button` starts when pressed. The vocabulary
 // lives here with the other Behaviour-element data (rather than in the editor)
 // because a saved element carries it, so validation has to reach it.
-// `stopwatch` is its own tool rather than a mode of `timer` (spec/105). The
+// `stopwatch` is its own tool rather than a mode of `timer` (docs/specs/012-collaboration/session-button.md). The
 // two share a clock and nothing else: a countdown is placed with a LENGTH and
 // the question is "how long", a stopwatch has no length and the question is
 // only "start it". Folding them together meant a timer element's settings
@@ -126,7 +126,7 @@ export const DEFAULT_VOTE_DOTS = 3;
 export const TIMER_MINUTES_RANGE = { min: 1, max: 120 } as const;
 
 /**
- * The lengths offered on the Timer element's own menu (spec/105).
+ * The lengths offered on the Timer element's own menu (docs/specs/012-collaboration/session-button.md).
  *
  * Presets rather than a number field: this menu sits on a 64px-tall element on
  * the canvas, and the lengths people actually run a session at are a short
@@ -154,7 +154,7 @@ export type SessionButtonConfig = {
   // the poll rather than a composer.
   question?: string;
   options?: string[];
-  // Poll: how the answers are shaped (spec/88) — Yes/No, +Abstain, the written
+  // Poll: how the answers are shaped (docs/specs/012-collaboration/live-poll.md) — Yes/No, +Abstain, the written
   // `options`, a 1-5 rating, or free text. Absent means `choice`, NOT the
   // wire default: a button authored before this field existed was written by
   // `defaultSessionConfig` with two answers and meant them to be the answers.
@@ -162,7 +162,7 @@ export type SessionButtonConfig = {
 };
 
 /**
- * A ready-to-use config for one session tool (spec/105).
+ * A ready-to-use config for one session tool (docs/specs/012-collaboration/session-button.md).
  *
  * The palette offers a tile PER TOOL rather than one button you then
  * reconfigure, so "Add poll" has to place a working poll. A poll in
@@ -245,7 +245,7 @@ export function sessionButtonPlan(config: SessionButtonConfig | undefined): Sess
   return { tool, style, question: (config?.question ?? '').trim() || 'Quick question', options };
 }
 
-// --- Picker (spec/107) ------------------------------------------------------
+// --- Picker (docs/specs/012-collaboration/picker.md) ------------------------------------------------------
 
 // Where a picker draws its candidates from: the people currently in the room,
 // or a list written on the element.

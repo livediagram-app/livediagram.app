@@ -2,7 +2,7 @@
 
 import { useSyncExternalStore } from 'react';
 
-// What the IMPORTING session sees around a photo draft (spec/139 Phase 8), and
+// What the IMPORTING session sees around a photo draft (docs/specs/021-event-storming/event-storming.md Phase 8), and
 // only that session: which notes on the board the photo matched, and what the
 // photo read them as when it differed.
 //

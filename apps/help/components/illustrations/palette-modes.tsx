@@ -1,4 +1,4 @@
-// Palette-category illustrations (spec/55): the mode picker (Select, Hand,
+// Palette-category illustrations (docs/specs/018-help/help-app.md): the mode picker (Select, Hand,
 // Eraser, Format Painter, Laser, Spotlight, Avatar, Isometric) and the palette
 // settings popover (Auto-Attach Arrows, Alignment Guides, Minimal Panels, Reset
 // Palette Position). Composed only from the shared primitives so the house style
@@ -302,7 +302,7 @@ export function IsometricMode() {
  *  own setting. Reused across the settings articles. */
 // The Settings dialog's rows for the canvas-behaviour preferences. It drew
 // the Palette's own gear popover until that popover was removed and every
-// preference moved to Settings (spec/20): the rows and their controls are
+// preference moved to Settings (docs/specs/007-editor/user-preferences.md): the rows and their controls are
 // the same, so only the frame and the title changed.
 export function PaletteSettings({
   highlight,

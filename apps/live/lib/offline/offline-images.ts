@@ -1,4 +1,4 @@
-// Image re-homing for the Offline Mode conversions (spec/76 + spec/19).
+// Image re-homing for the Offline Mode conversions (docs/specs/006-diagram/offline-mode.md + docs/specs/009-elements/images.md).
 //
 // A cloud diagram's images live in R2 and elements carry an opaque
 // `imageId`; an offline diagram must be self-contained, so its images are

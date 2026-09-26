@@ -1,7 +1,7 @@
 import type { ImageBuffer } from './colour';
 
 // CIELAB (D65 white, sRGB primaries): the colour space where a distance is a
-// difference a person sees (spec/139 Phase 9).
+// difference a person sees (docs/specs/021-event-storming/event-storming.md Phase 9).
 //
 // HSV saturation is the wrong ruler for pale paper on a white wall: a pale
 // yellow aggregate and a white wall differ by a sliver of saturation that the

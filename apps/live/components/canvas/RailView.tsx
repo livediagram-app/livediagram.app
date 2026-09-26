@@ -1,6 +1,6 @@
 'use client';
 
-// Timeline rail (spec/51): a horizontal line with evenly-spaced points, an
+// Timeline rail (docs/specs/009-elements/timeline-rail.md): a horizontal line with evenly-spaced points, an
 // editable label above each point, rendered inside its boxed element so move /
 // resize / select / group all come for free. Adding points is offered from the
 // element's standard quick-connect "+" (QuickConnectRing), so the rail draws no

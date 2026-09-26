@@ -1,4 +1,4 @@
-// The parts the palette mode illustrations are drawn from (spec/55): a glyph
+// The parts the palette mode illustrations are drawn from (docs/specs/018-help/help-app.md): a glyph
 // per mode, the catalogue pairing each mode with its glyph and label, the
 // shared mode-row every picker scene renders, and the isometric projection the
 // Isometric scene needs.

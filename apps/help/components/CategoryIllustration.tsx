@@ -1,4 +1,4 @@
-// On-brand banner illustrations, one per help category (spec/55). Each is a
+// On-brand banner illustrations, one per help category (docs/specs/018-help/help-app.md). Each is a
 // compact SVG scene evoking that area with motifs lifted from the real editor
 // (shapes + arrows on a canvas, the palette panel, tab pills, live cursors,
 // theme swatches, ...) so the help centre reads as a window into the product.

@@ -35,7 +35,7 @@ export function renderLabel(
   padding: number,
   isEditing: boolean,
   // Commits the edited label: the plain-text mirror plus the per-range
-  // runs (spec/09). Runs are normalized + may be empty for plain text.
+  // runs (docs/specs/008-canvas/canvas-and-palette.md). Runs are normalized + may be empty for plain text.
   onCommitLabel: (label: string, runs: TextRun[]) => void,
   onCancelEdit: () => void,
   editCursorAtEnd: boolean,
@@ -43,7 +43,7 @@ export function renderLabel(
   // on-screen size inside the world transform.
   zoom: number,
   fontFamily?: string,
-  // Whole-element alignment setter surfaced in the edit toolbar (spec/09).
+  // Whole-element alignment setter surfaced in the edit toolbar (docs/specs/008-canvas/canvas-and-palette.md).
   // Operates on the current selection = the editing element.
   onSetAlign?: (x: TextAlignX, y: TextAlignY) => void,
   // When the element carries an inline icon or a status marker, the editor
@@ -51,7 +51,7 @@ export function renderLabel(
   // place beside the text while typing; the inline-icon layout owns
   // positioning + padding.
   inlineIcon = false,
-  // Text-native animation class (spec/09): applied to the label content node
+  // Text-native animation class (docs/specs/008-canvas/canvas-and-palette.md): applied to the label content node
   // so glow / pulse / trace / gradient ride the glyphs rather than the
   // element's invisible bounding box. Set only for text elements (see
   // isTextNativeAnim in BoxedElementView); undefined otherwise.
@@ -66,7 +66,7 @@ export function renderLabel(
   // pre-edit affordance is just an empty rectangle / nothing.
   const placeholder = element.type === 'text' ? 'Text' : isSticky ? 'Note' : '';
 
-  // Workshop notes are written in capitals (spec/139) — a presentation rule,
+  // Workshop notes are written in capitals (docs/specs/021-event-storming/event-storming.md) — a presentation rule,
   // so it rides the label STYLE (and the fit below) rather than touching the
   // stored text. Display label, rich runs and the live editor all take the
   // same flag, or the note would change case on double-click.
@@ -83,7 +83,7 @@ export function renderLabel(
 
   const richText = (element as { richText?: TextRun[] }).richText;
 
-  // Auto-fit (spec/139): on a multi-line label (sticky) 'scale' means FILL
+  // Auto-fit (docs/specs/021-event-storming/event-storming.md): on a multi-line label (sticky) 'scale' means FILL
   // THE NOTE — measured here once, then handed to whichever of the two
   // surfaces renders (label or editor), so they can never disagree and
   // double-clicking never shifts the text.
@@ -138,7 +138,7 @@ export function renderLabel(
     );
   }
 
-  // Per-range formatting (spec/09): once a label carries non-trivial
+  // Per-range formatting (docs/specs/008-canvas/canvas-and-palette.md): once a label carries non-trivial
   // runs, render them as styled spans regardless of size (the `scale`
   // auto-fit opt-out). Empty / single override-free runs fall through to
   // the legacy whole-element renderers below.

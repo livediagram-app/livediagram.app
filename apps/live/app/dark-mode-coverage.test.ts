@@ -2,7 +2,7 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
-// Appearance (spec/07) is only as good as its least-converted screen, and the
+// Appearance (docs/specs/007-editor/live-app.md) is only as good as its least-converted screen, and the
 // screens that get missed are never the editor — they are the ones a user is
 // only ever in for a second: the diagram loading placeholder, the illustrative
 // tiles in the New Diagram dialog. Nothing failed when those stayed light. The

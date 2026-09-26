@@ -6,7 +6,7 @@ import {
   type ArrowFlow,
 } from '@livediagram/diagram';
 
-// The flowing-arrow rendering slice (spec/09), lifted out of ArrowView:
+// The flowing-arrow rendering slice (docs/specs/008-canvas/canvas-and-palette.md), lifted out of ArrowView:
 // the per-flow path class / dash tables, the phase-sync pinning hook,
 // and the travelling dot / comet overlays. The view keeps the visible
 // <path> (the class + dash land on it) and mounts the returned refs.
@@ -67,7 +67,7 @@ export function useArrowFlow(arrow: ArrowElement) {
   const flowCometRef = useRef<SVGGElement>(null);
   useEffect(() => {
     if (!arrow.flow || typeof window === 'undefined') return;
-    // A play-once flow (flowRepeat false, spec/09) must NOT be pinned to the
+    // A play-once flow (flowRepeat false, docs/specs/008-canvas/canvas-and-palette.md) must NOT be pinned to the
     // document-timeline origin: with one iteration, startTime 0 lands it in
     // the finished state before the user ever sees it play. It starts when
     // applied instead — phase sync only matters for loops.

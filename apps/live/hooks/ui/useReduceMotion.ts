@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { readUserPreferences } from '@/lib/user-preferences';
 
 // Keep the `.reduce-motion` class on <html> in sync with the user's
-// "Reduce motion" preference (spec/20) so flipping the Settings toggle
+// "Reduce motion" preference (docs/specs/007-editor/user-preferences.md) so flipping the Settings toggle
 // takes effect live, without a reload. The CSS in globals.css keys off
 // that class (alongside the OS `prefers-reduced-motion` media query, which
 // is always honoured independently) to collapse decorative animations +

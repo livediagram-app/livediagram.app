@@ -9,7 +9,7 @@
 // Navigation is deliberately a hard `window.location.assign` rather
 // than client routing: the editor's hydration path owns identity +
 // load, and the current diagram is already autosaved, so a reload is
-// the simplest correct handoff (spec/14).
+// the simplest correct handoff (docs/specs/007-editor/new-diagram-route.md).
 
 import type { Dispatch, SetStateAction } from 'react';
 import {
@@ -97,7 +97,7 @@ export function useDiagramActions(deps: DiagramActionsDeps) {
     setSharedDiagrams,
   });
 
-  // Scope-crossing move (spec/35), for the Explorer panel's move picker
+  // Scope-crossing move (docs/specs/013-workspace/team-shared-diagrams.md), for the Explorer panel's move picker
   // when a TEAM is involved on either side: re-folder within a team, file
   // a personal diagram into a team, or bring a team diagram back to the
   // personal tree (ownership transfers to the mover server-side). One API
@@ -106,7 +106,7 @@ export function useDiagramActions(deps: DiagramActionsDeps) {
   // (Purely personal moves stay on moveDiagramToFolder above — it updates
   // the list optimistically.)
   //
-  // Telemetry (spec/22), on the success path only: a personal diagram
+  // Telemetry (docs/specs/017-telemetry/telemetry.md), on the success path only: a personal diagram
   // filed into a team is Team·Added·Diagram, the same event the Explorer
   // page's own move and the New Diagram wizard send; anything else (within
   // a team, team -> team, team -> personal) is Team·Moved·Diagram. An
@@ -132,7 +132,7 @@ export function useDiagramActions(deps: DiagramActionsDeps) {
   };
 
   // "New Diagram" from the Explorer. Welcome / create-new lives at
-  // /live/new (spec/14), so hand off there; that route owns the
+  // /live/new (docs/specs/007-editor/new-diagram-route.md), so hand off there; that route owns the
   // identity + template + theme picker and the actual diagram POST.
   // The current diagram is already autosaved so nothing is lost.
   const newDiagram = () => {
@@ -143,7 +143,7 @@ export function useDiagramActions(deps: DiagramActionsDeps) {
   // Visitor action: duplicate the currently-open shared diagram
   // into the caller's own files. Goes to the api worker's copy
   // endpoint which authorises via owner / shared_with row / share
-  // code (spec/11), then navigates to the new diagram so the
+  // code (docs/specs/015-api/api.md), then navigates to the new diagram so the
   // visitor immediately lands on their own copy. Owner case never
   // hits this; the button is gated on `!isOwner`.
   const makeCopy = async () => {

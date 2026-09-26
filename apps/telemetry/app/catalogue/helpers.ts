@@ -1,9 +1,9 @@
-// The factory the catalogue's long tail is written with (spec/22).
+// The factory the catalogue's long tail is written with (docs/specs/017-telemetry/telemetry.md).
 // Part of the metric catalogue: import from ../metric-catalogue.
 
 import type { Metric, Rising } from '../metric-series';
 
-// Charts defined once and reused (spec/22). A chart stack references these
+// Charts defined once and reused (docs/specs/017-telemetry/telemetry.md). A chart stack references these
 // rather than declaring its own copies, so one chart can sit in several
 // stacks, on several tabs, or on its own, and its wording stays in one place.
 

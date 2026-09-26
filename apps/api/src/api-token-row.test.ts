@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { rowToApiToken, type ApiTokenRow } from './api-token-row';
 
-// The row → DTO step for the token list (spec/61). Small, but it is the exact
+// The row → DTO step for the token list (docs/specs/015-api/public-api-and-tokens.md). Small, but it is the exact
 // point where a database row becomes a response body, so "which fields cross"
 // is the whole job.
 
@@ -18,7 +18,7 @@ const row = (over: Partial<ApiTokenRow> = {}): ApiTokenRow => ({
   ...over,
 });
 
-describe('rowToApiToken (spec/61)', () => {
+describe('rowToApiToken (docs/specs/015-api/public-api-and-tokens.md)', () => {
   it('carries the metadata the owner manages tokens by', () => {
     expect(rowToApiToken(row())).toEqual({
       id: 't1',

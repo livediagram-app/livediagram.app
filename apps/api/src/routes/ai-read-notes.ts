@@ -17,7 +17,7 @@ const MAX_TOKENS = 2000;
 // A note is a phrase, not an essay. Anything longer is a model running away.
 const MAX_TEXT_CHARS = 200;
 
-// Read the handwriting on sticky-note crops (spec/139 Phase 8).
+// Read the handwriting on sticky-note crops (docs/specs/021-event-storming/event-storming.md Phase 8).
 //
 // The crops arrive already cut out by the browser, which is also where the
 // stickies were FOUND. This route does one thing: hand the pictures to the

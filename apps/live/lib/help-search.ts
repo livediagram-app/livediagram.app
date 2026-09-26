@@ -1,5 +1,5 @@
-// The help-centre catalogue surfaced by the global SearchPanel (spec/09 +
-// spec/56): the FULL article registry from @livediagram/help-registry, so
+// The help-centre catalogue surfaced by the global SearchPanel (docs/specs/008-canvas/canvas-and-palette.md +
+// docs/specs/018-help/contextual-help-links.md): the FULL article registry from @livediagram/help-registry, so
 // every help article is findable from the canvas. Each item matches on its
 // title plus the registry's description + keyword synonyms ("transparency"
 // finds Layer Order and Opacity), resolved to an absolute /help href.
@@ -22,6 +22,6 @@ export const HELP_SEARCH_ITEMS: HelpSearchItem[] = articles.map((a) => ({
   // The telemetry `type` on click (`UI·Opened`): the registry's unique
   // per-article id, the same one help-articles.ts's helpArticleTelemetryId
   // and the help centre report. Not the bare slug, which two pairs of
-  // articles share (spec/22).
+  // articles share (docs/specs/017-telemetry/telemetry.md).
   leaf: articleTelemetryId(a),
 }));

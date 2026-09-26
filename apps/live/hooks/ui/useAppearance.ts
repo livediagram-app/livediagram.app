@@ -47,7 +47,7 @@ export function nextAppearanceSetting(setting: AppearanceSetting): AppearanceSet
   return CYCLE[(CYCLE.indexOf(setting) + 1) % CYCLE.length]!;
 }
 
-// Telemetry labels are presets, never user content (spec/22).
+// Telemetry labels are presets, never user content (docs/specs/017-telemetry/telemetry.md).
 const TELEMETRY_LABEL: Record<AppearanceSetting, string> = {
   light: 'Light',
   dark: 'Dark',

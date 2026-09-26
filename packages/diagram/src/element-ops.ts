@@ -1,4 +1,4 @@
-// Element-level operations for realtime conflict resolution (spec/75, Level 0).
+// Element-level operations for realtime conflict resolution (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 0).
 //
 // The realtime room used to broadcast a whole `Tab` on every edit, so two
 // people editing *different* elements on the same tab clobbered each other
@@ -12,7 +12,7 @@
 // `ElementOp` in a `{ tabId, op }` frame (see @livediagram/api-schema).
 //
 // Level 0 scope: `update` replaces the whole element by id (simple + correct;
-// two peers editing the same element still last-writer-wins, which the spec/07
+// two peers editing the same element still last-writer-wins, which the docs/specs/007-editor/live-app.md
 // selection lock covers). Field-level merge of the same element is deferred to
 // the CRDT (Level 2).
 
@@ -86,7 +86,7 @@ export function applyElementOp(elements: Element[], op: ElementOp): Element[] {
     }
     case 'update':
       return elements.some((e) => e.id === op.element.id)
-        ? // A Q&A board keeps whichever notes carry the newer rev (spec/151):
+        ? // A Q&A board keeps whichever notes carry the newer rev (docs/specs/012-collaboration/qa-board.md):
           // a peer who moved the board before a vote reached them must not
           // send that vote back out of existence.
           elements.map((e) => (e.id === op.element.id ? preferNewerQa(e, op.element) : e))

@@ -1,4 +1,4 @@
-// The inline-PNG result helper for the MCP tools (spec/62 §5), split from
+// The inline-PNG result helper for the MCP tools (docs/specs/015-api/mcp-server.md §5), split from
 // tool-helpers.ts for the same reason tab-builders.ts was: this file reaches
 // the resvg WASM renderer, which cannot load in the plain-node test
 // environment, and importing it dragged the auth guard and the plain result
@@ -15,7 +15,7 @@ import { apiFetch } from './api';
 import type { Env } from './env';
 import type { ToolResult } from './tool-helpers';
 
-// Per-image cap for embedding (spec/62 §5): a diagram can reference large
+// Per-image cap for embedding (docs/specs/015-api/mcp-server.md §5): a diagram can reference large
 // uploads, and inlining them as base64 into the preview PNG's own base64
 // response would bloat what the model receives. Above this, the image falls
 // back to the placeholder box (as before) — the structured elements still carry
@@ -24,7 +24,7 @@ const MAX_EMBED_BYTES = 2 * 1024 * 1024;
 
 // Prefetch the bytes of every image element on the tab and return a
 // resolveImageHref that inlines them as data URIs, so the render shows the real
-// picture instead of a placeholder (spec/62 §5). resvg (WASM) can't fetch, so
+// picture instead of a placeholder (docs/specs/015-api/mcp-server.md §5). resvg (WASM) can't fetch, so
 // the bytes must be inlined. Owner-authed via the caller's token — the same
 // GET /api/images/:id the app uses. The shared embedder reads them
 // concurrently under the per-image cap; any failure (missing, too big, error)

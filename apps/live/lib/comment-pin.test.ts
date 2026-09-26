@@ -10,7 +10,7 @@ import {
   type ShapeElement,
 } from '@livediagram/diagram';
 
-// The comment pin (spec/136). The point of these is that the pin reuses the
+// The comment pin (docs/specs/012-collaboration/comment-pin.md). The point of these is that the pin reuses the
 // ORDINARY comment field rather than growing a parallel one, so most of what
 // is worth pinning is "the existing helpers work on it unchanged".
 

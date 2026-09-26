@@ -2,7 +2,7 @@
 
 import type { ModelDownload as Download } from '@/lib/reading/download-progress';
 
-// The in-browser reader's model arriving (spec/139 Phase 9): ~180 MB, fetched
+// The in-browser reader's model arriving (docs/specs/021-event-storming/event-storming.md Phase 9): ~180 MB, fetched
 // once per device and kept in the browser's cache. A download that size with
 // nothing moving on screen reads as a hang, so it gets a real bar — megabytes
 // and a share — and a word that this is the one time it costs anything.

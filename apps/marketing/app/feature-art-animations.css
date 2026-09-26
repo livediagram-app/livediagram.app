@@ -519,7 +519,7 @@
   animation: fa-rotate 5s ease-in-out infinite;
 }
 /* ─────────────────────────────────────────────────────────────────
- * Motion-feature illustrations (spec/09 "Animated elements" + the
+ * Motion-feature illustrations (docs/specs/008-canvas/canvas-and-palette.md "Animated elements" + the
  * animated background patterns). These mirror the editor's own looping
  * element / arrow / icon animations, so they run continuously rather
  * than on the build-hold-fade cycle the cards above use.
@@ -665,7 +665,7 @@
   animation: fa-drag-dup 4.2s ease-in-out infinite;
 }
 
-/* Template gallery (spec/16): a category opened from the chip cloud, or by a
+/* Template gallery (docs/specs/019-marketing/marketing-site.md): a category opened from the chip cloud, or by a
    search, rises into place instead of appearing in one frame. Both the row
    and each card in it: the row fades up, the cards follow in a short
    stagger (set per card as --tg-i), so the eye is led along the new row. */

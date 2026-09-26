@@ -15,9 +15,9 @@ type DiagramRow = {
   shareable: number;
   folder_id: string | null;
   team_id: string | null;
-  // Provenance (spec/15): null = user-made; 'ai' / 'mcp' = generated.
+  // Provenance (docs/specs/013-workspace/folders.md): null = user-made; 'ai' / 'mcp' = generated.
   source: string | null;
-  // Slide deck (spec/31): serialised StoredPresentation, or null for no deck.
+  // Slide deck (docs/specs/012-collaboration/presentation-mode.md): serialised StoredPresentation, or null for no deck.
   presentation: string | null;
   saved_at: number;
   created_at: number;
@@ -31,7 +31,7 @@ type SummaryRow = DiagramRow;
 
 async function listTabSummariesFor(env: Env, diagramId: string): Promise<TabSummaryDTO[]> {
   // Read through the diagram_tabs link table (migration 0011 /
-  // spec/17) — order_index now lives on the link, not on the tab,
+  // docs/specs/006-diagram/tab-diagram-many-to-many.md) — order_index now lives on the link, not on the tab,
   // so two diagrams that share a tab can order it independently.
   // The legacy tabs.diagram_id + tabs.order_index columns still
   // exist for one more phase as a fallback; we read the canonical
@@ -132,7 +132,7 @@ function rowToSummary(row: SummaryRow): DiagramSummary {
   };
 }
 
-// Personal library only (spec/35): a diagram moved into a team's
+// Personal library only (docs/specs/013-workspace/team-shared-diagrams.md): a diagram moved into a team's
 // shared library leaves the owner's personal lists and renders on
 // the team page instead.
 export async function listDiagramsByOwner(env: Env, ownerId: string): Promise<DiagramSummary[]> {
@@ -144,7 +144,7 @@ export async function listDiagramsByOwner(env: Env, ownerId: string): Promise<Di
   return (result.results ?? []).map(rowToSummary);
 }
 
-// One team's shared library (spec/35), any owner.
+// One team's shared library (docs/specs/013-workspace/team-shared-diagrams.md), any owner.
 export async function listDiagramsByTeam(env: Env, teamId: string): Promise<DiagramSummary[]> {
   const result = await env.DB.prepare(
     `SELECT ${DIAGRAM_SUMMARY_COLS} FROM diagrams WHERE team_id = ? ORDER BY saved_at DESC`,
@@ -169,7 +169,7 @@ export async function upsertDiagramMeta(
   // `shareCode` is intentionally absent from the INSERT — it now
   // lives only in share_links. The DTO field is read-only (derived
   // via subquery on selects).
-  // `source` (provenance, spec/15) is written on INSERT but deliberately
+  // `source` (provenance, docs/specs/013-workspace/folders.md) is written on INSERT but deliberately
   // absent from the DO UPDATE SET, so it's set once at create time and
   // never rewritten by a later metadata upsert (rename / autosave / move).
   await env.DB.prepare(
@@ -193,7 +193,7 @@ export async function upsertDiagramMeta(
     .run();
 }
 
-// Slide deck write (spec/31). Its OWN statement rather than a field on
+// Slide deck write (docs/specs/012-collaboration/presentation-mode.md). Its OWN statement rather than a field on
 // upsertDiagramMeta, for the same reason folder / team placement has one: the
 // meta upsert runs on every rename and autosave, and a deck must never be
 // rewritten by a caller that was not thinking about the deck. Passing null
@@ -208,11 +208,11 @@ export async function setDiagramPresentation(
     .run();
 }
 
-// Placement write (spec/15 + spec/35): folder and team scope move
+// Placement write (docs/specs/013-workspace/folders.md + docs/specs/013-workspace/team-shared-diagrams.md): folder and team scope move
 // together in one UPDATE so a diagram can never point at a folder in
 // a scope it isn't in. `newOwnerId` transfers ownership in the same
 // write: a joined member moving a team diagram out into their own
-// personal library becomes its owner (spec/35), and folders are
+// personal library becomes its owner (docs/specs/013-workspace/team-shared-diagrams.md), and folders are
 // owner-scoped so the row must follow them. Omit to keep the owner.
 export async function setDiagramFolder(
   env: Env,
@@ -244,7 +244,7 @@ export async function setDiagramShare(env: Env, id: string, shareable: boolean):
     .run();
 }
 
-// Share password (spec/24). Stored in plain text — deliberately
+// Share password (docs/specs/013-workspace/share-password.md). Stored in plain text — deliberately
 // readable by the owner (the Share dialog shows it) and the threat
 // model is anti-URL-guessing, not cryptographic. NULL / empty means
 // the diagram has no password. Kept OUT of the diagram DTO columns
@@ -273,21 +273,21 @@ export async function setDiagramSharePassword(
 
 export async function deleteDiagram(env: Env, id: string): Promise<void> {
   await env.DB.prepare('DELETE FROM diagrams WHERE id = ?').bind(id).run();
-  // Drop the cached SVG snapshot (spec/67) alongside the row so a
+  // Drop the cached SVG snapshot (docs/specs/006-diagram/diagram-snapshots.md) alongside the row so a
   // deleted diagram doesn't leave an orphaned R2 object behind. Best
   // effort: a missing binding or a missing object is a no-op, and a
   // failure here must never fail the delete itself.
   if (env.IMAGES) await env.IMAGES.delete(thumbnailKey(id)).catch(() => {});
 }
 
-// R2 object key for a diagram's cached SVG snapshot (spec/67). Shared by
+// R2 object key for a diagram's cached SVG snapshot (docs/specs/006-diagram/diagram-snapshots.md). Shared by
 // the render-cache (which writes it) and deleteDiagram (which clears it)
 // so the key shape lives in exactly one place.
 export function thumbnailKey(diagramId: string): string {
   return `thumb/${diagramId}`;
 }
 
-// When the cached snapshot was last rendered (spec/67), or null when it
+// When the cached snapshot was last rendered (docs/specs/006-diagram/diagram-snapshots.md), or null when it
 // never has been. The render-on-read path compares this against the
 // diagram's saved_at to decide whether the R2 object is still fresh.
 export async function getThumbRenderedAt(env: Env, id: string): Promise<number | null> {
@@ -297,7 +297,7 @@ export async function getThumbRenderedAt(env: Env, id: string): Promise<number |
   return row?.thumb_rendered_at ?? null;
 }
 
-// Stamp the snapshot as freshly rendered (spec/67). Called after a
+// Stamp the snapshot as freshly rendered (docs/specs/006-diagram/diagram-snapshots.md). Called after a
 // successful R2 write so the next read streams the cached bytes instead
 // of re-rendering.
 export async function markThumbRendered(env: Env, id: string, now: number): Promise<void> {
@@ -338,7 +338,7 @@ export async function copyDiagram(
   // Preserves order_index verbatim so the cloned diagram opens to
   // the same tab layout the visitor was looking at. Skipping
   // share_links + change_log is by design — those don't survive
-  // ownership transfer. Copy semantics (vs link semantics, spec/17)
+  // ownership transfer. Copy semantics (vs link semantics, docs/specs/006-diagram/tab-diagram-many-to-many.md)
   // are deliberate: edits to the copy stay isolated from the source.
   const tabRows = await env.DB.prepare(
     `SELECT t.id, t.name, dt.order_index, t.data
@@ -372,7 +372,7 @@ export async function copyDiagram(
       ).bind(newId, freshTabId, row.order_index, now),
       // The copy carries the source's actions + threads inside its
       // data, so its index rows are copied the same way, without a
-      // parse (spec/142 §2.1).
+      // parse (docs/specs/013-workspace/activity-page.md §2.1).
       ...collabIndexCopyStatements(env, row.id, freshTabId),
     ];
   });
@@ -394,7 +394,7 @@ export function remapTabDataLinks(data: string, tabIdMap: Map<string, string>): 
   }
 }
 
-// spec/64 (#6): total diagrams owned by `ownerId`, for the milestone check on
+// docs/specs/014-identity/transactional-email.md (#6): total diagrams owned by `ownerId`, for the milestone check on
 // create. Counts all of an owner's diagrams (a cheap indexed COUNT).
 export async function countDiagramsByOwner(env: Env, ownerId: string): Promise<number> {
   const row = await env.DB.prepare('SELECT COUNT(*) AS n FROM diagrams WHERE owner_id = ?')
@@ -403,7 +403,7 @@ export async function countDiagramsByOwner(env: Env, ownerId: string): Promise<n
   return row?.n ?? 0;
 }
 
-// spec/64 (#1) throttle: claim the right to email the owner about a new comment
+// docs/specs/014-identity/transactional-email.md (#1) throttle: claim the right to email the owner about a new comment
 // on this diagram, at most once per window. Atomic conditional UPDATE so a burst
 // of concurrent comment saves can't each fire an email. `cutoff` = now - window;
 // returns false when we already emailed within the window.

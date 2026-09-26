@@ -20,7 +20,7 @@ import {
 import type { Element } from './index';
 import { ES_LANE_PITCH, laneCentre, type EsTimeline } from './event-storming-lanes';
 
-// Reconciling a photographed wall against the board (spec/139 Phase 8). The
+// Reconciling a photographed wall against the board (docs/specs/021-event-storming/event-storming.md Phase 8). The
 // rule every one of these protects: an import ADDS. Whatever the photo says,
 // the notes already on the board are not touched.
 
@@ -362,7 +362,7 @@ describe('reconcilePhoto', () => {
   });
 });
 
-// The draft lifecycle (spec/139 Phase 8). The notes are IN the document while
+// The draft lifecycle (docs/specs/021-event-storming/event-storming.md Phase 8). The notes are IN the document while
 // the author reviews them, so these three answers are what keep that honest.
 describe('the photo draft', () => {
   const draft = (id: string, over: Record<string, unknown> = {}) =>
@@ -419,7 +419,7 @@ describe('the photo draft', () => {
   });
 });
 
-// Who owns the history while a draft is open (spec/139 Phase 8).
+// Who owns the history while a draft is open (docs/specs/021-event-storming/event-storming.md Phase 8).
 describe('onlyDraftNotesChanged', () => {
   const draft = {
     id: 'd',
@@ -463,7 +463,7 @@ describe('onlyDraftNotesChanged', () => {
   });
 });
 
-// An illegible crop (spec/139 Phase 8): the detector SAW the paper, the model
+// An illegible crop (docs/specs/021-event-storming/event-storming.md Phase 8): the detector SAW the paper, the model
 // could not read it. The note still has to land — empty, for the author to
 // fill in — and it must never be mistaken for a note the board already has.
 describe('a note the model could not read', () => {

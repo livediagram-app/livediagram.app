@@ -1,6 +1,6 @@
 'use client';
 
-// A Timeline for something other than the reader's own feed (spec/138
+// A Timeline for something other than the reader's own feed (docs/specs/013-workspace/timeline.md
 // §3.4) — a team's activity, or one diagram's history.
 //
 // Self-contained, unlike the Explorer's landing pane: it owns its

@@ -6,7 +6,7 @@ import type { LaserPoint } from '@/lib/laser-buffer';
 
 // Realtime presence state for the diagram room: who's connected, each
 // peer's last-seen timestamp, and their tab focus / selection / cursor /
-// laser trail / walking character (spec/101). useRoomConnection writes these through the returned
+// laser trail / walking character (docs/specs/008-canvas/avatar-mode.md). useRoomConnection writes these through the returned
 // setters; useEditorState reads them (via lib/presence-rows) to build the
 // avatar / cursor / laser / selection rows the editor renders.
 export function usePresenceState() {
@@ -59,11 +59,11 @@ export function usePresenceState() {
   const [remoteLaserTrails, setRemoteLaserTrails] = useState<
     Map<string, { tabId: string; points: LaserPoint[] }>
   >(new Map());
-  // Per-participant Avatar-mode characters (spec/101), keyed by participant
+  // Per-participant Avatar-mode characters (docs/specs/008-canvas/avatar-mode.md), keyed by participant
   // id: the latest presence snapshot each peer published, or absent once they
   // leave the mode (an `avatar: null` op deletes the entry). Scoped per tab in
   // the op itself, like cursors.
-  // Follow-me (spec/131): where each peer is looking. Unsolicited, so it is
+  // Follow-me (docs/specs/012-collaboration/follow-me-viewport.md): where each peer is looking. Unsolicited, so it is
   // collected for everyone and read only while somebody is being followed.
   const [remoteViewports, setRemoteViewports] = useState<
     Map<string, { tabId: string; pan: { x: number; y: number }; zoom: number }>

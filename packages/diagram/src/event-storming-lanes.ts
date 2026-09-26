@@ -1,4 +1,4 @@
-// Timeline lanes on an event-storming board (spec/139 Phase 6): the geometry
+// Timeline lanes on an event-storming board (docs/specs/021-event-storming/event-storming.md Phase 6): the geometry
 // of the horizontal lane stack a note snaps onto while it is being dragged.
 //
 // Phase 5 made the x axis something the board KNOWS — "between two notes" is a
@@ -22,7 +22,7 @@
 //
 // Pure and React-free: the palette drag, the drag of a note already on the
 // board, the overlay that lights the lane and the drop all ask the same
-// functions, so the preview can never disagree with the result (spec/58).
+// functions, so the preview can never disagree with the result (docs/specs/010-palette/palette-drag-ghost.md).
 
 import { ES_NOTE_SIZE_PX } from './event-storming';
 import type { Element } from './index';
@@ -164,7 +164,7 @@ const sameRow = (a: { y: number; height: number }, b: { y: number; height: numbe
 const RHYTHM_SLOTS_EACH_WAY = 4;
 
 // How many squares of empty wall a row's own slot may leave before the lanes
-// above and below outrank it (spec/139 Phase 6: the operator's "one sticky in
+// above and below outrank it (docs/specs/021-event-storming/event-storming.md Phase 6: the operator's "one sticky in
 // between").
 export const ES_OWN_ROW_FIRST_STEPS = 1;
 

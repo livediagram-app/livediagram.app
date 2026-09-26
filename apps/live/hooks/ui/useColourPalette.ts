@@ -6,7 +6,7 @@ import { readUserPreferences } from '@/lib/user-preferences';
 import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
 import type { ColourPalette } from '@/components/palette/context-menu-input-rows';
 
-// The colour palette every picker in the editor offers (spec/09 Colours): the
+// The colour palette every picker in the editor offers (docs/specs/008-canvas/canvas-and-palette.md Colours): the
 // active theme's presets, plus the colours this user has actually used.
 //
 // One hook because there are now several pickers (the element menu, the
@@ -38,7 +38,7 @@ export function useColourPalette(): {
     update((current) => addCustomSwatch(current, color, presetColors));
   return {
     // Also returned on its own: committing a colour ADDS it to the palette
-    // (spec/09 Colours), so callers need it outside the bundle too.
+    // (docs/specs/008-canvas/canvas-and-palette.md Colours), so callers need it outside the bundle too.
     addCustomColor,
     swatches: {
       presets: presetColors,

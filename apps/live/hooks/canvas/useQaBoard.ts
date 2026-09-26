@@ -1,4 +1,4 @@
-// The Q&A board's runtime (spec/151): send an action to the server, show it
+// The Q&A board's runtime (docs/specs/012-collaboration/qa-board.md): send an action to the server, show it
 // under the finger before the server answers, and land the server's word when
 // it arrives, from the response or from the room.
 //
@@ -9,7 +9,7 @@
 // still in flight, and without the queue it would briefly erase the second.
 //
 // Both kinds of write go through `applyRemoteTabs` and into the autosave's
-// baseline too, the same path a peer's op takes (spec/152), so the autosave
+// baseline too, the same path a peer's op takes (docs/specs/012-collaboration/collab-race-hardening.md), so the autosave
 // never mistakes the server's word for a local edit. An optimistic copy keeps the rev it
 // was built on, so even if it did reach an autosave or an `el` op the
 // rev-merge (preferNewerQa) would refuse it everywhere else.
@@ -49,10 +49,10 @@ export function useQaBoard({
   selfParticipant: Participant;
   sessionShareCode: string | null;
   applyRemoteTabs: (updater: (prev: Tab[]) => Tab[]) => void;
-  // The persisting write, used only for an offline diagram (spec/76), where
+  // The persisting write, used only for an offline diagram (docs/specs/006-diagram/offline-mode.md), where
   // there is no server and the ordinary tab save is the store.
   commitTabs: (mapTabs: (ts: Tab[]) => Tab[]) => unknown;
-  // The autosave's baseline (spec/152). The board is the server's, so its
+  // The autosave's baseline (docs/specs/012-collaboration/collab-race-hardening.md). The board is the server's, so its
   // view lands here as well as on screen and is never saved back as ours.
   lastSavedTabsRef: MutableRefObject<Tab[]>;
   onError: (message: string) => void;

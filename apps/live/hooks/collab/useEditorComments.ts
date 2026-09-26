@@ -4,7 +4,7 @@
 // - `commentThreadOpenId`: which element's thread popover is open
 //   (null when none). The dynamic `<CommentThreadPopover>` is
 //   gated on this so the chunk only loads when a thread is opened.
-// - every change goes out as ONE element delta (spec/152): an add, a
+// - every change goes out as ONE element delta (docs/specs/012-collaboration/collab-race-hardening.md): an add, a
 //   delete, an id swap or a resolve, applied locally without a history
 //   push (typing a comment then Ctrl+Z doesn't blow it away) and sent to
 //   the room at once. The thread used to ride the whole-element update,
@@ -13,8 +13,8 @@
 //   `resolveThread`, `unresolveThread`: the six actions the
 //   comment thread popover + the Comment panel bind to.
 //
-// Telemetry (spec/22) lives HERE, not at the call sites: the anchored
-// popover and the Comment panel (spec/136) both drive these actions, and an
+// Telemetry (docs/specs/017-telemetry/telemetry.md) lives HERE, not at the call sites: the anchored
+// popover and the Comment panel (docs/specs/012-collaboration/comment-pin.md) both drive these actions, and an
 // emit beside one surface silently missed the other. Each action counts once,
 // whichever surface ran it. Added / Deleted with a `persist` callback (the
 // view-role path, which writes through the dedicated comment endpoints rather
@@ -34,7 +34,7 @@ import type { ApplyElementDelta } from '@/hooks/collab/useElementDeltas';
 
 type EditorCommentsDeps = {
   // Applies one delta to the ACTIVE tab without pushing a snapshot (per
-  // the spec/12 activity-log carve-out for non-undoable edits) and sends
+  // the docs/specs/012-collaboration/activity-and-audit.md activity-log carve-out for non-undoable edits) and sends
   // it to the room. Comments are tab-scoped: switching tabs while a
   // thread is open keeps the popover up, but the write targets whichever
   // tab is active at call time.
@@ -48,7 +48,7 @@ type EditorCommentsDeps = {
   selfParticipant: { id: string; name: string; color: string };
 };
 
-// A view-role write through the dedicated comment endpoints (spec/11). The
+// A view-role write through the dedicated comment endpoints (docs/specs/015-api/api.md). The
 // add resolves to the server's comment (its id replaces the local one).
 type PersistAdd = (localId: string) => Promise<{ id?: string } | null | undefined>;
 type PersistDelete = () => Promise<unknown>;

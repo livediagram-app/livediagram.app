@@ -2,7 +2,7 @@ import type { NextConfig } from 'next';
 
 // Static export fronted by Cloudflare Static Assets, served under
 // `/telemetry` by the router worker (which strips the prefix before
-// forwarding, exactly like `/live`). See specs/22 + specs/08.
+// forwarding, exactly like `/live`). See docs/specs/017-telemetry/telemetry.md + docs/specs/016-platform/router-app.md.
 // `scripts/next-dev.mjs` sets NEXT_DISTDIR=.next-dev before exec'ing
 // `next dev`, so a `next build` in the same checkout can't corrupt the
 // dev server's cache (the `_buildManifest.js.tmp.*` ENOENT 500s).

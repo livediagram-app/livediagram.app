@@ -4,7 +4,7 @@ import { CODE_LANGUAGES, CODE_MAX_LENGTH, type CodeLanguage } from '@livediagram
 import { Dialog } from '@/components/dialogs/Dialog';
 import { DialogHeader } from './DialogHeader';
 
-// The code block's edit modal (spec/82): a monospace textarea + a language
+// The code block's edit modal (docs/specs/009-elements/code-block.md): a monospace textarea + a language
 // dropdown. Opened by double-clicking the card or from the context menu's
 // Code category (a multi-line editor is too big for the menu, like the line
 // chart's data grid). Commits once on Save — one undo step.

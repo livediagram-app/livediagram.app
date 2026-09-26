@@ -1,4 +1,4 @@
-// Schema.org JSON-LD builders for the help centre (spec/55). Search engines
+// Schema.org JSON-LD builders for the help centre (docs/specs/018-help/help-app.md). Search engines
 // read these to render breadcrumb trails, article rich results, and the site
 // name in results. Pure functions returning plain objects; a <JsonLd> renders
 // them into a <script type="application/ld+json">.

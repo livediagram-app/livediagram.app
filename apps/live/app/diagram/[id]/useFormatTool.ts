@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import type { CanvasTool } from '@/components/palette/CommandPalette';
 
-// The persistent Format painter tool's mode boundary (spec/09), lifted
+// The persistent Format painter tool's mode boundary (docs/specs/008-canvas/canvas-and-palette.md), lifted
 // out of useEditorState as one cohesive slice. Active while the
 // palette's Format tool is picked: clicking elements arms a source then
 // paints its style onto each subsequent click (see useEditorDrag).
@@ -23,7 +23,7 @@ export function useFormatTool({
   const formatToolActive = canvasTool === 'format';
   const prevCanvasToolRef = useRef(canvasTool);
   // The tool that was active when Format was entered, so wrapping up the
-  // Format tool returns the user to what they were doing (spec/09) rather
+  // Format tool returns the user to what they were doing (docs/specs/008-canvas/canvas-and-palette.md) rather
   // than always dropping to Select.
   const preFormatToolRef = useRef<CanvasTool>('select');
   useEffect(() => {

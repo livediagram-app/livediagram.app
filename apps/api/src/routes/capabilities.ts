@@ -14,7 +14,7 @@ export function handleCapabilities(ctx: RouteContext): Response {
     return methodNotAllowed();
   }
   return json({
-    // One usable provider, resolved from whichever key is set (spec/25).
+    // One usable provider, resolved from whichever key is set (docs/specs/007-editor/ai-assistance.md).
     // Reports whether a provider is CONFIGURED, and deliberately says nothing
     // about whether THIS caller may use the endpoint. That asymmetry matters if
     // `AI_REQUIRE_CLERK` is ever turned on: the editor shows the AI panel on
@@ -25,8 +25,8 @@ export function handleCapabilities(ctx: RouteContext): Response {
     // instead (see apps/api/wrangler.toml). Staging has the flag on today and
     // has exactly that broken panel for guests.
     aiEnabled: resolveAiProvider(env) !== null,
-    // spec/65: the live app hides the email-notification toggles when
-    // Resend isn't configured (they'd do nothing). Same gate spec/64 uses.
+    // docs/specs/014-identity/profile-and-email-notifications.md: the live app hides the email-notification toggles when
+    // Resend isn't configured (they'd do nothing). Same gate docs/specs/014-identity/transactional-email.md uses.
     emailEnabled: emailEnabled(env),
   });
 }

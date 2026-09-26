@@ -1,4 +1,4 @@
-// Colour, the way a photograph of paper needs it (spec/139 Phase 8).
+// Colour, the way a photograph of paper needs it (docs/specs/021-event-storming/event-storming.md Phase 8).
 //
 // Hue is what tells an orange domain event from a blue command, and hue is the
 // one channel that survives a room's lighting reasonably well — as long as the

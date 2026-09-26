@@ -18,7 +18,7 @@ type IconPickerTabProps = {
 
 // One glyph, drawn small. Clicking adds it at the viewport centre as an 'icon'
 // shape tinted by the element stroke; dragging drops it at the pointer, or
-// onto a shape to become that shape's inline icon. See spec/09 "Icons".
+// onto a shape to become that shape's inline icon. See docs/specs/008-canvas/canvas-and-palette.md "Icons".
 function IconTile({ icon, onAdd }: { icon: IconDef; onAdd: (id: string) => void }) {
   return (
     <IconButton
@@ -50,7 +50,7 @@ function IconTile({ icon, onAdd }: { icon: IconDef; onAdd: (id: string) => void 
   );
 }
 
-// The command palette's Icons tab (spec/109): the same drill-in browse the
+// The command palette's Icons tab (docs/specs/010-palette/palette-category-browse.md): the same drill-in browse the
 // Tools tab uses, over the line-art catalogue.
 //
 // It used to be one flat scroll of 183 glyphs behind a category-filter
@@ -60,7 +60,7 @@ function IconTile({ icon, onAdd }: { icon: IconDef; onAdd: (id: string) => void 
 // structure on screen; search still cuts across all of it.
 //
 // "All of it" is the LINE-ART catalogue: the colour emoji that used to sit
-// here as an Emoji category are their own palette category now (spec/116), and
+// here as an Emoji category are their own palette category now (docs/specs/010-palette/stickers.md), and
 // the results this tab is handed are filtered to match.
 export function IconPickerTab({
   addIcon,

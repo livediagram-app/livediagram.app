@@ -1,4 +1,4 @@
-// The MCP tools (spec/62 §4). Each is a thin wrapper over the api worker
+// The MCP tools (docs/specs/015-api/mcp-server.md §4). Each is a thin wrapper over the api worker
 // plus the shared diagram helpers (validate / auto-layout / renderElementsToSvg)
 // — no business logic the editor doesn't already own. The calling LLM produces
 // the elements; these tools validate, lay out, persist, and render. The
@@ -68,7 +68,7 @@ export function registerTools(server: McpServer, env: Env): void {
     },
     async (args, extra) => {
       const token = requireToken(extra as Extra);
-      // Personal + team shared libraries (spec/35): a diagram filed into a
+      // Personal + team shared libraries (docs/specs/013-workspace/team-shared-diagrams.md): a diagram filed into a
       // team leaves the personal list, so both must be swept.
       const [{ diagrams }, teamLibraries] = await Promise.all([
         apiJson<DiagramListResponse>(env, token, '/diagrams'),
@@ -131,8 +131,8 @@ export function registerTools(server: McpServer, env: Env): void {
       return textResult({
         categories: TEMPLATE_CATEGORIES,
         // A hidden template is an editor-onboarding artefact, not a scaffold
-        // an AI caller should list or build from. None ships today; spec/69's
-        // guided-tour sample was the last, retired by spec/79.
+        // an AI caller should list or build from. None ships today; docs/specs/007-editor/guided-tour-sample.md's
+        // guided-tour sample was the last, retired by docs/specs/007-editor/editor-tour.md.
         templates: TEMPLATES.filter((t) => !t.hidden).map((t) => ({
           kind: t.kind,
           title: t.title,
@@ -170,7 +170,7 @@ export function registerTools(server: McpServer, env: Env): void {
       const tabs: Tab[] = [];
       for (const t of inputTabs) {
         const tabId = crypto.randomUUID();
-        // Template tab (spec/62 §4.5): materialise the curated scaffold
+        // Template tab (docs/specs/015-api/mcp-server.md §4.5): materialise the curated scaffold
         // instead of expecting elements.
         if (t.template) {
           const kind = resolveTemplate(t.template);
@@ -183,7 +183,7 @@ export function registerTools(server: McpServer, env: Env): void {
           tabs.push(buildTemplateTab(tabId, t.name, kind, args.theme));
           continue;
         }
-        // Graph-first (spec/62 §4.7): the server builds + lays out the boxes
+        // Graph-first (docs/specs/015-api/mcp-server.md §4.7): the server builds + lays out the boxes
         // and arrows from a node/edge graph.
         if (t.graph) {
           tabs.push(buildGraphTab(tabId, t.name, t.graph, args.theme));
@@ -201,7 +201,7 @@ export function registerTools(server: McpServer, env: Env): void {
         tabs.push(buildTab(tabId, t.name, (candidate as Tab).elements, args.layout, args.theme));
       }
       const id = crypto.randomUUID();
-      // Tag the diagram as MCP-generated (spec/15). The Explorer surfaces a
+      // Tag the diagram as MCP-generated (docs/specs/013-workspace/folders.md). The Explorer surfaces a
       // synthetic "Generated" folder over source != null, so there's no
       // real folder to create / place it in.
       await apiJson(env, token, '/diagrams', {
@@ -241,7 +241,7 @@ export function registerTools(server: McpServer, env: Env): void {
     async (args, extra) => {
       const token = requireToken(extra as Extra);
       const tabId = crypto.randomUUID();
-      // Template tab (spec/62 §4.5): resolved up front so an unknown kind
+      // Template tab (docs/specs/015-api/mcp-server.md §4.5): resolved up front so an unknown kind
       // fails before any network round trip.
       const templateKind = args.template ? resolveTemplate(args.template) : null;
       if (args.template && !templateKind) {
@@ -308,7 +308,7 @@ export function registerTools(server: McpServer, env: Env): void {
       const tabId = tab.id;
 
       let nextElements: unknown[];
-      // Graph-first replace (spec/62 §4.7): a node/edge graph the server builds
+      // Graph-first replace (docs/specs/015-api/mcp-server.md §4.7): a node/edge graph the server builds
       // + lays out, in place of hand-placed elements. Forces auto layout below.
       const graphReplace = args.mode === 'replace' && !!args.graph;
       if (args.mode === 'replace') {
@@ -346,7 +346,7 @@ export function registerTools(server: McpServer, env: Env): void {
         el.type === 'shape' ? { ...el, shape: coerceShapeKind(el.shape) } : el,
       );
       // Layout applies only on a full replace (the model decides via `layout`);
-      // ops edits always keep the existing positions (spec/62 §4.4).
+      // ops edits always keep the existing positions (docs/specs/015-api/mcp-server.md §4.4).
       const elements: Element[] =
         args.mode === 'replace' ? applyLayout(graphReplace ? 'auto' : args.layout, fixed) : fixed;
       const nextTab: Tab = { ...(tab as Tab), id: tabId, elements };

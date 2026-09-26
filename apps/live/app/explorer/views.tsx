@@ -1,6 +1,6 @@
 'use client';
 
-// Presentational primitives for the Explorer page (spec/15). Lifted
+// Presentational primitives for the Explorer page (docs/specs/013-workspace/folders.md). Lifted
 // out of page.tsx so the route file can focus on data flow
 // (state, effects, api calls) rather than 800 lines of pure render
 // markup. Every export here is a stateless or near-stateless React
@@ -34,7 +34,7 @@ export { FolderRow };
 // Diagram rows render the api client's DiagramListItem directly
 // (same rows the floating Explorer panel uses), so the two explorer
 // surfaces can't drift apart on what a list item carries. Recent rows
-// (spec/35) may additionally carry:
+// (docs/specs/013-workspace/team-shared-diagrams.md) may additionally carry:
 //   - `team`: the team library the diagram lives in — a "Team"
 //     visibility badge + the team as owner, and a team-scoped menu.
 //   - `shared`: a diagram shared WITH the viewer (not theirs) — a
@@ -64,18 +64,18 @@ export function sharedToPaneDiagram(s: SharedWithItem): PaneDiagram {
 // What the sidebar tree highlights and what the right pane shows.
 // "Special" nodes (`recent`, `all`, `shared`) are virtual buckets
 // with no folder row behind them; `folder` is a real owned folder and
-// `team` a team the signed-in user belongs to (spec/32).
+// `team` a team the signed-in user belongs to (docs/specs/013-workspace/teams.md).
 export type SelectedNode =
-  // The landing view (spec/138): a day-grouped feed of everything that
+  // The landing view (docs/specs/013-workspace/timeline.md): a day-grouped feed of everything that
   // happened, rather than a list of files.
   | { kind: 'timeline' }
-  // What is outstanding for the reader across every diagram (spec/142):
+  // What is outstanding for the reader across every diagram (docs/specs/013-workspace/activity-page.md):
   // open actions assigned to / by them, unresolved threads they're in.
   | { kind: 'activity' }
   | { kind: 'recent' }
   | { kind: 'all' }
   | { kind: 'unsorted' }
-  // Diagrams this user starred, personal or team (spec/95).
+  // Diagrams this user starred, personal or team (docs/specs/013-workspace/favourites.md).
   | { kind: 'favourites' }
   | { kind: 'generated' }
   | { kind: 'offline' }
@@ -229,7 +229,7 @@ export function SharedList({
   onDismiss,
 }: {
   shared: SharedWithItem[];
-  // Viewer identity for each row's thumbnail fetch (spec/67); the share
+  // Viewer identity for each row's thumbnail fetch (docs/specs/006-diagram/diagram-snapshots.md); the share
   // code on the item authorises the read.
   ownerId: string | null;
   onDismiss: (id: string) => void;

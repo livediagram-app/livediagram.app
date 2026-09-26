@@ -1,10 +1,10 @@
-// Excalidraw export (spec/87): serialise a Tab as a `.excalidraw` scene —
+// Excalidraw export (docs/specs/020-import-export/excalidraw-import-export.md): serialise a Tab as a `.excalidraw` scene —
 // the plain-JSON format excalidraw.com saves and opens. Pure Tab -> string,
 // plugged into the Export dialog's text-panel registry beside tabToJsonText /
 // tabToMarkdownText.
 //
 // Deliberately lossy: Excalidraw has ~8 element types, so anything without a
-// counterpart degrades to a labelled box per the spec/87 degradation table.
+// counterpart degrades to a labelled box per the docs/specs/020-import-export/excalidraw-import-export.md degradation table.
 // Labels ride as BOUND TEXT elements (containerId + a boundElements entry on
 // the container) so they stay attached when edited in Excalidraw.
 
@@ -53,7 +53,7 @@ function chassis(
   };
 }
 
-// Reverse of the import maps (spec/87).
+// Reverse of the import maps (docs/specs/020-import-export/excalidraw-import-export.md).
 const STROKE_WIDTH_PX = { none: 1, thin: 1, medium: 2, thick: 4, 'extra-thick': 4 } as const;
 const strokeStyleOut = (s: string | undefined): string =>
   s === 'dotted' ? 'dotted' : s && s !== 'solid' ? 'dashed' : 'solid';
@@ -159,7 +159,7 @@ export function tabToExcalidrawText(tab: Tab): string {
     const labelText =
       el.type === 'link-card'
         ? (el.meta?.title ?? (el.link?.kind === 'url' ? el.link.url : el.label)) || undefined
-        : // A video has no cached title (it stores no metadata, spec/114), so
+        : // A video has no cached title (it stores no metadata, docs/specs/009-elements/youtube-video.md), so
           // it exports as its URL — the only thing Excalidraw can hold.
           el.type === 'video'
           ? ((el.link?.kind === 'url' ? el.link.url : el.label) ?? undefined)

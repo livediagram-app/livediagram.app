@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { ArrowElement, Element, ShapeElement } from '@livediagram/diagram';
 import { summarizeChange, summarizeEdits } from './change-summaries';
 
-// The activity panel's one-line vocabulary (spec/12): each field group
+// The activity panel's one-line vocabulary (docs/specs/012-collaboration/activity-and-audit.md): each field group
 // gets a verb a user recognises, so entries never degrade to a vague
 // "Edited X" when the change is nameable.
 
@@ -200,7 +200,7 @@ describe('summarizeChange — mixed commits', () => {
     );
   });
 
-  it('names an insertion rather than listing its parts (spec/139)', () => {
+  it('names an insertion rather than listing its parts (docs/specs/021-event-storming/event-storming.md)', () => {
     // One note added, and everything from that point on slid right by the
     // width it took up: that is one act, not an add plus an unrelated edit.
     const note = (id: string, x: number) =>

@@ -1,4 +1,4 @@
-// MCP OAuth consent (spec/62 §3): the consent page calls this to mint the
+// MCP OAuth consent (docs/specs/015-api/mcp-server.md §3): the consent page calls this to mint the
 // lvd_ token that gets handed to the connecting MCP client. Signed-in only —
 // apiHeaders attaches the Clerk Bearer, and the api's /api/oauth/exchange
 // rejects a guest.

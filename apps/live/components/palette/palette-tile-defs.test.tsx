@@ -11,9 +11,9 @@ import {
   tilesInToolGroup,
 } from './palette-tile-defs';
 
-// The shared tile catalogue (spec/78) feeds the category tabs, Favourites
+// The shared tile catalogue (docs/specs/010-palette/palette-favourites.md) feeds the category tabs, Favourites
 // (which persists tile IDS across sessions), the search panel, and — since
-// the Tools tab grew grouped sub-sections (spec/09 "Sub-categories") — the
+// the Tools tab grew grouped sub-sections (docs/specs/008-canvas/canvas-and-palette.md "Sub-categories") — the
 // TOOL_GROUPS render loop. These invariants pin the contracts those
 // surfaces rely on; none of them surface as errors during a normal render
 // (an ungrouped tools tile just silently vanishes from the Tools tab).
@@ -39,7 +39,7 @@ describe('PALETTE_TILES catalogue', () => {
   });
 });
 
-// The Event Storming category (spec/139): one tile per note kind in the
+// The Event Storming category (docs/specs/021-event-storming/event-storming.md): one tile per note kind in the
 // EVENT_STORMING_NOTES catalogue, a top-level palette category of its own.
 // The tiles derive from the catalogue, so this pins the derivation both
 // ways: every note kind has a tile, every tile arms a sticky intent
@@ -111,7 +111,7 @@ describe('tool blurbs', () => {
 // category picker, and several of those blurbs list the elements the category
 // holds. Adding a tile does not update the blurb, and nothing failed when it
 // went stale: Behaviour named five of its eight elements for three releases,
-// and Collaborate dropped the comment pin (spec/136) the day it shipped.
+// and Collaborate dropped the comment pin (docs/specs/012-collaboration/comment-pin.md) the day it shipped.
 //
 // Text cannot be checked mechanically here — some blurbs enumerate ("estimate
 // cards, temperature checks, ...") while others are deliberately illustrative
@@ -136,12 +136,12 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   media: 8,
   components: 9,
   data: 7,
-  // Behaviours absorbed Collaborate (spec/110), so this is both families:
+  // Behaviours absorbed Collaborate (docs/specs/010-palette/palette-top-level-categories.md), so this is both families:
   // Ask (3 estimate scales + temperature + idea box + Q&A board), Run the
   // room (3), Session (3), Record (3), Reactions (5), Selection
   // Mode (8 modes), Navigate (2), plus the comment pin loose on top.
   behaviour: 36,
-  // The Event Storming notation (spec/139): one tile per note kind.
+  // The Event Storming notation (docs/specs/021-event-storming/event-storming.md): one tile per note kind.
   'event-storming': 8,
 };
 
@@ -186,7 +186,7 @@ describe('TOOL_GROUPS', () => {
   });
 });
 
-// Behaviour and Collaborate draw their tiles by CATEGORY (spec/09
+// Behaviour and Collaborate draw their tiles by CATEGORY (docs/specs/008-canvas/canvas-and-palette.md
 // "Sub-categories"): each tab hands PaletteGroupBrowser a list of group
 // definitions, and a tile is drawn by the category whose id matches its
 // `tileGroup`. A tile whose group is in no definition is drawn by nothing: it
@@ -227,7 +227,7 @@ function renderedGroups(component: string): { groups: Set<string>; allowsLoose: 
 // Behaviours is a toolGroup INSIDE the tools section, not a section of its
 // own: asking for a 'behaviour' section returns nothing and would make every
 // row look empty. It is the only grouped tab left — Collaborate was merged
-// into it (spec/110) — and the list stays an array so a second one costs a
+// into it (docs/specs/010-palette/palette-top-level-categories.md) — and the list stays an array so a second one costs a
 // line rather than a rewrite.
 const TABS = [
   {

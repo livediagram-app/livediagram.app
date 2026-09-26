@@ -53,7 +53,7 @@ export function EditorTabDialogs() {
     setShareDialogOpen,
   } = useEditorContext();
 
-  // Offline diagrams (spec/76) can't be shared until they're synced to the
+  // Offline diagrams (docs/specs/006-diagram/offline-mode.md) can't be shared until they're synced to the
   // owner's account; the Share dialog shows a gate that runs this conversion,
   // then reloads so the editor re-hydrates as a normal cloud diagram.
   const isOffline = useIsOfflineDiagram(diagramId);
@@ -68,7 +68,7 @@ export function EditorTabDialogs() {
       {exportOpen ? (
         <ExportTabDialog
           // Export what the author is LOOKING at: a tab on the Default colour
-          // scheme paints in the viewer's appearance (spec/07), so the export
+          // scheme paints in the viewer's appearance (docs/specs/007-editor/live-app.md), so the export
           // takes the resolved backdrop rather than the stored one — and, from
           // it, the ink for every element that carries no colours of its own.
           tab={{
@@ -101,7 +101,7 @@ export function EditorTabDialogs() {
           tabs={tabs}
           nameConfirmed={nameConfirmed}
           // Signed-in via Clerk → name is locked to the account
-          // display name (same rule as the welcome modal, spec/04).
+          // display name (same rule as the welcome modal, docs/specs/014-identity/auth-and-guest-access.md).
           // Guests pass undefined so the input + shuffle stay live.
           lockedName={clerkUserId ? clerkDisplayName : null}
           onSaveName={updateParticipantName}

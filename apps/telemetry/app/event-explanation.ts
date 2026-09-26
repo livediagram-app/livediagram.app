@@ -1,7 +1,7 @@
 import { API_OPERATIONS, BY_ACTION, EXACT } from './event-explanations';
 import { articleTitle, CANVAS_CONTROLS, eventLabel, typeLabel } from './event-vocab';
 
-// The plain-language sentence under every metric (spec/22): what someone did
+// The plain-language sentence under every metric (docs/specs/017-telemetry/telemetry.md): what someone did
 // to make the event, for a reader who has never seen the code. Looked up in
 // order:
 //  1. an exact sentence for this category·action·type (event-explanations.ts);

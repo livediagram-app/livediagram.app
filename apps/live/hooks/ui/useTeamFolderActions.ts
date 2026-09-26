@@ -6,11 +6,11 @@ import type { useConfirm } from '@/hooks/ui/useConfirm';
 import { track } from '@/lib/telemetry';
 
 // Team-library folder mutations for the Explorer panel's team tree
-// (spec/35), lifted out of EditorCanvasHost. Straight api calls plus a
+// (docs/specs/013-workspace/team-shared-diagrams.md), lifted out of EditorCanvasHost. Straight api calls plus a
 // sweep refresh: the swept team libraries are the panel's source, so a
 // mutation re-reads them rather than patching a copy. Teams are Clerk-only,
 // so signed out = no handlers at all, which is what hides the verbs.
-// Every emit carries the `Team` type (spec/22 Folder), the same as the
+// Every emit carries the `Team` type (docs/specs/017-telemetry/telemetry.md Folder), the same as the
 // team library's own folder verbs, so a team folder never reads as a
 // personal Explorer one.
 export function useTeamFolderActions({

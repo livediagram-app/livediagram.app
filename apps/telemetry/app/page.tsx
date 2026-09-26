@@ -36,7 +36,7 @@ import { MetricSearch } from './MetricSearch';
 // under '/telemetry' (basePath doesn't rewrite absolute fetch paths).
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 
-// Three ways to read the same summary payload (spec/22). The timeframe
+// Three ways to read the same summary payload (docs/specs/017-telemetry/telemetry.md). The timeframe
 // window is global (the WindowPanel above the tabs), so it lives here
 // alongside the active tab and is passed into whichever view renders.
 // Tab order follows the product funnel: who arrives, signs up, opens and

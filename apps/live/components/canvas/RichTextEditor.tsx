@@ -1,4 +1,4 @@
-// The in-place rich-text editor (spec/09). Replaces the plain <textarea>
+// The in-place rich-text editor (docs/specs/008-canvas/canvas-and-palette.md). Replaces the plain <textarea>
 // label editors for shape / text / sticky: a single contentEditable that
 // renders the label's runs as styled <span>s and shows a floating toolbar
 // for per-range bold / italic / underline / strikethrough / lists / colour.
@@ -51,7 +51,7 @@ export function RichTextEditor({
   onSetAlign,
   inline = false,
 }: RichTextEditorProps) {
-  // Mind map (spec/118): present only inside the editor canvas.
+  // Mind map (docs/specs/009-elements/mind-node.md): present only inside the editor canvas.
   const growMind = useMindGrow();
   const {
     editorRef,
@@ -89,7 +89,7 @@ export function RichTextEditor({
     <div
       // Marks the whole editing session (editor + floating toolbar) so the
       // context menu's outside-click dismiss ignores clicks in here — the
-      // menu rides alongside the editor while a label is edited (spec/09).
+      // menu rides alongside the editor while a label is edited (docs/specs/008-canvas/canvas-and-palette.md).
       data-rich-text-session=""
       className={`pointer-events-none flex overflow-visible ${
         // Inline: a content-sized flex child (NOT flex-1), so the icon + editor
@@ -126,7 +126,7 @@ export function RichTextEditor({
             return;
           }
           // Same for the context menu riding alongside the edit session
-          // (spec/09): its buttons preserve focus via the capture listener
+          // (docs/specs/008-canvas/canvas-and-palette.md): its buttons preserve focus via the capture listener
           // in useRichTextSession, but its form controls (the colour input,
           // the opacity slider) legitimately take focus — that's a menu
           // interaction, not a click-away.
@@ -162,7 +162,7 @@ export function RichTextEditor({
               return;
             }
           }
-          // Mind map (spec/118): on a mind node, Tab and Enter COMMIT this
+          // Mind map (docs/specs/009-elements/mind-node.md): on a mind node, Tab and Enter COMMIT this
           // label and grow the next node, so a whole branch is typed without
           // leaving the editor. Handled here rather than in the global
           // shortcut handler because the label has to be committed first —
@@ -226,7 +226,7 @@ export function RichTextEditor({
           fontSize: `${basePx}px`,
           textAlign: TEXT_ALIGN[alignX],
           fontFamily,
-          // Same capitals the committed label wears (spec/139): the typed
+          // Same capitals the committed label wears (docs/specs/021-event-storming/event-storming.md): the typed
           // text is stored as written, it just reads as the note will.
           textTransform: uppercase ? 'uppercase' : undefined,
         }}

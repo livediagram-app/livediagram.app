@@ -308,7 +308,7 @@ export function BackgroundEngineeringIcon() {
   );
 }
 
-// ── Animated pattern previews (spec/09) ──────────────────────────────────
+// ── Animated pattern previews (docs/specs/008-canvas/canvas-and-palette.md) ──────────────────────────────────
 // Still glyphs that depict each animated backdrop's resting frame; the
 // "animated" nature is conveyed by the picker tooltip, not the icon.
 

@@ -5,7 +5,7 @@ import { articles, categories } from './articles';
 import { SUPPORT_ARTICLE_FALLBACK, SUPPORT_ARTICLE_ICONS } from './articleIcons';
 import { FEATURE_ICONS } from './featureIcons';
 
-// The support half of the card catalogue (spec/55), the sibling of
+// The support half of the card catalogue (docs/specs/018-help/help-app.md), the sibling of
 // feature-icons.test.ts.
 //
 // `ArticleCard` resolves a glyph in three steps: the article's own entry in

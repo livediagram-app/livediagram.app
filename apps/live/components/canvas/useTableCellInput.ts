@@ -7,7 +7,7 @@ import {
   type TableElement,
 } from '@livediagram/diagram';
 
-// The selected-cell INPUT layer for TableView (spec/09 Table): the
+// The selected-cell INPUT layer for TableView (docs/specs/008-canvas/canvas-and-palette.md Table): the
 // spreadsheet-style keyboard handling while a cell is selected but not
 // editing (arrows move the selection, Tab walks cells and appends a row
 // off the end, Enter / F2 / type-to-edit open the editor, Backspace
@@ -57,7 +57,7 @@ export function useTableCellInput({
   initialTextRef: MutableRefObject<string>;
   typeToEditRef: MutableRefObject<boolean>;
 }) {
-  // Selected-cell keyboard layer (spreadsheet-style, spec/09). Handled keys
+  // Selected-cell keyboard layer (spreadsheet-style, docs/specs/008-canvas/canvas-and-palette.md). Handled keys
   // stop propagation so the editor's window-level shortcuts can't double-act
   // on the element. Re-registered per render on purpose: the handler closes
   // over the live element / selection.

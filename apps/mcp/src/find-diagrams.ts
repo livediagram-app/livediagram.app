@@ -1,6 +1,6 @@
-// The find_diagrams search space (spec/62 §4.1): the caller's personal
+// The find_diagrams search space (docs/specs/015-api/mcp-server.md §4.1): the caller's personal
 // library PLUS every shared library of the teams they've joined. A diagram
-// filed into a team leaves its owner's personal list entirely (spec/35), so
+// filed into a team leaves its owner's personal list entirely (docs/specs/013-workspace/team-shared-diagrams.md), so
 // without the team sweep it would be invisible to the MCP — the personal
 // GET /diagrams alone is not "the user's diagrams".
 import type {

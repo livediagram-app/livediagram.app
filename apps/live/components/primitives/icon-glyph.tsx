@@ -32,7 +32,7 @@ function Prim({ p }: { p: IconPrim }) {
     case 'ellipse':
       return <ellipse cx={p.cx} cy={p.cy} rx={p.rx} ry={p.ry} vectorEffect={ve} />;
     case 'text':
-      // Colour-emoji glyph (spec/85): the emoji font supplies the colours,
+      // Colour-emoji glyph (docs/specs/010-palette/emoji-icons.md): the emoji font supplies the colours,
       // so the wrapper's stroke tint is a harmless no-op. The wrapper svg
       // sets fill="none" for the line-art prims, which would blank a
       // <text> glyph — override with an explicit fill (colour-emoji
@@ -65,7 +65,7 @@ export function IconPrims({
   animationRepeat,
 }: {
   iconId: string | undefined;
-  // The chosen looping animation (spec/09), or undefined for a static glyph.
+  // The chosen looping animation (docs/specs/008-canvas/canvas-and-palette.md), or undefined for a static glyph.
   // The palette picker passes nothing, so thumbnails stay still.
   animation?: IconAnimation;
   // Loop speed for the animation; undefined = the shared 'slow' default.
@@ -95,7 +95,7 @@ export function IconPrims({
 // Full-box icon overlay for a shape==='icon' element. When the icon
 // carries a label the glyph scales into the band OPPOSITE the caption
 // (iconBandClass — the same inverse-alignment bands as Technology
-// marks, spec/41), so moving the text never stacks it over the art;
+// marks, docs/specs/010-palette/technology-icons.md), so moving the text never stacks it over the art;
 // with no label the glyph fills the box. The stroke is non-scaling so
 // the line weight stays crisp at any element size, and it picks up the
 // element's stroke colour so icons tint + theme like line drawings.

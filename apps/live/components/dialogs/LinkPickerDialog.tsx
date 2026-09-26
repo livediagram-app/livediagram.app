@@ -10,7 +10,7 @@ import { DialogFooter } from '@/components/dialogs/DialogFooter';
 
 // Shared link picker, styled like the import / export dialogs (centred
 // modal, brand chrome). Used for BOTH element links and per-cell table
-// links (spec/09). Three modes — link to a Tab, another Diagram, or an
+// links (docs/specs/008-canvas/canvas-and-palette.md). Three modes — link to a Tab, another Diagram, or an
 // external URL — plus a Remove action when a link already exists.
 //
 // Generic by design: the dialog builds the chosen `ElementLink` and
@@ -37,7 +37,7 @@ type LinkPickerDialogProps = {
   initialMode?: 'tab' | 'diagram' | 'url';
   // Restricts the dialog to the URL mode, with caller-supplied copy and
   // validation. For an element whose link IS its content — a video's YouTube
-  // URL (spec/114) — the tab and diagram modes are not a narrower choice, they
+  // URL (docs/specs/009-elements/youtube-video.md) — the tab and diagram modes are not a narrower choice, they
   // are a meaningless one: a video pointed at a tab has nothing to play.
   urlOnly?: UrlOnlyConfig;
   onCommit: (link: ElementLink | null) => void;
@@ -121,7 +121,7 @@ export function LinkPickerDialog({
             : 'Jump to a tab, open another diagram, or go to a web address.'
         }
       >
-        {/* A URL-restricted picker is an embed's link dialog (spec/121), so
+        {/* A URL-restricted picker is an embed's link dialog (docs/specs/009-elements/embed-providers.md), so
             it points at the embed article rather than the generic links one:
             "which links work here" is the question being asked. */}
         <HelpArticleLink

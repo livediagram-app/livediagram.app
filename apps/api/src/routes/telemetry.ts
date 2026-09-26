@@ -1,4 +1,4 @@
-// /api/telemetry/summary — public usage dashboard data (spec/22).
+// /api/telemetry/summary — public usage dashboard data (docs/specs/017-telemetry/telemetry.md).
 
 import {
   metricKey,
@@ -18,7 +18,7 @@ const SERIES_DAYS = TELEMETRY_WINDOW_DAYS.last30;
 
 type DailyRow = Awaited<ReturnType<typeof telemetryDailyCountsSince>>[number];
 
-// Public dashboard data (spec/22). Grouped counts for three FIXED
+// Public dashboard data (docs/specs/017-telemetry/telemetry.md). Grouped counts for three FIXED
 // windows so the queries stay simple and the response is cacheable. No
 // custom ranges. Edge-cached so a public traffic spike never hammers
 // D1. Off unless TELEMETRY_ENABLED.
@@ -34,7 +34,7 @@ export async function handleTelemetry(ctx: RouteContext): Promise<Response> {
   // to 5 minutes, making the feature impossible to iterate on. In
   // production the cache stays on (see below) so a traffic spike
   // never hammers D1. Parallel to the localhost same-origin escape
-  // hatch above (spec/22).
+  // hatch above (docs/specs/017-telemetry/telemetry.md).
   const isLocalDev = isLoopbackHostname(url.hostname);
   const cacheKey = new Request(url.toString());
   if (!isLocalDev) {
@@ -69,7 +69,7 @@ export function telemetrySeriesStart(now: number): number {
 // The query reaches one series further back than the series itself, so each
 // window can be compared with the span just before it (`previousWindows`):
 // the 30 days before the last 30 end 59 days back, inside the 60-day
-// retention (spec/22).
+// retention (docs/specs/017-telemetry/telemetry.md).
 export function telemetryQueryStart(now: number): number {
   return telemetrySeriesStart(now) - SERIES_DAYS * DAY_MS;
 }

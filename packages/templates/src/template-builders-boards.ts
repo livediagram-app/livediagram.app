@@ -9,7 +9,7 @@
 // belong with this thematic group.
 //
 // Each builder is still pure: takes a centre (cx, cy), returns a
-// fresh Element[]. See spec/09 "Templates" for the catalogue.
+// fresh Element[]. See docs/specs/008-canvas/canvas-and-palette.md "Templates" for the catalogue.
 
 import {
   createArrow,
@@ -140,7 +140,7 @@ export function buildRetrospective(cx: number, cy: number): Element[] {
 // hand-built reference (505x835 lanes, 457x112 cards), re-centred on the
 // supplied canvas point. Colours are left to the theme
 // (recolourElementsForTheme); cards read via their borders + the chip.
-// The board ships pre-layered (spec/74 "Layered templates"): the title,
+// The board ships pre-layered (docs/specs/006-diagram/layers.md "Layered templates"): the title,
 // lane containers and headers sit on a "Board" scaffold layer under a
 // "Cards" content layer holding the tickets, so cards drag between
 // lanes without grabbing the lane behind them. templateCanvasOverrides
@@ -383,7 +383,7 @@ export function buildSwot(cx: number, cy: number): Element[] {
     // Starter bullets sit under the header. Width matches the header
     // so the text rail aligns crisply down the quadrant's left edge. The
     // bullet marker is tinted to the quadrant's header hue (per-range
-    // rich text, spec/09) so each line ties back to its quadrant while
+    // rich text, docs/specs/008-canvas/canvas-and-palette.md) so each line ties back to its quadrant while
     // the body text stays theme-neutral.
     q.bullets.forEach((bullet, i) => {
       const runs: TextRun[] = [{ text: '• ', color: q.headerColor }, { text: bullet }];
@@ -419,7 +419,7 @@ export function buildSwot(cx: number, cy: number): Element[] {
     textAlignX: 'center',
     // The subject under analysis ties all four quadrants together → hero preset.
     colorPreset: 'bold',
-    // Content layer (spec/74): the rename target rides with the notes, so
+    // Content layer (docs/specs/006-diagram/layers.md): the rename target rides with the notes, so
     // it stays clickable when the quadrant scaffold is locked.
     layerId: TEMPLATE_CONTENT_LAYER_ID,
   });

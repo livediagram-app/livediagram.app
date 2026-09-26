@@ -1,6 +1,6 @@
 'use client';
 
-// Line chart (spec/53): a 2-D chart — shared x-axis `lineCategories` and one or
+// Line chart (docs/specs/009-elements/pie-chart.md): a 2-D chart — shared x-axis `lineCategories` and one or
 // more named `lineSeries`, each drawn as a polyline with point markers in the
 // theme palette, with an optional legend listing the series. Data is edited as
 // a grid (or imported from CSV) via the Data menu. Reuses the chart-family

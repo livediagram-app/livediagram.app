@@ -21,14 +21,14 @@ import { useCopiedFlash } from '@livediagram/ui';
 import { DialogHeader } from './DialogHeader';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
 
-// Human labels for the expiry choices (spec/34), shared by the create
+// Human labels for the expiry choices (docs/specs/013-workspace/share-link-expiry.md), shared by the create
 // dropdown and the inactive rows' Extend button.
 
-// Share-diagram modal. Layout per spec/07 ("Share dialog"): the
+// Share-diagram modal. Layout per docs/specs/007-editor/live-app.md ("Share dialog"): the
 // guest-only name row first (so a guest sets the identity their links
 // will carry), then the create row (the dialog's primary action), the
 // active link cards, the inactive (expired) links when any exist
-// (spec/34), and finally the share password (spec/24) as the quiet
+// (docs/specs/013-workspace/share-link-expiry.md), and finally the share password (docs/specs/013-workspace/share-password.md) as the quiet
 // options band. Backdrop + dark-mode treatment match Settings /
 // Shortcuts / Export.
 export function ShareDialog({
@@ -57,10 +57,10 @@ export function ShareDialog({
   const [busy, setBusy] = useState(false);
   const { copied: copiedCode, flash } = useCopiedFlash<string>(1500);
   const [newRole, setNewRole] = useState<ShareRole>('edit');
-  // Lifetime for the next link (spec/34). Never = the pre-expiry
+  // Lifetime for the next link (docs/specs/013-workspace/share-link-expiry.md). Never = the pre-expiry
   // default: the link works until revoked.
   const [newExpiry, setNewExpiry] = useState<ShareLinkExpiry>('never');
-  // Which tab the Live image renders (spec/54). null = the first tab,
+  // Which tab the Live image renders (docs/specs/013-workspace/live-image-share.md). null = the first tab,
   // which the server serves from its cached snapshot, so the URL omits
   // `?tab=`. Diagram-wide: the same choice applies to every share link's
   // image. Any other tab id is threaded straight into the image URL.
@@ -128,7 +128,7 @@ export function ShareDialog({
   // prerender (the dialog isn't shown then) doesn't touch window.
   const origin = typeof window === 'undefined' ? '' : window.location.origin;
 
-  // Offline diagrams (spec/76) have nothing to share yet, so swap the whole
+  // Offline diagrams (docs/specs/006-diagram/offline-mode.md) have nothing to share yet, so swap the whole
   // dialog for the sync gate until the owner moves it to the cloud.
   if (offline && onSyncToCloud) {
     return <ShareOfflineGate onSyncToCloud={onSyncToCloud} onClose={onClose} />;
@@ -154,7 +154,7 @@ export function ShareDialog({
         {/* Guests only, and first: the name peers will see on the
                 links minted below. Signed-in users' display names come
                 from their Clerk account, so there's nothing to edit and
-                the row hides entirely (spec/07). */}
+                the row hides entirely (docs/specs/007-editor/live-app.md). */}
         {nameLocked ? null : (
           <div className="flex flex-col gap-1.5">
             <p className={sectionLabel}>Your name</p>
@@ -288,7 +288,7 @@ export function ShareDialog({
           )}
         </div>
 
-        {/* Inactive (expired) links — spec/34. Only rendered when
+        {/* Inactive (expired) links — docs/specs/013-workspace/share-link-expiry.md. Only rendered when
                 there's something in it, so the dialog stays unchanged
                 for owners who never use expiry. */}
         {inactiveLinks.length > 0 ? (

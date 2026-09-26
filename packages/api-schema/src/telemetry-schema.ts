@@ -1,9 +1,9 @@
-// Telemetry wire-format (spec/22): the closed category/action vocabulary,
+// Telemetry wire-format (docs/specs/017-telemetry/telemetry.md): the closed category/action vocabulary,
 // the TelemetryEvent shape + validator, and the dashboard summary/window
 // types. Self-contained (no diagram deps); split out of the schema barrel.
 
 // ---------------------------------------------------------------------
-// Telemetry (spec/22)
+// Telemetry (docs/specs/017-telemetry/telemetry.md)
 // ---------------------------------------------------------------------
 //
 // Anonymous, first-party product events. Each event is three small
@@ -26,7 +26,7 @@ export const TELEMETRY_CATEGORIES = [
   'Template',
   'Comment',
   'Note',
-  // Assigned actions (spec/68): assign / complete / reopen / edit / delete
+  // Assigned actions (docs/specs/012-collaboration/assigned-actions.md): assign / complete / reopen / edit / delete
   // on an element's action, plus the popover open. `type` carries the
   // email-checkbox state on create ('EmailOn'/'EmailOff') and the edit
   // flavour on change ('Reassigned'/'Edited') — never action content.
@@ -34,74 +34,74 @@ export const TELEMETRY_CATEGORIES = [
   'Search',
   'UI',
   'Folder',
-  // Layers (spec/74): panel + layer lifecycle. 'Added'/'Deleted'/'Renamed'/
+  // Layers (docs/specs/006-diagram/layers.md): panel + layer lifecycle. 'Added'/'Deleted'/'Renamed'/
   // 'Reordered' for the layer rows, 'Toggled' with `type`
   // 'Hidden'/'Shown'/'Locked'/'Unlocked' for the eye + padlock,
   // 'Selected' for an active-layer switch, 'Moved' for move-selection-
   // to-layer, 'Opened' for the panel. Never layer names in `type`.
   'Layer',
   'Session',
-  // The facilitator baton (spec/149): who is running a live session.
+  // The facilitator baton (docs/specs/012-collaboration/facilitator.md): who is running a live session.
   // 'Started' when somebody takes a free one, 'Changed' when it is handed on
   // or taken back, 'Ended' when the holder steps down. `type` is the shape of
   // the move ('Claimed' / 'Granted' / 'Released'), or 'Unlocked' when the
-  // facilitator frees an element somebody was holding (spec/07 lock) — never a
+  // facilitator frees an element somebody was holding (docs/specs/007-editor/live-app.md lock) — never a
   // name: the question is whether rooms use the role at all, not who held it.
   'Facilitator',
   'AI',
   'Team',
-  // Participant lifecycle (spec/22): 'Participant'/'Created' fires
+  // Participant lifecycle (docs/specs/017-telemetry/telemetry.md): 'Participant'/'Created' fires
   // once per fresh browser identity mint, the daily-new-visitors
   // signal; 'Participant'/'Returned' fires once per browser per UTC
   // day when a returning visitor reopens the app, split guest vs
   // signed-in via the type. Sign-in / sign-up / sign-out stay under
   // 'Session'.
   'Participant',
-  // Help centre (apps/help, spec/22 + spec/55): article views +
+  // Help centre (apps/help, docs/specs/017-telemetry/telemetry.md + docs/specs/018-help/help-app.md): article views +
   // per-article helpful / not-really feedback. The second app (besides
   // the editor) that emits telemetry. `type` is the article slug.
   'Help',
-  // API tokens (spec/61) + MCP connections (spec/62): 'Created'/'Removed'
+  // API tokens (docs/specs/015-api/public-api-and-tokens.md) + MCP connections (docs/specs/015-api/mcp-server.md): 'Created'/'Removed'
   // with `type` 'Manual' (Explorer New-token) or 'MCP' (an AI tool connected
   // via the consent screen, which mints a token under the hood).
   'Token',
-  // MCP server tool calls (apps/mcp, spec/62): 'Used' with `type` the tool
+  // MCP server tool calls (apps/mcp, docs/specs/015-api/mcp-server.md): 'Used' with `type` the tool
   // name (CreateDiagram, ReadDiagram, ...). Emitted by the MCP worker, the
   // third app that reports telemetry, so usage shows up distinctly from the
   // in-editor AI panel.
   'Mcp',
-  // Transactional + lifecycle email (apps/api, spec/64): 'Sent' with `type`
+  // Transactional + lifecycle email (apps/api, docs/specs/014-identity/transactional-email.md): 'Sent' with `type`
   // the template kind ('Welcome', 'TeamInvite', ...). Written server-side by
   // the api worker, which is the only place that knows a send happened —
   // nothing reaches a browser, so without this the whole onboarding series
   // was unmeasurable and a broken RESEND_API_KEY was invisible. Never an
   // address, a name, or a count of recipients: the kind and nothing else.
   'Email',
-  // Error tracking (spec/22): generic failure counts. The action slot
+  // Error tracking (docs/specs/017-telemetry/telemetry.md): generic failure counts. The action slot
   // carries the SOURCE ('Api' | 'Client', or 'Warning' for a degradation
   // the author was carried through — deliberate nouns in the verb slot);
   // `type` is a fixed kind or status token ('Http500', 'Internal',
   // 'Uncaught', 'UnhandledRejection', 'AiQuota.BrowserReader') — never a
   // message, stack, or URL.
   'Error',
-  // Timeline (spec/138): the Explorer's landing feed. 'Opened' with
+  // Timeline (docs/specs/013-workspace/timeline.md): the Explorer's landing feed. 'Opened' with
   // `type` 'Landing' | 'Nav' separates the new default landing view
   // from a deliberate visit, so the landing-page change is measurable;
   // 'Opened'/'Stack' counts stacked-run expansions, which is how we
   // learn whether the stacking thresholds are right. 'Changed' carries
   // the view mode, 'Selected' a filter chip's source type, and 'Loaded'
   // 'More' | 'Retry' — the second being a read that failed hard enough
-  // that the reader pressed Try again (spec/138 §2.4), which is the
+  // that the reader pressed Try again (docs/specs/013-workspace/timeline.md §2.4), which is the
   // only signal we get for a feed nobody could load. Never a diagram
   // name, team name, or comment text.
   'Timeline',
-  // Activity page (spec/142): the Explorer's cross-diagram inbox of open
+  // Activity page (docs/specs/013-workspace/activity-page.md): the Explorer's cross-diagram inbox of open
   // actions + comment threads. 'Opened' once per visit; 'Selected' with
   // `type` 'Action' | 'Thread' on a row click (which kind of row sends
   // people back into a diagram); 'Loaded'/'Retry' when a failed read is
   // retried. Never an action name, comment text, or diagram name.
   'Activity',
-  // Page views (spec/150): 'View' with `type` the normalised page path
+  // Page views (docs/specs/017-telemetry/page-view-telemetry.md): 'View' with `type` the normalised page path
   // ('/help/canvas/the-canvas', '/diagram'), reported by every
   // frontend on each path change. The one category whose `type` is a path,
   // so it validates against PAGE_VIEW_PATH_PATTERN instead of the token
@@ -117,7 +117,7 @@ export const TELEMETRY_ACTIONS = [
   'Removed',
   'Shared',
   'Joined',
-  // Team invites (spec/32): the recipient turned one down. The counterpart to
+  // Team invites (docs/specs/013-workspace/teams.md): the recipient turned one down. The counterpart to
   // 'Joined' rather than a flavour of 'Removed', because the two answer
   // different questions — an admin withdrawing an invitation is a change of
   // mind about the invite, a recipient declining is an answer to it, and only
@@ -129,7 +129,7 @@ export const TELEMETRY_ACTIONS = [
   'Locked',
   'Unlocked',
   // HISTORICAL: the editor stopped emitting these when groups were removed
-  // (spec/147). They stay in the vocabulary so the rows already stored keep
+  // (docs/specs/009-elements/web-components-and-no-groups.md). They stay in the vocabulary so the rows already stored keep
   // their label on the dashboard.
   'Grouped',
   'Ungrouped',
@@ -145,7 +145,7 @@ export const TELEMETRY_ACTIONS = [
   'Undone',
   'Redone',
   'Cleared',
-  // Diagram / Tab (spec/22): an existing diagram was opened, or a tab's
+  // Diagram / Tab (docs/specs/017-telemetry/telemetry.md): an existing diagram was opened, or a tab's
   // content was fetched for viewing (incl. switching to it). Fires on
   // every open, the counterpart to 'Created' — an engagement/opens signal.
   'Loaded',
@@ -161,25 +161,25 @@ export const TELEMETRY_ACTIONS = [
   'SignedIn',
   'SignedUp',
   'SignedOut',
-  // Live session tools (spec/39): a timer / vote started or ended, vote
+  // Live session tools (docs/specs/012-collaboration/session-tools.md): a timer / vote started or ended, vote
   // results revealed, and a dot cast on an element.
   'Started',
   'Ended',
   'Revealed',
   'Voted',
-  // Help centre (spec/22 + spec/55): an article was viewed, and the
+  // Help centre (docs/specs/017-telemetry/telemetry.md + docs/specs/018-help/help-app.md): an article was viewed, and the
   // reader rated it helpful / not-really via the article feedback widget.
   'View',
   'Helpful',
   'Unhelpful',
-  // Participant (spec/22): a returning browser reopened the app on a
+  // Participant (docs/specs/017-telemetry/telemetry.md): a returning browser reopened the app on a
   // later UTC day. Paired with 'Participant'/'Created', gated once per
   // UTC day client-side; type is 'Anonymous' | 'Authenticated'.
   'Returned',
-  // Email (spec/64): a transactional / lifecycle email left the worker for
+  // Email (docs/specs/014-identity/transactional-email.md): a transactional / lifecycle email left the worker for
   // the provider. Only ever paired with the 'Email' category.
   'Sent',
-  // Error source (spec/22): the nouns the 'Error' category uses in the
+  // Error source (docs/specs/017-telemetry/telemetry.md): the nouns the 'Error' category uses in the
   // action slot — API failures vs client-side exceptions, and warnings: a
   // degradation the author was carried through (a spent AI budget that
   // failed over to the in-browser reader) rather than stopped by.
@@ -213,7 +213,7 @@ export function isValidTelemetryEvent(value: unknown): value is TelemetryEvent {
   const e = value as Record<string, unknown>;
   if (!TELEMETRY_CATEGORIES.includes(e.category as TelemetryCategory)) return false;
   if (!TELEMETRY_ACTIONS.includes(e.action as TelemetryAction)) return false;
-  // A page view is only a page view with a path (spec/150).
+  // A page view is only a page view with a path (docs/specs/017-telemetry/page-view-telemetry.md).
   if (e.category === 'Page') {
     return e.action === 'View' && typeof e.type === 'string' && isValidPageViewPath(e.type);
   }
@@ -221,7 +221,7 @@ export function isValidTelemetryEvent(value: unknown): value is TelemetryEvent {
   return typeof e.type === 'string' && TELEMETRY_TYPE_PATTERN.test(e.type);
 }
 
-// The fixed dashboard windows (spec/22): no custom ranges, so queries
+// The fixed dashboard windows (docs/specs/017-telemetry/telemetry.md): no custom ranges, so queries
 // stay simple and the summary response is cacheable.
 export type TelemetryWindowKey = 'today' | 'last7' | 'last30';
 
@@ -249,17 +249,17 @@ export type TelemetryWindow = {
 };
 
 // ---------------------------------------------------------------------
-// AI Assistance (spec/25)
+// AI Assistance (docs/specs/007-editor/ai-assistance.md)
 // ---------------------------------------------------------------------
 
-// Two modes (spec/25): 'ask' is read-only Q&A; 'clean' tidies the existing tab.
+// Two modes (docs/specs/007-editor/ai-assistance.md): 'ask' is read-only Q&A; 'clean' tidies the existing tab.
 // The old 'generate' (Build) + 'review' modes were removed — the calling model
-// in an external AI tool (spec/62) does generation far better.
+// in an external AI tool (docs/specs/015-api/mcp-server.md) does generation far better.
 
 // `byMetric` is the per-event version of `byCategory`: one 30-day
 // series per distinct event, keyed by `metricKey(category, action,
 // type)` (= `category|action|type`, empty string for a null type).
-// Drives the Search view's single-metric trend line (spec/22).
+// Drives the Search view's single-metric trend line (docs/specs/017-telemetry/telemetry.md).
 export type TelemetryDaily = {
   days: number[];
   totals: number[];
@@ -277,7 +277,7 @@ export function metricKey(category: string, action: string, type: string | null)
 }
 
 // The `Element·Added` type tokens that correspond to a PALETTE item, in
-// the buckets the public dashboard ranks them by (spec/22).
+// the buckets the public dashboard ranks them by (docs/specs/017-telemetry/telemetry.md).
 //
 // Shared here, rather than hand-mirrored in the dashboard, because both
 // ends of this have to agree exactly: the editor picks the token when it
@@ -320,7 +320,7 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Annotation',
     'LinkCard',
     // Every embed tile (YouTube / Vimeo / Loom / Figma / Google Docs / the
-    // website embed, spec/133) creates a `video` element, and all six report
+    // website embed, docs/specs/009-elements/website-embed.md) creates a `video` element, and all six report
     // as `Video`: the provider is not part of the token. Missing here since
     // the element shipped, so six palette tiles were counted nowhere.
     'Video',
@@ -330,11 +330,11 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Timeline-rail',
     'CodeBlock',
     'Page',
-    // Mind node (spec/118).
+    // Mind node (docs/specs/009-elements/mind-node.md).
     'MindNode',
-    // Lane (spec/119).
+    // Lane (docs/specs/009-elements/lane.md).
     'Lane',
-    // Entity (spec/120).
+    // Entity (docs/specs/009-elements/entity.md).
     'Entity',
     'Checklist',
     'ModeButton',
@@ -343,11 +343,11 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Reveal',
     'Picker',
     'ReactionPad',
-    // Done check (spec/137): a Behaviour element by its palette home.
+    // Done check (docs/specs/012-collaboration/done-check.md): a Behaviour element by its palette home.
     'DoneCheck',
-    // Chair (spec/130): a Behaviour element, so it ranks with them.
+    // Chair (docs/specs/009-elements/chair.md): a Behaviour element, so it ranks with them.
     'Chair',
-    // Bring Focus (spec/144): likewise Behaviour, in the Navigate group. The
+    // Bring Focus (docs/specs/012-collaboration/bring-focus.md): likewise Behaviour, in the Navigate group. The
     // token is what elementTelemetryType actually emits for the kind, which
     // for a hyphenated one is the hyphen kept (see Pie-chart above).
     'Focus-button',
@@ -359,23 +359,23 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Rating',
     'Legend',
   ],
-  // The Collaborate category (spec/123 to spec/129) — its own bucket rather
+  // The Collaborate category (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md) — its own bucket rather
   // than more entries under `tools`, because the palette gave it its own
   // category and the dashboard's cards are the palette's own tabs. The Chair
-  // (spec/130) is NOT here: it ships in Behaviour, so it buckets with the
+  // (docs/specs/009-elements/chair.md) is NOT here: it ships in Behaviour, so it buckets with the
   // other behaviour elements under `tools` above.
   collaborate: [
     'Estimate',
     'Temperature',
     'Idea-box',
-    // Q&A board (spec/151).
+    // Q&A board (docs/specs/012-collaboration/qa-board.md).
     'Qa-board',
     'Agenda',
     'Decision',
     'Roll-call',
-    // Comment pin (spec/136).
+    // Comment pin (docs/specs/012-collaboration/comment-pin.md).
     'CommentPin',
-    // Action panel (spec/146).
+    // Action panel (docs/specs/012-collaboration/action-panel.md).
     'ActionPanel',
   ],
   components: ['Banner', 'Hero', 'Header', 'Callout', 'StatRow', 'ProcessSteps'],
@@ -402,7 +402,7 @@ export type TelemetrySummary = {
 };
 
 // -----
-// Unfurl (spec/40) — link-card preview metadata extracted server-side by
+// Unfurl (docs/specs/009-elements/link-cards.md) — link-card preview metadata extracted server-side by
 // GET /api/unfurl?url=… (the static client can't read cross-origin page
 // HTML). Every field is optional: an unfurl that finds nothing still
 // returns 200 with the resolved url, and the card falls back to the bare

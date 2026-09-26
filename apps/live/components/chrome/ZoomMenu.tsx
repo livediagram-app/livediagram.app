@@ -10,7 +10,7 @@ import { useHoverCloseTimer } from '@/hooks/ui/useHoverCloseTimer';
 // popover above with the preset zoom levels + Fit, so the dock itself
 // stays down to three buttons. Options live in a popover rather than
 // more dock buttons to keep the corner chrome minimal (same motivation
-// as zen mode, spec/26).
+// as zen mode, docs/specs/007-editor/zen-mode.md).
 
 const ZOOM_PRESETS = [0.25, 0.5, 0.75, 1, 1.25, 1.5];
 

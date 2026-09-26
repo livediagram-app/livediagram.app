@@ -1,6 +1,6 @@
 'use client';
 
-// The presenter's settings, opened from the cog in the HUD (spec/31).
+// The presenter's settings, opened from the cog in the HUD (docs/specs/012-collaboration/presentation-mode.md).
 //
 // Grouped into Transition, Playback and Display, because the list grew past
 // the point where a flat one reads as a list. Each entry still has to be a

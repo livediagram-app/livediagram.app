@@ -8,14 +8,14 @@ import {
   type ShapeElement,
 } from '@livediagram/diagram';
 
-// A chair (spec/130): furniture an Avatar-mode character sits down in.
+// A chair (docs/specs/009-elements/chair.md): furniture an Avatar-mode character sits down in.
 //
 // Drawn rather than labelled, because a box with the word "chair" in it is not
 // furniture. The element's own label renders UNDER the chair (a name, a role),
 // out of the way of whoever sits in it.
 //
 // WHO is sitting is not in the element — occupancy rides the avatar presence
-// op (spec/101), so a chair cannot be left stuck by somebody who closed their
+// op (docs/specs/008-canvas/avatar-mode.md), so a chair cannot be left stuck by somebody who closed their
 // laptop. The canvas passes the sitters it knows about from presence.
 
 export type ChairSitter = { name: string; color: string };
@@ -33,9 +33,9 @@ export function ChairView({
   element: ShapeElement;
   // Everyone currently seated here, from peer presence. Usually 0 or 1; two is
   // allowed and self-correcting, because enforcing one seat needs a lock and a
-  // lock means a chair that gets stuck (spec/130).
+  // lock means a chair that gets stuck (docs/specs/009-elements/chair.md).
   sitters: ChairSitter[];
-  // The glow / pulse / trace / gradient animation (spec/09), drawn on the
+  // The glow / pulse / trace / gradient animation (docs/specs/008-canvas/canvas-and-palette.md), drawn on the
   // chair's own silhouette: the element box is transparent, so the wrapper's
   // box-shadow version would ring a rectangle around nothing. Mounted here
   // rather than on the svg, whose `transform` already carries the facing.

@@ -59,7 +59,7 @@ describe('boxed-element factories', () => {
   });
 
   it('createImage drops a 200x150 placeholder with null imageId and aspect-lock on', () => {
-    // spec/19 contract: the canvas drops an image element with no
+    // docs/specs/009-elements/images.md contract: the canvas drops an image element with no
     // bytes attached, the picker fills imageId in afterwards. The
     // empty-state thumbnail renders while imageId is null, then the
     // aspectLocked default kicks in so resizing once a real image
@@ -75,7 +75,7 @@ describe('boxed-element factories', () => {
     });
   });
 
-  it('createAnnotation is a 44x44 boxed marker with no note yet (spec/38)', () => {
+  it('createAnnotation is a 44x44 boxed marker with no note yet (docs/specs/009-elements/annotations.md)', () => {
     const a = createAnnotation(7, 8);
     expect(a).toMatchObject({ type: 'annotation', x: 7, y: 8, width: 44, height: 44 });
     // Aspect-locked by default so resizing keeps the marker round.
@@ -86,7 +86,7 @@ describe('boxed-element factories', () => {
     expect(isBoxed(a)).toBe(true);
   });
 
-  it('createLinkCard is a 280x120 boxed bookmark with no link/meta yet (spec/40)', () => {
+  it('createLinkCard is a 280x120 boxed bookmark with no link/meta yet (docs/specs/009-elements/link-cards.md)', () => {
     const c = createLinkCard(3, 4);
     expect(c).toMatchObject({ type: 'link-card', x: 3, y: 4, width: 280, height: 120 });
     expect(c.link).toBeUndefined();
@@ -271,7 +271,7 @@ describe('duplicateElements', () => {
     expect(idMap.has('arrow')).toBe(false);
   });
 
-  it('remaps an on-arrow endpoint to the duplicate when the target arrow copies too (spec/50)', () => {
+  it('remaps an on-arrow endpoint to the duplicate when the target arrow copies too (docs/specs/008-canvas/arrow-to-arrow.md)', () => {
     const a = shape('a');
     const lifeline: ArrowElement = {
       id: 'lifeline',
@@ -435,7 +435,7 @@ describe('comment helpers', () => {
 const _typecheck: Element = createShape('square', 0, 0);
 void _typecheck;
 
-describe('createShape (mode button, spec/103)', () => {
+describe('createShape (mode button, docs/specs/009-elements/mode-button.md)', () => {
   it('arrives looking like a real button, not a themed box', () => {
     const button = createShape('mode-button', 10, 20);
     expect(button.shape).toBe('mode-button');
@@ -491,7 +491,7 @@ describe('createShape (mode button, spec/103)', () => {
     ).toBe(false);
   });
 
-  it('makes a portal portal-shaped and unpaired (spec/104)', () => {
+  it('makes a portal portal-shaped and unpaired (docs/specs/009-elements/portal-element.md)', () => {
     const portal = createShape('portal', 0, 0);
     expect(portal.shape).toBe('portal');
     expect(portal.height).toBeGreaterThan(portal.width);
@@ -504,7 +504,7 @@ describe('createShape (mode button, spec/103)', () => {
   });
 });
 
-// A copied workshop note (spec/139) is a new piece of paper: fresh id AND a
+// A copied workshop note (docs/specs/021-event-storming/event-storming.md) is a new piece of paper: fresh id AND a
 // fresh hand-placement. Every duplication path in the editor — Ctrl+D,
 // shift-drag duplicate, copy/paste — funnels through this one function, so
 // the rule lives here and can't be missed by one of them.

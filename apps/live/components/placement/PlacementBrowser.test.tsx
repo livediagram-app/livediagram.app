@@ -5,8 +5,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { PlacementBrowser, type PickerFolder } from './PlacementBrowser';
 import type { PlacementLayout } from './PlacementCard';
 
-// The browse the New Diagram wizard's folder step (spec/141) and the
-// move-to-folder dialog (spec/15) share. These pin the parts a reader can't
+// The browse the New Diagram wizard's folder step (docs/specs/006-diagram/save-locations.md) and the
+// move-to-folder dialog (docs/specs/013-workspace/folders.md) share. These pin the parts a reader can't
 // tell from the placement strings: the bar that is at every level, the
 // subfolder badges, the Folder / Subfolder caption, and the cascade each
 // level enters with.

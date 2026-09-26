@@ -25,7 +25,7 @@ import { noteSizeField } from './size-field';
 import { combineWithModel, type HybridRules } from './hybrid';
 import type { ModelCues } from './model-cues';
 
-// Finding the stickies in a photograph of a wall (spec/139 Phase 8).
+// Finding the stickies in a photograph of a wall (docs/specs/021-event-storming/event-storming.md Phase 8).
 //
 // Classical computer vision, on purpose: the notation is COLOUR, and colour is
 // something a hue histogram knows exactly and a language model guesses at. It
@@ -154,7 +154,7 @@ export function detectStickies(image: ImageBuffer, opts: DetectOptions = {}): De
   const noteSize = estimateNoteSize(blobs, noiseFloor);
   const classNoteSize = estimateNoteSizes(blobs, noiseFloor);
   // Fuse handwriting-shattered notes back into whole notes before labeling
-  // (spec/139 Phase 9): a morphological close by ~a pen stroke, per class —
+  // (docs/specs/021-event-storming/event-storming.md Phase 9): a morphological close by ~a pen stroke, per class —
   // and a pen stroke is a fraction of a NOTE, not of the frame. Photographed
   // close up, a note is 55px and the gap to the note beside it is a handful,
   // so a radius picked off the image welded four notes into a bar.

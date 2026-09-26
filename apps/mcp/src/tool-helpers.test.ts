@@ -10,7 +10,7 @@ import {
   type Extra,
 } from './tool-helpers';
 
-// The plumbing every MCP tool goes through (spec/62), and none of it had a
+// The plumbing every MCP tool goes through (docs/specs/015-api/mcp-server.md), and none of it had a
 // test. `requireToken` is an auth boundary — it is the check standing between
 // an unauthenticated caller and the api. The result helpers decide what an AI
 // client actually receives, including whether it can tell a failure from a

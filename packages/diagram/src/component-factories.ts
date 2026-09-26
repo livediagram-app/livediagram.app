@@ -1,4 +1,4 @@
-// The palette's ready-made components (spec/09, spec/147): Banner, Callout,
+// The palette's ready-made components (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/009-elements/web-components-and-no-groups.md): Banner, Callout,
 // Stat row, Process steps, Header, Hero and Avatar, plus the createComponent
 // dispatcher and their natural sizes.
 //
@@ -51,7 +51,7 @@ export const COMPONENT_SIZE: Record<ComponentKind, { width: number; height: numb
   avatar: { width: AVATAR_SIZE, height: AVATAR_SIZE },
 };
 
-// Avatar (spec/09): a circular image. Square + aspect-locked with a 'full'
+// Avatar (docs/specs/008-canvas/canvas-and-palette.md): a circular image. Square + aspect-locked with a 'full'
 // corner radius (CSS clamps that to a circle). Centred on (cx, cy); imageId
 // is null until the picker fills it.
 export function createAvatar(cx: number, cy: number): ImageElement {
@@ -65,7 +65,7 @@ export function createAvatar(cx: number, cy: number): ImageElement {
   };
 }
 
-// Hero (spec/147): a large cover-fit image with a caption card inset near the
+// Hero (docs/specs/009-elements/web-components-and-no-groups.md): a large cover-fit image with a caption card inset near the
 // bottom, in the theme accent under white text. The card is inset rather than
 // covering the image so the image stays double-clickable to set / change it.
 export function createHero(cx: number, cy: number, accent: string): ImageElement {
@@ -81,7 +81,7 @@ export function createHero(cx: number, cy: number, accent: string): ImageElement
   };
 }
 
-// One web component shape (spec/147), centred on (cx, cy) and dressed in the
+// One web component shape (docs/specs/009-elements/web-components-and-no-groups.md), centred on (cx, cy) and dressed in the
 // theme. The accent-bar kinds (banner, header) take the accent as their
 // stroke, which the bar paints in, and keep white text; the cards take the
 // surface + ink with the accent as their border and emphasis.

@@ -4,12 +4,12 @@ import type { Participant } from '@/lib/identity';
 export type ShareDialogProps = {
   participant: Participant;
   links: ShareLink[];
-  // The diagram's current share password (spec/24), or null when unset.
+  // The diagram's current share password (docs/specs/013-workspace/share-password.md), or null when unset.
   // Shown in the clear so the owner can always see + change it.
   sharePassword: string | null;
   shareUrlFor: (code: string) => string;
   // The diagram's tabs, in bar order, for the Live image control's
-  // per-tab picker (spec/54). The first entry is the default the cached
+  // per-tab picker (docs/specs/013-workspace/live-image-share.md). The first entry is the default the cached
   // snapshot renders; picking another appends `?tab=<id>` to the image
   // URL. Only `id` + `name` are read.
   tabs: { id: string; name: string }[];
@@ -18,20 +18,20 @@ export type ShareDialogProps = {
   nameConfirmed: boolean;
   // When non-null, the owner is signed in via Clerk and their display
   // name is dictated by their account — there's nothing to edit, so
-  // the "Your name" row hides entirely (spec/07). Guests (null) get
+  // the "Your name" row hides entirely (docs/specs/007-editor/live-app.md). Guests (null) get
   // the editable name + shuffle row.
   lockedName?: string | null;
   onSaveName: (name: string) => Promise<void> | void;
   onCreateLink: (role: ShareRole, expiry: ShareLinkExpiry) => Promise<void> | void;
   onRevokeLink: (code: string) => Promise<void> | void;
   // Re-arm an expiring link for another round of its creation-time
-  // duration (spec/34). Only rendered on inactive (expired) rows.
+  // duration (docs/specs/013-workspace/share-link-expiry.md). Only rendered on inactive (expired) rows.
   onExtendLink: (code: string) => Promise<void> | void;
   // Set (or clear, with null) the diagram's share password. Resolves to
   // the stored value on success (`null` = cleared) and `undefined` on
   // FAILURE, so the field never reflects a write that didn't land.
   onSetPassword: (password: string | null) => Promise<string | null | undefined> | void;
-  // Offline Mode (spec/76): an offline diagram lives only in this browser, so
+  // Offline Mode (docs/specs/006-diagram/offline-mode.md): an offline diagram lives only in this browser, so
   // it has nothing to share yet. When true the dialog shows a gate asking the
   // owner to sync it to their account first; `onSyncToCloud` performs that
   // conversion (offline -> cloud), after which the real share options apply.

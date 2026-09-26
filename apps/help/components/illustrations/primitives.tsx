@@ -1,4 +1,4 @@
-// Shared SVG building blocks for the in-article help illustrations (spec/55).
+// Shared SVG building blocks for the in-article help illustrations (docs/specs/018-help/help-app.md).
 //
 // Every illustration in `components/illustrations/*` is composed from these
 // primitives so the whole help centre reads as one coherent window into the

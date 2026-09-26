@@ -2,7 +2,7 @@
 // simpler than comments: one small document per element, no author, no
 // thread. The state machine is just an open-id (`noteOpenId`, null when no
 // popover is open); the content lives on the element as `note?` (the
-// plain-text mirror) plus `noteRich?` (its formatting runs, spec/92) — see
+// plain-text mirror) plus `noteRich?` (its formatting runs, docs/specs/009-elements/rich-text-notes.md) — see
 // packages/diagram BoxedElement.
 //
 // Unlike comments (which bypass history on purpose), note edits run

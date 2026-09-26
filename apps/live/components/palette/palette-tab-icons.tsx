@@ -1,4 +1,4 @@
-// The palette category-tab glyphs (spec/09), lifted out of
+// The palette category-tab glyphs (docs/specs/008-canvas/canvas-and-palette.md), lifted out of
 // CommandPalette's tab definitions so the palette file reads as wiring
 // rather than ~180 lines of inline SVG. Each is the universal symbol
 // for its category, readable at tab size.
@@ -45,7 +45,7 @@ export function ShapesTabIcon() {
   );
 }
 
-// Build (spec/132): a frame with a band across its top and a node hanging off
+// Build (docs/specs/010-palette/build-category.md): a frame with a band across its top and a node hanging off
 // it — scaffolding rather than content, which is what this category holds.
 export function BuildTabIcon() {
   return (
@@ -88,7 +88,7 @@ export function ComponentsTabIcon() {
   );
 }
 
-// The Data category's glyph (spec/53): a bar chart, the most literal picture
+// The Data category's glyph (docs/specs/009-elements/pie-chart.md): a bar chart, the most literal picture
 // of what the tab holds.
 export function DataTabIcon() {
   return (
@@ -107,7 +107,7 @@ export function DataTabIcon() {
   );
 }
 
-// The Behaviour category's glyph (spec/110): a cursor over a target, for the
+// The Behaviour category's glyph (docs/specs/010-palette/palette-top-level-categories.md): a cursor over a target, for the
 // elements that DO something when somebody interacts with them.
 export function BehaviourTabIcon() {
   return (
@@ -128,7 +128,7 @@ export function BehaviourTabIcon() {
   );
 }
 
-// The Write category's glyph (spec/110): a pen nib over a line of text.
+// The Write category's glyph (docs/specs/010-palette/palette-top-level-categories.md): a pen nib over a line of text.
 export function WriteTabIcon() {
   return (
     <svg
@@ -148,7 +148,7 @@ export function WriteTabIcon() {
   );
 }
 
-// The Draw category's glyph (spec/110): a freehand squiggle.
+// The Draw category's glyph (docs/specs/010-palette/palette-top-level-categories.md): a freehand squiggle.
 export function DrawTabIcon() {
   return (
     <svg
@@ -167,7 +167,7 @@ export function DrawTabIcon() {
   );
 }
 
-// The Media category's glyph (spec/110): a picture frame, for Image + Avatar.
+// The Media category's glyph (docs/specs/010-palette/palette-top-level-categories.md): a picture frame, for Image + Avatar.
 export function MediaTabIcon() {
   return (
     <svg
@@ -274,7 +274,7 @@ export function TechTabIcon() {
   );
 }
 
-/** Event Storming (spec/139): three tilted sticky notes marching left to
+/** Event Storming (docs/specs/021-event-storming/event-storming.md): three tilted sticky notes marching left to
  *  right — the workshop's opening move, matching the template's preview. */
 export function EventStormingTabIcon() {
   return (

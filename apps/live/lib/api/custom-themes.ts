@@ -1,4 +1,4 @@
-// Custom-theme calls (spec/44): list / create / update / delete. Owner-
+// Custom-theme calls (docs/specs/011-theme/custom-themes.md): list / create / update / delete. Owner-
 // scoped like folders; guests included (apiHeaders attaches the Clerk
 // token when signed in, else the X-Owner-Id header).
 import type { CustomTheme, CustomThemeDefinition } from '@livediagram/api-schema';
@@ -50,7 +50,7 @@ export async function apiUpdateCustomTheme(
 }
 
 export async function apiDeleteCustomTheme(ownerId: string, id: string): Promise<void> {
-  // Theme events are keyed under the 'account' source type (spec/138 §4.5).
+  // Theme events are keyed under the 'account' source type (docs/specs/013-workspace/timeline.md §4.5).
   return apiDelete(`${API_BASE}/custom-themes/${id}`, ownerId, {
     action: 'delete custom theme',
     purge: { sourceType: 'account', sourceId: id },

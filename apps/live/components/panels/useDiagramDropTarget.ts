@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { DIAGRAM_DRAG_MIME } from './explorer-drag-mime';
 
-// A folder row that accepts a diagram dragged onto it (spec/15): the
+// A folder row that accepts a diagram dragged onto it (docs/specs/013-workspace/folders.md): the
 // hover-highlight flag plus the three drag handlers the row spreads onto its
 // element.
 //

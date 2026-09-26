@@ -1,19 +1,19 @@
-// Activity page wire format (spec/142): the cross-diagram list of what
+// Activity page wire format (docs/specs/013-workspace/activity-page.md): the cross-diagram list of what
 // is outstanding for one reader — open actions assigned to them, open
 // actions they assigned to others, and unresolved comment threads they
 // are in.
 //
 // The api worker builds these from the collaboration index
 // (`collab_actions` / `collab_threads`, a projection of the element
-// JSON that stays the source of truth, spec/68 §1); the live app's
+// JSON that stays the source of truth, docs/specs/012-collaboration/assigned-actions.md §1); the live app's
 // Activity pane renders them. Present-tense by design: the Timeline
-// (spec/138) records that an action WAS assigned, this says whether it
+// (docs/specs/013-workspace/timeline.md) records that an action WAS assigned, this says whether it
 // is still open.
 
 // Where a row lives, and how the reader reaches it. `via` is how the
 // diagram is visible to them (their own, a joined team's library, or
 // shared with them); `shareCode` is set only for 'shared', so the client
-// can build the visitor URL (spec/33) the way Shared with You does.
+// can build the visitor URL (docs/specs/013-workspace/embeds.md) the way Shared with You does.
 export type ActivityPlace = {
   diagramId: string;
   diagramName: string;
@@ -28,9 +28,9 @@ export type ActivityPlace = {
   elementLabel: string;
 };
 
-// An open action (spec/68) the reader assigned or was assigned. The two
+// An open action (docs/specs/012-collaboration/assigned-actions.md) the reader assigned or was assigned. The two
 // flags are resolved server-side against the reader's identity AND the
-// identities it used to be (spec/142 §2.2), so a self-assignment made as
+// identities it used to be (docs/specs/013-workspace/activity-page.md §2.2), so a self-assignment made as
 // a guest still reads as "mine" after signing up.
 export type ActivityAction = ActivityPlace & {
   id: string;
@@ -46,7 +46,7 @@ export type ActivityAction = ActivityPlace & {
 
 // An unresolved comment thread the reader is in: they wrote a comment
 // in it, or it is on a diagram they own (owners already hear about every
-// new comment by email, spec/64).
+// new comment by email, docs/specs/014-identity/transactional-email.md).
 export type ActivityThread = ActivityPlace & {
   commentCount: number;
   latest: { text: string; authorName: string; authorColor: string; at: number };

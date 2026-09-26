@@ -1,10 +1,10 @@
 // POST /api/diagrams/<id>/tabs/<tabId>/qa — one action on a Q&A board
-// (spec/151).
+// (docs/specs/012-collaboration/qa-board.md).
 //
 // The board is the one element whose state the SERVER owns: every add, vote
 // and facilitator action, from every role, comes through here. That is what
 // lets a view-link audience take part (the comment endpoint is the precedent
-// for a view-role write, spec/11) and what keeps one vote per person honest,
+// for a view-role write, docs/specs/015-api/api.md) and what keeps one vote per person honest,
 // because the voter id is derived from the authenticated caller rather than
 // claimed by them.
 //
@@ -52,7 +52,7 @@ export async function handleQaBoardRoute(ctx: RouteContext): Promise<Response | 
 
   // The audience's two verbs are open to anyone who can read the diagram;
   // running the board needs edit rights. The facilitator baton is a
-  // client-side rule on top (spec/149): this route can't see which socket
+  // client-side rule on top (docs/specs/012-collaboration/facilitator.md): this route can't see which socket
   // holds it.
   const allowed = isParticipantQaAction(action)
     ? await gateRead(ctx, id, existing.ownerId, existing.teamId)
@@ -60,7 +60,7 @@ export async function handleQaBoardRoute(ctx: RouteContext): Promise<Response | 
   if (!allowed) return forbidden();
 
   // Server-derived identity: the voter id from the authenticated owner, the
-  // author from their participant row (never from the request, spec/12).
+  // author from their participant row (never from the request, docs/specs/012-collaboration/activity-and-audit.md).
   const voterId = await qaVoterId(owner, elementId);
   const author =
     action.type === 'add' && !action.anonymous

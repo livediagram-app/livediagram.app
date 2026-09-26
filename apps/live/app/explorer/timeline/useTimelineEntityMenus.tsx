@@ -1,7 +1,7 @@
 'use client';
 
 // What a Timeline card's ⋯ menu can DO for the thing it's about, beyond
-// removing the card (spec/138 §2.8): the verbs the Explorer already
+// removing the card (docs/specs/013-workspace/timeline.md §2.8): the verbs the Explorer already
 // offers that kind of entity, resolved from the Explorer's own state
 // and run through the Explorer's own handlers.
 //
@@ -126,7 +126,7 @@ export function useTimelineEntityMenus(): {
     async (team: TeamListItem) => {
       if (!ownerId) return;
       // The member list isn't in the Explorer's team list; fetch it for
-      // the reader's own row and the last-admin rule (spec/32).
+      // the reader's own row and the last-admin rule (docs/specs/013-workspace/teams.md).
       const detail = await apiGetTeam(ownerId, team.id).catch(() => null);
       const self = detail?.members.find((m) => m.userId !== null && m.userId === clerkUserId);
       if (!detail || !self) {

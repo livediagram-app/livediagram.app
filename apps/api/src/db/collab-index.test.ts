@@ -9,7 +9,7 @@ import {
 } from './collab-index';
 
 // The statements a tab write contributes to the collaboration index
-// (spec/142 §2.1), and the read's row -> DTO mapping (§3, §4). A fake
+// (docs/specs/013-workspace/activity-page.md §2.1), and the read's row -> DTO mapping (§3, §4). A fake
 // D1 binding records SQL + binds; the SQL itself needs a live D1 to
 // prove, so these pin the CONTRACT every write path relies on: a full
 // replace per tab, the FK-safe ordering, and the dedupe/drop rules on

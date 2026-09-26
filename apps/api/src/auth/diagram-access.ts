@@ -13,15 +13,15 @@
 //   different diagram leaking write access through.
 //
 //   Both additionally allow a JOINED member of the diagram's team
-//   (spec/35): a team's shared library grants edit to its members,
+//   (docs/specs/013-workspace/team-shared-diagrams.md): a team's shared library grants edit to its members,
 //   checked against the verified caller identity. Invited (not yet
-//   accepted) members get nothing, consistent with spec/32.
+//   accepted) members get nothing, consistent with docs/specs/013-workspace/teams.md.
 //
 //   canReadDiagram: owner, OR ANY valid share code (view or edit)
 //   that maps to this diagram. Reads must be open to view-role
 //   visitors: a view-only share link exists precisely so
-//   stakeholders can see the diagram (spec/04), and tab content is
-//   fetched lazily per tab (spec/13), so the per-tab GET is the
+//   stakeholders can see the diagram (docs/specs/014-identity/auth-and-guest-access.md), and tab content is
+//   fetched lazily per tab (docs/specs/006-diagram/per-tab-storage.md), so the per-tab GET is the
 //   only path a viewer has to that content. Mirrors the read check
 //   the image route applies (a share code for the diagram,
 //   regardless of role).
@@ -30,7 +30,7 @@ import { getMembership } from '../db';
 import type { Env } from '../types';
 import { isPersonalOwner, shareLinkForDiagram, sharePasswordOk } from './share-access';
 
-// Joined-member check for team diagrams (spec/35). `caller` MUST be the
+// Joined-member check for team diagrams (docs/specs/013-workspace/team-shared-diagrams.md). `caller` MUST be the
 // VERIFIED Clerk user id (never the unsigned X-Owner-Id header): a team
 // owner/member id is a Clerk id deliberately shared among teammates, so
 // trusting an attacker-supplied id here would let a removed member (or
@@ -67,13 +67,13 @@ async function canAccessDiagram(
 ): Promise<boolean> {
   // Membership alone for a team diagram. The owner of a team diagram is a
   // joined member while they're in the team; once they leave or are removed,
-  // owning the row must not keep it open to them (spec/35).
+  // owning the row must not keep it open to them (docs/specs/013-workspace/team-shared-diagrams.md).
   if (isPersonalOwner(owner, ownerId, teamId)) return true;
   if (await isJoinedTeamMember(env, teamId, callerId)) return true;
   const link = await shareLinkForDiagram(env, shareCode, diagramId);
   if (!link) return false;
   if (needsEdit && link.role !== 'edit') return false;
-  // Share-password gate (spec/24): every share-code-based access must carry
+  // Share-password gate (docs/specs/013-workspace/share-password.md): every share-code-based access must carry
   // the matching X-Share-Password. `sharePassword` defaults to null so the
   // 5-arg call sites + existing tests fail CLOSED on a protected diagram
   // rather than silently bypassing the gate.

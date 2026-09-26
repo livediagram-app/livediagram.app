@@ -4,7 +4,7 @@ import { StartDrawingArt } from '@/components/StartDrawingArt';
 // (`app/page.tsx`) and every feature category page (`/features/<id>`) so a
 // visitor who drilled into a category can convert without bouncing home, and
 // the CTA copy / styling lives in exactly one place. The primary CTA reads
-// "Start drawing" everywhere (spec/16).
+// "Start drawing" everywhere (docs/specs/019-marketing/marketing-site.md).
 export function StartDrawingCta() {
   return (
     <section id="get-started" className="border-t border-slate-200/70 bg-brand-500">

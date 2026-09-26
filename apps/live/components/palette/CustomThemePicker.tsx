@@ -1,13 +1,13 @@
 'use client';
 
-// The theme picker with custom-theme support (spec/44): the built-in
+// The theme picker with custom-theme support (docs/specs/011-theme/custom-themes.md): the built-in
 // ThemeCategoryBrowser plus a "Custom" category (wired through the browser)
 // whose drill-in lists the owner's saved themes and a "+ New theme" tile.
 // This component owns the builder: picking New / Edit swaps the whole
 // picker for the CustomThemeBuilder with a Cancel back to browsing.
 //
-// Shared by the right-click Tab Look & Feel dialog (spec/42) and the
-// New-diagram / template picker (spec/14) so the two surfaces, and the
+// Shared by the right-click Tab Look & Feel dialog (docs/specs/011-theme/canvas-and-theme-dialog.md) and the
+// New-diagram / template picker (docs/specs/007-editor/new-diagram-route.md) so the two surfaces, and the
 // custom-theme create/edit flow, can't drift. Selection is reported via
 // onSelect / onCommit; the host decides what that means: apply live (the
 // dialog) or stage the choice until Create (the new-diagram wizard).
@@ -73,7 +73,7 @@ export function CustomThemePicker({
   };
 
   // "Copy" a built-in theme: open the builder as a new theme seeded with
-  // that theme's options so the user can tweak it (spec/44).
+  // that theme's options so the user can tweak it (docs/specs/011-theme/custom-themes.md).
   const copyTheme = (theme: ThemeDefinition) => {
     setSaveError(null);
     setReturnToCustom(true);

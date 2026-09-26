@@ -72,7 +72,7 @@ describe('findInsertionSlot', () => {
     expect(new Set(slot?.shiftedIds)).toEqual(new Set(['b', 'c']));
   });
 
-  // The second entry point (spec/139): a note ALREADY on the board is dragged
+  // The second entry point (docs/specs/021-event-storming/event-storming.md): a note ALREADY on the board is dragged
   // into a gap. It is the thing being inserted, so it must neither define the
   // row nor be pushed aside by its own arrival.
   describe('when the incoming note is already on the board', () => {
@@ -465,7 +465,7 @@ describe('insertionGhostCentre', () => {
   });
 });
 
-// Timeline lanes (spec/139 Phase 6): with lanes on, the board has committed to
+// Timeline lanes (docs/specs/021-event-storming/event-storming.md Phase 6): with lanes on, the board has committed to
 // The ripple opens by the incoming note plus the row's own gap, and that is
 // the whole rule on every board. A lanes board used to round it up to a column
 // lattice, which is exactly the assumption that broke: a gutter of 72 is not a
@@ -500,7 +500,7 @@ describe('findInsertionSlot — on a lanes-on board', () => {
   });
 });
 
-// Two notes one gutter apart are two notes (spec/139 Phase 7: docking is
+// Two notes one gutter apart are two notes (docs/specs/021-event-storming/event-storming.md Phase 7: docking is
 // retired), so the gap between them is a gap like any other.
 describe('findInsertionSlot — notes a gutter apart', () => {
   const esNote = (id: string, kind: string, x: number) =>

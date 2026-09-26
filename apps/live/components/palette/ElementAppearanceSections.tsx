@@ -105,7 +105,7 @@ export function ElementAppearanceSections({
   // the actor, and the self-drawing data shapes, whose controls were dead).
   const borderable = supportsBorderControls(target);
   // A regular shape carrying an inline icon (drag-an-icon-onto-it
-  // feature, spec/09) gets a "Remove icon" entry; the dedicated 'icon'
+  // feature, docs/specs/008-canvas/canvas-and-palette.md) gets a "Remove icon" entry; the dedicated 'icon'
   // shape is its own glyph and excluded.
   const hasInlineIcon =
     target.type === 'shape' && target.shape !== 'icon' && target.iconId !== undefined;
@@ -119,27 +119,27 @@ export function ElementAppearanceSections({
   const isMind = isMindNode(target);
   const isChecklist = target.type === 'shape' && isChecklistShape(target.shape);
   const isEntity = target.type === 'shape' && target.shape === 'entity';
-  // Mode button (spec/103): its one setting is which mode it hands out.
+  // Mode button (docs/specs/009-elements/mode-button.md): its one setting is which mode it hands out.
   const isModeButton = target.type === 'shape' && target.shape === 'mode-button';
-  // Portal (spec/104): its one setting is which portal it leads to.
+  // Portal (docs/specs/009-elements/portal-element.md): its one setting is which portal it leads to.
   const isPortal = target.type === 'shape' && target.shape === 'portal';
-  // The other Behaviour kinds with settings (spec/105, /106, /107).
+  // The other Behaviour kinds with settings (docs/specs/012-collaboration/session-button.md, /106, /107).
   const isSessionButton = target.type === 'shape' && target.shape === 'session-button';
   const isReveal = target.type === 'shape' && target.shape === 'reveal';
   const isPicker = target.type === 'shape' && target.shape === 'picker';
   const isReactionPad = target.type === 'shape' && target.shape === 'reaction-pad';
-  // The collaboration elements that carry settings (spec/123, 127, 128, 130).
+  // The collaboration elements that carry settings (docs/specs/012-collaboration/estimate-card.md, 127, 128, 130).
   const isEstimate = target.type === 'shape' && target.shape === 'estimate';
   const isAgenda = target.type === 'shape' && target.shape === 'agenda';
   const isDecision = target.type === 'shape' && target.shape === 'decision';
   const isChair = target.type === 'shape' && target.shape === 'chair';
-  // The Text band (spec/09): Markers + Alignment. Markers are regular-shape
+  // The Text band (docs/specs/008-canvas/canvas-and-palette.md): Markers + Alignment. Markers are regular-shape
   // only (self-drawing shapes have no label slot); Alignment applies to any
   // boxed element with a text slot.
-  // Markers decorate the LABEL (spec/49), so the category only shows once
+  // Markers decorate the LABEL (docs/specs/009-elements/shape-markers.md), so the category only shows once
   // the element actually has text — or while its text is being TYPED: in
   // edit mode the label is still uncommitted (text commits on blur), and
-  // the menu riding alongside the editor (spec/09) must offer the text
+  // the menu riding alongside the editor (docs/specs/008-canvas/canvas-and-palette.md) must offer the text
   // options for the words on screen, not the empty committed label.
   const hasText =
     ((target as { label?: string }).label ?? '').trim().length > 0 || props.editingId === target.id;
@@ -162,7 +162,7 @@ export function ElementAppearanceSections({
   // The Style flyout shows when any of its children would: presets
   // (shapes with looks / arrow line looks), Colours, or Border — the
   // same gates the sections carry inside.
-  // A code block takes no element colours (spec/82) but it does pick a colour
+  // A code block takes no element colours (docs/specs/009-elements/code-block.md) but it does pick a colour
   // SCHEME, so the band opens for it carrying only Presets: Colours and Border
   // gate themselves off it already.
   const showStyle =
@@ -175,7 +175,7 @@ export function ElementAppearanceSections({
   return (
     <>
       {showAppearanceGroup ? <MenuGroupSeparator /> : null}
-      {/* ── Style band (spec/09): Presets (spec/48) + Colours + Border,
+      {/* ── Style band (docs/specs/008-canvas/canvas-and-palette.md): Presets (docs/specs/010-palette/style-presets.md) + Colours + Border,
             grouped under one "Style" row that opens them in a side flyout —
             the same fold the Text band uses — so the three style categories
             take one slot in the menu's vertical stack. Inside the flyout
@@ -240,7 +240,7 @@ export function ElementAppearanceSections({
         sectionProps={sectionProps}
         flyoutProps={flyoutProps}
       />
-      {/* Icon — a Technology icon element's fixed tile size (spec/41).
+      {/* Icon — a Technology icon element's fixed tile size (docs/specs/010-palette/technology-icons.md).
             The mark renders at a preset pixel size regardless of the box;
             these tiles pick the preset. */}
       {isIcon && isTechIconId((target as { iconId?: string }).iconId) ? (
@@ -303,9 +303,9 @@ export function ElementAppearanceSections({
           </MenuAccordionSection>
         </>
       ) : null}
-      {/* ── Text band (spec/09): every text control for the element —
+      {/* ── Text band (docs/specs/008-canvas/canvas-and-palette.md): every text control for the element —
             typography (Font / Size / Padding / Alignment) plus Markers
-            (spec/49) — grouped under one "Text" row that opens them in a side
+            (docs/specs/009-elements/shape-markers.md) — grouped under one "Text" row that opens them in a side
             flyout, so they don't lengthen the menu's vertical stack. The row
             only shows when the element has text (showMarkers / showAlignment
             both require a non-empty label). Sub-categories all start closed:

@@ -59,7 +59,7 @@ export function MultiPlacementSections({
           <MenuTile icon={<LayerUpIcon />} label="Bring to Front" onClick={props.onBringToFront} />
           <MenuTile icon={<LayerDownIcon />} label="Send to Back" onClick={props.onSendToBack} />
         </MenuTileGrid>
-        {/* Move the whole selection to a named layer (spec/74). */}
+        {/* Move the whole selection to a named layer (docs/specs/006-diagram/layers.md). */}
         <MoveToLayerRow
           layers={props.layers}
           elements={props.elements}

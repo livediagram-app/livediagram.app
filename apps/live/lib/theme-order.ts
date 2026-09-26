@@ -7,7 +7,7 @@ import {
 import { shufflePinned } from './shuffle';
 import { themeCategory } from './themes-taxonomy';
 
-// Which themes LEAD, whatever the shuffle does (spec/09).
+// Which themes LEAD, whatever the shuffle does (docs/specs/008-canvas/canvas-and-palette.md).
 //
 // The scheme browser deliberately shuffles, so a different set greets the user
 // on each open. Default is exempt, because it is the one a reader measures the

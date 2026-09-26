@@ -1,6 +1,6 @@
 'use client';
 
-// Bring Focus (spec/144): press it and everyone else in the room is offered a
+// Bring Focus (docs/specs/012-collaboration/bring-focus.md): press it and everyone else in the room is offered a
 // jump to it, at your zoom, on your tab.
 //
 // The same keycap the mode button wears, for the same reason: this is a thing
@@ -13,7 +13,7 @@ import { keycapEdge } from '@/components/canvas/paper-kit';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 
 // A target: the reticle you put over the thing you want looked at. Not an eye
-// (that is the reveal's, spec/106) and not an arrow (that is the portal's):
+// (that is the reveal's, docs/specs/009-elements/reveal-zone.md) and not an arrow (that is the portal's):
 // this one is about WHERE, not about seeing or travelling.
 function TargetGlyph() {
   return (

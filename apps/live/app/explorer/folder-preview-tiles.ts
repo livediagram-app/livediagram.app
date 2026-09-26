@@ -1,4 +1,4 @@
-// Which tiles a folder card's content preview shows (spec/99), kept
+// Which tiles a folder card's content preview shows (docs/specs/013-workspace/folder-content-previews.md), kept
 // pure and separate from the rendering so the rule ("diagrams first,
 // subfolders fill the rest, four max, the overflow becomes +N") is
 // unit-testable without a DOM.

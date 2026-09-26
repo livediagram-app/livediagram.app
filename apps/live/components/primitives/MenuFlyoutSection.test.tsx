@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// The lone-section promotion (spec/09). A flyout category holding exactly one
+// The lone-section promotion (docs/specs/008-canvas/canvas-and-palette.md). A flyout category holding exactly one
 // section is not a category: the section takes its place in the host menu.
 //
 // Rendered rather than tested as a pure helper because the rule is about what

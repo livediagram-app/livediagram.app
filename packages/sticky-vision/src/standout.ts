@@ -2,7 +2,7 @@ import { rgbToHsv, type ImageBuffer } from './colour';
 import { isDarkGrain } from './texture';
 
 // Does a box hold PAPER, or a patch of the wall that squeaked past the colour
-// floor? (spec/139 Phase 9.)
+// floor? (docs/specs/021-event-storming/event-storming.md Phase 9.)
 //
 // Its own module because it asks its own question, and asks it of the
 // PICTURE rather than of the floors: every box reaching here already cleared

@@ -76,7 +76,7 @@ describe('TemplatePreview bounds', () => {
     // points that pull wider than the painted curve.
     const tolerance = 1.25;
     const spills: string[] = [];
-    // Hidden templates (spec/69) ship no preview; only listed ones render.
+    // Hidden templates (docs/specs/007-editor/guided-tour-sample.md) ship no preview; only listed ones render.
     for (const t of TEMPLATES.filter((x) => !x.hidden)) {
       const el = TemplatePreview({ kind: t.kind });
       expect(el, `missing preview for '${t.kind}'`).not.toBeNull();

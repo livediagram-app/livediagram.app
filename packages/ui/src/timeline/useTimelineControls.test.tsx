@@ -64,7 +64,7 @@ describe('useTimelineControls', () => {
   });
 
   describe('visibleEvents', () => {
-    it('hides the edit that shares a day with its create (spec/138 §2.1a)', () => {
+    it('hides the edit that shares a day with its create (docs/specs/013-workspace/timeline.md §2.1a)', () => {
       const noon = new Date(2026, 8, 21, 12, 0).getTime();
       const created = event({
         id: 'c',

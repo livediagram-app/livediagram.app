@@ -6,7 +6,7 @@ import { isoPivot, isoTransform } from '@/lib/isometric';
 import { useIsometricCamera } from '@/hooks/canvas/useIsometricCamera';
 import type { CanvasTool } from '@/components/palette/CommandPalette';
 
-// The isometric-view slice (spec/45), lifted out of Canvas: the
+// The isometric-view slice (docs/specs/008-canvas/isometric-view.md), lifted out of Canvas: the
 // orbit-able camera, the content-centre pivot the tilt rotates around,
 // and the transform fragment the canvas wrapper appends innermost.
 // Everything is local view state — nothing persists or syncs.
@@ -19,7 +19,7 @@ export function useIsometricView({
   elements: Element[];
   mainRef: Ref<HTMLElement>;
 }) {
-  // Isometric camera (spec/45): the orbit-able view angle. Local, non-synced
+  // Isometric camera (docs/specs/008-canvas/isometric-view.md): the orbit-able view angle. Local, non-synced
   // view state; Shift-drag on the canvas spins / tilts it (the <main>
   // pointerdown handler routes to `isoCamera.startOrbit`).
   const isoCamera = useIsometricCamera();

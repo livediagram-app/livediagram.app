@@ -1,4 +1,4 @@
--- Slide decks (spec/31): the presentation built over a diagram.
+-- Slide decks (docs/specs/012-collaboration/presentation-mode.md): the presentation built over a diagram.
 --
 -- Diagram-level rather than per-tab, because a slide belongs to ONE tab but
 -- the DECK does not: its order interleaves tabs freely (A, C, A), so no single

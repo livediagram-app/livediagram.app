@@ -1,4 +1,4 @@
-// The face of a Roll call (spec/129): who was in the room when the roll was
+// The face of a Roll call (docs/specs/012-collaboration/roll-call.md): who was in the room when the roll was
 // taken. A frozen snapshot, not live presence — a card that tracked presence
 // would be empty five minutes after the session, which is exactly when anyone
 // reads it.
@@ -11,7 +11,7 @@ import { Perforation, TornEdge } from '@/components/canvas/paper-kit';
 // The stored name + colour, drawn as the presence avatar it was copied from.
 // NOT ParticipantAvatar: that takes a live Participant with a presence status,
 // and the whole point here is that these people are no longer in the room
-// (spec/129).
+// (docs/specs/012-collaboration/roll-call.md).
 function RollAvatar({ entry }: { entry: RollCallEntry }) {
   return (
     <span
@@ -49,7 +49,7 @@ export function RollCallFace({
       title={label.trim() || 'Roll call'}
       textColor={textColor}
       aside={entries.length ? `${entries.length} present` : undefined}
-      // A TICKET STUB (spec/122). A roll call freezes who was here at one
+      // A TICKET STUB (docs/specs/012-collaboration/participant-responses.md). A roll call freezes who was here at one
       // moment and then stops changing — the same thing a stub is: torn off,
       // kept, and never updated again. The perforation under the title is
       // where it came away; the bottom edge is the tear itself.

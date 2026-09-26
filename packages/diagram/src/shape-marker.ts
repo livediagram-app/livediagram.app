@@ -1,4 +1,4 @@
-// Shape markers (spec/49): a small status glyph rendered inside a shape, just
+// Shape markers (docs/specs/009-elements/shape-markers.md): a small status glyph rendered inside a shape, just
 // to the left of its label (or centred when the shape has no label). Three
 // traffic-light status dots plus a checkbox in its unchecked / checked state.
 // The kind is stored on ShapeElement.marker; its size on ShapeElement.markerSize

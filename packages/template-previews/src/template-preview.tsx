@@ -7,7 +7,7 @@ import { templatePreviewGroup4 } from './template-preview-4';
 
 // Static SVG preview tiles, one branch per TemplateKind, rendered by the
 // editor's template picker and the marketing site's template gallery
-// (spec/16). Pure-render presentational markup, no hooks. Each branch is
+// (docs/specs/019-marketing/marketing-site.md). Pure-render presentational markup, no hooks. Each branch is
 // independent of the rest: adding a new template kind means appending one
 // switch case in a group file plus adding the kind to TEMPLATES in
 // @livediagram/templates; template-preview.test.ts fails until both exist.

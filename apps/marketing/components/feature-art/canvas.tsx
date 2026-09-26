@@ -375,7 +375,7 @@ export function FoldersArt() {
   );
 }
 
-// Tab folders (spec/30): grouping a diagram's TABS along the tab bar,
+// Tab folders (docs/specs/006-diagram/tab-folders.md): grouping a diagram's TABS along the tab bar,
 // distinct from FoldersArt above (filing whole diagrams in the explorer).
 export function TabFoldersArt() {
   const members = [
@@ -760,7 +760,7 @@ export function RefreshArt() {
   );
 }
 
-// Spotlight presenter tool (spec/09): the canvas dims under a dark shroud and
+// Spotlight presenter tool (docs/specs/008-canvas/canvas-and-palette.md): the canvas dims under a dark shroud and
 // only a soft circle around the cursor stays lit, so the presenter can draw
 // the room's eye to one part of the diagram. The clear circle is a transparent
 // span with a huge dark box-shadow; it travels between two nodes.
@@ -862,7 +862,7 @@ export function AvatarModeArt() {
   );
 }
 
-// Custom themes (spec/44): build your own palette, save it to your account,
+// Custom themes (docs/specs/011-theme/custom-themes.md): build your own palette, save it to your account,
 // and reuse it across diagrams like any built-in theme. A swatch row with one
 // selected, then a preview adopting the custom (brand-purple) colours.
 export function CustomThemesArt() {

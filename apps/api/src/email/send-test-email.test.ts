@@ -1,4 +1,4 @@
-// MANUAL live-send harness (spec/64). Sends one REAL email per template via the
+// MANUAL live-send harness (docs/specs/014-identity/transactional-email.md). Sends one REAL email per template via the
 // real client, so you can eyeball them in an inbox before enabling email on a
 // deployment. Double-gated so it can never fire during a normal test run / CI:
 // it only runs when RESEND_LIVE_TEST=1 is passed AND RESEND_API_KEY +

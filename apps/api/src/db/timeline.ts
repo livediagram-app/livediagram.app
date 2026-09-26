@@ -1,4 +1,4 @@
-// timeline — the Explorer's landing feed (migration 0042, spec/138).
+// timeline — the Explorer's landing feed (migration 0042, docs/specs/013-workspace/timeline.md).
 //
 // Every event is written inline on the write path that caused it.
 // There are no scanners and no scan cron: unlike the system this shape
@@ -60,7 +60,7 @@ export function dedupeKeyOnce(): string {
 // pushes `occurred_at` forward and refreshes the snapshot. That is a
 // deliberate departure from a strictly additive model, and it is only
 // safe because nothing user-authored (a star, a dismissal) hangs off
-// these rows yet — see spec/138 §4.2.
+// these rows yet — see docs/specs/013-workspace/timeline.md §4.2.
 export async function emitTimelineEvent(
   env: Env,
   draft: TimelineEventDraft,
@@ -116,7 +116,7 @@ export async function emitTimelineEvent(
 // team-invite flow needs it on its own: an invite is created against an
 // email address, so at emit time there is nobody to scope it to. The
 // membership lands later, in the lazy email-claim step that fills in
-// the invitee's user_id (spec/138 §4.4).
+// the invitee's user_id (docs/specs/013-workspace/timeline.md §4.4).
 export async function attachEventToScopes(
   env: Env,
   eventId: string,
@@ -196,7 +196,7 @@ export async function readTimeline(
   opts: ReadTimelineOptions,
 ): Promise<ReadTimelineResult> {
   const binds: unknown[] = [opts.scope.scopeType, opts.scope.scopeId];
-  // A dismissed membership (spec/138 §2.9) is still a row, so the
+  // A dismissed membership (docs/specs/013-workspace/timeline.md §2.9) is still a row, so the
   // re-emit path can't resurrect it, but it is not part of the feed.
   let where = 's.scope_type = ?1 AND s.scope_id = ?2 AND s.deleted_at IS NULL';
 
@@ -360,7 +360,7 @@ export async function markScopeBackfilled(env: Env, scope: TimelineScopeRef): Pr
 // Call this BEFORE emitting the entity's own `*_deleted` tombstone, so
 // the tombstone survives: a deleted diagram collapses from a run of
 // bubbles to exactly one row saying it was deleted, which is the row
-// that answers "what happened to it?" (spec/138 §3.5). Every future
+// that answers "what happened to it?" (docs/specs/013-workspace/timeline.md §3.5). Every future
 // entity's delete path should call this rather than writing the DELETE
 // inline.
 //
@@ -380,7 +380,7 @@ export async function markScopeBackfilled(env: Env, scope: TimelineScopeRef): Pr
 //
 // The expiry sweep writes `token_expiring` / `share_link_expiring` FUTURE-dated
 // so they sit in the band above Today — the band that exists so a user finds out
-// before something breaks rather than after (spec/138 §4.5). Nothing ever took
+// before something breaks rather than after (docs/specs/013-workspace/timeline.md §4.5). Nothing ever took
 // them back, so revoking the token or extending the link left the warning
 // sitting there advertising a deadline that no longer existed, above the
 // past-tense "API Token Revoked" row saying it had been dealt with. The emit's
@@ -423,7 +423,7 @@ export async function markTimelineEventsDeletedBySource(
     .run();
 }
 
-// Per-entry dismissal (spec/138 §2.9): take one event off ONE scope's
+// Per-entry dismissal (docs/specs/013-workspace/timeline.md §2.9): take one event off ONE scope's
 // feed. Soft, on the membership row rather than the event, because the
 // event is shared by everyone it was scoped to — a teammate tidying
 // their feed must not tidy yours — and because `attachEventToScopes` is
@@ -457,7 +457,7 @@ export async function dismissTimelineEventForScope(
   return true;
 }
 
-// The same dismissal for a whole stack at once (spec/138 §2.9). One
+// The same dismissal for a whole stack at once (docs/specs/013-workspace/timeline.md §2.9). One
 // UPDATE over the id list rather than a round trip per card: a day's
 // stack of forty renames is one request and one statement. Returns how
 // many rows this call actually marked; ids the scope never held, or
@@ -498,7 +498,7 @@ export async function deleteTimelineForOwner(env: Env, ownerId: string): Promise
     .run();
 }
 
-// Guest -> Clerk migration on sign-up (spec/138 §9). Moves the guest's
+// Guest -> Clerk migration on sign-up (docs/specs/013-workspace/timeline.md §9). Moves the guest's
 // feed, the events they authored, and the scope-state row — the last so
 // the backfill doesn't run a second time against the new id and
 // duplicate what just migrated.
@@ -538,7 +538,7 @@ export async function migrateTimelineOwner(
     .run();
 }
 
-// Daily retention sweep (spec/138 §3.5). Runs alongside the change_log
+// Daily retention sweep (docs/specs/013-workspace/timeline.md §3.5). Runs alongside the change_log
 // prune in the same cron; 365 days here (TIMELINE_RETENTION_MS) against
 // that one's 90. Signature matches the other sweeps so it slots into
 // the shared `scheduleSweep` helper rather than growing its own.

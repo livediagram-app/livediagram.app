@@ -1,6 +1,6 @@
 import { useState, type DragEvent as ReactDragEvent } from 'react';
 
-// The tab bar's drag-reorder machinery (spec/30), lifted out of
+// The tab bar's drag-reorder machinery (docs/specs/006-diagram/tab-folders.md), lifted out of
 // TabBar's pill renderer: which pill is being dragged, which pill +
 // side the pointer is over (driving the insertion caret), and the five
 // drag handlers each pill mounts. Deterministic drop: the side comes

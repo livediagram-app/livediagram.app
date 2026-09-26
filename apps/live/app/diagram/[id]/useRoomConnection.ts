@@ -32,7 +32,7 @@ export function useRoomConnection(opts: {
   hydrated: boolean;
   diagramId: string | null;
   diagramShareable: boolean;
-  // The diagram's team (spec/35), null for a personal diagram. A team
+  // The diagram's team (docs/specs/013-workspace/team-shared-diagrams.md), null for a personal diagram. A team
   // diagram is a live room for its members even without a share link,
   // so presence opens for it the same way a shared diagram does.
   diagramTeamId: string | null;
@@ -40,7 +40,7 @@ export function useRoomConnection(opts: {
   sessionShareCode: string | null;
   lastSeenRef: MutableRefObject<Map<string, number>>;
   selfParticipantRef: MutableRefObject<Participant>;
-  // The autosave's baseline (spec/152): every document op a peer sends is
+  // The autosave's baseline (docs/specs/012-collaboration/collab-race-hardening.md): every document op a peer sends is
   // folded into it as well as into the tabs on screen, so the next local save
   // neither mistakes it for ours nor ships it back out.
   saveBaseline: SaveBaselineRefs;
@@ -55,11 +55,11 @@ export function useRoomConnection(opts: {
   setRemoteCursors: Dispatch<SetStateAction<Map<string, CursorPos>>>;
   setRemoteTabFocus: Dispatch<SetStateAction<Map<string, string>>>;
   setRemoteLaserTrails: Dispatch<SetStateAction<Map<string, LaserTrail>>>;
-  // Avatar mode (spec/101): peers' walking characters, latest snapshot each.
+  // Avatar mode (docs/specs/008-canvas/avatar-mode.md): peers' walking characters, latest snapshot each.
   setRemoteAvatars: Dispatch<
     SetStateAction<Map<string, { tabId: string; avatar: AvatarPresence }>>
   >;
-  // Follow-me (spec/131): where each peer is looking, latest sample each.
+  // Follow-me (docs/specs/012-collaboration/follow-me-viewport.md): where each peer is looking, latest sample each.
   // Only read while somebody is being followed; kept for everyone because the
   // op is unsolicited (see the RoomOp comment).
   setRemoteViewports: Dispatch<
@@ -68,23 +68,23 @@ export function useRoomConnection(opts: {
   setChangeLog: Dispatch<SetStateAction<ChangeLogEntry[]>>;
   setDiagramName: Dispatch<SetStateAction<string>>;
   setSelfParticipant: Dispatch<SetStateAction<Participant>>;
-  // Live poll (spec/88) inbound handlers, owned by useLivePoll. Stable
+  // Live poll (docs/specs/012-collaboration/live-poll.md) inbound handlers, owned by useLivePoll. Stable
   // (useCallback with no changing deps) so they don't reopen the socket —
   // the effect's dep list stays [hydrated, diagramId, diagramShareable].
-  // Avatar mode (spec/101): somebody pushed our character. Stable, like the
+  // Avatar mode (docs/specs/008-canvas/avatar-mode.md): somebody pushed our character. Stable, like the
   // poll handlers below, so it can't reopen the socket.
   receiveAvatarPush: (dx: number, dy: number) => void;
-  // A peer set off a reaction pad (spec/135). Purely visual: nothing is
+  // A peer set off a reaction pad (docs/specs/009-elements/reaction-pad.md). Purely visual: nothing is
   // written, so there is nothing here to persist, order, or undo.
   receiveReaction: (elementId: string, reaction: string) => void;
-  // Bring Focus (spec/144): somebody is asking the room to come and look.
+  // Bring Focus (docs/specs/012-collaboration/bring-focus.md): somebody is asking the room to come and look.
   receiveFocusHere: (
     from: string,
     tabId: string,
     at: { x: number; y: number },
     zoom: number,
   ) => void;
-  // The facilitator baton (spec/149): the room's answer, and the token we
+  // The facilitator baton (docs/specs/012-collaboration/facilitator.md): the room's answer, and the token we
   // present on every hello so a refresh keeps it.
   receiveFacilitator: (msg: {
     holder: string | null;
@@ -93,17 +93,17 @@ export function useRoomConnection(opts: {
     token?: string;
   }) => void;
   readFacilitatorToken: () => string | null;
-  // The facilitator freed an element we were holding (spec/07 lock). Only our
+  // The facilitator freed an element we were holding (docs/specs/007-editor/live-app.md lock). Only our
   // socket is sent this, so there is nothing to check it against.
   receiveSelectionReleased: (msg: { elementId: string; by: string }) => void;
   receivePoll: (poll: LivePoll) => void;
   receivePollAnswer: (from: string, pollId: string, value: string | null, key?: string) => void;
   receivePollEnd: (pollId: string) => void;
-  // A Q&A board's authoritative state after a server write (spec/151).
+  // A Q&A board's authoritative state after a server write (docs/specs/012-collaboration/qa-board.md).
   // Stable, like the poll handlers, so it can't reopen the socket.
   receiveQa: (tabId: string, elementId: string, notes: QaNote[], rev: number) => void;
   // Re-hydrate tab content from D1 when the room can't replay our gap
-  // (spec/97). Stable, like the poll handlers, so it can't reopen the
+  // (docs/specs/012-collaboration/resync-without-reload.md). Stable, like the poll handlers, so it can't reopen the
   // socket — the effect's dep list stays [hydrated, diagramId, shareable].
   resyncFromServer: () => Promise<void>;
 }) {
@@ -145,7 +145,7 @@ export function useRoomConnection(opts: {
 
   useEffect(() => {
     // Open the realtime room for a shared diagram OR a team diagram
-    // (spec/35): team members collaborate live on a team diagram with
+    // (docs/specs/013-workspace/team-shared-diagrams.md): team members collaborate live on a team diagram with
     // no share link, so presence must work there too.
     if (!hydrated || !diagramId || (!diagramShareable && !diagramTeamId)) {
       // Make sure any state from a previous shared session is cleared
@@ -169,10 +169,10 @@ export function useRoomConnection(opts: {
         setLivePresence(
           participants.map((p) => ({
             id: p.id,
-            // The peer's document-write id (spec/122), claimed in their
+            // The peer's document-write id (docs/specs/012-collaboration/participant-responses.md), claimed in their
             // hello and relayed unchanged — it is what joins their saved
             // answer on a done check / estimate card back to their avatar.
-            // `p.id` cannot: the room mints that per socket (spec/61 §6),
+            // `p.id` cannot: the room mints that per socket (docs/specs/015-api/public-api-and-tokens.md §6),
             // so it matches nothing that was ever written down.
             ...(p.key ? { key: p.key } : {}),
             name: p.name,
@@ -248,7 +248,7 @@ export function useRoomConnection(opts: {
         });
         setRemoteSelections((prev) => pruneMapToPresent(prev, present));
         setRemoteCursors((prev) => pruneMapToPresent(prev, present));
-        // A peer who disconnects takes their character with them (spec/101),
+        // A peer who disconnects takes their character with them (docs/specs/008-canvas/avatar-mode.md),
         // so a closed tab can't leave someone standing on the canvas forever.
         setRemoteAvatars((prev) => pruneMapToPresent(prev, present));
         // Same for the lastSeen idle tracker (a plain ref, not state):
@@ -272,20 +272,20 @@ export function useRoomConnection(opts: {
           op.kind === 'tab-meta' ||
           op.kind === 'diagram-meta'
         ) {
-          // A document change from a peer: a whole tab, one element (spec/75),
-          // one dot (spec/39), one answer / idea / tick / comment (spec/152),
+          // A document change from a peer: a whole tab, one element (docs/specs/012-collaboration/realtime-conflict-resolution.md),
+          // one dot (docs/specs/012-collaboration/session-tools.md), one answer / idea / tick / comment (docs/specs/012-collaboration/collab-race-hardening.md),
           // non-element tab fields, or the diagram's name
           // and tab list. One pure function applies each (room-op-apply.ts),
           // to the tabs on screen AND to the autosave's baseline, so the
           // change is known to be the peer's and is never saved or broadcast
-          // back as if it were ours (spec/152).
+          // back as if it were ours (docs/specs/012-collaboration/collab-race-hardening.md).
           if (op.kind === 'diagram-meta') setDiagramName(op.name);
           applyRemoteTabs((prev) => applyRoomOpToTabs(prev, op));
           foldRemoteOpIntoBaseline(saveBaseline, op);
         } else if (op.kind === 'select') {
           setRemoteSelections((prev) => {
             const next = new Map(prev);
-            // tabId scopes the badge + spec/07 lock to the sender's tab;
+            // tabId scopes the badge + docs/specs/007-editor/live-app.md lock to the sender's tab;
             // absent (older peer) = tab-unknown, shown everywhere.
             next.set(from, { elementId: op.elementId, tabId: op.tabId });
             return next;
@@ -305,7 +305,7 @@ export function useRoomConnection(opts: {
           presence.laser(from, {
             tabId: op.tabId,
             point: { x: op.x, y: op.y, t: performance.now() },
-            // The sender's pen (spec/111), parsed field by field so a token
+            // The sender's pen (docs/specs/008-canvas/laser-panel.md), parsed field by field so a token
             // from a newer client costs that field and not the trail.
             config: op.look ? parseLaserConfig(op.look) : undefined,
           });
@@ -328,7 +328,7 @@ export function useRoomConnection(opts: {
           // nobody else, so anything that arrives here was aimed at us. We
           // can't check that ourselves — peers are identified by server-minted
           // presence ids precisely so nobody learns anyone's real owner id
-          // (spec/61 §6), and that includes not recognising our own. Nothing is
+          // (docs/specs/015-api/public-api-and-tokens.md §6), and that includes not recognising our own. Nothing is
           // written to the document either way: our client decides what to do
           // with the request, and does nothing if we've left the mode.
           receiveAvatarPush(op.dx, op.dy);
@@ -350,7 +350,7 @@ export function useRoomConnection(opts: {
             return next;
           });
         } else if (op.kind === 'poll-start') {
-          // Live poll (spec/88). Purely ephemeral: it lands in the poll
+          // Live poll (docs/specs/012-collaboration/live-poll.md). Purely ephemeral: it lands in the poll
           // hook's memory and never touches tabs, autosave, or the change
           // log, so there is nothing here to persist or undo.
           receivePoll(op.poll);
@@ -372,7 +372,7 @@ export function useRoomConnection(opts: {
         } else if (op.kind === 'log-remove') {
           setChangeLog((prev) => prev.filter((e) => e.id !== op.entryId));
         } else if (op.kind === 'qa') {
-          // The api's word on a Q&A board (spec/151). System-only: the worker
+          // The api's word on a Q&A board (docs/specs/012-collaboration/qa-board.md). System-only: the worker
           // sends it through /broadcast after the write is already in D1, and
           // the room refuses it from a client socket, so the sender check is
           // defence in depth like share-revoked's below.
@@ -401,15 +401,15 @@ export function useRoomConnection(opts: {
       onSelectionReleased: (msg) => receiveSelectionReleased(msg),
       onResync: () => {
         // The room couldn't bridge our reconnect gap from its op log
-        // (spec/75, Level 1) -- we fell too far behind or it restarted.
-        // Re-fetch the tab rows from D1 IN PLACE (spec/97). This used to
+        // (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1) -- we fell too far behind or it restarted.
+        // Re-fetch the tab rows from D1 IN PLACE (docs/specs/012-collaboration/resync-without-reload.md). This used to
         // be a full page reload, on the assumption it was rare; live
         // telemetry said otherwise, and a reload also destroyed the
         // viewport, selection, and undo history to fix stale content.
         void resyncFromServer();
       },
     };
-    // Team diagrams need a one-time room ticket (spec/11): membership is
+    // Team diagrams need a one-time room ticket (docs/specs/015-api/api.md): membership is
     // keyed on the VERIFIED Clerk id, which a WS upgrade can't carry, so
     // the ticket is minted over authenticated REST first. Personal /
     // share-code sessions skip the extra round trip — their legacy query

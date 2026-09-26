@@ -79,7 +79,7 @@ describe('describeVariant — per-type body styling', () => {
   it('a sticky is borderless paper by default; an explicit stroke draws one', () => {
     // Real stickies have no outline — the sheet's edge against its shadow is
     // the border. Setting strokeColor is an explicit user choice, so it
-    // still draws (the swatch stays functional, spec/09 Colours).
+    // still draws (the swatch stays functional, docs/specs/008-canvas/canvas-and-palette.md Colours).
     const plain = describeVariant(make('sticky', { fillColor: '#ffd' }), false, false, null);
     expect(plain.className).not.toContain('border');
     expect(plain.style.backgroundColor).toBe('#ffd');
@@ -92,7 +92,7 @@ describe('describeVariant — per-type body styling', () => {
   });
 
   it('a sticky is square-cornered and wears the paper-peel class, not a halo', () => {
-    // Paper look (spec/09): sharp corners (a real sticky is die-cut square),
+    // Paper look (docs/specs/008-canvas/canvas-and-palette.md): sharp corners (a real sticky is die-cut square),
     // and the peel is cast by the .lvd-sticky-peel pseudo-element — a shadow
     // caster inset below the glued top strip, so the shadow starts partway
     // DOWN THE SIDES and offsets increasingly toward the bottom. A wrapper
@@ -107,7 +107,7 @@ describe('describeVariant — per-type body styling', () => {
     expect(style.boxShadow).toBeUndefined();
   });
 
-  it('a user-set shadow (spec/86) replaces the peel outright', () => {
+  it('a user-set shadow (docs/specs/008-canvas/element-shadows.md) replaces the peel outright', () => {
     const userShadow = { offsetX: 0, offsetY: 4, blur: 12, opacity: 0.25 };
     const { className, style } = describeVariant(
       make('sticky', { shadow: userShadow }),
@@ -144,7 +144,7 @@ describe('describeVariant — remote-selector signal', () => {
   });
 });
 
-describe('describeVariant — element shadows (spec/86)', () => {
+describe('describeVariant — element shadows (docs/specs/008-canvas/element-shadows.md)', () => {
   const shadow = { offsetX: 0, offsetY: 4, blur: 12, opacity: 0.25 };
   const boxCss = '0px 4px 12px rgba(15, 23, 42, 0.25)';
   const filterCss = 'drop-shadow(0px 4px 12px rgba(15, 23, 42, 0.25))';
@@ -186,7 +186,7 @@ describe('describeVariant — element shadows (spec/86)', () => {
     expect(style.filter).toBeUndefined();
   });
 
-  it('unsupported types ignore a stray shadow field (spec/86 gate)', () => {
+  it('unsupported types ignore a stray shadow field (docs/specs/008-canvas/element-shadows.md gate)', () => {
     const { style } = describeVariant(make('text', { shadow }), false, false, null);
     expect(style.boxShadow).toBeUndefined();
     expect(style.filter).toBeUndefined();

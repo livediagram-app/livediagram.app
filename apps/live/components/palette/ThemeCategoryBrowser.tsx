@@ -4,10 +4,10 @@
 // quick-pick + a card per colour-temperament category, plus an optional
 // Custom category) that drills into a category's themes with a Back
 // affordance. Lifted out of TemplatePicker so the exact same browse
-// renders in both the New-diagram picker (spec/14) and the Theme tab of
-// the right-click CanvasThemeDialog (spec/42), so the two can't drift.
+// renders in both the New-diagram picker (docs/specs/007-editor/new-diagram-route.md) and the Theme tab of
+// the right-click CanvasThemeDialog (docs/specs/011-theme/canvas-and-theme-dialog.md), so the two can't drift.
 //
-// Custom themes (spec/44) appear as a "Custom" category when the custom
+// Custom themes (docs/specs/011-theme/custom-themes.md) appear as a "Custom" category when the custom
 // props are wired: its drill-in lists the owner's saved themes (apply /
 // edit / delete) plus a "+ New theme" tile that opens the builder. The
 // builder itself is owned by the host (CustomThemePicker); this browser
@@ -49,7 +49,7 @@ export function ThemeCategoryBrowser({
   onSelect,
   onCommit,
   className,
-  // Custom themes (spec/44). Passing `onNewCustomTheme` turns on the
+  // Custom themes (docs/specs/011-theme/custom-themes.md). Passing `onNewCustomTheme` turns on the
   // Custom category; `customThemes` is the owner's saved list.
   customThemes,
   initialCategory,
@@ -72,7 +72,7 @@ export function ThemeCategoryBrowser({
   onNewCustomTheme?: () => void;
   onEditCustomTheme?: (id: string) => void;
   onDeleteCustomTheme?: (id: string) => void;
-  // Copy a built-in theme into the builder as a new custom theme (spec/44).
+  // Copy a built-in theme into the builder as a new custom theme (docs/specs/011-theme/custom-themes.md).
   // When set, built-in theme cards show a "Copy" affordance.
   onCopyTheme?: (theme: ThemeDefinition) => void;
 }) {
@@ -99,7 +99,7 @@ export function ThemeCategoryBrowser({
   const { appearance } = useAppearance();
   const commit = onCommit ?? onSelect;
   // The quick-pick card previews Default as THIS viewer sees it: light chrome
-  // shows the white canvas, dark chrome the charcoal one (spec/07). The card
+  // shows the white canvas, dark chrome the charcoal one (docs/specs/007-editor/live-app.md). The card
   // in the Dark category is the opposite — it always shows the dark half,
   // because it is illustrating the scheme's place among the dark canvases.
   const defaultScheme = getTheme('brand', appearance);
@@ -213,7 +213,7 @@ function BackButton({ current, onClick }: { current?: string; onClick: () => voi
 
 // A full-width iOS-style switch prompting the user to match the editor's
 // light / dark chrome to the category they're browsing — dark mode for
-// the Dark themes, light mode for the light-backdrop ones (spec/07
+// the Dark themes, light mode for the light-backdrop ones (docs/specs/007-editor/live-app.md
 // covers the UI mode). Only shown when that mode ISN'T already active
 // (and never for the colour-agnostic Custom bucket), so it reads as a
 // helpful one-tap nudge rather than a persistent control.

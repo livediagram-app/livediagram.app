@@ -1,14 +1,14 @@
-// spec/65: server-side read of the email-notification preferences a user
+// docs/specs/014-identity/profile-and-email-notifications.md: server-side read of the email-notification preferences a user
 // flipped on the Explorer profile page. They live in the same
-// `user_preferences` JSON blob as the editor flags (spec/20) — reusing that
+// `user_preferences` JSON blob as the editor flags (docs/specs/007-editor/user-preferences.md) — reusing that
 // synced store rather than a parallel table — so this is a read-only slice of
 // that blob, used by the api worker to decide whether to send a transactional
-// notification email (spec/64) on someone else's request.
+// notification email (docs/specs/014-identity/transactional-email.md) on someone else's request.
 
 import type { Env } from '../types';
 
 // Both flags default to true: a missing key / row / corrupt blob means
-// "notify" (the toggles are opt-OUT, mirroring spec/20's notificationsEnabled).
+// "notify" (the toggles are opt-OUT, mirroring docs/specs/007-editor/user-preferences.md's notificationsEnabled).
 type NotificationPrefs = {
   notifyDiagramJoin: boolean;
   notifyInviteResponse: boolean;

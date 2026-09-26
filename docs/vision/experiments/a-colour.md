@@ -1,7 +1,7 @@
 # Experiments, group A: colour and light
 
-Part of [the experiment plan](../../../plans/event-storming-photo-95-experiments.md)
-towards [the bar](../../../plans/event-storming-photo-95.md). Owned files:
+Part of the experiment plan
+towards the bar. Owned files:
 `classify.ts`, `floors.ts`, `colour.ts`, and the new `lab.ts`, `surface.ts`,
 `histogram.ts`. Every number is from `scripts/calibrate.ts` (or
 `scripts/colour-sweep.ts`, which reproduces its summary exactly) on the eight

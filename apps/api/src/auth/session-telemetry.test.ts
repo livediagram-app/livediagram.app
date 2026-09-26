@@ -4,7 +4,7 @@ import type { Env } from '../types';
 import type { ClerkIdentity } from './clerk';
 import { FRESH_SIGN_IN_MINUTES, noteAuthSighting, reportAuthSighting } from './session-telemetry';
 
-// Session·SignedUp / SignedIn are counted server-side (spec/22) so a Google
+// Session·SignedUp / SignedIn are counted server-side (docs/specs/017-telemetry/telemetry.md) so a Google
 // sign-up through /sso-callback counts the same as an email-code one, and each
 // completed authentication counts exactly once. These pin the rule: a new
 // session id is one event; a new account makes it SignedUp and never also
@@ -34,7 +34,7 @@ function db(opts: { newSession: boolean; newAccount: boolean }, env: Partial<Env
 const counted = (d: ReturnType<typeof fakeD1>) =>
   d.matching('INSERT INTO events').map((c) => c.bindings.slice(0, 3));
 
-describe('reportAuthSighting (spec/22 sign-up / sign-in count)', () => {
+describe('reportAuthSighting (docs/specs/017-telemetry/telemetry.md sign-up / sign-in count)', () => {
   it('counts a new session on a new account as SignedUp only', async () => {
     const d = db({ newSession: true, newAccount: true });
     expect(await reportAuthSighting(d.env, identity())).toBe('SignedUp');

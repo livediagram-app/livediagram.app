@@ -12,7 +12,7 @@ import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@/lib/clamp-to-viewport';
 // SINGLE small document (no author, no thread, no resolve / replies),
 // surfaced as `element.note?` plus its formatting runs `element.noteRich?`
 // on the schema. Rich text (bold / italic / underline, headings, bullet +
-// numbered lists, links) landed in spec/92; the editing surface itself is
+// numbered lists, links) landed in docs/specs/009-elements/rich-text-notes.md; the editing surface itself is
 // NoteRichTextEditor, this file is the anchored shell around it.
 //
 // Positioning mirrors CommentThreadPopover: a `data-element-id` lookup

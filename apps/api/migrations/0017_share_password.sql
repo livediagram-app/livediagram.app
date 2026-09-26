@@ -1,4 +1,4 @@
--- Optional per-diagram share password (spec/24). When set, any non-owner
+-- Optional per-diagram share password (docs/specs/013-workspace/share-password.md). When set, any non-owner
 -- opening a share link for this diagram must supply the password before the
 -- api will resolve the diagram or honour reads / writes carried on that
 -- share code. One password covers every share link the diagram has.

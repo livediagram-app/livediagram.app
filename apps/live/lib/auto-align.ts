@@ -1,4 +1,4 @@
-// Auto-align ("Cleanup → Auto-align", spec/47): snap every boxed element's
+// Auto-align ("Cleanup → Auto-align", docs/specs/008-canvas/layout-cleanup.md): snap every boxed element's
 // position and dimensions to the grid so near-aligned shapes become exactly
 // aligned and minor drift collapses. Free-endpoint arrows snap their endpoints
 // to the same grid; pinned arrow endpoints stay attached to their elements

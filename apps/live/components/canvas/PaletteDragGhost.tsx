@@ -4,14 +4,14 @@ import { useEffect, useState } from 'react';
 import { ShapeGlyph } from '@/components/primitives/shape-icon';
 import { usePaletteDragPreview, usePaletteDragSnap } from '@/lib/palette-drag-preview';
 
-// Drag-to-add ghost (spec/58). While a palette tile is being dragged, this
+// Drag-to-add ghost (docs/specs/010-palette/palette-drag-ghost.md). While a palette tile is being dragged, this
 // paints a translucent footprint of what will land — sized to the shape's
 // default footprint × the current zoom, centred on the cursor (matching where
 // dropPaletteItem places it) — so the drop has live, on-canvas feedback
 // instead of the browser's default tile snapshot.
 export function PaletteDragGhost({ zoom }: { zoom: number }) {
   const preview = usePaletteDragPreview();
-  // The live alignment snap (spec/139), published by usePaletteDragGuides:
+  // The live alignment snap (docs/specs/021-event-storming/event-storming.md), published by usePaletteDragGuides:
   // the ghost draws where the element will LAND, not under the raw cursor,
   // so the guide lines and the footprint agree.
   const snap = usePaletteDragSnap();

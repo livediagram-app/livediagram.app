@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
-// While a deck is running (spec/31) the overlay owns the keyboard. It consumes
+// While a deck is running (docs/specs/012-collaboration/presentation-mode.md) the overlay owns the keyboard. It consumes
 // the keys it uses — arrows, space, N, Escape — but everything else propagates
 // straight through to the editor's own shortcut surfaces, and that was a real
 // bug: pressing G in front of a room armed a parallelogram on a canvas you

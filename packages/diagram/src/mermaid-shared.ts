@@ -1,4 +1,4 @@
-// Line + label plumbing shared by the Mermaid dialect parsers (spec/73):
+// Line + label plumbing shared by the Mermaid dialect parsers (docs/specs/020-import-export/mermaid.md):
 // the flowchart parser (mermaid.ts), the state-diagram parser
 // (mermaid-state.ts), and the ER parser (mermaid-er.ts) all clean lines,
 // read id tokens, and decode labels the same way. Internal module, not

@@ -48,7 +48,7 @@ describe('anchorPosition', () => {
     expect(anchorPosition(shape('a', { rotation: 0 }), 'e')).toEqual({ x: 100, y: 40 });
   });
 
-  it('anchors a Technology icon on its fixed-size mark, not the element box (spec/41)', () => {
+  it('anchors a Technology icon on its fixed-size mark, not the element box (docs/specs/010-palette/technology-icons.md)', () => {
     // 200x100 box, no label: the md (48px) mark centres at (76..124, 26..74),
     // so connectors touch the visible chip instead of floating on the box edge.
     const tech = shape('t', { shape: 'icon', iconId: 'aws-ec2', width: 200, height: 100 });
@@ -151,7 +151,7 @@ describe('endpointPosition', () => {
     });
   });
 
-  it('resolves an on-arrow endpoint to a point along the target arrow (spec/50)', () => {
+  it('resolves an on-arrow endpoint to a point along the target arrow (docs/specs/008-canvas/arrow-to-arrow.md)', () => {
     // A straight arrow from (0,0) to (100,0); t=0.5 is its midpoint.
     const line: ArrowElement = {
       id: 'line',

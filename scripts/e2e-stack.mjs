@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// E2E stack (spec/72): the two-process stack the Playwright smoke suite
+// E2E stack (docs/specs/003-system-architecture/e2e-smoke.md): the two-process stack the Playwright smoke suite
 // runs against — the real static `apps/live/out` build served with the
 // production router/worker rewrites, plus the api worker on a local D1.
 // Dependency-free (node builtins) so it adds nothing to install cost.
@@ -8,7 +8,7 @@
 //   1. api — `wrangler dev --local` (apps/api) after applying the D1
 //      migrations to a fresh local database, so persistence works.
 //   2. live — a static file server for `out/` that reproduces the three
-//      things production does (spec/72): strip the `/live` assetPrefix,
+//      things production does (docs/specs/003-system-architecture/e2e-smoke.md): strip the `/live` assetPrefix,
 //      rewrite `/diagram/*` to the single placeholder, and proxy
 //      `/api/*` to the api worker so the app is same-origin.
 //
@@ -243,7 +243,7 @@ async function main() {
       String(API_PORT),
       // Production's origin allow-list lives in wrangler.toml [vars], which
       // `wrangler dev` reads too; it would 403 every AI call from this
-      // localhost editor. Blank it, as `pnpm dev` does (spec/25).
+      // localhost editor. Blank it, as `pnpm dev` does (docs/specs/007-editor/ai-assistance.md).
       '--var',
       'AI_ALLOWED_ORIGINS:',
     ],

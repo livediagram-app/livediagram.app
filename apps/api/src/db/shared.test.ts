@@ -3,7 +3,7 @@ import { fakeD1 } from '../test-d1';
 import { dropSharedAccess, hasSharedAccess, listSharedWith, recordSharedAccess } from './shared';
 
 // `shared_with` is what a visitor sees under "Shared with you", and it is also
-// one leg of the access check the notify-action route runs (spec/68). Both
+// one leg of the access check the notify-action route runs (docs/specs/012-collaboration/assigned-actions.md). Both
 // readings are security-adjacent: a row that shouldn't be there grants a
 // stranger a listing entry, and a row that's missing locks a legitimate
 // collaborator out of their own notification.
@@ -19,7 +19,7 @@ const sharedRow = (over: Record<string, unknown> = {}) => ({
   ...over,
 });
 
-describe('recordSharedAccess (spec/65 + spec/22 first-visit signal)', () => {
+describe('recordSharedAccess (docs/specs/014-identity/profile-and-email-notifications.md + docs/specs/017-telemetry/telemetry.md first-visit signal)', () => {
   it('reports a first visit when its insert creates the row, and writes nothing else', async () => {
     const db = fakeD1(({ sql }) => (sql.includes('INSERT OR IGNORE') ? { changes: 1 } : {}));
     expect(await recordSharedAccess(db.env, 'visitor-1', 'diag-1', 'edit')).toBe(true);
@@ -45,7 +45,7 @@ describe('recordSharedAccess (spec/65 + spec/22 first-visit signal)', () => {
   });
 });
 
-describe('hasSharedAccess (spec/68 access leg)', () => {
+describe('hasSharedAccess (docs/specs/012-collaboration/assigned-actions.md access leg)', () => {
   it('is true when a row exists and false when it does not', async () => {
     const present = fakeD1(() => ({ first: { one: 1 } }));
     expect(await hasSharedAccess(present.env, 'visitor-1', 'diag-1')).toBe(true);
@@ -60,7 +60,7 @@ describe('hasSharedAccess (spec/68 access leg)', () => {
   });
 });
 
-describe('listSharedWith (spec/09 Shared with you)', () => {
+describe('listSharedWith (docs/specs/008-canvas/canvas-and-palette.md Shared with you)', () => {
   it('maps a row to the DTO the Explorer renders', async () => {
     const db = fakeD1(() => ({ all: [sharedRow()] }));
     expect(await listSharedWith(db.env, 'visitor-1')).toEqual([

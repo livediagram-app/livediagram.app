@@ -1,6 +1,6 @@
 'use client';
 
-// The element context menu's Shadow accordion (spec/86): preset tiles
+// The element context menu's Shadow accordion (docs/specs/008-canvas/element-shadows.md): preset tiles
 // (None / Soft / Drop / Lifted / Hard) with the shared hover-preview /
 // click-commit flow, plus Offset X / Y, Blur and Opacity sliders on the
 // debounced one-undo-step-per-gesture policy (mirroring the Opacity
@@ -109,7 +109,7 @@ export function ShadowSection({
   onPreviewEnd: () => void;
 }) {
   // Sliders display DEFAULT_SHADOW at rest and seed from it on the first
-  // drag (spec/86), so dragging any single axis yields a visible shadow.
+  // drag (docs/specs/008-canvas/element-shadows.md), so dragging any single axis yields a visible shadow.
   const current = shadow ?? DEFAULT_SHADOW;
   const patch = (field: keyof ElementShadow) => (v: number) =>
     onSetShadow({ ...current, [field]: v });

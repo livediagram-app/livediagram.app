@@ -173,7 +173,7 @@ describe('applyListStyle / stripListPrefixes', () => {
   });
 });
 
-describe('link + heading run attributes (spec/92)', () => {
+describe('link + heading run attributes (docs/specs/009-elements/rich-text-notes.md)', () => {
   it('splits and merges on link like any other attribute', () => {
     const runs = applyFormatToRange(runsFromPlainText('see the docs'), 4, 12, {
       link: 'https://example.com',

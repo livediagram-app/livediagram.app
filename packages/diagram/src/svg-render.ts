@@ -1,4 +1,4 @@
-// Headless SVG renderer for a tab's elements (spec/62 §5). Extracted from the
+// Headless SVG renderer for a tab's elements (docs/specs/015-api/mcp-server.md §5). Extracted from the
 // editor's export pipeline (apps/live/lib/export-tab.ts) so the SAME element
 // drawing serves both the in-app SVG/PNG export AND the MCP worker's inline
 // render — one renderer, two callers, no DOM. The per-element drawers
@@ -22,7 +22,7 @@ import {
 import { canvasSurface } from './colors';
 import { DIAMOND_POINTS } from './shape-geometry';
 import { svgTableShape } from './svg-render-table';
-// Which body an element draws, and the list of kinds that have one (spec/143).
+// Which body an element draws, and the list of kinds that have one (docs/specs/020-import-export/export-fidelity.md).
 import { shapeHasBespokeBody, svgElementBody } from './svg-render-body';
 import { BEHAVIOUR_FACE_SHAPES } from './svg-render-faces';
 import { isCollabPanelShape } from './collab-shapes';
@@ -61,7 +61,7 @@ import { svgArrow } from './svg-render-arrows';
 export { arrowHeadRefs, svgArrow, svgArrowhead } from './svg-render-arrows';
 import type { BoxedElement, Element, Tab } from './index';
 import { layerBands, layerOpacityOf, visibleLayerElements } from './layers';
-// Element drop shadows (spec/86): gate + deterministic filter defs.
+// Element drop shadows (docs/specs/008-canvas/element-shadows.md): gate + deterministic filter defs.
 import { shadowFilterId, supportsShadow, svgShadowFilterDef } from './shadow';
 
 // The export descriptor layer (constants, ExportShape / resolver types,
@@ -99,7 +99,7 @@ import {
   type ResolveImageHref,
   type ResolveStickerArt,
 } from './svg-render-describe';
-// Typefaces (spec/28): an export paints the face the canvas painted, and
+// Typefaces (docs/specs/004-interface-design/fonts.md): an export paints the face the canvas painted, and
 // declares the ones it used so the file stands on its own.
 import { googleFontsHref } from './fonts';
 import { boundsOfPoints, type Point } from './geometry-primitives';
@@ -167,7 +167,7 @@ function svgImageShape(
 // preset size in the band (TechIconGlyph).
 export function svgIconShape(el: BoxedElement, art: ExportIconArt, stroke: string): string {
   if (art.colored) {
-    // A Technology mark renders at its fixed preset size (spec/41), centred
+    // A Technology mark renders at its fixed preset size (docs/specs/010-palette/technology-icons.md), centred
     // in the glyph band and clamped to the box — techIconMarkBounds is the
     // single source of that geometry (shared with the connector anchors in
     // geometry.ts), mirroring TechIconGlyph exactly. The band sits OPPOSITE
@@ -205,7 +205,7 @@ export function svgBoxed(el: BoxedElement, opts: BoxedExportOptions = {}): strin
   const rotAttr = rotation
     ? ` transform="rotate(${r2(rotation)} ${r2(el.x + el.width / 2)} ${r2(el.y + el.height / 2)})"`
     : '';
-  // Drop shadow (spec/86): reference the shared feDropShadow def the
+  // Drop shadow (docs/specs/008-canvas/element-shadows.md): reference the shared feDropShadow def the
   // document emitter collects via svgShadowDefs (deterministic id, so
   // this stays in lockstep without threading the def through).
   const shadow = supportsShadow(el) ? el.shadow : undefined;
@@ -224,11 +224,11 @@ export function svgBoxed(el: BoxedElement, opts: BoxedExportOptions = {}): strin
     return `<g${opAttr}${rotAttr}>${svgFreehandShape(el, shape.stroke, shape.fill)}</g>`;
   }
   if (el.type === 'shape' && el.shape === 'code-block') {
-    // The dark editor card + plain mono lines (spec/82); no label.
+    // The dark editor card + plain mono lines (docs/specs/009-elements/code-block.md); no label.
     return `<g${opAttr}${rotAttr}${shadowAttr}>${svgCodeBlockShape(el)}</g>`;
   }
   if (el.type === 'shape' && el.shape === 'legend' && shape.kind === 'rect') {
-    // The key card with its swatch + label rows (spec/53).
+    // The key card with its swatch + label rows (docs/specs/009-elements/pie-chart.md).
     return `<g${opAttr}${rotAttr}${shadowAttr}>${svgLegendShape(
       el,
       shape.fill,
@@ -237,7 +237,7 @@ export function svgBoxed(el: BoxedElement, opts: BoxedExportOptions = {}): strin
     )}</g>`;
   }
   if (el.type === 'shape' && el.shape === 'checklist' && shape.kind === 'rect') {
-    // The themed to-do card with its rows + done-count footer (spec/83).
+    // The themed to-do card with its rows + done-count footer (docs/specs/009-elements/checklist.md).
     return `<g${opAttr}${rotAttr}${shadowAttr}>${svgChecklistShape(
       el,
       shape.fill,
@@ -251,7 +251,7 @@ export function svgBoxed(el: BoxedElement, opts: BoxedExportOptions = {}): strin
         ? svgImageShape(el, shape.href, shape.objectFit, shape.radius)
         : `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="6"` +
           ` fill="${EXPORT_IMAGE_FILL}" stroke="${EXPORT_IMAGE_STROKE}" stroke-width="1.5" stroke-dasharray="4 4"/>`) +
-      // A hero's caption card (spec/147), over the image.
+      // A hero's caption card (docs/specs/009-elements/web-components-and-no-groups.md), over the image.
       (el.type === 'image' ? svgHeroCaption(el, fontFamily) : '');
   } else if (shape.kind === 'ellipse') {
     shapeStr = `<ellipse cx="${r2(cx)}" cy="${r2(cy)}" rx="${r2(el.width / 2)}" ry="${r2(el.height / 2)}" fill="${xmlEscape(shape.fill)}" stroke="${xmlEscape(shape.stroke)}" stroke-width="1.5"/>`;
@@ -273,7 +273,7 @@ export function svgBoxed(el: BoxedElement, opts: BoxedExportOptions = {}): strin
         : // A sticky is die-cut paper: square corners, matching the canvas.
           el.type === 'sticky'
           ? 0
-          : // A mind node is a soft-cornered pill-ish box (spec/118), the one
+          : // A mind node is a soft-cornered pill-ish box (docs/specs/009-elements/mind-node.md), the one
             // rect kind the canvas rounds further than the usual 6.
             el.type === 'shape' && el.shape === 'mind-node'
             ? 12
@@ -303,8 +303,8 @@ export function svgBoxed(el: BoxedElement, opts: BoxedExportOptions = {}): strin
       (selfPainting && face
         ? ''
         : `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="${r2(rx)}" fill="${xmlEscape(shape.fill)}" stroke="${xmlEscape(shape.stroke)}" stroke-width="1.5"/>`);
-    // What the canvas draws ON the box: a lane's title gutter (spec/119) and a
-    // browser frame's chrome strip (spec/09).
+    // What the canvas draws ON the box: a lane's title gutter (docs/specs/009-elements/lane.md) and a
+    // browser frame's chrome strip (docs/specs/008-canvas/canvas-and-palette.md).
     const onBox =
       el.type === 'shape' && el.shape === 'lane'
         ? svgLaneGutter(el, shape.stroke)
@@ -334,7 +334,7 @@ export function svgBoxed(el: BoxedElement, opts: BoxedExportOptions = {}): strin
     (el.type === 'shape' &&
       (isCollabPanelShape(el.shape) ||
         BEHAVIOUR_FACE_SHAPES.has(el.shape) ||
-        // A web component (spec/147) writes its label in its own region.
+        // A web component (docs/specs/009-elements/web-components-and-no-groups.md) writes its label in its own region.
         isWebComponentShape(el.shape)))
       ? ''
       : label.runs
@@ -369,7 +369,7 @@ export function svgBoxed(el: BoxedElement, opts: BoxedExportOptions = {}): strin
 }
 
 // The <style> block declaring the webfonts an export actually used
-// (spec/28), so the file carries its own typography instead of relying on
+// (docs/specs/004-interface-design/fonts.md), so the file carries its own typography instead of relying on
 // the reader having Permanent Marker installed. Empty when nothing on the
 // tab picked a face, keeping a plain export byte-identical to before.
 //
@@ -386,7 +386,7 @@ export function svgFontDefs(fontIds: readonly string[]): string {
   return `<defs><style type="text/css">@import url("${xmlEscape(href)}");</style></defs>`;
 }
 
-// The <defs> block for every distinct element shadow in the list (spec/86):
+// The <defs> block for every distinct element shadow in the list (docs/specs/008-canvas/element-shadows.md):
 // one feDropShadow filter per unique value, ids matching what svgBoxed
 // references. Empty string when nothing carries a shadow, so shadow-less
 // documents stay byte-identical to before.
@@ -410,7 +410,7 @@ export function boxedNeedsSvgRaster(
   resolveStickerArt?: ResolveStickerArt,
 ): boolean {
   if (el.rotation) return true;
-  // A shadow renders via an feDropShadow filter def (spec/86), which the
+  // A shadow renders via an feDropShadow filter def (docs/specs/008-canvas/element-shadows.md), which the
   // PNG canvas drawers can't reproduce natively.
   if (supportsShadow(el) && el.shadow) return true;
   if (el.type === 'table' || el.type === 'freehand') return true;
@@ -437,8 +437,8 @@ export function boxedNeedsSvgRaster(
 
 // Render a tab's elements to a complete SVG string on a solid background, sized
 // to the content bounds with padding. Layer bands paint bottom -> top with
-// frame sections behind their band-mates (spec/74 + spec/09), boxed elements
-// before arrows. Hidden layers are skipped, so server snapshots (spec/67) and
+// frame sections behind their band-mates (docs/specs/006-diagram/layers.md + docs/specs/008-canvas/canvas-and-palette.md), boxed elements
+// before arrows. Hidden layers are skipped, so server snapshots (docs/specs/006-diagram/diagram-snapshots.md) and
 // MCP inline images match what the canvas shows. No isometric projection or
 // backdrop pattern — those are in-app export extras (apps/live/lib/export-tab).
 export function renderElementsToSvg(
@@ -460,16 +460,16 @@ export function renderElementsToSvg(
   const vbH = bounds.h + padding * 2;
   const bg = opts.background ?? tab.backgroundColor ?? EXPORT_BG;
   // What you export is what you see: an element with no colours of its own is
-  // drawn in the ink of the paper it is being exported onto (spec/07), so a
+  // drawn in the ink of the paper it is being exported onto (docs/specs/007-editor/live-app.md), so a
   // dark canvas exports dark-canvas elements rather than pale ones.
   const surface = canvasSurface(bg);
   const parts: string[] = [
     `<svg xmlns="http://www.w3.org/2000/svg" width="${r2(vbW)}" height="${r2(vbH)}" viewBox="${r2(vbX)} ${r2(vbY)} ${r2(vbW)} ${r2(vbH)}">`,
     `<rect x="${r2(vbX)}" y="${r2(vbY)}" width="${r2(vbW)}" height="${r2(vbH)}" fill="${xmlEscape(bg)}"/>`,
   ];
-  // Webfont declarations for the faces this tab uses (spec/28), including
+  // Webfont declarations for the faces this tab uses (docs/specs/004-interface-design/fonts.md), including
   // the one the event-storming notation asks for on its notes.
-  // The categorical ramp the tab's theme gives its charts (spec/53), which is
+  // The categorical ramp the tab's theme gives its charts (docs/specs/009-elements/pie-chart.md), which is
   // what the canvas hands them. Without it every exported chart fell back to
   // the built-in ramp and came out in different colours to the board.
   const chartPalette = themeChartPalette(
@@ -477,11 +477,11 @@ export function renderElementsToSvg(
   );
   const fontDefs = svgFontDefs(exportFontIds(visible, tab.font));
   if (fontDefs) parts.push(fontDefs);
-  // Element-shadow filter defs (spec/86); empty string when none.
+  // Element-shadow filter defs (docs/specs/008-canvas/element-shadows.md); empty string when none.
   const shadowDefs = svgShadowDefs(visible);
   if (shadowDefs) parts.push(shadowDefs);
   // Per band: boxed first, then arrows; a dimmed layer wraps its band in
-  // a <g opacity> (spec/74).
+  // a <g opacity> (docs/specs/006-diagram/layers.md).
   for (const band of layerBands(tab.elements, tab.layers)) {
     const inner: string[] = [];
     for (const el of band.elements) {

@@ -1,7 +1,7 @@
 import { resolveAiProvider, trimTrailingSlashes, type ResolvedAiProvider } from './ai-provider';
 import type { Env } from './types';
 
-// The one place the worker talks to a model (spec/25).
+// The one place the worker talks to a model (docs/specs/007-editor/ai-assistance.md).
 //
 // It does not know which company is on the other end. Every provider worth
 // using speaks the OpenAI chat-completions wire — Google Gemini through its

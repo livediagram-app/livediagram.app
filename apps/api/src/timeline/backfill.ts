@@ -1,4 +1,4 @@
-// One-shot backfill (spec/138 §5).
+// One-shot backfill (docs/specs/013-workspace/timeline.md §5).
 //
 // A brand-new Timeline that is empty for a user with sixty diagrams
 // reads as a broken feature, not a new one. On the first read of a

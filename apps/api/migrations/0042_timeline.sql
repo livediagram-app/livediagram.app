@@ -1,4 +1,4 @@
--- Timeline (spec/138) — the Explorer's landing feed.
+-- Timeline (docs/specs/013-workspace/timeline.md) — the Explorer's landing feed.
 --
 -- Two tables plus a per-scope state row. The split matters: an event
 -- row holds WHAT happened once, and the scopes table holds WHO should
@@ -16,7 +16,7 @@
 CREATE TABLE timeline_events (
   id TEXT PRIMARY KEY,
   -- Owner id of whoever did the thing: a Clerk `sub`, or a guest
-  -- participant id (spec/04 hybrid identity). NULL for system events
+  -- participant id (docs/specs/014-identity/auth-and-guest-access.md hybrid identity). NULL for system events
   -- with no human actor, e.g. a token-expiry warning.
   actor_id TEXT,
   -- The domain object this is about. 'diagram' | 'team' | 'account'.
@@ -28,7 +28,7 @@ CREATE TABLE timeline_events (
   -- '' for one-shot events (a diagram is created once). Carries
   -- '<actorId>:<YYYY-MM-DD>' for the coalesced editing event, which is
   -- the one event type that deliberately extends itself through a day
-  -- rather than emitting per save (spec/138 §4.2).
+  -- rather than emitting per save (docs/specs/013-workspace/timeline.md §4.2).
   dedupe_key TEXT NOT NULL DEFAULT '',
   -- Title Case category, never user content ("Comment Added").
   title TEXT NOT NULL,
@@ -49,7 +49,7 @@ CREATE TABLE timeline_events (
   UNIQUE (source_type, source_id, event_type, dedupe_key)
 );
 
--- The retention sweep's predicate (spec/138 §3.5).
+-- The retention sweep's predicate (docs/specs/013-workspace/timeline.md §3.5).
 CREATE INDEX timeline_events_occurred_idx ON timeline_events (occurred_at);
 
 CREATE TABLE timeline_event_scopes (
@@ -73,7 +73,7 @@ CREATE TABLE timeline_scope_state (
   scope_type TEXT NOT NULL,
   scope_id TEXT NOT NULL,
   -- NULL until the one-shot backfill has seeded this scope from the
-  -- caller's existing diagrams + team memberships (spec/138 §5).
+  -- caller's existing diagrams + team memberships (docs/specs/013-workspace/timeline.md §5).
   backfilled_at INTEGER,
   last_refreshed_at INTEGER,
   PRIMARY KEY (scope_type, scope_id)

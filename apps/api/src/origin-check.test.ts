@@ -42,7 +42,7 @@ describe('isLocalhostPair', () => {
 
     it('https loopback URLs (scheme is irrelevant)', () => {
       // The scheme doesn't change the hostname check, but pinning
-      // this makes the spec/22 invariant explicit: it's about
+      // this makes the docs/specs/017-telemetry/telemetry.md invariant explicit: it's about
       // hostname, not protocol.
       expect(isLocalhostPair('https://localhost:8443', 'https://localhost:8444')).toBe(true);
     });

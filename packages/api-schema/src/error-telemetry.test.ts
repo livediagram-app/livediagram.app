@@ -8,7 +8,7 @@ import {
 } from './error-telemetry';
 import { isValidTelemetryEvent } from './telemetry-schema';
 
-// Error telemetry tokens (spec/22): every Error source builds its `type`
+// Error telemetry tokens (docs/specs/017-telemetry/telemetry.md): every Error source builds its `type`
 // through these, so a token that failed TELEMETRY_TYPE_PATTERN would be
 // dropped at ingest with nothing to notice. Pin the shape.
 

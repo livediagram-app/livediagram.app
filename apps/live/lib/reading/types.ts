@@ -19,7 +19,7 @@ export type ReadOptions = {
   // `why` says what kept it off the graphics card, when it is the processor.
   onBackend?: (backend: ReaderBackend, why?: ProcessorReason) => void;
   // The hosted reader ran out of budget and this device reads the rest
-  // (spec/139 Phase 9). Called once, as the failover begins.
+  // (docs/specs/021-event-storming/event-storming.md Phase 9). Called once, as the failover begins.
   onFallback?: (reason: ReaderFallback) => void;
   // One note's words, as soon as they are read, so the photo fills in note by
   // note rather than all at once at the end.

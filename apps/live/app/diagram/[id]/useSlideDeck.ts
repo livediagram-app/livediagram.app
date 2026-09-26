@@ -1,6 +1,6 @@
 'use client';
 
-// The slide deck's state (spec/31): the deck itself, the editing verbs the
+// The slide deck's state (docs/specs/012-collaboration/presentation-mode.md): the deck itself, the editing verbs the
 // Slide Deck panel drives, and the presentation the Start button runs.
 //
 // The deck is diagram-level, not per-tab, because a slide belongs to one tab
@@ -77,7 +77,7 @@ export function useSlideDeck({
   // Non-null only while presenting: the index into the presentable list.
   const [presentingAt, setPresentingAt] = useState<number | null>(null);
   const [startingDeck, setStartingDeck] = useState(false);
-  // Device-local presenter settings (spec/31). Owned here rather than in the
+  // Device-local presenter settings (docs/specs/012-collaboration/presentation-mode.md). Owned here rather than in the
   // overlay because the FIT reads them too — "Actual size" is a setting about
   // the camera, and the camera lives outside the overlay.
   const [config, setConfig] = useState<PresentationConfig>(DEFAULT_PRESENTATION_CONFIG);
@@ -351,7 +351,7 @@ export function useSlideDeck({
   const start = useCallback(async () => {
     if (runnable.length === 0) return;
     // A deck reaching into a tab nobody has visited would stall mid-show, so
-    // pull every unloaded tab before the first slide paints (spec/13).
+    // pull every unloaded tab before the first slide paints (docs/specs/006-diagram/per-tab-storage.md).
     setStartingDeck(true);
     try {
       await loadAllTabs?.();

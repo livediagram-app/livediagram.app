@@ -1,6 +1,6 @@
 'use client';
 
-// Mounts the presentation (spec/31) over the editor, and owns the two pieces
+// Mounts the presentation (docs/specs/012-collaboration/presentation-mode.md) over the editor, and owns the two pieces
 // of state that belong to a RUNNING deck rather than to the deck itself: which
 // way the last move travelled (so the slide transition knows which way to
 // slide) and the transition's own tick.
@@ -26,7 +26,7 @@ export function PresentationHost() {
   const at = slideDeck?.presentingAt ?? null;
   const [direction, setDirection] = useState<'forward' | 'back'>('forward');
   const prevAt = useRef<number | null>(null);
-  // Device-local presenter settings (spec/31). Owned by the deck hook, because
+  // Device-local presenter settings (docs/specs/012-collaboration/presentation-mode.md). Owned by the deck hook, because
   // the camera reads them too.
   const config = slideDeck?.config;
   const configRef = useRef(config);

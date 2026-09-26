@@ -9,7 +9,7 @@ import {
 } from './ai-provider';
 import type { Env } from './types';
 
-// Whose model is this (spec/25)? The key answers it. What is pinned here is
+// Whose model is this (docs/specs/007-editor/ai-assistance.md)? The key answers it. What is pinned here is
 // that each preset stands on its own, that a half-configured generic is not a
 // configuration, and — the one with money attached — that two keys resolve to
 // NOTHING rather than to a coin flip.

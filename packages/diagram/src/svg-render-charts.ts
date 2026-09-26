@@ -1,4 +1,4 @@
-// Chart elements in the headless render (spec/53): pie, bar and line, plus the
+// Chart elements in the headless render (docs/specs/009-elements/pie-chart.md): pie, bar and line, plus the
 // key they share.
 //
 // These drew NOTHING before this: the exporter had no branch for them, so a
@@ -36,7 +36,7 @@ function svgChartLegend(
   const vertical = legend.pos === 'left' || legend.pos === 'right';
   if (!legend.show || (vertical ? legend.w < 48 : legend.h < 18)) return '';
   const font = fontFamily ? ` font-family="${xmlEscape(fontFamily)}"` : '';
-  // Text Size (spec/53), on the canvas's scale; the swatch and row pitch keep
+  // Text Size (docs/specs/009-elements/pie-chart.md), on the canvas's scale; the swatch and row pitch keep
   // their proportion to it, as ChartLegend's do.
   const fontPx = legendFontPx(el.textSize);
   const swatch = Math.round(fontPx * 0.8);

@@ -1,5 +1,5 @@
 // share_links — per-diagram, per-role short codes (migration 0003,
-// expiry columns from 0020 / spec/34). Row shape + role normalisation
+// expiry columns from 0020 / docs/specs/013-workspace/share-link-expiry.md). Row shape + role normalisation
 // live in share-link-row.ts so the defensive mapper has its own test
 // surface.
 
@@ -29,7 +29,7 @@ export function generateShareCode(length = 8): string {
 }
 
 // Owner-facing list for the Share dialog: ALL links, expired included
-// — the dialog splits them into Active / Inactive (spec/34).
+// — the dialog splits them into Active / Inactive (docs/specs/013-workspace/share-link-expiry.md).
 export async function listShareLinks(env: Env, diagramId: string): Promise<ShareLinkDTO[]> {
   const result = await env.DB.prepare(
     `SELECT ${SHARE_LINK_COLS} FROM share_links WHERE diagram_id = ? ORDER BY created_at ASC`,
@@ -39,7 +39,7 @@ export async function listShareLinks(env: Env, diagramId: string): Promise<Share
   return (result.results ?? []).map(rowToShareLink);
 }
 
-// The access-side lookup: ACTIVE links only (spec/34). This is the
+// The access-side lookup: ACTIVE links only (docs/specs/013-workspace/share-link-expiry.md). This is the
 // single enforcement choke point — the read/edit gates in
 // auth/diagram-access.ts, the WebSocket-upgrade role resolution, and
 // GET /api/share/:code all come through here, so an expired link
@@ -88,7 +88,7 @@ export async function createShareLink(
 }
 
 // Re-arm an expiring link for another round of its creation-time
-// duration, counted from now (spec/34). Returns the updated link, or
+// duration, counted from now (docs/specs/013-workspace/share-link-expiry.md). Returns the updated link, or
 // null when the code doesn't exist or the link never expires (nothing
 // to extend — the route maps that to a 400).
 export async function extendShareLink(env: Env, code: string): Promise<ShareLinkDTO | null> {

@@ -3,8 +3,8 @@
 Can a tiny learned model find the sticky notes on our eight labelled walls
 better than the classical pipeline (`packages/sticky-vision`), above all
 where notes touch? Code: [`packages/sticky-model`](../../../packages/sticky-model/README.md).
-Plan: [event-storming-photo-95-experiments.md](../../../plans/event-storming-photo-95-experiments.md),
-group E. Bar: [event-storming-photo-95.md](../../../plans/event-storming-photo-95.md).
+Plan: event-storming-photo-95-experiments.md,
+group E. Bar: event-storming-photo-95.md.
 
 Every number here comes from the same scorer and bar as the classical sweep
 (`sticky-vision/scripts/truth.ts`: `score`, `meetsBar`), on the same 1000px

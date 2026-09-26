@@ -1,6 +1,6 @@
 'use client';
 
-// The facilitator baton, from this browser's side (spec/149): who holds it,
+// The facilitator baton, from this browser's side (docs/specs/012-collaboration/facilitator.md): who holds it,
 // whether that is us, and the three asks that move it.
 //
 // The room arbitrates, so nothing here decides anything — it sends an ask and
@@ -58,7 +58,7 @@ export type FacilitatorApi = {
   releaseFacilitator: () => void;
   /**
    * Free an element a peer is holding through the concurrent-selection lock
-   * (spec/07), so the session can get on with it. The room arbitrates: it
+   * (docs/specs/007-editor/live-app.md), so the session can get on with it. The room arbitrates: it
    * refuses unless the baton is ours or free, and tells the holder alone.
    */
   releaseSelectionLock: (presenceId: string, elementId: string) => void;
@@ -97,7 +97,7 @@ export function useFacilitator(deps: {
   const [facilitatorId, setFacilitatorId] = useState<string | null>(null);
   // Whether the baton is OURS is not something we can work out by comparing
   // ids: the room mints a presence id per socket and never tells you which one
-  // is yours (spec/61 §6). The token is the answer. It rides only the holder's
+  // is yours (docs/specs/015-api/public-api-and-tokens.md §6). The token is the answer. It rides only the holder's
   // copy of the frame, so "this frame carried a token" means "you are the
   // facilitator", and any frame without one means you are not.
   const [isFacilitator, setIsFacilitator] = useState(false);
@@ -149,7 +149,7 @@ export function useFacilitator(deps: {
     [],
   );
 
-  // Telemetry (spec/22) on the ASK rather than the answer: a refused ask is
+  // Telemetry (docs/specs/017-telemetry/telemetry.md) on the ASK rather than the answer: a refused ask is
   // worth knowing about, and the answer arrives at every client, which would
   // count one move as many.
   const claimFacilitator = useCallback(() => {

@@ -1,8 +1,8 @@
-// Tab import (spec/27 + spec/73), lifted out of useTabActions: the
+// Tab import (docs/specs/020-import-export/markdown-import.md + docs/specs/020-import-export/mermaid.md), lifted out of useTabActions: the
 // id re-mint imported elements go through, the single-undo-step content
 // replace, and the format-dispatched importer (JSON / DSL / Markdown)
 // with its lazy-loaded parser cluster (JSON / Markdown / Mermaid /
-// Excalidraw, spec/87).
+// Excalidraw, docs/specs/020-import-export/excalidraw-import-export.md).
 
 import { remapElementRefs, type Element, type Tab } from '@livediagram/diagram';
 import { mergeImportedTab } from '@/lib/import-merge';
@@ -20,8 +20,8 @@ export const remintElementIds = (elements: Element[]): Element[] => {
     idMap.set(el.id, id);
     return { ...el, id };
   });
-  // Arrow endpoints, mind-map parents (spec/118) and portal partners
-  // (spec/104) follow the new ids. Missed, a duplicated tab's mind-map
+  // Arrow endpoints, mind-map parents (docs/specs/009-elements/mind-node.md) and portal partners
+  // (docs/specs/009-elements/portal-element.md) follow the new ids. Missed, a duplicated tab's mind-map
   // nodes named parents on the SOURCE tab and paired portals lost their
   // partner. Element links are left alone: a link names its tab too, and
   // that is still the source tab, where the original element still is.
@@ -61,7 +61,7 @@ export function useTabImport({
     setFormatSourceId(null);
   };
 
-  // Import TEXT of a given format into the active tab (spec/27 + spec/73).
+  // Import TEXT of a given format into the active tab (docs/specs/020-import-export/markdown-import.md + docs/specs/020-import-export/mermaid.md).
   // Shared by the Import dialog's paste-editor path and the file path
   // (which reads the file then hands the text here), so both routes run
   // the exact same parse + replace. The parsers are lazy-loaded so their
@@ -80,7 +80,7 @@ export function useTabImport({
       const { buildElementsFromExcalidraw } = await import('@/lib/excalidraw-import');
       const result = buildElementsFromExcalidraw(text);
       if (!result.ok) return { status: 'error', error: result.error };
-      // Ids are already re-minted inside the converter (spec/87), so this
+      // Ids are already re-minted inside the converter (docs/specs/020-import-export/excalidraw-import-export.md), so this
       // skips the JSON path's remintElementIds step.
       replaceActiveTabContent({
         id: activeId,
@@ -128,7 +128,7 @@ export function useTabImport({
     return { status: 'done' };
   };
 
-  // Import a FILE into the active tab (spec/27). Picks a file for the
+  // Import a FILE into the active tab (docs/specs/020-import-export/markdown-import.md). Picks a file for the
   // chosen format, then hands its text to importTextIntoActiveTab so the
   // file and paste paths converge on one parser. Returns the dialog
   // outcome; 'cancelled' when the file picker is dismissed.

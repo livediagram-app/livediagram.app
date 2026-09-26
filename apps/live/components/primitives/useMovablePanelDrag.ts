@@ -17,7 +17,7 @@ import type { MovablePanelProps } from './MovablePanel.types';
 
 // The MovablePanel header-drag machinery, lifted out of the component:
 // the legacy free-move path (offsetParent coords through onMoveTo) and
-// the corner-docking path (spec/63 — threshold lift, viewport-space
+// the corner-docking path (docs/specs/007-editor/panel-docking.md — threshold lift, viewport-space
 // tracking, live snap geometry through the onDockDrag* callbacks), plus
 // the collapse-vs-drag press routing on the title row. The component
 // mounts `beginDrag` on its header and renders from `drag` /
@@ -50,7 +50,7 @@ export function useMovablePanelDrag({
   setCollapsed: (v: boolean) => void;
 }) {
   // Presence of getDockBounds opts this panel into the corner-docking
-  // drag path (spec/63). Computed once per render; cheap.
+  // drag path (docs/specs/007-editor/panel-docking.md). Computed once per render; cheap.
   const docking = !!getDockBounds;
   // Last drag geometry, so pointerup can hand the final spot to
   // onDockDragEnd (which decides snap-to-corner vs free drop).

@@ -1,6 +1,6 @@
 // Assembles the palette catalogue (shapes + line-art icons + technology icons
 // + stickers) into the flat, keyword-tagged list the global search surfaces as
-// "Add to canvas" results (spec/09). Built here, not in lib/search.ts, so the
+// "Add to canvas" results (docs/specs/008-canvas/canvas-and-palette.md). Built here, not in lib/search.ts, so the
 // search matcher stays catalogue-agnostic and the Explorer (which never adds
 // elements) doesn't pull the icon data into its bundle.
 
@@ -83,7 +83,7 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
 };
 
 // The shape-placing tiles, in palette order. Derived from the shared
-// catalogue (spec/78) rather than restated, which is what keeps search from
+// catalogue (docs/specs/010-palette/palette-favourites.md) rather than restated, which is what keeps search from
 // drifting behind the palette again. Icon / sticker / tech tiles are excluded
 // deliberately: those catalogues are enumerated in full below, so including
 // their single "open the picker" tile would add a duplicate result.
@@ -133,7 +133,7 @@ export function buildPaletteSearchItems(): PaletteSearchItem[] {
       };
     }),
     // Line art only. The catalogue still carries the legacy emoji entries so
-    // pre-spec/116 elements keep rendering, but offering them here would add
+    // elements from before docs/specs/010-palette/stickers.md keep rendering, but offering them here would add
     // a second way to place something that is a sticker now.
     ...getLoadedIconCatalog()
       .filter((i) => !isLegacyEmojiIconId(i.id))
@@ -143,7 +143,7 @@ export function buildPaletteSearchItems(): PaletteSearchItem[] {
         keywords: `icon ${i.keywords}`,
         add: { type: 'icon' as const, iconId: i.id },
       })),
-    // Stickers (spec/116), added through their own path. A badge also
+    // Stickers (docs/specs/010-palette/stickers.md), added through their own path. A badge also
     // matches on the word on its pill, so "blocked" finds BLOCKED.
     ...getLoadedStickerCatalog().map((s) => ({
       id: `sticker:${s.id}`,

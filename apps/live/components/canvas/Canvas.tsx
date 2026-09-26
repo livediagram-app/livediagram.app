@@ -156,8 +156,8 @@ export function Canvas(props: CanvasProps) {
     handleDockButtonClick,
     openDockPanel,
   } = useCanvasMobileDock(mainRef);
-  // A session panel opens under its dock button when it arrives (spec/88,
-  // spec/39): a new poll (or the one you just answered), a vote just opened.
+  // A session panel opens under its dock button when it arrives (docs/specs/012-collaboration/live-poll.md,
+  // docs/specs/012-collaboration/session-tools.md): a new poll (or the one you just answered), a vote just opened.
   useOpenDockPanelOnChange(props.pollPanel ? props.pollPanel.poll.id : null, 'poll', openDockPanel);
   useOpenDockPanelOnChange(props.tabVote ? 'vote' : null, 'vote', openDockPanel);
 
@@ -197,7 +197,7 @@ export function Canvas(props: CanvasProps) {
   // usePaletteDrop so the canvas body keeps to layout + pointer routing.
   const paletteDrop = usePaletteDrop({
     onDropPhoto: props.onDropPhoto,
-    // A tile DRAGGED onto the canvas is an edit too (spec/101), so it leaves
+    // A tile DRAGGED onto the canvas is an edit too (docs/specs/008-canvas/avatar-mode.md), so it leaves
     // Avatar mode the same way a tile click does — otherwise the element
     // landed while the canvas still read as read-only.
     onDropPalette: props.onDropPalette
@@ -266,12 +266,12 @@ export function Canvas(props: CanvasProps) {
   // O(N) for the sole purpose of computing a boolean.
   const hasArrows = elements.some((el) => el.type === 'arrow');
 
-  // Spotlight presenter tool (spec/09): screen-space light position +
+  // Spotlight presenter tool (docs/specs/008-canvas/canvas-and-palette.md): screen-space light position +
   // radius. Local to Canvas so the click handlers, the pointer tracker, and
   // the overlay share one source of truth; survives Pan/Select detours
   // because Canvas stays mounted.
   const spotlight = useSpotlight();
-  // The spotlight's look (spec/112): persisted per browser, read by the
+  // The spotlight's look (docs/specs/008-canvas/spotlight-panel.md): persisted per browser, read by the
   // overlay and edited from the Spotlight Panel down in the chrome.
   const spotlightLook = useSpotlightConfig();
   // Where to draw the eraser's brush ring, in <main>-relative px. Null until
@@ -279,10 +279,10 @@ export function Canvas(props: CanvasProps) {
   // of the screen would claim a brush that isn't there.
   const [eraserPos, setEraserPos] = useState<{ x: number; y: number } | null>(null);
 
-  // Avatar mode (spec/101): the walking character's position / facing / step
+  // Avatar mode (docs/specs/008-canvas/avatar-mode.md): the walking character's position / facing / step
   // frame, its click-to-walk entry point, and the camera follow. Owns its own
   // rAF loop, dormant unless the tool is active.
-  // The character's gender / clothing / hair / size (spec/101), persisted per
+  // The character's gender / clothing / hair / size (docs/specs/008-canvas/avatar-mode.md), persisted per
   // browser. Owned here because both the sprite and the Avatar Panel (down in
   // CanvasChrome) read it, and it outlives any one walk.
   const avatarLook = useAvatarConfig({ active: canvasTool === 'avatar' });
@@ -305,7 +305,7 @@ export function Canvas(props: CanvasProps) {
   // needs `sitOn`, which the same hook returns (see enterPortalRef below for
   // the identical knot).
   // The burst the avatar panel has asked for, if any. Ephemeral exactly like
-  // a pad's (spec/135): nothing is stored and nothing is replayed.
+  // a pad's (docs/specs/009-elements/reaction-pad.md): nothing is stored and nothing is replayed.
   const [avatarBurst, setAvatarBurst] = useState<{ reaction: Reaction; seed: number } | null>(null);
   const avatarBurstSeq = useRef(0);
   const avatarRef = useRef<ReturnType<typeof useAvatarWalk> | null>(null);
@@ -321,10 +321,10 @@ export function Canvas(props: CanvasProps) {
     setViewportOffset,
     spawnAtRef: avatarSpawnRef,
     onPresence: props.onAvatarPresence,
-    // Walking the character into a portal travels through it (spec/104) — the same
+    // Walking the character into a portal travels through it (docs/specs/009-elements/portal-element.md) — the same
     // action the portal's own click fires.
     onWalkIntoPortal: (element) => enterPortalRef.current(element),
-    // Chair (spec/130): walking onto one sits the character down, snapped to
+    // Chair (docs/specs/009-elements/chair.md): walking onto one sits the character down, snapped to
     // the seat point so it sits ON the chair rather than wherever it arrived.
     onWalkIntoChair: (element) => {
       const facing = element.chairFacing ?? DEFAULT_CHAIR_FACING;
@@ -334,7 +334,7 @@ export function Canvas(props: CanvasProps) {
         CHAIR_SITTER_FACING[facing],
       );
     },
-    // Reaction pad (spec/135): walking onto one is the same act as pressing
+    // Reaction pad (docs/specs/009-elements/reaction-pad.md): walking onto one is the same act as pressing
     // it, so it runs the same handler.
     onWalkIntoReactionPad: (element) => props.onFireReaction?.(element),
   });
@@ -361,7 +361,7 @@ export function Canvas(props: CanvasProps) {
     }
     return byChair;
   }, [avatar.seatedOn, props.remoteAvatars, props.selfParticipant.color]);
-  // Somebody pushed us (spec/101): slide along their direction, once per push.
+  // Somebody pushed us (docs/specs/008-canvas/avatar-mode.md): slide along their direction, once per push.
   // Keyed on the sequence number, not the vector, so two identical shoves in a
   // row both land.
   const lastShoveRef = useRef<number | null>(null);
@@ -381,7 +381,7 @@ export function Canvas(props: CanvasProps) {
     return el && isBoxed(el) ? { x: el.x, y: el.y, width: el.width, height: el.height } : null;
   }, [avatar.standingOnId, elements]);
 
-  // Portals (spec/104): the camera centres on the paired portal and the walking
+  // Portals (docs/specs/009-elements/portal-element.md): the camera centres on the paired portal and the walking
   // character steps out of it — see makePortalTravel.
   //
   // `enterPortal` needs the avatar hook (to place the character) and the hook
@@ -400,7 +400,7 @@ export function Canvas(props: CanvasProps) {
   });
   enterPortalRef.current = enterPortal;
 
-  // Isometric view (spec/45): the orbit-able camera + the innermost
+  // Isometric view (docs/specs/008-canvas/isometric-view.md): the orbit-able camera + the innermost
   // transform fragment, pivoted on the content centre — see
   // useIsometricView. Shift-drag on the canvas spins / tilts it (see
   // the <main> pointerdown handler).
@@ -432,7 +432,7 @@ export function Canvas(props: CanvasProps) {
       const node = mainRef && 'current' in mainRef ? mainRef.current : null;
       const mr = node?.getBoundingClientRect();
       const at = mr ? { x: e.clientX - mr.left, y: e.clientY - mr.top } : null;
-      // The eraser's brush ring (spec/113) needs the same screen-space point
+      // The eraser's brush ring (docs/specs/008-canvas/eraser-panel.md) needs the same screen-space point
       // the spotlight's light does, so they share the measurement.
       if (at && canvasTool === 'spotlight') spotlight.setPos(at);
       if (at && canvasTool === 'eraser') setEraserPos(at);
@@ -457,7 +457,7 @@ export function Canvas(props: CanvasProps) {
     onMultiContextMenu,
   });
 
-  // An armed workshop-note tile is a STAMP, not a draw-to-size (spec/139
+  // An armed workshop-note tile is a STAMP, not a draw-to-size (docs/specs/021-event-storming/event-storming.md
   // Phase 4): its ghost follows the pointer, and the draw gesture places by the
   // same rule.
   const { stamp, stampAt, showStamp } = useStampGhost({
@@ -480,7 +480,7 @@ export function Canvas(props: CanvasProps) {
     showStamp,
   });
 
-  // Polygon click-to-place gesture (spec/84), composed IN FRONT of the
+  // Polygon click-to-place gesture (docs/specs/008-canvas/polygon-tool.md), composed IN FRONT of the
   // drag-based draw gesture: while the polygon intent is armed it
   // claims every draw-intercept press as a vertex placement.
   const { polygonVertices, polygonCursor, beginPolygonPoint, handlePolygonDoubleClick } =
@@ -534,7 +534,7 @@ export function Canvas(props: CanvasProps) {
   return (
     <main
       ref={mainRef}
-      // In the tab order (spec/71): keyboard users Tab to the canvas as
+      // In the tab order (docs/specs/004-interface-design/canvas-accessibility.md): keyboard users Tab to the canvas as
       // one stop, then Tab / Shift+Tab walk the elements (useCanvasA11y,
       // engaged only while this surface itself is focused — the marker
       // attribute below is how the hook recognises it). The role stays
@@ -548,7 +548,7 @@ export function Canvas(props: CanvasProps) {
       onDragOver={paletteDrop.onDragOver}
       onDrop={paletteDrop.onDrop}
       onPointerDownCapture={surface.onPointerDownCapture}
-      // A dark backdrop deepens the sticky paper-peel (spec/09): the shadow
+      // A dark backdrop deepens the sticky paper-peel (docs/specs/008-canvas/canvas-and-palette.md): the shadow
       // ink is tuned for light paper and vanishes on a dark wall. Flagged
       // here so the peel's CSS can respond without knowing about themes.
       data-dark-canvas={isDarkCanvas(tabBackgroundColor) ? '' : undefined}
@@ -579,10 +579,10 @@ export function Canvas(props: CanvasProps) {
         ...(pendingDraw ? { cursor: drawIntentCursor(pendingDraw) } : null),
       }}
     >
-      {/* SR-only polite live region (spec/71): selection / delete / undo
+      {/* SR-only polite live region (docs/specs/004-interface-design/canvas-accessibility.md): selection / delete / undo
           announcements land here. */}
       <CanvasLiveRegion />
-      {/* Animated backdrops (spec/09) paint as an ambient overlay behind the
+      {/* Animated backdrops (docs/specs/008-canvas/canvas-and-palette.md) paint as an ambient overlay behind the
           diagram content; the static patterns ride the <main> background
           above. tabBackgroundStyle returns just the backdrop colour for
           these, so this layer is the only thing that draws their motion. */}
@@ -599,23 +599,23 @@ export function Canvas(props: CanvasProps) {
         ref={wrapperRef}
         onPointerDown={surface.onWrapperPointerDown}
         onDoubleClick={(e) => {
-          // Polygon finish-line double-click (spec/84) wins over the
+          // Polygon finish-line double-click (docs/specs/008-canvas/polygon-tool.md) wins over the
           // add-text double-click while the intent is armed.
           if (handlePolygonDoubleClick()) return;
           surface.onWrapperDoubleClick(e);
         }}
-        // Spotlight (spec/09) is a non-editing presenter mode: make the whole
+        // Spotlight (docs/specs/008-canvas/canvas-and-palette.md) is a non-editing presenter mode: make the whole
         // diagram layer ignore pointer events so NO element kind can be
         // selected, dragged, or edited (a per-element capture guard can't
         // catch every select path — boxed elements, arrow hit-bands, labels,
         // click vs pointerdown). Clicks then fall through to <main>, where the
         // capture handler turns them into grow / shrink, and middle-mouse or
         // held-Space still pans.
-        // Isometric view (spec/45): like Spotlight, the layer goes
+        // Isometric view (docs/specs/008-canvas/isometric-view.md): like Spotlight, the layer goes
         // pointer-events-none so NO element kind can be selected / dragged —
         // it's a read-only view tool. Clicks fall through to <main>, where a
         // drag pans (canvasTool === 'isometric' is added to `wantsPan`).
-        // Avatar mode (spec/101): same treatment for the same reason — the mode
+        // Avatar mode (docs/specs/008-canvas/avatar-mode.md): same treatment for the same reason — the mode
         // is read-only, so the diagram layer goes inert and every click falls
         // through to <main>, where the capture handler turns it into a walk.
         className={`absolute inset-0 origin-center touch-none ${
@@ -630,7 +630,7 @@ export function Canvas(props: CanvasProps) {
         style={{
           // Translate is in canvas-coords (applied first); scale is centred
           // on the wrapper so zooming keeps the viewport centre stable.
-          // Isometric tilt (spec/45) is appended INNERMOST (last in the list,
+          // Isometric tilt (docs/specs/008-canvas/isometric-view.md) is appended INNERMOST (last in the list,
           // so it transforms the content first): that keeps the pan translate
           // in screen space, so a drag moves the scene the way the cursor
           // moves at any camera angle. The fragment (built above as
@@ -649,7 +649,7 @@ export function Canvas(props: CanvasProps) {
           ...(pendingDraw ? { cursor: drawIntentCursor(pendingDraw) } : null),
         }}
       >
-        {/* Isometric extrusion (spec/45): per-element raised blocks painted
+        {/* Isometric extrusion (docs/specs/008-canvas/isometric-view.md): per-element raised blocks painted
             behind the real element layer, which caps each column at z=0.
             Only mounted while the tool is active. */}
         {canvasTool === 'isometric' ? <IsometricDepthLayer elements={elements} /> : null}
@@ -662,7 +662,7 @@ export function Canvas(props: CanvasProps) {
             onFireReaction={props.onFireReaction}
             reactionBursts={props.reactionBursts}
             onReactionBurstDone={props.onReactionBurstDone}
-            // Chair (spec/130): occupancy resolved here, where peer presence
+            // Chair (docs/specs/009-elements/chair.md): occupancy resolved here, where peer presence
             // lives, rather than threaded from the page.
             chairSitters={(elementId) => chairSitters.get(elementId) ?? []}
             // Pressing a Selection Mode button that hands out Avatar mode drops
@@ -687,7 +687,7 @@ export function Canvas(props: CanvasProps) {
             setQuickRingOpen={setQuickRingOpen}
           />
         </MindGrowProvider>
-        {/* Avatar mode (spec/101): the walking characters, INSIDE the
+        {/* Avatar mode (docs/specs/008-canvas/avatar-mode.md): the walking characters, INSIDE the
             transformed wrapper so they pan / zoom with the diagram, and after
             the element layer so they stand in front of the content they walk
             over. Peers' characters render whether or not WE are in the mode —
@@ -706,7 +706,7 @@ export function Canvas(props: CanvasProps) {
             wave={peer.avatar.wave}
             seated={!!peer.avatar.seatedOn}
             // Replayed locally from the kind + elapsed time in their packet, by
-            // the same pure function the sender used (spec/101).
+            // the same pure function the sender used (docs/specs/008-canvas/avatar-mode.md).
             pose={
               peer.avatar.reaction
                 ? reactionPose(peer.avatar.reaction.kind, peer.avatar.reaction.elapsedMs)
@@ -717,7 +717,7 @@ export function Canvas(props: CanvasProps) {
             standingOn={null}
           />
         ))}
-        {/* A Reaction Pad burst (spec/135) thrown around the CHARACTER rather
+        {/* A Reaction Pad burst (docs/specs/009-elements/reaction-pad.md) thrown around the CHARACTER rather
             than around a pad. Same engine, same particles: the pad and the
             avatar panel are two ways to set off one effect, not two effects.
             Positioned at the character's canvas point, inside the transformed
@@ -756,12 +756,12 @@ export function Canvas(props: CanvasProps) {
         ) : null}
       </div>
 
-      {/* Spotlight presenter shroud (spec/09). Screen-space sibling of the
+      {/* Spotlight presenter shroud (docs/specs/008-canvas/canvas-and-palette.md). Screen-space sibling of the
           transformed wrapper so the light stays fixed on screen while the
           diagram pans / zooms underneath. Rendered before CanvasChrome so the
           palette + chrome paint ON TOP and stay reachable to switch tools
           back; pointer-events-none lets clicks fall through to <main>. */}
-      {/* The eraser's brush ring (spec/113): the same screen-space layer as
+      {/* The eraser's brush ring (docs/specs/008-canvas/eraser-panel.md): the same screen-space layer as
           the shroud, for the same reason — it must not pan or zoom with the
           diagram, and it must never take a pointer event. */}
       {canvasTool === 'eraser' ? (
@@ -847,18 +847,18 @@ export function Canvas(props: CanvasProps) {
         onIsoOrbit={isoCamera.startOrbit}
         onIsoReset={isoCamera.reset}
       />
-      {/* Lazy per-tab load (spec/13). Last child + z-[var(--z-overlay)] so it covers the
+      {/* Lazy per-tab load (docs/specs/006-diagram/per-tab-storage.md). Last child + z-[var(--z-overlay)] so it covers the
           canvas AND the floating palette, blocking any edit that would
           otherwise overwrite an unfetched tab's real content. */}
       {tabLoadState && tabLoadState !== 'ready' ? (
         <TabLoadOverlay state={tabLoadState} onRetry={() => onRetryTabLoad?.()} />
       ) : null}
-      {/* Drag-to-add ghost (spec/58): previews where a dragged palette shape
+      {/* Drag-to-add ghost (docs/specs/010-palette/palette-drag-ghost.md): previews where a dragged palette shape
           will land, following the cursor over the canvas. */}
       <PaletteDragGhost zoom={viewportZoom} />
-      {/* Map (spec/59) now renders inside CanvasChrome's docking layer
-          (spec/63) so it snaps + stacks like the other floating panels. */}
-      {/* Touch long-press "hold" ring at the finger: the spec/09
+      {/* Map (docs/specs/008-canvas/minimap.md) now renders inside CanvasChrome's docking layer
+          (docs/specs/007-editor/panel-docking.md) so it snaps + stacks like the other floating panels. */}
+      {/* Touch long-press "hold" ring at the finger: the docs/specs/008-canvas/canvas-and-palette.md
           press-and-hold affordance that opens the context menu on touch.
           Portaled to escape the canvas's pan/zoom transform so its fixed
           position is viewport-relative. Reveals only after a deliberate hold

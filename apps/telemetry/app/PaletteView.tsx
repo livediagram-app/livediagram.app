@@ -7,7 +7,7 @@ import { RankCard, rank } from './RankCard';
 import { PALETTE_TYPE_ALIASES } from './palette-types';
 import { rankTrend, windowLabel } from './windows';
 
-// Palette view (spec/22): what people reach for in the editor's creation
+// Palette view (docs/specs/017-telemetry/telemetry.md): what people reach for in the editor's creation
 // palette, most to least, broken out by the palette's own tabs. Element adds
 // (`Element·Added·<type>`) are bucketed into the catalogue categories below.
 // The canvas selection modes are a separate concept, not elements, so they
@@ -15,7 +15,7 @@ import { rankTrend, windowLabel } from './windows';
 // window appear.
 
 // The palette tabs come from the SHARED catalogue in @livediagram/api-schema
-// (spec/22), not a local copy. They used to be hand-mirrored here with a
+// (docs/specs/017-telemetry/telemetry.md), not a local copy. They used to be hand-mirrored here with a
 // "keep in sync" comment, and they didn't stay in sync: this file still
 // expected `Code-block` long after the editor settled on `CodeBlock`, so
 // every code block anyone drew was emitted, stored, and silently missing

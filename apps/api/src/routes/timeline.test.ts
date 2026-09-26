@@ -1,7 +1,7 @@
 import { makeTestRouteContext } from './test-route-context';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-// The read surface for the Explorer's landing feed (spec/138 §6).
+// The read surface for the Explorer's landing feed (docs/specs/013-workspace/timeline.md §6).
 //
 // The `scope` query parameter is the interesting part: it exists so the
 // wire shape is fixed before a second scope type ships, but in v1 the
@@ -145,7 +145,7 @@ describe('handleTimeline read', () => {
     expect(store.readTimeline).not.toHaveBeenCalled();
   });
 
-  // An invite grants no access to the team's content (spec/32), and its
+  // An invite grants no access to the team's content (docs/specs/013-workspace/teams.md), and its
   // feed is content.
   it('403s a team scope for an invited-but-not-joined member', async () => {
     db.getMembership.mockResolvedValue({ status: 'invited', role: 'member' });
@@ -334,7 +334,7 @@ describe('handleTimeline refresh', () => {
   });
 });
 
-// Per-entry dismissal (spec/138 §2.9). The only write on the feed, and
+// Per-entry dismissal (docs/specs/013-workspace/timeline.md §2.9). The only write on the feed, and
 // it is always against the caller's own scope: there is no parameter
 // that could point it at somebody else's.
 describe('handleTimeline dismiss', () => {

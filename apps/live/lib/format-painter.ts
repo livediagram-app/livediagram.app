@@ -17,7 +17,7 @@
 // A projection key whose value is `undefined` is deliberate: it means
 // "the source is on the default here", and `applyPaint` clears the
 // target's override so the target ends up looking like the source
-// (spec/09). A key that is ABSENT means the source's kind doesn't carry
+// (docs/specs/008-canvas/canvas-and-palette.md). A key that is ABSENT means the source's kind doesn't carry
 // the field at all, so it has no opinion and the target keeps its own.
 
 import {
@@ -87,12 +87,12 @@ export function paintableBoxedFields(source: BoxedElement): Partial<BoxedElement
     height: source.height,
     aspectLocked: source.aspectLocked,
     opacity: source.opacity,
-    // Looping animation (spec/09) is a cosmetic field, so paint it like the rest.
+    // Looping animation (docs/specs/008-canvas/canvas-and-palette.md) is a cosmetic field, so paint it like the rest.
     animation: source.animation,
     animationSpeed: source.animationSpeed,
     animationRepeat: source.animationRepeat,
   };
-  // Drop shadow (spec/86): cosmetic, painted alongside where the kind draws one.
+  // Drop shadow (docs/specs/008-canvas/element-shadows.md): cosmetic, painted alongside where the kind draws one.
   if (SHADOW_KINDS.has(kind)) {
     (base as { shadow?: ElementShadow }).shadow = (source as { shadow?: ElementShadow }).shadow;
   }
@@ -126,7 +126,7 @@ export function paintableBoxedFields(source: BoxedElement): Partial<BoxedElement
     ...base,
     fillColor: source.fillColor,
     strokeColor: source.strokeColor,
-    // A table's header row / a lane's title gutter (spec/09, spec/119).
+    // A table's header row / a lane's title gutter (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/009-elements/lane.md).
     headerFill: ext.headerFill,
     textColor: uniformRunValue(rt, 'color') ?? source.textColor,
     textSize: uniformRunValue(rt, 'size') ?? source.textSize,
@@ -148,13 +148,13 @@ export function paintableBoxedFields(source: BoxedElement): Partial<BoxedElement
   if (RADIUS_KINDS.has(kind)) out.borderRadius = ext.borderRadius;
   if (kind === 'table') out.headerTextColor = ext.headerTextColor;
   if (kind === 'shape') {
-    // Colour-preset binding (spec/48) + the fill's theme lock: carried
+    // Colour-preset binding (docs/specs/010-palette/style-presets.md) + the fill's theme lock: carried
     // alongside the colours so a painted shape tracks the theme exactly
     // like the source did. applyPaint decides whether the binding holds.
     out.colorPreset = ext.colorPreset;
     out.themeLockFill = ext.themeLockFill;
     // Per-icon glyph animation + speed and the Technology mark's fixed
-    // size preset (spec/09 / spec/41).
+    // size preset (docs/specs/008-canvas/canvas-and-palette.md / docs/specs/010-palette/technology-icons.md).
     out.iconAnimation = ext.iconAnimation;
     out.iconAnimationSpeed = ext.iconAnimationSpeed;
     out.iconAnimationRepeat = ext.iconAnimationRepeat;
@@ -180,14 +180,14 @@ export function paintableArrowFields(source: ArrowElement): Partial<ArrowElement
     arrowheadSize: source.arrowheadSize,
     arrowheadShape: source.arrowheadShape,
     arrowStyle: source.arrowStyle,
-    // Route behind boxes (spec/90): a look choice like the rest. Absent
+    // Route behind boxes (docs/specs/008-canvas/arrow-route-behind.md): a look choice like the rest. Absent
     // means on, so a default source turns it back on for the target.
     routeBehind: source.routeBehind,
-    // Flow animation (spec/09): marching dashes / travelling dot.
+    // Flow animation (docs/specs/008-canvas/canvas-and-palette.md): marching dashes / travelling dot.
     flow: source.flow,
     flowSpeed: source.flowSpeed,
     flowRepeat: source.flowRepeat,
-    // Label text styling (spec/09). Arrows don't carry alignment /
+    // Label text styling (docs/specs/008-canvas/canvas-and-palette.md). Arrows don't carry alignment /
     // padding (the label rides the line), but do carry the same text
     // switches + size + colour + font as boxed labels, and the
     // caption plate behind the label.
@@ -221,7 +221,7 @@ const PRESET_COLOURS = ['fillColor', 'strokeColor', 'textColor'] as const;
 // `undefined` values clear the target's override (see the header), and
 // the two derived fields are kept honest: the target's per-range runs
 // yield to painted text, and the colour-preset binding only survives
-// when it still describes the colours on the element (spec/09).
+// when it still describes the colours on the element (docs/specs/008-canvas/canvas-and-palette.md).
 export function applyPaint<T extends BoxedElement | ArrowElement>(
   target: T,
   patch: Partial<BoxedElement> | Partial<ArrowElement>,

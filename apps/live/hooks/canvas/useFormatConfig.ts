@@ -1,4 +1,4 @@
-// The format painter's settings (spec/117), persisted per browser — the same
+// The format painter's settings (docs/specs/008-canvas/format-panel.md), persisted per browser — the same
 // shape as the other tool-panel hooks.
 
 import { useState } from 'react';
@@ -21,7 +21,7 @@ export function useFormatConfig() {
   };
 
   // One toggle at a time. The telemetry names WHICH setting moved, never the
-  // resulting set (spec/22).
+  // resulting set (docs/specs/017-telemetry/telemetry.md).
   const toggleGroup = (group: FormatGroup) => {
     write(
       { ...config, copies: { ...config.copies, [group]: !config.copies[group] } },

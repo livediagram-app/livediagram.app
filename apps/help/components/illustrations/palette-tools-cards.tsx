@@ -1,4 +1,4 @@
-// Card-element illustrations for the Tools tab (spec/82 + spec/83): the dark
+// Card-element illustrations for the Tools tab (docs/specs/009-elements/code-block.md + docs/specs/009-elements/checklist.md): the dark
 // monospace code block and the checkable checklist card. Split out from
 // palette-tools.tsx (already at size) per the no-god-files rule; composed from
 // the shared primitives plus raw rects for the token/row motifs the kit lacks.

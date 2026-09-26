@@ -1,4 +1,4 @@
-// Share-link + share-password calls (spec/24): resolve a share code to
+// Share-link + share-password calls (docs/specs/013-workspace/share-password.md): resolve a share code to
 // a diagram, list/create/delete links, and set the diagram password.
 import type {
   DiagramResponse,
@@ -36,7 +36,7 @@ async function _apiLoadShared(
   const res = await apiFetch(`${API_BASE}/share/${code}`, {
     headers: await apiHeaders(ownerId, { share: null }),
   });
-  // Password gate (spec/24): 401 = the diagram is protected and we sent
+  // Password gate (docs/specs/013-workspace/share-password.md): 401 = the diagram is protected and we sent
   // no (or no longer-valid) password; 403 = we sent a wrong one. Both
   // surface as `passwordRequired` so the editor shows the gate; only
   // 403 flags `invalid` so it can show an error line. The password the
@@ -60,7 +60,7 @@ export const apiLoadShared = dedupeInFlight(
 // share-dialog state alongside the other read endpoints. Strict
 // Mode doubling collapses to one fetch.
 // Returns the diagram's share links AND its current share password
-// (spec/24) in one owner-only round-trip — the Share dialog needs both.
+// (docs/specs/013-workspace/share-password.md) in one owner-only round-trip — the Share dialog needs both.
 async function _apiListShareLinks(
   ownerId: string,
   id: string,
@@ -108,7 +108,7 @@ export async function apiCreateShareLink(
 }
 
 // Re-arm an expiring link for another round of its creation-time
-// duration (spec/34). Returns the updated link with its new deadline.
+// duration (docs/specs/013-workspace/share-link-expiry.md). Returns the updated link with its new deadline.
 export async function apiExtendShareLink(
   ownerId: string,
   id: string,

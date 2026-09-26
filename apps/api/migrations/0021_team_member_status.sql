@@ -1,4 +1,4 @@
--- Invite accept/decline handshake (spec/32). Membership becomes a
+-- Invite accept/decline handshake (docs/specs/013-workspace/teams.md). Membership becomes a
 -- two-step: an invite row is born 'invited' and only counts as
 -- membership once its owner accepts ('joined'). Declining deletes the
 -- row (no column needed for that side).

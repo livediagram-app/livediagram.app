@@ -18,7 +18,7 @@ import { usePaletteRecent } from './palette-recent-context';
 import { tilesInSection } from './palette-tile-defs';
 
 // Renders palette tiles from the shared catalogue (palette-tile-defs,
-// spec/78): maps each tile's action descriptor to the editor's add-handler
+// docs/specs/010-palette/palette-favourites.md): maps each tile's action descriptor to the editor's add-handler
 // bundle and derives the pending-draw highlight, so the category tabs and
 // the Favourites grid share one tile implementation.
 
@@ -42,7 +42,7 @@ export type PaletteTileActions = {
   addArrow: () => void;
   // Optional fill + kind: the Event Storming tiles pass their note kind's
   // canonical colour and the kind itself (which routes the note onto its
-  // stage's layer, spec/139); plain "Add sticky note" passes nothing.
+  // stage's layer, docs/specs/021-event-storming/event-storming.md); plain "Add sticky note" passes nothing.
   addSticky: (fill?: string, esKind?: EventStormingNoteKind) => void;
   addTable: () => void;
   addImage: () => void;
@@ -51,7 +51,7 @@ export type PaletteTileActions = {
   addVideo: (provider?: EmbedProvider) => void;
   addSticker: (stickerId: string) => void;
   addComponent: (kind: ComponentKind) => void;
-  // Dynamic icon favourites (spec/78): drop a single line-art / Technology
+  // Dynamic icon favourites (docs/specs/010-palette/palette-favourites.md): drop a single line-art / Technology
   // catalogue icon, same handlers the Icons / Technology tabs use.
   addIcon: (iconId: string) => void;
   addTechIcon: (iconId: string) => void;
@@ -66,7 +66,7 @@ export function tileHandler(def: PaletteTileDef, actions: PaletteTileActions): (
   switch (a.type) {
     case 'shape':
       // The creation-time choice rides along, so "Add poll" places a poll and
-      // a confetti tile places a confetti pad (spec/105, spec/135).
+      // a confetti tile places a confetti pad (docs/specs/012-collaboration/session-button.md, docs/specs/009-elements/reaction-pad.md).
       return () =>
         actions.addShape(a.kind, {
           session: a.session,
@@ -111,7 +111,7 @@ export function tileHandler(def: PaletteTileDef, actions: PaletteTileActions): (
 
 // Whether this tile is the armed draw-to-size intent (the pressed
 // highlight). Only the annotation drops immediately and never arms, so it is
-// the only kind with no active state (spec/09 "Placement on add").
+// the only kind with no active state (docs/specs/008-canvas/canvas-and-palette.md "Placement on add").
 export function tileActive(
   def: PaletteTileDef,
   pendingDraw: PendingDraw | null | undefined,
@@ -133,7 +133,7 @@ export function tileActive(
     case 'component':
       return pendingDraw.type === 'component' && pendingDraw.kind === a.kind;
     // The three pens share the freehand intent, split by the variant
-    // payload — each tile lights only for its own arm (spec/115).
+    // payload — each tile lights only for its own arm (docs/specs/008-canvas/two-pens.md).
     case 'freehand':
       return pendingDraw.type === 'freehand' && pendingDraw.variant === undefined;
     case 'shape-pen':
@@ -173,11 +173,11 @@ export function visibleTiles(defs: PaletteTileDef[], hasImage: boolean): Palette
 // One catalogue tile, rendered exactly as its home tab renders it.
 // (Favourites curation happens in the edit-favourites dialog, not by
 // overlaying badges here — see PaletteFavouritesDialog.) `compact` is the
-// Toolbar layout's strip (spec/148): icon only, name in the tooltip, and the
+// Toolbar layout's strip (docs/specs/007-editor/toolbar-layout.md): icon only, name in the tooltip, and the
 // shortcut letter always showing in the corner rather than only while the
 // modifier is held, the way a tool bar reads.
 // A tile's click handler, which in the Toolbar layout also records the use,
-// so the strip can bring the tile to its front (spec/148). Everywhere else it
+// so the strip can bring the tile to its front (docs/specs/007-editor/toolbar-layout.md). Everywhere else it
 // is exactly tileHandler.
 export function useTileHandler(def: PaletteTileDef, actions: PaletteTileActions): () => void {
   const recent = usePaletteRecent();
@@ -213,7 +213,7 @@ export function PaletteTile({
         }
       : undefined;
   // Sticky tiles drag too (the plain note + the Event Storming notation,
-  // spec/139), carrying their kind so the drop routes + sizes like a tap.
+  // docs/specs/021-event-storming/event-storming.md), carrying their kind so the drop routes + sizes like a tap.
   // The IconButton clears the ghost on dragEnd for every tile, so setting
   // it here is safe.
   const stickyDrag =

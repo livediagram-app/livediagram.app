@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// The wizard's placement lists (spec/141, spec/35), and what inline creation
+// The wizard's placement lists (docs/specs/006-diagram/save-locations.md, docs/specs/013-workspace/team-shared-diagrams.md), and what inline creation
 // does to them: a new folder lands in the list it was made in, a new team
 // joins the overview with an empty library, and either returning null on
 // failure so the tile stays open for another go.

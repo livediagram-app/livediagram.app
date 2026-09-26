@@ -1,0 +1,13 @@
+# Diagram
+
+Follow the references below only as needed; never upfront.
+
+- ./diagram-structure.md - when working on Diagram structure: Diagrams contain tabs; elements can link across tabs
+- ./per-tab-storage.md - when working on Per-tab storage: Split tabs into their own D1 rows so autosave scope shrinks
+- ./tab-diagram-many-to-many.md - when working on Tab ↔ diagram many-to-many: Link table so a tab can live in multiple diagrams
+- ./tab-folders.md - when working on Tab folders: Group a diagram's tabs into one-level, collapsible named folders
+- ./diagram-snapshots.md - when working on Diagram SVG snapshots: One R2-cached SVG per diagram, rendered on-read-if-stale: Explorer row thumbnails (owner-authed) + the live image share embed ([Live image share link](../013-workspace/live-image-share.md), share-code-scoped). Gated on the optional R2 binding
+- ./layers.md - when working on Layers: Photoshop-style per-tab layers: Tab.layers bands + element layerId, active layer receives new elements, visibility/lock/reorder, band-scoped z-order, a dockable Layers panel (bottom-right, dock button on mobile/minimal), hidden layers excluded from exports behind an export-dialog toggle
+- ./offline-mode.md - when working on Offline Mode: Opt-in per-diagram mode (a toggle in the New Diagram dialog, not the default) that saves only to the browser (IndexedDB), never to the API — images embedded locally, server-only features (teams / AI / live) hidden and Share gated behind a sync-to-cloud prompt, an "Offline" badge in the header + Explorer. Convertible both ways: "Save to your account" (Offline → Cloud) and "Take offline" (Cloud → Offline, deleting the server copy, with confirmation). Folded into the marketing privacy area + a help article
+- ./name-length.md - when working on Tab and diagram name length: Tab + diagram names capped at 60 chars with whitespace collapsed and word-boundary ellipsis truncation; enforced at every mutation point (auto-naming, renames, /new wizard) with `maxLength` on the inputs as a visible second line of defence
+- ./save-locations.md - when working on Save Locations: The New Diagram wizard's "Save Offline, This Browser Only" toggle becomes a **Save location** row of tiles (livediagram, the default, and Local Browser), built on the same `PlacementCard` as the Save In row so the two read as one family. A toggle could only ever answer yes or no; a catalogue (`lib/save-locations.ts`, `NewDiagramSettings.saveLocation`) is what a third store (Google Drive, GitHub) can be added to as one entry, one glyph, and one create branch. Only shipped locations are shown, no "coming soon" tiles

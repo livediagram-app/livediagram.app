@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// The Explorer's additions to a Timeline card (spec/138 §2.8, §2.9): a
+// The Explorer's additions to a Timeline card (docs/specs/013-workspace/timeline.md §2.8, §2.9): a
 // menu on every card (each can be removed from the feed), the full
 // diagram menu for a diagram the Explorer has loaded, a rename input in
 // the title slot while that diagram is being renamed, and the diagram's
@@ -99,7 +99,7 @@ describe('useTimelineCardSlots', () => {
     expect(slots?.title).toBeUndefined();
   });
 
-  // Every card can be removed from the feed (spec/138 §2.9), so every
+  // Every card can be removed from the feed (docs/specs/013-workspace/timeline.md §2.9), so every
   // card has a menu — but only a loaded diagram's card borrows the
   // Explorer's name for the subject; the rest keep the renderer's.
   it('gives a tombstone and an unloaded diagram the entity menu, with no rename slot', () => {

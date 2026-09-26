@@ -23,8 +23,8 @@ export type { AvatarClothing, AvatarConfig, AvatarGender, AvatarHair, AvatarSize
 // ---------------------------------------------------------------------
 
 // Full diagram payload returned by `GET /api/diagrams/:id`. After
-// per-tab storage (spec/13), `tabs` is a list of `TabSummary`
-// How a diagram came to exist (spec/15 "Generated" folder, spec/62).
+// per-tab storage (docs/specs/006-diagram/per-tab-storage.md), `tabs` is a list of `TabSummary`
+// How a diagram came to exist (docs/specs/013-workspace/folders.md "Generated" folder, docs/specs/015-api/mcp-server.md).
 // null = authored by a person in the editor; 'mcp' = created by an
 // external AI tool via the MCP server; 'ai' = created by the in-editor
 // AI assistant (reserved — no producer today). Drives the synthetic
@@ -45,17 +45,17 @@ export type Diagram = {
   shareable: boolean;
   shareCode: string | null;
   // Folder placement. null means the diagram is in the conceptual
-  // Unsorted bucket. See spec/15.
+  // Unsorted bucket. See docs/specs/013-workspace/folders.md.
   folderId: string | null;
-  // Team library placement (spec/35). null = the owner's personal
+  // Team library placement (docs/specs/013-workspace/team-shared-diagrams.md). null = the owner's personal
   // tree; non-null = this team's shared library (where folderId then
   // refers to one of THAT team's folders, or null for the team's
   // Unsorted). Joined members of the team get edit access.
   teamId: string | null;
-  // Provenance (spec/15). null = made by a person; non-null = generated
+  // Provenance (docs/specs/013-workspace/folders.md). null = made by a person; non-null = generated
   // (see DiagramSource). Set on create, never rewritten by meta updates.
   source: DiagramSource | null;
-  // Slide deck (spec/31), serialised `StoredPresentation` JSON, or null when
+  // Slide deck (docs/specs/012-collaboration/presentation-mode.md), serialised `StoredPresentation` JSON, or null when
   // the diagram has no deck (every diagram until somebody builds one).
   // Deliberately absent from DiagramSummary: the Explorer lists diagrams and
   // has no use for their decks, and a deck is the one metadata field that can
@@ -82,9 +82,9 @@ export type DiagramSummary = {
   shareable: boolean;
   shareCode: string | null;
   folderId: string | null;
-  // Team library placement (spec/35) — see Diagram.teamId.
+  // Team library placement (docs/specs/013-workspace/team-shared-diagrams.md) — see Diagram.teamId.
   teamId: string | null;
-  // Provenance (spec/15) — see Diagram.source.
+  // Provenance (docs/specs/013-workspace/folders.md) — see Diagram.source.
   source: DiagramSource | null;
   savedAt: number;
   createdAt: number;
@@ -130,7 +130,7 @@ export type TabSummary = {
   name: string;
   orderIndex: number;
   updatedAt: number;
-  // Per-diagram folder name (spec/30), read from the diagram_tabs
+  // Per-diagram folder name (docs/specs/006-diagram/tab-folders.md), read from the diagram_tabs
   // link row. Optional / omitted = the tab is loose (no folder). The
   // TabBar groups contiguous same-folder tabs under one chip.
   folder?: string;
@@ -139,7 +139,7 @@ export type TabSummary = {
 // Full tab payload returned by `GET /api/diagrams/:id/tabs/:tabId`:
 // the editor's `Tab` (elements + comments + theme + canvas) plus the
 // row's audit metadata. `folder` here is the per-diagram membership
-// from the diagram_tabs link (spec/30), distinct from anything in the
+// from the diagram_tabs link (docs/specs/006-diagram/tab-folders.md), distinct from anything in the
 // tab body — it is never stored in the `tabs.data` blob.
 export type TabRecord = Tab & {
   diagramId: string;
@@ -148,11 +148,11 @@ export type TabRecord = Tab & {
 };
 
 // ---------------------------------------------------------------------
-// Folders (spec/15)
+// Folders (docs/specs/013-workspace/folders.md)
 // ---------------------------------------------------------------------
 
 // A folder row. `parentId === null` means the folder lives at the
-// tree root. `teamId` (spec/35): null = a personal folder gated on
+// tree root. `teamId` (docs/specs/013-workspace/team-shared-diagrams.md): null = a personal folder gated on
 // `ownerId`; non-null = a folder in that team's shared library,
 // gated on joined membership (ownerId then records the creator for
 // audit only).
@@ -167,7 +167,7 @@ export type Folder = {
 };
 
 // ---------------------------------------------------------------------
-// Custom themes (spec/44)
+// Custom themes (docs/specs/011-theme/custom-themes.md)
 // ---------------------------------------------------------------------
 
 // The themable payload of a custom theme — the same fields a built-in
@@ -195,7 +195,7 @@ export type CustomThemeDefinition = {
 
 // A saved custom theme. `id` is `custom:<uuid>` so it can never collide
 // with a built-in ThemeId and is a cheap "is this custom?" check. It is
-// stored on `Tab.theme` like any other theme id. Owner-scoped (spec/04
+// stored on `Tab.theme` like any other theme id. Owner-scoped (docs/specs/014-identity/auth-and-guest-access.md
 // hybrid identity), guests included.
 export type CustomTheme = {
   id: string;
@@ -207,7 +207,7 @@ export type CustomTheme = {
 };
 
 // ---------------------------------------------------------------------
-// API tokens (spec/61)
+// API tokens (docs/specs/015-api/public-api-and-tokens.md)
 // ---------------------------------------------------------------------
 
 // An external API credential, owner-scoped to a Clerk account. The wire
@@ -220,22 +220,22 @@ export type ApiToken = {
   createdAt: number;
   // Null until the token is first used to authenticate a request.
   lastUsedAt: number | null;
-  // Fixed at createdAt + 6 months (spec/61).
+  // Fixed at createdAt + 6 months (docs/specs/015-api/public-api-and-tokens.md).
   expiresAt: number;
-  // Read-only token (spec/62 §4.11): may only make GET/HEAD requests; the api
+  // Read-only token (docs/specs/015-api/mcp-server.md §4.11): may only make GET/HEAD requests; the api
   // rejects its writes. Minted read-only via the MCP consent screen.
   readOnly: boolean;
 };
 
 // ---------------------------------------------------------------------
-// Teams (spec/32)
+// Teams (docs/specs/013-workspace/teams.md)
 // ---------------------------------------------------------------------
 
 export type TeamRole = 'admin' | 'member';
 
 // A team row. No owner column: ownership is expressed through the
 // Admin role on the member link rows, so a team survives its creator
-// leaving. `organisation` is free text (spec/32), not a foreign key.
+// leaving. `organisation` is free text (docs/specs/013-workspace/teams.md), not a foreign key.
 export type Team = {
   id: string;
   name: string;
@@ -253,13 +253,13 @@ export type TeamListItem = Team & {
   memberCount: number;
 };
 
-// The accept/decline handshake state (spec/32). An 'invited' row
+// The accept/decline handshake state (docs/specs/013-workspace/teams.md). An 'invited' row
 // grants no membership: it waits in the invitee's Invites section
 // until they accept ('joined') or decline (row deleted).
 export type TeamMemberStatus = 'invited' | 'joined';
 
 // One member link row. `userId` is the Clerk user id, null while the
-// invite hasn't connected yet (spec/32's lazy claim fills it in —
+// invite hasn't connected yet (docs/specs/013-workspace/teams.md's lazy claim fills it in —
 // connecting identifies the person, it does NOT accept for them).
 // `email` is the lowercased invite address; null only on a creator
 // row minted when the deployment's JWT carries no email claim. One of
@@ -271,7 +271,7 @@ export type TeamMember = {
   email: string | null;
   role: TeamRole;
   status: TeamMemberStatus;
-  // The member's display name (spec/32), resolved from their
+  // The member's display name (docs/specs/013-workspace/teams.md), resolved from their
   // participant profile once they've joined and used the app. Null on
   // a pending invite or a member with no profile yet; the client then
   // falls back to the invite email's local part.
@@ -290,7 +290,7 @@ export type TeamInvite = {
   invitedAt: number;
 };
 
-// The team's shareable invite link (spec/32): an admin turns it on, it
+// The team's shareable invite link (docs/specs/013-workspace/teams.md): an admin turns it on, it
 // expires after a week, and anyone signed in who opens it can join.
 // Null in the team detail when off / expired. Admin-only.
 export type TeamInviteLink = {
@@ -313,12 +313,12 @@ export type TeamInviteLinkJoin = {
 };
 
 // ---------------------------------------------------------------------
-// Share links (spec/04, spec/11)
+// Share links (docs/specs/014-identity/auth-and-guest-access.md, docs/specs/015-api/api.md)
 // ---------------------------------------------------------------------
 
 export type ShareRole = 'edit' | 'view';
 
-// Lifetime chosen at link creation (spec/34). 'never' is the default
+// Lifetime chosen at link creation (docs/specs/013-workspace/share-link-expiry.md). 'never' is the default
 // and the pre-expiry behaviour: the link works until revoked.
 export type ShareLinkExpiry = 'never' | 'week' | 'month' | 'sixMonths';
 
@@ -338,7 +338,7 @@ export type ShareLink = {
   diagramId: string;
   role: ShareRole;
   createdAt: number;
-  // Expiry (spec/34). `expiry` is the duration chosen at creation —
+  // Expiry (docs/specs/013-workspace/share-link-expiry.md). `expiry` is the duration chosen at creation —
   // kept so Extend re-applies the same lifetime. `expiresAt` is the
   // enforcement deadline (ms epoch); null = never expires. A link
   // with `expiresAt` in the past is "inactive": it stops resolving /
@@ -386,10 +386,10 @@ export type ParticipantPresence = {
   tabId?: string;
   // The id this participant WRITES INTO THE DOCUMENT for anything recorded
   // per person — today the `responses` on a done check / estimate card /
-  // temperature check (spec/122).
+  // temperature check (docs/specs/012-collaboration/participant-responses.md).
   //
   // It exists because `id` above cannot do that job. `id` is minted fresh by
-  // the room for every socket (spec/61 §6), so it is unforgeable but also
+  // the room for every socket (docs/specs/015-api/public-api-and-tokens.md §6), so it is unforgeable but also
   // unrecognisable: it changes on reconnect and matches nothing that was ever
   // saved. Joining a saved answer back to the person in the roster needs an
   // id that is STABLE across connections, and the owner id can't be it —
@@ -406,7 +406,7 @@ export type ParticipantPresence = {
 };
 
 // ---------------------------------------------------------------------
-// Images (spec/19)
+// Images (docs/specs/009-elements/images.md)
 // ---------------------------------------------------------------------
 
 // One row returned by `GET /api/images` (the gallery list) + the
@@ -424,7 +424,7 @@ export type ImageSummary = {
 };
 
 // ---------------------------------------------------------------------
-// Change log (spec/12)
+// Change log (docs/specs/012-collaboration/activity-and-audit.md)
 // ---------------------------------------------------------------------
 
 export type ChangeLogKind = 'add' | 'edit' | 'delete' | 'revert';
@@ -439,7 +439,7 @@ export type ChangeLogEntry = {
   // diagram-scoped entries; new entries always carry a real id
   // (since #14 dropped the diagram_id column the tab id is now the
   // canonical pointer into the change_log → tabs → diagram_tabs
-  // chain — see spec/17).
+  // chain — see docs/specs/006-diagram/tab-diagram-many-to-many.md).
   tabId: string | null;
   participantId: string;
   participantName: string;
@@ -453,7 +453,7 @@ export type ChangeLogEntry = {
 };
 
 // How many of the most recent change-log entries the Activity Panel
-// surfaces (spec/12). Shared so the server hydrate (`GET .../log` LIMIT)
+// surfaces (docs/specs/012-collaboration/activity-and-audit.md). Shared so the server hydrate (`GET .../log` LIMIT)
 // and the client's in-session list cap can't drift apart: the panel shows
 // "the most recent N", and if the client retained more than the server
 // hydrates, a reload would silently change how much history is visible.
@@ -464,7 +464,7 @@ export const CHANGE_LOG_LIST_LIMIT = 30;
 // that isn't (yet) linked to the diagram. The common cause is benign: the
 // editor logs an edit the moment it happens, but a brand-new tab only
 // reaches D1 on the debounced autosave, so the first edit on it can beat
-// its own tab row. The client retries that one quietly (spec/12).
+// its own tab row. The client retries that one quietly (docs/specs/012-collaboration/activity-and-audit.md).
 export const CHANGE_LOG_TAB_NOT_SAVED = 'tab_not_saved';
 
 // Canonical hash function for the X-Image-Sha256 wire-format header.
@@ -521,8 +521,8 @@ export type AiRequest = {
 // Response body for GET /api/capabilities.
 export type CapabilitiesResponse = {
   aiEnabled: boolean;
-  // True only when the deployment has Resend configured (spec/64). The
-  // live app hides the email-notification toggles (spec/65) when false,
+  // True only when the deployment has Resend configured (docs/specs/014-identity/transactional-email.md). The
+  // live app hides the email-notification toggles (docs/specs/014-identity/profile-and-email-notifications.md) when false,
   // since they'd be inert without an email backend. Optional so an older
   // client / a fail-closed default still parses.
   emailEnabled?: boolean;

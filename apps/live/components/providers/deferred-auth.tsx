@@ -3,7 +3,7 @@
 // The auth surface the app tree consumes INSTEAD of Clerk's hooks, so
 // `@clerk/react` (~96 kB min / ~25 kB gz) stays out of every route's
 // first load and out of the bundle entirely for embeds and Clerk-less
-// self-hosts (spec/03/04: Clerk is optional and purely additive). The
+// self-hosts (docs/specs/002-project-scope/open-source-and-business-model.md/04: Clerk is optional and purely additive). The
 // real Clerk provider mounts inside a lazily-loaded bridge
 // (ClerkBridge) that publishes this state; until that chunk lands the
 // defaults below describe exactly what Clerk-loading always looked

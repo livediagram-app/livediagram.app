@@ -5,7 +5,7 @@ and where it still falls over. Written while calibrating it against three
 photographs of a real workshop wall; every number below was moved by that
 exercise, and several of the first guesses were badly wrong in instructive ways.
 
-Used by the event-storming photo import (spec/139 Phase 8). Reading the
+Used by the event-storming photo import ([Event storming](../specs/021-event-storming/event-storming.md) Phase 8). Reading the
 handwriting on each detected note is a separate reader's job (in-browser OCR
 since Phase 9); everything spatial is here, in code, where it is deterministic
 and testable.
@@ -328,7 +328,7 @@ and testable.
   themselves ([experiments](experiments/a2-colour.md)).
 - **Per-wall colour conventions.** Every workshop invents its own (the
   calibration wall uses pink for hotspots and green for read models). Today that
-  is one global decision plus the draft's Change kind verb; spec/139 lists a
+  is one global decision plus the draft's Change kind verb; [Event storming](../specs/021-event-storming/event-storming.md) lists a
   per-board colour legend as the real answer.
 
 ## Working on it
@@ -442,7 +442,7 @@ they exist:
   moved whole boxes: the same detector scored 91.4 on its pixels and 90.7 on
   the editor's, and a different wall passed. `--magick` still forces it.
 - The summary also measures THE BAR of
-  [plans/event-storming-photo-95.md](../../plans/event-storming-photo-95.md):
+  plans/0007-event-storming-photo-95.md:
   recall without the small actors (`rec-A`; actors reported apart), the count
   of MERGED boxes (a box holding the centres of two or more labelled notes),
   and a PASS / FAIL per wall — recall without actors ≥ 95%, precision ≥ 95%,

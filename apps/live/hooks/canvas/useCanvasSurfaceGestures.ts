@@ -13,7 +13,7 @@ import { useRightClickRelease } from '@/hooks/canvas/useRightClickRelease';
 type PanAndMarquee = ReturnType<typeof useCanvasPanAndMarquee>;
 
 // How presses on the bare canvas surface route between the tools
-// (spec/09 + spec/45), lifted out of Canvas's JSX: the capture-phase
+// (docs/specs/008-canvas/canvas-and-palette.md + docs/specs/008-canvas/isometric-view.md), lifted out of Canvas's JSX: the capture-phase
 // intercepts (spotlight grow / shrink, eraser, middle-mouse pan,
 // draw-to-size), the background context menu, and the outer <main> +
 // inner wrapper pointerdowns that arm the long-press menu, the
@@ -56,7 +56,7 @@ export function useCanvasSurfaceGestures({
   setMarquee: PanAndMarquee['setMarquee'];
   spotlight: ReturnType<typeof useSpotlight>;
   avatar: ReturnType<typeof useAvatarWalk>;
-  // Peers' characters on this tab (spec/101), so a click can land on one.
+  // Peers' characters on this tab (docs/specs/008-canvas/avatar-mode.md), so a click can land on one.
   peerAvatars: CanvasProps['remoteAvatars'];
   // Shove a peer: fired once our character has walked up to theirs.
   onPushPeer?: (targetId: string, dx: number, dy: number) => void;
@@ -105,7 +105,7 @@ export function useCanvasSurfaceGestures({
   //    pan is the safe no-op when the presenter is just steadying their
   //    hand. The trail keeps capturing pointer-moves throughout, so the
   //    pan reads as a sweeping laser to peers.
-  //  - Touch + Laser is the exception (spec/09): a finger drag in laser
+  //  - Touch + Laser is the exception (docs/specs/008-canvas/canvas-and-palette.md): a finger drag in laser
   //    mode draws the laser, not panning, because touch has no hover
   //    and pan-on-drag would pin the dot in canvas-coords (the canvas
   //    slides under the finger), defeating presenter mode on phones.
@@ -158,7 +158,7 @@ export function useCanvasSurfaceGestures({
     // gesture.
     const surface = mainRef && 'current' in mainRef ? mainRef.current : null;
     if (surface && e.target instanceof Node && !surface.contains(e.target)) return;
-    // Spotlight tool (spec/09): a non-editing presenter mode. Left-click
+    // Spotlight tool (docs/specs/008-canvas/canvas-and-palette.md): a non-editing presenter mode. Left-click
     // grows the light; right-click shrinks it (the shrink itself runs in
     // onContextMenuCapture below). Handled in the capture phase so it
     // wins over an element's own select/drag — and we MUST swallow the
@@ -175,7 +175,7 @@ export function useCanvasSurfaceGestures({
       if (e.button === 0) spotlight.grow();
       return;
     }
-    // Avatar mode (spec/101): a non-editing presenter mode where a primary
+    // Avatar mode (docs/specs/008-canvas/avatar-mode.md): a non-editing presenter mode where a primary
     // click means "walk over there". Handled in the capture phase for the
     // same reason as Spotlight: the diagram layer is pointer-inert, but arrow
     // hit-bands re-enable themselves via `pointer-events: stroke` and select
@@ -192,7 +192,7 @@ export function useCanvasSurfaceGestures({
       // is (male / female), and a right-click anywhere else is swallowed —
       // the context menu stays shut in this mode either way.
       if (e.button === 0) {
-        // Seated (spec/130): a double-click is one of the two deliberate ways
+        // Seated (docs/specs/009-elements/chair.md): a double-click is one of the two deliberate ways
         // out of a chair. A single click deliberately does nothing — walkTo
         // refuses while seated, so you cannot be dragged out by a stray click
         // — which left no pointer-only way out at all until this.
@@ -201,7 +201,7 @@ export function useCanvasSurfaceGestures({
           return;
         }
         // Clicking someone ELSE's character walks over and pushes them
-        // (spec/101), rather than walking to the spot they're standing on.
+        // (docs/specs/008-canvas/avatar-mode.md), rather than walking to the spot they're standing on.
         const peer = peerAvatarAt(point);
         if (peer) {
           avatar.walkTo(peer.standAt, () => onPushPeer?.(peer.id, peer.dx, peer.dy));
@@ -211,7 +211,7 @@ export function useCanvasSurfaceGestures({
       } else if (e.button === 2) avatar.toggleLookAt(point);
       return;
     }
-    // Eraser tool (spec/09): a primary-button press deletes whatever
+    // Eraser tool (docs/specs/008-canvas/canvas-and-palette.md): a primary-button press deletes whatever
     // it lands on and starts a drag-to-erase gesture. Handled in the
     // capture phase so it wins over an element's own select/drag and
     // the background marquee/pan; useCanvasEraser tracks the rest of
@@ -257,7 +257,7 @@ export function useCanvasSurfaceGestures({
   };
 
   const onContextMenuCapture = (e: ReactMouseEvent) => {
-    // Spotlight tool (spec/09): right-click shrinks the light instead of
+    // Spotlight tool (docs/specs/008-canvas/canvas-and-palette.md): right-click shrinks the light instead of
     // opening any menu. Capture phase + stopPropagation so it intercepts
     // right-clicks ANYWHERE — including over an element, whose own
     // onContextMenu would otherwise open the element menu. The bubble
@@ -285,9 +285,9 @@ export function useCanvasSurfaceGestures({
     e.preventDefault();
     // Spotlight suppresses all context menus (right-click is its
     // shrink gesture, handled in onContextMenuCapture). Isometric
-    // (spec/45) likewise: right-click-drag orbits the camera, so the
+    // (docs/specs/008-canvas/isometric-view.md) likewise: right-click-drag orbits the camera, so the
     // canvas / tab menu must never open in that tool or it interrupts
-    // the orbit gesture. Avatar mode (spec/101) is read-only and mid-
+    // the orbit gesture. Avatar mode (docs/specs/008-canvas/avatar-mode.md) is read-only and mid-
     // narration: a menu popping open would interrupt the tour.
     if (canvasTool === 'spotlight' || canvasTool === 'isometric' || canvasTool === 'avatar') return;
     // A macOS Ctrl+click is a context click on the PRIMARY button, so its
@@ -305,7 +305,7 @@ export function useCanvasSurfaceGestures({
     // (touch has no right-click). Armed before the marquee / pan logic;
     // a finger that moves cancels it, so it never fights a drag.
     canvasLongPress.onPointerDown(e);
-    // Isometric (spec/45): holding the RIGHT button and dragging orbits
+    // Isometric (docs/specs/008-canvas/isometric-view.md): holding the RIGHT button and dragging orbits
     // the camera too — a mouse-only alternative to Shift-drag / the orbit
     // button. The canvas / tab context menu is suppressed wholesale while
     // the isometric tool is active (see onContextMenu above), so a
@@ -347,7 +347,7 @@ export function useCanvasSurfaceGestures({
     // Restrict to direct hits on `main` so element clicks (which
     // bubble up here) don't also trigger.
     if (e.target !== e.currentTarget) return;
-    // Isometric (spec/45): Shift-drag orbits the camera (spin + tilt)
+    // Isometric (docs/specs/008-canvas/isometric-view.md): Shift-drag orbits the camera (spin + tilt)
     // instead of panning, so the plain drag stays a pan. Self-contained
     // in the camera hook; take it before the pan branch below.
     if (canvasTool === 'isometric' && e.shiftKey) {

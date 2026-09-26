@@ -17,7 +17,7 @@ import { clerkEnabled, clerkPublishableKey } from '@/lib/clerk-config';
 
 export function StaticClerkProvider({ children }: { children: ReactNode }) {
   if (!clerkEnabled || !clerkPublishableKey) {
-    // Pass-through (self-host without Clerk, spec/03 + spec/04): the
+    // Pass-through (self-host without Clerk, docs/specs/002-project-scope/open-source-and-business-model.md + docs/specs/014-identity/auth-and-guest-access.md): the
     // auth pages themselves gate on `clerkEnabled` and render their
     // "auth is disabled here" state.
     return <>{children}</>;

@@ -1,6 +1,6 @@
 'use client';
 
-// Animation-picker tile grids for the editor context menu (spec/09), lifted
+// Animation-picker tile grids for the editor context menu (docs/specs/008-canvas/canvas-and-palette.md), lifted
 // out of EditorContextMenu.tsx to keep that god file focused on menu structure.
 // Each control is an illustrated tile per kind plus a Speed row once a motion
 // is picked. The boxed Animation, arrow Flow, and icon-animation pickers all
@@ -55,7 +55,7 @@ function useSpeedRowGate<T>(committed: T | null, onSet: (v: T | null) => void) {
 // replacing the `[null, ...X] as (T | null)[]` cast that recurred per grid.
 export const withNone = <T,>(kinds: readonly T[]): (T | null)[] => [null, ...kinds];
 
-// Speed presets row (spec/09) — shown under an Animation / Flow control once
+// Speed presets row (docs/specs/008-canvas/canvas-and-palette.md) — shown under an Animation / Flow control once
 // an animation is picked. Slowest / Slow / Normal / Fast scale the loop's
 // duration; Slow is the default for a fresh animation.
 export function SpeedTiles({
@@ -136,7 +136,7 @@ export function AnimationTiles({
   onSet: (v: ElementAnimation | null) => void;
   onSetSpeed: (v: AnimationSpeed) => void;
   onSetRepeat: (v: boolean) => void;
-  // Desktop hover-to-preview (spec/09): play the hovered motion live on the
+  // Desktop hover-to-preview (docs/specs/008-canvas/canvas-and-palette.md): play the hovered motion live on the
   // selection without committing; onPreviewEnd reverts. Omitted = no preview.
   onPreview?: (v: ElementAnimation | null) => void;
   onPreviewEnd?: () => void;
@@ -189,7 +189,7 @@ export function FlowTiles({
   onSet: (v: ArrowFlow | null) => void;
   onSetSpeed: (v: AnimationSpeed) => void;
   onSetRepeat: (v: boolean) => void;
-  // Desktop hover-to-preview (spec/09), as in AnimationTiles.
+  // Desktop hover-to-preview (docs/specs/008-canvas/canvas-and-palette.md), as in AnimationTiles.
   onPreview?: (v: ArrowFlow | null) => void;
   onPreviewEnd?: () => void;
 }) {
@@ -222,7 +222,7 @@ export function FlowTiles({
   );
 }
 
-// Icon Animation control (spec/09): icons get their own glyph-motion set
+// Icon Animation control (docs/specs/008-canvas/canvas-and-palette.md): icons get their own glyph-motion set
 // (Spin / Beat / Pulse / Bounce / Wiggle / Flash / Tada) instead of the
 // boxed-element animation set. Like the boxed Animation + arrow Flow controls,
 // a Speed row appears once a motion is picked.
@@ -243,7 +243,7 @@ export function IconAnimationTiles({
   onSet: (v: IconAnimation | null) => void;
   onSetSpeed: (v: AnimationSpeed) => void;
   onSetRepeat: (v: boolean) => void;
-  // Desktop hover-to-preview (spec/09), as in AnimationTiles.
+  // Desktop hover-to-preview (docs/specs/008-canvas/canvas-and-palette.md), as in AnimationTiles.
   onPreview?: (v: IconAnimation | null) => void;
   onPreviewEnd?: () => void;
 }) {
@@ -276,7 +276,7 @@ export function IconAnimationTiles({
   );
 }
 
-// Legend placement (spec/53): Off plus the four sides, drawn as a chart-area
+// Legend placement (docs/specs/009-elements/pie-chart.md): Off plus the four sides, drawn as a chart-area
 // box with a legend bar on the relevant edge (none for Off).
 const LEGEND_PLACEMENTS = ['off', 'top', 'left', 'right', 'bottom'] as const;
 type LegendPlacement = (typeof LEGEND_PLACEMENTS)[number];
@@ -327,7 +327,7 @@ function LegendPosGlyph({ pos }: { pos: LegendPlacement }) {
   );
 }
 
-// Chart legend placement picker (spec/53): Off / Top / Left / Right / Below.
+// Chart legend placement picker (docs/specs/009-elements/pie-chart.md): Off / Top / Left / Right / Below.
 // The four sides set both the position and chartLegend=true (onSetPosition);
 // Off flips chartLegend=false (onSetOff). Default position is 'right'.
 export function LegendPositionTiles({
@@ -357,7 +357,7 @@ export function LegendPositionTiles({
   );
 }
 
-// Icon-size picker (spec/41): a Technology icon's fixed tile size. Four
+// Icon-size picker (docs/specs/010-palette/technology-icons.md): a Technology icon's fixed tile size. Four
 // preset tiles, each a rounded-square chip glyph at a graduated size over
 // its caption — icon buttons, matching the other tile grids here.
 const ICON_SIZE_LABEL: Record<IconSize, string> = {
@@ -396,7 +396,7 @@ export function IconSizeTiles({
   // The element's committed preset ('md' when unset).
   value: IconSize;
   onSet: (v: IconSize) => void;
-  // Optional hover-preview pair (spec/48 flow): hovering a tile shows the
+  // Optional hover-preview pair (docs/specs/010-palette/style-presets.md flow): hovering a tile shows the
   // size live on the icon, leaving reverts.
   onPreview?: (v: IconSize) => void;
   onPreviewEnd?: () => void;

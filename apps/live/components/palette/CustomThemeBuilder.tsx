@@ -1,6 +1,6 @@
 'use client';
 
-// The custom-theme builder (spec/44). Fast by default, deep on demand:
+// The custom-theme builder (docs/specs/011-theme/custom-themes.md). Fast by default, deep on demand:
 // it opens on the base colours (Background / Fill / Stroke, plus the Text
 // they derive) from which sane defaults for everything else come, then
 // expands to the granular controls (pattern, per-shape colours). A live

@@ -10,7 +10,7 @@ import { cellKey } from '@/components/canvas/TableCellView';
 import { useLongPress } from '@/hooks/ui/useLongPress';
 import { track } from '@/lib/telemetry';
 
-// The cell-selection slice (spec/09 multi-cell selection + the per-cell
+// The cell-selection slice (docs/specs/008-canvas/canvas-and-palette.md multi-cell selection + the per-cell
 // context menu), lifted out of TableView: the anchor + shift-click
 // extras, the menu's screen position, the long-press that opens it on
 // touch, the whole-selection style / clear commits, and the effects
@@ -37,12 +37,12 @@ export function useTableCellSelection({
   onCommitTable: (id: string, patch: Partial<Pick<TableElement, 'cells' | 'cellStyles'>>) => void;
 }) {
   const [selectedCell, setSelectedCell] = useState<{ r: number; c: number } | null>(null);
-  // Shift-click multi-cell selection (spec/09): extra cells beyond the
+  // Shift-click multi-cell selection (docs/specs/008-canvas/canvas-and-palette.md): extra cells beyond the
   // anchor `selectedCell`, keyed "r:c". Styling / clearing acts on the
   // whole set; keyboard navigation and plain clicks collapse it back to
   // the anchor alone.
   const [extraCells, setExtraCells] = useState<Set<string>>(new Set());
-  // The per-cell CONTEXT MENU (spec/09): right-click a cell on desktop,
+  // The per-cell CONTEXT MENU (docs/specs/008-canvas/canvas-and-palette.md): right-click a cell on desktop,
   // long-press on touch, opens the accordion menu at the pointer (screen
   // coords — it portals out of the transformed canvas). A plain click only
   // selects the cell.
@@ -92,7 +92,7 @@ export function useTableCellSelection({
   };
 
   // Every selected cell — the anchor first, then the shift-clicked extras
-  // (spec/09 multi-cell selection). The keyboard clear, the context menu's
+  // (docs/specs/008-canvas/canvas-and-palette.md multi-cell selection). The keyboard clear, the context menu's
   // styling, and Clear Cells all act on this set.
   const selectionCells = (): { r: number; c: number }[] => {
     if (!selectedCell) return [];

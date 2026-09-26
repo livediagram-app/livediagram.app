@@ -5,7 +5,7 @@ import type {
   ReactNode,
 } from 'react';
 
-// Shared top-centre overlay region (spec/09). Every floating status pill
+// Shared top-centre overlay region (docs/specs/008-canvas/canvas-and-palette.md). Every floating status pill
 // that belongs at the top middle of the canvas — the owner / role badge,
 // the editor mode banners (format painter, group, draw), the
 // multi-selection toolbar, the session timer and the vote banner — used
@@ -26,7 +26,7 @@ const TONE_CLASS: Record<BannerTone, string> = {
   brand:
     'border-brand-200 bg-brand-50 text-brand-800 dark:border-brand-500/40 dark:bg-brand-500/15 dark:text-brand-100',
   // Solid, for a pill that reports something HAPPENING to your view right now
-  // (being followed along, spec/131) rather than a mode you turned on. It is
+  // (being followed along, docs/specs/012-collaboration/follow-me-viewport.md) rather than a mode you turned on. It is
   // meant to be the loudest thing on the canvas until you stop it.
   live: 'border-brand-500 bg-brand-500 text-white',
   danger:
@@ -45,7 +45,7 @@ export function TopCenterStack({
   belowToolbar = false,
 }: {
   children: ReactNode;
-  // The Toolbar layout's strip (spec/148) owns top-3 on desktop, so the
+  // The Toolbar layout's strip (docs/specs/007-editor/toolbar-layout.md) owns top-3 on desktop, so the
   // stack starts under it instead of on top of it.
   belowToolbar?: boolean;
 }) {
@@ -112,7 +112,7 @@ export function TopCenterBanner({
   tone?: BannerTone;
   className?: string;
   // Inline styles for effects a class can't express. The countdown pill
-  // uses it to paint a draining background gradient (spec/39) — done as
+  // uses it to paint a draining background gradient (docs/specs/012-collaboration/session-tools.md) — done as
   // a background rather than an absolutely-positioned fill layer so the
   // pill needs no extra DOM and no stacking-context juggling to keep the
   // clock and buttons legible on top.

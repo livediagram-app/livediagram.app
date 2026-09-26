@@ -3,7 +3,7 @@
 import { ActivityIcon, RedoIcon, UndoIcon } from '@/components/panels/ActivityPanel';
 import { Tooltip } from '@/components/primitives/Tooltip';
 
-// The Activity strip in the bottom-right cluster (spec/12): the Tab Activity
+// The Activity strip in the bottom-right cluster (docs/specs/012-collaboration/activity-and-audit.md): the Tab Activity
 // button with inline Undo / Redo, so the most common history actions don't
 // need the panel. Leftmost of the cluster, before Layers + Theme & Canvas.
 // Edit sessions only: undo / redo and the audit trail aren't actionable for a

@@ -52,10 +52,10 @@ type ChromeExtras = {
   // Snapped pointer position while a draw is armed but not yet started
   // (pre-press start-snap preview); null when not armed / not snapped.
   drawHover: { x: number; y: number } | null;
-  // The armed fixed-size note's ghost (spec/139 Phase 4).
+  // The armed fixed-size note's ghost (docs/specs/021-event-storming/event-storming.md Phase 4).
   stamp: StampGhost | null;
   penPoints: { x: number; y: number }[] | null;
-  // Polygon tool in-flight state (spec/84): the placed vertices and
+  // Polygon tool in-flight state (docs/specs/008-canvas/polygon-tool.md): the placed vertices and
   // the live rubber-band cursor position, both canvas coords.
   polygonVertices: { x: number; y: number }[];
   polygonCursor: { x: number; y: number } | null;
@@ -80,7 +80,7 @@ type ChromeExtras = {
   // Reset the isometric camera to its default angle (wired to
   // `isoCamera.reset`) — fired when the dock orbit button is clicked.
   onIsoReset: () => void;
-  // Avatar mode (spec/101): the character's customisation, owned by
+  // Avatar mode (docs/specs/008-canvas/avatar-mode.md): the character's customisation, owned by
   // useAvatarConfig in Canvas (it persists per browser, so it lives with the
   // sprite rather than in the editor's diagram state) and edited by the
   // Avatar Panel down in the chrome.
@@ -92,9 +92,9 @@ type ChromeExtras = {
   // Roll a whole new character, and play one of the panel's reactions.
   onRandomiseAvatar: () => void;
   onAvatarReaction: (kind: import('@/lib/avatar-reactions').AvatarReactionKind) => void;
-  // Throw one of the Reaction Pad's bursts (spec/135) around the character.
+  // Throw one of the Reaction Pad's bursts (docs/specs/009-elements/reaction-pad.md) around the character.
   onAvatarBurst?: (reaction: import('@livediagram/diagram').Reaction) => void;
-  // Laser Panel (spec/111): the pen, owned by useLaserConfig in Canvas (it
+  // Laser Panel (docs/specs/008-canvas/laser-panel.md): the pen, owned by useLaserConfig in Canvas (it
   // persists per browser, like the avatar's costume) and edited down here.
   laserConfig?: import('@/lib/laser-config').LaserConfig;
   onChangeLaserField?: <K extends keyof import('@/lib/laser-config').LaserConfig>(
@@ -104,7 +104,7 @@ type ChromeExtras = {
   laserPanelPosition?: { x: number; y: number } | null;
   onMoveLaserPanel?: (x: number, y: number) => void;
   onResetLaserPanel?: () => void;
-  // Spotlight Panel (spec/112): the light's look, owned by useSpotlightConfig
+  // Spotlight Panel (docs/specs/008-canvas/spotlight-panel.md): the light's look, owned by useSpotlightConfig
   // in Canvas, plus the live radius the canvas clicks also change.
   spotlightConfig?: import('@/lib/spotlight-config').SpotlightConfig;
   onChangeSpotlightField?: <K extends keyof import('@/lib/spotlight-config').SpotlightConfig>(
@@ -116,7 +116,7 @@ type ChromeExtras = {
   spotlightPanelPosition?: { x: number; y: number } | null;
   onMoveSpotlightPanel?: (x: number, y: number) => void;
   onResetSpotlightPanel?: () => void;
-  // Eraser Panel (spec/113): the brush's settings, owned by useEraserConfig in
+  // Eraser Panel (docs/specs/008-canvas/eraser-panel.md): the brush's settings, owned by useEraserConfig in
   // Canvas (the erase gesture reads it too).
   eraserConfig?: import('@/lib/eraser-config').EraserConfig;
   onChangeEraserField?: <K extends keyof import('@/lib/eraser-config').EraserConfig>(
@@ -126,18 +126,18 @@ type ChromeExtras = {
   eraserPanelPosition?: { x: number; y: number } | null;
   onMoveEraserPanel?: (x: number, y: number) => void;
   onResetEraserPanel?: () => void;
-  // Highlighter Panel (spec/81): the marker's colour + strength, owned by
+  // Highlighter Panel (docs/specs/008-canvas/highlighter.md): the marker's colour + strength, owned by
   // useShapeDrawing (highlighterColor / highlighterWidth below) — the settings
   // that used to hang off the top mode banner.
   highlighterPanelPosition?: { x: number; y: number } | null;
   onMoveHighlighterPanel?: (x: number, y: number) => void;
   onResetHighlighterPanel?: () => void;
-  // Slide Deck panel (spec/31): the seventh tool panel.
+  // Slide Deck panel (docs/specs/012-collaboration/presentation-mode.md): the seventh tool panel.
   slideDeckPanelPosition?: { x: number; y: number } | null;
   onMoveSlideDeckPanel?: (x: number, y: number) => void;
   onResetSlideDeckPanel?: () => void;
   slideDeck?: import('@/app/diagram/[id]/useSlideDeck').SlideDeckState;
-  // Format Panel (spec/117): what the painter copies, owned in editor state
+  // Format Panel (docs/specs/008-canvas/format-panel.md): what the painter copies, owned in editor state
   // (the paint lives there), plus a description of the loaded element.
   formatConfig?: import('@/lib/format-config').FormatConfig;
   onToggleFormatGroup?: (group: import('@/lib/format-config').FormatGroup) => void;
@@ -155,7 +155,7 @@ type ChromeExtras = {
 
 export type CanvasChromeProps = CanvasProps & ChromeExtras;
 
-// Per-corner stack container classes (spec/63). Each is an absolute,
+// Per-corner stack container classes (docs/specs/007-editor/panel-docking.md). Each is an absolute,
 // pointer-inert flex column pinned to one corner of the dock layer
 // (inset 16px = the `*-4` resting inset). Top corners stack downward,
 // bottom corners upward (flex-col-reverse) so the first panel always
@@ -230,24 +230,24 @@ export function CanvasChrome(props: CanvasChromeProps) {
     zenMode,
     onToggleZen,
   } = props;
-  // Zen / focus mode (spec/26): hide all floating chrome. `chromeHidden`
+  // Zen / focus mode (docs/specs/007-editor/zen-mode.md): hide all floating chrome. `chromeHidden`
   // folds it in next to the welcome-flow gate that already suppresses
   // the same panels, so each panel stays hidden in either state.
   const chromeHidden = welcomeOpen || zenMode === true;
 
-  // --- Corner docking (spec/63) — see useCornerDocking. ---
+  // --- Corner docking (docs/specs/007-editor/panel-docking.md) — see useCornerDocking. ---
   const { isMobile, dock, dockLayerRef, cornerRefs, dockingActive, panelWiringFor } =
     useCornerDocking({
       minimalPanels: minimalPanels === true,
       zenMode: zenMode === true,
       toolbarLayout: toolbarLayout === true,
     });
-  // Alignment guides while a palette tile is being dragged in (spec/139):
+  // Alignment guides while a palette tile is being dragged in (docs/specs/021-event-storming/event-storming.md):
   // the same faint lines a move shows, BEFORE the element exists. The hook
   // also publishes the snap the ghost + drop read, so all three agree.
   //
   // On an event-storming board, while Alt is held, it additionally offers to
-  // INSERT the note between two others (spec/139): the board is a
+  // INSERT the note between two others (docs/specs/021-event-storming/event-storming.md): the board is a
   // left-to-right timeline, so making room in the middle is the board's most
   // common edit. Never offered where the drop would be refused anyway
   // (read-only, locked tab, blocked active layer), so the preview can't
@@ -278,7 +278,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     snapTargets,
   });
 
-  // Toolbar layout (spec/148) in force: honoured on a phone too, where it
+  // Toolbar layout (docs/specs/007-editor/toolbar-layout.md) in force: honoured on a phone too, where it
   // replaces the dock's Palette + Explorer buttons.
   const toolbarActive = toolbarLayout === true;
   // The Explorer menu button: top-left on desktop, the far left of the strip
@@ -362,7 +362,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
         />
       ) : null}
 
-      {/* Timeline lanes (spec/139 Phase 6): the lane a dragged note is
+      {/* Timeline lanes (docs/specs/021-event-storming/event-storming.md Phase 6): the lane a dragged note is
           landing on, lit for the duration of the drag. Beside the guide
           overlay because it is the same kind of thing — help BEFORE the
           drop — and it publishes through its own store, so it costs nothing
@@ -398,12 +398,12 @@ export function CanvasChrome(props: CanvasChromeProps) {
         wrapperRef={wrapperRef}
       />
 
-      {/* Top-of-canvas floating chrome (spec/09): owner / role badge, the
+      {/* Top-of-canvas floating chrome (docs/specs/008-canvas/canvas-and-palette.md): owner / role badge, the
           active editor-mode banner, multi-selection toolbar, session timer
           and vote banner — laid out as one non-overlapping stack. */}
       <TopCenterChrome {...props} toolbarLayout={toolbarActive} />
 
-      {/* Toolbar layout (spec/148): the menu button stands where the
+      {/* Toolbar layout (docs/specs/007-editor/toolbar-layout.md): the menu button stands where the
           Explorer would float and opens it as a popover (zen hides it, the
           welcome flow doesn't, same as the Explorer), and the strip replaces
           the Palette for edit sessions. */}
@@ -455,7 +455,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
         onDockButtonClick={handleDockButtonClick}
       />
 
-      {/* Floating panels (spec/63). In the desktop docking layout they
+      {/* Floating panels (docs/specs/007-editor/panel-docking.md). In the desktop docking layout they
           are distributed into per-corner stack containers (with a free
           layer + snap guides) by `dockedLayer`; otherwise — mobile,
           minimal dock, or zen — they render inline where they always
@@ -495,9 +495,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
           (with inline Undo / Redo), the Layers button, the Theme & Canvas
           paintbrush, then the Zoom controls. Activity + Layers minimise into
           their buttons in desktop Floating and open as popovers above them
-          everywhere else (clusterPopovers, spec/07). */}
+          everywhere else (clusterPopovers, docs/specs/007-editor/live-app.md). */}
       <div
-        // Presenting hides this cluster (spec/31): zen keeps the zoom controls
+        // Presenting hides this cluster (docs/specs/012-collaboration/presentation-mode.md): zen keeps the zoom controls
         // as its one way back out, and a deck has its own way out plus no
         // zoom to offer.
         data-zoom-cluster=""
@@ -506,7 +506,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
         {welcomeOpen ? null : (
           <>
             {offscreenContent ? <OffscreenContentHint onBringBack={onFitToScreen} /> : null}
-            {/* Activity + Undo / Redo (spec/12): see ActivityClusterStrip. */}
+            {/* Activity + Undo / Redo (docs/specs/012-collaboration/activity-and-audit.md): see ActivityClusterStrip. */}
             {!zenMode && !readOnly && (clusterPopovers ? true : activityMinimized) ? (
               <ActivityClusterStrip
                 popoverOpen={clusterPopovers && activeMobilePanel === 'activity'}
@@ -522,7 +522,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 canRedo={canRedo}
               />
             ) : null}
-            {/* Layers (spec/74): see LayersClusterButton. */}
+            {/* Layers (docs/specs/006-diagram/layers.md): see LayersClusterButton. */}
             {!zenMode && !readOnly && (clusterPopovers ? true : layersMinimized) ? (
               <LayersClusterButton
                 popoverOpen={clusterPopovers && activeMobilePanel === 'layers'}
@@ -534,7 +534,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 }
               />
             ) : null}
-            {/* Theme & Canvas dock button (spec/42): the paintbrush right of
+            {/* Theme & Canvas dock button (docs/specs/011-theme/canvas-and-theme-dialog.md): the paintbrush right of
                 the Layers dock opens the CanvasThemeDialog — the same modal
                 the canvas right-click menu reaches, one click from the
                 chrome. All viewports, mobile included — the canvas menu's

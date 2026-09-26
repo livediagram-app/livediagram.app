@@ -29,7 +29,7 @@ export function useElementHelpers(opts: {
   editsBlocked: boolean;
   multiSelectedIds: Set<string>;
   formatSourceId: string | null;
-  // The Format Panel's settings (spec/117): which parts of a copied style
+  // The Format Panel's settings (docs/specs/008-canvas/format-panel.md): which parts of a copied style
   // travel, and whether the brush stays loaded.
   formatConfig: FormatConfig;
   getViewportCenter: () => { x: number; y: number };
@@ -72,7 +72,7 @@ export function useElementHelpers(opts: {
     canvasX: number,
     canvasY: number,
     make: (x: number, y: number) => T,
-    // `insertion` is the slot an event-storming drag was offering (spec/139):
+    // `insertion` is the slot an event-storming drag was offering (docs/specs/021-event-storming/event-storming.md):
     // the drop then ripples the board open and adds the note as ONE change.
     opts?: { edit?: boolean; insertion?: InsertionSlot | null },
   ) => {
@@ -120,7 +120,7 @@ export function useElementHelpers(opts: {
       y: centre.y - height / 2,
       width,
       height,
-      // Seed the tab's default text size onto the new element (spec/28).
+      // Seed the tab's default text size onto the new element (docs/specs/004-interface-design/fonts.md).
       ...(activeTab.defaultTextSize ? { textSize: activeTab.defaultTextSize } : {}),
     };
     // Single commit that both adds the element and marks the template
@@ -132,7 +132,7 @@ export function useElementHelpers(opts: {
     // Layer accordion's "Send to back" covers the rarer reverse case.
     const before = activeTab.elements;
     const after = insertion ? insertElementAt(before, insertion, el) : [...before, el];
-    // Insert between (spec/139): the ripple runs against whatever the tab
+    // Insert between (docs/specs/021-event-storming/event-storming.md): the ripple runs against whatever the tab
     // holds NOW, not the snapshot the drag started with, so a peer's mid-drag
     // move isn't reverted by the drop that follows it. One commitTabs = one
     // history entry, so a single Undo takes the ripple AND the note back.
@@ -162,7 +162,7 @@ export function useElementHelpers(opts: {
   // activity-log entry, and selecting the primary.
   //
   // placeBoxed above makes exactly one element and centres it on a point.
-  // Mind-map growth (spec/118) makes a node AND its connector, at a position
+  // Mind-map growth (docs/specs/009-elements/mind-node.md) makes a node AND its connector, at a position
   // it has already worked out from the branch, so it needs neither of those —
   // but it needs all of the rest, and re-implementing them at the call site is
   // how an add path ends up missing its activity-log entry.
@@ -170,7 +170,7 @@ export function useElementHelpers(opts: {
     added: Element[],
     primaryId: string,
     // Existing elements to move out of the way, by id. Mind-map growth
-    // (spec/118) makes room for a new node by sliding whole neighbouring
+    // (docs/specs/009-elements/mind-node.md) makes room for a new node by sliding whole neighbouring
     // trees down, and that move has to land in the SAME commit as the add or
     // it becomes a second undo step for one keystroke.
     shifts: readonly { id: string; dy: number }[] = [],
@@ -194,7 +194,7 @@ export function useElementHelpers(opts: {
     //
     // This matters because of who calls it: the mind-map grower runs
     // immediately after the label editor commits the text you just typed
-    // (spec/118), in the same tick. A snapshot taken at render time predates
+    // (docs/specs/009-elements/mind-node.md), in the same tick. A snapshot taken at render time predates
     // that commit, so writing it back silently threw the label away — every
     // node in a chain came out blank.
     const byId = new Map(shifts.map((s) => [s.id, s.dy]));
@@ -253,7 +253,7 @@ export function useElementHelpers(opts: {
     // Every toggle off means there is nothing to paint: leave the brush and
     // the target alone rather than committing an empty change per tap.
     if (!formatPaintsAnything(formatConfig)) return;
-    // "Paint once" (spec/117) empties the brush after one apply, whatever the
+    // "Paint once" (docs/specs/008-canvas/format-panel.md) empties the brush after one apply, whatever the
     // caller asked for; the single-shot toolbar painter never asks to keep it.
     const keepSource = opts?.keepSource === true && formatConfig.mode === 'keep';
     const source = activeTab.elements.find((el) => el.id === formatSourceId);
@@ -270,7 +270,7 @@ export function useElementHelpers(opts: {
     // arrow-to-boxed paints are no-ops: the two kinds share
     // almost no formattable fields.
     if (isBoxed(source) && isBoxed(target)) {
-      // The Format Panel (spec/117) decides which parts travel; the projection
+      // The Format Panel (docs/specs/008-canvas/format-panel.md) decides which parts travel; the projection
       // above still decides which parts CAN.
       const projection = filterPaintedFields(paintableBoxedFields(source), formatConfig);
       commit((els) =>

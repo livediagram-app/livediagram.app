@@ -6,7 +6,7 @@ import {
   type TableElement,
 } from '@livediagram/diagram';
 
-// The in-cell contentEditable editor (spec/09 Table), lifted out of
+// The in-cell contentEditable editor (docs/specs/008-canvas/canvas-and-palette.md Table), lifted out of
 // TableView's cell render: the spreadsheet-style keyboard layer (Enter
 // commits + moves down, Tab walks the grid and grows it off the last
 // cell, caret-aware arrow navigation), the tabular-clipboard paste that

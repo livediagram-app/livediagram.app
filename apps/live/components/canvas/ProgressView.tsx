@@ -1,4 +1,4 @@
-// Progress elements (spec/46): a horizontal bar + a donut ring that display a
+// Progress elements (docs/specs/009-elements/progress.md): a horizontal bar + a donut ring that display a
 // 0–100 percentage. Rendered by BoxedElementView for shape ===
 // 'progress-bar' / 'progress-ring'. The fill (and ring arc) take the element's
 // accent colour; the track takes its fill colour. `progressAnim` drives a

@@ -6,7 +6,7 @@ import { clerkEnabled } from '@/lib/clerk-config';
 import { useExplorer } from '../ExplorerContext';
 import { ExplorerPane } from '../ExplorerPane';
 
-// Invites are team-only (spec/32), so a signed-out visitor has nothing
+// Invites are team-only (docs/specs/013-workspace/teams.md), so a signed-out visitor has nothing
 // to see here. Once auth has settled, bounce them to sign-in with a
 // `redirect_url` back to this page so they land on their invites after
 // signing in or registering. Signed-in invitees see their pending

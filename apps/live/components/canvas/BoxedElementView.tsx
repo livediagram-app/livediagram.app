@@ -141,11 +141,11 @@ function BoxedElementViewImpl({
   fontFamily,
 }: BoxedElementViewProps) {
   // Which paper this element sits on, for every colour it doesn't carry
-  // itself (spec/07): a Default tab stores no element colours at all, so on
+  // itself (docs/specs/007-editor/live-app.md): a Default tab stores no element colours at all, so on
   // a dark canvas this is where the greys come from.
   const surface = useCanvasSurface();
   const isLocked = element.locked === true || tabLocked;
-  // Concurrent-selection lock (spec/07): another participant has this
+  // Concurrent-selection lock (docs/specs/007-editor/live-app.md): another participant has this
   // element selected (remoteSelectors already excludes our own
   // selection). We block select / drag / edit and show a not-allowed
   // cursor so two people don't fight over the same element. Distinct
@@ -158,7 +158,7 @@ function BoxedElementViewImpl({
   // reset) restores resize.
   const rotation = element.rotation ?? 0;
   const isRotated = rotation % 360 !== 0;
-  // Layer-scoped vote (spec/96). Only while casting is OPEN: after End
+  // Layer-scoped vote (docs/specs/012-collaboration/vote-layer-scope.md). Only while casting is OPEN: after End
   // vote the board goes back to normal so the results walkthrough reads
   // against the full diagram. `votableInVote` already folds in the kind
   // rule, so a text element on the votable layer dims too — correct, it
@@ -171,13 +171,13 @@ function BoxedElementViewImpl({
   const defaultAlign = defaultTextAlign(element);
   const alignX = element.textAlignX ?? defaultAlign.x;
   const alignY = element.textAlignY ?? defaultAlign.y;
-  // A pre-redesign Selection Mode button (spec/103) wore white-on-blue; it now
+  // A pre-redesign Selection Mode button (docs/specs/009-elements/mode-button.md) wore white-on-blue; it now
   // renders in today's skin, text included, so the two halves can't disagree.
   const textColor = isLegacyModeButtonSkin(element)
     ? MODE_BUTTON_SKIN.text
     : (element.textColor ?? defaultTextColor(element, surface));
 
-  // Annotation marker (spec/38): a fixed-size note circle. Hovering it
+  // Annotation marker (docs/specs/009-elements/annotations.md): a fixed-size note circle. Hovering it
   // floats its note above everything; clicking it (handled in the drag
   // engine's click-vs-drag test) opens the editable note popover.
   const isAnnotation = element.type === 'annotation';
@@ -239,14 +239,14 @@ function BoxedElementViewImpl({
   const accent = remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface);
   const variant = describeVariant(element, isSelected, isMultiSelected, remoteBorderColor, surface);
 
-  // A comment pin (spec/136) shows its own count on its face, so the generic
+  // A comment pin (docs/specs/012-collaboration/comment-pin.md) shows its own count on its face, so the generic
   // badge is suppressed: the pin IS the badge, and two counts on one 40px
   // marker is one too many.
   const isCommentPin = element.type === 'shape' && element.shape === 'comment-pin';
   const commentCount = isCommentPin ? 0 : activeCommentCount(element.commentThread);
-  // Assigned action (spec/68): the badge shows only while the action is
+  // Assigned action (docs/specs/012-collaboration/assigned-actions.md): the badge shows only while the action is
   // open; a done action stays on the element but stops shouting. An action
-  // panel (spec/146) shows its action on its face, so it is the badge.
+  // panel (docs/specs/012-collaboration/action-panel.md) shows its action on its face, so it is the badge.
   const isActionPanel = element.type === 'shape' && element.shape === 'action-card';
   const hasOpenAction = !isActionPanel && isOpenAction(element.action);
   // Both 'tab' and 'diagram' kinds get the "linked" badge; the
@@ -265,19 +265,19 @@ function BoxedElementViewImpl({
   // above and is excluded here). Computed before the label so the editor
   // can render as a flex child (keeping the icon visible while typing).
   const inlineIcon = element.type === 'shape' && element.shape !== 'icon' && element.iconId;
-  // A status marker (spec/49) sits just left of the label (or centred when the
+  // A status marker (docs/specs/009-elements/shape-markers.md) sits just left of the label (or centred when the
   // shape has no label). Progress shapes render their own centred percentage,
   // so they skip it. Shares the icon+label flex layout below.
   const marker: ShapeMarker | undefined =
     element.type === 'shape' && !isSelfDrawingShape(element.shape) ? element.marker : undefined;
   // Which surface each looping animation rides (wrapper box vs text
   // glyphs vs SVG outline), the pop-in entry class, and the CSS custom
-  // properties the keyframes read (spec/09) — see useBoxedElementAnimation.
+  // properties the keyframes read (docs/specs/008-canvas/canvas-and-palette.md) — see useBoxedElementAnimation.
   const { labelAnimClass, artAnimClass, svgAnim, wrapperAnimClass, animStyle } =
     useBoxedElementAnimation(element, textColor);
 
   // An icon element's caption is confined to its own band — the complement
-  // of the glyph band (spec/41, iconCaptionBand) — so the text can never
+  // of the glyph band (docs/specs/010-palette/technology-icons.md, iconCaptionBand) — so the text can never
   // stack over the art. The label renders with the band's INTERNAL vertical
   // anchor (side captions centre on the glyph's row) and the JSX below wraps
   // it in the band container.
@@ -301,7 +301,7 @@ function BoxedElementViewImpl({
     fontFamily,
     onSetTextAlign,
     // Inline (flex-child) editor whenever the label shares its box with a
-    // sibling glyph — an inline icon OR a status marker (spec/49). A
+    // sibling glyph — an inline icon OR a status marker (docs/specs/009-elements/shape-markers.md). A
     // marker-only shape still lays out through ShapeInlineIconLayout, and
     // a full-box editor there contributes no flex width, so the marker
     // centred alone on top of the text while editing.
@@ -309,13 +309,13 @@ function BoxedElementViewImpl({
     labelAnimClass,
   );
 
-  // Palette-icon drop target (spec/09 inline icons) — see
+  // Palette-icon drop target (docs/specs/008-canvas/canvas-and-palette.md inline icons) — see
   // useIconDropTarget; the wrapper mounts its handlers below and the
   // IconDropPreview band renders while dragging over.
   const { acceptsIconDrop, dropSide, handleIconDragOver, handleIconDragLeave, handleIconDrop } =
     useIconDropTarget(element, onDropIcon);
 
-  // Insert-between preview (spec/139). A CSS translate rather than a moved
+  // Insert-between preview (docs/specs/021-event-storming/event-storming.md). A CSS translate rather than a moved
   // `x`: it is GPU-composited, it cannot desync from the model because the
   // model never changed, and it unwinds by dropping a style. It composes
   // ahead of the tilt below so the note slides and stays hand-placed.
@@ -328,7 +328,7 @@ function BoxedElementViewImpl({
       // Carries the slot's easing (globals.css) for as long as a slot COULD
       // be open, so the board eases shut as well as open.
       data-insert-shift={insertShiftAnimates ? '' : undefined}
-      // Screen-reader name (spec/71): same naming the change log uses,
+      // Screen-reader name (docs/specs/004-interface-design/canvas-accessibility.md): same naming the change log uses,
       // so 'Square "Login"' reads consistently across both surfaces.
       role="img"
       aria-label={elementAriaLabel(element)}
@@ -350,21 +350,21 @@ function BoxedElementViewImpl({
       onDragLeave={acceptsIconDrop ? handleIconDragLeave : undefined}
       onDrop={acceptsIconDrop ? handleIconDrop : undefined}
       // `group` so the vote stepper inside can fade up on element hover
-      // (spec/39) without threading a hover state through props.
+      // (docs/specs/012-collaboration/session-tools.md) without threading a hover state through props.
       className={`group absolute origin-center touch-none select-none ${
-        // A looping animation (spec/09) replaces the one-shot pop-in entry
+        // A looping animation (docs/specs/008-canvas/canvas-and-palette.md) replaces the one-shot pop-in entry
         // class (both drive the `animation` property, so they can't co-exist).
         wrapperAnimClass
       } ${variant.className} ${cursor}`}
       style={{
-        // Isometric depth stagger (spec/45) — see globals.css [data-iso].
+        // Isometric depth stagger (docs/specs/008-canvas/isometric-view.md) — see globals.css [data-iso].
         ...({ '--iso-z': isoDepth } as React.CSSProperties),
         left: element.x,
         top: element.y,
         width: element.width,
         height: element.height,
         color: textColor,
-        // Layer-scoped vote (spec/96): elements off the votable layer stay
+        // Layer-scoped vote (docs/specs/012-collaboration/vote-layer-scope.md): elements off the votable layer stay
         // VISIBLE — you still need the board's context to judge what
         // you're voting on — but drop back so the votable set reads as the
         // foreground. Only while casting is open; once the vote ends the
@@ -433,11 +433,11 @@ function BoxedElementViewImpl({
           radiusPx={element.borderRadius !== undefined ? BORDER_RADIUS_PX[element.borderRadius] : 8}
         />
       ) : null}
-      {/* A Record's rows (spec/120), under its title label. */}
+      {/* A Record's rows (docs/specs/009-elements/entity.md), under its title label. */}
       {element.type === 'shape' && element.shape === 'entity' ? (
         <EntityView element={element} textColor={textColor} fontFamily={fontFamily} />
       ) : null}
-      {/* A chair (spec/130): the furniture itself, plus whoever presence says
+      {/* A chair (docs/specs/009-elements/chair.md): the furniture itself, plus whoever presence says
           is sitting in it. */}
       {element.type === 'shape' && element.shape === 'chair' ? (
         <ChairView
@@ -446,7 +446,7 @@ function BoxedElementViewImpl({
           animClass={artAnimClass}
         />
       ) : null}
-      {/* A Lane's title gutter (spec/119), behind the label. */}
+      {/* A Lane's title gutter (docs/specs/009-elements/lane.md), behind the label. */}
       {element.type === 'shape' && element.shape === 'lane' ? (
         <LaneGutter
           stroke={element.strokeColor ?? defaultStrokeColor(element, surface)}
@@ -464,7 +464,7 @@ function BoxedElementViewImpl({
           alignY={alignY}
         />
       ) : null}
-      {/* A Page's turned-back bottom-right corner (spec/100). */}
+      {/* A Page's turned-back bottom-right corner (docs/specs/009-elements/page-element.md). */}
       {element.type === 'shape' && element.shape === 'page' ? (
         <PageCornerFold
           width={element.width}
@@ -540,7 +540,7 @@ function BoxedElementViewImpl({
           land. Cleared on drop / drag-leave. */}
       {dropSide ? <IconDropPreview side={dropSide} /> : null}
 
-      {/* The burst (spec/135), a sibling of the label stack rather than a
+      {/* The burst (docs/specs/009-elements/reaction-pad.md), a sibling of the label stack rather than a
           child of it: the particles leave the pad's box on purpose, and the
           face above clips to its own rounded corners. */}
       {reactionBurst ? (
@@ -587,7 +587,7 @@ function BoxedElementViewImpl({
         />
       ) : null}
 
-      {/* Layer-scoped vote (spec/96): a soft brand ring marking what CAN
+      {/* Layer-scoped vote (docs/specs/012-collaboration/vote-layer-scope.md): a soft brand ring marking what CAN
           take a dot. Paired with the dimming of everything else — the two
           together answer "where do I click" without the user having to
           work out which layer each element is on. Pointer-events-none so
@@ -600,7 +600,7 @@ function BoxedElementViewImpl({
         />
       ) : null}
 
-      {/* Dot-vote tally pill + winner ring (spec/39) — see
+      {/* Dot-vote tally pill + winner ring (docs/specs/012-collaboration/session-tools.md) — see
           ElementVoteOverlay. */}
       <ElementVoteOverlay
         element={element}
@@ -615,7 +615,7 @@ function BoxedElementViewImpl({
         onCastVote={onCastVote}
       />
 
-      {/* Photo draft (spec/139 Phase 8): a dashed accent frame just outside
+      {/* Photo draft (docs/specs/021-event-storming/event-storming.md Phase 8): a dashed accent frame just outside
           the paper, in the alignment guides' own language, saying "this one
           came from the photo and has not been accepted yet". Drawn rather
           than tinted, because a workshop note's FILL is its meaning. */}
@@ -666,7 +666,7 @@ function BoxedElementViewImpl({
       />
 
       {/* Hover preview: float this annotation's note above every element
-          (spec/38). Suppressed while selected — the click/edit popover owns
+          (docs/specs/009-elements/annotations.md). Suppressed while selected — the click/edit popover owns
           that surface then — and only when there's note text to show. */}
       {isAnnotation && hovering && !isSelected && !isEditing && element.note ? (
         <AnnotationHoverNote

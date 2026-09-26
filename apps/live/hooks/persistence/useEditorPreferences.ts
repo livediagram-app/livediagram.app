@@ -1,4 +1,4 @@
-// Per-user editor preferences (spec/20), lifted out of useEditorState.
+// Per-user editor preferences (docs/specs/007-editor/user-preferences.md), lifted out of useEditorState.
 // One localStorage key, applies to every diagram the user opens from
 // this device. Loaded on mount (not gated on diagramId, since
 // preferences aren't diagram-scoped) and mutated through the
@@ -36,17 +36,17 @@ export function useEditorPreferences(deps: EditorPreferencesDeps) {
     // setAiPanelVisible is a useState setter (stable identity).
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userPreferences.aiAssistanceEnabled]);
-  // Apply the "Reduce motion" preference (spec/20) to <html>. The OS
+  // Apply the "Reduce motion" preference (docs/specs/007-editor/user-preferences.md) to <html>. The OS
   // prefers-reduced-motion media query is honoured by globals.css
   // regardless; this lets the user force it on independent of the OS.
   useReduceMotion(userPreferences.reduceMotion === true);
-  // Apply the "Panel opacity" preference (spec/20) to the floating panels
+  // Apply the "Panel opacity" preference (docs/specs/007-editor/user-preferences.md) to the floating panels
   // via the --lvd-panel-opacity custom property. Floating panels only; the
   // minimal dock never reads the var.
   usePanelOpacity(userPreferences.panelOpacity);
   // Mirror the auto-rebind flag into its own ref so the drag move
   // handler can read it without re-attaching listeners. Defaults to
-  // OFF (spec/20): a fresh session keeps arrow anchors where they
+  // OFF (docs/specs/007-editor/user-preferences.md): a fresh session keeps arrow anchors where they
   // were drawn; the palette toggle opts into rebinding.
   const autoRebindArrowsRef = useRef<boolean>(autoRebindArrowsEnabled(userPreferences));
   autoRebindArrowsRef.current = autoRebindArrowsEnabled(userPreferences);
@@ -62,13 +62,13 @@ export function useEditorPreferences(deps: EditorPreferencesDeps) {
   // the consumer's comparison: `telemetryEnabled` reads via
   // `!== false` so undefined = on, while
   // `autoRebindArrows` (via autoRebindArrowsEnabled) and `drawToAdd`
-  // read via `=== true` so undefined = off (matches spec/20's
+  // read via `=== true` so undefined = off (matches docs/specs/007-editor/user-preferences.md's
   // defaults).
   useEffect(() => {
     setUserPreferences(readUserPreferences());
   }, []);
 
-  // Server-side preferences sync (spec/20). Once the owner id
+  // Server-side preferences sync (docs/specs/007-editor/user-preferences.md). Once the owner id
   // resolves, fetch the row from D1 and merge it over the
   // localStorage cache. Server wins for any key present on both
   // sides. The cache-only read above still fired first so the UI

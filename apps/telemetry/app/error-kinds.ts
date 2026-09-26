@@ -1,4 +1,4 @@
-// How the dashboard reads error events (spec/22), shared by the Exceptions
+// How the dashboard reads error events (docs/specs/017-telemetry/telemetry.md), shared by the Exceptions
 // tab and the Exceptions stack on the Dashboard so both split failures the same
 // way.
 //

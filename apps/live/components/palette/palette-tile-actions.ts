@@ -1,5 +1,5 @@
 // Wrap a palette tile-action bundle so every add runs a preamble first
-// (spec/101): picking any tile while Avatar mode is active leaves the mode, so
+// (docs/specs/008-canvas/avatar-mode.md): picking any tile while Avatar mode is active leaves the mode, so
 // the element actually lands instead of the click being swallowed by a
 // read-only canvas.
 //

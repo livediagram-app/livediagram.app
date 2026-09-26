@@ -3,7 +3,7 @@ import type { TableElement } from '@livediagram/diagram';
 import { TableHeaderMenu, Trigger } from '@/components/canvas/table-menu-controls';
 import { FLOATING_CONTROL_GAP, FLOATING_CONTROL_SIZE } from '@/components/chrome/floating-controls';
 
-// The table's outside-the-edge column / row controls (spec/09 Table): the
+// The table's outside-the-edge column / row controls (docs/specs/008-canvas/canvas-and-palette.md Table): the
 // ⋯ trigger strips laid out on grids mirroring the live track templates
 // (so each trigger stays centred over its column / in its row at any
 // pinned width), and the portalled insert / move / delete menu the
@@ -20,7 +20,7 @@ function trackCentre(sizes: number[], i: number): number {
   return off + (sizes[i] ?? 0) / 2;
 }
 
-// The table's quick-connect pluses sit on the edge MIDPOINTS (spec/09),
+// The table's quick-connect pluses sit on the edge MIDPOINTS (docs/specs/008-canvas/canvas-and-palette.md),
 // right where a centre column / row's ⋯ trigger would land now the
 // triggers live outside the edges. When a trigger's centre falls under
 // the plus, dodge it sideways / downwards by a screen-constant nudge.
@@ -223,7 +223,7 @@ export function TableAxisMenuPortal({
   );
 }
 
-// The between-track resize divider strips (spec/09 Table): thin strips
+// The between-track resize divider strips (docs/specs/008-canvas/canvas-and-palette.md Table): thin strips
 // riding grids that mirror the live column / row templates so each
 // divider sits exactly on its boundary. A divider must REST (arm) under
 // the pointer before a press starts a resize — an instant strip on

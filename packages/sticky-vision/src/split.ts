@@ -1,7 +1,7 @@
 import { fillRatio, MIN_SOLID_FILL, type Box, type PaperMask } from './boxes';
 import { splitAtNecks } from './necks';
 
-// Cutting a blob that is more than one note into notes (spec/139 Phase 9).
+// Cutting a blob that is more than one note into notes (docs/specs/021-event-storming/event-storming.md Phase 9).
 //
 // Its own module because it is its own question: everything here is about
 // WHERE the boundary between two pieces of paper is, given the mask and how

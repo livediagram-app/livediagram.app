@@ -1,5 +1,5 @@
 // /api/tokens — external API credentials, signed-in (Clerk) users only
-// (spec/61). Gated exactly like the team routes: a guest (X-Owner-Id-only)
+// (docs/specs/015-api/public-api-and-tokens.md). Gated exactly like the team routes: a guest (X-Owner-Id-only)
 // caller is refused outright. A token always acts as the Clerk account that
 // created it; there are no guest-owned tokens.
 //
@@ -30,7 +30,7 @@ export async function handleTokens(ctx: RouteContext): Promise<Response> {
       const name = typeof body.name === 'string' ? body.name.trim() : '';
       if (name.length > MAX_NAME_LEN) return badRequest('name too long');
       const minted = await mintApiToken(env, { ownerId: owner, name: name || null });
-      // Null means the per-account cap (spec/61) is already reached.
+      // Null means the per-account cap (docs/specs/015-api/public-api-and-tokens.md) is already reached.
       if (!minted) return json({ error: 'token_limit_reached' }, { status: 409 });
       ctx.waitUntil?.(recordTokenCreated(env, { id: minted.id, name: name || 'API token' }, owner));
       // The plaintext is returned ONCE, here. It is never stored and never

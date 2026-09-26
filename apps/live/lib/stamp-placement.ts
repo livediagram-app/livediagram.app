@@ -9,7 +9,7 @@ import type { PendingDraw } from '@/lib/draw-mode';
 import type { LanePreview } from '@/lib/lane-preview';
 import { paletteDragSnapAt } from '@/lib/palette-drag-snap';
 
-// Placing a fixed-size note from an armed palette tile (spec/139 Phase 4). A
+// Placing a fixed-size note from an armed palette tile (docs/specs/021-event-storming/event-storming.md Phase 4). A
 // workshop note has one size for life, so the gesture that would draw a box
 // to size instead STAMPS the note: a ghost of it follows the pointer, and it
 // lands centred where the pointer is released. On an event-storming board it

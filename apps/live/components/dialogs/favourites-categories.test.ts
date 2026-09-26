@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { PALETTE_CATEGORIES } from '@/components/palette/palette-category-tabs';
 import { tilesForCategory } from '@/components/palette/palette-tile-defs';
 
-// Drift guard for the Edit Favourites dialog's category pills (spec/78).
+// Drift guard for the Edit Favourites dialog's category pills (docs/specs/010-palette/palette-favourites.md).
 //
 // The dialog used to keep its own hand-written list of categories. It drifted
 // silently: by the time it was noticed it was offering a "Tools" category that
@@ -28,7 +28,7 @@ describe('Edit Favourites category pills', () => {
   it('includes the categories the stale list was missing', () => {
     // Named explicitly so a regression that dropped them fails here rather
     // than agreeing with a derivation that also broke. 'collaborate' used to
-    // be on this list and is now part of 'behaviour' (spec/110).
+    // be on this list and is now part of 'behaviour' (docs/specs/010-palette/palette-top-level-categories.md).
     for (const id of ['build', 'write', 'draw', 'media', 'stickers', 'behaviour']) {
       expect(pillIds).toContain(id);
     }
@@ -40,7 +40,7 @@ describe('Edit Favourites category pills', () => {
   });
 
   it('no longer offers the deleted Tools category', () => {
-    // Tools was dissolved into top-level categories in spec/110; a pill for it
+    // Tools was dissolved into top-level categories in docs/specs/010-palette/palette-top-level-categories.md; a pill for it
     // led to an empty grid.
     expect(pillIds).not.toContain('tools');
   });

@@ -36,14 +36,14 @@ import type { SelectedNode } from './views';
 import { indexFolders, folderBreadcrumb, folderDescendants } from '@/lib/folder-tree';
 
 // All Explorer state + handlers, lifted out of the old single-page
-// component when the sections became routes (spec/15): the layout's
+// component when the sections became routes (docs/specs/013-workspace/folders.md): the layout's
 // ExplorerShell instantiates this once and provides it via
 // ExplorerContext, so the sidebar persists (data and all) while the
 // child route under /explorer/<section> changes. The current section
 // is no longer useState — it's derived from the URL, and `go`
 // navigates, so back/forward and deep links work for free.
 //
-// Open to both guests and signed-in users (spec/04 + spec/15): the
+// Open to both guests and signed-in users (docs/specs/014-identity/auth-and-guest-access.md + docs/specs/013-workspace/folders.md): the
 // owner id resolves to the Clerk userId when signed in, otherwise to
 // the `livediagram:v2:self-id` localStorage UUID.
 export function useExplorerState() {
@@ -59,9 +59,9 @@ export function useExplorerState() {
 
   const { authLoaded, clerkUserId, clerkDisplayName, isSignedIn } = useClerkApiBootstrap();
 
-  // Synced user preferences (spec/20). Owned HERE rather than in
+  // Synced user preferences (docs/specs/007-editor/user-preferences.md). Owned HERE rather than in
   // ExplorerShell because the pane needs them too (Recent honours the
-  // hidden-from-Recent list, spec/93) — two useState copies would drift
+  // hidden-from-Recent list, docs/specs/013-workspace/hide-from-recent.md) — two useState copies would drift
   // the moment one of them wrote. Seeded from the localStorage cache for
   // an instant first paint; the authoritative D1 copy merges in on mount.
   const [prefs, setPrefs] = useState<UserPreferences>(() => readUserPreferences());
@@ -71,7 +71,7 @@ export function useExplorerState() {
   // settled so a signed-in user never momentarily reads a guest id.
   // For a guest, resolve a SIGNED id (ensureSignedGuestIdentity, like the
   // editor's useIdentityBootstrap) rather than a bare ensureGuestSelfId, so the
-  // `X-Owner-Sig` the §4 REST gate may require (spec/61) is minted even for a
+  // `X-Owner-Sig` the §4 REST gate may require (docs/specs/015-api/public-api-and-tokens.md) is minted even for a
   // guest who opens the Explorer before ever touching the editor — otherwise
   // their diagram / folder list calls would 401 once enforcement is on. Async,
   // so ownerId stays null until it resolves (the lists are autoLoad:false off
@@ -89,7 +89,7 @@ export function useExplorerState() {
     };
   }, [authLoaded, clerkUserId]);
   const ownerId: string | null = !authLoaded ? null : (clerkUserId ?? guestId);
-  // Daily-active-returns signal (spec/22): the Explorer is an app-open
+  // Daily-active-returns signal (docs/specs/017-telemetry/telemetry.md): the Explorer is an app-open
   // surface too, so count a returning visitor here. Gated once per
   // browser per UTC day inside the helper (shared with the editor +
   // /new bootstraps), so landing here and then the editor still counts
@@ -107,7 +107,7 @@ export function useExplorerState() {
     refresh: refreshFolders,
   } = useFolders(ownerId, { autoLoad: false });
   const [shared, setShared] = useState<SharedWithItem[]>([]);
-  // Teams (spec/32): signed-in only. Guests get a sign-in prompt in
+  // Teams (docs/specs/013-workspace/teams.md): signed-in only. Guests get a sign-in prompt in
   // the sidebar section instead of rows; Clerk-disabled self-host
   // deployments hide the section entirely.
   const teamsEnabled = Boolean(isSignedIn && clerkUserId);
@@ -119,7 +119,7 @@ export function useExplorerState() {
     declineInvite,
     refresh: refreshTeams,
   } = useTeams(ownerId, { enabled: teamsEnabled });
-  // API tokens (spec/61): signed-in only, same gate as teams. Loaded here so
+  // API tokens (docs/specs/015-api/public-api-and-tokens.md): signed-in only, same gate as teams. Loaded here so
   // the sidebar badge, the header New-token popover, and the list pane share
   // one source.
   const tokens = useTokens(ownerId, { enabled: teamsEnabled });
@@ -133,7 +133,7 @@ export function useExplorerState() {
   const [searchOpen, setSearchOpen] = useState(false);
   // Settings lives here rather than in ExplorerShell because the sidebar's
   // account button opens it too, now that the profile page it used to open
-  // has been folded into the dialog (spec/20 + spec/65).
+  // has been folded into the dialog (docs/specs/007-editor/user-preferences.md + docs/specs/014-identity/profile-and-email-notifications.md).
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsFocus, setSettingsFocus] = useState<{
     categoryId: string;
@@ -143,7 +143,7 @@ export function useExplorerState() {
   // `settingsFocus`, which additionally rings one row.
   const [settingsCategory, setSettingsCategory] = useState<string | null>(null);
   // `?settings=<category>` deep link. The Settings dialog replaced the
-  // /explorer/profile page (spec/65), and mail already in people's inboxes
+  // /explorer/profile page (docs/specs/014-identity/profile-and-email-notifications.md), and mail already in people's inboxes
   // links at their notification preferences, so any surface can name the pane
   // it means. The param is stripped once consumed, so a refresh or a back
   // does not keep reopening the dialog.
@@ -160,9 +160,9 @@ export function useExplorerState() {
   // Which folder branches (and which teams) are open in the sidebar.
   // Local state only; a fresh visit starts everything collapsed. Team
   // ids live in the same set so a team's folder subtree expands the
-  // same way a personal folder does (one expand model, spec/35).
+  // same way a personal folder does (one expand model, docs/specs/013-workspace/team-shared-diagrams.md).
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set<string>());
-  // Team libraries swept lazily (spec/35) for the four consumers: the
+  // Team libraries swept lazily (docs/specs/013-workspace/team-shared-diagrams.md) for the four consumers: the
   // search panel's Folders group, the move modal's team destinations,
   // the Recent list's team rows, and the sidebar's team subtrees.
   // Recent is the landing section, so signed-in members effectively
@@ -173,7 +173,7 @@ export function useExplorerState() {
     refresh: refreshTeamLibraries,
   } = useTeamLibrariesSweep(ownerId, teams, {
     // The sidebar renders every team as a collapsible folder tree on
-    // EVERY explorer route (spec/35), so it needs each team's folders to
+    // EVERY explorer route (docs/specs/013-workspace/team-shared-diagrams.md), so it needs each team's folders to
     // know whether to show the expand chevron — not just on Recent /
     // search / move. Gating on the route (e.g. `selected.kind === 'recent'`)
     // meant a hard navigation onto a team folder (which the sidebar opens
@@ -315,7 +315,7 @@ export function useExplorerState() {
   // Rename / delete / duplicate also re-sweep the team libraries:
   // these actions are wired against the personal `diagrams` list, so a
   // team diagram in Recent (which lives in the sweep, not `diagrams`)
-  // wouldn't otherwise repaint after the action lands (spec/35).
+  // wouldn't otherwise repaint after the action lands (docs/specs/013-workspace/team-shared-diagrams.md).
   const renameDiagram = (id: string, name: string) => {
     setRenamingDiagramId(null);
     listRenameDiagram(id, name);
@@ -337,7 +337,7 @@ export function useExplorerState() {
   };
 
   // The unified move picker's state, handlers, and destination trees
-  // (spec/35) live in useExplorerMoves.
+  // (docs/specs/013-workspace/team-shared-diagrams.md) live in useExplorerMoves.
   const {
     moveTarget,
     setMoveTarget,
@@ -370,13 +370,13 @@ export function useExplorerState() {
 
   // Right-pane derivations (buckets, synthetic folders, pane content /
   // title / crumbs, Recent badge) live in useExplorerPane.
-  // Per-user diagram stars (spec/95). Its own D1 table rather than the
+  // Per-user diagram stars (docs/specs/013-workspace/favourites.md). Its own D1 table rather than the
   // preferences blob, which is 4 KB-capped; favourites are unlimited.
   const { favouriteIds, toggleFavourite } = useFavourites(ownerId);
 
   const timelineUnread = useTimelineUnread(ownerId);
 
-  // What's outstanding for the reader (spec/142). Read once here rather
+  // What's outstanding for the reader (docs/specs/013-workspace/activity-page.md). Read once here rather
   // than in the section, because the sidebar badge draws from the same
   // list on every Explorer section.
   const activity = useActivityFeed(ownerId);
@@ -416,7 +416,7 @@ export function useExplorerState() {
     };
   }, [ownerId]);
 
-  // Hide / show a diagram in Recent (spec/93). Read-modify-writes from the
+  // Hide / show a diagram in Recent (docs/specs/013-workspace/hide-from-recent.md). Read-modify-writes from the
   // CACHE rather than the React snapshot: the PUT sends the whole blob, so
   // a stale snapshot would clobber sibling flags written by another tab.
   const toggleRecentExclusion = useCallback(
@@ -489,15 +489,15 @@ export function useExplorerState() {
     offlineDiagrams,
     paneContent,
     recentCount,
-    // Unread Timeline events (spec/138 §2.5), for the sidebar badge.
+    // Unread Timeline events (docs/specs/013-workspace/timeline.md §2.5), for the sidebar badge.
     timelineUnread,
-    // What's outstanding for the reader (spec/142): the Activity pane's
+    // What's outstanding for the reader (docs/specs/013-workspace/activity-page.md): the Activity pane's
     // lists + the sidebar badge's count.
     activity,
-    // Per-user diagram stars (spec/95).
+    // Per-user diagram stars (docs/specs/013-workspace/favourites.md).
     favouriteIds,
     toggleFavourite,
-    // Preferences (spec/20) + the Recent exclusion toggle (spec/93).
+    // Preferences (docs/specs/007-editor/user-preferences.md) + the Recent exclusion toggle (docs/specs/013-workspace/hide-from-recent.md).
     prefs,
     setPrefs,
     toggleRecentExclusion,

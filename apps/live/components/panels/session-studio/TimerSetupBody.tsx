@@ -1,6 +1,6 @@
 'use client';
 
-// The timer's setup UI (spec/39): mode toggle, dial, presets, and the button
+// The timer's setup UI (docs/specs/012-collaboration/session-tools.md): mode toggle, dial, presets, and the button
 // that starts it. ONE component, rendered in three places — the Session
 // Studio's Timer pane, a timer element's `…` quick menu, and that element's
 // right-click Session category — because they were three different UIs for one
@@ -45,7 +45,7 @@ export function TimerSetupBody({
   /**
    * The Studio offers both modes, because it is the one place you choose which
    * kind of clock to run. A TIMER ELEMENT does not: it is a countdown you
-   * placed on the canvas, and a stopwatch is its own element (spec/105), so a
+   * placed on the canvas, and a stopwatch is its own element (docs/specs/012-collaboration/session-button.md), so a
    * toggle here would offer to turn one element into another.
    */
   showModeToggle?: boolean;

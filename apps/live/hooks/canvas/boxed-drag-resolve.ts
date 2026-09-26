@@ -25,7 +25,7 @@ import {
   type ShapeBounds,
 } from '@/lib/canvas';
 
-// The boxed move / resize frame resolvers (spec/09 canvas), lifted out of
+// The boxed move / resize frame resolvers (docs/specs/008-canvas/canvas-and-palette.md canvas), lifted out of
 // useEditorDrag's pointermove switch the same way the arrow snap ladder
 // went to resolveArrowEndpointDrag: pure functions the drag hook feeds
 // the gesture's captured start state + the live delta, getting back the
@@ -67,12 +67,12 @@ export function resolveBoxedMove({
   dx: number;
   dy: number;
   // Cmd/Ctrl held: place freely — skip alignment + distribution snapping
-  // and their guide lines for this gesture (spec/60).
+  // and their guide lines for this gesture (docs/specs/008-canvas/snap-override.md).
   noSnap: boolean;
   // The user's alignment-guides preference (guides only; the snap still
   // applies when it's off).
   guidesOn: boolean;
-  // Timeline lanes (spec/139 Phase 6), when this drag is eligible for them: a
+  // Timeline lanes (docs/specs/021-event-storming/event-storming.md Phase 6), when this drag is eligible for them: a
   // single note, on an event-storming board, with lanes on. The caller owns
   // that decision and passes null otherwise — so the rung here is purely
   // "where does the lane want it".
@@ -348,7 +348,7 @@ export function resolveBoxedResize({
     if (!isBoxed(el)) continue;
     const start = startBounds.get(el.id);
     if (!start) continue;
-    // Fixed-size kinds (spec/103) ride along with the union's MOVE but keep
+    // Fixed-size kinds (docs/specs/009-elements/mode-button.md) ride along with the union's MOVE but keep
     // their own width / height, so scaling a selection can't quietly resize a
     // control that has no resize handles of its own.
     if (isFixedSizeElement(el)) {

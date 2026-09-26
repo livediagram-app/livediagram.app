@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildSystemPrompt, diagramTypeHint, extractExistingStyle } from './ai-prompt';
 
-// The AI assistant's prompt layer (spec/25). All three exports are pure,
+// The AI assistant's prompt layer (docs/specs/007-editor/ai-assistance.md). All three exports are pure,
 // and each guards something a regression would break silently: the
 // intent router decides which layout playbook the model gets, the style
 // sampler is what makes Clean respect the user's canvas, and the system

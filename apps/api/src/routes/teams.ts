@@ -1,11 +1,11 @@
-// /api/teams (spec/32) — teams with Admin/Member roles. Clerk-only:
+// /api/teams (docs/specs/013-workspace/teams.md) — teams with Admin/Member roles. Clerk-only:
 // membership is keyed by Clerk user id and invites by verified email,
 // so the guest X-Owner-Id path is structurally insufficient and every
 // request here requires a verified Bearer token (401 otherwise). The
 // rest of the API keeps its hybrid guest path; this surface alone is
-// signed-in (the canvas never is — spec/04).
+// signed-in (the canvas never is — docs/specs/014-identity/auth-and-guest-access.md).
 //
-// Two verified credentials reach the READ surface (spec/61 §3.4): a
+// Two verified credentials reach the READ surface (docs/specs/015-api/public-api-and-tokens.md §3.4): a
 // Clerk session JWT, or an `lvd_` API token (its owner is always a
 // Clerk account) — so an external integration can list the caller's
 // teams and read their shared libraries like the app does. Every
@@ -93,7 +93,7 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
   const userId = verifiedUserId;
 
   // /api/teams/invite-link/<token> — RESOLVE a shareable join link
-  // (spec/32). Guest-accessible (sits ABOVE the sign-in gate): a token
+  // (docs/specs/013-workspace/teams.md). Guest-accessible (sits ABOVE the sign-in gate): a token
   // holder must see WHAT team they're joining before they sign in. The
   // token is the credential, so returning the team name to anyone who
   // has it is fine. The join POST needs a verified user — it's below
@@ -107,18 +107,18 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
   }
 
   if (!userId) return signInRequired();
-  // Read vs manage (spec/61 §3.4): an API token passes the gate above for
+  // Read vs manage (docs/specs/015-api/public-api-and-tokens.md §3.4): an API token passes the gate above for
   // GETs, but every mutation needs the interactive Clerk session.
   if (request.method !== 'GET' && !clerkUserId) return signInRequired();
 
-  // /api/teams/invite-link/<token>/join — JOIN via the link (spec/32).
+  // /api/teams/invite-link/<token>/join — JOIN via the link (docs/specs/013-workspace/teams.md).
   // Signed-in only (above). Adds the caller as a joined member; the db
   // helper de-dupes against an existing membership / pending invite.
   if (segments.length === 5 && segments[2] === 'invite-link' && segments[4] === 'join') {
     if (request.method !== 'POST') return notFound();
     const result = await joinTeamByInviteToken(env, segments[3]!, userId, clerkEmail);
     if (!result) return notFound();
-    // spec/138 §4.4: only a genuine arrival. `alreadyMember` means the
+    // docs/specs/013-workspace/timeline.md §4.4: only a genuine arrival. `alreadyMember` means the
     // caller re-opened their own join link, which is not news to anyone.
     if (!result.alreadyMember) {
       const joined = await getTeam(env, result.teamId);
@@ -138,7 +138,7 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
       // caller's verified address becomes a membership in the same
       // round-trip that would render it.
       if (clerkEmail) await connectInvitesByEmail(env, userId, clerkEmail);
-      // spec/138 §4.4: the claim above just told us who a pending
+      // docs/specs/013-workspace/timeline.md §4.4: the claim above just told us who a pending
       // invite belongs to. Hand them the invite events that were
       // emitted scope-less because nobody could be scoped at the time.
       ctx.waitUntil?.(attachClaimedInviteEvents(env, userId));
@@ -169,7 +169,7 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
     return notFound();
   }
 
-  // /api/teams/invites — the caller's pending invites (spec/32).
+  // /api/teams/invites — the caller's pending invites (docs/specs/013-workspace/teams.md).
   // Sits above the team-scoped resolution because 'invites' occupies
   // the id slot (team ids are UUIDs, so no collision). Runs the same
   // lazy claim as the list so the two calls are order-independent.
@@ -199,7 +199,7 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
   const isAdmin = me.role === 'admin' && me.status === 'joined';
 
   // /api/teams/<id>/library — the team's shared folder tree +
-  // diagrams (spec/35). Any membership row passes the gate above,
+  // diagrams (docs/specs/013-workspace/team-shared-diagrams.md). Any membership row passes the gate above,
   // but the library is for JOINED members only — an invitee deciding
   // on an invite sees the team's shape, not its content.
   if (segments.length === 4 && segments[3] === 'library') {
@@ -218,7 +218,7 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
   if (segments.length === 3) {
     if (request.method === 'GET') {
       const members = await listTeamMembers(env, teamId);
-      // The invite link is an admin-only management surface (spec/32),
+      // The invite link is an admin-only management surface (docs/specs/013-workspace/teams.md),
       // so only admins get its token in the detail payload.
       const inviteLink = isAdmin ? await getTeamInviteLink(env, teamId) : null;
       return json({ team, members, myRole: me.role, inviteLink });
@@ -260,7 +260,7 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
       // with the team, so afterwards there is nobody left to tell.
       const audience = await audienceForTeam(env, teamId);
       await deleteTeam(env, teamId);
-      // Cascade, then tombstone (spec/138 §3.5): the team's own history
+      // Cascade, then tombstone (docs/specs/013-workspace/timeline.md §3.5): the team's own history
       // (renames, joins, role changes) goes with it, and "Team Deleted"
       // is the one card every former member keeps.
       ctx.waitUntil?.(
@@ -275,7 +275,7 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
 
   // /api/teams/<id>/invite-link — admin turns the shareable join link
   // on (POST: generate / rotate, fixed 1-week expiry) or off (DELETE).
-  // Admin-only management surface (spec/32).
+  // Admin-only management surface (docs/specs/013-workspace/teams.md).
   if (segments.length === 4 && segments[3] === 'invite-link') {
     if (!isAdmin) return adminRequired();
     if (request.method === 'POST') {
@@ -293,7 +293,7 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
     return notFound();
   }
 
-  // The assigned-actions endpoints (spec/68): /access-check +
+  // The assigned-actions endpoints (docs/specs/012-collaboration/assigned-actions.md): /access-check +
   // /notify-action — see team-action-routes.ts.
   const actionResp = await handleTeamActionRoutes(ctx, { teamId, me, userId });
   if (actionResp) return actionResp;
@@ -307,14 +307,14 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
       if (!email || !EMAIL_PATTERN.test(email)) return badRequest('invalid email');
       if (await teamHasEmail(env, teamId, email)) return conflict('already_member');
       const member = await addTeamMember(env, { teamId, email });
-      // spec/138 §4.4: emitted with NO scope — the invitee is an email
+      // docs/specs/013-workspace/timeline.md §4.4: emitted with NO scope — the invitee is an email
       // address until they sign in, so there is nobody to scope it to.
       // attachClaimedInviteEvents hands it to them once the lazy claim
       // resolves who they are, keeping this sent-at date.
       ctx.waitUntil?.(
         recordInviteReceived(env, team, { id: member.id, userId: null }, userId, member.createdAt),
       );
-      // spec/64: tell the invitee they've been invited, with a link to their
+      // docs/specs/014-identity/transactional-email.md: tell the invitee they've been invited, with a link to their
       // invites page. Best-effort, in the background; no-op when email is off.
       if (emailEnabled(env)) {
         ctx.waitUntil?.(sendEmail(env, { to: email, ...teamInviteEmail(env, team.name) }));
@@ -325,7 +325,7 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
   }
 
   // /api/teams/<id>/members/<memberId>/accept — the invitee's yes
-  // (spec/32): own row only, and only while it's still 'invited'.
+  // (docs/specs/013-workspace/teams.md): own row only, and only while it's still 'invited'.
   if (segments.length === 6 && segments[3] === 'members' && segments[5] === 'accept') {
     if (request.method !== 'POST') return notFound();
     const member = await getTeamMember(env, segments[4]!);
@@ -338,7 +338,7 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
       // After the flip, so audienceForTeam already counts the new
       // member and they see their own arrival.
       ctx.waitUntil?.(recordInviteAccepted(env, team, userId, member.email ?? null));
-      // spec/65: tell the team's admins someone said yes. Best-effort,
+      // docs/specs/014-identity/profile-and-email-notifications.md: tell the team's admins someone said yes. Best-effort,
       // off the response path; no-op when email is off / admins opted out.
       const responder = member.email ?? clerkEmail;
       if (responder) {
@@ -361,7 +361,7 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
       const body = (await request.json().catch(() => null)) as { role?: string } | null;
       const role = body?.role;
       if (role !== 'admin' && role !== 'member') return badRequest('invalid role');
-      // Last-admin guard (spec/32): demoting the only JOINED admin
+      // Last-admin guard (docs/specs/013-workspace/teams.md): demoting the only JOINED admin
       // would leave the team unmanageable. Invited rows are exempt —
       // they don't count as managing admins yet either way.
       if (member.role === 'admin' && member.status === 'joined' && role === 'member') {
@@ -396,12 +396,12 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
       ) {
         return conflict('last_admin');
       }
-      // spec/138 §4.4: resolve the audience BEFORE the row goes, or the
+      // docs/specs/013-workspace/timeline.md §4.4: resolve the audience BEFORE the row goes, or the
       // person leaving never sees their own departure.
       const audience = await audienceForTeam(env, teamId);
       // What they made stays with the team. Left owned by them, the owner
       // leg of every access gate would keep it open to somebody the team
-      // just removed (spec/35).
+      // just removed (docs/specs/013-workspace/team-shared-diagrams.md).
       if (member.status === 'joined' && member.userId) {
         await handTeamWorkToHeir(env, teamId, member.userId);
       }
@@ -419,7 +419,7 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
             : recordMemberRemoved(env, team, who, userId, audience),
         );
       }
-      // spec/65: a self-removal of a still-INVITED row is a DECLINE — tell
+      // docs/specs/014-identity/profile-and-email-notifications.md: a self-removal of a still-INVITED row is a DECLINE — tell
       // the team's admins. An admin revoking a pending invite, or a joined
       // member leaving, is not an invite response and notifies no one.
       if (member.status === 'invited' && isSelf) {

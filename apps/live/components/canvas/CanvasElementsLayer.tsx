@@ -63,7 +63,7 @@ type ElementsExtras = {
 
 type CanvasElementsLayerProps = CanvasProps & ElementsExtras;
 
-// The ring action each row-carrying web component offers (spec/147).
+// The ring action each row-carrying web component offers (docs/specs/009-elements/web-components-and-no-groups.md).
 const WEB_ROW_ACTION: Partial<Record<string, { label: string; description: string }>> = {
   'stat-row': { label: 'Add stat', description: 'Add another KPI card to the row.' },
   process: { label: 'Add step', description: 'Add another step to the end of the process.' },
@@ -125,7 +125,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     sessionStartBlocked,
     timerState,
     // The tab's live timer plus the handlers that drive it, so a Timer
-    // session element can BE the timer (spec/105) rather than a button that
+    // session element can BE the timer (docs/specs/012-collaboration/session-button.md) rather than a button that
     // starts one elsewhere. The handlers no-op when edits are blocked, so a
     // read-only surface needs no separate gate here.
     tabTimer,
@@ -211,7 +211,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onSetTextAlign: readOnly ? undefined : onSetTextAlign,
     onCommitTable,
     onCommitHeaderSize: readOnly ? undefined : onCommitHeaderSize,
-    // The seam's snap targets (spec/119). Resolved here because this is where
+    // The seam's snap targets (docs/specs/009-elements/lane.md). Resolved here because this is where
     // the sibling elements are: BoxedElementView only ever sees its own.
     onSnapSeam: readOnly
       ? undefined
@@ -243,9 +243,9 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   // paint — re-render this layer once they are in so every fitted label
   // re-measures in its real face (see useFontsReady).
   useFontsReady();
-  // Resolved tab default font once; per-element falls back to it (spec/28).
+  // Resolved tab default font once; per-element falls back to it (docs/specs/004-interface-design/fonts.md).
   const tabFontStack = resolveFontStack(tabFont);
-  // Highest dot count on the tab (spec/39), computed once so each element's
+  // Highest dot count on the tab (docs/specs/012-collaboration/session-tools.md), computed once so each element's
   // vote pill can flag itself a winner once results are revealed.
   const voteMax = tabVote
     ? Object.values(tabVote.votes).reduce((m, ids) => Math.max(m, ids.length), 0)
@@ -261,20 +261,20 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     () => (hasArrows ? buildElementIndex(elements) : null),
     [hasArrows, elements],
   );
-  // Insert-between preview (spec/139): while a palette drag hovers a gap on an
+  // Insert-between preview (docs/specs/021-event-storming/event-storming.md): while a palette drag hovers a gap on an
   // event-storming board, the elements at and after the insertion point RENDER
   // shifted right to show the slot opening — see useInsertShift.
   const insertShift = useInsertShift();
-  // Session-local view state for an open photo draft (spec/139 Phase 8).
+  // Session-local view state for an open photo draft (docs/specs/021-event-storming/event-storming.md Phase 8).
   const draftView = usePhotoDraftView();
-  // Paint order (spec/74 + spec/09): layer bands bottom -> top, keeping
+  // Paint order (docs/specs/006-diagram/layers.md + docs/specs/008-canvas/canvas-and-palette.md): layer bands bottom -> top, keeping
   // array order within each band with frames hoisted to the front of
   // THEIR band (a frame is a section backdrop that must sit behind its
   // contents so they stay clickable). Hidden layers' elements drop out
   // here entirely — no DOM, so no hit-testing either. Same banding the
   // exporters use. Each element carries its band's opacity so per-layer
   // opacity multiplies over the element's own. While a Layers-panel row
-  // is hovered (`layerPreviewId`, spec/74 hover-solo) ONLY that band
+  // is hovered (`layerPreviewId`, docs/specs/006-diagram/layers.md hover-solo) ONLY that band
   // renders — hidden or not — at full band opacity so the preview is
   // legible. Memoised for the same reason as the index (stable identity
   // when inputs are).
@@ -290,11 +290,11 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     });
   }, [elements, tabLayers, layerPreviewId]);
   // Whether the single selected element is a timeline rail — gates the rail's
-  // "Add point" action on the quick-connect "+" (spec/51).
+  // "Add point" action on the quick-connect "+" (docs/specs/009-elements/timeline-rail.md).
   const selectedElement = selectedId ? elements.find((e) => e.id === selectedId) : undefined;
   const selectedIsRail = selectedElement?.type === 'shape' && isRailShape(selectedElement.shape);
   const selectedIsTable = selectedElement?.type === 'table';
-  // Web components (spec/147): the ring's "Add stat / step / link", while
+  // Web components (docs/specs/009-elements/web-components-and-no-groups.md): the ring's "Add stat / step / link", while
   // there is room for one more.
   const webRow =
     selectedElement?.type === 'shape' && onAppendWebRow && canAppendWebRow(selectedElement)
@@ -324,11 +324,11 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             gets its own <svg> overlay; pointer events on the SVG are
             disabled in CSS, only the inner arrow line picks them up. */}
       {ordered.map(({ element, layerOpacity }, isoDepth) => {
-        // Shift-duplicate ghost (spec/80): the dragged set renders
+        // Shift-duplicate ghost (docs/specs/008-canvas/shift-drag-duplicate.md): the dragged set renders
         // translucent while its materialised copy holds the start
         // position, multiplied over any per-layer opacity.
         const ghostFactor = shiftDupGhostIds?.has(element.id) ? 0.45 : 1;
-        // Photo draft (spec/139 Phase 8): while one is open, everything that
+        // Photo draft (docs/specs/021-event-storming/event-storming.md Phase 8): while one is open, everything that
         // is NOT part of it recedes, so the notes the photo brought are the
         // most visible thing on the board. A render-time style, local to the
         // importing session — the board itself is untouched.
@@ -402,7 +402,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             insertShiftAnimates={insertShift.animates}
             // Resolved once here, where both the vote and the tab's layers
             // are in scope, rather than threading `layers` down to the
-            // gesture hook and the overlay separately (spec/96).
+            // gesture hook and the overlay separately (docs/specs/012-collaboration/vote-layer-scope.md).
             votableInVote={isVotableInVote(element, tabVote, tabLayers)}
             layerOpacity={effOpacity < 1 ? effOpacity : undefined}
             // The draft treatment, and the "already here" badge on a note the
@@ -490,9 +490,9 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             chairSitters={chairSitters}
             // Mode Buttons light up for the mode they hand out, and the
             // canvas-tool union is WIDER than the mode vocabulary: Slide Deck
-            // (spec/31) has no Mode Button, so it is not a SelectionMode.
+            // (docs/specs/012-collaboration/presentation-mode.md) has no Mode Button, so it is not a SelectionMode.
             // Narrow rather than widen — a "Switch to Slide Deck" button is
-            // exactly what spec/31 rules out.
+            // exactly what docs/specs/012-collaboration/presentation-mode.md rules out.
             activeMode={isSelectionMode(canvasTool) ? canvasTool : undefined}
             onEnterPortal={onEnterPortal}
             onFireReaction={onFireReaction}
@@ -507,7 +507,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             onLinkCell={h.onLinkCell}
             imageContext={imageContext}
             onContextSelect={h.handleElementContextSelect}
-            // A workshop note writes in marker (spec/139): the notation names
+            // A workshop note writes in marker (docs/specs/021-event-storming/event-storming.md): the notation names
             // the face, so it outranks the tab default — but not an explicit
             // per-element font, which is a deliberate author choice.
             fontFamily={
@@ -553,7 +553,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
       ) : null}
 
       {/* The next-note buttons on the note you are pointing at or have
-          selected (spec/139 Phase 7). They stand down while any drag is in
+          selected (docs/specs/021-event-storming/event-storming.md Phase 7). They stand down while any drag is in
           hand: the board is the drag's for the duration. */}
       {props.esBoard && props.onAddNextNote ? (
         <NextNoteButtons
@@ -605,17 +605,17 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
               onSpawn={(kind) => onSpawnConnect(placement, kind)}
               onArrowPointerDown={(e) => onStartArrow(placement, e)}
               onPencil={onStartPencil}
-              // Timeline rail (spec/51): the standard "+" gains an "Add point"
+              // Timeline rail (docs/specs/009-elements/timeline-rail.md): the standard "+" gains an "Add point"
               // action instead of the rail drawing its own competing button.
               onAddRailPoint={selectedIsRail ? onAddRailPoint : undefined}
               webRow={webRow}
-              // Table ring (spec/09): Arrow + this side's structural add.
+              // Table ring (docs/specs/008-canvas/canvas-and-palette.md): Arrow + this side's structural add.
               variant={selectedIsTable ? 'table' : 'default'}
               onAddTableRow={selectedIsTable && placement === 'below' ? onAddTableRow : undefined}
               onAddTableColumn={
                 selectedIsTable && placement === 'right' ? onAddTableColumn : undefined
               }
-              // Mind map (spec/118): Add child / Add sibling, each naming its
+              // Mind map (docs/specs/009-elements/mind-node.md): Add child / Add sibling, each naming its
               // shortcut in the tooltip. Only on a mind node, and only where
               // there is a grower (not the share view, embed, or exports).
               onGrowMind={

@@ -1,6 +1,6 @@
 import type { ImageSummary } from '@livediagram/api-schema';
 
-// images row shape as read from D1 (migration 0014 / spec/19). The
+// images row shape as read from D1 (migration 0014 / docs/specs/009-elements/images.md). The
 // gallery list endpoint + the image-bytes read both pass rows
 // through the mapper below to produce the wire-format DTO the live
 // editor consumes.

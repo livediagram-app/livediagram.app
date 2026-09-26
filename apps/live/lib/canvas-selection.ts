@@ -52,7 +52,7 @@ export function deriveCanvasSelection(input: {
   isPaintMode: boolean;
   tabLocked: boolean;
   readOnly: boolean;
-  // Event-storming board (spec/139): a low-threshold capture surface where
+  // Event-storming board (docs/specs/021-event-storming/event-storming.md): a low-threshold capture surface where
   // every control that doesn't serve "add a note, type, drag" is a
   // distraction — the quick-connect pluses stand down.
   esBoard?: boolean;
@@ -100,14 +100,14 @@ export function deriveCanvasSelection(input: {
     selected &&
     !elementMenuOpen &&
     selectedIsBoxed &&
-    // Never on an event-storming board (spec/139).
+    // Never on an event-storming board (docs/specs/021-event-storming/event-storming.md).
     !esBoard &&
     // Quick-connect works on a single element. A marquee multi-select stays
     // suppressed: it's a transient selection, not a unit you chain from.
     multiSelectedIds.size === 0 &&
-    // An annotation marker is a note, not a node to chain from. See spec/38
-    // + spec/09. Tables DO show the pluses, with a slimmed table ring (Arrow
-    // + Add Row / Add Column, spec/09).
+    // An annotation marker is a note, not a node to chain from. See docs/specs/009-elements/annotations.md
+    // + docs/specs/008-canvas/canvas-and-palette.md. Tables DO show the pluses, with a slimmed table ring (Arrow
+    // + Add Row / Add Column, docs/specs/008-canvas/canvas-and-palette.md).
     //
     // Frames used to be excluded too, on the grounds that a backdrop's
     // pluses would float far out around the whole section. Lanes are the
@@ -137,15 +137,15 @@ export function deriveCanvasSelection(input: {
   // connector to a grid is an unlikely flow and the external dots
   // clash with the table's own in-cell controls. Resize handles
   // (resizeVisible) still show.
-  // Resize handles skip the FIXED-SIZE kinds (spec/103 buttons) and any
-  // element stamped fixed at creation (spec/139 event-storming notes): both
+  // Resize handles skip the FIXED-SIZE kinds (docs/specs/009-elements/mode-button.md buttons) and any
+  // element stamped fixed at creation (docs/specs/021-event-storming/event-storming.md event-storming notes): both
   // are one size for life, so offering a handle would advertise a resize the
   // drag paths deliberately ignore.
   const resizeVisible = (id: string) => {
     if (!handleVisible(id)) return false;
     const el = elements.find((e) => e.id === id);
     // Fixed-size elements (mode / session buttons by kind, event-storming
-    // notes by their creation stamp — spec/139) advertise no resize.
+    // notes by their creation stamp — docs/specs/021-event-storming/event-storming.md) advertise no resize.
     return !(el && isFixedSizeElement(el));
   };
 

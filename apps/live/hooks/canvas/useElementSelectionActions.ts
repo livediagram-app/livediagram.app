@@ -44,13 +44,13 @@ type EditorSelectionActionsDeps = {
   setMultiSelectedIds: (ids: Set<string>) => void;
   setFormatSourceId: (id: string | null) => void;
   // True when another participant has the element selected (concurrent-
-  // selection lock, spec/07). A marquee skips locked elements so a drag
+  // selection lock, docs/specs/007-editor/live-app.md). A marquee skips locked elements so a drag
   // box doesn't scoop up something someone else is editing.
   lockedByOther: (id: string) => boolean;
-  // Elements on a LOCKED layer (spec/74): protected from deletion like
+  // Elements on a LOCKED layer (docs/specs/006-diagram/layers.md): protected from deletion like
   // per-element `locked`.
   layerLockedIds: Set<string>;
-  // Elements on a hidden OR locked layer (spec/74): a marquee never
+  // Elements on a hidden OR locked layer (docs/specs/006-diagram/layers.md): a marquee never
   // selects them.
   layerInertIds: Set<string>;
 };
@@ -97,7 +97,7 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
       return els.filter((el) => {
         // Belt-and-suspenders: never drop a locked element, even via the
         // arrow cascade (a locked arrow survives its endpoint going).
-        // A locked LAYER protects its elements the same way (spec/74).
+        // A locked LAYER protects its elements the same way (docs/specs/006-diagram/layers.md).
         if (el.locked === true || layerLockedIds.has(el.id)) return true;
         if (targetIds.has(el.id)) return false;
         if (el.type === 'arrow' && arrowReferencesAny(el, targetIds)) return false;
@@ -110,7 +110,7 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     announceDeleted(targetIds);
   };
 
-  // SR announcement for a delete (spec/71), named like the change log
+  // SR announcement for a delete (docs/specs/004-interface-design/canvas-accessibility.md), named like the change log
   // ("Deleted 'Login'", "Deleted 2 Squares & an Arrow"). Reads the
   // pre-commit elements so the deleted ones are still resolvable.
   const announceDeleted = (targetIds: Set<string>) => {
@@ -120,7 +120,7 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
   };
 
   // The deletable subset of a selection: ids whose element isn't locked.
-  // Locked elements are protected from deletion (spec/09 Locking).
+  // Locked elements are protected from deletion (docs/specs/008-canvas/canvas-and-palette.md Locking).
   const deletableIds = (ids: Set<string>): Set<string> => {
     const lockedIds = new Set(
       activeTab.elements.filter((el) => el.locked === true).map((el) => el.id),
@@ -135,7 +135,7 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
   const selectMarquee = (rawIds: Set<string>) => {
     // Drop any element another participant currently holds — a marquee
     // shouldn't pull a remotely-locked element into the selection — and
-    // anything on a hidden / locked layer (spec/74).
+    // anything on a hidden / locked layer (docs/specs/006-diagram/layers.md).
     const ids = new Set<string>();
     for (const id of rawIds) if (!lockedByOther(id) && !layerInertIds.has(id)) ids.add(id);
     if (ids.size === 0) {
@@ -210,7 +210,7 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     track('Element', 'Selected', 'Filter');
   };
 
-  // Quick add (spec/09): from the selected element, add a new element to
+  // Quick add (docs/specs/008-canvas/canvas-and-palette.md): from the selected element, add a new element to
   // `direction`. `kind` decides what's added — 'duplicate' clones the source,
   // 'text' drops a caption to the side. Neither draws a
   // connector arrow; the + menu's Arrow action is how you connect them.
@@ -255,7 +255,7 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
   };
 
   // Intra-LAYER z-order (selection popover). Distinct from the element
-  // menu's Bring to Front, which is a LAYER move (spec/74): these nudge the
+  // menu's Bring to Front, which is a LAYER move (docs/specs/006-diagram/layers.md): these nudge the
   // selection within its own band, so two notes on the same layer can be
   // stacked without shuffling anyone between layers. A multi-selection
   // travels together, keeping its members' relative order.

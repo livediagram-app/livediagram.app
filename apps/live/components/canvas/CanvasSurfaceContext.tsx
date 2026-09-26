@@ -7,7 +7,7 @@ import type { CanvasSurface } from '@livediagram/diagram';
 // carries no colour of its own is drawn in that paper's ink
 // (`defaultStrokeColor` and friends in @livediagram/diagram), and the Default
 // theme deliberately leaves elements uncoloured — so on a Default tab
-// this context IS the element colour (spec/07, spec/09).
+// this context IS the element colour (docs/specs/007-editor/live-app.md, docs/specs/008-canvas/canvas-and-palette.md).
 //
 // A context rather than a prop chain, for two reasons. The element views are
 // `React.memo`'d, and memo blocks a parent's re-render from reaching them but

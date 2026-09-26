@@ -1,4 +1,4 @@
-// Working together: live sessions, sharing, discussion, the Timeline, teams and the facilitation tools (spec/22).
+// Working together: live sessions, sharing, discussion, the Timeline, teams and the facilitation tools (docs/specs/017-telemetry/telemetry.md).
 // Part of the metric catalogue: import from ../metric-catalogue.
 
 import type { Metric, MetricStack } from '../metric-series';
@@ -188,7 +188,7 @@ export const LIVE_IMAGE_TABS = chart(
 // Everything but Live Together counts an INVITATION (a link made, a member
 // added, a poll opened); Live Together counts two people on one canvas at the
 // same moment, which is what the rest is FOR, so read the rest against it. The
-// facilitation tools (spec/39 + spec/88) are read by their drop-off: votes
+// facilitation tools (docs/specs/012-collaboration/session-tools.md + docs/specs/012-collaboration/live-poll.md) are read by their drop-off: votes
 // started vs revealed, dots cast vs retracted, timers started vs finished.
 
 export const MULTIPLAYER_SESSIONS: Metric = {
@@ -571,7 +571,7 @@ export const STOPWATCHES: MetricStack = {
   headline: STOPWATCHES_STARTED,
 };
 
-// The Explorer Timeline (spec/138) and the editor's Activity panel.
+// The Explorer Timeline (docs/specs/013-workspace/timeline.md) and the editor's Activity panel.
 // Timeline·Opened carries four things by type: two ways of arriving on the
 // feed (Landing, the Explorer's default page, and Nav, a deliberate visit),
 // which is how the landing-page change is measured, and two things done in it
@@ -649,7 +649,7 @@ export const TIMELINE_AND_ACTIVITY: MetricStack = {
   ],
 };
 
-// Presentations (spec/31).
+// Presentations (docs/specs/012-collaboration/presentation-mode.md).
 export const SLIDES_REORDERED = chart(
   'UI',
   'Moved',

@@ -5,7 +5,7 @@ import type { DetectedSticky } from '@livediagram/sticky-vision';
 import { cropBoxes } from '@/lib/photo-detect';
 import type { CropReader, ReadOptions, ReadText } from '@/lib/reading/types';
 
-// Reading a box again after the author moved, resized or drew it (spec/139
+// Reading a box again after the author moved, resized or drew it (docs/specs/021-event-storming/event-storming.md
 // Phase 9). The crop is cut afresh from the FULL-resolution photo for the
 // box's new rectangle and sent to the same reader; the new words replace the
 // old ones as they arrive. The debounce and the "never over typed words" rule

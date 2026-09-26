@@ -12,7 +12,7 @@ const WIZARD_STEPS: { key: WizardStep; label: string }[] = [
 ];
 
 // The wizard header for the template picker (Template -> Theme -> Settings,
-// spec/76), plus its StepChip pill. A compact, left-aligned stepper: each
+// docs/specs/006-diagram/offline-mode.md), plus its StepChip pill. A compact, left-aligned stepper: each
 // chip jumps to that step, and the connector fills brand as you advance so
 // it reads as progress rather than a static rule. On a phone the three
 // chips have ~340px between them: the connectors shrink and the chip

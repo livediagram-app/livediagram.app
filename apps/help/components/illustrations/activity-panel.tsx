@@ -1,4 +1,4 @@
-// Activity-Panel-category illustrations (spec/55): the per-tab change log with
+// Activity-Panel-category illustrations (docs/specs/018-help/help-app.md): the per-tab change log with
 // who/what/when entries, jump-to-element, clear history, plus undo / redo /
 // revert controls. Composed only from the shared primitives so the house style
 // holds; the panel scene is reused across articles with small variations.

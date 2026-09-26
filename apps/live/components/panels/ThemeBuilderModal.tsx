@@ -1,6 +1,6 @@
 'use client';
 
-// The custom-theme builder in a modal (spec/44), plus the copy for
+// The custom-theme builder in a modal (docs/specs/011-theme/custom-themes.md), plus the copy for
 // deleting a theme. Shared by the Explorer's Themes pane and the
 // Timeline's theme-card menu, so "Edit theme" and "Delete" mean exactly
 // the same thing from both places.

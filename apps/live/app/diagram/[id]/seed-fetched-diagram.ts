@@ -23,7 +23,7 @@ export function makeSeedFetchedDiagram(deps: {
   loadedTabIdsRef: MutableRefObject<Set<string>>;
   setActiveId: SetState<string>;
   setDiagramName: SetState<string>;
-  // The stored slide deck (spec/31), handed on for useSlideDeck to parse.
+  // The stored slide deck (docs/specs/012-collaboration/presentation-mode.md), handed on for useSlideDeck to parse.
   setDiagramPresentation: SetState<string | null>;
   setDiagramOwnerColor: SetState<string | null>;
   setDiagramOwnerId: SetState<string | null>;
@@ -55,7 +55,7 @@ export function makeSeedFetchedDiagram(deps: {
   // `tabShareCode` is the share code the per-tab fetch presents as
   // authorisation: the visitor's session code, or null for the owner.
   return async (selfId: string, fetched: Diagram, tabShareCode: string | null) => {
-    // Lazy per-tab fetch (spec/13): the active tab (first in the
+    // Lazy per-tab fetch (docs/specs/006-diagram/per-tab-storage.md): the active tab (first in the
     // summaries) gets its full payload inline so the first paint
     // has real content; the rest land as placeholders and the
     // lazy-load effect fetches each one when the user switches.
@@ -77,7 +77,7 @@ export function makeSeedFetchedDiagram(deps: {
         placeholderTabs[0] = first;
         loadedTabIdsRef.current.add(firstSummary.id);
         setLoadedTabIds((prev) => new Set(prev).add(firstSummary.id));
-        // Telemetry (spec/22): the first tab's content was fetched.
+        // Telemetry (docs/specs/017-telemetry/telemetry.md): the first tab's content was fetched.
         // Subsequent tabs count via usePerTabLoad on switch.
         track('Tab', 'Loaded');
       }
@@ -109,7 +109,7 @@ export function makeSeedFetchedDiagram(deps: {
     setDiagramOwnerId(fetched.ownerId);
     setDiagramOwnerName(fetched.ownerName ?? null);
     setDiagramOwnerColor(fetched.ownerColor ?? null);
-    // Telemetry (spec/22): an existing diagram was opened — every open,
+    // Telemetry (docs/specs/017-telemetry/telemetry.md): an existing diagram was opened — every open,
     // owner URL or share URL, the counterpart to Diagram/Created.
     track('Diagram', 'Loaded');
   };

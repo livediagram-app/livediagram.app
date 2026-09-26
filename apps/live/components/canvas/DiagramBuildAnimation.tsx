@@ -4,7 +4,7 @@
 // to connect them, echoing the editor's core gesture: add a shape,
 // wire it up. Shared by the OAuth completing-sign-in screen
 // (/sso-callback), the diagram loading placeholder (DiagramLoading),
-// and the Just-Draw creating card on /new?blank=1 (spec/14).
+// and the Just-Draw creating card on /new?blank=1 (docs/specs/007-editor/new-diagram-route.md).
 // Pure SVG + CSS keyframes (no JS tick, no extra
 // deps, runs in the static export), and it honours
 // prefers-reduced-motion by sitting on the finished diagram instead of

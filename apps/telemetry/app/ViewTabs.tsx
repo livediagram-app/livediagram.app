@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 
-// The dashboard's view selector (spec/22). The `leads` (the Dashboard, then
+// The dashboard's view selector (docs/specs/017-telemetry/telemetry.md). The `leads` (the Dashboard, then
 // Search) stand on their own to the left: the overview and the way to find any
 // one metric. Every other view is a closer look at one area, so those sit
 // together in a bar titled "Detail".

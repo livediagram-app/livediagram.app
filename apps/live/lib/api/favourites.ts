@@ -1,4 +1,4 @@
-// Per-user diagram favourites (spec/95).
+// Per-user diagram favourites (docs/specs/013-workspace/favourites.md).
 //
 // A star lives in its own D1 table rather than the preferences blob:
 // favourites are meant to be unlimited, and that blob is capped at 4 KB
@@ -51,7 +51,7 @@ export async function apiSetFavourite(
   // An offline diagram has no row in `diagrams`, and the favourites table's
   // diagram_id is a foreign key into it (migration 0040), so sending this
   // star to the server does not just go unused, it is REJECTED with
-  // "FOREIGN KEY constraint failed". Keep it local, as spec/76 requires of
+  // "FOREIGN KEY constraint failed". Keep it local, as docs/specs/006-diagram/offline-mode.md requires of
   // every offline row: no server fetch, "list, thumbnail, or otherwise".
   if (await isOfflineId(diagramId)) {
     await offlineSetFavourite(diagramId, favourite).catch(() => {});

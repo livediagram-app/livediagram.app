@@ -67,7 +67,7 @@ describe('tabBroadcastOps', () => {
     expect(tabBroadcastOps(before, after)).toEqual([{ kind: 'tab', tabId: 't1', tab: after }]);
   });
 
-  it('names a cleared meta field in `clear` rather than resending the tab (spec/152)', () => {
+  it('names a cleared meta field in `clear` rather than resending the tab (docs/specs/012-collaboration/collab-race-hardening.md)', () => {
     // Clearing a field yields patch[k] = undefined, which JSON.stringify drops
     // on the wire. It used to force a whole-tab op, which replaced every
     // element on every receiver; the clear now travels by name.
@@ -84,7 +84,7 @@ describe('tabBroadcastOps', () => {
   });
 });
 
-describe('the vote field (spec/39)', () => {
+describe('the vote field (docs/specs/012-collaboration/session-tools.md)', () => {
   const vote = (over: Partial<TabVote> = {}): TabVote => ({
     active: true,
     revealed: false,
@@ -149,7 +149,7 @@ describe('the vote field (spec/39)', () => {
     ]);
   });
 
-  it('clears the vote by name, leaving elements alone (spec/152)', () => {
+  it('clears the vote by name, leaving elements alone (docs/specs/012-collaboration/collab-race-hardening.md)', () => {
     const before = tab({ vote: vote() });
     const after = tab();
     expect(tabBroadcastOps(before, after)).toEqual([
@@ -158,7 +158,7 @@ describe('the vote field (spec/39)', () => {
   });
 });
 
-describe('comment author ids stay off the wire (spec/152)', () => {
+describe('comment author ids stay off the wire (docs/specs/012-collaboration/collab-race-hardening.md)', () => {
   it("strips every comment's author id from element and tab ops", () => {
     const thread = {
       comments: [

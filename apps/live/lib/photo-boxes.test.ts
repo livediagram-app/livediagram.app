@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { DetectedSticky } from '@livediagram/sticky-vision';
 import { boxesFromLabel, moveBox, resizeBox, withKind } from './photo-boxes';
 
-// Correcting a box on the photograph under review (spec/139 Phase 9). All in
+// Correcting a box on the photograph under review (docs/specs/021-event-storming/event-storming.md Phase 9). All in
 // WORKING-image pixels, the space the detector found the boxes in.
 const frame = { width: 1000, height: 500 };
 const box = (over: Partial<DetectedSticky> = {}): DetectedSticky => ({

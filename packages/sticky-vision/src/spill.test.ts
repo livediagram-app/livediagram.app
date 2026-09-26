@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { hexToRgb, type ImageBuffer } from './colour';
 import { dropSurfaces, spillOf } from './spill';
 
-// A note is an object, and its paper stops at its edge (spec/139 Phase 9).
+// A note is an object, and its paper stops at its edge (docs/specs/021-event-storming/event-storming.md Phase 9).
 // Every image here is drawn, so how far a colour runs past a box is known.
 
 function blank(width: number, height: number, hex: string): ImageBuffer {

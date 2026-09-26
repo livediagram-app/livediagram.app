@@ -27,18 +27,18 @@ const CollaboratePanel = dynamic(() =>
   import('@/components/panels/CollaboratePanel').then((m) => m.CollaboratePanel),
 );
 
-// Lazy for the same reason, and more so: the poll panel (spec/88) only
+// Lazy for the same reason, and more so: the poll panel (docs/specs/012-collaboration/live-poll.md) only
 // mounts while a poll is actually running, which is rare and brief.
 const PollPanel = dynamic(() => import('@/components/panels/PollPanel').then((m) => m.PollPanel));
 
-// Same again for the vote panel (spec/39): only on screen while a
+// Same again for the vote panel (docs/specs/012-collaboration/session-tools.md): only on screen while a
 // dot-vote is running.
 const VotePanel = dynamic(() => import('@/components/panels/VotePanel').then((m) => m.VotePanel));
 
-// Lazy for the same reason: the Actions panel (spec/68) only mounts when
+// Lazy for the same reason: the Actions panel (docs/specs/012-collaboration/assigned-actions.md) only mounts when
 // the active tab has at least one element with an OPEN assigned action.
 
-// The floating panels as elements (spec/63), lifted out of CanvasChrome:
+// The floating panels as elements (docs/specs/007-editor/panel-docking.md), lifted out of CanvasChrome:
 // the stable handler bundles for the memo'd panels, the docking-aware
 // wiring per panel, the palette's theme tint + dock-mode
 // reopen-after-draw behaviour, and each panel's element with its own
@@ -58,7 +58,7 @@ export function useCanvasChromePanels({
   chromeHidden: boolean;
   isMobile: boolean;
   dockingActive: boolean;
-  // Toolbar layout on desktop (spec/148): the strip stands in for the
+  // Toolbar layout on desktop (docs/specs/007-editor/toolbar-layout.md): the strip stands in for the
   // Palette, and the Explorer opens as a popover under the menu button
   // instead of floating in its corner.
   toolbarActive: boolean;
@@ -253,7 +253,7 @@ export function useCanvasChromePanels({
     onResetActivity,
     onToggleActivityMinimized,
     onSetRevertHoverPreview: (v: boolean) => {
-      // Settings flip fires BEFORE the persist (spec/22).
+      // Settings flip fires BEFORE the persist (docs/specs/017-telemetry/telemetry.md).
       track('UI', 'Toggled', v ? 'ActivityRevertPreviewOn' : 'ActivityRevertPreviewOff');
       onChangeSettings({ ...settings, activityRevertHoverPreview: v });
     },
@@ -276,7 +276,7 @@ export function useCanvasChromePanels({
     handleDockButtonClick,
   });
 
-  // --- Floating panels as elements (spec/63) ---
+  // --- Floating panels as elements (docs/specs/007-editor/panel-docking.md) ---
   // Built once with docking-aware wiring, then rendered either inline
   // (legacy: mobile / minimal / zen) or distributed into corner stacks
   // (desktop docking). Each keeps its own visibility gate.
@@ -398,7 +398,7 @@ export function useCanvasChromePanels({
 
   // Layers + Activity open as popovers over their bottom-right cluster
   // buttons in the dock layouts (minimal, a phone outside Toolbar) and in
-  // Toolbar (spec/148); only the desktop Floating layout docks them as
+  // Toolbar (docs/specs/007-editor/toolbar-layout.md); only the desktop Floating layout docks them as
   // corner panels that minimise into those buttons.
   const clusterPopovers = !dockingActive || toolbarActive;
 
@@ -437,7 +437,7 @@ export function useCanvasChromePanels({
     />
   );
 
-  // Layers panel (spec/74). Edit sessions only (a viewer can't manage
+  // Layers panel (docs/specs/006-diagram/layers.md). Edit sessions only (a viewer can't manage
   // layers; visibility / lock still shape what they see via the render
   // path). Floating: hidden while minimised into its bottom-right cluster
   // button. As a popover (clusterPopovers): always mounted so that button can
@@ -512,7 +512,7 @@ export function useCanvasChromePanels({
       />
     );
 
-  // Minimap (spec/59) routed through docking like the other panels: it
+  // Minimap (docs/specs/008-canvas/minimap.md) routed through docking like the other panels: it
   // stacks with Activity in the bottom-left and snaps / persists the same
   // way (the old "defer to Activity at the default corner" gate is gone —
   // stacking handles their coexistence). Desktop-only, gated on the map
@@ -520,9 +520,9 @@ export function useCanvasChromePanels({
   const mapEnabled = settings?.showMinimap !== false;
   const mapAccent = paletteTheme.elementStroke ?? '#0ea5e9';
   const minimapWiring = panelWiringFor('minimap', props.mapPosition, props.onResetMap);
-  // Hidden layers (spec/74) drop out of the miniature too, so the map
+  // Hidden layers (docs/specs/006-diagram/layers.md) drop out of the miniature too, so the map
   // matches the canvas. Not rendered at all in the minimal panel layout
-  // (spec/59): minimal collapses panels to dock buttons, and a
+  // (docs/specs/008-canvas/minimap.md): minimal collapses panels to dock buttons, and a
   // free-floating map contradicts that.
   const minimapEl =
     !chromeHidden && !isMobile && !minimalPanels && mapEnabled && elements.length >= 4 ? (
@@ -544,7 +544,7 @@ export function useCanvasChromePanels({
       />
     ) : null;
 
-  // Live poll (spec/88). Unlike its neighbours this panel is absent most
+  // Live poll (docs/specs/012-collaboration/live-poll.md). Unlike its neighbours this panel is absent most
   // of the time: it exists only while a poll is running and the viewer is
   // entitled to the results, so it joins and leaves its corner stack.
   const pollEl =
@@ -568,7 +568,7 @@ export function useCanvasChromePanels({
       />
     ) : null;
 
-  // Live vote (spec/39). Present only while a vote is on the tab: turnout
+  // Live vote (docs/specs/012-collaboration/session-tools.md). Present only while a vote is on the tab: turnout
   // while casting is open, then the clickable ranked results.
   const voteEl =
     !chromeHidden && tabVote ? (

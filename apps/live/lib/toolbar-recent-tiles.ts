@@ -1,13 +1,13 @@
 import { readLocalStorageSafe, safeJson, writeLocalStorageSafe } from './local-storage-safe';
 
-// The Toolbar layout's recently-used tiles (spec/148): tile ids, most recent
+// The Toolbar layout's recently-used tiles (docs/specs/007-editor/toolbar-layout.md): tile ids, most recent
 // first. The strip puts a category's recently-used tiles ahead of the rest,
 // so the element you just reached for is on the bar next time, in the first
 // slot, and the tile it displaced drops back behind More.
 //
 // One list across every category rather than one per category: a tile used
 // from Shapes is just as likely to be wanted again from Favourites. Per
-// browser, like the palette's other UI state (spec/78), and separate from
+// browser, like the palette's other UI state (docs/specs/010-palette/palette-favourites.md), and separate from
 // the Favourites list itself, so the floating Palette's order is untouched.
 
 const TOOLBAR_RECENT_KEY = 'livediagram:v1:toolbar-recent-tiles';

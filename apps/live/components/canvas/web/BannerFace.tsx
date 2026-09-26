@@ -3,7 +3,7 @@ import { InlineTextLine } from '@/components/canvas/InlineTextLine';
 import { LabelRegion } from '@/components/canvas/web/LabelRegion';
 import { rectStyle, type WebFaceProps } from '@/components/canvas/web/web-face-props';
 
-// Banner (spec/147): an accent bar with the title (the label, edited like any
+// Banner (docs/specs/009-elements/web-components-and-no-groups.md): an accent bar with the title (the label, edited like any
 // label) over a subtitle line edited in place. The bar paints in the fill
 // when one is picked, else the stroke — the theme accent.
 export function BannerFace({

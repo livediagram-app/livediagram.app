@@ -1,4 +1,4 @@
--- spec/67: freshness marker for a diagram's cached SVG snapshot. The
+-- docs/specs/006-diagram/diagram-snapshots.md: freshness marker for a diagram's cached SVG snapshot. The
 -- snapshot bytes live in R2 (key `thumb/<diagramId>`); this column
 -- records when they were last rendered so the render-on-read path can
 -- tell a stale snapshot (saved_at > thumb_rendered_at) it must

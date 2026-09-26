@@ -4,7 +4,7 @@
 // returns the matching shape kind + bounding box + a 0..1
 // confidence score. The editor-page commit handler decides whether
 // to convert the freehand into a proper shape element based on the
-// score; see spec/09 Pencil (freehand) subsection for the user-
+// score; see docs/specs/008-canvas/canvas-and-palette.md Pencil (freehand) subsection for the user-
 // visible contract.
 //
 // Heuristics over template-matching ($1 Recognizer et al) on purpose:
@@ -27,7 +27,7 @@
 // Each branch returns a confidence in [0, 1]. The caller's threshold
 // (today 0.40 in commitFreehand) leans hard toward "convert it":
 // picking the Shape Pen rather than Freehand is itself the request to
-// classify (spec/115 replaced the persisted `recogniseShapes`
+// classify (docs/specs/008-canvas/two-pens.md replaced the persisted `recogniseShapes`
 // preference with the choice of pen), so the user has already asked
 // for it. A false-positive convert is one
 // Cmd-Z away; a false negative (a wobbly square that stayed a

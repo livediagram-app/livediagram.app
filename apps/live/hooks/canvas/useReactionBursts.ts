@@ -4,7 +4,7 @@ import { useCallback, useRef, useState } from 'react';
 
 import { isReaction, REACTION_DEFAULT, type Reaction } from '@livediagram/diagram';
 
-// The reaction bursts currently playing (spec/135).
+// The reaction bursts currently playing (docs/specs/009-elements/reaction-pad.md).
 //
 // Ephemeral, per-client, and never document state: a burst is not stored, not
 // undoable, and not replayed to somebody who joins after it finished. It plays

@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 
 /**
- * Frames an in-article illustration (spec/55). Wraps an SVG scene from
+ * Frames an in-article illustration (docs/specs/018-help/help-app.md). Wraps an SVG scene from
  * `components/illustrations/*` in a soft "editor viewport" card (rounded,
  * subtle border + shadow, brand-tinted backdrop) and renders an optional
  * caption beneath it. One frame for every illustration so the help centre's

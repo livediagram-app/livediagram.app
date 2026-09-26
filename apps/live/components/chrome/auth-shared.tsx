@@ -397,7 +397,7 @@ export function messageOf(err: unknown, fallback: string): string {
 // Both sign-in and sign-up accept Clerk's protected-page bounce as
 // `?redirect_url=/<path>`. After verification the user should land back
 // where they came from. Routes are now clean (no `/live` prefix — the
-// router selects the live app by route, spec/08), so destinations are
+// router selects the live app by route, docs/specs/016-platform/router-app.md), so destinations are
 // plain same-origin paths. Validation rules:
 //
 //   - Must be a same-origin absolute PATH: starts with a single `/`,
@@ -416,7 +416,7 @@ export const POST_AUTH_DEFAULT = '/new';
 
 // Sign-in default: a returning user with no `?redirect_url` lands on
 // their Explorer ("here's all your stuff") rather than the new-diagram
-// welcome flow that suits a fresh sign-up. See spec/04.
+// welcome flow that suits a fresh sign-up. See docs/specs/014-identity/auth-and-guest-access.md.
 export const POST_AUTH_SIGNIN_DEFAULT = '/explorer';
 
 // A redirect_url is safe iff it's a same-origin absolute path that

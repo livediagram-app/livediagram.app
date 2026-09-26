@@ -1,5 +1,5 @@
 -- Per-diagram audit log. One row per undoable commit. See spec
--- specs/12-activity-and-audit.md.
+-- docs/specs/012-collaboration/activity-and-audit.md.
 --
 -- before_state / after_state are JSON objects keyed by element id:
 --   null  → element didn't exist on that side of the change

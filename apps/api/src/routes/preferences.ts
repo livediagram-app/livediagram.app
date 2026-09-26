@@ -1,9 +1,9 @@
-// /api/preferences — per-user editor preference flags (spec/20).
+// /api/preferences — per-user editor preference flags (docs/specs/007-editor/user-preferences.md).
 
 import { badRequest, json, missingAuth, noContent, notFound } from '../responses';
 import type { RouteContext } from './context';
 
-// Per-user editor preference flags (spec/20). Stored as a single
+// Per-user editor preference flags (docs/specs/007-editor/user-preferences.md). Stored as a single
 // JSON blob per owner so adding a flag never needs a migration.
 // Hybrid identity: Clerk userId when signed in, X-Owner-Id
 // otherwise, matching the rest of the api. The blob is opaque

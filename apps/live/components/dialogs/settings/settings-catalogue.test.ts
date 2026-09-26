@@ -110,7 +110,7 @@ describe('settings catalogue', () => {
   });
 
   it('emits telemetry tokens the public dashboard will accept', () => {
-    // spec/22 bounds the `type` slot so the dashboard can never render
+    // docs/specs/017-telemetry/telemetry.md bounds the `type` slot so the dashboard can never render
     // user-generated content. A token that fails the pattern is dropped on
     // the floor, which is invisible until the chart is missing a series.
     for (const token of ALL_ROWS.flatMap(tokensOf)) {

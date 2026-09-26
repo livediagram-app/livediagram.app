@@ -1,4 +1,4 @@
-// Behaviour and Collaborate faces in the headless render (spec/103 to /137).
+// Behaviour and Collaborate faces in the headless render (docs/specs/009-elements/mode-button.md to /137).
 //
 // These fifteen kinds all exported as the SAME thing: a rounded box with the
 // kind's name centred in it. Every workshop board came out of an export as a
@@ -7,7 +7,7 @@
 // What they draw here is each card's STRUCTURE, in its real colours and at its
 // real scale: the title where the card puts it, the status line beside it, the
 // body's own marks, the footer's pills. What it deliberately does not
-// reproduce is the paper kit (spec/122) that gives each card its texture, and
+// reproduce is the paper kit (docs/specs/012-collaboration/participant-responses.md) that gives each card its texture, and
 // the pressed / live states of controls that cannot be pressed in a still
 // image. A card is recognisable and readable rather than pixel-identical, and
 // the comment on each face says which of its marks are which.
@@ -87,7 +87,7 @@ function collabCard(
   body: (w: number, h: number) => string,
 ): string {
   const design = SHAPE_DEFAULT_SIZE[el.shape] ?? { width: el.width, height: el.height };
-  // The Q&A board reflows rather than scales (spec/151): a bigger board shows
+  // The Q&A board reflows rather than scales (docs/specs/012-collaboration/qa-board.md): a bigger board shows
   // more rows at the same size, on the canvas and so in the export too.
   const scale =
     el.shape === 'qa-board' ? 1 : Math.min(el.width / design.width, el.height / design.height);
@@ -145,7 +145,7 @@ function footerPills(x: number, y: number, labels: readonly string[], color: str
     .join('');
 }
 
-// ── Collaborate panels (spec/123 to /129, /137) ─────────────────────────
+// ── Collaborate panels (docs/specs/012-collaboration/estimate-card.md to /129, /137) ─────────────────────────
 
 export function svgCollabFace(el: Face, label: string, color: string): string | null {
   const title = label.trim();
@@ -216,7 +216,7 @@ export function svgCollabFace(el: Face, label: string, color: string): string | 
     case 'qa-board': {
       // The ranked queue as it stood: a vote pill and the note per row, the
       // spotlit note first, so an exported board still says what the room
-      // asked and what it wanted most (spec/151).
+      // asked and what it wanted most (docs/specs/012-collaboration/qa-board.md).
       const { discussing, queue, done } = qaView(el.qaNotes);
       const rows = discussing ? [discussing, ...queue] : queue;
       const total = rows.length + done.length;
@@ -351,7 +351,7 @@ export function svgCollabFace(el: Face, label: string, color: string): string | 
   }
 }
 
-// ── Behaviour elements (spec/103 to /107, /135, /136) ───────────────────
+// ── Behaviour elements (docs/specs/009-elements/mode-button.md to /107, /135, /136) ───────────────────
 
 /** The eye a reveal's cover carries, drawn at `size` about (cx, cy). */
 function eye(cx: number, cy: number, size: number, color: string): string {
@@ -375,7 +375,7 @@ export function svgBehaviourFace(
   const title = label.trim();
   switch (el.shape) {
     case 'focus-button': {
-      // Bring Focus (spec/144): the chip and its target, over the label. The
+      // Bring Focus (docs/specs/012-collaboration/bring-focus.md): the chip and its target, over the label. The
       // press states are the one thing not reproduced, for the reason every
       // other control here drops them: nothing in a still image can be
       // hovered or held.
@@ -466,7 +466,7 @@ export function svgBehaviourFace(
       );
     }
     case 'chair': {
-      // The chair itself (spec/130), from the shared table the canvas's
+      // The chair itself (docs/specs/009-elements/chair.md), from the shared table the canvas's
       // ChairView draws (shape-geometry.ts): backrest, slat, seat, legs and
       // stretcher, plus the contact shadow that sits it on the canvas rather
       // than floating it over. Turned whole for its facing, about the box
@@ -508,7 +508,7 @@ export function svgBehaviourFace(
       );
     }
     case 'action-card': {
-      // The action panel (spec/146): its header, the action's name and who it
+      // The action panel (docs/specs/012-collaboration/action-panel.md): its header, the action's name and who it
       // is assigned to, or the empty state. Truncated to the card, since the
       // export has no DOM to wrap against.
       const action = el.action;
@@ -572,7 +572,7 @@ export function svgBehaviourFace(
 }
 
 /**
- * A face wrapped in the element's typeface (spec/28).
+ * A face wrapped in the element's typeface (docs/specs/004-interface-design/fonts.md).
  *
  * One group rather than an attribute on each of the twenty-odd text marks
  * inside: SVG text inherits `font-family`, so the wrapper is both shorter and

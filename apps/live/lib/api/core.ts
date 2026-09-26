@@ -17,7 +17,7 @@ import { readLocalStorageSafe, writeLocalStorageSafe } from '../local-storage-sa
 import { getGuestSelfSig } from '../local-identity';
 import { notifyApiWrite } from './write-signal';
 // Every non-2xx the expectOk* helpers throw, and every fetch that rejects in
-// apiFetch, is reported through here (spec/22 'Error').
+// apiFetch, is reported through here (docs/specs/017-telemetry/telemetry.md 'Error').
 import { reportApiError, reportNetworkError } from './error-report';
 
 // `API_BASE` resolution:
@@ -60,7 +60,7 @@ export function wsUrl(path: string): string {
 // Every api request goes through here rather than bare `fetch` so a
 // successful WRITE can be announced (write-signal.ts): the Timeline
 // re-reads itself off that signal, which is what lets a delete or a
-// rename show up on the feed without a browser refresh (spec/138
+// rename show up on the feed without a browser refresh (docs/specs/013-workspace/timeline.md
 // §2.4b). Reads stay silent, and so do the feed's own endpoints —
 // dismissing a card must not make the feed re-read itself to notice.
 //
@@ -102,7 +102,7 @@ export type CreateTokenResponse = {
   expiresAt: number;
 };
 // The share-links list doubles as the owner's read of the diagram's
-// share password (spec/24): owner-only endpoint, so it's safe in the
+// share password (docs/specs/013-workspace/share-password.md): owner-only endpoint, so it's safe in the
 // clear. `password` is null when the diagram has no password.
 export type ShareLinksResponse = { links: ShareLink[]; password: string | null };
 export type SharePasswordResponse = { password: string | null };
@@ -112,14 +112,14 @@ export type ParticipantResponse = {
   participant: { id: string; name: string; color: string; createdAt: number };
 };
 
-// Result of resolving a share code (spec/24). A protected diagram
+// Result of resolving a share code (docs/specs/013-workspace/share-password.md). A protected diagram
 // returns `passwordRequired` instead of the diagram until the visitor
 // supplies the matching password; `invalid` is true only when a wrong
 // password was submitted (vs none yet), so the gate can show an error.
 export type SharedDiagramResolution =
   { diagram: Diagram; role: ShareRole } | { passwordRequired: true; invalid: boolean };
 
-// Hybrid identity (spec/04, spec/11). When a token provider has been
+// Hybrid identity (docs/specs/014-identity/auth-and-guest-access.md, docs/specs/015-api/api.md). When a token provider has been
 // registered via `setTokenProvider` and resolves to a non-null Clerk
 // session token, every request goes out with
 // `Authorization: Bearer <jwt>` and NO `X-Owner-Id` — the api worker
@@ -178,7 +178,7 @@ export function getLastKnownToken(): string | null {
   return lastKnownToken;
 }
 
-// Share password for the current visitor session (spec/24). Same
+// Share password for the current visitor session (docs/specs/013-workspace/share-password.md). Same
 // module-level rationale as the token provider: rather than thread the
 // password through every call signature, the viewer sets it once after
 // passing the password gate and `apiHeaders` (HTTP) + `connectRoom`
@@ -202,7 +202,7 @@ export function getSessionSharePassword(): string | null {
 //   - Password rotated: the cached value comes back from the server
 //     as passwordRequired { invalid: true }, the bootstrap clears the
 //     entry, and the gate prompts the visitor afresh.
-// Threat model (spec/24) is anti-URL-guessing, not cryptographic
+// Threat model (docs/specs/013-workspace/share-password.md) is anti-URL-guessing, not cryptographic
 // protection of user data; storing plain text mirrors what the api
 // worker already does in D1. The owner cleartext-reads it on the
 // Share dialog anyway.
@@ -217,7 +217,7 @@ export function writeCachedSharePassword(shareCode: string, password: string | n
   else writeLocalStorageSafe(key, '');
 }
 
-// Exported for direct testing of the hybrid identity gate (spec/04):
+// Exported for direct testing of the hybrid identity gate (docs/specs/014-identity/auth-and-guest-access.md):
 // Bearer token wins when present, X-Owner-Id is the fallback, and the
 // two MUST NOT coexist on a single request (an api worker that sees
 // both would derive owner from the JWT and silently ignore the header
@@ -240,7 +240,7 @@ export async function apiHeaders(
     h['Authorization'] = `Bearer ${token}`;
   } else {
     h['X-Owner-Id'] = ownerId;
-    // Proof of possession for the guest id (spec/61 §4): the api worker can
+    // Proof of possession for the guest id (docs/specs/015-api/public-api-and-tokens.md §4): the api worker can
     // require a valid signature on owner-scoped routes, which a harvested id
     // wouldn't have. Sent whenever we hold one for this id; absent for legacy
     // unsigned guests (accepted during the grace window) and self-hosts with
@@ -250,7 +250,7 @@ export async function apiHeaders(
   }
   if (opts.body) h['Content-Type'] = 'application/json';
   if (opts.share) h['X-Share-Code'] = opts.share;
-  // Share password (spec/24) rides on every request once the visitor
+  // Share password (docs/specs/013-workspace/share-password.md) rides on every request once the visitor
   // has passed the gate; the api ignores it unless the diagram is
   // protected + accessed via a share code. Owners never set it.
   if (sessionSharePassword) h['X-Share-Password'] = sessionSharePassword;
@@ -367,7 +367,7 @@ export async function apiDelete(
     // When this DELETE ends an entity the Timeline narrates (a diagram, a
     // folder, a theme, a team), name it in the feed's terms so the feed
     // can drop the entity's earlier cards at once, the way the worker's
-    // cascade does server-side (spec/138 §3.5). Omit for a DELETE that
+    // cascade does server-side (docs/specs/013-workspace/timeline.md §3.5). Omit for a DELETE that
     // merely changes something (a share link, a favourite).
     purge?: { sourceType: string; sourceId: string };
   },
@@ -391,13 +391,13 @@ export async function apiDelete(
 // but must never enter the persisted tab body (`tabs.data`):
 //   - `templateChosen` — UI-only (have we dismissed the per-tab
 //     template picker yet?); a pure frontend concern.
-//   - `folder` — per-diagram membership (spec/30) that lives on the
+//   - `folder` — per-diagram membership (docs/specs/006-diagram/tab-folders.md) that lives on the
 //     diagram_tabs link, carried via the meta/reorder path. Leaking it
 //     into the shared body would make a folder follow the tab into
 //     every diagram it's shared into, breaking per-diagram scope.
 // Shared by apiCreateDiagram + apiSaveTab.
 // The single normalisation every tab passes through on its way to the wire:
-// strip the UI-only fields, and stamp the board kind (spec/139).
+// strip the UI-only fields, and stamp the board kind (docs/specs/021-event-storming/event-storming.md).
 //
 // The kind is stamped HERE rather than only at the editor's commit choke
 // point because several mutation paths reach persistence — the history

@@ -8,7 +8,7 @@ import { ViewToggle } from '@/app/explorer/ViewToggle';
 import type { ExplorerViewMode } from '@/app/explorer/useExplorerViewMode';
 import type { Folder } from '@livediagram/api-schema';
 
-// The bar above the team library (spec/35): where you are, and the two things
+// The bar above the team library (docs/specs/013-workspace/team-shared-diagrams.md): where you are, and the two things
 // you can do from anywhere in it — switch card / list view, and add something.
 //
 // Split out of TeamSharedDiagrams because it is the half of that component
@@ -118,7 +118,7 @@ export function TeamLibraryHeader({
             >
               <MenuTileGrid cols={2}>
                 {/* New diagram lands directly in the team library, scoped
-                to the folder currently open (spec/35): /live/new
+                to the folder currently open (docs/specs/013-workspace/team-shared-diagrams.md): /live/new
                 applies the team + folder placement after the create. */}
                 <MenuTile
                   icon={

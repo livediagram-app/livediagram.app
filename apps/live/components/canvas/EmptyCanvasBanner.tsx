@@ -2,7 +2,7 @@
 
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 
-// Empty-canvas hint (spec/14). A subdued bottom banner shown while the active
+// Empty-canvas hint (docs/specs/007-editor/new-diagram-route.md). A subdued bottom banner shown while the active
 // tab has no elements — replacing the old centre-of-canvas card so the hint
 // stays unobtrusive (a truly blank diagram reads as blank, not as a
 // half-finished modal). Not dismissible: it simply goes away once the canvas

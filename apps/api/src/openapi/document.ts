@@ -1,4 +1,4 @@
-// Assembles the OpenAPI 3.1 document served at GET /api/openapi.json (spec/37)
+// Assembles the OpenAPI 3.1 document served at GET /api/openapi.json (docs/specs/015-api/api-documentation.md)
 // from three runtime-safe inputs: the route manifest (the declared surface),
 // the generated component schemas (derived from @livediagram/api-schema), and
 // the static auth-scheme / info metadata below. Pure and deterministic — the
@@ -24,14 +24,14 @@ const ERROR_SCHEMA: JsonSchema = {
 
 const SECURITY_SCHEMES: Record<string, JsonSchema> = {
   // A Clerk session JWT OR an API token (`lvd_…`), both presented as
-  // `Authorization: Bearer <credential>` (spec/04, spec/61).
+  // `Authorization: Bearer <credential>` (docs/specs/014-identity/auth-and-guest-access.md, docs/specs/015-api/public-api-and-tokens.md).
   Bearer: {
     type: 'http',
     scheme: 'bearer',
     description:
       'A Clerk session JWT or an API token (`lvd_…`). API tokens are the credential for external callers; create one in the Explorer (see the API tokens help article).',
   },
-  // The guest path: an unsigned per-browser owner id (spec/04). First-party
+  // The guest path: an unsigned per-browser owner id (docs/specs/014-identity/auth-and-guest-access.md). First-party
   // app use; an `X-Owner-Sig` HMAC is also required once enforcement is on.
   GuestId: {
     type: 'apiKey',
@@ -81,7 +81,7 @@ function operationId(route: RouteSpec): string {
 //
 // Mirrors index.ts exactly, which means NOT every operation:
 //   - writes share a per-owner (or per-token) budget, except POST /events
-//     (spec/22: telemetry must not be throttled into silence);
+//     (docs/specs/017-telemetry/telemetry.md: telemetry must not be throttled into silence);
 //   - GETs are throttled only under a token, so only the token-usable ones;
 //   - GET /share/{code} is throttled per IP, to blunt share-code guessing.
 // A read that no token can reach cannot 429, and saying otherwise would send
@@ -90,7 +90,7 @@ function operationId(route: RouteSpec): string {
 // One more exemption lives in index.ts: the room-ticket mint (a 429 there
 // costs a member their whole realtime session). It needs no entry here because
 // the mint has no manifest entry at all, the realtime handshake being
-// documented in spec/11 rather than in the OpenAPI surface.
+// documented in docs/specs/015-api/api.md rather than in the OpenAPI surface.
 const RATE_LIMIT_EXEMPT_WRITES = new Set(['post /events']);
 
 function isRateLimited(route: RouteSpec): boolean {
@@ -208,7 +208,7 @@ export function buildOpenApiDocument(): OpenApiDocument {
         'programmatically. External callers authenticate with an API token ' +
         '(`Authorization: Bearer lvd_…`); see the "API tokens" help article to create one. ' +
         'Endpoints an external token can use are marked `x-token-usable`. The realtime ' +
-        'WebSocket protocol is documented in spec/11, not here.',
+        'WebSocket protocol is documented in docs/specs/015-api/api.md, not here.',
       license: { name: 'MIT' },
     },
     servers: [{ url: '/api', description: 'Same-origin API (e.g. https://livediagram.app/api).' }],

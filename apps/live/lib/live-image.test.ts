@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { liveImageHtml, liveImageMarkdown, liveImageUrlFor } from './live-image';
 
-describe('live-image builders (spec/54 + spec/67)', () => {
+describe('live-image builders (docs/specs/013-workspace/live-image-share.md + docs/specs/006-diagram/diagram-snapshots.md)', () => {
   const origin = 'https://livediagram.app';
 
   it('builds the same-origin /api share-image URL', () => {

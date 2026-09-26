@@ -58,12 +58,12 @@ export type EditorContextMenuProps = {
   // The active tab's elements — used to resolve the clicked element
   // (for the element menu) and read its link / note state.
   elements: Element[];
-  // The tab default face (spec/28), so the layer previews in here paint
+  // The tab default face (docs/specs/004-interface-design/fonts.md), so the layer previews in here paint
   // what the canvas paints.
   tabFont?: string;
   onClose: () => void;
   // The element currently in text-edit mode, if any. While the menu rides
-  // alongside the editor (spec/09) the target's label is still uncommitted
+  // alongside the editor (docs/specs/008-canvas/canvas-and-palette.md) the target's label is still uncommitted
   // (text commits on blur), so label-gated categories (Text: Typography /
   // Alignment / Markers) treat "being edited" as having text — otherwise a
   // fresh shape's menu hides exactly the options the user is typing for.
@@ -74,15 +74,15 @@ export type EditorContextMenuProps = {
   // Remove an inline icon from the element. Only surfaced when the
   // clicked element actually carries one (a non-'icon' shape with iconId).
   onRemoveIcon: (elementId: string) => void;
-  // Image element actions (spec/19): open the picker (select / change) and
+  // Image element actions (docs/specs/009-elements/images.md): open the picker (select / change) and
   // clear the picked image back to a placeholder.
   onOpenImagePicker: (elementId: string) => void;
   onRemoveImage: (elementId: string) => void;
-  // Clear the link off the selected element (spec/40 link-card "Remove Link").
+  // Clear the link off the selected element (docs/specs/009-elements/link-cards.md link-card "Remove Link").
   onRemoveLink: () => void;
   onBringToFront: () => void;
   onSendToBack: () => void;
-  // Event-storming note menu (spec/139): the notation's own short verb list
+  // Event-storming note menu (docs/specs/021-event-storming/event-storming.md): the notation's own short verb list
   // replaces the styling sections — a workshop note's colour, text style and
   // rotation ARE the notation, so there is nothing there to configure.
   onCutElement: () => void;
@@ -91,7 +91,7 @@ export type EditorContextMenuProps = {
   onDeleteElement: () => void;
   onStackFront: () => void;
   onStackBack: () => void;
-  // Layers (spec/74): the tab's normalised stack (bottom -> top) for the
+  // Layers (docs/specs/006-diagram/layers.md): the tab's normalised stack (bottom -> top) for the
   // Layer section's move-to dropdown, the selection's resolved layer
   // (null when members span layers), and the selection-wide move.
   layers: Layer[];
@@ -109,7 +109,7 @@ export type EditorContextMenuProps = {
   onSetFillColor: (color: string) => void;
   onSetStrokeColor: (color: string) => void;
   // Hover-to-preview for the individual colour swatches, border tiles, and
-  // rotation angles (spec/48 flow extended to the granular controls): on a
+  // rotation angles (docs/specs/010-palette/style-presets.md flow extended to the granular controls): on a
   // desktop pointer, hovering shows the value live and it only sticks on click.
   // onCommit*/onPreview* mirror the preset rows; onPreviewStyleEnd (declared
   // below) reverts. The custom colour <input> keeps onSet*Color (debounced).
@@ -122,7 +122,7 @@ export type EditorContextMenuProps = {
   onSetArrowheadColor: (color: string) => void;
   onPreviewArrowheadColor: (color: string) => void;
   onCommitArrowheadColor: (color: string) => void;
-  // The plate behind an arrow's caption (spec/09). Absent = none, which is
+  // The plate behind an arrow's caption (docs/specs/008-canvas/canvas-and-palette.md). Absent = none, which is
   // how a label has always drawn.
   onSetLabelFill: (color: string) => void;
   onPreviewLabelFill: (color: string) => void;
@@ -138,7 +138,7 @@ export type EditorContextMenuProps = {
   onCommitBorderStyle: (value: BorderStyle) => void;
   onPreviewBorderRadius: (value: BorderRadius) => void;
   onCommitBorderRadius: (value: BorderRadius) => void;
-  // Drop shadow (spec/86): preset tiles commit/preview like the border
+  // Drop shadow (docs/specs/008-canvas/element-shadows.md): preset tiles commit/preview like the border
   // tiles; the four sliders use the debounced onSetShadow (one undo step
   // per gesture, like onSetOpacity). `null` clears.
   onSetShadow: (shadow: ElementShadow | null) => void;
@@ -146,69 +146,69 @@ export type EditorContextMenuProps = {
   onCommitShadow: (shadow: ElementShadow | null) => void;
   onPreviewRotation: (deg: number) => void;
   onCommitRotation: (deg: number) => void;
-  // Status markers (spec/49): set / clear the shape's marker glyph and its
+  // Status markers (docs/specs/009-elements/shape-markers.md): set / clear the shape's marker glyph and its
   // size. Commit + hover-preview pairs, like the border tiles above.
   onSetMarker: (value: ShapeMarker | null) => void;
   onSetMarkerSize: (value: TextSize) => void;
   onPreviewMarker: (value: ShapeMarker | null) => void;
   onPreviewMarkerSize: (value: TextSize) => void;
-  // Timeline rail (spec/51): set the rail's point count.
+  // Timeline rail (docs/specs/009-elements/timeline-rail.md): set the rail's point count.
   onSetRailCount: (count: number) => void;
-  // Rating (spec/52): the star score + its animation.
+  // Rating (docs/specs/009-elements/rating.md): the star score + its animation.
   onSetRating: (value: number) => void;
   onSetRatingAnim: (value: RatingAnim | null) => void;
   onSetRatingAnimSpeed: (value: AnimationSpeed) => void;
   onSetRatingAnimRepeat: (value: boolean) => void;
-  // Pie chart (spec/53): the data rows + the slice animation.
+  // Pie chart (docs/specs/009-elements/pie-chart.md): the data rows + the slice animation.
   onSetPieData: (slices: PieSlice[]) => void;
   onSetPieAnim: (value: PieAnim | null) => void;
   onSetPieAnimSpeed: (value: AnimationSpeed) => void;
   onSetPieAnimRepeat: (value: boolean) => void;
   onSetChartLegend: (value: boolean) => void;
   onSetChartLegendPosition: (position: ChartLegendPosition) => void;
-  // Line chart (spec/53): open the data modal for the given element (the 2-D
+  // Line chart (docs/specs/009-elements/pie-chart.md): open the data modal for the given element (the 2-D
   // grid is too wide for the menu, which just summarises the series).
   onEditLineData: (elementId: string) => void;
-  // Code block (spec/82): open the code edit modal for the given element
+  // Code block (docs/specs/009-elements/code-block.md): open the code edit modal for the given element
   // (same too-big-for-the-menu rationale as the line chart's grid).
   onEditCodeBlock: (elementId: string) => void;
-  // Long-line wrapping on a code block (spec/82), on by default.
+  // Long-line wrapping on a code block (docs/specs/009-elements/code-block.md), on by default.
   onSetCodeWrap: (wrap: boolean) => void;
-  // Legend rows (spec/53): the whole array, committed in one step.
+  // Legend rows (docs/specs/009-elements/pie-chart.md): the whole array, committed in one step.
   onSetLegendItems: (items: LegendItem[]) => void;
-  // Mind-map flow (spec/118): the shape the selected node's whole map grows
+  // Mind-map flow (docs/specs/009-elements/mind-node.md): the shape the selected node's whole map grows
   // in. Resolved here rather than in the menu because it is stored on the
   // tree's ROOT, which the menu has no way to walk to.
   mindFlow: MindFlow;
   onSetMindFlow: (flow: MindFlow) => void;
-  // Checklist (spec/83): replace the selected checklist's rows.
+  // Checklist (docs/specs/009-elements/checklist.md): replace the selected checklist's rows.
   onSetChecklistItems: (items: ChecklistItem[]) => void;
   // Tick one row, as the on-canvas checkbox does: a delta the room merges,
-  // not a rewrite of every row (spec/152).
+  // not a rewrite of every row (docs/specs/012-collaboration/collab-race-hardening.md).
   onToggleChecklistItem?: (elementId: string, index: number) => void;
   onSetEntityFields: (fields: EntityField[]) => void;
-  // Web components (spec/147): the rows of the selected stat row / process /
+  // Web components (docs/specs/009-elements/web-components-and-no-groups.md): the rows of the selected stat row / process /
   // header (each field only lands on its own kind), and an image's hero
   // caption card on or off.
   onSetWebRows: (rows: import('@livediagram/diagram').WebRows) => void;
   onSetHeroCaption: (on: boolean) => void;
-  // Mode button (spec/103): which selection mode pressing it hands out.
+  // Mode button (docs/specs/009-elements/mode-button.md): which selection mode pressing it hands out.
   onSetButtonMode: (mode: import('@livediagram/diagram').SelectionMode) => void;
-  // Portal (spec/104): which portal this one leads to; null unpairs it.
+  // Portal (docs/specs/009-elements/portal-element.md): which portal this one leads to; null unpairs it.
   onSetPortalTarget: (targetId: string | null) => void;
-  // Portal (spec/104): its name (menu-only — the canvas ring stays clean), and
+  // Portal (docs/specs/009-elements/portal-element.md): its name (menu-only — the canvas ring stays clean), and
   // "create the far end for me" for the common case where it doesn't exist yet.
   onSetPortalName: (name: string) => void;
   onCreateLinkedPortal: () => void;
-  // Session button (spec/105) / Reveal zone (spec/106) / Picker (spec/107):
+  // Session button (docs/specs/012-collaboration/session-button.md) / Reveal zone (docs/specs/009-elements/reveal-zone.md) / Picker (docs/specs/012-collaboration/picker.md):
   // their settings, applied to the element the menu is acting on.
   onSetSession: (config: import('@livediagram/diagram').SessionButtonConfig) => void;
   onSetRevealed: (revealed: boolean) => void;
   onSetPickerSource: (source: import('@livediagram/diagram').PickerSource) => void;
   onSetPickerOptions: (options: string[]) => void;
-  // Reaction pad (spec/135): which burst the pad throws.
+  // Reaction pad (docs/specs/009-elements/reaction-pad.md): which burst the pad throws.
   onSetReaction: (reaction: import('@livediagram/diagram').Reaction) => void;
-  // The collaboration elements (spec/123, 127, 128, 130). The temperature
+  // The collaboration elements (docs/specs/012-collaboration/estimate-card.md, 127, 128, 130). The temperature
   // check, idea box and roll call carry no settings — everything they do
   // happens on their own faces — so they need no setter here.
   onSetEstimateScale: (scale: EstimateScale) => void;
@@ -221,13 +221,13 @@ export type EditorContextMenuProps = {
   // so the picker can mark the off-tab candidates.
   tabs: import('@livediagram/diagram').Tab[];
   activeTabId: string;
-  // Style presets (spec/48): one-click colour + border looks for the selected
+  // Style presets (docs/specs/010-palette/style-presets.md): one-click colour + border looks for the selected
   // shape, plus a reset back to the theme default. `shapeColorPresets` are
   // theme-derived (see shapeColorPresets in lib/themes).
   shapeColorPresets: ShapeColorPreset[];
   onApplyShapeColorPreset: (preset: ShapeColorPreset) => void;
   onResetShapeStyle: () => void;
-  // Hover-to-preview (spec/48): on a desktop pointer, hovering a preset tile
+  // Hover-to-preview (docs/specs/010-palette/style-presets.md): on a desktop pointer, hovering a preset tile
   // shows it live on the selected element; it only sticks on click. The
   // `onPreview*` callbacks apply the ephemeral preview; `onPreviewStyleEnd`
   // reverts it when the pointer leaves the tile without clicking. Shared across
@@ -235,23 +235,23 @@ export type EditorContextMenuProps = {
   onPreviewShapeColorPreset: (preset: ShapeColorPreset) => void;
   onPreviewArrowPreset: (preset: ArrowPreset) => void;
   onPreviewStyleEnd: () => void;
-  // Code-block colour scheme (spec/82): the code block's flavour of preset,
+  // Code-block colour scheme (docs/specs/009-elements/code-block.md): the code block's flavour of preset,
   // and the only style choice it has. Same hover-preview / click-commit flow.
   onApplyCodeTheme: (id: CodeThemeId) => void;
   onPreviewCodeTheme: (id: CodeThemeId) => void;
-  // Table looks (spec/48): cells + grid + header band + banding in one step.
+  // Table looks (docs/specs/010-palette/style-presets.md): cells + grid + header band + banding in one step.
   // Theme-derived, like the shape presets.
   tableColorPresets: TablePreset[];
   onApplyTablePreset: (preset: TablePreset) => void;
   onPreviewTablePreset: (preset: TablePreset) => void;
-  // Chart palettes (spec/53): the chart's flavour of preset.
+  // Chart palettes (docs/specs/009-elements/pie-chart.md): the chart's flavour of preset.
   onApplyChartPalette: (id: ChartPaletteId) => void;
   onPreviewChartPalette: (id: ChartPaletteId) => void;
-  // Arrow style presets (spec/48): one-click line looks (pattern / thickness /
+  // Arrow style presets (docs/specs/010-palette/style-presets.md): one-click line looks (pattern / thickness /
   // optional flow animation) for the selected arrow, plus a reset.
   onApplyArrowPreset: (preset: ArrowPreset) => void;
   onResetArrowStyle: () => void;
-  // Animated elements (spec/09): a looping animation on boxed elements, a flow
+  // Animated elements (docs/specs/008-canvas/canvas-and-palette.md): a looping animation on boxed elements, a flow
   // animation on arrows, and a glyph animation on icons. `null` clears it. The
   // onSet* commit; the onPreview* play it live on hover (desktop) and
   // onAnimationPreviewEnd reverts when the pointer leaves the tile — same
@@ -270,7 +270,7 @@ export type EditorContextMenuProps = {
   onSetProgressAnimRepeat: (value: boolean) => void;
   onSetAnimationSpeed: (value: AnimationSpeed) => void;
   onSetFlowSpeed: (value: AnimationSpeed) => void;
-  // Repeat toggles (spec/09): true (the default) loops, false plays once.
+  // Repeat toggles (docs/specs/008-canvas/canvas-and-palette.md): true (the default) loops, false plays once.
   onSetAnimationRepeat: (value: boolean) => void;
   onSetIconAnimationRepeat: (value: boolean) => void;
   onSetFlowRepeat: (value: boolean) => void;
@@ -283,7 +283,7 @@ export type EditorContextMenuProps = {
   onToggleTextStrikethrough: () => void;
   onSetTextSize: (size: TextSize) => void;
   onPreviewTextSize: (size: TextSize) => void;
-  // Element-level typography for the "Text" flyout (spec/09): the label's font
+  // Element-level typography for the "Text" flyout (docs/specs/008-canvas/canvas-and-palette.md): the label's font
   // and box padding, applied to the whole selection (parallel to onSetTextSize).
   // Preview variants apply the change ephemerally on hover; onPreviewStyleEnd
   // (below) reverts it, matching the marker / alignment / colour tiles.
@@ -291,12 +291,12 @@ export type EditorContextMenuProps = {
   onPreviewFont: (font: string | null) => void;
   onSetPadding: (padding: Padding) => void;
   onPreviewPadding: (padding: Padding) => void;
-  // Arrow Line + Pointer controls (spec/09), surfaced for arrows via the
+  // Arrow Line + Pointer controls (docs/specs/008-canvas/canvas-and-palette.md), surfaced for arrows via the
   // shared ArrowLine / Pointer controls.
   onSetArrowThickness: (v: ArrowThickness) => void;
   onSetArrowStyle: (v: ArrowStyle) => void;
   onSetArrowStrokeStyle: (v: BorderStyle) => void;
-  // Route behind boxes (spec/90).
+  // Route behind boxes (docs/specs/008-canvas/arrow-route-behind.md).
   onSetArrowRouteBehind: (v: boolean) => void;
   onSetArrowEnds: (v: ArrowEnds) => void;
   onSetArrowheadSize: (v: ArrowheadSize) => void;
@@ -309,15 +309,15 @@ export type EditorContextMenuProps = {
   // Reset the shape back to its kind's default aspect ratio (keeps area,
   // snaps the width:height proportion back to the canonical look).
   onResetAspectRatio: () => void;
-  // Change a workshop note's KIND (spec/139): a verb on this board, because
+  // Change a workshop note's KIND (docs/specs/021-event-storming/event-storming.md): a verb on this board, because
   // the kind is the notation rather than a style. Absent when the session
   // cannot edit.
   onSetEsKind?: (kind: EventStormingNoteKind) => void;
-  // Set the selection's exact size in canvas pixels (spec/134). Either
+  // Set the selection's exact size in canvas pixels (docs/specs/008-canvas/element-size.md). Either
   // dimension alone is allowed: the omitted one is left as-is, or carried by
   // the aspect lock when that is on.
   onSetSize: (size: { width?: number; height?: number }) => void;
-  // The colour palette every ColourRow in this menu offers (spec/09 Colours):
+  // The colour palette every ColourRow in this menu offers (docs/specs/008-canvas/canvas-and-palette.md Colours):
   // the theme's swatches plus the user's own, spread straight onto the row.
   colourPalette: ColourPalette;
   // Table structure toggles (header row / column, zebra) for the Table
@@ -329,18 +329,18 @@ export type EditorContextMenuProps = {
   // hover-preview pair.
   onSetIconPosition: (elementId: string, iconId: string, position: IconPosition) => void;
   onPreviewIconPosition: (elementId: string, iconId: string, position: IconPosition) => void;
-  // A Technology icon element's fixed tile-size preset (spec/41). Commit +
+  // A Technology icon element's fixed tile-size preset (docs/specs/010-palette/technology-icons.md). Commit +
   // hover-preview pair.
   onSetIconSize: (size: IconSize) => void;
   onPreviewIconSize: (size: IconSize) => void;
   // Whole-element text alignment (the same 3x3 grid as the text toolbar's
-  // alignment dropdown — surfaced in both places for discovery, spec/09).
+  // alignment dropdown — surfaced in both places for discovery, docs/specs/008-canvas/canvas-and-palette.md).
   // Commit + hover-preview pair.
   onSetTextAlign: (x: TextAlignX, y: TextAlignY) => void;
   onPreviewTextAlign: (x: TextAlignX, y: TextAlignY) => void;
   onOpenNote: (elementId: string) => void;
   onOpenComments: (elementId: string) => void;
-  // Assigned actions (spec/68): the Collaborate category's Assign Action
+  // Assigned actions (docs/specs/012-collaboration/assigned-actions.md): the Collaborate category's Assign Action
   // tile, shown for everyone (signed-out users can self-assign). Opens
   // the assign dialog (no action yet) or the action popover (one exists).
   onAssignAction: (elementId: string) => void;

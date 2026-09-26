@@ -1,4 +1,4 @@
-// Troubleshooting-category illustrations (spec/55): the concrete states a stuck
+// Troubleshooting-category illustrations (docs/specs/018-help/help-app.md): the concrete states a stuck
 // editor shows (a loading canvas, a sign-in error, a dropped live connection, a
 // rendering glitch, the autosave indicator and the Activity Panel). Composed
 // only from the shared primitives so the house style holds.

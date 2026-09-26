@@ -1,4 +1,4 @@
-// Turning a photographed wall into notes on the board (spec/139 Phase 8).
+// Turning a photographed wall into notes on the board (docs/specs/021-event-storming/event-storming.md Phase 8).
 //
 // `reconcilePhoto` is the one entry point the dialog calls. Everything here is
 // pure and deterministic: given the same photo reading and the same board, it
@@ -178,7 +178,7 @@ export function reconcilePhoto(
     .map((n) => {
       const kind = kindOf(n);
       // The SILHOUETTE comes from the kind, never from the photo: the
-      // stationery is fixed (spec/139 Phase 4), and a note photographed at an
+      // stationery is fixed (docs/specs/021-event-storming/event-storming.md Phase 4), and a note photographed at an
       // angle would otherwise arrive slightly the wrong shape forever.
       const size = eventStormingNoteSize(kind);
       const centre = applyPhotoTransform(n, transform);
@@ -233,7 +233,7 @@ export function boardNotesOfElements(elements: Element[]): BoardNote[] {
 }
 
 // ---------------------------------------------------------------------
-// The draft (spec/139 Phase 8)
+// The draft (docs/specs/021-event-storming/event-storming.md Phase 8)
 // ---------------------------------------------------------------------
 //
 // An import lands ON the board rather than in a dialog: the new notes appear at

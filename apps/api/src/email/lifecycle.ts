@@ -1,4 +1,4 @@
-// spec/64: onboarding-series orchestration. Ties the email_lifecycle table to
+// docs/specs/014-identity/transactional-email.md: onboarding-series orchestration. Ties the email_lifecycle table to
 // the templates + Resend client. Two entry points: an inline first-sighting
 // welcome (immediate) and the daily cron sweep (welcome catch-up + week 1 / 2).
 
@@ -35,7 +35,7 @@ const STAGE_BUILDER: Record<LifecycleStage, (env: Env) => RenderedEmail> = {
   week2: week2Email,
 };
 
-// First authenticated sighting → sign-up (spec/64 §4). Best-effort: stamps
+// First authenticated sighting → sign-up (docs/specs/014-identity/transactional-email.md §4). Best-effort: stamps
 // welcome_sent_at only on a successful send, so a failed inline send is left for
 // the next daily sweep to retry. Runs in ctx.waitUntil, so it never blocks the request.
 export async function welcomeOnSighting(env: Env, ownerId: string, email: string): Promise<void> {
@@ -46,7 +46,7 @@ export async function welcomeOnSighting(env: Env, ownerId: string, email: string
   if (sent) await markStageSent(env, ownerId, 'welcome');
 }
 
-// Daily cron (spec/64 §5). Welcome is swept too so inline-failed / email-was-off
+// Daily cron (docs/specs/014-identity/transactional-email.md §5). Welcome is swept too so inline-failed / email-was-off
 // rows get caught up; week 1 / 2 fire once their row is old enough.
 export async function runLifecycleSweep(env: Env): Promise<void> {
   if (!emailEnabled(env)) return;
@@ -55,7 +55,7 @@ export async function runLifecycleSweep(env: Env): Promise<void> {
   // user can't have toggled before it fires). Every LATER tip/check-in respects
   // notifyTips, so the "Tips and check-ins" toggle genuinely turns them all off.
   await sweepStage(env, 'welcome', now, false);
-  // Activation nudge (spec/64 #4): zero-diagram signups ~3 days in. Runs before
+  // Activation nudge (docs/specs/014-identity/transactional-email.md #4): zero-diagram signups ~3 days in. Runs before
   // week 1 so an empty account hears this first; dueForActivation excludes rows
   // that already reached week 1.
   await sweepActivation(env, now - ACTIVATION_DELAY_MS);
@@ -64,14 +64,14 @@ export async function runLifecycleSweep(env: Env): Promise<void> {
   await sweepWinback(env, now - WINBACK_QUIET_MS);
 }
 
-// Whether the owner has opted out of tips / check-ins (spec/64). Shared by the
+// Whether the owner has opted out of tips / check-ins (docs/specs/014-identity/transactional-email.md). Shared by the
 // later onboarding stages, the activation nudge, and win-back.
 async function tipsOptedOut(env: Env, ownerId: string): Promise<boolean> {
   const prefs = await getNotificationPrefs(env, ownerId);
   return !prefs.notifyTips;
 }
 
-// Win-back (spec/64 #5): one-shot re-engagement for owners quiet ~4 weeks.
+// Win-back (docs/specs/014-identity/transactional-email.md #5): one-shot re-engagement for owners quiet ~4 weeks.
 // Opt-out (notifyTips). Each quiet owner is considered exactly once: we stamp
 // winback_sent_at whether we send or they've opted out (only a failed send is
 // left to retry), so an opted-out owner isn't re-queried every day.

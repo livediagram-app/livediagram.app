@@ -1,4 +1,4 @@
-// Assigned-action state machine for the editor (spec/68), the sibling of
+// Assigned-action state machine for the editor (docs/specs/012-collaboration/assigned-actions.md), the sibling of
 // useEditorComments. The bundle covers:
 //
 // - `actionPopoverOpenId`: which element's action popover is open.
@@ -53,7 +53,7 @@ type EditorActionsDeps = {
   notify: (input: {
     teamId: string;
     assigneeUserId: string | null;
-    // The membership row id, for an invited assignee (spec/68).
+    // The membership row id, for an invited assignee (docs/specs/012-collaboration/assigned-actions.md).
     assigneeMemberId?: string;
     actionName: string;
     description: string;
@@ -175,7 +175,7 @@ export function useEditorActions(deps: EditorActionsDeps): EditorActionsApi {
           : action,
       );
       track('Action', 'Changed', reassigned ? 'Reassigned' : 'Edited');
-      // Only a NEW assignee gets the email offer (spec/68 §3): an edit
+      // Only a NEW assignee gets the email offer (docs/specs/012-collaboration/assigned-actions.md §3): an edit
       // that keeps the assignee sends nothing, and a self-assignment
       // has no team context to email through.
       if (reassigned && input.notifyEmail && input.teamId) {

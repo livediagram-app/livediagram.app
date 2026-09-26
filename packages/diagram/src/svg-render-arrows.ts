@@ -1,4 +1,4 @@
-// Arrow SVG emitters (spec/62 §5), split from svg-render.ts alongside
+// Arrow SVG emitters (docs/specs/015-api/mcp-server.md §5), split from svg-render.ts alongside
 // the -primitives / -shapes / -table / -labels siblings: the arrowhead
 // <marker> builder, the per-arrow path + label emitter, and the
 // head-reference resolution that keeps heads tangent to curved / angled
@@ -55,7 +55,7 @@ export function svgArrowhead(
   from: { x: number; y: number },
   to: { x: number; y: number },
   color: string,
-  // The head-shape + size presets (spec/09): the canvas renders all seven
+  // The head-shape + size presets (docs/specs/008-canvas/canvas-and-palette.md): the canvas renders all seven
   // shapes via SVG markers, so the export has to reproduce them or a UML
   // diagram's hollow-triangle inheritance / diamond aggregation flattens
   // into generic filled triangles. Defaults match the canvas defaults.
@@ -119,7 +119,7 @@ export function svgArrow(
   elements: Element[],
   surface: CanvasSurface = 'light',
   // The tab's font, for a caption that has not chosen one of its own
-  // (spec/28), so an exported caption reads in the same face as the board.
+  // (docs/specs/004-interface-design/fonts.md), so an exported caption reads in the same face as the board.
   tabFont?: string,
 ): string {
   // Same converging-fan offset the live canvas applies (see
@@ -171,7 +171,7 @@ export function svgArrow(
       arrow.labelOffset,
       arrow.curvePoints,
     );
-    // The caption as it is actually styled (spec/09): its own size, weight,
+    // The caption as it is actually styled (docs/specs/008-canvas/canvas-and-palette.md): its own size, weight,
     // slant, colour and plate. This used to emit a fixed 12px near-black
     // label, so an export showed a different caption to the board every time
     // one had been styled at all.

@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useFontsReady } from './useFontsReady';
 
 // Auto-fit measures the face it paints, and webfonts land after first paint
-// (spec/28 `display=swap`). Without a nudge, a board nobody has touched keeps
+// (docs/specs/004-interface-design/fonts.md `display=swap`). Without a nudge, a board nobody has touched keeps
 // the size it measured against the swap fallback.
 describe('useFontsReady', () => {
   const setFonts = (fonts: unknown) => {

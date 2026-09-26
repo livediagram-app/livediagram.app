@@ -1,6 +1,6 @@
 'use client';
 
-// The Eraser Panel (spec/113): mode, size and what it may erase — the fourth
+// The Eraser Panel (docs/specs/008-canvas/eraser-panel.md): mode, size and what it may erase — the fourth
 // mode panel, on the same terms as the Laser and
 // Spotlight ones.
 //

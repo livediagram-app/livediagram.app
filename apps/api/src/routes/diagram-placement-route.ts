@@ -1,4 +1,4 @@
-// /api/diagrams/<id>/folder — placement (spec/15 + spec/35), split out
+// /api/diagrams/<id>/folder — placement (docs/specs/013-workspace/folders.md + docs/specs/013-workspace/team-shared-diagrams.md), split out
 // of routes/diagrams.ts: the scope-change policy is the densest rule
 // block under the diagram resource, so it owns its own module the way
 // the tab / share sub-paths own diagram-subresource-routes.ts.
@@ -23,9 +23,9 @@ import { ownsDiagram, requireOwner, type RouteContext } from './context';
 // Returns null when the request isn't the placement route.
 export async function handleDiagramPlacement(ctx: RouteContext): Promise<Response | null> {
   const { request, env, segments } = ctx;
-  // /api/diagrams/<id>/folder — placement (spec/15 + spec/35). Body:
+  // /api/diagrams/<id>/folder — placement (docs/specs/013-workspace/folders.md + docs/specs/013-workspace/team-shared-diagrams.md). Body:
   // { folderId, teamId? }. A team diagram is managed by every joined
-  // member (spec/35), so the rules are by membership, not ownership:
+  // member (docs/specs/013-workspace/team-shared-diagrams.md), so the rules are by membership, not ownership:
   //   - INTO a team (or between teams): caller must be a joined
   //     member of the destination team; if the diagram is currently
   //     personal, only its owner may file it into a team; if it's in
@@ -89,7 +89,7 @@ export async function handleDiagramPlacement(ctx: RouteContext): Promise<Respons
       }
 
       // A non-owner moving a team diagram out to personal takes
-      // ownership (spec/35): the diagram lands in the mover's library.
+      // ownership (docs/specs/013-workspace/team-shared-diagrams.md): the diagram lands in the mover's library.
       const movingOutToPersonal = teamId === null && existing.teamId !== null;
       const newOwnerId = movingOutToPersonal && !isOwner ? caller! : undefined;
       // Whose personal folder a personal placement must belong to.
@@ -112,7 +112,7 @@ export async function handleDiagramPlacement(ctx: RouteContext): Promise<Respons
       const leavingAudience = movingOutToPersonal ? await audienceForDiagram(env, existing) : null;
       const leftTeam = movingOutToPersonal ? await getTeam(env, existing.teamId!) : null;
       await setDiagramFolder(env, id, folderId, teamId, newOwnerId);
-      // spec/138: publishing into a team library is a different event
+      // docs/specs/013-workspace/timeline.md: publishing into a team library is a different event
       // from filing something in a folder — the first tells a whole
       // team a diagram is theirs to work on, the second is personal
       // tidying. Re-read the diagram so the audience resolves against

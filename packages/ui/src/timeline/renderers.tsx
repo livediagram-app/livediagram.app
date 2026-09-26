@@ -1,6 +1,6 @@
 'use client';
 
-// The fallback renderer and the registry lookup (spec/138 §7).
+// The fallback renderer and the registry lookup (docs/specs/013-workspace/timeline.md §7).
 //
 // The package ships a renderer that can draw ANY event from its
 // title/description/source type alone. Consumers override per source

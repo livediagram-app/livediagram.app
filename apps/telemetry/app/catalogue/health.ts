@@ -1,4 +1,4 @@
-// Error health and the help centre (spec/22).
+// Error health and the help centre (docs/specs/017-telemetry/telemetry.md).
 // Part of the metric catalogue: import from ../metric-catalogue.
 
 import { isRecovery, isServerCrash } from '../error-kinds';

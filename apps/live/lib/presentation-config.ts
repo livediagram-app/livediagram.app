@@ -1,4 +1,4 @@
-// How a presentation behaves (spec/31), set from the cog in the presenter HUD.
+// How a presentation behaves (docs/specs/012-collaboration/presentation-mode.md), set from the cog in the presenter HUD.
 //
 // Device-local, like the other tool settings (the eraser's brush, the laser's
 // pen): it is how YOU want to drive a deck on THIS machine, not a property of

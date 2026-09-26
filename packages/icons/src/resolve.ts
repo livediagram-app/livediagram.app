@@ -26,7 +26,7 @@ export function resolveIconExportArt(iconId: string): IconExportArt | undefined 
   return line ? { markup: iconPrimsMarkup(line.prims), colored: false } : undefined;
 }
 
-// Resolve a sticker element's `stickerId` to its built artwork (spec/116), or
+// Resolve a sticker element's `stickerId` to its built artwork (docs/specs/010-palette/stickers.md), or
 // undefined for an unknown id — the renderer then falls back to a plain box,
 // the same way an unknown icon id does. Goes through `stickerArt`, the one
 // builder the editor canvas uses too, so a shared thumbnail and the board

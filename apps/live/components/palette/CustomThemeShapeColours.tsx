@@ -1,6 +1,6 @@
 'use client';
 
-// The custom-theme builder's per-shape colour section (spec/44, the
+// The custom-theme builder's per-shape colour section (docs/specs/011-theme/custom-themes.md, the
 // UML-style per-kind overrides), split out of CustomThemeBuilder: the
 // kinds on offer, the base-colour fallbacks + resolver, and the dense
 // rows of preview + fill / outline / text dots. The builder mounts it

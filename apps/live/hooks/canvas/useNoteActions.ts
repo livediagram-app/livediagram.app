@@ -15,7 +15,7 @@ import { planNextNote } from '@/lib/next-note-add';
 import type { InsertionSlot } from '@/lib/insert-between';
 import { track } from '@/lib/telemetry';
 
-// The note acts on an event-storming board (spec/139): add the next note
+// The note acts on an event-storming board (docs/specs/021-event-storming/event-storming.md): add the next note
 // beside one (Phase 7), and change a note's kind. Each is ONE undoable step
 // through the ordinary commit choke point, so layer stamping, board-kind
 // stamping, the activity log, autosave and realtime all happen exactly as they
@@ -27,7 +27,7 @@ import { track } from '@/lib/telemetry';
 
 type NoteActionsDeps = {
   activeTab: Tab;
-  // The whole creation gate (spec/74): a view-only session, a locked tab, or a
+  // The whole creation gate (docs/specs/006-diagram/layers.md): a view-only session, a locked tab, or a
   // hidden / locked active layer. Every act here creates or changes, so all
   // three refuse.
   createBlocked: boolean;

@@ -1,4 +1,4 @@
-// The face of an Idea box (spec/125): a prompt, a field anyone can type into,
+// The face of an Idea box (docs/specs/012-collaboration/idea-box.md): a prompt, a field anyone can type into,
 // and a count that becomes the cards once the box is opened.
 //
 // Closed, it shows a count and NOT the text — not even to the person who wrote
@@ -37,9 +37,9 @@ export function IdeaBoxFace({
   // Open the box: opening is the act the element exists for, and a Clear
   // sitting next to it is a mis-tap that throws away everything the room wrote.
   onClear?: () => void;
-  /** The way out of the round controls to the element's full menu (spec/09). */
+  /** The way out of the round controls to the element's full menu (docs/specs/008-canvas/canvas-and-palette.md). */
   onOpenSettings?: () => void;
-  // Turns the open box's cards into ordinary sticky notes (spec/125) so they
+  // Turns the open box's cards into ordinary sticky notes (docs/specs/012-collaboration/idea-box.md) so they
   // can be grouped, moved and dot-voted like anything else on the board.
   onScatter?: () => void;
 }) {
@@ -88,7 +88,7 @@ export function IdeaBoxFace({
           </ElementEllipsisMenu>
         ) : undefined
       }
-      // A POSTING BOX (spec/122). The slot is the whole element in one shape:
+      // A POSTING BOX (docs/specs/012-collaboration/participant-responses.md). The slot is the whole element in one shape:
       // things go in, nothing comes back out until somebody opens it.
       //
       // It began as a dark bar near the top edge, which read as a progress

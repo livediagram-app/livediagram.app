@@ -32,7 +32,7 @@ import {
 import type { DetectedSticky } from '@livediagram/sticky-vision';
 import { track } from '@/lib/telemetry';
 
-// A photo import as ONE gesture (spec/139 Phase 8): the draft lands in the
+// A photo import as ONE gesture (docs/specs/021-event-storming/event-storming.md Phase 8): the draft lands in the
 // document so the author can correct it with the ordinary machinery, Add
 // leaves exactly one undo step, and Discard leaves the board byte-for-byte as
 // it was.
@@ -396,7 +396,7 @@ describe('landing a draft', () => {
     expect(h.elements()).toEqual([]);
     expect(h.steps()).toBe(0);
     expect(h.toasts[0]).toMatch(/no stickies found/i);
-    // The photo STAYS on screen (spec/139: the dialog stays open for another
+    // The photo STAYS on screen (docs/specs/021-event-storming/event-storming.md: the dialog stays open for another
     // try). The advice is about this photograph, and closing the dialog throws
     // away the thing the advice is about — along with the chance to draw the
     // boxes by hand.
@@ -557,7 +557,7 @@ describe('the pure lifecycle the hook leans on', () => {
   });
 });
 
-// WHO reads is decided by what the deployment has, not by the author (spec/139
+// WHO reads is decided by what the deployment has, not by the author (docs/specs/021-event-storming/event-storming.md
 // Phase 9). The hook must pass the capability through and use whatever reader
 // comes back — the import works either way.
 describe('choosing the reader', () => {
@@ -582,7 +582,7 @@ describe('choosing the reader', () => {
   });
 });
 
-// The photo goes up FIRST (spec/139 Phase 9). Detection is fast on a small
+// The photo goes up FIRST (docs/specs/021-event-storming/event-storming.md Phase 9). Detection is fast on a small
 // photo and slow on a 12-megapixel one, and the first version did all of it
 // before showing anything at all — so picking a big photo looked exactly like
 // picking no photo: no overlay, no spinner, no error, nothing. The overlay now
@@ -682,7 +682,7 @@ describe('a pick is never silently dropped', () => {
   });
 });
 
-// The in-browser reader could not start at all (spec/139 Phase 9): that is not
+// The in-browser reader could not start at all (docs/specs/021-event-storming/event-storming.md Phase 9): that is not
 // "some notes could not be read", and it is not the photograph's fault.
 describe('when the reading model cannot start', () => {
   it('says the reader could not start, not that the photo was unreadable', async () => {
@@ -702,7 +702,7 @@ describe('when the reading model cannot start', () => {
   });
 });
 
-// The hosted reader's budget ran out and this device read instead (spec/139
+// The hosted reader's budget ran out and this device read instead (docs/specs/021-event-storming/event-storming.md
 // Phase 9): the review says so, and the editor's error telemetry gets ONE
 // warning with closed values only.
 describe('when the free budget is spent', () => {
@@ -726,7 +726,7 @@ describe('when the free budget is spent', () => {
   });
 });
 
-// Reading on the processor says WHY (spec/139 Phase 9).
+// Reading on the processor says WHY (docs/specs/021-event-storming/event-storming.md Phase 9).
 describe('where the in-browser reader runs', () => {
   it('carries the reason it is the processor', async () => {
     vi.mocked(readCrops).mockImplementation(async (_crops, opts) => {
@@ -739,7 +739,7 @@ describe('where the in-browser reader runs', () => {
   });
 });
 
-// A box the author moved, resized or drew is read again (spec/139 Phase 9):
+// A box the author moved, resized or drew is read again (docs/specs/021-event-storming/event-storming.md Phase 9):
 // cut afresh from the full-resolution photo, sent to the same reader, and its
 // words replace the old ones when they arrive.
 describe('reading a changed box again', () => {

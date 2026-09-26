@@ -1,4 +1,4 @@
-// Telemetry event iconography (spec/22): the glyph lookup tables (by type, then
+// Telemetry event iconography (docs/specs/017-telemetry/telemetry.md): the glyph lookup tables (by type, then
 // action, then category) and the EventIcon that resolves an event to its glyph.
 // A pure presentational mapping, split out of the dashboard page so page.tsx is
 // the dashboard rather than also a ~110-line icon registry.

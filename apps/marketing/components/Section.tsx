@@ -97,7 +97,7 @@ function FeatureCard({ title, description, art, href }: FeatureProps) {
   );
 
   // The card is an anchor target: the landing page's feature badges link to
-  // it (spec/16). scroll-mt keeps it clear of the sticky header on arrival.
+  // it (docs/specs/019-marketing/marketing-site.md). scroll-mt keeps it clear of the sticky header on arrival.
   const id = featureAnchor(title);
   const className =
     'group flex h-full scroll-mt-24 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition duration-200 hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md';

@@ -1,6 +1,6 @@
 'use client';
 
-// The Poll tool (spec/88): compose a question, choose how people answer, see
+// The Poll tool (docs/specs/012-collaboration/live-poll.md): compose a question, choose how people answer, see
 // exactly what they will be shown, and ask.
 //
 // The composer's centrepiece is the live preview card. A poll is the one
@@ -73,7 +73,7 @@ function PollComposer(
 }
 
 /**
- * The poll composer, CONTROLLED on question / style / answers (spec/88).
+ * The poll composer, CONTROLLED on question / style / answers (docs/specs/012-collaboration/live-poll.md).
  *
  * Exported so a poll element's `…` menu and its right-click Session category
  * render this exact composer rather than their own take on it. In the Studio
@@ -244,7 +244,7 @@ export function PollComposerBody({
   );
 }
 
-// The ballot a `collaborators` poll will freeze (spec/88): the room, exactly as
+// The ballot a `collaborators` poll will freeze (docs/specs/012-collaboration/live-poll.md): the room, exactly as
 // it will be asked. Read-only on purpose — these are not answers the author
 // writes, and a list they could edit would be a list that disagrees with who is
 // actually here.

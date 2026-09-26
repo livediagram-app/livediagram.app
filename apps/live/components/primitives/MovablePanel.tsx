@@ -7,7 +7,7 @@ import { isMobileViewportSync } from '@/lib/responsive';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { usePhoneDock } from './phone-dock-context';
 
-// The corner-docking props bundle (spec/63). CanvasChrome builds one of
+// The corner-docking props bundle (docs/specs/007-editor/panel-docking.md). CanvasChrome builds one of
 // these per panel when docking is active and panel wrappers spread it
 // straight onto their inner MovablePanel, so each wrapper only grows by
 // one optional prop. Empty / absent => the panel stays on the legacy
@@ -138,7 +138,7 @@ export function MovablePanel({
       (phoneDock &&
         (dockControlledOpen ||
           (collapsible && !effectiveCollapsed && mobileOpenOverride === undefined))),
-    // The tour popover (spec/79) is always "inside": it sits next to the
+    // The tour popover (docs/specs/007-editor/editor-tour.md) is always "inside": it sits next to the
     // panel it's explaining, so tapping its Next button must not dismiss
     // that panel out from under the highlight. A popover's own portalled
     // menus and confirms (a layer's row menu, Delete's confirm) are inside
@@ -209,7 +209,7 @@ export function MovablePanel({
                   ? 'bottom-4 right-4'
                   : 'left-4 top-4';
 
-  // Docked rest (spec/63): the panel sits in a corner stack container
+  // Docked rest (docs/specs/007-editor/panel-docking.md): the panel sits in a corner stack container
   // and lets that flex column own its position + reflow — no absolute
   // positioning, no corner class, no inline left/top. A pointer-down that
   // hasn't yet crossed the drag threshold (drag set, not lifted) still
@@ -310,7 +310,7 @@ export function MovablePanel({
       data-floating-panel=""
       data-tour-id={dataTourId}
       // Marks the FULL floating panel as opacity-controlled: globals.css
-      // applies the user's --lvd-panel-opacity here (spec/20) and restores
+      // applies the user's --lvd-panel-opacity here (docs/specs/007-editor/user-preferences.md) and restores
       // it to opaque on hover / focus. The minimal dock branch above is
       // deliberately not tagged, so panel opacity never touches the
       // minimal layout.

@@ -3,7 +3,7 @@
 import { createContext, useContext } from 'react';
 import type { ExplorerStateValue } from './useExplorerState';
 
-// Shared Explorer state (spec/15). ExplorerShell (rendered by the
+// Shared Explorer state (docs/specs/013-workspace/folders.md). ExplorerShell (rendered by the
 // /explorer layout) instantiates useExplorerState once and provides
 // it here, so the sidebar + every /explorer/<section> route page read
 // the same data without refetching across navigations. Same pattern

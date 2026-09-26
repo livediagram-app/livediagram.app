@@ -5,7 +5,7 @@ import { PaletteCategoryBrowser } from '@/components/palette/PaletteCategoryBrow
 import { Tooltip } from '@/components/primitives/Tooltip';
 
 // One sticker in the picker, drawn as the sticker it actually is — plate,
-// shadow and all — rather than as a glyph on a palette button (spec/116). The
+// shadow and all — rather than as a glyph on a palette button (docs/specs/010-palette/stickers.md). The
 // tile IS the artwork, so what you click is exactly what lands.
 //
 // Deliberately not IconButton: that draws a themed, tinted, captioned tile,
@@ -41,8 +41,8 @@ function StickerTile({ sticker, onAdd }: { sticker: StickerDef; onAdd: (id: stri
   );
 }
 
-// The palette's Stickers category (spec/116): the drill-in browse every
-// catalogue tab uses (spec/109), over the sticker catalogue. Eleven groups —
+// The palette's Stickers category (docs/specs/010-palette/stickers.md): the drill-in browse every
+// catalogue tab uses (docs/specs/010-palette/palette-category-browse.md), over the sticker catalogue. Eleven groups —
 // Badges first, then Reactions, Feelings, Status, Direction, Celebrate,
 // Decorate, Meeting, Work, People, Fun — with search across all of them.
 export function StickerPickerTab({

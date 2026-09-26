@@ -13,12 +13,12 @@ import { registerTools } from './tools';
 import { TOOL_ANNOTATIONS, type ToolBehaviour } from './tool-annotations';
 import type { ToolAnnotations } from '@modelcontextprotocol/sdk/types.js';
 
-// Every registered MCP tool must report itself (spec/62 §4, spec/22).
+// Every registered MCP tool must report itself (docs/specs/015-api/mcp-server.md §4, docs/specs/017-telemetry/telemetry.md).
 //
-// The promise spec/22 makes is "every registered tool emits", and there is no
+// The promise docs/specs/017-telemetry/telemetry.md makes is "every registered tool emits", and there is no
 // runtime signal when that stops being true: telemetry is fire-and-forget and
 // the public dashboard only renders what ARRIVED, so a tool nobody instrumented
-// is indistinguishable from a tool nobody used. spec/22 records this exact
+// is indistinguishable from a tool nobody used. docs/specs/017-telemetry/telemetry.md records this exact
 // failure from the editor side — `Video` had no telemetry bucket, so from the
 // day embeds shipped their adds were counted nowhere and every test passed.
 //
@@ -26,12 +26,12 @@ import type { ToolAnnotations } from '@modelcontextprotocol/sdk/types.js';
 // server and telemetry through the stub `env.API` the emitter posts to, so it
 // proves the emit RUNS rather than that the string appears in the file. The
 // emit lives in `registerTool` and fires only when the tool SUCCEEDED
-// (spec/22's success-path rule), so the harness has two api bindings: one that
+// (docs/specs/017-telemetry/telemetry.md's success-path rule), so the harness has two api bindings: one that
 // answers every route plausibly (each tool must then report itself exactly
 // once) and one that refuses everything (no tool may then count a use, while
 // the failure still reaches the Exceptions dashboard as `Error·Api`).
 //
-// Not checked here: that spec/22's Mcp bullet lists the same nine tokens. This
+// Not checked here: that docs/specs/017-telemetry/telemetry.md's Mcp bullet lists the same nine tokens. This
 // workspace targets the Workers runtime and carries no node types, so a test in
 // it cannot read the spec off disk, and restating the nine tokens locally to
 // compare against would just be the copy this file exists to avoid.
@@ -92,7 +92,7 @@ function harness(api: 'ok' | 'down' = 'down') {
 }
 
 // find_diagrams -> FindDiagrams. The tool name is snake_case on the wire (MCP
-// convention) and the telemetry token is PascalCase (spec/22 bounds `type` to a
+// convention) and the telemetry token is PascalCase (docs/specs/017-telemetry/telemetry.md bounds `type` to a
 // short token), so the two spellings have to be derived from each other rather
 // than typed twice.
 function expectedToken(toolName: string): string {
@@ -172,8 +172,8 @@ describe('registerTools', () => {
   });
 
   it('counts no use when the tool failed, but reports the api failure', async () => {
-    // spec/22's success-path rule: a call that errored isn't a use. The
-    // failure itself still reaches the Exceptions dashboard (spec/62 §4.12),
+    // docs/specs/017-telemetry/telemetry.md's success-path rule: a call that errored isn't a use. The
+    // failure itself still reaches the Exceptions dashboard (docs/specs/015-api/mcp-server.md §4.12),
     // labelled with the tool it came from via registerTool's scope.
     const { registered, emitted } = harness('down');
     for (const tool of registered) {
@@ -213,7 +213,7 @@ describe('registerTools', () => {
 });
 
 // Every registered tool must declare its behaviour as MCP annotations
-// (spec/62 §4.14).
+// (docs/specs/015-api/mcp-server.md §4.14).
 //
 // Same shape of promise as the telemetry suite above, and the same absence of a
 // runtime signal: a tool with no annotations still works, it just asks the user
@@ -244,7 +244,7 @@ describe('tool annotations', () => {
     const unannotated = registered.filter((r) => !r.config.annotations).map((r) => r.name);
     expect(unannotated).toEqual([]);
     // Matching a preset by value (not just "has some annotations") is what
-    // stops a hand-rolled block drifting from the table in spec/62 §4.14.
+    // stops a hand-rolled block drifting from the table in docs/specs/015-api/mcp-server.md §4.14.
     const presets = Object.values(TOOL_ANNOTATIONS);
     for (const r of registered) {
       expect(presets, `${r.name} uses an off-catalogue annotations block`).toContainEqual(
@@ -253,7 +253,7 @@ describe('tool annotations', () => {
     }
   });
 
-  it('annotates each tool with the behaviour spec/62 §4.14 assigns it', () => {
+  it('annotates each tool with the behaviour docs/specs/015-api/mcp-server.md §4.14 assigns it', () => {
     const { registered } = harness();
     for (const r of registered) {
       const behaviour = BEHAVIOURS[r.name];
@@ -265,7 +265,7 @@ describe('tool annotations', () => {
   });
 
   it('marks the read tools read-only and the writers not', () => {
-    // The read/write split has to match spec/62 §4.11's read-only-token
+    // The read/write split has to match docs/specs/015-api/mcp-server.md §4.11's read-only-token
     // boundary: a `read_only = 1` token can reach exactly the read tools, so a
     // tool annotated read-only that the api would reject as a write (or the
     // reverse) is a lie to the client either way.

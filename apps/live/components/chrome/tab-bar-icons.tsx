@@ -126,7 +126,7 @@ export function SearchGlyph() {
   return <SearchIcon size={14} />;
 }
 
-// GitHub mark - the open-source repo link in the footer (spec/03).
+// GitHub mark - the open-source repo link in the footer (docs/specs/002-project-scope/open-source-and-business-model.md).
 export function GithubIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden>

@@ -3,7 +3,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { connectRoom, roomQueryString } from './room';
 
-describe('roomQueryString (realtime auth params, spec/04 + spec/24)', () => {
+describe('roomQueryString (realtime auth params, docs/specs/014-identity/auth-and-guest-access.md + docs/specs/013-workspace/share-password.md)', () => {
   it('maps each identifier to its short key', () => {
     expect(roomQueryString({ shareCode: 'C', ownerId: 'O', ticket: 'T' }, 'P')).toBe(
       't=T&s=C&o=O&p=P',
@@ -28,7 +28,7 @@ describe('roomQueryString (realtime auth params, spec/04 + spec/24)', () => {
   });
 });
 
-// The reconnect cursor (spec/75, Level 1). The room skips the sender when it
+// The reconnect cursor (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1). The room skips the sender when it
 // relays an op, so the client's own ops only ever reach its cursor through a
 // `cursor` frame; without one a reconnect asked for them back and re-applied
 // its own `vote` deltas, counting each dot twice.
@@ -110,7 +110,7 @@ describe('connectRoom reconnect cursor', () => {
   });
 });
 
-describe('connectRoom outbox (spec/152)', () => {
+describe('connectRoom outbox (docs/specs/012-collaboration/collab-race-hardening.md)', () => {
   class FakeSocket {
     static OPEN = 1;
     static all: FakeSocket[] = [];

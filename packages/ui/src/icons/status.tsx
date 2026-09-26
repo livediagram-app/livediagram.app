@@ -1,6 +1,6 @@
 import { Glyph, type IconProps } from './Glyph';
 
-// Status + label glyphs: the share-state badge dots (spec/24 / spec/35), the
+// Status + label glyphs: the share-state badge dots (docs/specs/013-workspace/share-password.md / docs/specs/013-workspace/team-shared-diagrams.md), the
 // Tabs label, the sign-in sparkle and the error-state crossed circle. The
 // marketing hero illustration draws the editor's chrome with these same
 // components, so the two can't drift apart.

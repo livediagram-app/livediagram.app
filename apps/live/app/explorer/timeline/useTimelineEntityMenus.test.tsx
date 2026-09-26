@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// What a card's ⋯ menu offers for the thing it's about (spec/138 §2.8):
+// What a card's ⋯ menu offers for the thing it's about (docs/specs/013-workspace/timeline.md §2.8):
 // the Explorer's own verbs for tokens, teams, invites and themes, and
 // only the "open the section" row when the Explorer can't resolve the
 // entity any more.

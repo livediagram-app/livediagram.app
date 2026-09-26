@@ -11,7 +11,7 @@ export function useEditorDialogs() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   // Where Settings should land when it is opened from a search result
-  // (spec/20): the setting itself, not the dialog's front door. Cleared on
+  // (docs/specs/007-editor/user-preferences.md): the setting itself, not the dialog's front door. Cleared on
   // close so the next plain open starts on the default category.
   const [settingsFocus, setSettingsFocus] = useState<{
     categoryId: string;
@@ -50,7 +50,7 @@ export function useEditorDialogs() {
     url.searchParams.delete('share');
     window.history.replaceState(null, '', url.pathname + url.search + url.hash);
   }, []);
-  // The right-click Canvas/Theme dialog (spec/42). null = closed; the
+  // The right-click Canvas/Theme dialog (docs/specs/011-theme/canvas-and-theme-dialog.md). null = closed; the
   // value is which tab it opened on. A single flag drives both the open
   // state and the active tab.
   const [canvasThemeTab, setCanvasThemeTab] = useState<CanvasThemeTab | null>(null);
@@ -61,7 +61,7 @@ export function useEditorDialogs() {
   // tab live from `multiSelectedIds` when scope is 'selection'.
   const [exportScope, setExportScope] = useState<'tab' | 'selection'>('tab');
   const [importOpen, setImportOpen] = useState(false);
-  // The Collaborators modal (spec/145), opened from a tab's presence stack.
+  // The Collaborators modal (docs/specs/012-collaboration/collaborator-enhancements.md), opened from a tab's presence stack.
   // null = closed; otherwise `focusId` is whose avatar was clicked (null from
   // the "+N" badge), which the modal highlights.
   const [collaborators, setCollaborators] = useState<{ focusId: string | null } | null>(null);

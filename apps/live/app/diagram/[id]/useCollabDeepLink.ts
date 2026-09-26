@@ -6,7 +6,7 @@ import { parseCollabDeepLink, type CollabDeepLink } from '@/lib/collab-deep-link
 import type { TabLoadState } from './editor-page-helpers';
 
 // Consumes the element deep link an Activity row opens the editor with
-// (spec/142 §1): `#t=<tab>&el=<element>&open=action|comments`. Once the
+// (docs/specs/013-workspace/activity-page.md §1): `#t=<tab>&el=<element>&open=action|comments`. Once the
 // pinned tab's elements have loaded, select the element, bring it into
 // view, and open the named popover — exactly what a Collaborate Panel
 // row click does in-editor.
@@ -67,7 +67,7 @@ export function useCollabDeepLink({
     if (activeTabLoadState !== 'ready') return;
     const el = elements.find((e) => e.id === target.elementId);
     // Deleted since the Activity page loaded: the tab is open, which is
-    // as close as the link can get (spec/142 §1).
+    // as close as the link can get (docs/specs/013-workspace/activity-page.md §1).
     if (!el || el.type === 'arrow') return;
     select(el.id);
     scrollIntoView(el.x, el.y, el.width, el.height, { center: true });

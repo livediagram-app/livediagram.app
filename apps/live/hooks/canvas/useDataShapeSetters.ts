@@ -54,7 +54,7 @@ type DataShapeSetterDeps = {
 // public ones delegate to; all resolve the selection and commit through the
 // two shared handles, so they live together off useElementStyle.
 export function useDataShapeSetters({ currentSelectionIds, commit }: DataShapeSetterDeps) {
-  // Progress elements (spec/46): the percentage + how its fill animates, all
+  // Progress elements (docs/specs/009-elements/progress.md): the percentage + how its fill animates, all
   // gated to progress shapes. The four setters differ only in the patched
   // field + telemetry type, so they share one body.
   const setProgressFieldSelected = makeShapePatcher({
@@ -71,7 +71,7 @@ export function useDataShapeSetters({ currentSelectionIds, commit }: DataShapeSe
   const setProgressAnimRepeatSelected = (value: boolean) =>
     setProgressFieldSelected({ progressAnimRepeat: value }, 'ProgressAnim');
 
-  // Timeline rail (spec/51). Setting the point count also resizes the element
+  // Timeline rail (docs/specs/009-elements/timeline-rail.md). Setting the point count also resizes the element
   // so the per-point spacing stays constant (count × step), keeping the rail
   // neat as points are added / removed. Applies to selected rail shapes.
   const setRailCountSelected = (count: number) => {
@@ -103,7 +103,7 @@ export function useDataShapeSetters({ currentSelectionIds, commit }: DataShapeSe
   };
 
   // Append a row / column to each selected table — the table quick-connect
-  // ring's structural adds (spec/09). The helper returns the spliced cells
+  // ring's structural adds (docs/specs/008-canvas/canvas-and-palette.md). The helper returns the spliced cells
   // PLUS the realigned side arrays; apply them together so pinned sizes and
   // per-cell styles can't drift onto the wrong track.
   const appendTableRowSelected = () => {
@@ -140,7 +140,7 @@ export function useDataShapeSetters({ currentSelectionIds, commit }: DataShapeSe
       }),
     );
   };
-  // Edit one rail point's label (spec/51). Keyed by element id (the inline
+  // Edit one rail point's label (docs/specs/009-elements/timeline-rail.md). Keyed by element id (the inline
   // editor lives on the element itself), committed on blur so it's one undo
   // step. Grows the labels array as needed; trailing empties are harmless.
   const setRailLabelSelected = (elementId: string, index: number, text: string) => {
@@ -156,7 +156,7 @@ export function useDataShapeSetters({ currentSelectionIds, commit }: DataShapeSe
     track('Element', 'Changed', 'TimelineRail');
   };
 
-  // Code block (spec/82): replace the snippet + language together (the edit
+  // Code block (docs/specs/009-elements/code-block.md): replace the snippet + language together (the edit
   // dialog commits once on Save — one undo step), gated to code-block shapes.
   const setCodeSelected = (code: string, language: CodeLanguage) => {
     const ids = currentSelectionIds();
@@ -171,10 +171,10 @@ export function useDataShapeSetters({ currentSelectionIds, commit }: DataShapeSe
     track('Element', 'Changed', 'CodeBlock');
   };
 
-  // Long-line wrapping (spec/82). Its own setter rather than a third argument
+  // Long-line wrapping (docs/specs/009-elements/code-block.md). Its own setter rather than a third argument
   // to setCodeSelected: that one commits the dialog's Save, and a toggle in
   // the menu has nothing to do with the snippet's text.
-  // Legend rows (spec/53): the whole array at once, like the checklist's
+  // Legend rows (docs/specs/009-elements/pie-chart.md): the whole array at once, like the checklist's
   // section, so an add / remove / retitle is one undo step.
   const setLegendItemsSelected = (items: LegendItem[]) => {
     const ids = currentSelectionIds();
@@ -192,7 +192,7 @@ export function useDataShapeSetters({ currentSelectionIds, commit }: DataShapeSe
     track('Element', 'Changed', 'Legend');
   };
 
-  // Mind-map flow (spec/118). Written to the tree's ROOT, not the selected
+  // Mind-map flow (docs/specs/009-elements/mind-node.md). Written to the tree's ROOT, not the selected
   // node: the flow is the map's, and a map half tree and half bubble is not a
   // map anyone meant to draw. Selecting several nodes of one map therefore
   // sets it once.
@@ -228,9 +228,9 @@ export function useDataShapeSetters({ currentSelectionIds, commit }: DataShapeSe
     track('Element', 'Changed', 'CodeWrap');
   };
 
-  // The masthead lines (spec/100): a page's heading + subtitle, and the same
+  // The masthead lines (docs/specs/009-elements/page-element.md): a page's heading + subtitle, and the same
   // two fields on a banner (its subtitle) and a callout (its heading),
-  // spec/147. One setter for both lines rather than two near-identical ones,
+  // docs/specs/009-elements/web-components-and-no-groups.md. One setter for both lines rather than two near-identical ones,
   // since the only difference is which field.
   const setPageHeading = (
     elementId: string,
@@ -247,7 +247,7 @@ export function useDataShapeSetters({ currentSelectionIds, commit }: DataShapeSe
     );
   };
 
-  // Entity fields (spec/120). Bounded on write like the checklist's rows, so
+  // Entity fields (docs/specs/009-elements/entity.md). Bounded on write like the checklist's rows, so
   // a paste into the menu can't produce an element nobody can read.
   const setEntityFieldsSelected = (fields: EntityField[]) => {
     const ids = currentSelectionIds();
@@ -266,7 +266,7 @@ export function useDataShapeSetters({ currentSelectionIds, commit }: DataShapeSe
     track('Element', 'Changed', 'Entity');
   };
 
-  // --- The collaboration elements (spec/123, 127, 128, 130) ----------------
+  // --- The collaboration elements (docs/specs/012-collaboration/estimate-card.md, 127, 128, 130) ----------------
   // Selection-wide like every other setter here, each gated to its own kind so
   // a multi-selection containing a chair and a chart only writes the chair.
   const setCollabFieldSelected = (
@@ -303,7 +303,7 @@ export function useDataShapeSetters({ currentSelectionIds, commit }: DataShapeSe
     setCollabFieldSelected('decision', { decisionStatus: status }, 'Decision');
 
   // An empty date CLEARS the field, so an undated card renders nothing at all
-  // rather than an empty slot (spec/128).
+  // rather than an empty slot (docs/specs/012-collaboration/decision-record.md).
   const setDecisionDateSelected = (date: string | undefined) =>
     setCollabFieldSelected('decision', { decisionDate: date || undefined }, 'Decision');
 
@@ -337,7 +337,7 @@ export function useDataShapeSetters({ currentSelectionIds, commit }: DataShapeSe
     track('Element', 'Changed', 'Checklist');
   };
 
-  // Mode button (spec/103): which selection mode the button hands whoever
+  // Mode button (docs/specs/009-elements/mode-button.md): which selection mode the button hands whoever
   // presses it. Gated to the button kind, so a multi-selection of mixed
   // elements only rewrites the buttons in it.
   const setButtonModeSelected = (mode: SelectionMode) => {
@@ -351,9 +351,9 @@ export function useDataShapeSetters({ currentSelectionIds, commit }: DataShapeSe
     track('Element', 'Changed', 'ModeButton');
   };
 
-  // Rating (spec/52) + the charts (spec/53) — see useChartSetters.
+  // Rating (docs/specs/009-elements/rating.md) + the charts (docs/specs/009-elements/pie-chart.md) — see useChartSetters.
   const chartSetters = useChartSetters({ currentSelectionIds, commit });
-  // The web components (spec/147) — see useWebComponentSetters.
+  // The web components (docs/specs/009-elements/web-components-and-no-groups.md) — see useWebComponentSetters.
   const webSetters = useWebComponentSetters({ currentSelectionIds, commit });
 
   return {

@@ -12,7 +12,7 @@ import {
 // carries the time it was sampled so the overlay can fade older
 // segments out and drop dead points entirely. `color` is the
 // participant's identity colour — the fallback, and what "Your colour"
-// resolves to. `config` is that participant's own pen (spec/111): it
+// resolves to. `config` is that participant's own pen (docs/specs/008-canvas/laser-panel.md): it
 // travels with their samples, so a presenter's bold amber comet looks
 // the same on every screen.
 type LaserTrail = {
@@ -79,7 +79,7 @@ function Trail({ trail, zoom, now }: { trail: LaserTrail; zoom: number; now: num
 
   return (
     <g>
-      {/* Glow (spec/111) lays a wide, faint copy of the trail UNDER the stroke
+      {/* Glow (docs/specs/008-canvas/laser-panel.md) lays a wide, faint copy of the trail UNDER the stroke
           — the cheapest thing that survives a washed-out projector. Drawn
           first so the sharp line sits on top of its own halo. */}
       {config.effect === 'glow' ? (

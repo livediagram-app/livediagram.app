@@ -1,6 +1,6 @@
 'use client';
 
-// The Explorer pane header (spec/15): title + breadcrumb on the left, and on
+// The Explorer pane header (docs/specs/013-workspace/folders.md): title + breadcrumb on the left, and on
 // the right a section "?" help button, any section-specific actions slot, and
 // a single Create dropdown (New diagram / New folder). Split out of views.tsx
 // so that barrel holds the list/row primitives while the header chrome (and
@@ -67,7 +67,7 @@ export function PaneHeader({
   crumbs: { name: string; onClick?: () => void }[];
   // Section-scoped Help button, rendered to the left of Create (or alone
   // when the section has no Create action). Deep-links the matching
-  // help-centre article (spec/56) for this Explorer section; its tooltip
+  // help-centre article (docs/specs/018-help/contextual-help-links.md) for this Explorer section; its tooltip
   // copy comes from HELP_LINK_COPY.
   helpArticle?: HelpArticleKey;
   // Mobile only: opens the section drawer (the sidebar is hidden below
@@ -88,10 +88,10 @@ export function PaneHeader({
   folderLabel?: string;
   // Extra section-specific action(s) rendered in the actions row, just to the
   // right of the help "?" button (e.g. the API tokens "New token" popover
-  // button, spec/61). Lets a section add a header CTA without going through
+  // button, docs/specs/015-api/public-api-and-tokens.md). Lets a section add a header CTA without going through
   // the diagram/folder Create dropdown.
   headerActions?: ReactNode;
-  // List/Card toggle (spec/67), shown at the far right of the actions row
+  // List/Card toggle (docs/specs/006-diagram/diagram-snapshots.md), shown at the far right of the actions row
   // on the browse views that can render either layout. Both must be
   // present for the toggle to appear; sections that only list one way
   // (gallery, tokens, …) omit them.

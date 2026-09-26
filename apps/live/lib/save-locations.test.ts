@@ -7,10 +7,10 @@ import {
   type SaveLocationId,
 } from './save-locations';
 
-// The catalogue drives the Save location tiles (spec/141) and the create
+// The catalogue drives the Save location tiles (docs/specs/006-diagram/save-locations.md) and the create
 // branch in /new. Pin the invariants a new entry must keep: the default is
 // the first tile, ids are unique, and exactly one id is the browser-only
-// store (spec/76), so a future location can't silently create offline.
+// store (docs/specs/006-diagram/offline-mode.md), so a future location can't silently create offline.
 describe('save locations', () => {
   it('opens on livediagram, the first tile', () => {
     expect(DEFAULT_SAVE_LOCATION).toBe('livediagram');

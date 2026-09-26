@@ -23,14 +23,14 @@ export type ExplorerProps = {
   // viewer. Distinct from a diagram's own ownerId.
   ownerId: string | null;
   // Every folder for the owner. Empty array = no user folders, but
-  // the synthetic Unsorted bucket still renders. See spec/15.
+  // the synthetic Unsorted bucket still renders. See docs/specs/013-workspace/folders.md.
   folders: Folder[];
   // Diagrams shared with the current owner (read-only or edit
   // visitor entries). Empty array hides the section entirely so
   // pure-private users don't see an empty accordion.
   shared?: SharedWithItem[];
   // Teams the signed-in user belongs to + their swept libraries
-  // (spec/35). Drive the Teams accordion, team rows in Recent, and the
+  // (docs/specs/013-workspace/team-shared-diagrams.md). Drive the Teams accordion, team rows in Recent, and the
   // current-team-diagram row. Empty / omitted = no Teams section (the
   // common guest / no-teams case).
   teams?: { id: string; name: string }[];
@@ -48,11 +48,11 @@ export type ExplorerProps = {
   // diagrams" before the API call resolves.
   loading: boolean;
   currentDiagramId: string | null;
-  // Diagrams this user hid from Recent, and the toggle (spec/93). Recent
+  // Diagrams this user hid from Recent, and the toggle (docs/specs/013-workspace/hide-from-recent.md). Recent
   // is the only section that honours the list.
   recentExcludedIds: string[];
   onToggleRecentExclusion: (diagramId: string) => void;
-  // Per-user stars (spec/95).
+  // Per-user stars (docs/specs/013-workspace/favourites.md).
   favouriteIds: Set<string>;
   onToggleFavourite: (diagramId: string) => void;
   onMoveTo: (x: number, y: number) => void;
@@ -79,22 +79,22 @@ export type ExplorerProps = {
   onCreateFolder?: (input: { name: string; parentId: string | null }) => Promise<Folder | void>;
   onRenameFolder?: (id: string, name: string) => void;
   onDeleteFolder?: (id: string) => void;
-  // The same three for a TEAM's folders (spec/35): the panel's team tree
+  // The same three for a TEAM's folders (docs/specs/013-workspace/team-shared-diagrams.md): the panel's team tree
   // offers rename / new subfolder / delete like the personal tree. Absent
   // = the team tree is browse-only.
   onTeamFolders?: TeamFolderHandlers;
   onMoveDiagramToFolder?: (diagramId: string, folderId: string | null) => void;
-  // Scope-aware move (spec/35): routes a pick that involves a team on
+  // Scope-aware move (docs/specs/013-workspace/team-shared-diagrams.md): routes a pick that involves a team on
   // either side (re-folder within a team, personal -> team, team ->
   // personal). When wired, the move picker offers every space.
   onMoveDiagramTo?: (
     diagramId: string,
     dest: { teamId: string | null; folderId: string | null },
     // Where the diagram is coming from (null = the personal tree), so a
-    // personal -> team move counts as Team·Added·Diagram (spec/22).
+    // personal -> team move counts as Team·Added·Diagram (docs/specs/017-telemetry/telemetry.md).
     fromTeamId?: string | null,
   ) => void;
-  // The header ⋯ menu's verbs beyond new / open (spec/15). Each optional:
+  // The header ⋯ menu's verbs beyond new / open (docs/specs/013-workspace/folders.md). Each optional:
   // an absent handler drops its row.
   menuActions?: ExplorerMenuActions;
   // Callback the Canvas wires up to track Explorer's bottom edge so
@@ -102,7 +102,7 @@ export type ExplorerProps = {
   // banner-pins to the top of the viewport rather than the left
   // corner). Optional: desktop layout doesn't need it.
   onSize?: (size: { width: number; height: number; bottomY: number }) => void;
-  // Corner-docking bundle (spec/63), forwarded to the inner MovablePanel.
+  // Corner-docking bundle (docs/specs/007-editor/panel-docking.md), forwarded to the inner MovablePanel.
   dock?: MovablePanelDockProps;
   // Mobile dock control — forwarded to the inner MovablePanel.
   mobileOpenOverride?: boolean;

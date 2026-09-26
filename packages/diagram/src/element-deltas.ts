@@ -1,12 +1,12 @@
-// Per-element deltas (spec/152): the fields that many participants write AT
+// Per-element deltas (docs/specs/012-collaboration/collab-race-hardening.md): the fields that many participants write AT
 // ONCE travel as the change, not the state.
 //
 // An element change otherwise leaves a browser as an `el` `update` op that
-// replaces the whole element on every receiver (spec/75). That is fine for an
+// replaces the whole element on every receiver (docs/specs/012-collaboration/realtime-conflict-resolution.md). That is fine for an
 // author editing a shape, which the selection lock makes a one-writer affair,
 // and wrong for a done check the whole room presses in the same second: each
 // receiver took the other's copy, and one mark vanished. It is the dot-vote's
-// bug (spec/39) on element fields, fixed the same way. A delta names one
+// bug (docs/specs/012-collaboration/session-tools.md) on element fields, fixed the same way. A delta names one
 // person's answer, one idea, one tick or one comment, so concurrent deltas
 // commute and every peer lands on the same element.
 //
@@ -42,7 +42,7 @@ const COMMENT_MAX_TEXT = 5000;
 const COMMENTS_MAX = 500;
 
 export type ElementDelta =
-  // Cast (value) or withdraw (null) ONE participant's answer (spec/122).
+  // Cast (value) or withdraw (null) ONE participant's answer (docs/specs/012-collaboration/participant-responses.md).
   | {
       kind: 'response';
       participantId: string;
@@ -50,13 +50,13 @@ export type ElementDelta =
       at: number;
       round?: string;
     }
-  // Drop one anonymous idea into the box (spec/125). No author, still.
+  // Drop one anonymous idea into the box (docs/specs/012-collaboration/idea-box.md). No author, still.
   | { kind: 'idea'; text: string; round?: string }
-  // Tick or untick one checklist row (spec/83). Rows have no ids, so the row
+  // Tick or untick one checklist row (docs/specs/009-elements/checklist.md). Rows have no ids, so the row
   // is named by its index AND its text: a peer who reordered or retitled the
   // rows meanwhile gets the row with that text, or nothing.
   | { kind: 'check'; index: number; text: string; done: boolean }
-  // Comment threads (spec/09): append, delete, the server's id replacing the
+  // Comment threads (docs/specs/008-canvas/canvas-and-palette.md): append, delete, the server's id replacing the
   // local one, and resolve / unresolve.
   | { kind: 'comment-add'; comment: Comment }
   | { kind: 'comment-remove'; commentId: string }
@@ -150,7 +150,7 @@ export function applyElementDelta(el: Element, delta: ElementDelta): Element {
       if (!thread || typeof delta.to !== 'string') return el;
       if (!thread.comments.some((c) => c.id === delta.from)) return el;
       // The server's copy under the new id may have arrived first (the api
-      // relays a view-role comment to the room, spec/152): then the local copy
+      // relays a view-role comment to the room, docs/specs/012-collaboration/collab-race-hardening.md): then the local copy
       // is the duplicate, and goes. The relayed copy carries no author id
       // (that is the author's credential), so ours lends it one: it is how the
       // author keeps their own delete button.
@@ -262,7 +262,7 @@ export function checklistDeltaFor(el: Element, index: number): ElementDelta | nu
 }
 
 // The response a delta would record, for a sender deciding what to send. A
-// press on your own answer withdraws it (spec/122).
+// press on your own answer withdraws it (docs/specs/012-collaboration/participant-responses.md).
 export function responseDeltaFor(
   el: ShapeElement,
   participantId: string,

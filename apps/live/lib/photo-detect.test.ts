@@ -13,7 +13,7 @@ vi.mock('./photo-model/client', () => ({
 }));
 
 // Everything the browser does with a photograph before anything is sent
-// (spec/139 Phase 8). jsdom has no canvas, so the drawing surface is stubbed
+// (docs/specs/021-event-storming/event-storming.md Phase 8). jsdom has no canvas, so the drawing surface is stubbed
 // and made to hand back pixels WE control — which means the detector really
 // runs here, on an image this test drew, and only the encoder is a stand-in.
 
@@ -245,7 +245,7 @@ async function withStub(
   return detectAndCrop(file());
 }
 
-// A box the author moved, resized or drew is read again (spec/139 Phase 9):
+// A box the author moved, resized or drew is read again (docs/specs/021-event-storming/event-storming.md Phase 9):
 // its crop is cut afresh from the FULL-resolution photo, not the working copy.
 describe('cropBoxes', () => {
   const box = {

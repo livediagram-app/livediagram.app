@@ -1,4 +1,4 @@
-// Pure logic behind the Session Studio (spec/39, spec/88): which tool the
+// Pure logic behind the Session Studio (docs/specs/012-collaboration/session-tools.md, docs/specs/012-collaboration/live-poll.md): which tool the
 // panel opens on, the Timer dial's angle <-> minutes mapping, and the dot
 // vote's phase. Kept out of the components so it can be tested without a
 // DOM, and so the dial's snapping rules live in one place.

@@ -1,5 +1,5 @@
 // What the MCP consent screen is allowed to believe about an authorize
-// request (spec/62 §3).
+// request (docs/specs/015-api/mcp-server.md §3).
 //
 // The MCP's /oauth/authorize redirects here with `session`, and ALSO with
 // `client` + `to` query params for display. Those params are not evidence:

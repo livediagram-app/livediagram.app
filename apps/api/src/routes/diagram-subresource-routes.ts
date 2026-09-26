@@ -52,14 +52,14 @@ import {
 // null to let the main dispatcher fall through to the remaining routes.
 export async function handleDiagramSubresources(ctx: RouteContext): Promise<Response | null> {
   const { request, env, segments } = ctx;
-  // /api/diagrams/<id>/tabs/<tabId>/qa — a Q&A board action (spec/151).
+  // /api/diagrams/<id>/tabs/<tabId>/qa — a Q&A board action (docs/specs/012-collaboration/qa-board.md).
   const qa = await handleQaBoardRoute(ctx);
   if (qa) return qa;
   // /api/diagrams/<id>/tabs/<tabId>
   //   GET    — full tab payload. READ access: owner or ANY valid
   //            share code (view OR edit) for this diagram, so
-  //            view-only visitors can load tab content (spec/04 +
-  //            spec/13). This is a viewer's only path to content:
+  //            view-only visitors can load tab content (docs/specs/014-identity/auth-and-guest-access.md +
+  //            docs/specs/006-diagram/per-tab-storage.md). This is a viewer's only path to content:
   //            the share resolve returns summaries, and the
   //            realtime room relays ops, not snapshots.
   //   PUT    — upsert one tab. Body is a Tab. orderIndex falls
@@ -88,7 +88,7 @@ export async function handleDiagramSubresources(ctx: RouteContext): Promise<Resp
         owner === existing.ownerId
           ? tab
           : { ...tab, elements: redactCommentAuthorIds(tab.elements, owner) };
-      // spec/138 §4.3: somebody arrived through a SHARE LINK and opened this.
+      // docs/specs/013-workspace/timeline.md §4.3: somebody arrived through a SHARE LINK and opened this.
       // The tab read is the honest signal for "opened" — the diagram GET is hit
       // by link previews and polls, whereas fetching tab content means a person
       // is looking at the canvas. Coalesced per visitor per day inside the
@@ -97,7 +97,7 @@ export async function handleDiagramSubresources(ctx: RouteContext): Promise<Resp
       //
       // Gated on a share code being PRESENT, not merely on the caller not being
       // the owner. The read gate also admits any joined member of the diagram's
-      // team (spec/35), who presents no code — so the looser test reported
+      // team (docs/specs/013-workspace/team-shared-diagrams.md), who presents no code — so the looser test reported
       // teammates browsing their own library as visitors. The bubble reads
       // "opened by a visitor · Someone with the share link" and files under the
       // sharing filter, so an owner saw that for a diagram they had never
@@ -133,7 +133,7 @@ export async function handleDiagramSubresources(ctx: RouteContext): Promise<Resp
       }
       // Fold in whatever answers, ideas, ticks and dots the room holds that
       // this client hadn't seen when it snapshotted, so a stale save can't
-      // erase them from D1 (spec/152 phase 3). A no-op for a diagram with no
+      // erase them from D1 (docs/specs/012-collaboration/collab-race-hardening.md phase 3). A no-op for a diagram with no
       // room, or a save with no room cursor.
       // In parallel with the stored tab it doesn't depend on.
       const [{ tab: body, commentAuthors }, existingTab] = await Promise.all([
@@ -146,7 +146,7 @@ export async function handleDiagramSubresources(ctx: RouteContext): Promise<Resp
         getTab(env, id, tabId),
       ]);
       // (existingTab, read above) gives the order index; append if new.
-      // Data-loss backstop (spec/13). Refuse to blank a tab that
+      // Data-loss backstop (docs/specs/006-diagram/per-tab-storage.md). Refuse to blank a tab that
       // currently holds content unless the client explicitly marks the
       // empty write intentional via `X-Allow-Empty: 1`. The live editor
       // sets that header only when it had the tab's content
@@ -165,7 +165,7 @@ export async function handleDiagramSubresources(ctx: RouteContext): Promise<Resp
       ) {
         return conflict('empty_tab_overwrite_blocked');
       }
-      // A Q&A board's notes are owned by the qa endpoint (spec/151): keep
+      // A Q&A board's notes are owned by the qa endpoint (docs/specs/012-collaboration/qa-board.md): keep
       // whichever copy has the higher `qaRev`, so an autosave built from a
       // snapshot taken before a vote landed can't erase it, and an editor's
       // later save carries a newer rev back if a race ever did.
@@ -175,7 +175,7 @@ export async function handleDiagramSubresources(ctx: RouteContext): Promise<Resp
       // match the resolved owner's participant record. Without
       // this the client can claim any authorName / authorColor
       // and impersonate another participant in the comment
-      // thread (see the spec/04 + spec/12 security audit
+      // thread (see the docs/specs/014-identity/auth-and-guest-access.md + docs/specs/012-collaboration/activity-and-audit.md security audit
       // thread). Existing comments preserve their original
       // authors (compared by id against the prior tab).
       // getDiagram already joined the owner's participant row — reuse it
@@ -204,7 +204,7 @@ export async function handleDiagramSubresources(ctx: RouteContext): Promise<Resp
           }
         : body;
       await upsertTab(env, id, { ...sanitised, id: tabId }, orderIndex);
-      // spec/138: the coalesced "worked on" event plus anything the
+      // docs/specs/013-workspace/timeline.md: the coalesced "worked on" event plus anything the
       // save added that the feed cares about (comments, thread
       // resolutions, assigned + completed actions). Diffed against the
       // stored tab because comments and actions live inside element
@@ -214,7 +214,7 @@ export async function handleDiagramSubresources(ctx: RouteContext): Promise<Resp
       ctx.waitUntil?.(
         recordTabSave(env, existing, owner, sanitised.elements, existingTab?.elements ?? []),
       );
-      // spec/64 (#1): an edit-role visitor (not the owner) adding a comment
+      // docs/specs/014-identity/transactional-email.md (#1): an edit-role visitor (not the owner) adding a comment
       // notifies the owner immediately. Best-effort, off the request path.
       if (
         emailEnabled(env) &&
@@ -310,7 +310,7 @@ export async function handleDiagramSubresources(ctx: RouteContext): Promise<Resp
     );
     await upsertTab(env, id, { ...tab, elements: updatedElements }, tab.orderIndex);
     // Tell the room, so editors see it now and their next save keeps it
-    // (spec/152). Off the response path. WITHOUT the author id: it is the
+    // (docs/specs/012-collaboration/collab-race-hardening.md). Off the response path. WITHOUT the author id: it is the
     // visitor's owner id, which a GET redacts for everyone but its author
     // (redactCommentAuthors), and the room would hand it to every socket.
     // Nothing is lost by leaving it out: a save restores a stored comment's
@@ -322,14 +322,14 @@ export async function handleDiagramSubresources(ctx: RouteContext): Promise<Resp
         comment: publicComment,
       }),
     );
-    // spec/138 §4.3: the OTHER comment write path. A view-role visitor
+    // docs/specs/013-workspace/timeline.md §4.3: the OTHER comment write path. A view-role visitor
     // can't autosave, so this endpoint is their only way to persist a
     // comment — and without an emit here their comments would be the
     // one kind missing from the feed.
     ctx.waitUntil?.(
       recordCommentAdded(env, existing, { id: comment.id, text, authorName, authorColor }, owner),
     );
-    // spec/64 (#1): a view-role visitor's comment notifies the owner immediately.
+    // docs/specs/014-identity/transactional-email.md (#1): a view-role visitor's comment notifies the owner immediately.
     if (emailEnabled(env) && owner !== existing.ownerId) {
       ctx.waitUntil?.(
         notifyNewComment(env, { id, ownerId: existing.ownerId, name: existing.name }, authorName),
@@ -384,7 +384,7 @@ export async function handleDiagramSubresources(ctx: RouteContext): Promise<Resp
   }
 
   // /api/diagrams/<id>/tabs/<tabId>/link — owner only.
-  //   POST — add an existing tab to this diagram (spec/17).
+  //   POST — add an existing tab to this diagram (docs/specs/006-diagram/tab-diagram-many-to-many.md).
   // Auth: the caller must own this diagram AND own at least
   // one diagram that already contains the tab. The second
   // half stops a stranger from grafting a tab they have no

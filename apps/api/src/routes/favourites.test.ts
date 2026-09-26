@@ -1,7 +1,7 @@
 import { makeTestRouteContext } from './test-route-context';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-// Route surface for per-user diagram stars (spec/95). Favourites are
+// Route surface for per-user diagram stars (docs/specs/013-workspace/favourites.md). Favourites are
 // deliberately owner-scoped with NO diagram-access check — a star is a
 // private bookmark that grants nothing — so what matters here is that the
 // owner gate holds and that every id reaching the db layer is scoped to

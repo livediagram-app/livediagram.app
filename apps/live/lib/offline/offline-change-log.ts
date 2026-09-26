@@ -1,4 +1,4 @@
-// Offline Mode (spec/76): an offline diagram's activity / change log is
+// Offline Mode (docs/specs/006-diagram/offline-mode.md): an offline diagram's activity / change log is
 // local-only, kept inside its IndexedDB record — there is no server history,
 // so the /log endpoints must never be hit for one. This is the local
 // counterpart of `lib/api/change-log.ts`, which dispatches here when the
@@ -17,7 +17,7 @@ import {
 // ---------------------------------------------------------------------------
 
 // Prepend the entry, newest first, capped at the same limit the server
-// hydrates (spec/12): the Activity Panel only ever shows the most recent N,
+// hydrates (docs/specs/012-collaboration/activity-and-audit.md): the Activity Panel only ever shows the most recent N,
 // and unlike D1 there's no audit table behind it — retaining more would just
 // bloat a record that gets rewritten whole on every save.
 export function appendLog(rec: OfflineDiagramRecord, entry: ChangeLogEntry): OfflineDiagramRecord {

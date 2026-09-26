@@ -4,10 +4,10 @@ import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { pageViewPath } from '@livediagram/api-schema';
 
-// Page view telemetry (spec/150): one `Page·View·<path>` per path change,
+// Page view telemetry (docs/specs/017-telemetry/page-view-telemetry.md): one `Page·View·<path>` per path change,
 // shared by every frontend. Mounted once in each app's root layout through a
 // small client adapter that hands it the app's own policy-wrapped track(), so
-// the build gate and the spec/20 opt-out stay app-owned.
+// the build gate and the docs/specs/007-editor/user-preferences.md opt-out stay app-owned.
 //
 // `usePathname` is only the trigger. The path reported is
 // `window.location.pathname`, because under a basePath (help, telemetry)

@@ -151,7 +151,7 @@ describe('createPresenceCoalescer', () => {
     expect(trail?.points.map((p) => p.x)).toEqual([9]);
   });
 
-  it('carries the sender\u2019s pen through to the committed trail (spec/111)', () => {
+  it('carries the sender\u2019s pen through to the committed trail (docs/specs/008-canvas/laser-panel.md)', () => {
     // "Everyone sees your pen": the look travels with the samples. This is
     // the whole feature — without it every peer renders DEFAULT_LASER_CONFIG
     // and a presenter's bold amber comet is a thin default line elsewhere.

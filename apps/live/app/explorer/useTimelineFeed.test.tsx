@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// The first hook-BODY test in apps/live (spec/18). Everything else here tests
+// The first hook-BODY test in apps/live (docs/specs/003-system-architecture/testing.md). Everything else here tests
 // the pure helpers beside a hook; this one renders the hook, because the bug
 // it covers lives entirely in effect + ref lifecycle and no pure function can
 // see it.
@@ -125,7 +125,7 @@ describe('useTimelineFeed', () => {
   });
 });
 
-// The bug this whole surface was reported for (spec/138 §2.4): a read
+// The bug this whole surface was reported for (docs/specs/013-workspace/timeline.md §2.4): a read
 // that failed came back as an empty page, so the pane said "Nothing has
 // happened yet" to somebody whose history was intact on the server, and
 // only a browser refresh proved otherwise.
@@ -168,7 +168,7 @@ describe('useTimelineFeed failure handling', () => {
   });
 });
 
-// Returning to a tab that has been open since yesterday (spec/138 §2.4a).
+// Returning to a tab that has been open since yesterday (docs/specs/013-workspace/timeline.md §2.4a).
 describe('useTimelineFeed on return to the tab', () => {
   afterEach(() => {
     vi.useRealTimers();
@@ -227,7 +227,7 @@ describe('useTimelineFeed on return to the tab', () => {
   });
 });
 
-// The reader's own actions (spec/138 §2.4b). The bug this was reported
+// The reader's own actions (docs/specs/013-workspace/timeline.md §2.4b). The bug this was reported
 // for: delete a diagram from a card's menu and the feed sat unchanged —
 // no tombstone, the deleted diagram's cards still up — until a browser
 // refresh.
@@ -295,7 +295,7 @@ describe('useTimelineFeed after the readers own write', () => {
   });
 });
 
-// Per-card removal (spec/138 §2.9).
+// Per-card removal (docs/specs/013-workspace/timeline.md §2.9).
 describe('useTimelineFeed dismiss', () => {
   it('takes the card off at once and tells the worker', async () => {
     apiListTimeline.mockResolvedValue({ events: [event('a', 30), event('b', 20)] });

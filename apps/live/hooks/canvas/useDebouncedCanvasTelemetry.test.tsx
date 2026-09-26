@@ -16,7 +16,7 @@ beforeEach(() => {
 });
 afterEach(() => vi.useRealTimers());
 
-describe('useDebouncedCanvasTelemetry (spec/22 Canvas slider emits)', () => {
+describe('useDebouncedCanvasTelemetry (docs/specs/017-telemetry/telemetry.md Canvas slider emits)', () => {
   it('collapses a drag into one event per setter', () => {
     const { result } = renderHook(() => useDebouncedCanvasTelemetry());
     for (let i = 0; i < 10; i++) result.current('backgroundColor', 'BackgroundColor');

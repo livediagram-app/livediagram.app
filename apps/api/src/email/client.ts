@@ -1,4 +1,4 @@
-// spec/64: Resend client. The whole email feature is gated on RESEND_API_KEY:
+// docs/specs/014-identity/transactional-email.md: Resend client. The whole email feature is gated on RESEND_API_KEY:
 // absent, every send is a no-op and the lifecycle table is never touched, so a
 // deployment with email off does zero extra work (mirrors the OPENAI_API_KEY ->
 // AI-hidden pattern). Sends are best-effort: this never throws, so an email or
@@ -33,7 +33,7 @@ export function appBaseUrl(env: Env): string {
 const SLASH = '/'.charCodeAt(0);
 
 type EmailMessage = {
-  // Which template this is, for the spec/22 'Email' telemetry below. Comes
+  // Which template this is, for the docs/specs/017-telemetry/telemetry.md 'Email' telemetry below. Comes
   // from the builder's own return, so callers never spell it out.
   kind: EmailKind;
   to: string;
@@ -42,7 +42,7 @@ type EmailMessage = {
   // For opt-out emails: a URL where the recipient can manage / turn off this
   // category. Emitted as a `List-Unsubscribe` header so mail clients can surface
   // a native unsubscribe affordance (we point it at the profile page rather than
-  // a one-click POST endpoint, by design — spec/64).
+  // a one-click POST endpoint, by design — docs/specs/014-identity/transactional-email.md).
   unsubscribeUrl?: string;
 };
 
@@ -66,10 +66,10 @@ export async function sendEmail(env: Env, msg: EmailMessage): Promise<{ sent: bo
         ...(msg.unsubscribeUrl ? { headers } : {}),
       }),
     });
-    // One anonymous telemetry row per outcome (spec/22), written server-side
+    // One anonymous telemetry row per outcome (docs/specs/017-telemetry/telemetry.md), written server-side
     // because nothing about an email reaches a browser: the send happens in a
     // cron or a waitUntil after the response has gone. Without it the lifecycle
-    // series (spec/64) was unmeasurable and a dead RESEND_API_KEY was invisible.
+    // series (docs/specs/014-identity/transactional-email.md) was unmeasurable and a dead RESEND_API_KEY was invisible.
     // reportServerEvent gates on TELEMETRY_ENABLED and swallows its own failure.
     if (!res.ok) {
       console.error(

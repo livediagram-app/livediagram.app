@@ -8,7 +8,7 @@
 // so the editor keeps its selection while the menu is open.
 //
 // Shared by the label toolbar (RichTextToolbar) and the note toolbar
-// (NoteFormatToolbar) — they host the same block-type picker (spec/102) and a
+// (NoteFormatToolbar) — they host the same block-type picker (docs/specs/009-elements/block-type-picker.md) and a
 // second copy of this would drift on the first behaviour fix.
 
 import { useEffect, useRef, useState } from 'react';

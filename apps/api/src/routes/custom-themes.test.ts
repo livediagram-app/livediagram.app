@@ -1,7 +1,7 @@
 import { makeTestRouteContext } from './test-route-context';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-// Authorisation surface for handleCustomThemes (spec/44). Owner-scoped
+// Authorisation surface for handleCustomThemes (docs/specs/011-theme/custom-themes.md). Owner-scoped
 // like folders: an unauthenticated caller is rejected (400), a missing
 // theme is 404, a foreign-owned theme is 403, and the owner's own CRUD
 // succeeds. Guests are first-class (the owner id is just a string here).
@@ -17,7 +17,7 @@ const { db } = vi.hoisted(() => ({
 }));
 vi.mock('../db', () => db);
 
-// The Timeline side of a delete (spec/138 §3.5): the cascade and the
+// The Timeline side of a delete (docs/specs/013-workspace/timeline.md §3.5): the cascade and the
 // tombstone, both off the response path.
 const { timeline } = vi.hoisted(() => ({
   timeline: {

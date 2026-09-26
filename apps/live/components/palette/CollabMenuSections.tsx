@@ -1,9 +1,9 @@
 'use client';
 
 // The element-menu sections for the collaboration elements that carry
-// settings: the estimate card's scale (spec/123), the agenda's segments
-// (spec/127), the decision record's status / date / drivers (spec/128), and
-// the chair's facing (spec/130).
+// settings: the estimate card's scale (docs/specs/012-collaboration/estimate-card.md), the agenda's segments
+// (docs/specs/012-collaboration/agenda.md), the decision record's status / date / drivers (docs/specs/012-collaboration/decision-record.md), and
+// the chair's facing (docs/specs/009-elements/chair.md).
 //
 // Their own file for the same reason BehaviourMenuSections has one: each is a
 // small form, and none of it belongs in the data-shape sections beside charts
@@ -44,7 +44,7 @@ import { ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
 // These used to be forced open, because inside a flyout panel holding only
 // them an accordion was a second click revealing the one thing behind it.
 // `MenuFlyoutSection` now promotes a lone section into the host menu instead
-// (spec/09), where it is an ordinary collapsible row like every other one — so
+// (docs/specs/008-canvas/canvas-and-palette.md), where it is an ordinary collapsible row like every other one — so
 // the override is gone and the scaffold's `sectionProps` is passed straight
 // through. Forcing it open here now would leave a row in the main menu that
 // can never be closed.
@@ -59,7 +59,7 @@ const addButtonClass =
 const removeButtonClass =
   'flex h-5 w-5 shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-500/15';
 
-// --- Estimate card (spec/123) ---------------------------------------------
+// --- Estimate card (docs/specs/012-collaboration/estimate-card.md) ---------------------------------------------
 
 export function EstimateMenuSection({
   target,
@@ -105,10 +105,10 @@ export function EstimateMenuSection({
   );
 }
 
-// --- Agenda (spec/127) -----------------------------------------------------
+// --- Agenda (docs/specs/012-collaboration/agenda.md) -----------------------------------------------------
 
-// Mirrors the checklist's row editor (spec/83) and the record's field editor
-// (spec/120) rather than inventing a third row-editing idiom.
+// Mirrors the checklist's row editor (docs/specs/009-elements/checklist.md) and the record's field editor
+// (docs/specs/009-elements/entity.md) rather than inventing a third row-editing idiom.
 export function AgendaMenuSection({
   target,
   sectionProps,
@@ -199,7 +199,7 @@ export function AgendaMenuSection({
   );
 }
 
-// --- Decision record (spec/128) -------------------------------------------
+// --- Decision record (docs/specs/012-collaboration/decision-record.md) -------------------------------------------
 
 export function DecisionMenuSection({
   target,
@@ -262,7 +262,7 @@ export function DecisionMenuSection({
             className={`${fieldClass} mt-1`}
             value={target?.decisionDate ?? ''}
             // Empty clears the field entirely: an undated card shows nothing
-            // rather than "no date" (spec/128).
+            // rather than "no date" (docs/specs/012-collaboration/decision-record.md).
             onChange={(e) => onSetDate(e.target.value || undefined)}
           />
         </div>
@@ -305,7 +305,7 @@ export function DecisionMenuSection({
   );
 }
 
-// --- Chair (spec/130) ------------------------------------------------------
+// --- Chair (docs/specs/009-elements/chair.md) ------------------------------------------------------
 
 const FACING_ARROW: Record<ChairFacing, string> = { n: '↓', e: '←', s: '↑', w: '→' };
 
@@ -322,7 +322,7 @@ export function ChairMenuSection({
   return (
     <MenuAccordionSection title="Chair" icon={<ToolsMenuGlyph />} {...sectionProps('chair')}>
       {/* Tiles rather than a list: the arrow IS the answer here, which is the
-          same test the palette applies to its own categories (spec/110). */}
+          same test the palette applies to its own categories (docs/specs/010-palette/palette-top-level-categories.md). */}
       <MenuTileGrid cols={4}>
         {CHAIR_FACINGS.map((f) => (
           <MenuTile

@@ -1,6 +1,6 @@
 // The card grid and the card shell every card-shaped surface shares:
 // the Explorer's Recent / folder cards and the Timeline's event cards
-// (spec/67, spec/138 §2). One set of classes, so a diagram looks like
+// (docs/specs/006-diagram/diagram-snapshots.md, docs/specs/013-workspace/timeline.md §2). One set of classes, so a diagram looks like
 // the same diagram whichever page it's on.
 
 /** One column on a phone, two from `sm:`, three from `lg:`. */

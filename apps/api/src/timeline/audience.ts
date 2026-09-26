@@ -1,4 +1,4 @@
-// Who should see a timeline event (spec/138 §4.1).
+// Who should see a timeline event (docs/specs/013-workspace/timeline.md §4.1).
 //
 // The whole reason the scope join table exists: one event row, many
 // recipients. A comment on a diagram in a twelve-person team library is
@@ -26,8 +26,8 @@ export function diagramScope(diagramId: string): TimelineScopeRef {
 
 // Everyone who should see an event about this diagram: its owner, plus
 // every JOINED member of its team when it lives in a team library
-// (spec/35). `invited` rows are excluded — an invite grants no
-// membership until it's accepted (spec/32), and it must not leak the
+// (docs/specs/013-workspace/team-shared-diagrams.md). `invited` rows are excluded — an invite grants no
+// membership until it's accepted (docs/specs/013-workspace/teams.md), and it must not leak the
 // contents of a library the person hasn't joined.
 //
 // The actor is deliberately NOT excluded. "You commented on X" belongs

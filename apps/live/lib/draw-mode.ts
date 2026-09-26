@@ -11,7 +11,7 @@ import type {
 import { EMBED_PROVIDER_LABEL, eventStormingNote } from '@livediagram/diagram';
 
 // Draw-to-size intent. Picking any element from the palette except the
-// annotation (spec/09 "Placement on add") stashes the intent here; the canvas
+// annotation (docs/specs/008-canvas/canvas-and-palette.md "Placement on add") stashes the intent here; the canvas
 // then enters a "drag to define" gesture and forwards the resolved
 // start + end points to the editor on pointer-up. Discriminated so
 // the canvas can render the right preview per intent (oval for a
@@ -22,9 +22,9 @@ export type PendingDraw =
   // `iconId` (+ seed `label`) ride the shape intent for the `icon` kind, so a
   // palette icon / tech icon draws to size exactly like a shape (tap to drop,
   // drag to size) instead of dropping at a fixed size.
-  // `stickerId` rides the same intent for the `sticker` kind (spec/116), the
+  // `stickerId` rides the same intent for the `sticker` kind (docs/specs/010-palette/stickers.md), the
   // way `iconId` does for `icon`.
-  // `session` (spec/105) and `reaction` (spec/135) ride the same intent for
+  // `session` (docs/specs/012-collaboration/session-button.md) and `reaction` (docs/specs/009-elements/reaction-pad.md) ride the same intent for
   // the same reason: both kinds are ONE element with a mode field, and the
   // palette offers a tile per mode rather than one tile you then reconfigure.
   // Carrying the choice on the intent is what lets "Add poll" place a poll
@@ -42,7 +42,7 @@ export type PendingDraw =
     }
   | { type: 'text' }
   // `fill` + `esKind` ride the sticky intent for the Event Storming tiles
-  // (spec/139): the notation is one `sticky` type in eight semantic
+  // (docs/specs/021-event-storming/event-storming.md): the notation is one `sticky` type in eight semantic
   // colours, and the palette offers a tile per note kind, so the choice
   // has to survive the gesture the same way `session` / `provider` do
   // above. The kind additionally routes the note onto its workshop
@@ -50,13 +50,13 @@ export type PendingDraw =
   // default, no routing.
   | { type: 'sticky'; fill?: string; esKind?: EventStormingNoteKind }
   | { type: 'image' }
-  // Table (spec/09), link card (spec/40), and the embeds (spec/114, spec/121)
+  // Table (docs/specs/008-canvas/canvas-and-palette.md), link card (docs/specs/009-elements/link-cards.md), and the embeds (docs/specs/009-elements/youtube-video.md, docs/specs/009-elements/embed-providers.md)
   // are their own element types rather than ShapeKinds, so each needs its own
   // intent to ride the same gesture. They used to drop at the viewport centre
   // for want of one, which made "draws or drops?" a property of how the
   // element was modelled instead of whether it has a size worth choosing.
   // Annotation is deliberately absent: a fixed 44x44 marker has no box to
-  // size, so it stays the one instant-drop tile (spec/38).
+  // size, so it stays the one instant-drop tile (docs/specs/009-elements/annotations.md).
   | { type: 'table' }
   | { type: 'link-card' }
   // `provider` rides the intent the way `session` / `reaction` do above: the
@@ -65,7 +65,7 @@ export type PendingDraw =
   // embed the user then has to go and re-point.
   | { type: 'video'; provider?: EmbedProvider }
   | { type: 'arrow' }
-  // A composite Component (spec/09): banner / hero / header / callout / stat /
+  // A composite Component (docs/specs/008-canvas/canvas-and-palette.md): banner / hero / header / callout / stat /
   // process / avatar. Draws to size exactly like a shape — a tap drops it at
   // its natural size, a drag scales the whole group to the dragged box.
   | { type: 'component'; kind: ComponentKind }
@@ -73,19 +73,19 @@ export type PendingDraw =
   // box intents, this one has no tap-to-drop branch (the pencil is
   // gestural by definition) and the gesture collects a
   // stream of pointer samples during the drag, simplified +
-  // smoothed on release into a FreehandElement (see spec/09 Pencil
-  // (freehand) subsection, spec/05 FreehandElement). The
-  // 'highlighter' variant (spec/81) rides the same gesture but
+  // smoothed on release into a FreehandElement (see docs/specs/008-canvas/canvas-and-palette.md Pencil
+  // (freehand) subsection, docs/specs/006-diagram/diagram-structure.md FreehandElement). The
+  // 'highlighter' variant (docs/specs/008-canvas/highlighter.md) rides the same gesture but
   // commits the marker recipe: no shape recognition, no
   // close-to-fill, wide translucent stroke.
   //
-  // 'shape-pen' (spec/115) is the same gesture WITH recognition: a rough
+  // 'shape-pen' (docs/specs/008-canvas/two-pens.md) is the same gesture WITH recognition: a rough
   // circle becomes a circle. Recognition used to be a toggle in the pen's
   // mode banner, which made "will this stroke convert?" a hidden mode you had
   // to check before every stroke. It is now which pen you picked, so the
   // answer is the tile you clicked.
   | { type: 'freehand'; variant?: 'highlighter' | 'shape-pen' }
-  // Polygon tool (spec/84): click-to-place vertices rather than a
+  // Polygon tool (docs/specs/008-canvas/polygon-tool.md): click-to-place vertices rather than a
   // drag gesture. The canvas accumulates clicked points; closing on
   // the start vertex or double-click / Enter commits a
   // straight-edged FreehandElement.
@@ -132,7 +132,7 @@ const COMPONENT_LABELS: Record<ComponentKind, string> = {
 // phone-width viewport, so mobile gets the bare "Drag to draw"
 // (the gesture still auto-closes, the user just doesn't see the
 // hint until they try it).
-// Is this the held Highlighter's own intent (spec/81)? The marker rides the
+// Is this the held Highlighter's own intent (docs/specs/008-canvas/highlighter.md)? The marker rides the
 // freehand gesture, so it is a `pendingDraw` like any other, but it is a TOOL
 // rather than a one-shot arm — the surfaces that speak to an arm (the mode
 // banner and its Cancel) ask this so they can leave it alone.
@@ -147,7 +147,7 @@ export function drawBannerMessage(intent: PendingDraw, isMobile: boolean): strin
     case 'text':
       return 'Tap to drop or drag to place text';
     case 'sticky':
-      // A workshop note has one size for life (spec/139), so it is placed, not
+      // A workshop note has one size for life (docs/specs/021-event-storming/event-storming.md), so it is placed, not
       // drawn; the ghost under the pointer shows where.
       return intent.esKind
         ? `Click to place a ${eventStormingNote(intent.esKind).label.toLowerCase()} note`
@@ -159,7 +159,7 @@ export function drawBannerMessage(intent: PendingDraw, isMobile: boolean): strin
     case 'link-card':
       return 'Tap to drop or drag to draw a link card';
     case 'video':
-      // Names the service the tile promised (spec/121) rather than saying
+      // Names the service the tile promised (docs/specs/009-elements/embed-providers.md) rather than saying
       // "video" for all six, so the banner confirms which one is queued. The
       // 16:9 note is the one surprising thing about this drag, so it earns
       // its place on desktop; a phone-width banner can't hold it.
@@ -176,7 +176,7 @@ export function drawBannerMessage(intent: PendingDraw, isMobile: boolean): strin
       // highlighter variant never closes, so it skips the hint.
       if (intent.variant === 'highlighter') return 'Drag to highlight';
       // The shape pen says what it will do, since that is the whole
-      // difference between it and Freehand (spec/115).
+      // difference between it and Freehand (docs/specs/008-canvas/two-pens.md).
       if (intent.variant === 'shape-pen')
         return isMobile ? 'Draw a shape' : 'Draw a rough shape — it snaps to the real one';
       return isMobile ? 'Drag to draw' : 'Drag to draw (release near the start to close)';
@@ -278,7 +278,7 @@ export function drawIntentCursor(intent: PendingDraw): string {
     }
     if (intent.variant === 'shape-pen') {
       // Pen nib with a dashed square beside it: the nib says "drawing", the
-      // square says "this one lands as a shape" (spec/115).
+      // square says "this one lands as a shape" (docs/specs/008-canvas/two-pens.md).
       return drawCursorFromGlyph(
         `<path d="M12 24 L17 19 L19.5 21.5 L14.5 26.5 Z M17 19 L19 17" stroke="black" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none" /><rect x="17.5" y="12" width="9" height="9" rx="1" fill="none" stroke="black" stroke-width="1.3" stroke-dasharray="2.4 2" />`,
       );

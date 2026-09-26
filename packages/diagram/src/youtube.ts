@@ -1,4 +1,4 @@
-// YouTube URL parsing for the video element (spec/114).
+// YouTube URL parsing for the video element (docs/specs/009-elements/youtube-video.md).
 //
 // Lives in the diagram package rather than the editor because both the canvas
 // renderer and the export paths need to answer "is this link a video, and
@@ -8,7 +8,7 @@
 // truth, and a cached id would be a second copy of it that can drift. That is
 // affordable here precisely because parsing is local and free — a link card
 // caches its preview only because unfurling costs a network round trip
-// (spec/40).
+// (docs/specs/009-elements/link-cards.md).
 
 // YouTube ids are exactly 11 characters of the URL-safe base64 alphabet.
 // Anchored, so a longer path segment that merely starts with 11 valid
@@ -90,7 +90,7 @@ export function youtubePosterUrl(videoId: string): string {
 }
 
 /**
- * The player URL, mounted only once the user presses play (spec/114).
+ * The player URL, mounted only once the user presses play (docs/specs/009-elements/youtube-video.md).
  *
  * `youtube-nocookie.com` sets nothing until playback actually starts, so
  * opening a diagram that contains a video is not a tracked visit.
@@ -100,9 +100,9 @@ export function youtubeEmbedUrl(videoId: string): string {
 }
 
 /** The canonical watch page, for the "open on YouTube" affordance. */
-// --- Other providers (spec/121) --------------------------------------------
+// --- Other providers (docs/specs/009-elements/embed-providers.md) --------------------------------------------
 //
-// The video element was built YouTube-only (spec/114), and its own spec noted
+// The video element was built YouTube-only (docs/specs/009-elements/youtube-video.md), and its own spec noted
 // that the parser, the poster URL and the embed origin were the only
 // YouTube-specific parts. This is those three, generalised.
 //
@@ -211,7 +211,7 @@ export function embedTargetFor(url: string | undefined | null): EmbedTarget | nu
     };
   }
   // Anything else http(s) is a plain website embed: the URL goes into the
-  // iframe untouched (spec/133).
+  // iframe untouched (docs/specs/009-elements/website-embed.md).
   //
   // Deliberately the LAST branch, and deliberately not reached by a malformed
   // link for a provider we DO know: `vimeo.com/nonsense` still returns null

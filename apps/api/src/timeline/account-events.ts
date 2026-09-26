@@ -1,4 +1,4 @@
-// Account + housekeeping events (spec/138 §4.5).
+// Account + housekeeping events (docs/specs/013-workspace/timeline.md §4.5).
 //
 // The quiet end of the catalogue, and the only place the feed looks
 // FORWARD: the two `*_expiring` events carry the expiry as their
@@ -32,7 +32,7 @@ export async function recordTokenCreated(
 }
 
 // Future-dated. Emitted by the daily expiry-warning cron that already
-// computes which tokens are inside the 7-day window (spec/61), so this
+// computes which tokens are inside the 7-day window (docs/specs/015-api/public-api-and-tokens.md), so this
 // costs one extra write on a pass that was happening anyway.
 export async function recordTokenExpiring(
   env: Env,

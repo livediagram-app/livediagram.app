@@ -98,7 +98,7 @@ describe('url builders', () => {
   });
 
   it('builds the player on the no-cookie origin', () => {
-    // The no-cookie origin is the privacy contract in spec/114; a regression
+    // The no-cookie origin is the privacy contract in docs/specs/009-elements/youtube-video.md; a regression
     // to www.youtube.com here would silently start setting cookies.
     const embed = youtubeEmbedUrl(ID);
     expect(embed.startsWith('https://www.youtube-nocookie.com/embed/')).toBe(true);

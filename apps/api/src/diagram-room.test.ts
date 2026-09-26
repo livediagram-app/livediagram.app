@@ -65,11 +65,11 @@ type FakeState = {
   sockets: WebSocket[];
   acceptWebSocket: (ws: WebSocket) => void;
   getWebSockets: () => WebSocket[];
-  // Backs the persisted epoch/seq (spec/97). Shared across DiagramRoom
+  // Backs the persisted epoch/seq (docs/specs/012-collaboration/resync-without-reload.md). Shared across DiagramRoom
   // instances built from the same FakeState, which is exactly what a
   // hibernation wake looks like: same storage, fresh instance.
   store: Map<string, unknown>;
-  // The facilitator grace period (spec/149) is the room's only alarm.
+  // The facilitator grace period (docs/specs/012-collaboration/facilitator.md) is the room's only alarm.
   alarms: number[];
   storage: {
     get: (key: string) => Promise<unknown>;
@@ -192,7 +192,7 @@ describe('DiagramRoom /broadcast endpoint', () => {
     expect(aPayload.op).toEqual({ kind: 'share-revoked', code: 'CODE-123' });
   });
 
-  it('sequences an `ordered` system op into the catch-up log (spec/151)', async () => {
+  it('sequences an `ordered` system op into the catch-up log (docs/specs/012-collaboration/qa-board.md)', async () => {
     const { room, state } = newRoom();
     const a = makeSocket();
     seedSession(state, a, presence('p-a', 'view'));
@@ -259,7 +259,7 @@ describe('DiagramRoom /broadcast endpoint', () => {
 
 describe('DiagramRoom presence broadcast', () => {
   // Each client must NOT receive its own entry: the broadcast presence id is a
-  // fresh server-random (spec/61 §6), so a client can't recognise its own entry
+  // fresh server-random (docs/specs/015-api/public-api-and-tokens.md §6), so a client can't recognise its own entry
   // by id to filter it — including it makes the user show up as a participant
   // twice (once here, once from the local self entry the editor always renders).
   it('sends each client the roster minus its own entry', () => {
@@ -343,7 +343,7 @@ describe('DiagramRoom hello frame role forcing', () => {
     const stored = storedPresence(ws);
     expect(stored?.role).toBe('view');
     // The client-claimed id is replaced by a server-assigned ephemeral id
-    // (spec/61 §6), so the spoofed value never reaches presence.
+    // (docs/specs/015-api/public-api-and-tokens.md §6), so the spoofed value never reaches presence.
     expect(stored?.id).not.toBe('lying-peer');
     expect(stored?.id).toBeTruthy();
   });
@@ -351,7 +351,7 @@ describe('DiagramRoom hello frame role forcing', () => {
   it('replaces the client participant id with a server-assigned ephemeral id', () => {
     const { room } = newRoom();
     const ws = makeSocket();
-    // The DO assigns each session a fresh ephemeral presence id (spec/61 §6):
+    // The DO assigns each session a fresh ephemeral presence id (docs/specs/015-api/public-api-and-tokens.md §6):
     // the real owner id is never broadcast, and a client can't impersonate
     // another peer because its claimed id is discarded.
     room.acceptSession(asWs(ws), 'edit');
@@ -516,7 +516,7 @@ describe('DiagramRoom op-role enforcement', () => {
   // Presence ops are ephemeral (cursor / selection / tab-focus / laser /
   // avatar) and must relay from a view-role session too, otherwise a viewer is
   // invisible to peers — no cursor, no selection highlight, no "which tab
-  // they're on", and no walking character (spec/101).
+  // they're on", and no walking character (docs/specs/008-canvas/avatar-mode.md).
   // Driven off the real set, so a presence kind added to the gate joins this
   // loop automatically instead of shipping untested. `avatar-push` is the one
   // exclusion: it is ADDRESSED rather than broadcast (see its own tests just
@@ -535,9 +535,9 @@ describe('DiagramRoom op-role enforcement', () => {
     });
   }
 
-  // Avatar-mode shove (spec/101). It is ADDRESSED, not broadcast: the room
+  // Avatar-mode shove (docs/specs/008-canvas/avatar-mode.md). It is ADDRESSED, not broadcast: the room
   // delivers it to the named presence and nobody else. That routing has to live
-  // here because presence ids are server-minted (spec/61 §6) — a client never
+  // here because presence ids are server-minted (docs/specs/015-api/public-api-and-tokens.md §6) — a client never
   // learns its own, so it cannot recognise a push aimed at it, and an earlier
   // build that made the receiver check `targetId` against its local id dropped
   // every real push on the floor.
@@ -624,7 +624,7 @@ describe('DiagramRoom op-role enforcement', () => {
     expect(new Set(classified).size).toBe(classified.length);
   });
 
-  // Follow-me (spec/131). Two properties, and both were broken while
+  // Follow-me (docs/specs/012-collaboration/follow-me-viewport.md). Two properties, and both were broken while
   // `viewport` sat outside the presence set.
   it('relays a viewport from a view-role session, unordered and unlogged', () => {
     const { room } = newRoom();
@@ -701,7 +701,7 @@ describe('DiagramRoom op-role enforcement', () => {
     expect(opsReceived(target.ws)).toHaveLength(1);
   });
 
-  // Live poll (spec/88): a presenter polling an audience is the main use,
+  // Live poll (docs/specs/012-collaboration/live-poll.md): a presenter polling an audience is the main use,
   // and audiences sit on view links — so answering must work at view role
   // while starting / ending a poll stays behind the edit gate.
   it('relays a poll answer from a view-role session', () => {
@@ -818,7 +818,7 @@ describe('DiagramRoom tab-focus presence echo', () => {
     const b = makeSocket();
     room.acceptSession(asWs(b), 'edit');
     sendFrame(room, b, { kind: 'hello', participant: { id: 'p-b', name: 'B', color: '#def' } });
-    // A's broadcast id is its server-assigned ephemeral id (spec/61 §6), not
+    // A's broadcast id is its server-assigned ephemeral id (docs/specs/015-api/public-api-and-tokens.md §6), not
     // the claimed 'p-a' — find its row by the stored id.
     const aId = storedPresence(a)?.id;
     const presenceFrames = b.sent.map((s) => JSON.parse(s)).filter((m) => m.kind === 'presence');
@@ -870,7 +870,7 @@ describe('DiagramRoom hibernation survival', () => {
     after.acceptSession(asWs(joiner), 'edit');
     sendFrame(after, joiner, { kind: 'hello', participant: { id: 'j', name: 'J', color: '#333' } });
     // The presence frame by kind, not by position: a hello is also answered
-    // with the facilitator state (spec/149), so "the last frame" is not it.
+    // with the facilitator state (docs/specs/012-collaboration/facilitator.md), so "the last frame" is not it.
     const frame = joiner.sent
       .map((raw) => JSON.parse(raw) as { kind: string; participants?: ParticipantPresence[] })
       .findLast((f) => f.kind === 'presence')!;
@@ -878,7 +878,7 @@ describe('DiagramRoom hibernation survival', () => {
   });
 });
 
-describe('DiagramRoom op ordering + reconnect catch-up (spec/75, Level 1)', () => {
+describe('DiagramRoom op ordering + reconnect catch-up (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1)', () => {
   // Drive an established edit-role session and expose helpers to push ops
   // and read the frames a peer receives.
   function editorAndPeer(room: DiagramRoom) {
@@ -1053,7 +1053,7 @@ describe('DiagramRoom op ordering + reconnect catch-up (spec/75, Level 1)', () =
     expect(lastCatchup(editor).resync).toBe(true);
   });
 
-  // Spec/97: the room used to mint a fresh epoch on every hibernation
+  // docs/specs/012-collaboration/resync-without-reload.md: the room used to mint a fresh epoch on every hibernation
   // wake, so any client reconnecting afterwards mismatched and resynced —
   // which cost it a full page reload. Both values now survive the wake.
   it('keeps its epoch and seq across a simulated hibernation wake', async () => {
@@ -1099,7 +1099,7 @@ describe('DiagramRoom op ordering + reconnect catch-up (spec/75, Level 1)', () =
   });
 });
 
-// ── The facilitator baton (spec/149) ──────────────────────────────────
+// ── The facilitator baton (docs/specs/012-collaboration/facilitator.md) ──────────────────────────────────
 //
 // The room is the only thing that can arbitrate this, so these cover what
 // only it can get wrong: who is told, who is told the TOKEN, and the one op
@@ -1346,7 +1346,7 @@ describe('DiagramRoom facilitator', () => {
   });
 });
 
-describe('DiagramRoom multiplayer telemetry (spec/22)', () => {
+describe('DiagramRoom multiplayer telemetry (docs/specs/017-telemetry/telemetry.md)', () => {
   // A fake D1 that records every telemetry row the room writes.
   function envWithRows(): { env: Env; rows: unknown[][] } {
     const rows: unknown[][] = [];
@@ -1408,7 +1408,7 @@ describe('DiagramRoom multiplayer telemetry (spec/22)', () => {
   });
 });
 
-describe('DiagramRoom freeing a selection lock (spec/07 + spec/149)', () => {
+describe('DiagramRoom freeing a selection lock (docs/specs/007-editor/live-app.md + docs/specs/012-collaboration/facilitator.md)', () => {
   // Sent frames as the fake socket recorded them.
   const framesOf = (ws: FakeSocket) => ws.sent.map((raw) => JSON.parse(raw) as { kind: string });
   const released = (ws: FakeSocket) => framesOf(ws).filter((f) => f.kind === 'selection-released');
@@ -1433,7 +1433,7 @@ describe('DiagramRoom freeing a selection lock (spec/07 + spec/149)', () => {
 
   it('tells the holder alone, and nobody else', () => {
     // The addressing IS the delivery: a client is never told its own presence
-    // id (spec/61 §6), so a broadcast naming a target would reach nobody able
+    // id (docs/specs/015-api/public-api-and-tokens.md §6), so a broadcast naming a target would reach nobody able
     // to recognise itself in it.
     const { room, host, holder, bystander } = room3();
     sendFrame(room, host, unlock());
@@ -1499,7 +1499,7 @@ describe('DiagramRoom freeing a selection lock (spec/07 + spec/149)', () => {
   });
 });
 
-describe('DiagramRoom collaboration ledger (spec/152 phase 3)', () => {
+describe('DiagramRoom collaboration ledger (docs/specs/012-collaboration/collab-race-hardening.md phase 3)', () => {
   function editor(room: DiagramRoom) {
     const ws = makeSocket();
     room.acceptSession(asWs(ws), 'edit');
@@ -1546,7 +1546,7 @@ describe('DiagramRoom collaboration ledger (spec/152 phase 3)', () => {
   });
 });
 
-describe('DiagramRoom live poll (spec/152)', () => {
+describe('DiagramRoom live poll (docs/specs/012-collaboration/collab-race-hardening.md)', () => {
   const pollOp = (id: string, startedAt = 1) => ({
     kind: 'op',
     op: {
@@ -1607,7 +1607,7 @@ describe('DiagramRoom live poll (spec/152)', () => {
   });
 });
 
-describe('DiagramRoom worker mutations (spec/152)', () => {
+describe('DiagramRoom worker mutations (docs/specs/012-collaboration/collab-race-hardening.md)', () => {
   it('sequences a worker-made comment into the stream for everybody', async () => {
     const { room } = newRoom();
     const peer = makeSocket();
@@ -1640,7 +1640,7 @@ describe('DiagramRoom worker mutations (spec/152)', () => {
   });
 });
 
-describe('DiagramRoom comment author ids (spec/152)', () => {
+describe('DiagramRoom comment author ids (docs/specs/012-collaboration/collab-race-hardening.md)', () => {
   it('strips them from every op it relays, whatever a client sent', () => {
     const { room } = newRoom();
     const editor = makeSocket();

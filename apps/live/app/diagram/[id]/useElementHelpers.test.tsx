@@ -53,7 +53,7 @@ function committedXs(commitTabs: ReturnType<typeof vi.fn>, against: Element[]): 
   return next[0]!.elements.map((el) => (el as StickyElement).x);
 }
 
-describe('addBoxedAt with an insertion slot (spec/139)', () => {
+describe('addBoxedAt with an insertion slot (docs/specs/021-event-storming/event-storming.md)', () => {
   it('commits the ripple and the new note as ONE change', () => {
     const { helpers, commitTabs } = harness();
     helpers.addBoxedAt(372, 100, (x) => note('new', x) as StickyElement, {

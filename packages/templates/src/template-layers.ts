@@ -1,5 +1,5 @@
 // Pre-assigned layers for templates whose scaffold stays put while
-// their content moves (spec/74 "Layered templates"). A layered
+// their content moves (docs/specs/006-diagram/layers.md "Layered templates"). A layered
 // template's builder stamps these ids onto the elements it returns,
 // and `templateCanvasOverrides` ships the matching `Tab.layers` array,
 // so every application path (editor picker, /new, MCP) lands scaffold
@@ -22,7 +22,7 @@ import type { TemplateKind } from './templates';
 export const TEMPLATE_SCAFFOLD_LAYER_ID = 'layer:template:scaffold';
 export const TEMPLATE_CONTENT_LAYER_ID = 'layer:template:content';
 
-// Bottom → top, matching Tab.layers order (spec/74). Built fresh per
+// Bottom → top, matching Tab.layers order (docs/specs/006-diagram/layers.md). Built fresh per
 // call so a caller mutating its tab can't corrupt the catalogue.
 const layered = (scaffoldName: string, contentName: string): Layer[] => [
   { id: TEMPLATE_SCAFFOLD_LAYER_ID, name: scaffoldName },
@@ -77,7 +77,7 @@ export function templateLayers(kind: TemplateKind): Layer[] | undefined {
     // furniture is dragged around it.
     case 'floor-plan':
       return layered('Rooms', 'Furniture');
-    // Event storming (spec/139) is the one four-layer template: a hidden
+    // Event storming (docs/specs/021-event-storming/event-storming.md) is the one four-layer template: a hidden
     // Timeline-rail scaffold under three workshop-stage bands (Big picture /
     // Process / Design) that the editor's view switcher toggles. The layer
     // set lives in @livediagram/diagram beside the note catalogue so the

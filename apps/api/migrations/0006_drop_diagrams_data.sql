@@ -1,5 +1,5 @@
 -- The diagrams.data JSON blob was retained one release window as a
--- rollback safety net after the per-tab storage refactor (spec/13 +
+-- rollback safety net after the per-tab storage refactor (docs/specs/006-diagram/per-tab-storage.md +
 -- migration 0005). The new code has been live and writing to the
 -- `tabs` table; the column is now dead weight.
 --

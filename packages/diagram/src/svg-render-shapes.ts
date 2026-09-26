@@ -127,7 +127,7 @@ export function svgShapeSilhouette(
 
 // A freehand sketch's real path (normalised points scaled to the box), drawn
 // the way FreehandSvg draws it on the canvas: a pen stroke through the same
-// Catmull-Rom smoothing, a polygon-tool path (spec/84) with its straight
+// Catmull-Rom smoothing, a polygon-tool path (docs/specs/008-canvas/polygon-tool.md) with its straight
 // edges, and nothing for a lone point. Closed paths fill like the canvas;
 // open ones render stroke-only.
 export function svgFreehandShape(el: FreehandElement, stroke: string, fill: string): string {
@@ -137,7 +137,7 @@ export function svgFreehandShape(el: FreehandElement, stroke: string, fill: stri
     ? pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${r2(p.x)} ${r2(p.y)}`).join(' ') +
       (el.closed ? ' Z' : '')
     : catmullRomToBezierPath(pts, el.closed, r2);
-  // Highlighter recipe (spec/81): the marker owns width + translucency
+  // Highlighter recipe (docs/specs/008-canvas/highlighter.md): the marker owns width + translucency
   // (a fixed wide round stroke, multiply blend, never filled); the
   // border presets don't apply. Mirrors FreehandSvg in the editor so
   // thumbnails / MCP renders match the canvas.
@@ -163,7 +163,7 @@ export function svgFreehandShape(el: FreehandElement, stroke: string, fill: stri
   );
 }
 
-// Code block (spec/82): the editor card + plain monospace lines, in whichever
+// Code block (docs/specs/009-elements/code-block.md): the editor card + plain monospace lines, in whichever
 // colour scheme the element carries (see code-themes.ts). No syntax
 // highlighting here: the tokenizer is deliberately a live-editor chunk, and
 // un-highlighted mono is a faithful degrade for a thumbnail.
@@ -202,7 +202,7 @@ export function svgCodeBlockShape(el: BoxedElement & { type: 'shape' }): string 
   const maxLines = Math.max(1, Math.floor((el.height - CODE_PAD * 2) / CODE_LINE_HEIGHT));
   const maxChars = Math.max(4, Math.floor((el.width - CODE_PAD * 2) / 7.2));
   const source = empty ? ['// double-click to add code'] : code.split('\n');
-  // Wrapping is the element's default (spec/82), so the still render wraps
+  // Wrapping is the element's default (docs/specs/009-elements/code-block.md), so the still render wraps
   // too: clipping a wrapped block at the card edge would show a different
   // amount of code in an export than on the canvas.
   const lines = (
@@ -217,7 +217,7 @@ export function svgCodeBlockShape(el: BoxedElement & { type: 'shape' }): string 
         ` xml:space="preserve">${xmlEscape(line.slice(0, maxChars))}</text>`,
     )
     .join('');
-  // Language badge, top-right, hidden for 'plain' (spec/82).
+  // Language badge, top-right, hidden for 'plain' (docs/specs/009-elements/code-block.md).
   const lang = el.codeLanguage && el.codeLanguage !== 'plain' ? el.codeLanguage : null;
   const badge = lang
     ? `<text x="${r2(el.x + el.width - CODE_PAD)}" y="${r2(el.y + CODE_PAD + 2)}" font-family="${CODE_FONT}"` +
@@ -226,7 +226,7 @@ export function svgCodeBlockShape(el: BoxedElement & { type: 'shape' }): string 
   return card + lineStr + badge;
 }
 
-// Checklist (spec/83): the themed card + one square-and-text row per item,
+// Checklist (docs/specs/009-elements/checklist.md): the themed card + one square-and-text row per item,
 // done rows ticked, struck through, and muted, plus the done-count footer.
 const CHECK_ROW_HEIGHT = 26;
 const CHECK_BOX_SIZE = 14;
@@ -274,7 +274,7 @@ export function svgChecklistShape(
   return card + rows + footer;
 }
 
-// Legend (spec/53): the themed card + one swatch-and-label row per item. The
+// Legend (docs/specs/009-elements/pie-chart.md): the themed card + one swatch-and-label row per item. The
 // swatch falls back to the chart ramp by index, the same rule the canvas view
 // uses, so a legend beside a chart matches it in an export too.
 const LEGEND_PAD = 12;
@@ -290,7 +290,7 @@ export function svgLegendShape(
     ` rx="8" fill="${xmlEscape(fill)}" stroke="${xmlEscape(stroke)}" stroke-width="1.5"/>`;
   const items = el.legendItems ?? [];
   const colors = chartPaletteColors(el.chartPalette) ?? PIE_PALETTE;
-  // Text Size (spec/53): the row pitch and the dot scale with the words, the
+  // Text Size (docs/specs/009-elements/pie-chart.md): the row pitch and the dot scale with the words, the
   // way LegendView's do.
   const fontPx = legendFontPx(el.textSize);
   const dotPx = Math.round(fontPx * 0.75);
@@ -315,7 +315,7 @@ export function svgLegendShape(
   return card + rows;
 }
 
-// A lane's title gutter (spec/119): the tinted strip behind the title, on
+// A lane's title gutter (docs/specs/009-elements/lane.md): the tinted strip behind the title, on
 // whichever edge the title is pinned to, with the rule where it meets the
 // body. Without it an exported swimlane is a plain box with its title
 // floating in the middle of the work.
@@ -358,7 +358,7 @@ export function svgLaneGutter(el: BoxedElement & { type: 'shape' }, stroke: stri
   );
 }
 
-// A browser frame's chrome (spec/09 Devices): the fixed-height strip pinned to
+// A browser frame's chrome (docs/specs/008-canvas/canvas-and-palette.md Devices): the fixed-height strip pinned to
 // the top, its three window dots, the nav glyphs and the URL pill. Fixed pixel
 // geometry from the shared table (BROWSER_CHROME), laid out the way the
 // canvas's flex strip lays it out, so it doesn't deform with the box's aspect.

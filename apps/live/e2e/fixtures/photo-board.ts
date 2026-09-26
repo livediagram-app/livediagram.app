@@ -4,7 +4,7 @@ import { dismissQuickTour, startEventStormingRow } from '../fixtures';
 // The boundary model's weights, a hashed static asset of the app.
 export const BOUNDARY_WEIGHTS = /\/weights\.[^/]*\.bin$/;
 
-// An Event storming board ready for a photo import (spec/139 Phase 8 + 9).
+// An Event storming board ready for a photo import (docs/specs/021-event-storming/event-storming.md Phase 8 + 9).
 // Capabilities say a model is configured, so the SERVER reader runs: it is
 // stubbed to answer blank rather than calling a real provider from a test. The
 // detector and its boundary model are real; both are served by the app itself.

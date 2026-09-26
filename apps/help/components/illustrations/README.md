@@ -1,6 +1,6 @@
 # Help illustrations
 
-Inline SVG figures for the help articles (spec/55). SVG, never screenshots, so
+Inline SVG figures for the help articles ([Help app](../../../../docs/specs/018-help/help-app.md)). SVG, never screenshots, so
 they stay crisp, theme with the brand ramp, and add zero binary assets to the
 static export.
 

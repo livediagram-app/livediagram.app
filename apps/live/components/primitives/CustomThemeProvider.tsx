@@ -16,7 +16,7 @@ import {
 } from '@/lib/custom-theme-registry';
 import { track } from '@/lib/telemetry';
 
-// Reactive owner-scoped custom-theme list + CRUD (spec/44). Wraps the
+// Reactive owner-scoped custom-theme list + CRUD (docs/specs/011-theme/custom-themes.md). Wraps the
 // editor and the Explorer so the theme picker / builder / Themes pane
 // share one source of truth. Every mutation writes THROUGH to the
 // module registry (custom-theme-registry.ts) so the synchronous
@@ -67,7 +67,7 @@ export function CustomThemeProvider({
   // delete is persisted. The editor uses it to revert any tab in the open
   // diagram that was using the now-dead `custom:<uuid>` id back to the
   // default theme, so the deletion is reflected on the canvas immediately
-  // (spec/44). Surfaces other than the editor (Explorer, new-diagram) omit
+  // (docs/specs/011-theme/custom-themes.md). Surfaces other than the editor (Explorer, new-diagram) omit
   // it — they have no open diagram to repaint.
   onThemeDeleted?: (id: string) => void;
   children: ReactNode;

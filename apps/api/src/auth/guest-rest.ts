@@ -1,4 +1,4 @@
-// Guest REST signature gate (spec/61 §4).
+// Guest REST signature gate (docs/specs/015-api/public-api-and-tokens.md §4).
 //
 // The guest `X-Owner-Id` header is a bearer value that leaks to collaborators
 // (presence frames, the change-log), and the REST path trusted it with no
@@ -9,7 +9,7 @@
 // auth/owner-signature.ts). The legitimate guest holds its signature; a
 // harvester does not.
 //
-// Rollout is gated so legacy unsigned guests aren't locked out (spec/61 §4
+// Rollout is gated so legacy unsigned guests aren't locked out (docs/specs/015-api/public-api-and-tokens.md §4
 // "Compatibility"): enforcement is OFF until the operator sets an explicit
 // cutoff, giving active guests time to self-heal to a signed id first.
 

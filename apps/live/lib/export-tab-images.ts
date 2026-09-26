@@ -34,7 +34,7 @@ export async function loadTabImages(
   await Promise.all(
     ids.map(async (id) => {
       try {
-        // Offline Mode (spec/76): an embedded image already IS a data URL.
+        // Offline Mode (docs/specs/006-diagram/offline-mode.md): an embedded image already IS a data URL.
         const href = id.startsWith('data:')
           ? id
           : await apiFetchImageDataUrl(ctx.ownerId, id, {

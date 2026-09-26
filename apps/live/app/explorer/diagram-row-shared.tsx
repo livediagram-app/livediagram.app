@@ -55,7 +55,7 @@ export function ownerLabelFor(diagram: PaneDiagram): string {
 // The actions menu shared by the row + card. Anchored to the trigger the
 // caller passes. Shared-with-me rows get Open / Dismiss; owned + team
 // rows get the full rename / duplicate / change-folder / (open team) /
-// delete set (spec/35).
+// delete set (docs/specs/013-workspace/team-shared-diagrams.md).
 //
 // Shape: a header naming the diagram, then one full-width row per verb
 // with its icon on the left, and Delete last under a separator. It was
@@ -85,7 +85,7 @@ export function DiagramActionsMenu({
 }: {
   diagram: PaneDiagram;
   anchor: HTMLElement | null;
-  // Viewer id for Offline Mode conversions (spec/76).
+  // Viewer id for Offline Mode conversions (docs/specs/006-diagram/offline-mode.md).
   ownerId: string | null;
   onClose: () => void;
   // Every verb is optional: a row renders only when its handler is passed,
@@ -97,12 +97,12 @@ export function DiagramActionsMenu({
   onMove?: (anchor: HTMLElement | null) => void;
   onDelete?: () => void;
   onDismiss?: () => void;
-  // Hide / show in Recent (spec/93). Per-user, so the label reflects THIS
+  // Hide / show in Recent (docs/specs/013-workspace/hide-from-recent.md). Per-user, so the label reflects THIS
   // viewer's state; omitted where the surface can't offer it.
   recentExcluded?: boolean;
   onToggleRecentExclusion?: () => void;
   onShowHistory?: () => void;
-  // Per-user star (spec/95). Personal + team diagrams only; a
+  // Per-user star (docs/specs/013-workspace/favourites.md). Personal + team diagrams only; a
   // shared-with-you row isn't in your library to star.
   favourite?: boolean;
   onToggleFavourite?: () => void;
@@ -113,7 +113,7 @@ export function DiagramActionsMenu({
   // How to open it. Absent = navigate to the diagram's page; the floating
   // panel passes its own opener so switching diagrams stays in-editor.
   onOpen?: () => void;
-  // Timeline only (spec/138 §2.9): take THIS card off the reader's feed.
+  // Timeline only (docs/specs/013-workspace/timeline.md §2.9): take THIS card off the reader's feed.
   // Says nothing about the diagram, so it sits with the other "how you
   // see it" verbs, not with Delete.
   onRemoveFromTimeline?: () => void;
@@ -124,7 +124,7 @@ export function DiagramActionsMenu({
 }) {
   const href = hrefForDiagram(diagram);
   const offline = diagram.ownerId === OFFLINE_OWNER_ID;
-  // Offline Mode conversions (spec/76), shared with the panel row via the hook.
+  // Offline Mode conversions (docs/specs/006-diagram/offline-mode.md), shared with the panel row via the hook.
   const { syncToCloud, takeOffline } = useOfflineConversion(diagram, ownerId, onClose);
   // Run a verb, then close: every row does this, so it's one wrapper.
   const then = (fn: () => void) => () => {
@@ -227,7 +227,7 @@ export function DiagramActionsMenu({
           icon={recentExcluded ? <ClockOffIcon /> : <ClockIcon />}
           // The label states what the click DOES, and by doing so tells
           // you the current state — which is why the diagram needs no
-          // badge anywhere else (spec/93).
+          // badge anywhere else (docs/specs/013-workspace/hide-from-recent.md).
           label={recentExcluded ? 'Show in Recent' : 'Hide from Recent'}
           onClick={then(onToggleRecentExclusion)}
         />

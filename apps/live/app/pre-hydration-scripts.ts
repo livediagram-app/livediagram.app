@@ -18,14 +18,14 @@ import { STORAGE_KEY as USER_PREFERENCES_STORAGE_KEY } from '@/lib/user-preferen
 // here (Safari private mode, a blocked storage context) would take the rest of
 // the inline boot with it.
 
-// Appearance (spec/07). 'dark' paints dark, 'light' stays light, and anything
+// Appearance (docs/specs/007-editor/live-app.md). 'dark' paints dark, 'light' stays light, and anything
 // else — 'system', nothing stored at all, or a value this build doesn't know —
 // defers to the device, because System is the default. That last case is the
 // one that matters most here: it is EVERY first-time visitor, so a dark-machine
 // reader has to land dark before the first paint rather than flash white.
 export const APPEARANCE_BOOT_SCRIPT = `try{var s=localStorage.getItem('${APPEARANCE_STORAGE_KEY}');if(s==='dark'||(s!=='light'&&typeof matchMedia==='function'&&matchMedia('${DARK_MEDIA_QUERY}').matches))document.documentElement.classList.add('dark')}catch(e){}`;
 
-// Reduce motion (spec/20). Same reason as the appearance script: the class has
+// Reduce motion (docs/specs/007-editor/user-preferences.md). Same reason as the appearance script: the class has
 // to be on <html> by the time elements mount, or their one-shot pop-in /
 // fly-up-in animations have already fired before a React effect could add it.
 // The OS prefers-reduced-motion query in globals.css needs no JS; this only

@@ -1,5 +1,5 @@
-// Deterministic auto-layout for AI-generated diagrams (spec/25) and the
-// editor's Auto Layout / "Tidy up" (spec/47).
+// Deterministic auto-layout for AI-generated diagrams (docs/specs/007-editor/ai-assistance.md) and the
+// editor's Auto Layout / "Tidy up" (docs/specs/008-canvas/layout-cleanup.md).
 //
 // The model is good at deciding WHAT nodes and edges a diagram needs but poor
 // at geometry: it scatters sizes, mis-anchors arrows, and spaces nodes
@@ -7,7 +7,7 @@
 // graph (nodes + the arrows between them) and re-derives clean geometry:
 //
 //   1. Uniform per-tier sizing — peers (same shape + text level) get one size.
-//   2. Per-component positioning in the requested STYLE (spec/47 "Layout
+//   2. Per-component positioning in the requested STYLE (docs/specs/008-canvas/layout-cleanup.md "Layout
 //      styles"): the default layered (Sugiyama-lite) flow — sources at the
 //      top (or left), each successive rank below (or right) — or the tidy
 //      tree (auto-layout-tree.ts) or radial mindmap (auto-layout-mindmap.ts).
@@ -38,7 +38,7 @@ import { positionMindmapComponent } from './auto-layout-mindmap';
 
 export type LayoutDirection = 'TB' | 'LR';
 
-// How each connected component's nodes are positioned (spec/47 "Layout
+// How each connected component's nodes are positioned (docs/specs/008-canvas/layout-cleanup.md "Layout
 // styles"). 'flow' is the layered layout every existing caller gets.
 export type LayoutStyle = 'flow' | 'tree' | 'mindmap';
 
@@ -52,7 +52,7 @@ export type AutoLayoutOptions = {
   // Positioning style; omit for the layered flow (the long-standing default).
   style?: LayoutStyle;
   // Nodes whose given width/height must survive layout untouched, exempt
-  // from peer-size normalisation. Used by the cluster layout (spec/73):
+  // from peer-size normalisation. Used by the cluster layout (docs/specs/020-import-export/mermaid.md):
   // a contracted cluster block is exactly its members' bounding box, and
   // normalizeSizes would clamp it to the shape tier's size.
   fixedSizeIds?: Set<ElementId>;
@@ -189,7 +189,7 @@ export function isLayoutCandidate(elements: Element[]): boolean {
 // roughly one point (e.g. everything left at 0,0) — i.e. the model left
 // placement to us. Lets a caller PRESERVE a real layout the model produced (a
 // ring for a cycle, a tree, a grid) and only auto-lay-out when it didn't bother
-// to place things (spec/62 §4.3: the calling LLM decides the layout).
+// to place things (docs/specs/015-api/mcp-server.md §4.3: the calling LLM decides the layout).
 export function nodesLookUnplaced(elements: Element[]): boolean {
   const boxed = elements.filter(isBoxed);
   if (boxed.length < 2) return true; // nothing meaningful to preserve
@@ -214,7 +214,7 @@ export function autoLayoutElements(elements: Element[], opts: AutoLayoutOptions 
   // content — titles, captions, per-stage descriptions, legends, loose notes —
   // is NOT a node: it passes through at the position it was given rather than
   // being raked into a disconnected-component column beside the graph (which
-  // detached and scrambled the frog-lifecycle descriptions, spec/62 §4.3).
+  // detached and scrambled the frog-lifecycle descriptions, docs/specs/015-api/mcp-server.md §4.3).
   const connected = new Set<ElementId>();
   for (const e of buildEdges(arrows, new Set(allBoxed.map((n) => n.id)))) {
     connected.add(e.from);

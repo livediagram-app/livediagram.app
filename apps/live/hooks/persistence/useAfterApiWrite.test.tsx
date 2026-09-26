@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// The after-write beat the Timeline re-reads on (spec/138 §2.4b): one
+// The after-write beat the Timeline re-reads on (docs/specs/013-workspace/timeline.md §2.4b): one
 // delayed run per write, bursts collapsed to one run per interval, and
 // a purge handed over at once.
 

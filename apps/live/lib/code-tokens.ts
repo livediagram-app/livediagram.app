@@ -1,6 +1,6 @@
 import type { CodeLanguage } from '@livediagram/diagram';
 
-// Hand-rolled tokenizer for the code block's syntax highlighting (spec/82).
+// Hand-rolled tokenizer for the code block's syntax highlighting (docs/specs/009-elements/code-block.md).
 // One generic scanner driven by a per-language config: comments, strings,
 // numbers, and a keyword set. Deliberately tiny and dependency-free — the
 // output feeds fixed colour classes on a dark card, not an editor — and

@@ -1,9 +1,9 @@
-// Bring Focus (spec/144): the one rule for "is this view already looking at
+// Bring Focus (docs/specs/012-collaboration/bring-focus.md): the one rule for "is this view already looking at
 // that?", and what the presser is told.
 //
 // It is asked from both ends. The RECIPIENT asks it of their own view, to
 // decide whether an invitation is worth a dialog. The PRESSER asks it of every
-// peer's published viewport (spec/131), to decide what their own toast should
+// peer's published viewport (docs/specs/012-collaboration/follow-me-viewport.md), to decide what their own toast should
 // say. Same question, so one answer: a second copy of this arithmetic would
 // drift, and the two ends would disagree about who was asked.
 

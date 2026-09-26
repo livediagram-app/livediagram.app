@@ -1,4 +1,4 @@
-// Graph plumbing shared by the auto-layout styles (spec/47): the layered
+// Graph plumbing shared by the auto-layout styles (docs/specs/008-canvas/layout-cleanup.md): the layered
 // flow layout (auto-layout.ts), the tidy tree (auto-layout-tree.ts) and the
 // radial mindmap (auto-layout-mindmap.ts) all consume the same node sizing,
 // edge extraction, component split, and arrow re-anchoring. Internal module,

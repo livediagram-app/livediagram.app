@@ -75,14 +75,14 @@ export function createSticky(x: number, y: number): StickyElement {
   };
 }
 
-// Fixed marker size for an annotation (see specs/38). It never resizes, so
+// Fixed marker size for an annotation (see docs/specs/009-elements/annotations.md). It never resizes, so
 // this is its size for life; `inheritedSizeFor` keeps it at this regardless
 // of the current selection.
 const ANNOTATION_SIZE = 44;
 
 // A note marker dropped at (x, y). The note text starts empty — the user
 // clicks the marker to add it. Aspect-locked by default so resizing keeps
-// the marker round (spec/38).
+// the marker round (docs/specs/009-elements/annotations.md).
 export function createAnnotation(x: number, y: number): AnnotationElement {
   return {
     id: crypto.randomUUID(),
@@ -95,7 +95,7 @@ export function createAnnotation(x: number, y: number): AnnotationElement {
   };
 }
 
-// A link-card / bookmark (spec/40) at (x, y). No link yet — the user sets
+// A link-card / bookmark (docs/specs/009-elements/link-cards.md) at (x, y). No link yet — the user sets
 // the URL via the link picker, and the editor fills `meta` from the unfurl
 // endpoint. Default size suits a favicon + title row above an optional image.
 export function createLinkCard(x: number, y: number): LinkCardElement {
@@ -109,7 +109,7 @@ export function createLinkCard(x: number, y: number): LinkCardElement {
   };
 }
 
-// A YouTube video (spec/114) at (x, y). No link yet — the user sets the URL
+// A YouTube video (docs/specs/009-elements/youtube-video.md) at (x, y). No link yet — the user sets the URL
 // via the same link picker a link card uses, and the id is parsed from it on
 // render. 480x270 is a true 16:9, and `aspectLocked` keeps it that way: a
 // stretched video frame is never what anyone wants.
@@ -122,14 +122,14 @@ export function createVideo(x: number, y: number, provider?: EmbedProvider): Vid
     width: 480,
     height: 270,
     aspectLocked: true,
-    // Which tile it came from (spec/121), so the empty state can name the
+    // Which tile it came from (docs/specs/009-elements/embed-providers.md), so the empty state can name the
     // service rather than listing all five.
     ...(provider ? { embedProvider: provider } : {}),
   };
 }
 
 // Scale a set of elements uniformly about (ox, oy) — used to drag-to-draw a
-// component to size (spec/09). Boxed elements scale position + size; arrows
+// component to size (docs/specs/008-canvas/canvas-and-palette.md). Boxed elements scale position + size; arrows
 // scale only their FREE endpoints (pinned ones track their elements). Font
 // sizes are unchanged (matches group resize).
 export function scaleElements(elements: Element[], ox: number, oy: number, s: number): Element[] {

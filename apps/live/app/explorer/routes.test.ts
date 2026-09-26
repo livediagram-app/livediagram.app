@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { explorerPathFor, selectedFromRoute } from './routes';
 import type { SelectedNode } from './views';
 
-// The mapping is the explorer's URL contract (spec/15): every sidebar
+// The mapping is the explorer's URL contract (docs/specs/013-workspace/folders.md): every sidebar
 // section must round-trip node → path → node, because the sidebar
 // highlights whatever selectedFromRoute derives from the address bar.
 
@@ -49,7 +49,7 @@ describe('explorer route mapping', () => {
     });
   });
 
-  // The landing section (spec/138 §8.1). Three places decide it — the
+  // The landing section (docs/specs/013-workspace/timeline.md §8.1). Three places decide it — the
   // live worker's 302, the /explorer client replace, and this default —
   // and they have to agree, or a mangled link lands somewhere the
   // address bar doesn't.

@@ -4,7 +4,7 @@ import type { Env } from './env';
 import { runInRequest } from './request-scope';
 
 // A telemetry post the runtime can cancel with the response is a post that may
-// never land (spec/22 Mcp). Inside a request, every post, the tool's
+// never land (docs/specs/017-telemetry/telemetry.md Mcp). Inside a request, every post, the tool's
 // `Mcp·Used` and an `Error·Api` failure report alike, must be handed to the
 // request's waitUntil.
 

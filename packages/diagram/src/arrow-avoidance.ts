@@ -1,4 +1,4 @@
-// Collision-avoiding curve for freshly drawn arrows (spec/77).
+// Collision-avoiding curve for freshly drawn arrows (docs/specs/008-canvas/arrow-collision-avoidance.md).
 //
 // When the user finishes drawing an arrow, a straight chord can cut through
 // an unrelated element, or run flush along the boxes it connects (both ends

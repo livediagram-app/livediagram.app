@@ -103,7 +103,7 @@ export function FreehandSvg({
   // to an empty path; the renderer then draws nothing, which is the
   // right behaviour for a degenerate single-click "stroke".
   const vbPoints = element.points.map((p) => ({ x: p.nx * 100, y: p.ny * 100 }));
-  // Polygon-tool paths (spec/84) keep their deliberate corners:
+  // Polygon-tool paths (docs/specs/008-canvas/polygon-tool.md) keep their deliberate corners:
   // straight M/L segments instead of the Catmull-Rom smoothing the
   // sampled pencil strokes want.
   const d =
@@ -115,7 +115,7 @@ export function FreehandSvg({
         : catmullRomToBezierPath(vbPoints, element.closed);
   const dasharray = BORDER_DASH_ARRAY[element.strokeStyle ?? DEFAULT_BORDER_STYLE];
   const widthPx = BORDER_STROKE_PX[element.strokeWidth ?? DEFAULT_BORDER_STROKE];
-  // Highlighter recipe (spec/81): the marker owns width + translucency
+  // Highlighter recipe (docs/specs/008-canvas/highlighter.md): the marker owns width + translucency
   // (fixed wide round stroke, multiply blend, never filled) so the
   // border-preset widths and dash styles don't apply. Kept in sync
   // with svgFreehandShape (the headless twin) by the spec.

@@ -1,5 +1,5 @@
 // Debounced `Canvas·Changed` telemetry for the tab's appearance sliders
-// (spec/22 Canvas: BackgroundColor / BackgroundOpacity / PatternColor and the
+// (docs/specs/017-telemetry/telemetry.md Canvas: BackgroundColor / BackgroundOpacity / PatternColor and the
 // other slider-driven background settings).
 //
 // A slider drag emits one event, ~800ms after the last tick, rather than one
@@ -14,7 +14,7 @@ import { useEffect, useRef } from 'react';
 import { onPageHide } from '@livediagram/telemetry-client';
 import { track } from '@/lib/telemetry';
 
-// Slider-edit debounce window. Spec/22's noise rule excludes "raw colour
+// Slider-edit debounce window. docs/specs/017-telemetry/telemetry.md's noise rule excludes "raw colour
 // tweaks", and emitting on every slider tick would absolutely qualify;
 // debouncing at ~800ms means one user dragging a slider end-to-end produces
 // one event instead of dozens, while still capturing "did they actually

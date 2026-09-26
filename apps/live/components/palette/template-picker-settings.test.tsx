@@ -3,7 +3,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { NewDiagramSettingsStep } from './template-picker-settings';
 
-// The Settings step (spec/141): the Save location tiles, the folder step
+// The Settings step (docs/specs/006-diagram/save-locations.md): the Save location tiles, the folder step
 // headed by the chosen location, and what Local Browser does to the step.
 
 function show(saveLocation: 'livediagram' | 'browser', onSaveLocation = vi.fn()) {

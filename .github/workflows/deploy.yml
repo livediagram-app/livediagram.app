@@ -4,7 +4,7 @@ name: Deploy Production
 # workflow run deploy.yml`) once CI on `main` is green and you're ready to
 # ship.
 # It is intentionally NOT chained to CI — a green build no longer deploys on
-# its own. Staging is the one that deploys automatically (spec/140).
+# its own. Staging is the one that deploys automatically (docs/specs/016-platform/staging-environment.md).
 #
 # The steps live in `deploy-reusable.yml`, which staging calls too, so the two
 # environments cannot drift apart. This file is only the trigger and the

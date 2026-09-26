@@ -123,7 +123,7 @@ export function UnsortedIcon({ size = 13 }: IconProps) {
   );
 }
 
-// Cloud-with-slash for the synthetic Offline folder (spec/76): diagrams
+// Cloud-with-slash for the synthetic Offline folder (docs/specs/006-diagram/offline-mode.md): diagrams
 // saved only in this browser, never on the server.
 export function OfflineFolderIcon({ size = 13 }: IconProps) {
   return (
@@ -155,7 +155,7 @@ export function DiagramIcon({ size = 13 }: IconProps) {
   );
 }
 
-// The Timeline section (spec/138): a vertical rail with event dots
+// The Timeline section (docs/specs/013-workspace/timeline.md): a vertical rail with event dots
 // hanging off it: the shape of the feed itself, and deliberately not
 // another clock (Recent already owns that glyph, and the two sections
 // now sit next to each other in Quick find).
@@ -170,7 +170,7 @@ export function TimelineIcon({ size = 13 }: IconProps) {
   );
 }
 
-// Activity (spec/142): an inbox tray with a tick, what's waiting on
+// Activity (docs/specs/013-workspace/activity-page.md): an inbox tray with a tick, what's waiting on
 // you, as opposed to the Timeline's spine of what happened.
 export function ActivityIcon({ size = 13 }: IconProps) {
   return (
@@ -183,7 +183,7 @@ export function ActivityIcon({ size = 13 }: IconProps) {
 }
 
 // Clock: the Recent list, and the row menu's hide / show in Recent
-// (spec/93); the label carries the direction, the glyph the topic.
+// (docs/specs/013-workspace/hide-from-recent.md); the label carries the direction, the glyph the topic.
 export function ClockIcon({ size = 13 }: IconProps) {
   return (
     <StrokeGlyph size={size}>
@@ -194,7 +194,7 @@ export function ClockIcon({ size = 13 }: IconProps) {
 }
 
 // The clock with a strike-through: a diagram hidden from Recent
-// (spec/93). Paired with ClockIcon so the menu row's glyph flips with
+// (docs/specs/013-workspace/hide-from-recent.md). Paired with ClockIcon so the menu row's glyph flips with
 // its label rather than relying on the wording alone.
 export function ClockOffIcon({ size = 13 }: IconProps) {
   return (
@@ -206,7 +206,7 @@ export function ClockOffIcon({ size = 13 }: IconProps) {
   );
 }
 
-// Star: per-user favourites (spec/95). Filled when the diagram is
+// Star: per-user favourites (docs/specs/013-workspace/favourites.md). Filled when the diagram is
 // starred, hollow when it isn't, so a menu row's glyph carries the state
 // alongside its label.
 export function StarIcon({ filled = false, size = 13 }: IconProps & { filled?: boolean }) {
@@ -238,7 +238,7 @@ export function ImageIcon({ size = 13 }: IconProps) {
   );
 }
 
-// Painter's palette: the Themes section (spec/44).
+// Painter's palette: the Themes section (docs/specs/011-theme/custom-themes.md).
 export function PaletteIcon({ size = 13 }: IconProps) {
   return (
     <StrokeGlyph size={size}>
@@ -331,7 +331,7 @@ export function OpenIcon({ size = 13 }: IconProps) {
   );
 }
 
-// Offline Mode conversions (spec/76), from the diagram menu: a cloud with
+// Offline Mode conversions (docs/specs/006-diagram/offline-mode.md), from the diagram menu: a cloud with
 // an arrow going up into it, and a tray with an arrow coming down.
 export function SyncIcon({ size = 14 }: IconProps) {
   return (

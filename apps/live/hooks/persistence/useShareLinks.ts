@@ -24,12 +24,12 @@ import type { Participant } from '@/lib/identity';
 type ShareLinksDeps = {
   // The current diagram id. All link actions no-op until it exists
   // (the editor route always has a real id by the time the dialog is
-  // open — the mint-id flow lives on /live/new, spec/14).
+  // open — the mint-id flow lives on /live/new, docs/specs/007-editor/new-diagram-route.md).
   diagramId: string | null;
   selfParticipant: Participant;
   setSelfParticipant: Dispatch<SetStateAction<Participant>>;
   setShareLinks: Dispatch<SetStateAction<ShareLink[]>>;
-  // The diagram's share password (spec/24). setSharePassword reconciles
+  // The diagram's share password (docs/specs/013-workspace/share-password.md). setSharePassword reconciles
   // page state after a save / clear.
   setSharePassword: Dispatch<SetStateAction<string | null>>;
   setDiagramShareable: Dispatch<SetStateAction<boolean>>;
@@ -68,10 +68,10 @@ export function useShareLinks(deps: ShareLinksDeps) {
   };
 
   // Create a new share link for the current diagram with the given
-  // role and lifetime (spec/34; 'never' = works until revoked). The
+  // role and lifetime (docs/specs/013-workspace/share-link-expiry.md; 'never' = works until revoked). The
   // editor route always has a real diagramId by the time the Share
   // dialog is open — the welcome / mint-id flow now lives on
-  // /live/new (spec/14) — so this just calls the API directly.
+  // /live/new (docs/specs/007-editor/new-diagram-route.md) — so this just calls the API directly.
   const createShareLink = async (role: ShareRole, expiry: ShareLinkExpiry = 'never') => {
     if (!diagramId) return;
     confirmName();
@@ -80,9 +80,9 @@ export function useShareLinks(deps: ShareLinksDeps) {
       setShareLinks((prev) => [...prev, link]);
       setDiagramShareable(true);
       setDiagramShareCode((prev) => prev ?? link.code);
-      // Telemetry (spec/22): a share link was created. `type` is the
+      // Telemetry (docs/specs/017-telemetry/telemetry.md): a share link was created. `type` is the
       // role (Edit / View) — a preset, never user content. A chosen
-      // lifetime emits a second preset alongside (spec/34).
+      // lifetime emits a second preset alongside (docs/specs/013-workspace/share-link-expiry.md).
       track('Diagram', 'Shared', role === 'edit' ? 'Edit' : 'View');
       if (expiry !== 'never') {
         const expiryType = {
@@ -98,7 +98,7 @@ export function useShareLinks(deps: ShareLinksDeps) {
   };
 
   // Re-arm an expired (or active) expiring link for another round of
-  // its creation-time duration (spec/34). The server computes the new
+  // its creation-time duration (docs/specs/013-workspace/share-link-expiry.md). The server computes the new
   // deadline; the returned link replaces the stale row in state so the
   // dialog's Active / Inactive split updates immediately.
   const extendShareLink = async (code: string) => {
@@ -136,7 +136,7 @@ export function useShareLinks(deps: ShareLinksDeps) {
     });
   };
 
-  // Set or clear the diagram's share password (spec/24). A null / empty
+  // Set or clear the diagram's share password (docs/specs/013-workspace/share-password.md). A null / empty
   // value removes it. Persists through the api, reconciles page state
   // with the server-normalised value, and emits telemetry. Returns the
   // stored value so the dialog can reflect exactly what now gates
@@ -151,7 +151,7 @@ export function useShareLinks(deps: ShareLinksDeps) {
     try {
       const stored = await apiSetSharePassword(selfParticipant.id, diagramId, trimmed);
       setSharePassword(stored);
-      // Telemetry (spec/22): the `type` is a preset, never the password.
+      // Telemetry (docs/specs/017-telemetry/telemetry.md): the `type` is a preset, never the password.
       track('Diagram', 'Shared', stored ? 'PasswordSet' : 'PasswordCleared');
       return stored;
     } catch {

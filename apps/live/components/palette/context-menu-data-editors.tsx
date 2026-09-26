@@ -19,7 +19,7 @@ import { hexish } from '@/components/palette/palette-controls';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/PortalMenu';
 import { MenuToggleRow } from '@/components/palette/context-menu-input-rows';
 
-// Pie-chart data editor (spec/53): one row per slice — a colour swatch
+// Pie-chart data editor (docs/specs/009-elements/pie-chart.md): one row per slice — a colour swatch
 // (recolourable), a label, and a value — plus add / remove. Local draft while
 // typing; commits the whole array on blur / structural change (one undo step).
 export function PieDataEditor({
@@ -101,7 +101,7 @@ export function PieDataEditor({
   );
 }
 
-// Legend rows editor (spec/53): a colour dot, a label, remove, and add. The
+// Legend rows editor (docs/specs/009-elements/pie-chart.md): a colour dot, a label, remove, and add. The
 // same shape as the pie editor minus the value, because a legend is a key: it
 // says what a colour means and nothing about how much of it there is.
 export function LegendDataEditor({
@@ -175,7 +175,7 @@ export function LegendDataEditor({
   );
 }
 
-// Line-chart data summary (spec/53): the 2-D grid is too wide for the narrow
+// Line-chart data summary (docs/specs/009-elements/pie-chart.md): the 2-D grid is too wide for the narrow
 // menu, so the Data category just lists the series (a colour dot + name) and an
 // "Edit data" button that opens the full grid + CSV import in a modal.
 export function LineDataSummary({
@@ -215,10 +215,10 @@ export function LineDataSummary({
   );
 }
 
-// Checklist rows editor (spec/83): one row per item — a done toggle, the row
+// Checklist rows editor (docs/specs/009-elements/checklist.md): one row per item — a done toggle, the row
 // text, and remove — plus add. Same draft-while-typing / commit-on-blur
 // contract as PieDataEditor (one undo step per blur / structural change).
-// A record's fields (spec/120): one row per `name: Type`. Mirrors the
+// A record's fields (docs/specs/009-elements/entity.md): one row per `name: Type`. Mirrors the
 // checklist editor below — same shape of problem (a bounded list of short
 // strings edited in a narrow menu), so same shape of control.
 export function EntityFieldsEditor({
@@ -293,7 +293,7 @@ export function ChecklistRowsEditor({
 }: {
   items: ChecklistItem[];
   onChange: (items: ChecklistItem[]) => void;
-  // Tick one row as its own delta (spec/152). Without it, the tick rewrites
+  // Tick one row as its own delta (docs/specs/012-collaboration/collab-race-hardening.md). Without it, the tick rewrites
   // the rows like every other edit here.
   onToggle?: (index: number) => void;
 }) {
@@ -351,7 +351,7 @@ export function ChecklistRowsEditor({
   );
 }
 
-// Code block summary (spec/82): a multi-line editor is too big for the menu,
+// Code block summary (docs/specs/009-elements/code-block.md): a multi-line editor is too big for the menu,
 // so the Code category shows the language + line count and an "Edit code"
 // button that opens the modal — the LineDataSummary pattern.
 export function CodeSummary({
@@ -363,7 +363,7 @@ export function CodeSummary({
 }: {
   code: string;
   language: string;
-  // Long-line wrapping (spec/82). On by default, so this is the switch that
+  // Long-line wrapping (docs/specs/009-elements/code-block.md). On by default, so this is the switch that
   // turns it OFF for the rare block whose lines mean something at their full
   // length (a table of fixed columns, say).
   wrap: boolean;
@@ -392,7 +392,7 @@ export function CodeSummary({
   );
 }
 
-// Mind-map flow tiles (spec/118): the shape the map grows in. Drawn rather
+// Mind-map flow tiles (docs/specs/009-elements/mind-node.md): the shape the map grows in. Drawn rather
 // than named, because "Balanced" and "Bubble" mean nothing until you see the
 // arrangement; each glyph is the branch pattern its flow produces.
 const MIND_FLOW_ICON: Record<MindFlow, ReactNode> = {

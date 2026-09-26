@@ -204,7 +204,7 @@ export function anchorPosition(element: BoxedElement, anchor: Anchor): Point {
 }
 
 // The box connectors treat as an element's visual body: a Technology
-// icon's fixed-size mark (spec/41 — the element box can be much larger
+// icon's fixed-size mark (docs/specs/010-palette/technology-icons.md — the element box can be much larger
 // than the visible chip, so box-edge anchors would float in whitespace
 // and face selection would answer for the wrong rectangle), the element
 // itself otherwise. Returns the element identity for the common case so

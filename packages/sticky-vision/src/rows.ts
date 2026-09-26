@@ -1,6 +1,6 @@
 import type { Box } from './boxes';
 
-// Which row of the wall each sticky is in, and where along it (spec/139).
+// Which row of the wall each sticky is in, and where along it (docs/specs/021-event-storming/event-storming.md).
 //
 // A wall sags: a row photographed from an angle drifts ten or twenty pixels
 // from one end to the other, so a row is a CLUSTER of centre-y values, not a

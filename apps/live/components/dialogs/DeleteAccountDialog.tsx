@@ -91,7 +91,7 @@ export function DeleteAccountDialog({
       return;
     }
     // Anonymous, no identifier: the account-lifecycle counter for the
-    // dashboard's Account Activity stack (spec/22). Fired now, after the server data is
+    // dashboard's Account Activity stack (docs/specs/017-telemetry/telemetry.md). Fired now, after the server data is
     // gone but before sign-out, so the opt-out itself still reaches the wire.
     track('Session', 'Deleted', 'Account');
     try {

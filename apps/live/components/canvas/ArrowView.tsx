@@ -23,7 +23,7 @@ import { BRAND_600 } from './arrow-handle-style';
 import { useLongPress } from '@/hooks/ui/useLongPress';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 
-// The mask region + backdrop for route-behind (spec/90). Deliberately vast
+// The mask region + backdrop for route-behind (docs/specs/008-canvas/arrow-route-behind.md). Deliberately vast
 // rather than fitted to the arrow: a curve can bow well outside its chord,
 // and a region that ends where the geometry does clips the drawing instead
 // of the boxes.
@@ -38,7 +38,7 @@ type ArrowViewProps = {
   isSelected: boolean;
   isPaintMode: boolean;
   isEditing: boolean;
-  // Type-to-edit (spec/09): caret at end instead of select-all when the
+  // Type-to-edit (docs/specs/008-canvas/canvas-and-palette.md): caret at end instead of select-all when the
   // label was seeded by the first typed character.
   editCursorAtEnd?: boolean;
   // True when the whole tab is locked (toggled from the tab ellipsis
@@ -90,7 +90,7 @@ type ArrowViewProps = {
   // Begin dragging the label along the line / to either side. Fires
   // when the arrow is selected and the user grabs the label box.
   onBeginLabelDrag?: (id: string, e: ReactPointerEvent) => void;
-  // Resolved CSS font-family for the arrow's label (spec/28). Arrows
+  // Resolved CSS font-family for the arrow's label (docs/specs/004-interface-design/fonts.md). Arrows
   // have no per-element font, so this is the tab default; undefined =
   // the editor default.
   fontFamily?: string;
@@ -126,7 +126,7 @@ function ArrowViewImpl({
   onBeginLabelDrag,
   fontFamily,
 }: ArrowViewProps) {
-  // An arrow with no stroke of its own takes the canvas's ink (spec/07).
+  // An arrow with no stroke of its own takes the canvas's ink (docs/specs/007-editor/live-app.md).
   const surface = useCanvasSurface();
   const isLocked = arrow.locked === true || tabLocked;
   // Open the context menu beside the arrow rather than under the cursor /
@@ -140,7 +140,7 @@ function ArrowViewImpl({
     const anchor = rect ? elementMenuAnchor(rect) : { x, y };
     onContextSelect(arrow.id, anchor.x, anchor.y);
   };
-  // Right-click opens on release, like every other element (spec/09).
+  // Right-click opens on release, like every other element (docs/specs/008-canvas/canvas-and-palette.md).
   const arrowRightClick = useRightClickRelease((e) => contextSelectBeside(e.clientX, e.clientY));
   // Touch long-press opens the arrow's context menu (touch has no
   // right-click); a press that moves becomes a select / drag instead.
@@ -159,7 +159,7 @@ function ArrowViewImpl({
   const { from, to, pathD, curveAnchors, curveControl, elbowPoint, labelText, labelPos } =
     deriveArrowViewFrame(arrow, elementIndex, isEditing);
   const showLabel = isEditing || labelText.length > 0;
-  // Route behind boxes (spec/90). Where the line would cross an unrelated
+  // Route behind boxes (docs/specs/008-canvas/arrow-route-behind.md). Where the line would cross an unrelated
   // box it breaks a little before it and resumes past it, so a fan of
   // arrows to nearby children doesn't draw over the children in between.
   //
@@ -175,7 +175,7 @@ function ArrowViewImpl({
   // case is nothing in the way, and an empty mask is pure overhead.
   const behindMaskId = behindHoles.length > 0 ? `lvd-behind-${arrow.id}` : null;
   const behindMask = behindMaskId ? `url(#${behindMaskId})` : undefined;
-  // Flow derivations + the phase-sync pinning (spec/09) live in
+  // Flow derivations + the phase-sync pinning (docs/specs/008-canvas/canvas-and-palette.md) live in
   // useArrowFlow; the visible path below mounts flowPathRef and the
   // travelling overlays render via ArrowFlowOverlays.
   const { flowFactor, flowPathClass, flowPathDash, flowPathRef, flowDotRef, flowCometRef } =
@@ -202,7 +202,7 @@ function ArrowViewImpl({
   // than a chained `currentColor` keyword that ends up resolving on
   // the marker's own colour property.
   return (
-    // Screen-reader name (spec/71): arrows are SVG, so the group carries
+    // Screen-reader name (docs/specs/004-interface-design/canvas-accessibility.md): arrows are SVG, so the group carries
     // the same kind-plus-label name a boxed element's wrapper does.
     <g style={{ opacity }} role="img" aria-label={elementAriaLabel(arrow)}>
       {ownMarkerId && ownHeadColor ? (
@@ -276,7 +276,7 @@ function ArrowViewImpl({
         // 'draw' normalises the path length to 1 so its reveal dash maths is
         // length-independent (see FLOW_PATH_DASH + lvd-arrow-draw).
         pathLength={arrow.flow === 'draw' ? 1 : undefined}
-        // Flowing arrow (spec/09): dashes / beads march a fixed pattern along
+        // Flowing arrow (docs/specs/008-canvas/canvas-and-palette.md): dashes / beads march a fixed pattern along
         // the path (the class animates stroke-dashoffset), overriding the
         // static strokeStyle dasharray; pulse / grow / glow animate the line in
         // place and keep it. Otherwise the shared dasharray lookup mirrors the
@@ -309,7 +309,7 @@ function ArrowViewImpl({
             ...(arrow.flow === 'glow' || arrow.flow === 'shimmer'
               ? { '--lvd-flow-color': baseStroke }
               : {}),
-            // Repeat off = the flow plays once and holds (spec/09).
+            // Repeat off = the flow plays once and holds (docs/specs/008-canvas/canvas-and-palette.md).
             ...(arrow.flowRepeat === false ? { '--lvd-flow-iter': 1 } : {}),
           } as React.CSSProperties
         }
@@ -317,7 +317,7 @@ function ArrowViewImpl({
 
       <path
         // The wide transparent hit band. Carries data-element-id so DOM
-        // hit-testing (the eraser's elementsFromPoint, spec/09) resolves an
+        // hit-testing (the eraser's elementsFromPoint, docs/specs/008-canvas/canvas-and-palette.md) resolves an
         // arrow the same way it resolves a boxed element's wrapper.
         data-element-id={arrow.id}
         ref={hitBandRef}

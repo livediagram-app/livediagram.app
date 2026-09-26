@@ -1,6 +1,6 @@
 'use client';
 
-// The browser's EyeDropper (spec/09 Colours): click the pipette, then click
+// The browser's EyeDropper (docs/specs/008-canvas/canvas-and-palette.md Colours): click the pipette, then click
 // anywhere on the screen, and the colour under the pointer comes back as a
 // hex. It samples the whole screen, not just the canvas, so a colour can be
 // lifted from an image, a logo in another window, or an element already on

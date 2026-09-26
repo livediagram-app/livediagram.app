@@ -1,4 +1,4 @@
-// The image upload cap (spec/19), shared because BOTH sides need the same
+// The image upload cap (docs/specs/009-elements/images.md), shared because BOTH sides need the same
 // number and they need it for different reasons.
 //
 // The api enforces it: the pre-dispatch Content-Length gate uses this cap on
@@ -19,7 +19,7 @@ export const MAX_IMAGE_BYTES = 10 * 1024 * 1024; // 10 MB
 /** The cap as a whole number of MB, for user-facing copy ("Limit is 10 MB"). */
 export const MAX_IMAGE_MB = MAX_IMAGE_BYTES / (1024 * 1024);
 
-// The formats an upload may declare (spec/19), here for the same reasons as
+// The formats an upload may declare (docs/specs/009-elements/images.md), here for the same reasons as
 // the cap above, only more so: the api doesn't merely enforce this list, it
 // SERIALISES it — a 415 response carries `acceptedTypes` straight from this
 // tuple. That makes it wire contract by definition, and a second hand-written

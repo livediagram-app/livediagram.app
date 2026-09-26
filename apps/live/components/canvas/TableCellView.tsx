@@ -74,7 +74,7 @@ export type TableCellCtx = {
   ) => void;
 };
 
-// One table cell (spec/09 Table), lifted out of TableView's render
+// One table cell (docs/specs/008-canvas/canvas-and-palette.md Table), lifted out of TableView's render
 // loop: the header / zebra / per-cell style resolution, the selection +
 // context-menu + shift-multi-select gestures, the in-cell editor mount,
 // and the linked-cell badge. Pure render slice — all state stays in
@@ -175,7 +175,7 @@ export function TableCellView({
         }
       }}
       onContextMenu={(e) => {
-        // Right-click opens the per-cell context menu (spec/09) —
+        // Right-click opens the per-cell context menu (docs/specs/008-canvas/canvas-and-palette.md) —
         // the explicit gesture on desktop; touch long-presses
         // instead (cellLongPress). Swallowed so the element
         // context menu doesn't also open over it. On a cell

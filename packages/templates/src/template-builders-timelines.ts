@@ -43,7 +43,7 @@ export function buildTimeline(cx: number, cy: number): Element[] {
     ...createArrow(startX, baseY, startX + lineLength, baseY),
     arrowEnds: 'none',
     strokeColor: '#64748b',
-    // The spine is the timeline's scaffold layer (spec/74); the
+    // The spine is the timeline's scaffold layer (docs/specs/006-diagram/layers.md); the
     // milestone markers + labels ride the content layer above it.
     layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
   });

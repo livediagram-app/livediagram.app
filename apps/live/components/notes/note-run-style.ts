@@ -1,4 +1,4 @@
-// Typography for a rich-text note (spec/92). Shared by the read-only
+// Typography for a rich-text note (docs/specs/009-elements/rich-text-notes.md). Shared by the read-only
 // renderer (NoteRichText) and the contentEditable editor so a note looks
 // identical whether you're reading it or writing it — the editor paints the
 // same CSS onto its spans that the renderer puts on its React spans.

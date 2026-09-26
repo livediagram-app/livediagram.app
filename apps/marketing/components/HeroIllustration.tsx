@@ -4,7 +4,7 @@
 //   1. Flowchart — shared, a teammate cursor, and the theme beat: the Tab
 //      Look & Feel dialog opens, a theme card is picked, and the diagram
 //      recolours (the only window that recolours; its canvas tints to match).
-//   2. Slide deck — the same flowchart presented (spec/31): full screen, so
+//   2. Slide deck — the same flowchart presented (docs/specs/012-collaboration/presentation-mode.md): full screen, so
 //      no header, tab bar or panels, only the canvas and the presenting HUD;
 //      four slides travel across it a piece at a time and end on the whole
 //      picture.
@@ -92,10 +92,10 @@ const CARDS: {
   shared: boolean;
   theming: boolean;
   canvasTint: string;
-  // Presenting (spec/31): the panels give way to the presenting HUD, and
+  // Presenting (docs/specs/012-collaboration/presentation-mode.md): the panels give way to the presenting HUD, and
   // the canvas shows the deck's slides instead of the whole diagram.
   presenting?: boolean;
-  // Dock the Layers panel (spec/74) on this window's canvas, and minimise
+  // Dock the Layers panel (docs/specs/006-diagram/layers.md) on this window's canvas, and minimise
   // the palette to its header bar (as the editor does), so the wide
   // timeline has the canvas to itself.
   layers?: boolean;
@@ -360,7 +360,7 @@ function EditorWindow({
             playing ? 'hero-fade' : 'hero-fade-out'
           }`}
         />
-        {/* Presenting is full screen (spec/31): no header, no tab bar, no
+        {/* Presenting is full screen (docs/specs/012-collaboration/presentation-mode.md): no header, no tab bar, no
             panels, just the slide's canvas and the HUD. */}
         {presenting ? null : (
           <>
@@ -502,7 +502,7 @@ function EditorWindow({
             </div>
           </div>
 
-          {/* The Layers panel (spec/74), docked on the timeline window: one
+          {/* The Layers panel (docs/specs/006-diagram/layers.md), docked on the timeline window: one
               row per layer with its eye toggle, the hidden one dimmed. */}
           {layers ? (
             <div className="absolute left-2 top-2 hidden w-32 flex-col rounded-lg border border-slate-200 bg-white shadow-md sm:flex">
@@ -571,7 +571,7 @@ function EditorWindow({
             </svg>
           </div>
 
-          {/* The Tab Look & Feel dialog (spec/42): opens over the canvas,
+          {/* The Tab Look & Feel dialog (docs/specs/011-theme/canvas-and-theme-dialog.md): opens over the canvas,
               a theme card is picked (the selection ring moves, the pointer
               dips), it closes, and the recolour follows. Themed window only. */}
           {theming && playing ? (

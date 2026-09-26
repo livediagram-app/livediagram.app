@@ -1,5 +1,5 @@
 // Formal UML templates: the class diagram and the state machine. Both
-// lean on UML notation the arrow model already ships (spec/09): hollow
+// lean on UML notation the arrow model already ships (docs/specs/008-canvas/canvas-and-palette.md): hollow
 // triangle heads for inheritance, hollow diamonds for aggregation, and
 // event-labelled transitions. They share a file because they share
 // that notation vocabulary; the looser architecture sketches live in
@@ -7,7 +7,7 @@
 //
 // Each builder is pure: it takes a centre (cx, cy) and returns a fresh
 // Element[]. Sizing constants live inline so each template is
-// self-describing. See spec/09 "Templates" for the catalogue.
+// self-describing. See docs/specs/008-canvas/canvas-and-palette.md "Templates" for the catalogue.
 
 import {
   createPinnedArrow,
@@ -19,7 +19,7 @@ import {
 // A small media-library class model: an abstract MediaItem with Song /
 // Podcast subclasses and a Playlist aggregating items.
 //
-// Each class is one ENTITY element (spec/120) — a title bar over member
+// Each class is one ENTITY element (docs/specs/009-elements/entity.md) — a title bar over member
 // rows. It used to be two flush-stacked tables sharing a groupId, where the
 // SEAM between them stood in for the attribute / method separator: three
 // objects pretending to be one class, and members that could only be edited
@@ -35,7 +35,7 @@ import {
 export function buildUmlClass(cx: number, cy: number): Element[] {
   const classW = 270;
   const rowH = 26;
-  // The entity's title band (spec/120) at the default text size.
+  // The entity's title band (docs/specs/009-elements/entity.md) at the default text size.
   const TITLE_H = 30;
 
   type UmlClass = {

@@ -1,8 +1,8 @@
 import { makeTestRouteContext } from './test-route-context';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-// Route surface for the Activity page (spec/142 §3). The read is scoped
-// to the resolved owner inside the db layer (spec/142 §4), so what the
+// Route surface for the Activity page (docs/specs/013-workspace/activity-page.md §3). The read is scoped
+// to the resolved owner inside the db layer (docs/specs/013-workspace/activity-page.md §4), so what the
 // route has to get right is the owner gate, the verb surface, and the
 // one-shot backfill dispatch on first sight.
 

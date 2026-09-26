@@ -1,4 +1,4 @@
-// The smallest crop the in-browser reader is asked about (spec/139 Phase 9).
+// The smallest crop the in-browser reader is asked about (docs/specs/021-event-storming/event-storming.md Phase 9).
 //
 // Measured on 86 notes with known words (scripts/reader-bench.mts, shrinking
 // each crop to a given short edge): see docs/vision/handwriting-readers.md.

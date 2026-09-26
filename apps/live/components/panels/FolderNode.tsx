@@ -63,7 +63,7 @@ export function FolderNode({
 
   const [editing, setEditing] = useState(false);
   const menu = useRowMenu({ disabled: editing });
-  // Drop a dragged diagram on the header to file it here (spec/15).
+  // Drop a dragged diagram on the header to file it here (docs/specs/013-workspace/folders.md).
   const drop = useDiagramDropTarget(folder.id, tree.rows.onMoveDiagramToFolder);
 
   // Auto-enter rename mode for freshly-created folders.

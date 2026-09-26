@@ -9,7 +9,7 @@ import { defineProject } from '@livediagram/vitest-config';
 // Per-glob thresholds, so the bar applies file by file: a new module dropped
 // into src/auth/ is held to the same standard on the commit that adds it,
 // rather than being averaged away by its neighbours. The rest of the worker
-// has no threshold yet (spec/18) — this is the first ratchet, not the last.
+// has no threshold yet (docs/specs/003-system-architecture/testing.md) — this is the first ratchet, not the last.
 const GATE_KEEPERS = [
   'src/auth/**',
   'src/api-token-row.ts',

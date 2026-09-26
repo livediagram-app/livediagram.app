@@ -29,15 +29,15 @@ describe('HELP_ARTICLES deep links resolve to a real help page', () => {
 });
 
 describe('every key earns its place', () => {
-  // spec/56 pairs the two halves: "new placements reuse HelpArticleLink + a
+  // docs/specs/018-help/contextual-help-links.md pairs the two halves: "new placements reuse HelpArticleLink + a
   // HELP_ARTICLES key". A key with no surface is half a placement — it looks
   // like the editor links that article when nothing does, and the existing
   // test above passes happily because the PATH is fine.
   //
   // Six had accumulated. Four (mind maps, lanes, entities, the Behaviour
-  // category) never had a placement in spec/56 at all. Two more (the Explorer
+  // category) never had a placement in docs/specs/018-help/contextual-help-links.md at all. Two more (the Explorer
   // panel, reverting changes) lost theirs when the floating panels' header
-  // help icons were deliberately removed, which spec/56 records. Every one of
+  // help icons were deliberately removed, which docs/specs/018-help/contextual-help-links.md records. Every one of
   // those articles is still in the help centre; only the editor's unused
   // constants went.
   //
@@ -100,7 +100,7 @@ describe('helpArticleHref / helpArticleTelemetryId', () => {
   });
 });
 
-describe('HELP_LINK_COPY (spec/56)', () => {
+describe('HELP_LINK_COPY (docs/specs/018-help/contextual-help-links.md)', () => {
   // The tooltip on every help link: a "Learn about …" title naming what the
   // reader is looking at, and one line on what the article does for them.
   // The Record type already forces an entry per key; this guards the shape

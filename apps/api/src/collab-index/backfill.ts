@@ -1,4 +1,4 @@
-// One-shot seed of the collaboration index for one owner (spec/142
+// One-shot seed of the collaboration index for one owner (docs/specs/013-workspace/activity-page.md
 // §2.3). Tabs saved after the index shipped index themselves in the
 // save's own batch; this covers the dormant ones, so the Activity page
 // is not empty for somebody whose open actions all predate it.

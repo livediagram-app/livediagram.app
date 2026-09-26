@@ -1,6 +1,6 @@
 'use client';
 
-// A run of same-kind events, collapsed or open (spec/138 §2.1).
+// A run of same-kind events, collapsed or open (docs/specs/013-workspace/timeline.md §2.1).
 //
 // One cell of the day's grid, wearing the generic headline, with one or
 // two faux-card layers stepping out behind it so the pile reads as
@@ -33,7 +33,7 @@ export function StackedCard({
   registry: TimelineRendererRegistry;
   ctx: TimelineRendererContext;
   onToggle: () => void;
-  /** The host's ⋯ menu for the whole run (spec/138 §2.9). The card
+  /** The host's ⋯ menu for the whole run (docs/specs/013-workspace/timeline.md §2.9). The card
    *  stops its events at the slot, so opening it never toggles the run. */
   slots?: Pick<TimelineCardSlots, 'menu' | 'onContextMenu'>;
   /** The run is open: this card heads it and collapses it. */

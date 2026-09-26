@@ -20,7 +20,7 @@ import { useRereadOnChange } from './photo/useRereadOnChange';
 import { usePhotoView } from './photo/usePhotoView';
 import { kindOfBox } from './photo/kindOfBox';
 
-// Reviewing a photographed wall (spec/139 Phase 9).
+// Reviewing a photographed wall (docs/specs/021-event-storming/event-storming.md Phase 9).
 //
 // THE LAYOUT CONTRACT: the photograph IS the interface. It is sized to fit the
 // viewport with its aspect ratio intact, and everything else — the boxes, the
@@ -81,7 +81,7 @@ export function PhotoReviewOverlay({
   // Set when the hosted budget was spent and this device reads instead.
   readerFallback?: ReaderFallback;
   // Boxes being read again after a move, resize or draw, and the way to ask
-  // for that (spec/139 Phase 9).
+  // for that (docs/specs/021-event-storming/event-storming.md Phase 9).
   rereading?: number;
   onReread?: (boxes: DetectedSticky[]) => void;
   // The boxes to land AS THEY STAND — ticked, corrected, drawn — and the

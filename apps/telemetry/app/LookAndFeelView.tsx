@@ -16,7 +16,7 @@ import { CardColumns } from './CardColumns';
 import { RankCard, rank } from './RankCard';
 import { rankTrend, windowLabel } from './windows';
 
-// Look & Feel view (spec/22): which visual presets get picked, most to
+// Look & Feel view (docs/specs/017-telemetry/telemetry.md): which visual presets get picked, most to
 // least, plus how much the custom-theme builder gets used. The presets
 // are ranked usage lists (templates `Template·Used·<id>`, built-in themes
 // `Theme·Changed·<name>`, canvas patterns `Canvas·Changed·<pattern>`), the top
@@ -102,7 +102,7 @@ export function LookAndFeelView({
   );
 }
 
-// The custom-theme builder's four lifecycle actions (spec/22): created,
+// The custom-theme builder's four lifecycle actions (docs/specs/017-telemetry/telemetry.md): created,
 // applied, edited, deleted. Not a ranking (distinct verbs), so shown as
 // labelled stat tiles with their own mini trend.
 export const CUSTOM_THEME_METRICS: {

@@ -25,7 +25,7 @@ import {
   type BoxedElement,
   type Element,
 } from '@livediagram/diagram';
-// Shared SVG render helpers (spec/62 §5): moved into the diagram package so the
+// Shared SVG render helpers (docs/specs/015-api/mcp-server.md §5): moved into the diagram package so the
 // MCP worker reuses the same element drawing. The canvas / isometric / backdrop
 // orchestration below stays here and imports the per-element drawers + helpers.
 import {
@@ -43,7 +43,7 @@ import {
 import { isoDepthLayers, isoExtrudes, isoLayerBrightness, ISO_TILT_DEG } from './isometric';
 
 // Shared options for the image exports (PNG / SVG / PDF). `isometric` tilts
-// the rendered scene into the editor's isometric projection (spec/45 / 48),
+// the rendered scene into the editor's isometric projection (docs/specs/008-canvas/isometric-view.md / 48),
 // off by default. `pattern` paints the tab's backdrop pattern (grid / dots /
 
 function boxedSilhouettePath(
@@ -73,14 +73,14 @@ function boxedSilhouettePath(
   }
 }
 
-// Isometric extrusion (spec/45): behind the element body, paint a stack of its
+// Isometric extrusion (docs/specs/008-canvas/isometric-view.md): behind the element body, paint a stack of its
 // silhouette stepped along the projected depth axis — the same voxel column
 // the on-screen isometric view renders (IsometricDepthLayer). Each copy is the
 // element's accent dimmed toward the floor. The step is computed in element
 // space so that, once the iso matrix is applied to the context, every copy
 // lands at the right SCREEN depth offset (0, z·sin(elevation)); inverting that
 // projection gives the element-space offset z·tan(elevation)·(sinAz, cosAz).
-// `alpha` is an extra opacity FACTOR (per-layer opacity, spec/74)
+// `alpha` is an extra opacity FACTOR (per-layer opacity, docs/specs/006-diagram/layers.md)
 // multiplied over the element's own — same rule on all three drawers.
 export function drawBoxedExtrusion(
   ctx: CanvasRenderingContext2D,
@@ -146,7 +146,7 @@ export function drawBoxed(
   el: BoxedElement,
   resolveImage?: (imageId: string) => HTMLImageElement | undefined,
   alpha = 1,
-  // The tab default face (spec/28). The PNG rasterises in the browser, where
+  // The tab default face (docs/specs/004-interface-design/fonts.md). The PNG rasterises in the browser, where
   // the webfonts are already loaded, so it can paint the real typeface —
   // element font, else the notation's, else this.
   tabFont?: string,
@@ -180,7 +180,7 @@ export function drawBoxed(
   } else if (shape.kind !== 'none' && shape.kind !== 'sticker') {
     // Stickers are excluded because they are drawn art, not a fill + stroke
     // silhouette: `boxedNeedsSvgRaster` routes every one of them through its
-    // own SVG before this drawer is reached (spec/116).
+    // own SVG before this drawer is reached (docs/specs/010-palette/stickers.md).
     ctx.fillStyle = shape.fill;
     ctx.strokeStyle = shape.stroke;
     boxedSilhouettePath(ctx, el, shape.kind);

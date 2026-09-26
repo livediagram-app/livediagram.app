@@ -6,7 +6,7 @@ import { Tooltip } from '@/components/primitives/Tooltip';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { PadTread } from '@/components/canvas/paper-kit';
 
-// The face of a Reaction Pad (spec/135): a big pressable glyph over the
+// The face of a Reaction Pad (docs/specs/009-elements/reaction-pad.md): a big pressable glyph over the
 // element's label.
 //
 // It is a floor pad, not a button, and it is drawn like one: the glyph sits
@@ -15,8 +15,8 @@ import { PadTread } from '@/components/canvas/paper-kit';
 // Avatar-mode character walking onto it — and a thing you can stand on has to
 // look like a thing you can stand on.
 //
-// Interaction rules match the Selection Mode button (spec/103) and the Portal
-// (spec/104): a real <button> so a click travels rather than only selecting,
+// Interaction rules match the Selection Mode button (docs/specs/009-elements/mode-button.md) and the Portal
+// (docs/specs/009-elements/portal-element.md): a real <button> so a click travels rather than only selecting,
 // `pointer-events: auto` so it works inside the pointer-inert Avatar /
 // Spotlight / Isometric layers, and pointer-down left alone so dragging still
 // moves the element.
@@ -86,7 +86,7 @@ export function ReactionPadFace({
         aria-label={`Set off ${REACTION_LABEL[reaction]}`}
         className="pointer-events-auto relative h-full w-full cursor-pointer rounded-[inherit] transition active:scale-[0.97] @container"
       >
-        {/* A FLOOR PAD (spec/122). It has two triggers — a click, and a
+        {/* A FLOOR PAD (docs/specs/012-collaboration/participant-responses.md). It has two triggers — a click, and a
             character walking onto it in Avatar mode — so it has to look like
             a thing you can stand on. Rings out from the middle are what a
             pressure pad looks like from above. */}

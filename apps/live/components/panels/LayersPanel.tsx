@@ -18,7 +18,7 @@ import {
 } from '@/components/panels/layers-panel-icons';
 import type { MovablePanelPlacementProps } from '@/components/primitives/MovablePanel.types';
 
-// The Layers panel (spec/74): one row per layer, TOP layer first (the
+// The Layers panel (docs/specs/006-diagram/layers.md): one row per layer, TOP layer first (the
 // panel mirrors the paint stack like every design tool). Row = eye
 // toggle · a mini preview of just that layer's elements (all rows share
 // the whole tab's framing so content reads in place, like the Map) ·
@@ -67,7 +67,7 @@ export function LayersPanel({
   counts: Map<string, number>;
   // The tab's elements, for the per-row layer previews.
   elements: Element[];
-  // The tab default face (spec/28), so a preview matches the canvas.
+  // The tab default face (docs/specs/004-interface-design/fonts.md), so a preview matches the canvas.
   tabFont?: string;
   onMinimize: () => void;
   forceDockMode?: boolean;
@@ -85,7 +85,7 @@ export function LayersPanel({
   onReorderLayer: (layerId: string, toIndex: number) => void;
   // Merge the ACTIVE layer into its neighbour; the neighbour survives.
   onMergeLayer: (direction: 'above' | 'below') => void;
-  // Row context-menu verbs (spec/74). Opacity is a live slider (the hook
+  // Row context-menu verbs (docs/specs/006-diagram/layers.md). Opacity is a live slider (the hook
   // debounces its history step); clear + hide-others are one-shot.
   onSetLayerOpacity: (layerId: string, opacity: number) => void;
   onClearLayer: (layerId: string) => void;
@@ -93,10 +93,10 @@ export function LayersPanel({
   // Hover-to-solo: while a row is hovered the canvas shows ONLY that
   // layer; null restores the normal view. Ephemeral, never persisted.
   onPreviewLayer: (layerId: string | null) => void;
-  // The hover-solo user preference (spec/20) + its setter, surfaced in
+  // The hover-solo user preference (docs/specs/007-editor/user-preferences.md) + its setter, surfaced in
   // the header gear alongside Reset position.
   hoverPreviewEnabled: boolean;
-  // Row density (spec/74): the thumbnail and the element count are each
+  // Row density (docs/specs/006-diagram/layers.md): the thumbnail and the element count are each
   // optional, so a diagram with many layers reads as a compact list.
   showPreview: boolean;
   showCount: boolean;
@@ -118,7 +118,7 @@ export function LayersPanel({
   // tiles via useLayerThumbnails.
   const { thumbMarkup, thumbViewBox } = useLayerThumbnails(elements, layers, tabFont);
 
-  // Row context menu (spec/74): which layer it targets + where to hang
+  // Row context menu (docs/specs/006-diagram/layers.md): which layer it targets + where to hang
   // it (the panel's left edge at the clicked row).
   const [rowMenu, setRowMenu] = useState<{
     layerId: string;
@@ -309,7 +309,7 @@ export function LayersPanel({
                 aria-label="Delete Layer"
                 onClick={(e) => {
                   // Empty layers delete straight away; a populated one
-                  // asks first via an anchored popover (spec/74).
+                  // asks first via an anchored popover (docs/specs/006-diagram/layers.md).
                   if (activeCount === 0) onRemoveLayer(activeLayerId);
                   else setConfirmAnchor(e.currentTarget);
                 }}

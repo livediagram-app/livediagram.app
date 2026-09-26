@@ -9,7 +9,7 @@ import { FolderActionsMenu } from './folder-actions-menu';
 import { RelativeTimeChip } from '@/components/primitives/RelativeTimeChip';
 import type { FolderActionBundle } from './explorer-view-props';
 
-// The Explorer's folder row (spec/15), lifted out of views.tsx: the list
+// The Explorer's folder row (docs/specs/013-workspace/folders.md), lifted out of views.tsx: the list
 // row (icon, inline rename, child-count badge, relative time, ellipsis /
 // right-click menu). The menu itself is the shared FolderActionsMenu,
 // which the cards, the sidebar tree and the floating panel open too.

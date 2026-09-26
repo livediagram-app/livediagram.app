@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { makeTestRouteContext } from './test-route-context';
 
-// Telemetry ingest (spec/22). Everything here answers 204 whatever happens —
+// Telemetry ingest (docs/specs/017-telemetry/telemetry.md). Everything here answers 204 whatever happens —
 // telemetry must never surface an error to the caller — so the assertions are
 // about what reached the DB layer, not the status code.
 //
@@ -95,7 +95,7 @@ describe('handleEvents rate limiting', () => {
   });
 });
 
-describe('handleEvents page views (spec/150)', () => {
+describe('handleEvents page views (docs/specs/017-telemetry/page-view-telemetry.md)', () => {
   it('stores a normalised path and drops anything that is not one', async () => {
     const ctx = makeTestRouteContext('POST', '/api/events', {
       body: {
@@ -124,7 +124,7 @@ describe('handleEvents page views (spec/150)', () => {
   });
 });
 
-describe('handleEvents server-emitted pairs (spec/22)', () => {
+describe('handleEvents server-emitted pairs (docs/specs/017-telemetry/telemetry.md)', () => {
   it('drops the pairs the worker counts itself, keeping the rest of the batch', async () => {
     // Session·SignedUp / SignedIn and Diagram·Joined moved server-side; an
     // old cached editor bundle still posting them must not double count.

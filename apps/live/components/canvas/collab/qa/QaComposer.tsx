@@ -1,4 +1,4 @@
-// The Q&A board's composer (spec/151): a field, an Anonymous toggle and a send
+// The Q&A board's composer (docs/specs/012-collaboration/qa-board.md): a field, an Anonymous toggle and a send
 // button. Enter posts. The toggle is sticky for the session on purpose: people
 // who want to ask anonymously tend to want it for every note, and re-arming
 // it per note is how a name slips onto the one note that shouldn't have it.

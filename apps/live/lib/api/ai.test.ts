@@ -143,7 +143,7 @@ describe('AI shape vocabulary agrees with the server prompt', () => {
   });
 });
 
-// Reading sticky crops (spec/139 Phase 8). Non-streaming and BATCHED, so what
+// Reading sticky crops (docs/specs/021-event-storming/event-storming.md Phase 8). Non-streaming and BATCHED, so what
 // matters is that a run of any size becomes the right requests, that every
 // answer comes back in one list, and that a failure arrives as its TOKEN.
 describe('apiAiReadNotes', () => {

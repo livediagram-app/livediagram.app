@@ -1,4 +1,4 @@
-// Palette-category illustrations (spec/55): the Shapes and Arrows the palette
+// Palette-category illustrations (docs/specs/018-help/help-app.md): the Shapes and Arrows the palette
 // places, morphing one shape kind into another, shape markers, style presets,
 // arrow styles, draggable curve / elbow handles, and arrow-to-arrow snapping.
 // Composed only from the shared primitives so the house style holds.

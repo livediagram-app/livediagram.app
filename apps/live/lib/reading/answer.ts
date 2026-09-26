@@ -1,6 +1,6 @@
 import { normaliseRead, type ReadText } from './types';
 
-// What the in-browser model's answer MEANS for a note (spec/139 Phase 9).
+// What the in-browser model's answer MEANS for a note (docs/specs/021-event-storming/event-storming.md Phase 9).
 //
 // A line break is layout, the model's own "no writing" is a blank note, and an
 // answer shaped like CHAT rather than like a sticky note is not a reading.

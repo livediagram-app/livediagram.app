@@ -18,7 +18,7 @@ describe('panel-layout', () => {
   it('default layout preserves the historical fixed arrangement', () => {
     const layout = defaultPanelLayout();
     expect(layout.corners['top-left']).toEqual(['explorer']);
-    // Vote (spec/39) and Poll (spec/88) sit directly under the Palette.
+    // Vote (docs/specs/012-collaboration/session-tools.md) and Poll (docs/specs/012-collaboration/live-poll.md) sit directly under the Palette.
     // They're the two panels that aren't always present — each exists
     // only while its session is running — so most of the time this corner
     // renders as just palette + collaborate + ai.

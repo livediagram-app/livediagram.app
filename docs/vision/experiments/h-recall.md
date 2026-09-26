@@ -1,7 +1,7 @@
 # Experiments, group H: recall, round 3
 
-Part of [the experiment plan](../../../plans/event-storming-photo-95-experiments.md)
-towards [the bar](../../../plans/event-storming-photo-95.md), after round 2's
+Part of the experiment plan
+towards the bar, after round 2's
 [no-box group](f-nobox.md) and [colour group](a2-colour.md). Owned files:
 `boxes.ts`, `detect.ts`, `classify.ts`, `floors.ts`, `lab.ts`, `colour.ts`.
 Target: recall without actors ≥ 95% on every wall.

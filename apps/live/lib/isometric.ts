@@ -1,11 +1,11 @@
-// Isometric view (spec/45): pure projection constants + helpers for the
+// Isometric view (docs/specs/008-canvas/isometric-view.md): pure projection constants + helpers for the
 // navigation-only isometric canvas tool. Kept out of Canvas.tsx so the
 // geometry is unit-testable and the canvas just consumes the values.
 
 import { shapePolygonVertices, type BoxedElement, type ShapeKind } from '@livediagram/diagram';
 
 // Whether a boxed element gets an extrusion column in isometric view
-// (spec/45). One predicate shared by the live IsometricDepthLayer and both
+// (docs/specs/008-canvas/isometric-view.md). One predicate shared by the live IsometricDepthLayer and both
 // exporters so the three can't drift:
 // - Frames are section BACKDROPS, not solid blocks — extruding one raises a
 //   huge column of near-coplanar slabs under everything inside it (z-fights
@@ -17,7 +17,7 @@ import { shapePolygonVertices, type BoxedElement, type ShapeKind } from '@livedi
 //   anonymous block and buries the artwork.
 export function isoExtrudes(el: BoxedElement): boolean {
   if (el.type === 'text') return false;
-  // A sticker is a flat thing stuck ON the board (spec/116), so it gets no
+  // A sticker is a flat thing stuck ON the board (docs/specs/010-palette/stickers.md), so it gets no
   // extruded column — the same reason a glyph and a frame section don't.
   if (
     el.type === 'shape' &&
@@ -115,7 +115,7 @@ export function isoTransform(
 }
 
 // The 2D affine matrix equivalent of `isoTransform` for a flat (z=0) plane,
-// used by the image export (spec/48 isometric export). Isometric is a parallel
+// used by the image export (docs/specs/010-palette/style-presets.md isometric export). Isometric is a parallel
 // (orthographic) projection with no perspective, so projecting the diagram
 // plane under `rotateX(elevation) rotateZ(azimuth)` collapses to a plain 2x2
 // affine map: an in-plane rotation by the azimuth, then a vertical squash by

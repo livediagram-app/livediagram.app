@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Env } from '../types';
 
 // Characterisation tests for handleImages' authorisation surface
-// (spec/19). Covers: the 503 fallback when R2 is absent (self-host), the
+// (docs/specs/009-elements/images.md). Covers: the 503 fallback when R2 is absent (self-host), the
 // owner gate on the gallery list / usage / delete, and the byte-read
 // access policy (image owner OR a share-readable diagram that references
 // the image). Pins behaviour ahead of the requireOwner extraction.

@@ -1,4 +1,4 @@
-// How big a note is HERE (spec/139 Phase 9).
+// How big a note is HERE (docs/specs/021-event-storming/event-storming.md Phase 9).
 //
 // One median note size serves a photograph taken square-on to a short wall.
 // A wide or angled photograph is not like that: the notes at the near end

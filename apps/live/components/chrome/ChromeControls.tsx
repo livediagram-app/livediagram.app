@@ -5,7 +5,7 @@ import { GearIcon, GithubIcon, SearchGlyph } from '@/components/chrome/tab-bar-i
 import { REPO_URL } from '@livediagram/ui';
 
 // The right-hand control cluster shared by the editor's bottom tab bar and
-// the Explorer's bottom bar (spec/07): search, the open-source GitHub
+// the Explorer's bottom bar (docs/specs/007-editor/live-app.md): search, the open-source GitHub
 // link, settings, and the dark-mode toggle. Each callback-driven control
 // renders only when its handler is supplied; dark-mode is always shown, and
 // GitHub unless the host opts out. Keyboard shortcuts live in Settings' Keyboard category. Rendered as a fragment
@@ -26,7 +26,7 @@ export function ChromeControls({
   settingsDescription?: string;
   labelled?: boolean;
   // The editor moved its GitHub link into the Explorer panel's ⋯ menu
-  // (spec/15); the full-page Explorer's bar keeps it.
+  // (docs/specs/013-workspace/folders.md); the full-page Explorer's bar keeps it.
   github?: boolean;
 }) {
   const BTN = labelled ? `${CHROME_BTN} ${CHROME_BTN_LABELLED}` : CHROME_BTN;
@@ -42,7 +42,7 @@ export function ChromeControls({
       ) : null}
       {github ? (
         <>
-          {/* Open-source repo link (the codebase is public + MIT, spec/03). An
+          {/* Open-source repo link (the codebase is public + MIT, docs/specs/002-project-scope/open-source-and-business-model.md). An
           external <a>, not a callback, so it needs no wiring.
 
           Hidden below sm: the bottom bar is tight on a phone and this is the

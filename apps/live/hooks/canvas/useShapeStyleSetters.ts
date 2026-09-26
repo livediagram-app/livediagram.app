@@ -30,7 +30,7 @@ type ShapeStyleSetterDeps = {
 };
 
 /**
- * Bounds for a typed-in size (spec/134). A zero or negative box is not a
+ * Bounds for a typed-in size (docs/specs/008-canvas/element-size.md). A zero or negative box is not a
  * shape, and a runaway one (a stray extra digit) is a diagram nobody can pan
  * out of, so the box is clamped rather than trusted.
  */
@@ -83,7 +83,7 @@ export function useShapeStyleSetters({
     track('Element', 'Changed', 'AspectRatioReset');
   };
 
-  // Set the selected element's size in exact pixels (spec/134).
+  // Set the selected element's size in exact pixels (docs/specs/008-canvas/element-size.md).
   //
   // Canvas pixels at 100% zoom, which is the only unit the model has — a
   // floorplan drawn at "10px per cm" is the user's own scale, and inventing a
@@ -162,7 +162,7 @@ export function useShapeStyleSetters({
     track('Element', 'Changed', 'BorderRadius');
   };
 
-  // Style presets (spec/48). One-click looks for the selected shape(s),
+  // Style presets (docs/specs/010-palette/style-presets.md). One-click looks for the selected shape(s),
   // Set a field on every selected shape (any shape kind), the shape-wide
   // counterpart of setArrowFieldSelected. The icon / progress / rating helpers
   // gate to their specific shape kinds; this is for fields any shape can carry.
@@ -174,7 +174,7 @@ export function useShapeStyleSetters({
     );
     track('Element', 'Changed', telemetryType);
   };
-  // Status markers (spec/49). A glyph shown inside the shape, left of its
+  // Status markers (docs/specs/009-elements/shape-markers.md). A glyph shown inside the shape, left of its
   // label; `null` clears it. `markerSize` is a TextSize bucket ('scale' tracks
   // the element's text). Shapes only.
   const setMarkerSelected = (marker: ShapeMarker | null) =>
@@ -182,7 +182,7 @@ export function useShapeStyleSetters({
   const setMarkerSizeSelected = (size: TextSize) =>
     setShapeFieldSelected({ markerSize: size }, 'MarkerSize');
 
-  // A preset is one complete look (spec/48): in a single history step it writes
+  // A preset is one complete look (docs/specs/010-palette/style-presets.md): in a single history step it writes
   // fill + stroke + text + border weight / style / radius at once (unlike the
   // per-field setters above). Shapes only.
   const applyShapeColorPresetSelected = (preset: ShapeColorPreset) => {
@@ -215,7 +215,7 @@ export function useShapeStyleSetters({
           strokeWidth: undefined,
           strokeStyle: undefined,
           borderRadius: undefined,
-          // Reset style clears the drop shadow too (spec/86): the plain
+          // Reset style clears the drop shadow too (docs/specs/008-canvas/element-shadows.md): the plain
           // theme look carries none.
           shadow: undefined,
           // Drop the colour-preset binding too — reset returns to the plain

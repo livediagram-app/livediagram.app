@@ -28,7 +28,7 @@ const ZERO = { diagrams: 0, folders: 0, shared: 0, images: 0 };
 //     the TARGET is the new signed id, proven by `toSignature`. NOTE: the
 //     source is only bearer-authenticated, so this path carries the same
 //     residual exposure as the pre-signing guest model for legacy ids
-//     during the transition window (spec/04). New guests never use it.
+//     during the transition window (docs/specs/014-identity/auth-and-guest-access.md). New guests never use it.
 //
 // Idempotent: a no-op (source == target) moves zero rows.
 export async function handleMigrate(ctx: RouteContext): Promise<Response> {

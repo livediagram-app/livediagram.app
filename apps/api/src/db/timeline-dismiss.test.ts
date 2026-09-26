@@ -7,7 +7,7 @@ import {
 } from './timeline';
 import type { Env } from '../types';
 
-// Per-entry dismissal (spec/138 §2.9).
+// Per-entry dismissal (docs/specs/013-workspace/timeline.md §2.9).
 //
 // The dismissal is a soft mark on the MEMBERSHIP row, so the read side
 // has to filter it everywhere a membership is joined: the feed itself

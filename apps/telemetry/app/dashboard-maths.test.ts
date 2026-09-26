@@ -4,7 +4,7 @@ import { pct } from './chart-utils';
 import { buildMetrics } from './metrics';
 import { WINDOW_META, buildWindowCounts, windowHighlightFrom, windowLabel } from './windows';
 
-// The arithmetic behind the public dashboard (spec/22). It is public and
+// The arithmetic behind the public dashboard (docs/specs/017-telemetry/telemetry.md). It is public and
 // indexable, so a wrong number here is wrong in the open — and none of these
 // helpers had a test: the app's only suite covers the event vocabulary.
 //

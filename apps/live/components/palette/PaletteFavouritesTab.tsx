@@ -27,7 +27,7 @@ import { PaletteFavouritesReorder } from './PaletteFavouritesReorder';
 import { orderByRecent } from '@/lib/toolbar-recent-tiles';
 import { usePaletteRecent } from './palette-recent-context';
 
-// The Favourites category (spec/78): the user's go-to creation tiles in one
+// The Favourites category (docs/specs/010-palette/palette-favourites.md): the user's go-to creation tiles in one
 // grid, the palette's default landing. The grid renders the saved tiles
 // exactly like their home tabs (same tiles, tinting, draw-to-size, drag);
 // curation happens in the edit-favourites MODAL (search + category filter +
@@ -38,7 +38,7 @@ import { usePaletteRecent } from './palette-recent-context';
 // arrangement and dragging it where you will actually use it beats dragging a
 // list in a dialog.
 //
-// It also carries the palette's CROSS-CATEGORY search (spec/110). Flattening
+// It also carries the palette's CROSS-CATEGORY search (docs/specs/010-palette/palette-top-level-categories.md). Flattening
 // the palette put every element one click away but spread them over ten
 // categories, so "where does Checklist live now" needed an answer that isn't
 // "open each one". Favourites is the default landing, which makes it the
@@ -102,7 +102,7 @@ export function PaletteFavouritesTab({
   // icon catalogues; subscribing re-renders this grid when the chunk lands
   // so they pop in rather than silently missing until a later re-render.
   const iconCatalogsLoaded = useIconCatalogs();
-  // The Toolbar layout (spec/148) orders Favourites by use rather than by
+  // The Toolbar layout (docs/specs/007-editor/toolbar-layout.md) orders Favourites by use rather than by
   // hand: the grid follows the strip, used tiles first, and the Reorder /
   // Edit footer is gone, since a hand-made order would be overridden on the
   // next use anyway.

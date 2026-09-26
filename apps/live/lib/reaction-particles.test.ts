@@ -8,7 +8,7 @@ import {
   type Particle,
 } from './reaction-particles';
 
-// The burst physics (spec/135). Worth testing because the numbers are the
+// The burst physics (docs/specs/009-elements/reaction-pad.md). Worth testing because the numbers are the
 // effect: a burst with no spread, no gravity or a frame-rate-dependent drag
 // looks wrong in a way no type check catches.
 

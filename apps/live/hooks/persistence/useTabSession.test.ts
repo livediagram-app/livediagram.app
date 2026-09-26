@@ -115,7 +115,7 @@ describe('one dot per item', () => {
   });
 });
 
-describe('while somebody else is facilitating (spec/149)', () => {
+describe('while somebody else is facilitating (docs/specs/012-collaboration/facilitator.md)', () => {
   it('refuses to start the timer', () => {
     const { session, tab } = harness({}, { sessionToolsBlocked: true });
     session().startTimer('countdown', 60_000);
@@ -146,7 +146,7 @@ describe('while somebody else is facilitating (spec/149)', () => {
   });
 });
 
-describe('dot-vote telemetry (spec/22)', () => {
+describe('dot-vote telemetry (docs/specs/017-telemetry/telemetry.md)', () => {
   const votedCalls = () =>
     vi.mocked(track).mock.calls.filter(([c, a]) => c === 'Element' && a === 'Voted');
   const retractedCalls = () =>

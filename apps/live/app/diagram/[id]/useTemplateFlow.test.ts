@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { templatePickerTabAction } from './useTemplateFlow';
 
-// The Quick Start picker is scoped to the tab it opened on (spec/14).
+// The Quick Start picker is scoped to the tab it opened on (docs/specs/007-editor/new-diagram-route.md).
 // Applying a template REPLACES that tab's elements, so a picker that
 // outlives its tab is a data-loss bug: add Tab 2 (picker opens), switch
 // back to Tab 1, confirm a template, and Tab 1's work is gone.

@@ -7,7 +7,7 @@ import {
 } from '@livediagram/help-registry/telemetry';
 import { articles } from './articles';
 
-// Help telemetry (spec/22) names an article by its telemetry id: `Help·View`,
+// Help telemetry (docs/specs/017-telemetry/telemetry.md) names an article by its telemetry id: `Help·View`,
 // `Help·Helpful` / `Help·Unhelpful` here, and the editor's help-link
 // `UI·Opened`. Two articles with one id report one merged number, which is
 // what happened to the two Format Painter and the two Palette articles while

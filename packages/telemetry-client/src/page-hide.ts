@@ -1,4 +1,4 @@
-// Run a callback when the page is being hidden or unloaded (spec/22), BEFORE
+// Run a callback when the page is being hidden or unloaded (docs/specs/017-telemetry/telemetry.md), BEFORE
 // the telemetry engine's own page-hide flush sends its last batch.
 //
 // For an emit a host deliberately holds back (a debounced slider change, a

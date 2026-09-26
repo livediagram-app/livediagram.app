@@ -3,7 +3,7 @@
 // `isTechIconId` gates paths that cannot wait for that chunk: the editor's
 // coloured-vs-line-art render dispatch, drag fold-into-shape exclusion and
 // telemetry typing, and the diagram package's connector geometry (a tech
-// icon's arrows attach to its fixed-size mark, spec/41). Tech ids carry no
+// icon's arrows attach to its fixed-size mark, docs/specs/010-palette/technology-icons.md). Tech ids carry no
 // common prefix ('aws-*' but also bare 'k8s' / 'docker'), so a cheap prefix
 // test can't replace a membership check; ~68 short strings ≈ 1 kB. A parity
 // test (apps/live tech-icons.test.ts) pins this set to the data catalogue's

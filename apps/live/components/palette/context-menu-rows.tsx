@@ -77,10 +77,10 @@ export function MarkersMenuGlyph() {
   );
 }
 
-// Markers control (spec/49): a None option + one illustrated tile per marker,
+// Markers control (docs/specs/009-elements/shape-markers.md): a None option + one illustrated tile per marker,
 // then a Size row (Scale / S / M / L, mirroring the Text size control).
 // 'scale' tracks the element's text size. The Size row is always present —
-// see the note on it below (spec/98).
+// see the note on it below (docs/specs/004-interface-design/flyout-height-stability.md).
 export function MarkerTiles({
   marker,
   size,
@@ -94,7 +94,7 @@ export function MarkerTiles({
   size: TextSize;
   onSet: (v: ShapeMarker | null) => void;
   onSetSize: (v: TextSize) => void;
-  // Optional hover-preview pair (spec/48 flow) for the marker tiles and the
+  // Optional hover-preview pair (docs/specs/010-palette/style-presets.md flow) for the marker tiles and the
   // Size row: hovering shows the marker live, leaving reverts.
   onPreview?: (v: ShapeMarker | null) => void;
   onPreviewSize?: (v: TextSize) => void;
@@ -205,7 +205,7 @@ export function TextSizeTiles({
 }: {
   current: TextSize | undefined;
   onSet: (size: TextSize) => void;
-  // Optional hover-preview pair (spec/48 flow): hovering a tile shows the
+  // Optional hover-preview pair (docs/specs/010-palette/style-presets.md flow): hovering a tile shows the
   // size live, leaving reverts. Callers without preview (table cells) omit.
   onPreview?: (size: TextSize) => void;
   onPreviewEnd?: () => void;

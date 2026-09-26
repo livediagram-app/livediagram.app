@@ -1,4 +1,4 @@
-// The Q&A board's spotlight (spec/151): the note the room is discussing, lifted
+// The Q&A board's spotlight (docs/specs/012-collaboration/qa-board.md): the note the room is discussing, lifted
 // out of the queue into a lit card with a slow accent sweep round its edge and
 // a breathing "live" dot. The facilitator closes it from here, or closes it
 // and brings up the next top note in one press.

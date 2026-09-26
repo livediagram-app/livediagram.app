@@ -32,7 +32,7 @@ export default function LandingPage() {
 
         {/* Each feature category is pitched as a compact advertising block that
             links into its own /features/<id> page, rather than enumerating
-            every feature card inline (spec/16). The block alternates its art
+            every feature card inline (docs/specs/019-marketing/marketing-site.md). The block alternates its art
             side + tinted background by index for rhythm. */}
         {LANDING_SECTIONS.map((section, index) => (
           <Fragment key={section.id}>

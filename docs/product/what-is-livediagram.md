@@ -1,0 +1,58 @@
+# What is livediagram?
+
+A multiplayer canvas in the browser. Teams build diagrams and mindmaps together in real time: shared cursors, live selections, per-tab activity log with surgical revert. The canvas always works without signing in, so the friction to start is "open the link, start drawing."
+
+The hosted product is at **[livediagram.app](https://livediagram.app)**. The entire codebase is [MIT-licensed](../../LICENSE) and self-hostable end-to-end.
+
+## Who it's for
+
+Teams that think visually together:
+
+- Engineering teams sketching architecture, sequence flows, system designs.
+- Product and design teams mapping user journeys, information architecture, brainstorms.
+- Cross-functional groups in workshops, planning sessions, retrospectives.
+
+The unit of value is the team, not the individual. See [Purpose](../specs/001-project-vision/purpose.md) for the full positioning.
+
+## What's built today
+
+- **Canvas primitives**: shapes (fourteen geometric primitives plus frames, device mockups for wireframing, progress bars / rings, star ratings, timeline rails, pie / bar / line charts, syntax-highlighted code blocks, and tickable checklists, plus a curated single-colour icon catalogue and a ~190-strong colour-emoji sticker set, see [Stickers](../specs/010-palette/stickers.md)), tables, sticky notes, text, images, arrows (straight / curved / angled with draggable curve / elbow handles, configurable thickness + arrowhead size, optional labels), freehand sketches via the Freehand and Shape Pen tools (smooth SVG paths; the Shape Pen auto-converts a rough square / circle / diamond / triangle / star / line into the real element on release, see [Two pens instead of a pen and a mode](../specs/008-canvas/two-pens.md)), a translucent Highlighter held as a canvas mode with its own colour + strength panel (see [Highlighter](../specs/008-canvas/highlighter.md)), a click-to-place polygon / polyline tool, comment threads, per-element links + locks, and drop shadows with presets + sliders (see [Element shadows](../specs/008-canvas/element-shadows.md)).
+- **Multi-select**: marquee drag, shift-click, format painter.
+- **Layers**: per-tab Photoshop-style layers with a dockable Layers panel (per-layer previews, hide, lock, rename, drag-to-restack); Bring to Front / Send to Back move elements between layers, and hidden layers stay out of exports. See [Layers](../specs/006-diagram/layers.md).
+- **Presentation mode**: build a **slide deck** over a diagram and run it full screen. A slide is an explicit set of elements you picked from one tab; the deck spans tabs, so slide 1 can come from one board and slide 2 from another. Slides reference elements rather than copying them, so editing a shape updates every slide it is on. Built and started from the Slide Deck panel: reorder by dragging, rename, duplicate, hide a slide from the run without deleting it, and write presenter notes you open on demand behind a button. A cog carries the transition and its speed, auto-advance, looping, and whether a small slide fills the screen. Presenting shows a room what you want them to see over a screen share: it broadcasts nothing, and nothing on a slide can be changed, though clicking an element still shows its note, comments and actions. See [Presentation mode](../specs/012-collaboration/presentation-mode.md).
+- **Rotation**: tilt any boxed element about its centre to a preset 45° angle from the right-click Rotation menu or the search palette's Rotate actions; the angle round-trips through copy / paste / duplicate / save ([Canvas and palette](../specs/008-canvas/canvas-and-palette.md)).
+- **Templates**: forty-six starters across eight categories (mind maps, flowcharts, hierarchies, agile, project management, strategy, design, technical), from Blank, Flowchart, Kanban, and SWOT to Gantt, ER diagram, sequence diagram, system architecture, and three UI wireframes.
+- **Themes**: twenty-six presets (including the multi-colour palettes from [Multi-colour (rainbow) themes](../specs/011-theme/multicolour-themes.md)) that recolour the canvas, every shape, every arrow in one click, plus a custom-scheme builder that saves owner-scoped schemes to the database ([Custom themes](../specs/011-theme/custom-themes.md)). The Default scheme has a light and a dark half and follows each reader's own appearance setting ([Live app](../specs/007-editor/live-app.md)).
+- **Multiplayer**: live presence, cursors, selection rings, comments, laser-pointer broadcast via per-diagram Durable Object rooms.
+- **Audit log**: every change recorded per-tab; one-click revert on any entry, even after later edits.
+- **Tabs**: every diagram is a stack of tabs (link across them; copy a tab into another diagram).
+- **Folders**: nested folders in the Explorer; full-page `/explorer` for signed-in users.
+- **Timeline**: `/explorer` opens on a day-grouped feed of everything that happened across your diagrams, teams and account (comments, assigned actions, team membership, invites, plus forward-dated expiry warnings), with an unread marker and a calendar month view. Guests included; their history migrates on sign-up. See [Timeline](../specs/013-workspace/timeline.md).
+- **Activity**: the Explorer section beside the Timeline that lists what is still _outstanding_ for you across every diagram: open actions assigned to you, open actions you assigned to others, and unresolved comment threads you are in, each row opening the diagram at that element with its popover ready. See [Activity page](../specs/013-workspace/activity-page.md).
+- **Sharing**: editor or view-only share links per diagram, with an optional password gate that applies to every link on the diagram; revoke individually or in bulk at any time.
+- **Embeds**: a read-only `/embed` view of any share link, iframe-able into wikis, Notion, and docs (copy the snippet from the Share dialog); live-updates as the diagram is edited. See [Read-only embeds (`/embed`)](../specs/013-workspace/embeds.md).
+- **Hybrid auth**: guests get everything (full persistence keyed to a per-browser id); signed-in users (Clerk) get cross-device sync and account self-delete.
+- **Offline Mode** (optional, per diagram): create a diagram saved only in this browser (IndexedDB), never on the server. Opt in from the New Diagram wizard's Settings step; convert either way later (Sync Diagram uploads it to your account, Take Offline pulls a cloud diagram down and deletes the server copy). See [Offline Mode](../specs/006-diagram/offline-mode.md).
+- **Export / import**: export the active tab as PNG, SVG, PDF, Mermaid, Markdown, Excalidraw, or a portable JSON file; import JSON, Mermaid (flowchart / state / ER, connections intact), Markdown, or a `.excalidraw` file into the active tab. See [Mermaid import & export](../specs/020-import-export/mermaid.md) and [Excalidraw import & export](../specs/020-import-export/excalidraw-import-export.md).
+- **"Shared with you" Explorer accordion**: visitors can make their own copy of a shared diagram.
+- **Teams**: create teams with Admin / Member roles and email invites in the Explorer, plus a per-team shared library of diagrams. See [Teams](../specs/013-workspace/teams.md) and [Team shared diagrams](../specs/013-workspace/team-shared-diagrams.md).
+- **Assigned actions**: attach a named, described piece of work to any element and assign it to a teammate, optionally emailing them. Actions live beside comments in the Collaborate panel, so a diagram can carry the follow-ups it generated instead of them leaking into a separate tracker. See [Assigned actions](../specs/012-collaboration/assigned-actions.md).
+- **API tokens + public API**: signed-in users can mint `lvd_` tokens and drive the REST API from outside the editor — scripts, CI, anything that can send a header. See [Public API and API tokens](../specs/015-api/public-api-and-tokens.md).
+- **MCP server**: `mcp.livediagram.app` connects the editor to AI tools over OAuth, so an assistant can find, read, create, and edit your diagrams directly. It's an OAuth front door onto the same API tokens above, not a second permission model. See [MCP server](../specs/015-api/mcp-server.md).
+- **AI assistance** (optional): an in-editor panel with two modes — Ask answers questions about the active tab, Clean fixes label typos and normalises sizes, positions, and styles. Off by default; needs an `a model key` on the api worker plus per-user opt-in in Settings, and is hidden entirely on forks that don't configure a key. See [AI Assistance](../specs/007-editor/ai-assistance.md). This is the in-editor panel only — for driving diagrams from an outside assistant, see the MCP server above.
+- **Telemetry**: anonymous first-party product events stored in D1; public dashboard at `/telemetry`. No third-party analytics; no identifiers crossing the wire. Off in OSS forks unless the worker is configured for it. See [Telemetry + public transparency dashboard](../specs/017-telemetry/telemetry.md).
+- **Transactional + lifecycle email** (optional): welcome on first sign-in, week-1 / week-2 onboarding tips off the daily cron, and transactional team-invite + account-deleted messages, sent via Resend. Off until a `RESEND_API_KEY` is set; guests never receive email (it's authenticated-only). See [Transactional & lifecycle email (Resend)](../specs/014-identity/transactional-email.md).
+
+## What's still ahead
+
+- **Finer-grained team permissions** (today every member can edit every team diagram).
+
+Realtime collaboration is in good shape: concurrent edits to _different_ elements merge, the room orders mutations so everyone converges, and a dropped connection catches up on reconnect (see [Realtime conflict resolution](../specs/012-collaboration/realtime-conflict-resolution.md)). Two people editing the _same_ element at once is headed off by the selection lock ([Live app](../specs/007-editor/live-app.md)), so a full field-level CRDT isn't needed.
+
+## Open source
+
+- The codebase is **[MIT-licensed](../../LICENSE)** and publicly viewable. Anyone can self-host.
+- The hosted version at [livediagram.app](https://livediagram.app) runs alongside. **Free for everyone, no paid tier, no plan to introduce one.**
+- The OSS core never calls home and never gates features behind a license check. Its SaaS integrations are all optional, each gated on its own key — Clerk (auth), Resend (email), and OpenAI (the AI assistant): with `CLERK_JWKS_URL` / `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` unset the api worker and live frontend degrade to pure-guest mode and the editor is fully usable. A self-hoster who wants zero outbound runtime traffic (besides Cloudflare) can leave all three unset.
+
+See [Open source + distribution](../specs/002-project-scope/open-source-and-business-model.md) for the distribution model, and [Auth + guest access](../specs/014-identity/auth-and-guest-access.md) for the hybrid auth contract.

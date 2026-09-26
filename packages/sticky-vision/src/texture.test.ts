@@ -9,7 +9,7 @@ import {
   valueSpreadOf,
 } from './texture';
 
-// Junk rejection by what the PAPER looks like (spec/139 Phase 9): every image
+// Junk rejection by what the PAPER looks like (docs/specs/021-event-storming/event-storming.md Phase 9): every image
 // is drawn here, so each feature is checked against a surface whose texture is
 // known exactly.
 

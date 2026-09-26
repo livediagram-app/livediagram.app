@@ -4,7 +4,7 @@ import { EVENT_GLYPH_PATHS } from './icons';
 
 // A card shows its glyph twice, small in the reason line and large in
 // the preview box when there is no snapshot, so two event types sharing
-// a mark read as the same event at a glance (spec/138 §2). The compiler
+// a mark read as the same event at a glance (docs/specs/013-workspace/timeline.md §2). The compiler
 // keeps the map exhaustive; this keeps it distinct.
 describe('timeline event glyphs', () => {
   it('gives every event type its own mark', () => {

@@ -1,4 +1,4 @@
-// Offline Mode conversions (spec/76): move a diagram between the browser-only
+// Offline Mode conversions (docs/specs/006-diagram/offline-mode.md): move a diagram between the browser-only
 // IndexedDB store and the cloud API, in both directions.
 //
 // Ordering is chosen so a failure never loses the diagram: the destination is
@@ -32,12 +32,12 @@ import {
 export async function saveOfflineToCloud(offlineId: string, ownerId: string): Promise<string> {
   const rec = await offlineGetRecord(offlineId);
   if (!rec) throw new Error('offline diagram not found');
-  // Re-home embedded data-URI images to R2 first (spec/19 + /76): the cloud
+  // Re-home embedded data-URI images to R2 first (docs/specs/009-elements/images.md + /76): the cloud
   // copy gets real gallery images instead of bloated tab JSON. Best-effort
   // per image; a kept data URI still renders.
   const tabs = await uploadEmbeddedImages(ownerId, rec.tabs);
   // Declare the conversion so the feed says "Synced to the Cloud" rather than
-  // reporting a brand-new diagram (spec/76 + spec/138).
+  // reporting a brand-new diagram (docs/specs/006-diagram/offline-mode.md + docs/specs/013-workspace/timeline.md).
   // Everything the record holds besides tabs travels too: the local copy is
   // deleted next, so a deck or placement left behind is gone for good.
   await apiCreateDiagram(
@@ -53,7 +53,7 @@ export async function saveOfflineToCloud(offlineId: string, ownerId: string): Pr
     { conversion: 'sync' },
   );
   await offlineDeleteDiagram(rec.id);
-  // The star lived on the offline record (spec/95), which just went. Re-star
+  // The star lived on the offline record (docs/specs/013-workspace/favourites.md), which just went. Re-star
   // on the server AFTER the delete: while the id is still registered offline,
   // apiSetFavourite would route the star straight back to the local store.
   if (rec.favourite) await apiSetFavourite(ownerId, rec.id, true);
@@ -95,7 +95,7 @@ export async function takeCloudOffline(
   // Embed referenced R2 images as data URIs BEFORE the server delete below:
   // once the diagram row is gone, its images count as unused and the api's
   // 30-day retention reaper would delete the bytes the offline diagram still
-  // points at (spec/19 + /76).
+  // points at (docs/specs/009-elements/images.md + /76).
   const tabs = await embedTabImages(fetchedTabs, { ownerId, diagramId, shareCode });
   // Embedding is best-effort per image, but the DELETE below is not: if any
   // image failed to embed, aborting here keeps the server copy (and its
@@ -107,7 +107,7 @@ export async function takeCloudOffline(
   if (unembedded) throw new Error('image embed incomplete');
 
   // The cloud star is a row keyed on the diagram, so the server delete below
-  // takes it too; carry it onto the offline record (spec/95). Best-effort:
+  // takes it too; carry it onto the offline record (docs/specs/013-workspace/favourites.md). Best-effort:
   // apiListFavourites answers [] rather than throwing when the fetch fails.
   const starred = (await apiListFavourites(ownerId)).includes(diagram.id);
   const now = Date.now();
@@ -130,7 +130,7 @@ export async function takeCloudOffline(
   try {
     // Declare the conversion: this DELETE is indistinguishable from a real
     // delete at the boundary, and undeclared the feed told the owner their
-    // diagram had been deleted (spec/76 + spec/138).
+    // diagram had been deleted (docs/specs/006-diagram/offline-mode.md + docs/specs/013-workspace/timeline.md).
     await apiDelete(`${API_BASE}/diagrams/${diagramId}`, ownerId, {
       action: 'take offline',
       extra: { [DIAGRAM_CONVERSION_HEADER]: 'offline' },

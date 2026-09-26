@@ -1,4 +1,4 @@
-// The telemetry identifier of a help article (spec/22 `Help`, spec/56).
+// The telemetry identifier of a help article (docs/specs/017-telemetry/telemetry.md `Help`, docs/specs/018-help/contextual-help-links.md).
 //
 // Help telemetry reports WHICH article was read, voted on, or opened from the
 // editor, as the event's `type`. That has to be a bounded token

@@ -6,7 +6,7 @@ import { cutNarrowRun, isNarrowNote } from './narrow';
 import type { NoteSizeField } from './size-field';
 import { median } from './stats';
 
-// From blobs to stickies (spec/139 Phase 8).
+// From blobs to stickies (docs/specs/021-event-storming/event-storming.md Phase 8).
 //
 // A blob is not a sticky. Handwriting cuts one note into several blobs of the
 // same colour; two notes of the same colour lapped over each other are one
@@ -528,7 +528,7 @@ function rescueBlock(box: Box, mask: PaperMask, radius: number): Box[] {
   }));
 }
 
-// The stationery silhouette a box implies (spec/139 Phase 4). Measured against
+// The stationery silhouette a box implies (docs/specs/021-event-storming/event-storming.md Phase 4). Measured against
 // the photo's own median note, so it works at any distance.
 export function silhouetteOf(box: Box, noteSize: number): 'square' | 'wide' | 'small' {
   if (noteSize <= 0) return 'square';

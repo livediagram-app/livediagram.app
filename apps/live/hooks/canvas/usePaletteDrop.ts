@@ -15,7 +15,7 @@ import { getPaletteDragSnap, setPaletteDragSnap } from '@/lib/palette-drag-previ
 import { TECH_ICON_DND_MIME } from '@/lib/tech-icons';
 
 type PaletteDropDeps = {
-  // 'sticky' rides beside the shape kinds (spec/139): a sticky is its own
+  // 'sticky' rides beside the shape kinds (docs/specs/021-event-storming/event-storming.md): a sticky is its own
   // element type, and the drop needs to build one rather than a shape.
   onDropPalette?: (
     kind: ShapeKind | 'sticky',
@@ -29,7 +29,7 @@ type PaletteDropDeps = {
   // origin-center pivot, so dividing by zoom yields world coords directly.
   wrapperRef: RefObject<HTMLElement | null>;
   // A photo dropped on an EVENT-STORMING board is a piece of wall, not a
-  // picture (spec/139 Phase 8): it is read, and nothing becomes an image
+  // picture (docs/specs/021-event-storming/event-storming.md Phase 8): it is read, and nothing becomes an image
   // element. Supplied only on such a board with the model configured, so
   // every other board — and this one without a key — keeps today's behaviour
   // exactly, which is that a dropped file does nothing here at all.
@@ -82,9 +82,9 @@ export function usePaletteDrop({
     // drop over the Palette would still add an element behind it.
     if ((e.target as Element | null)?.closest?.('[data-floating-panel]')) return;
     // `kind` or `kind|choice` — the creation-time choice a split tile
-    // carries (spec/103, /105, /123, /135). Without parsing it back out, a
+    // carries (docs/specs/009-elements/mode-button.md, /105, /123, /135). Without parsing it back out, a
     // dragged Poll tile dropped a timer.
-    // A photograph of the wall, read rather than placed (spec/139 Phase 8).
+    // A photograph of the wall, read rather than placed (docs/specs/021-event-storming/event-storming.md Phase 8).
     const photo = photoFrom(e);
     if (photo) {
       e.preventDefault();
@@ -97,7 +97,7 @@ export function usePaletteDrop({
     // carrying the id; dropPaletteItem picks the telemetry type.
     const iconId =
       e.dataTransfer.getData(ICON_DND_MIME) || e.dataTransfer.getData(TECH_ICON_DND_MIME);
-    // A sticker carries its OWN mime (spec/116) precisely so it can't be
+    // A sticker carries its OWN mime (docs/specs/010-palette/stickers.md) precisely so it can't be
     // mistaken for an icon: an icon dropped on a shape folds into that
     // shape's label, and a sticker must never do that.
     const stickerId = e.dataTransfer.getData(STICKER_DND_MIME);
@@ -109,7 +109,7 @@ export function usePaletteDrop({
     const rect = wrapperRef.current?.getBoundingClientRect();
     if (!rect) return;
     const raw = pointerToCanvas(e.clientX, e.clientY, rect, viewportZoom);
-    // Land where the ghost + guides promised (spec/139): the alignment snap
+    // Land where the ghost + guides promised (docs/specs/021-event-storming/event-storming.md): the alignment snap
     // the drag latched onto, not the raw cursor. Cleared immediately so a
     // later drag can't inherit a stale offset.
     const snap = getPaletteDragSnap();

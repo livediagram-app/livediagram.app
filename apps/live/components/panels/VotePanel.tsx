@@ -1,6 +1,6 @@
 'use client';
 
-// The live VOTE panel (spec/39): the facilitator's read on a dot-vote in
+// The live VOTE panel (docs/specs/012-collaboration/session-tools.md): the facilitator's read on a dot-vote in
 // progress, on the same shared MovablePanel as Poll / Collaborate /
 // Layers. Two phases, one panel:
 //
@@ -16,7 +16,7 @@
 //
 // On naming: rows are NOT attributed to people, and can't be. Dots are
 // keyed by the local participant id while the room's presence roster is
-// keyed by a server-random per-connection id (spec/61 §6) — the two never
+// keyed by a server-random per-connection id (docs/specs/015-api/public-api-and-tokens.md §6) — the two never
 // match, so the client has no way to turn a voter into a name. That is a
 // happy accident for a dot-vote, and the turnout numbers below answer the
 // question the host actually has ("is everyone done?") without it.
@@ -69,11 +69,11 @@ export function VotePanel({
   onEndVote: () => void;
   onRevealVote: () => void;
   onClearVote: () => void;
-  // Only the participant who STARTED this vote drives it (spec/39): end,
+  // Only the participant who STARTED this vote drives it (docs/specs/012-collaboration/session-tools.md): end,
   // reveal, clear, and moving the results focus. Everyone else follows.
   isHost: boolean;
   stackBelowY?: number;
-  // View-role visitors watch the vote but never drive it (spec/39).
+  // View-role visitors watch the vote but never drive it (docs/specs/012-collaboration/session-tools.md).
   readOnly: boolean;
 } & MovablePanelPlacementProps) {
   const showResults = vote.revealed;

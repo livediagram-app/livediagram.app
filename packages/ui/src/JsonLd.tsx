@@ -1,5 +1,5 @@
 // Renders a schema.org payload as an inline `<script type="application/ld+json">`.
-// Marketing and the help centre both emit structured data (spec/16, spec/55)
+// Marketing and the help centre both emit structured data (docs/specs/019-marketing/marketing-site.md, docs/specs/018-help/help-app.md)
 // and each had grown its own copy of this component.
 //
 // The two copies had diverged on the thing that matters: marketing replaced

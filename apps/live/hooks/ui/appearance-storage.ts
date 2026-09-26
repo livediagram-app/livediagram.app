@@ -1,7 +1,7 @@
 // The two constants the Appearance boot path needs — the localStorage
 // key and the OS media query — in a PLAIN module — deliberately NOT `'use client'`. The root layout is a
 // server component and inlines this key into a pre-hydration `<script>`
-// that applies the saved dark class before first paint (spec/07, no
+// that applies the saved dark class before first paint (docs/specs/007-editor/live-app.md, no
 // theme flash). Importing the key from the client `useAppearance` hook
 // made Next substitute a client-reference stub ("Attempted to call …
 // from the server") for the value; that stub's text contains an

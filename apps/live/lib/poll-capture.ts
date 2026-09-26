@@ -1,4 +1,4 @@
-// Keeping a poll's results (spec/126): turn an ending poll into an ordinary
+// Keeping a poll's results (docs/specs/012-collaboration/poll-result-capture.md): turn an ending poll into an ordinary
 // canvas element, so the one number the session produced doesn't vanish with
 // the panel.
 //
@@ -10,7 +10,7 @@ import { pollOptionTokens, tallyPoll, type LivePoll } from '@livediagram/api-sch
 import { createShape, type ShapeElement } from '@livediagram/diagram';
 
 // A token poll becomes a BAR CHART; a free-text poll becomes an opened IDEA
-// BOX. Neither is a new element kind, which is the point (spec/126): the
+// BOX. Neither is a new element kind, which is the point (docs/specs/012-collaboration/poll-result-capture.md): the
 // tallies ARE a labelled dataset and the free-text answers ARE a set of
 // anonymous submissions, and both of those already render, theme, export and
 // edit. A bespoke "poll result" kind would rebuild every one of those paths to

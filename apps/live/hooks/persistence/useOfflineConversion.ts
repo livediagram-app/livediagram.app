@@ -10,7 +10,7 @@ import {
   takeCloudOffline,
 } from '@/lib/offline/offline-convert';
 
-// Shared Offline Mode conversion handlers (spec/76) for the Explorer's row and
+// Shared Offline Mode conversion handlers (docs/specs/006-diagram/offline-mode.md) for the Explorer's row and
 // card menus, which otherwise duplicated this logic. `syncToCloud` uploads an
 // offline diagram to the account; `takeOffline` pulls a cloud diagram down and
 // deletes the server copy (gated by a confirm). Both reload afterwards so the

@@ -66,7 +66,7 @@ describe('help centre internal links', () => {
 const LIVE_APP_DIR = fileURLToPath(new URL('../../live/app', import.meta.url));
 
 // Routes served by a different worker entirely, so there is no page.tsx to
-// find. The router stitches these under the same hostname (spec/08).
+// find. The router stitches these under the same hostname (docs/specs/016-platform/router-app.md).
 const OTHER_WORKERS = new Set(['/telemetry']);
 
 // Markdown [label](/path) and JSX href="/path", excluding /help (covered

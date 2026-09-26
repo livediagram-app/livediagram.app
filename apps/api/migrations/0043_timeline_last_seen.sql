@@ -1,4 +1,4 @@
--- Timeline unread marker (spec/138 §2.5).
+-- Timeline unread marker (docs/specs/013-workspace/timeline.md §2.5).
 --
 -- `last_refreshed_at` was written by the Refresh button, which is gone:
 -- the feed loads on mount and seeds itself off that same read, so a

@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it, vi } from 'vitest';
 import router, { type Env } from './index';
 
-// Dispatch tests for the router (spec/08): every production request
+// Dispatch tests for the router (docs/specs/016-platform/router-app.md): every production request
 // flows through this table, and a mistake here is a product-wide
 // outage, so the path -> (worker, strip) mapping is pinned against
 // mock service bindings. The final describe is a cross-app drift
@@ -180,7 +180,7 @@ describe('bare help-article paths', () => {
   });
 });
 
-// The staging environment's noindex header (spec/140). Staging is public on
+// The staging environment's noindex header (docs/specs/016-platform/staging-environment.md). Staging is public on
 // purpose, so this header is the only thing keeping a second copy of every
 // marketing and help page out of search results — and it has to reach every
 // app on the hostname without touching any of their builds.

@@ -3,7 +3,7 @@ import type { Element } from '@livediagram/diagram';
 import { collabIndexRowsFromElements } from './rows';
 
 // The pure projection every tab write feeds the collaboration index
-// with (spec/142 §2.1). What it gets wrong, the Activity page shows
+// with (docs/specs/013-workspace/activity-page.md §2.1). What it gets wrong, the Activity page shows
 // wrong for every reader, so the shapes are pinned here.
 
 const shape = (id: string, label: string, extra: Record<string, unknown> = {}): Element =>

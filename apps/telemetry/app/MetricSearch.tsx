@@ -14,7 +14,7 @@ import { EventIcon } from './telemetry-event-icon';
 import { TrendChart } from './TrendChart';
 import { buildWindowCounts, WINDOW_META, windowHighlightFrom } from './windows';
 
-// The Search view (spec/22): find one specific event, by typing a query in
+// The Search view (docs/specs/017-telemetry/telemetry.md): find one specific event, by typing a query in
 // the MetricPicker or by clicking through the word cloud below it (category,
 // then action, then type), then see just that metric charted over time. The metric universe is exactly the
 // keys of `daily.byMetric`, so anything offered has a line to draw.
@@ -33,7 +33,7 @@ export function MetricSearch({
 }) {
   const [selected, setSelected] = useState<Metric | null>(null);
   // The cloud's level, kept here so the breadcrumb over a charted metric
-  // (spec/22) can step back to any level of the cloud.
+  // (docs/specs/017-telemetry/telemetry.md) can step back to any level of the cloud.
   const [path, setPath] = useState<CloudPath>([]);
   const navigate = (to: CloudPath) => {
     setSelected(null);

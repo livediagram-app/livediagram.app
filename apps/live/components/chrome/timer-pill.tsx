@@ -2,7 +2,7 @@
 
 import { formatTimerClock, timerDone, timerDisplayMs, type TabTimer } from '@livediagram/diagram';
 
-// The session timer's LOOK, in one place (spec/39, spec/105).
+// The session timer's LOOK, in one place (docs/specs/012-collaboration/session-tools.md, docs/specs/012-collaboration/session-button.md).
 //
 // Extracted from TimerWidget when the Timer session element became a real
 // timer on the canvas rather than a button that starts one: two surfaces

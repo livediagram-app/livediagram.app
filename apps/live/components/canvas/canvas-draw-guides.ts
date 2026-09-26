@@ -72,7 +72,7 @@ export function computeDrawGuides({
     drawDrag && pendingDraw && pendingDraw.type !== 'arrow' && pendingDraw.type !== 'freehand'
       ? alignmentGuides(
           // The box that will COMMIT, not the raw drag — an embed is fitted
-          // to 16:9 inside it (spec/114), and guiding off the un-fitted
+          // to 16:9 inside it (docs/specs/009-elements/youtube-video.md), and guiding off the un-fitted
           // rectangle would promise the user an alignment the element then
           // doesn't have. Same helper the preview + commit use.
           drawnDragBox(
@@ -108,7 +108,7 @@ export function computeDrawGuides({
       ? [...snapGuides, ...drawBoxGuides, ...drawHoverGuides, ...drawPenGuides]
       : snapGuides;
   // While drawing a NEW arrow near another arrow, reveal that arrow's snap
-  // points (spec/50) — the same dots the reposition drag shows — so the user
+  // points (docs/specs/008-canvas/arrow-to-arrow.md) — the same dots the reposition drag shows — so the user
   // can line the new endpoint up as they draw, not only after dropping it.
   const drawArrowSnaps: SnapTarget[] = (() => {
     if (!drawDrag || !pendingDraw || pendingDraw.type !== 'arrow') return [];

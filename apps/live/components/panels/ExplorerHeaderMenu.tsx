@@ -8,13 +8,13 @@ import { GearIcon, GithubIcon, SearchGlyph } from '@/components/chrome/tab-bar-i
 import { REPO_URL } from '@livediagram/ui';
 import type { ExplorerMenuActions } from './Explorer.types';
 
-// The Explorer panel header's ⋯ menu (spec/15): the diagram-level verbs that
+// The Explorer panel header's ⋯ menu (docs/specs/013-workspace/folders.md): the diagram-level verbs that
 // used to be split between a "+ New" chip here and the editor's bottom bar.
 // Three bands, new/open, then this diagram (share / export), then the app
 // (search / GitHub / settings). Each row renders only when its handler is
 // wired, and a band left empty takes its separator with it, so the Explorer
 // behind an error screen (no diagram, so no share / export) still reads
-// cleanly. Rows, not tiles: a ⋯ menu that IS the list (spec/15).
+// cleanly. Rows, not tiles: a ⋯ menu that IS the list (docs/specs/013-workspace/folders.md).
 export function ExplorerHeaderMenu({
   onNewDiagram,
   actions = {},

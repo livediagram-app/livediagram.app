@@ -1,4 +1,4 @@
-// Presentation-mode illustrations (spec/31): the Slide Deck panel you build a
+// Presentation-mode illustrations (docs/specs/012-collaboration/presentation-mode.md): the Slide Deck panel you build a
 // deck in, a slide's `…` menu, the travelling transition, and the presenter's
 // HUD strip. Composed from the shared primitives, with raw shapes only for the
 // motifs the kit lacks (the HUD's dark strip, the jump grid glyph).

@@ -2,13 +2,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { makeTestRouteContext } from './test-route-context';
 import type { DiagramDTO } from '../types';
 
-// Leaving a team library is its own event (spec/35 + spec/138 §4).
+// Leaving a team library is its own event (docs/specs/013-workspace/team-shared-diagrams.md + docs/specs/013-workspace/timeline.md §4).
 //
 // It used to fall through to the `diagram_moved` arm, so pulling a diagram out
 // of a shared library read "Moved to a Folder — Payments architecture →
 // Unsorted", delivered to the MOVER only: `recordDiagramMoved` resolves its
 // audience from the diagram, which by then is personal. And when the mover is
-// not the owner, spec/35 hands them ownership — so the previous owner and the
+// not the owner, docs/specs/013-workspace/team-shared-diagrams.md hands them ownership — so the previous owner and the
 // whole team could lose a diagram with nothing in either feed.
 //
 // The empty-folder case was worse. A diagram sitting at the team-library root

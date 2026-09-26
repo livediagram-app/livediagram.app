@@ -1,4 +1,4 @@
-// Arrow-key nudge for the current selection (spec/09 Move). Lifted
+// Arrow-key nudge for the current selection (docs/specs/008-canvas/canvas-and-palette.md Move). Lifted
 // out of editor-page.tsx so the burst-coalescing refs live next to
 // the handler that uses them (they were 300+ lines apart in the
 // page file), and so the burst timer cleans up on unmount instead
@@ -84,7 +84,7 @@ export function useNudgeSelection(deps: NudgeDeps): (dx: number, dy: number) => 
     if (!burstActiveRef.current) {
       burstActiveRef.current = true;
       burstTokenRef.current = deps.markCheckpoint();
-      // Telemetry (spec/22): one event per burst, not per press.
+      // Telemetry (docs/specs/017-telemetry/telemetry.md): one event per burst, not per press.
       // `type` is a preset, never user content.
       track('Element', 'Changed', 'Nudge');
     }

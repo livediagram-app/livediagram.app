@@ -6,7 +6,7 @@ import { ROUTE_MANIFEST } from './manifest';
 import { buildOpenApiDocument } from './document';
 import type { JsonSchema } from './types';
 
-// Drift guards for the OpenAPI surface (spec/37). The worker dispatch is
+// Drift guards for the OpenAPI surface (docs/specs/015-api/api-documentation.md). The worker dispatch is
 // segment-based and imperative, so the manifest is the declaration of the
 // surface and these tests pin it to reality: a route segment added to the
 // dispatch without a manifest entry, a schema reference that doesn't exist, or
@@ -85,7 +85,7 @@ describe('OpenAPI manifest ↔ dispatch parity', () => {
     // The check above is per SEGMENT, so it stays green when an existing
     // segment grows a verb: adding PATCH to /diagrams passes, because
     // 'diagrams' is already documented. The published description is what
-    // external callers build against (spec/37, spec/61), and an endpoint
+    // external callers build against (docs/specs/015-api/api-documentation.md, docs/specs/015-api/public-api-and-tokens.md), and an endpoint
     // missing from it is one nobody can discover.
     //
     // Route handlers spell the check two ways: `method === 'PUT'` to select a

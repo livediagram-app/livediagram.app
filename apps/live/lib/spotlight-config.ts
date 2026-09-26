@@ -1,10 +1,10 @@
-// The Spotlight's look (spec/112): light size, how dark the shroud goes, how
+// The Spotlight's look (docs/specs/008-canvas/spotlight-panel.md): light size, how dark the shroud goes, how
 // soft its edge is, and its shape — plus the values the overlay draws from.
 //
-// Device-local, like the laser pen (spec/111) and the avatar costume
-// (spec/101): it depends on your screen and the room you are presenting in,
+// Device-local, like the laser pen (docs/specs/008-canvas/laser-panel.md) and the avatar costume
+// (docs/specs/008-canvas/avatar-mode.md): it depends on your screen and the room you are presenting in,
 // not on the diagram. Unlike the pen it is NOT published — Spotlight is a view
-// aid for the person using it, so there is nothing on the wire (spec/09).
+// aid for the person using it, so there is nothing on the wire (docs/specs/008-canvas/canvas-and-palette.md).
 
 import { readLocalStorageSafe, safeJson, writeLocalStorageSafe } from './local-storage-safe';
 
@@ -55,7 +55,7 @@ export const SPOTLIGHT_SHAPES: readonly { id: SpotlightShape; label: string; hin
 // --- What the overlay draws from --------------------------------------------
 
 // The light's radius in screen px for each preset. The canvas can still grow /
-// shrink freely from here by clicking (spec/09), which is why the panel labels
+// shrink freely from here by clicking (docs/specs/008-canvas/canvas-and-palette.md), which is why the panel labels
 // an off-preset radius "Custom" rather than pretending.
 const SIZE_RADIUS: Record<SpotlightSize, number> = { small: 110, medium: 170, large: 280 };
 

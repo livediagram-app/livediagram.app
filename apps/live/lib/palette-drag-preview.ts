@@ -3,7 +3,7 @@
 import { useSyncExternalStore } from 'react';
 import type { ShapeKind } from '@livediagram/diagram';
 
-// Shared, transient state for the palette drag-to-add ghost (spec/58). A
+// Shared, transient state for the palette drag-to-add ghost (docs/specs/010-palette/palette-drag-ghost.md). A
 // palette tile publishes what it's dragging on `dragstart` so the canvas's
 // PaletteDragGhost can preview it — `dataTransfer.getData()` is unreadable
 // during `dragover` (browser security), so the source has to hand it over.
@@ -19,7 +19,7 @@ type PaletteDragPreview = {
   // This will land as a sticky NOTE, whatever the ghost draws. A note has no
   // shape kind of its own, so a note drag publishes a square footprint at the
   // note's real size; this says what it will actually become. Insert between
-  // (spec/139) is a gesture about the note grammar, so it reads this rather
+  // (docs/specs/021-event-storming/event-storming.md) is a gesture about the note grammar, so it reads this rather
   // than the drawing kind.
   note?: boolean;
 };
@@ -65,7 +65,7 @@ export function suppressNativeDragImage(e: { dataTransfer: DataTransfer | null }
   }
 }
 
-// The live snap offset for the in-flight palette drag (spec/139): canvas-unit
+// The live snap offset for the in-flight palette drag (docs/specs/021-event-storming/event-storming.md): canvas-unit
 // dx/dy the dragged footprint has latched onto its neighbours. Published by
 // the one owner that computes it (usePaletteDragGuides, which also produces
 // the guide lines), read by the ghost (so it DRAWS snapped) and by the drop

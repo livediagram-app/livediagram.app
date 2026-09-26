@@ -7,7 +7,7 @@ import type { Corner } from '@/lib/photo-boxes';
 import { BoxEditControls } from './BoxEditControls';
 import { lineHeightPx, useFitText, WORDS_FONT } from './fitText';
 
-// One sticky, drawn on the photograph it was found in (spec/139 Phase 9).
+// One sticky, drawn on the photograph it was found in (docs/specs/021-event-storming/event-storming.md Phase 9).
 //
 // The box carries the two things the author cannot get from the photo itself:
 // what the reader made of the handwriting, and whether this one is coming to

@@ -5,7 +5,7 @@ import { applyRoomOpToTabs } from './room-op-apply';
 // The autosave's baseline (`lastSavedTabsRef` + `lastSavedNameRef`) is the
 // "before" of both diffs a save makes: which tabs to PUT, and which ops to
 // broadcast. It has to mean "what peers and D1 already have", so a peer's op
-// is folded into it as well as into the tabs on screen (spec/152). Otherwise
+// is folded into it as well as into the tabs on screen (docs/specs/012-collaboration/collab-race-hardening.md). Otherwise
 // the next local save sees the peer's change as ours and ships it back out in
 // our older copy.
 //

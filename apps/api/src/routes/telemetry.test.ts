@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// The dashboard's windows (spec/22) must cover exactly the calendar days the
+// The dashboard's windows (docs/specs/017-telemetry/telemetry.md) must cover exactly the calendar days the
 // trend line highlights: Today since UTC midnight, Last 7 days from midnight
 // six days back, Last 30 days from midnight 29 days back. They used to be
 // rolling (`now - 7d`, `now - 30d`), so each count included a partial extra

@@ -6,7 +6,7 @@ import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { parseCsvLineData } from '@/lib/csv';
 import { DialogHeader } from './DialogHeader';
 
-// Line-chart data editor in a modal (spec/53). The context menu's Data category
+// Line-chart data editor in a modal (docs/specs/009-elements/pie-chart.md). The context menu's Data category
 // only summarises the series + offers "Edit data", which opens this — the 2-D
 // grid (a row per category, a column per series) is too wide for the narrow
 // menu. A row per category (label + a value per series) with the series names

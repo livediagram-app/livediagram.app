@@ -41,7 +41,7 @@ import type { useContextMenuScaffold } from './useContextMenuScaffold';
 import { BorderControls } from '@/components/palette/BorderControls';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 
-// The multi-selection menu's style + motion sections (spec/09), each
+// The multi-selection menu's style + motion sections (docs/specs/008-canvas/canvas-and-palette.md), each
 // applying selection-wide with display values read off the first
 // matching member. Rendered in two parts so the parent can fold the
 // 'style' half (Colours / Border) into the Style side-flyout alongside
@@ -83,7 +83,7 @@ export function MultiStyleSections({
   // First member whose kind rounds corners — gates + feeds the Radius
   // grid, mirroring the single menu's supportsBorderRadius branch.
   radiusSrc: { borderRadius?: BorderRadius } | undefined;
-  // First shadow-supporting member (spec/86) — gates + feeds the Shadow
+  // First shadow-supporting member (docs/specs/008-canvas/element-shadows.md) — gates + feeds the Shadow
   // section, mirroring the single menu's supportsShadow branch.
   shadowSrc: { shadow?: ElementShadow } | undefined;
   techIconSrc: ShapeElement | undefined;
@@ -92,7 +92,7 @@ export function MultiStyleSections({
   const { sectionProps, colorProps, textColorHandlers, fillColorHandlers, strokeColorHandlers } =
     scaffold;
   // As in the single-element menu: a swatch reads the canvas's ink for any
-  // element that carries no colour of its own (spec/07).
+  // element that carries no colour of its own (docs/specs/007-editor/live-app.md).
   const surface = useCanvasSurface();
   // Type-aware animation sets, mirroring the single menu: a selection
   // that is ALL charts gets the slice animations, ALL icons the glyph
@@ -106,7 +106,7 @@ export function MultiStyleSections({
   const iconSrc = allIcons ? (boxedSel[0] as ShapeElement) : undefined;
   return (
     <>
-      {/* Animation (spec/09) — applies to every boxed member of the
+      {/* Animation (docs/specs/008-canvas/canvas-and-palette.md) — applies to every boxed member of the
           selection. */}
       {part === 'motion' && boxedSel.length ? (
         <MenuAccordionSection
@@ -249,7 +249,7 @@ export function MultiStyleSections({
           />
         </MenuAccordionSection>
       ) : null}
-      {/* Shadow (spec/86) — presets + sliders, selection-wide like Border.
+      {/* Shadow (docs/specs/008-canvas/element-shadows.md) — presets + sliders, selection-wide like Border.
           Reads off the first shadow-supporting member. */}
       {part === 'style' && shadowSrc ? (
         <ShadowSection
@@ -261,7 +261,7 @@ export function MultiStyleSections({
           onPreviewEnd={props.onPreviewStyleEnd}
         />
       ) : null}
-      {/* Icon — a Technology icon's fixed tile size (spec/41), when
+      {/* Icon — a Technology icon's fixed tile size (docs/specs/010-palette/technology-icons.md), when
           the selection holds any; applies to every tech icon in it. */}
       {part === 'motion' && techIconSrc ? (
         <MenuAccordionSection

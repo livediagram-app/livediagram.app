@@ -9,7 +9,7 @@ import { ALTERNATIVE_SLUGS, ALTERNATIVES_LAST_UPDATED, getAlternative } from '@/
 import { JsonLd, pageMetadata } from '@livediagram/ui';
 
 // One page per competitor at /alternatives/<slug> (see
-// specs/21-comparison-pages.md). Static export: only the known slugs are
+// docs/specs/019-marketing/comparison-pages.md). Static export: only the known slugs are
 // generated, so an unknown slug 404s at build rather than rendering.
 export const dynamicParams = false;
 
@@ -38,7 +38,7 @@ export default async function AlternativePage({ params }: { params: Promise<{ sl
   const alt = getAlternative(slug);
   if (!alt) notFound();
 
-  // FAQPage JSON-LD (spec/21 "Metadata"): the per-competitor questions
+  // FAQPage JSON-LD (docs/specs/019-marketing/comparison-pages.md "Metadata"): the per-competitor questions
   // target the long-tail queries around "<tool> alternative" searches
   // and can surface as Google's expandable-FAQ rich result. Answers
   // are plain strings in the data, so the structured-data text matches
@@ -149,7 +149,7 @@ export default async function AlternativePage({ params }: { params: Promise<{ sl
           </div>
         </div>
 
-        {/* Deep-dive sections (spec/21 "Page shape"): competitor-specific
+        {/* Deep-dive sections (docs/specs/019-marketing/comparison-pages.md "Page shape"): competitor-specific
             prose expanding the key value themes behind the bullets above.
             Pure data-driven render; the honesty rules live in the copy
             itself in lib/alternatives.ts. */}

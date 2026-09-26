@@ -2,7 +2,7 @@
 // APP0 / APP1 (Exif) / APP2 (ICC profile) / APPn / COM marker the
 // file carries, leaving only the image-data segments needed to
 // render. Pure byte-level rewrite: no JPEG decode, no re-encode,
-// the rendered pixels stay bit-identical. See spec/19 + the
+// the rendered pixels stay bit-identical. See docs/specs/009-elements/images.md + the
 // security audit thread that drove this.
 //
 // JPEG layout (from JFIF / EXIF specs):

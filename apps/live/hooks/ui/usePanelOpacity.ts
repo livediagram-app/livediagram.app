@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 
 // Keep the `--lvd-panel-opacity` custom property on <html> in sync with the
-// user's "Panel opacity" preference (spec/20). The full floating editor
+// user's "Panel opacity" preference (docs/specs/007-editor/user-preferences.md). The full floating editor
 // panels (MovablePanel, tagged `data-panel-translucent`) read it via CSS in
 // globals.css, so dragging the slider makes them translucent live and they
 // snap back to opaque on hover / focus. Only the full panels reference the

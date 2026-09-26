@@ -66,7 +66,7 @@ export function SettingsCategoryPane({
   );
 
   // Fire BEFORE the write so an opt-out event still reaches the wire ahead of
-  // the preference that gates it (spec/22).
+  // the preference that gates it (docs/specs/017-telemetry/telemetry.md).
   function renderRow(row: SettingsCategorySpec['rows'][number]) {
     switch (row.kind) {
       case 'toggle':
@@ -164,7 +164,7 @@ const APPEARANCE_OPTIONS = [
 ];
 
 // Appearance is the one row backed by its own device-local store rather than
-// UserPreferences (spec/07: a pre-hydration script applies it before first
+// UserPreferences (docs/specs/007-editor/live-app.md: a pre-hydration script applies it before first
 // paint, so it cannot wait on a synced fetch). useAppearance emits the
 // telemetry for the change itself, which is why nothing is tracked here.
 function AppearanceRow({ row }: { row: SettingsAppearanceRowSpec }) {
@@ -180,7 +180,7 @@ function AppearanceRow({ row }: { row: SettingsAppearanceRowSpec }) {
 }
 
 // A choice row's telemetry type carries the option picked, as a toggle's
-// carries its new state (spec/22): 'PanelLayout' + 'toolbar' →
+// carries its new state (docs/specs/017-telemetry/telemetry.md): 'PanelLayout' + 'toolbar' →
 // 'PanelLayoutToolbar', so the dashboard shows which way people moved, not
 // just that they touched the setting. Option ids are catalogue constants,
 // never user content.

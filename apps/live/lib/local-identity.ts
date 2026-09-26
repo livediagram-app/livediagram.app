@@ -1,5 +1,5 @@
 // Single source of truth for the browser-local identity state that
-// guests rely on (spec/04). The key strings used to be inlined at
+// guests rely on (docs/specs/014-identity/auth-and-guest-access.md). The key strings used to be inlined at
 // every read/write site across editor-page, the new-diagram page and
 // the Clerk bootstrap hook — renaming the namespace or evolving the
 // schema needed a grep + sweep across several files. Centralising
@@ -28,14 +28,14 @@ const NS = 'livediagram:v2:';
 const KEYS = {
   // Per-browser guest participant id (`crypto.randomUUID()`),
   // carried to the api worker as `X-Owner-Id` until/unless the
-  // user signs in with Clerk. See spec/04 — "Hybrid identity".
+  // user signs in with Clerk. See docs/specs/014-identity/auth-and-guest-access.md — "Hybrid identity".
   selfId: `${NS}self-id`,
   // HMAC signature of the guest id, minted by the api worker at
   // POST /api/guest-id (auth/owner-signature.ts). Replayed in the
   // /api/migrate body so the worker can prove the caller actually owns
   // the guest data it's claiming — observing the bare id is not enough.
   // Absent for legacy guests created before signing shipped, or when the
-  // worker has no GUEST_ID_HMAC_SECRET configured. See spec/04.
+  // worker has no GUEST_ID_HMAC_SECRET configured. See docs/specs/014-identity/auth-and-guest-access.md.
   selfSig: `${NS}self-sig`,
   // Boolean flag — '1' once the user has confirmed their display
   // name via the welcome modal at least once. Used to suppress the
@@ -44,17 +44,17 @@ const KEYS = {
   nameConfirmed: `${NS}name-confirmed`,
   // UTC day string (YYYY-MM-DD) of this browser's most recent app
   // open. Gates the once-per-day 'Participant'/'Returned' telemetry
-  // signal (spec/22) so a returning visitor counts once per UTC day,
+  // signal (docs/specs/017-telemetry/telemetry.md) so a returning visitor counts once per UTC day,
   // not once per page load. Written by lib/daily-return.ts only.
   lastActiveDay: `${NS}last-active-day`,
   // Per-browser random used as the participant id in anything the
   // DOCUMENT records per person — the `responses` on a done check,
-  // estimate card or temperature check (spec/122).
+  // estimate card or temperature check (docs/specs/012-collaboration/participant-responses.md).
   //
   // Deliberately NOT `selfId`: that is the guest's owner id, an
   // `X-Owner-Id` credential, and writing it into a shared diagram would
   // hand it to every co-viewer. Deliberately not the room's presence id
-  // either — that one is minted per socket (spec/61 §6), so it changes
+  // either — that one is minted per socket (docs/specs/015-api/public-api-and-tokens.md §6), so it changes
   // on reconnect and matches nothing that was saved. This sits between
   // the two: stable like the owner id, worthless like the presence id.
   collabKey: `${NS}collab-key`,
@@ -101,7 +101,7 @@ export function ensureGuestSelfId(): string {
   const fresh = crypto.randomUUID();
   setGuestSelfId(fresh);
   // A fresh mint means a browser we've never seen: the daily
-  // new-visitors signal (spec/22). Returning visitors hit the
+  // new-visitors signal (docs/specs/017-telemetry/telemetry.md). Returning visitors hit the
   // `stored` early-return above and never re-emit.
   reportParticipantCreated();
   return fresh;
@@ -114,7 +114,7 @@ export function ensureGuestSelfId(): string {
 // it is one browser, so it counts once.
 let participantCreatedReported = false;
 
-// The single emit point for `Participant`/`Created` (spec/22), shared by the
+// The single emit point for `Participant`/`Created` (docs/specs/017-telemetry/telemetry.md), shared by the
 // local mint above and the signed mint in guest-identity.ts.
 export function reportParticipantCreated(): void {
   if (participantCreatedReported) return;
@@ -139,7 +139,7 @@ export function ensureCollabKey(): string {
 }
 
 // The UTC day this browser was last seen active, or null if never
-// recorded. The daily-return signal (spec/22) reads this to decide
+// recorded. The daily-return signal (docs/specs/017-telemetry/telemetry.md) reads this to decide
 // whether it has already counted today. See lib/daily-return.ts.
 export function getLastActiveDay(): string | null {
   return readLocalStorageSafe(KEYS.lastActiveDay);

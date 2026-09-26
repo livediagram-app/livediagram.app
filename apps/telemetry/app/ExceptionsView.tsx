@@ -13,7 +13,7 @@ import {
 import { RankCard, rank } from './RankCard';
 import { rankTrend, windowLabel } from './windows';
 
-// Exceptions view (spec/22): error health, each row saying where it
+// Exceptions view (docs/specs/017-telemetry/telemetry.md): error health, each row saying where it
 // failed. API failures observed by the editor's api-client
 // (`Error·Api·Http<status>.<Action>`, `Network.<Method>.<Route>`), server-side
 // crashes the api worker self-reports (`Internal.<Method>.<Route>`), MCP

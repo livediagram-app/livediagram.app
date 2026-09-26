@@ -1,5 +1,5 @@
 // Renders a Technology (brand) icon: a brand-coloured rounded tile + the
-// icon's white line-art glyph (spec/41). Shared by the canvas element
+// icon's white line-art glyph (docs/specs/010-palette/technology-icons.md). Shared by the canvas element
 // (BoxedElementView, for shape==='icon' when the id is a tech icon) and the
 // palette Technology picker so the on-canvas mark and the picker thumbnail
 // can't drift.
@@ -75,7 +75,7 @@ export function TechIconArt({ iconId }: { iconId: string | undefined }) {
 }
 
 // Brand-icon overlay for a shape==='icon' element whose id is a tech icon.
-// The mark renders at a FIXED pixel size (spec/41): `size` is the element's
+// The mark renders at a FIXED pixel size (docs/specs/010-palette/technology-icons.md): `size` is the element's
 // `iconSize` preset (default 'md' = 48px), so resizing the element gives
 // the caption room without inflating the chip; the tile clamps to the box
 // via max-width/height when the box is smaller than the preset. When the
@@ -96,13 +96,13 @@ export function TechIconGlyph({
 }: {
   iconId: string | undefined;
   hasLabel?: boolean;
-  // Fixed tile size preset (spec/41); undefined = the default ('md').
+  // Fixed tile size preset (docs/specs/010-palette/technology-icons.md); undefined = the default ('md').
   size?: IconSize;
   // The label's alignment; the mark takes the opposite band (see
   // techIconMarkBounds, whose numbers these CSS bands mirror).
   labelAlignX?: TextAlignX;
   labelAlignY?: TextAlignY;
-  // Per-icon looping animation (spec/09); undefined = static. Wraps the whole
+  // Per-icon looping animation (docs/specs/008-canvas/canvas-and-palette.md); undefined = static. Wraps the whole
   // tile + glyph so a brand mark spins / beats as one.
   animation?: IconAnimation;
   // Loop speed for the animation; undefined = the shared 'slow' default.

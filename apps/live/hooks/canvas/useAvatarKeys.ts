@@ -1,4 +1,4 @@
-// Avatar-mode keyboard slice (spec/101): the held-arrow steering flags and
+// Avatar-mode keyboard slice (docs/specs/008-canvas/avatar-mode.md): the held-arrow steering flags and
 // the Space jump trigger, split out of useAvatarWalk so that hook keeps to
 // state + the animation loop.
 //

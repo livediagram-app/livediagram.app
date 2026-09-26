@@ -60,7 +60,7 @@ export function useArrowDragHandlers({
     });
   };
 
-  // Where a shift-drag fork's tail sits on the trunk (spec/50): far enough
+  // Where a shift-drag fork's tail sits on the trunk (docs/specs/008-canvas/arrow-to-arrow.md): far enough
   // along that the shared trunk dominates and the fork reads as a Y near the
   // head, not a second arrow from the source.
   const FORK_T = 0.7;
@@ -72,7 +72,7 @@ export function useArrowDragHandlers({
     d.setSelectedId(arrowId);
     if (arrow.locked === true || d.layerInertIds.has(arrowId) || d.isReadOnly) return;
     const start = endpointPosition(end === 'from' ? arrow.from : arrow.to, d.activeTab.elements);
-    // Shift-drag on the HEAD forks a branch (spec/50): the arrow itself
+    // Shift-drag on the HEAD forks a branch (docs/specs/008-canvas/arrow-to-arrow.md): the arrow itself
     // stays put; a NEW arrow starts with its tail connected on this line
     // (~70% along) and its head following the drag — one trunk pointing at
     // several targets instead of parallel near-duplicate arrows. The branch

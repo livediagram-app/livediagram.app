@@ -1,4 +1,4 @@
-// One note in the Q&A board's live queue (spec/151): the vote pill, the note,
+// One note in the Q&A board's live queue (docs/specs/012-collaboration/qa-board.md): the vote pill, the note,
 // who asked and when, and a heat bar showing its share of the top note's
 // votes, so the shape of the queue reads from across a room. The facilitator's
 // actions surface on hover.

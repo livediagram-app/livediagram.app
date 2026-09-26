@@ -1,6 +1,6 @@
 import type { Box, PaperMask } from './boxes';
 
-// Narrow notes (spec/139 Phase 9): a box a note long but thinner than the
+// Narrow notes (docs/specs/021-event-storming/event-storming.md Phase 9): a box a note long but thinner than the
 // wall's notes. Most are real: an actor (narrower stationery), a note half
 // covered by its neighbour, a note photographed at a slant. Some are two small
 // square notes stacked, fused by the close; the RAW mask, read before the

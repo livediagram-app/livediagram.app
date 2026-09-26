@@ -1,4 +1,4 @@
-// Mindmap layout style (spec/47 "Layout styles"): radial. The hub (highest-
+// Mindmap layout style (docs/specs/008-canvas/layout-cleanup.md "Layout styles"): radial. The hub (highest-
 // degree node) sits at the centre and its subtrees fan out around it: each
 // subtree owns an angular wedge proportional to its leaf count, and depth
 // maps to ring radius. Rings grow when a level is crowded so labels don't

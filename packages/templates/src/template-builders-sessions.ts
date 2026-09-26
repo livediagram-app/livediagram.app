@@ -1,4 +1,4 @@
-// Live-session boards built around the Q&A board (spec/151): Lean Coffee
+// Live-session boards built around the Q&A board (docs/specs/012-collaboration/qa-board.md): Lean Coffee
 // and a Town Hall Q&A. Unlike the workshop boards next door these are RUN
 // rather than filled in, so their centre is a live element the room writes
 // into, flanked by the session tools the format calls for (a timer, a
@@ -10,7 +10,7 @@
 // to do.
 //
 // Each builder is pure: it takes a centre (cx, cy) and returns a fresh
-// Element[]. See spec/09 "Templates" for the catalogue.
+// Element[]. See docs/specs/008-canvas/canvas-and-palette.md "Templates" for the catalogue.
 
 import { createShape, createText, type Element } from '@livediagram/diagram';
 
@@ -152,7 +152,7 @@ export function buildLeanCoffee(cx: number, cy: number): Element[] {
 
 // Town Hall Q&A: an all-hands or panel where the audience asks and upvotes
 // questions, often from a view-only link, which the Q&A board allows
-// (spec/151). The agenda keeps the session to time, the timer runs the Q&A
+// (docs/specs/012-collaboration/qa-board.md). The agenda keeps the session to time, the timer runs the Q&A
 // block, and anything the panel can't answer live goes on the follow-ups
 // checklist with an owner.
 export function buildTownHall(cx: number, cy: number): Element[] {

@@ -1,4 +1,4 @@
-// Server-side telemetry self-reports (spec/22).
+// Server-side telemetry self-reports (docs/specs/017-telemetry/telemetry.md).
 //
 // A few events can only be counted honestly by the api worker, because the
 // browser either never sees them (an email sent from a cron) or cannot tell

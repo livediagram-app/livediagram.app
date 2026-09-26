@@ -2,7 +2,7 @@
 
 import { PHOTO_ZOOM_MAX } from '@/lib/photo-view';
 
-// The zoom, where it can be seen and clicked (spec/139 Phase 9). The wheel and
+// The zoom, where it can be seen and clicked (docs/specs/021-event-storming/event-storming.md Phase 9). The wheel and
 // the keys are faster, but a gesture nobody knows about is not a feature: the
 // buttons are the discoverable half, and the hint under them teaches the rest.
 export function ZoomControls({

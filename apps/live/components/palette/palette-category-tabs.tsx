@@ -59,7 +59,7 @@ export function paletteCategoryTabs(
   deps: {
     pendingDraw: PendingDraw | null | undefined;
     tileActions: PaletteTileActions;
-    // Board-level switches for the Event Storming category (spec/139),
+    // Board-level switches for the Event Storming category (docs/specs/021-event-storming/event-storming.md),
     // supplied only when the active tab IS one of those boards.
     esBoardControls?: EsBoardControls;
   } & IconDeps &

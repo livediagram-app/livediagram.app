@@ -9,7 +9,7 @@ import {
   type ThemePaletteEntry,
 } from './themes';
 
-// Graph-aware theme transforms (spec/29 multi-colour themes), split out
+// Graph-aware theme transforms (docs/specs/011-theme/multicolour-themes.md multi-colour themes), split out
 // of themes.ts: the whole-element-list entry points that resolve each
 // element's hierarchy branch before delegating to the per-element
 // transforms themes.ts keeps.
@@ -110,7 +110,7 @@ export function recolourElementsForTheme(elements: Element[], theme: ThemeDefini
   const branches = theme.palette ? assignBranches(elements) : null;
   return elements.map(
     (el) =>
-      // An element bound to a preset (spec/48) takes the preset's variant for
+      // An element bound to a preset (docs/specs/010-palette/style-presets.md) takes the preset's variant for
       // this theme, not the plain branch / base colours — so a template's Bold
       // key element stays Bold in whatever theme it's built with.
       rederivePresetForTheme(el, theme) ??
@@ -131,7 +131,7 @@ export function switchThemeElements(
   const nextBranches = next.palette ? assignBranches(elements) : null;
   return elements.map(
     (el) =>
-      // Preset-bound elements (spec/48) re-derive their preset for the new
+      // Preset-bound elements (docs/specs/010-palette/style-presets.md) re-derive their preset for the new
       // theme instead of being preserved as a manual override: picking a new
       // theme moves a Bold-preset shape, or a Banded table, to that theme's
       // version of the look rather than stranding it on the old colours.

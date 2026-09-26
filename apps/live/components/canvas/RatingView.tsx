@@ -1,6 +1,6 @@
 'use client';
 
-// Rating element (spec/52): a row of five stars showing a 1–5 score. Rendered
+// Rating element (docs/specs/009-elements/rating.md): a row of five stars showing a 1–5 score. Rendered
 // by BoxedElementView for shape === 'rating'. Filled stars take the element's
 // accent (stroke) colour; empty stars are a muted outline. `ratingAnim` drives
 // a looping / one-shot `lvd-rating-*` animation on the filled stars (pop /

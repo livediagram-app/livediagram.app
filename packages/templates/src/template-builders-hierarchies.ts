@@ -6,7 +6,7 @@
 //
 // Each builder is pure: it takes a centre (cx, cy) and returns a fresh
 // Element[]. Sizing constants live inline so each template is
-// self-describing. See spec/09 "Templates" for the catalogue.
+// self-describing. See docs/specs/008-canvas/canvas-and-palette.md "Templates" for the catalogue.
 
 import { createPinnedArrow, createShape, createText, type Element } from '@livediagram/diagram';
 

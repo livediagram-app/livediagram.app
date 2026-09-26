@@ -5,7 +5,7 @@ import { detectStickies } from './detect';
 import type { PaperFloors } from './floors';
 import { rgbToLab } from './lab';
 
-// Pale paper on a pale wall (spec/139 Phase 9). A pale pink note on white
+// Pale paper on a pale wall (docs/specs/021-event-storming/event-storming.md Phase 9). A pale pink note on white
 // paper has too little HSV saturation to clear the floor at the wall's hue,
 // yet in CIELAB a*b* it sits well clear of the wall. When it is also lit like
 // the wall, it is paper.

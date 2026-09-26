@@ -1,4 +1,4 @@
-// Server-side Session·SignedUp / Session·SignedIn (spec/22).
+// Server-side Session·SignedUp / Session·SignedIn (docs/specs/017-telemetry/telemetry.md).
 //
 // These used to be emitted by the browser, and only on the email-code paths:
 // a Google sign-up or sign-in finishes inside Clerk's OAuth redirect

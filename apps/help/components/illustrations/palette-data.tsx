@@ -1,4 +1,4 @@
-// Palette "Data and Chart Elements" illustrations (spec/55): progress bars and
+// Palette "Data and Chart Elements" illustrations (docs/specs/018-help/help-app.md): progress bars and
 // rings, star ratings, pie charts, bar / line charts, and timeline rails. These
 // are chart motifs the shared kit deliberately doesn't ship, so they draw raw
 // <rect>/<circle>/<path>/<text> directly, but only with the house palette

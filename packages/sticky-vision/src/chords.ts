@@ -1,7 +1,7 @@
 import type { Box, PaperMask } from './boxes';
 import { convexityDefects, largestRegion, traceOuterContour, type Notch } from './contour';
 
-// Cutting a blob at the NOTCHES where two notes meet (spec/139 Phase 9,
+// Cutting a blob at the NOTCHES where two notes meet (docs/specs/021-event-storming/event-storming.md Phase 9,
 // experiment B2).
 //
 // Two notes lapped over each other, offset by a few pixels, leave an outline

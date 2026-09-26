@@ -1,6 +1,6 @@
 import { test as base, expect, type Page } from '@playwright/test';
 
-// Shared fixture (spec/72): every smoke test fails on an uncaught
+// Shared fixture (docs/specs/003-system-architecture/e2e-smoke.md): every smoke test fails on an uncaught
 // exception or unhandled rejection surfaced to the page — the class the
 // "maximum update depth" pan-loop bug was in, which the per-test UI
 // checks merely exercise. `pageErrors` collects them; assert it stays
@@ -87,7 +87,7 @@ export async function startTemplateDiagram(
 }
 
 // An event-storming board with a ROW of three domain events on it, one gutter
-// apart (spec/139). The template seeds a single "Board Created" note; the lane,
+// apart (docs/specs/021-event-storming/event-storming.md). The template seeds a single "Board Created" note; the lane,
 // rhythm and insertion tests need neighbours to place against, so this writes
 // a row around that note through the api and reloads. The three are copies of
 // the seeded note (so they carry exactly its stationery), one rhythm step apart.
@@ -135,7 +135,7 @@ export async function startEventStormingRow(page: Page): Promise<void> {
   await notes.nth(2).waitFor();
 }
 
-// Dismiss the quick-tour dialog (spec/47) if this profile is offered one.
+// Dismiss the quick-tour dialog (docs/specs/008-canvas/layout-cleanup.md) if this profile is offered one.
 // It lands a BEAT AFTER the canvas does, and its modal overlay swallows
 // pointer events — so a test that merely checks whether it is showing YET
 // races it and then finds its drags going nowhere, silently. Wait for it,
@@ -156,7 +156,7 @@ export async function startBlankDiagram(page: Page): Promise<void> {
   await page.goto('/new');
   await page.getByText('New Diagram', { exact: false }).waitFor();
   // Step 1: pick the Blank template. Single-click advances to the theme
-  // step (spec/76), so no explicit Next is needed here.
+  // step (docs/specs/006-diagram/offline-mode.md), so no explicit Next is needed here.
   await page.getByText('Blank diagram', { exact: false }).click();
   // Step 2 (theme) -> step 3 (settings). ANCHORED name: a bare /next/i
   // also matches the Next.js DevTools button on dev servers.
@@ -169,7 +169,7 @@ export async function startBlankDiagram(page: Page): Promise<void> {
     .getByRole('button', { name: /^(create|start|use this|done|finish)$/i })
     .first()
     .click();
-  // The editor is up once the canvas surface (the a11y root, spec/71)
+  // The editor is up once the canvas surface (the a11y root, docs/specs/004-interface-design/canvas-accessibility.md)
   // is in the DOM.
   await page.locator('[data-canvas-a11y-root]').waitFor();
 }

@@ -30,7 +30,7 @@ export function useEditorPersistence({ toast }: { toast: ReturnType<typeof useTo
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [diagramName, setDiagramName] = useState('Untitled diagram');
-  // The stored slide deck (spec/31) exactly as the api returned it, seeded on
+  // The stored slide deck (docs/specs/012-collaboration/presentation-mode.md) exactly as the api returned it, seeded on
   // load and never read again after useSlideDeck parses it. Kept as raw text
   // rather than a parsed Deck so hydration has one obvious moment, and a deck
   // the parser cannot read costs the deck rather than the diagram.
@@ -59,7 +59,7 @@ export function useEditorPersistence({ toast }: { toast: ReturnType<typeof useTo
   const [sharedDiagrams, setSharedDiagrams] = useState<SharedWithItem[]>([]);
   // Per-diagram audit log surfaced in the Activity Panel. Newest first.
   // Hydrated from the API for existing diagrams; appended to on every
-  // commit. See specs/12-activity-and-audit.md.
+  // commit. See docs/specs/012-collaboration/activity-and-audit.md.
   const [changeLog, setChangeLog] = useState<ChangeLogEntry[]>([]);
   const [changeLogLoading, setChangeLogLoading] = useState(true);
   // Brief error string surfaced by the Import-tab flow when the

@@ -1,4 +1,4 @@
-// DOM plumbing for the interactive editor tour (spec/79). The tour drives
+// DOM plumbing for the interactive editor tour (docs/specs/007-editor/editor-tour.md). The tour drives
 // the real chrome (panels, dropdowns, menus) through the same buttons a
 // user would press, so these helpers resolve tour anchors (`data-tour-id`)
 // and wait out lazy-loaded menus instead of assuming synchronous DOM.
@@ -9,7 +9,7 @@ function tourSelector(tourId: string): string {
 
 // An anchor only counts once it RENDERS: a surface that hides chrome keeps
 // the node in the DOM (the event-storming board's palette header band is
-// `display:none`, spec/139), and anchoring to it parked the highlight ring
+// `display:none`, docs/specs/021-event-storming/event-storming.md), and anchoring to it parked the highlight ring
 // at 0x0 in the top-left corner and opened its menu off-screen. A node with
 // no client rects has no box, so it is treated as absent — the step is
 // skipped rather than pointing at nothing.
@@ -27,7 +27,7 @@ export function findTour(tourId: string): HTMLElement | null {
 // mobile panel auto-collapse) must not fire from a tour-driven click.
 //
 // An anchor that WRAPS its button (the Toolbar layout's Explorer menu button,
-// spec/148, anchors on its card so the ring frames the card) is pressed
+// docs/specs/007-editor/toolbar-layout.md, anchors on its card so the ring frames the card) is pressed
 // through that button: a click dispatched on the wrapper never reaches the
 // child's onClick, so the menu silently stayed shut.
 export function clickTour(tourId: string): boolean {

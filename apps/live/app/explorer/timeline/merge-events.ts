@@ -1,4 +1,4 @@
-// Merging one read's events into the ones already on screen (spec/138
+// Merging one read's events into the ones already on screen (docs/specs/013-workspace/timeline.md
 // §2.4a, §2.4b).
 //
 // Two of the feed's reads merge rather than replace — the re-read on
@@ -29,7 +29,7 @@ export function mergeEvents(prev: TimelineEvent[], incoming: TimelineEvent[]): T
 }
 
 // A first-page re-read, treated as authoritative for the stretch of
-// time it covers (spec/138 §2.4b).
+// time it covers (docs/specs/013-workspace/timeline.md §2.4b).
 //
 // A plain merge only ever adds, so after the reader deletes a diagram
 // the worker's cascade (§3.5) has removed its cards from the server
@@ -75,7 +75,7 @@ export function reconcileEvents(
 
 // The fields a re-emit can move on an existing row: the coalesced edit
 // event walks `occurredAt` forward and refreshes its snapshot on every
-// save (spec/138 §4.2). Compared by value — the two copies come from
+// save (docs/specs/013-workspace/timeline.md §4.2). Compared by value — the two copies come from
 // different JSON parses, so identity would call every row changed.
 function sameEvent(a: TimelineEvent, b: TimelineEvent): boolean {
   return (
@@ -86,7 +86,7 @@ function sameEvent(a: TimelineEvent, b: TimelineEvent): boolean {
   );
 }
 
-// The client half of the worker's delete cascade (spec/138 §3.5): drop
+// The client half of the worker's delete cascade (docs/specs/013-workspace/timeline.md §3.5): drop
 // every card about an entity that no longer exists. Same predicate as
 // `markTimelineEventsDeletedBySource` — keyed on the id, or referencing
 // it from the snapshot under `<sourceType>Id` — so a comment on the

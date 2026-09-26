@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// The one component in this folder with a render test (spec/138 §11):
+// The one component in this folder with a render test (docs/specs/013-workspace/timeline.md §11):
 // the menu slot is the one place a card's click and a child's click
 // compete, and that can only be checked by rendering both.
 

@@ -1,7 +1,7 @@
 import type { ImageBuffer } from './colour';
 import { labImageOf, type LabImage } from './lab';
 
-// Does a box hold an OBJECT, or a piece cut out of a surface? (spec/139
+// Does a box hold an OBJECT, or a piece cut out of a surface? (docs/specs/021-event-storming/event-storming.md
 // Phase 9.)
 //
 // A sticky note is an object: its paper stops at its edge. Grow the box's own

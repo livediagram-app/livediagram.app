@@ -1,5 +1,5 @@
 // Auto-open the element context menu while a label is being edited
-// (spec/09): entering text-edit mode on a boxed element opens the menu
+// (docs/specs/008-canvas/canvas-and-palette.md): entering text-edit mode on a boxed element opens the menu
 // beside the element (the standard elementMenuAnchor position) so
 // whole-element styling stays one click away without leaving the editor,
 // and exiting edit mode closes it again. Desktop only — on a mobile
@@ -38,7 +38,7 @@ export function useEditModeContextMenu({
       if (isMobile) return;
       const el = elementsRef.current.find((e) => e.id === editingId);
       if (!el || !isBoxed(el)) return;
-      // Sticky notes opt out (spec/139 boards live and die by quick note
+      // Sticky notes opt out (docs/specs/021-event-storming/event-storming.md boards live and die by quick note
       // capture, and it reads wrong everywhere): double-click means "type",
       // and a menu popping open beside every note is noise — right-click /
       // long-press still opens the element menu deliberately.

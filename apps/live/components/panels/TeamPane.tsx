@@ -15,7 +15,7 @@ import { TeamInviteLinkDialog } from '@/components/dialogs/TeamInviteLinkDialog'
 import { TeamSharedDiagrams } from '@/components/panels/TeamSharedDiagrams';
 import { TeamTimeline } from './ScopedTimeline';
 
-// Right-pane team view for the Explorer (spec/32): one calm card —
+// Right-pane team view for the Explorer (docs/specs/013-workspace/teams.md): one calm card —
 // header (organisation + member count + an overflow menu for the
 // rare actions), the member list with avatars and real names, and a
 // slim invite footer for admins. The last-admin rules are baked into
@@ -49,7 +49,7 @@ export function TeamPane({
   // uses this to drop the team title on a 404 — there's no team to name.
   onLoadResult?: (found: boolean) => void;
   // Full move destinations + cross-scope router for the shared-diagrams
-  // move picker (spec/35): passed straight through to TeamSharedDiagrams
+  // move picker (docs/specs/013-workspace/team-shared-diagrams.md): passed straight through to TeamSharedDiagrams
   // so a team diagram can be re-homed to Personal Space / another team.
   moveDests?: ComponentProps<typeof TeamSharedDiagrams>['moveDests'];
   onMoveDiagramTo?: ComponentProps<typeof TeamSharedDiagrams>['onMoveDiagramTo'];
@@ -152,7 +152,7 @@ export function TeamPane({
   const adminCount = members.filter((m) => m.role === 'admin').length;
   const selfRow = members.find((m) => m.userId !== null && m.userId === clerkUserId) ?? null;
   // The one rule the whole surface bends around: a team always keeps
-  // at least one Admin (spec/32). When that's you, leaving, removing
+  // at least one Admin (docs/specs/013-workspace/teams.md). When that's you, leaving, removing
   // your row, and demoting yourself all disappear as options.
   const isLastAdmin = (m: TeamMember) => m.role === 'admin' && adminCount <= 1;
   const canLeave = selfRow !== null && !isLastAdmin(selfRow);
@@ -308,7 +308,7 @@ export function TeamPane({
         ) : null}
       </div>
 
-      {/* ---------- Shared diagrams (spec/35): the team's folder
+      {/* ---------- Shared diagrams (docs/specs/013-workspace/team-shared-diagrams.md): the team's folder
           tree + diagrams, managed by every joined member. ---------- */}
       {/* key on teamId so switching teams remounts the library and
           resets its open-folder `spot` — otherwise a subfolder open in
@@ -334,7 +334,7 @@ export function TeamPane({
         onCancel={() => setEditOpen(false)}
       />
 
-      {/* The team's own history (spec/138 §3.4). Distinct from each
+      {/* The team's own history (docs/specs/013-workspace/timeline.md §3.4). Distinct from each
           member's personal feed: the per-member scopes are written when
           an event happens, so somebody who joined in March has nothing
           from February — this scope carries the whole thing.

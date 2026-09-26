@@ -68,7 +68,7 @@ export function themePresetColors(theme: ThemeDefinition): string[] {
   return out.slice(0, 20);
 }
 
-// A one-click shape style preset (spec/48): a complete look applied together —
+// A one-click shape style preset (docs/specs/010-palette/style-presets.md): a complete look applied together —
 // fill / stroke / text colour AND a matching border treatment (weight +
 // pattern). Deliberately NOT the border radius: radius is a shape-silhouette
 // choice the user makes separately, and presets clobbering it read as the
@@ -77,7 +77,7 @@ export function themePresetColors(theme: ThemeDefinition): string[] {
 // colour-picker swatches.
 export type ShapeColorPreset = {
   // Stable identity for the preset, independent of the theme it's rendered
-  // for (spec/48). Stored on a shape's `colorPreset` so a theme change can
+  // for (docs/specs/010-palette/style-presets.md). Stored on a shape's `colorPreset` so a theme change can
   // re-derive the same variant for the new theme. The variants are fixed
   // tokens: the theme tier 'theme' | 'soft' | 'tinted' | 'solid' | 'bold'
   // (multi-colour themes' per-branch cards are 'branch-<i>'), the neutral
@@ -283,7 +283,7 @@ export function shapeColorPresets(theme: ThemeDefinition): ShapeColorPreset[] {
       borderStroke: 'thick',
       borderStyle: 'solid',
     },
-    // ── Status: semantic colours (theme-independent, spec/48) ──
+    // ── Status: semantic colours (theme-independent, docs/specs/010-palette/style-presets.md) ──
     {
       id: 'info',
       name: 'Info',
@@ -344,7 +344,7 @@ export function shapeColorPresets(theme: ThemeDefinition): ShapeColorPreset[] {
   return out;
 }
 
-// Resolve a stored `colorPreset` id (spec/48) to its colours UNDER A GIVEN
+// Resolve a stored `colorPreset` id (docs/specs/010-palette/style-presets.md) to its colours UNDER A GIVEN
 // THEME. Returns null when the theme has no such variant (e.g. a 'branch-2'
 // preset after switching to a single-accent theme that has no branches) so the
 // caller can leave the shape's current colours in place rather than blank them.
@@ -375,7 +375,7 @@ export function rederiveColorPresetForTheme(el: Element, theme: ThemeDefinition)
   };
 }
 
-// A categorical palette derived from the active theme, for charts (spec/53):
+// A categorical palette derived from the active theme, for charts (docs/specs/009-elements/pie-chart.md):
 // multi-colour themes contribute each branch hue (genuinely distinct slices);
 // single-accent themes contribute variants of the accent (lighter / darker
 // tints) so the slices still read as "shades of the theme". Deduped
@@ -406,10 +406,10 @@ export function themeChartPalette(theme: ThemeDefinition): string[] {
   return out;
 }
 
-// ── Sticky-note presets (spec/48) ───────────────────────────────────────
+// ── Sticky-note presets (docs/specs/010-palette/style-presets.md) ───────────────────────────────────────
 //
 // A pad of note colours, and NOT theme-derived: a sticky is exempt from theme
-// recolouring (spec/139) precisely because the colour of a note is the user's
+// recolouring (docs/specs/021-event-storming/event-storming.md) precisely because the colour of a note is the user's
 // own shorthand, not the board's palette. It had no presets at all, so
 // recolouring one meant opening Colours and picking a fill and then a matching
 // text colour by hand, which is two decisions for what is really one.
@@ -445,7 +445,7 @@ export const STICKY_PRESETS: readonly ShapeColorPreset[] = (
   borderStyle: 'solid' as const,
 }));
 
-// ── Table presets (spec/48) ─────────────────────────────────────────────
+// ── Table presets (docs/specs/010-palette/style-presets.md) ─────────────────────────────────────────────
 
 /** One complete table look: the four surfaces a table paints, plus the
  *  banding, which is a look rather than structure. */
@@ -457,7 +457,7 @@ export type TablePreset = {
   stroke: string;
   text: string;
   /** The header band. Its fill is the shared `headerFill`, since a table's
-   *  header row and a lane's title gutter are one idea (spec/119). */
+   *  header row and a lane's title gutter are one idea (docs/specs/009-elements/lane.md). */
   headerFill: string;
   headerText: string;
   /** Alternating body-row tint. */

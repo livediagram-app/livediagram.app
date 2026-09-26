@@ -4,7 +4,7 @@ import { handleAiReadNotes } from './ai-read-notes';
 import type { RouteContext } from './context';
 import type { Env } from '../types';
 
-// Reading sticky crops (spec/139 Phase 8). Three things are pinned: the shared
+// Reading sticky crops (docs/specs/021-event-storming/event-storming.md Phase 8). Three things are pinned: the shared
 // gate still guards this route (it is the operator's model budget either way),
 // what counts as a crop, and that EVERY crop that went out gets an answer back
 // — whatever the provider did or did not say.

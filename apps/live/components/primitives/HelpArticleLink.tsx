@@ -45,10 +45,10 @@ type HelpArticleLinkProps = {
   className?: string;
 };
 
-// One affordance for every editor -> help-centre deep link (spec/56).
+// One affordance for every editor -> help-centre deep link (docs/specs/018-help/contextual-help-links.md).
 // Surfaces reference an article key, never a raw URL; the link opens the
 // help centre in a new tab and fires a single UI/Opened telemetry event
-// keyed by the article's registry telemetry id (spec/22).
+// keyed by the article's registry telemetry id (docs/specs/017-telemetry/telemetry.md).
 export function HelpArticleLink({
   article,
   title = HELP_LINK_COPY[article].title,

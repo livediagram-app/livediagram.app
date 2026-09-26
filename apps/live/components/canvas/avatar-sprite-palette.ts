@@ -1,4 +1,4 @@
-// The Avatar sprite's colour palette (spec/101), shared by the sprite body and
+// The Avatar sprite's colour palette (docs/specs/008-canvas/avatar-mode.md), shared by the sprite body and
 // the head-and-hair views next door. Colour is the one thing every part of the
 // figure has to agree on, so it lives in one file rather than being threaded
 // between them or duplicated per view.

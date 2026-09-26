@@ -1,4 +1,4 @@
-// Theme taxonomy + metadata (spec/14): the per-theme description blurbs and the
+// Theme taxonomy + metadata (docs/specs/007-editor/new-diagram-route.md): the per-theme description blurbs and the
 // colour-temperament categories the picker buckets themes into. Pure catalogue
 // data plus its lookups, split out of themes.ts (the recolouring engine) — this
 // is consumed by the theme-picker UI, not by element recolouring, so it stands
@@ -6,14 +6,14 @@
 import type { ThemeId, ThemeCategory } from './themes';
 
 // Short, user-facing blurb per built-in theme, shown under the label on
-// the picker's theme cards (spec/14). A `Record<ThemeId, string>` so the
+// the picker's theme cards (docs/specs/007-editor/new-diagram-route.md). A `Record<ThemeId, string>` so the
 // compiler forces every theme to carry one: add a ThemeId without a line
 // here and the build fails, which is how this can't drift from THEMES.
 // Custom themes have no entry (their card shows just the saved name).
 const THEME_DESCRIPTIONS: Record<ThemeId, string> = {
   // The one scheme whose blurb describes a BEHAVIOUR rather than a palette:
   // Default is the same entry in both halves, and which you see is your own
-  // appearance (spec/07).
+  // appearance (docs/specs/007-editor/live-app.md).
   brand: 'Light or dark, following your appearance.',
   slate: 'Soft pinks on a blush canvas.',
   forest: 'Deep greens on a leafy canvas.',
@@ -81,7 +81,7 @@ const THEME_CATEGORY: Record<ThemeId, ThemeCategory> = {
   plum: 'dark',
   abyss: 'dark',
   espresso: 'dark',
-  // Multi-colour "rainbow" themes (spec/29).
+  // Multi-colour "rainbow" themes (docs/specs/011-theme/multicolour-themes.md).
   rainbow: 'multicolour',
   pastel: 'multicolour',
   tropical: 'multicolour',

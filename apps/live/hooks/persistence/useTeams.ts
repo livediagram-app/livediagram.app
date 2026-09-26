@@ -12,7 +12,7 @@ import {
 } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
 
-// Teams list + pending invites state (spec/32), shaped after
+// Teams list + pending invites state (docs/specs/013-workspace/teams.md), shaped after
 // useFolders so the Explorer composes both the same way. Signed-in
 // only: callers pass `enabled: false` for guests (the api 401s the
 // guest path anyway, this just avoids the doomed request). The two
@@ -124,7 +124,7 @@ export function useTeams(ownerId: string | null, opts: { enabled: boolean }): Us
         await apiRemoveTeamMember(ownerId, invite.team.id, invite.memberId);
         // The RECIPIENT saying no, which is not the same fact as an admin
         // withdrawing the invitation (that one keeps `Team·Removed·Invite`,
-        // spec/22). This used to emit that event, so the two were pooled and
+        // docs/specs/017-telemetry/telemetry.md). This used to emit that event, so the two were pooled and
         // the accept-vs-decline ratio on an invite — the only number that says
         // whether invitations are landing — could not be read at all.
         track('Team', 'Declined', 'Invite');

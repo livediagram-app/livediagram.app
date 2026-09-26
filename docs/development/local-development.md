@@ -1,0 +1,184 @@
+# Local development
+
+How to run livediagram on your machine.
+
+## Requirements
+
+- **Node** `>= 22` (Wrangler 4 requires it).
+- **pnpm** `>= 9` (the lockfile and workspaces depend on it).
+
+Cloudflare is not required for local development. The api worker runs locally via Wrangler against a local D1 SQLite file; the Next.js apps run via Next's dev server.
+
+## Clone and install
+
+```sh
+git clone https://github.com/livediagram-app/livediagram.app livediagram
+cd livediagram
+pnpm install
+```
+
+This installs every workspace at once, including both TypeScript compilers: 7 for `tsc` and 6 for the tools that import a compiler API. [Contributing](contributing.md#two-typescripts) explains the pair.
+
+## Apply the local database migrations (once, before first `pnpm dev`)
+
+`wrangler dev` does NOT auto-apply migrations: a fresh local D1 starts empty. Run this once after cloning, and again whenever a new migration lands under `apps/api/migrations/`:
+
+```sh
+pnpm --filter @livediagram/api db:migrate:local
+```
+
+It applies every SQL file in `apps/api/migrations/` to the local SQLite file Wrangler keeps at `apps/api/.wrangler/state/v3/d1/`. The production deploy runs the equivalent `db:migrate:remote` step automatically in CI (see [Self-hosting](../operations/self-hosting.md)).
+
+## Run everything
+
+```sh
+pnpm dev
+```
+
+Turbo spins up all seven dev servers in parallel:
+
+| App              | Dev URL                                                                                            |
+| ---------------- | -------------------------------------------------------------------------------------------------- |
+| `apps/router`    | `http://localhost:3000` — **everything on one port**, stitched like production                     |
+| `apps/marketing` | `http://localhost:3001`                                                                            |
+| `apps/live`      | `http://localhost:3002` (clean routes: /new, /explorer, ...)                                       |
+| `apps/telemetry` | `http://localhost:3003/telemetry`                                                                  |
+| `apps/help`      | `http://localhost:3004/help`                                                                       |
+| `apps/api`       | `http://localhost:8787/api`                                                                        |
+| `apps/mcp`       | `http://localhost:8788` (MCP server, [MCP server](../specs/015-api/mcp-server.md); signed-in only) |
+
+The `router` dev server (`wrangler dev --env local`, port 3000) gives you the production URL shape locally: `/` is marketing, `/new` and `/diagram/*` are the editor, plus `/telemetry`, `/help`, and `/api` — no per-app port to remember. It has no service bindings in dev; the `[env.local]` environment in `apps/router/wrangler.toml` points it at the localhost origins above and it proxies plain HTTP (see [Router app](../specs/016-platform/router-app.md)).
+
+**Use port 3000 unless you have a reason not to.** Each app's own port still serves its pages, but only the router puts the API on the same origin. The frontends call `NEXT_PUBLIC_API_BASE`, defaulting to the relative `/api` — correct in production and behind the router, and a dead end on an app's own port, where nothing serves `/api` (these are static exports; there are no Next API routes, see [Architecture](architecture.md)). So the editor on `http://localhost:3002` cannot reach the api worker until you tell it where the worker is:
+
+```sh
+# apps/live/.env.local  (gitignored; see apps/live/.env.example)
+NEXT_PUBLIC_API_BASE=http://localhost:8787/api
+```
+
+A remote api works too, and there are now two of them: `https://staging.livediagram.app/api`
+reaches [staging](../specs/016-platform/staging-environment.md), which has its own database and is
+the one to reach for; the production api reads and writes real people's diagrams.
+
+Without it the editor loads, the canvas works, and the first save fails with **“Couldn’t create the diagram”** — which reads like a broken api worker rather than a missing variable, so it is worth setting up front. `apps/telemetry` and `apps/help` read the same variable: the dashboard needs it to show anything on `:3003`, and the help centre only loses its telemetry posts without it. To work on the dashboard against real numbers without seeding a local database, point it at production's summary instead: `NEXT_PUBLIC_API_BASE=https://www.livediagram.app/api` in `apps/telemetry/.env.local`. `GET /api/telemetry/summary` is public, read-only and allows any origin, and the dashboard only sends events itself when `NEXT_PUBLIC_TELEMETRY_ENABLED=true`, which local builds leave unset.
+
+The editor works in pure-guest mode without any auth setup: `pnpm dev` and open `http://localhost:3000/new`. Diagrams persist to the local D1 file the api worker creates on first start. (On `http://localhost:3002/new` instead, set `NEXT_PUBLIC_API_BASE` first — see the note above.)
+
+## Scoping commands to one workspace
+
+```sh
+pnpm --filter @livediagram/live dev
+pnpm --filter @livediagram/api test
+pnpm --filter @livediagram/marketing build
+```
+
+Workspace names follow the pattern `@livediagram/<app-or-package-folder-name>`.
+
+## Useful scripts
+
+Run from the repo root:
+
+| Command                                    | What it does                                                                                                                                          |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm install`                             | Install all workspace deps.                                                                                                                           |
+| `pnpm dev`                                 | Start all dev servers in parallel (`turbo run dev`).                                                                                                  |
+| `pnpm build`                               | Production build across the repo (`turbo run build`).                                                                                                 |
+| `pnpm lint`                                | ESLint across the repo (`turbo run lint`).                                                                                                            |
+| `pnpm typecheck`                           | `tsc --noEmit` across every workspace (`turbo run typecheck`).                                                                                        |
+| `pnpm test`                                | Vitest across every workspace that has tests (`turbo run test`).                                                                                      |
+| `pnpm --filter @livediagram/live test:e2e` | Playwright smoke suite ([End-to-end smoke tests](../specs/003-system-architecture/e2e-smoke.md)); reuses a running `pnpm dev` or boots its own stack. |
+| `pnpm format`                              | Prettier write across the repo.                                                                                                                       |
+| `pnpm format:check`                        | Prettier check (this is what CI runs).                                                                                                                |
+| `pnpm demo:sticky-vision`                  | Bundle + serve the sticky-detection demo at <http://localhost:4199> ([Event storming](../specs/021-event-storming/event-storming.md)).                |
+
+Turbo caches results, so re-running with no changes is a no-op.
+
+## Enabling Clerk auth locally (optional)
+
+The editor works without Clerk. To exercise the signed-in code paths:
+
+1. Create a Clerk application in the [Clerk dashboard](https://dashboard.clerk.com).
+2. Copy the **publishable key** and the **JWKS URL**.
+3. Drop them into the two env files:
+
+   ```sh
+   # apps/live/.env.local (gitignored)
+   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+
+   # apps/api/.dev.vars (gitignored)
+   CLERK_JWKS_URL=https://<your-instance>.clerk.accounts.dev/.well-known/jwks.json
+   ```
+
+4. Restart `pnpm dev`.
+
+To also show the **"Continue with Google"** button on `/sign-in` and `/get-started`, enable the Google SSO connection in the Clerk dashboard (dev instances can use Clerk's shared Google credentials with no Google Cloud setup) and add to `apps/live/.env.local`:
+
+```sh
+NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED=true
+```
+
+It only takes effect when `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` is also set, and like any `NEXT_PUBLIC_*` change it needs a `pnpm dev` restart to bake in. Leave it unset to keep just the email-code flow.
+
+With these set the editor's sign-in flow at `/sign-in` becomes functional. The api worker verifies the Bearer JWT and derives the owner id from the `sub` claim instead of falling back to the `X-Owner-Id` header.
+
+Without these set: the api worker silently treats every request as a guest (the `X-Owner-Id` header path), and the live frontend's ClerkProvider becomes a pass-through that renders the editor without any auth UI. This is the self-host default. See [Auth + guest access](../specs/014-identity/auth-and-guest-access.md) for the full hybrid model.
+
+## Enabling AI assistance locally (optional)
+
+The AI panel ([AI Assistance](../specs/007-editor/ai-assistance.md)) is hidden entirely unless the api worker has an OpenAI key. To turn it on locally:
+
+```sh
+# apps/api/.dev.vars (gitignored)
+AI_API_KEY=...            # any OpenAI-compatible provider's key
+# AI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai  # optional; defaults to OpenAI
+# AI_MODEL=gpt-4o              # optional; defaults to gpt-4o
+# AI_VISION_MODEL=gpt-4o       # optional; reads sticky crops (docs/specs/021-event-storming/event-storming.md).
+#                              # On Google this defaults to gemini-2.5-flash-lite,
+#                              # which reads handwriting better than the big model.
+```
+
+Restart `pnpm dev`. `GET /api/capabilities` will start reporting `{ aiEnabled: true }`, the Settings dialog grows an "AI Assistant" toggle, and the editor surfaces the panel once the user opts in. The two spend-DoS knobs `AI_ALLOWED_ORIGINS` and `AI_REQUIRE_CLERK` are hosted-only; leave them unset locally so the guest path keeps working. Production declares `AI_ALLOWED_ORIGINS` in `apps/api/wrangler.toml` `[vars]`, which `wrangler dev` also reads, so the api's `dev` script (and the e2e stack) blank it with `--var AI_ALLOWED_ORIGINS:`; without that, every AI request from a localhost editor answers 403 `origin_not_allowed`. See `apps/api/.env.example` for the full set of vars the worker reads.
+
+## Running tests
+
+```sh
+pnpm test                                # everything
+pnpm --filter @livediagram/api test      # one workspace
+pnpm --filter @livediagram/live exec vitest   # watch mode while developing
+```
+
+Tests live alongside the code they cover, as `*.test.ts` / `*.test.tsx` files. The test runner is [Vitest](https://vitest.dev) with the shared config from `@livediagram/vitest-config`. See [Testing](../specs/003-system-architecture/testing.md) for the testing contract.
+
+## Trying the photo import without an AI key
+
+The e2e stack (`scripts/e2e-stack.mjs`) can serve the built editor a second
+time, beside a running stack, as a deployment WITHOUT an AI key runs it — so
+the photo import reads the handwriting with the in-browser model (and shows
+its download the first time):
+
+```bash
+E2E_LIVE_PORT=3402 E2E_API_PORT=8887 E2E_LIVE_ONLY=1 E2E_NO_AI=1 node scripts/e2e-stack.mjs
+```
+
+`E2E_LIVE_ONLY=1` serves the static editor only, proxying to the api already
+on `E2E_API_PORT`; `E2E_NO_AI=1` answers `/api/capabilities` with
+`aiEnabled: false`.
+
+To try a hosted reader whose free budget is spent, swap `E2E_NO_AI=1` for
+`E2E_AI_BUDGET_SPENT=1`: the api still reports a model, every
+`/api/ai/read-notes` call answers 429 `ai_quota`, and the import fails over
+to the in-browser model and says so ([Event storming](../specs/021-event-storming/event-storming.md) Phase 9).
+
+## Three gotchas
+
+- **All four Next.js dev servers (`marketing`, `live`, `telemetry`, `help`) run through `scripts/next-dev.mjs`.** It frees the port, points dev at an isolated `.next-dev/` cache, and wipes that cache on every start, so a `next build` running in the same checkout can't corrupt the dev server (the recurring "unstyled help page" / `Cannot find module './NNNN.js'` failures) and a crashed restart never inherits a broken cache. All four run on Turbopack, which is also what `next build` uses under Next 16, so dev compiles the same way the deployed bundle does. If a dev server ever does get stuck, stop it and restart — the wipe-on-start clears it.
+
+  `help` was pinned to webpack until the Next 16 upgrade, because Turbopack's Rust MDX pipeline ignores remark/rehype plugins handed over as imported JS functions and its pipe tables rendered as literal text. `apps/help/next.config.ts` now names `remark-gfm` as a string (`remarkPlugins: [['remark-gfm', {}]]`), which Turbopack resolves itself, so the tables survive. Keep that string form: importing the plugin back fails the build outright under Turbopack with "does not have serializable options".
+
+  Next 16 also writes three files into whichever app you run it from, all of them gitignored on purpose: `next-env.d.ts` (it now names the active distDir inside itself, so dev and build would otherwise rewrite it over each other), and an `AGENTS.md` + `CLAUDE.md` pair of agent instructions. Don't un-ignore or hand-edit them; the repo's agent instructions live in the root `AGENTS.md`, and each app's tsconfig already picks up the Next types without `next-env.d.ts` being tracked.
+
+  The webpack escape hatch is still there — `pnpm --filter @livediagram/live dev:webpack` boots the editor on webpack, and `scripts/next-dev.mjs` honours `--webpack` from any app. It exists for the case where Turbopack genuinely doesn't support something the app needs, and it is a diagnostic rather than a default: Turbopack became the default precisely because webpack's HMR kept desynchronising here and serving `__webpack_modules__[moduleId] is not a function` until someone wiped `.next`. If you find yourself needing the hatch, that is worth a spec note rather than a habit.
+
+- **The api worker's local D1 file lives at `apps/api/.wrangler/state/v3/d1/`.** Delete the folder to start over with an empty database.
+
+- **Open the editor on `localhost`, not on the machine's LAN address.** Over plain `http` from any other address (`http://192.168.x.x:3002`, `http://<machine-name>:3002`) the browser is not in a secure context, withholds `crypto.randomUUID`, and the editor fails to load with "This page couldn't load". A known gap, not yet fixed: the editor calls `crypto.randomUUID` directly in about 75 places. Testing from a phone or a second laptop needs https (a tunnel, or a dev certificate) until it is.

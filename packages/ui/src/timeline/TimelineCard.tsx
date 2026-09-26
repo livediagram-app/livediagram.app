@@ -1,6 +1,6 @@
 'use client';
 
-// One event, as a card (spec/138 §2). Four regions, top to bottom: the
+// One event, as a card (docs/specs/013-workspace/timeline.md §2). Four regions, top to bottom: the
 // preview box, the title row (subject + the host's menu slot), the
 // reason line, and an optional description.
 //
@@ -30,9 +30,9 @@ export function TimelineCard({
 }: {
   event: TimelineEvent;
   rendered: TimelineCardRender;
-  /** The host's additions: a ⋯ menu, an inline rename (spec/138 §2.8). */
+  /** The host's additions: a ⋯ menu, an inline rename (docs/specs/013-workspace/timeline.md §2.8). */
   slots?: TimelineCardSlots;
-  /** Landed since the reader last opened the feed (spec/138 §2.5). */
+  /** Landed since the reader last opened the feed (docs/specs/013-workspace/timeline.md §2.5). */
   isNew?: boolean;
   /** The deep-link target: ringed so the reader can see where they landed. */
   focused?: boolean;

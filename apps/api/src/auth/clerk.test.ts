@@ -17,7 +17,7 @@ vi.mock('jose', () => ({
 
 import { getClerkIdentity } from './clerk';
 
-// `getClerkIdentity` is the spec/04 hybrid identity gate on the api
+// `getClerkIdentity` is the docs/specs/014-identity/auth-and-guest-access.md hybrid identity gate on the api
 // worker side: when it returns null, the caller falls through to the
 // legacy `X-Owner-Id` header so the guest path keeps serving. The
 // "valid token" branch hits a remote JWKS via `jose` and lives in
@@ -26,7 +26,7 @@ import { getClerkIdentity } from './clerk';
 // these would either lock guests out (if a stricter branch started
 // throwing) or quietly accept malformed Bearer headers (if the parser
 // drifted away from the "Bearer " prefix), and the guest path is the
-// editor's promise to never require auth (spec/03 + spec/04).
+// editor's promise to never require auth (docs/specs/002-project-scope/open-source-and-business-model.md + docs/specs/014-identity/auth-and-guest-access.md).
 
 function makeEnv(jwksUrl: string | undefined): Env {
   // Cast through unknown so the test only fills the fields the helper
@@ -41,11 +41,11 @@ function makeRequest(authHeader: string | null): Request {
   return new Request('https://api.example/whatever', { headers });
 }
 
-describe('getClerkIdentity (guest fall-through gate, spec/04)', () => {
+describe('getClerkIdentity (guest fall-through gate, docs/specs/014-identity/auth-and-guest-access.md)', () => {
   it('returns null when CLERK_JWKS_URL is unset (Clerk not configured for this env)', async () => {
     // Self-host path: a deployment without Clerk leaves the var
     // unset, every request is treated as guest, X-Owner-Id is the
-    // only identity signal the api worker honours. spec/03's
+    // only identity signal the api worker honours. docs/specs/002-project-scope/open-source-and-business-model.md's
     // "don't break self-hosting" rule depends on this branch.
     const result = await getClerkIdentity(makeEnv(undefined), makeRequest('Bearer anything'));
     expect(result).toBeNull();
@@ -87,7 +87,7 @@ describe('getClerkIdentity (guest fall-through gate, spec/04)', () => {
 // The other half: what a token that DOES verify is allowed to assert. Every
 // case here decides an identity the rest of the worker then trusts as the
 // owner of the request, so a drift means acting as the wrong account.
-describe('getClerkIdentity (verified session, spec/04 + spec/32)', () => {
+describe('getClerkIdentity (verified session, docs/specs/014-identity/auth-and-guest-access.md + docs/specs/013-workspace/teams.md)', () => {
   const JWKS_URL = 'https://clerk.example/.well-known/jwks.json';
 
   beforeEach(() => {
@@ -118,7 +118,7 @@ describe('getClerkIdentity (verified session, spec/04 + spec/32)', () => {
   });
 
   it('normalises the email claim to trimmed lowercase', async () => {
-    // Team invites match on email (spec/32); the session token is the only
+    // Team invites match on email (docs/specs/013-workspace/teams.md); the session token is the only
     // email the worker trusts, and it has to compare equal to the stored one.
     const request = verifiedWith({ sub: 'user_abc', email: '  Ada@Example.COM ' });
     expect(await getClerkIdentity(makeEnv(JWKS_URL), request)).toMatchObject({
@@ -141,7 +141,7 @@ describe('getClerkIdentity (verified session, spec/04 + spec/32)', () => {
     });
   });
 
-  it('carries the sid and first-factor age claims for the sign-in count (spec/22)', async () => {
+  it('carries the sid and first-factor age claims for the sign-in count (docs/specs/017-telemetry/telemetry.md)', async () => {
     // Session·SignedUp / SignedIn are counted server-side per new session id,
     // and a session whose first factor was verified long ago is not a fresh
     // sign-in. Both claims are optional; anything malformed reads as absent.

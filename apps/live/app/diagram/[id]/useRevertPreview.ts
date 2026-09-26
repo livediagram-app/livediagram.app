@@ -1,12 +1,12 @@
 'use client';
 
-// Hover-to-preview for the Activity panel's per-row Revert (spec/12).
+// Hover-to-preview for the Activity panel's per-row Revert (docs/specs/012-collaboration/activity-and-audit.md).
 // Resting the pointer on a revertable row shows, live on the canvas,
 // what clicking its Revert button would do — the affected elements
 // jump to the entry's `before` state — and pulling the pointer off
 // restores the current state. Nothing commits: the preview rides the
 // same present-only machinery as the style-preset hover previews
-// (spec/48): `tickTabs` (no history push, no activity emit, no room
+// (docs/specs/010-palette/style-presets.md): `tickTabs` (no history push, no activity emit, no room
 // broadcast beyond the normal element sync) plus `previewingRef` so
 // autosave skips the ephemeral frames.
 //

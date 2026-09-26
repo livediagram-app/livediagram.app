@@ -15,7 +15,7 @@ import {
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { DataMenuGlyph } from '@/components/palette/context-menu-data-rows';
 
-// The web components' row editors (spec/147), in the Tools flyout beside the
+// The web components' row editors (docs/specs/009-elements/web-components-and-no-groups.md), in the Tools flyout beside the
 // checklist's and the entity's: a stat row's cards, a process's steps and a
 // header's links. The canvas edits each row's WORDS in place; this is where
 // rows are added, removed and reordered, bounded to each kind's min and max.

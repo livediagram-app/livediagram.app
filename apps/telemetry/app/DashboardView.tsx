@@ -45,7 +45,7 @@ import { MetricGroups, type MetricGroup } from './MetricCards';
 import type { ViewKey } from './view-keys';
 import { windowLabel } from './windows';
 
-// The Dashboard view (spec/22, default tab): every event the product sends,
+// The Dashboard view (docs/specs/017-telemetry/telemetry.md, default tab): every event the product sends,
 // as chart stacks grouped by the question they answer, each a combined chart
 // that opens into its members' cards. Charts come from the shared catalogue,
 // so a stack only references them. Every emitted event lands in some chart

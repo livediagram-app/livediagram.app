@@ -10,7 +10,7 @@ import { useEditorDrag } from './useEditorDrag';
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 import type { EditorDragDeps } from './useEditorDrag.types';
 
-// Dragging a note ALREADY on the board into a gap (spec/139), driven through
+// Dragging a note ALREADY on the board into a gap (docs/specs/021-event-storming/event-storming.md), driven through
 // the real drag machine rather than its parts: the gate, the live preview, the
 // single-undo drop and the hostile paths are all properties of the wiring, not
 // of the pure resolver (that is note-insertion-drag.test.ts).
@@ -174,7 +174,7 @@ afterEach(() => {
   vi.mocked(track).mockClear();
 });
 
-describe('useEditorDrag — inserting a note already on the board (spec/139)', () => {
+describe('useEditorDrag — inserting a note already on the board (docs/specs/021-event-storming/event-storming.md)', () => {
   it('opens a slot while Alt is held over a gap', () => {
     const h = harness();
     press(h, 'drag');
@@ -222,7 +222,7 @@ describe('useEditorDrag — inserting a note already on the board (spec/139)', (
     expect(getInsertionSlot()).toBeNull();
   });
 
-  // spec/22: one event per committed insertion, from either entry point.
+  // docs/specs/017-telemetry/telemetry.md: one event per committed insertion, from either entry point.
   it('reports the insertion once, and only when one happened', () => {
     const h = harness();
     press(h, 'drag');
@@ -317,7 +317,7 @@ describe('useEditorDrag — inserting a note already on the board (spec/139)', (
       expect(getInsertionSlot()).toBeNull();
     });
 
-    // Shift is already spoken for by drag-duplicate (spec/80).
+    // Shift is already spoken for by drag-duplicate (docs/specs/008-canvas/shift-drag-duplicate.md).
     it('yields to a drag-duplicate when Shift joins in', () => {
       const h = harness();
       press(h, 'drag');
@@ -351,7 +351,7 @@ describe('useEditorDrag — inserting a note already on the board (spec/139)', (
       expect(h.xOf('drag')! - h.xOf('c')!).toBe(1200 - 544);
     });
 
-    // Cmd/Ctrl means free placement (spec/60). An open slot IS the placement,
+    // Cmd/Ctrl means free placement (docs/specs/008-canvas/snap-override.md). An open slot IS the placement,
     // so insertion wins; snapping is irrelevant while a slot is open anyway.
     it('wins over Cmd/Ctrl free placement', () => {
       const h = harness();

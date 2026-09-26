@@ -18,7 +18,7 @@ type ImportTabDialogProps = {
   // dialog can close / stay open / show an error without throwing.
   onImportFile: (format: Format) => Promise<ImportOutcome>;
   // Runs a text import (the paste/write path) for the chosen format,
-  // bypassing the file picker (spec/27 + spec/73).
+  // bypassing the file picker (docs/specs/020-import-export/markdown-import.md + docs/specs/020-import-export/mermaid.md).
   onImportText: (format: Format, text: string) => Promise<ImportOutcome>;
   onClose: () => void;
 };
@@ -68,10 +68,10 @@ const FORMATS: {
 ];
 
 // Counterpart to ExportTabDialog: pick a format to import INTO the current
-// tab. Importing REPLACES the tab's contents (spec/27), so the dialog leads
+// tab. Importing REPLACES the tab's contents (docs/specs/020-import-export/markdown-import.md), so the dialog leads
 // with a warning before the format cards. Every format is text, so each card
 // opens the same two-step panel: paste/write the content, or pick a file
-// (spec/73). Errors render inline; on success the dialog closes.
+// (docs/specs/020-import-export/mermaid.md). Errors render inline; on success the dialog closes.
 export function ImportTabDialog({
   tabName,
   onImportFile,

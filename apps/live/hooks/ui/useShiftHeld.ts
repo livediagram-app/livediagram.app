@@ -5,7 +5,7 @@ import { createHeldKeyStore, useHeldKey } from './held-key-store';
 // Singleton subscription that exposes "is the user currently holding
 // Shift". The store machinery is shared (see held-key-store); what
 // follows is only this key's policy. Drives the modifier hint banner
-// (spec/09): while Shift is down the editor names what the modifier is
+// (docs/specs/008-canvas/canvas-and-palette.md): while Shift is down the editor names what the modifier is
 // doing right now.
 //
 // A Shift press while typing (an input / textarea / contentEditable has

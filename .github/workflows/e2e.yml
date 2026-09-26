@@ -1,6 +1,6 @@
 name: E2E Smoke
 
-# Browser E2E (spec/72) is deliberately OFF the per-PR critical path —
+# Browser E2E (docs/specs/003-system-architecture/e2e-smoke.md) is deliberately OFF the per-PR critical path —
 # it costs a browser download + a running stack. The fast unit gate
 # (ci.yml) still runs on every PR/push. This runs:
 #   - on push to main (a post-merge smoke), and

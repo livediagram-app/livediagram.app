@@ -3,7 +3,7 @@
 // cycle observable at runtime.
 import type { Element, ElementId, Tab } from './index';
 
-// Photoshop-style layers (spec/74). A tab optionally carries an ordered
+// Photoshop-style layers (docs/specs/006-diagram/layers.md). A tab optionally carries an ordered
 // `layers` array (BOTTOM -> TOP: index 0 paints lowest) and each element
 // points into it via `layerId`. Everything here is pure: helpers take a
 // tab (or an element list + the raw layers array) and return a new value,
@@ -12,7 +12,7 @@ import type { Element, ElementId, Tab } from './index';
 export type Layer = {
   id: string;
   name: string;
-  // Hidden layers don't render, hit-test, or export (spec/74). Absent =
+  // Hidden layers don't render, hit-test, or export (docs/specs/006-diagram/layers.md). Absent =
   // visible, so untouched layers stay byte-light in the stored JSON.
   visible?: boolean;
   // Elements on a locked layer behave like `element.locked` (selectable
@@ -28,7 +28,7 @@ export type Layer = {
 // The lazily-materialised base layer. A FIXED sentinel id (not a random
 // uuid) so two clients that materialise the array concurrently converge
 // on the same base layer, and so elements with a missing `layerId`
-// (everything authored before spec/74) resolve to it wherever it moves
+// (everything authored before docs/specs/006-diagram/layers.md) resolve to it wherever it moves
 // in the stack.
 export const DEFAULT_LAYER_ID = 'layer:default';
 export const DEFAULT_LAYER_NAME = 'Layer 1';
@@ -63,9 +63,9 @@ export function resolveLayerId(layerId: string | undefined, layers: Layer[]): st
 }
 
 // The paint tier of an element within its band, back to front:
-// - frames are section backdrops that paint below their band-mates (spec/09);
+// - frames are section backdrops that paint below their band-mates (docs/specs/008-canvas/canvas-and-palette.md);
 // - event-storming actors sit in front of every other note, and hotspots in
-//   front of actors (spec/139 Phase 4).
+//   front of actors (docs/specs/021-event-storming/event-storming.md Phase 4).
 // Array order decides within a tier.
 function paintTier(el: Element): number {
   if (el.type === 'shape' && el.shape === 'frame') return 0;
@@ -137,7 +137,7 @@ function hiddenLayerIds(layers: Layer[]): Set<string> {
 }
 
 // Element ids sitting on a hidden layer — the set the canvas drops from
-// hit-testing, marquee, select-all, and keyboard traversal (spec/71).
+// hit-testing, marquee, select-all, and keyboard traversal (docs/specs/004-interface-design/canvas-accessibility.md).
 export function hiddenLayerElementIds(
   elements: Element[],
   layers: Layer[] | undefined,
@@ -180,7 +180,7 @@ export function layerElementCounts(tab: Pick<Tab, 'elements' | 'layers'>): Map<s
 }
 
 // The active layer for a tab given the user's remembered choice: the
-// remembered layer when it still exists, else the TOP layer (spec/74's
+// remembered layer when it still exists, else the TOP layer (docs/specs/006-diagram/layers.md's
 // default). Session-scoped UI state — never persisted.
 export function resolveActiveLayerId(
   layers: Layer[] | undefined,
@@ -206,7 +206,7 @@ export function isDefaultLayerName(name: string): boolean {
 }
 
 // Stamp the active layer onto elements that appeared in a commit without
-// a valid layer (spec/74: "every new element lands on the active layer").
+// a valid layer (docs/specs/006-diagram/layers.md: "every new element lands on the active layer").
 // Called at the editor's single commit choke point so no individual
 // creation path (draw, paste, AI, template, Mermaid import) carries layer
 // logic. A tab that has never materialised `layers` is left untouched —

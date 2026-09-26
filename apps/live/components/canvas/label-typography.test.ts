@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { labelTypographyClass } from './label-style';
 
-// Zero layout shift on entering text-edit (the design rule, and spec/139's
+// Zero layout shift on entering text-edit (the design rule, and docs/specs/021-event-storming/event-storming.md's
 // capture loop: double-click means "type", not "watch the text jump").
 // The display label and the inline editor must agree on typography, or the
 // glyphs move — and on a multi-line element they can even re-wrap — the

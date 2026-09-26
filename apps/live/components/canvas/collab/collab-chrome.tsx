@@ -1,4 +1,4 @@
-// Shared chrome for the collaboration panels (spec/123 to spec/129): the card
+// Shared chrome for the collaboration panels (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md): the card
 // title, the small press targets, and the empty-state line.
 //
 // Five faces render the same card — a title over a body over a control row —
@@ -13,7 +13,7 @@ export { tint };
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { Tooltip } from '@/components/primitives/Tooltip';
 
-// Scales a Collaborate card's contents to the element's box (spec/122).
+// Scales a Collaborate card's contents to the element's box (docs/specs/012-collaboration/participant-responses.md).
 //
 // The face is laid out at the kind's default size and then scaled, rather
 // than reflowed. That is the difference between "the card gets bigger" and
@@ -29,7 +29,7 @@ import { Tooltip } from '@/components/primitives/Tooltip';
 // left the agenda's ruling and crease floating in a band in the middle of a
 // tall element, with bare card above and below.
 //
-// A card whose content is a LIST that grows (the Q&A board, spec/151) opts out
+// A card whose content is a LIST that grows (the Q&A board, docs/specs/012-collaboration/qa-board.md) opts out
 // with `reflow`: there, resizing is how you make room for more notes, and
 // scaling would spend the new space on bigger type instead.
 function CollabScale({
@@ -98,7 +98,7 @@ export function CollabPanel({
   aside?: React.ReactNode;
   children: React.ReactNode;
   footer?: React.ReactNode;
-  // Extra class on the card body. Used by the Done check (spec/137) for its
+  // Extra class on the card body. Used by the Done check (docs/specs/012-collaboration/done-check.md) for its
   // all-done flash, which is a class rather than an inline style so the
   // reduced-motion override in globals.css can reach it.
   className?: string;
@@ -106,7 +106,7 @@ export function CollabPanel({
   // check's ellipsis menu lives here; a card with no per-card controls passes
   // nothing and the row is unchanged.
   headerExtra?: React.ReactNode;
-  // The paper kit (spec/122): the textures that make this card a particular
+  // The paper kit (docs/specs/012-collaboration/participant-responses.md): the textures that make this card a particular
   // OBJECT rather than a generic rounded rectangle. `backdrop` prints UNDER
   // the content — rules, a halftone screen, a punched margin — and `overlay`
   // over it, for the pieces that have to sit on top of everything: a folded
@@ -274,7 +274,7 @@ export function CollabChip({
 
 // The line a card shows before anything has happened to it. Deliberately a
 // sentence rather than a zero: an average of 0 on an unanswered temperature
-// check reads as a very unhappy room (spec/124).
+// check reads as a very unhappy room (docs/specs/012-collaboration/temperature-check.md).
 export function CollabEmpty({ children, textColor }: { children: string; textColor: string }) {
   return (
     <p className="py-1 text-[11px] leading-relaxed opacity-55" style={{ color: textColor }}>

@@ -1,5 +1,5 @@
 // api_tokens — external API credentials, owner-scoped to a Clerk account
-// (spec/61). We store only the SHA-256 hash; the auth hot path hashes the
+// (docs/specs/015-api/public-api-and-tokens.md). We store only the SHA-256 hash; the auth hot path hashes the
 // presented token and looks the hash up here.
 
 import { apiTokenExpiry, generateApiToken, hashApiToken } from '../auth/api-token';
@@ -9,7 +9,7 @@ import type { ApiTokenDTO, Env } from '../types';
 const COLS =
   'id, owner_id, token_hash, name, created_at, last_used_at, expires_at, revoked, read_only';
 
-// Hard cap on live tokens per account (spec/61): enough for any real
+// Hard cap on live tokens per account (docs/specs/015-api/public-api-and-tokens.md): enough for any real
 // integration set, low enough to keep the list + table tidy.
 export const MAX_API_TOKENS_PER_OWNER = 10;
 
@@ -41,7 +41,7 @@ export async function createApiToken(
     tokenHash: string;
     createdAt: number;
     expiresAt: number;
-    // Read-only token (spec/62 §4.11): may only GET/HEAD. Defaults to full
+    // Read-only token (docs/specs/015-api/mcp-server.md §4.11): may only GET/HEAD. Defaults to full
     // read+write when omitted.
     readOnly?: boolean;
   },
@@ -56,10 +56,10 @@ export async function createApiToken(
 
 /**
  * Mint a live API token: enforce the per-account cap, generate the secret,
- * hash it, and insert the row (spec/61).
+ * hash it, and insert the row (docs/specs/015-api/public-api-and-tokens.md).
  *
  * Two routes mint tokens — `POST /api/tokens` for a user in the Explorer, and
- * the OAuth exchange for an MCP client (spec/62) — and each used to carry its
+ * the OAuth exchange for an MCP client (docs/specs/015-api/mcp-server.md) — and each used to carry its
  * own copy of this sequence. The rules that matter are all in it: the cap, the
  * six-month expiry, and the fact that only the HASH is ever stored. A second
  * copy is a second place for one of those to quietly stop being true, and the
@@ -94,7 +94,7 @@ export async function mintApiToken(
 // Hashes the token, looks up a LIVE (non-revoked, unexpired) row, and stamps
 // `last_used_at`. Returns `{ ownerId, tokenId }`, or null when no live token
 // matches (revoked / expired / unknown all collapse to "not authenticated").
-// The tokenId lets the request rate-limit on the specific token (spec/61 §3.5)
+// The tokenId lets the request rate-limit on the specific token (docs/specs/015-api/public-api-and-tokens.md §3.5)
 // rather than the owner, so one runaway integration can't burn the owner's
 // interactive-app budget.
 export async function resolveApiToken(
@@ -126,7 +126,7 @@ export async function revokeApiToken(env: Env, ownerId: string, id: string): Pro
   return (res.meta?.changes ?? 0) > 0;
 }
 
-// spec/64 (#3): tokens that expire within `windowMs` and haven't been warned
+// docs/specs/014-identity/transactional-email.md (#3): tokens that expire within `windowMs` and haven't been warned
 // yet (live only). The daily cron uses this to send a one-time "expiring soon"
 // heads-up so a programmatic integration doesn't silently break. Bounded batch,
 // soonest-first.

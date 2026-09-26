@@ -1,9 +1,9 @@
-// API token mint + hashing (spec/61). A token is an opaque secret shown to the
+// API token mint + hashing (docs/specs/015-api/public-api-and-tokens.md). A token is an opaque secret shown to the
 // user ONCE; we persist only its SHA-256 hash and verify by hashing the
 // presented value and looking that hash up (the hash is derived from 256 bits
 // of randomness, so an indexed equality lookup leaks nothing useful — there's
 // no low-entropy value to time-attack, unlike a password). Tokens authenticate
-// signed-in (Clerk) accounts only; see spec/61.
+// signed-in (Clerk) accounts only; see docs/specs/015-api/public-api-and-tokens.md.
 
 import { bytesToBase64Url, sha256Hex } from '@livediagram/api-schema';
 
@@ -30,7 +30,7 @@ export async function hashApiToken(token: string): Promise<string> {
   return sha256Hex(new TextEncoder().encode(token));
 }
 
-// Token lifetime: a fixed six calendar months from creation (spec/61). Returns
+// Token lifetime: a fixed six calendar months from creation (docs/specs/015-api/public-api-and-tokens.md). Returns
 // the absolute `expires_at` (epoch ms). Six months is the hard maximum and the
 // only option — there is no never-expires and no shorter value.
 export function apiTokenExpiry(createdAt: number): number {

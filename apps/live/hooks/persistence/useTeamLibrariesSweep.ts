@@ -1,9 +1,9 @@
-// Lazy sweep of every joined team's shared library (spec/35), one
+// Lazy sweep of every joined team's shared library (docs/specs/013-workspace/team-shared-diagrams.md), one
 // fetch per team, consumed by four surfaces:
 //   - the explorer sidebar's team subtrees (a team renders as a
 //     collapsible folder tree on every route — it needs each team's
 //     folders to decide whether to show the expand chevron),
-//   - the search panel's Folders group (team folders, spec/09),
+//   - the search panel's Folders group (team folders, docs/specs/008-canvas/canvas-and-palette.md),
 //   - the move modal's team destinations,
 //   - the explorer's Recent list (team diagrams ride alongside the
 //     personal ones, badged "Team").

@@ -17,7 +17,7 @@ import { isOfflineIdSync } from '@/lib/offline/offline-store';
 import { useTimelineFeed } from './useTimelineFeed';
 
 // The browse sections that render a folders + diagrams grid the List/Card
-// toggle (spec/67) can swap. Other sections (gallery, themes, tokens,
+// toggle (docs/specs/006-diagram/diagram-snapshots.md) can swap. Other sections (gallery, themes, tokens,
 // profile, team, invites, shared) have their own fixed layout.
 const BROWSE_KINDS = new Set([
   'recent',
@@ -31,7 +31,7 @@ const BROWSE_KINDS = new Set([
 ]);
 
 // Each Explorer section deep-links its matching help-centre article from a
-// Help button in the pane header (spec/56); the button's tooltip copy comes
+// Help button in the pane header (docs/specs/018-help/contextual-help-links.md); the button's tooltip copy comes
 // from HELP_LINK_COPY. Sections without a guide (team, invites) simply omit
 // it.
 const SECTION_HELP: Partial<Record<string, HelpArticleKey>> = {
@@ -135,7 +135,7 @@ export function ExplorerPane() {
   useEffect(() => {
     setTeamNotFound(false);
   }, [selected]);
-  // Where each Recent row lives (spec/94). Recent is the only pane that
+  // Where each Recent row lives (docs/specs/013-workspace/recent-folder-chip.md). Recent is the only pane that
   // spans folders — every other one IS a folder, so a chip there would just
   // repeat the pane's own title.
   //
@@ -144,7 +144,7 @@ export function ExplorerPane() {
   const folderChipFor = useCallback(
     (d: PaneDiagram): { label: string; onOpen: () => void } | null => {
       // Recent AND Favourites both aggregate across folders, so both need
-      // to say where a row actually lives (spec/94, spec/95). Every other
+      // to say where a row actually lives (docs/specs/013-workspace/recent-folder-chip.md, docs/specs/013-workspace/favourites.md). Every other
       // pane IS a folder, where the chip would just repeat its title.
       const aggregates = selected.kind === 'recent' || selected.kind === 'favourites';
       if (!aggregates || d.shared) return null;
@@ -179,7 +179,7 @@ export function ExplorerPane() {
   // its feed renders in the body. Gated like the other section hooks so
   // visiting Recent doesn't fetch a feed nobody is looking at.
   const timeline = useTimelineFeed(ownerId, selected.kind === 'timeline');
-  // Which diagram's history dialog is open, if any (spec/138 §3.4).
+  // Which diagram's history dialog is open, if any (docs/specs/013-workspace/timeline.md §3.4).
   const [historyFor, setHistoryFor] = useState<{ id: string; name: string } | null>(null);
 
   return (
@@ -203,11 +203,11 @@ export function ExplorerPane() {
           // than a container you add to, so this started out omitted and left
           // to the empty state's CTA — but the empty state is exactly what a
           // returning user never sees, and Timeline is now the Explorer
-          // landing page (spec/138 §8.1). That made "start a new diagram" a
+          // landing page (docs/specs/013-workspace/timeline.md §8.1). That made "start a new diagram" a
           // dead end on the first screen of the app.
           //
           // Activity does NOT: a new diagram puts nothing on an inbox of
-          // open actions and threads (spec/142 §1).
+          // open actions and threads (docs/specs/013-workspace/activity-page.md §1).
           selected.kind === 'activity' ||
           selected.kind === 'shared' ||
           selected.kind === 'gallery' ||
@@ -263,7 +263,7 @@ export function ExplorerPane() {
         ) : null
       ) : selected.kind === 'activity' ? (
         // Like the Timeline, ahead of the diagram-list `loading` gate: the
-        // section reads its own feed (spec/142 §5).
+        // section reads its own feed (docs/specs/013-workspace/activity-page.md §5).
         <ActivityPane feed={activity} />
       ) : loading ? (
         <SkeletonRows />
@@ -287,7 +287,7 @@ export function ExplorerPane() {
             onTeamsChanged={() => void refreshTeams()}
             onLeftTeam={() => go({ kind: 'timeline' })}
             onLoadResult={(found) => setTeamNotFound(!found)}
-            // The shared-diagrams move picker offers every space (spec/35):
+            // The shared-diagrams move picker offers every space (docs/specs/013-workspace/team-shared-diagrams.md):
             // the personal tree + each team, with `moveDiagramTo` routing a
             // cross-scope pick from the diagram's current placement.
             moveDests={{ personalFolders: movePersonalFolders, teams: moveTeamDests }}
@@ -301,7 +301,7 @@ export function ExplorerPane() {
       ) : selected.kind === 'themes' ? (
         <ThemesPane />
       ) : selected.kind === 'tokens' ? (
-        // Signed-in only (spec/61). Reached via the sidebar only when signed
+        // Signed-in only (docs/specs/015-api/public-api-and-tokens.md). Reached via the sidebar only when signed
         // in, but a guest could deep-link /explorer/tokens — show a sign-in
         // prompt rather than a TokensPane that would just 403.
         clerkUserId ? (
@@ -334,7 +334,7 @@ export function ExplorerPane() {
         <EmptyPane selected={selected} />
       ) : (
         (() => {
-          // List and Card take the SAME props (spec/67), so build them
+          // List and Card take the SAME props (docs/specs/006-diagram/diagram-snapshots.md), so build them
           // once and pick the component by the toggle.
           const ViewComponent = viewMode === 'card' ? CardView : ListView;
           return (
@@ -376,7 +376,7 @@ export function ExplorerPane() {
               onShowHistory={(id) => {
                 const row = paneContent.diagrams.find((d) => d.id === id);
                 // Offline diagrams never reach the worker, so they have
-                // no server history to show (spec/76).
+                // no server history to show (docs/specs/006-diagram/offline-mode.md).
                 if (row && !isOfflineIdSync(id)) setHistoryFor({ id, name: row.name });
               }}
               favouriteIds={favouriteIds}
@@ -384,21 +384,21 @@ export function ExplorerPane() {
               folderChipFor={folderChipFor}
               childrenCount={(id) => childrenByParent.get(id)?.length ?? 0}
               diagramsCount={(id) => diagramsByFolder.get(id)?.length ?? 0}
-              // What each folder card previews (spec/99) — the same
+              // What each folder card previews (docs/specs/013-workspace/folder-content-previews.md) — the same
               // client-side indexes the counts come from, so no extra fetch.
               folderContents={(id) => ({
                 folders: childrenByParent.get(id) ?? [],
                 diagrams: diagramsByFolder.get(id) ?? [],
               })}
               // Owner column (desktop): Recent mixes personal + team rows
-              // (spec/35), so it's the one list where ownership varies.
+              // (docs/specs/013-workspace/team-shared-diagrams.md), so it's the one list where ownership varies.
               showOwner={selected.kind === 'recent'}
             />
           );
         })()
       )}
 
-      {/* One diagram's own history (spec/138 §3.4), opened from a row's
+      {/* One diagram's own history (docs/specs/013-workspace/timeline.md §3.4), opened from a row's
           menu. Lives at the pane level rather than per row so only one
           is ever mounted. */}
       {ownerId ? (

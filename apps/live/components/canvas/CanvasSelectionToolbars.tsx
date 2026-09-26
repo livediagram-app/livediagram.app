@@ -7,7 +7,7 @@ import { MultiSelectionToolbar } from '@/components/canvas/MultiSelectionToolbar
 import { SelectionPopover } from '@/components/canvas/SelectionPopover';
 import { useInsertionSlot } from '@/lib/insertion-preview';
 
-// The floating selection toolbars (spec/09): the single-selection popover
+// The floating selection toolbars (docs/specs/008-canvas/canvas-and-palette.md): the single-selection popover
 // and the marquee multi-selection toolbar, each riding a sibling wrapper
 // that mirrors the canvas transform so they counter-scale with zoom and
 // float over the selection. Extracted from Canvas as one cohesive layer —
@@ -31,7 +31,7 @@ export function CanvasSelectionToolbars({
     multiToolbarBounds,
     showMultiToolbar,
   } = selection;
-  // Insert-between preview (spec/139): the toolbars anchor to element BOUNDS,
+  // Insert-between preview (docs/specs/021-event-storming/event-storming.md): the toolbars anchor to element BOUNDS,
   // and the preview slides elements by a render-time transform their bounds
   // know nothing about — so while a slot is open they would float over empty
   // canvas. They fade out the same way they do for a quick-connect ring, and
@@ -105,7 +105,7 @@ export function CanvasSelectionToolbars({
             }
             hasText={selected ? elementHasText(selected) : false}
             onDuplicate={readOnly ? undefined : selected ? onDuplicateSelected : undefined}
-            // Intra-layer z-order (spec/74): stack within the element's own
+            // Intra-layer z-order (docs/specs/006-diagram/layers.md): stack within the element's own
             // band. The element menu's Bring to Front moves LAYERS; these
             // are the missing nudge for two things on the same one.
             onBringToFront={readOnly || !selected ? undefined : props.onBringSelectedToFront}

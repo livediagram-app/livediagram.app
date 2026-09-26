@@ -5,8 +5,8 @@ precise) take the separation of group E's learned boundary model
 ([e-model.md](e-model.md): a 85K-parameter U-Net trained on synthetic walls
 only, which all but eliminated real merges) without giving up its precision?
 Decided by the sweep over the eight labelled walls, for the bar of
-[plans/event-storming-photo-95.md](../../../plans/event-storming-photo-95.md).
-Plan: [plans/event-storming-photo-95-experiments.md](../../../plans/event-storming-photo-95-experiments.md)
+plans/0007-event-storming-photo-95.md.
+Plan: plans/0006-event-storming-photo-95-experiments.md
 (J).
 
 Every table gives, per wall, **F1 / precision / recall without actors /
@@ -309,7 +309,7 @@ unusable through WebGL without a GPU or the plain-JavaScript backend.
    `index.ts` (not done here: this group changes existing modules only through
    `hybrid.ts` and one call in `detect.ts`).
 6. **Telemetry**: which path detected (hybrid / classical) and which backend,
-   as closed enum values; and spec/139 Phase 9 to say the model is optional,
+   as closed enum values; and [Event storming](../../specs/021-event-storming/event-storming.md) Phase 9 to say the model is optional,
    lazy and local, like the detector.
 
 ## What to try next

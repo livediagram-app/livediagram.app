@@ -16,7 +16,7 @@ export type StampGhost = StampPlacement & {
   screen: { x: number; y: number; width: number; height: number };
 };
 
-// The ghost of an armed fixed-size note (spec/139 Phase 4). While a workshop
+// The ghost of an armed fixed-size note (docs/specs/021-event-storming/event-storming.md Phase 4). While a workshop
 // note's tile is armed, a ghost of the note follows the pointer over the
 // canvas, snapped to the lanes, and the lane it would take lights. `stampAt`
 // is the same placement for the draw gesture to press, drag and drop by, so

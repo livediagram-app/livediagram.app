@@ -1,4 +1,4 @@
-// The LABEL rich-text editor's session state (spec/09): everything that is
+// The LABEL rich-text editor's session state (docs/specs/008-canvas/canvas-and-palette.md): everything that is
 // specific to editing an element's label on the canvas — the element-derived
 // run styling, the mount caret policy, the toolbar flip, the focus guards for
 // the context menu riding alongside, and the commit-on-blur-or-unmount
@@ -7,7 +7,7 @@
 //
 // The generic runs ⇄ contentEditable machine (paint, read-back, selection
 // restore, active format, format commands) lives in useRichTextDocument,
-// shared with the note editor (spec/92).
+// shared with the note editor (docs/specs/009-elements/rich-text-notes.md).
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { runsFromPlainText, runsPlainText, type TextRun } from '@livediagram/diagram';
@@ -95,7 +95,7 @@ export function useRichTextSession({
     applyHeading,
   } = doc;
 
-  // Auto-fit (spec/139): a multi-line label on 'scale' measures its LIVE
+  // Auto-fit (docs/specs/021-event-storming/event-storming.md): a multi-line label on 'scale' measures its LIVE
   // text against the box, so the size tracks what is being typed — and, on
   // mount, lands on exactly the number the display label was already using
   // (same pure helper, same inputs), which is what keeps double-click
@@ -111,7 +111,7 @@ export function useRichTextSession({
           bold: !!element.textBold,
           italic: !!element.textItalic,
           // Capitals are wider: measure what the CSS transform will paint
-          // (spec/139), or the note overflows as you type.
+          // (docs/specs/021-event-storming/event-storming.md), or the note overflows as you type.
           uppercase: !!uppercase,
           // Same reason for the face: the display label measured the marker,
           // so the editor must too or the text resizes on double-click.
@@ -166,7 +166,7 @@ export function useRichTextSession({
     };
     document.addEventListener('pointerup', onUp);
     // Focus preservation for the context menu riding alongside the edit
-    // session (spec/09): preventDefault on mousedown inside the element
+    // session (docs/specs/008-canvas/canvas-and-palette.md): preventDefault on mousedown inside the element
     // context menu (or one of its side flyouts) so clicking a menu control
     // never blurs the editor or drops the live text selection — the same
     // trick as the toolbar's noFocusSteal, applied at the document capture

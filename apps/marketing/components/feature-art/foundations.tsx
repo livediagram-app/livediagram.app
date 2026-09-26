@@ -517,7 +517,7 @@ export function AnyDeviceArt() {
 
 export function ExportArt() {
   // The board on the left, the same board as a file on the right. The two
-  // panels are deliberately identical: spec/143's whole rule is that an export
+  // panels are deliberately identical: docs/specs/020-import-export/export-fidelity.md's whole rule is that an export
   // is a picture of the diagram, not a lossy version of one.
   return (
     <Frame>

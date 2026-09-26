@@ -23,7 +23,7 @@ export function useBoxedDragHandlers({
 }: BoxedDragHandlerDeps) {
   const beginDrag = (elementId: string, mode: DragMode, e: ReactPointerEvent) => {
     const d = depsRef.current;
-    // Arrow click-to-connect (spec/09): same "armed source, next click
+    // Arrow click-to-connect (docs/specs/008-canvas/canvas-and-palette.md): same "armed source, next click
     // is the action" shape as format-paint below. Draws a
     // pinned connector to the clicked shape instead of selecting it.
     if (d.connectSourceId !== null && mode === 'move') {
@@ -46,7 +46,7 @@ export function useBoxedDragHandlers({
     if (d.editingId === elementId) return;
     const element = d.activeTab.elements.find((el) => el.id === elementId);
     if (!element || !isBoxed(element)) return;
-    // A hidden / locked LAYER makes its elements fully inert (spec/74):
+    // A hidden / locked LAYER makes its elements fully inert (docs/specs/006-diagram/layers.md):
     // unlike per-element `locked` (selectable to inspect, below), a
     // press on one doesn't even land a selection.
     if (d.layerInertIds.has(elementId)) return;
@@ -64,7 +64,7 @@ export function useBoxedDragHandlers({
       ? d.multiSelectedIds
       : new Set<string>([elementId]);
 
-    // Frame sections (spec/09): MOVING a frame carries everything inside
+    // Frame sections (docs/specs/008-canvas/canvas-and-palette.md): MOVING a frame carries everything inside
     // it. Expand the move set with every boxed element whose centre lies
     // within a frame being moved (pinned arrows between them follow via
     // the rebind pass). Resizing is deliberately excluded — a frame

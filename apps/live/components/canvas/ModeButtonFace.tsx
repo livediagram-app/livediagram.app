@@ -1,4 +1,4 @@
-// The pressable face of a Mode Button element (spec/103): the mode's glyph
+// The pressable face of a Mode Button element (docs/specs/009-elements/mode-button.md): the mode's glyph
 // ABOVE the element's label, drawn as a real button.
 //
 // Three things make this different from every other element's content:
@@ -129,7 +129,7 @@ export function ModeButtonFace({
   // fill (a plain surface by default) is the button, and a gradient wash over
   // it only muddied whatever colour the author picked. What sells "raised" is
   // the hairline highlight along the top edge, which works on any fill.
-  // A KEYCAP (spec/122). This is the one element on the board that IS a key —
+  // A KEYCAP (docs/specs/012-collaboration/participant-responses.md). This is the one element on the board that IS a key —
   // you press it and a tool comes out — so it is moulded like one: a lit top
   // face, a shaded skirt, and a drop that stands it off the board. The old
   // flat white inset highlight said "button" in the abstract; this says which

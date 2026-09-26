@@ -5,7 +5,7 @@ import type { Element } from '@livediagram/diagram';
 import { useCanvasA11y } from './useCanvasA11y';
 
 // Tab means two things on a focused canvas: walk to the next element
-// (spec/71) and, on a selected mind node, grow a child (spec/118). Both
+// (docs/specs/004-interface-design/canvas-accessibility.md) and, on a selected mind node, grow a child (docs/specs/009-elements/mind-node.md). Both
 // listeners sit on window, and this one is mounted first, so the traversal
 // silently ate every Tab: pressing it on a mind node cycled the tab's
 // elements instead of adding a node, which is exactly what got reported.

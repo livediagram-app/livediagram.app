@@ -1,6 +1,6 @@
 import { expect, test, dismissQuickTour, expectNoPageErrors } from './fixtures';
 
-// Appearance (spec/07) end to end: the three settings on the real control, and
+// Appearance (docs/specs/007-editor/live-app.md) end to end: the three settings on the real control, and
 // the thing the merge was for — a tab on the Default theme repainting
 // with the viewer, canvas AND elements, without writing to the diagram.
 //
@@ -10,7 +10,7 @@ import { expect, test, dismissQuickTour, expectNoPageErrors } from './fixtures';
 
 const CANVAS = '[data-canvas-a11y-root]';
 
-// The wizard's Skip path (spec/14): a blank diagram on the Default colour
+// The wizard's Skip path (docs/specs/007-editor/new-diagram-route.md): a blank diagram on the Default colour
 // scheme, in one click. What this suite needs is a default tab, not the wizard.
 async function justDraw(page: import('@playwright/test').Page): Promise<void> {
   await page.goto('/new');
@@ -60,7 +60,7 @@ test.describe('Appearance', () => {
     await justDraw(page);
 
     // A first-time visitor on a dark machine lands dark: System is the default
-    // (spec/07), and the pre-hydration script resolves it before first paint.
+    // (docs/specs/007-editor/live-app.md), and the pre-hydration script resolves it before first paint.
     expect(await setting(page)).toBe('System');
     await expect(page.locator('html')).toHaveClass(/dark/);
     // The CANVAS comes with it, not just the chrome — a Default tab has no

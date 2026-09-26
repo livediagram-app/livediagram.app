@@ -99,7 +99,7 @@ describe('notifyNewComment', () => {
   });
 });
 
-describe('actionAssignedEmail (spec/68)', () => {
+describe('actionAssignedEmail (docs/specs/012-collaboration/assigned-actions.md)', () => {
   it('names the assigner, diagram, and action, links to the diagram', () => {
     const e = actionAssignedEmail(env, 'Sam', 'Roadmap', 'd1', 'Review the copy', 'Hero only');
     expect(e.subject).toMatch(/Sam/);
@@ -126,7 +126,7 @@ describe('actionAssignedEmail (spec/68)', () => {
   });
 });
 
-describe('notifyActionAssigned (spec/68)', () => {
+describe('notifyActionAssigned (docs/specs/012-collaboration/assigned-actions.md)', () => {
   const input = {
     assigneeUserId: 'u2',
     assigneeFallbackEmail: 'invited@x.com',
@@ -177,7 +177,7 @@ describe('notifyActionAssigned (spec/68)', () => {
   });
 });
 
-describe('notifyMilestone (spec/64 #6)', () => {
+describe('notifyMilestone (docs/specs/014-identity/transactional-email.md #6)', () => {
   it('sends + claims at a milestone count when opted in', async () => {
     vi.mocked(getOwnerEmail).mockResolvedValue('owner@x.com');
     vi.mocked(getNotificationPrefs).mockResolvedValue(allowAll);
@@ -208,7 +208,7 @@ describe('notifyMilestone (spec/64 #6)', () => {
   });
 });
 
-describe('notifyFirstShare (spec/64 #6)', () => {
+describe('notifyFirstShare (docs/specs/014-identity/transactional-email.md #6)', () => {
   it('sends + claims on a first share when opted in', async () => {
     vi.mocked(getOwnerEmail).mockResolvedValue('owner@x.com');
     vi.mocked(getNotificationPrefs).mockResolvedValue(allowAll);

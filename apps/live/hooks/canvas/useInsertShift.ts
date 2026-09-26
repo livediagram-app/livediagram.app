@@ -5,7 +5,7 @@ import { usePaletteDragPreview } from '@/lib/palette-drag-preview';
 import { useInsertionDragInHand, useInsertionSlot } from '@/lib/insertion-preview';
 
 // How far each element is standing aside, right now, to show the insertion a
-// drag is offering (spec/139 insert between). Read from the drag's
+// drag is offering (docs/specs/021-event-storming/event-storming.md insert between). Read from the drag's
 // module store rather than threaded through props — a drag is global,
 // single-at-a-time and transient, the same reason the ghost reads it there.
 //

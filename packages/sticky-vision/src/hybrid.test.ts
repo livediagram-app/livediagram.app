@@ -4,7 +4,7 @@ import type { ComponentMask } from './components';
 import { combineWithModel, type HybridRules } from './hybrid';
 import type { ModelCues, ModelNote } from './model-cues';
 
-// The classical boxes and a boundary model's cues combined (spec/139 Phase 9,
+// The classical boxes and a boundary model's cues combined (docs/specs/021-event-storming/event-storming.md Phase 9,
 // experiment group J). Everything here is drawn by hand: a class mask, the
 // classical boxes on it, and the notes a model "saw".
 

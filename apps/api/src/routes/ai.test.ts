@@ -3,7 +3,7 @@ import { handleAi } from './ai';
 import type { RouteContext } from './context';
 import type { Env } from '../types';
 
-// These tests pin the two spend-DoS gates on POST /api/ai (spec/25):
+// These tests pin the two spend-DoS gates on POST /api/ai (docs/specs/007-editor/ai-assistance.md):
 //
 //   1. AI_ALLOWED_ORIGINS: when set, the worker must reject any request
 //      whose Origin header isn't in the comma-separated allow-list with

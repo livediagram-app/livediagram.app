@@ -1,4 +1,4 @@
-// The category·action pairs the editor actually emits (spec/22, issue #30).
+// The category·action pairs the editor actually emits (docs/specs/017-telemetry/telemetry.md, issue #30).
 //
 // Pinned so telemetry can't drift silently. Emitting is fire-and-forget by
 // design and the public dashboard only shows what ARRIVED, so a renamed or
@@ -7,7 +7,7 @@
 // telemetry-coverage.test.ts.
 //
 // Changing the editor's event vocabulary means updating THIS list and the
-// taxonomy in specs/22-telemetry.md in the same change. That pairing is the
+// taxonomy in docs/specs/017-telemetry/telemetry.md in the same change. That pairing is the
 // whole point: the manifest catches the drift, the spec explains the event.
 //
 // Pairs only, not `type` values — types are open-ended by design (a shape
@@ -24,7 +24,7 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Action·Opened',
   'Action·Resolved',
   'Action·Unresolved',
-  // Activity (spec/142): the Explorer's cross-diagram inbox. 'Opened'
+  // Activity (docs/specs/013-workspace/activity-page.md): the Explorer's cross-diagram inbox. 'Opened'
   // once per visit, 'Selected' with type 'Action' | 'Thread' on a row
   // click, 'Loaded'/'Retry' after a failed read.
   'Activity·Loaded',
@@ -63,15 +63,15 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Element·Toggled',
   'Element·Unlinked',
   'Element·Unlocked',
-  // Playback started on a video element (spec/114).
+  // Playback started on a video element (docs/specs/009-elements/youtube-video.md).
   'Element·Used',
   'Element·Voted',
   'Error·Api',
   'Error·Client',
   // The hosted reader's budget was spent and the photo import failed over to
-  // the in-browser reader (spec/139 Phase 9).
+  // the in-browser reader (docs/specs/021-event-storming/event-storming.md Phase 9).
   'Error·Warning',
-  // The facilitator baton (spec/149): taken, handed on, stepped down. The
+  // The facilitator baton (docs/specs/012-collaboration/facilitator.md): taken, handed on, stepped down. The
   // question is whether rooms use the role at all, never who held it.
   'Facilitator·Changed',
   'Facilitator·Ended',
@@ -128,7 +128,7 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Team·Changed',
   'Team·Created',
   // The recipient turned an invitation down — the counterpart to Team·Joined,
-  // and distinct from Team·Removed·Invite (an Admin withdrawing one). spec/32.
+  // and distinct from Team·Removed·Invite (an Admin withdrawing one). docs/specs/013-workspace/teams.md.
   'Team·Declined',
   'Team·Deleted',
   'Team·Joined',
@@ -139,12 +139,12 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Theme·Changed',
   'Theme·Created',
   'Theme·Deleted',
-  // Timeline (spec/138): 'Opened' with type 'Landing' | 'Nav' | 'Stack'
+  // Timeline (docs/specs/013-workspace/timeline.md): 'Opened' with type 'Landing' | 'Nav' | 'Stack'
   // — the first two measure the landing-page change, the third tells us
   // whether the stacking thresholds are right. 'Changed' carries the
   // view mode, 'Selected' a filter chip's source type, 'Loaded'/'More'
   // a Show-more click, 'Removed'/'Entry' a card taken off the feed
-  // (spec/138 §2.9).
+  // (docs/specs/013-workspace/timeline.md §2.9).
   'Timeline·Changed',
   'Timeline·Loaded',
   'Timeline·Opened',

@@ -1,4 +1,4 @@
-// Chart palettes (spec/53).
+// Chart palettes (docs/specs/009-elements/pie-chart.md).
 //
 // A chart's colours were a two-level fallback: a per-slice / per-series
 // override, else the categorical ramp derived from the tab's theme. That left

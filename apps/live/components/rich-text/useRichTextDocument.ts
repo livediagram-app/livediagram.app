@@ -1,6 +1,6 @@
 // The runs ⇄ contentEditable machine shared by every rich-text surface in
-// the editor: the element-label editor (spec/09) and the element-note editor
-// (spec/92). It owns the parts that are identical whatever is being edited —
+// the editor: the element-label editor (docs/specs/008-canvas/canvas-and-palette.md) and the element-note editor
+// (docs/specs/009-elements/rich-text-notes.md). It owns the parts that are identical whatever is being edited —
 // the runs / selection / composition refs, the imperative paint, the DOM
 // read-back, the repaint-and-restore-selection cycle a format apply triggers,
 // and the toolbar's active-format state.

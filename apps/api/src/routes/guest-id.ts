@@ -6,7 +6,7 @@
 // they observed in someone else's diagram DTO or presence frame. The live
 // app caches both and replays the signature in the /api/migrate body so
 // the worker can prove the caller actually owns the guest data it's
-// claiming (see auth/owner-signature.ts + spec/04).
+// claiming (see auth/owner-signature.ts + docs/specs/014-identity/auth-and-guest-access.md).
 //
 // When GUEST_ID_HMAC_SECRET is unset (self-host that hasn't configured
 // it), the endpoint still mints an id but with a null signature, and

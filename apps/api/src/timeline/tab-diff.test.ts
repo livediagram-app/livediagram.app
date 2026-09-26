@@ -3,7 +3,7 @@ import type { Element } from '@livediagram/diagram';
 import { completedActions, newActions, newComments, newlyResolvedThreads } from './tab-diff';
 
 // The diff is the only place that can tell "a comment was added" or "a
-// thread was resolved" (spec/138 §4.3): comments and actions live in
+// thread was resolved" (docs/specs/013-workspace/timeline.md §4.3): comments and actions live in
 // element JSON, not in tables. These pin what a save is read as.
 
 function shape(id: string, extra: Record<string, unknown> = {}): Element {

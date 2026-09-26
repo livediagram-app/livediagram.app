@@ -2,7 +2,7 @@
 
 // "The reader just changed something" — run a callback a beat after any
 // successful api write, so a screen that mirrors server state (the
-// Timeline, spec/138 §2.4b) can re-read itself without the reader
+// Timeline, docs/specs/013-workspace/timeline.md §2.4b) can re-read itself without the reader
 // pressing refresh.
 //
 // Two timings, both deliberate:

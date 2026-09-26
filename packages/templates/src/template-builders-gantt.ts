@@ -125,7 +125,7 @@ function rect(x: number, y: number, w: number, h: number, fill: string, lockFill
   };
 }
 
-// The chart ships pre-layered (spec/74 "Layered templates"): the month
+// The chart ships pre-layered (docs/specs/006-diagram/layers.md "Layered templates"): the month
 // header + tracks + row labels form a fixed "Grid" scaffold layer, with
 // the duration bars users slide and stretch on a "Bars" content layer.
 export function buildGanttChart(cx: number, cy: number): Element[] {

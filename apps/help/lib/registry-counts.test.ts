@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { articles, categories } from './articles';
 
-// `articleCount` is hand-maintained (spec/55), and a stale one is invisible:
+// `articleCount` is hand-maintained (docs/specs/018-help/help-app.md), and a stale one is invisible:
 // the category card simply advertises the wrong number, and nothing at
 // runtime can notice. This pins the rule it actually follows — every article
 // whose `categorySlug` is exactly this category, sub-articles included — so

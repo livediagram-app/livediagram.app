@@ -2,7 +2,7 @@
 
 Shared [Vitest](https://vitest.dev) configuration for the monorepo. One place
 for test conventions and coverage settings so workspaces don't each reinvent
-them. See [`specs/18-testing.md`](../../specs/18-testing.md).
+them. See [`docs/specs/003-system-architecture/testing.md`](../../docs/specs/003-system-architecture/testing.md).
 
 ## Usage
 

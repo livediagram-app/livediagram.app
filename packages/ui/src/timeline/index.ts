@@ -1,4 +1,4 @@
-// Timeline components (spec/138 §7). Product-agnostic: they lay a feed
+// Timeline components (docs/specs/013-workspace/timeline.md §7). Product-agnostic: they lay a feed
 // out and know nothing about diagrams, teams, or routes. The consumer
 // supplies a renderer registry keyed by source type.
 //

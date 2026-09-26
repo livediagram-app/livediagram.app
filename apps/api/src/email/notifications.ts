@@ -1,11 +1,11 @@
-// spec/65: the two opt-out transactional notifications layered on top of the
-// spec/64 email feature. Both are best-effort, fired from `ctx.waitUntil` on a
+// docs/specs/014-identity/profile-and-email-notifications.md: the two opt-out transactional notifications layered on top of the
+// docs/specs/014-identity/transactional-email.md email feature. Both are best-effort, fired from `ctx.waitUntil` on a
 // request made by SOMEONE OTHER than the recipient (a visitor opening a shared
 // diagram; an invitee responding to an invite), so the recipient's address
 // comes from trusted server state (email_lifecycle / team_members), never the
-// caller's headers, and their opt-out is read from user_preferences (spec/20).
+// caller's headers, and their opt-out is read from user_preferences (docs/specs/007-editor/user-preferences.md).
 //
-// Like every spec/64 send these never throw — sendEmail swallows failures — so
+// Like every docs/specs/014-identity/transactional-email.md send these never throw — sendEmail swallows failures — so
 // a notification problem can't break the request that triggered it.
 
 import {
@@ -19,7 +19,7 @@ import {
 import type { Env } from '../types';
 import { emailEnabled, sendEmail } from './client';
 
-// At most one "new comment" email per diagram per this window (spec/64 #1), so a
+// At most one "new comment" email per diagram per this window (docs/specs/014-identity/transactional-email.md #1), so a
 // burst of comments doesn't spam the owner.
 const COMMENT_NOTIFY_THROTTLE_MS = 15 * 60 * 1000;
 import {
@@ -31,7 +31,7 @@ import {
   milestoneEmail,
 } from './templates';
 
-// spec/68: a teammate assigned the recipient an action on a diagram element.
+// docs/specs/012-collaboration/assigned-actions.md: a teammate assigned the recipient an action on a diagram element.
 // Fired by the notify-action route AFTER it has verified both parties are
 // joined members of the same team and resolved every string server-side.
 // Opt-out (notifyActionAssigned). The assignee's address prefers their
@@ -120,7 +120,7 @@ export async function notifyInviteResponse(
 }
 
 // Someone OTHER than the owner left a comment on a diagram the owner owns
-// (spec/64 #1). Immediate, opt-out (notifyComments). Best-effort; never blocks
+// (docs/specs/014-identity/transactional-email.md #1). Immediate, opt-out (notifyComments). Best-effort; never blocks
 // the comment write. The comment text is deliberately NOT included.
 export async function notifyNewComment(
   env: Env,
@@ -141,11 +141,11 @@ export async function notifyNewComment(
   });
 }
 
-// spec/64 (#6): the diagram counts that trigger a milestone email. Just the
+// docs/specs/014-identity/transactional-email.md (#6): the diagram counts that trigger a milestone email. Just the
 // tenth for now; the single milestone_sent_at column fires once per owner.
 const MILESTONE_DIAGRAM_COUNTS = [10];
 
-// Celebrate when an owner reaches a diagram-count milestone (spec/64 #6).
+// Celebrate when an owner reaches a diagram-count milestone (docs/specs/014-identity/transactional-email.md #6).
 // Opt-out (notifyMilestones). The atomic claim means a burst of saves at the
 // milestone count sends exactly one email. Best-effort; never blocks the write.
 export async function notifyMilestone(
@@ -163,7 +163,7 @@ export async function notifyMilestone(
   await sendEmail(env, { to, ...milestoneEmail(env, diagramCount) });
 }
 
-// First-ever share link is a milestone (spec/64 #6). Opt-out (notifyMilestones).
+// First-ever share link is a milestone (docs/specs/014-identity/transactional-email.md #6). Opt-out (notifyMilestones).
 // Same claim-then-send shape as notifyMilestone; the atomic claim fires it once.
 export async function notifyFirstShare(env: Env, ownerId: string): Promise<void> {
   if (!emailEnabled(env)) return;

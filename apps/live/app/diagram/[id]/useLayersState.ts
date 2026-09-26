@@ -26,7 +26,7 @@ import {
 } from '@livediagram/diagram';
 import { track } from '@/lib/telemetry';
 
-// Layers domain slice (spec/74): the per-tab ACTIVE layer (session-scoped
+// Layers domain slice (docs/specs/006-diagram/layers.md): the per-tab ACTIVE layer (session-scoped
 // UI state — deliberately never persisted or synced) plus every layer
 // mutation the panel and context menu fire. All persisted layer data
 // lives on the Tab itself, so each op is one `commitActiveTab` call and
@@ -106,7 +106,7 @@ export function useLayersState(opts: {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeLayerBlocked, activeLayerHidden, editsBlocked]);
 
-  // Hover-to-solo (spec/74): while a panel row is hovered the canvas
+  // Hover-to-solo (docs/specs/006-diagram/layers.md): while a panel row is hovered the canvas
   // renders ONLY that layer. Pure view state — never persisted, synced,
   // or exported.
   const [previewLayerId, setPreviewLayerId] = useState<string | null>(null);
@@ -170,7 +170,7 @@ export function useLayersState(opts: {
     track('Layer', 'Toggled', lock ? 'Locked' : 'Unlocked');
   };
 
-  // Merge the ACTIVE layer into its neighbour (spec/74): the neighbour
+  // Merge the ACTIVE layer into its neighbour (docs/specs/006-diagram/layers.md): the neighbour
   // survives (name + state) and becomes active, like Photoshop's Merge
   // Down. No neighbour in that direction = no-op (the panel disables
   // the button).
@@ -226,7 +226,7 @@ export function useLayersState(opts: {
     track('Layer', 'Reordered');
   };
 
-  // Smart naming (spec/74), called from commitLabel alongside the
+  // Smart naming (docs/specs/006-diagram/layers.md), called from commitLabel alongside the
   // diagram / tab auto-renames: when a label commit lands on an element
   // whose layer still carries its default "Layer N" name, and no OTHER
   // element on that layer is labelled, the layer adopts the committed
@@ -257,7 +257,7 @@ export function useLayersState(opts: {
     const name = label.split('\n')[0]!.slice(0, 40).trim();
     if (!name) return;
     tickTabs((ts) => ts.map((t) => (t.id === activeId ? renameLayer(t, layerId, name) : t)));
-    // Smart naming is a distinct feature from a manual rename (spec/74) —
+    // Smart naming is a distinct feature from a manual rename (docs/specs/006-diagram/layers.md) —
     // track it separately so its uptake is measurable.
     track('Layer', 'Renamed', 'Adopted');
   };

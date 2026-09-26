@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { createShape, type ShapeElement, type Tab } from '@livediagram/diagram';
 import { makePortalTravel, type PortalTravelDeps } from './portal-travel';
 
-// Going through a portal (spec/104) does three things that have to happen
+// Going through a portal (docs/specs/009-elements/portal-element.md) does three things that have to happen
 // together: switch tab when the far portal is on another one, centre the camera
 // on it, and step the walking character out of it. They were previously wired
 // inline in Canvas, where none of them could be tested without a DOM.

@@ -62,7 +62,7 @@ describe('iconPrimMarkup', () => {
     expect(iconPrimMarkup({ t: 'ellipse', cx: 1, cy: 2, rx: 3, ry: 4 })).toBe(
       '<ellipse cx="1" cy="2" rx="3" ry="4"/>',
     );
-    // The text prim (spec/85 emoji entries): centred anchor + central
+    // The text prim (docs/specs/010-palette/emoji-icons.md emoji entries): centred anchor + central
     // baseline so the glyph sits on (x, y); an explicit fill so the
     // line-art wrapper's fill="none" can't blank it, stroke="none" so it
     // can't render hollow.

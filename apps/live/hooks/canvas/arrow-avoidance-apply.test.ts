@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { ArrowElement, Element } from '@livediagram/diagram';
 import { applyCollisionAvoidance } from './arrow-avoidance-apply';
 
-// The apply side of spec/77: pure elements map, so the whole creation
+// The apply side of docs/specs/008-canvas/arrow-collision-avoidance.md: pure elements map, so the whole creation
 // wiring short of the pointer gesture is testable here. The geometry
 // itself is covered in packages/diagram/src/arrow-avoidance.test.ts;
 // these assertions pin the mapping around it (role assignment, the
@@ -83,7 +83,7 @@ describe('applyCollisionAvoidance', () => {
   it('bows a corner-anchored chord collinear with its own edge lines', () => {
     // The image-21 shape: pinned at the facing right CORNERS of two stacked
     // boxes, the chord retracing both right-edge lines. The collinear-edge
-    // rule (spec/77) bows it outward.
+    // rule (docs/specs/008-canvas/arrow-collision-avoidance.md) bows it outward.
     const els: Element[] = [
       shape('a', 0, 0, 100, 80),
       shape('b', 0, 320, 100, 80),

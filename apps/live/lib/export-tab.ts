@@ -19,7 +19,7 @@ import {
   type BoxedElement,
   type Tab,
 } from '@livediagram/diagram';
-// Shared SVG render helpers (spec/62 §5): moved into the diagram package so the
+// Shared SVG render helpers (docs/specs/015-api/mcp-server.md §5): moved into the diagram package so the
 // MCP worker reuses the same element drawing. The canvas / isometric / backdrop
 // orchestration below stays here and imports the per-element drawers + helpers.
 import {
@@ -54,20 +54,20 @@ import { drawArrow, drawBoxed, drawBoxedExtrusion } from './export-tab-canvas-dr
 import type { ExportImageMap } from './export-tab-images';
 
 // Shared options for the image exports (PNG / SVG / PDF). `isometric` tilts
-// the rendered scene into the editor's isometric projection (spec/45 / 48),
+// the rendered scene into the editor's isometric projection (docs/specs/008-canvas/isometric-view.md / 48),
 // off by default. `pattern` paints the tab's backdrop pattern (grid / dots /
 // …); on by default, the user can switch it off in the Export dialog.
 // `images` carries pre-loaded bitmaps (keyed by imageId) so image / avatar
 // elements embed their photo instead of a placeholder; absent ids (or no map)
 // fall back to the placeholder. Build it with loadTabImages (export-tab-images).
-// `hiddenLayers` INCLUDES layers the user has hidden (spec/74); off by default
+// `hiddenLayers` INCLUDES layers the user has hidden (docs/specs/006-diagram/layers.md); off by default
 // so the export matches what the canvas shows.
 export type ImageExportOpts = {
   isometric?: boolean;
   pattern?: boolean;
   hiddenLayers?: boolean;
   images?: ExportImageMap;
-  // Embedded @font-face rules for the faces this tab uses (spec/28), from
+  // Embedded @font-face rules for the faces this tab uses (docs/specs/004-interface-design/fonts.md), from
   // embeddedFontFaceCss. Absent = the SVG falls back to declaring the
   // Google stylesheet by @import, which only a browser opening the file
   // directly will honour.
@@ -78,7 +78,7 @@ export type ImageExportOpts = {
 // `@/lib/export-tab` barrel they already import the exporters from.
 export { loadTabImages } from './export-tab-images';
 
-// Webfont embedding for downloads (spec/28) — the bytes travel with the file.
+// Webfont embedding for downloads (docs/specs/004-interface-design/fonts.md) — the bytes travel with the file.
 import { embeddedFontFaceCss } from './export-fonts';
 
 // Default backdrop pattern colour when a tab leaves it unset (matches the
@@ -142,7 +142,7 @@ export async function renderTabToCanvas(
 ): Promise<HTMLCanvasElement> {
   const scale = opts.scale ?? 2; // default 2× for crisp output
   // Hidden layers drop out of the export (bounds included) unless the
-  // dialog's include-hidden option is on (spec/74). `ordered` is the
+  // dialog's include-hidden option is on (docs/specs/006-diagram/layers.md). `ordered` is the
   // paint order — layer bands bottom -> top, frames first per band —
   // with each element carrying its band's opacity factor.
   const els = opts.hiddenLayers ? tab.elements : visibleLayerElements(tab.elements, tab.layers);
@@ -150,7 +150,7 @@ export async function renderTabToCanvas(
     includeHidden: opts.hiddenLayers,
   }).flatMap((band) => band.elements.map((el) => ({ el, alpha: layerOpacityOf(band.layer) })));
   const bounds = contentBounds(els);
-  // Isometric export (spec/45 / 48): project the flat content through the iso
+  // Isometric export (docs/specs/008-canvas/isometric-view.md / 48): project the flat content through the iso
   // affine and size the canvas to the tilted footprint so nothing clips. The
   // matrix is applied to the drawing context after positioning, so every
   // element / arrow drawer stays in plain canvas coordinates.
@@ -169,7 +169,7 @@ export async function renderTabToCanvas(
   // on) sits flat over it — like the editor, whose backdrop never tilts.
   const bgColor = tab.backgroundColor ?? EXPORT_BG;
   // Elements that carry no colours of their own are drawn in the ink of the
-  // paper being exported onto (spec/07), so a dark canvas exports dark-canvas
+  // paper being exported onto (docs/specs/007-editor/live-app.md), so a dark canvas exports dark-canvas
   // elements rather than pale ones.
   const surface = canvasSurface(bgColor);
   ctx.fillStyle = bgColor;
@@ -203,7 +203,7 @@ export async function renderTabToCanvas(
   }
   // Boxed elements first so arrows draw over them with the right
   // z-order on either end; framesFirst keeps frame sections behind
-  // their contents (spec/09).
+  // their contents (docs/specs/008-canvas/canvas-and-palette.md).
   const resolveImage = opts.images ? (id: string) => opts.images!.get(id)?.image : undefined;
   // Elements the canvas drawers can't reproduce (tables, freehand, shape
   // silhouettes, rotation, icon glyphs — boxedNeedsSvgRaster) rasterise via
@@ -213,7 +213,7 @@ export async function renderTabToCanvas(
   // when the element carries a rotation, since svgBoxed bakes the rotation
   // into the markup and it sweeps outside the unrotated box. A failed
   // rasterise falls back to drawBoxed's plain box.
-  // The tab default face (spec/28) every element without its own inherits.
+  // The tab default face (docs/specs/004-interface-design/fonts.md) every element without its own inherits.
   const tabFont = tab.font;
   // Webfont bytes for the faces in play. A rasterised fragment is loaded as
   // an <img>, which blocks external resources outright — so a marker note
@@ -229,7 +229,7 @@ export async function renderTabToCanvas(
     if (el.type === 'arrow' || !isBoxed(el)) continue;
     if (!boxedNeedsSvgRaster(el, resolveIconArtLoaded, resolveStickerArtLoaded)) continue;
     const diag = Math.hypot(el.width, el.height);
-    // A shadow sweeps outside the box by its offset + blur (spec/86);
+    // A shadow sweeps outside the box by its offset + blur (docs/specs/008-canvas/element-shadows.md);
     // grow the raster pad so it isn't clipped, and inline its filter
     // def (the fragment has no document <defs> to resolve against).
     const shadow = supportsShadow(el) && el.shadow ? el.shadow : undefined;
@@ -315,7 +315,7 @@ function svgSilhouette(
   return `<rect x="${r2(x)}" y="${r2(y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="6" fill="${xmlEscape(fill)}"/>`;
 }
 
-// Isometric extrusion column for one boxed element (spec/45) — the SVG
+// Isometric extrusion column for one boxed element (docs/specs/008-canvas/isometric-view.md) — the SVG
 // counterpart of drawBoxedExtrusion. Stepped silhouette copies, dimmed toward
 // the floor, behind the element body.
 function svgBoxedExtrusion(el: BoxedElement, surface: CanvasSurface): string {
@@ -342,7 +342,7 @@ function svgBoxedExtrusion(el: BoxedElement, surface: CanvasSurface): string {
 }
 
 // Exported so the export dialog can render a live preview of the image
-// export (spec/48): same SVG the .svg download produces, and PNG / PDF
+// export (docs/specs/010-palette/style-presets.md): same SVG the .svg download produces, and PNG / PDF
 // rasterise the same content, so one SVG preview faithfully represents all
 // three image formats under the current isometric / pattern options.
 export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
@@ -374,17 +374,17 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   parts.push(
     `<rect x="${r2(vbX)}" y="${r2(vbY)}" width="${r2(vbW)}" height="${r2(vbH)}" fill="${xmlEscape(bgColor)}"/>`,
   );
-  // Typefaces (spec/28): the real bytes when the caller pre-fetched them
+  // Typefaces (docs/specs/004-interface-design/fonts.md): the real bytes when the caller pre-fetched them
   // (a download, which must stand alone), else a declaration of the Google
   // stylesheet (the live preview, where the page has the faces already).
   const fontDefs = opts.fontCss
     ? `<defs><style type="text/css">${opts.fontCss}</style></defs>`
     : svgFontDefs(exportFontIds(els, tab.font));
   if (fontDefs) parts.push(fontDefs);
-  // Element-shadow filter defs (spec/86); empty string when none.
+  // Element-shadow filter defs (docs/specs/008-canvas/element-shadows.md); empty string when none.
   const shadowDefs = svgShadowDefs(els);
   if (shadowDefs) parts.push(shadowDefs);
-  // Backdrop pattern (spec/48) over the colour, flat (never tilted — the
+  // Backdrop pattern (docs/specs/010-palette/style-presets.md) over the colour, flat (never tilted — the
   // editor's backdrop doesn't tilt in isometric either).
   const bg = backgroundPatternDefs(tab, opts);
   if (bg) {
@@ -409,7 +409,7 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   }
   // Within each band: boxed elements first, then arrows on top (same
   // z-order as the canvas); bands stack bottom -> top with frame
-  // sections behind their band-mates (spec/74 + spec/09).
+  // sections behind their band-mates (docs/specs/006-diagram/layers.md + docs/specs/008-canvas/canvas-and-palette.md).
   const resolveImageHref = opts.images ? (id: string) => opts.images!.get(id)?.href : undefined;
   for (const band of bands) {
     const inner: string[] = [];

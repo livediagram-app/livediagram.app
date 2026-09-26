@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import type { LayoutRect, ShapeElement, WebRows } from '@livediagram/diagram';
 
-// What every web component face (spec/147) is handed by ElementFaceRouter.
+// What every web component face (docs/specs/009-elements/web-components-and-no-groups.md) is handed by ElementFaceRouter.
 export type WebFaceProps = {
   element: ShapeElement;
   // The element's label, rendered by the shared label path (so double-click

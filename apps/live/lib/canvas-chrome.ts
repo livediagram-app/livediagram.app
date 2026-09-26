@@ -13,7 +13,7 @@
 // the popover.
 //
 // `from: 'button'` is for a lone button that is NOT the dock: the Toolbar
-// layout's menu button in the top-left corner (spec/148). Right-tucking its
+// layout's menu button in the top-left corner (docs/specs/007-editor/toolbar-layout.md). Right-tucking its
 // popover would open the Explorer on the far side of the canvas from the
 // button that asked for it, so it hangs from the button's own left edge
 // instead, still kept on the canvas.
@@ -64,21 +64,21 @@ export function canvasCursorClass(input: {
   if (pan) return 'cursor-grabbing';
   if (marquee) return 'cursor-crosshair';
   if (canvasTool === 'laser' && !spaceHeld) return 'cursor-crosshair';
-  // Spotlight (spec/09): a custom glowing-dot cursor (see .cursor-spotlight
+  // Spotlight (docs/specs/008-canvas/canvas-and-palette.md): a custom glowing-dot cursor (see .cursor-spotlight
   // in globals.css) pins the exact centre of the light. Space still pans, so
   // defer to the grab cursor while it's held.
   if (canvasTool === 'spotlight' && !spaceHeld) return 'cursor-spotlight';
-  // Avatar mode (spec/101): every click is "walk over there", so the pointer
+  // Avatar mode (docs/specs/008-canvas/avatar-mode.md): every click is "walk over there", so the pointer
   // cursor is the honest affordance. Space still pans, so defer to grab.
   if (canvasTool === 'avatar' && !spaceHeld) return 'cursor-pointer';
   // Eraser shows a custom eraser glyph (see .cursor-eraser in globals.css),
   // unless Space is held for a temporary pan.
   if (canvasTool === 'eraser' && !spaceHeld) return 'cursor-eraser';
-  // Isometric view (spec/45) is navigation-only: it pans like Hand, so it
+  // Isometric view (docs/specs/008-canvas/isometric-view.md) is navigation-only: it pans like Hand, so it
   // shares the grab cursor (grabbing while dragging is handled by the `pan`
   // branch above).
   if (canvasTool === 'isometric' && !spaceHeld) return 'cursor-grab';
-  // Format tool (spec/09): the copy cursor in both phases (picking a base
+  // Format tool (docs/specs/008-canvas/canvas-and-palette.md): the copy cursor in both phases (picking a base
   // and painting onto targets) signals "this click acts on the element".
   if (canvasTool === 'format' && !spaceHeld) return 'cursor-copy';
   if (canvasTool === 'pan' && !spaceHeld) return 'cursor-grab';

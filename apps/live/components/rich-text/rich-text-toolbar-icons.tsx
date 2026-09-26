@@ -3,7 +3,7 @@
 //
 // The bullet / numbered / no-list / heading glyphs that lived here went with
 // the buttons they labelled: both toolbars now use the block-type picker
-// (spec/102), which is a word list, not a row of pictograms.
+// (docs/specs/009-elements/block-type-picker.md), which is a word list, not a row of pictograms.
 export function EllipsisIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden>

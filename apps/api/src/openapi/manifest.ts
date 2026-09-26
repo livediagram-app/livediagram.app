@@ -1,5 +1,5 @@
 // The route manifest: the single declarative description of the `/api/*` REST
-// surface (spec/37). Each entry names one endpoint's method, path template,
+// surface (docs/specs/015-api/api-documentation.md). Each entry names one endpoint's method, path template,
 // auth mode, summary, request/response body, and meaningful status codes. The
 // worker dispatch (index.ts → routes/*.ts) is segment-based and imperative, so
 // THIS array is the declaration of the surface, and `manifest.test.ts` pins it
@@ -15,7 +15,7 @@
 
 import type { BodySchema } from './types';
 
-/** How a caller authenticates (spec/04):
+/** How a caller authenticates (docs/specs/014-identity/auth-and-guest-access.md):
  *  - `public`: no identity required.
  *  - `guest-or-clerk`: the guest `X-Owner-Id` header OR a Bearer credential
  *    (a Clerk session JWT or an API token).
@@ -336,7 +336,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'diagrams',
     tag: 'Diagrams',
     summary:
-      'WebSocket upgrade to the realtime room. The op protocol is documented in spec/11, not here.',
+      'WebSocket upgrade to the realtime room. The op protocol is documented in docs/specs/015-api/api.md, not here.',
     auth: 'guest-or-clerk',
     query: [
       { name: 's', required: false, description: 'Share code, for non-owner collaborators.' },
@@ -700,7 +700,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [204, 400, 401],
   },
 
-  // ---- Favourites (spec/95) ----
+  // ---- Favourites (docs/specs/013-workspace/favourites.md) ----
   {
     method: 'GET',
     path: '/favourites',
@@ -733,7 +733,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [204, 401],
   },
 
-  // ---- Timeline (spec/138) ----
+  // ---- Timeline (docs/specs/013-workspace/timeline.md) ----
   {
     method: 'GET',
     path: '/timeline',
@@ -798,7 +798,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [200, 400, 401],
   },
 
-  // ---- Activity (spec/142) ----
+  // ---- Activity (docs/specs/013-workspace/activity-page.md) ----
   {
     method: 'GET',
     path: '/activity',
@@ -985,7 +985,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'teams',
     tag: 'Teams',
     summary:
-      'Whether a joined teammate can open a diagram the caller can access (spec/68): owner, team-library member, or prior share-link visitor.',
+      'Whether a joined teammate can open a diagram the caller can access (docs/specs/012-collaboration/assigned-actions.md): owner, team-library member, or prior share-link visitor.',
     auth: 'clerk',
     responseSchema: {
       type: 'object',
@@ -1000,7 +1000,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'teams',
     tag: 'Teams',
     summary:
-      'Email a joined teammate that an action on a diagram element was assigned to them (spec/68). Best-effort; the assignee may have opted out.',
+      'Email a joined teammate that an action on a diagram element was assigned to them (docs/specs/012-collaboration/assigned-actions.md). Best-effort; the assignee may have opted out.',
     auth: 'clerk',
     requestSchema: {
       type: 'object',
@@ -1117,7 +1117,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     tag: 'Telemetry',
     summary: 'Ingest a batch of anonymous first-party telemetry events.',
     // The route also honours an `X-Internal-Events-Key` header that exempts
-    // our own workers from the per-IP rate limiter (spec/22). Deliberately
+    // our own workers from the per-IP rate limiter (docs/specs/017-telemetry/telemetry.md). Deliberately
     // NOT documented here: the public spec describes what a public caller
     // can use, and advertising the bypass header would only invite guessing
     // at the secret. Its absence is a choice, not an oversight.

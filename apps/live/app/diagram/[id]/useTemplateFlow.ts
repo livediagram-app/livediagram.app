@@ -118,7 +118,7 @@ export function useTemplateFlow(opts: {
       setTemplatePickerMode('welcome');
       return;
     }
-    // Telemetry (spec/22): a template was applied; `type` is the kind.
+    // Telemetry (docs/specs/017-telemetry/telemetry.md): a template was applied; `type` is the kind.
     // The picker also lets the user pick a theme alongside the template,
     // so emit Theme / Changed in the same flow that /live/new uses for
     // its symmetric "create with a chosen theme" event.
@@ -154,14 +154,14 @@ export function useTemplateFlow(opts: {
     // the editor stayed brand-blue instead of inheriting the
     // theme's stroke colour.
     // Graph-aware recolour (multi-colour themes tint each branch a
-    // different hue — spec/29); single-colour themes fall through to the
+    // different hue — docs/specs/011-theme/multicolour-themes.md); single-colour themes fall through to the
     // per-element transform unchanged.
     const elements = !theme ? rawElements : recolourElementsForTheme(rawElements, theme);
     // Apply the picker's theme choice at the same time as the
     // template scaffold so the user lands on a fully themed canvas
     // in one step instead of having to revisit the Theme accordion.
     // The backdrop goes through the same switchThemeBackdrop
-    // preserve-customs rule as the Theme accordion (spec/09): a
+    // preserve-customs rule as the Theme accordion (docs/specs/008-canvas/canvas-and-palette.md): a
     // custom canvas colour / pattern, including one a fresh tab
     // inherited from its source tab via the new-tab seed, survives
     // confirming a template under the unchanged theme. Hard-coding

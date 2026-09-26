@@ -1,4 +1,4 @@
-// Tab-folder membership actions (spec/30): move a tab into a folder,
+// Tab-folder membership actions (docs/specs/006-diagram/tab-folders.md): move a tab into a folder,
 // remove it, and rename a folder. Kept out of the already-busy
 // useTabActions so the folder concern has its own focused home.
 //
@@ -48,7 +48,7 @@ export function useTabFolders(deps: TabFoldersDeps) {
     );
     emitTabMeta(tabId, tabFolderTransitionSummary(tabFolderName(target), name));
     // Two facts when the name is new, so two events (the deliberate double-emit
-    // pattern spec/22 uses for Tab·Started·Vote + PrivateVote): the folder came
+    // pattern docs/specs/017-telemetry/telemetry.md uses for Tab·Started·Vote + PrivateVote): the folder came
     // into existence, AND this tab is now filed in it. The old either/or made
     // "tabs filed into folders" undercount by exactly the number of folders
     // anyone had ever created.

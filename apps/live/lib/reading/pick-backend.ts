@@ -1,6 +1,6 @@
 import type { ProcessorReason } from './reader-protocol';
 
-// Which engine the in-browser reader runs on (spec/139 Phase 9), and — when it
+// Which engine the in-browser reader runs on (docs/specs/021-event-storming/event-storming.md Phase 9), and — when it
 // is the processor — why.
 //
 // Any real graphics card: in half precision when it has `shader-f16`, in full

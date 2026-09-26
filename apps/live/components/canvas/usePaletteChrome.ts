@@ -5,7 +5,7 @@ import { getTheme } from '@/lib/themes';
 import { isMobileViewportSync } from '@/lib/responsive';
 import type { CanvasChromeProps } from './CanvasChrome';
 
-// The palette's chrome behaviours (spec/09 + /63), lifted out of
+// The palette's chrome behaviours (docs/specs/008-canvas/canvas-and-palette.md + /63), lifted out of
 // useCanvasChromePanels: the dock-mode reopen-after-draw transition and
 // the active-tab theme tint the tiles preview.
 export function usePaletteChrome({
@@ -45,9 +45,9 @@ export function usePaletteChrome({
   // tab theme: the boxed-shape tiles render filled in the theme's element
   // fill + stroke, line-art tools + icons tint to the stroke. The Basic
   // theme leaves elementStroke null, so we pass nothing and the palette
-  // keeps its default slate look. See spec/09.
+  // keeps its default slate look. See docs/specs/008-canvas/canvas-and-palette.md.
   const paletteTheme = getTheme(tabThemeId);
-  // A per-shape theme (UML / custom, spec/42 + spec/44) tints each shape
+  // A per-shape theme (UML / custom, docs/specs/011-theme/canvas-and-theme-dialog.md + docs/specs/011-theme/custom-themes.md) tints each shape
   // tile by its own kind even when the base element stroke is unset, so
   // surface the tint whenever there's a base stroke OR per-shape colours.
   const paletteTint =

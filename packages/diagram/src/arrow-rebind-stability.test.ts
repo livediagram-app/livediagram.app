@@ -3,7 +3,7 @@ import { rebindArrowAnchorsAfterMove } from './arrow-rebind';
 import { createShape } from './factories';
 import type { Anchor, ArrowElement, Element } from './index';
 
-// The auto-rebind confidence gate (spec/09): a settled arrow only re-plans
+// The auto-rebind confidence gate (docs/specs/008-canvas/canvas-and-palette.md): a settled arrow only re-plans
 // when its current faces genuinely broke (the line no longer exits through
 // them, or the best face beats them decisively). Regression suite for the
 // "subtly moved the hub and half the fan reshuffled" report: geometry

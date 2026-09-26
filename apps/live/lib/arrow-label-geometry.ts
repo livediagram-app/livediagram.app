@@ -17,7 +17,7 @@ const LABEL_GAP_PX = 8;
 // boxed element. When the arrow's direction is known, the first two candidates
 // are offset PERPENDICULAR to the line (one each side) by enough to clear it —
 // so a label never sits on top of a horizontal / diagonal / vertical arrow
-// (spec/09 quality bar). The four cardinal slots remain as fallbacks for the
+// (docs/specs/008-canvas/canvas-and-palette.md quality bar). The four cardinal slots remain as fallbacks for the
 // box-dodging case. If everything collides, falls back to the first candidate
 // rather than hiding the label.
 export function placeLabel(

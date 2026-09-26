@@ -6,7 +6,7 @@ import { SITE_NAME, SITE_URL } from './site';
 // the help centre each built their own and had drifted: help sent a `summary`
 // Twitter card with no image and suffixed every title with " | livediagram",
 // marketing a `summary_large_image` with the brand card and the title as
-// given. One rule now (spec/16 "SEO and metadata", spec/55): the title passes
+// given. One rule now (docs/specs/019-marketing/marketing-site.md "SEO and metadata", docs/specs/018-help/help-app.md): the title passes
 // through verbatim, and every page carries the large brand card unless it
 // ships its own.
 

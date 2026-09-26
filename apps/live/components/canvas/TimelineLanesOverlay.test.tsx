@@ -5,7 +5,7 @@ import { ES_LANE_HEIGHT, laneTop, type EsTimeline } from '@livediagram/diagram';
 import { setLanePreview } from '@/lib/lane-preview';
 import { TimelineLanesOverlay } from './TimelineLanesOverlay';
 
-// The lit lane (spec/139 Phase 6). What matters here is that it draws NOTHING
+// The lit lane (docs/specs/021-event-storming/event-storming.md Phase 6). What matters here is that it draws NOTHING
 // until a drag has claimed a lane, and that what it draws lands where the drop
 // will — canvas coords through the wrapper rect + zoom, the one inversion the
 // rest of the canvas chrome uses.

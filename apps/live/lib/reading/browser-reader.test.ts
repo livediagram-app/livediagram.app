@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { readCropsInBrowser, readCropsWith } from './browser-reader';
 import type { ReaderRequest, ReaderResponse } from './reader-protocol';
 
-// The in-browser reader runs its model in a WORKER (spec/139 Phase 9): on the
+// The in-browser reader runs its model in a WORKER (docs/specs/021-event-storming/event-storming.md Phase 9): on the
 // page it took the main thread whole — the review's reveal froze and nothing
 // moved while a wall was read. The page only posts crops and listens.
 

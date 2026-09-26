@@ -1,6 +1,6 @@
 'use client';
 
-// The Timeline's data + control state (spec/138 §8).
+// The Timeline's data + control state (docs/specs/013-workspace/timeline.md §8).
 //
 // Held in ExplorerPane rather than inside the pane component, because
 // the two halves of the Timeline render in different places: the
@@ -39,7 +39,7 @@ import { useReturnToTab } from '@/hooks/ui/useReturnToTab';
 import { track } from '@/lib/telemetry';
 
 // Was the Timeline where this page load STARTED, or somewhere the user
-// navigated to afterwards? The landing-page change (spec/138 §8.1) is
+// navigated to afterwards? The landing-page change (docs/specs/013-workspace/timeline.md §8.1) is
 // only measurable if the two are told apart.
 //
 // Captured from the URL at module evaluation, which runs before any
@@ -62,11 +62,11 @@ export type TimelineFeed = {
   loadingMore: boolean;
   hasMore: boolean;
   loadMore: () => void;
-  /** The last read FAILED (spec/138 §2.4) — not the same as no events. */
+  /** The last read FAILED (docs/specs/013-workspace/timeline.md §2.4) — not the same as no events. */
   error: boolean;
   /** Re-read the first page; what the failed state's Try again calls. */
   retry: () => void;
-  /** Take one card, or a whole stack of them, off this reader's feed (spec/138 §2.9). */
+  /** Take one card, or a whole stack of them, off this reader's feed (docs/specs/013-workspace/timeline.md §2.9). */
   dismiss: (eventIds: string | string[]) => void;
   /** Watermark from the first read; events past it render as New. */
   lastSeenAt?: number;
@@ -87,7 +87,7 @@ export function useTimelineFeed(
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   // The read failed, which is NOT the same as the feed being empty
-  // (spec/138 §2.4). Conflating the two is what told people with years
+  // (docs/specs/013-workspace/timeline.md §2.4). Conflating the two is what told people with years
   // of history that nothing had ever happened to them.
   const [error, setError] = useState(false);
   // Captured from the FIRST read only. The server moves the watermark
@@ -104,7 +104,7 @@ export function useTimelineFeed(
     ),
     // The category id is a fixed token from a closed set, never user
     // content — the telemetry `type` slot has to stay renderable on the
-    // public dashboard (spec/22).
+    // public dashboard (docs/specs/017-telemetry/telemetry.md).
     onFilterChange: useCallback((excluded: TimelineCategory[]) => {
       const last = excluded[excluded.length - 1];
       if (last) track('Timeline', 'Selected', last);
@@ -181,7 +181,7 @@ export function useTimelineFeed(
         // either belongs to the feed we just navigated away from, or is
         // the empty one the reader pressed Try again about. Either way
         // the pane now shows the failed state rather than claiming the
-        // feed is empty (spec/138 §2.4).
+        // feed is empty (docs/specs/013-workspace/timeline.md §2.4).
         if (mode === 'replace') {
           setEvents([]);
           setCursor(undefined);
@@ -217,13 +217,13 @@ export function useTimelineFeed(
     void load('replace');
   }, [enabled, ownerId, scopeKey, load]);
 
-  // Coming back to a tab that has been open since yesterday (spec/138
+  // Coming back to a tab that has been open since yesterday (docs/specs/013-workspace/timeline.md
   // §2.4a). Also how a feed that failed to load heals itself without
   // the reader pressing anything — which is the case they used to
   // "fix" with a browser refresh.
   useReturnToTab(() => void load('merge'), { enabled: enabled && !!ownerId });
 
-  // The reader's own actions (spec/138 §2.4b). Deleting a diagram from a
+  // The reader's own actions (docs/specs/013-workspace/timeline.md §2.4b). Deleting a diagram from a
   // card's menu used to leave the feed exactly as it was until a browser
   // refresh: the worker had swept the diagram's cards and written its
   // tombstone, and nothing on the client asked. Now any successful
@@ -321,7 +321,7 @@ export function useTimelineFeed(
     void load('replace');
   }, [load]);
 
-  // Per-card removal (spec/138 §2.9). Optimistic: the card goes as the
+  // Per-card removal (docs/specs/013-workspace/timeline.md §2.9). Optimistic: the card goes as the
   // menu closes, and comes back only if the worker refused. Its own
   // path rather than a write signal — the dismissal endpoint is the
   // feed's own, and the feed already knows exactly what changed.
@@ -333,7 +333,7 @@ export function useTimelineFeed(
       if (removed.length === 0) return;
       track('Timeline', 'Removed', 'Entry');
       setEvents((prev) => prev.filter((e) => !ids.has(e.id)));
-      // A stack goes in one request (spec/138 §6.2a); a single card on
+      // A stack goes in one request (docs/specs/013-workspace/timeline.md §6.2a); a single card on
       // its own endpoint, whose 404 the client already tolerates.
       const request =
         removed.length === 1

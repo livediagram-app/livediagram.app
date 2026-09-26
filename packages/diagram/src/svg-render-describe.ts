@@ -1,4 +1,4 @@
-// The export descriptor layer of the headless SVG renderer (spec/62
+// The export descriptor layer of the headless SVG renderer (docs/specs/015-api/mcp-server.md
 // §5), split out of svg-render.ts: the export constants, the
 // ExportShape / resolver types, and describeBoxedExport — the pure
 // element -> shape + label descriptor both the per-element emitters and
@@ -43,7 +43,7 @@ export type ExportShape =
   | { kind: 'diamond'; fill: string; stroke: string }
   | { kind: 'rect'; fill: string; stroke: string }
   | { kind: 'icon'; art: ExportIconArt; fill: string; stroke: string }
-  // A sticker (spec/116): fully self-coloured art (plate, shadow, content)
+  // A sticker (docs/specs/010-palette/stickers.md): fully self-coloured art (plate, shadow, content)
   // that fills the element box. No fill / stroke, because a sticker has
   // neither — its colours are its own.
   | { kind: 'sticker'; art: ExportStickerArt }
@@ -68,7 +68,7 @@ export type ResolveImageHref = (imageId: string) => string | undefined;
 export type ExportIconArt = { markup: string; colored: boolean };
 export type ResolveIconArt = (iconId: string) => ExportIconArt | undefined;
 
-// Resolved artwork for a shape==='sticker' element (spec/116): self-coloured
+// Resolved artwork for a shape==='sticker' element (docs/specs/010-palette/stickers.md): self-coloured
 // markup plus the viewBox it was drawn in. Structural, for the same reason
 // ExportIconArt is — this package never imports the catalogue; each caller
 // passes a resolver (the editor from its async registry, the Workers from
@@ -80,7 +80,7 @@ export type ResolveStickerArt = (stickerId: string) => ExportStickerArt | undefi
 export type BoxedExport = { opacity: number; shape: ExportShape; label: ExportLabel | null };
 
 // What an export needs from its caller beyond the element itself: the three
-// art resolvers, and the tab's default font (spec/28) — an element without
+// art resolvers, and the tab's default font (docs/specs/004-interface-design/fonts.md) — an element without
 // its own face inherits the tab's, so a renderer that doesn't pass it paints
 // the wrong typeface for the whole board.
 export type BoxedExportOptions = {
@@ -89,17 +89,17 @@ export type BoxedExportOptions = {
   resolveStickerArt?: ResolveStickerArt;
   tabFont?: string;
   // The paper the export is being drawn on, for elements that carry no
-  // colours of their own (spec/07). Defaults to light, so a caller that
+  // colours of their own (docs/specs/007-editor/live-app.md). Defaults to light, so a caller that
   // doesn't say gets exactly the output it always got.
   surface?: CanvasSurface;
-  // The tab theme's categorical ramp, for the chart elements (spec/53). The
+  // The tab theme's categorical ramp, for the chart elements (docs/specs/009-elements/pie-chart.md). The
   // canvas hands its charts the same list; without it they fall back to the
   // built-in one, which is what a caller with no theme in hand wants.
   chartPalette?: readonly string[];
 };
 
 // The face a label paints in: the author's own choice, else the notation's
-// (a workshop note writes in marker, spec/139), else the tab default. The
+// (a workshop note writes in marker, docs/specs/021-event-storming/event-storming.md), else the tab default. The
 // same ladder the canvas walks — an export that resolved it differently
 // would hand out a picture of a diagram nobody has.
 export function exportFontFamily(el: BoxedElement, tabFont?: string): string | undefined {
@@ -151,7 +151,7 @@ export function describeBoxedExport(el: BoxedElement, opts: BoxedExportOptions =
           },
     };
   }
-  // Stickers (spec/116) come before any colour work: the art is entirely
+  // Stickers (docs/specs/010-palette/stickers.md) come before any colour work: the art is entirely
   // self-coloured and there is never a label, so a sticker is its plate and
   // nothing else.
   const stickerArt =
@@ -163,10 +163,10 @@ export function describeBoxedExport(el: BoxedElement, opts: BoxedExportOptions =
   }
   const fill = el.fillColor ?? defaultFillColor(el, surface);
   // A sticky is borderless paper unless the user deliberately set a border
-  // colour (matching the canvas, spec/09 "Sticky notes read as paper").
+  // colour (matching the canvas, docs/specs/008-canvas/canvas-and-palette.md "Sticky notes read as paper").
   const stroke =
     el.strokeColor ?? (el.type === 'sticky' ? 'none' : defaultStrokeColor(el, surface));
-  // Icon elements (spec/09 "Icons" line art + spec/41 Technology marks): when
+  // Icon elements (docs/specs/008-canvas/canvas-and-palette.md "Icons" line art + docs/specs/010-palette/technology-icons.md Technology marks): when
   // a caller supplies the glyph resolver AND the id resolves, export the real
   // art with the caption in the bottom band (mirroring IconGlyph /
   // TechIconGlyph's glyph-above-caption layout). Otherwise fall through to
@@ -179,7 +179,7 @@ export function describeBoxedExport(el: BoxedElement, opts: BoxedExportOptions =
   if (iconArt) {
     const size = fontSizeFor(el.textSize);
     // The caption lives in its own band — the complement of the glyph band
-    // (iconCaptionBand, spec/41) — so it can never stack over the art: a
+    // (iconCaptionBand, docs/specs/010-palette/technology-icons.md) — so it can never stack over the art: a
     // centre caption takes the vertical band the glyph doesn't, a left/right
     // caption its half of the box, centred on the glyph's row. Mirrors the
     // editor's captionBandClass exactly.
@@ -255,7 +255,7 @@ export function describeBoxedExport(el: BoxedElement, opts: BoxedExportOptions =
   const alignY = el.textAlignY ?? defaults.y;
   const pad = PADDING_PX[el.padding ?? defaultPadding(el)];
   // A workshop note exports in capitals, exactly as the board paints it
-  // (spec/139) — a shared PNG that quietly restored sentence case would
+  // (docs/specs/021-event-storming/event-storming.md) — a shared PNG that quietly restored sentence case would
   // stop being the board people were looking at.
   const label: ExportLabel | null = el.label
     ? {

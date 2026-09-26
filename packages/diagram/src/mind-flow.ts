@@ -1,4 +1,4 @@
-// Mind-map flows (spec/118): the shape a map grows in.
+// Mind-map flows (docs/specs/009-elements/mind-node.md): the shape a map grows in.
 //
 // Growth started with one arrangement, the one a keyboard-driven outline wants:
 // a child to the right, siblings stacked down it. That is a TREE, and it is

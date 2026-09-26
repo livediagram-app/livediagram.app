@@ -1,9 +1,9 @@
-// Anonymous, first-party product telemetry emitter (spec/22).
+// Anonymous, first-party product telemetry emitter (docs/specs/017-telemetry/telemetry.md).
 //
 // The buffering / flush / page-hide engine lives in
 // @livediagram/telemetry-client (shared with the help centre); this
 // wrapper owns the editor's policy: the build-time
-// NEXT_PUBLIC_TELEMETRY_ENABLED gate and the cached spec/20 per-user
+// NEXT_PUBLIC_TELEMETRY_ENABLED gate and the cached docs/specs/007-editor/user-preferences.md per-user
 // opt-out. See the package for the privacy rules — `type` is always a
 // closed-vocabulary token, never user content.
 
@@ -19,7 +19,7 @@ const ENABLED = process.env.NEXT_PUBLIC_TELEMETRY_ENABLED === 'true';
 
 let preferenceListenersAttached = false;
 
-// User-preference opt-out (spec/20). Cached so the hot path doesn't
+// User-preference opt-out (docs/specs/007-editor/user-preferences.md). Cached so the hot path doesn't
 // hit localStorage on every track() call (some events fire in bursts:
 // undo/redo, zoom). Invalidated by the same-tab
 // `livediagram:preferences-changed` event the writer dispatches, or

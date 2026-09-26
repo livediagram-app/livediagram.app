@@ -8,7 +8,7 @@ import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import type { SettingsDeleteAccountRowSpec, SettingsIdentityRowSpec } from './settings-catalogue';
 
 // The account rows, moved here from the Explorer's /explorer/profile page
-// (spec/65) when that page was retired: everything it held now lives in
+// (docs/specs/014-identity/profile-and-email-notifications.md) when that page was retired: everything it held now lives in
 // Settings, so a second account home was a second place to look.
 //
 // Lazy: the confirmation modal pulls in Clerk's reverification surface and
@@ -74,7 +74,7 @@ export function SettingsIdentityRow({ row }: { row: SettingsIdentityRowSpec }) {
 }
 
 // Delete account. Signed-in only, and not because of the UI: the api's
-// DELETE /api/account is Clerk-only by design (spec/65), since the whole
+// DELETE /api/account is Clerk-only by design (docs/specs/014-identity/profile-and-email-notifications.md), since the whole
 // point is wiping data bound to a VERIFIED identity. A guest's owner id is an
 // unverified header, so honouring it would let anyone wipe anyone's diagrams.
 // The row still renders for guests, saying why, rather than vanishing, so the

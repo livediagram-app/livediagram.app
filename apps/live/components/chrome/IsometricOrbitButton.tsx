@@ -3,7 +3,7 @@
 import { Tooltip } from '@/components/primitives/Tooltip';
 import { isDragTravel } from '@/lib/press-gestures';
 
-// Orbit control for the isometric view (spec/45). Drag it to orbit the
+// Orbit control for the isometric view (docs/specs/008-canvas/isometric-view.md). Drag it to orbit the
 // camera the same way Shift-drag does on the canvas — horizontal motion
 // spins the azimuth, vertical motion tilts the elevation — so orbiting needs
 // no held modifier. A plain click (press with no drag) snaps the camera back

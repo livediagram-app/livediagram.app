@@ -8,7 +8,7 @@ compatibility_date = "2026-05-29"
 directory = "./out"
 not_found_handling = "404-page"
 
-# Staging (spec/140): `wrangler deploy --env staging` deploys the same
+# Staging (docs/specs/016-platform/staging-environment.md): `wrangler deploy --env staging` deploys the same
 # static `./out` as `livediagram-marketing-staging`. The build that fills
 # `out/` is a different one — staging bakes its own NEXT_PUBLIC_* values —
 # so the two environments never share an artifact.

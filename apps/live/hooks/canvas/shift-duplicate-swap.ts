@@ -1,4 +1,4 @@
-// Shift-duplicate identity swap for a boxed move (spec/80).
+// Shift-duplicate identity swap for a boxed move (docs/specs/008-canvas/shift-drag-duplicate.md).
 //
 // Holding Shift mid-drag turns a move into a copy, and it does that by
 // SWAPPING identities rather than by dragging a copy: the ORIGINAL elements

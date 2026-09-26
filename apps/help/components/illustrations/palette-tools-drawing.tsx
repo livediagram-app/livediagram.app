@@ -1,11 +1,11 @@
-// Drawing-gesture illustrations (spec/81 + spec/84): the Highlighter's wide
+// Drawing-gesture illustrations (docs/specs/008-canvas/highlighter.md + docs/specs/008-canvas/polygon-tool.md): the Highlighter's wide
 // translucent marker stroke and the Polygon tool's click-to-place vertices.
 // Split out from palette-tools.tsx (already at size) per the no-god-files
 // rule; composed only from the shared primitives.
 
 import { Scene, Shape, Cursor, Panel, Label } from './primitives';
 
-// The marker cup, in the panel's own order (spec/81). Tailwind classes rather
+// The marker cup, in the panel's own order (docs/specs/008-canvas/highlighter.md). Tailwind classes rather
 // than the editor's hexes: an illustration follows the help centre's house
 // palette, and these are the same five families.
 const SWATCHES = [

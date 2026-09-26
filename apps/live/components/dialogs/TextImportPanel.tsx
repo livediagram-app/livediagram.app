@@ -3,7 +3,7 @@ import { BackBar } from '@/components/primitives/BackBar';
 import { Button } from '@livediagram/ui';
 import type { ImportOutcome } from '@/lib/import-tab';
 
-// The paste-or-file sub-view for a text import format (spec/27 + spec/73).
+// The paste-or-file sub-view for a text import format (docs/specs/020-import-export/markdown-import.md + docs/specs/020-import-export/mermaid.md).
 // A textarea to paste/write the content, an Import button, and a "pick a
 // file instead" escape hatch. Format-agnostic — the parent supplies the
 // placeholder example and the two runners (text vs file). Owns its own
@@ -57,7 +57,7 @@ export function TextImportPanel({
 
   return (
     <div>
-      {/* The shared two-level "back to the overview" bar (spec/56 house
+      {/* The shared two-level "back to the overview" bar (docs/specs/018-help/contextual-help-links.md house
           style), the same control the New Diagram wizard's location step
           uses — not a small text link buried in the footer beside the
           commit button, where the way back sat next to the way forward. */}

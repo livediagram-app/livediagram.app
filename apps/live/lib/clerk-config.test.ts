@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 // clerk-config reads NEXT_PUBLIC_* at module-load time (baked into the
 // static export), so each case sets the env then imports a fresh copy.
-// Gating the whole Clerk-vs-guest mode (spec/03 + spec/04), so the
+// Gating the whole Clerk-vs-guest mode (docs/specs/002-project-scope/open-source-and-business-model.md + docs/specs/014-identity/auth-and-guest-access.md), so the
 // publishable-key prefix check and the Google-OAuth dependency on Clerk
 // are worth pinning.
 const KEYS = ['NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY', 'NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED'];

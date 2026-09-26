@@ -1,6 +1,6 @@
 'use client';
 
-// One slide's `…` menu in the Slide Deck panel (spec/31).
+// One slide's `…` menu in the Slide Deck panel (docs/specs/012-collaboration/presentation-mode.md).
 //
 // Everything a slide can have done to it lives here, so the row itself keeps
 // exactly one job — pressing it opens the slide — and the list reads as a deck

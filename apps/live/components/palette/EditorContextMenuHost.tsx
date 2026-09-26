@@ -191,7 +191,7 @@ export function EditorContextMenuHost() {
   const ctxMemberIds =
     multiSelectedIds.size > 0 ? [...multiSelectedIds] : ctxSelectedEl ? [ctxSelectedEl.id] : [];
 
-  // The flow the selected node's MAP grows in (spec/118). Resolved here
+  // The flow the selected node's MAP grows in (docs/specs/009-elements/mind-node.md). Resolved here
   // because it lives on the tree's root, which the menu cannot walk to from
   // the node in hand.
   const menuMindFlow =
@@ -200,7 +200,7 @@ export function EditorContextMenuHost() {
       : DEFAULT_MIND_FLOW;
 
   // The selection's layer for the Layer section's move-to dropdown
-  // (spec/74): the single resolved layer every member shares, or null
+  // (docs/specs/006-diagram/layers.md): the single resolved layer every member shares, or null
   // when the selection spans layers.
   const ctxLayerIds = new Set(
     ctxMemberIds
@@ -237,7 +237,7 @@ export function EditorContextMenuHost() {
       onPreviewTextAlign={previewTextAlign}
       onBringToFront={bringSelectedToFront}
       onSendToBack={sendSelectedToBack}
-      // Event-storming note verbs (spec/139). Front/back here are the
+      // Event-storming note verbs (docs/specs/021-event-storming/event-storming.md). Front/back here are the
       // IN-LAYER stack (same as the selection popover), not the layer
       // moves above: on a workshop board the notes share one band and
       // "bring to front" means "over the note it overlaps".

@@ -141,7 +141,7 @@ import { useEditorRealtime } from './editor-realtime';
 // duplication a future HISTORY_LIMIT bump would silently break).
 
 export function useEditorState(opts: { embed?: boolean } = {}) {
-  // Read-only embed view (spec/33). The flag forces view behaviour
+  // Read-only embed view (docs/specs/013-workspace/embeds.md). The flag forces view behaviour
   // regardless of the share role, suppresses the visitor identity
   // screen, and EditorView swaps the chrome for the embed badge +
   // tab switcher. Constant for the lifetime of the page (it comes
@@ -149,7 +149,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const embedMode = opts.embed === true;
   const initialTabs: Tab[] = [createTab('Tab 1')];
 
-  // Embed page-view telemetry (spec/33) is emitted by editor-page.tsx —
+  // Embed page-view telemetry (docs/specs/013-workspace/embeds.md) is emitted by editor-page.tsx —
   // exactly one site, so an embed render can't be double-counted.
 
   // Clerk wiring (token provider + guest→authed migration). One hook
@@ -172,7 +172,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     redo: redoHistory,
   } = useDiagramHistory(initialTabs);
 
-  // Per-step Undo/Redo memory for the activity log (spec/12): one
+  // Per-step Undo/Redo memory for the activity log (docs/specs/012-collaboration/activity-and-audit.md): one
   // token-stamped marker per history step, holding the log entry that
   // step emitted or null. Every history push below pairs with a marker
   // push; the emitter (useActivityLogEmitter) fills a marker in — the
@@ -186,7 +186,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // synchronous mutation.
   const entryHistoryRef = useRef<EntryHistory>(emptyEntryHistory());
   const historyTokenRef = useRef(0);
-  // Active-layer stamp for the commit choke point below (spec/74). A ref
+  // Active-layer stamp for the commit choke point below (docs/specs/006-diagram/layers.md). A ref
   // (not state): commitTabs is defined before the layers slice computes,
   // so the slice refreshes this every render and the closure reads the
   // latest value at commit time.
@@ -194,14 +194,14 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const commitTabs = (mapTabs: (ts: Tab[]) => Tab[]): number => {
     const token = ++historyTokenRef.current;
     entryHistoryRef.current = entryHistoryPush(entryHistoryRef.current, token);
-    // Layer stamping (spec/74): elements APPEARING in this commit without
+    // Layer stamping (docs/specs/006-diagram/layers.md): elements APPEARING in this commit without
     // a valid layerId land on the active layer. One choke point, so no
     // individual creation path (draw, paste, AI, template, Mermaid
     // import) carries layer logic. stampNewElementLayers no-ops on tabs
     // that never materialised `layers`, and on undo/remote applies (which
     // bypass commitTabs entirely).
     rawCommitTabs((ts) => {
-      // Board kind (spec/139): a committed tab says what KIND of board it
+      // Board kind (docs/specs/021-event-storming/event-storming.md): a committed tab says what KIND of board it
       // is, rather than leaving a reader to know that absence means
       // 'diagram'. Same choke point as the layer stamp below, and
       // `stampTabKind` returns the tab unchanged when it already has one,
@@ -223,7 +223,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     });
     return token;
   };
-  // While a photo draft is open it OWNS the history (spec/139 Phase 8): the
+  // While a photo draft is open it OWNS the history (docs/specs/021-event-storming/event-storming.md Phase 8): the
   // landing and every correction the author makes to a draft note are one
   // gesture, ending at Add (the step stands) or Discard (it is thrown away).
   // A ref, because `commit` / `markCheckpoint` are defined long before the
@@ -271,7 +271,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   };
 
   // Stable id + name projection of the tabs for link-badge tooltips
-  // (spec/09): keyed on a signature so it only changes when a tab is
+  // (docs/specs/008-canvas/canvas-and-palette.md): keyed on a signature so it only changes when a tab is
   // added / removed / renamed, NOT on every element edit, keeping the
   // memoised element views from re-rendering as the user types.
   //
@@ -326,20 +326,20 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // Canvas tool (Pan / Select / Laser). See useCanvasTool: the raw
   // setter serves internal auto-switches, the tracked selectCanvasTool
   // serves the user-facing pickers.
-  // The laser pen (spec/111): persisted per browser, published with every
+  // The laser pen (docs/specs/008-canvas/laser-panel.md): persisted per browser, published with every
   // laser sample, and edited from the Laser Panel.
   const laserPen = useLaserConfig();
-  // The eraser's settings (spec/113): read by the erase gesture below and
+  // The eraser's settings (docs/specs/008-canvas/eraser-panel.md): read by the erase gesture below and
   // edited from the Eraser Panel.
   const eraserSettings = useEraserConfig();
-  // The format painter's settings (spec/117): which parts of a copied style
+  // The format painter's settings (docs/specs/008-canvas/format-panel.md): which parts of a copied style
   // travel, read by the paint and edited from the Format Panel.
   const formatSettings = useFormatConfig();
   const { canvasTool, setCanvasTool, selectCanvasTool, exitAvatarTool, toolBeforeCurrent } =
     useCanvasTool({
       defaultPan: embedMode,
     });
-  // Persistent Format painter tool (spec/09): the mode-boundary reset +
+  // Persistent Format painter tool (docs/specs/008-canvas/canvas-and-palette.md): the mode-boundary reset +
   // the exit that restores the pre-Format tool. See useFormatTool.
   const { formatToolActive, exitFormatTool } = useFormatTool({
     canvasTool,
@@ -373,7 +373,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // (no URL params → straight to welcome modal) or once the API call
   // resolves (params → load the diagram first).
   const [loadingDiagram, setLoadingDiagram] = useState(true);
-  // User-facing tool picker. Spotlight (spec/09) is a non-editing presenter
+  // User-facing tool picker. Spotlight (docs/specs/008-canvas/canvas-and-palette.md) is a non-editing presenter
   // mode, so entering it clears any selection: an element selected beforehand
   // would otherwise keep its handles (dimmed under the shroud) and pop back
   // on exit. Wraps the tracked selectCanvasTool so every entry point (palette
@@ -397,7 +397,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     ) {
       return;
     }
-    // Spotlight and Avatar mode (spec/101) are both non-editing presenter
+    // Spotlight and Avatar mode (docs/specs/008-canvas/avatar-mode.md) are both non-editing presenter
     // modes, so both clear the selection on entry.
     if (tool === 'spotlight' || tool === 'avatar') {
       setSelectedId(null);
@@ -405,7 +405,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     }
     selectCanvasTool(tool);
   };
-  // Pressing a Selection Mode button (spec/103). Pressing the button for the
+  // Pressing a Selection Mode button (docs/specs/009-elements/mode-button.md). Pressing the button for the
   // mode you are ALREADY in takes you back where you came from: on a read-only
   // walkthrough the button may be the only control on screen, so it has to work
   // in both directions. Everything else is an ordinary pick, guards included.
@@ -425,7 +425,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     color: '#0ea5e9',
     status: 'online',
   });
-  // Who "I" am in a dot vote (spec/152): the collab key, which is stable and
+  // Who "I" am in a dot vote (docs/specs/012-collaboration/collab-race-hardening.md): the collab key, which is stable and
   // safe to publish, rather than the owner id, which is a guest's credential.
   const voteSelfId = participantKey(selfParticipant);
   // Keyboard-shortcut catalog modal + per-device disable toggle.
@@ -467,7 +467,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     sessionShareCodeRef,
   } = realtime;
   // One answer / idea / tick / comment, applied here and sent to the room as
-  // a delta ahead of the autosave (spec/152). Shared by the comments, the
+  // a delta ahead of the autosave (docs/specs/012-collaboration/collab-race-hardening.md). Shared by the comments, the
   // checklist and the collaboration elements below.
   const applyElementDelta = useElementDeltas({ activeId, tickTabs, roomRef });
   // Comment-thread state + handlers. The open-id drives the
@@ -486,7 +486,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     resolveThread,
     unresolveThread,
   } = useEditorComments({ applyElementDelta, selfParticipant });
-  // Per-user editor preferences (spec/20): the state, the ref mirrors
+  // Per-user editor preferences (docs/specs/007-editor/user-preferences.md): the state, the ref mirrors
   // the drag hook reads, and the localStorage read + D1 sync effects.
   // See useEditorPreferences.
   const { userPreferences, setUserPreferences, autoRebindArrowsRef, alignmentGuidesRef } =
@@ -496,11 +496,11 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
       setAiPanelVisible: panelLayout.setAiPanelVisible,
     });
 
-  // Hide / show a diagram in the Explorer panel's Recent list (spec/93).
+  // Hide / show a diagram in the Explorer panel's Recent list (docs/specs/013-workspace/hide-from-recent.md).
   // Read-modify-writes from the CACHE, not the React snapshot: the PUT
   // sends the whole preferences blob, so a stale snapshot would clobber
   // flags another tab wrote.
-  // Per-user diagram stars (spec/95), for the Explorer panel's rows.
+  // Per-user diagram stars (docs/specs/013-workspace/favourites.md), for the Explorer panel's rows.
   const { favouriteIds, toggleFavourite } = useFavourites(selfParticipant.id);
 
   const toggleRecentExclusion = (diagramId: string) => {
@@ -608,7 +608,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const [loadedTabIds, setLoadedTabIds] = useState<Set<string>>(new Set());
   // Tab ids whose lazy fetch FAILED (network / 5xx — not a 404). Drives
   // the canvas's blocking error overlay so the user can't edit a blank
-  // placeholder and have the autosave wipe the real server row (spec/13).
+  // placeholder and have the autosave wipe the real server row (docs/specs/006-diagram/per-tab-storage.md).
   // `tabLoadRetryNonce` lets the Retry button re-run usePerTabLoad's
   // effect for the same active tab (deps otherwise unchanged).
   const [tabLoadErrors, setTabLoadErrors] = useState<Set<string>>(new Set());
@@ -647,7 +647,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const [hydrated, setHydrated] = useState(false);
   // Sharing / session / owner / share-link state + the room refs all now
   // live in useEditorRealtime, destructured above. Embeds honour the share
-  // code's role (spec/33): a view code renders a read-only viewer, an edit
+  // code's role (docs/specs/013-workspace/embeds.md): a view code renders a read-only viewer, an edit
   // code an editable embed. The api enforces the role on every write, so
   // this is presentation-side only.
   const isReadOnly = sessionRole === 'view';
@@ -656,10 +656,10 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // diff: any tab whose object reference changed since last save is
   // ours to PUT; tab order / diagram rename hit the metadata PUT.
   // Debounced 600ms — feels responsive without hammering the API.
-  // Spec/13 has the design.
+  // docs/specs/006-diagram/per-tab-storage.md has the design.
   const lastSavedTabsRef = useRef<Tab[]>([]);
   const lastSavedNameRef = useRef<string>('');
-  // Peer ops that land while a save is in flight (spec/152); see save-baseline.
+  // Peer ops that land while a save is in flight (docs/specs/012-collaboration/collab-race-hardening.md); see save-baseline.
   const remoteOpJournalRef = useRef<RemoteOpJournal>(createRemoteOpJournal());
 
   // True while a hover-preview is on screen (set by useStylePreview). Style
@@ -766,18 +766,18 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   useEffect(() => {
     selfParticipantRef.current = selfParticipant;
   }, [selfParticipant]);
-  // Live poll (spec/88): the ephemeral pulse-check. Declared before the
+  // Live poll (docs/specs/012-collaboration/live-poll.md): the ephemeral pulse-check. Declared before the
   // room connection because that's what feeds it inbound ops. Nothing it
   // holds is persisted — no tab field, no autosave, no change log.
   // Kept in step with the facilitator hook below, which cannot be declared up
   // here: it needs the room, and the room needs this.
   const sessionBlockedRef = useRef(false);
-  // The room's roster, for a `collaborators` poll (spec/88). A ref because the
+  // The room's roster, for a `collaborators` poll (docs/specs/012-collaboration/live-poll.md). A ref because the
   // presence rows it is filled from are derived much further down this file —
   // they need the room, which needs the poll hook — and because the only
   // moment its value matters is the instant somebody starts a poll.
   const pollCollaboratorsRef = useRef<readonly PollCandidate[]>([]);
-  // Our collab key, for the poll's answers and host (spec/152). A ref: the poll
+  // Our collab key, for the poll's answers and host (docs/specs/012-collaboration/collab-race-hardening.md). A ref: the poll
   // hook's handlers stay stable while identity hydrates.
   const pollSelfKeyRef = useRef(voteSelfId);
   pollSelfKeyRef.current = voteSelfId;
@@ -788,7 +788,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     selfKeyRef: pollSelfKeyRef,
   });
   // In-place recovery when the room can't replay our reconnect gap
-  // (spec/97), in place of the page reload this used to do.
+  // (docs/specs/012-collaboration/resync-without-reload.md), in place of the page reload this used to do.
   const resyncFromServer = useRoomResync({
     diagramId,
     selfId: selfParticipant.id,
@@ -801,7 +801,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   });
   // Realtime room: WebSocket per shared diagram (presence + ops). See
   // useRoomConnection.
-  // Avatar mode (spec/101): a shove somebody sent us, bumped by a sequence
+  // Avatar mode (docs/specs/008-canvas/avatar-mode.md): a shove somebody sent us, bumped by a sequence
   // number so two identical pushes both land. Canvas replays it onto our own
   // character — a push is a request to its owner, never a remote write.
   const [avatarShove, setAvatarShove] = useState<{ dx: number; dy: number; seq: number } | null>(
@@ -810,19 +810,19 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const receiveAvatarPush = useCallback((dx: number, dy: number) => {
     setAvatarShove((prev) => ({ dx, dy, seq: (prev?.seq ?? 0) + 1 }));
   }, []);
-  // Reaction bursts (spec/135): ephemeral, per-client, never document state.
+  // Reaction bursts (docs/specs/009-elements/reaction-pad.md): ephemeral, per-client, never document state.
   const reactions = useReactionBursts();
   const receiveFocusRef = useRef<
     ((from: string, tabId: string, at: { x: number; y: number }, zoom: number) => void) | null
   >(null);
 
-  // Who is running this session (spec/149). Declared before the room
+  // Who is running this session (docs/specs/012-collaboration/facilitator.md). Declared before the room
   // connection because the socket hands it every answer and asks it for the
   // token on each hello.
   const facilitator = useFacilitator({
     diagramId,
     send: (msg) => roomRef.current?.send(msg),
-    // toast.info, so the Show notifications preference (spec/20) governs these
+    // toast.info, so the Show notifications preference (docs/specs/007-editor/user-preferences.md) governs these
     // exactly as it governs every other announcement.
     onNotice: (message) => toast.info(message),
     // Names come from the roster we already hold, so a renamed participant's
@@ -831,8 +831,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   });
   sessionBlockedRef.current = facilitator.sessionToolsBlocked;
 
-  // The facilitator has freed an element we were holding (spec/07 lock,
-  // spec/149). Only our socket is sent this, so there is no target id to check.
+  // The facilitator has freed an element we were holding (docs/specs/007-editor/live-app.md lock,
+  // docs/specs/012-collaboration/facilitator.md). Only our socket is sent this, so there is no target id to check.
   //
   // Clearing `selectedId` is the whole of it: usePresenceBroadcast already
   // fires a `select` op on every change, so peers' locks fall away through the
@@ -857,7 +857,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     [setSelectedId, setEditingId, setMultiSelectedIds],
   );
 
-  // The Q&A board (spec/151). Up here, ahead of the room, because the room
+  // The Q&A board (docs/specs/012-collaboration/qa-board.md). Up here, ahead of the room, because the room
   // lands the server's `qa` ops through it.
   const qaBoard = useQaBoard({
     diagramId,
@@ -938,7 +938,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     resetTabs,
   });
 
-  // Teams the signed-in user belongs to (spec/32), surfaced in the
+  // Teams the signed-in user belongs to (docs/specs/013-workspace/teams.md), surfaced in the
   // search panel. Fetched lazily the first time search opens so
   // guest sessions and non-searching sessions never pay the request;
   // guests can't have teams, so the gate also requires a Clerk id.
@@ -946,11 +946,11 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // session, not just while search is open, because the floating
   // Explorer panel now surfaces teams + their diagrams (a Teams
   // accordion, team rows in Recent, the current team diagram —
-  // spec/35), so the data has to be present whenever the panel is.
+  // docs/specs/013-workspace/team-shared-diagrams.md), so the data has to be present whenever the panel is.
   const { teams } = useTeams(clerkUserId ?? null, {
     enabled: !!clerkUserId,
   });
-  // Their libraries (spec/35): one sweep per team. Feeds the search
+  // Their libraries (docs/specs/013-workspace/team-shared-diagrams.md): one sweep per team. Feeds the search
   // panel's folder group AND the floating Explorer panel (team folder
   // tree + team diagrams in Recent + the current team diagram).
   const {
@@ -963,7 +963,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
 
   const activeTab = tabs.find((t) => t.id === activeId) ?? tabs[0]!;
 
-  // Vote privacy (spec/39): while a hide-cursors vote is open on this tab,
+  // Vote privacy (docs/specs/012-collaboration/session-tools.md): while a hide-cursors vote is open on this tab,
   // peer cursors + laser trails are neither sent nor drawn. Derived here so
   // the outbound gate (useEditorBroadcast) and the render gate
   // (usePresenceRows) read the same value off the synced tab.
@@ -998,10 +998,10 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // is invoked further down, once `activeTab` is in scope; it
   // also owns `getViewportCenter` and `fitToScreen`.
 
-  // Open or collapse a comment panel (spec/136). Persisted rather than local,
+  // Open or collapse a comment panel (docs/specs/012-collaboration/comment-pin.md). Persisted rather than local,
   // so a facilitator opening the thread they want discussed opens it for the
   // room instead of only for themselves.
-  // Set a reaction pad off (spec/135): play it here, then tell the room.
+  // Set a reaction pad off (docs/specs/009-elements/reaction-pad.md): play it here, then tell the room.
   //
   // Local-first rather than round-tripping through the server: the press has
   // to feel instant, and a burst is not shared state that could disagree — it
@@ -1016,7 +1016,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     [reactions.play, broadcastReaction],
   );
 
-  // Bring Focus (spec/144): ask everyone else to come and look at this
+  // Bring Focus (docs/specs/012-collaboration/bring-focus.md): ask everyone else to come and look at this
   // element, at our zoom, on our tab.
   //
   // Sends the element's CENTRE rather than our pan: two people rarely have the
@@ -1084,7 +1084,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     scrollIntoView,
   } = useEditorViewport({ activeTab, selectedId });
 
-  // Slide deck (spec/31). Owns the deck, the panel's editing verbs, and the
+  // Slide deck (docs/specs/012-collaboration/presentation-mode.md). Owns the deck, the panel's editing verbs, and the
   // presentation Start runs. Placed after the viewport because presenting
   // frames each slide through it.
   const slideDeck = useSlideDeck({
@@ -1142,7 +1142,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     offset: { x: number; y: number };
   } | null>(null);
   const presenting = slideDeck.presentingAt !== null;
-  // Every editor keyboard surface is off while a deck is running (spec/31).
+  // Every editor keyboard surface is off while a deck is running (docs/specs/012-collaboration/presentation-mode.md).
   // The overlay owns the keyboard then — it consumes the keys it uses, but
   // everything else fell straight through to the editor, so pressing G in
   // front of a room armed a parallelogram on a canvas you cannot draw on.
@@ -1215,7 +1215,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [presenting]);
 
-  // Publish where WE are looking, on change (spec/131). Unsolicited by design
+  // Publish where WE are looking, on change (docs/specs/012-collaboration/follow-me-viewport.md). Unsolicited by design
   // — see the RoomOp comment — and throttled to ~10 Hz inside the broadcaster,
   // so an idle participant sends nothing at all.
   useEffect(() => {
@@ -1225,7 +1225,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [viewportOffset, viewportZoom, activeId]);
 
-  // Follow-me viewport (spec/131): pin our pan / zoom / tab to a peer's until
+  // Follow-me viewport (docs/specs/012-collaboration/follow-me-viewport.md): pin our pan / zoom / tab to a peer's until
   // we take the canvas back. View-role visitors can both follow and be
   // followed — it mutates nothing, and the audience on a view link is exactly
   // who most needs it.
@@ -1246,7 +1246,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // otherwise snap the view straight back off the element).
   const skipTabFitRef = useRef<string | null>(null);
 
-  // Bring Focus (spec/144): the invitation somebody else's press leaves on
+  // Bring Focus (docs/specs/012-collaboration/bring-focus.md): the invitation somebody else's press leaves on
   // screen, and what taking it does. Placed after the viewport because taking
   // one navigates through it.
   const focusInvite = useFocusInvite({
@@ -1259,7 +1259,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   });
   receiveFocusRef.current = focusInvite.receiveFocusHere;
 
-  // Server capabilities (spec/25). Fetched once at mount; determines
+  // Server capabilities (docs/specs/007-editor/ai-assistance.md). Fetched once at mount; determines
   // whether the AI panel option is shown in Settings and rendered.
   const { aiEnabled: aiCapable, emailEnabled } = useCapabilities(sharePasswordGate === null);
 
@@ -1273,7 +1273,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   });
 
   // Capture an Activity-page element deep link BEFORE the tab-entry
-  // effect below rewrites the hash to the plain #t= pin (spec/142 §1).
+  // effect below rewrites the hash to the plain #t= pin (docs/specs/013-workspace/activity-page.md §1).
   // Consumed further down by useCollabDeepLink once the tab is ready.
   const collabDeepLink = useCollabDeepLinkCapture();
 
@@ -1289,7 +1289,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
 
   // Derived realtime presence rows (avatars per tab, remote cursors,
   // laser trails, per-element selections) and the concurrent-selection
-  // lock (spec/07). Pure derivation over the usePresenceState values +
+  // lock (docs/specs/007-editor/live-app.md). Pure derivation over the usePresenceState values +
   // the local laser trail. See usePresenceRows.
   const {
     participantsByTab,
@@ -1315,7 +1315,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     selfLaserConfig: laserPen.config,
     cursorsHidden: voteCursorsHidden,
   });
-  // Everyone in the diagram, as poll candidates (spec/88). Self first, then
+  // Everyone in the diagram, as poll candidates (docs/specs/012-collaboration/live-poll.md). Self first, then
   // whoever is present on any tab — the order the Collaborators modal uses, so
   // a roster poll's ballot reads the way the panel beside it does. Someone on
   // two tabs appears twice here; de-duplicating is `pollCollaboratorOptions`'s
@@ -1346,7 +1346,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     return commentRowsFromElements(boxed);
   }, [activeTab.elements]);
 
-  // Assigned-action state + handlers (spec/68), the comments hook's
+  // Assigned-action state + handlers (docs/specs/012-collaboration/assigned-actions.md), the comments hook's
   // sibling: the popover open-id, the Assign Action dialog target, and
   // the save / complete / reopen / delete mutations. Mutations bypass
   // history like comments (Cmd+Z must never silently unassign work).
@@ -1372,7 +1372,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
       return el && isBoxed(el) ? el.action : undefined;
     },
     // The signed-in account, or the hydrated guest participant identity
-    // (guests may self-assign, spec/68 §2). Null only pre-hydration.
+    // (guests may self-assign, docs/specs/012-collaboration/assigned-actions.md §2). Null only pre-hydration.
     self: {
       userId: clerkUserId ?? (hydrated ? selfParticipant.id : null),
       name: clerkDisplayName ?? (hydrated ? selfParticipant.name : null),
@@ -1390,7 +1390,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   });
 
   // Action rows (open AND done — the panel filters between Outstanding
-  // and Completed) for the floating Actions panel (spec/68), the
+  // and Completed) for the floating Actions panel (docs/specs/012-collaboration/assigned-actions.md), the
   // commentRows sibling: same memo key, same boxed-only walk. Rows
   // assigned to the current user sort first.
   const actionRows = useMemo(() => {
@@ -1410,7 +1410,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // placeholder participant with the loaded / freshly minted one. Without
   // this, TemplatePicker's `useState(participant.name)` lazy init captures
   // the SSG placeholder "Guest" and never updates.
-  // Welcome ("New Diagram") lives on /live/new post-spec/14, so any
+  // Welcome ("New Diagram") lives on /live/new since docs/specs/007-editor/new-diagram-route.md, so any
   // time the picker fires on the editor route it's the per-tab
   // "Pick a template" variant. Identity (visitor join) keeps its
   // own mode.
@@ -1435,7 +1435,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // lets the IDENTITY mode of the picker through for read-only while
   // still blocking the template-choosing mode.
   //
-  // Embeds skip the prompt entirely (spec/33): a "what's your name"
+  // Embeds skip the prompt entirely (docs/specs/013-workspace/embeds.md): a "what's your name"
   // card inside a README iframe is wrong, so embed sessions keep
   // their default guest identity silently.
   const joinScreenOpen =
@@ -1455,7 +1455,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // Single emission point for activity-log entries. Every editorial
   // change goes through here — both element commits and surgical
   // reverts — so the audit stays honest. See
-  // specs/12-activity-and-audit.md. Optimistic: we prepend the entry
+  // docs/specs/012-collaboration/activity-and-audit.md. Optimistic: we prepend the entry
   // Activity-log entry emission lives in useActivityLogEmitter.
   // The hook owns the shared appendLogEntry path (optimistic local
   // append + fire-and-forget API + room broadcast + entry-history
@@ -1484,7 +1484,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // tick / element-add helpers all consult this early-return guard
   // so a single check covers drag, edit, paint, delete, etc.
   const activeTabLocked = activeTab.locked === true;
-  // Lazy per-tab load gate (spec/13). Until the active tab's content has
+  // Lazy per-tab load gate (docs/specs/006-diagram/per-tab-storage.md). Until the active tab's content has
   // landed it's an empty placeholder, NOT its real server row. The canvas
   // shows a blocking overlay over this state — but that overlay only
   // captures POINTER events; window/document keyboard + paste listeners
@@ -1513,7 +1513,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // checks so a viewer can still select and inspect.
   const editsBlocked = activeTabLocked || isReadOnly || activeTabLoadState !== 'ready';
 
-  // An Activity-page row opened this diagram at one element (spec/142
+  // An Activity-page row opened this diagram at one element (docs/specs/013-workspace/activity-page.md
   // §1): once the pinned tab is ready, select it, bring it into view and
   // open its popover. See useCollabDeepLink.
   useCollabDeepLink({
@@ -1571,7 +1571,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     emitChange(activeId, liveTab.elements, next.elements);
   };
 
-  // Layers domain slice (spec/74): the active layer, the panel /
+  // Layers domain slice (docs/specs/006-diagram/layers.md): the active layer, the panel /
   // context-menu ops, and the hidden / locked element-id sets every
   // interaction gate below reads.
   const layersState = useLayersState({
@@ -1594,11 +1594,11 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // Refresh the commit choke point's stamp (see commitTabs above).
   activeLayerStampRef.current = { tabId: activeId, layerId: activeLayerId };
 
-  // Is this an event-storming board (spec/139)? One layer, so this is just
+  // Is this an event-storming board (docs/specs/021-event-storming/event-storming.md)? One layer, so this is just
   // tab data — it drives the palette, the stationery and the note menu.
   const esBoard = isEventStormingTab(activeTab);
   // Element creation lands on the active layer, so it's additionally
-  // blocked while that layer is hidden or locked (spec/74).
+  // blocked while that layer is hidden or locked (docs/specs/006-diagram/layers.md).
   const createBlocked = editsBlocked || activeLayerBlocked;
 
   // A layer turning hidden or locked (locally or by a peer) drops its
@@ -1614,7 +1614,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [layerInertIds]);
 
-  // Apply AI-returned elements as a single undo block (spec/25).
+  // Apply AI-returned elements as a single undo block (docs/specs/007-editor/ai-assistance.md).
   // Generate handles both modifications and additions in one pass:
   //   - Elements whose ID matches an existing element → replace in place
   //   - Elements with a new ID → append; deduplicate if the AI reused a
@@ -1630,7 +1630,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // element on the right tab; tab-meta entries pop the matching
   // accordion in the Editor panel so the user can see what changed
   // and tweak it again.
-  // Hover-to-preview for the Activity rows' Revert (spec/12): resting
+  // Hover-to-preview for the Activity rows' Revert (docs/specs/012-collaboration/activity-and-audit.md): resting
   // on a revertable row shows the revert result live; leaving restores.
   // Shares previewingRef with the style previews so autosave skips the
   // ephemeral frames. See useRevertPreview.
@@ -1699,7 +1699,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     activeId,
     activeTab,
     // Creation-only helpers: additionally blocked while the active layer
-    // is hidden / locked (spec/74).
+    // is hidden / locked (docs/specs/006-diagram/layers.md).
     editsBlocked: createBlocked,
     multiSelectedIds,
     formatSourceId,
@@ -1713,7 +1713,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setFormatSourceId,
   });
 
-  // Photo import (spec/139 Phase 8): reads a photographed wall, reconciles it
+  // Photo import (docs/specs/021-event-storming/event-storming.md Phase 8): reads a photographed wall, reconciles it
   // against this board and lands the result as an on-canvas DRAFT. Detection
   // and reading are both in-browser now (Phase 9), so this needs no model key.
   const photoDraft = usePhotoDraft({
@@ -1762,7 +1762,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const photoPickerRef = photoPicker.inputRef;
   const openPhotoImport = photoPicker.open;
 
-  // Note acts on an event-storming board (spec/139): add the next note beside
+  // Note acts on an event-storming board (docs/specs/021-event-storming/event-storming.md): add the next note beside
   // one, change a note's kind.
   const noteActions = useNoteActions({
     activeTab,
@@ -1814,7 +1814,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     toast,
   });
 
-  // Tab-folder membership (spec/30), kept separate from the busy
+  // Tab-folder membership (docs/specs/006-diagram/tab-folders.md), kept separate from the busy
   // useTabActions. Menu-only: drag-reorder lives above.
   const {
     moveTabToFolder,
@@ -1858,7 +1858,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     refreshTeamLibraries,
     refreshDiagramList: () => refreshDiagramList(selfParticipant.id),
     // Keep the header's Private / Team badge honest when the OPEN diagram
-    // changes scope via the move picker (spec/35).
+    // changes scope via the move picker (docs/specs/013-workspace/team-shared-diagrams.md).
     onDiagramScopeChanged: (id, teamId) => {
       if (id === diagramId) setDiagramTeamId(teamId);
     },
@@ -1961,7 +1961,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     scheduleTabMetaLog,
   });
 
-  // Live session tools (spec/39): facilitator timer + dot-voting handlers.
+  // Live session tools (docs/specs/012-collaboration/session-tools.md): facilitator timer + dot-voting handlers.
   // State lives on the tab (`activeTab.timer` / `activeTab.vote`), so the
   // UI reads it straight off the tab; these are just the mutators.
   const {
@@ -1984,16 +1984,16 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     sessionToolsBlocked: facilitator.sessionToolsBlocked,
     activeId,
     activeTab,
-    // The non-history mutator, per spec/39: starting a timer or
+    // The non-history mutator, per docs/specs/012-collaboration/session-tools.md: starting a timer or
     // placing a dot isn't undoable (and mustn't evict real edits
     // from the bounded undo stack).
     commitTabs: tickTabs,
     emitTabMeta,
     // Dots and the host are keyed by the collab key, not the owner id: the
     // owner id is a guest's credential, and a dot op broadcasts its voter to
-    // every socket in the room (spec/152, spec/122).
+    // every socket in the room (docs/specs/012-collaboration/collab-race-hardening.md, docs/specs/012-collaboration/participant-responses.md).
     selfId: voteSelfId,
-    // Straight down the socket, ahead of the autosave (spec/39). A no-op
+    // Straight down the socket, ahead of the autosave (docs/specs/012-collaboration/session-tools.md). A no-op
     // before the room is open, exactly like every other presence-speed send —
     // a solo vote still works, it just has nobody to tell.
     emitVote: (tabId, elementId, delta, round) =>
@@ -2011,7 +2011,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   });
 
   // The interactive Behaviour elements that act on the SESSION rather than the
-  // document (spec/105, /106, /107): the session button's press, the reveal
+  // document (docs/specs/012-collaboration/session-button.md, /106, /107): the session button's press, the reveal
   // zone's local uncover, and the picker's roll.
   const { pressSessionButton, revealedIds, toggleRevealForMe, pickerFor, setSessionConfigFor } =
     useBehaviourElements({
@@ -2031,10 +2031,10 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
       startPoll: livePoll.startPoll,
     });
 
-  // The collaboration elements (spec/122 to spec/129). Sibling of the
+  // The collaboration elements (docs/specs/012-collaboration/participant-responses.md to docs/specs/012-collaboration/roll-call.md). Sibling of the
   // behaviour hook above: these write to the document through `tickTabs`,
   // which does NOT push undo history, so one person's Ctrl+Z can never
-  // retract another person's answer (spec/152). Scatter alone commits.
+  // retract another person's answer (docs/specs/012-collaboration/collab-race-hardening.md). Scatter alone commits.
   const collabElements = useCollabElements({
     activeId,
     commitTabs,
@@ -2047,14 +2047,14 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     livePresence,
     startTimer,
   });
-  // A checklist tick is a room press like an answer (spec/152).
+  // A checklist tick is a room press like an answer (docs/specs/012-collaboration/collab-race-hardening.md).
   const { toggleChecklistItem } = collabElements;
 
-  // Keeping a poll's results (spec/126). Ends the poll for the room through
+  // Keeping a poll's results (docs/specs/012-collaboration/poll-result-capture.md). Ends the poll for the room through
   // the SAME `endPoll` the plain End uses — one op, so a participant sees no
   // difference and no new op kind exists — and additionally drops the tallies
   // onto the canvas as an ordinary, undoable element.
-  // Keep Results (spec/126): drop a chart of the tallies so far onto the
+  // Keep Results (docs/specs/012-collaboration/poll-result-capture.md): drop a chart of the tallies so far onto the
   // active tab. The poll keeps running, so it can be kept again later
   // (a second chart), and End is still the only thing that ends it.
   const keepPollResults = () => {
@@ -2066,7 +2066,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
 
   // Image domain (picker state, recent-images list, placement + fill
   // handlers). Lives in its own hook so the page no longer carries
-  // that state or its six handlers — see useEditorImages + spec/19.
+  // that state or its six handlers — see useEditorImages + docs/specs/009-elements/images.md.
   const {
     imagePickerOpenFor,
     imageContext,
@@ -2176,7 +2176,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const { dropIconOnElement, removeIconFromElement, dropIconElementOnShape } =
     useInlineIconMutators({ editsBlocked, commit });
 
-  // Per-cell table links (spec/09). Which cell's link picker is open +
+  // Per-cell table links (docs/specs/008-canvas/canvas-and-palette.md). Which cell's link picker is open +
   // the history-committed write into that cell's style. See
   // useCellLinkPicker; the shared LinkPickerDialog renders against it
   // in EditorView.
@@ -2213,7 +2213,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     layerInertIds,
   });
 
-  // Eraser canvas tool (spec/09): press / drag to delete any element the
+  // Eraser canvas tool (docs/specs/008-canvas/canvas-and-palette.md): press / drag to delete any element the
   // pointer touches, as a single-undo gesture. Canvas calls beginErase
   // from its capture-phase pointerdown. See useCanvasEraser.
   const { beginErase } = useCanvasEraser({
@@ -2337,7 +2337,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     scheduleElementChangeLog,
   });
 
-  // Portal links (spec/104) live off the style hook: a link can point at a
+  // Portal links (docs/specs/009-elements/portal-element.md) live off the style hook: a link can point at a
   // portal on ANOTHER tab, so these setters need the whole tab list and a
   // tabs-wide commit rather than the active tab's element mapper.
   const {
@@ -2358,7 +2358,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setSelectedId,
   });
 
-  // Hover-to-preview for the style-preset tiles (spec/48): hovering a preset on
+  // Hover-to-preview for the style-preset tiles (docs/specs/010-palette/style-presets.md): hovering a preset on
   // a desktop pointer shows it live; the change only sticks on click. See
   // useStylePreview — preview/revert go through tickTabs (no history), the
   // commit restores the original first so undo snapshots the true pre-hover
@@ -2432,7 +2432,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     previewingRef,
   });
 
-  // The same idea one level up (spec/47): hovering a Cleanup row in the tab
+  // The same idea one level up (docs/specs/008-canvas/layout-cleanup.md): hovering a Cleanup row in the tab
   // menu lays the whole tab out behind it, and the layout only sticks on click.
   const { previewCleanup, endCleanupPreview } = useCleanupPreview({
     editsBlocked,
@@ -2500,7 +2500,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     },
   });
 
-  // Canvas accessibility baseline (spec/71): Tab / Shift+Tab element
+  // Canvas accessibility baseline (docs/specs/004-interface-design/canvas-accessibility.md): Tab / Shift+Tab element
   // traversal while the canvas surface is focused, plus SR live-region
   // announcements on selection changes. See useCanvasA11y.
   useCanvasA11y({
@@ -2516,7 +2516,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     ownsTabKey: canGrowMindNode,
   });
 
-  // Vote-results review (spec/39): the local walkthrough of revealed top
+  // Vote-results review (docs/specs/012-collaboration/session-tools.md): the local walkthrough of revealed top
   // picks — focus highlight + Previous / Next / Done in the vote banner.
   const {
     voteReview,
@@ -2533,7 +2533,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setVoteReviewIndex,
   });
 
-  // Keyboard nudge (spec/09 Move). See useNudgeSelection for the
+  // Keyboard nudge (docs/specs/008-canvas/canvas-and-palette.md Move). See useNudgeSelection for the
   // burst-coalescing + auto-rebind behaviour; this hook also owns
   // the timer-cleanup-on-unmount that the prior inline version
   // didn't have.
@@ -2596,12 +2596,12 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     scheduleElementChangeLog,
     onIconElementDroppedOnShape: editsBlocked ? undefined : dropIconElementOnShape,
     // Click (not drag) on an annotation marker opens its note editor
-    // (spec/38). Blocked alongside other edits on a locked / read-only tab.
+    // (docs/specs/009-elements/annotations.md). Blocked alongside other edits on a locked / read-only tab.
     onAnnotationClicked: editsBlocked ? undefined : openNote,
     autoRebindArrowsRef,
     alignmentGuidesRef,
     isPinchingRef,
-    // Insert between (spec/139): dragging a note already on the board into a
+    // Insert between (docs/specs/021-event-storming/event-storming.md): dragging a note already on the board into a
     // gap, while Alt is held. Same gate the palette drag uses, so both entry
     // points agree about when the gesture is available.
     insertGate: {
@@ -2634,7 +2634,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     onPastePhoto: readPhotoFile,
   });
 
-  // Zen / focus mode (spec/26). Flips the chrome-hidden flag and emits
+  // Zen / focus mode (docs/specs/007-editor/zen-mode.md). Flips the chrome-hidden flag and emits
   // the toggle telemetry BEFORE the state change (matches the dark-mode /
   // settings pattern so an opt-out still reaches the wire). Shared by the
   // palette enter button, the zoom-dock exit button, and the Z shortcut.
@@ -2648,7 +2648,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // Backspace wipes selection, Cmd-Z / Cmd-Shift-Z undo / redo, Cmd-X / -C
   // / -V cut / copy / paste, Cmd-D duplicate, V / H / K canvas-tool switch,
   // Z zen, z-order + fit-to-screen). The full keymap + rationale lives in
-  // useEditorKeyboardShortcuts and is catalogued in spec/09.
+  // useEditorKeyboardShortcuts and is catalogued in docs/specs/008-canvas/canvas-and-palette.md.
   useEditorKeyboardShortcuts({
     formatSourceId,
     setFormatSourceId,
@@ -2685,7 +2685,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
       }
     },
     onSelectAll: () => {
-      // Hidden / locked layers are excluded from select-all (spec/74).
+      // Hidden / locked layers are excluded from select-all (docs/specs/006-diagram/layers.md).
       const allIds = new Set(
         activeTab.elements.map((el) => el.id).filter((id) => !layerInertIds.has(id)),
       );
@@ -2727,20 +2727,20 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   });
 
   return {
-    // The id the dot-vote knows us by (spec/152): every vote reader compares
+    // The id the dot-vote knows us by (docs/specs/012-collaboration/collab-race-hardening.md): every vote reader compares
     // against this, never the owner id.
     voteSelfId,
     // Re-sweep the team libraries after a team-folder mutation made from
-    // the Explorer panel (spec/35), and the confirm dialog its delete uses.
+    // the Explorer panel (docs/specs/013-workspace/team-shared-diagrams.md), and the confirm dialog its delete uses.
     refreshTeamLibraries,
     confirm,
-    // Clipboard copy, also exposed to the event-storming note menu (spec/139),
+    // Clipboard copy, also exposed to the event-storming note menu (docs/specs/021-event-storming/event-storming.md),
     // plus paste + its enabled flag for the canvas menu's Paste row.
     copySelection,
     pasteFromClipboard,
     hasClipboard,
     ...panelLayout,
-    // Presenting wears the zen chrome treatment (spec/31 → spec/26): header,
+    // Presenting wears the zen chrome treatment (docs/specs/012-collaboration/presentation-mode.md → docs/specs/007-editor/zen-mode.md): header,
     // tab bar, panels and palette all gone, so a projector shows the diagram
     // rather than the workbench. An OVERRIDE of the spread above rather than a
     // write to zen state, so exiting a presentation restores whatever zen the
@@ -2752,7 +2752,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     ...realtime,
     activeTab,
     activeTabLocked,
-    // Layers (spec/74): the normalised stack, the session-scoped active
+    // Layers (docs/specs/006-diagram/layers.md): the normalised stack, the session-scoped active
     // layer, per-layer element counts, the interaction-gate id sets, and
     // the panel / context-menu ops.
     layers,
@@ -2760,12 +2760,12 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     activeLayerBlocked,
     // The whole creation gate: a locked tab, a view-only session, or a
     // hidden / locked active layer. The canvas reads it so the
-    // insert-between preview (spec/139) never offers a slot the drop
+    // insert-between preview (docs/specs/021-event-storming/event-storming.md) never offers a slot the drop
     // would refuse.
     createBlocked,
-    // Note acts on an event-storming board (spec/139).
+    // Note acts on an event-storming board (docs/specs/021-event-storming/event-storming.md).
     ...noteActions,
-    // Photo import (spec/139 Phase 8): the draft run, whether the entry
+    // Photo import (docs/specs/021-event-storming/event-storming.md Phase 8): the draft run, whether the entry
     // points may be offered, and the hidden file input they open.
     photoDraft,
     photoImportAvailable,
@@ -2791,7 +2791,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     hideOtherLayersOp: layersState.hideOthers,
     layerPreviewId: layersState.previewLayerId,
     setLayerPreviewId: layersState.setPreviewLayerId,
-    // Event-storming workshop views (spec/139).
+    // Event-storming workshop views (docs/specs/021-event-storming/event-storming.md).
     esBoard,
     // Menu-facing wrapper: moves the CURRENT selection
     // onto the picked layer.
@@ -2832,12 +2832,12 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     applyImageToElement,
     autoAlignTab,
     autoLayoutTab,
-    // The facilitator baton (spec/149): who is running this session.
+    // The facilitator baton (docs/specs/012-collaboration/facilitator.md): who is running this session.
     facilitator,
     previewCleanup,
     endCleanupPreview,
     applyTabFontToAll,
-    // Live session tools (spec/39)
+    // Live session tools (docs/specs/012-collaboration/session-tools.md)
     startTimer,
     pauseTimer,
     resumeTimer,
@@ -2925,7 +2925,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     duplicateDiagram,
     duplicateMultiSelected,
     duplicateSelected,
-    // Intra-layer z-order for the selection popover (spec/74).
+    // Intra-layer z-order for the selection popover (docs/specs/006-diagram/layers.md).
     stackSelectedFront,
     stackSelectedBack,
     duplicateTab,
@@ -2958,7 +2958,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     openCellLinkPicker,
     applyCellLink,
     activeTabLoadState,
-    // Slide deck (spec/31): the whole surface in one object, like livePoll —
+    // Slide deck (docs/specs/012-collaboration/presentation-mode.md): the whole surface in one object, like livePoll —
     // nothing outside the panel and the overlay reads into it.
     slideDeck,
     // What the presentation is showing, or null. The canvas renders THESE
@@ -2966,7 +2966,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     // a slide a slide.
     presentingElements,
     livePresence,
-    // Live poll (spec/88) — the whole ephemeral surface in one object
+    // Live poll (docs/specs/012-collaboration/live-poll.md) — the whole ephemeral surface in one object
     // rather than a dozen flattened keys, since nothing else reads into it.
     livePoll,
     keepPollResults,
@@ -3007,7 +3007,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     removeTabFromFolder,
     reorderTabs,
     resetColorsSelected,
-    // Style-preset hover preview + click commit (spec/48).
+    // Style-preset hover preview + click commit (docs/specs/010-palette/style-presets.md).
     clearStylePreview,
     previewShapeColorPreset,
     commitShapeColorPreset,

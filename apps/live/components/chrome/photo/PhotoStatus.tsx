@@ -12,7 +12,7 @@ const PROCESSOR_WHY: Record<ProcessorReason, string> = {
   'gpu-failed': 'the graphics card failed to start the model',
 };
 
-// What the surface is doing, said ON the photograph (spec/139 Phase 9).
+// What the surface is doing, said ON the photograph (docs/specs/021-event-storming/event-storming.md Phase 9).
 //
 // Pills rather than a panel: the photo is the whole interface, and a strip of
 // chrome beside it would be the sidebar coming back through the window. They

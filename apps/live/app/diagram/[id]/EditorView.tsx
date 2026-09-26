@@ -39,10 +39,10 @@ import { useEditorAccent } from '@/hooks/ui/useEditorAccent';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useEditorContext } from './EditorContext';
 import { useSelectTab } from './useSelectTab';
-// Each major area fails on its own and reports which one it was (spec/22).
+// Each major area fails on its own and reports which one it was (docs/specs/017-telemetry/telemetry.md).
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 
-// How long a guest edits before the sign-in nudge appears (spec/36).
+// How long a guest edits before the sign-in nudge appears (docs/specs/014-identity/sign-in-encouragement.md).
 // Long enough that it never greets someone the instant they open a
 // diagram; short enough to catch an invested session.
 const SIGNIN_BANNER_DELAY_MS = 5 * 60_000;
@@ -54,7 +54,7 @@ const SIGNIN_BANNER_DELAY_MS = 5 * 60_000;
 // scope changed from the page's locals to the destructured context.
 export function EditorView() {
   const ctx = useEditorContext();
-  // Offline Mode (spec/76): a diagram saved only in this browser. Drives the
+  // Offline Mode (docs/specs/006-diagram/offline-mode.md): a diagram saved only in this browser. Drives the
   // "Offline" header badge and hides server-only actions (Share).
   const isOffline = useIsOfflineDiagram(ctx.diagramId);
   const {
@@ -146,7 +146,7 @@ export function EditorView() {
   } = ctx;
 
   // Who is facilitating, named for the UI, or null when it is nobody or us
-  // (spec/149). Resolved from the roster we already hold so a rename reads
+  // (docs/specs/012-collaboration/facilitator.md). Resolved from the roster we already hold so a rename reads
   // correctly, and null when we hold it: our own controls are not blocked,
   // so there is nothing to explain.
   const facilitatorName =
@@ -154,16 +154,16 @@ export function EditorView() {
       ? (livePresence.find((p) => p.id === facilitator.facilitatorId)?.name ?? 'Someone else')
       : null;
   const selectTab = useSelectTab();
-  // Contextual command palette for the SearchPanel "Actions" group (spec/09):
+  // Contextual command palette for the SearchPanel "Actions" group (docs/specs/008-canvas/canvas-and-palette.md):
   // selection-aware command list + dispatcher, built off the same editor
   // actions the menus use. Empty (undefined items) for view-only sessions.
   // Retarget the brand-* accent (buttons, rings, focus) to the active tab's
-  // theme so the editor chrome matches the diagram (spec/42).
+  // theme so the editor chrome matches the diagram (docs/specs/011-theme/canvas-and-theme-dialog.md).
   useEditorAccent(activeTab.theme);
-  // The viewer's own light / dark chrome (spec/07). Read here because the
+  // The viewer's own light / dark chrome (docs/specs/007-editor/live-app.md). Read here because the
   // Default theme resolves through it — see the canvas surface below.
   const { appearance } = useAppearance();
-  // Guest sign-in nudge (spec/36): the same banner the Explorer shows,
+  // Guest sign-in nudge (docs/specs/014-identity/sign-in-encouragement.md): the same banner the Explorer shows,
   // but on the editor it waits ~5 minutes into the session before
   // appearing so it never interrupts someone the moment they open a
   // diagram. Hidden in embed (read-only iframe) and zen mode. zenMode
@@ -174,7 +174,7 @@ export function EditorView() {
   const signInTimerEnabled = clerkEnabled && !clerkUserId && !embedMode && !signInDismissed;
   const signInDelayElapsed = useDelayedReveal(SIGNIN_BANNER_DELAY_MS, signInTimerEnabled);
   const showSignInBanner = signInTimerEnabled && !zenMode && signInDelayElapsed;
-  // Empty-canvas hint (spec/14): a bottom banner while the active tab has no
+  // Empty-canvas hint (docs/specs/007-editor/new-diagram-route.md): a bottom banner while the active tab has no
   // elements. Not dismissible — it just goes away once there's content. Hidden
   // in zen / embed, while a draw tool is armed, or while Quick Start is open;
   // yields the bottom slot to the sign-in banner.
@@ -189,7 +189,7 @@ export function EditorView() {
   // The primary selection's flavour for the modifier hint's no-drag messages.
   const shiftSelected = selectedId ? activeTab.elements.find((el) => el.id === selectedId) : null;
   // The photo draft awaiting a decision, and the session-local view state
-  // that goes with it (spec/139 Phase 8).
+  // that goes with it (docs/specs/021-event-storming/event-storming.md Phase 8).
   const draftNotes = draftNotesOf(activeTab.elements);
   const draftView = usePhotoDraftView();
   const backdrop = resolveTabBackdrop(activeTab, appearance);
@@ -203,13 +203,13 @@ export function EditorView() {
 
   return (
     // Which paper the canvas is, for every element that carries no colour of
-    // its own (spec/07). Read HERE, above both the canvas and the element
+    // its own (docs/specs/007-editor/live-app.md). Read HERE, above both the canvas and the element
     // menus, so a swatch in a menu can't disagree with the shape it describes.
     // Subscribing to the appearance is what re-renders this on a mode switch:
     // a Default tab's paper is the viewer's, not the tab's.
     <CanvasSurfaceProvider surface={canvasSurface(backdrop.backgroundColor)}>
       <div className="flex h-dvh flex-col">
-        {/* Arrow click-to-connect hint (spec/09): shown while the gesture
+        {/* Arrow click-to-connect hint (docs/specs/008-canvas/canvas-and-palette.md): shown while the gesture
           is armed so the user knows the next shape click connects, and
           gives a click target to cancel (clicking empty canvas also
           cancels). */}
@@ -228,8 +228,8 @@ export function EditorView() {
             </button>
           </div>
         ) : null}
-        {/* Zen / focus mode (spec/26) hides the header entirely so the
-          canvas gets the full height. Embeds (spec/33) never show it. */}
+        {/* Zen / focus mode (docs/specs/007-editor/zen-mode.md) hides the header entirely so the
+          canvas gets the full height. Embeds (docs/specs/013-workspace/embeds.md) never show it. */}
         {zenMode || embedMode ? null : (
           <AreaErrorBoundary area="Header" fallback="panel">
             <EditorHeader
@@ -257,7 +257,7 @@ export function EditorView() {
               }}
               onRename={(next) => {
                 const prev = diagramName.trim();
-                // spec/91: capped here so the header rename can't outrun the
+                // docs/specs/006-diagram/name-length.md: capped here so the header rename can't outrun the
                 // limit the auto-namer and the Explorer renames both respect.
                 const nextTrim = truncateName(next);
                 setDiagramName(nextTrim);
@@ -282,13 +282,13 @@ export function EditorView() {
         <AreaErrorBoundary area="Canvas" fallback="panel" fallbackClassName="flex-1">
           <EditorCanvasHost />
         </AreaErrorBoundary>
-        {/* Presenting (spec/31) renders over everything and takes the keyboard.
+        {/* Presenting (docs/specs/012-collaboration/presentation-mode.md) renders over everything and takes the keyboard.
           Nothing at all when no deck is running. */}
         <AreaErrorBoundary area="Presentation">
           <PresentationHost />
         </AreaErrorBoundary>
         {embedMode ? (
-          // Embed chrome (spec/33): the link-out badge + a minimal tab
+          // Embed chrome (docs/specs/013-workspace/embeds.md): the link-out badge + a minimal tab
           // switcher replace the full TabBar. Same selection clears as
           // the TabBar's onSelect so element state never leaks across a
           // tab switch.
@@ -305,7 +305,7 @@ export function EditorView() {
               tabs={tabs}
               activeId={activeId}
               // Clicking an avatar in a presence stack opens the Collaborators
-              // modal (spec/145), which is where Follow (spec/131) lives.
+              // modal (docs/specs/012-collaboration/collaborator-enhancements.md), which is where Follow (docs/specs/012-collaboration/follow-me-viewport.md) lives.
               followingId={followMe.followingId}
               onOpenCollaborators={openCollaborators}
               onMoveTabToFolder={moveTabToFolder}
@@ -325,7 +325,7 @@ export function EditorView() {
               }}
               timer={activeTab.timer ?? null}
               vote={activeTab.vote ?? null}
-              // Somebody else is running this session (spec/149), so the Studio
+              // Somebody else is running this session (docs/specs/012-collaboration/facilitator.md), so the Studio
               // says whose it is and disables its controls.
               facilitatedBy={facilitatorName}
               onStartTimer={startTimer}
@@ -340,7 +340,7 @@ export function EditorView() {
               onClearVote={clearVote}
               livePoll={livePoll.poll}
               // A poll only reaches other people through the realtime room
-              // (spec/88). Unshared and off-team, it still runs, just for you;
+              // (docs/specs/012-collaboration/live-poll.md). Unshared and off-team, it still runs, just for you;
               // the composer says so rather than refusing.
               pollHasAudience={diagramShareable || !!diagramTeamId}
               onStartPoll={livePoll.startPoll}
@@ -348,9 +348,9 @@ export function EditorView() {
               voteLayers={layers}
               activeLayerId={activeLayerId}
               otherDiagrams={
-                // Tab linking is a server-side row insert (spec/17), so neither an
+                // Tab linking is a server-side row insert (docs/specs/006-diagram/tab-diagram-many-to-many.md), so neither an
                 // offline diagram's tabs nor an offline destination can take part
-                // (spec/76) — empty list disables the menu entry.
+                // (docs/specs/006-diagram/offline-mode.md) — empty list disables the menu entry.
                 isOffline
                   ? []
                   : diagramList.filter((d) => d.id !== diagramId && d.ownerId !== OFFLINE_OWNER_ID)
@@ -375,7 +375,7 @@ export function EditorView() {
                 setSearchOpen(true);
                 // Element search walks local tab state; pull every
                 // not-yet-visited tab's content so matches cover the
-                // whole diagram (spec/09 "Search panel"). Best-effort
+                // whole diagram (docs/specs/008-canvas/canvas-and-palette.md "Search panel"). Best-effort
                 // and fire-and-forget: results refresh as tabs land.
                 void loadAllTabs();
               }}
@@ -390,7 +390,7 @@ export function EditorView() {
                 onAutoLayout: autoLayoutTab,
                 onPreviewCleanup: previewCleanup,
                 onEndCleanupPreview: endCleanupPreview,
-                // Paste straight from the empty-canvas right-click (spec/09).
+                // Paste straight from the empty-canvas right-click (docs/specs/008-canvas/canvas-and-palette.md).
                 onPaste: pasteFromClipboard,
                 canPaste: hasClipboard,
               }}
@@ -400,7 +400,7 @@ export function EditorView() {
         <AreaErrorBoundary area="Search">
           <EditorSearchPanel />
         </AreaErrorBoundary>
-        {/* Live poll (spec/88). The prompt is shown to EVERY participant
+        {/* Live poll (docs/specs/012-collaboration/live-poll.md). The prompt is shown to EVERY participant
           including view-role; the results panel unlocks once you've
           responded (or if you're the host). Both vanish with the poll —
           nothing here is persisted. */}
@@ -411,7 +411,7 @@ export function EditorView() {
           poll={livePoll.poll && !livePoll.myAnswer ? livePoll.poll : null}
           onAnswer={livePoll.answerPoll}
         />
-        {/* Bring Focus (spec/144). A dialog like the poll prompt above, and for
+        {/* Bring Focus (docs/specs/012-collaboration/bring-focus.md). A dialog like the poll prompt above, and for
           the same reason: it is a question addressed to you, not a status
           line. Shown to view-role visitors too. */}
         <FocusInviteDialog
@@ -435,13 +435,13 @@ export function EditorView() {
         <AreaErrorBoundary area="ElementDialogs">
           <EditorElementDialogs />
         </AreaErrorBoundary>
-        {/* Interactive editor tour (spec/79): renders nothing unless the /new
+        {/* Interactive editor tour (docs/specs/007-editor/editor-tour.md): renders nothing unless the /new
           wizard's "Show me around" handoff flag is pending. */}
         <AreaErrorBoundary area="Tour">
           <TourHost />
         </AreaErrorBoundary>
 
-        {/* Guest sign-in nudge (spec/36), delayed ~5 min. Lifted above
+        {/* Guest sign-in nudge (docs/specs/014-identity/sign-in-encouragement.md), delayed ~5 min. Lifted above
           the 48px tab bar (pb-16) and over the canvas chrome (z-[var(--z-overlay)]). */}
         {showSignInBanner ? (
           <SignInBanner
@@ -450,7 +450,7 @@ export function EditorView() {
             placementClassName="bottom-0 z-[var(--z-overlay)] pb-16"
           />
         ) : null}
-        {/* Empty-canvas hint (spec/14) — replaces the old centre-of-canvas card
+        {/* Empty-canvas hint (docs/specs/007-editor/new-diagram-route.md) — replaces the old centre-of-canvas card
           with a subdued, dismissible bottom banner so a blank diagram reads as
           intentionally blank. */}
         {showEmptyCanvasBanner ? (
@@ -467,7 +467,7 @@ export function EditorView() {
         {zenMode || embedMode || showSignInBanner || showEmptyCanvasBanner ? null : (
           <ThemeModeBanner themeId={activeTab.theme} />
         )}
-        {/* Modifier hint (spec/09, spec/139): names what holding Shift does
+        {/* Modifier hint (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/021-event-storming/event-storming.md): names what holding Shift does
           right now, and offers the Alt insert-between gesture while a note is
           on the move. Suppressed while a mode banner owns the top slot. */}
         <ModifierHintBanner
@@ -482,7 +482,7 @@ export function EditorView() {
             strip from the moment the file is picked, with Cancel. */}
         <PhotoImportProgress state={photoDraft.state} onCancel={photoDraft.cancelReading} />
 
-        {/* Step 1 + 2 of the wizard (spec/139 Phase 9): the photo with every
+        {/* Step 1 + 2 of the wizard (docs/specs/021-event-storming/event-storming.md Phase 9): the photo with every
             box, tickable, and the words editable. Nothing lands until Add. */}
         {photoDraft.state.stage === 'review' && photoDraft.review ? (
           <PhotoReviewOverlay
@@ -509,7 +509,7 @@ export function EditorView() {
           />
         ) : null}
 
-        {/* A photo import awaiting Add or Discard (spec/139 Phase 8). Derived
+        {/* A photo import awaiting Add or Discard (docs/specs/021-event-storming/event-storming.md Phase 8). Derived
             from the tab's own draft notes, so a reload mid-import comes back to
             the same decision rather than to a board full of strays. Hidden
             while the words are still being read: that moment belongs to the

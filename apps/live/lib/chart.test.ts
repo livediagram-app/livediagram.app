@@ -17,7 +17,7 @@ const el = (over: Record<string, unknown> = {}): ShapeElement =>
 describe('chartFrame', () => {
   // The default is BELOW the plot: a side legend spent up to 130px of a
   // 280px-wide chart on series names and squeezed the plot into a third of
-  // the card (spec/53).
+  // the card (docs/specs/009-elements/pie-chart.md).
   it('lays out a legend below the plot by default (horizontal band)', () => {
     const f = chartFrame(el());
     expect(f.showLegend).toBe(true);

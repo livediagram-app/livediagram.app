@@ -1,4 +1,4 @@
--- Token-based team invites (spec/32): an unguessable token per pending
+-- Token-based team invites (docs/specs/013-workspace/teams.md): an unguessable token per pending
 -- invite so a person can claim it from a shared link, independent of
 -- the Clerk session-token `email` claim (which the auto-connect path
 -- relies on and which is easy to misconfigure). NULL on joined /
