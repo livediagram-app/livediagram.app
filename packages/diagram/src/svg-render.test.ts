@@ -817,3 +817,15 @@ describe('contentBounds', () => {
     expect(b.y).toBeLessThanOrEqual(l.center.y - l.height / 2);
   });
 });
+
+// An empty <tspan> carries no glyph, so SVG drops its `dy` with it: a blank
+// line the author typed collapsed, and the text below it moved up a line.
+describe('blank lines in a wrapped label', () => {
+  it('keep their height as a non-breaking space', () => {
+    const svg = renderElementsToSvg(
+      tab([shape('a'), shape('b', { x: 400 }), pinnedArrow('arr', 'a', 'b', { label: '1\n\n2' })]),
+    );
+    const tspans = [...svg.matchAll(/<tspan[^>]*>([^<]*)<\/tspan>/g)].map((m) => m[1]);
+    expect(tspans).toEqual(['1', '\u00a0', '2']);
+  });
+});

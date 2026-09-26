@@ -4,7 +4,12 @@ import {
   type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
 } from 'react';
-import { LABEL_PAD_X_PX, LABEL_PAD_Y_PX, type ArrowLabelLayout } from '@livediagram/diagram';
+import {
+  BLANK_LINE,
+  LABEL_PAD_X_PX,
+  LABEL_PAD_Y_PX,
+  type ArrowLabelLayout,
+} from '@livediagram/diagram';
 import { BRAND_600 } from './arrow-handle-style';
 
 // Browsers and the canvas measure text a hair apart; the editor gets this
@@ -170,8 +175,9 @@ export function ArrowLabel({
         style={{ pointerEvents: 'none', userSelect: 'none', fontFamily }}
       >
         {lines.map((line, i) => (
+          // A blank line keeps its height as a no-break space (see svgWrappedLabel).
           <tspan key={i} x={center.x} dy={i === 0 ? 0 : lineHeightPx}>
-            {line}
+            {line || BLANK_LINE}
           </tspan>
         ))}
       </text>

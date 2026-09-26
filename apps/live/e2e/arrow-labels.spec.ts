@@ -95,6 +95,23 @@ test.describe('arrow labels and bending', () => {
     expectNoPageErrors(pageErrors);
   });
 
+  test('a blank line keeps its height', async ({ page, pageErrors }) => {
+    await startBlankDiagram(page);
+    await seedTab(page, linked);
+    await dblclickLabel(page, 'calls');
+    await editor(page).fill('');
+    await page.keyboard.type('1');
+    await page.keyboard.press('Shift+Enter');
+    await page.keyboard.press('Shift+Enter');
+    await page.keyboard.type('2');
+    await page.keyboard.press('Enter');
+    const one = (await page.getByText('1', { exact: true }).boundingBox())!;
+    const two = (await page.getByText('2', { exact: true }).boundingBox())!;
+    // Two line heights apart, not one: the blank line between them stays.
+    expect(two.y - one.y).toBeGreaterThan(one.height * 1.8);
+    expectNoPageErrors(pageErrors);
+  });
+
   test('dragging the line bends it, and one undo straightens it', async ({ page, pageErrors }) => {
     await startBlankDiagram(page);
     await seedTab(page, linked);

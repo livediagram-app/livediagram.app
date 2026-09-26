@@ -47,6 +47,7 @@ import { svgRichWrappedLabel, svgWrappedLabel } from './svg-render-labels';
 
 export {
   EXPORT_DEFAULT_FONT,
+  BLANK_LINE,
   svgFontFamilyAttr,
   svgLabel,
   svgRichLabel,
