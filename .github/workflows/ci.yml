@@ -47,8 +47,11 @@ jobs:
       - name: Type check
         run: pnpm typecheck
 
+      # Two packages at a time: each vitest already fills the runner's cores,
+      # and turbo's default fan-out starved the CPU-heavy sticky-vision suite
+      # into timeouts.
       - name: Test
-        run: pnpm test
+        run: pnpm turbo run test --concurrency=2
 
       # Coverage runs as its own step because it ENFORCES something: the
       # per-file 100% thresholds on the api worker's identity / token /
@@ -57,7 +60,7 @@ jobs:
       # goes unexercised in CI — which is how a v4 coverage provider once sat
       # against a v5 runner with every check green.
       - name: Coverage thresholds
-        run: pnpm test:coverage
+        run: pnpm turbo run test:coverage --concurrency=2
 
       - name: Build
         run: pnpm build

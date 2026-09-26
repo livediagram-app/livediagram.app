@@ -4,6 +4,8 @@ import { isSvgRenderedShape, ShapeSvgOverlay } from '@/components/canvas/shape-s
 import { POLYGON_CLOSE_PX } from '@/components/canvas/useCanvasPolygonGesture';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { drawnDragBox } from '@/lib/draw-commit';
+import type { StampGhost } from '@/components/canvas/useStampGhost';
+import { NoteGhost } from '@/components/canvas/NoteGhost';
 
 type CanvasDrawPreviewProps = {
   drawDrag: { startX: number; startY: number; currentX: number; currentY: number } | null;
@@ -15,6 +17,9 @@ type CanvasDrawPreviewProps = {
   highlighterColor: string;
   highlighterWidth: number;
   pendingDraw: PendingDraw | null;
+  // The armed fixed-size note's ghost (spec/139 Phase 4), when the tile is a
+  // stamp rather than a draw-to-size. It replaces the size box entirely.
+  stamp: StampGhost | null;
   viewportZoom: number;
   wrapperRef: RefObject<HTMLDivElement | null>;
 };
@@ -30,11 +35,21 @@ export function CanvasDrawPreview({
   highlighterColor,
   highlighterWidth,
   pendingDraw,
+  stamp,
   viewportZoom,
   wrapperRef,
 }: CanvasDrawPreviewProps) {
   return (
     <>
+      {stamp && pendingDraw?.type === 'sticky' ? (
+        <NoteGhost
+          kind={pendingDraw.esKind ?? null}
+          box={stamp.screen}
+          px={1}
+          position="fixed"
+          testId="stamp-ghost"
+        />
+      ) : null}
       {/* Draw-to-size preview. drawDrag holds canvas coords; convert
           to client coords via the wrapper rect + viewportZoom so the
           overlay aligns with the canvas content under it. The shape
@@ -145,7 +160,7 @@ export function CanvasDrawPreview({
           })()
         : null}
 
-      {drawDrag && pendingDraw
+      {drawDrag && pendingDraw && !stamp
         ? (() => {
             const rect = wrapperRef.current?.getBoundingClientRect();
             if (!rect) return null;

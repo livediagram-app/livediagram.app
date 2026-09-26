@@ -3235,6 +3235,42 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "NoteCrop": {
+    "additionalProperties": false,
+    "properties": {
+      "id": {
+        "type": "number"
+      },
+      "image": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "image"
+    ],
+    "type": "object"
+  },
+  "NoteText": {
+    "additionalProperties": false,
+    "properties": {
+      "id": {
+        "type": "number"
+      },
+      "legible": {
+        "type": "boolean"
+      },
+      "text": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "text",
+      "legible"
+    ],
+    "type": "object"
+  },
   "Padding": {
     "enum": [
       "none",
@@ -3360,6 +3396,36 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "fireworks"
     ],
     "type": "string"
+  },
+  "ReadNotesRequest": {
+    "additionalProperties": false,
+    "properties": {
+      "crops": {
+        "items": {
+          "$ref": "#/components/schemas/NoteCrop"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "crops"
+    ],
+    "type": "object"
+  },
+  "ReadNotesResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "texts": {
+        "items": {
+          "$ref": "#/components/schemas/NoteText"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "texts"
+    ],
+    "type": "object"
   },
   "RollCallEntry": {
     "additionalProperties": false,
@@ -4039,6 +4105,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "commentThread": {
         "$ref": "#/components/schemas/CommentThread"
+      },
+      "esDraft": {
+        "const": true,
+        "type": "boolean"
       },
       "esKind": {
         "$ref": "#/components/schemas/EventStormingNoteKind"
@@ -4799,7 +4869,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Returned",
       "Sent",
       "Api",
-      "Client"
+      "Client",
+      "Warning"
     ],
     "type": "string"
   },

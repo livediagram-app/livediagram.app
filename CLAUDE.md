@@ -2,6 +2,10 @@
 
 Monorepo for the livediagram product. Multiple apps share code through internal packages.
 
+## Before you start
+
+- `git fetch` latest from origin
+
 ## Specs are the source of truth
 
 Before building or proposing anything, **check `specs/`**. Every product decision, feature, constraint, and rule lives there. The index is at [`specs/README.md`](specs/README.md).
@@ -57,6 +61,7 @@ packages/
   template-previews/ # per-template preview SVGs (editor picker + marketing template gallery)
   help-registry/  # help-centre article/category registry + keywords (help app + editor search)
   api-schema/     # wire-format DTOs the api worker emits + the live editor consumes
+  sticky-vision/  # finds sticky notes in a wall photo (classical CV, no DOM) for the event-storming photo import
   telemetry-client/ # shared browser telemetry emitter (buffer/flush/beacon engine)
   eslint-config/  # shared ESLint flat config
   prettier-config/# shared Prettier config

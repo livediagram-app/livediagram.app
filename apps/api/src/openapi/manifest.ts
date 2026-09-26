@@ -1084,6 +1084,17 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     requestSchema: 'AiRequest',
     statuses: [200, 401, 403, 500, 502, 503],
   },
+  {
+    method: 'POST',
+    path: '/ai/read-notes',
+    segment: 'ai',
+    tag: 'AI',
+    summary: 'Read the handwriting on sticky-note crops cut from a wall photo.',
+    auth: 'guest-or-clerk',
+    requestSchema: 'ReadNotesRequest',
+    responseSchema: 'ReadNotesResponse',
+    statuses: [200, 400, 401, 403, 413, 429, 502, 503],
+  },
 
   // ---- Link unfurl ----
   {

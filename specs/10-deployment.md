@@ -36,15 +36,18 @@ Steps:
 2. `pnpm lint`
 3. `pnpm format:check`
 4. `pnpm typecheck`
-5. `pnpm test`
-6. `pnpm build`
-7. `pnpm staging:check`
+5. `pnpm turbo run test --concurrency=2`
+6. `pnpm turbo run test:coverage --concurrency=2` (enforces the per-file coverage thresholds)
+7. `pnpm build`
+8. `pnpm staging:check`
+
+The two test steps run two packages at a time. Each package's Vitest already fills the runner's cores, and turbo's default fan-out on the 4-vCPU runner slowed the CPU-heavy `sticky-vision` suite about 70x, into timeouts. `pnpm test` cannot carry the flag: it is pnpm's built-in test command, so CI calls turbo directly.
 
 CI is the gate you check before deploying to production, but it does **not** trigger that deploy — production is a separate, manually-dispatched workflow (see below). It **does** trigger the staging deploy, via `workflow_run` on a successful CI run on `main` ([spec/140](140-staging-environment.md)).
 
 `pnpm staging:check` runs `wrangler deploy --dry-run --env staging` for the three workers that carry bindings (api, mcp, router). Wrangler does not inherit bindings into a named environment, so a binding missing from an `[env.staging]` block — or a `service =` that lost its `-staging` suffix, pointing the staging router at **production** — is neither a type error nor a test failure. Without this step the first sign of either is a deploy.
 
-**Testing** runs via [Vitest](https://vitest.dev). Workspaces opt in by adding `"test": "vitest run"` to their `package.json` scripts and `vitest` to their `devDependencies`; turbo then picks the task up automatically. Tests live next to the source they cover as `*.test.ts` files. Today `packages/diagram`, `apps/live`, `apps/api`, and `apps/marketing` are opted in; other workspaces mirror the pattern when they add their first test.
+**Testing** runs via [Vitest](https://vitest.dev). Workspaces opt in by adding `"test": "vitest run"` to their `package.json` scripts and `vitest` to their `devDependencies`; turbo then picks the task up automatically. Tests live next to the source they cover as `*.test.ts` files. Most workspaces are opted in (`pnpm turbo run test --dry` lists them); a workspace mirrors the pattern when it adds its first test.
 
 ## Deploy
 
@@ -132,4 +135,4 @@ The workers themselves remain reachable at their default `*.workers.dev` URLs fo
 
 - Preview deploys for PRs (one environment tracking `main` is all there is — see [spec/140](140-staging-environment.md) "What staging is not").
 - Rollback procedure (currently: `wrangler rollback` via dashboard or CLI).
-- Per-worker secrets that are **not** in the optional sync table above (e.g. `OPENAI_API_KEY`, `RESEND_API_KEY`) — those are set by hand with `wrangler secret put` and persist across deploys.
+- Per-worker secrets that are **not** in the optional sync table above (e.g. the model key (`GOOGLE_AI_STUDIO_API_KEY` / `OPENAI_API_KEY` / `AI_API_KEY`), `RESEND_API_KEY`) — those are set by hand with `wrangler secret put` and persist across deploys.

@@ -61,7 +61,7 @@ describe('headlineTotal', () => {
 describe('headlineMembers', () => {
   it('marks what the head sums, so its combined line agrees with its number', () => {
     expect(headlineMembers(ALL_VISITORS)).toEqual([true, true, false, false]);
-    expect(headlineMembers(EXCEPTIONS)).toEqual([true, false, true, false]);
+    expect(headlineMembers(EXCEPTIONS)).toEqual([true, false, true, false, false]);
   });
 });
 

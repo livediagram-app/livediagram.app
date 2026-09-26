@@ -78,10 +78,11 @@ export const TELEMETRY_CATEGORIES = [
   // address, a name, or a count of recipients: the kind and nothing else.
   'Email',
   // Error tracking (spec/22): generic failure counts. The action slot
-  // carries the SOURCE ('Api' | 'Client' — deliberate nouns in the verb
-  // slot); `type` is a fixed kind or status token ('Http500',
-  // 'Internal', 'Uncaught', 'UnhandledRejection') — never a message,
-  // stack, or URL.
+  // carries the SOURCE ('Api' | 'Client', or 'Warning' for a degradation
+  // the author was carried through — deliberate nouns in the verb slot);
+  // `type` is a fixed kind or status token ('Http500', 'Internal',
+  // 'Uncaught', 'UnhandledRejection', 'AiQuota.BrowserReader') — never a
+  // message, stack, or URL.
   'Error',
   // Timeline (spec/138): the Explorer's landing feed. 'Opened' with
   // `type` 'Landing' | 'Nav' separates the new default landing view
@@ -178,10 +179,13 @@ export const TELEMETRY_ACTIONS = [
   // Email (spec/64): a transactional / lifecycle email left the worker for
   // the provider. Only ever paired with the 'Email' category.
   'Sent',
-  // Error source (spec/22): the two nouns the 'Error' category uses in
-  // the action slot — API failures vs client-side exceptions.
+  // Error source (spec/22): the nouns the 'Error' category uses in the
+  // action slot — API failures vs client-side exceptions, and warnings: a
+  // degradation the author was carried through (a spent AI budget that
+  // failed over to the in-browser reader) rather than stopped by.
   'Api',
   'Client',
+  'Warning',
 ] as const;
 export type TelemetryAction = (typeof TELEMETRY_ACTIONS)[number];
 

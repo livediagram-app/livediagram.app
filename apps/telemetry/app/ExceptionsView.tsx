@@ -19,7 +19,9 @@ import { rankTrend, windowLabel } from './windows';
 // crashes the api worker self-reports (`Internal.<Method>.<Route>`), MCP
 // failures by tool (`Http503.<Tool>`, `Internal.<Tool>`), and client-side
 // exceptions from the editor + help centre
-// (`Error·Client·Uncaught.<Page>.<ErrorName>`, `Render.<Area>.<ErrorName>`).
+// (`Error·Client·Uncaught.<Page>.<ErrorName>`, `Render.<Area>.<ErrorName>`),
+// and warnings (`Error·Warning·*`): a degradation the author was carried
+// through, such as a spent AI budget failing over to the in-browser reader.
 // Every count is generic by construction (statuses, route words, pages, areas
 // and a closed list of error names), so there is nothing personal to show. An
 // empty view is the goal state.
@@ -50,6 +52,7 @@ export function ExceptionsView({
     rows,
     (r) => r.category === 'Error' && r.action === 'Client' && !isRecovery(r.type),
   );
+  const warning = rank(rows, (r) => r.category === 'Error' && r.action === 'Warning');
 
   return (
     <div className="mt-8">
@@ -91,6 +94,16 @@ export function ExceptionsView({
             items={client}
             daily={summary.daily}
             emptyLabel="No client exceptions in this window. Good."
+          />
+          <RankCard
+            trend={trend}
+            title="Warnings"
+            subtitle="Degradations the author was carried through, such as a spent AI budget reading on the device"
+            category="Error"
+            action="Warning"
+            items={warning}
+            daily={summary.daily}
+            emptyLabel="No warnings in this window."
           />
         </CardColumns>
       </div>

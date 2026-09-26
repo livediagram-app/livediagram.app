@@ -69,6 +69,7 @@ import { TabLoadOverlay } from '@/components/canvas/TabLoadOverlay';
 import { PaletteDragGhost } from '@/components/canvas/PaletteDragGhost';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { useCanvasDrawGesture } from '@/components/canvas/useCanvasDrawGesture';
+import { useStampGhost } from '@/components/canvas/useStampGhost';
 import { useCanvasPolygonGesture } from '@/components/canvas/useCanvasPolygonGesture';
 import { useCanvasSurfaceGestures } from '@/hooks/canvas/useCanvasSurfaceGestures';
 import { useCanvasSelectHandlers } from '@/hooks/canvas/useCanvasSelectHandlers';
@@ -195,6 +196,7 @@ export function Canvas(props: CanvasProps) {
   // Palette drag-drop onto the canvas (onDragOver / onDrop), lifted into
   // usePaletteDrop so the canvas body keeps to layout + pointer routing.
   const paletteDrop = usePaletteDrop({
+    onDropPhoto: props.onDropPhoto,
     // A tile DRAGGED onto the canvas is an edit too (spec/101), so it leaves
     // Avatar mode the same way a tile click does — otherwise the element
     // landed while the canvas still read as read-only.
@@ -455,6 +457,17 @@ export function Canvas(props: CanvasProps) {
     onMultiContextMenu,
   });
 
+  // An armed workshop-note tile is a STAMP, not a draw-to-size (spec/139
+  // Phase 4): its ghost follows the pointer, and the draw gesture places by the
+  // same rule.
+  const { stamp, stampAt, showStamp } = useStampGhost({
+    pendingDraw,
+    elements,
+    tabKind: props.tabKind,
+    tabLayers: props.tabLayers,
+    viewportZoom,
+    wrapperRef,
+  });
   const { drawDrag, penPoints, drawHover, beginPendingDrawGesture } = useCanvasDrawGesture({
     pendingDraw,
     elements,
@@ -463,6 +476,8 @@ export function Canvas(props: CanvasProps) {
     isPinchingRef,
     onCommitDraw,
     onCommitFreehand,
+    stampAt,
+    showStamp,
   });
 
   // Polygon click-to-place gesture (spec/84), composed IN FRONT of the
@@ -811,6 +826,7 @@ export function Canvas(props: CanvasProps) {
         marquee={marquee}
         drawDrag={drawDrag}
         drawHover={drawHover}
+        stamp={stamp}
         penPoints={penPoints}
         polygonVertices={polygonVertices}
         polygonCursor={polygonCursor}

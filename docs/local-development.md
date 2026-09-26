@@ -89,6 +89,7 @@ Run from the repo root:
 | `pnpm --filter @livediagram/live test:e2e` | Playwright smoke suite (spec/72); reuses a running `pnpm dev` or boots its own stack. |
 | `pnpm format`                              | Prettier write across the repo.                                                       |
 | `pnpm format:check`                        | Prettier check (this is what CI runs).                                                |
+| `pnpm demo:sticky-vision`                  | Bundle + serve the sticky-detection demo at <http://localhost:4199> (spec/139).       |
 
 Turbo caches results, so re-running with no changes is a no-op.
 
@@ -128,11 +129,15 @@ The AI panel (spec/25) is hidden entirely unless the api worker has an OpenAI ke
 
 ```sh
 # apps/api/.dev.vars (gitignored)
-OPENAI_API_KEY=sk-...
-# OPENAI_MODEL=gpt-4o   # optional; defaults to gpt-4o
+AI_API_KEY=...            # any OpenAI-compatible provider's key
+# AI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai  # optional; defaults to OpenAI
+# AI_MODEL=gpt-4o              # optional; defaults to gpt-4o
+# AI_VISION_MODEL=gpt-4o       # optional; reads sticky crops (spec/139).
+#                              # On Google this defaults to gemini-2.5-flash-lite,
+#                              # which reads handwriting better than the big model.
 ```
 
-Restart `pnpm dev`. `GET /api/capabilities` will start reporting `{ aiEnabled: true }`, the Settings dialog grows an "AI Assistant" toggle, and the editor surfaces the panel once the user opts in. The two spend-DoS knobs `AI_ALLOWED_ORIGINS` and `AI_REQUIRE_CLERK` are hosted-only by default; leave them unset locally so the guest path keeps working. See `apps/api/.env.example` for the full set of vars the worker reads.
+Restart `pnpm dev`. `GET /api/capabilities` will start reporting `{ aiEnabled: true }`, the Settings dialog grows an "AI Assistant" toggle, and the editor surfaces the panel once the user opts in. The two spend-DoS knobs `AI_ALLOWED_ORIGINS` and `AI_REQUIRE_CLERK` are hosted-only; leave them unset locally so the guest path keeps working. Production declares `AI_ALLOWED_ORIGINS` in `apps/api/wrangler.toml` `[vars]`, which `wrangler dev` also reads, so the api's `dev` script (and the e2e stack) blank it with `--var AI_ALLOWED_ORIGINS:`; without that, every AI request from a localhost editor answers 403 `origin_not_allowed`. See `apps/api/.env.example` for the full set of vars the worker reads.
 
 ## Running tests
 
@@ -144,7 +149,27 @@ pnpm --filter @livediagram/live exec vitest   # watch mode while developing
 
 Tests live alongside the code they cover, as `*.test.ts` / `*.test.tsx` files. The test runner is [Vitest](https://vitest.dev) with the shared config from `@livediagram/vitest-config`. See [spec/18](../specs/18-testing.md) for the testing contract.
 
-## Two gotchas
+## Trying the photo import without an AI key
+
+The e2e stack (`scripts/e2e-stack.mjs`) can serve the built editor a second
+time, beside a running stack, as a deployment WITHOUT an AI key runs it — so
+the photo import reads the handwriting with the in-browser model (and shows
+its download the first time):
+
+```bash
+E2E_LIVE_PORT=3402 E2E_API_PORT=8887 E2E_LIVE_ONLY=1 E2E_NO_AI=1 node scripts/e2e-stack.mjs
+```
+
+`E2E_LIVE_ONLY=1` serves the static editor only, proxying to the api already
+on `E2E_API_PORT`; `E2E_NO_AI=1` answers `/api/capabilities` with
+`aiEnabled: false`.
+
+To try a hosted reader whose free budget is spent, swap `E2E_NO_AI=1` for
+`E2E_AI_BUDGET_SPENT=1`: the api still reports a model, every
+`/api/ai/read-notes` call answers 429 `ai_quota`, and the import fails over
+to the in-browser model and says so (spec/139 Phase 9).
+
+## Three gotchas
 
 - **All four Next.js dev servers (`marketing`, `live`, `telemetry`, `help`) run through `scripts/next-dev.mjs`.** It frees the port, points dev at an isolated `.next-dev/` cache, and wipes that cache on every start, so a `next build` running in the same checkout can't corrupt the dev server (the recurring "unstyled help page" / `Cannot find module './NNNN.js'` failures) and a crashed restart never inherits a broken cache. All four run on Turbopack, which is also what `next build` uses under Next 16, so dev compiles the same way the deployed bundle does. If a dev server ever does get stuck, stop it and restart — the wipe-on-start clears it.
 
@@ -155,3 +180,5 @@ Tests live alongside the code they cover, as `*.test.ts` / `*.test.tsx` files. T
   The webpack escape hatch is still there — `pnpm --filter @livediagram/live dev:webpack` boots the editor on webpack, and `scripts/next-dev.mjs` honours `--webpack` from any app. It exists for the case where Turbopack genuinely doesn't support something the app needs, and it is a diagnostic rather than a default: Turbopack became the default precisely because webpack's HMR kept desynchronising here and serving `__webpack_modules__[moduleId] is not a function` until someone wiped `.next`. If you find yourself needing the hatch, that is worth a spec note rather than a habit.
 
 - **The api worker's local D1 file lives at `apps/api/.wrangler/state/v3/d1/`.** Delete the folder to start over with an empty database.
+
+- **Open the editor on `localhost`, not on the machine's LAN address.** Over plain `http` from any other address (`http://192.168.x.x:3002`, `http://<machine-name>:3002`) the browser is not in a secure context, withholds `crypto.randomUUID`, and the editor fails to load with "This page couldn't load". A known gap, not yet fixed: the editor calls `crypto.randomUUID` directly in about 75 places. Testing from a phone or a second laptop needs https (a tunnel, or a dev certificate) until it is.

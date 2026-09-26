@@ -196,12 +196,26 @@ The in-editor AI panel (spec/25) is hidden entirely unless the api worker has an
 To turn it on, set the key as a worker secret:
 
 ```bash
-pnpm --filter @livediagram/api exec wrangler secret put OPENAI_API_KEY
+# Pick ONE, whichever provider you use:
+pnpm --filter @livediagram/api exec wrangler secret put GOOGLE_AI_STUDIO_API_KEY
+# or OPENAI_API_KEY, or AI_API_KEY (with AI_BASE_URL + AI_MODEL as [vars])
 ```
 
 Optional knobs (all plain `[vars]` in `apps/api/wrangler.toml`, the dashboard, or `.dev.vars`):
 
-- `OPENAI_MODEL`: model name, defaults to `gpt-4o`.
+The provider is inferred from WHICH key you set (spec/25): a Google AI Studio
+key means Google, an OpenAI key means OpenAI, and `AI_API_KEY` means "anything
+else that speaks the OpenAI wire" — which needs `AI_BASE_URL` too (a local
+llama.cpp is `http://127.0.0.1:8080/v1`). Set exactly one key: two of them is
+refused rather than guessed at.
+
+- `AI_MODEL`: overrides the preset's default model (`gemini-3.6-flash` for
+  Google, `gpt-4o` for OpenAI). Required when using `AI_API_KEY`.
+- `AI_VISION_MODEL`: model id for reading sticky-note crops
+  (`POST /api/ai/read-notes`, spec/139). On Google this defaults to
+  `gemini-2.5-flash-lite` rather than the assistant's model — it reads
+  handwriting better AND costs less (docs/vision/handwriting-readers.md). If you
+  set `AI_MODEL` yourself, the reader uses that unless you set this too.
 - `AI_ALLOWED_ORIGINS`: comma-separated `Origin` allow-list for `POST /api/ai` (e.g. `https://your-host,http://localhost:3002`). Unset = no origin check. Matched verbatim, case-sensitive.
 - `AI_REQUIRE_CLERK`: set to `"true"` to reject the guest (`X-Owner-Id`) path on `/api/ai` only, requiring a verified Clerk JWT. Unset = guests can use AI (so a Clerk-less fork still works).
 

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import type { Element, StickyElement } from '@livediagram/diagram';
+import { type Element, type StickyElement } from '@livediagram/diagram';
 import type { ShapeBounds } from '@/lib/canvas';
-import { landNoteInSlot, resolveNoteInsertion } from './note-insertion-drag';
+import { isSingleNoteDrag, landNoteInSlot, resolveNoteInsertion } from './note-insertion-drag';
 
 function note(id: string, x: number, y = 0): StickyElement {
   return { id, type: 'sticky', x, y, width: 200, height: 200, label: id } as StickyElement;
@@ -40,6 +40,21 @@ function resolve(overrides: Partial<Parameters<typeof resolveNoteInsertion>[0]> 
     ...overrides,
   });
 }
+
+describe('isSingleNoteDrag', () => {
+  it('is one note dragged alone', () => {
+    expect(isSingleNoteDrag(BOARD, 'drag', boundsOf(BOARD, 'drag'))).toBe(true);
+  });
+
+  it('is not a selection of notes', () => {
+    expect(isSingleNoteDrag(BOARD, 'drag', boundsOf(BOARD, 'drag', 'a'))).toBe(false);
+  });
+
+  it('is not a shape', () => {
+    const shape = { id: 's', type: 'shape', x: 0, y: 0, width: 10, height: 10 } as Element;
+    expect(isSingleNoteDrag([shape], 's', boundsOf([shape], 's'))).toBe(false);
+  });
+});
 
 describe('resolveNoteInsertion', () => {
   it('offers the gap the dragged note is aiming at', () => {
@@ -123,5 +138,20 @@ describe('landNoteInSlot', () => {
     // Nothing else is touched: the ripple is a render-time preview until the
     // drop commits it.
     expect((after.find((el) => el.id === 'b') as StickyElement).x).toBe(272);
+  });
+});
+
+// Timeline lanes (spec/139 Phase 6): the ripple opens by the incoming note
+// plus the row's own gap, on a lanes board exactly as on any other. It used to
+// round up to a column lattice; the lattice is gone, because it could not
+// express the row's gutter in the first place.
+describe('resolveNoteInsertion — on a lanes-on board', () => {
+  it('opens by the row rhythm, not a lattice', () => {
+    const slot = resolve();
+    expect(slot!.shiftDx).toBe(272);
+  });
+
+  it('opens by the same rhythm when lanes are off', () => {
+    expect(resolve()!.shiftDx).toBe(272);
   });
 });

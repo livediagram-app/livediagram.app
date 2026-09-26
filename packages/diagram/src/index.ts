@@ -434,6 +434,9 @@ export * from './rich-text';
 
 export * from './factories';
 export * from './event-storming';
+export * from './event-storming-lanes';
+export * from './event-storming-next';
+export * from './event-storming-photo';
 export * from './graph-authoring';
 export * from './mermaid';
 export * from './duplicate';
@@ -490,6 +493,8 @@ export * from './geometry-guides';
 // while groups existed (spec/147).
 export * from './layer-order';
 export * from './legacy-groups';
+export * from './legacy-docks';
+export * from './stored-elements';
 
 // Photoshop-style layers (spec/74): the Layer type used by the Tab field
 // above, band-aware render ordering, and the pure layer operations.

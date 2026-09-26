@@ -1,4 +1,4 @@
-import type { Tab } from '@livediagram/diagram';
+import { migrateStoredElements, type Tab } from '@livediagram/diagram';
 
 // How an imported tab lands on top of the tab receiving it (spec/27).
 //
@@ -11,10 +11,12 @@ import type { Tab } from '@livediagram/diagram';
 // were all there, but the palette, the stationery and the note menu were
 // gone, with nothing to say why (spec/139). Without `layers`, every imported
 // element's `layerId` dangles and the bands it was organised into are lost.
+// A file is a stored tab like any other, so its elements take the same
+// migrations on the way in (retired groups and docks).
 export function mergeImportedTab(receiving: Tab, imported: Tab): Tab {
   return {
     ...receiving,
-    elements: imported.elements,
+    elements: migrateStoredElements(imported.elements),
     kind: imported.kind ?? receiving.kind,
     layers: imported.layers ?? receiving.layers,
     theme: imported.theme ?? receiving.theme,

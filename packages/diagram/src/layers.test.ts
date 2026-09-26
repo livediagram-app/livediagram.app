@@ -395,3 +395,49 @@ describe('resolveActiveLayerId — the fallback must be usable', () => {
     expect(resolveActiveLayerId(layers, undefined)).toBe('b');
   });
 });
+
+// Event-storming stacking (spec/139 Phase 4): actors in front of every other
+// note, hotspots in front of actors. A paint-order rule, applied per band.
+describe('layerBands — event-storming stacking', () => {
+  const note = (id: string, esKind?: string) =>
+    ({ id, type: 'sticky', x: 0, y: 0, width: 200, height: 200, esKind }) as Element;
+  const order = (els: Element[], layers?: Tab['layers']) =>
+    layerBands(els, layers).flatMap((band) => band.elements.map((el) => el.id));
+
+  it('paints actors in front of every other note, hotspots in front of actors', () => {
+    const board = [
+      note('hot', 'hotspot'),
+      note('actor', 'actor'),
+      note('event', 'domain-event'),
+      note('plain'),
+    ];
+    expect(order(board)).toEqual(['event', 'plain', 'actor', 'hot']);
+  });
+
+  it('keeps the array order within each tier', () => {
+    const board = [
+      note('a2', 'actor'),
+      note('e1', 'domain-event'),
+      note('a1', 'actor'),
+      note('c1', 'command'),
+    ];
+    expect(order(board)).toEqual(['e1', 'c1', 'a2', 'a1']);
+  });
+
+  it('stacks within each band, never across layers', () => {
+    const layers = [
+      { id: 'low', name: 'Low' },
+      { id: 'high', name: 'High' },
+    ];
+    const board = [
+      { ...note('hot', 'hotspot'), layerId: 'low' } as Element,
+      { ...note('event', 'domain-event'), layerId: 'high' } as Element,
+    ];
+    expect(order(board, layers)).toEqual(['hot', 'event']);
+  });
+
+  it('returns the SAME array for a board with no actors or hotspots', () => {
+    const board = [note('event', 'domain-event'), note('plain')];
+    expect(layerBands(board, undefined)[0]!.elements).toBe(board);
+  });
+});

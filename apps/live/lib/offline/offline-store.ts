@@ -11,7 +11,7 @@
 // dispatch can answer "is this id offline?" cheaply.
 
 import type { ChangeLogEntry, Diagram, DiagramSummary, TabSummary } from '@livediagram/api-schema';
-import { migrateLegacyGroups, stampTabKind } from '@livediagram/diagram';
+import { migrateStoredElements, stampTabKind } from '@livediagram/diagram';
 import type { Tab } from '@livediagram/diagram';
 
 // Sentinel owner id stamped on offline diagrams. They have no server owner;
@@ -311,9 +311,9 @@ export async function offlineLoadDiagram(id: string): Promise<Diagram | null> {
 export async function offlineLoadTab(id: string, tabId: string): Promise<Tab | null> {
   const rec = await backend.get(id);
   const tab = rec?.tabs.find((t) => t.id === tabId) ?? null;
-  // The offline twin of the api's rowToTab (spec/147): a diagram kept in
-  // this browser since before groups were removed still carries them.
-  return tab ? { ...tab, elements: migrateLegacyGroups(tab.elements) } : null;
+  // The offline twin of the api's rowToTab: a diagram kept in this browser
+  // can still carry retired element fields (spec/147 groups, spec/139 docks).
+  return tab ? { ...tab, elements: migrateStoredElements(tab.elements) } : null;
 }
 
 export async function offlineCreateDiagram(

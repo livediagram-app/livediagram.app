@@ -24,6 +24,7 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   acceptsInlineIcon,
+  ES_LANES,
   isBoxed,
   nearestElementTowards,
   opposingAnchor,
@@ -39,7 +40,8 @@ import { iconDropSide, type DragState } from '@/lib/canvas';
 import { elementHostsAtPoint } from '@/lib/dom-hit-test';
 import { applyInsertionShift, type InsertionSlot } from '@/lib/insert-between';
 import { setInsertionDragInHand, setInsertionSlot } from '@/lib/insertion-preview';
-import { landNoteInSlot, resolveNoteInsertion } from './note-insertion-drag';
+import { setLanePreview } from '@/lib/lane-preview';
+import { isSingleNoteDrag, landNoteInSlot, resolveNoteInsertion } from './note-insertion-drag';
 import type { EditorDragDeps, EditorDragApi } from './useEditorDrag.types';
 import { applyCollisionAvoidance } from './arrow-avoidance-apply';
 import { applyArrowDragMove } from './arrow-drag-apply';
@@ -187,9 +189,19 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     const movingOneNote =
       drag.kind === 'boxed' &&
       drag.mode === 'move' &&
-      drag.startBounds.size === 1 &&
-      depsRef.current.activeTab.elements.find((el) => el.id === drag.primaryId)?.type === 'sticky';
+      isSingleNoteDrag(depsRef.current.activeTab.elements, drag.primaryId, drag.startBounds);
     setInsertionDragInHand(movingOneNote && depsRef.current.insertGate.esBoard);
+    // Timeline lanes (spec/139 Phase 6) apply to ANY notes being moved on one
+    // of these boards, one or many: a selection snaps by the note in hand and
+    // still meets the board's places. The insertion gesture still wants
+    // exactly one note, so it keeps its own flag.
+    const notesEligible =
+      drag.kind === 'boxed' &&
+      drag.mode === 'move' &&
+      depsRef.current.insertGate.esBoard &&
+      [...drag.startBounds.keys()].every(
+        (id) => depsRef.current.activeTab.elements.find((el) => el.id === id)?.type === 'sticky',
+      );
     // The last pointer position of this drag, so pressing or releasing Alt
     // without moving the mouse still opens / unwinds the slot (see onAltChange).
     let lastMove: MovePointer | null = null;
@@ -209,6 +221,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       // by the checkpoint, and the other notes never moved for real.
       insertSlotRef.current = null;
       setInsertionSlot(null);
+      setLanePreview(null);
       // A live shift-duplicate is torn down with the gesture: the clone set
       // goes (a no-op after the Escape path's cancelToCheckpoint already
       // restored, but pinch / second-touch cancels never restore) and the
@@ -316,6 +329,9 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
           insertSlotRef.current = slot;
           setInsertionSlot(slot);
           if (slot) {
+            // An open slot IS the placement, so the lane rung stands down
+            // with everything else below it.
+            setLanePreview(null);
             // One vertical line where the board splits, in the guide overlay's
             // own visual language — the same marker the palette drag draws.
             scheduleGuides(
@@ -338,7 +354,11 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
             dy,
             noSnap,
             guidesOn: depsRef.current.alignmentGuidesRef.current ?? true,
+            // Free placement (Cmd/Ctrl) skips the lanes with everything else:
+            // the modifier means "I know where I want this".
+            timeline: notesEligible && !noSnap ? ES_LANES : null,
           });
+          setLanePreview(move.lane);
           scheduleGuides(move.guides, move.distGuides);
           tick((els) => {
             // First pass: translate every dragged boxed element (and the
@@ -662,6 +682,9 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       const insertion = insertSlotRef.current;
       insertSlotRef.current = null;
       setInsertionSlot(null);
+      // The lane has done its job the moment the note lands on it: the drop
+      // commits the position the overlay was promising, and the overlay goes.
+      setLanePreview(null);
       if (insertion && drag?.kind === 'boxed' && drag.mode === 'move') {
         d.tick((els) => applyInsertionShift(els, insertion));
         track('Canvas', 'Used', 'InsertBetween');
@@ -820,6 +843,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       // No gesture in flight: nothing may be left standing aside.
       insertSlotRef.current = null;
       setInsertionSlot(null);
+      setLanePreview(null);
       setInsertionDragInHand(false);
     };
   }, [drag, scheduleGuides, scheduleSnapTargets]);

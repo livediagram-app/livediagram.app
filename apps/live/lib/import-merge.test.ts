@@ -36,4 +36,26 @@ describe('mergeImportedTab', () => {
     expect(out.kind).toBe('event-storming');
     expect(out.layers).toEqual([{ id: 'a', name: 'A' }]);
   });
+
+  // Timeline lanes are BOARD state (spec/139 Phase 6): a board exported with
+  // Anchor docking is retired (spec/139 Phase 7): a file exported while it
+  // existed brings its relations in, and they are dropped on the way.
+  it('drops a stored dock relation', () => {
+    const imported = tab({
+      elements: [
+        {
+          id: 'd',
+          type: 'sticky',
+          esKind: 'command',
+          x: 0,
+          y: 0,
+          width: 200,
+          height: 200,
+          esDock: { hostId: 'h', side: 'before' },
+        },
+      ] as unknown as Tab['elements'],
+    });
+    const out = mergeImportedTab(tab(), imported);
+    expect(out.elements[0]).not.toHaveProperty('esDock');
+  });
 });

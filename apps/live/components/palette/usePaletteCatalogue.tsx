@@ -31,6 +31,8 @@ type Deps = Pick<
   | 'onToggleZen'
   | 'canvasEmpty'
   | 'pendingDraw'
+  | 'esBoard'
+  | 'esBoardControls'
   | 'onDrawArmed'
   | 'onMobileClose'
 > &
@@ -65,6 +67,8 @@ export function usePaletteCatalogue({
   onBeginShapePen,
   onBeginPolygon,
   pendingDraw,
+  esBoard,
+  esBoardControls,
   onDrawArmed,
   onMobileClose,
 }: Deps) {
@@ -221,6 +225,9 @@ export function usePaletteCatalogue({
   const tabs = paletteCategoryTabs({
     pendingDraw,
     tileActions,
+    // Only on an ES board: the category renders elsewhere too (a favourited
+    // note kind), where a board switch means nothing.
+    esBoardControls: esBoard ? esBoardControls : undefined,
     addIcon,
     iconQuery,
     setIconQuery,

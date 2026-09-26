@@ -40,6 +40,8 @@ export function EditorContextMenuHost() {
     bringSelectedToFront,
     copySelection,
     deleteSelected,
+    setEsKindOf,
+    createBlocked,
     duplicateSelected,
     stackSelectedFront,
     stackSelectedBack,
@@ -245,6 +247,11 @@ export function EditorContextMenuHost() {
       onCopyElement={copySelection}
       onDuplicateElement={duplicateSelected}
       onDeleteElement={deleteSelected}
+      onSetEsKind={
+        createBlocked || contextMenu.mode !== 'element'
+          ? undefined
+          : (kind) => setEsKindOf(contextMenu.elementId, kind)
+      }
       onStackFront={stackSelectedFront}
       onStackBack={stackSelectedBack}
       layers={layers}

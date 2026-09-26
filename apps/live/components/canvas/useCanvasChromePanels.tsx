@@ -141,6 +141,7 @@ export function useCanvasChromePanels({
     onPreviewLayer,
     onActivityRowClick,
     esBoard,
+    esBoardControls,
     onChangeSettings,
     onClearActivity,
     onClearRevertPreview,
@@ -495,6 +496,7 @@ export function useCanvasChromePanels({
         canvasEmpty={elements.length === 0}
         {...pickPaletteAddHandlers(props)}
         esBoard={esBoard}
+        esBoardControls={esBoardControls}
         pendingDraw={pendingDraw}
         themeTint={paletteTint}
         onSize={(size) => setPaletteBottomY(size.bottomY)}

@@ -16,6 +16,7 @@ import {
   WebGroupIcon,
 } from './palette-group-icons';
 import { tilesInSection, tilesInToolGroup } from './palette-tile-defs';
+import { EventStormingBoardRows, type EsBoardControls } from './EventStormingBoardRows';
 
 // The palette's creation-category tab bodies. Since spec/78 every tile is
 // a data entry in the shared catalogue (palette-tile-defs.tsx) rendered
@@ -64,13 +65,22 @@ export function PaletteWriteTab({ pendingDraw, actions }: TabProps) {
 // Behaviour and Data — eight identical squares in different colours don't
 // explain themselves; "Something that happened, past tense" against "An
 // intent that triggers an event" is the actual choice.
-export function PaletteEventStormingTab({ pendingDraw, actions }: TabProps) {
+export function PaletteEventStormingTab({
+  pendingDraw,
+  actions,
+  board,
+}: TabProps & { board?: EsBoardControls }) {
   return (
-    <PaletteToolRows
-      tiles={tilesInSection('event-storming')}
-      actions={actions}
-      pendingDraw={pendingDraw}
-    />
+    <>
+      {/* Board-level switches first (spec/139 Phase 6), then the notation.
+          Absent on every other board, where they would control nothing. */}
+      {board ? <EventStormingBoardRows controls={board} /> : null}
+      <PaletteToolRows
+        tiles={tilesInSection('event-storming')}
+        actions={actions}
+        pendingDraw={pendingDraw}
+      />
+    </>
   );
 }
 

@@ -93,8 +93,8 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     // goes. If the whole selection is locked, the delete is a no-op.
     const targetIds = deletableIds(ids);
     if (targetIds.size === 0) return;
-    commit((els) =>
-      els.filter((el) => {
+    commit((els) => {
+      return els.filter((el) => {
         // Belt-and-suspenders: never drop a locked element, even via the
         // arrow cascade (a locked arrow survives its endpoint going).
         // A locked LAYER protects its elements the same way (spec/74).
@@ -102,8 +102,8 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
         if (targetIds.has(el.id)) return false;
         if (el.type === 'arrow' && arrowReferencesAny(el, targetIds)) return false;
         return true;
-      }),
-    );
+      });
+    });
     setSelectedId(null);
     setEditingId(null);
     track('Element', 'Deleted');
@@ -180,14 +180,14 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     if (targetIds.size === 0) return;
     track('Element', 'Deleted'); // parity with single-element deleteSelected
     announceDeleted(targetIds);
-    commit((els) =>
-      els.filter((el) => {
+    commit((els) => {
+      return els.filter((el) => {
         if (el.locked === true || layerLockedIds.has(el.id)) return true;
         if (targetIds.has(el.id)) return false;
         if (el.type === 'arrow' && arrowReferencesAny(el, targetIds)) return false;
         return true;
-      }),
-    );
+      });
+    });
     setMultiSelectedIds(new Set());
     setEditingId(null);
   };

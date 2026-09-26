@@ -359,8 +359,24 @@ export const INSERTED_BETWEEN = chart(
   'Canvas',
   'Used',
   'Inserted Between',
-  'A shape dragged onto an arrow to insert it between two others.',
+  'A note dropped into the gap between two notes on an event-storming board, the board making room for it.',
   { types: ['InsertBetween'] },
+);
+
+export const NEXT_NOTES_ADDED = chart(
+  'Canvas',
+  'Used',
+  'Next Notes Added',
+  'A next-note tab beside an event-storming note clicked, adding the note the notation puts there.',
+  { types: ['AddNextNote'] },
+);
+
+export const NOTE_KINDS_CHANGED = chart(
+  'Canvas',
+  'Used',
+  'Note Kinds Changed',
+  'An event-storming note turned into another kind, say a domain event into a hotspot.',
+  { types: ['ChangeNoteKind'] },
 );
 
 export const ELEMENT_EDITING: MetricStack = {
@@ -380,6 +396,8 @@ export const ELEMENT_EDITING: MetricStack = {
     ELEMENT_ACTIONS_USED,
     KEYBOARD_SELECTIONS,
     INSERTED_BETWEEN,
+    NEXT_NOTES_ADDED,
+    NOTE_KINDS_CHANGED,
     LINKS_REMOVED,
   ],
   seeAlso: { view: 'editing', label: 'See Each Formatting Control on the Editing Tab' },

@@ -110,7 +110,11 @@ function PaletteToolRow({
                   : { width: 200, height: 200 };
                 // The ghost draws by shape kind; a square footprint at the
                 // note's real size reads as the sticky it will become.
-                setPaletteDragPreview({ kind: 'square', ...size, note: true });
+                setPaletteDragPreview({
+                  kind: 'square',
+                  ...size,
+                  note: true,
+                });
                 suppressNativeDragImage(e);
               }
             : undefined

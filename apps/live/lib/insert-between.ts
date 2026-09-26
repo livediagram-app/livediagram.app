@@ -1,4 +1,4 @@
-import { isBoxed, type Element, type ElementId } from '@livediagram/diagram';
+import { ES_NOTE_GAP, isBoxed, type Element, type ElementId } from '@livediagram/diagram';
 
 // Inserting a note BETWEEN two notes (spec/139). An event-storming wall is a
 // left-to-right timeline, so "this happened before that" is the whole
@@ -77,12 +77,12 @@ type FindArgs = {
   // row — you can't aim at a note you can't see — but they still SHIFT, so
   // the board stays consistent the moment their layer comes back.
   inertIds?: ReadonlySet<ElementId>;
-  // The note being dragged, when it is one already on the board rather than a
-  // new one from the palette. It is the thing being INSERTED, so it is out of
-  // the reckoning entirely: it neither defines the row (it is sitting under
-  // the cursor, where it would otherwise be its own neighbour) nor gets
-  // pushed aside to make room for its own arrival.
-  excludeId?: ElementId;
+  // The note(s) being dragged, when they are already on the board rather than
+  // new from the palette. They are the thing being INSERTED, so they are out
+  // of the reckoning entirely: they neither define the row (they are sitting
+  // under the cursor, where they would otherwise be their own neighbours) nor
+  // get pushed aside to make room for their own arrival.
+  excludeIds?: ReadonlySet<ElementId>;
   // The slot currently on offer, if any. Passed back in so the offer sticks
   // through a shaky hand (see SLOT_HYSTERESIS).
   active?: InsertionSlot | null;
@@ -90,7 +90,7 @@ type FindArgs = {
 
 // The event-storming template's own gap, used when the row has no gap worth
 // measuring (its notes overlap or sit flush).
-export const DEFAULT_INSERTION_GAP = 72;
+export const DEFAULT_INSERTION_GAP = ES_NOTE_GAP;
 
 // How far above / below a note the cursor still counts as "in this row",
 // as a fraction of the note's height.
@@ -162,18 +162,38 @@ function stillInside(slot: InsertionSlot, cursorX: number, cursorY: number, elem
   return withinX && withinY;
 }
 
+// Everything at or after a point on the x axis that travels WHOLE when the
+// board opens there. Boxed elements answer with their left edge; an arrow
+// travels exactly when both its ends do. A locked element never travels — the board opens around it.
+//
+// Shared by the Alt insertion (spec/139 Phase 5) and the next-note ripple
+// (Phase 7), which are the same act seen twice: make room HERE, by this much.
+export function travellingIdsFrom(elements: Element[], atX: number): Set<ElementId> {
+  const movingIds = new Set<ElementId>();
+  for (const el of elements) {
+    if (!movable(el) || !isBoxed(el)) continue;
+    if (el.x >= atX) movingIds.add(el.id);
+  }
+  // Arrows resolve after the boxes, because a pinned arrow travels exactly
+  // when the elements it connects do.
+  for (const el of elements) {
+    if (movable(el) && arrowTravelsWhole(el, atX, movingIds)) movingIds.add(el.id);
+  }
+  return movingIds;
+}
+
 export function findInsertionSlot({
   cursorX,
   cursorY,
   incomingWidth,
   elements: all,
   inertIds,
-  excludeId,
+  excludeIds,
   active,
 }: FindArgs): InsertionSlot | null {
-  // The board as the insertion sees it: everything except the note being
+  // The board as the insertion sees it: everything except what is being
   // inserted. One filter up front, so no rule below has to remember.
-  const elements = excludeId === undefined ? all : all.filter((el) => el.id !== excludeId);
+  const elements = excludeIds === undefined ? all : all.filter((el) => !excludeIds.has(el.id));
   if (active && stillInside(active, cursorX, cursorY, elements)) return active;
 
   // Row candidates: what the author can actually see and aim at.
@@ -194,18 +214,14 @@ export function findInsertionSlot({
   if (!left || !right) return null;
 
   const atX = right.x;
+  // The incoming note plus the row's own rhythm, on every board. There used
+  // to be a rounding-up step here for boards with lanes, so a pushed row
+  // stayed on the column lattice; the lattice is gone (it could not express
+  // the row's gutter in the first place), and the opening is now the rhythm
+  // itself.
   const shiftDx = incomingWidth + medianGap(row);
 
-  // An element is "at or after" the insertion point by its left edge.
-  const movingIds = new Set<ElementId>();
-  for (const el of elements) {
-    if (movable(el) && isBoxed(el) && el.x >= atX) movingIds.add(el.id);
-  }
-  // Arrows resolve after the boxes, because a pinned arrow travels exactly
-  // when the elements it connects do.
-  for (const el of elements) {
-    if (movable(el) && arrowTravelsWhole(el, atX, movingIds)) movingIds.add(el.id);
-  }
+  const movingIds = travellingIdsFrom(elements, atX);
 
   let spanTop = Infinity;
   let spanBottom = -Infinity;

@@ -1,5 +1,7 @@
+import { ES_LANES } from '@livediagram/diagram';
 import { computeDrawGuides } from '@/components/canvas/canvas-draw-guides';
 import { CanvasGuideOverlay } from '@/components/canvas/CanvasGuideOverlay';
+import { TimelineLanesOverlay } from '@/components/canvas/TimelineLanesOverlay';
 import { CanvasDrawPreview } from '@/components/canvas/CanvasDrawPreview';
 import { TopCenterChrome } from '@/components/chrome/TopCenterChrome';
 // Lazy-load TemplatePicker (1163 lines + its theme / share helpers)
@@ -36,6 +38,7 @@ import { useCanvasChromePanels } from './useCanvasChromePanels';
 import { usePaletteDragGuides } from '@/hooks/canvas/usePaletteDragGuides';
 import { PhoneDockProvider } from '@/components/primitives/phone-dock-context';
 import { PANEL_CORNERS, PANEL_IDS, cornerBottomInset, type PanelCorner } from '@/lib/panel-layout';
+import type { StampGhost } from '@/components/canvas/useStampGhost';
 
 // Values the Canvas computes (selection projection + layout/dock/zoom
 // state) and threads into the chrome alongside its own props.
@@ -49,6 +52,8 @@ type ChromeExtras = {
   // Snapped pointer position while a draw is armed but not yet started
   // (pre-press start-snap preview); null when not armed / not snapped.
   drawHover: { x: number; y: number } | null;
+  // The armed fixed-size note's ghost (spec/139 Phase 4).
+  stamp: StampGhost | null;
   penPoints: { x: number; y: number }[] | null;
   // Polygon tool in-flight state (spec/84): the placed vertices and
   // the live rubber-band cursor position, both canvas coords.
@@ -183,6 +188,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     dockButtonRefs,
     drawDrag,
     drawHover,
+    stamp,
     elements,
     handleDockButtonClick,
     handleSetZoom,
@@ -257,9 +263,13 @@ export function CanvasChrome(props: CanvasChromeProps) {
       createBlocked: props.createBlocked === true,
     },
     inertIds: props.layerInertIds,
+    // Every event-storming board is on lanes; the stack is derived from the
+    // board itself, so there is nothing to gate beyond "is this that board".
+    timeline: props.esBoard === true ? ES_LANES : null,
   });
   const { alignGuides, allSnapTargets } = computeDrawGuides({
-    drawDrag,
+    // A stamp is placed by the lanes, not sized against edges: no box guides.
+    drawDrag: stamp ? null : drawDrag,
     pendingDraw,
     elements,
     drawHover,
@@ -352,6 +362,18 @@ export function CanvasChrome(props: CanvasChromeProps) {
         />
       ) : null}
 
+      {/* Timeline lanes (spec/139 Phase 6): the lane a dragged note is
+          landing on, lit for the duration of the drag. Beside the guide
+          overlay because it is the same kind of thing — help BEFORE the
+          drop — and it publishes through its own store, so it costs nothing
+          on every other board. */}
+      <TimelineLanesOverlay
+        timeline={props.esBoard === true ? ES_LANES : null}
+        tabThemeId={tabThemeId}
+        viewportZoom={viewportZoom}
+        wrapperRef={wrapperRef}
+      />
+
       <CanvasGuideOverlay
         alignGuides={paletteDrag.guides.length > 0 ? paletteDrag.guides : alignGuides}
         allSnapTargets={allSnapTargets}
@@ -371,6 +393,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
         highlighterColor={highlighterColor}
         highlighterWidth={highlighterWidth}
         pendingDraw={pendingDraw}
+        stamp={stamp}
         viewportZoom={viewportZoom}
         wrapperRef={wrapperRef}
       />
@@ -405,6 +428,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
           {...pickPaletteAddHandlers(props)}
           pendingDraw={pendingDraw}
           esBoard={props.esBoard}
+          esBoardControls={props.esBoardControls}
           themeTint={paletteTint}
           leading={menuInStrip ? explorerMenuButton : undefined}
         />

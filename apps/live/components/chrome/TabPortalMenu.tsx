@@ -14,6 +14,7 @@ import {
 } from '@/components/chrome/tab-bar-icons';
 import {
   MenuAccordionSection,
+  MenuActionRow,
   MenuGroupSeparator,
   MenuTile,
   MenuTileGrid,
@@ -300,11 +301,11 @@ export function PortalMenu({
                 description="Create a copy of this tab in this diagram."
                 onClick={onDuplicate}
               />
-              {/* Paste, in the toolbar rather than a row of its own:
-                  right-clicking empty canvas is overwhelmingly "put the
-                  thing I copied here". Greyed, not hidden, when the buffer
-                  is empty, so the menu keeps one shape. */}
-              {canvas ? (
+              {/* Paste in the tab ⋯ menu: one tab verb among several, so an
+                  icon. Opened from an empty-canvas right-click (`point`) it
+                  is a labelled row below instead (spec/09). Greyed, not
+                  hidden, when the buffer is empty. */}
+              {canvas && !point ? (
                 <MenuToolButton
                   icon={<PasteMenuIcon />}
                   label="Paste"
@@ -351,6 +352,26 @@ export function PortalMenu({
             {/* Separator under the toolbar, isolating the quick verbs from
                 the verbose category bands below. */}
             <MenuGroupSeparator />
+            {/* The empty-canvas right-click is usually "put what I copied
+                HERE", so there Paste leads the menu as a labelled row
+                (spec/09 "Canvas menu: Paste"). */}
+            {canvas && point ? (
+              <>
+                <div data-testid="canvas-paste-row">
+                  <MenuActionRow
+                    plain
+                    icon={<PasteMenuIcon />}
+                    label="Paste"
+                    disabled={!canvas.canPaste}
+                    onClick={() => {
+                      canvas.onPaste();
+                      onClose();
+                    }}
+                  />
+                </div>
+                <MenuGroupSeparator />
+              </>
+            ) : null}
             {/* Verbose actions live in collapsible categories (closed by
                 default, one open at a time), matching the element menu. */}
             <MenuAccordionSection

@@ -49,6 +49,17 @@ export const REALTIME_RESYNCS: Metric = {
     'Not an exception: the editor noticed it had missed live updates and refetched the diagram to catch up. A rising line means the realtime room is dropping updates.',
 };
 
+export const WARNINGS: Metric = {
+  rising: 'bad',
+  category: 'Error',
+  action: 'Warning',
+  // Every kind of warning: each names its fallback (AiQuota.BrowserReader, …).
+  typeIn: () => true,
+  title: 'Warnings',
+  blurb:
+    'Not a failure: a degradation the author was carried through, such as a spent AI budget reading the photo on the device instead. A rising line means a fallback is doing more of the work.',
+};
+
 // Headed by the errors someone actually hit, each once: failed requests plus
 // client exceptions. Server crashes would count those failures a second time
 // and resyncs are recoveries, so neither joins the headline.
@@ -57,8 +68,8 @@ export const EXCEPTIONS: MetricStack = {
   stack: true,
   title: 'Exceptions',
   blurb:
-    'Errors people hit, from failed requests and client exceptions, beside the server crashes behind them and the realtime resyncs that recovered. Zero is the goal.',
-  members: [FAILED_REQUESTS, SERVER_CRASHES, CLIENT_EXCEPTIONS, REALTIME_RESYNCS],
+    'Errors people hit, from failed requests and client exceptions, beside the server crashes behind them, the realtime resyncs that recovered, and the warnings the author was carried through. Zero is the goal.',
+  members: [FAILED_REQUESTS, SERVER_CRASHES, CLIENT_EXCEPTIONS, REALTIME_RESYNCS, WARNINGS],
   headline: [FAILED_REQUESTS, CLIENT_EXCEPTIONS],
   seeAlso: { view: 'exceptions', label: 'See Each Error on the Exceptions Tab' },
 };

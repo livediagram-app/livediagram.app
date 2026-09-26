@@ -7,7 +7,7 @@
 // Like the tree style, geometry hangs off a BFS spanning tree; non-tree
 // edges just re-anchor across the placed nodes.
 
-import { type ElementId } from './index';
+import type { ElementId } from './index';
 import {
   LAYER_GAP,
   SIBLING_GAP,

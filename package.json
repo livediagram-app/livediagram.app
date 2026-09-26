@@ -12,6 +12,9 @@
     "test:coverage": "turbo run test:coverage",
     "typecheck": "turbo run typecheck",
     "staging:check": "turbo run staging:check",
+    "bench:readers": "tsx scripts/read-bench.mts",
+    "demo:sticky-vision:build": "node demo/sticky-vision/build.mjs",
+    "demo:sticky-vision": "pnpm demo:sticky-vision:build && node demo/sticky-vision/serve.mjs",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
     "clean": "turbo run clean && rm -rf node_modules"
@@ -20,6 +23,7 @@
     "@livediagram/eslint-config": "workspace:*",
     "@livediagram/prettier-config": "workspace:*",
     "@typescript/native": "npm:typescript@^7.0.2",
+    "esbuild": "^0.28.2",
     "eslint": "^10.10.0",
     "prettier": "^3.9.7",
     "turbo": "^2.10.13",

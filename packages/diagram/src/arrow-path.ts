@@ -1,4 +1,4 @@
-import { type Anchor, type ArrowStyle, type Endpoint } from './index';
+import type { Anchor, ArrowStyle, Endpoint } from './index';
 
 // The anchor a pinned end sits on; null for free / on-arrow ends.
 const anchorOf = (ep?: Endpoint): Anchor | null => (ep && ep.kind === 'pinned' ? ep.anchor : null);

@@ -17,7 +17,7 @@ export const metadata = helpMetadata({
 
 Event storming is a workshop method for exploring a business domain together. A group puts sticky notes on a wall — things that happened, the commands that caused them, the people and systems involved — until the story of the domain is visible end to end. Alberto Brandolini's notation gives each colour a fixed meaning, so a wall of paper reads the same to everyone who knows the method.
 
-Starting a diagram from the **Event storming** [template](/help/canvas/templates/) gives you a board built for that, rather than a blank canvas you have to shape yourself.
+Starting a diagram from the **Event storming** [template](/help/canvas/templates/) gives you a board built for that, rather than a blank canvas you have to shape yourself. It starts with a single orange domain event, **Board Created**, the first thing that happened, and nothing else on the wall.
 
 ## What makes it a board, not just a diagram
 
@@ -54,9 +54,105 @@ It works two ways round, which is the point:
 
 This only happens on an event storming board, where left-to-right means time, and only for notes — a shape or an icon is dropped where you drop it. On an ordinary diagram, a note dropped in a gap is just a note dropped in a gap.
 
+## Timeline lanes
+
+An event-storming board has a rhythm built in: notes you drag snap into evenly
+spaced rows and line themselves up with the notes already on the board. There is
+nothing to switch on.
+
+- **Nothing on the board ever moves to make room.** The rows arrange themselves
+  around the work that is already there.
+- **You see them only while you are dragging** — the lane a note is about to
+  land in lights up, with its neighbours fainter either side, and everything
+  disappears again when you let go.
+- **In the same row, the board offers you the rhythm.** The next place along is
+  one gap from your neighbour, and the one after that leaves a sticky's worth of
+  wall empty in between — room for the event nobody has written yet. Nothing
+  touching, nothing half-way.
+- **In the row above or below, edges line up.** Squarely above or below a note,
+  or one place along from it either way — the diagonal. Same size of sticky also
+  gets the brick position, centred under the gap between two squares; different
+  sizes line up on the left edge or the right edge. That is all of it.
+- **Push a note right up against another** and it takes the next place in the
+  row rather than landing half on top of it: a row stays regular however
+  impatiently you build it.
+- **The offer is outlined on the lane before you let go**, so you always drop
+  into a place you have already seen.
+- **One gap, always the same.** Stickies sit a finger's width apart, and the
+  notes already there never move to make room. Drop a note somewhere with
+  nothing near it and it stays exactly where you put it.
+- **Drag several notes together** and the note you grabbed takes the place,
+  just as it would alone; the others follow and keep the spacing they already
+  had.
+- Hold **Cmd / Ctrl** while dragging to ignore the lanes for that one note.
+
+Lanes are never exported: they are there to help you place a note, not to be
+part of the picture.
+
+## Adding the next note
+
+The notation reads left to right, and some notes have an obvious neighbour:
+
+- a **command** comes before the **domain event** it triggers,
+- a **policy** comes after the **domain event** it reacts to,
+- a **command** comes after the **policy** that issues it.
+
+Select a note and a small tab in the next note's colour peeks from each side
+that has one. Point at a tab to see a dashed outline of the note it will add,
+exactly where it will land. Click it and the note is added right beside, one
+gap away, open for typing. If something is already there, the board makes room. The new note is an
+ordinary note: move it, delete it or change its kind like any other.
+
+## Adding notes from a photo of the wall
+
+Most sessions happen on a real wall first. **Add from photo** at the top of the
+Event Storming palette reads that wall in:
+
+1. Take or drop a photo of the wall (you can also paste one onto the board).
+2. The photo fills the screen and a box appears on every sticky found in it,
+   with the words read from its handwriting. The box's colour is the kind, taken
+   from the paper.
+3. Check it right there: **untick** a box that is not a note, **click the
+   words** to fix a misreading, and **drag round** a sticky it missed. A box
+   that is slightly off can be fixed rather than redrawn: **click it** to select
+   it, then drag it to move it, drag a corner to resize it, pick a colour to
+   change its kind, or press **Delete** to remove it. A big
+   wall of small notes is far easier up close: **scroll** to zoom (or pinch, on
+   a trackpad or a phone, or use the **+** button), and drag with the **middle
+   mouse button** to move around (or hold **Space** and drag). **Fit** shows
+   the whole photo again.
+4. **Add** puts the notes **on the board, as a draft**: outlined, laid out where they
+   were on the wall, with the rest of the board faded behind them — the second look, at
+   the notes in place and at the size they will really be.
+5. Fix anything from right there: double-click to correct a word it misread,
+   drag one that landed awkwardly, delete what you do not want, or right-click
+   a note and **Change kind** if the light made a colour ambiguous.
+6. **Add** keeps them, in one step that a single Undo takes back. **Discard**
+   leaves the board exactly as it was.
+
+A note your board already has is marked **"already here"** and left alone —
+never moved, never re-worded, even if the photo reads it differently. That is
+what makes the next photo of the next piece of wall safe to import: only what
+is new is added.
+
+<Tip>
+  The photo never leaves your machine. Your browser finds the stickies in it and sends only small
+  crops of individual notes to be read, so the room, the whiteboard behind, and whoever is standing
+  in front of it stay with you. The first import also downloads a small note-finding model (under
+  half a megabyte), which runs in your browser too.
+</Tip>
+
+<Note>
+  It will not get a whole wall in one go. Handwriting in pen, a note half-covered by another, a
+  colour your team uses differently, the far side of a corner — expect to fix some and add a few
+  yourself. It is a head start on the typing, not a replacement for reading your own wall.
+</Note>
+
 ## One wall of paper
 
 The board is a single [layer](/help/canvas/layers/). Every note lands on it, whichever colour it is, so any two notes can be stacked in front of or behind each other and nothing is filed away on a plane you cannot see.
+
+One thing is always true of the stack: **actors sit in front of every other note, and hotspots in front of actors**, the way a person or a red flag is stuck on top of the note it belongs to. Bring to front and send to back still reorder notes of the same kind.
 
 <Tip>
   Add your own layers if you want them — an ES board is an ordinary diagram underneath, and the

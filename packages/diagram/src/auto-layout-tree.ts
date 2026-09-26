@@ -7,7 +7,7 @@
 // extra in-edges and cycles stay out of the skeleton and their arrows simply
 // re-anchor across the result.
 
-import { type ElementId } from './index';
+import type { ElementId } from './index';
 import {
   LAYER_GAP,
   SIBLING_GAP,

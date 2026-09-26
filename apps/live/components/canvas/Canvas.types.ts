@@ -3,7 +3,7 @@
 // via inline import('...') so this file only needs the bare-named
 // types as top-level imports.
 import type { PointerEvent as ReactPointerEvent, Ref } from 'react';
-import type { EmbedProvider, EventStormingNoteKind } from '@livediagram/diagram';
+import type { EmbedProvider, EsSide, EventStormingNoteKind } from '@livediagram/diagram';
 import type {
   AlignmentGuide,
   BackgroundPattern,
@@ -25,6 +25,7 @@ import type { ChangeLogEntry, DiagramListItem, Folder, SharedWithItem } from '@/
 import type { TeamFolderHandlers } from '@/components/panels/Explorer.types';
 import type { TeamDiagramRow, TeamFolderRow } from '@/hooks/persistence/useTeamLibrariesSweep';
 import type { CanvasTool } from '@/components/palette/CommandPalette';
+import type { EsBoardControls } from '@/components/palette/EventStormingBoardRows';
 
 // A connection-point marker shown while dragging an arrow endpoint: the
 // world-space position of a nearby shape's anchor, with `active` set on the
@@ -71,6 +72,9 @@ export type CanvasProps = {
   // The tab’s board kind (spec/139), which decides whether this canvas
   // presents as an event-storming board.
   tabKind?: TabKind;
+  // The tab's timeline lane stack (spec/139 Phase 6) when lanes are on, else
+  // undefined: a note dragged in from the palette snaps onto it, and the
+  // overlay lights the lane it is landing on.
   // Element ids on a hidden or locked layer (spec/74) — inert to every
   // selection surface, including the right-click context menu.
   layerInertIds: Set<string>;
@@ -310,6 +314,15 @@ export type CanvasProps = {
   // palette opens on the Event Storming category instead of Favourites, and
   // a palette drag can offer to insert BETWEEN two notes.
   esBoard?: boolean;
+  // Board-level switches for the palette's Event Storming category
+  // (spec/139 Phase 6: timeline lanes). Supplied only on such a board.
+  esBoardControls?: EsBoardControls;
+  // Add the next note beside a note (spec/139 Phase 7), from its next-note
+  // button. Absent when the session cannot create.
+  onAddNextNote?: (fromId: string, side: EsSide) => void;
+  // Read a photograph of the wall dropped on the canvas (spec/139 Phase 8).
+  // Present only on an event-storming board with the model configured.
+  onDropPhoto?: (file: File) => void;
   // True when a new element cannot land at all: a locked tab, a view-only
   // session, or a hidden / locked active layer (spec/74). The insert-between
   // preview reads it so it never offers a slot the drop would refuse.

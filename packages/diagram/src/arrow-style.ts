@@ -1,4 +1,4 @@
-import { type ArrowElement } from './index';
+import type { ArrowElement } from './index';
 
 // Arrow appearance presets: the named thickness / arrowhead-size /
 // arrowhead-shape / path-style options, their px (or marker) mappings,

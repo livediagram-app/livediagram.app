@@ -26,6 +26,19 @@ const OUT_DIR = path.join(ROOT, 'apps', 'live', 'out');
 
 const LIVE_PORT = Number(process.env.E2E_LIVE_PORT ?? 3002);
 const API_PORT = Number(process.env.E2E_API_PORT ?? 8787);
+// Two switches for trying the editor as a DIFFERENT deployment would run it,
+// beside a stack that is already up:
+//   E2E_LIVE_ONLY=1  serve the static editor only, proxying to the api
+//                    already listening on E2E_API_PORT (no second worker).
+//   E2E_NO_AI=1      answer /api/capabilities with aiEnabled: false, as a
+//                    deployment with no AI key does — so the photo import
+//                    reads with the in-browser model.
+//   E2E_AI_BUDGET_SPENT=1  answer /api/ai/read-notes with 429 `ai_quota`, as a
+//                    hosted reader whose free budget is spent does — so the
+//                    photo import fails over to the in-browser model.
+const LIVE_ONLY = process.env.E2E_LIVE_ONLY === '1';
+const NO_AI = process.env.E2E_NO_AI === '1';
+const AI_BUDGET_SPENT = process.env.E2E_AI_BUDGET_SPENT === '1';
 
 const children = [];
 function run(cmd, args, opts = {}) {
@@ -81,12 +94,22 @@ const MIME = {
   '.ico': 'image/x-icon',
   '.txt': 'text/plain; charset=utf-8',
   '.woff2': 'font/woff2',
+  // Cloudflare serves it so; streaming compilation needs it.
+  '.wasm': 'application/wasm',
   '.map': 'application/json; charset=utf-8',
 };
 
 function serveFile(res, filePath) {
   const ext = path.extname(filePath);
-  res.writeHead(200, { 'Content-Type': MIME[ext] ?? 'application/octet-stream' });
+  res.writeHead(200, {
+    'Content-Type': MIME[ext] ?? 'application/octet-stream',
+    // NEVER let a browser hold on to this build. The HTML names the hashed
+    // JS chunks, so a cached page keeps running the code it was built with —
+    // and a tab left open across a rebuild then shows behaviour that no
+    // longer exists in the repo, which is indistinguishable from the fix not
+    // working. Costs nothing here: this server exists for e2e and review.
+    'Cache-Control': 'no-store, must-revalidate',
+  });
   createReadStream(filePath).pipe(res);
 }
 
@@ -128,10 +151,54 @@ function proxyApi(req, res) {
 function startLiveServer() {
   const server = http.createServer((req, res) => {
     const pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
+    if (NO_AI && pathname === '/api/capabilities') {
+      // Everything else about the real answer stands; only the AI is off.
+      http
+        .get({ host: '127.0.0.1', port: API_PORT, path: '/api/capabilities' }, (up) => {
+          let body = '';
+          up.on('data', (c) => (body += c));
+          up.on('end', () => {
+            let caps = {};
+            try {
+              caps = JSON.parse(body);
+            } catch {
+              /* the api answered something else: report AI off regardless */
+            }
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ ...caps, aiEnabled: false }));
+          });
+        })
+        .on('error', () => {
+          res.writeHead(502, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'api_unreachable' }));
+        });
+      return;
+    }
+    if (AI_BUDGET_SPENT && pathname === '/api/ai/read-notes') {
+      // Drain the body first, as a real server would, then refuse for quota.
+      req.resume();
+      req.on('end', () => {
+        res.writeHead(429, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'ai_quota' }));
+      });
+      return;
+    }
     if (pathname === '/api' || pathname.startsWith('/api/')) return proxyApi(req, res);
     // Match the worker's /explorer → /explorer/recent redirect.
     if (pathname === '/explorer' || pathname === '/explorer/') {
       res.writeHead(302, { Location: '/explorer/recent' });
+      res.end();
+      return;
+    }
+    // Cloudflare's assets layer (`html_handling` defaults to
+    // "auto-trailing-slash") answers `/new/` — whose file is `new.html`, not
+    // `new/index.html` — with a redirect to `/new`, query intact. Without
+    // this the stack answered 404, the page recovered client-side without its
+    // query string, and `?truth=1` typed on `/new/` armed nothing.
+    const bare = pathname.length > 1 && pathname.endsWith('/') ? pathname.slice(0, -1) : null;
+    if (bare && !bare.startsWith('/diagram') && existsSync(path.join(OUT_DIR, `${bare}.html`))) {
+      const search = new URL(req.url, 'http://localhost').search;
+      res.writeHead(307, { Location: `${bare}${search}` });
       res.end();
       return;
     }
@@ -151,6 +218,13 @@ async function main() {
     console.error(`[e2e] ${OUT_DIR} missing — run \`pnpm --filter @livediagram/live build\` first`);
     process.exit(1);
   }
+  if (LIVE_ONLY) {
+    console.log(
+      `[e2e] static editor only, proxying to the api on :${API_PORT}${NO_AI ? ', AI reported off' : ''}${AI_BUDGET_SPENT ? ', AI budget spent' : ''}`,
+    );
+    startLiveServer();
+    return;
+  }
   console.log('[e2e] applying local D1 migrations…');
   await waitForExit(
     run('pnpm', ['--filter', '@livediagram/api', 'run', 'db:migrate:local'], { cwd: ROOT }),
@@ -167,6 +241,11 @@ async function main() {
       '--local',
       '--port',
       String(API_PORT),
+      // Production's origin allow-list lives in wrangler.toml [vars], which
+      // `wrangler dev` reads too; it would 403 every AI call from this
+      // localhost editor. Blank it, as `pnpm dev` does (spec/25).
+      '--var',
+      'AI_ALLOWED_ORIGINS:',
     ],
     {
       cwd: ROOT,

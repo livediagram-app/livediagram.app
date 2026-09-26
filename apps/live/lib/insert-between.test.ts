@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ArrowElement, Element, StickyElement } from '@livediagram/diagram';
+import { type ArrowElement, type Element, type StickyElement } from '@livediagram/diagram';
 import {
   DEFAULT_INSERTION_GAP,
   applyInsertionShift,
@@ -84,7 +84,7 @@ describe('findInsertionSlot', () => {
         cursorY,
         incomingWidth: 200,
         elements: WITH_D,
-        excludeId: 'd',
+        excludeIds: new Set(['d']),
       });
 
     it('never pushes the dragged note aside to make room for itself', () => {
@@ -105,7 +105,7 @@ describe('findInsertionSlot', () => {
         cursorY: 100,
         incomingWidth: 200,
         elements: overlapping,
-        excludeId: 'drag',
+        excludeIds: new Set(['drag']),
       });
       expect(slot?.leftId).toBe('a');
       expect(slot?.rightId).toBe('b');
@@ -132,7 +132,7 @@ describe('findInsertionSlot', () => {
         cursorY: 100,
         incomingWidth: 200,
         elements: ROW,
-        excludeId: 'c',
+        excludeIds: new Set(['c']),
       });
       expect(slot?.rightId).toBe('b');
       expect(slot?.shiftDx).toBe(272);
@@ -146,7 +146,7 @@ describe('findInsertionSlot', () => {
           cursorY: 100,
           incomingWidth: 200,
           elements: [note('a', 0), note('b', 272)],
-          excludeId: 'b',
+          excludeIds: new Set(['b']),
         }),
       ).toBeNull();
     });
@@ -462,5 +462,66 @@ describe('insertionGhostCentre', () => {
   it('centres the incoming note on the slot it opened', () => {
     const slot = slotAt(236)!;
     expect(insertionGhostCentre(slot, 200)).toEqual({ x: 372, y: 100 });
+  });
+});
+
+// Timeline lanes (spec/139 Phase 6): with lanes on, the board has committed to
+// The ripple opens by the incoming note plus the row's own gap, and that is
+// the whole rule on every board. A lanes board used to round it up to a column
+// lattice, which is exactly the assumption that broke: a gutter of 72 is not a
+// multiple of a half note, so the rounding shifted rows off their own rhythm.
+describe('findInsertionSlot — on a lanes-on board', () => {
+  it('opens by the row rhythm, not a lattice', () => {
+    const slot = findInsertionSlot({
+      cursorX: 236,
+      cursorY: 100,
+      incomingWidth: 200,
+      elements: ROW,
+    });
+    // 200 + the row's own 72 gap.
+    expect(slot?.shiftDx).toBe(272);
+  });
+
+  it('falls back to the board gap when the row has none to measure', () => {
+    const flush = [note('a', 0), note('b', 200), note('c', 400)];
+    const slot = findInsertionSlot({
+      cursorX: 200,
+      cursorY: 100,
+      incomingWidth: 200,
+      elements: flush,
+    });
+    expect(slot!.shiftDx).toBe(200 + DEFAULT_INSERTION_GAP);
+  });
+
+  it('is unrounded when lanes are off', () => {
+    expect(
+      findInsertionSlot({ cursorX: 236, cursorY: 100, incomingWidth: 200, elements: ROW })?.shiftDx,
+    ).toBe(272);
+  });
+});
+
+// Two notes one gutter apart are two notes (spec/139 Phase 7: docking is
+// retired), so the gap between them is a gap like any other.
+describe('findInsertionSlot — notes a gutter apart', () => {
+  const esNote = (id: string, kind: string, x: number) =>
+    ({
+      id,
+      type: 'sticky',
+      esKind: kind,
+      fixedSize: true,
+      x,
+      y: 0,
+      width: 200,
+      height: 200,
+    }) as Element;
+
+  it('offers the gutter between a command and its event as a gap', () => {
+    const slot = findInsertionSlot({
+      cursorX: 992,
+      cursorY: 100,
+      incomingWidth: 200,
+      elements: [esNote('c', 'command', 784), esNote('e', 'domain-event', 1000)],
+    });
+    expect(slot).toMatchObject({ leftId: 'c', rightId: 'e' });
   });
 });

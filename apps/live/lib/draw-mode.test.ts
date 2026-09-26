@@ -50,6 +50,12 @@ const INTENT_SAMPLES: Record<PendingDraw['type'], PendingDraw[]> = {
 const ALL_INTENTS: PendingDraw[] = Object.values(INTENT_SAMPLES).flat();
 
 describe('drawBannerMessage', () => {
+  it('says a workshop note is placed, not drawn (spec/139)', () => {
+    expect(drawBannerMessage({ type: 'sticky', esKind: 'command' }, false)).toBe(
+      'Click to place a command note',
+    );
+  });
+
   it('renders the combined tap/drag copy per box intent', () => {
     expect(drawBannerMessage({ type: 'text' }, false)).toBe('Tap to drop or drag to place text');
     expect(drawBannerMessage({ type: 'sticky' }, false)).toBe(

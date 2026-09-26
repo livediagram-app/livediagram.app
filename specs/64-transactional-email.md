@@ -66,7 +66,7 @@ help article.
 - `RESEND_API_KEY` (secret) — when **unset**, `emailEnabled(env)` is false and
   every send is a no-op. No `email_lifecycle` writes happen either (the
   first-sighting upsert is itself guarded), so a deployment with email off does
-  zero extra work. This mirrors the `OPENAI_API_KEY`-absent → AI-hidden pattern.
+  zero extra work. This mirrors the model-key-absent → AI-hidden pattern.
 - `RESEND_FROM` (plain var, optional) — the From identity. Default
   `livediagram <hello@livediagram.app>`. Requires a domain verified in Resend.
 - `APP_BASE_URL` (plain var, optional) — public origin for links in emails.

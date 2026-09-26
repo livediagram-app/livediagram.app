@@ -9,7 +9,7 @@
 // createImage is the THEME: the caller maps the tab theme to colours (keeping
 // this package theme-agnostic) and each component takes the ones it wears.
 
-import { type Element, type ImageElement, type ShapeElement, type ShapeKind } from './index';
+import type { Element, ImageElement, ShapeElement, ShapeKind } from './index';
 import { createImage } from './factories';
 import { createShape, SHAPE_DEFAULT_SIZE } from './shape-factory';
 import { ACCENT_BAR_TEXT, HERO_DEFAULT_CAPTION } from './web-components';

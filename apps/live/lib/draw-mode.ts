@@ -8,7 +8,7 @@ import type {
   SessionTool,
   ShapeKind,
 } from '@livediagram/diagram';
-import { EMBED_PROVIDER_LABEL } from '@livediagram/diagram';
+import { EMBED_PROVIDER_LABEL, eventStormingNote } from '@livediagram/diagram';
 
 // Draw-to-size intent. Picking any element from the palette except the
 // annotation (spec/09 "Placement on add") stashes the intent here; the canvas
@@ -147,7 +147,11 @@ export function drawBannerMessage(intent: PendingDraw, isMobile: boolean): strin
     case 'text':
       return 'Tap to drop or drag to place text';
     case 'sticky':
-      return 'Tap to drop or drag to draw a sticky note';
+      // A workshop note has one size for life (spec/139), so it is placed, not
+      // drawn; the ghost under the pointer shows where.
+      return intent.esKind
+        ? `Click to place a ${eventStormingNote(intent.esKind).label.toLowerCase()} note`
+        : 'Tap to drop or drag to draw a sticky note';
     case 'image':
       return 'Tap to drop or drag to draw image bounds';
     case 'table':

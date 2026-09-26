@@ -86,6 +86,7 @@ type Diagram = {
 type Tab = {
   id: TabId;
   name: string;
+  kind?: TabKind; // 'diagram' | 'event-storming' (spec/139); absent = 'diagram'
   elements: Element[];
   // …plus theme, backgroundColor/Pattern/Opacity, patternColor, locked
 };
@@ -95,7 +96,7 @@ type Tab = {
 //                            / document / stadium / actor / cloud / browser / monitor / laptop
 //                            / phone / tablet)
 //   TextElement
-//   StickyElement
+//   StickyElement    (optionally esKind — the event-storming note kind, spec/139)
 //   ImageElement     (boxed, references an R2-stored bitmap by imageId, see spec/19)
 //   ArrowElement     (from + to Endpoints, arrowStyle, arrowheadSize, optional label)
 //   FreehandElement  (boxed, carries a normalised polyline + optional auto-close flag for

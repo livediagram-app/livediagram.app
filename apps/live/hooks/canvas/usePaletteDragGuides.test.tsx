@@ -1,13 +1,20 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import type { Element } from '@livediagram/diagram';
+import {
+  ES_LANE_PITCH,
+  laneCentre,
+  type Element,
+  type EsTimeline,
+  type EventStormingNoteKind,
+} from '@livediagram/diagram';
 import {
   getPaletteDragSnap,
   setPaletteDragPreview,
   setPaletteDragSnap,
 } from '@/lib/palette-drag-preview';
 import { getInsertionSlot, setInsertionSlot } from '@/lib/insertion-preview';
+import { getLanePreview, setLanePreview } from '@/lib/lane-preview';
 import { usePaletteDragGuides } from './usePaletteDragGuides';
 
 // A row of three 200x200 notes with 72 gaps: 0..200, 272..472, 544..744.
@@ -47,13 +54,21 @@ function altDragOver(target: HTMLElement, clientX: number, clientY: number) {
   dragOver(target, clientX, clientY, true);
 }
 
-function render(opts: { esBoard: boolean; elements?: Element[]; zoom?: number; note?: boolean }) {
+function render(opts: {
+  esBoard: boolean;
+  elements?: Element[];
+  zoom?: number;
+  note?: boolean;
+  timeline?: EsTimeline | null;
+  esKind?: EventStormingNoteKind;
+}) {
   const wrapperRef = wrapper();
   setPaletteDragPreview({
     kind: 'square',
     width: 200,
     height: 200,
     note: opts.note !== false,
+    ...(opts.esKind ? { esKind: opts.esKind } : {}),
   });
   const view = renderHook(() =>
     usePaletteDragGuides({
@@ -67,6 +82,7 @@ function render(opts: { esBoard: boolean; elements?: Element[]; zoom?: number; n
         createBlocked: false,
       },
       inertIds: new Set<string>(),
+      timeline: opts.timeline ?? null,
     }),
   );
   return { ...view, wrapperRef };
@@ -76,7 +92,62 @@ afterEach(() => {
   setPaletteDragPreview(null);
   setInsertionSlot(null);
   setPaletteDragSnap(null);
+  setLanePreview(null);
   document.body.innerHTML = '';
+});
+
+// Timeline lanes (spec/139 Phase 6) on the palette path. The ghost, the lit
+// lane and the drop all read ONE snap, so these assert the published offset —
+// which is exactly what the drop consumes.
+describe('usePaletteDragGuides — timeline lanes (spec/139)', () => {
+  const TIMELINE: EsTimeline = { originY: 0 };
+  // A cursor a few px off lane 1, in note-centre coords. x has nothing to
+  // line up with on an empty board, so it stays where the cursor is.
+  const CX = 309 + 100;
+  const CY = ES_LANE_PITCH + 7 + 100;
+
+  it('lights the lane and carries the note onto it', () => {
+    const { wrapperRef } = render({ esBoard: true, timeline: TIMELINE, elements: [] });
+    dragOver(wrapperRef.current, CX, CY);
+    expect(getLanePreview()).toMatchObject({ laneIndex: 1 });
+    const snap = getPaletteDragSnap();
+    expect(CX + snap!.dx - 100).toBe(309);
+    expect(CY + snap!.dy).toBe(laneCentre(1, TIMELINE));
+  });
+
+  it('does nothing while lanes are off', () => {
+    const { wrapperRef } = render({ esBoard: true, timeline: null, elements: [] });
+    dragOver(wrapperRef.current, CX, CY);
+    expect(getLanePreview()).toBeNull();
+    expect(getPaletteDragSnap()).toEqual({ dx: 0, dy: 0 });
+  });
+
+  it('never snaps a SHAPE dragged in from the palette', () => {
+    const { wrapperRef } = render({
+      esBoard: true,
+      timeline: TIMELINE,
+      elements: [],
+      note: false,
+    });
+    dragOver(wrapperRef.current, CX, CY);
+    expect(getLanePreview()).toBeNull();
+  });
+
+  it('stands down for an open insertion slot', () => {
+    const { wrapperRef } = render({ esBoard: true, timeline: TIMELINE });
+    altDragOver(wrapperRef.current, 236, 100);
+    expect(getInsertionSlot()).not.toBeNull();
+    expect(getLanePreview()).toBeNull();
+  });
+
+  it('clears the lit lane when the drag leaves the window', () => {
+    const { wrapperRef } = render({ esBoard: true, timeline: TIMELINE, elements: [] });
+    dragOver(wrapperRef.current, CX, CY);
+    act(() => {
+      document.dispatchEvent(new Event('dragleave', { bubbles: true }));
+    });
+    expect(getLanePreview()).toBeNull();
+  });
 });
 
 describe('usePaletteDragGuides — insert between (spec/139)', () => {

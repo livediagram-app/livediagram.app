@@ -35,6 +35,7 @@ import { PaletteFavouritesTab } from '@/components/palette/PaletteFavouritesTab'
 import type { ComponentProps } from 'react';
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { PaletteTileActions } from '@/components/palette/PaletteTileGrid';
+import type { EsBoardControls } from '@/components/palette/EventStormingBoardRows';
 
 // Deps are named exactly as the tab bodies' own props, and typed off those
 // components, so the array below is verbatim from where it used to live and
@@ -58,6 +59,9 @@ export function paletteCategoryTabs(
   deps: {
     pendingDraw: PendingDraw | null | undefined;
     tileActions: PaletteTileActions;
+    // Board-level switches for the Event Storming category (spec/139),
+    // supplied only when the active tab IS one of those boards.
+    esBoardControls?: EsBoardControls;
   } & IconDeps &
     StickerDeps &
     TechDeps,
@@ -65,6 +69,7 @@ export function paletteCategoryTabs(
   const {
     pendingDraw,
     tileActions,
+    esBoardControls,
     addIcon,
     iconQuery,
     setIconQuery,
@@ -91,7 +96,13 @@ export function paletteCategoryTabs(
     write: <PaletteWriteTab pendingDraw={pendingDraw} actions={tileActions} />,
     draw: <PaletteDrawTab pendingDraw={pendingDraw} actions={tileActions} />,
     devices: <DevicePickerTab pendingDraw={pendingDraw} actions={tileActions} />,
-    'event-storming': <PaletteEventStormingTab pendingDraw={pendingDraw} actions={tileActions} />,
+    'event-storming': (
+      <PaletteEventStormingTab
+        pendingDraw={pendingDraw}
+        actions={tileActions}
+        board={esBoardControls}
+      />
+    ),
     icons: (
       <IconPickerTab
         addIcon={addIcon}

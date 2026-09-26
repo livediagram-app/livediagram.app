@@ -39,6 +39,7 @@ type Props = Pick<
   | 'canvasEmpty'
   | 'pendingDraw'
   | 'esBoard'
+  | 'esBoardControls'
   | 'themeTint'
 > &
   PaletteAddHandlers & {

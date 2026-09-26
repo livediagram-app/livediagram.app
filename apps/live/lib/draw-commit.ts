@@ -1,5 +1,6 @@
 import {
   defaultSessionConfig,
+  eventStormingNote,
   eventStormingNoteSize,
   eventStormingTilt,
   eventStormingBoardLayerId,
@@ -8,6 +9,7 @@ import {
   isLayerLocked,
   isLayerVisible,
   REACTION_PAD_LABEL,
+  type EventStormingNoteKind,
   type StickyElement,
 } from '@livediagram/diagram';
 import { ARROW_SNAP_THRESHOLD_PX, inheritedSizeFor } from '@/lib/canvas';
@@ -33,6 +35,7 @@ import type { ThemeDefinition } from '@livediagram/diagram';
 import { isTechIconId } from '@/lib/tech-icons';
 import { getSticker, stickerDropSize } from '@/lib/stickers';
 import type { PendingDraw } from '@/lib/draw-mode';
+import { stampSizeFor } from '@/lib/stamp-placement';
 
 // The pure element construction behind commitDraw (spec/09 draw-to-add),
 // lifted out of useShapeDrawing: each builder interprets the gesture's
@@ -252,8 +255,11 @@ export function buildDrawnBoxed(
     isTap && intent.type === 'shape' && intent.kind === 'sticker' && intent.stickerId
       ? stickerDropSize(getSticker(intent.stickerId), { width: drawnWidth, height }).width
       : drawnWidth;
-  const x = isTap ? startX - width / 2 : dragBox.x;
-  const y = isTap ? startY - height / 2 : dragBox.y;
+  // A fixed-size workshop note is STAMPED (spec/139 Phase 4): centred on the
+  // release point at its own final size, whatever the gesture did.
+  const stamp = stampSizeFor(intent, activeTab);
+  const x = stamp ? endX - stamp.width / 2 : isTap ? startX - width / 2 : dragBox.x;
+  const y = stamp ? endY - stamp.height / 2 : isTap ? startY - height / 2 : dragBox.y;
   const colours = deriveNewBoxedColours(base, {
     backgroundColor: activeTab.backgroundColor,
     patternColor: activeTab.patternColor,
@@ -348,4 +354,29 @@ export function buildDrawnBoxed(
       ? { stickerId: intent.stickerId }
       : {}),
   } as typeof base;
+}
+
+// The ONE way a workshop note is minted (spec/139), for every entry point that
+// is not a draw gesture: the anchor-add affordance, and a photo import. It
+// goes through `buildDrawnBoxed` rather than beside it, so fill, silhouette,
+// tilt, fixed size, auto-fit, caps and layer routing can never drift between
+// how a note arrives — which is the rule the palette tap and the palette drag
+// already share, and the one this board has paid for before.
+//
+// Takes the note's CENTRE, because that is what the tap path takes.
+export function buildEventStormingNote(
+  kind: EventStormingNoteKind,
+  centreX: number,
+  centreY: number,
+  activeTab: Tab,
+): StickyElement {
+  return buildDrawnBoxed(
+    { type: 'sticky', fill: eventStormingNote(kind).fill, esKind: kind },
+    centreX,
+    centreY,
+    centreX,
+    centreY,
+    null,
+    activeTab,
+  ) as StickyElement;
 }

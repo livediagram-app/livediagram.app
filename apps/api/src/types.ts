@@ -108,17 +108,27 @@ export type Env = {
   // Public origin used to build links in emails (optional). Defaults to
   // "https://livediagram.app".
   APP_BASE_URL?: string;
-  // OpenAI API key for the AI assistance feature (spec/25). When absent
-  // the feature is hidden entirely — GET /api/capabilities returns
-  // { aiEnabled: false } and POST /api/ai returns 503. Set via
-  // `wrangler secret put OPENAI_API_KEY` for production; drop into
+  // WHOSE model, and where (spec/25). The PROVIDER is inferred from which of
+  // these keys is set, because a key is provider-specific and its name should
+  // say so — see ai-provider.ts. Exactly one may be set; none = the whole AI
+  // surface is hidden (capabilities reports aiEnabled:false and the AI routes
+  // answer 503), which is the self-host default.
+  //
+  // Set via `wrangler secret put <NAME>` in production; drop into
   // `apps/api/.dev.vars` for local dev (gitignored, never commit).
+  GOOGLE_AI_STUDIO_API_KEY?: string;
   OPENAI_API_KEY?: string;
-  // Override the OpenAI model (optional). Defaults to gpt-4o.
-  // Set in wrangler.toml [vars] if you want a different model.
-  OPENAI_MODEL?: string;
+  // Any other OpenAI-compatible endpoint (Mistral, OpenRouter, a local
+  // llama.cpp or Ollama). Needs AI_BASE_URL and AI_MODEL with it.
+  AI_API_KEY?: string;
+  AI_BASE_URL?: string;
+  // Overrides the preset's default model for any provider.
+  AI_MODEL?: string;
+  // Overrides it for the crop reader only (spec/139 Phase 8); defaults to the
+  // resolved AI_MODEL, so a deployment only sets it to split the two apart.
+  AI_VISION_MODEL?: string;
   // Per-IP rate limiter for POST /api/ai. Caps AI requests at 20/60s
-  // per IP so a single client can't exhaust the OpenAI budget.
+  // per IP so a single client can't exhaust the operator's model budget.
   // Optional: absent (self-host) falls through to "allow".
   AI_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Per-token read limiter for token-authed GETs (spec/61 §3.5), keyed on the

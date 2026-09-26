@@ -61,6 +61,14 @@ export type CommandContext = {
   // Spotlight is desktop-only (hover + click-to-resize don't map to touch),
   // so it is withheld on a phone the same way the dropdown omits it.
   isMobile: boolean;
+  // Event storming (spec/139): the board-level verbs are offered only on one
+  // of those boards, where they mean something.
+  esBoard: boolean;
+  // Are timeline lanes on right now (spec/139 Phase 6)? Names the verb
+  // honestly rather than offering a switch whose direction you have to guess.
+  // Can this deployment read a photographed wall (spec/139 Phase 8)? False
+  // without a model key, where the verb would be an offer nobody can accept.
+  photoImportAvailable: boolean;
 };
 
 // The handlers the commands call. Injected by useEditorCommands; each is the
@@ -98,6 +106,10 @@ export type CommandHandlers = {
   // Switches the canvas tool — the same setter the palette's tool dropdown
   // calls, so the pressed state and telemetry are identical either way.
   setTool: (tool: string) => void;
+  // Timeline lanes on an event-storming board (spec/139 Phase 6) — the same
+  // flip the palette's switch runs.
+  // Open the wall-photo reader (spec/139 Phase 8).
+  openPhotoImport: () => void;
 };
 
 // The canvas tools reachable from search, in the tool dropdown's own order.
@@ -260,6 +272,19 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
   // --- Diagram / tab commands. Always available in-diagram (independent of
   // the selection), so a power user can share / rename / theme without first
   // clearing what's selected.
+  // Event-storming board verbs (spec/139). Only on such a board: a timeline
+  // lane on an ordinary diagram would be a grid for nothing.
+  if (ctx.esBoard) {
+    if (ctx.photoImportAvailable) {
+      out.push({
+        id: 'photo-import',
+        name: 'Add notes from a photo',
+        keywords: 'photo camera picture wall sticky scan ocr read import capture snapshot',
+        run: h.openPhotoImport,
+      });
+    }
+  }
+
   out.push({
     id: 'create-tab',
     name: 'Create new tab',

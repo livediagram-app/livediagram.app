@@ -25,6 +25,12 @@ import { EditorAnchoredPopovers } from '@/components/panels/EditorAnchoredPopove
 import { EditorSearchPanel } from '@/components/panels/EditorSearchPanel';
 import { ThemeModeBanner } from '@/components/chrome/ThemeModeBanner';
 import { ModifierHintBanner } from '@/components/chrome/ModifierHintBanner';
+import { PhotoDraftBar } from '@/components/chrome/PhotoDraftBar';
+import { PhotoImportProgress } from '@/components/chrome/PhotoImportProgress';
+import { PhotoReviewOverlay } from '@/components/chrome/PhotoReviewOverlay';
+import { PHOTO_ACCEPT_ATTR } from '@/lib/photo-detect';
+import { usePhotoDraftView } from '@/lib/photo-draft-preview';
+import { draftNotesOf } from '@livediagram/diagram';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { useDismissibleBanner } from '@/hooks/ui/useDismissibleBanner';
 import { useIsOfflineDiagram } from '@/hooks/persistence/useIsOfflineDiagram';
@@ -83,6 +89,10 @@ export function EditorView() {
     canvasTool,
     drag,
     esBoard,
+    photoDraft,
+    photoImportAvailable,
+    onPhotoPicked,
+    photoPickerRef,
     clearTabContent,
     clerkUserId,
     closeContextMenu,
@@ -177,6 +187,10 @@ export function EditorView() {
     activeTab.elements.length === 0;
   // The primary selection's flavour for the modifier hint's no-drag messages.
   const shiftSelected = selectedId ? activeTab.elements.find((el) => el.id === selectedId) : null;
+  // The photo draft awaiting a decision, and the session-local view state
+  // that goes with it (spec/139 Phase 8).
+  const draftNotes = draftNotesOf(activeTab.elements);
+  const draftView = usePhotoDraftView();
   const backdrop = resolveTabBackdrop(activeTab, appearance);
   const shiftSelectedKind = !shiftSelected
     ? null
@@ -461,6 +475,70 @@ export function EditorView() {
           hasElements={activeTab.elements.length > 0}
           suppressed={canvasTool === 'format' || formatSourceId !== null || pendingDraw !== null}
         />
+
+        {/* What a photo import is doing BEFORE the draft lands: a progress
+            strip from the moment the file is picked, with Cancel. */}
+        <PhotoImportProgress state={photoDraft.state} onCancel={photoDraft.cancelReading} />
+
+        {/* Step 1 + 2 of the wizard (spec/139 Phase 9): the photo with every
+            box, tickable, and the words editable. Nothing lands until Add. */}
+        {photoDraft.state.stage === 'review' && photoDraft.review ? (
+          <PhotoReviewOverlay
+            review={photoDraft.review}
+            reading={
+              photoDraft.state.readSoFar < photoDraft.state.found && !photoDraft.review.readError
+            }
+            modelDownload={photoDraft.state.modelDownload}
+            readSoFar={photoDraft.state.readSoFar}
+            readTotal={photoDraft.state.found}
+            readerBackend={photoDraft.state.readerBackend}
+            readerWhy={photoDraft.state.readerWhy}
+            readerFallback={photoDraft.state.readerFallback}
+            rereading={photoDraft.rereading}
+            onReread={photoDraft.reread}
+            onConfirm={photoDraft.confirm}
+            onCancel={photoDraft.cancelReview}
+            // "Try another photo": leave this review and open the picker
+            // again, inside the same click, so the browser allows the dialog.
+            onRetake={() => {
+              photoDraft.cancelReview();
+              photoPickerRef.current?.click();
+            }}
+          />
+        ) : null}
+
+        {/* A photo import awaiting Add or Discard (spec/139 Phase 8). Derived
+            from the tab's own draft notes, so a reload mid-import comes back to
+            the same decision rather than to a board full of strays. Hidden
+            while the words are still being read: that moment belongs to the
+            progress strip above. */}
+        {photoDraft.state.stage !== 'detecting' ? (
+          <PhotoDraftBar
+            draftCount={draftNotes.length}
+            read={draftView?.read ?? null}
+            readError={draftView?.readError}
+            matchedCount={draftView ? draftView.matchedIds.size : null}
+            busy={photoDraft.state.stage === 'committing'}
+            onAccept={photoDraft.accept}
+            onDiscard={photoDraft.discard}
+          />
+        ) : null}
+
+        {/* The one file input behind "Add from photo". Hidden, opened by the
+            palette row and the command palette; `capture` makes a phone open
+            the camera straight away, because the act is "photograph this wall". */}
+        {photoImportAvailable ? (
+          <input
+            ref={photoPickerRef}
+            type="file"
+            accept={PHOTO_ACCEPT_ATTR}
+            capture="environment"
+            className="hidden"
+            aria-hidden
+            tabIndex={-1}
+            onChange={onPhotoPicked}
+          />
+        ) : null}
       </div>
     </CanvasSurfaceProvider>
   );

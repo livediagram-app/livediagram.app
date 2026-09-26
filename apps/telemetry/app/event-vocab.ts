@@ -50,7 +50,7 @@ export const CATEGORY_DESCRIPTIONS: Record<TelemetryCategory, string> = {
   Email:
     'Transactional and lifecycle email leaving the api worker (welcome, onboarding, team invites, notifications). The template kind only, never a recipient.',
   Error:
-    'Failures, counted generically: API responses that errored (by HTTP status, plus worker-reported internal crashes) and client-side uncaught exceptions. Never a message, stack, or URL.',
+    'Failures, counted generically: API responses that errored (by HTTP status, plus worker-reported internal crashes) client-side uncaught exceptions, and warnings (a degradation the author was carried through, such as a spent AI budget failing over to the in-browser reader). Never a message, stack, or URL.',
 };
 
 // Per-category colour used by every chart so the category-share bar,
@@ -174,6 +174,34 @@ export function eventExplanation(category: string, action: string, type: string 
   }
   if (category === 'Canvas' && action === 'Used' && type === 'InsertBetween') {
     return 'Someone held Alt and dragged a note into the gap between two notes on an event-storming board (spec/139), and the board made room for it.';
+  }
+  if (category === 'Canvas' && action === 'Used' && type === 'AddNextNote') {
+    return 'Someone clicked a next-note button beside a note on an event-storming board (spec/139) and got the note the notation puts there.';
+  }
+  if (category === 'Canvas' && action === 'Used' && type === 'ChangeNoteKind') {
+    return 'Someone changed what kind of note a sticky is on an event-storming board (spec/139), say from a domain event to a hotspot.';
+  }
+  // Retired with the lane switch (spec/139 Phase 6: lanes are what the board
+  // is, not a mode); still described because stored events carry them.
+  if (category === 'Canvas' && action === 'Used' && type === 'TimelineLanesOn') {
+    return 'Someone turned timeline lanes on for an event-storming board (spec/139). Retired: lanes are always on.';
+  }
+  if (category === 'Canvas' && action === 'Used' && type === 'TimelineLanesOff') {
+    return 'Someone turned timeline lanes off for an event-storming board (spec/139). Retired: lanes are always on.';
+  }
+  // Retired with anchor docking (spec/139 Phase 7); still described because
+  // stored events carry them.
+  if (category === 'Canvas' && action === 'Used' && type === 'DockAdd') {
+    return "Someone clicked a note's anchor on an event-storming board (spec/139) and got the matching note already docked to it. Retired: now AddNextNote.";
+  }
+  if (category === 'Canvas' && action === 'Used' && type === 'Dock') {
+    return 'Someone dragged a note onto a compatible face on an event-storming board (spec/139) and it docked. Retired with docking.';
+  }
+  if (category === 'Canvas' && action === 'Used' && type === 'Undock') {
+    return 'Someone pulled a docked note away from its host on an event-storming board (spec/139). Retired with docking.';
+  }
+  if (category === 'AI' && action === 'Used' && type === 'PhotoNotes') {
+    return 'Someone imported the sticky notes from a photograph of a real wall onto an event-storming board (spec/139).';
   }
   if (category === 'Canvas' && action === 'Zoomed' && type) {
     if (type === 'In') return 'Someone tapped the zoom-in button.';

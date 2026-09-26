@@ -1,0 +1,175 @@
+import { AMBIGUOUS_ID, CLASS, seamRadiusFor, threeClassMask, type Rect } from '../mask';
+import { paintBacking, paintDistractors, paintWallMarks, tape } from './backing';
+import { develop, light, randomView, warp } from './camera';
+import { paintFlatWall } from './flat';
+import { layoutNotes, looseNotes } from './layout';
+import { paintNote } from './notes';
+import { BACKINGS, type Backing } from './palette';
+import { planeOf } from './raster';
+import { paintRoom } from './room';
+import { rngFrom } from './rng';
+
+// A procedurally generated photograph of an event-storming wall, with its
+// training mask (experiment E1). Every wall is a pure function of its seed.
+//
+// Two styles: a PHOTO of a wall (light, texture, perspective, noise) and a
+// FLAT one, as a screen draws it (`flat.ts`).
+
+export type WallStyle = 'photo' | 'flat';
+
+export type SyntheticWall = {
+  width: number;
+  height: number;
+  // 8-bit RGB, three bytes per pixel.
+  rgb: Uint8Array;
+  // CLASS per pixel (background / core / seam).
+  classes: Uint8Array;
+  // One box per note the photograph shows enough of to count.
+  boxes: Rect[];
+  noteSize: number;
+  style: WallStyle;
+};
+
+export type SyntheticOptions = {
+  noteSize?: number;
+  backing?: Backing;
+  style?: WallStyle;
+  // The share of seeds drawn flat when `style` is not given.
+  flatChance?: number;
+};
+
+// How often a wall is drawn flat. The draw comes from its own stream, salted
+// off the seed, so every photographed wall stays exactly what the photo-only
+// generator drew for that seed, and a smaller share's flat walls are a subset
+// of a larger one's.
+export const FLAT_CHANCE = 0.2;
+const STYLE_SALT = 0x5f1a7c3;
+const styleOf = (seed: number, share: number): WallStyle =>
+  rngFrom(seed ^ STYLE_SALT).chance(share) ? 'flat' : 'photo';
+
+// The wall plane is larger than the frame, so the camera can turn and tilt
+// without showing an edge that is not there.
+const PLANE_MARGIN = 1.2;
+// A note the frame shows less of than this (behind a box, off the edge) is
+// not asked of the model as a note: its paper is seam, never core.
+const MIN_VISIBLE_FRACTION = 0.2;
+// The range of note sizes, in output pixels: the real walls at the 1000px
+// working size run from ~18px (a dense whiteboard) to ~110px (a close-up).
+// How often a wall also has notes outside its arrangement (see looseNotes).
+const LOOSE_NOTES_CHANCE = 0.35;
+export const NOTE_SIZE_RANGE: [number, number] = [14, 120];
+
+export function syntheticWall(
+  seed: number,
+  width: number,
+  height: number,
+  opts: SyntheticOptions = {},
+): SyntheticWall {
+  const style = opts.style ?? styleOf(seed, opts.flatChance ?? FLAT_CHANCE);
+  const rng = rngFrom(seed);
+  if (style === 'flat') {
+    const flat = paintFlatWall(rng, width, height, opts.noteSize);
+    return finish(flat.rgb, flat.ids, width, height, flat.notes, flat.noteSize, style);
+  }
+  const noteSize = opts.noteSize ?? rng.logRange(...NOTE_SIZE_RANGE);
+  const backing = opts.backing ?? rng.pick(BACKINGS);
+  const plane = planeOf(Math.ceil(width * PLANE_MARGIN), Math.ceil(height * PLANE_MARGIN));
+
+  paintBacking(plane, rng, backing, noteSize);
+  paintWallMarks(plane, rng, noteSize);
+  paintDistractors(plane, rng, noteSize);
+  const notes = layoutNotes(rng, plane.width, plane.height, noteSize);
+  const shadowFall = { dx: rng.range(-0.04, 0.04), dy: rng.range(0.0, 0.08) };
+  for (const note of notes) paintNote(plane, rng, note, shadowFall);
+  // Tape over the notes themselves: the paper stays a note beneath it.
+  const tapes = rng.chance(0.3) ? rng.int(1, 3) : 0;
+  for (let i = 0; i < tapes; i += 1) tape(plane, rng, noteSize);
+  const room = paintRoom(plane, rng, noteSize);
+  if (rng.chance(LOOSE_NOTES_CHANCE)) {
+    const inRoom = room !== null && rng.chance(0.6);
+    const loose = looseNotes(
+      rng,
+      plane.width,
+      plane.height,
+      noteSize,
+      notes.length + 1,
+      inRoom ? room : undefined,
+    );
+    for (const note of loose) paintNote(plane, rng, note, shadowFall);
+    notes.push(...loose);
+  }
+
+  const view = randomView(rng, { w: width, h: height }, plane);
+  const { rgb: linear, ids } = warp(plane, view, width, height);
+  light(linear, width, height, rng);
+  const rgb = develop(linear, width, height, rng);
+  return finish(rgb, ids, width, height, notes, noteSize, style);
+}
+
+// The training target of a painted wall: the three-class mask, and a box per
+// note the frame shows enough of to count.
+function finish(
+  rgb: Uint8Array,
+  ids: Int32Array,
+  width: number,
+  height: number,
+  notes: readonly { id: number; w: number; h: number }[],
+  noteSize: number,
+  style: WallStyle,
+): SyntheticWall {
+  const { boxes, radius } = visibleNotes(ids, width, notes);
+  const classes = threeClassMask(ids, width, height, (id) => radius.get(id) ?? 2);
+  // A sliver of a note (the L of one stacked under another) can show enough
+  // paper yet be seam all through: it is not asked of the model as a note.
+  const cored = new Set<number>();
+  for (let p = 0; p < ids.length; p += 1) if (classes[p] === CLASS.core) cored.add(ids[p]!);
+  return {
+    width,
+    height,
+    rgb,
+    classes,
+    boxes: boxes.filter((b) => cored.has(b.id)).map(({ id: _, ...rect }) => rect),
+    noteSize,
+    style,
+  };
+}
+
+function visibleNotes(
+  ids: Int32Array,
+  width: number,
+  notes: readonly { id: number; w: number; h: number }[],
+): { boxes: (Rect & { id: number })[]; radius: Map<number, number> } {
+  const ext = new Map<number, { x0: number; y0: number; x1: number; y1: number; n: number }>();
+  for (let p = 0; p < ids.length; p += 1) {
+    const id = ids[p]!;
+    if (id <= 0) continue;
+    const x = p % width;
+    const y = (p - x) / width;
+    const e = ext.get(id);
+    if (!e) ext.set(id, { x0: x, y0: y, x1: x, y1: y, n: 1 });
+    else {
+      e.x0 = Math.min(e.x0, x);
+      e.y0 = Math.min(e.y0, y);
+      e.x1 = Math.max(e.x1, x);
+      e.y1 = Math.max(e.y1, y);
+      e.n += 1;
+    }
+  }
+  const byId = new Map(notes.map((n) => [n.id, n]));
+  const boxes: (Rect & { id: number })[] = [];
+  const radius = new Map<number, number>();
+  const hidden = new Set<number>();
+  for (const [id, e] of ext) {
+    const note = byId.get(id)!;
+    radius.set(id, seamRadiusFor(note.w, note.h));
+    if (e.n < MIN_VISIBLE_FRACTION * note.w * note.h) {
+      hidden.add(id);
+      continue;
+    }
+    boxes.push({ id, x: e.x0, y: e.y0, w: e.x1 - e.x0 + 1, h: e.y1 - e.y0 + 1 });
+  }
+  if (hidden.size > 0) {
+    for (let p = 0; p < ids.length; p += 1) if (hidden.has(ids[p]!)) ids[p] = AMBIGUOUS_ID;
+  }
+  return { boxes, radius };
+}

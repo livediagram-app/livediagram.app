@@ -1,4 +1,7 @@
-import { type Element, type ElementId, type Tab } from './index';
+// TYPE-only import, written as `import type` so it is erased: `./index`
+// re-exports this module, and a value-shaped import here is what made that
+// cycle observable at runtime.
+import type { Element, ElementId, Tab } from './index';
 
 // Photoshop-style layers (spec/74). A tab optionally carries an ordered
 // `layers` array (BOTTOM -> TOP: index 0 paints lowest) and each element
@@ -59,18 +62,32 @@ export function resolveLayerId(layerId: string | undefined, layers: Layer[]): st
   return (layers.find((l) => l.id === DEFAULT_LAYER_ID) ?? layers[0]!).id;
 }
 
-// Frames are section backdrops that must paint below their band-mates
-// (spec/09) — same predicate the svg renderer uses.
-const isFrameEl = (el: Element): boolean => el.type === 'shape' && el.shape === 'frame';
+// The paint tier of an element within its band, back to front:
+// - frames are section backdrops that paint below their band-mates (spec/09);
+// - event-storming actors sit in front of every other note, and hotspots in
+//   front of actors (spec/139 Phase 4).
+// Array order decides within a tier.
+function paintTier(el: Element): number {
+  if (el.type === 'shape' && el.shape === 'frame') return 0;
+  if (el.type === 'sticky' && el.esKind === 'actor') return 2;
+  if (el.type === 'sticky' && el.esKind === 'hotspot') return 3;
+  return 1;
+}
 
-const framesFirstIn = (elements: Element[]): Element[] =>
-  elements.some(isFrameEl)
-    ? [...elements.filter(isFrameEl), ...elements.filter((el) => !isFrameEl(el))]
-    : elements;
+// A stable sort by tier. Returns the SAME array when it is already in tier
+// order, which is every band without frames, actors or hotspots out of place.
+function paintOrderIn(elements: Element[]): Element[] {
+  const tiers = elements.map(paintTier);
+  if (tiers.every((t, i) => i === 0 || tiers[i - 1]! <= t)) return elements;
+  return elements
+    .map((el, i) => ({ el, i, tier: tiers[i]! }))
+    .sort((a, b) => a.tier - b.tier || a.i - b.i)
+    .map((x) => x.el);
+}
 
 // The same paint order, kept grouped per layer — for renderers that wrap
 // each band (e.g. in a <g opacity> for per-layer opacity). Bands are
-// bottom -> top, each band's elements in paint order (frames first).
+// bottom -> top, each band's elements in paint order (see paintTier).
 // Hidden layers' bands are dropped unless `includeHidden`.
 export function layerBands(
   elements: Element[],
@@ -80,13 +97,13 @@ export function layerBands(
   const ls = tabLayers(layers);
   if (ls.length === 1) {
     if (!opts?.includeHidden && !isLayerVisible(ls[0]!)) return [];
-    return [{ layer: ls[0]!, elements: framesFirstIn(elements) }];
+    return [{ layer: ls[0]!, elements: paintOrderIn(elements) }];
   }
   const bands = bandsOf(elements, ls);
   const out: { layer: Layer; elements: Element[] }[] = [];
   ls.forEach((layer, i) => {
     if (!opts?.includeHidden && !isLayerVisible(layer)) return;
-    out.push({ layer, elements: framesFirstIn(bands[i]!) });
+    out.push({ layer, elements: paintOrderIn(bands[i]!) });
   });
   return out;
 }

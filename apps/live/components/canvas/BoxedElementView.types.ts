@@ -44,6 +44,13 @@ export type BoxedElementViewProps = {
   // `opacity`. Undefined = 1 (kept undefined at full opacity so the
   // memoised view's props stay stable).
   layerOpacity?: number;
+  // Photo draft (spec/139 Phase 8): this note arrived from a photograph and
+  // has not been accepted yet, so it wears a dashed accent outline.
+  photoDraft?: boolean;
+  // …and this one is a note the photo MATCHED: it gets a small "already here"
+  // badge, with what the photo read when that differed from the board.
+  photoMatched?: boolean;
+  photoReadAs?: string;
   // Element-id-bearing signatures so the parent can pass a single
   // stable callback per kind (rather than recreating a closure per
   // element on every render). The child has `element.id` in scope

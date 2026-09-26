@@ -135,3 +135,16 @@ ordinary spec/74 data).
 - [x] Fold-back: `esStageStamp` → `esBoardLayerStamp`, the `stage` field
       comment now states what it IS (domain vocabulary, drives nothing),
       dead view-bar comments removed, spec/139 opens with the board kind
+
+## Phases 6–8 — lanes, anchor docking, photo import (SHIPPED)
+
+Three additions to the board kind, planned and worked in
+[`plans/event-storming-photo-lanes-docking.md`](event-storming-photo-lanes-docking.md)
+and specified in spec/139's Phase 6 / 7 / 8 sections:
+
+- **Timeline lanes** (`Tab.esTimeline`): a board-level switch giving the y axis
+  a rhythm, lit only while a note is being dragged.
+- **Anchor docking** (`StickyElement.esDock`): the notation's own adjacencies —
+  command↔event, command↔policy, policy↔event — as something the board knows.
+- **Photo import** (`POST /api/ai/photo-notes`): read a photograph of the real
+  wall and add only the notes the board does not already have.
