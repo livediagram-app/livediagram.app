@@ -106,7 +106,7 @@ overlay, or as nothing at all.
 
 ## Visual demo
 
-`demo/sticky-vision/` (repo root) is a standalone page that bundles this
+`docs/demo/sticky-vision/` is a standalone page that bundles this
 package, draws a synthetic kraft wall, runs the detector on it, and overlays
 every box with its kind colour, `row · #order` and confidence. Because the
 synthetic wall knows what it drew, the page scores itself and outlines each

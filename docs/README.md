@@ -19,6 +19,7 @@ These docs are the practical guide: what the app does, how to run it locally, ho
 - ./vision/handwriting-readers.md - when choosing a reader for marker handwriting on a sticky crop
 - ./vision/experiments/e-model.md - when weighing a tiny learned boundary model against the classical pipeline
 - ./vision/experiments/d-resolution.md - when asking whether more pixels per note help the sticky detector
+- ./demo/sticky-vision/index.html - when watching the sticky detector run live on a synthetic wall (`pnpm demo:sticky-vision`)
 
 ## How docs relate to specs
 

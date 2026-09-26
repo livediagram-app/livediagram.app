@@ -358,7 +358,7 @@ kind, one point or one mask at a time; what each is for, and the recall
 experiments they served, are in [experiments/h-recall.md](experiments/h-recall.md).
 
 `pnpm demo:sticky-vision` (repo root) bundles the package with esbuild and
-serves `demo/sticky-vision/index.html`: a synthetic kraft wall the page draws
+serves `docs/demo/sticky-vision/index.html`: a synthetic kraft wall the page draws
 itself, detected live, every box overlaid with kind colour, `row · #order` and
 confidence, and each miss outlined as a dashed ghost because the page knows what
 it drew. "Load a real photo" runs the same pipeline on a photograph.
