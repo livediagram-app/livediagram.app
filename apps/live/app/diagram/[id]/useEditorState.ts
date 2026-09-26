@@ -2620,6 +2620,10 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // paste). `copySelection` feeds the keyboard hook below; paste is
   // driven by a native `paste` listener the hook owns. See
   // useClipboard.
+  // The pointer's canvas position while it is over the canvas, null
+  // otherwise. Written by the canvas host on every pointer move; read by paste
+  // (docs/specs/021-event-storming/event-storming.md "Always on a lane": a paste lands at the pointer).
+  const canvasPointerRef = useRef<{ x: number; y: number } | null>(null);
   const { copySelection, pasteFromClipboard, hasClipboard } = useClipboard({
     isReadOnly,
     embedMode,
@@ -2636,6 +2640,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     diagramId,
     toast,
     onPastePhoto: readPhotoFile,
+    canvasPointerRef,
   });
 
   // Zen / focus mode (docs/specs/007-editor/zen-mode.md). Flips the chrome-hidden flag and emits
@@ -2882,6 +2887,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     clearReactionBurst: reactions.clear,
     broadcastCursor,
     broadcastLaser,
+    canvasPointerRef,
     canRedo,
     canUndo,
     cancelDrawShape,
