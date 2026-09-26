@@ -25,6 +25,32 @@ describe('mergeImportedTab', () => {
     expect(mergeImportedTab(tab(), tab({ layers })).layers).toEqual(layers);
   });
 
+  it('lands an imported workshop board on the lanes and marks it settled', () => {
+    // docs/specs/021-event-storming/event-storming.md "Always on a lane": a file import lands every workshop
+    // note on its nearest lane, x untouched.
+    const note = {
+      id: 'n',
+      type: 'sticky',
+      esKind: 'command',
+      fillColor: '#93c5fd',
+      fixedSize: true,
+      x: 17,
+      y: 130,
+      width: 200,
+      height: 200,
+    } as Tab['elements'][number];
+    const out = mergeImportedTab(tab(), tab({ kind: 'event-storming', elements: [note] }));
+    expect(out.elements[0]).toMatchObject({ x: 17, y: 240 });
+    expect(out.esLanesSettled).toBe(true);
+  });
+
+  it('leaves an ordinary import where it was', () => {
+    const shape = { id: 's', type: 'shape', shape: 'square', x: 0, y: 130, width: 9, height: 9 };
+    const out = mergeImportedTab(tab(), tab({ elements: [shape as Tab['elements'][number]] }));
+    expect(out.elements[0]).toMatchObject({ y: 130 });
+    expect(out.esLanesSettled).toBeUndefined();
+  });
+
   it('keeps what the import does not specify', () => {
     const mine = tab({
       theme: 'charcoal',

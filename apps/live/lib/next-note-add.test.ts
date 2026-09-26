@@ -12,7 +12,8 @@ import { planNextNote } from './next-note-add';
 // where that spot is occupied the board OPENS with the shipped insertion ripple
 // rather than refusing — the same behaviour the Alt gesture already taught.
 
-function note(id: string, kind: string, x: number, y = 500, w = 200, h = 200): StickyElement {
+// Notes sit on lane 2 (centre 580) unless a test says otherwise.
+function note(id: string, kind: string, x: number, y = 480, w = 200, h = 200): StickyElement {
   return {
     id,
     type: 'sticky',
@@ -28,6 +29,13 @@ function note(id: string, kind: string, x: number, y = 500, w = 200, h = 200): S
 const from = note('e', 'domain-event', 1000);
 
 describe('planNextNote', () => {
+  it('lands the next note on the lane of a note free-placed off one', () => {
+    // docs/specs/021-event-storming/event-storming.md "Always on a lane".
+    const free = note('f', 'domain-event', 1000, 130);
+    const plan = planNextNote([free], 'f', 'after', 'policy')!;
+    expect(plan.bounds.y + plan.bounds.height / 2).toBe(340);
+  });
+
   it('puts the note one gutter beside and moves nothing', () => {
     const plan = planNextNote([from], 'e', 'before', 'command')!;
     expect(plan.bounds).toEqual(nextNoteBounds(from, 'before', 'command'));

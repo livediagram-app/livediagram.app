@@ -67,6 +67,18 @@ describe('findInsertionSlot', () => {
     expect(slot?.atY).toBe(100);
   });
 
+  it('centres the slot on the lane of a row free-placed off one', () => {
+    // docs/specs/021-event-storming/event-storming.md "Always on a lane": the inserted note lands on the row's lane.
+    const row = [note('a', 0, 130), note('b', 272, 130)];
+    const slot = findInsertionSlot({
+      cursorX: 236,
+      cursorY: 230,
+      incomingWidth: 200,
+      elements: row,
+    });
+    expect(slot?.atY).toBe(340);
+  });
+
   it('shifts the right-hand note and everything after it, and nothing before', () => {
     const slot = slotAt(236);
     expect(new Set(slot?.shiftedIds)).toEqual(new Set(['b', 'c']));

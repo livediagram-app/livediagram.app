@@ -2,6 +2,7 @@ import {
   ES_NOTE_GAP,
   eventStormingKindOf,
   isBoxed,
+  nearestLaneTop,
   nextNoteBounds,
   rectsIntersect,
   type Element,
@@ -39,7 +40,11 @@ export function planNextNote(
 ): NextNotePlan | null {
   const from = elements.find((el) => el.id === fromId);
   if (!from || !isBoxed(from) || !eventStormingKindOf(from)) return null;
-  const bounds = nextNoteBounds(from, side, kind);
+  // Centred on the note it is added from, and on that note's lane: a note
+  // free-placed off a lane still hands its next note a lane
+  // (docs/specs/021-event-storming/event-storming.md "Always on a lane").
+  const beside = nextNoteBounds(from, side, kind);
+  const bounds = { ...beside, y: nearestLaneTop(beside) };
 
   const collides = elements.some(
     (el) => isBoxed(el) && el.id !== fromId && !inertIds.has(el.id) && rectsIntersect(bounds, el),

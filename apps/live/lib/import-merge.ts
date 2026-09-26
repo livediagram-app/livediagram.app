@@ -1,4 +1,9 @@
-import { migrateStoredElements, type Tab } from '@livediagram/diagram';
+import {
+  isEventStormingTab,
+  migrateStoredElements,
+  settleNotesOnLanes,
+  type Tab,
+} from '@livediagram/diagram';
 
 // How an imported tab lands on top of the tab receiving it (docs/specs/020-import-export/markdown-import.md).
 //
@@ -14,6 +19,19 @@ import { migrateStoredElements, type Tab } from '@livediagram/diagram';
 // A file is a stored tab like any other, so its elements take the same
 // migrations on the way in (retired groups and docks).
 export function mergeImportedTab(receiving: Tab, imported: Tab): Tab {
+  const merged = mergeFields(receiving, imported);
+  // An event-storming board's workshop notes always sit on a lane
+  // (docs/specs/021-event-storming/event-storming.md "Always on a lane"): an import lands every one on its
+  // nearest lane, x untouched, and the board is settled.
+  if (!isEventStormingTab(merged)) return merged;
+  return {
+    ...merged,
+    elements: settleNotesOnLanes(merged.elements).elements,
+    esLanesSettled: true,
+  };
+}
+
+function mergeFields(receiving: Tab, imported: Tab): Tab {
   return {
     ...receiving,
     elements: migrateStoredElements(imported.elements),
