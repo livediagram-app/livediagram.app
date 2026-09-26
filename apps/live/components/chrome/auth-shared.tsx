@@ -4,7 +4,7 @@
 // (`/get-started/`) pages. Without this, both pages held identical
 // copies of the 6-digit code input, the Google glyph SVG, the
 // "Redirecting…" interstitial, and the Clerk error-message parser —
-// roughly 100 lines of literal copy-paste. CLAUDE.md's reuse rule is
+// roughly 100 lines of literal copy-paste. AGENTS.md's reuse rule is
 // non-negotiable; both auth pages stay in sync as Clerk's API evolves.
 //
 // Lives in `components/` (not `packages/`) because the styling is

@@ -1,7 +1,7 @@
 // API-worker type surface. The wire-format DTOs are now defined in
 // `@livediagram/api-schema` so the api worker and the live editor
 // share the same source of truth (no more parallel type definitions
-// drifting between them — see CLAUDE.md's reuse-over-duplication
+// drifting between them — see AGENTS.md's reuse-over-duplication
 // rule). This file re-exports the canonical names under the
 // historical `*DTO` aliases the worker code already uses, and adds
 // the worker-only `Env` binding shape that has nowhere else to live.

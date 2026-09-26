@@ -381,7 +381,7 @@ hardening landed first:
    ([§3.7](#37-self-hosting)).
 5. Wire token resolution into `resolveOwner`; enforce scopes.
 6. **Docs + help, shipped WITH the feature** (help articles describe live
-   features and must be registered — see the help-centre rule in `CLAUDE.md`,
+   features and must be registered — see the help-centre rule in `AGENTS.md`,
    so this copy lands when the feature does, not before):
    - A new help article (e.g. `account-and-data/api-tokens`) covering what
      tokens are, creating/revoking them **from the Explorer**, the **6-month
