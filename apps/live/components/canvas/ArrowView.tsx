@@ -1,15 +1,18 @@
-import { memo, useMemo, useRef, type PointerEvent as ReactPointerEvent } from 'react';
+import { memo, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import {
   arrowheadShapeOf,
   arrowheadSizeOf,
   BORDER_DASH_ARRAY,
   DEFAULT_BORDER_STYLE,
   defaultArrowStrokeColor,
+  KNOCKOUT_RADIUS_PX,
   routeBehindHoles,
   ROUTE_BEHIND_MARGIN,
   type ArrowElement,
+  type ArrowLabelLayout,
   type ElementIndex,
 } from '@livediagram/diagram';
+import { sameLabelRender, type ArrowLabelRender } from '@/hooks/canvas/useArrowLabelLayouts';
 import type { ArrowEnd } from '@/lib/canvas';
 import { deriveArrowViewFrame } from './arrow-view-frame';
 import { useRightClickRelease } from '@/hooks/canvas/useRightClickRelease';
@@ -23,7 +26,8 @@ import { BRAND_600 } from './arrow-handle-style';
 import { useLongPress } from '@/hooks/ui/useLongPress';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 
-// The mask region + backdrop for route-behind (docs/specs/008-canvas/arrow-route-behind.md). Deliberately vast
+// The mask region + backdrop for route-behind (docs/specs/008-canvas/arrow-route-behind.md) and label
+// knockouts (docs/specs/008-canvas/arrow-labels.md). Deliberately vast
 // rather than fitted to the arrow: a curve can bow well outside its chord,
 // and a region that ends where the geometry does clips the drawing instead
 // of the boxes.
@@ -35,6 +39,12 @@ type ArrowViewProps = {
   // arrow resolves its endpoints / label collisions with O(1) lookups
   // instead of scanning the whole element array twice per arrow.
   elementIndex: ElementIndex;
+  // This arrow's label layout + the knockouts its line takes, from the
+  // layer's one label pass (docs/specs/008-canvas/arrow-labels.md).
+  labelRender: ArrowLabelRender;
+  // Lays the label out for text being typed, so the editor sits and wraps
+  // where the label will land.
+  draftLayout: (arrow: ArrowElement, text: string) => ArrowLabelLayout | null;
   isSelected: boolean;
   isPaintMode: boolean;
   isEditing: boolean;
@@ -105,6 +115,8 @@ type ArrowViewProps = {
 function ArrowViewImpl({
   arrow,
   elementIndex,
+  labelRender,
+  draftLayout,
   isSelected,
   isPaintMode,
   isEditing,
@@ -156,9 +168,28 @@ function ArrowViewImpl({
   const markerUrl = `url(#${ownMarkerId ?? arrowheadMarkerId(headShape, headSize)})`;
   // Endpoints / path / midpoint / handle points / label placement — the
   // pure per-render frame, resolved in arrow-view-frame.ts.
-  const { from, to, pathD, curveAnchors, curveControl, elbowPoint, labelText, labelPos } =
-    deriveArrowViewFrame(arrow, elementIndex, isEditing);
-  const showLabel = isEditing || labelText.length > 0;
+  const { from, to, pathD, curveAnchors, curveControl, elbowPoint } = deriveArrowViewFrame(
+    arrow,
+    elementIndex,
+  );
+  // While editing, the label follows the draft text: laid out live so the
+  // editor, its wrap and the knockout move as you type.
+  const [draft, setDraft] = useState<string | null>(null);
+  const [draftSession, setDraftSession] = useState(isEditing);
+  if (draftSession !== isEditing) {
+    setDraftSession(isEditing);
+    setDraft(null);
+  }
+  const draftText = draft ?? arrow.label ?? '';
+  // An empty draft still needs a box to type into; size it for the placeholder.
+  const editLayout = isEditing ? draftLayout(arrow, draftText.trim() ? draftText : 'Label') : null;
+  const labelLayout = isEditing ? editLayout : labelRender.layout;
+  const knockouts = isEditing
+    ? [
+        ...labelRender.knockouts.filter((k) => k !== labelRender.layout?.knockout),
+        ...(editLayout?.knockout ? [editLayout.knockout] : []),
+      ]
+    : labelRender.knockouts;
   // Route behind boxes (docs/specs/008-canvas/arrow-route-behind.md). Where the line would cross an unrelated
   // box it breaks a little before it and resumes past it, so a fan of
   // arrows to nearby children doesn't draw over the children in between.
@@ -173,7 +204,11 @@ function ArrowViewImpl({
   );
   // Only mint a mask when something actually cuts this arrow — the common
   // case is nothing in the way, and an empty mask is pure overhead.
-  const behindMaskId = behindHoles.length > 0 ? `lvd-behind-${arrow.id}` : null;
+  const maskHoles = [
+    ...behindHoles.map((h) => ({ ...h, rx: ROUTE_BEHIND_MARGIN })),
+    ...knockouts.map((k) => ({ ...k, rx: KNOCKOUT_RADIUS_PX })),
+  ];
+  const behindMaskId = maskHoles.length > 0 ? `lvd-behind-${arrow.id}` : null;
   const behindMask = behindMaskId ? `url(#${behindMaskId})` : undefined;
   // Flow derivations + the phase-sync pinning (docs/specs/008-canvas/canvas-and-palette.md) live in
   // useArrowFlow; the visible path below mounts flowPathRef and the
@@ -235,7 +270,7 @@ function ArrowViewImpl({
             height={MASK_SPAN.size}
             fill="white"
           />
-          {behindHoles.map((h, i) => (
+          {maskHoles.map((h, i) => (
             <rect
               key={i}
               x={h.x}
@@ -243,7 +278,7 @@ function ArrowViewImpl({
               width={h.width}
               height={h.height}
               fill="black"
-              rx={ROUTE_BEHIND_MARGIN}
+              rx={h.rx}
             />
           ))}
         </mask>
@@ -368,17 +403,15 @@ function ArrowViewImpl({
         cometRef={flowCometRef}
       />
 
-      {showLabel ? (
+      {labelLayout ? (
         <ArrowLabel
-          x={labelPos.x}
-          y={labelPos.y}
-          text={labelText}
+          layout={labelLayout}
+          text={arrow.label ?? ''}
           fill={arrow.labelFill}
           color={arrow.textColor ?? baseStroke}
           isEditing={isEditing}
           cursorAtEnd={editCursorAtEnd}
           fontFamily={fontFamily}
-          textSize={arrow.textSize}
           textBold={arrow.textBold}
           textItalic={arrow.textItalic}
           textUnderline={arrow.textUnderline}
@@ -386,6 +419,7 @@ function ArrowViewImpl({
           draggable={labelDraggable && !!onBeginLabelDrag}
           onStartDrag={(e) => onBeginLabelDrag?.(arrow.id, e)}
           onEdit={() => onBeginEdit(arrow.id)}
+          onDraft={setDraft}
           onCommit={(next) => onCommitLabel(arrow.id, next)}
           onCancel={onCancelEdit}
           onSelect={(e) => onSelect(arrow.id, e)}
@@ -414,9 +448,17 @@ function ArrowViewImpl({
   );
 }
 
-// Default shallow-prop comparison is sufficient: `arrow` is
-// reference-stable across renders that don't touch it, `elements`
-// is reference-stable for the same reason (commit/commitTabs only
-// returns a new array when something actually changed), and every
-// other prop is a primitive or a stable id-bearing callback.
-export const ArrowView = memo(ArrowViewImpl);
+// `arrow` and `elementIndex` are reference-stable across renders that don't
+// touch them, and every other prop but the label render is a primitive or a
+// stable id-bearing callback, so a shallow compare suffices for those.
+export const ArrowView = memo(ArrowViewImpl, arrowViewPropsEqual);
+
+// The label render is compared by value: the layer lays every label out
+// afresh on each element change (docs/specs/008-canvas/arrow-labels.md).
+export function arrowViewPropsEqual(a: ArrowViewProps, b: ArrowViewProps): boolean {
+  const keys = Object.keys(a) as (keyof ArrowViewProps)[];
+  if (keys.length !== Object.keys(b).length) return false;
+  return keys.every((k) =>
+    k === 'labelRender' ? sameLabelRender(a.labelRender, b.labelRender) : Object.is(a[k], b[k]),
+  );
+}

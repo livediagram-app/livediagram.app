@@ -64,7 +64,7 @@ import {
   type ArrowLabelPass,
 } from './arrow-label-layout';
 
-export { arrowHeadRefs, svgArrow, svgArrowhead } from './svg-render-arrows';
+export { arrowHeadRefs, arrowLabelFontStack, svgArrow, svgArrowhead } from './svg-render-arrows';
 import type { BoxedElement, Element, Tab } from './index';
 import { layerBands, layerOpacityOf, visibleLayerElements } from './layers';
 // Element drop shadows (docs/specs/008-canvas/element-shadows.md): gate + deterministic filter defs.

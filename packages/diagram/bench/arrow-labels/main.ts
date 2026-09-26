@@ -41,6 +41,8 @@ type State = {
   knockoutOthers: boolean;
   dark: boolean;
   only: string;
+  // Show one angled strategy (for side-by-side captures); empty shows all four.
+  strategy: string;
 };
 
 const params = new URLSearchParams(location.search);
@@ -50,6 +52,7 @@ const state: State = {
   knockoutOthers: params.get('others') === '1',
   dark: params.get('theme') !== 'light',
   only: params.get('only') ?? '',
+  strategy: params.get('strategy') ?? '',
 };
 
 function sync(): void {
@@ -59,6 +62,7 @@ function sync(): void {
   if (state.knockoutOthers) p.set('others', '1');
   if (!state.dark) p.set('theme', 'light');
   if (state.only) p.set('only', state.only);
+  if (state.strategy) p.set('strategy', state.strategy);
   history.replaceState(null, '', `?${p}`);
 }
 
@@ -113,7 +117,7 @@ function render(): void {
   const grid = document.getElementById('grid')!;
   grid.replaceChildren();
   for (const sc of SCENARIOS) {
-    if (state.only && sc.id !== state.only) continue;
+    if (state.only && !state.only.split(',').includes(sc.id)) continue;
     const row = document.createElement('section');
     row.className = 'scenario';
     row.dataset.scenario = sc.id;
@@ -122,8 +126,9 @@ function render(): void {
     cells.className = 'cells';
     // Strategies only differ on angled arrows; everything else renders once, full size.
     const angled = sc.elements.some((e) => e.type === 'arrow' && e.arrowStyle === 'angled');
-    cells.classList.toggle('single', !angled);
-    for (const st of angled ? STRATEGIES : STRATEGIES.slice(1, 2)) {
+    cells.classList.toggle('single', !angled || !!state.strategy);
+    const shown = STRATEGIES.filter((s) => !state.strategy || s.id === state.strategy);
+    for (const st of angled ? shown : STRATEGIES.slice(1, 2)) {
       const options: Partial<ArrowLabelLayoutOptions> = {
         angledStrategy: st.id,
         crossCapPx: state.crossCapPx,

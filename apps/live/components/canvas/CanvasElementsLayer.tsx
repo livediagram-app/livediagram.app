@@ -22,6 +22,7 @@ import type { PointerEvent as ReactPointerEvent } from 'react';
 import { type QuickConnectDirection } from '@/lib/canvas';
 import { ArrowDefs } from '@/components/canvas/arrow-defs';
 import { ArrowView } from '@/components/canvas/ArrowView';
+import { useArrowLabelLayouts } from '@/hooks/canvas/useArrowLabelLayouts';
 import { BoxedElementView } from '@/components/canvas/BoxedElementView';
 import { LaserOverlay } from '@/components/canvas/LaserOverlay';
 import { UnionResizeHandles } from '@/components/canvas/element-parts';
@@ -242,7 +243,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   // Auto-fit measures the face it paints, and webfonts land after first
   // paint — re-render this layer once they are in so every fitted label
   // re-measures in its real face (see useFontsReady).
-  useFontsReady();
+  const fontsReady = useFontsReady();
   // Resolved tab default font once; per-element falls back to it (docs/specs/004-interface-design/fonts.md).
   const tabFontStack = resolveFontStack(tabFont);
   // Highest dot count on the tab (docs/specs/012-collaboration/session-tools.md), computed once so each element's
@@ -261,6 +262,9 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     () => (hasArrows ? buildElementIndex(elements) : null),
     [hasArrows, elements],
   );
+  // Every arrow label laid out once per element change, avoiding each other
+  // (docs/specs/008-canvas/arrow-labels.md).
+  const arrowLabels = useArrowLabelLayouts(elements, hasArrows, tabFont, fontsReady);
   // Insert-between preview (docs/specs/021-event-storming/event-storming.md): while a palette drag hovers a gap on an
   // event-storming board, the elements at and after the insertion point RENDER
   // shifted right to show the slot opening — see useInsertShift.
@@ -365,6 +369,8 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
               <ArrowView
                 arrow={element}
                 elementIndex={elementIndex!}
+                labelRender={arrowLabels.renderOf(element.id)}
+                draftLayout={arrowLabels.draftLayout}
                 isSelected={element.id === selectedId || multiSelectedIds.has(element.id)}
                 isPaintMode={isPaintMode}
                 isEditing={element.id === editingId}
@@ -384,7 +390,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
                 onDeleteCurvePoint={h.onDeleteCurvePoint}
                 onBeginElbowDrag={h.onBeginArrowElbowDrag}
                 onBeginLabelDrag={h.onBeginArrowLabelDrag}
-                fontFamily={tabFontStack}
+                fontFamily={resolveFontStack(element.font) ?? tabFontStack}
               />
             </svg>
           );

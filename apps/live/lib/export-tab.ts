@@ -10,6 +10,8 @@
 // rendering.
 
 import {
+  arrowLabelFontStack,
+  arrowLabelPass,
   isBoxed,
   layerBands,
   layerOpacityOf,
@@ -50,7 +52,7 @@ import {
   isoProjectBounds,
   ISO_TILT_DEG,
 } from './isometric';
-import { drawArrow, drawBoxed, drawBoxedExtrusion } from './export-tab-canvas-draw';
+import { drawBoxed, drawBoxedExtrusion } from './export-tab-canvas-draw';
 import type { ExportImageMap } from './export-tab-images';
 
 // Shared options for the image exports (PNG / SVG / PDF). `isometric` tilts
@@ -149,7 +151,12 @@ export async function renderTabToCanvas(
   const ordered = layerBands(tab.elements, tab.layers, {
     includeHidden: opts.hiddenLayers,
   }).flatMap((band) => band.elements.map((el) => ({ el, alpha: layerOpacityOf(band.layer) })));
-  const bounds = contentBounds(els);
+  // Every caption laid out once, as the canvas and the SVG export do
+  // (docs/specs/008-canvas/arrow-labels.md); the bounds include the plates.
+  const labels = arrowLabelPass(tab.elements, {
+    fontFamilyOf: (a) => arrowLabelFontStack(a, tab.font),
+  });
+  const bounds = contentBounds(els, labels);
   // Isometric export (docs/specs/008-canvas/isometric-view.md / 48): project the flat content through the iso
   // affine and size the canvas to the tilted footprint so nothing clips. The
   // matrix is applied to the drawing context after positioning, so every
@@ -273,11 +280,26 @@ export async function renderTabToCanvas(
     }
     drawBoxed(ctx, el, resolveImage, alpha, tabFont, surface);
   }
-  for (const { el, alpha } of ordered) {
-    if (el.type !== 'arrow') continue;
-    // Endpoint resolution keeps the FULL list, so an arrow pinned to a
-    // hidden element still lands where the canvas draws it.
-    drawArrow(ctx, el, tab.elements, alpha, surface);
+  // Arrows rasterise from the SAME markup the SVG export emits (heads, fans,
+  // wrapped captions, knockouts), in one layer over the boxes. Endpoint
+  // resolution keeps the FULL list, so an arrow pinned to a hidden element
+  // still lands where the canvas draws it.
+  const arrowMarkup = ordered
+    .filter(({ el }) => el.type === 'arrow')
+    .map(({ el, alpha }) => {
+      const svg = el.type === 'arrow' ? svgArrow(el, tab.elements, surface, tabFont, labels) : '';
+      return alpha < 1 ? `<g opacity="${r2(alpha)}">${svg}</g>` : svg;
+    })
+    .join('');
+  if (arrowMarkup) {
+    const ax = bounds.x - EXPORT_PADDING;
+    const ay = bounds.y - EXPORT_PADDING;
+    const aw = bounds.w + EXPORT_PADDING * 2;
+    const ah = bounds.h + EXPORT_PADDING * 2;
+    const svg =
+      `<svg xmlns="http://www.w3.org/2000/svg" width="${r2(aw * scale)}" height="${r2(ah * scale)}"` +
+      ` viewBox="${r2(ax)} ${r2(ay)} ${r2(aw)} ${r2(ah)}">${fontDefs}${arrowMarkup}</svg>`;
+    ctx.drawImage(await svgToImage(svg), ax, ay, aw, ah);
   }
   return canvas;
 }
@@ -350,11 +372,14 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   // renderer above; each band wraps in a <g opacity> when dimmed.
   const els = opts.hiddenLayers ? tab.elements : visibleLayerElements(tab.elements, tab.layers);
   const bands = layerBands(tab.elements, tab.layers, { includeHidden: opts.hiddenLayers });
+  const labels = arrowLabelPass(tab.elements, {
+    fontFamilyOf: (a) => arrowLabelFontStack(a, tab.font),
+  });
   const wrapBand = (layerOpacity: number, inner: string[]): string =>
     layerOpacity < 1
       ? `<g opacity="${r2(layerOpacity)}">${inner.join('\n')}</g>`
       : inner.join('\n');
-  const bounds = contentBounds(els);
+  const bounds = contentBounds(els, labels);
   // Isometric export: the viewBox spans the projected (tilted) footprint and a
   // <g matrix> applies the iso projection to the content, while the background
   // rect stays in viewBox space so it fills the whole frame.
@@ -426,7 +451,7 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
         );
     }
     for (const el of band.elements) {
-      if (el.type === 'arrow') inner.push(svgArrow(el, tab.elements, surface));
+      if (el.type === 'arrow') inner.push(svgArrow(el, tab.elements, surface, tab.font, labels));
     }
     parts.push(wrapBand(layerOpacityOf(band.layer), inner));
   }

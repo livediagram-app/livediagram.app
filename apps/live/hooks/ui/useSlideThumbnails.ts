@@ -5,6 +5,8 @@ import {
   r2,
   resolveSlide,
   slideBounds,
+  arrowLabelFontStack,
+  arrowLabelPass,
   svgArrow,
   svgBoxed,
   type Deck,
@@ -57,11 +59,18 @@ export function useSlideThumbnails(deck: Deck, tabs: Tab[]): Map<string, SlideTh
           );
         }
       }
+      // Labels are laid out against the whole tab, as the canvas lays them out.
+      const labels = arrowLabelPass(tab.elements, {
+        fontFamilyOf: (a) => arrowLabelFontStack(a, tab.font),
+      });
       for (const el of elements) {
         // Arrows resolve their endpoints against the WHOLE tab, not just the
         // slide: an arrow is on the slide because both its ends are, and it
         // still needs their real positions to draw itself.
-        if (el.type === 'arrow') parts.push(svgArrow(el, tab.elements));
+        if (el.type === 'arrow')
+          parts.push(
+            svgArrow(el, tab.elements, 'light', tab.font, labels, `lvd-slide-${slide.id}-ko-`),
+          );
       }
       const pad = 8;
       out.set(slide.id, {

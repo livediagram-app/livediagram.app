@@ -120,6 +120,10 @@ export function svgArrow(
   labels: ArrowLabelPass = arrowLabelPass(elements, {
     fontFamilyOf: (a) => arrowLabelFontStack(a, tabFont),
   }),
+  // Mask ids live in the document once the markup is inlined; a caller that
+  // inlines several renders of the same arrow (thumbnails, the minimap) gives
+  // each its own prefix so no render borrows another's mask.
+  maskIdPrefix = 'lvd-ko-',
 ): string {
   // Same converging-fan offset the live canvas applies (see
   // arrow-endpoint-spread.ts), so exports match what's on screen.
@@ -149,7 +153,9 @@ export function svgArrow(
   const dashAttr = dash ? ` stroke-dasharray="${dash}"` : '';
   const knockouts = labels.knockoutsOf(arrow.id);
   const maskId =
-    knockouts.length > 0 ? `lvd-ko-${String(arrow.id).replace(/[^a-zA-Z0-9_-]/g, '')}` : null;
+    knockouts.length > 0
+      ? `${maskIdPrefix}${String(arrow.id)}`.replace(/[^a-zA-Z0-9_-]/g, '')
+      : null;
   if (maskId) parts.push(svgKnockoutMask(maskId, knockouts));
   const maskAttr = maskId ? ` mask="url(#${xmlEscape(maskId)})"` : '';
   parts.push(
