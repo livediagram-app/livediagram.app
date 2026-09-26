@@ -8,9 +8,19 @@ import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { Tooltip } from '@/components/primitives/Tooltip';
 import { tint } from '../collab-chrome';
 
-// One accent for the board, readable on light and dark themes alike. The
-// theme owns the card; the accent only marks what is YOURS and what is LIVE.
-export const QA_ACCENT = '#6d5efc';
+// The board's accent marks what is YOURS and what is LIVE. It is the tab
+// theme's colour, not the board's own: QaBoardFace sets `--qa-accent` from the
+// element's themed stroke, and `--qa-on-accent` to whichever ink reads on it,
+// so a warm theme gets a warm board and a pale accent never carries white
+// text. Everything here reads the variables (tint() mixes them via
+// color-mix), so there is one place the colour is decided.
+export const QA_ACCENT = 'var(--qa-accent)';
+export const QA_ON_ACCENT = 'var(--qa-on-accent)';
+// The accent as TEXT on the card. A theme's accent can sit on the same side of
+// light as its card (a pale yellow stroke on cream), where it fills a button
+// fine but vanishes as a word, so labels and glyphs read this instead: the
+// accent where it contrasts, pulled toward the theme's ink where it doesn't.
+export const QA_ACCENT_INK = 'var(--qa-accent-ink)';
 
 // Every control on the board stops the pointer at itself: a press on a vote
 // must not also select the board, which would put your name on it through the
@@ -179,7 +189,7 @@ export function VotePill({
         width: w,
         height: large ? 50 : 42,
         fontSize: large ? 15 : 13,
-        color: mine ? '#fff' : textColor,
+        color: mine ? QA_ON_ACCENT : textColor,
         backgroundColor: mine ? QA_ACCENT : tint(textColor, frozen ? 0.04 : 0.06),
         borderColor: mine ? QA_ACCENT : tint(textColor, frozen ? 0.08 : 0.16),
         boxShadow: mine ? `0 4px 12px -4px ${QA_ACCENT}` : undefined,
@@ -192,7 +202,7 @@ export function VotePill({
         <span
           key={burst}
           className="qa-float pointer-events-none absolute left-1/2 top-0 text-[11px] font-black"
-          style={{ color: QA_ACCENT }}
+          style={{ color: QA_ACCENT_INK }}
         >
           +1
         </span>
@@ -227,7 +237,7 @@ export function RoundAction({
   children: React.ReactNode;
 }) {
   const press = usePressWithoutDrag(onPress);
-  const color = tone === 'accent' ? QA_ACCENT : tone === 'danger' ? '#e11d48' : textColor;
+  const color = tone === 'accent' ? QA_ACCENT_INK : tone === 'danger' ? '#e11d48' : textColor;
   return (
     <Tooltip title={label} description={description}>
       <button

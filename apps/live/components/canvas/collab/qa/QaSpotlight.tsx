@@ -7,7 +7,15 @@ import type { QaNote } from '@livediagram/diagram';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { Tooltip } from '@/components/primitives/Tooltip';
 import { tint } from '../collab-chrome';
-import { AuthorChip, CheckGlyph, QA_ACCENT, VotePill, stopPointer } from './qa-parts';
+import {
+  AuthorChip,
+  CheckGlyph,
+  QA_ACCENT,
+  QA_ACCENT_INK,
+  QA_ON_ACCENT,
+  VotePill,
+  stopPointer,
+} from './qa-parts';
 
 function SpotButton({
   children,
@@ -33,7 +41,7 @@ function SpotButton({
         style={
           loud
             ? {
-                color: '#fff',
+                color: QA_ON_ACCENT,
                 backgroundColor: QA_ACCENT,
                 boxShadow: `0 4px 14px -6px ${QA_ACCENT}`,
               }
@@ -76,7 +84,7 @@ export function QaSpotlight({
         <span className="qa-live h-2 w-2 rounded-full" style={{ backgroundColor: QA_ACCENT }} />
         <span
           className="text-[9.5px] font-bold uppercase tracking-[0.12em]"
-          style={{ color: QA_ACCENT }}
+          style={{ color: QA_ACCENT_INK }}
         >
           Now discussing
         </span>

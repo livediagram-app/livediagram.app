@@ -7,7 +7,15 @@
 // note being discussed lifts into a lit card with a breathing live dot.
 
 import { useEffect, useState } from 'react';
-import { qaView, qaVoterId, type QaNote, type ShapeElement } from '@livediagram/diagram';
+import {
+  canvasSurface,
+  defaultStrokeColor,
+  qaView,
+  qaVoterId,
+  type QaNote,
+  type ShapeElement,
+} from '@livediagram/diagram';
+import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { CollabPanel, tint } from '../collab-chrome';
 import {
   ElementEllipsisMenu,
@@ -19,7 +27,7 @@ import { QaNoteRow } from './QaNoteRow';
 import { QaSpotlight } from './QaSpotlight';
 import { QaDiscussed } from './QaDiscussed';
 import { QaComposer } from './QaComposer';
-import { QA_ACCENT, DiscussGlyph, stopPointer } from './qa-parts';
+import { QA_ACCENT, QA_ACCENT_INK, DiscussGlyph, stopPointer } from './qa-parts';
 import { useFlipList } from './useFlipList';
 
 // What the board can do for this viewer. Participant verbs are present for
@@ -59,7 +67,7 @@ function StartButton({ onPress }: { onPress: () => void }) {
       {...stopPointer}
       className="pointer-events-auto flex shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-dashed py-2 text-[11px] font-semibold transition hover:brightness-110"
       style={{
-        color: QA_ACCENT,
+        color: QA_ACCENT_INK,
         borderColor: tint(QA_ACCENT, 0.45),
         backgroundColor: tint(QA_ACCENT, 0.05),
       }}
@@ -122,6 +130,17 @@ export function QaBoardFace({
   actions: QaFaceActions;
   onOpenSettings?: () => void;
 }) {
+  // The accent is the TAB THEME's: a theme writes every element's stroke, so
+  // the board's own stroke is the theme's element accent (and a user who
+  // recolours the border recolours the accent with it). The ink on it is
+  // picked by its lightness, so a pale accent gets dark text, not white.
+  const paper = useCanvasSurface();
+  const accent = element.strokeColor ?? defaultStrokeColor(element, paper);
+  const onAccent = canvasSurface(accent) === 'dark' ? '#ffffff' : '#0f172a';
+  const accentInk =
+    canvasSurface(accent) === canvasSurface(surface)
+      ? `color-mix(in srgb, ${accent} 40%, ${textColor})`
+      : accent;
   const notes: QaNote[] = element.qaNotes ?? [];
   const { discussing, queue, done } = qaView(notes);
   const voterId = useSelfVoterId(selfOwnerId, element.id);
@@ -179,8 +198,10 @@ export function QaBoardFace({
       style={
         {
           display: 'contents',
-          '--qa-accent': QA_ACCENT,
-          '--qa-accent-soft': tint(QA_ACCENT, 0.35),
+          '--qa-accent': accent,
+          '--qa-on-accent': onAccent,
+          '--qa-accent-ink': accentInk,
+          '--qa-accent-soft': tint(accent, 0.35),
           '--qa-card': surface,
         } as React.CSSProperties
       }

@@ -7,7 +7,14 @@ import { useState } from 'react';
 import { QA_MAX_TEXT } from '@livediagram/diagram';
 import { Tooltip } from '@/components/primitives/Tooltip';
 import { tint } from '../collab-chrome';
-import { MaskGlyph, QA_ACCENT, SendGlyph, stopPointer } from './qa-parts';
+import {
+  MaskGlyph,
+  QA_ACCENT,
+  QA_ACCENT_INK,
+  QA_ON_ACCENT,
+  SendGlyph,
+  stopPointer,
+} from './qa-parts';
 
 export function QaComposer({
   textColor,
@@ -63,8 +70,8 @@ export function QaComposer({
           }}
           disabled={!text}
           aria-label="Post note"
-          className="pointer-events-auto inline-flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-full text-white transition hover:scale-105 active:scale-95 disabled:cursor-default disabled:opacity-35"
-          style={{ backgroundColor: QA_ACCENT }}
+          className="pointer-events-auto inline-flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-full transition hover:scale-105 active:scale-95 disabled:cursor-default disabled:opacity-35"
+          style={{ backgroundColor: QA_ACCENT, color: QA_ON_ACCENT }}
         >
           <SendGlyph size={13} />
         </button>
@@ -89,7 +96,7 @@ export function QaComposer({
             }}
             className="pointer-events-auto inline-flex cursor-pointer items-center gap-1.5 rounded-full py-0.5 pl-0.5 pr-2 text-[10px] font-semibold transition"
             style={{
-              color: anonymous ? QA_ACCENT : textColor,
+              color: anonymous ? QA_ACCENT_INK : textColor,
               backgroundColor: anonymous ? tint(QA_ACCENT, 0.14) : tint(textColor, 0.06),
             }}
           >

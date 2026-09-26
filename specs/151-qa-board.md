@@ -174,13 +174,22 @@ board's notes from **whichever copy has the higher `qaRev`**
 
 The goal is a queue the room _watches_, not a form it fills in.
 
+**Colour comes from the tab theme.** A theme writes every element's stroke, so
+the board's accent is its own themed stroke (falling back to the theme's
+default stroke), and recolouring the border recolours the accent. The board
+defines no colour of its own. Two derived inks keep it readable on any theme:
+the ink ON the accent (white or near-black, picked by the accent's lightness)
+for filled buttons and your own votes, and the accent AS TEXT, which is the
+accent where it contrasts with the card and the accent mixed toward the
+theme's text colour where it doesn't (a pale yellow stroke on a cream card).
+
 - **The spotlight.** The note being discussed lifts out of the list into a
   lit card at the top: a pulsing "Now discussing" rail, the note large, the
   author, the vote count. The facilitator gets **Done** and **Done, next** on
   it, which closes this note and spotlights the current top note in one press.
 - **The live list.** Each row is a vote pill and the note. The pill is the
   control: press to upvote, press again to withdraw. Your own votes are filled
-  in the board's accent; others' are outlined. A thin heat bar under each note
+  in the theme's accent; others' are outlined. A thin heat bar under each note
   shows its share of the top note's votes, so the shape of the queue reads
   from across a room.
 - **It moves.** When a vote changes the ranking, rows slide to their new place

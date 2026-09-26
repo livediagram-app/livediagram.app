@@ -10,6 +10,7 @@ import {
   AuthorChip,
   CheckGlyph,
   QA_ACCENT,
+  QA_ACCENT_INK,
   RoundAction,
   DiscussGlyph,
   TrashGlyph,
@@ -54,7 +55,7 @@ export const QaNoteRow = forwardRef<
         {top ? (
           <span
             className="self-start rounded-full px-1.5 py-px text-[9px] font-bold uppercase tracking-[0.08em]"
-            style={{ color: QA_ACCENT, backgroundColor: tint(QA_ACCENT, 0.14) }}
+            style={{ color: QA_ACCENT_INK, backgroundColor: tint(QA_ACCENT, 0.14) }}
           >
             Most wanted
           </span>
