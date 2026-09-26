@@ -6,6 +6,7 @@ import type { TelemetryDaily, TelemetryWindow, TelemetryWindowKey } from '@lived
 import { categoryColor, eventExplanation } from './event-vocab';
 import { ActivityGlyph } from './glyphs';
 import { buildMetrics, type Metric } from './metrics';
+import { MetricBreadcrumb, metricCrumbs, type CloudPath } from './MetricBreadcrumb';
 import { MetricCloud } from './MetricCloud';
 import { MetricPicker } from './MetricPicker';
 import { EventIcon } from './telemetry-event-icon';
@@ -27,6 +28,13 @@ export function MetricSearch({
   active: TelemetryWindowKey;
 }) {
   const [selected, setSelected] = useState<Metric | null>(null);
+  // The cloud's level, kept here so the breadcrumb over a charted metric
+  // (spec/22) can step back to any level of the cloud.
+  const [path, setPath] = useState<CloudPath>([]);
+  const navigate = (to: CloudPath) => {
+    setSelected(null);
+    setPath(to);
+  };
 
   const metrics = useMemo(() => buildMetrics(daily), [daily]);
   const windowCounts = useMemo(() => buildWindowCounts(windows), [windows]);
@@ -50,13 +58,9 @@ export function MetricSearch({
 
       {selected ? (
         <>
-          <button
-            type="button"
-            onClick={() => setSelected(null)}
-            className="mt-4 cursor-pointer text-sm text-sky-600 hover:underline dark:text-sky-400"
-          >
-            ← Browse all events
-          </button>
+          <div className="mt-4">
+            <MetricBreadcrumb crumbs={metricCrumbs(path, selected)} onNavigate={navigate} />
+          </div>
           <SelectedMetric
             metric={selected}
             windowCounts={windowCounts}
@@ -65,7 +69,13 @@ export function MetricSearch({
           />
         </>
       ) : (
-        <MetricCloud metrics={metrics} counts={windowCounts[active]} onSelect={setSelected} />
+        <MetricCloud
+          metrics={metrics}
+          counts={windowCounts[active]}
+          path={path}
+          onPathChange={setPath}
+          onSelect={setSelected}
+        />
       )}
     </div>
   );
