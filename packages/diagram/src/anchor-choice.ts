@@ -97,5 +97,9 @@ export function facingSideTowards(element: BoxedElement, towards: Point): Side |
 // The creation anchor: the middle of the side the connector faces towards
 // `towards`. 'e' when the direction is zero (a point on the centre).
 export function bestAnchorTowards(element: BoxedElement, towards: Point): Anchor {
-  return facingSideTowards(element, towards) ?? 'e';
+  const side = facingSideTowards(element, towards);
+  if (side && side !== exitSideTowards(element, towards)) {
+    console.debug(`[arrow-anchors] creation element=${element.id} side=${side} fallback=side`);
+  }
+  return side ?? 'e';
 }

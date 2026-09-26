@@ -226,3 +226,36 @@ describe('sides without anchors', () => {
     expect(['w', 'e']).toContain(from);
   });
 });
+
+describe('fallback logging', () => {
+  it('says when the facing side or the class fell back', () => {
+    const debug = vi.spyOn(console, 'debug').mockImplementation(() => {});
+    run(
+      [
+        box('a', 0, 200, { shape: 'triangle' }),
+        box('b', 0, -200),
+        arrow('x', pin('a', 's'), pin('b', 's')),
+      ],
+      ['b'],
+    );
+    expect(debug).toHaveBeenCalledWith(
+      expect.stringMatching(
+        /^\[arrow-rebind\] trigger arrow=x end=from element=a side=[ew] s->[ew] fallback=side$/,
+      ),
+    );
+    debug.mockClear();
+    run(
+      [
+        box('a', 0, 0, { shape: 'circle' }),
+        box('b', -300, 100),
+        arrow('x', pin('a', 'nne'), pin('b', 'e')),
+      ],
+      ['b'],
+    );
+    expect(debug).toHaveBeenCalledWith(
+      expect.stringMatching(
+        /^\[arrow-rebind\] trigger arrow=x end=from element=a side=w nne->(nw|sw) fallback=class$/,
+      ),
+    );
+  });
+});

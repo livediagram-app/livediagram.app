@@ -93,6 +93,7 @@ export function nearestOfferedAnchor(element: BoxedElement, anchor: Anchor): Anc
       best = a;
     }
   }
+  console.debug(`[arrow-anchors] remap element=${element.id} ${anchor}->${best}`);
   return best;
 }
 

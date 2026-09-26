@@ -1,6 +1,6 @@
 import type { Anchor, ArrowElement, BoxedElement, Element, ElementId, Endpoint } from './index';
 import { anchorClass, anchorLiesOn, offeredOnSide } from './anchors';
-import { anchorAimPoint, facingSideTowards } from './anchor-choice';
+import { anchorAimPoint, exitSideTowards, facingSideTowards } from './anchor-choice';
 import { arrowPolyline, pathPassesThrough, pinnedBoxedElement } from './arrow-path-hits';
 import { swapCrossingEnds } from './arrow-rebind-swap';
 import {
@@ -121,7 +121,14 @@ function reanchorEnd(
   const candidates = offeredOnSide(el, side, anchorClass(ep.anchor));
   const anchor = pickCandidate(el, ep.anchor, candidates, reference, held);
   moveHeld(held, el.id, ep.anchor, anchor);
-  console.debug(`${tag} side=${side} ${ep.anchor}->${anchor}`);
+  // Say so when the shape's own anchors bent the rule: a bare facing side
+  // (a triangle's top) or a class the side does not offer.
+  const fallback = [
+    side !== exitSideTowards(el, aim) ? 'side' : '',
+    anchorClass(anchor) !== anchorClass(ep.anchor) ? 'class' : '',
+  ].filter(Boolean);
+  const note = fallback.length ? ` fallback=${fallback.join(',')}` : '';
+  console.debug(`${tag} side=${side} ${ep.anchor}->${anchor}${note}`);
   return { kind: 'pinned', elementId: el.id, anchor };
 }
 

@@ -38,7 +38,8 @@ is the exact node the floating Palette renders, not a copy. The popover is
 wide (26rem) rather than tall, so a body rarely has to scroll. Picking a tile
 from it closes it, so the canvas is clear to draw on; switching category
 closes it too, since it was showing the old one. Opening it focuses the body's
-search field, when the category has one, so typing filters straight away; on a phone it does not,
+search field, when the category has one, so typing filters straight away (a category that loads
+its catalogue a moment later focuses the field as soon as it appears); on a phone it does not,
 because focusing would raise the keyboard over the popover.
 
 More appears when the category has more than ten tiles, and always for

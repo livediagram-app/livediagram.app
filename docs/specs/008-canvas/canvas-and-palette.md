@@ -357,7 +357,7 @@ Each arrow has a **from** and a **to** endpoint. An endpoint is either:
 - **Free** — an `(x, y)` position on the canvas.
 - **Pinned** — attached to an **anchor** of a shape. A pinned endpoint follows its shape as the shape moves/resizes.
 
-A pinned endpoint sits on one of the element's **sixteen anchors** (corners, edge midpoints and the quarter points between them). The anchor vocabulary, anchor geometry, the converging-fan rendering and the auto-rebind that changes anchors as elements move are specified in [Arrow anchors and auto-rebind](arrow-anchors.md).
+A pinned endpoint sits on one of the anchors its shape offers (sixteen on a box: corners, edge midpoints and the quarter points between them; fewer on some shapes). The anchor vocabulary, anchor geometry, the converging-fan rendering and the auto-rebind that changes anchors as elements move are specified in [Arrow anchors and auto-rebind](arrow-anchors.md).
 
 ### Adding an arrow
 
