@@ -210,9 +210,21 @@ function violationFor(
 
 // ----------------------------------------------------------- stylesheets
 
-/** Replace comments with blanks of the same shape, so indices and lines survive. */
-function blankCssComments(css: string): string {
-  return css.replace(/\/\*[\s\S]*?\*\//g, (c) => c.replace(/[^\n]/g, ' '));
+/**
+ * Blank every block comment with spaces of the same shape, so indices and lines survive.
+ * One linear pass: an unterminated comment runs to the end of the text, as CSS reads it.
+ */
+function blankBlockComments(text: string): string {
+  let out = '';
+  let from = 0;
+  for (;;) {
+    const open = text.indexOf('/*', from);
+    if (open === -1) return out + text.slice(from);
+    const close = text.indexOf('*/', open + 2);
+    const end = close === -1 ? text.length : close + 2;
+    out += text.slice(from, open) + text.slice(open, end).replace(/[^\n]/g, ' ');
+    from = end;
+  }
 }
 
 type Declaration = { selector: string; prop: string; value: string; index: number };
@@ -312,7 +324,7 @@ function lineAt(text: string, index: number): number {
 
 /** Every motion violation in one stylesheet. */
 export function scanStylesheet(text: string, file: string, tokens: TokenMap): MotionViolation[] {
-  const css = blankCssComments(text);
+  const css = blankBlockComments(text);
   const { decls, selectors } = declarations(css);
   const hoverBases = new Set(
     selectors.filter((s) => INTERACTION.test(s)).map((s) => withoutInteraction(s)),
@@ -337,9 +349,10 @@ export function scanStylesheet(text: string, file: string, tokens: TokenMap): Mo
 
 /** Blank out comments in TS/TSX, leaving `//` inside URLs (`https://`) alone. */
 function blankSourceComments(src: string): string {
-  return src
-    .replace(/\/\*[\s\S]*?\*\//g, (c) => c.replace(/[^\n]/g, ' '))
-    .replace(/(^|[\s;{}(),])\/\/[^\n]*/g, (c, lead: string) => lead + ' '.repeat(c.length - 1));
+  return blankBlockComments(src).replace(
+    /(^|[\s;{}(),])\/\/[^\n]*/g,
+    (c, lead: string) => lead + ' '.repeat(c.length - 1),
+  );
 }
 
 /** The string literal around `index`: from the nearest quote before it to its match after. */

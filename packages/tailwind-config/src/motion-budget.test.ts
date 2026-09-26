@@ -148,6 +148,19 @@ describe('scanStylesheet', () => {
     expect(v[0]?.line).toBe(3);
   });
 
+  it('treats an unterminated comment as running to the end of the file', () => {
+    const v = scan('.a { transition: opacity 900ms; }\n/* .b { transition: opacity 900ms; }');
+    expect(v).toHaveLength(1);
+    expect(v[0]?.line).toBe(1);
+  });
+
+  it('scans a pathological run of comment openers in linear time', () => {
+    const hostile = '/*' + 'a/*'.repeat(100_000);
+    const started = performance.now();
+    scan(hostile);
+    expect(performance.now() - started).toBeLessThan(250);
+  });
+
   it('ignores non-motion declarations that mention time-like words', () => {
     expect(scan('.a { view-transition-name: header; transition-property: opacity; }')).toEqual([]);
   });
@@ -155,6 +168,18 @@ describe('scanStylesheet', () => {
 
 describe('scanSource', () => {
   const scan = (src: string) => scanSource(src, 'x.tsx', T);
+
+  it('ignores block comments, terminated or not', () => {
+    expect(scan('/* <div className="transition duration-500" /> */')).toEqual([]);
+    expect(scan('const a = 1;\n/* <div className="transition duration-500" />')).toEqual([]);
+  });
+
+  it('scans a pathological run of comment openers in linear time', () => {
+    const hostile = '/*' + 'a/*'.repeat(100_000);
+    const started = performance.now();
+    scan(hostile);
+    expect(performance.now() - started).toBeLessThan(250);
+  });
 
   it('passes numeric and token duration classes within the ceiling', () => {
     expect(scan('<div className="transition duration-200 ease-out" />')).toEqual([]);
