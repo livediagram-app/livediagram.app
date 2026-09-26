@@ -423,7 +423,9 @@ and the dialog stays as the one complete, browsable index of them.
   A choice option can be **desktop only** (`desktopOnly` in the catalogue).
   On a phone-sized viewport it stays visible but can't be picked, and a note
   under the row says why. Panel Layout's Floating is desktop only: a phone
-  uses the button bar instead. Toolbar works on a phone (spec/148).
+  shows Toolbar instead (spec/148), which is therefore the phone default,
+  and the row rings Toolbar there (`read(prefs, { mobile })`). Minimal and
+  Toolbar both work on a phone.
 
   **Show Welcome Tour** is inverted against the stored `tourSeen`: the row
   asks "show me the tour?", the preference records "already seen". Because

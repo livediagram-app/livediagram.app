@@ -372,7 +372,8 @@ export const articles: Article[] = [
     slug: 'welcome-tour',
     title: 'The Welcome Tour',
     description: 'The interactive editor walkthrough, offered once and replayable from Settings.',
-    keywords: 'tour walkthrough guide onboarding show me around intro tutorial replay rerun steps',
+    keywords:
+      'tour walkthrough guide onboarding show me around intro tutorial replay rerun steps layout panel toolbar minimal floating',
     category: 'Getting Started',
     categorySlug: 'getting-started',
   },
@@ -737,8 +738,8 @@ export const articles: Article[] = [
   {
     slug: 'mobile',
     title: 'Mobile',
-    description: 'The touch-friendly editor on a phone, with the compact dock and gestures.',
-    keywords: 'phone iphone android touch gestures small screen',
+    description: 'The touch-friendly editor on a phone, with the toolbar strip and gestures.',
+    keywords: 'phone iphone android touch gestures small screen toolbar dock mobile layout',
     category: 'Supported Devices',
     categorySlug: 'supported-devices',
   },

@@ -86,7 +86,9 @@ export type SettingsChoiceRowSpec = RowBase & {
   // viewport, with a note saying so (the panel layouts: a phone is always
   // docked, spec/148).
   options: { id: string; label: string; desktopOnly?: boolean }[];
-  read: (prefs: UserPreferences) => string;
+  // `mobile` asks for the value a phone shows, which can differ when the
+  // stored one is desktop only (Floating shows as Toolbar there).
+  read: (prefs: UserPreferences, view?: { mobile?: boolean }) => string;
   write: (prefs: UserPreferences, next: string) => UserPreferences;
   // Choices fire one 'Changed' event naming the setting, not the value ,
   // matching what the Map popover already emits.
@@ -232,7 +234,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         section: 'Layout',
         label: 'Panel Layout',
         description:
-          'Floating shows the Explorer, Palette and other panels over the canvas. Minimal collapses them into a compact button bar that opens each as a popover. Toolbar keeps the floating panels but puts the Palette in one strip across the top of the canvas, and opens the Explorer from a button in the top-left. On a phone, Floating falls back to the button bar.',
+          'Floating shows the Explorer, Palette and other panels over the canvas. Minimal collapses them into a compact button bar that opens each as a popover. Toolbar keeps the floating panels but puts the Palette in one strip across the top of the canvas, and opens the Explorer from a button in the top-left. On a phone, Floating becomes Toolbar.',
         helpArticle: 'toolbarLayout',
         illustration: 'panelLayout',
         options: [
@@ -240,7 +242,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
           { id: 'minimal', label: 'Minimal' },
           { id: 'toolbar', label: 'Toolbar' },
         ],
-        read: (p) => resolvePanelLayout(p),
+        read: (p, view) => resolvePanelLayout(p, view),
         write: (p, v) => withPanelLayout(p, v as PanelLayout),
         event: { category: 'UI', changed: 'PanelLayout' },
       },
@@ -644,4 +646,24 @@ export function visibleCategories(
   return SETTINGS_CATEGORIES.filter((c) => !c.requiresAi || aiCapable)
     .map((c) => ({ ...c, rows: c.rows.filter((r) => !r.available || r.available(ctx)) }))
     .filter((c) => c.rows.length > 0);
+}
+
+// A choice row by key, for a surface outside Settings that offers the same
+// choice (the welcome tour's layout picker, spec/79) and must read, write
+// and report it exactly as the row does.
+export function choiceRow(key: string): SettingsChoiceRowSpec {
+  for (const c of SETTINGS_CATEGORIES) {
+    const row = c.rows.find((r) => r.key === key);
+    if (row?.kind === 'choice') return row;
+  }
+  throw new Error(`No settings choice row "${key}"`);
+}
+
+// A choice row's telemetry type carries the option picked, as a toggle's
+// carries its new state (spec/22): 'PanelLayout' + 'toolbar' →
+// 'PanelLayoutToolbar', so the dashboard shows which way people moved, not
+// just that they touched the setting. Option ids are catalogue constants,
+// never user content.
+export function choiceTelemetryType(changed: string, optionId: string): string {
+  return `${changed}${optionId.charAt(0).toUpperCase()}${optionId.slice(1)}`;
 }

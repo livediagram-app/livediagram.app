@@ -17,6 +17,7 @@ import { deriveNewBoxedColours } from '@/lib/themes';
 import { computeViewportCenter } from '@/lib/viewport';
 import { findTour, waitForSelector, waitForTour } from './tour-dom';
 import { tourStepsFor, tourStepTelemetryType, type TourApi } from './tour-steps';
+import { TourLayoutPicker } from './TourLayoutPicker';
 import { TourPopover } from './TourPopover';
 
 // Orchestrates the interactive editor tour (spec/79). Mounted once in
@@ -60,13 +61,13 @@ const unionRects = (a: TourTargetRect, b: TourTargetRect): TourTargetRect => {
 export function TourHost() {
   const ctx = useEditorContext();
   const isMobile = useIsMobileViewport();
-  // The effective step list: mobile drops the desktop-only steps (search,
+  // The effective step list: mobile drops the desktop-only step (the
   // theme dock button), an event-storming board drops the palette-header
   // dropdowns it doesn't render (spec/139).
   const esBoard = ctx.esBoard === true;
   // The Toolbar layout (spec/148) moves the Explorer behind a menu button,
   // honoured on a phone too; the minimal layout docks panels like a phone.
-  const panelLayout = resolvePanelLayout(ctx.userPreferences ?? {});
+  const panelLayout = resolvePanelLayout(ctx.userPreferences ?? {}, { mobile: isMobile });
   const toolbar = panelLayout === 'toolbar';
   const steps = useMemo(
     () => tourStepsFor({ mobile: isMobile, esBoard, toolbar }),
@@ -134,8 +135,6 @@ export function TourHost() {
       });
     },
     closeContextMenu: () => ctx.closeContextMenu(),
-    openSearchPanel: () => ctx.setSearchOpen(true),
-    closeSearchPanel: () => ctx.setSearchOpen(false),
   };
 
   // Peek at the /new handoff flag (NOT consume: it stays set until the
@@ -190,7 +189,7 @@ export function TourHost() {
   }, [ready]);
 
   // The step list can SHRINK mid-tour (crossing the mobile breakpoint
-  // drops the desktop-only steps): clamp the index so the effects and
+  // drops the desktop-only step): clamp the index so the effects and
   // render below never read past the end (steps[stepIndex] would be
   // undefined and the sync .target access threw before this guard).
   useEffect(() => {
@@ -345,13 +344,10 @@ export function TourHost() {
         // interact with whatever is highlighted; portalled menus (higher
         // z / later portals) paint above the dim. transition-all makes it
         // glide when the rect moves between steps; fade-in covers its
-        // first appearance. Targets that bring their own modal backdrop
-        // (the search panel) lift the ring above the modal layer.
+        // first appearance.
         <div
           aria-hidden
-          className={`pointer-events-none fixed animate-fade-in rounded-xl border-2 border-brand-400 transition-all duration-300 ease-out dark:border-brand-500 ${
-            step.ringAboveModal ? 'z-[var(--z-popover)]' : 'z-[var(--z-overlay)]'
-          }`}
+          className="pointer-events-none fixed z-[var(--z-overlay)] animate-fade-in rounded-xl border-2 border-brand-400 transition-all duration-300 ease-out dark:border-brand-500"
           style={{
             left: targetRect.left - 6,
             top: targetRect.top - 6,
@@ -372,6 +368,7 @@ export function TourHost() {
         title={step.title}
         body={step.body}
         targetRect={targetRect}
+        layoutPicker={step.card === 'welcome' ? <TourLayoutPicker /> : undefined}
         onBack={stepIndex > 1 && !step.card ? onBack : undefined}
         onNext={onNext}
         onSkip={onSkip}

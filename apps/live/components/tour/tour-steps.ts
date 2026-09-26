@@ -21,9 +21,6 @@ export type TourApi = {
   // element's menu is open (or null if it couldn't be).
   openElementContextMenu: () => Promise<void>;
   closeContextMenu: () => void;
-  // The Cmd/Ctrl+K search panel, for the search step (desktop only).
-  openSearchPanel: () => void;
-  closeSearchPanel: () => void;
 };
 
 export type TourStep = {
@@ -43,18 +40,14 @@ export type TourStep = {
   // around" / "No thanks", declining is permanent via the done-guard);
   // 'outro' wraps it up ("Start creating" + a help-centre link).
   card?: 'welcome' | 'outro';
-  // Skip this step entirely on mobile viewports (the search panel is a
-  // desktop surface).
+  // Skip this step entirely on mobile viewports (desktop-only chrome, like
+  // the paintbrush dock button).
   mobileSkip?: boolean;
   // Skip this step on an event-storming board (spec/139): the board hides
   // the palette's header band, so its two dropdowns aren't there to point
   // at. Without this the step anchors to a display:none trigger — a ring
   // measuring 0x0 in the top-left corner and a menu opened off-screen.
   boardSkip?: boolean;
-  // Lift the highlight ring above the modal layer for targets that carry
-  // their own full-screen backdrop (the search panel sits at --z-modal,
-  // which would otherwise bury the ring's --z-overlay dim).
-  ringAboveModal?: boolean;
   prepare?: (api: TourApi) => void | Promise<void>;
   cleanup?: (api: TourApi) => void;
   // Overrides for the Toolbar panel layout (spec/148), merged in by
@@ -197,18 +190,6 @@ export const TOUR_STEPS: TourStep[] = [
     // The paintbrush dock button is desktop chrome (mobile reaches the
     // same dialog through the canvas menu).
     mobileSkip: true,
-  },
-  {
-    id: 'search',
-    title: 'Search everything',
-    body: 'The search panel helps you find everything from diagrams and elements to help articles. You can even perform actions like adding a shape from here.',
-    target: 'search-panel',
-    // The panel brings its own full-screen backdrop at the modal layer.
-    ringAboveModal: true,
-    // Cmd/Ctrl+K search is a desktop surface; skip it on phones.
-    mobileSkip: true,
-    prepare: (api) => api.openSearchPanel(),
-    cleanup: (api) => api.closeSearchPanel(),
   },
   {
     id: 'outro',

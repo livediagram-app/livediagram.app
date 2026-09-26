@@ -5,21 +5,21 @@ import { MobileEditor, TouchGestures } from '@/components/illustrations/devices'
 export const metadata = helpMetadata({
   title: 'Mobile',
   description:
-    'livediagram on a phone is a touch-friendly editor: pinch to zoom, drag to pan, long-press for menus, and a compact dock in place of the floating panels.',
+    'livediagram on a phone is a touch-friendly editor: pinch to zoom, drag to pan, long-press for menus, and the palette as one strip across the top.',
   path: '/help/supported-devices/mobile/',
 });
 
-<ArticleLayout title="Mobile" description="On a phone the editor is built for touch, with a compact dock and finger gestures in place of a mouse and keyboard." categoryTitle="Supported Devices" categorySlug="supported-devices">
+<ArticleLayout title="Mobile" description="On a phone the editor is built for touch, with a palette strip across the top and finger gestures in place of a mouse and keyboard." categoryTitle="Supported Devices" categorySlug="supported-devices">
 
 livediagram works on a phone right in your browser, with no app to install. The editor automatically switches to a touch-friendly layout on small screens so the canvas stays the star and everything is reachable with a thumb. It is great for viewing a diagram, making quick edits, and joining a live session on the go.
 
 ## A layout built for touch
 
-On a small screen the floating panels are replaced by a **compact dock** in the top corner. Tap a dock button to open the palette, the Explorer, the Collaborate list (it appears once the tab has comments or actions), or other panels as a pop-over, and it tidies itself away again after you add something, so you keep the most room for your work.
+On a small screen the editor starts in the [Toolbar layout](/help/palette/toolbar-layout/): the palette becomes one strip across the top, with a menu button at its left end for the Explorer, and **More** for everything that doesn't fit. Prefer a **compact dock** instead? Pick **Minimal** under **Panel Layout** in [Settings](/help/user-interface/settings/): the panels then open from a row of buttons in the top corner, each as a pop-over that tidies itself away after you add something.
 
 The editor also opens zoomed out a little so you land on a useful overview of the whole diagram, and when you add a new element it slides into view automatically.
 
-<Figure caption="On a phone a compact dock replaces the floating panels and the diagram is zoomed to fit, keeping the canvas front and centre.">
+<Figure caption="On a phone the palette becomes one strip across the top, with the menu button at its left end, and the diagram is zoomed to fit, keeping the canvas front and centre.">
   <MobileEditor />
 </Figure>
 

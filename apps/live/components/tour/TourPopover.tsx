@@ -1,6 +1,6 @@
 'use client';
 
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { clamp } from '@livediagram/diagram';
 import { Button } from '@livediagram/ui';
 import { placeTourPopover } from './tour-position';
@@ -31,6 +31,7 @@ export function TourPopover({
   title,
   body,
   targetRect,
+  layoutPicker,
   onBack,
   onNext,
   onSkip,
@@ -50,6 +51,9 @@ export function TourPopover({
   // Viewport rect of the highlighted target; null while the step is still
   // preparing (the card then centres itself).
   targetRect: TourTargetRect | null;
+  // The welcome card's panel-layout choice (TourLayoutPicker), shown under
+  // the copy so it is answered whether the tour is taken or declined.
+  layoutPicker?: ReactNode;
   onBack?: () => void;
   onNext: () => void;
   onSkip: () => void;
@@ -161,6 +165,7 @@ export function TourPopover({
             </span>
             <h3 className="text-base font-semibold text-slate-900 dark:text-slate-50">{title}</h3>
             <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">{body}</p>
+            {card === 'welcome' && layoutPicker ? <div className="mt-2">{layoutPicker}</div> : null}
             {card === 'welcome' ? (
               <div className="mt-2 flex items-center justify-end gap-2">
                 {/* Declining is a first-class, same-weight choice — the offer

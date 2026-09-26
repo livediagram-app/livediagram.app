@@ -221,10 +221,23 @@ export type PanelLayout = (typeof PANEL_LAYOUTS)[number];
 // the legacy boolean decides, so nobody's layout moved when the choice
 // arrived. An unknown value (written by a newer client) reads as the default
 // rather than as a crash.
-export function resolvePanelLayout(prefs: UserPreferences): PanelLayout {
+//
+// Pass `mobile` for the layout a phone actually shows: Floating is desktop
+// only, so there it (and so the unset default) becomes Toolbar (spec/148).
+// The stored value is untouched, so the same user still gets Floating back
+// on a desktop.
+export function resolvePanelLayout(
+  prefs: UserPreferences,
+  { mobile = false }: { mobile?: boolean } = {},
+): PanelLayout {
   const v = prefs.panelLayout;
-  if (v && (PANEL_LAYOUTS as readonly string[]).includes(v)) return v;
-  return prefs.minimalPanels === true ? 'minimal' : 'floating';
+  const stored =
+    v && (PANEL_LAYOUTS as readonly string[]).includes(v)
+      ? (v as PanelLayout)
+      : prefs.minimalPanels === true
+        ? 'minimal'
+        : 'floating';
+  return mobile && stored === 'floating' ? 'toolbar' : stored;
 }
 
 // Write a layout, keeping the legacy flag in step: only Minimal docks the

@@ -324,8 +324,9 @@ export function TabletRotate() {
 
 // --- Mobile ------------------------------------------------------------------
 
-/** A phone running the touch editor: a compact dock in the top corner, the
- *  diagram zoomed to fit, and a finger interacting with the canvas. */
+/** A phone running the touch editor: the Toolbar strip across the top (a
+ *  phone's default layout), the diagram zoomed to fit, and a finger
+ *  interacting with the canvas. */
 export function MobileEditor() {
   return (
     <Scene w={420} h={240} bg="plain">
@@ -341,19 +342,54 @@ export function MobileEditor() {
       />
       <rect x={188} y={22} width={44} height={5} rx={2.5} className="fill-slate-200" />
       <rect x={158} y={34} width={104} height={172} rx={6} className="fill-slate-50" />
-      {/* Compact dock, top corner */}
+      {/* The Toolbar strip, a phone's default layout (spec/148): menu button,
+          selection mode, category, as many tiles as fit (three here), More. */}
       <rect
-        x={166}
-        y={42}
-        width={62}
-        height={20}
-        rx={6}
+        x={162}
+        y={40}
+        width={96}
+        height={18}
+        rx={5}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={1.2}
       />
-      <circle cx={177} cy={52} r={3.5} className="fill-brand-500" />
-      <circle cx={195} cy={52} r={3.5} className="fill-slate-300" />
-      <circle cx={213} cy={52} r={3.5} className="fill-slate-300" />
+      {/* Menu button (☰) */}
+      <path
+        d="M167 45.5h7M167 49h7M167 52.5h7"
+        className="stroke-slate-500"
+        strokeWidth={1.2}
+        strokeLinecap="round"
+      />
+      <path d="M178 44v10M204 44v10M234 44v10" className="stroke-slate-200" strokeWidth={1} />
+      {/* Selection mode + category pickers, icon-only on a phone */}
+      <rect x={181} y={44} width={9} height={10} rx={2.5} className="fill-brand-100" />
+      <rect x={192} y={44} width={9} height={10} rx={2.5} className="fill-brand-100" />
+      <circle cx={185.5} cy={49} r={2} className="fill-brand-500" />
+      <path
+        d="M196.5 46.5l0.9 1.8 2 0.3-1.4 1.4 0.3 2-1.8-0.9-1.8 0.9 0.3-2-1.4-1.4 2-0.3z"
+        className="fill-brand-500"
+      />
+      {/* Three shape tiles */}
+      <rect
+        x={206}
+        y={46}
+        width={6}
+        height={6}
+        rx={1}
+        className="fill-none stroke-slate-500"
+        strokeWidth={1}
+      />
+      <circle cx={218.5} cy={49} r={3.2} className="fill-none stroke-slate-500" strokeWidth={1} />
+      <path
+        d="M229 45.6l3.4 3.4-3.4 3.4-3.4-3.4z"
+        className="fill-none stroke-slate-500"
+        strokeWidth={1}
+      />
+      {/* More */}
+      <rect x={237} y={44} width={17} height={10} rx={2.5} className="fill-brand-100" />
+      <circle cx={241.5} cy={49} r={0.9} className="fill-brand-500" />
+      <circle cx={245} cy={49} r={0.9} className="fill-brand-500" />
+      <circle cx={248.5} cy={49} r={0.9} className="fill-brand-500" />
       {/* Diagram zoomed to fit */}
       <g transform="translate(164 78) scale(0.5)">
         <MiniFlow x={0} y={0} showLabels={false} />

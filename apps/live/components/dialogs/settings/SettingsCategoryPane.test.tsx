@@ -57,7 +57,7 @@ describe('SettingsCategoryPane on a phone', () => {
     expect(layoutOption('Toolbar').disabled).toBe(false);
     expect(layoutOption('Minimal').disabled).toBe(false);
     expect(screen.getByRole('note').textContent).toBe(
-      'Floating is desktop only. On a phone it uses the button bar instead.',
+      'Floating is desktop only. On a phone it uses the Toolbar layout instead.',
     );
     fireEvent.click(layoutOption('Floating'));
     expect(onChange).not.toHaveBeenCalled();

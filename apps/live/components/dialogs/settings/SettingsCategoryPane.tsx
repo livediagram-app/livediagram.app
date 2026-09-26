@@ -14,7 +14,11 @@ import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { track } from '@/lib/telemetry';
 import type { AppearanceSetting } from '@/hooks/ui/appearance-store';
-import type { SettingsAppearanceRowSpec, SettingsCategorySpec } from './settings-catalogue';
+import {
+  choiceTelemetryType,
+  type SettingsAppearanceRowSpec,
+  type SettingsCategorySpec,
+} from './settings-catalogue';
 import type { UserPreferences } from '@/lib/user-preferences';
 
 // One category's settings. The pane is deliberately thin: the catalogue says
@@ -93,10 +97,10 @@ export function SettingsCategoryPane({
               limited
                 ? `${joinLabels(desktopOnly.map((o) => o.label))} ${
                     desktopOnly.length === 1 ? 'is' : 'are'
-                  } desktop only. On a phone it uses the button bar instead.`
+                  } desktop only. On a phone it uses the Toolbar layout instead.`
                 : undefined
             }
-            value={row.read(settings)}
+            value={row.read(settings, { mobile: isMobile })}
             onChange={(next) => {
               track(row.event.category, 'Changed', choiceTelemetryType(row.event.changed, next));
               onChange(row.write(settings, next));
@@ -177,15 +181,6 @@ function AppearanceRow({ row }: { row: SettingsAppearanceRowSpec }) {
       onChange={(next) => set(next as AppearanceSetting)}
     />
   );
-}
-
-// A choice row's telemetry type carries the option picked, as a toggle's
-// carries its new state (spec/22): 'PanelLayout' + 'toolbar' →
-// 'PanelLayoutToolbar', so the dashboard shows which way people moved, not
-// just that they touched the setting. Option ids are catalogue constants,
-// never user content.
-function choiceTelemetryType(changed: string, optionId: string): string {
-  return `${changed}${optionId.charAt(0).toUpperCase()}${optionId.slice(1)}`;
 }
 
 // "Floating", "Floating and Toolbar", "A, B and C".

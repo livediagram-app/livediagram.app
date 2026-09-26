@@ -17,6 +17,7 @@ import { track } from '@/lib/telemetry';
 import { useTeamFolderActions } from '@/hooks/ui/useTeamFolderActions';
 import { getTheme, resolveTabBackdrop, themeChartPalette, type ThemeId } from '@/lib/themes';
 import { useAppearance } from '@/hooks/ui/useAppearance';
+import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { Canvas } from '@/components/canvas/Canvas';
 import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
 
@@ -376,6 +377,9 @@ export function EditorCanvasHost() {
   // canvas repaint when it changes — resolveTabBackdrop would otherwise read a
   // module store nothing re-renders for.
   const { appearance } = useAppearance();
+  // The layout this viewport shows (a phone has no Floating, spec/148).
+  const isMobile = useIsMobileViewport();
+  const panelLayout = resolvePanelLayout(userPreferences, { mobile: isMobile });
   const backdrop = resolveTabBackdrop(activeTab, appearance);
   const activeTabChangeLog = useMemo(
     () => changeLog.filter((entry) => entry.tabId === activeId),
@@ -671,8 +675,9 @@ export function EditorCanvasHost() {
         onChangeSettings={onChangeSettings}
         // Only Minimal docks the panels. Toolbar (spec/148) keeps Floating's
         // panels and swaps the Palette + Explorer for the strip and menu button.
-        minimalPanels={resolvePanelLayout(userPreferences) === 'minimal'}
-        toolbarLayout={resolvePanelLayout(userPreferences) === 'toolbar'}
+        // A phone resolves Floating to Toolbar, its default.
+        minimalPanels={panelLayout === 'minimal'}
+        toolbarLayout={panelLayout === 'toolbar'}
         onToggleMinimalPanels={onToggleMinimalPanels}
         onCancelDraw={cancelDrawShape}
         onUndo={undo}
