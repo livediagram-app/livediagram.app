@@ -25,6 +25,11 @@ pointer exactly and can be placed off-grid.
   two placement rules at once would put the note, the insertion marker and
   the drop in three different places. Release Alt and this override applies
   again for the rest of the drag, as usual.
+- **It is the one way off a lane.** On an event-storming board a workshop note
+  always lands on a lane ([Event storming](../021-event-storming/event-storming.md#always-on-a-lane));
+  Cmd/Ctrl skips the lanes with every other snap, and the note stays exactly
+  where it was put: no later load, settle or nudge re-snaps it on its own
+  (an up / down arrow key does move it, to the next lane on that side).
 
 ## Implementation
 

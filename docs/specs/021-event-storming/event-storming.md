@@ -456,13 +456,15 @@ axis means anything in particular, so the whole feature is gated on
   (its band spans y 0..200), and the lanes repeat every pitch in both
   directions (`ES_LANES`). Nothing on the board moves them: not a note placed
   higher, not the top-most note being moved, deleted or re-kinded, not an
-  import, a paste, an undo or a peer. Nothing to persist and nothing to
-  migrate; a note that sits off-lane on an older board stays where it is until
-  it is next dragged.
-- **Each axis snaps only within its own tolerance**, and independently: half
-  the lane gap (20px) on y, so a note parked deliberately between two lanes
-  stays there; 12px on x, a real threshold, so a note placed in open space
-  stays exactly where the hand put it.
+  import, a paste, an undo or a peer. An older board whose notes sit off-lane
+  is settled onto it ONCE (see [Always on a lane](#always-on-a-lane)).
+- **A workshop note always lands on a lane; x stays soft.** y has no
+  tolerance for a note with an event-storming kind: wherever it is let go, it
+  lands on the nearest lane, and only Cmd/Ctrl free placement leaves it
+  between two ([Always on a lane](#always-on-a-lane)). A plain sticky keeps the
+  old aid, snapping only within half the lane gap (20px). x snaps only within
+  its own capture radius, so a note placed in open space along a lane stays
+  exactly where the hand put it.
 
 ### Placement rules
 
@@ -470,18 +472,18 @@ The rules a single note follows on a lanes-on board. This table is the contract;
 it is updated in the SAME commit as any change to it, and the rulings below
 record who asked for what.
 
-| Where                                | What is offered                                                                                                                                                                                                                                                                                                                                                                                                      |
-| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Same lane, no neighbour in reach** | Nothing. The note is free within the lane.                                                                                                                                                                                                                                                                                                                                                                           |
-| **Same lane, a neighbour in reach**  | One GUTTER from the neighbour, and then the same again with a square note worth of empty wall between (room kept for an event not yet written): `x = n.x + n.width + 16 + k × (200 + 16)`, `k ≥ 0`, and the mirror to its left. Every step is a SQUARE note, whatever is being placed, so a row has one set of places whichever sticky you hold.                                                                     |
-| **Same lane — never offered**        | Touching (`n.x ± w`). One gap plus one sticky (`n.x + n.width + gutter + w`) — that is a note's edge, not a place. Half a pitch. Anything landing on a note that is already there (opening a row is the Alt insertion, a different verb).                                                                                                                                                                            |
-| **Adjacent lane**                    | EDGES LINE UP, in three columns: exactly above/below the note, and ONE rhythm step (216) to either side — the diagonal, a note sitting against its neighbour one place along. Same silhouette lines up on the left edge and, for two SQUARES, the brick as well (centred on the gap beside the note). Different silhouettes line up on the left edge or the right edge, in the same three columns, and get no brick. |
-| **Every other x snap**               | Stands down. On an event-storming board the lane resolver is the only source of x — the ordinary alignment and distribution rungs were adding exactly the positions the rules above exclude.                                                                                                                                                                                                                         |
-| **A multi-selection**                | Snapped by the NOTE IN HAND: the offers are asked of the note the drag began on, exactly as if it were dragged alone, and every other note moves by the one delta, so the selection keeps its spacing exactly. The preview is that note’s footprint.                                                                                                                                                                 |
-| **Dropped ON a note in the row**     | Resolved to the nearest slot, however far it is. Sliding a note back until it touches the one before it is how an author says "right behind this", and the gesture overshoots by nature; a footprint lying on another note is not a resting place on a board of paper.                                                                                                                                               |
-| **The gutter**                       | Always `ES_NOTE_GAP` (16). Not measured from the board any more: one number, relative to the notes in the row, is what makes the places predictable.                                                                                                                                                                                                                                                                 |
-| **Capture**                          | Half a standard note (100px) on x, the lane tolerance on y. Offers rank in three tiers and distance decides within a tier: (1) the note’s OWN row, at most one square left empty from a neighbour (`k ≤ 1`); (2) the lanes above and below, whose aligned columns and bricks stay equals; (3) the own row further along (`k ≥ 2`). The slot is drawn before the drop.                                                |
-| **Precedence**                       | An open Alt slot, then Cmd/Ctrl free placement, then these rules.                                                                                                                                                                                                                                                                                                                                                    |
+| Where                                | What is offered                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Same lane, no neighbour in reach** | Nothing. The note is free within the lane.                                                                                                                                                                                                                                                                                                                                                                                                             |
+| **Same lane, a neighbour in reach**  | One GUTTER from the neighbour, and then the same again with a square note worth of empty wall between (room kept for an event not yet written): `x = n.x + n.width + 16 + k × (200 + 16)`, `k ≥ 0`, and the mirror to its left. Every step is a SQUARE note, whatever is being placed, so a row has one set of places whichever sticky you hold.                                                                                                       |
+| **Same lane — never offered**        | Touching (`n.x ± w`). One gap plus one sticky (`n.x + n.width + gutter + w`) — that is a note's edge, not a place. Half a pitch. Anything landing on a note that is already there (opening a row is the Alt insertion, a different verb).                                                                                                                                                                                                              |
+| **Adjacent lane**                    | EDGES LINE UP, in three columns: exactly above/below the note, and ONE rhythm step (216) to either side — the diagonal, a note sitting against its neighbour one place along. Same silhouette lines up on the left edge and, for two SQUARES, the brick as well (centred on the gap beside the note). Different silhouettes line up on the left edge or the right edge, in the same three columns, and get no brick.                                   |
+| **Every other x snap**               | Stands down. On an event-storming board the lane resolver is the only source of x — the ordinary alignment and distribution rungs were adding exactly the positions the rules above exclude.                                                                                                                                                                                                                                                           |
+| **A multi-selection**                | Snapped by the NOTE IN HAND: the offers are asked of the note the drag began on, exactly as if it were dragged alone, and every other note moves by the one delta, so the selection keeps its spacing exactly. The preview is that note’s footprint.                                                                                                                                                                                                   |
+| **Dropped ON a note in the row**     | Resolved to the nearest slot, however far it is. Sliding a note back until it touches the one before it is how an author says "right behind this", and the gesture overshoots by nature; a footprint lying on another note is not a resting place on a board of paper.                                                                                                                                                                                 |
+| **The gutter**                       | Always `ES_NOTE_GAP` (16). Not measured from the board any more: one number, relative to the notes in the row, is what makes the places predictable.                                                                                                                                                                                                                                                                                                   |
+| **Capture**                          | Half a standard note (100px) on x. On y a workshop note ALWAYS takes the nearest lane; a plain sticky only within the lane tolerance (20px). Offers rank in three tiers and distance decides within a tier: (1) the note’s OWN row, at most one square left empty from a neighbour (`k ≤ 1`); (2) the lanes above and below, whose aligned columns and bricks stay equals; (3) the own row further along (`k ≥ 2`). The slot is drawn before the drop. |
+| **Precedence**                       | An open Alt slot, then Cmd/Ctrl free placement, then these rules.                                                                                                                                                                                                                                                                                                                                                                                      |
 
 **Non-square stationery** (provisional, awaiting a ruling): a wide or small note
 takes a slot like any other. The first slot after a neighbour is that
@@ -492,7 +494,99 @@ is centred on the gap, so its own width decides where its left edge falls. All
 of it lives in `rhythmSlots` and `gutterCentres` in
 `packages/diagram/src/event-storming-lanes.ts`, so a ruling is a small change.
 
+### Always on a lane
+
+**The invariant.** On an event-storming board, every WORKSHOP NOTE (a sticky
+with an event-storming kind, `isEventStormingNote`) sits on a lane: its centre
+on a lane's centre line. Plain stickies, shapes, icons, images and arrows are
+not held; a plain sticky keeps the lane as an aid (20px). The ONE way off a
+lane is Cmd/Ctrl free placement, and a note placed that way stays exactly
+where it was put: nothing re-snaps it later. On an ordinary board there are no
+lanes, so nothing is held.
+
+The rule is about ARRIVING notes. Whatever lands or moves a note puts it on a
+lane; nothing ever moves a note that is already down to make room for one that
+is arriving (the Alt insertion stays the one verb that makes room).
+
+| Way in                                            | Where the note lands                                                                                                                                                                                                                                                                                                       |
+| ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Drag, one note or a selection**                 | y: the nearest lane, at any distance (there is no "parked between lanes" any more). x: the placement rules above, unchanged. A selection snaps by the note in hand; when that note is a plain sticky, by the first workshop note in the selection, so every workshop note in it stays on a lane.                           |
+| **Cmd/Ctrl drag**                                 | Exactly where the hand puts it, on a lane or not.                                                                                                                                                                                                                                                                          |
+| **Palette drag, click to place**                  | The nearest lane, the same placement as a drag.                                                                                                                                                                                                                                                                            |
+| **A single note landing on an occupied spot**     | The nearest free rhythm slot along its lane (the "Dropped ON a note in the row" rule, whatever brought the note there).                                                                                                                                                                                                    |
+| **Arrow keys up / down**                          | A whole lane per press, Shift or not: the note's centre moves to the next lane above or below it (a note off-lane goes to the lane on that side). Left / right nudge is unchanged (1px, 10px with Shift). A selection holding a workshop note moves by that note's lane step, every member by the same delta.              |
+| **Paste, the pointer over the canvas**            | At the POINTER. One note: centred on the pointer, then placed exactly as a note dropped there (lane, slot, occupied spot). Several: the block keeps its layout, centred on the pointer, and each row of notes takes its own lane (rows to lanes, below); nothing already on the board moves, and the block may overlap it. |
+| **Paste, the pointer anywhere else**              | STAGGERED on the original: the same lane, 24px to the right. Overlapping the original is fine; it is a copy you are about to move. Over a panel, or with the pointer outside the window, is "anywhere else".                                                                                                               |
+| **Duplicate** (⌘D, the menu, the command palette) | Staggered on the original: the same lane, 24px to the right.                                                                                                                                                                                                                                                               |
+| **Photo import**                                  | Rows of the photograph to lanes, with a cascade; notes above one another share a column. See below.                                                                                                                                                                                                                        |
+| **MCP** (`update_diagram`)                        | Every workshop note the call adds or moves is an arriving note: rows to lanes, and a lone arrival landing on an occupied spot takes the nearest free slot.                                                                                                                                                                 |
+| **File import** (JSON into the tab)               | Every workshop note to its nearest lane, x untouched.                                                                                                                                                                                                                                                                      |
+| **Next-note button**                              | The lane of the note it was added from (that note's nearest lane, when it was free-placed off one).                                                                                                                                                                                                                        |
+| **Alt insertion**                                 | The lane of the row it is inserted into.                                                                                                                                                                                                                                                                                   |
+| **A new board** (template, /new, MCP template)    | The seed "Board Created" note on lane 0, and the board marked settled.                                                                                                                                                                                                                                                     |
+| **An older board** (authored before this rule)    | Settled ONCE, the first time it is opened by someone who can edit it: see below.                                                                                                                                                                                                                                           |
+
+**Rows to lanes.** Several notes arriving together (a paste, an MCP call)
+keep their layout as a block, and each ROW of them takes its own lane: a row is
+the notes level with each other (centres less than half a lane's height apart,
+measured from the row's first note, top to bottom). The first row takes its
+nearest lane; every later row takes its nearest lane but at least the lane
+below the row before it, so two rows never merge into one and the order of the
+rows is kept. A row pushed down pushes every row below it by the same lane (the
+cascade). x is untouched.
+
+**Older boards settle once.** A board authored before this rule may hold notes
+parked between lanes. The first time it is opened by someone who can edit it
+(not a view-only visitor, not a locked tab), every workshop note that is not on
+a lane moves to its nearest lane: y only, x untouched, nothing pushed, and a
+locked note stays where it is. It is ONE undoable step, named in the activity
+log, and a toast says how many notes moved. The board then carries
+`esLanesSettled: true` and is never settled again, so a note free-placed
+afterwards stays free. Undo puts the notes back but keeps the mark (it is
+grafted across undo like the session tools' state): an author who undoes the
+settle has said no, and the board must not ask again. A board with nothing to
+move is marked without an undo step. New boards are marked when they are made.
+
+**Photo import.** A photograph is the densest, least regular arrival there is:
+its rows sag, its notes are lapped, and a small photo of a big wall puts two
+rows of paper closer together than one lane. It lands in four steps, and
+nothing already on the board moves in any of them:
+
+1. **Geometry is photographed square.** Photo coordinates are fractions of the
+   photo's WIDTH on both axes, so one scale carries both. (Before this, y was a
+   fraction of the height, which stretched every landscape photo's rows apart
+   by its aspect ratio and made lanes skip.)
+2. **Columns.** Notes of DIFFERENT rows whose centres are within a quarter of
+   a standard note (50px) of each other share one column: their left edges
+   take the left edge of the top-most of them. Alignment the photo only
+   approximates is kept exactly, for the code export to read later.
+3. **Rows to lanes, with the cascade.** The detector's rows, top to bottom:
+   each takes its nearest lane, but at least the lane below the row before it.
+   A note whose footprint lands on a note already on the board, or on an
+   imported note of an EARLIER row, goes one lane down, and every row below it
+   goes down one lane with it, so dense, small and imperfect photos keep their
+   row order.
+4. **Along a row.** Notes of one row that overlap each other (lapped paper, or
+   a policy's wide silhouette where the wall had a square) slide right along
+   the lane to one gutter clear of the note before them, in the photo's left
+   to right order (provisional, awaiting a ruling: the literal cascade would
+   push them down instead).
+
 **Rulings** (each one an operator input, and what changed):
+
+- **2026-09-26 — "event-storming stickies always land on lanes"** (fourteen
+  decisions, all final): the lanes stop being an aid a note can ignore and
+  become where a workshop note IS. Drag y has no tolerance for a workshop note;
+  Cmd/Ctrl stays the one way off a lane; x is untouched. Arrow keys move a whole
+  lane. Paste lands at the pointer when it is over the canvas and staggered on
+  the original otherwise; duplicate staggers on the same lane; several notes
+  keep their layout with a lane per row; a single note on an occupied spot
+  takes the next free slot along its lane. Photo import keeps row order with a
+  cascade and lines up columns within a quarter note. MCP-created notes and
+  file imports land on lanes. Older boards are settled once, as one undoable
+  step, and marked. Nothing already on the board is ever pushed; Alt stays the
+  way to make room. This retires "a note parked between lanes stays there" and
+  "a note off-lane on an older board stays until it is next dragged".
 
 - **2026-09-25 — "a couple of ways move the snapping lanes up and down, which
   is not expected"**: the stack was anchored on the TOP EDGE of the board's
@@ -601,9 +695,10 @@ of it lives in `rhythmSlots` and `gutterCentres` in
   read as one row: the 180-tall wide kinds (policy, external system, aggregate)
   and the 140-tall actor sit centred against the 200-tall square kinds instead
   of hanging from a shared top edge.
-- **Nothing on the board ever moves to make room.** Not one note. Lanes are an
-  aid the next drag can use, not a cage the board is poured into; "snap
-  everything to lanes" is a separate verb nobody has asked for yet.
+- **Nothing on the board ever moves to make room.** Not one note. Only the
+  note ARRIVING moves (a drop, a paste, an import), and the one-time settle of
+  an older board is the only time a note already down changes lane. Making
+  room is the Alt insertion's job and nothing else's.
 - **Invisible until a note is on the move.** No permanent rules ruled across
   the canvas: while a single note is being dragged (from the palette or already
   on the board, alone or as a selection) the lane it would land on lights as a faint band with a centre
@@ -639,8 +734,8 @@ of it lives in `rhythmSlots` and `gutterCentres` in
 - **The template lands on the lanes.** The event-storming template lays its
   starter row on the lane nearest the centre it is built at, so a fresh board
   starts on the lanes every drag snaps to (`buildEventStorming`).
-- **Not in v1:** no keyboard shortcut, no "snap all notes to lanes" verb, no
-  vertical lanes (the module is horizontal in fact, axis-shaped in form), and
+- **Not in v1:** no "snap all notes to lanes" verb (the one-time settle is
+  not a verb), no vertical lanes (the module is horizontal in fact, axis-shaped in form), and
   no per-lane naming — a lane is a position, not an entity.
 
 **What shipped, in numbers.** `ES_LANE_HEIGHT` 200 (one standard note),
@@ -1559,16 +1654,19 @@ type, kept current every session. Each should stay true on its own.
 - A React state updater is not a place for side effects — it re-runs, and the
   import added everything twice. Unit tests missed it; counting stickies on a
   real canvas did not.
-- Lanes are an aid, not a cage: they appear only during a drag, they snap only
-  within a tolerance, and they move NOT ONE note that is already down.
+- A lane is where a workshop note IS, not a hint it may ignore: an aid with a
+  tolerance left notes parked between rows, and a wall of rows is only a wall of
+  rows if every note is on one. One modifier (Cmd/Ctrl) is the way off.
+- Only the arriving note moves: a lane rule that pushed notes already down to
+  make room would be an import, a paste or a drop nobody dares to make.
 - A toggle for something the board always wants is a toggle nobody should have
   to find. Lanes shipped with a switch, a command and a menu verb; the operator
   asked for all three to go, and with them went the tab field, its migration
   surface and two telemetry events. Derived state cannot drift from the board
   it describes.
 - A grid claims every point by construction (half a column is the farthest
-  anything can be from one), so only the axis with a real tolerance — y, onto
-  the lane — is where "an aid, not a cage" actually lives.
+  anything can be from one), so x, where a note must be free to sit anywhere
+  along its row, can never be a grid; y, where it must not, is one.
 - Two placement rules on one axis is one lie: when a lane claims an axis, the
   alignment guide for that axis has to go with it, or the board draws a line
   along an edge the note is not landing on.
