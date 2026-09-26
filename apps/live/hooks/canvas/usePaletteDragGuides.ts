@@ -168,6 +168,7 @@ export function usePaletteDragGuides({
         // Lanes are a NOTE grammar: a shape dragged in from the palette lands
         // exactly as it does on every other board.
         timeline: preview.note === true ? lanes : null,
+        laneHeld: preview.workshop === true,
       });
       setPaletteDragSnap({ dx: snap.dx, dy: snap.dy });
       setLanePreview(snap.lane);

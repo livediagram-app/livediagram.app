@@ -22,6 +22,9 @@ type PaletteDragPreview = {
   // (docs/specs/021-event-storming/event-storming.md) is a gesture about the note grammar, so it reads this rather
   // than the drawing kind.
   note?: boolean;
+  // The note is a WORKSHOP note (the tile has an event-storming kind), which
+  // always lands on a lane (docs/specs/021-event-storming/event-storming.md "Always on a lane").
+  workshop?: boolean;
 };
 
 let current: PaletteDragPreview | null = null;

@@ -5,6 +5,7 @@ import type { PointerEvent as ReactPointerEvent } from 'react';
 import {
   ES_LANES,
   ES_LANE_PITCH,
+  isOnLane,
   laneCentre,
   type Element,
   type EsTimeline,
@@ -26,6 +27,12 @@ const TIMELINE: EsTimeline = { originY: 0 };
 
 function note(id: string, x: number, y = 0): StickyElement {
   return { id, type: 'sticky', x, y, width: 200, height: 200, label: id } as StickyElement;
+}
+
+// A WORKSHOP note: a sticky with an event-storming kind, which always lands
+// on a lane (docs/specs/021-event-storming/event-storming.md "Always on a lane").
+function workshop(id: string, x: number, y = 0): StickyElement {
+  return { ...note(id, x, y), esKind: 'domain-event', fillColor: '#fdba74', fixedSize: true };
 }
 
 // `drag` starts at (1000, 1000) — clear of every lane and column, so any
@@ -217,6 +224,36 @@ describe('useEditorDrag — timeline lanes (docs/specs/021-event-storming/event-
     move(h, DX, midY - 1000);
     expect(h.yOf('drag')).toBe(midY);
     expect(getLanePreview()).toBeNull();
+  });
+
+  it('lands a WORKSHOP note on the nearest lane from between two', () => {
+    const h = harness({ elements: [note('a', 0), note('b', 272), workshop('drag', 1000, 1000)] });
+    press(h, 'drag');
+    const midY = ES_LANE_PITCH + 100;
+    move(h, DX, midY - 1000);
+    expect(h.yOf('drag')).toBe(laneCentre(1, TIMELINE) - 100);
+    expect(getLanePreview()).toMatchObject({ laneIndex: 1 });
+  });
+
+  it('leaves a workshop note exactly where Cmd/Ctrl puts it', () => {
+    const h = harness({ elements: [note('a', 0), workshop('drag', 1000, 1000)] });
+    press(h, 'drag');
+    const midY = ES_LANE_PITCH + 100;
+    move(h, DX, midY - 1000, { meta: true });
+    expect(h.yOf('drag')).toBe(midY);
+  });
+
+  it('holds a selection by its first workshop note when the note in hand is a plain sticky', () => {
+    // The plain sticky in hand sits 60px below the workshop note's lane
+    // offset, so snapping by it would leave the workshop note off a lane.
+    const h = harness({
+      elements: [workshop('w', 1300, 1000), note('drag', 1000, 1060)],
+      multiSelected: ['drag', 'w'],
+    });
+    press(h, 'drag');
+    move(h, 0, ES_LANE_PITCH + 130 - 1000);
+    expect(isOnLane({ y: h.yOf('w')!, height: 200 })).toBe(true);
+    expect(h.yOf('drag')! - h.yOf('w')!).toBe(60);
   });
 
   it('stands down under free placement (Cmd/Ctrl)', () => {

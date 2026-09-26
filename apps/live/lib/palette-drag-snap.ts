@@ -3,6 +3,7 @@ import {
   distributionSnap,
   snapToAlignment,
   capturePlacement,
+  laneSnapThreshold,
   snapToLane,
   type AlignmentGuide,
   type DistributionGuide,
@@ -31,6 +32,7 @@ export function paletteDragSnapAt({
   height,
   elements,
   timeline = null,
+  laneHeld = false,
 }: {
   // The cursor in canvas coords. The footprint is CENTRED on it, matching
   // where the drop actually places the element.
@@ -43,6 +45,9 @@ export function paletteDragSnapAt({
   // note, on an event-storming board, with lanes on. Null otherwise — the
   // caller owns that decision, exactly as the note-drag path's does.
   timeline?: EsTimeline | null;
+  // A WORKSHOP note always lands on a lane (docs/specs/021-event-storming/event-storming.md "Always on a lane"):
+  // no y tolerance. A plain sticky keeps the lane as an aid.
+  laneHeld?: boolean;
 }): {
   dx: number;
   dy: number;
@@ -58,7 +63,7 @@ export function paletteDragSnapAt({
   };
   // Lanes claim the row, the neighbours claim x — the same ladder the
   // note-drag resolver follows, two entry points.
-  const laneSnap = timeline ? snapToLane(candidate, timeline) : null;
+  const laneSnap = timeline ? snapToLane(candidate, timeline, laneSnapThreshold(laneHeld)) : null;
   const gutterSnap = laneSnap
     ? capturePlacement({ ...candidate, y: laneSnap.y }, elements, {})
     : null;

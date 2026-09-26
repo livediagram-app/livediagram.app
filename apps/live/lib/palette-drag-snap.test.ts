@@ -168,6 +168,19 @@ describe('paletteDragSnapAt — timeline lanes', () => {
     expect(out).toEqual({ dx: 0, dy: 0, guides: [], distGuides: [], lane: null });
   });
 
+  it('lands a WORKSHOP note on the nearest lane from between two (always on a lane)', () => {
+    const out = paletteDragSnapAt({
+      canvasX: 900 + 100,
+      canvasY: ES_LANE_PITCH + 100 + 100 + 3,
+      ...dragged,
+      elements: [],
+      timeline: TIMELINE,
+      laneHeld: true,
+    });
+    expect(ES_LANE_PITCH + 200 + 3 + out.dy).toBe(laneCentre(1, TIMELINE));
+    expect(out.lane).toMatchObject({ laneIndex: 1 });
+  });
+
   it('stands every other snap down: no lane, no slot, no guides', () => {
     // A neighbour whose TOP edge sits mid-way between two lanes: no lane can
     // claim y, so nothing is offered — and on a lanes board the ordinary

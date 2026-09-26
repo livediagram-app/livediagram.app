@@ -41,6 +41,9 @@ export function stampPlacement(
   canvasY: number,
   size: Size,
   board: BoardLike,
+  // A workshop note (a kinded tile) always lands on a lane; a plain sticky
+  // keeps the lane as an aid (docs/specs/021-event-storming/event-storming.md "Always on a lane").
+  held = false,
 ): StampPlacement {
   const snap = paletteDragSnapAt({
     canvasX,
@@ -48,6 +51,7 @@ export function stampPlacement(
     ...size,
     elements: board.elements as Element[],
     timeline: isEventStormingTab(board) ? ES_LANES : null,
+    laneHeld: held,
   });
   const cx = canvasX + snap.dx;
   const cy = canvasY + snap.dy;
@@ -55,4 +59,9 @@ export function stampPlacement(
     bounds: { x: cx - size.width / 2, y: cy - size.height / 2, ...size },
     lane: snap.lane,
   };
+}
+
+// Is this stamp a workshop note (a tile with a kind), held to the lanes?
+export function stampHeld(intent: PendingDraw): boolean {
+  return intent.type === 'sticky' && !!intent.esKind;
 }

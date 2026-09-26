@@ -26,6 +26,7 @@ import {
   acceptsInlineIcon,
   anchorOutward,
   ES_LANES,
+  isEventStormingNote,
   isBoxed,
   nearestElementTowards,
   opposingAnchor,
@@ -189,6 +190,20 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       [...drag.startBounds.keys()].every(
         (id) => depsRef.current.activeTab.elements.find((el) => el.id === id)?.type === 'sticky',
       );
+    // Always on a lane (docs/specs/021-event-storming/event-storming.md): a WORKSHOP note has no y tolerance.
+    // A selection is snapped by the note in hand; when that is a plain
+    // sticky, by the first workshop note in the selection, so every workshop
+    // note in it stays on a lane.
+    const laneAnchorId = (() => {
+      if (drag.kind !== 'boxed') return null;
+      const els = depsRef.current.activeTab.elements;
+      const isWorkshop = (id: string) => {
+        const el = els.find((e) => e.id === id);
+        return !!el && isEventStormingNote(el);
+      };
+      if (isWorkshop(drag.primaryId)) return drag.primaryId;
+      return [...drag.startBounds.keys()].find(isWorkshop) ?? null;
+    })();
     // The last pointer position of this drag, so pressing or releasing Alt
     // without moving the mouse still opens / unwinds the slot (see onAltChange).
     let lastMove: MovePointer | null = null;
@@ -336,7 +351,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
           const move = resolveBoxedMove({
             elements: activeTab.elements,
             startBounds: drag.startBounds,
-            primaryId: drag.primaryId,
+            primaryId: notesEligible && laneAnchorId ? laneAnchorId : drag.primaryId,
             dx,
             dy,
             noSnap,
@@ -344,6 +359,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
             // Free placement (Cmd/Ctrl) skips the lanes with everything else:
             // the modifier means "I know where I want this".
             timeline: notesEligible && !noSnap ? ES_LANES : null,
+            laneHeld: laneAnchorId !== null,
           });
           setLanePreview(move.lane);
           scheduleGuides(move.guides, move.distGuides);
