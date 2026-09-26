@@ -58,7 +58,7 @@ A human-facing viewer (Scalar / Redoc / Stoplight Elements) is nice but pulls a 
 
 ## Hard constraints honored
 
-- Served by the **api worker**, not Next.js — no SSR, no Node runtime added ([CLAUDE.md](../CLAUDE.md) static-only rule).
+- Served by the **api worker**, not Next.js — no SSR, no Node runtime added ([AGENTS.md](../AGENTS.md) static-only rule).
 - **Self-hostable** with no external dependency; the doc generates at build time and ships in the worker bundle.
 - **Reuse over duplication**: component schemas come from `@livediagram/api-schema`, the existing single source of truth, never re-typed.
 

@@ -1,7 +1,7 @@
 // Shared Line + Pointer controls for arrows. Rendered inside the editor
 // context menu's Line / Pointer categories (kept as a standalone, reusable
 // unit so a second caller can drop them in without duplication, per
-// CLAUDE.md). Pure presentation: values in, setters out. Each sub-grid
+// AGENTS.md). Pure presentation: values in, setters out. Each sub-grid
 // is gated on its value being non-null, so a caller can pass null to hide a
 // row (the context menu does this for elements that don't carry that field).
 

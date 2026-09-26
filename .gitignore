@@ -34,7 +34,7 @@ next-env.d.ts
 # `next dev` (Next 16) drops an `AGENTS.md` + a `CLAUDE.md` pointing at it
 # into whichever app it's run from, and re-creates them if deleted. The
 # guidance in them is fine to read locally, but this repo keeps its agent
-# instructions in one curated root `CLAUDE.md`, and tracking four generated
+# instructions in one curated root `AGENTS.md`, and tracking four generated
 # copies (one per Next app) would scatter that and hand the background
 # auto-committer more churn. Ignored, so they exist locally and never show
 # up in `git status`.

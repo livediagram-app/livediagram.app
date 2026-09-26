@@ -77,7 +77,7 @@ describe('buildPaletteSearchItems', () => {
     }
   });
   it('gives every searchable shape tile its own synonyms', () => {
-    // The help registry makes keywords mandatory for an article (CLAUDE.md)
+    // The help registry makes keywords mandatory for an article (AGENTS.md)
     // because a reader who does not know the title cannot find it otherwise.
     // The palette search has the same problem and no such rule: SHAPE_KEYWORDS
     // is Partial, so a new element joins the panel matching only its own name

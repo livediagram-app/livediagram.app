@@ -41,7 +41,7 @@ import {
 // defined once and Favourites can never drift from the home tabs.
 //
 // Pure data: a flat catalogue, exempt from the file-size target (see
-// CLAUDE.md) — extend it in place rather than splitting it.
+// AGENTS.md) — extend it in place rather than splitting it.
 
 // 'icons' and 'technology' exist only on DYNAMIC tiles (individual icon
 // favourites, palette-dynamic-tiles.tsx) — no PALETTE_TILES entry carries

@@ -8,7 +8,7 @@ import { articles } from './articles';
 // title in a result list and in the category browse grid, so it wants to be
 // short and scannable. The page's `helpMetadata` one is the SEO and OG meta:
 // it is what a search engine and a link preview quote, so it wants to say
-// more than the card does. CLAUDE.md states the rule directly ("write a
+// more than the card does. AGENTS.md states the rule directly ("write a
 // concise one, don't just copy the meta"), and the Privacy Policy is the
 // pattern to copy: a one-line card, a meta that names what the page covers.
 //

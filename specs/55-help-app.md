@@ -10,7 +10,7 @@ The editor is friction-free and discoverable, but there's no place that explains
 
 A new Next.js app, `apps/help`, deployed as the `livediagram-help` Worker and stitched in by the router under `/help` — the same pattern as `apps/telemetry` (see [spec/08](08-router-app.md), [spec/22](22-telemetry.md)):
 
-- `output: 'export'`, `basePath: '/help'`, `assetPrefix: '/help'`. Static only, no SSR (see [hard constraints](../CLAUDE.md)).
+- `output: 'export'`, `basePath: '/help'`, `assetPrefix: '/help'`. Static only, no SSR (see [hard constraints](../AGENTS.md)).
 - The router strips `/help` and forwards to the worker, which serves `./out`.
 - Content is **MDX** (`@next/mdx`) plus a TypeScript article index (`lib/articles.ts`). Navigation/index pages are TSX.
 

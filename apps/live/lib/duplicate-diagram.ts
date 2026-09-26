@@ -2,7 +2,7 @@
 //
 // "Clone an existing diagram into a fresh one under the same owner"
 // is a multi-step operation that lived as three near-identical
-// inlines (editor-page, /new, /explorer). Per CLAUDE.md it's
+// inlines (editor-page, /new, /explorer). Per AGENTS.md it's
 // supposed to live in one place — extracting it here removes the
 // drift risk (one copy could silently forget to remap link
 // references and break cross-tab navigation in the copy).

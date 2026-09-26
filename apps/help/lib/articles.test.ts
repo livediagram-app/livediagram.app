@@ -16,7 +16,7 @@ import {
 // hand-maintained and is the SINGLE source for search + browse: an
 // article's page.mdx renders from the filesystem but is invisible unless
 // it's registered there, and a registered slug with no page yields a dead
-// search-result link (CLAUDE.md treats either drift as a bug). This pins
+// search-result link (AGENTS.md treats either drift as a bug). This pins
 // both directions plus the per-category articleCount, so the registry
 // can't silently drift from app/. The filesystem checks live in this app
 // (not the package) because they read this app's app/ directory.

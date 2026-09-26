@@ -549,7 +549,7 @@ Worker (no DOM, no React).
    OAuth endpoints + `OAUTH_KV`. Until this lands, the worker can be exercised
    with a hand-pasted `lvd_` Bearer for development.
 6. **Docs + help, shipped WITH the feature** (per the help-centre + docs rules in
-   `CLAUDE.md`):
+   `AGENTS.md`):
    - A help article (e.g. `account-and-data/connect-ai-mcp`) — what the MCP is,
      connecting it to Claude/an AI tool, the signed-in-only limitation, that it
      mints a revocable API token — **registered in `apps/help/lib/articles.ts`**.

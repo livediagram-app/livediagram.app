@@ -1,6 +1,6 @@
 # Build phase
 
-The frontend-only prototype phase ended once the API app landed. This spec captures **where we are now** and **what's still ahead**, so contributors don't have to reverse-engineer the timeline from CLAUDE.md and git history.
+The frontend-only prototype phase ended once the API app landed. This spec captures **where we are now** and **what's still ahead**, so contributors don't have to reverse-engineer the timeline from AGENTS.md and git history.
 
 ## Where we are now
 
@@ -40,6 +40,6 @@ These are the meaningful gaps between today and "full product":
 These were called out at prototype time and still apply:
 
 - **Static-only frontends.** Next.js apps use `output: 'export'`. No SSR, no Node runtime, no Next.js API routes. Server logic goes in the api worker.
-- **Reuse over duplication** ([CLAUDE.md](../CLAUDE.md#core-principle-reuse-over-duplication)). Shared types, UI primitives, configs, and the diagram data model live in `packages/`, never copy-pasted across apps.
+- **Reuse over duplication** ([AGENTS.md](../AGENTS.md#core-principle-reuse-over-duplication)). Shared types, UI primitives, configs, and the diagram data model live in `packages/`, never copy-pasted across apps.
 - **Self-hostable.** The OSS core can run fully without any external SaaS dependency. Clerk auth is optional (see [04](04-auth-and-guest-access.md)); when it isn't configured, the worker and the live frontend degrade to pure-guest mode and the editor remains fully usable. There is no paid tier and no plan to introduce one (see [03](03-open-source-and-business-model.md)).
 - **No secrets in source** — see [06-secrets-policy.md](06-secrets-policy.md).

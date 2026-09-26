@@ -20,7 +20,7 @@ which is split by domain (`diagrams.ts`, `tabs.ts`, `share.ts`, …). A new
 contributor can find the persistence boundary instantly; finding "the
 canvas components" means scrolling 157 alphabetised entries. This is the
 flat-directory half of the consistency review (item #9); it complements
-the no-god-files rule in `CLAUDE.md` (cohesion over line count).
+the no-god-files rule in `AGENTS.md` (cohesion over line count).
 
 ## Proposed taxonomy
 
