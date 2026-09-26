@@ -2,6 +2,10 @@
 
 Monorepo for the livediagram product. Multiple apps share code through internal packages.
 
+## Before you start
+
+- `git fetch` latest from origin
+
 ## Specs are the source of truth
 
 Before building or proposing anything, **check `specs/`**. Every product decision, feature, constraint, and rule lives there. The index is at [`specs/README.md`](specs/README.md).
