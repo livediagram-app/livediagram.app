@@ -23,7 +23,7 @@ export function StoryBeat({ beat, index }: { beat: LandingBeat; index: number })
       className={`scroll-mt-20 border-t border-slate-200/70 ${tinted ? 'bg-brand-50/60' : 'bg-white'}`}
     >
       <div className="mx-auto grid max-w-6xl items-center gap-10 px-6 py-20 sm:py-24 lg:grid-cols-2 lg:gap-16">
-        <div className={artFirst ? 'lg:order-2' : ''}>
+        <div className={`enter-on-scroll ${artFirst ? 'lg:order-2' : ''}`}>
           {/* The beat's number sits beside its title, centred on the whole
               block, so a title that wraps to two lines stays balanced. */}
           <div className="flex items-center gap-4">
@@ -76,7 +76,7 @@ export function StoryBeat({ beat, index }: { beat: LandingBeat; index: number })
 
         {/* Hidden below the two-column breakpoint: stacked on mobile it eats
             the screen and restates the pitch above it. */}
-        <div className={`hidden lg:block ${artFirst ? 'lg:order-1' : ''}`}>
+        <div className={`enter-on-scroll hidden lg:block ${artFirst ? 'lg:order-1' : ''}`}>
           <Showcase items={beatShowcase(beat)} />
         </div>
       </div>

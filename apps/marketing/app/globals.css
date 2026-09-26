@@ -4,6 +4,7 @@
 @import '@livediagram/template-previews/preview-motion.css';
 @import './hero-animations.css';
 @import './feature-art-animations.css';
+@import './page-motion.css';
 
 /* Scan the shared UI package so utility classes used inside its
  * components (e.g. `text-brand-500` in <Brand>'s wordmark) are

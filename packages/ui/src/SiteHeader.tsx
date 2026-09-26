@@ -48,7 +48,7 @@ export function SiteHeader({
 }) {
   return (
     <>
-      <header className="sticky top-0 z-50 h-18 border-y border-slate-200/70 bg-slate-50/80 backdrop-blur">
+      <header className="sticky top-0 z-50 h-18 border-y border-slate-200/70 bg-slate-50/80 backdrop-blur [view-transition-name:site-header]">
         {/* gap-* guarantees breathing room between the left cluster and the CTA
             even when justify-between collapses to zero on a narrow phone (where
             Brand + the apps-menu dropdown + CTA otherwise sit flush). Mobile

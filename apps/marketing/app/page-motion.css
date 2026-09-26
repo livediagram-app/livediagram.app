@@ -1,0 +1,56 @@
+/* Page motion for the marketing site (spec/16): moving between pages and
+   arriving on one feels continuous rather than a hard cut. Pure CSS, layered
+   on content that is fully present in the static HTML, so crawlers, reader
+   modes and no-JS visitors get the same text: nothing waits on script, and a
+   browser without these features simply shows the page as it is.
+
+   1. Cross-document view transitions (opted into in app/layout.tsx's <head>):
+      navigating between two marketing pages
+      (home to /features/<id> and back) crossfades instead of flashing white,
+      and the sticky header (view-transition-name: site-header, set on the
+      shared SiteHeader) holds still while the content changes under it.
+   2. `.enter`: an element eases up into place on load. `--enter-delay`
+      staggers a group (the feature-category hero's eyebrow, title, pitch,
+      CTA, showcase).
+   3. `.enter-on-scroll`: the same entrance, played as the element scrolls
+      into view where the browser supports scroll-driven animation; elsewhere
+      it plays on load like `.enter`.
+
+   Everything sits behind prefers-reduced-motion: no-preference. */
+
+@media (prefers-reduced-motion: no-preference) {
+  /* The `@view-transition { navigation: auto }` opt-in itself is inlined in
+     the root layout's <head>, not here: it has to be parsed before the new
+     page's first paint, which this bundled stylesheet can miss. */
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 260ms;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .enter,
+  .enter-on-scroll {
+    animation: page-enter 620ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: var(--enter-delay, 0ms);
+  }
+
+  @supports (animation-timeline: view()) {
+    .enter-on-scroll {
+      animation-timeline: view();
+      animation-range: entry 0% entry 70%;
+      animation-duration: auto;
+      animation-delay: 0ms;
+    }
+  }
+}
+
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
