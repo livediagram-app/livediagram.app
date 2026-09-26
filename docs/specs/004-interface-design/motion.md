@@ -63,7 +63,8 @@ A progress ring that fills over a timer's window measures that timer. It is an a
 - **Canvas** and **content** durations live only in their own stylesheets. In the editor that's
   `canvas-motion.css` and `qa-board.css`. In marketing it's `hero-animations.css`,
   `feature-art-animations.css` and `ShowcaseStagger.module.css`. In the template previews it's
-  `preview-motion.css`. Any other stylesheet is chrome.
+  `preview-motion.css`. Any other stylesheet is chrome, including telemetry's `dataviz-motion.css`
+  and marketing's `page-motion.css`.
 - No component class or inline style carries a duration above the ceiling.
 
 ## Reduced motion
@@ -87,17 +88,19 @@ Shortening motion changes when things settle, never where. Chrome motion animate
 `transform`. The exceptions are height, width and grid-row reveals, and those are driven by the
 person's own input. Layout shift stays at zero.
 
-## Open: under comparison
+## Under comparison
 
-The operator is comparing three kinds of motion at their current length against 250ms. Until then
-they keep their current durations:
+The operator is comparing three kinds of motion at their current length against 250ms:
 
-- **Telemetry data-viz reveals.** The chart line wipe (800ms), metric rise (420ms), word cloud (420ms,
-  with a 500ms stagger cap) and funnel bars (500ms).
-- **Marketing scroll reveal and page transition.** Section `page-enter` (620ms) and the
-  cross-document view transition (260ms).
-- **Template-preview hover stories.** They're in the editor's template picker and the marketing
-  gallery, running 420–900ms per step.
+- **Telemetry data-viz reveals** are capped as chrome. The word cloud and a charted metric's rise
+  are `micro` cascades, and the chart's line wipe and the funnel bars settle at `short`. They
+  were 420ms, 420ms on a 60ms beat, 800ms after a 300ms delay, and 500ms.
+- **The marketing page transition and hero entrance** are capped as chrome. The cross-document
+  view transition takes `long`, and the hero's pieces enter as a `micro` cascade. They were
+  260ms and 620ms with delays up to 260ms. The scroll-driven section reveal follows the scroll,
+  not a clock, so it isn't timed motion.
+- **Template-preview hover stories** stay content at their own pace, 420–1600ms per beat. They
+  play in the marketing gallery, and the comparison compresses them in the browser only.
 
 ## Enforcement
 

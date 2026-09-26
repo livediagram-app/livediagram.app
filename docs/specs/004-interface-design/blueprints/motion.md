@@ -154,9 +154,17 @@ Every chrome `duration-<n>` becomes a token. Hover-driven ones become `duration-
 - **`apps/help`**: `.card-glow` (0.3s) takes `micro`, as do `CategoryCard`, `FeatureArticleCard`,
   `ArticleCard`, the contact cards, `SearchInput`, `BackToTop` and the `ArticleLayout` feedback
   buttons.
-- **`apps/marketing`**: the `Section` card hover takes `micro`.
-- **`apps/telemetry`**: the `MetricCloud` word hover and `.stack-dim` take `micro`.
-  `StickyWindowBar` takes `short`.
+- **`apps/marketing`**: the `Section` card hover takes `micro`. Under comparison (spec), the
+  `page-motion.css` view transition takes `long`. The `.enter` hero entrance takes `micro`, with
+  `animation-delay: min(var(--enter-delay, 0ms), var(--motion-cascade-cap))`, and
+  `FeatureCategoryHero` sets `--enter-delay` from `cascadeDelayMs(index)`.
+- **`apps/telemetry`**: the `MetricCloud` word hover and `.stack-dim` take `micro`, and
+  `StickyWindowBar` takes `short`. `MetricCards` staggers its expansion with `cascadeDelayMs`,
+  and `fade-in` comes from the shared theme. Under comparison (spec), `dataviz-motion.css` holds
+  the data-viz reveals:
+  - `.cloud-word` and `.metric-rise` take `micro`, and `MetricCloud` and `MetricSearch` stagger
+    them with `cascadeDelayMs`.
+  - `.metric-reveal` and `.funnel-bar` take `short`.
 
 Canvas and content durations above the ceiling move into their stylesheets, unchanged:
 
@@ -221,6 +229,8 @@ It works on the value with `!important` stripped.
   unless it's a single term.
 - `${MOTION_MS.micro|short|long}ms` in a template literal gives the token. Any other `${…}` gives
   `Infinity`.
+- `auto` gives `0`. A scroll-driven animation's `auto` duration fills its scroll range; it isn't
+  time.
 - Anything else gives `Infinity`.
 
 ### `scanStylesheet`
@@ -320,9 +330,10 @@ logging, because motion isn't a decision point.
 | Stylesheet: ceiling, hover, ambient, delay   | `packages/tailwind-config/src/motion-budget.test.ts`                                        |
 | Source: classes, hover, inline, templates    | `packages/tailwind-config/src/motion-budget.test.ts`                                        |
 | The shared theme is within budget            | `packages/tailwind-config/src/theme-budget.test.ts`                                         |
-| Each workspace is within budget              | `motion-budget.test.ts` in live, help, marketing, telemetry and ui                          |
+| Each workspace is within budget              | `motion-budget.test.ts` in live, help, marketing, telemetry, ui and template-previews       |
 | Timeline cascades use the shared cap         | `packages/ui/src/timeline/ExpandedStack.test.tsx`                                           |
 | Exit holds equal their tokens                | `ToolbarStripRail.test.tsx`, `TabPresenceStack.test.tsx`                                    |
+| Reduced motion creates no transitions        | `apps/live/app/reduced-motion.test.ts`                                                      |
 | Canvas entry keeps 360ms                     | `apps/live/app/canvas-motion.test.ts`, `apps/live/components/canvas/canvas-motion.test.tsx` |
 | Chrome animations settle in 250ms at runtime | `apps/live/e2e/motion-budget.spec.ts`                                                       |
 
