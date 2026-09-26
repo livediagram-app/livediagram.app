@@ -131,6 +131,14 @@ test.describe('Appearance', () => {
     expectNoPageErrors(pageErrors);
   });
 
+  test('tells Dark Reader to stand down, in the served head', async ({ page }) => {
+    // Asserted on the rendered page, not the metadata object: Next drops a meta
+    // whose content is empty, and a unit test on the object passed while the
+    // page carried nothing.
+    await page.goto('/new');
+    await expect(page.locator('head meta[name="darkreader-lock"]')).toHaveCount(1);
+  });
+
   test('remembers the setting across a reload, before first paint', async ({ page }) => {
     await page.emulateMedia({ colorScheme: 'light' });
     await justDraw(page);
