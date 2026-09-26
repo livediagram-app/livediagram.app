@@ -8,8 +8,8 @@ auto-rebind rule.
 
 ## Anchors
 
-A pinned endpoint names one of **sixteen anchors** of the element it is pinned to. They are named
-after the sixteen points of the compass rose:
+A pinned endpoint names one of **sixteen anchors**, named after the sixteen points of the compass
+rose. Which of them an element offers is its anchor set (below):
 
 | Position class | Anchors                                                | Where                                            |
 | -------------- | ------------------------------------------------------ | ------------------------------------------------ |
@@ -25,22 +25,39 @@ after the sixteen points of the compass rose:
 - The eight anchors that predate the quarters keep their ids and their meaning, so every stored
   diagram stays valid unchanged. Stored and imported data accepts all sixteen ids.
 
+### Anchor sets
+
+Every element offers an **anchor set**: the position classes it has anchors for.
+
+| Anchor set | Classes                 | Count | Kinds                       |
+| ---------- | ----------------------- | ----- | --------------------------- |
+| Full       | corner, quarter, middle | 16    | every kind not listed below |
+| Compass    | corner, middle          | 8     | `circle`                    |
+
+- Every set includes the middles: they are the creation anchors and the anchor dots.
+- Snapping, the snap-target markers and the auto-rebind only ever choose an offered anchor.
+- An end can still sit on an anchor its element does not offer (a square with quarter ends morphed
+  into a circle, or imported data). It is drawn at that anchor's point on the outline, and when the
+  auto-rebind moves it, it takes the nearest offered class: a quarter becomes a corner, or a middle
+  when corners are not offered either; a corner becomes a quarter, or a middle.
+
 ## Anchor geometry
 
 - An anchor is a point on the element's **connector box**: the element's box, or a Technology
   icon's mark ([Technology icons](../010-palette/technology-icons.md)).
 - **Outline projection.** On a shape whose drawn outline differs from its box, the anchor moves
   onto that outline along the ray from the box centre through the box anchor, so a connector meets
-  the edge the user sees. This applies to all sixteen anchors, quarters included. The outlined
+  the edge the user sees. This applies to every anchor, quarters included. The outlined
   kinds are:
   - `circle` (the ellipse filling the box);
   - `diamond`, `parallelogram`, `hexagon`, `triangle`, `trapezoid` and `star` (their polygons in
     the shared shape-geometry table);
   - `stadium` (the capsule: a box with fully rounded ends);
   - `actor` (the hull around the stick figure: head, arm tips and feet, down to the bottom of its
-    label band).
-- Every other kind keeps its box as its outline for anchoring, including `cloud`, `document`,
-  `cylinder` and `speech-bubble`.
+    label band);
+  - `cloud` and `document` (their drawn paths: the cloud's bumps, the document's wavy bottom edge).
+- Every other kind keeps its box as its outline for anchoring, including `cylinder` and
+  `speech-bubble`.
 - A Technology icon with a caption pushes the anchors on the caption's side out to the element
   edge, so a connector leaving toward the caption starts past the text.
 - **Rotation.** On a rotated element the anchor rotates with the element about its centre.
@@ -49,11 +66,11 @@ after the sixteen points of the compass rose:
 
 ## Where anchors are offered
 
-- **Snapping.** Dragging an arrow endpoint near any element snaps it to the nearest of that
-  element's sixteen anchors (within the snap distance in [Canvas and palette](canvas-and-palette.md)
+- **Snapping.** Dragging an arrow endpoint near any element snaps it to the nearest anchor in that
+  element's anchor set (within the snap distance in [Canvas and palette](canvas-and-palette.md)
   "Manipulating arrows").
-- **Snap-target markers.** While an endpoint is dragged, all sixteen anchors of every nearby
-  element show as small dots on its outline; the one snapped to is drawn larger.
+- **Snap-target markers.** While an endpoint is dragged, the anchor set of every nearby element
+  shows as small dots on its outline; the one snapped to is drawn larger.
 - **Anchor dots** on a selected element stay the four middles: they are where a new connector is
   dragged out from, and a quarter is reached by snapping.
 
@@ -136,7 +153,8 @@ When an arrow triggers, each of its pinned ends is re-evaluated:
 2. **Already facing.** If the anchor already lies on the facing side (a corner lying on it through
    either of its two sides counts), the end keeps its anchor.
 3. **Same class, new side.** Otherwise the end moves to an anchor of the **same position class** on
-   the facing side:
+   the facing side (or of the nearest offered class, when its element's anchor set lacks that
+   class, see "Anchor sets"):
    - a **middle** takes the facing side's middle;
    - a **quarter** takes the quarter on the facing side that is **closer to the other end**, unless
      another arrow already holds it; then it takes the other quarter;
@@ -174,7 +192,8 @@ After the re-evaluation, two pinned ends on the **same side of the same shape** 
 
 ## Implementation
 
-- Vocabulary and geometry: `packages/diagram/src/anchors.ts`, `shape-outline.ts`, `geometry.ts`.
+- Vocabulary, anchor sets and geometry: `packages/diagram/src/anchors.ts`, `shape-outline.ts`,
+  `svg-path-outline.ts`, `geometry.ts`.
 - Creation choice: `bestAnchorTowards` in `anchor-choice.ts`.
 - Fan: `arrow-endpoint-spread.ts`.
 - Auto-rebind: `rebindArrowAnchorsAfterMove` in `arrow-rebind.ts`, with the path tests in
