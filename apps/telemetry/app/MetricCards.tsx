@@ -28,7 +28,6 @@ import type { MetricGroup } from './metric-series';
 // metric-card view so each is just a list of metric groups rendered
 // identically.
 
-
 const GRID = 'grid gap-4 sm:grid-cols-2 xl:grid-cols-3';
 
 type OpenStack = { key: string; anchor: HTMLElement };
