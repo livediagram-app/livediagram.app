@@ -5,8 +5,9 @@ Status: shipped
 ## What
 
 The interface moves quickly. Chrome motion confirms what just happened; it does not narrate it, and the
-person using it never waits for it. Motion on the canvas, and in marketing illustrations, is content,
-and follows its own specs.
+person using it never waits for it. Motion on the canvas and in marketing illustrations is content,
+and follows its own specs. Content drawn in for reading, such as a marketing page entrance or a
+telemetry chart, takes a little longer (see Content pacing).
 
 This applies to everyone. It isn't a preference. [Reduce motion](../007-editor/user-preferences.md) is
 the one switch, and it goes further: it collapses all motion to instant.
@@ -41,15 +42,15 @@ Tailwind's bare `transition` utility runs at `micro`.
 
 Every duration in the codebase belongs to exactly one kind. The budget applies to the first two.
 
-| Kind                     | What it is                                                                                             | Budget                      |
-| ------------------------ | ------------------------------------------------------------------------------------------------------ | --------------------------- |
-| **Chrome transition**    | A chrome surface changing state: entering, leaving, opening, resizing, hovering                        | 250ms, or 150ms for hovers  |
-| **Cascade**              | Chrome items entering one beat apart                                                                   | 250ms for the whole cascade |
-| **Canvas animation**     | Motion of or on the diagram. Element entry and animations, arrow flow, slide transitions, Q&A board    | Its own spec                |
-| **Content illustration** | Marketing illustrations and template-preview stories: a picture that moves, not a control              | Its own spec                |
-| **Content entrance**     | A marketing page arriving: the cross-document crossfade and the hero entrance                          | About 450ms, see below      |
-| **Ambient indicator**    | Looping status. Spinners, skeleton pulses, live dots, empty-state float, attention pulses that repeat  | Exempt; not a transition    |
-| **Timer**                | Time before something happens: debounce, hover grace, close delay, long press, auto-save, auto-dismiss | Untouched; not motion       |
+| Kind                     | What it is                                                                                             | Budget                                    |
+| ------------------------ | ------------------------------------------------------------------------------------------------------ | ----------------------------------------- |
+| **Chrome transition**    | A chrome surface changing state: entering, leaving, opening, resizing, hovering                        | 250ms, or 150ms for hovers                |
+| **Cascade**              | Chrome items entering one beat apart                                                                   | 250ms for the whole cascade               |
+| **Canvas animation**     | Motion of or on the diagram. Element entry and animations, arrow flow, slide transitions, Q&A board    | Its own spec                              |
+| **Content illustration** | Marketing illustrations and template-preview stories: a picture that moves, not a control              | Its own spec                              |
+| **Content reveal**       | Content drawn in for reading: the marketing page entrance, telemetry data-viz reveals                  | About half its original length, see below |
+| **Ambient indicator**    | Looping status. Spinners, skeleton pulses, live dots, empty-state float, attention pulses that repeat  | Exempt; not a transition                  |
+| **Timer**                | Time before something happens: debounce, hover grace, close delay, long press, auto-save, auto-dismiss | Untouched; not motion                     |
 
 A timer that only waits for an exit animation to finish before unmounting is an **exit hold**. It
 belongs to the animation it waits for, not to the timers, so it runs for that animation's token.
@@ -63,9 +64,9 @@ A progress ring that fills over a timer's window measures that timer. It is an a
 - **Chrome** durations are tokens, in chrome stylesheets and in component classes.
 - **Canvas** and **content** durations live only in their own stylesheets. In the editor that's
   `canvas-motion.css` and `qa-board.css`. In marketing it's `hero-animations.css`,
-  `feature-art-animations.css`, `ShowcaseStagger.module.css` and `page-motion.css`. In the template
-  previews it's `preview-motion.css`. Any other stylesheet is chrome, including telemetry's
-  `dataviz-motion.css`.
+  `feature-art-animations.css`, `ShowcaseStagger.module.css` and `page-motion.css`. In telemetry
+  it's `dataviz-motion.css`. In the template previews it's `preview-motion.css`. Any other
+  stylesheet is chrome.
 - No component class or inline style carries a duration above the ceiling.
 
 ## Reduced motion
@@ -91,22 +92,19 @@ person's own input. Layout shift stays at zero.
 
 ## Content pacing
 
-Two kinds of content motion were compared against the 250ms budget, and the operator decided each:
+Three kinds of content motion were compared against the 250ms budget, and the operator decided each:
 
 - **The marketing page entrance** runs at half its original length. At 250ms it read as too fast
   for a page that's there to be read. The hero's pieces take 310ms each and start 35ms apart, the
   last at 130ms, so the hero settles in about 440ms. The cross-document crossfade stays at
   260ms. The scroll-driven section reveal follows the scroll, not a clock, so it isn't timed
   motion.
+- **Telemetry data-viz reveals** run at half their original length, for the same reason. Cloud
+  words take 210ms and start 11ms apart, capped at 250ms, so the cloud settles by about 460ms. A
+  charted metric's pieces take 210ms and start 30ms apart. The line wipe takes 400ms after 150ms,
+  settling by about 550ms, and the funnel bars take 250ms.
 - **Template-preview hover stories** keep their own pace, 420–1600ms per beat. Compressed into
   250ms, a story becomes a blip.
-
-## Under comparison
-
-- **Telemetry data-viz reveals** are capped as chrome for now. The word cloud and a charted
-  metric's rise are `micro` cascades, and the chart's line wipe and the funnel bars settle at
-  `short`. They were 420ms, 420ms on a 60ms beat, 800ms after a 300ms delay, and 500ms. The
-  operator found 250ms too fast and is comparing it with half the original length.
 
 ## Enforcement
 

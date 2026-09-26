@@ -1,7 +1,6 @@
 'use client';
 
 import { useMemo, useState, type CSSProperties, type ReactNode } from 'react';
-import { cascadeDelayMs } from '@livediagram/tailwind-config/motion';
 import { EmptyState } from '@livediagram/ui';
 import type { TelemetryDaily, TelemetryWindow, TelemetryWindowKey } from '@livediagram/api-schema';
 import { eventExplanation } from './event-explanation';
@@ -19,6 +18,10 @@ import { buildWindowCounts, WINDOW_META, windowHighlightFrom } from './windows';
 // the MetricPicker or by clicking through the word cloud below it (category,
 // then action, then type), then see just that metric charted over time. The metric universe is exactly the
 // keys of `daily.byMetric`, so anything offered has a line to draw.
+
+// The beat between each piece of a charted metric easing in (dataviz-motion.css
+// paces the reveal).
+const RISE_STEP_MS = 30;
 
 export function MetricSearch({
   windows,
@@ -100,10 +103,9 @@ function SelectedMetric({
   const series = daily.byMetric[metric.key] ?? [];
   // Everything below the breadcrumb eases in, one beat after another: the
   // icon, the title, the description, the three counts, then the trend line
-  // draws itself left to right (globals.css; off under reduced motion).
+  // draws itself left to right (dataviz-motion.css; off under reduced motion).
   // Keyed by the metric so stepping to another one replays it.
-  // Each piece of a charted metric eases in one cascade beat after the last.
-  const rise = (step: number): CSSProperties => ({ animationDelay: `${cascadeDelayMs(step)}ms` });
+  const rise = (step: number): CSSProperties => ({ animationDelay: `${step * RISE_STEP_MS}ms` });
   return (
     <div className="mt-6 rounded-3xl border border-slate-200 bg-white px-6 pb-6 pt-5 dark:border-slate-700 dark:bg-slate-900">
       {breadcrumb}

@@ -161,11 +161,12 @@ Every chrome `duration-<n>` becomes a token. Hover-driven ones become `duration-
   `ENTER_BEAT_MS` is 35.
 - **`apps/telemetry`**: the `MetricCloud` word hover and `.stack-dim` take `micro`, and
   `StickyWindowBar` takes `short`. `MetricCards` staggers its expansion with `cascadeDelayMs`,
-  and `fade-in` comes from the shared theme. Under comparison (spec), `dataviz-motion.css` holds
-  the data-viz reveals:
-  - `.cloud-word` and `.metric-rise` take `micro`, and `MetricCloud` and `MetricSearch` stagger
-    them with `cascadeDelayMs`.
-  - `.metric-reveal` and `.funnel-bar` take `short`.
+  and `fade-in` comes from the shared theme. The data-viz reveals are content (spec, "Content
+  pacing"), in `dataviz-motion.css`, which is listed as a content stylesheet:
+  - `.cloud-word` and `.metric-rise` take 210ms. `MetricCloud` delays each word by
+    `min(i × CLOUD_BEAT_MS, CLOUD_BEAT_CAP_MS)` (11ms, 250ms), and `MetricSearch` delays each
+    piece by `step × RISE_STEP_MS` (30ms).
+  - `.metric-reveal` takes 400ms and `.funnel-bar` 250ms.
 
 Canvas and content durations above the ceiling move into their stylesheets, unchanged:
 

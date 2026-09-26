@@ -1,7 +1,6 @@
 'use client';
 
 import { useMemo, type CSSProperties } from 'react';
-import { cascadeDelayMs } from '@livediagram/tailwind-config/motion';
 import { categoryColor, typeLabel } from './event-vocab';
 import { MetricBreadcrumb, metricCrumbs, type CloudPath } from './MetricBreadcrumb';
 import type { Metric } from './metrics';
@@ -29,6 +28,9 @@ import type { Metric } from './metrics';
 
 const MIN_PX = 14;
 const MAX_PX = 48;
+// The cloud's arrival beat and its cap (dataviz-motion.css paces the reveal).
+const CLOUD_BEAT_MS = 11;
+const CLOUD_BEAT_CAP_MS = 250;
 
 type Word = { key: string; label: string; count: number; color: string; activate: () => void };
 
@@ -145,7 +147,7 @@ export function MetricCloud({
               fontWeight: Math.round(500 + 300 * t),
               color: w.color,
               '--o': w.count === 0 ? 0.3 : 0.6 + 0.4 * t,
-              animationDelay: `${cascadeDelayMs(i)}ms`,
+              animationDelay: `${Math.min(i * CLOUD_BEAT_MS, CLOUD_BEAT_CAP_MS)}ms`,
             };
             return (
               <button
