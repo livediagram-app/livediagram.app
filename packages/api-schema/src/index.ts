@@ -472,6 +472,20 @@ export const CHANGE_LOG_TAB_NOT_SAVED = 'tab_not_saved';
 // (see ./sha256.ts for the rationale).
 export { sha256Hex } from './sha256';
 
+// Worker-safe base64 / base64url encoders for raw bytes, shared by both
+// workers and the editor (see ./bytes.ts).
+export { bytesToBase64, bytesToBase64Url } from './bytes';
+
+// Image magic-number sniffing and the server-side image embedder both
+// workers render tabs with (see ./image-sniff.ts, ./embed-images.ts).
+export { sniffImageType } from './image-sniff';
+export {
+  embedTabImages,
+  tabImageIds,
+  type EmbedImageLimits,
+  type EmbedImageSource,
+} from './embed-images';
+
 // Shared display-casing for preset values (template ids, theme names,
 // telemetry action / type enums). One definition so the live editor and
 // the telemetry dashboard can't drift (see ./title-case.ts).
@@ -539,3 +553,4 @@ export * from './server-emitted-events';
 export * from './error-telemetry';
 export * from './timeline';
 export * from './activity';
+export * from './responses';

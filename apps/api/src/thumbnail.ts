@@ -12,6 +12,7 @@
 // render, and every write path (editor, collaborators, MCP, API token)
 // invalidates the snapshot uniformly because they all bump saved_at.
 
+import { embedTabImages } from '@livediagram/api-schema';
 import { renderElementsToSvg, type Tab } from '@livediagram/diagram';
 // Static-import icon resolver (bundle size is fine in a Worker) so icon
 // elements render their real glyph in the snapshot / live image instead of
@@ -142,39 +143,26 @@ async function renderTabDataToSvg(
   });
 }
 
-// Read each image/avatar element's bytes from R2 and return them keyed by
-// imageId as base64 data URLs, ready for the renderer to inline. Honours
-// IMAGE_EMBED_BUDGET_BYTES: ids are read in document order until the budget
-// is spent, after which (or on a missing object) the element keeps its
-// placeholder. R2 is the same store the authenticated image endpoint reads
-// (key = imageId), so a shared diagram's images embed without re-auth.
+// Read each image element's bytes from R2 and return them keyed by imageId
+// as base64 data URLs, ready for the renderer to inline. The shared embedder
+// (@livediagram/api-schema embedTabImages) reads ids in document order until
+// IMAGE_EMBED_BUDGET_BYTES is spent, after which (or on a missing object) the
+// element keeps its placeholder. R2 is the same store the authenticated image
+// endpoint reads (key = imageId), so a shared diagram's images embed without
+// re-auth.
 async function loadEmbeddedImages(env: Env, tab: Tab): Promise<Map<string, string>> {
-  const map = new Map<string, string>();
-  if (!env.IMAGES) return map;
-  const ids = Array.from(
-    new Set(tab.elements.flatMap((el) => (el.type === 'image' && el.imageId ? [el.imageId] : []))),
+  const images = env.IMAGES;
+  if (!images) return new Map();
+  return embedTabImages(
+    tab,
+    async (id) => {
+      const object = await images.get(id);
+      if (!object) return null;
+      return {
+        bytes: await object.arrayBuffer(),
+        contentType: object.httpMetadata?.contentType ?? null,
+      };
+    },
+    { totalBudgetBytes: IMAGE_EMBED_BUDGET_BYTES },
   );
-  let budget = IMAGE_EMBED_BUDGET_BYTES;
-  for (const id of ids) {
-    const object = await env.IMAGES.get(id);
-    if (!object) continue;
-    const buf = await object.arrayBuffer();
-    if (buf.byteLength > budget) continue; // keep the snapshot bounded
-    budget -= buf.byteLength;
-    const contentType = object.httpMetadata?.contentType ?? 'application/octet-stream';
-    map.set(id, `data:${contentType};base64,${bytesToBase64(new Uint8Array(buf))}`);
-  }
-  return map;
-}
-
-// Base64-encode bytes without Node's Buffer (Workers runtime). Chunked
-// through String.fromCharCode so a large image doesn't blow the argument
-// limit of a single spread.
-function bytesToBase64(bytes: Uint8Array): string {
-  let binary = '';
-  const CHUNK = 0x8000;
-  for (let i = 0; i < bytes.length; i += CHUNK) {
-    binary += String.fromCharCode(...bytes.subarray(i, i + CHUNK));
-  }
-  return btoa(binary);
 }

@@ -1,4 +1,11 @@
-import { json, methodNotAllowed, missingAuth, rateLimited } from '../responses';
+import {
+  forbidden,
+  json,
+  methodNotAllowed,
+  missingAuth,
+  rateLimited,
+  signInRequired,
+} from '../responses';
 import { clientIp } from '../client-ip';
 import { resolveAiProvider } from '../ai-provider';
 import type { RouteContext } from './context';
@@ -32,7 +39,7 @@ export async function aiGate(ctx: RouteContext): Promise<Response | null> {
       .filter((s) => s.length > 0);
     const origin = request.headers.get('Origin');
     if (!origin || !allowed.includes(origin)) {
-      return json({ error: 'origin_not_allowed' }, { status: 403 });
+      return forbidden('origin_not_allowed');
     }
   }
 
@@ -41,7 +48,7 @@ export async function aiGate(ctx: RouteContext): Promise<Response | null> {
   // drain the operator's model budget. Opt-in, so an OSS self-host that runs no
   // Clerk at all keeps the feature usable.
   if (env.AI_REQUIRE_CLERK === 'true' && ctx.clerkUserId == null) {
-    return json({ error: 'sign_in_required' }, { status: 401 });
+    return signInRequired();
   }
 
   if (!ctx.resolveOwner()) return missingAuth();

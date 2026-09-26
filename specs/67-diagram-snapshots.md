@@ -38,7 +38,13 @@ On a read of either delivery path:
   `thumb_rendered_at`, and return it. Icon elements render their real
   glyph (line art + Technology brand tiles) via the
   `@livediagram/icons/resolve` resolver the worker passes in — see
-  spec/41 "Rendering".
+  spec/41 "Rendering". Image elements render their real picture: the
+  worker reads each upload from R2 and inlines it as a base64 data URL
+  through `embedTabImages` (`@livediagram/api-schema`, shared with the
+  MCP preview, spec/62 §5), in document order under a 3 MB total budget
+  so a tab of large photos can't produce a multi-megabyte snapshot. An
+  image past the budget, missing from R2, or not a recognised raster
+  format keeps its placeholder box.
 
 This is **render-on-read**, not render-on-save, on purpose:
 

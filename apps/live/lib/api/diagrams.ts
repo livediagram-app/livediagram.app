@@ -1,7 +1,13 @@
 // Diagram-level calls: load / create / save-meta / delete / list, the
 // copy-into-my-files flow, and the "Shared with you" list.
 import { DIAGRAM_CONVERSION_HEADER, type DiagramConversion } from '@livediagram/api-schema';
-import type { Diagram, DiagramSummary, SharedWithItem } from '@livediagram/api-schema';
+import type {
+  Diagram,
+  DiagramListResponse,
+  DiagramResponse,
+  DiagramSummary,
+  SharedWithItem,
+} from '@livediagram/api-schema';
 import type { Tab } from '@livediagram/diagram';
 import { dedupeInFlight } from '../dedupe';
 import {
@@ -19,8 +25,6 @@ import {
   expectOkOrNull,
   expectOkVoid,
   tabForWire,
-  type DiagramResponse,
-  type ListResponse,
   apiFetch,
 } from './core';
 
@@ -156,7 +160,7 @@ async function _apiListDiagrams(ownerId: string): Promise<DiagramSummary[]> {
   const offline = await offlineListDiagrams().catch(() => [] as DiagramSummary[]);
   try {
     const res = await apiFetch(`${API_BASE}/diagrams`, { headers: await apiHeaders(ownerId) });
-    const { diagrams } = await expectOk<ListResponse>(res, 'list');
+    const { diagrams } = await expectOk<DiagramListResponse>(res, 'list');
     // Dedupe by id: legacy data (pre ghost-row fix) can hold BOTH an offline
     // record and a same-id server row. The offline copy wins — it is what the
     // dispatch loads for that id — and dropping the twin keeps React keys

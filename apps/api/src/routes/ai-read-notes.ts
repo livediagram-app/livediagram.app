@@ -6,7 +6,7 @@ import {
   type ReadNotesRequest,
   type ReadNotesResponse,
 } from '@livediagram/api-schema';
-import { CORS_HEADERS, json } from '../responses';
+import { aiError, CORS_HEADERS, json } from '../responses';
 import { chatCompletions, providerOf } from '../ai-client';
 import { aiGate } from './ai-gate';
 import { buildReadNotesPrompt, READ_NOTES_SCHEMA } from './ai-read-prompt';
@@ -85,7 +85,7 @@ export async function handleAiReadNotes(ctx: RouteContext): Promise<Response> {
       '[ai/read-notes] provider call failed:',
       err instanceof Error ? err.message : String(err),
     );
-    return json({ error: 'ai_error' }, { status: 502 });
+    return aiError();
   }
 
   if (!res.ok) {
@@ -100,7 +100,7 @@ export async function handleAiReadNotes(ctx: RouteContext): Promise<Response> {
     // "try again tomorrow, or raise the limit". Passing it through as one more
     // ai_error sends the author back to retry something that cannot work yet.
     if (res.status === 429) return json({ error: 'ai_quota' }, { status: 429 });
-    return json({ error: 'ai_error' }, { status: 502 });
+    return aiError();
   }
 
   let payload: unknown;
@@ -119,7 +119,7 @@ export async function handleAiReadNotes(ctx: RouteContext): Promise<Response> {
       console.error(
         `[ai/read-notes] answer truncated: finish_reason=length model=${model} crops=${crops.length} max_tokens=${MAX_TOKENS} — raise MAX_TOKENS or send fewer crops`,
       );
-      return json({ error: 'ai_error' }, { status: 502 });
+      return aiError();
     }
     if (!raw) {
       payload = null;
@@ -129,7 +129,7 @@ export async function handleAiReadNotes(ctx: RouteContext): Promise<Response> {
         // A malformed answer has to be diagnosable: log what the model actually
         // said (truncated), then fail rather than hand back a silent empty list.
         console.error(`[ai/read-notes] unparseable content: ${raw.slice(0, 300)}`);
-        return json({ error: 'ai_error' }, { status: 502 });
+        return aiError();
       }
     }
   } catch (err) {
@@ -137,7 +137,7 @@ export async function handleAiReadNotes(ctx: RouteContext): Promise<Response> {
       '[ai/read-notes] provider returned unparseable content:',
       err instanceof Error ? err.message : String(err),
     );
-    return json({ error: 'ai_error' }, { status: 502 });
+    return aiError();
   }
 
   const answer = collate(

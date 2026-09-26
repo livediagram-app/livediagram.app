@@ -4,14 +4,8 @@
 // Durable Object WebSocket upgrade with its role / password trust
 // boundary.
 
-import { timingSafeEqual } from '../auth/timing-safe';
-import {
-  consumeWsTicket,
-  createWsTicket,
-  getDiagramMeta,
-  getDiagramSharePassword,
-  getShareLink,
-} from '../db';
+import { isPersonalOwner, shareLinkForDiagram, sharePasswordOk } from '../auth/share-access';
+import { consumeWsTicket, createWsTicket, getDiagramMeta } from '../db';
 import { forbidden, json, notFound } from '../responses';
 import { gateEdit, gateRead, type RouteContext } from './context';
 
@@ -76,22 +70,15 @@ export async function handleDiagramRoomRoutes(ctx: RouteContext): Promise<Respon
     // closed for the membership leg. Team owners come in via the ticket
     // (its mint admits them through the verified callerId === ownerId
     // leg); a personal guest owner's id stays an unguessable UUID.
-    const isOwnerUpgrade = !!(
-      diagram &&
-      !diagram.teamId &&
-      claimedOwnerId &&
-      claimedOwnerId === diagram.ownerId
-    );
+    const isOwnerUpgrade =
+      !!diagram && isPersonalOwner(claimedOwnerId, diagram.ownerId, diagram.teamId);
     if (ticketRole) {
       role = ticketRole;
     } else if (isOwnerUpgrade) {
       role = 'edit';
     } else {
-      const code = url.searchParams.get('s');
-      if (code) {
-        const link = await getShareLink(env, code);
-        if (link && link.diagramId === id) role = link.role;
-      }
+      const link = await shareLinkForDiagram(env, url.searchParams.get('s'), id);
+      if (link) role = link.role;
     }
     // Refuse the upgrade unless the caller is the owner or holds a valid
     // share code for THIS diagram. Without this, a diagram with no share
@@ -108,9 +95,7 @@ export async function handleDiagramRoomRoutes(ctx: RouteContext): Promise<Respon
     // REST, so the room matches). A bad / missing password refuses the
     // upgrade outright so the room never even sees the peer.
     if (!isOwnerUpgrade && !ticketRole) {
-      const required = await getDiagramSharePassword(env, id);
-      if (required && !(await timingSafeEqual(url.searchParams.get('p') ?? '', required)))
-        return forbidden();
+      if (!(await sharePasswordOk(env, id, url.searchParams.get('p')))) return forbidden();
     }
     // Presence identity is no longer forwarded: the DO assigns each session a
     // fresh ephemeral id for its broadcast presence / cursor (spec/61 §6), so
