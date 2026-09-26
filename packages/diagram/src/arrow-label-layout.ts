@@ -37,14 +37,11 @@ export const BESIDE_GAP_PX = 6;
 export const LOCAL_DIRECTION_WINDOW_PX = 24;
 export const CROSS_CAP_PX = 160;
 export const ALONG_CAP_PX = 240;
-export const HORIZONTAL_TOLERANCE_DEG = 20;
 export const CHAR_WIDTH_FALLBACK_PX = 7;
 const WORD_WIDTH_CACHE_MAX = 2000;
-// Slide candidates: twelfths of the open run, kept to its middle half.
+// Slide candidates: twelfths of the open run, at most a quarter of it either
+// side of the preferred centre.
 const SLIDE_DIVISIONS = 12;
-
-export type AngledLabelStrategy =
-  'route-middle' | 'longest-segment' | 'middle-segment' | 'horizontal-preferred';
 
 export type ArrowLabelMeasureFor = (
   fontPx: number,
@@ -54,7 +51,6 @@ export type ArrowLabelMeasureFor = (
 ) => TextMeasure;
 
 export type ArrowLabelLayoutOptions = {
-  angledStrategy: AngledLabelStrategy;
   crossCapPx: number;
   alongCapPx: number;
   knockoutOthers: boolean;
@@ -63,7 +59,6 @@ export type ArrowLabelLayoutOptions = {
 };
 
 export const DEFAULT_ARROW_LABEL_LAYOUT_OPTIONS: ArrowLabelLayoutOptions = {
-  angledStrategy: 'longest-segment',
   crossCapPx: CROSS_CAP_PX,
   alongCapPx: ALONG_CAP_PX,
   knockoutOthers: false,
@@ -249,7 +244,7 @@ function rectAround(c: Pt, w: number, h: number, margin = 0): Rect {
 }
 
 // ---------------------------------------------------------------------
-// Host span (which part of the route may hold the label)
+// Spans (which part of the route may hold the label)
 // ---------------------------------------------------------------------
 
 type Span = { start: number; end: number; atRouteStart: boolean; atRouteEnd: boolean };
@@ -274,40 +269,37 @@ function openRunOf(span: Span, clear: { start: number; end: number }): [number, 
   ];
 }
 
-function hostSpan(
+// Where an on-line label goes: the span it may occupy and its preferred centre.
+// The route middle, unless the label would straddle a corner there; then the
+// longest segment, at the spot on it closest to the route middle
+// (docs/specs/008-canvas/arrow-labels.md "Placement").
+function placementOf(
   arrow: ArrowElement,
   r: Route,
-  o: ArrowLabelLayoutOptions,
-  linesOn: (span: Span) => number | null,
-): Span {
+  clear: { start: number; end: number },
+  blockOn: (span: Span) => { block: Block; run: [number, number] } | null,
+): { span: Span; sc: number } {
   const whole: Span = { start: 0, end: r.length, atRouteStart: true, atRouteEnd: true };
-  if (arrowStyleOf(arrow) !== 'angled' || r.pts.length < 3) return whole;
+  const [w0, w1] = openRunOf(whole, clear);
+  const sm = (w0 + w1) / 2;
+  if (arrowStyleOf(arrow) !== 'angled' || r.pts.length < 3) return { span: whole, sc: sm };
   const segs = segmentSpans(r);
-  const longest = segs.reduce((best, s) => (s.end - s.start > best.end - best.start ? s : best));
-  switch (o.angledStrategy) {
-    case 'route-middle':
-      return whole;
-    case 'longest-segment':
-      return longest;
-    case 'middle-segment':
-      return segs.find((s) => r.length / 2 <= s.end) ?? longest;
-    case 'horizontal-preferred': {
-      // A horizontal run wins only if it holds the label on no more lines than
-      // the longest run would.
-      const most = linesOn(longest) ?? Infinity;
-      const tol = Math.sin((HORIZONTAL_TOLERANCE_DEG * Math.PI) / 180);
-      const horizontal = segs
-        .filter((s, i) => {
-          const a = r.pts[i]!;
-          const b = r.pts[i + 1]!;
-          const len = s.end - s.start;
-          const lines = linesOn(s);
-          return len > 1e-9 && Math.abs(b.y - a.y) / len <= tol && lines !== null && lines <= most;
-        })
-        .sort((a, b) => b.end - b.start - (a.end - a.start));
-      return horizontal[0] ?? longest;
-    }
+  const halfOn = (fit: { block: Block }, s: number) =>
+    footprintAlong(fit.block, directionAt(r, s)) / 2;
+  const middle = segs.find((s) => sm <= s.end) ?? segs[segs.length - 1]!;
+  const onMiddle = blockOn(middle);
+  if (onMiddle) {
+    const [a, b] = onMiddle.run;
+    const half = halfOn(onMiddle, sm);
+    if (sm - a >= half && b - sm >= half) return { span: middle, sc: sm };
   }
+  const longest = segs.reduce((best, s) => (s.end - s.start > best.end - best.start ? s : best));
+  const onLongest = blockOn(longest);
+  if (!onLongest) return { span: longest, sc: (longest.start + longest.end) / 2 };
+  const [a, b] = onLongest.run;
+  const half = halfOn(onLongest, (a + b) / 2);
+  const sc = a + half <= b - half ? Math.min(b - half, Math.max(a + half, sm)) : (a + b) / 2;
+  return { span: longest, sc };
 }
 
 // ---------------------------------------------------------------------
@@ -438,16 +430,15 @@ export function layoutArrowLabel(
     return block ? { block, run } : null;
   };
 
-  const span = hostSpan(arrow, route, o, (s) => blockOn(s)?.block.lines.length ?? null);
+  const { span, sc } = placementOf(arrow, route, clear, blockOn);
   const [s0, s1] = openRunOf(span, clear);
   if (s1 <= s0) return beside('empty-run');
   const fit = blockOn(span);
   if (!fit) return beside('no-fit');
   const { block } = fit;
-  const sc = (s0 + s1) / 2;
   const step = (s1 - s0) / SLIDE_DIVISIONS;
-  const lo = s0 + (s1 - s0) / 4;
-  const hi = s1 - (s1 - s0) / 4;
+  const lo = Math.max(s0, sc - (s1 - s0) / 4);
+  const hi = Math.min(s1, sc + (s1 - s0) / 4);
   const candidates: number[] = [sc];
   for (let k = 1; k <= SLIDE_DIVISIONS; k++) {
     for (const s of [sc + k * step, sc - k * step])

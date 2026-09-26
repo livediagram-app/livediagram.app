@@ -1,4 +1,4 @@
-// The ten arrow shapes the label bench compares strategies on
+// The ten arrow shapes the label bench renders
 // (docs/specs/008-canvas/arrow-labels.md "Open decisions"). The first is the
 // diagram that prompted the spec; the rest isolate one arrow shape each.
 

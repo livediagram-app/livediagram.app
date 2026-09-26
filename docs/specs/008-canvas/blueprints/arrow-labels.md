@@ -16,21 +16,20 @@ Scope, by file:
 | `apps/live/components/canvas/ArrowView.tsx`           | Knockout mask on the line + halo; renders the layout it is given              |
 | `apps/live/components/canvas/ArrowLabel.tsx`          | Multi-line SVG caption; textarea editor laid out by the same engine           |
 | `apps/live/lib/arrow-label-geometry.ts`               | Removed (`placeLabel` is replaced by the engine)                              |
-| `packages/diagram/bench/arrow-labels/`                | The label bench: scenarios, strategy switcher, esbuild entry                  |
+| `packages/diagram/bench/arrow-labels/`                | The label bench: scenarios, cap + knockout switches, esbuild, seed            |
 
 ## Domain and naming
 
-| Term            | Identifier                                  | Meaning                                                         |
-| --------------- | ------------------------------------------- | --------------------------------------------------------------- |
-| Label layout    | `ArrowLabelLayout`                          | Where and how one label renders                                 |
-| Layout mode     | `mode: 'on-line' \| 'beside' \| 'placed'`   | Auto on the route / auto beside it / user-dragged `labelOffset` |
-| Route           | `route: Pt[]` (polyline, draw order)        | `arrowPathPolyline` of the resolved (spread) endpoints          |
-| Host span       | `HostSpan = { start: number; end: number }` | Arc-length interval the strategy lets the label occupy          |
-| Open run        | `openRun(host, route, clearances)`          | Host span minus end / corner clearances                         |
-| Angled strategy | `AngledLabelStrategy`                       | Which part of an angled route is the host span (open decision)  |
-| Label block     | `LabelBlock = { lines, width, height }`     | Wrapped text plus padding; `width`/`height` are the plate size  |
-| Footprint       | `footprintAlong(block, dir)`                | Length of route the block covers when centred on it             |
-| Knockout        | `knockout: Rect \| null`                    | The block inflated by `KNOCKOUT_MARGIN_PX`, cut from lines      |
+| Term         | Identifier                                  | Meaning                                                         |
+| ------------ | ------------------------------------------- | --------------------------------------------------------------- |
+| Label layout | `ArrowLabelLayout`                          | Where and how one label renders                                 |
+| Layout mode  | `mode: 'on-line' \| 'beside' \| 'placed'`   | Auto on the route / auto beside it / user-dragged `labelOffset` |
+| Route        | `route: Pt[]` (polyline, draw order)        | `arrowPathPolyline` of the resolved (spread) endpoints          |
+| Placement    | `placementOf(arrow, route, clear, blockOn)` | The span a label may occupy and its preferred centre `sc`       |
+| Open run     | `openRunOf(span, clearances)`               | A span minus end / corner clearances                            |
+| Label block  | `LabelBlock = { lines, width, height }`     | Wrapped text plus padding; `width`/`height` are the plate size  |
+| Footprint    | `footprintAlong(block, dir)`                | Length of route the block covers when centred on it             |
+| Knockout     | `knockout: Rect \| null`                    | The block inflated by `KNOCKOUT_MARGIN_PX`, cut from lines      |
 
 Banned synonyms: "caption box" (say label block), "gap" in code (say knockout), "midpoint" for the
 label anchor (the anchor may slide).
@@ -47,17 +46,15 @@ An arrow with empty text has no entry.
    `from` point.
 2. **Clearances.** At an end carrying a head: `headLength(shape, size) + END_STUB_PX`; at a bare
    end: `END_STUB_PX`. `headLength = (8/6) * ARROWHEAD_SIZE_PX[size]`, times 1.5 for diamonds.
-3. **Host span.** Straight and curved: `[0, L]`. Angled, by `options.angledStrategy`:
-   - `route-middle`: `[0, L]`.
-   - `longest-segment`: the longest segment; first in draw order on a tie (D18).
-   - `middle-segment`: the segment containing arc length `L / 2`.
-   - `horizontal-preferred`: the longest segment within 20° of horizontal whose open run holds the
-     block on no more lines than the longest segment would; else `longest-segment`.
-     A host boundary that is a corner (not a route end) takes `END_STUB_PX` clearance.
-4. **Open run** `[s0, s1]` = host span shrunk by the clearances. Empty (`s1 <= s0`) → beside.
+3. **Placement.** Whole-route open run `[w0, w1]`, route middle `sm = (w0 + w1) / 2`. Straight and
+   curved: span `[0, L]`, `sc = sm`. Angled: the segment containing `sm`, if the block fits there with
+   `sm` at least half its footprint from both ends of that segment's open run; `sc = sm`. Otherwise
+   the longest segment (first in draw order on a tie, D18), `sc = sm` clamped to
+   `[a + half, b - half]` of its open run. A segment boundary that is a corner takes `END_STUB_PX`.
+4. **Open run** `[s0, s1]` = the span shrunk by the clearances. Empty (`s1 <= s0`) → beside.
 5. **Local direction** at arc length `s`: unit vector from `pointAt(s - W)` to `pointAt(s + W)`,
    `W = LOCAL_DIRECTION_WINDOW_PX`, both clamped into `[0, L]`.
-6. **Block at the centre** `sc = (s0 + s1) / 2`, direction `u`:
+6. **Block** for the span, direction `u` at its open-run centre:
    - `half = (s1 - s0) / 2`.
    - Wrap at `cap = crossCapPx + (alongCapPx - crossCapPx) * u.x²` (D25). While `footprintAlong(block, u) > 2 * half` and the widest
      line has more than one word, re-wrap at `block.textWidth - 1`. Still too long → beside.
@@ -66,7 +63,7 @@ An arrow with empty text has no entry.
    - `footprintAlong(block, u) = min(block.width / |u.x|, block.height / |u.y|)`, with the knockout
      margin included on both sides; a zero component drops its term.
 7. **Slide.** Candidates at `s = sc + k * step` for `k = 0, ±1, ±2, …` with `step = (s1 - s0) / 12`,
-   limited to the middle half `[s0 + (s1 - s0) / 4, s1 - (s1 - s0) / 4]`, ordered by `|k|`, `+`
+   limited to `[max(s0, sc - (s1 - s0) / 4), min(s1, sc + (s1 - s0) / 4)]`, ordered by `|k|`, `+`
    before `-` (D20). A candidate is taken when the block centred at `pointAt(s)` fits
    (`footprintAlong <= 2 * min(s - s0, s1 - s)`), and its knockout rect hits no obstacle. None
    taken → the centre candidate.
@@ -86,10 +83,7 @@ An arrow with empty text has no entry.
 ## Interfaces
 
 ```ts
-type AngledLabelStrategy =
-  'route-middle' | 'longest-segment' | 'middle-segment' | 'horizontal-preferred';
 type ArrowLabelLayoutOptions = {
-  angledStrategy: AngledLabelStrategy;
   crossCapPx: number;
   alongCapPx: number;
   knockoutOthers: boolean;
@@ -148,9 +142,9 @@ whitespace; a single word wider than the cap is not broken (D22).
 ## Testing
 
 `arrow-label-layout.test.ts` and `arrow-label-wrap.test.ts`, with an injected fixed-width measure:
-one test per numbered behaviour step and per strategy, plus: horizontal width follows run length,
+one test per numbered behaviour step, the angled route-middle and corner fallback, plus: horizontal width follows run length,
 vertical width hits the cap, diagonal blends, balance avoids an orphan, explicit newline kept, head
-clearance moves the centre, obstacle slides the anchor, slide stays in the middle half, beside
+clearance moves the centre, obstacle slides the anchor, slide stays within a quarter run of its centre, beside
 when too short, beside side flips on an obstacle, placed knockout on and off, knockout-others
 toggle. Export parity: `svg-render.test.ts` asserts the export wraps and masks the same lines.
 
@@ -167,6 +161,5 @@ toggle. Export parity: `svg-render.test.ts` asserts the export wraps and masks t
 | `LOCAL_DIRECTION_WINDOW_PX` | 24    | Half-window for local direction; 8 to 64     |
 | `CROSS_CAP_PX` (default)    | 160   | Bench decides; candidates 120 / 160 / 200    |
 | `ALONG_CAP_PX` (default)    | 240   | Bench decides; candidates 200 / 240 / 320    |
-| `HORIZONTAL_TOLERANCE_DEG`  | 20    | `horizontal-preferred` only                  |
 | `CHAR_WIDTH_FALLBACK_PX`    | 7     | Per char at 12 px, scaled; the old estimate  |
 | `WORD_WIDTH_CACHE_MAX`      | 2000  | Cache bound                                  |

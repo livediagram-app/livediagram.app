@@ -30,11 +30,12 @@ Breaking the line around the label avoids the overlap and keeps the ownership.
 
 - An auto-placed label is centred on the route, at the middle of its open run.
 - If that spot collides with an unrelated box or with another arrow's label, the label anchor
-  slides along the route, staying within the middle half of the open run, to the nearest spot that
+  slides along the route, up to a quarter of the open run either side of where it wanted to be, to the nearest spot that
   is clear. When no spot is clear, the middle wins.
 - Text is always horizontal. A label never rotates with its line.
-- On an **angled** arrow the label sits on one segment rather than straddling a corner. Which
-  segment is chosen is decided on the label bench (see "Open decisions").
+- On an **angled** arrow the label also sits at the route middle, unless it would straddle a corner
+  there. Then it moves to the longest segment, at the spot on that segment closest to the route
+  middle. It never sits across a corner.
 - A label that cannot fit on its route even at its narrowest wrap (the arrow is too short) sits
   **beside** the line instead: offset perpendicular to the local direction, just clear of the
   line, on whichever side is free of boxes (left of travel first). A label beside its line has no
@@ -90,9 +91,8 @@ code as the canvas, so an exported label wraps at the same words and sits at the
 
 ## Open decisions
 
-Decided on the label bench (`packages/diagram/bench/arrow-labels`), which shows ten arrow shapes,
-including the diagram that prompted this spec, under each candidate:
+Decided on the label bench (`packages/diagram/bench/arrow-labels`, ten arrow shapes including the
+diagram that prompted this spec):
 
-- Which segment an angled arrow's label sits on.
 - The width caps along horizontal and across vertical runs.
 - Whether a label knocks out other arrows crossing beneath it.

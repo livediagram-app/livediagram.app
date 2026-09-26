@@ -466,7 +466,7 @@ export function renderElementsToSvg(
     resolveImageHref?: ResolveImageHref;
     resolveIconArt?: ResolveIconArt;
     resolveStickerArt?: ResolveStickerArt;
-    // Label layout overrides (docs/specs/008-canvas/arrow-labels.md); the label bench compares strategies through it.
+    // Label layout overrides (docs/specs/008-canvas/arrow-labels.md); the label bench switches caps and knockouts through it.
     arrowLabels?: Partial<ArrowLabelLayoutOptions>;
   } = {},
 ): string {

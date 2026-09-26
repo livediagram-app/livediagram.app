@@ -23,9 +23,14 @@ One row per default applied where a spec is silent or qualitative.
 | D17 | arrow-labels  | Order in which labels claim space                         | Arrows in document order; each sees the knockouts placed before it                                                  |
 | D18 | arrow-labels  | Longest segment tie                                       | First in draw order                                                                                                 |
 | D19 | arrow-labels  | "Balanced" lines                                          | Smallest width keeping the greedy line count; 8 binary-search steps                                                 |
-| D20 | arrow-labels  | "Nearest spot that is clear"                              | Twelfths of the open run, middle half only, forward before backward                                                 |
+| D20 | arrow-labels  | "Nearest spot that is clear"                              | Twelfths of the open run, within a quarter run of the preferred centre, forward first                               |
 | D21 | arrow-labels  | Which boxes a label avoids                                | Every boxed element except `frame` and `lane` containers, own endpoints included                                    |
 | D22 | arrow-labels  | A word wider than the cap                                 | Never broken; the line overflows the cap                                                                            |
 | D23 | arrow-labels  | Measure fails (NaN)                                       | 7 px per char at 12 px, scaled by font size                                                                         |
 | D24 | arrow-labels  | Word-width cache bound                                    | 2 000 entries, cleared when full                                                                                    |
 | D25 | arrow-labels  | Cap between horizontal and vertical                       | `cross + (along - cross) * u.x^2`, smooth in the angle                                                              |
+| D26 | arrow-labels  | Which elements a label pass sees                          | The whole tab, hidden layers included, on the canvas and in every export alike                                      |
+| D27 | arrow-bending | "A little way in from each end"                           | The grab fraction is clamped to 0.2 to 0.8                                                                          |
+| D28 | arrow-bending | Snapping while bending by the line                        | None; the handles keep their snapping, a line bend is freehand                                                      |
+| D29 | arrow-bending | Bowing a zero-length arrow                                | Inserts one bend point instead                                                                                      |
+| D30 | arrow-bending | "Close together" for a double-press                       | Within 8 screen px and 450 ms, the existing window                                                                  |

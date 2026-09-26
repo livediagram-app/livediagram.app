@@ -30,3 +30,15 @@
 - [ ] Testing
 - [ ] Constants and configuration
 - [ ] Defaults ledger
+
+## arrow-bending
+
+- [ ] Domain and naming
+- [ ] Behaviour and state
+- [ ] Errors and edge cases
+- [ ] Presentation and UX
+- [ ] Accessibility
+- [ ] Observability
+- [ ] Testing
+- [ ] Constants and configuration
+- [ ] Defaults ledger

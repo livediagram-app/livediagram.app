@@ -155,7 +155,7 @@ describe('layoutArrowLabels: beside the line', () => {
 describe('layoutArrowLabels: obstacles', () => {
   const line = () => arrow('a', [0, 0], [600, 0], 'UI', { arrowEnds: 'both' });
 
-  it('slides along the line, within the middle half, to clear a box', () => {
+  it('slides along the line, within a quarter run of the middle, to clear a box', () => {
     const l = layoutOf([box('b', 280, -20, 40, 40), line()], 'a');
     expect(l.center.y).toBe(0);
     expect(l.center.x).not.toBe(300);
@@ -181,10 +181,20 @@ describe('layoutArrowLabels: obstacles', () => {
   });
 });
 
-describe('layoutArrowLabels: angled strategies', () => {
-  // A Z: 300 across, 100 down, 250 across. Chord middle is (275, 50).
-  const z = () =>
-    arrow('a', [0, 0], [550, 100], 'UI', {
+describe('layoutArrowLabels: angled arrows', () => {
+  // One bend point turns a free angled arrow into an L through it.
+  const angled = (to: [number, number], bend: [number, number], label = 'UI') => {
+    const mid = { x: to[0] / 2, y: to[1] / 2 };
+    return arrow('a', [0, 0], to, label, {
+      arrowStyle: 'angled',
+      arrowEnds: 'both',
+      curvePoints: [{ dx: bend[0] - mid.x, dy: bend[1] - mid.y }],
+    });
+  };
+
+  it('sits at the route middle when that is clear of a corner, even on a short segment', () => {
+    // A Z: 300 across, 100 down, 250 across; the middle falls on the drop.
+    const z = arrow('a', [0, 0], [550, 100], 'UI', {
       arrowStyle: 'angled',
       arrowEnds: 'both',
       curvePoints: [
@@ -192,25 +202,20 @@ describe('layoutArrowLabels: angled strategies', () => {
         { dx: 25, dy: 50 },
       ],
     });
-  const at = (angledStrategy: ArrowLabelLayoutOptions['angledStrategy']) =>
-    layoutOf([z()], 'a', { angledStrategy }).center;
-
-  it('route-middle centres on the whole route, even on a short segment', () => {
-    const c = at('route-middle');
+    const c = layoutOf([z], 'a').center;
     expect(c.x).toBeCloseTo(300);
     expect(c.y).toBeCloseTo(25);
   });
 
-  it('longest-segment centres on the longest segment', () => {
-    expect(at('longest-segment')).toEqual({ x: 154, y: 0 });
+  it('moves off a corner onto the longest segment, as close to the middle as fits', () => {
+    // 240 across then 260 down: the middle lands 10px past the corner.
+    const c = layoutOf([angled([240, 260], [240, 0])], 'a').center;
+    expect(c.x).toBeCloseTo(240);
+    expect(c.y).toBeCloseTo(12 + 12.5);
   });
 
-  it('middle-segment centres on the segment holding the route middle', () => {
-    expect(at('middle-segment')).toEqual({ x: 300, y: 50 });
-  });
-
-  it('horizontal-preferred picks the longest horizontal segment that fits', () => {
-    expect(at('horizontal-preferred')).toEqual({ x: 154, y: 0 });
+  it('breaks a tie for longest by draw order when the middle is exactly the corner', () => {
+    expect(layoutOf([angled([200, 200], [200, 0])], 'a').center).toEqual({ x: 175, y: 0 });
   });
 });
 
@@ -278,7 +283,6 @@ describe('layoutArrowLabels: refinements from the bench', () => {
         }),
       ],
       'a',
-      { angledStrategy: 'longest-segment' },
     );
     expect(l.center.x).toBeCloseTo(100);
     const k = l.knockout!;
@@ -296,22 +300,5 @@ describe('layoutArrowLabels: refinements from the bench', () => {
     expect(l.mode).toBe('beside');
     expect(l.center.x - l.width / 2).toBeGreaterThanOrEqual(160);
     expect(l.center.x + l.width / 2).toBeLessThanOrEqual(250);
-  });
-
-  it('horizontal-preferred skips a horizontal leg that would need more lines', () => {
-    // 100 across then 400 down: the short leg can only hold the label on two
-    // lines, the long leg on one, so the long leg wins.
-    const l = layoutOf(
-      [
-        arrow('a', [0, 0], [100, 400], 'after 30 days', {
-          arrowStyle: 'angled',
-          curvePoints: [{ dx: 50, dy: -200 }],
-        }),
-      ],
-      'a',
-      { angledStrategy: 'horizontal-preferred' },
-    );
-    expect(l.lines).toEqual(['after 30 days']);
-    expect(l.center.x).toBeCloseTo(100);
   });
 });

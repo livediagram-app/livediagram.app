@@ -1,39 +1,15 @@
-// The arrow label bench (docs/specs/008-canvas/arrow-labels.md "Open decisions").
-// Renders every scenario through the real export renderer, once per angled
-// strategy, with the caps and knockout rule switchable. Runs in the browser so
-// text is measured the way the canvas measures it.
+// The arrow label bench (docs/specs/008-canvas/arrow-labels.md). Renders every
+// scenario through the real export renderer, with the width caps and the
+// knockout rule switchable. Runs in the browser so text is measured the way
+// the canvas measures it.
 
 import {
   ALONG_CAP_PX,
   CROSS_CAP_PX,
   renderElementsToSvg,
-  type AngledLabelStrategy,
   type ArrowLabelLayoutOptions,
 } from '../../src/index';
 import { SCENARIOS } from './scenarios';
-
-const STRATEGIES: { id: AngledLabelStrategy; name: string; blurb: string }[] = [
-  {
-    id: 'route-middle',
-    name: 'A. Route middle',
-    blurb: 'Middle of the whole path; may sit on a corner.',
-  },
-  {
-    id: 'longest-segment',
-    name: 'B. Longest segment',
-    blurb: 'Centre of the longest straight run.',
-  },
-  {
-    id: 'middle-segment',
-    name: 'C. Middle segment',
-    blurb: 'Centre of the run the path middle falls on.',
-  },
-  {
-    id: 'horizontal-preferred',
-    name: 'D. Horizontal preferred',
-    blurb: 'Longest horizontal run that holds the label, else B.',
-  },
-];
 
 type State = {
   crossCapPx: number;
@@ -41,8 +17,6 @@ type State = {
   knockoutOthers: boolean;
   dark: boolean;
   only: string;
-  // Show one angled strategy (for side-by-side captures); empty shows all four.
-  strategy: string;
 };
 
 const params = new URLSearchParams(location.search);
@@ -52,7 +26,6 @@ const state: State = {
   knockoutOthers: params.get('others') === '1',
   dark: params.get('theme') !== 'light',
   only: params.get('only') ?? '',
-  strategy: params.get('strategy') ?? '',
 };
 
 function sync(): void {
@@ -62,7 +35,6 @@ function sync(): void {
   if (state.knockoutOthers) p.set('others', '1');
   if (!state.dark) p.set('theme', 'light');
   if (state.only) p.set('only', state.only);
-  if (state.strategy) p.set('strategy', state.strategy);
   history.replaceState(null, '', `?${p}`);
 }
 
@@ -124,30 +96,22 @@ function render(): void {
     row.innerHTML = `<h2>${sc.title}</h2><p>${sc.note}</p>`;
     const cells = document.createElement('div');
     cells.className = 'cells';
-    // Strategies only differ on angled arrows; everything else renders once, full size.
-    const angled = sc.elements.some((e) => e.type === 'arrow' && e.arrowStyle === 'angled');
-    cells.classList.toggle('single', !angled || !!state.strategy);
-    const shown = STRATEGIES.filter((s) => !state.strategy || s.id === state.strategy);
-    for (const st of angled ? shown : STRATEGIES.slice(1, 2)) {
-      const options: Partial<ArrowLabelLayoutOptions> = {
-        angledStrategy: st.id,
-        crossCapPx: state.crossCapPx,
-        alongCapPx: state.alongCapPx,
-        knockoutOthers: state.knockoutOthers,
-      };
-      const cell = document.createElement('figure');
-      if (angled) cell.dataset.strategy = `${st.name}: ${st.blurb}`;
-      // An <img> per render, so each SVG's mask ids stay its own.
-      const svg = renderElementsToSvg(
-        { id: sc.id, name: sc.title, elements: sc.elements },
-        { arrowLabels: options, background: state.dark ? '#0f172a' : '#ffffff', padding: 24 },
-      );
-      const img = document.createElement('img');
-      img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
-      img.alt = `${sc.title}, ${st.name}`;
-      cell.append(img);
-      cells.append(cell);
-    }
+    const options: Partial<ArrowLabelLayoutOptions> = {
+      crossCapPx: state.crossCapPx,
+      alongCapPx: state.alongCapPx,
+      knockoutOthers: state.knockoutOthers,
+    };
+    const cell = document.createElement('figure');
+    // An <img> per render, so each SVG's mask ids stay its own.
+    const svg = renderElementsToSvg(
+      { id: sc.id, name: sc.title, elements: sc.elements },
+      { arrowLabels: options, background: state.dark ? '#0f172a' : '#ffffff', padding: 24 },
+    );
+    const img = document.createElement('img');
+    img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+    img.alt = sc.title;
+    cell.append(img);
+    cells.append(cell);
     row.append(cells);
     grid.append(row);
   }
