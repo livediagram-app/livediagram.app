@@ -16,7 +16,7 @@ const markup = TEMPLATES.map((t) => ({
   svg: renderToStaticMarkup(createElement(TemplatePreview, { kind: t.kind })),
 }));
 
-const STORY_ENTRANCES = ['pv-new', 'pv-arrive', 'pv-token'];
+const STORY_ENTRANCES = ['pv-new', 'pv-arrive', 'pv-token', 'pv-travel'];
 
 describe('preview hover stories', () => {
   it('keeps every shape a story adds invisible at rest', () => {
@@ -39,17 +39,13 @@ describe('preview hover stories', () => {
     }
   });
 
-  it('tells a story on the flagship templates', () => {
-    const storied = markup.filter(({ svg }) => /class="pv-/.test(svg)).map((m) => m.kind);
-    expect(storied).toEqual(
-      expect.arrayContaining([
-        'mindmap',
-        'mindmap-tree',
-        'mindmap-bubble',
-        'kanban',
-        'flowchart',
-        'gantt',
-      ]),
-    );
+  // Every card in the gallery tells its own story, not just the build
+  // replay, so a new template without one fails here (Blank, which the
+  // gallery doesn't list, is the exception).
+  it('tells a story on every template', () => {
+    const missing = markup
+      .filter(({ kind, svg }) => kind !== 'blank' && !/class="[^"]*\bpv-/.test(svg))
+      .map((m) => m.kind);
+    expect(missing).toEqual([]);
   });
 });

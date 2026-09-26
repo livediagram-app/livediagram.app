@@ -79,6 +79,34 @@ export function templatePreviewGroup2(kind: TemplateKind): ReactElement | null {
               strokeWidth="0.75"
             />
           ))}
+          {/* Hover story: notes are sorted out of the middle into each
+              quadrant, strengths filling up first. */}
+          {[
+            { x: 10, y: 8, at: 900 },
+            { x: 48, y: 8, at: 1200 },
+            { x: 10, y: 30, at: 1500 },
+            { x: 48, y: 30, at: 1800 },
+            { x: 22, y: 15, at: 2200 },
+          ].map((n) => (
+            <rect
+              key={`${n.x}-${n.y}`}
+              className="pv-arrive"
+              opacity="0"
+              x={n.x}
+              y={n.y}
+              width="12"
+              height="6"
+              rx="0.75"
+              fill="white"
+              stroke="rgb(100 116 139)"
+              strokeWidth="0.5"
+              style={pv({
+                '--pv-from-x': `${34 - n.x}px`,
+                '--pv-from-y': `${22 - n.y}px`,
+                '--pv-at': `${n.at}ms`,
+              })}
+            />
+          ))}
         </svg>
       );
     case 'timeline':
@@ -87,6 +115,8 @@ export function templatePreviewGroup2(kind: TemplateKind): ReactElement | null {
           <line x1="6" y1="25" x2="74" y2="25" stroke="rgb(100 116 139)" strokeWidth="1.5" />
           {[14, 28, 42, 56, 70].map((mx, i) => (
             <g key={mx}>
+              {/* Hover story: each event pulses as the "now" marker below
+                  sweeps past it. */}
               <circle
                 cx={mx}
                 cy="25"
@@ -94,6 +124,8 @@ export function templatePreviewGroup2(kind: TemplateKind): ReactElement | null {
                 fill="rgb(186 230 253)"
                 stroke="rgb(14 165 233)"
                 strokeWidth="1"
+                className="pv-pulse"
+                style={pv({ '--pv-at': `${900 + Math.round(((mx - 6) / 68) * 2000)}ms` })}
               />
               <rect
                 x={mx - 6}
@@ -115,6 +147,18 @@ export function templatePreviewGroup2(kind: TemplateKind): ReactElement | null {
               />
             </g>
           ))}
+          {/* The "now" marker, sweeping left to right along the spine. */}
+          <rect
+            className="pv-travel"
+            opacity="0"
+            x="5"
+            y="19"
+            width="2"
+            height="12"
+            rx="1"
+            fill="rgb(239 68 68)"
+            style={pv({ '--pv-dx': '68px', '--pv-dur': '2400ms', '--pv-at': '900ms' })}
+          />
         </svg>
       );
     case 'milestone-timeline':
@@ -127,6 +171,18 @@ export function templatePreviewGroup2(kind: TemplateKind): ReactElement | null {
             stroke="rgb(100 116 139)"
             strokeWidth="1.5"
             fill="none"
+          />
+          {/* Hover story: progress fills the spine up to the Launch
+              milestone, which then lights up. Dashed to nothing at rest
+              (strokeDasharray 0 1) so the static art shows no progress. */}
+          <path
+            className="pv-draw"
+            pathLength="1"
+            strokeDasharray="0 1"
+            d="M4 27 H47"
+            stroke="rgb(14 165 233)"
+            strokeWidth="2.6"
+            style={pv({ '--pv-at': '900ms', '--pv-dur': '1400ms' })}
           />
           {[13, 30, 47, 64].map((mx, i) => {
             const above = i % 2 === 0;
@@ -169,6 +225,8 @@ export function templatePreviewGroup2(kind: TemplateKind): ReactElement | null {
                   fill={hero ? 'rgb(186 230 253)' : 'white'}
                   stroke={hero ? 'rgb(14 165 233)' : 'rgb(148 163 184)'}
                   strokeWidth="0.75"
+                  className={hero ? 'pv-pulse' : undefined}
+                  style={hero ? pv({ '--pv-at': '2300ms' }) : undefined}
                 />
               </g>
             );
@@ -185,6 +243,18 @@ export function templatePreviewGroup2(kind: TemplateKind): ReactElement | null {
             stroke="rgb(100 116 139)"
             strokeWidth="1.5"
             fill="none"
+          />
+          {/* Hover story: progress runs down the spine, each milestone dot
+              pulsing as it's reached, then the Launch card lights up.
+              Dashed to nothing at rest so the static art shows no progress. */}
+          <path
+            className="pv-draw"
+            pathLength="1"
+            strokeDasharray="0 1"
+            d="M40 4 V30"
+            stroke="rgb(14 165 233)"
+            strokeWidth="2.6"
+            style={pv({ '--pv-at': '900ms', '--pv-dur': '1500ms' })}
           />
           {[10, 20, 30, 40].map((my, i) => {
             const leftSide = i % 2 === 0;
@@ -216,6 +286,8 @@ export function templatePreviewGroup2(kind: TemplateKind): ReactElement | null {
                   fill="rgb(14 165 233)"
                   stroke="white"
                   strokeWidth="0.75"
+                  className={i < 3 ? 'pv-pulse' : undefined}
+                  style={i < 3 ? pv({ '--pv-at': `${1000 + i * 520}ms` }) : undefined}
                 />
                 {/* Milestone card at the end of the stem. */}
                 <rect
@@ -227,6 +299,8 @@ export function templatePreviewGroup2(kind: TemplateKind): ReactElement | null {
                   fill={hero ? 'rgb(186 230 253)' : 'white'}
                   stroke={hero ? 'rgb(14 165 233)' : 'rgb(148 163 184)'}
                   strokeWidth="0.75"
+                  className={hero ? 'pv-pulse' : undefined}
+                  style={hero ? pv({ '--pv-at': '2600ms' }) : undefined}
                 />
               </g>
             );
@@ -237,6 +311,8 @@ export function templatePreviewGroup2(kind: TemplateKind): ReactElement | null {
       return (
         <svg width="70" height="46" viewBox="0 0 70 50" aria-hidden>
           {/* Three semi-transparent outlined circles arranged in a triangle. */}
+          {/* Hover story: the three sets pull apart, slide back into their
+              overlap, and the shared middle lights up. */}
           <circle
             cx="35"
             cy="18"
@@ -245,6 +321,8 @@ export function templatePreviewGroup2(kind: TemplateKind): ReactElement | null {
             fillOpacity="0.45"
             stroke="rgb(14 165 233)"
             strokeWidth="1"
+            className="pv-route"
+            style={pv({ '--pv-dy': '-3px', '--pv-at': '900ms', '--pv-dur': '1300ms' })}
           />
           <circle
             cx="24"
@@ -254,6 +332,13 @@ export function templatePreviewGroup2(kind: TemplateKind): ReactElement | null {
             fillOpacity="0.45"
             stroke="rgb(248 113 113)"
             strokeWidth="1"
+            className="pv-route"
+            style={pv({
+              '--pv-dx': '-8px',
+              '--pv-dy': '3px',
+              '--pv-at': '900ms',
+              '--pv-dur': '1300ms',
+            })}
           />
           <circle
             cx="46"
@@ -263,6 +348,24 @@ export function templatePreviewGroup2(kind: TemplateKind): ReactElement | null {
             fillOpacity="0.45"
             stroke="rgb(74 222 128)"
             strokeWidth="1"
+            className="pv-route"
+            style={pv({
+              '--pv-dx': '8px',
+              '--pv-dy': '3px',
+              '--pv-at': '900ms',
+              '--pv-dur': '1300ms',
+            })}
+          />
+          <circle
+            className="pv-new"
+            opacity="0"
+            cx="35"
+            cy="27"
+            r="3"
+            fill="rgb(250 204 21)"
+            stroke="rgb(202 138 4)"
+            strokeWidth="0.75"
+            style={pv({ '--pv-at': '2300ms' })}
           />
         </svg>
       );
@@ -306,6 +409,39 @@ export function templatePreviewGroup2(kind: TemplateKind): ReactElement | null {
               markerEnd=""
             />
           ))}
+          {/* Hover story: the customer walks the stages left to right, and
+              a mood dot lands on each stage's note as they pass: happy,
+              unsure, frustrated, happy again. */}
+          {[
+            { x: 12, fill: 'rgb(74 222 128)', at: 1100 },
+            { x: 30, fill: 'rgb(250 204 21)', at: 1650 },
+            { x: 48, fill: 'rgb(248 113 113)', at: 2200 },
+            { x: 66, fill: 'rgb(74 222 128)', at: 2750 },
+          ].map((m) => (
+            <circle
+              key={m.x}
+              className="pv-new"
+              opacity="0"
+              cx={m.x}
+              cy="33"
+              r="2.2"
+              fill={m.fill}
+              stroke="white"
+              strokeWidth="0.5"
+              style={pv({ '--pv-at': `${m.at}ms` })}
+            />
+          ))}
+          <circle
+            className="pv-travel"
+            opacity="0"
+            cx="12"
+            cy="21.5"
+            r="2.4"
+            fill="rgb(14 165 233)"
+            stroke="white"
+            strokeWidth="0.6"
+            style={pv({ '--pv-dx': '54px', '--pv-dur': '2600ms', '--pv-at': '900ms' })}
+          />
         </svg>
       );
     case 'fishbone':
@@ -330,14 +466,16 @@ export function templatePreviewGroup2(kind: TemplateKind): ReactElement | null {
             { x1: 16, y1: 44, x2: 28, y2: 25 },
             { x1: 36, y1: 44, x2: 48, y2: 25 },
           ].map((b, i) => (
-            <line
+            // Hover story: each cause bone grows in from its category to
+            // the spine, one after another.
+            <path
               key={i}
-              x1={b.x1}
-              y1={b.y1}
-              x2={b.x2}
-              y2={b.y2}
+              d={`M${b.x1} ${b.y1} L${b.x2} ${b.y2}`}
               stroke="rgb(100 116 139)"
               strokeWidth="0.75"
+              className="pv-draw"
+              pathLength="1"
+              style={pv({ '--pv-at': `${900 + i * 300}ms`, '--pv-dur': '500ms' })}
             />
           ))}
           {/* Small category labels at the ends of each branch. */}
@@ -359,6 +497,40 @@ export function templatePreviewGroup2(kind: TemplateKind): ReactElement | null {
               strokeWidth="0.5"
             />
           ))}
+          {/* ...then sub-causes branch off the bones, and the effect they
+              all feed lights up. */}
+          {[
+            { x1: 22, y1: 15.5, x2: 14, at: 2200 },
+            { x1: 42, y1: 15.5, x2: 34, at: 2350 },
+            { x1: 22, y1: 34.5, x2: 14, at: 2500 },
+            { x1: 42, y1: 34.5, x2: 34, at: 2650 },
+          ].map((t) => (
+            <line
+              key={`${t.x1}-${t.y1}`}
+              className="pv-new"
+              opacity="0"
+              x1={t.x1}
+              y1={t.y1}
+              x2={t.x2}
+              y2={t.y1}
+              stroke="rgb(14 165 233)"
+              strokeWidth="0.75"
+              style={pv({ '--pv-at': `${t.at}ms` })}
+            />
+          ))}
+          <rect
+            className="pv-new"
+            opacity="0"
+            x="62"
+            y="20"
+            width="14"
+            height="10"
+            rx="1"
+            fill="rgb(125 211 252)"
+            stroke="rgb(2 132 199)"
+            strokeWidth="0.9"
+            style={pv({ '--pv-at': '3000ms' })}
+          />
         </svg>
       );
     case 'pyramid':
@@ -371,6 +543,8 @@ export function templatePreviewGroup2(kind: TemplateKind): ReactElement | null {
             { x: 16, y: 26, w: 38, h: 9 },
             { x: 10, y: 36, w: 50, h: 9 },
           ].map((t, i) => (
+            // Hover story: the tiers stack up from the foundation, each
+            // rising from its base, and the peak crowns it last.
             <rect
               key={i}
               x={t.x}
@@ -381,8 +555,23 @@ export function templatePreviewGroup2(kind: TemplateKind): ReactElement | null {
               fill={i === 0 ? 'rgb(186 230 253)' : 'rgb(241 245 249)'}
               stroke="rgb(148 163 184)"
               strokeWidth="0.75"
+              className="pv-grow-y"
+              style={pv({ '--pv-at': `${300 + (3 - i) * 380}ms`, '--pv-dur': '420ms' })}
             />
           ))}
+          <rect
+            className="pv-new"
+            opacity="0"
+            x="28"
+            y="6"
+            width="14"
+            height="9"
+            rx="1"
+            fill="rgb(125 211 252)"
+            stroke="rgb(2 132 199)"
+            strokeWidth="0.9"
+            style={pv({ '--pv-at': '2100ms' })}
+          />
         </svg>
       );
     case 'mobile-wireframe':
@@ -414,20 +603,34 @@ export function templatePreviewGroup2(kind: TemplateKind): ReactElement | null {
                 stroke="rgb(147 197 253)"
                 strokeWidth="0.4"
               />
-              {/* Three content cards */}
-              {[15, 22, 29].map((cy) => (
-                <rect
-                  key={cy}
-                  x={px + 2}
-                  y={cy}
-                  width="16"
-                  height="5"
-                  rx="0.5"
-                  fill="white"
-                  stroke="rgb(148 163 184)"
-                  strokeWidth="0.4"
-                />
-              ))}
+              {/* Three content cards. Hover story: the middle screen scrolls
+                  its feed, the top card leaving as the rest move up. */}
+              {[15, 22, 29].map((cy, ci) => {
+                const scrolls = px === 30;
+                return (
+                  <rect
+                    key={cy}
+                    x={px + 2}
+                    y={cy}
+                    width="16"
+                    height="5"
+                    rx="0.5"
+                    fill="white"
+                    stroke="rgb(148 163 184)"
+                    strokeWidth="0.4"
+                    className={scrolls ? (ci === 0 ? 'pv-leave' : 'pv-shift') : undefined}
+                    style={
+                      scrolls
+                        ? pv(
+                            ci === 0
+                              ? { '--pv-at': '1000ms', '--pv-dur': '300ms' }
+                              : { '--pv-dy': '-7px', '--pv-at': '1000ms', '--pv-dur': '500ms' },
+                          )
+                        : undefined
+                    }
+                  />
+                );
+              })}
               {/* Bottom tab bar */}
               <rect
                 x={px + 2}
@@ -441,6 +644,33 @@ export function templatePreviewGroup2(kind: TemplateKind): ReactElement | null {
               />
             </g>
           ))}
+          {/* ...a fresh card scrolls in at the bottom of the feed, then a tap
+              lands on the right screen's tab bar. */}
+          <rect
+            className="pv-arrive"
+            opacity="0"
+            x="32"
+            y="29"
+            width="16"
+            height="5"
+            rx="0.5"
+            fill="rgb(224 242 254)"
+            stroke="rgb(14 165 233)"
+            strokeWidth="0.5"
+            style={pv({ '--pv-from-y': '7px', '--pv-at': '1300ms' })}
+          />
+          <circle
+            className="pv-new"
+            opacity="0"
+            cx="64"
+            cy="42.25"
+            r="2"
+            fill="rgb(14 165 233)"
+            fillOpacity="0.6"
+            stroke="rgb(2 132 199)"
+            strokeWidth="0.5"
+            style={pv({ '--pv-at': '2200ms' })}
+          />
         </svg>
       );
     case 'laptop-wireframe':
@@ -523,6 +753,34 @@ export function templatePreviewGroup2(kind: TemplateKind): ReactElement | null {
             fill="white"
             stroke="rgb(148 163 184)"
             strokeWidth="0.4"
+          />
+          {/* Hover story: the dashboard loads, a figure landing in each stat
+              card, then the chart draws across the content row (dashed to
+              nothing at rest so the static art is unchanged). */}
+          {[25, 39, 53].map((cx, i) => (
+            <rect
+              key={cx}
+              className="pv-new"
+              opacity="0"
+              x={cx + 2}
+              y="18"
+              width={[7, 9, 5][i]}
+              height="2.4"
+              rx="0.4"
+              fill="rgb(14 165 233)"
+              style={pv({ '--pv-at': `${900 + i * 250}ms` })}
+            />
+          ))}
+          <path
+            className="pv-draw"
+            pathLength="1"
+            strokeDasharray="0 1"
+            d="M27 33 L34 29.5 L41 31 L48 27.5 L55 29 L62 26.5 L68 27.5"
+            fill="none"
+            stroke="rgb(14 165 233)"
+            strokeWidth="0.9"
+            strokeLinejoin="round"
+            style={pv({ '--pv-at': '1800ms', '--pv-dur': '900ms' })}
           />
         </svg>
       );
@@ -653,6 +911,30 @@ export function templatePreviewGroup2(kind: TemplateKind): ReactElement | null {
           <polygon points="59,26 58,24.5 60,24.5" fill="rgb(100 116 139)" />
           <line x1="42" y1="36" x2="38" y2="36" stroke="rgb(100 116 139)" strokeWidth="0.7" />
           <polygon points="38,36 39.5,35 39.5,37" fill="rgb(100 116 139)" />
+          {/* Hover story: presenting walks the deck in reading order
+              (1, 2, 4, 3), each slide lighting up as it's shown. */}
+          {[
+            { x: 4, y: 3, at: 900 },
+            { x: 42, y: 3, at: 1450 },
+            { x: 42, y: 26, at: 2000 },
+            { x: 4, y: 26, at: 2550 },
+          ].map((s) => (
+            <rect
+              key={`${s.x}-${s.y}`}
+              className="pv-new"
+              opacity="0"
+              x={s.x - 0.8}
+              y={s.y - 0.8}
+              width="35.6"
+              height="21.6"
+              rx="1.6"
+              fill="rgb(14 165 233)"
+              fillOpacity="0.12"
+              stroke="rgb(14 165 233)"
+              strokeWidth="1.3"
+              style={pv({ '--pv-at': `${s.at}ms` })}
+            />
+          ))}
         </svg>
       );
     default:

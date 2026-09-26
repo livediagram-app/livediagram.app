@@ -1,5 +1,7 @@
-import type { ReactElement } from 'react';
+import type { ReactElement, SVGProps } from 'react';
 import type { TemplateKind } from '@livediagram/templates';
+import { pv } from './motion';
+import { FILL_BOX, Pop, PopDot, popGroup } from './story-parts';
 
 // Group 4 of 4 (the roadmap / canvas / workshop / hierarchy / UML /
 // cloud batch). Static SVG preview tiles (one branch per TemplateKind; see
@@ -12,12 +14,15 @@ export function templatePreviewGroup4(kind: TemplateKind): ReactElement | null {
   switch (kind) {
     case 'roadmap':
       // Three horizon lanes (green / blue / slate) of initiative cards.
+      // Hover story: a Later item is pulled forward into Next, then the Now
+      // lane's second item ships. At rest Next is one item short, the gap
+      // the pulled item fills; both moving cards are drawn last.
       return (
         <svg width="76" height="46" viewBox="0 0 80 50" aria-hidden>
           {[
-            { x: 4, fill: 'rgb(220 252 231)', stroke: 'rgb(134 239 172)' },
-            { x: 30, fill: 'rgb(219 234 254)', stroke: 'rgb(147 197 253)' },
-            { x: 56, fill: 'rgb(226 232 240)', stroke: 'rgb(203 213 225)' },
+            { x: 4, fill: 'rgb(220 252 231)', stroke: 'rgb(134 239 172)', cards: [15] },
+            { x: 30, fill: 'rgb(219 234 254)', stroke: 'rgb(147 197 253)', cards: [15] },
+            { x: 56, fill: 'rgb(226 232 240)', stroke: 'rgb(203 213 225)', cards: [15] },
           ].map((lane, i) => (
             <g key={i}>
               <rect
@@ -31,21 +36,18 @@ export function templatePreviewGroup4(kind: TemplateKind): ReactElement | null {
                 strokeWidth="1"
               />
               <rect x={lane.x + 3} y="8" width="10" height="3" rx="1" fill="rgb(15 23 42)" />
-              {[15, 30].map((y) => (
-                <rect
-                  key={y}
-                  x={lane.x + 3}
-                  y={y}
-                  width="14"
-                  height="11"
-                  rx="1.5"
-                  fill="white"
-                  stroke="rgb(148 163 184)"
-                  strokeWidth="0.8"
-                />
+              {lane.cards.map((y) => (
+                <RoadCard key={y} x={lane.x + 3} y={y} />
               ))}
             </g>
           ))}
+          <RoadCard x={7} y={30} className="pv-leave" style={pv({ '--pv-at': '1900ms' })} />
+          <RoadCard
+            x={59}
+            y={30}
+            className="pv-shift"
+            style={pv({ '--pv-dx': '-26px', '--pv-at': '1000ms', '--pv-dur': '800ms' })}
+          />
         </svg>
       );
     case 'raci-matrix':
@@ -95,17 +97,27 @@ export function templatePreviewGroup4(kind: TemplateKind): ReactElement | null {
               strokeWidth="0.7"
             />
           ))}
-          {/* Scattered R/A/C/I marks as tinted dots. */}
+          {/* Scattered R/A/C/I marks as tinted dots. Hover story: the bottom
+              task's grey mark is handed to the next role, then the middle
+              task gains a Responsible (green). */}
           {[
             { cx: 34, cy: 19.5, f: 'rgb(134 239 172)' },
             { cx: 50, cy: 19.5, f: 'rgb(147 197 253)' },
             { cx: 66, cy: 29, f: 'rgb(252 211 77)' },
-            { cx: 34, cy: 39, f: 'rgb(203 213 225)' },
             { cx: 66, cy: 39, f: 'rgb(134 239 172)' },
             { cx: 50, cy: 29, f: 'rgb(252 211 77)' },
           ].map((d, i) => (
             <circle key={i} cx={d.cx} cy={d.cy} r="2.6" fill={d.f} />
           ))}
+          <circle
+            cx="34"
+            cy="39"
+            r="2.6"
+            fill="rgb(203 213 225)"
+            className="pv-shift"
+            style={pv({ '--pv-dx': '16px', '--pv-at': '1000ms' })}
+          />
+          <PopDot at={1700} cx="34" cy="29" r="2.6" fill="rgb(134 239 172)" />
         </svg>
       );
     case 'user-story-map':
@@ -126,29 +138,15 @@ export function templatePreviewGroup4(kind: TemplateKind): ReactElement | null {
               strokeWidth="0.9"
             />
           ))}
-          {[4, 24, 44, 64].map((x) => (
-            <g key={x}>
-              <rect
-                x={x}
-                y="17"
-                width="14"
-                height="9"
-                rx="1"
-                fill="rgb(254 243 199)"
-                stroke="rgb(253 230 138)"
-                strokeWidth="0.9"
-              />
-              <rect
-                x={x}
-                y="38"
-                width="14"
-                height="9"
-                rx="1"
-                fill="rgb(254 243 199)"
-                stroke="rgb(253 230 138)"
-                strokeWidth="0.9"
-              />
-            </g>
+          {/* Hover story: the third activity's later story is promoted
+              over the release line into the first release, and a new story
+              backfills the later release. At rest the first release has
+              the gap it fills. */}
+          {[4, 24, 64].map((x) => (
+            <Sticky key={x} x={x} y={17} />
+          ))}
+          {[4, 24, 64].map((x) => (
+            <Sticky key={x} x={x} y={38} />
           ))}
           <line
             x1="2"
@@ -158,6 +156,19 @@ export function templatePreviewGroup4(kind: TemplateKind): ReactElement | null {
             stroke="rgb(100 116 139)"
             strokeWidth="1"
             strokeDasharray="4 3"
+          />
+          <Sticky
+            x={44}
+            y={38}
+            className="pv-shift"
+            style={pv({ '--pv-dy': '-21px', '--pv-at': '1000ms', '--pv-dur': '800ms' })}
+          />
+          <Sticky
+            x={44}
+            y={38}
+            className="pv-arrive"
+            opacity="0"
+            style={pv({ '--pv-from-y': '10px', '--pv-at': '1900ms' })}
           />
         </svg>
       );
@@ -198,16 +209,39 @@ export function templatePreviewGroup4(kind: TemplateKind): ReactElement | null {
               transform={`rotate(${s.r} ${s.x + 8.5} ${s.y + 5.5})`}
             />
           ))}
-          <rect
-            x="62"
-            y="16"
-            width="15"
-            height="10"
-            rx="1"
-            fill="rgb(254 243 199)"
-            stroke="rgb(253 230 138)"
-            strokeWidth="0.9"
-            transform="rotate(7 69.5 21)"
+          {/* Hover story: the loose note is grouped onto the second theme's
+              pile, then a fresh note turns up loose. The tilted note moves
+              inside a <g> so its own rotate() survives. */}
+          <g
+            className="pv-shift"
+            style={{
+              ...pv({
+                '--pv-dx': '-22px',
+                '--pv-dy': '13px',
+                '--pv-at': '1000ms',
+                '--pv-dur': '800ms',
+              }),
+              ...FILL_BOX,
+            }}
+          >
+            <rect
+              x="62"
+              y="16"
+              width="15"
+              height="10"
+              rx="1"
+              fill="rgb(254 243 199)"
+              stroke="rgb(253 230 138)"
+              strokeWidth="0.9"
+              transform="rotate(7 69.5 21)"
+            />
+          </g>
+          <Sticky
+            x={62}
+            y={16}
+            className="pv-arrive"
+            opacity="0"
+            style={pv({ '--pv-from-x': '10px', '--pv-at': '2000ms' })}
           />
         </svg>
       );
@@ -245,6 +279,28 @@ export function templatePreviewGroup4(kind: TemplateKind): ReactElement | null {
           {/* Costs / revenue base row. */}
           <line x1="4" y1="34" x2="76" y2="34" stroke="rgb(100 116 139)" strokeWidth="0.8" />
           <line x1="40" y1="34" x2="40" y2="46" stroke="rgb(100 116 139)" strokeWidth="0.8" />
+          {/* Hover story: the canvas fills in, value proposition first, then
+              who it's for, who helps, and how it earns. */}
+          {[
+            [36, 8, 1000],
+            [36, 15, 1250],
+            [65, 8, 1550],
+            [7, 8, 1850],
+            [58, 38, 2150],
+          ].map(([x, y, at]) => (
+            <Pop
+              key={at}
+              at={at!}
+              x={x}
+              y={y}
+              width="8"
+              height="5"
+              rx="0.8"
+              fill="rgb(254 243 199)"
+              stroke="rgb(245 158 11)"
+              strokeWidth="0.6"
+            />
+          ))}
         </svg>
       );
     case 'empathy-map':
@@ -302,6 +358,33 @@ export function templatePreviewGroup4(kind: TemplateKind): ReactElement | null {
           {/* Head-and-shoulders glyph inside the persona circle. */}
           <circle cx="40" cy="22.6" r="2.2" fill="rgb(14 165 233)" />
           <path d="M 35.8 29.2 Q 40 24.8 44.2 29.2" fill="rgb(14 165 233)" />
+          {/* Hover story: an observation comes out of the persona into each
+              quadrant in turn: says, thinks, does, feels. */}
+          {[
+            [12, 10, 1000],
+            [59, 10, 1300],
+            [12, 34, 1600],
+            [59, 34, 1900],
+          ].map(([x, y, at]) => (
+            <rect
+              key={at}
+              className="pv-arrive"
+              opacity="0"
+              x={x}
+              y={y}
+              width="9"
+              height="6"
+              rx="0.8"
+              fill="white"
+              stroke="rgb(100 116 139)"
+              strokeWidth="0.6"
+              style={pv({
+                '--pv-from-x': `${35.5 - x!}px`,
+                '--pv-from-y': `${22 - y!}px`,
+                '--pv-at': `${at}ms`,
+              })}
+            />
+          ))}
         </svg>
       );
     case 'funnel':
@@ -332,6 +415,31 @@ export function templatePreviewGroup4(kind: TemplateKind): ReactElement | null {
             stroke="rgb(14 165 233)"
             strokeWidth="1"
           />
+          {/* Hover story: prospects drop through the stages on a loop; the
+              ones at the edges fall out after the first stage. */}
+          {[
+            { x: 35, dx: 0, dy: 38, at: 1000 },
+            { x: 20, dx: -4, dy: 11, at: 1300 },
+            { x: 35, dx: 0, dy: 38, at: 1600 },
+            { x: 50, dx: 4, dy: 11, at: 1900 },
+            { x: 35, dx: 0, dy: 38, at: 2200 },
+          ].map((d) => (
+            <circle
+              key={d.at}
+              className="pv-travel"
+              opacity="0"
+              cx={d.x}
+              cy="7"
+              r="1.6"
+              fill="rgb(2 132 199)"
+              style={pv({
+                '--pv-dx': `${d.dx}px`,
+                '--pv-dy': `${d.dy}px`,
+                '--pv-at': `${d.at}ms`,
+                '--pv-dur': '1800ms',
+              })}
+            />
+          ))}
         </svg>
       );
     case 'okr-tree':
@@ -405,6 +513,27 @@ export function templatePreviewGroup4(kind: TemplateKind): ReactElement | null {
               strokeWidth="0.7"
             />
           ))}
+          {/* Hover story: each key result's progress bar fills to where it
+              stands this quarter. The bar pops in with its track, then grows. */}
+          {[
+            [8, 10, 1000],
+            [33, 5, 1300],
+            [58, 8, 1600],
+          ].map(([x, w, at]) => (
+            <g key={x} className="pv-new" opacity="0" style={popGroup(at!)}>
+              <rect x={x! + 2} y="25.5" width="10" height="1.8" rx="0.9" fill="rgb(226 232 240)" />
+              <rect
+                x={x! + 2}
+                y="25.5"
+                width={w}
+                height="1.8"
+                rx="0.9"
+                fill="rgb(34 197 94)"
+                className="pv-grow-x"
+                style={pv({ '--pv-at': `${at! + 150}ms`, '--pv-dur': '900ms' })}
+              />
+            </g>
+          ))}
         </svg>
       );
     case 'sitemap':
@@ -447,464 +576,72 @@ export function templatePreviewGroup4(kind: TemplateKind): ReactElement | null {
               strokeWidth="0.8"
             />
           ))}
-          {/* Elbow connectors: down from Home, across, down into each tier. */}
-          <path
-            d="M 40 12 V 17 H 14 V 22 M 40 17 V 22 M 40 17 H 66 V 22"
-            fill="none"
-            stroke="rgb(100 116 139)"
-            strokeWidth="0.8"
-          />
-          <path
-            d="M 14 30 V 34.5 H 8 V 39 M 14 34.5 H 20 V 39"
-            fill="none"
-            stroke="rgb(100 116 139)"
-            strokeWidth="0.7"
-          />
-          <path
-            d="M 40 30 V 34.5 H 34 V 39 M 40 34.5 H 46 V 39"
-            fill="none"
-            stroke="rgb(100 116 139)"
-            strokeWidth="0.7"
-          />
-          <path
-            d="M 66 30 V 34.5 H 60 V 39 M 66 34.5 H 72 V 39"
-            fill="none"
-            stroke="rgb(100 116 139)"
-            strokeWidth="0.7"
-          />
-        </svg>
-      );
-    case 'browser-wireframe':
-      // Browser chrome over a hero + button and three feature cards.
-      return (
-        <svg width="76" height="46" viewBox="0 0 80 50" aria-hidden>
-          <rect
-            x="4"
-            y="3"
-            width="72"
-            height="44"
-            rx="3"
-            fill="white"
-            stroke="rgb(14 165 233)"
-            strokeWidth="1.2"
-          />
-          <line x1="4" y1="11" x2="76" y2="11" stroke="rgb(14 165 233)" strokeWidth="0.9" />
-          {[9, 13.5, 18].map((cx) => (
-            <circle key={cx} cx={cx} cy="7" r="1.4" fill="rgb(148 163 184)" />
-          ))}
-          <rect x="24" y="5" width="46" height="4" rx="2" fill="rgb(226 232 240)" />
-          {/* Hero copy + CTA on the left, image placeholder right. */}
-          <rect x="9" y="16" width="26" height="4" rx="1" fill="rgb(15 23 42)" />
-          <rect x="9" y="22" width="20" height="2.5" rx="0.8" fill="rgb(148 163 184)" />
-          <rect
-            x="9"
-            y="27"
-            width="13"
-            height="5"
-            rx="2.5"
-            fill="rgb(186 230 253)"
-            stroke="rgb(14 165 233)"
-            strokeWidth="0.8"
-          />
-          <rect
-            x="44"
-            y="15"
-            width="27"
-            height="18"
-            rx="1.5"
-            fill="none"
-            stroke="rgb(148 163 184)"
-            strokeWidth="0.9"
-          />
-          <circle
-            cx="49"
-            cy="20"
-            r="2"
-            fill="rgb(186 230 253)"
-            stroke="rgb(14 165 233)"
-            strokeWidth="0.7"
-          />
-          {/* Feature-card row. */}
-          {[9, 31, 53].map((x) => (
-            <rect
-              key={x}
-              x={x}
-              y="37"
-              width="18"
-              height="7"
-              rx="1.5"
-              fill="white"
-              stroke="rgb(148 163 184)"
-              strokeWidth="0.8"
-            />
-          ))}
-        </svg>
-      );
-    case 'storyboard':
-      // Six numbered scene frames with caption lines.
-      return (
-        <svg width="76" height="46" viewBox="0 0 80 50" aria-hidden>
+          {/* Elbow connectors: down from Home, across, down into each tier.
+              Hover story: the site's links wire up from Home down, tier by
+              tier, then a visitor's route lights up to its last page. */}
           {[
-            { x: 5, y: 5 },
-            { x: 31, y: 5 },
-            { x: 57, y: 5 },
-            { x: 5, y: 28 },
-            { x: 31, y: 28 },
-            { x: 57, y: 28 },
-          ].map((f, i) => (
-            <g key={i}>
-              <rect
-                x={f.x}
-                y={f.y}
-                width="18"
-                height="12"
-                rx="1.5"
-                fill="white"
-                stroke="rgb(14 165 233)"
-                strokeWidth="0.9"
-              />
-              <circle
-                cx={f.x + 1.5}
-                cy={f.y + 1.5}
-                r="2.6"
-                fill="rgb(186 230 253)"
-                stroke="rgb(14 165 233)"
-                strokeWidth="0.7"
-              />
-              <rect
-                x={f.x + 2}
-                y={f.y + 14.5}
-                width="14"
-                height="2.2"
-                rx="0.7"
-                fill="rgb(148 163 184)"
-              />
-            </g>
-          ))}
-        </svg>
-      );
-    case 'cloud-architecture':
-      // Edge cloud fanning through services into three data stores.
-      return (
-        <svg width="72" height="46" viewBox="0 0 80 50" aria-hidden>
-          {/* CDN cloud at the edge. */}
-          <path
-            d="M 32 12 Q 32 6 38 6 Q 40 2 45 3.5 Q 50 2 51 7 Q 56 8 54 12 Z"
-            fill="rgb(186 230 253)"
-            stroke="rgb(14 165 233)"
-            strokeWidth="1"
-          />
-          {/* Two service tiles. */}
-          <rect
-            x="18"
-            y="20"
-            width="16"
-            height="10"
-            rx="1.5"
-            fill="white"
-            stroke="rgb(14 165 233)"
-            strokeWidth="1"
-          />
-          <rect
-            x="46"
-            y="20"
-            width="16"
-            height="10"
-            rx="1.5"
-            fill="white"
-            stroke="rgb(14 165 233)"
-            strokeWidth="1"
-          />
-          {/* Three datastore cylinders. */}
-          {[10, 33, 56].map((x) => (
-            <g key={x}>
-              <path
-                d={`M ${x} 39 V 45 Q ${x + 7} 48.5 ${x + 14} 45 V 39`}
-                fill="white"
-                stroke="rgb(14 165 233)"
-                strokeWidth="0.9"
-              />
-              <ellipse
-                cx={x + 7}
-                cy="39"
-                rx="7"
-                ry="2.6"
-                fill="rgb(186 230 253)"
-                stroke="rgb(14 165 233)"
-                strokeWidth="0.9"
-              />
-            </g>
-          ))}
-          {/* Fan-out connectors. */}
-          <line x1="40" y1="12" x2="27" y2="20" stroke="rgb(100 116 139)" strokeWidth="0.8" />
-          <line x1="44" y1="12" x2="53" y2="20" stroke="rgb(100 116 139)" strokeWidth="0.8" />
-          <line x1="25" y1="30" x2="18" y2="37" stroke="rgb(100 116 139)" strokeWidth="0.8" />
-          <line x1="30" y1="30" x2="38" y2="37" stroke="rgb(100 116 139)" strokeWidth="0.8" />
-          <line x1="55" y1="30" x2="61" y2="37" stroke="rgb(100 116 139)" strokeWidth="0.8" />
-        </svg>
-      );
-    case 'uml-class':
-      // Three compartmented class boxes with a hollow inheritance triangle.
-      return (
-        <svg width="76" height="46" viewBox="0 0 80 50" aria-hidden>
-          {/* Parent class. */}
-          <g>
-            <rect
-              x="28"
-              y="3"
-              width="24"
-              height="16"
-              rx="1"
-              fill="white"
-              stroke="rgb(14 165 233)"
-              strokeWidth="1"
+            ['M 40 12 V 17 H 14 V 22 M 40 17 V 22 M 40 17 H 66 V 22', 0.8, 900],
+            ['M 14 30 V 34.5 H 8 V 39 M 14 34.5 H 20 V 39', 0.7, 1300],
+            ['M 40 30 V 34.5 H 34 V 39 M 40 34.5 H 46 V 39', 0.7, 1450],
+            ['M 66 30 V 34.5 H 60 V 39 M 66 34.5 H 72 V 39', 0.7, 1600],
+          ].map(([d, w, at]) => (
+            <path
+              key={at}
+              d={d as string}
+              pathLength="1"
+              fill="none"
+              stroke="rgb(100 116 139)"
+              strokeWidth={w}
+              className="pv-draw"
+              style={pv({ '--pv-at': `${at}ms`, '--pv-dur': '600ms' })}
             />
-            <rect
-              x="28"
-              y="3"
-              width="24"
-              height="5"
-              fill="rgb(186 230 253)"
+          ))}
+          <g className="pv-new" opacity="0" style={popGroup(2200)}>
+            <path
+              d="M 40 12 V 17 H 66 V 22 M 66 30 V 34.5 H 72 V 39"
+              pathLength="1"
+              fill="none"
               stroke="rgb(14 165 233)"
-              strokeWidth="0.8"
+              strokeWidth="1.6"
+              className="pv-draw"
+              style={pv({ '--pv-at': '2200ms', '--pv-dur': '900ms' })}
             />
-            <line x1="28" y1="13" x2="52" y2="13" stroke="rgb(14 165 233)" strokeWidth="0.8" />
           </g>
-          {/* Two subclasses. */}
-          {[8, 48].map((x) => (
-            <g key={x}>
-              <rect
-                x={x}
-                y="31"
-                width="24"
-                height="16"
-                rx="1"
-                fill="white"
-                stroke="rgb(14 165 233)"
-                strokeWidth="1"
-              />
-              <rect
-                x={x}
-                y="31"
-                width="24"
-                height="5"
-                fill="rgb(186 230 253)"
-                stroke="rgb(14 165 233)"
-                strokeWidth="0.8"
-              />
-              <line x1={x} y1="41" x2={x + 24} y2="41" stroke="rgb(14 165 233)" strokeWidth="0.8" />
-            </g>
-          ))}
-          {/* Inheritance edges meeting a hollow triangle at the parent. */}
-          <line x1="20" y1="31" x2="38" y2="23" stroke="rgb(100 116 139)" strokeWidth="0.9" />
-          <line x1="60" y1="31" x2="42" y2="23" stroke="rgb(100 116 139)" strokeWidth="0.9" />
-          <polygon
-            points="40,19 36.5,24.5 43.5,24.5"
-            fill="white"
-            stroke="rgb(100 116 139)"
-            strokeWidth="0.9"
-          />
-        </svg>
-      );
-    case 'state-machine':
-      // Initial dot → two states → bullseye final, event ticks between.
-      return (
-        <svg width="76" height="40" viewBox="0 0 80 40" aria-hidden>
-          <circle cx="7" cy="20" r="3.5" fill="rgb(15 23 42)" />
-          <rect
-            x="16"
-            y="12"
-            width="20"
-            height="16"
-            rx="8"
-            fill="rgb(186 230 253)"
-            stroke="rgb(14 165 233)"
-            strokeWidth="1"
-          />
-          <rect
-            x="46"
-            y="12"
-            width="20"
-            height="16"
-            rx="8"
-            fill="white"
-            stroke="rgb(14 165 233)"
-            strokeWidth="1"
-          />
-          <circle cx="74" cy="20" r="4.5" fill="white" stroke="rgb(15 23 42)" strokeWidth="1.1" />
-          <circle cx="74" cy="20" r="2.2" fill="rgb(15 23 42)" />
-          {/* Transitions. */}
-          <line x1="10.5" y1="20" x2="15" y2="20" stroke="rgb(100 116 139)" strokeWidth="1" />
-          <line x1="36" y1="20" x2="44" y2="20" stroke="rgb(100 116 139)" strokeWidth="1" />
-          <polygon points="45.5,20 42.5,18.4 42.5,21.6" fill="rgb(100 116 139)" />
-          <line x1="66" y1="20" x2="68.5" y2="20" stroke="rgb(100 116 139)" strokeWidth="1" />
-        </svg>
-      );
-    case 'floor-plan':
-      // A shell with a corridor through it: three rooms above, three
-      // below, furniture blocked in so the tile reads as a plan rather
-      // than as a grid of empty boxes.
-      return (
-        <svg width="76" height="46" viewBox="0 0 80 50" aria-hidden>
-          {/* Outer wall, drawn heavier than the partitions. */}
-          <rect
-            x="2"
-            y="3"
-            width="76"
-            height="44"
-            fill="white"
-            stroke="rgb(71 85 105)"
-            strokeWidth="1.8"
-          />
-          {/* Corridor walls + the partitions off them. */}
-          <line x1="2" y1="21" x2="78" y2="21" stroke="rgb(71 85 105)" strokeWidth="1" />
-          <line x1="2" y1="27" x2="78" y2="27" stroke="rgb(71 85 105)" strokeWidth="1" />
-          <line x1="36" y1="3" x2="36" y2="21" stroke="rgb(71 85 105)" strokeWidth="1" />
-          <line x1="58" y1="3" x2="58" y2="21" stroke="rgb(71 85 105)" strokeWidth="1" />
-          <line x1="34" y1="27" x2="34" y2="47" stroke="rgb(71 85 105)" strokeWidth="1" />
-          <line x1="52" y1="27" x2="52" y2="47" stroke="rgb(71 85 105)" strokeWidth="1" />
-          {/* Living room: sofa, coffee table, TV on the far wall. */}
-          <rect
-            x="6"
-            y="6"
-            width="14"
-            height="5"
-            rx="1"
-            fill="rgb(186 230 253)"
-            stroke="rgb(14 165 233)"
-            strokeWidth="0.8"
-          />
-          <rect
-            x="9"
-            y="13.5"
-            width="8"
-            height="3"
-            rx="0.8"
-            fill="white"
-            stroke="rgb(14 165 233)"
-            strokeWidth="0.8"
-          />
-          <rect
-            x="26"
-            y="16"
-            width="7"
-            height="2.5"
-            fill="rgb(14 165 233)"
-            stroke="rgb(14 165 233)"
-            strokeWidth="0.6"
-          />
-          {/* Two bedrooms: a double and a single. */}
-          <rect
-            x="39"
-            y="6"
-            width="11"
-            height="12"
-            rx="1"
-            fill="rgb(186 230 253)"
-            stroke="rgb(14 165 233)"
-            strokeWidth="0.8"
-          />
-          <line x1="39" y1="9" x2="50" y2="9" stroke="rgb(14 165 233)" strokeWidth="0.7" />
-          <rect
-            x="61"
-            y="6"
-            width="8"
-            height="11"
-            rx="1"
-            fill="rgb(186 230 253)"
-            stroke="rgb(14 165 233)"
-            strokeWidth="0.8"
-          />
-          <line x1="61" y1="9" x2="69" y2="9" stroke="rgb(14 165 233)" strokeWidth="0.7" />
-          {/* Kitchen: a counter run and a round table. */}
-          <rect
-            x="5"
-            y="30"
-            width="13"
-            height="3.5"
-            fill="white"
-            stroke="rgb(14 165 233)"
-            strokeWidth="0.8"
-          />
-          <circle
-            cx="23"
-            cy="39"
-            r="4"
-            fill="rgb(186 230 253)"
-            stroke="rgb(14 165 233)"
-            strokeWidth="0.8"
-          />
-          {/* Bathroom: tub + toilet. */}
-          <rect
-            x="37"
-            y="30"
-            width="12"
-            height="6"
-            rx="2"
-            fill="rgb(186 230 253)"
-            stroke="rgb(14 165 233)"
-            strokeWidth="0.8"
-          />
-          <circle
-            cx="39.5"
-            cy="42"
-            r="2.2"
-            fill="white"
-            stroke="rgb(14 165 233)"
-            strokeWidth="0.8"
-          />
-          {/* Study: desk + chair. */}
-          <rect
-            x="56"
-            y="31"
-            width="13"
-            height="4"
-            fill="white"
-            stroke="rgb(14 165 233)"
-            strokeWidth="0.8"
-          />
-          <circle
-            cx="62"
-            cy="39"
-            r="2.6"
-            fill="rgb(186 230 253)"
-            stroke="rgb(14 165 233)"
-            strokeWidth="0.8"
-          />
-        </svg>
-      );
-    case 'event-storming':
-      // The starter itself (spec/139 Phase 1): one orange domain event on a
-      // faint timeline, the first thing that happened.
-      return (
-        <svg width="76" height="40" viewBox="0 0 80 40" aria-hidden>
-          <line
-            x1="4"
-            y1="34"
-            x2="76"
-            y2="34"
-            stroke="rgb(148 163 184)"
-            strokeWidth="0.9"
-            strokeDasharray="3 2"
-          />
-          <polygon points="78,34 74,32.2 74,35.8" fill="rgb(148 163 184)" />
-          <rect
-            x="31"
-            y="7"
-            width="18"
-            height="18"
-            rx="1.5"
-            fill="rgb(253 186 116)"
-            stroke="rgb(249 115 22)"
-            strokeWidth="0.9"
-            transform="rotate(-3 40 16)"
-          />
-          {/* "Board Created", scribbled on the note. */}
-          <line x1="35" y1="14" x2="45" y2="14" stroke="rgb(154 52 18)" strokeWidth="1" />
-          <line x1="35" y1="18" x2="42" y2="18" stroke="rgb(154 52 18)" strokeWidth="1" />
         </svg>
       );
     default:
       return null;
   }
+}
+
+// Helpers for the hover stories (preview-motion.css).
+
+// A roadmap initiative card.
+function RoadCard(props: { x: number; y: number } & Omit<SVGProps<SVGRectElement>, 'x' | 'y'>) {
+  return (
+    <rect
+      width="14"
+      height="11"
+      rx="1.5"
+      fill="white"
+      stroke="rgb(148 163 184)"
+      strokeWidth="0.8"
+      {...props}
+    />
+  );
+}
+
+// An amber sticky (user story map, affinity map).
+function Sticky(props: { x: number; y: number } & Omit<SVGProps<SVGRectElement>, 'x' | 'y'>) {
+  return (
+    <rect
+      width="14"
+      height="9"
+      rx="1"
+      fill="rgb(254 243 199)"
+      stroke="rgb(253 230 138)"
+      strokeWidth="0.9"
+      {...props}
+    />
+  );
 }

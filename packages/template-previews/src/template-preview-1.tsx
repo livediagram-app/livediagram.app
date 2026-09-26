@@ -1,10 +1,13 @@
 import type { ReactElement } from 'react';
 import type { TemplateKind } from '@livediagram/templates';
 import { pv } from './motion';
+import { popGroup } from './story-parts';
 
 // Group 1 of 3 (mind maps / flowcharts). Static SVG preview tiles (one branch per
 // TemplateKind; see template-preview.tsx for who renders them). Split out of template-preview.tsx to keep each file under the
 // ~1000-line budget; TemplatePreview chains the groups with ??.
+// A story group hidden at rest that pops in at `at` (pv-new on a <g>, scaled
+// round its own box rather than the drawing's corner).
 export function templatePreviewGroup1(kind: TemplateKind): ReactElement | null {
   switch (kind) {
     case 'blank':
@@ -240,6 +243,8 @@ export function templatePreviewGroup1(kind: TemplateKind): ReactElement | null {
               fill="none"
               stroke="rgb(14 165 233)"
               strokeWidth="0.9"
+              // Hover story: the middle VP, who gains the new hire below.
+              {...(x === 33 ? { className: 'pv-pulse', style: pv({ '--pv-at': '2100ms' }) } : {})}
             />
           ))}
           {/* 3rd level: 2 reports under each VP */}
@@ -298,6 +303,32 @@ export function templatePreviewGroup1(kind: TemplateKind): ReactElement | null {
               />
             </g>
           ))}
+          {/* Hover story: a new hire drops in beside the middle VP's team and
+              their reporting line joins up. */}
+          <rect
+            className="pv-arrive"
+            opacity="0"
+            x="48.5"
+            y="40"
+            width="8"
+            height="5"
+            rx="1"
+            fill="rgb(186 230 253)"
+            stroke="rgb(14 165 233)"
+            strokeWidth="0.8"
+            style={pv({ '--pv-from-y': '-14px', '--pv-from-x': '-8px', '--pv-at': '900ms' })}
+          />
+          <line
+            className="pv-new"
+            opacity="0"
+            x1="40"
+            y1="26"
+            x2="52.5"
+            y2="40"
+            stroke="rgb(100 116 139)"
+            strokeWidth="0.7"
+            style={pv({ '--pv-at': '1700ms' })}
+          />
         </svg>
       );
     case 'flowchart':
@@ -402,9 +433,32 @@ export function templatePreviewGroup1(kind: TemplateKind): ReactElement | null {
                   fill="rgb(254 243 199)"
                   stroke="rgb(253 224 71)"
                   strokeWidth="0.5"
+                  // Hover story: the note that wins the vote.
+                  {...(col.x === 30 && sy === 22
+                    ? { className: 'pv-pulse', style: pv({ '--pv-at': '2500ms' }) }
+                    : {})}
                 />
               ))}
             </g>
+          ))}
+          {/* Hover story: the team dot-votes; three dots pile onto one note in
+              the middle column, one lands elsewhere, and the winner stands out. */}
+          {[
+            { cx: 35, cy: 25.5, at: 1000 },
+            { cx: 61, cy: 15.5, at: 1250 },
+            { cx: 39, cy: 25.5, at: 1500 },
+            { cx: 43, cy: 25.5, at: 1900 },
+          ].map((d) => (
+            <circle
+              key={`${d.cx}-${d.cy}`}
+              className="pv-new"
+              opacity="0"
+              cx={d.cx}
+              cy={d.cy}
+              r="1.6"
+              fill="rgb(79 70 229)"
+              style={pv({ '--pv-at': `${d.at}ms` })}
+            />
           ))}
         </svg>
       );
@@ -496,6 +550,41 @@ export function templatePreviewGroup1(kind: TemplateKind): ReactElement | null {
             <polygon points="52.5,23.5 55,25 52.5,26.5" />
             <polygon points="61,35 62.5,37.5 64,35" />
           </g>
+          {/* Hover story: a piece of work travels the flow, handed from lane to
+              lane: from the start to the step, down to the decision, then on
+              to the next lane's step and down to the end. */}
+          <g className="pv-new" opacity="0" style={popGroup(900)}>
+            <g className="pv-leave" style={pv({ '--pv-at': '2150ms', '--pv-dur': '200ms' })}>
+              <circle
+                className="pv-route"
+                cx="21"
+                cy="9"
+                r="2"
+                fill="rgb(2 132 199)"
+                style={pv({
+                  '--pv-dx': '20.5px',
+                  '--pv-dy2': '16px',
+                  '--pv-dx2': '20.5px',
+                  '--pv-at': '950ms',
+                })}
+              />
+            </g>
+          </g>
+          <g className="pv-new" opacity="0" style={popGroup(2150)}>
+            <circle
+              className="pv-route"
+              cx="41.5"
+              cy="25"
+              r="2"
+              fill="rgb(2 132 199)"
+              style={pv({
+                '--pv-dx': '21px',
+                '--pv-dx2': '21px',
+                '--pv-dy2': '16px',
+                '--pv-at': '2200ms',
+              })}
+            />
+          </g>
         </svg>
       );
     case 'decision-tree':
@@ -542,8 +631,33 @@ export function templatePreviewGroup1(kind: TemplateKind): ReactElement | null {
               fill="rgb(224 242 254)"
               stroke="rgb(14 165 233)"
               strokeWidth="0.9"
+              // Hover story: the outcome the answers lead to.
+              {...(x === 24 ? { className: 'pv-pulse', style: pv({ '--pv-at': '2500ms' }) } : {})}
             />
           ))}
+          {/* Hover story: answering the questions lights one path down the
+              tree, root to branch to a single outcome. */}
+          <g
+            className="pv-new"
+            opacity="0"
+            fill="none"
+            stroke="rgb(2 132 199)"
+            strokeWidth="1.6"
+            style={popGroup(1000)}
+          >
+            <path
+              className="pv-draw"
+              pathLength="1"
+              d="M40 14 V18 H23 V22"
+              style={pv({ '--pv-at': '1000ms', '--pv-dur': '600ms' })}
+            />
+            <path
+              className="pv-draw"
+              pathLength="1"
+              d="M23 30 V35 H31 V40"
+              style={pv({ '--pv-at': '1800ms', '--pv-dur': '600ms' })}
+            />
+          </g>
         </svg>
       );
     case 'approval-workflow':
@@ -584,6 +698,8 @@ export function templatePreviewGroup1(kind: TemplateKind): ReactElement | null {
             fill="none"
             stroke="rgb(14 165 233)"
             strokeWidth="0.9"
+            className="pv-pulse"
+            style={pv({ '--pv-at': '3000ms' })}
           />
           <line x1="19" y1="18.5" x2="25" y2="18.5" stroke="rgb(100 116 139)" strokeWidth="0.8" />
           <line x1="41" y1="18.5" x2="47" y2="18.5" stroke="rgb(100 116 139)" strokeWidth="0.8" />
@@ -595,6 +711,40 @@ export function templatePreviewGroup1(kind: TemplateKind): ReactElement | null {
             strokeWidth="0.8"
             strokeDasharray="2 1.5"
           />
+          {/* Hover story: the request travels to the reviewer, waits there a
+              beat, passes the decision and lands as approved, ticked. */}
+          <g className="pv-new" opacity="0" style={popGroup(900)}>
+            <g className="pv-leave" style={pv({ '--pv-at': '2750ms', '--pv-dur': '200ms' })}>
+              <rect
+                className="pv-route"
+                x="9.5"
+                y="16.5"
+                width="3"
+                height="4"
+                rx="0.5"
+                fill="rgb(2 132 199)"
+                style={pv({
+                  '--pv-dx': '22px',
+                  '--pv-dx2': '61px',
+                  '--pv-at': '950ms',
+                  '--pv-dur': '1800ms',
+                })}
+              />
+            </g>
+          </g>
+          <g className="pv-new" opacity="0" style={popGroup(2750)}>
+            <path
+              className="pv-draw"
+              pathLength="1"
+              d="M69.5 18.5 L71.5 20.5 L75 16.5"
+              fill="none"
+              stroke="rgb(22 163 74)"
+              strokeWidth="1.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              style={pv({ '--pv-at': '2750ms', '--pv-dur': '350ms' })}
+            />
+          </g>
         </svg>
       );
     case 'data-flow':
@@ -649,6 +799,31 @@ export function templatePreviewGroup1(kind: TemplateKind): ReactElement | null {
           <line x1="19" y1="19.5" x2="30" y2="19.5" stroke="rgb(100 116 139)" strokeWidth="0.8" />
           <line x1="46" y1="19.5" x2="60" y2="19.5" stroke="rgb(100 116 139)" strokeWidth="0.8" />
           <line x1="38" y1="27.5" x2="38" y2="38" stroke="rgb(100 116 139)" strokeWidth="0.8" />
+          {/* Hover story: data keeps moving: a packet in from the source, one
+              out to the store, one down to the output, each on its own loop. */}
+          {[
+            { x: 19.5, y: 18.3, dx: '8px', dy: '0px', at: 900 },
+            { x: 46.5, y: 18.3, dx: '11px', dy: '0px', at: 1400 },
+            { x: 36.8, y: 28.5, dx: '0px', dy: '7px', at: 1900 },
+          ].map((p) => (
+            <rect
+              key={p.at}
+              className="pv-travel"
+              opacity="0"
+              x={p.x}
+              y={p.y}
+              width="2.4"
+              height="2.4"
+              rx="0.4"
+              fill="rgb(2 132 199)"
+              style={pv({
+                '--pv-dx': p.dx,
+                '--pv-dy': p.dy,
+                '--pv-at': `${p.at}ms`,
+                '--pv-dur': '1300ms',
+              })}
+            />
+          ))}
         </svg>
       );
     default:
