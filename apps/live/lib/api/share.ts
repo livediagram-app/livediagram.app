@@ -44,11 +44,15 @@ async function _apiLoadShared(
   if (res.status === 401 || res.status === 403) {
     return { passwordRequired: true, invalid: res.status === 403 };
   }
-  const body = await expectOkOrNull<DiagramResponse & { role?: ShareRole }>(res, 'load shared');
+  const body = await expectOkOrNull<DiagramResponse & { role?: ShareRole; tabId?: string | null }>(
+    res,
+    'load shared',
+  );
   if (!body) return null;
   return {
     diagram: body.diagram,
     role: body.role === 'view' ? 'view' : 'edit',
+    tabId: typeof body.tabId === 'string' ? body.tabId : null,
   };
 }
 export const apiLoadShared = dedupeInFlight(

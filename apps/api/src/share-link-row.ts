@@ -1,7 +1,7 @@
 import type { ShareLink as ShareLinkDTO, ShareLinkExpiry } from '@livediagram/api-schema';
 
 // share_links row shape as read from D1 (migration 0003 + the expiry
-// columns from 0020). `role` arrives as a free-form string here, but
+// columns from 0020, the tab scope from 0048). `role` arrives as a free-form string here, but
 // the wire-format DTO is the narrow union 'edit' | 'view'. The mapper
 // below normalises. `expiry` / `expires_at` are NULL on every
 // pre-0020 row (= never expires).
@@ -13,6 +13,8 @@ export type ShareLinkRow = {
   created_at: number;
   expiry: string | null;
   expires_at: number | null;
+  // Tab scope (docs/specs/013-workspace/tab-scoped-share-links.md). NULL = All tabs.
+  tab_id: string | null;
 };
 
 // Pure mapper from D1 row to wire-format DTO. Pulled out of db.ts
@@ -44,6 +46,7 @@ export function rowToShareLink(row: ShareLinkRow): ShareLinkDTO {
     createdAt: row.created_at,
     expiry: normaliseExpiry(row.expiry),
     expiresAt: row.expires_at ?? null,
+    tabId: row.tab_id ?? null,
   };
 }
 

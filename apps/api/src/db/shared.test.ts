@@ -16,13 +16,14 @@ const sharedRow = (over: Record<string, unknown> = {}) => ({
   share_code: 'code-1',
   owner_name: 'Ada',
   owner_color: '#ff0000',
+  tab_id: null,
   ...over,
 });
 
 describe('recordSharedAccess (docs/specs/014-identity/profile-and-email-notifications.md + docs/specs/017-telemetry/telemetry.md first-visit signal)', () => {
   it('reports a first visit when its insert creates the row, and writes nothing else', async () => {
     const db = fakeD1(({ sql }) => (sql.includes('INSERT OR IGNORE') ? { changes: 1 } : {}));
-    expect(await recordSharedAccess(db.env, 'visitor-1', 'diag-1', 'edit')).toBe(true);
+    expect(await recordSharedAccess(db.env, 'visitor-1', 'diag-1', 'edit', null)).toBe(true);
     const insert = db.one('INSERT OR IGNORE INTO shared_with');
     expect(insert.bindings.slice(0, 3)).toEqual(['visitor-1', 'diag-1', 'edit']);
     expect(db.matching('UPDATE shared_with')).toHaveLength(0);
@@ -32,15 +33,27 @@ describe('recordSharedAccess (docs/specs/014-identity/profile-and-email-notifica
     // The email and the Diagram·Joined count fire once per person, but the
     // row has to keep up with a link that was re-issued at a different role.
     const db = fakeD1(({ sql }) => (sql.includes('INSERT OR IGNORE') ? { changes: 0 } : {}));
-    expect(await recordSharedAccess(db.env, 'visitor-1', 'diag-1', 'view')).toBe(false);
+    expect(await recordSharedAccess(db.env, 'visitor-1', 'diag-1', 'view', null)).toBe(false);
     const update = db.one('UPDATE shared_with');
     expect(update.bindings[0]).toBe('view');
-    expect(update.bindings.slice(2)).toEqual(['visitor-1', 'diag-1']);
+    expect(update.bindings.slice(-2)).toEqual(['visitor-1', 'diag-1']);
+  });
+
+  // docs/specs/013-workspace/tab-scoped-share-links.md: the scope follows the same last-visit-wins rule as role.
+  it('records the scope the visitor was granted, on first and repeat visits', async () => {
+    const first = fakeD1(({ sql }) => (sql.includes('INSERT OR IGNORE') ? { changes: 1 } : {}));
+    await recordSharedAccess(first.env, 'visitor-1', 'diag-1', 'view', 'tab-2');
+    expect(first.one('INSERT OR IGNORE INTO shared_with').bindings).toContain('tab-2');
+    const repeat = fakeD1(({ sql }) => (sql.includes('INSERT OR IGNORE') ? { changes: 0 } : {}));
+    await recordSharedAccess(repeat.env, 'visitor-1', 'diag-1', 'edit', null);
+    const update = repeat.one('UPDATE shared_with');
+    expect(update.sql).toContain('tab_id = ?');
+    expect(update.bindings).toEqual(['edit', null, expect.any(Number), 'visitor-1', 'diag-1']);
   });
 
   it('never reads first-ness from a separate SELECT (a race would double count)', async () => {
     const db = fakeD1(() => ({ changes: 1 }));
-    await recordSharedAccess(db.env, 'visitor-1', 'diag-1', 'edit');
+    await recordSharedAccess(db.env, 'visitor-1', 'diag-1', 'edit', null);
     expect(db.matching('SELECT')).toHaveLength(0);
   });
 });
@@ -72,8 +85,21 @@ describe('listSharedWith (docs/specs/008-canvas/canvas-and-palette.md Shared wit
         shareCode: 'code-1',
         ownerName: 'Ada',
         ownerColor: '#ff0000',
+        tabId: null,
       },
     ]);
+  });
+
+  // docs/specs/013-workspace/tab-scoped-share-links.md: the code handed back must carry exactly the scope the
+  // visitor was given. An All-tabs code for a visitor who was shown one tab
+  // would open the rest of the diagram to them.
+  it('hands back a code of the granted scope, never a broader one', async () => {
+    const db = fakeD1(() => ({ all: [sharedRow({ tab_id: 'tab-2' })] }));
+    const [item] = await listSharedWith(db.env, 'visitor-1');
+    expect(item!.tabId).toBe('tab-2');
+    const sql = db.one('FROM shared_with s').sql;
+    expect(sql).toContain('share_links.tab_id IS s.tab_id');
+    expect(sql).toContain('share_links.role = s.role');
   });
 
   it('drops rows whose share has since been revoked', async () => {

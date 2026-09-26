@@ -54,9 +54,13 @@ export async function handleShare(ctx: RouteContext): Promise<Response> {
       // tracking is a nice-to-have.
       const visitor = resolveOwner();
       if (visitor && visitor !== d.ownerId) {
-        const firstVisit = await recordSharedAccess(env, visitor, d.id, link.role).catch(
-          () => false,
-        );
+        const firstVisit = await recordSharedAccess(
+          env,
+          visitor,
+          d.id,
+          link.role,
+          link.tabId,
+        ).catch(() => false);
         // docs/specs/014-identity/profile-and-email-notifications.md: tell the owner the first time a new person opens
         // their shared diagram. Best-effort + off the response path; the
         // notify layer no-ops when email is off, the owner is a guest, or

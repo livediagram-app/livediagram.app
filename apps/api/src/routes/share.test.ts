@@ -89,6 +89,7 @@ function shareLink(diagramId: string) {
     createdAt: 0,
     expiry: 'never' as const,
     expiresAt: null,
+    tabId: null,
   };
 }
 

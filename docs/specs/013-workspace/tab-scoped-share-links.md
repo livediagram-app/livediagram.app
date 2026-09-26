@@ -27,20 +27,20 @@ The `ShareLink` DTO gains `tabId: string | null`, and `SharedWithItem` gains `ta
 
 A scoped link grants its role **on its tab only**. The worker enforces this in one place, the diagram access resolution: it answers not just "may this caller read/edit" but "with what tab scope". Every route applies the scope:
 
-| Door | Scoped visitor gets |
-| --- | --- |
-| `GET /api/share/:code` | `{ diagram, role, tabId }`, with the diagram redacted (see [Redaction](#redaction)). |
-| `GET /api/diagrams/:id` | The same redacted diagram. |
-| `PUT /api/diagrams/:id` (rename, reorder, tab folders, deck) | 403. The diagram's structure isn't theirs to change. |
-| `GET/PUT/DELETE /api/diagrams/:id/tabs/:tabId` | Their tab only, with the role's usual rules. Another tab id is a 404 (no existence leak). DELETE of their own tab is 403: a scoped link can't delete the tab it's scoped to. |
-| Comment `POST`/`DELETE` | Their tab only; otherwise 404. |
-| Change log `GET` | Only entries on their tab. |
-| Change log `POST`/`DELETE` | Only entries on their tab; otherwise 404. |
-| `POST /api/diagrams/:id/copy` | A copy holding **only their tab**. |
-| `GET /api/diagrams/:id/thumbnail` | Their tab's image, not the first-tab snapshot. |
-| `GET /api/images/:id?d=` | Only images referenced by their tab. |
-| `GET /api/share/:code/image.svg` | Always their tab. A `?tab=` naming another tab is a 404. |
-| Room ticket / WS upgrade | Admitted with the role and the scope (see [Realtime](#realtime)). |
+| Door                                                         | Scoped visitor gets                                                                                                                                                          |
+| ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/share/:code`                                       | `{ diagram, role, tabId }`, with the diagram redacted (see [Redaction](#redaction)).                                                                                         |
+| `GET /api/diagrams/:id`                                      | The same redacted diagram.                                                                                                                                                   |
+| `PUT /api/diagrams/:id` (rename, reorder, tab folders, deck) | 403. The diagram's structure isn't theirs to change.                                                                                                                         |
+| `GET/PUT/DELETE /api/diagrams/:id/tabs/:tabId`               | Their tab only, with the role's usual rules. Another tab id is a 404 (no existence leak). DELETE of their own tab is 403: a scoped link can't delete the tab it's scoped to. |
+| Comment `POST`/`DELETE`                                      | Their tab only; otherwise 404.                                                                                                                                               |
+| Change log `GET`                                             | Only entries on their tab.                                                                                                                                                   |
+| Change log `POST`/`DELETE`                                   | Only entries on their tab; otherwise 404.                                                                                                                                    |
+| `POST /api/diagrams/:id/copy`                                | A copy holding **only their tab**.                                                                                                                                           |
+| `GET /api/diagrams/:id/thumbnail`                            | Their tab's image, not the first-tab snapshot.                                                                                                                               |
+| `GET /api/images/:id?d=`                                     | Only images referenced by their tab.                                                                                                                                         |
+| `GET /api/share/:code/image.svg`                             | Always their tab. A `?tab=` naming another tab is a 404.                                                                                                                     |
+| Room ticket / WS upgrade                                     | Admitted with the role and the scope (see [Realtime](#realtime)).                                                                                                            |
 
 Holding several links is never merged: each request is judged on the code it carries.
 

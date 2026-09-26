@@ -93,6 +93,7 @@ describe('canEditDiagram', () => {
       createdAt: 0,
       expiry: 'never',
       expiresAt: null,
+      tabId: null,
     });
     const allowed = await canEditDiagram(FAKE_ENV, 'diag-1', null, 'ABC23456', 'owner-a');
     expect(allowed).toBe(false);
@@ -110,6 +111,7 @@ describe('canEditDiagram', () => {
       createdAt: 0,
       expiry: 'never',
       expiresAt: null,
+      tabId: null,
     });
     const allowed = await canEditDiagram(FAKE_ENV, 'diag-1', null, 'VIEW2345', 'owner-a');
     expect(allowed).toBe(false);
@@ -123,6 +125,7 @@ describe('canEditDiagram', () => {
       createdAt: 0,
       expiry: 'never',
       expiresAt: null,
+      tabId: null,
     });
     const allowed = await canEditDiagram(FAKE_ENV, 'diag-1', null, 'EDIT2345', 'owner-a');
     expect(allowed).toBe(true);
@@ -168,6 +171,7 @@ describe('canReadDiagram', () => {
       createdAt: 0,
       expiry: 'never',
       expiresAt: null,
+      tabId: null,
     });
     const allowed = await canReadDiagram(FAKE_ENV, 'diag-1', null, 'ABC23456', 'owner-a');
     expect(allowed).toBe(false);
@@ -186,6 +190,7 @@ describe('canReadDiagram', () => {
       createdAt: 0,
       expiry: 'never',
       expiresAt: null,
+      tabId: null,
     });
     const allowed = await canReadDiagram(FAKE_ENV, 'diag-1', null, 'VIEW2345', 'owner-a');
     expect(allowed).toBe(true);
@@ -202,6 +207,7 @@ describe('canReadDiagram', () => {
       createdAt: 0,
       expiry: 'never',
       expiresAt: null,
+      tabId: null,
     });
     const allowed = await canReadDiagram(FAKE_ENV, 'diag-1', null, 'EDIT2345', 'owner-a');
     expect(allowed).toBe(true);
@@ -218,6 +224,7 @@ describe('share password gate (docs/specs/013-workspace/share-password.md)', () 
     createdAt: 0,
     expiry: 'never',
     expiresAt: null,
+    tabId: null,
   };
 
   it('denies a share-code edit when the password is required but absent', async () => {

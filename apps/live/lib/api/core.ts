@@ -123,7 +123,9 @@ export type ParticipantResponse = {
 // supplies the matching password; `invalid` is true only when a wrong
 // password was submitted (vs none yet), so the gate can show an error.
 export type SharedDiagramResolution =
-  { diagram: Diagram; role: ShareRole } | { passwordRequired: true; invalid: boolean };
+  // `tabId`: the tab a tab-scoped link opens (docs/specs/013-workspace/tab-scoped-share-links.md); null = All tabs.
+  | { diagram: Diagram; role: ShareRole; tabId: string | null }
+  | { passwordRequired: true; invalid: boolean };
 
 // Hybrid identity (docs/specs/014-identity/auth-and-guest-access.md, docs/specs/015-api/api.md). When a token provider has been
 // registered via `setTokenProvider` and resolves to a non-null Clerk

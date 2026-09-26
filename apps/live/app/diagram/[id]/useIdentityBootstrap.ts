@@ -331,7 +331,7 @@ export function useIdentityBootstrap(opts: {
         const accepted = getSessionSharePassword();
         if (accepted) writeCachedSharePassword(shareCodeParam, accepted);
         {
-          const { diagram: fetched, role } = resolution;
+          const { diagram: fetched, role, tabId: scopeTabId } = resolution;
           const session = resolveDiagramSession({
             diagramOwnerId: fetched.ownerId,
             selfId: self.id,
@@ -395,6 +395,7 @@ export function useIdentityBootstrap(opts: {
                       savedAt: fetched.savedAt,
                       role,
                       shareCode: shareCodeParam,
+                      tabId: scopeTabId,
                       ownerName: fetched.ownerName ?? null,
                       ownerColor: fetched.ownerColor ?? null,
                     },

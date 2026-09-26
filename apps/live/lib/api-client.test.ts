@@ -158,7 +158,13 @@ describe('apiLoadShared password gate (docs/specs/013-workspace/share-password.m
   it('resolves the diagram + role on 200', async () => {
     stubFetch(200, { diagram: { id: 'd1' }, role: 'view' });
     const res = await apiLoadShared('CODE2345', 'guest-4');
-    expect(res).toMatchObject({ role: 'view', diagram: { id: 'd1' } });
+    expect(res).toMatchObject({ role: 'view', diagram: { id: 'd1' }, tabId: null });
+  });
+
+  it("carries a tab-scoped link's tab (docs/specs/013-workspace/tab-scoped-share-links.md)", async () => {
+    stubFetch(200, { diagram: { id: 'd1' }, role: 'edit', tabId: 'tab-2' });
+    const res = await apiLoadShared('CODE2345', 'guest-5');
+    expect(res).toMatchObject({ role: 'edit', tabId: 'tab-2' });
   });
 });
 
