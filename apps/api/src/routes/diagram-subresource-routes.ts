@@ -5,7 +5,7 @@
 
 import type { Tab } from '@livediagram/diagram';
 import { applyElementDelta, isValidTab, preferNewerQaAll } from '@livediagram/diagram';
-import { mergeRoomLedger, relayElementDelta } from '../room-client';
+import { broadcastShareOp, mergeRoomLedger, relayElementDelta } from '../room-client';
 import { MAX_TAB_BYTES, bodyExceedsCap } from '../limits';
 import {
   findCommentHost,
@@ -17,6 +17,7 @@ import {
 import { emailEnabled } from '../email/client';
 import { notifyNewComment } from '../email/notifications';
 import {
+  deleteShareLinksForTab,
   deleteTabRow,
   diagramsContainingTab,
   getDiagram,
@@ -40,6 +41,7 @@ import { handleDiagramShareRoutes } from './diagram-share-routes';
 import { handleQaBoardRoute } from './qa-board-routes';
 import {
   gateEdit,
+  gateGrant,
   gateRead,
   ownsDiagram,
   requireOwner,
@@ -75,8 +77,11 @@ export async function handleDiagramSubresources(ctx: RouteContext): Promise<Resp
     if (!existing) return notFound();
 
     if (request.method === 'GET') {
-      const allowed = await gateRead(ctx, id, existing.ownerId, existing.teamId);
-      if (!allowed) return forbidden();
+      // Naming the tab confines a tab-scoped link to its own tab
+      // (docs/specs/013-workspace/tab-scoped-share-links.md). Every other tab reads as missing: 404, no
+      // existence leak.
+      const allowed = await gateRead(ctx, id, existing.ownerId, existing.teamId, tabId);
+      if (!allowed) return deniedOnTab(ctx, existing);
       const tab = await getTab(env, id, tabId);
       if (!tab) return notFound();
       // Blank other people's comment author ids before handing the tab
@@ -112,8 +117,9 @@ export async function handleDiagramSubresources(ctx: RouteContext): Promise<Resp
       return json({ tab: safe });
     }
 
-    // Writes below: owner or edit-role share visitor only.
-    const allowed = await gateEdit(ctx, id, existing.ownerId, existing.teamId);
+    // Writes below: owner or edit-role share visitor only, and a tab-scoped
+    // visitor on their own tab only.
+    const allowed = await gateEdit(ctx, id, existing.ownerId, existing.teamId, tabId);
     if (!allowed) return forbidden();
     if (request.method === 'PUT') {
       const received = (await request.json()) as Tab;
@@ -247,7 +253,17 @@ export async function handleDiagramSubresources(ctx: RouteContext): Promise<Resp
       });
     }
     if (request.method === 'DELETE') {
+      // A tab-scoped link can't delete the tab it is scoped to: that would
+      // end its own link, and the diagram's structure isn't the visitor's.
+      const grant = await gateGrant(ctx, id, existing.ownerId, existing.teamId);
+      if (grant?.tabScope !== null) return forbidden();
       await deleteTabRow(env, id, tabId);
+      // The links scoped to it die with it (docs/specs/013-workspace/tab-scoped-share-links.md), and their
+      // holders leave the editor as on a revoke.
+      const revoked = await deleteShareLinksForTab(env, id, tabId);
+      for (const code of revoked) {
+        ctx.waitUntil?.(broadcastShareOp(env, id, { kind: 'share-revoked', code }));
+      }
       return noContent();
     }
   }
@@ -272,8 +288,8 @@ export async function handleDiagramSubresources(ctx: RouteContext): Promise<Resp
     if (owner instanceof Response) return owner;
     const existing = await getDiagram(env, id);
     if (!existing) return notFound();
-    const allowed = await gateRead(ctx, id, existing.ownerId, existing.teamId);
-    if (!allowed) return forbidden();
+    const allowed = await gateRead(ctx, id, existing.ownerId, existing.teamId, tabId);
+    if (!allowed) return deniedOnTab(ctx, existing);
     let body: { elementId?: unknown; text?: unknown };
     try {
       body = (await request.json()) as { elementId?: unknown; text?: unknown };
@@ -358,8 +374,8 @@ export async function handleDiagramSubresources(ctx: RouteContext): Promise<Resp
     if (owner instanceof Response) return owner;
     const existing = await getDiagram(env, id);
     if (!existing) return notFound();
-    const allowed = await gateRead(ctx, id, existing.ownerId, existing.teamId);
-    if (!allowed) return forbidden();
+    const allowed = await gateRead(ctx, id, existing.ownerId, existing.teamId, tabId);
+    if (!allowed) return deniedOnTab(ctx, existing);
     const tab = await getTab(env, id, tabId);
     if (!tab) return notFound();
     // Locate the comment + confirm authorship before mutating anything.
@@ -436,4 +452,16 @@ export async function handleDiagramSubresources(ctx: RouteContext): Promise<Resp
   }
 
   return null;
+}
+
+// A refused per-tab request. A caller holding SOME grant on the diagram was
+// refused this tab because their link is scoped to another one
+// (docs/specs/013-workspace/tab-scoped-share-links.md): the tab reads as missing, 404, so its existence
+// doesn't leak. Anyone else gets the usual 403.
+async function deniedOnTab(
+  ctx: RouteContext,
+  diagram: { id: string; ownerId: string; teamId: string | null },
+): Promise<Response> {
+  const grant = await gateGrant(ctx, diagram.id, diagram.ownerId, diagram.teamId);
+  return grant ? notFound() : forbidden();
 }

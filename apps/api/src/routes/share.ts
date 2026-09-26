@@ -12,7 +12,7 @@ import { forbidden, json, notFound, svgImage } from '../responses';
 import { reportServerEvent } from '../server-telemetry';
 import { sharePasswordStatus } from '../auth/share-access';
 import { getDiagramTabImageSvg, getDiagramThumbnailSvg } from '../thumbnail';
-import { redactDiagramForReader } from '../redact-diagram';
+import { redactDiagramForReader, redactDiagramForScope } from '../redact-diagram';
 import { sharePasswordOf, type RouteContext } from './context';
 
 // Resolve a share code to its diagram + role. Used by visitors
@@ -82,7 +82,9 @@ export async function handleShare(ctx: RouteContext): Promise<Response> {
           );
         }
       }
-      return json({ diagram: redactDiagramForReader(d, visitor), role: link.role });
+      // A tab-scoped link (docs/specs/013-workspace/tab-scoped-share-links.md) sees its tab; the rest are locked.
+      const diagram = redactDiagramForScope(redactDiagramForReader(d, visitor), link.tabId);
+      return json({ diagram, role: link.role, tabId: link.tabId });
     }
     // No active link resolves this code: expired, revoked, or never
     // existed. `getShareLink` (above) is the single authority — it
@@ -120,7 +122,12 @@ async function handleShareImage(ctx: RouteContext, code: string): Promise<Respon
   // cached first-tab snapshot (the default, shared with the Explorer
   // thumbnail). An unknown tab id resolves to null below → 404, same as
   // an empty diagram, so a bad param can't leak another diagram's tab.
-  const tabId = new URL(request.url).searchParams.get('tab');
+  //
+  // A tab-scoped link (docs/specs/013-workspace/tab-scoped-share-links.md) always renders its own tab: with no
+  // `?tab=` it picks that tab, and any other tab is a 404 before rendering.
+  const asked = new URL(request.url).searchParams.get('tab');
+  if (link.tabId !== null && asked !== null && asked !== link.tabId) return notFound();
+  const tabId = link.tabId ?? asked;
   const svg = tabId
     ? await getDiagramTabImageSvg(env, d, tabId)
     : await getDiagramThumbnailSvg(env, d);

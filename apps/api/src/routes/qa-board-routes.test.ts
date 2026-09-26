@@ -117,6 +117,16 @@ describe('handleQaBoardRoute', () => {
     expect(res!.status).toBe(403);
   });
 
+  // docs/specs/013-workspace/tab-scoped-share-links.md: the board lives on a tab, so both gates name it and
+  // a link scoped to another tab is refused.
+  it("names the board's tab to both gates", async () => {
+    const { call } = setup();
+    await call({ elementId: 'b1', action: { type: 'vote', noteId: 'n', on: true } });
+    expect(gates.gateRead).toHaveBeenCalledWith(expect.anything(), 'd1', 'owner-0', null, 't1');
+    await call({ elementId: 'b1', action: { type: 'clear' } });
+    expect(gates.gateEdit).toHaveBeenCalledWith(expect.anything(), 'd1', 'owner-0', null, 't1');
+  });
+
   it('rejects a malformed action before touching the room', async () => {
     const { call, sent } = setup();
     expect((await call({ elementId: 'b1', action: { type: 'nuke' } }))!.status).toBe(400);

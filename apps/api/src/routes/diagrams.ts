@@ -50,8 +50,8 @@ import {
   payloadTooLarge,
   svgImage,
 } from '../responses';
-import { getDiagramThumbnailSvg } from '../thumbnail';
-import { redactDiagramForReader } from '../redact-diagram';
+import { getDiagramTabImageSvg, getDiagramThumbnailSvg } from '../thumbnail';
+import { redactDiagramForReader, redactDiagramForScope } from '../redact-diagram';
 import { emailEnabled } from '../email/client';
 import { notifyMilestone } from '../email/notifications';
 import {
@@ -69,9 +69,9 @@ import { handleDiagramSubresources } from './diagram-subresource-routes';
 import type { ChangeLogEntryDTO, DiagramDTO } from '../types';
 import {
   gateEdit,
-  gateRead,
+  gateGrant,
   ownsDiagram,
-  requireDiagramAccess,
+  requireDiagramGrant,
   requireOwnedDiagram,
   requireOwner,
   shareCodeOf,
@@ -196,15 +196,19 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       // 404 (not 403) so a guessed UUID can't probe existence.
       const d = await getDiagram(env, id);
       if (!d) return notFound();
-      const allowed = await gateRead(ctx, id, d.ownerId, d.teamId);
+      const grant = await gateGrant(ctx, id, d.ownerId, d.teamId);
       // Redacted for every non-owner, exactly as the share-code resolver
       // does (docs/specs/014-identity/auth-and-guest-access.md): the gate above admits any valid share code, view
       // or edit, so this is the same audience — and a guest owner's id IS
       // their credential. This door was returning it intact while the
       // share door blanked it. See redact-diagram.ts.
-      return allowed
-        ? json({ diagram: redactDiagramForReader(d, ctx.resolveOwner()) })
-        : notFound();
+      // A tab-scoped visitor (docs/specs/013-workspace/tab-scoped-share-links.md) sees the other tabs locked.
+      if (!grant) return notFound();
+      const diagram = redactDiagramForScope(
+        redactDiagramForReader(d, ctx.resolveOwner()),
+        grant.tabScope,
+      );
+      return json({ diagram });
     }
     if (request.method === 'PUT') {
       // Metadata-only PUT now that tabs live in their own table.
@@ -361,18 +365,27 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       // (view-role visitors can fork their own copy, so this
       // is a read check, not an edit check). The third leg is
       // copy-specific so it stays inline.
-      let allowed = await gateRead(ctx, id, source.ownerId, source.teamId);
-      if (!allowed) {
-        const sharedRows = await listSharedWith(env, owner);
-        if (sharedRows.some((s) => s.id === id)) allowed = true;
+      //
+      // Either way a tab-scoped visitor (docs/specs/013-workspace/tab-scoped-share-links.md) copies their tab
+      // only: the share-code leg carries the link's scope, the shared_with
+      // leg the scope recorded on their last visit.
+      let scope: { tabScope: string | null } | null = await gateGrant(
+        ctx,
+        id,
+        source.ownerId,
+        source.teamId,
+      );
+      if (!scope) {
+        const sharedRow = (await listSharedWith(env, owner)).find((s) => s.id === id);
+        if (sharedRow) scope = { tabScope: sharedRow.tabId };
       }
-      if (!allowed) return forbidden();
+      if (!scope) return forbidden();
       const body = (await request.json().catch(() => ({}) as { name?: string })) as {
         name?: string;
       };
       const newId = crypto.randomUUID();
       const newName = (body.name?.trim() || `Copy of ${source.name}`).slice(0, 200);
-      const copy = await copyDiagram(env, id, newId, owner, newName);
+      const copy = await copyDiagram(env, id, newId, owner, newName, scope.tabScope);
       if (!copy) return notFound();
       ctx.waitUntil?.(recordDiagramDuplicated(env, copy, source.name, owner));
       // A copy taken by someone who came in through a share link is news the
@@ -411,9 +424,13 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
     if (request.method === 'GET') {
       const d = await getDiagram(env, id);
       if (!d) return notFound();
-      const allowed = await gateRead(ctx, id, d.ownerId, d.teamId);
-      if (!allowed) return notFound();
-      const svg = await getDiagramThumbnailSvg(env, d);
+      const grant = await gateGrant(ctx, id, d.ownerId, d.teamId);
+      if (!grant) return notFound();
+      // A tab-scoped visitor (docs/specs/013-workspace/tab-scoped-share-links.md) gets their tab, never the
+      // first-tab snapshot.
+      const svg = grant.tabScope
+        ? await getDiagramTabImageSvg(env, d, grant.tabScope)
+        : await getDiagramThumbnailSvg(env, d);
       if (svg == null) return notFound();
       // The client cache-busts via a `?v=<savedAt>` query param, so a
       // long private max-age is safe: a changed diagram changes the URL.
@@ -435,11 +452,14 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
   // See docs/specs/012-collaboration/activity-and-audit.md.
   if (segments.length === 4 && segments[3] === 'log') {
     const id = segments[2]!;
-    const access = await requireDiagramAccess(ctx, id, 'edit');
-    if (access instanceof Response) return access;
+    // A tab-scoped edit visitor (docs/specs/013-workspace/tab-scoped-share-links.md) reads and writes their
+    // tab's entries only.
+    const granted = await requireDiagramGrant(ctx, id, 'edit');
+    if (granted instanceof Response) return granted;
+    const { diagram: access, grant } = granted;
 
     if (request.method === 'GET') {
-      const entries = await listChangeLog(env, id);
+      const entries = await listChangeLog(env, id, grant.tabScope);
       // Redact each entry's author owner id for non-owners (docs/specs/015-api/public-api-and-tokens.md §6): it's
       // the same value a token / X-Owner-Id authenticates with, so a non-owner
       // edit collaborator must not be able to harvest it from the audit trail.
@@ -471,6 +491,7 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       }
       const entry = parseChangeLogEntryBody(body);
       if (!entry) return badRequest('missing change_log fields');
+      if (grant.tabScope !== null && entry.tabId !== grant.tabScope) return notFound();
       // The entry's tab must belong to THIS diagram. The log is listed by
       // joining through diagram_tabs, so an unchecked tab id let an editor of
       // one diagram write rows into another diagram's activity panel. It is
@@ -484,7 +505,7 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       // rather than trusting the body, so a client can't forge
       // participantId / participantName / participantColor and frame
       // another collaborator in the audit trail — the same defence the
-      // comment-write paths apply. requireDiagramAccess already proved
+      // comment-write paths apply. requireDiagramGrant already proved
       // the caller is identified, so resolveOwner() is non-null here.
       const caller = ctx.resolveOwner()!;
       const writer = await getParticipant(env, caller);
@@ -506,11 +527,11 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
   if (segments.length === 5 && segments[3] === 'log') {
     const id = segments[2]!;
     const entryId = segments[4]!;
-    const access = await requireDiagramAccess(ctx, id, 'edit');
-    if (access instanceof Response) return access;
+    const granted = await requireDiagramGrant(ctx, id, 'edit');
+    if (granted instanceof Response) return granted;
 
     if (request.method === 'DELETE') {
-      await deleteChangeLogEntry(env, id, entryId);
+      await deleteChangeLogEntry(env, id, entryId, granted.grant.tabScope);
       return noContent();
     }
   }

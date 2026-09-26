@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { unusedImageIds } from './images';
+import { fakeD1 } from '../test-d1';
+import { diagramReferencesImage, unusedImageIds } from './images';
 
 // unusedImageIds is the pure decision behind the daily unused-image
 // sweep (docs/specs/009-elements/images.md "Retention"): given the candidate ids (already
@@ -64,5 +65,25 @@ describe('unusedImageIds', () => {
       elements: [{ id: 'e1', type: 'shape', x: 0, y: 0, width: 1, height: 1, imageId: 'a' }],
     });
     expect(unusedImageIds(['a'], [tab])).toEqual(['a']);
+  });
+});
+
+// docs/specs/013-workspace/tab-scoped-share-links.md: a tab-scoped visitor may read an image only when
+// THEIR tab uses it, so the lookup narrows to that tab.
+describe('diagramReferencesImage', () => {
+  const tabData = JSON.stringify({
+    elements: [{ id: 'e1', type: 'image', imageId: 'i1', x: 0, y: 0, width: 1, height: 1 }],
+  });
+
+  it('looks across every tab by default', async () => {
+    const db = fakeD1(() => ({ all: [{ data: tabData }] }));
+    expect(await diagramReferencesImage(db.env, 'd1', 'i1')).toBe(true);
+    expect(db.one('FROM diagram_tabs dt').sql).not.toContain('dt.tab_id = ?');
+  });
+
+  it('looks at one tab when scoped', async () => {
+    const db = fakeD1(() => ({ all: [] }));
+    expect(await diagramReferencesImage(db.env, 'd1', 'i1', 't2')).toBe(false);
+    expect(db.one('FROM diagram_tabs dt').bindings).toEqual(['d1', 't2']);
   });
 });

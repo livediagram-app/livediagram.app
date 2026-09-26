@@ -8,7 +8,7 @@ import type { Env } from '../types';
 // access policy (image owner OR a share-readable diagram that references
 // the image). Pins behaviour ahead of the requireOwner extraction.
 
-const { db, canReadDiagram } = vi.hoisted(() => ({
+const { db, canReadDiagram, resolveDiagramGrant } = vi.hoisted(() => ({
   db: {
     deleteImage: vi.fn(),
     diagramReferencesImage: vi.fn(),
@@ -20,9 +20,14 @@ const { db, canReadDiagram } = vi.hoisted(() => ({
     listImagesByOwner: vi.fn(),
   },
   canReadDiagram: vi.fn(),
+  resolveDiagramGrant: vi.fn(),
 }));
 vi.mock('../db', () => db);
-vi.mock('../auth/diagram-access', () => ({ canReadDiagram, canEditDiagram: vi.fn() }));
+vi.mock('../auth/diagram-access', () => ({
+  canReadDiagram,
+  canEditDiagram: vi.fn(),
+  resolveDiagramGrant,
+}));
 
 import type { RouteContext } from './context';
 import { handleImages } from './images';
@@ -49,6 +54,12 @@ const makeCtx = (
 beforeEach(() => {
   for (const fn of Object.values(db)) fn.mockReset();
   canReadDiagram.mockReset();
+  resolveDiagramGrant.mockReset();
+  // The byte-read gate asks for the grant; drive it from canReadDiagram so
+  // the allow / deny cases below keep reading as they did.
+  resolveDiagramGrant.mockImplementation(async (...args: unknown[]) =>
+    (await canReadDiagram(...args)) ? { role: 'view', tabScope: null } : null,
+  );
 });
 
 describe('handleImages', () => {
@@ -130,5 +141,16 @@ describe('handleImages', () => {
     });
     const res = await handleImages(ctx);
     expect(res.status).toBe(200);
+  });
+
+  // docs/specs/013-workspace/tab-scoped-share-links.md: a tab-scoped visitor reads images their tab uses.
+  it('asks whether the scoped tab, not the whole diagram, uses the image', async () => {
+    db.getImage.mockResolvedValue({ id: 'i1', ownerId: 'someone-else' });
+    db.getDiagram.mockResolvedValue({ id: 'd1', ownerId: 'someone-else' });
+    resolveDiagramGrant.mockResolvedValue({ role: 'view', tabScope: 't2' });
+    db.diagramReferencesImage.mockResolvedValue(false);
+    const res = await handleImages(makeCtx('GET', '/api/images/i1?d=d1'));
+    expect(res.status).toBe(404);
+    expect(db.diagramReferencesImage).toHaveBeenCalledWith(expect.anything(), 'd1', 'i1', 't2');
   });
 });

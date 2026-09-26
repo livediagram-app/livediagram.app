@@ -13,7 +13,13 @@ import type { ChangeLogEntryDTO, Env } from '../types';
 // diagrams surfaces in both diagrams' logs — which is the right
 // answer once docs/specs/006-diagram/tab-diagram-many-to-many.md's many-to-many tabs land: the change exists
 // in every diagram it shows up in.
-export async function listChangeLog(env: Env, diagramId: string): Promise<ChangeLogEntryDTO[]> {
+// `onlyTabId` narrows the list to one tab for a tab-scoped visitor
+// (docs/specs/013-workspace/tab-scoped-share-links.md), in SQL so the cap applies to that tab.
+export async function listChangeLog(
+  env: Env,
+  diagramId: string,
+  onlyTabId: string | null = null,
+): Promise<ChangeLogEntryDTO[]> {
   // LEFT JOIN through participants so rows whose author has been
   // deleted (account delete) still surface, with a fallback name
   // and colour from rowToChangeLog. Inner join would silently hide
@@ -26,11 +32,15 @@ export async function listChangeLog(env: Env, diagramId: string): Promise<Change
        FROM change_log cl
        JOIN diagram_tabs dt ON dt.tab_id = cl.tab_id
        LEFT JOIN participants p ON p.id = cl.participant_id
-      WHERE dt.diagram_id = ?
+      WHERE dt.diagram_id = ?${onlyTabId === null ? '' : ' AND cl.tab_id = ?'}
       ORDER BY cl.created_at DESC
       LIMIT ?`,
   )
-    .bind(diagramId, CHANGE_LOG_LIST_LIMIT)
+    .bind(
+      ...(onlyTabId === null
+        ? [diagramId, CHANGE_LOG_LIST_LIMIT]
+        : [diagramId, onlyTabId, CHANGE_LOG_LIST_LIMIT]),
+    )
     .all<ChangeLogRow>();
   return (result.results ?? []).map(rowToChangeLog);
 }
@@ -109,13 +119,15 @@ export async function deleteChangeLogEntry(
   env: Env,
   diagramId: string,
   entryId: string,
+  // A tab-scoped visitor (docs/specs/013-workspace/tab-scoped-share-links.md) deletes on their tab only.
+  onlyTabId: string | null = null,
 ): Promise<void> {
   await env.DB.prepare(
     `DELETE FROM change_log
       WHERE id = ?
-        AND tab_id IN (SELECT tab_id FROM diagram_tabs WHERE diagram_id = ?)`,
+        AND tab_id IN (SELECT tab_id FROM diagram_tabs WHERE diagram_id = ?)${onlyTabId === null ? '' : '\n        AND tab_id = ?'}`,
   )
-    .bind(entryId, diagramId)
+    .bind(...(onlyTabId === null ? [entryId, diagramId] : [entryId, diagramId, onlyTabId]))
     .run();
 }
 

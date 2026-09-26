@@ -55,8 +55,8 @@ export async function handleQaBoardRoute(ctx: RouteContext): Promise<Response | 
   // client-side rule on top (docs/specs/012-collaboration/facilitator.md): this route can't see which socket
   // holds it.
   const allowed = isParticipantQaAction(action)
-    ? await gateRead(ctx, id, existing.ownerId, existing.teamId)
-    : await gateEdit(ctx, id, existing.ownerId, existing.teamId);
+    ? await gateRead(ctx, id, existing.ownerId, existing.teamId, tabId)
+    : await gateEdit(ctx, id, existing.ownerId, existing.teamId, tabId);
   if (!allowed) return forbidden();
 
   // Server-derived identity: the voter id from the authenticated owner, the

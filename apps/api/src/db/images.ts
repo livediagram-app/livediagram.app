@@ -272,6 +272,8 @@ export async function diagramReferencesImage(
   env: Env,
   diagramId: string,
   imageId: string,
+  // A tab-scoped visitor (docs/specs/013-workspace/tab-scoped-share-links.md): only their tab counts.
+  onlyTabId: string | null = null,
 ): Promise<boolean> {
   // Tabs live behind diagram_tabs (many-to-many per docs/specs/006-diagram/tab-diagram-many-to-many.md), so the
   // lookup joins through the link table rather than reading the
@@ -280,9 +282,9 @@ export async function diagramReferencesImage(
     `SELECT t.data
        FROM diagram_tabs dt
        JOIN tabs t ON t.id = dt.tab_id
-      WHERE dt.diagram_id = ?`,
+      WHERE dt.diagram_id = ?${onlyTabId === null ? '' : ' AND dt.tab_id = ?'}`,
   )
-    .bind(diagramId)
+    .bind(...(onlyTabId === null ? [diagramId] : [diagramId, onlyTabId]))
     .all<{ data: string }>();
   for (const row of rows.results ?? []) {
     try {

@@ -47,6 +47,7 @@ vi.mock('../db/timeline', () => ({ markTimelineEventsDeletedBySource: vi.fn(asyn
 const access = vi.hoisted(() => ({
   canReadDiagram: vi.fn(async () => true),
   canEditDiagram: vi.fn(async () => true),
+  resolveDiagramGrant: vi.fn(async () => ({ role: 'edit' as const, tabScope: null })),
 }));
 vi.mock('../auth/diagram-access', () => access);
 

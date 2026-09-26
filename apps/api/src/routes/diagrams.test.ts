@@ -14,14 +14,14 @@ import type { DiagramDTO } from '../types';
 //   - success with no body           -> 204
 // These cases pin that mapping across one representative route per
 // guard shape, so the requireOwner / requireOwnedDiagram /
-// requireDiagramAccess extraction can't silently swap a 403 for a 404
+// requireDiagramGrant extraction can't silently swap a 403 for a 404
 // (which would leak existence) or drop a missingAuth (which would let
 // an unauthenticated caller through).
 
 // vi.mock factories are hoisted above the module's top-level consts, so
 // the mock fns have to be created inside vi.hoisted to exist by the time
 // the factories run.
-const { db, canReadDiagram, canEditDiagram } = vi.hoisted(() => ({
+const { db, canReadDiagram, canEditDiagram, resolveDiagramGrant } = vi.hoisted(() => ({
   db: {
     listDiagramsByOwner: vi.fn(),
     getDiagram: vi.fn(),
@@ -50,20 +50,34 @@ const { db, canReadDiagram, canEditDiagram } = vi.hoisted(() => ({
     // Slide deck write (docs/specs/012-collaboration/presentation-mode.md).
     setDiagramPresentation: vi.fn(),
     reorderTabs: vi.fn(),
+    // Tab-scoped share links (docs/specs/013-workspace/tab-scoped-share-links.md).
+    copyDiagram: vi.fn(),
+    listSharedWith: vi.fn(),
+    deleteChangeLogEntry: vi.fn(),
+    deleteTabRow: vi.fn(),
+    deleteShareLinksForTab: vi.fn(async (): Promise<string[]> => []),
+    rescopeShareLink: vi.fn(),
   },
   // gateRead / gateEdit (context.ts) forward to these; mocking the auth
   // module lets each case drive "allowed" / "denied" directly.
   canReadDiagram: vi.fn(),
   canEditDiagram: vi.fn(),
+  // gateGrant (context.ts) forwards here. Defaults (beforeEach) to what the
+  // two gates above answer for an unscoped caller, so a case driving
+  // allow / deny through them reaches the scope-aware doors too.
+  resolveDiagramGrant: vi.fn(),
 }));
 vi.mock('../db', () => db);
-vi.mock('../auth/diagram-access', () => ({ canReadDiagram, canEditDiagram }));
+vi.mock('../auth/diagram-access', () => ({ canReadDiagram, canEditDiagram, resolveDiagramGrant }));
 
 // The thumbnail route (docs/specs/006-diagram/diagram-snapshots.md) delegates rendering to ./thumbnail; stub
 // it so these cases pin the ACCESS GATE, and can assert the renderer is
 // never reached for a denied caller (no render, no info leak).
-const getDiagramThumbnailSvg = vi.hoisted(() => vi.fn());
-vi.mock('../thumbnail', () => ({ getDiagramThumbnailSvg }));
+const { getDiagramThumbnailSvg, getDiagramTabImageSvg } = vi.hoisted(() => ({
+  getDiagramThumbnailSvg: vi.fn(),
+  getDiagramTabImageSvg: vi.fn(),
+}));
+vi.mock('../thumbnail', () => ({ getDiagramThumbnailSvg, getDiagramTabImageSvg }));
 
 import type { RouteContext } from './context';
 import { handleDiagrams } from './diagrams';
@@ -95,7 +109,14 @@ beforeEach(() => {
   for (const fn of Object.values(db)) fn.mockReset();
   canReadDiagram.mockReset();
   canEditDiagram.mockReset();
+  resolveDiagramGrant.mockReset();
+  resolveDiagramGrant.mockImplementation(async (...args: unknown[]) => {
+    if (await canEditDiagram(...args)) return { role: 'edit', tabScope: null };
+    if (await canReadDiagram(...args)) return { role: 'view', tabScope: null };
+    return null;
+  });
   getDiagramThumbnailSvg.mockReset();
+  getDiagramTabImageSvg.mockReset();
 });
 
 describe('GET /diagrams/:id/thumbnail (docs/specs/006-diagram/diagram-snapshots.md access gate)', () => {
@@ -733,5 +754,129 @@ describe('POST /diagrams carrying an Offline Mode sync (docs/specs/006-diagram/o
     const res = await create({ folderId: 'f1' });
     expect(res.status).toBe(201);
     expect(stored().folderId).toBeNull();
+  });
+});
+
+// docs/specs/013-workspace/tab-scoped-share-links.md. A visitor on a link scoped to tab t2: every door either
+// narrows to t2 or refuses.
+describe('a tab-scoped visitor', () => {
+  const scopedDiagram = () =>
+    ({
+      ...fakeDiagram('owner-1'),
+      presentation: '{"slides":[]}',
+      tabs: [
+        { id: 't1', diagramId: 'd1', name: 'Pricing', orderIndex: 0, updatedAt: 1 },
+        { id: 't2', diagramId: 'd1', name: 'Roadmap', orderIndex: 1, updatedAt: 1 },
+      ],
+    }) as unknown as DiagramDTO;
+  const visitor = { owner: 'visitor-1', headers: { 'X-Share-Code': 'SCOPED23' } };
+
+  beforeEach(() => {
+    db.getDiagram.mockResolvedValue(scopedDiagram());
+    resolveDiagramGrant.mockResolvedValue({ role: 'edit', tabScope: 't2' });
+  });
+
+  it('gets the diagram with every other tab locked and no deck', async () => {
+    const res = await handleDiagrams(makeCtx('GET', '/api/diagrams/d1', visitor));
+    const body = (await res.json()) as { diagram: DiagramDTO };
+    expect(body.diagram.tabs.map((t) => t.name)).toEqual(['', 'Roadmap']);
+    expect(body.diagram.presentation).toBeNull();
+  });
+
+  it("gets its tab's image as the thumbnail, never the first tab's", async () => {
+    getDiagramTabImageSvg.mockResolvedValue('<svg>t2</svg>');
+    const res = await handleDiagrams(makeCtx('GET', '/api/diagrams/d1/thumbnail', visitor));
+    expect(await res.text()).toBe('<svg>t2</svg>');
+    expect(getDiagramTabImageSvg).toHaveBeenCalledWith(expect.anything(), expect.anything(), 't2');
+    expect(getDiagramThumbnailSvg).not.toHaveBeenCalled();
+  });
+
+  it('names the tab it touches, so the gate can confine it', async () => {
+    canReadDiagram.mockResolvedValue(true);
+    db.getTab.mockResolvedValue({ id: 't2', name: 'Roadmap', elements: [] });
+    await handleDiagrams(makeCtx('GET', '/api/diagrams/d1/tabs/t2', visitor));
+    expect(canReadDiagram.mock.calls.at(-1)?.at(-1)).toBe('t2');
+    canEditDiagram.mockResolvedValue(true);
+    await handleDiagrams(makeCtx('PUT', '/api/diagrams/d1/tabs/t2', { ...visitor, body: {} }));
+    expect(canEditDiagram.mock.calls.at(-1)?.at(-1)).toBe('t2');
+  });
+
+  it('cannot delete the tab its link is scoped to', async () => {
+    canEditDiagram.mockResolvedValue(true);
+    const res = await handleDiagrams(makeCtx('DELETE', '/api/diagrams/d1/tabs/t2', visitor));
+    expect(res.status).toBe(403);
+    expect(db.deleteTabRow).not.toHaveBeenCalled();
+  });
+
+  it('lists the log of its tab only', async () => {
+    db.listChangeLog.mockResolvedValue([]);
+    const res = await handleDiagrams(makeCtx('GET', '/api/diagrams/d1/log', visitor));
+    expect(res.status).toBe(200);
+    expect(db.listChangeLog).toHaveBeenCalledWith(expect.anything(), 'd1', 't2');
+  });
+
+  it('cannot log on another tab', async () => {
+    const res = await handleDiagrams(
+      makeCtx('POST', '/api/diagrams/d1/log', {
+        ...visitor,
+        body: {
+          id: 'l1',
+          tabId: 't1',
+          participantId: 'p',
+          participantName: 'A',
+          participantColor: '#000000',
+          kind: 'edit',
+          summary: 'x',
+          elementIds: [],
+          beforeState: {},
+          afterState: {},
+        },
+      }),
+    );
+    expect(res.status).toBe(404);
+    expect(db.insertChangeLogEntry).not.toHaveBeenCalled();
+  });
+
+  it('removes log entries on its tab only', async () => {
+    await handleDiagrams(makeCtx('DELETE', '/api/diagrams/d1/log/e1', visitor));
+    expect(db.deleteChangeLogEntry).toHaveBeenCalledWith(expect.anything(), 'd1', 'e1', 't2');
+  });
+
+  it('a view-role scoped visitor still cannot read the log', async () => {
+    resolveDiagramGrant.mockResolvedValue({ role: 'view', tabScope: 't2' });
+    const res = await handleDiagrams(makeCtx('GET', '/api/diagrams/d1/log', visitor));
+    expect(res.status).toBe(403);
+  });
+
+  it('copies its tab only', async () => {
+    db.copyDiagram.mockResolvedValue({ id: 'd2' });
+    const res = await handleDiagrams(
+      makeCtx('POST', '/api/diagrams/d1/copy', { ...visitor, body: {} }),
+    );
+    expect(res.status).toBe(201);
+    expect(db.copyDiagram.mock.calls[0]?.at(-1)).toBe('t2');
+  });
+
+  it('copies its tab only through its Shared-with-you row too', async () => {
+    resolveDiagramGrant.mockResolvedValue(null);
+    db.listSharedWith.mockResolvedValue([{ id: 'd1', tabId: 't2' }]);
+    db.copyDiagram.mockResolvedValue({ id: 'd2' });
+    const res = await handleDiagrams(
+      makeCtx('POST', '/api/diagrams/d1/copy', { owner: 'visitor-1', body: {} }),
+    );
+    expect(res.status).toBe(201);
+    expect(db.copyDiagram.mock.calls[0]?.at(-1)).toBe('t2');
+  });
+});
+
+describe('deleting a tab (docs/specs/013-workspace/tab-scoped-share-links.md)', () => {
+  it('takes the links scoped to it along', async () => {
+    db.getDiagram.mockResolvedValue(fakeDiagram('owner-1'));
+    canEditDiagram.mockResolvedValue(true);
+    db.deleteShareLinksForTab.mockResolvedValue(['AAAA2222']);
+    const res = await handleDiagrams(makeCtx('DELETE', '/api/diagrams/d1/tabs/t2'));
+    expect(res.status).toBe(204);
+    expect(db.deleteTabRow).toHaveBeenCalledWith(expect.anything(), 'd1', 't2');
+    expect(db.deleteShareLinksForTab).toHaveBeenCalledWith(expect.anything(), 'd1', 't2');
   });
 });
