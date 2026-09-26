@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
+  contrastRatio,
+  MIN_TEXT_CONTRAST,
   ARROW_THICKNESS_PX,
   ARROWHEAD_SHAPES,
   ARROWHEAD_SIZE_PX,
@@ -260,5 +262,31 @@ describe('supportsFillColor', () => {
     expect(supportsFillColor(shape('frame'))).toBe(true);
     // The progress track is drawn FROM fillColor, self-painting or not.
     expect(supportsFillColor(shape('progress-bar'))).toBe(true);
+  });
+});
+
+// docs/specs/011-theme/blueprints/multicolour-themes.md, the contrast helper.
+describe('contrastRatio', () => {
+  it('rates black on white at 21 and a colour on itself at 1', () => {
+    expect(contrastRatio('#000000', '#ffffff')).toBeCloseTo(21, 5);
+    expect(contrastRatio('#7c2d12', '#7c2d12')).toBeCloseTo(1, 5);
+  });
+
+  it('does not depend on argument order', () => {
+    expect(contrastRatio('#1e3a8a', '#dbeafe')).toBe(contrastRatio('#dbeafe', '#1e3a8a'));
+  });
+
+  it('matches the WCAG reference value for #767676 on white', () => {
+    // The lightest grey that passes AA on white: 4.54:1.
+    expect(contrastRatio('#767676', '#ffffff')).toBeCloseTo(4.54, 2);
+  });
+
+  it('is NaN for anything but #rrggbb, so no threshold check can pass', () => {
+    expect(contrastRatio('red', '#ffffff')).toBeNaN();
+    expect(contrastRatio('#fff', '#000000')).toBeNaN();
+  });
+
+  it('names the AA threshold for normal text', () => {
+    expect(MIN_TEXT_CONTRAST).toBe(4.5);
   });
 });

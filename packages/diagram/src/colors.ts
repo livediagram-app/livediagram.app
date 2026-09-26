@@ -51,6 +51,30 @@ export function hexToRgb(hex: string): RGB | null {
   return { r: parseInt(m[1]!, 16), g: parseInt(m[2]!, 16), b: parseInt(m[3]!, 16) };
 }
 
+// WCAG 2.2 SC 1.4.3: the minimum contrast for normal-size text (AA).
+export const MIN_TEXT_CONTRAST = 4.5;
+
+// WCAG 2.2 contrast ratio of two `#rrggbb` colours, in [1, 21] and
+// order-independent. NaN for any other input, so a `>=` threshold check
+// can never pass on a colour it could not read.
+export function contrastRatio(a: string, b: string): number {
+  const la = relativeLuminance(a);
+  const lb = relativeLuminance(b);
+  if (la === null || lb === null) return NaN;
+  return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+}
+
+function relativeLuminance(hex: string): number | null {
+  if (!hex.startsWith('#')) return null;
+  const rgb = hexToRgb(hex);
+  if (!rgb) return null;
+  const channel = (v: number) => {
+    const c = v / 255;
+    return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  };
+  return 0.2126 * channel(rgb.r) + 0.7152 * channel(rgb.g) + 0.0722 * channel(rgb.b);
+}
+
 // Channels back to `#rrggbb`, rounded and clamped into 0-255 first.
 export function rgbToHex({ r, g, b }: RGB): string {
   const clamp = (v: number) => Math.max(0, Math.min(255, Math.round(v)));
