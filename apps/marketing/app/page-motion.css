@@ -16,10 +16,12 @@
       into view where the browser supports scroll-driven animation; elsewhere
       it plays on load like `.enter`.
 
-   Chrome motion (docs/specs/004-interface-design/motion.md): the page
-   transition settles at long, and the entrance is a cascade of micro items
-   whose delay stops at the cascade cap. A scroll-driven entrance follows the
-   scroll, not a clock.
+   Paced as content, not chrome (docs/specs/004-interface-design/motion.md
+   "Kinds of motion"): a page arriving is read, not waited on, so its entrance
+   runs at half its original length rather than inside the 250ms chrome
+   budget. The hero settles in about 440ms (310ms per piece, the last starting
+   at 130ms) and the page crossfade takes 260ms. A scroll-driven entrance
+   follows the scroll, not a clock.
 
    Everything sits behind prefers-reduced-motion: no-preference. */
 
@@ -29,14 +31,14 @@
      page's first paint, which this bundled stylesheet can miss. */
   ::view-transition-old(root),
   ::view-transition-new(root) {
-    animation-duration: var(--transition-duration-long);
+    animation-duration: 260ms;
     animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .enter,
   .enter-on-scroll {
-    animation: page-enter var(--transition-duration-micro) cubic-bezier(0.2, 0.7, 0.2, 1) both;
-    animation-delay: min(var(--enter-delay, 0ms), var(--motion-cascade-cap));
+    animation: page-enter 310ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: var(--enter-delay, 0ms);
   }
 
   @supports (animation-timeline: view()) {

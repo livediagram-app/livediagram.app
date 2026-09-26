@@ -1,6 +1,5 @@
 import { ctaHref } from '@livediagram/api-schema';
 import type { CSSProperties } from 'react';
-import { cascadeDelayMs } from '@livediagram/tailwind-config/motion';
 import { CtaLink } from '@/components/CtaLink';
 import type { LandingSection } from '@/lib/landing-content';
 import { SectionShowcase } from '@/components/SectionShowcase';
@@ -13,9 +12,10 @@ import { SectionShowcase } from '@/components/SectionShowcase';
 
 // The hero eases in piece by piece on arrival (page-motion.css `.enter`), so
 // landing here from the home page reads as a continuation, not a cut.
-// The hero's pieces enter as one cascade (docs/specs/004-interface-design/motion.md).
+// The hero's pieces enter one beat apart (page-motion.css paces the entrance).
+const ENTER_BEAT_MS = 35;
 const delay = (index: number) =>
-  ({ '--enter-delay': `${cascadeDelayMs(index)}ms` }) as CSSProperties;
+  ({ '--enter-delay': `${Math.min(index * ENTER_BEAT_MS, 130)}ms` }) as CSSProperties;
 
 export function FeatureCategoryHero({ section }: { section: LandingSection }) {
   return (

@@ -154,10 +154,11 @@ Every chrome `duration-<n>` becomes a token. Hover-driven ones become `duration-
 - **`apps/help`**: `.card-glow` (0.3s) takes `micro`, as do `CategoryCard`, `FeatureArticleCard`,
   `ArticleCard`, the contact cards, `SearchInput`, `BackToTop` and the `ArticleLayout` feedback
   buttons.
-- **`apps/marketing`**: the `Section` card hover takes `micro`. Under comparison (spec), the
-  `page-motion.css` view transition takes `long`. The `.enter` hero entrance takes `micro`, with
-  `animation-delay: min(var(--enter-delay, 0ms), var(--motion-cascade-cap))`, and
-  `FeatureCategoryHero` sets `--enter-delay` from `cascadeDelayMs(index)`.
+- **`apps/marketing`**: the `Section` card hover takes `micro`. The page entrance is content
+  (spec, "Content pacing"), and `page-motion.css` is listed as a content stylesheet. The view
+  transition takes 260ms. `.enter` takes 310ms with `animation-delay: var(--enter-delay, 0ms)`.
+  `FeatureCategoryHero` sets `--enter-delay` to `min(index × ENTER_BEAT_MS, 130)`, where
+  `ENTER_BEAT_MS` is 35.
 - **`apps/telemetry`**: the `MetricCloud` word hover and `.stack-dim` take `micro`, and
   `StickyWindowBar` takes `short`. `MetricCards` staggers its expansion with `cascadeDelayMs`,
   and `fade-in` comes from the shared theme. Under comparison (spec), `dataviz-motion.css` holds

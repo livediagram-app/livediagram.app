@@ -47,6 +47,7 @@ Every duration in the codebase belongs to exactly one kind. The budget applies t
 | **Cascade**              | Chrome items entering one beat apart                                                                   | 250ms for the whole cascade |
 | **Canvas animation**     | Motion of or on the diagram. Element entry and animations, arrow flow, slide transitions, Q&A board    | Its own spec                |
 | **Content illustration** | Marketing illustrations and template-preview stories: a picture that moves, not a control              | Its own spec                |
+| **Content entrance**     | A marketing page arriving: the cross-document crossfade and the hero entrance                          | About 450ms, see below      |
 | **Ambient indicator**    | Looping status. Spinners, skeleton pulses, live dots, empty-state float, attention pulses that repeat  | Exempt; not a transition    |
 | **Timer**                | Time before something happens: debounce, hover grace, close delay, long press, auto-save, auto-dismiss | Untouched; not motion       |
 
@@ -62,9 +63,9 @@ A progress ring that fills over a timer's window measures that timer. It is an a
 - **Chrome** durations are tokens, in chrome stylesheets and in component classes.
 - **Canvas** and **content** durations live only in their own stylesheets. In the editor that's
   `canvas-motion.css` and `qa-board.css`. In marketing it's `hero-animations.css`,
-  `feature-art-animations.css` and `ShowcaseStagger.module.css`. In the template previews it's
-  `preview-motion.css`. Any other stylesheet is chrome, including telemetry's `dataviz-motion.css`
-  and marketing's `page-motion.css`.
+  `feature-art-animations.css`, `ShowcaseStagger.module.css` and `page-motion.css`. In the template
+  previews it's `preview-motion.css`. Any other stylesheet is chrome, including telemetry's
+  `dataviz-motion.css`.
 - No component class or inline style carries a duration above the ceiling.
 
 ## Reduced motion
@@ -88,19 +89,24 @@ Shortening motion changes when things settle, never where. Chrome motion animate
 `transform`. The exceptions are height, width and grid-row reveals, and those are driven by the
 person's own input. Layout shift stays at zero.
 
+## Content pacing
+
+Two kinds of content motion were compared against the 250ms budget, and the operator decided each:
+
+- **The marketing page entrance** runs at half its original length. At 250ms it read as too fast
+  for a page that's there to be read. The hero's pieces take 310ms each and start 35ms apart, the
+  last at 130ms, so the hero settles in about 440ms. The cross-document crossfade stays at
+  260ms. The scroll-driven section reveal follows the scroll, not a clock, so it isn't timed
+  motion.
+- **Template-preview hover stories** keep their own pace, 420–1600ms per beat. Compressed into
+  250ms, a story becomes a blip.
+
 ## Under comparison
 
-The operator is comparing three kinds of motion at their current length against 250ms:
-
-- **Telemetry data-viz reveals** are capped as chrome. The word cloud and a charted metric's rise
-  are `micro` cascades, and the chart's line wipe and the funnel bars settle at `short`. They
-  were 420ms, 420ms on a 60ms beat, 800ms after a 300ms delay, and 500ms.
-- **The marketing page transition and hero entrance** are capped as chrome. The cross-document
-  view transition takes `long`, and the hero's pieces enter as a `micro` cascade. They were
-  260ms and 620ms with delays up to 260ms. The scroll-driven section reveal follows the scroll,
-  not a clock, so it isn't timed motion.
-- **Template-preview hover stories** stay content at their own pace, 420–1600ms per beat. They
-  play in the marketing gallery, and the comparison compresses them in the browser only.
+- **Telemetry data-viz reveals** are capped as chrome for now. The word cloud and a charted
+  metric's rise are `micro` cascades, and the chart's line wipe and the funnel bars settle at
+  `short`. They were 420ms, 420ms on a 60ms beat, 800ms after a 300ms delay, and 500ms. The
+  operator found 250ms too fast and is comparing it with half the original length.
 
 ## Enforcement
 
