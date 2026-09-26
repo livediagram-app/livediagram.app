@@ -14,7 +14,6 @@ Scope, by file:
 | `packages/diagram/src/shape-outline.ts`                       | Anchoring outlines, outline projection, point-inside test                                          |
 | `packages/diagram/src/svg-path-outline.ts`                    | `sampleSvgPath`: an outline polygon from a drawn path (cloud, document)                            |
 | `packages/diagram/src/anchor-layouts.ts`                      | `anchorLayoutPoint`: face-placed anchors of triangle, hexagon, parallelogram, trapezoid            |
-| `apps/live/components/palette/ToolbarPalette.tsx`             | More popover focuses its search field on open (toolbar layout spec)                                |
 | `packages/diagram/src/shape-geometry.ts`                      | `ACTOR_HULL`, the actor's anchoring hull (D8)                                                      |
 | `packages/diagram/src/geometry.ts`                            | `anchorPosition`                                                                                   |
 | `packages/diagram/src/anchor-choice.ts`                       | `exitSideTowards`, `facingSideTowards`, `anchorAimPoint`, `bestAnchorTowards`                      |
@@ -31,7 +30,7 @@ Scope, by file:
 | `apps/live/hooks/canvas/useNudgeSelection.ts`                 | Rebind per nudge                                                                                   |
 | `apps/live/app/diagram/[id]/useArrowConnect.ts`               | Click-to-connect: creation anchors only, no rebind                                                 |
 | `apps/live/hooks/canvas/arrow-endpoint-resolve.ts`            | Stops writing `manual`                                                                             |
-| `apps/live/hooks/canvas/useBoxedDragHandlers.ts`              | Tap-placed arrow direction from `anchorOutward`                                                    |
+| `apps/live/hooks/canvas/useBoxedDragHandlers.ts`              | Quick-connect pins `nearestOfferedAnchor`; tap-placed arrow direction from `anchorOutward`         |
 | `apps/live/components/dialogs/settings/settings-catalogue.ts` | Setting copy                                                                                       |
 | `apps/help/app/palette/auto-attach-arrows/page.mdx`           | Help article                                                                                       |
 | `apps/api/src/ai-prompt.ts`                                   | Anchor list for the AI                                                                             |
@@ -388,6 +387,9 @@ existing validator). The api, the MCP tools and every import path validate throu
 - **`manual`.** Removed from the type. No code writes it. Stored `manual: true` flags are inert,
   and an end the rebind rewrites drops it (D12).
 - **Never persisted.** Outlines, paths, held counts, fans: all derived per call.
+- **Positions are derived.** Only the anchor id is stored. Where it sits follows the kind's current
+  layout, so an old diagram's ends on a parallelogram, trapezoid, hexagon, star or cylinder draw at
+  their new points without any data change.
 - **Wire.** Anchor changes ride the drag's element updates like any other element edit; nothing
   new on the realtime protocol.
 - **OpenAPI.** `Anchor` enum grows to 16 and the pinned endpoint loses `manual`, regenerated with
@@ -395,23 +397,28 @@ existing validator). The api, the MCP tools and every import path validate throu
 
 ## Errors and edge cases
 
-| #   | Case                                              | Handling                                                    |
-| --- | ------------------------------------------------- | ----------------------------------------------------------- |
-| E1  | Pinned element missing or not boxed               | End skipped; its shape is not in `shapes`                   |
-| E2  | Centre equals aim point                           | `exitSideTowards` null: keep                                |
-| E3  | Shape thinner than `2 × PATH_INSIDE_INSET_PX`     | Inside test always false: never triggers                    |
-| E4  | Self-loop                                         | Not considered; not in swap groups                          |
-| E5  | Both ends on elements that moved together         | Not considered                                              |
-| E6  | Both candidates held                              | Closer one taken; the fan separates                         |
-| E7  | Candidates equally close                          | Nearer the previous anchor (D3)                             |
-| E8  | Path still passes through after re-evaluation     | Kept as decided; next run sees the same side and keeps (I5) |
-| E9  | Swap would not uncross, or would pass through     | No swap                                                     |
-| E10 | More than `SWAP_MAX_ENDS_PER_SIDE` ends on a side | Side skipped, O3                                            |
-| E11 | Unknown anchor id in stored data                  | Validation rejects the element                              |
-| E12 | On-arrow other end                                | Treated as a point for aim and reference                    |
-| E13 | Setting off                                       | The hooks never call the run                                |
-| E14 | Degenerate zero-length path                       | No sample lies inside: no trigger                           |
-| E15 | An editor bundle older than the sixteen anchors   | Out of scope: deploys ship the editor and the api together  |
+| #   | Case                                              | Handling                                                                                                     |
+| --- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| E1  | Pinned element missing or not boxed               | End skipped; its shape is not in `shapes`                                                                    |
+| E2  | Centre equals aim point                           | `exitSideTowards` null: keep                                                                                 |
+| E3  | Shape thinner than `2 × PATH_INSIDE_INSET_PX`     | Inside test always false: never triggers                                                                     |
+| E4  | Self-loop                                         | Not considered; not in swap groups                                                                           |
+| E5  | Both ends on elements that moved together         | Not considered                                                                                               |
+| E6  | Both candidates held                              | Closer one taken; the fan separates                                                                          |
+| E7  | Candidates equally close                          | Nearer the previous anchor (D3)                                                                              |
+| E8  | Path still passes through after re-evaluation     | Kept as decided; next run sees the same side and keeps (I5)                                                  |
+| E9  | Swap would not uncross, or would pass through     | No swap                                                                                                      |
+| E10 | More than `SWAP_MAX_ENDS_PER_SIDE` ends on a side | Side skipped, O3                                                                                             |
+| E11 | Unknown anchor id in stored data                  | Validation rejects the element                                                                               |
+| E12 | On-arrow other end                                | Treated as a point for aim and reference                                                                     |
+| E13 | Setting off                                       | The hooks never call the run                                                                                 |
+| E14 | Degenerate zero-length path                       | No sample lies inside: no trigger                                                                            |
+| E15 | An editor bundle older than the sixteen anchors   | Out of scope: deploys ship the editor and the api together                                                   |
+| E16 | Facing side carries no anchors (a triangle's top) | `facingSideTowards` takes the next side that does; O1 notes `fallback=side`                                  |
+| E17 | Facing side lacks the end's class                 | `offeredOnSide` falls back (quarter → corner → middle, corner → quarter → middle); O1 notes `fallback=class` |
+| E18 | End on an anchor its shape does not offer         | Drawn at its projected point; the next re-anchor lands on an offered one (I8)                                |
+| E19 | Quick-connect from a side without anchors         | `nearestOfferedAnchor`, O5                                                                                   |
+| E20 | Creation towards a side without anchors           | `bestAnchorTowards` takes the facing side, O6                                                                |
 
 ## Security and trust
 
@@ -425,12 +432,14 @@ existing validator). The api, the MCP tools and every import path validate throu
 ## Performance and limits
 
 - **Trigger.** Per considered arrow: at most `(segments) × min(clip length / step,
-PATH_MAX_SAMPLES_PER_SEGMENT)` samples × 2 shapes × outline edges (≤ 34, the stadium). A straight
+PATH_MAX_SAMPLES_PER_SEGMENT)` samples × 2 shapes × outline edges (≤ 61, the sampled cloud). A straight
   arrow between two 160 px boxes costs ≈ 2 × 90 samples × 4 checks.
 - **Swap.** Pairs per side ≤ `32² / 2`; each pair ≤ 25 × 25 segment tests; ≤ `SWAP_MAX_PASSES`.
 - **Budget.** The run stays under 4 ms for 100 considered arrows, inside a 16 ms drag frame.
   Measured (node 24, one hub with 100 arrows, a quarter of them curved, 60 drag frames): median
-  0.95 ms, p95 2.9 ms; the first frame pays JIT warm-up.
+  1.0 ms, p95 3.4 ms with boxes and circles; median 2.2 ms, p95 3.9 ms with outlined kinds
+  (triangle, hexagon, cylinder, cloud, parallelogram, document, stadium). The first frame pays JIT
+  warm-up.
 - **Cap.** `MAX_ELEMENTS_PER_TAB` (10,000) bounds everything else.
 
 ## Presentation and UX
@@ -458,14 +467,16 @@ PATH_MAX_SAMPLES_PER_SEGMENT)` samples × 2 shapes × outline edges (≤ 34, the
 ## Observability
 
 Fixed prefix `[arrow-rebind]`, `key=value` pairs, `console.debug` (D6). Only triggered arrows and
-swaps log, never a quiet frame.
+swaps log, plus the anchor fallbacks (O5, O6, prefix `[arrow-anchors]`); never a quiet frame.
 
-| #   | Where                                | Fingerprint                                                                                                                                        |
-| --- | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| O1  | Step 4, per re-evaluated end         | `[arrow-rebind] trigger arrow=<id> end=<from\|to> element=<id> side=<s> <old>-><new>` (`<new>` = `<old>` when kept, plus `kept=<facing\|no-side>`) |
-| O2  | Swap applied                         | `[arrow-rebind] swap element=<id> arrows=<a>,<b> <anchorA><-><anchorB>`                                                                            |
-| O3  | Side over the cap                    | `[arrow-rebind] swap skipped element=<id> side=<s> ends=<n>`                                                                                       |
-| O4  | `sampleSvgPath`, unsupported command | `console.warn` `[shape-outline] unsupported path command=<c>`                                                                                      |
+| #   | Where                                     | Fingerprint                                                                                                                                                                                      |
+| --- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| O1  | Step 4, per re-evaluated end              | `[arrow-rebind] trigger arrow=<id> end=<from\|to> element=<id> side=<s> <old>-><new>`, plus ` fallback=<side\|class\|side,class>` when E16 / E17 applied, or ` kept=<facing\|no-side>` when kept |
+| O2  | Swap applied                              | `[arrow-rebind] swap element=<id> arrows=<a>,<b> <anchorA><-><anchorB>`                                                                                                                          |
+| O3  | Side over the cap                         | `[arrow-rebind] swap skipped element=<id> side=<s> ends=<n>`                                                                                                                                     |
+| O4  | `sampleSvgPath`, unsupported command      | `console.warn` `[shape-outline] unsupported path command=<c>`                                                                                                                                    |
+| O5  | `nearestOfferedAnchor`, a remap only      | `[arrow-anchors] remap element=<id> <asked>-><offered>`                                                                                                                                          |
+| O6  | `bestAnchorTowards`, a side fallback only | `[arrow-anchors] creation element=<id> side=<s> fallback=side`                                                                                                                                   |
 
 ## Testing
 
@@ -477,8 +488,8 @@ swaps log, never a quiet frame.
 | Snapping and markers honour the offer (I8)                                                               | no quarter snap on a circle; 8 markers                                                    | `anchor-geometry.test.ts`, `apps/live/lib/drag-geometry.test.ts` |
 | Face-placed anchors                                                                                      | parallelogram, trapezoid, hexagon, triangle points; star on its box; cylinder on its caps | `anchor-geometry.test.ts`                                        |
 | A side without anchors                                                                                   | triangle target above: facing side falls to w / e; creation anchor never `n`              | `anchor-geometry.test.ts`, `arrow-rebind.test.ts`                |
+| Fallback logs O1, O5, O6                                                                                 | triangle side fallback, circle class fallback, remap, creation; silent otherwise          | `arrow-rebind.test.ts`, `anchor-geometry.test.ts`                |
 | Quick-connect from a side without anchors                                                                | `nearestOfferedAnchor(triangle, n)`                                                       | `anchor-geometry.test.ts`                                        |
-| More focuses search on desktop, not on a phone                                                           | open More on Icons                                                                        | `apps/live/components/palette/ToolbarPalette.test.tsx`           |
 | A quarter on a circle re-anchors to a corner                                                             | morphed-circle end flips side                                                             | `arrow-rebind.test.ts`                                           |
 | Cloud and document outlines, path sampler, O4                                                            | anchors on the outline; unsupported command → null + warn                                 | `anchor-geometry.test.ts`                                        |
 | Box positions                                                                                            | all 16 on a box                                                                           | `anchor-geometry.test.ts`                                        |

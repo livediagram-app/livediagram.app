@@ -202,6 +202,10 @@ After the re-evaluation, two pinned ends on the **same side of the same shape** 
 - A shape too small to have an inside deeper than the grazing tolerance never triggers.
 - Unknown anchor ids in stored or imported data are rejected by validation like any other invalid
   endpoint.
+- An end on an anchor its shape does not offer is drawn where that anchor projects onto the outline,
+  and only changes when the auto-rebind moves it, to an offered anchor.
+- A facing side without anchors falls to the next side that has them; every shape offers anchors
+  on at least three sides, so an end always finds one.
 
 ## Implementation
 
