@@ -28,6 +28,12 @@ updates:
       # Majors are deliberately left out of both groups, so each one arrives as
       # its own PR. A Next or React major is real work and should not ride along
       # with a batch of patches.
+    ignore:
+      # transformers 4.x ships an onnxruntime-web wasm over the 25 MiB Workers
+      # Static Assets limit, so the editor cannot deploy with it. Revisit when
+      # the runtime fits (the build's asset-size gate will say).
+      - dependency-name: '@huggingface/transformers'
+        update-types: ['version-update:semver-major']
 
   # Keeps the actions in ci.yml / deploy.yml / e2e.yml current. Same class of
   # drift as the npm tree, and easy to forget because nothing here has a lockfile.

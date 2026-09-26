@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "node ../../scripts/next-dev.mjs --port 3002",
     "dev:webpack": "node ../../scripts/next-dev.mjs --port 3002 --webpack",
-    "build": "next build",
+    "build": "next build && node scripts/asset-size-gate.mjs out",
     "lint": "eslint .",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@clerk/react": "^6.16.1",
-    "@huggingface/transformers": "^4.3.0",
+    "@huggingface/transformers": "^3.8.1",
     "@livediagram/api-schema": "workspace:*",
     "@livediagram/diagram": "workspace:*",
     "@livediagram/help-registry": "workspace:*",
