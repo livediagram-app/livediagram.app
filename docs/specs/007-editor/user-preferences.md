@@ -93,15 +93,11 @@ stays viable.
 
 ```ts
 type UserPreferences = {
-  // When true, the live editor runs the "re-pin connected arrow
-  // anchors as elements move" pass implemented in packages/diagram's
-  // `rebindArrowAnchorsAfterMove` (pinned in
-  // packages/diagram/src/geometry.test.ts). Defaults to OFF: arrow
-  // anchors stay where the user chose them at draw time unless they
-  // opt in. (Flipped from a true default in July 2026: the
-  // auto-chosen faces surprised users more often than they helped,
-  // e.g. a midpoint-to-midpoint slant crossing a hand-anchored arrow
-  // between the same two boxes.)
+  // When false, the live editor skips the auto-rebind that moves a
+  // pinned arrow end to the side facing the other end once its drawn
+  // path runs through a shape after a move (packages/diagram's
+  // `rebindArrowAnchorsAfterMove`, see ../008-canvas/arrow-anchors.md).
+  // Defaults to ON.
   autoRebindArrows?: boolean;
 
   // When false, the live editor's `track()` helper is a no-op:
@@ -217,21 +213,15 @@ another version's flags.
 
 Missing key === undefined === default behaviour. Concretely:
 
-- `autoRebindArrows` undefined → arrows do NOT rebind (the default:
-  anchors stay where they were drawn). Setting it to `true` is the
-  only state that changes behaviour. The derivation lives in ONE
-  place, `autoRebindArrowsEnabled(prefs)` in
+- `autoRebindArrows` undefined → the auto-rebind runs (the default,
+  [Arrow anchors and auto-rebind](../008-canvas/arrow-anchors.md)).
+  Setting it to `false` is the only state that turns it off, and then
+  a move never changes an anchor. The rule is the same for every
+  pinned end, including ends the user placed by hand. The derivation
+  lives in ONE place, `autoRebindArrowsEnabled(prefs)` in
   `apps/live/lib/user-preferences.ts`, shared by the Settings
   dialog's row and the editor-preferences hook so the default
   can't drift between consumers.
-  - Per-endpoint override: dragging an arrow's endpoint onto an
-    anchor by hand marks that endpoint `manual` (a flag on the
-    pinned `Endpoint` in `packages/diagram`). `rebindArrowAnchorsAfterMove`
-    leaves a manual endpoint's face fixed even when auto-rebind is
-    on, so a deliberate correction sticks; the other (auto) end of
-    the same arrow still re-anchors. This is independent of the
-    global `autoRebindArrows` toggle — it's a local opt-out for one
-    endpoint, not a preference.
 - `telemetryEnabled` undefined → telemetry on (the default).
   Setting it to `false` is the only state that opts out.
 - `recogniseShapes` is ignored whatever its value ([Two pens instead of a pen and a mode](../008-canvas/two-pens.md)): the
