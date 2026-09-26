@@ -8,10 +8,12 @@
 // `X-Owner-Id`, which the worker refuses. The provider must be in place
 // before any child's first fetch.
 
-import { render } from '@testing-library/react';
+import { act, render } from '@testing-library/react';
 import { useEffect, type ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { apiHeaders, setTokenProvider } from '@/lib/api/core';
+import { resetGuestMigrationForTests } from '@/lib/guest-migration';
+import { setGuestIdentity } from '@/lib/local-identity';
 
 vi.mock('@/lib/clerk-config', () => ({ clerkEnabled: true }));
 const { getToken } = vi.hoisted(() => ({
@@ -32,6 +34,13 @@ vi.mock('@/components/providers/deferred-auth', () => {
     }),
   };
 });
+
+const MIGRATED = { diagrams: 1, folders: 0, shared: 0, images: 0 };
+const { apiMigrateGuestData } = vi.hoisted(() => ({ apiMigrateGuestData: vi.fn() }));
+vi.mock('@/lib/api-client', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/api-client')>()),
+  apiMigrateGuestData,
+}));
 
 const { useClerkApiBootstrap } = await import('./useClerkApiBootstrap');
 
@@ -72,5 +81,50 @@ describe('useClerkApiBootstrap token provider', () => {
     const sent = (await apiHeaders('user_abc')) as Record<string, string>;
     expect(getToken).toHaveBeenLastCalledWith({ skipCache: true });
     expect(sent['Authorization']).toBe('Bearer jwt-fresh');
+  });
+});
+
+// Issue #67: signing in with a guest diagram open showed "diagram does not
+// exist", because the editor loaded it as the Clerk user before
+// POST /api/migrate had moved it. Owner data waits for the migration.
+describe('useClerkApiBootstrap guest migration', () => {
+  it('holds authLoaded until the guest data has migrated', async () => {
+    resetGuestMigrationForTests();
+    setGuestIdentity('guest-1', 'sig-1');
+    let finish: (v: typeof MIGRATED) => void = () => {};
+    apiMigrateGuestData.mockReturnValue(new Promise((r) => (finish = r)));
+    const seen: boolean[] = [];
+    function Probe() {
+      seen.push(useClerkApiBootstrap().authLoaded);
+      return null;
+    }
+
+    render(<Probe />);
+    expect(seen.at(-1)).toBe(false);
+    expect(apiMigrateGuestData).toHaveBeenCalledWith('guest-1', 'sig-1');
+
+    await act(async () => finish(MIGRATED));
+    expect(seen.at(-1)).toBe(true);
+    expect(seen.indexOf(true)).toBeGreaterThan(0);
+  });
+
+  it('migrates once however many components mount the hook', async () => {
+    resetGuestMigrationForTests();
+    setGuestIdentity('guest-1', 'sig-1');
+    apiMigrateGuestData.mockResolvedValue(MIGRATED);
+    function Probe() {
+      useClerkApiBootstrap();
+      return null;
+    }
+
+    await act(async () => {
+      render(
+        <>
+          <Probe />
+          <Probe />
+        </>,
+      );
+    });
+    expect(apiMigrateGuestData).toHaveBeenCalledTimes(1);
   });
 });

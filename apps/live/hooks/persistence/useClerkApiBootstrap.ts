@@ -1,10 +1,10 @@
 'use client';
 
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { apiMigrateGuestData, setTokenProvider } from '@/lib/api-client';
+import { useEffect, useLayoutEffect, useMemo, useReducer, useState } from 'react';
+import { setTokenProvider } from '@/lib/api-client';
 import { clerkEnabled } from '@/lib/clerk-config';
-import { clearGuestSelfId, getGuestSelfId, getGuestSelfSig } from '@/lib/local-identity';
+import { guestMigrationPending, settleGuestMigration } from '@/lib/guest-migration';
 
 // Two things every page that talks to the api needs to do once Clerk
 // is in the tree:
@@ -19,9 +19,10 @@ import { clearGuestSelfId, getGuestSelfId, getGuestSelfSig } from '@/lib/local-i
 //      `POST /api/migrate` reassigns every `diagrams.owner_id` +
 //      `folders.owner_id` row from the guest id to the Clerk userId
 //      (docs/specs/014-identity/auth-and-guest-access.md + docs/specs/015-api/api.md). On success we drop the localStorage key so
-//      subsequent loads skip the call entirely. A ref guards against
-//      React StrictMode's double-render firing two migration calls
-//      in dev.
+//      subsequent loads skip the call entirely. `authLoaded` stays
+//      false until the migration settles, so no page reads owner data
+//      as the Clerk userId while it still belongs to the guest id
+//      (issue #67). lib/guest-migration.ts runs it once per page load.
 //
 // Both Stage 3 (token provider) and Stage 4 (migration) lived as
 // identical copy-paste pairs in editor-page.tsx and new/page.tsx until
@@ -78,7 +79,21 @@ function useClerkApiBootstrapEnabled(): BootstrapResult {
     const id = window.setTimeout(() => setTimedOut(true), 5000);
     return () => window.clearTimeout(id);
   }, [clerkLoaded]);
-  const authLoaded = clerkLoaded || timedOut;
+  // 2. Guest → authed migration. Read on render so the very first
+  // signed-in render already holds `authLoaded`.
+  const migrating = !!isSignedIn && !!clerkUserId && guestMigrationPending(clerkUserId);
+  const [, rerender] = useReducer((n: number) => n + 1, 0);
+  useEffect(() => {
+    if (!isSignedIn || !clerkUserId) return;
+    let live = true;
+    void settleGuestMigration(clerkUserId).then(() => {
+      if (live) rerender();
+    });
+    return () => {
+      live = false;
+    };
+  }, [isSignedIn, clerkUserId]);
+  const authLoaded = (clerkLoaded || timedOut) && !migrating;
 
   // First+Last takes precedence so we always present the form the
   // user picked at sign-up. Falls back to fullName (covers OAuth
@@ -113,31 +128,6 @@ function useClerkApiBootstrapEnabled(): BootstrapResult {
       setTokenProvider(null);
     };
   }, [isSignedIn, getToken]);
-
-  // 2. Guest → authed migration. Fires at most once per session.
-  const migrateAttemptedRef = useRef(false);
-  useEffect(() => {
-    if (!isSignedIn || !clerkUserId) return;
-    if (migrateAttemptedRef.current) return;
-    const guestId = getGuestSelfId();
-    if (!guestId || guestId === clerkUserId) return;
-    migrateAttemptedRef.current = true;
-    // Send the guest id's signature so the worker can verify possession
-    // (docs/specs/014-identity/auth-and-guest-access.md). Null for a guest the editor bootstrap never managed to
-    // sign (offline, or worker signing disabled); the worker then accepts
-    // it only when signing is off, and otherwise refuses — the safe
-    // failure (data stays under the guest id rather than being claimable
-    // by an observer).
-    void apiMigrateGuestData(guestId, getGuestSelfSig())
-      .then((res) => {
-        if (res) clearGuestSelfId();
-      })
-      .catch(() => {
-        // Network glitch — leave the localStorage id in place so a
-        // future load retries.
-        migrateAttemptedRef.current = false;
-      });
-  }, [isSignedIn, clerkUserId]);
 
   return { isSignedIn, authLoaded, clerkUserId, clerkDisplayName };
 }
