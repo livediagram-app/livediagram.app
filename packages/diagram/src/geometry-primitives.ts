@@ -71,3 +71,20 @@ export function boundsOfPoints(points: Iterable<Point>): Rect | null {
   }
   return found ? { x: minX, y: minY, width: maxX - minX, height: maxY - minY } : null;
 }
+
+// Rotate `p` clockwise about `center` by `deg` degrees, matching the
+// CSS `transform: rotate(deg)` the canvas applies to a rotated element
+// (positive = clockwise in the y-down canvas space). Pure helper shared
+// by anchorPosition, the side choice in anchor-choice.ts and the outline
+// inside test in shape-outline.ts.
+export function rotatePoint(p: Point, center: Point, deg: number): Point {
+  const rad = (deg * Math.PI) / 180;
+  const cos = Math.cos(rad);
+  const sin = Math.sin(rad);
+  const dx = p.x - center.x;
+  const dy = p.y - center.y;
+  return {
+    x: center.x + dx * cos - dy * sin,
+    y: center.y + dx * sin + dy * cos,
+  };
+}

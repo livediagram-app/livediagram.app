@@ -113,8 +113,7 @@ export function useArrowDragHandlers({
       startClientY: e.clientY,
       startCanvasX: start.x,
       startCanvasY: start.y,
-      // Repositioning an existing endpoint is a manual correction: if it
-      // lands on an anchor, mark it `manual` so auto-rebind leaves it.
+      // Repositioning an existing endpoint, not drawing a new arrow.
       reposition: true,
     });
   };

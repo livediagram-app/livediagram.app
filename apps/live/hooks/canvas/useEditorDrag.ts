@@ -24,11 +24,11 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   acceptsInlineIcon,
+  anchorOutward,
   ES_LANES,
   isBoxed,
   nearestElementTowards,
   opposingAnchor,
-  type Anchor,
   rebindArrowAnchorsAfterMove,
   type ArrowElement,
   type Element,
@@ -75,19 +75,6 @@ type MovePointer = {
   ctrlKey: boolean;
   metaKey: boolean;
   shiftKey: boolean;
-};
-
-// Unit vector out of each anchor, for placing a tapped quick-connect arrow's
-// free end when there's nothing on that side to attach to.
-const ANCHOR_OUT: Record<Anchor, { x: number; y: number }> = {
-  n: { x: 0, y: -1 },
-  s: { x: 0, y: 1 },
-  e: { x: 1, y: 0 },
-  w: { x: -1, y: 0 },
-  ne: { x: 0.707, y: -0.707 },
-  nw: { x: -0.707, y: -0.707 },
-  se: { x: 0.707, y: 0.707 },
-  sw: { x: -0.707, y: 0.707 },
 };
 
 export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
@@ -370,16 +357,13 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
               move.tx,
               move.ty,
             );
-            // Second pass: re-pin connected arrow anchors against
-            // the moved positions so an arrow stays visually
-            // attached as the user drags. Skipped when the per-
-            // user preference (docs/specs/007-editor/user-preferences.md) is off, in which case
-            // anchors stay frozen at whatever the user originally
-            // chose. Read through a ref so a mid-drag flip lands
-            // on the next pointermove without re-attaching.
-            // ?? false mirrors docs/specs/007-editor/user-preferences.md's opt-in default should the
-            // ref somehow be unset.
-            const autoRebind = depsRef.current.autoRebindArrowsRef.current ?? false;
+            // Second pass, live on every frame: the auto-rebind
+            // (docs/specs/008-canvas/arrow-anchors.md) moves an end whose
+            // arrow now runs through a shape. Skipped when the
+            // preference (docs/specs/007-editor/user-preferences.md) is
+            // off. Read through a ref so a mid-drag flip lands on the
+            // next pointermove; ?? true mirrors its default.
+            const autoRebind = depsRef.current.autoRebindArrowsRef.current ?? true;
             return autoRebind ? rebindArrowAnchorsAfterMove(moved, drag.startBounds) : moved;
           });
           // Shift-duplicate identity swap (docs/specs/008-canvas/shift-drag-duplicate.md): holding Shift turns
@@ -544,7 +528,9 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
             source && isBoxed(source)
               ? nearestElementTowards(d.activeTab.elements, source, anchor)
               : null;
-          const out = ANCHOR_OUT[anchor];
+          // Out of the anchor, for placing a tapped quick-connect arrow's free end
+          // when there's nothing on that side to attach to.
+          const out = anchorOutward(anchor);
           d.commit((els) =>
             els.map((el) =>
               el.id !== arrowId || el.type !== 'arrow'

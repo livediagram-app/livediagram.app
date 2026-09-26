@@ -113,6 +113,19 @@ describe('isValidElement', () => {
     );
   });
 
+  it('accepts all sixteen anchors and rejects any other id (docs/specs/008-canvas/arrow-anchors.md)', () => {
+    const arrowTo = (anchor: string) => ({
+      id: 'a',
+      type: 'arrow',
+      from: { kind: 'pinned', elementId: 'b', anchor },
+      to: { kind: 'free', x: 0, y: 0 },
+    });
+    for (const anchor of ['nne', 'ene', 'ese', 'sse', 'ssw', 'wsw', 'wnw', 'nnw', 'ne', 'n']) {
+      expect(isValidElement(arrowTo(anchor))).toBe(true);
+    }
+    expect(isValidElement(arrowTo('nnn'))).toBe(false);
+  });
+
   it('rejects over-cap arrays (freehand points, table cells)', () => {
     const points = Array.from({ length: MAX_FREEHAND_POINTS + 1 }, () => ({ nx: 0, ny: 0 }));
     expect(isValidElement({ id: 'f', type: 'freehand', closed: false, points, ...box })).toBe(

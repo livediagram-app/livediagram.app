@@ -1,4 +1,3 @@
-import { isTechIconId } from '@livediagram/icons';
 import {
   arrowLabelAnchor,
   arrowStyleOf,
@@ -9,10 +8,10 @@ import {
   type ElementId,
   type Endpoint,
 } from './index';
-import { techIconMarkBounds } from './icon-size';
-import { unionRects, type Point, type Rect } from './geometry-primitives';
-import { shapePolygonVertices } from './shape-geometry';
-import type { ShapeKind } from './shape-kind';
+import { anchorLayoutPoint } from './anchor-layouts';
+import { anchorFraction, anchorLiesOn, offeredAnchors } from './anchors';
+import { rotatePoint, unionRects, type Point, type Rect } from './geometry-primitives';
+import { anchorOutline, connectorBox, projectOntoOutline } from './shape-outline';
 
 // --- Geometry helpers ------------------------------------------------------
 
@@ -20,126 +19,6 @@ import type { ShapeKind } from './shape-kind';
 // live in a leaf module so modules that must not import the barrel at
 // runtime (shadow.ts, web-components.ts) can still share them.
 export * from './geometry-primitives';
-
-// Rotate `p` clockwise about `center` by `deg` degrees, matching the
-// CSS `transform: rotate(deg)` the canvas applies to a rotated element
-// (positive = clockwise in the y-down canvas space). Pure helper shared
-// by anchorPosition + the face selection in anchor-choice.ts.
-export function rotatePoint(p: Point, center: Point, deg: number): Point {
-  const rad = (deg * Math.PI) / 180;
-  const cos = Math.cos(rad);
-  const sin = Math.sin(rad);
-  const dx = p.x - center.x;
-  const dy = p.y - center.y;
-  return {
-    x: center.x + dx * cos - dy * sin,
-    y: center.y + dx * sin + dy * cos,
-  };
-}
-
-// The anchor point on the element's UNROTATED axis-aligned box.
-function localAnchorPosition(
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  anchor: Anchor,
-): Point {
-  switch (anchor) {
-    case 'nw':
-      return { x, y };
-    case 'n':
-      return { x: x + width / 2, y };
-    case 'ne':
-      return { x: x + width, y };
-    case 'e':
-      return { x: x + width, y: y + height / 2 };
-    case 'se':
-      return { x: x + width, y: y + height };
-    case 's':
-      return { x: x + width / 2, y: y + height };
-    case 'sw':
-      return { x, y: y + height };
-    case 'w':
-      return { x, y: y + height / 2 };
-  }
-}
-
-// Outline polygons for the SVG-rendered shapes whose drawn edge differs
-// from their bounding box, read from the shared geometry table
-// (shape-geometry.ts) the overlay and the export both paint from, so an
-// anchor projected onto these vertices lands on the line the user actually
-// sees. Convex only: the ray-exit test below assumes one boundary crossing,
-// so non-convex shapes (star, cloud, speech-bubble) are deliberately absent
-// and fall back to the bounding box.
-const CONVEX_OUTLINE_KINDS: readonly ShapeKind[] = [
-  'diamond',
-  'parallelogram',
-  'hexagon',
-  'triangle',
-  'trapezoid',
-];
-const SHAPE_OUTLINES: Partial<Record<string, readonly [number, number][]>> = Object.fromEntries(
-  CONVEX_OUTLINE_KINDS.map((kind) => [kind, shapePolygonVertices(kind)!]),
-);
-
-// Project a bounding-box anchor onto the shape's actual drawn outline, so a
-// connector meets a diamond's slanted edge or a circle's curve instead of
-// floating in the empty bounding-box corner. Returns the point where the ray
-// from the shape centre through the bbox anchor exits the shape, or null when
-// the shape's outline IS its box (square, devices, text/table/sticky/image)
-// so the caller keeps the plain anchor. Works in the element's local
-// (unrotated) px space; the caller rotates the result out to world space.
-function projectAnchorToShape(
-  shape: string,
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  p: Point,
-): Point | null {
-  if (width <= 0 || height <= 0) return null;
-  const cx = x + width / 2;
-  const cy = y + height / 2;
-  const dx = p.x - cx;
-  const dy = p.y - cy;
-  if (Math.abs(dx) < 1e-9 && Math.abs(dy) < 1e-9) return null;
-
-  // Circle renders as an ellipse filling the box; intersect the centre->anchor
-  // ray with that ellipse directly (cheaper + exact vs polygonising it).
-  if (shape === 'circle') {
-    const hx = width / 2;
-    const hy = height / 2;
-    const t = 1 / Math.sqrt((dx / hx) ** 2 + (dy / hy) ** 2);
-    return { x: cx + dx * t, y: cy + dy * t };
-  }
-
-  const outline = SHAPE_OUTLINES[shape];
-  if (!outline) return null;
-
-  // Vertices mapped from the 0..100 viewBox into local px.
-  const verts = outline.map(([vx, vy]) => ({
-    x: x + (vx / 100) * width,
-    y: y + (vy / 100) * height,
-  }));
-  // Smallest positive t where the ray centre + t*(dx,dy) crosses an edge.
-  let bestT = Infinity;
-  for (let i = 0; i < verts.length; i++) {
-    const a = verts[i]!;
-    const b = verts[(i + 1) % verts.length]!;
-    const ex = b.x - a.x;
-    const ey = b.y - a.y;
-    const det = ex * dy - dx * ey;
-    if (Math.abs(det) < 1e-9) continue; // ray parallel to this edge
-    const rx = a.x - cx;
-    const ry = a.y - cy;
-    const t = (ex * ry - rx * ey) / det;
-    const s = (dx * ry - rx * dy) / det;
-    if (t > 1e-6 && s >= -1e-6 && s <= 1 + 1e-6 && t < bestT) bestT = t;
-  }
-  if (!Number.isFinite(bestT)) return null;
-  return { x: cx + dx * bestT, y: cy + dy * bestT };
-}
 
 // Works on any boxed element since they share x/y/width/height. When the
 // element carries a `rotation`, the anchor is rotated about the
@@ -152,19 +31,21 @@ function projectAnchorToShape(
 // corner) before any rotation is applied.
 export function anchorPosition(element: BoxedElement, anchor: Anchor): Point {
   const box = connectorBox(element);
-  let local = localAnchorPosition(box.x, box.y, box.width, box.height, anchor);
+  const { fx, fy } = anchorFraction(anchor);
+  let local: Point = { x: box.x + fx * box.width, y: box.y + fy * box.height };
+  // A face-placed anchor (triangle, hexagon, parallelogram, trapezoid) sits
+  // at its own point along a drawn face, already on the outline.
+  const placed =
+    box === element && element.type === 'shape' ? anchorLayoutPoint(element.shape, anchor) : null;
   // Project onto the shape's real outline only when the connector box IS the
-  // element box — a Technology icon's mark is a plain rounded square, so its
-  // rect anchors are already on the visible edge.
-  if (element.type === 'shape' && box === element) {
-    const projected = projectAnchorToShape(
-      element.shape,
-      element.x,
-      element.y,
-      element.width,
-      element.height,
-      local,
-    );
+  // element box: a Technology icon's mark is a plain rounded square, so its
+  // box anchors are already on the visible edge.
+  const outline = box === element && !placed ? anchorOutline(element) : null;
+  if (placed) {
+    local = { x: box.x + (placed[0] / 100) * box.width, y: box.y + (placed[1] / 100) * box.height };
+  } else if (outline) {
+    const centre = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+    const projected = projectOntoOutline(outline, centre, local);
     if (projected) local = projected;
   } else if (box !== element && element.label) {
     // Tech icon with a caption: the caption sits between the mark and the
@@ -174,21 +55,13 @@ export function anchorPosition(element: BoxedElement, anchor: Anchor): Point {
     // one) instead of crossing it. The other sides stay on the chip.
     const alignX = element.textAlignX ?? 'center';
     const alignY = element.textAlignY ?? 'bottom';
-    if (alignX === 'left' && (anchor === 'w' || anchor === 'nw' || anchor === 'sw')) {
+    if (alignX === 'left' && anchorLiesOn(anchor, 'w')) {
       local = { x: element.x, y: local.y };
-    } else if (alignX === 'right' && (anchor === 'e' || anchor === 'ne' || anchor === 'se')) {
+    } else if (alignX === 'right' && anchorLiesOn(anchor, 'e')) {
       local = { x: element.x + element.width, y: local.y };
-    } else if (
-      alignX === 'center' &&
-      alignY === 'bottom' &&
-      (anchor === 's' || anchor === 'se' || anchor === 'sw')
-    ) {
+    } else if (alignX === 'center' && alignY === 'bottom' && anchorLiesOn(anchor, 's')) {
       local = { x: local.x, y: element.y + element.height };
-    } else if (
-      alignX === 'center' &&
-      alignY !== 'bottom' &&
-      (anchor === 'n' || anchor === 'ne' || anchor === 'nw')
-    ) {
+    } else if (alignX === 'center' && alignY !== 'bottom' && anchorLiesOn(anchor, 'n')) {
       local = { x: local.x, y: element.y };
     }
   }
@@ -203,23 +76,24 @@ export function anchorPosition(element: BoxedElement, anchor: Anchor): Point {
   );
 }
 
-// The box connectors treat as an element's visual body: a Technology
-// icon's fixed-size mark (docs/specs/010-palette/technology-icons.md — the element box can be much larger
-// than the visible chip, so box-edge anchors would float in whitespace
-// and face selection would answer for the wrong rectangle), the element
-// itself otherwise. Returns the element identity for the common case so
-// callers can cheaply tell the two apart. Shared with the face selection
-// in anchor-choice.ts.
-export function connectorBox(el: BoxedElement): {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-} {
-  if (el.type === 'shape' && el.shape === 'icon' && isTechIconId(el.iconId)) {
-    return techIconMarkBounds(el);
+// `anchor` when the element offers it, else the offered anchor nearest its
+// point (first in table order on a tie): what a quick-connect from a side
+// without anchors, such as a triangle's top, pins to.
+export function nearestOfferedAnchor(element: BoxedElement, anchor: Anchor): Anchor {
+  const offered = offeredAnchors(element);
+  if (offered.includes(anchor)) return anchor;
+  const from = anchorPosition(element, anchor);
+  let best = offered[0] ?? anchor;
+  let bestD = Infinity;
+  for (const a of offered) {
+    const p = anchorPosition(element, a);
+    const d = (p.x - from.x) ** 2 + (p.y - from.y) ** 2;
+    if (d < bestD - 1e-9) {
+      bestD = d;
+      best = a;
+    }
   }
-  return el;
+  return best;
 }
 
 export function centreOf(el: BoxedElement): Point {

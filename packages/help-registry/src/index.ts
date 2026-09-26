@@ -1093,8 +1093,8 @@ export const articles: Article[] = [
   {
     slug: 'auto-attach-arrows',
     title: 'Auto-Attach Arrows',
-    description: 'Re-pin arrows to the nearest face as shapes move.',
-    keywords: 'reconnect pin snap face move connector attach follow',
+    description: 'Move an arrow end to the facing side when a move sends it through a shape.',
+    keywords: 'reconnect pin snap side anchor quarter corner move connector attach follow',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Palette Settings',

@@ -75,6 +75,23 @@ const rect = (
 // draws it natively at element coordinates rather than as a nested <svg>.
 export const DIAMOND_POINTS = '50,0 100,50 50,100 0,50';
 
+/** The actor's anchoring hull in its 0..90 x 0..130 viewBox
+ *  (docs/specs/008-canvas/arrow-anchors.md): the convex hull of the head, the
+ *  arm tips and the feet, carried down to the bottom of the label band so a
+ *  connector below the figure clears its caption. Clockwise from the top. */
+export const ACTOR_HULL: readonly (readonly [number, number])[] = [
+  [45, 6],
+  [56.3, 10.7],
+  [61, 22],
+  [74, 56],
+  [68, 130],
+  [22, 130],
+  [16, 56],
+  [29, 22],
+  [33.7, 10.7],
+];
+export const ACTOR_VIEWBOX = { width: 90, height: 130 } as const;
+
 // Every silhouette whose geometry does not depend on the element's size.
 const FIXED_GEOMETRY: Partial<Record<ShapeKind, ShapeGeometry>> = {
   diamond: stretch(polygon(DIAMOND_POINTS)),
@@ -134,7 +151,7 @@ const FIXED_GEOMETRY: Partial<Record<ShapeKind, ShapeGeometry>> = {
   // UML actor: an open head over a line body. The viewBox leaves a small
   // clear band under the legs (y 112..130) for the label.
   actor: {
-    viewBox: '0 0 90 130',
+    viewBox: `0 0 ${ACTOR_VIEWBOX.width} ${ACTOR_VIEWBOX.height}`,
     preserveAspectRatio: 'xMidYMid meet',
     parts: [
       { tag: 'circle', role: 'head', cx: 45, cy: 22, r: 16 },
@@ -145,6 +162,14 @@ const FIXED_GEOMETRY: Partial<Record<ShapeKind, ShapeGeometry>> = {
     ],
   },
 };
+
+/** A single-path silhouette's `d` in its 0..100 box, or null for a kind not
+ *  drawn as one path. Anchor projection samples it (cloud, document). */
+export function shapePathData(kind: ShapeKind): string | null {
+  const parts = FIXED_GEOMETRY[kind]?.parts;
+  const only = parts?.length === 1 ? parts[0] : undefined;
+  return only?.tag === 'path' ? only.d : null;
+}
 
 /** A single-polygon silhouette's vertices in its 0..100 box (which equals
  *  CSS percentages), or null for a kind not drawn as one polygon. For the

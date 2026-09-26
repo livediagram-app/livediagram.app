@@ -52,7 +52,7 @@ ARROW — connections. Prefer pinned endpoints whenever you know both element ID
  strokeStyle?:"solid"|"dashed"|"dotted"}
 Endpoint: {kind:"pinned", elementId:string, anchor:AnchorDir}
        OR {kind:"free", x:number, y:number}  ← only when no target element exists
-AnchorDir: "n"|"s"|"e"|"w"|"ne"|"nw"|"se"|"sw"
+AnchorDir: "n"|"s"|"e"|"w"|"ne"|"nw"|"se"|"sw"|"nne"|"ene"|"ese"|"sse"|"ssw"|"wsw"|"wnw"|"nnw" (corners, midpoints, quarter points between them)
 
 ARROW ANCHOR RULES — critical for correct layout:
 • Left-to-right flow: from anchor "e" → to anchor "w"

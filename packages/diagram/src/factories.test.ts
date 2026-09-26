@@ -348,13 +348,13 @@ describe('duplicateElements', () => {
     expect(dup!.from).toEqual({ kind: 'on-arrow', arrowId: 'lifeline', t: 0.4 });
   });
 
-  it('preserves the manual anchor flag when repinning to a duplicate', () => {
+  it('repins both ends to the duplicates, anchors unchanged', () => {
     const a = shape('a');
     const b = shape('b', { x: 100 });
     const arrow: ArrowElement = {
       id: 'arrow',
       type: 'arrow',
-      from: { kind: 'pinned', elementId: 'a', anchor: 'e', manual: true },
+      from: { kind: 'pinned', elementId: 'a', anchor: 'ene' },
       to: { kind: 'pinned', elementId: 'b', anchor: 'w' },
     };
     const { newElements, idMap } = duplicateElements(
@@ -364,13 +364,7 @@ describe('duplicateElements', () => {
       0,
     );
     const dup = newElements.find((e): e is ArrowElement => e.type === 'arrow');
-    expect(dup!.from).toEqual({
-      kind: 'pinned',
-      elementId: idMap.get('a'),
-      anchor: 'e',
-      manual: true,
-    });
-    // Auto-managed ends stay auto-managed (no manual key invented).
+    expect(dup!.from).toEqual({ kind: 'pinned', elementId: idMap.get('a'), anchor: 'ene' });
     expect(dup!.to).toEqual({ kind: 'pinned', elementId: idMap.get('b'), anchor: 'w' });
   });
 

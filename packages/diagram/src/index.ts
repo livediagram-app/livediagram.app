@@ -481,8 +481,14 @@ export * from './element-kind-label';
 // or "Untitled".
 export * from './element-display-label';
 
+// Anchor table, outlines and side choice (docs/specs/008-canvas/arrow-anchors.md).
+export * from './anchors';
+export * from './anchor-layouts';
+export * from './shape-outline';
+export * from './svg-path-outline';
 export * from './anchor-choice';
 export * from './geometry';
+export * from './arrow-path-hits';
 export * from './arrow-rebind';
 export * from './arrow-endpoint-spread';
 // Arrows breaking around intervening boxes at render time (docs/specs/008-canvas/arrow-route-behind.md).

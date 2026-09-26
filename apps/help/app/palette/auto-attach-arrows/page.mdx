@@ -6,31 +6,41 @@ import { PaletteSettings, AutoAttachArrows } from '@/components/illustrations/pa
 export const metadata = helpMetadata({
   title: 'Auto-Attach Arrows',
   description:
-    'Keep arrows pinned to the nearest face of a shape as it moves, so connectors always point at the right spot.',
+    'Keep arrows clear of the shapes they connect: when a move sends an arrow through a shape, its end hops to the side facing the other end.',
   path: '/help/palette/auto-attach-arrows/',
 });
 
 <ArticleLayout
   title="Auto-Attach Arrows"
-  description="Re-pin arrows to the nearest face of a shape automatically as that shape moves."
+  description="When a move sends an arrow through a shape it connects, its end moves to the side facing the other end."
   categoryTitle="Palette"
   categorySlug="palette"
   subArticles={getSubArticles("auto-attach-arrows")}
 >
 
-Auto-Attach Arrows is a toggle, and it is off by default: arrows stay pinned exactly where you drew them until you opt in. You will find it in [Settings](/help/user-interface/settings/), under **Editor**.
+Auto-Attach Arrows is a toggle, and it is on by default. You will find it in [Settings](/help/user-interface/settings/), under **Editor**.
 
 <Figure caption="The Editor settings, with Auto-attach arrows highlighted and switched on.">
   <PaletteSettings highlight="auto-attach" />
 </Figure>
 
+## Where an arrow can attach
+
+Most shapes have sixteen points an arrow end can snap to: the four corners, the middle of each edge, and a quarter point between each corner and its middle. A few shapes have their own set: a circle, a diamond and a person have eight (no quarter points), a triangle has nine (three on each of its faces, none at the tip), and a document has fourteen (its wavy bottom edge has no corner points). On a hexagon, parallelogram or trapezoid the points follow the faces you see. On round, slanted and wavy shapes (a circle, a diamond, a person, a cloud) the points sit on the outline you see. Drag an arrow end near a shape and its points light up.
+
 ## What it does
 
-When the setting is on, arrows re-pin to the nearest face or edge of a shape as that shape moves. The connector follows along, so it keeps pointing at the right spot without you having to tidy up endpoints by hand. Under the switch the description reads: "Re-pin arrows to the nearest face as shapes move."
+As you move shapes, an arrow end stays exactly where you put it, with one exception: when the move leaves the arrow running **through** one of the shapes it connects. Then its ends move to the sides that face each other.
 
-Re-pinning is deliberately conservative: an arrow only picks a new face when its current one has genuinely stopped making sense, such as the shape being dragged to the other side of its partner. Nudging a connected shape a little never reshuffles a layout you have already arranged.
+- An end keeps its kind of spot: a corner stays a corner, a quarter point a quarter point, a middle a middle. Only the side changes.
+- A quarter point moves to the quarter on the new side nearer the other end, unless another arrow already sits there.
+- Curved and angled arrows count by the line as drawn, not a straight line between their ends.
+- It happens live while you drag, and there is no going back: once an end has moved, its new spot is where it stays.
+- Ends you placed by hand follow the same rule, and so does the attached end of an arrow whose other end is free.
 
-<Figure caption="As the target shape moves, the arrow re-pins to its nearest face instead of dangling at the old spot.">
+When two arrows leave the same side of a shape and cross each other, they swap their spots, so the lines untangle without changing sides.
+
+<Figure caption="The target moves to the other side of the source. Left where they were, the ends would run the arrow through the source, so both move to the sides that face each other.">
   <AutoAttachArrows />
 </Figure>
 
@@ -38,8 +48,8 @@ Re-pinning is deliberately conservative: an arrow only picks a new face when its
 
 When several arrows pin to the same spot on a shape, say a hub with every child pointing at its bottom edge, the arrowheads fan out side by side along that edge instead of piling onto one point. The fan is purely visual and automatic: the pins themselves don't change, the heads just stay readable however many connectors converge.
 
-## When to turn it on
+## When to turn it off
 
-Switch it on if you move shapes around a lot and want connectors to keep pointing at the nearest face without tidying endpoints by hand. Leave it off (the default) when you have positioned connectors deliberately and want every endpoint to hold exactly where you put it as shapes are dragged.
+Switch it off when you want every arrow end to hold exactly where you put it, even when a move makes an arrow cross a shape. With it off, moving shapes never changes where an arrow is attached.
 
 </ArticleLayout>

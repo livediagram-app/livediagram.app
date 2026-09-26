@@ -1,5 +1,12 @@
 import type { Dispatch, PointerEvent as ReactPointerEvent, RefObject, SetStateAction } from 'react';
-import { anchorPosition, isBoxed, type Anchor, type ArrowElement } from '@livediagram/diagram';
+import {
+  anchorOutward,
+  anchorPosition,
+  isBoxed,
+  nearestOfferedAnchor,
+  type Anchor,
+  type ArrowElement,
+} from '@livediagram/diagram';
 import { getTheme } from '@/lib/themes';
 import { track } from '@/lib/telemetry';
 import { withFrameContents, type DragMode, type DragState, type ShapeBounds } from '@/lib/canvas';
@@ -107,7 +114,7 @@ export function useBoxedDragHandlers({
 
   const beginAnchorDrag = (
     elementId: string,
-    anchor: Anchor,
+    sideAnchor: Anchor,
     e: ReactPointerEvent,
     opts?: {
       clickToPlace?: boolean;
@@ -120,6 +127,9 @@ export function useBoxedDragHandlers({
     const element = d.activeTab.elements.find((el) => el.id === elementId);
     if (!element || !isBoxed(element) || element.locked === true || d.isReadOnly) return;
     if (d.layerInertIds.has(elementId)) return;
+    // A side without anchors (a triangle's top) starts from the nearest one
+    // the shape offers (docs/specs/008-canvas/arrow-anchors.md).
+    const anchor = nearestOfferedAnchor(element, sideAnchor);
     const start = anchorPosition(element, anchor);
     const fromEnd: ArrowElement['from'] = { kind: 'pinned', elementId, anchor };
     // A connector drawn FROM a shape takes the TAB THEME's stroke, not the
@@ -135,17 +145,7 @@ export function useBoxedDragHandlers({
     // arrow that runs straight out from the anchor by that many px and
     // select it so the user can reposition it by hand.
     if (opts?.placeOutPx) {
-      const out: Record<Anchor, { x: number; y: number }> = {
-        n: { x: 0, y: -1 },
-        s: { x: 0, y: 1 },
-        e: { x: 1, y: 0 },
-        w: { x: -1, y: 0 },
-        ne: { x: 0.707, y: -0.707 },
-        nw: { x: -0.707, y: -0.707 },
-        se: { x: 0.707, y: 0.707 },
-        sw: { x: -0.707, y: 0.707 },
-      };
-      const dir = out[anchor];
+      const dir = anchorOutward(anchor);
       const placed: ArrowElement = {
         id: crypto.randomUUID(),
         type: 'arrow',

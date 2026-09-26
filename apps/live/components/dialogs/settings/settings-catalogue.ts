@@ -196,12 +196,10 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'connector reattach sticky arrows connections',
         label: 'Auto-Attach Arrows',
         description:
-          'Re-pins an arrow to the nearest face of the shape it connects as that shape moves, so a connection follows its endpoints instead of drifting.',
+          'When a move leaves an arrow running through a shape it connects, its end moves to the side facing the other end and keeps its corner, quarter or middle spot.',
         helpArticle: 'autoAttachArrows',
-        // Opt-in (docs/specs/007-editor/user-preferences.md), and the editor gates the rebind on this same
-        // helper. Re-deriving it as `!== false` here showed the switch ON for
-        // a fresh profile while the feature was off, so the first click
-        // "turned it off" and it never ran.
+        // On by default (docs/specs/007-editor/user-preferences.md); the editor gates the rebind on this
+        // same helper, so the switch and the behaviour cannot disagree.
         read: autoRebindArrowsEnabled,
         write: (p, v) => ({ ...p, autoRebindArrows: v }),
         event: { category: 'UI', on: 'AutoRebindOn', off: 'AutoRebindOff' },

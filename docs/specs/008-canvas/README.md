@@ -3,6 +3,8 @@
 Follow the references below only as needed; never upfront.
 
 - ./canvas-and-palette.md - when working on Canvas and palette: The canvas and its floating palette: canvas tools, every element kind, drawing, rich-text labels
+- ./arrow-anchors.md - when working on Arrow anchors and auto-rebind: The sixteen anchors (corners, quarters, middles), outline projection, the creation anchor, the converging fan, and the auto-rebind that moves an end to the facing side (same position class) only when its drawn path runs through a shape, plus same-side crossing swaps
+- ./blueprints/README.md - when implementing a canvas spec that has a blueprint (arrow anchors and auto-rebind)
 - ./isometric-view.md - when working on Isometric view: Navigation tool that tilts the tab into an isometric, extruded-depth view; pans like Hand, read-only
 - ./layout-cleanup.md - when working on Layout cleanup: The tab menu's Cleanup band: Auto-align (grid snap) + Auto Layout (deterministic graph layout / Tidy up)
 - ./arrow-to-arrow.md - when working on Arrow-to-arrow connections: Snap an arrow endpoint to evenly-spaced points along another arrow's line (sequence-diagram messages)

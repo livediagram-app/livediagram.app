@@ -167,7 +167,6 @@ export function applyArrowDragMove(args: ArrowDragMoveArgs): void {
     elements,
     arrowId: drag.arrowId,
     end: drag.end,
-    reposition: drag.reposition === true,
     noSnap,
     guidesOn,
   });

@@ -37,20 +37,20 @@ arrow bindings follow), so nothing can collide with
 elements already on the diagram — the JSON import's `remintElementIds` step is
 not needed on this path.
 
-| Excalidraw                        | livediagram                                                                                                                                      |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `rectangle`                       | `shape: 'square'` (`roundness` set → `borderRadius: 'md'`, absent → `'none'`)                                                                    |
-| `ellipse`                         | `shape: 'circle'`                                                                                                                                |
-| `diamond`                         | `shape: 'diamond'`                                                                                                                               |
-| `frame` / `magicframe`            | `shape: 'frame'` with the frame's `name` as label                                                                                                |
-| `text` with `containerId`         | the container's `label` (+ its text styling); the text element itself is consumed                                                                |
-| `text` standalone                 | `text` element                                                                                                                                   |
-| `arrow`                           | `arrow`; `startBinding`/`endBinding` → `pinned` endpoints at the nearest of the 8 anchors; 3+ points → `arrowStyle: 'curved'` with `curvePoints` |
-| `line`, 2 points                  | `arrow` with `arrowEnds: 'none'`                                                                                                                 |
-| `line`, 3+ points                 | `freehand` with `straightEdges: true`; first ≈ last point → `closed: true` + fill                                                                |
-| `freedraw`                        | `freehand` (points normalised into the bounding box); first ≈ last point → `closed: true` + fill, same geometric rule as `line`                  |
-| `image`                           | `image` placeholder (`imageId: null`) — bytes are NOT migrated in v1 (they'd need an R2 upload per file)                                         |
-| `embeddable` / `iframe` / unknown | skipped; the count is returned in the result (`skipped`) so tests can assert it                                                                  |
+| Excalidraw                        | livediagram                                                                                                                                       |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `rectangle`                       | `shape: 'square'` (`roundness` set → `borderRadius: 'md'`, absent → `'none'`)                                                                     |
+| `ellipse`                         | `shape: 'circle'`                                                                                                                                 |
+| `diamond`                         | `shape: 'diamond'`                                                                                                                                |
+| `frame` / `magicframe`            | `shape: 'frame'` with the frame's `name` as label                                                                                                 |
+| `text` with `containerId`         | the container's `label` (+ its text styling); the text element itself is consumed                                                                 |
+| `text` standalone                 | `text` element                                                                                                                                    |
+| `arrow`                           | `arrow`; `startBinding`/`endBinding` → `pinned` endpoints at the nearest of the 16 anchors; 3+ points → `arrowStyle: 'curved'` with `curvePoints` |
+| `line`, 2 points                  | `arrow` with `arrowEnds: 'none'`                                                                                                                  |
+| `line`, 3+ points                 | `freehand` with `straightEdges: true`; first ≈ last point → `closed: true` + fill                                                                 |
+| `freedraw`                        | `freehand` (points normalised into the bounding box); first ≈ last point → `closed: true` + fill, same geometric rule as `line`                   |
+| `image`                           | `image` placeholder (`imageId: null`) — bytes are NOT migrated in v1 (they'd need an R2 upload per file)                                          |
+| `embeddable` / `iframe` / unknown | skipped; the count is returned in the result (`skipped`) so tests can assert it                                                                   |
 
 Property mapping, applied to every imported element where present:
 

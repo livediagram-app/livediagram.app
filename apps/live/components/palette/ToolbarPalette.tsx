@@ -181,6 +181,30 @@ export function ToolbarPalette(props: Props) {
     };
   }, [moreOpen]);
 
+  // Opening More focuses the body's search field, so typing filters straight
+  // away (docs/specs/007-editor/toolbar-layout.md). A body that loads its catalogue lazily
+  // (Icons, Technology) mounts the field a beat later, so watch for it. Not
+  // on a phone: focusing would raise the keyboard over the popover.
+  const moreRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const popover = moreRef.current;
+    if (!moreOpen || isMobile || !popover) return;
+    const focusSearch = () => {
+      const field = popover.querySelector<HTMLInputElement>(
+        'input[type="search"], input[type="text"], input:not([type])',
+      );
+      if (!field) return false;
+      field.focus();
+      return true;
+    };
+    if (focusSearch()) return;
+    const observer = new MutationObserver(() => {
+      if (focusSearch()) observer.disconnect();
+    });
+    observer.observe(popover, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, [moreOpen, isMobile]);
+
   // Where the More popover hangs: its right edge under the More button's
   // right edge, as an offset into the strip. Measured on the click that opens
   // it; the strip is centred, so a window resize moves both together and the
@@ -357,6 +381,7 @@ export function ToolbarPalette(props: Props) {
               // Palette renders. Capped to the window so a long category
               // (Components, Behaviours) scrolls rather than running off it.
               <div
+                ref={moreRef}
                 data-toolbar-more=""
                 // Hangs from the More button, not the middle of the strip. Wide
                 // rather than tall, so a category body rarely has to scroll.

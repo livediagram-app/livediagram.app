@@ -17,6 +17,7 @@
 // saves is migrated here on the next read.
 
 import type { Anchor, Element } from './index';
+import { anchorFraction } from './anchors';
 
 type Box = { x: number; y: number; width: number; height: number };
 type LegacyGroupEnd = { kind: 'pinned-group'; groupId: string; anchor: Anchor };
@@ -49,11 +50,10 @@ function groupBoxes(elements: readonly Element[]): Map<string, Box> {
   return out;
 }
 
-// The anchor point on a box: side midpoints and corners.
+// The anchor point on a box, from the shared anchor table.
 function anchorOn(b: Box, anchor: Anchor): { x: number; y: number } {
-  const x = anchor.includes('w') ? b.x : anchor.includes('e') ? b.x + b.width : b.x + b.width / 2;
-  const y = anchor.includes('n') ? b.y : anchor.includes('s') ? b.y + b.height : b.y + b.height / 2;
-  return { x, y };
+  const { fx, fy } = anchorFraction(anchor);
+  return { x: b.x + fx * b.width, y: b.y + fy * b.height };
 }
 
 // Whether a tab's elements carry anything to migrate. Cheap, so the common

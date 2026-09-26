@@ -1,11 +1,5 @@
 import { useState } from 'react';
-import {
-  bestAnchorTowards,
-  isBoxed,
-  rebindArrowAnchorsAfterMove,
-  type ArrowElement,
-  type Tab,
-} from '@livediagram/diagram';
+import { bestAnchorTowards, isBoxed, type ArrowElement, type Tab } from '@livediagram/diagram';
 import { getTheme } from '@/lib/themes';
 import { track } from '@/lib/telemetry';
 
@@ -73,10 +67,9 @@ export function useArrowConnect({
     if (!from || !to || !isBoxed(from) || !isBoxed(to)) return;
     const fromCenter = { x: from.x + from.width / 2, y: from.y + from.height / 2 };
     const toCenter = { x: to.x + to.width / 2, y: to.y + to.height / 2 };
-    // Pick the geometrically-best face on each endpoint, facing the other
-    // element. We deliberately DON'T avoid faces other arrows already use:
-    // sharing a start/end point is allowed, and steering off the natural
-    // face just to dodge an occupied one produced visibly worse connectors.
+    // The creation anchor (docs/specs/008-canvas/arrow-anchors.md): the middle
+    // of the side facing the other element. Sharing an anchor with another
+    // arrow is allowed; the fan separates the heads.
     const theme = getTheme(activeTab.theme);
     const stroke = from.strokeColor ?? theme.elementStroke ?? undefined;
     const arrow: ArrowElement = {
@@ -96,18 +89,7 @@ export function useArrowConnect({
     };
     commitTabs((ts) =>
       ts.map((t) =>
-        t.id === activeId
-          ? {
-              ...t,
-              // Run the new arrow through the same distribution pass a move
-              // uses (docs/specs/008-canvas/canvas-and-palette.md), scoped to its target end: a fresh connector
-              // joins an established fan on the source (sibling vote over
-              // the settled arrows' faces) instead of keeping whichever
-              // face its own chord grazes first.
-              elements: rebindArrowAnchorsAfterMove([...t.elements, arrow], new Set([toId])),
-              templateChosen: true,
-            }
-          : t,
+        t.id === activeId ? { ...t, elements: [...t.elements, arrow], templateChosen: true } : t,
       ),
     );
     setSelectedId(arrow.id);

@@ -15,9 +15,9 @@
 //   - Telemetry: one `Element / Changed / Nudge` per burst, never
 //     per press.
 //   - Boxed elements shift `x`/`y`; free arrow endpoints shift
-//     `from`/`to`; pinned arrow anchors re-pick their best face via
-//     rebindArrowAnchorsAfterMove when the autoRebindArrows pref
-//     is on (read through the live ref so the latest value applies
+//     `from`/`to`; pinned arrow ends run the auto-rebind
+//     (rebindArrowAnchorsAfterMove, docs/specs/008-canvas/arrow-anchors.md)
+//     when the autoRebindArrows pref is on (read through the live ref so the latest value applies
 //     without re-mounting the listener).
 //   - Suppressed in view-role sessions; the consumer also gates on
 //     "is there a typing target focused" upstream.
