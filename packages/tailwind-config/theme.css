@@ -4,6 +4,35 @@
  * docs/specs/007-editor/live-app.md "UI light / dark mode" for the policy. */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Motion tokens (docs/specs/004-interface-design/motion.md). Every chrome
+ * transition or animation settles within 250ms, hovers and small fades within
+ * 150ms, and a cascade as a whole within 250ms. `static` so a token read only
+ * through var() is still emitted. The same numbers live in src/motion.ts for
+ * code that needs milliseconds; a test keeps them equal. Tailwind turns the
+ * `--transition-duration-*` namespace into `duration-micro` / `-short` /
+ * `-long`, and the bare `transition` utility runs at micro. */
+@theme static {
+  --transition-duration-micro: 150ms;
+  --transition-duration-short: 200ms;
+  --transition-duration-long: 250ms;
+  --default-transition-duration: var(--transition-duration-micro);
+  /* A cascade's items run at micro; the delay steps by 10ms and stops at
+   * long - micro, so the last item lands by the ceiling. */
+  --motion-cascade-step: 10ms;
+  --motion-cascade-cap: 100ms;
+  /* The small fade every app shares (tooltips, popovers, portal menus). */
+  --animate-fade-in: fade-in var(--transition-duration-micro) ease-out;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 @theme {
   --color-brand-50: #f0f9ff;
   --color-brand-100: #e0f2fe;
@@ -78,7 +107,7 @@
 }
 
 .tl-fan-out {
-  animation: tl-fan-out 0.42s cubic-bezier(0.2, 0.85, 0.25, 1) both;
+  animation: tl-fan-out var(--transition-duration-micro) cubic-bezier(0.2, 0.85, 0.25, 1) both;
   transform-origin: right center;
 }
 
@@ -100,7 +129,7 @@
 }
 
 .tl-fan-out-up {
-  animation: tl-fan-out-up 0.42s cubic-bezier(0.2, 0.85, 0.25, 1) both;
+  animation: tl-fan-out-up var(--transition-duration-micro) cubic-bezier(0.2, 0.85, 0.25, 1) both;
   transform-origin: right center;
 }
 
@@ -153,75 +182,45 @@
 }
 
 .lvd-cascade > * {
-  animation: lvd-row-in 0.32s ease-out both;
+  animation: lvd-row-in var(--transition-duration-micro) ease-out both;
 }
 
 .lvd-cascade > *:nth-child(1) {
   animation-delay: 0ms;
 }
 .lvd-cascade > *:nth-child(2) {
-  animation-delay: 35ms;
+  animation-delay: 10ms;
 }
 .lvd-cascade > *:nth-child(3) {
-  animation-delay: 70ms;
+  animation-delay: 20ms;
 }
 .lvd-cascade > *:nth-child(4) {
-  animation-delay: 105ms;
+  animation-delay: 30ms;
 }
 .lvd-cascade > *:nth-child(5) {
-  animation-delay: 140ms;
+  animation-delay: 40ms;
 }
 .lvd-cascade > *:nth-child(6) {
-  animation-delay: 175ms;
+  animation-delay: 50ms;
 }
 .lvd-cascade > *:nth-child(7) {
-  animation-delay: 210ms;
+  animation-delay: 60ms;
 }
 .lvd-cascade > *:nth-child(8) {
-  animation-delay: 245ms;
+  animation-delay: 70ms;
 }
 .lvd-cascade > *:nth-child(9) {
-  animation-delay: 280ms;
+  animation-delay: 80ms;
 }
 .lvd-cascade > *:nth-child(10) {
-  animation-delay: 315ms;
-}
-.lvd-cascade > *:nth-child(11) {
-  animation-delay: 350ms;
-}
-.lvd-cascade > *:nth-child(12) {
-  animation-delay: 385ms;
-}
-.lvd-cascade > *:nth-child(13) {
-  animation-delay: 420ms;
-}
-.lvd-cascade > *:nth-child(14) {
-  animation-delay: 455ms;
-}
-.lvd-cascade > *:nth-child(15) {
-  animation-delay: 490ms;
-}
-.lvd-cascade > *:nth-child(16) {
-  animation-delay: 525ms;
-}
-.lvd-cascade > *:nth-child(17) {
-  animation-delay: 560ms;
-}
-.lvd-cascade > *:nth-child(18) {
-  animation-delay: 595ms;
-}
-.lvd-cascade > *:nth-child(19) {
-  animation-delay: 630ms;
-}
-.lvd-cascade > *:nth-child(20) {
-  animation-delay: 665ms;
+  animation-delay: 90ms;
 }
 
-/* Past the twentieth row the delay stops growing. Those rows are below
- * the fold on any realistic viewport, so a longer ramp would only make
- * the bottom of a long library sit blank after the top had settled. */
-.lvd-cascade > *:nth-child(n + 21) {
-  animation-delay: 700ms;
+/* From the eleventh row on the delay stops growing at the cascade cap
+ * (--motion-cascade-cap), so the whole list settles within 250ms; rows that
+ * far down are below the fold on most viewports anyway. */
+.lvd-cascade > *:nth-child(n + 11) {
+  animation-delay: var(--motion-cascade-cap);
 }
 
 @media (prefers-reduced-motion: reduce) {

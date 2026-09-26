@@ -2,12 +2,31 @@
   "name": "@livediagram/tailwind-config",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
   "main": "./theme.css",
   "exports": {
     ".": "./theme.css",
-    "./theme.css": "./theme.css"
+    "./theme.css": "./theme.css",
+    "./motion": "./src/motion.ts",
+    "./motion-budget": "./src/motion-budget.ts"
   },
   "files": [
-    "theme.css"
-  ]
+    "theme.css",
+    "src"
+  ],
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "clean": "rm -rf node_modules .turbo coverage"
+  },
+  "devDependencies": {
+    "@livediagram/eslint-config": "workspace:*",
+    "@livediagram/vitest-config": "workspace:*",
+    "@types/node": "^26.6.2",
+    "@typescript/native": "npm:typescript@^7.0.2",
+    "eslint": "^10.11.0",
+    "typescript": "npm:@typescript/typescript6@^6.0.2",
+    "vitest": "^5.0.1"
+  }
 }
