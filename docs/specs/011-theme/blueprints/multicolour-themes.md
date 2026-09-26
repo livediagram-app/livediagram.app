@@ -245,6 +245,7 @@ Each spec rule maps to one test, and every test is deterministic.
 | Built-in contrast ≥ 4.5                                  | every palette entry + `rootColor` of every built-in             | `themes-data.test.ts` (new)                 |
 | api rejects empty palette (E6) + O3                      | POST and PUT, 400, no write                                     | `apps/api/src/routes/custom-themes.test.ts` |
 | Five built-ins, 26 total                                 | counts                                                          | `apps/live/lib/themes.test.ts` (exists)     |
+| Colours reach the canvas + O1 in the browser             | Rainbow on a mind map: ≥ 3 palette hues, switch log             | `apps/live/e2e/multicolour-theme.spec.ts`   |
 
 ## Constants and configuration
 
