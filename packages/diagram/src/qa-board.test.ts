@@ -6,7 +6,6 @@ import {
   preferNewerQaAll,
   qaView,
   qaVoterId,
-  withQaState,
   type QaActor,
   type QaNote,
 } from './qa-board';
@@ -176,12 +175,6 @@ describe('preferNewerQa', () => {
   it('leaves non-board lists untouched', () => {
     const els = [createShape('square', 0, 0)];
     expect(preferNewerQaAll([], els)).toBe(els);
-  });
-
-  it('withQaState only moves forward', () => {
-    const el = board(3, []);
-    expect(withQaState(el, [note('n1')], 3)).toBe(el);
-    expect(withQaState(el, [note('n1')], 4).qaNotes).toHaveLength(1);
   });
 });
 

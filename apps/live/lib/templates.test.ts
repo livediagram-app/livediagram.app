@@ -23,7 +23,7 @@ import { getTheme } from './themes';
 
 // The catalogue's shape (count + default/extra split + no kind
 // drift) is load-bearing across both the picker and the marketing
-// site. spec/16 pins "48 templates (10 default + 38 extra)" and
+// site. spec/16 pins "50 templates (10 default + 40 extra)" and
 // spec/09 catalogues the picker UX. These tests pin the array so
 // either the spec or the catalogue can't silently drift away from
 // the other.
@@ -69,6 +69,8 @@ describe('TEMPLATES catalogue', () => {
     'raci-matrix',
     'user-story-map',
     'affinity-map',
+    'lean-coffee',
+    'town-hall',
     'business-model-canvas',
     'empathy-map',
     'funnel',
@@ -84,21 +86,21 @@ describe('TEMPLATES catalogue', () => {
   ];
 
   // Hidden templates are buildable but never listed, so every user-facing
-  // count (spec/16's "48 templates", the picker grids, the MCP catalogue)
+  // count (spec/16's "50 templates", the picker grids, the MCP catalogue)
   // is over the listed subset. The mechanism is generic; nothing ships
   // hidden today (the spec/69 guided-tour sample used it until the
   // interactive tour, spec/79, superseded it).
   const listed = TEMPLATES.filter((t) => !t.hidden);
 
-  it('lists exactly 48 templates (10 default + 38 extra, matches spec/16 and spec/09)', () => {
-    expect(listed).toHaveLength(48);
+  it('lists exactly 50 templates (10 default + 40 extra, matches spec/16 and spec/09)', () => {
+    expect(listed).toHaveLength(50);
   });
 
-  it('splits cleanly into 10 default + 38 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
+  it('splits cleanly into 10 default + 40 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
     const defaults = listed.filter((t) => !t.extra);
     const extras = listed.filter((t) => t.extra);
     expect(defaults).toHaveLength(10);
-    expect(extras).toHaveLength(38);
+    expect(extras).toHaveLength(40);
   });
 
   it('ships no hidden templates (the flag is generic; spec/69 was retired by spec/79)', () => {

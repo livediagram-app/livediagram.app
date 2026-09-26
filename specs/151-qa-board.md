@@ -211,6 +211,25 @@ and a bigger board shows more notes before it scrolls. The static export
 follows the same rule, drawing as many rows as the box fits. To make it
 readable on a projector, zoom the canvas.
 
+## Templates
+
+Two templates in the Agile category are built around the board
+(`template-builders-sessions.ts`), the first templates to seat a Collaborate
+element:
+
+- **Lean Coffee** (`lean-coffee`): a board labelled Topics between the
+  format's how-it-works steps and its tools: an 8-minute timer, a "Keep going
+  on this topic?" Yes/No poll, and a takeaways checklist. Lean Coffee is the
+  board's loop almost exactly (propose, upvote, discuss the top topic, Done,
+  next), which is why it earned a template.
+- **Town Hall Q&A** (`town-hall`): a "Questions for the panel" board beside an
+  agenda with a Q&A block, a 30-minute timer for it, and a follow-ups
+  checklist for what the panel can't answer live.
+
+Both boards start **empty**. A session template is used live, and example
+questions would be the first thing a facilitator had to delete in front of the
+room; the board's own empty state already says what to do.
+
 ## Export and render
 
 `qaNotes` is an ordinary element field, so it rides JSON export and import.

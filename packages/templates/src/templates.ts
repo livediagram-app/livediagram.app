@@ -79,6 +79,12 @@ export type TemplateKind =
   // Affinity map: brainstorm stickies clustered into labelled themes,
   // with an unsorted pile still to file.
   | 'affinity-map'
+  // Lean Coffee (spec/151): an agenda-less meeting run on a Q&A board, with
+  // a timebox timer, a keep-going poll and a takeaways checklist.
+  | 'lean-coffee'
+  // Town Hall Q&A (spec/151): an audience Q&A board beside an agenda, a
+  // Q&A timer and a follow-ups checklist.
+  | 'town-hall'
   // The classic nine-block Business Model Canvas, every block seeded
   // with a prompt and starter notes.
   | 'business-model-canvas'
@@ -356,6 +362,19 @@ export const TEMPLATES: TemplateDescriptor[] = [
     extra: true,
   },
   {
+    kind: 'lean-coffee',
+    title: 'Lean Coffee',
+    description:
+      'The room brings the topics, upvotes them, and talks through the top ones in timeboxes.',
+    extra: true,
+  },
+  {
+    kind: 'town-hall',
+    title: 'Town Hall Q&A',
+    description: 'An upvoted audience Q&A with an agenda, a timer and a follow-ups list.',
+    extra: true,
+  },
+  {
     kind: 'business-model-canvas',
     title: 'Business Model Canvas',
     description: 'The classic nine-block canvas, every block seeded with starter notes.',
@@ -520,6 +539,10 @@ const TEMPLATE_CATEGORY: Record<TemplateKind, TemplateCategory> = {
   'prioritization-matrix': 'planning',
   'user-story-map': 'planning',
   'affinity-map': 'planning',
+  // Live sessions run on a Q&A board (spec/151): meetings, which the Agile
+  // category's retros already make a home for.
+  'lean-coffee': 'planning',
+  'town-hall': 'planning',
   // Project Management: time-ordered schedules, roadmaps + ownership.
   gantt: 'project-management',
   timeline: 'project-management',
@@ -658,6 +681,8 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   'floor-plan': 'graph',
   'user-story-map': 'grid',
   'affinity-map': 'grid',
+  'lean-coffee': 'grid',
+  'town-hall': 'grid',
   // Event storming is a sticky-note workshop like the story / affinity
   // maps, so it pins the dot grid rather than riding the other technical
   // templates' graph paper.

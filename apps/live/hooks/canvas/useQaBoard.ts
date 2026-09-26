@@ -197,5 +197,3 @@ export function useQaBoard({
     clearQaBoard: (element: ShapeElement) => void run(element, { type: 'clear' }),
   };
 }
-
-export type QaBoardApi = ReturnType<typeof useQaBoard>;

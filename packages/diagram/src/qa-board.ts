@@ -5,7 +5,7 @@
 // A LEAF module (types only from './index'), for the same module-cycle reason
 // collab-shapes.ts is one. Re-exported from './index'.
 
-import type { Element, ShapeElement, ShapeKind } from './index';
+import type { Element, ShapeKind } from './index';
 
 export type QaNoteState = 'discussing' | 'done';
 
@@ -49,8 +49,6 @@ export type QaAction =
   | { type: 'reopen'; noteId: string }
   | { type: 'remove'; noteId: string }
   | { type: 'clear' };
-
-export type QaActionType = QaAction['type'];
 
 // The audience's two verbs. Everything else is gated on edit rights by the
 // server and on the facilitator baton by the client (spec/151).
@@ -260,11 +258,4 @@ export function preferNewerQaAll<T extends Element>(current: Element[], incoming
     return next;
   });
   return changed ? out : incoming;
-}
-
-// Land an authoritative board state on one element. Returns the same element
-// when it is already at (or past) that rev.
-export function withQaState(el: ShapeElement, notes: QaNote[], rev: number): ShapeElement {
-  if ((el.qaRev ?? 0) >= rev) return el;
-  return { ...el, qaNotes: notes, qaRev: rev };
 }
