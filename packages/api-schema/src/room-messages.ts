@@ -146,7 +146,10 @@ export const MUTATION_OP_KINDS = [
 // could send one could rewrite every peer's board without touching D1. Unlike
 // `share-revoked` it is SEQUENCED into the catch-up log (the worker asks for
 // that on the /broadcast body), because it changes the document.
-export const SYSTEM_OP_KINDS = ['share-revoked', 'qa'] as const;
+//
+// `share-rescoped` (docs/specs/013-workspace/tab-scoped-share-links.md) for the same reason as
+// `share-revoked`: a forged one would reload every holder of a code.
+export const SYSTEM_OP_KINDS = ['share-revoked', 'share-rescoped', 'qa'] as const;
 
 // The whole vocabulary. Every op the editor sends or handles is one of these
 // three kinds of thing, and which one it is decides its ordering, its role gate,
@@ -384,7 +387,9 @@ export type RoomOp =
       name: string;
       // `folder` (docs/specs/006-diagram/tab-folders.md) is the per-diagram folder name, optional so
       // an older peer that omits it is treated as loose — no parse break.
-      tabs: { id: string; name: string; orderIndex: number; folder?: string }[];
+      // `outOfScope` marks a tab outside a tab-scoped session's scope
+      // (docs/specs/013-workspace/tab-scoped-share-links.md): its name is blanked by the room.
+      tabs: { id: string; name: string; orderIndex: number; folder?: string; outOfScope?: true }[];
     }
   // `tabId` scopes the selection to the tab it lives on: element ids
   // are only unique per tab in older diagrams (tab duplication used to
@@ -503,6 +508,10 @@ export type RoomOp =
   // Carries only the revoked code; viewers compare against their own
   // sessionShareCode and act only if it matches.
   | { kind: 'share-revoked'; code: string }
+  // The named share link changed scope (docs/specs/013-workspace/tab-scoped-share-links.md). Sessions that
+  // hydrated with that code reload into the new scope; the room closes their
+  // sockets. Worker-originated, like share-revoked.
+  | { kind: 'share-rescoped'; code: string }
   // A Q&A board's whole state after a server write (docs/specs/012-collaboration/qa-board.md). Replaces the
   // element's notes when `rev` is newer than the local `qaRev`.
   | { kind: 'qa'; tabId: string; elementId: string; notes: QaNote[]; rev: number };

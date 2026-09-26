@@ -11,14 +11,14 @@ const { db } = vi.hoisted(() => ({ db: { getDiagram: vi.fn(), getMembership: vi.
 vi.mock('../db', () => db);
 
 const { access } = vi.hoisted(() => ({
-  access: { canReadDiagram: vi.fn(), canEditDiagram: vi.fn() },
+  access: { canReadDiagram: vi.fn(), canEditDiagram: vi.fn(), resolveDiagramGrant: vi.fn() },
 }));
 vi.mock('../auth/diagram-access', () => access);
 
 import type { RouteContext } from './context';
 import {
   ownsDiagram,
-  requireDiagramAccess,
+  requireDiagramGrant,
   requireOwnedDiagram,
   requireOwner,
   sharePasswordOf,
@@ -170,44 +170,49 @@ describe('ownsDiagram', () => {
   });
 });
 
-describe('requireDiagramAccess', () => {
+describe('requireDiagramGrant', () => {
   it('404s a missing diagram before gating', async () => {
     db.getDiagram.mockResolvedValue(null);
-    const out = await requireDiagramAccess(makeCtx({ owner: 'g' }), 'd1', 'read');
+    const out = await requireDiagramGrant(makeCtx({ owner: 'g' }), 'd1', 'read');
     expect((out as Response).status).toBe(404);
-    expect(access.canReadDiagram).not.toHaveBeenCalled();
+    expect(access.resolveDiagramGrant).not.toHaveBeenCalled();
   });
 
-  it('403s when the read gate denies access', async () => {
+  it('403s when the caller holds no grant', async () => {
     db.getDiagram.mockResolvedValue({ id: 'd1', ownerId: 'other', teamId: null });
-    access.canReadDiagram.mockResolvedValue(false);
-    const out = await requireDiagramAccess(makeCtx({ owner: 'g' }), 'd1', 'read');
+    access.resolveDiagramGrant.mockResolvedValue(null);
+    const out = await requireDiagramGrant(makeCtx({ owner: 'g' }), 'd1', 'read');
     expect((out as Response).status).toBe(403);
   });
 
-  it('returns the diagram when the gate allows it', async () => {
-    const diagram = { id: 'd1', ownerId: 'other', teamId: null };
-    db.getDiagram.mockResolvedValue(diagram);
-    access.canReadDiagram.mockResolvedValue(true);
-    const out = await requireDiagramAccess(makeCtx({ owner: 'g' }), 'd1', 'read');
-    expect(out).toBe(diagram);
+  it('403s a view grant in edit mode', async () => {
+    db.getDiagram.mockResolvedValue({ id: 'd1', ownerId: 'other', teamId: null });
+    access.resolveDiagramGrant.mockResolvedValue({ role: 'view', tabScope: null });
+    const out = await requireDiagramGrant(makeCtx({ owner: 'g' }), 'd1', 'edit');
+    expect((out as Response).status).toBe(403);
   });
 
-  it('uses the edit gate (not read) in edit mode', async () => {
-    db.getDiagram.mockResolvedValue({ id: 'd1', ownerId: 'other', teamId: null });
-    access.canEditDiagram.mockResolvedValue(true);
-    await requireDiagramAccess(makeCtx({ owner: 'g' }), 'd1', 'edit');
-    expect(access.canEditDiagram).toHaveBeenCalledOnce();
-    expect(access.canReadDiagram).not.toHaveBeenCalled();
+  it('returns the diagram and the grant, scope included', async () => {
+    const diagram = { id: 'd1', ownerId: 'other', teamId: null };
+    const grant = { role: 'edit', tabScope: 't2' };
+    db.getDiagram.mockResolvedValue(diagram);
+    access.resolveDiagramGrant.mockResolvedValue(grant);
+    const out = await requireDiagramGrant(makeCtx({ owner: 'g' }), 'd1', 'edit');
+    expect(out).toEqual({ diagram, grant });
+  });
+
+  it('400s an unidentified caller', async () => {
+    const out = await requireDiagramGrant(makeCtx({ owner: null }), 'd1', 'read');
+    expect((out as Response).status).toBe(400);
   });
 
   it('forwards verifiedUserId (session OR api token) to the team-membership check', async () => {
     db.getDiagram.mockResolvedValue({ id: 'd1', ownerId: 'other', teamId: 'team-1' });
-    access.canReadDiagram.mockResolvedValue(true);
+    access.resolveDiagramGrant.mockResolvedValue({ role: 'edit', tabScope: null });
     // A token caller: no Clerk session, but a server-verified account id.
     const ctx = { ...makeCtx({ owner: 'user-9' }), verifiedUserId: 'user-9' };
-    await requireDiagramAccess(ctx, 'd1', 'read');
-    expect(access.canReadDiagram).toHaveBeenCalledWith(
+    await requireDiagramGrant(ctx, 'd1', 'read');
+    expect(access.resolveDiagramGrant).toHaveBeenCalledWith(
       ctx.env,
       'd1',
       'user-9',

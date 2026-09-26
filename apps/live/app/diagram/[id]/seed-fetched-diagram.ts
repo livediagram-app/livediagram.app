@@ -3,6 +3,7 @@ import type { Tab } from '@livediagram/diagram';
 import type { Diagram } from '@livediagram/api-schema';
 import { apiLoadTab } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
+import { firstTabToLoad, isTabOutOfScope } from '@/lib/tab-scope';
 import { placeholdersFromSummaries } from './editor-page-helpers';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
@@ -54,17 +55,25 @@ export function makeSeedFetchedDiagram(deps: {
   } = deps;
   // `tabShareCode` is the share code the per-tab fetch presents as
   // authorisation: the visitor's session code, or null for the owner.
-  return async (selfId: string, fetched: Diagram, tabShareCode: string | null) => {
+  //
+  // `tabScope` is the one tab a tab-scoped share link opens
+  // (docs/specs/013-workspace/tab-scoped-share-links.md): that tab is fetched eagerly and made active,
+  // wherever it sits in the bar. Null = the first tab, as for everyone else.
+  return async (
+    selfId: string,
+    fetched: Diagram,
+    tabShareCode: string | null,
+    tabScope: string | null,
+  ) => {
     // Lazy per-tab fetch (docs/specs/006-diagram/per-tab-storage.md): the active tab (first in the
-    // summaries) gets its full payload inline so the first paint
-    // has real content; the rest land as placeholders and the
+    // summaries, or the scoped one) gets its full payload inline so the first
+    // paint has real content; the rest land as placeholders and the
     // lazy-load effect fetches each one when the user switches.
     const placeholderTabs: Tab[] = placeholdersFromSummaries(fetched.tabs);
-    const firstSummary = fetched.tabs[0];
-    if (firstSummary) {
-      const first = await apiLoadTab(selfId, fetched.id, firstSummary.id, tabShareCode).catch(
-        () => null,
-      );
+    const firstId = firstTabToLoad(fetched.tabs, tabScope);
+    const firstIndex = placeholderTabs.findIndex((t) => t.id === firstId);
+    if (firstId && firstIndex >= 0) {
+      const first = await apiLoadTab(selfId, fetched.id, firstId, tabShareCode).catch(() => null);
       // Only mark the tab loaded when the eager fetch actually
       // returned content. If it failed (e.g. a transient 403 from
       // a request that raced ahead of the Clerk token / session
@@ -74,9 +83,9 @@ export function makeSeedFetchedDiagram(deps: {
       // permanently blank while later tabs — fetched through that
       // effect after bootstrap — loaded fine.
       if (first) {
-        placeholderTabs[0] = first;
-        loadedTabIdsRef.current.add(firstSummary.id);
-        setLoadedTabIds((prev) => new Set(prev).add(firstSummary.id));
+        placeholderTabs[firstIndex] = first;
+        loadedTabIdsRef.current.add(firstId);
+        setLoadedTabIds((prev) => new Set(prev).add(firstId));
         // Telemetry (docs/specs/017-telemetry/telemetry.md): the first tab's content was fetched.
         // Subsequent tabs count via usePerTabLoad on switch.
         track('Tab', 'Loaded');
@@ -99,8 +108,11 @@ export function makeSeedFetchedDiagram(deps: {
     {
       const hashMatch = window.location.hash.match(/t=([^&]+)/);
       const hashedId = hashMatch ? hashMatch[1] : null;
-      const pickFromHash = hashedId && placeholderTabs.some((t) => t.id === hashedId);
-      setActiveId(pickFromHash ? hashedId! : (placeholderTabs[0]?.id ?? activeId));
+      const pickFromHash =
+        hashedId &&
+        placeholderTabs.some((t) => t.id === hashedId) &&
+        !isTabOutOfScope(hashedId, tabScope);
+      setActiveId(pickFromHash ? hashedId! : (firstId ?? activeId));
     }
     setLoadedExistingDiagram(true);
     setDiagramShareable(fetched.shareable);

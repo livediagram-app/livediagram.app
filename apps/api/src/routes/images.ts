@@ -25,7 +25,7 @@ import {
 } from '../responses';
 import { MAX_IMAGE_BYTES } from '../limits';
 import { recordImageUploaded } from '../timeline';
-import { gateRead, requireOwner, type RouteContext } from './context';
+import { gateGrant, requireOwner, type RouteContext } from './context';
 
 // Parse a positive-integer cap from a wrangler.toml [vars] entry.
 // Returns null when the string is missing, blank, non-numeric, or
@@ -258,9 +258,11 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
           // future tightening of the share-code check (e.g.
           // explicit expiry, IP throttling) lands once and
           // both routes follow.
-          const diagramReadable = await gateRead(ctx, d, diagram.ownerId, diagram.teamId);
-          if (diagramReadable) {
-            allowed = await diagramReferencesImage(env, d, imageId);
+          // A tab-scoped visitor (docs/specs/013-workspace/tab-scoped-share-links.md) reads the images their
+          // own tab uses, not every image in the diagram.
+          const grant = await gateGrant(ctx, d, diagram.ownerId, diagram.teamId);
+          if (grant) {
+            allowed = await diagramReferencesImage(env, d, imageId, grant.tabScope);
           }
         }
       }

@@ -21,18 +21,21 @@ export async function recordSharedAccess(
   ownerId: string,
   diagramId: string,
   role: ShareRole,
+  // The link's tab scope (docs/specs/013-workspace/tab-scoped-share-links.md); null = All tabs. Last visit
+  // wins, like role.
+  tabId: string | null,
 ): Promise<boolean> {
   const now = Date.now();
   const inserted = await env.DB.prepare(
-    'INSERT OR IGNORE INTO shared_with (owner_id, diagram_id, role, last_seen) VALUES (?, ?, ?, ?)',
+    'INSERT OR IGNORE INTO shared_with (owner_id, diagram_id, role, last_seen, tab_id) VALUES (?, ?, ?, ?, ?)',
   )
-    .bind(ownerId, diagramId, role, now)
+    .bind(ownerId, diagramId, role, now, tabId)
     .run();
   if (inserted.meta.changes === 1) return true;
   await env.DB.prepare(
-    'UPDATE shared_with SET role = ?, last_seen = ? WHERE owner_id = ? AND diagram_id = ?',
+    'UPDATE shared_with SET role = ?, tab_id = ?, last_seen = ? WHERE owner_id = ? AND diagram_id = ?',
   )
-    .bind(role, now, ownerId, diagramId)
+    .bind(role, tabId, now, ownerId, diagramId)
     .run();
   return false;
 }
@@ -70,13 +73,18 @@ export async function hasSharedAccess(
 // revoked since the visit (no live code left at the matching role,
 // or shareable flipped off) are filtered out so the visitor
 // doesn't see a list item they can't act on.
+//
+// The code also matches the visitor's recorded tab scope
+// (docs/specs/013-workspace/tab-scoped-share-links.md), so a visitor shown one tab is never handed an
+// All-tabs code, and vice versa.
 export async function listSharedWith(env: Env, ownerId: string): Promise<SharedWithItem[]> {
   const res = await env.DB.prepare(
-    `SELECT d.id, d.name, d.saved_at, s.role,
+    `SELECT d.id, d.name, d.saved_at, s.role, s.tab_id,
             (SELECT code
                FROM share_links
               WHERE share_links.diagram_id = d.id
                 AND share_links.role = s.role
+                AND share_links.tab_id IS s.tab_id
                 AND (share_links.expires_at IS NULL OR share_links.expires_at > ?)
               ORDER BY share_links.created_at ASC
               LIMIT 1) AS share_code,
@@ -95,6 +103,7 @@ export async function listSharedWith(env: Env, ownerId: string): Promise<SharedW
       name: string;
       saved_at: number;
       role: ShareRole;
+      tab_id: string | null;
       share_code: string | null;
       owner_name: string | null;
       owner_color: string | null;
@@ -107,6 +116,7 @@ export async function listSharedWith(env: Env, ownerId: string): Promise<SharedW
       savedAt: r.saved_at,
       role: r.role,
       shareCode: r.share_code as string,
+      tabId: r.tab_id ?? null,
       ownerName: r.owner_name,
       ownerColor: r.owner_color,
     }));

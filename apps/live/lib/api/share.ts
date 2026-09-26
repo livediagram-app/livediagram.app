@@ -44,11 +44,15 @@ async function _apiLoadShared(
   if (res.status === 401 || res.status === 403) {
     return { passwordRequired: true, invalid: res.status === 403 };
   }
-  const body = await expectOkOrNull<DiagramResponse & { role?: ShareRole }>(res, 'load shared');
+  const body = await expectOkOrNull<DiagramResponse & { role?: ShareRole; tabId?: string | null }>(
+    res,
+    'load shared',
+  );
   if (!body) return null;
   return {
     diagram: body.diagram,
     role: body.role === 'view' ? 'view' : 'edit',
+    tabId: typeof body.tabId === 'string' ? body.tabId : null,
   };
 }
 export const apiLoadShared = dedupeInFlight(
@@ -97,11 +101,13 @@ export async function apiCreateShareLink(
   id: string,
   role: ShareRole,
   expiry: ShareLinkExpiry = 'never',
+  // The one tab the link opens (docs/specs/013-workspace/tab-scoped-share-links.md); null = All tabs.
+  tabId: string | null = null,
 ): Promise<ShareLink> {
   const res = await apiFetch(`${API_BASE}/diagrams/${id}/share`, {
     method: 'POST',
     headers: await apiHeaders(ownerId, { body: true }),
-    body: JSON.stringify({ role, expiry }),
+    body: JSON.stringify({ role, expiry, tabId }),
   });
   const { link } = await expectOk<ShareLinkResponse>(res, 'create share link');
   return link;
@@ -119,6 +125,23 @@ export async function apiExtendShareLink(
     headers: await apiHeaders(ownerId),
   });
   const { link } = await expectOk<ShareLinkResponse>(res, 'extend share link');
+  return link;
+}
+
+// Change which tabs a link opens (docs/specs/013-workspace/tab-scoped-share-links.md): a tab id, or null for
+// All tabs. The code stays; its holders reload into the new scope.
+export async function apiRescopeShareLink(
+  ownerId: string,
+  id: string,
+  code: string,
+  tabId: string | null,
+): Promise<ShareLink> {
+  const res = await apiFetch(`${API_BASE}/diagrams/${id}/share/${code}`, {
+    method: 'PUT',
+    headers: await apiHeaders(ownerId, { body: true }),
+    body: JSON.stringify({ tabId }),
+  });
+  const { link } = await expectOk<ShareLinkResponse>(res, 'rescope share link');
   return link;
 }
 

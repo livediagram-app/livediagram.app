@@ -179,13 +179,13 @@ describe('POST /api/diagrams/:id/share — minting a link', () => {
     const { ctx } = ctxFor('POST', '/api/diagrams/d_1/share', { body: {} });
     const res = await handleDiagramShareRoutes(ctx);
     expect(res!.status).toBe(201);
-    expect(db.createShareLink).toHaveBeenCalledWith({}, 'd_1', 'CODE1234', 'edit', 'never');
+    expect(db.createShareLink).toHaveBeenCalledWith({}, 'd_1', 'CODE1234', 'edit', 'never', null);
   });
 
   it('honours an explicit view role', async () => {
     const { ctx } = ctxFor('POST', '/api/diagrams/d_1/share', { body: { role: 'view' } });
     await handleDiagramShareRoutes(ctx);
-    expect(db.createShareLink).toHaveBeenCalledWith({}, 'd_1', 'CODE1234', 'view', 'never');
+    expect(db.createShareLink).toHaveBeenCalledWith({}, 'd_1', 'CODE1234', 'view', 'never', null);
   });
 
   it('400s a role it does not recognise instead of granting edit', async () => {
@@ -203,13 +203,27 @@ describe('POST /api/diagrams/:id/share — minting a link', () => {
     for (const expiry of ['week', 'month', 'sixMonths'] as const) {
       const { ctx } = ctxFor('POST', '/api/diagrams/d_1/share', { body: { expiry } });
       await handleDiagramShareRoutes(ctx);
-      expect(db.createShareLink).toHaveBeenLastCalledWith({}, 'd_1', 'CODE1234', 'edit', expiry);
+      expect(db.createShareLink).toHaveBeenLastCalledWith(
+        {},
+        'd_1',
+        'CODE1234',
+        'edit',
+        expiry,
+        null,
+      );
     }
     // An unknown token is not an error: it degrades to the pre-expiry
     // behaviour, a link that works until revoked.
     const { ctx } = ctxFor('POST', '/api/diagrams/d_1/share', { body: { expiry: 'fortnight' } });
     await handleDiagramShareRoutes(ctx);
-    expect(db.createShareLink).toHaveBeenLastCalledWith({}, 'd_1', 'CODE1234', 'edit', 'never');
+    expect(db.createShareLink).toHaveBeenLastCalledWith(
+      {},
+      'd_1',
+      'CODE1234',
+      'edit',
+      'never',
+      null,
+    );
   });
 
   it('mints from a request with no readable body at all', async () => {

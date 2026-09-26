@@ -9,7 +9,8 @@ export type ShareDialogProps = {
   sharePassword: string | null;
   shareUrlFor: (code: string) => string;
   // The diagram's tabs, in bar order, for the Live image control's
-  // per-tab picker (docs/specs/013-workspace/live-image-share.md). The first entry is the default the cached
+  // per-tab picker (docs/specs/013-workspace/live-image-share.md) and the link scope pickers
+  // (docs/specs/013-workspace/tab-scoped-share-links.md). The first entry is the default the cached
   // snapshot renders; picking another appends `?tab=<id>` to the image
   // URL. Only `id` + `name` are read.
   tabs: { id: string; name: string }[];
@@ -22,8 +23,15 @@ export type ShareDialogProps = {
   // the editable name + shuffle row.
   lockedName?: string | null;
   onSaveName: (name: string) => Promise<void> | void;
-  onCreateLink: (role: ShareRole, expiry: ShareLinkExpiry) => Promise<void> | void;
+  // `tabId` scopes the new link to one tab (docs/specs/013-workspace/tab-scoped-share-links.md); null = All tabs.
+  onCreateLink: (
+    role: ShareRole,
+    expiry: ShareLinkExpiry,
+    tabId: string | null,
+  ) => Promise<void> | void;
   onRevokeLink: (code: string) => Promise<void> | void;
+  // Change which tabs an existing link opens; null widens it to All tabs.
+  onRescopeLink: (code: string, tabId: string | null) => Promise<void> | void;
   // Re-arm an expiring link for another round of its creation-time
   // duration (docs/specs/013-workspace/share-link-expiry.md). Only rendered on inactive (expired) rows.
   onExtendLink: (code: string) => Promise<void> | void;

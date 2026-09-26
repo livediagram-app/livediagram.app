@@ -108,6 +108,9 @@ export type SharedWithItem = {
   // lands on the owner-only path and 404s. The worker filters out rows
   // whose share was revoked (no code left), so this is never null here.
   shareCode: string;
+  // The scope the visitor was granted (docs/specs/013-workspace/tab-scoped-share-links.md); null = All tabs.
+  // `shareCode` always carries this same scope, never a broader one.
+  tabId: string | null;
   // Owner's display name + avatar colour, joined from participants.
   // Nullable: Clerk-authed owners may have no participant row yet, so
   // the UI shows an "Unknown owner" placeholder.
@@ -134,6 +137,9 @@ export type TabSummary = {
   // link row. Optional / omitted = the tab is loose (no folder). The
   // TabBar groups contiguous same-folder tabs under one chip.
   folder?: string;
+  // Set for a tab outside a tab-scoped visitor's scope (docs/specs/013-workspace/tab-scoped-share-links.md):
+  // its name is blanked, its folder dropped, and its content never served.
+  outOfScope?: true;
 };
 
 // Full tab payload returned by `GET /api/diagrams/:id/tabs/:tabId`:
@@ -345,6 +351,9 @@ export type ShareLink = {
   // authorising but stays listed for the owner to delete or extend.
   expiry: ShareLinkExpiry;
   expiresAt: number | null;
+  // Tab scope (docs/specs/013-workspace/tab-scoped-share-links.md): the one tab this link opens, or null
+  // for All tabs.
+  tabId: string | null;
 };
 
 // ---------------------------------------------------------------------

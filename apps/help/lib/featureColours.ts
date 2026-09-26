@@ -106,6 +106,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   // Collaboration → Sharing guides
   'share-passwords': '#475569',
   'share-link-expiry': '#f59e0b',
+  'one-tab': '#14b8a6',
   embeds: '#6366f1',
   'live-image': '#0ea5e9',
   // Collaboration → Voting

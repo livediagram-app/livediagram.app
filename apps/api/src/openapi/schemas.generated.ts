@@ -4088,6 +4088,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "role": {
         "$ref": "#/components/schemas/ShareRole"
+      },
+      "tabId": {
+        "type": [
+          "string",
+          "null"
+        ]
       }
     },
     "required": [
@@ -4096,7 +4102,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "role",
       "createdAt",
       "expiry",
-      "expiresAt"
+      "expiresAt",
+      "tabId"
     ],
     "type": "object"
   },
@@ -4145,6 +4152,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "shareCode": {
         "type": "string"
+      },
+      "tabId": {
+        "type": [
+          "string",
+          "null"
+        ]
       }
     },
     "required": [
@@ -4153,6 +4166,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "savedAt",
       "role",
       "shareCode",
+      "tabId",
       "ownerName",
       "ownerColor"
     ],
@@ -4414,6 +4428,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "orderIndex": {
         "type": "number"
+      },
+      "outOfScope": {
+        "const": true,
+        "type": "boolean"
       },
       "updatedAt": {
         "type": "number"

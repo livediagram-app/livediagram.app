@@ -24,7 +24,7 @@ const { db } = vi.hoisted(() => ({
 vi.mock('../db', () => db);
 
 const { gates } = vi.hoisted(() => ({
-  gates: { canEditDiagram: vi.fn(), canReadDiagram: vi.fn() },
+  gates: { canEditDiagram: vi.fn(), canReadDiagram: vi.fn(), resolveDiagramGrant: vi.fn() },
 }));
 vi.mock('../auth/diagram-access', () => gates);
 
@@ -160,7 +160,7 @@ describe('WebSocket upgrade — trust headers', () => {
 
   it('admits a ticket holder with the role the mint resolved', async () => {
     db.getDiagramMeta.mockResolvedValue({ ownerId: 'someone-else', teamId: 'team-1' });
-    db.consumeWsTicket.mockResolvedValue('edit');
+    db.consumeWsTicket.mockResolvedValue({ role: 'edit', tabScope: null, shareCode: null });
     const { env, seen } = roomEnv();
     const res = await handleDiagramRoomRoutes(
       makeTestRouteContext('GET', '/api/diagrams/d1/ws?t=TICKET-1', {
@@ -177,35 +177,117 @@ describe('WebSocket upgrade — trust headers', () => {
 });
 
 describe('POST room-ticket', () => {
-  it('mints an edit ticket when the edit gate passes', async () => {
+  it('mints an edit ticket when the caller holds edit', async () => {
     db.getDiagramMeta.mockResolvedValue({ ownerId: 'owner-1', teamId: null });
-    gates.canEditDiagram.mockResolvedValue(true);
+    gates.resolveDiagramGrant.mockResolvedValue({ role: 'edit', tabScope: null, shareCode: null });
     const res = await handleDiagramRoomRoutes(
       makeTestRouteContext('POST', '/api/diagrams/d1/room-ticket', { owner: 'owner-1' }),
     );
     expect(await res!.json()).toEqual({ ticket: 'TICKET-1' });
-    expect(db.createWsTicket).toHaveBeenCalledWith(expect.anything(), 'd1', 'edit');
+    expect(db.createWsTicket).toHaveBeenCalledWith(expect.anything(), 'd1', {
+      role: 'edit',
+      tabScope: null,
+      shareCode: null,
+    });
   });
 
-  it('falls back to a view ticket when only the read gate passes', async () => {
+  it('mints a view ticket for a view grant', async () => {
     db.getDiagramMeta.mockResolvedValue({ ownerId: 'other', teamId: null });
-    gates.canEditDiagram.mockResolvedValue(false);
-    gates.canReadDiagram.mockResolvedValue(true);
+    gates.resolveDiagramGrant.mockResolvedValue({ role: 'view', tabScope: null, shareCode: 'C' });
     const res = await handleDiagramRoomRoutes(
       makeTestRouteContext('POST', '/api/diagrams/d1/room-ticket', { owner: 'visitor' }),
     );
     expect(res!.status).toBe(200);
-    expect(db.createWsTicket).toHaveBeenCalledWith(expect.anything(), 'd1', 'view');
+    expect(db.createWsTicket).toHaveBeenCalledWith(expect.anything(), 'd1', {
+      role: 'view',
+      tabScope: null,
+      shareCode: 'C',
+    });
   });
 
-  it('404s (no existence leak) and mints nothing when both gates deny', async () => {
+  it('404s (no existence leak) and mints nothing without a grant', async () => {
     db.getDiagramMeta.mockResolvedValue({ ownerId: 'other', teamId: null });
-    gates.canEditDiagram.mockResolvedValue(false);
-    gates.canReadDiagram.mockResolvedValue(false);
+    gates.resolveDiagramGrant.mockResolvedValue(null);
     const res = await handleDiagramRoomRoutes(
       makeTestRouteContext('POST', '/api/diagrams/d1/room-ticket', { owner: 'stranger' }),
     );
     expect(res!.status).toBe(404);
     expect(db.createWsTicket).not.toHaveBeenCalled();
+  });
+});
+
+// docs/specs/013-workspace/tab-scoped-share-links.md: the room learns each session's scope and the code that
+// admitted it from the worker, on every path, and never from the client.
+describe('WebSocket upgrade: tab scope', () => {
+  const SPOOFED_SCOPE = {
+    Upgrade: 'websocket',
+    'X-Verified-Tab-Scope': '',
+    'X-Verified-Share-Code': 'NOTMINE2',
+  };
+
+  it("forwards a scoped link's tab and code on the share-code path", async () => {
+    db.getDiagramMeta.mockResolvedValue({ ownerId: 'owner-uuid', teamId: null });
+    db.getShareLink.mockResolvedValue({
+      diagramId: 'd1',
+      role: 'view',
+      tabId: 't2',
+      code: 'CODE1234',
+    });
+    const { env, seen } = roomEnv();
+    await handleDiagramRoomRoutes(
+      makeTestRouteContext('GET', '/api/diagrams/d1/ws?s=CODE1234', {
+        owner: null,
+        headers: SPOOFED_SCOPE,
+        env,
+      }),
+    );
+    expect(seen[0]!.headers.get('X-Verified-Tab-Scope')).toBe('t2');
+    expect(seen[0]!.headers.get('X-Verified-Share-Code')).toBe('CODE1234');
+  });
+
+  it('forwards what the ticket carried', async () => {
+    db.getDiagramMeta.mockResolvedValue({ ownerId: 'someone-else', teamId: null });
+    db.consumeWsTicket.mockResolvedValue({ role: 'edit', tabScope: 't2', shareCode: 'CODE1234' });
+    const { env, seen } = roomEnv();
+    await handleDiagramRoomRoutes(
+      makeTestRouteContext('GET', '/api/diagrams/d1/ws?t=TICKET-1', {
+        owner: null,
+        headers: SPOOFED_SCOPE,
+        env,
+      }),
+    );
+    expect(seen[0]!.headers.get('X-Verified-Tab-Scope')).toBe('t2');
+    expect(seen[0]!.headers.get('X-Verified-Share-Code')).toBe('CODE1234');
+  });
+
+  it('blanks both for the owner, whatever the client sent', async () => {
+    db.getDiagramMeta.mockResolvedValue({ ownerId: 'owner-uuid', teamId: null });
+    const { env, seen } = roomEnv();
+    await handleDiagramRoomRoutes(
+      makeTestRouteContext('GET', '/api/diagrams/d1/ws?o=owner-uuid', {
+        owner: null,
+        headers: { ...SPOOFED_SCOPE, 'X-Verified-Tab-Scope': 't9' },
+        env,
+      }),
+    );
+    expect(seen[0]!.headers.get('X-Verified-Tab-Scope')).toBe('');
+    expect(seen[0]!.headers.get('X-Verified-Share-Code')).toBe('');
+  });
+
+  it('mints a ticket carrying the grant scope and code', async () => {
+    db.getDiagramMeta.mockResolvedValue({ ownerId: 'other', teamId: null });
+    gates.resolveDiagramGrant.mockResolvedValue({
+      role: 'edit',
+      tabScope: 't2',
+      shareCode: 'CODE1234',
+    });
+    await handleDiagramRoomRoutes(
+      makeTestRouteContext('POST', '/api/diagrams/d1/room-ticket', { owner: 'visitor' }),
+    );
+    expect(db.createWsTicket).toHaveBeenCalledWith(expect.anything(), 'd1', {
+      role: 'edit',
+      tabScope: 't2',
+      shareCode: 'CODE1234',
+    });
   });
 });

@@ -112,3 +112,27 @@ export async function relayElementDelta(
     // The comment is saved; the room just didn't hear about it.
   }
 }
+
+// Tell every socket in a diagram's room that a share link changed: revoked
+// (its holders leave the editor) or rescoped (they reload into the new scope,
+// docs/specs/013-workspace/tab-scoped-share-links.md). The room also closes those sockets. Best-effort: the
+// D1 write before it is the authoritative change, so a room that can't be
+// reached is logged rather than failing the request.
+export async function broadcastShareOp(
+  env: Env,
+  diagramId: string,
+  op: { kind: 'share-revoked' | 'share-rescoped'; code: string },
+): Promise<void> {
+  try {
+    await env.DIAGRAM_ROOM.get(env.DIAGRAM_ROOM.idFromName(diagramId)).fetch(
+      'https://room/broadcast',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ op }),
+      },
+    );
+  } catch (err) {
+    console.warn(`[room-broadcast] ${op.kind} did not reach the room`, diagramId, err);
+  }
+}

@@ -6,7 +6,12 @@
 // its segment and returns `notFound()` for sub-paths / methods it
 // doesn't recognise (preserving the original fall-through-to-404).
 
-import { canEditDiagram, canReadDiagram } from '../auth/diagram-access';
+import {
+  canEditDiagram,
+  canReadDiagram,
+  resolveDiagramGrant,
+  type DiagramGrant,
+} from '../auth/diagram-access';
 import { getDiagram, getMembership } from '../db';
 import { forbidden, missingAuth, notFound } from '../responses';
 import type { DiagramDTO, Env } from '../types';
@@ -75,11 +80,16 @@ export function sharePasswordOf(request: Request): string | null {
 // (ctx, diagramId, diagramOwnerId) helper drops a stack of
 // repetitive 6-line invocations to 1-liners. Behaviour stays
 // identical: each helper just forwards the ctx-derived args.
+//
+// `tabId` names the tab the request touches. Leave it off for a
+// diagram-level door: a tab-scoped link is then refused (fail closed,
+// docs/specs/013-workspace/tab-scoped-share-links.md).
 export function gateRead(
   ctx: RouteContext,
   diagramId: string,
   diagramOwnerId: string,
   diagramTeamId: string | null = null,
+  tabId?: string,
 ): Promise<boolean> {
   return canReadDiagram(
     ctx.env,
@@ -93,6 +103,7 @@ export function gateRead(
     // team-membership check — never the unsigned X-Owner-Id header
     // (docs/specs/013-workspace/team-shared-diagrams.md access trust boundary).
     ctx.verifiedUserId,
+    tabId,
   );
 }
 
@@ -101,6 +112,7 @@ export function gateEdit(
   diagramId: string,
   diagramOwnerId: string,
   diagramTeamId: string | null = null,
+  tabId?: string,
 ): Promise<boolean> {
   return canEditDiagram(
     ctx.env,
@@ -113,6 +125,28 @@ export function gateEdit(
     // Server-verified account id (Clerk session or API token) for the
     // team-membership check — never the unsigned X-Owner-Id header
     // (docs/specs/013-workspace/team-shared-diagrams.md access trust boundary).
+    ctx.verifiedUserId,
+    tabId,
+  );
+}
+
+// The caller's grant on a diagram, scope included, for the doors that narrow
+// what they return to a scoped visitor's tab rather than refuse them
+// (docs/specs/013-workspace/tab-scoped-share-links.md). Null = no access.
+export function gateGrant(
+  ctx: RouteContext,
+  diagramId: string,
+  diagramOwnerId: string,
+  diagramTeamId: string | null = null,
+): Promise<DiagramGrant | null> {
+  return resolveDiagramGrant(
+    ctx.env,
+    diagramId,
+    ctx.resolveOwner(),
+    shareCodeOf(ctx.request),
+    diagramOwnerId,
+    sharePasswordOf(ctx.request),
+    diagramTeamId,
     ctx.verifiedUserId,
   );
 }
@@ -191,26 +225,22 @@ export async function requireOwnedDiagram(
   return existing;
 }
 
-// Share-gated resource: resolve the caller, load the diagram, and run
-// the read- or edit-access gate (owner OR a valid share code of the
-// matching role). Returns the diagram, or 400 / 404 / 403. Used by the
-// tab-content + change-log paths where a non-owner share visitor is a
+// Share-gated resource: resolve the caller, load the diagram, and resolve
+// the caller's grant (owner, joined team member, or a share code; edit mode
+// also needs the edit role). Returns the diagram plus the grant, whose
+// `tabScope` the route applies (docs/specs/013-workspace/tab-scoped-share-links.md), or 400 / 404 / 403.
+// Used by the change-log paths, where a non-owner share visitor is a
 // legitimate caller.
-export async function requireDiagramAccess(
+export async function requireDiagramGrant(
   ctx: RouteContext,
   diagramId: string,
   mode: 'read' | 'edit',
-): Promise<DiagramDTO | Response> {
+): Promise<{ diagram: DiagramDTO; grant: DiagramGrant } | Response> {
   const owner = ctx.resolveOwner();
   if (!owner) return missingAuth();
-  const existing = await getDiagram(ctx.env, diagramId);
-  if (!existing) return notFound();
-  const allowed = await (mode === 'edit' ? gateEdit : gateRead)(
-    ctx,
-    diagramId,
-    existing.ownerId,
-    existing.teamId,
-  );
-  if (!allowed) return forbidden();
-  return existing;
+  const diagram = await getDiagram(ctx.env, diagramId);
+  if (!diagram) return notFound();
+  const grant = await gateGrant(ctx, diagramId, diagram.ownerId, diagram.teamId);
+  if (!grant || (mode === 'edit' && grant.role !== 'edit')) return forbidden();
+  return { diagram, grant };
 }

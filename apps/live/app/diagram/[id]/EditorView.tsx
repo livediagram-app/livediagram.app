@@ -112,6 +112,8 @@ export function EditorView() {
     setImportOpen,
     isOwner,
     isReadOnly,
+    isStructureReadOnly,
+    isOutOfScope,
     linkActiveTabTo,
     loadAllTabs,
     makeCopy,
@@ -248,7 +250,7 @@ export function EditorView() {
                 !isOwner && hydrated && !anyWelcomeOpen && diagramId ? makeCopy : undefined
               }
               copying={copying}
-              readOnly={isReadOnly}
+              readOnly={isStructureReadOnly}
               renameNonce={renameDiagramNonce}
               brandAccent={getTheme(activeTab.theme).elementStroke ?? undefined}
               onOpenShare={() => {
@@ -358,7 +360,10 @@ export function EditorView() {
               onCopyTabTo={linkActiveTabTo}
               onToggleLockTab={toggleActiveTabLock}
               onReorder={reorderTabs}
-              readOnly={isReadOnly}
+              // A tab-scoped visitor edits their tab's content at most, never the
+              // tabs around it (docs/specs/013-workspace/tab-scoped-share-links.md).
+              readOnly={isStructureReadOnly}
+              isOutOfScope={isOutOfScope}
               renameActiveNonce={renameTabNonce}
               participantsByTab={participantsByTab}
               selfId={selfParticipant.id}

@@ -2,6 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { fakeD1 } from '../test-d1';
 import { consumeWsTicket, createWsTicket } from './ws-tickets';
 
+const EDIT = { role: 'edit', tabScope: null, shareCode: null } as const;
+const VIEW = { role: 'view', tabScope: null, shareCode: null } as const;
+
 // A ws ticket is the only thing standing between "passed the REST access
 // gates for this diagram" and an open realtime socket: the upgrade can't
 // carry a Bearer token or a guest signature, so possession of a ticket IS the
@@ -10,17 +13,25 @@ import { consumeWsTicket, createWsTicket } from './ws-tickets';
 // silently lost.
 
 describe('createWsTicket (docs/specs/007-editor/live-app.md room auth)', () => {
-  it('writes the diagram, the resolved role and an expiry a minute out', async () => {
+  it('writes the diagram, the resolved admission and an expiry a minute out', async () => {
     const db = fakeD1();
-    const ticket = await createWsTicket(db.env, 'diag-1', 'edit', 1_000_000);
+    const ticket = await createWsTicket(db.env, 'diag-1', EDIT, 1_000_000);
     const insert = db.one('INSERT INTO ws_tickets');
-    expect(insert.bindings).toEqual([ticket, 'diag-1', 'edit', 1_060_000]);
+    expect(insert.bindings).toEqual([ticket, 'diag-1', 'edit', 1_060_000, null, null]);
+  });
+
+  // docs/specs/013-workspace/tab-scoped-share-links.md: the ticket carries the scope and the admitting code
+  // from the mint to the upgrade.
+  it('writes a tab scope and the code that granted it', async () => {
+    const db = fakeD1();
+    await createWsTicket(db.env, 'diag-1', { role: 'view', tabScope: 't2', shareCode: 'CODE2345' });
+    expect(db.one('INSERT INTO ws_tickets').bindings.slice(4)).toEqual(['t2', 'CODE2345']);
   });
 
   it('mints an unguessable ticket, never a value the caller supplied', async () => {
     const db = fakeD1();
-    const first = await createWsTicket(db.env, 'diag-1', 'view');
-    const second = await createWsTicket(db.env, 'diag-1', 'view');
+    const first = await createWsTicket(db.env, 'diag-1', VIEW);
+    const second = await createWsTicket(db.env, 'diag-1', VIEW);
     expect(first).not.toBe(second);
     expect(first).toMatch(/^[0-9a-f-]{36}$/);
   });
@@ -29,15 +40,28 @@ describe('createWsTicket (docs/specs/007-editor/live-app.md room auth)', () => {
     // The table would otherwise grow a row per room join forever; nothing else
     // ever deletes an unused ticket.
     const db = fakeD1();
-    await createWsTicket(db.env, 'diag-1', 'edit', 1_000_000);
+    await createWsTicket(db.env, 'diag-1', EDIT, 1_000_000);
     expect(db.one('DELETE FROM ws_tickets WHERE expires_at').bindings).toEqual([1_000_000]);
   });
 });
 
 describe('consumeWsTicket (docs/specs/007-editor/live-app.md room auth)', () => {
-  it('returns the role the ticket was minted with', async () => {
+  it('returns the admission the ticket was minted with', async () => {
+    const db = fakeD1(() => ({ first: { role: 'view', tab_scope: 't2', share_code: 'CODE2345' } }));
+    expect(await consumeWsTicket(db.env, 'tkt', 'diag-1', 5)).toEqual({
+      role: 'view',
+      tabScope: 't2',
+      shareCode: 'CODE2345',
+    });
+  });
+
+  it('reads an unscoped ticket as every tab', async () => {
     const db = fakeD1(() => ({ first: { role: 'edit' } }));
-    expect(await consumeWsTicket(db.env, 'tkt', 'diag-1', 5)).toBe('edit');
+    expect(await consumeWsTicket(db.env, 'tkt', 'diag-1', 5)).toEqual({
+      role: 'edit',
+      tabScope: null,
+      shareCode: null,
+    });
   });
 
   it('deletes as it reads, so a replay matches no row', async () => {
@@ -47,7 +71,7 @@ describe('consumeWsTicket (docs/specs/007-editor/live-app.md room auth)', () => 
     await consumeWsTicket(db.env, 'tkt', 'diag-1', 5);
     const stmt = db.one('ws_tickets');
     expect(stmt.sql).toContain('DELETE FROM ws_tickets');
-    expect(stmt.sql).toContain('RETURNING role');
+    expect(stmt.sql).toContain('RETURNING role, tab_scope, share_code');
   });
 
   it('scopes the consume to the diagram and to unexpired rows', async () => {

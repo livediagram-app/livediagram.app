@@ -27,7 +27,7 @@
 //   regardless of role).
 
 import { getMembership } from '../db';
-import type { Env } from '../types';
+import type { Env, ShareRole } from '../types';
 import { isPersonalOwner, shareLinkForDiagram, sharePasswordOk } from './share-access';
 
 // Joined-member check for team diagrams (docs/specs/013-workspace/team-shared-diagrams.md). `caller` MUST be the
@@ -46,14 +46,53 @@ async function isJoinedTeamMember(
   return membership?.status === 'joined';
 }
 
+// What a caller holds on a diagram: a role, the one tab it is confined to
+// (docs/specs/013-workspace/tab-scoped-share-links.md), and the share code that granted it. `tabScope` is
+// null for the owner, a joined team member and an All-tabs link; `shareCode`
+// is null for the owner and a team member, who need no code.
+export type DiagramGrant = { role: ShareRole; tabScope: string | null; shareCode: string | null };
+
 // `owner` is the hybrid identity (Clerk sub OR unsigned X-Owner-Id guest
 // header); `callerId` is the VERIFIED Clerk user id (null for guests).
 // For a personal diagram the hybrid `owner` path is safe (a guest id is
 // an unguessable UUID). For a TEAM diagram the identity must be verified,
-// because owner/member ids are Clerk ids shared among the team — so the
+// because owner/member ids are Clerk ids shared among the team, so the
 // header path is disabled there and only `callerId` + share codes count.
-// The two exported checks differ only in the share-link role they accept:
-// edit needs an edit-role link, read takes either role.
+//
+// The doors that can narrow what they return to one tab (the diagram
+// fetch, the log list, copy, thumbnails, images, the room) ask for the
+// grant itself and apply its scope.
+export async function resolveDiagramGrant(
+  env: Env,
+  diagramId: string,
+  owner: string | null,
+  shareCode: string | null,
+  ownerId: string,
+  sharePassword: string | null = null,
+  teamId: string | null = null,
+  callerId: string | null = null,
+): Promise<DiagramGrant | null> {
+  // Membership alone for a team diagram. The owner of a team diagram is a
+  // joined member while they're in the team; once they leave or are removed,
+  // owning the row must not keep it open to them (docs/specs/013-workspace/team-shared-diagrams.md).
+  if (isPersonalOwner(owner, ownerId, teamId)) return FULL_EDIT;
+  if (await isJoinedTeamMember(env, teamId, callerId)) return FULL_EDIT;
+  const link = await shareLinkForDiagram(env, shareCode, diagramId);
+  if (!link) return null;
+  // Share-password gate (docs/specs/013-workspace/share-password.md): every share-code-based access must carry
+  // the matching X-Share-Password. `sharePassword` defaults to null so the
+  // short call sites fail CLOSED on a protected diagram rather than silently
+  // bypassing the gate.
+  if (!(await sharePasswordOk(env, diagramId, sharePassword))) return null;
+  return { role: link.role, tabScope: link.tabId, shareCode: link.code };
+}
+
+const FULL_EDIT: DiagramGrant = { role: 'edit', tabScope: null, shareCode: null };
+
+// The two boolean gates. `targetTabId` names the tab the request touches;
+// omitted, the request is diagram-level, and a tab-scoped link grants
+// nothing there. Failing closed means a door nobody taught about scopes
+// refuses a scoped visitor rather than handing them the whole diagram.
 async function canAccessDiagram(
   needsEdit: boolean,
   env: Env,
@@ -64,20 +103,21 @@ async function canAccessDiagram(
   sharePassword: string | null,
   teamId: string | null,
   callerId: string | null,
+  targetTabId: string | undefined,
 ): Promise<boolean> {
-  // Membership alone for a team diagram. The owner of a team diagram is a
-  // joined member while they're in the team; once they leave or are removed,
-  // owning the row must not keep it open to them (docs/specs/013-workspace/team-shared-diagrams.md).
-  if (isPersonalOwner(owner, ownerId, teamId)) return true;
-  if (await isJoinedTeamMember(env, teamId, callerId)) return true;
-  const link = await shareLinkForDiagram(env, shareCode, diagramId);
-  if (!link) return false;
-  if (needsEdit && link.role !== 'edit') return false;
-  // Share-password gate (docs/specs/013-workspace/share-password.md): every share-code-based access must carry
-  // the matching X-Share-Password. `sharePassword` defaults to null so the
-  // 5-arg call sites + existing tests fail CLOSED on a protected diagram
-  // rather than silently bypassing the gate.
-  return sharePasswordOk(env, diagramId, sharePassword);
+  const grant = await resolveDiagramGrant(
+    env,
+    diagramId,
+    owner,
+    shareCode,
+    ownerId,
+    sharePassword,
+    teamId,
+    callerId,
+  );
+  if (!grant) return false;
+  if (needsEdit && grant.role !== 'edit') return false;
+  return grant.tabScope === null || grant.tabScope === targetTabId;
 }
 
 export async function canEditDiagram(
@@ -89,6 +129,7 @@ export async function canEditDiagram(
   sharePassword: string | null = null,
   teamId: string | null = null,
   callerId: string | null = null,
+  targetTabId?: string,
 ): Promise<boolean> {
   return canAccessDiagram(
     true,
@@ -100,6 +141,7 @@ export async function canEditDiagram(
     sharePassword,
     teamId,
     callerId,
+    targetTabId,
   );
 }
 
@@ -112,6 +154,7 @@ export async function canReadDiagram(
   sharePassword: string | null = null,
   teamId: string | null = null,
   callerId: string | null = null,
+  targetTabId?: string,
 ): Promise<boolean> {
   return canAccessDiagram(
     false,
@@ -123,5 +166,6 @@ export async function canReadDiagram(
     sharePassword,
     teamId,
     callerId,
+    targetTabId,
   );
 }

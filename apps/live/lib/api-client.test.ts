@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   apiCreateDiagram,
   apiCreateShareLink,
+  apiRescopeShareLink,
   apiDeleteImage,
   apiDeleteShareLink,
   apiDeleteTab,
@@ -158,7 +159,47 @@ describe('apiLoadShared password gate (docs/specs/013-workspace/share-password.m
   it('resolves the diagram + role on 200', async () => {
     stubFetch(200, { diagram: { id: 'd1' }, role: 'view' });
     const res = await apiLoadShared('CODE2345', 'guest-4');
-    expect(res).toMatchObject({ role: 'view', diagram: { id: 'd1' } });
+    expect(res).toMatchObject({ role: 'view', diagram: { id: 'd1' }, tabId: null });
+  });
+
+  it("carries a tab-scoped link's tab (docs/specs/013-workspace/tab-scoped-share-links.md)", async () => {
+    stubFetch(200, { diagram: { id: 'd1' }, role: 'edit', tabId: 'tab-2' });
+    const res = await apiLoadShared('CODE2345', 'guest-5');
+    expect(res).toMatchObject({ role: 'edit', tabId: 'tab-2' });
+  });
+});
+
+// docs/specs/013-workspace/tab-scoped-share-links.md: minting and rescoping carry the tab.
+describe('share-link scope calls', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('mints a link scoped to a tab', async () => {
+    stubFetch(201, { link: { code: 'C', tabId: 't2' } });
+    await apiCreateShareLink('owner-1', 'd1', 'view', 'never', 't2');
+    const [url, init] = vi.mocked(fetch).mock.calls[0]!;
+    expect(url).toBe('/api/diagrams/d1/share');
+    expect(JSON.parse(init!.body as string)).toEqual({
+      role: 'view',
+      expiry: 'never',
+      tabId: 't2',
+    });
+  });
+
+  it('mints an All-tabs link by default', async () => {
+    stubFetch(201, { link: { code: 'C', tabId: null } });
+    await apiCreateShareLink('owner-1', 'd1', 'view');
+    const init = vi.mocked(fetch).mock.calls[0]![1]!;
+    expect(JSON.parse(init.body as string).tabId).toBeNull();
+  });
+
+  it('rescopes a link with a PUT and hands back the link', async () => {
+    stubFetch(200, { link: { code: 'C', tabId: null } });
+    const link = await apiRescopeShareLink('owner-1', 'd1', 'C', null);
+    const [url, init] = vi.mocked(fetch).mock.calls[0]!;
+    expect(url).toBe('/api/diagrams/d1/share/C');
+    expect(init!.method).toBe('PUT');
+    expect(JSON.parse(init!.body as string)).toEqual({ tabId: null });
+    expect(link.tabId).toBeNull();
   });
 });
 

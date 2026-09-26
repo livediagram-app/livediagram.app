@@ -74,6 +74,8 @@ export function useIdentityBootstrap(opts: {
     setSelfParticipant: SetState<Participant>;
     setSessionRole: SetState<ShareRole>;
     setSessionShareCode: SetState<string | null>;
+    // The one tab a tab-scoped link opens (docs/specs/013-workspace/tab-scoped-share-links.md); null = all.
+    setSessionTabScope: (scope: string | null) => void;
     setSharedDiagrams: SetState<SharedWithItem[]>;
     setShareLinks: SetState<ShareLink[]>;
     setSharePassword: SetState<string | null>;
@@ -120,6 +122,7 @@ export function useIdentityBootstrap(opts: {
     setSelfParticipant,
     setSessionRole,
     setSessionShareCode,
+    setSessionTabScope,
     setSharedDiagrams,
     setShareLinks,
     setSharePassword,
@@ -331,7 +334,7 @@ export function useIdentityBootstrap(opts: {
         const accepted = getSessionSharePassword();
         if (accepted) writeCachedSharePassword(shareCodeParam, accepted);
         {
-          const { diagram: fetched, role } = resolution;
+          const { diagram: fetched, role, tabId: scopeTabId } = resolution;
           const session = resolveDiagramSession({
             diagramOwnerId: fetched.ownerId,
             selfId: self.id,
@@ -342,7 +345,10 @@ export function useIdentityBootstrap(opts: {
           // Tab seeding + name + owner fields (shared with the owner-URL
           // branch below) — see seed-fetched-diagram.ts. Visitors present
           // their session share code on the eager first-tab fetch.
-          await seedFetchedDiagram(self.id, fetched, codeForVisitor);
+          // Scope first: seeding makes the scoped tab active, and the active-tab
+          // guard refuses any other (docs/specs/013-workspace/tab-scoped-share-links.md).
+          setSessionTabScope(scopeTabId);
+          await seedFetchedDiagram(self.id, fetched, codeForVisitor, scopeTabId);
           setDiagramId(fetched.id);
           setIsOwner(session.isOwner);
           // Visitors inherit the role from their share code; owners are
@@ -395,6 +401,7 @@ export function useIdentityBootstrap(opts: {
                       savedAt: fetched.savedAt,
                       role,
                       shareCode: shareCodeParam,
+                      tabId: scopeTabId,
                       ownerName: fetched.ownerName ?? null,
                       ownerColor: fetched.ownerColor ?? null,
                     },
@@ -439,7 +446,7 @@ export function useIdentityBootstrap(opts: {
         // Tab seeding + name + owner fields (shared with the visitor
         // branch above) — see seed-fetched-diagram.ts. The owner's
         // eager first-tab fetch presents no share code.
-        await seedFetchedDiagram(self.id, fetched, null);
+        await seedFetchedDiagram(self.id, fetched, null, null);
         // An offline diagram (docs/specs/006-diagram/offline-mode.md) is yours by construction — its
         // ownerId is the local sentinel, never a participant id, so
         // without this it would wrongly get visitor chrome (Make a

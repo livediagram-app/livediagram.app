@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { remapTabDataLinks } from './diagrams';
+import { fakeD1 } from '../test-d1';
+import { copyDiagram, remapTabDataLinks } from './diagrams';
 
 // copyDiagram re-points a copied tab's internal links at the copy's own tabs.
 describe('remapTabDataLinks', () => {
@@ -27,5 +28,25 @@ describe('remapTabDataLinks', () => {
     const plain = '{"elements":[{"id":"a","type":"shape"}]}';
     expect(remapTabDataLinks(plain, map)).toBe(plain);
     expect(remapTabDataLinks('{"tabId" nope', map)).toBe('{"tabId" nope');
+  });
+});
+
+// docs/specs/013-workspace/tab-scoped-share-links.md: a tab-scoped visitor's copy holds their tab only.
+describe('copyDiagram tab filter', () => {
+  const source = { id: 'd1', owner_id: 'o', name: 'Doc', shareable: 0, saved_at: 1, created_at: 1 };
+  const answer = ({ sql }: { sql: string }) =>
+    sql.includes('FROM diagram_tabs dt') ? { all: [] } : { first: source, all: [] };
+  it('copies every tab by default and one tab when asked', async () => {
+    const all = fakeD1(answer);
+    await copyDiagram(all.env, 'd1', 'd2', 'me', 'Copy');
+    expect(all.one('SELECT t.id, t.name, dt.order_index, t.data').sql).not.toContain(
+      'dt.tab_id = ?',
+    );
+
+    const one = fakeD1(answer);
+    await copyDiagram(one.env, 'd1', 'd2', 'me', 'Copy', 't2');
+    const query = one.one('SELECT t.id, t.name, dt.order_index, t.data');
+    expect(query.sql).toContain('dt.tab_id = ?');
+    expect(query.bindings).toEqual(['d1', 't2']);
   });
 });

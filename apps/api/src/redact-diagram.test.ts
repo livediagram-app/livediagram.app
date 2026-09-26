@@ -3,7 +3,7 @@
 // workspace to whoever presents it. So "who gets to see it" is a security
 // rule, and it gets a suite of its own rather than living inside one route's.
 import { describe, expect, it } from 'vitest';
-import { redactDiagramForReader } from './redact-diagram';
+import { redactDiagramForReader, redactDiagramForScope } from './redact-diagram';
 import type { DiagramDTO } from './types';
 
 // A guest-owned diagram: the owner id is the UUID that identifies that
@@ -63,5 +63,40 @@ describe('redactDiagramForReader', () => {
   it('blanks a string that is merely similar', () => {
     expect(redactDiagramForReader(diagram, `${GUEST_OWNER} `).ownerId).toBe('');
     expect(redactDiagramForReader(diagram, GUEST_OWNER.toUpperCase()).ownerId).toBe('');
+  });
+});
+
+// docs/specs/013-workspace/tab-scoped-share-links.md. A scoped visitor's copy of the diagram keeps every
+// tab in place, so the bar can draw a "Not shared" pill for it, but nothing about a
+// tab outside their scope beyond its id and position.
+describe('redactDiagramForScope', () => {
+  const tabs = [
+    { id: 't1', diagramId: 'd1', name: 'Pricing', orderIndex: 0, updatedAt: 5, folder: 'Money' },
+    { id: 't2', diagramId: 'd1', name: 'Roadmap', orderIndex: 1, updatedAt: 6 },
+  ];
+  const full = { ...diagram, tabs, presentation: '{"slides":[]}' } as DiagramDTO;
+
+  it('marks every tab outside the scope out of scope, keeping only id and position', () => {
+    const out = redactDiagramForScope(full, 't2');
+    expect(out.tabs[0]).toEqual({
+      id: 't1',
+      diagramId: 'd1',
+      name: '',
+      orderIndex: 0,
+      updatedAt: 0,
+      outOfScope: true,
+    });
+  });
+
+  it('leaves the scoped tab as it is', () => {
+    expect(redactDiagramForScope(full, 't2').tabs[1]).toEqual(tabs[1]);
+  });
+
+  it('drops the slide deck, which spans tabs', () => {
+    expect(redactDiagramForScope(full, 't2').presentation).toBeNull();
+  });
+
+  it('hands an unscoped reader the diagram untouched', () => {
+    expect(redactDiagramForScope(full, null)).toBe(full);
   });
 });

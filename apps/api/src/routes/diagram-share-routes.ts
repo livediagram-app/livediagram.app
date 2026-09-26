@@ -15,6 +15,7 @@ import {
   getDiagramSharePassword,
   getShareLinkIncludingExpired,
   listShareLinks,
+  rescopeShareLink,
   retractTimelineWarning,
   setDiagramShare,
   setDiagramSharePassword,
@@ -23,6 +24,7 @@ import { emailEnabled } from '../email/client';
 import { notifyFirstShare } from '../email/notifications';
 import { badRequest, json, noContent, notFound } from '../responses';
 import type { ShareRole } from '../types';
+import { broadcastShareOp } from '../room-client';
 import { recordShareLinkCreated } from '../timeline';
 import { requireOwnedDiagram, type RouteContext } from './context';
 
@@ -50,6 +52,7 @@ export async function handleDiagramShareRoutes(ctx: RouteContext): Promise<Respo
       const body = (await request.json().catch(() => ({}))) as {
         role?: ShareRole;
         expiry?: ShareLinkExpiry;
+        tabId?: unknown;
       };
       // Reject a garbage role rather than silently granting edit (the prior
       // `=== 'view' ? 'view' : 'edit'` turned any typo into an edit link).
@@ -64,8 +67,11 @@ export async function handleDiagramShareRoutes(ctx: RouteContext): Promise<Respo
         body.expiry === 'week' || body.expiry === 'month' || body.expiry === 'sixMonths'
           ? body.expiry
           : 'never';
+      // Scope (docs/specs/013-workspace/tab-scoped-share-links.md): one of this diagram's tabs, or All tabs.
+      const tabId = parseScope(body.tabId, access.tabs);
+      if (tabId === INVALID_SCOPE) return badRequest('invalid tab');
       const code = generateShareCode();
-      const link = await createShareLink(env, id, code, role, expiry);
+      const link = await createShareLink(env, id, code, role, expiry, tabId);
       // docs/specs/013-workspace/timeline.md §4.3: owner-only. Who a diagram is shared with is the
       // owner's business — a team member seeing "a link was created"
       // learns nothing they can act on.
@@ -133,21 +139,25 @@ export async function handleDiagramShareRoutes(ctx: RouteContext): Promise<Respo
       // its window, so the worst case is a day of silence rather than a
       // deadline the owner has already dealt with.
       await retractTimelineWarning(env, 'diagram', id, 'share_link_expiring');
-      // Tell every connected peer in this diagram's room that
-      // the code just got revoked so any viewer / editor who
-      // hydrated with `X-Share-Code: <code>` can hard-redirect
-      // instead of continuing to read a diagram they no longer
-      // have access to. Fire-and-forget: the persistence above
-      // is the authoritative revoke, the broadcast is UX.
-      const stub = env.DIAGRAM_ROOM.get(env.DIAGRAM_ROOM.idFromName(id));
-      stub
-        .fetch('https://room/broadcast', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ op: { kind: 'share-revoked', code } }),
-        })
-        .catch(() => {});
+      // Tell every connected peer in this diagram's room that the code just
+      // got revoked: its holders hard-redirect out, and the room closes their
+      // sockets. The persistence above is the authoritative revoke.
+      await broadcastShareOp(env, id, { kind: 'share-revoked', code });
       return noContent();
+    }
+    // PUT: rescope the link (docs/specs/013-workspace/tab-scoped-share-links.md). Body { tabId: string | null };
+    // the code stays, and its holders reload into the new scope.
+    if (request.method === 'PUT') {
+      const existing = await getShareLinkIncludingExpired(env, code);
+      if (!existing || existing.diagramId !== id) return notFound();
+      const body = (await request.json().catch(() => ({}))) as { tabId?: unknown };
+      if (!('tabId' in body)) return badRequest('invalid tab');
+      const tabId = parseScope(body.tabId, access.tabs);
+      if (tabId === INVALID_SCOPE) return badRequest('invalid tab');
+      const link = await rescopeShareLink(env, code, tabId);
+      if (!link) return notFound();
+      ctx.waitUntil?.(broadcastShareOp(env, id, { kind: 'share-rescoped', code }));
+      return json({ link });
     }
   }
 
@@ -177,4 +187,18 @@ export async function handleDiagramShareRoutes(ctx: RouteContext): Promise<Respo
     }
   }
   return null;
+}
+
+// A link's scope from a request body (docs/specs/013-workspace/tab-scoped-share-links.md): null or absent
+// is All tabs; a string must name one of the diagram's own tabs. Anything
+// else is INVALID_SCOPE, which the routes answer with 400 invalid tab.
+const INVALID_SCOPE = Symbol('invalid scope');
+
+function parseScope(
+  value: unknown,
+  tabs: readonly { id: string }[],
+): string | null | typeof INVALID_SCOPE {
+  if (value === undefined || value === null) return null;
+  if (typeof value !== 'string') return INVALID_SCOPE;
+  return tabs.some((t) => t.id === value) ? value : INVALID_SCOPE;
 }

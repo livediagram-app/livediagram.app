@@ -21,7 +21,7 @@ type TelemetryEvent = {
 };
 ```
 
-Examples: `{category:'Diagram', action:'Created'}`, `{category:'Diagram', action:'Shared', type:'Edit'}`, `{category:'Diagram', action:'Joined', type:'Edit'}`, `{category:'Element', action:'Added', type:'Square'}`.
+Examples: `{category:'Diagram', action:'Created'}`, `{category:'Diagram', action:'Shared', type:'Edit'}` (plus `TabScoped` / `Rescoped` for [Tab-scoped share links](../013-workspace/tab-scoped-share-links.md)), `{category:'Diagram', action:'Joined', type:'Edit'}`, `{category:'Element', action:'Added', type:'Square'}`.
 
 `category` and `action` validate against closed enums: the ingest endpoint drops any event whose category or action is not in `TELEMETRY_CATEGORIES` / `TELEMETRY_ACTIONS`.
 

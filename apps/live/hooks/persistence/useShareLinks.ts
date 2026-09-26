@@ -11,6 +11,7 @@ import {
   apiCreateShareLink,
   apiDeleteShareLink,
   apiExtendShareLink,
+  apiRescopeShareLink,
   apiSaveSelf,
   apiSetSharePassword,
   type ShareLink,
@@ -72,11 +73,17 @@ export function useShareLinks(deps: ShareLinksDeps) {
   // editor route always has a real diagramId by the time the Share
   // dialog is open — the welcome / mint-id flow now lives on
   // /live/new (docs/specs/007-editor/new-diagram-route.md) — so this just calls the API directly.
-  const createShareLink = async (role: ShareRole, expiry: ShareLinkExpiry = 'never') => {
+  //
+  // `tabId` scopes the link to one tab (docs/specs/013-workspace/tab-scoped-share-links.md); null = All tabs.
+  const createShareLink = async (
+    role: ShareRole,
+    expiry: ShareLinkExpiry = 'never',
+    tabId: string | null = null,
+  ) => {
     if (!diagramId) return;
     confirmName();
     try {
-      const link = await apiCreateShareLink(selfParticipant.id, diagramId, role, expiry);
+      const link = await apiCreateShareLink(selfParticipant.id, diagramId, role, expiry, tabId);
       setShareLinks((prev) => [...prev, link]);
       setDiagramShareable(true);
       setDiagramShareCode((prev) => prev ?? link.code);
@@ -92,6 +99,7 @@ export function useShareLinks(deps: ShareLinksDeps) {
         }[expiry];
         track('Diagram', 'Shared', expiryType);
       }
+      if (tabId) track('Diagram', 'Shared', 'TabScoped');
     } catch {
       toast.error('Could not create the share link. Try again.');
     }
@@ -109,6 +117,19 @@ export function useShareLinks(deps: ShareLinksDeps) {
       track('Diagram', 'Shared', 'Extended');
     } catch {
       toast.error('Could not extend the link. Try again.');
+    }
+  };
+
+  // Change which tabs a link opens (docs/specs/013-workspace/tab-scoped-share-links.md). The server tells the
+  // link's holders to reload; the returned link replaces the row in place.
+  const rescopeShareLink = async (code: string, tabId: string | null) => {
+    if (!diagramId) return;
+    try {
+      const link = await apiRescopeShareLink(selfParticipant.id, diagramId, code, tabId);
+      setShareLinks((prev) => prev.map((l) => (l.code === code ? link : l)));
+      track('Diagram', 'Shared', 'Rescoped');
+    } catch {
+      toast.error('Could not change which tabs the link opens. Try again.');
     }
   };
 
@@ -171,6 +192,7 @@ export function useShareLinks(deps: ShareLinksDeps) {
     updateParticipantName,
     createShareLink,
     extendShareLink,
+    rescopeShareLink,
     revokeShareLink,
     setDiagramSharePassword,
     shareUrlFor,

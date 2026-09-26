@@ -323,6 +323,8 @@ export async function copyDiagram(
   newId: string,
   newOwnerId: string,
   newName: string,
+  // A tab-scoped visitor's copy (docs/specs/013-workspace/tab-scoped-share-links.md) takes their tab only.
+  onlyTabId: string | null = null,
 ): Promise<DiagramDTO | null> {
   const source = await getDiagram(env, sourceId);
   if (!source) return null;
@@ -344,10 +346,10 @@ export async function copyDiagram(
     `SELECT t.id, t.name, dt.order_index, t.data
        FROM diagram_tabs dt
        JOIN tabs t ON t.id = dt.tab_id
-      WHERE dt.diagram_id = ?
+      WHERE dt.diagram_id = ?${onlyTabId === null ? '' : ' AND dt.tab_id = ?'}
       ORDER BY dt.order_index ASC`,
   )
-    .bind(sourceId)
+    .bind(...(onlyTabId === null ? [sourceId] : [sourceId, onlyTabId]))
     .all<{ id: string; name: string; order_index: number; data: string }>();
   // Mint every fresh tab id up front so a tab / element link on one tab
   // can be re-pointed at its sibling's copy (the Explorer duplicate does

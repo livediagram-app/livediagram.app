@@ -89,6 +89,7 @@ function shareLink(diagramId: string) {
     createdAt: 0,
     expiry: 'never' as const,
     expiresAt: null,
+    tabId: null,
   };
 }
 
@@ -274,6 +275,34 @@ describe('GET /api/share/<code>/image.svg (docs/specs/013-workspace/live-image-s
     expect(getThumbnailMock).not.toHaveBeenCalled();
   });
 
+  // docs/specs/013-workspace/tab-scoped-share-links.md: a scoped link's image is always its own tab.
+  describe('for a tab-scoped link', () => {
+    const scopedLink = () => ({ ...shareLink('d1'), tabId: 'tab-2' });
+    beforeEach(() => {
+      getShareLinkMock.mockResolvedValue(scopedLink());
+      getDiagramMock.mockResolvedValue(diagram('d1'));
+      getSharePasswordMock.mockResolvedValue(null);
+      getTabImageMock.mockResolvedValue('<svg>tab2</svg>');
+    });
+
+    it('renders its tab, not the first-tab snapshot, when no tab is asked for', async () => {
+      const res = await handleShare(imageCtx('C'));
+      expect(await res.text()).toBe('<svg>tab2</svg>');
+      expect(getTabImageMock).toHaveBeenCalledWith(expect.anything(), expect.anything(), 'tab-2');
+      expect(getThumbnailMock).not.toHaveBeenCalled();
+    });
+
+    it('renders its tab when that tab is asked for by name', async () => {
+      expect((await handleShare(imageCtx('C', 'tab-2'))).status).toBe(200);
+    });
+
+    it('404s any other tab without rendering it', async () => {
+      const res = await handleShare(imageCtx('C', 'tab-1'));
+      expect(res.status).toBe(404);
+      expect(getTabImageMock).not.toHaveBeenCalled();
+    });
+  });
+
   it('still 404s a password-protected diagram for a ?tab= request (gate before render)', async () => {
     getShareLinkMock.mockResolvedValue(shareLink('d1'));
     getDiagramMock.mockResolvedValue(diagram('d1'));
@@ -368,7 +397,36 @@ describe('GET /api/share/<code> (docs/specs/013-workspace/share-password.md + do
   it('records the visit for an identified non-owner, at the link’s role', async () => {
     const { ctx } = resolveCtx({ visitor: 'visitor-1' });
     await handleShare(ctx);
-    expect(recordSharedAccessMock).toHaveBeenCalledWith(FAKE_ENV, 'visitor-1', 'd1', 'view');
+    expect(recordSharedAccessMock).toHaveBeenCalledWith(FAKE_ENV, 'visitor-1', 'd1', 'view', null);
+  });
+
+  // docs/specs/013-workspace/tab-scoped-share-links.md
+  it('hands a tab-scoped visitor their tab, the rest out of scope, and records the scope', async () => {
+    getShareLinkMock.mockResolvedValue({ ...shareLink('d1'), tabId: 't2' });
+    getDiagramMock.mockResolvedValue({
+      ...diagram('d1'),
+      tabs: [
+        { id: 't1', diagramId: 'd1', name: 'Pricing', orderIndex: 0, updatedAt: 1 },
+        { id: 't2', diagramId: 'd1', name: 'Roadmap', orderIndex: 1, updatedAt: 1 },
+      ],
+    });
+    const { ctx } = resolveCtx({ visitor: 'visitor-1' });
+    const body = (await (await handleShare(ctx)).json()) as {
+      tabId: string | null;
+      diagram: { tabs: { name: string; outOfScope?: true }[] };
+    };
+    expect(body.tabId).toBe('t2');
+    expect(body.diagram.tabs.map((t) => [t.name, t.outOfScope])).toEqual([
+      ['', true],
+      ['Roadmap', undefined],
+    ]);
+    expect(recordSharedAccessMock).toHaveBeenCalledWith(FAKE_ENV, 'visitor-1', 'd1', 'view', 't2');
+  });
+
+  it('tells an All-tabs visitor they have every tab', async () => {
+    const { ctx } = resolveCtx({ visitor: 'visitor-1' });
+    const body = (await (await handleShare(ctx)).json()) as { tabId: string | null };
+    expect(body.tabId).toBeNull();
   });
 
   it('records nothing for a visitor who never identifies', async () => {

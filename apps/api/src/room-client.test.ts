@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { ShapeElement, Tab, TabLedger } from '@livediagram/diagram';
 import type { Env } from './types';
-import { mergeRoomLedger, parseRoomCursor } from './room-client';
+import { broadcastShareOp, mergeRoomLedger, parseRoomCursor } from './room-client';
 
 const card: ShapeElement = {
   id: 'card',
@@ -75,5 +75,36 @@ describe('parseRoomCursor', () => {
     expect(parseRoomCursor('ep:-1')).toBeNull();
     expect(parseRoomCursor('ep:1.5')).toBeNull();
     expect(parseRoomCursor(':3')).toBeNull();
+  });
+});
+
+// The worker telling a room a share link changed (docs/specs/013-workspace/tab-scoped-share-links.md): the
+// op reaches the room's broadcast endpoint, and a room that can't be reached
+// is logged, never thrown, because the D1 write it follows is the real change.
+describe('broadcastShareOp', () => {
+  it("posts the op to the diagram's room", async () => {
+    const { env, stubFetch } = envWith(async () => new Response(null, { status: 204 }));
+    await broadcastShareOp(env, 'd1', { kind: 'share-rescoped', code: 'ABCD2345' });
+    const [url, init] = stubFetch.mock.calls[0] as unknown as [string, RequestInit];
+    expect(url).toBe('https://room/broadcast');
+    expect(JSON.parse(init.body as string)).toEqual({
+      op: { kind: 'share-rescoped', code: 'ABCD2345' },
+    });
+  });
+
+  it('logs and carries on when the room cannot be reached', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const { env } = envWith(async () => {
+      throw new Error('room down');
+    });
+    await expect(
+      broadcastShareOp(env, 'd1', { kind: 'share-revoked', code: 'ABCD2345' }),
+    ).resolves.toBeUndefined();
+    expect(warn).toHaveBeenCalledWith(
+      '[room-broadcast] share-revoked did not reach the room',
+      'd1',
+      expect.any(Error),
+    );
+    warn.mockRestore();
   });
 });

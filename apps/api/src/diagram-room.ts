@@ -12,6 +12,7 @@ import {
   helloPresence,
   resolveCatchup,
 } from './diagram-room-rules';
+import { opForScope, scopedSenderMayRelay } from './room-scope';
 import {
   beginGrace,
   claimBaton,
@@ -133,7 +134,19 @@ type SessionAttachment = {
   //     room has already counted (Diagram·Used·Multiplayer, docs/specs/017-telemetry/telemetry.md). See
   //     room-multiplayer.ts for why the mark lives here.
   multiplayer?: boolean;
+  //   - `tabScope`: the one tab this session is confined to
+  //     (docs/specs/013-workspace/tab-scoped-share-links.md), from X-Verified-Tab-Scope. Null / absent = every tab.
+  //   - `shareCode`: the share code that admitted it, from X-Verified-Share-Code,
+  //     so revoking or rescoping that code can close exactly its sockets.
+  tabScope?: string | null;
+  shareCode?: string | null;
 };
+
+// Share-link ops that end the sessions their code admitted.
+const SHARE_LINK_OPS = new Set(['share-revoked', 'share-rescoped']);
+// Close code for a socket whose share link was revoked or rescoped. In the
+// 4000-4999 application range; the client reloads or leaves on the op itself.
+const SHARE_LINK_CHANGED_CLOSE = 4003;
 
 export class DiagramRoom implements DurableObject {
   state: DurableObjectState;
@@ -245,6 +258,7 @@ export class DiagramRoom implements DurableObject {
       // peer whose socket blipped, the same as a peer's own mutation would.
       if (body.ordered === true) this.broadcastOrderedSystemOp(op);
       else this.broadcastSystemOp(op);
+      this.closeSessionsOfChangedLink(op);
       return new Response(null, { status: 204 });
     }
     if (request.method === 'POST' && url.pathname === '/qa') {
@@ -299,14 +313,24 @@ export class DiagramRoom implements DurableObject {
       headerRole === 'edit' || headerRole === 'view' ? headerRole : undefined;
     // Same trust argument as the role: only the worker can set it.
     const isOwner = request.headers.get('X-Verified-Owner') === '1';
-    this.acceptSession(server, verifiedRole, isOwner);
+    // Same trust argument again: the scope and the admitting code are set by
+    // the worker on every upgrade (empty = none).
+    const tabScope = request.headers.get('X-Verified-Tab-Scope') || null;
+    const shareCode = request.headers.get('X-Verified-Share-Code') || null;
+    this.acceptSession(server, verifiedRole, isOwner, tabScope, shareCode);
     return new Response(null, { status: 101, webSocket: client });
   }
 
   // Admit one server-side socket into the room: pin its hibernation-proof
   // session state (attachment) and hand it to the runtime. Split out of
   // fetch so tests can drive sessions without constructing WebSocketPair.
-  acceptSession(ws: WebSocket, verifiedRole?: 'edit' | 'view', isOwner = false): void {
+  acceptSession(
+    ws: WebSocket,
+    verifiedRole?: 'edit' | 'view',
+    isOwner = false,
+    tabScope: string | null = null,
+    shareCode: string | null = null,
+  ): void {
     // Per-session ephemeral presence id (docs/specs/015-api/public-api-and-tokens.md §6): the broadcast presence /
     // cursor id is a fresh server-assigned random, NOT the connector's real
     // owner id — so a co-present collaborator (incl. a view-only share
@@ -318,6 +342,8 @@ export class DiagramRoom implements DurableObject {
       verifiedRole,
       presence: null,
       isOwner,
+      tabScope,
+      shareCode,
     } satisfies SessionAttachment);
     // Hibernation-aware accept: the runtime owns the socket's event
     // delivery (webSocketMessage / webSocketClose / webSocketError) and
@@ -356,8 +382,10 @@ export class DiagramRoom implements DurableObject {
       if (ws === except) continue;
       const attachment = ws.deserializeAttachment() as SessionAttachment | null;
       if (attachment?.presence?.id !== presenceId) continue;
+      const out = this.frameFor(ws, payload, serialized);
+      if (out === null) return;
       try {
-        ws.send(serialized);
+        ws.send(out);
       } catch {
         this.opRates.delete(ws);
       }
@@ -369,11 +397,48 @@ export class DiagramRoom implements DurableObject {
     const serialized = JSON.stringify(payload);
     for (const ws of this.state.getWebSockets()) {
       if (ws === except) continue;
+      const out = this.frameFor(ws, payload, serialized);
+      if (out === null) continue;
       try {
-        ws.send(serialized);
+        ws.send(out);
       } catch {
         this.opRates.delete(ws);
       }
+    }
+  }
+
+  // The frame one socket should receive for `payload`: as serialised for an
+  // unscoped session, redacted or withheld (null) for a tab-scoped one
+  // (docs/specs/013-workspace/tab-scoped-share-links.md). Only op frames carry tab content.
+  private frameFor(ws: WebSocket, payload: ServerMessage, serialized: string): string | null {
+    if (payload.kind !== 'op') return serialized;
+    const scope = this.scopeOf(ws);
+    if (scope === null) return serialized;
+    const op = opForScope(payload.op, scope);
+    if (op === null) return null;
+    return op === payload.op ? serialized : JSON.stringify({ ...payload, op });
+  }
+
+  // A socket's tab scope. Read from the attachment, so it survives
+  // hibernation; fixed for the life of the session.
+  private scopeOf(ws: WebSocket): string | null {
+    return this.readSession(ws)?.tabScope ?? null;
+  }
+
+  // After a share-revoked / share-rescoped op has gone out, close every socket
+  // its code admitted: its holders must stop receiving ops whether or not
+  // their client honours the op (docs/specs/013-workspace/tab-scoped-share-links.md).
+  private closeSessionsOfChangedLink(op: unknown): void {
+    const { kind, code } = (op ?? {}) as { kind?: unknown; code?: unknown };
+    if (typeof kind !== 'string' || !SHARE_LINK_OPS.has(kind) || typeof code !== 'string') return;
+    for (const ws of this.state.getWebSockets()) {
+      if (this.readSession(ws)?.shareCode !== code) continue;
+      try {
+        ws.close(SHARE_LINK_CHANGED_CLOSE, kind);
+      } catch {
+        // Already gone.
+      }
+      this.opRates.delete(ws);
     }
   }
 
@@ -545,6 +610,9 @@ export class DiagramRoom implements DurableObject {
       // could forge `share-revoked` with the code from their own URL
       // and force-redirect every collaborator out of the session.
       if (isSystemOpKind(opKind)) return;
+      // A tab-scoped session acts on its own tab only, and never on the
+      // diagram's structure (docs/specs/013-workspace/tab-scoped-share-links.md).
+      if (!scopedSenderMayRelay(msg.op, session.tabScope ?? null)) return;
       const isPresenceOp = isPresenceOpKind(opKind);
       if (sender.role !== 'edit' && !isPresenceOp) return;
       // Running the session belongs to whoever holds the baton (docs/specs/012-collaboration/facilitator.md).
@@ -625,11 +693,20 @@ export class DiagramRoom implements DurableObject {
       { epoch, lastSeq },
       { epoch: this.epoch, seq: this.seq, opLog: this.opLog },
     );
+    // A tab-scoped session replays its own tab only, like the live relay.
+    const scope = this.scopeOf(ws);
+    const visible =
+      scope === null
+        ? ops
+        : ops.flatMap((o) => {
+            const op = opForScope(o.op, scope);
+            return op === null ? [] : [{ ...o, op }];
+          });
     const payload: ServerMessage = {
       kind: 'catchup',
       epoch: this.epoch,
       seq: this.seq,
-      ops,
+      ops: visible,
       resync,
     };
     try {

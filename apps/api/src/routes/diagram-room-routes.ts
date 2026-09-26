@@ -7,7 +7,7 @@
 import { isPersonalOwner, shareLinkForDiagram, sharePasswordOk } from '../auth/share-access';
 import { consumeWsTicket, createWsTicket, getDiagramMeta } from '../db';
 import { forbidden, json, notFound } from '../responses';
-import { gateEdit, gateRead, type RouteContext } from './context';
+import { gateGrant, type RouteContext } from './context';
 
 // Returns null when the request isn't a room route.
 export async function handleDiagramRoomRoutes(ctx: RouteContext): Promise<Response | null> {
@@ -26,7 +26,7 @@ export async function handleDiagramRoomRoutes(ctx: RouteContext): Promise<Respon
   // callers (team members above all: membership MUST be checked against
   // the VERIFIED Clerk id, docs/specs/013-workspace/team-shared-diagrams.md) prove their access here over normal
   // authenticated REST and hand the resulting short-lived ticket to the
-  // upgrade as `?t=`. gateEdit/gateRead run the exact same access policy
+  // upgrade as `?t=`. gateGrant runs the exact same access policy
   // as every REST read/write, including the share-password gate.
   if (segments.length === 4 && segments[3] === 'room-ticket' && request.method === 'POST') {
     const id = segments[2]!;
@@ -34,11 +34,11 @@ export async function handleDiagramRoomRoutes(ctx: RouteContext): Promise<Respon
     // runs on every room join.
     const diagram = await getDiagramMeta(env, id);
     if (!diagram) return notFound();
-    let role: 'edit' | 'view' | null = null;
-    if (await gateEdit(ctx, id, diagram.ownerId, diagram.teamId)) role = 'edit';
-    else if (await gateRead(ctx, id, diagram.ownerId, diagram.teamId)) role = 'view';
-    if (!role) return notFound();
-    const ticket = await createWsTicket(env, id, role);
+    // The grant carries the role, a tab-scoped link's scope and the code that
+    // granted it (docs/specs/013-workspace/tab-scoped-share-links.md); the ticket takes all three to the room.
+    const grant = await gateGrant(ctx, id, diagram.ownerId, diagram.teamId);
+    if (!grant) return notFound();
+    const ticket = await createWsTicket(env, id, grant);
     return json({ ticket });
   }
 
@@ -52,6 +52,10 @@ export async function handleDiagramRoomRoutes(ctx: RouteContext): Promise<Respon
     // ignores any role the client might set in its own hello
     // payload, so this header is the trust boundary.
     let role: 'edit' | 'view' | null = null;
+    // A tab-scoped link's tab, and the code that admitted a share visitor
+    // (docs/specs/013-workspace/tab-scoped-share-links.md). Null for the owner and a team member.
+    let tabScope: string | null = null;
+    let shareCode: string | null = null;
     const claimedOwnerId = url.searchParams.get('o');
     // Gate-only projection — the upgrade uses only ownerId/teamId.
     const diagram = await getDiagramMeta(env, id);
@@ -62,7 +66,8 @@ export async function handleDiagramRoomRoutes(ctx: RouteContext): Promise<Respon
     // trusted an unverified, teammate-visible value, so a removed member
     // (or anyone who learned a member id) could keep joining the room.
     const ticket = url.searchParams.get('t');
-    const ticketRole = ticket ? await consumeWsTicket(env, ticket, id) : null;
+    const admission = ticket ? await consumeWsTicket(env, ticket, id) : null;
+    const ticketRole = admission?.role ?? null;
     // The bare-`o` owner match is PERSONAL diagrams only, mirroring the
     // REST access rule (auth/diagram-access.ts): a TEAM diagram's owner
     // id is a Clerk id deliberately visible to every teammate, so a
@@ -72,13 +77,17 @@ export async function handleDiagramRoomRoutes(ctx: RouteContext): Promise<Respon
     // leg); a personal guest owner's id stays an unguessable UUID.
     const isOwnerUpgrade =
       !!diagram && isPersonalOwner(claimedOwnerId, diagram.ownerId, diagram.teamId);
-    if (ticketRole) {
-      role = ticketRole;
+    if (admission) {
+      ({ role, tabScope, shareCode } = admission);
     } else if (isOwnerUpgrade) {
       role = 'edit';
     } else {
       const link = await shareLinkForDiagram(env, url.searchParams.get('s'), id);
-      if (link) role = link.role;
+      if (link) {
+        role = link.role;
+        tabScope = link.tabId;
+        shareCode = link.code;
+      }
     }
     // Refuse the upgrade unless the caller is the owner or holds a valid
     // share code for THIS diagram. Without this, a diagram with no share
@@ -117,6 +126,11 @@ export async function handleDiagramRoomRoutes(ctx: RouteContext): Promise<Respon
     // owner can always take the session back, and a boolean answers that
     // without handing the room an identity it deliberately does not hold.
     forwarded.headers.set('X-Verified-Owner', isOwnerUpgrade ? '1' : '0');
+    // The session's tab scope and admitting code, set on every path for the
+    // same reason as the two above: the room believes these names. Empty =
+    // none (docs/specs/013-workspace/tab-scoped-share-links.md).
+    forwarded.headers.set('X-Verified-Tab-Scope', tabScope ?? '');
+    forwarded.headers.set('X-Verified-Share-Code', shareCode ?? '');
     return stub.fetch(forwarded);
   }
 

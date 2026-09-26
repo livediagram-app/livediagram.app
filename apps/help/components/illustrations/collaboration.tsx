@@ -294,6 +294,43 @@ export function ShareExpiry() {
   return <ShareDialog variant="expiry" />;
 }
 
+/** A visitor on a one-tab link: their tab's canvas above a tab bar where the
+ *  shared tab sits between two nameless "Not shared" pills. */
+export function OneTabShare() {
+  const pill = (x: number, w: number, label: string, shared: boolean) => (
+    <g transform={`translate(${x} 196)`}>
+      <rect
+        width={w}
+        height={24}
+        rx={7}
+        className={shared ? 'fill-white stroke-brand-400' : 'fill-transparent stroke-slate-400'}
+        strokeWidth={1.5}
+        strokeDasharray={shared ? undefined : '4 3'}
+      />
+      <Label
+        x={w / 2}
+        y={13}
+        anchor="middle"
+        size={10}
+        weight={600}
+        tone={shared ? 'strong' : 'muted'}
+      >
+        {label}
+      </Label>
+    </g>
+  );
+  return (
+    <Scene w={420} h={240}>
+      <Shape x={70} y={60} w={112} h={56} kind="rect" label="Q3: beta" />
+      <Shape x={238} y={60} w={112} h={56} kind="rect" label="Q4: launch" />
+      <rect x={0} y={184} width={420} height={56} className="fill-slate-100" />
+      {pill(40, 104, 'Not shared', false)}
+      {pill(158, 104, 'Roadmap', true)}
+      {pill(276, 104, 'Not shared', false)}
+    </Scene>
+  );
+}
+
 /** A read-only embedded diagram inside another page, with an embed-code
  *  snippet beneath it. */
 export function EmbeddedDiagram() {

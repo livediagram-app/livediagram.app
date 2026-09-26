@@ -31,7 +31,7 @@ vi.mock('../db', () => ({
 // Import AFTER the mock declaration so the helpers pick up the
 // stubbed `getShareLink`. The helpers themselves don't care about
 // the Env shape past the type, so we hand the assertions a stub.
-import { canEditDiagram, canReadDiagram } from './diagram-access';
+import { canEditDiagram, canReadDiagram, resolveDiagramGrant } from './diagram-access';
 
 const FAKE_ENV = {} as Env;
 
@@ -93,6 +93,7 @@ describe('canEditDiagram', () => {
       createdAt: 0,
       expiry: 'never',
       expiresAt: null,
+      tabId: null,
     });
     const allowed = await canEditDiagram(FAKE_ENV, 'diag-1', null, 'ABC23456', 'owner-a');
     expect(allowed).toBe(false);
@@ -110,6 +111,7 @@ describe('canEditDiagram', () => {
       createdAt: 0,
       expiry: 'never',
       expiresAt: null,
+      tabId: null,
     });
     const allowed = await canEditDiagram(FAKE_ENV, 'diag-1', null, 'VIEW2345', 'owner-a');
     expect(allowed).toBe(false);
@@ -123,6 +125,7 @@ describe('canEditDiagram', () => {
       createdAt: 0,
       expiry: 'never',
       expiresAt: null,
+      tabId: null,
     });
     const allowed = await canEditDiagram(FAKE_ENV, 'diag-1', null, 'EDIT2345', 'owner-a');
     expect(allowed).toBe(true);
@@ -168,6 +171,7 @@ describe('canReadDiagram', () => {
       createdAt: 0,
       expiry: 'never',
       expiresAt: null,
+      tabId: null,
     });
     const allowed = await canReadDiagram(FAKE_ENV, 'diag-1', null, 'ABC23456', 'owner-a');
     expect(allowed).toBe(false);
@@ -186,6 +190,7 @@ describe('canReadDiagram', () => {
       createdAt: 0,
       expiry: 'never',
       expiresAt: null,
+      tabId: null,
     });
     const allowed = await canReadDiagram(FAKE_ENV, 'diag-1', null, 'VIEW2345', 'owner-a');
     expect(allowed).toBe(true);
@@ -202,6 +207,7 @@ describe('canReadDiagram', () => {
       createdAt: 0,
       expiry: 'never',
       expiresAt: null,
+      tabId: null,
     });
     const allowed = await canReadDiagram(FAKE_ENV, 'diag-1', null, 'EDIT2345', 'owner-a');
     expect(allowed).toBe(true);
@@ -218,6 +224,7 @@ describe('share password gate (docs/specs/013-workspace/share-password.md)', () 
     createdAt: 0,
     expiry: 'never',
     expiresAt: null,
+    tabId: null,
   };
 
   it('denies a share-code edit when the password is required but absent', async () => {
@@ -372,5 +379,122 @@ describe('team-library access (docs/specs/013-workspace/team-shared-diagrams.md)
       await canEditDiagram(FAKE_ENV, 'diag-1', 'user-2', null, 'owner-a', null, null, 'user-2'),
     ).toBe(false);
     expect(getMembershipMock).not.toHaveBeenCalled();
+  });
+});
+
+// docs/specs/013-workspace/tab-scoped-share-links.md. A scoped link grants its role on ONE tab. The gates
+// fail closed: a request that names no tab (a diagram-level door) is refused a
+// scoped link, and only the doors that know how to narrow what they return ask
+// for the grant itself.
+describe('tab-scoped links', () => {
+  const scoped = (role: 'edit' | 'view', tabId: string | null = 'tab-2'): ShareLink => ({
+    code: 'SCOPED23',
+    role,
+    diagramId: 'diag-1',
+    createdAt: 0,
+    expiry: 'never',
+    expiresAt: null,
+    tabId,
+  });
+  const read = (tab?: string) =>
+    canReadDiagram(FAKE_ENV, 'diag-1', null, 'SCOPED23', 'owner-a', null, null, null, tab);
+  const edit = (tab?: string) =>
+    canEditDiagram(FAKE_ENV, 'diag-1', null, 'SCOPED23', 'owner-a', null, null, null, tab);
+
+  it('opens its own tab', async () => {
+    getShareLinkMock.mockResolvedValue(scoped('edit'));
+    expect(await read('tab-2')).toBe(true);
+    expect(await edit('tab-2')).toBe(true);
+  });
+
+  it('refuses every other tab', async () => {
+    getShareLinkMock.mockResolvedValue(scoped('edit'));
+    expect(await read('tab-1')).toBe(false);
+    expect(await edit('tab-1')).toBe(false);
+  });
+
+  it('refuses a diagram-level door, which names no tab', async () => {
+    getShareLinkMock.mockResolvedValue(scoped('edit'));
+    expect(await read()).toBe(false);
+    expect(await edit()).toBe(false);
+  });
+
+  it('keeps the role: a scoped view link still cannot write its own tab', async () => {
+    getShareLinkMock.mockResolvedValue(scoped('view'));
+    expect(await read('tab-2')).toBe(true);
+    expect(await edit('tab-2')).toBe(false);
+  });
+
+  it('leaves an All-tabs link opening any tab and the diagram itself', async () => {
+    getShareLinkMock.mockResolvedValue(scoped('edit', null));
+    expect(await read('tab-1')).toBe(true);
+    expect(await edit()).toBe(true);
+  });
+
+  it('leaves the owner opening any tab', async () => {
+    expect(
+      await canEditDiagram(
+        FAKE_ENV,
+        'diag-1',
+        'owner-a',
+        null,
+        'owner-a',
+        null,
+        null,
+        null,
+        'tab-9',
+      ),
+    ).toBe(true);
+  });
+});
+
+describe('resolveDiagramGrant', () => {
+  const grant = (owner: string | null, code: string | null, password: string | null = null) =>
+    resolveDiagramGrant(FAKE_ENV, 'diag-1', owner, code, 'owner-a', password, null, null);
+
+  it('grants the owner edit on every tab', async () => {
+    expect(await grant('owner-a', null)).toEqual({ role: 'edit', tabScope: null, shareCode: null });
+  });
+
+  it('grants a joined team member edit on every tab', async () => {
+    getMembershipMock.mockResolvedValue({ status: 'joined' });
+    expect(
+      await resolveDiagramGrant(FAKE_ENV, 'diag-1', 'x', null, 'owner-a', null, 'team-1', 'user-1'),
+    ).toEqual({ role: 'edit', tabScope: null, shareCode: null });
+  });
+
+  it("hands back a share link's role and scope", async () => {
+    getShareLinkMock.mockResolvedValue({
+      code: 'SCOPED23',
+      role: 'view',
+      diagramId: 'diag-1',
+      createdAt: 0,
+      expiry: 'never',
+      expiresAt: null,
+      tabId: 'tab-2',
+    });
+    expect(await grant(null, 'SCOPED23')).toEqual({
+      role: 'view',
+      tabScope: 'tab-2',
+      shareCode: 'SCOPED23',
+    });
+  });
+
+  it('grants nothing without a matching password', async () => {
+    getSharePasswordMock.mockResolvedValue('hunter2');
+    getShareLinkMock.mockResolvedValue({
+      code: 'SCOPED23',
+      role: 'edit',
+      diagramId: 'diag-1',
+      createdAt: 0,
+      expiry: 'never',
+      expiresAt: null,
+      tabId: null,
+    });
+    expect(await grant(null, 'SCOPED23', 'wrong')).toBeNull();
+  });
+
+  it('grants nothing to a stranger', async () => {
+    expect(await grant(null, null)).toBeNull();
   });
 });

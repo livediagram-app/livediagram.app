@@ -8,7 +8,9 @@ import {
   generateShareCode,
   getShareLink,
   getShareLinkIncludingExpired,
+  deleteShareLinksForTab,
   listShareLinks,
+  rescopeShareLink,
 } from './share';
 
 // share_links is the enforcement choke point for every visitor who isn't the
@@ -25,6 +27,7 @@ const row = (over: Record<string, unknown> = {}) => ({
   created_at: 1_000,
   expiry: null,
   expires_at: null,
+  tab_id: null,
   ...over,
 });
 
@@ -94,7 +97,18 @@ describe('getShareLink (the access gate, docs/specs/013-workspace/share-link-exp
       createdAt: 1_000,
       expiry: 'never',
       expiresAt: null,
+      tabId: null,
     });
+  });
+
+  // docs/specs/013-workspace/tab-scoped-share-links.md: a scoped link is only a link while its tab is still in
+  // the diagram, in the same query, so no caller can skip the check.
+  it('only resolves a scoped link while its tab is still in the diagram', async () => {
+    const db = fakeD1(() => ({ first: null }));
+    await getShareLink(db.env, 'ABCD2345');
+    expect(db.one('FROM share_links').sql).toMatch(
+      /tab_id IS NULL OR EXISTS \(SELECT 1 FROM diagram_tabs dt WHERE dt\.diagram_id = share_links\.diagram_id AND dt\.tab_id = share_links\.tab_id\)/,
+    );
   });
 
   it('filters expiry in SQL, against now', async () => {
@@ -140,6 +154,7 @@ describe('createShareLink (docs/specs/013-workspace/share-link-expiry.md)', () =
       createdAt: 1_000,
       expiry: 'never',
       expiresAt: null,
+      tabId: null,
     });
     expect(db.one('INSERT INTO share_links').bindings).toEqual([
       'ABCD2345',
@@ -148,7 +163,15 @@ describe('createShareLink (docs/specs/013-workspace/share-link-expiry.md)', () =
       1_000,
       null,
       null,
+      null,
     ]);
+  });
+
+  it('stores the tab scope (docs/specs/013-workspace/tab-scoped-share-links.md)', async () => {
+    const db = fakeD1();
+    const link = await createShareLink(db.env, 'diag-1', 'ABCD2345', 'view', 'never', 'tab-2');
+    expect(link.tabId).toBe('tab-2');
+    expect(db.one('INSERT INTO share_links').bindings[6]).toBe('tab-2');
   });
 
   it('arms the deadline from creation time for a timed link', async () => {
@@ -231,5 +254,64 @@ describe('deleteShareLink (docs/specs/013-workspace/share-link-expiry.md)', () =
     const db = fakeD1(() => ({ first: null }));
     await deleteShareLink(db.env, 'NOPE');
     expect(db.matching('DELETE FROM share_links')).toEqual([]);
+  });
+});
+
+describe('rescopeShareLink (docs/specs/013-workspace/tab-scoped-share-links.md)', () => {
+  it('rewrites the scope and hands back the link as it now stands', async () => {
+    const db = fakeD1(({ sql }) =>
+      sql.includes('SELECT') ? { first: row({ tab_id: 'tab-2' }) } : {},
+    );
+    const link = await rescopeShareLink(db.env, 'ABCD2345', 'tab-2');
+    expect(db.one('UPDATE share_links SET tab_id').bindings).toEqual(['tab-2', 'ABCD2345']);
+    expect(link?.tabId).toBe('tab-2');
+  });
+
+  it('widens a link back to All tabs', async () => {
+    const db = fakeD1(({ sql }) => (sql.includes('SELECT') ? { first: row() } : {}));
+    await rescopeShareLink(db.env, 'ABCD2345', null);
+    expect(db.one('UPDATE share_links SET tab_id').bindings).toEqual([null, 'ABCD2345']);
+  });
+
+  it('refuses a code that does not exist, and writes nothing', async () => {
+    const db = fakeD1(() => ({ first: null }));
+    expect(await rescopeShareLink(db.env, 'NOPE', 'tab-2')).toBeNull();
+    expect(db.matching('UPDATE share_links')).toEqual([]);
+  });
+});
+
+describe('deleteShareLinksForTab (docs/specs/013-workspace/tab-scoped-share-links.md)', () => {
+  it('deletes every link scoped to the tab and names them, so their holders can be told', async () => {
+    const db = fakeD1(({ sql }) => {
+      if (sql.includes('COUNT(*)')) return { first: { n: 1 } };
+      if (sql.includes('SELECT code')) return { all: [{ code: 'AAAA2222' }, { code: 'BBBB3333' }] };
+      return {};
+    });
+    const codes = await deleteShareLinksForTab(db.env, 'diag-1', 'tab-2');
+    expect(codes).toEqual(['AAAA2222', 'BBBB3333']);
+    expect(db.one('SELECT code FROM share_links').bindings).toEqual(['diag-1', 'tab-2']);
+    expect(db.one('DELETE FROM share_links').bindings).toEqual(['diag-1', 'tab-2']);
+    expect(db.matching('UPDATE diagrams SET shareable = 0')).toEqual([]);
+  });
+
+  it('closes sharing when those were the last links', async () => {
+    const db = fakeD1(({ sql }) => {
+      if (sql.includes('COUNT(*)')) return { first: { n: 0 } };
+      if (sql.includes('SELECT code')) return { all: [{ code: 'AAAA2222' }] };
+      return {};
+    });
+    await deleteShareLinksForTab(db.env, 'diag-1', 'tab-2');
+    expect(db.one('UPDATE diagrams SET shareable = 0').bindings).toEqual(['diag-1']);
+  });
+
+  it('writes nothing when no link is scoped to the tab', async () => {
+    const db = fakeD1(() => ({ all: [] }));
+    expect(await deleteShareLinksForTab(db.env, 'diag-1', 'tab-2')).toEqual([]);
+    expect(db.matching('DELETE FROM share_links')).toEqual([]);
+  });
+
+  it('survives a query that answers without results', async () => {
+    const db = fakeD1(() => ({ all: undefined }));
+    expect(await deleteShareLinksForTab(db.env, 'diag-1', 'tab-2')).toEqual([]);
   });
 });

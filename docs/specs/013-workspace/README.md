@@ -6,6 +6,7 @@ Follow the references below only as needed; never upfront.
 - ./share-password.md - when working on Share password: Optional per-diagram password gating share-link view + edit access
 - ./teams.md - when working on Teams: Teams with Admin/Member roles, email invites, Explorer section
 - ./embeds.md - when working on Read-only embeds (`/embed`): Iframe-able `/embed` share view + Copy-embed-code in Share
+- ./tab-scoped-share-links.md - when working on Tab-scoped share links: A share link scoped to one tab; other tabs locked, enforced server-side incl. the room
 - ./share-link-expiry.md - when working on Share-link expiry: Optional link lifetime (week/month/6 months); Inactive section
 - ./team-shared-diagrams.md - when working on Team shared diagrams: Per-team folder tree + diagrams every joined member can manage
 - ./live-image-share.md - when working on Live image share link: Share-link-scoped `<img>`-able SVG at `/api/share/<code>/image.svg`, served from the snapshot cache ([Diagram SVG snapshots](../006-diagram/diagram-snapshots.md))

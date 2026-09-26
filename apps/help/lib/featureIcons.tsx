@@ -507,6 +507,14 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M12 5.5V4a2.5 2.5 0 015 0v1.5" {...s} />
     </Glyph>
   ),
+  // A row of tabs where only the middle one is solid: the one tab a link opens.
+  'one-tab': (
+    <Glyph>
+      <rect x="2" y="8" width="6" height="8" rx="1.5" strokeDasharray="2 2" {...s} />
+      <rect x="9" y="6" width="6" height="12" rx="1.5" {...s} />
+      <rect x="16" y="8" width="6" height="8" rx="1.5" strokeDasharray="2 2" {...s} />
+    </Glyph>
+  ),
   // A chain whose far ring is a clock: the link, and the deadline on it.
   'share-link-expiry': (
     <Glyph>

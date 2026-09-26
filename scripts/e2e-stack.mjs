@@ -10,13 +10,15 @@
 //   2. live — a static file server for `out/` that reproduces the three
 //      things production does (docs/specs/003-system-architecture/e2e-smoke.md): strip the `/live` assetPrefix,
 //      rewrite `/diagram/*` to the single placeholder, and proxy
-//      `/api/*` to the api worker so the app is same-origin.
+//      `/api/*` (WebSocket upgrades included) to the api worker so the app
+//      is same-origin.
 //
 // Foregrounds both and stays alive; Playwright's webServer waits on the
 // live port. SIGINT/SIGTERM tears the whole tree down.
 
 import { spawn } from 'node:child_process';
 import http from 'node:http';
+import net from 'node:net';
 import { createReadStream, existsSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
@@ -148,6 +150,31 @@ function proxyApi(req, res) {
   req.pipe(proxyReq);
 }
 
+// The realtime room is a WebSocket on /api/diagrams/<id>/ws. Production routes
+// the upgrade through the router like any other /api request; without this the
+// browser's socket was never answered here, so no e2e test could see a room op.
+// Relays the raw upgrade to the api worker and pipes both directions.
+function proxyApiUpgrade(req, socket, head) {
+  const pathname = new URL(req.url, 'http://localhost').pathname;
+  if (!pathname.startsWith('/api/')) {
+    socket.destroy();
+    return;
+  }
+  const upstream = net.connect(API_PORT, '127.0.0.1', () => {
+    const headerLines = [];
+    for (let i = 0; i < req.rawHeaders.length; i += 2) {
+      headerLines.push(`${req.rawHeaders[i]}: ${req.rawHeaders[i + 1]}`);
+    }
+    upstream.write(
+      `${req.method} ${req.url} HTTP/${req.httpVersion}\r\n${headerLines.join('\r\n')}\r\n\r\n`,
+    );
+    if (head.length > 0) upstream.write(head);
+    socket.pipe(upstream).pipe(socket);
+  });
+  upstream.on('error', () => socket.destroy());
+  socket.on('error', () => upstream.destroy());
+}
+
 function startLiveServer() {
   const server = http.createServer((req, res) => {
     const pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
@@ -209,6 +236,7 @@ function startLiveServer() {
     if (existsSync(notFound)) createReadStream(notFound).pipe(res);
     else res.end('Not found');
   });
+  server.on('upgrade', proxyApiUpgrade);
   server.listen(LIVE_PORT, () => console.log(`[e2e] live static server on :${LIVE_PORT}`));
 }
 

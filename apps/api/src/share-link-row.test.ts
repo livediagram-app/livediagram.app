@@ -19,6 +19,7 @@ function row(over: Partial<ShareLinkRow> = {}): ShareLinkRow {
     created_at: 1717000000000,
     expiry: null,
     expires_at: null,
+    tab_id: null,
     ...over,
   };
 }
@@ -32,6 +33,11 @@ describe('rowToShareLink', () => {
     expect(dto.createdAt).toBe(1717000000000);
     expect(dto.expiry).toBe('never');
     expect(dto.expiresAt).toBeNull();
+    expect(dto.tabId).toBeNull();
+  });
+
+  it('maps the tab scope through (docs/specs/013-workspace/tab-scoped-share-links.md)', () => {
+    expect(rowToShareLink(row({ tab_id: 'tab-2' })).tabId).toBe('tab-2');
   });
 
   it('maps the expiry columns through (docs/specs/013-workspace/share-link-expiry.md)', () => {

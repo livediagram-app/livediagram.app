@@ -44,3 +44,27 @@ export function redactDiagramForReader(diagram: DiagramDTO, caller: string | nul
     ? diagram
     : { ...diagram, ownerId: '', shareCode: null };
 }
+
+// A tab-scoped visitor's copy (docs/specs/013-workspace/tab-scoped-share-links.md). Every other tab keeps
+// its id and position, so the bar can draw a "Not shared" pill in place, and loses
+// its name, folder and timestamp. The deck goes too: slides span tabs.
+// `tabScope` null (owner, team member, All-tabs link) returns the diagram as is.
+export function redactDiagramForScope(diagram: DiagramDTO, tabScope: string | null): DiagramDTO {
+  if (tabScope === null) return diagram;
+  return {
+    ...diagram,
+    presentation: null,
+    tabs: diagram.tabs.map((t) =>
+      t.id === tabScope
+        ? t
+        : {
+            id: t.id,
+            diagramId: t.diagramId,
+            name: '',
+            orderIndex: t.orderIndex,
+            updatedAt: 0,
+            outOfScope: true,
+          },
+    ),
+  };
+}
