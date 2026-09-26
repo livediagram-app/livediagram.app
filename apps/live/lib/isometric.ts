@@ -2,7 +2,7 @@
 // navigation-only isometric canvas tool. Kept out of Canvas.tsx so the
 // geometry is unit-testable and the canvas just consumes the values.
 
-import type { BoxedElement, ShapeKind } from '@livediagram/diagram';
+import { shapePolygonVertices, type BoxedElement, type ShapeKind } from '@livediagram/diagram';
 
 // Whether a boxed element gets an extrusion column in isometric view
 // (spec/45). One predicate shared by the live IsometricDepthLayer and both
@@ -31,24 +31,33 @@ export function isoExtrudes(el: BoxedElement): boolean {
 // filling the element rect; left as a plain rectangle the extrusion of a
 // circle / diamond / cylinder reads as a square block behind the shape (the
 // reported bug). Clipping every layer to the shape's own outline makes the
-// column follow the silhouette instead. The polygon points are lifted straight
-// from ShapeSvgOverlay's `0 0 100 100` viewBox (which equals CSS percentages),
-// so the extrusion and the painted shape share one geometry source. Shapes
-// without an entry (square, browser, document, cloud, devices, text / sticky /
-// image / table …) fall back to the default rounded rectangle.
+// column follow the silhouette instead. The polygon points come from the
+// shared geometry table (@livediagram/diagram shape-geometry.ts), whose
+// `0 0 100 100` viewBox equals CSS percentages, so the extrusion and the
+// painted shape share one geometry source. Shapes without an entry (square,
+// browser, document, cloud, devices, text / sticky / image / table …) fall
+// back to the default rounded rectangle.
 //
 // `radius` shapes use border-radius rather than a polygon because their outline
 // is curved: circle / progress-ring are full ellipses, stadium is a pill, and
 // cylinder gets elliptical top + bottom caps (`50% / 12%` matches the SVG's
 // ry=12 in the 0..100 box) with straight sides.
-const SHAPE_CLIP_PATH: Partial<Record<ShapeKind, string>> = {
-  diamond: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
-  parallelogram: 'polygon(20% 0%, 100% 0%, 80% 100%, 0% 100%)',
-  hexagon: 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)',
-  triangle: 'polygon(50% 2%, 98% 98%, 2% 98%)',
-  trapezoid: 'polygon(22% 4%, 78% 4%, 98% 96%, 2% 96%)',
-  star: 'polygon(50% 2%, 61% 35%, 96% 35%, 68% 56%, 78% 89%, 50% 69%, 22% 89%, 32% 56%, 4% 35%, 39% 35%)',
-};
+const CLIPPED_KINDS: readonly ShapeKind[] = [
+  'diamond',
+  'parallelogram',
+  'hexagon',
+  'triangle',
+  'trapezoid',
+  'star',
+];
+const SHAPE_CLIP_PATH: Partial<Record<ShapeKind, string>> = Object.fromEntries(
+  CLIPPED_KINDS.map((kind) => [
+    kind,
+    `polygon(${shapePolygonVertices(kind)!
+      .map(([x, y]) => `${x}% ${y}%`)
+      .join(', ')})`,
+  ]),
+);
 
 const SHAPE_BORDER_RADIUS: Partial<Record<ShapeKind, string>> = {
   circle: '50%',

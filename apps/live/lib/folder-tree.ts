@@ -8,25 +8,30 @@
 // reading "same shape as the personal explorer's". Two folder trees over the
 // same `Folder` type, so one module and two callers.
 //
-// All three are pure functions of the list; the hooks keep the memoisation,
-// since only they know when `folders` changed.
+// All of them are pure functions of the list; the hooks keep the
+// memoisation, since only they know when `folders` changed.
+//
+// Generic over the row shape: the personal `Folder`, the team sweep's
+// `TeamFolderRow` and the move picker's bare nodes all carry the three
+// fields a tree needs, so every surface indexes through here rather than
+// rebuilding the maps inline.
 
-import type { Folder } from '@livediagram/api-schema';
+export type TreeFolder = { id: string; name: string; parentId: string | null };
 
-export type FolderIndex = {
+export type FolderIndex<F extends TreeFolder = TreeFolder> = {
   // Every folder by id, so a walk up the parents doesn't rescan the list.
-  folderById: Map<string, Folder>;
+  folderById: Map<string, F>;
   // Children per parent id (null = root), so the recursive renderer is O(1)
   // per node instead of filtering the whole list at every level.
-  childrenByParent: Map<string | null, Folder[]>;
-  rootFolders: Folder[];
+  childrenByParent: Map<string | null, F[]>;
+  rootFolders: F[];
 };
 
 // Index a flat list both ways. Siblings are sorted by name so the tree reads
 // alphabetically at every level, whatever order the API returned.
-export function indexFolders(folders: readonly Folder[]): FolderIndex {
-  const byId = new Map<string, Folder>();
-  const byParent = new Map<string | null, Folder[]>();
+export function indexFolders<F extends TreeFolder>(folders: readonly F[]): FolderIndex<F> {
+  const byId = new Map<string, F>();
+  const byParent = new Map<string | null, F[]>();
   for (const f of folders) {
     byId.set(f.id, f);
     const bucket = byParent.get(f.parentId) ?? [];
@@ -45,13 +50,13 @@ export function indexFolders(folders: readonly Folder[]): FolderIndex {
 // row can't hang the render.
 //
 // Returns [] for `all` and the other virtual nodes, which have no folder id.
-export function folderBreadcrumb(
-  folderById: ReadonlyMap<string, Folder>,
+export function folderBreadcrumb<F extends TreeFolder>(
+  folderById: ReadonlyMap<string, F>,
   folderId: string | null,
-): Folder[] {
+): F[] {
   if (!folderId) return [];
-  const chain: Folder[] = [];
-  let cursor: Folder | undefined = folderById.get(folderId);
+  const chain: F[] = [];
+  let cursor: F | undefined = folderById.get(folderId);
   const seen = new Set<string>();
   while (cursor && !seen.has(cursor.id)) {
     seen.add(cursor.id);
@@ -68,7 +73,7 @@ export function folderBreadcrumb(
 // Includes `rootId` itself, since moving a folder into itself is the same
 // mistake. The `out` check doubles as the cycle guard.
 export function folderDescendants(
-  childrenByParent: ReadonlyMap<string | null, Folder[]>,
+  childrenByParent: ReadonlyMap<string | null, readonly TreeFolder[]>,
   rootId: string,
 ): Set<string> {
   const out = new Set<string>([rootId]);
@@ -82,4 +87,32 @@ export function folderDescendants(
       }
   }
   return out;
+}
+
+// Rows split by a key, each bucket keeping the input order. The by-team
+// splits (the sidebar's and panel's Teams sections) and the by-folder
+// diagram buckets below all start here.
+export function groupBy<R, K>(rows: readonly R[], keyOf: (r: R) => K): Map<K, R[]> {
+  const map = new Map<K, R[]>();
+  for (const r of rows) {
+    const k = keyOf(r);
+    const bucket = map.get(k);
+    if (bucket) bucket.push(r);
+    else map.set(k, [r]);
+  }
+  return map;
+}
+
+// Diagrams per folder id (null = the root's Unsorted bucket), newest first
+// in every bucket: the order every Explorer list shows a folder's contents
+// in. `exclude` drops rows before bucketing, for the panel, which keeps
+// offline diagrams out of Unsorted because they get their own node.
+export function groupDiagramsByFolder<D extends { folderId: string | null; savedAt: number }>(
+  diagrams: readonly D[],
+  opts: { exclude?: (d: D) => boolean } = {},
+): Map<string | null, D[]> {
+  const kept = opts.exclude ? diagrams.filter((d) => !opts.exclude!(d)) : diagrams;
+  const map = groupBy(kept, (d) => d.folderId);
+  for (const bucket of map.values()) bucket.sort((a, b) => b.savedAt - a.savedAt);
+  return map;
 }

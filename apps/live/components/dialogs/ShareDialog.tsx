@@ -1,7 +1,8 @@
 'use client';
 
+import { TrashIcon } from '@/components/primitives/explorer-icons';
 import { useState } from 'react';
-import { Button, Select, TextInput } from '@livediagram/ui';
+import { Button, LinkIcon, RefreshIcon, Select, TextInput } from '@livediagram/ui';
 import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { initialsOf, randomName } from '@/lib/identity';
@@ -9,9 +10,8 @@ import type { ShareLinkExpiry, ShareRole } from '@/lib/api-client';
 import { useRelativeTimeTick } from '@/lib/relative-time';
 import { track } from '@/lib/telemetry';
 import { useToast } from '@/hooks/ui/useToast';
-import { TrashIcon } from '@/components/panels/explorer-icons';
 import { Tooltip } from '@/components/primitives/Tooltip';
-import { EXPIRY_LABELS, LinkIcon, RefreshIcon, RoleButton } from './share-dialog-parts';
+import { EXPIRY_LABELS, RoleButton } from './share-dialog-parts';
 import { ActiveShareLinkRow } from './ShareLinkRow';
 import type { ShareDialogProps } from './ShareDialog.types';
 import { SharePasswordSection } from './SharePasswordSection';

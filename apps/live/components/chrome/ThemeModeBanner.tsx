@@ -14,6 +14,7 @@
 // keyed to the specific mismatch, not forever).
 
 import { useState } from 'react';
+import { CloseIcon } from '@livediagram/ui';
 import { isLightColor } from '@livediagram/diagram';
 import { getTheme } from '@/lib/themes';
 import { useAppearance } from '@/hooks/ui/useAppearance';
@@ -58,18 +59,7 @@ export function ThemeModeBanner({ themeId }: { themeId: string | undefined }) {
           aria-label="Dismiss"
           className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-200"
         >
-          <svg
-            width="15"
-            height="15"
-            viewBox="0 0 16 16"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.7"
-            strokeLinecap="round"
-            aria-hidden
-          >
-            <path d="M4 4l8 8M12 4l-8 8" />
-          </svg>
+          <CloseIcon size={15} strokeWidth={1.4875} />
         </button>
       </div>
     </div>

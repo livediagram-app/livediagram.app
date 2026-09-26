@@ -99,7 +99,7 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // Speech bubble: wider than tall, with room for the tail beneath the body.
   'speech-bubble': { width: 180, height: 130 },
   // Frame / section: a large container drawn around content, so it starts
-  // big. Transparent body (see shape-svg-overlay) with a top-left label.
+  // big. Transparent by default (see defaultFillColor) with a top-left label.
   frame: { width: 360, height: 260 },
   // UI device frames. Sized to evoke each device's natural aspect
   // ratio at a glance: browser + monitor land on a 4:3-ish landscape
@@ -496,8 +496,7 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
   }
   // Frame: a container drawn around other elements. Its label sits in the
   // top-right (like a section title) rather than centred, and the body is
-  // transparent (rendered fill-less in shape-svg-overlay) so content shows
-  // through.
+  // transparent by default (defaultFillColor) so content shows through.
   if (kind === 'frame') {
     // Frames start with a "Frame" section title in the top-right, padded in
     // off the border so it doesn't touch the outline, so they read as a

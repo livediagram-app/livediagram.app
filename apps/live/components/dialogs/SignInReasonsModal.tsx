@@ -12,12 +12,11 @@
 // keyboard / screen-reader users get the same modal semantics.
 
 import Link from 'next/link';
-import { buttonClassName } from '@livediagram/ui';
+import { buttonClassName, CloseIcon, SparkleIcon } from '@livediagram/ui';
 import { SignInIcon } from '@/components/chrome/AuthControls';
 import { useRef } from 'react';
 import type { ReactNode } from 'react';
 import { Portal } from '@/components/primitives/Portal';
-import { CloseIcon } from '@/components/primitives/CloseIcon';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
 import { useFocusTrap } from '@/hooks/ui/useFocusTrap';
@@ -114,7 +113,7 @@ export function SignInReasonsModal({
               <CloseIcon size={16} />
             </button>
             <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-white/80">
-              <SparkleIcon />
+              <SparkleIcon className="opacity-90" />
               Free account
             </div>
             <h2 id="signin-reasons-title" className="mt-1.5 text-xl font-bold">
@@ -249,22 +248,6 @@ function Svg({ children }: { children: ReactNode }) {
       aria-hidden
     >
       {children}
-    </svg>
-  );
-}
-
-function SparkleIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="currentColor"
-      aria-hidden
-      className="opacity-90"
-    >
-      <path d="M8 1.5 9.2 5.4 13 6.6 9.2 7.8 8 11.7 6.8 7.8 3 6.6 6.8 5.4 8 1.5Z" />
-      <path d="M13 10.5l.6 1.9 1.9.6-1.9.6-.6 1.9-.6-1.9-1.9-.6 1.9-.6.6-1.9Z" />
     </svg>
   );
 }

@@ -16,9 +16,9 @@
 // new event type fails the build until it has a mark, and a test keeps
 // the marks distinct.
 
+import { TeamIcon } from '@/components/primitives/explorer-icons';
 import type { ReactNode } from 'react';
 import type { KnownTimelineEventType } from '@livediagram/api-schema';
-import { TeamIcon } from '../icons';
 
 function Glyph({ d }: { d: string }) {
   return (

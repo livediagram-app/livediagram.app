@@ -1,7 +1,12 @@
 'use client';
 
-import { DEFAULT_CHAIR_FACING, type ChairFacing, type ShapeElement } from '@livediagram/diagram';
-import { tint } from './collab-chrome';
+import {
+  CHAIR_FACING_ROTATION,
+  CHAIR_GEOMETRY,
+  chairSeatFill,
+  DEFAULT_CHAIR_FACING,
+  type ShapeElement,
+} from '@livediagram/diagram';
 
 // A chair (spec/130): furniture an Avatar-mode character sits down in.
 //
@@ -15,9 +20,10 @@ import { tint } from './collab-chrome';
 
 export type ChairSitter = { name: string; color: string };
 
-// Rotation for each facing. 'n' is the drawn orientation: back at the top,
-// sitter facing down the board toward the reader.
-const FACING_ROTATION: Record<ChairFacing, number> = { n: 0, e: 90, s: 180, w: 270 };
+// The drawing (and the rotation for each facing, 'n' being the drawn one:
+// back at the top, sitter facing down the board toward the reader) comes
+// from the shared CHAIR_GEOMETRY table (@livediagram/diagram
+// shape-geometry.ts), which the headless export draws too.
 
 export function ChairView({
   element,
@@ -42,15 +48,19 @@ export function ChairView({
   // stayed bright on a dark-themed board, the one thing furniture must not do.
   // (Not `currentColor`: that inherits the label's text colour and drew a
   // black chair.)
-  const seat =
-    element.fillColor && element.fillColor !== 'transparent'
-      ? element.fillColor
-      : tint(stroke, 0.32);
+  const seat = chairSeatFill(element.fillColor, stroke);
   const facing = element.chairFacing ?? DEFAULT_CHAIR_FACING;
   const occupied = sitters.length > 0;
   // The ring takes the first sitter's presence colour, so an occupied chair
   // reads as THEIR chair at a glance.
   const ringColor = sitters[0]?.color ?? stroke;
+  const g = CHAIR_GEOMETRY;
+  const rail = {
+    stroke,
+    strokeWidth: g.railStrokeWidth,
+    opacity: g.railOpacity,
+    fill: 'none',
+  };
 
   return (
     <div
@@ -58,9 +68,9 @@ export function ChairView({
       aria-hidden={false}
     >
       <svg
-        viewBox="0 0 64 72"
+        viewBox={g.viewBox}
         className="absolute inset-0 h-full w-full"
-        style={{ transform: `rotate(${FACING_ROTATION[facing]}deg)` }}
+        style={{ transform: `rotate(${CHAIR_FACING_ROTATION[facing]}deg)` }}
         role="img"
         aria-label={
           occupied ? `Chair, ${sitters.map((s) => s.name).join(' and ')} sitting` : 'Empty chair'
@@ -68,56 +78,29 @@ export function ChairView({
       >
         {/* Contact shadow, so the chair sits ON the canvas rather than
             floating over it — the same trick the Avatar-mode sprite uses. */}
-        <ellipse cx="32" cy="66" rx="19" ry="4" fill="#0f172a" opacity="0.12" />
+        <ellipse {...g.shadow} />
         {/* Backrest: TALL, so the silhouette reads as a chair. Squat and wide
             it just stacks two pills on top of each other. */}
-        <rect
-          x="17"
-          y="3"
-          width="30"
-          height="31"
-          rx="4"
-          fill={seat}
-          stroke={stroke}
-          strokeWidth="2"
-        />
+        <rect {...g.back} fill={seat} stroke={stroke} strokeWidth={g.panelStrokeWidth} />
         {/* A slat down the back, which is what makes it furniture rather than
             a rounded rectangle. */}
-        <path d="M32 8v21" stroke={stroke} strokeWidth="1.5" opacity="0.5" fill="none" />
+        <path d={g.slat} {...rail} />
         {/* Seat: a shallow slab, wider than the back and overhanging it. */}
-        <rect
-          x="10"
-          y="34"
-          width="44"
-          height="13"
-          rx="3"
-          fill={seat}
-          stroke={stroke}
-          strokeWidth="2"
-        />
+        <rect {...g.seat} fill={seat} stroke={stroke} strokeWidth={g.panelStrokeWidth} />
         {/* Front legs, splayed very slightly so the chair stands rather than
             hovers, with a stretcher between them. */}
         <path
-          d="M15 47v16M49 47v16"
+          d={g.legs}
           stroke={stroke}
-          strokeWidth="2.5"
+          strokeWidth={g.legStrokeWidth}
           strokeLinecap="round"
           fill="none"
         />
-        <path d="M15 57h34" stroke={stroke} strokeWidth="1.5" opacity="0.5" fill="none" />
+        <path d={g.stretcher} {...rail} />
         {occupied ? (
           // A soft ring in the sitter's colour. Drawn on the SEAT, which is
           // where the character's feet land (chairSeatPoint).
-          <ellipse
-            cx="32"
-            cy="40"
-            rx="24"
-            ry="10"
-            fill="none"
-            stroke={ringColor}
-            strokeWidth="3"
-            opacity="0.85"
-          />
+          <ellipse {...g.ring} fill="none" stroke={ringColor} strokeWidth="3" opacity="0.85" />
         ) : null}
       </svg>
       {occupied ? (

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { SearchIcon } from '@livediagram/ui';
 import type { Tab } from '@livediagram/diagram';
 import {
   buildSearchResults,
@@ -14,7 +15,7 @@ import {
 } from '@/lib/search';
 import { titleCaseType, track } from '@/lib/telemetry';
 import { useEscape } from '@/hooks/ui/useEscape';
-import { SearchIcon, SearchResultIcon } from './search-panel-icons';
+import { SearchResultIcon } from './search-panel-icons';
 
 // Global search panel: triggered from a footer button, blurs the
 // canvas behind it, pops up near the top-centre. The scope is

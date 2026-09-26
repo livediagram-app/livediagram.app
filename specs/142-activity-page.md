@@ -317,7 +317,8 @@ then a team's, then a shared one.
 The section checklist from spec/138 §8.3: `views.tsx` gains
 `{ kind: 'activity' }`, `routes.ts` maps it both ways,
 `app/explorer/activity/page.tsx` is the route stub, `ExplorerSidebar`
-gets the Quick find row (with `ActivityIcon` in `icons.tsx`),
+gets the Quick find row (with `ActivityIcon` in
+`components/primitives/explorer-icons.tsx`),
 `useExplorerPane` names it, `ExplorerPane` dispatches to the
 lazy-loaded `ActivityPane` (not a `BROWSE_KIND`; no New Diagram / New
 Folder header actions; Help links the new article), and

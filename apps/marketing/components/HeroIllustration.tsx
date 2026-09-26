@@ -32,7 +32,16 @@
 // tint, and hides the laser.
 
 import { useEffect, useState, type ReactNode } from 'react';
-import { Brand } from '@livediagram/ui';
+import {
+  Brand,
+  ChevronDownIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  MenuIcon,
+  PrivateDotIcon,
+  SharedDotIcon,
+  TabsLabelIcon,
+} from '@livediagram/ui';
 import {
   ArchitectureDiagram,
   FlowchartDiagram,
@@ -43,17 +52,11 @@ import {
   type Theme,
 } from './hero-diagrams';
 import {
-  ChevronGlyph,
   EyeGlyph,
-  HudChevron,
-  MenuGlyph,
-  PrivateDotIcon,
   Shape,
   ShareGlyph,
-  SharedDotIcon,
   StarGlyph,
   TabAvatar,
-  TabsLabelIcon,
   ToolGlyph,
 } from './hero-illustration-glyphs';
 
@@ -370,9 +373,9 @@ function EditorWindow({
                 <Brand size="sm" />
                 {/* The Editor menu, as the real header carries it. */}
                 <span className="hidden items-center gap-1 rounded-md border border-slate-200 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 sm:inline-flex">
-                  <MenuGlyph />
+                  <MenuIcon size={9} strokeWidth={1.6} />
                   Editor
-                  <ChevronGlyph />
+                  <ChevronDownIcon size={8} strokeWidth={1.6} />
                 </span>
               </div>
               <div className="flex min-w-0 items-center gap-2">
@@ -418,7 +421,7 @@ function EditorWindow({
               to its header bar, the way a panel folds in the editor. */}
           {presenting ? (
             <div className="absolute right-2 top-2 hidden items-center gap-2 rounded-xl bg-slate-900/75 px-2.5 py-1.5 text-[9px] font-medium text-white shadow-lg backdrop-blur sm:flex">
-              <HudChevron dir="prev" />
+              <ChevronLeftIcon size={9} strokeWidth={2.4} />
               <span className="relative inline-block h-3 w-28 text-left">
                 {(playing ? SLIDES : SLIDES.slice(-1)).map((slide, i) => (
                   <span
@@ -434,7 +437,7 @@ function EditorWindow({
                   </span>
                 ))}
               </span>
-              <HudChevron dir="next" />
+              <ChevronRightIcon size={9} strokeWidth={2.4} />
               <span className="ml-1 border-l border-white/20 pl-2 text-white/70">Notes</span>
               <span className="text-white/70">✕</span>
             </div>
@@ -476,12 +479,12 @@ function EditorWindow({
                 ) : (
                   tool[1]
                 )}
-                <ChevronGlyph />
+                <ChevronDownIcon size={8} strokeWidth={1.6} />
               </span>
               <span className="inline-flex items-center gap-0.5">
                 <StarGlyph />
                 Favourites
-                <ChevronGlyph />
+                <ChevronDownIcon size={8} strokeWidth={1.6} />
               </span>
             </div>
             <div className="px-1.5 pt-1.5">

@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Button } from '@livediagram/ui';
-import { CloseIcon } from '@/components/primitives/CloseIcon';
+import { Button, CloseIcon } from '@livediagram/ui';
 import { useEscape } from '@/hooks/ui/useEscape';
 import type { Participant } from '@/lib/identity';
 import { track } from '@/lib/telemetry';

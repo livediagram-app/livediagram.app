@@ -6,7 +6,7 @@
 // has two states — the name form, then the one-time secret reveal (Copy + Done
 // side by side) once the token is minted. Reads/writes through the shared
 // TokensController so the list + sidebar badge update on create.
-import { PlusIcon } from '@/components/panels/explorer-icons';
+import { PlusIcon } from '@/components/primitives/explorer-icons';
 import { Button } from '@livediagram/ui';
 import { useRef, useState } from 'react';
 import { PortalMenu } from '@/components/primitives/PortalMenu';

@@ -5,12 +5,12 @@
 // a single Create dropdown (New diagram / New folder). Split out of views.tsx
 // so that barrel holds the list/row primitives while the header chrome (and
 // its private hamburger / caret icons) stands on its own.
+import { DiagramIcon, FolderOutlineIcon, PlusIcon } from '@/components/primitives/explorer-icons';
 import { Button } from '@livediagram/ui';
 import { useRef, useState, type ReactNode } from 'react';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import { MenuTile, PortalMenu } from '@/components/primitives/PortalMenu';
-import { DiagramIcon, MenuFolderIcon, PlusIcon } from './icons';
 import { paneCreateMode } from './pane-create-action';
 import { ViewToggle } from './ViewToggle';
 import type { ExplorerViewMode } from './useExplorerViewMode';
@@ -210,7 +210,7 @@ export function PaneHeader({
                     <MenuTile
                       icon={
                         <span className="[&_svg]:h-5 [&_svg]:w-5">
-                          <MenuFolderIcon />
+                          <FolderOutlineIcon />
                         </span>
                       }
                       label={folderLabel ?? 'New Folder'}

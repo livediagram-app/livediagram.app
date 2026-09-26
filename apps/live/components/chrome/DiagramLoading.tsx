@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { RefreshIcon } from '@livediagram/ui';
 import { DiagramBuildAnimation } from '@/components/canvas/DiagramBuildAnimation';
 
 // Full-screen "loading your diagram…" placeholder. Stand-in for the
@@ -11,8 +12,7 @@ import { DiagramBuildAnimation } from '@/components/canvas/DiagramBuildAnimation
 // too long" message and a Refresh button so the user has an out.
 //
 // Lifted out of editor-page.tsx (which is the only consumer) just to
-// give that file its 60 lines back. RefreshIcon stays co-located
-// because it has no other caller.
+// give that file its 60 lines back.
 export function DiagramLoading() {
   const [slow, setSlow] = useState(false);
   useEffect(() => {
@@ -39,33 +39,12 @@ export function DiagramLoading() {
               onClick={() => window.location.reload()}
               className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-slate-800 dark:hover:text-brand-200"
             >
-              <RefreshIcon />
+              <RefreshIcon size={13} strokeWidth={1.6} />
               Refresh
             </button>
           </div>
         ) : null}
       </div>
     </div>
-  );
-}
-
-function RefreshIcon() {
-  return (
-    <svg
-      width="13"
-      height="13"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M2.5 8a5.5 5.5 0 0 1 9.4-3.9L13.5 5.5" />
-      <path d="M13.5 2.5v3h-3" />
-      <path d="M13.5 8a5.5 5.5 0 0 1-9.4 3.9L2.5 10.5" />
-      <path d="M2.5 13.5v-3h3" />
-    </svg>
   );
 }

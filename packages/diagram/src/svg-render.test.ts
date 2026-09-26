@@ -398,9 +398,15 @@ describe('renderElementsToSvg', () => {
       expect(svg).toContain('preserveAspectRatio="none"');
     });
 
-    it('renders a frame as outline only (contents show through)', () => {
-      const svg = renderElementsToSvg(tab([shape('f', { shape: 'frame' })]));
-      expect(svg).toContain('fill="none"');
+    it('renders a frame see-through by default, but paints a picked fill like the canvas', () => {
+      // The default fill is transparent, so the contents show through...
+      const bare = renderElementsToSvg(tab([shape('f', { shape: 'frame' })]));
+      expect(bare).toMatch(/<rect x="1" y="1" width="98" height="98" fill="transparent"/);
+      // ...and a background colour picked in the menu exports, as it paints.
+      const filled = renderElementsToSvg(
+        tab([shape('f', { shape: 'frame', fillColor: '#fef3c7' })]),
+      );
+      expect(filled).toMatch(/<rect x="1" y="1" width="98" height="98" fill="#fef3c7"/);
     });
 
     it('applies element rotation about the centre', () => {

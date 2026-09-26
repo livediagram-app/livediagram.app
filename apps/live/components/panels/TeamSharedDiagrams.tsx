@@ -2,7 +2,9 @@
 
 import { useState } from 'react';
 import type { Folder } from '@livediagram/api-schema';
-import { FolderRow, UnsortedRow } from '@/app/explorer/views';
+import { FolderRow, SkeletonRows, UnsortedRow } from '@/app/explorer/views';
+import { EmptyState } from '@livediagram/ui';
+import { FolderSolidIcon, TeamIcon } from '@/components/primitives/explorer-icons';
 import { CardView } from '@/app/explorer/CardView';
 import { TeamLibraryHeader } from '@/components/panels/TeamLibraryHeader';
 import { useExplorerViewMode } from '@/app/explorer/useExplorerViewMode';
@@ -17,6 +19,7 @@ import { useTeamLibrary } from '@/hooks/persistence/useTeamLibrary';
 import { apiCreateFolder } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
 import { useRelativeTimeTick } from '@/lib/relative-time';
+import { folderDescendants } from '@/lib/folder-tree';
 
 // "Shared diagrams" on the team page (spec/35): the team's folder
 // tree + diagrams, navigated with a small breadcrumb instead of a
@@ -140,20 +143,10 @@ export function TeamSharedDiagrams({
   // (cycle prevention, mirroring the personal picker).
   const movePickerFolders = (() => {
     if (!moveTarget) return [];
-    const excluded = new Set<string>();
-    if (moveTarget.kind === 'folder') {
-      const stack = [moveTarget.id];
-      excluded.add(moveTarget.id);
-      while (stack.length > 0) {
-        const cur = stack.pop()!;
-        for (const k of lib.childrenByParent.get(cur) ?? []) {
-          if (!excluded.has(k.id)) {
-            excluded.add(k.id);
-            stack.push(k.id);
-          }
-        }
-      }
-    }
+    const excluded =
+      moveTarget.kind === 'folder'
+        ? folderDescendants(lib.childrenByParent, moveTarget.id)
+        : new Set<string>();
     return lib.folders
       .filter((f) => !excluded.has(f.id))
       .map((f) => ({ id: f.id, name: f.name, parentId: f.parentId }));
@@ -198,22 +191,27 @@ export function TeamSharedDiagrams({
 
       {/* ---------- Rows ---------- */}
       {lib.loading ? (
-        <ul className="divide-y divide-slate-100 dark:divide-slate-700/60">
-          {Array.from({ length: 2 }).map((_, i) => (
-            <li key={i} className="flex items-center gap-3 px-4 py-3">
-              <span className="h-4 w-4 animate-pulse rounded bg-slate-200 dark:bg-slate-700" />
-              <span className="h-4 flex-1 animate-pulse rounded bg-slate-200 dark:bg-slate-700" />
-            </li>
-          ))}
-        </ul>
+        <SkeletonRows count={2} framed={false} />
       ) : visibleFolders.length === 0 &&
         visibleDiagrams.length === 0 &&
         !(spot.kind === 'root' && unsorted.length > 0) ? (
-        <p className="px-4 py-8 text-center text-xs text-slate-500 dark:text-slate-400">
-          {spot.kind === 'root'
-            ? 'Nothing shared yet. Move a diagram here from your personal explorer, or create a folder to organise ahead.'
-            : 'This folder is empty.'}
-        </p>
+        // The Explorer's empty-state card (spec/15), inset so its border
+        // sits inside this section's own.
+        <div className="p-3">
+          {spot.kind === 'root' ? (
+            <EmptyState
+              icon={<TeamIcon />}
+              title="Nothing Shared Yet"
+              description="Move a diagram here from your personal explorer, or create a folder to organise ahead."
+            />
+          ) : (
+            <EmptyState
+              icon={<FolderSolidIcon open />}
+              title="This Folder Is Empty"
+              description="Move a diagram here, or add a subfolder to organise your team's work."
+            />
+          )}
+        </div>
       ) : viewMode === 'card' ? (
         // Same folders + diagrams as the list, rendered as the Explorer's
         // card grid (spec/67). Team diagrams (DiagramSummary) satisfy the
@@ -368,7 +366,3 @@ export function TeamSharedDiagrams({
     </div>
   );
 }
-
-// One diagram row in the team library. A team diagram is managed by
-// every joined member (spec/35), so the menu offers the same actions
-// the personal + Recent surfaces do: rename, duplicate, change folder.

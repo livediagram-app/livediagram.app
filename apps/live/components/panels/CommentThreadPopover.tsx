@@ -1,8 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Button } from '@livediagram/ui';
-import { CloseIcon } from '@/components/primitives/CloseIcon';
+import { Button, CloseIcon, TrashIcon } from '@livediagram/ui';
 import { Portal } from '@/components/primitives/Portal';
 import { useReposition } from '@/hooks/canvas/useReposition';
 import type { Comment, CommentThread } from '@livediagram/diagram';
@@ -278,29 +277,9 @@ function CommentRow({
           onClick={onDelete}
           className="self-start rounded p-0.5 text-slate-400 opacity-0 transition hover:bg-rose-50 hover:text-rose-700 group-hover:opacity-100 dark:text-slate-400 dark:hover:bg-rose-500/15 dark:hover:text-rose-300"
         >
-          <TrashIcon />
+          <TrashIcon size={12} strokeWidth={1.5} />
         </button>
       ) : null}
     </li>
-  );
-}
-
-function TrashIcon() {
-  return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M2.5 4h11" />
-      <path d="M6 4V2.75A.75.75 0 0 1 6.75 2h2.5a.75.75 0 0 1 .75.75V4" />
-      <path d="M4 4l.7 9.1a1 1 0 0 0 1 .9h4.6a1 1 0 0 0 1-.9L12 4" />
-    </svg>
   );
 }

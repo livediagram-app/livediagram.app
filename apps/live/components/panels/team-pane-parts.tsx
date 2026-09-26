@@ -1,8 +1,7 @@
-import { Select } from '@livediagram/ui';
+import { CloseIcon, Select } from '@livediagram/ui';
 import { Tooltip } from '@/components/primitives/Tooltip';
 import type { TeamMember, TeamRole } from '@/lib/api-client';
 import { colorForKey, initialsOf } from '@/lib/identity';
-import { RemoveIcon } from '@/components/panels/explorer-icons';
 
 // What a member row is called. Self rows use the account display name
 // so the list reads as people, not pronouns; everyone else is their
@@ -161,7 +160,7 @@ export function TeamMemberRow({
             aria-label={`Remove ${name}`}
             className="inline-flex h-7 w-7 items-center justify-center rounded text-slate-300 opacity-0 transition hover:bg-rose-50 hover:text-rose-700 focus-visible:opacity-100 group-hover:opacity-100 dark:text-slate-600 dark:hover:bg-rose-500/15 dark:hover:text-rose-300"
           >
-            <RemoveIcon />
+            <CloseIcon size={11} strokeWidth={1.6} />
           </button>
         ) : null}
       </span>

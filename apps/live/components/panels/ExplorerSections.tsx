@@ -11,9 +11,12 @@ import {
   SharedRow,
   UnsortedNode,
 } from '@/components/panels/explorer-views';
-import { ChevronIcon, DynamicFolderIcon } from '@/components/panels/explorer-icons';
 import { ExplorerTabBar, type ExplorerTab } from '@/components/panels/ExplorerTabBar';
 import { TeamNode } from '@/components/panels/explorer-team-views';
+import { SYNTHETIC_FOLDERS } from '@/app/explorer/synthetic-folders';
+import type { PanelFolderTree } from './FolderNode';
+import type { PanelRowActions } from './PanelDiagramRows';
+import { TreeNodeHeader } from './TreeNodeHeader';
 import type { useExplorerViewModel } from './useExplorerViewModel';
 
 type ExplorerViewModel = ReturnType<typeof useExplorerViewModel>;
@@ -147,6 +150,32 @@ export function ExplorerSections({
   // storing "open" would make the first collapse click a no-op.
   const dynamicOpen = !expandedFolders['dynamic-collapsed'];
 
+  // What every diagram row in the Personal tab can do, handed to each node
+  // (the Teams tab adjusts it per team, below).
+  const rows: PanelRowActions = {
+    ownerId,
+    currentDiagramId,
+    exitingDiagramIds,
+    onOpenDiagram,
+    onDeleteDiagram,
+    onDuplicateDiagram,
+    onMoveDiagramRequest,
+    onMoveDiagramToFolder,
+  };
+  const personalTree: PanelFolderTree = {
+    foldersByParent,
+    diagramsByFolder,
+    expanded: expandedFolders,
+    onToggleExpanded: onToggleFolder,
+    pendingRenameId: pendingRenameFolderId,
+    onRenameFolderCommitted,
+    onRenameFolder,
+    onDeleteFolder,
+    onCreateChild,
+    rows,
+  };
+  const unsortedDiagrams = diagramsByFolder.get(null) ?? [];
+
   return (
     <div className="flex flex-col gap-2 rounded-xl bg-slate-50 p-1.5 ring-1 ring-slate-200/60 dark:bg-slate-800/50 dark:ring-slate-700/60">
       <ExplorerTabBar
@@ -237,100 +266,40 @@ export function ExplorerSections({
       ) : activeTab === 'work' ? (
         <ul className="flex flex-col gap-0.5">
           {(foldersByParent.get(null) ?? []).map((f) => (
-            <FolderNode
-              key={f.id}
-              folder={f}
-              ownerId={ownerId}
-              depth={0}
-              foldersByParent={foldersByParent}
-              diagramsByFolder={diagramsByFolder}
-              expanded={expandedFolders}
-              onToggleExpanded={onToggleFolder}
-              currentDiagramId={currentDiagramId}
-              pendingRenameId={pendingRenameFolderId}
-              onRenameFolderCommitted={onRenameFolderCommitted}
-              onOpenDiagram={onOpenDiagram}
-              onRenameFolder={onRenameFolder}
-              onDeleteFolder={onDeleteFolder}
-              onCreateChild={onCreateChild}
-              onDeleteDiagram={onDeleteDiagram}
-              exitingDiagramIds={exitingDiagramIds}
-              onDuplicateDiagram={onDuplicateDiagram}
-              onMoveDiagramRequest={
-                onMoveDiagramRequest ? (id) => onMoveDiagramRequest(id) : undefined
-              }
-              onMoveDiagramToFolder={onMoveDiagramToFolder}
-            />
+            <FolderNode key={f.id} folder={f} depth={0} tree={personalTree} />
           ))}
           {/* The synthetic nodes group under one "Dynamic" parent (matching
               the /explorer sidebar): live views over your diagrams, not real
               folder rows. Open by default so Unsorted stays one click away. */}
           <li>
-            <div className="flex items-center gap-1 rounded-md px-2 py-1.5 text-xs text-slate-700 transition hover:bg-slate-100 dark:text-white dark:hover:bg-slate-800">
-              <button
-                type="button"
-                onClick={() => onToggleFolder('dynamic-collapsed')}
-                aria-expanded={dynamicOpen}
-                aria-label={dynamicOpen ? 'Collapse Dynamic' : 'Expand Dynamic'}
-                className="flex h-4 w-4 items-center justify-center rounded text-slate-400 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
-              >
-                <span
-                  className={`inline-block transition-transform ${dynamicOpen ? 'rotate-90' : 'rotate-0'}`}
-                  aria-hidden
-                >
-                  <ChevronIcon />
-                </span>
-              </button>
-              <span className="text-slate-400 dark:text-slate-400">
-                <DynamicFolderIcon />
-              </span>
-              <button
-                type="button"
-                onClick={() => onToggleFolder('dynamic-collapsed')}
-                className="flex min-w-0 flex-1 items-center gap-1 truncate text-left"
-              >
-                <span className="truncate italic text-slate-500 dark:text-white">Dynamic</span>
-                <span className="inline-flex h-4 min-w-[1rem] shrink-0 items-center justify-center rounded-full bg-slate-200 px-1 text-[10px] font-medium text-slate-600 dark:bg-slate-700 dark:text-white">
-                  {(diagramsByFolder.get(null) ?? []).length + offlineDiagrams.length}
-                </span>
-              </button>
-            </div>
+            <TreeNodeHeader
+              expanded={dynamicOpen}
+              onToggle={() => onToggleFolder('dynamic-collapsed')}
+              noun={SYNTHETIC_FOLDERS.dynamic.label}
+              icon={<SYNTHETIC_FOLDERS.dynamic.Icon size={12} />}
+              label={SYNTHETIC_FOLDERS.dynamic.label}
+              labelClassName="italic text-slate-500 dark:text-white"
+              count={unsortedDiagrams.length + offlineDiagrams.length}
+            />
           </li>
           {dynamicOpen ? (
             <li>
               <ul className="flex flex-col gap-0.5 pl-3">
-                {(diagramsByFolder.get(null) ?? []).length > 0 ? (
+                {unsortedDiagrams.length > 0 ? (
                   <UnsortedNode
-                    ownerId={ownerId}
                     expanded={expandedFolders}
                     onToggleExpanded={onToggleFolder}
-                    diagrams={diagramsByFolder.get(null) ?? []}
-                    currentDiagramId={currentDiagramId}
-                    onOpenDiagram={onOpenDiagram}
-                    onDeleteDiagram={onDeleteDiagram}
-                    exitingDiagramIds={exitingDiagramIds}
-                    onDuplicateDiagram={onDuplicateDiagram}
-                    onMoveDiagramRequest={
-                      onMoveDiagramRequest ? (id) => onMoveDiagramRequest(id) : undefined
-                    }
-                    onMoveDiagramToFolder={onMoveDiagramToFolder}
+                    diagrams={unsortedDiagrams}
+                    rows={rows}
                   />
                 ) : null}
                 {/* Offline (spec/76): always rendered, even empty, so the
                     browser-only bucket stays discoverable. */}
                 <OfflineNode
-                  ownerId={ownerId}
                   expanded={expandedFolders}
                   onToggleExpanded={onToggleFolder}
                   diagrams={offlineDiagrams}
-                  currentDiagramId={currentDiagramId}
-                  onOpenDiagram={onOpenDiagram}
-                  onDeleteDiagram={onDeleteDiagram}
-                  exitingDiagramIds={exitingDiagramIds}
-                  onDuplicateDiagram={onDuplicateDiagram}
-                  onMoveDiagramRequest={
-                    onMoveDiagramRequest ? (id) => onMoveDiagramRequest(id) : undefined
-                  }
+                  rows={rows}
                 />
               </ul>
             </li>
@@ -342,23 +311,23 @@ export function ExplorerSections({
             <TeamNode
               key={t.id}
               team={t}
-              ownerId={ownerId}
               folders={foldersByTeam.get(t.id) ?? []}
               diagrams={diagramsByTeam.get(t.id) ?? []}
-              currentDiagramId={currentDiagramId}
               expanded={expandedFolders}
               onToggleExpanded={onToggleFolder}
-              onOpenDiagram={(id) => onOpenDiagram(id)}
               onOpenTeam={(teamId) =>
                 window.location.assign(`/explorer/team?id=${encodeURIComponent(teamId)}`)
               }
-              // Hard delete on team-library rows, any joined
-              // member (spec/35); the api enforces membership.
-              onDeleteDiagram={onDeleteDiagram}
-              onDuplicateDiagram={onDuplicateDiagram}
-              onMoveDiagramRequest={
-                onMoveTeamDiagramRequest ? (id) => onMoveTeamDiagramRequest(id, t.id) : undefined
-              }
+              // Hard delete on team-library rows, any joined member
+              // (spec/35); the api enforces membership. Change Folder
+              // opens the picker inside this team. No drag-and-drop.
+              rows={{
+                ...rows,
+                onMoveDiagramRequest: onMoveTeamDiagramRequest
+                  ? (id) => onMoveTeamDiagramRequest(id, t.id)
+                  : undefined,
+                onMoveDiagramToFolder: undefined,
+              }}
               pendingRenameId={pendingRenameFolderId}
               onRenameFolderCommitted={onRenameFolderCommitted}
               onRenameFolder={onTeamFolders?.rename}

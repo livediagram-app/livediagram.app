@@ -1,4 +1,4 @@
-// Inline SVG icons for the template picker (create-diagram CTA, refresh,
+// Inline SVG icons for the template picker (create-diagram CTA,
 // folder-open, spinner, sparkle, pencil). Pure presentational; split out
 // of TemplatePicker.tsx.
 export function ArrowRightIcon() {
@@ -70,27 +70,6 @@ export function PencilIcon() {
     >
       <path d="m11.1 2.6 2.3 2.3-7.8 7.8-3 .7.7-3z" />
       <path d="m9.6 4.1 2.3 2.3" />
-    </svg>
-  );
-}
-
-export function RefreshIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M2.5 8a5.5 5.5 0 0 1 9.4-3.9L13.5 5.5" />
-      <path d="M13.5 2.5v3h-3" />
-      <path d="M13.5 8a5.5 5.5 0 0 1-9.4 3.9L2.5 10.5" />
-      <path d="M2.5 13.5v-3h3" />
     </svg>
   );
 }

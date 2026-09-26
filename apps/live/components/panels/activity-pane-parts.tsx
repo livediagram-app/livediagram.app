@@ -5,6 +5,8 @@
 // Lifted out of ActivityPane so the pane file keeps the data split and
 // the section order, and each piece here is one cohesive slice.
 
+import { ActivityIcon, TeamIcon } from '@/components/primitives/explorer-icons';
+import { CountBadge } from '@/components/primitives/CountBadge';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import type { ActivityAction, ActivityPlace, ActivityThread } from '@livediagram/api-schema';
@@ -15,7 +17,6 @@ import { collabDeepLinkHref, type CollabPopover } from '@/lib/collab-deep-link';
 import { helpArticleHref } from '@/lib/help-articles';
 import { initialsOf } from '@/lib/identity';
 import { formatRelativeTimeShort } from '@/lib/relative-time';
-import { ActivityIcon, TeamIcon } from '@/app/explorer/icons';
 
 // One titled card-list. The container matches the List view's so the
 // page reads as an Explorer section rather than a panel that escaped
@@ -33,9 +34,7 @@ export function ActivitySection({
     <section className="mb-5">
       <h2 className="mb-2 flex items-center gap-2 px-1 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
         {title}
-        <span className="inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-slate-200 px-1 text-[10px] font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300">
-          {count}
-        </span>
+        <CountBadge count={count} />
       </h2>
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
         <ul className="lvd-cascade divide-y divide-slate-100 dark:divide-slate-700/60">

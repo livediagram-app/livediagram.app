@@ -1,6 +1,6 @@
 import { initialsOf, randomName, type Participant } from '@/lib/identity';
 import { Tooltip } from '@/components/primitives/Tooltip';
-import { RefreshIcon } from './template-picker-icons';
+import { RefreshIcon } from '@livediagram/ui';
 
 // The picker's identity row (spec/14 welcome + join flows): the avatar
 // bubble, the display-name input (read-only when the name is dictated

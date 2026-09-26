@@ -1,10 +1,9 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Button, TextInput } from '@livediagram/ui';
+import { Button, CloseIcon, TextInput } from '@livediagram/ui';
 import type { ElementAction } from '@livediagram/diagram';
 import { Dialog } from '@/components/dialogs/Dialog';
-import { CloseIcon } from '@/components/primitives/CloseIcon';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import type { TeamListItem } from '@/lib/api-client';
 import type { SaveActionInput } from '@/hooks/collab/useEditorActions';

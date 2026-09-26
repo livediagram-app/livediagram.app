@@ -1,9 +1,9 @@
 'use client';
 
+import { TrashIcon } from '@/components/primitives/explorer-icons';
 import { memo } from 'react';
 import type { ChangeLogEntry } from '@/lib/api-client';
 import type { SaveStatus } from '@/components/chrome/EditorHeader';
-import { TrashIcon } from '@/components/panels/explorer-icons';
 import { MovablePanel, type MovablePanelDockProps } from '@/components/primitives/MovablePanel';
 import { Tooltip } from '@/components/primitives/Tooltip';
 import type { DockAnchor } from '@/lib/canvas-chrome';

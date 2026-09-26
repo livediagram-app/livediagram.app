@@ -17,7 +17,8 @@
 // box, so a big one has bigger type rather than more padding.
 
 import { SHAPE_DEFAULT_SIZE } from './shape-factory';
-import { agendaTotalMinutes } from './collab-shapes';
+import { agendaTotalMinutes, DEFAULT_CHAIR_FACING } from './collab-shapes';
+import { CHAIR_FACING_ROTATION, CHAIR_GEOMETRY, chairSeatFill } from './shape-geometry';
 import { REACTION_DEFAULT, REACTION_EMOJI } from './data-shapes';
 import type { BoxedElement } from './index';
 import { r2, xmlEscape } from './svg-render-primitives';
@@ -416,21 +417,31 @@ export function svgBehaviourFace(
       );
     }
     case 'chair': {
-      // The chair itself (spec/130), on its own 64x72 grid: backrest, slat,
-      // seat, legs and stretcher, plus the contact shadow that sits it on the
-      // canvas rather than floating it over.
-      const seat = el.fillColor ?? '#e2e8f0';
+      // The chair itself (spec/130), from the shared table the canvas's
+      // ChairView draws (shape-geometry.ts): backrest, slat, seat, legs and
+      // stretcher, plus the contact shadow that sits it on the canvas rather
+      // than floating it over. Turned whole for its facing, about the box
+      // centre, exactly as the canvas rotates its svg.
+      const g = CHAIR_GEOMETRY;
+      const seat = xmlEscape(chairSeatFill(el.fillColor, stroke));
       const line = xmlEscape(stroke);
-      return (
-        `<svg x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" viewBox="0 0 64 72" preserveAspectRatio="xMidYMid meet" overflow="visible">` +
-        `<ellipse cx="32" cy="66" rx="19" ry="4" fill="#0f172a" opacity="0.12"/>` +
-        `<rect x="17" y="3" width="30" height="31" rx="4" fill="${xmlEscape(seat)}" stroke="${line}" stroke-width="2"/>` +
-        `<path d="M32 8v21" stroke="${line}" stroke-width="1.5" opacity="0.5" fill="none"/>` +
-        `<rect x="10" y="34" width="44" height="13" rx="3" fill="${xmlEscape(seat)}" stroke="${line}" stroke-width="2"/>` +
-        `<path d="M15 47v16M49 47v16" stroke="${line}" stroke-width="2.5" stroke-linecap="round" fill="none"/>` +
-        `<path d="M15 57h34" stroke="${line}" stroke-width="1.5" opacity="0.5" fill="none"/>` +
-        `</svg>`
-      );
+      const panel = (p: { x: number; y: number; width: number; height: number; rx: number }) =>
+        `<rect x="${p.x}" y="${p.y}" width="${p.width}" height="${p.height}" rx="${p.rx}" fill="${seat}" stroke="${line}" stroke-width="${g.panelStrokeWidth}"/>`;
+      const rail = (d: string) =>
+        `<path d="${d}" stroke="${line}" stroke-width="${g.railStrokeWidth}" opacity="${g.railOpacity}" fill="none"/>`;
+      const chair =
+        `<svg x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" viewBox="${g.viewBox}" preserveAspectRatio="xMidYMid meet" overflow="visible">` +
+        `<ellipse cx="${g.shadow.cx}" cy="${g.shadow.cy}" rx="${g.shadow.rx}" ry="${g.shadow.ry}" fill="${g.shadow.fill}" opacity="${g.shadow.opacity}"/>` +
+        panel(g.back) +
+        rail(g.slat) +
+        panel(g.seat) +
+        `<path d="${g.legs}" stroke="${line}" stroke-width="${g.legStrokeWidth}" stroke-linecap="round" fill="none"/>` +
+        rail(g.stretcher) +
+        `</svg>`;
+      const turn = CHAIR_FACING_ROTATION[el.chairFacing ?? DEFAULT_CHAIR_FACING];
+      return turn
+        ? `<g transform="rotate(${turn} ${r2(el.x + el.width / 2)} ${r2(el.y + el.height / 2)})">${chair}</g>`
+        : chair;
     }
     case 'comment-pin': {
       const count = el.commentThread?.comments.length ?? 0;

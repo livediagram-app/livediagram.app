@@ -10,12 +10,12 @@
 // dismissal is persisted (useDismissibleBanner) in one place.
 
 import dynamic from 'next/dynamic';
+import { CloseIcon, SparkleIcon } from '@livediagram/ui';
 import { SignInIcon } from '@/components/chrome/AuthControls';
 import Link from 'next/link';
 import { useState } from 'react';
 import { track } from '@/lib/telemetry';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
-import { CloseIcon } from '@/components/primitives/CloseIcon';
 
 // Lazy-load the reasons modal: the banner shows on every guest
 // Explorer load, but the modal only matters once Learn more is
@@ -64,7 +64,7 @@ export function SignInBanner({
         <div className="pointer-events-auto flex w-full max-w-3xl animate-fly-up-in flex-col gap-3 overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-brand-500 to-brand-600 p-4 text-white shadow-2xl shadow-brand-900/30 sm:flex-row sm:items-center sm:gap-4 sm:px-5">
           {/* Decorative glyph tile */}
           <span className="hidden h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/15 sm:flex">
-            <SparkleIcon />
+            <SparkleIcon size={20} />
           </span>
 
           <div className="min-w-0 flex-1">
@@ -115,14 +115,5 @@ export function SignInBanner({
         <SignInReasonsModal open onClose={() => setReasonsOpen(false)} onSignIn={trackSignIn} />
       ) : null}
     </>
-  );
-}
-
-function SparkleIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor" aria-hidden>
-      <path d="M8 1.5 9.2 5.4 13 6.6 9.2 7.8 8 11.7 6.8 7.8 3 6.6 6.8 5.4 8 1.5Z" />
-      <path d="M13 10.5l.6 1.9 1.9.6-1.9.6-.6 1.9-.6-1.9-1.9-.6 1.9-.6.6-1.9Z" />
-    </svg>
   );
 }

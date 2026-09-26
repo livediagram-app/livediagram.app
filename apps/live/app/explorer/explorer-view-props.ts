@@ -15,10 +15,13 @@ import type { PaneDiagram } from '@/app/explorer/views';
 // noted below). That is not an oversight to tidy up: it is the price of one
 // props object serving both views, and it is cheaper than the alternative of
 // ExplorerPane branching its object construction on the view mode.
-export type FolderActions = (
-  f: Folder,
-  anchor: HTMLElement | null,
-) => { rename: () => void; newSubfolder: () => void; move: () => void; delete: () => void };
+export type FolderActionBundle = {
+  rename: () => void;
+  newSubfolder: () => void;
+  move: () => void;
+  delete: () => void;
+};
+export type FolderActions = (f: Folder, anchor: HTMLElement | null) => FolderActionBundle;
 
 export type ExplorerViewProps = {
   folders: Folder[];

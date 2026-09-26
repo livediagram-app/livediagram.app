@@ -2,15 +2,12 @@ import { useRef } from 'react';
 import { Tooltip } from '@/components/primitives/Tooltip';
 import { useEdgeAwarePlacement } from '@/hooks/canvas/useEdgeAwarePlacement';
 import { FloatingTitle } from '@/components/chrome/FloatingTitle';
+import { CommentIcon, DuplicateIcon, LockIcon, TrashIcon } from '@livediagram/ui';
 import {
   BringToFrontIcon,
-  CommentIcon,
-  DuplicateIcon,
   EllipsisIcon,
-  LockIcon,
   SendToBackIcon,
   TextIcon,
-  TrashIcon,
 } from '@/components/canvas/selection-popover-icons';
 
 type Bounds = { x: number; y: number; width: number; height: number };

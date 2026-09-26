@@ -1,8 +1,9 @@
 'use client';
 
+import { OpenIcon, PlusIcon } from '@/components/primitives/explorer-icons';
 import { useState, type ReactNode } from 'react';
+import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import { MenuActionRow, MenuGroupSeparator, PortalMenu } from '@/components/primitives/PortalMenu';
-import { OpenIcon, PlusIcon } from '@/components/panels/explorer-icons';
 import { GearIcon, GithubIcon, SearchGlyph } from '@/components/chrome/tab-bar-icons';
 import { GITHUB_REPO_URL } from '@/lib/github';
 import type { ExplorerMenuActions } from './Explorer.types';
@@ -113,20 +114,12 @@ export function ExplorerHeaderMenu({
 
   return (
     <>
-      <button
-        type="button"
-        aria-label="More"
-        aria-haspopup="menu"
-        aria-expanded={anchor !== null}
+      <EllipsisTriggerButton
+        size="sm"
+        label="More"
+        expanded={anchor !== null}
         onClick={(e) => setAnchor(anchor ? null : e.currentTarget)}
-        className="flex h-5 w-5 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-      >
-        <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
-          <circle cx="3" cy="7" r="1.25" fill="currentColor" />
-          <circle cx="7" cy="7" r="1.25" fill="currentColor" />
-          <circle cx="11" cy="7" r="1.25" fill="currentColor" />
-        </svg>
-      </button>
+      />
       {anchor ? (
         <PortalMenu anchor={anchor} onClose={close}>
           <div className="min-w-44 py-1">

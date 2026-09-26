@@ -1,11 +1,13 @@
-import { useRef, useState } from 'react';
+import { FolderSolidIcon } from '@/components/primitives/explorer-icons';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
+import { CountBadge } from '@/components/primitives/CountBadge';
+import { useRowMenu } from '@/components/primitives/useRowMenu';
 import type { Folder } from '@/lib/api-client';
 import { useRelativeTimeTick } from '@/lib/relative-time';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
 import { FolderActionsMenu } from './folder-actions-menu';
-import { FolderIcon } from './icons';
 import { RelativeTimeChip } from '@/components/primitives/RelativeTimeChip';
+import type { FolderActionBundle } from './explorer-view-props';
 
 // The Explorer's folder row (spec/15), lifted out of views.tsx: the list
 // row (icon, inline rename, child-count badge, relative time, ellipsis /
@@ -27,23 +29,17 @@ export function FolderRow({
   onOpen: () => void;
   onCommitRename: (name: string) => void;
   onCancelRename: () => void;
-  getActionsForAnchor: (anchor: HTMLElement | null) => {
-    rename: () => void;
-    newSubfolder: () => void;
-    move: () => void;
-    delete: () => void;
-  };
+  getActionsForAnchor: (anchor: HTMLElement | null) => FolderActionBundle;
 }) {
   useRelativeTimeTick();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLButtonElement>(null);
+  const menu = useRowMenu({ disabled: renaming });
 
   // When renaming, the label area is a plain div so the <input>
   // inside it isn't nested in a <button> (which steals focus).
   const labelInner = (
     <>
       <span className="shrink-0 text-amber-500">
-        <FolderIcon open={false} />
+        <FolderSolidIcon />
       </span>
       {renaming ? (
         <InlineRenameInput
@@ -57,11 +53,7 @@ export function FolderRow({
           {folder.name}
         </span>
       )}
-      {childCount > 0 ? (
-        <span className="ml-1 inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-slate-200 px-1 text-[10px] font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300">
-          {childCount}
-        </span>
-      ) : null}
+      {childCount > 0 ? <CountBadge count={childCount} className="ml-1" /> : null}
     </>
   );
   return (
@@ -69,14 +61,7 @@ export function FolderRow({
       className="group grid grid-cols-[1fr_140px_40px] sm:grid-cols-[1fr_90px_140px_40px] items-center gap-2 px-4 py-2 transition hover:bg-slate-50 dark:hover:bg-slate-700"
       // Right-click anywhere on the row opens the same actions menu as the
       // ellipsis button (anchored to it).
-      onContextMenu={
-        renaming
-          ? undefined
-          : (e) => {
-              e.preventDefault();
-              setMenuOpen(true);
-            }
-      }
+      onContextMenu={menu.onContextMenu}
     >
       {renaming ? (
         <div className="flex min-w-0 items-center gap-2">{labelInner}</div>
@@ -95,21 +80,14 @@ export function FolderRow({
       {renaming ? (
         <span />
       ) : (
-        <EllipsisTriggerButton
-          ref={menuRef}
-          label={`Menu for ${folder.name}`}
-          onClick={(e) => {
-            e.stopPropagation();
-            setMenuOpen((o) => !o);
-          }}
-        />
+        <EllipsisTriggerButton {...menu.triggerProps} label={`Menu for ${folder.name}`} />
       )}
-      {menuOpen ? (
+      {menu.open ? (
         <FolderActionsMenu
           folder={folder}
-          anchor={menuRef.current}
-          onClose={() => setMenuOpen(false)}
-          {...menuHandlers(getActionsForAnchor(menuRef.current))}
+          anchor={menu.triggerRef.current}
+          onClose={menu.close}
+          {...menuHandlers(getActionsForAnchor(menu.triggerRef.current))}
         />
       ) : null}
     </li>
@@ -117,12 +95,7 @@ export function FolderRow({
 }
 
 // The page's action bundle, as the shared menu's optional handlers.
-export function menuHandlers(actions: {
-  rename: () => void;
-  newSubfolder: () => void;
-  move: () => void;
-  delete: () => void;
-}) {
+export function menuHandlers(actions: FolderActionBundle) {
   return {
     onRename: actions.rename,
     onNewSubfolder: actions.newSubfolder,

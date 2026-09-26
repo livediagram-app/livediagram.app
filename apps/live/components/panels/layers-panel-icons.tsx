@@ -59,9 +59,11 @@ export function EyeOffIcon() {
   );
 }
 
-export function LockIcon() {
+// `size` defaults to the row control's 12px; the row menu's Lock item draws
+// it at 14.
+export function LockIcon({ size = 12 }: { size?: number } = {}) {
   return (
-    <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden>
+    <svg width={size} height={size} viewBox="0 0 14 14" fill="none" aria-hidden>
       <rect x="3" y="6" width="8" height="5.5" rx="1" stroke="currentColor" strokeWidth="1.2" />
       <path d="M4.5 6V4.5a2.5 2.5 0 0 1 5 0V6" stroke="currentColor" strokeWidth="1.2" />
     </svg>

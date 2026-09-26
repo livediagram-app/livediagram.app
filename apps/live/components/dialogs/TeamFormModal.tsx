@@ -1,10 +1,9 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Button, TextInput } from '@livediagram/ui';
+import { Button, CloseIcon, TextInput } from '@livediagram/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
-import { CloseIcon } from '@/components/primitives/CloseIcon';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
 
 // Create / edit form for a team (spec/32): name + organisation.

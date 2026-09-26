@@ -1,6 +1,7 @@
 import {
   BORDER_DASH_ARRAY,
   BORDER_STROKE_PX,
+  BROWSER_CHROME,
   catmullRomToBezierPath,
   DEFAULT_BORDER_STROKE,
   DEFAULT_BORDER_STYLE,
@@ -17,8 +18,12 @@ import {
 // Counter-scaled by `zoom` is intentionally NOT applied — chrome
 // elements should scale with the canvas zoom like the rest of the
 // shape so a small browser at low zoom still reads as a browser.
-const BROWSER_CHROME_HEIGHT_PX = 48;
+// Every size and glyph comes from the shared BROWSER_CHROME table
+// (@livediagram/diagram shape-geometry.ts), which the headless export
+// lays out the same way, so an exported browser matches this strip.
 export function BrowserChrome({ stroke, zoom: _zoom }: { stroke: string; zoom: number }) {
+  const c = BROWSER_CHROME;
+  const dot = { width: c.dotPx, height: c.dotPx, backgroundColor: stroke };
   return (
     <div
       aria-hidden
@@ -30,44 +35,47 @@ export function BrowserChrome({ stroke, zoom: _zoom }: { stroke: string; zoom: n
       // Span the full width: the frame is now the wrapper's own CSS
       // border, so left-0 / right-0 lands the bottom divider exactly on
       // the inner edges of the side border instead of overhanging it.
-      className="pointer-events-none absolute left-0 right-0 top-0 flex items-center gap-2.5 px-4 py-2.5"
+      className="pointer-events-none absolute left-0 right-0 top-0 flex items-center"
       style={{
-        height: BROWSER_CHROME_HEIGHT_PX,
+        height: c.heightPx,
+        paddingLeft: c.padXPx,
+        paddingRight: c.padXPx,
+        gap: c.groupGapPx,
         color: stroke,
         borderBottom: `1px solid ${stroke}`,
       }}
     >
       {/* Three traffic-light window dots. Fixed-pixel so they stay
           round regardless of how the box stretches. */}
-      <div className="flex shrink-0 items-center gap-1.5">
-        <span className="h-3 w-3 rounded-full" style={{ backgroundColor: stroke }} aria-hidden />
-        <span className="h-3 w-3 rounded-full" style={{ backgroundColor: stroke }} aria-hidden />
-        <span className="h-3 w-3 rounded-full" style={{ backgroundColor: stroke }} aria-hidden />
+      <div className="flex shrink-0 items-center" style={{ gap: c.dotGapPx }}>
+        <span className="rounded-full" style={dot} aria-hidden />
+        <span className="rounded-full" style={dot} aria-hidden />
+        <span className="rounded-full" style={dot} aria-hidden />
       </div>
       {/* Back / forward / reload icons. Single SVG group with fixed
           pixel size so the icon weight + spacing stays consistent. */}
       <svg
-        width="56"
-        height="18"
-        viewBox="0 0 44 14"
+        width={c.nav.widthPx}
+        height={c.nav.heightPx}
+        viewBox={c.nav.viewBox}
         fill="none"
         stroke="currentColor"
-        strokeWidth="1.6"
+        strokeWidth={c.nav.strokeWidth}
         strokeLinecap="round"
         strokeLinejoin="round"
         className="shrink-0"
         aria-hidden
       >
-        <path d="M 7 3 L 3 7 L 7 11" />
-        <path d="M 15 11 L 19 7 L 15 3" />
-        <path d="M 30 4 A 4 4 0 1 1 27 11 M 30 4 L 33 4 M 30 4 L 30 7" />
+        {c.nav.paths.map((d) => (
+          <path key={d} d={d} />
+        ))}
       </svg>
       {/* URL pill. Flex-fills the remaining width so it scales with
           the shape; the height stays fixed so it always reads as a
           pill no matter how tall the chrome strip is. */}
       <div
-        className="h-5 min-w-0 flex-1 rounded-full border"
-        style={{ borderColor: stroke }}
+        className="min-w-0 flex-1 rounded-full border"
+        style={{ height: c.pillHeightPx, borderColor: stroke }}
         aria-hidden
       />
     </div>

@@ -10,6 +10,7 @@
 import { iconBandBounds, techIconMarkBounds } from './icon-size';
 import {
   hasShapeSilhouette,
+  scaledPolygonPoints,
   svgChecklistShape,
   svgLaneGutter,
   svgBrowserChrome,
@@ -19,6 +20,7 @@ import {
   svgShapeSilhouette,
 } from './svg-render-shapes';
 import { canvasSurface } from './colors';
+import { DIAMOND_POINTS } from './shape-geometry';
 import { svgTableShape } from './svg-render-table';
 // Which body an element draws, and the list of kinds that have one (spec/143).
 import { shapeHasBespokeBody, svgElementBody } from './svg-render-body';
@@ -263,7 +265,8 @@ export function svgBoxed(el: BoxedElement, opts: BoxedExportOptions = {}): strin
   } else if (shape.kind === 'ellipse') {
     shapeStr = `<ellipse cx="${r2(cx)}" cy="${r2(cy)}" rx="${r2(el.width / 2)}" ry="${r2(el.height / 2)}" fill="${xmlEscape(shape.fill)}" stroke="${xmlEscape(shape.stroke)}" stroke-width="1.5"/>`;
   } else if (shape.kind === 'diamond') {
-    shapeStr = `<polygon points="${r2(cx)},${r2(el.y)} ${r2(el.x + el.width)},${r2(cy)} ${r2(cx)},${r2(el.y + el.height)} ${r2(el.x)},${r2(cy)}" fill="${xmlEscape(shape.fill)}" stroke="${xmlEscape(shape.stroke)}" stroke-width="1.5" stroke-linejoin="round"/>`;
+    // Native at element coordinates, from the shared table's points.
+    shapeStr = `<polygon points="${scaledPolygonPoints(DIAMOND_POINTS, el.x, el.y, el.width, el.height)}" fill="${xmlEscape(shape.fill)}" stroke="${xmlEscape(shape.stroke)}" stroke-width="1.5" stroke-linejoin="round"/>`;
   } else if (shape.kind === 'rect') {
     // Shape silhouettes (hexagon / cylinder / document / devices / actor /
     // frame ...) mirror the editor overlay's geometry; kinds without one

@@ -11,7 +11,7 @@ import { useAppearance } from '@/hooks/ui/useAppearance';
 import type { AutoLayoutChoice } from '@/lib/auto-layout-choices';
 import type { CleanupKind } from '@/lib/tab-cleanup';
 import type { Participant } from '@/lib/identity';
-import { TabsLabelIcon } from '@/components/chrome/tab-bar-icons';
+import { TabsLabelIcon } from '@livediagram/ui';
 import { TabFolderChip } from '@/components/chrome/TabFolderChip';
 import { useTabReorderDrag } from './useTabReorderDrag';
 import { ChromeControls } from '@/components/chrome/ChromeControls';

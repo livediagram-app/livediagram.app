@@ -13,7 +13,7 @@ import { useConfirm } from '@/hooks/ui/useConfirm';
 import { materialiseCustomTheme } from '@/lib/custom-theme-registry';
 import { useCustomThemes } from '@/components/primitives/CustomThemeProvider';
 import type { CustomThemeDraft } from '@/components/palette/CustomThemeBuilder';
-import { EmptyState } from '@livediagram/ui';
+import { CopyIcon, EmptyState, PencilIcon, PlusIcon, TrashSimpleIcon } from '@livediagram/ui';
 import { ThemeBuilderModal, themeDeleteConfirm } from './ThemeBuilderModal';
 import { ThemeSwatch } from '@/components/primitives/ThemeSwatch';
 import { Tooltip } from '@/components/primitives/Tooltip';
@@ -80,7 +80,7 @@ export function ThemesPane() {
               <div className="flex items-center gap-1">
                 <Tooltip title="Edit" description="Open this theme in the builder.">
                   <IconBtn label="Edit theme" onClick={() => setBuilding(t.id)}>
-                    <EditIcon />
+                    <PencilIcon />
                   </IconBtn>
                 </Tooltip>
                 <Tooltip title="Duplicate" description="Create a copy of this theme.">
@@ -88,7 +88,7 @@ export function ThemesPane() {
                     label="Duplicate theme"
                     onClick={() => void createTheme(`${t.name} copy`, t.definition)}
                   >
-                    <DuplicateIcon />
+                    <CopyIcon />
                   </IconBtn>
                 </Tooltip>
                 <Tooltip title="Delete" description="Remove this theme.">
@@ -97,7 +97,7 @@ export function ThemesPane() {
                     danger
                     onClick={() => void confirmDelete(t.id, t.name)}
                   >
-                    <TrashIcon />
+                    <TrashSimpleIcon />
                   </IconBtn>
                 </Tooltip>
               </div>
@@ -108,17 +108,7 @@ export function ThemesPane() {
             onClick={() => setBuilding('new')}
             className="flex min-h-[7rem] flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-slate-300 text-slate-500 transition hover:border-brand-400 hover:text-brand-600 dark:border-slate-600 dark:text-slate-400"
           >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 16 16"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              aria-hidden
-            >
-              <path d="M8 3.5v9M3.5 8h9" strokeLinecap="round" />
-            </svg>
+            <PlusIcon size={20} strokeWidth={1.5} />
             <span className="text-xs font-medium">New theme</span>
           </button>
         </div>
@@ -162,59 +152,6 @@ function IconBtn({
     >
       {children}
     </button>
-  );
-}
-
-function EditIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      aria-hidden
-    >
-      <path d="M11.5 2.5l2 2L6 12l-3 1 1-3z" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function DuplicateIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      aria-hidden
-    >
-      <rect x="5.5" y="5.5" width="8" height="8" rx="1.5" />
-      <path d="M10.5 5.5V4A1.5 1.5 0 0 0 9 2.5H4A1.5 1.5 0 0 0 2.5 4v5A1.5 1.5 0 0 0 4 10.5h1.5" />
-    </svg>
-  );
-}
-
-function TrashIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      aria-hidden
-    >
-      <path
-        d="M3.5 4.5h9M6.5 4.5V3h3v1.5M5 4.5l.5 8h5l.5-8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
   );
 }
 

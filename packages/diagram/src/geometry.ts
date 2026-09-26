@@ -10,6 +10,8 @@ import {
   type Endpoint,
 } from './index';
 import { techIconMarkBounds } from './icon-size';
+import { shapePolygonVertices } from './shape-geometry';
+import type { ShapeKind } from './shape-kind';
 
 // --- Geometry helpers ------------------------------------------------------
 
@@ -60,45 +62,22 @@ function localAnchorPosition(
 }
 
 // Outline polygons for the SVG-rendered shapes whose drawn edge differs
-// from their bounding box, in the shared 0..100 viewBox the overlay paints
-// in (apps/live/components/shape-svg-overlay.tsx). Kept in lock-step with
-// that file: an anchor projected onto these vertices lands on the line the
-// user actually sees. Convex only — the ray-exit test below assumes one
-// boundary crossing, so non-convex shapes (star, cloud, speech-bubble) are
-// deliberately absent and fall back to the bounding box.
-const SHAPE_OUTLINES: Partial<Record<string, readonly [number, number][]>> = {
-  diamond: [
-    [50, 0],
-    [100, 50],
-    [50, 100],
-    [0, 50],
-  ],
-  parallelogram: [
-    [20, 0],
-    [100, 0],
-    [80, 100],
-    [0, 100],
-  ],
-  hexagon: [
-    [25, 0],
-    [75, 0],
-    [100, 50],
-    [75, 100],
-    [25, 100],
-    [0, 50],
-  ],
-  triangle: [
-    [50, 2],
-    [98, 98],
-    [2, 98],
-  ],
-  trapezoid: [
-    [22, 4],
-    [78, 4],
-    [98, 96],
-    [2, 96],
-  ],
-};
+// from their bounding box, read from the shared geometry table
+// (shape-geometry.ts) the overlay and the export both paint from, so an
+// anchor projected onto these vertices lands on the line the user actually
+// sees. Convex only: the ray-exit test below assumes one boundary crossing,
+// so non-convex shapes (star, cloud, speech-bubble) are deliberately absent
+// and fall back to the bounding box.
+const CONVEX_OUTLINE_KINDS: readonly ShapeKind[] = [
+  'diamond',
+  'parallelogram',
+  'hexagon',
+  'triangle',
+  'trapezoid',
+];
+const SHAPE_OUTLINES: Partial<Record<string, readonly [number, number][]>> = Object.fromEntries(
+  CONVEX_OUTLINE_KINDS.map((kind) => [kind, shapePolygonVertices(kind)!]),
+);
 
 // Project a bounding-box anchor onto the shape's actual drawn outline, so a
 // connector meets a diamond's slanted edge or a circle's curve instead of

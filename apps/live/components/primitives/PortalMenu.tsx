@@ -9,6 +9,7 @@ import {
   type PointerEventHandler,
   type ReactNode,
 } from 'react';
+import { ChevronDownIcon } from '@livediagram/ui';
 import { Portal } from '@/components/primitives/Portal';
 import { Tooltip } from '@/components/primitives/Tooltip';
 import { clampToViewport } from '@/lib/clamp-to-viewport';
@@ -147,20 +148,9 @@ export function MenuAccordionSection({
           <span className="flex w-4 shrink-0 items-center justify-center">{icon}</span>
           {title}
         </span>
-        <svg
-          width="10"
-          height="10"
-          viewBox="0 0 12 12"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden
+        <ChevronDownIcon
           className={`transition-transform duration-200 ${open ? '' : '-rotate-90'}`}
-        >
-          <path d="M3 4.5 6 7.5 9 4.5" />
-        </svg>
+        />
       </button>
       <div
         className={`grid transition-all duration-200 ease-out ${

@@ -13,7 +13,10 @@
 // tiles. A menu that looked like this one used to and nothing else in the app
 // is a menu people have to learn twice.
 
+import { DuplicateIcon, PencilIcon, TrashIcon } from '@/components/primitives/explorer-icons';
 import { useRef, useState } from 'react';
+import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
+import { PlusIcon } from '@livediagram/ui';
 
 import { slideName, type Slide } from '@livediagram/diagram';
 
@@ -25,7 +28,6 @@ import {
   MenuToolButton,
   PortalMenu,
 } from '@/components/primitives/PortalMenu';
-import { DuplicateIcon, PencilIcon, TrashIcon } from '@/components/panels/explorer-icons';
 import { EyeIcon, EyeOffIcon } from '@/components/panels/layers-panel-icons';
 import { NoteMenuIcon } from '@/components/palette/context-menu-icons';
 
@@ -43,23 +45,6 @@ function SelectionIcon() {
     >
       <rect x="1.8" y="1.8" width="5.5" height="5.5" rx="1" />
       <rect x="8.7" y="8.7" width="5.5" height="5.5" rx="1" />
-    </svg>
-  );
-}
-
-function PlusIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      aria-hidden
-    >
-      <path d="M8 3.5v9M3.5 8h9" />
     </svg>
   );
 }
@@ -124,11 +109,11 @@ export function SlideRowMenu({
 
   return (
     <>
-      <button
+      <EllipsisTriggerButton
         ref={buttonRef}
-        type="button"
-        aria-label={`Options for ${slideName(slide, index)}`}
-        aria-expanded={open}
+        size="sm"
+        label={`Options for ${slideName(slide, index)}`}
+        expanded={open}
         // The row is draggable and pressable; neither should fire because the
         // pointer went down on this button.
         onPointerDown={(e) => e.stopPropagation()}
@@ -136,14 +121,7 @@ export function SlideRowMenu({
           e.stopPropagation();
           setOpen((v) => !v);
         }}
-        className="flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-      >
-        <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
-          <circle cx="3" cy="7" r="1.25" fill="currentColor" />
-          <circle cx="7" cy="7" r="1.25" fill="currentColor" />
-          <circle cx="11" cy="7" r="1.25" fill="currentColor" />
-        </svg>
-      </button>
+      />
       {open ? (
         <PortalMenu anchor={buttonRef.current} placement="below" onClose={close}>
           {/* Quick-action toolbar, matching the Explorer's rows and the tab

@@ -3,6 +3,11 @@
 // which was over the 1000-line mark and mixed a timed animation with 370
 // lines of SVG paths. Every one of these is pure markup with no state, no
 // module constants and no reference to another, so they read on their own.
+// Glyphs the editor's chrome also draws (the share-state dots, the Tabs label,
+// chevrons, menu, search) come from @livediagram/ui instead, so the hero
+// mirrors the editor rather than a copy of it.
+
+import { SearchIcon } from '@livediagram/ui';
 
 // A tab's presence avatar, sized as the editor's TabPresenceStack sizes them:
 // small initials on the participant's colour, a white ring, overlapping the
@@ -26,70 +31,6 @@ export function TabAvatar({
     >
       {initials}
     </span>
-  );
-}
-
-// Tab-bar "Tabs" label icon, mirroring apps/live/components/TabBar.tsx.
-export function TabsLabelIcon() {
-  return (
-    <svg
-      width="11"
-      height="11"
-      viewBox="0 0 12 12"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M1.5 4.5h3l1 1.25h5v4.25h-9z" />
-      <path d="M3 4.5V3h3.25" />
-    </svg>
-  );
-}
-
-// Connected-nodes glyph for the header "Shared" badge, mirroring
-// EditorHeader's SharedDotIcon.
-export function SharedDotIcon() {
-  return (
-    <svg
-      width="9"
-      height="9"
-      viewBox="0 0 9 9"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <circle cx="2" cy="4.5" r="1.4" />
-      <circle cx="7" cy="2" r="1.2" />
-      <circle cx="7" cy="7" r="1.2" />
-      <path d="M3.2 3.8L5.9 2.5M3.2 5.2L5.9 6.5" />
-    </svg>
-  );
-}
-
-// Padlock glyph for the header "Private" badge, mirroring EditorHeader's
-// PrivateDotIcon.
-export function PrivateDotIcon() {
-  return (
-    <svg
-      width="9"
-      height="9"
-      viewBox="0 0 9 9"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <rect x="2" y="4" width="5" height="3.5" rx="0.8" />
-      <path d="M3.25 4V3a1.25 1.25 0 0 1 2.5 0v1" />
-    </svg>
   );
 }
 
@@ -120,10 +61,7 @@ export function ToolGlyph({
   return (
     <span className="flex h-6 w-6 items-center justify-center rounded-md">
       {kind === 'search' ? (
-        <svg {...common}>
-          <circle cx="7" cy="7" r="4" />
-          <path d="M10 10l3.5 3.5" />
-        </svg>
+        <SearchIcon size={px} strokeWidth={1.4} />
       ) : kind === 'keys' ? (
         <svg {...common}>
           <rect x="1.5" y="4" width="13" height="8" rx="1.5" />
@@ -274,60 +212,6 @@ export function Shape({ kind }: { kind: string }) {
       );
   }
   return null;
-}
-
-// The presenting HUD's previous / next arrows.
-export function HudChevron({ dir }: { dir: 'prev' | 'next' }) {
-  return (
-    <svg
-      width="9"
-      height="9"
-      viewBox="0 0 12 12"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      {dir === 'prev' ? <path d="M7.5 2.5 4 6l3.5 3.5" /> : <path d="M4.5 2.5 8 6l-3.5 3.5" />}
-    </svg>
-  );
-}
-
-export function MenuGlyph() {
-  return (
-    <svg
-      width="9"
-      height="9"
-      viewBox="0 0 12 12"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      aria-hidden
-    >
-      <path d="M2 3h8M2 6h8M2 9h8" />
-    </svg>
-  );
-}
-
-export function ChevronGlyph() {
-  return (
-    <svg
-      width="8"
-      height="8"
-      viewBox="0 0 12 12"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M3 4.5l3 3 3-3" />
-    </svg>
-  );
 }
 
 export function StarGlyph() {

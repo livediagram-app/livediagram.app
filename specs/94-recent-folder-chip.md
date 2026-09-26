@@ -61,7 +61,7 @@ Worth revisiting if the panel ever grows a routable folder view.
 
 ## Where it lives
 
-- `FolderChip` — `apps/live/app/explorer/diagram-row-shared.tsx`, beside
+- `FolderChip`: `apps/live/app/explorer/diagram-badges.tsx`, beside
   `VisibilityBadge`, so the list row and the card can't drift.
 - The resolver — `folderChipFor` in `apps/live/app/explorer/ExplorerPane.tsx`,
   which is also where the "Recent only" gate lives. Rows and cards take a

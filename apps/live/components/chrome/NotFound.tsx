@@ -9,7 +9,7 @@
 // The new-diagram sparkle, shared with the template picker's footer so
 // the two create-new surfaces can't drift.
 import { SparkleIcon } from '@/components/palette/template-picker-icons';
-import { Button } from '@livediagram/ui';
+import { Button, CircleXIcon } from '@livediagram/ui';
 
 type NotFoundProps = {
   onCreateNew: () => void;
@@ -20,20 +20,7 @@ export function NotFound({ onCreateNew }: NotFoundProps) {
     <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-6">
       <div className="pointer-events-auto flex max-w-md animate-pop-in flex-col items-center rounded-xl border border-slate-200 bg-white px-8 py-10 text-center shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900">
         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 text-rose-500 dark:bg-rose-500/10 dark:text-rose-300">
-          <svg
-            width="28"
-            height="28"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.75"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden
-          >
-            <circle cx="12" cy="12" r="9" />
-            <path d="M9 9l6 6M9 15l6-6" />
-          </svg>
+          <CircleXIcon />
         </div>
         <p className="mt-4 text-[10px] font-semibold uppercase tracking-wider text-rose-600 dark:text-rose-300">
           404

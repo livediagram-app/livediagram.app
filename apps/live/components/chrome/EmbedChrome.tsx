@@ -14,6 +14,7 @@
 // diagram has many tabs.
 
 import { useRef, useState } from 'react';
+import { MenuIcon } from '@livediagram/ui';
 import type { Tab } from '@livediagram/diagram';
 import { useClickOutside } from '@/hooks/ui/useClickOutside';
 import { useEscape } from '@/hooks/ui/useEscape';
@@ -33,23 +34,6 @@ function OpenExternalIcon() {
     >
       <path d="M5 2H2.5A.5.5 0 0 0 2 2.5v7a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 .5-.5V7" />
       <path d="M7 2h3v3M10 2 5.5 6.5" />
-    </svg>
-  );
-}
-
-function MenuIcon() {
-  return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 12 12"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      aria-hidden
-    >
-      <path d="M2 3h8M2 6h8M2 9h8" />
     </svg>
   );
 }

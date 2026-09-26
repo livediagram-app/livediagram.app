@@ -1,5 +1,18 @@
 'use client';
 
+import {
+  ActivityIcon,
+  ClockIcon,
+  ImageIcon,
+  InviteIcon,
+  KeyIcon,
+  PaletteIcon,
+  PlusIcon,
+  ShareIcon,
+  StarIcon,
+  TeamIcon,
+  TimelineIcon,
+} from '@/components/primitives/explorer-icons';
 import Link from 'next/link';
 import { SignInIcon } from '@/components/chrome/AuthControls';
 import { Tooltip } from '@/components/primitives/Tooltip';
@@ -7,30 +20,14 @@ import { useAuthHrefs } from '@/components/chrome/auth-shared';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { useExplorer } from './ExplorerContext';
 import { useMemo, useState } from 'react';
-import {
-  ActivityIcon,
-  ClockIcon,
-  DynamicFolderIcon,
-  ImageIcon,
-  InviteIcon,
-  KeyIcon,
-  OfflineFolderIcon,
-  PaletteIcon,
-  PlusIcon,
-  ShareIcon,
-  SparkleIcon,
-  TeamIcon,
-  TimelineIcon,
-  UnsortedIcon,
-  StarIcon,
-} from './icons';
+import { groupBy, indexFolders } from '@/lib/folder-tree';
+import { SYNTHETIC_FOLDERS } from './synthetic-folders';
 import {
   SearchSidebarIcon,
   SidebarFolderSubtree,
   SidebarRow,
   SidebarSectionLabel,
   TeamFolderSubtree,
-  type TeamFolderNode,
 } from './sidebar';
 
 // The Explorer's section tree (spec/15), shared by the desktop
@@ -87,19 +84,16 @@ export function ExplorerSidebar() {
 
   // Per-team folder tree, indexed by parentId, for the expandable
   // team subtrees (spec/35). Built from the lazy library sweep.
-  const teamTree = useMemo(() => {
-    const byTeam = new Map<string, Map<string | null, TeamFolderNode[]>>();
-    for (const f of teamFolders) {
-      const byParent = byTeam.get(f.teamId) ?? new Map<string | null, TeamFolderNode[]>();
-      const bucket = byParent.get(f.parentId) ?? [];
-      bucket.push({ id: f.id, name: f.name, parentId: f.parentId });
-      byParent.set(f.parentId, bucket);
-      byTeam.set(f.teamId, byParent);
-    }
-    for (const byParent of byTeam.values())
-      for (const bucket of byParent.values()) bucket.sort((a, b) => a.name.localeCompare(b.name));
-    return byTeam;
-  }, [teamFolders]);
+  const teamTree = useMemo(
+    () =>
+      new Map(
+        [...groupBy(teamFolders, (f) => f.teamId)].map(([teamId, rows]) => [
+          teamId,
+          indexFolders(rows).childrenByParent,
+        ]),
+      ),
+    [teamFolders],
+  );
 
   return (
     <>
@@ -222,8 +216,8 @@ export function ExplorerSidebar() {
           sit here too and has moved up to Quick find (spec/138 §8.2), so
           the parent's badge no longer counts it. */}
       <SidebarRow
-        icon={<DynamicFolderIcon />}
-        label="Dynamic"
+        icon={<SYNTHETIC_FOLDERS.dynamic.Icon />}
+        label={SYNTHETIC_FOLDERS.dynamic.label}
         selected={selected.kind === 'dynamic'}
         onClick={() => go({ kind: 'dynamic' })}
         depth={0}
@@ -236,30 +230,26 @@ export function ExplorerSidebar() {
       />
       {dynamicOpen ? (
         <>
-          <SidebarRow
-            icon={<UnsortedIcon />}
-            label="Unsorted"
-            selected={selected.kind === 'unsorted'}
-            onClick={() => go({ kind: 'unsorted' })}
-            depth={1}
-            badge={unsortedDiagrams.length || undefined}
-          />
-          <SidebarRow
-            icon={<SparkleIcon />}
-            label="Generated"
-            selected={selected.kind === 'generated'}
-            onClick={() => go({ kind: 'generated' })}
-            depth={1}
-            badge={generatedDiagrams.length || undefined}
-          />
-          <SidebarRow
-            icon={<OfflineFolderIcon />}
-            label="Offline"
-            selected={selected.kind === 'offline'}
-            onClick={() => go({ kind: 'offline' })}
-            depth={1}
-            badge={offlineDiagrams.length || undefined}
-          />
+          {(
+            [
+              ['unsorted', unsortedDiagrams.length],
+              ['generated', generatedDiagrams.length],
+              ['offline', offlineDiagrams.length],
+            ] as const
+          ).map(([kind, count]) => {
+            const { Icon, label } = SYNTHETIC_FOLDERS[kind];
+            return (
+              <SidebarRow
+                key={kind}
+                icon={<Icon />}
+                label={label}
+                selected={selected.kind === kind}
+                onClick={() => go({ kind })}
+                depth={1}
+                badge={count || undefined}
+              />
+            );
+          })}
         </>
       ) : null}
       {rootFolders.map((f) => (

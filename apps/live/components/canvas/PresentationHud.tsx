@@ -9,6 +9,7 @@
 // popover would be left orphaned over the slide.
 
 import { useEffect, useRef, useState } from 'react';
+import { ChevronLeftIcon, ChevronRightIcon, CloseIcon } from '@livediagram/ui';
 
 import { GearIcon } from '@/components/chrome/tab-bar-icons';
 
@@ -187,34 +188,10 @@ export function PresentationHud({
             "click anywhere to advance" is not discoverable and cannot go
             BACK at all. */}
         <HudButton label="Previous slide" onPress={() => onBack?.()} disabled={!onBack}>
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 16 16"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.7"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden
-          >
-            <path d="M10 3.5 5.5 8l4.5 4.5" />
-          </svg>
+          <ChevronLeftIcon />
         </HudButton>
         <HudButton label="Next slide" onPress={onNext}>
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 16 16"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.7"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden
-          >
-            <path d="M6 3.5 10.5 8 6 12.5" />
-          </svg>
+          <ChevronRightIcon />
         </HudButton>
         {/* Only when this slide HAS a script. A permanent button that opens an
             empty card is a control that lies about there being something to
@@ -267,18 +244,7 @@ export function PresentationHud({
           <GearIcon />
         </HudButton>
         <HudButton label="Exit presentation" onPress={onClose}>
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 16 16"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-            aria-hidden
-          >
-            <path d="M4 4l8 8M12 4l-8 8" />
-          </svg>
+          <CloseIcon strokeWidth={1.4} />
         </HudButton>
       </div>
 

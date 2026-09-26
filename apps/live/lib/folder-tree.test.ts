@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { indexFolders, folderBreadcrumb, folderDescendants } from './folder-tree';
+import {
+  indexFolders,
+  folderBreadcrumb,
+  folderDescendants,
+  groupBy,
+  groupDiagramsByFolder,
+} from './folder-tree';
 import type { Folder } from '@livediagram/api-schema';
 
 const f = (id: string, name: string, parentId: string | null = null): Folder => ({
@@ -85,5 +91,64 @@ describe('folderDescendants', () => {
   it('terminates on a cycle', () => {
     const cyclic = indexFolders([f('x', 'X', 'y'), f('y', 'Y', 'x')]);
     expect([...folderDescendants(cyclic.childrenByParent, 'x')].sort()).toEqual(['x', 'y']);
+  });
+});
+
+describe('indexFolders on a non-Folder row shape', () => {
+  it("keeps the caller's own row type, extra fields included", () => {
+    const rows = [
+      { id: 't1', name: 'Zed', parentId: null, teamId: 'team' },
+      { id: 't2', name: 'Abe', parentId: null, teamId: 'team' },
+    ];
+    const { rootFolders } = indexFolders(rows);
+    expect(rootFolders.map((r) => `${r.name}:${r.teamId}`)).toEqual(['Abe:team', 'Zed:team']);
+  });
+});
+
+describe('groupDiagramsByFolder', () => {
+  const d = (id: string, folderId: string | null, savedAt: number, offline = false) => ({
+    id,
+    folderId,
+    savedAt,
+    offline,
+  });
+
+  it('buckets by folder id, null being the root', () => {
+    const map = groupDiagramsByFolder([d('a', null, 1), d('b', 'f', 2), d('c', null, 3)]);
+    expect(map.get(null)?.map((x) => x.id)).toEqual(['c', 'a']);
+    expect(map.get('f')?.map((x) => x.id)).toEqual(['b']);
+  });
+
+  it('sorts every bucket newest first', () => {
+    const map = groupDiagramsByFolder([d('old', 'f', 1), d('new', 'f', 9), d('mid', 'f', 5)]);
+    expect(map.get('f')?.map((x) => x.id)).toEqual(['new', 'mid', 'old']);
+  });
+
+  it('drops excluded rows before bucketing', () => {
+    const map = groupDiagramsByFolder([d('a', null, 1, true), d('b', null, 2)], {
+      exclude: (x) => x.offline,
+    });
+    expect(map.get(null)?.map((x) => x.id)).toEqual(['b']);
+  });
+
+  it('does not reorder the input', () => {
+    const input = [d('a', null, 1), d('b', null, 2)];
+    groupDiagramsByFolder(input);
+    expect(input.map((x) => x.id)).toEqual(['a', 'b']);
+  });
+});
+
+describe('groupBy', () => {
+  it('splits rows per key, keeping input order', () => {
+    const map = groupBy(
+      [
+        { id: '1', teamId: 'x' },
+        { id: '2', teamId: 'y' },
+        { id: '3', teamId: 'x' },
+      ],
+      (r) => r.teamId,
+    );
+    expect(map.get('x')?.map((r) => r.id)).toEqual(['1', '3']);
+    expect(map.get('y')?.map((r) => r.id)).toEqual(['2']);
   });
 });

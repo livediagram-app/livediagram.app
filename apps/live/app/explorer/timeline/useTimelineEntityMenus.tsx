@@ -23,6 +23,18 @@
 // warning a reader sees is the same one they'd see on the Tokens,
 // Themes or Team page.
 
+import { CloseIcon } from '@livediagram/ui';
+import {
+  CheckIcon,
+  DiagramIcon,
+  ImageIcon,
+  InviteIcon,
+  KeyIcon,
+  PaletteIcon,
+  PencilIcon,
+  TeamIcon,
+  TrashIcon,
+} from '@/components/primitives/explorer-icons';
 import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import type { TimelineEvent } from '@livediagram/ui';
 import type { TeamInvite, TeamListItem } from '@livediagram/api-schema';
@@ -40,18 +52,6 @@ import { useConfirm } from '@/hooks/ui/useConfirm';
 import { useToast } from '@/hooks/ui/useToast';
 import { track } from '@/lib/telemetry';
 import { useExplorer } from '../ExplorerContext';
-import {
-  CloseIcon,
-  DiagramIcon,
-  ImageIcon,
-  InviteIcon,
-  KeyIcon,
-  MenuCheckIcon,
-  MenuPencilIcon,
-  MenuTrashIcon,
-  PaletteIcon,
-  TeamIcon,
-} from '../icons';
 import type { TimelineMenuItem } from './TimelineCardMenu';
 
 export type TimelineEntityMenu = {
@@ -249,10 +249,10 @@ export function useTimelineEntityMenus(): {
           ];
           if (invite) {
             items.push(
-              { label: 'Accept Invite', icon: <MenuCheckIcon />, onClick: () => accept(invite) },
+              { label: 'Accept Invite', icon: <CheckIcon />, onClick: () => accept(invite) },
               {
                 label: 'Decline Invite',
-                icon: <CloseIcon />,
+                icon: <CloseIcon size={11} strokeWidth={1.8} />,
                 onClick: () => void declineInvite(invite),
                 danger: true,
               },
@@ -274,20 +274,20 @@ export function useTimelineEntityMenus(): {
         if (team.myRole === 'admin') {
           items.push({
             label: 'Edit Team',
-            icon: <MenuPencilIcon />,
+            icon: <PencilIcon size={12} />,
             onClick: () => setEditingTeam(team),
           });
         }
         items.push({
           label: 'Leave Team',
-          icon: <CloseIcon />,
+          icon: <CloseIcon size={11} strokeWidth={1.8} />,
           onClick: () => void leaveTeam(team),
           danger: true,
         });
         if (team.myRole === 'admin') {
           items.push({
             label: 'Delete Team',
-            icon: <MenuTrashIcon />,
+            icon: <TrashIcon size={12} />,
             onClick: () => void deleteTeam(team),
             danger: true,
           });
@@ -304,7 +304,7 @@ export function useTimelineEntityMenus(): {
           if (token) {
             items.push({
               label: 'Revoke Token',
-              icon: <MenuTrashIcon />,
+              icon: <TrashIcon size={12} />,
               onClick: () => void revokeToken(token.id),
               danger: true,
             });
@@ -320,12 +320,12 @@ export function useTimelineEntityMenus(): {
             items.push(
               {
                 label: 'Edit Theme',
-                icon: <MenuPencilIcon />,
+                icon: <PencilIcon size={12} />,
                 onClick: () => setEditingThemeId(theme.id),
               },
               {
                 label: 'Delete Theme',
-                icon: <MenuTrashIcon />,
+                icon: <TrashIcon size={12} />,
                 onClick: () => void removeTheme(theme.id, theme.name),
                 danger: true,
               },

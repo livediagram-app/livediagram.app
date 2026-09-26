@@ -9,6 +9,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { CloseIcon } from '@livediagram/ui';
 import { Portal } from '@/components/primitives/Portal';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { useReposition } from '@/hooks/canvas/useReposition';
@@ -393,14 +394,7 @@ function Flyout({
                   onClick={() => setOpen(false)}
                   className="-mr-1 flex h-7 w-7 shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
                 >
-                  <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden>
-                    <path
-                      d="M4 4l8 8M12 4l-8 8"
-                      stroke="currentColor"
-                      strokeWidth="1.6"
-                      strokeLinecap="round"
-                    />
-                  </svg>
+                  <CloseIcon strokeWidth={1.4} />
                 </button>
               </div>
             ) : null}

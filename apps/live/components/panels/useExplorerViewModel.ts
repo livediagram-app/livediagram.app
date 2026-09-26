@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 
-import type { DiagramListItem, Folder, SharedWithItem } from '@/lib/api-client';
+import type { DiagramListItem, SharedWithItem } from '@/lib/api-client';
+import { groupBy, groupDiagramsByFolder, indexFolders } from '@/lib/folder-tree';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import type { ExplorerProps } from './Explorer.types';
 
@@ -91,54 +92,27 @@ export function useExplorerViewModel({
       .sort((a, b) => b.savedAt - a.savedAt)
       .slice(0, RECENT_LIMIT);
   }, [diagrams, visibleTeamDiagrams, shared, currentDiagramId, recentExcluded]);
-  // This team's folder rows, indexed by team, for the Teams accordion.
-  const foldersByTeam = useMemo(() => {
-    const map = new Map<string, { id: string; name: string; parentId: string | null }[]>();
-    for (const f of teamFolders) {
-      const bucket = map.get(f.teamId) ?? [];
-      bucket.push({ id: f.id, name: f.name, parentId: f.parentId });
-      map.set(f.teamId, bucket);
-    }
-    return map;
-  }, [teamFolders]);
-  // This team's diagrams, indexed by team, so the Teams accordion can
-  // show the diagrams inside each team folder (spec/35).
-  const diagramsByTeam = useMemo(() => {
-    const map = new Map<string, DiagramListItem[]>();
-    for (const d of visibleTeamDiagrams) {
-      const bucket = map.get(d.team.id) ?? [];
-      bucket.push(d);
-      map.set(d.team.id, bucket);
-    }
-    return map;
-  }, [visibleTeamDiagrams]);
+  // This team's folder rows and diagrams, indexed by team, for the Teams
+  // accordion, which shows the diagrams inside each team folder (spec/35).
+  const foldersByTeam = useMemo(() => groupBy(teamFolders, (f) => f.teamId), [teamFolders]);
+  const diagramsByTeam = useMemo(
+    () => groupBy(visibleTeamDiagrams, (d) => d.team.id),
+    [visibleTeamDiagrams],
+  );
 
   // Folder tree: index folders by parentId so the recursive renderer
   // can ask for children by id without rescanning the full list.
-  const foldersByParent = useMemo(() => {
-    const map = new Map<string | null, Folder[]>();
-    for (const f of folders) {
-      const bucket = map.get(f.parentId) ?? [];
-      bucket.push(f);
-      map.set(f.parentId, bucket);
-    }
-    for (const bucket of map.values()) bucket.sort((a, b) => a.name.localeCompare(b.name));
-    return map;
-  }, [folders]);
+  const foldersByParent = useMemo(() => indexFolders(folders).childrenByParent, [folders]);
 
-  const diagramsByFolder = useMemo(() => {
-    const map = new Map<string | null, DiagramListItem[]>();
-    for (const d of diagrams) {
-      // Offline diagrams (spec/76) stay out of the root Unsorted bucket:
-      // they render under the panel's synthetic Offline node instead.
-      if (d.folderId === null && d.ownerId === OFFLINE_OWNER_ID) continue;
-      const bucket = map.get(d.folderId) ?? [];
-      bucket.push(d);
-      map.set(d.folderId, bucket);
-    }
-    for (const bucket of map.values()) bucket.sort((a, b) => b.savedAt - a.savedAt);
-    return map;
-  }, [diagrams]);
+  // Offline diagrams (spec/76) stay out of the root Unsorted bucket: they
+  // render under the panel's synthetic Offline node instead.
+  const diagramsByFolder = useMemo(
+    () =>
+      groupDiagramsByFolder(diagrams, {
+        exclude: (d) => d.folderId === null && d.ownerId === OFFLINE_OWNER_ID,
+      }),
+    [diagrams],
+  );
 
   // Offline diagrams (spec/76): everything saved only in this browser,
   // regardless of any folder placement in the local record, for the panel's

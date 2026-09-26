@@ -1,4 +1,5 @@
 import { forwardRef, type SelectHTMLAttributes } from 'react';
+import { ChevronDownIcon } from './icons';
 
 // The shared <select>. Callers used to render raw native selects, which
 // kept the browser's default chrome (grey bevelled arrow, platform
@@ -49,20 +50,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
       <select ref={ref} className={`${BASE} ${VARIANTS[variant]} ${SIZES[size]}`} {...rest}>
         {children}
       </select>
-      <svg
-        width="10"
-        height="10"
-        viewBox="0 0 12 12"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden
-        className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500"
-      >
-        <path d="M3 4.5 6 7.5 9 4.5" />
-      </svg>
+      <ChevronDownIcon className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
     </span>
   );
 });

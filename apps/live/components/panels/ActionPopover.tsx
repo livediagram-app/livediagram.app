@@ -3,9 +3,9 @@
 // The spec/68 clipboard-with-tick action glyph, shared with the context
 // menu's Assign Action tile so the two surfaces can't drift.
 import { ActionMenuIcon as ClipboardIcon } from '@/components/palette/context-menu-icons';
+import { CloseIcon, TrashIcon } from '@livediagram/ui';
 import { useRef, useState } from 'react';
 import type { ElementAction } from '@livediagram/diagram';
-import { CloseIcon } from '@/components/primitives/CloseIcon';
 import { Portal } from '@/components/primitives/Portal';
 import { useReposition } from '@/hooks/canvas/useReposition';
 import { useClickOutside } from '@/hooks/ui/useClickOutside';
@@ -169,7 +169,7 @@ export function ActionPopover({
                 onClick={onDelete}
                 className="inline-flex items-center gap-1.5 rounded-md bg-rose-600 px-2.5 py-1.5 text-[11px] font-medium text-white transition hover:bg-rose-700"
               >
-                <TrashIcon />
+                <TrashIcon size={11} />
                 Confirm
               </button>
             ) : (
@@ -179,7 +179,7 @@ export function ActionPopover({
                 onClick={() => setConfirmingDelete(true)}
                 className="inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 text-[11px] font-medium text-rose-600 transition hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-500/15"
               >
-                <TrashIcon />
+                <TrashIcon size={11} />
               </button>
             )}
           </footer>
@@ -261,26 +261,6 @@ function PencilIcon() {
       aria-hidden
     >
       <path d="M11.5 2.5a1.4 1.4 0 0 1 2 2L5 13l-2.75.75L3 11z" />
-    </svg>
-  );
-}
-
-function TrashIcon() {
-  return (
-    <svg
-      width="11"
-      height="11"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.75"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M2.5 4h11" />
-      <path d="M6 4V2.75A.75.75 0 0 1 6.75 2h2.5a.75.75 0 0 1 .75.75V4" />
-      <path d="M4 4l.7 9.1a1 1 0 0 0 1 .9h4.6a1 1 0 0 0 1-.9L12 4" />
     </svg>
   );
 }
