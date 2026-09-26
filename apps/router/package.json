@@ -14,16 +14,16 @@
     "clean": "rm -rf dist .wrangler node_modules .turbo"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^5.20260916.1",
+    "@cloudflare/workers-types": "^5.20260923.1",
     "@livediagram/api-schema": "workspace:*",
     "@livediagram/eslint-config": "workspace:*",
     "@livediagram/help-registry": "workspace:*",
     "@livediagram/vitest-config": "workspace:*",
-    "@types/node": "^26.6.1",
+    "@types/node": "^26.6.2",
     "@typescript/native": "npm:typescript@^7.0.2",
-    "eslint": "^10.10.0",
+    "eslint": "^10.11.0",
     "typescript": "npm:@typescript/typescript6@^6.0.2",
     "vitest": "^5.0.1",
-    "wrangler": "^4.132.0"
+    "wrangler": "^4.136.3"
   }
 }

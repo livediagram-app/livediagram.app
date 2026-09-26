@@ -22,10 +22,10 @@
   "devDependencies": {
     "@livediagram/eslint-config": "workspace:*",
     "@livediagram/vitest-config": "workspace:*",
-    "@types/node": "^26.6.1",
+    "@types/node": "^26.6.2",
     "@typescript/native": "npm:typescript@^7.0.2",
     "@vitest/coverage-v8": "^5.0.1",
-    "eslint": "^10.10.0",
+    "eslint": "^10.11.0",
     "typescript": "npm:@typescript/typescript6@^6.0.2",
     "vitest": "^5.0.1"
   }
