@@ -15,7 +15,7 @@
     "clean": "rm -rf .next .next-dev out node_modules .turbo coverage"
   },
   "dependencies": {
-    "@clerk/react": "^6.16.1",
+    "@clerk/react": "^6.17.0",
     "@huggingface/transformers": "^3.8.1",
     "@livediagram/api-schema": "workspace:*",
     "@livediagram/diagram": "workspace:*",
