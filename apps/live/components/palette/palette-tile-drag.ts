@@ -33,7 +33,7 @@ export function tileDragStart(
           ? eventStormingNoteSize(action.esKind as EventStormingNoteKind)
           : { width: 200, height: 200 };
         // A note has no shape kind: a square footprint at its real size reads as the note it becomes.
-        setPaletteDragPreview({ kind: 'square', ...size, note: true });
+        setPaletteDragPreview({ kind: 'square', ...size, note: true, workshop: !!action.esKind });
         suppressNativeDragImage(e);
       };
     case 'icon':

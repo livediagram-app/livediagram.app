@@ -138,6 +138,15 @@ describe('TEMPLATES catalogue', () => {
 });
 
 describe('templateCanvasOverrides', () => {
+  it('makes an event-storming board already settled on its lanes', () => {
+    // docs/specs/021-event-storming/event-storming.md "Always on a lane": the seed note is built on lane 0,
+    // so a new board never needs the one-time settle.
+    expect(templateCanvasOverrides('event-storming')).toMatchObject({
+      kind: 'event-storming',
+      esLanesSettled: true,
+    });
+  });
+
   it('gives mind maps a softer backdrop opacity (plus an explicit grid)', () => {
     // Mind maps sit on a slightly translucent canvas so the central
     // node reads as a focal point rather than competing with the

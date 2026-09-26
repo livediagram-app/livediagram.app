@@ -2,7 +2,12 @@ import { useCallback, useEffect, useRef, useState, type RefObject } from 'react'
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { pointerToCanvas } from '@/lib/canvas';
 import { setLanePreview } from '@/lib/lane-preview';
-import { stampPlacement, stampSizeFor, type StampPlacement } from '@/lib/stamp-placement';
+import {
+  stampHeld,
+  stampPlacement,
+  stampSizeFor,
+  type StampPlacement,
+} from '@/lib/stamp-placement';
 
 type StampGhostDeps = Pick<
   CanvasProps,
@@ -37,6 +42,7 @@ export function useStampGhost({
   const size = pendingDraw ? stampSizeFor(pendingDraw, board) : null;
   const width = size?.width;
   const height = size?.height;
+  const held = pendingDraw ? stampHeld(pendingDraw) : false;
 
   const stampAt = useCallback(
     (canvasX: number, canvasY: number) =>
@@ -45,8 +51,9 @@ export function useStampGhost({
         canvasY,
         { width: width!, height: height! },
         { elements, kind: tabKind, layers: tabLayers },
+        held,
       ),
-    [width, height, elements, tabKind, tabLayers],
+    [width, height, elements, tabKind, tabLayers, held],
   );
 
   const [stamp, setStamp] = useState<StampGhost | null>(null);

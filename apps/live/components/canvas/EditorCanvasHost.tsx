@@ -1,5 +1,6 @@
 'use client';
 
+import { pastePointer } from '@/lib/canvas-pointer';
 import { dropThenDisarm } from '@/lib/palette-drop';
 import { resolvePanelLayout } from '@/lib/user-preferences';
 import { describeOne } from '@/lib/element-names';
@@ -150,6 +151,7 @@ export function EditorCanvasHost() {
     clearReactionBurst,
     broadcastCursor,
     broadcastLaser,
+    canvasPointerRef,
     cancelConnect,
     cancelDrawShape,
     cancelEdit,
@@ -492,7 +494,8 @@ export function EditorCanvasHost() {
         reactionBursts={reactionBursts}
         onReactionBurstDone={clearReactionBurst}
         laserTrails={laserTrailRows}
-        onCanvasPointerMove={(x, y) => {
+        onCanvasPointerMove={(x, y, target) => {
+          canvasPointerRef.current = pastePointer(x, y, target ?? null);
           if (canvasTool === 'laser' && x !== null && y !== null) {
             // The pen rides the sample so peers draw MY laser (docs/specs/008-canvas/laser-panel.md).
             broadcastLaser(x, y, laserConfig);
@@ -988,6 +991,9 @@ export function EditorCanvasHost() {
                   mode: 'canvas',
                   x: sx,
                   y: sy,
+                  // Where a Paste from this menu lands: the right-clicked
+                  // spot, not wherever the pointer is when the row is clicked.
+                  canvasPoint: canvasPointerRef.current,
                   // Open upward when the click is in the bottom fifth of the
                   // viewport so the canvas menu's categories don't run
                   // off-screen (matching the tab menu).

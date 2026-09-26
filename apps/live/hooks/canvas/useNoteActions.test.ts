@@ -21,7 +21,8 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn(), titleCaseType: (s: string) =
 // commits, what the gate refuses, and that a note arrives through the one
 // builder.
 
-function note(id: string, kind: string, x: number, y = 500): StickyElement {
+// On lane 2 (centre 580), where every workshop note sits.
+function note(id: string, kind: string, x: number, y = 480): StickyElement {
   return {
     id,
     type: 'sticky',

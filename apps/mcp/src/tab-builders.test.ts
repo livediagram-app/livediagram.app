@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { isValidTab, type Element } from '@livediagram/diagram';
-import { applyLayout, buildGraphTab, buildTab } from './tab-builders';
+import { applyLayout, buildGraphTab, buildTab, landMcpArrivals } from './tab-builders';
 
 // Graph-first authoring end-to-end (docs/specs/015-api/mcp-server.md §4.7): a node/edge graph must
 // come out a valid, themed, auto-laid-out tab.
@@ -101,5 +101,52 @@ describe('event-storming fields survive a tool write', () => {
     const existing = { id: 't1', name: 'Wall', kind: 'event-storming', elements: [] };
     const next = { ...existing, elements: esPair };
     expect(next.kind).toBe('event-storming');
+  });
+});
+
+// docs/specs/021-event-storming/event-storming.md "Always on a lane": notes an MCP call adds or moves on an
+// event-storming tab land on lanes; nothing already there moves.
+describe('landMcpArrivals', () => {
+  const note = (id: string, x: number, y: number): Element =>
+    ({
+      id,
+      type: 'sticky',
+      x,
+      y,
+      width: 200,
+      height: 200,
+      esKind: 'domain-event',
+      fillColor: '#fdba74',
+      fixedSize: true,
+    }) as Element;
+  const es = (elements: Element[]) => ({
+    id: 't',
+    name: 'T',
+    kind: 'event-storming' as const,
+    elements,
+  });
+
+  it('lands an added note on its lane, and in the free slot when its spot is taken', () => {
+    const before = es([note('down', 0, 0)]);
+    const out = landMcpArrivals(before, [note('down', 0, 0), note('new', 30, 20)], 'ops');
+    expect(out.find((e) => e.id === 'new')).toMatchObject({ x: 216, y: 0 });
+    expect(out.find((e) => e.id === 'down')).toMatchObject({ x: 0, y: 0 });
+  });
+
+  it('lands a note an update moved, and leaves an untouched off-lane note alone', () => {
+    const before = es([note('moved', 0, 0), note('parked', 900, 130)]);
+    const out = landMcpArrivals(before, [note('moved', 500, 250), note('parked', 900, 130)], 'ops');
+    expect(out.find((e) => e.id === 'moved')).toMatchObject({ x: 500, y: 240 });
+    expect(out.find((e) => e.id === 'parked')).toMatchObject({ y: 130 });
+  });
+
+  it('lands every note of a replace, a lane per row', () => {
+    const out = landMcpArrivals(es([]), [note('a', 0, 10), note('b', 216, 120)], 'replace');
+    expect(out.map((e) => ('y' in e ? e.y : null))).toEqual([0, 240]);
+  });
+
+  it('leaves an ordinary tab exactly as the call wrote it', () => {
+    const next = [note('a', 0, 130)];
+    expect(landMcpArrivals({ elements: [] }, next, 'ops')).toBe(next);
   });
 });

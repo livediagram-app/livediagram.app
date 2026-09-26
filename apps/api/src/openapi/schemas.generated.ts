@@ -4337,6 +4337,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "esLanesSettled": {
+        "type": "boolean"
+      },
       "folder": {
         "type": "string"
       },

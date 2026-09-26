@@ -73,6 +73,21 @@ describe('graftLiveTabState session fields (docs/specs/012-collaboration/session
   });
 });
 
+describe('graftLiveTabState lane settle mark (docs/specs/021-event-storming/event-storming.md)', () => {
+  it('keeps the settled mark when undo restores the positions from before the settle', () => {
+    const live = [{ ...tab('t1', [shape('a')]), esLanesSettled: true }];
+    const snapshot = [tab('t1', [shape('a')])];
+    expect(graftLiveTabState(live, snapshot)[0]!.esLanesSettled).toBe(true);
+  });
+
+  it('leaves a tab that was never settled unmarked', () => {
+    const live = [tab('t1', [shape('a')])];
+    const snapshot = [tab('t1', [shape('a')])];
+    const restored = graftLiveTabState(live, snapshot);
+    expect(restored[0]).toBe(snapshot[0]);
+  });
+});
+
 describe('graftLiveTabState collaborative fields (docs/specs/012-collaboration/collab-race-hardening.md)', () => {
   // A snapshot taken before anybody answered: undoing some earlier edit
   // restores it, and must not take the room's answers with it.

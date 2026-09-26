@@ -26,7 +26,12 @@ const START: ShapeBounds = { x: 1000, y: 1000, width: 200, height: 200 };
 function resolve(
   dx: number,
   dy: number,
-  over: { timeline?: EsTimeline | null; noSnap?: boolean; elements?: Element[] } = {},
+  over: {
+    timeline?: EsTimeline | null;
+    noSnap?: boolean;
+    elements?: Element[];
+    laneHeld?: boolean;
+  } = {},
 ) {
   return resolveBoxedMove({
     elements: over.elements ?? [note('drag', 1000, 1000)],
@@ -37,6 +42,7 @@ function resolve(
     noSnap: over.noSnap === true,
     guidesOn: true,
     timeline: over.timeline === undefined ? TIMELINE : over.timeline,
+    laneHeld: over.laneHeld === true,
   });
 }
 
@@ -116,7 +122,23 @@ describe('resolveBoxedMove — timeline lanes', () => {
     expect(out.distGuides).toEqual([]);
   });
 
-  it('offers nothing at all when no lane claims the note', () => {
+  it('lands a WORKSHOP note on the nearest lane from anywhere between two (always on a lane)', () => {
+    const midY = ES_LANE_PITCH + 100;
+    const out = resolve(4 - START.x, midY - START.y, {
+      elements: [note('drag', 1000, 1000), note('n', 0, midY)],
+      laneHeld: true,
+    });
+    // Centre at 440: nearest to lane 1 (340) over lane 2 (580).
+    expect(START.y + out.ty).toBe(laneCentre(1, TIMELINE) - 100);
+    expect(out.lane?.laneIndex).toBe(1);
+  });
+
+  it('lets a workshop note go free under Cmd/Ctrl', () => {
+    const out = resolve(9, 7, { noSnap: true, laneHeld: true });
+    expect(out).toEqual({ tx: 9, ty: 7, guides: [], distGuides: [], lane: null });
+  });
+
+  it('offers nothing at all when no lane claims a plain sticky', () => {
     // y parked between two lanes: nothing is offered, and x is the hand's.
     const midY = ES_LANE_PITCH + 100;
     const out = resolve(4 - START.x, midY - START.y, {

@@ -29,10 +29,11 @@
 // the hook registers, so `pasteFromClipboard` / `pasteImageFile` stay
 // internal.
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type RefObject } from 'react';
 import { duplicateElements, type Element, type Tab } from '@livediagram/diagram';
 import { anyModalOpen } from '@/lib/modal-guard';
 import { parseElementsPayload, serialiseElements, stripIdentity } from '@/lib/clipboard-payload';
+import { landPastedCopies, pasteTranslation } from '@/lib/paste-placement';
 import { addImageFileForDiagram } from '@/lib/upload-image';
 import { track } from '@/lib/telemetry';
 import { trackDuplicated } from '@/lib/element-telemetry';
@@ -74,6 +75,11 @@ type ClipboardDeps = {
   // (docs/specs/021-event-storming/event-storming.md Phase 8). Supplied only on an event-storming board with the
   // reader available; absent everywhere else, where paste is untouched.
   onPastePhoto?: (file: File) => void;
+  // Where the pointer is on the canvas, in canvas coords; null while it is
+  // off the canvas (over a panel, outside the window). On an event-storming
+  // board a paste holding a workshop note lands there
+  // (docs/specs/021-event-storming/event-storming.md "Always on a lane").
+  canvasPointerRef?: RefObject<{ x: number; y: number } | null>;
 };
 
 export function useClipboard(deps: ClipboardDeps) {
@@ -93,6 +99,7 @@ export function useClipboard(deps: ClipboardDeps) {
     diagramId,
     toast,
     onPastePhoto,
+    canvasPointerRef,
   } = deps;
 
   const [clipboard, setClipboard] = useState<Element[] | null>(null);
@@ -147,12 +154,14 @@ export function useClipboard(deps: ClipboardDeps) {
 
   // `source` is what the OS clipboard carried, when it carried ours. Absent
   // for a paste that found nothing on the system clipboard, which falls back
-  // to the in-app buffer.
-  const pasteFromClipboard = (source?: Element[]) => {
+  // to the in-app buffer. `at` is where the paste was asked for (the canvas
+  // menu's right-click point); absent, the live canvas pointer decides.
+  const pasteFromClipboard = (source?: Element[], at?: { x: number; y: number } | null) => {
     if (isReadOnly) return;
     const pasting = source && source.length > 0 ? source : clipboard;
     if (!pasting || pasting.length === 0) return;
-    const offset = 24;
+    const pointer = at !== undefined ? at : (canvasPointerRef?.current ?? null);
+    const { dx, dy, atPointer } = pasteTranslation(pasting, activeTab, pointer);
     const clipIds = new Set(pasting.map((el) => el.id));
     // Clipboard ids may not exist in the current tab (the source
     // was deleted, the user pasted into a different tab, etc.).
@@ -163,9 +172,10 @@ export function useClipboard(deps: ClipboardDeps) {
     // reproduce what was copied, not the element as it has since
     // been edited (that's what the copy-time deep clone is for).
     const merged = [...activeTab.elements.filter((el) => !clipIds.has(el.id)), ...pasting];
-    const { newElements } = duplicateElements(merged, clipIds, offset, offset);
+    const { newElements } = duplicateElements(merged, clipIds, dx, dy);
     if (newElements.length === 0) return;
-    commit((els) => [...els, ...newElements]);
+    const copyIds = new Set(newElements.map((el) => el.id));
+    commit((els) => landPastedCopies([...els, ...newElements], copyIds, atPointer));
     if (newElements.length === 1) {
       setSelectedId(newElements[0]!.id);
       setMultiSelectedIds(new Set());

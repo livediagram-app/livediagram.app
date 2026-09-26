@@ -391,7 +391,11 @@ export function EditorView() {
                 onPreviewCleanup: previewCleanup,
                 onEndCleanupPreview: endCleanupPreview,
                 // Paste straight from the empty-canvas right-click (docs/specs/008-canvas/canvas-and-palette.md).
-                onPaste: pasteFromClipboard,
+                onPaste: () =>
+                  pasteFromClipboard(
+                    undefined,
+                    contextMenu?.mode === 'canvas' ? (contextMenu.canvasPoint ?? null) : null,
+                  ),
                 canPaste: hasClipboard,
               }}
             />

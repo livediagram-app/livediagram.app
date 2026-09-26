@@ -1,4 +1,12 @@
-import { ES_NOTE_GAP, isBoxed, type Element, type ElementId } from '@livediagram/diagram';
+import {
+  ES_LANES,
+  ES_NOTE_GAP,
+  isBoxed,
+  laneCentre,
+  laneIndexAt,
+  type Element,
+  type ElementId,
+} from '@livediagram/diagram';
 
 // Inserting a note BETWEEN two notes (docs/specs/021-event-storming/event-storming.md). An event-storming wall is a
 // left-to-right timeline, so "this happened before that" is the whole
@@ -237,7 +245,9 @@ export function findInsertionSlot({
 
   return {
     atX,
-    atY: right.y + right.height / 2,
+    // On the lane of the note it displaces: the inserted note is a workshop
+    // note, and those always sit on a lane (docs/specs/021-event-storming/event-storming.md "Always on a lane").
+    atY: laneCentre(laneIndexAt(right.y + right.height / 2, ES_LANES), ES_LANES),
     shiftDx,
     shiftedIds: [...movingIds],
     leftId: left.id,

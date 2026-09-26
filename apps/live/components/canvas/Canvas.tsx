@@ -440,7 +440,7 @@ export function Canvas(props: CanvasProps) {
     const rect = wrapperRef.current?.getBoundingClientRect();
     if (!rect) return;
     const { x: sx, y: sy } = pointerToCanvas(e.clientX, e.clientY, rect, viewportZoom);
-    onCanvasPointerMove(sx, sy);
+    onCanvasPointerMove(sx, sy, e.target);
   };
   const handlePointerLeaveCanvas = () => {
     onCanvasPointerMove(null, null);

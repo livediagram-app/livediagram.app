@@ -615,10 +615,12 @@ describe('detectStickies', () => {
 });
 
 describe('what the detector hands on', () => {
-  it('normalises a box against the image it was found in', () => {
+  it('normalises a box against the image WIDTH on both axes, so one scale carries both', () => {
+    // A square note in a 2:1 photo stays square: fractions of the height would
+    // have stretched every landscape wall's rows apart by its aspect ratio.
     const image = rect(blank(200, 100), 40, 20, 40, 40, fillOf('domain-event'));
     const [sticky] = detectStickies(image);
-    expect(toNormalised(sticky!, image)).toEqual({ cx: 0.3, cy: 0.4, w: 0.2, h: 0.4 });
+    expect(toNormalised(sticky!, image)).toEqual({ cx: 0.3, cy: 0.2, w: 0.2, h: 0.2 });
   });
 
   it('scales the crop back to the full-resolution photo, with padding', () => {

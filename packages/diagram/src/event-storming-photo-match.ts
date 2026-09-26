@@ -9,7 +9,8 @@
 
 import type { EventStormingNoteKind } from './event-storming';
 
-// One note as the model read it, in photo space (every box field 0..1).
+// One note as the model read it, in photo space: every box field a fraction of
+// the photo's WIDTH, on both axes, so one scale carries the photo onto the board.
 export type PhotoNote = {
   id: number;
   text: string;

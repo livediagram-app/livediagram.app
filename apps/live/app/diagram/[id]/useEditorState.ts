@@ -38,6 +38,7 @@ import { useEditorContextMenu } from '@/hooks/canvas/useEditorContextMenu';
 import { useEditorPreferences } from '@/hooks/persistence/useEditorPreferences';
 import { useDiagramHistory } from '@/hooks/canvas/useDiagramHistory';
 import { useCanvasA11y } from '@/hooks/canvas/useCanvasA11y';
+import { useLaneSettle } from '@/hooks/canvas/useLaneSettle';
 import { useNudgeSelection } from '@/hooks/canvas/useNudgeSelection';
 import { useFolders } from '@/hooks/persistence/useFolders';
 import { useConfirm } from '@/hooks/ui/useConfirm';
@@ -1602,6 +1603,17 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // blocked while that layer is hidden or locked (docs/specs/006-diagram/layers.md).
   const createBlocked = editsBlocked || activeLayerBlocked;
 
+  // An older event-storming board is settled onto the lanes once
+  // (docs/specs/021-event-storming/event-storming.md "Always on a lane").
+  useLaneSettle({
+    activeTab,
+    editsBlocked,
+    commitActiveTab,
+    markSettled: (tabId) =>
+      tickTabs((ts) => ts.map((t) => (t.id === tabId ? { ...t, esLanesSettled: true } : t))),
+    toastInfo: toast.info,
+  });
+
   // A layer turning hidden or locked (locally or by a peer) drops its
   // elements from any live selection — the same guarantee delete gives.
   useEffect(() => {
@@ -2545,6 +2557,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     multiSelectedIds,
     selectedId,
     activeTab,
+    laneBoard: esBoard,
     markCheckpoint,
     tick,
     scheduleElementChangeLog,
@@ -2619,6 +2632,10 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // paste). `copySelection` feeds the keyboard hook below; paste is
   // driven by a native `paste` listener the hook owns. See
   // useClipboard.
+  // The pointer's canvas position while it is over the canvas, null
+  // otherwise. Written by the canvas host on every pointer move; read by paste
+  // (docs/specs/021-event-storming/event-storming.md "Always on a lane": a paste lands at the pointer).
+  const canvasPointerRef = useRef<{ x: number; y: number } | null>(null);
   const { copySelection, pasteFromClipboard, hasClipboard } = useClipboard({
     isReadOnly,
     embedMode,
@@ -2635,6 +2652,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     diagramId,
     toast,
     onPastePhoto: readPhotoFile,
+    canvasPointerRef,
   });
 
   // Zen / focus mode (docs/specs/007-editor/zen-mode.md). Flips the chrome-hidden flag and emits
@@ -2881,6 +2899,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     clearReactionBurst: reactions.clear,
     broadcastCursor,
     broadcastLaser,
+    canvasPointerRef,
     canRedo,
     canUndo,
     cancelDrawShape,

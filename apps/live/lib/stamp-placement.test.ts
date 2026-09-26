@@ -43,6 +43,13 @@ describe('stampPlacement', () => {
     expect(out.lane).toMatchObject({ laneIndex: 1 });
   });
 
+  it('holds a workshop note to the lane from anywhere between two', () => {
+    const between = laneCentre(1, ES_LANES) + 110;
+    expect(stampPlacement(1000, between, size, esBoard).lane).toBeNull();
+    const out = stampPlacement(1000, between, size, esBoard, true);
+    expect(out.bounds.y + out.bounds.height / 2).toBe(laneCentre(1, ES_LANES));
+  });
+
   it('takes the slot beside a note in the row', () => {
     const neighbour = {
       id: 'n',

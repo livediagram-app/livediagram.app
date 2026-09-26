@@ -51,7 +51,15 @@ export type EditorContextMenuState =
   | { mode: 'multi'; x: number; y: number }
   // `openUp` grows the menu upward from y (for the footer canvas-menu button,
   // so it opens above the footer rather than over it).
-  | { mode: 'canvas'; x: number; y: number; openUp?: boolean };
+  | {
+      mode: 'canvas';
+      x: number;
+      y: number;
+      openUp?: boolean;
+      // The right-clicked spot in canvas coords (null off the canvas): where
+      // this menu's Paste lands on an event-storming board.
+      canvasPoint?: { x: number; y: number } | null;
+    };
 
 export type EditorContextMenuProps = {
   menu: EditorContextMenuState;

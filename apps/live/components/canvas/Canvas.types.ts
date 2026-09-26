@@ -270,7 +270,13 @@ export type CanvasProps = {
     color: string;
     points: { x: number; y: number; t: number }[];
   }[];
-  onCanvasPointerMove: (canvasX: number | null, canvasY: number | null) => void;
+  // `target` is what the pointer is over, so a paste can tell the canvas from
+  // a floating panel lying on top of it (lib/canvas-pointer.ts).
+  onCanvasPointerMove: (
+    canvasX: number | null,
+    canvasY: number | null,
+    target?: EventTarget | null,
+  ) => void;
   onDuplicateMultiSelected: () => void;
   onDeleteMultiSelected: () => void;
   onToggleLockMultiSelected: () => void;

@@ -6,6 +6,7 @@ import {
   snapResizeBounds,
   snapToAlignment,
   capturePlacement,
+  laneSnapThreshold,
   snapToLane,
   unionRects,
   type AlignmentGuide,
@@ -60,6 +61,7 @@ export function resolveBoxedMove({
   noSnap,
   guidesOn,
   timeline = null,
+  laneHeld = false,
 }: {
   elements: Element[];
   startBounds: ReadonlyMap<string, ShapeBounds>;
@@ -77,6 +79,10 @@ export function resolveBoxedMove({
   // that decision and passes null otherwise — so the rung here is purely
   // "where does the lane want it".
   timeline?: EsTimeline | null;
+  // The note in hand is a WORKSHOP note, which always lands on a lane
+  // (docs/specs/021-event-storming/event-storming.md "Always on a lane"): the y snap has no tolerance. A plain
+  // sticky keeps the lane as an aid.
+  laneHeld?: boolean;
 }): {
   tx: number;
   ty: number;
@@ -100,7 +106,7 @@ export function resolveBoxedMove({
   // door, or the brick-pattern stagger under that note's gutter. Candidates
   // are measured where the note will LAND (the lane-snapped y), so which row
   // it is joining is settled before its neighbours are asked.
-  const laneSnap = timeline ? snapToLane(candidate, timeline) : null;
+  const laneSnap = timeline ? snapToLane(candidate, timeline, laneSnapThreshold(laneHeld)) : null;
   // A SELECTION SNAPS BY THE NOTE IN HAND. The note the drag began on is what
   // meets the board's places, and every other note rides along by the same
   // delta, so the selection's spacing is untouched.
