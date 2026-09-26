@@ -1,0 +1,41 @@
+name: CodeQL
+
+# Advanced setup: one job scans every language, so CodeQL shows as a single
+# check instead of one per language. Requires the repository's CodeQL default
+# setup to be disabled, otherwise GitHub rejects the upload.
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    # Weekly, so newly released queries also run against an unchanged main.
+    - cron: '27 4 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: codeql-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Initialise CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: actions, javascript-typescript
+          build-mode: none
+
+      - name: Analyse
+        uses: github/codeql-action/analyze@v4
