@@ -33,7 +33,9 @@ async function seedTab(page: Page, elements: Seed): Promise<void> {
         const diagram = await (await fetch(`${base}/diagrams/${id}`, { headers })).json();
         tabId = diagram.diagram?.tabs?.[0]?.id ?? '';
         if (tabId) {
-          const got = await (await fetch(`${base}/diagrams/${id}/tabs/${tabId}`, { headers })).json();
+          const got = await (
+            await fetch(`${base}/diagrams/${id}/tabs/${tabId}`, { headers })
+          ).json();
           tab = got.tab ?? null;
         }
         if (!tab) await new Promise((r) => setTimeout(r, 100));
@@ -98,9 +100,7 @@ test.describe('Arrow auto-rebind', () => {
     expect(await pathEnds(page, 'x')).toEqual([400, 250, 300, 250]);
     await release();
     expect(await pathEnds(page, 'x')).toEqual([400, 250, 300, 250]);
-    expect(logs).toContainEqual(
-      '[arrow-rebind] trigger arrow=x end=from element=a side=w e->w',
-    );
+    expect(logs).toContainEqual('[arrow-rebind] trigger arrow=x end=from element=a side=w e->w');
     expectNoPageErrors(pageErrors);
   });
 
