@@ -117,6 +117,53 @@ export function snapToLane(
 }
 
 // ---------------------------------------------------------------------
+// Held: a workshop note always sits on a lane
+// ---------------------------------------------------------------------
+//
+// docs/specs/021-event-storming/event-storming.md "Always on a lane". A note with an event-storming kind has no
+// tolerance on y: wherever it lands, it lands on the nearest lane. A plain
+// sticky keeps the lane as an aid. Cmd/Ctrl skips the lanes entirely, which
+// is the caller's business (it passes no timeline).
+
+// How close to a lane centre counts as ON it. Coordinates arrive as floats
+// from transforms and imports, so exact equality would call a note off-lane
+// for a rounding error.
+export const LANE_EPSILON = 0.5;
+
+export function laneSnapThreshold(held: boolean): number {
+  return held ? Infinity : ES_LANE_SNAP_Y;
+}
+
+// The top edge that centres this box on the lane nearest its centre.
+export function nearestLaneTop(
+  box: { y: number; height: number },
+  timeline: EsTimeline = ES_LANES,
+): number {
+  const index = laneIndexAt(box.y + box.height / 2, timeline);
+  return laneCentre(index, timeline) - box.height / 2;
+}
+
+export function isOnLane(
+  box: { y: number; height: number },
+  timeline: EsTimeline = ES_LANES,
+): boolean {
+  return Math.abs(box.y - nearestLaneTop(box, timeline)) <= LANE_EPSILON;
+}
+
+// The arrow keys: one whole lane up or down. A note between two lanes goes to
+// the lane on the side it was pushed towards, so a press never skips one.
+export function laneStepTop(
+  box: { y: number; height: number },
+  direction: -1 | 1,
+  timeline: EsTimeline = ES_LANES,
+): number {
+  const t = (box.y + box.height / 2 - laneCentre(0, timeline)) / ES_LANE_PITCH;
+  const onLane = Math.abs(t - Math.round(t)) * ES_LANE_PITCH <= LANE_EPSILON;
+  const target = onLane ? Math.round(t) + direction : direction < 0 ? Math.floor(t) : Math.ceil(t);
+  return laneCentre(target, timeline) - box.height / 2;
+}
+
+// ---------------------------------------------------------------------
 // X: what the neighbours say
 // ---------------------------------------------------------------------
 

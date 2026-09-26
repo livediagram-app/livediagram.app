@@ -16,7 +16,7 @@ import {
   type EventStormingNoteKind,
 } from './event-storming';
 import type { Element, StickyElement } from './index';
-import { ES_LANES, snapToLane, type EsTimeline } from './event-storming-lanes';
+import { placeNewNotes } from './event-storming-photo-place';
 import {
   applyPhotoTransform,
   defaultPhotoScale,
@@ -30,14 +30,8 @@ import {
 } from './event-storming-photo-match';
 
 export * from './event-storming-photo-match';
+export { placeNewNotes, PHOTO_COLUMN_RADIUS } from './event-storming-photo-place';
 
-// The gap between two new notes that have nothing to tell us otherwise. The
-// event-storming template's own rhythm, the same number `insert-between` falls
-// back to when a row has no gap worth measuring.
-export const PHOTO_DEFAULT_GAP = 72;
-// How far a new note may be from an existing row before it stops being part of
-// it: half a note. Beyond that it is a row of its own.
-const ROW_SNAP_RATIO = 0.5;
 // How far clear of the board a photo with nothing in common lands.
 const SEED_CLEARANCE = 200;
 
@@ -71,14 +65,6 @@ function kindOf(note: PhotoNote): EventStormingNoteKind {
   return note.kind === 'unknown' ? UNKNOWN_KIND_FALLBACK : note.kind;
 }
 
-function overlapsX(a: { x: number; width: number }, b: { x: number; width: number }): boolean {
-  return a.x < b.x + b.width && b.x < a.x + a.width;
-}
-
-function overlapsY(a: { y: number; height: number }, b: { y: number; height: number }): boolean {
-  return a.y < b.y + b.height && b.y < a.y + a.height;
-}
-
 // Where the whole photo goes when NOTHING in it matches the board: clear to the
 // right of everything, with its top row lined up with the board's top row. The
 // x axis is time on this board, so a fresh piece of wall is most likely a
@@ -88,64 +74,6 @@ function seedOffset(existing: BoardNote[]): { dx: number; dy: number } | null {
   const right = Math.max(...existing.map((n) => n.x + n.width));
   const top = Math.min(...existing.map((n) => n.y));
   return { dx: right + SEED_CLEARANCE, dy: top };
-}
-
-// Snap a new note's row onto an existing one when it is close enough to be
-// part of it — a photo read a row as sagging, and the board's own row is the
-// truth the author already arranged.
-function snapRow(y: number, height: number, rows: number[]): number {
-  let best: number | null = null;
-  for (const row of rows) {
-    if (Math.abs(row - y) <= height * ROW_SNAP_RATIO) {
-      if (best === null || Math.abs(row - y) < Math.abs(best - y)) best = row;
-    }
-  }
-  return best ?? y;
-}
-
-// Place every addition, then make sure none of them lands on top of anything.
-// Only NEW notes move: an existing note is immovable, so a collision is always
-// resolved by pushing the arrival further along the row.
-export function placeNewNotes(
-  additions: PhotoAddition[],
-  _transform: PhotoTransform,
-  existing: BoardNote[],
-  opts: { timeline?: EsTimeline | null; gap?: number } = {},
-): PhotoAddition[] {
-  const timeline = opts.timeline ?? null;
-  const gap = opts.gap ?? PHOTO_DEFAULT_GAP;
-  const rows = [...new Set(existing.map((n) => n.y))];
-
-  // Left to right, so a row is filled in reading order and the de-overlap pass
-  // below only ever has to look leftwards.
-  const placed = [...additions].sort((a, b) => a.y - b.y || a.x - b.x);
-  const settled: PhotoAddition[] = [];
-
-  for (const note of placed) {
-    const x = note.x;
-    let y = timeline ? note.y : snapRow(note.y, note.height, rows);
-    if (timeline) {
-      // Rows only: a photo already knows where the notes were ACROSS the
-      // wall, and that is the one thing about the layout worth keeping. The
-      // lanes tidy the rows; x stays as photographed.
-      const snap = snapToLane({ x, y, width: note.width, height: note.height }, timeline, Infinity);
-      if (snap) y = snap.y;
-    }
-    let candidate = { ...note, x, y };
-    // Push right until the spot is free. Existing notes and already-settled
-    // additions both count; the gap is the row's own rhythm.
-    const blockers = [
-      ...existing.map((n) => ({ x: n.x, y: n.y, width: n.width, height: n.height, id: n.id })),
-      ...settled.map((n) => ({ x: n.x, y: n.y, width: n.width, height: n.height, id: undefined })),
-    ];
-    for (let guard = 0; guard < blockers.length + 1; guard += 1) {
-      const hit = blockers.find((b) => overlapsX(candidate, b) && overlapsY(candidate, b));
-      if (!hit) break;
-      candidate = { ...candidate, x: hit.x + hit.width + gap };
-    }
-    settled.push(candidate);
-  }
-  return settled;
 }
 
 // The whole reconciliation, in one call: what the photo shows that the board
@@ -166,8 +94,8 @@ export function reconcilePhoto(
     // of it (a photo's own coordinates start at 0,0, which is usually exactly
     // where somebody's first note is).
     const seed = seedOffset(existing);
-    const minX = Math.min(...detected.map((n) => n.cx - n.w / 2), 0);
-    const minY = Math.min(...detected.map((n) => n.cy - n.h / 2), 0);
+    const minX = Math.min(...detected.map((n) => n.cx - n.w / 2));
+    const minY = Math.min(...detected.map((n) => n.cy - n.h / 2));
     transform = seed
       ? { scale, tx: seed.dx - minX * scale, ty: seed.dy - minY * scale }
       : { scale, tx: -minX * scale, ty: -minY * scale };
@@ -193,8 +121,9 @@ export function reconcilePhoto(
       };
     });
 
-  // Photo import is an event-storming verb, and every such board has lanes.
-  const placed = placeNewNotes(additions, transform, existing, { timeline: ES_LANES });
+  // Photo import is an event-storming verb, and every such board has lanes:
+  // rows to lanes, columns lined up, nothing already there moved.
+  const placed = placeNewNotes(additions, existing);
 
   const differences: PhotoDifference[] = [];
   for (const m of matches) {

@@ -549,28 +549,37 @@ move is marked without an undo step. New boards are marked when they are made.
 
 **Photo import.** A photograph is the densest, least regular arrival there is:
 its rows sag, its notes are lapped, and a small photo of a big wall puts two
-rows of paper closer together than one lane. It lands in four steps, and
+rows of paper closer together than one lane. It lands in five steps, and
 nothing already on the board moves in any of them:
 
 1. **Geometry is photographed square.** Photo coordinates are fractions of the
    photo's WIDTH on both axes, so one scale carries both. (Before this, y was a
    fraction of the height, which stretched every landscape photo's rows apart
    by its aspect ratio and made lanes skip.)
-2. **Columns.** Notes of DIFFERENT rows whose centres are within a quarter of
+2. **Rows.** A row is the notes level with each other in the photograph:
+   centres less than half a lane's height below the row's first note, top to
+   bottom (the same rows as a paste). Measured from the photo itself, not taken
+   from the detector: the detector's rows chain across a scattered wall (one
+   labelled wall of a dozen heights came out as six rows) and would flatten it.
+3. **Columns.** Notes of DIFFERENT rows whose centres are within a quarter of
    a standard note (50px) of each other share one column: their left edges
    take the left edge of the top-most of them. Alignment the photo only
    approximates is kept exactly, for the code export to read later.
-3. **Rows to lanes, with the cascade.** The detector's rows, top to bottom:
-   each takes its nearest lane, but at least the lane below the row before it.
-   A note whose footprint lands on a note already on the board, or on an
-   imported note of an EARLIER row, goes one lane down, and every row below it
-   goes down one lane with it, so dense, small and imperfect photos keep their
-   row order.
-4. **Along a row.** Notes of one row that overlap each other (lapped paper, or
-   a policy's wide silhouette where the wall had a square) slide right along
-   the lane to one gutter clear of the note before them, in the photo's left
-   to right order (provisional, awaiting a ruling: the literal cascade would
-   push them down instead).
+4. **Lanes, with the cascade.** Each row, as a unit, takes its nearest lane.
+   A row with a note landing on a note already on the board, or on a note of a
+   row above it, goes one lane down, and every row below goes down one lane
+   with it, so dense, small and imperfect photos keep their row order. Two rows
+   that do not overlap may share a lane.
+5. **Along a lane.** Notes that overlap on one lane (lapped paper, or a
+   policy's wide silhouette where the wall had a square) slide right, one
+   gutter clear of the note before them, in the photo's left-to-right order,
+   and past any board note they would land on (provisional, awaiting a ruling:
+   the literal cascade would push them down a lane instead, and on the
+   labelled walls that turns an 11-lane photograph into 21 lanes).
+
+A photo with nothing in common with the board lines its top ROW up with the
+board's top, clear to its right (it used to line up the photograph's top edge,
+so a photo of a wall with bare paper above the notes landed lanes too low).
 
 **Rulings** (each one an operator input, and what changed):
 

@@ -248,18 +248,20 @@ export function detectStickies(image: ImageBuffer, opts: DetectOptions = {}): De
   }));
 }
 
-// The detector works in working-image pixels; the reconciler wants the image
-// normalised to 0..1, so a downscale (or a different phone) means the same
-// thing.
+// The detector works in working-image pixels; the reconciler wants them
+// normalised, so a downscale (or a different phone) means the same thing. BOTH
+// axes are fractions of the image's WIDTH: the reconciler carries photo space
+// onto the board with one scale, and a y in fractions of the height stretched
+// every landscape wall's rows apart by its aspect ratio (docs/specs/021-event-storming/event-storming.md).
 export function toNormalised(
   sticky: DetectedSticky,
   image: { width: number; height: number },
 ): { cx: number; cy: number; w: number; h: number } {
   return {
     cx: (sticky.x + sticky.w / 2) / image.width,
-    cy: (sticky.y + sticky.h / 2) / image.height,
+    cy: (sticky.y + sticky.h / 2) / image.width,
     w: sticky.w / image.width,
-    h: sticky.h / image.height,
+    h: sticky.h / image.width,
   };
 }
 

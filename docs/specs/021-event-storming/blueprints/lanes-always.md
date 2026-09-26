@@ -160,31 +160,28 @@ Banned synonyms: "snap all", "normalise" (for the settle), "grid" for the lane s
 
 ### Photo placement (`event-storming-photo-place.ts`)
 
-Input: additions in canvas space (kind silhouette, centred on the transformed photo centre),
-each with its detector `row` and its photo-order `cx`; existing board notes.
+Input: additions in canvas space (kind silhouette, centred on the transformed photo centre);
+existing board notes.
 
-1. **Columns.** Visit additions by centre x (ties: row, then id). Each joins the first open
+1. **Rows.** `groupRows(additions)` (the paste rows): top to bottom, each left to right.
+2. **Columns.** Visit additions by centre x (ties: row, then index). Each joins the first open
    column whose anchor centre is within `PHOTO_COLUMN_RADIUS` (50) and that holds no member of
    its row; otherwise it opens a column anchored at its own centre. For every column of two or
    more, each member's `x` becomes the `x` of its top-most member (smallest centre y, ties by
-   id).
-2. **Rows.** Group by detector `row`; rows ordered by mean centre y (ties by row index);
-   members by photo `cx` (ties by id).
-3. **Lanes.** `shift = 0`, `previousLane = −∞`. Per row: `nearest = laneIndexAt(mean cy)`,
-   `base = max(nearest + shift, previousLane + 1)`; `shift = base − nearest`. Per member,
-   `lane = base`, then loop:
-   - **Slide:** while the footprint overlaps a settled member of the SAME row on that lane,
-     `x = that member's right edge + ES_NOTE_GAP`.
-   - **Collide:** if the footprint overlaps an existing note, or a settled addition of an
-     EARLIER row, `lane += 1`, `shift += 1`, and repeat the loop.
-   - Otherwise settle at `y = laneCentre(lane) − h / 2`.
-   - Loop bound: `existing + additions + 2` passes; on reaching it the note settles where it
-     is and `console.warn('[es-lanes] photo placement bound', …)` fires (never observed).
-     `previousLane = base`.
-4. Output: the additions with their new `x` / `y`, in input order.
+   index) (D7).
+3. **Lanes.** `shift = 0`. Per row: `lane = laneIndexAt(mean cy) + shift`; while any member's
+   footprint at `lane` overlaps an existing note (rectangles), or overlaps in x an addition of an
+   EARLIER row already on `lane`: `lane += 1`, `shift += 1`. Loop bound
+   `existing + additions + 2`; on reaching it the row stays and
+   `console.warn('[es-lanes] photo placement bound', …)` fires (never observed).
+4. **Along.** Per lane: its additions by original centre x (ties by index); each note's `x` is
+   raised to the previous note's right edge + `ES_NOTE_GAP` when it overlaps it, then past any
+   existing note its footprint overlaps (right edge + `ES_NOTE_GAP`, repeated).
+5. Output: the additions with their new `x` / `y`, in input order.
 
-`reconcilePhoto` fills `row` from `PhotoNote.row`. `toNormalised` divides `cy` and `h` by the
-image WIDTH as well.
+`toNormalised` divides `cy` and `h` by the image WIDTH as well. `reconcilePhoto`'s seed offset
+(nothing in common) takes the minimum over the notes only, so the photo's top row, not its
+top edge, lines up with the board's top.
 
 ### MCP (`update_diagram`)
 
@@ -230,7 +227,7 @@ export function placeNewNotes(additions: PhotoAddition[], existing: BoardNote[])
 type Tab = { /* … */ esLanesSettled?: boolean };
 ```
 
-`PhotoAddition` gains `row: number` and `photoCx: number`. The unused `_transform` and `opts`
+The unused `_transform` and `opts`
 parameters of `placeNewNotes` go (its one caller is `reconcilePhoto`). `PHOTO_DEFAULT_GAP`
 (72, the retired gutter) goes; the slide uses `ES_NOTE_GAP`.
 
@@ -253,21 +250,21 @@ it runs in the editor (so it is undoable), never at the storage boundary.
 
 ## Errors and edge cases
 
-| Case                                                 | Handling                                                             |
-| ---------------------------------------------------- | -------------------------------------------------------------------- |
-| Tab content not loaded yet / load failed             | `editsBlocked`; the settle waits for `'ready'`                       |
-| View-only visitor or locked tab opens an older board | No settle, no mark; the next editor settles it                       |
-| Undo of the settle                                   | Positions back, mark kept; never offered again                       |
-| Two editors open an older board together             | Both settle to the same positions; the second commit is a no-op diff |
-| Locked workshop note off a lane                      | Left where it is by the settle; a drag cannot move it anyway         |
-| A free-placed (Cmd/Ctrl) note after the mark         | Never re-snapped; arrow up / down moves it to the lane on that side  |
-| Plain sticky selected with workshop notes            | Anchor is the first workshop note; the sticky rides the same delta   |
-| Paste with the pointer over a floating panel         | The canvas saw a pointer leave: staggered                            |
-| Paste of shapes only on an event-storming board      | Unchanged: +24, +24                                                  |
-| A block paste overlapping notes already there        | Allowed; nothing already down moves                                  |
-| Photo row pushed below a note by the cascade         | Every later row follows by the same lane, order kept                 |
-| Photo placement loop bound reached                   | Settles in place, `console.warn('[es-lanes] photo placement bound')` |
-| MCP moves a workshop note off a lane with `update`   | Landed on its nearest lane                                           |
+| Case                                                  | Handling                                                             |
+| ----------------------------------------------------- | -------------------------------------------------------------------- |
+| Tab content not loaded yet / load failed              | `editsBlocked`; the settle waits for `'ready'`                       |
+| View-only visitor or locked tab opens an older board  | No settle, no mark; the next editor settles it                       |
+| Undo of the settle                                    | Positions back, mark kept; never offered again                       |
+| Two editors open an older board together              | Both settle to the same positions; the second commit is a no-op diff |
+| Locked workshop note off a lane                       | Left where it is by the settle; a drag cannot move it anyway         |
+| A free-placed (Cmd/Ctrl) note after the mark          | Never re-snapped; arrow up / down moves it to the lane on that side  |
+| Plain sticky selected with workshop notes             | Anchor is the first workshop note; the sticky rides the same delta   |
+| Paste with the pointer over a floating panel          | The canvas saw a pointer leave: staggered                            |
+| Paste of shapes only on an event-storming board       | Unchanged: +24, +24                                                  |
+| A block paste overlapping notes already there         | Allowed; nothing already down moves                                  |
+| A photo row landing on a board note or a row above it | The row goes a lane down; every later row follows, order kept        |
+| Photo placement loop bound reached                    | Settles in place, `console.warn('[es-lanes] photo placement bound')` |
+| MCP moves a workshop note off a lane with `update`    | Landed on its nearest lane                                           |
 
 ## Security and trust
 

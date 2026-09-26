@@ -264,6 +264,10 @@ export type Tab = {
   id: TabId;
   name: string;
   kind?: TabKind;
+  // An event-storming board whose workshop notes have been settled onto the
+  // lanes once (docs/specs/021-event-storming/event-storming.md "Always on a lane"). Set by that settle, by the
+  // template, or by a file import; never cleared, and grafted across undo.
+  esLanesSettled?: boolean;
   elements: Element[];
   backgroundPattern?: BackgroundPattern;
   backgroundColor?: string;
@@ -439,6 +443,7 @@ export * from './rich-text';
 export * from './factories';
 export * from './event-storming';
 export * from './event-storming-lanes';
+export * from './event-storming-lane-landing';
 export * from './event-storming-next';
 export * from './event-storming-photo';
 export * from './graph-authoring';

@@ -236,6 +236,13 @@ export function graftLiveTabState(
       if (src.vote !== undefined) next.vote = src.vote;
       else delete next.vote;
     }
+    // The lane settle mark (docs/specs/021-event-storming/event-storming.md "Always on a lane") is set once and
+    // never cleared: undoing the settle restores the notes' positions, and the
+    // mark stays so the board does not settle them again.
+    if (src.esLanesSettled === true && next.esLanesSettled !== true) {
+      next = next === tab ? { ...tab } : next;
+      next.esLanesSettled = true;
+    }
     return next;
   });
 }

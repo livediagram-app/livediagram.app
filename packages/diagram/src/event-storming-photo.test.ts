@@ -10,15 +10,13 @@ import {
   matchDetectedNotes,
   normaliseNoteText,
   noteTextSimilarity,
-  placeNewNotes,
   reconcilePhoto,
   UNKNOWN_KIND_FALLBACK,
   type BoardNote,
-  type PhotoAddition,
   type PhotoNote,
 } from './event-storming-photo';
 import type { Element } from './index';
-import { ES_LANE_PITCH, laneCentre, type EsTimeline } from './event-storming-lanes';
+import { laneCentre, type EsTimeline } from './event-storming-lanes';
 
 // Reconciling a photographed wall against the board (docs/specs/021-event-storming/event-storming.md Phase 8). The
 // rule every one of these protects: an import ADDS. Whatever the photo says,
@@ -221,67 +219,6 @@ describe('fitPhotoTransform', () => {
   });
 });
 
-describe('placeNewNotes', () => {
-  const transform = { scale: 2000, tx: 0, ty: 0 };
-
-  const addition = (over: Partial<PhotoAddition> & { detectedId: number }): PhotoAddition => ({
-    kind: 'domain-event',
-    text: 'New',
-    x: 0,
-    y: 0,
-    width: 200,
-    height: 200,
-    ...over,
-  });
-
-  it('leaves an addition where the transform put it when nothing is there', () => {
-    const out = placeNewNotes([addition({ detectedId: 1, x: 500, y: 300 })], transform, []);
-    expect(out[0]).toMatchObject({ x: 500, y: 300 });
-  });
-
-  it('joins the row it nearly landed in', () => {
-    const existing = [board({ id: 'a', x: 0, y: 500 })];
-    const out = placeNewNotes([addition({ detectedId: 1, x: 900, y: 560 })], transform, existing);
-    expect(out[0]!.y).toBe(500);
-  });
-
-  it('starts its own row when it is nowhere near one', () => {
-    const existing = [board({ id: 'a', x: 0, y: 500 })];
-    const out = placeNewNotes([addition({ detectedId: 1, x: 900, y: 900 })], transform, existing);
-    expect(out[0]!.y).toBe(900);
-  });
-
-  it('pushes only the NEW note aside when they collide', () => {
-    const existing = [board({ id: 'a', x: 500, y: 0 })];
-    const frozen = JSON.stringify(existing);
-    const out = placeNewNotes([addition({ detectedId: 1, x: 520, y: 0 })], transform, existing);
-    expect(out[0]!.x).toBe(500 + 200 + 72);
-    expect(JSON.stringify(existing)).toBe(frozen);
-  });
-
-  it('keeps additions off each other too', () => {
-    const out = placeNewNotes(
-      [addition({ detectedId: 1, x: 0, y: 0 }), addition({ detectedId: 2, x: 40, y: 0 })],
-      transform,
-      [],
-    );
-    expect(out[1]!.x).toBeGreaterThanOrEqual(out[0]!.x + 200);
-  });
-
-  it('lands on the lanes when the board has them on, without moving x', () => {
-    const timeline: EsTimeline = { originY: 0 };
-    const out = placeNewNotes(
-      [addition({ detectedId: 1, x: 307, y: ES_LANE_PITCH + 9 })],
-      transform,
-      [],
-      { timeline },
-    );
-    // Rows are tidied; x is left exactly where the wall had it.
-    expect(out[0]!.x).toBe(307);
-    expect(out[0]!.y).toBe(laneCentre(1, timeline) - 100);
-  });
-});
-
 describe('reconcilePhoto', () => {
   it('adds everything, in the photo’s own layout, on an empty board', () => {
     const detected = [
@@ -336,6 +273,17 @@ describe('reconcilePhoto', () => {
     const out = reconcilePhoto(detected, existing);
     expect(out.additions[0]!.x).toBeGreaterThanOrEqual(200 + 200);
     expect(out.additions[0]!.y).toBe(240);
+  });
+
+  it('lines the photo top ROW up with the board, not the empty wall above it', () => {
+    // The paper starts a third of the way down the photograph.
+    const detected = [
+      photo({ id: 1, text: 'Refund issued', cx: 0.1, cy: 0.35, w: 0.1, h: 0.1 }),
+      photo({ id: 2, text: 'Refund paid', cx: 0.1, cy: 0.5, w: 0.1, h: 0.1 }),
+    ];
+    const existing = [board({ id: 'a', text: 'Order placed', x: 0, y: 240 })];
+    const out = reconcilePhoto(detected, existing);
+    expect(out.additions.map((a) => a.y)).toEqual([240, 480]);
   });
 
   it('shows a text difference without applying it', () => {

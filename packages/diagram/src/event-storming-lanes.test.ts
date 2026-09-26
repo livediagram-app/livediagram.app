@@ -16,6 +16,10 @@ import {
   type LaneCandidate,
   snapToLane,
   visibleLaneIndices,
+  laneSnapThreshold,
+  nearestLaneTop,
+  isOnLane,
+  laneStepTop,
   type EsTimeline,
 } from './event-storming-lanes';
 import { ES_NOTE_SIZE_PX } from './event-storming';
@@ -423,5 +427,40 @@ describe('visibleLaneIndices', () => {
     expect(visibleLaneIndices({ top: OFFSET.originY, bottom: OFFSET.originY + 1 }, OFFSET)).toEqual(
       [0],
     );
+  });
+});
+
+// docs/specs/021-event-storming/event-storming.md "Always on a lane".
+describe('lane holding', () => {
+  it('holds a workshop note at any distance and a plain sticky within the lane tolerance', () => {
+    expect(laneSnapThreshold(true)).toBe(Infinity);
+    expect(laneSnapThreshold(false)).toBe(ES_LANE_SNAP_Y);
+  });
+
+  it('finds the top that centres a box on its nearest lane', () => {
+    // Lane 0 is centred at y = 100, lane 1 at 340.
+    expect(nearestLaneTop({ y: 30, height: 200 })).toBe(0);
+    expect(nearestLaneTop({ y: 130, height: 200 })).toBe(240);
+    // A 140-tall actor centres on the lane, not hangs from its top.
+    expect(nearestLaneTop({ y: 250, height: 140 })).toBe(270);
+  });
+
+  it('says whether a box is on a lane, forgiving sub-pixel drift', () => {
+    expect(isOnLane({ y: 240, height: 200 })).toBe(true);
+    expect(isOnLane({ y: 240.4, height: 200 })).toBe(true);
+    expect(isOnLane({ y: 241, height: 200 })).toBe(false);
+    expect(isOnLane({ y: 250, height: 180 })).toBe(true);
+  });
+
+  it('steps a note on a lane one whole lane up or down', () => {
+    expect(laneStepTop({ y: 240, height: 200 }, -1)).toBe(0);
+    expect(laneStepTop({ y: 240, height: 200 }, 1)).toBe(480);
+    expect(laneStepTop({ y: 10, height: 180 }, -1)).toBe(-230);
+  });
+
+  it('steps a note parked between lanes to the lane on that side', () => {
+    // Centre at 220: between lane 0 (100) and lane 1 (340).
+    expect(laneStepTop({ y: 120, height: 200 }, -1)).toBe(0);
+    expect(laneStepTop({ y: 120, height: 200 }, 1)).toBe(240);
   });
 });
