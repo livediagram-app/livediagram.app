@@ -41,8 +41,9 @@ export function useFlipList(order: string[]) {
       node.style.transform = `translateY(${delta}px)`;
       // ...force the browser to take that as the starting frame...
       void node.offsetHeight;
-      // ...then play: let it slide home.
-      node.style.transition = 'transform 420ms cubic-bezier(0.22, 1, 0.36, 1)';
+      // ...then play: let it slide home, on .qa-flip-move in qa-board.css.
+      node.style.transition = '';
+      node.classList.add('qa-flip-move');
       node.style.transform = '';
       if (delta > 0) {
         node.classList.remove('qa-climb');

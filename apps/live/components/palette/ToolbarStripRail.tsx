@@ -1,6 +1,7 @@
 'use client';
 
 import { isValidElement, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { MOTION_MS } from '@livediagram/tailwind-config/motion';
 
 // The moving part of the Toolbar layout's strip (docs/specs/007-editor/toolbar-layout.md): the tiles of the
 // current category plus its More button. Switching category can take the
@@ -20,14 +21,12 @@ import { isValidElement, useLayoutEffect, useRef, useState, type ReactNode } fro
 // animate nothing. Reduced motion collapses all of
 // it to instant through the global rules in globals.css.
 
-// Beat between two incoming tiles. Shorter than the 40ms default of
-// `.stagger-enter`: ten tiles at 40ms is nearly half a second of arriving.
-const STAGGER_STEP = '22ms';
-
-// How long the outgoing layer stays mounted: its pop-out, shortened.
-export const RAIL_LEAVE_MS = 160;
+// How long the outgoing layer stays mounted: exactly its pop-out, which runs at
+// the micro motion token (docs/specs/004-interface-design/motion.md). The incoming
+// tiles cascade on the shared `.stagger-enter` beat.
+export const RAIL_LEAVE_MS = MOTION_MS.micro;
 // How long a reordered tile takes to slide to its new slot.
-const REORDER_MS = 200;
+const REORDER_MS = MOTION_MS.short;
 
 // An item's identity within the rail: its React key, or its index for an
 // unkeyed item (which then simply doesn't take part in a reorder).
@@ -108,7 +107,7 @@ export function ToolbarStripRail({
     // ...then play: let it ease to its real slot.
     void el.offsetWidth;
     for (const node of moved) {
-      node.style.transition = `transform ${REORDER_MS}ms ease-out`;
+      node.style.transition = `transform ${MOTION_MS.short}ms ease-out`;
       node.style.transform = '';
     }
     const done = window.setTimeout(
@@ -143,7 +142,7 @@ export function ToolbarStripRail({
       // Clipped sideways only, so a shrinking rail hides the outgoing tiles
       // past its edge while pressed rings and the pop's overshoot still show.
       className={`relative flex items-center overflow-x-clip [overflow-clip-margin:3px]${
-        animate ? ' transition-[width] duration-200 ease-out' : ''
+        animate ? ' transition-[width] duration-short ease-out' : ''
       }`}
       style={{ width: width ?? undefined }}
     >
@@ -162,7 +161,7 @@ export function ToolbarStripRail({
                   ? 'animate-pop-in'
                   : ''
             }`}
-            style={{ '--stagger-i': i, '--stagger-step': STAGGER_STEP } as React.CSSProperties}
+            style={{ '--stagger-i': i } as React.CSSProperties}
           >
             {item}
           </span>

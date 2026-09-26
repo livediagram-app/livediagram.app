@@ -44,7 +44,7 @@ export function AnimatedHeightBox({
   return (
     <div
       className={`${exceedsCap ? 'overflow-y-auto' : 'overflow-hidden'}${
-        animate ? ' transition-[height] duration-200 ease-out' : ''
+        animate ? ' transition-[height] duration-short ease-out' : ''
       }${className ? ` ${className}` : ''}`}
       style={{
         height:

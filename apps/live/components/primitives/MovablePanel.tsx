@@ -257,7 +257,7 @@ export function MovablePanel({
               ? { top: anchor.top + 12, left: anchor.left }
               : { top: 56, right: 12 }
         }
-        className="pointer-events-auto absolute z-[var(--z-toolbar)] flex w-64 max-w-[calc(100vw-2rem)] cursor-default flex-col rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 transition-opacity duration-150 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40"
+        className="pointer-events-auto absolute z-[var(--z-toolbar)] flex w-64 max-w-[calc(100vw-2rem)] cursor-default flex-col rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 transition-opacity duration-micro dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40"
       >
         {anchor ? (
           <div
@@ -360,7 +360,7 @@ export function MovablePanel({
           to 0px because the grid track constrains the child height. */}
       <div
         className={
-          'grid transition-[grid-template-rows] duration-200 ease-out ' +
+          'grid transition-[grid-template-rows] duration-short ease-out ' +
           (collapsible && effectiveCollapsed ? 'grid-rows-[0fr]' : 'grid-rows-[1fr]')
         }
         aria-hidden={collapsible && effectiveCollapsed ? true : undefined}

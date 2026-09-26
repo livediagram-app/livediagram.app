@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { MOTION_MS } from '@livediagram/tailwind-config/motion';
 import type { Participant } from '@/lib/identity';
 import { ParticipantAvatar } from '@/components/primitives/ParticipantAvatar';
 import { participantBadges } from '@/lib/collaborator-roster';
@@ -23,7 +24,9 @@ import { participantBadges } from '@/lib/collaborator-roster';
 // modal (docs/specs/012-collaboration/collaborator-enhancements.md), which lists everyone by tab and is where Follow lives
 // (docs/specs/012-collaboration/follow-me-viewport.md). The avatar used to start following directly.
 
-const POP_OUT_MS = 240;
+// An exit hold (docs/specs/004-interface-design/motion.md): a leaver stays mounted exactly
+// as long as its pop-out runs.
+const POP_OUT_MS = MOTION_MS.micro;
 
 export function TabPresenceStack({
   participants,

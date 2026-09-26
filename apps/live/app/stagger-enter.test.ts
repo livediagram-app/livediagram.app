@@ -17,12 +17,13 @@ function block(selector: string): string {
 }
 
 describe('.stagger-enter', () => {
-  it('delays by the item index and holds the keyframe start until then', () => {
-    const rule = block('.stagger-enter {');
-    // The beat is overridable per use (`--stagger-step`, the Toolbar strip
-    // uses a quicker one) but keeps a fixed default for everyone else.
-    expect(rule).toMatch(
-      /animation-delay:\s*calc\(var\(--stagger-i, 0\) \* var\(--stagger-step, \d+ms\)\)/,
+  it('delays by the item index, capped, and holds the keyframe start until then', () => {
+    const rule = block('.stagger-enter {').replace(/\s+/g, ' ');
+    // The beat and its cap are the shared cascade tokens, so a cascade of any
+    // length settles within the 250ms motion budget
+    // (docs/specs/004-interface-design/motion.md).
+    expect(rule).toContain(
+      'animation-delay: min( calc(var(--stagger-i, 0) * var(--motion-cascade-step)), var(--motion-cascade-cap) );',
     );
     expect(rule).toContain('animation-fill-mode: backwards');
   });

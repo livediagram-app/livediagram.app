@@ -347,7 +347,7 @@ export function TourHost() {
         // first appearance.
         <div
           aria-hidden
-          className="pointer-events-none fixed z-[var(--z-overlay)] animate-fade-in rounded-xl border-2 border-brand-400 transition-all duration-300 ease-out dark:border-brand-500"
+          className="pointer-events-none fixed z-[var(--z-overlay)] animate-fade-in rounded-xl border-2 border-brand-400 transition-all duration-long ease-out dark:border-brand-500"
           style={{
             left: targetRect.left - 6,
             top: targetRect.top - 6,

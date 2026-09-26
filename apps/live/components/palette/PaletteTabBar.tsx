@@ -201,7 +201,7 @@ export function PaletteTabBar({
         // the new content's size, so for those 200ms the content overflows a
         // box that is still the old size, and the bar appeared and vanished.
         className={`overflow-x-hidden ${capped ? 'overflow-y-auto' : 'overflow-y-hidden'}${
-          animate ? ' transition-[height] duration-200 ease-out' : ''
+          animate ? ' transition-[height] duration-short ease-out' : ''
         }`}
         style={{ height: bodyHeight }}
       >

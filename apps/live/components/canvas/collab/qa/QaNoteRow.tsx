@@ -121,7 +121,7 @@ export const QaNoteRow = forwardRef<
       {/* The heat bar: this note's share of the most-voted note's count. */}
       <span
         aria-hidden
-        className="absolute bottom-0 left-0 h-[2px] rounded-full transition-[width] duration-500 ease-out"
+        className="qa-heat absolute bottom-0 left-0 h-[2px] rounded-full"
         style={{
           width: `${Math.round(heat * 100)}%`,
           background: `linear-gradient(90deg, ${tint(QA_ACCENT, 0.35)}, ${QA_ACCENT})`,

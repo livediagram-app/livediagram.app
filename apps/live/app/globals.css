@@ -71,6 +71,10 @@
 /*
  * Animation tokens. Each `--animate-*` variable creates a Tailwind
  * `animate-<name>` utility that runs the matching @keyframes on mount.
+ * Durations are the motion tokens of the shared theme
+ * (docs/specs/004-interface-design/motion.md): micro (150ms) for small
+ * surfaces and cascade items, short (200ms) for step swaps and drawers, long
+ * (250ms) for dialogs and sheets. `fade-in` lives in the shared theme.
  * Transform-based animations (pop-in, fly-up-in) must only be used on
  * elements that don't carry their own inline `transform` style, otherwise
  * the animation overrides positioning. Use the opacity-only `fade-in`
@@ -78,21 +82,23 @@
  * (popover, plus buttons, mode banner, portal menus).
  */
 @theme {
-  --animate-pop-in: pop-in 360ms cubic-bezier(0.34, 1.56, 0.64, 1);
-  --animate-pop-out: pop-out 220ms cubic-bezier(0.4, 0, 1, 1) forwards;
-  --animate-fade-in: fade-in 260ms ease-out;
-  --animate-fly-up-in: fly-up-in 420ms cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-pop-in: pop-in var(--transition-duration-micro) cubic-bezier(0.34, 1.56, 0.64, 1);
+  --animate-pop-out: pop-out var(--transition-duration-micro) cubic-bezier(0.4, 0, 1, 1) forwards;
+  --animate-fly-up-in: fly-up-in var(--transition-duration-long) cubic-bezier(0.16, 1, 0.3, 1);
   /* A sheet rising from the bottom edge of the screen. Distinct from
      fly-up-in's 16px lift: this one travels its own full height, so it reads
      as arriving from off-screen rather than settling into place. */
-  --animate-sheet-up: sheet-up 340ms cubic-bezier(0.16, 1, 0.3, 1);
-  --animate-slide-row-in: slide-row-in 220ms cubic-bezier(0.16, 1, 0.3, 1);
-  --animate-slide-row-out: slide-row-out 220ms cubic-bezier(0.4, 0, 1, 1) forwards;
-  --animate-slide-in-left: slide-in-left 240ms cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-sheet-up: sheet-up var(--transition-duration-long) cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-slide-row-in: slide-row-in var(--transition-duration-micro)
+    cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-slide-row-out: slide-row-out var(--transition-duration-micro) cubic-bezier(0.4, 0, 1, 1)
+    forwards;
+  --animate-slide-in-left: slide-in-left var(--transition-duration-short)
+    cubic-bezier(0.16, 1, 0.3, 1);
   /* Directional card slide (forward from the right, back from the left). Used
      by the TemplatePicker wizard's phase transitions. */
-  --animate-tip-next: tip-next 260ms cubic-bezier(0.16, 1, 0.3, 1);
-  --animate-tip-prev: tip-prev 260ms cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-tip-next: tip-next var(--transition-duration-short) cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-tip-prev: tip-prev var(--transition-duration-short) cubic-bezier(0.16, 1, 0.3, 1);
   /* Dropdown listbox opening: a short drop/rise toward the trigger so the
      menu visibly unfolds (PaletteDropdown; -down for below-the-trigger,
      -up for the flipped variant). Pair with origin-top / origin-bottom. */
@@ -101,8 +107,10 @@
      transform-origin the caller sets, so a menu anchored top-right visibly
      comes out of the top-right control rather than appearing whole. See
      PaletteDropdown. */
-  --animate-dropdown-down: dropdown-open 190ms cubic-bezier(0.16, 1, 0.3, 1);
-  --animate-dropdown-up: dropdown-open 190ms cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-dropdown-down: dropdown-open var(--transition-duration-micro)
+    cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-dropdown-up: dropdown-open var(--transition-duration-micro)
+    cubic-bezier(0.16, 1, 0.3, 1);
   /* Empty-state illustration motion (--animate-empty-*) now lives in the
      shared tailwind theme (@livediagram/tailwind-config) so every app's
      EmptyState animates alike; see packages/ui/src/EmptyState.tsx. */
@@ -134,15 +142,6 @@
   100% {
     transform: scale(0);
     opacity: 0;
-  }
-}
-
-@keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
   }
 }
 
@@ -271,7 +270,7 @@
  */
 [data-panel-translucent] {
   opacity: var(--lvd-panel-opacity, 1);
-  transition: opacity 200ms ease;
+  transition: opacity var(--transition-duration-micro) ease;
 }
 [data-panel-translucent]:hover,
 [data-panel-translucent]:focus-within {
@@ -316,15 +315,20 @@
 
 /*
  * Staggered entrance. An item in a list or grid that should arrive one beat
- * after the one before it: pair with any `animate-*` utility and set
- * `--stagger-i` to the item's index (and `--stagger-step` to change the
- * 40ms beat). `backwards` fill keeps a delayed item
+ * after the one before it: pair with a micro `animate-*` utility and set
+ * `--stagger-i` to the item's index. The beat and its cap are the shared
+ * cascade tokens, so however long the list, the whole cascade settles within
+ * the 250ms motion budget (docs/specs/004-interface-design/motion.md).
+ * `backwards` fill keeps a delayed item
  * at its keyframe start (invisible) until its turn, instead of showing it
  * and then re-hiding it. Reduced motion zeroes the delay as well as the
  * duration (above), so nothing waits on a beat it will never see.
  */
 .stagger-enter {
-  animation-delay: calc(var(--stagger-i, 0) * var(--stagger-step, 40ms));
+  animation-delay: min(
+    calc(var(--stagger-i, 0) * var(--motion-cascade-step)),
+    var(--motion-cascade-cap)
+  );
   animation-fill-mode: backwards;
 }
 @media (prefers-reduced-motion: reduce) {
@@ -339,8 +343,9 @@
 /*
  * Context-menu "falling stack": each direct child of a right-click menu
  * drops in just after the previous one, so the categories cascade into place
- * rather than appearing all at once. Capped at a dozen staggered children;
- * anything past that rides the last delay. The reduced-motion blocks above
+ * rather than appearing all at once. A 10ms beat, capped at the cascade cap
+ * from the eleventh child on, so the whole menu settles within 250ms
+ * (docs/specs/004-interface-design/motion.md). The reduced-motion blocks above
  * already collapse the drop to ~instant, and the delay reset below drops the
  * cascade too, so motion-sensitive users get the whole menu at once.
  */
@@ -355,40 +360,40 @@
   }
 }
 .lvd-menu-stagger > * {
-  animation: menu-drop 200ms ease-out both;
+  animation: menu-drop var(--transition-duration-micro) ease-out both;
 }
 .lvd-menu-stagger > *:nth-child(1) {
   animation-delay: 0ms;
 }
 .lvd-menu-stagger > *:nth-child(2) {
-  animation-delay: 40ms;
+  animation-delay: 10ms;
 }
 .lvd-menu-stagger > *:nth-child(3) {
-  animation-delay: 80ms;
+  animation-delay: 20ms;
 }
 .lvd-menu-stagger > *:nth-child(4) {
-  animation-delay: 120ms;
+  animation-delay: 30ms;
 }
 .lvd-menu-stagger > *:nth-child(5) {
-  animation-delay: 160ms;
+  animation-delay: 40ms;
 }
 .lvd-menu-stagger > *:nth-child(6) {
-  animation-delay: 200ms;
+  animation-delay: 50ms;
 }
 .lvd-menu-stagger > *:nth-child(7) {
-  animation-delay: 240ms;
+  animation-delay: 60ms;
 }
 .lvd-menu-stagger > *:nth-child(8) {
-  animation-delay: 280ms;
+  animation-delay: 70ms;
 }
 .lvd-menu-stagger > *:nth-child(9) {
-  animation-delay: 320ms;
+  animation-delay: 80ms;
 }
 .lvd-menu-stagger > *:nth-child(10) {
-  animation-delay: 360ms;
+  animation-delay: 90ms;
 }
 .lvd-menu-stagger > *:nth-child(n + 11) {
-  animation-delay: 400ms;
+  animation-delay: var(--motion-cascade-cap);
 }
 @media (prefers-reduced-motion: reduce) {
   .lvd-menu-stagger > * {
@@ -518,7 +523,7 @@
    Written here rather than as a Tailwind group-hover variant: the named-group
    form produced no rule at all, and this is one selector. */
 [role='listbox'] [role='option'] .lvd-opt-glyph {
-  transition: transform 160ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform var(--transition-duration-micro) cubic-bezier(0.16, 1, 0.3, 1);
 }
 [role='listbox'] [role='option']:hover:not(:disabled) .lvd-opt-glyph {
   transform: translateY(-2px) scale(1.12);
