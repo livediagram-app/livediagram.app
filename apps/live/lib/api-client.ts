@@ -44,6 +44,7 @@ export {
 
 export * from './api/diagrams';
 export * from './api/tabs';
+export * from './api/qa-board';
 export * from './api/share';
 export * from './api/change-log';
 export * from './api/folders';

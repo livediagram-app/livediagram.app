@@ -200,3 +200,7 @@ centred at the design size, so a card taller or wider than its default still
 paints its backdrop edge to edge: a centred design box left the agenda's
 ruling and crease floating in a band mid-element with bare card above and
 below.
+
+**The one exception is the Q&A board** ([spec/151](151-qa-board.md)), which
+passes `reflow`. Its content is a list that grows, so resizing it is how you
+make room for more notes, and scaling would spend that room on bigger type.

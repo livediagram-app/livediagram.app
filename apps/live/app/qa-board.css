@@ -1,0 +1,145 @@
+/*
+ * Q&A board motion (spec/151). The board is a queue the room WATCHES, so its
+ * movement carries meaning: a vote pops, a climbing note glows, the spotlight
+ * breathes. Every animation here collapses under the reduced-motion rules in
+ * globals.css (both the OS setting and the per-user preference), and the
+ * FLIP reorder in useFlipList checks the same two switches before moving.
+ */
+
+/* The vote pill's press: a quick overshoot so the count feels struck. */
+@keyframes qa-pop {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.22);
+  }
+  70% {
+    transform: scale(0.94);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.qa-pop {
+  animation: qa-pop 380ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* The "+1" that lifts off the pill when you vote. */
+@keyframes qa-float {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 0) scale(0.8);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -22px) scale(1.05);
+  }
+}
+.qa-float {
+  animation: qa-float 700ms ease-out forwards;
+}
+
+/* A freshly posted note settles into the list. */
+@keyframes qa-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+.qa-enter {
+  animation: qa-enter 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* A note that just climbed the ranking: one soft wash of the accent. */
+@keyframes qa-climb {
+  0% {
+    box-shadow: 0 0 0 0 var(--qa-accent-soft);
+  }
+  30% {
+    box-shadow: 0 0 0 3px var(--qa-accent-soft);
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+.qa-climb {
+  animation: qa-climb 900ms ease-out;
+}
+
+/* The live dot on the "Now discussing" rail. */
+@keyframes qa-live {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 var(--qa-accent-soft);
+    opacity: 1;
+  }
+  50% {
+    box-shadow: 0 0 0 5px transparent;
+    opacity: 0.75;
+  }
+}
+.qa-live {
+  animation: qa-live 1.6s ease-in-out infinite;
+}
+
+/* The spotlight card's border: a slow sweep of the accent round the edge. */
+@keyframes qa-sweep {
+  to {
+    --qa-sweep-angle: 360deg;
+  }
+}
+@property --qa-sweep-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+.qa-spotlight {
+  background:
+    linear-gradient(var(--qa-card), var(--qa-card)) padding-box,
+    conic-gradient(
+        from var(--qa-sweep-angle),
+        var(--qa-accent) 0deg,
+        transparent 90deg,
+        transparent 270deg,
+        var(--qa-accent) 360deg
+      )
+      border-box;
+  border: 1.5px solid transparent;
+  animation: qa-sweep 4s linear infinite;
+}
+
+/* The empty board's ghost rows breathe, so it reads as waiting, not broken. */
+@keyframes qa-ghost {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+.qa-ghost {
+  animation: qa-ghost 2.4s ease-in-out infinite;
+}
+
+/* Row actions reveal on hover (and stay visible on keyboard focus). */
+.qa-row .qa-row-actions {
+  opacity: 0;
+  transform: translateX(4px);
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease;
+}
+.qa-row:hover .qa-row-actions,
+.qa-row:focus-within .qa-row-actions {
+  opacity: 1;
+  transform: none;
+}

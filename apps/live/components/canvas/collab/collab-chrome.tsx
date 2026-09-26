@@ -28,9 +28,21 @@ import { Tooltip } from '@/components/primitives/Tooltip';
 // default still paints its backdrop edge to edge: a centred design-sized box
 // left the agenda's ruling and crease floating in a band in the middle of a
 // tall element, with bare card above and below.
-function CollabScale({ element, children }: { element: ShapeElement; children: React.ReactNode }) {
+//
+// A card whose content is a LIST that grows (the Q&A board, spec/151) opts out
+// with `reflow`: there, resizing is how you make room for more notes, and
+// scaling would spend the new space on bigger type instead.
+function CollabScale({
+  element,
+  reflow,
+  children,
+}: {
+  element: ShapeElement;
+  reflow?: boolean;
+  children: React.ReactNode;
+}) {
   const design = SHAPE_DEFAULT_SIZE[element.shape];
-  const scale = Math.min(element.width / design.width, element.height / design.height);
+  const scale = reflow ? 1 : Math.min(element.width / design.width, element.height / design.height);
   return (
     // Pinned with `absolute inset-0` rather than `h-full w-full`: `h-full`
     // plus padding only stays inside the box under border-box sizing, and when
@@ -69,6 +81,7 @@ export function CollabPanel({
   backdrop,
   overlay,
   inset,
+  reflow,
 }: {
   // The element, for its box. A Collaborate card SCALES to the space it is
   // given rather than laying out into it: resizing one is how a facilitator
@@ -108,6 +121,9 @@ export function CollabPanel({
   // punched margin does not print through the title and a torn edge does not
   // eat the footer.
   inset?: { left?: number; bottom?: number; top?: number };
+  // Lay out into the box at a fixed size instead of scaling to it (see
+  // CollabScale).
+  reflow?: boolean;
 }) {
   return (
     // Pinned with `absolute inset-0` rather than sized with `h-full w-full`,
@@ -118,7 +134,7 @@ export function CollabPanel({
     // "Add" pill hanging over the border. `inset-0` pins to the box whatever
     // the sizing model, and `overflow-hidden` makes it impossible for any
     // future child to escape the element it belongs to.
-    <CollabScale element={element}>
+    <CollabScale element={element} reflow={reflow}>
       <div className="relative h-full w-full overflow-hidden rounded-[inherit]">
         {backdrop}
         <div

@@ -68,6 +68,8 @@ const ALL_KINDS = [
   'raci-matrix',
   'user-story-map',
   'affinity-map',
+  'lean-coffee',
+  'town-hall',
   'business-model-canvas',
   'empathy-map',
   'funnel',

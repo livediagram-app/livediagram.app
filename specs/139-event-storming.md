@@ -1614,7 +1614,7 @@ truth for what the type IS at any moment.
 
 ## Counts
 
-The catalogue is pinned at **48 templates (10 default + 38 extra)** —
+The catalogue is pinned at **50 templates (10 default + 40 extra)** —
 `templates.test.ts`, spec/09, spec/16, spec/23, the marketing FAQ +
 landing copy, and the help centre's templates article all moved
 together with this addition.

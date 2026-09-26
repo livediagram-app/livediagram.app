@@ -24,6 +24,8 @@ import {
   type FacilitatorState,
 } from './facilitator';
 
+import { writeQaAction, type QaWriteRequest } from './qa-board-write';
+
 // One Durable Object instance per diagram id. Holds the set of currently
 // connected WebSockets plus their participant identity, and broadcasts
 // presence + op messages so every client sees what every other client is
@@ -179,6 +181,15 @@ export class DiagramRoom implements DurableObject {
   // from a fake state alone; without it the emit is skipped.
   env: Env | undefined;
 
+  // The Q&A board write queue (spec/151). Every board write for this diagram
+  // runs through here ONE AT A TIME. A Durable Object only serialises the
+  // synchronous parts of its handlers: while one write is awaiting D1, the
+  // runtime happily starts the next request, and two read-modify-writes of the
+  // same row would be exactly the race that once cost the dot vote its votes.
+  // In memory because a queue only matters while requests are in flight; a
+  // hibernation wake has none.
+  private qaQueue: Promise<unknown> = Promise.resolve();
+
   constructor(state: DurableObjectState, env?: Env) {
     this.state = state;
     this.env = env;
@@ -224,8 +235,15 @@ export class DiagramRoom implements DurableObject {
       }
       const op = (body as { op?: unknown }).op;
       if (!op) return new Response('missing op', { status: 400 });
-      this.broadcastSystemOp(op);
+      // `ordered` asks for a seq + a catch-up log slot: a system op that
+      // changes the document (a Q&A board write, spec/151) must replay to a
+      // peer whose socket blipped, the same as a peer's own mutation would.
+      if ((body as { ordered?: unknown }).ordered === true) this.broadcastOrderedSystemOp(op);
+      else this.broadcastSystemOp(op);
       return new Response(null, { status: 204 });
+    }
+    if (request.method === 'POST' && url.pathname === '/qa') {
+      return this.handleQaWrite(request);
     }
     if (request.headers.get('Upgrade') !== 'websocket') {
       return new Response('Expected WebSocket', { status: 426 });
@@ -330,6 +348,53 @@ export class DiagramRoom implements DurableObject {
     // System ops broadcast to ALL peers: the originator is the worker itself,
     // not any connected session, so nobody is excluded.
     this.broadcast({ kind: 'op', from: 'system', op });
+  }
+
+  // One Q&A board write, queued behind every other one for this diagram
+  // (spec/151). Reached only from the api worker's qa route, which has already
+  // checked access and derived the actor, so the body is trusted the same way
+  // /broadcast's is. The broadcast happens INSIDE the queued step, so peers
+  // receive board states in rev order.
+  async handleQaWrite(request: Request): Promise<Response> {
+    const env = this.env;
+    if (!env) return new Response('no env', { status: 503 });
+    let req: QaWriteRequest;
+    try {
+      req = (await request.json()) as QaWriteRequest;
+    } catch {
+      return new Response('bad json', { status: 400 });
+    }
+    const step = this.qaQueue.then(async () => {
+      const result = await writeQaAction(env, req);
+      if (result.ok && result.changed) {
+        this.broadcastOrderedSystemOp({
+          kind: 'qa',
+          tabId: req.tabId,
+          elementId: req.elementId,
+          notes: result.notes,
+          rev: result.rev,
+        });
+      }
+      return result;
+    });
+    // A failed step must not wedge every write after it.
+    this.qaQueue = step.catch(() => undefined);
+    const result = await step;
+    return result.ok
+      ? Response.json({ notes: result.notes, rev: result.rev })
+      : Response.json({ error: 'qa_write_failed' }, { status: result.status });
+  }
+
+  // A system op that changes the document (spec/151): sequenced and logged
+  // exactly like a client mutation, so `resolveCatchup` replays it. Nobody is
+  // excluded from the relay (there is no sending socket), so there is no
+  // separate `cursor` frame to send back either.
+  broadcastOrderedSystemOp(op: unknown): void {
+    const seq = ++this.seq;
+    this.persistOrder();
+    this.opLog.push({ seq, from: 'system', op });
+    if (this.opLog.length > OP_LOG_LIMIT) this.opLog.shift();
+    this.broadcast({ kind: 'op', from: 'system', op, seq, epoch: this.epoch });
   }
 
   // Hibernation event handler: one inbound frame from one socket. The DO

@@ -24,6 +24,7 @@ import { useFormatConfig } from '@/hooks/canvas/useFormatConfig';
 import { usePortalSetters } from '@/hooks/canvas/usePortalSetters';
 import { useBehaviourElements } from '@/hooks/canvas/useBehaviourElements';
 import { useCollabElements } from '@/hooks/canvas/useCollabElements';
+import { useQaBoard } from '@/hooks/canvas/useQaBoard';
 import { useFollowMe } from '@/hooks/collab/useFollowMe';
 import { useFacilitator } from '@/hooks/collab/useFacilitator';
 import { useFocusInvite } from '@/hooks/collab/useFocusInvite';
@@ -842,6 +843,19 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     [setSelectedId, setEditingId, setMultiSelectedIds],
   );
 
+  // The Q&A board (spec/151). Up here, ahead of the room, because the room
+  // lands the server's `qa` ops through it.
+  const qaBoard = useQaBoard({
+    diagramId,
+    activeId,
+    selfParticipant,
+    sessionShareCode,
+    applyRemoteTabs,
+    commitTabs,
+    remoteUpdateRef,
+    onError: (message) => toast.error(message),
+  });
+
   useRoomConnection({
     hydrated,
     diagramId,
@@ -877,6 +891,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     receivePoll: livePoll.receivePoll,
     receivePollAnswer: livePoll.receiveAnswer,
     receivePollEnd: livePoll.receivePollEnd,
+    receiveQa: qaBoard.receiveQa,
     resyncFromServer,
   });
 
@@ -3096,6 +3111,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setSessionConfigFor,
     pickerFor,
     collabElements,
+    qaBoard,
     setRatingSelected,
     setRatingAnimSelected,
     setRatingAnimSpeedSelected,

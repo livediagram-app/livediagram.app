@@ -1,11 +1,195 @@
 import type { ReactElement } from 'react';
 import type { TemplateKind } from '@livediagram/templates';
 
-// Group 3 of 3 (strategy / design / technical). Static SVG preview tiles (one branch per
+// Group 3 of 3 (strategy / design / technical, plus the Q&A board's live-session boards). Static SVG preview tiles (one branch per
 // TemplateKind; see template-preview.tsx for who renders them). Split out of template-preview.tsx to keep each file under the
 // ~1000-line budget; TemplatePreview chains the groups with ??.
 export function templatePreviewGroup3(kind: TemplateKind): ReactElement | null {
   switch (kind) {
+    case 'lean-coffee':
+      return (
+        <svg width="70" height="46" viewBox="0 0 70 50" aria-hidden>
+          {/* How-it-works steps down the left. */}
+          {[12, 18, 24, 30].map((y) => (
+            <path
+              key={y}
+              d={`M 4 ${y} L 16 ${y}`}
+              stroke="rgb(148 163 184)"
+              strokeWidth="1.4"
+              strokeLinecap="round"
+            />
+          ))}
+          {/* The Topics board: ranked rows, each with its vote chip; the top
+              chip is filled, the vote that put it there. */}
+          <rect
+            x="21"
+            y="6"
+            width="28"
+            height="40"
+            rx="3"
+            fill="white"
+            stroke="rgb(14 165 233)"
+            strokeWidth="1"
+          />
+          {[0, 1, 2, 3].map((i) => (
+            <g key={i}>
+              <rect
+                x="24"
+                y={11 + i * 8.5}
+                width="5"
+                height="6"
+                rx="1.2"
+                fill={i === 0 ? 'rgb(14 165 233)' : 'rgb(224 242 254)'}
+              />
+              <path
+                d={`M 31 ${14 + i * 8.5} L ${45 - i * 3} ${14 + i * 8.5}`}
+                stroke="rgb(100 116 139)"
+                strokeWidth="1.2"
+                strokeLinecap="round"
+              />
+            </g>
+          ))}
+          {/* The timebox timer and the keep-going poll. */}
+          <circle
+            cx="58"
+            cy="12"
+            r="5"
+            fill="rgb(224 242 254)"
+            stroke="rgb(14 165 233)"
+            strokeWidth="0.9"
+          />
+          <path
+            d="M 58 9.5 L 58 12 L 60 13.2"
+            fill="none"
+            stroke="rgb(14 165 233)"
+            strokeWidth="0.9"
+            strokeLinecap="round"
+          />
+          {/* Takeaways checklist. */}
+          {[25, 32, 39].map((y, i) => (
+            <g key={y}>
+              <rect
+                x="53"
+                y={y - 2.5}
+                width="4"
+                height="4"
+                rx="0.8"
+                fill="white"
+                stroke="rgb(100 116 139)"
+                strokeWidth="0.8"
+              />
+              <path
+                d={`M 59.5 ${y - 0.5} L ${67 - i * 2} ${y - 0.5}`}
+                stroke="rgb(148 163 184)"
+                strokeWidth="1.1"
+                strokeLinecap="round"
+              />
+            </g>
+          ))}
+        </svg>
+      );
+    case 'town-hall':
+      return (
+        <svg width="70" height="46" viewBox="0 0 70 50" aria-hidden>
+          {/* The agenda: segments with their minutes, the Q&A block current. */}
+          <rect
+            x="3"
+            y="6"
+            width="17"
+            height="24"
+            rx="2.5"
+            fill="white"
+            stroke="rgb(203 213 225)"
+            strokeWidth="0.9"
+          />
+          {[11, 16, 21, 26].map((y, i) => (
+            <path
+              key={y}
+              d={`M 6 ${y} L 17 ${y}`}
+              stroke={i === 2 ? 'rgb(14 165 233)' : 'rgb(148 163 184)'}
+              strokeWidth="1.3"
+              strokeLinecap="round"
+            />
+          ))}
+          <rect
+            x="3"
+            y="34"
+            width="17"
+            height="8"
+            rx="4"
+            fill="rgb(224 242 254)"
+            stroke="rgb(14 165 233)"
+            strokeWidth="0.8"
+          />
+          {/* The questions board: the spotlit question lit at the top, the
+              ranked queue under it. */}
+          <rect
+            x="24"
+            y="4"
+            width="26"
+            height="43"
+            rx="3"
+            fill="white"
+            stroke="rgb(14 165 233)"
+            strokeWidth="1"
+          />
+          <rect
+            x="26.5"
+            y="7"
+            width="21"
+            height="9"
+            rx="2"
+            fill="rgb(224 242 254)"
+            stroke="rgb(14 165 233)"
+            strokeWidth="0.8"
+          />
+          <path
+            d="M 29.5 11.5 L 44.5 11.5"
+            stroke="rgb(14 165 233)"
+            strokeWidth="1.3"
+            strokeLinecap="round"
+          />
+          {[0, 1, 2].map((i) => (
+            <g key={i}>
+              <rect
+                x="27"
+                y={20 + i * 8.5}
+                width="4.5"
+                height="6"
+                rx="1.2"
+                fill={i === 0 ? 'rgb(14 165 233)' : 'rgb(224 242 254)'}
+              />
+              <path
+                d={`M 33.5 ${23 + i * 8.5} L ${46 - i * 3} ${23 + i * 8.5}`}
+                stroke="rgb(100 116 139)"
+                strokeWidth="1.2"
+                strokeLinecap="round"
+              />
+            </g>
+          ))}
+          {/* Follow-ups checklist. */}
+          {[12, 19, 26].map((y, i) => (
+            <g key={y}>
+              <rect
+                x="54"
+                y={y - 2.5}
+                width="4"
+                height="4"
+                rx="0.8"
+                fill="white"
+                stroke="rgb(100 116 139)"
+                strokeWidth="0.8"
+              />
+              <path
+                d={`M 60.5 ${y - 0.5} L ${67 - i * 2} ${y - 0.5}`}
+                stroke="rgb(148 163 184)"
+                strokeWidth="1.1"
+                strokeLinecap="round"
+              />
+            </g>
+          ))}
+        </svg>
+      );
     case 'flywheel':
       return (
         <svg width="70" height="46" viewBox="0 0 70 50" aria-hidden>

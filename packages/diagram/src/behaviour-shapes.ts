@@ -25,6 +25,7 @@ export const BEHAVIOUR_SHAPES: readonly ShapeKind[] = [
   'estimate',
   'temperature',
   'idea-box',
+  'qa-board',
   'agenda',
   'decision',
   'roll-call',
@@ -44,7 +45,8 @@ export function isBehaviourShape(kind: ShapeKind): boolean {
  *
  * The ones that do earned it: a Timer's length, a Vote's dots and a Poll's
  * question are the settings you change mid-session, and a Done check's round
- * and an Idea box's contents are reset from the same place. Everything else in
+ * and an Idea box's contents are reset from the same place, as are a Q&A
+ * board's spotlight and notes (spec/151). Everything else in
  * the family gets the shared settings `…` instead, which opens the element's
  * context menu.
  *
@@ -53,7 +55,9 @@ export function isBehaviourShape(kind: ShapeKind): boolean {
  * can see from across the room.
  */
 export function drawsOwnElementMenu(kind: ShapeKind): boolean {
-  return kind === 'session-button' || kind === 'done-check' || kind === 'idea-box';
+  return (
+    kind === 'session-button' || kind === 'done-check' || kind === 'idea-box' || kind === 'qa-board'
+  );
 }
 
 /**

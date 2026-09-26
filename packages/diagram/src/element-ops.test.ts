@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { Element } from './index';
+import { createShape, type Element } from './index';
 import { applyElementOp, applyElementOps, diffToElementOps } from './element-ops';
 
 const el = (id: string, over: Partial<Element> = {}): Element =>
@@ -87,5 +87,37 @@ describe('concurrent different-element edits merge (the Level 0 win)', () => {
     const expected = [el('x', { x: 100 }), el('y', { y: 200 })];
     expect(ab).toEqual(expected);
     expect(ba).toEqual(expected);
+  });
+});
+
+// The dot vote's old failure (spec/39), on the Q&A board (spec/151): a peer
+// moves the board with a copy taken before a vote reached them, and their
+// `el` update must not send that vote back out of existence.
+describe('applyElementOp on a Q&A board', () => {
+  const board = (rev: number, voters: string[], x = 0) => ({
+    ...createShape('qa-board', x, 0),
+    id: 'b',
+    qaRev: rev,
+    qaNotes: [{ id: 'n1', text: 'q', at: 1, voters }],
+  });
+
+  it('keeps votes a stale peer update never saw, but takes the move', () => {
+    const local = [board(5, ['a', 'b', 'c'])];
+    const stale = board(4, ['a', 'b'], 300);
+    const [out] = applyElementOp(local, { kind: 'update', element: stale }) as ReturnType<
+      typeof board
+    >[];
+    expect(out!.x).toBe(300);
+    expect(out!.qaNotes[0]!.voters).toEqual(['a', 'b', 'c']);
+    expect(out!.qaRev).toBe(5);
+  });
+
+  it('takes a newer board state from a peer', () => {
+    const local = [board(5, ['a'])];
+    const [out] = applyElementOp(local, {
+      kind: 'update',
+      element: board(6, ['a', 'z']),
+    }) as ReturnType<typeof board>[];
+    expect(out!.qaNotes[0]!.voters).toEqual(['a', 'z']);
   });
 });

@@ -21,6 +21,7 @@ import { AgendaFace } from './AgendaFace';
 import { RollCallFace } from './RollCallFace';
 import { DecisionFace } from './DecisionFace';
 import { DoneCheckFace } from './DoneCheckFace';
+import { QaBoardFace } from './qa/QaBoardFace';
 
 // What a collaboration face needs from the editor. Absent entirely on a
 // surface with no session behind it (the read-only embed, the export
@@ -48,6 +49,22 @@ export type CollabApi = {
   scatterIdeas?: (element: ShapeElement) => void;
   pressAgendaItem?: (element: ShapeElement, index: number) => void;
   takeRoll?: (element: ShapeElement) => void;
+  // The Q&A board (spec/151). Our OWNER id, only so the board can compute our
+  // voter id the way the server does (qaVoterId) and know which notes we
+  // voted for; the face never renders or sends it. And our name, for the
+  // composer's "As …" toggle.
+  selfOwnerId?: string;
+  selfName?: string;
+  // Present for anyone in a live session, view links included: the server
+  // owns the board and gates these on read access.
+  addQaNote?: (element: ShapeElement, text: string, anonymous: boolean) => void;
+  voteQaNote?: (element: ShapeElement, noteId: string, on: boolean) => void;
+  // Whoever is running the board (spec/149): absent for everyone else.
+  discussQaNote?: (element: ShapeElement, noteId: string | null) => void;
+  closeQaNote?: (element: ShapeElement, noteId: string) => void;
+  reopenQaNote?: (element: ShapeElement, noteId: string) => void;
+  removeQaNote?: (element: ShapeElement, noteId: string) => void;
+  clearQaBoard?: (element: ShapeElement) => void;
 };
 
 export function CollabFaceRouter({
@@ -134,6 +151,31 @@ export function CollabFaceRouter({
         onReveal={api?.revealIdeas ? () => api.revealIdeas!(element) : undefined}
         onClear={api?.clearIdeas ? () => api.clearIdeas!(element) : undefined}
         onScatter={api?.scatterIdeas ? () => api.scatterIdeas!(element) : undefined}
+        onOpenSettings={onOpenSettings}
+      />
+    );
+  }
+  if (element.shape === 'qa-board') {
+    // Bind each verb to this element once, so the face deals in note ids.
+    const bind = <A extends unknown[]>(fn?: (el: ShapeElement, ...args: A) => void) =>
+      fn ? (...args: A) => fn(element, ...args) : undefined;
+    return (
+      <QaBoardFace
+        element={element}
+        label={label}
+        textColor={textColor}
+        surface={surface}
+        selfOwnerId={api?.selfOwnerId ?? ''}
+        selfName={api?.selfName ?? ''}
+        actions={{
+          add: bind(api?.addQaNote),
+          vote: bind(api?.voteQaNote),
+          discuss: bind(api?.discussQaNote),
+          close: bind(api?.closeQaNote),
+          reopen: bind(api?.reopenQaNote),
+          remove: bind(api?.removeQaNote),
+          clear: bind(api?.clearQaBoard),
+        }}
         onOpenSettings={onOpenSettings}
       />
     );

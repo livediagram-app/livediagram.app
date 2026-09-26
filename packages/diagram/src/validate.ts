@@ -21,6 +21,7 @@ import type { Element, ShapeKind, Tab } from './index';
 import { EMBED_PROVIDERS } from './youtube';
 import { isPickerSource, isSelectionMode, isSessionTool } from './selection-mode';
 import { RESPONSES_MAX, RESPONSE_VALUE_MAX } from './responses';
+import { QA_MAX_ID, QA_MAX_NAME, QA_MAX_NOTES, QA_MAX_TEXT, QA_MAX_VOTERS } from './qa-board';
 import {
   AGENDA_MAX_ITEMS,
   AGENDA_MAX_TEXT,
@@ -129,6 +130,7 @@ export const SHAPE_KINDS = new Set<string>([
   'estimate',
   'temperature',
   'idea-box',
+  'qa-board',
   'agenda',
   'decision',
   'roll-call',
@@ -353,6 +355,30 @@ export function isValidElement(el: unknown): el is Element {
       }
     }
     if (el.ideasRevealed !== undefined && typeof el.ideasRevealed !== 'boolean') return false;
+    // Q&A board (spec/151): bounded notes, each with bounded voters. The
+    // one-vote-per-person rule is the reducer's (applyQaAction), not a load
+    // check, for the same leniency `responses` takes above.
+    if (el.qaNotes !== undefined) {
+      if (!boundedArray(el.qaNotes, QA_MAX_NOTES)) return false;
+      for (const n of el.qaNotes) {
+        if (!isObj(n)) return false;
+        if (typeof n.id !== 'string' || n.id.length === 0 || n.id.length > QA_MAX_ID) return false;
+        if (typeof n.text !== 'string' || n.text.length > QA_MAX_TEXT) return false;
+        if (typeof n.at !== 'number' || !Number.isFinite(n.at)) return false;
+        if (!boundedArray(n.voters, QA_MAX_VOTERS)) return false;
+        for (const v of n.voters) if (typeof v !== 'string' || v.length > QA_MAX_ID) return false;
+        if (n.state !== undefined && n.state !== 'discussing' && n.state !== 'done') return false;
+        if (n.doneAt !== undefined && (typeof n.doneAt !== 'number' || !Number.isFinite(n.doneAt)))
+          return false;
+        if (n.author !== undefined) {
+          if (!isObj(n.author)) return false;
+          if (typeof n.author.name !== 'string' || n.author.name.length > QA_MAX_NAME) return false;
+          if (typeof n.author.color !== 'string' || n.author.color.length > 32) return false;
+        }
+      }
+    }
+    if (el.qaRev !== undefined && (typeof el.qaRev !== 'number' || !Number.isFinite(el.qaRev)))
+      return false;
     // Agenda (spec/127): bounded rows of { label, minutes }. Minutes are
     // clamped where they're read (clampAgendaMinutes), not rejected here — a
     // tab shouldn't fail to load over a number someone can fix from the menu,

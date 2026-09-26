@@ -285,3 +285,30 @@ export async function reorderTabs(
   if (batch.length > 0) await env.DB.batch(batch);
   await env.DB.prepare('UPDATE diagrams SET saved_at = ? WHERE id = ?').bind(now, diagramId).run();
 }
+
+// Compare-and-swap one tab's `data` blob (spec/151). Writes `nextData` only
+// if the row still holds exactly `expectedData`, the string the caller read,
+// and reports whether it did. The Q&A board's endpoint loops on this so a
+// room voting in the same second can't lose a vote to the read-modify-write
+// race a plain upsert would have.
+//
+// Only `data` and `updated_at` move: a board write never renames, reorders or
+// relinks the tab, and it touches no action or thread, so the collaboration
+// index (spec/142) has nothing to mirror.
+export async function swapTabData(
+  env: Env,
+  diagramId: string,
+  tabId: string,
+  expectedData: string,
+  nextData: string,
+): Promise<boolean> {
+  const now = Date.now();
+  const res = await env.DB.prepare(
+    'UPDATE tabs SET data = ?, updated_at = ? WHERE id = ? AND data = ?',
+  )
+    .bind(nextData, now, tabId, expectedData)
+    .run();
+  if ((res.meta?.changes ?? 0) === 0) return false;
+  await env.DB.prepare('UPDATE diagrams SET saved_at = ? WHERE id = ?').bind(now, diagramId).run();
+  return true;
+}

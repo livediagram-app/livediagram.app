@@ -14,7 +14,7 @@ import { Scene, Label, TextBar, Avatar, Shape, Arrow, Panel } from './primitives
 
 /** A collaboration element on the canvas: title, the count on the right, a
  *  body, and the card's own footer buttons. */
-function CollabCard({
+export function CollabCard({
   x,
   y,
   w,
@@ -64,7 +64,7 @@ function CollabCard({
 }
 
 /** A card footer button: loud for the one the card is for, quiet beside it. */
-function CardButton({
+export function CardButton({
   x,
   y,
   w,

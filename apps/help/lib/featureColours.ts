@@ -152,6 +152,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'estimate-cards': '#8b5cf6',
   'temperature-checks': '#ef4444',
   'idea-boxes': '#eab308',
+  'qa-boards': '#6d5efc',
   agendas: '#0891b2',
   'decision-records': '#14b8a6',
   'roll-calls': '#a855f7',

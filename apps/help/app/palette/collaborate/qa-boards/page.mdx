@@ -1,0 +1,63 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { QaBoardCard } from '@/components/illustrations/palette-qa-board';
+
+export const metadata = helpMetadata({
+  title: 'Q&A Boards',
+  description:
+    'A Slido-style list where anyone adds a note, named or anonymous, everyone upvotes the ones they want to discuss, and the most wanted rise to the top for the facilitator to spotlight and close.',
+  path: '/help/palette/collaborate/qa-boards/',
+});
+
+<ArticleLayout
+  title="Q&A Boards"
+  description="Notes the room upvotes, with the most wanted always on top."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  parentArticle={{ title: 'Collaborate elements', slug: 'collaborate' }}
+  subArticles={getSubArticles('collaborate').filter((a) => a.slug !== 'qa-boards')}
+>
+
+A Q&A board is a live question queue. Anyone adds a note, everyone upvotes the ones they want to talk about, and the list keeps itself sorted so the most wanted note is always on top. It sits in the **Ask** group of the [Collaborate](/help/palette/collaborate/) category.
+
+<Figure caption="The note being discussed sits in the spotlight; the queue below is ranked by votes.">
+  <QaBoardCard />
+</Figure>
+
+## Adding a note
+
+Type into **Add a note** at the foot of the board and press Enter. Your name goes on the note unless you switch on **Anonymous**, in which case no name is stored with it at all. The switch stays on for the rest of your session.
+
+People on a **view-only** share link can add notes and vote too: the audience asking questions rarely has edit rights, and doesn't need them here.
+
+## Voting
+
+Press the arrow beside a note to upvote it. Press it again to take your vote back. You get **one vote per note**, and the board enforces that itself, so it holds however many tabs you have open.
+
+When votes change the ranking, notes slide to their new place. The top note is marked **Most wanted**, and the thin bar under each note shows its votes against the top note's.
+
+## Running the discussion
+
+The [facilitator](/help/collaboration/facilitator/) runs the board. If nobody has taken that role, anyone with edit rights can.
+
+- **Discuss the top note**, or **Discuss now** on any note, lifts it into the spotlight at the top.
+- **Done** folds it into **Discussed** below the queue, with its votes frozen. **Done, next** closes it and spotlights the current top note in one press.
+- **Remove** takes a note off the board, for duplicates and anything off-topic.
+- Open **Discussed** to see what the room has covered, and **Reopen** a note to put it back in the queue.
+- The board's `…` menu clears the spotlight or empties the board for the next session.
+
+## Templates
+
+Two [templates](/help/canvas/templates/) in the **Agile** category start from a Q&A board:
+
+- **Lean Coffee**: the room brings the topics, upvotes them, and talks through the top ones in timeboxes. The board sits beside an 8-minute timer, a "Keep going on this topic?" poll and a takeaways checklist.
+- **Town Hall Q&A**: an audience Q&A for an all-hands or a panel, with an agenda, a timer for the Q&A block and a follow-ups checklist for anything the panel can't answer live.
+
+<Tip>
+  Make the board bigger to fit more notes on screen: the text stays the same size and more of the
+  queue shows before it scrolls. To make it readable from the back of the room, zoom the canvas
+  instead.
+</Tip>
+
+</ArticleLayout>

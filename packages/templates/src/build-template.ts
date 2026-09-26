@@ -30,6 +30,7 @@ import { buildFloorPlan } from './template-builders-floorplan';
 import { buildEventStorming } from './template-builders-eventstorming';
 import { buildBusinessModelCanvas, buildEmpathyMap } from './template-builders-canvases';
 import { buildAffinityMap, buildUserStoryMap } from './template-builders-workshops';
+import { buildLeanCoffee, buildTownHall } from './template-builders-sessions';
 import { buildOkrTree, buildSitemap } from './template-builders-hierarchies';
 import { buildFunnel } from './template-builders-funnel';
 import { buildRoadmap } from './template-builders-roadmap';
@@ -136,6 +137,10 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
       return buildUserStoryMap(cx, cy);
     case 'affinity-map':
       return buildAffinityMap(cx, cy);
+    case 'lean-coffee':
+      return buildLeanCoffee(cx, cy);
+    case 'town-hall':
+      return buildTownHall(cx, cy);
     case 'business-model-canvas':
       return buildBusinessModelCanvas(cx, cy);
     case 'empathy-map':

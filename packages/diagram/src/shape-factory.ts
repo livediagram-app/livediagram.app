@@ -183,6 +183,9 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // Idea box (spec/125): a box that holds a stack of cards, so it arrives
   // sized like a retro column rather than a sticky.
   'idea-box': { width: 320, height: 340 },
+  // Q&A board (spec/151): a spotlight over a ranked list over the add field,
+  // so it arrives tall enough for five or six notes before it scrolls.
+  'qa-board': { width: 360, height: 460 },
   // Agenda (spec/127): a run of six segments before it needs resizing.
   agenda: { width: 330, height: 300 },
   // Decision record (spec/128): a card for a sentence plus three drivers.
@@ -339,6 +342,7 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
     kind === 'estimate' ||
     kind === 'temperature' ||
     kind === 'idea-box' ||
+    kind === 'qa-board' ||
     kind === 'agenda' ||
     kind === 'roll-call'
   ) {
@@ -360,6 +364,7 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
     }
     if (kind === 'temperature') return { ...seed, label: 'How are we feeling?' };
     if (kind === 'idea-box') return { ...seed, label: 'Ideas' };
+    if (kind === 'qa-board') return { ...seed, label: 'Questions' };
     if (kind === 'agenda') {
       return {
         ...seed,

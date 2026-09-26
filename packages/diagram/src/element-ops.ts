@@ -17,6 +17,7 @@
 // the CRDT (Level 2).
 
 import type { Element } from './index';
+import { preferNewerQa } from './qa-board';
 
 export type ElementOp =
   // A new element appeared; `at` is its z-order index in the tab.
@@ -76,7 +77,7 @@ export function applyElementOp(elements: Element[], op: ElementOp): Element[] {
   switch (op.kind) {
     case 'add': {
       if (elements.some((e) => e.id === op.element.id)) {
-        return elements.map((e) => (e.id === op.element.id ? op.element : e));
+        return elements.map((e) => (e.id === op.element.id ? preferNewerQa(e, op.element) : e));
       }
       const next = elements.slice();
       const at = Math.max(0, Math.min(op.at, next.length));
@@ -85,7 +86,10 @@ export function applyElementOp(elements: Element[], op: ElementOp): Element[] {
     }
     case 'update':
       return elements.some((e) => e.id === op.element.id)
-        ? elements.map((e) => (e.id === op.element.id ? op.element : e))
+        ? // A Q&A board keeps whichever notes carry the newer rev (spec/151):
+          // a peer who moved the board before a vote reached them must not
+          // send that vote back out of existence.
+          elements.map((e) => (e.id === op.element.id ? preferNewerQa(e, op.element) : e))
         : elements;
     case 'remove':
       return elements.filter((e) => e.id !== op.id);
