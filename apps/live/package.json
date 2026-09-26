@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@clerk/react": "^6.16.1",
-    "@huggingface/transformers": "^3.8.1",
+    "@huggingface/transformers": "^4.3.0",
     "@livediagram/api-schema": "workspace:*",
     "@livediagram/diagram": "workspace:*",
     "@livediagram/help-registry": "workspace:*",
