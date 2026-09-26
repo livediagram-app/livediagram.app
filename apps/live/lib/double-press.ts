@@ -68,3 +68,15 @@ export function createPressLedger() {
 // One canvas per page, so one ledger: presses on boxes, arrows, labels and
 // handles all land here.
 export const pressLedger = createPressLedger();
+
+// A selection handle's press: records it, and says whether it may start its
+// gesture. A press that pairs with the one before (the second click of a
+// double-click, landing on a handle the first click revealed) may not; the
+// double-click then reaches the element and edits it.
+export function handlePressStarts(
+  id: string,
+  e: { timeStamp: number; clientX: number; clientY: number },
+): boolean {
+  return !pressLedger.press({ id, t: e.timeStamp, x: e.clientX, y: e.clientY, wasSelected: true })
+    .pairs;
+}

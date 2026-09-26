@@ -4,6 +4,7 @@
 import type { CSSProperties, PointerEvent as ReactPointerEvent } from 'react';
 import { LockIcon } from '@livediagram/ui';
 import type { DragMode } from '@/lib/canvas';
+import { handlePressStarts } from '@/lib/double-press';
 import { ADORNMENT_MIN_ZOOM } from '@/components/canvas/element-badges';
 import {
   FLOATING_CONTROL_CLASS,
@@ -104,7 +105,7 @@ function ResizeHandles({ elementId, zoom, rotation = 0, onBeginDrag }: ResizeHan
           key={pos}
           onPointerDown={(e) => {
             e.stopPropagation();
-            onBeginDrag(elementId, `resize-${pos}`, e);
+            if (handlePressStarts(elementId, e)) onBeginDrag(elementId, `resize-${pos}`, e);
           }}
           style={{
             transform: `scale(${1 / zoom})`,
@@ -268,7 +269,7 @@ function EdgeResizeHandle({
       aria-label={`Resize ${vertical ? 'height' : 'width'}`}
       onPointerDown={(e) => {
         e.stopPropagation();
-        onBeginDrag(elementId, `resize-${anchor}`, e);
+        if (handlePressStarts(elementId, e)) onBeginDrag(elementId, `resize-${anchor}`, e);
       }}
       style={{
         ...ANCHOR_STYLE[anchor],

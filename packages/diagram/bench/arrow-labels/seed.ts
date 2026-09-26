@@ -15,7 +15,23 @@ if (!apiBase || !ownerId) {
 }
 
 const id = crypto.randomUUID();
-const tabs = SCENARIOS.map((s) => ({ id: `tab-${s.id}`, name: s.title, elements: s.elements }));
+const tabs = [
+  ...SCENARIOS.map((s) => ({ id: `tab-${s.id}`, name: s.title, elements: s.elements })),
+  // An arrow attached to nothing, for the move frame (docs/specs/008-canvas/arrow-bending.md).
+  {
+    id: 'tab-free',
+    name: '11. Free arrow',
+    elements: [
+      {
+        id: 'free',
+        type: 'arrow' as const,
+        from: { kind: 'free' as const, x: 200, y: 300 },
+        to: { kind: 'free' as const, x: 600, y: 300 },
+        label: 'drifting',
+      },
+    ],
+  },
+];
 const res = await fetch(`${apiBase}/diagrams`, {
   method: 'POST',
   headers: { 'content-type': 'application/json', 'x-owner-id': ownerId },

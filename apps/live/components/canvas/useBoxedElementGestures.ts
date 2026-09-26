@@ -3,6 +3,7 @@ import type { PointerEvent as ReactPointerEvent, RefObject } from 'react';
 import { isSelfDrawingShape } from '@livediagram/diagram';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
 import { useLongPress } from '@/hooks/ui/useLongPress';
+import { pressLedger } from '@/lib/double-press';
 import type { BoxedElementViewProps } from './BoxedElementView.types';
 
 // The boxed element's press / double-click / context-menu routing,
@@ -85,6 +86,17 @@ export function useBoxedElementGestures({
       onCastVote(element.id);
       return;
     }
+    // The double-press rule (docs/specs/008-canvas/arrow-bending.md): the second press of a
+    // double-click never drags; the dblclick that follows edits. After the
+    // vote branch, so two quick presses during a vote still cast two dots.
+    const verdict = pressLedger.press({
+      id: element.id,
+      t: e.timeStamp,
+      x: e.clientX,
+      y: e.clientY,
+      wasSelected: isSelected,
+    });
+    if (verdict.pairs) return;
     // Shift modifier: on an element that is NOT part of the selection it
     // stays the immediate selection toggle (add to the marquee set), the
     // convention every drawing tool uses. On an element that IS selected
