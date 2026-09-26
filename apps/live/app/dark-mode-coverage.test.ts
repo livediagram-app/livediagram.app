@@ -78,10 +78,26 @@ describe('tiles of light-canvas illustration art', () => {
     // The ~48 template previews and the export-format glyphs are drawn as
     // light-canvas art. One `.dark` rule flips the lot, so a preview nobody
     // has drawn yet is dark-correct the moment it lands.
-    expect(RELIGHT_CSS).toMatch(
-      /\.dark \.preview-art-tile,\s*\.preview-art-tile-dark \{[^}]*filter:[^}]*invert/,
-    );
+    expect(RELIGHT_CSS).toMatch(/\.dark \.preview-art-tile \{[^}]*filter:[^}]*invert/);
     expect(GLOBALS).toContain("@import '@livediagram/template-previews/preview-art-tile.css';");
+  });
+
+  // The editor's tiles land on the dark CANVAS colour (docs/specs/007-editor/live-app.md), so a
+  // thumbnail previews the canvas you will get: the plate and every white fill are clamped to
+  // #f3faff before the filter, which maps it to #0d1318, the nearest it reaches to #0d121a.
+  it('land the editor tile on the dark canvas colour', () => {
+    const rule = /\.dark \.preview-art-tile \{([^}]*)\}/.exec(RELIGHT_CSS)?.[1] ?? '';
+    expect(rule).toMatch(/filter:\s*invert\(0\.95\) hue-rotate\(180deg\)/);
+    expect(rule).toMatch(/background-color:\s*#f3faff/);
+    const veil = /\.dark \.preview-art-tile::after \{([^}]*)\}/.exec(RELIGHT_CSS)?.[1] ?? '';
+    expect(veil).toMatch(/background:\s*#f3faff/);
+    expect(veil).toMatch(/mix-blend-mode:\s*darken/);
+  });
+
+  it("leave the marketing gallery's dark tile as it was", () => {
+    expect(RELIGHT_CSS).toMatch(
+      /\.preview-art-tile-dark \{\s*filter: invert\(0\.9\) hue-rotate\(180deg\);\s*\}/,
+    );
   });
 
   it('no longer prop up the old light-plate workaround', () => {

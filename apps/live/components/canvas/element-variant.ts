@@ -25,6 +25,10 @@ import { isSvgRenderedShape } from '@/components/canvas/shape-svg-overlay';
 // table using an outline rather than a real border; and the user-pickable
 // border width / style / radius for CSS shapes. Lifted out of
 // BoxedElementView so the rules are unit-testable.
+// The offset gap (text's ring stands off the glyphs) shows the paper rather than a white frame.
+const DARK_SELECTION_RING =
+  'dark:ring-blue-500/80 dark:shadow-[0_0_20px_rgba(37,99,235,0.15)] dark:ring-offset-transparent';
+
 export function describeVariant(
   element: BoxedElement,
   isSelected: boolean,
@@ -37,8 +41,10 @@ export function describeVariant(
 ): { className: string; style: CSSProperties } {
   // Multi-selection uses a much louder ring (solid brand-500, offset)
   // so a busy canvas with many selected elements reads unambiguously.
-  // Single selection keeps the subtler brand-200 / brand-300 rings.
-  const singleRing = (cls: string) => (isSelected && !isMultiSelected ? cls : '');
+  // Single selection keeps the subtler brand-200 / brand-300 rings, and in
+  // dark mode is a blue ring with a soft glow (docs/specs/008-canvas/canvas-and-palette.md, Selection).
+  const singleRing = (cls: string) =>
+    isSelected && !isMultiSelected ? `${cls} ${DARK_SELECTION_RING}` : '';
   const multiRing = isMultiSelected ? 'ring-2 ring-brand-500 ring-offset-2 ring-offset-white' : '';
   // When a remote participant has this element selected, draw a thicker
   // 3-pixel border in their colour so the realtime signal is glanceable.
@@ -142,13 +148,11 @@ export function describeVariant(
       };
     }
     case 'text': {
+      // Unselected text has no border / outline — it reads as plain text on
+      // the canvas; the selection ring only appears on select.
       const ring = isMultiSelected
         ? multiRing
-        : isSelected
-          ? 'ring-2 ring-brand-300 ring-offset-2 ring-offset-white'
-          : // Unselected text has no border / outline — it reads as plain
-            // text on the canvas; the selection ring only appears on select.
-            '';
+        : singleRing('ring-2 ring-brand-300 ring-offset-2 ring-offset-white');
       return {
         className: `text-slate-800 rounded-sm ${ring}`,
         // Text elements have no real border; render the remote-selector

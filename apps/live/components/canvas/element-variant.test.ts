@@ -28,6 +28,36 @@ describe('describeVariant — selection rings', () => {
   });
 });
 
+// Dark mode (docs/specs/008-canvas/canvas-and-palette.md, Selection): a single selection is a
+// blue-500/80 ring with a soft glow, so it reads as light on dark paper. Light keeps the brand ring.
+describe('describeVariant — dark selection', () => {
+  const DARK_RING = ['dark:ring-blue-500/80', 'dark:shadow-[0_0_20px_rgba(37,99,235,0.15)]'];
+
+  it('adds the blue ring and glow to a single selection of every kind', () => {
+    for (const el of [
+      shape(),
+      shape({ shape: 'diamond' }),
+      make('text'),
+      make('sticky'),
+      make('image'),
+    ]) {
+      const cls = describeVariant(el, true, false, null).className.split(/\s+/);
+      for (const token of DARK_RING) expect(cls, el.type).toContain(token);
+    }
+  });
+
+  it('keeps the light ring exactly as it was', () => {
+    expect(describeVariant(shape(), true, false, null).className).toContain(
+      'ring-2 ring-brand-200',
+    );
+  });
+
+  it('leaves unselected and multi-selected elements alone', () => {
+    expect(describeVariant(shape(), false, false, null).className).not.toContain('dark:ring');
+    expect(describeVariant(shape(), false, true, null).className).not.toContain('dark:ring');
+  });
+});
+
 describe('describeVariant — per-type body styling', () => {
   it('a CSS shape carries fill + border + radius in style', () => {
     const { style } = describeVariant(

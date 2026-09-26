@@ -88,6 +88,21 @@ export function resizeCursor(handle: string, rotation: number): string {
 const HIT_PAD_CLASSES =
   "pointer-coarse:before:absolute pointer-coarse:before:-inset-[16px] pointer-coarse:before:content-['']";
 
+// The corner resize handle: the floating control in light mode, and in dark mode
+// (docs/specs/008-canvas/canvas-and-palette.md, Selection) a #60a5fa square with a #1e3a8a border
+// that holds its fill on hover (only the opacity lifts). The floating control's own dark plate
+// is left out rather than overridden.
+const lightOnly = (cls: string) =>
+  cls
+    .split(/\s+/)
+    .filter((t) => t && !t.startsWith('dark:'))
+    .join(' ');
+export const RESIZE_HANDLE_CLASS = [
+  lightOnly(`${FLOATING_CONTROL_CLASS} ${FLOATING_CONTROL_HOVER_CLASS}`),
+  'dark:rounded-[1px] dark:border-blue-900 dark:bg-blue-400 dark:shadow-none',
+  'dark:hover:border-blue-900 dark:hover:bg-blue-400 dark:hover:shadow-none',
+].join(' ');
+
 type ResizeHandlesProps = {
   elementId: string;
   zoom: number;
@@ -112,7 +127,7 @@ export function ResizeHandles({ elementId, zoom, rotation = 0, onBeginDrag }: Re
             transformOrigin: 'center',
             cursor: resizeCursor(pos, rotation),
           }}
-          className={`pointer-events-auto absolute h-3 w-3 opacity-70 hover:opacity-100 ${FLOATING_CONTROL_CLASS} ${FLOATING_CONTROL_HOVER_CLASS} ${positionClasses[pos]} ${HIT_PAD_CLASSES}`}
+          className={`pointer-events-auto absolute h-3 w-3 opacity-70 hover:opacity-100 ${RESIZE_HANDLE_CLASS} ${positionClasses[pos]} ${HIT_PAD_CLASSES}`}
         />
       ))}
     </>
