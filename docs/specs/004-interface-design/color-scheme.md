@@ -40,6 +40,8 @@ Slate complements sky cleanly (both are cool-toned). Use for text, borders, surf
 | `slate-900` | `#0F172A` | Highest-contrast text, dark bg |
 | `slate-950` | `#020617` | Dark mode page background      |
 
+In dark mode the three surface stops are the blue-slate of the [dark palette](#dark-palette-steel) instead.
+
 ## Semantic colors
 
 Reserved for status — never used decoratively.
@@ -59,13 +61,77 @@ Reserved for status — never used decoratively.
 - **Focus rings** are 2px `brand-500` with a 2px `brand-100` halo for accessibility.
 - **Selection / collaborator highlights** on the canvas use `brand-200`–`brand-300` tints. Individual collaborator cursors may shift hue (per-user color), but the default user's selection stays in the brand range.
 - **Page background**: `slate-50`. **Canvas background**: pure white (`#FFFFFF`) so diagrams read cleanly.
-- **Dark mode** uses `slate-950` page bg, `slate-900` surfaces, `brand-400` for primary actions (lighter shade reads better on dark).
+- **Dark mode** uses `slate-950` page bg, `slate-900` surfaces and the Steel accent, as the [dark palette](#dark-palette-steel) sets out.
+- **Numerals in a circle or pill** (step numbers, counts) centre their ink, not their line box: the digit sits in
+  `text-optical-centre`, a shared utility that trims the text box to cap height and baseline. It is layout, not
+  colour, so it holds in both appearances.
+
+## Dark palette (Steel)
+
+Dark mode is its own palette, not the light one with the lights off. It lives in `packages/tailwind-config/theme.css`
+under `.dark` and **retargets tokens only**: every `slate-*` / `brand-*` utility keeps its name, and light mode keeps
+every colour it has. The canvas half of the palette (backdrop, grid, element ink, arrows, selection) belongs to the
+Default colour scheme's dark half, specified in [Canvas and palette](../008-canvas/canvas-and-palette.md).
+
+### Surfaces
+
+A blue-slate, one hue with the canvas (`#0d121a`) so chrome and paper read as one material.
+
+| Token       | Dark value | Usage                               |
+| ----------- | ---------- | ----------------------------------- |
+| `slate-950` | `#0b0f16`  | Page background, deepest wells      |
+| `slate-900` | `#131b26`  | Panels, dialogs, header, tab bar    |
+| `slate-800` | `#16202e`  | Raised rows, inputs, hover surfaces |
+
+The lighter stops (`slate-50`…`slate-700`) keep Tailwind's values: they carry dark-mode text and borders.
+
+### Accent: the Steel ramp
+
+In dark mode the brand ramp is **Steel**, an accent drawn from the surface hue itself, so a filled button reads as
+part of the chrome rather than a sticker on it.
+
+| Token       | Dark value | Usage in dark mode                               |
+| ----------- | ---------- | ------------------------------------------------ |
+| `brand-50`  | `#eef3fa`  | Text on brand-tinted fills                       |
+| `brand-100` | `#dbe6f4`  | Hover text                                       |
+| `brand-200` | `#bcd0ea`  | Emphasised text                                  |
+| `brand-300` | `#9bb9de`  | Brand text, badges                               |
+| `brand-400` | `#8fb3e0`  | Brand text and links, the lightest accent        |
+| `brand-500` | `#5b86bf`  | Rings, tinted fills (`brand-500/10`), decoration |
+| `brand-600` | `#3a6599`  | **Solid fills under white text**                 |
+| `brand-700` | `#2f5484`  | Hover on a solid fill                            |
+| `brand-800` | `#26446b`  | Deep accents                                     |
+| `brand-900` | `#1d3553`  | Deep accents                                     |
+| `brand-950` | `#142538`  | Deepest accent surfaces                          |
+
+The wordmark's "diagram" half is the one vivid note: **sky-400 `#38bdf8`** in dark mode. Light mode keeps
+`brand-500`, and the logo mark keeps its own colour in both.
+
+### Rules
+
+- **Solid brand fill with white text** (primary buttons, active segments, filled step circles, avatar discs, count
+  badges) sits on `brand-600` in dark mode and hovers to `brand-700`: white on `#3a6599` is 6.0:1. The pairing is
+  one shared class, `SOLID_BRAND_DARK`, never re-typed per component.
+- **Brand-coloured text** in dark mode is `brand-400` or lighter (`#8fb3e0` on `slate-900` is 8.0:1).
+- **Tinted fills** (`brand-500/10`, `brand-500/15`…) and purely decorative uses (spinners' tracks, glyph strokes on a
+  tinted plate, shadows) keep their tokens: the Steel ramp restyles them by itself.
+- **Themed tabs tint on top.** A tab on a colour scheme with an accent retargets the brand ramp (both appearances)
+  and the dark surface stops ([Canvas and theme dialog](../011-theme/canvas-and-theme-dialog.md)); that tint
+  outranks the Steel base by selector, not by stylesheet order, so the Steel palette is only ever what a Default tab
+  shows.
+- **Light mode is untouched.** No light token, class or colour changes with the dark palette.
 
 ## Accessibility
 
 - All text/background pairings must meet **WCAG AA** contrast (4.5:1 for body, 3:1 for large text and UI controls).
 - `brand-500` on white meets AA for large text only — for small text, use `brand-700` or darker.
 - Never rely on color alone to convey status; pair semantic colors with an icon or label.
+- **Contrast guard (dark mode).** A Playwright audit (`apps/live/e2e/contrast-audit.spec.ts`) walks every visible
+  text node on the New Diagram wizard, the editor, its dialogs and panels, and the Explorer in dark mode, composites
+  the real background under it, and fails below 4.5:1 (3:1 for large text: 24px, or 18.66px bold). It has no
+  allow-list. It covers **dark mode only**: light mode's colours are owned by Thomas
+  ([@tommcclean](https://github.com/tommcclean)) under [#74](https://github.com/livediagram-app/livediagram.app/issues/74),
+  which stays open for the light half.
 
 ## Tailwind integration
 

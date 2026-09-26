@@ -90,6 +90,15 @@ vehicle that exercises code paths.
    ([Motion](../004-interface-design/motion.md)). Under reduced motion,
    each must be instant, with no uncaught error.
 
+5. **Contrast audit, dark mode** (`contrast-audit.spec.ts`): on the New
+   Diagram wizard, the editor with a seeded diagram, the Join dialog, the
+   Settings dialog, the panels and the Explorer, every visible text node is
+   measured against the background actually painted under it (each ancestor's
+   background composited by its alpha down to the page) and must meet WCAG AA:
+   4.5:1, or 3:1 for large text. No allow-list: a failure is fixed at its
+   colour. Dark mode only; light mode belongs to #74's light half
+   ([Colour scheme](../004-interface-design/color-scheme.md#accessibility)).
+
 New browser-risky features should add one focused smoke here, not a
 broad suite; depth stays in unit tests where it's cheap.
 
