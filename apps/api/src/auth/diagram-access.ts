@@ -46,10 +46,11 @@ async function isJoinedTeamMember(
   return membership?.status === 'joined';
 }
 
-// What a caller holds on a diagram: a role, and the one tab it is confined
-// to (docs/specs/013-workspace/tab-scoped-share-links.md). `tabScope` is null for the owner, a joined team
-// member and an All-tabs link.
-export type DiagramGrant = { role: ShareRole; tabScope: string | null };
+// What a caller holds on a diagram: a role, the one tab it is confined to
+// (docs/specs/013-workspace/tab-scoped-share-links.md), and the share code that granted it. `tabScope` is
+// null for the owner, a joined team member and an All-tabs link; `shareCode`
+// is null for the owner and a team member, who need no code.
+export type DiagramGrant = { role: ShareRole; tabScope: string | null; shareCode: string | null };
 
 // `owner` is the hybrid identity (Clerk sub OR unsigned X-Owner-Id guest
 // header); `callerId` is the VERIFIED Clerk user id (null for guests).
@@ -83,10 +84,10 @@ export async function resolveDiagramGrant(
   // short call sites fail CLOSED on a protected diagram rather than silently
   // bypassing the gate.
   if (!(await sharePasswordOk(env, diagramId, sharePassword))) return null;
-  return { role: link.role, tabScope: link.tabId };
+  return { role: link.role, tabScope: link.tabId, shareCode: link.code };
 }
 
-const FULL_EDIT: DiagramGrant = { role: 'edit', tabScope: null };
+const FULL_EDIT: DiagramGrant = { role: 'edit', tabScope: null, shareCode: null };
 
 // The two boolean gates. `targetTabId` names the tab the request touches;
 // omitted, the request is diagram-level, and a tab-scoped link grants

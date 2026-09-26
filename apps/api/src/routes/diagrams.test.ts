@@ -987,7 +987,7 @@ describe('share-link scope (docs/specs/013-workspace/tab-scoped-share-links.md)'
     expect(res.status).toBe(400);
   });
 
-  it('04s when the link vanished between the check and the rescope', async () => {
+  it('404s when the link vanished between the check and the rescope', async () => {
     db.getShareLinkIncludingExpired.mockResolvedValue(link());
     db.rescopeShareLink.mockResolvedValue(null);
     const res = await handleDiagrams(

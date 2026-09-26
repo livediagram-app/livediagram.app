@@ -1692,3 +1692,120 @@ describe('DiagramRoom comment author ids (docs/specs/012-collaboration/collab-ra
     expect(received).toContain('"authorName":"Ed"');
   });
 });
+
+// docs/specs/013-workspace/tab-scoped-share-links.md, Realtime. A session admitted on a link scoped to tab
+// t2 receives nothing about t1, can't change t1, and is shut out when its
+// link is revoked or rescoped.
+describe('DiagramRoom tab-scoped sessions', () => {
+  function scopedSession(
+    state: FakeState,
+    ws: FakeSocket & { closed?: [number, string] },
+    p: ParticipantPresence,
+    tabScope: string | null,
+    shareCode: string | null = null,
+  ) {
+    ws.attachment = {
+      presenceId: p.id,
+      verifiedRole: p.role,
+      presence: p,
+      isOwner: false,
+      tabScope,
+      shareCode,
+    };
+    (ws as unknown as { close: (code: number, reason: string) => void }).close = (code, reason) => {
+      ws.closed = [code, reason];
+    };
+    state.sockets.push(asWs(ws));
+  }
+  const ops = (ws: FakeSocket) =>
+    ws.sent
+      .map((m) => JSON.parse(m))
+      .filter((m) => m.kind === 'op')
+      .map((m) => m.op);
+
+  it('keeps another tab out of a scoped session and lets its own through', () => {
+    const { room, state } = newRoom();
+    const owner = makeSocket();
+    const scoped = makeSocket();
+    scopedSession(state, owner, presence('p-o', 'edit'), null);
+    scopedSession(state, scoped, presence('p-s', 'view'), 't2');
+    sendFrame(room, owner, { kind: 'op', op: { kind: 'el', tabId: 't1', op: { type: 'x' } } });
+    sendFrame(room, owner, { kind: 'op', op: { kind: 'el', tabId: 't2', op: { type: 'y' } } });
+    expect(ops(scoped)).toEqual([{ kind: 'el', tabId: 't2', op: { type: 'y' } }]);
+  });
+
+  it('hands a scoped session a redacted diagram-meta', () => {
+    const { room, state } = newRoom();
+    const owner = makeSocket();
+    const scoped = makeSocket();
+    scopedSession(state, owner, presence('p-o', 'edit'), null);
+    scopedSession(state, scoped, presence('p-s', 'view'), 't2');
+    sendFrame(room, owner, {
+      kind: 'op',
+      op: {
+        kind: 'diagram-meta',
+        name: 'Plan',
+        tabs: [
+          { id: 't1', name: 'Pricing', orderIndex: 0 },
+          { id: 't2', name: 'Roadmap', orderIndex: 1 },
+        ],
+      },
+    });
+    expect(ops(scoped)[0].tabs[0]).toEqual({ id: 't1', name: '', orderIndex: 0, locked: true });
+  });
+
+  it('refuses a scoped session changing another tab, or the diagram', () => {
+    const { room, state } = newRoom();
+    const owner = makeSocket();
+    const scoped = makeSocket();
+    scopedSession(state, owner, presence('p-o', 'edit'), null);
+    scopedSession(state, scoped, presence('p-s', 'edit'), 't2');
+    sendFrame(room, scoped, { kind: 'op', op: { kind: 'el', tabId: 't1', op: {} } });
+    sendFrame(room, scoped, { kind: 'op', op: { kind: 'diagram-meta', name: 'x', tabs: [] } });
+    expect(ops(owner)).toEqual([]);
+    sendFrame(room, scoped, { kind: 'op', op: { kind: 'el', tabId: 't2', op: {} } });
+    expect(ops(owner)).toEqual([{ kind: 'el', tabId: 't2', op: {} }]);
+  });
+
+  it('filters the catch-up replay the same way', () => {
+    const { room, state } = newRoom();
+    const owner = makeSocket();
+    scopedSession(state, owner, presence('p-o', 'edit'), null);
+    sendFrame(room, owner, { kind: 'op', op: { kind: 'el', tabId: 't1', op: {} } });
+    sendFrame(room, owner, { kind: 'op', op: { kind: 'el', tabId: 't2', op: {} } });
+    const scoped = makeSocket();
+    scopedSession(state, scoped, presence('p-s', 'view'), 't2');
+    sendFrame(room, scoped, { kind: 'sync', epoch: null, lastSeq: 0 });
+    const catchup = scoped.sent.map((m) => JSON.parse(m)).find((m) => m.kind === 'catchup');
+    expect(catchup.ops.map((o: { op: { tabId: string } }) => o.op.tabId)).toEqual(['t2']);
+  });
+
+  for (const kind of ['share-revoked', 'share-rescoped']) {
+    it(`closes the sockets a ${kind} code admitted, after telling them`, async () => {
+      const { room, state } = newRoom();
+      const holder = makeSocket() as FakeSocket & { closed?: [number, string] };
+      const other = makeSocket() as FakeSocket & { closed?: [number, string] };
+      scopedSession(state, holder, presence('p-h', 'view'), 't2', 'CODE2345');
+      scopedSession(state, other, presence('p-x', 'view'), null, 'OTHER234');
+      await room.fetch(
+        new Request('https://room/broadcast', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ op: { kind, code: 'CODE2345' } }),
+        }),
+      );
+      expect(ops(holder)).toEqual([{ kind, code: 'CODE2345' }]);
+      expect(holder.closed?.[0]).toBe(4003);
+      expect(other.closed).toBeUndefined();
+    });
+  }
+
+  it('pins the scope and code on the session at admission', () => {
+    const { room } = newRoom();
+    const ws = makeSocket();
+    (room as unknown as { state: { acceptWebSocket: () => void } }).state.acceptWebSocket =
+      () => {};
+    room.acceptSession(asWs(ws), 'view', false, 't2', 'CODE2345');
+    expect(ws.attachment).toMatchObject({ tabScope: 't2', shareCode: 'CODE2345' });
+  });
+});

@@ -453,14 +453,14 @@ describe('resolveDiagramGrant', () => {
     resolveDiagramGrant(FAKE_ENV, 'diag-1', owner, code, 'owner-a', password, null, null);
 
   it('grants the owner edit on every tab', async () => {
-    expect(await grant('owner-a', null)).toEqual({ role: 'edit', tabScope: null });
+    expect(await grant('owner-a', null)).toEqual({ role: 'edit', tabScope: null, shareCode: null });
   });
 
   it('grants a joined team member edit on every tab', async () => {
     getMembershipMock.mockResolvedValue({ status: 'joined' });
     expect(
       await resolveDiagramGrant(FAKE_ENV, 'diag-1', 'x', null, 'owner-a', null, 'team-1', 'user-1'),
-    ).toEqual({ role: 'edit', tabScope: null });
+    ).toEqual({ role: 'edit', tabScope: null, shareCode: null });
   });
 
   it("hands back a share link's role and scope", async () => {
@@ -473,7 +473,11 @@ describe('resolveDiagramGrant', () => {
       expiresAt: null,
       tabId: 'tab-2',
     });
-    expect(await grant(null, 'SCOPED23')).toEqual({ role: 'view', tabScope: 'tab-2' });
+    expect(await grant(null, 'SCOPED23')).toEqual({
+      role: 'view',
+      tabScope: 'tab-2',
+      shareCode: 'SCOPED23',
+    });
   });
 
   it('grants nothing without a matching password', async () => {

@@ -296,7 +296,7 @@ describe('GET /api/share/<code>/image.svg (docs/specs/013-workspace/live-image-s
       expect((await handleShare(imageCtx('C', 'tab-2'))).status).toBe(200);
     });
 
-    it('04s any other tab without rendering it', async () => {
+    it('404s any other tab without rendering it', async () => {
       const res = await handleShare(imageCtx('C', 'tab-1'));
       expect(res.status).toBe(404);
       expect(getTabImageMock).not.toHaveBeenCalled();
