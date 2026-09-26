@@ -360,7 +360,10 @@ and the dialog stays as the one complete, browsable index of them.
   `scrollTop` would land on a different row; the anchor brings the same row
   back at any window size. Rows that change height after the restore (the
   token list loading) are re-anchored until the reader scrolls, taps or
-  types in the pane. A pane scrolled to its very top keeps no anchor.
+  types in the pane. The offset is measured in layout pixels, not rendered
+  ones: re-anchoring starts while the dialog still scales in from 0.96, and
+  a rendered measure would land short by 4% of the offset. A pane scrolled
+  to its very top keeps no anchor.
   Picking another category always starts its pane at the top.
 
   - A targeted open (a search result, the `?settings=` deep link) wins over
