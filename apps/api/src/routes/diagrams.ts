@@ -40,7 +40,16 @@ import {
   setDiagramPresentation,
   upsertDiagramMeta,
 } from '../db';
-import { badRequest, conflict, forbidden, json, noContent, notFound, svgImage } from '../responses';
+import {
+  badRequest,
+  conflict,
+  forbidden,
+  json,
+  noContent,
+  notFound,
+  payloadTooLarge,
+  svgImage,
+} from '../responses';
 import { getDiagramThumbnailSvg } from '../thumbnail';
 import { redactOwnerId } from '../redact-owner';
 import { emailEnabled } from '../email/client';
@@ -95,7 +104,7 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
         for (const tab of body.tabs) {
           if (!isValidTab(tab)) return badRequest('invalid tab');
           if (byteLength(JSON.stringify(tab)) > MAX_TAB_BYTES) {
-            return json({ error: 'payload_too_large' }, { status: 413 });
+            return payloadTooLarge();
           }
         }
       }
@@ -452,11 +461,11 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       // nothing when a header was present.
       const declared = declaredBodyBytes(request);
       if (declared !== null && declared > MAX_CHANGE_LOG_ENTRY_BYTES) {
-        return json({ error: 'payload_too_large' }, { status: 413 });
+        return payloadTooLarge();
       }
       const body = (await request.json()) as Partial<ChangeLogEntryDTO>;
       if (bodyExceedsCap(request, body, MAX_CHANGE_LOG_ENTRY_BYTES)) {
-        return json({ error: 'payload_too_large' }, { status: 413 });
+        return payloadTooLarge();
       }
       const entry = parseChangeLogEntryBody(body);
       if (!entry) return badRequest('missing change_log fields');

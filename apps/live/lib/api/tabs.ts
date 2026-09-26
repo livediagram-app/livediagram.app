@@ -1,6 +1,6 @@
 // Per-tab calls: lazy load, upsert (the autosave path), comment append,
 // cross-diagram link, and delete.
-import type { TabSummary } from '@livediagram/api-schema';
+import type { TabResponse, TabSummary } from '@livediagram/api-schema';
 import { normalizeTable, type Tab } from '@livediagram/diagram';
 import { dedupeInFlight } from '../dedupe';
 import { getGuestSelfSig } from '../local-identity';
@@ -22,7 +22,6 @@ import {
   getLastKnownToken,
   getSessionSharePassword,
   tabForWire,
-  type TabResponse,
   apiFetch,
 } from './core';
 

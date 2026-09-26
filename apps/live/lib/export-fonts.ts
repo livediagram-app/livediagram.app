@@ -1,3 +1,4 @@
+import { bytesToBase64 } from '@livediagram/api-schema';
 import { googleFontsHref } from '@livediagram/diagram';
 
 // Webfonts, EMBEDDED, for an image export (spec/28).
@@ -80,16 +81,5 @@ async function fetchAsDataUrl(url: string, doFetch: FetchLike): Promise<string |
   if (!res.ok) return null;
   const bytes = new Uint8Array(await res.arrayBuffer());
   const mime = url.endsWith('.woff2') ? 'font/woff2' : 'font/woff';
-  return `data:${mime};base64,${base64(bytes)}`;
-}
-
-// Chunked so a font file (tens of thousands of bytes) can't blow the
-// argument limit of String.fromCharCode.
-function base64(bytes: Uint8Array): string {
-  let binary = '';
-  const CHUNK = 0x8000;
-  for (let i = 0; i < bytes.length; i += CHUNK) {
-    binary += String.fromCharCode(...bytes.subarray(i, i + CHUNK));
-  }
-  return btoa(binary);
+  return `data:${mime};base64,${bytesToBase64(bytes)}`;
 }

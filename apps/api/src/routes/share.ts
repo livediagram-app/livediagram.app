@@ -8,9 +8,9 @@ import {
   recordSharedAccess,
 } from '../db';
 import { notifyDiagramJoin } from '../email/notifications';
-import { json, notFound, svgImage } from '../responses';
+import { forbidden, json, notFound, svgImage } from '../responses';
 import { reportServerEvent } from '../server-telemetry';
-import { timingSafeEqual } from '../auth/timing-safe';
+import { sharePasswordStatus } from '../auth/share-access';
 import { getDiagramTabImageSvg, getDiagramThumbnailSvg } from '../thumbnail';
 import { redactOwnerId } from '../redact-owner';
 import { sharePasswordOf, type RouteContext } from './context';
@@ -135,10 +135,8 @@ export async function passwordGate(
   diagramId: string,
   provided: string | null,
 ): Promise<Response | null> {
-  const required = await getDiagramSharePassword(env, diagramId);
-  if (!required) return null;
-  if (provided == null) return json({ error: 'password_required' }, { status: 401 });
-  if (!(await timingSafeEqual(provided, required)))
-    return json({ error: 'password_invalid' }, { status: 403 });
+  const status = await sharePasswordStatus(env, diagramId, provided);
+  if (status === 'missing') return json({ error: 'password_required' }, { status: 401 });
+  if (status === 'invalid') return forbidden('password_invalid');
   return null;
 }

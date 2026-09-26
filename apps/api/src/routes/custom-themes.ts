@@ -11,7 +11,7 @@ import {
   updateCustomTheme,
 } from '../db';
 import type { CustomThemeDefinition } from '../types';
-import { badRequest, forbidden, json, noContent, notFound } from '../responses';
+import { badRequest, forbidden, json, noContent, notFound, payloadTooLarge } from '../responses';
 import { requireOwner, type RouteContext } from './context';
 import { MAX_NAME_LEN, MAX_THEME_DEF_BYTES, byteLength } from '../limits';
 import { recordThemeDeleted, recordThemeSaved } from '../timeline';
@@ -25,7 +25,7 @@ function themeTooLarge(
 ): Response | null {
   if (typeof name === 'string' && name.length > MAX_NAME_LEN) return badRequest('name too long');
   if (definition !== undefined && byteLength(JSON.stringify(definition)) > MAX_THEME_DEF_BYTES) {
-    return json({ error: 'payload_too_large' }, { status: 413 });
+    return payloadTooLarge();
   }
   return null;
 }

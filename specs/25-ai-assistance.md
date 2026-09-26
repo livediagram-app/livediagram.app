@@ -154,14 +154,19 @@ reference kind with them (arrow ends, mind-map parents, portal partners) through
 `remapElementRefs`.
 
 Error responses follow the standard worker envelope, `{ "error": "<token>" }`. The route emits
-exactly four:
+exactly six:
 
 | Token                | Status | When                                                       |
 | -------------------- | ------ | ---------------------------------------------------------- |
 | `sign_in_required`   | 401    | The assistant is signed-in only.                           |
 | `origin_not_allowed` | 403    | The request came from an origin the worker does not serve. |
+| `method_not_allowed` | 405    | Anything but a `POST`.                                     |
+| `rate_limited`       | 429    | The caller's per-owner request budget is spent.            |
 | `ai_error`           | 502    | The upstream model call failed.                            |
 | `ai_not_configured`  | 503    | No model key on this deployment (the self-host default).   |
+
+A request with no identity at all (neither a Clerk session nor an `X-Owner-Id`)
+gets the worker-wide `bad_request` 400 every owner-scoped route sends.
 
 **`off_topic` is not one of them.** A prompt the model judges off-topic still returns **200**: the
 streamed body carries `"offTopic": true`, and the editor turns that into a local `off_topic` error
@@ -244,7 +249,7 @@ asked only to read the handwriting on the crops that came out of that.
 - **Answer**: `{ texts: { id, text, legible }[] }`. `legible: false` with empty
   text is a real answer — the paper was there, the words were not readable — and
   it still becomes a note, empty, for the author to fill in.
-- **Errors**: the four this spec already defines, plus `crops_invalid` (400),
+- **Errors**: the six above, plus `crops_invalid` (400),
   `crops_too_large` (413) and `ai_quota` (429). A key that has spent its quota
   is told apart from a passing spike on purpose: one means try later, the other
   means raise the limit, and reporting both as `ai_error` sends the author back

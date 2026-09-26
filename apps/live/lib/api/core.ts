@@ -8,11 +8,9 @@ import type {
   ChangeLogEntry,
   CustomTheme,
   Diagram,
-  DiagramSummary,
   Folder,
   ShareLink,
   ShareRole,
-  TabRecord,
 } from '@livediagram/api-schema';
 import { stampTabKind, type Tab } from '@livediagram/diagram';
 import { readLocalStorageSafe, writeLocalStorageSafe } from '../local-storage-safe';
@@ -87,11 +85,9 @@ function isTimelinePath(url: string): boolean {
 }
 
 // Envelope shapes the API wraps payloads in. The canonical inner
-// types come from `@livediagram/api-schema`; these envelopes are
-// purely client-side glue for `expectOk` to destructure.
-export type DiagramResponse = { diagram: Diagram };
-export type TabResponse = { tab: TabRecord };
-export type ListResponse = { diagrams: DiagramSummary[] };
+// types come from `@livediagram/api-schema`, as do the envelopes the
+// MCP server reads too (DiagramResponse, TabResponse, ...); the ones
+// below are the editor-only glue for `expectOk` to destructure.
 export type FolderResponse = { folder: Folder };
 export type FoldersResponse = { folders: Folder[] };
 export type CustomThemeResponse = { theme: CustomTheme };
@@ -105,7 +101,6 @@ export type CreateTokenResponse = {
   name: string | null;
   expiresAt: number;
 };
-export type ShareLinkResponse = { link: ShareLink };
 // The share-links list doubles as the owner's read of the diagram's
 // share password (spec/24): owner-only endpoint, so it's safe in the
 // clear. `password` is null when the diagram has no password.

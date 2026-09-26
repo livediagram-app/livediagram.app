@@ -50,7 +50,24 @@ describe('spec/25 lists the AI route error tokens the route emits', () => {
       .map((f) => readFileSync(`${ROOT}/apps/api/src/routes/${f}`, 'utf8'))
       .join('\n');
     const spec = readFileSync(`${ROOT}/specs/25-ai-assistance.md`, 'utf8');
-    const emitted = [...route.matchAll(/error: '([a-z_]+)'/g)].map((m) => m[1]!);
+    // Tokens come from inline envelopes AND the shared helpers in
+    // responses.ts: a no-arg helper (`aiError()`) stands for the fixed token
+    // its body returns, and `forbidden('x')` / `conflict('x')` carry theirs as
+    // the argument. Reading only the inline literals would stop checking a
+    // token the moment its route switched to the helper.
+    const responses = readFileSync(`${ROOT}/apps/api/src/responses.ts`, 'utf8');
+    const helperTokens = new Map(
+      [
+        ...responses.matchAll(
+          /export function (\w+)\(\): Response \{\s*return json\(\{ error: '([a-z_]+)'/g,
+        ),
+      ].map((m) => [m[1]!, m[2]!]),
+    );
+    const emitted = [
+      ...[...route.matchAll(/error: '([a-z_]+)'/g)].map((m) => m[1]!),
+      ...[...route.matchAll(/\b(?:forbidden|conflict)\('([a-z_]+)'\)/g)].map((m) => m[1]!),
+      ...[...route.matchAll(/\b(\w+)\(\)/g)].flatMap((m) => helperTokens.get(m[1]!) ?? []),
+    ];
     expect(new Set(emitted).size).toBeGreaterThan(3);
 
     for (const token of new Set(emitted)) {

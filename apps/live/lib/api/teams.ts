@@ -7,21 +7,20 @@
 // UI has to message them ("Already on this team") rather than treat
 // them as transport failures.
 import type {
-  DiagramSummary,
-  Folder,
   Team,
   TeamInvite,
   TeamInviteLink,
   TeamInviteLinkInfo,
   TeamInviteLinkJoin,
+  TeamLibraryResponse,
   TeamListItem,
   TeamMember,
   TeamRole,
+  TeamsResponse,
 } from '@livediagram/api-schema';
 import { dedupeInFlight } from '../dedupe';
 import { API_BASE, apiDelete, apiHeaders, expectOk, apiFetch } from './core';
 
-type TeamsResponse = { teams: TeamListItem[] };
 type TeamResponse = { team: Team };
 export type TeamDetailResponse = {
   team: Team;
@@ -33,7 +32,6 @@ export type TeamDetailResponse = {
 };
 type TeamMemberResponse = { member: TeamMember };
 type TeamInvitesResponse = { invites: TeamInvite[] };
-type TeamLibraryResponse = { folders: Folder[]; diagrams: DiagramSummary[] };
 
 // Same dedupe rationale as apiListFolders: the sidebar list is
 // fetched once per surface, and concurrent mounts must not fan out

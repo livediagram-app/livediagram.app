@@ -1,6 +1,12 @@
 // Share-link + share-password calls (spec/24): resolve a share code to
 // a diagram, list/create/delete links, and set the diagram password.
-import type { ShareLink, ShareLinkExpiry, ShareRole } from '@livediagram/api-schema';
+import type {
+  DiagramResponse,
+  ShareLink,
+  ShareLinkExpiry,
+  ShareLinkResponse,
+  ShareRole,
+} from '@livediagram/api-schema';
 import { dedupeInFlight } from '../dedupe';
 import {
   API_BASE,
@@ -8,9 +14,7 @@ import {
   apiHeaders,
   expectOk,
   expectOkOrNull,
-  type DiagramResponse,
   type SharedDiagramResolution,
-  type ShareLinkResponse,
   type ShareLinksResponse,
   type SharePasswordResponse,
   apiFetch,
