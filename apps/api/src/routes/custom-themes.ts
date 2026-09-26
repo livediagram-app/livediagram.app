@@ -30,6 +30,18 @@ function themeTooLarge(
   return null;
 }
 
+// Reject a definition whose palette is present but empty: a multi-colour
+// theme with no colours would silently paint as single-colour
+// (docs/specs/011-theme/multicolour-themes.md). Returns the rejection
+// Response, or null when the definition is acceptable.
+function themeInvalid(id: string, definition: CustomThemeDefinition | undefined): Response | null {
+  if (Array.isArray(definition?.palette) && definition.palette.length === 0) {
+    console.warn(`[custom-themes] rejected id=${id} reason=empty-palette`);
+    return badRequest('empty palette');
+  }
+  return null;
+}
+
 export async function handleCustomThemes(ctx: RouteContext): Promise<Response> {
   const { request, env, segments } = ctx;
   if (segments[1] !== 'custom-themes') return notFound();
@@ -53,6 +65,8 @@ export async function handleCustomThemes(ctx: RouteContext): Promise<Response> {
       }
       const tooBig = themeTooLarge(body.name, body.definition);
       if (tooBig) return tooBig;
+      const invalid = themeInvalid(body.id, body.definition);
+      if (invalid) return invalid;
       const theme = await createCustomTheme(env, {
         id: body.id,
         ownerId: owner,
@@ -77,6 +91,8 @@ export async function handleCustomThemes(ctx: RouteContext): Promise<Response> {
       };
       const tooBig = themeTooLarge(body.name, body.definition);
       if (tooBig) return tooBig;
+      const invalid = themeInvalid(id, body.definition);
+      if (invalid) return invalid;
       await updateCustomTheme(env, id, { name: body.name, definition: body.definition });
       const updated = await getCustomTheme(env, id);
       return json({ theme: updated });
