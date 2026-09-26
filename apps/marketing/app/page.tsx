@@ -26,7 +26,7 @@ const INTERLUDES: Record<string, ReactNode> = {
 export default function LandingPage() {
   return (
     <>
-      <Header />
+      <Header surface="Home" />
       <main>
         <Hero />
 
@@ -41,7 +41,7 @@ export default function LandingPage() {
           </Fragment>
         ))}
 
-        <StartDrawingCta />
+        <StartDrawingCta surface="Home" />
       </main>
       <Footer />
     </>

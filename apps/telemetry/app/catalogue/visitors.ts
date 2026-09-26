@@ -248,3 +248,30 @@ export const PAGE_VIEWS_BY_APP: MetricStack = {
   members: [MARKETING_PAGES, LIVE_PAGES, HELP_PAGES, DASHBOARD_PAGES],
   seeAlso: { view: 'pages', label: 'See Every Page on the Pages Tab' },
 };
+
+// The landing funnel (spec/153): arrivals at /new from a public page's call
+// to action, and the diagrams those visits created. The Pages tab splits them
+// by page and button against the page views before them.
+export const CTA_ARRIVALS = chart(
+  'Cta',
+  'Opened',
+  'CTA Arrivals',
+  'Somebody followed a call to action on a public page (the landing page, a feature or comparison page, the help centre) and reached the New Diagram page.',
+);
+
+export const CTA_DIAGRAMS = chart(
+  'Cta',
+  'Created',
+  'Diagrams from CTAs',
+  'Of those arrivals, the visits that went on to create a diagram. Counted once per arrival.',
+);
+
+export const CALLS_TO_ACTION: MetricStack = {
+  stack: true,
+  title: 'Calls to Action',
+  blurb:
+    'How the public pages turn visitors into diagrams: arrivals from a call to action, and the diagrams they created.',
+  members: [CTA_ARRIVALS, CTA_DIAGRAMS],
+  headline: CTA_DIAGRAMS,
+  seeAlso: { view: 'pages', label: 'See the Landing Funnel on the Pages Tab' },
+};

@@ -60,7 +60,7 @@ export default async function FeatureCategoryPage({
   return (
     <>
       <BreadcrumbJsonLd name={section.title} path={`/features/${slug}`} />
-      <Header />
+      <Header surface="Feature" />
       <main>
         <Breadcrumb items={[{ label: section.title }]} />
         <FeatureCategoryHero section={section} />
@@ -81,7 +81,7 @@ export default async function FeatureCategoryPage({
           )}
         </Section>
         <OtherCategories currentId={section.id} />
-        <StartDrawingCta />
+        <StartDrawingCta surface="Feature" />
       </main>
       <Footer />
     </>

@@ -1,3 +1,4 @@
+import { ctaHref } from '@livediagram/api-schema';
 import { CtaLink } from '@/components/CtaLink';
 import type { LandingSection } from '@/lib/landing-content';
 import { SectionShowcase } from '@/components/SectionShowcase';
@@ -21,7 +22,7 @@ export function FeatureCategoryHero({ section }: { section: LandingSection }) {
           </h1>
           <p className="mt-5 text-lg leading-relaxed text-slate-600">{section.description}</p>
           <div className="mt-8">
-            <CtaLink href="/new">Start drawing</CtaLink>
+            <CtaLink href={ctaHref('/new', 'Feature.Hero')}>Start drawing</CtaLink>
           </div>
         </div>
 

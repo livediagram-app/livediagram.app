@@ -1,3 +1,4 @@
+import { ctaHref } from '@livediagram/api-schema';
 import { buttonClassName } from '@livediagram/ui';
 import { HeroIllustration } from './HeroIllustration';
 
@@ -23,7 +24,7 @@ export function Hero() {
             swaps them side by side on desktop. */}
         <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <a
-            href="/new"
+            href={ctaHref('/new', 'Home.Hero')}
             className={buttonClassName({
               size: 'lg',
               className: 'w-full shadow-sm sm:order-2 sm:w-auto',
@@ -32,7 +33,7 @@ export function Hero() {
             Choose Template
           </a>
           <a
-            href="/new?blank=1"
+            href={ctaHref('/new?blank=1', 'Home.HeroDraw')}
             className={buttonClassName({
               variant: 'secondary',
               size: 'lg',

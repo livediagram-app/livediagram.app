@@ -84,7 +84,7 @@ export default function StatusPage() {
   return (
     <>
       <BreadcrumbJsonLd name="Status" path="/status" />
-      <Header />
+      <Header surface="Status" />
       <main className="mx-auto max-w-3xl px-6 py-16 sm:py-20">
         <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
           Service status
