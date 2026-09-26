@@ -135,7 +135,7 @@ const absPoint = (src: ExcalidrawElement, p: [number, number]) => ({
   y: (src.y ?? 0) + p[1],
 });
 
-// Nearest of the 8 anchors on `target` to `point` — how a binding whose
+// Nearest of the 16 anchors on `target` to `point` — how a binding whose
 // exact face Excalidraw derives dynamically becomes one of our pinned faces.
 function nearestAnchor(target: BoxedElement, point: { x: number; y: number }): Anchor {
   let best: Anchor = 'e';

@@ -182,9 +182,9 @@ all read this one geometry, so a captioned icon exports exactly as drawn.
 **Connectors attach to the mark, not the element box.** Because the box can
 be much larger than the visible chip, arrow anchors on a Technology icon are
 computed on the mark's rectangle (`techIconMarkBounds`, the same geometry the
-renderers use): pinned endpoints touch the chip's edge, and the auto-attach
-face choice (`rankAnchorsTowards` / `anchorAimPoint` in
-`packages/diagram/src/geometry.ts`) answers for the chip — so an arrow to an
+renderers use): pinned endpoints touch the chip's edge, and the side choice
+(`exitSideTowards` / `anchorAimPoint` in `packages/diagram/src/anchor-choice.ts`,
+[Arrow anchors and auto-rebind](../008-canvas/arrow-anchors.md)) answers for the chip — so an arrow to an
 element below leaves the mark's bottom centre instead of a box edge floating
 in whitespace. **Exception: the caption's side.** The caption sits between
 the mark and the element edge on its side, so the anchors on that side push

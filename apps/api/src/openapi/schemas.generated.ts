@@ -310,13 +310,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "Anchor": {
     "enum": [
       "n",
+      "nne",
       "ne",
+      "ene",
       "e",
+      "ese",
       "se",
+      "sse",
       "s",
+      "ssw",
       "sw",
+      "wsw",
       "w",
-      "nw"
+      "wnw",
+      "nw",
+      "nnw"
     ],
     "type": "string"
   },
@@ -2482,9 +2490,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "kind": {
             "const": "pinned",
             "type": "string"
-          },
-          "manual": {
-            "type": "boolean"
           }
         },
         "required": [

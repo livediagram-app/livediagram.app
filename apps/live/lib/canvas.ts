@@ -282,10 +282,9 @@ export type DragState =
       // carries the source anchor so the pointer-up can attach the far end to
       // whatever sits on that side, falling back to a short free stub.
       tapPlace?: { anchor: Anchor; sourceId: string; placeOutPx: number };
-      // True when the user is repositioning an EXISTING arrow's endpoint
-      // (a deliberate manual correction), as opposed to drawing a new
-      // arrow. A reposition that lands on an anchor marks the endpoint
-      // `manual` so auto-rebind leaves it alone thereafter (docs/specs/007-editor/user-preferences.md).
+      // True when the user is repositioning an EXISTING arrow's endpoint,
+      // as opposed to drawing a new arrow (which alone gets the draw-time
+      // collision curve and the modifier hint).
       reposition?: boolean;
     }
   | {

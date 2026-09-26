@@ -34,10 +34,6 @@ Scope, by file:
 | `apps/api/src/ai-prompt.ts`                                   | Anchor list for the AI                                                  |
 | `apps/api/src/openapi/schemas.generated.ts`                   | Regenerated `Anchor` enum and pinned endpoint schema                    |
 
-Removed: `packages/diagram/src/arrow-rebind-plan.ts`, `arrow-rebind-stability.test.ts`, and from
-`anchor-choice.ts` the ranking, commitment, hysteresis and face-sharing exports
-(`rankAnchorsTowards`, `ANCHOR_SWITCH_MARGIN`, `FACE_SHARE_MIN_RAD`, `isCardinal`, `Cardinal`).
-
 ## Domain and naming
 
 | Term              | Identifier                                             | Meaning                                                             |

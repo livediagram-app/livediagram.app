@@ -73,9 +73,9 @@ describe('computeSnapTargets', () => {
   const arrow = (): Element =>
     ({ id: 'a', type: 'arrow', from: { x: 0, y: 0 }, to: { x: 10, y: 10 } }) as Element;
 
-  it('reveals all 8 anchors of a shape under the cursor', () => {
+  it('reveals all 16 anchors of a shape under the cursor', () => {
     const out = computeSnapTargets({ x: 50, y: 30 }, [shape()], null, null);
-    expect(out).toHaveLength(8);
+    expect(out).toHaveLength(16);
     expect(out.every((t) => !t.active)).toBe(true);
   });
 
@@ -90,7 +90,7 @@ describe('computeSnapTargets', () => {
 
   it('reveals a shape when the cursor is within the margin but outside the box', () => {
     // Box spans x 0..100; margin is generous, so x = -20 still reveals.
-    expect(computeSnapTargets({ x: -20, y: 30 }, [shape()], null, null)).toHaveLength(8);
+    expect(computeSnapTargets({ x: -20, y: 30 }, [shape()], null, null)).toHaveLength(16);
     // Far enough past the margin: nothing.
     expect(computeSnapTargets({ x: -200, y: 30 }, [shape()], null, null)).toEqual([]);
   });

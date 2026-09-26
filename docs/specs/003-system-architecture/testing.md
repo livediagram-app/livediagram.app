@@ -122,7 +122,7 @@ v5 test runner with every check green: nothing invoked the broken path.
   filename — counts below are as of 2026-07-14):
   - `packages/diagram` (37 suites): the data model end to end — element
     factories + defaults, geometry / anchor / snap math, arrow path +
-    avoidance + endpoint-spread + rebind stability, group + layer mutations,
+    avoidance + endpoint-spread + auto-rebind and crossing swaps, group + layer mutations,
     auto-layout (clusters + styles), Mermaid import/export (flowchart, state,
     ER), graph authoring, freehand + shape recognition, rich text, tables,
     comments, session tools, element shadows, the headless SVG renderer,

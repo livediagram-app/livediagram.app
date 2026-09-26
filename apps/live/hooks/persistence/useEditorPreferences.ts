@@ -46,8 +46,7 @@ export function useEditorPreferences(deps: EditorPreferencesDeps) {
   usePanelOpacity(userPreferences.panelOpacity);
   // Mirror the auto-rebind flag into its own ref so the drag move
   // handler can read it without re-attaching listeners. Defaults to
-  // OFF (docs/specs/007-editor/user-preferences.md): a fresh session keeps arrow anchors where they
-  // were drawn; the palette toggle opts into rebinding.
+  // ON (docs/specs/007-editor/user-preferences.md); the Settings toggle turns it off.
   const autoRebindArrowsRef = useRef<boolean>(autoRebindArrowsEnabled(userPreferences));
   autoRebindArrowsRef.current = autoRebindArrowsEnabled(userPreferences);
   // Same mirror for the alignment-guide preference so the drag move

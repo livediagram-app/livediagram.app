@@ -22,10 +22,9 @@ import { apiGetPreferences, apiPutPreferences } from './api-client';
 import { readLocalStorageSafe, writeLocalStorageSafe } from './local-storage-safe';
 
 export type UserPreferences = {
-  // When `true`, the editor runs the auto arrow-rebind pass on
-  // move (docs/specs/007-editor/user-preferences.md's `rebindArrowAnchorsAfterMove` in
-  // packages/diagram). Missing / undefined / false === auto-rebind
-  // OFF: anchors stay where the user chose them at draw time.
+  // When `false`, the editor skips the auto-rebind on move
+  // (docs/specs/008-canvas/arrow-anchors.md, `rebindArrowAnchorsAfterMove`
+  // in packages/diagram). Missing / undefined / true === on.
   // Consumers derive the effective value via
   // `autoRebindArrowsEnabled` below so the default lives here once.
   autoRebindArrows?: boolean;
@@ -246,12 +245,12 @@ export function withPanelLayout(prefs: UserPreferences, layout: PanelLayout): Us
   return { ...prefs, panelLayout: layout, minimalPanels: layout === 'minimal' };
 }
 
-// The effective "Auto-attach arrows" state (docs/specs/007-editor/user-preferences.md): opt-in, so only
-// an explicit `true` enables the on-move rebind pass. The single home
-// for the default — the palette settings popover and the
-// editor-preferences hook both call this instead of re-deriving it.
+// The effective "Auto-Attach Arrows" state (docs/specs/007-editor/user-preferences.md): on by
+// default, so only an explicit `false` turns the on-move rebind off. The
+// single home for the default: the Settings row and the editor-preferences
+// hook both call this instead of re-deriving it.
 export function autoRebindArrowsEnabled(prefs: UserPreferences): boolean {
-  return prefs.autoRebindArrows === true;
+  return prefs.autoRebindArrows !== false;
 }
 
 // Read the current preferences from localStorage. Returns `{}` on

@@ -457,21 +457,22 @@ export function PanelOpacity() {
   );
 }
 
-/** Auto-attach arrows: an arrow re-pinning to the nearest face of a shape after
- *  the shape has moved (ghost at the old spot, solid at the new). */
+/** Auto-attach arrows: the target is dragged from the right of the source to
+ *  its left. Kept where they were, the ends would run the line through the
+ *  source, so both move to the sides that now face each other. */
 export function AutoAttachArrows() {
   return (
     <Scene w={420} h={220}>
-      <Shape x={48} y={92} w={88} h={48} label="Source" />
-      {/* Old position (ghost) and the arrow that used to point there */}
-      <Shape x={210} y={48} w={88} h={48} dashed fill="fill-slate-50" stroke="stroke-slate-300" />
-      <Arrow from={[136, 116]} to={[210, 72]} tone="muted" dashed />
-      {/* Moved shape, arrow re-pinned to its nearest face */}
-      <Shape x={252} y={132} w={88} h={48} accent label="Target" />
-      <Arrow from={[136, 116]} to={[252, 156]} kind="curved" tone="accent" />
-      {/* Move trail */}
+      <Shape x={166} y={86} w={88} h={48} label="Source" />
+      {/* Old position (ghost) and the arrow as it was */}
+      <Shape x={320} y={86} w={88} h={48} dashed fill="fill-slate-50" stroke="stroke-slate-300" />
+      <Arrow from={[254, 110]} to={[320, 110]} tone="muted" dashed />
+      {/* Moved shape; both ends now on the facing sides */}
+      <Shape x={12} y={86} w={88} h={48} accent label="Target" />
+      <Arrow from={[166, 110]} to={[100, 110]} tone="accent" />
+      {/* Move trail, over the top */}
       <path
-        d="M254 72 q40 30 30 60"
+        d="M364 80 Q210 -10 56 80"
         className="stroke-slate-300"
         strokeWidth={2}
         fill="none"

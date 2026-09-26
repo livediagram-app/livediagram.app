@@ -1,5 +1,11 @@
 import type { Dispatch, PointerEvent as ReactPointerEvent, RefObject, SetStateAction } from 'react';
-import { anchorPosition, isBoxed, type Anchor, type ArrowElement } from '@livediagram/diagram';
+import {
+  anchorOutward,
+  anchorPosition,
+  isBoxed,
+  type Anchor,
+  type ArrowElement,
+} from '@livediagram/diagram';
 import { getTheme } from '@/lib/themes';
 import { track } from '@/lib/telemetry';
 import { withFrameContents, type DragMode, type DragState, type ShapeBounds } from '@/lib/canvas';
@@ -135,17 +141,7 @@ export function useBoxedDragHandlers({
     // arrow that runs straight out from the anchor by that many px and
     // select it so the user can reposition it by hand.
     if (opts?.placeOutPx) {
-      const out: Record<Anchor, { x: number; y: number }> = {
-        n: { x: 0, y: -1 },
-        s: { x: 0, y: 1 },
-        e: { x: 1, y: 0 },
-        w: { x: -1, y: 0 },
-        ne: { x: 0.707, y: -0.707 },
-        nw: { x: -0.707, y: -0.707 },
-        se: { x: 0.707, y: 0.707 },
-        sw: { x: -0.707, y: 0.707 },
-      };
-      const dir = out[anchor];
+      const dir = anchorOutward(anchor);
       const placed: ArrowElement = {
         id: crypto.randomUUID(),
         type: 'arrow',

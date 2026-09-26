@@ -37,7 +37,6 @@ export function resolveArrowEndpointDrag({
   elements,
   arrowId,
   end,
-  reposition,
   noSnap,
   guidesOn,
 }: {
@@ -45,9 +44,6 @@ export function resolveArrowEndpointDrag({
   elements: Element[];
   arrowId: string;
   end: ArrowEnd;
-  // True when the user is repositioning an EXISTING arrow's endpoint —
-  // landing on an anchor then marks it `manual` so auto-rebind leaves it.
-  reposition: boolean;
   // Cmd/Ctrl held: skip the alignment snap so the point goes exactly
   // where the cursor is.
   noSnap: boolean;
@@ -97,14 +93,7 @@ export function resolveArrowEndpointDrag({
 
   if (anchorSnap) {
     return {
-      endpoint: {
-        kind: 'pinned',
-        elementId: anchorSnap.elementId,
-        anchor: anchorSnap.anchor,
-        // A hand-repositioned endpoint that lands on an anchor is a manual
-        // override; auto-rebind then leaves this end's face alone.
-        ...(reposition ? { manual: true } : {}),
-      },
+      endpoint: { kind: 'pinned', elementId: anchorSnap.elementId, anchor: anchorSnap.anchor },
       guides: [],
       snapTargets,
       arrowConnected: false,
