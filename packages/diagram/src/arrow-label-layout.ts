@@ -53,7 +53,6 @@ export type ArrowLabelMeasureFor = (
 export type ArrowLabelLayoutOptions = {
   crossCapPx: number;
   alongCapPx: number;
-  knockoutOthers: boolean;
   fontFamilyOf?: (arrow: ArrowElement) => string | undefined;
   measureFor?: ArrowLabelMeasureFor;
 };
@@ -61,7 +60,6 @@ export type ArrowLabelLayoutOptions = {
 export const DEFAULT_ARROW_LABEL_LAYOUT_OPTIONS: ArrowLabelLayoutOptions = {
   crossCapPx: CROSS_CAP_PX,
   alongCapPx: ALONG_CAP_PX,
-  knockoutOthers: false,
 };
 
 export type ArrowLabelLayout = {
@@ -495,40 +493,8 @@ export function layoutArrowLabels(
   return out;
 }
 
-// The knockout rects an arrow's line mask cuts: its own label's, plus (when
-// `knockoutOthers`) every other label whose knockout overlaps its route.
-export function arrowKnockouts(
-  arrowId: ElementId,
-  elements: Element[],
-  layouts: ReadonlyMap<ElementId, ArrowLabelLayout>,
-  knockoutOthers: boolean,
-): Rect[] {
-  const own = layouts.get(arrowId)?.knockout;
-  const out: Rect[] = own ? [own] : [];
-  if (!knockoutOthers) return out;
-  const arrow = elements.find((e): e is ArrowElement => e.id === arrowId && e.type === 'arrow');
-  if (!arrow) return out;
-  const { route } = arrowRoute(arrow, elements);
-  for (const [id, l] of layouts) {
-    if (id === arrowId || !l.knockout) continue;
-    if (routeCrossesRect(route, l.knockout)) out.push(l.knockout);
-  }
-  return out;
-}
-
-function routeCrossesRect(r: Route, rect: Rect): boolean {
-  // Sample every few px: a knockout is at least a line tall, so 4px steps
-  // cannot jump across one.
-  for (let s = 0; s <= r.length; s += 4) {
-    const p = pointAt(r, s);
-    if (p.x >= rect.x && p.x <= rect.x + rect.width && p.y >= rect.y && p.y <= rect.y + rect.height)
-      return true;
-  }
-  return false;
-}
-
 // One tab's labels, laid out once and shared by every arrow a renderer
-// draws: the layouts, plus each arrow's knockouts (resolved lazily, cached).
+// draws: the layouts, plus the knockout each arrow's line takes.
 export type ArrowLabelPass = {
   layouts: ReadonlyMap<ElementId, ArrowLabelLayout>;
   knockoutsOf: (arrowId: ElementId) => Rect[];
@@ -539,18 +505,12 @@ export function arrowLabelPass(
   options: Partial<ArrowLabelLayoutOptions> = {},
 ): ArrowLabelPass {
   const layouts = layoutArrowLabels(elements, options);
-  const knockoutOthers =
-    options.knockoutOthers ?? DEFAULT_ARROW_LABEL_LAYOUT_OPTIONS.knockoutOthers;
-  const cache = new Map<ElementId, Rect[]>();
   return {
     layouts,
+    // A label cuts only its own line (docs/specs/008-canvas/arrow-labels.md).
     knockoutsOf: (id) => {
-      let hit = cache.get(id);
-      if (!hit) {
-        hit = arrowKnockouts(id, elements, layouts, knockoutOthers);
-        cache.set(id, hit);
-      }
-      return hit;
+      const own = layouts.get(id)?.knockout;
+      return own ? [own] : [];
     },
   };
 }

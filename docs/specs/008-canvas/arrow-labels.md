@@ -88,9 +88,3 @@ position.
 
 The export (SVG, PNG, PDF, thumbnails, the MCP render) lays out and knocks out labels with the same
 code as the canvas, so an exported label wraps at the same words and sits at the same spot.
-
-## The label bench
-
-`packages/diagram/bench/arrow-labels` renders ten arrow shapes, including the diagram that prompted
-this spec, through the export renderer, with the caps and the crossing knockout switchable. The
-angled rule, both caps and the own-line-only knockout were chosen on it.

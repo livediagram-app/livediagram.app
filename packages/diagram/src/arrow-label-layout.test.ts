@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_ARROW_LABEL_LAYOUT_OPTIONS,
   KNOCKOUT_MARGIN_PX,
-  arrowKnockouts,
+  arrowLabelPass,
   layoutArrowLabels,
   type ArrowLabelLayoutOptions,
 } from './arrow-label-layout';
@@ -239,21 +239,15 @@ describe('layoutArrowLabels: placed labels', () => {
   });
 });
 
-describe('arrowKnockouts', () => {
-  const els = (): Element[] => [
-    arrow('a', [0, 0], [600, 0], 'UI', { arrowEnds: 'both' }),
-    arrow('b', [300, -200], [300, 200], ''),
-  ];
-
-  it('gives an arrow its own knockout only by default', () => {
-    const map = layoutArrowLabels(els(), opts());
-    expect(arrowKnockouts('a', els(), map, false)).toHaveLength(1);
-    expect(arrowKnockouts('b', els(), map, false)).toHaveLength(0);
-  });
-
-  it('cuts a crossing arrow too when knockoutOthers is on', () => {
-    const map = layoutArrowLabels(els(), opts());
-    expect(arrowKnockouts('b', els(), map, true)).toHaveLength(1);
+describe('arrowLabelPass', () => {
+  it('gives an arrow its own knockout only, never one from a crossing label', () => {
+    const els: Element[] = [
+      arrow('a', [0, 0], [600, 0], 'UI', { arrowEnds: 'both' }),
+      arrow('b', [300, -200], [300, 200], ''),
+    ];
+    const pass = arrowLabelPass(els, opts());
+    expect(pass.knockoutsOf('a')).toHaveLength(1);
+    expect(pass.knockoutsOf('b')).toHaveLength(0);
   });
 });
 
@@ -271,7 +265,7 @@ describe('DEFAULT_ARROW_LABEL_LAYOUT_OPTIONS', () => {
   });
 });
 
-describe('layoutArrowLabels: refinements from the bench', () => {
+describe('layoutArrowLabels: refinements', () => {
   it('never lets a knockout bite into the next segment round a corner', () => {
     // L: 100 across, then 400 down. On the short leg the two-line block's
     // knockout would reach down the long leg; it must not.

@@ -19,7 +19,6 @@ Scope, by file:
 | `apps/live/hooks/ui/useSlideThumbnails.ts`, `useLayerThumbnails.ts`, `components/canvas/Minimap.tsx` | One pass each, with their own mask-id prefix                                             |
 | `apps/live/components/canvas/ArrowView.tsx`                                                          | Knockout mask on the line + halo; renders the layout it is given                         |
 | `apps/live/components/canvas/ArrowLabel.tsx`                                                         | Multi-line SVG caption; textarea editor laid out by the same engine                      |
-| `packages/diagram/bench/arrow-labels/`                                                               | The label bench: scenarios, cap + knockout switches, esbuild, seed                       |
 
 ## Domain and naming
 
@@ -80,8 +79,8 @@ An arrow with empty text has no entry.
 10. **Placed.** Centre = `arrowLabelAnchor(..., labelOffset, ...)`. Block wrapped at `cap`,
     balanced. Knockout when `|offset| < |n.x| * w/2 + |n.y| * h/2` (the block overlaps the line),
     else null.
-11. **Knockout others.** When `options.knockoutOthers`, each arrow's mask also takes every other
-    label's knockout that intersects its route's bounding box; otherwise only its own.
+11. **Own line only.** An arrow's mask takes its own label's knockout and no other; a label never
+    cuts an arrow crossing beneath it.
 
 ## Interfaces
 
@@ -89,7 +88,6 @@ An arrow with empty text has no entry.
 type ArrowLabelLayoutOptions = {
   crossCapPx: number;
   alongCapPx: number;
-  knockoutOthers: boolean;
   // Font stack a caption paints in; the measure uses it.
   fontFamilyOf?: (arrow: ArrowElement) => string | undefined;
   // Injected for tests; defaults to labelMeasure.
@@ -170,8 +168,8 @@ whitespace; a single word wider than the cap is not broken (D22).
 one test per numbered behaviour step, the angled route-middle and corner fallback, plus: horizontal width follows run length,
 vertical width hits the cap, diagonal blends, balance avoids an orphan, explicit newline kept, head
 clearance moves the centre, obstacle slides the anchor, slide stays within a quarter run of its centre, beside
-when too short, beside side flips on an obstacle, placed knockout on and off, knockout-others
-toggle. Export parity: `svg-render.test.ts` asserts the export wraps and masks the same lines.
+when too short, beside side flips on an obstacle, placed knockout on and off, own knockout
+only. Export parity: `svg-render.test.ts` asserts the export wraps and masks the same lines.
 
 ## Constants
 
@@ -184,7 +182,7 @@ toggle. Export parity: `svg-render.test.ts` asserts the export wraps and masks t
 | `KNOCKOUT_RADIUS_PX`        | 4     | Rounded cut corners; matches the plate       |
 | `BESIDE_GAP_PX`             | 6     | Line to beside-label edge; 4 to 12           |
 | `LOCAL_DIRECTION_WINDOW_PX` | 24    | Half-window for local direction; 8 to 64     |
-| `CROSS_CAP_PX`              | 120   | Chosen on the bench; safe 100 to 200         |
-| `ALONG_CAP_PX`              | 240   | Chosen on the bench; safe 200 to 320         |
+| `CROSS_CAP_PX`              | 120   | Chosen by the operator; safe 100 to 200      |
+| `ALONG_CAP_PX`              | 240   | Chosen by the operator; safe 200 to 320      |
 | `CHAR_WIDTH_FALLBACK_PX`    | 7     | Per char at 12 px, scaled; the old estimate  |
 | `WORD_WIDTH_CACHE_MAX`      | 2000  | Cache bound                                  |

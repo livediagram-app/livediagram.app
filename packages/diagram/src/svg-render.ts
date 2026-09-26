@@ -58,12 +58,7 @@ export {
   type ExportRun,
 } from './svg-render-labels';
 import { arrowLabelFontStack, svgArrow } from './svg-render-arrows';
-import {
-  arrowLabelPass,
-  arrowRoutePoints,
-  type ArrowLabelLayoutOptions,
-  type ArrowLabelPass,
-} from './arrow-label-layout';
+import { arrowLabelPass, arrowRoutePoints, type ArrowLabelPass } from './arrow-label-layout';
 
 export { arrowHeadRefs, arrowLabelFontStack, svgArrow, svgArrowhead } from './svg-render-arrows';
 import type { BoxedElement, Element, Tab } from './index';
@@ -467,15 +462,12 @@ export function renderElementsToSvg(
     resolveImageHref?: ResolveImageHref;
     resolveIconArt?: ResolveIconArt;
     resolveStickerArt?: ResolveStickerArt;
-    // Label layout overrides (docs/specs/008-canvas/arrow-labels.md); the label bench switches caps and knockouts through it.
-    arrowLabels?: Partial<ArrowLabelLayoutOptions>;
   } = {},
 ): string {
   const padding = opts.padding ?? EXPORT_PADDING;
   const visible = visibleLayerElements(tab.elements, tab.layers);
   // Every caption laid out once, in document order, so labels see each other.
   const labels = arrowLabelPass(tab.elements, {
-    ...opts.arrowLabels,
     fontFamilyOf: (a) => arrowLabelFontStack(a, tab.font),
   });
   const bounds = contentBounds(visible, labels);
