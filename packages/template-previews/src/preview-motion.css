@@ -1,0 +1,315 @@
+/* Template previews that come alive on hover (spec/16).
+   -----------------------------------------------------
+   Opt-in: a surface puts `preview-motion` on the tile holding a
+   <TemplatePreview> and `preview-motion-host` on whatever should trigger it
+   (the marketing gallery's card link). Nothing here applies at rest, so an
+   unhovered tile, and every surface that doesn't opt in (the editor's
+   picker), draws exactly the static art.
+
+   Two layers:
+   1. Every preview REPLAYS ITS BUILD: each drawn shape pops in after the one
+      before, in document order, so the diagram assembles itself. Works for
+      all ~48 previews with no per-template work, including ones nobody has
+      drawn yet.
+   2. Some previews then TELL A STORY with their own classes: `pv-new` shapes
+      are present in the art but drawn with opacity="0", so they're invisible
+      until the story adds them; `pv-shift` moves a shape by --pv-dx/--pv-dy;
+      `pv-arrive` pops a shape in at --pv-from-x/--pv-from-y and glides it
+      home; `pv-grow-x` grows a bar from its left edge; `pv-pulse` swells a
+      shape and settles it back; `pv-token` travels the flowchart. --pv-at sets
+      when a story beat starts.
+
+   CSS px in an SVG transform are the drawing's own units, so the offsets in
+   the markup read in the same coordinates as the shapes.
+
+   All of it sits behind prefers-reduced-motion: no-preference. */
+
+@media (prefers-reduced-motion: no-preference) {
+  /* 1. The build: every leaf shape, staggered by its position. A direct
+        child of the <svg> sets --pv-i; a shape inside a <g> adds its own
+        --pv-j to the group's, so mapped groups still assemble in order. */
+  .preview-motion-host:is(:hover, :focus-visible)
+    .preview-motion
+    svg
+    :is(rect, circle, ellipse, line, path, polygon, polyline, text) {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: pv-build 420ms cubic-bezier(0.2, 0.8, 0.3, 1.25) both;
+    animation-delay: calc((var(--pv-i, 0) + var(--pv-j, 0)) * 45ms);
+  }
+
+  /* A shape with its own rotate() would lose it under a CSS transform, so it
+     fades in instead of scaling. */
+  .preview-motion-host:is(:hover, :focus-visible) .preview-motion svg [transform] {
+    animation-name: pv-fade;
+  }
+
+  /* 2. Story beats. */
+  .preview-motion-host:is(:hover, :focus-visible) .preview-motion svg .pv-new {
+    animation: pv-build 420ms cubic-bezier(0.2, 0.8, 0.3, 1.25) var(--pv-at, 900ms) both;
+  }
+
+  .preview-motion-host:is(:hover, :focus-visible) .preview-motion svg .pv-arrive {
+    animation: pv-arrive 900ms cubic-bezier(0.3, 0.7, 0.2, 1) var(--pv-at, 900ms) both;
+  }
+
+  .preview-motion-host:is(:hover, :focus-visible) .preview-motion svg .pv-shift {
+    animation:
+      pv-build 420ms cubic-bezier(0.2, 0.8, 0.3, 1.25) both,
+      pv-shift 600ms cubic-bezier(0.4, 0, 0.2, 1) var(--pv-at, 900ms) forwards;
+    animation-delay: calc((var(--pv-i, 0) + var(--pv-j, 0)) * 45ms), var(--pv-at, 900ms);
+  }
+
+  .preview-motion-host:is(:hover, :focus-visible) .preview-motion svg .pv-grow-x {
+    transform-origin: left center;
+    animation: pv-grow-x 600ms cubic-bezier(0.3, 0.7, 0.2, 1) var(--pv-at, 600ms) both;
+  }
+
+  .preview-motion-host:is(:hover, :focus-visible) .preview-motion svg .pv-pulse {
+    animation:
+      pv-build 420ms cubic-bezier(0.2, 0.8, 0.3, 1.25) both,
+      pv-pulse 700ms ease-in-out var(--pv-at, 900ms);
+    animation-delay: calc((var(--pv-i, 0) + var(--pv-j, 0)) * 45ms), var(--pv-at, 900ms);
+  }
+
+  .preview-motion-host:is(:hover, :focus-visible) .preview-motion svg .pv-token {
+    animation: pv-flow 2600ms ease-in-out var(--pv-at, 900ms) infinite;
+  }
+}
+
+@keyframes pv-build {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes pv-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pv-arrive {
+  0% {
+    opacity: 0;
+    transform: translate(var(--pv-from-x, 0px), var(--pv-from-y, 0px)) scale(0.3);
+  }
+  35% {
+    opacity: 1;
+    transform: translate(var(--pv-from-x, 0px), var(--pv-from-y, 0px)) scale(1);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes pv-shift {
+  from {
+    transform: none;
+  }
+  to {
+    transform: translate(var(--pv-dx, 0px), var(--pv-dy, 0px));
+  }
+}
+
+@keyframes pv-grow-x {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes pv-pulse {
+  50% {
+    transform: scale(1.5);
+  }
+}
+
+/* The flowchart's token: down from Start, a beat at the decision, on to End. */
+@keyframes pv-flow {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0);
+  }
+  8% {
+    opacity: 1;
+  }
+  50%,
+  62% {
+    transform: translate(0, 26.5px);
+  }
+  90% {
+    opacity: 1;
+    transform: translate(0, 39.5px);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(0, 39.5px);
+  }
+}
+
+/* Build order: each shape's position among its siblings. Past 24 the rest
+   share the last slot, so a busy preview still finishes in about a second.
+   (Generated rule set: one per position, at the svg's children and at a
+   group's children.) */
+.preview-motion svg > :nth-child(1) {
+  --pv-i: 0;
+}
+.preview-motion svg > :nth-child(2) {
+  --pv-i: 1;
+}
+.preview-motion svg > :nth-child(3) {
+  --pv-i: 2;
+}
+.preview-motion svg > :nth-child(4) {
+  --pv-i: 3;
+}
+.preview-motion svg > :nth-child(5) {
+  --pv-i: 4;
+}
+.preview-motion svg > :nth-child(6) {
+  --pv-i: 5;
+}
+.preview-motion svg > :nth-child(7) {
+  --pv-i: 6;
+}
+.preview-motion svg > :nth-child(8) {
+  --pv-i: 7;
+}
+.preview-motion svg > :nth-child(9) {
+  --pv-i: 8;
+}
+.preview-motion svg > :nth-child(10) {
+  --pv-i: 9;
+}
+.preview-motion svg > :nth-child(11) {
+  --pv-i: 10;
+}
+.preview-motion svg > :nth-child(12) {
+  --pv-i: 11;
+}
+.preview-motion svg > :nth-child(13) {
+  --pv-i: 12;
+}
+.preview-motion svg > :nth-child(14) {
+  --pv-i: 13;
+}
+.preview-motion svg > :nth-child(15) {
+  --pv-i: 14;
+}
+.preview-motion svg > :nth-child(16) {
+  --pv-i: 15;
+}
+.preview-motion svg > :nth-child(17) {
+  --pv-i: 16;
+}
+.preview-motion svg > :nth-child(18) {
+  --pv-i: 17;
+}
+.preview-motion svg > :nth-child(19) {
+  --pv-i: 18;
+}
+.preview-motion svg > :nth-child(20) {
+  --pv-i: 19;
+}
+.preview-motion svg > :nth-child(21) {
+  --pv-i: 20;
+}
+.preview-motion svg > :nth-child(22) {
+  --pv-i: 21;
+}
+.preview-motion svg > :nth-child(23) {
+  --pv-i: 22;
+}
+.preview-motion svg > :nth-child(24) {
+  --pv-i: 23;
+}
+.preview-motion svg > :nth-child(n + 25) {
+  --pv-i: 24;
+}
+.preview-motion svg > * > :nth-child(1) {
+  --pv-j: 0;
+}
+.preview-motion svg > * > :nth-child(2) {
+  --pv-j: 1;
+}
+.preview-motion svg > * > :nth-child(3) {
+  --pv-j: 2;
+}
+.preview-motion svg > * > :nth-child(4) {
+  --pv-j: 3;
+}
+.preview-motion svg > * > :nth-child(5) {
+  --pv-j: 4;
+}
+.preview-motion svg > * > :nth-child(6) {
+  --pv-j: 5;
+}
+.preview-motion svg > * > :nth-child(7) {
+  --pv-j: 6;
+}
+.preview-motion svg > * > :nth-child(8) {
+  --pv-j: 7;
+}
+.preview-motion svg > * > :nth-child(9) {
+  --pv-j: 8;
+}
+.preview-motion svg > * > :nth-child(10) {
+  --pv-j: 9;
+}
+.preview-motion svg > * > :nth-child(11) {
+  --pv-j: 10;
+}
+.preview-motion svg > * > :nth-child(12) {
+  --pv-j: 11;
+}
+.preview-motion svg > * > :nth-child(13) {
+  --pv-j: 12;
+}
+.preview-motion svg > * > :nth-child(14) {
+  --pv-j: 13;
+}
+.preview-motion svg > * > :nth-child(15) {
+  --pv-j: 14;
+}
+.preview-motion svg > * > :nth-child(16) {
+  --pv-j: 15;
+}
+.preview-motion svg > * > :nth-child(17) {
+  --pv-j: 16;
+}
+.preview-motion svg > * > :nth-child(18) {
+  --pv-j: 17;
+}
+.preview-motion svg > * > :nth-child(19) {
+  --pv-j: 18;
+}
+.preview-motion svg > * > :nth-child(20) {
+  --pv-j: 19;
+}
+.preview-motion svg > * > :nth-child(21) {
+  --pv-j: 20;
+}
+.preview-motion svg > * > :nth-child(22) {
+  --pv-j: 21;
+}
+.preview-motion svg > * > :nth-child(23) {
+  --pv-j: 22;
+}
+.preview-motion svg > * > :nth-child(24) {
+  --pv-j: 23;
+}
+.preview-motion svg > * > :nth-child(n + 25) {
+  --pv-j: 24;
+}

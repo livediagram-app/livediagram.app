@@ -1,5 +1,6 @@
 import type { ReactElement } from 'react';
 import type { TemplateKind } from '@livediagram/templates';
+import { pv } from './motion';
 
 // Group 1 of 3 (mind maps / flowcharts). Static SVG preview tiles (one branch per
 // TemplateKind; see template-preview.tsx for who renders them). Split out of template-preview.tsx to keep each file under the
@@ -45,6 +46,52 @@ export function templatePreviewGroup1(kind: TemplateKind): ReactElement | null {
           <line x1="49" y1="25" x2="61" y2="25" stroke="rgb(100 116 139)" strokeWidth="1" />
           <line x1="40" y1="16" x2="40" y2="11" stroke="rgb(100 116 139)" strokeWidth="1" />
           <line x1="40" y1="34" x2="40" y2="39" stroke="rgb(100 116 139)" strokeWidth="1" />
+          {/* Hover story (preview-motion.css): two new ideas pop out of the
+              centre and glide to their places, each connector following. */}
+          <circle
+            className="pv-arrive"
+            opacity="0"
+            cx="63"
+            cy="10"
+            r="4"
+            fill="none"
+            stroke="rgb(14 165 233)"
+            strokeWidth="1.25"
+            style={pv({ '--pv-from-x': '-19px', '--pv-from-y': '13px', '--pv-at': '900ms' })}
+          />
+          <line
+            className="pv-new"
+            opacity="0"
+            x1="47.5"
+            y1="20.1"
+            x2="59.7"
+            y2="12.2"
+            stroke="rgb(100 116 139)"
+            strokeWidth="1"
+            style={pv({ '--pv-at': '1700ms' })}
+          />
+          <circle
+            className="pv-arrive"
+            opacity="0"
+            cx="17"
+            cy="41"
+            r="4"
+            fill="none"
+            stroke="rgb(14 165 233)"
+            strokeWidth="1.25"
+            style={pv({ '--pv-from-x': '21px', '--pv-from-y': '-15px', '--pv-at': '1500ms' })}
+          />
+          <line
+            className="pv-new"
+            opacity="0"
+            x1="32.6"
+            y1="30.1"
+            x2="20.3"
+            y2="38.7"
+            stroke="rgb(100 116 139)"
+            strokeWidth="1"
+            style={pv({ '--pv-at': '2300ms' })}
+          />
         </svg>
       );
     case 'mindmap-tree':
@@ -79,6 +126,31 @@ export function templatePreviewGroup1(kind: TemplateKind): ReactElement | null {
               />
             </g>
           ))}
+          {/* Hover story: a child idea slides out of the middle branch. */}
+          <rect
+            className="pv-arrive"
+            opacity="0"
+            x="64"
+            y="21.5"
+            width="12"
+            height="8"
+            rx="2"
+            fill="rgb(186 230 253)"
+            stroke="rgb(14 165 233)"
+            strokeWidth="1.25"
+            style={pv({ '--pv-from-x': '-14px', '--pv-at': '900ms' })}
+          />
+          <line
+            className="pv-new"
+            opacity="0"
+            x1="58"
+            y1="25.5"
+            x2="64"
+            y2="25.5"
+            stroke="rgb(100 116 139)"
+            strokeWidth="1"
+            style={pv({ '--pv-at': '1600ms' })}
+          />
         </svg>
       );
     case 'mindmap-bubble':
@@ -92,9 +164,11 @@ export function templatePreviewGroup1(kind: TemplateKind): ReactElement | null {
             [40, 44],
             [16, 34],
             [16, 16],
-          ].map(([bx, by]) => (
+          ].map(([bx, by], i) => (
             <g key={`${bx}-${by}`}>
               <line x1="40" y1="25" x2={bx} y2={by} stroke="rgb(100 116 139)" strokeWidth="0.9" />
+              {/* Hover story: a wave swells each bubble in turn round the
+                  ring (a rotation would swing the oval ring past the tile). */}
               <circle
                 cx={bx}
                 cy={by}
@@ -102,6 +176,8 @@ export function templatePreviewGroup1(kind: TemplateKind): ReactElement | null {
                 fill="none"
                 stroke="rgb(14 165 233)"
                 strokeWidth="1.25"
+                className="pv-pulse"
+                style={pv({ '--pv-at': `${900 + i * 160}ms` })}
               />
             </g>
           ))}
@@ -112,6 +188,29 @@ export function templatePreviewGroup1(kind: TemplateKind): ReactElement | null {
             fill="rgb(186 230 253)"
             stroke="rgb(14 165 233)"
             strokeWidth="1.25"
+          />
+          {/* ...then a new bubble sprouts off the lower-right one. */}
+          <line
+            className="pv-new"
+            opacity="0"
+            x1="67.5"
+            y1="36.8"
+            x2="71.7"
+            y2="40.1"
+            stroke="rgb(100 116 139)"
+            strokeWidth="0.9"
+            style={pv({ '--pv-at': '2000ms' })}
+          />
+          <circle
+            className="pv-new"
+            opacity="0"
+            cx="74"
+            cy="42"
+            r="3"
+            fill="none"
+            stroke="rgb(14 165 233)"
+            strokeWidth="1.25"
+            style={pv({ '--pv-at': '2200ms' })}
           />
         </svg>
       );
@@ -260,6 +359,16 @@ export function templatePreviewGroup1(kind: TemplateKind): ReactElement | null {
           <line x1="24" y1="21" x2="24" y2="25" stroke="rgb(100 116 139)" strokeWidth="1" />
           <line x1="24" y1="39" x2="24" y2="42" stroke="rgb(100 116 139)" strokeWidth="1" />
           <line x1="33" y1="32" x2="40" y2="32" stroke="rgb(100 116 139)" strokeWidth="1" />
+          {/* Hover story: a token walks the flow, pausing at the decision. */}
+          <circle
+            className="pv-token"
+            opacity="0"
+            cx="24"
+            cy="5.5"
+            r="1.8"
+            fill="rgb(2 132 199)"
+            style={pv({ '--pv-at': '1100ms' })}
+          />
         </svg>
       );
     case 'retrospective':

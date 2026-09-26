@@ -1,5 +1,6 @@
-import type { ReactElement } from 'react';
+import type { ReactElement, SVGProps } from 'react';
 import type { TemplateKind } from '@livediagram/templates';
+import { pv } from './motion';
 
 // Group 2 of 3 (agile / hierarchy / wireframes). Static SVG preview tiles (one branch per
 // TemplateKind; see template-preview.tsx for who renders them). Split out of template-preview.tsx to keep each file under the
@@ -7,13 +8,18 @@ import type { TemplateKind } from '@livediagram/templates';
 export function templatePreviewGroup2(kind: TemplateKind): ReactElement | null {
   switch (kind) {
     case 'kanban':
+      // Hover story: work moves right. A card leaves In progress for Done,
+      // a To do card follows it into In progress, and new work lands in To
+      // do. At rest Done is one card short, the gap the first card fills.
+      // The moving cards are drawn after every column so they pass OVER the
+      // column backgrounds rather than under them.
       return (
         <svg width="70" height="44" viewBox="0 0 80 50" aria-hidden>
           {/* Three columns: To do (slate), In progress (blue), Done (green). */}
           {[
-            { x: 4, fill: 'rgb(241 245 249)', stroke: 'rgb(203 213 225)' },
-            { x: 30, fill: 'rgb(219 234 254)', stroke: 'rgb(147 197 253)' },
-            { x: 56, fill: 'rgb(220 252 231)', stroke: 'rgb(134 239 172)' },
+            { x: 4, fill: 'rgb(241 245 249)', stroke: 'rgb(203 213 225)', cards: [13, 23] },
+            { x: 30, fill: 'rgb(219 234 254)', stroke: 'rgb(147 197 253)', cards: [13, 23] },
+            { x: 56, fill: 'rgb(220 252 231)', stroke: 'rgb(134 239 172)', cards: [13, 23] },
           ].map((col) => (
             <g key={col.x}>
               <rect
@@ -26,21 +32,30 @@ export function templatePreviewGroup2(kind: TemplateKind): ReactElement | null {
                 stroke={col.stroke}
                 strokeWidth="0.75"
               />
-              {[13, 23, 33].map((sy) => (
-                <rect
-                  key={sy}
-                  x={col.x + 2}
-                  y={sy}
-                  width="16"
-                  height="7"
-                  rx="1"
-                  fill="white"
-                  stroke="rgb(148 163 184)"
-                  strokeWidth="0.5"
-                />
+              {col.cards.map((sy) => (
+                <KanbanCard key={sy} x={col.x + 2} y={sy} />
               ))}
             </g>
           ))}
+          <KanbanCard
+            x={32}
+            y={33}
+            className="pv-shift"
+            style={pv({ '--pv-dx': '26px', '--pv-at': '1000ms' })}
+          />
+          <KanbanCard
+            x={6}
+            y={33}
+            className="pv-shift"
+            style={pv({ '--pv-dx': '26px', '--pv-at': '1600ms' })}
+          />
+          <KanbanCard
+            x={6}
+            y={33}
+            className="pv-new"
+            opacity="0"
+            style={pv({ '--pv-at': '2200ms' })}
+          />
         </svg>
       );
     case 'swot':
@@ -643,4 +658,25 @@ export function templatePreviewGroup2(kind: TemplateKind): ReactElement | null {
     default:
       return null;
   }
+}
+
+// One kanban card (the kanban preview draws nine, three of them moving).
+function KanbanCard({
+  x,
+  y,
+  ...rest
+}: { x: number; y: number } & Omit<SVGProps<SVGRectElement>, 'x' | 'y'>) {
+  return (
+    <rect
+      x={x}
+      y={y}
+      width="16"
+      height="7"
+      rx="1"
+      fill="white"
+      stroke="rgb(148 163 184)"
+      strokeWidth="0.5"
+      {...rest}
+    />
+  );
 }

@@ -1,5 +1,6 @@
 import type { ReactElement } from 'react';
 import type { TemplateKind } from '@livediagram/templates';
+import { pv } from './motion';
 
 // Group 3 of 3 (strategy / design / technical, plus the Q&A board's live-session boards). Static SVG preview tiles (one branch per
 // TemplateKind; see template-preview.tsx for who renders them). Split out of template-preview.tsx to keep each file under the
@@ -325,7 +326,7 @@ export function templatePreviewGroup3(kind: TemplateKind): ReactElement | null {
             { y: 21, bx: 30, bw: 14, fill: 'rgb(125 107 176)' },
             { y: 29, bx: 40, bw: 18, fill: 'rgb(201 138 59)' },
             { y: 37, bx: 52, bw: 14, fill: 'rgb(106 155 94)' },
-          ].map((r) => (
+          ].map((r, i) => (
             <g key={r.y}>
               <rect
                 x="3"
@@ -338,7 +339,17 @@ export function templatePreviewGroup3(kind: TemplateKind): ReactElement | null {
                 strokeWidth="0.4"
               />
               <rect x="4.5" y={r.y + 1} width="17" height="4" rx="0.5" fill="rgb(148 163 184)" />
-              <rect x={r.bx} y={r.y + 1} width={r.bw} height="4" rx="1" fill={r.fill} />
+              {/* Hover story: each duration bar grows in, one after another. */}
+              <rect
+                x={r.bx}
+                y={r.y + 1}
+                width={r.bw}
+                height="4"
+                rx="1"
+                fill={r.fill}
+                className="pv-grow-x"
+                style={pv({ '--pv-at': `${600 + i * 220}ms` })}
+              />
             </g>
           ))}
         </svg>

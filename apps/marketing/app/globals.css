@@ -1,6 +1,7 @@
 @import 'tailwindcss';
 @import '@livediagram/tailwind-config';
 @import '@livediagram/template-previews/preview-art-tile.css';
+@import '@livediagram/template-previews/preview-motion.css';
 @import './hero-animations.css';
 @import './feature-art-animations.css';
 
