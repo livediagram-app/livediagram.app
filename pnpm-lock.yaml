@@ -587,6 +587,13 @@ importers:
       typescript-eslint:
         specifier: ^8.70.1
         version: 8.70.1(@typescript/typescript6@6.0.2)(eslint@10.11.0(jiti@2.7.0))
+    devDependencies:
+      '@livediagram/vitest-config':
+        specifier: workspace:*
+        version: link:../vitest-config
+      vitest:
+        specifier: ^5.0.1
+        version: 5.0.2(@types/node@26.6.2)(@vitest/coverage-v8@5.0.2)(jsdom@30.1.1)(vite@7.3.5(@types/node@26.6.2)(jiti@2.7.0)(lightningcss@1.32.0))
 
   packages/help-registry:
     devDependencies:
@@ -647,12 +654,15 @@ importers:
       '@types/node':
         specifier: ^26.6.2
         version: 26.6.2
+      '@typescript/native':
+        specifier: npm:typescript@^7.0.2
+        version: typescript@7.0.2
       eslint:
         specifier: ^10.11.0
         version: 10.11.0(jiti@2.7.0)
       typescript:
-        specifier: ^6.0.3
-        version: 6.0.3
+        specifier: npm:@typescript/typescript6@^6.0.2
+        version: '@typescript/typescript6@6.0.2'
       vitest:
         specifier: ^5.0.1
         version: 5.0.2(@types/node@26.6.2)(@vitest/coverage-v8@5.0.2)(jsdom@30.1.1)(vite@7.3.5(@types/node@26.6.2)(jiti@2.7.0)(lightningcss@1.32.0))
@@ -672,12 +682,15 @@ importers:
       '@playwright/test':
         specifier: ^1.63.0
         version: 1.63.0
+      '@typescript/native':
+        specifier: npm:typescript@^7.0.2
+        version: typescript@7.0.2
       eslint:
         specifier: ^10.11.0
         version: 10.11.0(jiti@2.7.0)
       typescript:
-        specifier: ^6.0.3
-        version: 6.0.3
+        specifier: npm:@typescript/typescript6@^6.0.2
+        version: '@typescript/typescript6@6.0.2'
       vitest:
         specifier: ^5.0.1
         version: 5.0.2(@types/node@26.6.2)(@vitest/coverage-v8@5.0.2)(jsdom@30.1.1)(vite@7.3.5(@types/node@26.6.2)(jiti@2.7.0)(lightningcss@1.32.0))

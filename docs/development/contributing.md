@@ -74,6 +74,8 @@ TypeScript 7 is the Go compiler. It type-checks this monorepo about **7x faster*
 
 What 7.0 does not ship is a programmatic API; that lands in 7.1. Tools that import the compiler rather than shell out to it — typescript-eslint, Next.js, Prettier's TypeScript parser — therefore still need 6. The alias pair is Microsoft's documented answer: `typescript` keeps resolving to the 6.0 API for those tools, while `@typescript/native` supplies 7's `tsc`. Run `tsc6` if you ever need to compare the two compilers on the same file.
 
+`packages/eslint-config/typescript-aliases.test.ts` holds every workspace to the root manifest's pair: a new package that lists a plain `typescript` type-checks on 6 without anyone noticing, and draws a Dependabot major bump that cannot install.
+
 Two consequences worth knowing before they bite you:
 
 - **`packages/eslint-config` declares the 6.0 alias as a real dependency.** Without it, `auto-install-peers` resolves typescript-eslint's `typescript` peer against the 7.0 copy and every lint run dies with `typescript-eslint does not support TS 7.0`.
