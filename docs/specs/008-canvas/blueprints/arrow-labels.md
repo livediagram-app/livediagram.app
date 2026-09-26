@@ -184,7 +184,7 @@ toggle. Export parity: `svg-render.test.ts` asserts the export wraps and masks t
 | `KNOCKOUT_RADIUS_PX`        | 4     | Rounded cut corners; matches the plate       |
 | `BESIDE_GAP_PX`             | 6     | Line to beside-label edge; 4 to 12           |
 | `LOCAL_DIRECTION_WINDOW_PX` | 24    | Half-window for local direction; 8 to 64     |
-| `CROSS_CAP_PX` (default)    | 160   | Bench decides; candidates 120 / 160 / 200    |
-| `ALONG_CAP_PX` (default)    | 240   | Bench decides; candidates 200 / 240 / 320    |
+| `CROSS_CAP_PX`              | 120   | Chosen on the bench; safe 100 to 200         |
+| `ALONG_CAP_PX`              | 240   | Chosen on the bench; safe 200 to 320         |
 | `CHAR_WIDTH_FALLBACK_PX`    | 7     | Per char at 12 px, scaled; the old estimate  |
 | `WORD_WIDTH_CACHE_MAX`      | 2000  | Cache bound                                  |

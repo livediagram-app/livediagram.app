@@ -1,6 +1,6 @@
 # Arrow labels
 
-Status: shipped (width caps and crossing knockouts at their defaults, pending the bench decision)
+Status: shipped
 
 An arrow's label names the relationship the arrow draws. It belongs to its line, so it sits **on**
 the line, centred, with the line broken open around it. It wraps onto several lines rather than
@@ -58,7 +58,7 @@ The maximum width follows the local direction:
 - **Diagonal runs** blend the two: the limit is whichever width makes the label's footprint along
   the line fit the open run, never above the cap.
 
-A label is never wider than a cap, which is wider along a horizontal run than across a vertical one, so a very long arrow still gets a readable label rather than one long strip. The caps and the stub are named constants in the blueprint; their values are decided on the bench.
+A label is never wider than a cap, which is wider along a horizontal run than across a vertical one, so a very long arrow still gets a readable label rather than one long strip. The caps are 120px across a vertical run and 240px along a horizontal one; the stub is a named constant in the blueprint.
 Explicit line breaks the author types are kept, and each explicit line still wraps to the width.
 
 ## Knockout
@@ -68,7 +68,7 @@ Explicit line breaks the author types are kept, and each explicit line still wra
   knockout never reaches one.
 - A label's plate (`labelFill`), when the author sets one, still paints inside the gap. Without one
   the gap stays transparent.
-- Whether a label also cuts **other** arrows that cross beneath it is decided on the bench.
+- A label cuts only its own line. Other arrows crossing beneath it are drawn as they are.
 
 ## Editing
 
@@ -89,10 +89,8 @@ position.
 The export (SVG, PNG, PDF, thumbnails, the MCP render) lays out and knocks out labels with the same
 code as the canvas, so an exported label wraps at the same words and sits at the same spot.
 
-## Open decisions
+## The label bench
 
-Decided on the label bench (`packages/diagram/bench/arrow-labels`, ten arrow shapes including the
-diagram that prompted this spec):
-
-- The width caps along horizontal and across vertical runs.
-- Whether a label knocks out other arrows crossing beneath it.
+`packages/diagram/bench/arrow-labels` renders ten arrow shapes, including the diagram that prompted
+this spec, through the export renderer, with the caps and the crossing knockout switchable. The
+angled rule, both caps and the own-line-only knockout were chosen on it.
