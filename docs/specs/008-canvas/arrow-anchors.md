@@ -9,7 +9,7 @@ auto-rebind rule.
 ## Anchors
 
 A pinned endpoint names one of **sixteen anchors**, named after the sixteen points of the compass
-rose. Which of them an element offers is its anchor set (below):
+rose. Which of them an element offers depends on its kind (below):
 
 | Position class | Anchors                                                | Where                                            |
 | -------------- | ------------------------------------------------------ | ------------------------------------------------ |
@@ -25,21 +25,29 @@ rose. Which of them an element offers is its anchor set (below):
 - The eight anchors that predate the quarters keep their ids and their meaning, so every stored
   diagram stays valid unchanged. Stored and imported data accepts all sixteen ids.
 
-### Anchor sets
+### Anchors per shape
 
-Every element offers an **anchor set**: the position classes it has anchors for.
+Each kind offers its own **anchors**: which of the sixteen it has, and where they sit.
 
-| Anchor set | Classes                 | Count | Kinds                       |
-| ---------- | ----------------------- | ----- | --------------------------- |
-| Full       | corner, quarter, middle | 16    | every kind not listed below |
-| Compass    | corner, middle          | 8     | `circle`                    |
+| Kind                                                         | Count | Anchors and where they sit                                                                                                                                                                                                                                          |
+| ------------------------------------------------------------ | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Box-shaped kinds (every kind not listed), `stadium`, `cloud` | 16    | All sixteen, on the box or projected onto the drawn outline                                                                                                                                                                                                         |
+| `star`                                                       | 16    | All sixteen on its bounding rectangle, not on its points                                                                                                                                                                                                            |
+| `speech-bubble`                                              | 16    | All sixteen on its body (which fills the box); the tail carries none                                                                                                                                                                                                |
+| `cylinder`                                                   | 16    | All sixteen, projected onto its drawn outline (the curved top and bottom)                                                                                                                                                                                           |
+| `document`                                                   | 14    | All but the two bottom corners (`sw`, `se`), on its drawn outline                                                                                                                                                                                                   |
+| `parallelogram`, `trapezoid`                                 | 16    | Corners on the shape's own corners; top and bottom middles on the shape's vertical centre line; each top or bottom quarter halfway between that middle and the nearer corner of its face; left and right faces carry their quarter, middle and three-quarter points |
+| `hexagon`                                                    | 16    | Top and bottom faces carry three: the middle and, halfway between it and each end of the face, a quarter; the corners and the side quarters split each slanted face into thirds; the side middles are the side points                                               |
+| `triangle`                                                   | 9     | Three on each face (left `w`, right `e`, base `s`): the face's middle and, halfway between it and each end of the face, a quarter. No corners, nothing at the apex                                                                                                  |
+| `circle`, `diamond`                                          | 8     | Corners and middles on the outline (a diamond's middles are its tips, its corners the centres of its edges)                                                                                                                                                         |
+| `actor`                                                      | 8     | Corners and middles on the hull around the figure                                                                                                                                                                                                                   |
 
-- Every set includes the middles: they are the creation anchors and the anchor dots.
-- Snapping, the snap-target markers and the auto-rebind only ever choose an offered anchor.
+- A side that carries anchors always carries its middle.
+- Snapping, the snap-target markers, the creation anchor and the auto-rebind only ever choose an
+  offered anchor.
 - An end can still sit on an anchor its element does not offer (a square with quarter ends morphed
-  into a circle, or imported data). It is drawn at that anchor's point on the outline, and when the
-  auto-rebind moves it, it takes the nearest offered class: a quarter becomes a corner, or a middle
-  when corners are not offered either; a corner becomes a quarter, or a middle.
+  into a circle, an old diagram, imported data). It is drawn where that anchor projects onto the
+  outline, as before; when the auto-rebind moves it, it takes an offered one.
 
 ## Anchor geometry
 
@@ -50,13 +58,14 @@ Every element offers an **anchor set**: the position classes it has anchors for.
   the edge the user sees. This applies to every anchor, quarters included. The outlined
   kinds are:
   - `circle` (the ellipse filling the box);
-  - `diamond`, `parallelogram`, `hexagon`, `triangle`, `trapezoid` and `star` (their polygons in
-    the shared shape-geometry table);
+  - `diamond`, `parallelogram`, `hexagon`, `triangle` and `trapezoid` (their polygons in the
+    shared shape-geometry table; the last four also place their anchors along their faces, above);
   - `stadium` (the capsule: a box with fully rounded ends);
   - `actor` (the hull around the stick figure: head, arm tips and feet, down to the bottom of its
     label band);
-  - `cloud` and `document` (their drawn paths: the cloud's bumps, the document's wavy bottom edge).
-- Every other kind keeps its box as its outline for anchoring, including `cylinder` and
+  - `cloud` and `document` (their drawn paths: the cloud's bumps, the document's wavy bottom edge);
+  - `cylinder` (its body with the curved top and bottom).
+- Every other kind keeps its box as its outline for anchoring, including `star` and
   `speech-bubble`.
 - A Technology icon with a caption pushes the anchors on the caption's side out to the element
   edge, so a connector leaving toward the caption starts past the text.
@@ -67,18 +76,19 @@ Every element offers an **anchor set**: the position classes it has anchors for.
 ## Where anchors are offered
 
 - **Snapping.** Dragging an arrow endpoint near any element snaps it to the nearest anchor in that
-  element's anchor set (within the snap distance in [Canvas and palette](canvas-and-palette.md)
+  element's anchors (within the snap distance in [Canvas and palette](canvas-and-palette.md)
   "Manipulating arrows").
-- **Snap-target markers.** While an endpoint is dragged, the anchor set of every nearby element
-  shows as small dots on its outline; the one snapped to is drawn larger.
-- **Anchor dots** on a selected element stay the four middles: they are where a new connector is
-  dragged out from, and a quarter is reached by snapping.
+- **Snap-target markers.** While an endpoint is dragged, the anchors of every nearby element
+  show as small dots on its outline; the one snapped to is drawn larger.
+- **Quick-connect pluses** on a selected element start a connector from the middle of their side;
+  a side without anchors (a triangle's top) starts it from the offered anchor nearest that middle.
 
 ## The anchor at creation
 
 When a connector is created between two elements without the user choosing the anchors
 (click-to-connect, templates, mind maps), each end takes the **middle** of the side
-that the ray from its element's centre towards the other element's centre leaves through. The
+that the ray from its element's centre towards the other element's centre leaves through (for a
+side without anchors, the next side as in "The new side"). The
 choice is aspect-ratio aware and rotation aware: a short, wide box leaves through its top or bottom
 for all but near-horizontal targets. Sharing an anchor with an existing connector is allowed.
 
@@ -149,12 +159,15 @@ When an arrow triggers, each of its pinned ends is re-evaluated:
    centre towards the other end's **aim point** leaves the connector box. The aim point is the
    point of the other end's connector box closest to this element's centre, or the other end's
    position when that end is not pinned to an element. Aiming at the closest point makes boxes in a
-   row face each other through their opposing sides even when slightly offset.
+   row face each other through their opposing sides even when slightly offset. When that side
+   carries no anchors (a triangle's top), the facing side is the next one that does: first the
+   other side the ray leaves through, then the remaining sides by how directly they face the aim
+   point.
 2. **Already facing.** If the anchor already lies on the facing side (a corner lying on it through
    either of its two sides counts), the end keeps its anchor.
 3. **Same class, new side.** Otherwise the end moves to an anchor of the **same position class** on
-   the facing side (or of the nearest offered class, when its element's anchor set lacks that
-   class, see "Anchor sets"):
+   the facing side. When the side offers none of that class, a quarter takes a corner, else a
+   middle; a corner takes a quarter, else a middle:
    - a **middle** takes the facing side's middle;
    - a **quarter** takes the quarter on the facing side that is **closer to the other end**, unless
      another arrow already holds it; then it takes the other quarter;
@@ -192,7 +205,7 @@ After the re-evaluation, two pinned ends on the **same side of the same shape** 
 
 ## Implementation
 
-- Vocabulary, anchor sets and geometry: `packages/diagram/src/anchors.ts`, `shape-outline.ts`,
+- Vocabulary, anchors per shape and geometry: `packages/diagram/src/anchors.ts`, `shape-outline.ts`,
   `svg-path-outline.ts`, `geometry.ts`.
 - Creation choice: `bestAnchorTowards` in `anchor-choice.ts`.
 - Fan: `arrow-endpoint-spread.ts`.

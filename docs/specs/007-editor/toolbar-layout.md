@@ -37,7 +37,9 @@ right edge: search, group browser, Favourites Edit / Reorder, everything. It
 is the exact node the floating Palette renders, not a copy. The popover is
 wide (26rem) rather than tall, so a body rarely has to scroll. Picking a tile
 from it closes it, so the canvas is clear to draw on; switching category
-closes it too, since it was showing the old one.
+closes it too, since it was showing the old one. Opening it focuses the body's
+search field, when the category has one, so typing filters straight away; on a phone it does not,
+because focusing would raise the keyboard over the popover.
 
 More appears when the category has more than ten tiles, and always for
 Favourites, Icons, Stickers, Technology and Behaviours, whose bodies carry
