@@ -20,6 +20,7 @@ Migration `0048_tab_scoped_share_links.sql`:
 
 - `share_links.tab_id TEXT NULL`: the tab the link is scoped to; NULL = All tabs. Existing rows are NULL, so every existing link keeps its meaning.
 - `shared_with.tab_id TEXT NULL`: the scope the visitor was last granted, written alongside `role` on every share resolve (last visit wins, the rule `role` already follows).
+- `ws_tickets.tab_scope TEXT NULL` and `ws_tickets.share_code TEXT NULL`: a room ticket carries the scope and the admitting code from the mint to the upgrade (see [Realtime](#realtime)).
 
 The `ShareLink` DTO gains `tabId: string | null`, and `SharedWithItem` gains `tabId: string | null`.
 
@@ -34,7 +35,7 @@ A scoped link grants its role **on its tab only**. The worker enforces this in o
 | `PUT /api/diagrams/:id` (rename, reorder, tab folders, deck) | 403. The diagram's structure isn't theirs to change.                                                                                                                         |
 | `GET/PUT/DELETE /api/diagrams/:id/tabs/:tabId`               | Their tab only, with the role's usual rules. Another tab id is a 404 (no existence leak). DELETE of their own tab is 403: a scoped link can't delete the tab it's scoped to. |
 | Comment `POST`/`DELETE`                                      | Their tab only; otherwise 404.                                                                                                                                               |
-| Change log `GET`                                             | Only entries on their tab.                                                                                                                                                   |
+| Change log `GET`                                             | Only entries on their tab. Edit role only, as for every visitor.                                                                                                             |
 | Change log `POST`/`DELETE`                                   | Only entries on their tab; otherwise 404.                                                                                                                                    |
 | `POST /api/diagrams/:id/copy`                                | A copy holding **only their tab**.                                                                                                                                           |
 | `GET /api/diagrams/:id/thumbnail`                            | Their tab's image, not the first-tab snapshot.                                                                                                                               |
@@ -71,7 +72,7 @@ The upgrade forwards the resolved scope to the room with the role (`X-Verified-T
 For a scoped session:
 
 - **Outbound**: the room doesn't send it any op carrying a different `tabId`: element, tab, cursor, selection, avatar, reaction, viewport, focus and Q&A ops. A `select` without a `tabId` is dropped, as is a `log` op whose entry is on another tab. `diagram-meta` is redacted the same way the REST diagram is. Catch-up replay applies the same filter. Its `seq` can lag because of filtered ops, which is harmless: every op on its own tab still reaches it, and the ledger merge is per tab.
-- **Inbound**: the room drops any mutation from it that carries a different `tabId`, and drops `diagram-meta` from it outright.
+- **Inbound**: the room drops any op from it that carries a different `tabId` (presence included, so a `tab-focus` elsewhere too), a `select` with no `tabId`, a `log` entry on another tab, and `diagram-meta` outright. Of the tab-less ops it may still send `log-remove` and the poll ops. Anything else fails closed.
 - Presence entries still carry each peer's tab id, so avatars can stack on "Not shared" pills. An id is not content.
 
 ### Revoke closes the socket
@@ -92,7 +93,7 @@ Changing a link's scope broadcasts a system op `share-rescoped { code }`. Sessio
 
 ## Owner experience (Share dialog)
 
-- **New link** gains a **Scope** select beside the role toggle: "All tabs" (default), then each tab by name, in bar order. It only shows when the diagram has more than one tab.
+- **New link** gains a **Tabs** select beside the role toggle ("Tabs this link opens"): "All tabs" (default), then each tab by name, in bar order. It only shows when the diagram has more than one tab, and then the row wraps onto two lines: role and tabs, then lifetime and Create.
 - Each active link card shows its scope as a select ("All tabs" / a tab name). Changing it rescopes the link at once. A single-tab diagram shows no scope control; its links are All tabs.
 - A scoped link's **Live image** has no tab picker: it always renders the link's tab.
 - A scoped link's Embed shows its tab, because the embed resolves through the same code.
