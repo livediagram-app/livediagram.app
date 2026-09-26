@@ -13,8 +13,8 @@
     "typecheck": "turbo run typecheck",
     "staging:check": "turbo run staging:check",
     "bench:readers": "tsx scripts/read-bench.mts",
-    "demo:sticky-vision:build": "node demo/sticky-vision/build.mjs",
-    "demo:sticky-vision": "pnpm demo:sticky-vision:build && node demo/sticky-vision/serve.mjs",
+    "demo:sticky-vision:build": "node docs/demo/sticky-vision/build.mjs",
+    "demo:sticky-vision": "pnpm demo:sticky-vision:build && node docs/demo/sticky-vision/serve.mjs",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
     "clean": "turbo run clean && rm -rf node_modules"
