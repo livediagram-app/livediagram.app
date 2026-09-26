@@ -16,3 +16,17 @@
 - [x] Testing
 - [x] Constants and configuration
 - [x] Defaults ledger
+
+## arrow-labels
+
+- [ ] Domain and naming
+- [ ] Behaviour and state
+- [ ] Interfaces and contracts
+- [ ] Errors and edge cases
+- [ ] Performance and limits
+- [ ] Presentation and UX
+- [ ] Accessibility
+- [ ] Observability
+- [ ] Testing
+- [ ] Constants and configuration
+- [ ] Defaults ledger

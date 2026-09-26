@@ -57,7 +57,7 @@ The maximum width follows the local direction:
 - **Diagonal runs** blend the two: the limit is whichever width makes the label's footprint along
   the line fit the open run, never above the cap.
 
-The cap and the stub are named constants in the blueprint; the cap's value is decided on the bench.
+A label is never wider than a cap, which is wider along a horizontal run than across a vertical one, so a very long arrow still gets a readable label rather than one long strip. The caps and the stub are named constants in the blueprint; their values are decided on the bench.
 Explicit line breaks the author types are kept, and each explicit line still wraps to the width.
 
 ## Knockout
@@ -94,5 +94,5 @@ Decided on the label bench (`packages/diagram/bench/arrow-labels`), which shows 
 including the diagram that prompted this spec, under each candidate:
 
 - Which segment an angled arrow's label sits on.
-- The width cap across vertical runs.
+- The width caps along horizontal and across vertical runs.
 - Whether a label knocks out other arrows crossing beneath it.
