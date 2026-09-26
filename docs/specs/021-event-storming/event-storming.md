@@ -749,15 +749,22 @@ so a photo of a wall with bare paper above the notes landed lanes too low).
 
 **What shipped, in numbers.** `ES_LANE_HEIGHT` 200 (one standard note),
 `ES_LANE_GAP` 40, `ES_LANE_PITCH` 240, `ES_NOTE_GAP` 16 (the board's own
-gutter, shared with the template and the insertion ripple), y tolerance 20
-(`ES_LANE_SNAP_Y`, half the gap), x capture radius 100
+gutter, shared with the template and the insertion ripple), y tolerance 20 for a
+plain sticky (`ES_LANE_SNAP_Y`, half the gap; a workshop note has none,
+`laneSnapThreshold`), on-a-lane tolerance 0.5px (`LANE_EPSILON`), photo column
+radius 50 (`PHOTO_COLUMN_RADIUS`, a quarter note), x capture radius 100
 (`ES_CANDIDATE_RADIUS_X`, half a standard note), reach 2 lanes
 (`ES_CANDIDATE_REACH_LANES`). They sit in one constants block at the top of the
 geometry module, because they are a single model and get corrected together. The
 geometry is `packages/diagram/src/event-storming-lanes.ts` (including
 `ES_LANES`, the one fixed stack); the lit lane is the module store `lib/lane-preview.ts` rendered by
 `components/canvas/TimelineLanesOverlay.tsx`; the two drag paths resolve it in
-`hooks/canvas/boxed-drag-resolve.ts` and `lib/palette-drag-snap.ts`. The
+`hooks/canvas/boxed-drag-resolve.ts` and `lib/palette-drag-snap.ts`. Everything
+that lands notes without a drag is `packages/diagram/src/event-storming-lane-landing.ts`
+(`landArrivals`, `settleNotesOnLanes`, rows to lanes) and, for a photograph,
+`event-storming-photo-place.ts`; the editor wires them in `lib/paste-placement.ts`,
+`lib/canvas-pointer.ts`, `hooks/canvas/useLaneSettle.ts`, `useNudgeSelection` and
+`useElementDuplication`, and the MCP worker in `landMcpArrivals`. The
 overlay's ink is the ALIGNMENT GUIDES' own derivation
 (`elementStroke ?? deriveTextColorForBg(backgroundColor)`) rather than a second
 vocabulary, which is also what keeps it legible on a dark wall.
@@ -934,7 +941,7 @@ low-threshold capture surface can least afford.
   whole import back.
 - **Where a photo with nothing in common lands:** to the RIGHT of the board's
   bounding box, one note width clear, its top row aligned with the board's top
-  row (snapped to a lane when lanes are on). The x axis is time, and a fresh
+  row (on its lane). The x axis is time, and a fresh
   piece of wall is most likely a continuation.
 - **Nothing found is not an error.** "No stickies found in this photo" with one
   line of retake advice (fill the frame, straight on, good light), and the
@@ -1668,6 +1675,15 @@ type, kept current every session. Each should stay true on its own.
   rows if every note is on one. One modifier (Cmd/Ctrl) is the way off.
 - Only the arriving note moves: a lane rule that pushed notes already down to
   make room would be an import, a paste or a drop nobody dares to make.
+- Normalise both axes of a photo by ONE dimension: fractions of the width on x
+  and of the height on y, carried by one scale, stretched every landscape
+  wall's rows apart by its aspect ratio, invisible until rows had to meet lanes.
+- A detector's rows are not a layout's rows: chained clustering is right for
+  reading order and wrong for placement, where a scattered wall of a dozen
+  heights collapsed into six rows. Rows for placement are measured from the
+  first note of the row, never chained.
+- A floating panel is not the canvas, but its pointer moves reach the canvas:
+  "where is the pointer" has to ask what is under it.
 - A toggle for something the board always wants is a toggle nobody should have
   to find. Lanes shipped with a switch, a command and a menu verb; the operator
   asked for all three to go, and with them went the tab field, its migration

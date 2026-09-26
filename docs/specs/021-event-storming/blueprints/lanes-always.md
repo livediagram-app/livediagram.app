@@ -27,6 +27,7 @@ Scope, by file:
 | `apps/live/hooks/canvas/useNudgeSelection.ts`            | Up / down on a workshop note: a lane per press                            |
 | `apps/live/lib/paste-placement.ts`                       | `pasteTranslation`, `landPastedCopies`: pointer vs staggered              |
 | `apps/live/hooks/canvas/useClipboard.ts`                 | Paste reads the canvas pointer; the menu's Paste passes its own point     |
+| `apps/live/lib/canvas-pointer.ts`                        | `pastePointer`: a floating panel is not the canvas                        |
 | `apps/live/hooks/canvas/useElementDuplication.ts`        | Duplicate staggers along the lane                                         |
 | `apps/live/hooks/canvas/useLaneSettle.ts`                | The one-time settle of an older board                                     |
 | `apps/live/lib/import-merge.ts`                          | A file import onto an event-storming tab settles its notes                |
@@ -82,12 +83,14 @@ Banned synonyms: "snap all", "normalise" (for the settle), "grid" for the lane s
   `primaryId: laneAnchorId` whenever the timeline is on (D1).
 - Palette drag: `PaletteDragPreview.workshop = true` for a tile with an `esKind`;
   `laneHeld = preview.workshop === true`.
-- Stamp: `stampPlacement` gains `held = intent.type === 'sticky' && !!intent.esKind`.
+- Stamp: `stampPlacement(x, y, size, board, held)`, with `held = stampHeld(intent)`
+  (`intent.type === 'sticky' && !!intent.esKind`).
 - Cmd/Ctrl (`noSnap`) passes `timeline: null`, unchanged: the note is free.
 
 ### Nudge (`useNudgeSelection`)
 
-- New dep `laneBoard: boolean` (`isEventStormingTab(activeTab)`).
+- New dep `laneBoard: boolean` (`isEventStormingTab(activeTab)`, the editor's `esBoard`). The step is
+  `laneAwareStep(deps, ids, dx, dy)`.
 - When `laneBoard && dy !== 0` and the selection holds a workshop note: the anchor is the
   single selection when it is a workshop note, else the first workshop note of the selection
   in document order (D2). `dy := laneStepTop(anchor, sign(dy)) − anchor.y`; `dx := 0` for
@@ -132,7 +135,8 @@ Banned synonyms: "snap all", "normalise" (for the settle), "grid" for the lane s
 
 ### Duplicate (`useElementDuplication`)
 
-- New dep `laneBoard`. When `laneBoard` and the selection holds a workshop note the offset is
+- No new dep: `duplicateOffset(activeTab, ids)` reads the board. When it is an event-storming board
+  and the selection holds a workshop note the offset is
   `(24, 0)`, and the copies go through `landArrivals(…, { x: 'keep' })`. Otherwise `(24, 24)`
   and no landing.
 
