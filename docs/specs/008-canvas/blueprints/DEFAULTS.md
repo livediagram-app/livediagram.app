@@ -17,6 +17,6 @@ One row per default applied where a spec is silent or qualitative.
 | D11 | arrow-anchors | Return value when nothing changes                         | The input array itself, so callers can skip work on reference equality                                              |
 | D12 | arrow-anchors | Stored `manual` flags after the rule stopped reading them | A rewritten end is a fresh `{ kind, elementId, anchor }`, so the inert flag falls away                              |
 | D13 | arrow-anchors | How a curved outline (cloud, document) is sampled         | Cubic curves at 12 segments each; only `M L C Z` absolute commands, the ones those paths use                        |
-| D14 | arrow-anchors | How an element declares its anchor set                    | A per-shape-kind map with a full-set default, so a new kind gets 16 until decided otherwise                         |
+| D14 | arrow-anchors | How a kind declares its anchors                           | A per-shape-kind list of anchor ids with an all-sixteen default, so a new kind gets 16 until decided otherwise      |
 | D15 | arrow-anchors | Where face-placed anchors come from                       | Derived from the kind's polygon vertices at load, so a silhouette change moves its anchors with it                  |
 | D16 | arrow-anchors | Quick-connect from a side without anchors                 | The offered anchor nearest the side's middle, first in table order on a tie                                         |
