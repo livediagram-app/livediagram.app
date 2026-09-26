@@ -1,19 +1,19 @@
 import { describe, expect, it } from 'vitest';
-import { subpageMetadata } from './subpage-metadata';
+import { breadcrumbJsonLd, pageMetadata } from './seo';
 
-// subpageMetadata is the single factory every marketing subpage
-// (FAQ, Terms, Privacy, /alternatives, /alternatives/<slug>) uses
-// for its Next `metadata` block, so a regression here ripples
-// across the whole non-landing surface. The tests below pin the
+// pageMetadata is the single factory every marketing subpage
+// (FAQ, /alternatives, /alternatives/<slug>, /features/<id>, /status)
+// and every help-centre page uses for its Next `metadata` block, so a
+// regression here ripples across the whole non-landing surface. The tests below pin the
 // shape Google + Twitter + sister-page canonical-checks all
 // depend on: a value drift in `openGraph.type` from 'article' to
 // 'website', or in `locale` from 'en_GB' to 'en-GB' (BCP 47 form
 // rather than the OG-required underscore form), would break
 // social cards on every subpage at once.
 
-describe('subpageMetadata', () => {
+describe('pageMetadata', () => {
   it('passes title + description through to the top-level fields', () => {
-    const md = subpageMetadata({
+    const md = pageMetadata({
       title: 'FAQ | livediagram',
       description: 'Questions and answers',
       path: '/faq',
@@ -23,16 +23,16 @@ describe('subpageMetadata', () => {
   });
 
   it('uses the supplied path as the canonical', () => {
-    // The metadataBase in app/layout.tsx resolves the relative
+    // The metadataBase in each app's layout resolves the relative
     // path against the production origin, so `/faq` becomes
     // `https://livediagram.app/faq` in the emitted <link>. The
     // factory's job is to surface the supplied path verbatim.
-    const md = subpageMetadata({ title: 't', description: 'd', path: '/terms' });
+    const md = pageMetadata({ title: 't', description: 'd', path: '/terms' });
     expect(md.alternates).toEqual({ canonical: '/terms' });
   });
 
-  it('emits an `article`-type openGraph block with the marketing siteName + en_GB locale', () => {
-    const md = subpageMetadata({
+  it('emits an `article`-type openGraph block with the default siteName + en_GB locale', () => {
+    const md = pageMetadata({
       title: 'Terms | livediagram',
       description: 'Legal terms',
       path: '/terms',
@@ -52,7 +52,7 @@ describe('subpageMetadata', () => {
   });
 
   it('emits a `summary_large_image` twitter card with title + description mirrors', () => {
-    const md = subpageMetadata({
+    const md = pageMetadata({
       title: 'Alternatives | livediagram',
       description: 'How livediagram compares',
       path: '/alternatives',
@@ -66,30 +66,31 @@ describe('subpageMetadata', () => {
 
   it('sets the OG + Twitter card image explicitly (the file-convention fallback is suppressed once openGraph is declared)', () => {
     // Next.js auto-promotes app/opengraph-image.tsx to og:image ONLY for
-    // routes that don't declare their own openGraph. Every subpage here
-    // sets an explicit openGraph object, which suppresses that fallback, so
-    // without an explicit image the card goes missing (verified against the
-    // built HTML). Pin that the factory references the generated assets so
-    // subpage links keep their social / SERP card.
-    const md = subpageMetadata({ title: 't', description: 'd', path: '/privacy' });
+    // routes that don't declare their own openGraph. Every page here sets an
+    // explicit openGraph object, which suppresses that fallback, so without
+    // an explicit image the card goes missing (verified against the built
+    // HTML). Pin that the factory references marketing's generated assets by
+    // absolute URL, so a page in a basePath app (the help centre, which has
+    // no card of its own) resolves them too.
+    const md = pageMetadata({ title: 't', description: 'd', path: '/privacy' });
     const og = md.openGraph as Record<string, unknown> | undefined;
     expect(og?.images).toEqual([
       {
-        url: '/opengraph-image',
+        url: 'https://livediagram.app/opengraph-image',
         width: 1200,
         height: 630,
         alt: 'livediagram: a real-time multiplayer canvas for diagrams and mindmaps',
       },
     ]);
     const tw = md.twitter as Record<string, unknown> | undefined;
-    expect(tw?.images).toEqual(['/twitter-image']);
+    expect(tw?.images).toEqual(['https://livediagram.app/twitter-image']);
   });
 
   it('omits the shared card image when the page has its own route-level image (ownOgImage)', () => {
     // The /features/<id> pages ship their own opengraph-image / twitter-image,
     // so the factory must NOT set images (that would override the per-category
     // file-convention card with the generic brand one).
-    const md = subpageMetadata({
+    const md = pageMetadata({
       title: 't',
       description: 'd',
       path: '/features/simple',
@@ -108,8 +109,8 @@ describe('subpageMetadata', () => {
     // per-page image) leaked across pages. Asserting distinct
     // references rules out an accidental return-the-singleton
     // refactor.
-    const a = subpageMetadata({ title: 'a', description: 'd', path: '/faq' });
-    const b = subpageMetadata({ title: 'b', description: 'd', path: '/terms' });
+    const a = pageMetadata({ title: 'a', description: 'd', path: '/faq' });
+    const b = pageMetadata({ title: 'b', description: 'd', path: '/terms' });
     expect(a).not.toBe(b);
     expect(a.openGraph).not.toBe(b.openGraph);
   });
@@ -119,7 +120,7 @@ describe('subpageMetadata', () => {
     // must NOT emit an empty / "Invalid Date" string into the
     // article:modified_time meta tag for them, which would surface
     // a parse warning in Google Search Console.
-    const md = subpageMetadata({ title: 't', description: 'd', path: '/faq' });
+    const md = pageMetadata({ title: 't', description: 'd', path: '/faq' });
     const og = md.openGraph as Record<string, unknown> | undefined;
     expect(og?.modifiedTime).toBeUndefined();
   });
@@ -133,7 +134,7 @@ describe('subpageMetadata', () => {
     // friendly Date and not worry about the wire format). See
     // spec/21 "Metadata".
     const date = new Date('2026-06-02T00:00:00.000Z');
-    const md = subpageMetadata({
+    const md = pageMetadata({
       title: 't',
       description: 'd',
       path: '/alternatives/miro',
@@ -141,5 +142,44 @@ describe('subpageMetadata', () => {
     });
     const og = md.openGraph as Record<string, unknown> | undefined;
     expect(og?.modifiedTime).toBe('2026-06-02T00:00:00.000Z');
+  });
+});
+
+describe('pageMetadata siteName', () => {
+  it('lets an app name itself (the help centre) without changing anything else', () => {
+    const md = pageMetadata({
+      title: 'Themes',
+      description: 'd',
+      path: '/help/canvas/themes/',
+      siteName: 'livediagram Help',
+    });
+    expect(md.title).toBe('Themes');
+    expect(md.openGraph).toMatchObject({ siteName: 'livediagram Help', title: 'Themes' });
+    expect(md.twitter).toMatchObject({ card: 'summary_large_image', title: 'Themes' });
+  });
+});
+
+describe('breadcrumbJsonLd', () => {
+  it('numbers the crumbs from 1 and omits `item` for an unlinked crumb', () => {
+    expect(
+      breadcrumbJsonLd([
+        { name: 'Help', url: 'https://livediagram.app/help/' },
+        { name: 'Canvas', url: 'https://livediagram.app/help/canvas/' },
+        { name: 'Themes' },
+      ]),
+    ).toEqual({
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Help', item: 'https://livediagram.app/help/' },
+        {
+          '@type': 'ListItem',
+          position: 2,
+          name: 'Canvas',
+          item: 'https://livediagram.app/help/canvas/',
+        },
+        { '@type': 'ListItem', position: 3, name: 'Themes' },
+      ],
+    });
   });
 });

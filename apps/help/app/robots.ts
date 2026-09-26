@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next';
-import { HELP_URL, SITE_URL } from '@/lib/site';
+import { SITE_URL } from '@livediagram/ui';
+import { HELP_URL } from '@/lib/site';
 
 // Help centre robots (spec/55): fully crawlable, with a pointer to the
 // sitemap. Static so it ships with the `output: 'export'` build.

@@ -1,6 +1,6 @@
 import type { EmbedProvider, EventStormingNoteKind } from '@livediagram/diagram';
 import { useEffect, useState } from 'react';
-import { MOBILE_BREAKPOINT_PX, isMobileViewportSync } from '@/lib/responsive';
+import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import type { PaletteTileActions } from '@/components/palette/PaletteTileGrid';
 import { getLineArtIconCatalog } from '@/lib/icons';
 import { searchStickers } from '@/lib/stickers';
@@ -75,17 +75,10 @@ export function usePaletteCatalogue({
   // Spotlight (spec/09) is desktop-only: it relies on hover-tracking the
   // cursor and on left/right-click to resize the light, none of which map to
   // touch — so drop it from the tool picker on mobile viewports. Reactive
-  // (mirrors MovablePanel) so the option appears / disappears as the viewport
-  // crosses the breakpoint, with a sync initial read to avoid a flicker.
-  const [isMobile, setIsMobile] = useState(isMobileViewportSync);
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const mq = window.matchMedia?.(`(max-width: ${MOBILE_BREAKPOINT_PX - 1}px)`);
-    if (!mq) return;
-    const onChange = () => setIsMobile(mq.matches);
-    mq.addEventListener('change', onChange);
-    return () => mq.removeEventListener('change', onChange);
-  }, []);
+  // (the shared useIsMobileViewport, as MovablePanel uses) so the option
+  // appears / disappears as the viewport crosses the breakpoint; a client
+  // mount reads it synchronously, so there's no flicker.
+  const isMobile = useIsMobileViewport();
   // If the viewport shrinks into mobile while Spotlight is active (desktop ->
   // resize / rotate), revert to Select: the option has just left the picker,
   // so leaving the tool on spotlight would strand it (the trigger would

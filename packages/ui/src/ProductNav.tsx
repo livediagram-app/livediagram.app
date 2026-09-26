@@ -12,7 +12,9 @@
 // because the destinations live in different apps stitched under one host by
 // the router, so client-side nav wouldn't cross them.
 
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
+import { useClickOutside } from './useClickOutside';
+import { useEscape } from './useEscape';
 import { ChevronDownIcon } from './icons';
 
 type ProductNavKey = 'home' | 'explorer' | 'editor' | 'help' | 'telemetry';
@@ -103,21 +105,8 @@ export function ProductNav({
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (!open) return;
-    const onPointerDown = (e: PointerEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false);
-    };
-    document.addEventListener('pointerdown', onPointerDown);
-    document.addEventListener('keydown', onKeyDown);
-    return () => {
-      document.removeEventListener('pointerdown', onPointerDown);
-      document.removeEventListener('keydown', onKeyDown);
-    };
-  }, [open]);
+  useClickOutside(ref, () => setOpen(false), open);
+  useEscape(() => setOpen(false), { enabled: open });
 
   // ml-* gives the menu breathing room from the logo it always sits beside,
   // in every header that renders it (marketing / telemetry / editor / explorer

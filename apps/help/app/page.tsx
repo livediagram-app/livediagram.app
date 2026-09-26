@@ -5,8 +5,10 @@ import { Breadcrumb } from '@/components/Breadcrumb';
 import { featureCategories, supportCategories } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 
+// The one page that spells out the " | livediagram" suffix: the root layout's
+// title template only reaches child segments, not this root index.
 export const metadata: Metadata = helpMetadata({
-  title: 'Help',
+  title: 'Help | livediagram',
   description:
     'Guides, tutorials, and answers for livediagram. Browse feature documentation, getting-started guides, and troubleshooting.',
   path: '/help/',

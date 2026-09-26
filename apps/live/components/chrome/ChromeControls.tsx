@@ -2,7 +2,7 @@ import { Tooltip } from '@/components/primitives/Tooltip';
 import { AppearanceToggle } from '@/components/chrome/AppearanceToggle';
 import { CHROME_BTN, CHROME_BTN_LABELLED, ChromeLabel } from '@/components/chrome/chrome-button';
 import { GearIcon, GithubIcon, SearchGlyph } from '@/components/chrome/tab-bar-icons';
-import { GITHUB_REPO_URL } from '@/lib/github';
+import { REPO_URL } from '@livediagram/ui';
 
 // The right-hand control cluster shared by the editor's bottom tab bar and
 // the Explorer's bottom bar (spec/07): search, the open-source GitHub
@@ -57,7 +57,7 @@ export function ChromeControls({
               description="View livediagram's open-source code on GitHub."
             >
               <a
-                href={GITHUB_REPO_URL}
+                href={REPO_URL}
                 target="_blank"
                 rel="noreferrer noopener"
                 aria-label="Source on GitHub"

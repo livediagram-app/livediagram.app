@@ -770,6 +770,9 @@ importers:
       '@livediagram/api-schema':
         specifier: workspace:*
         version: link:../api-schema
+      '@livediagram/telemetry-client':
+        specifier: workspace:*
+        version: link:../telemetry-client
       react:
         specifier: ^19.0.0
         version: 19.3.0

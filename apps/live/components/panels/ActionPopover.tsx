@@ -3,13 +3,11 @@
 // The spec/68 clipboard-with-tick action glyph, shared with the context
 // menu's Assign Action tile so the two surfaces can't drift.
 import { ActionMenuIcon as ClipboardIcon } from '@/components/palette/context-menu-icons';
-import { CloseIcon, TrashIcon } from '@livediagram/ui';
+import { CloseIcon, TrashIcon, useClickOutside, useEscape } from '@livediagram/ui';
 import { useRef, useState } from 'react';
 import type { ElementAction } from '@livediagram/diagram';
 import { Portal } from '@/components/primitives/Portal';
 import { useReposition } from '@/hooks/canvas/useReposition';
-import { useClickOutside } from '@/hooks/ui/useClickOutside';
-import { useEscape } from '@/hooks/ui/useEscape';
 import { initialsOf } from '@/lib/identity';
 import { formatRelativeTimeCompact } from '@/lib/relative-time';
 import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@/lib/clamp-to-viewport';

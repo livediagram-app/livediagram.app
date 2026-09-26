@@ -223,6 +223,26 @@ export function createLazyTrack(opts: {
   };
 }
 
+// Next inlines `process.env.NEXT_PUBLIC_*` into every client bundle at build
+// time, workspace packages included, so the reads below become literals.
+// Declared locally because this package doesn't pull in Node's types.
+declare const process: { env: Record<string, string | undefined> };
+
+/**
+ * The public sites' one track() (help centre, marketing, the dashboard): a
+ * lazy emitter with the shared policy, i.e. the build-time
+ * NEXT_PUBLIC_TELEMETRY_ENABLED gate plus the spec/20 opt-out this origin
+ * shares with the editor. Built once here so the three apps can't drift on
+ * it, and a module singleton so a page that emits from several places (help's
+ * page views, article views and errors) runs one buffer, not several. The
+ * editor keeps its own emitter: it caches the opt-out behind its preference
+ * events and targets its configured api base.
+ */
+export const siteTrack: TelemetryEmitter['track'] = createLazyTrack({
+  apiBase: process.env.NEXT_PUBLIC_API_BASE ?? '/api',
+  enabled: process.env.NEXT_PUBLIC_TELEMETRY_ENABLED === 'true',
+});
+
 // ---------------------------------------------------------------------
 // Client error tracking (spec/22 'Error' category)
 // ---------------------------------------------------------------------

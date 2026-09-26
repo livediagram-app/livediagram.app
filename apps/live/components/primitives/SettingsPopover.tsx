@@ -5,8 +5,7 @@ import { Portal } from '@/components/primitives/Portal';
 import { Tooltip } from '@/components/primitives/Tooltip';
 import { GearIcon } from '@/components/chrome/tab-bar-icons';
 import { ResetPositionGlyph } from '@/components/primitives/ResetPositionGlyph';
-import { useClickOutside } from '@/hooks/ui/useClickOutside';
-import { useEscape } from '@/hooks/ui/useEscape';
+import { useClickOutside, useEscape } from '@livediagram/ui';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
 
 const GAP = 8; // space between the trigger and the popover

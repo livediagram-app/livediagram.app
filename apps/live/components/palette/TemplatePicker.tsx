@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Button, CloseIcon } from '@livediagram/ui';
-import { useEscape } from '@/hooks/ui/useEscape';
+import { Button, CloseIcon, useEscape } from '@livediagram/ui';
 import type { Participant } from '@/lib/identity';
 import { track } from '@/lib/telemetry';
 import { shufflePinned } from '@/lib/shuffle';

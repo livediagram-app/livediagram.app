@@ -17,7 +17,7 @@ import {
   PlacementCard,
 } from '@/components/placement/PlacementCard';
 import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
-import { useEscape } from '@/hooks/ui/useEscape';
+import { useEscape } from '@livediagram/ui';
 import { matches } from '@/lib/search';
 
 // Shared modal frame: header (title + sub + close) over a scrollable body.

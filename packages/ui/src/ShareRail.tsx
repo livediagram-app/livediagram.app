@@ -1,11 +1,10 @@
 'use client';
 
+import { SITE_URL as SHARE_URL } from './site';
 import { useCopiedFlash } from './useCopiedFlash';
 
-// The canonical site origin we want people to pass along. Hardcoded here (it
-// mirrors apps/marketing/lib/site SITE_URL) so this rail is self-contained and
-// shareable from any app that renders the shared SiteHeader, not just marketing.
-const SHARE_URL = 'https://livediagram.app';
+// The URL we want people to pass along is the shared site origin (./site), so
+// this rail is shareable from any app that renders the shared SiteHeader.
 
 /** The line we want people to pass along; the URL is the shared site origin. */
 const SHARE_TEXT =

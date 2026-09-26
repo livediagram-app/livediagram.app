@@ -9,13 +9,13 @@ import { forwardRef, type ButtonHTMLAttributes } from 'react';
 //
 // `variant` is the intent (brand primary / destructive / neutral
 // outline); `size` is the padding+type scale (sm is the dialog-action
-// rhythm, lg the marketing CTA). Everything else — onClick, type,
-// disabled, aria-*, ref — passes straight through, so this is a drop-in
-// for a raw <button>. Extra `className` is appended last so a caller
+// rhythm, lg the large CTA, cta / cta-sm the public sites' call-to-action
+// pill). Everything else (onClick, type, disabled, aria-*, ref) passes
+// straight through, so this is a drop-in for a raw <button>. Extra `className` is appended last so a caller
 // can still add layout (w-full, mt-…) without re-stating the look.
 
 export type ButtonVariant = 'primary' | 'danger' | 'secondary';
-export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg';
+export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg' | 'cta-sm' | 'cta';
 
 const BASE =
   'inline-flex items-center justify-center gap-2 rounded-md font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50';
@@ -33,6 +33,11 @@ const SIZES: Record<ButtonSize, string> = {
   sm: 'px-3 py-1.5 text-sm',
   md: 'px-4 py-2 text-sm',
   lg: 'px-6 py-3 text-base',
+  // The public sites' primary call-to-action pill (marketing's CtaLink, the
+  // help centre's contact actions): wider than md, shorter than lg, in the
+  // small or the base type scale.
+  'cta-sm': 'px-5 py-2.5 text-sm',
+  cta: 'px-5 py-2.5 text-base',
 };
 
 // Class-string escape hatch for ANCHORS styled as buttons: Next's <Link>
