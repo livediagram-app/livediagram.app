@@ -56,12 +56,21 @@ This only happens on an event storming board, where left-to-right means time, an
 
 ## Timeline lanes
 
-An event-storming board has a rhythm built in: notes you drag snap into evenly
-spaced rows and line themselves up with the notes already on the board. There is
-nothing to switch on.
+An event-storming board has a rhythm built in: every note of the notation sits
+in one of its evenly spaced rows, called lanes, and lines itself up with the
+notes already on the board. There is nothing to switch on.
 
-- **Nothing on the board ever moves to make room.** The rows arrange themselves
-  around the work that is already there.
+- **A note always lands on a lane.** Let go of a note anywhere, even half-way
+  between two rows, and it settles into the nearest one. The same goes for a
+  note you paste, duplicate, add from a photo or import from a file. A plain
+  sticky (not one of the eight note kinds) is only nudged into a lane when you
+  drop it close to one.
+- **Hold Cmd / Ctrl while dragging** to put a note exactly where you want it,
+  lane or no lane. It stays there: nothing moves it back later.
+- **The arrow keys move a note a whole lane** up or down; left and right still
+  nudge it a pixel at a time (ten with Shift).
+- **Nothing on the board ever moves to make room.** Only the note you are
+  placing moves; to open a gap, press **Alt** while dragging (above).
 - **You see them only while you are dragging** — the lane a note is about to
   land in lights up, with its neighbours fainter either side, and everything
   disappears again when you let go.
@@ -78,9 +87,20 @@ nothing to switch on.
   impatiently you build it.
 - **The offer is outlined on the lane before you let go**, so you always drop
   into a place you have already seen.
-- **One gap, always the same.** Stickies sit a finger's width apart, and the
-  notes already there never move to make room. Drop a note somewhere with
-  nothing near it and it stays exactly where you put it.
+- **One gap, always the same.** Stickies sit a finger's width apart. Drop a
+  note somewhere with nothing near it and it stays exactly where you put it
+  along its lane.
+- **Pasting lands where your pointer is.** With the pointer over the board,
+  **Cmd / Ctrl + V** puts the note there, on the nearest lane, taking the next
+  free place if that spot is taken. With the pointer anywhere else (or from a
+  menu), the copy lands just to the right of the original, on the same lane,
+  ready to drag. Several notes keep their layout, each row on a lane of its own.
+- **Duplicate** (Cmd / Ctrl + D) puts the copy just to the right of the
+  original, on the same lane.
+- **Boards made before lanes held every note** are tidied once, the first time
+  someone who can edit opens them: notes sitting between two lanes move to the
+  nearest one, and a message says how many. One **Undo** puts them back, and
+  the board will not ask again.
 - **Drag several notes together** and the note you grabbed takes the place,
   just as it would alone; the others follow and keep the spacing they already
   had.
@@ -129,6 +149,11 @@ Event Storming palette reads that wall in:
    a note and **Change kind** if the light made a colour ambiguous.
 6. **Add** keeps them, in one step that a single Undo takes back. **Discard**
    leaves the board exactly as it was.
+
+The notes land on the lanes the way the wall had them: each row of the photo
+on a lane of its own, in the same order, even when the photo squeezes two rows
+closer than one lane. Notes roughly above one another line up in one column,
+and notes lapped over each other in a row are spread along their lane.
 
 A note your board already has is marked **"already here"** and left alone —
 never moved, never re-worded, even if the photo reads it differently. That is
