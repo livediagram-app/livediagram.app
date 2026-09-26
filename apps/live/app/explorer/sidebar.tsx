@@ -58,7 +58,7 @@ export function SidebarSectionLabel({
 }) {
   return (
     <div
-      className={`flex items-center justify-between px-2 pb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 ${
+      className={`flex items-center justify-between px-2 pb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400 ${
         first ? '' : 'mt-5 pt-1'
       }`}
     >
@@ -110,7 +110,7 @@ export function SidebarRow({
   }`;
   const labelInner = (
     <>
-      <span className="shrink-0 text-slate-400 dark:text-slate-500">{icon}</span>
+      <span className="shrink-0 text-slate-400">{icon}</span>
       <span className="min-w-0 flex-1 truncate">{label}</span>
       {badge !== undefined ? <CountBadge count={badge} className="ml-1" /> : null}
     </>
@@ -125,7 +125,7 @@ export function SidebarRow({
         type="button"
         onClick={onToggleExpand}
         aria-label={expanded ? 'Collapse' : 'Expand'}
-        className={`flex h-5 w-5 shrink-0 items-center justify-center text-slate-400 transition dark:text-slate-500 ${
+        className={`flex h-5 w-5 shrink-0 items-center justify-center text-slate-400 transition ${
           hasChildren ? 'hover:text-slate-700 dark:hover:text-slate-200' : 'invisible'
         }`}
         disabled={!hasChildren || !onToggleExpand}

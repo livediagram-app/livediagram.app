@@ -236,7 +236,7 @@ export function PollComposerBody({
       <StudioButton variant="primary" onClick={start} disabled={missing !== null}>
         {missing ?? 'Ask everyone'}
       </StudioButton>
-      <p className="text-center text-[10px] leading-snug text-slate-400 dark:text-slate-500">
+      <p className="text-center text-[10px] leading-snug text-slate-400">
         Everyone here is asked, view-only visitors included. Answers are anonymous and nothing is
         saved to the diagram.
       </p>
@@ -270,7 +270,7 @@ function RosterPreview({ options }: { options: string[] }) {
           </li>
         ))}
       </ul>
-      <p className="text-[10px] text-slate-400 dark:text-slate-500">
+      <p className="text-[10px] text-slate-400">
         Taken when you ask, so anyone who joins after won&rsquo;t be on the list.
       </p>
     </div>

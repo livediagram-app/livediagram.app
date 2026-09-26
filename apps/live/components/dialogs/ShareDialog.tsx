@@ -20,6 +20,7 @@ import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useCopiedFlash } from '@livediagram/ui';
 import { DialogHeader } from './DialogHeader';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
+import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
 
 // Human labels for the expiry choices (docs/specs/013-workspace/share-link-expiry.md), shared by the create
 // dropdown and the inactive rows' Extend button.
@@ -176,8 +177,10 @@ export function ShareDialog({
               <div
                 role="img"
                 aria-label={`Your avatar colour: ${participant.color}`}
-                style={{ backgroundColor: participant.color }}
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white"
+                style={{
+                  ...identityVars(participant.color),
+                }}
+                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white ${IDENTITY_FILL}`}
               >
                 {initialsOf(effectiveName)}
               </div>

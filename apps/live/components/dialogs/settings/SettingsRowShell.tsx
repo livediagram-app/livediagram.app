@@ -105,9 +105,7 @@ export function SettingsRowShell({
         {/* Settings now lists every preference, including the ones whose
             day-to-day home is a panel's own gear. Saying so keeps the two
             from reading as rival controls for the same thing. */}
-        {row.alsoIn ? (
-          <span className="block text-slate-400 dark:text-slate-500">Also in {row.alsoIn}.</span>
-        ) : null}
+        {row.alsoIn ? <span className="block text-slate-400">Also in {row.alsoIn}.</span> : null}
       </p>
     </div>
   );

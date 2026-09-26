@@ -144,7 +144,7 @@ export function TimelineCard({
             renderer's own meta trails it as running text, so a long one
             ("Rotate it before it lapses…") wraps word by word rather
             than being clipped or dropping whole onto its own line. */}
-        <p className="break-words text-[10px] leading-snug text-slate-400 dark:text-slate-500">
+        <p className="break-words text-[10px] leading-snug text-slate-400">
           <time dateTime={new Date(event.occurredAt).toISOString()}>
             {timeLabel(event.occurredAt)}
           </time>

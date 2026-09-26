@@ -6,6 +6,7 @@ import { Tooltip } from '@/components/primitives/Tooltip';
 import { ActionMenuIcon, CommentMenuIcon } from '@/components/palette/context-menu-icons';
 import type { ActionRow, CommentRow } from './CollaboratePanel';
 import { SOLID_BRAND_DARK } from '@livediagram/ui';
+import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
 
 // The COLLABORATE panel's row + filter-control components, lifted out
 // of CollaboratePanel (which keeps the panel shell, the merge / filter
@@ -99,25 +100,23 @@ function RowShell({
         onClick={onClick}
         className="group flex w-full items-start gap-2 rounded px-1.5 py-2 text-left transition hover:bg-slate-100 dark:hover:bg-slate-800"
       >
-        <span aria-hidden className="mt-0.5 shrink-0 text-slate-400 dark:text-slate-500">
+        <span aria-hidden className="mt-0.5 shrink-0 text-slate-400">
           {icon}
         </span>
         <span className="min-w-0 flex-1">
           <span className={`block truncate text-xs font-medium ${titleClass}`}>{title}</span>
-          <span className="line-clamp-1 text-[10px] text-slate-400 dark:text-slate-500">
-            {description}
-          </span>
+          <span className="line-clamp-1 text-[10px] text-slate-400">{description}</span>
         </span>
         <span className="flex shrink-0 flex-col items-end gap-0.5">
           <Tooltip title={avatar.name} description={avatar.detail}>
             <span
-              className={`flex h-5 w-5 items-center justify-center rounded-full text-[8px] font-semibold text-white ${avatar.colorClass ?? ''}`}
-              style={avatar.color ? { backgroundColor: avatar.color } : undefined}
+              className={`flex h-5 w-5 items-center justify-center rounded-full text-[8px] font-semibold text-white ${avatar.colorClass ?? ''} ${avatar.color ? IDENTITY_FILL : ''}`}
+              style={avatar.color ? identityVars(avatar.color) : undefined}
             >
               {initialsOf(avatar.name)}
             </span>
           </Tooltip>
-          <span className="text-[10px] text-slate-400 dark:text-slate-500">
+          <span className="text-[10px] text-slate-400">
             {formatRelativeTimeShort(Date.now() - at)}
           </span>
         </span>
@@ -132,15 +131,15 @@ export function ActionRowItem({ row, onClick }: { row: ActionRow; onClick: () =>
       icon={<ActionMenuIcon />}
       title={row.actionName}
       titleClass={
-        row.status === 'done'
-          ? 'text-slate-400 line-through dark:text-slate-500'
-          : 'text-slate-800 dark:text-slate-100'
+        row.status === 'done' ? 'text-slate-400 line-through' : 'text-slate-800 dark:text-slate-100'
       }
       description={row.label}
       avatar={{
         name: row.mine ? 'You' : row.assigneeName,
         detail: 'Assignee',
-        colorClass: row.mine ? 'bg-brand-500' : 'bg-slate-400 dark:bg-slate-600',
+        colorClass: row.mine
+          ? `bg-brand-500 ${SOLID_BRAND_DARK}`
+          : 'bg-slate-400 dark:bg-slate-600',
       }}
       at={row.createdAt}
       onClick={onClick}
@@ -153,9 +152,7 @@ export function CommentRowItem({ row, onClick }: { row: CommentRow; onClick: () 
     <RowShell
       icon={<CommentMenuIcon />}
       title={row.label}
-      titleClass={
-        row.resolved ? 'text-slate-400 dark:text-slate-500' : 'text-slate-800 dark:text-slate-100'
-      }
+      titleClass={row.resolved ? 'text-slate-400' : 'text-slate-800 dark:text-slate-100'}
       description={row.latestText}
       avatar={{
         name: row.latestAuthorName,

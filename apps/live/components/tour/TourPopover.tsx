@@ -206,7 +206,7 @@ export function TourPopover({
               <button
                 type="button"
                 onClick={onSkip}
-                className="text-[11px] font-medium text-slate-400 transition hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
+                className="text-[11px] font-medium text-slate-400 transition hover:text-slate-600 dark:hover:text-slate-300"
               >
                 Skip tour
               </button>

@@ -360,7 +360,7 @@ export function PaletteDropdown({
                         // say it started.
                         <div
                           role="presentation"
-                          className={`col-span-full px-1.5 pb-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 ${bandTint(opt.group)} ${
+                          className={`col-span-full px-1.5 pb-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400 ${bandTint(opt.group)} ${
                             i === 0
                               ? 'pt-0.5'
                               : 'mt-1 border-t border-slate-200 pt-1.5 dark:border-slate-700'
@@ -424,7 +424,7 @@ export function PaletteDropdown({
                               worth discovering and worth nothing at the cost of
                               the label's line. */}
                         {opt.shortcut ? (
-                          <kbd className="absolute right-0.5 top-0.5 rounded-[3px] px-0.5 text-[8px] font-semibold uppercase leading-[1.4] text-slate-400 dark:text-slate-500">
+                          <kbd className="absolute right-0.5 top-0.5 rounded-[3px] px-0.5 text-[8px] font-semibold uppercase leading-[1.4] text-slate-400 dark:text-slate-400">
                             {opt.shortcut}
                           </kbd>
                         ) : null}

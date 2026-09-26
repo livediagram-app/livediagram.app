@@ -209,3 +209,40 @@ describe('optical numerals', () => {
     expect(offenders).toEqual([]);
   });
 });
+
+// White text on an identity colour (docs/specs/004-interface-design/color-scheme.md, Dark palette rules):
+// a colour taken at runtime (a participant's, a team's) is painted through identityVars + IDENTITY_FILL,
+// never an inline backgroundColor, so dark mode can deepen it under the white text.
+describe('white text on an identity colour', () => {
+  it('never sits on an inline runtime background, which the dark shade could not override', () => {
+    const offenders: string[] = [];
+    for (const path of SOURCES.filter((p) => p.endsWith('.tsx'))) {
+      const sf = ts.createSourceFile(
+        path,
+        readFileSync(path, 'utf8'),
+        ts.ScriptTarget.Latest,
+        true,
+        ts.ScriptKind.TSX,
+      );
+      const visit = (node: ts.Node): void => {
+        if (ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) {
+          const attr = (name: string) =>
+            node.attributes.properties.find(
+              (p): p is ts.JsxAttribute => ts.isJsxAttribute(p) && p.name.getText(sf) === name,
+            );
+          const cls = attr('className')?.initializer?.getText(sf) ?? '';
+          const style = attr('style')?.initializer?.getText(sf) ?? '';
+          const runtimeBg = /backgroundColor:\s*(?!['"`])/.test(style);
+          if (runtimeBg && /(^|[\s'"`{])text-white\b/.test(cls)) {
+            offenders.push(
+              `${relative(REPO, path)}:${sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1}`,
+            );
+          }
+        }
+        ts.forEachChild(node, visit);
+      };
+      visit(sf);
+    }
+    expect(offenders).toEqual([]);
+  });
+});

@@ -52,7 +52,7 @@ export function TemplatePickerBrowse({
           onChange={(e) => setTemplateQuery(e.target.value)}
           placeholder="Search templates"
           aria-label="Search templates"
-          className="w-72 max-w-[70%] rounded-md border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 placeholder:text-slate-400 focus:border-brand-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:placeholder:text-slate-500"
+          className="w-72 max-w-[70%] rounded-md border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 placeholder:text-slate-400 focus:border-brand-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:placeholder:text-slate-400"
         />
       </div>
       {/* Two-level browse inside a height-capped scroll area:

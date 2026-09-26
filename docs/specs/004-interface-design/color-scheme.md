@@ -113,6 +113,15 @@ The wordmark's "diagram" half is the one vivid note: **sky-400 `#38bdf8`** in da
   badges) sits on `brand-600` in dark mode, and a control hovers to `brand-700`: white on `#3a6599` is 6.0:1. The
   pairing lives in two shared class constants in `@livediagram/ui`, `SOLID_BRAND_DARK` for a static fill and
   `SOLID_BRAND_DARK_CONTROL` for a control, never re-typed per component.
+- **White text on an identity colour** (avatar initials, cursor and presence labels, a comment author's disc, a
+  team's tile: a participant's or team's colour under white text) sits on a **deeper shade of the same hue** in dark
+  mode (`identityDeep`): each participant colour's own Tailwind 700 step (5.0 to 7.9:1 under white), and for any
+  other colour the lightest darkening that reaches 4.5:1. White fails AA on all ten participant colours as they
+  are. The text stays white, and light mode keeps the colour exactly. The colour is carried by the shared
+  `identityVars` style and `IDENTITY_FILL` class, never an inline background, which the dark shade could not
+  override.
+- **Secondary text** in dark mode is `slate-400` or lighter (6.4:1 on `slate-900`). `slate-500` is for non-text only
+  in dark mode: as text it is 3.4 to 3.9:1 on every dark surface.
 - **Brand-coloured text** in dark mode is `brand-400` or lighter (`#8fb3e0` on `slate-900` is 8.0:1).
 - **Tinted fills** (`brand-500/10`, `brand-500/15`…) and purely decorative uses (spinners' tracks, glyph strokes on a
   tinted plate, shadows) keep their tokens: the Steel ramp restyles them by itself.

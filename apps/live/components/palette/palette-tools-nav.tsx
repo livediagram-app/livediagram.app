@@ -102,7 +102,7 @@ export function ToolsBreadcrumb({
         </span>
         {root}
       </button>
-      <span aria-hidden className="text-slate-400 dark:text-slate-500">
+      <span aria-hidden className="text-slate-400">
         ›
       </span>
       <span className="px-1 font-semibold text-slate-800 dark:text-slate-100">{label}</span>

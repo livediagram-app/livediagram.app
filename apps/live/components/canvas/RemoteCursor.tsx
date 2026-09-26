@@ -1,3 +1,5 @@
+import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
+
 // Floating cursor for a remote participant (extracted from Canvas so
 // CanvasElementsLayer can render it inside the transformed wrapper).
 // Position is in canvas coords (so the cursor pans + zooms with the
@@ -33,8 +35,8 @@ export function RemoteCursor({
         <path d="M2 1 L14 8 L8 9 L11 14 L9 15 L6 10 L2 14 Z" />
       </svg>
       <span
-        className="absolute left-3 top-3 whitespace-nowrap rounded px-1.5 py-0.5 text-[10px] font-semibold text-white shadow-sm"
-        style={{ backgroundColor: cursor.color }}
+        className={`absolute left-3 top-3 whitespace-nowrap rounded px-1.5 py-0.5 text-[10px] font-semibold text-white shadow-sm ${IDENTITY_FILL}`}
+        style={identityVars(cursor.color)}
       >
         {cursor.name}
       </span>

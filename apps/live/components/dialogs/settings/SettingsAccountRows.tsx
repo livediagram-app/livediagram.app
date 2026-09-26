@@ -53,9 +53,7 @@ export function SettingsIdentityRow({ row }: { row: SettingsIdentityRowSpec }) {
                   </span>
                 ) : null}
                 {joined ? (
-                  <span className="mt-0.5 block text-[11px] text-slate-400 dark:text-slate-500">
-                    Joined {joined}
-                  </span>
+                  <span className="mt-0.5 block text-[11px] text-slate-400">Joined {joined}</span>
                 ) : null}
               </span>
             </>

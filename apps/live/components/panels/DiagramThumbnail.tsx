@@ -130,7 +130,7 @@ export function DiagramThumbnail({
       // `@container`, so the placeholder can decide by its OWN width
       // whether there is room for a caption: a card preview gets the
       // words, a row thumb gets the sketch alone.
-      className={`@container flex shrink-0 items-center justify-center overflow-hidden text-slate-400 dark:text-slate-500 ${className}`}
+      className={`@container flex shrink-0 items-center justify-center overflow-hidden text-slate-400 ${className}`}
     >
       {state.status === 'ready' ? (
         // A blob URL, not a remote asset, so a plain <img> is correct
@@ -205,7 +205,7 @@ function BlankCanvasIllustration({ captioned = false }: { captioned?: boolean })
       {captioned ? (
         // Container-queried: only where the box is wide enough to hold
         // the words without crowding the sketch (a card, not a row).
-        <span className="hidden text-[11px] font-medium text-slate-400 @min-[140px]:block dark:text-slate-500">
+        <span className="hidden text-[11px] font-medium text-slate-400 @min-[140px]:block">
           Nothing drawn yet
         </span>
       ) : null}

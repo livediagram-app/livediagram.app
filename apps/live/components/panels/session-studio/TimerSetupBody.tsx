@@ -117,7 +117,7 @@ export function TimerSetupBody({
           </StudioButton>
         </>
       )}
-      <p className="text-center text-[10px] leading-snug text-slate-400 dark:text-slate-500">
+      <p className="text-center text-[10px] leading-snug text-slate-400">
         Everyone on this tab sees the same clock.
       </p>
     </div>

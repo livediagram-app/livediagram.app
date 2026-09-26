@@ -186,7 +186,7 @@ export function NewThemeCard({ onClick }: { onClick: () => void }) {
       onClick={onClick}
       className="group flex flex-col gap-1 rounded-md border border-dashed border-slate-300 p-1.5 text-left transition hover:border-brand-400 hover:bg-brand-50/40 dark:border-slate-600 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10"
     >
-      <span className="flex h-20 w-full items-center justify-center rounded-md bg-slate-50 text-slate-400 transition group-hover:text-brand-500 dark:bg-slate-800/60 dark:text-slate-500 dark:group-hover:text-brand-300">
+      <span className="flex h-20 w-full items-center justify-center rounded-md bg-slate-50 text-slate-400 transition group-hover:text-brand-500 dark:bg-slate-800/60 dark:group-hover:text-brand-300">
         <PlusIcon size={18} />
       </span>
       <span className="w-full truncate text-center text-[10px] font-medium text-slate-600 dark:text-slate-300">

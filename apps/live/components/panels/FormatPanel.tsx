@@ -94,8 +94,8 @@ export function FormatPanel({
             open={openRow === 'copies'}
             onToggle={() => toggle('copies')}
             headerClassName="flex w-full items-center justify-between gap-2 py-1.5 text-left"
-            titleClassName="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500"
-            chevronClassName="text-slate-400 dark:text-slate-500"
+            titleClassName="text-[10px] font-semibold uppercase tracking-wider text-slate-400"
+            chevronClassName="text-slate-400"
             bodyClassName="pb-2"
             trailing={
               <span
@@ -122,7 +122,7 @@ export function FormatPanel({
                       className={`rounded-md border px-2 py-1 text-[11px] font-medium transition ${
                         active
                           ? 'border-brand-400 bg-brand-50 text-brand-700 dark:border-brand-500 dark:bg-brand-500/15 dark:text-brand-200'
-                          : 'border-slate-200 text-slate-400 line-through hover:border-brand-300 hover:text-brand-700 dark:border-slate-700 dark:text-slate-500'
+                          : 'border-slate-200 text-slate-400 line-through hover:border-brand-300 hover:text-brand-700 dark:border-slate-700 dark:text-slate-400'
                       }`}
                     >
                       {group.label}
@@ -137,8 +137,8 @@ export function FormatPanel({
             open={openRow === 'mode'}
             onToggle={() => toggle('mode')}
             headerClassName="flex w-full items-center justify-between gap-2 py-1.5 text-left"
-            titleClassName="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500"
-            chevronClassName="text-slate-400 dark:text-slate-500"
+            titleClassName="text-[10px] font-semibold uppercase tracking-wider text-slate-400"
+            chevronClassName="text-slate-400"
             bodyClassName="pb-2"
             trailing={
               <span className="text-[11px] font-medium text-slate-600 dark:text-slate-300">
@@ -173,7 +173,7 @@ export function FormatPanel({
         <p
           className={`px-1 pt-1.5 text-[10px] leading-snug ${
             paintsAnything
-              ? 'text-slate-400 dark:text-slate-500'
+              ? 'text-slate-400 dark:text-slate-400'
               : 'text-amber-600 dark:text-amber-400'
           }`}
         >

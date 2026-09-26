@@ -115,7 +115,7 @@ export function TimelineFilterPopover({
           toolbar). The icons are shared, which is the part that would
           actually drift. */}
       <div className="sm:hidden">
-        <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+        <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-400">
           View
         </p>
         <div className="mb-4 flex rounded-lg border border-slate-200 p-0.5 dark:border-slate-700">
@@ -142,7 +142,7 @@ export function TimelineFilterPopover({
           rather than labelled "Others": on its own that word doesn't say
           others-what, and the option only means anything next to the
           alternative it replaces. */}
-      <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+      <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
         Activity by
       </p>
       <div className="mb-4 flex rounded-lg border border-slate-200 p-0.5 dark:border-slate-700">
@@ -169,9 +169,7 @@ export function TimelineFilterPopover({
       </div>
 
       <div className="mb-2 flex items-center justify-between">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-          Show
-        </p>
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Show</p>
         {/* Shown whenever ANY control is narrowing the feed. Gating on
             `excluded.size` alone hid the only way out of an actor filter
             that had emptied the list. */}

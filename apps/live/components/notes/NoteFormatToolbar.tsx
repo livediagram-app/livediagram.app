@@ -160,7 +160,7 @@ function NoteLinkField({
         placeholder="example.com"
         aria-label="Link address"
         aria-invalid={invalid}
-        className={`min-w-0 flex-1 rounded-md border bg-white px-2 py-1 text-xs text-slate-800 outline-none placeholder:text-slate-400 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 ${
+        className={`min-w-0 flex-1 rounded-md border bg-white px-2 py-1 text-xs text-slate-800 outline-none placeholder:text-slate-400 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-400 ${
           invalid
             ? 'border-rose-400 focus:ring-2 focus:ring-rose-100 dark:border-rose-500'
             : 'border-slate-200 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 dark:border-slate-700'

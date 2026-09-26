@@ -67,7 +67,7 @@ export const EllipsisTriggerButton = forwardRef<
       aria-haspopup="menu"
       aria-expanded={expanded}
       className={[
-        'inline-flex shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-slate-200 hover:text-slate-700 dark:text-slate-500 dark:hover:bg-slate-700 dark:hover:text-slate-200',
+        'inline-flex shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-slate-200 hover:text-slate-700 dark:hover:bg-slate-700 dark:hover:text-slate-200',
         SIZE_CLASS[size],
         revealClass,
         tuck ? '-mr-1 -mt-0.5' : '',

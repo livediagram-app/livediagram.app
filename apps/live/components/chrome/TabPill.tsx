@@ -116,7 +116,8 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
         isActive && !isEditing
           ? {
               color: legibleTabAccent(tab, isDark),
-              backgroundColor: isDark ? '#1e293b' : '#ffffff',
+              // Dark: the dark palette's raised surface, so a themed tab's tint reaches it too.
+              backgroundColor: isDark ? 'var(--color-slate-800)' : '#ffffff',
               boxShadow: `0 0 0 1px color-mix(in srgb, ${legibleTabAccent(tab, isDark)} 45%, transparent), 0 1px 3px rgb(0 0 0 / ${isDark ? '0.45' : '0.12'})`,
             }
           : undefined

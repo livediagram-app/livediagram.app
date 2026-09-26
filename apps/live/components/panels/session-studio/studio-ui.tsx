@@ -206,12 +206,10 @@ export function StudioCallout({
 export function StudioLabel({ children, aside }: { children: ReactNode; aside?: ReactNode }) {
   return (
     <div className="flex items-baseline justify-between gap-2">
-      <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+      <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
         {children}
       </span>
-      {aside ? (
-        <span className="text-[10px] tabular-nums text-slate-400 dark:text-slate-500">{aside}</span>
-      ) : null}
+      {aside ? <span className="text-[10px] tabular-nums text-slate-400">{aside}</span> : null}
     </div>
   );
 }

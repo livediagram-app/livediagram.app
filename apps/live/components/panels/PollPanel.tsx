@@ -82,9 +82,7 @@ export function PollPanel({
         <div className="flex flex-col gap-1.5">
           {poll.style === 'text' ? (
             textAnswers.length === 0 ? (
-              <p className="text-[11px] italic text-slate-400 dark:text-slate-500">
-                No answers yet.
-              </p>
+              <p className="text-[11px] italic text-slate-400">No answers yet.</p>
             ) : (
               <ul className="flex max-h-40 flex-col gap-1 overflow-y-auto">
                 {textAnswers.map((text, i) => (
@@ -102,7 +100,7 @@ export function PollPanel({
           )}
         </div>
 
-        <p className="text-[10px] text-slate-400 dark:text-slate-500">
+        <p className="text-[10px] text-slate-400">
           {answered} answered &middot; {skipped} skipped
         </p>
 

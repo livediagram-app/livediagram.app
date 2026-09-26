@@ -42,7 +42,7 @@ function HelpLink() {
       href="/help/account-and-data/connect-ai-mcp/"
       target="_blank"
       rel="noopener noreferrer"
-      className="mt-5 inline-flex items-center gap-1.5 text-xs font-medium text-slate-400 transition hover:text-brand-600 dark:text-slate-500 dark:hover:text-brand-400"
+      className="mt-5 inline-flex items-center gap-1.5 text-xs font-medium text-slate-400 transition hover:text-brand-600 dark:hover:text-brand-400"
     >
       <svg
         width="13"

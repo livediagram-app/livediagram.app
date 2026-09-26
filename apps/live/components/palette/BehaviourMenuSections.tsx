@@ -76,7 +76,7 @@ function LinesRow({
           className={`${fieldClass} resize-none`}
         />
       </label>
-      <p className="pb-1 pt-1 text-[10px] text-slate-400 dark:text-slate-500">One per line.</p>
+      <p className="pb-1 pt-1 text-[10px] text-slate-400">One per line.</p>
     </div>
   );
 }

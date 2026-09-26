@@ -105,9 +105,9 @@ const ANIMALS = [
   'Wolf',
 ];
 
-// Curated palette of distinguishable, accessible colours. All have enough
-// contrast against white text for the avatar initials to stay legible.
-const COLORS = [
+// Curated palette of distinguishable colours. White initials fall below AA on
+// every one of them; dark mode paints their deeper shade (identity-fill.ts) instead.
+export const PARTICIPANT_COLORS = [
   '#0ea5e9', // sky-500
   '#10b981', // emerald-500
   '#f59e0b', // amber-500
@@ -130,7 +130,7 @@ export function randomName(): string {
 }
 
 export function randomColor(): string {
-  return pick(COLORS);
+  return pick(PARTICIPANT_COLORS);
 }
 
 // Deterministic palette pick for identities that have no persisted
@@ -144,7 +144,7 @@ export function colorForKey(key: string): string {
     hash ^= key.charCodeAt(i);
     hash = Math.imul(hash, 0x01000193);
   }
-  return COLORS[Math.abs(hash) % COLORS.length]!;
+  return PARTICIPANT_COLORS[Math.abs(hash) % PARTICIPANT_COLORS.length]!;
 }
 
 // Pick a colour from the palette that isn't in `taken`. When the
@@ -161,10 +161,10 @@ export function colorForKey(key: string): string {
 // records can stay random.
 export function nextFreeColor(taken: Set<string>, preferred?: string): string {
   if (preferred && !taken.has(preferred)) return preferred;
-  for (const c of COLORS) {
+  for (const c of PARTICIPANT_COLORS) {
     if (!taken.has(c)) return c;
   }
-  return preferred ?? COLORS[0]!;
+  return preferred ?? PARTICIPANT_COLORS[0]!;
 }
 
 // Up to two characters for the avatar. Single-word names use the first

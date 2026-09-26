@@ -273,7 +273,7 @@ export function SearchPanel({
                 ? 'Search diagrams, folders, teams, tabs, elements, help...'
                 : 'Search diagrams, folders, teams, help...'
             }
-            className="flex-1 bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-400 dark:text-slate-100 dark:placeholder:text-slate-500"
+            className="flex-1 bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-400 dark:text-slate-100 dark:placeholder:text-slate-400"
           />
           <button
             type="button"

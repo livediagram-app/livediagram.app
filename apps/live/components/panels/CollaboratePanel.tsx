@@ -186,7 +186,7 @@ export function CollaboratePanel({
           </div>
         </div>
         {shown.length === 0 ? (
-          <p className="px-1.5 py-4 text-center text-[11px] text-slate-400 dark:text-slate-500">
+          <p className="px-1.5 py-4 text-center text-[11px] text-slate-400">
             {kindFilter === 'comments'
               ? filter === 'open'
                 ? 'No open comments.'

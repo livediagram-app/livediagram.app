@@ -294,7 +294,7 @@ export function TeamPane({
               onChange={(e) => setInviteEmail(e.target.value)}
               placeholder="Add your team by email address, they will receive an invite."
               aria-label="Invite by email address"
-              className="min-w-0 flex-1 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400 dark:text-slate-100 dark:placeholder:text-slate-500"
+              className="min-w-0 flex-1 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400 dark:text-slate-100 dark:placeholder:text-slate-400"
             />
             <Button
               type="submit"

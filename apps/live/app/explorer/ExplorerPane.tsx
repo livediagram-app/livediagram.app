@@ -311,7 +311,7 @@ export function ExplorerPane() {
             <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
               Sign in to use API tokens
             </p>
-            <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
+            <p className="mt-1 text-xs text-slate-400">
               API tokens are an account feature for calling the API from your own scripts.
             </p>
             <a

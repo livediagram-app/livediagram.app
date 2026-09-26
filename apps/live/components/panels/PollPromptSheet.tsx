@@ -123,7 +123,7 @@ export function PollPromptSheet({
                 placeholder="Your answer"
                 className="w-full resize-none rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-brand-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
               />
-              <span className="self-end text-[10px] tabular-nums text-slate-400 dark:text-slate-500">
+              <span className="self-end text-[10px] tabular-nums text-slate-400">
                 {text.length}/{POLL_TEXT_ANSWER_MAX}
               </span>
               <button
@@ -157,7 +157,7 @@ export function PollPromptSheet({
           )}
 
           <div className="flex items-center justify-between gap-2 border-t border-slate-100 pt-2 dark:border-slate-800">
-            <span className="text-[10px] leading-snug text-slate-400 dark:text-slate-500">
+            <span className="text-[10px] leading-snug text-slate-400">
               Answers aren&apos;t shown against names.
             </span>
             <button

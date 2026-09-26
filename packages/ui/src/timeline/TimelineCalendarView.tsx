@@ -133,7 +133,7 @@ export function TimelineCalendarView({
         {WEEKDAYS.map((day) => (
           <div
             key={day}
-            className="pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500"
+            className="pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400"
           >
             {day}
           </div>
@@ -159,7 +159,7 @@ export function TimelineCalendarView({
                 className={`text-[11px] ${
                   isToday
                     ? 'font-semibold text-brand-700 dark:text-brand-300'
-                    : 'text-slate-400 dark:text-slate-500'
+                    : 'text-slate-400 dark:text-slate-400'
                 }`}
               >
                 {cell.day}

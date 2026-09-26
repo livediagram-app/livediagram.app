@@ -83,7 +83,7 @@ export function SettingsCategoryList({
                 <span className="text-optical-centre">{count}</span>
               </span>
             ) : null}
-            {isRoot ? <NavChevron className="text-slate-400 dark:text-slate-500" /> : null}
+            {isRoot ? <NavChevron className="text-slate-400" /> : null}
           </button>
         );
       })}
