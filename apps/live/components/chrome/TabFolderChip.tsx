@@ -169,8 +169,8 @@ export function TabFolderChip({
         >
           <FolderGlyph open={open} />
           <span>{name}</span>
-          <span className="rounded-full bg-slate-200 px-1.5 py-px text-[10px] font-semibold leading-none text-slate-500 dark:bg-slate-700 dark:text-slate-300">
-            {tabs.length}
+          <span className="inline-flex h-3 items-center rounded-full bg-slate-200 px-1.5 text-[10px] font-semibold leading-none text-slate-500 dark:bg-slate-700 dark:text-slate-300">
+            <span className="text-optical-centre">{tabs.length}</span>
           </span>
         </button>
       )}

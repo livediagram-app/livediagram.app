@@ -89,9 +89,9 @@ export function StackedCard({
         />
         <span
           aria-hidden
-          className="pointer-events-none absolute right-2 top-2 rounded-full bg-slate-900/70 px-2 py-0.5 text-[11px] font-semibold text-white dark:bg-white/80 dark:text-slate-900"
+          className="pointer-events-none absolute right-2 top-2 inline-flex h-5 items-center rounded-full bg-slate-900/70 px-2 text-[11px] font-semibold text-white dark:bg-white/80 dark:text-slate-900"
         >
-          {count}
+          <span className="text-optical-centre">{count}</span>
         </span>
       </div>
     </div>

@@ -144,7 +144,7 @@ export function CollaboratePanel({
           <span
             className={`inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-brand-500 px-1 text-[10px] font-semibold text-white ${SOLID_BRAND_DARK}`}
           >
-            {open.length}
+            <span className="text-optical-centre">{open.length}</span>
           </span>
         ) : undefined
       }

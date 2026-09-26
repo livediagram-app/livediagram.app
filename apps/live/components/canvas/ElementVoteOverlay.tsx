@@ -160,7 +160,7 @@ export function ElementVoteOverlay({
                   : 'border border-slate-200 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100')
               }
             >
-              {voteTotal}
+              <span className="text-optical-centre">{voteTotal}</span>
             </span>
           </Tooltip>
         </div>

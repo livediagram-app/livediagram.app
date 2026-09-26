@@ -97,7 +97,7 @@ function StepChip({
             />
           </svg>
         ) : (
-          n
+          <span className="text-optical-centre">{n}</span>
         )}
       </span>
       <span className={`text-xs font-medium transition-colors ${text}`}>{label}</span>

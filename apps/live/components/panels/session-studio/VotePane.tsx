@@ -266,7 +266,7 @@ function PhaseTrack({ phase }: { phase: VotePhase }) {
                       : 'bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500'
                 }`}
               >
-                {done ? '✓' : i + 1}
+                {done ? '✓' : <span className="text-optical-centre">{i + 1}</span>}
               </span>
               <span
                 className={`text-[10px] font-medium ${

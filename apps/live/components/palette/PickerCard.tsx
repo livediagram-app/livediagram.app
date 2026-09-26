@@ -73,8 +73,8 @@ export function PickerCard({
             </p>
             {/* Count badge, pinned far right (w-full row + justify-between) so it
                 sits in the same spot on every card regardless of label length. */}
-            <span className="shrink-0 rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold leading-none text-slate-500 dark:bg-slate-700 dark:text-slate-300">
-              {count}
+            <span className="inline-flex h-3.5 shrink-0 items-center justify-center rounded-full bg-slate-100 px-1.5 text-[10px] font-semibold leading-none text-slate-500 dark:bg-slate-700 dark:text-slate-300">
+              <span className="text-optical-centre">{count}</span>
             </span>
           </div>
         )}

@@ -185,7 +185,7 @@ export function PollComposerBody({
           {options.map((opt, i) => (
             <div key={i} className="flex items-center gap-1.5">
               <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[10px] font-semibold text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-                {String.fromCharCode(65 + i)}
+                <span className="text-optical-centre">{String.fromCharCode(65 + i)}</span>
               </span>
               <input
                 ref={(el) => {

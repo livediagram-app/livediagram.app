@@ -497,8 +497,8 @@ export function SlideDeckPanel({
           <PlayIcon />
           {startingDeck ? 'Loading…' : 'Present'}
           {runnable.length > 0 && !startingDeck ? (
-            <span className="rounded-full bg-white/25 px-1.5 py-px text-[10px] font-semibold tabular-nums">
-              {runnable.length}
+            <span className="inline-flex h-[17px] items-center rounded-full bg-white/25 px-1.5 text-[10px] font-semibold tabular-nums">
+              <span className="text-optical-centre">{runnable.length}</span>
             </span>
           ) : null}
         </button>

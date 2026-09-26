@@ -199,7 +199,7 @@ export function FilterTab({
             : 'bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-400'
         }`}
       >
-        {count}
+        <span className="text-optical-centre">{count}</span>
       </span>
     </button>
   );

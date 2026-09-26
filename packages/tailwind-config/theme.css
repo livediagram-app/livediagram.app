@@ -55,6 +55,20 @@
   --animate-empty-ring: empty-ring 2.8s cubic-bezier(0, 0, 0.2, 1) infinite;
 }
 
+/* A numeral (or capital) centred in a circle or pill: centre its INK, not its line box
+ * (docs/specs/004-interface-design/color-scheme.md, Usage rules). A digit has no descender, so a
+ * centred line box leaves it sitting high; trimming the box to cap height and baseline lets flex
+ * centring land on the glyph itself. Without text-box support, nudge by the UI face's measured
+ * cap-to-line-box offset instead. Layout only, so it holds in both appearances. */
+@utility text-optical-centre {
+  display: inline-block;
+  line-height: 1;
+  text-box: trim-both cap alphabetic;
+  @supports not (text-box: trim-both cap alphabetic) {
+    transform: translateY(0.1em);
+  }
+}
+
 /* The dark palette, Steel (docs/specs/004-interface-design/color-scheme.md). Dark mode is its own
  * palette, not the light one with the lights off: blue-slate surfaces one hue with the dark canvas,
  * and an accent drawn from that hue. Tokens only, so every slate-* / brand-* utility keeps its name,
