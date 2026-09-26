@@ -2050,6 +2050,15 @@ export const articles: Article[] = [
     parentSlug: 'sharing',
   },
   {
+    slug: 'one-tab',
+    title: 'Sharing One Tab',
+    description: 'Scope a share link to one tab; the rest stays private.',
+    keywords: 'single tab scope restrict part only page subset private hide limit share link',
+    category: 'Collaboration',
+    categorySlug: 'collaboration/sharing',
+    parentSlug: 'sharing',
+  },
+  {
     slug: 'share-link-expiry',
     title: 'Share Link Expiry',
     description: 'Give a share link a lifetime so it stops working later.',

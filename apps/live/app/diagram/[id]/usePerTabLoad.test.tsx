@@ -30,6 +30,7 @@ function setup() {
         activeId,
         selfId: 'me',
         sessionShareCode: null,
+        sessionTabScope: null,
         tabsRef: { current: [] as Tab[] },
         loadedTabIdsRef,
         setLoadedTabIds: vi.fn(),
@@ -134,6 +135,7 @@ describe('usePerTabLoad search sweep failing on the tab being viewed', () => {
           activeId,
           selfId: 'me',
           sessionShareCode: null,
+          sessionTabScope: null,
           tabsRef: { current: [{ id: 't1' }, { id: 't2' }] as Tab[] },
           loadedTabIdsRef,
           setLoadedTabIds: vi.fn(),
@@ -155,5 +157,42 @@ describe('usePerTabLoad search sweep failing on the tab being viewed', () => {
       await sweep;
     });
     expect(errors.has('t2')).toBe(true);
+  });
+});
+
+// docs/specs/013-workspace/tab-scoped-share-links.md: the search sweep never asks for a tab outside a
+// tab-scoped session's scope; the server would refuse it, and the visitor
+// has no business asking.
+describe('usePerTabLoad search sweep in a tab-scoped session', () => {
+  beforeEach(() => {
+    apiLoadTab.mockReset();
+    apiLoadTab.mockImplementation((_me: string, _d: string, tabId: string) =>
+      Promise.resolve({ id: tabId, name: tabId, elements: [] }),
+    );
+  });
+
+  it('loads the scoped tab only', async () => {
+    const hook = renderHook(() =>
+      usePerTabLoad({
+        hydrated: true,
+        diagramId: 'd1',
+        activeId: 't2',
+        selfId: 'me',
+        sessionShareCode: 'CODE2345',
+        sessionTabScope: 't2',
+        tabsRef: { current: [{ id: 't1' }, { id: 't2' }, { id: 't3' }] as Tab[] },
+        loadedTabIdsRef: { current: new Set<string>() },
+        setLoadedTabIds: vi.fn(),
+        setTabLoadErrors: vi.fn(),
+        retryNonce: 0,
+        lastSavedTabsRef: { current: [] },
+        resetTabs: () => {},
+      }),
+    );
+    await act(async () => {
+      await hook.result.current.loadAllTabs();
+    });
+    const asked = apiLoadTab.mock.calls.map((c) => c[2]);
+    expect(new Set(asked)).toEqual(new Set(['t2']));
   });
 });

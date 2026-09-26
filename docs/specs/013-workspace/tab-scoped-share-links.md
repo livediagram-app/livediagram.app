@@ -1,6 +1,6 @@
 # Tab-scoped share links
 
-A share link ([Auth + guest access](../014-identity/auth-and-guest-access.md), [API app](../015-api/api.md)) has a **scope**: either **All tabs** (the whole diagram) or **one tab**. A tab-scoped link opens only its tab. The other tabs stay visible in the visitor's tab bar as locked, nameless pills, and the server never sends their content. That covers REST and the realtime room.
+A share link ([Auth + guest access](../014-identity/auth-and-guest-access.md), [API app](../015-api/api.md)) has a **scope**: either **All tabs** (the whole diagram) or **one tab**. A tab-scoped link opens only its tab. The other tabs stay visible in the visitor's tab bar as nameless "Not shared" pills, and the server never sends their content. That covers REST and the realtime room.
 
 ## Why
 
@@ -39,6 +39,8 @@ A scoped link grants its role **on its tab only**. The worker enforces this in o
 | `POST /api/diagrams/:id/copy`                                | A copy holding **only their tab**.                                                                                                                                           |
 | `GET /api/diagrams/:id/thumbnail`                            | Their tab's image, not the first-tab snapshot.                                                                                                                               |
 | `GET /api/images/:id?d=`                                     | Only images referenced by their tab.                                                                                                                                         |
+| Q&A board `POST .../tabs/:tabId/qa`                          | Their tab only.                                                                                                                                                              |
+| Diagram timeline feed                                        | Refused: it spans every tab.                                                                                                                                                 |
 | `GET /api/share/:code/image.svg`                             | Always their tab. A `?tab=` naming another tab is a 404.                                                                                                                     |
 | Room ticket / WS upgrade                                     | Admitted with the role and the scope (see [Realtime](#realtime)).                                                                                                            |
 
@@ -52,7 +54,7 @@ A scoped link is only valid while its tab is still in the diagram. Deleting that
 
 A scoped visitor's copy of the diagram:
 
-- `tabs`: every tab keeps its `id` and `orderIndex`, so the bar can draw it in place. The other tabs carry `name: ''`, no `folder`, `updatedAt: 0` and `locked: true`. Their tab is unchanged.
+- `tabs`: every tab keeps its `id` and `orderIndex`, so the bar can draw it in place. The other tabs carry `name: ''`, no `folder`, `updatedAt: 0` and `outOfScope: true`. (Not `locked`: `Tab.locked` is the existing user-toggled read-only lock, a different thing.) Their tab is unchanged.
 - `presentation`: `null`. A slide deck spans tabs.
 - The diagram's name, owner name and colour stay: the visitor sees those when resolving any link.
 
@@ -70,7 +72,7 @@ For a scoped session:
 
 - **Outbound**: the room doesn't send it any op carrying a different `tabId`: element, tab, cursor, selection, avatar, reaction, viewport, focus and Q&A ops. A `select` without a `tabId` is dropped, as is a `log` op whose entry is on another tab. `diagram-meta` is redacted the same way the REST diagram is. Catch-up replay applies the same filter. Its `seq` can lag because of filtered ops, which is harmless: every op on its own tab still reaches it, and the ledger merge is per tab.
 - **Inbound**: the room drops any mutation from it that carries a different `tabId`, and drops `diagram-meta` from it outright.
-- Presence entries still carry each peer's tab id, so avatars can stack on locked pills. An id is not content.
+- Presence entries still carry each peer's tab id, so avatars can stack on "Not shared" pills. An id is not content.
 
 ### Revoke closes the socket
 
@@ -83,9 +85,9 @@ Changing a link's scope broadcasts a system op `share-rescoped { code }`. Sessio
 ## Visitor experience
 
 - A scoped visitor lands **on their tab**, whatever tab the diagram last had open.
-- Other tabs render as **locked pills**: greyed, a lock glyph, the label "Locked tab", not clickable, not draggable, no context menu. The tooltip reads "Not shared with you". Locked tabs never sit inside a tab folder (the folder name is withheld too).
-- Everything that works across tabs is off for a scoped visitor: the add-tab button, tab rename/duplicate/delete/reorder, tab folders, diagram rename, and the slide deck and Present.
-- An element link pointing at a locked tab does nothing but show the toast "That tab isn't shared with you".
+- Other tabs render as **"Not shared" pills**: greyed, an eye-off glyph, the label "Not shared", not clickable, not draggable, no context menu. The tooltip reads "This tab isn't shared with you". They never sit inside a tab folder (the folder name is withheld too).
+- Everything that works across tabs, or on the tab bar itself, is off for a scoped visitor: the add-tab button, the tab menu (so rename, duplicate, delete, lock and the tab's session tools too), drag-reordering, tab folders, diagram rename, and the slide deck (picking it says "The slide deck isn't shared with you").
+- An element link, search result or keyboard switch pointing at a tab outside the scope does nothing but show the toast "That tab isn't shared with you".
 - Make a copy takes their tab only.
 
 ## Owner experience (Share dialog)
@@ -100,6 +102,10 @@ Changing a link's scope broadcasts a system op `share-rescoped { code }`. Sessio
 - `POST /api/diagrams/:id/share` body gains optional `tabId: string | null`. An unknown tab, or one not in this diagram, is `400 invalid tab`.
 - `PUT /api/diagrams/:id/share/:code` (owner-only), body `{ tabId: string | null }`: rescope. `400 invalid tab` as above, `404` for an unknown code. Returns `{ link }` and broadcasts `share-rescoped`.
 - `GET /api/share/:code` returns `tabId` alongside `role`.
+
+## Testing
+
+`apps/live/e2e/tab-scoped-share.spec.ts` drives the whole path: the owner scopes a link in the Share dialog, a visitor opens it in a second browser, no response or realtime frame carries the other tabs, and rescoping to All tabs reloads the visitor into every tab. The e2e stack proxies the realtime room's WebSocket for this.
 
 ## Telemetry
 

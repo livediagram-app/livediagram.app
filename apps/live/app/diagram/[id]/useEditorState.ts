@@ -131,6 +131,7 @@ import { useCleanupPreview } from '@/hooks/canvas/useCleanupPreview';
 import { useTabEntryEffects } from './useTabEntryEffects';
 import { useCollabDeepLink, useCollabDeepLinkCapture } from './useCollabDeepLink';
 import { useEditorUiState } from './editor-ui-state';
+import { useTabScope } from './useTabScope';
 import { useEditorPersistence } from './editor-persistence';
 import { useEditorRealtime } from './editor-realtime';
 
@@ -298,7 +299,11 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // names directly throughout; the whole slice is spread into the
   // returned view-model below (the `...panelLayout` / `...dialogs`
   // convention), so the explicit return doesn't re-list these.
-  const uiState = useEditorUiState(initialTabs[0]!.id);
+  // A tab-scoped share session's one tab (docs/specs/013-workspace/tab-scoped-share-links.md). Created first:
+  // the active-tab guard in editor-ui-state reads its ref.
+  const tabScope = useTabScope();
+  const { sessionTabScope, setSessionTabScope, tabScopeRef, isOutOfScope } = tabScope;
+  const uiState = useEditorUiState(initialTabs[0]!.id, tabScopeRef);
   const {
     activeId,
     setActiveId,
@@ -396,6 +401,12 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
         tool === 'avatar' ||
         tool === 'isometric')
     ) {
+      return;
+    }
+    // A slide deck spans tabs, so a tab-scoped session has none
+    // (docs/specs/013-workspace/tab-scoped-share-links.md): the server withholds it and refuses writes.
+    if (tool === 'slide-deck' && tabScopeRef.current !== null) {
+      toast.info("The slide deck isn't shared with you");
       return;
     }
     // Spotlight and Avatar mode (docs/specs/008-canvas/avatar-mode.md) are both non-editing presenter
@@ -652,6 +663,11 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // code an editable embed. The api enforces the role on every write, so
   // this is presentation-side only.
   const isReadOnly = sessionRole === 'view';
+  // The diagram's structure (tabs, their order and folders, the name, the
+  // deck) is read-only for a view link and for any tab-scoped link: a scoped
+  // edit link edits its one tab's content, nothing around it
+  // (docs/specs/013-workspace/tab-scoped-share-links.md).
+  const isStructureReadOnly = isReadOnly || sessionTabScope !== null;
 
   // Per-tab autosave. The previous snapshot lives in a ref so we can
   // diff: any tab whose object reference changed since last save is
@@ -746,6 +762,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
       setSelfParticipant,
       setSessionRole,
       setSessionShareCode,
+      setSessionTabScope,
       setSharedDiagrams,
       setShareLinks,
       setSharePassword,
@@ -930,6 +947,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     activeId,
     selfId: selfParticipant.id,
     sessionShareCode,
+    sessionTabScope,
     tabsRef,
     loadedTabIdsRef,
     setLoadedTabIds,
@@ -2749,6 +2767,10 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   });
 
   return {
+    // Tab-scoped share session (docs/specs/013-workspace/tab-scoped-share-links.md).
+    sessionTabScope,
+    isOutOfScope,
+    isStructureReadOnly,
     // The id the dot-vote knows us by (docs/specs/012-collaboration/collab-race-hardening.md): every vote reader compares
     // against this, never the owner id.
     voteSelfId,

@@ -6,6 +6,7 @@ import { legibleTabAccent } from '@/lib/tab-accent';
 import { TabLockIcon } from '@/components/chrome/tab-bar-icons';
 import { TabPresenceStack } from '@/components/chrome/TabPresenceStack';
 import { EllipsisMenuButton } from './EllipsisMenuButton';
+import { OutOfScopeTabPill } from './OutOfScopeTabPill';
 import type { useTabReorderDrag } from './useTabReorderDrag';
 import type { CanvasMenuActions } from './TabBar';
 
@@ -30,6 +31,9 @@ export type TabPillCtx = {
   participantsByTab: Map<string, Participant[]>;
   selfId: string;
   selfRole: 'edit' | 'view';
+  // True for a tab outside a tab-scoped share session's scope
+  // (docs/specs/013-workspace/tab-scoped-share-links.md); such a tab renders as a "Not shared" pill.
+  isOutOfScope?: (tabId: string) => boolean;
   // Threaded to the presence stack: the follow ring (docs/specs/012-collaboration/follow-me-viewport.md) and the
   // Collaborators modal an avatar click opens (docs/specs/012-collaboration/collaborator-enhancements.md).
   followingId?: string | null;
@@ -63,7 +67,17 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
     onOpenCollaborators,
     canvasActions,
     tabMenuProps,
+    isOutOfScope,
   } = ctx;
+  if (isOutOfScope?.(tab.id)) {
+    return (
+      <OutOfScopeTabPill
+        participants={participantsByTab.get(tab.id) ?? []}
+        selfId={selfId}
+        selfRole={selfRole}
+      />
+    );
+  }
   const isActive = tab.id === activeId;
   const isEditing = editingId === tab.id;
   const caret = reorderDrag.caretFor(tab.id);

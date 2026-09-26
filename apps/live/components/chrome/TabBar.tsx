@@ -111,6 +111,9 @@ type TabBarProps = {
   // all vanish), and tab drag-to-reorder. Tab pills remain
   // clickable so the viewer can still navigate between tabs.
   readOnly?: boolean;
+  // Tabs outside a tab-scoped share session's scope render as "Not shared"
+  // pills (docs/specs/013-workspace/tab-scoped-share-links.md).
+  isOutOfScope?: (tabId: string) => boolean;
   // Bumped by the command palette's "Rename tab" action to inline-rename the
   // ACTIVE tab (the palette can't reach this component's local editing state).
   // A monotonic counter; each increment opens the active tab's name editor.
@@ -175,6 +178,7 @@ export function TabBar({
   onToggleLockTab,
   onReorder,
   readOnly = false,
+  isOutOfScope,
   renameActiveNonce = 0,
   participantsByTab,
   selfId,
@@ -289,6 +293,7 @@ export function TabBar({
   // One tab pill — see TabPill. The ctx bundle keeps the render
   // callback (shared with TabFolderChip's members) a one-liner.
   const pillCtx: TabPillCtx = {
+    isOutOfScope,
     activeId,
     editingId,
     setEditingId,

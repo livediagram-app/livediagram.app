@@ -46,7 +46,7 @@ export function redactDiagramForReader(diagram: DiagramDTO, caller: string | nul
 }
 
 // A tab-scoped visitor's copy (docs/specs/013-workspace/tab-scoped-share-links.md). Every other tab keeps
-// its id and position, so the bar can draw a locked pill in place, and loses
+// its id and position, so the bar can draw a "Not shared" pill in place, and loses
 // its name, folder and timestamp. The deck goes too: slides span tabs.
 // `tabScope` null (owner, team member, All-tabs link) returns the diagram as is.
 export function redactDiagramForScope(diagram: DiagramDTO, tabScope: string | null): DiagramDTO {
@@ -63,7 +63,7 @@ export function redactDiagramForScope(diagram: DiagramDTO, tabScope: string | nu
             name: '',
             orderIndex: t.orderIndex,
             updatedAt: 0,
-            locked: true,
+            outOfScope: true,
           },
     ),
   };

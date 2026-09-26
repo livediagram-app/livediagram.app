@@ -57,7 +57,7 @@ so it exercises exactly what ships, not a dev-only code path.
    - rewrite every `/diagram/<id>` to the single placeholder
      `out/diagram/[id].html` ([Dedicated route for new-diagram creation](../007-editor/new-diagram-route.md) — one HTML backs every diagram
      URL);
-   - proxy `/api/*` to the api worker so the app is same-origin (no CORS
+   - proxy `/api/*` to the api worker, WebSocket upgrades included (the realtime room), so the app is same-origin (no CORS
      surprises, mirroring the router).
 
 Locally the same `playwright.config.ts` sets `reuseExistingServer`, so a

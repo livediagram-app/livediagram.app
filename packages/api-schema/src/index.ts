@@ -139,7 +139,7 @@ export type TabSummary = {
   folder?: string;
   // Set for a tab outside a tab-scoped visitor's scope (docs/specs/013-workspace/tab-scoped-share-links.md):
   // its name is blanked, its folder dropped, and its content never served.
-  locked?: true;
+  outOfScope?: true;
 };
 
 // Full tab payload returned by `GET /api/diagrams/:id/tabs/:tabId`:

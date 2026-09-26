@@ -4423,15 +4423,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "id": {
         "type": "string"
       },
-      "locked": {
-        "const": true,
-        "type": "boolean"
-      },
       "name": {
         "type": "string"
       },
       "orderIndex": {
         "type": "number"
+      },
+      "outOfScope": {
+        "const": true,
+        "type": "boolean"
       },
       "updatedAt": {
         "type": "number"

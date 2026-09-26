@@ -8,6 +8,7 @@ import {
 } from 'react';
 import type { Tab } from '@livediagram/diagram';
 import { apiLoadTab } from '@/lib/api-client';
+import { isTabOutOfScope } from '@/lib/tab-scope';
 import { track } from '@/lib/telemetry';
 
 // Lazy per-tab content load (docs/specs/006-diagram/per-tab-storage.md), lifted out of editor-page.tsx.
@@ -33,6 +34,9 @@ export function usePerTabLoad(opts: {
   activeId: string;
   selfId: string;
   sessionShareCode: string | null;
+  // A tab-scoped share session's tab (docs/specs/013-workspace/tab-scoped-share-links.md): the search sweep
+  // skips every other tab, whose content the server won't serve.
+  sessionTabScope: string | null;
   // Latest tabs, mirrored to a ref by the page so loadAllTabs can
   // enumerate ids without re-creating itself on every tabs change.
   tabsRef: MutableRefObject<Tab[]>;
@@ -56,6 +60,7 @@ export function usePerTabLoad(opts: {
     activeId,
     selfId,
     sessionShareCode,
+    sessionTabScope,
     tabsRef,
     loadedTabIdsRef,
     setLoadedTabIds,
@@ -233,7 +238,9 @@ export function usePerTabLoad(opts: {
       if (targetId !== activeIdRef.current) return;
       setTabLoadErrors((prev) => (prev.has(targetId) ? prev : new Set(prev).add(targetId)));
     };
-    const pending = tabsRef.current.map((t) => t.id).filter((id) => !loadedTabIds.has(id));
+    const pending = tabsRef.current
+      .map((t) => t.id)
+      .filter((id) => !loadedTabIds.has(id) && !isTabOutOfScope(id, sessionTabScope));
     if (pending.length === 0) return;
     pending.forEach((id) => loadedTabIds.add(id));
     await Promise.all(
@@ -259,7 +266,7 @@ export function usePerTabLoad(opts: {
       }),
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hydrated, diagramId, selfId, sessionShareCode]);
+  }, [hydrated, diagramId, selfId, sessionShareCode, sessionTabScope]);
 
   return { loadAllTabs };
 }

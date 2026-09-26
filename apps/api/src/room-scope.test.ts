@@ -52,7 +52,7 @@ describe('opForScope (what a scoped session receives)', () => {
       kind: 'diagram-meta',
       name: 'Plan',
       tabs: [
-        { id: 't1', name: '', orderIndex: 0, locked: true },
+        { id: 't1', name: '', orderIndex: 0, outOfScope: true },
         { id: 't2', name: 'Roadmap', orderIndex: 1 },
       ],
     });

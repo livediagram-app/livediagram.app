@@ -387,9 +387,9 @@ export type RoomOp =
       name: string;
       // `folder` (docs/specs/006-diagram/tab-folders.md) is the per-diagram folder name, optional so
       // an older peer that omits it is treated as loose — no parse break.
-      // `locked` marks a tab outside a tab-scoped session's scope
+      // `outOfScope` marks a tab outside a tab-scoped session's scope
       // (docs/specs/013-workspace/tab-scoped-share-links.md): its name is blanked by the room.
-      tabs: { id: string; name: string; orderIndex: number; folder?: string; locked?: true }[];
+      tabs: { id: string; name: string; orderIndex: number; folder?: string; outOfScope?: true }[];
     }
   // `tabId` scopes the selection to the tab it lives on: element ids
   // are only unique per tab in older diagrams (tab duplication used to

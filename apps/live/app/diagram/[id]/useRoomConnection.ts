@@ -19,6 +19,7 @@ import type { RemoteSelection } from '@/lib/presence-rows';
 import { pruneMapToPresent } from './editor-page-helpers';
 import { applyRoomOpToTabs } from './room-op-apply';
 import { foldRemoteOpIntoBaseline, type SaveBaselineRefs } from './save-baseline';
+import { shareLinkOpEffect } from './share-link-ops';
 
 // Realtime room: one WebSocket per diagram, opened only while the
 // diagram is shared. Lifted out of editor-page.tsx verbatim — the
@@ -377,24 +378,14 @@ export function useRoomConnection(opts: {
           // the room refuses it from a client socket, so the sender check is
           // defence in depth like share-revoked's below.
           if (from === 'system') receiveQa(op.tabId, op.elementId, op.notes, op.rev);
-        } else if (op.kind === 'share-revoked') {
-          // Owner revoked a share link. If our session is hydrated
-          // against that exact code, the diagram is no longer ours
-          // to read; hard-redirect to the explorer so we don't sit
-          // on stale state. The check is per-client: an owner who
-          // revoked their own outbound link to a different visitor
-          // keeps their session. System-only: the worker emits this
-          // via the DO's /broadcast with `from: 'system'` (and the DO
-          // refuses to relay it from client sockets) — the sender
-          // check here is defence in depth against a peer forging a
-          // force-redirect.
-          if (
-            from === 'system' &&
-            sessionShareCodeRef.current &&
-            sessionShareCodeRef.current === op.code
-          ) {
-            window.location.assign('/explorer');
-          }
+        } else if (op.kind === 'share-revoked' || op.kind === 'share-rescoped') {
+          // The owner revoked or rescoped a share link (share-link-ops.ts).
+          // A session hydrated with that exact code leaves the editor on a
+          // revoke and reloads into the new scope on a rescope; the room
+          // closes its socket either way. Everyone else keeps their session.
+          const effect = shareLinkOpEffect(op, from, sessionShareCodeRef.current);
+          if (effect === 'leave') window.location.assign('/explorer');
+          else if (effect === 'reload') window.location.reload();
         }
       },
       onFacilitator: (msg) => receiveFacilitator(msg),

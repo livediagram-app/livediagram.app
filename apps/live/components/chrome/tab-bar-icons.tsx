@@ -44,6 +44,28 @@ export function TabLockIcon() {
   );
 }
 
+// An eye with a stroke through it: a tab that isn't shared with this visitor
+// (docs/specs/013-workspace/tab-scoped-share-links.md). Deliberately not the padlock, which marks a tab
+// its editors have locked.
+export function TabNotSharedIcon() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M2 8s2.2-4 6-4c1 0 1.9.3 2.7.7M14 8s-.8 1.5-2.3 2.6M9.4 9.4a2 2 0 0 1-2.8-2.8" />
+      <path d="M2.5 2.5l11 11" />
+    </svg>
+  );
+}
+
 export function FolderMenuIcon() {
   return (
     <svg

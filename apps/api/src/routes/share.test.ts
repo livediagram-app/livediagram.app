@@ -401,7 +401,7 @@ describe('GET /api/share/<code> (docs/specs/013-workspace/share-password.md + do
   });
 
   // docs/specs/013-workspace/tab-scoped-share-links.md
-  it('hands a tab-scoped visitor their tab, the rest locked, and records the scope', async () => {
+  it('hands a tab-scoped visitor their tab, the rest out of scope, and records the scope', async () => {
     getShareLinkMock.mockResolvedValue({ ...shareLink('d1'), tabId: 't2' });
     getDiagramMock.mockResolvedValue({
       ...diagram('d1'),
@@ -413,10 +413,10 @@ describe('GET /api/share/<code> (docs/specs/013-workspace/share-password.md + do
     const { ctx } = resolveCtx({ visitor: 'visitor-1' });
     const body = (await (await handleShare(ctx)).json()) as {
       tabId: string | null;
-      diagram: { tabs: { name: string; locked?: true }[] };
+      diagram: { tabs: { name: string; outOfScope?: true }[] };
     };
     expect(body.tabId).toBe('t2');
-    expect(body.diagram.tabs.map((t) => [t.name, t.locked])).toEqual([
+    expect(body.diagram.tabs.map((t) => [t.name, t.outOfScope])).toEqual([
       ['', true],
       ['Roadmap', undefined],
     ]);

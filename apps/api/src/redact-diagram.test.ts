@@ -67,7 +67,7 @@ describe('redactDiagramForReader', () => {
 });
 
 // docs/specs/013-workspace/tab-scoped-share-links.md. A scoped visitor's copy of the diagram keeps every
-// tab in place, so the bar can draw a locked pill for it, but nothing about a
+// tab in place, so the bar can draw a "Not shared" pill for it, but nothing about a
 // tab outside their scope beyond its id and position.
 describe('redactDiagramForScope', () => {
   const tabs = [
@@ -76,7 +76,7 @@ describe('redactDiagramForScope', () => {
   ];
   const full = { ...diagram, tabs, presentation: '{"slides":[]}' } as DiagramDTO;
 
-  it('locks every tab outside the scope, keeping only id and position', () => {
+  it('marks every tab outside the scope out of scope, keeping only id and position', () => {
     const out = redactDiagramForScope(full, 't2');
     expect(out.tabs[0]).toEqual({
       id: 't1',
@@ -84,7 +84,7 @@ describe('redactDiagramForScope', () => {
       name: '',
       orderIndex: 0,
       updatedAt: 0,
-      locked: true,
+      outOfScope: true,
     });
   });
 

@@ -59,14 +59,14 @@ export function scopedSenderMayRelay(op: unknown, tabScope: string | null): bool
 }
 
 // diagram-meta carries every tab's name and folder. Other tabs keep their id
-// and position and are marked locked, exactly like the REST diagram
+// and position and are marked out of scope, exactly like the REST diagram
 // (redactDiagramForScope).
 function redactDiagramMeta(o: LooseOp, tabScope: string): unknown {
   if (!Array.isArray(o.tabs)) return null;
   return {
     ...o,
     tabs: (o.tabs as { id: string; orderIndex: number }[]).map((t) =>
-      t.id === tabScope ? t : { id: t.id, name: '', orderIndex: t.orderIndex, locked: true },
+      t.id === tabScope ? t : { id: t.id, name: '', orderIndex: t.orderIndex, outOfScope: true },
     ),
   };
 }

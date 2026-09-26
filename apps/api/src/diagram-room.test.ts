@@ -1751,7 +1751,7 @@ describe('DiagramRoom tab-scoped sessions', () => {
         ],
       },
     });
-    expect(ops(scoped)[0].tabs[0]).toEqual({ id: 't1', name: '', orderIndex: 0, locked: true });
+    expect(ops(scoped)[0].tabs[0]).toEqual({ id: 't1', name: '', orderIndex: 0, outOfScope: true });
   });
 
   it('refuses a scoped session changing another tab, or the diagram', () => {

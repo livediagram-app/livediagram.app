@@ -278,7 +278,11 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     tokenUsable: true,
     requestSchema: {
       type: 'object',
-      properties: { role: ref('ShareRole'), expiry: ref('ShareLinkExpiry') },
+      properties: {
+        role: ref('ShareRole'),
+        expiry: ref('ShareLinkExpiry'),
+        tabId: { type: ['string', 'null'] },
+      },
       required: ['role'],
     },
     responseSchema: wrap('link', 'ShareLink'),
@@ -318,6 +322,22 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     auth: 'guest-or-clerk',
     tokenUsable: true,
     statuses: [204, 401, 403, 404],
+  },
+  {
+    method: 'PUT',
+    path: '/diagrams/{id}/share/{code}',
+    segment: 'diagrams',
+    tag: 'Sharing',
+    summary: 'Change which tabs a share link opens: one tab, or null for all.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    requestSchema: {
+      type: 'object',
+      properties: { tabId: { type: ['string', 'null'] } },
+      required: ['tabId'],
+    },
+    responseSchema: wrap('link', 'ShareLink'),
+    statuses: [200, 400, 401, 403, 404],
   },
   {
     method: 'POST',
@@ -641,8 +661,12 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     query: [{ name: 'password', required: false, description: 'Required when the link is gated.' }],
     responseSchema: {
       type: 'object',
-      properties: { diagram: ref('Diagram'), role: ref('ShareRole') },
-      required: ['diagram', 'role'],
+      properties: {
+        diagram: ref('Diagram'),
+        role: ref('ShareRole'),
+        tabId: { type: ['string', 'null'] },
+      },
+      required: ['diagram', 'role', 'tabId'],
     },
     statuses: [200, 401, 403, 404],
   },

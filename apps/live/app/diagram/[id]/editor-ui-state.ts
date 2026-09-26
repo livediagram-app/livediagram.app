@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useCallback, useState, type MutableRefObject, type SetStateAction } from 'react';
+import { useToast } from '@/hooks/ui/useToast';
+import { OUT_OF_SCOPE_MESSAGE, isTabOutOfScope } from '@/lib/tab-scope';
 
 // Ephemeral, in-the-moment editing UI for the canvas: which tab is
 // active, what's selected / being edited, the format painter's "source"
@@ -10,8 +12,28 @@ import { useState } from 'react';
 //
 // The setters are threaded into the editor's many action hooks; the
 // values feed the derived selection / picker logic in useEditorState.
-export function useEditorUiState(initialActiveId: string) {
-  const [activeId, setActiveId] = useState<string>(() => initialActiveId);
+//
+// `tabScopeRef` holds the tab a tab-scoped share session is confined to
+// (docs/specs/013-workspace/tab-scoped-share-links.md), null for everyone else. Every tab switch goes
+// through `setActiveId`, so refusing an out-of-scope tab here covers the tab
+// bar, links, search, the keyboard and slides at once. A ref, not state, so
+// the bootstrap can set the scope and the first active tab in one tick.
+export function useEditorUiState(
+  initialActiveId: string,
+  tabScopeRef: MutableRefObject<string | null>,
+) {
+  const [activeId, setActiveIdRaw] = useState<string>(() => initialActiveId);
+  const toast = useToast();
+  const setActiveId = useCallback(
+    (next: SetStateAction<string>) => {
+      if (typeof next === 'string' && isTabOutOfScope(next, tabScopeRef.current)) {
+        toast.info(OUT_OF_SCOPE_MESSAGE);
+        return;
+      }
+      setActiveIdRaw(next);
+    },
+    [tabScopeRef, toast],
+  );
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   // True when the active label edit began via type-to-edit (docs/specs/008-canvas/canvas-and-palette.md): the
