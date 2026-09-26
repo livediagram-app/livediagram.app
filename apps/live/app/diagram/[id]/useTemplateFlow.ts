@@ -46,6 +46,8 @@ export function useTemplateFlow(opts: {
   setEditingId: SetState<string | null>;
   setSelfParticipant: SetState<Participant>;
   setTemplatePickerMode: SetState<TemplatePickerMode>;
+  // Frames the tab once the template's elements have rendered (useTabEntryEffects).
+  requestFit: () => void;
 }) {
   const {
     activeId,
@@ -59,6 +61,7 @@ export function useTemplateFlow(opts: {
     setEditingId,
     setSelfParticipant,
     setTemplatePickerMode,
+    requestFit,
   } = opts;
 
   // Quick Start belongs to the tab it was opened on. Both entry points
@@ -182,6 +185,8 @@ export function useTemplateFlow(opts: {
         };
       }),
     );
+    // The scaffold replaced the tab's content, so frame it. Blank leaves the view where it is.
+    if (elements.length > 0) requestFit();
     // Auto-select when a template produces a single element so the user can
     // immediately rename or edit it. Multi-element templates — and the now
     // truly-empty Blank template (zero elements) — leave the selection cleared.
