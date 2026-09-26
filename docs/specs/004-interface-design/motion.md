@@ -70,9 +70,16 @@ A progress ring that fills over a timer's window measures that timer. It is an a
 
 Reduced motion is unchanged, and it outranks the budget. The OS `prefers-reduced-motion` setting and
 the per-user `reduceMotion` preference both collapse every animation and transition to about
-instant, canvas included. The collapse is 0.01ms, which keeps `animationend` and `transitionend`
-firing. They also zero every cascade delay. The budget describes full motion; reduced motion is
-stricter still.
+instant, canvas included, and zero every cascade delay. The budget describes full motion; reduced
+motion is stricter still.
+
+- **Animations** collapse to 0.01ms rather than 0, so `animationend` still fires for code that
+  waits on it (the presentation host).
+- **Transitions** collapse to 0s, so none is created. Every element's `transition-property`
+  defaults to `all`, so any non-zero duration on every element turns every style write into a
+  transition. A position written and measured in the same frame then reads back its old value. The
+  tab menu's viewport clamp looped on exactly that ("Maximum update depth exceeded"). Nothing waits
+  on `transitionend`.
 
 ## Layout stability
 

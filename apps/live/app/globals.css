@@ -283,8 +283,15 @@
  * motion" preference, which adds `.reduce-motion` to <html>. Decorative
  * animations + transitions collapse to ~instant so motion-sensitive users
  * get a calm, static UI; nothing is hidden or disabled, it just stops
- * moving. 0.01ms (rather than 0) keeps animationend / transitionend events
- * firing so any JS waiting on them still resolves.
+ * moving (docs/specs/004-interface-design/motion.md "Reduced motion").
+ *
+ * Animations collapse to 0.01ms rather than 0, so animationend still fires for
+ * the JS that waits on it (PresentationHost). Transitions collapse to 0s: every
+ * element's transition-property defaults to `all`, so any non-zero duration on
+ * `*` would turn every style write into a transition, and a position written
+ * and measured in the same frame would read back the old value (the tab
+ * menu's viewport clamp looped on exactly that). Nothing waits on
+ * transitionend.
  */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -292,7 +299,7 @@
   *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    transition-duration: 0s !important;
     scroll-behavior: auto !important;
   }
 }
@@ -301,7 +308,7 @@
 :root.reduce-motion *::after {
   animation-duration: 0.01ms !important;
   animation-iteration-count: 1 !important;
-  transition-duration: 0.01ms !important;
+  transition-duration: 0s !important;
   scroll-behavior: auto !important;
 }
 
