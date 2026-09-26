@@ -5,7 +5,7 @@ import { ELEMENT_ANIMATIONS } from '@livediagram/diagram';
 
 // An element's animation is applied by building a class name:
 // `lvd-anim-${element.animation}`. Nothing checks that the class exists, so an
-// animation added to the union without a matching rule in globals.css picks
+// animation added to the union without a matching rule in canvas-motion.css picks
 // cleanly in the UI, saves onto the element, syncs to collaborators, and
 // animates nothing. There is no error, and the element still looks fine at
 // rest, so it reads as "that one is subtle" rather than as a bug.
@@ -14,7 +14,7 @@ import { ELEMENT_ANIMATIONS } from '@livediagram/diagram';
 // that glow and pulse "did nothing at all" on stickers because the class was
 // dropped on the way to a renderer that never ran. Same silence, different
 // cause.
-const CSS = readFileSync(fileURLToPath(new URL('./globals.css', import.meta.url)), 'utf8');
+const CSS = readFileSync(fileURLToPath(new URL('./canvas-motion.css', import.meta.url)), 'utf8');
 
 const boxClasses = new Set(
   [...CSS.matchAll(/^\.lvd-anim-([a-z-]+)/gm)]
