@@ -8,7 +8,8 @@ import { isTechIconId } from '@livediagram/icons';
 import type { BoxedElement } from './index';
 import { techIconMarkBounds } from './icon-size';
 import { distToSegment, rotatePoint, type Point } from './geometry-primitives';
-import { ACTOR_HULL, ACTOR_VIEWBOX, shapePolygonVertices } from './shape-geometry';
+import { ACTOR_HULL, ACTOR_VIEWBOX, shapePathData, shapePolygonVertices } from './shape-geometry';
+import { sampleSvgPath } from './svg-path-outline';
 import type { ShapeKind } from './shape-kind';
 
 // Half circles of a stadium are polygonised with this many segments each:
@@ -45,9 +46,15 @@ const POLYGON_KINDS: readonly ShapeKind[] = [
   'trapezoid',
   'star',
 ];
-const POLYGONS: Partial<Record<ShapeKind, readonly [number, number][]>> = Object.fromEntries(
-  POLYGON_KINDS.map((kind) => [kind, shapePolygonVertices(kind)!]),
-);
+// Shapes drawn as one curved path, sampled into a polygon (0..100 box).
+const PATH_KINDS: readonly ShapeKind[] = ['cloud', 'document'];
+const POLYGONS: Partial<Record<ShapeKind, readonly [number, number][]>> = Object.fromEntries([
+  ...POLYGON_KINDS.map((kind) => [kind, shapePolygonVertices(kind)!]),
+  ...PATH_KINDS.flatMap((kind) => {
+    const points = sampleSvgPath(shapePathData(kind) ?? '');
+    return points ? [[kind, points.map((p) => [p.x, p.y])]] : [];
+  }),
+]);
 
 function stadiumOutline(x: number, y: number, w: number, h: number): Point[] {
   const r = Math.min(w, h) / 2;

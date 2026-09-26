@@ -1,5 +1,5 @@
 import type { Anchor, ArrowElement, BoxedElement, Element, ElementId, Endpoint } from './index';
-import { anchorClass, anchorLiesOn, anchorsOf } from './anchors';
+import { anchorClass, anchorLiesOn, anchorsOf, offeredClass } from './anchors';
 import { anchorAimPoint, exitSideTowards } from './anchor-choice';
 import { arrowPolyline, pathPassesThrough, pinnedBoxedElement } from './arrow-path-hits';
 import { swapCrossingEnds } from './arrow-rebind-swap';
@@ -118,7 +118,7 @@ function reanchorEnd(
     return ep;
   }
   const reference = otherEl ? centreOf(otherEl) : aim;
-  const candidates = anchorsOf(side, anchorClass(ep.anchor));
+  const candidates = anchorsOf(side, offeredClass(el, anchorClass(ep.anchor)));
   const anchor = pickCandidate(el, ep.anchor, candidates, reference, held);
   moveHeld(held, el.id, ep.anchor, anchor);
   console.debug(`${tag} side=${side} ${ep.anchor}->${anchor}`);

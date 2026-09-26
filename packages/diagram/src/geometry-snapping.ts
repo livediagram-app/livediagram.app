@@ -4,7 +4,8 @@
 // package barrel (index.ts) alongside geometry.
 import { anchorPosition, type Point } from './geometry';
 import type { AlignmentGuide } from './geometry-guides';
-import { ALL_ANCHORS, isBoxed, type Anchor, type Element, type ElementId } from './index';
+import { isBoxed, type Anchor, type Element, type ElementId } from './index';
+import { offeredAnchors } from './anchors';
 
 // Alignment snapping: when dragging an element, snap its edges/centre to
 // match nearby OTHER elements' edges/centres on the same axis. Returns the
@@ -286,7 +287,7 @@ export function snapToAnchor(
     // centre) sits within R = half the element's diagonal of its
     // centre, for ANY rotation. So if the point is farther than
     // R + threshold from the centre, no anchor can be in range — skip
-    // the 8-anchor inner loop entirely. Conservative, so it never
+    // the anchor loop entirely. Conservative, so it never
     // changes the result, only avoids work on distant elements.
     const cx = el.x + el.width / 2;
     const cy = el.y + el.height / 2;
@@ -295,7 +296,7 @@ export function snapToAnchor(
     const dcx = cx - point.x;
     const dcy = cy - point.y;
     if (dcx * dcx + dcy * dcy > reach * reach) continue;
-    for (const anchor of ALL_ANCHORS) {
+    for (const anchor of offeredAnchors(el)) {
       const pos = anchorPosition(el, anchor);
       const dx = pos.x - point.x;
       const dy = pos.y - point.y;

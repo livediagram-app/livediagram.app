@@ -163,6 +163,14 @@ const FIXED_GEOMETRY: Partial<Record<ShapeKind, ShapeGeometry>> = {
   },
 };
 
+/** A single-path silhouette's `d` in its 0..100 box, or null for a kind not
+ *  drawn as one path. Anchor projection samples it (cloud, document). */
+export function shapePathData(kind: ShapeKind): string | null {
+  const parts = FIXED_GEOMETRY[kind]?.parts;
+  const only = parts?.length === 1 ? parts[0] : undefined;
+  return only?.tag === 'path' ? only.d : null;
+}
+
 /** A single-polygon silhouette's vertices in its 0..100 box (which equals
  *  CSS percentages), or null for a kind not drawn as one polygon. For the
  *  consumers that need the outline itself rather than a drawing: anchor

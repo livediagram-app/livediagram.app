@@ -8,6 +8,10 @@ import {
   anchorPrimarySide,
   anchorSides,
   anchorsOf,
+  anchorSetOf,
+  FULL_ANCHOR_SET,
+  offeredAnchors,
+  offeredClass,
 } from './index';
 
 describe('anchor vocabulary (docs/specs/008-canvas/arrow-anchors.md)', () => {
@@ -88,5 +92,24 @@ describe('anchor vocabulary (docs/specs/008-canvas/arrow-anchors.md)', () => {
     expect(anchorOutward('ese')).toEqual({ x: 1, y: 0 });
     expect(anchorOutward('ne').x).toBeCloseTo(0.707, 3);
     expect(anchorOutward('ne').y).toBeCloseTo(-0.707, 3);
+  });
+});
+
+describe('anchor sets (docs/specs/008-canvas/arrow-anchors.md "Anchor sets")', () => {
+  const el = (shape: 'square' | 'circle') =>
+    ({ id: 'x', type: 'shape', shape, x: 0, y: 0, width: 100, height: 100 }) as const;
+
+  it('offers sixteen anchors on a box and eight on a circle', () => {
+    expect(offeredAnchors(el('square'))).toEqual(ALL_ANCHORS);
+    expect(offeredAnchors(el('circle'))).toEqual(['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw']);
+    expect(anchorSetOf(el('circle'))).toEqual(['corner', 'middle']);
+  });
+
+  it('always offers middles and falls back to the nearest offered class', () => {
+    expect(anchorSetOf(el('square'))).toEqual(FULL_ANCHOR_SET);
+    expect(FULL_ANCHOR_SET).toContain('middle');
+    expect(offeredClass(el('circle'), 'quarter')).toBe('corner');
+    expect(offeredClass(el('circle'), 'corner')).toBe('corner');
+    expect(offeredClass(el('square'), 'quarter')).toBe('quarter');
   });
 });

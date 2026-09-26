@@ -79,6 +79,11 @@ describe('computeSnapTargets', () => {
     expect(out.every((t) => !t.active)).toBe(true);
   });
 
+  it("reveals only a circle's eight anchors (docs/specs/008-canvas/arrow-anchors.md)", () => {
+    const circle = { ...shape(), shape: 'circle' } as Element;
+    expect(computeSnapTargets({ x: 50, y: 30 }, [circle], null, null)).toHaveLength(8);
+  });
+
   it('flags exactly the active (element, anchor) anchor', () => {
     const out = computeSnapTargets({ x: 50, y: 30 }, [shape()], 's', 'n');
     expect(out.filter((t) => t.active)).toHaveLength(1);

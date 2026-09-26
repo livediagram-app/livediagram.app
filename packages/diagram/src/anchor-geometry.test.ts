@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   ALL_ANCHORS,
   anchorOutline,
@@ -6,6 +6,7 @@ import {
   bestAnchorTowards,
   exitSideTowards,
   pointInsideOutline,
+  sampleSvgPath,
   snapToAnchor,
   type ShapeElement,
 } from './index';
@@ -103,7 +104,7 @@ describe('sixteen anchor positions (docs/specs/008-canvas/arrow-anchors.md)', ()
 describe('anchoring outlines', () => {
   it('has no outline for box-shaped kinds', () => {
     expect(anchorOutline(shape())).toBeNull();
-    expect(anchorOutline(shape({ shape: 'cloud' }))).toBeNull();
+    expect(anchorOutline(shape({ shape: 'cylinder' }))).toBeNull();
   });
 
   it('tests inside a box with an inset', () => {
@@ -147,5 +148,39 @@ describe('creation anchor', () => {
     expect(exitSideTowards(shape({ rotation: 90 }), { x: 300, y: 50 })).toBe('n');
     expect(exitSideTowards(shape(), { x: 50, y: 50 })).toBeNull();
     expect(bestAnchorTowards(shape(), { x: 50, y: 50 })).toBe('e');
+  });
+});
+
+describe('anchor sets in snapping and outlines', () => {
+  it('never snaps a circle to a quarter it does not offer', () => {
+    const c = shape({ shape: 'circle' });
+    const nne = anchorPosition(shape(), 'nne');
+    expect(snapToAnchor(nne, [c], 30)?.anchor).not.toBe('nne');
+  });
+
+  it.each(['cloud', 'document'] as const)('puts every %s anchor on its drawn path', (kind) => {
+    const el = shape({ shape: kind, width: 180, height: 120 });
+    expect(anchorOutline(el)?.kind).toBe('polygon');
+    for (const a of ALL_ANCHORS) {
+      const p = anchorPosition(el, a);
+      expect(pointInsideOutline(el, p, 0.01), `${kind} ${a}`).toBe(false);
+      const inward = { x: p.x + (90 - p.x) * 0.02, y: p.y + (60 - p.y) * 0.02 };
+      expect(pointInsideOutline(el, inward, 0), `${kind} ${a} inward`).toBe(true);
+    }
+  });
+
+  it("follows the document's wavy bottom and the cloud's top bump", () => {
+    const doc = shape({ shape: 'document' });
+    // Between the waves the bottom edge rises well above the box bottom.
+    expect(anchorPosition(doc, 's').y).toBeLessThan(97);
+    expect(anchorPosition(shape({ shape: 'cloud' }), 'n').y).toBeLessThan(2);
+  });
+
+  it('samples an absolute M/L/C/Z path and rejects other commands', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    expect(sampleSvgPath('M 0 0 L 10 0 C 10 5, 5 10, 0 10 Z', 4)).toHaveLength(6);
+    expect(sampleSvgPath('M 0 0 A 5 5 0 0 1 10 0 Z')).toBeNull();
+    expect(warn).toHaveBeenCalledWith('[shape-outline] unsupported path command=A');
+    warn.mockRestore();
   });
 });

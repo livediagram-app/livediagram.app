@@ -7,7 +7,7 @@
 // curve-point insertion. All stateless; nothing here touches React.
 
 import {
-  ALL_ANCHORS,
+  offeredAnchors,
   anchorPosition,
   isBoxed,
   type AlignmentGuide,
@@ -98,7 +98,7 @@ export function computeSnapTargets(
     ) {
       continue;
     }
-    for (const anchor of ALL_ANCHORS) {
+    for (const anchor of offeredAnchors(el)) {
       const p = anchorPosition(el, anchor);
       out.push({
         x: p.x,

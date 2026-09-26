@@ -200,3 +200,16 @@ describe('edges and invariants', () => {
     );
   });
 });
+
+describe('anchor sets', () => {
+  it('moves a quarter its circle does not offer to the facing corner', () => {
+    // A square morphed into a circle kept its quarter end.
+    const els = [
+      box('a', 0, 0, { shape: 'circle' }),
+      box('b', -300, 100),
+      arrow('x', pin('a', 'nne'), pin('b', 'e')),
+    ];
+    const [from] = ends(run(els, ['b']), 'x');
+    expect(['nw', 'sw']).toContain(from);
+  });
+});
