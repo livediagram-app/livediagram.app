@@ -6,6 +6,11 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { PALETTE_ADD_HANDLER_KEYS, type PaletteAddHandlers } from './palette-add-handlers';
 import { ToolbarPalette } from './ToolbarPalette';
 
+const mobile = vi.hoisted(() => ({ value: false }));
+vi.mock('@/hooks/ui/useIsMobileViewport', () => ({
+  useIsMobileViewport: () => mobile.value,
+}));
+
 beforeAll(() => {
   // The strip's rail measures itself; jsdom has no layout, so a no-op
   // observer is all it needs.
@@ -19,6 +24,7 @@ beforeAll(() => {
 afterEach(() => {
   cleanup();
   localStorage.clear();
+  mobile.value = false;
 });
 
 function handlers(): PaletteAddHandlers {
@@ -99,6 +105,25 @@ describe('ToolbarPalette', () => {
     fireEvent.click(within(popover).getByRole('button', { name: 'Add circle' }));
     expect(h.onAddShape).toHaveBeenCalledWith('circle', expect.anything());
     expect(document.querySelector('[data-toolbar-more]')).toBeNull();
+  });
+
+  it('focuses the search field when More opens (docs/specs/007-editor/toolbar-layout.md)', () => {
+    show();
+    fireEvent.click(screen.getByRole('button', { name: 'More Favourites' }));
+    const popover = document.querySelector('[data-toolbar-more]') as HTMLElement;
+    expect(document.activeElement).toBe(
+      within(popover).getByPlaceholderText('Search all elements'),
+    );
+  });
+
+  it('leaves focus alone on a phone, where it would raise the keyboard', () => {
+    mobile.value = true;
+    show();
+    fireEvent.click(screen.getByRole('button', { name: 'More Favourites' }));
+    const popover = document.querySelector('[data-toolbar-more]') as HTMLElement;
+    expect(document.activeElement).not.toBe(
+      within(popover).getByPlaceholderText('Search all elements'),
+    );
   });
 
   it('closes More when the category changes, since it showed the old one', () => {
