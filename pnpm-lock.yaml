@@ -49,8 +49,8 @@ importers:
         specifier: npm:@typescript/typescript6@^6.0.2
         version: '@typescript/typescript6@6.0.2'
       wrangler:
-        specifier: ^4.136.3
-        version: 4.136.3(@cloudflare/workers-types@5.20260923.1)(@types/node@26.6.2)
+        specifier: ^4.137.0
+        version: 4.137.0(@cloudflare/workers-types@5.20260923.1)(@types/node@26.6.2)
 
   apps/api:
     dependencies:
@@ -98,8 +98,8 @@ importers:
         specifier: ^5.0.1
         version: 5.0.2(@types/node@26.6.2)(@vitest/coverage-v8@5.0.2)(jsdom@30.1.1)(vite@7.3.5(@types/node@26.6.2)(jiti@2.7.0)(lightningcss@1.32.0))
       wrangler:
-        specifier: ^4.136.3
-        version: 4.136.3(@cloudflare/workers-types@5.20260923.1)(@types/node@26.6.2)
+        specifier: ^4.137.0
+        version: 4.137.0(@cloudflare/workers-types@5.20260923.1)(@types/node@26.6.2)
 
   apps/help:
     dependencies:
@@ -411,8 +411,8 @@ importers:
         specifier: ^5.0.1
         version: 5.0.2(@types/node@26.6.2)(@vitest/coverage-v8@5.0.2)(jsdom@30.1.1)(vite@7.3.5(@types/node@26.6.2)(jiti@2.7.0)(lightningcss@1.32.0))
       wrangler:
-        specifier: ^4.136.3
-        version: 4.136.3(@cloudflare/workers-types@5.20260923.1)(@types/node@26.6.2)
+        specifier: ^4.137.0
+        version: 4.137.0(@cloudflare/workers-types@5.20260923.1)(@types/node@26.6.2)
 
   apps/router:
     devDependencies:
@@ -447,8 +447,8 @@ importers:
         specifier: ^5.0.1
         version: 5.0.2(@types/node@26.6.2)(@vitest/coverage-v8@5.0.2)(jsdom@30.1.1)(vite@7.3.5(@types/node@26.6.2)(jiti@2.7.0)(lightningcss@1.32.0))
       wrangler:
-        specifier: ^4.136.3
-        version: 4.136.3(@cloudflare/workers-types@5.20260923.1)(@types/node@26.6.2)
+        specifier: ^4.137.0
+        version: 4.137.0(@cloudflare/workers-types@5.20260923.1)(@types/node@26.6.2)
 
   apps/telemetry:
     dependencies:
@@ -3993,8 +3993,8 @@ packages:
     engines: {node: '>=16'}
     hasBin: true
 
-  wrangler@4.136.3:
-    resolution: {integrity: sha512-L1bS8BI9xoEk3RRr5XoZn5q5k1jCRo8+37ZEEab/jsUFzE1Ea2sIBAbmP1CdwSeD6mZYmnUtR6xpi9esHIl6GA==}
+  wrangler@4.137.0:
+    resolution: {integrity: sha512-vq2JmxkvwOjnsMUejQwd89/EK6u1d20OMlGUVVmb55gVi2zSBKp2rvmxUiPqrSEntK8NwzpTF3DQ/S2I9/TLsg==}
     engines: {node: '>=22.0.0'}
     hasBin: true
     peerDependencies:
@@ -4010,8 +4010,8 @@ packages:
   wrappy@1.0.2:
     resolution: {integrity: sha512-l4Sp/DRseor9wL6EvV2+TuQn63dMkPjZ/sp9XkghTEbV9KlPS1xUsZ3u7/IQO4wxtcFB4bgpQPRcR3QCvezPcQ==}
 
-  ws@8.21.3:
-    resolution: {integrity: sha512-201TZ/kPWxoPr/OKWjquZR1SWKXcvxdH+e1xrx89b3YbmzLMFCLfnaG1HFIgWzJOEWZ7MvpK++odZufgYR50Rw==}
+  ws@8.22.0:
+    resolution: {integrity: sha512-Ydggc987+RO0AnWtZ/7Wq9FtNvcrL1b/RO0ud9mWjUPgDrsAAwQSF51sm2hm1XofbU/4jkpGEsLFsZZxU+1DOg==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
       bufferutil: ^4.0.1
@@ -6605,7 +6605,7 @@ snapshots:
       sharp: 0.35.4(@types/node@26.6.2)
       undici: 7.30.0
       workerd: 1.20260921.1
-      ws: 8.21.3
+      ws: 8.22.0
       youch: 4.1.0-beta.10
     transitivePeerDependencies:
       - '@types/node'
@@ -7412,7 +7412,7 @@ snapshots:
       '@cloudflare/workerd-linux-arm64': 1.20260921.1
       '@cloudflare/workerd-windows-64': 1.20260921.1
 
-  wrangler@4.136.3(@cloudflare/workers-types@5.20260923.1)(@types/node@26.6.2):
+  wrangler@4.137.0(@cloudflare/workers-types@5.20260923.1)(@types/node@26.6.2):
     dependencies:
       '@cloudflare/kv-asset-handler': 0.5.0
       '@cloudflare/unenv-preset': 2.16.2(unenv@2.0.0-rc.24)(workerd@1.20260921.1)
@@ -7438,7 +7438,7 @@ snapshots:
 
   wrappy@1.0.2: {}
 
-  ws@8.21.3: {}
+  ws@8.22.0: {}
 
   xml-name-validator@5.0.0: {}
 
