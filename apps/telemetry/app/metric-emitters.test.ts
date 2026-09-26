@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { GROUPS as EDITING } from './EditingView';
 import { SETTINGS_CHANGED, SETTINGS_STACKS } from './metric-catalogue';
 import { GROUPS as SETTINGS } from './SettingsView';
+import { COMPUTED_EMITTERS, TOUR_STEP_SOURCE } from './computed-emitters';
 import { COMPUTED, scanEmitters, type Emit } from './emitter-scan';
 import { GROUPS as EXCEPTIONS, RECOVERY_TYPES } from './ExceptionsView';
 import { GROUPS as HELP } from './HelpView';
@@ -23,6 +24,7 @@ import {
   type MetricGroup,
 } from './metric-series';
 import { SELECTION_MODES } from './PaletteView';
+import { TOUR_STEP_TYPES } from './tour-steps';
 
 // Every card and every hard-coded ranking type on the dashboard must be an
 // event something in the repo can actually send. Two ways that went wrong:
@@ -39,8 +41,9 @@ import { SELECTION_MODES } from './PaletteView';
 //
 // emitter-scan.ts resolves literals, ternaries, lookup tables, forwarding
 // helpers, the api worker's own inserts, and the Settings catalogue. What it
-// cannot resolve is COMPUTED, and a card may only lean on a computed emitter
-// when it is listed in COMPUTED_TYPES below with the reason.
+// cannot resolve is COMPUTED: each computed site declares the values it can
+// send in computed-emitters.ts, and every check below reads those values as
+// if they were literals.
 
 const REPO = resolve(__dirname, '../../..');
 // The dashboard reads events, it never emits them.
@@ -63,49 +66,19 @@ const DYNAMIC_EMITTERS: Record<string, string> = {
     'reportServerEvent, the api worker helper; its callers are scanned as emitters',
 };
 
-// Card or ranking types that only a computed emitter produces, so the scan
-// can't see the string. Each names where the value comes from; a typo here
-// still fails, because a computed emitter for the category·action must exist.
-const COMPUTED_TYPES: Record<string, string> = {
-  // themeTelemetryLabel(themeId): a built-in theme's catalogue label.
-  'Theme·Changed·Default': "packages/diagram themes-data.ts, the brand theme's label",
-  // Custom theme ids all map to one token in themeTelemetryLabel.
-  'Theme·Changed·Custom': 'custom-theme-registry.ts themeTelemetryLabel',
-  // reportServerEvent(env, 'Email', 'Sent', msg.kind): each template's `kind`.
-  'Email·Sent·Welcome': 'apps/api email/templates.ts, the welcome message',
-  'Email·Sent·TeamInvite': 'apps/api email/templates.ts, the team invite',
-  'Email·Sent·ActionAssigned': 'apps/api email/templates.ts, the action notification',
-  'Email·Sent·Week1': 'apps/api email/templates.ts, onboarding week 1',
-  'Email·Sent·Week2': 'apps/api email/templates.ts, onboarding week 2',
-  'Email·Sent·Activation': 'apps/api email/templates.ts, the zero-diagram nudge',
-  'Email·Sent·WinBack': 'apps/api email/templates.ts, the quiet-account win-back',
-  'Email·Sent·Milestone': 'apps/api email/templates.ts, the diagram-count milestone',
-  'Email·Sent·FirstShare': 'apps/api email/templates.ts, the first share link',
-  'Email·Sent·InviteResponse': 'apps/api email/templates.ts, the invite accepted/declined notice',
-  'Email·Sent·DiagramJoined': 'apps/api email/templates.ts, the shared-diagram opened notice',
-  'Email·Sent·CommentNotification': 'apps/api email/templates.ts, the new-comment notice',
-  'Email·Sent·TokenExpiring': 'apps/api email/templates.ts, the API token expiry warning',
-  'Email·Sent·AccountDeleted': 'apps/api email/templates.ts, the deletion confirmation',
-  // postTelemetry(env, 'Mcp', 'Used', pascalToken(name)): each registered tool.
-  'Mcp·Used·FindDiagrams': 'apps/mcp tools.ts, find_diagrams',
-  'Mcp·Used·ReadDiagram': 'apps/mcp tools.ts, read_diagram',
-  'Mcp·Used·ListTemplates': 'apps/mcp tools.ts, list_templates',
-  'Mcp·Used·CreateDiagram': 'apps/mcp tools.ts, create_diagram',
-  'Mcp·Used·AddTab': 'apps/mcp tools.ts, add_tab',
-  'Mcp·Used·UpdateDiagram': 'apps/mcp tools.ts, update_diagram',
-  'Mcp·Used·ShareDiagram': 'apps/mcp tools.ts, share_diagram',
-  'Mcp·Used·RenameDiagram': 'apps/mcp tools.ts, rename_diagram',
-  'Mcp·Used·DeleteDiagram': 'apps/mcp tools.ts, delete_diagram',
-};
+// A computed emitter's values (computed-emitters.ts), by its site key.
+const siteKey = (e: Known) => `${e.path} ${e.category}·${e.action}`;
+const declared = (e: Known): readonly (string | null)[] =>
+  COMPUTED_EMITTERS[siteKey(e)]?.values ?? [];
+const COMPUTED_SITES = KNOWN.filter((e) => e.type === COMPUTED);
+
+// Every event an emitter can send, computed sites expanded to their values.
+const SENDS = KNOWN.flatMap((e) =>
+  e.type === COMPUTED ? declared(e).map((type) => ({ ...e, type })) : [e],
+);
 
 function sendable(category: string, action: string, type: string | null): boolean {
-  const pair = KNOWN.filter((e) => e.category === category && e.action === action);
-  if (pair.some((e) => e.type === type)) return true;
-  return (
-    type !== null &&
-    `${category}·${action}·${type}` in COMPUTED_TYPES &&
-    pair.some((e) => e.type === COMPUTED)
-  );
+  return SENDS.some((e) => e.category === category && e.action === action && e.type === type);
 }
 
 const ALL: MetricGroup[] = [...DASHBOARD, ...EDITING, ...SETTINGS, ...EXCEPTIONS, ...HELP];
@@ -208,6 +181,22 @@ describe('hard-coded ranking types', () => {
   });
 });
 
+describe('computed emitters', () => {
+  it('each declare the values they can send', () => {
+    const sites = [...new Set(COMPUTED_SITES.map(siteKey))].sort();
+    expect(sites).toEqual(Object.keys(COMPUTED_EMITTERS).sort());
+  });
+
+  it.each(Object.entries(COMPUTED_EMITTERS))('%s lists at least one value', (_site, spec) => {
+    expect(spec.values.length).toBeGreaterThan(0);
+  });
+
+  it('read the tour steps the editor sends, in the order the Help tab ranks them', () => {
+    expect(TOUR_STEP_SOURCE.length).toBeGreaterThan(5);
+    expect([...TOUR_STEP_TYPES]).toEqual(TOUR_STEP_SOURCE);
+  });
+});
+
 describe('the Settings tab', () => {
   it('has a chart for every Settings row the editor emits', () => {
     const charts = SETTINGS_STACKS.flatMap((s) => s.members);
@@ -238,16 +227,11 @@ const NO_CHART: Record<string, string> = {
 
 describe('every event has a chart', () => {
   const charts = ALL.flatMap(groupMetrics);
-  const home = (e: Known) =>
-    charts.some((m) =>
-      e.type === COMPUTED
-        ? // A computed type (an email template, an MCP tool) can't be read by
-          // the scan; any chart on its category·action counts, and those
-          // families have their own completeness tests (metric-series.test).
-          matches({ ...m, allTypes: true, typeIn: undefined }, e.category, e.action, null)
-        : matches(m, e.category, e.action, e.type as string | null),
-    );
-  const orphans = KNOWN.filter(
+  // A computed site counts through each value it declares, so a value no
+  // chart counts is an orphan like any literal one.
+  const home = (e: (typeof SENDS)[number]) =>
+    charts.some((m) => matches(m, e.category, e.action, e.type as string | null));
+  const orphans = SENDS.filter(
     (e) => !home(e) && !(`${e.category}·${e.action}·${String(e.type)}` in NO_CHART),
   );
   it('finds a chart for every event an emitter can send', () => {
@@ -256,7 +240,7 @@ describe('every event has a chart', () => {
         ...new Set(
           orphans.map(
             (e) =>
-              `${e.category}·${e.action}·${e.type === COMPUTED ? '<computed>' : String(e.type)}  (${e.path.split('/').slice(-2).join('/')})`,
+              `${e.category}·${e.action}·${String(e.type)}  (${e.path.split('/').slice(-2).join('/')})`,
           ),
         ),
       ].sort(),
@@ -283,7 +267,7 @@ describe('no event is counted by two unrelated charts', () => {
       return s.headline !== undefined && inHead[i] !== inHead[j];
     });
   const charts = [...new Set(ALL.flatMap(groupMetrics))];
-  const clashes = KNOWN.filter((e) => e.type !== COMPUTED).flatMap((e) => {
+  const clashes = SENDS.flatMap((e) => {
     const hits = charts.filter((m) => matches(m, e.category, e.action, e.type as string | null));
     const bad: string[] = [];
     for (let i = 0; i < hits.length; i++) {

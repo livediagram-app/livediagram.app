@@ -4,13 +4,13 @@ import { Fragment, useState } from 'react';
 import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
 import { MetricCard } from './MetricCard';
 import { MetricStackCard } from './MetricStackCard';
+import { stackMemberColors } from './stack-colours';
 import { StackModal } from './StackModal';
 import {
   dailySeries,
   isStack,
   metricKey,
   stackDrawsLines,
-  stackSeriesColor,
   previousCount,
   windowCount,
   type Metric,
@@ -85,9 +85,10 @@ export function MetricGroups({
               const opened = open?.key === key ? open : null;
               const counts = item.members.map((m) => windowCount(summary, active, m));
               const lines = stackDrawsLines(item.members.length);
+              const colors = stackMemberColors(item.members);
               const series = item.members.map((m, i) => ({
                 label: m.title,
-                color: stackSeriesColor(i),
+                color: colors[i]!,
                 values: daily ? dailySeries(daily, m) : [],
               }));
               // The modal is portalled to <body>, so rendering it beside

@@ -262,7 +262,7 @@ export function MetricPicker({
         aria-controls={listboxId}
         aria-autocomplete="list"
         className="!py-3 !pl-10 !pr-10 text-base"
-        placeholder="Search a metric, or browse — e.g. “element added”"
+        placeholder="Search a metric, or browse, e.g. “element added”"
         value={query}
         onChange={(e) => reset(e.target.value)}
         onFocus={() => setOpen(true)}

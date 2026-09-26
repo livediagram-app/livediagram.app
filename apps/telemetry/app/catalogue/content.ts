@@ -6,6 +6,12 @@ import { canonicalElementType, PALETTE_KINDS, type PaletteTab } from '../palette
 import type { Metric, MetricStack } from '../metric-series';
 import { chart } from './helpers';
 
+// The Element types that are a table's rows and columns, not elements, and
+// the table's own switches (spec/22).
+const TABLE_PARTS: readonly string[] = ['TableRow', 'TableColumn'];
+const TABLE_TOGGLES: readonly string[] = ['TableHeaderRow', 'TableHeaderColumn', 'TableZebra'];
+const isTablePart = (type: string | null): boolean => TABLE_PARTS.includes(type ?? '');
+
 // Filling out existing stacks.
 export const JUST_DRAW = chart(
   'UI',
@@ -45,11 +51,19 @@ export const TABS_REORDERED = chart(
   'Tab pills dragged into a new order.',
 );
 
+export const LINKS_ADDED = chart(
+  'Element',
+  'Linked',
+  'Links Added',
+  'A link put on an element or a table cell: a web address, another diagram, or another tab.',
+  { types: ['Url', 'Diagram', 'Tab'] },
+);
+
 export const LINKS_REMOVED = chart(
   'Element',
   'Unlinked',
   'Links Removed',
-  'A link taken off an element.',
+  'A link taken off an element or a table cell.',
   { rising: 'neutral' },
 );
 
@@ -57,7 +71,7 @@ export const TABS_CLEARED = chart(
   'Tab',
   'Cleared',
   'Tabs Cleared',
-  'Everything on a tab removed at once. (A discarded vote, also sent as Tab·Cleared, is Votes Discarded.)',
+  'Everything on a tab removed at once. (A discarded dot vote is counted under Votes Discarded instead.)',
   { typeIn: (t) => t === null, rising: 'neutral' },
 );
 
@@ -118,6 +132,42 @@ export const DIAGRAMS_DUPLICATED: Metric = {
   blurb: 'A diagram copied from the Explorer, or a shared diagram cloned into your own account.',
 };
 
+// Offline Mode (spec/76): a diagram kept only in this browser, and the two
+// conversions between the stores. Created Offline is a subset of Diagrams
+// Created, so it sits in Diagram Actions outside the headline as well as
+// heading its own stack.
+export const CREATED_OFFLINE = chart(
+  'Diagram',
+  'Created',
+  'Created Offline',
+  'A new diagram kept only in this browser (Offline Mode), never sent to the server. Part of Diagrams Created.',
+  { types: ['Offline'] },
+);
+
+export const TAKEN_OFFLINE = chart(
+  'Diagram',
+  'Moved',
+  'Taken Offline',
+  'A cloud diagram converted to Offline Mode with Take Offline, so it now lives only in this browser.',
+  { types: ['TakenOffline'] },
+);
+
+export const SAVED_TO_CLOUD = chart(
+  'Diagram',
+  'Moved',
+  'Saved to Cloud',
+  'An offline diagram synced up to the server with Sync Diagram, so it can be shared.',
+  { types: ['SavedToCloud'], rising: 'neutral' },
+);
+
+export const OFFLINE_MODE: MetricStack = {
+  stack: true,
+  title: 'Offline Mode',
+  blurb:
+    'Diagrams kept only in this browser: made offline, taken offline from the cloud, and synced back up.',
+  members: [CREATED_OFFLINE, TAKEN_OFFLINE, SAVED_TO_CLOUD],
+};
+
 // Tab lifecycle.
 export const TABS_LOADED: Metric = {
   category: 'Tab',
@@ -169,13 +219,15 @@ export const EXPORTS: Metric = {
 };
 
 // The diagram + tab lifecycle as stacks (Dashboard). Loaded is the opens
-// signal (every open, including a new diagram's first), read against the
-// once-per-object Created beside it.
+// signal (every open, including a page refresh and a new diagram's first),
+// read against the once-per-object Created beside it. It is a different unit
+// from the changes, and counts every new diagram a second time, so neither
+// head adds it in: each totals the changes made.
 export const DIAGRAM_ACTIONS: MetricStack = {
   stack: true,
   title: 'Diagram Actions',
   blurb:
-    'Diagrams opened, made, renamed, deleted and duplicated, and how they were started. A Just Draw or template link also counts as Created, so the total leaves those two out.',
+    'Diagrams opened, made, renamed, deleted and duplicated, and how new ones were started: Just Draw, a template link, or offline. Those three are part of Diagrams Created.',
   members: [
     DIAGRAMS_LOADED,
     DIAGRAMS_CREATED,
@@ -184,20 +236,30 @@ export const DIAGRAM_ACTIONS: MetricStack = {
     DIAGRAMS_DUPLICATED,
     JUST_DRAW,
     TEMPLATE_LINKS,
+    CREATED_OFFLINE,
   ],
-  headline: [
-    DIAGRAMS_LOADED,
-    DIAGRAMS_CREATED,
-    DIAGRAMS_RENAMED,
-    DIAGRAMS_DELETED,
-    DIAGRAMS_DUPLICATED,
-  ],
+  headline: [DIAGRAMS_CREATED, DIAGRAMS_RENAMED, DIAGRAMS_DELETED, DIAGRAMS_DUPLICATED],
 };
+
+const TAB_CHANGES = [
+  TABS_CREATED,
+  TABS_RENAMED,
+  TABS_DELETED,
+  TABS_DUPLICATED,
+  TAB_TEXT_DEFAULTS,
+  TABS_ARRANGED,
+  TABS_REORDERED,
+  TABS_LINKED,
+  TABS_LOCKED,
+  TABS_CLEARED,
+];
 
 export const TAB_ACTIONS: MetricStack = {
   stack: true,
   title: 'Tab Actions',
-  blurb: 'Tabs opened, made, renamed, deleted and duplicated.',
+  blurb:
+    'Tabs opened, then everything done to one: made, renamed, deleted, duplicated, restyled, auto-arranged, reordered, linked into another diagram, locked and cleared.',
+  headline: TAB_CHANGES,
   members: [
     TABS_LOADED,
     TABS_CREATED,
@@ -257,9 +319,10 @@ export const ICONS_ADDED = addedFrom('icons', 'Icons Added', 'Line-art and techn
 export const OTHER_ELEMENTS_ADDED: Metric = {
   category: 'Element',
   action: 'Added',
-  typeIn: (type) => !PALETTE_KINDS.has(canonicalElementType(type)),
+  typeIn: (type) => !PALETTE_KINDS.has(canonicalElementType(type)) && !isTablePart(type),
   title: 'Other Elements Added',
-  blurb: 'Kinds the palette catalogue does not list, such as pasted images.',
+  blurb:
+    'Kinds the palette catalogue does not list, such as pasted images. Table rows and columns are in Tables.',
 };
 
 export const ELEMENTS_ADDED: MetricStack = {
@@ -294,8 +357,8 @@ export const ELEMENTS_DELETED = chart(
   'Element',
   'Deleted',
   'Elements Deleted',
-  'Elements removed, table rows and columns included. One per gesture, however many it took.',
-  { rising: 'neutral' },
+  'Elements removed, by a delete or the eraser. One per gesture, however many it took. Table rows and columns are in Tables.',
+  { typeIn: (t) => !isTablePart(t), rising: 'neutral' },
 );
 
 export const ELEMENTS_DUPLICATED = chart(
@@ -317,20 +380,23 @@ export const ARROW_ENDS_ATTACHED = chart(
   'Linked',
   'Arrow Ends Attached',
   'An arrow end dropped onto a shape so it follows it.',
+  { types: ['ArrowPoint'] },
 );
 
 export const ELEMENTS_REORDERED = chart(
   'Element',
   'Reordered',
   'Elements Reordered',
-  'Sent to the back or brought to the front, or a table row or column moved.',
+  'Sent to the back or brought to the front. A table row or column moved is in Tables.',
+  { typeIn: (t) => !isTablePart(t) },
 );
 
 export const ELEMENT_OPTIONS_TOGGLED = chart(
   'Element',
   'Toggled',
   'Element Options Toggled',
-  'Per-element switches: bold, italic and other text styles, aspect lock, table zebra rows and header column.',
+  'Per-element switches: bold, italic and other text styles, and aspect lock. Table header and zebra switches are in Tables.',
+  { typeIn: (t) => !TABLE_TOGGLES.includes(t ?? '') },
 );
 
 export const ELEMENTS_LOCKED = chart(
@@ -398,9 +464,55 @@ export const ELEMENT_EDITING: MetricStack = {
     INSERTED_BETWEEN,
     NEXT_NOTES_ADDED,
     NOTE_KINDS_CHANGED,
+    LINKS_ADDED,
     LINKS_REMOVED,
   ],
   seeAlso: { view: 'editing', label: 'See Each Formatting Control on the Editing Tab' },
+};
+
+// Tables: the row and column edits inside a table element. They are sent as
+// Element events typed TableRow / TableColumn, and the element charts above
+// leave them out, so a table row never counts as an element. The table
+// itself (Element·Added·Table) stays in Tools Added, and cell and preset
+// edits in Elements Changed with the other formatting controls.
+export const TABLE_ROWS_ADDED = chart(
+  'Element',
+  'Added',
+  'Rows & Columns Added',
+  'A row or column inserted into a table.',
+  { types: TABLE_PARTS },
+);
+
+export const TABLE_ROWS_REMOVED = chart(
+  'Element',
+  'Deleted',
+  'Rows & Columns Removed',
+  'A row or column taken out of a table.',
+  { types: TABLE_PARTS, rising: 'neutral' },
+);
+
+export const TABLE_ROWS_MOVED = chart(
+  'Element',
+  'Reordered',
+  'Rows & Columns Moved',
+  'A table row or column dragged to a new position.',
+  { types: TABLE_PARTS },
+);
+
+export const TABLE_STYLE_TOGGLES = chart(
+  'Element',
+  'Toggled',
+  'Header & Zebra Toggles',
+  'A table header row, header column or zebra striping switched on or off.',
+  { types: TABLE_TOGGLES },
+);
+
+export const TABLES: MetricStack = {
+  stack: true,
+  title: 'Tables',
+  blurb:
+    'Editing inside a table: rows and columns added, removed and moved, and its header and zebra switches.',
+  members: [TABLE_ROWS_ADDED, TABLE_ROWS_REMOVED, TABLE_ROWS_MOVED, TABLE_STYLE_TOGGLES],
 };
 
 // Undo, redo and revert.

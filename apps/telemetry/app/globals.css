@@ -47,8 +47,40 @@
   animation: cloud-word-in 420ms cubic-bezier(0.2, 0.85, 0.25, 1) both;
 }
 
+/* A charted metric in the Search view easing in (spec/22): its heading,
+ * description and counts rise in on a short stagger, in the cloud words'
+ * curve so the two read as one motion, then the trend line wipes in left to
+ * right, as if drawn. Delays come inline, per piece. */
+@keyframes metric-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@keyframes metric-reveal {
+  from {
+    opacity: 0;
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.metric-rise {
+  animation: metric-rise 420ms cubic-bezier(0.2, 0.85, 0.25, 1) both;
+}
+
+.metric-reveal {
+  animation: metric-reveal 800ms cubic-bezier(0.45, 0, 0.2, 1) backwards;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .cloud-word {
+  .cloud-word,
+  .metric-rise,
+  .metric-reveal {
     animation: none;
   }
 }

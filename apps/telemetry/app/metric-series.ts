@@ -85,6 +85,26 @@ export function headlineTotal(
   return total;
 }
 
+// What a head's number counts, as a line under its blurb, when that is not
+// simply every member: a headline stack's number would otherwise read as the
+// members' sum ("Account Activity 1" over four charts). Null when it sums
+// them all. Names whichever side is shorter, what it counts or what it leaves
+// out.
+export function headlineCaption(stack: MetricStack): string | null {
+  const inHeadline = headlineMembers(stack);
+  const titles = (keep: boolean) =>
+    stack.members.filter((_, i) => inHeadline[i] === keep).map((m) => m.title);
+  const counted = titles(true);
+  const left = titles(false);
+  if (left.length === 0) return null;
+  return left.length < counted.length
+    ? `The total leaves out ${listOf(left)}.`
+    : `The total counts ${listOf(counted)} only.`;
+}
+
+const listOf = (items: string[]): string =>
+  items.length <= 1 ? (items[0] ?? '') : `${items.slice(0, -1).join(', ')} and ${items.at(-1)}`;
+
 // Every chart a group shows, stacks opened up: what the emitter test checks.
 export const groupMetrics = (group: MetricGroup): Metric[] =>
   group.metrics.flatMap((item) => (isStack(item) ? item.members : [item]));
@@ -151,17 +171,9 @@ export function previousCount(
   return series.slice(n - 2 * windowDays, n - windowDays).reduce((a, b) => a + b, 0);
 }
 
-// One colour per stack member, in order. Owned by the stack's rendering, not
-// the chart, since the same chart can sit in stacks beside different company.
-// Distinct hues from the brand-adjacent palette, readable on light and dark.
-const STACK_SERIES_COLORS = ['#0ea5e9', '#f59e0b', '#8b5cf6', '#10b981', '#ec4899'];
-
-export const stackSeriesColor = (index: number): string =>
-  STACK_SERIES_COLORS[index % STACK_SERIES_COLORS.length]!;
-
-// The most members a stack's head draws as separate lines, one colour each.
-// A bigger stack draws its combined line instead, and its members' cards keep
-// their own category colour since no head line matches them.
-export const MAX_STACK_LINES = STACK_SERIES_COLORS.length;
+// The most members a stack's head draws as separate lines, one colour each
+// (stack-colours.ts). A bigger stack draws its combined line instead, and its
+// members' cards keep their own category colour since no head line matches them.
+export const MAX_STACK_LINES = 5;
 
 export const stackDrawsLines = (members: number): boolean => members <= MAX_STACK_LINES;

@@ -10,7 +10,9 @@ import {
 } from './metric-catalogue';
 import { MetricGroups, type MetricGroup } from './MetricCards';
 import { CardColumns } from './CardColumns';
+import { isHelpArticleType } from './opened-types';
 import { RankCard, rank } from './RankCard';
+import { tourStepLabel, tourStepRows } from './tour-steps';
 import { rankTrend, windowLabel } from './windows';
 
 // Help view (spec/22): how the help centre (apps/help) is doing. Article reads
@@ -24,6 +26,10 @@ import { rankTrend, windowLabel } from './windows';
 // get read, which earn a thumbs-up, and which ones leave people unsatisfied
 // (the last is the useful one; those articles are the ones to rewrite). A
 // vote counts the reader's final choice, not every tap.
+//
+// Two more read the help that lives inside the editor: the articles opened
+// from it (`UI·Opened·<slug>`, the same ids), and the welcome tour's steps in
+// the order it shows them, a funnel whose fall-off says where people stop.
 export const GROUPS: MetricGroup[] = [
   {
     title: 'Help engagement',
@@ -43,12 +49,18 @@ export function HelpView({
   const viewed = rank(rows, (r) => r.category === 'Help' && r.action === 'View');
   const helpful = rank(rows, (r) => r.category === 'Help' && r.action === 'Helpful');
   const unhelpful = rank(rows, (r) => r.category === 'Help' && r.action === 'Unhelpful');
+  const fromEditor = rank(
+    rows,
+    (r) => r.category === 'UI' && r.action === 'Opened' && isHelpArticleType(r.type),
+  );
+  const tourSteps = tourStepRows(rows);
 
   return (
     <div className="mt-8">
       <p className="text-sm text-slate-500 dark:text-slate-400">
         How the help centre is doing, for <span className="font-medium">{windowLabel(active)}</span>
-        : reads and per-article feedback.
+        : reads and per-article feedback, the articles opened from inside the editor, and how far
+        people get through the welcome tour.
       </p>
       <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
         Rows before late September 2026 for format-painter and command-palette also count the Tips
@@ -87,6 +99,28 @@ export function HelpView({
             items={unhelpful}
             daily={summary.daily}
             emptyLabel="No not-really votes in this window yet."
+          />
+          <RankCard
+            trend={trend}
+            title="Opened From the Editor"
+            subtitle="Help articles opened from inside the editor, from a help link or the search panel"
+            category="UI"
+            action="Opened"
+            items={fromEditor}
+            daily={summary.daily}
+            emptyLabel="No articles were opened from the editor in this window yet."
+          />
+          <RankCard
+            trend={trend}
+            ordered
+            title="Tour Steps"
+            subtitle="Each welcome tour step viewed, in the order the tour shows them: where the counts fall away is where people stop"
+            category="UI"
+            action="View"
+            items={tourSteps}
+            label={tourStepLabel}
+            daily={summary.daily}
+            emptyLabel="No tour steps were viewed in this window yet."
           />
         </CardColumns>
       </div>

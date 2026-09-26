@@ -1,18 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import {
-  CATEGORY_DESCRIPTIONS,
-  categoryColor,
-  eventExplanation,
-  eventLabel,
-  typeLabel,
-} from './event-vocab';
+import { CATEGORY_DESCRIPTIONS, categoryColor, eventLabel, typeLabel } from './event-vocab';
 
 // The dashboard's vocabulary layer (spec/22): pure labelling helpers behind
 // the public /telemetry page. First tests for this app.
 
 describe('eventLabel', () => {
   it('joins action and type with a separator, title-cased', () => {
-    expect(eventLabel({ action: 'Added', type: 'code-block' })).toBe('Added · Code-Block');
+    expect(eventLabel({ action: 'Added', type: 'code-block' })).toBe('Added · Code Block');
   });
 
   it('falls back to the action alone when there is no type', () => {
@@ -25,6 +19,11 @@ describe('eventLabel', () => {
     );
     expect(typeLabel('/alternatives/miro')).toBe('/alternatives/miro');
     expect(typeLabel('square')).toBe('Square');
+    expect(typeLabel('SessionButton')).toBe('Session Button');
+    expect(typeLabel('AiOn')).toBe('AI On');
+    expect(typeLabel('Idea-box')).toBe('Idea Box');
+    expect(typeLabel('your-first-diagram')).toBe('Your First Diagram');
+    expect(typeLabel('Http403.SaveTab')).toBe('Http403.SaveTab');
   });
 });
 
@@ -37,23 +36,5 @@ describe('categoryColor', () => {
     for (const category of Object.keys(CATEGORY_DESCRIPTIONS)) {
       expect(categoryColor(category), category).not.toBe('#94a3b8');
     }
-  });
-});
-
-describe('eventExplanation', () => {
-  it('prefers the most specific rule (category + action + type)', () => {
-    expect(eventExplanation('Element', 'Added', 'Square')).toBe(
-      'Someone dropped a square onto the canvas.',
-    );
-  });
-
-  it('always produces a non-empty sentence, even off the known paths', () => {
-    // The layered fallbacks are the point: whatever combination arrives
-    // (already vocabulary-validated upstream), the tooltip never renders
-    // blank.
-    const out = eventExplanation('Token', 'Revoked', null);
-    expect(out.length).toBeGreaterThan(0);
-    const generic = eventExplanation('UI', 'Zoomed', 'SomethingNew');
-    expect(generic.length).toBeGreaterThan(0);
   });
 });

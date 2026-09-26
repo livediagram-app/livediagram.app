@@ -117,7 +117,7 @@ export default function TelemetryDashboard() {
             <EmptyState
               icon={<ActivityGlyph />}
               title="Couldn’t load the numbers"
-              description="The telemetry API didn’t answer just now. Give it a moment and refresh — nothing’s broken on your end."
+              description="The telemetry API didn’t answer just now. Give it a moment and refresh: nothing’s broken on your end."
             />
           </div>
         ) : !summary?.enabled ? (

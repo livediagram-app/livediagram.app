@@ -1,7 +1,8 @@
 'use client';
 
-import { useMemo, useState, type CSSProperties } from 'react';
+import { useMemo, type CSSProperties } from 'react';
 import { categoryColor, typeLabel } from './event-vocab';
+import { MetricBreadcrumb, metricCrumbs, type CloudPath } from './MetricBreadcrumb';
 import type { Metric } from './metrics';
 
 // The Search view's word cloud (spec/22): what shows while no metric is
@@ -44,14 +45,18 @@ export function centreOut<T>(items: T[], weight: (item: T) => number): T[] {
 export function MetricCloud({
   metrics,
   counts,
+  path,
+  onPathChange: setPath,
   onSelect,
 }: {
   metrics: Metric[];
   counts: Map<string, number>; // selected-window count per metric key
+  // The level is owned by the Search view, so the breadcrumb over a charted
+  // metric can step back into it.
+  path: CloudPath;
+  onPathChange: (path: CloudPath) => void;
   onSelect: (metric: Metric) => void;
 }) {
-  // [] = categories; [category] = its actions; [category, action] = its types.
-  const [path, setPath] = useState<string[]>([]);
   const [category, action] = path;
 
   const words = useMemo<Word[]>(() => {
@@ -95,7 +100,7 @@ export function MetricCloud({
         color,
         activate: () => onSelect(m),
       }));
-  }, [metrics, counts, category, action, onSelect]);
+  }, [metrics, counts, category, action, setPath, onSelect]);
 
   const laidOut = centreOut(words, (w) => w.count);
   const top = Math.max(1, ...words.map((w) => w.count));
@@ -107,10 +112,6 @@ export function MetricCloud({
   // The level's own hue for the backdrop glow: brand at the top, the
   // category's colour once inside one.
   const glow = category === undefined ? '#0ea5e9' : categoryColor(category);
-
-  const crumbs = [{ label: 'All events', to: [] as string[] }];
-  if (category !== undefined) crumbs.push({ label: category, to: [category] });
-  if (action !== undefined) crumbs.push({ label: action, to: [category!, action] });
 
   return (
     <div className="relative mt-6 overflow-hidden rounded-3xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
@@ -124,33 +125,7 @@ export function MetricCloud({
       />
       <div className="relative px-6 pb-8 pt-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <nav aria-label="Event levels" className="flex flex-wrap items-center gap-1.5 text-sm">
-            {crumbs.map((c, i) => {
-              const last = i === crumbs.length - 1;
-              return (
-                <span key={c.label} className="flex items-center gap-1.5">
-                  {i > 0 ? (
-                    <span aria-hidden className="text-slate-300 dark:text-slate-600">
-                      ›
-                    </span>
-                  ) : null}
-                  {last ? (
-                    <span className="rounded-full bg-slate-900 px-3 py-1 text-xs font-semibold text-white dark:bg-white dark:text-slate-900">
-                      {c.label}
-                    </span>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => setPath(c.to)}
-                      className="cursor-pointer rounded-full border border-slate-200 bg-white/70 px-3 py-1 text-xs font-medium text-slate-600 transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-300 dark:hover:text-white"
-                    >
-                      {c.label}
-                    </button>
-                  )}
-                </span>
-              );
-            })}
-          </nav>
+          <MetricBreadcrumb crumbs={metricCrumbs(path)} onNavigate={setPath} />
           <p className="text-xs tabular-nums text-slate-400">
             {total.toLocaleString()} {total === 1 ? 'event' : 'events'} across {words.length}{' '}
             {levelNoun}

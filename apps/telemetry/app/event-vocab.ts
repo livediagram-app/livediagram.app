@@ -32,23 +32,23 @@ export const CATEGORY_DESCRIPTIONS: Record<TelemetryCategory, string> = {
     'Folders: create, rename, delete, re-parent. Explorer folders of diagrams, or (type Tab) tab folders inside one diagram.',
   Layer:
     'Tab layers (Photoshop-style stacking bands): add, rename, delete, restack, show / hide, lock, move elements between layers, open the panel.',
-  Session: 'Account-level events when Clerk auth is configured: sign-in, sign-up, sign-out.',
+  Session: 'Accounts, where sign-in is set up: signing up, signing in, signing out.',
   Facilitator:
     'The live-session baton: somebody taking the timer / votes / polls for a room, handing them on, or stepping down.',
   AI: 'The optional in-editor AI assistant: running its Ask / Clean requests on the current tab.',
   Team: 'Teams: creating and joining, renaming, role changes, member invites and removals, and the shared team library of diagrams.',
   Participant:
-    'Visitor arrivals: a new browser identity minted (once per fresh visitor), and a returning browser reopening the app (once per day, split guest vs signed-in).',
+    'Visitor arrivals: a first-time visitor (once per new browser), and a returning browser reopening the app (once per day, split guest vs signed-in).',
   Help: 'Help-centre articles: views and per-article helpful / not-really feedback.',
   Page: 'Pages viewed across the whole site (marketing, editor, help centre, this dashboard), by path, with ids and query strings stripped.',
   Timeline:
     "The Explorer's activity feed: opening it (split by whether it was the landing view or a deliberate visit), switching between the list and calendar views, toggling a filter chip, expanding a collapsed run of same-day events, and paging further back.",
   Activity:
     "The Explorer's Activity page (open actions and comment threads across every diagram): opening it, clicking a row through to the diagram (split by action vs thread), and retrying a failed read.",
-  Token: 'API tokens: minted by hand or via an AI tool connecting through MCP, and revoked.',
+  Token: 'API tokens: created by hand or by an AI tool connecting over MCP, and revoked.',
   Mcp: 'MCP server tool calls made by connected AI assistants.',
   Email:
-    'Transactional and lifecycle email leaving the api worker (welcome, onboarding, team invites, notifications). The template kind only, never a recipient.',
+    'Emails the product sends (welcome, onboarding, team invites, notifications). Which email only, never who received it.',
   Error:
     'Failures, counted generically: API responses that errored (by HTTP status, plus worker-reported internal crashes) client-side uncaught exceptions, and warnings (a degradation the author was carried through, such as a spent AI budget failing over to the in-browser reader). Never a message, stack, or URL.',
 };
@@ -114,274 +114,61 @@ export const CANVAS_CONTROLS: Readonly<Record<string, string>> = {
 };
 
 export function typeLabel(type: string): string {
-  return type.startsWith('/') ? type : titleCase(type);
+  // Page paths and error codes (`Http403.SaveTab`) are only recognisable as
+  // what was recorded, so they stay as they are.
+  if (type.startsWith('/') || type.includes('.')) return type;
+  if (/^[a-z0-9]+(-[a-z0-9]+)+$/.test(type)) return articleTitle(type);
+  // 'SessionButton' -> 'Session Button', 'AiOn' -> 'AI On', 'Idea-box' -> 'Idea Box'.
+  return type
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
+    .split(/[-_\s]+/)
+    .filter(Boolean)
+    .map((w) => ACRONYMS[w.toLowerCase()] ?? w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ');
+}
+
+const ACRONYMS: Readonly<Record<string, string>> = {
+  ai: 'AI',
+  api: 'API',
+  faq: 'FAQ',
+  id: 'ID',
+  json: 'JSON',
+  mcp: 'MCP',
+  pdf: 'PDF',
+  png: 'PNG',
+  svg: 'SVG',
+  ui: 'UI',
+  url: 'URL',
+};
+const SMALL_WORDS = new Set([
+  'a',
+  'an',
+  'and',
+  'as',
+  'at',
+  'for',
+  'in',
+  'of',
+  'on',
+  'or',
+  'the',
+  'to',
+  'with',
+]);
+
+// A help article's telemetry id is its slug: 'api-tokens' -> 'API Tokens',
+// 'your-first-diagram' -> 'Your First Diagram'.
+export function articleTitle(slug: string): string {
+  return slug
+    .split('-')
+    .map(
+      (w, i) =>
+        ACRONYMS[w] ?? (i > 0 && SMALL_WORDS.has(w) ? w : w.charAt(0).toUpperCase() + w.slice(1)),
+    )
+    .join(' ');
 }
 
 export function eventLabel(row: Pick<TelemetryCount, 'action' | 'type'>): string {
   return row.type ? `${titleCase(row.action)} · ${typeLabel(row.type)}` : titleCase(row.action);
-}
-
-// Short plain-language explanation for a single event row, shown as
-// a tooltip on hover so a curious visitor doesn't have to read the
-// editor source to understand what each verb means. The rules are
-// layered: try the most specific match first (category + action +
-// type), then category + action, then category, then a generic
-// action-only sentence as the safety net. The dashboard never surfaces
-// a row whose strings aren't already validated against the closed
-// vocabulary (spec/22), so unknown branches really are unusual.
-export function eventExplanation(category: string, action: string, type: string | null): string {
-  // Category + action + type (the most user-recognisable combos).
-  if (category === 'Page' && action === 'View' && type) {
-    return `Someone viewed ${type}, by loading it or navigating to it within the site.`;
-  }
-  if (category === 'Element' && action === 'Added' && type) {
-    return `Someone dropped a ${type.toLowerCase()} onto the canvas.`;
-  }
-  if (category === 'Diagram' && action === 'Exported' && type) {
-    return `Someone exported a tab as ${type}.`;
-  }
-  if (category === 'Diagram' && action === 'Shared' && type) {
-    return `Someone generated a ${type.toLowerCase()}-role share link for a diagram.`;
-  }
-  if (category === 'Diagram' && action === 'Joined' && type) {
-    return `Someone came into a diagram through a ${type.toLowerCase()}-role share link. Counted once per person per diagram, not on every revisit.`;
-  }
-  if (category === 'Element' && action === 'Linked' && type) {
-    return `Someone linked an element to another ${type.toLowerCase()}.`;
-  }
-  if (category === 'Element' && action === 'Reordered' && type) {
-    return type === 'Front'
-      ? 'Someone sent an element to the front of the stack.'
-      : 'Someone sent an element to the back of the stack.';
-  }
-  if (category === 'Element' && action === 'Changed' && type === 'FormatPainter') {
-    return 'Someone used the format painter to copy a style from one element onto another.';
-  }
-  if (category === 'Tab' && action === 'Imported' && type) {
-    return `Someone imported a tab from a ${type} file.`;
-  }
-  if (category === 'Theme' && action === 'Changed' && type) {
-    return `A tab was given the ${type} theme: switched to it, or picked when a diagram or template was created with it.`;
-  }
-  if (category === 'Canvas' && action === 'Changed' && type) {
-    const control = CANVAS_CONTROLS[type];
-    return control
-      ? `Someone adjusted a tab's ${control} in the canvas panel.`
-      : `Someone switched a tab's background pattern to ${type}.`;
-  }
-  if (category === 'Canvas' && action === 'Used' && type === 'FollowMe') {
-    return "Someone pinned their canvas to a peer's viewport (spec/131), following their pan, zoom and tab until they take it back.";
-  }
-  if (category === 'Canvas' && action === 'Used' && type === 'InsertBetween') {
-    return 'Someone held Alt and dragged a note into the gap between two notes on an event-storming board (spec/139), and the board made room for it.';
-  }
-  if (category === 'Canvas' && action === 'Used' && type === 'AddNextNote') {
-    return 'Someone clicked a next-note button beside a note on an event-storming board (spec/139) and got the note the notation puts there.';
-  }
-  if (category === 'Canvas' && action === 'Used' && type === 'ChangeNoteKind') {
-    return 'Someone changed what kind of note a sticky is on an event-storming board (spec/139), say from a domain event to a hotspot.';
-  }
-  // Retired with the lane switch (spec/139 Phase 6: lanes are what the board
-  // is, not a mode); still described because stored events carry them.
-  if (category === 'Canvas' && action === 'Used' && type === 'TimelineLanesOn') {
-    return 'Someone turned timeline lanes on for an event-storming board (spec/139). Retired: lanes are always on.';
-  }
-  if (category === 'Canvas' && action === 'Used' && type === 'TimelineLanesOff') {
-    return 'Someone turned timeline lanes off for an event-storming board (spec/139). Retired: lanes are always on.';
-  }
-  // Retired with anchor docking (spec/139 Phase 7); still described because
-  // stored events carry them.
-  if (category === 'Canvas' && action === 'Used' && type === 'DockAdd') {
-    return "Someone clicked a note's anchor on an event-storming board (spec/139) and got the matching note already docked to it. Retired: now AddNextNote.";
-  }
-  if (category === 'Canvas' && action === 'Used' && type === 'Dock') {
-    return 'Someone dragged a note onto a compatible face on an event-storming board (spec/139) and it docked. Retired with docking.';
-  }
-  if (category === 'Canvas' && action === 'Used' && type === 'Undock') {
-    return 'Someone pulled a docked note away from its host on an event-storming board (spec/139). Retired with docking.';
-  }
-  if (category === 'AI' && action === 'Used' && type === 'PhotoNotes') {
-    return 'Someone imported the sticky notes from a photograph of a real wall onto an event-storming board (spec/139).';
-  }
-  if (category === 'Canvas' && action === 'Zoomed' && type) {
-    if (type === 'In') return 'Someone tapped the zoom-in button.';
-    if (type === 'Out') return 'Someone tapped the zoom-out button.';
-    if (type === 'Fit') return 'Someone tapped "Fit to screen".';
-    if (type === 'Reset') return 'Someone reset the zoom to 100%.';
-  }
-  if (category === 'Template' && action === 'Used' && type) {
-    return `Someone started a fresh tab from the ${type} template.`;
-  }
-  if (category === 'Search' && action === 'Selected' && type) {
-    return `Someone picked a ${type.toLowerCase()} match from the global search results.`;
-  }
-  if (category === 'UI' && action === 'Toggled' && type) {
-    if (type === 'Light' || type === 'Dark' || type === 'System')
-      return `Someone set the editor appearance to ${type}.`;
-    return `Someone flipped an editor setting: ${typeLabel(type)}.`;
-  }
-  if (category === 'UI' && action === 'Opened' && type) {
-    if (type === 'Settings') return 'Someone opened the Settings dialog.';
-    if (type === 'Shortcuts') return 'Someone opened the keyboard-shortcuts dialog.';
-    if (type === 'Tips') return 'Someone opened the Tips carousel.';
-    if (type === 'Share') return 'Someone opened the Share dialog.';
-    if (type === 'Activity') return 'Someone expanded the Activity panel.';
-  }
-  if (category === 'UI' && action === 'Closed' && type === 'Welcome') {
-    return 'Someone dismissed the first-run welcome modal.';
-  }
-  if (category === 'UI' && action === 'Copied' && type === 'ShareLink') {
-    return 'Someone copied a share link to the clipboard.';
-  }
-
-  // Category + action.
-  if (category === 'Diagram') {
-    if (action === 'Loaded')
-      return 'A diagram was opened, counted on every open (including a page refresh and the first open of a diagram just created).';
-    if (action === 'Created') return 'A brand-new diagram was created.';
-    if (action === 'Duplicated') return 'A diagram was duplicated into a new one.';
-    if (action === 'Deleted') return 'A diagram was deleted.';
-    if (action === 'Renamed') return 'A diagram was renamed.';
-    if (action === 'Moved') return 'A diagram was moved into (or out of) a folder.';
-    if (action === 'Undone') return 'Someone hit Undo on a diagram edit.';
-    if (action === 'Redone') return 'Someone hit Redo on a diagram edit.';
-    if (action === 'Reverted')
-      return 'Someone reverted a single change from the diagram activity log.';
-    if (action === 'Used' && type === 'Multiplayer')
-      return 'A diagram was open with at least one other person live in the room, counted once per diagram per visit. The one event that counts collaboration happening rather than being offered.';
-  }
-  if (category === 'Email') {
-    if (action === 'Sent')
-      return 'A transactional or lifecycle email left the api worker for the provider. The template kind only, never a recipient or a name.';
-  }
-  if (category === 'Element') {
-    if (action === 'Deleted') return 'An element was removed from the canvas.';
-    if (action === 'Duplicated') return 'An element was duplicated.';
-    // Historical: groups were removed (spec/147), so these only label old rows.
-    if (action === 'Grouped') return 'A multi-selection was grouped (before groups were removed).';
-    if (action === 'Ungrouped')
-      return 'A group was disbanded back into individual elements (before groups were removed).';
-    if (action === 'Locked') return "An element's lock was turned on (no edits allowed).";
-    if (action === 'Unlocked') return "An element's lock was turned off (edits resume).";
-    if (action === 'Toggled')
-      return 'An on/off property was flipped on an element: a text style (Bold, Italic, Underline, Strikethrough), the aspect-ratio lock, or a table option (header row, header column, zebra striping).';
-    if (action === 'Unlinked') return 'Someone cleared the link off an element.';
-  }
-  if (category === 'Tab') {
-    if (action === 'Loaded')
-      return "A tab's content was fetched for viewing (the first tab when a diagram opens, then each tab switched to).";
-    if (action === 'Created') return 'A new tab was added to a diagram.';
-    if (action === 'Moved') return 'A tab was filed into a tab folder (spec/30).';
-    if (action === 'Removed')
-      return 'A tab was taken out of a tab folder and made loose again. Emitted the same way whether the ellipsis menu or a drag did it.';
-    if (action === 'Deleted') return 'A tab was removed from a diagram.';
-    if (action === 'Duplicated') return 'A tab was duplicated.';
-    if (action === 'Renamed') return 'A tab was renamed.';
-    if (action === 'Locked') return 'A tab was locked (read-only).';
-    if (action === 'Unlocked') return 'A tab was unlocked (edits resume).';
-    if (action === 'Linked') return 'A tab was linked into another diagram.';
-    if (action === 'Reordered') return 'Someone dragged a tab to a new position.';
-    if (action === 'Aligned') return 'Someone tapped "Auto align" to snap a tab to the grid.';
-    if (action === 'Cleared') return "A tab's content was wiped.";
-  }
-  if (category === 'Comment') {
-    if (action === 'Added') return 'A comment was added to an element thread.';
-    if (action === 'Deleted') return 'A comment was removed from a thread.';
-    if (action === 'Resolved') return 'A comment thread was marked resolved.';
-    if (action === 'Unresolved') return 'A resolved comment thread was reopened.';
-    if (action === 'Opened') return 'Someone opened the comment popover on an element.';
-  }
-  if (category === 'Note') {
-    if (action === 'Added') return 'A note was added to an element (first non-empty save).';
-    if (action === 'Changed') return "An existing note's text was edited.";
-    if (action === 'Deleted') return 'A note was cleared from an element.';
-    if (action === 'Opened') return 'Someone opened the note popover on an element.';
-  }
-  if (category === 'Help') {
-    if (action === 'Searched')
-      return type === 'NoResults'
-        ? 'A help-centre search that matched no article — the direct backlog of articles worth writing. The query itself is never sent.'
-        : 'A help-centre search that matched at least one article. One emit per settled query, never the query text.';
-  }
-  if (category === 'Search') {
-    if (action === 'Opened') return 'The global search panel was opened.';
-    if (action === 'Searched') return 'A query was typed into search (one emit per session).';
-  }
-  if (category === 'Team') {
-    // The three ways a row leaves a team's member list are deliberately
-    // separate: pooling them made "people who left a team" include invitations
-    // nobody ever accepted (spec/32).
-    if (action === 'Joined') return 'Someone accepted a team invite, by email or by invite link.';
-    if (action === 'Declined')
-      return 'Someone turned down a team invite. Read against Joined: the two are the accept rate on an invitation.';
-    if (action === 'Added')
-      return type === 'Member'
-        ? 'An admin sent a team invite by email. This counts the invitation, NOT the acceptance — that is Joined.'
-        : "A diagram was added to a team's shared library.";
-    if (action === 'Removed')
-      return type === 'Invite'
-        ? 'An admin withdrew an invitation the recipient had not accepted. Distinct from Declined, where the recipient is the one who said no.'
-        : type === 'Self'
-          ? 'Someone left a team they had joined.'
-          : type === 'Link'
-            ? "A team's shareable invite link was turned off."
-            : 'An admin removed a member who had joined the team.';
-  }
-  if (category === 'Folder') {
-    // The `Tab` type is a TAB folder (spec/30) — the collapsible grouping of tab
-    // pills inside one diagram — not a folder of diagrams in the explorer. Two
-    // different features that happen to share the word.
-    if (action === 'Created')
-      return type === 'Tab'
-        ? 'A new tab folder was created inside a diagram, by typing a name the diagram had not used before.'
-        : 'A new folder was created in the diagram explorer.';
-    if (action === 'Renamed')
-      return type === 'Tab' ? 'A tab folder was renamed.' : 'A folder was renamed.';
-    if (action === 'Deleted') return 'A folder was deleted (contained diagrams move to Unsorted).';
-    if (action === 'Moved') return 'A folder was re-parented under another folder (or the root).';
-  }
-  if (category === 'Layer') {
-    if (action === 'Added') return 'A new layer was added in the Layers panel.';
-    if (action === 'Deleted') return 'A layer (and everything on it) was deleted.';
-    if (action === 'Removed')
-      return type === 'MergedUp'
-        ? 'A layer was merged into the one above it.'
-        : 'A layer was merged into the one below it.';
-    if (action === 'Renamed')
-      return type === 'Adopted'
-        ? "A layer auto-named itself from an element's label (smart naming)."
-        : 'A layer was renamed by hand.';
-    if (action === 'Reordered') return 'Someone dragged a layer to restack it.';
-    if (action === 'Changed') return "A layer's opacity was adjusted.";
-    if (action === 'Cleared') return 'A layer was emptied (its elements deleted, the layer kept).';
-    if (action === 'Selected') return 'Someone switched which layer is active.';
-    if (action === 'Moved') return 'A selection was moved onto another layer.';
-    if (action === 'Opened') return 'Someone expanded the Layers panel.';
-    if (action === 'Toggled') {
-      if (type === 'Hidden') return 'A layer was hidden.';
-      if (type === 'Shown') return 'A hidden layer was shown again.';
-      if (type === 'Locked') return 'A layer was locked (its elements become read-only).';
-      if (type === 'Unlocked') return 'A locked layer was unlocked.';
-      if (type === 'OthersHidden') return 'Someone hid every layer except one.';
-    }
-  }
-  if (category === 'Session') {
-    if (action === 'SignedIn') return 'A visitor just completed sign-in via Clerk.';
-    if (action === 'SignedUp') return 'A visitor just completed sign-up via Clerk.';
-    if (action === 'SignedOut') return 'A visitor just signed out.';
-  }
-  if (category === 'Participant') {
-    if (action === 'Created')
-      return 'A brand-new browser identity was minted: a first-time visitor.';
-    if (action === 'Returned') {
-      if (type === 'Anonymous')
-        return 'A returning guest (not signed in) reopened the app on a later day, counted once per day.';
-      if (type === 'Authenticated')
-        return 'A returning signed-in user reopened the app on a later day, counted once per day.';
-      return 'A returning visitor reopened the app on a later day than their first visit, counted once per day.';
-    }
-  }
-
-  // Generic fallback.
-  return `One occurrence of ${eventLabel({ action, type })}.`;
 }
