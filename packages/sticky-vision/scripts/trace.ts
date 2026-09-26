@@ -1,6 +1,7 @@
 import { classMaskOf, closeRadiusFor, detectStickies } from '../src/detect';
 import { closePaperMask, labelComponents } from '../src/components';
 import {
+  boxOf,
   estimateNoteSize,
   estimateNoteSizes,
   fillRatio,
@@ -8,6 +9,7 @@ import {
   noiseFloorFor,
   type Box,
 } from '../src/boxes';
+import { holdsPoint, overlapArea } from '../src/rect';
 import { splitOversized } from '../src/split';
 import { cutAtNotches } from '../src/chords';
 import { cutAtSeam, findSeam, luminanceOf } from '../src/seam';
@@ -27,11 +29,6 @@ import { photoDir, truthFor } from './truth';
 // hands it the photograph's luminance.
 
 type Rect = { x: number; y: number; w: number; h: number };
-const inside = (r: Rect, x: number, y: number) =>
-  x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h;
-const overlap = (a: Rect, b: Rect) =>
-  Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x)) *
-  Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y));
 
 const [filter = '', ...pointArgs] = process.argv.slice(2);
 const points = pointArgs.map((p) => p.split(',').map(Number) as [number, number]);
@@ -43,29 +40,14 @@ for (const name of listPhotos(DIR).filter((n) => n.includes(filter))) {
   const { width, height } = image;
   const imageSize = Math.max(width, height);
   const mask = classMaskOf(image);
-  const toBox = (c: {
-    classId: number;
-    minX: number;
-    minY: number;
-    maxX: number;
-    maxY: number;
-    pixels: number;
-  }): Box => ({
-    classId: c.classId,
-    x: c.minX,
-    y: c.minY,
-    w: c.maxX - c.minX + 1,
-    h: c.maxY - c.minY + 1,
-    pixels: c.pixels,
-  });
   const noiseFloor = noiseFloorFor(imageSize);
-  const blobs = labelComponents(mask).map(toBox);
+  const blobs = labelComponents(mask).map(boxOf);
   const note = estimateNoteSize(blobs, noiseFloor);
   const classSize = estimateNoteSizes(blobs, noiseFloor);
   // The detector's own radius, not a copy: a hand-copied 0.04 closed twice as
   // hard as detectStickies and measured a mask that never ships.
   const closed = closePaperMask(mask, { radius: closeRadiusFor(note, imageSize) });
-  const merged = mergeFragments(labelComponents(closed).map(toBox), note);
+  const merged = mergeFragments(labelComponents(closed).map(boxOf), note);
   const lum = luminanceOf(image);
   const notes = labels.notes.map((n) => ({
     kind: n.kind,
@@ -84,10 +66,12 @@ for (const name of listPhotos(DIR).filter((n) => n.includes(filter))) {
   console.log(`\n${name}  note ${note}px  class sizes ${JSON.stringify([...classSize])}`);
   const targets: Rect[] = points.length
     ? points.map(([x, y]) => ({ x, y, w: 0, h: 0 }))
-    : detectStickies(image).filter((d) => notes.filter((n) => inside(d, n.cx, n.cy)).length >= 2);
+    : detectStickies(image).filter(
+        (d) => notes.filter((n) => holdsPoint(d, n.cx, n.cy)).length >= 2,
+      );
   for (const t of targets) {
     const held = notes.filter(
-      (n) => overlap(t, { x: n.cx, y: n.cy, w: 1, h: 1 }) > 0 || inside(t, n.cx, n.cy),
+      (n) => overlapArea(t, { x: n.cx, y: n.cy, w: 1, h: 1 }) > 0 || holdsPoint(t, n.cx, n.cy),
     );
     const near = notes.filter(
       (n) =>
@@ -102,8 +86,8 @@ for (const name of listPhotos(DIR).filter((n) => n.includes(filter))) {
         )
         .join(' | ')}${held.length > 1 ? `  (holds ${held.length})` : ''}`,
     );
-    const hit = (b: Rect) => (t.w === 0 ? inside(b, t.x, t.y) : overlap(b, t) > 0);
-    const source = merged.filter(hit).sort((a, b) => overlap(b, t) - overlap(a, t))[0];
+    const hit = (b: Rect) => (t.w === 0 ? holdsPoint(b, t.x, t.y) : overlapArea(b, t) > 0);
+    const source = merged.filter(hit).sort((a, b) => overlapArea(b, t) - overlapArea(a, t))[0];
     if (!source) continue;
     console.log(
       `    blob  ${fmt(source)} class ${source.classId} parts ${source.parts?.length ?? 1}`,

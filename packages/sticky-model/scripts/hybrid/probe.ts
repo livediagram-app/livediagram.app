@@ -1,4 +1,4 @@
-import { classMaskOf, detectStickies } from '../../../sticky-vision/src/detect';
+import { classMaskOf, detectStickies, holdsPoint } from '@livediagram/sticky-vision';
 import { score } from '../../../sticky-vision/scripts/truth';
 import { CUE_OPTIONS, cuesOf } from '../../src/cues';
 import { loadHybridWalls } from './walls';
@@ -25,8 +25,6 @@ const minCore = Number(arg('min-core', '12'));
 type R = { x: number; y: number; w: number; h: number };
 const cx = (r: R) => r.x + r.w / 2;
 const cy = (r: R) => r.y + r.h / 2;
-const holds = (b: R, x: number, y: number) =>
-  x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h;
 const at = (r: R) =>
   `${Math.round(cx(r))},${Math.round(cy(r))} ${Math.round(r.w)}x${Math.round(r.h)}`;
 
@@ -62,7 +60,7 @@ for (const wall of await loadHybridWalls()) {
       }
     return n ? paper / n : 0;
   };
-  const coresIn = (b: R) => cues.notes.filter((m) => holds(b, cx(m.core), cy(m.core)));
+  const coresIn = (b: R) => cues.notes.filter((m) => holdsPoint(b, cx(m.core), cy(m.core)));
   const matchesLabel = (m: R, l: R) =>
     Math.hypot(cx(m) - cx(l), cy(m) - cy(l)) <= Math.max(l.w, l.h) * 0.5 &&
     (m.w * m.h) / (l.w * l.h) <= 2 &&
@@ -73,7 +71,7 @@ for (const wall of await loadHybridWalls()) {
   );
   const spurious = new Set(s.spurious);
   for (const b of found) {
-    const held = labels.filter((l) => holds(b, cx(l), cy(l)));
+    const held = labels.filter((l) => holdsPoint(b, cx(l), cy(l)));
     if (held.length < 2) continue;
     const cores = coresIn(b);
     const inseparable = held.some((a) =>
@@ -89,14 +87,14 @@ for (const wall of await loadHybridWalls()) {
   for (const n of s.missed) {
     const l = { x: n.x * width, y: n.y * height, w: n.w * width, h: n.h * height };
     const model = cues.notes.find((m) => matchesLabel(m, l));
-    const under = found.find((b) => holds(b, cx(l), cy(l)));
+    const under = found.find((b) => holdsPoint(b, cx(l), cy(l)));
     console.log(
       `  missed ${at(l)} ${n.kind.padEnd(15)} model ${model ? `${at(model)} c${model.confidence.toFixed(2)} ${model.corePixels}px` : '-'}` +
         `  paper ${(paperOf(l) * 100).toFixed(0)}%  in-box ${under ? at(under) : '-'}`,
     );
   }
   for (const b of s.spurious) {
-    const held = labels.filter((l) => holds(b, cx(l), cy(l))).length;
+    const held = labels.filter((l) => holdsPoint(b, cx(l), cy(l))).length;
     if (held >= 2) continue;
     console.log(
       `  spurious ${at(b)} bg ${bgOf(b).toFixed(2)} cores ${coresIn(b).length} holds ${held}`,

@@ -1,5 +1,6 @@
 import { classMaskOf, detectStickies, type DetectDropReason } from '../src/detect';
 import type { Box } from '../src/boxes';
+import { holdsPoint, iou } from '../src/rect';
 import { standoutOf } from '../src/standout';
 import { brightnessOf, edgeContrastOf, roughnessOf, valueSpreadOf } from '../src/texture';
 import { listPhotos, loadPhoto } from './photos';
@@ -21,16 +22,6 @@ const onlyWall = process.argv.includes('--wall')
   ? process.argv[process.argv.indexOf('--wall') + 1]
   : undefined;
 const verbose = process.argv.includes('--all');
-
-type Rect = { x: number; y: number; w: number; h: number };
-const inside = (r: Rect, x: number, y: number) =>
-  x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h;
-const iou = (a: Rect, b: Rect) => {
-  const ix = Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x));
-  const iy = Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y));
-  const i = ix * iy;
-  return i / Math.max(1, a.w * a.h + b.w * b.h - i);
-};
 
 const tally: Record<string, Record<string, number>> = {};
 for (const name of listPhotos(DIR)) {
@@ -61,7 +52,7 @@ for (const name of listPhotos(DIR)) {
   const byGate: Record<string, number> = {};
   console.log(`\n${name}`);
   for (const n of notes) {
-    if (matched(n) || found.some((b) => inside(b, n.cx, n.cy))) continue;
+    if (matched(n) || found.some((b) => holdsPoint(b, n.cx, n.cy))) continue;
     let paper = 0;
     let total = 0;
     for (let y = Math.round(n.cy - n.h / 3); y < n.cy + n.h / 3; y += 1)
@@ -72,7 +63,7 @@ for (const name of listPhotos(DIR)) {
       }
     if (paper / Math.max(1, total) <= 0.4) continue;
     const over = drops
-      .filter((d) => iou(d.box, n) > 0.05 || inside(d.box, n.cx, n.cy))
+      .filter((d) => iou(d.box, n) > 0.05 || holdsPoint(d.box, n.cx, n.cy))
       .map((d) => ({ ...d, iou: iou(d.box, n) }))
       .sort((a, b) => b.iou - a.iou);
     const decisive = over[0];

@@ -308,7 +308,7 @@ describe('renderElementsToSvg', () => {
   });
 
   describe('freehand + silhouettes + rotation', () => {
-    it('renders a freehand sketch as its polyline, not a box', () => {
+    it('renders a freehand sketch as the canvas smooth curve, not a box', () => {
       const el = {
         id: 'fh',
         type: 'freehand',
@@ -324,8 +324,35 @@ describe('renderElementsToSvg', () => {
         strokeColor: '#333333',
       } as Tab['elements'][number];
       const svg = renderElementsToSvg(tab([el]));
-      expect(svg).toContain('M 10 10 L 110 60');
+      // The same Catmull-Rom curve the canvas's FreehandSvg draws (it used to
+      // export straight segments), with the numbers rounded to 2 places.
+      expect(svg).toContain('d="M 10 10 C 26.67 18.33, 93.33 51.67, 110 60"');
       expect(svg).not.toContain('rx="6"');
+    });
+
+    it('keeps a polygon-tool path straight, and draws nothing for one point', () => {
+      const base = {
+        id: 'pg',
+        type: 'freehand',
+        x: 0,
+        y: 0,
+        width: 100,
+        height: 100,
+        closed: true,
+        strokeColor: '#333333',
+      };
+      const polygon = {
+        ...base,
+        straightEdges: true,
+        points: [
+          { nx: 0, ny: 0 },
+          { nx: 1, ny: 0 },
+          { nx: 1, ny: 1 },
+        ],
+      } as Tab['elements'][number];
+      expect(renderElementsToSvg(tab([polygon]))).toContain('d="M 0 0 L 100 0 L 100 100 Z"');
+      const dot = { ...base, points: [{ nx: 0.5, ny: 0.5 }] } as Tab['elements'][number];
+      expect(renderElementsToSvg(tab([dot]))).not.toContain('<path');
     });
 
     it('renders a code block as the dark card + mono lines (spec/82)', () => {

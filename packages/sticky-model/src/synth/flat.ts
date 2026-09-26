@@ -1,3 +1,4 @@
+import { hexToRgb } from '@livediagram/sticky-vision';
 import { layoutNotes, type NoteSpec } from './layout';
 import { dividerLine, handwriting } from './notes';
 import {
@@ -45,11 +46,11 @@ const DIGITAL_FILLS = [
   '#be88c7',
 ];
 
-const fromHex = (h: string): Rgb => [
-  parseInt(h.slice(1, 3), 16) / 255,
-  parseInt(h.slice(3, 5), 16) / 255,
-  parseInt(h.slice(5, 7), 16) / 255,
-];
+// The synth planes work in 0-1, so the shared 0-255 parse is scaled down.
+const fromHex = (h: string): Rgb => {
+  const { r, g, b } = hexToRgb(h);
+  return [r / 255, g / 255, b / 255];
+};
 
 // White, light grey, a pale tint, or dark mode.
 function canvasColour(rng: Rng): Rgb {

@@ -4,6 +4,7 @@ import { cutAtNotches } from './chords';
 import { cutAtSeam, type Luminance } from './seam';
 import { cutNarrowRun, isNarrowNote } from './narrow';
 import type { NoteSizeField } from './size-field';
+import { median } from './stats';
 
 // From blobs to stickies (spec/139 Phase 8).
 //
@@ -98,7 +99,8 @@ export function fillRatio(box: Box): number {
   return box.pixels / Math.max(1, box.w * box.h);
 }
 
-function boxOf(c: Component): Box {
+// A labelled component's bounding box, as the Box every later stage reads.
+export function boxOf(c: Component): Box {
   return {
     classId: c.classId,
     x: c.minX,
@@ -107,16 +109,6 @@ function boxOf(c: Component): Box {
     h: c.maxY - c.minY + 1,
     pixels: c.pixels,
   };
-}
-
-// The UPPER median on an even count. With a handful of boxes the difference
-// decides everything: a photo of one note beside one speck has median 'speck'
-// under the lower median, and every threshold derived from it then throws the
-// note away.
-function median(values: number[]): number {
-  if (values.length === 0) return 0;
-  const sorted = [...values].sort((a, b) => a - b);
-  return sorted[Math.floor(sorted.length / 2)]!;
 }
 
 // The note size this photo is working at: the median blob's SHORT side.

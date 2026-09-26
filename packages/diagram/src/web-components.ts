@@ -11,6 +11,7 @@
 // validator and the shape factory can read its constants at module-init time
 // without walking the index cycle.
 
+import { clamp, type Rect } from './geometry-primitives';
 import type { ShapeKind } from './index';
 
 // --- Vocabulary -------------------------------------------------------------
@@ -74,9 +75,7 @@ export function clampWebText(s: string): string {
 
 // --- Layout -----------------------------------------------------------------
 
-export type LayoutRect = { x: number; y: number; width: number; height: number };
-
-const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
+export type LayoutRect = Rect;
 
 // Stat row: the cards share the width equally with a fixed gap, and the
 // value's size follows the card height, so a taller row gets bigger numbers

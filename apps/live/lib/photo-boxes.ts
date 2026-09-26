@@ -1,4 +1,4 @@
-import { EVENT_STORMING_NOTES } from '@livediagram/diagram';
+import { clamp, EVENT_STORMING_NOTES } from '@livediagram/diagram';
 import type { DetectedSticky, Truth } from '@livediagram/sticky-vision';
 
 // Correcting the boxes on a photograph under review (spec/139 Phase 9): move,
@@ -11,8 +11,6 @@ export type Corner = 'nw' | 'ne' | 'sw' | 'se';
 
 // The smallest box there can be: enough of the photo to classify its paper.
 const MIN_SIDE_PX = 4;
-
-const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
 
 // A dragged box stays whole on the photo: it stops at the edge rather than
 // hanging off it, where its crop would be cut from nothing.

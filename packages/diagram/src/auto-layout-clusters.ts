@@ -16,6 +16,7 @@ import {
   type DiagramGraph,
   type GraphCluster,
 } from './graph-authoring';
+import { unionRects, type Rect } from './geometry-primitives';
 import { isBoxed, type ArrowElement, type BoxedElement, type Element } from './index';
 
 // Space between a frame's border and its members: the top band is deeper so
@@ -28,14 +29,9 @@ export type ClusteredLayoutOptions = {
   makeEdgeId?: () => string;
 };
 
-function bbox(els: BoxedElement[]): { minX: number; minY: number; maxX: number; maxY: number } {
-  return {
-    minX: Math.min(...els.map((e) => e.x)),
-    minY: Math.min(...els.map((e) => e.y)),
-    maxX: Math.max(...els.map((e) => e.x + e.width)),
-    maxY: Math.max(...els.map((e) => e.y + e.height)),
-  };
-}
+// Every caller passes a non-empty block (placed nodes, or a cluster's
+// members, which sanitizeClusters guarantees), so the union is never null.
+const bbox = (els: BoxedElement[]): Rect => unionRects(els)!;
 
 // autoLayoutElements only positions nodes an arrow touches; edgeless nodes
 // keep their given position, which for graph imports means piled at the
@@ -60,10 +56,9 @@ export function sweepEdgelessNodes(elements: Element[], exempt?: Set<string>): E
   // Row-wrap the loose nodes below the placed block (or from the origin when
   // everything is loose), capping rows at the block's width so the sweep
   // doesn't sprawl into a single endless line.
-  const start = placed.length
-    ? { x: bbox(placed).minX, y: bbox(placed).maxY + LAYER_GAP }
-    : { x: 0, y: 0 };
-  const rowCap = Math.max(placed.length ? bbox(placed).maxX - bbox(placed).minX : 0, 600);
+  const block = placed.length ? bbox(placed) : null;
+  const start = block ? { x: block.x, y: block.y + block.height + LAYER_GAP } : { x: 0, y: 0 };
+  const rowCap = Math.max(block ? block.width : 0, 600);
   const pos = new Map<string, Pt>();
   let x = 0;
   let y = start.y;
@@ -149,8 +144,8 @@ export function layoutClusteredGraph(
       shape: 'frame' as const,
       x: 0,
       y: 0,
-      width: b.maxX - b.minX + 2 * FRAME_PAD,
-      height: b.maxY - b.minY + FRAME_TOP + FRAME_PAD,
+      width: b.width + 2 * FRAME_PAD,
+      height: b.height + FRAME_TOP + FRAME_PAD,
       label: c.label ?? c.id,
     };
   });
@@ -183,8 +178,8 @@ export function layoutClusteredGraph(
     placedFrames.push(frame);
     const members = memberEls.get(c.id)!;
     const b = bbox(members);
-    const dx = frame.x + FRAME_PAD - b.minX;
-    const dy = frame.y + FRAME_TOP - b.minY;
+    const dx = frame.x + FRAME_PAD - b.x;
+    const dy = frame.y + FRAME_TOP - b.y;
     for (const m of members) placedNodes.push({ ...m, x: m.x + dx, y: m.y + dy });
   }
 

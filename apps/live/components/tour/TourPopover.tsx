@@ -1,6 +1,7 @@
 'use client';
 
 import { useLayoutEffect, useRef, useState } from 'react';
+import { clamp } from '@livediagram/diagram';
 import { Button } from '@livediagram/ui';
 import { placeTourPopover } from './tour-position';
 import { TourHelpArt } from './TourHelpArt';
@@ -70,8 +71,6 @@ export function TourPopover({
   useLayoutEffect(() => {
     const node = ref.current;
     if (!node) return;
-    const clamp = (v: number, min: number, max: number) =>
-      Math.min(Math.max(v, min), Math.max(min, max));
     const place = () => {
       const size = { width: node.offsetWidth, height: node.offsetHeight };
       const viewport = { width: window.innerWidth, height: window.innerHeight };

@@ -1,4 +1,4 @@
-import type { ImageBuffer } from '../../../sticky-vision/src/colour';
+import { hexToRgb, type ImageBuffer } from '@livediagram/sticky-vision';
 import { rngFrom, type Rng } from '../../src/synth/rng';
 
 // Drawn boards: the flat, textureless walls a screenshot of a digital board
@@ -12,11 +12,10 @@ export type Board = { name: string; image: ImageBuffer; notes: DrawnNote[] };
 
 type Rgb = [number, number, number];
 
-const hex = (h: string): Rgb => [
-  parseInt(h.slice(1, 3), 16),
-  parseInt(h.slice(3, 5), 16),
-  parseInt(h.slice(5, 7), 16),
-];
+const hex = (h: string): Rgb => {
+  const { r, g, b } = hexToRgb(h);
+  return [r, g, b];
+};
 
 // The editor's event-storming fills and a digital whiteboard's sticky palette.
 const FILLS = [

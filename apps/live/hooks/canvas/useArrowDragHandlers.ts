@@ -5,11 +5,11 @@ import {
   arrowStyleOf,
   curveAnchorPoints,
   curveControlPoint,
+  distToSegment,
   endpointPosition,
   type ArrowElement,
 } from '@livediagram/diagram';
 import { track } from '@/lib/telemetry';
-import { distToSegment } from '@/lib/drag-geometry';
 import type { ArrowEnd, DragState } from '@/lib/canvas';
 import type { EditorDragDeps } from './useEditorDrag.types';
 

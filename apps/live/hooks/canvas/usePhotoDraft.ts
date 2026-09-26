@@ -8,6 +8,7 @@ import {
   draftNotesOf,
   eventStormingNoteSize,
   reconcilePhoto,
+  unionRects,
   type Element,
   type PhotoAddition,
   type PhotoNote,
@@ -268,18 +269,15 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
   // past life size.
   const frameElements = useCallback(
     (els: readonly { x: number; y: number; width: number; height: number }[]) => {
-      if (els.length === 0) return;
-      const minX = Math.min(...els.map((e) => e.x));
-      const minY = Math.min(...els.map((e) => e.y));
-      const maxX = Math.max(...els.map((e) => e.x + e.width));
-      const maxY = Math.max(...els.map((e) => e.y + e.height));
+      const b = unionRects(els);
+      if (!b) return;
       const margin = 120;
       live.current.fitToBounds(
         {
-          x: minX - margin,
-          y: minY - margin,
-          w: maxX - minX + margin * 2,
-          h: maxY - minY + margin * 2,
+          x: b.x - margin,
+          y: b.y - margin,
+          w: b.width + margin * 2,
+          h: b.height + margin * 2,
         },
         { maxZoom: 1 },
       );

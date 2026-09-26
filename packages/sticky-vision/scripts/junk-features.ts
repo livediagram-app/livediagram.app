@@ -1,6 +1,7 @@
 import { writeFileSync } from 'node:fs';
 import { rgbToHsv, type ImageBuffer } from '../src/colour';
 import { detectStickies, type DetectedSticky } from '../src/detect';
+import { median } from '../src/stats';
 import { standoutOf, standoutPartsOf } from '../src/standout';
 import { edgeSidesOf, lbpEntropyOf, roughnessOf, valueSpreadOf } from '../src/texture';
 import { straightSidesOf } from './straightness';
@@ -27,11 +28,6 @@ export type BoxRow = {
   w: number;
   h: number;
   f: Record<string, number>;
-};
-
-const median = (values: number[]) => {
-  const s = [...values].sort((a, b) => a - b);
-  return s[s.length >> 1] ?? 0;
 };
 
 function frameLuma(image: ImageBuffer): number {

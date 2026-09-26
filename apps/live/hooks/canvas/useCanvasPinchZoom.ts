@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, type RefObject } from 'react';
+import { clamp } from '@livediagram/diagram';
 import { ZOOM_MIN, ZOOM_MAX } from '@/lib/canvas';
 
 // Wheel + touch viewport gestures on the canvas:
@@ -24,8 +25,6 @@ import { ZOOM_MIN, ZOOM_MAX } from '@/lib/canvas';
 // The fixed wrapper centre wCX = canvasMain.left + canvasMain.width/2
 // (no transform on <main> itself). Keeping focal point at screen px:
 //   tx2 = (px - wCX) * (1/z2 - 1/z1) + tx1
-
-const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
 
 type Deps = {
   canvasMainRef: React.RefObject<HTMLElement | null>;

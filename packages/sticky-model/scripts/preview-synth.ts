@@ -1,5 +1,5 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { encodePng } from '../../sticky-vision/scripts/png';
+import { encodePng } from '@livediagram/sticky-vision/png';
 import { syntheticWall, type WallStyle } from '../src/synth/wall';
 import { WORK_DIR } from './paths';
 

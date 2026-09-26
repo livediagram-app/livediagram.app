@@ -5,6 +5,7 @@ import { greyWorldBalance, type ImageBuffer } from './colour';
 import { notStandingOut, STANDOUT_CALIBRATION } from './standout';
 import { closePaperMask, labelComponents, type ComponentMask } from './components';
 import {
+  boxOf,
   estimateNoteSize,
   estimateNoteSizes,
   fitBoxes,
@@ -149,14 +150,7 @@ export function detectStickies(image: ImageBuffer, opts: DetectOptions = {}): De
   // `estimateNoteSize`. Everything after this divides by it, including the
   // close that follows, so it cannot be measured after the close.
   const noiseFloor = noiseFloorFor(imageSize);
-  const blobs = labelComponents(mask).map((c) => ({
-    classId: c.classId,
-    x: c.minX,
-    y: c.minY,
-    w: c.maxX - c.minX + 1,
-    h: c.maxY - c.minY + 1,
-    pixels: c.pixels,
-  }));
+  const blobs = labelComponents(mask).map(boxOf);
   const noteSize = estimateNoteSize(blobs, noiseFloor);
   const classNoteSize = estimateNoteSizes(blobs, noiseFloor);
   // Fuse handwriting-shattered notes back into whole notes before labeling

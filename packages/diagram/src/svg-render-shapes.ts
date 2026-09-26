@@ -8,6 +8,7 @@
 import { BORDER_DASH_ARRAY, BORDER_STROKE_PX } from './border-style';
 import type { BoxedElement, FreehandElement, ShapeKind } from './index';
 import { r2, xmlEscape } from './svg-render-primitives';
+import { catmullRomToBezierPath } from './polyline';
 import { codeTheme } from './code-themes';
 import { chartPaletteColors } from './chart-palettes';
 import { isLaneBand, laneEdgeOfElement, laneSizeOfElement } from './lane-gutter';
@@ -124,14 +125,18 @@ export function svgShapeSilhouette(
   );
 }
 
-// A freehand sketch's real polyline (normalised points scaled to the box),
-// closed paths fill like the canvas; open ones render stroke-only.
+// A freehand sketch's real path (normalised points scaled to the box), drawn
+// the way FreehandSvg draws it on the canvas: a pen stroke through the same
+// Catmull-Rom smoothing, a polygon-tool path (spec/84) with its straight
+// edges, and nothing for a lone point. Closed paths fill like the canvas;
+// open ones render stroke-only.
 export function svgFreehandShape(el: FreehandElement, stroke: string, fill: string): string {
-  if (el.points.length === 0) return '';
-  const pts = el.points.map(
-    (p, i) => `${i === 0 ? 'M' : 'L'} ${r2(el.x + p.nx * el.width)} ${r2(el.y + p.ny * el.height)}`,
-  );
-  const d = pts.join(' ') + (el.closed ? ' Z' : '');
+  if (el.points.length < 2) return '';
+  const pts = el.points.map((p) => ({ x: el.x + p.nx * el.width, y: el.y + p.ny * el.height }));
+  const d = el.straightEdges
+    ? pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${r2(p.x)} ${r2(p.y)}`).join(' ') +
+      (el.closed ? ' Z' : '')
+    : catmullRomToBezierPath(pts, el.closed, r2);
   // Highlighter recipe (spec/81): the marker owns width + translucency
   // (a fixed wide round stroke, multiply blend, never filled); the
   // border presets don't apply. Mirrors FreehandSvg in the editor so

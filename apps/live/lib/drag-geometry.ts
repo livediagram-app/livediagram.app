@@ -109,21 +109,3 @@ export function computeSnapTargets(
   }
   return out;
 }
-
-// Distance from point p to segment a-b (canvas coords). Used to pick which
-// segment of a multi-bend curve a click lands on so a new control point is
-// inserted in the right place.
-export function distToSegment(
-  p: { x: number; y: number },
-  a: { x: number; y: number },
-  b: { x: number; y: number },
-): number {
-  const vx = b.x - a.x;
-  const vy = b.y - a.y;
-  const lenSq = vx * vx + vy * vy;
-  const t =
-    lenSq < 1e-9 ? 0 : Math.max(0, Math.min(1, ((p.x - a.x) * vx + (p.y - a.y) * vy) / lenSq));
-  const cx = a.x + t * vx;
-  const cy = a.y + t * vy;
-  return Math.hypot(p.x - cx, p.y - cy);
-}

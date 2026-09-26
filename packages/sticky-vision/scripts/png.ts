@@ -5,10 +5,14 @@ import type { ImageBuffer } from '../src/colour';
 // PNG in, PNG out. No dependency: node's zlib is the only hard part of either.
 // Used by the calibration loop to read working copies of real photographs and
 // to write the overlay that makes "did it find the notes" a question you can
-// answer by looking.
+// answer by looking, and by the editor's e2e suite to encode the wall it
+// draws. Node only; exported as `@livediagram/sticky-vision/png`.
 
 export function decodePng(path: string): ImageBuffer {
-  const buf = readFileSync(path);
+  return decodePngBuffer(readFileSync(path));
+}
+
+export function decodePngBuffer(buf: Buffer): ImageBuffer {
   let pos = 8;
   let width = 0;
   let height = 0;
@@ -76,14 +80,22 @@ const CRC_TABLE = (() => {
   return table;
 })();
 
-export function encodePng(image: ImageBuffer): Buffer {
+// Minimal PNG: one IHDR (8-bit truecolour), one IDAT of zlib-deflated
+// scanlines (filter 0), one IEND. Enough for any browser, small enough to
+// read. `data` is RGBA by default (an ImageBuffer, alpha dropped); pass
+// `channels: 3` for packed RGB.
+export function encodePng(
+  image: { width: number; height: number; data: ArrayLike<number> },
+  opts: { channels?: 3 | 4 } = {},
+): Buffer {
   const { width, height, data } = image;
+  const channels = opts.channels ?? 4;
   const stride = width * 3;
   const raw = Buffer.alloc((stride + 1) * height);
   for (let y = 0; y < height; y += 1) {
-    raw[y * (stride + 1)] = 0;
+    raw[y * (stride + 1)] = 0; // filter: none
     for (let x = 0; x < width; x += 1) {
-      const i = (y * width + x) * 4;
+      const i = (y * width + x) * channels;
       const o = y * (stride + 1) + 1 + x * 3;
       raw[o] = data[i]!;
       raw[o + 1] = data[i + 1]!;
@@ -93,8 +105,8 @@ export function encodePng(image: ImageBuffer): Buffer {
   const ihdr = Buffer.alloc(13);
   ihdr.writeUInt32BE(width, 0);
   ihdr.writeUInt32BE(height, 4);
-  ihdr[8] = 8;
-  ihdr[9] = 2;
+  ihdr[8] = 8; // bit depth
+  ihdr[9] = 2; // colour type: truecolour
   const crc = (b: Buffer) => {
     let c = 0xffffffff;
     for (const byte of b) c = CRC_TABLE[(c ^ byte) & 0xff]! ^ (c >>> 8);

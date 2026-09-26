@@ -7,6 +7,7 @@ import {
   snapToAlignment,
   capturePlacement,
   snapToLane,
+  unionRects,
   type AlignmentGuide,
   type DistributionGuide,
   type Element,
@@ -19,7 +20,6 @@ import {
   snapModeOf,
   MIN_SIZE,
   nextBounds,
-  unionOfBounds,
   unionResizeMember,
   type DragMode,
   type ShapeBounds,
@@ -327,7 +327,7 @@ export function resolveBoxedResize({
   // the primary's edges aren't load-bearing here: snapping one member's
   // edge would push the whole group around in ways the user didn't ask
   // for.
-  const unionStart = unionOfBounds(startBounds.values());
+  const unionStart = unionRects(startBounds.values());
   if (!unionStart || !corner) return null;
   const anyAspectLocked = elements.some(
     (el) => isBoxed(el) && startBounds.has(el.id) && el.aspectLocked === true,
