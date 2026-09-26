@@ -15,9 +15,14 @@ async function openToolbarBoard(page: Page): Promise<void> {
   });
   await page.goto('/new');
   // Retried: on a cold dev server the first click can land before hydration.
+  // A click that already worked leaves the wizard, so the retry only waits for
+  // the canvas then: clicking again would look for a button that is gone.
+  const canvas = page.locator(CANVAS);
   await expect(async () => {
-    await page.getByRole('button', { name: /^just draw$/i }).click({ timeout: 2_000 });
-    await page.locator(CANVAS).waitFor({ timeout: 3_000 });
+    if (!(await canvas.isVisible())) {
+      await page.getByRole('button', { name: /^just draw$/i }).click({ timeout: 2_000 });
+    }
+    await canvas.waitFor({ timeout: 3_000 });
   }).toPass({ timeout: 20_000 });
   await dismissQuickTour(page);
 }
