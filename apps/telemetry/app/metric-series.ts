@@ -151,17 +151,9 @@ export function previousCount(
   return series.slice(n - 2 * windowDays, n - windowDays).reduce((a, b) => a + b, 0);
 }
 
-// One colour per stack member, in order. Owned by the stack's rendering, not
-// the chart, since the same chart can sit in stacks beside different company.
-// Distinct hues from the brand-adjacent palette, readable on light and dark.
-const STACK_SERIES_COLORS = ['#0ea5e9', '#f59e0b', '#8b5cf6', '#10b981', '#ec4899'];
-
-export const stackSeriesColor = (index: number): string =>
-  STACK_SERIES_COLORS[index % STACK_SERIES_COLORS.length]!;
-
-// The most members a stack's head draws as separate lines, one colour each.
-// A bigger stack draws its combined line instead, and its members' cards keep
-// their own category colour since no head line matches them.
-export const MAX_STACK_LINES = STACK_SERIES_COLORS.length;
+// The most members a stack's head draws as separate lines, one colour each
+// (stack-colours.ts). A bigger stack draws its combined line instead, and its
+// members' cards keep their own category colour since no head line matches them.
+export const MAX_STACK_LINES = 5;
 
 export const stackDrawsLines = (members: number): boolean => members <= MAX_STACK_LINES;

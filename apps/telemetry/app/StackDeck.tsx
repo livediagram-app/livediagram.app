@@ -19,6 +19,7 @@ export function StackDeck({
   title,
   noun,
   count,
+  accent,
   aside,
   expanded,
   onToggle,
@@ -27,6 +28,9 @@ export function StackDeck({
   title: string;
   noun: string; // what the members are, plural: "charts", "rankings"
   count: number; // members, for the subtitle and the layers
+  // The stack's category hue (stack-colours.ts), tinting its icon tile the
+  // way a metric card's tile wears its category.
+  accent: string;
   aside?: ReactNode; // top-right, e.g. the combined count
   expanded: boolean;
   // Hands back the head element, which gets focus back when the modal closes.
@@ -69,7 +73,10 @@ export function StackDeck({
       >
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-2.5">
-            <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300">
+            <span
+              className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+              style={{ backgroundColor: `${accent}1a`, color: accent }}
+            >
               <StackGlyph />
             </span>
             <div>

@@ -2,6 +2,7 @@
 
 import { fmtDay } from './chart-utils';
 import { headlineMembers, headlineTotal, stackDrawsLines, type MetricStack } from './metric-series';
+import { stackAccent } from './stack-colours';
 import { StackDeck } from './StackDeck';
 import { StackTrendChart, type StackSeries } from './StackTrendChart';
 import { TrendBadge } from './TrendBadge';
@@ -35,13 +36,15 @@ export function MetricStackCard({
   const total = headlineTotal(stack, counts) ?? 0;
   const before = headlineTotal(stack, previousCounts);
   const inHeadline = headlineMembers(stack);
-  const { chart, legend, hidden } = headView(stack.title, series, counts, inHeadline);
+  const accent = stackAccent(stack.members);
+  const { chart, legend, hidden } = headView(stack.title, series, counts, inHeadline, accent);
 
   return (
     <StackDeck
       title={stack.title}
       noun="charts"
       count={stack.members.length}
+      accent={accent}
       expanded={expanded}
       onToggle={onToggle}
       aside={
@@ -90,20 +93,19 @@ export function MetricStackCard({
 
 // A few members' busiest charts for a summarised head's legend.
 const LEGEND_TOP = 4;
-// The combined line on a summarised head.
-const TOTAL_COLOR = '#0ea5e9';
 
 type LegendEntry = { label: string; count: number; color?: string };
 
 // What the head draws. Up to MAX_STACK_LINES members, one coloured line each
 // with a matching legend. Past that the lines turn to spaghetti (Emails Sent
-// has fourteen), so the chart is the members' combined line and the legend
-// names the busiest few by window count.
+// has fourteen), so the chart is the members' combined line, in the stack's
+// accent, and the legend names the busiest few by window count.
 function headView(
   title: string,
   series: StackSeries[],
   counts: number[],
   inHeadline: boolean[],
+  accent: string,
 ): { chart: StackSeries[]; legend: LegendEntry[]; hidden: number } {
   if (stackDrawsLines(series.length)) {
     return {
@@ -121,7 +123,7 @@ function headView(
     .map((s, i) => ({ label: s.label, count: counts[i] ?? 0 }))
     .sort((a, b) => b.count - a.count);
   return {
-    chart: [{ label: title, color: TOTAL_COLOR, values: combined }],
+    chart: [{ label: title, color: accent, values: combined }],
     legend: ranked.slice(0, LEGEND_TOP),
     hidden: Math.max(0, ranked.length - LEGEND_TOP),
   };

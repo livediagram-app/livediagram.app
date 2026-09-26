@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { GROUPS as DASHBOARD } from './DashboardView';
 import { EMAIL_KIND_METRICS, NEW_VISITORS, RETURNING_VISITORS } from './metric-catalogue';
-import { groupMetrics, isStack, stackSeriesColor, type MetricGroup } from './metric-series';
+import { groupMetrics, isStack, type MetricGroup } from './metric-series';
 
 describe('chart stacks', () => {
   const stack = {
@@ -24,10 +24,6 @@ describe('chart stacks', () => {
     expect(other.members[0]).toBe(stack.members[1]);
     expect(isStack(stack)).toBe(true);
     expect(isStack(NEW_VISITORS)).toBe(false);
-  });
-
-  it('gives each member its own line colour', () => {
-    expect(stackSeriesColor(0)).not.toBe(stackSeriesColor(1));
   });
 });
 
