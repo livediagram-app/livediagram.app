@@ -61,7 +61,7 @@ function Publisher({ onState }: { onState: (state: DeferredAuthState) => void })
             createdAt: user.createdAt ?? null,
           }
         : null,
-      getToken: async () => (await getToken()) ?? null,
+      getToken: async (opts) => (await getToken(opts)) ?? null,
       signOut: (opts) => signOut(opts),
       deleteAccount: isSignedIn ? () => deleteUserReverified() : null,
     });

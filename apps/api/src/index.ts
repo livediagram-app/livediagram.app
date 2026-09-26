@@ -16,11 +16,12 @@ import {
   apiRouteLabel,
   bearerTokenOf,
   errorTypeToken,
+  isClerkIdShape,
   TIMELINE_RETENTION_MS,
 } from '@livediagram/api-schema';
 import { isApiTokenFormat } from './auth/api-token';
 import { verifyOwnerId } from './auth/owner-signature';
-import { guestSignatureEnforced, isClerkIdShape, OWNER_SCOPED_SEGMENTS } from './auth/guest-rest';
+import { guestSignatureEnforced, OWNER_SCOPED_SEGMENTS } from './auth/guest-rest';
 import { handleTokens } from './routes/tokens';
 import { handleOauthExchange } from './routes/oauth';
 import { DiagramRoom } from './diagram-room';

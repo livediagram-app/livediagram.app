@@ -87,8 +87,14 @@ const TEMPLATES = ['Flowchart', 'Mindmap', 'Event-storming'];
 const TEMPLATE_WHY = "titleCaseType(kind): a template's kind";
 const ELEMENT_KINDS = ['Square', 'Circle', 'Sticky', 'Icon', 'TechIcon', 'Banner', 'Video'];
 const ELEMENT_WHY = 'an element kind, as the palette catalogue spells it';
-const API_ERRORS = ['Http403.LoadTab', 'Http500.SaveTab', 'Network.Put.Diagrams.Tabs'];
-const API_ERROR_WHY = 'a status or kind plus the request that failed';
+const API_ERRORS = [
+  'Http403.LoadTab.Forbidden',
+  'Http500.SaveTab',
+  'Network.Put.Diagrams.Tabs',
+  'Auth.NoSessionToken',
+  'SaveFailed.TypeError',
+];
+const API_ERROR_WHY = 'a status or kind plus the request that failed, and the worker error token';
 
 export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   // The api worker.

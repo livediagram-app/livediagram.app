@@ -3,7 +3,6 @@
 import type { TabResponse, TabSummary } from '@livediagram/api-schema';
 import { normalizeTable, type Tab } from '@livediagram/diagram';
 import { dedupeInFlight } from '../dedupe';
-import { getGuestSelfSig } from '../local-identity';
 import {
   isOfflineId,
   isOfflineIdSync,
@@ -21,6 +20,7 @@ import {
   expectOkVoid,
   getLastKnownToken,
   getSessionSharePassword,
+  identityHeaders,
   tabForWire,
   apiFetch,
 } from './core';
@@ -152,16 +152,15 @@ export function flushDiagramSavesBeacon(args: {
   // guest signature (a sync localStorage read); without the sig these
   // writes 401 (signature_required) once guest-sig enforcement is on,
   // silently losing the final debounce window's edits — the exact loss
-  // this flush exists to prevent. Bearer and X-Owner-Id stay mutually
-  // exclusive, matching apiHeaders.
-  const base: Record<string, string> = {};
-  const cachedToken = getLastKnownToken();
-  if (cachedToken) {
-    base['Authorization'] = `Bearer ${cachedToken}`;
-  } else {
-    base['X-Owner-Id'] = args.ownerId;
-    const sig = getGuestSelfSig();
-    if (sig) base['X-Owner-Sig'] = sig;
+  // this flush exists to prevent. The rule is apiHeaders' own
+  // (identityHeaders). A signed-in owner with no cached token has nothing the worker accepts, so
+  // skip the flush rather than fire writes that are certain to 401.
+  let base: Record<string, string>;
+  try {
+    base = identityHeaders(args.ownerId, getLastKnownToken());
+  } catch {
+    console.warn('[save] unload flush skipped: no session token for a signed-in owner');
+    return;
   }
   if (args.shareCode) base['X-Share-Code'] = args.shareCode;
   // The share password (docs/specs/013-workspace/share-password.md) is a synchronous session read too —

@@ -104,6 +104,21 @@ describe('eventExplanation', () => {
     );
   });
 
+  it('ignores the worker error token after the operation', () => {
+    expect(eventExplanation('Error', 'Api', 'Http401.SaveTab.SignInRequired')).toBe(
+      eventExplanation('Error', 'Api', 'Http401.SaveTab'),
+    );
+  });
+
+  it('reads the save failures that never got a status', () => {
+    expect(eventExplanation('Error', 'Api', 'Auth.NoSessionToken')).toBe(
+      "A signed-in visitor's request was held back because no sign-in token was available to send with it.",
+    );
+    expect(eventExplanation('Error', 'Api', 'SaveFailed.TypeError')).toBe(
+      'Saving changes failed with an unexpected missing or wrong kind of value before any request was answered.',
+    );
+  });
+
   it('reads a client error code as where it broke', () => {
     expect(eventExplanation('Error', 'Client', 'Uncaught.Diagram.TypeError')).toBe(
       'The diagram page hit an unexpected missing or wrong kind of value that nothing in the code caught.',

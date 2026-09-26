@@ -17,6 +17,9 @@ import {
   expectOk,
   expectOkOrNull,
   expectOkVoid,
+  getLastKnownToken,
+  identityHeaders,
+  SessionTokenUnavailableError,
   setSessionSharePassword,
   setTokenProvider,
   stripUiTabFields,
@@ -59,6 +62,38 @@ describe('apiHeaders (hybrid identity gate, docs/specs/014-identity/auth-and-gue
     expect(h['Authorization']).toBeUndefined();
   });
 
+  // Clerk's getToken() can resolve null for a moment on a live session. A
+  // null used to fall back to `X-Owner-Id: <Clerk id>`, which the worker
+  // refuses (401 account_id_not_a_guest_credential), surfacing as "Couldn't
+  // save your changes. Check your connection." on a perfectly good network.
+  it('asks for a fresh token, bypassing the cache, when the provider resolves null', async () => {
+    const provider = vi.fn((opts?: { skipCache?: boolean }) =>
+      Promise.resolve(opts?.skipCache ? 'jwt-fresh' : null),
+    );
+    setTokenProvider(provider);
+    const h = H(await apiHeaders('user_abc'));
+    expect(provider).toHaveBeenNthCalledWith(2, { skipCache: true });
+    expect(h['Authorization']).toBe('Bearer jwt-fresh');
+    expect(h['X-Owner-Id']).toBeUndefined();
+    expect(getLastKnownToken()).toBe('jwt-fresh');
+  });
+
+  it('does not re-ask when the first token resolves', async () => {
+    const provider = vi.fn(() => Promise.resolve('jwt-xyz'));
+    setTokenProvider(provider);
+    await apiHeaders('user_abc');
+    expect(provider).toHaveBeenCalledTimes(1);
+  });
+
+  it('refuses to send an account id as the guest header when no token comes back', async () => {
+    setTokenProvider(() => Promise.resolve(null));
+    await expect(apiHeaders('user_abc')).rejects.toBeInstanceOf(SessionTokenUnavailableError);
+  });
+
+  it('refuses an account id with no provider registered at all', async () => {
+    await expect(apiHeaders('user_abc')).rejects.toBeInstanceOf(SessionTokenUnavailableError);
+  });
+
   it('adds Content-Type only for body requests, and the share code when given', async () => {
     expect(H(await apiHeaders('g'))['Content-Type']).toBeUndefined();
     expect(H(await apiHeaders('g', { body: true }))['Content-Type']).toBe('application/json');
@@ -69,6 +104,26 @@ describe('apiHeaders (hybrid identity gate, docs/specs/014-identity/auth-and-gue
     expect(H(await apiHeaders('g'))['X-Share-Password']).toBeUndefined();
     setSessionSharePassword('pw');
     expect(H(await apiHeaders('g'))['X-Share-Password']).toBe('pw');
+  });
+});
+
+// The one identity rule both header builders share: apiHeaders (async) and
+// the unload beacon (sync, cached token).
+describe('identityHeaders', () => {
+  it('sends only the Bearer when a token is held', () => {
+    expect(identityHeaders('user_abc', 'jwt')).toEqual({ Authorization: 'Bearer jwt' });
+  });
+
+  it('sends the guest id and its signature without a token', () => {
+    identity.getGuestSelfSig.mockReturnValue('sig-abc');
+    expect(identityHeaders('guest-1', null)).toEqual({
+      'X-Owner-Id': 'guest-1',
+      'X-Owner-Sig': 'sig-abc',
+    });
+  });
+
+  it('throws rather than present an account id as a guest credential', () => {
+    expect(() => identityHeaders('user_abc', null)).toThrow(SessionTokenUnavailableError);
   });
 });
 

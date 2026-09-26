@@ -84,6 +84,13 @@ export function useEditorPersistence({ toast }: { toast: ReturnType<typeof useTo
     if (saveStatus === 'error') {
       toast.error('Couldn’t save your changes. Check your connection.');
     }
+    // The network is fine here: the server couldn't tie the save to the
+    // signed-in account. Blaming the connection sent people checking a cable.
+    if (saveStatus === 'unauthenticated') {
+      toast.error(
+        'Couldn’t confirm you’re signed in, so your changes aren’t saving. Sign in again to keep them.',
+      );
+    }
     // A refusal, not a failure: retrying is pointless and the autosave has
     // already stopped, so this fires once and has to carry the whole message.
     // It names the likely cause and the way out, because the alternative is a
