@@ -2,7 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { TRUTH_ARMED_KEY, armTruthFromUrl, truthArmed, truthArmedOn } from './photo-truth';
 
-// Arming the label export (docs/vision/sticky-detection.md). It is a
+// Arming the label export (docs/research/vision/sticky-detection.md). It is a
 // CALIBRATION affordance, not a feature: nobody importing a photo of their
 // wall should ever meet it, so it is off until someone asks for it by hand.
 describe('truthArmed', () => {

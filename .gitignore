@@ -87,7 +87,7 @@ coverage/
 # detector by hand. This repo is public: these never enter it (docs/specs/021-event-storming/event-storming.md).
 /packages/sticky-vision/test-files/
 
-# Research agents' raw reports (working notes); distilled into docs/vision/research.md
+# Research agents' raw reports (working notes); distilled into docs/research/vision/research.md
 /research/
 
 # Plans are working documents (docs/specs holds what ships).

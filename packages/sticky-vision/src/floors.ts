@@ -16,7 +16,7 @@ import { BLOWN_OUT, hueOf, measure, wallLabOf, type Surface } from './surface';
 // (paper there reads as wall) and too low for the lit third (sunlit kraft
 // reads as paper, bridging every note into one blob the shape filters then
 // throw away, notes and all). Measured on six photographs of one workshop
-// wall — see docs/vision/sticky-detection.md.
+// wall — see docs/research/vision/sticky-detection.md.
 
 // How much more saturated than the wall a pixel has to be before it is paper.
 // Measured on real photographs of kraft-paper walls: the wall sits around 0.15

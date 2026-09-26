@@ -288,7 +288,7 @@ test('the photo import needs no model key', async ({ page, pageErrors }) => {
   expectNoPageErrors(pageErrors);
 });
 
-// Labelling a wall from the review (docs/vision/sticky-detection.md). The
+// Labelling a wall from the review (docs/research/vision/sticky-detection.md). The
 // detector is tuned against photographs somebody labelled note by note, and
 // the corrections the author makes here ARE that labelling — so it can be
 // handed back as a file rather than done twice. Armed by hand, so a normal

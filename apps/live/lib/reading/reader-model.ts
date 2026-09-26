@@ -8,7 +8,7 @@ import type { ReaderBackend } from './reader-protocol';
 // A small vision-language model, not an OCR engine. That is the finding the
 // whole module rests on: measured on a real workshop wall, Tesseract read ONE
 // note in twenty-four and invented words on every blank crop, while this reads
-// about four words in five (docs/vision/handwriting-readers.md). OCR engines
+// about four words in five (docs/research/vision/handwriting-readers.md). OCR engines
 // are trained on printed text; a marker scrawl on coloured paper is a
 // different problem, and a small VLM is the smallest thing that actually does
 // it.
@@ -88,7 +88,7 @@ export async function loadReader(
             { device: 'webgpu', dtype: 'q4', progress_callback }
         : // On the processor the embedding is q8: its q4 file is the fp32
           // table, so q8 is 85 MB less to download for the same answers
-          // (docs/vision/handwriting-readers.md).
+          // (docs/research/vision/handwriting-readers.md).
           {
             device: 'wasm',
             dtype: { embed_tokens: 'q8', vision_encoder: 'q4', decoder_model_merged: 'q4' },

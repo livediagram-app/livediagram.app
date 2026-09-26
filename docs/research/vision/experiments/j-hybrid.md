@@ -309,7 +309,7 @@ unusable through WebGL without a GPU or the plain-JavaScript backend.
    `index.ts` (not done here: this group changes existing modules only through
    `hybrid.ts` and one call in `detect.ts`).
 6. **Telemetry**: which path detected (hybrid / classical) and which backend,
-   as closed enum values; and [Event storming](../../specs/021-event-storming/event-storming.md) Phase 9 to say the model is optional,
+   as closed enum values; and [Event storming](../../../specs/021-event-storming/event-storming.md) Phase 9 to say the model is optional,
    lazy and local, like the detector.
 
 ## What to try next

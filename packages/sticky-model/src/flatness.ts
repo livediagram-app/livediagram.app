@@ -4,7 +4,7 @@
 // (0.09-0.30 of them on the eight labelled walls, the most on a whiteboard's
 // blown-out white); a screen fills whole regions with one colour to the bit
 // (0.95 and more on every drawn board). The boundary model learnt
-// photographs: a flat drawing is not asked of it (docs/vision/experiments/o-flat.md).
+// photographs: a flat drawing is not asked of it (docs/research/vision/experiments/o-flat.md).
 
 type Rgba = { width: number; height: number; data: Uint8ClampedArray };
 

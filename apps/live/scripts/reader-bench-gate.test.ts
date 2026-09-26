@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { gateRun } from './reader-bench-gate';
 
-// The detector gate under measurement (docs/vision/handwriting-readers.md):
+// The detector gate under measurement (docs/research/vision/handwriting-readers.md):
 // SmolVLM's answer is kept only where PP-OCRv6's text detector found at least
 // one line of text in the same crop.
 const note = (index: number, read: string, lines: string) => ({

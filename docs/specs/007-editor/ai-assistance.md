@@ -191,7 +191,7 @@ it for `/api/ai/read-notes` only. The READER has its own Google default,
 `gemini-2.5-flash-lite`, because reading handwriting is literal work: measured
 on a real wall it read 99% of the words against 95% for `gemini-3.6-flash`,
 while costing about a quarter as much and finishing four times faster
-(docs/vision/handwriting-readers.md). That default applies only when the
+(docs/research/vision/handwriting-readers.md). That default applies only when the
 operator has named NO model — setting `AI_MODEL` means it for the reader too,
 and `AI_VISION_MODEL` beats both. The generic
 row is Mistral, OpenRouter, a local llama.cpp or Ollama — anything that speaks

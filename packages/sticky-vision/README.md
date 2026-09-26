@@ -77,7 +77,7 @@ repository):
 The editor runs the second, and falls back to the first whenever the model
 cannot load. Counting detections is not a score — a detector that boxes the
 masking tape too finds more of them. How it got here, experiment by
-experiment: [docs/vision/experiments](../../docs/vision/experiments/).
+experiment: [docs/research/vision/experiments](../../docs/research/vision/experiments/).
 
 ## What it cannot do
 

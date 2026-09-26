@@ -12,7 +12,7 @@ export const BOUNDARY_WEIGHTS = /\/weights\.[^/]*\.bin$/;
 // `boundaryModel: false` blocks the model's weights, so the classical detector
 // runs alone and the model's runtime stays off the wire. A drawn wall is flat,
 // so the editor reads it with the classical detector alone either way
-// (docs/vision/experiments/o-flat.md); photo-model.spec.ts covers both paths.
+// (docs/research/vision/experiments/o-flat.md); photo-model.spec.ts covers both paths.
 export async function openPhotoBoard(
   page: Page,
   opts: { boundaryModel?: boolean } = {},

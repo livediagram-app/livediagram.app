@@ -193,7 +193,7 @@ export async function cropBoxes(
 
 // The model's cues for this image, or the reason there are none. Never throws:
 // a correction that cannot be had is no reason to fail the import. A flat
-// drawing is not asked at all (docs/vision/experiments/o-flat.md).
+// drawing is not asked at all (docs/research/vision/experiments/o-flat.md).
 async function boundaryModelFor(image: {
   width: number;
   height: number;

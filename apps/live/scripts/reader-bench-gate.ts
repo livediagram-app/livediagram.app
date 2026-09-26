@@ -1,4 +1,4 @@
-// The PP-OCRv6 detector gate, measured (docs/vision/handwriting-readers.md):
+// The PP-OCRv6 detector gate, measured (docs/research/vision/handwriting-readers.md):
 // SmolVLM's answer is kept only where PP-OCRv6-tiny's text detector found at
 // least one line of text in the same crop, and blanked where it found none.
 //

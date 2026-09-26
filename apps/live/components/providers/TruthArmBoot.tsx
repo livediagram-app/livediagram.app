@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { armTruthFromUrl } from '@/lib/photo-truth';
 
 // Arms the ground-truth export from `?truth=1`, at app load, on whatever page
-// carries the parameter (docs/vision/sticky-detection.md).
+// carries the parameter (docs/research/vision/sticky-detection.md).
 //
 // It has to be here rather than on the review surface, because the review
 // surface is three navigations too late: the editor is reached from /new, and

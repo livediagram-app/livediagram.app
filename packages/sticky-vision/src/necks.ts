@@ -34,7 +34,7 @@ const NECK_MIN_CORE = 0.25;
 // below the size floor; twice gives the note back and still stops short of a
 // strip longer than the erosion. It is sensitive: on the panorama (a 5 px
 // erosion) one step of regrowth more or less moves recall by up to ten
-// points (docs/vision/experiments/i-separation.md, I2).
+// points (docs/research/vision/experiments/i-separation.md, I2).
 const NECK_REGROW = 2;
 // How far a core grows back before it stops following paper that touches
 // another colour, as a multiple of the erosion. Up to once is the note's own

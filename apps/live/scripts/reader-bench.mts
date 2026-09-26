@@ -1,5 +1,5 @@
 // Benchmarking the IN-BROWSER readers against labelled walls (docs/specs/021-event-storming/event-storming.md Phase 9,
-// docs/vision/handwriting-readers.md).
+// docs/research/vision/handwriting-readers.md).
 //
 // A script, not a test: the photographs and their words are somebody's real
 // workshop, kept in the private truths repository, so nothing here runs in CI
