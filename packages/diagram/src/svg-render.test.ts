@@ -847,6 +847,8 @@ describe('caption colour on dark paper', () => {
   });
 
   it('lets a coloured arrow keep its caption in step with its line', () => {
-    expect(render({ strokeColor: '#dc2626' })).toMatch(/<text[^>]*fill="#dc2626"[^>]*>(<tspan[^>]*>)?Go</);
+    expect(render({ strokeColor: '#dc2626' })).toMatch(
+      /<text[^>]*fill="#dc2626"[^>]*>(<tspan[^>]*>)?Go</,
+    );
   });
 });
