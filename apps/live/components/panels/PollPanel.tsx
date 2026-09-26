@@ -24,6 +24,7 @@
 import { tallyPoll, type LivePoll, type PollTallyRow } from '@livediagram/api-schema';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import type { MovablePanelPlacementProps } from '@/components/primitives/MovablePanel.types';
+import { SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
 
 export function PollPanel({
   poll,
@@ -122,7 +123,7 @@ export function PollPanel({
                   type="button"
                   onClick={onKeepResults}
                   title="Drop a chart of the results so far onto the canvas. The poll keeps running."
-                  className="flex h-7 w-full items-center justify-center rounded-md bg-brand-500 px-2 text-[11px] font-semibold text-white transition hover:bg-brand-600"
+                  className={`flex h-7 w-full items-center justify-center rounded-md bg-brand-500 px-2 text-[11px] font-semibold text-white transition hover:bg-brand-600 ${SOLID_BRAND_DARK_CONTROL}`}
                 >
                   Keep Results
                 </button>

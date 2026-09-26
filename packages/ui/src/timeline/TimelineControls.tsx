@@ -14,6 +14,7 @@
 import { MODE_LABELS, ModeIcon, TIMELINE_MODES } from './ModeIcon';
 import { TimelineFilterPopover } from './TimelineFilterPopover';
 import type { TimelineControls as Controls } from './useTimelineControls';
+import { SOLID_BRAND_DARK_CONTROL } from '../brand-classes';
 
 // The shared shape: same height, radius, border and type scale as the
 // header's other buttons.
@@ -47,7 +48,7 @@ export function TimelineControls({ controls }: { controls: Controls }) {
             onClick={() => setMode(value)}
             className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition ${
               mode === value
-                ? 'bg-brand-600 text-white'
+                ? `bg-brand-600 text-white ${SOLID_BRAND_DARK_CONTROL}`
                 : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'
             }`}
           >

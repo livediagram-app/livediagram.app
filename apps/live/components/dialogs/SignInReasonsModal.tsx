@@ -101,7 +101,7 @@ export function SignInReasonsModal({
         >
           {/* Header with a brand gradient wash so the modal reads as a
               celebratory upsell, not a system dialog. */}
-          <div className="relative shrink-0 bg-gradient-to-br from-brand-500 to-brand-600 px-6 pb-5 pt-6 text-white">
+          <div className="relative shrink-0 bg-gradient-to-br from-brand-500 to-brand-600 px-6 pb-5 pt-6 text-white dark:from-brand-600 dark:to-brand-700">
             <button
               type="button"
               onClick={onClose}

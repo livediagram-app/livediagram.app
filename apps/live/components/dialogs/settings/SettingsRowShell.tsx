@@ -121,7 +121,7 @@ function InfoGlyph() {
       viewBox="0 0 12 12"
       fill="none"
       aria-hidden
-      className="mt-0.5 shrink-0 text-brand-500"
+      className="mt-0.5 shrink-0 text-brand-500 dark:text-brand-400"
     >
       <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.2" />
       <path d="M6 5.4v3M6 3.6h.01" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />

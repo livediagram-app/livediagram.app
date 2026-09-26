@@ -14,6 +14,7 @@ import { CARD_PREVIEW, CARD_SHELL } from '../cardGrid';
 import { eventTone, toneColor, toneSoftColor } from './eventTone';
 import { timeLabel } from './useTimelineGrouping';
 import type { TimelineCardRender, TimelineCardSlots, TimelineEvent } from './types';
+import { SOLID_BRAND_DARK } from '../brand-classes';
 
 // Swallow anything that would otherwise bubble to the card's own
 // handlers. A wrapper rather than asking each host slot to remember.
@@ -100,7 +101,9 @@ export function TimelineCard({
           </div>
         )}
         {isNew && (
-          <span className="absolute left-2 top-2 rounded bg-brand-600 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-white shadow-sm">
+          <span
+            className={`absolute left-2 top-2 rounded bg-brand-600 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-white shadow-sm ${SOLID_BRAND_DARK}`}
+          >
             New
           </span>
         )}

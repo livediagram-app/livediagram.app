@@ -56,7 +56,7 @@ export function TabLoadOverlay({
           stroke="currentColor"
           strokeWidth="3"
           strokeLinecap="round"
-          className="animate-spin text-brand-500"
+          className="animate-spin text-brand-500 dark:text-brand-400"
           aria-hidden
         >
           <circle cx="16" cy="16" r="12" strokeOpacity="0.18" />

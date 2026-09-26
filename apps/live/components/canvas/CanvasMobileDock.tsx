@@ -10,6 +10,7 @@ import {
   SpotlightIcon,
 } from '@/components/palette/palette-icons';
 import type { MobilePanel } from '@/hooks/canvas/useCanvasMobileDock';
+import { SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
 
 // Top-right mobile dock (docs/specs/007-editor/live-app.md "Mobile chrome"): a compact button row
 // that replaces the four full-width collapse banners on mobile, opening
@@ -287,7 +288,7 @@ export function CanvasMobileDock({
             (i === arr.length - 1 ? 'rounded-r-lg ' : '') +
             (i > 0 ? 'border-l border-slate-200 dark:border-slate-800 ' : '') +
             (activeMobilePanel === btn.id
-              ? 'bg-brand-500 text-white'
+              ? `bg-brand-500 text-white ${SOLID_BRAND_DARK_CONTROL}`
               : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800')
           }
         >

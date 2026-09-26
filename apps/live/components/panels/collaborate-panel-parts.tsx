@@ -5,6 +5,7 @@ import { initialsOf } from '@/lib/identity';
 import { Tooltip } from '@/components/primitives/Tooltip';
 import { ActionMenuIcon, CommentMenuIcon } from '@/components/palette/context-menu-icons';
 import type { ActionRow, CommentRow } from './CollaboratePanel';
+import { SOLID_BRAND_DARK } from '@livediagram/ui';
 
 // The COLLABORATE panel's row + filter-control components, lifted out
 // of CollaboratePanel (which keeps the panel shell, the merge / filter
@@ -194,7 +195,7 @@ export function FilterTab({
       <span
         className={`inline-flex h-3.5 min-w-[0.875rem] items-center justify-center rounded-full px-1 text-[9px] font-semibold ${
           active
-            ? 'bg-brand-500 text-white'
+            ? `bg-brand-500 text-white ${SOLID_BRAND_DARK}`
             : 'bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-400'
         }`}
       >

@@ -6,6 +6,7 @@
 
 import type { ReactNode } from 'react';
 import { CARD_GRID } from '../cardGrid';
+import { SOLID_BRAND_DARK } from '../brand-classes';
 
 export function TimelineGroup({
   label,
@@ -53,7 +54,9 @@ export function TimelineGroup({
       <div className="min-w-0 flex-1 pb-4">
         <div className="mb-2 flex items-baseline gap-2 pt-1">
           {isToday && (
-            <span className="rounded bg-brand-500 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white">
+            <span
+              className={`rounded bg-brand-500 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white ${SOLID_BRAND_DARK}`}
+            >
               Today
             </span>
           )}

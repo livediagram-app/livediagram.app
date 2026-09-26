@@ -21,6 +21,7 @@ import { BlockTypePicker } from '@/components/rich-text/BlockTypePicker';
 import type { ActiveFormat } from '@/components/rich-text/rich-text-format';
 import { Tooltip } from '@/components/primitives/Tooltip';
 import { normaliseUrl } from '@/lib/url-safety';
+import { SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
 
 // preventDefault on mousedown keeps focus + the live selection in the
 // contentEditable when a control is clicked (the classic rich-text-toolbar
@@ -169,7 +170,7 @@ function NoteLinkField({
         type="button"
         onMouseDown={noFocusSteal}
         onClick={apply}
-        className="rounded-md bg-brand-600 px-2 py-1 text-xs font-medium text-white transition hover:bg-brand-700"
+        className={`rounded-md bg-brand-600 px-2 py-1 text-xs font-medium text-white transition hover:bg-brand-700 ${SOLID_BRAND_DARK_CONTROL}`}
       >
         Apply
       </button>

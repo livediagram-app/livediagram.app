@@ -55,6 +55,29 @@
   --animate-empty-ring: empty-ring 2.8s cubic-bezier(0, 0, 0.2, 1) infinite;
 }
 
+/* The dark palette, Steel (docs/specs/004-interface-design/color-scheme.md). Dark mode is its own
+ * palette, not the light one with the lights off: blue-slate surfaces one hue with the dark canvas,
+ * and an accent drawn from that hue. Tokens only, so every slate-* / brand-* utility keeps its name,
+ * and light mode keeps every colour above. A themed tab's tint (useEditorAccent) is written with a
+ * more specific selector, so it outranks this base whatever order the stylesheets load in. */
+.dark {
+  --color-slate-950: #0b0f16;
+  --color-slate-900: #131b26;
+  --color-slate-800: #16202e;
+
+  --color-brand-50: #eef3fa;
+  --color-brand-100: #dbe6f4;
+  --color-brand-200: #bcd0ea;
+  --color-brand-300: #9bb9de;
+  --color-brand-400: #8fb3e0;
+  --color-brand-500: #5b86bf;
+  --color-brand-600: #3a6599;
+  --color-brand-700: #2f5484;
+  --color-brand-800: #26446b;
+  --color-brand-900: #1d3553;
+  --color-brand-950: #142538;
+}
+
 @keyframes empty-float {
   0%,
   100% {

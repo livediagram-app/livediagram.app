@@ -12,7 +12,7 @@
 // this is mostly what a genuinely new visitor sees.
 
 import Link from 'next/link';
-import { EmptyState } from '@livediagram/ui';
+import { EmptyState, SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
 
 export function TimelineEmptyState() {
   return (
@@ -40,7 +40,7 @@ export function TimelineEmptyState() {
           (ExplorerEmptyState), so the two read as one surface. */}
       <Link
         href="/new"
-        className="inline-flex items-center gap-1.5 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-500"
+        className={`inline-flex items-center gap-1.5 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-500 ${SOLID_BRAND_DARK_CONTROL}`}
       >
         New diagram
       </Link>

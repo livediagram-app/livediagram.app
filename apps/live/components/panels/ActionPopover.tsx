@@ -3,7 +3,13 @@
 // The docs/specs/012-collaboration/assigned-actions.md clipboard-with-tick action glyph, shared with the context
 // menu's Assign Action tile so the two surfaces can't drift.
 import { ActionMenuIcon as ClipboardIcon } from '@/components/palette/context-menu-icons';
-import { CloseIcon, TrashIcon, useClickOutside, useEscape } from '@livediagram/ui';
+import {
+  CloseIcon,
+  TrashIcon,
+  useClickOutside,
+  useEscape,
+  SOLID_BRAND_DARK,
+} from '@livediagram/ui';
 import { useRef, useState } from 'react';
 import type { ElementAction } from '@livediagram/diagram';
 import { Portal } from '@/components/primitives/Portal';
@@ -129,7 +135,7 @@ export function ActionPopover({
           <div className="flex items-center gap-2 rounded-md bg-slate-50 px-2.5 py-2 dark:bg-slate-800/60">
             <span
               aria-hidden
-              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-500 text-[10px] font-semibold text-white"
+              className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-500 text-[10px] font-semibold text-white ${SOLID_BRAND_DARK}`}
             >
               {initialsOf(assigneeName)}
             </span>

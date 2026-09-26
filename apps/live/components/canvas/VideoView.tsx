@@ -11,6 +11,7 @@ import {
 } from '@livediagram/diagram';
 import { track } from '@/lib/telemetry';
 import { useFrameBlocked } from '@/components/canvas/use-frame-blocked';
+import { SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
 
 // Inner content of a video element (docs/specs/009-elements/youtube-video.md): a YouTube poster frame with a
 // play button, which swaps for the real player when pressed.
@@ -330,7 +331,9 @@ function ControlButton({
       aria-pressed={active}
       title={label}
       className={`pointer-events-auto flex h-6 w-6 items-center justify-center rounded-md backdrop-blur transition ${
-        active ? 'bg-brand-500 text-white' : 'bg-black/60 text-white hover:bg-black/80'
+        active
+          ? `bg-brand-500 text-white ${SOLID_BRAND_DARK_CONTROL}`
+          : 'bg-black/60 text-white hover:bg-black/80'
       }`}
     >
       <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden>

@@ -66,7 +66,7 @@ export function describeVariant(
       // `stroke` prop, not this style block.
       if (isSvgRenderedShape(element.shape)) {
         return {
-          className: `text-brand-800 ${ring}`,
+          className: `text-brand-800 dark:text-white ${ring}`,
           style: { borderRadius: '4px', ...filterShadow },
         };
       }
@@ -123,7 +123,7 @@ export function describeVariant(
       return {
         // Drop the border-2 class so we can drive border width from
         // the user's strokeWidth pick instead of a fixed 2px.
-        className: `text-brand-800 shadow-sm ${ring}`,
+        className: `text-brand-800 shadow-sm dark:text-white ${ring}`,
         style: {
           ...(fill === 'transparent' ? filterShadow : boxShadow),
           borderRadius: fixedRadius ?? (userRadius !== null ? `${userRadius}px` : '8px'),

@@ -39,7 +39,7 @@ const SHARE_STATE_META: Record<
     description: 'In a team library: every member of the team can open it.',
     badge:
       'inline-flex items-center gap-1 rounded-full bg-brand-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-brand-700 ring-1 ring-brand-200 dark:bg-brand-500/10 dark:text-brand-300 dark:ring-brand-500/30',
-    dot: 'text-brand-500',
+    dot: 'text-brand-500 dark:text-brand-400',
   },
   // Offline Mode (docs/specs/006-diagram/offline-mode.md): saved only in this browser, never on the server.
   // Amber so it reads as a distinct, deliberate state rather than a neutral

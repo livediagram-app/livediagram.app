@@ -32,6 +32,7 @@ import { Tooltip } from '@/components/primitives/Tooltip';
 import type { SlideDeckState } from '@/app/diagram/[id]/useSlideDeck';
 import { track } from '@/lib/telemetry';
 import { isDragTravel } from '@/lib/press-gestures';
+import { SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
 
 function PlayIcon() {
   return (
@@ -491,7 +492,7 @@ export function SlideDeckPanel({
           type="button"
           onClick={() => void start()}
           disabled={runnable.length === 0 || startingDeck}
-          className="flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-md bg-brand-600 px-2 py-2 text-[11px] font-semibold text-white transition hover:bg-brand-700 disabled:cursor-default disabled:opacity-40"
+          className={`flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-md bg-brand-600 px-2 py-2 text-[11px] font-semibold text-white transition hover:bg-brand-700 disabled:cursor-default disabled:opacity-40 ${SOLID_BRAND_DARK_CONTROL}`}
         >
           <PlayIcon />
           {startingDeck ? 'Loading…' : 'Present'}

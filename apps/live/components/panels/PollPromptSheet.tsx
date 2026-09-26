@@ -23,6 +23,7 @@ import { useEffect, useState } from 'react';
 import { POLL_TEXT_ANSWER_MAX, pollOptionTokens, type LivePoll } from '@livediagram/api-schema';
 import { Portal } from '@/components/primitives/Portal';
 import { anyModalOpen } from '@/lib/modal-guard';
+import { SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
 
 export function PollPromptSheet({
   poll,
@@ -129,7 +130,7 @@ export function PollPromptSheet({
                 type="button"
                 disabled={text.trim().length === 0}
                 onClick={() => onAnswer(text.trim())}
-                className="w-full rounded-lg bg-brand-500 px-3 py-2 text-sm font-semibold text-white transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-40"
+                className={`w-full rounded-lg bg-brand-500 px-3 py-2 text-sm font-semibold text-white transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-40 ${SOLID_BRAND_DARK_CONTROL}`}
               >
                 Send answer
               </button>

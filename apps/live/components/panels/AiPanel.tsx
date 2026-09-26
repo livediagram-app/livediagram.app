@@ -6,6 +6,7 @@ import type { AiMode } from '@/lib/api-client';
 import { Tooltip } from '@/components/primitives/Tooltip';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useAiPanelSession } from './useAiPanelSession';
+import { SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
 
 type AiPanelProps = {
   contextElements: Element[]; // all tab elements
@@ -120,7 +121,7 @@ export function AiPanelContent({
                 onClick={() => setMode(m.id)}
                 className={
                   mode === m.id
-                    ? 'flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-semibold bg-brand-500 text-white transition'
+                    ? `flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-semibold bg-brand-500 text-white transition ${SOLID_BRAND_DARK_CONTROL}`
                     : 'flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200'
                 }
               >
@@ -233,7 +234,7 @@ export function AiPanelContent({
           onClick={() => void handleSend()}
           disabled={isLoading || ownerId === 'self'}
           aria-label="Send"
-          className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-brand-500 py-1.5 text-[12px] font-medium text-white transition hover:bg-brand-600 disabled:opacity-50"
+          className={`flex w-full items-center justify-center gap-1.5 rounded-lg bg-brand-500 py-1.5 text-[12px] font-medium text-white transition hover:bg-brand-600 disabled:opacity-50 ${SOLID_BRAND_DARK_CONTROL}`}
         >
           {isLoading ? <Spinner small /> : <SendIcon />}
           {isLoading ? 'Thinking…' : 'Send'}

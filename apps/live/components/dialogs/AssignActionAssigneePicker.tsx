@@ -1,5 +1,6 @@
 import { initialsOf } from '@/lib/identity';
 import { clerkEnabled } from '@/lib/clerk-config';
+import { SOLID_BRAND_DARK } from '@livediagram/ui';
 
 // One pickable assignee (docs/specs/012-collaboration/assigned-actions.md): the pinned Myself row, or a joined
 // member of the diagram's team.
@@ -76,7 +77,7 @@ export function AssigneePicker({
       >
         <span
           aria-hidden
-          className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-500 text-[10px] font-semibold text-white"
+          className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-500 text-[10px] font-semibold text-white ${SOLID_BRAND_DARK}`}
         >
           {initialsOf(m.name)}
         </span>

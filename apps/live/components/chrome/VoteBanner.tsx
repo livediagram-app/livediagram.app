@@ -3,6 +3,7 @@
 import { votesSpentBy, type TabVote } from '@livediagram/diagram';
 import type { VoteReview } from '@/hooks/canvas/useVoteReview';
 import { TopCenterBanner } from '@/components/chrome/TopCenter';
+import { SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
 
 // Floating dot-voting status banner (docs/specs/012-collaboration/session-tools.md). While a vote is open it
 // tells each participant how many of their dots remain; once ended it
@@ -96,7 +97,7 @@ function ReviewButton({
       className={
         'rounded-full px-2 py-0.5 text-[11px] font-semibold transition disabled:cursor-not-allowed disabled:opacity-40 ' +
         (emphasis
-          ? 'bg-brand-500 text-white hover:bg-brand-600'
+          ? `bg-brand-500 text-white hover:bg-brand-600 ${SOLID_BRAND_DARK_CONTROL}`
           : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700')
       }
     >

@@ -148,7 +148,7 @@ export function AlignmentGrid({
               aria-pressed={active}
               className={
                 active
-                  ? 'flex h-7 w-full items-center justify-center rounded-md bg-brand-100 text-brand-700'
+                  ? 'flex h-7 w-full items-center justify-center rounded-md bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-200'
                   : 'flex h-7 w-full items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white'
               }
             >

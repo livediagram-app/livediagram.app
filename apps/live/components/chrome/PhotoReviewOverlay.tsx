@@ -19,6 +19,7 @@ import { useReviewBoxes } from './photo/useReviewBoxes';
 import { useRereadOnChange } from './photo/useRereadOnChange';
 import { usePhotoView } from './photo/usePhotoView';
 import { kindOfBox } from './photo/kindOfBox';
+import { SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
 
 // Reviewing a photographed wall (docs/specs/021-event-storming/event-storming.md Phase 9).
 //
@@ -441,7 +442,7 @@ export function PhotoReviewOverlay({
             type="button"
             onClick={confirm}
             disabled={edits.ticked.size === 0}
-            className="pointer-events-auto rounded-full bg-brand-500 px-4 py-1.5 text-sm font-semibold text-white shadow-lg hover:bg-brand-600 disabled:opacity-50"
+            className={`pointer-events-auto rounded-full bg-brand-500 px-4 py-1.5 text-sm font-semibold text-white shadow-lg hover:bg-brand-600 disabled:opacity-50 ${SOLID_BRAND_DARK_CONTROL}`}
           >
             Add {edits.ticked.size} {edits.ticked.size === 1 ? 'note' : 'notes'}
           </button>

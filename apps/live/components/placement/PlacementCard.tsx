@@ -101,7 +101,7 @@ function InlineCreateTile({
           : 'flex flex-col items-center justify-center gap-1.5 p-3'
       } rounded-lg border border-brand-300 bg-brand-50/40 dark:border-brand-500/50 dark:bg-brand-500/10`}
     >
-      <span className="shrink-0 text-brand-500">{icon}</span>
+      <span className="shrink-0 text-brand-500 dark:text-brand-400">{icon}</span>
       <input
         type="text"
         autoFocus

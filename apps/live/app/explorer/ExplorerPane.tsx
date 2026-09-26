@@ -11,7 +11,7 @@ import { CardView } from './CardView';
 import { useExplorerViewMode } from './useExplorerViewMode';
 import { EmptyPane } from './ExplorerEmptyState';
 import { DynamicFolderInfo } from './DynamicFolderInfo';
-import { TimelineControls } from '@livediagram/ui';
+import { TimelineControls, SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
 import { DiagramHistoryDialog } from '@/components/panels/DiagramHistoryDialog';
 import { isOfflineIdSync } from '@/lib/offline/offline-store';
 import { useTimelineFeed } from './useTimelineFeed';
@@ -316,7 +316,7 @@ export function ExplorerPane() {
             </p>
             <a
               href={signInHref}
-              className="mt-3 inline-block rounded-md bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-brand-500"
+              className={`mt-3 inline-block rounded-md bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-brand-500 ${SOLID_BRAND_DARK_CONTROL}`}
             >
               Sign in
             </a>

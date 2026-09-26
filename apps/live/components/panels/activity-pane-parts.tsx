@@ -10,7 +10,7 @@ import { CountBadge } from '@/components/primitives/CountBadge';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import type { ActivityAction, ActivityPlace, ActivityThread } from '@livediagram/api-schema';
-import { EmptyState } from '@livediagram/ui';
+import { EmptyState, SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
 import { ActionMenuIcon, CommentMenuIcon } from '@/components/palette/context-menu-icons';
 import { Tooltip } from '@/components/primitives/Tooltip';
 import { collabDeepLinkHref, type CollabPopover } from '@/lib/collab-deep-link';
@@ -205,7 +205,7 @@ export function ActivityEmptyState() {
         href={helpArticleHref('assignedActions')}
         target="_blank"
         rel="noreferrer noopener"
-        className="inline-flex items-center gap-1.5 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-500"
+        className={`inline-flex items-center gap-1.5 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-500 ${SOLID_BRAND_DARK_CONTROL}`}
       >
         How actions work
       </a>
@@ -226,7 +226,7 @@ export function ActivityFailedState({ onRetry }: { onRetry: () => void }) {
       <button
         type="button"
         onClick={onRetry}
-        className="mt-3 inline-block rounded-md bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-brand-500"
+        className={`mt-3 inline-block rounded-md bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-brand-500 ${SOLID_BRAND_DARK_CONTROL}`}
       >
         Try again
       </button>
