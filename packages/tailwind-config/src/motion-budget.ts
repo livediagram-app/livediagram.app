@@ -87,6 +87,8 @@ function callArgs(text: string, name: string): string | null {
 export function durationBoundMs(value: string, tokens: TokenMap): number {
   const v = value.replace(/!important/g, '').trim();
   if (!v) return Infinity;
+  // A scroll-driven animation's `auto` duration fills its scroll range; it is not time.
+  if (v === 'auto') return 0;
 
   const literal = TIME.exec(v);
   if (literal) return Number(literal[1]) * (literal[2] === 's' ? 1000 : 1);

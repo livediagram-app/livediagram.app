@@ -53,6 +53,10 @@ describe('durationBoundMs', () => {
     expect(durationBoundMs('${REORDER_MS}ms', T)).toBe(Infinity);
   });
 
+  it('reads auto as no time: a scroll-driven animation follows the scroll, not a clock', () => {
+    expect(durationBoundMs('auto', T)).toBe(0);
+  });
+
   it('treats unrecognised text as unbounded', () => {
     expect(durationBoundMs('soon', T)).toBe(Infinity);
     expect(durationBoundMs('', T)).toBe(Infinity);
