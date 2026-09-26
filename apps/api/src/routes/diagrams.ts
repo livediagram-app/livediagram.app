@@ -51,7 +51,7 @@ import {
   svgImage,
 } from '../responses';
 import { getDiagramThumbnailSvg } from '../thumbnail';
-import { redactOwnerId } from '../redact-owner';
+import { redactDiagramForReader } from '../redact-diagram';
 import { emailEnabled } from '../email/client';
 import { notifyMilestone } from '../email/notifications';
 import {
@@ -201,8 +201,10 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       // does (docs/specs/014-identity/auth-and-guest-access.md): the gate above admits any valid share code, view
       // or edit, so this is the same audience — and a guest owner's id IS
       // their credential. This door was returning it intact while the
-      // share door blanked it. See redact-owner.ts.
-      return allowed ? json({ diagram: redactOwnerId(d, ctx.resolveOwner()) }) : notFound();
+      // share door blanked it. See redact-diagram.ts.
+      return allowed
+        ? json({ diagram: redactDiagramForReader(d, ctx.resolveOwner()) })
+        : notFound();
     }
     if (request.method === 'PUT') {
       // Metadata-only PUT now that tabs live in their own table.
@@ -278,8 +280,8 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
         ctx.waitUntil?.(recordDiagramRenamed(env, diagram, existing.name, owner));
       }
       // Redacted like the GET: an edit-role share visitor passes gateEdit, and
-      // a guest owner's id is a credential (see redact-owner.ts).
-      return json({ diagram: diagram ? redactOwnerId(diagram, owner) : diagram });
+      // a guest owner's id is a credential (see redact-diagram.ts).
+      return json({ diagram: diagram ? redactDiagramForReader(diagram, owner) : diagram });
     }
     if (request.method === 'DELETE') {
       // Owner, OR a joined member of the diagram's team (docs/specs/013-workspace/team-shared-diagrams.md:
