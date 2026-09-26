@@ -11,7 +11,7 @@ import {
   CheckGlyph,
   QA_ACCENT,
   RoundAction,
-  SpotlightGlyph,
+  DiscussGlyph,
   TrashGlyph,
   VotePill,
   relTime,
@@ -96,7 +96,7 @@ export const QaNoteRow = forwardRef<
             textColor={textColor}
             onPress={actions.onDiscuss}
           >
-            <SpotlightGlyph />
+            <DiscussGlyph />
           </RoundAction>
           <RoundAction
             label="Mark done"

@@ -50,14 +50,16 @@ export const ChevronGlyph = ({ size = 12, open }: Glyph & { open: boolean }) => 
     {svg(size, <path d="m4 6 4 4 4-4" />)}
   </span>
 );
-// A microphone: "give this one the floor". (A spotlight lamp was tried first
-// and was an unreadable smudge at 12px.)
-export const SpotlightGlyph = ({ size = 12 }: Glyph) =>
+// A speech bubble with a typing ellipsis: "talk about this one now", the same
+// word the spotlight it sends the note to wears ("Now discussing").
+export const DiscussGlyph = ({ size = 12 }: Glyph) =>
   svg(
     size,
     <>
-      <rect x="5.8" y="1.8" width="4.4" height="7.6" rx="2.2" />
-      <path d="M3.6 7.6a4.4 4.4 0 0 0 8.8 0M8 12v2.2M5.8 14.2h4.4" />
+      <path d="M3 2.8h10a1.2 1.2 0 0 1 1.2 1.2v6.2a1.2 1.2 0 0 1-1.2 1.2H7.4L4.2 14v-2.6H3a1.2 1.2 0 0 1-1.2-1.2V4A1.2 1.2 0 0 1 3 2.8Z" />
+      <circle cx="5.4" cy="7.1" r=".85" fill="currentColor" stroke="none" />
+      <circle cx="8" cy="7.1" r=".85" fill="currentColor" stroke="none" />
+      <circle cx="10.6" cy="7.1" r=".85" fill="currentColor" stroke="none" />
     </>,
   );
 

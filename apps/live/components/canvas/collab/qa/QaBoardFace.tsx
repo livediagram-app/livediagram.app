@@ -19,7 +19,7 @@ import { QaNoteRow } from './QaNoteRow';
 import { QaSpotlight } from './QaSpotlight';
 import { QaDiscussed } from './QaDiscussed';
 import { QaComposer } from './QaComposer';
-import { QA_ACCENT, SpotlightGlyph, stopPointer } from './qa-parts';
+import { QA_ACCENT, DiscussGlyph, stopPointer } from './qa-parts';
 import { useFlipList } from './useFlipList';
 
 // What the board can do for this viewer. Participant verbs are present for
@@ -64,7 +64,7 @@ function StartButton({ onPress }: { onPress: () => void }) {
         backgroundColor: tint(QA_ACCENT, 0.05),
       }}
     >
-      <SpotlightGlyph /> Discuss the top note
+      <DiscussGlyph /> Discuss the top note
     </button>
   );
 }
