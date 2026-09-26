@@ -26,7 +26,7 @@ Defining the wire shapes once means server and client cannot drift — adding a 
 
 The api accepts two equivalent ways of identifying the request owner, in this order of preference (see [Auth + guest access](../014-identity/auth-and-guest-access.md)):
 
-1. **Clerk Bearer JWT** — `Authorization: Bearer <token>`. Verified against `env.CLERK_JWKS_URL` in `apps/api/src/auth/clerk.ts` using `jose`'s `createRemoteJWKSet` + `jwtVerify`. The token's `sub` claim is the owner id. Returns null on any failure (invalid signature, expired, malformed, missing env var) — never 401, because the worker must still serve the guest path.
+1. **Clerk Bearer JWT** — `Authorization: Bearer <token>`. Verified against `env.CLERK_JWKS_URL` in `apps/api/src/auth/clerk.ts` using `jose`'s `createRemoteJWKSet` + `jwtVerify`. The token's `sub` claim is the owner id. Returns null on any failure (invalid signature, expired, malformed, missing env var), logged as `[auth] clerk_jwt_rejected reason=<jose code>`, never 401, because the worker must still serve the guest path. `exp` / `nbf` allow 5 seconds of clock skew, matching Clerk's backend SDK.
 2. **Legacy guest header** — `X-Owner-Id: <participant-id>`. The participant id is a `crypto.randomUUID()` minted on first visit and persisted in `localStorage` under `livediagram:v2:self-id`. Used when the Bearer header is absent or verification failed.
 
 The request handler computes the resolution once at the top of `fetch`:
