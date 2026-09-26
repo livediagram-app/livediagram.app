@@ -83,6 +83,12 @@ vehicle that exercises code paths.
 4. **Reduced-motion / no-console-error sweep** across the above — a
    dedicated assertion that the three flows produced zero uncaught
    errors.
+5. **Motion budget** (`motion-budget.spec.ts`): opens the editor's menus,
+   dropdowns, the context menu, Settings and Search, and records every
+   animation and transition the browser runs outside canvas elements.
+   Each must settle within 250ms, delay included
+   ([Motion](../004-interface-design/motion.md)). Under reduced motion,
+   each must be instant, with no uncaught error.
 
 New browser-risky features should add one focused smoke here, not a
 broad suite; depth stays in unit tests where it's cheap.

@@ -268,8 +268,9 @@ Nothing is stored. The `reduceMotion` preference is unchanged.
 
 - **An unknown `var()` in a duration position** is `unbounded`, never assumed small.
 - **A missing classified stylesheet** is reported, as described above.
-- **Reduced motion** still wins. The `0.01ms !important` collapse and the zeroed cascade delays
-  stay in `globals.css`. Cascade delays are zeroed through the same selectors, now against the
+- **Reduced motion** still wins. The collapse in `globals.css` sets animations to
+  `0.01ms !important` and transitions to `0s !important`. The zeroed cascade delays stay too.
+  `app/reduced-motion.test.ts` pins both values. Cascade delays are zeroed through the same selectors, now against the
   `min()` value.
 - **`fill-mode: both` cascades** still pin `opacity: 1` under reduced motion.
 - **A `transition` with no duration** takes Tailwind's default, which is now bound to `micro`.
@@ -311,19 +312,19 @@ logging, because motion isn't a decision point.
 
 ## Testing
 
-| Rule                                         | Test                                                                            |
-| -------------------------------------------- | ------------------------------------------------------------------------------- |
-| Tokens match their constants                 | `packages/tailwind-config/src/motion.test.ts`                                   |
-| `cascadeDelayMs` caps and clamps             | `packages/tailwind-config/src/motion.test.ts`                                   |
-| Bounds for literals, `var`, `min`, `calc`    | `packages/tailwind-config/src/motion-budget.test.ts`                            |
-| Stylesheet: ceiling, hover, ambient, delay   | `packages/tailwind-config/src/motion-budget.test.ts`                            |
-| Source: classes, hover, inline, templates    | `packages/tailwind-config/src/motion-budget.test.ts`                            |
-| The shared theme is within budget            | `packages/tailwind-config/src/theme-budget.test.ts`                             |
-| Each workspace is within budget              | `motion-budget.test.ts` in live, help, marketing, telemetry and ui              |
-| Timeline cascades use the shared cap         | `packages/ui/src/timeline/Timeline.test.tsx`, or the existing StackedCard tests |
-| Exit holds equal their tokens                | `ToolbarStripRail.test.tsx`, `TabPresenceStack` test                            |
-| Canvas entry keeps 360ms                     | `apps/live/components/canvas/canvas-motion.test.ts`                             |
-| Chrome animations settle in 250ms at runtime | `apps/live/e2e/motion-budget.spec.ts`                                           |
+| Rule                                         | Test                                                                                        |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| Tokens match their constants                 | `packages/tailwind-config/src/motion.test.ts`                                               |
+| `cascadeDelayMs` caps and clamps             | `packages/tailwind-config/src/motion.test.ts`                                               |
+| Bounds for literals, `var`, `min`, `calc`    | `packages/tailwind-config/src/motion-budget.test.ts`                                        |
+| Stylesheet: ceiling, hover, ambient, delay   | `packages/tailwind-config/src/motion-budget.test.ts`                                        |
+| Source: classes, hover, inline, templates    | `packages/tailwind-config/src/motion-budget.test.ts`                                        |
+| The shared theme is within budget            | `packages/tailwind-config/src/theme-budget.test.ts`                                         |
+| Each workspace is within budget              | `motion-budget.test.ts` in live, help, marketing, telemetry and ui                          |
+| Timeline cascades use the shared cap         | `packages/ui/src/timeline/ExpandedStack.test.tsx`                                           |
+| Exit holds equal their tokens                | `ToolbarStripRail.test.tsx`, `TabPresenceStack.test.tsx`                                    |
+| Canvas entry keeps 360ms                     | `apps/live/app/canvas-motion.test.ts`, `apps/live/components/canvas/canvas-motion.test.tsx` |
+| Chrome animations settle in 250ms at runtime | `apps/live/e2e/motion-budget.spec.ts`                                                       |
 
 ### The runtime guard
 
