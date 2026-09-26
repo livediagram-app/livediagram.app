@@ -62,6 +62,8 @@ type TabActionsDeps = {
   setTemplatePickerMode: (mode: 'welcome' | 'templates' | 'identity') => void;
   // Surfaces an import parse error in the header (null clears it).
   setImportError: (message: string | null) => void;
+  // Frames the tab once replaced content has rendered (useTabEntryEffects).
+  requestFit: () => void;
   // Drops change-log rows for a deleted tab from the visible panel.
   setChangeLog: (update: (prev: ChangeLogEntry[]) => ChangeLogEntry[]) => void;
   // Re-pulls the owner's diagram list after a cross-diagram tab link.
@@ -88,6 +90,7 @@ export function useTabActions(deps: TabActionsDeps) {
     setFormatSourceId,
     setTemplatePickerMode,
     setImportError,
+    requestFit,
     setChangeLog,
     refreshDiagramList,
     confirm,
@@ -144,6 +147,7 @@ export function useTabActions(deps: TabActionsDeps) {
     setEditingId,
     setFormatSourceId,
     setImportError,
+    requestFit,
   });
 
   const toggleActiveTabLock = () => {

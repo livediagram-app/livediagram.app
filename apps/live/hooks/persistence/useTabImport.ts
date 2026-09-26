@@ -37,6 +37,8 @@ type TabImportDeps = {
   setFormatSourceId: (id: string | null) => void;
   // Surfaces an import parse error in the header (null clears it).
   setImportError: (message: string | null) => void;
+  // Frames the tab once the imported content has rendered (useTabEntryEffects).
+  requestFit: () => void;
 };
 
 export function useTabImport({
@@ -47,6 +49,7 @@ export function useTabImport({
   setEditingId,
   setFormatSourceId,
   setImportError,
+  requestFit,
 }: TabImportDeps) {
   // Replace the ACTIVE tab's content with an imported tab — its
   // elements + theme/background, keeping the tab's own id and name.
@@ -59,6 +62,8 @@ export function useTabImport({
     setSelectedId(null);
     setEditingId(null);
     setFormatSourceId(null);
+    // The import replaced the tab's content, so frame it.
+    if (imported.elements.length > 0) requestFit();
   };
 
   // Import TEXT of a given format into the active tab (docs/specs/020-import-export/markdown-import.md + docs/specs/020-import-export/mermaid.md).

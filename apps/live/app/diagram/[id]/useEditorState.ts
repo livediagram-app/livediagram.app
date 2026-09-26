@@ -1279,10 +1279,11 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
 
   // Tab-entry side effects (URL #t= pin + fit-to-screen once per tab
   // entry). See useTabEntryEffects.
-  useTabEntryEffects({
+  const { requestFit } = useTabEntryEffects({
     hydrated,
     activeId,
     elementCount: activeTab.elements.length,
+    tabLoaded: loadedTabIds.has(activeId),
     fitToScreen,
     skipFitForTabRef: skipTabFitRef,
   });
@@ -1808,6 +1809,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setFormatSourceId,
     setTemplatePickerMode,
     setImportError,
+    requestFit,
     setChangeLog,
     refreshDiagramList,
     confirm,
@@ -1916,6 +1918,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setEditingId,
     setSelfParticipant,
     setTemplatePickerMode,
+    requestFit,
   });
 
   // Debounced activity-log emitters (see hooks/useActivityLogDebounce
