@@ -6,13 +6,17 @@
 // every card shares live in @livediagram/ui, where the Timeline's cards
 // use them too (spec/138 §2).
 
-import { useRef, useState, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { CARD_PREVIEW as previewArea, CARD_SHELL as cardShell } from '@livediagram/ui';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
+import { CountBadge } from '@/components/primitives/CountBadge';
+import { useRowMenu } from '@/components/primitives/useRowMenu';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
 import { FolderActionsMenu } from './folder-actions-menu';
-import { FolderIcon } from './icons';
+import { FolderSolidIcon } from '@/components/primitives/explorer-icons';
 import type { Folder } from '@/lib/api-client';
+import type { FolderActionBundle } from './explorer-view-props';
+import { menuHandlers } from './folder-row';
 
 // The plain folder mark that fills a folder card's preview box when
 // there's nothing inside to preview (spec/99). Exported so FolderPreview
@@ -21,7 +25,7 @@ import type { Folder } from '@/lib/api-client';
 export function FolderCardGlyph() {
   return (
     <span className="[&_svg]:h-9 [&_svg]:w-9">
-      <FolderIcon open={false} />
+      <FolderSolidIcon open={false} />
     </span>
   );
 }
@@ -46,28 +50,11 @@ export function FolderCard({
   onOpen: () => void;
   onCommitRename: (name: string) => void;
   onCancelRename: () => void;
-  getActions: (anchor: HTMLElement | null) => {
-    rename: () => void;
-    newSubfolder: () => void;
-    move: () => void;
-    delete: () => void;
-  };
+  getActions: (anchor: HTMLElement | null) => FolderActionBundle;
 }) {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLButtonElement>(null);
-  const actions = getActions(menuRef.current);
+  const menu = useRowMenu({ disabled: renaming });
   return (
-    <div
-      className={cardShell}
-      onContextMenu={
-        renaming
-          ? undefined
-          : (e) => {
-              e.preventDefault();
-              setMenuOpen(true);
-            }
-      }
-    >
+    <div className={cardShell} onContextMenu={menu.onContextMenu}>
       <button
         type="button"
         onClick={onOpen}
@@ -92,34 +79,23 @@ export function FolderCard({
             className="min-w-0 flex-1 truncate text-left text-sm font-medium text-slate-900 transition hover:text-brand-700 dark:text-slate-100 dark:hover:text-brand-300"
           >
             {folder.name}
-            {childCount > 0 ? (
-              <span className="ml-1.5 inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-slate-200 px-1 text-[10px] font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300">
-                {childCount}
-              </span>
-            ) : null}
+            {childCount > 0 ? <CountBadge count={childCount} className="ml-1.5" /> : null}
           </button>
         )}
         {renaming ? null : (
           <EllipsisTriggerButton
-            ref={menuRef}
+            {...menu.triggerProps}
             tuck
             label={`Menu for folder ${folder.name}`}
-            onClick={(e) => {
-              e.stopPropagation();
-              setMenuOpen((o) => !o);
-            }}
           />
         )}
       </div>
-      {menuOpen ? (
+      {menu.open ? (
         <FolderActionsMenu
           folder={folder}
-          anchor={menuRef.current}
-          onClose={() => setMenuOpen(false)}
-          onRename={actions.rename}
-          onNewSubfolder={actions.newSubfolder}
-          onMove={actions.move}
-          onDelete={actions.delete}
+          anchor={menu.triggerRef.current}
+          onClose={menu.close}
+          {...menuHandlers(getActions(menu.triggerRef.current))}
         />
       ) : null}
     </div>
@@ -148,11 +124,7 @@ export function SyntheticFolderCard({
         <span className="truncate text-sm font-medium text-slate-900 dark:text-slate-100">
           {label}
         </span>
-        {count > 0 ? (
-          <span className="inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-slate-200 px-1 text-[10px] font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300">
-            {count}
-          </span>
-        ) : null}
+        {count > 0 ? <CountBadge count={count} /> : null}
       </span>
     </button>
   );

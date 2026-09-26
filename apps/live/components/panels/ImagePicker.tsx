@@ -1,5 +1,6 @@
 'use client';
 
+import { TrashIcon } from '@/components/primitives/explorer-icons';
 import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { useEffect, useState } from 'react';
 import { Dialog } from '@/components/dialogs/Dialog';
@@ -12,7 +13,6 @@ import {
 import { addImageFileForDiagram, ImageUploadError } from '@/lib/upload-image';
 import { isOfflineIdSync } from '@/lib/offline/offline-store';
 import { useConfirm } from '@/hooks/ui/useConfirm';
-import { TrashIcon } from '@/components/panels/explorer-icons';
 import { GalleryImageButton } from '@/components/panels/GalleryImageButton';
 import { ImageDropZone } from '@/components/canvas/ImageDropZone';
 

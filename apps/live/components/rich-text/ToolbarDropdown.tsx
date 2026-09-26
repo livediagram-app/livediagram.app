@@ -12,6 +12,7 @@
 // second copy of this would drift on the first behaviour fix.
 
 import { useEffect, useRef, useState } from 'react';
+import { ChevronDownIcon } from '@livediagram/ui';
 import { Tooltip } from '@/components/primitives/Tooltip';
 
 // preventDefault on mousedown keeps focus + the live selection in the
@@ -19,21 +20,7 @@ import { Tooltip } from '@/components/primitives/Tooltip';
 // bug).
 export const noFocusSteal = (e: React.MouseEvent) => e.preventDefault();
 
-const CHEVRON = (
-  <svg
-    width="12"
-    height="12"
-    viewBox="0 0 12 12"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.6"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    aria-hidden
-  >
-    <path d="M3 4.5 6 7.5 9 4.5" />
-  </svg>
-);
+const CHEVRON = <ChevronDownIcon size={12} strokeWidth={1.6} />;
 
 export function ToolbarDropdown({
   label,

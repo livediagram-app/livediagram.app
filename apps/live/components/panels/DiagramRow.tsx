@@ -1,6 +1,8 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useState } from 'react';
+import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
+import { useRowMenu } from '@/components/primitives/useRowMenu';
 import type { DiagramListItem } from '@/lib/api-client';
 import { relativeSince } from '@/lib/relative-time';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
@@ -63,9 +65,10 @@ export function DiagramRow({
   // dragged.
   draggable?: boolean;
 }) {
-  const [menuOpen, setMenuOpen] = useState(false);
   const [editing, setEditing] = useState(false);
-  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const hasMenu = Boolean(onRename || onDelete || onDuplicate || onMoveRequest);
+  // Right-click opens the menu too, except mid-rename or on a row without one.
+  const menu = useRowMenu({ disabled: !hasMenu || editing });
 
   const commitRename = (name: string) => {
     const next = name.trim();
@@ -73,7 +76,6 @@ export function DiagramRow({
     setEditing(false);
   };
 
-  const hasMenu = Boolean(onRename || onDelete || onDuplicate || onMoveRequest);
   const relative = relativeSince(item.savedAt);
   // Offline Mode (spec/76): an offline diagram's row carries ownerId
   // 'offline', which drives the fixed offline thumbnail.
@@ -134,16 +136,8 @@ export function DiagramRow({
       draggable={isDraggable && !editing}
       onDragStart={isDraggable && !editing ? handleDragStart : undefined}
       // Right-click anywhere on the row opens the same actions menu as the
-      // ellipsis button (anchored to it). Guarded so it's a no-op while
-      // renaming or when the row has no menu.
-      onContextMenu={
-        hasMenu && !editing
-          ? (e) => {
-              e.preventDefault();
-              setMenuOpen(true);
-            }
-          : undefined
-      }
+      // ellipsis button (anchored to it).
+      onContextMenu={menu.onContextMenu}
     >
       {editing ? (
         <div className={mainClass}>{mainInner}</div>
@@ -158,25 +152,13 @@ export function DiagramRow({
         </button>
       )}
       {hasMenu && !editing ? (
-        <button
-          ref={menuButtonRef}
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            setMenuOpen((o) => !o);
-          }}
-          aria-label="Diagram menu"
-          aria-expanded={menuOpen}
-          className={`mr-1 flex w-6 shrink-0 items-center justify-center self-center rounded text-slate-400 opacity-100 transition hover:bg-slate-200/70 hover:text-slate-700 sm:opacity-0 sm:group-hover:opacity-100 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-200 ${
-            menuOpen ? 'opacity-100' : ''
-          }`}
-        >
-          <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
-            <circle cx="3" cy="7" r="1.25" fill="currentColor" />
-            <circle cx="7" cy="7" r="1.25" fill="currentColor" />
-            <circle cx="11" cy="7" r="1.25" fill="currentColor" />
-          </svg>
-        </button>
+        <EllipsisTriggerButton
+          {...menu.triggerProps}
+          size="md"
+          reveal
+          className="mr-1 self-center"
+          label="Diagram menu"
+        />
       ) : null}
       {/* The same actions menu as the Explorer page's rows and cards
           (spec/67), so a diagram has one menu wherever it's listed. The
@@ -185,12 +167,12 @@ export function DiagramRow({
           that looked like no other was one people had to learn twice.
           What this surface can't offer (a star, history, Recent) is
           simply not passed, and the menu leaves those tiles out. */}
-      {menuOpen ? (
+      {menu.open ? (
         <DiagramActionsMenu
           diagram={item}
-          anchor={menuButtonRef.current}
+          anchor={menu.triggerRef.current}
           ownerId={ownerId}
-          onClose={() => setMenuOpen(false)}
+          onClose={menu.close}
           isOpen={active}
           onOpen={onOpen}
           // Only the open diagram's row renames inline (its title is the
@@ -201,9 +183,9 @@ export function DiagramRow({
           // Hand the menu button up as the anchor so the panel can open the
           // move picker / delete-confirm popover beside it.
           onMove={
-            onMoveRequest ? (anchor) => onMoveRequest(anchor ?? menuButtonRef.current) : undefined
+            onMoveRequest ? (anchor) => onMoveRequest(anchor ?? menu.triggerRef.current) : undefined
           }
-          onDelete={onDelete ? () => onDelete(menuButtonRef.current) : undefined}
+          onDelete={onDelete ? () => onDelete(menu.triggerRef.current) : undefined}
           favourite={favourite}
           onToggleFavourite={onToggleFavourite}
           recentExcluded={recentExcluded}

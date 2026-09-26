@@ -15,7 +15,7 @@ import {
 import { duplicateDiagram as duplicateDiagramApi } from '@/lib/duplicate-diagram';
 import { accepted } from '@/lib/accepted';
 import { track } from '@/lib/telemetry';
-import { indexFolders, folderBreadcrumb } from '@/lib/folder-tree';
+import { indexFolders, folderBreadcrumb, groupDiagramsByFolder } from '@/lib/folder-tree';
 
 // One team's shared library (spec/35): the folder tree + diagrams the
 // "Shared diagrams" section on the team page renders, plus the
@@ -54,16 +54,7 @@ export function useTeamLibrary(ownerId: string | null, teamId: string) {
     return indexFolders(folders);
   }, [folders]);
 
-  const diagramsByFolder = useMemo(() => {
-    const m = new Map<string | null, DiagramSummary[]>();
-    for (const d of diagrams) {
-      const bucket = m.get(d.folderId) ?? [];
-      bucket.push(d);
-      m.set(d.folderId, bucket);
-    }
-    for (const bucket of m.values()) bucket.sort((a, b) => b.savedAt - a.savedAt);
-    return m;
-  }, [diagrams]);
+  const diagramsByFolder = useMemo(() => groupDiagramsByFolder(diagrams), [diagrams]);
 
   // Breadcrumb chain root → folderId, tolerant of dangling parents
   // mid-refresh (same shape as the personal explorer's).

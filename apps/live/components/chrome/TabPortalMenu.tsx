@@ -1,9 +1,9 @@
+import { PencilIcon, TrashIcon } from '@/components/primitives/explorer-icons';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useReposition } from '@/hooks/canvas/useReposition';
 import { Portal } from '@/components/primitives/Portal';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { clampToViewport } from '@/lib/clamp-to-viewport';
-import { PencilIcon, TrashIcon } from '@/components/panels/explorer-icons';
 import { FileExportIcon, FileImportIcon } from '@/components/palette/palette-icons';
 import {
   ClearIcon,

@@ -1,10 +1,10 @@
 'use client';
 
+import { TrashIcon } from '@/components/primitives/explorer-icons';
 import { useEffect, useMemo, useState } from 'react';
 import { apiDeleteImage, apiImageUsage, apiListImages, type ImageSummary } from '@/lib/api-client';
 import { ImageUploadError, uploadImageFile } from '@/lib/upload-image';
 import { useConfirm } from '@/hooks/ui/useConfirm';
-import { TrashIcon } from '@/components/panels/explorer-icons';
 import { EmptyState } from '@livediagram/ui';
 import { GalleryImageButton } from '@/components/panels/GalleryImageButton';
 import { ImageDropZone } from '@/components/canvas/ImageDropZone';

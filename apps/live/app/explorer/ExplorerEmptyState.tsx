@@ -6,21 +6,21 @@
 // mini-diagram motif, with a heading, a one-line explainer, and a contextual
 // CTA where one applies. Motion is CSS-only (animate-empty-* in globals.css)
 // and pauses under prefers-reduced-motion.
-import Link from 'next/link';
-import type { ReactNode } from 'react';
-import { EmptyState } from '@livediagram/ui';
-import { helpArticleHref } from '@/lib/help-articles';
 import {
   ClockIcon,
   DiagramIcon,
-  FolderIcon,
+  FolderSolidIcon,
   OfflineFolderIcon,
   PlusIcon,
   ShareIcon,
   SparkleIcon,
   StarIcon,
   UnsortedIcon,
-} from './icons';
+} from '@/components/primitives/explorer-icons';
+import Link from 'next/link';
+import type { ReactNode } from 'react';
+import { EmptyState } from '@livediagram/ui';
+import { helpArticleHref } from '@/lib/help-articles';
 import type { SelectedNode } from './views';
 
 type EmptyKind =
@@ -69,7 +69,7 @@ const CONTENT: Record<
     cta: 'New diagram',
   },
   folder: {
-    icon: <FolderIcon open />,
+    icon: <FolderSolidIcon open />,
     title: 'This folder is empty',
     description: 'Add a diagram or a subfolder to organise your work.',
     cta: 'New diagram',

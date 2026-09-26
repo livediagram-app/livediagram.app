@@ -18,6 +18,7 @@
 // readable and inert. Presenting is a caller that omits them.
 
 import { activeCommentCount, isBoxed, type BoxedElement, type Element } from '@livediagram/diagram';
+import { CloseIcon } from '@livediagram/ui';
 
 import { CommentPanelFace } from '@/components/canvas/CommentPanelFace';
 import { NoteRichText } from '@/components/notes/NoteRichText';
@@ -89,18 +90,7 @@ export function PresentationElementPopover({
           onClick={onClose}
           className="shrink-0 cursor-pointer rounded p-0.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800"
         >
-          <svg
-            width="12"
-            height="12"
-            viewBox="0 0 12 12"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-            aria-hidden
-          >
-            <path d="M3 3l6 6M9 3l-6 6" />
-          </svg>
+          <CloseIcon size={12} strokeWidth={1.87} />
         </button>
       </div>
 

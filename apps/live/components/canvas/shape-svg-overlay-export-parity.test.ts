@@ -1,7 +1,10 @@
-import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { createShape, renderElementsToSvg, type Tab } from '@livediagram/diagram';
+import {
+  createShape,
+  renderElementsToSvg,
+  SHAPE_GEOMETRY_KINDS,
+  type Tab,
+} from '@livediagram/diagram';
 import type { ShapeKind } from '@livediagram/diagram';
 
 // Canvas and export must agree on which shapes have a real outline.
@@ -9,40 +12,32 @@ import type { ShapeKind } from '@livediagram/diagram';
 // `ShapeSvgOverlay` (this directory) draws the silhouettes the browser sees;
 // `svg-render-shapes.ts` in packages/diagram redraws them headlessly for the
 // SVG / PNG / PDF exports, the Explorer thumbnails, the share image and the
-// inline images the MCP server returns. Its header asks for the obvious thing
-// — "Keep the two in sync when a silhouette changes" — and nothing checked it.
+// inline images the MCP server returns. Both now draw from one geometry table
+// (shape-geometry.ts in packages/diagram), and shape-svg-overlay.test.tsx +
+// the package's shape-geometry.test.ts pin each side to its exact paths.
 //
-// The failure that asks for is quiet: add an overlay case and forget the
-// exporter, and the shape looks right on canvas while every export flattens it
-// to a plain rectangle. Nobody gets an error, and the export is the artefact
-// that leaves the product. Four other pairs of lists in this repo have drifted
-// exactly this way, so the guard is worth more than the comment.
+// This keeps the coarser, behavioural guard it started as: every kind the
+// overlay draws must export as something other than a plain box. The failure
+// it catches is quiet: a kind that looks right on canvas while every export
+// flattens it to a rectangle. Nobody gets an error, and the export is the
+// artefact that leaves the product.
 //
-// Asserted BEHAVIOURALLY rather than by comparing the two membership lists,
-// because equal lists is not the property that matters — `diamond` is drawn by
-// the exporter natively (a bare <polygon>, no silhouette entry) and is
-// perfectly fine. What matters is that the export draws something other than a
-// rectangle.
-const OVERLAY_SRC = readFileSync(
-  fileURLToPath(new URL('./shape-svg-overlay.tsx', import.meta.url)),
-  'utf8',
-);
-
-// The overlay dispatches on inline `shape === 'kind'` conditionals rather than
-// a table, so the kinds are read out of its source. Read, not restated: a
-// second hand-written copy is the thing that drifts.
-const OVERLAY_KINDS = [
-  ...new Set([...OVERLAY_SRC.matchAll(/shape === '([a-z0-9-]+)'/g)].map((m) => m[1]!)),
-];
+// Asserted BEHAVIOURALLY rather than by comparing membership lists, because
+// `diamond` is drawn by the exporter natively (a bare <polygon>, no
+// silhouette entry) and is perfectly fine. What matters is that the export
+// draws something other than a rectangle.
+//
+// The overlay's kinds ARE the table's kinds: it dispatches on the table, so
+// the list is imported rather than restated.
+const OVERLAY_KINDS: readonly string[] = SHAPE_GEOMETRY_KINDS;
 
 const tabOf = (elements: unknown[]) => ({ id: 't', name: 'Tab', elements }) as unknown as Tab;
 const exportOf = (kind: ShapeKind) => renderElementsToSvg(tabOf([createShape(kind, 0, 0)]));
 
 describe('canvas silhouettes survive the headless export', () => {
   it('extracted a plausible set of overlay kinds', () => {
-    // Guards the extraction itself: a refactor that renames the conditional
-    // must fail loudly here rather than let the real assertion pass over an
-    // empty list.
+    // Guards the list itself: a table that lost its entries must fail
+    // loudly here rather than let the real assertion pass over nothing.
     expect(OVERLAY_KINDS.length).toBeGreaterThan(12);
     expect(OVERLAY_KINDS).toContain('hexagon');
     expect(OVERLAY_KINDS).toContain('actor');

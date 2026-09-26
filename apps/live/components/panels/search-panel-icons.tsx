@@ -2,7 +2,8 @@ import type { SearchResultItem } from '@/lib/search';
 
 // The search panel's result-kind glyphs (spec/09 Search panel), lifted
 // out of SearchPanel: a compact icon per result kind so users can scan
-// the list by shape without reading labels, plus the input's magnifier.
+// the list by shape without reading labels. The input's magnifier is the
+// shared SearchIcon from @livediagram/ui.
 
 export function SearchResultIcon({ item }: { item: SearchResultItem }) {
   // Compact glyph per result kind so users can scan the list by
@@ -182,24 +183,6 @@ export function SearchResultIcon({ item }: { item: SearchResultItem }) {
       aria-hidden
     >
       <circle cx="8" cy="8" r="4" />
-    </svg>
-  );
-}
-
-export function SearchIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      aria-hidden
-    >
-      <circle cx="7" cy="7" r="4" />
-      <path d="M10 10l3.5 3.5" />
     </svg>
   );
 }

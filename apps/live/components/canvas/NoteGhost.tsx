@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react';
+import { PlusWideIcon } from '@livediagram/ui';
 import { eventStormingNote, type EventStormingNoteKind } from '@livediagram/diagram';
 
 // A note that is about to be added (spec/139): a dashed outline in the note's
@@ -44,15 +45,7 @@ export function NoteGhost({
       className="pointer-events-none z-[var(--z-chrome)] flex flex-col items-center justify-center font-semibold"
       style={style}
     >
-      <svg
-        aria-hidden
-        width={box.height * 0.12}
-        height={box.height * 0.12}
-        viewBox="0 0 16 16"
-        fill="none"
-      >
-        <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-      </svg>
+      <PlusWideIcon size={box.height * 0.12} />
       {kind ? eventStormingNote(kind).label : 'Sticky note'}
     </div>
   );

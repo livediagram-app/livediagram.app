@@ -1,12 +1,12 @@
 'use client';
 
+import { PencilIcon, PlusIcon, TrashIcon } from '@/components/primitives/explorer-icons';
 import { useCallback, useEffect, useRef, useState, type ComponentProps } from 'react';
-import { Button } from '@livediagram/ui';
+import { Button, CircleXIcon } from '@livediagram/ui';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import { apiGetTeam, type TeamMember } from '@/lib/api-client';
 import type { TeamDetailResponse } from '@/lib/api/teams';
 import { SignInIcon } from '@/components/chrome/AuthControls';
-import { PencilIcon, PlusIcon, TrashIcon } from '@/components/panels/explorer-icons';
 import { MenuTile, PortalMenu } from '@/components/primitives/PortalMenu';
 import { LinkIcon, TeamMemberRow } from './team-pane-parts';
 import { useTeamPaneActions } from './useTeamPaneActions';
@@ -127,20 +127,7 @@ export function TeamPane({
       <div className="flex items-center justify-center px-6 py-16">
         <div className="flex max-w-md animate-pop-in flex-col items-center rounded-xl border border-slate-200 bg-white px-8 py-10 text-center shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-800 dark:shadow-black/30">
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 text-rose-500 dark:bg-rose-500/15 dark:text-rose-300">
-            <svg
-              width="28"
-              height="28"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.75"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden
-            >
-              <circle cx="12" cy="12" r="9" />
-              <path d="M9 9l6 6M9 15l6-6" />
-            </svg>
+            <CircleXIcon />
           </div>
           <p className="mt-4 text-[10px] font-semibold uppercase tracking-wider text-rose-600">
             404

@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { ChevronDownIcon } from '@livediagram/ui';
 import { Portal } from '@/components/primitives/Portal';
 import { Tooltip } from '@/components/primitives/Tooltip';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
@@ -257,20 +258,7 @@ export function PaletteDropdown({
       {triggerLeading}
       {selected?.icon ? <span className={ICON_WRAP}>{selected.icon}</span> : null}
       {iconOnly ? null : <span className="truncate">{selected?.label}</span>}
-      <svg
-        width="10"
-        height="10"
-        viewBox="0 0 12 12"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden
-        className="shrink-0"
-      >
-        <path d="M3 4.5 6 7.5 9 4.5" />
-      </svg>
+      <ChevronDownIcon className="shrink-0" />
     </button>
   );
   return (

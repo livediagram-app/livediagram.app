@@ -10,7 +10,7 @@
 // the palette's Favourites grid visibly updates behind the modal.
 
 import { useState } from 'react';
-import { Button, Select } from '@livediagram/ui';
+import { Button, CheckIcon, Select } from '@livediagram/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { matches } from '@/lib/search';
@@ -234,19 +234,7 @@ export function PaletteFavouritesDialog({
           </Button>
         ) : null}
         <Button onClick={onClose} size="sm">
-          <svg
-            width="12"
-            height="12"
-            viewBox="0 0 12 12"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden
-          >
-            <path d="M2.5 6.5 5 9l4.5-6" />
-          </svg>
+          <CheckIcon strokeWidth={2} />
           Done
         </Button>
       </div>

@@ -9,10 +9,13 @@
 // FolderRow uses it too) goes back into views.tsx; the type imports
 // from there cost nothing at runtime.
 
-import { useRef, useState } from 'react';
 import type { Folder } from '@/lib/api-client';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
-import { ChevronIcon, EllipsisIcon, FolderIcon } from './icons';
+import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
+import { CountBadge } from '@/components/primitives/CountBadge';
+import { useRowMenu } from '@/components/primitives/useRowMenu';
+import { FolderSolidIcon, TreeChevronIcon } from '@/components/primitives/explorer-icons';
+import type { FolderActions } from './explorer-view-props';
 import { folderMenuHandlers, type SelectedNode } from './views';
 import { FolderActionsMenu } from './folder-actions-menu';
 
@@ -80,6 +83,7 @@ export function SidebarRow({
   onToggleExpand,
   trailing,
   renaming,
+  onContextMenu,
 }: {
   icon: React.ReactNode;
   label: React.ReactNode;
@@ -96,6 +100,8 @@ export function SidebarRow({
   // without the parent button intercepting it. An input nested inside
   // a button is invalid HTML and browsers steal the input's focus.
   renaming?: boolean;
+  // Right-click on the row, for rows that carry an actions menu.
+  onContextMenu?: (e: React.MouseEvent) => void;
 }) {
   const labelClass = `flex min-w-0 flex-1 items-center gap-1.5 py-1 text-left text-xs ${
     selected
@@ -106,17 +112,14 @@ export function SidebarRow({
     <>
       <span className="shrink-0 text-slate-400 dark:text-slate-500">{icon}</span>
       <span className="min-w-0 flex-1 truncate">{label}</span>
-      {badge !== undefined ? (
-        <span className="ml-1 inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-slate-200 px-1 text-[10px] font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300">
-          {badge}
-        </span>
-      ) : null}
+      {badge !== undefined ? <CountBadge count={badge} className="ml-1" /> : null}
     </>
   );
   return (
     <div
       className={`group flex items-center gap-1 rounded-md px-1 ${selected ? 'bg-brand-50 dark:bg-brand-500/15' : 'hover:bg-slate-100 dark:hover:bg-slate-700'}`}
       style={{ paddingLeft: depth * INDENT_STEP + 4 }}
+      onContextMenu={onContextMenu}
     >
       <button
         type="button"
@@ -127,7 +130,7 @@ export function SidebarRow({
         }`}
         disabled={!hasChildren || !onToggleExpand}
       >
-        {hasChildren ? <ChevronIcon open={!!expanded} /> : null}
+        {hasChildren ? <TreeChevronIcon open={!!expanded} /> : null}
       </button>
       {renaming ? (
         <div className={labelClass}>{labelInner}</div>
@@ -171,7 +174,7 @@ export function TeamFolderSubtree({
   return (
     <>
       <SidebarRow
-        icon={<FolderIcon open={isOpen} />}
+        icon={<FolderSolidIcon open={isOpen} />}
         label={folder.name}
         selected={false}
         onClick={() => onOpenFolder(folder.id)}
@@ -223,15 +226,7 @@ export function SidebarFolderSubtree({
   renamingFolderId: string | null;
   onCommitRenameFolder: (id: string, name: string) => void;
   onCancelRenameFolder: () => void;
-  folderActions: (
-    f: Folder,
-    anchor: HTMLElement | null,
-  ) => {
-    rename: () => void;
-    newSubfolder: () => void;
-    move: () => void;
-    delete: () => void;
-  };
+  folderActions: FolderActions;
 }) {
   const kids = childrenByParent.get(folder.id) ?? [];
   const hasKids = kids.length > 0;
@@ -239,8 +234,7 @@ export function SidebarFolderSubtree({
   const isSelected = selected.kind === 'folder' && selected.id === folder.id;
   const renaming = renamingFolderId === folder.id;
 
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLButtonElement>(null);
+  const menu = useRowMenu({ disabled: renaming });
 
   const labelNode = renaming ? (
     <InlineRenameInput
@@ -256,7 +250,7 @@ export function SidebarFolderSubtree({
   return (
     <>
       <SidebarRow
-        icon={<FolderIcon open={isOpen} />}
+        icon={<FolderSolidIcon open={isOpen} />}
         label={labelNode}
         selected={isSelected}
         onClick={() => onSelect(folder.id)}
@@ -265,29 +259,23 @@ export function SidebarFolderSubtree({
         expanded={isOpen}
         onToggleExpand={() => onToggleExpand(folder.id)}
         renaming={renaming}
+        onContextMenu={menu.onContextMenu}
         trailing={
           renaming ? null : (
-            <button
-              ref={menuRef}
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setMenuOpen((o) => !o);
-              }}
-              aria-label={`Menu for ${folder.name}`}
-              className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-slate-200 hover:text-slate-700 dark:text-slate-500 dark:hover:bg-slate-700 dark:hover:text-slate-200"
-            >
-              <EllipsisIcon />
-            </button>
+            <EllipsisTriggerButton
+              {...menu.triggerProps}
+              size="md"
+              label={`Menu for ${folder.name}`}
+            />
           )
         }
       />
-      {menuOpen ? (
+      {menu.open ? (
         <FolderActionsMenu
           folder={folder}
-          anchor={menuRef.current}
-          onClose={() => setMenuOpen(false)}
-          {...folderMenuHandlers(folderActions(folder, menuRef.current))}
+          anchor={menu.triggerRef.current}
+          onClose={menu.close}
+          {...folderMenuHandlers(folderActions(folder, menu.triggerRef.current))}
         />
       ) : null}
       {isOpen

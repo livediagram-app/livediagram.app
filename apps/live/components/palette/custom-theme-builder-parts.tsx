@@ -1,4 +1,5 @@
 import { hexish } from '@/components/palette/palette-controls';
+import { ChevronDownIcon, CopyIcon } from '@livediagram/ui';
 
 export type Painter = {
   copied: string | null;
@@ -65,7 +66,7 @@ export function ColorTile({
             aria-label={`Copy ${label} colour`}
             className="absolute right-0.5 top-0.5 flex h-4 w-4 items-center justify-center rounded bg-white/85 text-slate-600 shadow-sm transition hover:text-brand-600 dark:bg-slate-900/80 dark:text-slate-200"
           >
-            <CopyIcon />
+            <CopyIcon size={9} strokeWidth={1.6} />
           </button>
         ) : (
           // Paste overlay: covers the input so a click applies the copied
@@ -153,23 +154,6 @@ export function ResetGlyph() {
   );
 }
 
-function CopyIcon() {
-  return (
-    <svg
-      width="9"
-      height="9"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      aria-hidden
-    >
-      <rect x="5.5" y="5.5" width="8" height="8" rx="1.5" />
-      <path d="M10.5 5.5V4A1.5 1.5 0 0 0 9 2.5H4A1.5 1.5 0 0 0 2.5 4v5A1.5 1.5 0 0 0 4 10.5h1.5" />
-    </svg>
-  );
-}
-
 function PasteGlyph() {
   return (
     <svg
@@ -217,22 +201,7 @@ export function ExpandRow({
             </span>
           ) : null}
         </span>
-        <svg
-          width="12"
-          height="12"
-          viewBox="0 0 12 12"
-          fill="none"
-          aria-hidden
-          className={open ? 'rotate-180 transition' : 'transition'}
-        >
-          <path
-            d="M3 4.5 6 7.5 9 4.5"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+        <ChevronDownIcon size={12} className={open ? 'rotate-180 transition' : 'transition'} />
       </button>
       {open ? <div className="px-2.5 pb-2.5 pt-1">{children}</div> : null}
     </div>

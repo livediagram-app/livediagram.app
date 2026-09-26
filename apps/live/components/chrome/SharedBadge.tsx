@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { PrivateDotIcon, SharedDotIcon } from '@/components/chrome/share-state-icons';
+import { PrivateDotIcon, SharedDotIcon } from '@livediagram/ui';
 
 // The visibility pill rendered beside the diagram title, split out of
 // EditorHeader. Share links win: a shared team diagram reads "Shared" as

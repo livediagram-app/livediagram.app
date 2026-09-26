@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, type ReactNode } from 'react';
+import { CloseIcon } from '@livediagram/ui';
 import { createPortal } from 'react-dom';
 
 // The modal an open stack deals its members into (spec/22): centred over the
@@ -110,14 +111,7 @@ export function StackModal({
             aria-label={`Close ${title}`}
             className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-slate-400 hover:bg-slate-200 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
           >
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden>
-              <path
-                d="M6 6l12 12M18 6L6 18"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-            </svg>
+            <CloseIcon size={16} strokeWidth={1.17} />
           </button>
         </div>
         <div

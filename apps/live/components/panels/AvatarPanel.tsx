@@ -31,7 +31,7 @@ import { AvatarSprite } from '@/components/canvas/avatar-sprite';
 import { Tooltip } from '@/components/primitives/Tooltip';
 // The same glyph the welcome flow's "shuffle a random name" button uses — same
 // meaning (give me another random one), so it stays the same icon.
-import { RefreshIcon } from '@/components/palette/template-picker-icons';
+import { RefreshIcon } from '@livediagram/ui';
 import { ToolOptionRow } from '@/components/panels/ToolOptionRow';
 import { REACTION_EMOJI, REACTION_LABEL, REACTIONS, type Reaction } from '@livediagram/diagram';
 import { ModePanel, type ModePanelProps } from '@/components/panels/ModePanel';

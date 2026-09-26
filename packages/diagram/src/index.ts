@@ -421,6 +421,8 @@ export * from './chart-frame';
 // (spec/123 to spec/130). Both leaf modules, for the factories cycle.
 export * from './responses';
 export * from './collab-shapes';
+export * from './shape-geometry';
+export * from './color-wash';
 export * from './web-components';
 // The Behaviours family (spec/110): which kinds are in it, and which of them
 // draw their own `…` rather than taking the shared settings one.

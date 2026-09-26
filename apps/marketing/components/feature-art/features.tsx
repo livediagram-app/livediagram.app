@@ -1,6 +1,7 @@
 // Feature illustrations — tabs, reliability, and editor-feature scenes.
 // Split from FeatureArt.tsx; see ./shared for Frame + color constants.
 import { BLUE_FILL, BLUE_STROKE, Frame, PINK, SKY } from './shared';
+import { SearchIcon } from '@livediagram/ui';
 import { LockIcon, MiniDiagram, MiniEditorMock, SearchGlyph } from './features-parts';
 
 /* ───────────────────────────── Section: tabs ─────────────────────── */
@@ -404,18 +405,7 @@ export function SearchArt() {
     <Frame canvas>
       <div className="fa-fade absolute left-1/2 top-2 w-[84%] -translate-x-1/2 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg">
         <div className="flex items-center gap-1.5 border-b border-slate-100 px-2 py-1.5">
-          <svg
-            width="11"
-            height="11"
-            viewBox="0 0 16 16"
-            fill="none"
-            stroke="#94a3b8"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-          >
-            <circle cx="7" cy="7" r="4" />
-            <path d="M10 10l3.5 3.5" />
-          </svg>
+          <SearchIcon size={11} stroke="#94a3b8" />
           <span className="text-[8px] font-medium text-slate-600">auth</span>
           <kbd className="ml-auto rounded bg-slate-100 px-1 py-0.5 text-[7px] font-medium text-slate-400">
             Esc

@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
-import { Brand, ProductNav } from '@livediagram/ui';
+import { Brand, CloseIcon, ProductNav } from '@livediagram/ui';
 import { AuthControls } from '@/components/chrome/AuthControls';
 import { ChromeControls } from '@/components/chrome/ChromeControls';
 import { TeamFormModal } from '@/components/dialogs/TeamFormModal';
@@ -20,7 +20,6 @@ import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import { ExplorerProvider, useExplorer } from './ExplorerContext';
 import { ExplorerSidebar } from './ExplorerSidebar';
 import { useExplorerState } from './useExplorerState';
-import { CloseIcon } from './icons';
 
 // Lazy-load SearchPanel — same rationale as the editor route: it's
 // gated on `searchOpen`, never default-rendered, and dropping ~375
@@ -168,7 +167,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
                   aria-label="Close"
                   className="flex h-8 w-8 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-slate-200"
                 >
-                  <CloseIcon />
+                  <CloseIcon size={11} strokeWidth={1.8} />
                 </button>
               </div>
               <AreaErrorBoundary area="ExplorerSidebar" fallback="panel">

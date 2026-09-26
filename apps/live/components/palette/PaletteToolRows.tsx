@@ -12,6 +12,7 @@
 // screen, which the drill-in categories already made affordable: you arrive
 // here having chosen a group of three to eight tools, not facing all 28.
 
+import { StarIcon } from '@/components/primitives/explorer-icons';
 import { useEffect, useRef } from 'react';
 import {
   eventStormingNoteSize,
@@ -25,7 +26,6 @@ import type { PendingDraw } from '@/lib/draw-mode';
 import type { PaletteTileDef } from './palette-tile-defs';
 import { tileCaption } from './tile-caption';
 // The SAME star the Explorer's favourites use, so one glyph means one thing.
-import { StarIcon } from '@/components/panels/explorer-icons';
 import {
   tileActive,
   useTileHandler,
@@ -203,7 +203,7 @@ function PaletteToolRow({
             : 'text-slate-300 hover:bg-slate-100 hover:text-amber-400 dark:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-amber-400'
         }`}
       >
-        <StarIcon filled={favourite === true} />
+        <StarIcon size={14} filled={favourite === true} />
       </button>
     </div>
   );

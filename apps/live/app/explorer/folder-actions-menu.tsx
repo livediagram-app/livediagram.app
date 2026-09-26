@@ -11,14 +11,20 @@
 // rename or delete a team folder) simply leaves it out rather than
 // showing a row that does nothing.
 
+import { CloseIcon } from '@livediagram/ui';
+import {
+  FolderOutlineIcon,
+  OpenIcon,
+  PencilIcon,
+  PlusIcon,
+  TrashIcon,
+} from '@/components/primitives/explorer-icons';
 import {
   MenuActionRow,
   MenuGroupSeparator,
   MenuHeader,
   PortalMenu,
 } from '@/components/primitives/PortalMenu';
-import { CloseIcon, MenuFolderIcon, MenuPencilIcon, MenuTrashIcon, PlusIcon } from './icons';
-import { OpenIcon } from '@/components/panels/explorer-icons';
 
 export function FolderActionsMenu({
   folder,
@@ -67,7 +73,12 @@ export function FolderActionsMenu({
         </>
       ) : null}
       {onRename ? (
-        <MenuActionRow plain icon={<MenuPencilIcon />} label="Rename" onClick={then(onRename)} />
+        <MenuActionRow
+          plain
+          icon={<PencilIcon size={12} />}
+          label="Rename"
+          onClick={then(onRename)}
+        />
       ) : null}
       {onNewSubfolder ? (
         <MenuActionRow
@@ -80,7 +91,7 @@ export function FolderActionsMenu({
       {onMove ? (
         <MenuActionRow
           plain
-          icon={<MenuFolderIcon />}
+          icon={<FolderOutlineIcon />}
           label="Change Folder"
           onClick={then(onMove)}
         />
@@ -88,7 +99,7 @@ export function FolderActionsMenu({
       {onRemoveFromTimeline ? (
         <MenuActionRow
           plain
-          icon={<CloseIcon />}
+          icon={<CloseIcon size={11} strokeWidth={1.8} />}
           label="Remove from Timeline"
           onClick={then(onRemoveFromTimeline)}
         />
@@ -99,7 +110,7 @@ export function FolderActionsMenu({
           <MenuActionRow
             plain
             danger
-            icon={<MenuTrashIcon />}
+            icon={<TrashIcon size={12} />}
             label="Delete"
             onClick={then(onDelete)}
           />

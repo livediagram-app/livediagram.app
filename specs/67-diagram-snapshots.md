@@ -129,8 +129,8 @@ the unchosen view is the one that shows them their work. Card view renders the
 same folders + diagrams as a responsive grid of cards (1 / 2 / 3 columns
 by width), each with a large snapshot and every column the list shows
 (name, owner, visibility badge, updated time, actions menu). List and
-card share one badge + actions-menu module (`diagram-row-shared.tsx`) so
-they can't drift. A real switch (not a click on the already-active side)
+card share one badge module (`diagram-badges.tsx`) and one actions-menu
+module (`diagram-row-shared.tsx`) so they can't drift. A real switch (not a click on the already-active side)
 emits `UI / Toggled / ExplorerViewList | ExplorerViewCard` (spec/22).
 
 **The actions menu** (the ⋯ on a row or card, and on a Timeline diagram

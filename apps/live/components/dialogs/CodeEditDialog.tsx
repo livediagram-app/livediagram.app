@@ -1,7 +1,6 @@
 import { useRef, useState } from 'react';
-import { Button } from '@livediagram/ui';
+import { Button, CloseIcon } from '@livediagram/ui';
 import { CODE_LANGUAGES, CODE_MAX_LENGTH, type CodeLanguage } from '@livediagram/diagram';
-import { CloseIcon } from '@/components/primitives/CloseIcon';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { DialogHeader } from './DialogHeader';
 

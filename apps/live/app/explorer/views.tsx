@@ -9,21 +9,21 @@
 
 import Link from 'next/link';
 import type { ExplorerViewProps } from '@/app/explorer/explorer-view-props';
-import { type ReactNode } from 'react';
 import type { DiagramListItem, SharedWithItem } from '@/lib/api-client';
 import { useRelativeTimeTick } from '@/lib/relative-time';
 import { EmptyPane } from './ExplorerEmptyState';
 import { DiagramRow } from './explorer-route-diagram-row';
 import { FolderRow } from './folder-row';
 import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
-import {
-  CloseIcon,
-  DynamicFolderIcon,
-  OfflineFolderIcon,
-  SparkleIcon,
-  UnsortedIcon,
-} from './icons';
 import { RelativeTimeChip } from '@/components/primitives/RelativeTimeChip';
+import { CountBadge } from '@/components/primitives/CountBadge';
+import { Tooltip } from '@/components/primitives/Tooltip';
+import { DISMISS_SHARED, DismissSharedIcon } from '@/components/primitives/dismiss-shared';
+import {
+  SYNTHETIC_FOLDERS,
+  visibleSyntheticFolders,
+  type SyntheticFolderKind,
+} from './synthetic-folders';
 
 // The pane header lives in its own file now; re-exported so callers keep
 // importing it from the views barrel.
@@ -90,45 +90,34 @@ export type SelectedNode =
 
 // ---------- Right pane primitives ---------------------------------
 
-export function ListView({
-  folders,
-  diagrams,
-  ownerId,
-  showUnsortedRow,
-  unsortedCount,
-  onOpenUnsorted,
-  showGeneratedRow = false,
-  generatedCount = 0,
-  onOpenGenerated,
-  showOfflineRow = false,
-  offlineCount = 0,
-  onOpenOffline,
-  showDynamicRow = false,
-  dynamicCount = 0,
-  onOpenDynamic,
-  onOpenFolder,
-  onCommitRenameFolder,
-  onCancelRenameFolder,
-  renamingFolderId,
-  renamingDiagramId,
-  onCommitRenameDiagram,
-  onCancelRenameDiagram,
-  folderActions,
-  onStartRenameDiagram,
-  onDuplicateDiagram,
-  onDeleteDiagram,
-  onMoveDiagram,
-  onDismissShared,
-  recentExcludedIds,
-  favouriteIds,
-  onToggleFavourite,
-  folderChipFor,
-  onToggleRecentExclusion,
-  onShowHistory,
-  childrenCount,
-  diagramsCount,
-  showOwner = false,
-}: ExplorerViewProps) {
+export function ListView(props: ExplorerViewProps) {
+  const {
+    folders,
+    diagrams,
+    ownerId,
+    onOpenFolder,
+    onCommitRenameFolder,
+    onCancelRenameFolder,
+    renamingFolderId,
+    renamingDiagramId,
+    onCommitRenameDiagram,
+    onCancelRenameDiagram,
+    folderActions,
+    onStartRenameDiagram,
+    onDuplicateDiagram,
+    onDeleteDiagram,
+    onMoveDiagram,
+    onDismissShared,
+    recentExcludedIds,
+    favouriteIds,
+    onToggleFavourite,
+    folderChipFor,
+    onToggleRecentExclusion,
+    onShowHistory,
+    childrenCount,
+    diagramsCount,
+    showOwner = false,
+  } = props;
   return (
     <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
       <div
@@ -146,21 +135,9 @@ export function ListView({
         <span aria-hidden></span>
       </div>
       <ul className="lvd-cascade divide-y divide-slate-100 dark:divide-slate-700/60">
-        {showUnsortedRow ? <UnsortedRow count={unsortedCount} onOpen={onOpenUnsorted} /> : null}
-        {showGeneratedRow && onOpenGenerated ? (
-          <GeneratedRow count={generatedCount} onOpen={onOpenGenerated} />
-        ) : null}
-        {showOfflineRow && onOpenOffline ? (
-          <OfflineRow count={offlineCount} onOpen={onOpenOffline} />
-        ) : null}
-        {showDynamicRow && onOpenDynamic ? (
-          <SyntheticFolderRow
-            icon={<DynamicFolderIcon />}
-            label="Dynamic"
-            count={dynamicCount}
-            onOpen={onOpenDynamic}
-          />
-        ) : null}
+        {visibleSyntheticFolders(props).map((e) => (
+          <SyntheticFolderRow key={e.kind} kind={e.kind} count={e.count} onOpen={e.onOpen} />
+        ))}
         {folders.map((f) => (
           <FolderRow
             key={f.id}
@@ -208,16 +185,15 @@ export function ListView({
 // (Unsorted = no parent; Generated = AI-made). Shared by both so they
 // can't drift.
 function SyntheticFolderRow({
-  icon,
-  label,
+  kind,
   count,
   onOpen,
 }: {
-  icon: ReactNode;
-  label: string;
+  kind: SyntheticFolderKind;
   count: number;
   onOpen: () => void;
 }) {
+  const { Icon, label } = SYNTHETIC_FOLDERS[kind];
   return (
     <li className="group grid grid-cols-[1fr_140px_40px] sm:grid-cols-[1fr_90px_140px_40px] items-center gap-2 px-4 py-2 transition hover:bg-slate-50 dark:hover:bg-slate-700">
       <button
@@ -226,15 +202,13 @@ function SyntheticFolderRow({
         onClick={onOpen}
         className="flex min-w-0 items-center gap-2 text-left"
       >
-        <span className="shrink-0 text-slate-400 dark:text-slate-500">{icon}</span>
+        <span className="shrink-0 text-slate-400 dark:text-slate-500">
+          <Icon />
+        </span>
         <span className="truncate text-sm font-medium text-slate-900 group-hover:text-brand-700 dark:text-slate-100 dark:group-hover:text-brand-300">
           {label}
         </span>
-        {count > 0 ? (
-          <span className="ml-1 inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-slate-200 px-1 text-[10px] font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300">
-            {count}
-          </span>
-        ) : null}
+        {count > 0 ? <CountBadge count={count} className="ml-1" /> : null}
       </button>
       <span className="hidden sm:block" />
       {/* A folder has no visibility/owner of its own — leave the cell
@@ -246,27 +220,7 @@ function SyntheticFolderRow({
 }
 
 export function UnsortedRow({ count, onOpen }: { count: number; onOpen: () => void }) {
-  return (
-    <SyntheticFolderRow icon={<UnsortedIcon />} label="Unsorted" count={count} onOpen={onOpen} />
-  );
-}
-
-function GeneratedRow({ count, onOpen }: { count: number; onOpen: () => void }) {
-  return (
-    <SyntheticFolderRow icon={<SparkleIcon />} label="Generated" count={count} onOpen={onOpen} />
-  );
-}
-
-// Offline (spec/76): the synthetic folder for browser-only diagrams.
-function OfflineRow({ count, onOpen }: { count: number; onOpen: () => void }) {
-  return (
-    <SyntheticFolderRow
-      icon={<OfflineFolderIcon />}
-      label="Offline"
-      count={count}
-      onOpen={onOpen}
-    />
-  );
+  return <SyntheticFolderRow kind="unsorted" count={count} onOpen={onOpen} />;
 }
 
 export function SharedList({
@@ -318,14 +272,16 @@ export function SharedList({
               {s.role === 'edit' ? 'Edit' : 'View'}
             </span>
             <RelativeTimeChip at={s.savedAt} />
-            <button
-              type="button"
-              onClick={() => onDismiss(s.id)}
-              aria-label="Dismiss"
-              className="inline-flex h-7 w-7 items-center justify-center rounded text-slate-400 transition hover:bg-rose-50 hover:text-rose-700 dark:text-slate-500 dark:hover:bg-rose-500/15 dark:hover:text-rose-300"
-            >
-              <CloseIcon />
-            </button>
+            <Tooltip title={DISMISS_SHARED.title} description={DISMISS_SHARED.description}>
+              <button
+                type="button"
+                onClick={() => onDismiss(s.id)}
+                aria-label={DISMISS_SHARED.ariaLabel(s.name)}
+                className="inline-flex h-7 w-7 items-center justify-center rounded text-slate-400 transition hover:bg-rose-50 hover:text-rose-700 dark:text-slate-500 dark:hover:bg-rose-500/15 dark:hover:text-rose-300"
+              >
+                <DismissSharedIcon />
+              </button>
+            </Tooltip>
           </li>
         ))}
       </ul>
@@ -335,18 +291,25 @@ export function SharedList({
 
 // ---------- States: empty / loading / unauthenticated -------------
 
-export function SkeletonRows() {
+// Loading placeholder rows. Framed by default (the pane's own card);
+// `framed={false}` for a host that already draws the card, like the team
+// library, which also asks for fewer rows.
+export function SkeletonRows({ count = 6, framed = true }: { count?: number; framed?: boolean }) {
+  const rows = (
+    <ul className="divide-y divide-slate-100 dark:divide-slate-700/60">
+      {Array.from({ length: count }).map((_, i) => (
+        <li key={i} className="flex items-center gap-3 px-4 py-3">
+          <span className="h-4 w-4 animate-pulse rounded bg-slate-200 dark:bg-slate-700" />
+          <span className="h-4 flex-1 animate-pulse rounded bg-slate-200 dark:bg-slate-700" />
+          <span className="h-4 w-24 animate-pulse rounded bg-slate-200 dark:bg-slate-700" />
+        </li>
+      ))}
+    </ul>
+  );
+  if (!framed) return rows;
   return (
     <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
-      <ul className="divide-y divide-slate-100 dark:divide-slate-700/60">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <li key={i} className="flex items-center gap-3 px-4 py-3">
-            <span className="h-4 w-4 animate-pulse rounded bg-slate-200 dark:bg-slate-700" />
-            <span className="h-4 flex-1 animate-pulse rounded bg-slate-200 dark:bg-slate-700" />
-            <span className="h-4 w-24 animate-pulse rounded bg-slate-200 dark:bg-slate-700" />
-          </li>
-        ))}
-      </ul>
+      {rows}
     </div>
   );
 }

@@ -139,8 +139,9 @@ Like Pan / Select, repeated re-selection isn't re-tracked.
   extrudes as that outline instead of a square block behind it. The clip is
   derived in `isoShapeSilhouette` (`lib/isometric.ts`): polygonal shapes
   (diamond, hexagon, parallelogram, triangle, trapezoid, star) get a
-  `clip-path: polygon()` whose percentages are lifted straight from
-  `ShapeSvgOverlay`'s `0 0 100 100` viewBox (one geometry source); curved
+  `clip-path: polygon()` whose percentages are read from the shared shape
+  geometry table's `0 0 100 100` viewBox (`shape-geometry.ts`, the one
+  geometry source `ShapeSvgOverlay` and the export also draw from); curved
   shapes use `border-radius` (circle / progress-ring `50%`, stadium a pill,
   cylinder `50% / 12%` elliptical caps). Shapes without an entry and non-shape
   boxed elements (sticky / image / table / …) keep the rounded

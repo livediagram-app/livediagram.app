@@ -13,6 +13,7 @@
 // the router, so client-side nav wouldn't cross them.
 
 import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { ChevronDownIcon } from './icons';
 
 type ProductNavKey = 'home' | 'explorer' | 'editor' | 'help' | 'telemetry';
 
@@ -152,20 +153,13 @@ export function ProductNav({
             header's Brand + menu + "Start drawing" CTA stop crowding each other
             on a narrow screen. The label returns at sm+. */}
         <span className="hidden sm:inline">{active.label}</span>
-        <svg
-          viewBox="0 0 16 16"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.6"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden
+        <ChevronDownIcon
+          size={12}
+          strokeWidth={1.2}
           className={`h-3 w-3 opacity-60 transition-transform duration-200 group-hover:[transform:rotate(180deg)] group-focus-within:[transform:rotate(180deg)] ${
             open ? '[transform:rotate(180deg)]' : ''
           }`}
-        >
-          <path d="M4 6l4 4 4-4" />
-        </svg>
+        />
       </button>
 
       {/* pt-2 is a transparent bridge so the pointer can travel from the label

@@ -21,3 +21,4 @@ export { useMediaQuery, PREFERS_REDUCED_MOTION } from './useMediaQuery';
 export { useCopiedFlash } from './useCopiedFlash';
 export { CARD_GRID, CARD_PREVIEW, CARD_SHELL } from './cardGrid';
 export * from './timeline';
+export * from './icons';

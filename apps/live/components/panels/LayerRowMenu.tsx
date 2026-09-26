@@ -1,7 +1,9 @@
 'use client';
 
+import { PencilIcon, TrashIcon } from '@/components/primitives/explorer-icons';
 import { useRef, useState } from 'react';
 import { isLayerLocked, layerOpacityOf, type Layer } from '@livediagram/diagram';
+import { LockIcon } from '@/components/panels/layers-panel-icons';
 import { Portal } from '@/components/primitives/Portal';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import {
@@ -14,7 +16,6 @@ import {
 } from '@/components/primitives/PortalMenu';
 import { OpacityRow } from '@/components/palette/context-menu-rows';
 import { LayerDownIcon, LayersGlyph, LayerUpIcon } from '@/components/palette/context-menu-icons';
-import { PencilIcon, TrashIcon } from '@/components/panels/explorer-icons';
 import { useClickOutside } from '@/hooks/ui/useClickOutside';
 import { useEscape } from '@/hooks/ui/useEscape';
 
@@ -171,7 +172,7 @@ export function LayerRowMenu({
         <MenuAccordionSection title="Content" icon={<ContentGlyph />} {...sectionProps('content')}>
           <MenuTileGrid cols={2}>
             <MenuTile
-              icon={<PadlockIcon />}
+              icon={<LockIcon size={14} />}
               label={locked ? 'Unlock' : 'Lock'}
               active={locked}
               onClick={onToggleLock}
@@ -257,15 +258,6 @@ function ContentGlyph() {
         strokeWidth="1.2"
         strokeLinecap="round"
       />
-    </svg>
-  );
-}
-
-function PadlockIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
-      <rect x="3" y="6" width="8" height="5.5" rx="1" stroke="currentColor" strokeWidth="1.2" />
-      <path d="M4.5 6V4.5a2.5 2.5 0 0 1 5 0V6" stroke="currentColor" strokeWidth="1.2" />
     </svg>
   );
 }

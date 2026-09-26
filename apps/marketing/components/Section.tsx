@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { ChevronRightIcon } from '@livediagram/ui';
 import { featureAnchor } from '@/lib/feature-anchor';
 
 type SectionProps = {
@@ -86,20 +87,10 @@ function FeatureCard({ title, description, art, href }: FeatureProps) {
           <span>
             Learn more<span className="sr-only"> (opens in a new tab)</span>
           </span>
-          <svg
-            width="15"
-            height="15"
-            viewBox="0 0 16 16"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.7"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden
+          <ChevronRightIcon
+            size={15}
             className="transition-transform group-hover:translate-x-0.5"
-          >
-            <path d="M6 3.5 10.5 8 6 12.5" />
-          </svg>
+          />
         </div>
       ) : null}
     </>

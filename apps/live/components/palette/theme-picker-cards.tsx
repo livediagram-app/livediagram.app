@@ -5,6 +5,7 @@
 // the overview and the category detail view.
 
 import type { CustomTheme } from '@livediagram/api-schema';
+import { CopyIcon, PencilIcon, PlusIcon, TrashSimpleIcon } from '@livediagram/ui';
 import { PickerCard } from '@/components/palette/PickerCard';
 import { type ThemeDefinition } from '@/lib/themes';
 import { themeDescription } from '@/lib/themes-taxonomy';
@@ -66,28 +67,11 @@ export function ThemeCard({
           aria-label={`Copy ${theme.label} to a new theme`}
           className="absolute right-1.5 top-1.5 flex items-center gap-1 rounded-md bg-white/90 px-1.5 py-1 text-[10px] font-semibold text-slate-600 opacity-0 shadow-sm transition hover:text-brand-600 focus:opacity-100 group-hover:opacity-100 dark:bg-slate-900/85 dark:text-slate-200"
         >
-          <CopyGlyph />
+          <CopyIcon size={11} />
           Copy
         </button>
       ) : null}
     </div>
-  );
-}
-
-function CopyGlyph() {
-  return (
-    <svg
-      width="11"
-      height="11"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      aria-hidden
-    >
-      <rect x="5.5" y="5.5" width="8" height="8" rx="1.5" />
-      <path d="M10.5 5.5V4A1.5 1.5 0 0 0 9 2.5H4A1.5 1.5 0 0 0 2.5 4v5A1.5 1.5 0 0 0 4 10.5h1.5" />
-    </svg>
   );
 }
 
@@ -176,17 +160,7 @@ export function CustomThemeCard({
           aria-label={`Edit ${theme.name}`}
           className="rounded bg-white/90 p-0.5 text-slate-500 shadow-sm hover:text-brand-600 dark:bg-slate-800/90 dark:text-slate-300"
         >
-          <svg
-            width="12"
-            height="12"
-            viewBox="0 0 16 16"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.4"
-            aria-hidden
-          >
-            <path d="M11.5 2.5l2 2L6 12l-3 1 1-3z" strokeLinejoin="round" />
-          </svg>
+          <PencilIcon size={12} strokeWidth={1.4} />
         </button>
         <button
           type="button"
@@ -194,21 +168,7 @@ export function CustomThemeCard({
           aria-label={`Delete ${theme.name}`}
           className="rounded bg-white/90 p-0.5 text-slate-500 shadow-sm hover:text-rose-600 dark:bg-slate-800/90 dark:text-slate-300"
         >
-          <svg
-            width="12"
-            height="12"
-            viewBox="0 0 16 16"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.4"
-            aria-hidden
-          >
-            <path
-              d="M3.5 4.5h9M6.5 4.5V3h3v1.5M5 4.5l.5 8h5l.5-8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+          <TrashSimpleIcon size={12} strokeWidth={1.4} />
         </button>
       </div>
     </div>
@@ -227,17 +187,7 @@ export function NewThemeCard({ onClick }: { onClick: () => void }) {
       className="group flex flex-col gap-1 rounded-md border border-dashed border-slate-300 p-1.5 text-left transition hover:border-brand-400 hover:bg-brand-50/40 dark:border-slate-600 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10"
     >
       <span className="flex h-20 w-full items-center justify-center rounded-md bg-slate-50 text-slate-400 transition group-hover:text-brand-500 dark:bg-slate-800/60 dark:text-slate-500 dark:group-hover:text-brand-300">
-        <svg
-          width="18"
-          height="18"
-          viewBox="0 0 16 16"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.6"
-          aria-hidden
-        >
-          <path d="M8 3.5v9M3.5 8h9" strokeLinecap="round" />
-        </svg>
+        <PlusIcon size={18} />
       </span>
       <span className="w-full truncate text-center text-[10px] font-medium text-slate-600 dark:text-slate-300">
         New theme

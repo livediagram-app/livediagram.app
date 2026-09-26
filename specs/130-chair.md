@@ -38,6 +38,12 @@ button, portal, session button, reveal zone and picker.
   "Alex" — a chair that is somebody's chair.
 - Otherwise a completely ordinary element: move, resize, rotate, theme, group,
   lock, copy, export.
+- **One drawing, on the canvas and in an export.** `ChairView` and the
+  headless render (`svg-render-faces.ts`) both draw from `CHAIR_GEOMETRY` in
+  `packages/diagram/src/shape-geometry.ts`, and share its facing rotation and
+  seat rule (`chairSeatFill`: the element's fill, or with the default
+  `transparent` a wash of its stroke). An exported chair used to ignore its
+  facing and paint its seat with that literal `transparent`.
 - **Animations (spec/09) run on the drawing, not the box.** The element box is
   transparent, so the box versions of glow / pulse / trace / gradient would
   ring and fill a rectangle around nothing. Those four ride the chair's own

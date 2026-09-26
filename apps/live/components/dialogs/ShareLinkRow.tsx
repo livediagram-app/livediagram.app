@@ -1,4 +1,5 @@
-import { Button, Select } from '@livediagram/ui';
+import { TrashIcon } from '@/components/primitives/explorer-icons';
+import { Button, LinkIcon, Select } from '@livediagram/ui';
 import type { ShareLink } from '@/lib/api-client';
 import { buildEmbedSnippet, embedUrlFor } from '@/lib/embed';
 import { liveImageHtml, liveImageMarkdown, liveImageUrlFor } from '@/lib/live-image';
@@ -6,8 +7,7 @@ import { formatTimeLeftCompact } from '@/lib/relative-time';
 import { track } from '@/lib/telemetry';
 import { Tooltip } from '@/components/primitives/Tooltip';
 import { ShareCopyMenu } from './ShareCopyMenu';
-import { TrashIcon } from '@/components/panels/explorer-icons';
-import { CodeGlyph, EXPIRY_LABELS, ImageGlyph, LinkIcon } from './share-dialog-parts';
+import { CodeGlyph, EXPIRY_LABELS, ImageGlyph } from './share-dialog-parts';
 
 // One ACTIVE share-link card (spec/04 + spec/33 + spec/34 + spec/54),
 // lifted out of ShareDialog: the role + time-left badges and the

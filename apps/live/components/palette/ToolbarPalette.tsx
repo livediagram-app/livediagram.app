@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { ChevronDownIcon, EllipsisIcon } from '@livediagram/ui';
 import { track } from '@/lib/telemetry';
 import { loadPaletteFavourites } from '@/lib/palette-favourites';
 import { loadRecentTiles, recordTileUse, saveRecentTiles } from '@/lib/toolbar-recent-tiles';
@@ -211,25 +212,8 @@ export function ToolbarPalette(props: Props) {
       {/* An ellipsis rather than the word: the tooltip and aria-label name
           it, and a glyph sits with the icon tiles instead of reading as a
           stray label among them. */}
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden>
-        <circle cx="3.5" cy="8" r="1.3" />
-        <circle cx="8" cy="8" r="1.3" />
-        <circle cx="12.5" cy="8" r="1.3" />
-      </svg>
-      <svg
-        width="10"
-        height="10"
-        viewBox="0 0 12 12"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden
-        className={`transition-transform ${moreOpen ? 'rotate-180' : ''}`}
-      >
-        <path d="M3 4.5 6 7.5 9 4.5" />
-      </svg>
+      <EllipsisIcon />
+      <ChevronDownIcon className={`transition-transform ${moreOpen ? 'rotate-180' : ''}`} />
     </button>
   );
 

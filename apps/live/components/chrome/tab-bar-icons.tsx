@@ -5,6 +5,8 @@
 // table-icons.tsx / explorer-icons.tsx. No behaviour change. Colour comes from
 // the parent via `currentColor`.
 
+import { SearchIcon } from '@livediagram/ui';
+
 export function CopyIcon() {
   return (
     <svg
@@ -99,28 +101,6 @@ export function DiagramIcon() {
   );
 }
 
-// Tiny folder-tab-stack icon paired with the TABS label. Reads as
-// "tabs of paper" — disambiguates the label from the canvas's own
-// shape tooling at a glance.
-export function TabsLabelIcon() {
-  return (
-    <svg
-      width="11"
-      height="11"
-      viewBox="0 0 12 12"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M1.5 4.5h3l1 1.25h5v4.25h-9z" />
-      <path d="M3 4.5V3h3.25" />
-    </svg>
-  );
-}
-
 export function ClearIcon() {
   return (
     <svg
@@ -140,23 +120,10 @@ export function ClearIcon() {
   );
 }
 
-// Magnifier - the global-search button on the right edge of the bar.
+// Magnifier - the global-search button on the right edge of the bar. The
+// drawing is the shared SearchIcon; this pins the bar's 14px size.
 export function SearchGlyph() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      aria-hidden
-    >
-      <circle cx="7" cy="7" r="4" />
-      <path d="M10 10l3.5 3.5" />
-    </svg>
-  );
+  return <SearchIcon size={14} />;
 }
 
 // GitHub mark - the open-source repo link in the footer (spec/03).

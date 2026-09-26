@@ -518,7 +518,8 @@ Worker (no DOM, no React).
   (tracks / headers / zebra / per-cell text, `svg-render-table.ts`), freehand
   sketches as their polyline, the full shape-silhouette vocabulary (hexagon /
   cylinder / document / cloud / devices / actor / frame ... —
-  `svg-render-shapes.ts`, mirroring the editor's ShapeSvgOverlay geometry),
+  `svg-render-shapes.ts`, drawn from the same geometry table as the editor's
+  ShapeSvgOverlay: `shape-geometry.ts`, pinned by a test per kind on each side),
   element rotation, and icon glyphs (above). The PNG/PDF canvas path
   rasterises any element the canvas drawers can't reproduce from the SAME
   svg markup (`boxedNeedsSvgRaster`), so the three visual exports can't

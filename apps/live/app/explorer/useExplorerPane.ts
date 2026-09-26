@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import type { DiagramListItem, Folder, SharedWithItem } from '@/lib/api-client';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
+import { groupDiagramsByFolder } from '@/lib/folder-tree';
 import type { TeamDiagramRow } from '@/hooks/persistence/useTeamLibrariesSweep';
 import { sharedToPaneDiagram, type PaneDiagram, type SelectedNode } from './views';
 
@@ -44,16 +45,7 @@ export function useExplorerPane({
   // which is why the Favourites branch below reads both lists.
   favouriteIds: Set<string>;
 }) {
-  const diagramsByFolder = useMemo(() => {
-    const m = new Map<string | null, DiagramListItem[]>();
-    for (const d of diagrams) {
-      const bucket = m.get(d.folderId) ?? [];
-      bucket.push(d);
-      m.set(d.folderId, bucket);
-    }
-    for (const bucket of m.values()) bucket.sort((a, b) => b.savedAt - a.savedAt);
-    return m;
-  }, [diagrams]);
+  const diagramsByFolder = useMemo(() => groupDiagramsByFolder(diagrams), [diagrams]);
 
   // Unsorted is a virtual folder backed by `folder_id IS NULL` —
   // not a row in the folders table, just a synthetic bucket so loose

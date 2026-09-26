@@ -2,6 +2,7 @@
 // Kept here to avoid duplication across the three view components.
 
 import type { CSSProperties, PointerEvent as ReactPointerEvent } from 'react';
+import { LockIcon } from '@livediagram/ui';
 import type { DragMode } from '@/lib/canvas';
 import { ADORNMENT_MIN_ZOOM } from '@/components/canvas/element-badges';
 import {
@@ -21,19 +22,7 @@ export function LockBadge({ zoom = 1 }: { zoom?: number }) {
       aria-hidden
       className="pointer-events-none absolute -left-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-brand-500 text-white shadow-sm"
     >
-      <svg
-        width="11"
-        height="11"
-        viewBox="0 0 16 16"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <rect x="3" y="7.5" width="10" height="6.5" rx="1.25" />
-        <path d="M5.25 7.5V5a2.75 2.75 0 0 1 5.5 0v2.5" />
-      </svg>
+      <LockIcon size={11} strokeWidth={2} />
     </div>
   );
 }

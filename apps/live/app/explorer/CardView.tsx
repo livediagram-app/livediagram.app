@@ -9,100 +9,64 @@
 import Link from 'next/link';
 import type { CardViewProps, DiagramEntryProps } from '@/app/explorer/explorer-view-props';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
-import { useRef, useState } from 'react';
 import { useRelativeTimeTick } from '@/lib/relative-time';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
 import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
-import { DynamicFolderIcon, OfflineFolderIcon, SparkleIcon, UnsortedIcon } from './icons';
-import {
-  DiagramActionsMenu,
-  FavouriteMarker,
-  FolderChip,
-  hrefForDiagram,
-  VisibilityBadge,
-} from './diagram-row-shared';
+import { DiagramEntryMenu, hrefForDiagram, ownerLabelFor } from './diagram-row-shared';
+import { FavouriteMarker, FolderChip, VisibilityBadge } from './diagram-badges';
+import { SYNTHETIC_FOLDERS, visibleSyntheticFolders } from './synthetic-folders';
+import { useRowMenu } from '@/components/primitives/useRowMenu';
 import { FolderCard, SyntheticFolderCard } from './explorer-folder-cards';
 import { CARD_GRID, CARD_PREVIEW as previewArea, CARD_SHELL as cardShell } from '@livediagram/ui';
 import { FolderPreview } from './FolderPreview';
 import { RelativeTimeChip } from '@/components/primitives/RelativeTimeChip';
 
-export function CardView({
-  folders,
-  diagrams,
-  ownerId,
-  showUnsortedRow,
-  unsortedCount,
-  onOpenUnsorted,
-  showGeneratedRow = false,
-  generatedCount = 0,
-  onOpenGenerated,
-  showOfflineRow = false,
-  offlineCount = 0,
-  onOpenOffline,
-  showDynamicRow = false,
-  dynamicCount = 0,
-  onOpenDynamic,
-  onOpenFolder,
-  onCommitRenameFolder,
-  onCancelRenameFolder,
-  renamingFolderId,
-  renamingDiagramId,
-  onCommitRenameDiagram,
-  onCancelRenameDiagram,
-  folderActions,
-  onStartRenameDiagram,
-  onDuplicateDiagram,
-  onDeleteDiagram,
-  onMoveDiagram,
-  onDismissShared,
-  recentExcludedIds,
-  favouriteIds,
-  onToggleFavourite,
-  folderChipFor,
-  onToggleRecentExclusion,
-  onShowHistory,
-  childrenCount,
-  diagramsCount,
-  folderContents,
-  showOwner = false,
-  showVisibilityBadge = true,
-}: CardViewProps) {
+export function CardView(props: CardViewProps) {
+  const {
+    folders,
+    diagrams,
+    ownerId,
+    onOpenFolder,
+    onCommitRenameFolder,
+    onCancelRenameFolder,
+    renamingFolderId,
+    renamingDiagramId,
+    onCommitRenameDiagram,
+    onCancelRenameDiagram,
+    folderActions,
+    onStartRenameDiagram,
+    onDuplicateDiagram,
+    onDeleteDiagram,
+    onMoveDiagram,
+    onDismissShared,
+    recentExcludedIds,
+    favouriteIds,
+    onToggleFavourite,
+    folderChipFor,
+    onToggleRecentExclusion,
+    onShowHistory,
+    childrenCount,
+    diagramsCount,
+    folderContents,
+    showOwner = false,
+    showVisibilityBadge = true,
+  } = props;
   useRelativeTimeTick();
   return (
     <div className={`lvd-cascade ${CARD_GRID}`}>
-      {showUnsortedRow ? (
-        <SyntheticFolderCard
-          icon={<UnsortedIcon />}
-          label="Unsorted"
-          count={unsortedCount}
-          onOpen={onOpenUnsorted}
-        />
-      ) : null}
-      {showGeneratedRow && onOpenGenerated ? (
-        <SyntheticFolderCard
-          icon={<SparkleIcon />}
-          label="Generated"
-          count={generatedCount}
-          onOpen={onOpenGenerated}
-        />
-      ) : null}
-      {showOfflineRow && onOpenOffline ? (
-        <SyntheticFolderCard
-          icon={<OfflineFolderIcon />}
-          label="Offline"
-          count={offlineCount}
-          onOpen={onOpenOffline}
-        />
-      ) : null}
-      {showDynamicRow && onOpenDynamic ? (
-        <SyntheticFolderCard
-          icon={<DynamicFolderIcon />}
-          label="Dynamic"
-          count={dynamicCount}
-          onOpen={onOpenDynamic}
-        />
-      ) : null}
+      {visibleSyntheticFolders(props).map((e) => {
+        const { Icon, label } = SYNTHETIC_FOLDERS[e.kind];
+        return (
+          <SyntheticFolderCard
+            key={e.kind}
+            icon={<Icon />}
+            label={label}
+            count={e.count}
+            onOpen={e.onOpen}
+          />
+        );
+      })}
       {folders.map((f) => (
         <FolderCard
           key={f.id}
@@ -149,73 +113,46 @@ export function CardView({
   );
 }
 
-function DiagramCard({
-  diagram,
-  ownerId,
-  showOwner,
-  showVisibilityBadge,
-  folderChip,
-  renaming,
-  onStartRename,
-  onCommitRename,
-  onCancelRename,
-  onDuplicate,
-  onDelete,
-  onMove,
-  onDismiss,
-  favourite,
-  onToggleFavourite,
-  recentExcluded,
-  onToggleRecentExclusion,
-  onShowHistory,
-}: DiagramEntryProps & {
-  // Card-only: the list view shows visibility in its own column.
-  showVisibilityBadge: boolean;
-}) {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLButtonElement>(null);
+function DiagramCard(
+  props: DiagramEntryProps & {
+    // Card-only: the list view shows visibility in its own column.
+    showVisibilityBadge: boolean;
+  },
+) {
+  const {
+    diagram,
+    ownerId,
+    showOwner,
+    showVisibilityBadge,
+    folderChip,
+    renaming,
+    onCommitRename,
+    onCancelRename,
+    favourite,
+  } = props;
+  const menu = useRowMenu({ disabled: renaming });
   const href = hrefForDiagram(diagram);
-  const ownerLabel = showOwner
-    ? (diagram.team?.name ??
-      diagram.shared?.ownerName ??
-      (diagram.shared ? 'Unknown owner' : 'You'))
-    : null;
+  const ownerLabel = showOwner ? ownerLabelFor(diagram) : null;
+  const thumbnail = (
+    <DiagramThumbnail
+      ownerId={ownerId}
+      diagramId={diagram.id}
+      version={diagram.savedAt}
+      shareCode={diagram.shared?.shareCode}
+      offline={diagram.ownerId === OFFLINE_OWNER_ID}
+      className="h-full w-full"
+    />
+  );
 
   return (
-    <div
-      className={cardShell}
-      onContextMenu={
-        renaming
-          ? undefined
-          : (e) => {
-              e.preventDefault();
-              setMenuOpen(true);
-            }
-      }
-    >
+    <div className={cardShell} onContextMenu={menu.onContextMenu}>
       {/* Larger snapshot. The whole preview links to the diagram unless
           we're renaming (then it's inert so the input keeps focus). */}
       {renaming ? (
-        <span className={previewArea}>
-          <DiagramThumbnail
-            ownerId={ownerId}
-            diagramId={diagram.id}
-            version={diagram.savedAt}
-            shareCode={diagram.shared?.shareCode}
-            offline={diagram.ownerId === OFFLINE_OWNER_ID}
-            className="h-full w-full"
-          />
-        </span>
+        <span className={previewArea}>{thumbnail}</span>
       ) : (
         <Link href={href} className={previewArea} aria-label={`Open ${diagram.name}`}>
-          <DiagramThumbnail
-            ownerId={ownerId}
-            diagramId={diagram.id}
-            version={diagram.savedAt}
-            shareCode={diagram.shared?.shareCode}
-            offline={diagram.ownerId === OFFLINE_OWNER_ID}
-            className="h-full w-full"
-          />
+          {thumbnail}
         </Link>
       )}
 
@@ -237,15 +174,7 @@ function DiagramCard({
             </Link>
           )}
           {renaming ? null : (
-            <EllipsisTriggerButton
-              ref={menuRef}
-              tuck
-              label={`Menu for ${diagram.name}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                setMenuOpen((o) => !o);
-              }}
-            />
+            <EllipsisTriggerButton {...menu.triggerProps} tuck label={`Menu for ${diagram.name}`} />
           )}
         </div>
         {/* Keep every column the list shows: owner, visibility, updated. */}
@@ -259,23 +188,8 @@ function DiagramCard({
           <span className="truncate text-xs text-slate-500 dark:text-slate-400">{ownerLabel}</span>
         ) : null}
       </div>
-      {menuOpen ? (
-        <DiagramActionsMenu
-          diagram={diagram}
-          anchor={menuRef.current}
-          ownerId={ownerId}
-          onClose={() => setMenuOpen(false)}
-          onStartRename={onStartRename}
-          onDuplicate={onDuplicate}
-          onMove={onMove}
-          onDelete={onDelete}
-          onDismiss={onDismiss}
-          favourite={favourite}
-          onToggleFavourite={onToggleFavourite}
-          recentExcluded={recentExcluded}
-          onShowHistory={onShowHistory}
-          onToggleRecentExclusion={onToggleRecentExclusion}
-        />
+      {menu.open ? (
+        <DiagramEntryMenu entry={props} anchor={menu.triggerRef.current} onClose={menu.close} />
       ) : null}
     </div>
   );

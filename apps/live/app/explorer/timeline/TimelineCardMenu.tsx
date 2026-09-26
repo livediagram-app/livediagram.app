@@ -20,6 +20,7 @@
 // this trigger, so the slot hooks hold "which card's menu is open" and
 // both paths flip it.
 
+import { CloseIcon } from '@livediagram/ui';
 import { useRef, type ReactNode } from 'react';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import {
@@ -30,7 +31,6 @@ import {
 } from '@/components/primitives/PortalMenu';
 import { DiagramActionsMenu } from '../diagram-row-shared';
 import { FolderActionsMenu } from '../folder-actions-menu';
-import { CloseIcon } from '../icons';
 import type { PaneDiagram } from '../views';
 
 export type TimelineDiagramMenuHandlers = {
@@ -167,7 +167,12 @@ function EntityMenu({
         />
       ))}
       {plain.length > 0 ? <MenuGroupSeparator /> : null}
-      <MenuActionRow plain icon={<CloseIcon />} label="Remove from Timeline" onClick={onRemove} />
+      <MenuActionRow
+        plain
+        icon={<CloseIcon size={11} strokeWidth={1.8} />}
+        label="Remove from Timeline"
+        onClick={onRemove}
+      />
       {danger.length > 0 ? <MenuGroupSeparator /> : null}
       {danger.map((item) => (
         <MenuActionRow

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { CheckIcon } from '@livediagram/ui';
 import { useHoverCloseTimer } from '@/hooks/ui/useHoverCloseTimer';
 
 // The zoom-percentage button in the middle of the ZoomControls dock
@@ -93,7 +94,7 @@ export function ZoomMenu({ zoom, onSetZoom, onFitToScreen }: ZoomMenuProps) {
                         : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
                     }`}
                   >
-                    {levelPercent}%{active ? <CheckGlyph /> : null}
+                    {levelPercent}%{active ? <CheckIcon /> : null}
                   </button>
                 );
               })}
@@ -123,21 +124,6 @@ export function ZoomMenu({ zoom, onSetZoom, onFitToScreen }: ZoomMenuProps) {
         </div>
       ) : null}
     </div>
-  );
-}
-
-function CheckGlyph() {
-  return (
-    <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden>
-      <path
-        d="M2.5 6.5 5 9l4.5-6"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
   );
 }
 

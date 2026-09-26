@@ -2,19 +2,14 @@
 
 import Link from 'next/link';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
-import { useRef, useState } from 'react';
+import { useRowMenu } from '@/components/primitives/useRowMenu';
 import { useRelativeTimeTick } from '@/lib/relative-time';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
 import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import type { DiagramEntryProps } from '@/app/explorer/explorer-view-props';
-import {
-  DiagramActionsMenu,
-  FavouriteMarker,
-  FolderChip,
-  hrefForDiagram,
-  VisibilityBadge,
-} from './diagram-row-shared';
+import { DiagramEntryMenu, hrefForDiagram, ownerLabelFor } from './diagram-row-shared';
+import { FavouriteMarker, FolderChip, VisibilityBadge } from './diagram-badges';
 import { RelativeTimeChip } from '@/components/primitives/RelativeTimeChip';
 
 // One diagram row in the full-page /explorer list (open / rename / move /
@@ -22,30 +17,20 @@ import { RelativeTimeChip } from '@/components/primitives/RelativeTimeChip';
 // by FolderRow + the unsorted list there. The badge + actions menu come
 // from diagram-row-shared so the card view (CardView) can't drift. The
 // team library (TeamSharedDiagrams) renders this same row.
-export function DiagramRow({
-  diagram,
-  ownerId,
-  renaming,
-  onStartRename,
-  onCommitRename,
-  onCancelRename,
-  onDuplicate,
-  onDelete,
-  onMove,
-  onDismiss,
-  favourite,
-  onToggleFavourite,
-  recentExcluded,
-  onToggleRecentExclusion,
-  onShowHistory,
-  showOwner = false,
-  folderChip,
-  showVisibility = true,
-}: DiagramEntryProps) {
+export function DiagramRow(props: DiagramEntryProps) {
+  const {
+    diagram,
+    ownerId,
+    renaming,
+    onCommitRename,
+    onCancelRename,
+    favourite,
+    showOwner = false,
+    folderChip,
+    showVisibility = true,
+  } = props;
   useRelativeTimeTick();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLButtonElement>(null);
-  const isSharedRow = !!diagram.shared;
+  const menu = useRowMenu({ disabled: renaming });
   const href = hrefForDiagram(diagram);
 
   const titleNode = renaming ? (
@@ -74,14 +59,7 @@ export function DiagramRow({
       }
       // Right-click anywhere on the row opens the same actions menu as the
       // ellipsis button (anchored to it).
-      onContextMenu={
-        renaming
-          ? undefined
-          : (e) => {
-              e.preventDefault();
-              setMenuOpen(true);
-            }
-      }
+      onContextMenu={menu.onContextMenu}
     >
       <span className="flex min-w-0 items-center gap-2">
         <DiagramThumbnail
@@ -104,9 +82,7 @@ export function DiagramRow({
       </span>
       {showOwner ? (
         <span className="hidden truncate text-xs text-slate-500 sm:block dark:text-slate-400">
-          {diagram.team?.name ??
-            diagram.shared?.ownerName ??
-            (isSharedRow ? 'Unknown owner' : 'You')}
+          {ownerLabelFor(diagram)}
         </span>
       ) : null}
       <span className="hidden sm:block">
@@ -116,32 +92,10 @@ export function DiagramRow({
       {renaming ? (
         <span />
       ) : (
-        <EllipsisTriggerButton
-          ref={menuRef}
-          label={`Menu for ${diagram.name}`}
-          onClick={(e) => {
-            e.stopPropagation();
-            setMenuOpen((o) => !o);
-          }}
-        />
+        <EllipsisTriggerButton {...menu.triggerProps} label={`Menu for ${diagram.name}`} />
       )}
-      {menuOpen ? (
-        <DiagramActionsMenu
-          diagram={diagram}
-          anchor={menuRef.current}
-          ownerId={ownerId}
-          onClose={() => setMenuOpen(false)}
-          onStartRename={onStartRename}
-          onDuplicate={onDuplicate}
-          onMove={onMove}
-          onDelete={onDelete}
-          onDismiss={onDismiss}
-          favourite={favourite}
-          onToggleFavourite={onToggleFavourite}
-          recentExcluded={recentExcluded}
-          onToggleRecentExclusion={onToggleRecentExclusion}
-          onShowHistory={onShowHistory}
-        />
+      {menu.open ? (
+        <DiagramEntryMenu entry={props} anchor={menu.triggerRef.current} onClose={menu.close} />
       ) : null}
     </li>
   );

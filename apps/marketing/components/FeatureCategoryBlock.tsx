@@ -1,4 +1,5 @@
 import { CtaLink } from '@/components/CtaLink';
+import { ChevronRightIcon } from '@livediagram/ui';
 import { featureHref } from '@/lib/feature-anchor';
 import type { LandingSection } from '@/lib/landing-content';
 import { SectionShowcase } from '@/components/SectionShowcase';
@@ -58,20 +59,10 @@ export function FeatureCategoryBlock({
 
           <CtaLink href={`/features/${section.id}`} className="group mt-8 gap-2">
             {section.cta}
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 16 16"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.7"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden
+            <ChevronRightIcon
+              size={16}
               className="transition-transform group-hover:translate-x-0.5"
-            >
-              <path d="M6 3.5 10.5 8 6 12.5" />
-            </svg>
+            />
           </CtaLink>
         </div>
 

@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 
 import { PortalMenu } from './TabPortalMenu';
+import { EllipsisGlyph } from '@/components/primitives/EllipsisTriggerButton';
 import { MenuErrorBoundary } from '@/components/primitives/MenuErrorBoundary';
 import type { CanvasMenuActions } from './TabBar';
 import type { SessionToolsProps } from '@/components/chrome/session-tools-props';
@@ -87,11 +88,7 @@ export function EllipsisMenuButton({
         data-tour-id="tab-menu-trigger"
         className="flex h-6 w-6 items-center justify-center rounded text-current/70 transition hover:bg-white/40 hover:text-current"
       >
-        <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
-          <circle cx="3" cy="7" r="1.25" fill="currentColor" />
-          <circle cx="7" cy="7" r="1.25" fill="currentColor" />
-          <circle cx="11" cy="7" r="1.25" fill="currentColor" />
-        </svg>
+        <EllipsisGlyph />
       </button>
       {open ? (
         <MenuErrorBoundary onError={onClose}>

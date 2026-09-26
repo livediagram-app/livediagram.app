@@ -9,10 +9,10 @@
 // An empty folder falls back to the card's plain folder glyph: there is
 // nothing to preview, and the glyph is the honest answer.
 
+import { FolderSolidIcon } from '@/components/primitives/explorer-icons';
 import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { FolderCardGlyph } from './explorer-folder-cards';
-import { FolderIcon } from './icons';
 import { folderPreviewTiles, type FolderPreviewContents } from './folder-preview-tiles';
 
 // Half the box each way whatever the count, so a one-diagram folder and
@@ -51,7 +51,7 @@ export function FolderPreview({
             key={`f:${tile.folder.id}`}
             className={`${tileBox} text-brand-400 dark:text-brand-300 [&_svg]:h-5 [&_svg]:w-5`}
           >
-            <FolderIcon open={false} />
+            <FolderSolidIcon open={false} />
           </span>
         ),
       )}

@@ -1,9 +1,9 @@
 'use client';
 
+import { DiagramIcon, FolderOutlineIcon, PlusIcon } from '@/components/primitives/explorer-icons';
 import { useRef, useState } from 'react';
 import { Button } from '@livediagram/ui';
 import { MenuTile, MenuTileGrid, PortalMenu } from '@/components/primitives/PortalMenu';
-import { DiagramIcon, MenuFolderIcon, PlusIcon } from '@/app/explorer/icons';
 import { ViewToggle } from '@/app/explorer/ViewToggle';
 import type { ExplorerViewMode } from '@/app/explorer/useExplorerViewMode';
 import type { Folder } from '@livediagram/api-schema';
@@ -139,7 +139,7 @@ export function TeamLibraryHeader({
                 <MenuTile
                   icon={
                     <span className="[&_svg]:h-5 [&_svg]:w-5">
-                      <MenuFolderIcon />
+                      <FolderOutlineIcon />
                     </span>
                   }
                   label={inFolder ? 'New Subfolder' : 'New Folder'}

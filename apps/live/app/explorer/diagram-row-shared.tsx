@@ -1,34 +1,40 @@
 'use client';
 
 // Pieces shared by the Explorer's list row (explorer-route-diagram-row)
-// and card (CardView): the visibility badge, the actions menu, and the
-// open-href helper. Extracted so the two view modes can't drift on what
-// a diagram's badge says or which actions its menu offers.
+// and card (CardView): the actions menu (and the entry-props binding of
+// it), the owner label, and the open-href helper. The badges they show
+// live beside this, in diagram-badges.
+// Extracted so the two view modes can't drift on what a diagram's badge
+// says or which actions its menu offers.
 
-import { SharedDotIcon } from '@/components/chrome/share-state-icons';
+import { CloseIcon } from '@livediagram/ui';
+import {
+  ClockIcon,
+  ClockOffIcon,
+  DiagramIcon,
+  DuplicateIcon,
+  FolderOutlineIcon,
+  HistoryIcon,
+  PencilIcon,
+  ShareIcon,
+  StarIcon,
+  SyncIcon,
+  TakeOfflineIcon,
+  TeamIcon,
+  TrashIcon,
+} from '@/components/primitives/explorer-icons';
+import { DismissSharedIcon } from '@/components/primitives/dismiss-shared';
 import {
   MenuActionRow,
   MenuGroupSeparator,
   MenuHeader,
   PortalMenu,
 } from '@/components/primitives/PortalMenu';
-import { Tooltip } from '@/components/primitives/Tooltip';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { useOfflineConversion } from '@/hooks/persistence/useOfflineConversion';
-import {
-  CloseIcon,
-  DiagramIcon,
-  MenuDuplicateIcon,
-  MenuFolderIcon,
-  MenuPencilIcon,
-  MenuTrashIcon,
-  ShareIcon,
-  TeamIcon,
-  ClockIcon,
-  ClockOffIcon,
-  StarIcon,
-} from './icons';
 import type { PaneDiagram } from './views';
+import type { DiagramEntryProps } from './explorer-view-props';
+import { VisibilityBadge } from './diagram-badges';
 
 // Shared diagrams open on the visitor URL (the owner-only path 404s for
 // a non-owner); everything else opens on the owned path.
@@ -38,159 +44,11 @@ export function hrefForDiagram(diagram: PaneDiagram): string {
     : `/diagram/${diagram.id}`;
 }
 
-const badgeBase =
-  'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ring-1';
-
-// The star a favourited diagram carries wherever it's listed (spec/95),
-// so you can tell a starred diagram from an unstarred one without opening
-// its menu. Amber rather than the brand colour: it's a personal mark on
-// someone else's palette of status badges, and reads as "mine" next to
-// them.
-//
-// Unlike hidden-from-Recent (spec/93), which stays menu-only, this IS
-// worth a marker: hiding is a set-and-forget negative you rarely revisit,
-// where a favourite is a positive you actively scan for.
-export function FavouriteMarker() {
+// Who a row's Owner cell names: the team for a team diagram, the sharer
+// for one shared with you, otherwise you.
+export function ownerLabelFor(diagram: PaneDiagram): string {
   return (
-    <Tooltip
-      title="Favourite"
-      description="Starred by you. Find it under Favourites in Quick find."
-    >
-      <span className="inline-flex shrink-0 items-center text-amber-500 dark:text-amber-400">
-        <StarIcon filled />
-      </span>
-    </Tooltip>
-  );
-}
-
-// Where a diagram lives, shown on Recent rows (spec/94). Recent spans every
-// folder, so without this you can't tell a "Q3 plan" in Design from one in
-// Archive without opening it.
-//
-// Deliberately NOT the badgeBase treatment: those badges are uppercase,
-// ring-outlined statements about the diagram (Offline / Shared / Team /
-// Private). This is a quiet, lower-case location that happens to be
-// clickable, so it reads as a link rather than competing with them.
-//
-// Only the IMMEDIATE parent is shown. Folders nest arbitrarily deep, and a
-// full path would be unbounded on a row that has to stay compact; the
-// containing folder is the identifying bit in practice.
-export function FolderChip({ label, onOpen }: { label: string; onOpen: () => void }) {
-  return (
-    <Tooltip title={label} description="Go to this folder.">
-      <button
-        type="button"
-        onClick={(e) => {
-          // The whole row is a link to the diagram; this jumps to the
-          // folder instead, so it must not bubble into that.
-          e.preventDefault();
-          e.stopPropagation();
-          onOpen();
-        }}
-        className="inline-flex max-w-[10rem] items-center gap-1 rounded px-1 py-0.5 text-[11px] text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-slate-300"
-      >
-        <span className="shrink-0 [&_svg]:h-3 [&_svg]:w-3">
-          <MenuFolderIcon />
-        </span>
-        <span className="truncate">{label}</span>
-      </button>
-    </Tooltip>
-  );
-}
-
-// The visibility badge: Offline (saved only in this browser, spec/76), Shared
-// (a shared-with-me row / a share-link owned row), Team, or Private. Each
-// carries a concise hover tooltip explaining what the state means. Offline
-// wins first — an offline diagram is never shared or in a team.
-export function VisibilityBadge({ diagram }: { diagram: PaneDiagram }) {
-  if (diagram.ownerId === OFFLINE_OWNER_ID) {
-    return (
-      <Tooltip title="Offline" description="Saved only in this browser. Not synced or backed up.">
-        <span
-          className={`${badgeBase} bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/30`}
-        >
-          <svg
-            width="9"
-            height="9"
-            viewBox="0 0 9 9"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.3"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden
-          >
-            <path d="M2.4 6.6h3.4a1.4 1.4 0 0 0 .2-2.8 1.9 1.9 0 0 0-3.3-.5A1.35 1.35 0 0 0 2.4 6.6Z" />
-            <path d="M1.4 1.4l6.2 6.2" />
-          </svg>
-          Offline
-        </span>
-      </Tooltip>
-    );
-  }
-  if (diagram.shared || diagram.shareCode) {
-    return (
-      <Tooltip title="Shared" description="Anyone with the link can open it.">
-        <span
-          className={`${badgeBase} bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30`}
-        >
-          <SharedDotIcon />
-          Shared
-        </span>
-      </Tooltip>
-    );
-  }
-  if (diagram.team) {
-    return (
-      <Tooltip
-        title="Team"
-        description="In a team library, so every member of the team can open it."
-      >
-        <span
-          className={`${badgeBase} bg-brand-50 text-brand-700 ring-brand-200 dark:bg-brand-500/10 dark:text-brand-300 dark:ring-brand-500/30`}
-        >
-          <svg
-            width="9"
-            height="9"
-            viewBox="0 0 9 9"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.2"
-            strokeLinecap="round"
-            aria-hidden
-          >
-            <circle cx="3.2" cy="3.2" r="1.4" />
-            <path d="M1.2 7.8c.3-1.4 1-2.1 2-2.1s1.7.7 2 2.1" />
-            <circle cx="6.6" cy="3.6" r="1.1" />
-            <path d="M6.3 5.7c.9.1 1.5.7 1.7 1.8" />
-          </svg>
-          Team
-        </span>
-      </Tooltip>
-    );
-  }
-  return (
-    <Tooltip title="Private" description="Only visible to you.">
-      <span
-        className={`${badgeBase} bg-slate-100 text-slate-500 ring-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700`}
-      >
-        <svg
-          width="9"
-          height="9"
-          viewBox="0 0 9 9"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.4"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden
-        >
-          <rect x="1.6" y="4" width="5.8" height="3.6" rx="0.9" />
-          <path d="M3 4V2.9a1.5 1.5 0 0 1 3 0V4" />
-        </svg>
-        Private
-      </span>
-    </Tooltip>
+    diagram.team?.name ?? diagram.shared?.ownerName ?? (diagram.shared ? 'Unknown owner' : 'You')
   );
 }
 
@@ -289,7 +147,7 @@ export function DiagramActionsMenu({
         {onRemoveFromTimeline ? (
           <MenuActionRow
             plain
-            icon={<CloseIcon />}
+            icon={<CloseIcon size={11} strokeWidth={1.8} />}
             label="Remove from Timeline"
             onClick={then(onRemoveFromTimeline)}
           />
@@ -297,7 +155,7 @@ export function DiagramActionsMenu({
         <MenuActionRow
           plain
           danger
-          icon={<CloseIcon />}
+          icon={<DismissSharedIcon />}
           label="Dismiss"
           onClick={then(() => onDismiss?.())}
         />
@@ -327,7 +185,7 @@ export function DiagramActionsMenu({
       {onStartRename ? (
         <MenuActionRow
           plain
-          icon={<MenuPencilIcon />}
+          icon={<PencilIcon size={12} />}
           label="Rename"
           onClick={then(onStartRename)}
         />
@@ -335,7 +193,7 @@ export function DiagramActionsMenu({
       {onDuplicate ? (
         <MenuActionRow
           plain
-          icon={<MenuDuplicateIcon />}
+          icon={<DuplicateIcon size={12} />}
           label="Duplicate"
           onClick={then(onDuplicate)}
         />
@@ -343,7 +201,7 @@ export function DiagramActionsMenu({
       {onMove ? (
         <MenuActionRow
           plain
-          icon={<MenuFolderIcon />}
+          icon={<FolderOutlineIcon />}
           label="Change Folder"
           onClick={then(() => onMove(anchor))}
         />
@@ -399,7 +257,7 @@ export function DiagramActionsMenu({
         ) : (
           <MenuActionRow
             plain
-            icon={<TakeOfflineMenuIcon />}
+            icon={<TakeOfflineIcon />}
             label="Take Offline"
             onClick={() => void takeOffline()}
           />
@@ -408,7 +266,7 @@ export function DiagramActionsMenu({
       {onRemoveFromTimeline ? (
         <MenuActionRow
           plain
-          icon={<CloseIcon />}
+          icon={<CloseIcon size={11} strokeWidth={1.8} />}
           label="Remove from Timeline"
           onClick={then(onRemoveFromTimeline)}
         />
@@ -419,7 +277,7 @@ export function DiagramActionsMenu({
           <MenuActionRow
             plain
             danger
-            icon={<MenuTrashIcon />}
+            icon={<TrashIcon size={12} />}
             label="Delete"
             onClick={then(onDelete)}
           />
@@ -429,62 +287,33 @@ export function DiagramActionsMenu({
   );
 }
 
-function SyncIcon() {
+// DiagramActionsMenu bound to a list row's or card's entry props. Both
+// entries hand the menu the same fourteen bindings; this is them once.
+export function DiagramEntryMenu({
+  entry,
+  anchor,
+  onClose,
+}: {
+  entry: DiagramEntryProps;
+  anchor: HTMLElement | null;
+  onClose: () => void;
+}) {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M4.5 12.5h6.5a2.6 2.6 0 0 0 .3-5.2 3.6 3.6 0 0 0-6.7-.8A2.5 2.5 0 0 0 4.5 12.5Z" />
-      <path d="M8 11V7m0 0L6.6 8.4M8 7l1.4 1.4" />
-    </svg>
-  );
-}
-
-function TakeOfflineMenuIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M8 2.5v6m0 0L5.6 6.1M8 8.5l2.4-2.4" />
-      <path d="M3 10.5v2a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-2" />
-    </svg>
-  );
-}
-
-// A clock with an arrow curling back. Distinct from ClockIcon, which
-// this menu already uses for Hide-from-Recent two tiles away.
-function HistoryIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.7"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M3 3v5h5" />
-      <path d="M3.05 13A9 9 0 1 0 6 5.3L3 8" />
-      <path d="M12 7v5l3 2" />
-    </svg>
+    <DiagramActionsMenu
+      diagram={entry.diagram}
+      anchor={anchor}
+      ownerId={entry.ownerId}
+      onClose={onClose}
+      onStartRename={entry.onStartRename}
+      onDuplicate={entry.onDuplicate}
+      onMove={entry.onMove}
+      onDelete={entry.onDelete}
+      onDismiss={entry.onDismiss}
+      favourite={entry.favourite}
+      onToggleFavourite={entry.onToggleFavourite}
+      recentExcluded={entry.recentExcluded}
+      onToggleRecentExclusion={entry.onToggleRecentExclusion}
+      onShowHistory={entry.onShowHistory}
+    />
   );
 }

@@ -204,8 +204,15 @@ link.
   (not persisted) so reloads start collapsed and the panel stays
   compact.
 - Each folder row shows the folder name + a count badge for the
-  combined number of direct children (folders + diagrams).
-- **Right-clicking anywhere on a folder or diagram row** opens that row's ellipsis menu (suppressing the browser's default context menu), anchored to the row's ellipsis button — the same menu the `⋯` click opens. Applies in both the floating Explorer panel and the full-page `/explorer` (a no-op while a row is being renamed).
+  combined number of direct children (folders + diagrams). A folder
+  with nothing inside shows no expand chevron (its slot stays, so
+  names line up).
+- The Teams tab's folders are the **same folder node** as the personal
+  tree, handed a team's rows: same count badge, same chevron rule,
+  same right-click menu, and team diagram rows play the same slide-out
+  when deleted. What differs is data, not markup: team folders take
+  no drag-and-drop, and Show in Explorer opens the team page.
+- **Right-clicking anywhere on a folder or diagram row** opens that row's ellipsis menu (suppressing the browser's default context menu), anchored to the row's ellipsis button: the same menu the `⋯` click opens. Applies in both the floating Explorer panel and the full-page `/explorer`, including the page's sidebar folder tree (a no-op while a row is being renamed). Every row and card shares one `useRowMenu` hook and one `EllipsisTriggerButton`, so the trigger always reports `aria-expanded` and, on the panel's hover-revealed rows, stays visible while its menu is open.
 - Folder-row ellipsis menu: Rename, Delete, "Move to folder…".
   Rename is inline (same pattern as the diagram-row rename). Delete
   pops a confirmation dialog ("Delete this folder?" with the
