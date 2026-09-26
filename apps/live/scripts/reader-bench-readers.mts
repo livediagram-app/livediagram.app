@@ -6,8 +6,9 @@ import { createRequire } from 'node:module';
 import { homedir } from 'node:os';
 import { dirname } from 'node:path';
 import { MODEL_ID, readOne, type LoadedReader } from '../lib/reading/reader-model';
+import type { Ort, OrtSession, Rgb } from './reader-bench-ocr.mts';
+import { doctrRead } from './reader-bench-ocr-doctr.mts';
 import {
-  doctrRead,
   PADDLE_RAPIDOCR,
   PADDLE_V6,
   paddleDetect,
@@ -15,10 +16,7 @@ import {
   paddleRead,
   readLines,
   type PaddleSettings,
-  type Ort,
-  type OrtSession,
-  type Rgb,
-} from './reader-bench-ocr.mts';
+} from './reader-bench-ocr-paddle.mts';
 import { sharp } from './reader-bench-sharp.mts';
 
 export type BenchReader = { load: () => Promise<(image: string) => Promise<string>> };
