@@ -4,6 +4,7 @@ import {
   arrowheadSizeOf,
   BORDER_DASH_ARRAY,
   DEFAULT_BORDER_STYLE,
+  defaultArrowLabelColor,
   defaultArrowStrokeColor,
   KNOCKOUT_RADIUS_PX,
   routeBehindHoles,
@@ -436,7 +437,7 @@ function ArrowViewImpl({
           layout={labelLayout}
           text={arrow.label ?? ''}
           fill={arrow.labelFill}
-          color={arrow.textColor ?? baseStroke}
+          color={defaultArrowLabelColor(arrow, surface)}
           isEditing={isEditing}
           cursorAtEnd={editCursorAtEnd}
           fontFamily={fontFamily}

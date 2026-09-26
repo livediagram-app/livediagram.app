@@ -12,7 +12,7 @@ import {
   type ArrowheadShape,
 } from './arrow-style';
 import { BORDER_DASH_ARRAY } from './border-style';
-import { defaultArrowStrokeColor, type CanvasSurface } from './colors';
+import { defaultArrowLabelColor, defaultArrowStrokeColor, type CanvasSurface } from './colors';
 import { arrowEndpointSpread } from './arrow-endpoint-spread';
 import { endpointPosition } from './geometry';
 import { svgWrappedLabel } from './svg-render-labels';
@@ -187,9 +187,8 @@ export function svgArrow(
         center.x,
         center.y,
         'middle',
-        // Falls back to the line's colour, matching the canvas: a caption with
-        // no colour of its own belongs to the arrow it labels.
-        arrow.textColor ?? stroke,
+        // The same colour the canvas paints it (defaultArrowLabelColor).
+        defaultArrowLabelColor(arrow, surface),
         layout.fontPx,
         !!arrow.textBold,
         !!arrow.textItalic,

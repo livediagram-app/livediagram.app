@@ -26,7 +26,7 @@ describe('the Default colour scheme', () => {
     expect(light.label).toBe(dark.label);
     // Different canvas.
     expect(light.backgroundColor).toBe('#ffffff');
-    expect(dark.backgroundColor).toBe('#2b2b33');
+    expect(dark.backgroundColor).toBe('#0d121a');
     expect(light.patternColor).not.toBe(dark.patternColor);
   });
 
@@ -46,7 +46,7 @@ describe('the Default colour scheme', () => {
   });
 
   it('answers an unknown id with the Default scheme for that appearance', () => {
-    expect(getBuiltInTheme(undefined, 'dark').backgroundColor).toBe('#2b2b33');
+    expect(getBuiltInTheme(undefined, 'dark').backgroundColor).toBe('#0d121a');
     expect(getBuiltInTheme('not-a-scheme', 'light').backgroundColor).toBe('#ffffff');
   });
 });
