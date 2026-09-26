@@ -38,7 +38,7 @@ export default function ContactPage() {
         </p>
 
         <div className="space-y-4">
-          <div className="rounded-xl border border-slate-200 bg-white p-5 transition-all duration-200 hover:border-slate-300 sm:p-6">
+          <div className="rounded-xl border border-slate-200 bg-white p-5 transition-all duration-micro hover:border-slate-300 sm:p-6">
             <h2 className="mb-2 text-lg font-semibold text-slate-900">Email Us</h2>
             <p className="mb-4 leading-relaxed text-slate-600">
               Questions, feedback, or trouble with a feature? Email the team and we will get back to
@@ -49,7 +49,7 @@ export default function ContactPage() {
             </a>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white p-5 transition-all duration-200 hover:border-slate-300 sm:p-6">
+          <div className="rounded-xl border border-slate-200 bg-white p-5 transition-all duration-micro hover:border-slate-300 sm:p-6">
             <h2 className="mb-2 text-lg font-semibold text-slate-900">
               Report a Bug or Request a Feature
             </h2>

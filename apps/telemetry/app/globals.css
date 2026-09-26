@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import '@livediagram/tailwind-config';
+@import './dataviz-motion.css';
 
 /* Scan the shared UI package so utility classes used only inside its
  * components (e.g. the <Brand> mark + <Tooltip> card) are generated
@@ -7,80 +8,12 @@
  * package is symlinked. */
 @source '../../../packages/ui/src';
 
-/* Animation token + keyframes used by the shared Tooltip card so it
- * fades in cleanly on the dashboard the same way it does in the
- * editor. Kept in sync with apps/live/app/globals.css. */
-@theme {
-  --animate-fade-in: fade-in 260ms ease-out;
-}
-
-@keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
 /* The dim behind an open stack's modal (docs/specs/017-telemetry/telemetry.md), fading in with it. */
 .stack-dim {
   background: rgb(15 23 42 / 0.45);
-  animation: fade-in 200ms ease-out;
+  animation: fade-in var(--transition-duration-micro) ease-out;
 }
 
 .dark .stack-dim {
   background: rgb(2 6 23 / 0.65);
-}
-
-/* Search's word cloud (docs/specs/017-telemetry/telemetry.md): each level's words float in, staggered by an
- * inline animation-delay. Fill-mode `both` holds them hidden until their turn,
- * so reduced motion must pin them visible as well as stop the motion. */
-@keyframes cloud-word-in {
-  from {
-    opacity: 0;
-    transform: translateY(8px) scale(0.92);
-  }
-}
-
-.cloud-word {
-  animation: cloud-word-in 420ms cubic-bezier(0.2, 0.85, 0.25, 1) both;
-}
-
-/* A charted metric in the Search view easing in (docs/specs/017-telemetry/telemetry.md): its heading,
- * description and counts rise in on a short stagger, in the cloud words'
- * curve so the two read as one motion, then the trend line wipes in left to
- * right, as if drawn. Delays come inline, per piece. */
-@keyframes metric-rise {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-}
-
-@keyframes metric-reveal {
-  from {
-    opacity: 0;
-    clip-path: inset(0 100% 0 0);
-  }
-  to {
-    opacity: 1;
-    clip-path: inset(0 0 0 0);
-  }
-}
-
-.metric-rise {
-  animation: metric-rise 420ms cubic-bezier(0.2, 0.85, 0.25, 1) both;
-}
-
-.metric-reveal {
-  animation: metric-reveal 800ms cubic-bezier(0.45, 0, 0.2, 1) backwards;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .cloud-word,
-  .metric-rise,
-  .metric-reveal {
-    animation: none;
-  }
 }

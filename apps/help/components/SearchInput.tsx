@@ -66,7 +66,7 @@ export function SearchInput({ large = false }: { large?: boolean }) {
           }}
           onFocus={() => setDismissed(false)}
           aria-label="Search help articles"
-          className={`w-full rounded-xl border border-slate-200 bg-white text-slate-900 placeholder-slate-400 shadow-sm transition-all duration-200 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500/50 ${
+          className={`w-full rounded-xl border border-slate-200 bg-white text-slate-900 placeholder-slate-400 shadow-sm transition-all duration-micro focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500/50 ${
             large ? 'py-4 pl-12 pr-4 text-lg' : 'py-2.5 pl-10 pr-4 text-sm'
           }`}
         />

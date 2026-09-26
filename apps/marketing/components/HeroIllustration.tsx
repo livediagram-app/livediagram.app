@@ -266,7 +266,7 @@ export function HeroIllustration() {
                 onClick={() => setActive(i)}
                 style={{ width: `${card}%` }}
                 className={
-                  'shrink-0 text-left transition duration-500 ' +
+                  'hero-card-dim shrink-0 text-left ' +
                   (playing ? '' : 'scale-[0.97] opacity-60 blur-[2px]')
                 }
               >

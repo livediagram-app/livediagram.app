@@ -963,3 +963,12 @@
     transform: scale(0.5);
   }
 }
+
+/* The hero carousel: the playing card is sharp, the others sit dimmed, scaled
+   and blurred, easing between the two as the carousel moves on. Illustration
+   motion (docs/specs/004-interface-design/motion.md), so it keeps its own pace. */
+.hero-card-dim {
+  transition-property: opacity, transform, scale, filter;
+  transition-duration: 500ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}

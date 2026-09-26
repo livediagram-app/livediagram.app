@@ -759,9 +759,15 @@ importers:
       '@livediagram/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
+      '@livediagram/tailwind-config':
+        specifier: workspace:*
+        version: link:../tailwind-config
       '@livediagram/vitest-config':
         specifier: workspace:*
         version: link:../vitest-config
+      '@types/node':
+        specifier: ^26.6.2
+        version: 26.6.2
       '@types/react':
         specifier: ^19.3.0
         version: 19.3.0

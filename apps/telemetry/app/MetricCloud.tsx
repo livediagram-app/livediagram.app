@@ -155,7 +155,7 @@ export function MetricCloud({
                 onClick={w.activate}
                 aria-label={`${w.label}, ${w.count.toLocaleString()} ${w.count === 1 ? 'event' : 'events'}`}
                 style={style}
-                className="cloud-word group/word relative cursor-pointer leading-none tracking-tight dark:brightness-[1.35] opacity-[var(--o)] transition duration-200 hover:-translate-y-0.5 hover:!opacity-100 focus-visible:!opacity-100 focus-visible:outline-none group-hover/cloud:opacity-40"
+                className="cloud-word group/word relative cursor-pointer leading-none tracking-tight dark:brightness-[1.35] opacity-[var(--o)] transition duration-micro hover:-translate-y-0.5 hover:!opacity-100 focus-visible:!opacity-100 focus-visible:outline-none group-hover/cloud:opacity-40"
               >
                 {w.label}
                 <span

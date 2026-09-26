@@ -140,7 +140,7 @@ function FunnelStep({
       </div>
       <div className="mt-1 h-2.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
         <div
-          className="h-full rounded-full transition-[width] duration-500"
+          className="funnel-bar h-full rounded-full"
           style={{ width: `${width}%`, backgroundColor: color, opacity: faded ? 0.6 : 1 }}
         />
       </div>
