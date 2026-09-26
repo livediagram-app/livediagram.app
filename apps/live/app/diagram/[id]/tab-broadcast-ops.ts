@@ -1,4 +1,4 @@
-import { diffToElementOps, type Tab } from '@livediagram/diagram';
+import { diffToElementOps, preferNewerQaAll, type Tab } from '@livediagram/diagram';
 import type { RoomOp } from '@livediagram/api-schema';
 
 // Turn the before/after of an autosaved tab into the realtime ops to
@@ -109,5 +109,11 @@ export function tabBroadcastOps(before: Tab | undefined, after: Tab): RoomOp[] {
 // lifecycle change (start / end / reveal / clear) replaces it.
 export function mergeRemoteTab(local: Tab, incoming: Tab): Tab {
   const keepVote = voteChangeIsDotsOnly(local.vote, incoming.vote);
-  return { ...incoming, folder: local.folder, ...(keepVote ? { vote: local.vote } : {}) };
+  return {
+    ...incoming,
+    // Q&A boards keep the newer rev's notes (spec/151), same rule as `el`.
+    elements: preferNewerQaAll(local.elements, incoming.elements),
+    folder: local.folder,
+    ...(keepVote ? { vote: local.vote } : {}),
+  };
 }

@@ -19,6 +19,7 @@
 import { SHAPE_DEFAULT_SIZE } from './shape-factory';
 import { agendaTotalMinutes, DEFAULT_CHAIR_FACING } from './collab-shapes';
 import { CHAIR_FACING_ROTATION, CHAIR_GEOMETRY, chairSeatFill } from './shape-geometry';
+import { qaView } from './qa-board';
 import { REACTION_DEFAULT, REACTION_EMOJI } from './data-shapes';
 import type { BoxedElement } from './index';
 import { r2, xmlEscape } from './svg-render-primitives';
@@ -207,6 +208,51 @@ export function svgCollabFace(el: Face, label: string, color: string): string | 
             opacity: 0.45,
           }) +
           footerPills(PAD_X, h - PAD_Y - 18, ['Open the box'], color),
+      );
+    }
+    case 'qa-board': {
+      // The ranked queue as it stood: a vote pill and the note per row, the
+      // spotlit note first, so an exported board still says what the room
+      // asked and what it wanted most (spec/151).
+      const { discussing, queue, done } = qaView(el.qaNotes);
+      const rows = discussing ? [discussing, ...queue] : queue;
+      const total = rows.length + done.length;
+      return collabCard(
+        el,
+        title || 'Questions',
+        total ? `${total} ${total === 1 ? 'note' : 'notes'}` : undefined,
+        color,
+        (w, h) => {
+          if (rows.length === 0) {
+            return text(PAD_X, PAD_Y + TITLE_PX + 28, 'No notes yet', {
+              size: 10,
+              color,
+              opacity: 0.45,
+            });
+          }
+          const rowH = 30;
+          const top = PAD_Y + TITLE_PX + 14;
+          const fit = Math.max(1, Math.floor((h - top - PAD_Y) / rowH));
+          const maxChars = Math.max(8, Math.floor((w - PAD_X * 2 - 44) / 5.6));
+          return rows
+            .slice(0, fit)
+            .map((n, i) => {
+              const y = top + i * rowH;
+              const body = n.text.length > maxChars ? `${n.text.slice(0, maxChars - 1)}…` : n.text;
+              return (
+                pill(PAD_X, y, w - PAD_X * 2, rowH - 6, color, n === discussing ? 0.16 : 0.06) +
+                pill(PAD_X + 5, y + 4, 30, rowH - 14, color, 0.14) +
+                text(PAD_X + 20, y + 16.5, String(n.voters.length), {
+                  size: 10,
+                  weight: 600,
+                  color,
+                  anchor: 'middle',
+                }) +
+                text(PAD_X + 42, y + 16.5, body, { size: 10.5, color })
+              );
+            })
+            .join('');
+        },
       );
     }
     case 'agenda': {

@@ -17,6 +17,7 @@ import type { PickerSource, SelectionMode, SessionButtonConfig } from './selecti
 import type { IconSize } from './icon-size';
 import type { EmbedProvider } from './youtube';
 import type { ParticipantResponse } from './responses';
+import type { QaNote } from './qa-board';
 import type { HeroCaption, StatItem } from './web-components';
 import type {
   AgendaItem,
@@ -240,6 +241,12 @@ export type ShapeElement = {
   // to record who wrote a card. Bounded in validate.ts.
   ideaCards?: string[];
   ideasRevealed?: boolean;
+  // Q&A board (spec/151): the notes, in submission order (the sort is a view,
+  // never stored), and the server-bumped revision every whole-element sync
+  // path compares so a stale snapshot can't roll the board back
+  // (preferNewerQa). Only the qa endpoint writes these.
+  qaNotes?: QaNote[];
+  qaRev?: number;
   // Agenda (spec/127): the ordered segments, and the index of the one the room
   // is in (absent = not started). Only meaningful on 'agenda'.
   agendaItems?: AgendaItem[];

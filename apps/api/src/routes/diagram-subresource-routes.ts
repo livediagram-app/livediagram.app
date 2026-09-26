@@ -4,7 +4,7 @@
 // under a diagram id lives here.
 
 import type { Tab } from '@livediagram/diagram';
-import { isValidTab } from '@livediagram/diagram';
+import { isValidTab, preferNewerQaAll } from '@livediagram/diagram';
 import { MAX_TAB_BYTES, bodyExceedsCap } from '../limits';
 import {
   findComment,
@@ -28,6 +28,7 @@ import {
 import { badRequest, conflict, forbidden, json, noContent, notFound } from '../responses';
 import { recordCommentAdded, recordTabSave, recordVisitorOpened } from '../timeline';
 import { handleDiagramShareRoutes } from './diagram-share-routes';
+import { handleQaBoardRoute } from './qa-board-routes';
 import {
   gateEdit,
   gateRead,
@@ -42,6 +43,9 @@ import {
 // null to let the main dispatcher fall through to the remaining routes.
 export async function handleDiagramSubresources(ctx: RouteContext): Promise<Response | null> {
   const { request, env, segments } = ctx;
+  // /api/diagrams/<id>/tabs/<tabId>/qa — a Q&A board action (spec/151).
+  const qa = await handleQaBoardRoute(ctx);
+  if (qa) return qa;
   // /api/diagrams/<id>/tabs/<tabId>
   //   GET    — full tab payload. READ access: owner or ANY valid
   //            share code (view OR edit) for this diagram, so
@@ -139,6 +143,11 @@ export async function handleDiagramSubresources(ctx: RouteContext): Promise<Resp
       ) {
         return conflict('empty_tab_overwrite_blocked');
       }
+      // A Q&A board's notes are owned by the qa endpoint (spec/151): keep
+      // whichever copy has the higher `qaRev`, so an autosave built from a
+      // snapshot taken before a vote landed can't erase it, and an editor's
+      // later save carries a newer rev back if a race ever did.
+      if (existingTab) body.elements = preferNewerQaAll(existingTab.elements, body.elements);
       const orderIndex = existingTab?.orderIndex ?? existing.tabs.length; // tabs[] is already summaries
       // Rewrite the author fields on any newly-added comment to
       // match the resolved owner's participant record. Without

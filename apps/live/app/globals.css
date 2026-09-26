@@ -1,6 +1,7 @@
 @import 'tailwindcss';
 @import '@livediagram/tailwind-config';
 @import '@livediagram/template-previews/preview-art-tile.css';
+@import './qa-board.css';
 
 /* Scan the shared UI package so utility classes used only inside its
  * components (e.g. the <Brand> mark's hover-rotate) are generated here too.

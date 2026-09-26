@@ -189,6 +189,31 @@ describe('DiagramRoom /broadcast endpoint', () => {
     expect(aPayload.op).toEqual({ kind: 'share-revoked', code: 'CODE-123' });
   });
 
+  it('sequences an `ordered` system op into the catch-up log (spec/151)', async () => {
+    const { room, state } = newRoom();
+    const a = makeSocket();
+    seedSession(state, a, presence('p-a', 'view'));
+    const op = { kind: 'qa', tabId: 't', elementId: 'b', notes: [], rev: 1 };
+    await room.fetch(
+      new Request('https://room/broadcast', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ordered: true, op }),
+      }),
+    );
+    const sent = JSON.parse(a.sent[0]!);
+    expect(sent).toMatchObject({ kind: 'op', from: 'system', op, seq: 1 });
+    expect(typeof sent.epoch).toBe('string');
+    // A fresh client asking to catch up gets it replayed.
+    const b = makeSocket();
+    seedSession(state, b, presence('p-b', 'view'));
+    room.webSocketMessage(b as never, JSON.stringify({ kind: 'sync', epoch: null, lastSeq: 0 }));
+    const catchup = b.sent.map((m) => JSON.parse(m)).find((m) => Array.isArray(m.ops)) as {
+      ops: { from: string; seq: number; op: unknown }[];
+    };
+    expect(catchup.ops).toEqual([{ from: 'system', seq: 1, op }]);
+  });
+
   it('returns 400 when the body is not valid JSON', async () => {
     const { room } = newRoom();
     const res = await room.fetch(

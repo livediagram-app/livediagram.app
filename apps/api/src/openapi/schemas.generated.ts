@@ -1745,6 +1745,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
+          "qa-board": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
           "rating": {
             "additionalProperties": false,
             "properties": {
@@ -3378,6 +3393,62 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "QaNote": {
+    "additionalProperties": false,
+    "properties": {
+      "at": {
+        "type": "number"
+      },
+      "author": {
+        "additionalProperties": false,
+        "properties": {
+          "color": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "color"
+        ],
+        "type": "object"
+      },
+      "doneAt": {
+        "type": "number"
+      },
+      "id": {
+        "type": "string"
+      },
+      "state": {
+        "$ref": "#/components/schemas/QaNoteState"
+      },
+      "text": {
+        "type": "string"
+      },
+      "voters": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "id",
+      "text",
+      "at",
+      "voters"
+    ],
+    "type": "object"
+  },
+  "QaNoteState": {
+    "enum": [
+      "discussing",
+      "done"
+    ],
+    "type": "string"
+  },
   "RatingAnim": {
     "enum": [
       "pop",
@@ -3771,6 +3842,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "progressAnimSpeed": {
         "$ref": "#/components/schemas/AnimationSpeed"
       },
+      "qaNotes": {
+        "items": {
+          "$ref": "#/components/schemas/QaNote"
+        },
+        "type": "array"
+      },
+      "qaRev": {
+        "type": "number"
+      },
       "railCount": {
         "type": "number"
       },
@@ -3932,6 +4012,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "estimate",
       "temperature",
       "idea-box",
+      "qa-board",
       "agenda",
       "decision",
       "roll-call",

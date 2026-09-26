@@ -9,6 +9,7 @@
 // Everything here is re-exported from './index'.
 
 import type { ShapeKind } from './index';
+import { isQaBoardShape } from './qa-board';
 
 // --- Estimate card (spec/123) ---------------------------------------------
 
@@ -234,6 +235,7 @@ export function isCollabPanelShape(kind: ShapeKind): boolean {
     isEstimateShape(kind) ||
     isTemperatureShape(kind) ||
     isIdeaBoxShape(kind) ||
+    isQaBoardShape(kind) ||
     isAgendaShape(kind) ||
     isRollCallShape(kind) ||
     isDecisionShape(kind)

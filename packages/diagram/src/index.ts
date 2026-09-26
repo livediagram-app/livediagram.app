@@ -423,6 +423,8 @@ export * from './responses';
 export * from './collab-shapes';
 export * from './shape-geometry';
 export * from './color-wash';
+// The Q&A board (spec/151)
+export * from './qa-board';
 export * from './web-components';
 // The Behaviours family (spec/110): which kinds are in it, and which of them
 // draw their own `…` rather than taking the shared settings one.

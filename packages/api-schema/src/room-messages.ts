@@ -1,4 +1,4 @@
-import type { ElementOp, Tab } from '@livediagram/diagram';
+import type { ElementOp, QaNote, Tab } from '@livediagram/diagram';
 import type { ChangeLogEntry, ParticipantPresence } from './index';
 import type { AvatarConfig } from './avatar';
 import type { LivePoll } from './poll';
@@ -137,7 +137,13 @@ export const MUTATION_OP_KINDS = [
 // arrive on a client socket: without that, any edit-role peer could forge
 // `share-revoked` carrying the code from their own URL and force-redirect every
 // collaborator out of the session (spec/24).
-export const SYSTEM_OP_KINDS = ['share-revoked'] as const;
+//
+// `qa` (spec/151) is here for the same reason: it is the api's authoritative
+// word on a Q&A board after a write it has already persisted. A client that
+// could send one could rewrite every peer's board without touching D1. Unlike
+// `share-revoked` it is SEQUENCED into the catch-up log (the worker asks for
+// that on the /broadcast body), because it changes the document.
+export const SYSTEM_OP_KINDS = ['share-revoked', 'qa'] as const;
 
 // The whole vocabulary. Every op the editor sends or handles is one of these
 // three kinds of thing, and which one it is decides its ordering, its role gate,
@@ -459,7 +465,10 @@ export type RoomOp =
   // they don't continue to read or hold open a stale connection.
   // Carries only the revoked code; viewers compare against their own
   // sessionShareCode and act only if it matches.
-  | { kind: 'share-revoked'; code: string };
+  | { kind: 'share-revoked'; code: string }
+  // A Q&A board's whole state after a server write (spec/151). Replaces the
+  // element's notes when `rev` is newer than the local `qaRev`.
+  | { kind: 'qa'; tabId: string; elementId: string; notes: QaNote[]; rev: number };
 
 // Client-side narrowings of `ClientMessage` / `ServerMessage` that
 // pin `op` to `RoomOp` for type-safe send/receive in the editor.

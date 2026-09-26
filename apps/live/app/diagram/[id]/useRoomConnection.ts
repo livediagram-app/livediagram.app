@@ -1,5 +1,5 @@
 import { useEffect, type Dispatch, type MutableRefObject, type SetStateAction } from 'react';
-import { applyElementOp, applyVoteDelta, type Tab } from '@livediagram/diagram';
+import { applyElementOp, applyVoteDelta, type QaNote, type Tab } from '@livediagram/diagram';
 import {
   CHANGE_LOG_LIST_LIMIT,
   type AvatarPresence,
@@ -95,6 +95,9 @@ export function useRoomConnection(opts: {
   receivePoll: (poll: LivePoll) => void;
   receivePollAnswer: (from: string, pollId: string, value: string | null) => void;
   receivePollEnd: (pollId: string) => void;
+  // A Q&A board's authoritative state after a server write (spec/151).
+  // Stable, like the poll handlers, so it can't reopen the socket.
+  receiveQa: (tabId: string, elementId: string, notes: QaNote[], rev: number) => void;
   // Re-hydrate tab content from D1 when the room can't replay our gap
   // (spec/97). Stable, like the poll handlers, so it can't reopen the
   // socket — the effect's dep list stays [hydrated, diagramId, shareable].
@@ -132,6 +135,7 @@ export function useRoomConnection(opts: {
     receivePoll,
     receivePollAnswer,
     receivePollEnd,
+    receiveQa,
     resyncFromServer,
   } = opts;
 
@@ -443,6 +447,12 @@ export function useRoomConnection(opts: {
           });
         } else if (op.kind === 'log-remove') {
           setChangeLog((prev) => prev.filter((e) => e.id !== op.entryId));
+        } else if (op.kind === 'qa') {
+          // The api's word on a Q&A board (spec/151). System-only: the worker
+          // sends it through /broadcast after the write is already in D1, and
+          // the room refuses it from a client socket, so the sender check is
+          // defence in depth like share-revoked's below.
+          if (from === 'system') receiveQa(op.tabId, op.elementId, op.notes, op.rev);
         } else if (op.kind === 'share-revoked') {
           // Owner revoked a share link. If our session is hydrated
           // against that exact code, the diagram is no longer ours

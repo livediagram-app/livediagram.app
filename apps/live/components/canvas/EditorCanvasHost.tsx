@@ -283,6 +283,7 @@ export function EditorCanvasHost() {
     unresolveThread,
     pickerFor,
     collabElements,
+    qaBoard,
     followMe,
     keepPollResults,
     tabs,
@@ -589,6 +590,19 @@ export function EditorCanvasHost() {
           scatterIdeas: isReadOnly || runBlocked ? undefined : collabElements.scatterIdeas,
           pressAgendaItem: isReadOnly || runBlocked ? undefined : collabElements.pressAgendaItem,
           takeRoll: isReadOnly || runBlocked ? undefined : collabElements.takeRoll,
+          // The Q&A board (spec/151). Adding and voting stay live for a
+          // view-role visitor: the server owns the board and gates them on
+          // read access, which is the point of the element. Running it is
+          // the facilitator's, else any editor's.
+          selfOwnerId: selfParticipant.id,
+          selfName: selfParticipant.name,
+          addQaNote: qaBoard.addQaNote,
+          voteQaNote: qaBoard.voteQaNote,
+          discussQaNote: isReadOnly || runBlocked ? undefined : qaBoard.discussQaNote,
+          closeQaNote: isReadOnly || runBlocked ? undefined : qaBoard.closeQaNote,
+          reopenQaNote: isReadOnly || runBlocked ? undefined : qaBoard.reopenQaNote,
+          removeQaNote: isReadOnly || runBlocked ? undefined : qaBoard.removeQaNote,
+          clearQaBoard: isReadOnly || runBlocked ? undefined : qaBoard.clearQaBoard,
         }}
         onEraseStart={isReadOnly ? undefined : beginErase}
         onDuplicateMultiSelected={duplicateMultiSelected}

@@ -137,10 +137,10 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   components: 9,
   data: 7,
   // Behaviours absorbed Collaborate (spec/110), so this is both families:
-  // Ask (3 estimate scales + temperature + idea box), Run the
+  // Ask (3 estimate scales + temperature + idea box + Q&A board), Run the
   // room (3), Session (3), Record (3), Reactions (5), Selection
   // Mode (8 modes), Navigate (2), plus the comment pin loose on top.
-  behaviour: 35,
+  behaviour: 36,
   // The Event Storming notation (spec/139): one tile per note kind.
   'event-storming': 8,
 };

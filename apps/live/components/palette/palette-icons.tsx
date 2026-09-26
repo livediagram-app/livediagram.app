@@ -926,6 +926,20 @@ export function IdeaBoxIcon() {
   );
 }
 
+export function QaBoardIcon() {
+  return (
+    <CollabGlyph>
+      {/* a ranked list with an upvote chevron on the top row */}
+      <path d="M2.4 5.6l1.6-1.6 1.6 1.6" />
+      <path d="M7.4 4.8h6.2" />
+      <path d="M7.4 8.4h5" />
+      <path d="M7.4 12h3.6" />
+      <path d="M3.4 8.6v.1" />
+      <path d="M3.4 12.2v.1" />
+    </CollabGlyph>
+  );
+}
+
 export function AgendaIcon() {
   return (
     <CollabGlyph>
