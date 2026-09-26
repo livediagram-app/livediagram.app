@@ -12,7 +12,7 @@ import { forbidden, json, notFound, svgImage } from '../responses';
 import { reportServerEvent } from '../server-telemetry';
 import { sharePasswordStatus } from '../auth/share-access';
 import { getDiagramTabImageSvg, getDiagramThumbnailSvg } from '../thumbnail';
-import { redactOwnerId } from '../redact-owner';
+import { redactDiagramForReader } from '../redact-diagram';
 import { sharePasswordOf, type RouteContext } from './context';
 
 // Resolve a share code to its diagram + role. Used by visitors
@@ -78,7 +78,7 @@ export async function handleShare(ctx: RouteContext): Promise<Response> {
           );
         }
       }
-      return json({ diagram: redactOwnerId(d, visitor), role: link.role });
+      return json({ diagram: redactDiagramForReader(d, visitor), role: link.role });
     }
     // No active link resolves this code: expired, revoked, or never
     // existed. `getShareLink` (above) is the single authority — it

@@ -1,4 +1,5 @@
-// Strip the owner's id from a diagram DTO for anyone who isn't the owner.
+// Strip the owner's credentials from a diagram DTO for anyone who isn't the
+// owner: the owner's id, and the diagram's primary share code.
 //
 // A diagram's `ownerId` is a CREDENTIAL, not a label. For a guest owner it is
 // the `X-Owner-Id` bearer value itself, so handing it to a reader hands them
@@ -24,14 +25,22 @@
 // blank case and falls back to the owner's name + colour. So redacting on the
 // second door changes what a non-owner RECEIVES, not what they can do.
 
+// `shareCode` is a credential too. It is the diagram's OLDEST share link, of
+// any role, so a view-link visitor who received it held an edit link. A
+// visitor always has their own code already (the one they arrived with), and
+// only the owner manages links, so nobody else needs it.
+
 import type { DiagramDTO } from './types';
 
 // `caller` is the resolved owner of the request (Clerk sub, API-token owner,
 // or the guest header) — the same value the access gates compare against.
 //
 // Returns the DTO untouched for the owner, and a copy with `ownerId` blanked
-// for everyone else, including a null caller. Blank rather than absent so the
-// wire type stays `ownerId: string` and no client has to handle `undefined`.
-export function redactOwnerId(diagram: DiagramDTO, caller: string | null): DiagramDTO {
-  return caller && caller === diagram.ownerId ? diagram : { ...diagram, ownerId: '' };
+// and `shareCode` nulled for everyone else, including a null caller. Blank
+// rather than absent so the wire type stays `ownerId: string` and no client
+// has to handle `undefined`; null is the type's existing "no link" value.
+export function redactDiagramForReader(diagram: DiagramDTO, caller: string | null): DiagramDTO {
+  return caller && caller === diagram.ownerId
+    ? diagram
+    : { ...diagram, ownerId: '', shareCode: null };
 }
