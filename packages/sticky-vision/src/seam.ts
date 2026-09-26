@@ -1,5 +1,6 @@
 import type { Box, PaperMask } from './boxes';
 import type { ImageBuffer } from './colour';
+import { median } from './stats';
 
 // The SEAM between two notes that touch (spec/139 Phase 9, experiment B3).
 //
@@ -138,11 +139,6 @@ function seamDepthAlong(
   // Signed, so a step only counts when the paper changes the SAME way the
   // whole length of the line, as it does from one note to the next.
   return steps ? Math.max(dip, Math.abs(median(rises))) : dip;
-}
-
-function median(values: number[]): number {
-  values.sort((a, b) => a - b);
-  return values[Math.floor(values.length / 2)]!;
 }
 
 // The deepest seam across the box that leaves a note either side of it, or

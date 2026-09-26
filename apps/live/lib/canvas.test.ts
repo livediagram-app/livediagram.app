@@ -13,7 +13,6 @@ import {
   inheritedSizeFor,
   MIN_SIZE,
   nextBounds,
-  unionOfBounds,
   unionResizeMember,
   withFrameContents,
   type ShapeBounds,
@@ -257,29 +256,6 @@ describe('cornerOf', () => {
 
   it('returns null for move (no corner is being pulled)', () => {
     expect(cornerOf('move')).toBeNull();
-  });
-});
-
-describe('unionOfBounds', () => {
-  it('returns null for an empty iterable so callers can short-circuit', () => {
-    expect(unionOfBounds([])).toBeNull();
-  });
-
-  it('returns the same bounds back for a single-element union', () => {
-    const only: ShapeBounds = { x: 10, y: 20, width: 30, height: 40 };
-    expect(unionOfBounds([only])).toEqual(only);
-  });
-
-  it('takes the outermost edges across multiple disjoint bounds', () => {
-    const a: ShapeBounds = { x: 0, y: 0, width: 50, height: 30 };
-    const b: ShapeBounds = { x: 80, y: 100, width: 20, height: 40 };
-    expect(unionOfBounds([a, b])).toEqual({ x: 0, y: 0, width: 100, height: 140 });
-  });
-
-  it('survives overlapping bounds without double-counting size', () => {
-    const a: ShapeBounds = { x: 0, y: 0, width: 60, height: 60 };
-    const b: ShapeBounds = { x: 40, y: 40, width: 60, height: 60 };
-    expect(unionOfBounds([a, b])).toEqual({ x: 0, y: 0, width: 100, height: 100 });
   });
 });
 

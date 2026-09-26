@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
-import { classifyRgb, wallFloorsOf } from '../../sticky-vision/src';
-import { encodePng } from '../../sticky-vision/scripts/png';
+import { classifyRgb, wallFloorsOf } from '@livediagram/sticky-vision';
+import { encodePng } from '@livediagram/sticky-vision/png';
 import { score, truthFor } from '../../sticky-vision/scripts/truth';
 import { decodeBoxes, type DecodedBox, type DecodeMode } from '../src/decode';
 import { loadRealWalls, type RealWall } from './data/real';

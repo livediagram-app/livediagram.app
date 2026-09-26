@@ -522,7 +522,8 @@ Worker (no DOM, no React).
   the placeholder.
 - **Element coverage.** The shared renderer draws tables as their real grid
   (tracks / headers / zebra / per-cell text, `svg-render-table.ts`), freehand
-  sketches as their polyline, the full shape-silhouette vocabulary (hexagon /
+  sketches as the canvas draws them (the same Catmull-Rom smoothing, straight
+  segments for a polygon-tool path), the full shape-silhouette vocabulary (hexagon /
   cylinder / document / cloud / devices / actor / frame ... —
   `svg-render-shapes.ts`, drawn from the same geometry table as the editor's
   ShapeSvgOverlay: `shape-geometry.ts`, pinned by a test per kind on each side),

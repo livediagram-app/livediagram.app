@@ -1,5 +1,4 @@
-import { classMaskOf, detectStickies } from '../../../sticky-vision/src/detect';
-import { HYBRID_RULES } from '../../../sticky-vision/src/hybrid';
+import { classMaskOf, detectStickies, holdsPoint, HYBRID_RULES } from '@livediagram/sticky-vision';
 import { luminanceOf } from '../../../sticky-vision/src/seam';
 import { CUE_OPTIONS, cuesOf } from '../../src/cues';
 import { loadHybridWalls } from './walls';
@@ -18,8 +17,6 @@ const minArea = i === -1 ? 0.2 : Number(process.argv[i + 1]);
 type R = { x: number; y: number; w: number; h: number };
 const cx = (r: R) => r.x + r.w / 2;
 const cy = (r: R) => r.y + r.h / 2;
-const holds = (b: R, x: number, y: number) =>
-  x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h;
 
 for (const wall of await loadHybridWalls()) {
   const { width, height } = wall.image;
@@ -36,10 +33,10 @@ for (const wall of await loadHybridWalls()) {
   }));
   for (const b of found) {
     const inside = cues.notes.filter(
-      (n) => holds(b, cx(n.core), cy(n.core)) && n.w * n.h >= minArea * median,
+      (n) => holdsPoint(b, cx(n.core), cy(n.core)) && n.w * n.h >= minArea * median,
     );
     if (inside.length < 2) continue;
-    const held = labels.filter((l) => holds(b, cx(l), cy(l))).length;
+    const held = labels.filter((l) => holdsPoint(b, cx(l), cy(l))).length;
     const pairs: string[] = [];
     for (let a = 0; a < inside.length; a += 1)
       for (let c = a + 1; c < inside.length; c += 1) {
@@ -57,7 +54,7 @@ for (const wall of await loadHybridWalls()) {
           const x = Math.round(cx(p.core) + ((cx(q.core) - cx(p.core)) * s) / steps);
           const y = Math.round(cy(p.core) + ((cy(q.core) - cy(p.core)) * s) / steps);
           const l = lum[y * width + x]!;
-          if (holds(p.core, x, y) || holds(q.core, x, y)) {
+          if (holdsPoint(p.core, x, y) || holdsPoint(q.core, x, y)) {
             coreLum += l;
             coreN += 1;
             continue;

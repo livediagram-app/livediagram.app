@@ -1,6 +1,7 @@
 import { classMaskOf, closeRadiusFor } from '../src/detect';
 import { closePaperMask, labelComponents } from '../src/components';
-import { estimateNoteSize, fillRatio, mergeFragments, noiseFloorFor, type Box } from '../src/boxes';
+import { boxOf, estimateNoteSize, fillRatio, mergeFragments, noiseFloorFor } from '../src/boxes';
+import { holdsPoint } from '../src/rect';
 import { splitOversized } from '../src/split';
 import { cutAtNotches } from '../src/chords';
 import { findSeam, luminanceOf } from '../src/seam';
@@ -21,10 +22,6 @@ import { photoDir, truthFor } from './truth';
 // holds one centre (the seam crosses a single note, or cuts off a strip of a
 // neighbour), NONE when it holds none.
 
-type Rect = { x: number; y: number; w: number; h: number };
-const inside = (r: Rect, x: number, y: number) =>
-  x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h;
-
 const DIR = photoDir();
 const tally: Record<string, number> = {};
 for (const name of listPhotos(DIR)) {
@@ -34,27 +31,12 @@ for (const name of listPhotos(DIR)) {
   const { width, height } = image;
   const imageSize = Math.max(width, height);
   const mask = classMaskOf(image);
-  const toBox = (c: {
-    classId: number;
-    minX: number;
-    minY: number;
-    maxX: number;
-    maxY: number;
-    pixels: number;
-  }): Box => ({
-    classId: c.classId,
-    x: c.minX,
-    y: c.minY,
-    w: c.maxX - c.minX + 1,
-    h: c.maxY - c.minY + 1,
-    pixels: c.pixels,
-  });
   const noiseFloor = noiseFloorFor(imageSize);
-  const note = estimateNoteSize(labelComponents(mask).map(toBox), noiseFloor);
+  const note = estimateNoteSize(labelComponents(mask).map(boxOf), noiseFloor);
   // The detector's own radius, not a copy: a hand-copied 0.04 closed twice as
   // hard as detectStickies and measured a mask that never ships.
   const closed = closePaperMask(mask, { radius: closeRadiusFor(note, imageSize) });
-  const pieces = mergeFragments(labelComponents(closed).map(toBox), note)
+  const pieces = mergeFragments(labelComponents(closed).map(boxOf), note)
     .filter((b) => Math.min(b.w, b.h) >= noiseFloor && Math.min(b.w, b.h) >= note * 0.5)
     .flatMap((b) => splitOversized(b, note, closed, mask))
     .flatMap((b) => cutAtNotches(b, closed, note))
@@ -68,7 +50,7 @@ for (const name of listPhotos(DIR)) {
   for (const p of pieces) {
     const seam = findSeam(lum, p, note);
     if (!seam) continue;
-    const held = centres.filter((c) => inside(p, c.cx, c.cy));
+    const held = centres.filter((c) => holdsPoint(p, c.cx, c.cy));
     const at = (c: { cx: number; cy: number }) => (seam.vertical ? c.cx : c.cy);
     const before = held.filter((c) => at(c) <= seam.at).length;
     const after = held.length - before;

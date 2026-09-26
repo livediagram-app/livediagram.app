@@ -15,7 +15,10 @@ import {
   createShape,
   deriveShapeColours,
   deriveTextColorForBg,
+  hexToRgb,
   isLightColor,
+  rgbToHex,
+  shade,
   supportsBorderRadius,
   supportsFillColor,
   type ArrowElement,
@@ -37,6 +40,30 @@ const arrow = (overrides: Partial<ArrowElement> = {}): ArrowElement => ({
   from: { kind: 'free', x: 0, y: 0 },
   to: { kind: 'free', x: 10, y: 10 },
   ...overrides,
+});
+
+describe('hexToRgb / rgbToHex', () => {
+  it('parses #rrggbb with or without the #, in either case', () => {
+    expect(hexToRgb('#0ea5E9')).toEqual({ r: 14, g: 165, b: 233 });
+    expect(hexToRgb('0ea5e9')).toEqual({ r: 14, g: 165, b: 233 });
+  });
+
+  it('is null for anything that is not six hex digits', () => {
+    expect(hexToRgb('#fff')).toBeNull();
+    expect(hexToRgb('#0ea5e980')).toBeNull();
+    expect(hexToRgb('red')).toBeNull();
+  });
+
+  it('writes channels back rounded and clamped into 0-255', () => {
+    expect(rgbToHex({ r: 14, g: 165, b: 233 })).toBe('#0ea5e9');
+    expect(rgbToHex({ r: -4, g: 300, b: 127.6 })).toBe('#00ff80');
+  });
+
+  it('shade mixes toward black and leaves unparseable input alone', () => {
+    // The avatar sprite's shaded side is this 22% shade.
+    expect(shade('#0ea5e9', 0.22)).toBe('#0b81b6');
+    expect(shade('red', 0.5)).toBe('red');
+  });
 });
 
 describe('isLightColor', () => {

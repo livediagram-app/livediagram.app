@@ -1,5 +1,6 @@
 import { classMaskOf, detectStickies } from '../src/detect';
 import { labImageOf, type LabImage } from '../src/lab';
+import { median } from '../src/stats';
 import { EVENT_STORMING_NOTES } from '@livediagram/diagram';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { encodePng } from './png';
@@ -18,17 +19,15 @@ import { photoDir, score, truthFor } from './truth';
 const KIND_ID = new Map(EVENT_STORMING_NOTES.map((n, i) => [n.kind, i + 1]));
 const PAPER_FRACTION_FOR_COLOUR_OK = 0.5;
 
-function median(values: number[]): number {
-  if (values.length === 0) return Number.NaN;
-  const s = [...values].sort((a, b) => a - b);
-  return s[Math.floor(s.length / 2)]!;
-}
+// No pixels prints as NaN, a visible gap, where the shared median's 0 would
+// read as a real (black) colour.
+const medianOrNaN = (values: number[]) => (values.length === 0 ? Number.NaN : median(values));
 
 function labOf(lab: LabImage, xs: number[]): { l: number; a: number; b: number } {
   return {
-    l: median(xs.map((p) => lab.l[p]!)),
-    a: median(xs.map((p) => lab.a[p]!)),
-    b: median(xs.map((p) => lab.b[p]!)),
+    l: medianOrNaN(xs.map((p) => lab.l[p]!)),
+    a: medianOrNaN(xs.map((p) => lab.a[p]!)),
+    b: medianOrNaN(xs.map((p) => lab.b[p]!)),
   };
 }
 

@@ -193,7 +193,6 @@ export {
   MIN_SIZE,
   nextBounds,
   snapModeOf,
-  unionOfBounds,
   unionResizeMember,
   type ResizeSnapMode,
   type ShapeBounds,

@@ -1,35 +1,7 @@
 import type { AlignmentGuide, DistributionGuide, Element } from '@livediagram/diagram';
 import { describe, expect, it } from 'vitest';
 import type { SnapTarget } from '@/components/canvas/Canvas.types';
-import {
-  computeSnapTargets,
-  distToSegment,
-  sameDistGuides,
-  sameGuides,
-  sameTargets,
-} from './drag-geometry';
-
-describe('distToSegment', () => {
-  const a = { x: 0, y: 0 };
-  const b = { x: 10, y: 0 };
-
-  it('is zero for a point on the segment', () => {
-    expect(distToSegment({ x: 5, y: 0 }, a, b)).toBe(0);
-  });
-
-  it('is the perpendicular distance for a point beside the segment', () => {
-    expect(distToSegment({ x: 5, y: 3 }, a, b)).toBeCloseTo(3);
-  });
-
-  it('clamps past the endpoints (distance to the nearer end)', () => {
-    expect(distToSegment({ x: 20, y: 0 }, a, b)).toBeCloseTo(10); // past b
-    expect(distToSegment({ x: -5, y: 0 }, a, b)).toBeCloseTo(5); // past a
-  });
-
-  it('handles a degenerate zero-length segment as point distance', () => {
-    expect(distToSegment({ x: 3, y: 4 }, { x: 0, y: 0 }, { x: 0, y: 0 })).toBeCloseTo(5);
-  });
-});
+import { computeSnapTargets, sameDistGuides, sameGuides, sameTargets } from './drag-geometry';
 
 describe('sameGuides', () => {
   const g: AlignmentGuide[] = [{ axis: 'x', position: 10, start: 0, end: 100 }];

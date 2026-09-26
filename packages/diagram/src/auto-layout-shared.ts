@@ -4,6 +4,7 @@
 // edge extraction, component split, and arrow re-anchoring. Internal module,
 // not re-exported from the package index.
 
+import { clamp } from './geometry-primitives';
 import type { Anchor, ArrowElement, BoxedElement, ElementId } from './index';
 
 export const LAYER_GAP = 90; // gap between consecutive ranks (main axis)
@@ -14,7 +15,6 @@ export const COMPONENT_GAP = 120; // gap between disconnected sub-diagrams
 const SQUARE_SHAPES = new Set(['circle', 'diamond']);
 
 const round10 = (n: number) => Math.round(n / 10) * 10;
-export const clamp = (n: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, n));
 
 export type Size = { w: number; h: number };
 export type Pt = { x: number; y: number };

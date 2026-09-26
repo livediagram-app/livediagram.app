@@ -40,15 +40,19 @@ export function defaultPadding(element: BoxedElement): Padding {
 // for new elements when the tab background or pattern colour has been
 // customised. Failsafe: returns design defaults on unparseable input.
 
-type RGB = { r: number; g: number; b: number };
+export type RGB = { r: number; g: number; b: number };
 
-function hexToRgb(hex: string): RGB | null {
+// `#rrggbb` (the `#` optional) to 0-255 channels, or null for anything else
+// (shorthand, a CSS name, an rgb() string). The one hex parser: callers that
+// know their input is a catalogue hex assert it rather than re-parsing.
+export function hexToRgb(hex: string): RGB | null {
   const m = /^#?([a-fA-F\d]{2})([a-fA-F\d]{2})([a-fA-F\d]{2})$/.exec(hex);
   if (!m) return null;
   return { r: parseInt(m[1]!, 16), g: parseInt(m[2]!, 16), b: parseInt(m[3]!, 16) };
 }
 
-function rgbToHex({ r, g, b }: RGB): string {
+// Channels back to `#rrggbb`, rounded and clamped into 0-255 first.
+export function rgbToHex({ r, g, b }: RGB): string {
   const clamp = (v: number) => Math.max(0, Math.min(255, Math.round(v)));
   return '#' + [clamp(r), clamp(g), clamp(b)].map((v) => v.toString(16).padStart(2, '0')).join('');
 }

@@ -1,6 +1,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import type { ImageBuffer } from '../src/colour';
 import { detectStickies } from '../src/detect';
+import { holdsPoint, overlapArea } from '../src/rect';
 import { standoutPartsOf } from '../src/standout';
 import { brightnessOf, edgeContrastOf, roughnessOf, valueSpreadOf } from '../src/texture';
 import { encodePng } from './png';
@@ -25,14 +26,7 @@ import { photoDir, score, truthFor } from './truth';
 
 type Rect = { x: number; y: number; w: number; h: number };
 const area = (r: Rect) => r.w * r.h;
-const overlap = (a: Rect, b: Rect) =>
-  Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x)) *
-  Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y));
-const centreIn = (r: Rect, o: Rect) => {
-  const cx = o.x + o.w / 2;
-  const cy = o.y + o.h / 2;
-  return cx >= r.x && cx <= r.x + r.w && cy >= r.y && cy <= r.y + r.h;
-};
+const centreIn = (r: Rect, o: Rect) => holdsPoint(r, o.x + o.w / 2, o.y + o.h / 2);
 
 function crop(image: ImageBuffer, box: Rect, labels: Rect[], scale = 4): ImageBuffer {
   const pad = Math.round(Math.max(box.w, box.h) * 0.6);
@@ -108,8 +102,8 @@ for (const name of listPhotos(dir)) {
       .map((l, i) => ({
         i,
         l,
-        inBox: overlap(box, l) / area(box),
-        ofLabel: overlap(box, l) / area(l),
+        inBox: overlapArea(box, l) / area(box),
+        ofLabel: overlapArea(box, l) / area(l),
       }))
       .filter((o) => o.inBox > 0.05)
       .sort((a, b) => b.inBox - a.inBox);

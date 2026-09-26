@@ -10,12 +10,16 @@ import {
   type Endpoint,
 } from './index';
 import { techIconMarkBounds } from './icon-size';
+import { unionRects, type Point, type Rect } from './geometry-primitives';
 import { shapePolygonVertices } from './shape-geometry';
 import type { ShapeKind } from './shape-kind';
 
 // --- Geometry helpers ------------------------------------------------------
 
-export type Point = { x: number; y: number };
+// The dependency-free primitives (Point, Rect, clamp, rect tests, unions)
+// live in a leaf module so modules that must not import the barrel at
+// runtime (shadow.ts, web-components.ts) can still share them.
+export * from './geometry-primitives';
 
 // Rotate `p` clockwise about `center` by `deg` degrees, matching the
 // CSS `transform: rotate(deg)` the canvas applies to a rotated element
@@ -274,10 +278,7 @@ export function endpointPosition(
   return anchorPosition(target, endpoint.anchor);
 }
 
-export function elementBounds(
-  element: Element,
-  elements: Element[],
-): { x: number; y: number; width: number; height: number } {
+export function elementBounds(element: Element, elements: Element[]): Rect {
   if (isBoxed(element)) {
     return { x: element.x, y: element.y, width: element.width, height: element.height };
   }
@@ -296,24 +297,8 @@ export function elementBounds(
 // covers arrow-only / mixed selections — used to anchor the floating
 // selection toolbar over a marquee that grabbed arrows. Returns null when
 // no listed id matches.
-export function unionElementBounds(
-  elements: Element[],
-  ids: Set<ElementId>,
-): { x: number; y: number; width: number; height: number } | null {
-  let minX = Infinity,
-    minY = Infinity,
-    maxX = -Infinity,
-    maxY = -Infinity;
-  let found = false;
-  for (const el of elements) {
-    if (!ids.has(el.id)) continue;
-    found = true;
-    const b = elementBounds(el, elements);
-    if (b.x < minX) minX = b.x;
-    if (b.y < minY) minY = b.y;
-    if (b.x + b.width > maxX) maxX = b.x + b.width;
-    if (b.y + b.height > maxY) maxY = b.y + b.height;
-  }
-  if (!found) return null;
-  return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
+export function unionElementBounds(elements: Element[], ids: Set<ElementId>): Rect | null {
+  return unionRects(
+    elements.filter((el) => ids.has(el.id)).map((el) => elementBounds(el, elements)),
+  );
 }

@@ -1,7 +1,8 @@
 import { writeFileSync } from 'node:fs';
 import { classMaskOf, detectStickies } from '../src/detect';
 import { labelComponents } from '../src/components';
-import { estimateNoteSize, noiseFloorFor } from '../src/boxes';
+import { boxOf, estimateNoteSize, noiseFloorFor } from '../src/boxes';
+import { holdsPoint } from '../src/rect';
 import { encodePng } from './png';
 import { listPhotos, loadPhoto, workDirFor } from './photos';
 import { photoDir, truthFor } from './truth';
@@ -22,10 +23,6 @@ import { photoDir, truthFor } from './truth';
 
 const DIR = photoDir();
 const crops = process.argv.includes('--crops');
-
-type Rect = { x: number; y: number; w: number; h: number };
-const inside = (r: Rect, x: number, y: number) =>
-  x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h;
 
 function arrangement(points: { cx: number; cy: number }[], note: number): string {
   const cluster = (vals: number[]) => {
@@ -49,17 +46,7 @@ for (const name of listPhotos(DIR)) {
   const mask = classMaskOf(image);
   const imageSize = Math.max(width, height);
   const noiseFloor = noiseFloorFor(imageSize);
-  const noteSize = estimateNoteSize(
-    labelComponents(mask).map((c) => ({
-      classId: c.classId,
-      x: c.minX,
-      y: c.minY,
-      w: c.maxX - c.minX + 1,
-      h: c.maxY - c.minY + 1,
-      pixels: c.pixels,
-    })),
-    noiseFloor,
-  );
+  const noteSize = estimateNoteSize(labelComponents(mask).map(boxOf), noiseFloor);
   const notes = labels.notes.map((n) => ({
     kind: n.kind,
     cx: (n.x + n.w / 2) * width,
@@ -67,11 +54,11 @@ for (const name of listPhotos(DIR)) {
     w: n.w * width,
     h: n.h * height,
   }));
-  const merged = found.filter((b) => notes.filter((n) => inside(b, n.cx, n.cy)).length >= 2);
+  const merged = found.filter((b) => notes.filter((n) => holdsPoint(b, n.cx, n.cy)).length >= 2);
   totalMerged += merged.length;
   console.log(`\n${name}  note ${noteSize}px  merged ${merged.length}`);
   merged.forEach((b, i) => {
-    const held = notes.filter((n) => inside(b, n.cx, n.cy));
+    const held = notes.filter((n) => holdsPoint(b, n.cx, n.cy));
     const kinds = [...new Set(held.map((n) => n.kind))].join('+');
     const labelNote = held.reduce((a, n) => a + Math.min(n.w, n.h), 0) / held.length;
     console.log(
@@ -150,7 +137,7 @@ for (const name of listPhotos(DIR)) {
   const where: Record<string, number> = {};
   for (const n of notes) {
     if (matchedHit(n)) continue;
-    const holder = found.find((b) => inside(b, n.cx, n.cy));
+    const holder = found.find((b) => holdsPoint(b, n.cx, n.cy));
     let why: string;
     if (holder && merged.includes(holder)) why = 'in-merged';
     else if (holder) why = 'in-other-box';

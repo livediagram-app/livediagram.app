@@ -1,3 +1,4 @@
+import { holdsPoint } from '@livediagram/sticky-vision';
 import { meetsBar, type Score } from '../../sticky-vision/scripts/truth';
 
 // The per-wall table in the same columns as the classical sweep
@@ -15,12 +16,9 @@ export type Row = { name: string; score: Score; ms: number; realMerged: number; 
 
 type Box = { x: number; y: number; w: number; h: number };
 
+// How many of `labels` have their centre inside `b`.
 const holds = (b: Box, labels: readonly Box[]) =>
-  labels.filter((l) => {
-    const cx = l.x + l.w / 2;
-    const cy = l.y + l.h / 2;
-    return cx >= b.x && cx <= b.x + b.w && cy >= b.y && cy <= b.y + b.h;
-  }).length;
+  labels.filter((l) => holdsPoint(b, l.x + l.w / 2, l.y + l.h / 2)).length;
 
 export function realMergedOf(score: Score, labels: readonly Box[]): number {
   return score.spurious.filter((b) => holds(b, labels) >= 2).length;

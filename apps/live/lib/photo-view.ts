@@ -9,6 +9,8 @@
 //
 // Pure, so the maths is tested without a browser.
 
+import { clamp } from '@livediagram/diagram';
+
 export type PhotoView = { zoom: number; x: number; y: number };
 
 // The whole photograph, as laid out.
@@ -20,8 +22,6 @@ export const FIT: PhotoView = { zoom: 1, x: 0, y: 0 };
 export const PHOTO_ZOOM_MAX = 8;
 
 type Size = { width: number; height: number };
-
-const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
 
 // A photo is never pulled past its own edge: at zoom z the picture is z times
 // the frame, so its top-left may travel from 0 (left edge on the frame's left

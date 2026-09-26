@@ -4,6 +4,8 @@
 // one channel that survives a room's lighting reasonably well — as long as the
 // whole image is balanced first, which is what `greyWorldBalance` is for.
 
+import { hexToRgb as parseHex } from '@livediagram/diagram';
+
 export type Rgb = { r: number; g: number; b: number };
 // h in 0..360, s and v in 0..1.
 export type Hsv = { h: number; s: number; v: number };
@@ -137,13 +139,13 @@ export function pixelAt(image: ImageBuffer, x: number, y: number): Rgb {
   return { r: image.data[i]!, g: image.data[i + 1]!, b: image.data[i + 2]! };
 }
 
+// A catalogue fill to channels, through the diagram package's one hex parser.
+// Every caller passes a `#rrggbb` it owns, so one that doesn't parse is a bug
+// and throws, where the old slice-and-parseInt copy handed back NaN channels.
 export function hexToRgb(hex: string): Rgb {
-  const h = hex.replace('#', '');
-  return {
-    r: parseInt(h.slice(0, 2), 16),
-    g: parseInt(h.slice(2, 4), 16),
-    b: parseInt(h.slice(4, 6), 16),
-  };
+  const rgb = parseHex(hex);
+  if (!rgb) throw new Error(`Not a #rrggbb colour: ${hex}`);
+  return rgb;
 }
 
 export const COLOUR_CALIBRATION = {

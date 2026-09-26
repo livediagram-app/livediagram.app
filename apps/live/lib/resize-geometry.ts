@@ -5,6 +5,7 @@
 // lib/canvas.ts (which re-exports everything here, so importers keep
 // resolving) as one cohesive, DOM-free unit.
 
+import type { Rect } from '@livediagram/diagram';
 import type { DragMode } from './canvas';
 
 // Floor for any single side of a boxed element during a resize. Below
@@ -15,7 +16,7 @@ export const MIN_SIZE = 20;
 // The axis-aligned bounding rectangle a boxed element occupies on the
 // canvas. The drag pipeline reads start-bounds at gesture begin and
 // recomputes a fresh ShapeBounds on every pointer move.
-export type ShapeBounds = { x: number; y: number; width: number; height: number };
+export type ShapeBounds = Rect;
 
 // Given a shape's bounds at gesture start, project the current pointer
 // delta (`dx`, `dy` already in canvas coordinates — caller has
@@ -118,27 +119,6 @@ export function unionResizeMember(
     width: Math.max(MIN_SIZE, member.width * sx),
     height: Math.max(MIN_SIZE, member.height * sy),
   };
-}
-
-// Union bounding box of a Map of starts (the shape `drag.startBounds`
-// carries during a boxed-element drag). Returns null when the map is
-// empty so callers can short-circuit. Pulled out so the resize and
-// the test suite share one definition.
-export function unionOfBounds(boundsList: Iterable<ShapeBounds>): ShapeBounds | null {
-  let minX = Infinity;
-  let minY = Infinity;
-  let maxX = -Infinity;
-  let maxY = -Infinity;
-  let saw = false;
-  for (const b of boundsList) {
-    saw = true;
-    if (b.x < minX) minX = b.x;
-    if (b.y < minY) minY = b.y;
-    if (b.x + b.width > maxX) maxX = b.x + b.width;
-    if (b.y + b.height > maxY) maxY = b.y + b.height;
-  }
-  if (!saw) return null;
-  return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
 }
 
 // Map a DragMode to the corner letter, or null if the mode isn't a

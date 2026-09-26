@@ -1,6 +1,7 @@
 import type { Box } from './boxes';
 import type { ComponentMask } from './components';
 import type { CueRect, ModelCues, ModelNote } from './model-cues';
+import { median } from './stats';
 
 // The classical boxes, corrected by what a boundary model saw (spec/139
 // Phase 9, experiment group J).
@@ -74,10 +75,7 @@ const clip = (r: CueRect, to: CueRect): CueRect => {
   };
 };
 
-function medianArea(boxes: readonly CueRect[]): number {
-  const areas = boxes.map((b) => b.w * b.h).sort((a, b) => a - b);
-  return areas[Math.floor(areas.length / 2)] ?? 0;
-}
+const medianArea = (boxes: readonly CueRect[]): number => median(boxes.map((b) => b.w * b.h));
 
 // The paper under a rectangle: its most common class and how many pixels
 // carry it, and the fraction that is paper of any class.
@@ -145,9 +143,9 @@ export function combineWithModel(
       `model cues are ${cues.width}x${cues.height}, the image is ${mask.width}x${mask.height}`,
     );
   }
-  const median = medianArea(boxes.length ? boxes : cues.notes);
+  const medianBox = medianArea(boxes.length ? boxes : cues.notes);
   const sure = (n: ModelNote, r: { minConfidence: number; minAreaOfMedian: number }) =>
-    n.confidence >= r.minConfidence && n.w * n.h >= r.minAreaOfMedian * median;
+    n.confidence >= r.minConfidence && n.w * n.h >= r.minAreaOfMedian * medianBox;
 
   let out = [...boxes];
   const { drop, split, add, pad } = rules;
