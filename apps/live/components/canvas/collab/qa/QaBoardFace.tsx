@@ -187,6 +187,8 @@ export function QaBoardFace({
     >
       <CollabPanel
         element={element}
+        // Resizing makes room for more notes rather than bigger ones.
+        reflow
         title={label.trim() || 'Questions'}
         textColor={textColor}
         aside={total ? `${total} ${total === 1 ? 'note' : 'notes'}` : undefined}

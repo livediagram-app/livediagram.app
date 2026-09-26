@@ -87,7 +87,10 @@ function collabCard(
   body: (w: number, h: number) => string,
 ): string {
   const design = SHAPE_DEFAULT_SIZE[el.shape] ?? { width: el.width, height: el.height };
-  const scale = Math.min(el.width / design.width, el.height / design.height);
+  // The Q&A board reflows rather than scales (spec/151): a bigger board shows
+  // more rows at the same size, on the canvas and so in the export too.
+  const scale =
+    el.shape === 'qa-board' ? 1 : Math.min(el.width / design.width, el.height / design.height);
   // The inner box in design units, so a card larger than its default still
   // paints edge to edge rather than leaving a band of bare card.
   const w = el.width / scale;

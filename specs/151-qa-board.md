@@ -194,9 +194,13 @@ The goal is a queue the room _watches_, not a form it fills in.
 - **Facilitator hover actions** on every row: Discuss, Done, Remove.
 - **Empty state** invites the first note rather than explaining the element.
 
-The board scales like every Collaborate card (spec/122): it is laid out at its
-default size (360 × 460) and scaled to the box, so resizing it is how a
-facilitator makes it readable from the back.
+**Resizing makes room, not bigger type.** Every other Collaborate card scales
+its contents to the box (spec/122), because its content is fixed and resizing
+is how you make it readable from the back. The board's content is a list that
+grows, so it opts out (`CollabPanel reflow`): type stays at its designed size
+and a bigger board shows more notes before it scrolls. The static export
+follows the same rule, drawing as many rows as the box fits. To make it
+readable on a projector, zoom the canvas.
 
 ## Export and render
 
