@@ -8,16 +8,20 @@ import {
 
 // jsdom lays nothing out, so each element reports the viewport rect a real
 // browser would, derived from its content-space position and the scroll.
-function pane(rows: { key: string; top: number; height: number }[], scrollTop = 0) {
+// `scale` is a transform on an ancestor (the dialog's fly-up-in entrance): it
+// shrinks every rect, but not the layout, and not scrollTop.
+function pane(rows: { key: string; top: number; height: number }[], scrollTop = 0, scale = 1) {
   const PANE_TOP = 100;
   const el = document.createElement('div');
-  el.getBoundingClientRect = () => ({ top: PANE_TOP, bottom: PANE_TOP + 400 }) as DOMRect;
+  Object.defineProperty(el, 'offsetHeight', { value: 400 });
+  el.getBoundingClientRect = () =>
+    ({ top: PANE_TOP, bottom: PANE_TOP + 400 * scale, height: 400 * scale }) as DOMRect;
   for (const r of rows) {
     const row = document.createElement('div');
     row.setAttribute(SETTINGS_ROW_ATTRIBUTE, r.key);
     row.getBoundingClientRect = () => {
-      const top = PANE_TOP + r.top - el.scrollTop;
-      return { top, bottom: top + r.height } as DOMRect;
+      const top = PANE_TOP + (r.top - el.scrollTop) * scale;
+      return { top, bottom: top + r.height * scale } as DOMRect;
     };
     el.appendChild(row);
   }
@@ -39,6 +43,12 @@ describe('captureScrollAnchor', () => {
   it('anchors on the topmost row still showing, even partly', () => {
     // Row b spans 140..340; scrolled 200 in, its top sits 60px above the edge.
     expect(captureScrollAnchor(pane(ROWS, 200))).toEqual({ rowKey: 'b', offset: -60 });
+  });
+
+  it('measures in layout pixels while the dialog is scaled mid-entrance', () => {
+    const anchor = captureScrollAnchor(pane(ROWS, 200, 0.96));
+    expect(anchor?.rowKey).toBe('b');
+    expect(anchor?.offset).toBeCloseTo(-60);
   });
 
   it('skips rows scrolled wholly out of view', () => {
@@ -64,6 +74,13 @@ describe('applyScrollAnchor', () => {
     );
     applyScrollAnchor(el, { rowKey: 'b', offset: -60 });
     expect(el.scrollTop).toBe(320);
+  });
+
+  it('lands in layout pixels while the dialog is scaled mid-entrance', () => {
+    // Scaled rects alone would stop 4% short: 192 instead of 200.
+    const el = pane(ROWS, 0, 0.96);
+    applyScrollAnchor(el, { rowKey: 'b', offset: -60 });
+    expect(el.scrollTop).toBeCloseTo(200);
   });
 
   it('leaves the pane alone when the row is gone', () => {
