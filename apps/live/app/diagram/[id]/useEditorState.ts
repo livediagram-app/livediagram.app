@@ -38,6 +38,7 @@ import { useEditorContextMenu } from '@/hooks/canvas/useEditorContextMenu';
 import { useEditorPreferences } from '@/hooks/persistence/useEditorPreferences';
 import { useDiagramHistory } from '@/hooks/canvas/useDiagramHistory';
 import { useCanvasA11y } from '@/hooks/canvas/useCanvasA11y';
+import { useLaneSettle } from '@/hooks/canvas/useLaneSettle';
 import { useNudgeSelection } from '@/hooks/canvas/useNudgeSelection';
 import { useFolders } from '@/hooks/persistence/useFolders';
 import { useConfirm } from '@/hooks/ui/useConfirm';
@@ -1601,6 +1602,17 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // Element creation lands on the active layer, so it's additionally
   // blocked while that layer is hidden or locked (docs/specs/006-diagram/layers.md).
   const createBlocked = editsBlocked || activeLayerBlocked;
+
+  // An older event-storming board is settled onto the lanes once
+  // (docs/specs/021-event-storming/event-storming.md "Always on a lane").
+  useLaneSettle({
+    activeTab,
+    editsBlocked,
+    commitActiveTab,
+    markSettled: (tabId) =>
+      tickTabs((ts) => ts.map((t) => (t.id === tabId ? { ...t, esLanesSettled: true } : t))),
+    toastInfo: toast.info,
+  });
 
   // A layer turning hidden or locked (locally or by a peer) drops its
   // elements from any live selection — the same guarantee delete gives.

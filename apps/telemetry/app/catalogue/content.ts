@@ -445,6 +445,14 @@ export const NOTE_KINDS_CHANGED = chart(
   { types: ['ChangeNoteKind'] },
 );
 
+export const LANES_SETTLED = chart(
+  'Canvas',
+  'Used',
+  'Boards Lined Up On Lanes',
+  'An older event-storming board opened for the first time since notes always sit on a lane, its stray notes lined up in one undoable step.',
+  { types: ['LanesSettled'] },
+);
+
 export const ELEMENT_EDITING: MetricStack = {
   stack: true,
   title: 'Element Editing',
@@ -464,6 +472,7 @@ export const ELEMENT_EDITING: MetricStack = {
     INSERTED_BETWEEN,
     NEXT_NOTES_ADDED,
     NOTE_KINDS_CHANGED,
+    LANES_SETTLED,
     LINKS_ADDED,
     LINKS_REMOVED,
   ],

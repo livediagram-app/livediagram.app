@@ -69,6 +69,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone held Alt and dragged a note into the gap between two notes on an event-storming board (a workshop technique that maps a process as a timeline of sticky notes), and the board made room for it.',
   'Canvas|Used|Isometric':
     'Someone switched the canvas into Isometric view, which renders the board at an angle for a 3D-style look.',
+  'Canvas|Used|LanesSettled':
+    'An older event-storming board was opened by someone who can edit it, and its notes that sat between lanes were lined up on the lanes in one undoable step. Once per board.',
   'Canvas|Used|Laser':
     "Someone switched on the Laser pointer, a trail visible to everyone that shows where they're pointing without leaving a mark.",
   'Canvas|Used|Spotlight':
