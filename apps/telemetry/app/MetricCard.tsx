@@ -1,6 +1,7 @@
 'use client';
 
-import { categoryColor, eventExplanation, eventLabel } from './event-vocab';
+import { eventExplanation } from './event-explanation';
+import { categoryColor, eventLabel } from './event-vocab';
 import { isAggregate, type Metric } from './metric-series';
 import { EventIcon } from './telemetry-event-icon';
 import { TrendBadge } from './TrendBadge';

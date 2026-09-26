@@ -1,6 +1,7 @@
 // Which features carry the work: AI, layers, the palette and canvas modes, look and feel, search, dialogs, chrome, notes, actions, organisation (spec/22).
 // Part of the metric catalogue: import from ../metric-catalogue.
 
+import { isHelpArticleType, isSettingsCategory } from '../opened-types';
 import { SELECTION_MODES } from '../palette-types';
 import { CUSTOM_THEME_TYPES, NON_PATTERN_CANVAS_TYPES } from '../look-feel-types';
 import type { Metric, MetricStack } from '../metric-series';
@@ -136,14 +137,15 @@ export const MODE_OPTIONS = chart(
   { typeIn: (t) => /^(Eraser|Laser|Spotlight|Format)/.test(t ?? '') },
 );
 
-// AI assistance (Editing tab). Ask and Clean split AI Requests by mode.
+// AI assistance (Editing tab). Ask and Clean split AI Requests by mode. The
+// photo import sends AI·Used too, under Photo* types, and has its own stack.
 export const AI_REQUESTS: Metric = {
   category: 'AI',
   action: 'Used',
-  allTypes: true,
+  typeIn: (type) => type === 'Ask' || type === 'Clean',
   title: 'AI Requests',
   blurb:
-    'A completed request in the editor AI panel, across both modes (Ask, Clean). Refusals and failures are not counted (spec/25).',
+    'A completed request in the editor AI panel, across both modes (Ask, Clean). Refusals and failures are not counted.',
 };
 
 export const AI_ASK: Metric = {
@@ -171,13 +173,50 @@ export const AI_ASSISTANCE: MetricStack = {
   headline: AI_REQUESTS,
 };
 
+// The photo import (event storming): a wall photo read into sticky notes.
+// Each photo analysed sends which detector found its notes (the model, on
+// WebGPU or WASM, or the classical fallback and why), and an import the
+// author commits sends PhotoNotes. Two units, so the head counts imports.
+export const PHOTOS_IMPORTED = chart(
+  'AI',
+  'Used',
+  'Photos Imported',
+  'A photo of a sticky-note wall turned into notes on the canvas, once the author confirmed the draft.',
+  { types: ['PhotoNotes'] },
+);
+
+export const MODEL_DETECTED = chart(
+  'AI',
+  'Used',
+  'Model Detected',
+  'A photo whose sticky notes the in-browser AI model found.',
+  { typeIn: (type) => (type ?? '').startsWith('PhotoDetectHybrid') },
+);
+
+export const FELL_BACK_TO_CLASSICAL = chart(
+  'AI',
+  'Used',
+  'Fell Back to Classical',
+  "A photo read by the simpler fallback detector, because the in-browser AI model couldn't run on that device, failed, took too long, or the photo was too flat to read.",
+  { typeIn: (type) => (type ?? '').startsWith('PhotoDetectClassical'), rising: 'bad' },
+);
+
+export const PHOTO_IMPORT: MetricStack = {
+  stack: true,
+  title: 'Photo Import',
+  blurb:
+    'Sticky-note walls photographed into a diagram, and whether the in-browser model or the classical fallback read each photo.',
+  members: [PHOTOS_IMPORTED, MODEL_DETECTED, FELL_BACK_TO_CLASSICAL],
+  headline: PHOTOS_IMPORTED,
+};
+
 // Layers (spec/74): made, used, and looked at.
 export const LAYERS_CREATED: Metric = {
   category: 'Layer',
   action: 'Added',
   type: null,
   title: 'Layers Created',
-  blurb: 'A new layer on a tab (spec/74).',
+  blurb: 'A new layer on a tab.',
 };
 
 export const LAYER_TOGGLES: Metric = {
@@ -242,7 +281,7 @@ export const NOTES_ADDED: Metric = {
   action: 'Added',
   type: null,
   title: 'Notes Added',
-  blurb: "An element's note went from empty to written (spec/22).",
+  blurb: "An element's note went from empty to written.",
 };
 
 export const NOTES_OPENED: Metric = {
@@ -258,8 +297,7 @@ export const ACTIONS_ASSIGNED: Metric = {
   action: 'Created',
   allTypes: true,
   title: 'Actions Assigned',
-  blurb:
-    'Element-level work assigned to a teammate (spec/68), with or without the email notification.',
+  blurb: 'Work on an element assigned to a teammate, with or without the email notification.',
 };
 
 export const ACTIONS_EMAILED: Metric = {
@@ -315,10 +353,11 @@ export const TABS_FILED: Metric = {
 export const DIAGRAMS_FILED: Metric = {
   category: 'Diagram',
   action: 'Moved',
-  allTypes: true,
+  // The Offline Mode conversions are Diagram·Moved too, charted in their own
+  // stack (Taken Offline, Saved to Cloud).
+  typeIn: (type) => type !== 'TakenOffline' && type !== 'SavedToCloud',
   title: 'Diagrams Filed',
-  blurb:
-    'A diagram moved into a folder, back to Unsorted, or between the cloud and offline storage (spec/76).',
+  blurb: 'A diagram moved into a folder, or back to Unsorted.',
 };
 
 export const NOTES: MetricStack = {
@@ -332,7 +371,7 @@ export const NOTES: MetricStack = {
 export const ASSIGNED_ACTIONS: MetricStack = {
   stack: true,
   title: 'Assigned Actions',
-  blurb: 'Element-level work assigned to a teammate (spec/68), emailed about, and completed.',
+  blurb: 'Work on an element assigned to a teammate, emailed about, and completed.',
   members: [
     ACTIONS_ASSIGNED,
     ACTIONS_EMAILED,
@@ -526,8 +565,14 @@ const opened = (title: string, blurb: string, typeIn: (type: string | null) => b
 
 export const SETTINGS_OPENED = opened(
   'Settings Opened',
-  'The Settings dialog, or one of its categories, opened.',
-  (t) => (t ?? '').startsWith('Settings'),
+  'The Settings dialog opened.',
+  (t) => t === 'Settings',
+);
+
+export const SETTINGS_CATEGORIES_VISITED = opened(
+  'Settings Categories Visited',
+  'A category picked inside the open Settings dialog: Appearance, Editor, Account and the rest.',
+  isSettingsCategory,
 );
 
 export const SHARE_OPENED = opened(
@@ -545,7 +590,7 @@ export const PICKERS_OPENED = opened(
 export const HELP_FROM_EDITOR = opened(
   'Help from the Editor',
   'A help article opened from inside the editor.',
-  (t) => /^[a-z]/.test(t ?? ''),
+  isHelpArticleType,
 );
 
 export const SHORTCUTS_OPENED = opened(
@@ -606,6 +651,7 @@ export const PANELS_OPENED: MetricStack = {
   blurb: 'Which dialogs and panels people open, from Settings and Share to help articles.',
   members: [
     SETTINGS_OPENED,
+    SETTINGS_CATEGORIES_VISITED,
     SHARE_OPENED,
     PICKERS_OPENED,
     HELP_FROM_EDITOR,

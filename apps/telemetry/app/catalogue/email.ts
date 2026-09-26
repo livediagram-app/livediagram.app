@@ -89,7 +89,7 @@ export const COMMENT_EMAILS = email(
 export const ACTION_EMAILS = email(
   'ActionAssigned',
   'Action Notifications',
-  'A teammate was emailed about work assigned to them (spec/68).',
+  'A teammate was emailed about work assigned to them.',
 );
 
 export const TOKEN_EXPIRING_EMAILS = email(

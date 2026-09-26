@@ -10,7 +10,7 @@ export const TOKENS_CREATED: Metric = {
   action: 'Created',
   type: 'Manual',
   title: 'Tokens Created',
-  blurb: 'Personal API tokens minted by hand from the Explorer.',
+  blurb: 'Personal API tokens created by hand from the Explorer.',
 };
 
 export const AI_TOOLS_CONNECTED: Metric = {
@@ -27,7 +27,7 @@ export const TOKENS_REVOKED: Metric = {
   action: 'Removed',
   type: null,
   title: 'Tokens Revoked',
-  blurb: 'API tokens revoked, whether minted by hand or by an AI tool.',
+  blurb: 'API tokens revoked, whether created by hand or by an AI tool.',
 };
 
 export const API_TOKEN_ACTIVITY: MetricStack = {
@@ -35,7 +35,7 @@ export const API_TOKEN_ACTIVITY: MetricStack = {
   stack: true,
   title: 'API Token Activity',
   blurb:
-    'Every token event: minted by hand, minted by an AI tool connecting over MCP, and revoked.',
+    'Every token event: created by hand, created by an AI tool connecting over MCP, and revoked.',
   members: [TOKENS_CREATED, AI_TOOLS_CONNECTED, TOKENS_REVOKED],
 };
 

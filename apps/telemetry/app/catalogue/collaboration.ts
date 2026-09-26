@@ -206,7 +206,7 @@ export const VIEWPORTS_FOLLOWED: Metric = {
   type: 'FollowMe',
   title: 'Viewports Followed',
   blurb:
-    "Someone pinned their canvas to a peer's (spec/131): the strongest signal that a session is being presented rather than just co-edited.",
+    "Someone pinned their view to a teammate's, following their pan, zoom and tab: the strongest signal that a session is being presented rather than just co-edited.",
 };
 
 export const EDIT_LINKS_SHARED: Metric = {
@@ -365,7 +365,7 @@ export const POLLS_STARTED: Metric = {
   action: 'Started',
   type: 'Poll',
   title: 'Polls Started',
-  blurb: 'A live pulse-check was opened on a tab (spec/88). Nothing about a poll is persisted.',
+  blurb: 'A live pulse-check was opened on a tab. Nothing about a poll is persisted.',
 };
 
 export const POLL_ANSWERS: Metric = {
@@ -572,11 +572,40 @@ export const STOPWATCHES: MetricStack = {
 };
 
 // The Explorer Timeline (spec/138) and the editor's Activity panel.
-export const TIMELINE_OPENED = chart(
+// Timeline·Opened carries four things by type: two ways of arriving on the
+// feed (Landing, the Explorer's default page, and Nav, a deliberate visit),
+// which is how the landing-page change is measured, and two things done in it
+// (a card or stack menu opened, a stacked run expanded).
+export const TIMELINE_LANDINGS = chart(
   'Timeline',
   'Opened',
-  'Timeline Opened',
-  'The Explorer Timeline feed opened, from its landing, a stack, a menu or the nav.',
+  'Timeline Landings',
+  'The Explorer opened straight onto the Timeline, its default page.',
+  { types: ['Landing'] },
+);
+
+export const TIMELINE_VISITS = chart(
+  'Timeline',
+  'Opened',
+  'Timeline Visits',
+  'The Timeline opened on purpose, from the Explorer nav after starting elsewhere.',
+  { types: ['Nav'] },
+);
+
+export const TIMELINE_MENUS = chart(
+  'Timeline',
+  'Opened',
+  'Timeline Card Menus',
+  'The menu on a Timeline card or stack opened, by its button or a right-click.',
+  { types: ['Menu'] },
+);
+
+export const TIMELINE_STACKS_EXPANDED = chart(
+  'Timeline',
+  'Opened',
+  'Stacks Expanded',
+  'A stacked run of changes on the Timeline opened up to show each one.',
+  { types: ['Stack'] },
 );
 
 export const TIMELINE_ENTRIES_REMOVED = chart(
@@ -606,7 +635,10 @@ export const TIMELINE_AND_ACTIVITY: MetricStack = {
   title: 'Timeline & Activity',
   blurb: 'Keeping up with what changed: the Explorer Timeline and the editor Activity panel.',
   members: [
-    TIMELINE_OPENED,
+    TIMELINE_LANDINGS,
+    TIMELINE_VISITS,
+    TIMELINE_MENUS,
+    TIMELINE_STACKS_EXPANDED,
     TIMELINE_ENTRIES_REMOVED,
     ACTIVITY_OPENED,
     ACTIVITY_THREADS,
@@ -661,6 +693,16 @@ export const SLIDES_SHOWN_HIDDEN = chart(
   { types: ['SlideShown', 'SlideHidden'], rising: 'neutral' },
 );
 
+// The presenter settings (transition, speed, auto-advance, loop and the
+// rest) send UI·Changed·Presentation-<field>: which setting, never its value.
+export const PRESENTER_SETTINGS_CHANGED = chart(
+  'UI',
+  'Changed',
+  'Presenter Settings Changed',
+  'A presentation setting changed: the transition, speed, auto-advance, loop, zoom, or what the presenter sees.',
+  { typeIn: (type) => (type ?? '').startsWith('Presentation-') },
+);
+
 export const PRESENTATIONS: MetricStack = {
   stack: true,
   title: 'Presentations',
@@ -674,6 +716,7 @@ export const PRESENTATIONS: MetricStack = {
     SLIDES_SHOWN_HIDDEN,
     SLIDE_NOTES,
     SLIDES_REORDERED,
+    PRESENTER_SETTINGS_CHANGED,
   ],
   headline: PRESENTATIONS_STARTED,
 };

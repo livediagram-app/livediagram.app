@@ -26,7 +26,7 @@ export const SERVER_CRASHES: Metric = {
   typeIn: isServerCrash,
   title: 'Server Crashes',
   blurb:
-    'Unhandled exceptions the api worker reported about itself, by route. Most also appear as an Http500 in Failed Requests, so read the two side by side rather than adding them.',
+    'Crashes the livediagram server reported about itself, by endpoint. Most also appear as an Http500 in Failed Requests, so read the two side by side rather than adding them.',
 };
 
 export const CLIENT_EXCEPTIONS: Metric = {

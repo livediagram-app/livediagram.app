@@ -49,10 +49,26 @@ type RankListProps = {
   // The previous window, for each row's trend arrow (rankTrend). Omitted when
   // the api sent no previous windows.
   trend?: RankTrend;
+  // The items come in a fixed order that means something (a funnel's steps),
+  // not most-to-least: no Most used tag, and bars scale to the biggest row.
+  ordered?: boolean;
+  // How a row's type reads; the shared typeLabel unless the ranking knows a
+  // better name (a tour step's own name, without its TourStep prefix).
+  label?: (type: string) => string;
 };
 
 // The ranked rows, inside RankCard's frame.
-function RankList({ category, action, items, daily, emptyLabel, aliases, trend }: RankListProps) {
+function RankList({
+  category,
+  action,
+  items,
+  daily,
+  emptyLabel,
+  aliases,
+  trend,
+  ordered = false,
+  label = typeLabel,
+}: RankListProps) {
   const color = categoryColor(category);
   // Each row's count in the previous window, folded like the items were.
   const before = new Map<string, number>();
@@ -67,6 +83,7 @@ function RankList({ category, action, items, daily, emptyLabel, aliases, trend }
       </div>
     );
   }
+  const widest = Math.max(...items.map((r) => r.count));
   return (
     <ul className="mt-4 flex flex-col gap-3">
       {items.map((row, i) => {
@@ -74,7 +91,7 @@ function RankList({ category, action, items, daily, emptyLabel, aliases, trend }
         // used" — features with zero usage have no row at all, so the
         // bottom of this list isn't truly the least used, just the lowest
         // among those that have any data.
-        const isTop = items.length > 1 && i === 0;
+        const isTop = !ordered && items.length > 1 && i === 0;
         const series = daily
           ? aliasedSeries(daily.byMetric, category, action, row.type, aliases)
           : undefined;
@@ -84,7 +101,7 @@ function RankList({ category, action, items, daily, emptyLabel, aliases, trend }
               <div className="flex items-baseline justify-between gap-2 text-sm">
                 <span className="flex min-w-0 items-center gap-2">
                   <span className="truncate text-slate-700 dark:text-slate-200">
-                    {typeLabel(row.type ?? '')}
+                    {label(row.type ?? '')}
                   </span>
                   {isTop ? <RankTag /> : null}
                 </span>
@@ -108,7 +125,7 @@ function RankList({ category, action, items, daily, emptyLabel, aliases, trend }
                 <div
                   className="h-full rounded-full"
                   style={{
-                    width: `${pct(row.count, items[0]!.count)}%`,
+                    width: `${widest > 0 ? pct(row.count, widest) : 0}%`,
                     backgroundColor: color,
                   }}
                 />

@@ -3,7 +3,8 @@
 import { useMemo, useState, type CSSProperties, type ReactNode } from 'react';
 import { EmptyState } from '@livediagram/ui';
 import type { TelemetryDaily, TelemetryWindow, TelemetryWindowKey } from '@livediagram/api-schema';
-import { categoryColor, eventExplanation } from './event-vocab';
+import { eventExplanation } from './event-explanation';
+import { categoryColor } from './event-vocab';
 import { ActivityGlyph } from './glyphs';
 import { buildMetrics, type Metric } from './metrics';
 import { MetricBreadcrumb, metricCrumbs, type CloudPath } from './MetricBreadcrumb';
@@ -153,7 +154,7 @@ function SelectedMetric({
             style={rise(4)}
             className="metric-rise text-sm font-semibold text-slate-900 dark:text-slate-100"
           >
-            Daily trend — last 30 days
+            Daily Trend, Last 30 Days
           </p>
           <div style={rise(5)} className="metric-reveal mt-4">
             <TrendChart
