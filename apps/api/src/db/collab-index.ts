@@ -119,7 +119,9 @@ export function collabIndexCopyStatements(
 // (live share only) — with how each is reached and, for a share, the
 // code the client needs to open it. Scoping by library FIRST is the
 // security boundary: an id inside a blob can never surface a diagram
-// the reader can no longer open.
+// the reader can no longer open. A share also carries the tab it is
+// scoped to (docs/specs/013-workspace/tab-scoped-share-links.md): the code picked has exactly that scope,
+// and the reads keep only that tab's rows.
 //
 // Binds: ?1 = ownerId, ?2 = now (share-link expiry), ?3 = limit.
 const SCOPE_CTES = `
@@ -142,8 +144,11 @@ const SCOPE_CTES = `
            CASE WHEN d.owner_id = ?1 OR d.team_id IN (SELECT team_id FROM my_teams) THEN NULL
                 ELSE (SELECT sl.code FROM share_links sl
                        WHERE sl.diagram_id = d.id AND sl.role = s.role
+                         AND sl.tab_id IS s.tab_id
                          AND (sl.expires_at IS NULL OR sl.expires_at > ?2)
-                       ORDER BY sl.created_at ASC LIMIT 1) END AS share_code
+                       ORDER BY sl.created_at ASC LIMIT 1) END AS share_code,
+           CASE WHEN d.owner_id = ?1 OR d.team_id IN (SELECT team_id FROM my_teams) THEN NULL
+                ELSE s.tab_id END AS scope_tab_id
       FROM diagrams d
       LEFT JOIN shared_with s ON s.diagram_id = d.id AND s.owner_id = ?1
      WHERE d.owner_id = ?1
@@ -202,6 +207,7 @@ const ACTIONS_SQL = `${SCOPE_CTES}
     JOIN visible v ON v.id = dt.diagram_id
     JOIN tabs t ON t.id = ca.tab_id
    WHERE ca.status = 'open'
+     AND (v.scope_tab_id IS NULL OR v.scope_tab_id = ca.tab_id)
      AND (ca.assignee_user_id IN (SELECT id FROM me)
           OR ca.assigner_id IN (SELECT id FROM me)
           OR ca.assignee_member_id IN (SELECT id FROM my_members))
@@ -221,6 +227,7 @@ const THREADS_SQL = `${SCOPE_CTES}
     JOIN visible v ON v.id = dt.diagram_id
     JOIN tabs t ON t.id = ct.tab_id
    WHERE ct.resolved = 0
+     AND (v.scope_tab_id IS NULL OR v.scope_tab_id = ct.tab_id)
      AND (v.owner_id = ?1
           OR EXISTS (SELECT 1 FROM json_each(ct.participant_ids) je
                       WHERE je.value IN (SELECT id FROM me)))

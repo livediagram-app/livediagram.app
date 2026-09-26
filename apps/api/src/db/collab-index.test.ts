@@ -168,6 +168,17 @@ describe('readActivity', () => {
     expect(batches[0]![1]!.sql).toMatch(/FROM collab_threads/);
   });
 
+  // docs/specs/013-workspace/tab-scoped-share-links.md: a visitor shown one tab gets a code of exactly that
+  // scope, and sees actions and threads on that tab only.
+  it('confines a tab-scoped visitor to their tab, with a code of that scope', async () => {
+    const { env, batches } = fakeEnv();
+    await readActivity(env, 'me', { limit: 7 });
+    for (const s of batches[0]!) {
+      expect(s.sql).toContain('sl.tab_id IS s.tab_id');
+      expect(s.sql).toMatch(/v\.scope_tab_id IS NULL OR v\.scope_tab_id = c[at]\.tab_id/);
+    }
+  });
+
   it('maps rows to the wire shape with the flags as booleans', async () => {
     const { env } = fakeEnv([[actionRow({})], []]);
     const { actions } = await readActivity(env, 'me', { limit: 10 });

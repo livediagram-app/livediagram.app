@@ -434,7 +434,7 @@ describe('handleDiagrams share-link expiry (docs/specs/013-workspace/share-link-
       makeCtx('POST', '/api/diagrams/d1/share', { body: { role: 'edit', expiry: 'week' } }),
     );
     expect(res.status).toBe(201);
-    expect(db.createShareLink).toHaveBeenCalledWith({}, 'd1', 'CODE2345', 'edit', 'week');
+    expect(db.createShareLink).toHaveBeenCalledWith({}, 'd1', 'CODE2345', 'edit', 'week', null);
   });
 
   it('POST /diagrams/:id/share defaults unknown / missing expiry to never', async () => {
@@ -443,7 +443,7 @@ describe('handleDiagrams share-link expiry (docs/specs/013-workspace/share-link-
     await handleDiagrams(
       makeCtx('POST', '/api/diagrams/d1/share', { body: { role: 'view', expiry: 'fortnight' } }),
     );
-    expect(db.createShareLink).toHaveBeenCalledWith({}, 'd1', 'CODE2345', 'view', 'never');
+    expect(db.createShareLink).toHaveBeenCalledWith({}, 'd1', 'CODE2345', 'view', 'never', null);
   });
 
   it('extend re-arms an expiring link for the owner', async () => {
@@ -878,5 +878,139 @@ describe('deleting a tab (docs/specs/013-workspace/tab-scoped-share-links.md)', 
     expect(res.status).toBe(204);
     expect(db.deleteTabRow).toHaveBeenCalledWith(expect.anything(), 'd1', 't2');
     expect(db.deleteShareLinksForTab).toHaveBeenCalledWith(expect.anything(), 'd1', 't2');
+  });
+});
+
+describe('share-link scope (docs/specs/013-workspace/tab-scoped-share-links.md)', () => {
+  const twoTabs = () =>
+    ({
+      ...fakeDiagram('owner-1'),
+      tabs: [
+        { id: 't1', diagramId: 'd1', name: 'A', orderIndex: 0, updatedAt: 1 },
+        { id: 't2', diagramId: 'd1', name: 'B', orderIndex: 1, updatedAt: 1 },
+      ],
+    }) as unknown as DiagramDTO;
+  const link = (over: Record<string, unknown> = {}) => ({
+    code: 'CODE2345',
+    diagramId: 'd1',
+    role: 'view',
+    createdAt: 1,
+    expiry: 'never',
+    expiresAt: null,
+    tabId: null,
+    ...over,
+  });
+
+  beforeEach(() => {
+    db.getDiagram.mockResolvedValue(twoTabs());
+    db.generateShareCode.mockReturnValue('CODE2345');
+  });
+
+  it('mints a link scoped to one of the diagram tabs', async () => {
+    db.createShareLink.mockResolvedValue(link({ tabId: 't2' }));
+    const res = await handleDiagrams(
+      makeCtx('POST', '/api/diagrams/d1/share', { body: { role: 'view', tabId: 't2' } }),
+    );
+    expect(res.status).toBe(201);
+    expect(db.createShareLink).toHaveBeenCalledWith({}, 'd1', 'CODE2345', 'view', 'never', 't2');
+  });
+
+  it('refuses to mint a link for a tab the diagram does not have', async () => {
+    const res = await handleDiagrams(
+      makeCtx('POST', '/api/diagrams/d1/share', { body: { role: 'view', tabId: 't9' } }),
+    );
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: 'bad_request', message: 'invalid tab' });
+    expect(db.createShareLink).not.toHaveBeenCalled();
+  });
+
+  it('rescopes a link and tells the room', async () => {
+    db.getShareLinkIncludingExpired.mockResolvedValue(link());
+    db.rescopeShareLink.mockResolvedValue(link({ tabId: 't2' }));
+    const sent: Promise<unknown>[] = [];
+    const ctx = makeTestRouteContext('PUT', '/api/diagrams/d1/share/CODE2345', {
+      owner: 'owner-1',
+      body: { tabId: 't2' },
+      waitUntil: (p) => sent.push(p),
+    });
+    const res = await handleDiagrams(ctx);
+    expect(res.status).toBe(200);
+    expect(((await res.json()) as { link: { tabId: string } }).link.tabId).toBe('t2');
+    expect(db.rescopeShareLink).toHaveBeenCalledWith({}, 'CODE2345', 't2');
+    expect(sent).toHaveLength(1);
+  });
+
+  it('widens a link back to All tabs', async () => {
+    db.getShareLinkIncludingExpired.mockResolvedValue(link({ tabId: 't2' }));
+    db.rescopeShareLink.mockResolvedValue(link());
+    const res = await handleDiagrams(
+      makeCtx('PUT', '/api/diagrams/d1/share/CODE2345', { body: { tabId: null } }),
+    );
+    expect(res.status).toBe(200);
+    expect(db.rescopeShareLink).toHaveBeenCalledWith({}, 'CODE2345', null);
+  });
+
+  it('refuses a rescope to a tab the diagram does not have', async () => {
+    db.getShareLinkIncludingExpired.mockResolvedValue(link());
+    const res = await handleDiagrams(
+      makeCtx('PUT', '/api/diagrams/d1/share/CODE2345', { body: { tabId: 't9' } }),
+    );
+    expect(res.status).toBe(400);
+    expect(db.rescopeShareLink).not.toHaveBeenCalled();
+  });
+
+  it('refuses a rescope without a tabId field', async () => {
+    db.getShareLinkIncludingExpired.mockResolvedValue(link());
+    const res = await handleDiagrams(
+      makeCtx('PUT', '/api/diagrams/d1/share/CODE2345', { body: {} }),
+    );
+    expect(res.status).toBe(400);
+  });
+
+  it('refuses a tabId that is not a string', async () => {
+    db.getShareLinkIncludingExpired.mockResolvedValue(link());
+    const res = await handleDiagrams(
+      makeCtx('PUT', '/api/diagrams/d1/share/CODE2345', { body: { tabId: 7 } }),
+    );
+    expect(res.status).toBe(400);
+  });
+
+  it('refuses a body that is not JSON', async () => {
+    db.getShareLinkIncludingExpired.mockResolvedValue(link());
+    const ctx = makeCtx('PUT', '/api/diagrams/d1/share/CODE2345', {
+      headers: { 'Content-Type': 'application/json' },
+    });
+    const res = await handleDiagrams({
+      ...ctx,
+      request: new Request(ctx.request.url, { method: 'PUT', body: '{nope' }),
+    });
+    expect(res.status).toBe(400);
+  });
+
+  it('04s when the link vanished between the check and the rescope', async () => {
+    db.getShareLinkIncludingExpired.mockResolvedValue(link());
+    db.rescopeShareLink.mockResolvedValue(null);
+    const res = await handleDiagrams(
+      makeCtx('PUT', '/api/diagrams/d1/share/CODE2345', { body: { tabId: 't2' } }),
+    );
+    expect(res.status).toBe(404);
+  });
+
+  it("404s a rescope of another diagram's link", async () => {
+    db.getShareLinkIncludingExpired.mockResolvedValue(link({ diagramId: 'd2' }));
+    const res = await handleDiagrams(
+      makeCtx('PUT', '/api/diagrams/d1/share/CODE2345', { body: { tabId: 't2' } }),
+    );
+    expect(res.status).toBe(404);
+  });
+
+  it('403s a rescope by anyone but the owner', async () => {
+    const res = await handleDiagrams(
+      makeCtx('PUT', '/api/diagrams/d1/share/CODE2345', {
+        owner: 'intruder',
+        body: { tabId: 't2' },
+      }),
+    );
+    expect(res.status).toBe(403);
   });
 });
