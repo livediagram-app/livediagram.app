@@ -110,8 +110,9 @@ The wordmark's "diagram" half is the one vivid note: **sky-400 `#38bdf8`** in da
 ### Rules
 
 - **Solid brand fill with white text** (primary buttons, active segments, filled step circles, avatar discs, count
-  badges) sits on `brand-600` in dark mode and hovers to `brand-700`: white on `#3a6599` is 6.0:1. The pairing is
-  one shared class, `SOLID_BRAND_DARK`, never re-typed per component.
+  badges) sits on `brand-600` in dark mode, and a control hovers to `brand-700`: white on `#3a6599` is 6.0:1. The
+  pairing lives in two shared class constants in `@livediagram/ui`, `SOLID_BRAND_DARK` for a static fill and
+  `SOLID_BRAND_DARK_CONTROL` for a control, never re-typed per component.
 - **Brand-coloured text** in dark mode is `brand-400` or lighter (`#8fb3e0` on `slate-900` is 8.0:1).
 - **Tinted fills** (`brand-500/10`, `brand-500/15`…) and purely decorative uses (spinners' tracks, glyph strokes on a
   tinted plate, shadows) keep their tokens: the Steel ramp restyles them by itself.
