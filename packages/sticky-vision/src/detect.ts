@@ -12,6 +12,8 @@ import {
   silhouetteOf,
   type Box,
   type DropReason,
+  noiseFloorFor,
+  NOISE_FLOOR_FRACTION,
 } from './boxes';
 import { clusterRows } from './rows';
 import { luminanceOf } from './seam';
@@ -72,11 +74,6 @@ export type DetectOptions = {
 
 export type DetectDropReason =
   DropReason | 'standout' | 'dark-grain' | 'blank' | 'surface' | 'model-background';
-
-// Sensor noise, as a fraction of the working image's long edge: a property of
-// the camera rather than of the wall. Shared with `fitBoxes`, which uses the
-// same floor to decide what is too small to be anything.
-const NOISE_FLOOR_FRACTION = 0.008;
 
 // The morphological close's radius: a fraction of the note it is meant to put
 // back together, floored so that a very distant wall still gets a pixel of
@@ -151,7 +148,7 @@ export function detectStickies(image: ImageBuffer, opts: DetectOptions = {}): De
   // How big a note is on THIS wall, measured before anything is fused — see
   // `estimateNoteSize`. Everything after this divides by it, including the
   // close that follows, so it cannot be measured after the close.
-  const noiseFloor = Math.max(4, Math.round(imageSize * NOISE_FLOOR_FRACTION));
+  const noiseFloor = noiseFloorFor(imageSize);
   const blobs = labelComponents(mask).map((c) => ({
     classId: c.classId,
     x: c.minX,

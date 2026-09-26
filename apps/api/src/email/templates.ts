@@ -4,6 +4,7 @@
 // Content only: never a diagram's contents, only the user's own account facts
 // plus a team name the inviter already chose.
 
+import { xmlEscape } from '@livediagram/icons';
 import type { Env } from '../types';
 import { appBaseUrl } from './client';
 
@@ -335,16 +336,10 @@ export function actionAssignedEmail(
   };
 }
 
-// Minimal escaping for the one piece of user-influenced text in an email body
-// (the team name). HTML-escape for the body, and a plain-text variant for the
-// subject line.
-function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
+// Escaping for the one piece of user-influenced text in an email body (the
+// team name): the repo's one markup escaper for the body, and a plain-text
+// variant for the subject line. A local copy used to skip the apostrophe.
+const escapeHtml = xmlEscape;
 
 function escapeText(s: string): string {
   return s.replace(/[\r\n]+/g, ' ').slice(0, 80);

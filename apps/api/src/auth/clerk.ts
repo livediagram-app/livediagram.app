@@ -1,3 +1,4 @@
+import { bearerTokenOf } from '@livediagram/api-schema';
 import { createRemoteJWKSet, jwtVerify } from 'jose';
 import type { Env } from '../types';
 
@@ -65,8 +66,7 @@ export async function getClerkIdentity(env: Env, request: Request): Promise<Cler
   const jwksUrl = env.CLERK_JWKS_URL;
   if (!jwksUrl) return null;
 
-  const auth = request.headers.get('Authorization');
-  const token = auth?.startsWith('Bearer ') ? auth.slice(7) : null;
+  const token = bearerTokenOf(request.headers.get('Authorization'));
   if (!token) return null;
 
   try {

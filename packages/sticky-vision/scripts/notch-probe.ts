@@ -1,5 +1,5 @@
 import { classMaskOf, closeRadiusFor, detectStickies } from '../src/detect';
-import { estimateNoteSize, isPlausibleNote, type Box } from '../src/boxes';
+import { estimateNoteSize, isPlausibleNote, noiseFloorFor, type Box } from '../src/boxes';
 import { closePaperMask, labelComponents } from '../src/components';
 import { convexityDefects, largestRegion, traceOuterContour } from '../src/contour';
 import { noteSizeField } from '../src/size-field';
@@ -20,7 +20,7 @@ for (const name of listPhotos(DIR)) {
   const image = loadPhoto(DIR, name);
   const { width, height } = image;
   const imageSize = Math.max(width, height);
-  const noiseFloor = Math.max(4, Math.round(imageSize * 0.008));
+  const noiseFloor = noiseFloorFor(imageSize);
   const mask = classMaskOf(image);
   const blobs: Box[] = labelComponents(mask).map((c) => ({
     classId: c.classId,

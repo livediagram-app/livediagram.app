@@ -145,6 +145,14 @@ through ingestion rather than restating the list, since the second hand-written 
 what drifted: `checklist` was requested by name, with its `checklistItems` schema, and
 squared on arrival.
 
+Past that normalisation (kind coerced, a missing size defaulted), a streamed element is held
+to the same structural guard every save is: `isValidElement` from `@livediagram/diagram`,
+limited to the four types the assistant may add (shape, text, sticky, arrow). A looser local
+check used to live in the client and let through what the api then refused on save (an
+arrow with a junk endpoint, a non-finite coordinate). Renamed additions carry every
+reference kind with them (arrow ends, mind-map parents, portal partners) through the shared
+`remapElementRefs`.
+
 Error responses follow the standard worker envelope, `{ "error": "<token>" }`. The route emits
 exactly four:
 

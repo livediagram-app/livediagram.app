@@ -4,6 +4,7 @@
 // apps/live) and hands it to the client through the standard code+PKCE exchange.
 // All transient state lives in OAUTH_KV with short TTLs; no parallel credential
 // model — the heavy lifting (verify, revoke, caps, expiry) is the token's.
+import { isLoopbackHostname } from '@livediagram/api-schema';
 import type { Hono } from 'hono';
 import type { Env } from './env';
 
@@ -48,7 +49,7 @@ async function sha256base64url(s: string): Promise<string> {
 function isHttpsOrLocalhost(uri: string): boolean {
   try {
     const u = new URL(uri);
-    return u.protocol === 'https:' || u.hostname === 'localhost' || u.hostname === '127.0.0.1';
+    return u.protocol === 'https:' || isLoopbackHostname(u.hostname);
   } catch {
     return false;
   }

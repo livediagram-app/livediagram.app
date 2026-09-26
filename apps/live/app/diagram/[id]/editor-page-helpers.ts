@@ -5,6 +5,7 @@ import {
   autoLayoutElements,
   isBoxed,
   isLayoutCandidate,
+  remapElementRefs,
   type Element,
   type Tab,
 } from '@livediagram/diagram';
@@ -244,21 +245,13 @@ export function mergeAiElements(
     if (allIds.has(el.id)) idMap.set(el.id, crypto.randomUUID());
     else allIds.add(el.id);
   }
-  const deduped: Element[] = additions.map((el) => {
-    const newId = idMap.get(el.id) ?? el.id;
-    if (el.type === 'arrow') {
-      const from =
-        el.from.kind === 'pinned' && idMap.has(el.from.elementId)
-          ? { ...el.from, elementId: idMap.get(el.from.elementId)! }
-          : el.from;
-      const to =
-        el.to.kind === 'pinned' && idMap.has(el.to.elementId)
-          ? { ...el.to, elementId: idMap.get(el.to.elementId)! }
-          : el.to;
-      return { ...el, id: newId, from, to };
-    }
-    return { ...el, id: newId };
-  });
+  // Every reference kind follows a renamed addition (arrow ends pinned or
+  // hung off another arrow, mind-map parents, portal partners), via the same
+  // walk the import re-mint uses. Only pinned arrow ends used to follow here.
+  const deduped = remapElementRefs(
+    additions.map((el) => ({ ...el, id: idMap.get(el.id) ?? el.id })),
+    idMap,
+  );
 
   const modById = new Map(modifications.map((e) => [e.id, e]));
   // 'clean' preserves AI-invisible props by spreading the patch over the

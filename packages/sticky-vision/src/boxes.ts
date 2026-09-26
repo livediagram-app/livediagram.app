@@ -59,7 +59,14 @@ const PEN_STROKE_FRACTION = 0.006;
 // as soon as a pass changes nothing.
 const MAX_MERGE_PASSES = 12;
 // Anything thinner than this, in either direction, is noise rather than paper.
-const NOISE_FLOOR_FRACTION = 0.008;
+// Sensor noise, as a fraction of the working image's long edge: a property of
+// the camera rather than of the wall. detectStickies (and the scripts that
+// replay its stages) read it through noiseFloorFor, so there is one number.
+export const NOISE_FLOOR_FRACTION = 0.008;
+
+export function noiseFloorFor(imageSize: number): number {
+  return Math.max(4, Math.round(imageSize * NOISE_FLOOR_FRACTION));
+}
 // Below this fill a box is a patch of wall seen through gaps, not paper.
 // Two numbers, because the two questions differ: to CUT a blob into several
 // notes it has to be convincingly solid, but to KEEP one it only has to be
@@ -350,7 +357,7 @@ export function fitBoxes(
   // it is a property of the camera rather than of the wall — on a real photo
   // half the merged boxes are 1 to 5 pixels across, and they sit exactly where
   // a median would otherwise land.
-  const noiseFloor = Math.max(4, Math.round(imageSize * NOISE_FLOOR_FRACTION));
+  const noiseFloor = noiseFloorFor(imageSize);
   const solid = merged.filter((b) => refuse(b, Math.min(b.w, b.h) < noiseFloor && 'noise'));
   if (solid.length === 0) return [];
   // The note size the caller measured before the close, when one was measured:

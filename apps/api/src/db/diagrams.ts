@@ -2,6 +2,7 @@
 // timestamps) plus the copy operation. Tab content lives in tabs.ts;
 // the read DTO joins owner display info from participants.
 
+import { remapTabLinks, type Element } from '@livediagram/diagram';
 import { rowToTabSummary, type TabRow } from '../tab-row';
 import type { DiagramDTO, DiagramSummary, Env, TabSummaryDTO } from '../types';
 import { getParticipant } from './participants';
@@ -348,15 +349,23 @@ export async function copyDiagram(
   )
     .bind(sourceId)
     .all<{ id: string; name: string; order_index: number; data: string }>();
+  // Mint every fresh tab id up front so a tab / element link on one tab
+  // can be re-pointed at its sibling's copy (the Explorer duplicate does
+  // the same walk through the shared remapTabLinks). Without it the copy's
+  // links still named the SOURCE diagram's tabs, which the copy doesn't
+  // have. Only a tab whose data carries a tab id at all pays for a parse.
+  const rows = tabRows.results ?? [];
+  const tabIdMap = new Map(rows.map((row) => [row.id, crypto.randomUUID()]));
   // One batch instead of 2N sequential round trips: collect both
   // inserts for every source tab and submit them together.
-  const inserts = (tabRows.results ?? []).flatMap((row) => {
-    const freshTabId = crypto.randomUUID();
+  const inserts = rows.flatMap((row) => {
+    const freshTabId = tabIdMap.get(row.id)!;
+    const data = remapTabDataLinks(row.data, tabIdMap);
     return [
       env.DB.prepare(
         `INSERT INTO tabs (id, diagram_id, name, order_index, data, updated_at)
          VALUES (?, ?, ?, ?, ?, ?)`,
-      ).bind(freshTabId, newId, row.name, row.order_index, row.data, now),
+      ).bind(freshTabId, newId, row.name, row.order_index, data, now),
       env.DB.prepare(
         `INSERT INTO diagram_tabs (diagram_id, tab_id, order_index, added_at)
          VALUES (?, ?, ?, ?)`,
@@ -369,6 +378,20 @@ export async function copyDiagram(
   });
   if (inserts.length > 0) await env.DB.batch(inserts);
   return await getDiagram(env, newId);
+}
+
+// Re-point the tab / element links inside one tab's stored `data` JSON at
+// the copy's tab ids. The data is only parsed when it mentions a tab id, so
+// the common link-free tab is copied byte for byte as before.
+export function remapTabDataLinks(data: string, tabIdMap: Map<string, string>): string {
+  if (!data.includes('"tabId"')) return data;
+  try {
+    const parsed = JSON.parse(data) as { elements?: Element[] };
+    if (!Array.isArray(parsed.elements)) return data;
+    return JSON.stringify({ ...parsed, elements: remapTabLinks(parsed.elements, tabIdMap) });
+  } catch {
+    return data;
+  }
 }
 
 // spec/64 (#6): total diagrams owned by `ownerId`, for the milestone check on
