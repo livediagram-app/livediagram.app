@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { SettingsCategoryList } from '@/components/dialogs/settings/SettingsCategoryList';
@@ -21,6 +21,10 @@ import {
   type SettingsCategorySpec,
 } from '@/components/dialogs/settings/settings-catalogue';
 import type { SettingsCategoryId } from '@/components/dialogs/settings/settings-icons';
+import {
+  useRememberedSettingsView,
+  useSettingsViewMemory,
+} from '@/components/dialogs/settings/useSettingsViewMemory';
 import type { UserPreferences } from '@/lib/user-preferences';
 
 type SettingsDialogProps = {
@@ -67,24 +71,18 @@ export function SettingsDialog({
     [aiCapable, emailEnabled, signedIn],
   );
 
-  // On desktop a category is ALWAYS open (the pane can't be empty beside the
-  // rail); on the phone, null is the root list. Which is why this is one
-  // piece of state read two ways rather than two.
-  // A targeted open wins over both defaults, including on a phone, where it
-  // lands on the pushed pane rather than the root list.
+  // The category the reader chose; null is the phone's root list. Desktop
+  // reads null as "the first category" (see `selected` below), so one piece
+  // of state serves both layouts, across a resize or rotate too.
+  // A targeted open wins, including on a phone, where it lands on the pushed
+  // pane rather than the root list. Without one, the dialog reopens where it
+  // was last left.
   const target = (focus?.categoryId ?? initialCategoryId ?? null) as SettingsCategoryId | null;
+  const remembered = useRememberedSettingsView();
+  const restore = target ? null : remembered;
   const [selectedId, setSelectedId] = useState<SettingsCategoryId | null>(
-    target ?? (isMobile ? null : (categories[0]?.id ?? null)),
+    target ?? (restore?.categoryId as SettingsCategoryId | null | undefined) ?? null,
   );
-
-  // Crossing the breakpoint mid-session (a resize, a rotate) must not strand
-  // the dialog: desktop needs a pane, the phone root screen needs none.
-  useEffect(() => {
-    setSelectedId((current) => {
-      if (!isMobile) return current ?? categories[0]?.id ?? null;
-      return current;
-    });
-  }, [isMobile, categories]);
 
   const [query, setQuery] = useState('');
   const result = useMemo(() => searchSettings(categories, query), [categories, query]);
@@ -97,10 +95,20 @@ export function SettingsDialog({
   // pane until you tap one, so doing it there would push a category open the
   // moment you started typing and hide the badges you were searching for.
   const effectiveId = isMobile ? selectedId : firstMatchingCategory(result, selectedId);
+  // Desktop never shows an empty pane beside the rail: no selection, or one
+  // not (yet) among the visible categories (a remembered one whose capability
+  // has not loaded), shows the first category without forgetting the choice.
   const selected: SettingsCategorySpec | null =
-    result.categories.find((c) => c.id === effectiveId) ?? null;
+    result.categories.find((c) => c.id === effectiveId) ??
+    (isMobile || result.searching ? null : (result.categories[0] ?? null));
+
+  const { paneRef, onPaneScroll, forgetRestore } = useSettingsViewMemory({
+    categoryId: selected?.id ?? null,
+    restore,
+  });
 
   const select = (id: SettingsCategoryId) => {
+    forgetRestore();
     setSelectedId(id);
     // Which categories people actually open is the signal for whether this
     // reorganisation helped, and for what belongs on the first screen next.
@@ -193,7 +201,7 @@ export function SettingsDialog({
             </div>
             <SettingsCategoryList
               categories={result.categories}
-              selected={isMobile ? null : effectiveId}
+              selected={isMobile ? null : (selected?.id ?? null)}
               onSelect={select}
               variant={isMobile ? 'root' : 'sidebar'}
               searching={result.searching}
@@ -207,11 +215,16 @@ export function SettingsDialog({
         ) : null}
 
         {selected ? (
-          <div className="min-w-0 flex-1 overflow-y-auto px-4 py-4">
+          <div
+            // Remount the scroller on category change so a pane always starts
+            // at the top rather than inheriting the previous one's offset.
+            key={selected.id}
+            ref={paneRef}
+            onScroll={onPaneScroll}
+            data-settings-pane
+            className="min-w-0 flex-1 overflow-y-auto px-4 py-4"
+          >
             <SettingsCategoryPane
-              // Remount on category change so a pane always scrolls from the
-              // top rather than inheriting the previous one's offset.
-              key={selected.id}
               category={selected}
               settings={settings}
               onChange={onChange}

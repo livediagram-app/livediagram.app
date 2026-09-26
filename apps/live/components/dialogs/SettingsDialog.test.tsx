@@ -3,6 +3,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { SettingsDialog } from './SettingsDialog';
 import { visibleCategories } from './settings/settings-catalogue';
+import { SETTINGS_ROW_ATTRIBUTE } from './settings/settings-scroll-anchor';
+import { readSettingsView, writeSettingsView } from './settings/settings-view-memory';
 import type { UserPreferences } from '@/lib/user-preferences';
 
 // The dialog takes BOTH iOS Settings shapes, one per viewport (docs/specs/007-editor/user-preferences.md): the
@@ -38,6 +40,8 @@ const FIRST_CATEGORY = visibleCategories(true, { emailEnabled: true, signedIn: f
 afterEach(() => {
   cleanup();
   sessionStorage.clear();
+  localStorage.clear();
+  vi.restoreAllMocks();
 });
 
 describe('SettingsDialog', () => {
@@ -121,6 +125,98 @@ describe('SettingsDialog', () => {
     renderDialog({ tourSeen: true });
     fireEvent.click(screen.getByRole('button', { name: 'Close' }));
     expect(sessionStorage.getItem('livediagram:v2:tour-pending')).toBeNull();
+  });
+
+  describe('reopening where it was left', () => {
+    it('reopens on the category last open', () => {
+      setViewport(false);
+      renderDialog();
+      fireEvent.click(screen.getByRole('button', { name: 'Privacy' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+      cleanup();
+
+      renderDialog();
+      expect(screen.getByRole('switch', { name: 'Send Anonymous Usage Events' })).toBeTruthy();
+    });
+
+    it('lets a targeted open win over the memory', () => {
+      setViewport(false);
+      writeSettingsView({ categoryId: 'privacy', anchor: null });
+      render(
+        <SettingsDialog
+          settings={{} as UserPreferences}
+          onChange={() => {}}
+          onClose={() => {}}
+          aiCapable
+          initialCategoryId="editor"
+        />,
+      );
+      expect(screen.getByRole('switch', { name: 'Quick-Add on Hover' })).toBeTruthy();
+    });
+
+    it('reopens a phone on the pushed pane it was closed on', () => {
+      setViewport(true);
+      writeSettingsView({ categoryId: 'privacy', anchor: null });
+      renderDialog();
+      expect(screen.getByRole('switch', { name: 'Send Anonymous Usage Events' })).toBeTruthy();
+    });
+
+    it('reopens a phone on the root list when closed there', () => {
+      setViewport(true);
+      renderDialog();
+      fireEvent.click(screen.getByRole('button', { name: 'Privacy' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+      cleanup();
+      expect(readSettingsView()).toEqual({ categoryId: null, anchor: null });
+
+      renderDialog();
+      expect(screen.queryByRole('switch', { name: 'Send Anonymous Usage Events' })).toBeNull();
+    });
+
+    it('falls back to the first category when the remembered one is not visible', () => {
+      setViewport(false);
+      writeSettingsView({ categoryId: 'no-such-category', anchor: null });
+      renderDialog();
+      expect(screen.getByText(FIRST_CATEGORY.rows[0]!.label)).toBeTruthy();
+    });
+
+    it('scrolls the remembered row back to where it sat', () => {
+      setViewport(false);
+      // Lay the pane out: each row sits 150px below the last, the pane at 100.
+      vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
+        this: Element,
+      ) {
+        const pane = this.closest('[data-settings-pane]') as HTMLElement | null;
+        const key = this.getAttribute(SETTINGS_ROW_ATTRIBUTE);
+        if (!pane || this.hasAttribute('data-settings-pane')) return { top: 100 } as DOMRect;
+        const rows = [...pane.querySelectorAll(`[${SETTINGS_ROW_ATTRIBUTE}]`)];
+        const index = key ? rows.indexOf(this) : 0;
+        const top = 100 + index * 150 - pane.scrollTop;
+        return { top, bottom: top + 120 } as DOMRect;
+      });
+      const rows = FIRST_CATEGORY.rows;
+      const rowIndex = rows.length - 1;
+      expect(rowIndex).toBeGreaterThan(0);
+      writeSettingsView({
+        categoryId: FIRST_CATEGORY.id,
+        anchor: { rowKey: rows[rowIndex]!.key, offset: 20 },
+      });
+
+      renderDialog();
+      const pane = document.querySelector('[data-settings-pane]') as HTMLElement;
+      expect(pane.scrollTop).toBe(rowIndex * 150 - 20);
+    });
+
+    it('starts a newly picked category at the top', () => {
+      setViewport(false);
+      renderDialog();
+      const first = document.querySelector('[data-settings-pane]') as HTMLElement;
+      first.scrollTop = 300;
+      fireEvent.click(screen.getByRole('button', { name: 'Privacy' }));
+      const next = document.querySelector('[data-settings-pane]') as HTMLElement;
+      expect(next.scrollTop).toBe(0);
+    });
   });
 
   it('describes each switch with its own footnote, for screen readers too', () => {

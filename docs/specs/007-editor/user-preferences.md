@@ -338,7 +338,8 @@ and the dialog stays as the one complete, browsable index of them.
 
   - **Desktop** takes the iPadOS split view: the categories in a fixed left
     rail, the selected category's settings in the pane beside it. A category
-    is always selected (Editor on open) - the pane is never empty. The dialog
+    is always selected (Editor, unless it reopens where it was left) - the pane
+    is never empty. The dialog
     is capped at `42rem` tall; unbounded, a long category stretched it from
     the top of the screen to the bottom and read as a page, not a modal.
   - **Phone** (below the `sm:` breakpoint, via `useIsMobileViewport`) takes
@@ -346,10 +347,36 @@ and the dialog stays as the one complete, browsable index of them.
     tappable row, which pushes that category's pane with a back control in
     the header. One screen at a time.
 
-  Crossing the breakpoint mid-session re-selects a category, so a resize
-  never leaves the desktop layout with an empty pane. The backdrop is the
-  see-through `desktop-light` one, not the default dim+blur: this is where
-  you flip things whose effect is on the canvas behind it.
+  The desktop pane is never empty: with no category chosen (the phone's root
+  list, carried across a resize or rotate), or one not (yet) among the
+  visible ones, it shows the first category without forgetting the choice,
+  so a remembered category appears once capabilities load.
+
+  **It reopens where you left it.** Reopening Settings lands on the category
+  last open and scrolls its pane so the same row sits at the same height as
+  when the dialog closed. The position is kept as a **scroll anchor**: the
+  topmost visible row's key plus how far its top sat from the pane's top
+  edge, not a pixel offset. A resize reflows every footnote, so a raw
+  `scrollTop` would land on a different row; the anchor brings the same row
+  back at any window size. Rows that change height after the restore (the
+  token list loading) are re-anchored until the reader scrolls, taps or
+  types in the pane. A pane scrolled to its very top keeps no anchor.
+  Picking another category always starts its pane at the top.
+
+  - A targeted open (a search result, the `?settings=` deep link) wins over
+    the memory and restores no scroll.
+  - On a phone, closing from the root list reopens on the root list.
+  - A remembered category or row that no longer exists falls back to the
+    default category, or the top of the pane.
+  - The search box always opens empty.
+  - Stored device-local in `localStorage` under
+    `livediagram:settings-view:v1` and never synced: where you were in a
+    dialog belongs to this screen, not the account. Unreadable or malformed
+    storage is ignored with a `[settings-view]` warning.
+  - Written when the dialog unmounts and on `pagehide`, never per scroll
+    event. The backdrop is the
+    see-through `desktop-light` one, not the default dim+blur: this is where
+    you flip things whose effect is on the canvas behind it.
 
   **It is the central place to find every preference.** Categories:
   **Editor** (quick-add on hover, alignment guides, auto-attach arrows),
