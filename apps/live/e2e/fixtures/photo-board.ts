@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { dismissQuickTour, startTemplateDiagram } from '../fixtures';
+import { dismissQuickTour, startEventStormingRow } from '../fixtures';
 
 // The boundary model's weights, a hashed static asset of the app.
 export const BOUNDARY_WEIGHTS = /\/weights\.[^/]*\.bin$/;
@@ -34,7 +34,7 @@ export async function openPhotoBoard(
   // Safety net: no test may pull a reader's weights down the wire.
   await page.route('**/huggingface.co/**', (r) => r.abort());
   await page.route('**/cdn.jsdelivr.net/**', (r) => r.abort());
-  await startTemplateDiagram(page, /Browse Technical templates/, /^Event storming/i);
+  await startEventStormingRow(page);
   await page.locator('[data-canvas-a11y-root]').waitFor();
   await dismissQuickTour(page);
   await page.waitForTimeout(500);

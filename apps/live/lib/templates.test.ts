@@ -330,8 +330,8 @@ describe('layered templates (spec/74)', () => {
     expect(layers).toEqual(eventStormingLayers());
     const elements = buildTemplate('event-storming', 0, 0);
     const onBoard = elements.filter((el) => el.layerId === ES_BOARD_LAYER_ID);
-    // Three orange events + the method caption, all on the one board layer.
-    expect(onBoard).toHaveLength(4);
+    // The one orange event, on the one board layer.
+    expect(onBoard).toHaveLength(1);
     expect(onBoard.length).toBe(elements.length);
   });
 

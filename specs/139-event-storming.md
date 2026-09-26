@@ -38,11 +38,14 @@ is still invisible to the editor once its elements are on the canvas.
 
 - `TemplateKind` `'event-storming'`, title **Event storming**, an
   `extra` in the **Technical** category.
-- The seed is the method's opening move and nothing else: three orange
-  domain-event stickies (past tense — "Order placed", "Payment
-  received", "Order shipped"), gently tilted so they read as
-  hand-placed, above a muted one-line reminder of the rule ("Domain
-  events · past tense · left to right in time order"). Builder:
+- The seed is the method's opening move and nothing else: ONE orange
+  domain-event sticky reading **"Board Created"**, gently tilted so it
+  reads as hand-placed, on a lane. No text element: the board is paper
+  only, and the first event is both an example of the notation (past
+  tense) and the first thing that happened. Ruled 2026-09-26 ("I don't
+  want any text element on there, and I want to start with only one
+  Domain Event"); it replaced three sample events and a one-line reminder
+  of the rule. Builder:
   `packages/templates/src/template-builders-eventstorming.ts`.
 - **Colour is the notation.** Orange MEANS domain event, so the
   stickies carry an explicit `fillColor` (`#fdba74`). Stickies are
@@ -52,8 +55,8 @@ is still invisible to the editor once its elements are on the canvas.
 - **Dot-grid backdrop**, not the technical templates' graph paper: an
   event-storming board is a sticky-note workshop like the user story /
   affinity maps, which pin `grid`.
-- Preview tile: three orange stickies marching along a faint dashed
-  timeline arrow (`template-preview-4.tsx`).
+- Preview tile: one orange sticky on a faint dashed timeline arrow
+  (`template-preview-4.tsx`).
 
 ## Phase 2 (shipped): the sticky grammar in the palette
 

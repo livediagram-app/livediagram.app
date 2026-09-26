@@ -86,6 +86,55 @@ export async function startTemplateDiagram(
   await page.locator('[data-canvas-a11y-root]').waitFor();
 }
 
+// An event-storming board with a ROW of three domain events on it, one gutter
+// apart (spec/139). The template seeds a single "Board Created" note; the lane,
+// rhythm and insertion tests need neighbours to place against, so this writes
+// a row around that note through the api and reloads. The three are copies of
+// the seeded note (so they carry exactly its stationery), one rhythm step apart.
+export async function startEventStormingRow(page: Page): Promise<void> {
+  await startTemplateDiagram(page, /Browse Technical templates/, /^Event storming/i);
+  const notes = page.locator('[data-canvas-a11y-root]').getByRole('img', { name: /^Sticky note/ });
+  await notes.first().waitFor();
+  const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
+  await page.evaluate(async (base: string) => {
+    const owner = localStorage.getItem('livediagram:v2:self-id') ?? '';
+    const id = location.pathname.split('/').filter(Boolean).pop()!;
+    const headers = { 'X-Owner-Id': owner, 'Content-Type': 'application/json' };
+    // Wait for the new board's first save to land (its seeded note on the
+    // server), so the row is not written over by it.
+    let tab: { elements: { width: number; x: number }[] } | null = null;
+    let tabId = '';
+    for (let i = 0; i < 50 && !tab; i += 1) {
+      const diagram = await (await fetch(`${base}/diagrams/${id}`, { headers })).json();
+      tabId = diagram.diagram?.tabs?.[0]?.id ?? '';
+      if (tabId) {
+        const got = await (await fetch(`${base}/diagrams/${id}/tabs/${tabId}`, { headers })).json();
+        if (got.tab?.elements?.length === 1) tab = got.tab;
+      }
+      if (!tab) await new Promise((r) => setTimeout(r, 100));
+    }
+    if (!tab) throw new Error('the new board never saved its seed note');
+    const seed = tab.elements[0]!;
+    const step = seed.width + 16;
+    const labels = ['Order placed', 'Payment received', 'Order shipped'];
+    const elements = labels.map((label, i) => ({
+      ...seed,
+      id: crypto.randomUUID(),
+      label,
+      x: seed.x + (i - 1) * step,
+      rotation: i % 2 === 0 ? -1.1 : 1.1,
+    }));
+    const res = await fetch(`${base}/diagrams/${id}/tabs/${tabId}`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({ ...tab, elements }),
+    });
+    if (!res.ok) throw new Error(`seeding the row failed: ${res.status}`);
+  }, apiBase);
+  await page.reload();
+  await notes.nth(2).waitFor();
+}
+
 // Dismiss the quick-tour dialog (spec/47) if this profile is offered one.
 // It lands a BEAT AFTER the canvas does, and its modal overlay swallows
 // pointer events — so a test that merely checks whether it is showing YET

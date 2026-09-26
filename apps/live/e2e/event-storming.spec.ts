@@ -3,6 +3,7 @@ import {
   dismissQuickTour,
   expect,
   expectNoPageErrors,
+  startEventStormingRow,
   startTemplateDiagram,
   test,
 } from './fixtures';
@@ -67,7 +68,7 @@ test('timeline lanes snap a dragged note without moving anything else', async ({
   page,
   pageErrors,
 }) => {
-  await startTemplateDiagram(page, /Browse Technical templates/, /^Event storming/i);
+  await startEventStormingRow(page);
   const canvas = page.locator('[data-canvas-a11y-root]');
   await dismissQuickTour(page);
 
@@ -145,7 +146,9 @@ test('timeline lanes snap a dragged note without moving anything else', async ({
 // dropped from far enough away that only a real capture radius could land
 // them, and both are read back from the document rather than the screen.
 test('a dragged note takes the slot two events suggest', async ({ page, pageErrors }) => {
-  await startTemplateDiagram(page, /Browse Technical templates/, /^Event storming/i);
+  // Three placements, each read back from the api after the autosave.
+  test.slow();
+  await startEventStormingRow(page);
   const canvas = page.locator('[data-canvas-a11y-root]');
   await dismissQuickTour(page);
   const notes = canvas.getByRole('img', { name: /^Sticky note/ });
@@ -235,7 +238,7 @@ test('a next-note button adds a command before an event, and nothing ties them',
   page,
   pageErrors,
 }) => {
-  await startTemplateDiagram(page, /Browse Technical templates/, /^Event storming/i);
+  await startEventStormingRow(page);
   const canvas = page.locator('[data-canvas-a11y-root]');
   await dismissQuickTour(page);
   const notes = canvas.getByRole('img', { name: /^Sticky note/ });
@@ -291,7 +294,7 @@ test('pasting copied notes into a note open for typing puts them on the board', 
   pageErrors,
 }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
-  await startTemplateDiagram(page, /Browse Technical templates/, /^Event storming/i);
+  await startEventStormingRow(page);
   const canvas = page.locator('[data-canvas-a11y-root]');
   await dismissQuickTour(page);
   const notes = canvas.getByRole('img', { name: /^Sticky note/ });
@@ -320,7 +323,7 @@ test('an armed note tile shows the note it will add and places it there', async 
   page,
   pageErrors,
 }) => {
-  await startTemplateDiagram(page, /Browse Technical templates/, /^Event storming/i);
+  await startEventStormingRow(page);
   await dismissQuickTour(page);
   const notes = page.locator('[data-canvas-a11y-root]').getByRole('img', { name: /^Sticky note/ });
   await expect(notes).toHaveCount(3);

@@ -108,6 +108,17 @@ function coordsOf(el: Element): { x: number; y: number }[] {
 }
 
 describe('the event-storming template', () => {
+  it('seeds one domain event reading Board Created, and no text element', () => {
+    const els = buildTemplate('event-storming', 0, 0);
+    expect(els).toHaveLength(1);
+    expect(els[0]).toMatchObject({
+      type: 'sticky',
+      esKind: 'domain-event',
+      label: 'Board Created',
+    });
+    expect(els.some((el) => el.type === 'text')).toBe(false);
+  });
+
   it.each([0, 137, -421, 1000])('lays its row on a lane when built at y %i', (cy) => {
     const notes = buildTemplate('event-storming', 0, cy).filter((el) => el.type === 'sticky');
     expect(notes.length).toBeGreaterThan(0);

@@ -4,6 +4,7 @@ import {
   dismissQuickTour,
   expectNoPageErrors,
   startBlankDiagram,
+  startEventStormingRow,
   startTemplateDiagram,
 } from './fixtures';
 
@@ -76,6 +77,10 @@ test('an event-storming board stays a board across a reload', async ({ page, pag
   const canvas = page.locator('[data-canvas-a11y-root]');
   const note = canvas.getByRole('img', { name: /sticky/i }).first();
   await expect(note).toBeVisible();
+  // The starter is one domain event and nothing else: no text element
+  // (spec/139 Phase 1).
+  await expect(canvas.getByRole('img')).toHaveCount(1);
+  await expect(canvas.getByRole('img', { name: /Board Created/i })).toHaveCount(1);
   // Workshop notes are written in capitals (spec/139). Only a browser can
   // answer this one: the stored label keeps its typed casing, so the caps
   // exist purely as the rendered treatment.
@@ -108,7 +113,7 @@ test('an event-storming board stays a board across a reload', async ({ page, pag
 // Alt the board must not stir, which is the regression the Alt gesture exists
 // to prevent.
 test('a note dropped between two notes stays between them', async ({ page, pageErrors }) => {
-  await startTemplateDiagram(page, /Browse Technical templates/, /^Event storming/i);
+  await startEventStormingRow(page);
   const canvas = page.locator('[data-canvas-a11y-root]');
   await dismissQuickTour(page);
 
@@ -191,7 +196,7 @@ test('a note dropped between two notes stays between them', async ({ page, pageE
 // notes' render-only ripple are visible at once, and the whole gesture is a
 // single undo step including the note's original position.
 test('a note already on the board inserts between two others', async ({ page, pageErrors }) => {
-  await startTemplateDiagram(page, /Browse Technical templates/, /^Event storming/i);
+  await startEventStormingRow(page);
   const canvas = page.locator('[data-canvas-a11y-root]');
   await dismissQuickTour(page);
 
