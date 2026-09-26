@@ -28,7 +28,7 @@ describe('LANDING_BEATS', () => {
 
   it('never uses an em dash in its copy', () => {
     for (const beat of LANDING_BEATS) {
-      for (const text of [beat.title, beat.description, beat.cta, beat.eyebrow]) {
+      for (const text of [beat.title, beat.description, beat.cta]) {
         expect(text).not.toContain('—');
       }
     }

@@ -3,8 +3,8 @@ import { CtaLink } from '@/components/CtaLink';
 import { Showcase } from '@/components/Showcase';
 import { beatSections, beatShowcase, type LandingBeat } from '@/lib/landing-beats';
 
-// One beat of the landing page's story (spec/16): a numbered eyebrow, the
-// beat's headline and pitch, a chip into every category it covers (so all of
+// One beat of the landing page's story (spec/16): the beat's headline with
+// its number beside it, its pitch, a chip into every category it covers (so all of
 // them stay one click from home), a primary link into its lead category, and
 // a showcase with one scene from across the beat. Alternates the showcase
 // side and the tinted background by index so the run reads as a composed page.
@@ -23,25 +23,26 @@ export function StoryBeat({ beat, index }: { beat: LandingBeat; index: number })
     >
       <div className="mx-auto grid max-w-6xl items-center gap-10 px-6 py-20 sm:py-24 lg:grid-cols-2 lg:gap-16">
         <div className={artFirst ? 'lg:order-2' : ''}>
-          <p className="flex items-center gap-3 text-sm font-semibold tracking-wide text-brand-600 uppercase">
+          {/* The beat's number sits beside its title, centred on the whole
+              block, so a title that wraps to two lines stays balanced. */}
+          <div className="flex items-center gap-4">
             <span
               aria-hidden
-              className="inline-flex h-7 min-w-7 items-center justify-center rounded-full bg-brand-500 px-1.5 text-xs font-semibold text-white tabular-nums"
+              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-500 text-sm font-semibold text-white tabular-nums sm:h-10 sm:w-10"
             >
               {number}
             </span>
-            {beat.eyebrow}
-          </p>
-          <h2 className="mt-4 text-3xl font-semibold tracking-tight text-balance text-slate-900 sm:text-4xl">
-            {beat.title}
-          </h2>
+            <h2 className="text-3xl font-semibold tracking-tight text-balance text-slate-900 sm:text-4xl">
+              {beat.title}
+            </h2>
+          </div>
           <p className="mt-4 text-lg leading-relaxed text-pretty text-slate-600">
             {beat.description}
           </p>
 
           {/* A chip per category this beat covers, each into its own page,
               with how many features wait there. */}
-          <ul className="mt-6 flex flex-wrap gap-2" aria-label={`Inside ${beat.eyebrow}`}>
+          <ul className="mt-6 flex flex-wrap gap-2" aria-label={`Inside ${beat.title}`}>
             {sections.map((section) => (
               <li key={section.id}>
                 <a

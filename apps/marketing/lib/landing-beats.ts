@@ -11,8 +11,6 @@ import { getLandingSection, type LandingSection } from '@/lib/landing-content';
 export type LandingBeat = {
   // The beat's anchor on the landing page.
   id: string;
-  // The one-word eyebrow above the headline ("Create", "Together", ...).
-  eyebrow: string;
   title: string;
   description: string;
   // The categories this beat covers, lead first, each with the short label
@@ -27,7 +25,6 @@ export type LandingBeat = {
 export const LANDING_BEATS: LandingBeat[] = [
   {
     id: 'create',
-    eyebrow: 'Create',
     title: 'Start in seconds, go as deep as you like',
     description:
       'Open a link and draw. When the idea grows, the same canvas takes images, tables, icons, mind maps and freehand sketches, and guides and snapping keep it neat while you work.',
@@ -46,7 +43,6 @@ export const LANDING_BEATS: LandingBeat[] = [
   },
   {
     id: 'together',
-    eyebrow: 'Together',
     title: 'Built for working together',
     description:
       'Share a link and your team is on the canvas with you: live cursors, comments on any element, actions assigned to teammates, and a big system split across tabs that link to each other.',
@@ -63,7 +59,6 @@ export const LANDING_BEATS: LandingBeat[] = [
   },
   {
     id: 'present',
-    eyebrow: 'Present',
     title: 'Present straight from the canvas',
     description:
       'Turn what you drew into slides, point with a laser, spotlight the one piece you mean, and let arrows show the flow. No export, no second tool.',
@@ -80,7 +75,6 @@ export const LANDING_BEATS: LandingBeat[] = [
   },
   {
     id: 'yours',
-    eyebrow: 'Make it yours',
     title: 'Make it yours, keep it tidy',
     description:
       'Start from a template, recolour with a theme or build your own, then keep a busy canvas in order with layers, locking and a format painter.',
@@ -97,7 +91,6 @@ export const LANDING_BEATS: LandingBeat[] = [
   },
   {
     id: 'open',
-    eyebrow: 'Yours to keep',
     title: 'Open, private, and connected',
     description:
       'MIT-licensed and self-hostable. Your work saves itself and reverts in one click, a diagram can live only in your browser, and your AI tools can read and build diagrams for you.',
