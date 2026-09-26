@@ -18,12 +18,12 @@ It also gives a presenter somewhere to put a control bar — a row of buttons th
 - Hover brightens it and a press scales + sinks it. Hover is **desktop-only** — a touch device has no hover, and a sticky `:hover` after a tap reads as a stuck button.
 - **The face text is derived: "Switch to Avatar".** It carries no default label, so re-pointing a button at another mode relabels it instead of leaving yesterday's copy on it. An author who types their own label wins — it is still a shape's label — and an empty one falls back to the derived text, so a button is never blank.
 - **A button for the mode you are already in is the way back out.** It reads "Leave Avatar" and presses you into the tool you were in before, rather than sitting there disabled. On a read-only walkthrough the button can be the only control on screen, so a one-way door would strand the viewer.
-- Every mode's tooltip also explains what that mode does, since the author's label ("Walk with me") doesn't have to.
+- Every mode's hover card also explains what that mode does, since the author's label ("Walk with me") doesn't have to.
 - Which mode it hands out lives in **`ShapeElement.mode`** (a `SelectionMode`). Absent means `DEFAULT_BUTTON_MODE` — `'avatar'` — so a button authored without one, or by an older client, still does the thing it looks like it should.
 
 ## Pressing it
 
-- A **left-click presses it**, switching the clicker's own canvas tool. Nobody else's mode changes: it is a control for the person who clicked, not a broadcast. The tooltip says so.
+- A **left-click presses it**, switching the clicker's own canvas tool. Nobody else's mode changes: it is a control for the person who clicked, not a broadcast. The hover card says so.
 - It routes through the **same tool setter the palette picker uses**, so the mode's own rules all still apply: telemetry, the selection clear on entering Avatar / Spotlight, and the empty-canvas guard.
 - **Dragging it moves it, and does NOT press it.** The face fires on `click`, never on pointer-down — and swallows that click when the pointer travelled more than a wobble between press and release (`usePressWithoutDrag`), because a drag on an element still ends in a browser `click` event.
 - **A button that hands out Avatar mode spawns the character at the button**, just below it, rather than at the viewport centre: you pressed a thing on the canvas, so the character should appear where you pressed it.
@@ -50,7 +50,7 @@ Per [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md): 
 ## Implementation shape
 
 - **`packages/diagram`**: `selection-mode.ts` (vocabulary + default + guard); `'mode-button'` in the `ShapeKind` union, `SHAPE_KINDS`, and `SHAPE_DEFAULT_SIZE`; the `mode` field on `ShapeElement`; the `createShape` branch; the `mode` check in `validate.ts`; `Mode Button` in `element-kind-label.ts`. Unit-tested.
-- **`apps/live/components/canvas/ModeButtonFace.tsx`** — the pressable face (glyph + label + tooltip), and the `MODE_LABEL` map the element menu also reads.
+- **`apps/live/components/canvas/ModeButtonFace.tsx`** — the pressable face (glyph + label + hover card), and the `MODE_LABEL` map the element menu also reads.
 - Wiring, one small edit each: `BoxedElementView` (render the face instead of a plain label), `CanvasElementsLayer` + `Canvas.types` + `EditorCanvasHost` (thread the press to the tool setter, and the viewer's current mode down for the disabled state), `shape-svg-overlay.tsx` (the kind renders on the CSS box path — left on the SVG path it drew a TRANSPARENT box, since the overlay has no case for it, which is why the first version had no fill at all), `lib/themes.ts` (exempt from the colour projection), `palette-tile-defs.tsx` (the tile + the Behaviour group), `ElementDataSections` + `ElementAppearanceSections` + `EditorContextMenu.types` + `EditorContextMenuHost` (the Button section), `useDataShapeSetters` (the `mode` patch), `element-telemetry.ts` (the token), `draw-mode.ts` (spell a hyphenated kind out in the draw banner).
 
 ## Out of scope (v1)

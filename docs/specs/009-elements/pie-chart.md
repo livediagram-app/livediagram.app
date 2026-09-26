@@ -22,7 +22,7 @@ the same 1-D data model, while the line chart carries a 2-D dataset (see Model).
   a column per series, add / remove either axis, and an **Import CSV** button
   (header row = series names, first column = category labels). The chart +
   legend redraw live from the data.
-- Hovering a mark (slice / bar / line point) shows a tooltip with its label +
+- Hovering a mark (slice / bar / line point) shows a readout with its label +
   value, regardless of the legend toggle.
 - A **Chart** context-menu category holds display options: a **Legend**
   placement picker — **Off / Top / Left / Right / Below** (glyph-over-label
@@ -76,7 +76,7 @@ groups all three (they're all in `isSelfDrawingShape` too).
   carries the `lvd-pie-*` animation (CSS in `globals.css`, reduced-motion-safe),
   the axes / labels stay still. `element-variant.ts` gives them a borderless
   wrapper. Shared preamble lives in `lib/chart.ts` (`chartFrame` / `chartAnim`);
-  hover wiring in `useChartHover` + `ChartTooltip`.
+  hover wiring in `useChartHover` + `ChartReadout`.
 - CSV import (line): `parseCsvLineData` in `apps/live/lib/csv.ts` (quoted-field
   aware) turns a pasted/uploaded CSV into categories + series.
 - Setters in `useElementStyle.ts`: `setPieDataSelected(slices)` (pie / bar),

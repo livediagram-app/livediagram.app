@@ -23,7 +23,7 @@ to the top centre of the canvas, the way Excalidraw's tool bar works:
   as a compact trigger showing the current category's glyph and name. It
   sits directly before the tiles it chooses, so it reads as their label.
 - **Then the current category's first ten tiles**, icon-only, each with its
-  tooltip, shortcut letter, drag-to-place, theme tint and pressed state. They
+  hover card, shortcut letter, drag-to-place, theme tint and pressed state. They
   are the same tiles as the Palette's (`palette-tile-defs`, [Palette Favourites](../010-palette/palette-favourites.md)),
   rendered by the same `PaletteTile`, so one change reaches both layouts.
 - **Right: More (⋯ ▾)**, when the category has more than the strip shows.

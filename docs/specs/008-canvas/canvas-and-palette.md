@@ -53,7 +53,7 @@ Sections, top to bottom:
   - **Clerk enabled, signed out**: "Sign in to keep your content" with body "A free account keeps your diagrams and content across sessions and devices." and a primary CTA linking to `/sign-in/`.
   - **Clerk enabled, signed in**: renders nothing. The signed-in user already has the account that syncs everything; the nudge would just be noise.
 
-Diagram rows — in **Recent Diagrams** and inside folders — show a small chain-link glyph (the shared `SharedDiagramIcon`) beside the name when the diagram has an active share link (`shareCode` non-null, carried through from the `/api/diagrams` summary), with a "Has a share link" tooltip, so an owner can tell at a glance which of their diagrams are shared. The glyph is suppressed on the row for the currently-open diagram, whose share state already shows in the Current Diagram section.
+Diagram rows — in **Recent Diagrams** and inside folders — show a small chain-link glyph (the shared `SharedDiagramIcon`) beside the name when the diagram has an active share link (`shareCode` non-null, carried through from the `/api/diagrams` summary), with a "Has a share link" hover card, so an owner can tell at a glance which of their diagrams are shared. The glyph is suppressed on the row for the currently-open diagram, whose share state already shows in the Current Diagram section.
 
 On desktop, collapsing the Explorer banner-collapses it in place via the shared `MovablePanel` `collapsible` prop (same as the Palette). On mobile the Explorer is instead opened from the top-right mobile dock ([Live app](../007-editor/live-app.md) "Mobile chrome"), so it is no longer hidden on phones; the old bottom-of-canvas dock button is retired. Activity still docks via its own minimise path, see that section.
 
@@ -785,7 +785,7 @@ The editor uses subtle, purposeful motion to feel fluid and modern. Chrome motio
 
 - **`element-pop-in`**: `scale(0) → scale(1.06) → scale(1)` over 360 ms with a spring-easing curve. It's canvas motion, applied to `BoxedElementView` so newly added shapes, text and stickies pop into existence. It carries the element's own rotation through every frame.
 - **`pop-in`**: the same keyframe at the chrome `micro` token (150 ms), for small chrome surfaces entering (cluster bars, the zoom menu, toolbar-strip tiles). It's transform-based, so it must only be used on elements that don't carry their own inline `transform` style.
-- **`fade-in`**: pure `opacity` 0 → 1 at `micro` (150 ms). It's used wherever the element already has an inline `transform` (the selection popover, plus buttons, mode banner, portal menus, tab-link picker, tooltips), so the animation doesn't fight positioning.
+- **`fade-in`**: pure `opacity` 0 → 1 at `micro` (150 ms). It's used wherever the element already has an inline `transform` (the selection popover, plus buttons, mode banner, portal menus, tab-link picker, tooltips and hover cards), so the animation doesn't fight positioning.
 - **`fly-up-in`**: combined `translateY(16px) scale(0.96) → 0 / 1` at `long` (250 ms). It's applied to modal-style surfaces (dialogs, template picker, empty-state card).
 
 Animations only fire on mount, so they naturally trigger once per element. Switching tabs unmounts the old tab's elements and mounts the new ones, so the destination tab's elements animate in too — a side-effect that makes tab switches feel lively.
@@ -1189,24 +1189,29 @@ The UI exposes the `'tab'`, `'diagram'`, and `'url'` kinds (via the LinkPickerDi
 
 Setting or clearing a link applies to **all members of the current selection** (consistent with other per-element ops). Each linked member shows its own badge.
 
-## Tooltips
+## Tooltips and hover cards
 
-Every icon button on the palette and selection popover shows a **tooltip** on hover (and focus) with:
+Every palette tile and selection-popover button carries a hint, as defined in
+[Tooltips, hover cards and popovers](../004-interface-design/tooltips-hover-cards-popovers.md):
 
-- A short **title** in bold.
-- A one-sentence **description** explaining what the action does.
-
-Tooltips render in a portal at the top level of the document so they're never clipped by parent overflow. They appear above the target (with a small gap), centered horizontally on the button.
-
-The tooltip is a shared, reusable element used wherever a control needs a richer hover than `aria-label`.
+- A tile with a **caption** carries a **Tooltip** with its full name, after a 1 s hover or at once on
+  keyboard focus. The caption may be shortened; the tooltip never is.
+- A caption-less tile or icon button that needs explaining carries a **hover card**: the bold name
+  over one sentence saying what the action does.
+- The icon and technology pickers' glyph galleries carry a **Tooltip** only: a hover card on each of
+  ~60 glyphs is noise, and the name is all a glyph needs.
 
 ```tsx
-<Tooltip title="Add square" description="Drop a new square shape on the canvas.">
-  <button>…</button>
+<HoverCard title="Add square" description="Drop a new square shape on the canvas.">
+  <button aria-label="Add square">…</button>
+</HoverCard>
+
+<Tooltip label="Rectangle">
+  <button aria-label="Rectangle">…</button>
 </Tooltip>
 ```
 
-`aria-label` continues to serve screen readers; the tooltip is for sighted users wanting to know what an icon does.
+`aria-label` continues to serve screen readers, and a tooltip says the same words.
 
 ## Labels
 

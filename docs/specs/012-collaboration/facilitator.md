@@ -291,7 +291,7 @@ On this tab — Board
 | Row                          | Button                            | When                                                                                                        |
 | ---------------------------- | --------------------------------- | ----------------------------------------------------------------------------------------------------------- |
 | Somebody else                | **Make Facilitator**              | I may grant: the baton is free and I have edit rights, or I am the owner, or I hold it and am passing it on |
-| Somebody else, a viewer      | **Make Facilitator**, disabled    | Always. The tooltip says why, rather than hiding the button and leaving the rule unlearnable                |
+| Somebody else, a viewer      | **Make Facilitator**, disabled    | Always. The hover card says why, rather than hiding the button and leaving the rule unlearnable             |
 | Somebody else, holding it    | no button, **Facilitating** badge | Taking it back is done from my own row, so the baton has one home per person                                |
 | Mine, baton free             | **Take Facilitation**             | I have edit rights. This is also how a solo facilitator starts                                              |
 | Mine, somebody else holds it | **Take Over**                     | Owner only — the one row that makes "the diagram can always take back control" true                         |

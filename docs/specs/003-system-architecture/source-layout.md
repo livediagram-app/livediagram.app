@@ -8,7 +8,7 @@ been reorganised into the buckets below.
 `apps/live` has grown two flat grab-bag directories:
 
 - `apps/live/components/` — ~157 files, alphabetical, mixing 3-line leaves
-  (`ChartTooltip.tsx`, `CloseIcon.tsx`) with 1,000+ line screens
+  (`ChartReadout.tsx`, `CloseIcon.tsx`) with 1,000+ line screens
   (`Canvas.tsx`, `EditorContextMenu.tsx`, `BoxedElementView.tsx`).
 - `apps/live/hooks/` — ~66 files, canvas state machines
   (`useEditorDrag.ts`, `useElementStyle.ts`) sitting next to UI-only hooks

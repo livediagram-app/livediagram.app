@@ -80,7 +80,7 @@ nothing that suggests they could change it, the same gate as every other note
 edit.
 
 Controls, left to right, in one row of the shared toolbar-button styling
-(`h-8 w-8` icon buttons with the standard tooltip, dividers between groups):
+(`h-8 w-8` icon buttons with the standard hover card, dividers between groups):
 
 | Group  | Controls                                                                 |
 | ------ | ------------------------------------------------------------------------ |

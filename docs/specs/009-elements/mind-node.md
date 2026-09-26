@@ -153,9 +153,9 @@ undo stack has moved on.
 ## Discoverability
 
 A selected mind node's quick-add **"+"** leads with **Add child** and **Add
-sibling**, each naming its shortcut in the tooltip ("Shortcut: Tab", "Shortcut:
+sibling**, each naming its shortcut in the hover card ("Shortcut: Tab", "Shortcut:
 Enter"). Keyboard-driven expansion is worthless if nobody finds it, and a
-tooltip on a palette tile is read once, months before it matters. The "+" is
+hover card on a palette tile is read once, months before it matters. The "+" is
 where every other per-element action already lives, so the two that grow a
 mind map belong there too, and the actions work by pointer as well as by key,
 which the shortcuts alone never did.

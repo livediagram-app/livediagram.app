@@ -30,13 +30,13 @@ holds, and no separate icon set can drift from the contents.
 
 ## No descriptions on Icons / Technology
 
-Tool categories get a tooltip describing what's inside ("Blocks: code blocks,
+Tool categories get a hover card describing what's inside ("Blocks: code blocks,
 checklists, …"), because the label alone doesn't answer "is the thing I want in
 here?".
 
-"People", "Arrows", "AWS" and "Azure" already answer it. A tooltip that restates
+"People", "Arrows", "AWS" and "Azure" already answer it. A hover card that restates
 the label under the glyph is a delay in exchange for nothing, so `description`
-on a category is now optional and those two tabs omit it — no tooltip renders at
+on a category is now optional and those two tabs omit it — no hover card renders at
 all.
 
 ## Search is never narrowed
