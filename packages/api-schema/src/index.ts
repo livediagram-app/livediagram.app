@@ -477,6 +477,10 @@ export { sha256Hex } from './sha256';
 // the telemetry dashboard can't drift (see ./title-case.ts).
 export { titleCase } from './title-case';
 
+// Bearer-token and loopback-host reading, shared by the api and mcp workers
+// so the two can't disagree on what a request presented (see ./request-auth.ts).
+export { bearerTokenOf, isLoopbackHostname } from './request-auth';
+
 export type AiMode = 'clean' | 'ask';
 
 export type AiConversationTurn = { role: 'user' | 'assistant'; content: string };

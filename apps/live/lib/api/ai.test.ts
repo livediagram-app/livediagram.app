@@ -62,6 +62,34 @@ describe('extractElementsFromBuffer shape coercion', () => {
     expect(s.height).toBeGreaterThan(0);
   });
 
+  // The stream is held to the same guard as a save, so nothing it yields can
+  // fail the api's tab validation later.
+  it('drops what a save would reject: junk endpoints, bad anchors, infinite coordinates', () => {
+    const out = extractElementsFromBuffer(
+      `{"elements":[` +
+        `{"id":"a1","type":"arrow","from":{},"to":{}},` +
+        `{"id":"a2","type":"arrow","from":{"kind":"pinned","elementId":"s","anchor":"right"},"to":{"kind":"free","x":0,"y":0}},` +
+        `{"id":"s1","type":"shape","shape":"square","x":1e999,"y":0,"width":140,"height":60},` +
+        `{"id":"a3","type":"arrow","from":{"kind":"pinned","elementId":"s","anchor":"e"},"to":{"kind":"free","x":0,"y":0}}` +
+        `]}`,
+    );
+    expect(out.map((e) => e.id)).toEqual(['a3']);
+  });
+
+  it('defaults a missing size on text and sticky too', () => {
+    const out = extractElementsFromBuffer(
+      `{"elements":[{"id":"t","type":"text","x":0,"y":0,"label":"Title"},{"id":"n","type":"sticky","x":0,"y":0}]}`,
+    );
+    expect(out.map((e) => e.id)).toEqual(['t', 'n']);
+  });
+
+  it('ignores element types the assistant may not add', () => {
+    const out = extractElementsFromBuffer(
+      `{"elements":[{"id":"i","type":"image","x":0,"y":0,"width":10,"height":10,"src":"x"}]}`,
+    );
+    expect(out).toEqual([]);
+  });
+
   it('parses a shape whose label contains braces (no depth miscount)', () => {
     const out = extractElementsFromBuffer(
       `{"elements":[{"id":"a","type":"shape","shape":"square","x":0,"y":0,"width":140,"height":60,"label":"if (x) { y }"},{"id":"b","type":"shape","shape":"circle","x":200,"y":0,"width":80,"height":80}]}`,

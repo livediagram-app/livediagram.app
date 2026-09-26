@@ -20,7 +20,8 @@ import { RelativeTimeChip } from '@/components/primitives/RelativeTimeChip';
 // One diagram row in the full-page /explorer list (open / rename / move /
 // duplicate / delete + the drag source). Split out of views.tsx; rendered
 // by FolderRow + the unsorted list there. The badge + actions menu come
-// from diagram-row-shared so the card view (CardView) can't drift.
+// from diagram-row-shared so the card view (CardView) can't drift. The
+// team library (TeamSharedDiagrams) renders this same row.
 export function DiagramRow({
   diagram,
   ownerId,
@@ -39,6 +40,7 @@ export function DiagramRow({
   onShowHistory,
   showOwner = false,
   folderChip,
+  showVisibility = true,
 }: DiagramEntryProps) {
   useRelativeTimeTick();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -108,7 +110,7 @@ export function DiagramRow({
         </span>
       ) : null}
       <span className="hidden sm:block">
-        <VisibilityBadge diagram={diagram} />
+        {showVisibility ? <VisibilityBadge diagram={diagram} /> : null}
       </span>
       <RelativeTimeChip at={diagram.savedAt} />
       {renaming ? (

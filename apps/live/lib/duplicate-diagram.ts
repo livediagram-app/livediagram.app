@@ -23,7 +23,7 @@
 // the helper deliberately doesn't touch state outside the api
 // round-trip so it can stand alone.
 
-import type { Tab } from '@livediagram/diagram';
+import { remapTabLinks, type Tab } from '@livediagram/diagram';
 import { apiCreateDiagram, apiLoadDiagram, apiLoadTab, apiSaveDiagramMeta } from './api-client';
 import { isOfflineId, offlineCreateDiagram } from './offline/offline-store';
 
@@ -45,20 +45,10 @@ export async function duplicateDiagram(
   for (const tab of fullTabs) {
     if (!tab) continue;
     const newTabId = tabIdMap.get(tab.id) ?? crypto.randomUUID();
-    const elements = tab.elements.map((el) => {
-      if ('link' in el && el.link) {
-        // Tab / element-kind links carry a tabId that needs
-        // remapping into the duplicated tab tree. Diagram-kind
-        // links target another diagram entirely; they survive
-        // the duplication unchanged so the new diagram still
-        // navigates to the same external destination.
-        if (el.link.kind === 'tab' || el.link.kind === 'element') {
-          const next = tabIdMap.get(el.link.tabId);
-          if (next) return { ...el, link: { ...el.link, tabId: next } };
-        }
-      }
-      return el;
-    });
+    // Tab / element links follow the copy's tabs; diagram and url links
+    // leave the diagram and survive unchanged (shared with the api's copy
+    // route via @livediagram/diagram).
+    const elements = remapTabLinks(tab.elements, tabIdMap);
     remappedTabs.push({ ...tab, id: newTabId, elements });
   }
   const newId = crypto.randomUUID();

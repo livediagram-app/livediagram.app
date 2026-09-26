@@ -138,4 +138,8 @@ export type DiagramEntryProps = {
   // Where the diagram lives (spec/94). Recent only — every other pane IS a
   // folder, so the chip would just repeat its own title.
   folderChip?: { label: string; onOpen: () => void } | null;
+  // Hides the visibility badge but keeps its column, so the row still lines
+  // up with the FolderRows above it. The team library passes false: every
+  // row there is a team diagram (CardView's showVisibilityBadge, as a row).
+  showVisibility?: boolean;
 };

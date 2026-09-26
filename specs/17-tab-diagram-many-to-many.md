@@ -58,7 +58,7 @@ SELECT t.id, t.name, dt.order_index
 
 `DELETE /api/diagrams/:id/tabs/:tabId` now removes the link row first, then drops the underlying `tabs` row only when no other `diagram_tabs` entries reference it. Unlinking a shared tab from one diagram leaves the body intact for the others.
 
-`POST /api/diagrams/:id/copy` (item #9) copies tab bodies into freshly minted tab rows — that doesn't change. The new tab rows get fresh ids and their own `diagram_tabs` entries pointing at the new diagram. Cloning vs linking is a deliberate distinction: copy = independent content, link = shared content.
+`POST /api/diagrams/:id/copy` (item #9) copies tab bodies into freshly minted tab rows — that doesn't change. The new tab rows get fresh ids and their own `diagram_tabs` entries pointing at the new diagram, and any tab / element link in a copied body is re-pointed from the source tab id to its copy's (`remapTabLinks`, `@livediagram/diagram`). Cloning vs linking is a deliberate distinction: copy = independent content, link = shared content.
 
 ## Phasing
 

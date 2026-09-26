@@ -6,7 +6,7 @@ import { FolderRow, UnsortedRow } from '@/app/explorer/views';
 import { CardView } from '@/app/explorer/CardView';
 import { TeamLibraryHeader } from '@/components/panels/TeamLibraryHeader';
 import { useExplorerViewMode } from '@/app/explorer/useExplorerViewMode';
-import { TeamDiagramRow } from '@/components/panels/TeamDiagramRow';
+import { DiagramRow } from '@/app/explorer/explorer-route-diagram-row';
 import {
   MoveToFolderDialog,
   type MoveDestination,
@@ -271,11 +271,14 @@ export function TeamSharedDiagrams({
             />
           ))}
           {visibleDiagrams.map((d) => (
-            <TeamDiagramRow
+            // The Explorer's own row, so a team row matches the FolderRows
+            // above it (a local copy had drifted to a 3-column grid).
+            <DiagramRow
               key={d.id}
               diagram={d}
               ownerId={ownerId}
               renaming={renamingDiagramId === d.id}
+              showVisibility={false}
               onMove={() => setMoveTarget({ kind: 'diagram', id: d.id })}
               onStartRename={() => startRenameDiagram(d.id)}
               onCommitRename={(name) => commitRenameDiagram(d.id, name)}

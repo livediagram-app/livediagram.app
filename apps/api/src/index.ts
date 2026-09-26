@@ -12,7 +12,12 @@ import {
   deleteOldUnusedImages,
   resolveApiToken,
 } from './db';
-import { apiRouteLabel, errorTypeToken, TIMELINE_RETENTION_MS } from '@livediagram/api-schema';
+import {
+  apiRouteLabel,
+  bearerTokenOf,
+  errorTypeToken,
+  TIMELINE_RETENTION_MS,
+} from '@livediagram/api-schema';
 import { isApiTokenFormat } from './auth/api-token';
 import { verifyOwnerId } from './auth/owner-signature';
 import { guestSignatureEnforced, isClerkIdShape, OWNER_SCOPED_SEGMENTS } from './auth/guest-rest';
@@ -117,8 +122,7 @@ export default {
     // exact same ownership / gate checks as a signed-in one.
     let tokenAuth: { ownerId: string; tokenId: string; readOnly: boolean } | null = null;
     if (!clerkUserId) {
-      const authz = request.headers.get('Authorization');
-      const bearer = authz?.startsWith('Bearer ') ? authz.slice(7) : null;
+      const bearer = bearerTokenOf(request.headers.get('Authorization'));
       if (bearer && isApiTokenFormat(bearer)) tokenAuth = await resolveApiToken(env, bearer);
     }
     const resolveOwner = (): string | null =>

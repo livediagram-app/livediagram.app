@@ -1,6 +1,6 @@
-import { classMaskOf } from '../src/detect';
+import { classMaskOf, closeRadiusFor } from '../src/detect';
 import { closePaperMask, labelComponents } from '../src/components';
-import { estimateNoteSize } from '../src/boxes';
+import { estimateNoteSize, noiseFloorFor } from '../src/boxes';
 import { writeFileSync } from 'node:fs';
 import { loadPhoto, workDirFor } from './photos';
 import { encodePng } from './png';
@@ -36,10 +36,10 @@ const noteSize = estimateNoteSize(
     h: c.maxY - c.minY + 1,
     pixels: c.pixels,
   })),
-  Math.max(4, Math.round(imageSize * 0.008)),
+  noiseFloorFor(imageSize),
 );
-const cap = Math.max(2, Math.round(imageSize * 0.006));
-const radius = Math.max(1, Math.min(cap, Math.round(noteSize * 0.04)));
+// The detector's own radius (a hand-copied 0.04 closed twice as hard).
+const radius = closeRadiusFor(noteSize, imageSize);
 const closed = closePaperMask(mask, { radius });
 console.log(`note ${noteSize}px  close radius ${radius}`);
 const glyph = (c: number) => (c === 0 ? '.' : c < 10 ? String(c) : String.fromCharCode(55 + c));

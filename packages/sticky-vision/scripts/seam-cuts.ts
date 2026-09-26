@@ -1,6 +1,6 @@
-import { classMaskOf } from '../src/detect';
+import { classMaskOf, closeRadiusFor } from '../src/detect';
 import { closePaperMask, labelComponents } from '../src/components';
-import { estimateNoteSize, fillRatio, mergeFragments, type Box } from '../src/boxes';
+import { estimateNoteSize, fillRatio, mergeFragments, noiseFloorFor, type Box } from '../src/boxes';
 import { splitOversized } from '../src/split';
 import { cutAtNotches } from '../src/chords';
 import { findSeam, luminanceOf } from '../src/seam';
@@ -49,12 +49,11 @@ for (const name of listPhotos(DIR)) {
     h: c.maxY - c.minY + 1,
     pixels: c.pixels,
   });
-  const noiseFloor = Math.max(4, Math.round(imageSize * 0.008));
+  const noiseFloor = noiseFloorFor(imageSize);
   const note = estimateNoteSize(labelComponents(mask).map(toBox), noiseFloor);
-  const cap = Math.max(2, Math.round(imageSize * 0.006));
-  const closed = closePaperMask(mask, {
-    radius: Math.max(1, Math.min(cap, Math.round(note * 0.04))),
-  });
+  // The detector's own radius, not a copy: a hand-copied 0.04 closed twice as
+  // hard as detectStickies and measured a mask that never ships.
+  const closed = closePaperMask(mask, { radius: closeRadiusFor(note, imageSize) });
   const pieces = mergeFragments(labelComponents(closed).map(toBox), note)
     .filter((b) => Math.min(b.w, b.h) >= noiseFloor && Math.min(b.w, b.h) >= note * 0.5)
     .flatMap((b) => splitOversized(b, note, closed, mask))

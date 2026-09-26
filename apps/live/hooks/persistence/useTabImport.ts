@@ -4,7 +4,7 @@
 // with its lazy-loaded parser cluster (JSON / Markdown / Mermaid /
 // Excalidraw, spec/87).
 
-import type { Element, Tab } from '@livediagram/diagram';
+import { remapElementRefs, type Element, type Tab } from '@livediagram/diagram';
 import { mergeImportedTab } from '@/lib/import-merge';
 import type { ImportOutcome } from '@/lib/import-tab';
 import { track } from '@/lib/telemetry';
@@ -20,41 +20,12 @@ export const remintElementIds = (elements: Element[]): Element[] => {
     idMap.set(el.id, id);
     return { ...el, id };
   });
-  for (const el of next) {
-    if (el.type === 'arrow') {
-      for (const end of ['from', 'to'] as const) {
-        const ep = el[end];
-        if (ep.kind === 'pinned') {
-          const mapped = idMap.get(ep.elementId);
-          if (mapped) el[end] = { ...ep, elementId: mapped };
-        } else if (ep.kind === 'on-arrow') {
-          // Arrow-to-arrow endpoints (spec/50) reference another arrow's id,
-          // so they need remapping too — otherwise a DSL / JSON import with a
-          // message hung off a lifeline points at the pre-remint id.
-          const mapped = idMap.get(ep.arrowId);
-          if (mapped) el[end] = { ...ep, arrowId: mapped };
-        }
-      }
-    }
-  }
-  // Element-to-element references beyond arrows, remapped the way
-  // duplicateElements does. Missed, a duplicated tab's mind-map nodes
-  // (spec/118) named parents on the SOURCE tab, so collapse and re-layout
-  // found no children, and paired portals (spec/104) lost their partner.
-  //
-  // Element links are left alone: a link names its tab too, and that is still
-  // the source tab, where the original element still is.
-  return next.map((el) => {
-    if (el.type !== 'shape') return el;
-    const parent = el.mindParentId !== undefined ? idMap.get(el.mindParentId) : undefined;
-    const portal = el.portalTarget !== undefined ? idMap.get(el.portalTarget) : undefined;
-    if (!parent && !portal) return el;
-    return {
-      ...el,
-      ...(parent ? { mindParentId: parent } : {}),
-      ...(portal ? { portalTarget: portal } : {}),
-    };
-  });
+  // Arrow endpoints, mind-map parents (spec/118) and portal partners
+  // (spec/104) follow the new ids. Missed, a duplicated tab's mind-map
+  // nodes named parents on the SOURCE tab and paired portals lost their
+  // partner. Element links are left alone: a link names its tab too, and
+  // that is still the source tab, where the original element still is.
+  return remapElementRefs(next, idMap);
 };
 
 type TabImportDeps = {

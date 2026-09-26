@@ -193,3 +193,67 @@ export function duplicateElements(
 
   return { newElements: [...rewired, ...newArrows], idMap };
 }
+
+// Re-point element-to-element references after a caller has renamed some
+// element ids (old → new in `idMap`): arrow endpoints pinned to an element or
+// hung off another arrow (spec/50), a mind-map node's parent (spec/118) and a
+// portal's partner (spec/104). A reference whose target isn't in the map is
+// left alone. Element links are deliberately NOT touched: a link names its
+// tab as well as its element, and that is still the source tab.
+//
+// This is the reference half of every "same elements, fresh ids" path
+// (import re-mint, AI merge). Each of those used to re-list the reference
+// kinds itself, and each one that forgot a kind left the copy wired to the
+// original. duplicateElements has its own richer pass (offsets, dropping
+// unresolvable arrows) and stays separate.
+export function remapElementRefs<E extends Element>(
+  elements: E[],
+  idMap: Map<ElementId, ElementId>,
+): E[] {
+  if (idMap.size === 0) return elements;
+  const endpoint = (end: ArrowElement['from']): ArrowElement['from'] => {
+    if (end.kind === 'pinned') {
+      const mapped = idMap.get(end.elementId);
+      return mapped ? { ...end, elementId: mapped } : end;
+    }
+    if (end.kind === 'on-arrow') {
+      const mapped = idMap.get(end.arrowId);
+      return mapped ? { ...end, arrowId: mapped } : end;
+    }
+    return end;
+  };
+  return elements.map((el) => {
+    if (el.type === 'arrow') {
+      const from = endpoint(el.from);
+      const to = endpoint(el.to);
+      return from === el.from && to === el.to ? el : { ...el, from, to };
+    }
+    if (el.type !== 'shape') return el;
+    const parent = el.mindParentId !== undefined ? idMap.get(el.mindParentId) : undefined;
+    const portal = el.portalTarget !== undefined ? idMap.get(el.portalTarget) : undefined;
+    if (!parent && !portal) return el;
+    return {
+      ...el,
+      ...(parent ? { mindParentId: parent } : {}),
+      ...(portal ? { portalTarget: portal } : {}),
+    };
+  });
+}
+
+// Re-point tab and element links after a whole diagram is copied with fresh
+// tab ids (old → new in `tabIdMap`), so the copy's internal navigation lands
+// on its own tabs instead of the source diagram's. Diagram and url links
+// leave the diagram, so they survive unchanged. Shared by the editor's
+// Explorer duplicate and the api's copy route, which drifted apart when each
+// owned a copy of this walk: the api's copies kept pointing at the source.
+export function remapTabLinks<E extends Element>(
+  elements: E[],
+  tabIdMap: Map<string, string>,
+): E[] {
+  return elements.map((el) => {
+    const link = el.link;
+    if (!link || (link.kind !== 'tab' && link.kind !== 'element')) return el;
+    const next = tabIdMap.get(link.tabId);
+    return next ? { ...el, link: { ...link, tabId: next } } : el;
+  });
+}

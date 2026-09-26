@@ -10,7 +10,7 @@ import type {
   ReadNotesResponse,
 } from '@livediagram/api-schema';
 import { READ_MAX_CROPS_PER_REQUEST } from '@livediagram/api-schema';
-import type { Element } from '@livediagram/diagram';
+import { isValidElement, type Element } from '@livediagram/diagram';
 import { API_BASE, apiHeaders, apiFetch } from './core';
 
 // Fetch server capabilities once at editor mount. Returns everything
@@ -76,25 +76,21 @@ const AI_SHAPE_KINDS = new Set([
 const AI_DEFAULT_SHAPE_W = 120;
 const AI_DEFAULT_SHAPE_H = 64;
 
-function isValidElement(el: unknown): el is Element {
-  if (typeof el !== 'object' || el === null) return false;
-  const obj = el as Record<string, unknown>;
-  if (typeof obj.id !== 'string' || !obj.id) return false;
-  const t = obj.type;
-  if (t === 'shape') {
-    // Accept any shape with a position; the kind is coerced and the size
-    // defaulted in normalizeAiElement, so an off-vocabulary kind or a
-    // missing width/height no longer drops the whole node (which used to
-    // leave its connecting arrows floating).
-    return typeof obj.x === 'number' && typeof obj.y === 'number';
-  }
-  if (t === 'text' || t === 'sticky') {
-    return typeof obj.x === 'number' && typeof obj.y === 'number';
-  }
-  if (t === 'arrow') {
-    return typeof obj.from === 'object' && typeof obj.to === 'object';
-  }
-  return false;
+// Element types the assistant is allowed to add. Anything else in the stream
+// (an image, a freehand stroke the prompt told it not to emit) is dropped.
+const AI_ELEMENT_TYPES = new Set(['shape', 'text', 'sticky', 'arrow']);
+
+// Parse, normalise, then hold the result to the SAME structural guard every
+// save goes through (`isValidElement` from @livediagram/diagram). A looser
+// local copy used to live here: it let through arrows with junk endpoints and
+// non-finite coordinates, which rendered, then failed the api's tab validation
+// on save. Normalising first keeps the forgiving part (a stray kind or a
+// missing size still renders) without the drift.
+function toAiElement(raw: unknown): Element | null {
+  if (typeof raw !== 'object' || raw === null) return null;
+  if (!AI_ELEMENT_TYPES.has((raw as { type?: unknown }).type as string)) return null;
+  const el = normalizeAiElement(raw as Record<string, unknown>);
+  return isValidElement(el) ? el : null;
 }
 
 // Normalise an AI-returned element so it renders consistently. The big one:
@@ -105,24 +101,23 @@ function isValidElement(el: unknown): el is Element {
 // textSize:'md'; AI shapes routinely omit it (the prompt even told them to),
 // so pin any missing / non-fixed size to 'md'. The model's explicit sm/md/lg
 // hierarchy choices are preserved.
-function normalizeAiElement(el: Element): Element {
-  if (el.type === 'shape') {
-    const obj = el as Record<string, unknown>;
-    const patch: Record<string, unknown> = {};
+function normalizeAiElement(obj: Record<string, unknown>): unknown {
+  if (obj.type !== 'shape' && obj.type !== 'text' && obj.type !== 'sticky') return obj;
+  const patch: Record<string, unknown> = {};
+  // Default a missing / non-positive size so the box has area to draw.
+  if (typeof obj.width !== 'number' || obj.width <= 0) patch.width = AI_DEFAULT_SHAPE_W;
+  if (typeof obj.height !== 'number' || obj.height <= 0) patch.height = AI_DEFAULT_SHAPE_H;
+  if (obj.type === 'shape') {
     // Off-vocabulary / synonym kind ("rectangle", "box", a composite without
     // its data) → plain square, so the node renders instead of being dropped.
     if (typeof obj.shape !== 'string' || !AI_SHAPE_KINDS.has(obj.shape)) {
       patch.shape = 'square';
     }
-    // Default a missing / non-positive size so the box has area to draw.
-    if (typeof obj.width !== 'number' || obj.width <= 0) patch.width = AI_DEFAULT_SHAPE_W;
-    if (typeof obj.height !== 'number' || obj.height <= 0) patch.height = AI_DEFAULT_SHAPE_H;
     // Pin a non-fixed textSize to 'md' (else 'scale' balloons the label).
     const ts = obj.textSize;
     if (ts !== 'sm' && ts !== 'md' && ts !== 'lg') patch.textSize = 'md';
-    return Object.keys(patch).length ? ({ ...el, ...patch } as Element) : el;
   }
-  return el;
+  return Object.keys(patch).length ? { ...obj, ...patch } : obj;
 }
 
 // Parse all complete element objects out of an accumulated JSON buffer.
@@ -156,8 +151,8 @@ export function extractElementsFromBuffer(buffer: string): Element[] {
       depth--;
       if (depth === 0 && start >= 0) {
         try {
-          const el = JSON.parse(buffer.slice(start, i + 1));
-          if (isValidElement(el)) elements.push(normalizeAiElement(el));
+          const el = toAiElement(JSON.parse(buffer.slice(start, i + 1)));
+          if (el) elements.push(el);
         } catch {
           /* skip malformed */
         }

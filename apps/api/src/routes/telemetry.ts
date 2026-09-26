@@ -7,6 +7,7 @@ import {
   type TelemetrySummary,
   type TelemetryWindow,
   type TelemetryWindowKey,
+  isLoopbackHostname,
 } from '@livediagram/api-schema';
 import { telemetryDailyCountsSince } from '../db';
 import { json, notFound } from '../responses';
@@ -34,7 +35,7 @@ export async function handleTelemetry(ctx: RouteContext): Promise<Response> {
   // production the cache stays on (see below) so a traffic spike
   // never hammers D1. Parallel to the localhost same-origin escape
   // hatch above (spec/22).
-  const isLocalDev = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
+  const isLocalDev = isLoopbackHostname(url.hostname);
   const cacheKey = new Request(url.toString());
   if (!isLocalDev) {
     const hit = await caches.default.match(cacheKey);

@@ -1,7 +1,7 @@
 import { writeFileSync } from 'node:fs';
 import { classMaskOf, detectStickies } from '../src/detect';
 import { labelComponents } from '../src/components';
-import { estimateNoteSize } from '../src/boxes';
+import { estimateNoteSize, noiseFloorFor } from '../src/boxes';
 import { encodePng } from './png';
 import { listPhotos, loadPhoto, workDirFor } from './photos';
 import { photoDir, truthFor } from './truth';
@@ -48,7 +48,7 @@ for (const name of listPhotos(DIR)) {
   const found = detectStickies(image);
   const mask = classMaskOf(image);
   const imageSize = Math.max(width, height);
-  const noiseFloor = Math.max(4, Math.round(imageSize * 0.008));
+  const noiseFloor = noiseFloorFor(imageSize);
   const noteSize = estimateNoteSize(
     labelComponents(mask).map((c) => ({
       classId: c.classId,

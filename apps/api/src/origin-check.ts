@@ -13,12 +13,11 @@
 // from the route handler: matches the precedent set by image-strip,
 // image-sniff, tab-row, folder-row, share-link-row, change-log-row.
 
-// IPv4 + IPv6 + textual loopback hostnames the browser may emit.
-// `[::1]` is what `new URL('http://[::1]:3000').hostname` returns,
-// including the brackets, so the literal stays bracketed here.
-function isLoopback(hostname: string): boolean {
-  return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]';
-}
+import { isLoopbackHostname } from '@livediagram/api-schema';
+
+// IPv4 + IPv6 + textual loopback hostnames the browser may emit; the one
+// definition lives in @livediagram/api-schema so the mcp agrees.
+const isLoopback = isLoopbackHostname;
 
 // True iff BOTH `origin` and `target` parse as URLs whose hostname
 // is a loopback. Returns false on either side failing to parse,

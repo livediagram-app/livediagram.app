@@ -3,6 +3,7 @@
 // responses), Bearer-gated; tools reach the api worker over the API service
 // binding, forwarding the caller's `Authorization: Bearer lvd_…`. OAuth 2.1
 // endpoints mount alongside (added in the OAuth step).
+import { bearerTokenOf } from '@livediagram/api-schema';
 import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
@@ -35,8 +36,7 @@ registerOauthRoutes(app);
 // responses, which suits a per-request Worker: build a fresh server + transport,
 // connect, and let the transport turn the request into a response.
 app.all('/mcp', async (c) => {
-  const auth = c.req.header('Authorization');
-  const token = auth?.startsWith('Bearer ') ? auth.slice('Bearer '.length).trim() : null;
+  const token = bearerTokenOf(c.req.header('Authorization'));
   if (!token) {
     // Point MCP clients at the OAuth resource metadata so they can start the
     // connect flow (the metadata endpoint lands with the OAuth step). The
