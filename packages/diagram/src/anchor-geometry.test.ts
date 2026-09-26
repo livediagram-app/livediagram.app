@@ -253,3 +253,19 @@ describe('face-placed anchors (docs/specs/008-canvas/arrow-anchors.md "Anchors p
     expect(nearestOfferedAnchor(shape(), 'n')).toBe('n');
   });
 });
+
+describe('anchor fallback logging', () => {
+  it('logs a quick-connect remap and a creation side fallback, never the plain case', () => {
+    const debug = vi.spyOn(console, 'debug').mockImplementation(() => {});
+    const tri = shape({ id: 't', shape: 'triangle' });
+    nearestOfferedAnchor(tri, 'n');
+    expect(debug).toHaveBeenCalledWith('[arrow-anchors] remap element=t n->ene');
+    bestAnchorTowards(tri, { x: 60, y: -300 });
+    expect(debug).toHaveBeenCalledWith('[arrow-anchors] creation element=t side=e fallback=side');
+    debug.mockClear();
+    nearestOfferedAnchor(shape(), 'n');
+    bestAnchorTowards(shape(), { x: 400, y: 50 });
+    expect(debug).not.toHaveBeenCalled();
+    debug.mockRestore();
+  });
+});
