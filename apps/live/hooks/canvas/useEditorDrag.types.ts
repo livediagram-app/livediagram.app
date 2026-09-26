@@ -6,6 +6,7 @@ import type {
   Element,
   IconPosition,
   Tab,
+  FrameHandle,
 } from '@livediagram/diagram';
 import type { ArrowEnd, DragMode, DragState } from '@/lib/canvas';
 import type { InsertionGate } from '@/lib/insert-between';
@@ -151,6 +152,7 @@ export type EditorDragApi = {
   beginArrowCurveDrag: (arrowId: string, e: ReactPointerEvent) => void;
   beginArrowCurvePointDrag: (arrowId: string, index: number, e: ReactPointerEvent) => void;
   beginArrowBend: (arrowId: string, e: ReactPointerEvent<SVGElement>) => void;
+  beginArrowScale: (arrowId: string, handle: FrameHandle, e: ReactPointerEvent) => void;
   deleteCurvePoint: (arrowId: string, index: number) => void;
   beginArrowElbowDrag: (arrowId: string, e: ReactPointerEvent) => void;
   beginArrowLabelDrag: (arrowId: string, e: ReactPointerEvent) => void;

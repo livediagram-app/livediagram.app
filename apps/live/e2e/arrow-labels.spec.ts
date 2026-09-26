@@ -1,4 +1,5 @@
 import type { Page } from '@playwright/test';
+import { DOUBLE_PRESS_MS } from '../lib/double-press';
 import { expect, expectNoPageErrors, seedTab, startBlankDiagram, test } from './fixtures';
 
 // Arrow labels on the line and bending by the line, end to end
@@ -28,11 +29,14 @@ const linked = [
 const pathD = (page: Page, id: string) =>
   page.locator(`path[data-element-id="${id}"]`).getAttribute('d');
 
-// A screen point on the arrow's line, `f` of the way along its hit band
-// (the band of a horizontal line is centred on it).
+// A screen point on a straight arrow's line, `f` of the way along it, read
+// off the drawn path and mapped through the arrow's own screen transform.
 async function onLine(page: Page, id: string, f: number) {
-  const box = (await page.locator(`path[data-element-id="${id}"]`).boundingBox())!;
-  return { x: box.x + box.width * f, y: box.y + box.height / 2 };
+  return page.locator(`path[data-element-id="${id}"]`).evaluate((path: SVGPathElement, f) => {
+    const p = path.getPointAtLength(path.getTotalLength() * f);
+    const m = path.getScreenCTM()!;
+    return { x: m.a * p.x + m.c * p.y + m.e, y: m.b * p.x + m.d * p.y + m.f };
+  }, f);
 }
 
 // Double-click where the label is drawn. The text itself is pointer-inert;
@@ -140,6 +144,9 @@ test.describe('arrow labels and bending', () => {
     ]);
     const p = await onLine(page, 'free', 0.3);
     await page.mouse.click(p.x, p.y);
+    // Grabbing the frame straight after the selecting click, this close to it,
+    // would be the second press of a double-click (docs/specs/008-canvas/arrow-bending.md).
+    await page.waitForTimeout(DOUBLE_PRESS_MS + 50);
     const frame = (await page.getByTestId('arrow-move-frame').boundingBox())!;
     const before = await pathD(page, 'free');
     const x = frame.x + frame.width / 3;
@@ -152,6 +159,38 @@ test.describe('arrow labels and bending', () => {
     expect(after).not.toBe(before);
     // Moved, not bent.
     expect(after).not.toContain('Q');
+    expectNoPageErrors(pageErrors);
+  });
+
+  test('a free arrow scales from its frame corner', async ({ page, pageErrors }) => {
+    await startBlankDiagram(page);
+    await seedTab(page, [
+      {
+        id: 'free',
+        type: 'arrow',
+        from: { kind: 'free', x: 200, y: 300 },
+        to: { kind: 'free', x: 600, y: 400 },
+      },
+    ]);
+    const p = await onLine(page, 'free', 0.3);
+    await page.mouse.click(p.x, p.y);
+    // Grabbing the frame straight after the selecting click, this close to it,
+    // would be the second press of a double-click (docs/specs/008-canvas/arrow-bending.md).
+    await page.waitForTimeout(DOUBLE_PRESS_MS + 50);
+    const frame = (await page.getByTestId('arrow-move-frame').boundingBox())!;
+    const before = (await page.locator('path[data-element-id="free"]').boundingBox())!;
+    const x = frame.x + frame.width;
+    const y = frame.y + frame.height;
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.mouse.move(x + 50, y + 25, { steps: 5 });
+    await page.mouse.move(x + 100, y + 50, { steps: 5 });
+    await page.mouse.up();
+    const after = (await page.locator('path[data-element-id="free"]').boundingBox())!;
+    // Grew from the far corner: the start stays, the arrow is wider and taller.
+    expect(Math.abs(after.x - before.x)).toBeLessThan(2);
+    expect(after.width).toBeGreaterThan(before.width + 50);
+    expect(after.height).toBeGreaterThan(before.height + 25);
     expectNoPageErrors(pageErrors);
   });
 });

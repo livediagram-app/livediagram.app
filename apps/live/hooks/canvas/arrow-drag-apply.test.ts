@@ -4,7 +4,7 @@ import {
   type ArrowDragMoveArgs,
   type ArrowDragState,
 } from './arrow-drag-apply';
-import type { Element } from '@livediagram/diagram';
+import { planArrowBend, type ArrowElement, type Element } from '@livediagram/diagram';
 
 // A free-floating arrow: no pinned ends, so translate/endpoint maths stay
 // self-contained and don't need surrounding boxes to anchor against.
@@ -31,6 +31,7 @@ function run(drag: ArrowDragState, over: Partial<ArrowDragMoveArgs> = {}) {
     dx: 10,
     dy: 20,
     noSnap: false,
+    shiftHeld: false,
     elements: els,
     guidesOn: true,
     tick: (mapper) => {
@@ -86,6 +87,7 @@ describe('applyArrowDragMove', () => {
       dx: 5,
       dy: 5,
       noSnap: false,
+      shiftHeld: false,
       elements: els,
       guidesOn: true,
       tick: (mapper) => {
@@ -134,5 +136,37 @@ describe('applyArrowDragMove', () => {
       reposition: true,
     } as ArrowDragState);
     expect(onArrowConnected).not.toHaveBeenCalled();
+  });
+
+  it('bends the arrow by the plan made at the press', () => {
+    // A straight arrow grabbed at its middle and dragged down bows through
+    // the pointer (docs/specs/008-canvas/arrow-bending.md).
+    const plan = planArrowBend(arrow() as ArrowElement, [], { x: 50, y: 0 });
+    const { out } = run({
+      kind: 'arrow-bend',
+      arrowId: 'a1',
+      startClientX: 0,
+      startClientY: 0,
+      plan,
+    } as ArrowDragState);
+    const a = out[0] as ArrowElement;
+    expect(a.arrowStyle).toBe('curved');
+    expect(a.curveOffset).toBeDefined();
+  });
+
+  it('scales a free arrow from its frame, holding the opposite side', () => {
+    const { out } = run({
+      kind: 'arrow-scale',
+      arrowId: 'a1',
+      handle: 'e',
+      startClientX: 0,
+      startClientY: 0,
+      box: { x: 0, y: 0, width: 100, height: 0 },
+      start: arrow() as ArrowElement,
+    } as ArrowDragState);
+    const a = out[0] as ArrowElement;
+    expect(a.from).toEqual({ kind: 'free', x: 0, y: 0 });
+    expect(a.to.kind === 'free' && a.to.x).toBeCloseTo(110);
+    expect(a.to.kind === 'free' && a.to.y).toBe(0);
   });
 });

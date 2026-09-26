@@ -1,8 +1,6 @@
 import { memo, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import {
   arrowheadShapeOf,
-  arrowPathPolyline,
-  arrowStyleOf,
   arrowheadSizeOf,
   BORDER_DASH_ARRAY,
   DEFAULT_BORDER_STYLE,
@@ -28,7 +26,6 @@ import { BRAND_600 } from './arrow-handle-style';
 import { useLongPress } from '@/hooks/ui/useLongPress';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { pressLedger } from '@/lib/double-press';
-import { ArrowMoveFrame } from './ArrowMoveFrame';
 
 // The mask region + backdrop for route-behind (docs/specs/008-canvas/arrow-route-behind.md) and label
 // knockouts (docs/specs/008-canvas/arrow-labels.md). Deliberately vast
@@ -81,11 +78,6 @@ type ArrowViewProps = {
   onBeginEdit: (id: string) => void;
   onCommitLabel: (id: string, label: string) => void;
   onCancelEdit: () => void;
-  // Fires when the user drags the move frame of a fully-floating arrow
-  // (both endpoints `kind === 'free'`); dragging its line bends it instead
-  // (docs/specs/008-canvas/arrow-bending.md). Pinned arrows follow their elements. The handler is
-  // responsible for the gesture's pointer-move + pointer-up plumbing.
-  onBeginTranslate?: (id: string, e: ReactPointerEvent) => void;
   // Begin the curve drag gesture, when the arrow is curved and the
   // selected user grabs the curve handle. Receives the original
   // pointer event so the caller can hook up move/up listeners.
@@ -133,7 +125,6 @@ function ArrowViewImpl({
   onBeginEdit,
   onCommitLabel,
   onCancelEdit,
-  onBeginTranslate,
   onBeginCurveDrag,
   onBeginCurvePointDrag,
   onBeginArrowBend,
@@ -464,31 +455,6 @@ function ArrowViewImpl({
         />
       ) : null}
 
-      {isSelected &&
-      !isPaintMode &&
-      !readOnly &&
-      !isLocked &&
-      onBeginTranslate &&
-      arrow.from.kind === 'free' &&
-      arrow.to.kind === 'free' ? (
-        // A free arrow moves by its frame, since dragging its line bends it.
-        <ArrowMoveFrame
-          points={arrowPathPolyline(
-            arrowStyleOf(arrow),
-            from,
-            to,
-            arrow.from,
-            arrow.to,
-            arrow.curveOffset,
-            arrow.elbowOffset,
-            arrow.curvePoints,
-          )}
-          onPress={(e) => {
-            e.stopPropagation();
-            if (!guardPress(e)) onBeginTranslate(arrow.id, e);
-          }}
-        />
-      ) : null}
       {isSelected && !isPaintMode && !readOnly ? (
         <SelectedArrowHandles
           arrow={arrow}

@@ -405,6 +405,7 @@ export * from './arrow-label';
 export * from './arrow-label-layout';
 export * from './arrow-label-wrap';
 export * from './arrow-bend';
+export * from './arrow-scale';
 export * from './label-font';
 export * from './lane-gutter';
 export * from './arrow-style';

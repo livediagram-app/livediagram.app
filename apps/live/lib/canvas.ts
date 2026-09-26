@@ -2,7 +2,9 @@ import {
   isBoxed,
   isFixedSizeShape,
   type Anchor,
+  type ArrowElement,
   type BendPlan,
+  type FrameHandle,
   type BoxedElement,
   type Element,
   type IconPosition,
@@ -296,6 +298,17 @@ export type DragState =
       startClientX: number;
       startClientY: number;
       plan: BendPlan;
+    }
+  | {
+      // Scaling a free arrow from its frame handles (docs/specs/008-canvas/arrow-bending.md): the
+      // opposite side stays put; start snapshot + total delta each move.
+      kind: 'arrow-scale';
+      arrowId: string;
+      handle: FrameHandle;
+      startClientX: number;
+      startClientY: number;
+      box: { x: number; y: number; width: number; height: number };
+      start: ArrowElement;
     }
   | {
       // Whole-arrow translation. Only fires for arrows with both

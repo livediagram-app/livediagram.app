@@ -43,14 +43,22 @@ The curve and elbow handles stay: they are the precise controls. The "+" add-poi
 removed. Right-clicking a bend point still deletes it, and deleting the last one still reverts the
 arrow to a straight line.
 
-## Moving a free arrow
+## Moving and scaling a free arrow
 
 An arrow whose two ends are both free (attached to nothing) no longer moves by dragging its line,
-because dragging the line bends it. When selected, a free arrow shows a **move frame**: a dashed
-rectangle around the arrow's drawn extent, padded. Dragging the frame moves the whole arrow. The
-frame's interior is not a drag target, so elements inside it stay clickable. Arrow keys still nudge
-a selected free arrow. Arrows with an attached end have no move frame, as before, since they follow
-their elements.
+because dragging the line bends it. When selected, a free arrow wears a box's selection: the same
+brand ring round its drawn extent (padded clear of its endpoint grips), and the same corner and edge
+handles.
+
+- Dragging the ring moves the whole arrow. Its interior is not a drag target, so elements inside it
+  stay clickable.
+- Dragging a handle scales the arrow the way it would resize a box: the opposite corner or edge
+  stays put, and the ends and bends stretch to follow. Shift on a corner keeps the proportions. An
+  arrow never flips or collapses through itself.
+- An axis with no extent (a perfectly horizontal or vertical arrow) shows no edge handles for it,
+  since there is nothing to scale.
+- Arrow keys still nudge a selected free arrow. Arrows with an attached end have no frame, as
+  before, since they follow their elements.
 
 ## The double-press rule
 

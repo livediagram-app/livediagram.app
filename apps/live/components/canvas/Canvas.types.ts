@@ -3,7 +3,12 @@
 // via inline import('...') so this file only needs the bare-named
 // types as top-level imports.
 import type { PointerEvent as ReactPointerEvent, Ref } from 'react';
-import type { EmbedProvider, EsSide, EventStormingNoteKind } from '@livediagram/diagram';
+import type {
+  EmbedProvider,
+  EsSide,
+  EventStormingNoteKind,
+  FrameHandle,
+} from '@livediagram/diagram';
 import type {
   AlignmentGuide,
   BackgroundPattern,
@@ -632,6 +637,8 @@ export type CanvasProps = {
   onBeginArrowCurveDrag: (arrowId: string, e: ReactPointerEvent) => void;
   onBeginArrowCurvePointDrag: (arrowId: string, index: number, e: ReactPointerEvent) => void;
   onBeginArrowBend: (arrowId: string, e: ReactPointerEvent<SVGElement>) => void;
+  // Scale a selected free arrow from its frame handles (docs/specs/008-canvas/arrow-bending.md).
+  onBeginArrowScale: (arrowId: string, handle: FrameHandle, e: ReactPointerEvent) => void;
   onDeleteCurvePoint: (arrowId: string, index: number) => void;
   onBeginArrowElbowDrag: (arrowId: string, e: ReactPointerEvent) => void;
   onBeginArrowLabelDrag: (arrowId: string, e: ReactPointerEvent) => void;

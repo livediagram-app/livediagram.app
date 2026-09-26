@@ -6,8 +6,10 @@ import {
   curveAnchorPoints,
   curveControlPoint,
   endpointPosition,
+  arrowRoutePoints,
   planArrowBend,
   type ArrowElement,
+  type FrameHandle,
 } from '@livediagram/diagram';
 import { track } from '@/lib/telemetry';
 import { pointerToCanvas, type ArrowEnd, type DragState } from '@/lib/canvas';
@@ -213,6 +215,31 @@ export function useArrowDragHandlers({
     });
   };
 
+  // Scale a selected free arrow from its frame (docs/specs/008-canvas/arrow-bending.md). The box is
+  // the drawn route's bounds at the press; each move rescales from it.
+  const beginArrowScale = (arrowId: string, handle: FrameHandle, e: ReactPointerEvent) => {
+    const r = resolveArrowDrag(arrowId);
+    if (!r) return;
+    const { d, arrow } = r;
+    if (arrow.locked === true || d.layerInertIds.has(arrowId) || d.isReadOnly) return;
+    if (arrow.from.kind !== 'free' || arrow.to.kind !== 'free') return;
+    const pts = arrowRoutePoints(arrow, d.activeTab.elements);
+    const xs = pts.map((p) => p.x);
+    const ys = pts.map((p) => p.y);
+    const x = Math.min(...xs);
+    const y = Math.min(...ys);
+    checkpointPendingRef.current = true;
+    setDrag({
+      kind: 'arrow-scale',
+      arrowId,
+      handle,
+      startClientX: e.clientX,
+      startClientY: e.clientY,
+      box: { x, y, width: Math.max(...xs) - x, height: Math.max(...ys) - y },
+      start: arrow,
+    });
+  };
+
   // Remove a control point (right-click a point handle). Drops the slot from
   // curvePoints; clearing it back to undefined when the last one goes, so the
   // arrow falls back to its default single bend / straight line.
@@ -322,6 +349,7 @@ export function useArrowDragHandlers({
     beginArrowCurveDrag,
     beginArrowCurvePointDrag,
     beginArrowBend,
+    beginArrowScale,
     deleteCurvePoint,
     beginArrowElbowDrag,
     beginArrowLabelDrag,

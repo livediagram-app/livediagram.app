@@ -6,20 +6,22 @@ cited as `Dn`.
 
 Scope, by file:
 
-| File                                                     | Role                                                                                  |
-| -------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| `packages/diagram/src/arrow-bend.ts`                     | Pure bend maths: grab plan, bow through a point, insert, segment slide                |
-| `apps/live/lib/double-press.ts`                          | The press ledger: double-press pairing and echo detection                             |
-| `apps/live/lib/canvas.ts`                                | `DragState` gains `arrow-bend`                                                        |
-| `apps/live/hooks/canvas/useArrowDragHandlers.ts`         | `beginArrowBend`: plans a bend from a line press; `beginArrowTranslate` for the frame |
-| `apps/live/hooks/canvas/arrow-drag-apply.ts`             | Applies an `arrow-bend` tick from the start snapshot plus the delta                   |
-| `apps/live/hooks/canvas/useEditorDrag.ts`                | Engage threshold for every arrow drag except drawing a new arrow                      |
-| `apps/live/components/canvas/ArrowView.tsx`              | Line press begins a bend; records presses; move frame for free arrows                 |
-| `apps/live/components/canvas/SelectedArrowHandles.tsx`   | Endpoint, curve, bend-point and elbow handles; every press passes `guardPress`        |
-| `apps/live/components/canvas/ArrowMoveFrame.tsx`         | The free arrow's dashed move frame                                                    |
-| `apps/live/components/canvas/element-parts.tsx`          | Resize handles refuse a paired press (`handlePressStarts`)                            |
-| `apps/live/components/canvas/useBoxedElementGestures.ts` | Body presses are recorded; a paired press starts no drag                              |
-| `apps/live/hooks/ui/usePressWithoutDrag.ts`              | Reads `DOUBLE_PRESS_MS` from the ledger module                                        |
+| File                                                     | Role                                                                                            |
+| -------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `packages/diagram/src/arrow-bend.ts`                     | Pure bend maths: grab plan, bow through a point, insert, segment slide                          |
+| `apps/live/lib/double-press.ts`                          | The press ledger: double-press pairing and echo detection                                       |
+| `apps/live/lib/canvas.ts`                                | `DragState` gains `arrow-bend`                                                                  |
+| `apps/live/hooks/canvas/useArrowDragHandlers.ts`         | `beginArrowBend`: plans a bend from a line press; `beginArrowTranslate` for the frame           |
+| `apps/live/hooks/canvas/arrow-drag-apply.ts`             | Applies an `arrow-bend` tick from the start snapshot plus the delta                             |
+| `apps/live/hooks/canvas/useEditorDrag.ts`                | Engage threshold for every arrow drag except drawing a new arrow                                |
+| `apps/live/components/canvas/ArrowView.tsx`              | Line press begins a bend; records presses; move frame for free arrows                           |
+| `apps/live/components/canvas/SelectedArrowHandles.tsx`   | Endpoint, curve, bend-point and elbow handles; every press passes `guardPress`                  |
+| `apps/live/components/canvas/FreeArrowSelection.tsx`     | The free arrow's selection: ring (move bands) + the shared `ResizeHandles` / `EdgeResizeHandle` |
+| `packages/diagram/src/arrow-scale.ts`                    | `scaleFreeArrow`: ends and bends scaled from the opposite side                                  |
+| `apps/live/components/canvas/CanvasElementsLayer.tsx`    | Mounts `FreeArrowSelection` beside a selected free arrow's `<svg>`                              |
+| `apps/live/components/canvas/element-parts.tsx`          | Resize handles refuse a paired press (`handlePressStarts`)                                      |
+| `apps/live/components/canvas/useBoxedElementGestures.ts` | Body presses are recorded; a paired press starts no drag                                        |
+| `apps/live/hooks/ui/usePressWithoutDrag.ts`              | Reads `DOUBLE_PRESS_MS` from the ledger module                                                  |
 
 ## Domain and naming
 
@@ -30,7 +32,8 @@ Scope, by file:
 | Grab fraction | `t`                       | Parameter of the grabbed point, clamped to `[BEND_T_MIN, 1 - BEND_T_MIN]` |
 | Press ledger  | `pressLedger`             | The last recorded element press                                           |
 | Echo press    | `isEchoPress(prev, next)` | Pairs with the previous press, which found the element unselected         |
-| Move frame    | `ArrowMoveFrame`          | Dashed rect round a selected free arrow's route                           |
+| Move frame    | `FreeArrowSelection`      | A selected free arrow's ring and scale handles                            |
+| Frame handle  | `FrameHandle`             | `nw ne sw se n e s w`, as a box's resize handles                          |
 
 ## Behaviour
 
@@ -60,17 +63,28 @@ curve, elbow, label, translate) except the endpoint of an arrow being drawn.
 `<= DOUBLE_PRESS_SLOP_PX`. Echo: `pairs && !prev.wasSelected`.
 
 - A press that pairs never starts a drag of any kind.
-- **Arrows**: any press on the arrow (line, label, handle, move frame) that pairs opens the label
-  editor. The line selects first, since selecting resets the edit state. The editor opens on the
+- **Arrows**: any press on the arrow (line, label, handle) that pairs opens the label editor; a
+  paired press on the move frame starts nothing. The line selects first, since selecting resets the edit state. The editor opens on the
   **release** of that press (`pointerup`, dropped on `pointercancel`): opening on its `pointerdown`
   lets the browser's default focus move blur, and so commit, the new editor at once.
 - **Boxed elements**: a paired press on the body or a resize handle starts nothing; the browser's
   `dblclick` then reaches the element wrapper, which opens its editor as before.
 - Dot votes are cast before the ledger is consulted, so two quick presses during a vote cast two.
 
-**Move frame.** Shown when a free arrow is selected and editable. Rect = route bounding box inflated
-by `MOVE_FRAME_PAD_PX`; a 1px dashed brand stroke, and a transparent `MOVE_FRAME_HIT_PX` stroke as
-the hit band (`pointer-events: stroke`, cursor `move`). Pressing it begins `arrow-translate`.
+**Move frame.** Shown when a single free arrow is selected, editable, not locked and not being
+edited. Rect = route bounding box inflated by `MOVE_FRAME_PAD_PX`, drawn as HTML with the shape
+selection ring (`ring-2 ring-brand-200`). Four transparent bands of `MOVE_FRAME_HIT_PX` screen px
+centred on its sides take the press (cursor `move`) and begin `arrow-translate`. The corner handles
+(`ResizeHandles`) and, per axis with extent, the edge handles (`EdgeResizeHandle`) begin
+`arrow-scale` with their `FrameHandle`.
+
+**Scale** (`scaleFreeArrow(start, box, handle, delta, keepAspect)`): `box` is the unpadded route
+bounds at the press. Per moved side, `s = max(ARROW_SCALE_MIN_PX, extent ± delta) / extent`
+(1 for an extent under 0.5px). Shift on a corner uses the larger change on both axes. Points scale
+about the opposite side; `curveOffset`, `curvePoints`, `elbowOffset` scale as vectors.
+
+Frame bands and handles record their press through `handlePressStarts`; one that pairs starts
+nothing, like a box's handles.
 
 ## Errors and edge cases
 
@@ -89,9 +103,12 @@ Telemetry: `track('Element', 'Changed', 'ArrowBend')` once per engaged bend.
 
 `arrow-bend.test.ts`: plan per style, bow passes through the pointer at `t`, `t` clamp, insert
 index, slide keeps endpoints and inserts jogs, slide of an interior segment. `double-press.test.ts`:
-pairing window and slop, echo only when the first press found it unselected. E2E: double-click the
-middle of an unselected arrow opens the editor without bending it; drag the middle bows it; the
-move frame moves a free arrow.
+pairing window and slop, echo only when the first press found it unselected. `arrow-scale.test.ts`:
+corner and edge scaling, bends scale with the arrow, Shift keeps proportions, no flip or collapse,
+a flat axis stays. `arrow-drag-apply.test.ts`: the bend and scale ticks. E2E
+(`e2e/arrow-labels.spec.ts`): double-click on the line and on the label edits without bending, a
+blank line keeps its height, drag bends and one undo straightens, the frame moves and a corner
+scales a free arrow.
 
 ## Constants
 
@@ -107,12 +124,12 @@ move frame moves a free arrow.
 
 - An editable arrow line shows the `grab` cursor; locked, read-only and format-painter lines keep
   their existing cursor.
-- The move frame is a 1px dashed brand rectangle with 6px rounded corners; its edge shows `move`.
+- A selected free arrow shows the shape selection ring and handles; its ring edge shows `move`.
 - The "+" add-point handles are gone; the curve, bend-point and elbow handles are unchanged.
 
 ## Accessibility
 
-- The move frame's hit edge carries `aria-label="Move arrow"`. Keyboard users move a free arrow
+- The move frame's bands carry `role="button"` and `aria-label="Move arrow"`. Keyboard users move a free arrow
   with the arrow-key nudge, which already shifts free endpoints.
 - Bending has no keyboard equivalent beyond the existing context-menu line styles; the double-press
   rule is pointer-only and changes nothing for keyboard or assistive-technology users.
