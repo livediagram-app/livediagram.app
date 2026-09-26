@@ -119,3 +119,39 @@ describe('arrowEndpointSpread', () => {
     expect(base.x + off.x).toBeLessThanOrEqual(hub.x + hub.width);
   });
 });
+
+describe('quarter fans (docs/specs/008-canvas/arrow-anchors.md)', () => {
+  it('centres a quarter fan on the quarter and keeps it within half the edge', () => {
+    // 120 wide: half the edge is 60, 80% of it 48 across 9 ends = 6px spacing.
+    const hub = box('hub', 400, 100);
+    const ends = Array.from({ length: 9 }, (_, i) =>
+      arrow(
+        { kind: 'free', x: 100 + i * 100, y: 400 },
+        { kind: 'pinned', elementId: 'hub', anchor: 'sse' },
+        `q${i}`,
+      ),
+    );
+    const elements: Element[] = [hub, ...ends];
+    const xs = ends.map((e) => arrowEndpointSpread(e.id, 'to', elements).x);
+    expect(xs[0]).toBeCloseTo(-24, 6);
+    expect(xs[8]).toBeCloseTo(24, 6);
+    expect(arrowEndpointSpread('q4', 'to', elements)).toEqual({ x: 0, y: 0 });
+  });
+
+  it('fans a quarter on a vertical side along y', () => {
+    const hub = box('hub', 400, 100);
+    const a = arrow(
+      { kind: 'free', x: 800, y: 50 },
+      { kind: 'pinned', elementId: 'hub', anchor: 'ene' },
+      'a',
+    );
+    const b = arrow(
+      { kind: 'free', x: 800, y: 300 },
+      { kind: 'pinned', elementId: 'hub', anchor: 'ene' },
+      'b',
+    );
+    const elements: Element[] = [hub, a, b];
+    expect(arrowEndpointSpread('a', 'to', elements)).toEqual({ x: 0, y: -7 });
+    expect(arrowEndpointSpread('b', 'to', elements)).toEqual({ x: 0, y: 7 });
+  });
+});

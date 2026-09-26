@@ -121,16 +121,7 @@ export function duplicateElements(
       return existingIds.has(end.arrowId) ? end : null;
     }
     const dup = idMap.get(end.elementId);
-    // Preserve `manual`: a hand-placed anchor must stay fixed on the
-    // copy too, or the auto-rebind re-chooses the face on first move.
-    if (dup) {
-      return {
-        kind: 'pinned',
-        elementId: dup,
-        anchor: end.anchor,
-        ...(end.manual ? { manual: true } : {}),
-      };
-    }
+    if (dup) return { kind: 'pinned', elementId: dup, anchor: end.anchor };
     return existingIds.has(end.elementId) ? end : null;
   };
 

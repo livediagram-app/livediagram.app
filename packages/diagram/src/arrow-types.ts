@@ -12,17 +12,51 @@ import type { ArrowheadShape, ArrowheadSize, ArrowStyle } from './arrow-style';
 import type { AnimationSpeed } from './animation';
 import type { BorderStyle } from './border-style';
 
-export type Anchor = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
+// The sixteen anchors of a boxed element, named after the compass rose
+// (docs/specs/008-canvas/arrow-anchors.md): corners, edge midpoints and the
+// quarter points between them. Their table (side, class, position) is
+// anchors.ts.
+export type Anchor =
+  | 'n'
+  | 'nne'
+  | 'ne'
+  | 'ene'
+  | 'e'
+  | 'ese'
+  | 'se'
+  | 'sse'
+  | 's'
+  | 'ssw'
+  | 'sw'
+  | 'wsw'
+  | 'w'
+  | 'wnw'
+  | 'nw'
+  | 'nnw';
 
-export const ALL_ANCHORS: Anchor[] = ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw'];
+// Clockwise from north.
+export const ALL_ANCHORS: readonly Anchor[] = [
+  'n',
+  'nne',
+  'ne',
+  'ene',
+  'e',
+  'ese',
+  'se',
+  'sse',
+  's',
+  'ssw',
+  'sw',
+  'wsw',
+  'w',
+  'wnw',
+  'nw',
+  'nnw',
+];
 
 export type Endpoint =
   | { kind: 'free'; x: number; y: number }
-  // `manual` marks an anchor the user set by hand (dragging the endpoint
-  // onto that face). The auto-rebind that re-chooses faces as boxes move
-  // (`rebindArrowAnchorsAfterMove`) leaves a manual endpoint fixed, so a
-  // deliberate correction sticks. Absent === auto-managed (the default).
-  | { kind: 'pinned'; elementId: ElementId; anchor: Anchor; manual?: boolean }
+  | { kind: 'pinned'; elementId: ElementId; anchor: Anchor }
   // Connected to a point ALONG another arrow's line (docs/specs/008-canvas/arrow-to-arrow.md) — `t` is the
   // parametric position (0 = the target arrow's `from`, 1 = its `to`). The
   // position resolves dynamically from the target arrow's centreline, so it

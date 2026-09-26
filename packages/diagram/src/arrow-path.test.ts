@@ -268,3 +268,41 @@ describe('angledElbow', () => {
     expect(d.includes('Q')).toBe(false);
   });
 });
+
+describe('quarter anchors orient curves and elbows by their side (docs/specs/008-canvas/arrow-anchors.md)', () => {
+  const pin = (anchor: 'ene' | 'nne' | 'ssw' | 'wsw'): Endpoint => ({
+    kind: 'pinned',
+    elementId: 'x',
+    anchor,
+  });
+  it('runs an elbow horizontally first from a quarter on a vertical side', () => {
+    expect(angledElbow({ x: 0, y: 0 }, { x: 100, y: 50 }, pin('ene'), free(100, 50))).toEqual({
+      x: 100,
+      y: 0,
+    });
+    expect(angledElbow({ x: 0, y: 0 }, { x: 100, y: 50 }, pin('wsw'), free(100, 50))).toEqual({
+      x: 100,
+      y: 0,
+    });
+  });
+  it('runs an elbow vertically first from a quarter on a horizontal side', () => {
+    expect(angledElbow({ x: 0, y: 0 }, { x: 100, y: 50 }, pin('nne'), free(100, 50))).toEqual({
+      x: 0,
+      y: 50,
+    });
+  });
+  it('enters a quarter on a vertical side horizontally', () => {
+    expect(
+      curveControlPoint({ x: 0, y: 0 }, { x: 100, y: 50 }, undefined, free(0, 0), pin('wsw')),
+    ).toEqual({
+      x: 0,
+      y: 50,
+    });
+    expect(
+      curveControlPoint({ x: 0, y: 0 }, { x: 100, y: 50 }, undefined, free(0, 0), pin('ssw')),
+    ).toEqual({
+      x: 100,
+      y: 0,
+    });
+  });
+});

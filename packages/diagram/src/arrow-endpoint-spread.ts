@@ -18,19 +18,26 @@ import {
   type ElementId,
   type Endpoint,
 } from './index';
-import { connectorBox, endpointPosition, type ElementIndex, type Point } from './geometry';
+import { anchorClass, anchorPrimarySide } from './anchors';
+import { endpointPosition, type ElementIndex, type Point } from './geometry';
+import { connectorBox } from './shape-outline';
 
 // Gap between adjacent fanned heads, in canvas px. Clamped down when the
 // fan would otherwise occupy more than SPREAD_EDGE_FRACTION of the target
 // edge (many arrows into a small box).
 const SPREAD_SPACING = 14;
 const SPREAD_EDGE_FRACTION = 0.8;
+// A quarter's fan is centred on it and must stay between its corner and its
+// edge's middle, so its room is half the edge
+// (docs/specs/008-canvas/arrow-anchors.md).
+const QUARTER_FAN_ROOM = 0.5;
 
 // Which axis a fan runs along, per anchor: ends on the top / bottom edges
 // slide horizontally, ends on the left / right edges vertically. Corner
-// anchors belong to their horizontal edge.
+// anchors belong to their horizontal edge (their primary side).
 function spreadAxis(anchor: Anchor): 'x' | 'y' {
-  return anchor === 'e' || anchor === 'w' ? 'y' : 'x';
+  const side = anchorPrimarySide(anchor);
+  return side === 'e' || side === 'w' ? 'y' : 'x';
 }
 
 // Corner fans can't be centred on the anchor (half the heads would float
@@ -72,8 +79,9 @@ function fanFrame(
     const target = index.get(endpoint.elementId);
     if (!target || !isBoxed(target)) return null;
     const box = connectorBox(target);
+    const edge = spreadAxis(endpoint.anchor) === 'x' ? box.width : box.height;
     return {
-      span: spreadAxis(endpoint.anchor) === 'x' ? box.width : box.height,
+      span: anchorClass(endpoint.anchor) === 'quarter' ? edge * QUARTER_FAN_ROOM : edge,
       rotation: target.rotation ?? 0,
       anchor: endpoint.anchor,
     };

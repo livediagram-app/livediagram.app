@@ -1,11 +1,15 @@
 import type { Anchor, ArrowStyle, Endpoint } from './index';
+import { anchorClass, anchorPrimarySide } from './anchors';
 
 // The anchor a pinned end sits on; null for free / on-arrow ends.
 const anchorOf = (ep?: Endpoint): Anchor | null => (ep && ep.kind === 'pinned' ? ep.anchor : null);
 
 // Whether an anchor sits on a horizontal edge (top / bottom, corners
 // included) as opposed to a vertical side (e / w).
-const onHorizontalEdge = (a: Anchor): boolean => a !== 'e' && a !== 'w';
+const onHorizontalEdge = (a: Anchor): boolean => {
+  const side = anchorPrimarySide(a);
+  return side === 'n' || side === 's';
+};
 
 // The quadratic-Bezier control point a curved arrow uses. When
 // `curveOffset` is set, the user has dragged the curve handle and the
@@ -254,7 +258,7 @@ type Pt = { x: number; y: number };
 // quadratic Bezier sampled into short chords (fine enough to place +
 // project a label against). Both the label anchor and the label-drag
 // projection read this so they agree on the same line.
-function arrowCenterline(
+export function arrowPathPolyline(
   style: ArrowStyle,
   from: Pt,
   to: Pt,
@@ -344,7 +348,16 @@ export function arrowLabelAnchor(
   if (!labelOffset) {
     return arrowPathMidpoint(style, from, to, fromEp, toEp, curveOffset, elbowOffset, curvePoints);
   }
-  const pts = arrowCenterline(style, from, to, fromEp, toEp, curveOffset, elbowOffset, curvePoints);
+  const pts = arrowPathPolyline(
+    style,
+    from,
+    to,
+    fromEp,
+    toEp,
+    curveOffset,
+    elbowOffset,
+    curvePoints,
+  );
   const { point, tangent } = polylineAt(pts, labelOffset.t);
   // Left-hand normal (rotate the tangent +90°).
   const nx = -tangent.y;
@@ -367,7 +380,16 @@ export function projectToArrow(
   p: Pt,
   curvePoints?: { dx: number; dy: number }[],
 ): { t: number; offset: number } {
-  const pts = arrowCenterline(style, from, to, fromEp, toEp, curveOffset, elbowOffset, curvePoints);
+  const pts = arrowPathPolyline(
+    style,
+    from,
+    to,
+    fromEp,
+    toEp,
+    curveOffset,
+    elbowOffset,
+    curvePoints,
+  );
   const segLens: number[] = [];
   let total = 0;
   for (let i = 0; i < pts.length - 1; i++) {
@@ -402,23 +424,24 @@ export function projectToArrow(
   return { t: best.t, offset: best.offset };
 }
 
-// Which leg of an angled arrow runs first. Pinned endpoints carry
-// an intrinsic direction (E/W anchors leave horizontally; N/S leave
-// vertically); free endpoints fall back to "travel along the longer
-// axis first" so the elbow sits closer to the destination side.
+// The one side a middle or quarter anchor lies on; null for a corner (which
+// lies on two, so it carries no single direction).
+const edgeSide = (ep: Endpoint): string | null =>
+  ep.kind === 'pinned' && anchorClass(ep.anchor) !== 'corner' ? anchorPrimarySide(ep.anchor) : null;
+
+// Which leg of an angled arrow runs first. Pinned endpoints on a middle or a
+// quarter carry an intrinsic direction (the e / w sides leave horizontally,
+// n / s vertically); corners and free endpoints fall back to "travel along
+// the longer axis first" so the elbow sits closer to the destination side.
 function angledHorizontalFirst(
   from: { x: number; y: number },
   to: { x: number; y: number },
   fromEp: Endpoint,
   toEp: Endpoint,
 ): boolean {
-  if (fromEp.kind === 'pinned') {
-    if (fromEp.anchor === 'e' || fromEp.anchor === 'w') return true;
-    if (fromEp.anchor === 'n' || fromEp.anchor === 's') return false;
-  }
-  if (toEp.kind === 'pinned') {
-    if (toEp.anchor === 'n' || toEp.anchor === 's') return true;
-    if (toEp.anchor === 'e' || toEp.anchor === 'w') return false;
-  }
+  const fromSide = edgeSide(fromEp);
+  if (fromSide) return fromSide === 'e' || fromSide === 'w';
+  const toSide = edgeSide(toEp);
+  if (toSide) return toSide === 'n' || toSide === 's';
   return Math.abs(to.x - from.x) >= Math.abs(to.y - from.y);
 }

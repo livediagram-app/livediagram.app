@@ -18,6 +18,7 @@
 import type { Element, ShapeKind, Tab } from './index';
 // Value imports come from the data-shapes LEAF module (types only from
 // './index'), keeping this module out of the index ⇄ factories cycle.
+import { ALL_ANCHORS } from './arrow-types';
 import { EMBED_PROVIDERS } from './youtube';
 import { isPickerSource, isSelectionMode, isSessionTool } from './selection-mode';
 import { RESPONSES_MAX, RESPONSE_VALUE_MAX } from './responses';
@@ -75,7 +76,7 @@ export const ELEMENT_TYPES = new Set([
   'video',
   'arrow',
 ]);
-export const ANCHORS = new Set(['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw']);
+export const ANCHORS = new Set<string>(ALL_ANCHORS);
 
 // Every valid ShapeKind, as a runtime set. The editor renders only these; an
 // off-vocabulary kind (e.g. a model emitting "rectangle", which is NOT a kind —
