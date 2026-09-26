@@ -36,6 +36,7 @@ import {
   buildTab,
   buildGraphTab,
   buildTemplateTab,
+  landMcpArrivals,
   resolveTemplate,
   validTemplateKinds,
 } from './tab-builders';
@@ -297,7 +298,9 @@ export function registerTools(server: McpServer, env: Env): void {
       description:
         'Edit an existing tab. mode "replace" swaps the whole tab’s elements (validated + ' +
         'auto-laid-out); mode "ops" applies an ordered list of add/update/remove against ' +
-        'existing element ids and PRESERVES positions (no auto-layout). Returns an inline PNG.',
+        'existing element ids and PRESERVES positions (no auto-layout). On an event-storming tab, ' +
+        'event-storming notes you add or move land on the board’s horizontal lanes (240px apart, ' +
+        'lane 0 centred at y=100). Returns an inline PNG.',
       inputSchema: updateDiagramShape,
     },
     async (args, extra) => {
@@ -347,8 +350,15 @@ export function registerTools(server: McpServer, env: Env): void {
       );
       // Layout applies only on a full replace (the model decides via `layout`);
       // ops edits always keep the existing positions (docs/specs/015-api/mcp-server.md §4.4).
-      const elements: Element[] =
+      const laidOut: Element[] =
         args.mode === 'replace' ? applyLayout(graphReplace ? 'auto' : args.layout, fixed) : fixed;
+      // On an event-storming tab the workshop notes this call added or moved
+      // land on lanes (docs/specs/021-event-storming/event-storming.md "Always on a lane").
+      const elements = landMcpArrivals(
+        tab as Tab,
+        laidOut,
+        args.mode === 'replace' ? 'replace' : 'ops',
+      );
       const nextTab: Tab = { ...(tab as Tab), id: tabId, elements };
       await apiJson(env, token, `/diagrams/${args.diagramId}/tabs/${tabId}`, {
         method: 'PUT',

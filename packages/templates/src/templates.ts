@@ -717,6 +717,11 @@ export function templateCanvasOverrides(kind: TemplateKind): Partial<Tab> {
   // The kind, not a layer id, is what the editor reads to decide it is a
   // workshop board, so it must land on every application path: the picker,
   // /new, and the MCP worker all go through here.
-  if (kind === 'event-storming') overrides.kind = 'event-storming';
+  if (kind === 'event-storming') {
+    overrides.kind = 'event-storming';
+    // The seed note is built on a lane, so the board is born settled and the
+    // one-time settle never runs on it (docs/specs/021-event-storming/event-storming.md "Always on a lane").
+    overrides.esLanesSettled = true;
+  }
   return overrides;
 }
