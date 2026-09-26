@@ -46,6 +46,9 @@ const WORKSPACE_ROOTS = [
   'packages/templates/',
   'packages/help-registry/',
   'packages/telemetry-client/',
+  'packages/sticky-vision/',
+  'packages/sticky-model/',
+  'packages/',
 ];
 
 // Placeholders and globs the specs use on purpose: an elided route segment, a
@@ -66,9 +69,6 @@ function docFiles(): string[] {
   const walk = (dir: string) => {
     for (const f of readdirSync(`${ROOT}/${dir}`)) {
       const rel = `${dir}/${f}`;
-      // docs/research/vision holds dated experiment reports that quote the code
-      // as it stood during each experiment; they are records, not contracts.
-      if (rel === 'docs/research/vision') continue;
       if (statSync(`${ROOT}/${rel}`).isDirectory()) walk(rel);
       else if (f.endsWith('.md')) out.push(rel);
     }
