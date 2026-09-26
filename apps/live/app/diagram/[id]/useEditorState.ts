@@ -2545,6 +2545,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     multiSelectedIds,
     selectedId,
     activeTab,
+    laneBoard: esBoard,
     markCheckpoint,
     tick,
     scheduleElementChangeLog,
