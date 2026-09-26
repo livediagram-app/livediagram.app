@@ -13,9 +13,11 @@ Scope, by file:
 | `packages/diagram/src/anchors.ts`                             | The anchor table: side, position class, box fraction, outward vector                               |
 | `packages/diagram/src/shape-outline.ts`                       | Anchoring outlines, outline projection, point-inside test                                          |
 | `packages/diagram/src/svg-path-outline.ts`                    | `sampleSvgPath`: an outline polygon from a drawn path (cloud, document)                            |
+| `packages/diagram/src/anchor-layouts.ts`                      | `anchorLayoutPoint`: face-placed anchors of triangle, hexagon, parallelogram, trapezoid            |
+| `apps/live/components/palette/ToolbarPalette.tsx`             | More popover focuses its search field on open (toolbar layout spec)                                |
 | `packages/diagram/src/shape-geometry.ts`                      | `ACTOR_HULL`, the actor's anchoring hull (D8)                                                      |
 | `packages/diagram/src/geometry.ts`                            | `anchorPosition`                                                                                   |
-| `packages/diagram/src/anchor-choice.ts`                       | `exitSideTowards`, `anchorAimPoint`, `bestAnchorTowards`                                           |
+| `packages/diagram/src/anchor-choice.ts`                       | `exitSideTowards`, `facingSideTowards`, `anchorAimPoint`, `bestAnchorTowards`                      |
 | `packages/diagram/src/arrow-path.ts`                          | `arrowPathPolyline` (exported centreline), side-aware curve/elbow rules                            |
 | `packages/diagram/src/arrow-path-hits.ts`                     | `arrowPolyline`, `pathPassesThrough`, `pathsCross`, `pinnedBoxedElement`, `passesThroughOwnShapes` |
 | `packages/diagram/src/arrow-rebind.ts`                        | `rebindArrowAnchorsAfterMove`, `arrowReferencesAny`                                                |
@@ -42,7 +44,7 @@ Scope, by file:
 | Anchor            | `Anchor`                                               | One of the 16 ids                                                   |
 | Side              | `Side = 'n' \| 'e' \| 's' \| 'w'`                      | An edge of the connector box                                        |
 | Position class    | `AnchorClass = 'corner' \| 'quarter' \| 'middle'`      | Where along an edge an anchor sits                                  |
-| Anchor set        | `anchorSetOf(el): readonly AnchorClass[]`              | The position classes an element offers                              |
+| Anchor layout     | `anchorLayoutPoint(kind, anchor)`                      | A face-placed anchor's point in the 0..100 box, or null             |
 | Offered anchors   | `offeredAnchors(el): readonly Anchor[]`                | The anchors of its set, table order                                 |
 | Primary side      | `anchorPrimarySide(a)`                                 | The one side of a middle / quarter; a corner's horizontal side      |
 | Connector box     | `connectorBox(el)`                                     | The element box, or a Technology icon's mark                        |
@@ -50,7 +52,7 @@ Scope, by file:
 | Drawn path        | `arrowPolyline(arrow, index)`                          | The rendered path as a polyline, between true anchor points         |
 | Considered arrow  | (internal) `considered: ElementId[]`                   | An arrow the run evaluates                                          |
 | Trigger           | `pathPassesThrough`                                    | The drawn path goes inside a pinned end's shape                     |
-| Facing side       | `exitSideTowards(el, aim)`                             | The side the centre-to-aim ray leaves through                       |
+| Facing side       | `facingSideTowards(el, aim)`                           | The first side carrying anchors, in exit then alignment order       |
 | Aim point         | `aimPointOf(other, centre, index)`                     | Closest point of the other connector box, or the other position     |
 | Reference point   | `referencePointOf(other, index)`                       | Other connector box centre, or the other position                   |
 | Held              | (internal) `held: Map<ElementId, Map<Anchor, number>>` | Pinned ends per anchor per element                                  |
@@ -92,21 +94,44 @@ One `Record<Anchor, AnchorInfo>`; every helper reads it.
 - `anchorLiesOn(a, side)` is true when `side` is among `a`'s sides.
 - Quarter outward vectors are the side normal (D10).
 
-### Anchor sets (`anchors.ts`)
+### Offered anchors (`anchors.ts`)
 
-- `ANCHOR_SETS`: `Partial<Record<ShapeKind, readonly AnchorClass[]>>`; `circle` maps to
-  `['corner', 'middle']`. Every other element (every non-shape, and every shape kind absent from the
-  map) takes `FULL_ANCHOR_SET = ['corner', 'quarter', 'middle']`.
-- `anchorSetOf(el)`: `ANCHOR_SETS[el.shape]` for a shape, else `FULL_ANCHOR_SET`.
-- `offeredAnchors(el)`: `ALL_ANCHORS` filtered to `anchorSetOf(el)`, memoised per set.
-- `offeredClass(el, cls)`: `cls` when offered; else quarter → corner → middle, corner → quarter →
-  middle (the first offered). Middle is always offered (invariant I7).
-- Consumers: `snapToAnchor` and `computeSnapTargets` iterate `offeredAnchors(el)`; the Excalidraw
-  import's nearest anchor too; the run's step 4.3 asks `offeredClass`.
+- `OFFERED`: `Partial<Record<ShapeKind, readonly Anchor[]>>`, in table order:
+  - `circle`, `diamond`, `actor`: the corners and middles (`COMPASS_ANCHORS`);
+  - `triangle`: `ene e ese sse s ssw wsw w wnw`;
+  - `document`: all sixteen but `se` and `sw`.
+- `offeredAnchors(el)`: `OFFERED[el.shape]` for a shape, else `ALL_ANCHORS`.
+- `sideOffered(el, side)`: some offered anchor lies on `side`.
+- `offeredOnSide(el, side, cls)`: the offered anchors of `cls` on `side`; when none, of the
+  fallback classes in order (quarter → corner → middle, corner → quarter → middle, middle →
+  middle); empty only when the side carries nothing.
+- `nearestOfferedAnchor(el, a)` (`geometry.ts`): `a` when offered, else the offered anchor whose
+  position is nearest `anchorPosition(el, a)`, first in table order on a tie (D16).
+- Consumers: `snapToAnchor`, `computeSnapTargets` and the Excalidraw import iterate
+  `offeredAnchors(el)`; the run's step 4.3 asks `offeredOnSide`; `beginAnchorDrag` (quick-connect)
+  pins `nearestOfferedAnchor`.
+
+### Face-placed anchors (`anchor-layouts.ts`)
+
+`anchorLayoutPoint(kind, anchor): [number, number] | null`, points in the 0..100 box, derived once
+from `shapePolygonVertices(kind)` (D15). `mid(a, b)` is the midpoint, `lerp(a, b, t)` the point at
+`t` from `a`.
+
+- `parallelogram`, `trapezoid` (vertices TL, TR, BR, BL): corners = the vertices; `n = (50, TL.y)`,
+  `nnw = mid(n, TL)`, `nne = mid(n, TR)`; `s = (50, BL.y)`, `ssw = mid(s, BL)`, `sse = mid(s, BR)`;
+  `ene, e, ese = lerp(TR, BR, ¼, ½, ¾)`; `wnw, w, wsw = lerp(TL, BL, ¼, ½, ¾)`.
+- `hexagon` (T1, T2, R, B2, B1, L): `n = mid(T1, T2)`, `nnw = mid(n, T1)`, `nne = mid(n, T2)`, the
+  same below; `ne, ene = lerp(T2, R, ⅓, ⅔)`, `e = R`, `ese, se = lerp(R, B2, ⅓, ⅔)`; mirrored on the
+  left.
+- `triangle` (A apex, R, L): `w = mid(L, A)`, `wsw = mid(w, L)`, `wnw = mid(w, A)`; `e = mid(R, A)`,
+  `ese = mid(e, R)`, `ene = mid(e, A)`; `s = mid(L, R)`, `ssw = mid(s, L)`, `sse = mid(s, R)`.
+- Any other kind or anchor: null.
 
 ### Anchor position (`anchorPosition`)
 
-1. `box = connectorBox(el)`; `local = (box.x + fx·box.width, box.y + fy·box.height)`.
+1. `box = connectorBox(el)`. A face-placed anchor (`anchorLayoutPoint` not null, box is the element)
+   takes its layout point mapped into the box and skips step 2; otherwise
+   `local = (box.x + fx·box.width, box.y + fy·box.height)`.
 2. If `el` is a shape and `box === el`, and `anchorOutline(el)` is not null, replace `local` with
    `projectOntoOutline(outline, centre, local)`: the first point where the ray from the box centre
    through `local` crosses the outline; keep `local` when there is none.
@@ -120,14 +145,15 @@ One `Record<Anchor, AnchorInfo>`; every helper reads it.
 `anchorOutline(el): AnchorOutline | null`, in local unrotated px, for `el.type === 'shape'` with
 `connectorBox(el) === el` and a positive width and height:
 
-| Kind                                                                   | Outline                                                                                                             |
-| ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `circle`                                                               | `{ kind: 'ellipse', cx, cy, rx: w/2, ry: h/2 }`                                                                     |
-| `diamond`, `parallelogram`, `hexagon`, `triangle`, `trapezoid`, `star` | `shapePolygonVertices(kind)` mapped from 0..100 to the box                                                          |
-| `stadium`                                                              | Capsule polygon: `r = min(w, h)/2`, two half circles of `STADIUM_ARC_SEGMENTS` segments on the short axis ends (D8) |
-| `actor`                                                                | `ACTOR_HULL` (viewBox 90 × 130) fitted "meet": `k = min(w/90, h/130)`, centred (D8)                                 |
-| `cloud`, `document`                                                    | `sampleSvgPath(d)` of the kind's single main path in the shape-geometry table, mapped from 0..100 to the box        |
-| anything else                                                          | `null`: the connector box is the outline                                                                            |
+| Kind                                                           | Outline                                                                                                                          |
+| -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `circle`                                                       | `{ kind: 'ellipse', cx, cy, rx: w/2, ry: h/2 }`                                                                                  |
+| `diamond`, `parallelogram`, `hexagon`, `triangle`, `trapezoid` | `shapePolygonVertices(kind)` mapped from 0..100 to the box                                                                       |
+| `cylinder`                                                     | Body with half-ellipse top (centre y 15, ry 12) and bottom (centre y 85, ry 12), each `ARC_SEGMENTS` segments, in the 0..100 box |
+| `stadium`                                                      | Capsule polygon: `r = min(w, h)/2`, two half circles of `ARC_SEGMENTS` segments on the short axis ends (D8)                      |
+| `actor`                                                        | `ACTOR_HULL` (viewBox 90 × 130) fitted "meet": `k = min(w/90, h/130)`, centred (D8)                                              |
+| `cloud`, `document`                                            | `sampleSvgPath(d)` of the kind's single main path in the shape-geometry table, mapped from 0..100 to the box                     |
+| anything else                                                  | `null`: the connector box is the outline                                                                                         |
 
 `pointInsideOutline(el, p, inset): boolean`:
 
@@ -136,6 +162,10 @@ One `Record<Anchor, AnchorInfo>`; every helper reads it.
 3. Ellipse: `rx' = rx − inset`, `ry' = ry − inset`; false when either ≤ 0; else
    `(dx/rx')² + (dy/ry')² < 1`.
 4. Polygon: even-odd containment and a distance greater than `inset` to every edge.
+
+`facingSideTowards(el, towards): Side | null`: the sides with a finite exit time in ascending time,
+then the others by descending dot product of their outward normal with the local direction; the
+first for which `sideOffered(el, side)`. Null for a zero direction.
 
 ### Path outlines (`svg-path-outline.ts`)
 
@@ -146,7 +176,7 @@ box.
 
 ### Creation anchor (`bestAnchorTowards`)
 
-`bestAnchorTowards(el, towards): Anchor` returns the middle of `exitSideTowards(el, towards)`, and
+`bestAnchorTowards(el, towards): Anchor` returns the middle of `facingSideTowards(el, towards)`, and
 `'e'` when that is null (the direction is zero).
 
 `exitSideTowards(el, towards): Side | null`:
@@ -194,9 +224,9 @@ State lives only inside one call. Steps:
    `path = arrowPolyline(arrow, index)`; `shapes` = the boxed elements of its pinned ends;
    triggered when `pathPassesThrough(path, s)` for some `s` in `shapes`. Not triggered: next arrow.
 4. **Re-evaluate** `from`, then `to` (D7). For an end pinned to boxed element `el` with anchor `a`:
-   1. `aim = aimPointOf(otherEnd)`, `side = exitSideTowards(el, aim)`; `null` → keep.
+   1. `aim = aimPointOf(otherEnd)`, `side = facingSideTowards(el, aim)`; `null` → keep.
    2. `anchorLiesOn(a, side)` → keep.
-   3. `candidates = anchorsOf(side, offeredClass(el, anchorClass(a)))`. A middle has one candidate:
+   3. `candidates = offeredOnSide(el, side, anchorClass(a))`. A middle has one candidate:
       take it.
    4. Two candidates: order by distance from `anchorPosition(el, c)` to
       `referencePointOf(otherEnd)`; when the two distances differ by at most `CLOSENESS_TIE_PX`
@@ -219,7 +249,7 @@ Invariants, each asserted by a test:
 - **I4:** free and on-arrow ends never change.
 - **I5:** running the pass twice on its own output changes nothing further (idempotent at rest).
 - **I6:** deterministic for the same input.
-- **I7:** every anchor set contains `middle`.
+- **I7:** a side that carries anchors carries its middle.
 - **I8:** snapping, snap markers and a re-anchored end only ever land on an offered anchor.
 
 ### Swap (`arrow-rebind-swap.ts`)
@@ -272,10 +302,21 @@ export function anchorSides(a: Anchor): readonly Side[];
 export function anchorPrimarySide(a: Anchor): Side;
 export function anchorLiesOn(a: Anchor, side: Side): boolean;
 export function anchorsOf(side: Side, cls: AnchorClass): readonly Anchor[];
-export const FULL_ANCHOR_SET: readonly AnchorClass[];
-export function anchorSetOf(el: BoxedElement): readonly AnchorClass[];
 export function offeredAnchors(el: BoxedElement): readonly Anchor[];
-export function offeredClass(el: BoxedElement, cls: AnchorClass): AnchorClass;
+export function sideOffered(el: BoxedElement, side: Side): boolean;
+export function offeredOnSide(el: BoxedElement, side: Side, cls: AnchorClass): readonly Anchor[];
+
+// anchor-layouts.ts
+export function anchorLayoutPoint(
+  kind: ShapeKind,
+  anchor: Anchor,
+): readonly [number, number] | null;
+
+// geometry.ts
+export function nearestOfferedAnchor(el: BoxedElement, anchor: Anchor): Anchor;
+
+// anchor-choice.ts
+export function facingSideTowards(el: BoxedElement, towards: Point): Side | null;
 
 // svg-path-outline.ts
 export function sampleSvgPath(d: string, segmentsPerCurve?: number): Point[] | null;
@@ -428,45 +469,49 @@ swaps log, never a quiet frame.
 
 ## Testing
 
-| Rule                                                                                                     | Test                                                                               | File                                                             |
-| -------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| 16 anchors, clockwise, old 8 kept                                                                        | ids, order, uniqueness                                                             | `anchors.test.ts`                                                |
-| Class, sides, primary side, `anchorsOf`                                                                  | whole table                                                                        | `anchors.test.ts`                                                |
-| Anchor sets, I7, fallback classes                                                                        | circle offers 8, square 16; quarter → corner, corner → quarter / middle            | `anchors.test.ts`                                                |
-| Snapping and markers honour the set (I8)                                                                 | no quarter snap on a circle; 8 markers                                             | `anchor-geometry.test.ts`, `apps/live/lib/drag-geometry.test.ts` |
-| A quarter on a circle re-anchors to a corner                                                             | morphed-circle end flips side                                                      | `arrow-rebind.test.ts`                                           |
-| Cloud and document outlines, path sampler, O4                                                            | anchors on the outline; unsupported command → null + warn                          | `anchor-geometry.test.ts`                                        |
-| Box positions                                                                                            | all 16 on a box                                                                    | `anchor-geometry.test.ts`                                        |
-| Outline projection incl. quarters                                                                        | circle, diamond, star, stadium, actor points lie on the outline                    | `anchor-geometry.test.ts`                                        |
-| Rotation                                                                                                 | a quarter on a 90° element                                                         | `anchor-geometry.test.ts`                                        |
-| Caption push by side                                                                                     | `ssw`, `s`, `sse` pushed for a bottom caption                                      | `anchor-geometry.test.ts`                                        |
-| Inside test                                                                                              | box, ellipse, polygon, inset, rotated                                              | `anchor-geometry.test.ts`                                        |
-| Validation accepts 16, rejects others                                                                    | `nne` valid, `nnn` invalid                                                         | `validate.test.ts`                                               |
-| Snapping reaches quarters                                                                                | cursor near `nne` snaps to it                                                      | `anchor-geometry.test.ts`                                        |
-| Curve / elbow orientation for quarters                                                                   | `ene` horizontal-first, `nne` vertical-first                                       | `arrow-path.test.ts`                                             |
-| Quarter fan                                                                                              | centred, half-edge room, `ene` fans on y                                           | `arrow-endpoint-spread.test.ts`                                  |
-| Creation anchor                                                                                          | facing middles, aspect, rotation, zero direction                                   | `anchor-geometry.test.ts`                                        |
-| Path hits                                                                                                | straight / curved / angled through, grazing, clip; crossing, shared end, collinear | `arrow-path-hits.test.ts`                                        |
-| No trigger, no change (I1)                                                                               | a "better" side exists, path clear                                                 | `arrow-rebind.test.ts`                                           |
-| Trigger through own shape; middle stays middle                                                           | box moved past its partner                                                         | `arrow-rebind.test.ts`                                           |
-| Trigger through the other shape; facing end kept                                                         | head on the far side                                                               | `arrow-rebind.test.ts`                                           |
-| Quarter closer / held / both held / tie                                                                  | four cases                                                                         | `arrow-rebind.test.ts`                                           |
-| Corner: new side, and kept via second side                                                               | two cases                                                                          | `arrow-rebind.test.ts`                                           |
-| No memory                                                                                                | move back, anchor stays                                                            | `arrow-rebind.test.ts`                                           |
-| Former `manual` end re-anchors, flag dropped                                                             | stored `manual: true`                                                              | `arrow-rebind.test.ts`                                           |
-| One free end                                                                                             | pinned end moves, free end never (I4)                                              | `arrow-rebind.test.ts`                                           |
-| Rigid / self-loop / not moving                                                                           | three cases                                                                        | `arrow-rebind.test.ts`                                           |
-| Curved and angled paths trigger                                                                          | two cases                                                                          | `arrow-rebind.test.ts`                                           |
-| Rotation-aware side                                                                                      | rotated element                                                                    | `arrow-rebind.test.ts`                                           |
-| E1, E2, E12                                                                                              | missing element, coincident centres, on-arrow other end                            | `arrow-rebind.test.ts`                                           |
-| I5, I6                                                                                                   | second run no-op, two runs equal                                                   | `arrow-rebind.test.ts`                                           |
-| O1                                                                                                       | spy `console.debug`                                                                | `arrow-rebind.test.ts`                                           |
-| Swap: crossing same side, uncross only, pass-through guard, different sides, not considered, cap, O2, O3 | eight cases                                                                        | `arrow-rebind-swap.test.ts`                                      |
-| Default on                                                                                               | `{}` → true, `false` → false                                                       | `apps/live/lib/user-preferences.test.ts`                         |
-| Live drag re-anchors in the browser                                                                      | seeded diagram, path read with the drag held open, O1                              | `apps/live/e2e/arrow-rebind.spec.ts`                             |
-| The first crossing frame decides a quarter                                                               | drag past the quarter: `ene`, not `ese`                                            | `apps/live/e2e/arrow-rebind.spec.ts`                             |
-| Setting off: nothing moves                                                                               | flip the Settings switch, drag                                                     | `apps/live/e2e/arrow-rebind.spec.ts`                             |
-| Snap-target markers show 16                                                                              | `computeSnapTargets` length                                                        | `apps/live/lib/drag-geometry.test.ts`                            |
+| Rule                                                                                                     | Test                                                                                      | File                                                             |
+| -------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| 16 anchors, clockwise, old 8 kept                                                                        | ids, order, uniqueness                                                                    | `anchors.test.ts`                                                |
+| Class, sides, primary side, `anchorsOf`                                                                  | whole table                                                                               | `anchors.test.ts`                                                |
+| Offered anchors per kind, I7, class fallback on a side                                                   | circle / diamond / actor 8, triangle 9, document 14, square 16; triangle corner → quarter | `anchors.test.ts`                                                |
+| Snapping and markers honour the offer (I8)                                                               | no quarter snap on a circle; 8 markers                                                    | `anchor-geometry.test.ts`, `apps/live/lib/drag-geometry.test.ts` |
+| Face-placed anchors                                                                                      | parallelogram, trapezoid, hexagon, triangle points; star on its box; cylinder on its caps | `anchor-geometry.test.ts`                                        |
+| A side without anchors                                                                                   | triangle target above: facing side falls to w / e; creation anchor never `n`              | `anchor-geometry.test.ts`, `arrow-rebind.test.ts`                |
+| Quick-connect from a side without anchors                                                                | `nearestOfferedAnchor(triangle, n)`                                                       | `anchor-geometry.test.ts`                                        |
+| More focuses search on desktop, not on a phone                                                           | open More on Icons                                                                        | `apps/live/components/palette/ToolbarPalette.test.tsx`           |
+| A quarter on a circle re-anchors to a corner                                                             | morphed-circle end flips side                                                             | `arrow-rebind.test.ts`                                           |
+| Cloud and document outlines, path sampler, O4                                                            | anchors on the outline; unsupported command → null + warn                                 | `anchor-geometry.test.ts`                                        |
+| Box positions                                                                                            | all 16 on a box                                                                           | `anchor-geometry.test.ts`                                        |
+| Outline projection incl. quarters                                                                        | circle, diamond, star, stadium, actor points lie on the outline                           | `anchor-geometry.test.ts`                                        |
+| Rotation                                                                                                 | a quarter on a 90° element                                                                | `anchor-geometry.test.ts`                                        |
+| Caption push by side                                                                                     | `ssw`, `s`, `sse` pushed for a bottom caption                                             | `anchor-geometry.test.ts`                                        |
+| Inside test                                                                                              | box, ellipse, polygon, inset, rotated                                                     | `anchor-geometry.test.ts`                                        |
+| Validation accepts 16, rejects others                                                                    | `nne` valid, `nnn` invalid                                                                | `validate.test.ts`                                               |
+| Snapping reaches quarters                                                                                | cursor near `nne` snaps to it                                                             | `anchor-geometry.test.ts`                                        |
+| Curve / elbow orientation for quarters                                                                   | `ene` horizontal-first, `nne` vertical-first                                              | `arrow-path.test.ts`                                             |
+| Quarter fan                                                                                              | centred, half-edge room, `ene` fans on y                                                  | `arrow-endpoint-spread.test.ts`                                  |
+| Creation anchor                                                                                          | facing middles, aspect, rotation, zero direction                                          | `anchor-geometry.test.ts`                                        |
+| Path hits                                                                                                | straight / curved / angled through, grazing, clip; crossing, shared end, collinear        | `arrow-path-hits.test.ts`                                        |
+| No trigger, no change (I1)                                                                               | a "better" side exists, path clear                                                        | `arrow-rebind.test.ts`                                           |
+| Trigger through own shape; middle stays middle                                                           | box moved past its partner                                                                | `arrow-rebind.test.ts`                                           |
+| Trigger through the other shape; facing end kept                                                         | head on the far side                                                                      | `arrow-rebind.test.ts`                                           |
+| Quarter closer / held / both held / tie                                                                  | four cases                                                                                | `arrow-rebind.test.ts`                                           |
+| Corner: new side, and kept via second side                                                               | two cases                                                                                 | `arrow-rebind.test.ts`                                           |
+| No memory                                                                                                | move back, anchor stays                                                                   | `arrow-rebind.test.ts`                                           |
+| Former `manual` end re-anchors, flag dropped                                                             | stored `manual: true`                                                                     | `arrow-rebind.test.ts`                                           |
+| One free end                                                                                             | pinned end moves, free end never (I4)                                                     | `arrow-rebind.test.ts`                                           |
+| Rigid / self-loop / not moving                                                                           | three cases                                                                               | `arrow-rebind.test.ts`                                           |
+| Curved and angled paths trigger                                                                          | two cases                                                                                 | `arrow-rebind.test.ts`                                           |
+| Rotation-aware side                                                                                      | rotated element                                                                           | `arrow-rebind.test.ts`                                           |
+| E1, E2, E12                                                                                              | missing element, coincident centres, on-arrow other end                                   | `arrow-rebind.test.ts`                                           |
+| I5, I6                                                                                                   | second run no-op, two runs equal                                                          | `arrow-rebind.test.ts`                                           |
+| O1                                                                                                       | spy `console.debug`                                                                       | `arrow-rebind.test.ts`                                           |
+| Swap: crossing same side, uncross only, pass-through guard, different sides, not considered, cap, O2, O3 | eight cases                                                                               | `arrow-rebind-swap.test.ts`                                      |
+| Default on                                                                                               | `{}` → true, `false` → false                                                              | `apps/live/lib/user-preferences.test.ts`                         |
+| Live drag re-anchors in the browser                                                                      | seeded diagram, path read with the drag held open, O1                                     | `apps/live/e2e/arrow-rebind.spec.ts`                             |
+| The first crossing frame decides a quarter                                                               | drag past the quarter: `ene`, not `ese`                                                   | `apps/live/e2e/arrow-rebind.spec.ts`                             |
+| Setting off: nothing moves                                                                               | flip the Settings switch, drag                                                            | `apps/live/e2e/arrow-rebind.spec.ts`                             |
+| Snap-target markers show 16                                                                              | `computeSnapTargets` length                                                               | `apps/live/lib/drag-geometry.test.ts`                            |
 
 ## Constants and configuration
 
@@ -479,7 +524,7 @@ swaps log, never a quiet frame.
 | `CLOSENESS_TIE_PX`               | `0.5`    | Below a rendered pixel (D3)                                       | `[0, 2]`     | `arrow-rebind.ts`          |
 | `SWAP_MAX_PASSES`                | `8`      | Uncrossing converges in a pass or two in practice (D5)            | `[1, 32]`    | `arrow-rebind-swap.ts`     |
 | `SWAP_MAX_ENDS_PER_SIDE`         | `32`     | Bounds the pair count at 496 (D5)                                 | `[8, 128]`   | `arrow-rebind-swap.ts`     |
-| `STADIUM_ARC_SEGMENTS`           | `16`     | Sub-pixel error at 200 px (D8)                                    | `[8, 64]`    | `shape-outline.ts`         |
+| `ARC_SEGMENTS`                   | `16`     | Sub-pixel error at 200 px (D8)                                    | `[8, 64]`    | `shape-outline.ts`         |
 | `ACTOR_HULL`                     | 9 points | Convex hull of the actor's head, arm tips and feet, to y 130 (D8) | n/a          | `shape-geometry.ts`        |
 | `QUARTER_FAN_ROOM`               | `0.5`    | A quarter's fan stays between its corner and its middle (spec)    | `(0, 0.5]`   | `arrow-endpoint-spread.ts` |
 | `PATH_CURVE_SEGMENTS`            | `12`     | Under half a pixel of error on a 200 px cloud bump (D13)          | `[4, 64]`    | `svg-path-outline.ts`      |
