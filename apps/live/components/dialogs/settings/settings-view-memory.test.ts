@@ -34,6 +34,7 @@ describe('settings view memory', () => {
     ['not json', '{'],
     ['a non-object', '42'],
     ['a numeric category', '{"categoryId":3,"anchor":null}'],
+    ['a missing anchor', '{"categoryId":"editor"}'],
     ['an anchor without a row', '{"categoryId":"editor","anchor":{"offset":4}}'],
     ['a non-finite offset', '{"categoryId":"editor","anchor":{"rowKey":"a","offset":"x"}}'],
   ])('rejects %s', (_label, raw) => {

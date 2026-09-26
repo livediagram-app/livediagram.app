@@ -50,7 +50,7 @@ function isSettingsView(value: unknown): value is SettingsView {
   const { categoryId, anchor } = value as Record<string, unknown>;
   if (categoryId !== null && typeof categoryId !== 'string') return false;
   if (anchor === null) return true;
-  if (typeof anchor !== 'object' || anchor === undefined) return false;
+  if (typeof anchor !== 'object') return false;
   const { rowKey, offset } = anchor as Record<string, unknown>;
   return typeof rowKey === 'string' && typeof offset === 'number' && Number.isFinite(offset);
 }
