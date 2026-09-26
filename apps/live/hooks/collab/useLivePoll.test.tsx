@@ -114,3 +114,53 @@ describe('starting a collaborators poll (spec/88)', () => {
     expect(op.poll.options).toEqual(['Tea', 'Coffee']);
   });
 });
+
+describe('surviving reconnects and refreshes (spec/152)', () => {
+  function withKey(key: string) {
+    const send = vi.fn();
+    const hook = renderHook(() =>
+      useLivePoll({ roomRef: { current: { send } }, selfKeyRef: { current: key } }),
+    );
+    return { ...hook, send };
+  }
+
+  it("a replayed poll-start for the poll on screen keeps everyone's answers", () => {
+    const { result } = withKey('me');
+    act(() => result.current.receivePoll(poll('p1')));
+    act(() => result.current.receiveAnswer('socket-1', 'p1', 'pizza', 'ada'));
+    act(() => result.current.receivePoll(poll('p1')));
+    expect(result.current.answers.get('ada')).toBe('pizza');
+  });
+
+  it('keys an answer by who gave it, so a reconnect re-answer replaces it', () => {
+    const { result } = withKey('me');
+    act(() => result.current.receivePoll(poll('p1')));
+    act(() => result.current.receiveAnswer('socket-1', 'p1', 'pizza', 'ada'));
+    act(() => result.current.receiveAnswer('socket-2', 'p1', 'sushi', 'ada'));
+    expect([...result.current.answers.entries()]).toEqual([['ada', 'sushi']]);
+  });
+
+  it('knows its own answer and its own poll after a refresh', () => {
+    const { result } = withKey('me');
+    act(() => result.current.receivePoll({ ...poll('p1'), hostKey: 'me' }));
+    act(() => result.current.receiveAnswer('system', 'p1', 'pizza', 'me'));
+    expect(result.current.isHost).toBe(true);
+    expect(result.current.myAnswer).toEqual({ value: 'pizza' });
+  });
+
+  it('sends its key with a start and an answer', () => {
+    const { result, send } = withKey('me');
+    act(() => result.current.startPoll({ question: 'Lunch?', style: 'text', options: [] }));
+    act(() => result.current.answerPoll('pizza'));
+    const ops = send.mock.calls.map((c) => c[0].op);
+    expect(ops[0].poll.hostKey).toBe('me');
+    expect(ops[1]).toMatchObject({ kind: 'poll-answer', value: 'pizza', key: 'me' });
+  });
+
+  it('stays on the newer of two polls started at once', () => {
+    const { result } = withKey('me');
+    act(() => result.current.receivePoll({ ...poll('late'), startedAt: 9 }));
+    act(() => result.current.receivePoll({ ...poll('early'), startedAt: 3 }));
+    expect(result.current.poll?.id).toBe('late');
+  });
+});

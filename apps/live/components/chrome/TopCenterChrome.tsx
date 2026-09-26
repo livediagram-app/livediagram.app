@@ -1,4 +1,5 @@
 import { drawBannerMessage, isMarkerIntent } from '@/lib/draw-mode';
+import { participantKey } from '@/lib/identity';
 import { FormatPainterIcon } from '@livediagram/ui';
 import { isMobileViewportSync } from '@/lib/responsive';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
@@ -198,7 +199,7 @@ export function TopCenterChrome({
       {tabVote ? (
         <VoteBanner
           vote={tabVote}
-          selfId={selfParticipant.id}
+          selfId={participantKey(selfParticipant)}
           review={voteReview}
           onNext={onNextVoteResult}
           onPrev={onPrevVoteResult}

@@ -5,8 +5,9 @@
 // (The ./index import below is type-only — erased at compile — so it can't
 // re-introduce the runtime module cycle this split avoided.)
 
-import type { Element, Tab } from './index';
+import type { Element, ShapeElement, Tab } from './index';
 import type { ElementAction } from './element-action';
+import { isComment, keepLocalTicks } from './element-deltas';
 
 // A single comment inside a thread. The author is the participant who
 // wrote it (per `apps/live/lib/identity.ts`). The participant model is
@@ -58,11 +59,111 @@ export function activeCommentCount(thread: CommentThread | undefined): number {
   return thread.comments.length;
 }
 
+// A comment's `authorId` is its author's OWNER id, and for a guest that id is
+// the credential their api calls carry. D1 keeps it (the delete-own check
+// needs it) and a tab GET redacts it for everyone but the author, so the one
+// place it could still escape is the realtime room, which fans every element
+// op out to every socket. Everything the editor sends the room goes through
+// this first (spec/152); the author's own local copy keeps it.
+export function withoutCommentAuthorId(comment: Comment): Comment {
+  if (comment.authorId === undefined) return comment;
+  const { authorId: _drop, ...rest } = comment;
+  return rest;
+}
+
+export function withoutCommentAuthorIds<E extends Element>(el: E): E {
+  const thread = (el as { commentThread?: CommentThread }).commentThread;
+  if (!thread || !thread.comments.some((c) => c.authorId !== undefined)) return el;
+  return {
+    ...el,
+    commentThread: { ...thread, comments: thread.comments.map(withoutCommentAuthorId) },
+  };
+}
+
+// A room op with every comment author id taken out, whichever kind carries
+// one: an element add / update, a whole tab, or a posted comment. The ONE
+// definition of what may not reach the wire (spec/152): the editor applies it
+// to everything it sends, and the room to everything it relays, so neither a
+// new send path nor an old client can leak one. Anything else passes through
+// untouched (same object back).
+export function opForTheWire(op: unknown): unknown {
+  const o = op as {
+    kind?: unknown;
+    tab?: { elements?: Element[] };
+    op?: { kind?: unknown; element?: Element };
+    delta?: { kind?: unknown; comment?: unknown };
+  } | null;
+  if (!o || typeof o !== 'object') return op;
+  if (o.kind === 'tab' && Array.isArray(o.tab?.elements)) {
+    return { ...o, tab: { ...o.tab, elements: o.tab.elements.map(withoutCommentAuthorIds) } };
+  }
+  if (o.kind === 'el' && (o.op?.kind === 'add' || o.op?.kind === 'update') && o.op.element) {
+    return { ...o, op: { ...o.op, element: withoutCommentAuthorIds(o.op.element) } };
+  }
+  if (o.kind === 'el-delta' && o.delta?.kind === 'comment-add' && isComment(o.delta.comment)) {
+    return { ...o, delta: { ...o.delta, comment: withoutCommentAuthorId(o.delta.comment) } };
+  }
+  return op;
+}
+
+// Stamp a comment an editor posts with the name and colour of the session
+// that sent it, the identity everyone already sees on that person's cursor
+// (spec/152). The room holds no verified identity (spec/61 §6); this makes
+// the comment's name agree with the session it came from rather than with
+// whatever the frame said. Run after `opForTheWire`, which has already taken
+// any author id out.
+export function stampCommentAuthor(
+  op: unknown,
+  presence: { name: string; color: string },
+): unknown {
+  const o = op as { kind?: unknown; delta?: { kind?: unknown; comment?: unknown } };
+  if (o?.kind !== 'el-delta' || o.delta?.kind !== 'comment-add') return op;
+  if (!isComment(o.delta.comment)) return op;
+  return {
+    ...o,
+    delta: {
+      ...o.delta,
+      comment: { ...o.delta.comment, authorName: presence.name, authorColor: presence.color },
+    },
+  };
+}
+
 // The per-element fields that mutate OUTSIDE undo history and therefore
-// need re-grafting onto restored snapshots: comment threads (spec/09) and
-// assigned actions (spec/68 — Cmd+Z must never silently unassign work).
-const LIVE_ELEMENT_FIELDS = ['commentThread', 'action'] as const;
-type LiveFieldBag = { commentThread?: CommentThread; action?: ElementAction };
+// need re-grafting onto restored snapshots: comment threads (spec/09),
+// assigned actions (spec/68: Cmd+Z must never silently unassign work), and
+// everything a collaborative press writes (spec/152): answers, reveals, idea
+// cards, the roll, the agenda's current row and the picker's result. A
+// snapshot from before somebody answered would otherwise take their answer
+// away from the whole room the moment anyone pressed undo.
+const LIVE_ELEMENT_FIELDS = [
+  'commentThread',
+  'action',
+  'responses',
+  'responsesRevealed',
+  'collabRound',
+  'ideaCards',
+  'ideasRevealed',
+  'rollCall',
+  'agendaCurrent',
+  'pickerResult',
+  // The Q&A board's notes (spec/151) are written by its endpoint, never by
+  // an undoable edit, so a snapshot's copy is only ever older.
+  'qaNotes',
+  'qaRev',
+] as const;
+type LiveFieldBag = { commentThread?: CommentThread; action?: ElementAction } & Pick<
+  ShapeElement,
+  | 'responses'
+  | 'responsesRevealed'
+  | 'collabRound'
+  | 'ideaCards'
+  | 'ideasRevealed'
+  | 'rollCall'
+  | 'agendaCurrent'
+  | 'pickerResult'
+  | 'qaNotes'
+  | 'qaRev'
+>;
 
 function applyLiveField<K extends keyof LiveFieldBag>(
   target: LiveFieldBag,
@@ -87,6 +188,7 @@ export function graftLiveTabState(
   return onto.map((tab) => {
     const src = from.find((t) => t.id === tab.id);
     if (!src) return tab;
+    const srcById = new Map(src.elements.map((el) => [el.id, el] as const));
     const liveFields = new Map<string, LiveFieldBag>(
       src.elements.map((el) => {
         const bag: LiveFieldBag = {};
@@ -108,6 +210,21 @@ export function graftLiveTabState(
         changed = true;
         if (next === el) next = { ...el };
         applyLiveField(next as LiveFieldBag, field, liveValue);
+      }
+      // Checklist ticks are live too (spec/152), but the rows themselves are
+      // authored and undoable, so only the `done` flags carry over, row by row.
+      const liveEl = srcById.get(el.id);
+      if (
+        next.type === 'shape' &&
+        liveEl?.type === 'shape' &&
+        liveEl.checklistItems &&
+        next.checklistItems
+      ) {
+        const items = keepLocalTicks(liveEl.checklistItems, next.checklistItems);
+        if (items !== next.checklistItems) {
+          changed = true;
+          next = { ...next, checklistItems: items };
+        }
       }
       return next;
     });

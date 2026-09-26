@@ -15,6 +15,7 @@ import {
   type SessionButtonConfig,
   type ShapeElement,
   type Tab,
+  type TabVote,
   type TimerMode,
 } from '@livediagram/diagram';
 import type { Participant } from '@/lib/identity';
@@ -24,11 +25,13 @@ import { track } from '@/lib/telemetry';
 export function useBehaviourElements({
   activeId,
   commitTabs,
+  tickTabs,
   editsBlocked,
   sessionToolsBlocked,
   selfParticipant,
   livePresence,
   activeTimer,
+  activeVote,
   startTimer,
   pauseTimer,
   resumeTimer,
@@ -37,6 +40,8 @@ export function useBehaviourElements({
 }: {
   activeId: string;
   commitTabs: (mapTabs: (ts: Tab[]) => Tab[]) => unknown;
+  // The picker's roll: a session event, not an edit, so not undoable.
+  tickTabs: (mapTabs: (ts: Tab[]) => Tab[]) => void;
   // True for a view-role visitor / a locked tab: they may take part in a
   // session tool but not start one (spec/39), and their picker roll is theirs
   // alone rather than a write everyone sees.
@@ -50,6 +55,9 @@ export function useBehaviourElements({
   // stomping it (spec/105): pressing while one is running PAUSES, pressing
   // while one is paused RESUMES. Only a tab with no timer starts a new one.
   activeTimer: { running: boolean } | undefined;
+  // The running vote, if any: a vote button pressed mid-vote must not start a
+  // fresh one over it, which reset every dot on the board (spec/152).
+  activeVote: TabVote | undefined;
   startTimer: (mode: TimerMode, durationMs?: number) => void;
   pauseTimer: () => void;
   resumeTimer: () => void;
@@ -85,6 +93,11 @@ export function useBehaviourElements({
       return;
     }
     if (plan.tool === 'vote') {
+      // A vote already open is the room's round: somebody pressing the
+      // button again mid-vote means "we're voting", not "start over", and
+      // starting over wiped every dot cast so far (spec/152). Ending it stays
+      // with the vote's own controls.
+      if (activeVote?.active) return;
       startVote(plan.dots);
       return;
     }
@@ -140,7 +153,9 @@ export function useBehaviourElements({
         // not them: they may spin for themselves, but the room's answer is the
         // facilitator's to land.
         if (!editsBlocked && !sessionToolsBlocked) {
-          commitTabs((ts) =>
+          // Not undoable (spec/152): the room's answer is a fact about the
+          // session, and one person's Ctrl+Z must not re-roll it for all.
+          tickTabs((ts) =>
             ts.map((tab) =>
               tab.id !== activeId
                 ? tab

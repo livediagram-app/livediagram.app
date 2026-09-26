@@ -35,7 +35,40 @@ export type LivePoll = {
   // every other style, whose options are fixed (see pollOptionTokens).
   options: string[];
   startedAt: number;
+  // The collab key of whoever started it (spec/152), so they can still end it
+  // after a refresh: the room replays the poll to them, and without this their
+  // new session had no way to know it was theirs. A collab key, not an owner
+  // id, because every socket in the room sees the poll.
+  hostKey?: string;
 };
+
+// Two polls started in the same moment: which one the room is on. EVERY
+// participant, and the room itself, applies the same rule, so they converge
+// even though a sender never receives its own poll-start back. The newer start
+// wins, the id breaking a tie (spec/152).
+export function pollSupersedes(incoming: LivePoll, current: LivePoll | null): boolean {
+  if (!current) return true;
+  if (incoming.id === current.id) return false;
+  if (incoming.startedAt !== current.startedAt) return incoming.startedAt > current.startedAt;
+  return incoming.id > current.id;
+}
+
+// A poll-start frame as it arrives off the wire: shape-checked before
+// sanitisePoll, which assumes the fields are there.
+export function isLivePollShape(value: unknown): value is LivePoll {
+  if (!value || typeof value !== 'object') return false;
+  const p = value as Record<string, unknown>;
+  return (
+    typeof p.id === 'string' &&
+    p.id.length <= 100 &&
+    typeof p.question === 'string' &&
+    typeof p.style === 'string' &&
+    Array.isArray(p.options) &&
+    p.options.every((o) => typeof o === 'string') &&
+    typeof p.startedAt === 'number' &&
+    (p.hostKey === undefined || (typeof p.hostKey === 'string' && p.hostKey.length <= 200))
+  );
+}
 
 // Input caps (spec/88). Enforced at the compose inputs AND re-checked when
 // an op arrives, so a hand-crafted frame from a peer can't blow up the

@@ -4,7 +4,9 @@ import {
   POLL_QUESTION_MAX,
   POLL_TEXT_ANSWER_MAX,
   formatPollResults,
+  isLivePollShape,
   pollOptionTokens,
+  pollSupersedes,
   sanitisePoll,
   sanitisePollAnswer,
   tallyPoll,
@@ -185,5 +187,39 @@ describe('sanitisePoll duplicate answers', () => {
 
   it('refuses a list that is one answer written twice', () => {
     expect(sanitisePoll(poll('choice', ['A', 'A']))).toBeNull();
+  });
+});
+
+describe('pollSupersedes (spec/152)', () => {
+  const p = (id: string, startedAt: number): LivePoll => ({
+    id,
+    question: 'Q?',
+    style: 'text',
+    options: [],
+    startedAt,
+  });
+
+  it('takes a poll when none is running, never the one already on screen', () => {
+    expect(pollSupersedes(p('a', 1), null)).toBe(true);
+    expect(pollSupersedes(p('a', 1), p('a', 1))).toBe(false);
+  });
+
+  // Two polls started at once: every client, and the room, must land on the
+  // same one, whichever order they heard them in.
+  it('picks the same winner from either side', () => {
+    const older = p('z', 1);
+    const newer = p('a', 2);
+    expect(pollSupersedes(newer, older)).toBe(true);
+    expect(pollSupersedes(older, newer)).toBe(false);
+    const tieA = p('a', 5);
+    const tieB = p('b', 5);
+    expect(pollSupersedes(tieB, tieA)).toBe(true);
+    expect(pollSupersedes(tieA, tieB)).toBe(false);
+  });
+
+  it('shape-checks a frame before it is sanitised', () => {
+    expect(isLivePollShape(p('a', 1))).toBe(true);
+    expect(isLivePollShape({ ...p('a', 1), options: [1] })).toBe(false);
+    expect(isLivePollShape({ id: 'a' })).toBe(false);
   });
 });

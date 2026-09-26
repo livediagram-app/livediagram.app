@@ -183,6 +183,9 @@ export type EditorContextMenuProps = {
   onSetMindFlow: (flow: MindFlow) => void;
   // Checklist (spec/83): replace the selected checklist's rows.
   onSetChecklistItems: (items: ChecklistItem[]) => void;
+  // Tick one row, as the on-canvas checkbox does: a delta the room merges,
+  // not a rewrite of every row (spec/152).
+  onToggleChecklistItem?: (elementId: string, index: number) => void;
   onSetEntityFields: (fields: EntityField[]) => void;
   // Web components (spec/147): the rows of the selected stat row / process /
   // header (each field only lands on its own kind), and an image's hero

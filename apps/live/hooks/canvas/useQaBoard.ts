@@ -8,8 +8,9 @@
 // votes from flickering: the first vote's broadcast lands while the second is
 // still in flight, and without the queue it would briefly erase the second.
 //
-// Both kinds of write go through `applyRemoteTabs` with the autosave told to
-// skip, the same path a peer's op takes. An optimistic copy keeps the rev it
+// Both kinds of write go through `applyRemoteTabs` and into the autosave's
+// baseline too, the same path a peer's op takes (spec/152), so the autosave
+// never mistakes the server's word for a local edit. An optimistic copy keeps the rev it
 // was built on, so even if it did reach an autosave or an `el` op the
 // rev-merge (preferNewerQa) would refuse it everywhere else.
 
@@ -40,7 +41,7 @@ export function useQaBoard({
   sessionShareCode,
   applyRemoteTabs,
   commitTabs,
-  remoteUpdateRef,
+  lastSavedTabsRef,
   onError,
 }: {
   diagramId: string | null;
@@ -51,7 +52,9 @@ export function useQaBoard({
   // The persisting write, used only for an offline diagram (spec/76), where
   // there is no server and the ordinary tab save is the store.
   commitTabs: (mapTabs: (ts: Tab[]) => Tab[]) => unknown;
-  remoteUpdateRef: MutableRefObject<boolean>;
+  // The autosave's baseline (spec/152). The board is the server's, so its
+  // view lands here as well as on screen and is never saved back as ours.
+  lastSavedTabsRef: MutableRefObject<Tab[]>;
   onError: (message: string) => void;
 }) {
   const pendingRef = useRef(new Map<string, Pending[]>());
@@ -95,16 +98,16 @@ export function useQaBoard({
           });
           return changed ? { ...tab, elements } : tab;
         });
-        if (!changed) return tabs;
-        // Only when something moved: a flag left raised by a no-op would
-        // swallow the NEXT real edit's autosave.
-        if (!persist) remoteUpdateRef.current = true;
-        return next;
+        return changed ? next : tabs;
       };
-      if (persist) writersRef.current.commitTabs(updater);
-      else writersRef.current.applyRemoteTabs(updater);
+      if (persist) {
+        writersRef.current.commitTabs(updater);
+      } else {
+        writersRef.current.applyRemoteTabs(updater);
+        lastSavedTabsRef.current = updater(lastSavedTabsRef.current);
+      }
     },
-    [remoteUpdateRef],
+    [lastSavedTabsRef],
   );
 
   // The server's word on a board, from the room's `qa` op or our own

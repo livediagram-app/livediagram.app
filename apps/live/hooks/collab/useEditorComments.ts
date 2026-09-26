@@ -4,10 +4,11 @@
 // - `commentThreadOpenId`: which element's thread popover is open
 //   (null when none). The dynamic `<CommentThreadPopover>` is
 //   gated on this so the chunk only loads when a thread is opened.
-// - `updateThread`: mutator that runs a per-thread updater function
-//   against the active tab via `tickTabs` (no history push, per
-//   the long-standing rule that comment edits aren't undoable so
-//   typing a comment then Ctrl+Z doesn't blow it away).
+// - every change goes out as ONE element delta (spec/152): an add, a
+//   delete, an id swap or a resolve, applied locally without a history
+//   push (typing a comment then Ctrl+Z doesn't blow it away) and sent to
+//   the room at once. The thread used to ride the whole-element update,
+//   so two replies inside one save window lost one of them.
 // - `openComments`, `closeComments`, `addComment`, `deleteComment`,
 //   `resolveThread`, `unresolveThread`: the six actions the
 //   comment thread popover + the Comment panel bind to.
@@ -23,23 +24,21 @@
 // rather than alongside the main element-CRUD path: every other
 // element mutation runs through `commit`, which captures
 // before / after for history + activity log. Comments must NOT
-// snapshot history, so they call `tickTabs` directly. Keeping that
-// rule in one file makes the policy auditable.
+// snapshot history, so they go through `applyElementDelta`, which
+// ticks. Keeping that rule in one file makes the policy auditable.
 
 import { useState } from 'react';
-import { createComment, isBoxed, type CommentThread, type Tab } from '@livediagram/diagram';
+import { createComment } from '@livediagram/diagram';
 import { track } from '@/lib/telemetry';
+import type { ApplyElementDelta } from '@/hooks/collab/useElementDeltas';
 
 type EditorCommentsDeps = {
-  // The tab id every mutation targets. Comments are tab-scoped:
-  // switching tabs while a thread is open keeps the popover up
-  // (matches the previous inline behaviour), but the mutator
-  // writes against whichever tab is active at call time.
-  activeId: string;
-  // The history hook's element-only setter. Mutates tabs WITHOUT
-  // pushing a snapshot, which is exactly what comments need (per
-  // the spec/12 activity-log carve-out for non-undoable edits).
-  tickTabs: (mapTabs: (ts: Tab[]) => Tab[]) => void;
+  // Applies one delta to the ACTIVE tab without pushing a snapshot (per
+  // the spec/12 activity-log carve-out for non-undoable edits) and sends
+  // it to the room. Comments are tab-scoped: switching tabs while a
+  // thread is open keeps the popover up, but the write targets whichever
+  // tab is active at call time.
+  applyElementDelta: ApplyElementDelta;
   // The local participant. Their name + color stamp every comment
   // the user adds so other participants see "Tom: ..." rather
   // than anonymous bubbles. The id is stamped as the comment's
@@ -77,33 +76,6 @@ type EditorCommentsApi = {
 export function useEditorComments(deps: EditorCommentsDeps): EditorCommentsApi {
   const [commentThreadOpenId, setCommentThreadOpenId] = useState<string | null>(null);
 
-  // Per-thread mutator. Updates one element's commentThread on the
-  // active tab; returning `undefined` from `fn` drops the field
-  // entirely (the threaded element returns to "no comments").
-  const updateThread = (
-    elementId: string,
-    fn: (thread: CommentThread | undefined) => CommentThread | undefined,
-  ) => {
-    deps.tickTabs((ts) =>
-      ts.map((t) =>
-        t.id !== deps.activeId
-          ? t
-          : {
-              ...t,
-              elements: t.elements.map((el) => {
-                if (el.id !== elementId || !isBoxed(el)) return el;
-                const next = fn(el.commentThread);
-                if (!next) {
-                  const { commentThread: _drop, ...rest } = el;
-                  return rest as typeof el;
-                }
-                return { ...el, commentThread: next };
-              }),
-            },
-      ),
-    );
-  };
-
   const openComments = (elementId: string) => {
     // Closure read before the toggle so we emit only on the open
     // transition, never on close, and never double-fire under React
@@ -123,13 +95,9 @@ export function useEditorComments(deps: EditorCommentsDeps): EditorCommentsApi {
       name: deps.selfParticipant.name,
       color: deps.selfParticipant.color,
     });
-    updateThread(elementId, (thread) => ({
-      comments: [...(thread?.comments ?? []), comment],
-      // Adding a comment unresolves a resolved thread, the new
-      // message is itself a signal that the conversation isn't
-      // done.
-      resolved: false,
-    }));
+    // Adding a comment unresolves a resolved thread (applyElementDelta):
+    // the new message is itself a signal the conversation isn't done.
+    deps.applyElementDelta(elementId, { kind: 'comment-add', comment });
     if (persist) {
       void persist(comment.id)
         .then((created) => {
@@ -146,23 +114,12 @@ export function useEditorComments(deps: EditorCommentsDeps): EditorCommentsApi {
   };
 
   const replaceCommentId = (elementId: string, oldId: string, newId: string) => {
-    updateThread(elementId, (thread) =>
-      thread
-        ? {
-            ...thread,
-            comments: thread.comments.map((c) => (c.id === oldId ? { ...c, id: newId } : c)),
-          }
-        : undefined,
-    );
+    deps.applyElementDelta(elementId, { kind: 'comment-rekey', from: oldId, to: newId });
   };
 
   const deleteComment = (elementId: string, commentId: string, persist?: PersistDelete) => {
-    updateThread(elementId, (thread) => {
-      if (!thread) return undefined;
-      const remaining = thread.comments.filter((c) => c.id !== commentId);
-      if (remaining.length === 0) return undefined;
-      return { ...thread, comments: remaining };
-    });
+    // The last comment going takes the thread with it.
+    deps.applyElementDelta(elementId, { kind: 'comment-remove', commentId });
     if (persist) {
       void persist()
         .then(() => track('Comment', 'Deleted'))
@@ -173,11 +130,11 @@ export function useEditorComments(deps: EditorCommentsDeps): EditorCommentsApi {
   };
 
   const resolveThread = (elementId: string) => {
-    updateThread(elementId, (thread) => (thread ? { ...thread, resolved: true } : undefined));
+    deps.applyElementDelta(elementId, { kind: 'comment-resolve', resolved: true });
     track('Comment', 'Resolved');
   };
   const unresolveThread = (elementId: string) => {
-    updateThread(elementId, (thread) => (thread ? { ...thread, resolved: false } : undefined));
+    deps.applyElementDelta(elementId, { kind: 'comment-resolve', resolved: false });
     track('Comment', 'Unresolved');
   };
 

@@ -10,10 +10,10 @@
 
 import { createSticky } from '@livediagram/diagram';
 import {
+  checklistDeltaFor,
   clampAgendaMinutes,
-  clearResponse,
-  responseOf,
-  setResponse,
+  IDEA_MAX_CARDS,
+  responseDeltaFor,
   type Element,
   type ShapeElement,
   type Tab,
@@ -21,6 +21,7 @@ import {
 } from '@livediagram/diagram';
 import { participantKey, type Participant } from '@/lib/identity';
 import { track } from '@/lib/telemetry';
+import type { ApplyElementDelta } from '@/hooks/collab/useElementDeltas';
 
 // How far apart scattered ideas land, in canvas px (spec/125).
 const SCATTER_STEP = 20;
@@ -30,6 +31,9 @@ const STICKY_SIZE = 160;
 export function useCollabElements({
   activeId,
   commitTabs,
+  tickTabs,
+  applyElementDelta,
+  activeElements,
   editsBlocked,
   sessionToolsBlocked,
   selfParticipant,
@@ -37,7 +41,16 @@ export function useCollabElements({
   startTimer,
 }: {
   activeId: string;
+  // Undoable: only scatter uses it, because scatter CREATES stickies, which is
+  // authoring like any other add.
   commitTabs: (mapTabs: (ts: Tab[]) => Tab[]) => unknown;
+  // Not undoable, and not logged: every press below (spec/152).
+  tickTabs: (mapTabs: (ts: Tab[]) => Tab[]) => void;
+  // An answer or an idea: applied here and sent to the room as a delta, so
+  // two people pressing the same card at once both land (spec/152).
+  applyElementDelta: ApplyElementDelta;
+  // The active tab's elements, to read a checklist row before ticking it.
+  activeElements: Element[];
   // A view-role visitor / locked tab. The room already drops their mutations
   // (spec/11), so this is about not lying to them in the UI.
   editsBlocked: boolean;
@@ -48,16 +61,10 @@ export function useCollabElements({
   livePresence: Participant[];
   startTimer: (mode: TimerMode, durationMs?: number) => void;
 }) {
-  // Patch one element on the active tab.
-  //
-  // Every write here goes through `commitTabs`, which does NOT push undo
-  // history — the same call a dot-vote cast makes (spec/39). That is
-  // deliberate and load-bearing: undo is a personal control, and one person
-  // pressing Ctrl+Z must never retract another person's answer (spec/122).
-  // The same write, for a verb that runs the room rather than answering it:
-  // reveal, clear, scatter, roll, agenda. One helper rather than a flag on
-  // every call, so which side of the facilitator line a verb sits on is
-  // visible in the call itself (spec/149).
+  // `patchElement`, for a verb that runs the room rather than answering it:
+  // reveal, clear, roll, agenda. One helper rather than a flag on every call,
+  // so which side of the facilitator line a verb sits on is visible in the
+  // call itself (spec/149).
   const patchAsFacilitator = (
     elementId: string,
     patch: (el: ShapeElement) => Partial<ShapeElement>,
@@ -66,9 +73,13 @@ export function useCollabElements({
     patchElement(elementId, patch);
   };
 
+  // Patch one element on the active tab, through `tickTabs`: no undo history,
+  // because undo is a personal control and one person's Ctrl+Z must never
+  // retract another's answer (spec/122). Undo re-grafts these fields too
+  // (`LIVE_ELEMENT_FIELDS`), so an older snapshot can't take them back.
   const patchElement = (elementId: string, patch: (el: ShapeElement) => Partial<ShapeElement>) => {
     if (editsBlocked) return;
-    commitTabs((ts) =>
+    tickTabs((ts) =>
       ts.map((tab) =>
         tab.id !== activeId
           ? tab
@@ -93,13 +104,14 @@ export function useCollabElements({
   // That mismatch is what made a done check invisible to everyone but the
   // person pressing it.
   const respond = (element: ShapeElement, value: string) => {
-    const self = participantKey(selfParticipant);
-    const already = responseOf(element.responses, self) === value;
-    patchElement(element.id, (el) => ({
-      responses: already
-        ? clearResponse(el.responses, self)
-        : setResponse(el.responses, self, value, Date.now()),
-    }));
+    if (editsBlocked) return;
+    // ONE answer, as a delta stamped with the card's round (spec/152): it
+    // commutes with everybody else's, and a cast from before a clear is
+    // dropped rather than landing in the next round.
+    applyElementDelta(
+      element.id,
+      responseDeltaFor(element, participantKey(selfParticipant), value, Date.now()),
+    );
     track(
       'Element',
       'Changed',
@@ -121,7 +133,13 @@ export function useCollabElements({
     // Clearing un-reveals as well: the next round starts closed, or the card
     // would collect its first answer in the open. (A done check has nothing to
     // reveal, so the second field is a harmless no-op there.)
-    patchAsFacilitator(element.id, () => ({ responses: [], responsesRevealed: false }));
+    // A new round (spec/152): an answer cast before this clear names the old
+    // one, so no peer can let it into the next round.
+    patchAsFacilitator(element.id, () => ({
+      responses: [],
+      responsesRevealed: false,
+      collabRound: crypto.randomUUID(),
+    }));
     track('Element', 'Changed', element.shape === 'done-check' ? 'DoneCheck' : 'Estimate');
   };
 
@@ -131,7 +149,7 @@ export function useCollabElements({
   // schema:
   //   * no change-log entry, the same exception the high-frequency vote casts
   //     take (spec/39) — "Priya edited Idea Box" beside six anonymous cards is
-  //     a five-second deanonymisation. `commitTabs` is already the non-logging
+  //     a five-second deanonymisation. `tickTabs` is already the non-logging
   //     path, so this comes for free and must STAY free: routing this through
   //     a logging commit would quietly undo the feature.
   //   * no selection, so the spec/07 concurrent-selection ring doesn't put a
@@ -139,8 +157,17 @@ export function useCollabElements({
   //     deliberately never touches the selection.
   const addIdea = (element: ShapeElement, text: string) => {
     const clean = text.trim();
-    if (!clean) return;
-    patchElement(element.id, (el) => ({ ideaCards: [...(el.ideaCards ?? []), clean] }));
+    if (!clean || editsBlocked) return;
+    // A full box takes no more: one card past the cap would fail the whole
+    // tab's validation on save (spec/152).
+    if ((element.ideaCards ?? []).length >= IDEA_MAX_CARDS) return;
+    // ONE idea, as a delta (spec/152), so two people posting at once both
+    // land. Still no author: the delta has nowhere to put one either.
+    applyElementDelta(element.id, {
+      kind: 'idea',
+      text: clean,
+      ...(element.collabRound ? { round: element.collabRound } : {}),
+    });
     track('Element', 'Changed', 'Idea-box');
   };
 
@@ -154,7 +181,11 @@ export function useCollabElements({
   // card of the next round in the open, and the whole point of the element is
   // that nothing is visible until somebody decides it is.
   const clearIdeas = (element: ShapeElement) => {
-    patchAsFacilitator(element.id, () => ({ ideaCards: [], ideasRevealed: false }));
+    patchAsFacilitator(element.id, () => ({
+      ideaCards: [],
+      ideasRevealed: false,
+      collabRound: crypto.randomUUID(),
+    }));
     track('Element', 'Changed', 'Idea-box');
   };
 
@@ -222,7 +253,22 @@ export function useCollabElements({
     track('Element', 'Changed', 'Roll-call');
   };
 
+  // --- Checklist (spec/83) --------------------------------------------------
+  // Not one of the collaboration family, but the same problem: a whole room
+  // ticking rows on one shared list. A tick used to replace the whole element
+  // (and push undo), so two people ticking different rows lost one of them.
+  // Now it is one delta naming the row by index and text (spec/152).
+  const toggleChecklistItem = (elementId: string, index: number) => {
+    if (editsBlocked) return;
+    const element = activeElements.find((el) => el.id === elementId);
+    const delta = element ? checklistDeltaFor(element, index) : null;
+    if (delta) applyElementDelta(elementId, delta);
+    // Box ticks deliberately don't track: high-frequency, low-signal,
+    // matching spec/39's vote-cast precedent.
+  };
+
   return {
+    toggleChecklistItem,
     respond,
     setResponsesRevealed,
     clearResponses,

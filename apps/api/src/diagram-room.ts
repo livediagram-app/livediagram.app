@@ -1,4 +1,7 @@
 import { isPresenceOpKind, isSystemOpKind } from '@livediagram/api-schema';
+import { opForTheWire, stampCommentAuthor } from '@livediagram/diagram';
+import { RoomLedgerStore } from './room-ledger-store';
+import { RoomLivePoll } from './room-live-poll';
 import type { ClientMessage, Env, ParticipantPresence, ServerMessage } from './types';
 import { reportServerEvent } from './server-telemetry';
 import { multiplayerDecision } from './room-multiplayer';
@@ -175,6 +178,10 @@ export class DiagramRoom implements DurableObject {
   epoch: string = crypto.randomUUID();
   // Who is running the session (spec/149), restored in the constructor.
   facilitator: FacilitatorState = FREE_BATON;
+  // The collaboration ledger (spec/152 phase 3) and the running poll
+  // (spec/152), each in its own module; see room-ledger-store / room-live-poll.
+  ledger: RoomLedgerStore;
+  poll: RoomLivePoll;
 
   // The worker env, for the one server-side telemetry emit the room owns
   // (Diagram·Used·Multiplayer). Optional so unit tests can build a room
@@ -193,6 +200,8 @@ export class DiagramRoom implements DurableObject {
   constructor(state: DurableObjectState, env?: Env) {
     this.state = state;
     this.env = env;
+    this.ledger = new RoomLedgerStore(state.storage);
+    this.poll = new RoomLivePoll(state.storage);
     // Restore before any request can observe `epoch`/`seq`. A wake re-runs
     // the constructor, so without this gate a socket could be handed the
     // freshly-minted field values above and defeat the whole point.
@@ -206,6 +215,7 @@ export class DiagramRoom implements DurableObject {
         await state.storage.put(ORDER_STATE_KEY, { epoch: this.epoch, seq: this.seq });
       }
       this.facilitator = (await state.storage.get<FacilitatorState>(FACILITATOR_KEY)) ?? FREE_BATON;
+      await this.poll.restore();
     });
   }
 
@@ -227,23 +237,46 @@ export class DiagramRoom implements DurableObject {
     // op gets broadcast with a synthetic `from: 'system'` so the
     // frontend handler can distinguish it from a peer's op.
     if (request.method === 'POST' && url.pathname === '/broadcast') {
-      let body: unknown;
-      try {
-        body = await request.json();
-      } catch {
-        return new Response('bad json', { status: 400 });
-      }
-      const op = (body as { op?: unknown }).op;
+      const body = await readBody(request);
+      const op = body?.op;
       if (!op) return new Response('missing op', { status: 400 });
       // `ordered` asks for a seq + a catch-up log slot: a system op that
       // changes the document (a Q&A board write, spec/151) must replay to a
       // peer whose socket blipped, the same as a peer's own mutation would.
-      if ((body as { ordered?: unknown }).ordered === true) this.broadcastOrderedSystemOp(op);
+      if (body.ordered === true) this.broadcastOrderedSystemOp(op);
       else this.broadcastSystemOp(op);
       return new Response(null, { status: 204 });
     }
     if (request.method === 'POST' && url.pathname === '/qa') {
       return this.handleQaWrite(request);
+    }
+    // Internal: a document change the WORKER made (spec/152), relayed into the
+    // ordered stream like a peer's mutation: sequenced, logged for catch-up,
+    // sent to everybody. A view-role visitor's comment is written by the api,
+    // not by a client socket (the room refuses view-role mutations), so
+    // without this editors never saw it and their next save erased it. Only
+    // `el-delta` is accepted: the one kind the worker has to originate.
+    if (request.method === 'POST' && url.pathname === '/mutation') {
+      const op = (await readBody(request))?.op;
+      if ((op as { kind?: unknown } | undefined)?.kind !== 'el-delta') {
+        return new Response('bad op', { status: 400 });
+      }
+      this.sequenceMutation('system', opForTheWire(op));
+      return new Response(null, { status: 204 });
+    }
+    // Internal: a tab's collaboration ledger (spec/152 phase 3), which the
+    // api merges into a save before writing D1 so a stale snapshot can't
+    // erase an answer the room has seen. Same trust argument as /broadcast:
+    // only the worker can reach it.
+    if (request.method === 'GET' && url.pathname === '/ledger') {
+      const tabId = url.searchParams.get('tab');
+      if (!tabId) return new Response('missing tab', { status: 400 });
+      // The saver's cursor is only meaningful in this room's epoch. From any
+      // other, we can't tell what it has seen, so merge nothing.
+      if (url.searchParams.get('epoch') !== this.epoch) {
+        return Response.json({ elements: {} });
+      }
+      return Response.json(await this.ledger.read(tabId));
     }
     if (request.headers.get('Upgrade') !== 'websocket') {
       return new Response('Expected WebSocket', { status: 426 });
@@ -344,6 +377,19 @@ export class DiagramRoom implements DurableObject {
     }
   }
 
+  // Put a mutation into the ordered stream: a seq, the catch-up log, every
+  // socket but the sender's, and the ledger. One path for a peer's op and for
+  // one the worker made (spec/152), so the two can't drift. Returns the seq.
+  private sequenceMutation(from: string, op: unknown, except?: WebSocket): number {
+    const seq = ++this.seq;
+    this.persistOrder();
+    this.opLog.push({ seq, from, op });
+    if (this.opLog.length > OP_LOG_LIMIT) this.opLog.shift();
+    this.broadcast({ kind: 'op', from, op, seq, epoch: this.epoch }, except);
+    this.ledger.record(op, seq);
+    return seq;
+  }
+
   broadcastSystemOp(op: unknown): void {
     // System ops broadcast to ALL peers: the originator is the worker itself,
     // not any connected session, so nobody is excluded.
@@ -390,11 +436,7 @@ export class DiagramRoom implements DurableObject {
   // excluded from the relay (there is no sending socket), so there is no
   // separate `cursor` frame to send back either.
   broadcastOrderedSystemOp(op: unknown): void {
-    const seq = ++this.seq;
-    this.persistOrder();
-    this.opLog.push({ seq, from: 'system', op });
-    if (this.opLog.length > OP_LOG_LIMIT) this.opLog.shift();
-    this.broadcast({ kind: 'op', from: 'system', op, seq, epoch: this.epoch });
+    this.sequenceMutation('system', op);
   }
 
   // Hibernation event handler: one inbound frame from one socket. The DO
@@ -436,6 +478,8 @@ export class DiagramRoom implements DurableObject {
       // Where the ordered stream stands as this session joins, so a later
       // reconnect asks for what came after it, not for the whole log.
       this.sendTo(ws, { kind: 'cursor', epoch: this.epoch, seq: this.seq });
+      // The running poll, and every answer so far (spec/152).
+      for (const op of this.poll.replayOps()) this.sendTo(ws, { kind: 'op', from: 'system', op });
       this.broadcastPresence();
       this.noteMultiplayer();
       // Judge the baton BEFORE honouring a token: one that ran out of time is
@@ -540,6 +584,7 @@ export class DiagramRoom implements DurableObject {
         // peer's real owner id (spec/61 §6) — which also means a receiver can't
         // recognise its own id in the packet. So the routing happens here, and
         // a client acts on any avatar-push that reaches it.
+        if (opKind === 'poll-answer') this.poll.noteAnswer(msg.op, sender.id);
         if (opKind === 'avatar-push') {
           const targetId = (msg.op as { targetId?: unknown }).targetId;
           if (typeof targetId === 'string') {
@@ -549,14 +594,16 @@ export class DiagramRoom implements DurableObject {
         }
         this.broadcast({ kind: 'op', from: sender.id, op: msg.op }, ws);
       } else {
-        const seq = ++this.seq;
-        this.persistOrder();
-        this.opLog.push({ seq, from: sender.id, op: msg.op });
-        if (this.opLog.length > OP_LOG_LIMIT) this.opLog.shift();
-        this.broadcast({ kind: 'op', from: sender.id, op: msg.op, seq, epoch: this.epoch }, ws);
+        // No comment author id leaves the room, whatever a client sent: it is
+        // the author's owner id, a guest's credential. And a posted comment
+        // carries the name of the session that sent it, the one on its
+        // cursor, not whatever the frame claimed (spec/152).
+        const op = stampCommentAuthor(opForTheWire(msg.op), sender);
+        const seq = this.sequenceMutation(sender.id, op, ws);
         // The relay skips the sender, so tell it the seq its op took: its own
         // ops are already applied, and a reconnect must not replay them.
         this.sendTo(ws, { kind: 'cursor', epoch: this.epoch, seq });
+        if (opKind === 'poll-start' || opKind === 'poll-end') this.poll.noteLifecycle(op);
       }
     }
   }
@@ -836,5 +883,16 @@ export class DiagramRoom implements DurableObject {
         this.opRates.delete(ws);
       }
     }
+  }
+}
+
+// The JSON body of an internal worker call (`{ op, ordered? }`), or null
+// when it doesn't parse as an object.
+async function readBody(request: Request): Promise<{ op?: unknown; ordered?: unknown } | null> {
+  try {
+    const body: unknown = await request.json();
+    return body && typeof body === 'object' ? (body as { op?: unknown; ordered?: unknown }) : null;
+  } catch {
+    return null;
   }
 }

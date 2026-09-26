@@ -44,7 +44,9 @@ type TabSessionDeps = {
   // that used to carry them let a peer's stale snapshot erase a dot somebody
   // had just placed. This sends the CHANGE, immediately, so concurrent dots
   // commute instead of racing. No-op before the room is open.
-  emitVote: (tabId: string, elementId: string, delta: 1 | -1) => void;
+  // `round` is the open vote's (spec/152), so peers drop a dot meant for
+  // another round.
+  emitVote: (tabId: string, elementId: string, delta: 1 | -1, round?: string) => void;
 };
 
 export function useTabSession(deps: TabSessionDeps) {
@@ -219,6 +221,9 @@ export function useTabSession(deps: TabSessionDeps) {
       // A vote is one person's to run (spec/39): the starter is the only
       // one who can end / reveal / clear it or move the results focus.
       startedBy: selfId,
+      // A fresh round (spec/152): dots in flight from any earlier vote on this
+      // tab name a different round, so no peer can count them against this one.
+      round: crypto.randomUUID(),
     };
     patchActive((t) => ({ ...t, vote }));
     const layerName = vote.voteLayerId
@@ -303,7 +308,7 @@ export function useTabSession(deps: TabSessionDeps) {
     });
     // Straight out, ahead of the 600ms autosave: the point of the op is that a
     // dot stops waiting behind a debounce it can lose a race inside.
-    emitVote(activeId, elementId, 1);
+    emitVote(activeId, elementId, 1, current.round);
     track('Element', 'Voted');
   };
 
@@ -325,7 +330,7 @@ export function useTabSession(deps: TabSessionDeps) {
     patchActive((t) =>
       t.vote ? { ...t, vote: applyVoteDelta(t.vote, elementId, selfId, -1) } : t,
     );
-    emitVote(activeId, elementId, -1);
+    emitVote(activeId, elementId, -1, deps.activeTab.vote?.round);
     // The counterpart to Element·Voted, so "dots cast" can be read net of
     // second thoughts. Only when a dot actually came off.
     track('Element', 'Removed', 'Vote');

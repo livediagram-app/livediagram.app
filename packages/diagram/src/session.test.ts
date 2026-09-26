@@ -11,6 +11,8 @@ import {
   voteHidesTallies,
   voteTotals,
   applyVoteDelta,
+  mergeIncomingVote,
+  voteDeltaApplies,
   votesSpentBy,
   type TabTimer,
   type TabVote,
@@ -333,5 +335,57 @@ describe('applyVoteDelta — concurrent dots must not clobber (spec/39)', () => 
     // would leave that peer's screen disagreeing with the room forever.
     const spent = vote({ e1: ['ariel', 'ariel', 'ariel', 'ariel', 'ariel', 'ariel'] });
     expect(votesSpentBy(applyVoteDelta(spent, 'e2', 'ariel', 1), 'ariel')).toBe(7);
+  });
+});
+
+describe('vote rounds (spec/152)', () => {
+  const vote = (over: Partial<TabVote> = {}): TabVote => ({
+    active: true,
+    revealed: false,
+    votesPerPerson: 3,
+    votes: {},
+    round: 'r1',
+    ...over,
+  });
+
+  it('applies a dot for the open round', () => {
+    expect(voteDeltaApplies(vote(), 'r1')).toBe(true);
+  });
+
+  it('drops a dot from another round, so it cannot count against this one', () => {
+    expect(voteDeltaApplies(vote(), 'r0')).toBe(false);
+  });
+
+  it('drops a dot that reaches a closed vote', () => {
+    expect(voteDeltaApplies(vote({ active: false }), 'r1')).toBe(false);
+    expect(voteDeltaApplies(undefined, 'r1')).toBe(false);
+  });
+
+  it('falls back to the open check when either side has no round', () => {
+    expect(voteDeltaApplies(vote({ round: undefined }), 'r1')).toBe(true);
+    expect(voteDeltaApplies(vote(), undefined)).toBe(true);
+  });
+
+  // THE bug: End / Reveal carried the host's map as of their save and erased
+  // every dot still in flight. Within one round, only deltas move the map.
+  it('keeps our dots when a lifecycle change names the same round', () => {
+    const local = vote({ votes: { e1: ['ariel', 'pete'] } });
+    const incoming = vote({ active: false, votes: { e1: ['ariel'] } });
+    const merged = mergeIncomingVote(local, incoming);
+    expect(merged?.active).toBe(false);
+    expect(merged?.votes).toBe(local.votes);
+  });
+
+  it('takes the incoming map for a new round or a clear', () => {
+    const local = vote({ votes: { e1: ['ariel'] } });
+    const fresh = vote({ round: 'r2', votes: {} });
+    expect(mergeIncomingVote(local, fresh)).toBe(fresh);
+    expect(mergeIncomingVote(local, undefined)).toBeUndefined();
+  });
+
+  it('takes the incoming vote when it has no round (a vote from before rounds)', () => {
+    const local = vote({ votes: { e1: ['ariel'] } });
+    const legacy = vote({ round: undefined, active: false });
+    expect(mergeIncomingVote(local, legacy)).toBe(legacy);
   });
 });

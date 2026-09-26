@@ -289,9 +289,13 @@ export function EntityFieldsEditor({
 export function ChecklistRowsEditor({
   items,
   onChange,
+  onToggle,
 }: {
   items: ChecklistItem[];
   onChange: (items: ChecklistItem[]) => void;
+  // Tick one row as its own delta (spec/152). Without it, the tick rewrites
+  // the rows like every other edit here.
+  onToggle?: (index: number) => void;
 }) {
   const [rows, setRows] = useState<ChecklistItem[]>(items);
   useEffect(() => setRows(items), [items]);
@@ -307,7 +311,9 @@ export function ChecklistRowsEditor({
               checked={item.done}
               aria-label={`Row ${i + 1} done`}
               onChange={(e) =>
-                onChange(rows.map((r, j) => (j === i ? { ...r, done: e.target.checked } : r)))
+                onToggle
+                  ? onToggle(i)
+                  : onChange(rows.map((r, j) => (j === i ? { ...r, done: e.target.checked } : r)))
               }
               className="h-3.5 w-3.5 shrink-0 cursor-pointer accent-brand-500"
             />

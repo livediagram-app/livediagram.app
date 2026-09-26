@@ -77,11 +77,17 @@ export async function apiSaveTab(
   diagramId: string,
   tab: Tab,
   shareCode: string | null = null,
-  opts: { allowEmpty?: boolean } = {},
+  // `roomCursor`: where this client stood in the realtime room when it took
+  // the snapshot, so the api merges only the room's answers it hadn't seen
+  // (spec/152 phase 3).
+  opts: { allowEmpty?: boolean; roomCursor?: { epoch: string; seq: number } | null } = {},
 ): Promise<void> {
   if (await isOfflineId(diagramId)) return offlineSaveTab(diagramId, tab, Date.now());
   const headers = new Headers(await apiHeaders(ownerId, { share: shareCode, body: true }));
   if (opts.allowEmpty) headers.set('X-Allow-Empty', '1');
+  if (opts.roomCursor) {
+    headers.set('X-Room-Cursor', `${opts.roomCursor.epoch}:${opts.roomCursor.seq}`);
+  }
   const res = await apiFetch(`${API_BASE}/diagrams/${diagramId}/tabs/${tab.id}`, {
     method: 'PUT',
     headers,

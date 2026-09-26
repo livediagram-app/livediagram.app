@@ -74,6 +74,7 @@ type FakeState = {
   storage: {
     get: (key: string) => Promise<unknown>;
     put: (key: string, value: unknown) => Promise<void>;
+    list: (opts: { prefix: string }) => Promise<Map<string, unknown>>;
     setAlarm: (when: number) => Promise<void>;
   };
   blockConcurrencyWhile: (fn: () => Promise<void>) => Promise<void>;
@@ -114,6 +115,8 @@ function makeState(store: Map<string, unknown> = new Map()): FakeState {
         store.set(key, value);
         return Promise.resolve();
       },
+      list: ({ prefix }) =>
+        Promise.resolve(new Map([...store].filter(([key]) => key.startsWith(prefix)))),
       setAlarm: (when) => {
         state.alarms.push(when);
         return Promise.resolve();
@@ -1493,5 +1496,199 @@ describe('DiagramRoom freeing a selection lock (spec/07 + spec/149)', () => {
     sendFrame(room, host, unlock());
     // A facilitator frame would have gone out had the baton changed hands.
     expect(framesOf(holder).some((f) => f.kind === 'facilitator')).toBe(false);
+  });
+});
+
+describe('DiagramRoom collaboration ledger (spec/152 phase 3)', () => {
+  function editor(room: DiagramRoom) {
+    const ws = makeSocket();
+    room.acceptSession(asWs(ws), 'edit');
+    sendFrame(room, ws, { kind: 'hello', participant: { id: 'e', name: 'E', color: '#000' } });
+    return ws;
+  }
+  const answer = (participantId: string) => ({
+    kind: 'op',
+    op: {
+      kind: 'el-delta',
+      tabId: 't1',
+      elementId: 'card',
+      delta: { kind: 'response', participantId, value: 'done', at: 1 },
+    },
+  });
+  const ledger = async (room: DiagramRoom, epoch = room.epoch) =>
+    (await room.fetch(new Request(`https://room/ledger?tab=t1&epoch=${epoch}`))).json();
+
+  it('records each answer with the seq it took, and serves the tab ledger', async () => {
+    const { room } = newRoom();
+    const ws = editor(room);
+    sendFrame(room, ws, answer('a'));
+    sendFrame(room, ws, answer('b'));
+    const body = (await ledger(room)) as {
+      elements: Record<string, { responses: Record<string, { seq: number }> }>;
+    };
+    expect(body.elements.card!.responses.a!.seq).toBe(1);
+    expect(body.elements.card!.responses.b!.seq).toBe(2);
+  });
+
+  it('serves nothing to a cursor from another epoch', async () => {
+    const { room } = newRoom();
+    sendFrame(room, editor(room), answer('a'));
+    expect(await ledger(room, 'some-other-epoch')).toEqual({ elements: {} });
+  });
+
+  it('does not record a view-role sender (the op is refused before it)', async () => {
+    const { room } = newRoom();
+    const viewer = makeSocket();
+    room.acceptSession(asWs(viewer), 'view');
+    sendFrame(room, viewer, { kind: 'hello', participant: { id: 'v', name: 'V', color: '#000' } });
+    sendFrame(room, viewer, answer('v'));
+    expect(await ledger(room)).toEqual({ elements: {} });
+  });
+});
+
+describe('DiagramRoom live poll (spec/152)', () => {
+  const pollOp = (id: string, startedAt = 1) => ({
+    kind: 'op',
+    op: {
+      kind: 'poll-start',
+      poll: { id, question: 'Lunch?', style: 'text', options: [], startedAt, hostKey: 'host' },
+    },
+  });
+  function join(room: DiagramRoom, id: string, role: 'edit' | 'view' = 'edit') {
+    const ws = makeSocket();
+    room.acceptSession(asWs(ws), role);
+    sendFrame(room, ws, { kind: 'hello', participant: { id, name: id, color: '#000' } });
+    return ws;
+  }
+  const ops = (ws: FakeSocket) =>
+    ws.sent
+      .map((s) => JSON.parse(s))
+      .filter((m) => m.kind === 'op')
+      .map((m) => m.op);
+
+  it('replays the running poll and every answer to a late joiner', () => {
+    const { room } = newRoom();
+    const host = join(room, 'h');
+    const viewer = join(room, 'v', 'view');
+    sendFrame(room, host, pollOp('p1'));
+    sendFrame(room, viewer, {
+      kind: 'op',
+      op: { kind: 'poll-answer', pollId: 'p1', value: 'pizza', key: 'viewer-key' },
+    });
+    const late = join(room, 'late');
+    expect(ops(late)).toEqual([
+      expect.objectContaining({ kind: 'poll-start', poll: expect.objectContaining({ id: 'p1' }) }),
+      { kind: 'poll-answer', pollId: 'p1', value: 'pizza', key: 'viewer-key' },
+    ]);
+  });
+
+  it('a re-answer under the same key replaces the first', () => {
+    const { room } = newRoom();
+    const host = join(room, 'h');
+    sendFrame(room, host, pollOp('p1'));
+    for (const value of ['pizza', 'sushi']) {
+      sendFrame(room, host, {
+        kind: 'op',
+        op: { kind: 'poll-answer', pollId: 'p1', value, key: 'k' },
+      });
+    }
+    expect(room.poll.state?.answers).toEqual({ k: 'sushi' });
+  });
+
+  it('forgets the poll when it ends, and keeps the newer of two starts', () => {
+    const { room } = newRoom();
+    const host = join(room, 'h');
+    sendFrame(room, host, pollOp('late', 9));
+    sendFrame(room, host, pollOp('early', 3));
+    expect(room.poll.state?.poll.id).toBe('late');
+    sendFrame(room, host, { kind: 'op', op: { kind: 'poll-end', pollId: 'late' } });
+    expect(room.poll.state).toBeNull();
+    expect(ops(join(room, 'next'))).toEqual([]);
+  });
+});
+
+describe('DiagramRoom worker mutations (spec/152)', () => {
+  it('sequences a worker-made comment into the stream for everybody', async () => {
+    const { room } = newRoom();
+    const peer = makeSocket();
+    room.acceptSession(asWs(peer), 'edit');
+    sendFrame(room, peer, { kind: 'hello', participant: { id: 'p', name: 'P', color: '#000' } });
+    peer.sent.length = 0;
+    const op = {
+      kind: 'el-delta',
+      tabId: 't1',
+      elementId: 'card',
+      delta: { kind: 'comment-remove', commentId: 'c1' },
+    };
+    const res = await room.fetch(
+      new Request('https://room/mutation', { method: 'POST', body: JSON.stringify({ op }) }),
+    );
+    expect(res.status).toBe(204);
+    const frame = JSON.parse(peer.sent.at(-1)!);
+    expect(frame).toMatchObject({ kind: 'op', from: 'system', op, seq: 1, epoch: room.epoch });
+  });
+
+  it('accepts nothing but an element delta', async () => {
+    const { room } = newRoom();
+    const res = await room.fetch(
+      new Request('https://room/mutation', {
+        method: 'POST',
+        body: JSON.stringify({ op: { kind: 'tab', tabId: 't1', tab: {} } }),
+      }),
+    );
+    expect(res.status).toBe(400);
+  });
+});
+
+describe('DiagramRoom comment author ids (spec/152)', () => {
+  it('strips them from every op it relays, whatever a client sent', () => {
+    const { room } = newRoom();
+    const editor = makeSocket();
+    const peer = makeSocket();
+    room.acceptSession(asWs(editor), 'edit');
+    room.acceptSession(asWs(peer), 'edit');
+    sendFrame(room, editor, { kind: 'hello', participant: { id: 'e', name: 'Ed', color: '#000' } });
+    sendFrame(room, peer, { kind: 'hello', participant: { id: 'p', name: 'P', color: '#111' } });
+    const comment = {
+      id: 'c',
+      text: 'hi',
+      createdAt: 1,
+      authorName: 'Boss',
+      authorColor: '#fff',
+      authorId: 'owner-secret',
+    };
+    sendFrame(room, editor, {
+      kind: 'op',
+      op: {
+        kind: 'el',
+        tabId: 't',
+        op: {
+          kind: 'update',
+          element: {
+            id: 'a',
+            type: 'shape',
+            shape: 'square',
+            x: 0,
+            y: 0,
+            width: 1,
+            height: 1,
+            commentThread: { comments: [comment], resolved: false },
+          },
+        },
+      },
+    });
+    sendFrame(room, editor, {
+      kind: 'op',
+      op: {
+        kind: 'el-delta',
+        tabId: 't',
+        elementId: 'a',
+        delta: { kind: 'comment-add', comment: { ...comment, id: 'c2' } },
+      },
+    });
+    const received = peer.sent.join('\n');
+    expect(received).not.toContain('owner-secret');
+    // And a posted comment carries the sender's session name, not its claim.
+    expect(received).toContain('"authorName":"Ed"');
   });
 });

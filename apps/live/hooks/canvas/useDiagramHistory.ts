@@ -129,9 +129,10 @@ export function useDiagramHistory(initialTabs: Tab[]): DiagramHistory {
     setHistory((h) => historyCommit(h, mapTabs));
   };
 
-  const tick = (mapTabs: (tabs: Tab[]) => Tab[]) => {
+  // Stable identity: the delta sender (useElementDeltas) memoises on it.
+  const tick = useCallback((mapTabs: (tabs: Tab[]) => Tab[]) => {
     setHistory((h) => historyTick(h, mapTabs));
-  };
+  }, []);
 
   const markCheckpoint = () => {
     setHistory(historyMarkCheckpoint);

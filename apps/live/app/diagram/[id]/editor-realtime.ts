@@ -6,7 +6,7 @@ import { connectRoom, type ShareLink, type ShareRole } from '@/lib/api-client';
 // editor: the shareable / team / share-code flags that decide whether
 // the WebSocket room runs, the owner-vs-visitor identity + owner badge
 // info, the share-link list + password, the granted session role +
-// session share code, and the room/echo-guard refs. A cohesive slice
+// session share code, and the room ref. A cohesive slice
 // lifted out of useEditorState — same pattern as usePanelLayout /
 // usePresenceState.
 //
@@ -14,10 +14,6 @@ import { connectRoom, type ShareLink, type ShareRole } from '@/lib/api-client';
 // usePresenceState; this slice owns the gating + connection plumbing the
 // hydration/bootstrap, autosave and room hooks read and write.
 export function useEditorRealtime() {
-  // `remoteUpdateRef` blocks the auto-save effect from re-broadcasting
-  // a remote update back through the room (which would cause an
-  // infinite save/broadcast loop between two connected clients).
-  const remoteUpdateRef = useRef(false);
   // Single open room connection for the current diagram. Re-opens
   // whenever diagramId changes.
   const roomRef = useRef<ReturnType<typeof connectRoom> | null>(null);
@@ -94,7 +90,6 @@ export function useEditorRealtime() {
   sessionShareCodeRef.current = sessionShareCode;
 
   return {
-    remoteUpdateRef,
     roomRef,
     diagramShareable,
     setDiagramShareable,

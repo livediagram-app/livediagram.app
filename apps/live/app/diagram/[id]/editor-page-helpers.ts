@@ -128,6 +128,28 @@ export type TabSaveDiff = {
   hasChanges: boolean;
 };
 
+// Is this tab unchanged since the baseline? Identity first (the common case:
+// an untouched tab keeps its object), then content. A peer's op is applied to
+// the tabs on screen and to the baseline separately (spec/152), so the two end
+// up as different objects holding the same thing, and that is not a local
+// change. A false "changed" here only costs a redundant save.
+function sameTabContent(prev: Tab | undefined, current: Tab): boolean {
+  if (prev === current) return true;
+  if (!prev) return false;
+  // Element by element, identity first: a real edit usually leaves every
+  // other element the same object, so only the changed ones are serialised,
+  // not the whole tab twice on every autosave.
+  if (prev.elements.length !== current.elements.length) return false;
+  for (let i = 0; i < current.elements.length; i++) {
+    const a = prev.elements[i];
+    const b = current.elements[i];
+    if (a !== b && JSON.stringify(a) !== JSON.stringify(b)) return false;
+  }
+  const { elements: _p, ...prevMeta } = prev;
+  const { elements: _c, ...currentMeta } = current;
+  return JSON.stringify(prevMeta) === JSON.stringify(currentMeta);
+}
+
 export function computeTabSaveDiff(
   prevTabs: Tab[],
   currentTabs: Tab[],
@@ -137,7 +159,7 @@ export function computeTabSaveDiff(
 ): TabSaveDiff {
   const prevTabById = new Map(prevTabs.map((t) => [t.id, t] as const));
   const changedTabs = currentTabs
-    .filter((t) => prevTabById.get(t.id) !== t)
+    .filter((t) => !sameTabContent(prevTabById.get(t.id), t))
     .filter((t) => !loadedTabIds || loadedTabIds.has(t.id) || t.elements.length > 0);
   const orderChanged =
     currentTabs.length !== prevTabs.length ||

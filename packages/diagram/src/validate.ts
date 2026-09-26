@@ -22,6 +22,7 @@ import { EMBED_PROVIDERS } from './youtube';
 import { isPickerSource, isSelectionMode, isSessionTool } from './selection-mode';
 import { RESPONSES_MAX, RESPONSE_VALUE_MAX } from './responses';
 import { QA_MAX_ID, QA_MAX_NAME, QA_MAX_NOTES, QA_MAX_TEXT, QA_MAX_VOTERS } from './qa-board';
+import { COLLAB_ROUND_MAX } from './element-deltas';
 import {
   AGENDA_MAX_ITEMS,
   AGENDA_MAX_TEXT,
@@ -378,6 +379,12 @@ export function isValidElement(el: unknown): el is Element {
       }
     }
     if (el.qaRev !== undefined && (typeof el.qaRev !== 'number' || !Number.isFinite(el.qaRev)))
+      return false;
+    // The answers' round (spec/152): an opaque id.
+    if (
+      el.collabRound !== undefined &&
+      (typeof el.collabRound !== 'string' || el.collabRound.length > COLLAB_ROUND_MAX)
+    )
       return false;
     // Agenda (spec/127): bounded rows of { label, minutes }. Minutes are
     // clamped where they're read (clampAgendaMinutes), not rejected here — a

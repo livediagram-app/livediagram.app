@@ -128,6 +128,7 @@ export function EditorView() {
     connectSourceId,
     cancelConnect,
     selfParticipant,
+    voteSelfId,
     sessionRole,
     sessionShareCode,
     setDiagramName,
@@ -361,6 +362,7 @@ export function EditorView() {
               renameActiveNonce={renameTabNonce}
               participantsByTab={participantsByTab}
               selfId={selfParticipant.id}
+              voteSelfId={voteSelfId}
               selfRole={sessionRole}
               onOpenSettings={() => {
                 // Preferences are user-scoped, not diagram-scoped, so

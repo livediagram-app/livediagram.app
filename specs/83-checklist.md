@@ -19,9 +19,16 @@ A themed boxed card (fill/stroke/text follow the tab theme like any shape — un
 
 ## Interaction
 
-- **Clicking a checkbox on the canvas toggles that row's `done`** — the rating shape's interactive-stars precedent. Edit-role only; locked elements, hidden/locked layers, and view-only sessions are gated exactly as rating is. Each toggle is one undoable history entry and syncs as a normal element op.
+- **Clicking a checkbox on the canvas toggles that row's `done`** — the rating shape's interactive-stars precedent. Edit-role only; locked elements, hidden/locked layers, and view-only sessions are gated exactly as rating is. Each toggle is one `check` delta (spec/152), not undoable, and the menu's row toggles send the same delta.
 - **Row text editing** follows the data-shape pattern: the element context menu gains a **Checklist** section (`ElementDataSections.tsx` + a rows component): one text input per row with its done toggle, an "Add row" button (capped at 30), and per-row remove. Same commit/undo semantics as the rail-label and chart-data editors.
 - Double-click on the card is deliberately inert, matching the other self-drawing shapes: the on-canvas interaction is the checkbox itself, and row editing lives in the context menu's Checklist section.
+
+## Ticking together
+
+A tick is one `check` delta (spec/152) naming the row by index and text, so
+two people ticking different rows both land, and a peer's whole-element
+update (an added row, a retitle) keeps everyone's ticks. Ticks are not
+undoable: like a dot or an answer, they are the room's, not an edit.
 
 ## Headless render (share thumbnails, MCP, exports)
 

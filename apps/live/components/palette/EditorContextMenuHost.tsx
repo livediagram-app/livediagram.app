@@ -106,6 +106,7 @@ export function EditorContextMenuHost() {
     setLegendItemsSelected,
     setMindFlowSelected,
     setChecklistItemsSelected,
+    toggleChecklistItem,
     setEntityFieldsSelected,
     setWebRowsSelected,
     setHeroCaptionSelected,
@@ -310,6 +311,7 @@ export function EditorContextMenuHost() {
       mindFlow={menuMindFlow}
       onSetMindFlow={setMindFlowSelected}
       onSetChecklistItems={setChecklistItemsSelected}
+      onToggleChecklistItem={toggleChecklistItem}
       onSetEntityFields={setEntityFieldsSelected}
       onSetWebRows={setWebRowsSelected}
       onSetHeroCaption={setHeroCaptionSelected}
