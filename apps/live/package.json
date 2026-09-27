@@ -12,7 +12,8 @@
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test --project=chromium",
     "typecheck": "tsc --noEmit",
-    "clean": "rm -rf .next .next-dev out node_modules .turbo coverage"
+    "clean": "rm -rf .next .next-dev out node_modules .turbo coverage",
+    "icons:sheet": "vitest run --config scripts/icon-sheet/vitest.config.ts && node scripts/icon-sheet/shoot.mjs"
   },
   "dependencies": {
     "@clerk/react": "^6.17.0",
