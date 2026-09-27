@@ -1,6 +1,7 @@
+'use client';
+
 import { lucideGlyph } from '@livediagram/ui';
 import { lucideImage } from '@livediagram/icons/lucide';
-('use client');
 
 import { TrashIcon } from '@/components/primitives/explorer-icons';
 import { useEffect, useMemo, useState } from 'react';

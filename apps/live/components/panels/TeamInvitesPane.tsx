@@ -1,6 +1,7 @@
+'use client';
+
 import { lucideGlyph } from '@livediagram/ui';
 import { lucideMail } from '@livediagram/icons/lucide';
-('use client');
 
 import type { TeamInvite } from '@/lib/api-client';
 import { colorForKey, initialsOf } from '@/lib/identity';

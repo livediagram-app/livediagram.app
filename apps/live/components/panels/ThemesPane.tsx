@@ -1,6 +1,7 @@
+'use client';
+
 import { lucideGlyph } from '@livediagram/ui';
 import { lucidePalette } from '@livediagram/icons/lucide';
-('use client');
 
 // The Explorer "Themes" section (docs/specs/011-theme/custom-themes.md): manage the owner's saved
 // custom themes. Lists each as a swatch preview + name with icon actions
