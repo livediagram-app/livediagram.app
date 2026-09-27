@@ -25,9 +25,9 @@ const isIconExport = (name: string, v: unknown): v is ComponentType =>
   typeof v === 'function' && /^[A-Z]/.test(name) && /(Icon|Glyph)$/.test(name);
 
 function cellsOf(mod: Record<string, unknown>): Cell[] {
-  return Object.entries(mod)
-    .filter(([n, v]) => n !== 'Glyph' && isIconExport(n, v))
-    .map(([n, C]) => ({ name: n, node: <C /> }));
+  return Object.entries(mod).flatMap(([n, C]) =>
+    n !== 'Glyph' && isIconExport(n, C) ? [{ name: n, node: <C /> }] : [],
+  );
 }
 
 function renderCell({ name, node }: Cell): string {
