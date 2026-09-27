@@ -106,7 +106,7 @@ function CarouselArrow({
       onClick={onClick}
       disabled={disabled}
       aria-label={`${prev ? 'Previous' : 'Next'} ${label} templates`}
-      className="flex items-center justify-center rounded-full border border-slate-700 bg-slate-800 p-1.5 text-slate-300 transition enabled:hover:border-brand-400 enabled:hover:text-white disabled:cursor-default disabled:opacity-35 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400"
+      className="flex items-center justify-center rounded-full border border-slate-700 bg-slate-800 p-1.5 text-slate-300 transition enabled:hover:border-brand-400 enabled:hover:text-white disabled:cursor-default disabled:opacity-35 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400 dark:text-slate-600"
     >
       <svg
         width="18"

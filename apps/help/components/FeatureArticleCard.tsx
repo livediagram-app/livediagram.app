@@ -13,7 +13,7 @@ export function FeatureArticleCard({ article }: { article: Article }) {
   return (
     <Link
       href={articleHref(article)}
-      className="card-glow group block rounded-xl bg-white p-5 transition-colors duration-micro hover:bg-brand-50/30 sm:p-6"
+      className="card-glow group block rounded-xl bg-white p-5 transition-colors duration-micro hover:bg-brand-50/30 sm:p-6 dark:bg-slate-900"
     >
       <div className="flex items-start gap-4">
         <div
@@ -23,8 +23,12 @@ export function FeatureArticleCard({ article }: { article: Article }) {
           {featureIcon(article.slug, article.categorySlug)}
         </div>
         <div className="min-w-0 flex-1">
-          <h3 className="mb-1 text-lg font-semibold text-slate-900">{article.title}</h3>
-          <p className="text-sm leading-relaxed text-slate-500">{article.description}</p>
+          <h3 className="mb-1 text-lg font-semibold text-slate-900 dark:text-slate-100">
+            {article.title}
+          </h3>
+          <p className="text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+            {article.description}
+          </p>
         </div>
       </div>
       <CountPill count={subCount} noun="guide" />

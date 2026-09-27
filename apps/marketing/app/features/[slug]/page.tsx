@@ -69,7 +69,7 @@ export default async function FeatureCategoryPage({
             <div className="space-y-16">
               {groups.map((group) => (
                 <div key={group.title}>
-                  <h3 className="mb-6 text-xl font-semibold tracking-tight text-slate-900">
+                  <h3 className="mb-6 text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
                     {group.title}
                   </h3>
                   <FeatureGrid items={group.items} />

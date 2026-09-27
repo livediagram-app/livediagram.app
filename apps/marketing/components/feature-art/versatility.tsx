@@ -24,14 +24,14 @@ export function ShapesArt() {
   return (
     <Frame>
       <div className="flex h-full flex-col justify-center gap-1.5 px-3">
-        <p className="text-[8px] font-semibold uppercase tracking-wider text-slate-500">
+        <p className="text-[8px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
           Shapes · Devices
         </p>
         <div className="grid grid-cols-4 gap-1.5">
           {glyphs.map((g, i) => (
             <span
               key={g}
-              className="relative flex h-7 items-center justify-center rounded border border-slate-200 bg-white text-slate-500"
+              className="relative flex h-7 items-center justify-center rounded border border-slate-200 bg-white text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400"
             >
               <span
                 className="fa-hl pointer-events-none absolute inset-0 rounded ring-2 ring-brand-500"
@@ -71,8 +71,8 @@ export function NotesArt() {
         </span>
       </span>
       {/* note card */}
-      <div className="fa-fade absolute right-2 top-3 w-[52%] rounded-md border border-amber-200 bg-amber-50 p-1.5 shadow-md">
-        <div className="flex items-center gap-1 text-[7px] font-semibold text-amber-700">
+      <div className="fa-fade absolute right-2 top-3 w-[52%] rounded-md border border-amber-200 bg-amber-50 p-1.5 shadow-md dark:border-amber-500/30 dark:bg-amber-500/10">
+        <div className="flex items-center gap-1 text-[7px] font-semibold text-amber-700 dark:text-amber-300">
           <NoteIcon /> Note
         </div>
         <div className="mt-1 h-1.5 w-full rounded bg-amber-200/80" />
@@ -125,7 +125,7 @@ export function BorderStyleArt() {
           );
         })}
       </svg>
-      <span className="absolute bottom-1.5 right-2 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-slate-500 shadow-sm">
+      <span className="absolute bottom-1.5 right-2 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-slate-500 shadow-sm dark:bg-slate-900/90 dark:text-slate-400">
         solid · dashed · dotted
       </span>
     </Frame>
@@ -215,7 +215,7 @@ export function ArrowsArt() {
           angled
         </text>
       </svg>
-      <span className="absolute bottom-1.5 left-2 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-slate-500 shadow-sm">
+      <span className="absolute bottom-1.5 left-2 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-slate-500 shadow-sm dark:bg-slate-900/90 dark:text-slate-400">
         drag to bend
       </span>
     </Frame>
@@ -263,10 +263,10 @@ export function PencilArt() {
         />
       </svg>
       {/* magic-wand recognise chip */}
-      <span className="fa-pulse absolute right-2 top-2 flex items-center gap-1 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-brand-600 shadow-sm">
+      <span className="fa-pulse absolute right-2 top-2 flex items-center gap-1 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-brand-600 shadow-sm dark:bg-slate-900/90 dark:text-brand-300">
         <WandIcon /> recognise
       </span>
-      <span className="absolute bottom-1.5 left-2 flex items-center gap-1 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-slate-500 shadow-sm">
+      <span className="absolute bottom-1.5 left-2 flex items-center gap-1 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-slate-500 shadow-sm dark:bg-slate-900/90 dark:text-slate-400">
         <PencilGlyph /> freehand
       </span>
     </Frame>
@@ -350,7 +350,7 @@ export function AlignmentGuidesArt() {
           style={{ animationDelay: '0.5s' }}
         />
       </svg>
-      <span className="absolute bottom-1.5 right-2 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-slate-500 shadow-sm">
+      <span className="absolute bottom-1.5 right-2 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-slate-500 shadow-sm dark:bg-slate-900/90 dark:text-slate-400">
         snaps into line
       </span>
     </Frame>
@@ -388,7 +388,7 @@ export function CanvasBackdropArt() {
         {pats.map((p, i) => (
           <div
             key={p.key}
-            className="relative h-16 w-1/4 overflow-hidden rounded border border-slate-200 bg-white"
+            className="relative h-16 w-1/4 overflow-hidden rounded border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900"
           >
             <span
               className="absolute inset-0"
@@ -455,10 +455,12 @@ export function AiAssistArt() {
         </g>
       </svg>
       {/* floating assistant panel */}
-      <div className="fa-fade absolute right-2 top-2.5 w-[54%] rounded-md border border-slate-200 bg-white p-1.5 shadow-md">
-        <div className="flex items-center gap-1 border-b border-slate-100 pb-1">
+      <div className="fa-fade absolute right-2 top-2.5 w-[54%] rounded-md border border-slate-200 bg-white p-1.5 shadow-md dark:border-slate-800 dark:bg-slate-900">
+        <div className="flex items-center gap-1 border-b border-slate-100 pb-1 dark:border-slate-800">
           <SparkleIcon />
-          <span className="text-[8px] font-semibold text-slate-700">Assistant</span>
+          <span className="text-[8px] font-semibold text-slate-700 dark:text-slate-200">
+            Assistant
+          </span>
         </div>
         <div className="mt-1 flex gap-0.5">
           {tabs.map((t, i) => (
@@ -466,15 +468,17 @@ export function AiAssistArt() {
               key={t}
               className={
                 'rounded px-1 py-0.5 text-[6.5px] font-medium ' +
-                (i === 0 ? 'bg-brand-100 text-brand-700' : 'text-slate-400')
+                (i === 0
+                  ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-300'
+                  : 'text-slate-400')
               }
             >
               {t}
             </span>
           ))}
         </div>
-        <div className="mt-1 flex items-center gap-1 rounded border border-slate-200 bg-slate-50 px-1 py-0.5">
-          <span className="min-w-0 flex-1 truncate text-[7px] text-slate-500">
+        <div className="mt-1 flex items-center gap-1 rounded border border-slate-200 bg-slate-50 px-1 py-0.5 dark:border-slate-800 dark:bg-slate-950">
+          <span className="min-w-0 flex-1 truncate text-[7px] text-slate-500 dark:text-slate-400">
             Draw a login flow…
           </span>
           <span className="fa-pulse flex h-3.5 w-3.5 items-center justify-center rounded bg-brand-500 text-white">
@@ -522,7 +526,7 @@ export function RotateArt() {
           />
         </g>
       </svg>
-      <span className="absolute bottom-1.5 right-2 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-slate-500 shadow-sm">
+      <span className="absolute bottom-1.5 right-2 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-slate-500 shadow-sm dark:bg-slate-900/90 dark:text-slate-400">
         45° presets
       </span>
     </Frame>
@@ -537,39 +541,39 @@ export function MinimalPanelArt() {
     <Frame canvas>
       {/* standard — floating panels docked on the sides */}
       <div className="fa-on absolute inset-0">
-        <div className="absolute bottom-7 left-2 top-2 flex w-7 flex-col items-center gap-1 rounded-md border border-slate-200 bg-white py-1.5 shadow-sm">
+        <div className="absolute bottom-7 left-2 top-2 flex w-7 flex-col items-center gap-1 rounded-md border border-slate-200 bg-white py-1.5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           {[0, 1, 2, 3].map((i) => (
-            <span key={i} className="h-3 w-3 rounded bg-slate-200" />
+            <span key={i} className="h-3 w-3 rounded bg-slate-200 dark:bg-slate-700" />
           ))}
         </div>
-        <div className="absolute bottom-7 right-2 top-2 w-12 space-y-1 rounded-md border border-slate-200 bg-white p-1.5 shadow-sm">
-          <div className="h-1.5 w-full rounded bg-slate-300" />
-          <div className="h-1.5 w-3/4 rounded bg-slate-200" />
-          <div className="h-1.5 w-full rounded bg-slate-200" />
+        <div className="absolute bottom-7 right-2 top-2 w-12 space-y-1 rounded-md border border-slate-200 bg-white p-1.5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <div className="h-1.5 w-full rounded bg-slate-300 dark:bg-slate-600" />
+          <div className="h-1.5 w-3/4 rounded bg-slate-200 dark:bg-slate-700" />
+          <div className="h-1.5 w-full rounded bg-slate-200 dark:bg-slate-700" />
         </div>
-        <span className="absolute bottom-1.5 left-2 rounded bg-white/90 px-1.5 py-0.5 text-[7px] font-medium text-slate-500 shadow-sm">
+        <span className="absolute bottom-1.5 left-2 rounded bg-white/90 px-1.5 py-0.5 text-[7px] font-medium text-slate-500 shadow-sm dark:bg-slate-900/90 dark:text-slate-400">
           standard panels
         </span>
       </div>
       {/* minimal — compact dock + popover */}
       <div className="fa-off absolute inset-0">
-        <div className="absolute bottom-7 left-1/2 w-[46%] -translate-x-1/2 space-y-1 rounded-md border border-slate-200 bg-white p-1.5 shadow-md">
-          <div className="h-1.5 w-3/4 rounded bg-slate-300" />
-          <div className="h-1.5 w-full rounded bg-slate-200" />
+        <div className="absolute bottom-7 left-1/2 w-[46%] -translate-x-1/2 space-y-1 rounded-md border border-slate-200 bg-white p-1.5 shadow-md dark:border-slate-800 dark:bg-slate-900">
+          <div className="h-1.5 w-3/4 rounded bg-slate-300 dark:bg-slate-600" />
+          <div className="h-1.5 w-full rounded bg-slate-200 dark:bg-slate-700" />
         </div>
-        <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2 py-1 shadow-sm">
+        <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2 py-1 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           {[0, 1, 2, 3, 4].map((i) => (
-            <span key={i} className="h-2.5 w-2.5 rounded-full bg-slate-200" />
+            <span key={i} className="h-2.5 w-2.5 rounded-full bg-slate-200 dark:bg-slate-700" />
           ))}
         </div>
-        <span className="absolute left-2 top-2 rounded bg-white/90 px-1.5 py-0.5 text-[7px] font-medium text-slate-500 shadow-sm">
+        <span className="absolute left-2 top-2 rounded bg-white/90 px-1.5 py-0.5 text-[7px] font-medium text-slate-500 shadow-sm dark:bg-slate-900/90 dark:text-slate-400">
           compact dock
         </span>
       </div>
       {/* toggle (synced with the crossfade above) */}
-      <span className="absolute right-2 top-2 inline-flex h-4 w-8 items-center rounded-full bg-slate-200 shadow-sm">
+      <span className="absolute right-2 top-2 inline-flex h-4 w-8 items-center rounded-full bg-slate-200 shadow-sm dark:bg-slate-700">
         <span className="fa-off absolute inset-0 rounded-full bg-brand-500" />
-        <span className="fa-knob relative z-10 ml-0.5 h-3 w-3 rounded-full bg-white shadow" />
+        <span className="fa-knob relative z-10 ml-0.5 h-3 w-3 rounded-full bg-white shadow dark:bg-slate-900" />
       </span>
     </Frame>
   );
@@ -584,19 +588,19 @@ export function ZenModeArt() {
     <Frame canvas>
       {/* full chrome */}
       <div className="fa-on absolute inset-0">
-        <div className="absolute inset-x-0 top-0 flex h-4 items-center gap-1 border-b border-slate-200 bg-white/90 px-1.5">
-          <span className="h-1.5 w-1.5 rounded-full bg-slate-300" />
-          <span className="h-1.5 w-10 rounded bg-slate-200" />
-          <span className="ml-auto h-1.5 w-4 rounded bg-slate-200" />
+        <div className="absolute inset-x-0 top-0 flex h-4 items-center gap-1 border-b border-slate-200 bg-white/90 px-1.5 dark:border-slate-800 dark:bg-slate-900/90">
+          <span className="h-1.5 w-1.5 rounded-full bg-slate-300 dark:bg-slate-600" />
+          <span className="h-1.5 w-10 rounded bg-slate-200 dark:bg-slate-700" />
+          <span className="ml-auto h-1.5 w-4 rounded bg-slate-200 dark:bg-slate-700" />
         </div>
-        <div className="absolute bottom-2 left-2 top-6 flex w-6 flex-col items-center gap-1 rounded-md border border-slate-200 bg-white py-1 shadow-sm">
+        <div className="absolute bottom-2 left-2 top-6 flex w-6 flex-col items-center gap-1 rounded-md border border-slate-200 bg-white py-1 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           {[0, 1, 2].map((i) => (
-            <span key={i} className="h-2.5 w-2.5 rounded bg-slate-200" />
+            <span key={i} className="h-2.5 w-2.5 rounded bg-slate-200 dark:bg-slate-700" />
           ))}
         </div>
-        <div className="absolute bottom-2 right-2 top-6 w-10 space-y-1 rounded-md border border-slate-200 bg-white p-1 shadow-sm">
-          <div className="h-1.5 w-full rounded bg-slate-300" />
-          <div className="h-1.5 w-3/4 rounded bg-slate-200" />
+        <div className="absolute bottom-2 right-2 top-6 w-10 space-y-1 rounded-md border border-slate-200 bg-white p-1 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <div className="h-1.5 w-full rounded bg-slate-300 dark:bg-slate-600" />
+          <div className="h-1.5 w-3/4 rounded bg-slate-200 dark:bg-slate-700" />
         </div>
         <span className="absolute left-2 top-1 text-[7px] font-medium text-slate-400">
           full editor
@@ -604,7 +608,7 @@ export function ZenModeArt() {
       </div>
       {/* zen — content + just the zoom dock (with its exit control) */}
       <div className="fa-off absolute inset-0">
-        <span className="absolute bottom-1.5 right-2 flex items-center gap-1 rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-[7px] font-medium text-slate-500 shadow-sm">
+        <span className="absolute bottom-1.5 right-2 flex items-center gap-1 rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-[7px] font-medium text-slate-500 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
           100%
           <svg
             width="7"
@@ -623,7 +627,7 @@ export function ZenModeArt() {
             <path d="M2 10h4v4" />
           </svg>
         </span>
-        <span className="absolute left-2 top-2 rounded bg-white/90 px-1.5 py-0.5 text-[7px] font-medium text-slate-500 shadow-sm">
+        <span className="absolute left-2 top-2 rounded bg-white/90 px-1.5 py-0.5 text-[7px] font-medium text-slate-500 shadow-sm dark:bg-slate-900/90 dark:text-slate-400">
           zen mode
         </span>
       </div>
@@ -650,18 +654,20 @@ export function FontsArt() {
   return (
     <Frame>
       <div className="flex h-full flex-col justify-center gap-1.5 px-3">
-        <p className="text-[8px] font-semibold uppercase tracking-wider text-slate-500">Fonts</p>
+        <p className="text-[8px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+          Fonts
+        </p>
         {fonts.map((f, i) => (
           <span
             key={f.label}
-            className="relative flex items-center justify-between rounded border border-slate-200 bg-white px-2 py-1"
+            className="relative flex items-center justify-between rounded border border-slate-200 bg-white px-2 py-1 dark:border-slate-800 dark:bg-slate-900"
           >
             <span
               className="fa-hl pointer-events-none absolute inset-0 rounded ring-2 ring-brand-500"
               style={{ animationDelay: `${i * 0.7}s` }}
             />
             <span
-              className="text-[13px] leading-none text-slate-800"
+              className="text-[13px] leading-none text-slate-800 dark:text-slate-100"
               style={{ fontFamily: f.family }}
             >
               Diagram
@@ -681,17 +687,17 @@ export function MarkdownImportArt() {
   return (
     <Frame canvas>
       {/* left: a markdown outline */}
-      <div className="absolute bottom-3 left-2 top-3 w-[40%] rounded-md border border-slate-200 bg-white p-1.5 shadow-sm">
+      <div className="absolute bottom-3 left-2 top-3 w-[40%] rounded-md border border-slate-200 bg-white p-1.5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
         <div className="flex items-center gap-1">
-          <span className="rounded-sm bg-slate-200 px-1 text-[6px] font-semibold text-slate-500">
+          <span className="rounded-sm bg-slate-200 px-1 text-[6px] font-semibold text-slate-500 dark:bg-slate-700 dark:text-slate-400">
             md
           </span>
         </div>
         <div className="mt-1.5 space-y-1.5">
           <div className="h-1.5 w-4/5 rounded bg-slate-400" />
-          <div className="ml-2 h-1.5 w-3/5 rounded bg-slate-200" />
-          <div className="ml-4 h-1.5 w-1/2 rounded bg-slate-100" />
-          <div className="ml-2 h-1.5 w-3/5 rounded bg-slate-200" />
+          <div className="ml-2 h-1.5 w-3/5 rounded bg-slate-200 dark:bg-slate-700" />
+          <div className="ml-4 h-1.5 w-1/2 rounded bg-slate-100 dark:bg-slate-800" />
+          <div className="ml-2 h-1.5 w-3/5 rounded bg-slate-200 dark:bg-slate-700" />
         </div>
       </div>
       {/* arrow */}
@@ -744,23 +750,23 @@ export function MermaidArt() {
   return (
     <Frame canvas>
       {/* left: mermaid flowchart source */}
-      <div className="absolute bottom-3 left-2 top-3 w-[40%] rounded-md border border-slate-200 bg-white p-1.5 shadow-sm">
+      <div className="absolute bottom-3 left-2 top-3 w-[40%] rounded-md border border-slate-200 bg-white p-1.5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
         <div className="flex items-center gap-1">
-          <span className="rounded-sm bg-slate-200 px-1 text-[6px] font-semibold text-slate-500">
+          <span className="rounded-sm bg-slate-200 px-1 text-[6px] font-semibold text-slate-500 dark:bg-slate-700 dark:text-slate-400">
             mmd
           </span>
         </div>
         <div className="mt-1.5 space-y-1.5">
           <div className="h-1.5 w-4/5 rounded bg-slate-400" />
           <div className="flex items-center gap-1">
-            <div className="h-1.5 w-2/5 rounded bg-slate-200" />
+            <div className="h-1.5 w-2/5 rounded bg-slate-200 dark:bg-slate-700" />
             <span className="text-[6px] leading-none text-slate-400">→</span>
-            <div className="h-1.5 w-1/4 rounded bg-slate-200" />
+            <div className="h-1.5 w-1/4 rounded bg-slate-200 dark:bg-slate-700" />
           </div>
           <div className="flex items-center gap-1">
-            <div className="h-1.5 w-1/4 rounded bg-slate-200" />
+            <div className="h-1.5 w-1/4 rounded bg-slate-200 dark:bg-slate-700" />
             <span className="text-[6px] leading-none text-slate-400">→</span>
-            <div className="h-1.5 w-2/5 rounded bg-slate-200" />
+            <div className="h-1.5 w-2/5 rounded bg-slate-200 dark:bg-slate-700" />
           </div>
         </div>
       </div>

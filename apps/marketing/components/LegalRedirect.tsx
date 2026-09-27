@@ -24,7 +24,10 @@ export function LegalRedirect({
       <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">{heading}</h1>
       <p className="text-slate-600 dark:text-slate-400">
         It now lives in the help centre. If you are not redirected automatically,{' '}
-        <a href={href} className="text-brand-600 underline hover:text-brand-700">
+        <a
+          href={href}
+          className="text-brand-600 underline hover:text-brand-700 dark:text-brand-300 dark:hover:text-brand-200"
+        >
           {linkText}
         </a>
         .

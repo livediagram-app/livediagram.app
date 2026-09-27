@@ -19,22 +19,25 @@ const delay = (index: number) =>
 
 export function FeatureCategoryHero({ section }: { section: LandingSection }) {
   return (
-    <section className="border-b border-slate-200/70 bg-gradient-to-b from-brand-50/70 to-white">
+    <section className="border-b border-slate-200/70 bg-gradient-to-b from-brand-50/70 to-white dark:border-slate-800/70">
       <div className="mx-auto grid max-w-6xl items-center gap-10 px-6 py-16 sm:py-20 lg:grid-cols-2 lg:gap-16">
         <div>
           <p
-            className="enter text-sm font-semibold tracking-wide text-brand-600 uppercase"
+            className="enter text-sm font-semibold tracking-wide text-brand-600 uppercase dark:text-brand-300"
             style={delay(0)}
           >
             Feature category
           </p>
           <h1
-            className="enter mt-3 text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl"
+            className="enter mt-3 text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl dark:text-slate-100"
             style={delay(1)}
           >
             {section.title}
           </h1>
-          <p className="enter mt-5 text-lg leading-relaxed text-slate-600" style={delay(2)}>
+          <p
+            className="enter mt-5 text-lg leading-relaxed text-slate-600 dark:text-slate-300"
+            style={delay(2)}
+          >
             {section.description}
           </p>
           <div className="enter mt-8" style={delay(3)}>

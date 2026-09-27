@@ -16,7 +16,7 @@ import { ShowcaseStagger } from '@/components/ShowcaseStagger';
 
 export function Showcase({ items }: { items: FeatureProps[] }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-white to-brand-50/50 p-5 shadow-sm sm:p-6">
+    <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-white to-brand-50/50 p-5 shadow-sm sm:p-6 dark:border-slate-800">
       <ShowcaseStagger>
         {items.map((item) => (
           <div key={item.title}>
@@ -24,7 +24,9 @@ export function Showcase({ items }: { items: FeatureProps[] }) {
             {item.art}
             <div className="-mt-2 flex items-center gap-2">
               <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-brand-500" aria-hidden />
-              <span className="text-sm font-medium text-slate-700">{item.title}</span>
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                {item.title}
+              </span>
             </div>
           </div>
         ))}

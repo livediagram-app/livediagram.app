@@ -100,10 +100,10 @@ export default function TelemetryDashboard() {
           telemetry reads as part of the product. */}
       <SiteHeader productNav="telemetry" ctaSurface="Dashboard" />
       <main className="mx-auto max-w-6xl px-6 py-16 sm:py-20">
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
+        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl dark:text-slate-100">
           Telemetry, in the open
         </h1>
-        <p className="mt-4 max-w-2xl text-lg leading-relaxed text-slate-600">
+        <p className="mt-4 max-w-2xl text-lg leading-relaxed text-slate-600 dark:text-slate-300">
           This is everything we measure. We record anonymous, first-party product events to learn
           which features actually help. There are no third-party analytics or tracking vendors, no
           user content (never a diagram name, your name, or anything you type), and the data is
@@ -111,7 +111,7 @@ export default function TelemetryDashboard() {
         </p>
 
         {status === 'loading' ? (
-          <p className="mt-12 text-slate-500">Loading…</p>
+          <p className="mt-12 text-slate-500 dark:text-slate-400">Loading…</p>
         ) : status === 'error' ? (
           <div className="mt-12">
             <EmptyState
@@ -186,7 +186,7 @@ export default function TelemetryDashboard() {
                 <MetricSearch windows={summary.windows} daily={summary.daily} active={active} />
               </div>
             ) : (
-              <p className="mt-8 text-slate-500">
+              <p className="mt-8 text-slate-500 dark:text-slate-400">
                 Per-metric trends aren&rsquo;t available from this API version.
               </p>
             )}

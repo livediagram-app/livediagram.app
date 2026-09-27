@@ -21,10 +21,10 @@ export function Frame({ children, canvas = false }: { children: ReactNode; canva
     <div
       aria-hidden
       className={
-        'relative mb-5 h-24 w-full overflow-hidden rounded-md border border-slate-200 ' +
+        'relative mb-5 h-24 w-full overflow-hidden rounded-md border border-slate-200 dark:border-slate-800 ' +
         (canvas
           ? 'bg-white bg-[radial-gradient(circle_at_center,_#d8dee8_1px,_transparent_1px)] bg-[size:13px_13px]'
-          : 'bg-slate-50')
+          : 'bg-slate-50 dark:bg-slate-950')
       }
     >
       {children}

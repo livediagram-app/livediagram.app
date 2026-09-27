@@ -54,7 +54,7 @@ export function MetricBreadcrumb({
             <button
               type="button"
               onClick={() => onNavigate(c.to!)}
-              className="cursor-pointer rounded-full border border-slate-200 bg-white/70 px-3 py-1 text-xs font-medium text-slate-600 transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-300 dark:hover:text-white"
+              className="cursor-pointer rounded-full border border-slate-200 bg-white/70 px-3 py-1 text-xs font-medium text-slate-600 transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-300 dark:hover:text-white dark:hover:border-slate-600"
             >
               {c.label}
             </button>

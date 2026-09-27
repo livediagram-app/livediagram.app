@@ -41,7 +41,7 @@ export function WindowPanel({
                 'cursor-pointer rounded-xl border p-4 text-left transition ' +
                 (isActive
                   ? 'border-brand-500 bg-brand-50 ring-1 ring-brand-500 dark:bg-brand-500/10'
-                  : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:hover:bg-slate-800')
+                  : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:hover:bg-slate-800 dark:hover:border-slate-600')
               }
             >
               <span className="flex items-center justify-between">

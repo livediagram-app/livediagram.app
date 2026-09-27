@@ -9,11 +9,13 @@ export function MitArt() {
     <Frame>
       <div className="flex h-full flex-col items-center justify-center gap-1.5">
         <div
-          className="fa-pop flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2 py-1 shadow-sm"
+          className="fa-pop flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2 py-1 shadow-sm dark:border-slate-800 dark:bg-slate-900"
           style={{ animationDelay: '0.3s' }}
         >
           <GitHubIcon />
-          <span className="text-[9px] font-semibold text-slate-700">livediagram</span>
+          <span className="text-[9px] font-semibold text-slate-700 dark:text-slate-200">
+            livediagram
+          </span>
           <span className="rounded bg-slate-900 px-1.5 py-0.5 text-[7px] font-semibold text-white">
             MIT
           </span>
@@ -31,19 +33,20 @@ export function ApiArt() {
     <Frame>
       <div className="flex h-full flex-col items-center justify-center gap-1.5">
         <div
-          className="fa-pop w-[152px] overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm"
+          className="fa-pop w-[152px] overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900"
           style={{ animationDelay: '0.3s' }}
         >
-          <div className="flex items-center gap-1 border-b border-slate-100 bg-slate-50 px-1.5 py-1">
+          <div className="flex items-center gap-1 border-b border-slate-100 bg-slate-50 px-1.5 py-1 dark:border-slate-800 dark:bg-slate-950">
             <span className="h-1.5 w-1.5 rounded-full bg-rose-300" />
             <span className="h-1.5 w-1.5 rounded-full bg-amber-300" />
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-300" />
           </div>
           <div className="px-2 py-1.5 font-mono text-[7px] leading-relaxed">
             <div className="text-slate-400">$ curl …/api/diagrams</div>
-            <div className="text-slate-600">
+            <div className="text-slate-600 dark:text-slate-300">
               -H &quot;Authorization:{' '}
-              <span className="font-semibold text-brand-600">Bearer lvd_…</span>&quot;
+              <span className="font-semibold text-brand-600 dark:text-brand-300">Bearer lvd_…</span>
+              &quot;
             </div>
           </div>
         </div>
@@ -60,16 +63,21 @@ export function McpArt() {
     <Frame>
       <div className="flex h-full flex-col items-center justify-center gap-1.5">
         <div
-          className="fa-pop w-[152px] overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm"
+          className="fa-pop w-[152px] overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900"
           style={{ animationDelay: '0.3s' }}
         >
-          <div className="flex items-center gap-1 border-b border-slate-100 bg-slate-50 px-1.5 py-1">
+          <div className="flex items-center gap-1 border-b border-slate-100 bg-slate-50 px-1.5 py-1 dark:border-slate-800 dark:bg-slate-950">
             <SparkIcon />
-            <span className="text-[8px] font-semibold text-slate-600">AI tool · MCP</span>
+            <span className="text-[8px] font-semibold text-slate-600 dark:text-slate-300">
+              AI tool · MCP
+            </span>
           </div>
           <div className="px-2 py-1.5 font-mono text-[7px] leading-relaxed">
-            <div className="text-slate-600">
-              ▸ <span className="font-semibold text-brand-600">create_diagram</span>
+            <div className="text-slate-600 dark:text-slate-300">
+              ▸{' '}
+              <span className="font-semibold text-brand-600 dark:text-brand-300">
+                create_diagram
+              </span>
             </div>
             <div className="text-slate-400">&quot;auth flow&quot; → livediagram</div>
           </div>
@@ -108,7 +116,7 @@ export function NoServersArt() {
           {nodes.map((n, i) => (
             <span
               key={n}
-              className="relative rounded border border-slate-200 bg-white px-1.5 py-1 text-[7px] font-medium text-slate-600"
+              className="relative rounded border border-slate-200 bg-white px-1.5 py-1 text-[7px] font-medium text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
             >
               <span
                 className="fa-pulse absolute inset-0 rounded ring-2 ring-brand-400"
@@ -158,7 +166,7 @@ export function NoTrackingArt() {
           />
         </svg>
         <span
-          className="fa-fade text-[8px] font-medium text-slate-500"
+          className="fa-fade text-[8px] font-medium text-slate-500 dark:text-slate-400"
           style={{ animationDelay: '0.4s' }}
         >
           0 third-party trackers
@@ -245,7 +253,7 @@ export function EasyStartArt() {
           <path d="M2 1 L14 8 L8 9 L11 14 L9 15 L6 10 L2 14 Z" />
         </g>
       </svg>
-      <span className="absolute bottom-1.5 right-2 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-slate-500 shadow-sm">
+      <span className="absolute bottom-1.5 right-2 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-slate-500 shadow-sm dark:bg-slate-900/90 dark:text-slate-400">
         one click
       </span>
     </Frame>
@@ -285,11 +293,11 @@ export function DepthArt() {
           strokeWidth="1.5"
         />
       </svg>
-      <div className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center gap-1 rounded-md border border-slate-200 bg-white p-1 shadow-md">
+      <div className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center gap-1 rounded-md border border-slate-200 bg-white p-1 shadow-md dark:border-slate-800 dark:bg-slate-900">
         {tools.map((g, i) => (
           <span
             key={i}
-            className="fa-pop flex h-5 w-5 items-center justify-center rounded text-slate-500"
+            className="fa-pop flex h-5 w-5 items-center justify-center rounded text-slate-500 dark:text-slate-400"
             style={{ animationDelay: `${0.4 + i * 0.25}s` }}
           >
             {g}

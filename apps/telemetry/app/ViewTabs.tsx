@@ -94,16 +94,16 @@ export function ViewTabs<K extends string>({
   };
 
   const arrowClass = (enabled: boolean) =>
-    'flex h-8 w-7 shrink-0 items-center justify-center rounded-lg text-slate-500 transition ' +
+    'flex h-8 w-7 shrink-0 items-center justify-center rounded-lg text-slate-500 transition dark:text-slate-400 ' +
     (enabled
-      ? 'cursor-pointer hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-800'
+      ? 'cursor-pointer hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-800 dark:hover:text-slate-100'
       : 'cursor-default opacity-30');
 
   const tabClass = (selected: boolean) =>
     'flex shrink-0 cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition ' +
     (selected
       ? 'bg-brand-500 text-white shadow-sm'
-      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800');
+      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100');
   const bar =
     'flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm dark:border-slate-700 dark:bg-slate-900';
 

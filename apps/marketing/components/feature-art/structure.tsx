@@ -11,7 +11,7 @@ export function MindMapArt() {
   return (
     <Frame canvas>
       <div className="flex h-full items-center gap-3 px-4">
-        <span className="relative rounded-[5px] border border-brand-300 bg-brand-50 px-2 py-1.5 text-[7px] font-semibold text-brand-700">
+        <span className="relative rounded-[5px] border border-brand-300 bg-brand-50 px-2 py-1.5 text-[7px] font-semibold text-brand-700 dark:border-brand-500/50 dark:bg-brand-500/15 dark:text-brand-300">
           Roadmap
         </span>
         <svg className="h-14 w-5 shrink-0 text-slate-400" viewBox="0 0 20 56" aria-hidden>
@@ -26,7 +26,7 @@ export function MindMapArt() {
           {branches.map((b, i) => (
             <span
               key={b}
-              className="relative rounded-[5px] border border-slate-300 bg-white px-2 py-1 text-[7px] font-medium text-slate-600"
+              className="relative rounded-[5px] border border-slate-300 bg-white px-2 py-1 text-[7px] font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
             >
               {b}
               {/* The last one blinks as if just grown by a keystroke. */}
@@ -54,16 +54,16 @@ export function LanesArt() {
         {lanes.map((lane) => (
           <div
             key={lane.role}
-            className="flex items-center overflow-hidden rounded-[3px] border border-slate-300 bg-white"
+            className="flex items-center overflow-hidden rounded-[3px] border border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-900"
           >
-            <span className="w-[46px] shrink-0 border-r border-slate-300 bg-slate-100 px-1.5 py-1.5 text-[6px] font-semibold text-slate-600">
+            <span className="w-[46px] shrink-0 border-r border-slate-300 bg-slate-100 px-1.5 py-1.5 text-[6px] font-semibold text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
               {lane.role}
             </span>
             <span className="flex flex-1 items-center gap-1.5 px-2">
               {Array.from({ length: lane.steps }).map((_, i) => (
                 <span
                   key={i}
-                  className="h-3 w-7 rounded-[2px] border border-brand-300 bg-brand-50"
+                  className="h-3 w-7 rounded-[2px] border border-brand-300 bg-brand-50 dark:border-brand-500/50 dark:bg-brand-500/15"
                 />
               ))}
             </span>
@@ -84,13 +84,13 @@ export function EntityArt() {
   return (
     <Frame canvas>
       <div className="flex h-full items-center justify-center gap-2 px-3">
-        <div className="overflow-hidden rounded-[3px] border border-slate-300 bg-white shadow-sm">
-          <div className="border-b border-slate-300 bg-slate-100 px-2 py-1 text-[7px] font-semibold text-slate-700">
+        <div className="overflow-hidden rounded-[3px] border border-slate-300 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
+          <div className="border-b border-slate-300 bg-slate-100 px-2 py-1 text-[7px] font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
             User
           </div>
           {fields.map(([name, type]) => (
             <div key={name} className="flex w-[86px] justify-between px-2 py-[3px]">
-              <span className="text-[6px] text-slate-600">{name}</span>
+              <span className="text-[6px] text-slate-600 dark:text-slate-300">{name}</span>
               <span className="text-[6px] text-slate-400">{type}</span>
             </div>
           ))}
@@ -99,12 +99,16 @@ export function EntityArt() {
           <path d="M0 6h18" stroke="currentColor" strokeWidth="1.2" fill="none" />
           <path d="M18 2.5 23 6l-5 3.5z" fill="none" stroke="currentColor" strokeWidth="1.2" />
         </svg>
-        <div className="overflow-hidden rounded-[3px] border border-slate-300 bg-white shadow-sm">
-          <div className="border-b border-slate-300 bg-slate-100 px-2 py-1 text-[7px] font-semibold text-slate-700">
+        <div className="overflow-hidden rounded-[3px] border border-slate-300 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
+          <div className="border-b border-slate-300 bg-slate-100 px-2 py-1 text-[7px] font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
             Team
           </div>
-          <div className="w-[72px] px-2 py-[3px] text-[6px] text-slate-600">id</div>
-          <div className="w-[72px] px-2 py-[3px] text-[6px] text-slate-600">name</div>
+          <div className="w-[72px] px-2 py-[3px] text-[6px] text-slate-600 dark:text-slate-300">
+            id
+          </div>
+          <div className="w-[72px] px-2 py-[3px] text-[6px] text-slate-600 dark:text-slate-300">
+            name
+          </div>
         </div>
       </div>
     </Frame>
@@ -117,10 +121,10 @@ export function EmbedArt() {
   return (
     <Frame canvas>
       <div className="flex h-full items-center justify-center px-4">
-        <div className="relative h-[62px] w-[110px] overflow-hidden rounded-[4px] border border-slate-300 bg-slate-900 shadow-sm">
+        <div className="relative h-[62px] w-[110px] overflow-hidden rounded-[4px] border border-slate-300 bg-slate-900 shadow-sm dark:border-slate-700">
           {/* A suggestion of a poster frame behind the button. */}
           <span className="absolute inset-0 bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900" />
-          <span className="absolute inset-x-0 bottom-0 h-1.5 bg-white/10" />
+          <span className="absolute inset-x-0 bottom-0 h-1.5 bg-white/10 dark:bg-slate-900/10" />
           <span className="absolute left-1/2 top-1/2 flex h-5 w-7 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-[4px] bg-[#ff0000]">
             <svg viewBox="0 0 12 12" className="h-2.5 w-2.5" aria-hidden>
               <path d="M4 2.5 9 6l-5 3.5z" fill="#fff" />
@@ -145,8 +149,8 @@ export function TimelineFeedArt() {
   return (
     <Frame>
       <div className="flex h-full flex-col justify-center gap-1.5 px-3">
-        <div className="flex items-center gap-1 text-[7px] font-semibold text-slate-500">
-          <span className="rounded-full bg-slate-200 px-1.5 py-[1px] text-[6px] text-slate-600">
+        <div className="flex items-center gap-1 text-[7px] font-semibold text-slate-500 dark:text-slate-400">
+          <span className="rounded-full bg-slate-200 px-1.5 py-[1px] text-[6px] text-slate-600 dark:bg-slate-700 dark:text-slate-300">
             Today
           </span>
         </div>
@@ -160,11 +164,11 @@ export function TimelineFeedArt() {
               className="h-1.5 w-1.5 shrink-0 rounded-full"
               style={{ backgroundColor: colour }}
             />
-            <span className="flex-1 rounded-[3px] border border-slate-200 bg-white px-1.5 py-[3px] text-[7px] text-slate-600">
+            <span className="flex-1 rounded-[3px] border border-slate-200 bg-white px-1.5 py-[3px] text-[7px] text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
               {label}
             </span>
             {i === 0 ? (
-              <span className="rounded-full bg-brand-100 px-1 text-[6px] font-semibold text-brand-700">
+              <span className="rounded-full bg-brand-100 px-1 text-[6px] font-semibold text-brand-700 dark:bg-brand-500/20 dark:text-brand-300">
                 New
               </span>
             ) : (

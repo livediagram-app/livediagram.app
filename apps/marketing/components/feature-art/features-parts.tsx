@@ -22,8 +22,8 @@ export function MiniDiagram({
 }) {
   return (
     <div className="flex flex-col items-center gap-1">
-      <div className="w-20 rounded-md border border-slate-200 bg-white p-1 shadow-sm">
-        <div className="flex gap-0.5 border-b border-slate-100 pb-0.5">
+      <div className="w-20 rounded-md border border-slate-200 bg-white p-1 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div className="flex gap-0.5 border-b border-slate-100 pb-0.5 dark:border-slate-800">
           {tabs.map((t, i) => (
             <span
               key={i}
@@ -82,9 +82,13 @@ export function SearchGlyph({ kind }: { kind: string }) {
 }
 
 export function MiniEditorMock({ dark }: { dark: boolean }) {
-  const panel = dark ? 'border-slate-700 bg-slate-900' : 'border-slate-200 bg-white';
-  const bar = dark ? 'border-slate-700 bg-slate-800' : 'border-slate-100 bg-slate-50';
-  const dot = dark ? 'bg-slate-600' : 'bg-slate-300';
+  const panel = dark
+    ? 'border-slate-700 bg-slate-900'
+    : 'border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900';
+  const bar = dark
+    ? 'border-slate-700 bg-slate-800'
+    : 'border-slate-100 bg-slate-50 dark:border-slate-800 dark:bg-slate-950';
+  const dot = dark ? 'bg-slate-600' : 'bg-slate-300 dark:bg-slate-600';
   const shapeFill = dark ? '#0c4a6e' : BLUE_FILL;
   const grid = dark ? '#1e293b' : '#d8dee8';
   return (

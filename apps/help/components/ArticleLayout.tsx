@@ -19,11 +19,11 @@ function SidebarCard({ subArticles }: { subArticles?: Article[] }) {
   const hasSubArticles = !!subArticles && subArticles.length > 0;
 
   return (
-    <div className="sidebar-card rounded-xl border border-slate-200 bg-white p-5">
+    <div className="sidebar-card rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
       <TableOfContents />
       {hasSubArticles && (
         <>
-          <div className="toc-divider my-4 border-t border-slate-200" />
+          <div className="toc-divider my-4 border-t border-slate-200 dark:border-slate-800" />
           <h3 className="mb-1 text-xs font-semibold uppercase tracking-widest text-slate-400">
             Learn More
           </h3>
@@ -33,9 +33,9 @@ function SidebarCard({ subArticles }: { subArticles?: Article[] }) {
               <li key={a.slug}>
                 <Link
                   href={articleHref(a)}
-                  className="flex items-center gap-2.5 py-1 text-sm text-slate-600 transition-colors hover:text-brand-700"
+                  className="flex items-center gap-2.5 py-1 text-sm text-slate-600 transition-colors hover:text-brand-700 dark:text-slate-300 dark:hover:text-brand-200"
                 >
-                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-100 text-[10px] font-bold text-brand-700">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-100 text-[10px] font-bold text-brand-700 dark:bg-brand-500/20 dark:text-brand-300">
                     {i + 1}
                   </span>
                   {a.title}
@@ -123,11 +123,13 @@ export function ArticleLayout({
       <JsonLd data={articleJsonLd({ title, description: description ?? '', appPath: selfHref })} />
       <Breadcrumb items={breadcrumbItems} />
 
-      <section className="relative border-b border-slate-200 bg-brand-50/40 py-12 md:py-16">
+      <section className="relative border-b border-slate-200 bg-brand-50/40 py-12 md:py-16 dark:border-slate-800 dark:bg-brand-500/10">
         <div className="relative mx-auto max-w-7xl px-4 md:px-8">
-          <h1 className="mb-3 text-3xl font-bold text-slate-900 md:text-4xl">{title}</h1>
+          <h1 className="mb-3 text-3xl font-bold text-slate-900 md:text-4xl dark:text-slate-100">
+            {title}
+          </h1>
           {description && (
-            <p className="mb-4 max-w-2xl text-base leading-relaxed text-slate-600 md:text-lg">
+            <p className="mb-4 max-w-2xl text-base leading-relaxed text-slate-600 md:text-lg dark:text-slate-300">
               {description}
             </p>
           )}
@@ -155,7 +157,7 @@ export function ArticleLayout({
           </div>
           <button
             onClick={() => setMobileSidebarOpen(true)}
-            className="mt-5 inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900 lg:hidden"
+            className="mt-5 inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900 lg:hidden dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
           >
             <svg
               className="h-4 w-4"
@@ -183,13 +185,15 @@ export function ArticleLayout({
             className="absolute inset-0 bg-slate-900/40"
             onClick={() => setMobileSidebarOpen(false)}
           />
-          <div className="absolute bottom-0 right-0 top-0 w-80 max-w-[85vw] overflow-y-auto bg-slate-50 p-5">
+          <div className="absolute bottom-0 right-0 top-0 w-80 max-w-[85vw] overflow-y-auto bg-slate-50 p-5 dark:bg-slate-950">
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-slate-900">Article Navigation</h2>
+              <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                Article Navigation
+              </h2>
               <button
                 type="button"
                 onClick={() => setMobileSidebarOpen(false)}
-                className="p-1 text-slate-500 transition-colors hover:text-slate-900"
+                className="p-1 text-slate-500 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
                 aria-label="Close navigation"
               >
                 <svg
@@ -220,15 +224,17 @@ export function ArticleLayout({
               <SectionedContent>{children}</SectionedContent>
             </div>
 
-            <div className="mt-12 border-t border-slate-200 pt-6">
-              <p className="mb-3 text-sm text-slate-600">Was this article helpful?</p>
+            <div className="mt-12 border-t border-slate-200 pt-6 dark:border-slate-800">
+              <p className="mb-3 text-sm text-slate-600 dark:text-slate-300">
+                Was this article helpful?
+              </p>
               <div className="flex gap-3">
                 <button
                   onClick={() => cast('yes')}
                   className={`cursor-pointer rounded-xl px-5 py-2.5 text-sm font-semibold transition-all duration-micro ${
                     feedback === 'yes'
                       ? 'bg-emerald-600 text-white'
-                      : 'border border-slate-300 bg-white text-slate-600 hover:border-slate-400 hover:bg-slate-50'
+                      : 'border border-slate-300 bg-white text-slate-600 hover:border-slate-400 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'
                   }`}
                 >
                   Yes, it helped
@@ -238,18 +244,18 @@ export function ArticleLayout({
                   className={`cursor-pointer rounded-xl px-5 py-2.5 text-sm font-semibold transition-all duration-micro ${
                     feedback === 'no'
                       ? 'bg-rose-600 text-white'
-                      : 'border border-slate-300 bg-white text-slate-600 hover:border-slate-400 hover:bg-slate-50'
+                      : 'border border-slate-300 bg-white text-slate-600 hover:border-slate-400 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'
                   }`}
                 >
                   Not really
                 </button>
               </div>
               {feedback && (
-                <p className="mt-3 text-sm text-slate-500">
+                <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">
                   Thanks for your feedback.{' '}
                   <a
                     href="/help/contact/"
-                    className="text-brand-600 underline underline-offset-2 hover:text-brand-700"
+                    className="text-brand-600 underline underline-offset-2 hover:text-brand-700 dark:text-brand-300 dark:hover:text-brand-200"
                   >
                     Need more help?
                   </a>

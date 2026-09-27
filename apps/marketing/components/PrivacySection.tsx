@@ -72,7 +72,7 @@ export function PrivacySection() {
           >
             Your data, your call
           </h2>
-          <p className="mt-4 text-lg leading-relaxed text-slate-300">
+          <p className="mt-4 text-lg leading-relaxed text-slate-300 dark:text-slate-600">
             We don&rsquo;t make money by being creepy. No third-party trackers, no ads, no resale,
             no surprise audience. Just a diagram editor that treats your work like your work.
           </p>
@@ -86,12 +86,14 @@ export function PrivacySection() {
             >
               {p.art}
               <h3 className="text-base font-semibold text-white">{p.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-slate-300">{p.description}</p>
+              <p className="mt-2 text-sm leading-relaxed text-slate-300 dark:text-slate-600">
+                {p.description}
+              </p>
             </article>
           ))}
         </div>
 
-        <p className="mt-12 text-center text-xs text-slate-500">
+        <p className="mt-12 text-center text-xs text-slate-500 dark:text-slate-400">
           Read the full{' '}
           <a
             href="/help/policies/privacy-policy/"

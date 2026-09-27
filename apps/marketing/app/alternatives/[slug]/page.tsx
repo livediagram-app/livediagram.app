@@ -65,13 +65,15 @@ export default async function AlternativePage({ params }: { params: Promise<{ sl
       />
       <Header surface="Compare" />
       <main className="mx-auto max-w-3xl px-6 py-16 sm:py-20">
-        <p className="text-sm font-semibold uppercase tracking-wide text-brand-600">
+        <p className="text-sm font-semibold uppercase tracking-wide text-brand-600 dark:text-brand-300">
           livediagram vs {alt.name}
         </p>
-        <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
+        <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl dark:text-slate-100">
           {alt.h1}
         </h1>
-        <p className="mt-4 text-lg leading-relaxed text-slate-600">{alt.lede}</p>
+        <p className="mt-4 text-lg leading-relaxed text-slate-600 dark:text-slate-300">
+          {alt.lede}
+        </p>
 
         {/* At-a-glance comparison. Caption is sr-only so the visible
             layout doesn't gain an extra heading row, but screen readers
@@ -85,33 +87,41 @@ export default async function AlternativePage({ params }: { params: Promise<{ sl
               livediagram vs {alt.name}: feature-by-feature comparison
             </caption>
             <thead>
-              <tr className="border-b border-slate-200">
+              <tr className="border-b border-slate-200 dark:border-slate-800">
                 <th className="py-2 pr-4 font-medium text-slate-400" scope="col">
                   <span className="sr-only">Feature</span>
                 </th>
                 <th
-                  className="rounded-t-md bg-brand-50 px-4 py-2 font-semibold text-brand-700"
+                  className="rounded-t-md bg-brand-50 px-4 py-2 font-semibold text-brand-700 dark:bg-brand-500/15 dark:text-brand-300"
                   scope="col"
                 >
                   livediagram
                 </th>
-                <th className="px-4 py-2 font-semibold text-slate-700" scope="col">
+                <th
+                  className="px-4 py-2 font-semibold text-slate-700 dark:text-slate-200"
+                  scope="col"
+                >
                   {alt.name}
                 </th>
               </tr>
             </thead>
             <tbody>
               {alt.rows.map((row) => (
-                <tr key={row.label} className="border-b border-slate-100 align-top">
+                <tr
+                  key={row.label}
+                  className="border-b border-slate-100 align-top dark:border-slate-800"
+                >
                   <th
                     scope="row"
-                    className="py-3 pr-4 font-medium text-slate-500"
+                    className="py-3 pr-4 font-medium text-slate-500 dark:text-slate-400"
                     style={{ fontWeight: 500 }}
                   >
                     {row.label}
                   </th>
-                  <td className="bg-brand-50/60 px-4 py-3 text-slate-800">{row.us}</td>
-                  <td className="px-4 py-3 text-slate-600">{row.them}</td>
+                  <td className="bg-brand-50/60 px-4 py-3 text-slate-800 dark:bg-brand-500/10 dark:text-slate-100">
+                    {row.us}
+                  </td>
+                  <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{row.them}</td>
                 </tr>
               ))}
             </tbody>
@@ -120,12 +130,14 @@ export default async function AlternativePage({ params }: { params: Promise<{ sl
 
         {/* Honest two-sided takeaway */}
         <div className="mt-12 grid gap-6 sm:grid-cols-2">
-          <div className="rounded-lg border border-brand-200 bg-brand-50/50 p-6">
-            <h2 className="text-base font-semibold text-slate-900">Why pick livediagram</h2>
-            <ul className="mt-3 space-y-2 text-sm leading-relaxed text-slate-700">
+          <div className="rounded-lg border border-brand-200 bg-brand-50/50 p-6 dark:border-brand-500/30 dark:bg-brand-500/10">
+            <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">
+              Why pick livediagram
+            </h2>
+            <ul className="mt-3 space-y-2 text-sm leading-relaxed text-slate-700 dark:text-slate-200">
               {alt.usBest.map((point) => (
                 <li key={point} className="flex gap-2">
-                  <span aria-hidden className="mt-0.5 text-brand-600">
+                  <span aria-hidden className="mt-0.5 text-brand-600 dark:text-brand-300">
                     ✓
                   </span>
                   <span>{point}</span>
@@ -133,11 +145,11 @@ export default async function AlternativePage({ params }: { params: Promise<{ sl
               ))}
             </ul>
           </div>
-          <div className="rounded-lg border border-slate-200 bg-white p-6">
-            <h2 className="text-base font-semibold text-slate-900">
+          <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
+            <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">
               Where {alt.name} is the better pick
             </h2>
-            <ul className="mt-3 space-y-2 text-sm leading-relaxed text-slate-700">
+            <ul className="mt-3 space-y-2 text-sm leading-relaxed text-slate-700 dark:text-slate-200">
               {alt.themBest.map((point) => (
                 <li key={point} className="flex gap-2">
                   <span aria-hidden className="mt-0.5 text-slate-400">
@@ -156,11 +168,14 @@ export default async function AlternativePage({ params }: { params: Promise<{ sl
             itself in lib/alternatives.ts. */}
         {alt.sections.map((section) => (
           <section key={section.heading} className="mt-12">
-            <h2 className="text-xl font-semibold tracking-tight text-slate-900">
+            <h2 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
               {section.heading}
             </h2>
             {section.paragraphs.map((paragraph) => (
-              <p key={paragraph} className="mt-4 leading-relaxed text-slate-600">
+              <p
+                key={paragraph}
+                className="mt-4 leading-relaxed text-slate-600 dark:text-slate-300"
+              >
                 {paragraph}
               </p>
             ))}
@@ -169,14 +184,14 @@ export default async function AlternativePage({ params }: { params: Promise<{ sl
 
         {/* Per-competitor FAQ, mirrored into the FAQPage JSON-LD above. */}
         <section className="mt-14">
-          <h2 className="text-xl font-semibold tracking-tight text-slate-900">
+          <h2 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
             {alt.name} alternative FAQ
           </h2>
           <div className="mt-6 space-y-6">
             {alt.faqs.map((faq) => (
               <div key={faq.q}>
-                <h3 className="font-semibold text-slate-900">{faq.q}</h3>
-                <p className="mt-2 leading-relaxed text-slate-600">{faq.a}</p>
+                <h3 className="font-semibold text-slate-900 dark:text-slate-100">{faq.q}</h3>
+                <p className="mt-2 leading-relaxed text-slate-600 dark:text-slate-300">{faq.a}</p>
               </div>
             ))}
           </div>
@@ -188,15 +203,17 @@ export default async function AlternativePage({ params }: { params: Promise<{ sl
         </p>
 
         {/* CTA */}
-        <div className="mt-12 rounded-lg border border-slate-200 bg-slate-50 p-6 text-center">
-          <p className="text-slate-700">See how it feels, no sign-up required.</p>
+        <div className="mt-12 rounded-lg border border-slate-200 bg-slate-50 p-6 text-center dark:border-slate-800 dark:bg-slate-950">
+          <p className="text-slate-700 dark:text-slate-200">
+            See how it feels, no sign-up required.
+          </p>
           <CtaLink href={ctaHref('/new', 'Compare.Card')} size="sm" className="mt-3">
             Start drawing
           </CtaLink>
         </div>
 
-        <p className="mt-10 text-sm text-slate-500">
-          <a href="/alternatives" className="text-brand-600 hover:underline">
+        <p className="mt-10 text-sm text-slate-500 dark:text-slate-400">
+          <a href="/alternatives" className="text-brand-600 hover:underline dark:text-brand-300">
             ← Compare livediagram to other tools
           </a>
         </p>

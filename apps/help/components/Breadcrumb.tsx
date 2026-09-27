@@ -12,9 +12,9 @@ import { HELP_URL } from '@/lib/site';
 
 export function Breadcrumb({ items }: { items: BreadcrumbItem[] }) {
   return (
-    <div className="sticky top-18 z-40 border-b border-slate-200 bg-slate-50/85 backdrop-blur">
+    <div className="sticky top-18 z-40 border-b border-slate-200 bg-slate-50/85 backdrop-blur dark:border-slate-800 dark:bg-slate-900/85">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-2.5 md:px-8">
-        <nav className="flex min-w-0 flex-wrap items-center gap-2 text-sm text-slate-500">
+        <nav className="flex min-w-0 flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
           <BreadcrumbTrail items={items} rootLabel="Help" linkComponent={Link} />
         </nav>
       </div>

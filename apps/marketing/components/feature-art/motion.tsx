@@ -27,7 +27,7 @@ export function AnimatedShapesArt() {
             />
             <circle cx="23" cy="23" r="11" fill={BLUE_FILL} stroke={BLUE_STROKE} strokeWidth="2" />
           </svg>
-          <span className="text-[8px] font-medium text-slate-500">Pulse</span>
+          <span className="text-[8px] font-medium text-slate-500 dark:text-slate-400">Pulse</span>
         </div>
         {/* Glow — a soft halo breathing around the element. */}
         <div className="flex flex-col items-center gap-1.5">
@@ -53,7 +53,7 @@ export function AnimatedShapesArt() {
               strokeWidth="2"
             />
           </svg>
-          <span className="text-[8px] font-medium text-slate-500">Glow</span>
+          <span className="text-[8px] font-medium text-slate-500 dark:text-slate-400">Glow</span>
         </div>
         {/* Blink — a status breathe, the "status LED" pattern. */}
         <div className="flex flex-col items-center gap-1.5">
@@ -61,7 +61,7 @@ export function AnimatedShapesArt() {
             <circle cx="23" cy="23" r="7" fill="#dcfce7" stroke="#16a34a" strokeWidth="2" />
             <circle className="fa-pulse" cx="23" cy="23" r="3.5" fill="#22c55e" />
           </svg>
-          <span className="text-[8px] font-medium text-slate-500">Blink</span>
+          <span className="text-[8px] font-medium text-slate-500 dark:text-slate-400">Blink</span>
         </div>
       </div>
     </Frame>
@@ -108,7 +108,7 @@ export function FlowingArrowsArt() {
         />
         <path d="M154 48 l-8 -4.5 v9 z" fill={BLUE_STROKE} />
       </svg>
-      <span className="absolute bottom-1.5 right-2 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-slate-500 shadow-sm">
+      <span className="absolute bottom-1.5 right-2 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-slate-500 shadow-sm dark:bg-slate-900/90 dark:text-slate-400">
         flow
       </span>
     </Frame>
@@ -158,7 +158,7 @@ export function LivingBackgroundArt() {
           />
         </g>
       </svg>
-      <span className="absolute bottom-1.5 right-2 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-slate-500 shadow-sm">
+      <span className="absolute bottom-1.5 right-2 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-slate-500 shadow-sm dark:bg-slate-900/90 dark:text-slate-400">
         living backdrop
       </span>
     </Frame>
@@ -227,12 +227,12 @@ export function AnimatedIconsArt() {
 function IconTile({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="flex flex-col items-center gap-1">
-      <div className="flex h-9 w-9 items-center justify-center rounded-md border border-slate-200 bg-white">
+      <div className="flex h-9 w-9 items-center justify-center rounded-md border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
         <svg width="22" height="22" viewBox="0 0 24 24" className="overflow-visible">
           {children}
         </svg>
       </div>
-      <span className="text-[7px] font-medium text-slate-500">{label}</span>
+      <span className="text-[7px] font-medium text-slate-500 dark:text-slate-400">{label}</span>
     </div>
   );
 }

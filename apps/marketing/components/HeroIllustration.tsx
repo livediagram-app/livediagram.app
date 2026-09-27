@@ -293,7 +293,7 @@ export function HeroIllustration() {
           window so a visitor moves between them at their own pace (the
           auto-advance timer resets on each choice). */}
       <div className="mt-6 flex flex-col items-center gap-3">
-        <p className="text-sm text-slate-500" aria-live="polite">
+        <p className="text-sm text-slate-500 dark:text-slate-400" aria-live="polite">
           {current.label}
         </p>
         <div className="flex items-center gap-2" role="group" aria-label="Hero examples">
@@ -306,7 +306,9 @@ export function HeroIllustration() {
               onClick={() => setActive(i)}
               className={
                 'h-2 rounded-full transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 ' +
-                (i === active ? 'w-7 bg-brand-500' : 'w-2 bg-slate-300 hover:bg-slate-400')
+                (i === active
+                  ? 'w-7 bg-brand-500'
+                  : 'w-2 bg-slate-300 hover:bg-slate-400 dark:bg-slate-600')
               }
             />
           ))}
@@ -345,8 +347,8 @@ function EditorWindow({
   presenting: boolean;
 }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-2 shadow-xl shadow-brand-500/10">
-      <div className="relative overflow-hidden rounded-lg border border-slate-100">
+    <div className="rounded-xl border border-slate-200 bg-white p-2 shadow-xl shadow-brand-500/10 dark:border-slate-800 dark:bg-slate-900">
+      <div className="relative overflow-hidden rounded-lg border border-slate-100 dark:border-slate-800">
         {/* The fade. While playing it lifts from light grey over the first
             beat and drops back to it over the last second, timed to the 16s cycle,
             so the window's ending is the same whatever its last beat was and
@@ -356,7 +358,7 @@ function EditorWindow({
         <div
           key={playing ? 'play' : 'idle'}
           aria-hidden
-          className={`pointer-events-none absolute inset-0 z-20 bg-slate-200 ${
+          className={`pointer-events-none absolute inset-0 z-20 bg-slate-200 dark:bg-slate-700 ${
             playing ? 'hero-fade' : 'hero-fade-out'
           }`}
         />
@@ -365,11 +367,11 @@ function EditorWindow({
         {presenting ? null : (
           <>
             {/* Editor header strip (static chrome) */}
-            <div className="flex items-center justify-between gap-2 border-b border-slate-100 bg-white px-3 py-2">
+            <div className="flex items-center justify-between gap-2 border-b border-slate-100 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-900">
               <div className="flex items-center gap-2">
                 <Brand size="sm" />
                 {/* The Editor menu, as the real header carries it. */}
-                <span className="hidden items-center gap-1 rounded-md border border-slate-200 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 sm:inline-flex">
+                <span className="hidden items-center gap-1 rounded-md border border-slate-200 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 sm:inline-flex dark:border-slate-800 dark:text-slate-300">
                   <MenuIcon size={9} strokeWidth={1.6} />
                   Editor
                   <ChevronDownIcon size={8} strokeWidth={1.6} />
@@ -378,14 +380,14 @@ function EditorWindow({
               <div className="flex min-w-0 items-center gap-2">
                 <span className="hidden truncate text-xs text-slate-400 sm:inline">{title}</span>
                 {shared ? (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-700 ring-1 ring-emerald-200">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30">
                     <span className="text-emerald-500">
                       <SharedDotIcon />
                     </span>
                     Shared
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-700 ring-1 ring-amber-200">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-700 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/30">
                     <span className="text-amber-500">
                       <PrivateDotIcon />
                     </span>
@@ -440,8 +442,8 @@ function EditorWindow({
             </div>
           ) : null}
           {layers ? (
-            <div className="absolute right-2 top-2 hidden items-center gap-3 rounded-lg border border-slate-200 bg-white px-2 py-1 shadow-md sm:flex">
-              <p className="text-[8px] font-semibold uppercase tracking-wider text-slate-500">
+            <div className="absolute right-2 top-2 hidden items-center gap-3 rounded-lg border border-slate-200 bg-white px-2 py-1 shadow-md sm:flex dark:border-slate-800 dark:bg-slate-900">
+              <p className="text-[8px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 Palette
               </p>
               <span className="text-[10px] leading-none text-slate-400">+</span>
@@ -449,20 +451,20 @@ function EditorWindow({
           ) : null}
           <div
             className={
-              'absolute right-2 top-2 w-40 flex-col rounded-lg border border-slate-200 bg-white shadow-md ' +
+              'absolute right-2 top-2 w-40 flex-col rounded-lg border border-slate-200 bg-white shadow-md dark:border-slate-800 dark:bg-slate-900 ' +
               (layers || presenting ? 'hidden' : 'hidden sm:flex')
             }
           >
-            <div className="flex items-center justify-between border-b border-slate-100 px-2 py-1">
-              <p className="text-[8px] font-semibold uppercase tracking-wider text-slate-500">
+            <div className="flex items-center justify-between border-b border-slate-100 px-2 py-1 dark:border-slate-800">
+              <p className="text-[8px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 Palette
               </p>
-              <span className="flex gap-1 text-slate-300">
+              <span className="flex gap-1 text-slate-300 dark:text-slate-600">
                 <span className="h-1.5 w-1.5 rounded-full bg-current" />
                 <span className="h-1.5 w-1.5 rounded-full bg-current" />
               </span>
             </div>
-            <div className="flex items-center justify-between border-b border-slate-100 px-2 py-1 text-[9px] font-medium text-slate-600">
+            <div className="flex items-center justify-between border-b border-slate-100 px-2 py-1 text-[9px] font-medium text-slate-600 dark:border-slate-800 dark:text-slate-300">
               <span className="inline-flex items-center gap-0.5">
                 {typeof tool === 'string' ? (
                   tool
@@ -485,7 +487,7 @@ function EditorWindow({
               </span>
             </div>
             <div className="px-1.5 pt-1.5">
-              <div className="rounded-md border border-slate-200 px-1.5 py-0.5 text-[8px] text-slate-400">
+              <div className="rounded-md border border-slate-200 px-1.5 py-0.5 text-[8px] text-slate-400 dark:border-slate-800">
                 Search all elements
               </div>
             </div>
@@ -493,10 +495,12 @@ function EditorWindow({
               {PALETTE_TILES.map((t) => (
                 <span
                   key={t.kind}
-                  className="flex flex-col items-center gap-0.5 rounded py-0.5 text-slate-500"
+                  className="flex flex-col items-center gap-0.5 rounded py-0.5 text-slate-500 dark:text-slate-400"
                 >
                   <Shape kind={t.kind} />
-                  <span className="text-[7px] leading-none text-slate-500">{t.label}</span>
+                  <span className="text-[7px] leading-none text-slate-500 dark:text-slate-400">
+                    {t.label}
+                  </span>
                 </span>
               ))}
             </div>
@@ -505,8 +509,8 @@ function EditorWindow({
           {/* The Layers panel (docs/specs/006-diagram/layers.md), docked on the timeline window: one
               row per layer with its eye toggle, the hidden one dimmed. */}
           {layers ? (
-            <div className="absolute left-2 top-2 hidden w-32 flex-col rounded-lg border border-slate-200 bg-white shadow-md sm:flex">
-              <p className="border-b border-slate-100 px-2 py-1 text-[8px] font-semibold uppercase tracking-wider text-slate-500">
+            <div className="absolute left-2 top-2 hidden w-32 flex-col rounded-lg border border-slate-200 bg-white shadow-md sm:flex dark:border-slate-800 dark:bg-slate-900">
+              <p className="border-b border-slate-100 px-2 py-1 text-[8px] font-semibold uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:text-slate-400">
                 Layers
               </p>
               {LAYER_ROWS.map((row) => (
@@ -514,7 +518,9 @@ function EditorWindow({
                   key={row.name}
                   className={
                     'flex items-center gap-1.5 px-2 py-1 text-[9px] font-medium ' +
-                    (row.hidden ? 'text-slate-300' : 'text-slate-600')
+                    (row.hidden
+                      ? 'text-slate-300 dark:text-slate-600'
+                      : 'text-slate-600 dark:text-slate-300')
                   }
                 >
                   <EyeGlyph off={row.hidden} />
@@ -529,22 +535,22 @@ function EditorWindow({
               look-and-feel brush, and the zoom readout. */}
           <div
             className={
-              'absolute bottom-2 right-2 items-center gap-1.5 text-slate-500 ' +
+              'absolute bottom-2 right-2 items-center gap-1.5 text-slate-500 dark:text-slate-400 ' +
               (presenting ? 'hidden' : 'hidden sm:flex')
             }
           >
-            <span className="flex h-7 items-center rounded-md border border-slate-200 bg-white px-0.5 shadow-sm">
+            <span className="flex h-7 items-center rounded-md border border-slate-200 bg-white px-0.5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
               <ToolGlyph kind="history" small />
               <ToolGlyph kind="undo" small />
               <ToolGlyph kind="redo" small />
             </span>
-            <span className="flex h-7 items-center rounded-md border border-slate-200 bg-white px-0.5 shadow-sm">
+            <span className="flex h-7 items-center rounded-md border border-slate-200 bg-white px-0.5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
               <ToolGlyph kind="layers" small />
             </span>
-            <span className="flex h-7 items-center rounded-md border border-slate-200 bg-white px-0.5 shadow-sm">
+            <span className="flex h-7 items-center rounded-md border border-slate-200 bg-white px-0.5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
               <ToolGlyph kind="brush" small />
             </span>
-            <span className="flex h-7 items-center rounded-md border border-slate-200 bg-white px-2 text-[9px] font-medium shadow-sm">
+            <span className="flex h-7 items-center rounded-md border border-slate-200 bg-white px-2 text-[9px] font-medium shadow-sm dark:border-slate-800 dark:bg-slate-900">
               <span className="px-1.5">−</span>
               100%
               <span className="px-1.5">+</span>
@@ -575,9 +581,9 @@ function EditorWindow({
               a theme card is picked (the selection ring moves, the pointer
               dips), it closes, and the recolour follows. Themed window only. */}
           {theming && playing ? (
-            <div className="hero-dialog absolute left-1/2 top-1/2 z-10 hidden w-64 -translate-x-1/2 -translate-y-1/2 flex-col rounded-xl border border-slate-200 bg-white shadow-2xl sm:flex">
+            <div className="hero-dialog absolute left-1/2 top-1/2 z-10 hidden w-64 -translate-x-1/2 -translate-y-1/2 flex-col rounded-xl border border-slate-200 bg-white shadow-2xl sm:flex dark:border-slate-800 dark:bg-slate-900">
               <div className="flex items-center justify-between px-3 py-2">
-                <span className="text-[11px] font-semibold text-slate-800">
+                <span className="text-[11px] font-semibold text-slate-800 dark:text-slate-100">
                   Tab Look &amp; Feel
                 </span>
                 <span className="flex items-center gap-2 text-[10px] text-slate-400">
@@ -585,8 +591,8 @@ function EditorWindow({
                   <span>✕</span>
                 </span>
               </div>
-              <div className="mx-3 flex rounded-md bg-slate-100 p-0.5 text-[9px] font-medium text-slate-500">
-                <span className="flex-1 rounded bg-white py-0.5 text-center text-slate-800 shadow-sm">
+              <div className="mx-3 flex rounded-md bg-slate-100 p-0.5 text-[9px] font-medium text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                <span className="flex-1 rounded bg-white py-0.5 text-center text-slate-800 shadow-sm dark:bg-slate-900 dark:text-slate-100">
                   Theme
                 </span>
                 <span className="flex-1 py-0.5 text-center">Canvas</span>
@@ -596,12 +602,12 @@ function EditorWindow({
                 {THEME_CARDS.map((t) => (
                   <span
                     key={t.name}
-                    className={`flex flex-col items-center gap-1 rounded-lg border py-1.5 text-[8px] font-medium text-slate-600 ${
+                    className={`flex flex-col items-center gap-1 rounded-lg border py-1.5 text-[8px] font-medium text-slate-600 dark:text-slate-300 ${
                       t.picked
-                        ? 'hero-dialog-pick border-slate-200'
+                        ? 'hero-dialog-pick border-slate-200 dark:border-slate-800'
                         : t.current
                           ? 'hero-dialog-was border-brand-400 ring-1 ring-brand-300'
-                          : 'border-slate-200'
+                          : 'border-slate-200 dark:border-slate-800'
                     }`}
                   >
                     <span className="h-4 w-4 rounded-full" style={{ backgroundColor: t.swatch }} />
@@ -653,7 +659,7 @@ function EditorWindow({
           <>
             {/* Bottom tab bar (static chrome): colour-coded tabs relevant to this
                 diagram + the toolbelt the page advertises. */}
-            <div className="flex items-center gap-2 border-t border-slate-100 bg-white px-2 py-2">
+            <div className="flex items-center gap-2 border-t border-slate-100 bg-white px-2 py-2 dark:border-slate-800 dark:bg-slate-900">
               <span
                 className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400"
                 aria-hidden
@@ -675,7 +681,9 @@ function EditorWindow({
                       className="h-2.5 w-2.5 rounded-full"
                       style={{ backgroundColor: t.color }}
                     />
-                    <span className={t.active ? '' : 'text-slate-500'}>{t.name}</span>
+                    <span className={t.active ? '' : 'text-slate-500 dark:text-slate-400'}>
+                      {t.name}
+                    </span>
                     {/* Presence lives IN the tab, as the editor's TabPresenceStack
                         draws it: a stack of small initials between the tab name
                         and its ellipsis, one per person on that tab (you, and on

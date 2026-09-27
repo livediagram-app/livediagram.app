@@ -66,13 +66,13 @@ export function SearchInput({ large = false }: { large?: boolean }) {
           }}
           onFocus={() => setDismissed(false)}
           aria-label="Search help articles"
-          className={`w-full rounded-xl border border-slate-200 bg-white text-slate-900 placeholder-slate-400 shadow-sm transition-all duration-micro focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500/50 ${
+          className={`w-full rounded-xl border border-slate-200 bg-white text-slate-900 placeholder-slate-400 shadow-sm transition-all duration-micro focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500/50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 ${
             large ? 'py-4 pl-12 pr-4 text-lg' : 'py-2.5 pl-10 pr-4 text-sm'
           }`}
         />
       </div>
       {isOpen && results.length > 0 && (
-        <div className="scrollbar-slim absolute left-0 right-0 top-full z-50 mt-2 max-h-80 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl">
+        <div className="scrollbar-slim absolute left-0 right-0 top-full z-50 mt-2 max-h-80 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900">
           {results.map((article) => (
             <Link
               key={`${article.categorySlug}/${article.slug}`}
@@ -81,10 +81,12 @@ export function SearchInput({ large = false }: { large?: boolean }) {
                 setQuery('');
                 setDismissed(false);
               }}
-              className="block border-b border-slate-100 px-4 py-3 transition-colors last:border-b-0 hover:bg-brand-50/60"
+              className="block border-b border-slate-100 px-4 py-3 transition-colors last:border-b-0 hover:bg-brand-50/60 dark:border-slate-800"
             >
-              <p className="text-sm font-medium text-slate-900">{article.title}</p>
-              <p className="mt-0.5 text-xs text-slate-500">
+              <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                {article.title}
+              </p>
+              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
                 {article.category} &middot; {article.description}
               </p>
             </Link>
@@ -92,8 +94,8 @@ export function SearchInput({ large = false }: { large?: boolean }) {
         </div>
       )}
       {isOpen && query.trim().length > 1 && results.length === 0 && (
-        <div className="absolute left-0 right-0 top-full z-50 mt-2 rounded-xl border border-slate-200 bg-white p-4 shadow-xl">
-          <p className="text-center text-sm text-slate-500">
+        <div className="absolute left-0 right-0 top-full z-50 mt-2 rounded-xl border border-slate-200 bg-white p-4 shadow-xl dark:border-slate-800 dark:bg-slate-900">
+          <p className="text-center text-sm text-slate-500 dark:text-slate-400">
             No articles found for &ldquo;{query}&rdquo;
           </p>
         </div>
