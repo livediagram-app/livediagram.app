@@ -90,7 +90,7 @@ export function PresentationElementPopover({
           onClick={onClose}
           className="shrink-0 cursor-pointer rounded p-0.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800"
         >
-          <CloseIcon size={12} strokeWidth={1.87} />
+          <CloseIcon size={12} />
         </button>
       </div>
 

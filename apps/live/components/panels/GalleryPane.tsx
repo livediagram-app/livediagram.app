@@ -184,7 +184,7 @@ function GalleryCard({
           aria-label={`Delete ${image.originalName ?? 'image'}`}
           className="rounded p-1 text-rose-700 transition hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-500/10"
         >
-          <TrashIcon strokeWidth={1.6} />
+          <TrashIcon />
         </button>
       </div>
       <div className="mt-1">

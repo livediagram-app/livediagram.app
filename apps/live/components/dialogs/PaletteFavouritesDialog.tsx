@@ -234,7 +234,7 @@ export function PaletteFavouritesDialog({
           </Button>
         ) : null}
         <Button onClick={onClose} size="sm">
-          <CheckIcon strokeWidth={2} />
+          <CheckIcon />
           Done
         </Button>
       </div>

@@ -71,7 +71,7 @@ export function CommentMenuIcon() {
 }
 
 export function LinkMenuIcon() {
-  return <LinkIcon size={12} strokeWidth={1.6} />;
+  return <LinkIcon size={12} />;
 }
 
 export function SquareMenuIcon() {

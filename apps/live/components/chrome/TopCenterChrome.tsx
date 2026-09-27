@@ -113,7 +113,7 @@ export function TopCenterChrome({
             (which also flips isPaintMode true). */}
         {canvasTool === 'format' ? (
           <ModeBanner
-            icon={<FormatPainterIcon strokeWidth={1.75} />}
+            icon={<FormatPainterIcon />}
             message={
               formatSourceId
                 ? 'Tap elements to paint this style onto them'
@@ -124,7 +124,7 @@ export function TopCenterChrome({
           />
         ) : isPaintMode ? (
           <ModeBanner
-            icon={<FormatPainterIcon strokeWidth={1.75} />}
+            icon={<FormatPainterIcon />}
             message="Click an element to apply formatting"
             onAction={onCancelFormatPainter}
           />

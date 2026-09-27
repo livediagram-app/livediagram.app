@@ -66,7 +66,7 @@ export function ColorTile({
             aria-label={`Copy ${label} colour`}
             className="absolute right-0.5 top-0.5 flex h-4 w-4 items-center justify-center rounded bg-white/85 text-slate-600 shadow-sm transition hover:text-brand-600 dark:bg-slate-900/80 dark:text-slate-200"
           >
-            <CopyIcon size={9} strokeWidth={1.6} />
+            <CopyIcon size={9} />
           </button>
         ) : (
           // Paste overlay: covers the input so a click applies the copied

@@ -61,7 +61,7 @@ export function ToolGlyph({
   return (
     <span className="flex h-6 w-6 items-center justify-center rounded-md">
       {kind === 'search' ? (
-        <SearchIcon size={px} strokeWidth={1.4} />
+        <SearchIcon size={px} />
       ) : kind === 'keys' ? (
         <svg {...common}>
           <rect x="1.5" y="4" width="13" height="8" rx="1.5" />

@@ -205,7 +205,7 @@ function ToastBubble({ toast, onDismiss }: { toast: ToastEntry; onDismiss: () =>
         aria-label="Dismiss"
         className="rounded-md p-1 text-current opacity-60 transition hover:opacity-100"
       >
-        <CloseIcon size={12} strokeWidth={1.6} />
+        <CloseIcon size={12} />
       </button>
     </div>
   );

@@ -16,9 +16,9 @@
     "test": "vitest run"
   },
   "peerDependencies": {
+    "next": "^16.0.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "next": "^16.0.0"
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
     "@livediagram/eslint-config": "workspace:*",
@@ -35,6 +35,7 @@
   },
   "dependencies": {
     "@livediagram/api-schema": "workspace:*",
+    "@livediagram/icons": "workspace:^",
     "@livediagram/tailwind-config": "workspace:*",
     "@livediagram/telemetry-client": "workspace:*"
   }

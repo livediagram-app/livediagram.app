@@ -43,7 +43,7 @@ export function glyphStrokePx(sizePx: number): number;
 
 // packages/ui/src/icons/Glyph.tsx
 type IconProps = Omit<SVGProps<SVGSVGElement>, 'width' | 'height' | 'strokeWidth'> & {
-  size?: GlyphSize; // default 16
+  size?: number; // px, default 16; controls use GLYPH_SIZES
   weight?: number; // on-screen px override; default glyphStrokePx(size)
 };
 type GlyphProps = IconProps & { units?: number; filled?: boolean };
@@ -69,7 +69,8 @@ export function iconWeightPx(w: IconWeight | undefined): number;
 ## Errors and edge cases
 
 - Unknown `iconWeight` in stored data (hand-edited JSON) renders as `regular` through `iconWeightPx`.
-- `Glyph` with a size outside `GLYPH_SIZES` is a type error. Runtime callers are typed, so there is no runtime path.
+- `Glyph` with a non-positive or non-finite `size` throws the `strokeUnits` RangeError at render, surfacing in the error boundary and its log.
+- Off-step control sizes (11, 13, 15, 18) move to the nearest step during migration; the optical-alignment ink audit catches any shift.
 - The vendor script fails (non-zero exit, message `vendor-lucide: unknown glyph <name>`) when a manifest name is missing from the pinned package.
 - Emoji `text` prims keep `stroke="none"`, so weight does not affect them.
 

@@ -30,8 +30,18 @@ describe('shared chrome icons', () => {
     expect(paint).toBe('currentColor');
   });
 
-  it('honours a strokeWidth override', () => {
-    const { container } = render(<icons.TrashIcon strokeWidth={1.25} />);
-    expect(container.querySelector('svg')!.getAttribute('stroke-width')).toBe('1.25');
+  it('draws the house weight in on-screen px, whatever the viewBox', () => {
+    // 16-unit TrashIcon at 16px and 24-unit CircleXIcon at 24px both draw 1.5px.
+    const trash = render(<icons.TrashIcon size={16} />).container.querySelector('svg')!;
+    expect(Number(trash.getAttribute('stroke-width'))).toBe(1.5);
+    const circle = render(<icons.CircleXIcon size={24} />).container.querySelector('svg')!;
+    expect(Number(circle.getAttribute('stroke-width'))).toBe(1.5);
+    const small = render(<icons.CircleXIcon size={12} />).container.querySelector('svg')!;
+    expect(Number(small.getAttribute('stroke-width'))).toBe(2.5);
+  });
+
+  it('honours an on-screen weight override', () => {
+    const { container } = render(<icons.TrashIcon size={16} weight={2} />);
+    expect(Number(container.querySelector('svg')!.getAttribute('stroke-width'))).toBe(2);
   });
 });

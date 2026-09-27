@@ -316,12 +316,9 @@ export function DuplicateIcon({ size = 13 }: IconProps) {
   );
 }
 
-// `strokeWidth` as well as `size`, because the delete buttons that share
-// this can differ in weight as well as size (ActivityPanel 12/1.5,
-// MultiSelectionToolbar 14/1.5, GalleryPane + ImagePicker 13/1.6,
-// SelectionPopover 16/1.75).
-export function TrashIcon({ size = 13, strokeWidth = 1.5 }: IconProps & { strokeWidth?: number }) {
-  return <SharedTrashIcon size={size} strokeWidth={strokeWidth} />;
+// Size varies by host (12-16); weight is the house weight (Glyph).
+export function TrashIcon({ size = 13 }: IconProps) {
+  return <SharedTrashIcon size={size} />;
 }
 
 export function OpenIcon({ size = 13 }: IconProps) {

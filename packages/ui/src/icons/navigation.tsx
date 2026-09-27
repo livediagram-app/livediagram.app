@@ -4,42 +4,42 @@ import { Glyph, type IconProps } from './Glyph';
 
 // Downward chevron on a 12-unit viewBox: dropdown triggers and disclosure
 // toggles (rotate it with a className for the open state).
-export function ChevronDownIcon({ size = 10, strokeWidth = 1.5, ...rest }: IconProps) {
+export function ChevronDownIcon({ size = 10, ...rest }: IconProps) {
   return (
-    <Glyph size={size} strokeWidth={strokeWidth} units={12} {...rest}>
+    <Glyph size={size} units={12} {...rest}>
       <path d="M3 4.5 6 7.5 9 4.5" />
     </Glyph>
   );
 }
 
-export function ChevronLeftIcon({ size = 14, strokeWidth = 1.7, ...rest }: IconProps) {
+export function ChevronLeftIcon({ size = 14, ...rest }: IconProps) {
   return (
-    <Glyph size={size} strokeWidth={strokeWidth} {...rest}>
+    <Glyph size={size} {...rest}>
       <path d="M10 3.5 5.5 8l4.5 4.5" />
     </Glyph>
   );
 }
 
-export function ChevronRightIcon({ size = 14, strokeWidth = 1.7, ...rest }: IconProps) {
+export function ChevronRightIcon({ size = 14, ...rest }: IconProps) {
   return (
-    <Glyph size={size} strokeWidth={strokeWidth} {...rest}>
+    <Glyph size={size} {...rest}>
       <path d="M6 3.5 10.5 8 6 12.5" />
     </Glyph>
   );
 }
 
 // Three bars on a 12-unit viewBox.
-export function MenuIcon({ size = 12, strokeWidth = 1.5, ...rest }: IconProps) {
+export function MenuIcon({ size = 12, ...rest }: IconProps) {
   return (
-    <Glyph size={size} strokeWidth={strokeWidth} units={12} {...rest}>
+    <Glyph size={size} units={12} {...rest}>
       <path d="M2 3h8M2 6h8M2 9h8" />
     </Glyph>
   );
 }
 
-export function SearchIcon({ size = 16, strokeWidth = 1.6, ...rest }: IconProps) {
+export function SearchIcon({ size = 16, ...rest }: IconProps) {
   return (
-    <Glyph size={size} strokeWidth={strokeWidth} {...rest}>
+    <Glyph size={size} {...rest}>
       <circle cx="7" cy="7" r="4" />
       <path d="M10 10l3.5 3.5" />
     </Glyph>

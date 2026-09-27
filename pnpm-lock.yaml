@@ -826,6 +826,9 @@ importers:
       '@livediagram/api-schema':
         specifier: workspace:*
         version: link:../api-schema
+      '@livediagram/icons':
+        specifier: workspace:^
+        version: link:../icons
       '@livediagram/tailwind-config':
         specifier: workspace:*
         version: link:../tailwind-config

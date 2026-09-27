@@ -39,7 +39,7 @@ export function DiagramLoading() {
               onClick={() => window.location.reload()}
               className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-slate-800 dark:hover:text-brand-200"
             >
-              <RefreshIcon size={13} strokeWidth={1.6} />
+              <RefreshIcon size={13} />
               Refresh
             </button>
           </div>

@@ -394,7 +394,7 @@ function Flyout({
                   onClick={() => setOpen(false)}
                   className="-mr-1 flex h-7 w-7 shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
                 >
-                  <CloseIcon strokeWidth={1.4} />
+                  <CloseIcon />
                 </button>
               </div>
             ) : null}

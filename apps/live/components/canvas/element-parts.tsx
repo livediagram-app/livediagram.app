@@ -23,7 +23,7 @@ export function LockBadge({ zoom = 1 }: { zoom?: number }) {
       aria-hidden
       className={`pointer-events-none absolute -left-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-brand-500 text-white shadow-sm ${SOLID_BRAND_DARK}`}
     >
-      <LockIcon size={11} strokeWidth={2} />
+      <LockIcon size={11} />
     </div>
   );
 }

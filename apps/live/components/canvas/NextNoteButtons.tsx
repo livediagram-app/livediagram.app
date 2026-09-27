@@ -161,7 +161,6 @@ export function NextNoteButtons({
               >
                 <PlusWideIcon
                   size={t.tabHeight * (PLUS_RATIO / TAB_HEIGHT_RATIO)}
-                  strokeWidth={2.2}
                   className="shrink-0"
                 />
               </span>

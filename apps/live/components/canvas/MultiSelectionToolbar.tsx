@@ -129,7 +129,7 @@ export function MultiSelectionToolbar({
               : 'flex h-7 w-7 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900'
           }
         >
-          <LockIcon closed={anyLocked} size={14} strokeWidth={1.5} />
+          <LockIcon closed={anyLocked} size={14} />
         </button>
       </HoverCard>
       {showDelete ? (
@@ -150,7 +150,7 @@ export function MultiSelectionToolbar({
                 : 'flex h-7 w-7 items-center justify-center rounded-md text-slate-600 transition hover:bg-rose-50 hover:text-rose-700 dark:text-slate-300 dark:hover:bg-rose-500/15 dark:hover:text-rose-300'
             }
           >
-            <TrashIcon size={14} strokeWidth={1.5} />
+            <TrashIcon size={14} />
           </button>
         </HoverCard>
       ) : null}

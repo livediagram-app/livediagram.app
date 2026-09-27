@@ -59,7 +59,7 @@ export function ThemeModeBanner({ themeId }: { themeId: string | undefined }) {
           aria-label="Dismiss"
           className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-200"
         >
-          <CloseIcon size={15} strokeWidth={1.4875} />
+          <CloseIcon size={15} />
         </button>
       </div>
     </div>

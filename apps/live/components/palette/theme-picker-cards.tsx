@@ -160,7 +160,7 @@ export function CustomThemeCard({
           aria-label={`Edit ${theme.name}`}
           className="rounded bg-white/90 p-0.5 text-slate-500 shadow-sm hover:text-brand-600 dark:bg-slate-800/90 dark:text-slate-300"
         >
-          <PencilIcon size={12} strokeWidth={1.4} />
+          <PencilIcon size={12} />
         </button>
         <button
           type="button"
@@ -168,7 +168,7 @@ export function CustomThemeCard({
           aria-label={`Delete ${theme.name}`}
           className="rounded bg-white/90 p-0.5 text-slate-500 shadow-sm hover:text-rose-600 dark:bg-slate-800/90 dark:text-slate-300"
         >
-          <TrashSimpleIcon size={12} strokeWidth={1.4} />
+          <TrashSimpleIcon size={12} />
         </button>
       </div>
     </div>

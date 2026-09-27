@@ -11,8 +11,8 @@ type Icon = (props: IconProps) => ReactElement;
 
 const glyph =
   (paths: ReactElement): Icon =>
-  ({ size = 14, strokeWidth = 1.5, ...rest }) => (
-    <Glyph size={size} strokeWidth={strokeWidth} {...rest}>
+  ({ size = 14, ...rest }) => (
+    <Glyph size={size} {...rest}>
       {paths}
     </Glyph>
   );

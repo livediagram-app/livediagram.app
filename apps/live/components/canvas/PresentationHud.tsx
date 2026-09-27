@@ -248,7 +248,7 @@ export function PresentationHud({
           <GearIcon />
         </HudButton>
         <HudButton label="Exit presentation" onPress={onClose}>
-          <CloseIcon strokeWidth={1.4} />
+          <CloseIcon />
         </HudButton>
       </div>
 

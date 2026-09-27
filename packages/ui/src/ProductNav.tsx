@@ -144,7 +144,6 @@ export function ProductNav({
         <span className="hidden sm:inline">{active.label}</span>
         <ChevronDownIcon
           size={12}
-          strokeWidth={1.2}
           className={`h-3 w-3 opacity-60 transition-transform duration-micro group-hover:[transform:rotate(180deg)] group-focus-within:[transform:rotate(180deg)] ${
             open ? '[transform:rotate(180deg)]' : ''
           }`}

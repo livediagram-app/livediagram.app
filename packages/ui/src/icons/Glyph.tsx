@@ -1,10 +1,11 @@
+import { glyphStrokePx, strokeUnits } from '@livediagram/icons';
 import type { SVGProps } from 'react';
 
 // The chrome-icon base: a square, stroke-currentColor, decorative SVG. Every
 // named icon in this folder is a Glyph with its own path data and a default
-// size + stroke weight (the rendering most of its call sites used before the
-// copies were collapsed here). Colour always comes from the parent's text
-// colour via `currentColor`.
+// size. Weight is on-screen px (docs/specs/004-interface-design/iconography.md),
+// converted to viewBox units here, so every glyph reads the same weight
+// whatever its grid. Colour always comes from the parent's text colour.
 //
 // Distinct from @livediagram/icons, which is the CANVAS icon catalogue as SVG
 // markup strings; these are React components for app chrome.
@@ -12,8 +13,8 @@ import type { SVGProps } from 'react';
 export type IconProps = Omit<SVGProps<SVGSVGElement>, 'width' | 'height' | 'strokeWidth'> & {
   // Rendered width and height in px.
   size?: number;
-  // Stroke weight in viewBox units.
-  strokeWidth?: number;
+  // On-screen stroke in px; defaults to the house weight for the size.
+  weight?: number;
 };
 
 type GlyphProps = IconProps & {
@@ -25,7 +26,7 @@ type GlyphProps = IconProps & {
 
 export function Glyph({
   size = 16,
-  strokeWidth = 1.5,
+  weight,
   units = 16,
   filled = false,
   children,
@@ -36,7 +37,7 @@ export function Glyph({
     : {
         fill: 'none',
         stroke: 'currentColor',
-        strokeWidth,
+        strokeWidth: strokeUnits(weight ?? glyphStrokePx(size), size, units),
         strokeLinecap: 'round' as const,
         strokeLinejoin: 'round' as const,
       };
