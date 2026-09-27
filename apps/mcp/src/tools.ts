@@ -18,6 +18,7 @@ import {
   type Tab,
 } from '@livediagram/diagram';
 import { TEMPLATES, TEMPLATE_CATEGORIES, templateCategory } from '@livediagram/templates';
+import { TRASH_RETENTION_DAYS } from '@livediagram/api-schema';
 import { apiFetch, apiJson, reportApiFailure } from './api';
 import type { Env } from './env';
 import { fetchTeamLibraries, matchDiagrams } from './find-diagrams';
@@ -456,15 +457,20 @@ export function registerTools(server: McpServer, env: Env): void {
       behaviour: 'destructive',
       title: 'Delete a diagram or tab',
       description:
-        'PERMANENTLY delete a diagram — or, with tabId, just one of its tabs. This cannot ' +
-        'be undone, so confirm with the user first. A diagram must keep at least one tab.',
+        'Delete a diagram by moving it to the Trash, where the user can restore it for ' +
+        `${TRASH_RETENTION_DAYS} days before it is purged; with permanent: true it is deleted ` +
+        'for good at once. With tabId, delete just one of its tabs, outright. Confirm with ' +
+        'the user first. A diagram must keep at least one tab.',
       inputSchema: deleteDiagramShape,
     },
     async (args, extra) => {
       const token = requireToken(extra as Extra);
+      // A whole diagram goes to the Trash (docs/specs/013-workspace/trash.md)
+      // unless the call asks for a permanent delete; a tab has no Trash.
+      const permanent = args.permanent === true;
       const path = args.tabId
         ? `/diagrams/${args.diagramId}/tabs/${args.tabId}`
-        : `/diagrams/${args.diagramId}`;
+        : `/diagrams/${args.diagramId}${permanent ? '?permanent=true' : ''}`;
       // DELETE returns 204 with no body, so use apiFetch (apiJson would choke
       // parsing an empty response) and surface a clear message on failure.
       const res = await apiFetch(env, token, path, { method: 'DELETE' });
@@ -476,13 +482,22 @@ export function registerTools(server: McpServer, env: Env): void {
           `Could not delete (${res.status}). ` +
             (args.tabId
               ? 'A diagram must keep at least one tab — you cannot delete the last one.'
-              : 'Check the diagram id and that you own it.'),
+              : res.status === 410
+                ? 'It is already in the Trash; pass permanent: true to delete it for good.'
+                : 'Check the diagram id and that you own it.'),
         );
       }
       return textResult(
         args.tabId
           ? { deleted: 'tab', diagramId: args.diagramId, tabId: args.tabId }
-          : { deleted: 'diagram', diagramId: args.diagramId },
+          : permanent
+            ? { deleted: 'diagram', diagramId: args.diagramId, trashed: false }
+            : {
+                deleted: 'diagram',
+                diagramId: args.diagramId,
+                trashed: true,
+                restorableForDays: TRASH_RETENTION_DAYS,
+              },
       );
     },
   );

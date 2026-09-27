@@ -293,3 +293,104 @@ describe('tool annotations', () => {
     expect(destructive).toEqual(['delete_diagram', 'update_diagram']);
   });
 });
+
+// delete_diagram moves a diagram to the Trash unless asked to delete it for
+// good (docs/specs/015-api/mcp-server.md §4.9, docs/specs/013-workspace/trash.md).
+describe('delete_diagram', () => {
+  function deleteHarness() {
+    const calls: string[] = [];
+    const registered: Registered[] = [];
+    const server = {
+      registerTool: (
+        name: string,
+        config: Registered['config'],
+        handler: Registered['handler'],
+      ) => {
+        registered.push({ name, config, handler });
+      },
+    } as unknown as McpServer;
+    const env = {
+      API: {
+        fetch: async (request: Request) => {
+          const url = new URL(request.url);
+          if (url.pathname.endsWith('/events')) return new Response(null, { status: 204 });
+          calls.push(`${request.method} ${url.pathname}${url.search}`);
+          return new Response(null, { status: 204 });
+        },
+      },
+    } as unknown as Env;
+    registerTools(server, env);
+    const tool = registered.find((r) => r.name === 'delete_diagram')!;
+    return { calls, tool };
+  }
+
+  it('moves the diagram to the Trash by default', async () => {
+    const { calls, tool } = deleteHarness();
+    const result = (await tool.handler({ diagramId: 'd_1' }, AUTHED)) as {
+      content: { text: string }[];
+    };
+    expect(calls).toEqual(['DELETE /api/diagrams/d_1']);
+    expect(JSON.parse(result.content[0]!.text)).toEqual({
+      deleted: 'diagram',
+      diagramId: 'd_1',
+      trashed: true,
+      restorableForDays: 30,
+    });
+  });
+
+  it('deletes for good with permanent: true', async () => {
+    const { calls, tool } = deleteHarness();
+    const result = (await tool.handler({ diagramId: 'd_1', permanent: true }, AUTHED)) as {
+      content: { text: string }[];
+    };
+    expect(calls).toEqual(['DELETE /api/diagrams/d_1?permanent=true']);
+    expect(JSON.parse(result.content[0]!.text)).toEqual({
+      deleted: 'diagram',
+      diagramId: 'd_1',
+      trashed: false,
+    });
+  });
+
+  it('deletes one tab outright, with no Trash involved', async () => {
+    const { calls, tool } = deleteHarness();
+    await tool.handler({ diagramId: 'd_1', tabId: 't_1', permanent: true }, AUTHED);
+    expect(calls).toEqual(['DELETE /api/diagrams/d_1/tabs/t_1']);
+  });
+
+  it('describes the Trash and the permanent option', () => {
+    const { tool } = deleteHarness();
+    expect(tool.config.description).toContain('Trash');
+    expect(tool.config.description).toContain('permanent');
+  });
+});
+
+describe('delete_diagram on a diagram already in the Trash', () => {
+  it('says so, and how to delete it for good', async () => {
+    const registered: Registered[] = [];
+    const server = {
+      registerTool: (
+        name: string,
+        config: Registered['config'],
+        handler: Registered['handler'],
+      ) => {
+        registered.push({ name, config, handler });
+      },
+    } as unknown as McpServer;
+    const env = {
+      API: {
+        fetch: async (request: Request) =>
+          new URL(request.url).pathname.endsWith('/events')
+            ? new Response(null, { status: 204 })
+            : Response.json({ error: 'diagram_trashed' }, { status: 410 }),
+      },
+    } as unknown as Env;
+    registerTools(server, env);
+    const tool = registered.find((r) => r.name === 'delete_diagram')!;
+    const result = (await tool.handler({ diagramId: 'd_1' }, AUTHED)) as {
+      isError: boolean;
+      content: { text: string }[];
+    };
+    expect(result.isError).toBe(true);
+    expect(result.content[0]!.text).toContain('permanent: true');
+  });
+});

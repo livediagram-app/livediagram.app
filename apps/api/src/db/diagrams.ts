@@ -282,8 +282,10 @@ export async function setDiagramSharePassword(
     .run();
 }
 
-// Every delete path lands here: the Explorer, a teammate on a team diagram,
-// and Take Offline. A tab another diagram still holds survives it.
+// The immediate hard delete of one diagram, which only Take Offline uses now:
+// every other delete moves the diagram to the Trash, and its purge runs
+// purgeDiagrams (docs/specs/013-workspace/trash.md). A tab another diagram
+// still holds survives either.
 export async function deleteDiagram(env: Env, id: string): Promise<void> {
   await env.DB.batch(diagramRemovalStatements(env, { column: 'id', value: id }));
   // Drop the cached SVG snapshot (docs/specs/006-diagram/diagram-snapshots.md) alongside the row so a

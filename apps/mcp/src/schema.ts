@@ -305,7 +305,16 @@ export const deleteDiagramShape = {
     .optional()
     .describe(
       'Delete only this ONE tab instead of the whole diagram. A diagram must keep at ' +
-        'least one tab, so deleting the last remaining tab is refused.',
+        'least one tab, so deleting the last remaining tab is refused. A tab is deleted ' +
+        'outright; it does not go to the Trash.',
+    ),
+  permanent: z
+    .boolean()
+    .optional()
+    .describe(
+      'Delete the whole diagram for good instead of moving it to the Trash, where it can ' +
+        'otherwise be restored for 30 days. Only when the user explicitly asks for a ' +
+        'permanent delete.',
     ),
 };
 

@@ -331,11 +331,16 @@ assistant to "rename that" or "delete the old one":
   (`PUT /api/diagrams/<id>` `{ name }`), or one tab when `tabId` is given (no
   tab-name-only route, so it reads the tab and writes it back with the new
   name). Non-destructive.
-- **`delete_diagram`** — `{ diagramId, tabId? }`. Permanently deletes the
-  diagram (`DELETE /api/diagrams/<id>`) or one tab (`DELETE …/tabs/<tabId>`).
-  Irreversible, so the description tells the model to confirm with the user
-  first; the api refuses deleting a diagram's last remaining tab and surfaces a
-  clear message. Both inherit the ordinary owner/team authorization the routes
+- **`delete_diagram`** — `{ diagramId, tabId?, permanent? }`. Moves the
+  diagram to the [Trash](../013-workspace/trash.md) (`DELETE /api/diagrams/<id>`),
+  restorable for 30 days, and says so in its result (`trashed: true`,
+  `restorableForDays`). `permanent: true` deletes it for good at once
+  (`?permanent=true`), and is described as for an explicit request only. With
+  `tabId` it deletes one tab (`DELETE …/tabs/<tabId>`) outright: tabs have no
+  Trash. Still destructive, so the description tells the model to confirm with
+  the user first; the api refuses deleting a diagram's last remaining tab, and a
+  diagram already in the Trash answers 410, which the tool turns into "already in
+  the Trash; pass permanent: true". Both inherit the ordinary owner/team authorization the routes
   already enforce ([Public API and API tokens §3.4](public-api-and-tokens.md)).
 
 ### 4.10 Prompts (discoverability)
