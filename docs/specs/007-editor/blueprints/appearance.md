@@ -1,26 +1,31 @@
 # Appearance (light / dark / system): blueprint
 
-Derived from [Live app, Appearance](../live-app.md#appearance-light--dark--system), with the dark-mode token rules from
+Derived from [Appearance](../../004-interface-design/appearance.md) (the origin-wide setting, its boot script and the
+public-site toggle) and [Live app, Appearance](../live-app.md#appearance-light--dark--system) (the editor's parts), with the dark-mode token rules from
 [Colour scheme](../../004-interface-design/color-scheme.md) and the Default scheme's per-viewer halves from
 [Canvas and palette](../../008-canvas/canvas-and-palette.md). The spec decides; this file only adds engineering precision.
 Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 
 Scope, by file:
 
-| File                                                   | Role                                                                          |
-| ------------------------------------------------------ | ----------------------------------------------------------------------------- |
-| `apps/live/hooks/ui/appearance-storage.ts`             | The storage key and the media query; a plain module the server layout inlines |
-| `apps/live/hooks/ui/appearance-store.ts`               | Setting, resolution, OS watch, write, the `.dark` class; no React             |
-| `apps/live/hooks/ui/useAppearance.ts`                  | The subscription (`useSyncExternalStore`), the cycle, the telemetry           |
-| `apps/live/app/pre-hydration-scripts.ts`               | `APPEARANCE_BOOT_SCRIPT`, applied before first paint                          |
-| `apps/live/app/layout.tsx`                             | Inlines the boot script; declares the `darkreader-lock` meta                  |
-| `apps/live/components/chrome/AppearanceToggle.tsx`     | The three-state control on the TabBar                                         |
-| `apps/live/components/chrome/ThemeModeBanner.tsx`      | The match nudge                                                               |
-| `apps/live/components/canvas/CanvasSurfaceContext.tsx` | Carries the `CanvasSurface` past `React.memo` element views                   |
-| `packages/diagram/src/colors.ts`                       | `CanvasSurface`, `canvasSurface`, `isLightColor`, the `default*Color` inks    |
-| `packages/diagram/src/canvas-colors.ts`                | The Default scheme's light and dark canvas colours                            |
-| `packages/tailwind-config/theme.css`                   | The `dark:` class variant and the brand / slate tokens                        |
-| `packages/template-previews/src/preview-art-tile.css`  | Re-lights light-canvas preview art onto the dark canvas colour under `.dark`  |
+| File                                                       | Role                                                                         |
+| ---------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `packages/ui/src/appearance/appearance-storage.ts`         | Storage key, media query, `APPEARANCE_BOOT_SCRIPT`; a plain module           |
+| `packages/ui/src/appearance/appearance-store.ts`           | Setting, resolution, OS watch, write, the `.dark` class; no React            |
+| `packages/ui/src/appearance/appearance-cycle.ts`           | The cycle, the labels, the control's accessible name                         |
+| `packages/ui/src/appearance/useAppearance.ts`              | The subscription (`useSyncExternalStore`) and the cycle; optional `onSet`    |
+| `packages/ui/src/appearance/AppearanceIcon.tsx`            | Sun / moon / monitor glyph for the current setting                           |
+| `packages/ui/src/appearance/SiteAppearanceToggle.tsx`      | The public sites' control, in `SiteHeader`; no telemetry                     |
+| `packages/ui/src/site.ts`                                  | `PUBLIC_VIEWPORT` (`colorScheme: 'light dark'`) and `DARK_READER_LOCK`       |
+| `apps/*/app/layout.tsx` (live, marketing, help, telemetry) | Inline the boot script; declare the lock meta; dark body                     |
+| `apps/live/hooks/ui/useAppearance.ts`                      | The shared hook plus the editor's telemetry                                  |
+| `apps/live/components/chrome/AppearanceToggle.tsx`         | The three-state control on the TabBar                                        |
+| `apps/live/components/chrome/ThemeModeBanner.tsx`          | The match nudge                                                              |
+| `apps/live/components/canvas/CanvasSurfaceContext.tsx`     | Carries the `CanvasSurface` past `React.memo` element views                  |
+| `packages/diagram/src/colors.ts`                           | `CanvasSurface`, `canvasSurface`, `isLightColor`, the `default*Color` inks   |
+| `packages/diagram/src/canvas-colors.ts`                    | The Default scheme's light and dark canvas colours                           |
+| `packages/tailwind-config/theme.css`                       | The `dark:` class variant, the brand / slate tokens, `color-scheme`          |
+| `packages/template-previews/src/preview-art-tile.css`      | Re-lights light-canvas preview art onto the dark canvas colour under `.dark` |
 
 ## Domain and naming
 
@@ -55,8 +60,8 @@ The setting is a three-state cycle driven by `nextAppearanceSetting`: `light →
 
 ### Boot, in order
 
-1. The server renders `<html>` with no `dark` class (`getServerAppearance()` is `'light'`); `suppressHydrationWarning`
-   is scoped to `<html>` alone.
+1. The server renders `<html>` with no `dark` class (`getServerAppearance()` is `'light'`, and a control renders the
+   default setting, `getServerAppearanceSetting()`); `suppressHydrationWarning` is scoped to `<html>` alone.
 2. `APPEARANCE_BOOT_SCRIPT` runs in `<body>` before any content paints. It adds `dark` when the stored value is `'dark'`,
    or when it is anything other than `'light'` and the media query matches.
 3. React hydrates. `useAppearance`'s mount effect re-applies the resolved appearance, so an embed or test without the root
@@ -81,7 +86,7 @@ export function readAppearanceSetting(): AppearanceSetting;
 export function resolveAppearance(setting: AppearanceSetting): Appearance;
 export function applyAppearance(appearance: Appearance): void;
 export function setAppearance(next: AppearanceSetting): void;
-export function useAppearance(): {
+export function useAppearance(onSet?: (next: AppearanceSetting) => void): {
   setting: AppearanceSetting;
   appearance: Appearance;
   set: (next: AppearanceSetting) => void;
@@ -107,21 +112,21 @@ read back unchanged, and anything older reads as the default.
 
 ## Errors and edge cases
 
-| Case                                      | Handling                                                                  |
-| ----------------------------------------- | ------------------------------------------------------------------------- |
-| `localStorage` throws (private mode)      | Boot script: `try/catch`, page stays light. Store: `readLocalStorageSafe` |
-| No `matchMedia`                           | `system` resolves light; the boot script checks `typeof matchMedia`       |
-| Server render                             | `applyAppearance` is a no-op without `document`                           |
-| Unknown stored value                      | Reads as `system` (I1)                                                    |
-| Route that never mounts the hook (`/new`) | The boot script alone paints it                                           |
-| Dark Reader installed                     | Lock meta; the extension leaves the page untouched (I5)                   |
-| Empty meta content                        | Next drops it from the head, so the content is `'true'` (D2)              |
+| Case                                      | Handling                                                                |
+| ----------------------------------------- | ----------------------------------------------------------------------- |
+| `localStorage` throws (private mode)      | Boot script: `try/catch`, page stays light. Store: guarded read / write |
+| No `matchMedia`                           | `system` resolves light; the boot script checks `typeof matchMedia`     |
+| Server render                             | `applyAppearance` is a no-op without `document`                         |
+| Unknown stored value                      | Reads as `system` (I1)                                                  |
+| Route that never mounts the hook (`/new`) | The boot script alone paints it                                         |
+| Dark Reader installed                     | Lock meta; the extension leaves the page untouched (I5)                 |
+| Empty meta content                        | Next drops it from the head, so the content is `'true'` (D2)            |
 
 ## Security and trust
 
 The setting is device-local and never leaves the browser except as a preset telemetry label. The boot script
 interpolates `APPEARANCE_STORAGE_KEY` into a single-quoted string, so the key must hold no quote, backslash or newline;
-`pre-hydration-scripts.test.ts` asserts it on the value. The script modules carry no `'use client'` boundary, so the server
+`appearance-boot.test.ts` asserts it on the value. The script modules carry no `'use client'` boundary, so the server
 layout inlines the real string rather than a client-reference stub.
 
 ## Performance and limits
@@ -155,26 +160,30 @@ layout inlines the real string rather than a client-reference stub.
 
 ## Observability
 
-- A user toggle emits `track('UI', 'Toggled', 'Light' | 'Dark' | 'System')` from `useAppearance.set`.
+- An editor toggle emits `track('UI', 'Toggled', 'Light' | 'Dark' | 'System')` through the shared hook's `onSet`.
+- The public-site toggle emits nothing: those sites report page views only.
 - Not yet covered: the boot script's `catch` and the storage fallbacks are silent, and an OS-driven repaint (T2) emits
   nothing. Tracked as an open question.
 
 ## Testing
 
-| Rule                                                | Test                                                                           |
-| --------------------------------------------------- | ------------------------------------------------------------------------------ |
-| System is the default; unknown reads as System      | `appearance-store.test.ts`, `readAppearanceSetting`                            |
-| Explicit pick outranks the device (I2)              | `appearance-store.test.ts`, `resolveAppearance`                                |
-| OS flip repaints only under System (T2)             | `appearance-store.test.ts`, "the OS changing under a System setting"           |
-| Boot script agrees with the store (I1)              | `pre-hydration-scripts.test.ts`, "the appearance boot script"                  |
-| Key survives quoting; no client boundary            | `pre-hydration-scripts.test.ts`, "keys inlined into the pre-hydration scripts" |
-| No light full-screen surface without a dark variant | `dark-mode-coverage.test.ts`                                                   |
-| Preview tiles re-lit by one rule                    | `dark-mode-coverage.test.ts`, "tiles of light-canvas illustration art"         |
-| Cycle, canvas and element ink follow (I3)           | `e2e/appearance.spec.ts`, "opens on the device setting, then cycles"           |
-| Appearance never writes to the diagram (I3)         | `e2e/appearance.spec.ts`, "changing the appearance never writes"               |
-| Setting survives reload before first paint          | `e2e/appearance.spec.ts`, "remembers the setting across a reload"              |
-| Lock meta declared (I5)                             | `dark-reader-lock.test.ts`                                                     |
-| Lock meta reaches the served head (I5)              | `e2e/appearance.spec.ts`, "tells Dark Reader to stand down"                    |
+| Rule                                                | Test                                                                   |
+| --------------------------------------------------- | ---------------------------------------------------------------------- |
+| System is the default; unknown reads as System      | `appearance-store.test.ts`, `readAppearanceSetting`                    |
+| Explicit pick outranks the device (I2)              | `appearance-store.test.ts`, `resolveAppearance`                        |
+| OS flip repaints only under System (T2)             | `appearance-store.test.ts`, "the OS changing under a System setting"   |
+| Boot script agrees with the store (I1)              | `appearance-boot.test.ts`, "the appearance boot script"                |
+| Key survives quoting; no client boundary            | `appearance-boot.test.ts`, "the inlined storage key"                   |
+| Every app inlines the script, dark body             | `appearance-boot.test.ts`, "the <app> root layout"                     |
+| Public toggle cycles, paints, persists              | `SiteAppearanceToggle.test.tsx`                                        |
+| SiteHeader carries the toggle                       | `SiteAppearanceToggle.test.tsx`, "SiteHeader"                          |
+| No light full-screen surface without a dark variant | `dark-mode-coverage.test.ts`                                           |
+| Preview tiles re-lit by one rule                    | `dark-mode-coverage.test.ts`, "tiles of light-canvas illustration art" |
+| Cycle, canvas and element ink follow (I3)           | `e2e/appearance.spec.ts`, "opens on the device setting, then cycles"   |
+| Appearance never writes to the diagram (I3)         | `e2e/appearance.spec.ts`, "changing the appearance never writes"       |
+| Setting survives reload before first paint          | `e2e/appearance.spec.ts`, "remembers the setting across a reload"      |
+| Lock meta declared (I5)                             | `dark-reader-lock.test.ts`                                             |
+| Lock meta reaches the served head (I5)              | `e2e/appearance.spec.ts`, "tells Dark Reader to stand down"            |
 
 ## Constants and configuration
 
