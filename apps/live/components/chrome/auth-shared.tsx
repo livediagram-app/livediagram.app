@@ -367,7 +367,7 @@ export function OrDivider() {
       <div className="relative flex justify-center text-xs uppercase tracking-wide">
         {/* The chip's fill must match the AuthCard surface so it reads as a
             gap in the rule, not a floating box. */}
-        <span className="bg-white px-2 text-slate-400 dark:bg-slate-900 dark:text-slate-500">
+        <span className="bg-white px-2 text-slate-400 dark:bg-slate-900 dark:text-slate-400">
           or
         </span>
       </div>

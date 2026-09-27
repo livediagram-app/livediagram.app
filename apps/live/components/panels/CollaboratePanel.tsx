@@ -11,6 +11,7 @@ import {
   KindFilterButton,
 } from '@/components/panels/collaborate-panel-parts';
 import type { MovablePanelPlacementProps } from '@/components/primitives/MovablePanel.types';
+import { SOLID_BRAND_DARK } from '@livediagram/ui';
 
 // The floating COLLABORATE panel: the Comments and Actions panels
 // merged into one surface (they are the two ways work gets discussed /
@@ -140,8 +141,10 @@ export function CollaboratePanel({
       title="Collaborate"
       headerExtra={
         open.length > 0 ? (
-          <span className="inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-brand-500 px-1 text-[10px] font-semibold text-white">
-            {open.length}
+          <span
+            className={`inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-brand-500 px-1 text-[10px] font-semibold text-white ${SOLID_BRAND_DARK}`}
+          >
+            <span className="text-optical-centre">{open.length}</span>
           </span>
         ) : undefined
       }
@@ -183,7 +186,7 @@ export function CollaboratePanel({
           </div>
         </div>
         {shown.length === 0 ? (
-          <p className="px-1.5 py-4 text-center text-[11px] text-slate-400 dark:text-slate-500">
+          <p className="px-1.5 py-4 text-center text-[11px] text-slate-400">
             {kindFilter === 'comments'
               ? filter === 'open'
                 ? 'No open comments.'

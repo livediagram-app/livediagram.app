@@ -13,6 +13,7 @@
 // length you reach for, and the Studio's list is the one that was chosen for
 // that; anything else is a number field away in All settings.
 
+import { SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
 const PRESETS = [1, 3, 5, 10, 15, 30] as const;
 
 export function TimerPresetChips({
@@ -32,7 +33,7 @@ export function TimerPresetChips({
           aria-pressed={minutes === m}
           className={`cursor-pointer rounded-md py-1 text-[11px] font-semibold tabular-nums transition ${
             minutes === m
-              ? 'bg-brand-500 text-white'
+              ? `bg-brand-500 text-white ${SOLID_BRAND_DARK_CONTROL}`
               : 'bg-slate-100 text-slate-600 hover:bg-brand-50 hover:text-brand-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-brand-500/15'
           }`}
         >

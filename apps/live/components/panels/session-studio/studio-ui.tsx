@@ -9,6 +9,7 @@
 import type { ReactNode } from 'react';
 import { PollMenuIcon, TimerMenuIcon, VoteMenuIcon } from '@/components/palette/context-menu-icons';
 import type { StudioTool, StudioToolStatus } from './session-studio';
+import { SOLID_BRAND_DARK, SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
 
 const TOOL_META: Record<StudioTool, { label: string; icon: ReactNode }> = {
   timer: { label: 'Timer', icon: <TimerMenuIcon /> },
@@ -73,8 +74,7 @@ export function StudioSwitcher({
 type ButtonVariant = 'primary' | 'secondary' | 'danger';
 
 const BUTTON_CLASS: Record<ButtonVariant, string> = {
-  primary:
-    'bg-brand-500 text-white shadow-sm hover:bg-brand-600 disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none dark:disabled:bg-slate-800 dark:disabled:text-slate-500',
+  primary: `bg-brand-500 text-white shadow-sm hover:bg-brand-600 disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none dark:disabled:bg-slate-800 dark:disabled:text-slate-500 ${SOLID_BRAND_DARK_CONTROL}`,
   secondary:
     'border border-slate-200 bg-white text-slate-700 hover:border-brand-300 hover:text-brand-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60',
   danger:
@@ -172,7 +172,7 @@ export function TransportButton({
       <span
         className={`flex items-center justify-center rounded-full transition ${
           primary
-            ? 'h-12 w-12 bg-brand-500 text-white shadow-md group-hover:bg-brand-600'
+            ? `h-12 w-12 bg-brand-500 text-white shadow-md group-hover:bg-brand-600 ${SOLID_BRAND_DARK} dark:group-hover:bg-brand-700`
             : 'h-9 w-9 border border-slate-200 bg-white text-slate-600 group-hover:border-brand-300 group-hover:text-brand-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300'
         }`}
       >
@@ -206,12 +206,10 @@ export function StudioCallout({
 export function StudioLabel({ children, aside }: { children: ReactNode; aside?: ReactNode }) {
   return (
     <div className="flex items-baseline justify-between gap-2">
-      <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+      <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
         {children}
       </span>
-      {aside ? (
-        <span className="text-[10px] tabular-nums text-slate-400 dark:text-slate-500">{aside}</span>
-      ) : null}
+      {aside ? <span className="text-[10px] tabular-nums text-slate-400">{aside}</span> : null}
     </div>
   );
 }

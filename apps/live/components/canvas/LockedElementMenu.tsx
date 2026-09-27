@@ -73,7 +73,7 @@ export function LockedElementMenu({
         style={{ left, top, width: WIDTH }}
         className="fixed z-[var(--z-overlay,50)] rounded-lg border border-slate-200 bg-white py-1.5 shadow-lg dark:border-slate-700 dark:bg-slate-900"
       >
-        <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
+        <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
           In use
         </p>
         {holders.map((holder) => (
@@ -97,7 +97,7 @@ export function LockedElementMenu({
             <span className="truncate">Release {holder.name}&rsquo;s hold</span>
           </button>
         ))}
-        <p className="px-3 pt-1 text-[10px] leading-snug text-slate-400 dark:text-slate-500">
+        <p className="px-3 pt-1 text-[10px] leading-snug text-slate-400">
           They keep their work — it just stops being theirs to edit.
         </p>
       </div>

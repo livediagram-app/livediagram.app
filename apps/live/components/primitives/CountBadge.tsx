@@ -10,7 +10,7 @@ export function CountBadge({ count, className }: { count: number; className?: st
         className ? ` ${className}` : ''
       }`}
     >
-      {count}
+      <span className="text-optical-centre">{count}</span>
     </span>
   );
 }

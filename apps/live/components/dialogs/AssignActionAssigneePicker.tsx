@@ -1,5 +1,6 @@
 import { initialsOf } from '@/lib/identity';
 import { clerkEnabled } from '@/lib/clerk-config';
+import { SOLID_BRAND_DARK } from '@livediagram/ui';
 
 // One pickable assignee (docs/specs/012-collaboration/assigned-actions.md): the pinned Myself row, or a joined
 // member of the diagram's team.
@@ -76,7 +77,7 @@ export function AssigneePicker({
       >
         <span
           aria-hidden
-          className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-500 text-[10px] font-semibold text-white"
+          className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-500 text-[10px] font-semibold text-white ${SOLID_BRAND_DARK}`}
         >
           {initialsOf(m.name)}
         </span>
@@ -84,7 +85,7 @@ export function AssigneePicker({
           <span className="truncate">
             {isSelf ? 'Myself' : m.name}
             {isSelf ? (
-              <span className="text-slate-400 dark:text-slate-500"> ({m.name})</span>
+              <span className="text-slate-400 dark:text-slate-400"> ({m.name})</span>
             ) : null}
           </span>
           {m.pending ? (
@@ -117,7 +118,7 @@ export function AssigneePicker({
           </div>
         ))}
         {signedIn && memberOfDiagramTeam && members === null ? (
-          <p className="px-3 py-2 text-center text-xs text-slate-400 dark:text-slate-500">
+          <p className="px-3 py-2 text-center text-xs text-slate-400 dark:text-slate-400">
             Loading teammates…
           </p>
         ) : null}
@@ -175,11 +176,11 @@ export function AssigneePicker({
       ) : signedIn && !memberOfDiagramTeam ? (
         // Share-link editor on someone else's team diagram: they can
         // edit, but only the team's members are assignable.
-        <p className="px-1 text-xs text-slate-400 dark:text-slate-500">
+        <p className="px-1 text-xs text-slate-400">
           Only members of this diagram&apos;s team can be assigned actions.
         </p>
       ) : signedIn && members !== null && members.length === 0 ? (
-        <p className="px-1 text-xs text-slate-400 dark:text-slate-500">
+        <p className="px-1 text-xs text-slate-400">
           No other members in this team yet — invite teammates from the team page and they become
           assignable here, even before they accept.
         </p>

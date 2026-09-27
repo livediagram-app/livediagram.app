@@ -1117,7 +1117,7 @@ describe('dark colour-scheme order', () => {
   it('previews its DARK half there, whatever chrome the reader is in', () => {
     // The card sits among dark canvases, so it has to look like one; the
     // reader is being shown what the scheme looks like in that company.
-    expect(darkCategorySchemes(THEMES)[0]?.backgroundColor).toBe('#2b2b33');
+    expect(darkCategorySchemes(THEMES)[0]?.backgroundColor).toBe('#0d121a');
   });
 
   it('keeps the rest of the dark family intact behind it', () => {

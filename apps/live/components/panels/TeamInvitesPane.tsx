@@ -3,6 +3,7 @@
 import type { TeamInvite } from '@/lib/api-client';
 import { colorForKey, initialsOf } from '@/lib/identity';
 import { Button, EmptyState } from '@livediagram/ui';
+import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
 
 // Right-pane Invites view for the Explorer (docs/specs/013-workspace/teams.md accept/decline):
 // one card per pending invite — team monogram, name, organisation,
@@ -45,8 +46,10 @@ export function TeamInvitesPane({
           >
             <span
               aria-hidden
-              style={{ backgroundColor: colorForKey(invite.team.id) }}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-sm font-semibold text-white"
+              style={{
+                ...identityVars(colorForKey(invite.team.id)),
+              }}
+              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-sm font-semibold text-white ${IDENTITY_FILL}`}
             >
               {initialsOf(invite.team.name)}
             </span>
@@ -54,9 +57,7 @@ export function TeamInvitesPane({
               <span className="block truncate text-sm font-medium text-slate-900 dark:text-slate-100">
                 {invite.team.name}
               </span>
-              <span className="block truncate text-xs text-slate-400 dark:text-slate-500">
-                {subtitle}
-              </span>
+              <span className="block truncate text-xs text-slate-400">{subtitle}</span>
             </span>
             <button
               type="button"

@@ -8,10 +8,9 @@ export const DEFAULT_BACKGROUND_COLOR = '#ffffff';
 export const DEFAULT_PATTERN_COLOR = '#cbd5e1'; // slate-300
 
 // The same canvas in dark appearance: the Default colour scheme's dark half
-// (docs/specs/007-editor/live-app.md), and before that the Charcoal scheme it absorbed. Neutral zinc
-// rather than a hue, because this is the un-themed canvas — anything tinted
-// would be a choice, and the tinted darks (Midnight, Pine, Plum) are where a
-// choice belongs. Dots a step up from the backdrop so grid and outlines read
-// as one material.
-export const DARK_CANVAS_BACKGROUND_COLOR = '#2b2b33';
-export const DARK_CANVAS_PATTERN_COLOR = '#636373';
+// (docs/specs/008-canvas/canvas-and-palette.md, Default scheme, dark half). The blue-slate of the dark
+// chrome, so paper and panels read as one material. The grid is #2e4057 at 45 %
+// over the canvas, stored as the opaque blend so every renderer paints the same
+// colour without knowing about the alpha.
+export const DARK_CANVAS_BACKGROUND_COLOR = '#0d121a';
+export const DARK_CANVAS_PATTERN_COLOR = '#1c2735';

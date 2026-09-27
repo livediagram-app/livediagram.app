@@ -1,5 +1,6 @@
 import { initialsOf, randomName, type Participant } from '@/lib/identity';
 import { RefreshIcon, HoverCard } from '@livediagram/ui';
+import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
 
 // The picker's identity row (docs/specs/007-editor/new-diagram-route.md welcome + join flows): the avatar
 // bubble, the display-name input (read-only when the name is dictated
@@ -24,8 +25,8 @@ export function TemplatePickerIdentityRow({
       <div
         role="img"
         aria-label={`Your avatar colour: ${participant.color}`}
-        style={{ backgroundColor: participant.color }}
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-white"
+        style={identityVars(participant.color)}
+        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-white ${IDENTITY_FILL}`}
       >
         {initialsOf(effectiveName)}
       </div>
@@ -50,7 +51,7 @@ export function TemplatePickerIdentityRow({
           className={
             nameLocked
               ? 'mt-0.5 w-full cursor-default bg-transparent text-sm text-slate-500 outline-none dark:text-slate-400'
-              : 'mt-0.5 w-full bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-400 dark:text-slate-100 dark:placeholder:text-slate-500'
+              : 'mt-0.5 w-full bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-400 dark:text-slate-100 dark:placeholder:text-slate-400'
           }
         />
       </div>

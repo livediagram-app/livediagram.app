@@ -79,11 +79,11 @@ export function SettingsCategoryList({
                 actually goes somewhere. On the sidebar the pane is already
                 on screen, so a "there's more this way" arrow would lie. */}
             {searching && count > 0 ? (
-              <span className="shrink-0 rounded-full bg-brand-100 px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-brand-700 dark:bg-brand-500/25 dark:text-brand-100">
-                {count}
+              <span className="inline-flex h-[19px] shrink-0 items-center rounded-full bg-brand-100 px-1.5 text-[10px] font-semibold tabular-nums text-brand-700 dark:bg-brand-500/25 dark:text-brand-100">
+                <span className="text-optical-centre">{count}</span>
               </span>
             ) : null}
-            {isRoot ? <NavChevron className="text-slate-400 dark:text-slate-500" /> : null}
+            {isRoot ? <NavChevron className="text-slate-400" /> : null}
           </button>
         );
       })}

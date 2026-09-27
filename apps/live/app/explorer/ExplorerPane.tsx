@@ -11,7 +11,7 @@ import { CardView } from './CardView';
 import { useExplorerViewMode } from './useExplorerViewMode';
 import { EmptyPane } from './ExplorerEmptyState';
 import { DynamicFolderInfo } from './DynamicFolderInfo';
-import { TimelineControls } from '@livediagram/ui';
+import { TimelineControls, SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
 import { DiagramHistoryDialog } from '@/components/panels/DiagramHistoryDialog';
 import { isOfflineIdSync } from '@/lib/offline/offline-store';
 import { useTimelineFeed } from './useTimelineFeed';
@@ -311,12 +311,12 @@ export function ExplorerPane() {
             <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
               Sign in to use API tokens
             </p>
-            <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
+            <p className="mt-1 text-xs text-slate-400">
               API tokens are an account feature for calling the API from your own scripts.
             </p>
             <a
               href={signInHref}
-              className="mt-3 inline-block rounded-md bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-brand-500"
+              className={`mt-3 inline-block rounded-md bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-brand-500 ${SOLID_BRAND_DARK_CONTROL}`}
             >
               Sign in
             </a>

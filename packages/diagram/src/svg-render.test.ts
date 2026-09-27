@@ -829,3 +829,26 @@ describe('blank lines in a wrapped label', () => {
     expect(tspans).toEqual(['1', '\u00a0', '2']);
   });
 });
+
+// An arrow caption on dark paper (docs/specs/008-canvas/canvas-and-palette.md, Default scheme, dark half): the
+// export paints what the canvas does, so an uncoloured arrow's caption is a step lighter than its line.
+describe('caption colour on dark paper', () => {
+  const render = (o: Partial<ArrowElement>) =>
+    renderElementsToSvg(
+      tab([shape('a'), shape('b', { x: 200 }), pinnedArrow('r', 'a', 'b', { label: 'Go', ...o })], {
+        backgroundColor: '#0d121a',
+      }),
+    );
+
+  it('paints the line in the dark ink and the caption in slate-400', () => {
+    const svg = render({});
+    expect(svg).toContain('stroke="#64748b"');
+    expect(svg).toMatch(/<text[^>]*fill="#94a3b8"[^>]*>(<tspan[^>]*>)?Go</);
+  });
+
+  it('lets a coloured arrow keep its caption in step with its line', () => {
+    expect(render({ strokeColor: '#dc2626' })).toMatch(
+      /<text[^>]*fill="#dc2626"[^>]*>(<tspan[^>]*>)?Go</,
+    );
+  });
+});

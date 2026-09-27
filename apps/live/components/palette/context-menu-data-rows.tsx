@@ -120,7 +120,7 @@ export function RatingPickerRow({
   return (
     <div className="px-2 py-1.5">
       <p className="px-1 pb-1 text-[10px] font-medium text-slate-500 dark:text-slate-400">Stars</p>
-      <div className="flex items-center justify-center gap-1 text-slate-400 dark:text-slate-500">
+      <div className="flex items-center justify-center gap-1 text-slate-400">
         {Array.from({ length: RATING_MAX }, (_, i) => {
           const n = i + 1;
           return (

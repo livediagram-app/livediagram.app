@@ -136,7 +136,7 @@ export function TokensPane({
                 <dl className="mt-3.5 space-y-1.5 border-t border-slate-100 pt-3 text-xs dark:border-slate-700/60">
                   {rows.map(([label, value]) => (
                     <div key={label} className="flex items-baseline justify-between gap-2">
-                      <dt className="text-slate-400 dark:text-slate-500">{label}</dt>
+                      <dt className="text-slate-400">{label}</dt>
                       <dd className="truncate font-medium text-slate-600 dark:text-slate-300">
                         {value}
                       </dd>
@@ -146,7 +146,7 @@ export function TokensPane({
                 <button
                   type="button"
                   onClick={(e) => setConfirm({ id: t.id, anchor: e.currentTarget })}
-                  className="mt-3 self-end rounded-md px-2.5 py-1 text-xs font-medium text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 dark:text-slate-500 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
+                  className="mt-3 self-end rounded-md px-2.5 py-1 text-xs font-medium text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
                 >
                   Revoke
                 </button>

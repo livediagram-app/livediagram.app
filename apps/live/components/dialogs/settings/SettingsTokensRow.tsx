@@ -43,7 +43,7 @@ export function SettingsTokensRow({ row }: { row: SettingsTokensRowSpec }) {
               Sign in to create API tokens.
             </p>
           ) : list === null ? (
-            <p className="text-xs text-slate-400 dark:text-slate-500">Loading…</p>
+            <p className="text-xs text-slate-400 dark:text-slate-400">Loading…</p>
           ) : list.length === 0 ? (
             <p className="text-xs text-slate-500 dark:text-slate-400">
               No tokens yet.{' '}
@@ -65,7 +65,7 @@ export function SettingsTokensRow({ row }: { row: SettingsTokensRowSpec }) {
                         Read-only
                       </span>
                     ) : null}
-                    <span className="text-[10px] text-slate-400 dark:text-slate-500">
+                    <span className="text-[10px] text-slate-400 dark:text-slate-400">
                       {token.lastUsedAt ? `Used ${shortDate(token.lastUsedAt)}` : 'Never used'}
                     </span>
                   </span>

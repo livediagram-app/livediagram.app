@@ -202,7 +202,7 @@ function SyntheticFolderRow({
         onClick={onOpen}
         className="flex min-w-0 items-center gap-2 text-left"
       >
-        <span className="shrink-0 text-slate-400 dark:text-slate-500">
+        <span className="shrink-0 text-slate-400">
           <Icon />
         </span>
         <span className="truncate text-sm font-medium text-slate-900 group-hover:text-brand-700 dark:text-slate-100 dark:group-hover:text-brand-300">
@@ -277,7 +277,7 @@ export function SharedList({
                 type="button"
                 onClick={() => onDismiss(s.id)}
                 aria-label={DISMISS_SHARED.ariaLabel(s.name)}
-                className="inline-flex h-7 w-7 items-center justify-center rounded text-slate-400 transition hover:bg-rose-50 hover:text-rose-700 dark:text-slate-500 dark:hover:bg-rose-500/15 dark:hover:text-rose-300"
+                className="inline-flex h-7 w-7 items-center justify-center rounded text-slate-400 transition hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-500/15 dark:hover:text-rose-300"
               >
                 <DismissSharedIcon />
               </button>

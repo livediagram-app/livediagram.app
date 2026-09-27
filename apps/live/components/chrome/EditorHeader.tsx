@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { NameEditor } from '@/components/primitives/NameEditor';
-import { Brand, ProductNav, HoverCard } from '@livediagram/ui';
+import { Brand, ProductNav, HoverCard, SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
 import { AuthControls } from '@/components/chrome/AuthControls';
 import { SharedBadge } from '@/components/chrome/SharedBadge';
 
@@ -158,7 +158,7 @@ export function EditorHeader({
               onClick={onOpenShare}
               className={`${HEADER_ACTION_BTN} ${
                 shareable
-                  ? 'bg-brand-500 text-white hover:bg-brand-600'
+                  ? `bg-brand-500 text-white hover:bg-brand-600 ${SOLID_BRAND_DARK_CONTROL}`
                   : 'text-slate-600 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800'
               }`}
               aria-pressed={shareable}

@@ -68,7 +68,7 @@ pointer events from bubbling, and the hint must still see them.
 | T2  | `pointerleave`, `pointerType !== 'touch'`  |                                       | clear `overTrigger`; cancel open; `settle()`                                               |
 | T3  | surface `pointerenter`                     |                                       | `overSurface`; cancel close                                                                |
 | T4  | surface `pointerleave`                     |                                       | clear `overSurface`; `settle()`                                                            |
-| T5  | `focus` (bubbled)                          | target matches `:focus-visible` (D11) | `focused`; unless `dismissed`, cancel timers and open now, source `focus`                  |
+| T5  | `focus` (bubbled)                          | target matches `:focus-visible` (D27) | `focused`; unless `dismissed`, cancel timers and open now, source `focus`                  |
 | T6  | `blur` (bubbled)                           |                                       | clear `focused`; `settle()`                                                                |
 | T7  | `pointerdown`, not touch                   |                                       | cancel open; close; `dismissed`                                                            |
 | T8  | `pointerdown`, touch                       | `!hasVisibleText(anchor)`             | clear `suppressClick`; remember the point; `pressTimer` for `HINT_LONG_PRESS_MS`           |
@@ -81,7 +81,7 @@ pointer events from bubbling, and the hint must still see them.
 | T15 | unmount                                    |                                       | clear every timer; release the registry                                                    |
 
 `settle()`: if none of `overTrigger`, `overSurface`, `focused` holds, clear `dismissed` and, when open, close after
-`HINT_CLOSE_GRACE_MS`. A blur with the pointer elsewhere therefore closes after the same grace (D10).
+`HINT_CLOSE_GRACE_MS`. A blur with the pointer elsewhere therefore closes after the same grace (D26).
 
 `openDelayMs(kind, now)`: `0` for a hover card; for a tooltip, `0` when `isTooltipWarm(now)`, else
 `TOOLTIP_OPEN_DELAY_MS`.
@@ -141,13 +141,13 @@ export function placeHint(input: {
 }): { left: number; top: number; placement: HintPlacement; arrowOffset: number };
 ```
 
-- The anchor is the wrapper's `firstElementChild`, falling back to the wrapper itself (D15).
+- The anchor is the wrapper's `firstElementChild`, falling back to the wrapper itself (D31).
 - `Tooltip` wraps its child in `<span class="contents">`, so the child keeps its place in grid and flex layouts
   and no caller needs a layout prop. `HoverCard` keeps its `inline-flex` / `block` wrapper and its `className` /
   `style` pass-through, because 130 call sites already lay out through it.
 - An empty `label` renders the child alone, with no wrapper handlers.
 - `role="tooltip"` on both surfaces, each with a `useId` id. The trigger is not given `aria-describedby`: a tooltip
-  repeats the accessible name, so describing by it would announce the name twice (D14).
+  repeats the accessible name, so describing by it would announce the name twice (D30).
 
 Placement (moved unchanged from the old `Tooltip`): try top, bottom, right, left in that order and take the first whose
 box fits inside the viewport less `margin`; if none fits, top. Top and bottom centre on the trigger and clamp
@@ -198,7 +198,7 @@ surface.
 | Tooltip    | `rounded-md bg-slate-900 px-2 py-1 text-xs font-medium text-white` / `dark:bg-slate-700 dark:text-slate-50 dark:ring-1 dark:ring-slate-600` | 6px  | 8px   |
 | Hover card | `w-56 rounded-lg border bg-white px-3 py-2 shadow-lg` / `dark:border-slate-700 dark:bg-slate-800` (unchanged)                               | 10px | 10px  |
 
-- Tooltip: `max-w-xs`, text wraps, never truncates (D12).
+- Tooltip: `max-w-xs`, text wraps, never truncates (D28).
 - Both: `fixed`, `z-[var(--z-toast)]`, `pointer-events-auto` (hoverable), `animate-fade-in motion-reduce:animate-none`;
   `fade-in` runs at the `micro` motion token (150ms).
   Measured off-screen and `visibility: hidden` for the first frame so the fade starts in place.
@@ -223,7 +223,7 @@ surface.
 ## Observability
 
 - `console.warn('[tooltip] label is not the accessible name', { label, name })` when a Tooltip opens on a trigger
-  whose accessible name (`aria-label`, then `aria-labelledby` text, then text content) does not contain `label` (D16).
+  whose accessible name (`aria-label`, then `aria-labelledby` text, then text content) does not contain `label` (D32).
 - The lint rule reports every native `title` outside the exceptions, with a message naming the two components.
 - Nothing is logged per open: hovering is not an event worth a line (spec: no telemetry).
 
@@ -256,11 +256,11 @@ surface.
 | ------------------------- | ----- | ---------------------------------------------------------- | ---------- |
 | `TOOLTIP_OPEN_DELAY_MS`   | 1000  | Spec                                                       | 500–1500   |
 | `TOOLTIP_WARMUP_MS`       | 500   | Spec                                                       | 300–1000   |
-| `HINT_CLOSE_GRACE_MS`     | 100   | D9: crosses the 6–10px gap at any human speed              | 50–300     |
+| `HINT_CLOSE_GRACE_MS`     | 100   | D25: crosses the 6–10px gap at any human speed             | 50–300     |
 | `HINT_LONG_PRESS_MS`      | 500   | Spec; `apps/live/hooks/ui/useLongPress.ts` `LONG_PRESS_MS` | 400–800    |
 | `HINT_LONG_PRESS_SLOP_PX` | 10    | Spec; `useLongPress` `MOVE_SLOP_PX`                        | 6–16       |
 | `HINT_TOUCH_LINGER_MS`    | 1500  | Spec                                                       | 1000–3000  |
-| `TOOLTIP_GAP_PX`          | 6     | D13                                                        | 4–10       |
+| `TOOLTIP_GAP_PX`          | 6     | D29                                                        | 4–10       |
 | `HOVER_CARD_GAP_PX`       | 10    | Unchanged from the old `Tooltip` `GAP`                     | 6–14       |
 | `POPOVER_VIEWPORT_MARGIN` | 8     | Existing, `packages/ui/src/popover.ts`                     | 4–16       |
 

@@ -13,6 +13,7 @@
 // grips need a constant hit size.
 import { initialsOf } from '@/lib/identity';
 import { ActionIcon, CommentIcon, LinkIcon, NoteIcon, HoverCard } from '@livediagram/ui';
+import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
 
 // Below this canvas zoom the on-element adornments (badge pill, lock
 // badge, remote-selector avatars) disappear entirely.
@@ -47,8 +48,8 @@ export function RemoteSelectorsStrip({
           >
             <div
               aria-label={`Locked to ${p.name}`}
-              style={{ backgroundColor: p.color }}
-              className="flex h-5 w-5 items-center justify-center rounded-full border border-white text-[9px] font-semibold text-white shadow-sm"
+              style={identityVars(p.color)}
+              className={`flex h-5 w-5 items-center justify-center rounded-full border border-white text-[9px] font-semibold text-white shadow-sm ${IDENTITY_FILL}`}
             >
               {initialsOf(p.name)}
             </div>
@@ -156,7 +157,7 @@ export function BadgeStrip({
         >
           <CommentIcon size={13} strokeWidth={1.75} />
           <span className="absolute right-0 top-0 flex h-3 min-w-[12px] items-center justify-center rounded-full bg-rose-500 px-0.5 text-[8px] font-semibold leading-none text-white">
-            {commentCount}
+            <span className="text-optical-centre">{commentCount}</span>
           </span>
         </BadgeButton>
       ),
@@ -166,8 +167,8 @@ export function BadgeStrip({
   return (
     <div
       onPointerDown={(e) => e.stopPropagation()}
-      style={{ backgroundColor: badgeColor }}
-      className="pointer-events-auto absolute -right-1 -top-1 flex items-stretch overflow-hidden rounded-full shadow-sm ring-1 ring-white/60"
+      style={identityVars(badgeColor)}
+      className={`pointer-events-auto absolute -right-1 -top-1 flex items-stretch overflow-hidden rounded-full shadow-sm ring-1 ring-white/60 ${IDENTITY_FILL}`}
     >
       {segments.map((seg, i) => (
         <span key={seg.key} className={`flex ${i > 0 ? 'border-l border-white/35' : ''}`}>
@@ -203,8 +204,8 @@ function BadgeButton({
       // A SEGMENT of the connected pill (the wrapper owns the shared
       // theme-coloured background + rounding): rectangular hit area,
       // hover brightens just this segment.
-      style={{ backgroundColor: color }}
-      className="relative flex h-6 w-7 items-center justify-center text-white transition hover:brightness-110"
+      style={identityVars(color)}
+      className={`relative flex h-6 w-7 items-center justify-center text-white transition hover:brightness-110 ${IDENTITY_FILL}`}
       {...extra}
     >
       {children}

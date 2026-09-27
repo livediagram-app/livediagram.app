@@ -22,9 +22,9 @@
 // (useOpenDockPanelOnChange), since that is exactly when you want it.
 
 import { tallyPoll, type LivePoll, type PollTallyRow } from '@livediagram/api-schema';
-import { HoverCard } from '@livediagram/ui';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import type { MovablePanelPlacementProps } from '@/components/primitives/MovablePanel.types';
+import { HoverCard, SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
 
 export function PollPanel({
   poll,
@@ -82,9 +82,7 @@ export function PollPanel({
         <div className="flex flex-col gap-1.5">
           {poll.style === 'text' ? (
             textAnswers.length === 0 ? (
-              <p className="text-[11px] italic text-slate-400 dark:text-slate-500">
-                No answers yet.
-              </p>
+              <p className="text-[11px] italic text-slate-400">No answers yet.</p>
             ) : (
               <ul className="flex max-h-40 flex-col gap-1 overflow-y-auto">
                 {textAnswers.map((text, i) => (
@@ -102,7 +100,7 @@ export function PollPanel({
           )}
         </div>
 
-        <p className="text-[10px] text-slate-400 dark:text-slate-500">
+        <p className="text-[10px] text-slate-400">
           {answered} answered &middot; {skipped} skipped
         </p>
 
@@ -127,7 +125,7 @@ export function PollPanel({
                   <button
                     type="button"
                     onClick={onKeepResults}
-                    className="flex h-7 w-full items-center justify-center rounded-md bg-brand-500 px-2 text-[11px] font-semibold text-white transition hover:bg-brand-600"
+                    className={`flex h-7 w-full items-center justify-center rounded-md bg-brand-500 px-2 text-[11px] font-semibold text-white transition hover:bg-brand-600 ${SOLID_BRAND_DARK_CONTROL}`}
                   >
                     Keep Results
                   </button>

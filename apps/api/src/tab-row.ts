@@ -1,4 +1,4 @@
-import { migrateStoredElements, type Tab } from '@livediagram/diagram';
+import { migrateStoredTab, type Tab } from '@livediagram/diagram';
 import type { TabDTO, TabSummaryDTO } from './types';
 
 // tabs row shape as read from D1. The `data` column is the
@@ -39,13 +39,12 @@ export type TabRow = {
 // a forged `data` blob can't override id / name / diagramId / orderIndex
 // / updatedAt with its own values.
 export function rowToTab(row: TabRow): TabDTO {
-  const data = JSON.parse(row.data) as Omit<Tab, 'id' | 'name'>;
+  // Every tab read passes through here, so this is where stored tabs are
+  // migrated: retired schemes (docs/specs/011-theme/retired-schemes.md) and retired element fields
+  // (docs/specs/009-elements/web-components-and-no-groups.md groups, docs/specs/021-event-storming/event-storming.md docks). The same object for any other tab.
+  const data = migrateStoredTab(JSON.parse(row.data) as Omit<Tab, 'id' | 'name'>);
   return {
     ...data,
-    // Every tab read passes through here, so this is where retired element
-    // fields are frozen out (docs/specs/009-elements/web-components-and-no-groups.md groups, docs/specs/021-event-storming/event-storming.md docks). A no-op, same
-    // array, for any other tab.
-    ...(Array.isArray(data.elements) ? { elements: migrateStoredElements(data.elements) } : {}),
     id: row.id,
     name: row.name,
     diagramId: row.diagram_id,

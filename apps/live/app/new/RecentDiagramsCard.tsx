@@ -65,9 +65,7 @@ export function RecentDiagramsCard({
           <span className="text-[11px] font-semibold uppercase tracking-wider text-brand-700 dark:text-brand-300">
             Jump back in
           </span>
-          <span className="text-[10px] text-slate-400 dark:text-slate-500">
-            Your recent diagrams
-          </span>
+          <span className="text-[10px] text-slate-400">Your recent diagrams</span>
         </div>
       </div>
       <ul className="flex flex-col p-1.5">
@@ -82,9 +80,7 @@ export function RecentDiagramsCard({
                   {d.name || 'Untitled diagram'}
                 </span>
                 {d.savedAt != null ? (
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500">
-                    {relativeSince(d.savedAt)}
-                  </span>
+                  <span className="text-[10px] text-slate-400">{relativeSince(d.savedAt)}</span>
                 ) : null}
               </span>
               <ChevronRight />

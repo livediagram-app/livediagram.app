@@ -105,9 +105,7 @@ export function SettingsRowShell({
         {/* Settings now lists every preference, including the ones whose
             day-to-day home is a panel's own gear. Saying so keeps the two
             from reading as rival controls for the same thing. */}
-        {row.alsoIn ? (
-          <span className="block text-slate-400 dark:text-slate-500">Also in {row.alsoIn}.</span>
-        ) : null}
+        {row.alsoIn ? <span className="block text-slate-400">Also in {row.alsoIn}.</span> : null}
       </p>
     </div>
   );
@@ -121,7 +119,7 @@ function InfoGlyph() {
       viewBox="0 0 12 12"
       fill="none"
       aria-hidden
-      className="mt-0.5 shrink-0 text-brand-500"
+      className="mt-0.5 shrink-0 text-brand-500 dark:text-brand-400"
     >
       <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.2" />
       <path d="M6 5.4v3M6 3.6h.01" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />

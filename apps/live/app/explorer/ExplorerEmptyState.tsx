@@ -19,7 +19,7 @@ import {
 } from '@/components/primitives/explorer-icons';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-import { EmptyState } from '@livediagram/ui';
+import { EmptyState, SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
 import { helpArticleHref } from '@/lib/help-articles';
 import type { SelectedNode } from './views';
 
@@ -107,7 +107,7 @@ export function EmptyPane({ selected }: { selected: SelectedNode }) {
             href={helpArticleHref('connectAiTool')}
             target="_blank"
             rel="noreferrer noopener"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-500"
+            className={`inline-flex items-center gap-1.5 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-500 ${SOLID_BRAND_DARK_CONTROL}`}
           >
             <SparkleIcon />
             {c.cta}
@@ -125,7 +125,7 @@ export function EmptyPane({ selected }: { selected: SelectedNode }) {
       {c.cta ? (
         <Link
           href={ctaHref}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-500"
+          className={`inline-flex items-center gap-1.5 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-500 ${SOLID_BRAND_DARK_CONTROL}`}
         >
           <PlusIcon size={14} />
           {c.cta}

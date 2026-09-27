@@ -31,7 +31,7 @@ import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import type { SlideDeckState } from '@/app/diagram/[id]/useSlideDeck';
 import { track } from '@/lib/telemetry';
 import { isDragTravel } from '@/lib/press-gestures';
-import { HoverCard } from '@livediagram/ui';
+import { HoverCard, SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
 
 function PlayIcon() {
   return (
@@ -179,13 +179,13 @@ function SlideRow({
           <span
             className={`truncate text-[11px] font-medium ${
               slide.hidden
-                ? 'text-slate-400 line-through dark:text-slate-500'
+                ? 'text-slate-400 line-through dark:text-slate-400'
                 : 'text-slate-700 dark:text-slate-200'
             }`}
           >
             {slideName(slide, index)}
           </span>
-          <span className="truncate text-[9px] text-slate-400 dark:text-slate-500">
+          <span className="truncate text-[9px] text-slate-400">
             {/* The tab is named because a deck spans tabs: "3 elements" on its
                 own does not say which board they are on. A slide whose tab has
                 been deleted says so rather than showing a blank. */}
@@ -360,7 +360,7 @@ export function SlideDeckPanel({
     >
       <div className="flex max-h-[26rem] flex-col gap-2 px-2 pb-2">
         {deck.slides.length === 0 ? (
-          <p className="px-1 py-3 text-center text-[11px] leading-snug text-slate-400 dark:text-slate-500">
+          <p className="px-1 py-3 text-center text-[11px] leading-snug text-slate-400 dark:text-slate-400">
             No slides yet. Select what you want on the first slide, then press{' '}
             <span className="font-medium text-slate-500 dark:text-slate-300">New slide</span>.
           </p>
@@ -417,7 +417,7 @@ export function SlideDeckPanel({
         {notesSlide && !isReadOnly ? (
           <label className="flex flex-col gap-1">
             <span className="flex items-center justify-between px-0.5">
-              <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
+              <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-400">
                 Notes · {slideName(notesSlide, deck.slides.indexOf(notesSlide))}
               </span>
               <button
@@ -454,7 +454,7 @@ export function SlideDeckPanel({
                 decided while WRITING the talk rather than while giving it.
                 Blank means no target, which is most slides. */}
             <span className="flex items-center gap-2 px-0.5 pt-0.5">
-              <span className="text-[10px] text-slate-400 dark:text-slate-500">Budget</span>
+              <span className="text-[10px] text-slate-400">Budget</span>
               <input
                 type="number"
                 min={0}
@@ -467,7 +467,7 @@ export function SlideDeckPanel({
                 aria-label={`Minutes budgeted for ${slideName(notesSlide, deck.slides.indexOf(notesSlide))}`}
                 className="w-14 rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-[11px] tabular-nums text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-brand-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
               />
-              <span className="text-[10px] text-slate-400 dark:text-slate-500">
+              <span className="text-[10px] text-slate-400">
                 min · shown in the HUD if you turn the budget on
               </span>
             </span>
@@ -491,13 +491,13 @@ export function SlideDeckPanel({
           type="button"
           onClick={() => void start()}
           disabled={runnable.length === 0 || startingDeck}
-          className="flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-md bg-brand-600 px-2 py-2 text-[11px] font-semibold text-white transition hover:bg-brand-700 disabled:cursor-default disabled:opacity-40"
+          className={`flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-md bg-brand-600 px-2 py-2 text-[11px] font-semibold text-white transition hover:bg-brand-700 disabled:cursor-default disabled:opacity-40 ${SOLID_BRAND_DARK_CONTROL}`}
         >
           <PlayIcon />
           {startingDeck ? 'Loading…' : 'Present'}
           {runnable.length > 0 && !startingDeck ? (
-            <span className="rounded-full bg-white/25 px-1.5 py-px text-[10px] font-semibold tabular-nums">
-              {runnable.length}
+            <span className="inline-flex h-[17px] items-center rounded-full bg-white/25 px-1.5 text-[10px] font-semibold tabular-nums">
+              <span className="text-optical-centre">{runnable.length}</span>
             </span>
           ) : null}
         </button>

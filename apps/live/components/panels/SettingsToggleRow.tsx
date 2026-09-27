@@ -51,7 +51,7 @@ export function SettingsToggleRow({
     >
       <span className="flex min-w-0 flex-col">
         <span className="text-xs font-medium text-slate-700 dark:text-slate-200">{label}</span>
-        <span className="text-[10px] leading-snug text-slate-400 dark:text-slate-500">{hint}</span>
+        <span className="text-[10px] leading-snug text-slate-400">{hint}</span>
       </span>
       <ToggleSwitch checked={checked} label={label} presentational />
     </button>

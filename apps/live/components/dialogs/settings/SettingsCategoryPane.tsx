@@ -56,7 +56,7 @@ export function SettingsCategoryPane({
       {groups.map((group, groupIndex) => (
         <section key={group.section ?? groupIndex} className="flex flex-col gap-5">
           {group.section ? (
-            <h3 className="-mb-1.5 px-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+            <h3 className="-mb-1.5 px-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-400">
               {group.section}
             </h3>
           ) : null}

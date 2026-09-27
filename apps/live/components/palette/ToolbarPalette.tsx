@@ -389,7 +389,7 @@ export function ToolbarPalette(props: Props) {
                 style={isMobile ? undefined : { right: moreRight }}
                 className={`absolute top-full mt-2 max-h-[calc(100dvh-14rem)] ${isMobile ? 'inset-x-3' : 'w-[26rem]'} origin-top-right animate-dropdown-down overflow-y-auto overflow-x-hidden rounded-xl border border-slate-200 bg-white px-2 py-2.5 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40`}
               >
-                <div className="mb-2 px-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                <div className="mb-2 px-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
                   {category.label}
                 </div>
                 {category.content}

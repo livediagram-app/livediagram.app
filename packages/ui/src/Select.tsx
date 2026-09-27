@@ -50,7 +50,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
       <select ref={ref} className={`${BASE} ${VARIANTS[variant]} ${SIZES[size]}`} {...rest}>
         {children}
       </select>
-      <ChevronDownIcon className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
+      <ChevronDownIcon className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-400" />
     </span>
   );
 });

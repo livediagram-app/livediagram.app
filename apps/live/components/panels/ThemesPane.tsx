@@ -20,6 +20,7 @@ import {
   PlusIcon,
   TrashSimpleIcon,
   HoverCard,
+  SOLID_BRAND_DARK_CONTROL,
 } from '@livediagram/ui';
 import { ThemeBuilderModal, themeDeleteConfirm } from './ThemeBuilderModal';
 import { ThemeSwatch } from '@/components/primitives/ThemeSwatch';
@@ -67,7 +68,7 @@ export function ThemesPane() {
           <button
             type="button"
             onClick={() => setBuilding('new')}
-            className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-500"
+            className={`rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-500 ${SOLID_BRAND_DARK_CONTROL}`}
           >
             New theme
           </button>

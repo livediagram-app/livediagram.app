@@ -70,8 +70,8 @@ export function PaletteTileGroup({
             <span className="truncate text-[11px] font-semibold text-slate-700 dark:text-slate-200">
               {title}
             </span>
-            <span className="shrink-0 rounded-full bg-slate-100 px-1.5 text-[9px] font-semibold leading-[1.4] text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-              {tiles.length}
+            <span className="inline-flex h-[12.6px] shrink-0 items-center rounded-full bg-slate-100 px-1.5 text-[9px] font-semibold text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+              <span className="text-optical-centre">{tiles.length}</span>
             </span>
           </span>
           <span className="line-clamp-2 text-[10px] leading-snug text-slate-500 dark:text-slate-400">

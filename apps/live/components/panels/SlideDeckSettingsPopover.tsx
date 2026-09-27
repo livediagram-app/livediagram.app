@@ -42,9 +42,7 @@ function ChoiceRow<T extends string | number>({
   return (
     <div className="flex flex-col gap-1 px-2 py-1.5">
       <span className="text-[11px] font-medium text-slate-700 dark:text-slate-200">{label}</span>
-      {hint ? (
-        <span className="text-[10px] leading-tight text-slate-400 dark:text-slate-500">{hint}</span>
-      ) : null}
+      {hint ? <span className="text-[10px] leading-tight text-slate-400">{hint}</span> : null}
       <div className="flex gap-1 pt-0.5">
         {options.map((o) => (
           <HoverCard key={String(o.id)} title={o.label} description={o.hint} className="flex-1">

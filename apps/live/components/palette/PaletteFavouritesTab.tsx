@@ -272,7 +272,7 @@ export function PaletteFavouritesTab({
         )
       ) : favouriteTiles.length === 0 ? (
         showEmptyHint ? (
-          <p className="px-1 py-2 text-center text-[11px] text-slate-400 dark:text-slate-500">
+          <p className="px-1 py-2 text-center text-[11px] text-slate-400">
             {recent ? 'No favourites yet.' : 'No favourites yet — Edit to add some.'}
           </p>
         ) : null

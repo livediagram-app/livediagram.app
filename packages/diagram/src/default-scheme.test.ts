@@ -26,7 +26,7 @@ describe('the Default colour scheme', () => {
     expect(light.label).toBe(dark.label);
     // Different canvas.
     expect(light.backgroundColor).toBe('#ffffff');
-    expect(dark.backgroundColor).toBe('#2b2b33');
+    expect(dark.backgroundColor).toBe('#0d121a');
     expect(light.patternColor).not.toBe(dark.patternColor);
   });
 
@@ -46,31 +46,22 @@ describe('the Default colour scheme', () => {
   });
 
   it('answers an unknown id with the Default scheme for that appearance', () => {
-    expect(getBuiltInTheme(undefined, 'dark').backgroundColor).toBe('#2b2b33');
+    expect(getBuiltInTheme(undefined, 'dark').backgroundColor).toBe('#0d121a');
     expect(getBuiltInTheme('not-a-scheme', 'light').backgroundColor).toBe('#ffffff');
   });
 });
 
-// Charcoal was merged into Default, but diagrams saved against it are still out
-// there. Dropping the id would silently repaint someone's board, so it stays
-// resolvable — just not offered.
+// Charcoal was merged into Default. Diagrams saved against it are migrated to
+// Default on read (docs/specs/011-theme/retired-schemes.md), so the catalogue no longer carries it at all.
 describe('the Charcoal scheme it replaced', () => {
   it('is no longer offered in the catalogue', () => {
     expect(THEMES.map((t) => t.id)).not.toContain('charcoal');
   });
 
-  it('still resolves, with the colours it always had', () => {
-    const charcoal = getBuiltInTheme('charcoal');
-    expect(charcoal.id).toBe('charcoal');
-    expect(charcoal.backgroundColor).toBe('#2b2b33');
-    // Its element colours are BAKED into those diagrams' elements, so the
-    // scheme has to keep matching them.
-    expect(charcoal.elementFill).toBe('#2c2c33');
-    expect(charcoal.elementStroke).toBe('#a1a1aa');
-    expect(charcoal.elementText).toBe('#e4e4e7');
-  });
-
-  it('ignores the appearance, unlike Default', () => {
-    expect(getBuiltInTheme('charcoal', 'light')).toEqual(getBuiltInTheme('charcoal', 'dark'));
+  it('no longer resolves as a scheme of its own', () => {
+    expect(getBuiltInTheme('charcoal', 'dark')).toEqual(getBuiltInTheme(DEFAULT_SCHEME_ID, 'dark'));
+    expect(getBuiltInTheme('charcoal', 'light')).toEqual(
+      getBuiltInTheme(DEFAULT_SCHEME_ID, 'light'),
+    );
   });
 });

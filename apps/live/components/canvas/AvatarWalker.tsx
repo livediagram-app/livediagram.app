@@ -11,6 +11,7 @@ import { avatarScale, type AvatarConfig } from '@/lib/avatar-config';
 import type { AvatarFacing } from '@/lib/avatar-walk';
 import { AVATAR_HEIGHT, avatarBox } from '@/lib/avatar-walk';
 import { AvatarSprite } from '@/components/canvas/avatar-sprite';
+import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
 
 export function AvatarWalker({
   pos,
@@ -95,11 +96,11 @@ export function AvatarWalker({
       >
         {name ? (
           <div
-            className="absolute left-1/2 max-w-[120px] -translate-x-1/2 truncate rounded px-1.5 py-0.5 text-[10px] font-semibold leading-tight text-white"
+            className={`absolute left-1/2 max-w-[120px] -translate-x-1/2 truncate rounded px-1.5 py-0.5 text-[10px] font-semibold leading-tight text-white ${IDENTITY_FILL}`}
             // Pinned just above the HEAD, not the (headroom-extended) box, and
             // tracking the size choice so it hugs a small character too.
             style={{
-              backgroundColor: shirt ?? '#0ea5e9',
+              ...identityVars(shirt ?? '#0ea5e9'),
               top: box.offsetY - AVATAR_HEIGHT * scale - 16,
             }}
           >

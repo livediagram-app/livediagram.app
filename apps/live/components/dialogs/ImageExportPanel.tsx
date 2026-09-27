@@ -72,7 +72,7 @@ export function ImageExportPanel({
             dangerouslySetInnerHTML={{ __html: previewSvg }}
           />
         ) : (
-          <span className="text-xs text-slate-400 dark:text-slate-500">Preparing preview…</span>
+          <span className="text-xs text-slate-400">Preparing preview…</span>
         )}
       </div>
       {/* Isometric toggle. The help `?` sits beside the LABEL, not at the

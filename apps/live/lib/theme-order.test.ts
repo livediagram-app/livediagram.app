@@ -56,6 +56,6 @@ describe('darkCategorySchemes', () => {
   });
 
   it('shows Default as its dark half, so the card matches its company', () => {
-    expect(darkCategorySchemes(THEMES)[0]?.backgroundColor).toBe('#2b2b33');
+    expect(darkCategorySchemes(THEMES)[0]?.backgroundColor).toBe('#0d121a');
   });
 });

@@ -74,7 +74,7 @@ export function TourLayoutPicker() {
           );
         })}
       </div>
-      <p className="text-[11px] leading-snug text-slate-400 dark:text-slate-500">
+      <p className="text-[11px] leading-snug text-slate-400">
         You can change this any time in Settings.
       </p>
     </div>

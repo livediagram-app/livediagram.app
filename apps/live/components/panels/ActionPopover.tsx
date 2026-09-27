@@ -3,7 +3,13 @@
 // The docs/specs/012-collaboration/assigned-actions.md clipboard-with-tick action glyph, shared with the context
 // menu's Assign Action tile so the two surfaces can't drift.
 import { ActionMenuIcon as ClipboardIcon } from '@/components/palette/context-menu-icons';
-import { CloseIcon, TrashIcon, useClickOutside, useEscape } from '@livediagram/ui';
+import {
+  CloseIcon,
+  TrashIcon,
+  useClickOutside,
+  useEscape,
+  SOLID_BRAND_DARK,
+} from '@livediagram/ui';
 import { useRef, useState } from 'react';
 import type { ElementAction } from '@livediagram/diagram';
 import { Portal } from '@/components/primitives/Portal';
@@ -92,7 +98,7 @@ export function ActionPopover({
       >
         <header className="flex items-center justify-between border-b border-slate-100 px-3 py-2 dark:border-slate-800">
           <h3 className="flex items-center gap-1.5 text-xs font-semibold text-slate-800 dark:text-slate-100">
-            <span className="text-slate-400 dark:text-slate-500">
+            <span className="text-slate-400">
               <ClipboardIcon />
             </span>
             Action
@@ -129,7 +135,7 @@ export function ActionPopover({
           <div className="flex items-center gap-2 rounded-md bg-slate-50 px-2.5 py-2 dark:bg-slate-800/60">
             <span
               aria-hidden
-              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-500 text-[10px] font-semibold text-white"
+              className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-500 text-[10px] font-semibold text-white ${SOLID_BRAND_DARK}`}
             >
               {initialsOf(assigneeName)}
             </span>
@@ -137,7 +143,7 @@ export function ActionPopover({
               <span className="block truncate text-xs font-medium text-slate-700 dark:text-slate-200">
                 {mine ? 'Assigned to you' : `Assigned to ${assigneeName}`}
               </span>
-              <span className="block truncate text-[10px] text-slate-400 dark:text-slate-500">
+              <span className="block truncate text-[10px] text-slate-400">
                 {assignerName ? `by ${assignerName} · ` : ''}
                 {formatRelativeTimeCompact(Date.now() - action.createdAt)}
               </span>

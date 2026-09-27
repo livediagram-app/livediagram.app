@@ -153,7 +153,7 @@ export function LayerRow({
       {/* How much is on this layer. Same quiet chip as the Empty
         tag below, so a column of rows reads as one thing. */}
       {showCount && !empty && renamingId !== layer.id ? (
-        <span className="shrink-0 rounded bg-slate-100 px-1 py-0.5 text-[9px] font-semibold tabular-nums text-slate-400 dark:bg-slate-800 dark:text-slate-500">
+        <span className="shrink-0 rounded bg-slate-100 px-1 py-0.5 text-[9px] font-semibold tabular-nums text-slate-400 dark:bg-slate-800">
           {counts.get(layer.id) ?? 0}
         </span>
       ) : null}
@@ -161,7 +161,7 @@ export function LayerRow({
         (and prune) at a glance — the blank preview alone
         doesn't read as "nothing here". */}
       {empty && renamingId !== layer.id ? (
-        <span className="shrink-0 rounded bg-slate-100 px-1 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-slate-400 dark:bg-slate-800 dark:text-slate-500">
+        <span className="shrink-0 rounded bg-slate-100 px-1 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-slate-400 dark:bg-slate-800">
           Empty
         </span>
       ) : null}
@@ -181,7 +181,7 @@ export function LayerRow({
             e.stopPropagation();
             openRowMenu(layer.id, e.currentTarget);
           }}
-          className="flex h-6 w-6 shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-slate-200 hover:text-slate-600 dark:text-slate-500 dark:hover:bg-slate-700 dark:hover:text-slate-300"
+          className="flex h-6 w-6 shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-slate-200 hover:text-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-300"
         >
           <EllipsisIcon />
         </button>

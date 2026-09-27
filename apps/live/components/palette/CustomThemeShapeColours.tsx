@@ -143,7 +143,7 @@ export function PerShapeColoursSection({
                     onClick={() => clearShape(kind)}
                     disabled={!o}
                     aria-label={`Reset ${kind} colours`}
-                    className="flex h-5 w-5 items-center justify-center rounded text-slate-400 opacity-0 transition hover:text-slate-600 group-hover:opacity-100 disabled:!opacity-0 dark:text-slate-500 dark:hover:text-slate-300"
+                    className="flex h-5 w-5 items-center justify-center rounded text-slate-400 opacity-0 transition hover:text-slate-600 group-hover:opacity-100 disabled:!opacity-0 dark:hover:text-slate-300"
                   >
                     <ResetGlyph />
                   </button>

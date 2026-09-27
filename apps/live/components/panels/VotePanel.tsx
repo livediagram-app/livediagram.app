@@ -25,9 +25,9 @@ import { votesSpentBy, type Element, type TabVote } from '@livediagram/diagram';
 import { describeOne } from '@/lib/element-names';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import type { MovablePanelPlacementProps } from '@/components/primitives/MovablePanel.types';
+import { SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
 
-const primaryBtn =
-  'flex-1 rounded-md bg-brand-500 px-2 py-1 text-[11px] font-semibold text-white transition hover:bg-brand-600';
+const primaryBtn = `flex-1 rounded-md bg-brand-500 px-2 py-1 text-[11px] font-semibold text-white transition hover:bg-brand-600 ${SOLID_BRAND_DARK_CONTROL}`;
 const quietBtn =
   'flex-1 rounded-md border border-slate-200 px-2 py-1 text-[11px] font-medium text-slate-600 transition hover:border-brand-300 hover:text-brand-700 dark:border-slate-700 dark:text-slate-300';
 
@@ -111,7 +111,7 @@ export function VotePanel({
             gets the readout only — not disabled buttons, which would just
             advertise something they can't do. */}
         {readOnly || !isHost ? (
-          <p className="text-[10px] leading-snug text-slate-400 dark:text-slate-500">
+          <p className="text-[10px] leading-snug text-slate-400">
             {vote.revealed
               ? 'The host is walking through the results.'
               : 'Only the person who started this vote can end it.'}
@@ -205,7 +205,7 @@ function VoteTurnout({ vote, participantCount }: { vote: TabVote; participantCou
                   />
                 ))}
               </span>
-              <span className="shrink-0 text-[10px] tabular-nums text-slate-400 dark:text-slate-500">
+              <span className="shrink-0 text-[10px] tabular-nums text-slate-400 dark:text-slate-400">
                 {budget - spent} left
               </span>
             </li>
@@ -213,7 +213,7 @@ function VoteTurnout({ vote, participantCount }: { vote: TabVote; participantCou
         </ul>
       ) : null}
 
-      <p className="text-[10px] leading-snug text-slate-400 dark:text-slate-500">
+      <p className="text-[10px] leading-snug text-slate-400 dark:text-slate-400">
         {notStarted > 0
           ? `${notStarted} ${notStarted === 1 ? 'person hasn’t' : 'people haven’t'} voted yet`
           : started === 0
@@ -243,7 +243,7 @@ function VoteResultsList({
 }) {
   if (results.length === 0) {
     return (
-      <p className="text-[11px] italic text-slate-400 dark:text-slate-500">
+      <p className="text-[11px] italic text-slate-400 dark:text-slate-400">
         No dots were cast on this tab.
       </p>
     );
@@ -276,9 +276,7 @@ function VoteResultsList({
               <span
                 className={
                   'w-3 shrink-0 text-[10px] font-semibold tabular-nums ' +
-                  (isWinner
-                    ? 'text-amber-500 dark:text-amber-400'
-                    : 'text-slate-400 dark:text-slate-500')
+                  (isWinner ? 'text-amber-500 dark:text-amber-400' : 'text-slate-400')
                 }
               >
                 {i + 1}

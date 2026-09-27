@@ -18,7 +18,7 @@ async function justDraw(page: import('@playwright/test').Page): Promise<void> {
   await page.locator(CANVAS).waitFor();
   await dismissQuickTour(page);
 }
-const DARK_CANVAS = '#2b2b33';
+const DARK_CANVAS = '#0d121a';
 const LIGHT_CANVAS = '#ffffff';
 
 const rgb = (hex: string) => {
@@ -76,7 +76,7 @@ test.describe('Appearance', () => {
     await expect(square).toHaveCount(1);
     await expect
       .poll(async () => (await squareInk(page)).border, { message: 'element ink follows too' })
-      .toBe(rgb('#a1a1aa'));
+      .toBe(rgb('#64748b'));
 
     // System → Light. An explicit pick outranks the device, which is still dark.
     await appearanceButton(page).click();

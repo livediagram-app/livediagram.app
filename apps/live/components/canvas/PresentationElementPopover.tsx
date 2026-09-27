@@ -26,7 +26,7 @@ import { NoteRichText } from '@/components/notes/NoteRichText';
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-1">
-      <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
+      <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
         {title}
       </span>
       {children}
@@ -126,7 +126,7 @@ export function PresentationElementPopover({
               <span
                 className={`min-w-0 flex-1 text-[11px] font-medium ${
                   action.status === 'done'
-                    ? 'text-slate-400 line-through dark:text-slate-500'
+                    ? 'text-slate-400 line-through'
                     : 'text-slate-700 dark:text-slate-200'
                 }`}
               >
@@ -138,7 +138,7 @@ export function PresentationElementPopover({
                 {action.description}
               </span>
             ) : null}
-            <span className="pl-3 text-[10px] text-slate-400 dark:text-slate-500">
+            <span className="pl-3 text-[10px] text-slate-400 dark:text-slate-400">
               {action.assignee.name ?? 'Teammate'} · {action.status === 'done' ? 'Done' : 'Open'}
             </span>
           </div>

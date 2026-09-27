@@ -140,7 +140,7 @@ export function ColourRow({
       >
         <span className="flex items-center gap-2">
           {icon ? (
-            <span className="text-slate-400 dark:text-slate-500" aria-hidden>
+            <span className="text-slate-400" aria-hidden>
               {icon}
             </span>
           ) : null}

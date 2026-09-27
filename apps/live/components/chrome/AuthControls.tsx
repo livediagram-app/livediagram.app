@@ -23,7 +23,7 @@
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import Link from 'next/link';
 import { useRef, useState } from 'react';
-import { useClickOutside } from '@livediagram/ui';
+import { useClickOutside, SOLID_BRAND_DARK } from '@livediagram/ui';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { track } from '@/lib/telemetry';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
@@ -81,7 +81,9 @@ function AuthControlsEnabled() {
         aria-expanded={menuOpen}
         className={`${HEADER_ACTION_BTN} ${HEADER_ACTION_TONE}`}
       >
-        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-brand-500 text-[10px] font-semibold text-white">
+        <span
+          className={`flex h-5 w-5 items-center justify-center rounded-full bg-brand-500 text-[10px] font-semibold text-white ${SOLID_BRAND_DARK}`}
+        >
           {initial}
         </span>
         <span className="max-w-[4.5rem] truncate">{pillLabel ?? 'Account'}</span>

@@ -36,7 +36,7 @@ export function SharePasswordGate({ invalid, ownerName, onSubmit }: SharePasswor
         }}
         className="flex w-[26rem] max-w-full animate-fly-up-in flex-col items-center gap-4 rounded-xl border border-slate-200 bg-white px-6 py-8 text-center shadow-2xl shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900"
       >
-        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-100 text-brand-600">
+        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-100 text-brand-600 dark:bg-brand-500/15 dark:text-brand-300">
           <LockIcon />
         </span>
         <div>

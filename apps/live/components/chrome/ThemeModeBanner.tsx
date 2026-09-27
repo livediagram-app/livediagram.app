@@ -14,7 +14,7 @@
 // keyed to the specific mismatch, not forever).
 
 import { useState } from 'react';
-import { CloseIcon } from '@livediagram/ui';
+import { CloseIcon, SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
 import { isLightColor } from '@livediagram/diagram';
 import { getTheme } from '@/lib/themes';
 import { useAppearance } from '@/hooks/ui/useAppearance';
@@ -49,7 +49,7 @@ export function ThemeModeBanner({ themeId }: { themeId: string | undefined }) {
           type="button"
           onClick={() => set(target)}
           aria-label={toDark ? 'Switch to dark mode' : 'Switch to light mode'}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-500 text-white shadow-sm transition hover:bg-brand-600"
+          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-500 text-white shadow-sm transition hover:bg-brand-600 ${SOLID_BRAND_DARK_CONTROL}`}
         >
           {toDark ? <MoonIcon /> : <SunIcon />}
         </button>
