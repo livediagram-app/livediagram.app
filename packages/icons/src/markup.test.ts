@@ -14,15 +14,15 @@ const tile: TechIconDef = {
 
 describe('techGlyphStrokeUnits', () => {
   it('draws the chrome weight on screen at every tile preset', () => {
-    // 1.5px at 32 / 48 / 64 / 96px (ICON_SIZE_PX) on the 24-unit tile box.
-    expect(techGlyphStrokeUnits(32)).toBe(1.125);
-    expect(techGlyphStrokeUnits(48)).toBe(0.75);
-    expect(techGlyphStrokeUnits(64)).toBe(0.5625);
-    expect(techGlyphStrokeUnits(96)).toBe(0.375);
+    // 1.25px at 32 / 48 / 64 / 96px (ICON_SIZE_PX) on the 24-unit tile box.
+    expect(techGlyphStrokeUnits(32)).toBe(0.9375);
+    expect(techGlyphStrokeUnits(48)).toBe(0.625);
+    expect(techGlyphStrokeUnits(64)).toBe(0.46875);
+    expect(techGlyphStrokeUnits(96)).toBe(0.3125);
   });
 
   it('drops to the small weight at 12px or less', () => {
-    expect(techGlyphStrokeUnits(12)).toBe(2.5);
+    expect(techGlyphStrokeUnits(12)).toBe(2);
   });
 });
 

@@ -7,7 +7,10 @@ Derived from [Iconography](../iconography.md).
 | Term (spec)        | Identifier                                                                                                           | Home                                                 |
 | ------------------ | -------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
 | On-screen stroke   | `ICON_STROKE_PX`, `ICON_STROKE_PX_SMALL`                                                                             | `packages/icons/src/weight.ts`                       |
-| Stroke in units    | `strokeUnits(px, sizePx, units)`                                                                                     | `packages/icons/src/weight.ts`                       |
+| Stroke in units    | `strokeUnits(px, sizePx, units)` (exporters, tech tiles)                                                             | `packages/icons/src/weight.ts`                       |
+| Ink geometry       | `primsBounds`, `inkInsets`                                                                                           | `packages/icons/src/ink.ts`                          |
+| Glyph child reader | `childPrims(children)`                                                                                               | `packages/ui/src/icons/glyph-ink.ts`                 |
+| Non-scaling rule   | `.lvd-glyph *`                                                                                                       | `packages/tailwind-config/theme.css`                 |
 | Icon size step     | `GlyphSize` = `12 \| 14 \| 16 \| 20 \| 24`, `GLYPH_SIZES`                                                            | `packages/icons/src/weight.ts`                       |
 | Icon primitive     | `Glyph`                                                                                                              | `packages/ui/src/icons/Glyph.tsx`                    |
 | Icon weight        | `IconWeight` = `'thin' \| 'regular' \| 'bold'`                                                                       | `packages/diagram/src/icon-weight.ts`                |
@@ -22,7 +25,8 @@ Derived from [Iconography](../iconography.md).
 
 ## Behaviour and state
 
-- `Glyph` computes `strokeWidth = strokeUnits(px, size, units)`, where `px = weight ?? (size <= ICON_SMALL_MAX_PX ? ICON_STROKE_PX_SMALL : ICON_STROKE_PX)`.
+- `Glyph` sets `strokeWidth = weight ?? glyphStrokePx(size)` in on-screen px and the class `lvd-glyph`, whose rule makes every child `vector-effect: non-scaling-stroke`; CSS sizing and canvas zoom leave the weight alone.
+- `Glyph` reads its children's geometry (`childPrims`: intrinsic shapes, `g`, fragments, `Prims`) and sets `--glyph-ink-l/r/t/b` from `inkInsets` (2 decimals, clamped at 0; stroke 0 for filled glyphs). An unreadable child (transform, other component) omits the variables.
 - The canvas icon's stroke is `ICON_WEIGHT_PX[element.iconWeight ?? DEFAULT_ICON_WEIGHT]` in screen pixels (`vector-effect: non-scaling-stroke`, as today).
 - A remote participant's selection keeps its highlight stroke, `ICON_REMOTE_HIGHLIGHT_PX`.
 - An icon drawn inside another shape (`shape-inline-icon-layout`) uses `ICON_WEIGHT_PX.regular`.
@@ -33,8 +37,8 @@ Derived from [Iconography](../iconography.md).
 
 ```ts
 // packages/icons/src/weight.ts
-export const ICON_STROKE_PX = 1.5;
-export const ICON_STROKE_PX_SMALL = 1.25;
+export const ICON_STROKE_PX = 1.25;
+export const ICON_STROKE_PX_SMALL = 1;
 export const ICON_SMALL_MAX_PX = 12;
 export type GlyphSize = 12 | 14 | 16 | 20 | 24;
 export const GLYPH_SIZES: readonly GlyphSize[];
@@ -51,7 +55,7 @@ type GlyphProps = IconProps & { units?: number; filled?: boolean };
 // packages/diagram/src/icon-weight.ts
 export type IconWeight = 'thin' | 'regular' | 'bold';
 export const ICON_WEIGHTS: readonly IconWeight[];
-export const ICON_WEIGHT_PX: Record<IconWeight, number>; // thin 1, regular 1.5, bold 2.25
+export const ICON_WEIGHT_PX: Record<IconWeight, number>; // thin 0.75, regular 1.25, bold 2
 export const DEFAULT_ICON_WEIGHT: IconWeight; // 'regular'
 export const ICON_REMOTE_HIGHLIGHT_PX = 3;
 export function iconWeightPx(w: IconWeight | undefined): number;
@@ -63,13 +67,13 @@ export function iconWeightPx(w: IconWeight | undefined): number;
 ## Data and persistence
 
 - `iconWeight` is optional and persisted with the element like `iconSize`. Absent means `regular`. No migration.
-- Diagrams saved before this change render at 1.5px instead of 2px. This is the intended refinement.
+- Diagrams saved before this change render at 1.25px instead of 2px. This is the intended refinement.
 - The format painter copies `iconWeight` (format group `size`). Change summaries list it under `ICON_KEYS`.
 
 ## Errors and edge cases
 
 - Unknown `iconWeight` in stored data (hand-edited JSON) renders as `regular` through `iconWeightPx`.
-- `Glyph` with a non-positive or non-finite `size` throws the `strokeUnits` RangeError at render, surfacing in the error boundary and its log.
+- A `Glyph` with a non-positive `size` draws nothing visible; `strokeUnits` (exporters) rejects it with a `RangeError`.
 - Off-step control sizes (11, 13, 15, 18) move to the nearest step during migration; the optical-alignment ink audit catches any shift.
 - The vendor script fails (non-zero exit, message `vendor-lucide: unknown glyph <name>`) when a manifest name is missing from the pinned package.
 - Emoji `text` prims keep `stroke="none"`, so weight does not affect them.
@@ -95,7 +99,7 @@ export function iconWeightPx(w: IconWeight | undefined): number;
 
 - Weight tiles are toggle buttons (`aria-pressed`), like every menu tile row (`SizeButton`), and keyboard-operable.
 - `Glyph` stays `aria-hidden`. The control that holds it carries the name.
-- At 1.25–1.5px on-screen stroke, glyphs keep 3:1 non-text contrast against the dark and light surfaces the contrast audit already covers.
+- At 1–1.25px on-screen stroke, glyphs keep 3:1 non-text contrast against the dark and light surfaces the contrast audit already covers.
 
 ## Web experience
 
@@ -110,33 +114,34 @@ export function iconWeightPx(w: IconWeight | undefined): number;
 
 ## Testing
 
-| Spec rule                         | Test                                                                                             |
-| --------------------------------- | ------------------------------------------------------------------------------------------------ |
-| On-screen weight by size          | `weight.test.ts`: `glyphStrokePx`, `strokeUnits`                                                 |
-| One weight whatever viewBox       | `Glyph.test.tsx`: 16u@16px and 24u@24px give the same px                                         |
-| Glyph centred within 0.5px        | `centring.test.ts` over every exported glyph in both homes                                       |
-| Vendored, pinned, attributed      | `lucide-vendor.test.ts`: pinned version, manifest equals exports, file current, licence verbatim |
-| Icon weight default + map         | `icon-weight.test.ts`                                                                            |
-| Export honours weight             | `svg-render.test.ts`                                                                             |
-| Weight UI                         | e2e `icon-weight.spec.ts`: regular by default, set Bold, reload                                  |
-| Weight on elements                | `style-presets.test.ts` (`applyIconWeightToEl`), `format-painter.test.ts`                        |
-| Furniture silhouettes distinct    | `icon-catalog.test.ts`: no two ids share prims                                                   |
-| No same-provider tech glyph dupes | `tech-icon-catalog.test.ts`                                                                      |
-| No raw svg outside homes          | lint rule `livediagram/no-raw-svg` + its rule test                                               |
-| Contact sheet drift               | Playwright snapshot of `pnpm icons:sheet` output                                                 |
+| Spec rule                         | Test                                                                                                     |
+| --------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| On-screen weight by size          | `weight.test.ts`; `icons.test.tsx` (every shared icon); e2e `icon-weight.spec.ts` (computed non-scaling) |
+| Ink insets                        | `ink.test.ts`, `glyph-ink.test.tsx`                                                                      |
+| One weight whatever viewBox       | `Glyph.test.tsx`: 16u@16px and 24u@24px give the same px                                                 |
+| Glyph centred within 0.5px        | `centring.test.ts` over every exported glyph in both homes                                               |
+| Vendored, pinned, attributed      | `lucide-vendor.test.ts`: pinned version, manifest equals exports, file current, licence verbatim         |
+| Icon weight default + map         | `icon-weight.test.ts`                                                                                    |
+| Export honours weight             | `svg-render.test.ts`                                                                                     |
+| Weight UI                         | e2e `icon-weight.spec.ts`: regular by default, set Bold, reload                                          |
+| Weight on elements                | `style-presets.test.ts` (`applyIconWeightToEl`), `format-painter.test.ts`                                |
+| Furniture silhouettes distinct    | `icon-catalog.test.ts`: no two ids share prims                                                           |
+| No same-provider tech glyph dupes | `tech-icon-catalog.test.ts`                                                                              |
+| No raw svg outside homes          | lint rule `livediagram/no-raw-svg` + its rule test                                                       |
+| Contact sheet drift               | Playwright snapshot of `pnpm icons:sheet` output                                                         |
 
 ## Constants and configuration
 
-| Constant                   | Value | Provenance                            | Safe range |
-| -------------------------- | ----- | ------------------------------------- | ---------- |
-| `ICON_STROKE_PX`           | 1.5   | spec Weight; median of today's chrome | 1.25–1.75  |
-| `ICON_STROKE_PX_SMALL`     | 1.25  | spec Weight                           | 1–1.5      |
-| `ICON_SMALL_MAX_PX`        | 12    | spec Weight                           | 10–12      |
-| `ICON_WEIGHT_PX.thin`      | 1     | defaults ledger                       | 0.75–1.25  |
-| `ICON_WEIGHT_PX.regular`   | 1.5   | spec (matches chrome)                 | fixed      |
-| `ICON_WEIGHT_PX.bold`      | 2.25  | defaults ledger                       | 2–3        |
-| `ICON_REMOTE_HIGHLIGHT_PX` | 3     | existing hardcoded value              | 2.5–4      |
-| Centring tolerance         | 0.5px | spec Guarding / optical alignment     | fixed      |
+| Constant                   | Value | Provenance                                        | Safe range |
+| -------------------------- | ----- | ------------------------------------------------- | ---------- |
+| `ICON_STROKE_PX`           | 1.25  | spec Weight (operator choice after 1x comparison) | 1–1.5      |
+| `ICON_STROKE_PX_SMALL`     | 1     | spec Weight                                       | 0.75–1.25  |
+| `ICON_SMALL_MAX_PX`        | 12    | spec Weight                                       | 10–12      |
+| `ICON_WEIGHT_PX.thin`      | 0.75  | defaults ledger                                   | 0.75–1.25  |
+| `ICON_WEIGHT_PX.regular`   | 1.25  | spec (matches chrome)                             | fixed      |
+| `ICON_WEIGHT_PX.bold`      | 2     | defaults ledger                                   | 1.75–3     |
+| `ICON_REMOTE_HIGHLIGHT_PX` | 3     | existing hardcoded value                          | 2.5–4      |
+| Centring tolerance         | 0.5px | spec Guarding / optical alignment                 | fixed      |
 
 ## Assets and external resources
 

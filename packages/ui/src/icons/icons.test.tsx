@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { ICON_STROKE_PX, ICON_STROKE_PX_SMALL } from '@livediagram/icons';
 import { render } from '@testing-library/react';
 import type { ComponentType } from 'react';
 import { describe, expect, it } from 'vitest';
@@ -38,9 +39,9 @@ describe('shared chrome icons', () => {
     '%s draws the house weight in on-screen px',
     (_name, Icon) => {
       const at16 = render(<Icon size={16} />).container.querySelector('svg')!;
-      expect(onScreenPx(at16)).toBeCloseTo(1.5, 5);
+      expect(onScreenPx(at16)).toBeCloseTo(ICON_STROKE_PX, 5);
       const at12 = render(<Icon size={12} />).container.querySelector('svg')!;
-      expect(onScreenPx(at12)).toBeCloseTo(1.25, 5);
+      expect(onScreenPx(at12)).toBeCloseTo(ICON_STROKE_PX_SMALL, 5);
     },
   );
 

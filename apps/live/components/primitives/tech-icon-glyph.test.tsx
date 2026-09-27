@@ -28,7 +28,9 @@ describe('TechIconGlyph', () => {
 
   it('uses the default preset when none is set', () => {
     const { container } = render(<TechIconGlyph iconId="aws-s3" />);
-    expect(glyphGroup(container)?.getAttribute('stroke-width')).toBe('0.75');
+    expect(glyphGroup(container)?.getAttribute('stroke-width')).toBe(
+      String(techGlyphStrokeUnits(48)),
+    );
   });
 });
 
@@ -39,6 +41,8 @@ describe('TechIconArt', () => {
         <TechIconArt iconId="aws-s3" sizePx={18} />
       </svg>,
     );
-    expect(glyphGroup(container)?.getAttribute('stroke-width')).toBe('2');
+    expect(glyphGroup(container)?.getAttribute('stroke-width')).toBe(
+      String(techGlyphStrokeUnits(18)),
+    );
   });
 });

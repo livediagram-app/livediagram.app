@@ -7,9 +7,9 @@ export type IconWeight = 'thin' | 'regular' | 'bold';
 export const ICON_WEIGHTS: readonly IconWeight[] = ['thin', 'regular', 'bold'];
 
 export const ICON_WEIGHT_PX: Record<IconWeight, number> = {
-  thin: 1,
-  regular: 1.5,
-  bold: 2.25,
+  thin: 0.75,
+  regular: 1.25,
+  bold: 2,
 };
 
 export const DEFAULT_ICON_WEIGHT: IconWeight = 'regular';

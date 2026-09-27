@@ -2,8 +2,8 @@
 // Weight is specified as the stroke a person sees, never in viewBox units, so a glyph drawn on
 // any grid at any size reads the same. No React here: ui, the editor and the Workers share it.
 
-export const ICON_STROKE_PX = 1.5;
-export const ICON_STROKE_PX_SMALL = 1.25;
+export const ICON_STROKE_PX = 1.25;
+export const ICON_STROKE_PX_SMALL = 1;
 export const ICON_SMALL_MAX_PX = 12;
 
 export type GlyphSize = 12 | 14 | 16 | 20 | 24;

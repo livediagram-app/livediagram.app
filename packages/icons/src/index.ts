@@ -16,6 +16,15 @@
 export type { IconDef, IconPrim, TechIconDef, TechProvider } from './types';
 export { xmlEscape } from './xml';
 export {
+  inkInsets,
+  pathBounds,
+  primBounds,
+  primsBounds,
+  unionBounds,
+  type Bounds,
+  type InkInsets,
+} from './ink';
+export {
   GLYPH_SIZES,
   ICON_SMALL_MAX_PX,
   ICON_STROKE_PX,

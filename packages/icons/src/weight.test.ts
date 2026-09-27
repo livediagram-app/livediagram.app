@@ -10,17 +10,17 @@ import {
 } from './weight';
 
 describe('glyphStrokePx', () => {
-  it('draws 1.5px above the small threshold', () => {
-    expect(ICON_STROKE_PX).toBe(1.5);
-    expect(glyphStrokePx(14)).toBe(1.5);
-    expect(glyphStrokePx(24)).toBe(1.5);
+  it('draws 1.25px above the small threshold', () => {
+    expect(ICON_STROKE_PX).toBe(1.25);
+    expect(glyphStrokePx(14)).toBe(1.25);
+    expect(glyphStrokePx(24)).toBe(1.25);
   });
 
-  it('draws 1.25px at 12px and below', () => {
+  it('draws 1px at 12px and below', () => {
     expect(ICON_SMALL_MAX_PX).toBe(12);
-    expect(ICON_STROKE_PX_SMALL).toBe(1.25);
-    expect(glyphStrokePx(12)).toBe(1.25);
-    expect(glyphStrokePx(9)).toBe(1.25);
+    expect(ICON_STROKE_PX_SMALL).toBe(1);
+    expect(glyphStrokePx(12)).toBe(1);
+    expect(glyphStrokePx(9)).toBe(1);
   });
 });
 

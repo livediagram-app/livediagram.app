@@ -1,9 +1,9 @@
 // Geometric centring of SVG glyph markup (docs/specs/004-interface-design/iconography.md, "Guarding"):
 // the drawn geometry's bounding-box centre, stroke included, measured against the viewBox centre.
 // Test-only surface (subpath `@livediagram/icons/centring`); app code never imports it.
-import { svgPathBbox } from 'svg-path-bbox';
+import { pathBounds, unionBounds, type Bounds } from './ink';
 
-export type Bounds = { minX: number; minY: number; maxX: number; maxY: number };
+export type { Bounds };
 
 const ELEMENT = /<(path|circle|ellipse|rect|line|polyline|polygon)\b([^>]*)>/g;
 const ATTR = /([a-zA-Z][\w:-]*)="([^"]*)"/g;
@@ -17,11 +17,8 @@ function attrs(raw: string): Record<string, string> {
 function elementBounds(tag: string, a: Record<string, string>): Bounds | null {
   const n = (k: string) => Number(a[k] ?? 0);
   switch (tag) {
-    case 'path': {
-      if (!a.d) return null;
-      const [minX, minY, maxX, maxY] = svgPathBbox(a.d);
-      return { minX, minY, maxX, maxY };
-    }
+    case 'path':
+      return a.d ? pathBounds(a.d) : null;
     case 'circle':
       return {
         minX: n('cx') - n('r'),
@@ -67,19 +64,9 @@ function elementBounds(tag: string, a: Record<string, string>): Bounds | null {
 // geometry, or when a transform makes the plain attribute geometry untrustworthy.
 export function markupBounds(markup: string, strokeUnits: number): Bounds | null {
   if (/\btransform=/.test(markup)) return null;
-  let b: Bounds | null = null;
-  for (const m of markup.matchAll(ELEMENT)) {
-    const e = elementBounds(m[1]!, attrs(m[2]!));
-    if (!e) continue;
-    b = b
-      ? {
-          minX: Math.min(b.minX, e.minX),
-          minY: Math.min(b.minY, e.minY),
-          maxX: Math.max(b.maxX, e.maxX),
-          maxY: Math.max(b.maxY, e.maxY),
-        }
-      : e;
-  }
+  const b = unionBounds(
+    [...markup.matchAll(ELEMENT)].map((m) => elementBounds(m[1]!, attrs(m[2]!))),
+  );
   if (!b) return null;
   const p = strokeUnits / 2;
   return { minX: b.minX - p, minY: b.minY - p, maxX: b.maxX + p, maxY: b.maxY + p };

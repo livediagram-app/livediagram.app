@@ -1,5 +1,7 @@
-import { glyphStrokePx } from '@livediagram/icons';
-import type { SVGProps } from 'react';
+import { glyphStrokePx, inkInsets, primsBounds } from '@livediagram/icons';
+import type { CSSProperties, SVGProps } from 'react';
+
+import { childPrims } from './glyph-ink';
 
 // The chrome-icon base: a square, stroke-currentColor, decorative SVG. Every
 // named icon in this folder is a Glyph with its own path data and a default
@@ -30,9 +32,11 @@ export function Glyph({
   units = 16,
   filled = false,
   className,
+  style,
   children,
   ...rest
 }: GlyphProps) {
+  const strokePx = filled ? 0 : (weight ?? glyphStrokePx(size));
   const paint = filled
     ? { fill: 'currentColor' }
     : {
@@ -40,7 +44,7 @@ export function Glyph({
         stroke: 'currentColor',
         // On-screen px: every child is non-scaling (.lvd-glyph in the shared theme), so CSS sizing and
         // canvas zoom leave the weight alone.
-        strokeWidth: weight ?? glyphStrokePx(size),
+        strokeWidth: strokePx,
         strokeLinecap: 'round' as const,
         strokeLinejoin: 'round' as const,
       };
@@ -51,10 +55,34 @@ export function Glyph({
       viewBox={`0 0 ${units} ${units}`}
       aria-hidden
       className={className ? `lvd-glyph ${className}` : 'lvd-glyph'}
+      style={inkStyle(children, units, size, strokePx, style)}
       {...paint}
       {...rest}
     >
       {children}
     </svg>
   );
+}
+
+// Ink insets (docs/specs/004-interface-design/iconography.md, "Ink insets"): the blank margin the drawing leaves on
+// each side, stroke included, in rendered px, as --glyph-ink-l/r/t/b. Containers pull an edge icon out by
+// it so their padding is measured to the ink. Absent when a child's geometry can't be read.
+function inkStyle(
+  children: GlyphProps['children'],
+  units: number,
+  sizePx: number,
+  strokePx: number,
+  style: CSSProperties | undefined,
+): CSSProperties | undefined {
+  const prims = childPrims(children);
+  const bounds = prims && primsBounds(prims);
+  if (!bounds) return style;
+  const i = inkInsets(bounds, { units, sizePx, strokePx });
+  return {
+    '--glyph-ink-l': `${i.l}px`,
+    '--glyph-ink-r': `${i.r}px`,
+    '--glyph-ink-t': `${i.t}px`,
+    '--glyph-ink-b': `${i.b}px`,
+    ...style,
+  } as CSSProperties;
 }

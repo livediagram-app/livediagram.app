@@ -617,6 +617,10 @@ importers:
         version: '@typescript/typescript6@6.0.2'
 
   packages/icons:
+    dependencies:
+      svg-path-bbox:
+        specifier: 2.1.0
+        version: 2.1.0
     devDependencies:
       '@livediagram/eslint-config':
         specifier: workspace:*
@@ -639,9 +643,6 @@ importers:
       lucide-static:
         specifier: 1.48.0
         version: 1.48.0
-      svg-path-bbox:
-        specifier: 2.1.0
-        version: 2.1.0
       typescript:
         specifier: npm:@typescript/typescript6@^6.0.2
         version: '@typescript/typescript6@6.0.2'

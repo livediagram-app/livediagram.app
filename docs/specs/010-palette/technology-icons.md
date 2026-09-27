@@ -134,7 +134,7 @@ inside an `<svg>`. No stroke tint is applied; the brand colour is the tile fill
 and the glyph is white.
 
 **The glyph stroke is the chrome weight for the tile's rendered size**
-([Iconography](../004-interface-design/iconography.md)): 1.5px on screen, 1.25px at
+([Iconography](../004-interface-design/iconography.md)): 1.25px on screen, 1px at
 12px or less, expressed in tile-box units by `techGlyphStrokeUnits(sizePx)`
 (`@livediagram/icons`). On the canvas `sizePx` is the size preset (32 / 48 / 64 /
 96px); in the palette it is the thumbnail size (18px category and favourite tiles,

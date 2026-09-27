@@ -22,11 +22,19 @@ Every icon livediagram draws follows one grammar, so a glyph looks the same weig
 
 | Rendered size | On-screen stroke |
 | ------------- | ---------------- |
-| over 12px     | 1.5px            |
-| 12px or less  | 1.25px           |
+| over 12px     | 1.25px           |
+| 12px or less  | 1px              |
 
-- The weight holds whatever the viewBox or rendered size, so the same glyph never reads heavier in one place than another.
+- The weight holds whatever the viewBox, the rendered size, a CSS resize or a canvas zoom (the stroke is non-scaling), so the same glyph never reads heavier in one place than another.
+- 1.25px keeps line art light on 1x screens, where a 1.5px line smears across two pixels and reads as 2px.
 - Filled glyphs (play, pause, a filled star for "favourited") are allowed where the filled state carries meaning; they are the exception, not a style.
+
+## Ink insets
+
+- Every glyph exposes the blank margin its drawing leaves on each side, stroke included, in rendered px: `--glyph-ink-l`, `--glyph-ink-r`, `--glyph-ink-t`, `--glyph-ink-b` on the `<svg>`.
+- The insets are computed from the glyph's geometry during render (no DOM measurement), so static pages carry them and nothing shifts after paint.
+- A glyph whose geometry can't be read (a transform, an opaque child component) carries no insets.
+- Containers use them to measure padding to the ink (optical alignment).
 
 ## One home, one icon per meaning
 

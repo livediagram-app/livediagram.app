@@ -15,13 +15,13 @@ describe('icon weight', () => {
   });
 
   it('maps each weight to an on-screen stroke, regular matching the chrome weight', () => {
-    expect(ICON_WEIGHT_PX).toEqual({ thin: 1, regular: 1.5, bold: 2.25 });
+    expect(ICON_WEIGHT_PX).toEqual({ thin: 0.75, regular: 1.25, bold: 2 });
     expect(ICON_REMOTE_HIGHLIGHT_PX).toBe(3);
   });
 
   it('reads an unset or unknown weight as regular', () => {
-    expect(iconWeightPx(undefined)).toBe(1.5);
-    expect(iconWeightPx('bold')).toBe(2.25);
-    expect(iconWeightPx('heavy' as never)).toBe(1.5);
+    expect(iconWeightPx(undefined)).toBe(1.25);
+    expect(iconWeightPx('bold')).toBe(2);
+    expect(iconWeightPx('heavy' as never)).toBe(1.25);
   });
 });

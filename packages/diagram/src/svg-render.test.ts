@@ -527,18 +527,18 @@ describe('renderElementsToSvg', () => {
       expect(svg).toContain('<path d="M1 2"/>');
       expect(svg).toContain('viewBox="0 0 24 24"');
       expect(svg).toContain('stroke="#123456"');
-      // 48px box over a 24-unit viewBox = 2x scale, so the regular 1.5px
-      // on-screen stroke exports as 0.75 glyph units.
-      expect(svg).toContain('stroke-width="0.75"');
+      // 48px box over a 24-unit viewBox = 2x scale, so the regular 1.25px
+      // on-screen stroke exports as 0.63 glyph units.
+      expect(svg).toContain('stroke-width="0.63"');
     });
 
     it('exports the element icon weight as its on-screen stroke', () => {
       const art = { resolveIconArt: () => ({ markup: '<path d="M1 2"/>', colored: false }) };
       expect(renderElementsToSvg(tab([icon({ iconWeight: 'bold' })]), art)).toContain(
-        'stroke-width="1.13"',
+        'stroke-width="1"',
       );
       expect(renderElementsToSvg(tab([icon({ iconWeight: 'thin' })]), art)).toContain(
-        'stroke-width="0.5"',
+        'stroke-width="0.38"',
       );
     });
 
@@ -589,12 +589,12 @@ describe('renderElementsToSvg', () => {
         renderElementsToSvg(tab([icon(el)]), { resolveIconArt: art }).match(
           /viewBox="0 0 24 24"[^>]*stroke-width="([0-9.]+)"/,
         )?.[1];
-      // 1.5px on screen: 1.5 * 24 / preset px, in tile box units.
-      expect(strokeOf({ width: 200, height: 200 })).toBe('0.75'); // md, 48px
-      expect(strokeOf({ width: 200, height: 200, iconSize: 'sm' })).toBe('1.125');
-      expect(strokeOf({ width: 200, height: 200, iconSize: 'lg' })).toBe('0.5625');
+      // 1.25px on screen: 1.25 * 24 / preset px, in tile box units.
+      expect(strokeOf({ width: 200, height: 200 })).toBe('0.625'); // md, 48px
+      expect(strokeOf({ width: 200, height: 200, iconSize: 'sm' })).toBe('0.9375');
+      expect(strokeOf({ width: 200, height: 200, iconSize: 'lg' })).toBe('0.46875');
       // A preset clamped by a small box scales as one picture, weight included.
-      expect(strokeOf({ width: 60, height: 60, iconSize: 'xl' })).toBe('0.375');
+      expect(strokeOf({ width: 60, height: 60, iconSize: 'xl' })).toBe('0.3125');
     });
 
     it('sends a top-captioned Technology mark to the bottom band (docs/specs/010-palette/technology-icons.md)', () => {
