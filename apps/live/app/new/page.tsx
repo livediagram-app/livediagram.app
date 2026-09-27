@@ -1,7 +1,14 @@
 'use client';
 
 import { truncateName } from '@livediagram/diagram';
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import {
+  useEffect,
+  useEffectEvent,
+  useLayoutEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from 'react';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
 import { ApiErrorPage } from '@/components/chrome/ApiErrorPage';
 import { TemplatePicker, type NewDiagramSettings } from '@/components/palette/TemplatePicker';
@@ -27,6 +34,12 @@ import { WIZARD_BYPASS_PARAMS, wizardBypassKind } from '@/lib/new-diagram-params
 import { getTheme } from '@/lib/themes';
 import { themeTelemetryLabel } from '@/lib/custom-theme-registry';
 import { useLatest } from '@/hooks/ui/useLatest';
+
+// The wizard bypass a /new URL asks for, if any (docs/specs/007-editor/new-diagram-route.md). The URL does
+// not change under the page, so nothing needs to subscribe.
+const subscribeNever = () => () => {};
+const bypassKindFromUrl = () => wizardBypassKind(window.location.search);
+const noBypass = () => null;
 
 // Folder shape the Settings step's placement browser consumes.
 // Dedicated welcome / create-new flow, see docs/specs/007-editor/new-diagram-route.md.
@@ -104,19 +117,17 @@ export default function NewDiagramPage() {
   // default name) the moment it mounts and lands on the editor. The ?folder /
   // ?team placement context above still applies.
   //
-  // Detected in a layout effect, NOT a window-reading state initializer: the
-  // static export prerenders this page without a query string, so an
-  // initializer that returns a kind on the client makes the hydration render
-  // disagree with the server HTML. The layout effect flips the state before
-  // the post-hydration paint, and the pre-paint window before hydration is
-  // covered by the inline script + style guard rendered below. That guard
-  // can't validate a template kind, so when the query names one we don't
-  // know the effect lifts the guard and the wizard shows as normal.
-  const [bypassKind, setBypassKind] = useState<TemplateKind | null>(null);
+  // Read from the URL as an external store whose server snapshot is "no
+  // bypass", NOT a window-reading state initializer: the static export
+  // prerenders this page without a query string, so the hydration render has
+  // to match the server HTML. The kind lands on the render after hydration;
+  // until then the inline script + style guard rendered below keeps the
+  // wizard hidden. That guard can't validate a template kind, so when the
+  // query names one we don't know, the layout effect lifts it before the
+  // first post-hydration paint and the wizard shows as normal.
+  const bypassKind = useSyncExternalStore(subscribeNever, bypassKindFromUrl, noBypass);
   useLayoutEffect(() => {
-    const kind = wizardBypassKind(window.location.search);
-    if (kind) setBypassKind(kind);
-    else document.documentElement.removeAttribute('data-just-draw');
+    if (!bypassKindFromUrl()) document.documentElement.removeAttribute('data-just-draw');
   }, []);
 
   useEffect(() => {
@@ -311,20 +322,22 @@ export default function NewDiagramPage() {
   // here: the create fires before RecentDiagramsCard reports a count — which
   // is the behaviour we want for someone who asked to just draw.
   const bypassFired = useRef(false);
-  useEffect(() => {
-    if (!bypassKind || bypassFired.current) return;
-    bypassFired.current = true;
+  const fireBypass = useEffectEvent((kind: TemplateKind) => {
     // Wizard-bypass adoption signal (docs/specs/017-telemetry/telemetry.md): a fixed preset per entry
     // point, never user content. (The template itself is reported by the
     // usual Diagram / Created event the commit fires.)
-    track('UI', 'Used', bypassKind === 'blank' ? 'JustDraw' : 'TemplateLink');
+    track('UI', 'Used', kind === 'blank' ? 'JustDraw' : 'TemplateLink');
     const params = new URLSearchParams(window.location.search);
-    void commitNewDiagram(bypassKind, '', 'brand', {
+    void commitNewDiagram(kind, '', 'brand', {
       saveLocation: DEFAULT_SAVE_LOCATION,
       folderId: params.get('folder'),
       teamId: params.get('team'),
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  });
+  useEffect(() => {
+    if (!bypassKind || bypassFired.current) return;
+    bypassFired.current = true;
+    fireBypass(bypassKind);
   }, [bypassKind]);
 
   if (createError) {
