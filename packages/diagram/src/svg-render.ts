@@ -7,7 +7,9 @@
 //
 // Text measurement degrades to a char-width estimate when there's no DOM
 // (Workers / jsdom), so wrapping still works headless.
-import { iconBandBounds, techIconMarkBounds } from './icon-size';
+import { techGlyphStrokeUnits } from '@livediagram/icons';
+
+import { DEFAULT_ICON_SIZE, ICON_SIZE_PX, iconBandBounds, techIconMarkBounds } from './icon-size';
 import {
   hasShapeSilhouette,
   scaledPolygonPoints,
@@ -185,11 +187,15 @@ export function svgIconShape(el: BoxedElement, art: ExportIconArt, stroke: strin
     // single source of that geometry (shared with the connector anchors in
     // geometry.ts), mirroring TechIconGlyph exactly. The band sits OPPOSITE
     // the caption's vertical alignment so moving the text never stacks it
-    // over the mark; no label = the whole box.
+    // over the mark; no label = the whole box. The glyph weight follows the
+    // preset's size (techGlyphStrokeUnits), exactly as TechIconArt draws it.
     const mark = techIconMarkBounds(el);
+    const preset = (el.type === 'shape' ? el.iconSize : undefined) ?? DEFAULT_ICON_SIZE;
+    const strokeWidth = techGlyphStrokeUnits(ICON_SIZE_PX[preset]);
     return (
       `<svg x="${r2(mark.x)}" y="${r2(mark.y)}" width="${r2(mark.width)}" height="${r2(mark.height)}"` +
-      ` viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" overflow="visible">${art.markup}</svg>`
+      ` viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" overflow="visible"` +
+      ` stroke-width="${strokeWidth}">${art.markup}</svg>`
     );
   }
   const band = iconBandBounds(el);

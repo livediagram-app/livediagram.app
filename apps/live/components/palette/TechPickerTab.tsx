@@ -8,6 +8,10 @@ import { IconButton } from '@/components/palette/palette-controls';
 import { TechIconArt } from '@/components/primitives/tech-icon-glyph';
 import { PaletteCategoryBrowser } from '@/components/palette/PaletteCategoryBrowser';
 
+// Rendered tile sizes; TechIconArt weights its glyph for them.
+const CATEGORY_TILE_PX = 18;
+const ITEM_TILE_PX = 22;
+
 type TechPickerTabProps = {
   addTechIcon: (iconId: string) => void;
   techQuery: string;
@@ -42,8 +46,8 @@ export function TechPickerTab({
       label: provider.label,
       // No description: "AWS" and "Azure" are the whole answer.
       icon: first ? (
-        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden>
-          <TechIconArt iconId={first.id} />
+        <svg width={CATEGORY_TILE_PX} height={CATEGORY_TILE_PX} viewBox="0 0 24 24" aria-hidden>
+          <TechIconArt iconId={first.id} sizePx={CATEGORY_TILE_PX} />
         </svg>
       ) : null,
       items,
@@ -75,8 +79,8 @@ export function TechPickerTab({
                 e.dataTransfer.effectAllowed = 'copy';
               }}
             >
-              <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden>
-                <TechIconArt iconId={icon.id} />
+              <svg width={ITEM_TILE_PX} height={ITEM_TILE_PX} viewBox="0 0 24 24" aria-hidden>
+                <TechIconArt iconId={icon.id} sizePx={ITEM_TILE_PX} />
               </svg>
             </IconButton>
           ))}
