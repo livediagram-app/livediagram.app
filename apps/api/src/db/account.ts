@@ -5,6 +5,7 @@
 import { deleteTimelineForOwner, migrateTimelineOwner } from './timeline';
 import { deleteCollabIndexForOwner, recordOwnerAlias } from './collab-index';
 import { thumbnailKey } from './diagrams';
+import { diagramRemovalStatements } from './diagram-removal';
 import { detachUserFromTeams } from './teams';
 import type { Env } from '../types';
 
@@ -18,11 +19,10 @@ const R2_DELETE_CHUNK = 1000;
 // (docs/specs/009-elements/images.md). account-owner-columns.test.ts holds
 // both functions here to that list against the real schema. Called from
 // DELETE /api/account when the user opts in via the "Delete account"
-// dialog. Cascade rules take care of dependent D1 tables: `tabs`,
-// `share_links`, and `change_log` all FK to `diagrams.id` with ON
-// DELETE CASCADE (migrations 0003 / 0004 / 0005), so removing the
-// diagrams rows also drops the per-diagram tab content, share links,
-// and audit trail. Folders carry their own owner_id and need their
+// dialog. The diagrams go through diagramRemovalStatements, which drops
+// the tabs (and their history) no other owner's diagram still holds;
+// share links and the other per-diagram rows cascade from `diagrams.id`.
+// Folders carry their own owner_id and need their
 // own DELETE. Participants are owner-less in the schema but their id
 // IS the owner id, so a single id-match delete clears the display-
 // name / colour row too. Images carry owner_id on their D1 row and
@@ -73,9 +73,12 @@ export async function deleteAccount(
       await env.IMAGES.delete(thumbKeys.slice(i, i + R2_DELETE_CHUNK));
     }
   }
-  const diagramsRes = await env.DB.prepare('DELETE FROM diagrams WHERE owner_id = ?')
-    .bind(ownerId)
-    .run();
+  // Link-aware (docs/specs/006-diagram/tab-diagram-many-to-many.md): a tab
+  // shared into a diagram someone else owns stays there.
+  const removal = await env.DB.batch(
+    diagramRemovalStatements(env, { column: 'owner_id', value: ownerId }),
+  );
+  const diagramsRes = removal[removal.length - 1]!;
   // Personal folders only. A team folder carries its creator's owner_id but
   // belongs to the team (access is by membership), and teammates' diagrams
   // sit in it: deleting it dropped them out of the team library behind a

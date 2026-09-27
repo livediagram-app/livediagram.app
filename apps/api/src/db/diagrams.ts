@@ -7,6 +7,7 @@ import { rowToTabSummary, type TabRow } from '../tab-row';
 import type { DiagramDTO, DiagramSummary, Env, TabSummaryDTO } from '../types';
 import { getParticipant } from './participants';
 import { collabIndexCopyStatements } from './collab-index';
+import { diagramRemovalStatements } from './diagram-removal';
 
 type DiagramRow = {
   id: string;
@@ -271,8 +272,10 @@ export async function setDiagramSharePassword(
     .run();
 }
 
+// Every delete path lands here: the Explorer, a teammate on a team diagram,
+// and Take Offline. A tab another diagram still holds survives it.
 export async function deleteDiagram(env: Env, id: string): Promise<void> {
-  await env.DB.prepare('DELETE FROM diagrams WHERE id = ?').bind(id).run();
+  await env.DB.batch(diagramRemovalStatements(env, { column: 'id', value: id }));
   // Drop the cached SVG snapshot (docs/specs/006-diagram/diagram-snapshots.md) alongside the row so a
   // deleted diagram doesn't leave an orphaned R2 object behind. Best
   // effort: a missing binding or a missing object is a no-op, and a
