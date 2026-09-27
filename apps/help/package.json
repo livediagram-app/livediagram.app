@@ -13,8 +13,8 @@
     "clean": "rm -rf .next .next-dev out node_modules .turbo"
   },
   "dependencies": {
-    "@livediagram/help-registry": "workspace:*",
     "@livediagram/api-schema": "workspace:*",
+    "@livediagram/help-registry": "workspace:*",
     "@livediagram/telemetry-client": "workspace:*",
     "@livediagram/ui": "workspace:*",
     "@mdx-js/loader": "^3.1.0",
@@ -27,6 +27,7 @@
   },
   "devDependencies": {
     "@livediagram/eslint-config": "workspace:*",
+    "@livediagram/icons": "workspace:^",
     "@livediagram/tailwind-config": "workspace:*",
     "@livediagram/templates": "workspace:*",
     "@livediagram/vitest-config": "workspace:*",

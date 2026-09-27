@@ -12,4 +12,5 @@ Follow the references below only as needed; never upfront.
 - ./tooltips-hover-cards-popovers.md - when adding a hover or focus hint, a `title`, or a click-opened panel: Tooltip (name, 1 s), Hover card (title + description, instant), Popover (click, interactive), and their WCAG 1.4.13 behaviour
 - ./blueprints/README.md - when implementing a 004-interface-design spec: engineering detail derived from the specs
 - ./dropdown-tile-grid.md - when working on Tile grids for the palette dropdowns: The canvas-tool and palette-category pickers lay their options out as an icon-over-label tile grid instead of a long column, matching the context menus' MenuTileGrid
+- ./iconography.md - when drawing, adding or changing any icon: Lucide vocabulary, 1.5px on-screen weight, one home, icon weight on canvas
 - ./scrollbars.md - when anything scrolls: the themed scrollbar is the default everywhere, one slim variant, and the thumb contrast rule

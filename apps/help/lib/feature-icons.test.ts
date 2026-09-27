@@ -1,6 +1,8 @@
+import { markupBounds } from '@livediagram/icons/centring';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { articles, categories } from './articles';
-import { FEATURE_CATEGORY_ICONS, FEATURE_ICONS, featureIcon } from './featureIcons';
+import { FEATURE_CATEGORY_ICONS, FEATURE_ICONS, featureIcon, iconStroke } from './featureIcons';
 import {
   FEATURE_CATEGORY_HEX,
   FEATURE_ENTITY_HEX,
@@ -116,5 +118,22 @@ describe('the catalogue as rendered', () => {
     const iconKeys = Object.keys(FEATURE_ICONS).sort();
     const hueKeys = Object.keys(FEATURE_ENTITY_HEX).sort();
     expect(iconKeys).toEqual(hueKeys);
+  });
+});
+
+describe('feature icon geometry', () => {
+  // Every glyph draws inside its 24-unit box (docs/specs/004-interface-design/iconography.md), stroke included.
+  // A malformed path escapes the box and renders as clipped fragments.
+  const outside = (markup: string) => {
+    const b = markupBounds(markup, iconStroke.strokeWidth);
+    // Null = unmeasurable (a rotated sticky note); only measurable geometry is held to the box.
+    return !!b && (b.minX < 0 || b.minY < 0 || b.maxX > 24 || b.maxY > 24);
+  };
+
+  it('keeps every feature glyph inside its viewBox', () => {
+    const escaped = Object.entries(FEATURE_ICONS)
+      .filter(([, node]) => outside(renderToStaticMarkup(node)))
+      .map(([slug]) => slug);
+    expect(escaped).toEqual([]);
   });
 });

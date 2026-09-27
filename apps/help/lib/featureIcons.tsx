@@ -1190,8 +1190,8 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   ),
   'reverting-changes': (
     <Glyph>
-      <path d="M3 8a9 9 0 119-2.4L21 8" {...s} />
-      <path d="M21 4v4h-4M12 8v4l3 2" {...s} />
+      <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" {...s} />
+      <path d="M3 3v5h5M12 7v5l4 2" {...s} />
     </Glyph>
   ),
   'session-tools': (

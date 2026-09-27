@@ -1,3 +1,4 @@
+// Line-art geometry derived from Feather (MIT) and Lucide (ISC); notices in THIRD_PARTY_NOTICES.md.
 // Icon catalogue data, part 1 of 2 (general / arrows / etc). Split in two
 // purely to keep each file under the ~1000-line budget; the parts are
 // concatenated back together by consumers: the editor's lib/icon-registry.ts

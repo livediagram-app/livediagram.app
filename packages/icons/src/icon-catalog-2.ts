@@ -1,3 +1,4 @@
+// Line-art geometry derived from Feather (MIT) and Lucide (ISC); notices in THIRD_PARTY_NOTICES.md.
 // Icon catalogue data, part 2 of 2 (tech / people / security / files /
 // charts / ui / furniture / animated), plus the LEGACY emoji entries appended
 // at the end. See icon-catalog-1.ts for why this is split and why it loads

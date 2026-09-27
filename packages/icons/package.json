@@ -12,7 +12,8 @@
     "./icon-catalog-2": "./src/icon-catalog-2.ts",
     "./tech-icon-catalog": "./src/tech-icon-catalog.ts",
     "./resolve": "./src/resolve.ts",
-    "./sticker-catalog": "./src/sticker-catalog.ts"
+    "./sticker-catalog": "./src/sticker-catalog.ts",
+    "./centring": "./src/centring.ts"
   },
   "scripts": {
     "lint": "eslint .",
@@ -27,6 +28,7 @@
     "@typescript/native": "npm:typescript@^7.0.2",
     "@vitest/coverage-v8": "^5.0.1",
     "eslint": "^10.11.0",
+    "svg-path-bbox": "2.1.0",
     "typescript": "npm:@typescript/typescript6@^6.0.2",
     "vitest": "^5.0.1"
   }

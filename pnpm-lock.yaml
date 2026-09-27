@@ -140,6 +140,9 @@ importers:
       '@livediagram/eslint-config':
         specifier: workspace:*
         version: link:../../packages/eslint-config
+      '@livediagram/icons':
+        specifier: workspace:^
+        version: link:../../packages/icons
       '@livediagram/tailwind-config':
         specifier: workspace:*
         version: link:../../packages/tailwind-config
@@ -630,6 +633,9 @@ importers:
       eslint:
         specifier: ^10.11.0
         version: 10.11.0(jiti@2.7.0)
+      svg-path-bbox:
+        specifier: 2.1.0
+        version: 2.1.0
       typescript:
         specifier: npm:@typescript/typescript6@^6.0.2
         version: '@typescript/typescript6@6.0.2'
@@ -3739,6 +3745,14 @@ packages:
   supports-color@7.2.0:
     resolution: {integrity: sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw==}
     engines: {node: '>=8'}
+
+  svg-path-bbox@2.1.0:
+    resolution: {integrity: sha512-PEoSQFbBvL7FOCE4cN8Knej6L7bXdNkjPcUYsfMMpq0HpnqiO0sE2mcXTd7LX160aOyh5HbaeN/SoY8thMk5Kg==}
+    engines: {node: '>=6.17.1'}
+    hasBin: true
+
+  svgpath@2.6.0:
+    resolution: {integrity: sha512-OIWR6bKzXvdXYyO4DK/UWa1VA1JeKq8E+0ug2DG98Y/vOmMpfZNj+TIG988HjfYSqtcy/hFOtZq/n/j5GSESNg==}
 
   tailwindcss@4.3.3:
     resolution: {integrity: sha512-gOhV3P7ufE62QDGg1zVaTgCR+EtPv92k2nIhVcVKcLmxT1sUBsQGhnZj175j+MqRt4zLF7ic+sCYjfhxMxj7YQ==}
@@ -7173,6 +7187,12 @@ snapshots:
   supports-color@7.2.0:
     dependencies:
       has-flag: 4.0.0
+
+  svg-path-bbox@2.1.0:
+    dependencies:
+      svgpath: 2.6.0
+
+  svgpath@2.6.0: {}
 
   tailwindcss@4.3.3: {}
 
