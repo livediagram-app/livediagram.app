@@ -17,7 +17,8 @@ Scope, by file (all under `apps/live/lib/import-images/`):
 | `attach.ts`       | `attachImportImages`: key dedupe, element patching, progress, the report                       |
 | `report.ts`       | `emptyImportImageReport`, `describeImportImageReport`: tallies and the dialog copy             |
 | `browser.ts`      | `browserImageCodec`, `createBrowserImportImageSession`: the DOM codec + the api/offline wiring |
-| `index.ts`        | Public surface for importers                                                                   |
+| `index.ts`        | Public surface for importers (everything but the browser wiring)                               |
+| `test-fakes.ts`   | Fake codec and typed image blobs for the unit tests; imported by tests only                    |
 
 Only `browser.ts` touches the DOM or the network; every other module runs in Node under Vitest.
 
@@ -66,7 +67,8 @@ not used. `IMPORT_IMAGE_FAILURES`, in this order (the order the report lists the
    `unsupported`. `;base64` among the parameters: `atob` the payload (whitespace stripped first,
    D3); a throwing `atob`: `unsupported`. Otherwise: `decodeURIComponent` the payload, then UTF-8
    encode; a throwing decode: `unsupported`. Declared type = the first group, lower-cased.
-2. `blob`: bytes = `new Uint8Array(await blob.arrayBuffer())`; declared type = `blob.type`.
+2. `blob`: a `blob.size` over `IMPORT_IMAGE_MAX_SOURCE_BYTES` is `too-large` before reading; else
+   bytes = `new Uint8Array(await blob.arrayBuffer())`; declared type = `blob.type`.
 3. Zero bytes: `missing-bytes`. More than `IMPORT_IMAGE_MAX_SOURCE_BYTES`: `too-large`. For a data
    URL the length check runs on the payload before decoding (`payload.length * 3 / 4`), so a huge
    string is never decoded.
@@ -112,7 +114,7 @@ quality)`. `null` or a throw: `unsupported`. With `keepIfSmaller` and
 
 ### `createImportImageSession(deps)`
 
-`deps = { offline: boolean, codec, upload(prepared) → { imageId, deduped }, toDataUrl(blob) →
+`deps = { offline: boolean, codec, upload(prepared, name?) → { imageId, deduped }, toDataUrl(blob) →
 string, log? }`. State:
 
 | State           | Initial | Transition                                                     |
@@ -129,7 +131,7 @@ string, log? }`. State:
 3. Offline: `dataUrl = await toDataUrl(prepared.blob)`. `embeddedChars + dataUrl.length >
 OFFLINE_IMPORT_EMBED_BUDGET_CHARS`: `offline-budget` (the budget is not consumed). Else add it
    and resolve `{ ok: true, imageId: dataUrl, kind: 'embedded' }`.
-4. Cloud: `await upload(prepared)`; resolve `kind: deduped ? 'deduped' : 'uploaded'`. A throw:
+4. Cloud: `await upload(prepared, source.name)`; resolve `kind: deduped ? 'deduped' : 'uploaded'`. A throw:
    `failureFromUploadError`; `images-unavailable` sets `unavailable`.
 5. Any unexpected throw inside the slot: `upload-failed` (never rejects). Release the slot.
 6. `gallery-full` changes no state: later stores still upload (spec).
@@ -153,7 +155,7 @@ requests.length`.
 ### `describeImportImageReport(report)` → `{ lines: string[], failures: { failure, count, sentence }[], hint: string | null }`
 
 - `lines`: `"{n} image(s) imported"` when `imported > 0`; `"{n} already in your gallery"` when
-  `deduped > 0`; `"{n} left as placeholder(s)"` when placeholders > 0.
+  `deduped > 0`; `"1 left as a placeholder"` / `"{n} left as placeholders"` when placeholders > 0.
 - `failures`: in `IMPORT_IMAGE_FAILURES` order, only non-zero, with the spec's sentence.
 - `hint`: `"Double-click a placeholder to add its image."` when placeholders > 0, else `null`.
 
@@ -183,8 +185,9 @@ resolves `null`. Drawing uses `imageSmoothingQuality = 'high'`.
 isOfflineIdSync(diagramId)`; `upload` computes `sha256Hex` and calls `apiUploadImage` with the
 prepared type, dimensions and the source `name` as `originalName`; `toDataUrl` is `FileReader`.
 
-Importers depend only on `index.ts`: the types, `attachImportImages`, `createBrowserImportImageSession`
-(lazy-imported), `describeImportImageReport`, `emptyImportImageReport`.
+Importers depend on `index.ts` (the types, `attachImportImages`, `describeImportImageReport`,
+`emptyImportImageReport`, `importImageReportTotal`, `importImagePlaceholderCount`) and lazy-import
+`browser.ts` for `createBrowserImportImageSession`, so no DOM code reaches the first bundle.
 
 ## Data and persistence
 
@@ -234,6 +237,8 @@ No new persisted fields. A stored image sets the existing `ImageElement.imageId`
 
 - `console.info('[import-images]', outcomeName, { mimeType, sourceBytes, storedBytes, width, height })`
   per store, `outcomeName` ∈ `uploaded | deduped | embedded | <failure>`.
+- `console.info('[import-images]', 'missing-bytes', { key })` per key without a source (from
+  `attachImportImages`, which never hands those to the session).
 - `console.info('[import-images] report', report)` once per `attachImportImages`.
 - Failures that come from a throw also `console.warn('[import-images] error', failure, error)`.
 

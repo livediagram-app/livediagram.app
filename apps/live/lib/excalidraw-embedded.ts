@@ -18,6 +18,16 @@ const BAD_SCENE = "The Excalidraw scene inside this image couldn't be read.";
 
 class BadScene extends Error {}
 
+// Excalidraw's `encode()` output; older exports lack `version`, the oldest the
+// whole wrapper (they carry the scene JSON itself).
+type EncodedSceneWrapper = {
+  type?: unknown;
+  version?: unknown;
+  encoding?: unknown;
+  compressed?: unknown;
+  encoded?: unknown;
+};
+
 const latin1 = (bytes: Uint8Array) => {
   let out = '';
   for (let i = 0; i < bytes.length; i += 0x8000) {
@@ -99,12 +109,7 @@ async function decodeWrapperText(text: string): Promise<string> {
     throw new BadScene('wrapper is not JSON');
   }
   if (!parsed || typeof parsed !== 'object') throw new BadScene('wrapper is not an object');
-  const wrapper = parsed as {
-    type?: unknown;
-    encoding?: unknown;
-    compressed?: unknown;
-    encoded?: unknown;
-  };
+  const wrapper = parsed as EncodedSceneWrapper;
   if (!('encoded' in wrapper)) {
     if (wrapper.type === 'excalidraw') return text;
     throw new BadScene('not a scene');
