@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  supportsTextAlign,
   AGENDA_DEFAULT_MINUTES,
   AGENDA_MAX_MINUTES,
   ESTIMATE_SCALE_VALUES,
@@ -222,5 +223,39 @@ describe('the shared settings ellipsis (docs/specs/008-canvas/canvas-and-palette
     expect(carriesSharedSettingsMenu('done-check')).toBe(false);
     expect(carriesSharedSettingsMenu('comment-pin')).toBe(true);
     expect(carriesSharedSettingsMenu('square')).toBe(false);
+  });
+});
+
+// One text-align gate for the context menu and the quick style panel: a kind
+// whose face shows its label as a fixed title has nothing to align.
+describe('supportsTextAlign', () => {
+  it('is off for kinds with their own face and for self-drawing kinds', () => {
+    for (const kind of [
+      'qa-board',
+      'agenda',
+      'decision',
+      'roll-call',
+      'chair',
+      'session-button',
+      'focus-button',
+      'reveal',
+      'picker',
+      'comment-pin',
+      'action-card',
+      'reaction-pad',
+      'portal',
+      'mode-button',
+      'stat-row',
+      'sticker',
+      'icon',
+    ] as const) {
+      expect(supportsTextAlign(kind), kind).toBe(false);
+    }
+  });
+
+  it('is on for plain shapes and for kinds that render the aligned label', () => {
+    for (const kind of ['square', 'circle', 'banner', 'callout', 'page'] as const) {
+      expect(supportsTextAlign(kind), kind).toBe(true);
+    }
   });
 });

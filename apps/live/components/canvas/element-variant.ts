@@ -5,10 +5,9 @@ import {
   BORDER_STROKE_PX,
   DEFAULT_BORDER_STROKE,
   DEFAULT_BORDER_STYLE,
-  MODE_BUTTON_SKIN,
   defaultFillColor,
   defaultStrokeColor,
-  isLegacyModeButtonSkin,
+  ownColours,
   shadowBoxCss,
   shadowFilterCss,
   supportsShadow,
@@ -120,12 +119,11 @@ export function describeVariant(
       // Transparent-fill shapes (icons, outline boxes) take the filter
       // path: a box-shadow behind a see-through body reads as a floating
       // grey rectangle.
-      // A Selection Mode button still wearing the pre-redesign brand-blue
-      // default renders in today's skin instead (see isLegacyModeButtonSkin).
-      const legacyButton = isLegacyModeButtonSkin(element);
-      const fill = legacyButton
-        ? MODE_BUTTON_SKIN.fill
-        : (element.fillColor ?? defaultFillColor(element, surface));
+      // ownColours drops a skin a Behaviour element was once CREATED with
+      // (the old light button skin, the pre-redesign blue), so it resolves
+      // like an unstyled element and follows the surface (behaviour-skin.ts).
+      const own = ownColours(element);
+      const fill = own.fill ?? defaultFillColor(element, surface);
       return {
         // Drop the border-2 class so we can drive border width from
         // the user's strokeWidth pick instead of a fixed 2px.
@@ -134,9 +132,7 @@ export function describeVariant(
           ...(fill === 'transparent' ? filterShadow : boxShadow),
           borderRadius: fixedRadius ?? (userRadius !== null ? `${userRadius}px` : '8px'),
           backgroundColor: fill,
-          borderColor: legacyButton
-            ? MODE_BUTTON_SKIN.stroke
-            : (remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)),
+          borderColor: remoteBorderColor ?? own.stroke ?? defaultStrokeColor(element, surface),
           borderWidth: useSvgBorder ? 0 : remoteBorderColor ? remoteBorderWidth : strokePx,
           borderStyle: useSvgBorder
             ? 'none'

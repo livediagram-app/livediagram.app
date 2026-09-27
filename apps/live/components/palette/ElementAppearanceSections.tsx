@@ -26,7 +26,7 @@ import {
   isProgressShape,
   isRailShape,
   isRatingShape,
-  isSelfDrawingShape,
+  supportsTextAlign,
   supportsBorderControls,
   supportsColours,
   type IconSize,
@@ -149,7 +149,7 @@ export function ElementAppearanceSections({
   const showAlignment =
     boxed &&
     target.type !== 'image' &&
-    !(target.type === 'shape' && isSelfDrawingShape(target.shape)) &&
+    !(target.type === 'shape' && !supportsTextAlign(target.shape)) &&
     hasText;
   // The shape-only sections below (Marker / Progress / Rail / Rating / Data)
   // all render under a `target.type === 'shape'` guard, so this is non-null

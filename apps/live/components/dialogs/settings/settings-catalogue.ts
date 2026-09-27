@@ -78,6 +78,12 @@ type RowBase = {
   // directly beneath that row, indented, in a group named after it
   // (docs/specs/007-editor/power-user-mode.md#in-settings).
   parent?: string;
+  // A setting with no effect on a phone-sized viewport, holding the note that
+  // says so there. The row stays visible (so Settings reads the same on every
+  // device) but greyed and inert on a phone, and the stored value is left
+  // alone for the desktop. Without it the control flips freely and appears
+  // to do nothing, which reads as a bug.
+  desktopOnly?: string;
 };
 
 export type SettingsToggleRowSpec = RowBase & {
@@ -174,6 +180,11 @@ export type SettingsCategorySpec = {
   requiresAi?: boolean;
   rows: SettingsRowSpec[];
 };
+
+// A phone never draws the minimap (docs/specs/008-canvas/minimap.md), so all
+// three of its rows are inert there and share this note.
+const MINIMAP_DESKTOP_ONLY =
+  'The minimap is desktop only, so this has no effect on a phone. Your choice still applies on a larger screen.';
 
 export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
   {
@@ -307,6 +318,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         section: 'Layout',
         illustration: 'showMinimap',
         label: 'Show Minimap',
+        desktopOnly: MINIMAP_DESKTOP_ONLY,
         description:
           'Shows a small overview of the whole canvas in the bottom-left corner once a tab has a few elements and the Activity panel is minimised. Tap or drag it to jump around; scroll on it to zoom. Desktop only.',
         read: (p) => p.showMinimap !== false,
@@ -435,6 +447,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         section: 'Minimap',
         illustration: 'mapDimOutside',
         label: 'Dim Outside the View',
+        desktopOnly: MINIMAP_DESKTOP_ONLY,
         description:
           'Shades the part of the minimap that falls outside what you are currently looking at, so the viewport rectangle stands out.',
         read: (p) => p.mapDimOutside !== false,
@@ -447,6 +460,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'minimap height short medium tall map size',
         section: 'Minimap',
         label: 'Minimap Size',
+        desktopOnly: MINIMAP_DESKTOP_ONLY,
         description: 'How much of the bottom-left corner the minimap takes up.',
         options: [
           { id: 'short', label: 'Short' },

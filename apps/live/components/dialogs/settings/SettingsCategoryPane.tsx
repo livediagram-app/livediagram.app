@@ -109,11 +109,15 @@ export function SettingsCategoryPane({
   // Fire BEFORE the write so an opt-out event still reaches the wire ahead of
   // the preference that gates it (docs/specs/017-telemetry/telemetry.md).
   function renderRow(row: SettingsCategorySpec['rows'][number]) {
+    // A desktop-only row stays visible on a phone but inert, with its note.
+    const inert = isMobile && !!row.desktopOnly;
     switch (row.kind) {
       case 'toggle':
         return (
           <SettingsRow
             row={row}
+            disabled={inert}
+            notice={inert ? row.desktopOnly : undefined}
             checked={row.read(settings)}
             onChange={(next) => {
               track(row.event.category, 'Toggled', next ? row.event.on : row.event.off);
@@ -129,13 +133,18 @@ export function SettingsCategoryPane({
         return (
           <SettingsChoiceRow
             row={row}
-            options={row.options.map((o) => ({ ...o, disabled: isMobile && o.desktopOnly }))}
+            options={row.options.map((o) => ({
+              ...o,
+              disabled: inert || (isMobile && o.desktopOnly),
+            }))}
             notice={
-              limited
-                ? `${joinLabels(desktopOnly.map((o) => o.label))} ${
-                    desktopOnly.length === 1 ? 'is' : 'are'
-                  } desktop only. On a phone it uses the Toolbar layout instead.`
-                : undefined
+              inert
+                ? row.desktopOnly
+                : limited
+                  ? `${joinLabels(desktopOnly.map((o) => o.label))} ${
+                      desktopOnly.length === 1 ? 'is' : 'are'
+                    } desktop only. On a phone it uses the Toolbar layout instead.`
+                  : undefined
             }
             value={row.read(settings, { mobile: isMobile })}
             onChange={(next) => {

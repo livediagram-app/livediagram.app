@@ -1,4 +1,5 @@
-import { isLegacyModeButtonSkin, MODE_BUTTON_SKIN } from './selection-mode';
+import { defaultFillColor, defaultTextColor } from './colors';
+import { isLegacyModeButtonSkin } from './selection-mode';
 import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_BUTTON_MODE,
@@ -433,10 +434,11 @@ describe('createShape (mode button, docs/specs/009-elements/mode-button.md)', ()
   it('arrives looking like a real button, not a themed box', () => {
     const button = createShape('mode-button', 10, 20);
     expect(button.shape).toBe('mode-button');
-    // It has to read as pressable before anyone styles it: a solid fill, a
-    // legible label colour, a lift off the surface, and rounded corners.
-    expect(button.fillColor).toBeTruthy();
-    expect(button.textColor).toBeTruthy();
+    // It has to read as pressable before anyone styles it: a button skin (the
+    // kind's default per surface, not a stored colour, so it follows dark
+    // mode), a lift off the surface, and rounded corners.
+    expect(defaultFillColor(button, 'light')).toBe('#ffffff');
+    expect(defaultTextColor(button, 'dark')).not.toBe(defaultTextColor(button, 'light'));
     expect(button.shadow).toBeTruthy();
     expect(button.borderRadius).toBe('lg');
     expect(button.textBold).toBe(true);
@@ -461,9 +463,9 @@ describe('createShape (mode button, docs/specs/009-elements/mode-button.md)', ()
 
   it('treats the pre-redesign button skin as unset, not as a colour choice', () => {
     const fresh = createShape('mode-button', 0, 0);
-    // Today's default is the light surface, and it must NOT be mistaken for the
-    // legacy one (or every new button would be re-skinned forever).
-    expect(fresh.fillColor).toBe(MODE_BUTTON_SKIN.fill);
+    // Today's button stores no colour (its skin is the kind's per-surface
+    // default, behaviour-skin.ts), so it is never mistaken for the legacy one.
+    expect(fresh.fillColor).toBeUndefined();
     expect(isLegacyModeButtonSkin(fresh)).toBe(false);
     // A button saved before the redesign wore white-on-brand-blue.
     expect(

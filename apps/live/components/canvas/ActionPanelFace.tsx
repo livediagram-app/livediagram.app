@@ -8,6 +8,7 @@ import { ActionMenuIcon } from '@/components/palette/context-menu-icons';
 import { initialsOf } from '@/lib/identity';
 import { relativeSince } from '@/lib/relative-time';
 import { SOLID_BRAND_DARK } from '@livediagram/ui';
+import { useTouchScrollBody } from '@/hooks/ui/useTouchScrollBody';
 
 // The face of an Action panel (docs/specs/012-collaboration/action-panel.md): a card on the board that carries ONE
 // assigned action (docs/specs/012-collaboration/assigned-actions.md) and shows it in place.
@@ -38,6 +39,7 @@ export function ActionPanelFace({
   onComplete?: () => void;
   onReopen?: () => void;
 }) {
+  const touchScroll = useTouchScrollBody<HTMLDivElement>();
   const action = element.action;
   const done = action?.status === 'done';
 
@@ -73,7 +75,11 @@ export function ActionPanelFace({
         </div>
       ) : (
         <>
-          <div className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto px-2.5 pb-1">
+          {/* touch-none + useTouchScrollBody: see CollabPanel's body. */}
+          <div
+            {...touchScroll}
+            className="flex min-h-0 flex-1 touch-none flex-col gap-1 overflow-y-auto px-2.5 pb-1"
+          >
             <span
               className={`break-words text-[13px] font-semibold leading-snug ${
                 done ? 'line-through' : ''

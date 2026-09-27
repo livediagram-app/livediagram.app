@@ -56,7 +56,7 @@ describe('SettingsCategoryPane on a phone', () => {
     expect(layoutOption('Floating').disabled).toBe(true);
     expect(layoutOption('Toolbar').disabled).toBe(false);
     expect(layoutOption('Minimal').disabled).toBe(false);
-    expect(screen.getByRole('note').textContent).toBe(
+    expect(screen.getAllByRole('note').map((n) => n.textContent)).toContain(
       'Floating is desktop only. On a phone it uses the Toolbar layout instead.',
     );
     fireEvent.click(layoutOption('Floating'));
@@ -88,6 +88,44 @@ describe('SettingsCategoryPane on a phone', () => {
     expect(onChange).not.toHaveBeenCalled();
     fireEvent.click(layoutDrawing(0));
     expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ panelLayout: 'floating' }));
+  });
+});
+
+// A whole desktop-only row (the minimap's, docs/specs/008-canvas/minimap.md):
+// a phone never draws the minimap, so its rows are greyed and inert there,
+// with a note, rather than flipping to no visible effect.
+describe('SettingsCategoryPane desktop-only rows', () => {
+  const PANELS = SETTINGS_CATEGORIES.find((c) => c.id === 'panels')!;
+  const minimapSwitch = () => screen.getByRole('switch', { name: /Show Minimap/ });
+
+  it('greys out Show Minimap on a phone, says why, and ignores a tap', () => {
+    mobile.value = true;
+    const onChange = show();
+    expect((minimapSwitch() as HTMLButtonElement).disabled).toBe(true);
+    expect(minimapSwitch().getAttribute('aria-checked')).toBe('true');
+    expect(
+      screen.getAllByRole('note').some((n) => /minimap is desktop only/.test(n.textContent ?? '')),
+    ).toBe(true);
+    fireEvent.click(minimapSwitch());
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it('locks the other minimap rows on a phone too', () => {
+    mobile.value = true;
+    render(<SettingsCategoryPane category={PANELS} settings={{}} onChange={vi.fn()} />);
+    const dim = screen.getByRole('switch', { name: /Dim Outside the View/ }) as HTMLButtonElement;
+    expect(dim.disabled).toBe(true);
+    const sizes = screen
+      .getByRole('radiogroup', { name: 'Minimap Size' })
+      .querySelectorAll<HTMLButtonElement>('[role="radio"]');
+    expect([...sizes].every((b) => b.disabled)).toBe(true);
+  });
+
+  it('leaves Show Minimap working on desktop, with no note', () => {
+    const onChange = show();
+    expect((minimapSwitch() as HTMLButtonElement).disabled).toBe(false);
+    fireEvent.click(minimapSwitch());
+    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ showMinimap: false }));
   });
 });
 

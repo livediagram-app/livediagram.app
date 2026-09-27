@@ -6,14 +6,13 @@ import {
   BORDER_STROKE_PX,
   DEFAULT_BORDER_STROKE,
   DEFAULT_BORDER_STYLE,
-  MODE_BUTTON_SKIN,
   PADDING_PX,
   activeCommentCount,
   defaultPadding,
   defaultStrokeColor,
   defaultTextAlign,
   defaultTextColor,
-  isLegacyModeButtonSkin,
+  ownColours,
   isOpenAction,
   isSelfDrawingShape,
   type ShapeMarker,
@@ -172,11 +171,11 @@ function BoxedElementViewImpl({
   const defaultAlign = defaultTextAlign(element);
   const alignX = element.textAlignX ?? defaultAlign.x;
   const alignY = element.textAlignY ?? defaultAlign.y;
-  // A pre-redesign Selection Mode button (docs/specs/009-elements/mode-button.md) wore white-on-blue; it now
-  // renders in today's skin, text included, so the two halves can't disagree.
-  const textColor = isLegacyModeButtonSkin(element)
-    ? MODE_BUTTON_SKIN.text
-    : (element.textColor ?? defaultTextColor(element, surface));
+  // A skin a Behaviour element was once created with (the old light button
+  // skin, the pre-redesign blue) reads as unset, so it follows the surface
+  // like the fill and border do (behaviour-skin.ts).
+  const own = ownColours(element);
+  const textColor = own.text ?? defaultTextColor(element, surface);
 
   // Annotation marker (docs/specs/009-elements/annotations.md): a fixed-size note circle. Hovering it
   // floats its note above everything; clicking it (handled in the drag
@@ -237,7 +236,7 @@ function BoxedElementViewImpl({
   // stars): a remote selector colour wins, else the element's own stroke, else
   // the theme default stroke. Shared by the ProgressView / RailView / RatingView
   // branches below so they all read the same accent.
-  const accent = remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface);
+  const accent = remoteBorderColor ?? own.stroke ?? defaultStrokeColor(element, surface);
   const variant = describeVariant(element, isSelected, isMultiSelected, remoteBorderColor, surface);
 
   // A comment pin (docs/specs/012-collaboration/comment-pin.md) shows its own count on its face, so the generic
@@ -428,7 +427,7 @@ function BoxedElementViewImpl({
           shape={element.shape}
           width={element.width}
           height={element.height}
-          stroke={element.strokeColor ?? defaultStrokeColor(element, surface)}
+          stroke={own.stroke ?? defaultStrokeColor(element, surface)}
           strokeWidth={BORDER_STROKE_PX[element.strokeWidth ?? DEFAULT_BORDER_STROKE]}
           dasharray={BORDER_DASH_ARRAY[element.strokeStyle ?? DEFAULT_BORDER_STYLE] ?? ''}
           radiusPx={element.borderRadius !== undefined ? BORDER_RADIUS_PX[element.borderRadius] : 8}
