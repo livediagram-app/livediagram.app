@@ -13,8 +13,10 @@ import type { Env } from '../types';
 // it (the image delete above relies on the per-owner gallery cap instead).
 const R2_DELETE_CHUNK = 1000;
 
-// Wipe every row belonging to a given owner: diagrams, folders, the
-// participant record, AND the R2 image bytes (docs/specs/009-elements/images.md). Called from
+// Wipe every row belonging to a given owner: every owner-keyed table in
+// docs/specs/015-api/api.md "Owner-keyed data", AND the R2 image bytes
+// (docs/specs/009-elements/images.md). account-owner-columns.test.ts holds
+// both functions here to that list against the real schema. Called from
 // DELETE /api/account when the user opts in via the "Delete account"
 // dialog. Cascade rules take care of dependent D1 tables: `tabs`,
 // `share_links`, and `change_log` all FK to `diagrams.id` with ON
@@ -105,6 +107,10 @@ export async function deleteAccount(
   // visiting OTHER people's diagrams are keyed on their owner_id and
   // need their own DELETE — same table migrateOwnerId already handles.
   await env.DB.prepare('DELETE FROM shared_with WHERE owner_id = ?').bind(ownerId).run();
+  // favourites (docs/specs/013-workspace/favourites.md): the same split as
+  // shared_with. Stars on this owner's diagrams cascade; the stars they put on
+  // teammates' and other people's diagrams are theirs and go here.
+  await env.DB.prepare('DELETE FROM favourites WHERE owner_id = ?').bind(ownerId).run();
   // timeline (docs/specs/013-workspace/timeline.md §3.5): the feed, the events this owner authored,
   // and the scope-state row. Hard, not soft — soft delete is a
   // user-facing affordance in this product, never a retention strategy.
@@ -119,9 +125,9 @@ export async function deleteAccount(
   };
 }
 
-// Owner-id migration. Reassigns every `diagrams.owner_id`,
-// `folders.owner_id`, `shared_with.owner_id`, `user_preferences.owner_id`,
-// and `images.owner_id` row from `fromOwnerId` to `toOwnerId`. Called
+// Owner-id migration. Reassigns every guest-holdable owner-keyed row
+// (docs/specs/015-api/api.md "Owner-keyed data") from `fromOwnerId` to
+// `toOwnerId`. Called
 // from POST /api/migrate when a guest signs up: their localStorage
 // participant id moves to their Clerk userId so the new account sees
 // the diagrams, folders, shared-with-them list, editor preferences,
@@ -191,6 +197,31 @@ export async function migrateOwnerId(
     .bind(toOwnerId, fromOwnerId)
     .run();
   await env.DB.prepare('DELETE FROM user_preferences WHERE owner_id = ?').bind(fromOwnerId).run();
+  // favourites (docs/specs/013-workspace/favourites.md): the primary key is
+  // (owner_id, diagram_id), and both identities may have starred the same
+  // diagram, so INSERT OR IGNORE then DELETE like shared_with. A collision
+  // keeps the account's star and its original created_at.
+  await env.DB.prepare(
+    `INSERT OR IGNORE INTO favourites (owner_id, diagram_id, created_at)
+     SELECT ?, diagram_id, created_at
+     FROM favourites
+     WHERE owner_id = ?`,
+  )
+    .bind(toOwnerId, fromOwnerId)
+    .run();
+  await env.DB.prepare('DELETE FROM favourites WHERE owner_id = ?').bind(fromOwnerId).run();
+  // participants: the guest's name and colour. The id IS the owner id, so an
+  // account that already has a row keeps it (a signed-in name comes from Clerk
+  // anyway); the guest row goes, since nothing reads a retired guest id.
+  await env.DB.prepare(
+    `INSERT OR IGNORE INTO participants (id, name, color, created_at)
+     SELECT ?, name, color, created_at
+     FROM participants
+     WHERE id = ?`,
+  )
+    .bind(toOwnerId, fromOwnerId)
+    .run();
+  await env.DB.prepare('DELETE FROM participants WHERE id = ?').bind(fromOwnerId).run();
   // timeline (docs/specs/013-workspace/timeline.md §9): a week of drawing as a guest is history
   // worth keeping, so the feed, the authored events, and the
   // scope-state row all follow the user to their new account. The
