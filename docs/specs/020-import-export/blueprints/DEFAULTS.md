@@ -1,0 +1,21 @@
+# Import and export blueprint defaults
+
+One row per default applied where a spec is silent or qualitative.
+
+| #   | Blueprint     | Spec silence                                                           | Default applied                                                                      |
+| --- | ------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| D1  | drawio-import | A compressed payload that is not URI-encoded                           | Use the inflated Latin-1 text as it is when `decodeURIComponent` throws              |
+| D2  | drawio-import | PNG chunk integrity                                                    | CRCs are not checked; a truncated chunk ends the walk                                |
+| D3  | drawio-import | Colour values other than hex, `none`, `default`, `light-dark`, `rgb()` | Left unset, so the theme paints them                                                 |
+| D4  | drawio-import | Stroke width halfway between two presets                               | The thinner preset                                                                   |
+| D5  | drawio-import | A vertex with no `strokeWidth`                                         | `thin`, draw.io's 1 px, rather than livediagram's `medium` default                   |
+| D6  | drawio-import | An edge with `strokeColor=none`                                        | `opacity: 0`: the connection keeps its ends and label, drawn invisible as in draw.io |
+| D7  | drawio-import | A vertex with no geometry                                              | Skipped and counted `hidden-skipped` (draw.io cannot show it either)                 |
+| D8  | drawio-import | Duplicate cell ids                                                     | The last cell wins the id map; every cell is still walked once                       |
+| D9  | drawio-import | "A fixed soft drop shadow"                                             | `{ offsetX: 2, offsetY: 3, blur: 3, opacity: 0.25 }`                                 |
+| D10 | drawio-import | How much an icon's box grows to hold its caption                       | 18 px per line down / up; 7 px per character of the longest line sideways            |
+| D11 | drawio-import | "A label placed away from the middle"                                  | Geometry `x` more than 0.05 from 0                                                   |
+| D12 | drawio-import | How many unmatched stencil names the summary lists                     | The 5 most frequent, then "…"                                                        |
+| D13 | drawio-import | Font size halfway between two presets                                  | The smaller preset                                                                   |
+| D14 | drawio-import | Name of an unnamed page                                                | `Page n`, n its 1-based position                                                     |
+| D15 | drawio-import | Names of layers beyond the first when unnamed                          | `Layer n`, n its 1-based position                                                    |
