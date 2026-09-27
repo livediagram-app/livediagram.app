@@ -2,7 +2,8 @@
 
 import { useId, useMemo, useRef, useState, type ReactNode } from 'react';
 import { TextInput } from '@livediagram/ui';
-import { categoryColor, eventLabel, titleCase } from './event-vocab';
+import { eventLabel, titleCase } from './event-vocab';
+import { useCategoryColor } from './useCategoryColor';
 import { SearchGlyph } from './glyphs';
 import { EventIcon } from './telemetry-event-icon';
 import type { Metric } from './metrics';
@@ -54,10 +55,13 @@ function Chevron() {
 }
 
 function CategorySwatch({ category }: { category: string }) {
+  const tone = useCategoryColor();
   return (
+    // The dark hues are lifted to read on the dark card, so their initial
+    // reads in the card's own ink rather than white.
     <span
-      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[11px] font-semibold text-white"
-      style={{ backgroundColor: categoryColor(category) }}
+      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[11px] font-semibold text-white dark:text-slate-950"
+      style={{ backgroundColor: tone(category) }}
     >
       {category.slice(0, 1)}
     </span>
@@ -73,7 +77,7 @@ function EventChip({
   action: string;
   type: string | null;
 }) {
-  const color = categoryColor(category);
+  const color = useCategoryColor()(category);
   return (
     <span
       className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md"

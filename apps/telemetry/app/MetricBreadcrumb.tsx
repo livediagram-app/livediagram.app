@@ -46,7 +46,7 @@ export function MetricBreadcrumb({
           {c.to === null ? (
             <span
               aria-current="page"
-              className="rounded-full bg-slate-900 px-3 py-1 text-xs font-semibold text-white dark:bg-white dark:text-slate-900"
+              className="rounded-full bg-slate-900 px-3 py-1 text-xs font-semibold text-white dark:bg-slate-200 dark:text-slate-900"
             >
               {c.label}
             </span>

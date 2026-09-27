@@ -8,7 +8,7 @@ import {
   type TelemetrySummary,
   type TelemetryWindowKey,
 } from '@livediagram/api-schema';
-import { categoryColor } from './event-vocab';
+import { useCategoryColor } from './useCategoryColor';
 import { CUSTOM_THEME_TYPES, NON_PATTERN_CANVAS_TYPES, THEME_ALIASES } from './look-feel-types';
 import { ActivityGlyph } from './glyphs';
 import { MiniSparkline } from './MiniSparkline';
@@ -124,7 +124,7 @@ function CustomThemeCard({
   rows: TelemetryCount[];
   daily: TelemetryDaily | undefined;
 }) {
-  const color = categoryColor('Theme');
+  const color = useCategoryColor()('Theme');
   const find = (category: string, action: string, type: string) =>
     rows.find((r) => r.category === category && r.action === action && r.type === type)?.count ?? 0;
   const anyData = CUSTOM_THEME_METRICS.some((m) => find(m.category, m.action, m.type) > 0);

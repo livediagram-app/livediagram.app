@@ -1,3 +1,6 @@
+import type { Appearance } from '@livediagram/ui';
+import { darkFloor, forAppearance } from './appearance-colours';
+import { shade } from './colour-maths';
 import { categoryColor } from './event-vocab';
 
 // A chart stack's colours (docs/specs/017-telemetry/telemetry.md), carried through from the category hues
@@ -12,31 +15,33 @@ import { categoryColor } from './event-vocab';
 
 type Categorised = { category: string };
 
+// How far the shades of one hue spread in dark, upward from the hue's dark
+// floor, and the palest a shade may get before it reads as white rather than
+// as its hue.
+const DARK_SPREAD = 0.55;
+const DARK_PALEST = 0.8;
+
 // How far the shades of one hue spread, from the first member (darkest) to
 // the last (lightest). Scaled by the hue's own brightness so every shade stays
 // in a readable middle band: a deep hue (Page's #9d174d) mostly lightens,
 // since darkening it more lands on near-black, and a bright one (Tab's amber)
-// mostly darkens, since lightening it far washes out on a white card.
-function spread(hex: string): [number, number] {
+// mostly darkens, since lightening it far washes out on a white card. In dark
+// the band starts where the hue first reads on the dark card instead.
+function spread(hex: string, appearance: Appearance): [number, number] {
+  if (appearance === 'dark') {
+    const floor = darkFloor(hex);
+    return [floor, Math.min(floor + DARK_SPREAD, DARK_PALEST)];
+  }
   const n = parseInt(hex.slice(1), 16);
   const luma = (0.299 * ((n >> 16) & 0xff) + 0.587 * ((n >> 8) & 0xff) + 0.114 * (n & 0xff)) / 255;
   return [-0.4 * luma, 0.75 - 0.6 * luma];
 }
 
-// Mix a #rrggbb colour toward white (t > 0) or black (t < 0).
-export function shade(hex: string, t: number): string {
-  const n = parseInt(hex.slice(1), 16);
-  const target = t > 0 ? 255 : 0;
-  const amount = Math.abs(t);
-  const channel = (shift: number) => {
-    const c = (n >> shift) & 0xff;
-    return Math.round(c + (target - c) * amount);
-  };
-  return `#${[16, 8, 0].map((s) => channel(s).toString(16).padStart(2, '0')).join('')}`;
-}
-
 // One line colour per member, in order.
-export function stackMemberColors(members: Categorised[]): string[] {
+export function stackMemberColors(
+  members: Categorised[],
+  appearance: Appearance = 'light',
+): string[] {
   const bases = members.map((m) => categoryColor(m.category));
   const sharing = new Map<string, number>();
   for (const b of bases) sharing.set(b, (sharing.get(b) ?? 0) + 1);
@@ -45,15 +50,15 @@ export function stackMemberColors(members: Categorised[]): string[] {
     const k = sharing.get(base)!;
     const i = seen.get(base) ?? 0;
     seen.set(base, i + 1);
-    if (k === 1) return base;
-    const [darkest, lightest] = spread(base);
+    if (k === 1) return forAppearance(base, appearance);
+    const [darkest, lightest] = spread(base, appearance);
     return shade(base, darkest + ((lightest - darkest) * i) / (k - 1));
   });
 }
 
 // The stack's own colour, for its head's icon tile and its combined line: the
 // hue most of its members share (the first to reach it on a tie).
-export function stackAccent(members: Categorised[]): string {
+export function stackAccent(members: Categorised[], appearance: Appearance = 'light'): string {
   const tally = new Map<string, number>();
   let best = categoryColor(members[0]?.category ?? '');
   for (const m of members) {
@@ -62,5 +67,5 @@ export function stackAccent(members: Categorised[]): string {
     tally.set(c, n);
     if (n > (tally.get(best) ?? 0)) best = c;
   }
-  return best;
+  return forAppearance(best, appearance);
 }
