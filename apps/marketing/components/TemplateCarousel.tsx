@@ -8,16 +8,20 @@ import { BAND_LABEL } from '@/components/band-classes';
 // phone; the page size is pure CSS, so the arrows never have to know it),
 // with prev / next arrows in the heading row that page through the rest.
 // The track is a real horizontal scroller, so a touch swipe works too and
-// the arrows just scroll it by one visible width; scroll-snap lands the
-// page on a card edge. Arrows disable at either end and hide when every
+// the arrows just scroll it by one page; scroll-snap lands a swipe on a
+// card edge. Arrows disable at either end and hide when every
 // card already fits.
 export function TemplateCarousel({
   label,
+  count,
   itemsKey,
   reveal = false,
   children,
 }: {
   label: string;
+  // How many cards the row holds, shown as a badge beside the heading on a
+  // phone, where one card per page hides how far the row goes.
+  count: number;
   // Changes when the row's cards change (a filter), so the track rewinds
   // rather than staying scrolled past cards that are no longer there.
   itemsKey: string;
@@ -47,17 +51,32 @@ export function TemplateCarousel({
     return () => ro.disconnect();
   }, [itemsKey, measure]);
 
+  // A page is one visible width PLUS the gap before the next card: whole
+  // cards fill the width with a gap between each, so the next page starts a
+  // gap past the edge. Scrolling by clientWidth alone fell a gap short each
+  // press, and iOS Safari doesn't re-snap a programmatic smooth scroll, so
+  // the card sat shifted right with its right border clipped. Landing on a
+  // whole multiple of the stride also realigns a swipe that stopped between
+  // pages.
   const page = (direction: 1 | -1) => {
     const el = track.current;
     if (!el) return;
-    el.scrollBy({ left: direction * el.clientWidth, behavior: 'smooth' });
+    const stride = el.clientWidth + (parseFloat(getComputedStyle(el).columnGap) || 0);
+    const target = (Math.round(el.scrollLeft / stride) + direction) * stride;
+    el.scrollTo({ left: target, behavior: 'smooth' });
   };
 
   const paged = canPrev || canNext;
   return (
     <div className={reveal ? 'tg-reveal' : undefined}>
       <div className="flex items-center justify-between gap-4">
-        <h3 className={BAND_LABEL}>{label}</h3>
+        <div className="flex items-center gap-2">
+          <h3 className={BAND_LABEL}>{label}</h3>
+          <span className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-xs font-medium tabular-nums text-slate-600 sm:hidden dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
+            {count}
+            <span className="sr-only"> templates</span>
+          </span>
+        </div>
         {paged ? (
           <div className="flex items-center gap-1.5">
             <CarouselArrow

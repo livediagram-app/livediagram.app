@@ -97,6 +97,7 @@ export function TemplateGallery() {
               <TemplateCarousel
                 key={group.id}
                 label={group.label}
+                count={group.templates.length}
                 itemsKey={group.templates.map((t) => t.kind).join(',')}
                 reveal={group.id !== FIRST_CATEGORY}
               >
