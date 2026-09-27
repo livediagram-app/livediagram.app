@@ -7,6 +7,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
 import { normaliseHex } from '@/lib/swatch-overrides';
 
 const GAP = 8;
@@ -178,7 +179,7 @@ export function SwatchOverridePopover({
         <button
           type="button"
           onClick={close}
-          className="h-7 rounded-md bg-brand-600 px-3 text-xs font-medium text-white transition hover:bg-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1 dark:focus-visible:ring-offset-slate-900"
+          className={`h-7 rounded-md bg-brand-600 px-3 text-xs font-medium text-white transition hover:bg-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1 dark:focus-visible:ring-offset-slate-900 ${SOLID_BRAND_DARK_CONTROL}`}
         >
           Done
         </button>
