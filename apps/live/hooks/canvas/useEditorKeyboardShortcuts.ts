@@ -103,7 +103,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
   // only-bailout logic.
   useEffect(() => {
     if (!deps.enabled) return;
-    const onKey = (e: KeyboardEvent) => {
+    const handleKey = (e: KeyboardEvent) => {
       // A modal dialog owns the keyboard while open: its buttons /
       // toggles aren't text inputs, so without this gate `R` dropped a
       // rectangle (and Backspace deleted the selection) on the canvas
@@ -332,6 +332,14 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         editAction(live);
         return;
       }
+    };
+    // Every branch that acts claims the key with preventDefault, so a key this
+    // listener newly claimed is a shortcut used (the power user mode offer,
+    // docs/specs/007-editor/power-user-mode.md). A key someone else claimed first is not counted.
+    const onKey = (e: KeyboardEvent) => {
+      const claimed = e.defaultPrevented;
+      handleKey(e);
+      if (!claimed && e.defaultPrevented) liveRef.current.onShortcutUsed?.();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
