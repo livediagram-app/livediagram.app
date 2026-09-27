@@ -1,6 +1,14 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
 import { ChevronDownIcon, EllipsisIcon, HoverCard } from '@livediagram/ui';
 import { track } from '@/lib/telemetry';
 import { loadPaletteFavourites } from '@/lib/palette-favourites';
@@ -61,7 +69,17 @@ function Divider() {
 
 export function ToolbarPalette(props: Props) {
   const { canvasTool, esBoard, themeTint, pendingDraw, hidden, leading } = props;
-  const [moreOpen, setMoreOpen] = useState(false);
+  const [moreOpen, setMoreOpenState] = useState(false);
+  // Favourites are read from storage when the More popover opens or closes and when the category
+  // changes, not every render: the chrome re-renders on every drag frame, and the Favourites body
+  // writes its edits straight to storage, so closing the popover is exactly when the strip needs to
+  // catch up. Both transitions go through setMoreOpen, which re-reads.
+  const validIds = useMemo(() => new Set(PALETTE_TILES.map((t) => t.id)), []);
+  const [favouriteIds, setFavouriteIds] = useState(() => loadPaletteFavourites(validIds));
+  const setMoreOpen = (open: boolean) => {
+    setMoreOpenState(open);
+    setFavouriteIds(loadPaletteFavourites(validIds));
+  };
   // Tiles by use (docs/specs/007-editor/toolbar-layout.md): using one brings it to the front of the strip,
   // pushing the rest along, and the last drops back behind More. Read once
   // per page load; written on every use.
@@ -103,16 +121,6 @@ export function ToolbarPalette(props: Props) {
   const [categoryId, setCategoryId] = useState(defaultId);
   const category = tabs.find((t) => t.id === categoryId) ?? tabs[0];
 
-  // Favourites are read from storage when the category or the popover
-  // changes, not every render: the chrome re-renders on every drag frame, and
-  // the Favourites body writes its edits straight to storage, so closing the
-  // popover is exactly when the strip needs to catch up.
-  const validIds = useMemo(() => new Set(PALETTE_TILES.map((t) => t.id)), []);
-  const favouriteIds = useMemo(
-    () => loadPaletteFavourites(validIds),
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- re-read on close
-    [validIds, moreOpen, categoryId],
-  );
   // A phone gets a shorter strip; the rest of the category is behind More.
   const isMobile = useIsMobileViewport();
   const viewportWidth = useViewportWidth();
@@ -157,6 +165,7 @@ export function ToolbarPalette(props: Props) {
 
   // Outside pointer-down closes the More popover.
   const rootRef = useRef<HTMLDivElement>(null);
+  const closeMore = useEffectEvent(() => setMoreOpen(false));
   useEffect(() => {
     if (!moreOpen) return;
     const onDown = (e: PointerEvent) => {
@@ -167,10 +176,10 @@ export function ToolbarPalette(props: Props) {
       // closes it, so two strip menus are never open at once.
       if (t.closest('[data-toolbar-more], [data-toolbar-more-button]')) return;
       if (t.closest(INSIDE_SELECTOR)) return;
-      setMoreOpen(false);
+      closeMore();
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setMoreOpen(false);
+      if (e.key === 'Escape') closeMore();
     };
     document.addEventListener('pointerdown', onDown, true);
     document.addEventListener('keydown', onKey);
