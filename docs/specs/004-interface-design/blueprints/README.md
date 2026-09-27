@@ -3,7 +3,7 @@
 Follow the references below only as needed; never upfront.
 
 - ./motion.md - when implementing or changing motion tokens, cascades, exit holds, or the motion-budget guards
-- ./dark-palette.md - when implementing or changing the dark palette, dark canvas ink, dark selection, the preview-tile re-light, optical numerals or the contrast audit
+- ./dark-palette.md - when implementing or changing the dark palette, dark canvas ink, dark selection, the preview-tile re-light or the contrast audit
 - ./tooltips-hover-cards-popovers.md - when implementing or changing Tooltip, HoverCard, the hint engine, or the native-title lint rule
 - ./optical-alignment.md - when implementing or changing GlyphDisc, Chip, IconSlot, text-optical-*, SVG cap-band text, the ink audit or the optical guard
 - ./scrollbars.md - when implementing or changing the default scrollbar, the slim variant, or their guards

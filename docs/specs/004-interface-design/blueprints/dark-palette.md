@@ -11,7 +11,7 @@ Scope, by file:
 
 | File                                                  | Role                                                                                     |
 | ----------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `packages/tailwind-config/theme.css`                  | `.dark` surface + Steel tokens; `@utility text-optical-centre`                           |
+| `packages/tailwind-config/theme.css`                  | `.dark` surface + Steel tokens                                                           |
 | `packages/ui/src/brand-classes.ts`                    | `SOLID_BRAND_DARK`, `SOLID_BRAND_DARK_CONTROL`                                           |
 | `packages/ui/src/Brand.tsx`                           | Wordmark accent `dark:text-sky-400`                                                      |
 | `packages/diagram/src/canvas-colors.ts`               | Dark canvas + pattern constants                                                          |
@@ -45,7 +45,6 @@ Scope, by file:
 | Resize handle       | `RESIZE_HANDLE_CLASS`                                    | The corner handle's classes, both appearances                 |
 | Accent tint CSS     | `editorAccentCss(accent)`                                | The `<style>` text `useEditorAccent` injects                  |
 | Identity fill       | `identityDeep`, `identityVars`, `IDENTITY_FILL`          | A runtime colour under white text, deepened in dark mode      |
-| Optical centring    | `text-optical-centre` (`@utility`)                       | Centre a numeral's ink in its circle / pill                   |
 | Contrast audit      | `auditContrast(page)`, `contrast-audit.spec.ts`          | The Playwright guard                                          |
 
 Banned: "night mode"; "Steel theme" for the palette (Steel is also a colour scheme id: say "the dark palette", its ramp
@@ -100,17 +99,8 @@ export const IDENTITY_FILL = 'bg-(--identity) dark:bg-(--identity-deep)';
 export function auditContrast(page: Page): Promise<ContrastReport>; // { measured, failures, skipped }
 ```
 
-```css
-/* theme.css */
-@utility text-optical-centre {
-  display: inline-block;
-  line-height: 1;
-  text-box: trim-both cap alphabetic;
-  @supports not (text-box: trim-both cap alphabetic) {
-    transform: translateY(0.1em);
-  }
-}
-```
+The optical utilities (`text-optical-centre` and its siblings) belong to the
+[optical alignment blueprint](optical-alignment.md#utilities).
 
 Rejections are the guards': a missing pairing fails `dark-palette.test.ts` naming the file and literal (or line); a
 low-contrast node fails the audit with its text, colours, ratio and element.
@@ -160,8 +150,8 @@ dark:bg-blue-400 dark:shadow-none`, and the same on `dark:hover:` so only the op
 - Preview tile (editor, dark): `position: relative; isolation: isolate; background-color: #f3faff;
 filter: invert(0.95) hue-rotate(180deg)`, plus `::after { inset: 0; background: #f3faff; mix-blend-mode: darken;
 border-radius: inherit; pointer-events: none }`.
-- Optical centring: the digit (or poll letter) is wrapped in `<span class="text-optical-centre">`; hosts that took
-  their height from padding become `inline-flex items-center` at their previous rendered height (D12).
+- Optical centring: see the [optical alignment blueprint](optical-alignment.md); the heights D12 probed
+  are the ones its hosts pin.
 - Concentric step pill: the wizard's step chip pads `py-1 pl-1` at every breakpoint (the circle's 4px inset on
   three sides), trailing `pr-1.5 sm:pr-2.5` for the label; the rail sits at `-ml-1` so the first circle meets the
   heading's left edge. Measured: 4 / 4 / 4px at 1440 and 390px wide, in both modes.
@@ -211,7 +201,6 @@ The Charcoal migration logs as its blueprint states.
 | Wordmark accent dark-only                                    | `dark-palette.test.ts`, "the wordmark"                                     |
 | I2 solid fills, I3 brand text                                | `dark-palette.test.ts`, "solid brand fills", "brand-coloured text"         |
 | Step pill concentric with its circle at every breakpoint     | `apps/live/components/palette/template-picker-wizard.test.tsx`             |
-| Optical utility defined; every counted value wrapped         | `dark-palette.test.ts`, "optical numerals"                                 |
 | I5 identity colours                                          | `dark-palette.test.ts`, "white text on an identity colour"                 |
 | `identityDeep` at AA on every colour; fallback; pass-through | `apps/live/lib/identity-fill.test.ts`                                      |
 | Tint outranks base (B2)                                      | `apps/live/hooks/ui/editor-accent.test.ts`                                 |

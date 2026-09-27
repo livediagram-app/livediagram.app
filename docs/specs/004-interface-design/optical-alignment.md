@@ -1,6 +1,6 @@
 # Optical alignment
 
-Status: in progress
+Status: in review
 
 ## What
 
@@ -73,9 +73,11 @@ opposite of what a diagramming tool has to look like.
 One implementation per shape, shared from `@livediagram/ui`, so the rule is written once:
 
 - **Glyph disc**: a circle holding a letter, initials, a numeral or an icon, at a named size.
-- **Chip**: a pill holding an optional leading icon and a label, with the caps variant's trailing
-  tracking balanced.
+- **Chip**: a pill or badge holding an optional leading icon and a label, with the caps variant's
+  trailing tracking balanced. It keeps the height its padding gives it.
 - **Icon slot**: a fixed square that centres whatever it holds; stacks put their icon in one.
+- **Button label**: every button, and every link styled as one, centres its label's cap band without
+  changing its height, and measures its padding to an edge icon's ink.
 
 Existing ad-hoc shapes move onto these primitives. A new shape that frames a glyph uses one of them.
 

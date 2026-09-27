@@ -148,8 +148,10 @@ v5 test runner with every check green: nothing invoked the broken path.
     link resolves to a real help page.
     Source guards read the class strings where a rule cannot fail a build:
     `dark-mode-coverage.test.ts` and `dark-palette.test.ts` (the dark palette's
-    tokens, solid brand fills, brand text, optical numerals, identity
-    colours; [Colour scheme](../004-interface-design/color-scheme.md)).
+    tokens, solid brand fills, brand text, identity colours;
+    [Colour scheme](../004-interface-design/color-scheme.md)), and every workspace's
+    `optical-guard.test.ts` (no untrimmed text in a centring circle or pill;
+    [Optical alignment](../004-interface-design/optical-alignment.md)).
   - `apps/api` (46 suites): auth guards (Clerk, diagram access, tokens),
     every defensive D1 row mapper, the `DiagramRoom` Durable Object's
     security-critical paths, route handlers (diagrams, share, images,
