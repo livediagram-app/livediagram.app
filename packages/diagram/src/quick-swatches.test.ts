@@ -6,7 +6,7 @@ import {
   quickSwatches,
   quickSwatchSlotOf,
 } from './quick-swatches';
-import { contrastRatio } from './colors';
+import { contrastRatio, unpaintedShapeInk } from './colors';
 import { DEFAULT_SCHEME_DARK, DEFAULT_SCHEME_LIGHT, THEMES } from './themes-data';
 import type { ThemeDefinition } from './themes';
 
@@ -32,8 +32,12 @@ describe('quickSwatches', () => {
   });
 
   it('shows the unpainted ink as the default on the Default scheme', () => {
-    expect(quickSwatches(DEFAULT_SCHEME_LIGHT, 'stroke')[0]!.color).toBe('#0ea5e9');
-    expect(quickSwatches(DEFAULT_SCHEME_DARK, 'stroke')[0]!.color).toBe('#a1a1aa');
+    expect(quickSwatches(DEFAULT_SCHEME_LIGHT, 'stroke')[0]!.color).toBe(
+      unpaintedShapeInk('light').stroke,
+    );
+    expect(quickSwatches(DEFAULT_SCHEME_DARK, 'stroke')[0]!.color).toBe(
+      unpaintedShapeInk('dark').stroke,
+    );
   });
 
   it('takes a multi-colour theme’s own six branch colours', () => {
@@ -79,7 +83,8 @@ describe('quickSwatches', () => {
 
   it('keeps the theme’s label readable on a derived background (WCAG 1.4.3, 4.5:1)', () => {
     for (const t of SINGLE_ACCENT) {
-      const text = t.elementText ?? (t === DEFAULT_SCHEME_DARK ? '#e4e4e7' : '#075985');
+      const text =
+        t.elementText ?? unpaintedShapeInk(t === DEFAULT_SCHEME_DARK ? 'dark' : 'light').text;
       for (const s of quickSwatches(t, 'fill').slice(1)) {
         expect(contrastRatio(text, s.color), `${t.id} ${s.name}`).toBeGreaterThanOrEqual(4.5);
       }
