@@ -4,12 +4,12 @@ import { emailEnabled } from './email/client';
 import { runLifecycleSweep, welcomeOnSighting } from './email/lifecycle';
 import { runTokenExpirySweep } from './email/token-expiry';
 import { runTimelineExpirySweep } from './timeline';
+import { runImageRetention } from './image-refs/retention';
 import {
   deleteOldChangeLogEntries,
   deleteOldEvents,
   deleteOldSessionSightings,
   deleteOldTimelineEvents,
-  deleteOldUnusedImages,
   resolveApiToken,
 } from './db';
 import {
@@ -342,7 +342,8 @@ export default {
   // fires two independent retention sweeps:
   //   - change_log, 90-day floor (item #16 / docs/specs/012-collaboration/activity-and-audit.md).
   //   - events,     60-day floor (docs/specs/017-telemetry/telemetry.md "Retention").
-  //   - images,     30-day floor, unused only (docs/specs/009-elements/images.md "Retention").
+  //   - images,     30-day floor, unused only, after the reference-index backfill
+  //                 (docs/specs/009-elements/images.md "Retention").
   // All are no-ops when nothing is over the floor; all use
   // `ctx.waitUntil` so they run concurrently and the worker can
   // exit as soon as the schedule callback returns.
@@ -391,21 +392,16 @@ export default {
           .then((count) => console.log(`timeline expiry sweep: emitted ${count} events`))
           .catch((err) => console.error('timeline expiry sweep failed', err)),
       );
-      scheduleSweep(
-        ctx,
-        env,
-        'image',
-        'images',
-        now - UNUSED_IMAGE_RETENTION_MS,
-        deleteOldUnusedImages,
-      );
+      // docs/specs/009-elements/images.md "Retention": advance the reference-index backfill,
+      // then reap unused images. runImageRetention logs its own outcome.
+      ctx.waitUntil(runImageRetention(env, now));
     }
   },
 } satisfies ExportedHandler<Env>;
 
 // Run one daily retention sweep in the background: delete rows older than
-// `cutoff`, then log the count (or the failure) to `wrangler tail`. The three
-// sweeps (change_log / events / unused images) shared this exact waitUntil +
+// `cutoff`, then log the count (or the failure) to `wrangler tail`. The
+// retention sweeps (change_log / events / sessions / timeline) share this exact waitUntil +
 // then/catch shape; `label` + `unit` keep each log line reading naturally. A
 // zero is the normal case most days — observability without a metrics pipeline.
 function scheduleSweep(
@@ -441,10 +437,3 @@ const AUTH_SESSION_RETENTION_MS = 90 * 24 * 60 * 60 * 1000;
 // the surfaced window, leaving headroom for a future "Last 60
 // days" view to populate). See docs/specs/017-telemetry/telemetry.md "Retention".
 const EVENTS_RETENTION_MS = 60 * 24 * 60 * 60 * 1000;
-
-// 30 days in ms. The unused-image sweep only reaps images this old
-// AND referenced by no diagram, so the floor is the safety margin: a
-// freshly uploaded image not yet placed on the canvas is never reaped
-// out from under the user. Generous on purpose — storage hygiene, not
-// an aggressive GC. See docs/specs/009-elements/images.md "Retention".
-const UNUSED_IMAGE_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;

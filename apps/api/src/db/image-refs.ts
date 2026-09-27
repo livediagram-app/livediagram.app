@@ -124,8 +124,9 @@ export async function restartImageRefsBackfill(env: Env, now: number): Promise<v
     .run();
 }
 
-export async function advanceImageRefsBackfill(env: Env, cursor: number): Promise<void> {
-  await env.DB.prepare('UPDATE image_refs_backfill SET cursor = ? WHERE id = 1').bind(cursor).run();
+// A statement, so a page and its cursor land in one batch.
+export function imageRefsBackfillAdvanceStatement(env: Env, cursor: number): D1PreparedStatement {
+  return env.DB.prepare('UPDATE image_refs_backfill SET cursor = ? WHERE id = 1').bind(cursor);
 }
 
 export async function completeImageRefsBackfill(env: Env, now: number): Promise<void> {
