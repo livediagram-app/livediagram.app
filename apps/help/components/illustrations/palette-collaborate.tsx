@@ -459,7 +459,7 @@ export function DecisionRecordCard() {
         anchor="middle"
         size={8}
         weight={700}
-        className="fill-emerald-700"
+        className="fill-emerald-700 dark:fill-emerald-300"
       >
         ACCEPTED
       </Label>

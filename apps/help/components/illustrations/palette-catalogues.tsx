@@ -84,7 +84,7 @@ export function ComponentsCatalogue() {
         className="fill-brand-50 stroke-brand-200"
         strokeWidth={1.5}
       />
-      <circle cx={220} cy={139} r={7} className="fill-brand-400" />
+      <circle cx={220} cy={139} r={7} className="fill-brand-400 dark:fill-(--help-art-brand-600)" />
       <Label x={220} y={140} anchor="middle" size={9} weight={700} tone="onAccent">
         i
       </Label>

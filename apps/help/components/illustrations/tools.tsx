@@ -192,8 +192,8 @@ export function ZenAfter() {
 export function LightDarkToggle() {
   return (
     <Scene w={420} h={210} bg="none">
-      {/* Light editor */}
-      <g>
+      {/* Light editor. Each half keeps its appearance whatever the reader's. */}
+      <g className="help-art-as-drawn">
         <rect
           x={16}
           y={24}
@@ -226,7 +226,7 @@ export function LightDarkToggle() {
         <Arrow from={[104, 83]} to={[120, 130]} kind="elbow" />
       </g>
       {/* Dark editor */}
-      <g>
+      <g className="help-art-as-drawn">
         <rect
           x={218}
           y={24}

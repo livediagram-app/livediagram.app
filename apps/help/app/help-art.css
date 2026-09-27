@@ -1,0 +1,125 @@
+/* Dark appearance for the help centre's SVG art: the in-article scenes (`Scene`) and the category
+ * banners (`CategoryIllustration`), both of which carry `help-art` on their root <svg>.
+ *
+ * The art is drawn once, in the light ramp (white panels, slate ink, brand accents). In dark mode the
+ * art scope re-points each light token at its partner in the editor's dark chrome, so a scene shows
+ * the editor as it looks in dark with no `dark:` classes of its own: surfaces go dark, ink goes light,
+ * pale tints become tinted wells, and a solid accent deepens to brand-600 so white text on it keeps
+ * 6:1 (docs/specs/004-interface-design/color-scheme.md, Steel rules).
+ *
+ * A custom property cannot read its own name, so the original of every retargeted token is captured
+ * one level up, on `.dark`, and the scope reads those captures. `help-art-as-drawn` restores the
+ * captures on a group or element whose colours are its identity in both appearances: a code window,
+ * the presenter HUD, the light half of a light/dark comparison, and white text on a solid accent.
+ *
+ * A `dark:` class inside the art may only name a token this file leaves alone (slate-950, brand-800
+ * and up, and every hue from 300 up); a retargeted token under `dark:` would be retargeted again.
+ * To reach an original elsewhere, name its capture: `dark:fill-(--help-art-slate-800)`. Inside a
+ * `help-art-as-drawn` group every token is the original again. */
+
+.dark {
+  --help-art-white: var(--color-white);
+  --help-art-slate-50: var(--color-slate-50);
+  --help-art-slate-100: var(--color-slate-100);
+  --help-art-slate-200: var(--color-slate-200);
+  --help-art-slate-300: var(--color-slate-300);
+  --help-art-slate-400: var(--color-slate-400);
+  --help-art-slate-500: var(--color-slate-500);
+  --help-art-slate-600: var(--color-slate-600);
+  --help-art-slate-700: var(--color-slate-700);
+  --help-art-slate-800: var(--color-slate-800);
+  --help-art-slate-900: var(--color-slate-900);
+  --help-art-slate-950: var(--color-slate-950);
+  --help-art-brand-50: var(--color-brand-50);
+  --help-art-brand-100: var(--color-brand-100);
+  --help-art-brand-200: var(--color-brand-200);
+  --help-art-brand-300: var(--color-brand-300);
+  --help-art-brand-400: var(--color-brand-400);
+  --help-art-brand-500: var(--color-brand-500);
+  --help-art-brand-600: var(--color-brand-600);
+  --help-art-brand-700: var(--color-brand-700);
+  --help-art-brand-800: var(--color-brand-800);
+  --help-art-amber-50: var(--color-amber-50);
+  --help-art-amber-100: var(--color-amber-100);
+  --help-art-amber-200: var(--color-amber-200);
+  --help-art-emerald-50: var(--color-emerald-50);
+  --help-art-emerald-100: var(--color-emerald-100);
+  --help-art-emerald-200: var(--color-emerald-200);
+  --help-art-rose-50: var(--color-rose-50);
+  --help-art-rose-100: var(--color-rose-100);
+  --help-art-rose-200: var(--color-rose-200);
+  --help-art-violet-50: var(--color-violet-50);
+  --help-art-violet-100: var(--color-violet-100);
+  --help-art-violet-200: var(--color-violet-200);
+  --help-art-teal-200: var(--color-teal-200);
+}
+
+.dark .help-art {
+  /* Surfaces and ink: the slate ramp turns over, pivoting on slate-400. */
+  --color-white: var(--help-art-slate-900);
+  --color-slate-50: var(--help-art-slate-950);
+  --color-slate-100: var(--help-art-slate-800);
+  --color-slate-200: var(--help-art-slate-700);
+  --color-slate-300: var(--help-art-slate-600);
+  --color-slate-500: var(--help-art-slate-400);
+  --color-slate-600: var(--help-art-slate-300);
+  --color-slate-700: var(--help-art-slate-200);
+  --color-slate-800: var(--help-art-slate-100);
+  /* Shadows and scrims deepen rather than turn to haze. */
+  --color-slate-900: var(--help-art-slate-950);
+
+  /* Brand: pale tints become wells, the solid accent sits on brand-600, accent ink lightens. */
+  --color-brand-50: color-mix(in oklab, var(--help-art-brand-500) 15%, var(--help-art-slate-900));
+  --color-brand-100: color-mix(in oklab, var(--help-art-brand-500) 25%, var(--help-art-slate-900));
+  --color-brand-200: var(--help-art-brand-800);
+  --color-brand-500: var(--help-art-brand-600);
+  --color-brand-600: var(--help-art-brand-400);
+  --color-brand-700: var(--help-art-brand-300);
+
+  /* Accent hues: pale tints become tinted wells; 300 and up read on dark as drawn. */
+  --color-amber-50: color-mix(in oklab, var(--color-amber-500) 12%, var(--help-art-slate-900));
+  --color-amber-100: color-mix(in oklab, var(--color-amber-500) 20%, var(--help-art-slate-900));
+  --color-amber-200: color-mix(in oklab, var(--color-amber-500) 35%, var(--help-art-slate-900));
+  --color-emerald-50: color-mix(in oklab, var(--color-emerald-500) 12%, var(--help-art-slate-900));
+  --color-emerald-100: color-mix(in oklab, var(--color-emerald-500) 20%, var(--help-art-slate-900));
+  --color-emerald-200: color-mix(in oklab, var(--color-emerald-500) 35%, var(--help-art-slate-900));
+  --color-rose-50: color-mix(in oklab, var(--color-rose-500) 12%, var(--help-art-slate-900));
+  --color-rose-100: color-mix(in oklab, var(--color-rose-500) 20%, var(--help-art-slate-900));
+  --color-rose-200: color-mix(in oklab, var(--color-rose-500) 35%, var(--help-art-slate-900));
+  --color-violet-50: color-mix(in oklab, var(--color-violet-500) 12%, var(--help-art-slate-900));
+  --color-violet-100: color-mix(in oklab, var(--color-violet-500) 20%, var(--help-art-slate-900));
+  --color-violet-200: color-mix(in oklab, var(--color-violet-500) 35%, var(--help-art-slate-900));
+  --color-teal-200: color-mix(in oklab, var(--color-teal-500) 35%, var(--help-art-slate-900));
+}
+
+.dark .help-art .help-art-as-drawn {
+  --color-white: var(--help-art-white);
+  --color-slate-50: var(--help-art-slate-50);
+  --color-slate-100: var(--help-art-slate-100);
+  --color-slate-200: var(--help-art-slate-200);
+  --color-slate-300: var(--help-art-slate-300);
+  --color-slate-500: var(--help-art-slate-500);
+  --color-slate-600: var(--help-art-slate-600);
+  --color-slate-700: var(--help-art-slate-700);
+  --color-slate-800: var(--help-art-slate-800);
+  --color-slate-900: var(--help-art-slate-900);
+  --color-brand-50: var(--help-art-brand-50);
+  --color-brand-100: var(--help-art-brand-100);
+  --color-brand-200: var(--help-art-brand-200);
+  --color-brand-500: var(--help-art-brand-500);
+  --color-brand-600: var(--help-art-brand-600);
+  --color-brand-700: var(--help-art-brand-700);
+  --color-amber-50: var(--help-art-amber-50);
+  --color-amber-100: var(--help-art-amber-100);
+  --color-amber-200: var(--help-art-amber-200);
+  --color-emerald-50: var(--help-art-emerald-50);
+  --color-emerald-100: var(--help-art-emerald-100);
+  --color-emerald-200: var(--help-art-emerald-200);
+  --color-rose-50: var(--help-art-rose-50);
+  --color-rose-100: var(--help-art-rose-100);
+  --color-rose-200: var(--help-art-rose-200);
+  --color-violet-50: var(--help-art-violet-50);
+  --color-violet-100: var(--help-art-violet-100);
+  --color-violet-200: var(--help-art-violet-200);
+  --color-teal-200: var(--help-art-teal-200);
+}

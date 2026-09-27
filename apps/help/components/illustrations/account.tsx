@@ -237,7 +237,14 @@ export function DeleteDialog() {
             strokeWidth={2}
             strokeLinejoin="round"
           />
-          <Label x={0} y={2} anchor="middle" size={11} weight={700} className="fill-rose-500">
+          <Label
+            x={0}
+            y={2}
+            anchor="middle"
+            size={11}
+            weight={700}
+            className="fill-rose-500 dark:fill-rose-400"
+          >
             !
           </Label>
         </g>
