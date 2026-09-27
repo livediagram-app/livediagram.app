@@ -45,26 +45,19 @@ export function useAiPanelSession({
     }
   }, [reviewText, statusMsg]);
 
-  // Reset output when mode changes, keep history.
-  useEffect(() => {
+  // Reset during render: the output when the mode changes (history kept), and everything including
+  // history when the active tab changes — the previous tab's conversation is irrelevant to the new
+  // diagram. Keyed on the tab ID, not the name (see AiPanelProps).
+  const [sessionFor, setSessionFor] = useState({ mode, tabId });
+  if (sessionFor.mode !== mode || sessionFor.tabId !== tabId) {
+    setSessionFor({ mode, tabId });
     setReviewText('');
     setStatusMsg('');
     setSummary('');
     setStatus('idle');
     setProgressCount(0);
-  }, [mode]);
-
-  // Clear all state including history when the active tab changes — the
-  // previous tab's conversation is irrelevant to the new diagram. Keyed
-  // on the tab ID, not the name (see AiPanelProps).
-  useEffect(() => {
-    setReviewText('');
-    setStatusMsg('');
-    setSummary('');
-    setStatus('idle');
-    setProgressCount(0);
-    setHistory([]);
-  }, [tabId]);
+    if (sessionFor.tabId !== tabId) setHistory([]);
+  }
 
   const isLoading = status === 'loading';
 
