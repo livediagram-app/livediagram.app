@@ -20,7 +20,7 @@ import { Glyph } from '@livediagram/ui';
 // The shared shape: same height, radius, border and type scale as the
 // header's other buttons.
 const BUTTON =
-  'inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 dark:hover:text-white';
+  'optical-edges inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 dark:hover:text-white';
 
 export function TimelineControls({ controls }: { controls: Controls }) {
   const { mode, setMode, excluded, filterAnchor, setFilterAnchor, actorFilter } = controls;
@@ -47,14 +47,14 @@ export function TimelineControls({ controls }: { controls: Controls }) {
             type="button"
             aria-pressed={mode === value}
             onClick={() => setMode(value)}
-            className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition ${
+            className={`optical-edges inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition ${
               mode === value
                 ? `bg-brand-600 text-white ${SOLID_BRAND_DARK_CONTROL}`
                 : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'
             }`}
           >
             <ModeIcon mode={value} />
-            {MODE_LABELS[value]}
+            <span className="text-optical-line">{MODE_LABELS[value]}</span>
           </button>
         ))}
       </div>
@@ -71,7 +71,7 @@ export function TimelineControls({ controls }: { controls: Controls }) {
         className={`relative ${BUTTON}`}
       >
         <FilterIcon />
-        Filter
+        <span className="text-optical-line">Filter</span>
         {filtered && (
           // A dot rather than a count: the number of hidden things isn't
           // information anyone acts on, but "a filter is on, that's why

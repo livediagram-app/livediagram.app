@@ -67,11 +67,13 @@ export function ActiveShareLinkRow({
         <span
           className={
             link.role === 'edit'
-              ? 'inline-flex shrink-0 items-center rounded-full bg-brand-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-brand-800 dark:bg-brand-500/20 dark:text-brand-200'
-              : 'inline-flex shrink-0 items-center rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-700 dark:bg-slate-700 dark:text-slate-200'
+              ? 'inline-flex shrink-0 items-center rounded-full bg-brand-100 px-2 py-0.5 text-[10px] font-semibold text-brand-800 dark:bg-brand-500/20 dark:text-brand-200'
+              : 'inline-flex shrink-0 items-center rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-700 dark:bg-slate-700 dark:text-slate-200'
           }
         >
-          {link.role === 'edit' ? 'Edit' : 'View'}
+          <span className="text-optical-line text-optical-caps">
+            {link.role === 'edit' ? 'Edit' : 'View'}
+          </span>
         </span>
         {link.expiresAt !== null ? (
           <HoverCard

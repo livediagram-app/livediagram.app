@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { TeamInviteLinkInfo } from '@livediagram/api-schema';
-import { Brand, Button, buttonClassName } from '@livediagram/ui';
+import { Brand, Button, buttonClassName, ButtonContent } from '@livediagram/ui';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { ensureGuestSelfId } from '@/lib/local-identity';
@@ -158,7 +158,7 @@ export function TeamInviteJoin() {
           {joining ? 'Joining…' : 'Join'}
         </Button>
         <a href="/explorer" className={buttonClassName({ variant: 'secondary', size: 'md' })}>
-          Decline
+          <ButtonContent>Decline</ButtonContent>
         </a>
       </div>
     </Card>
@@ -203,7 +203,7 @@ function PrimaryLink({ href, children }: { href: string; children: React.ReactNo
   // anchor escape hatch; Button itself is <button>-only).
   return (
     <a href={href} className={buttonClassName({ size: 'md', className: 'mt-5 px-5' })}>
-      {children}
+      <ButtonContent>{children}</ButtonContent>
     </a>
   );
 }
@@ -214,7 +214,7 @@ function SecondaryLink({ href, children }: { href: string; children: React.React
       href={href}
       className={buttonClassName({ variant: 'secondary', size: 'md', className: 'px-5' })}
     >
-      {children}
+      <ButtonContent>{children}</ButtonContent>
     </a>
   );
 }

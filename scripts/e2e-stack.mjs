@@ -28,6 +28,15 @@ const OUT_DIR = path.join(ROOT, 'apps', 'live', 'out');
 
 const LIVE_PORT = Number(process.env.E2E_LIVE_PORT ?? 3002);
 const API_PORT = Number(process.env.E2E_API_PORT ?? 8787);
+// The other sites, for the audits that open them (docs/specs/004-interface-design/blueprints/
+// optical-alignment.md, "Ink audit"). Help and telemetry sit under their basePath on the live
+// origin, as the router mounts them; marketing owns "/" in production, so it gets its own port.
+const SITES = [
+  { prefix: '/help', dir: path.join(ROOT, 'apps', 'help', 'out') },
+  { prefix: '/telemetry', dir: path.join(ROOT, 'apps', 'telemetry', 'out') },
+];
+const MARKETING_DIR = path.join(ROOT, 'apps', 'marketing', 'out');
+const MARKETING_PORT = Number(process.env.E2E_MARKETING_PORT ?? 3013);
 // Two switches for trying the editor as a DIFFERENT deployment would run it,
 // beside a stack that is already up:
 //   E2E_LIVE_ONLY=1  serve the static editor only, proxying to the api
@@ -135,6 +144,29 @@ function resolveStatic(pathname) {
   return null;
 }
 
+// A basePath site's file for a request under its prefix, or null. A missing build is not an
+// error here: only the audits need these sites, and they fail loudly on the 404.
+function resolveSite(pathname) {
+  for (const site of SITES) {
+    if (pathname !== site.prefix && !pathname.startsWith(`${site.prefix}/`)) continue;
+    const p = pathname.slice(site.prefix.length) || '/';
+    return resolveIn(site.dir, p === '/' ? '/index' : p) ?? { notFound: site.dir };
+  }
+  return null;
+}
+
+// A clean-route static file in `dir`: the exact file, `<p>.html`, or `<p>/index.html`.
+function resolveIn(dir, p) {
+  for (const c of [
+    path.join(dir, p),
+    path.join(dir, `${p}.html`),
+    path.join(dir, p, 'index.html'),
+  ]) {
+    if (existsSync(c) && statSync(c).isFile()) return c;
+  }
+  return null;
+}
+
 function proxyApi(req, res) {
   const proxyReq = http.request(
     { host: '127.0.0.1', port: API_PORT, method: req.method, path: req.url, headers: req.headers },
@@ -229,6 +261,14 @@ function startLiveServer() {
       res.end();
       return;
     }
+    const site = resolveSite(pathname);
+    if (typeof site === 'string') return serveFile(res, site);
+    if (site) {
+      console.warn(`[e2e] ${pathname}: no build at ${site.notFound}`);
+      res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+      res.end(`Not built: ${site.notFound}`);
+      return;
+    }
     const file = resolveStatic(pathname);
     if (file) return serveFile(res, file);
     const notFound = path.join(OUT_DIR, '404.html');
@@ -238,6 +278,25 @@ function startLiveServer() {
   });
   server.on('upgrade', proxyApiUpgrade);
   server.listen(LIVE_PORT, () => console.log(`[e2e] live static server on :${LIVE_PORT}`));
+  startMarketingServer();
+}
+
+// Marketing on its own port, clean routes, same no-store rule. Absent build: a logged 404.
+function startMarketingServer() {
+  if (!existsSync(MARKETING_DIR)) {
+    console.warn(`[e2e] marketing not built (${MARKETING_DIR}); :${MARKETING_PORT} answers 404`);
+  }
+  const server = http.createServer((req, res) => {
+    const pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
+    const p = pathname === '/' ? '/index' : pathname.replace(/\/$/, '');
+    const file = existsSync(MARKETING_DIR) ? resolveIn(MARKETING_DIR, p) : null;
+    if (file) return serveFile(res, file);
+    res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end(existsSync(MARKETING_DIR) ? 'Not found' : `Not built: ${MARKETING_DIR}`);
+  });
+  server.listen(MARKETING_PORT, () =>
+    console.log(`[e2e] marketing static server on :${MARKETING_PORT}`),
+  );
 }
 
 // --- Boot ---------------------------------------------------------------

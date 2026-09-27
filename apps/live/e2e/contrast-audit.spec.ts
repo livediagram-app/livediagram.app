@@ -1,5 +1,5 @@
-import type { Browser, Page } from '@playwright/test';
 import { auditContrast, type ContrastReport } from './contrast';
+import { CANVAS, darkVisitor, freshDarkPage, seedDiagram, shareLink } from './audit-screens';
 import { dismissQuickTour, expect, expectNoPageErrors, test } from './fixtures';
 
 // Contrast audit, dark mode (docs/specs/003-system-architecture/e2e-smoke.md; the palette it guards is
@@ -8,75 +8,7 @@ import { dismissQuickTour, expect, expectNoPageErrors, test } from './fixtures';
 // is fixed at its colour. Light mode is deliberately out of scope: its colours belong to the light half
 // of #74, owned by Thomas.
 
-const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
-const CANVAS = '[data-canvas-a11y-root]';
-
 test.use({ colorScheme: 'dark', reducedMotion: 'reduce', viewport: { width: 1440, height: 860 } });
-
-async function darkVisitor(page: Page, owner?: string): Promise<void> {
-  await page.addInitScript((id) => {
-    localStorage.setItem('livediagram:v2:ui-mode', 'dark');
-    localStorage.setItem('livediagram:v2:name-confirmed', '1');
-    if (id) localStorage.setItem('livediagram:v2:self-id', id);
-  }, owner ?? null);
-}
-
-// A diagram shaped like a real one: an actor, boxes, and solid and dashed labelled arrows, on the
-// Default scheme, so the canvas ink is the palette's own.
-async function seedDiagram(page: Page, owner: string, origin: string): Promise<string> {
-  const id = crypto.randomUUID();
-  const box = (bid: string, label: string, x: number, y: number) => ({
-    id: bid,
-    type: 'shape',
-    shape: 'square',
-    x,
-    y,
-    width: 200,
-    height: 100,
-    label,
-  });
-  const arrow = (aid: string, from: string, to: string, label: string, dashed = false) => ({
-    id: aid,
-    type: 'arrow',
-    from: { kind: 'pinned', elementId: from, anchor: 's' },
-    to: { kind: 'pinned', elementId: to, anchor: 'n' },
-    label,
-    ...(dashed ? { strokeStyle: 'dashed' } : {}),
-  });
-  const elements = [
-    {
-      id: 'actor',
-      type: 'shape',
-      shape: 'actor',
-      x: 470,
-      y: 20,
-      width: 60,
-      height: 100,
-      label: 'Webber',
-    },
-    box('a', 'Assistant', 180, 240),
-    box('s', 'Spinner', 440, 240),
-    box('r', 'Runa (Backend)', 280, 480),
-    arrow('x1', 'actor', 'a', 'UI'),
-    arrow('x2', 'actor', 's', 'UI'),
-    arrow('x3', 'a', 'r', 'Use personal assistant', true),
-  ];
-  const res = await page.request.post(`${apiBase}/diagrams`, {
-    headers: { 'X-Owner-Id': owner, Origin: origin },
-    data: { id, name: 'Contrast', tabs: [{ id: crypto.randomUUID(), name: 'Runa', elements }] },
-  });
-  expect(res.ok(), `seeding failed: ${res.status()}`).toBe(true);
-  return id;
-}
-
-async function shareLink(page: Page, owner: string, origin: string, id: string): Promise<string> {
-  const res = await page.request.post(`${apiBase}/diagrams/${id}/share`, {
-    headers: { 'X-Owner-Id': owner, Origin: origin, 'Content-Type': 'application/json' },
-    data: {},
-  });
-  expect(res.ok()).toBe(true);
-  return ((await res.json()) as { link: { code: string } }).link.code;
-}
 
 function expectAA(report: ContrastReport, screen: string): void {
   test.info().annotations.push({
@@ -160,15 +92,3 @@ test.describe('Contrast audit, dark mode', () => {
     expectNoPageErrors(pageErrors);
   });
 });
-
-// A visitor with no identity yet, so the share link greets them with the Join dialog.
-async function freshDarkPage(browser: Browser): Promise<Page> {
-  const context = await browser.newContext({
-    colorScheme: 'dark',
-    reducedMotion: 'reduce',
-    viewport: { width: 1440, height: 860 },
-    baseURL: test.info().project.use.baseURL,
-  });
-  await context.addInitScript(() => localStorage.setItem('livediagram:v2:ui-mode', 'dark'));
-  return context.newPage();
-}

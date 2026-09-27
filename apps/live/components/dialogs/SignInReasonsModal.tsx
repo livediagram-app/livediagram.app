@@ -19,6 +19,7 @@ import {
   useFocusTrap,
   useEscape,
   Glyph,
+  ButtonContent,
 } from '@livediagram/ui';
 import { SignInIcon } from '@/components/chrome/AuthControls';
 import { useRef } from 'react';
@@ -166,8 +167,10 @@ export function SignInReasonsModal({
               onClick={onSignIn}
               className={buttonClassName({ size: 'md', className: 'w-full shadow-sm sm:w-auto' })}
             >
-              <SignInIcon size={14} />
-              Sign in
+              <ButtonContent>
+                <SignInIcon size={14} />
+                Sign in
+              </ButtonContent>
             </Link>
           </div>
         </div>

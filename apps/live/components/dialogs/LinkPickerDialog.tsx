@@ -165,8 +165,10 @@ export function LinkPickerDialog({
                 >
                   <span className="truncate">{t.name}</span>
                   {t.id === currentTabId ? (
-                    <span className="ml-2 shrink-0 rounded-full bg-slate-100 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-slate-500 dark:bg-slate-700 dark:text-slate-300">
-                      current
+                    <span className="inline-flex items-center ml-2 shrink-0 rounded-full bg-slate-100 px-1.5 py-0.5 text-[9px] font-semibold text-slate-500 dark:bg-slate-700 dark:text-slate-300">
+                      <span className="text-optical-line text-optical-caps [--optical-tracking:0.025em]">
+                        current
+                      </span>
                     </span>
                   ) : null}
                 </RowButton>

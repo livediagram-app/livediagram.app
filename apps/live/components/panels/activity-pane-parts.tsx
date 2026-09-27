@@ -10,7 +10,13 @@ import { CountBadge } from '@/components/primitives/CountBadge';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import type { ActivityAction, ActivityPlace, ActivityThread } from '@livediagram/api-schema';
-import { EmptyState, HoverCard, SOLID_BRAND_DARK, SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
+import {
+  EmptyState,
+  HoverCard,
+  SOLID_BRAND_DARK,
+  SOLID_BRAND_DARK_CONTROL,
+  GlyphDisc,
+} from '@livediagram/ui';
 import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
 import { ActionMenuIcon, CommentMenuIcon } from '@/components/palette/context-menu-icons';
 import { collabDeepLinkHref, type CollabPopover } from '@/lib/collab-deep-link';
@@ -163,12 +169,13 @@ function ActivityRowShell({
         </span>
         <span className="flex shrink-0 flex-col items-end gap-0.5">
           <HoverCard title={avatar.name} description={avatar.detail}>
-            <span
-              className={`flex h-6 w-6 items-center justify-center rounded-full text-[9px] font-semibold text-white ${avatar.colorClass ?? ''} ${avatar.color ? IDENTITY_FILL : ''}`}
+            <GlyphDisc
+              size={24}
+              className={`text-[9px] font-semibold text-white ${avatar.colorClass ?? ''} ${avatar.color ? IDENTITY_FILL : ''}`}
               style={avatar.color ? identityVars(avatar.color) : undefined}
             >
               {initialsOf(avatar.name)}
-            </span>
+            </GlyphDisc>
           </HoverCard>
           <span className="text-[10px] text-slate-400 dark:text-slate-400">
             {formatRelativeTimeShort(Date.now() - at)}

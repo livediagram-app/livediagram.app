@@ -2,7 +2,15 @@
 
 import { TrashIcon } from '@/components/primitives/explorer-icons';
 import { useState } from 'react';
-import { Button, LinkIcon, RefreshIcon, Select, TextInput, HoverCard } from '@livediagram/ui';
+import {
+  Button,
+  LinkIcon,
+  RefreshIcon,
+  Select,
+  TextInput,
+  HoverCard,
+  GlyphDisc,
+} from '@livediagram/ui';
 import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { initialsOf, randomName } from '@/lib/identity';
@@ -173,16 +181,18 @@ export function ShareDialog({
           <div className="flex flex-col gap-1.5">
             <p className={sectionLabel}>Your name</p>
             <div className="flex items-center gap-2.5">
-              <div
+              <GlyphDisc
+                size={32}
+                as="div"
                 role="img"
                 aria-label={`Your avatar colour: ${participant.color}`}
                 style={{
                   ...identityVars(participant.color),
                 }}
-                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white ${IDENTITY_FILL}`}
+                className={`text-xs font-semibold text-white ${IDENTITY_FILL}`}
               >
                 {initialsOf(effectiveName)}
-              </div>
+              </GlyphDisc>
               <TextInput
                 id="share-name"
                 value={name}
@@ -342,8 +352,8 @@ export function ShareDialog({
                   key={link.code}
                   className="flex items-center gap-2 rounded-md border border-slate-200 bg-slate-50/60 px-2.5 py-1.5 dark:border-slate-700 dark:bg-slate-800/40"
                 >
-                  <span className="inline-flex shrink-0 items-center rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-rose-700 ring-1 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:ring-rose-500/30">
-                    Expired
+                  <span className="inline-flex shrink-0 items-center rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-semibold text-rose-700 ring-1 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:ring-rose-500/30">
+                    <span className="text-optical-line text-optical-caps">Expired</span>
                   </span>
                   <input
                     readOnly

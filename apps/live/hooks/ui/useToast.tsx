@@ -9,7 +9,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { buttonClassName, CloseIcon, Glyph } from '@livediagram/ui';
+import { buttonClassName, CloseIcon, Glyph, ButtonContent } from '@livediagram/ui';
 import { Portal } from '@/components/primitives/Portal';
 import { readUserPreferences } from '@/lib/user-preferences';
 
@@ -187,14 +187,14 @@ function ToastBubble({ toast, onDismiss }: { toast: ToastEntry; onDismiss: () =>
               onClick={() => answer(true)}
               className={buttonClassName({ size: 'xs' })}
             >
-              {offer.confirmLabel}
+              <ButtonContent>{offer.confirmLabel}</ButtonContent>
             </button>
             <button
               type="button"
               onClick={() => answer(false)}
               className={buttonClassName({ size: 'xs', variant: 'secondary' })}
             >
-              {offer.declineLabel}
+              <ButtonContent>{offer.declineLabel}</ButtonContent>
             </button>
           </div>
         ) : null}

@@ -172,7 +172,7 @@ export function Stamp({
   return (
     <span
       aria-hidden
-      className="pointer-events-none inline-flex items-center justify-center rounded-[3px] px-2 py-[3px] text-[10px] font-extrabold uppercase leading-none tracking-[0.18em]"
+      className="pointer-events-none inline-flex items-center justify-center rounded-[3px] px-2 py-[3px] text-[10px] font-extrabold leading-none"
       style={{
         color: ink,
         transform: `rotate(${rotate}deg)`,
@@ -186,7 +186,9 @@ export function Stamp({
         backgroundSize: '3px 3px',
       }}
     >
-      {children}
+      <span className="text-optical-line text-optical-caps [--optical-tracking:0.18em]">
+        {children}
+      </span>
     </span>
   );
 }

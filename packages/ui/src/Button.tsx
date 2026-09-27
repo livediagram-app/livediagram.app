@@ -1,4 +1,4 @@
-import { forwardRef, type ButtonHTMLAttributes } from 'react';
+import { Children, forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react';
 import { SOLID_BRAND_DARK_CONTROL } from './brand-classes';
 
 // The shared button primitive. Before this, every dialog / panel /
@@ -19,7 +19,7 @@ export type ButtonVariant = 'primary' | 'danger' | 'secondary';
 export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg' | 'cta-sm' | 'cta';
 
 const BASE =
-  'inline-flex items-center justify-center gap-2 rounded-md font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50';
+  'optical-edges inline-flex items-center justify-center gap-2 rounded-md font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50';
 
 const VARIANTS: Record<ButtonVariant, string> = {
   primary: `bg-brand-500 text-white hover:bg-brand-600 focus-visible:outline-brand-500 ${SOLID_BRAND_DARK_CONTROL}`,
@@ -58,13 +58,31 @@ export function buttonClassName({
   return `${BASE} ${VARIANTS[variant]} ${SIZES[size]}${className ? ` ${className}` : ''}`;
 }
 
+// A button's label centres its cap band, not its line box (docs/specs/004-interface-design/
+// optical-alignment.md): each text run renders in `text-optical-line`, which keeps the line's height, so
+// the button is the size it always was. Icons and other elements pass through untouched. Links styled
+// with `buttonClassName` wrap their content in this too.
+export function ButtonContent({ children }: { children: ReactNode }) {
+  return (
+    <>
+      {Children.map(children, (child) =>
+        typeof child === 'string' || typeof child === 'number' ? (
+          <span className="text-optical-line">{child}</span>
+        ) : (
+          child
+        ),
+      )}
+    </>
+  );
+}
+
 export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: ButtonVariant;
   size?: ButtonSize;
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
-  { variant, size, className, type = 'button', ...rest },
+  { variant, size, className, type = 'button', children, ...rest },
   ref,
 ) {
   return (
@@ -73,6 +91,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       type={type}
       className={buttonClassName({ variant, size, className })}
       {...rest}
-    />
+    >
+      <ButtonContent>{children}</ButtonContent>
+    </button>
   );
 });

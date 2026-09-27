@@ -107,13 +107,16 @@ Without a dev stack, it builds the live app and boots its own (`scripts/e2e-stac
 
 Those ports are defaults, not fixtures. Three environment variables move them, which is what you want when `:3002` is already taken (a second checkout, a worktree):
 
-| Variable        | Default                 | What it moves                                                        |
-| --------------- | ----------------------- | -------------------------------------------------------------------- |
-| `E2E_BASE_URL`  | `http://localhost:3002` | Where Playwright points, and the URL it waits on before starting     |
-| `E2E_LIVE_PORT` | `3002`                  | The port `e2e-stack.mjs` serves the built live app on                |
-| `E2E_API_PORT`  | `8787`                  | The api worker's port, and the target its `/api/*` proxy forwards to |
+| Variable             | Default                 | What it moves                                                         |
+| -------------------- | ----------------------- | --------------------------------------------------------------------- |
+| `E2E_BASE_URL`       | `http://localhost:3002` | Where Playwright points, and the URL it waits on before starting      |
+| `E2E_LIVE_PORT`      | `3002`                  | The port `e2e-stack.mjs` serves the built live app on                 |
+| `E2E_API_PORT`       | `8787`                  | The api worker's port, and the target its `/api/*` proxy forwards to  |
+| `E2E_MARKETING_PORT` | `3013`                  | The port the stack serves the built marketing site on (optical audit) |
 
 `E2E_API_PORT` is self-contained: it sets the worker's port and the proxy that reaches it together. The other two are **not**. Playwright waits on `E2E_BASE_URL` while the stack binds `E2E_LIVE_PORT`, so moving the live app means setting both. Set only one and the run hangs until the 180-second `webServer` timeout, with nothing said about why.
+
+The optical audit also opens the help centre, the telemetry dashboard and the marketing site: build them (`pnpm --filter @livediagram/help --filter @livediagram/telemetry --filter @livediagram/marketing build`), or point `E2E_HELP_URL`, `E2E_TELEMETRY_URL` and `E2E_MARKETING_URL` at their dev servers.
 
 Keep the suite tiny — add a focused smoke for a browser-risky change, not a broad suite; depth belongs in unit tests where it's cheap.
 

@@ -12,7 +12,8 @@ import type { PaneDiagram } from './views';
 import { HoverCard, Glyph } from '@livediagram/ui';
 
 const badgeBase =
-  'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ring-1';
+  // Labels sit in text-optical-line + text-optical-caps (optical-alignment.md), so the base carries no case.
+  'optical-edges inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ring-1';
 
 // The star a favourited diagram carries wherever it's listed (docs/specs/013-workspace/favourites.md),
 // so you can tell a starred diagram from an unstarred one without opening
@@ -86,7 +87,7 @@ export function VisibilityBadge({ diagram }: { diagram: PaneDiagram }) {
             <path d="M2.4 6.6h3.4a1.4 1.4 0 0 0 .2-2.8 1.9 1.9 0 0 0-3.3-.5A1.35 1.35 0 0 0 2.4 6.6Z" />
             <path d="M1.4 1.4l6.2 6.2" />
           </Glyph>
-          Offline
+          <span className="text-optical-line text-optical-caps">Offline</span>
         </span>
       </HoverCard>
     );
@@ -98,7 +99,7 @@ export function VisibilityBadge({ diagram }: { diagram: PaneDiagram }) {
           className={`${badgeBase} bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30`}
         >
           <SharedDotIcon />
-          Shared
+          <span className="text-optical-line text-optical-caps">Shared</span>
         </span>
       </HoverCard>
     );
@@ -118,7 +119,7 @@ export function VisibilityBadge({ diagram }: { diagram: PaneDiagram }) {
             <circle cx="6.6" cy="3.6" r="1.1" />
             <path d="M6.3 5.7c.9.1 1.5.7 1.7 1.8" />
           </Glyph>
-          Team
+          <span className="text-optical-line text-optical-caps">Team</span>
         </span>
       </HoverCard>
     );
@@ -132,7 +133,7 @@ export function VisibilityBadge({ diagram }: { diagram: PaneDiagram }) {
           <rect x="1.6" y="4" width="5.8" height="3.6" rx="0.9" />
           <path d="M3 4V2.9a1.5 1.5 0 0 1 3 0V4" />
         </Glyph>
-        Private
+        <span className="text-optical-line text-optical-caps">Private</span>
       </span>
     </HoverCard>
   );

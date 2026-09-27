@@ -1,5 +1,5 @@
 import { ctaHref } from '@livediagram/api-schema';
-import { buttonClassName, SiteHeader } from '@livediagram/ui';
+import { buttonClassName, SiteHeader, ButtonContent } from '@livediagram/ui';
 import { SearchInput } from '@/components/SearchInput';
 
 // Help-centre header: the shared SiteHeader (packages/ui, also marketing's and
@@ -24,7 +24,7 @@ export function Header() {
           href={ctaHref('/new', 'Help.Header')}
           className={buttonClassName({ size: 'md', className: 'shrink-0 shadow-sm' })}
         >
-          Start drawing
+          <ButtonContent>Start drawing</ButtonContent>
         </a>
       }
     />

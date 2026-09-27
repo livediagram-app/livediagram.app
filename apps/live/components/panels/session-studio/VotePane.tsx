@@ -21,7 +21,7 @@ import { ToggleSwitch } from '@/components/palette/palette-controls';
 import type { SessionToolsProps } from '@/components/chrome/session-tools-props';
 import { votePhase, voteTurnout, type VotePhase } from './session-studio';
 import { StudioButton, StudioCallout, StudioLabel, StudioSegmented } from './studio-ui';
-import { SOLID_BRAND_DARK, Glyph } from '@livediagram/ui';
+import { SOLID_BRAND_DARK, Glyph, GlyphDisc } from '@livediagram/ui';
 
 type VotePaneProps = Pick<
   SessionToolsProps,
@@ -256,9 +256,10 @@ function PhaseTrack({ phase }: { phase: VotePhase }) {
         return (
           <li key={p.phase} className="flex flex-1 items-center last:flex-none">
             <span className="flex flex-col items-center gap-1">
-              <span
+              <GlyphDisc
+                size={20}
                 aria-current={current ? 'step' : undefined}
-                className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold ${
+                className={`text-[10px] font-bold ${
                   current
                     ? `bg-brand-500 text-white ring-4 ring-brand-500/15 ${SOLID_BRAND_DARK}`
                     : done
@@ -266,8 +267,8 @@ function PhaseTrack({ phase }: { phase: VotePhase }) {
                       : 'bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-400'
                 }`}
               >
-                {done ? '✓' : <span className="text-optical-centre">{i + 1}</span>}
-              </span>
+                {done ? '✓' : i + 1}
+              </GlyphDisc>
               <span
                 className={`text-[10px] font-medium ${
                   current

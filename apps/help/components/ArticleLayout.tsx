@@ -11,7 +11,7 @@ import { articleJsonLd } from '@/lib/structured-data';
 import { track } from '@/lib/telemetry';
 import { helpPathTelemetryId } from '@livediagram/help-registry/telemetry';
 import { useArticleVote } from './useArticleVote';
-import { CloseIcon, JsonLd } from '@livediagram/ui';
+import { CloseIcon, JsonLd, GlyphDisc } from '@livediagram/ui';
 import { ClockIcon, ContentsIcon } from '@/lib/chrome-icons';
 
 /** Sidebar card: shows the TOC and/or a "Learn more" list of related
@@ -36,9 +36,12 @@ function SidebarCard({ subArticles }: { subArticles?: Article[] }) {
                   href={articleHref(a)}
                   className="flex items-center gap-2.5 py-1 text-sm text-slate-600 transition-colors hover:text-brand-700 dark:text-slate-300 dark:hover:text-brand-200"
                 >
-                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-100 text-[10px] font-bold text-brand-700 dark:bg-brand-500/20 dark:text-brand-300">
+                  <GlyphDisc
+                    size={20}
+                    className="bg-brand-100 text-[10px] font-bold text-brand-700 dark:bg-brand-500/20 dark:text-brand-300"
+                  >
                     {i + 1}
-                  </span>
+                  </GlyphDisc>
                   {a.title}
                 </Link>
               </li>

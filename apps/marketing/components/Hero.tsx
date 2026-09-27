@@ -1,5 +1,5 @@
 import { ctaHref } from '@livediagram/api-schema';
-import { buttonClassName, Glyph } from '@livediagram/ui';
+import { buttonClassName, Glyph, ButtonContent } from '@livediagram/ui';
 import { HeroIllustration } from './HeroIllustration';
 
 // Each one true today (docs/specs/019-marketing/marketing-site.md's golden rule): no paid tier, the canvas works
@@ -55,7 +55,7 @@ export function Hero() {
               className: 'w-full shadow-sm sm:order-2 sm:w-auto',
             })}
           >
-            Choose Template
+            <ButtonContent>Choose Template</ButtonContent>
           </a>
           <a
             href={ctaHref('/new?blank=1', 'Home.HeroDraw')}
@@ -65,7 +65,7 @@ export function Hero() {
               className: 'w-full shadow-sm sm:order-1 sm:w-auto',
             })}
           >
-            Just Draw
+            <ButtonContent>Just Draw</ButtonContent>
           </a>
         </div>
         <ProofPoints />

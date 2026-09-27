@@ -1,5 +1,5 @@
 import { initialsOf, randomName, type Participant } from '@/lib/identity';
-import { RefreshIcon, HoverCard } from '@livediagram/ui';
+import { RefreshIcon, HoverCard, GlyphDisc } from '@livediagram/ui';
 import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
 
 // The picker's identity row (docs/specs/007-editor/new-diagram-route.md welcome + join flows): the avatar
@@ -22,14 +22,16 @@ export function TemplatePickerIdentityRow({
 }) {
   return (
     <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50/50 p-3 dark:border-slate-700 dark:bg-slate-800/50">
-      <div
+      <GlyphDisc
+        size={40}
+        as="div"
         role="img"
         aria-label={`Your avatar colour: ${participant.color}`}
         style={identityVars(participant.color)}
-        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-white ${IDENTITY_FILL}`}
+        className={`text-sm font-semibold text-white ${IDENTITY_FILL}`}
       >
         {initialsOf(effectiveName)}
-      </div>
+      </GlyphDisc>
       <div className="flex-1">
         <label
           htmlFor="welcome-name"

@@ -209,8 +209,8 @@ function BlockedGlyph() {
 function LoadCard({ target, onLoad }: { target: EmbedTarget; onLoad: () => void }) {
   return (
     <div className="pointer-events-none flex h-full w-full flex-col items-center justify-center gap-2 rounded-[inherit] px-3 text-center">
-      <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-300">
-        {target.label}
+      <span className="inline-flex items-center rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-semibold text-slate-300">
+        <span className="text-optical-line text-optical-caps">{target.label}</span>
       </span>
       <button
         type="button"

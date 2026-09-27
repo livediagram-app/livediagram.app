@@ -12,7 +12,11 @@
 // every target including headless ones.
 
 import { STICKER_TONE_COLOR, type StickerDef } from './sticker-types';
+import { capBandBaselineY } from './svg-cap-band';
 import { xmlEscape } from './xml';
+
+// Two decimals keeps the markup short and stable across renders.
+const num = (n: number) => String(Math.round(n * 100) / 100);
 
 // Inner SVG markup plus the viewBox it is drawn in. The caller owns the <svg>
 // element, so the same art serves an 18px palette tile and a 400px element.
@@ -33,20 +37,27 @@ function badgeFontSize(text: string): number {
   return Math.min(34, Math.round((AVAILABLE / (Math.max(2, text.length) * 0.7)) * 10) / 10);
 }
 
+// The badge's coloured pill (the inner rect below) and its word's tracking, in viewBox units.
+const BADGE_PILL = { x: 14, y: 14, width: 192, height: 60 };
+const BADGE_TRACKING = 1.2;
+
 export function stickerArt(def: StickerDef): StickerArt {
   if (def.kind === 'badge') {
     const fill = STICKER_TONE_COLOR[def.tone];
     const text = xmlEscape(def.text.toUpperCase());
     const fs = badgeFontSize(def.text);
+    // Dead centre in the pill (docs/specs/004-interface-design/optical-alignment.md): the cap band on the
+    // pill's centre line, and half the trailing letter-space given back, since SVG centres the word with it.
+    const x = BADGE_PILL.x + BADGE_PILL.width / 2 + BADGE_TRACKING / 2;
+    const y = capBandBaselineY(BADGE_PILL.y + BADGE_PILL.height / 2, fs);
     return {
       viewBox: '0 0 220 88',
       markup:
         `<rect x="6" y="10" width="208" height="76" rx="26" fill="${SHADOW}" opacity="${SHADOW_OPACITY}"/>` +
         `<rect x="6" y="6" width="208" height="76" rx="26" fill="#ffffff" stroke="${PLATE_EDGE}" stroke-width="1.5"/>` +
-        `<rect x="14" y="14" width="192" height="60" rx="20" fill="${fill}"/>` +
-        `<text x="110" y="45" font-family="system-ui, sans-serif" font-size="${fs}"` +
-        ` font-weight="800" letter-spacing="1.2" fill="#ffffff" text-anchor="middle"` +
-        ` dominant-baseline="central">${text}</text>`,
+        `<rect x="${BADGE_PILL.x}" y="${BADGE_PILL.y}" width="${BADGE_PILL.width}" height="${BADGE_PILL.height}" rx="20" fill="${fill}"/>` +
+        `<text x="${num(x)}" y="${num(y)}" font-family="system-ui, sans-serif" font-size="${fs}"` +
+        ` font-weight="800" letter-spacing="${BADGE_TRACKING}" fill="#ffffff" text-anchor="middle">${text}</text>`,
     };
   }
   return {

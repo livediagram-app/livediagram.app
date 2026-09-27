@@ -229,9 +229,11 @@ export function IconButton({
       {showBadge ? (
         <kbd
           aria-hidden
-          className="pointer-events-none absolute right-0.5 top-0.5 flex h-3.5 min-w-[0.875rem] items-center justify-center rounded-[3px] border border-slate-300 bg-white px-0.5 text-[8px] font-semibold uppercase leading-none text-slate-700 shadow-sm dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200"
+          className="pointer-events-none absolute right-0.5 top-0.5 flex h-3.5 min-w-[0.875rem] items-center justify-center rounded-[3px] border border-slate-300 bg-white px-0.5 text-[8px] font-semibold leading-none text-slate-700 shadow-sm dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200"
         >
-          {shortcut}
+          <span className="text-optical-line text-optical-caps [--optical-tracking:0em]">
+            {shortcut}
+          </span>
         </kbd>
       ) : null}
       {showCornerLetter ? (

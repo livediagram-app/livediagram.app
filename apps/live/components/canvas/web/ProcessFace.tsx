@@ -1,4 +1,5 @@
 import { ACCENT_BAR_TEXT, processLayout, WEB_TEXT_MAX } from '@livediagram/diagram';
+import { capBandBaselineY } from '@livediagram/icons';
 import { InlineTextLine } from '@/components/canvas/InlineTextLine';
 import { rectStyle, type WebFaceProps } from '@/components/canvas/web/web-face-props';
 
@@ -47,11 +48,11 @@ export function ProcessFace({
         {l.steps.map((s, i) => (
           <g key={i}>
             <circle cx={s.cx} cy={s.cy} r={s.r} fill={accent} />
+            {/* On its cap band, as the export draws it (optical-alignment.md). */}
             <text
               x={s.cx}
-              y={s.cy}
+              y={capBandBaselineY(s.cy, l.numberPx)}
               textAnchor="middle"
-              dominantBaseline="central"
               fill={ACCENT_BAR_TEXT}
               fontWeight={700}
               fontSize={l.numberPx}

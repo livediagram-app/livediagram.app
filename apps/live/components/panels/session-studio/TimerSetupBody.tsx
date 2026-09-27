@@ -23,6 +23,7 @@ import {
 import { TimerPresetChips } from './TimerPresetChips';
 import { TimerDial } from './TimerDial';
 import { PlayGlyph, StudioButton, StudioSegmented } from './studio-ui';
+import { GlyphDisc } from '@livediagram/ui';
 
 const MODE_OPTIONS = [
   { value: 'countdown', label: 'Countdown' },
@@ -136,14 +137,16 @@ function NudgeButton({
   children: string;
 }) {
   return (
-    <button
+    <GlyphDisc
+      size={32}
+      as="button"
       type="button"
       aria-label={label}
       onClick={onClick}
       disabled={disabled}
-      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-[15px] font-semibold text-slate-600 transition hover:border-brand-300 hover:text-brand-700 disabled:opacity-30 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+      className="border border-slate-200 bg-white text-[15px] font-semibold text-slate-600 transition hover:border-brand-300 hover:text-brand-700 disabled:opacity-30 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
     >
       {children}
-    </button>
+    </GlyphDisc>
   );
 }

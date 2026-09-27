@@ -56,13 +56,15 @@ export function ExplorerTabBar({
             role="tab"
             aria-selected={active}
             onClick={() => onSelect(tab.id)}
-            className={`relative z-10 flex flex-1 items-center justify-center rounded-md px-1.5 py-1 text-[10px] font-semibold uppercase tracking-wide transition-colors ${
+            className={`relative z-10 flex flex-1 items-center justify-center rounded-md px-1.5 py-1 text-[10px] font-semibold transition-colors ${
               active
                 ? 'text-slate-700 dark:text-white'
                 : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
             }`}
           >
-            <span className="truncate">{tab.label}</span>
+            <span className="text-optical-line text-optical-caps truncate [--optical-tracking:0.025em]">
+              {tab.label}
+            </span>
           </button>
         );
       })}

@@ -1,8 +1,9 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { NameEditor } from '@/components/primitives/NameEditor';
 import { Brand, ProductNav, HoverCard, SOLID_BRAND_DARK_CONTROL, Glyph } from '@livediagram/ui';
 import { AuthControls } from '@/components/chrome/AuthControls';
 import { SharedBadge } from '@/components/chrome/SharedBadge';
+import { HEADER_ACTION_BTN, HeaderGlyph } from '@/components/chrome/header-action';
 
 // Sync state surfaced as a small pill next to the diagram title. The
 // editor is autosave-driven, so silent failures (offline, API down,
@@ -16,14 +17,6 @@ import { SharedBadge } from '@/components/chrome/SharedBadge';
 // is a save the server could not tie to the signed-in account (a 401, or no
 // session token to send); it is retried, since the session can come back.
 export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error' | 'unauthenticated' | 'forbidden';
-
-// Full-height, edge-flush header action button: the icon stacked over a small
-// label, a left divider, hugging the top + bottom of the bar so the right-edge
-// actions read as a row of tabs filling the header rather than little floating
-// pills. Shared with AuthControls so Share / Make-a-copy / Sign-in all match.
-// The caller adds the tone (default slate, or the Share brand fill).
-export const HEADER_ACTION_BTN =
-  'flex h-full min-w-[3.75rem] cursor-pointer flex-col items-center justify-center gap-1 border-l border-slate-200 px-3 text-[10px] font-medium leading-none transition dark:border-slate-800';
 
 type EditorHeaderProps = {
   diagramName: string;
@@ -83,11 +76,14 @@ export function EditorHeader({
 }: EditorHeaderProps) {
   const [editing, setEditing] = useState(false);
 
-  // The command palette requests a rename by bumping renameNonce. Skip the
-  // initial 0 so we don't pop into edit mode on mount.
-  useEffect(() => {
-    if (renameNonce > 0 && !readOnly && !hideTitle) setEditing(true);
-  }, [renameNonce, readOnly, hideTitle]);
+  // The command palette requests a rename by bumping renameNonce. Each request is
+  // honoured once, as soon as the title can be edited (it may be hidden behind the
+  // welcome modal when it arrives); the mount value is never a request.
+  const [handledNonce, setHandledNonce] = useState(renameNonce);
+  if (renameNonce !== handledNonce && !readOnly && !hideTitle) {
+    setHandledNonce(renameNonce);
+    setEditing(true);
+  }
 
   return (
     // `relative z-[var(--z-modal)]` puts the entire header into its own stacking
@@ -147,7 +143,9 @@ export function EditorHeader({
               disabled={copying}
               className={`${HEADER_ACTION_BTN} text-slate-600 enabled:hover:bg-brand-50 enabled:hover:text-brand-700 disabled:cursor-not-allowed disabled:opacity-50 dark:text-slate-200 dark:enabled:hover:bg-slate-800 dark:enabled:hover:text-brand-200`}
             >
-              <CopyIcon />
+              <HeaderGlyph>
+                <CopyIcon />
+              </HeaderGlyph>
               {copying ? 'Copying' : 'Copy'}
             </button>
           </HoverCard>
@@ -167,7 +165,9 @@ export function EditorHeader({
               }`}
               aria-pressed={shareable}
             >
-              <ShareIcon />
+              <HeaderGlyph>
+                <ShareIcon />
+              </HeaderGlyph>
               {/* Label stays "Share" in both states — the user dislikes the
                   verb changing to "Shared". State is communicated by the
                   brand-500 fill + aria-pressed flip + the green SharedBadge by

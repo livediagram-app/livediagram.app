@@ -4,6 +4,7 @@ export { SiteHeader } from './SiteHeader';
 export { SiteFooter } from './SiteFooter';
 export {
   Button,
+  ButtonContent,
   buttonClassName,
   type ButtonProps,
   type ButtonVariant,
@@ -43,3 +44,4 @@ export {
   type BreadcrumbCrumb,
 } from './seo';
 export * from './appearance';
+export * from './optical';

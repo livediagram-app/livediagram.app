@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { GlyphDisc } from '@livediagram/ui';
 
 interface TocItem {
   id: string;
@@ -64,9 +65,12 @@ export function TableOfContents() {
                 }`}
               >
                 {item.level === 2 && (
-                  <span className="mr-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-brand-100 text-xs font-bold text-brand-700 dark:bg-brand-500/20 dark:text-brand-300">
+                  <GlyphDisc
+                    size={20}
+                    className="mr-2 bg-brand-100 text-xs font-bold text-brand-700 dark:bg-brand-500/20 dark:text-brand-300"
+                  >
                     {h2Index}
-                  </span>
+                  </GlyphDisc>
                 )}
                 {item.text}
               </a>

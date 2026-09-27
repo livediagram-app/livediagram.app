@@ -1,7 +1,7 @@
 'use client';
 
 import { useId, useMemo, useRef, useState, type ReactNode } from 'react';
-import { TextInput, Glyph } from '@livediagram/ui';
+import { TextInput, Glyph, CloseIcon } from '@livediagram/ui';
 import { eventLabel, titleCase } from './event-vocab';
 import { useCategoryColor } from './useCategoryColor';
 import { SearchGlyph } from './glyphs';
@@ -271,9 +271,7 @@ export function MetricPicker({
           onClick={() => reset('')}
           className="absolute right-2.5 top-1/2 flex h-5 w-5 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300"
         >
-          <span aria-hidden className="text-sm leading-none">
-            ✕
-          </span>
+          <CloseIcon size={10} />
         </button>
       ) : null}
 

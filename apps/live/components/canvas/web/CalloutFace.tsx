@@ -3,6 +3,7 @@ import { IconGlyph } from '@/components/primitives/icon-glyph';
 import { InlineTextLine } from '@/components/canvas/InlineTextLine';
 import { LabelRegion } from '@/components/canvas/web/LabelRegion';
 import { rectStyle, type WebFaceProps } from '@/components/canvas/web/web-face-props';
+import { GlyphDisc } from '@livediagram/ui';
 
 // Callout (docs/specs/009-elements/web-components-and-no-groups.md): the card is the ordinary bordered box; inside it, an
 // accent badge (an "i", or the element's inline icon when one is dropped on
@@ -21,14 +22,14 @@ export function CalloutFace({
   const d = l.badge.r * 2;
   return (
     <>
-      <div
+      <GlyphDisc
+        as="div"
+        size={d}
         aria-hidden
-        className="pointer-events-none absolute flex items-center justify-center rounded-full font-bold"
+        className="pointer-events-none absolute font-bold"
         style={{
           left: l.badge.cx - l.badge.r,
           top: l.badge.cy - l.badge.r,
-          width: d,
-          height: d,
           backgroundColor: accent,
           color: ACCENT_BAR_TEXT,
           fontSize: l.badge.r,
@@ -42,7 +43,7 @@ export function CalloutFace({
         ) : (
           'i'
         )}
-      </div>
+      </GlyphDisc>
       <div className="absolute" style={{ ...rectStyle(l.heading), fontFamily }}>
         <InlineTextLine
           value={element.pageTitle ?? ''}

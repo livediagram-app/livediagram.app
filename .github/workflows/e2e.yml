@@ -64,6 +64,11 @@ jobs:
       - name: Build live app
         run: pnpm --filter @livediagram/live build
 
+      # The optical-alignment audit also opens the help centre, the telemetry
+      # dashboard and the marketing site; the e2e stack serves their exports.
+      - name: Build help, telemetry and marketing
+        run: pnpm --filter @livediagram/help --filter @livediagram/telemetry --filter @livediagram/marketing build
+
       # Playwright's webServer boots scripts/e2e-stack.mjs (api worker on
       # local D1 + the static serve). CI=1 makes it always start fresh.
       - name: Run smoke suite

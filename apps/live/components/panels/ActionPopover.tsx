@@ -10,6 +10,7 @@ import {
   useEscape,
   SOLID_BRAND_DARK,
   Glyph,
+  GlyphDisc,
 } from '@livediagram/ui';
 import { useRef, useState } from 'react';
 import type { ElementAction } from '@livediagram/diagram';
@@ -134,12 +135,13 @@ export function ActionPopover({
             ) : null}
           </div>
           <div className="flex items-center gap-2 rounded-md bg-slate-50 px-2.5 py-2 dark:bg-slate-800/60">
-            <span
+            <GlyphDisc
+              size={28}
               aria-hidden
-              className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-500 text-[10px] font-semibold text-white ${SOLID_BRAND_DARK}`}
+              className={`bg-brand-500 text-[10px] font-semibold text-white ${SOLID_BRAND_DARK}`}
             >
               {initialsOf(assigneeName)}
-            </span>
+            </GlyphDisc>
             <span className="min-w-0 flex-1">
               <span className="block truncate text-xs font-medium text-slate-700 dark:text-slate-200">
                 {mine ? 'Assigned to you' : `Assigned to ${assigneeName}`}

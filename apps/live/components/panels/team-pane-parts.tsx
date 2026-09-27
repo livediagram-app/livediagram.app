@@ -1,4 +1,4 @@
-import { CloseIcon, Select, HoverCard, Glyph } from '@livediagram/ui';
+import { CloseIcon, Select, HoverCard, Glyph, GlyphDisc } from '@livediagram/ui';
 import type { TeamMember, TeamRole } from '@/lib/api-client';
 import { colorForKey, initialsOf } from '@/lib/identity';
 import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
@@ -92,17 +92,18 @@ export function TeamMemberRow({
   const removable = isAdmin && !isSelf && !pinnedAdmin;
   return (
     <li key={m.id} className="group flex items-center gap-3 px-4 py-2.5">
-      <span
+      <GlyphDisc
+        size={32}
         aria-hidden
         style={{
           ...identityVars(colorForKey(m.email ?? m.userId ?? m.id)),
         }}
-        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white ${
+        className={`text-xs font-semibold text-white ${
           pending ? 'opacity-50' : ''
         } ${IDENTITY_FILL}`}
       >
         {initialsOf(name)}
-      </span>
+      </GlyphDisc>
       <span className="min-w-0 flex-1">
         <span className="flex items-center gap-1.5">
           <span className="truncate text-sm font-medium text-slate-900 dark:text-slate-100">

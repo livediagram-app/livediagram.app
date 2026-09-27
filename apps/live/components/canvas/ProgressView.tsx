@@ -60,7 +60,8 @@ export function ProgressView({
       className="pointer-events-none absolute inset-0 flex items-center justify-center"
       style={{ color: textColor }}
     >
-      <span className="text-sm font-semibold tabular-nums">{pct}%</span>
+      {/* Centred on its cap band, as the export draws it (optical-alignment.md). */}
+      <span className="text-optical-centre text-sm font-semibold tabular-nums">{pct}%</span>
     </div>
   );
 

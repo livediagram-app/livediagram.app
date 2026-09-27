@@ -2,7 +2,7 @@ import { ctaHref, type CtaSurface } from '@livediagram/api-schema';
 import type { ReactNode } from 'react';
 import { SiteAppearanceToggle } from './appearance/SiteAppearanceToggle';
 import { Brand } from './Brand';
-import { buttonClassName } from './Button';
+import { ButtonContent, buttonClassName } from './Button';
 import { ProductNav, type ProductNavKey } from './ProductNav';
 import { ShareRail } from './ShareRail';
 
@@ -96,13 +96,13 @@ function DefaultActions({ ctaSurface }: { ctaSurface?: Exclude<CtaSurface, 'Help
           className: 'shrink-0 shadow-sm max-sm:hidden',
         })}
       >
-        Just Draw
+        <ButtonContent>Just Draw</ButtonContent>
       </a>
       <a
         href={ctaSurface ? ctaHref('/new', `${ctaSurface}.Header`) : '/new'}
         className={buttonClassName({ size: 'md', className: 'shrink-0 shadow-sm' })}
       >
-        Choose Template
+        <ButtonContent>Choose Template</ButtonContent>
       </a>
     </>
   );

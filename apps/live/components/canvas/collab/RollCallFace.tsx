@@ -8,6 +8,7 @@ import { initialsOf } from '@/lib/identity';
 import { CollabButton, CollabEmpty, CollabPanel } from './collab-chrome';
 import { Perforation, TornEdge } from '@/components/canvas/paper-kit';
 import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
+import { GlyphDisc } from '@livediagram/ui';
 
 // The stored name + colour, drawn as the presence avatar it was copied from.
 // NOT ParticipantAvatar: that takes a live Participant with a presence status,
@@ -15,14 +16,15 @@ import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
 // (docs/specs/012-collaboration/roll-call.md).
 function RollAvatar({ entry }: { entry: RollCallEntry }) {
   return (
-    <span
+    <GlyphDisc
+      size={20}
       role="img"
       aria-label={entry.name}
-      className={`flex h-[20px] w-[20px] shrink-0 items-center justify-center rounded-full text-[9px] font-semibold text-white ${IDENTITY_FILL}`}
+      className={`text-[9px] font-semibold text-white ${IDENTITY_FILL}`}
       style={identityVars(entry.color)}
     >
       {initialsOf(entry.name)}
-    </span>
+    </GlyphDisc>
   );
 }
 

@@ -158,8 +158,10 @@ export function CustomThemeBuilder({
           with the chosen pattern rendered edge to edge. */}
       <div className="relative">
         <ThemeSwatch theme={previewTheme} heightClass="h-24" realPattern />
-        <span className="pointer-events-none absolute right-2 top-2 rounded-md bg-slate-900/70 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white shadow-sm">
-          Illustration
+        <span className="inline-flex items-center pointer-events-none absolute right-2 top-2 rounded-md bg-slate-900/70 px-2 py-0.5 text-[10px] font-semibold text-white shadow-sm">
+          <span className="text-optical-line text-optical-caps [--optical-tracking:0.025em]">
+            Illustration
+          </span>
         </span>
       </div>
 

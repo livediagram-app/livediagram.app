@@ -3,6 +3,7 @@ import { MOTION_MS } from '@livediagram/tailwind-config/motion';
 import type { Participant } from '@/lib/identity';
 import { ParticipantAvatar } from '@/components/primitives/ParticipantAvatar';
 import { participantBadges } from '@/lib/collaborator-roster';
+import { GlyphDisc } from '@livediagram/ui';
 
 // Compact stack of participant initials, sitting between the tab
 // label and the ellipsis menu in TabBar. Rendered smaller than the
@@ -148,16 +149,18 @@ export function TabPresenceStack({
         </span>
       ))}
       {overflow > 0 ? (
-        <button
+        <GlyphDisc
+          size={16}
+          as="button"
           type="button"
           onClick={onOpenCollaborators ? () => onOpenCollaborators(null) : undefined}
           disabled={!onOpenCollaborators}
           aria-haspopup="dialog"
           aria-label={`${overflow} more participant${overflow === 1 ? '' : 's'} on this tab`}
-          className="inline-flex h-4 w-4 animate-pop-in cursor-pointer items-center justify-center rounded-full border-2 border-white bg-slate-200 text-[8px] font-semibold text-slate-600 shadow-sm transition hover:bg-slate-300 disabled:cursor-default disabled:hover:bg-slate-200 dark:border-slate-800 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600"
+          className="animate-pop-in cursor-pointer border-2 border-white bg-slate-200 text-[8px] font-semibold text-slate-600 shadow-sm transition hover:bg-slate-300 disabled:cursor-default disabled:hover:bg-slate-200 dark:border-slate-800 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600"
         >
           +{overflow}
-        </button>
+        </GlyphDisc>
       ) : null}
     </div>
   );

@@ -161,54 +161,8 @@ describe('brand-coloured text in dark mode', () => {
   });
 });
 
-// Numerals in circles and pills centre their INK, not their line box (docs/specs/004-interface-design/
-// color-scheme.md, Usage rules). A digit has no descender, so a line box centred in a circle leaves the
-// digit sitting visibly high; `text-optical-centre` trims the box to cap height and baseline.
-describe('optical numerals', () => {
-  it('are a shared Tailwind utility with a fallback', () => {
-    const rule = /@utility text-optical-centre \{([\s\S]*?)\n\}/.exec(THEME_CSS)?.[1] ?? '';
-    expect(rule).toMatch(/display:\s*inline-block/);
-    expect(rule).toMatch(/line-height:\s*1;/);
-    expect(rule).toMatch(/text-box:\s*trim-both cap alphabetic/);
-    expect(rule).toMatch(
-      /@supports not \(text-box: trim-both cap alphabetic\)\s*\{\s*transform:\s*translateY\(0\.1em\)/,
-    );
-  });
-
-  // A circle or pill (rounded-full) whose only child is a count, a length, a step number or a
-  // total renders that value through the utility.
-  it('wrap every counted value shown alone in a circle or pill', () => {
-    const COUNTED =
-      /^\{.*(\bcount|Count|\.length|\btotal|Total|\bn|String\.fromCharCode\(.*\))\s*\)?\}$/;
-    const offenders: string[] = [];
-    for (const path of SOURCES.filter((p) => p.endsWith('.tsx'))) {
-      const sf = ts.createSourceFile(
-        path,
-        readFileSync(path, 'utf8'),
-        ts.ScriptTarget.Latest,
-        true,
-        ts.ScriptKind.TSX,
-      );
-      const visit = (node: ts.Node): void => {
-        if (ts.isJsxElement(node)) {
-          const cls = node.openingElement.attributes.properties
-            .find((p) => ts.isJsxAttribute(p) && p.name.getText(sf) === 'className')
-            ?.getText(sf);
-          const kids = node.children.filter((c) => !(ts.isJsxText(c) && !c.text.trim()));
-          const only = kids.length === 1 ? kids[0]!.getText(sf).replace(/\s+/g, ' ') : '';
-          if (cls && /rounded-full/.test(cls) && COUNTED.test(only)) {
-            offenders.push(
-              `${relative(REPO, path)}:${sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1} ${only}`,
-            );
-          }
-        }
-        ts.forEachChild(node, visit);
-      };
-      visit(sf);
-    }
-    expect(offenders).toEqual([]);
-  });
-});
+// The optical utilities and the optical guard live with optical-alignment.md: packages/tailwind-config
+// (optical-utilities.test.ts) and each workspace's optical-guard.test.ts.
 
 // White text on an identity colour (docs/specs/004-interface-design/color-scheme.md, Dark palette rules):
 // a colour taken at runtime (a participant's, a team's) is painted through identityVars + IDENTITY_FILL,

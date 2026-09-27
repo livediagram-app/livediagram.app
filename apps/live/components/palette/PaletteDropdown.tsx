@@ -423,8 +423,10 @@ export function PaletteDropdown({
                               worth discovering and worth nothing at the cost of
                               the label's line. */}
                         {opt.shortcut ? (
-                          <kbd className="absolute right-0.5 top-0.5 rounded-[3px] px-0.5 text-[8px] font-semibold uppercase leading-[1.4] text-slate-400 dark:text-slate-400">
-                            {opt.shortcut}
+                          <kbd className="inline-flex items-center absolute right-0.5 top-0.5 rounded-[3px] px-0.5 text-[8px] font-semibold leading-[1.4] text-slate-400 dark:text-slate-400">
+                            <span className="text-optical-line text-optical-caps [--optical-tracking:0em]">
+                              {opt.shortcut}
+                            </span>
                           </kbd>
                         ) : null}
                       </button>
@@ -475,8 +477,10 @@ export function PaletteDropdown({
                         {opt.icon ? <span className={ICON_WRAP}>{opt.icon}</span> : null}
                         <span className="flex-1 truncate">{opt.label}</span>
                         {opt.shortcut ? (
-                          <kbd className="rounded-[3px] border border-slate-300 bg-white px-1 text-[8px] font-semibold uppercase leading-[1.4] text-slate-500 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-400">
-                            {opt.shortcut}
+                          <kbd className="inline-flex items-center rounded-[3px] border border-slate-300 bg-white px-1 text-[8px] font-semibold leading-[1.4] text-slate-500 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-400">
+                            <span className="text-optical-line text-optical-caps [--optical-tracking:0em]">
+                              {opt.shortcut}
+                            </span>
                           </kbd>
                         ) : null}
                       </button>

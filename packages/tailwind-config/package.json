@@ -8,7 +8,8 @@
     ".": "./theme.css",
     "./theme.css": "./theme.css",
     "./motion": "./src/motion.ts",
-    "./motion-budget": "./src/motion-budget.ts"
+    "./motion-budget": "./src/motion-budget.ts",
+    "./optical-guard": "./src/optical-guard.ts"
   },
   "files": [
     "theme.css",

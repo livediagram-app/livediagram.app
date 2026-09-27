@@ -58,7 +58,11 @@ so it exercises exactly what ships, not a dev-only code path.
      `out/diagram/[id].html` ([Dedicated route for new-diagram creation](../007-editor/new-diagram-route.md) — one HTML backs every diagram
      URL);
    - proxy `/api/*` to the api worker, WebSocket upgrades included (the realtime room), so the app is same-origin (no CORS
-     surprises, mirroring the router).
+     surprises, mirroring the router);
+   - serve `apps/help/out` under `/help/*` and `apps/telemetry/out` under `/telemetry/*`, their
+     basePaths, as the router mounts them; a missing build answers a logged 404.
+3. **marketing** — `apps/marketing/out` on its own port (`E2E_MARKETING_PORT`, default `3013`),
+   since marketing owns `/` in production.
 
 Locally the same `playwright.config.ts` sets `reuseExistingServer`, so a
 developer with `pnpm dev` already running (live :3002 + api :8787) runs
@@ -103,6 +107,14 @@ vehicle that exercises code paths.
    over an image. Dark mode only; light mode belongs to #74's light half
    ([Colour scheme](../004-interface-design/color-scheme.md#accessibility)).
 
+7. **Optical alignment audit, dark mode** (`optical-audit.spec.ts`,
+   `optical-audit-sites.spec.ts`): at 4x, on the wizard, the editor and its dialogs, the Join dialog,
+   the Explorer, the help centre, the telemetry dashboard and the marketing site, every glyph in a small
+   painted shape sits within 0.5px of its centre (text by its cap band, icons by their ink) and stacked
+   actions in a row share one baseline
+   ([Optical alignment](../004-interface-design/optical-alignment.md)). Each failure names the shape,
+   the offset and why the shape was held to centring.
+
 New browser-risky features should add one focused smoke here, not a
 broad suite; depth stays in unit tests where it's cheap.
 
@@ -112,7 +124,7 @@ broad suite; depth stays in unit tests where it's cheap.
   `scripts/e2e-stack.mjs`, `reuseExistingServer` locally.
 - `apps/live/e2e/*.spec.ts` — the specs above; a shared `expectNoErrors`
   fixture installs the console/pageerror listener.
-- `scripts/e2e-stack.mjs` — the two-process boot + static serve.
+- `scripts/e2e-stack.mjs` — the two-process boot + static serve (live, help, telemetry, marketing).
 - `.github/workflows/e2e.yml` — the cost-controlled workflow.
 - `test:e2e` script in `apps/live/package.json`.
 

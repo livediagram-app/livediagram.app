@@ -129,7 +129,11 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
         isEditing
           ? 'px-0'
           : isActive
-            ? 'px-2.5'
+            ? // The trailing ellipsis button carries its own padding around the glyph, so the pill's
+              // own trailing padding is trimmed to balance the dot's side (optical-alignment.md).
+              readOnly
+              ? 'px-2.5'
+              : 'pl-2.5 pr-1'
             : 'bg-slate-200/50 px-2.5 text-slate-600 hover:bg-slate-200 hover:text-slate-900 dark:bg-slate-800/70 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
       }`}
     >
@@ -157,7 +161,7 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
           onClick={() => onSelect(tab.id)}
           onDoubleClick={readOnly ? undefined : () => isActive && setEditingId(tab.id)}
           aria-current={isActive ? 'page' : undefined}
-          className="flex items-center gap-1.5 rounded-lg py-1 text-sm font-medium"
+          className="flex h-7 items-center gap-1.5 rounded-lg text-sm font-medium"
         >
           {/* The tab theme's accent as a small identity dot — the pill text
               itself stays neutral so it reads on the bar for ANY theme. */}
@@ -167,7 +171,9 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
             style={{ backgroundColor: legibleTabAccent(tab, isDark) }}
           />
           {tab.locked ? <TabLockIcon /> : null}
-          {tab.name}
+          {/* Trimmed to its cap band so the name centres on its letters; the button's height is
+              pinned because the trimmed name no longer props it open. */}
+          <span className="text-optical-centre">{tab.name}</span>
         </button>
       )}
       <TabPresenceStack
