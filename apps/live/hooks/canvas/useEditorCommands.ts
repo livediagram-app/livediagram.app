@@ -15,9 +15,51 @@ import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
 import type { CanvasTool } from '@/components/palette/CommandPalette.types';
 import { useIsOfflineDiagram } from '@/hooks/persistence/useIsOfflineDiagram';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
-import { buildEditorCommands, type CommandContext } from '@/lib/editor-commands';
+import {
+  buildEditorCommands,
+  type CommandContext,
+  type CommandHandlers,
+} from '@/lib/editor-commands';
 import type { CommandSearchItem } from '@/lib/search';
 import { track } from '@/lib/telemetry';
+import { useLatest } from '@/hooks/ui/useLatest';
+
+// What the catalogue is built with: which commands exist, and their words, depend on the context
+// alone, never on the handlers, so the searchable list needs none.
+const noop = () => {};
+const INERT_HANDLERS: CommandHandlers = {
+  deleteSelection: noop,
+  duplicateSelection: noop,
+  toggleLockSelection: noop,
+  bringToFront: noop,
+  sendToBack: noop,
+  rotate: noop,
+  clearAnimation: noop,
+  setMarker: noop,
+  addComment: noop,
+  editNote: noop,
+  createTab: noop,
+  renameDiagram: noop,
+  deleteDiagram: noop,
+  renameTab: noop,
+  openTheme: noop,
+  openCanvasOptions: noop,
+  openShare: noop,
+  openCollaborators: noop,
+  undo: noop,
+  redo: noop,
+  toggleZen: noop,
+  fitToScreen: noop,
+  autoLayout: noop,
+  autoAlign: noop,
+  openExport: noop,
+  openImport: noop,
+  openSettings: noop,
+  openShortcuts: noop,
+  openTemplates: noop,
+  setTool: noop,
+  openPhotoImport: noop,
+};
 
 export function useEditorCommands(): {
   // Undefined (not []) when there are no commands, so the SearchPanel can omit
@@ -97,10 +139,11 @@ export function useEditorCommands(): {
       : isBoxed(single) && !!single.animation
     : false;
 
-  const commands = useMemo(() => {
-    // Read-only gating happens inside the pure builder (docs/specs/007-editor/command-palette.md): view-only
-    // visitors keep the view-safe subset, editors get the full catalogue.
-    const cmdCtx: CommandContext = {
+  // Read-only gating happens inside the pure builder (docs/specs/007-editor/command-palette.md): view-only
+  // visitors keep the view-safe subset, editors get the full catalogue.
+  const canvasEmpty = activeTab.elements.length === 0;
+  const cmdCtx = useMemo<CommandContext>(
+    () => ({
       isReadOnly,
       canUndo,
       canRedo,
@@ -116,123 +159,123 @@ export function useEditorCommands(): {
       // Same emptiness test the palette's tool dropdown uses to disable the
       // content-dependent tools, so search can never offer a tool the palette
       // has greyed out.
-      canvasEmpty: activeTab.elements.length === 0,
+      canvasEmpty,
       isMobile,
       esBoard,
       photoImportAvailable,
-    };
-    return buildEditorCommands(cmdCtx, {
-      deleteSelection: () => (isMulti ? deleteMultiSelected() : deleteSelected()),
-      duplicateSelection: () => (isMulti ? duplicateMultiSelected() : duplicateSelected()),
-      toggleLockSelection: () => (isMulti ? toggleLockMultiSelected() : toggleLockSelected()),
-      // Layer-order handlers already act on the whole selection (single +
-      // multi), so they need no per-mode branch.
-      bringToFront: bringSelectedToFront,
-      sendToBack: sendSelectedToBack,
-      rotate: setRotationSelected,
-      clearAnimation: () =>
-        single?.type === 'arrow' ? setArrowFlowSelected(null) : setAnimationSelected(null),
-      setMarker: setMarkerSelected,
-      addComment: () => {
-        if (selectedId) openComments(selectedId);
-      },
-      editNote: () => {
-        if (selectedId) openNote(selectedId);
-      },
-      createTab: addTab,
-      renameDiagram: requestRenameDiagram,
-      // deleteDiagram confirms internally and (for the current diagram)
-      // redirects to /explorer; it needs the diagram's own id.
-      deleteDiagram: () => {
-        if (diagramId) void deleteDiagram(diagramId);
-      },
-      renameTab: requestRenameTab,
-      // Replicate the telemetry the menu/header entry points fire, since the
-      // setters themselves don't track.
-      openTheme: () => {
-        setCanvasThemeTab('theme');
-        track('UI', 'Opened', 'ThemePicker');
-      },
-      openCanvasOptions: () => {
-        setCanvasThemeTab('canvas');
-        track('UI', 'Opened', 'CanvasStyle');
-      },
-      openShare: () => {
-        setShareDialogOpen(true);
-        track('UI', 'Opened', 'Share');
-      },
-      // No focusId: search is "show me everyone", not "show me this person",
-      // which is what the presence-stack entry point passes. The opener tracks
-      // its own UI·Opened·Collaborators, so this adds none.
-      openCollaborators: () => ctx.openCollaborators(null),
-      // The remaining handlers track internally (undo/redo, zen, fit,
-      // auto layout/align) or have untracked entry points everywhere
-      // (export / import / templates), so no extra telemetry here.
-      undo,
-      redo,
-      toggleZen: toggleZenMode,
-      openPhotoImport,
-      fitToScreen,
-      autoLayout: autoLayoutTab,
-      autoAlign: autoAlignTab,
-      openExport: () => {
-        setExportScope('tab');
-        setExportOpen(true);
-      },
-      openImport: () => setImportOpen(true),
-      openSettings: () => {
-        setSettingsOpen(true);
-        track('UI', 'Opened', 'Settings');
-      },
-      openShortcuts: () => {
-        openSettingsOn('keyboard');
-        track('UI', 'Opened', 'Shortcuts');
-      },
-      openTemplates: openTemplatePicker,
-      // The context's setter, not the raw one: it carries the pressed-state
-      // and telemetry the dropdown's onChange relies on.
-      setTool: (tool) => setCanvasTool(tool as CanvasTool),
-    });
-    // The handlers are stable enough (editor action callbacks); the gating
-    // inputs are what actually change the catalogue.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    isReadOnly,
-    isOwner,
-    isOffline,
-    diagramId,
-    isMulti,
-    selectionCount,
-    selectedId,
-    single,
-    singleIsBoxed,
-    singleIsShape,
-    hasAnimation,
-    marker,
-    canUndo,
-    canRedo,
-    zenMode,
-    canvasTool,
-    activeTab.elements.length,
-    isMobile,
-    esBoard,
-    photoImportAvailable,
-    openPhotoImport,
-  ]);
-
-  const runCommand = useCallback(
-    (id: string) => {
-      commands.find((c) => c.id === id)?.run();
-    },
-    [commands],
+    }),
+    [
+      isReadOnly,
+      canUndo,
+      canRedo,
+      zenMode,
+      selectionCount,
+      singleIsBoxed,
+      singleIsShape,
+      hasAnimation,
+      marker,
+      isOwner,
+      isOffline,
+      canvasTool,
+      canvasEmpty,
+      isMobile,
+      esBoard,
+      photoImportAvailable,
+    ],
   );
 
-  const commandItems = useMemo(
-    () =>
-      commands.length
-        ? commands.map(({ id, name, keywords }) => ({ id, name, keywords }))
-        : undefined,
-    [commands],
+  // Each handler is the editor's own action for that verb, as it is at the moment a command runs.
+  const handlers: CommandHandlers = {
+    deleteSelection: () => (isMulti ? deleteMultiSelected() : deleteSelected()),
+    duplicateSelection: () => (isMulti ? duplicateMultiSelected() : duplicateSelected()),
+    toggleLockSelection: () => (isMulti ? toggleLockMultiSelected() : toggleLockSelected()),
+    // Layer-order handlers already act on the whole selection (single +
+    // multi), so they need no per-mode branch.
+    bringToFront: bringSelectedToFront,
+    sendToBack: sendSelectedToBack,
+    rotate: setRotationSelected,
+    clearAnimation: () =>
+      single?.type === 'arrow' ? setArrowFlowSelected(null) : setAnimationSelected(null),
+    setMarker: setMarkerSelected,
+    addComment: () => {
+      if (selectedId) openComments(selectedId);
+    },
+    editNote: () => {
+      if (selectedId) openNote(selectedId);
+    },
+    createTab: addTab,
+    renameDiagram: requestRenameDiagram,
+    // deleteDiagram confirms internally and (for the current diagram)
+    // redirects to /explorer; it needs the diagram's own id.
+    deleteDiagram: () => {
+      if (diagramId) void deleteDiagram(diagramId);
+    },
+    renameTab: requestRenameTab,
+    // Replicate the telemetry the menu/header entry points fire, since the
+    // setters themselves don't track.
+    openTheme: () => {
+      setCanvasThemeTab('theme');
+      track('UI', 'Opened', 'ThemePicker');
+    },
+    openCanvasOptions: () => {
+      setCanvasThemeTab('canvas');
+      track('UI', 'Opened', 'CanvasStyle');
+    },
+    openShare: () => {
+      setShareDialogOpen(true);
+      track('UI', 'Opened', 'Share');
+    },
+    // No focusId: search is "show me everyone", not "show me this person",
+    // which is what the presence-stack entry point passes. The opener tracks
+    // its own UI·Opened·Collaborators, so this adds none.
+    openCollaborators: () => ctx.openCollaborators(null),
+    // The remaining handlers track internally (undo/redo, zen, fit,
+    // auto layout/align) or have untracked entry points everywhere
+    // (export / import / templates), so no extra telemetry here.
+    undo,
+    redo,
+    toggleZen: toggleZenMode,
+    openPhotoImport,
+    fitToScreen,
+    autoLayout: autoLayoutTab,
+    autoAlign: autoAlignTab,
+    openExport: () => {
+      setExportScope('tab');
+      setExportOpen(true);
+    },
+    openImport: () => setImportOpen(true),
+    openSettings: () => {
+      setSettingsOpen(true);
+      track('UI', 'Opened', 'Settings');
+    },
+    openShortcuts: () => {
+      openSettingsOn('keyboard');
+      track('UI', 'Opened', 'Shortcuts');
+    },
+    openTemplates: openTemplatePicker,
+    // The context's setter, not the raw one: it carries the pressed-state
+    // and telemetry the dropdown's onChange relies on.
+    setTool: (tool) => setCanvasTool(tool as CanvasTool),
+  };
+
+  // The searchable catalogue changes only with the gating inputs.
+  const commandItems = useMemo(() => {
+    const commands = buildEditorCommands(cmdCtx, INERT_HANDLERS);
+    return commands.length
+      ? commands.map(({ id, name, keywords }) => ({ id, name, keywords }))
+      : undefined;
+  }, [cmdCtx]);
+
+  // Running one builds the commands from the context and handlers as they are now.
+  const liveCtx = useLatest(cmdCtx);
+  const liveHandlers = useLatest(handlers);
+  const runCommand = useCallback(
+    (id: string) => {
+      buildEditorCommands(liveCtx.current, liveHandlers.current)
+        .find((c) => c.id === id)
+        ?.run();
+    },
+    [liveCtx, liveHandlers],
   );
 
   return { commandItems, runCommand };
