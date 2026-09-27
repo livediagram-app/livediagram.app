@@ -14,7 +14,7 @@ export type ZipInput = {
 const u16 = (n: number) => [n & 0xff, (n >>> 8) & 0xff];
 const u32 = (n: number) => [n & 0xff, (n >>> 8) & 0xff, (n >>> 16) & 0xff, (n >>> 24) & 0xff];
 
-export function writeZip(entries: ZipInput[]): Uint8Array {
+export function writeZip(entries: ZipInput[]): Uint8Array<ArrayBuffer> {
   const locals: number[] = [];
   const central: number[] = [];
   for (const entry of entries) {

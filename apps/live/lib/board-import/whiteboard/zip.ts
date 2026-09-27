@@ -100,10 +100,13 @@ export function listZip(
   return { ok: true, entries };
 }
 
-async function inflateRaw(data: Uint8Array, budget: ByteBudget): Promise<Uint8Array> {
-  const stream = new Blob([data as BlobPart])
-    .stream()
-    .pipeThrough(new DecompressionStream('deflate-raw'));
+async function inflateRaw(data: Uint8Array<ArrayBuffer>, budget: ByteBudget): Promise<Uint8Array> {
+  const stream = new ReadableStream<Uint8Array<ArrayBuffer>>({
+    start(controller) {
+      controller.enqueue(data);
+      controller.close();
+    },
+  }).pipeThrough(new DecompressionStream('deflate-raw'));
   const chunks: Uint8Array[] = [];
   let total = 0;
   const reader = stream.getReader();
@@ -130,10 +133,10 @@ async function inflateRaw(data: Uint8Array, budget: ByteBudget): Promise<Uint8Ar
 
 /** One entry's bytes, inflated if deflated, or a named refusal. */
 export async function readZipEntry(
-  bytes: Uint8Array,
+  bytes: Uint8Array<ArrayBuffer>,
   entry: ZipEntry,
   budget: ByteBudget,
-): Promise<{ ok: true; bytes: Uint8Array } | { ok: false; refusal: ZipRefusal }> {
+): Promise<{ ok: true; bytes: Uint8Array<ArrayBuffer> } | { ok: false; refusal: ZipRefusal }> {
   if (entry.encrypted) return { ok: false, refusal: 'zip-encrypted' };
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   const at = entry.localHeaderOffset;
