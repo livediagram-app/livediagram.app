@@ -11,6 +11,7 @@ import { isBoxed, type Element } from '@livediagram/diagram';
 import type { EditorContextMenuState } from '@/components/palette/EditorContextMenu';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import { useLatest } from '@/hooks/ui/useLatest';
 
 export function useEditModeContextMenu({
   editingId,
@@ -26,8 +27,7 @@ export function useEditModeContextMenu({
   const isMobile = useIsMobileViewport();
   // Latest elements without retriggering the effect on every commit — the
   // menu should open / close on edit transitions only.
-  const elementsRef = useRef(elements);
-  elementsRef.current = elements;
+  const elementsRef = useLatest(elements);
   const prevEditingRef = useRef<string | null>(null);
 
   useEffect(() => {

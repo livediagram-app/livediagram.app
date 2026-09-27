@@ -32,6 +32,7 @@ import type { SlideDeckState } from '@/app/diagram/[id]/useSlideDeck';
 import { track } from '@/lib/telemetry';
 import { isDragTravel } from '@/lib/press-gestures';
 import { HoverCard, SOLID_BRAND_DARK_CONTROL, Glyph } from '@livediagram/ui';
+import { useLatest } from '@/hooks/ui/useLatest';
 
 function PlayIcon() {
   return (
@@ -266,8 +267,7 @@ export function SlideDeckPanel({
   const [dropAt, setDropAt] = useState<{ index: number; side: 'before' | 'after' } | null>(null);
   const origin = useRef<{ x: number; y: number } | null>(null);
   const dragging = useRef(false);
-  const dropRef = useRef<{ index: number; side: 'before' | 'after' } | null>(null);
-  dropRef.current = dropAt;
+  const dropRef = useLatest<{ index: number; side: 'before' | 'after' } | null>(dropAt);
 
   const slotUnder = (x: number, y: number) => {
     const el = document.elementFromPoint(x, y)?.closest('[data-slide-slot]');

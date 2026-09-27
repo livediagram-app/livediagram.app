@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useLatest } from '@/hooks/ui/useLatest';
 
 // Bring Focus (docs/specs/012-collaboration/bring-focus.md): the invitation somebody else's press puts on your
 // screen, and what taking it does.
@@ -76,13 +77,11 @@ export function useFocusInvite(deps: {
     },
     [],
   );
-
   // The live invitation in a ref as well as in state, so accepting can read it
   // without doing the work inside a setState UPDATER: React runs those during
   // the render phase, and navigating from one updates the page while this is
   // rendering (which React says, loudly).
-  const liveRef = useRef<FocusInvite | null>(null);
-  liveRef.current = invite;
+  const liveRef = useLatest<FocusInvite | null>(invite);
 
   const acceptFocus = useCallback(() => {
     const current = liveRef.current;
@@ -92,7 +91,7 @@ export function useFocusInvite(deps: {
     // looking at the right coordinates of the wrong board.
     ref.current.onFollowTab(current.tabId);
     ref.current.onCentreOn(current.at, current.zoom);
-  }, []);
+  }, [liveRef]);
 
   const dismissFocus = useCallback(() => setInvite(null), []);
 

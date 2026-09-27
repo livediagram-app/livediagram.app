@@ -23,7 +23,7 @@ at zero they become errors, so no new one lands.
   `Date.now()` or `Math.random()`, no DOM measurement, no mutation of props or state.
 - **A value an event handler or effect needs at its newest** is read through:
   - `useEffectEvent`, when what is kept is a callback called from an effect;
-  - `useLatest(value)` (a ref updated after render, in a layout effect), when it is a value read from
+  - `useLatest(value)` (a ref updated in an insertion effect, before any other effect runs), when it is a value read from
     event handlers, timers or subscriptions.
 - **Derived state is computed during render**, not mirrored in an effect. State that resets when an
   input changes is adjusted during render (comparing against the previous input kept in state) or reset

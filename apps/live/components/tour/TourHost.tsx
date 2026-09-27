@@ -19,6 +19,7 @@ import { findTour, waitForSelector, waitForTour } from './tour-dom';
 import { tourStepsFor, tourStepTelemetryType, type TourApi } from './tour-steps';
 import { TourLayoutPicker } from './TourLayoutPicker';
 import { TourPopover } from './TourPopover';
+import { useAssignRef, useLatest } from '@/hooks/ui/useLatest';
 
 // Orchestrates the interactive editor tour (docs/specs/007-editor/editor-tour.md). Mounted once in
 // EditorView; renders nothing until either the /new handoff flag is
@@ -85,16 +86,15 @@ export function TourHost() {
   // (prepare + waits) so a fast Next/Next can't land a stale target.
   const runTokenRef = useRef(0);
   const healingRef = useRef(false);
+  // The step API is rebuilt every render through a ref so step callbacks
+  // always see fresh editor-context handlers (never stale closures).
   // endTour, reachable from the step-run effect without depending on its
-  // per-render identity (assigned below, after its definition).
+  // per-render identity (declared here, kept current below, after its definition).
   const endTourRef = useRef<(outcome: 'TourCompleted' | 'TourSkipped' | 'TourDeclined') => void>(
     () => {},
   );
 
-  // The step API is rebuilt every render through a ref so step callbacks
-  // always see fresh editor-context handlers (never stale closures).
-  const apiRef = useRef<TourApi>(null as unknown as TourApi);
-  apiRef.current = {
+  const apiRef = useLatest<TourApi>({
     compact: isMobile || panelLayout === 'minimal',
     toolbar,
     openElementContextMenu: async () => {
@@ -135,7 +135,7 @@ export function TourHost() {
       });
     },
     closeContextMenu: () => ctx.closeContextMenu(),
-  };
+  });
 
   // Peek at the /new handoff flag (NOT consume: it stays set until the
   // offer is resolved, so a reload mid-offer or mid-tour re-offers instead
@@ -241,7 +241,7 @@ export function TourHost() {
     return () => {
       cancelled = true;
     };
-  }, [active, stepIndex, steps]);
+  }, [active, apiRef, stepIndex, steps]);
 
   // Track the target while a step is showing: follow it when it moves and
   // re-run prepare when it disappears (a menu dismissed under the tour).
@@ -275,7 +275,7 @@ export function TourHost() {
       setTargetRect((prev) => (prev && rectsEqual(prev, r) ? prev : r));
     }, 150);
     return () => window.clearInterval(id);
-  }, [active, stepIndex, steps]);
+  }, [active, apiRef, stepIndex, steps]);
 
   const endTour = (outcome: 'TourCompleted' | 'TourSkipped' | 'TourDeclined') => {
     runTokenRef.current++;
@@ -295,7 +295,7 @@ export function TourHost() {
     if (outcome === 'TourDeclined') track('UI', 'Closed', 'TourOffer');
     else track('UI', 'Ended', outcome);
   };
-  endTourRef.current = endTour;
+  useAssignRef(endTourRef, endTour);
 
   if (!active) return null;
   const step = steps[Math.min(stepIndex, steps.length - 1)];

@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState, type RefObject } from 'react';
+import { useEffect, useState, type RefObject } from 'react';
 import { snapToAlignment } from '@livediagram/diagram';
 import { pointerToCanvas } from '@/lib/canvas';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
+import { useLatest } from '@/hooks/ui/useLatest';
 
 const EMPTY_ID_SET: Set<string> = new Set();
 
@@ -32,8 +33,7 @@ export function useCanvasPolygonGesture({
   const [polygonCursor, setPolygonCursor] = useState<{ x: number; y: number } | null>(null);
   // Mirror for the window key handlers, which must read the latest
   // vertices without re-subscribing per click.
-  const verticesRef = useRef(polygonVertices);
-  verticesRef.current = polygonVertices;
+  const verticesRef = useLatest(polygonVertices);
 
   const polygonArmed = pendingDraw?.type === 'polygon';
 

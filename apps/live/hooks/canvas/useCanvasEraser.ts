@@ -41,6 +41,7 @@ import {
   type EraserConfig,
 } from '@/lib/eraser-config';
 import { track } from '@/lib/telemetry';
+import { useLatest } from '@/hooks/ui/useLatest';
 
 type EraserDeps = {
   editsBlocked: boolean;
@@ -77,8 +78,7 @@ export function useCanvasEraser(deps: EraserDeps) {
   // Latest deps for the window listeners: they attach once per gesture but
   // must read fresh state every move (the active tab shrinks as elements
   // are erased). Mirrors useEditorDrag's depsRef pattern.
-  const depsRef = useRef(deps);
-  depsRef.current = deps;
+  const depsRef = useLatest(deps);
   // Ids removed so far this gesture. Dedupes repeat hits as the pointer
   // lingers, and growing it lets the tick filter cascade pinned arrows
   // once an endpoint is erased.

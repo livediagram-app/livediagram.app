@@ -55,6 +55,7 @@ import {
 import { useSnapGuideState } from './useSnapGuideState';
 import { useArrowDragHandlers } from './useArrowDragHandlers';
 import { useBoxedDragHandlers } from './useBoxedDragHandlers';
+import { useLatest } from '@/hooks/ui/useLatest';
 
 // Screen-pixel distance the pointer must travel before a body drag
 // actually starts moving the element. Below this a press (even one that
@@ -131,11 +132,9 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
   // OTHER notes' ripple stays a render-time preview until the drop; only the
   // dragged note itself moves for real, as it does on any move.
   const insertSlotRef = useRef<InsertionSlot | null>(null);
-
   // Stash deps on every render so the move-effect always reads
   // fresh values without re-subscribing global pointer listeners.
-  const depsRef = useRef(deps);
-  depsRef.current = deps;
+  const depsRef = useLatest(deps);
 
   const { beginDrag, beginAnchorDrag } = useBoxedDragHandlers({
     depsRef,
@@ -864,7 +863,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       setLanePreview(null);
       setInsertionDragInHand(false);
     };
-  }, [drag, scheduleGuides, scheduleSnapTargets]);
+  }, [depsRef, drag, scheduleGuides, scheduleSnapTargets]);
 
   return {
     drag,

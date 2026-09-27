@@ -75,6 +75,7 @@ import { useCanvasSurfaceGestures } from '@/hooks/canvas/useCanvasSurfaceGesture
 import { useCanvasSelectHandlers } from '@/hooks/canvas/useCanvasSelectHandlers';
 import { useArrowLabelLayouts } from '@/hooks/canvas/useArrowLabelLayouts';
 import { useFontsReady } from '@/components/canvas/useFontsReady';
+import { useLatest } from '@/hooks/ui/useLatest';
 
 export function Canvas(props: CanvasProps) {
   const {
@@ -312,7 +313,6 @@ export function Canvas(props: CanvasProps) {
   // a pad's (docs/specs/009-elements/reaction-pad.md): nothing is stored and nothing is replayed.
   const [avatarBurst, setAvatarBurst] = useState<{ reaction: Reaction; seed: number } | null>(null);
   const avatarBurstSeq = useRef(0);
-  const avatarRef = useRef<ReturnType<typeof useAvatarWalk> | null>(null);
   const avatar = useAvatarWalk({
     active: canvasTool === 'avatar',
     config: avatarLook.config,
@@ -345,7 +345,7 @@ export function Canvas(props: CanvasProps) {
   // `sitOn` is returned by the very hook whose callback needs it, so the call
   // goes through a ref — declared above, repointed here, read at arrival time.
   // Same shape as `enterPortalRef` below, for the same reason.
-  avatarRef.current = avatar;
+  const avatarRef = useLatest<ReturnType<typeof useAvatarWalk> | null>(avatar);
 
   // Who is sitting in each chair, from PRESENCE — never from the diagram. Our
   // own character plus every peer's, keyed by chair id, so a chair empties by
@@ -384,14 +384,6 @@ export function Canvas(props: CanvasProps) {
     const el = elements.find((e) => e.id === avatar.standingOnId);
     return el && isBoxed(el) ? { x: el.x, y: el.y, width: el.width, height: el.height } : null;
   }, [avatar.standingOnId, elements]);
-
-  // Portals (docs/specs/009-elements/portal-element.md): the camera centres on the paired portal and the walking
-  // character steps out of it — see makePortalTravel.
-  //
-  // `enterPortal` needs the avatar hook (to place the character) and the hook
-  // needs `enterPortal` (for the walk-in), so the callback goes through a ref:
-  // declared here, repointed on every render, read at call time.
-  const enterPortalRef = useRef<(from: ShapeElement) => void>(() => {});
   const { enterPortal, resolvePortal } = makePortalTravel({
     elements,
     tabs: props.portalTabs,
@@ -402,7 +394,13 @@ export function Canvas(props: CanvasProps) {
     setViewportOffset,
     teleportTo: avatar.teleportTo,
   });
-  enterPortalRef.current = enterPortal;
+  // Portals (docs/specs/009-elements/portal-element.md): the camera centres on the paired portal and the walking
+  // character steps out of it — see makePortalTravel.
+  //
+  // `enterPortal` needs the avatar hook (to place the character) and the hook
+  // needs `enterPortal` (for the walk-in), so the callback goes through a ref:
+  // declared here, repointed on every render, read at call time.
+  const enterPortalRef = useLatest<(from: ShapeElement) => void>(enterPortal);
 
   // Isometric view (docs/specs/008-canvas/isometric-view.md): the orbit-able camera + the innermost
   // transform fragment, pivoted on the content centre — see

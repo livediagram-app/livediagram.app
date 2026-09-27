@@ -26,6 +26,7 @@ import { untitledNameForTemplate, type TemplateKind } from '@livediagram/templat
 import { WIZARD_BYPASS_PARAMS, wizardBypassKind } from '@/lib/new-diagram-params';
 import { getTheme } from '@/lib/themes';
 import { themeTelemetryLabel } from '@/lib/custom-theme-registry';
+import { useLatest } from '@/hooks/ui/useLatest';
 
 // Folder shape the Settings step's placement browser consumes.
 // Dedicated welcome / create-new flow, see docs/specs/007-editor/new-diagram-route.md.
@@ -174,7 +175,6 @@ export default function NewDiagramPage() {
       }
     })();
   }, [authLoaded, clerkUserId]);
-
   // Identity for the commit path. Clerk's chunk loads deferred, so a fast
   // click-through (or an e2e robot) can reach Create while `self` is still
   // the 'pending' placeholder — the identity bootstrap above hasn't run.
@@ -183,8 +183,7 @@ export default function NewDiagramPage() {
   // (fetching with the real id) 404s. So the commit resolves identity
   // itself: wait out the bootstrap (bounded — authLoaded flips by the
   // 5 s Clerk timeout at the latest), then fall back to the guest id.
-  const selfRef = useRef(self);
-  selfRef.current = self;
+  const selfRef = useLatest(self);
   const resolveSelf = async (): Promise<Participant> => {
     const deadline = Date.now() + 8000;
     while (selfRef.current.id === 'pending' && Date.now() < deadline) {

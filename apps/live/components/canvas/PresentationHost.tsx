@@ -14,6 +14,7 @@ import { useEffect, useRef, useState } from 'react';
 import { PresentationOverlay } from '@/components/canvas/PresentationOverlay';
 import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
 import { slideDurationMs } from '@/lib/presentation-config';
+import { useLatest } from '@/hooks/ui/useLatest';
 
 // The node the transition animates: the canvas surface. Kept here so the
 // cleanup can listen for ITS animationend rather than guessing a duration.
@@ -29,8 +30,7 @@ export function PresentationHost() {
   // Device-local presenter settings (docs/specs/012-collaboration/presentation-mode.md). Owned by the deck hook, because
   // the camera reads them too.
   const config = slideDeck?.config;
-  const configRef = useRef(config);
-  configRef.current = config;
+  const configRef = useLatest(config);
 
   // Drive the canvas's transition class. The canvas underneath is the thing
   // that actually moves — one transform on one layer, so a hundred-element
@@ -82,7 +82,7 @@ export function PresentationHost() {
       surface?.removeEventListener('animationcancel', done);
       window.clearTimeout(failsafe);
     };
-  }, [at]);
+  }, [at, configRef]);
 
   // Leaving the mode must always clean up, including on unmount (a navigation
   // away mid-presentation would otherwise leave the attribute on <html>).

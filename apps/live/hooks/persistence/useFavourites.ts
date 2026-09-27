@@ -9,8 +9,9 @@
 // the worst case for a failed write is a star that doesn't survive a
 // reload, which is a better trade than a UI that stalls on every click.
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { apiListFavourites, apiSetFavourite } from '@/lib/api-client';
+import { useLatest } from '@/hooks/ui/useLatest';
 
 export function useFavourites(ownerId: string | null) {
   const [favouriteIds, setFavouriteIds] = useState<Set<string>>(() => new Set());
@@ -18,8 +19,7 @@ export function useFavourites(ownerId: string | null) {
   // decide the direction, and a state updater is the wrong place to do
   // that: React may run it during a later render pass, so anything
   // captured from inside it is unsafe to use for the outbound request.
-  const idsRef = useRef(favouriteIds);
-  idsRef.current = favouriteIds;
+  const idsRef = useLatest(favouriteIds);
 
   useEffect(() => {
     if (!ownerId) {
@@ -48,7 +48,7 @@ export function useFavourites(ownerId: string | null) {
       setFavouriteIds(optimistic);
       void apiSetFavourite(ownerId, diagramId, next);
     },
-    [ownerId],
+    [idsRef, ownerId],
   );
 
   return { favouriteIds, toggleFavourite };

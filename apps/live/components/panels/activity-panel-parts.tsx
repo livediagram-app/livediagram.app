@@ -10,6 +10,7 @@ import type { ChangeLogEntry } from '@/lib/api-client';
 import { formatRelativeTimeShort, useRelativeNow } from '@/lib/relative-time';
 import type { SaveStatus } from '@/components/chrome/EditorHeader';
 import { HoverCard, Glyph } from '@livediagram/ui';
+import { useLatest } from '@/hooks/ui/useLatest';
 
 // Save-status badge that lived in the footer; the Activity panel
 // title is its new home — same factual content, paired with the
@@ -122,12 +123,11 @@ export function ActivityRow({
     hoveringRef.current = false;
     onHoverEnd();
   };
-  const endHoverRef = useRef(endHover);
-  endHoverRef.current = endHover;
+  const endHoverRef = useLatest(endHover);
   // If the row unmounts under the pointer (a peer's op removed the
   // entry, the log got cleared), pointerleave never fires — end the
   // preview here so the canvas doesn't stay stuck on it.
-  useEffect(() => () => endHoverRef.current(), []);
+  useEffect(() => () => endHoverRef.current(), [endHoverRef]);
   return (
     <li
       className="group relative"

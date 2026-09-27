@@ -6,7 +6,7 @@
 // every pointer move, and the side effects that apply preference flags
 // (reduce motion, AI panel auto-open).
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useReduceMotion } from '@/hooks/ui/useReduceMotion';
 import { usePanelOpacity } from '@/hooks/ui/usePanelOpacity';
 import {
@@ -15,6 +15,7 @@ import {
   fetchUserPreferences,
   type UserPreferences,
 } from '@/lib/user-preferences';
+import { useLatest } from '@/hooks/ui/useLatest';
 
 type EditorPreferencesDeps = {
   // The resolved owner id: Clerk userId for signed-in users, the
@@ -51,14 +52,12 @@ export function useEditorPreferences(deps: EditorPreferencesDeps) {
   // Mirror the auto-rebind flag into its own ref so the drag move
   // handler can read it without re-attaching listeners. Defaults to
   // ON (docs/specs/007-editor/user-preferences.md); the Settings toggle turns it off.
-  const autoRebindArrowsRef = useRef<boolean>(autoRebindArrowsEnabled(userPreferences));
-  autoRebindArrowsRef.current = autoRebindArrowsEnabled(userPreferences);
+  const autoRebindArrowsRef = useLatest<boolean>(autoRebindArrowsEnabled(userPreferences));
   // Same mirror for the alignment-guide preference so the drag move
   // handler can gate the guide computation without re-attaching its
   // listeners. Defaults to true (guides on) so a fresh session shows
   // them; flipping the Settings toggle takes effect on the next move.
-  const alignmentGuidesRef = useRef<boolean>(userPreferences.alignmentGuides !== false);
-  alignmentGuidesRef.current = userPreferences.alignmentGuides !== false;
+  const alignmentGuidesRef = useLatest<boolean>(userPreferences.alignmentGuides !== false);
 
   // Load the cached preferences once on mount. Missing or unparseable
   // entries collapse to `{}`; the per-flag default then depends on

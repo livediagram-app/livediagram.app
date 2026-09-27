@@ -10,7 +10,7 @@
 // ephemeral presence snapshot handed to `onPresence` for peers (docs/specs/008-canvas/avatar-mode.md
 // Realtime), which the room relays like a cursor.
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useInsertionEffect } from 'react';
 import type { Element } from '@livediagram/diagram';
 import { avatarScale, type AvatarConfig } from '@/lib/avatar-config';
 import { reactionPose, type AvatarReactionKind, type ReactionPose } from '@/lib/avatar-reactions';
@@ -32,6 +32,7 @@ import {
   type AvatarFacing,
   type AvatarPoint,
 } from '@/lib/avatar-walk';
+import { useLatest } from '@/hooks/ui/useLatest';
 
 // Canvas px of travel per leg swing. Tuned against AVATAR_SPEED so the
 // cadence reads as a walk rather than a shuffle (~6 steps/second at speed).
@@ -150,23 +151,18 @@ export function useAvatarWalk({
   const arrivedPortalRef = useRef<string | null>(null);
   // Fires once when the current walk target is reached, then clears itself.
   const arriveRef = useRef<(() => void) | null>(null);
-  const portalRef = useRef(onWalkIntoPortal);
-  portalRef.current = onWalkIntoPortal;
-  const chairRef = useRef(onWalkIntoChair);
-  chairRef.current = onWalkIntoChair;
-  const padRef = useRef(onWalkIntoReactionPad);
-  padRef.current = onWalkIntoReactionPad;
+  const portalRef = useLatest(onWalkIntoPortal);
+  const chairRef = useLatest(onWalkIntoChair);
+  const padRef = useLatest(onWalkIntoReactionPad);
   const seatedRef = useRef<string | null>(null);
   // The costume last published as a standing snapshot; null = nothing published
   // since the mode was entered. Keeps the entry publish to once per change.
   const publishedLookRef = useRef<string | null>(null);
   // Live costume for the loop's presence packets + the hit-test scale.
-  const configRef = useRef(config);
-  configRef.current = config;
+  const configRef = useLatest(config);
   // Facing, for the heartbeat below: a ref so the timer's dep list stays fixed
   // (a dep array that changes length is a React error) and it never re-arms.
-  const facingRef = useRef(facing);
-  facingRef.current = facing;
+  const facingRef = useLatest(facing);
   // NOTE: posRef is deliberately NOT re-synced from `pos` on every render. The
   // LOOP owns the position; `pos` is a copy for rendering. Assigning
   // `posRef.current = pos` here used to walk the character BACKWARDS whenever
@@ -180,19 +176,19 @@ export function useAvatarWalk({
   // wrote: a second frame before the commit then builds on the first instead of
   // overwriting it. A viewport change from ANYWHERE ELSE (pan, zoom, fit) won't
   // match what we last wrote, and is adopted.
+  // The adoption runs in an insertion effect, before the loop's next frame can read the ref, rather
+  // than during render.
   const offsetRef = useRef(viewportOffset);
   const offsetWrittenRef = useRef<AvatarPoint | null>(null);
-  if (
-    offsetWrittenRef.current === null ||
-    viewportOffset.x !== offsetWrittenRef.current.x ||
-    viewportOffset.y !== offsetWrittenRef.current.y
-  ) {
-    offsetRef.current = viewportOffset;
-  }
+  useInsertionEffect(() => {
+    const written = offsetWrittenRef.current;
+    if (written === null || viewportOffset.x !== written.x || viewportOffset.y !== written.y) {
+      offsetRef.current = viewportOffset;
+    }
+  }, [viewportOffset]);
   // Presence publisher, reached through a ref so the loop never re-attaches
   // just because the editor re-rendered.
-  const presenceRef = useRef(onPresence);
-  presenceRef.current = onPresence;
+  const presenceRef = useLatest(onPresence);
 
   const mainNode = () => (mainRef && 'current' in mainRef ? mainRef.current : null);
 
@@ -583,7 +579,7 @@ export function useAvatarWalk({
       });
     }, AVATAR_HEARTBEAT_MS);
     return () => window.clearInterval(beat);
-  }, [active]);
+  }, [active, configRef, facingRef, presenceRef]);
 
   // Portals (docs/specs/009-elements/portal-element.md): walking a character ONTO a portal travels through it. Fired
   // from an effect on ARRIVAL (the element under the feet changed) rather than

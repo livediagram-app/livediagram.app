@@ -35,6 +35,7 @@ import {
   savePresentationConfig,
   type PresentationConfig,
 } from '@/lib/presentation-config';
+import { useLatest } from '@/hooks/ui/useLatest';
 
 // How long after the last deck edit the save fires. Deck edits arrive in
 // bursts (drag a row through four positions, type a sentence of notes), and
@@ -72,8 +73,6 @@ export function useSlideDeck({
   // Which slide the PANEL has open. Separate from the presentation's own
   // index: checking slide 4 in the panel should not mean starting there.
   const [openSlideId, setOpenSlideId] = useState<string | null>(null);
-  // Read by verbs that need the CURRENT deck without taking it as a dep.
-  const deckRef = useRef<Deck>(EMPTY_DECK);
   // Non-null only while presenting: the index into the presentable list.
   const [presentingAt, setPresentingAt] = useState<number | null>(null);
   const [startingDeck, setStartingDeck] = useState(false);
@@ -98,8 +97,7 @@ export function useSlideDeck({
   // edit, or opening a diagram would immediately PUT the deck straight back.
   const hydratedRef = useRef(false);
   const saveTimer = useRef<number | null>(null);
-  const saveRef = useRef(saveDeck);
-  saveRef.current = saveDeck;
+  const saveRef = useLatest(saveDeck);
 
   /** Seed from the loaded diagram. Never counts as an edit. */
   const hydrateDeck = useCallback((serialised: string | null | undefined) => {
@@ -109,17 +107,20 @@ export function useSlideDeck({
 
   // Every edit goes through here so exactly one place is responsible for
   // persisting, and no verb can forget to.
-  const commitDeck = useCallback((next: Deck | ((prev: Deck) => Deck)) => {
-    setDeck((prev) => {
-      const resolved = typeof next === 'function' ? next(prev) : next;
-      if (saveTimer.current !== null) window.clearTimeout(saveTimer.current);
-      saveTimer.current = window.setTimeout(() => {
-        const stored = storePresentation(resolved);
-        saveRef.current?.(stored ? JSON.stringify(stored) : null);
-      }, DECK_SAVE_DEBOUNCE_MS);
-      return resolved;
-    });
-  }, []);
+  const commitDeck = useCallback(
+    (next: Deck | ((prev: Deck) => Deck)) => {
+      setDeck((prev) => {
+        const resolved = typeof next === 'function' ? next(prev) : next;
+        if (saveTimer.current !== null) window.clearTimeout(saveTimer.current);
+        saveTimer.current = window.setTimeout(() => {
+          const stored = storePresentation(resolved);
+          saveRef.current?.(stored ? JSON.stringify(stored) : null);
+        }, DECK_SAVE_DEBOUNCE_MS);
+        return resolved;
+      });
+    },
+    [saveRef],
+  );
 
   useEffect(
     () => () => {
@@ -137,7 +138,8 @@ export function useSlideDeck({
     return selectedId ? new Set([selectedId]) : new Set<string>();
   }, [multiSelectedIds, selectedId]);
 
-  deckRef.current = deck;
+  // Read by verbs that need the CURRENT deck without taking it as a dep.
+  const deckRef = useLatest<Deck>(deck);
   const openSlide = deck.slides.find((s) => s.id === openSlideId) ?? null;
 
   // Slides whose tab still exists and are not hidden, in deck order — what
@@ -272,7 +274,7 @@ export function useSlideDeck({
         }),
       }));
     },
-    [commitDeck, isReadOnly],
+    [commitDeck, deckRef, isReadOnly],
   );
 
   const deleteSlide = useCallback(

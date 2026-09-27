@@ -141,6 +141,7 @@ import { useEditorUiState } from './editor-ui-state';
 import { useTabScope } from './useTabScope';
 import { useEditorPersistence } from './editor-persistence';
 import { useEditorRealtime } from './editor-realtime';
+import { useAssignRef, useLatest } from '@/hooks/ui/useLatest';
 
 // Activity-log past/future stacks share the cap with the
 // state-snapshot stack: we can't undo past what useDiagramHistory
@@ -195,11 +196,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // synchronous mutation.
   const entryHistoryRef = useRef<EntryHistory>(emptyEntryHistory());
   const historyTokenRef = useRef(0);
-  // Active-layer stamp for the commit choke point below (docs/specs/006-diagram/layers.md). A ref
-  // (not state): commitTabs is defined before the layers slice computes,
-  // so the slice refreshes this every render and the closure reads the
-  // latest value at commit time.
-  const activeLayerStampRef = useRef<{ tabId: string; layerId: string } | null>(null);
   const commitTabs = (mapTabs: (ts: Tab[]) => Tab[]): number => {
     const token = ++historyTokenRef.current;
     entryHistoryRef.current = entryHistoryPush(entryHistoryRef.current, token);
@@ -232,12 +228,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     });
     return token;
   };
-  // While a photo draft is open it OWNS the history (docs/specs/021-event-storming/event-storming.md Phase 8): the
-  // landing and every correction the author makes to a draft note are one
-  // gesture, ending at Add (the step stands) or Discard (it is thrown away).
-  // A ref, because `commit` / `markCheckpoint` are defined long before the
-  // draft hook and read it at call time.
-  const photoDraftOpenRef = useRef(false);
   const markCheckpoint = (): number => {
     // A gesture inside the draft (dragging a draft note) must not push a step
     // of its own, or Undo after Add would stop at that drag instead of taking
@@ -831,8 +821,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const pollCollaboratorsRef = useRef<readonly PollCandidate[]>([]);
   // Our collab key, for the poll's answers and host (docs/specs/012-collaboration/collab-race-hardening.md). A ref: the poll
   // hook's handlers stay stable while identity hydrates.
-  const pollSelfKeyRef = useRef(voteSelfId);
-  pollSelfKeyRef.current = voteSelfId;
+  const pollSelfKeyRef = useLatest(voteSelfId);
   const livePoll = useLivePoll({
     roomRef,
     sessionBlockedRef,
@@ -864,9 +853,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   }, []);
   // Reaction bursts (docs/specs/009-elements/reaction-pad.md): ephemeral, per-client, never document state.
   const reactions = useReactionBursts();
-  const receiveFocusRef = useRef<
-    ((from: string, tabId: string, at: { x: number; y: number }, zoom: number) => void) | null
-  >(null);
 
   // Who is running this session (docs/specs/012-collaboration/facilitator.md). Declared before the room
   // connection because the socket hands it every answer and asks it for the
@@ -881,7 +867,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     // announcement reads correctly.
     nameOf: (presenceId) => livePresence.find((p) => p.id === presenceId)?.name ?? 'Somebody',
   });
-  sessionBlockedRef.current = facilitator.sessionToolsBlocked;
+  useAssignRef(sessionBlockedRef, facilitator.sessionToolsBlocked);
 
   // The facilitator has freed an element we were holding (docs/specs/007-editor/live-app.md lock,
   // docs/specs/012-collaboration/facilitator.md). Only our socket is sent this, so there is no target id to check.
@@ -1182,10 +1168,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     [presentingStep],
   );
   // Read by the resize observer below, which must not re-subscribe per slide.
-  const presentingStepRef = useRef(presentingStep);
-  presentingStepRef.current = presentingStep;
-  const configRef = useRef(slideDeck.config);
-  configRef.current = slideDeck.config;
+  const presentingStepRef = useLatest(presentingStep);
+  const configRef = useLatest(slideDeck.config);
 
   // Where the editor was looking before the deck took over, so exiting puts it
   // back. Without this you left a presentation zoomed to whatever the last
@@ -1311,7 +1295,9 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     onCentreOn: centreOn,
     isAlreadyThere: (tabId, at, zoom) => tabId === activeId && isCentredOn(at, zoom),
   });
-  receiveFocusRef.current = focusInvite.receiveFocusHere;
+  const receiveFocusRef = useLatest<
+    ((from: string, tabId: string, at: { x: number; y: number }, zoom: number) => void) | null
+  >(focusInvite.receiveFocusHere);
 
   // Server capabilities (docs/specs/007-editor/ai-assistance.md). Fetched once at mount; determines
   // whether the AI panel option is shown in Settings and rendered.
@@ -1504,7 +1490,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // on this route now; the historical new-diagram welcome lives on
   // /live/new.
   const anyWelcomeOpen = identityOnlyScreenOpen;
-
   // --- Element-scoped history helpers (active-tab aware) -------------------
 
   // Single emission point for activity-log entries. Every editorial
@@ -1523,8 +1508,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // (a repeat edit folds into the newest entry only while that entry
   // is still ours). A ref, not the state value, so the emit callbacks
   // read the current list instead of a stale closure.
-  const changeLogRef = useRef(persistence.changeLog);
-  changeLogRef.current = persistence.changeLog;
+  const changeLogRef = useLatest(persistence.changeLog);
   const { emitChange, emitTabMeta } = useActivityLogEmitter({
     diagramId,
     selfParticipant,
@@ -1667,7 +1651,14 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     layerInertIds,
   } = layersState;
   // Refresh the commit choke point's stamp (see commitTabs above).
-  activeLayerStampRef.current = { tabId: activeId, layerId: activeLayerId };
+  // Active-layer stamp for the commit choke point below (docs/specs/006-diagram/layers.md). A ref
+  // (not state): commitTabs is defined before the layers slice computes,
+  // so the slice refreshes this every render and the closure reads the
+  // latest value at commit time.
+  const activeLayerStampRef = useLatest<{ tabId: string; layerId: string } | null>({
+    tabId: activeId,
+    layerId: activeLayerId,
+  });
 
   // Is this an event-storming board (docs/specs/021-event-storming/event-storming.md)? One layer, so this is just
   // tab data — it drives the palette, the stationery and the note menu.
@@ -1822,7 +1813,12 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // The hidden file input the palette row and the command-palette entry open.
   // Keep the history-ownership ref (declared beside `commit`) in step with
   // whether a draft is actually open.
-  photoDraftOpenRef.current = photoDraft.draftOpen;
+  // While a photo draft is open it OWNS the history (docs/specs/021-event-storming/event-storming.md Phase 8): the
+  // landing and every correction the author makes to a draft note are one
+  // gesture, ending at Add (the step stands) or Discard (it is thrown away).
+  // A ref, because `commit` / `markCheckpoint` are defined long before the
+  // draft hook and read it at call time.
+  const photoDraftOpenRef = useLatest(photoDraft.draftOpen);
   const photoImportAvailable = esBoard;
   // One draft at a time: while one is open the entry points say so rather
   // than starting a second import over the first.

@@ -17,6 +17,7 @@ import { ToggleSwitch } from '@/components/palette/palette-controls';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { track } from '@/lib/telemetry';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
+import { useLatest } from '@/hooks/ui/useLatest';
 
 // Assign Action dialog (docs/specs/012-collaboration/assigned-actions.md §2). The picker always offers a pinned
 // **Myself** row (the feature is not sign-in gated: a signed-out user can
@@ -110,7 +111,6 @@ export function AssignActionDialog({
     assignee,
     setAssignee,
   });
-
   // Re-seed per open: a reopened dialog must show the CURRENT action (or
   // the create defaults), never the previous attempt. Creating defaults
   // the name to the element's own text (selected, so typing replaces it)
@@ -120,8 +120,7 @@ export function AssignActionDialog({
   // selfRow via a ref so a late identity settle (Clerk name resolving
   // after the dialog opened) can't re-run the seed and wipe mid-typing
   // edits.
-  const selfRowRef = useRef(selfRow);
-  selfRowRef.current = selfRow;
+  const selfRowRef = useLatest(selfRow);
   useEffect(() => {
     if (!open) return;
     setName(existing?.name ?? elementLabel ?? '');
@@ -130,7 +129,7 @@ export function AssignActionDialog({
     setNotifyEmail(true);
     nameRef.current?.focus();
     nameRef.current?.select();
-  }, [open, existing, elementLabel]);
+  }, [open, existing, elementLabel, selfRowRef]);
 
   // Signed-out impression: the Myself-only picker with the sign-in
   // nudge. One emit per open so the funnel is measurable (docs/specs/017-telemetry/telemetry.md).
