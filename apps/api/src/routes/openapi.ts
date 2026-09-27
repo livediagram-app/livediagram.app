@@ -1,6 +1,6 @@
 import { buildOpenApiDocument } from '../openapi/document';
 import type { OpenApiDocument } from '../openapi/types';
-import { json, methodNotAllowed } from '../responses';
+import { json, methodNotAllowed, notFound } from '../responses';
 import type { RouteContext } from './context';
 
 // GET /api/openapi.json — the machine-readable OpenAPI 3.1 description of the
@@ -11,6 +11,7 @@ import type { RouteContext } from './context';
 let cached: OpenApiDocument | null = null;
 
 export function handleOpenapi(ctx: RouteContext): Response {
+  if (ctx.segments.length !== 2) return notFound();
   if (ctx.request.method !== 'GET') return methodNotAllowed();
   cached ??= buildOpenApiDocument();
   return json(cached, { headers: { 'Cache-Control': 'public, max-age=3600' } });

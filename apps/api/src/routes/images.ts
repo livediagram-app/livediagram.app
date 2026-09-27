@@ -32,7 +32,7 @@ import { gateGrant, requireOwner, type RouteContext } from './context';
 // not strictly positive, so callers treat "unset" and "0" and
 // "garbage" identically as "no cap" (the OSS self-host default per
 // docs/specs/009-elements/images.md).
-function parsePositiveCap(raw: string | undefined): number | null {
+export function parsePositiveCap(raw: string | undefined): number | null {
   if (!raw) return null;
   const n = Number.parseInt(raw, 10);
   if (!Number.isFinite(n) || n <= 0) return null;

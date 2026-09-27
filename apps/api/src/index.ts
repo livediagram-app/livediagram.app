@@ -267,7 +267,8 @@ export default {
           // Two model routes, one gate (docs/specs/007-editor/ai-assistance.md + docs/specs/021-event-storming/event-storming.md Phase 8): the
           // assistant at /api/ai, and the crop reader one segment deeper.
           if (segments[2] === undefined) return await handleAi(ctx);
-          if (segments[2] === 'read-notes') return await handleAiReadNotes(ctx);
+          if (segments[2] === 'read-notes' && segments.length === 3)
+            return await handleAiReadNotes(ctx);
           return notFound();
         case 'events':
           return await handleEvents(ctx);

@@ -9,8 +9,10 @@ import type { JsonSchema } from './types';
 // Drift guards for the OpenAPI surface (docs/specs/015-api/api-documentation.md). The worker dispatch is
 // segment-based and imperative, so the manifest is the declaration of the
 // surface and these tests pin it to reality: a route segment added to the
-// dispatch without a manifest entry, a schema reference that doesn't exist, or
-// a DTO change that wasn't regenerated all turn CI red.
+// dispatch without a manifest entry, a verb a segment's handlers compare
+// against, a schema reference that doesn't exist, or a DTO change that wasn't
+// regenerated all turn CI red. (method, path-template) parity against the
+// running dispatch lives in route-parity.test.ts.
 
 // The set of top-level resource segments the worker actually dispatches, read
 // straight from index.ts's `case '<segment>':` labels. Reading the source
@@ -146,11 +148,11 @@ describe('rate-limited operations declare 429', () => {
     // Paths are keyed unprefixed; `/api` lives on the servers entry.
     doc.paths[route.path]?.[route.method.toLowerCase()]?.responses ?? {};
 
-  it('covers every write except the telemetry ingest', () => {
+  it('covers every write except the telemetry ingest and the room-ticket mint', () => {
     const writes = ROUTE_MANIFEST.filter((r) => r.method !== 'GET');
     expect(writes.length).toBeGreaterThan(40);
     for (const route of writes) {
-      const expected = route.path !== '/events';
+      const expected = route.path !== '/events' && route.path !== '/diagrams/{id}/room-ticket';
       expect(Boolean(responsesFor(route)['429']), `${route.method} ${route.path}`).toBe(expected);
     }
   });
@@ -161,9 +163,7 @@ describe('rate-limited operations declare 429', () => {
     // cannot occur. `/unfurl` declares its own (per-IP, SSRF guard).
     for (const route of ROUTE_MANIFEST.filter((r) => r.method === 'GET')) {
       const expected =
-        route.tokenUsable === true ||
-        route.path === '/share/{code}' ||
-        route.statuses.includes(429);
+        route.tokenUsable === true || route.segment === 'share' || route.statuses.includes(429);
       expect(Boolean(responsesFor(route)['429']), `GET ${route.path}`).toBe(expected);
     }
   });
@@ -246,5 +246,22 @@ describe('buildOpenApiDocument', () => {
     }
     // Error envelope is always present for handlers to reference.
     expect(doc.components.schemas.Error).toBeDefined();
+  });
+
+  it('advertises the SVG snapshot endpoints as image/svg+xml, the rest as JSON', () => {
+    const doc = buildOpenApiDocument() as {
+      paths: Record<string, Record<string, { responses: Record<string, { content?: object }> }>>;
+    };
+    const svg = ROUTE_MANIFEST.filter((r) => r.responseMediaType === 'image/svg+xml');
+    expect(svg.map((r) => r.path).sort()).toEqual([
+      '/diagrams/{id}/thumbnail',
+      '/share/{code}/image.svg',
+    ]);
+    for (const route of svg) {
+      const ok = doc.paths[route.path]![route.method.toLowerCase()]!.responses['200']!;
+      expect(Object.keys(ok.content ?? {})).toEqual(['image/svg+xml']);
+    }
+    const json = doc.paths['/diagrams/{id}']!.get!.responses['200']!;
+    expect(Object.keys(json.content ?? {})).toEqual(['application/json']);
   });
 });

@@ -2,10 +2,10 @@
 // surface (docs/specs/015-api/api-documentation.md). Each entry names one endpoint's method, path template,
 // auth mode, summary, request/response body, and meaningful status codes. The
 // worker dispatch (index.ts → routes/*.ts) is segment-based and imperative, so
-// THIS array is the declaration of the surface, and `manifest.test.ts` pins it
-// to the real handlers: a new resource segment added to the dispatch without a
-// manifest entry (or a manifest entry for a segment that no longer dispatches)
-// turns CI red.
+// THIS array is the declaration of the surface, and `route-parity.test.ts` pins
+// it to the real handlers by probing the running dispatch: a path the worker
+// serves without a manifest entry (or a manifest entry the worker doesn't
+// serve) turns CI red.
 //
 // `requestSchema` / `responseSchema` are either a component name (a key of the
 // generated COMPONENT_SCHEMAS, itself derived from @livediagram/api-schema) or
@@ -46,6 +46,9 @@ export interface RouteSpec {
   query?: QueryParam[];
   requestSchema?: BodySchema;
   responseSchema?: BodySchema;
+  /** Media type of the success body. Defaults to `application/json`; the SVG
+   *  snapshot endpoints answer `image/svg+xml`. */
+  responseMediaType?: string;
   /** Meaningful status codes. The first 2xx is the success response; the rest
    *  are documented with the shared Error schema by document.ts. */
   statuses: number[];
@@ -249,6 +252,46 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
+    path: '/diagrams/{id}/tabs/{tabId}/qa',
+    segment: 'diagrams',
+    tag: 'Diagrams',
+    summary:
+      'Apply one action to a Q&A board element. Readers may add and vote; running the board needs edit access. The voter and author are derived from the caller, never read from the body.',
+    auth: 'guest-or-clerk',
+    requestSchema: {
+      type: 'object',
+      properties: {
+        elementId: { type: 'string' },
+        action: {
+          type: 'object',
+          description:
+            'One of: add { id, text, anonymous }; vote { noteId, on }; discuss { noteId | null }; done, reopen or remove { noteId }; clear.',
+          properties: {
+            type: { enum: ['add', 'vote', 'discuss', 'done', 'reopen', 'remove', 'clear'] },
+            id: { type: 'string' },
+            text: { type: 'string' },
+            anonymous: { type: 'boolean' },
+            noteId: { type: ['string', 'null'] },
+            on: { type: 'boolean' },
+          },
+          required: ['type'],
+        },
+      },
+      required: ['elementId', 'action'],
+    },
+    responseSchema: {
+      type: 'object',
+      properties: {
+        notes: { type: 'array', items: ref('QaNote') },
+        rev: { type: 'integer' },
+        voterId: { type: 'string' },
+      },
+      required: ['notes', 'rev', 'voterId'],
+    },
+    statuses: [200, 400, 401, 403, 404, 409, 413],
+  },
+  {
+    method: 'POST',
     path: '/diagrams/{id}/tabs/{tabId}/link',
     segment: 'diagrams',
     tag: 'Diagrams',
@@ -349,6 +392,35 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     tokenUsable: true,
     responseSchema: wrap('link', 'ShareLink'),
     statuses: [200, 400, 401, 403, 404],
+  },
+  {
+    method: 'GET',
+    path: '/diagrams/{id}/thumbnail',
+    segment: 'diagrams',
+    tag: 'Diagrams',
+    summary:
+      "The diagram's cached SVG snapshot (a tab-scoped share visitor gets their tab). Read-gated like GET /diagrams/{id}; 404 when there is no snapshot.",
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    query: [{ name: 'v', required: false, description: 'Cache-buster (the savedAt stamp).' }],
+    responseSchema: { type: 'string' },
+    responseMediaType: 'image/svg+xml',
+    statuses: [200, 404],
+  },
+  {
+    method: 'POST',
+    path: '/diagrams/{id}/room-ticket',
+    segment: 'diagrams',
+    tag: 'Diagrams',
+    summary:
+      'Mint a one-time ticket for opening the realtime room: pass it to the WebSocket upgrade as `?t=`. Same access policy as a read, share password included. Exempt from the write rate limit.',
+    auth: 'guest-or-clerk',
+    responseSchema: {
+      type: 'object',
+      properties: { ticket: { type: 'string' } },
+      required: ['ticket'],
+    },
+    statuses: [200, 404],
   },
   {
     method: 'GET',
@@ -669,6 +741,25 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
       required: ['diagram', 'role', 'tabId'],
     },
     statuses: [200, 401, 403, 404],
+  },
+  {
+    method: 'GET',
+    path: '/share/{code}/image.svg',
+    segment: 'share',
+    tag: 'Sharing',
+    summary:
+      'Live image: the shared diagram as SVG, embeddable by a bare <img>. Public by share code; a password-protected share has no image.',
+    auth: 'public',
+    query: [
+      {
+        name: 'tab',
+        required: false,
+        description: "Tab id; defaults to the first tab (or the link's own tab).",
+      },
+    ],
+    responseSchema: { type: 'string' },
+    responseMediaType: 'image/svg+xml',
+    statuses: [200, 404],
   },
 
   // ---- Participants ----

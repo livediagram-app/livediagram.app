@@ -159,8 +159,8 @@ async function collectMeta(res: Response, maxBytes: number): Promise<CollectedMe
 }
 
 export async function handleUnfurl(ctx: RouteContext): Promise<Response> {
-  const { request, env, url } = ctx;
-  if (request.method !== 'GET') return notFound();
+  const { request, env, url, segments } = ctx;
+  if (segments.length !== 2 || request.method !== 'GET') return notFound();
 
   // Per-IP throttle: it's an unauthenticated outbound fetch, so bound abuse.
   if (env.UNFURL_RATE_LIMITER) {

@@ -108,4 +108,6 @@ Two environments run that same sequence, from one reusable workflow (`deploy-reu
 
 Staging exists mainly so a D1 migration runs against a real remote database one deploy before it reaches the one holding people's diagrams. It is public but `noindex` (the router stamps `X-Robots-Tag` when its `DEPLOY_ENV` is `staging`). See [Staging environment](../specs/016-platform/staging-environment.md).
 
+Both environments also get the **hosted profile** (`apps/api/hosted-vars.json`: telemetry on, per-owner image caps), which the workflow adds with `wrangler deploy --var` only in livediagram.app's own repository and then reads back off the live api worker. A fork deploys the committed config alone, so it is telemetry-off and uncapped. See [Deployment](../specs/016-platform/deployment.md) "Hosted profile".
+
 See [Self-hosting](../operations/self-hosting.md) for the step-by-step, and [Deployment](../specs/016-platform/deployment.md) for the deeper deployment contract.

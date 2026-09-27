@@ -2,14 +2,17 @@ name = "livediagram-api"
 main = "src/index.ts"
 compatibility_date = "2026-05-29"
 
-# Plain (non-secret) vars. TELEMETRY_ENABLED gates the anonymous,
+# Plain (non-secret) vars. Everything here is every fork's default too, so
+# what only livediagram.app runs with is NOT here: TELEMETRY_ENABLED and the
+# image gallery caps live in `hosted-vars.json`, which the deploy workflow adds
+# with `wrangler deploy --var` on livediagram.app's own repository only, and
+# then verifies on the live worker (docs/specs/016-platform/deployment.md
+# "Hosted profile"). A fork is therefore telemetry-off and uncapped until it
+# opts in, by declaring the var here. TELEMETRY_ENABLED gates the anonymous,
 # first-party product analytics + the public /telemetry dashboard
-# (docs/specs/017-telemetry/telemetry.md). "true" turns it on; anything else (or absent) keeps it
-# fully off, which is the self-host / OSS-fork default, so a fork
-# never ingests or serves analytics unless it opts in. Not a secret,
-# so it lives here in the open.
+# (docs/specs/017-telemetry/telemetry.md): "true" turns it on; anything else,
+# or absent, keeps it fully off.
 [vars]
-TELEMETRY_ENABLED = "true"
 
 # Origin allow-list for POST /api/ai (docs/specs/007-editor/ai-assistance.md). Stated HERE, not in the
 # Cloudflare dashboard, for the reason docs/specs/016-platform/staging-environment.md calls a known sharp edge: a
@@ -183,20 +186,19 @@ simple = { limit = 120, period = 60 }
 
 # Per-owner soft caps on the image gallery (docs/specs/009-elements/images.md). Both default to
 # "no limit" so OSS self-host operators run their own storage budget;
-# hosted livediagram.app sets both so a single owner can't drain the
-# R2 bucket. POST /api/images returns 403 { error: "gallery-full" }
-# once either cap is reached:
+# hosted livediagram.app sets both, through `hosted-vars.json` (see the top of
+# this file), so a single owner can't drain the R2 bucket. POST /api/images
+# returns 403 { error: "gallery_full" } once either cap is reached:
 #
 #   - IMAGE_MAX_PER_OWNER: maximum number of image rows one owner
-#     may keep in the gallery. Hosted livediagram.app sets this to
-#     "100".
+#     may keep in the gallery. Hosted: "100".
 #   - IMAGE_MAX_BYTES_PER_OWNER: maximum total byte_size summed
-#     across one owner's images. Hosted livediagram.app sets this
-#     to "104857600" (100 MB).
+#     across one owner's images. Hosted: "104857600" (100 MB).
 #
-# Plain [vars] entries; values are decimal strings parsed via
-# parseInt at request time. Unset, blank, "0", or non-numeric values
-# all read as "no limit".
+# Plain vars; values are decimal strings parsed via parseInt at request time.
+# Unset, blank, "0", or non-numeric values all read as "no limit". A self-host
+# sets them in [vars] above, never only in the Cloudflare dashboard: every
+# `wrangler deploy` replaces the worker's plain vars with the ones it declares.
 
 # RESEND_API_KEY + RESEND_FROM + APP_BASE_URL drive transactional &
 # lifecycle email (docs/specs/014-identity/transactional-email.md). All optional; an absent RESEND_API_KEY makes
@@ -290,11 +292,10 @@ simple = { limit = 120, period = 60 }
 [env.staging]
 name = "livediagram-api-staging"
 
+# TELEMETRY_ENABLED and the image caps come from `hosted-vars.json`, exactly as
+# for production (see the top of this file). Staging's events land in its own D1,
+# on STAGING's /telemetry dashboard, never in production's published numbers.
 [env.staging.vars]
-TELEMETRY_ENABLED = "true"
-# Staging emits into its own D1, so the events land on STAGING's /telemetry
-# dashboard and never in production's published numbers.
-
 # Links in staging email point back at staging (docs/specs/014-identity/transactional-email.md). Without this a
 # welcome email sent from a staging test lands someone on production.
 APP_BASE_URL = "https://staging.livediagram.app"
