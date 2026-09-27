@@ -45,6 +45,20 @@ afterEach(() => {
 });
 
 describe('SettingsDialog', () => {
+  it('shows Minimal Chrome only while power user mode is on', () => {
+    setViewport(false);
+    const { onChange } = renderDialog();
+    expect(screen.queryByRole('switch', { name: 'Minimal Chrome' })).toBeNull();
+    fireEvent.click(screen.getByRole('switch', { name: 'Power User Mode' }));
+    const next = onChange.mock.calls[0]![0] as UserPreferences;
+    expect(next.powerUserMode).toBe(true);
+    expect(next.panelLayout).toBe('toolbar');
+    cleanup();
+    renderDialog(next);
+    expect(screen.getByRole('switch', { name: 'Minimal Chrome' })).toBeTruthy();
+  });
+
+
   it('opens on desktop with the rail and the first category already showing', () => {
     setViewport(false);
     renderDialog();
