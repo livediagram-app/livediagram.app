@@ -453,6 +453,8 @@ export * from './event-storming-lanes';
 export * from './event-storming-lane-landing';
 export * from './event-storming-next';
 export * from './event-storming-photo';
+export * from './whiteboard';
+export * from './whiteboard-stroke';
 export * from './graph-authoring';
 export * from './mermaid';
 export * from './duplicate';

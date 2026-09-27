@@ -149,10 +149,13 @@ export function svgFreehandShape(el: FreehandElement, stroke: string, fill: stri
       ` stroke-linecap="round" stroke-linejoin="round"/>`
     );
   }
+  // A recorded pen width (a whiteboard pen, docs/specs/023-whiteboard/whiteboard.md) wins over the preset.
   const strokeWidth =
-    BORDER_STROKE_PX[
+    el.penWidth ??
+    (BORDER_STROKE_PX[
       (el as { strokeWidth?: keyof typeof BORDER_STROKE_PX }).strokeWidth ?? 'medium'
-    ] || 2;
+    ] ||
+      2);
   const dash =
     BORDER_DASH_ARRAY[
       (el as { strokeStyle?: keyof typeof BORDER_DASH_ARRAY }).strokeStyle ?? 'solid'

@@ -114,7 +114,9 @@ export function FreehandSvg({
           (element.closed ? ' Z' : '')
         : catmullRomToBezierPath(vbPoints, element.closed);
   const dasharray = BORDER_DASH_ARRAY[element.strokeStyle ?? DEFAULT_BORDER_STYLE];
-  const widthPx = BORDER_STROKE_PX[element.strokeWidth ?? DEFAULT_BORDER_STROKE];
+  // A recorded pen width (a whiteboard pen, docs/specs/023-whiteboard/whiteboard.md) wins over the preset.
+  const widthPx =
+    element.penWidth ?? BORDER_STROKE_PX[element.strokeWidth ?? DEFAULT_BORDER_STROKE];
   // Highlighter recipe (docs/specs/008-canvas/highlighter.md): the marker owns width + translucency
   // (fixed wide round stroke, multiply blend, never filled) so the
   // border-preset widths and dash styles don't apply. Kept in sync
