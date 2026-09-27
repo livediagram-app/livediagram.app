@@ -73,7 +73,8 @@ export function ActionPanelFace({
         </div>
       ) : (
         <>
-          <div className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto px-2.5 pb-1">
+          {/* touch-none: see CollabPanel's body; a scroller resets touch-action. */}
+          <div className="flex min-h-0 flex-1 touch-none flex-col gap-1 overflow-y-auto px-2.5 pb-1">
             <span
               className={`break-words text-[13px] font-semibold leading-snug ${
                 done ? 'line-through' : ''

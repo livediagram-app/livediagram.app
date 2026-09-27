@@ -75,7 +75,8 @@ export function CommentPanelFace({
         </span>
       </span>
 
-      <div className="flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto px-2.5 pb-1">
+      {/* touch-none: see CollabPanel's body; a scroller resets touch-action. */}
+      <div className="flex min-h-0 flex-1 touch-none flex-col gap-1.5 overflow-y-auto px-2.5 pb-1">
         {comments.length === 0 ? (
           <span className="text-[10px] italic opacity-50">
             Nothing yet. Say what this is about.
