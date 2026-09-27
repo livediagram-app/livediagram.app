@@ -1,89 +1,101 @@
-import { describe, expect, it } from 'vitest';
-import { fakeD1 } from '../test-d1';
-import { diagramReferencesImage, unusedImageIds } from './images';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { applyMigration } from '../test-sqlite-d1';
+import { resetImageRefIndexMemo } from './image-refs';
+import { diagramReferencesImage, imageUsageByOwner } from './images';
+import { upsertTab } from './tabs';
+import { diagram, refsFor, setup, tabWith } from './test-image-fixtures';
 
-// unusedImageIds is the pure decision behind the daily unused-image
-// sweep (docs/specs/009-elements/images.md "Retention"): given the candidate ids (already
-// filtered to "older than the 30-day floor") and every tab body in the
-// store, it returns the ids no diagram references — the set safe to
-// delete. The R2 + D1 delete loop needs a live binding to test, but
-// this is where the "is it actually unused" correctness lives.
+// The usage map and the share-visitor read (docs/specs/009-elements/images.md,
+// "Reference index"): both answer from the index, never a tab body.
 
-const tabWithImages = (...imageIds: (string | null)[]): string =>
-  JSON.stringify({
-    id: 'tab-1',
-    name: 'Tab',
-    elements: imageIds.map((imageId, i) => ({
-      id: `el-${i}`,
-      type: 'image',
-      x: 0,
-      y: 0,
-      width: 10,
-      height: 10,
-      imageId,
-    })),
-  });
+afterEach(() => {
+  resetImageRefIndexMemo();
+  vi.restoreAllMocks();
+});
 
-describe('unusedImageIds', () => {
-  it('returns every candidate when no tab references any of them', () => {
-    const tabs = [tabWithImages('other-1'), tabWithImages('other-2')];
-    expect(unusedImageIds(['a', 'b'], tabs).sort()).toEqual(['a', 'b']);
-  });
-
-  it('drops a candidate referenced by any tab', () => {
-    const tabs = [tabWithImages('a'), tabWithImages('other')];
-    expect(unusedImageIds(['a', 'b'], tabs)).toEqual(['b']);
-  });
-
-  it('keeps a candidate referenced by a tab from another owner (store-wide scan)', () => {
-    // The scan is store-wide on purpose: a shared tab (docs/specs/006-diagram/tab-diagram-many-to-many.md) can
-    // place an image inside another owner's diagram. A referenced image
-    // is never reaped, whoever's tab it lives in.
-    const tabs = [tabWithImages('a')];
-    expect(unusedImageIds(['a'], tabs)).toEqual([]);
-  });
-
-  it('returns nothing when there are no candidates', () => {
-    expect(unusedImageIds([], [tabWithImages('a')])).toEqual([]);
-  });
-
-  it('treats an unparseable tab body as no reference (never reaps a referenced image)', () => {
-    // A malformed tab can only fail to clear a candidate; it can never
-    // remove a real reference, so it errs toward keeping bytes.
-    expect(unusedImageIds(['a'], ['{not json', tabWithImages('a')])).toEqual([]);
-    expect(unusedImageIds(['a'], ['{not json']).sort()).toEqual(['a']);
-  });
-
-  it('ignores image elements with a null imageId (unattached placeholders)', () => {
-    expect(unusedImageIds(['a'], [tabWithImages(null)])).toEqual(['a']);
-  });
-
-  it('ignores non-image elements that happen to carry an imageId-like field', () => {
-    const tab = JSON.stringify({
-      id: 'tab-1',
-      name: 'Tab',
-      elements: [{ id: 'e1', type: 'shape', x: 0, y: 0, width: 1, height: 1, imageId: 'a' }],
+describe('imageUsageByOwner', () => {
+  it("maps each image to the owner's diagrams that place it, once each, by name", async () => {
+    const db = setup();
+    diagram(db.sql, 'A', 'owner', 'Zebra');
+    diagram(db.sql, 'B', 'owner', 'Apple');
+    diagram(db.sql, 'C', 'other', 'Theirs');
+    await upsertTab(db.env, 'A', tabWith('t1', 'shared-img', 'a-only'), 0);
+    await upsertTab(db.env, 'A', tabWith('t2', 'shared-img'), 1);
+    await upsertTab(db.env, 'B', tabWith('t3', 'shared-img'), 0);
+    await upsertTab(db.env, 'C', tabWith('t4', 'a-only'), 0);
+    expect(await imageUsageByOwner(db.env, 'owner')).toEqual({
+      'shared-img': [
+        { id: 'B', name: 'Apple' },
+        { id: 'A', name: 'Zebra' },
+      ],
+      'a-only': [{ id: 'A', name: 'Zebra' }],
     });
-    expect(unusedImageIds(['a'], [tab])).toEqual(['a']);
+  });
+
+  it('reads the index, never a body, once the index is complete', async () => {
+    const db = setup();
+    diagram(db.sql, 'A');
+    await upsertTab(db.env, 'A', tabWith('t1', 'img'), 0);
+    db.sql.exec('DELETE FROM image_refs');
+    expect(await imageUsageByOwner(db.env, 'owner')).toEqual({});
+  });
+
+  it("indexes the owner's tabs first while the backfill is incomplete", async () => {
+    const db = setup({ before0050: true });
+    diagram(db.sql, 'A');
+    db.sql.exec(
+      `INSERT INTO tabs (id, name, data, updated_at) VALUES ('t1', 't1', '${JSON.stringify(tabWith('t1', 'img'))}', 0)`,
+    );
+    db.sql.exec(
+      "INSERT INTO diagram_tabs (diagram_id, tab_id, order_index, added_at) VALUES ('A', 't1', 0, 0)",
+    );
+    applyMigration(db.sql, '0050');
+    expect(await imageUsageByOwner(db.env, 'owner')).toEqual({ img: [{ id: 'A', name: 'A' }] });
+    expect(refsFor(db.sql, 'img')).toBe(1);
   });
 });
 
-// docs/specs/013-workspace/tab-scoped-share-links.md: a tab-scoped visitor may read an image only when
-// THEIR tab uses it, so the lookup narrows to that tab.
+// docs/specs/013-workspace/tab-scoped-share-links.md: a tab-scoped visitor
+// may read an image only when THEIR tab uses it.
 describe('diagramReferencesImage', () => {
-  const tabData = JSON.stringify({
-    elements: [{ id: 'e1', type: 'image', imageId: 'i1', x: 0, y: 0, width: 1, height: 1 }],
-  });
+  async function twoTabs() {
+    const db = setup();
+    diagram(db.sql, 'A');
+    diagram(db.sql, 'B');
+    await upsertTab(db.env, 'A', tabWith('t1', 'i1'), 0);
+    await upsertTab(db.env, 'A', tabWith('t2', 'i2'), 1);
+    await upsertTab(db.env, 'B', tabWith('t3', 'i3'), 0);
+    return db;
+  }
 
-  it('looks across every tab by default', async () => {
-    const db = fakeD1(() => ({ all: [{ data: tabData }] }));
-    expect(await diagramReferencesImage(db.env, 'd1', 'i1')).toBe(true);
-    expect(db.one('FROM diagram_tabs dt').sql).not.toContain('dt.tab_id = ?');
+  it('looks across every tab of the diagram by default', async () => {
+    const db = await twoTabs();
+    expect(await diagramReferencesImage(db.env, 'A', 'i2')).toBe(true);
+    expect(await diagramReferencesImage(db.env, 'A', 'i3')).toBe(false);
   });
 
   it('looks at one tab when scoped', async () => {
-    const db = fakeD1(() => ({ all: [] }));
-    expect(await diagramReferencesImage(db.env, 'd1', 'i1', 't2')).toBe(false);
-    expect(db.one('FROM diagram_tabs dt').bindings).toEqual(['d1', 't2']);
+    const db = await twoTabs();
+    expect(await diagramReferencesImage(db.env, 'A', 'i1', 't1')).toBe(true);
+    expect(await diagramReferencesImage(db.env, 'A', 'i2', 't1')).toBe(false);
+  });
+
+  it('answers from the index once it is complete', async () => {
+    const db = await twoTabs();
+    db.sql.exec('DELETE FROM image_refs');
+    expect(await diagramReferencesImage(db.env, 'A', 'i1')).toBe(false);
+  });
+
+  it("indexes the diagram's tabs first while the backfill is incomplete", async () => {
+    const db = setup({ before0050: true });
+    diagram(db.sql, 'A');
+    db.sql.exec(
+      `INSERT INTO tabs (id, name, data, updated_at) VALUES ('t1', 't1', '${JSON.stringify(tabWith('t1', 'img'))}', 0)`,
+    );
+    db.sql.exec(
+      "INSERT INTO diagram_tabs (diagram_id, tab_id, order_index, added_at) VALUES ('A', 't1', 0, 0)",
+    );
+    applyMigration(db.sql, '0050');
+    expect(await diagramReferencesImage(db.env, 'A', 'img')).toBe(true);
   });
 });

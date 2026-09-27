@@ -6,7 +6,9 @@ import { remapTabLinks, type Element } from '@livediagram/diagram';
 import { rowToTabSummary, type TabRow } from '../tab-row';
 import type { DiagramDTO, DiagramSummary, Env, TabSummaryDTO } from '../types';
 import { getParticipant } from './participants';
+import { imageRefIdsFromData } from '../image-refs/extract';
 import { collabIndexCopyStatements } from './collab-index';
+import { imageRefAddStatements } from './image-refs';
 import { diagramRemovalStatements } from './diagram-removal';
 
 type DiagramRow = {
@@ -381,6 +383,9 @@ export async function copyDiagram(
       // data, so its index rows are copied the same way, without a
       // parse (docs/specs/013-workspace/activity-page.md §2.1).
       ...collabIndexCopyStatements(env, row.id, freshTabId),
+      // Image references from the copied body itself, not the source rows, so
+      // a copy is indexed even if its source never was.
+      ...imageRefAddStatements(env, freshTabId, imageRefIdsFromData(data)),
     ];
   });
   if (inserts.length > 0) await env.DB.batch(inserts);
