@@ -47,7 +47,7 @@ export function SettingsCategoryIcon({ id }: { id: SettingsCategoryId }) {
       aria-hidden
       className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-[7px] text-white ${TILE[id]}`}
     >
-      {GLYPHS[id]}
+      {CATEGORY_GLYPHS[id]}
     </span>
   );
 }
@@ -115,8 +115,8 @@ const PanelsGlyph = (
 // Notifications: a bell.
 const NotificationsGlyph = (
   <Svg>
-    <path d="M6 8.5a4 4 0 0 1 8 0c0 3 1.2 4.2 1.7 4.7a.5.5 0 0 1-.35.85H4.65a.5.5 0 0 1-.35-.85C4.8 12.7 6 11.5 6 8.5Z" />
-    <path d="M8.5 16.5a1.8 1.8 0 0 0 3 0" />
+    <path d="M6 7.5a4 4 0 0 1 8 0c0 3 1.2 4.2 1.7 4.7a.5.5 0 0 1-.35.85H4.65a.5.5 0 0 1-.35-.85C4.8 11.7 6 10.5 6 7.5Z" />
+    <path d="M8.5 15.5a1.8 1.8 0 0 0 3 0" />
   </Svg>
 );
 
@@ -135,8 +135,8 @@ const AccessibilityGlyph = (
 // AI: a spark.
 const AiGlyph = (
   <Svg>
-    <path d="M10 2.5c.6 3.4 1.6 4.4 5 5-3.4.6-4.4 1.6-5 5-.6-3.4-1.6-4.4-5-5 3.4-.6 4.4-1.6 5-5Z" />
-    <path d="M15.5 13.5c.25 1.4.65 1.8 2 2-1.35.25-1.75.65-2 2-.25-1.35-.65-1.75-2-2 1.35-.2 1.75-.6 2-2Z" />
+    <path d="M8.75 2.5c.6 3.4 1.6 4.4 5 5-3.4.6-4.4 1.6-5 5-.6-3.4-1.6-4.4-5-5 3.4-.6 4.4-1.6 5-5Z" />
+    <path d="M14.25 13.5c.25 1.4.65 1.8 2 2-1.35.25-1.75.65-2 2-.25-1.35-.65-1.75-2-2 1.35-.2 1.75-.6 2-2Z" />
   </Svg>
 );
 
@@ -148,7 +148,7 @@ const PrivacyGlyph = (
   </Svg>
 );
 
-const GLYPHS: Record<SettingsCategoryId, ReactNode> = {
+export const CATEGORY_GLYPHS: Record<SettingsCategoryId, ReactNode> = {
   account: AccountGlyph,
   editor: EditorGlyph,
   appearance: AppearanceGlyph,
