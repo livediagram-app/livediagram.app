@@ -9,6 +9,8 @@ import { useRef, type PointerEvent } from 'react';
 import { BorderStrokeIcon, BorderStyleIcon } from '@/components/palette/palette-icons';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { useQuickStylePlacement } from '@/hooks/ui/useQuickStylePlacement';
+import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
+import type { QuickStyleLayout } from '@/lib/quick-style-placement';
 import {
   QUICK_ICON_ALIGNS,
   QUICK_TEXT_ALIGNS,
@@ -58,9 +60,13 @@ const stop = (e: PointerEvent | React.MouseEvent) => e.stopPropagation();
 export function QuickStylePanel({
   quickStyle,
   hidden,
+  layout,
   showTitles = true,
 }: {
   quickStyle: QuickStyleApi;
+  // Floating docks it under the Palette in the Palette's own panel dress;
+  // Toolbar and Minimal keep it compact on the right edge.
+  layout: QuickStyleLayout;
   // Zen, embeds, presenting, or a context menu open: the panel stands down.
   hidden: boolean;
   // Power user mode may hide the section titles; the rows keep their names.
@@ -70,8 +76,9 @@ export function QuickStylePanel({
   const { view } = quickStyle;
   const active = !hidden && !isMobile && view !== null;
   const panelRef = useRef<HTMLDivElement>(null);
-  const spot = useQuickStylePlacement(panelRef, active);
+  const spot = useQuickStylePlacement(panelRef, active, layout);
   if (!active) return null;
+  const docked = layout === 'floating';
 
   return (
     <div
@@ -80,6 +87,10 @@ export function QuickStylePanel({
       aria-label="Quick style"
       data-quick-style-panel=""
       data-testid="quick-style-panel"
+      data-layout={layout}
+      // Docked, it is one of the floating panels, so the panel-opacity
+      // preference (docs/specs/007-editor/user-preferences.md) applies to it as to the Palette above.
+      data-panel-translucent={docked ? '' : undefined}
       onPointerDown={stop}
       onDoubleClick={stop}
       onContextMenu={(e) => {
@@ -88,33 +99,53 @@ export function QuickStylePanel({
       }}
       style={
         spot
-          ? { left: spot.left, top: spot.top }
+          ? {
+              left: spot.left,
+              top: spot.top,
+              ...(spot.width ? { width: spot.width } : {}),
+              ...(spot.maxHeight ? { maxHeight: spot.maxHeight } : {}),
+            }
           : // Measured before paint; hidden until then so it never flashes
             // in the wrong spot.
             { left: 0, top: 0, visibility: 'hidden' }
       }
-      className="pointer-events-auto fixed z-[var(--z-panel)] flex w-52 flex-col gap-2.5 rounded-lg border border-slate-200 bg-white p-2 shadow-lg shadow-slate-900/5 motion-safe:animate-fade-in dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40"
+      className={`pointer-events-auto fixed z-[var(--z-panel)] flex w-52 flex-col rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 motion-safe:animate-fade-in dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40 ${docked ? '' : 'gap-2.5 p-2'}`}
     >
-      <QuickStyleSections view={view} quickStyle={quickStyle} showTitles={showTitles} />
-      <div className="flex flex-col gap-1 border-t border-slate-200 pt-2 dark:border-slate-800">
-        {showTitles ? (
-          <span
-            aria-hidden
-            className="select-none px-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
-          >
-            Actions
+      {docked ? (
+        // The Palette's header language (MovablePanelHeader), minus the drag
+        // and collapse: the panel follows the Palette rather than moving itself.
+        <div className="flex items-center justify-between gap-2 rounded-t-lg border-b border-slate-200 px-2 pb-1.5 pt-2 dark:border-slate-800">
+          <span className="select-none text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-200">
+            Quick style
           </span>
-        ) : null}
-        <div role="group" aria-label="Actions">
-          <button
-            type="button"
-            onClick={quickStyle.clearStyles}
-            data-testid="quick-style-clear"
-            className="flex h-7 w-full items-center justify-center gap-1.5 rounded-md text-xs font-medium text-slate-700 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:text-slate-200 dark:hover:bg-slate-800"
-          >
-            <ClearStylesGlyph />
-            Clear styles
-          </button>
+          <HelpArticleLink article="quickStylePanel" />
+        </div>
+      ) : null}
+      <div
+        data-quick-style-body=""
+        className={docked ? 'flex min-h-0 flex-col gap-2.5 overflow-y-auto p-2.5' : 'contents'}
+      >
+        <QuickStyleSections view={view} quickStyle={quickStyle} showTitles={showTitles} />
+        <div className="flex flex-col gap-1 border-t border-slate-200 pt-2 dark:border-slate-800">
+          {showTitles ? (
+            <span
+              aria-hidden
+              className="select-none px-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
+            >
+              Actions
+            </span>
+          ) : null}
+          <div role="group" aria-label="Actions">
+            <button
+              type="button"
+              onClick={quickStyle.clearStyles}
+              data-testid="quick-style-clear"
+              className="flex h-7 w-full items-center justify-center gap-1.5 rounded-md text-xs font-medium text-slate-700 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:text-slate-200 dark:hover:bg-slate-800"
+            >
+              <ClearStylesGlyph />
+              Clear styles
+            </button>
+          </div>
         </div>
       </div>
     </div>

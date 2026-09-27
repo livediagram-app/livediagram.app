@@ -5,7 +5,7 @@
 // names repeated by a Tooltip. Arrow keys move and choose, one tab stop a row.
 
 import { useRef, type KeyboardEvent, type ReactNode } from 'react';
-import { Tooltip } from '@/components/primitives/Tooltip';
+import { Tooltip } from '@livediagram/ui';
 
 export type QuickOption<V> = {
   value: V;
@@ -70,12 +70,12 @@ export function QuickRadioRow<V extends string | number>({
         role="radiogroup"
         aria-label={title}
         data-testid={testId}
-        className={isSwatchRow ? 'flex gap-1' : 'grid grid-cols-3 gap-1'}
+        className={isSwatchRow ? 'flex justify-between gap-1' : 'grid grid-cols-3 gap-1'}
       >
         {options.map((o, i) => {
           const checked = i === checkedIndex;
           return (
-            <Tooltip key={String(o.value)} title={o.name} block={!isSwatchRow}>
+            <Tooltip key={String(o.value)} label={o.name}>
               <button
                 ref={(node) => {
                   refs.current[i] = node;

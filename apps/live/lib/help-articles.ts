@@ -30,6 +30,7 @@ export const HELP_ARTICLES = {
   embedElements: 'palette/embed-elements',
   alignmentGuides: 'palette/alignment-guides',
   panelOpacity: 'palette/panel-opacity',
+  quickStylePanel: 'canvas/quick-style-panel',
   quickAddOnHover: 'palette/quick-add-on-hover',
   isometricMode: 'selection-modes/isometric-mode',
   // One key per tool panel, so every mode's panel can point at the article
@@ -131,6 +132,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   panelOpacity: {
     title: 'Learn about panel opacity',
     description: 'Make the floating panels translucent so the canvas shows through.',
+  },
+  quickStylePanel: {
+    title: 'Learn about the quick style panel',
+    description: 'One-click colours and lines, and how the next shape remembers them.',
   },
   quickAddOnHover: {
     title: 'Learn about quick-add on hover',
