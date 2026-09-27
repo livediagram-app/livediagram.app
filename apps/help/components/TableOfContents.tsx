@@ -57,12 +57,14 @@ export function TableOfContents() {
             <li key={item.id}>
               <a
                 href={`#${item.id}`}
-                className={`flex items-center gap-2.5 py-1 text-sm transition-colors hover:text-brand-700 ${
-                  item.level === 3 ? 'pl-7 text-slate-400 hover:text-slate-600' : 'text-slate-600'
+                className={`flex items-center gap-2.5 py-1 text-sm transition-colors hover:text-brand-700 dark:hover:text-brand-200 ${
+                  item.level === 3
+                    ? 'pl-7 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+                    : 'text-slate-600 dark:text-slate-300'
                 }`}
               >
                 {item.level === 2 && (
-                  <span className="mr-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-brand-100 text-xs font-bold text-brand-700">
+                  <span className="mr-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-brand-100 text-xs font-bold text-brand-700 dark:bg-brand-500/20 dark:text-brand-300">
                     {h2Index}
                   </span>
                 )}

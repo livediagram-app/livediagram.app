@@ -2,7 +2,12 @@ import type { MDXComponents } from 'mdx/types';
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { articles, categories, articleHref, categoryHref } from '@/lib/articles';
-import { FEATURE_FALLBACK_HEX, featureColour } from '@/lib/featureColours';
+import {
+  FEATURE_FALLBACK_HEX,
+  FEATURE_TILE_CLASS,
+  featureColour,
+  featureTileStyle,
+} from '@/lib/featureColours';
 import { featureIcon } from '@/lib/featureIcons';
 import { Figure } from './components/Figure';
 
@@ -12,7 +17,7 @@ function Step({ n, children }: { n: number; children: ReactNode }) {
   return (
     <div className="step-item mb-6 flex gap-4">
       <div
-        className="step-number flex h-8 flex-shrink-0 items-center justify-center rounded-lg bg-brand-100 px-2.5 text-xs font-semibold text-brand-700"
+        className="step-number flex h-8 flex-shrink-0 items-center justify-center rounded-lg bg-brand-100 px-2.5 text-xs font-semibold text-brand-700 dark:bg-brand-500/20 dark:text-brand-300"
         data-n={n}
       />
       <div className="flex-1 pt-0.5">{children}</div>
@@ -23,9 +28,9 @@ function Step({ n, children }: { n: number; children: ReactNode }) {
 /** Tip callout box (brand-toned). */
 function Tip({ children }: { children: ReactNode }) {
   return (
-    <div className="my-5 flex gap-3 rounded-xl border border-brand-200 bg-brand-50 p-4">
+    <div className="my-5 flex gap-3 rounded-xl border border-brand-200 bg-brand-50 p-4 dark:border-brand-500/30 dark:bg-brand-500/15">
       <svg
-        className="mt-0.5 h-5 w-5 flex-shrink-0 text-brand-500"
+        className="mt-0.5 h-5 w-5 flex-shrink-0 text-brand-500 dark:text-brand-300"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -38,7 +43,9 @@ function Tip({ children }: { children: ReactNode }) {
           d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
         />
       </svg>
-      <div className="text-sm leading-relaxed text-slate-600 [&>p]:mb-0">{children}</div>
+      <div className="text-sm leading-relaxed text-slate-600 dark:text-slate-300 [&>p]:mb-0">
+        {children}
+      </div>
     </div>
   );
 }
@@ -46,7 +53,7 @@ function Tip({ children }: { children: ReactNode }) {
 /** Warning / important callout box (amber). */
 function Note({ children }: { children: ReactNode }) {
   return (
-    <div className="my-5 flex gap-3 rounded-xl border border-amber-300 bg-amber-50 p-4">
+    <div className="my-5 flex gap-3 rounded-xl border border-amber-300 bg-amber-50 p-4 dark:border-amber-500/50 dark:bg-amber-500/10">
       <svg
         className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-500"
         fill="none"
@@ -61,7 +68,9 @@ function Note({ children }: { children: ReactNode }) {
           d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
         />
       </svg>
-      <div className="text-sm leading-relaxed text-slate-600 [&>p]:mb-0">{children}</div>
+      <div className="text-sm leading-relaxed text-slate-600 dark:text-slate-300 [&>p]:mb-0">
+        {children}
+      </div>
     </div>
   );
 }
@@ -90,22 +99,26 @@ function Feature({ slug, title, children }: { slug?: string; title: string; chil
 
   const card = (
     <div
-      className={`h-full rounded-xl border border-slate-200 bg-white p-4 ${
-        href ? 'transition-colors hover:border-brand-300 hover:bg-brand-50/40' : ''
+      className={`h-full rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900 ${
+        href
+          ? 'transition-colors hover:border-brand-300 hover:bg-brand-50/40 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10'
+          : ''
       }`}
     >
       <div className="flex items-start gap-3">
         {icon && (
           <div
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
-            style={{ backgroundColor: `${colour}1f`, color: colour }}
+            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${FEATURE_TILE_CLASS}`}
+            style={featureTileStyle(colour)}
           >
             {icon}
           </div>
         )}
         <div className="min-w-0 flex-1">
-          <p className="mb-1 text-sm font-semibold text-slate-900">{title}</p>
-          <div className="text-sm leading-relaxed text-slate-500 [&>p]:mb-0">{children}</div>
+          <p className="mb-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{title}</p>
+          <div className="text-sm leading-relaxed text-slate-500 dark:text-slate-400 [&>p]:mb-0">
+            {children}
+          </div>
         </div>
       </div>
     </div>
@@ -131,7 +144,9 @@ export { Step, Tip, Note, Feature, FeatureGrid, Figure };
 export function useMDXComponents(components: MDXComponents): MDXComponents {
   return {
     h1: ({ children }) => (
-      <h1 className="mb-4 mt-8 text-3xl font-bold text-slate-900 md:text-4xl">{children}</h1>
+      <h1 className="mb-4 mt-8 text-3xl font-bold text-slate-900 md:text-4xl dark:text-slate-100">
+        {children}
+      </h1>
     ),
     h2: ({ children }) => {
       const text = typeof children === 'string' ? children : String(children ?? '');
@@ -142,45 +157,49 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
       return (
         <h2
           id={id}
-          className="mb-4 mt-10 flex items-center gap-3 text-xl font-bold text-slate-900 md:text-2xl"
+          className="mb-4 mt-10 flex items-center gap-3 text-xl font-bold text-slate-900 md:text-2xl dark:text-slate-100"
         >
-          <span className="section-number flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-brand-100 text-sm font-bold text-brand-700" />
+          <span className="section-number flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-brand-100 text-sm font-bold text-brand-700 dark:bg-brand-500/20 dark:text-brand-300" />
           {children}
         </h2>
       );
     },
     h3: ({ children }) => (
-      <h3 className="mb-2 mt-6 text-lg font-semibold text-slate-800">{children}</h3>
+      <h3 className="mb-2 mt-6 text-lg font-semibold text-slate-800 dark:text-slate-100">
+        {children}
+      </h3>
     ),
     p: ({ children }) => (
-      <p className="mb-4 text-[15px] leading-[1.8] text-slate-600">{children}</p>
+      <p className="mb-4 text-[15px] leading-[1.8] text-slate-600 dark:text-slate-300">
+        {children}
+      </p>
     ),
     a: ({ href, children }) => (
       <a
         href={href}
-        className="text-brand-600 underline underline-offset-2 transition-colors hover:text-brand-700"
+        className="text-brand-600 underline underline-offset-2 transition-colors hover:text-brand-700 dark:text-brand-300 dark:hover:text-brand-200"
       >
         {children}
       </a>
     ),
     ul: ({ children }) => (
-      <ul className="mb-5 ml-1 space-y-2.5 text-slate-600 [&>li]:relative [&>li]:pl-5 [&>li]:before:absolute [&>li]:before:left-0 [&>li]:before:top-[10px] [&>li]:before:h-2 [&>li]:before:w-2 [&>li]:before:rounded-full [&>li]:before:bg-brand-400 [&>li]:before:content-['']">
+      <ul className="mb-5 ml-1 space-y-2.5 text-slate-600 dark:text-slate-300 [&>li]:relative [&>li]:pl-5 [&>li]:before:absolute [&>li]:before:left-0 [&>li]:before:top-[10px] [&>li]:before:h-2 [&>li]:before:w-2 [&>li]:before:rounded-full [&>li]:before:bg-brand-400 [&>li]:before:content-['']">
         {children}
       </ul>
     ),
     ol: ({ children }) => (
-      <ol className="counter-reset-[step] mb-5 ml-1 list-none space-y-2.5 text-slate-600 [&>li]:relative [&>li]:pl-8 [&>li]:counter-increment-[step] [&>li]:before:absolute [&>li]:before:left-0 [&>li]:before:top-0 [&>li]:before:flex [&>li]:before:h-5 [&>li]:before:w-5 [&>li]:before:items-center [&>li]:before:justify-center [&>li]:before:rounded-full [&>li]:before:bg-brand-100 [&>li]:before:text-xs [&>li]:before:font-bold [&>li]:before:text-brand-700 [&>li]:before:content-[counter(step)]">
+      <ol className="counter-reset-[step] mb-5 ml-1 list-none space-y-2.5 text-slate-600 dark:text-slate-300 [&>li]:relative [&>li]:pl-8 [&>li]:counter-increment-[step] [&>li]:before:absolute [&>li]:before:left-0 [&>li]:before:top-0 [&>li]:before:flex [&>li]:before:h-5 [&>li]:before:w-5 [&>li]:before:items-center [&>li]:before:justify-center [&>li]:before:rounded-full [&>li]:before:bg-brand-100 [&>li]:before:text-xs [&>li]:before:font-bold [&>li]:before:text-brand-700 [&>li]:before:content-[counter(step)] dark:[&>li]:before:bg-brand-500/20 dark:[&>li]:before:text-brand-300">
         {children}
       </ol>
     ),
     li: ({ children }) => <li className="text-[15px] leading-relaxed">{children}</li>,
     code: ({ children }) => (
-      <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-sm text-brand-700">
+      <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-sm text-brand-700 dark:bg-slate-800 dark:text-brand-300">
         {children}
       </code>
     ),
     pre: ({ children }) => (
-      <pre className="mb-4 overflow-x-auto rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm">
+      <pre className="mb-4 overflow-x-auto rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm dark:border-slate-800 dark:bg-slate-950">
         {children}
       </pre>
     ),
@@ -194,23 +213,25 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
       </div>
     ),
     th: ({ children }) => (
-      <th className="border-b border-slate-200 px-3 py-2 text-sm font-semibold text-slate-800">
+      <th className="border-b border-slate-200 px-3 py-2 text-sm font-semibold text-slate-800 dark:border-slate-800 dark:text-slate-100">
         {children}
       </th>
     ),
     td: ({ children }) => (
-      <td className="border-b border-slate-100 px-3 py-2 align-top leading-relaxed text-slate-600">
+      <td className="border-b border-slate-100 px-3 py-2 align-top leading-relaxed text-slate-600 dark:border-slate-800 dark:text-slate-300">
         {children}
       </td>
     ),
     blockquote: ({ children }) => (
-      <blockquote className="my-5 rounded-r-lg border-l-4 border-brand-500 bg-slate-50 py-3 pl-4 pr-4 italic text-slate-500">
+      <blockquote className="my-5 rounded-r-lg border-l-4 border-brand-500 bg-slate-50 py-3 pl-4 pr-4 italic text-slate-500 dark:bg-slate-950 dark:text-slate-400">
         {children}
       </blockquote>
     ),
-    strong: ({ children }) => <strong className="font-semibold text-slate-900">{children}</strong>,
+    strong: ({ children }) => (
+      <strong className="font-semibold text-slate-900 dark:text-slate-100">{children}</strong>
+    ),
     hr: () => (
-      <hr className="my-8 h-px border-0 bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
+      <hr className="my-8 h-px border-0 bg-gradient-to-r from-transparent via-slate-200 to-transparent dark:via-slate-700" />
     ),
     Step,
     Tip,

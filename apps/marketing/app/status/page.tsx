@@ -86,34 +86,36 @@ export default function StatusPage() {
       <BreadcrumbJsonLd name="Status" path="/status" />
       <Header surface="Status" />
       <main className="mx-auto max-w-3xl px-6 py-16 sm:py-20">
-        <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
+        <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl dark:text-slate-100">
           Service status
         </h1>
-        <p className="mt-3 text-lg text-slate-600">
+        <p className="mt-3 text-lg text-slate-600 dark:text-slate-300">
           The pieces livediagram runs on, and how they&rsquo;re doing.
         </p>
 
-        <div className="mt-8 flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-5">
+        <div className="mt-8 flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-5 dark:border-emerald-500/30 dark:bg-emerald-500/10">
           <span className="relative inline-flex">
             <span className="absolute inline-flex h-3 w-3 animate-ping rounded-full bg-emerald-400 opacity-60" />
             <span className="relative inline-flex h-3 w-3 rounded-full bg-emerald-500" />
           </span>
           <div>
-            <p className="text-sm font-semibold text-emerald-900">All systems operational</p>
-            <p className="text-xs text-emerald-800/80">
+            <p className="text-sm font-semibold text-emerald-900 dark:text-emerald-200">
+              All systems operational
+            </p>
+            <p className="text-xs text-emerald-800/80 dark:text-emerald-200/80">
               No incidents reported. If you can read this page, the marketing site is up.
             </p>
           </div>
         </div>
 
-        <ul className="mt-8 divide-y divide-slate-200 rounded-xl border border-slate-200 bg-white">
+        <ul className="mt-8 divide-y divide-slate-200 rounded-xl border border-slate-200 bg-white dark:divide-slate-800 dark:border-slate-800 dark:bg-slate-900">
           {COMPONENTS.map((c) => (
             <li key={c.name} className="flex items-center justify-between gap-4 px-5 py-4">
               <div>
-                <p className="text-sm font-medium text-slate-800">{c.name}</p>
-                <p className="mt-0.5 text-xs text-slate-500">{c.description}</p>
+                <p className="text-sm font-medium text-slate-800 dark:text-slate-100">{c.name}</p>
+                <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{c.description}</p>
               </div>
-              <span className="flex items-center gap-1.5 rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-semibold text-emerald-800">
+              <span className="flex items-center gap-1.5 rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-semibold text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-200">
                 <span className="h-2 w-2 rounded-full bg-emerald-500" />
                 Operational
               </span>
@@ -121,9 +123,12 @@ export default function StatusPage() {
           ))}
         </ul>
 
-        <p className="mt-8 text-xs text-slate-500">
+        <p className="mt-8 text-xs text-slate-500 dark:text-slate-400">
           This page reflects the latest deployed state. Spotted something wrong? Email{' '}
-          <a href="mailto:hello@livediagram.app" className="underline hover:text-slate-800">
+          <a
+            href="mailto:hello@livediagram.app"
+            className="underline hover:text-slate-800 dark:hover:text-slate-100"
+          >
             hello@livediagram.app
           </a>{' '}
           or file an issue on{' '}
@@ -131,7 +136,7 @@ export default function StatusPage() {
             href={`${REPO_URL}/issues`}
             target="_blank"
             rel="noopener noreferrer"
-            className="underline hover:text-slate-800"
+            className="underline hover:text-slate-800 dark:hover:text-slate-100"
           >
             GitHub
           </a>

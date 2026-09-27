@@ -9,7 +9,10 @@ import { StartDrawingArt } from '@/components/StartDrawingArt';
 // the landing funnel (docs/specs/019-marketing/landing-funnel.md) can tell the two apart.
 export function StartDrawingCta({ surface }: { surface: 'Home' | 'Feature' }) {
   return (
-    <section id="get-started" className="border-t border-slate-200/70 bg-brand-500">
+    <section
+      id="get-started"
+      className="border-t border-slate-200/70 bg-brand-500 dark:border-slate-800/70 dark:bg-brand-600"
+    >
       <div className="mx-auto max-w-6xl px-6 py-20 text-center sm:py-24">
         <StartDrawingArt />
         <h2 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">
@@ -22,7 +25,7 @@ export function StartDrawingCta({ surface }: { surface: 'Home' | 'Feature' }) {
         <div className="mt-8">
           <a
             href={ctaHref('/new', `${surface}.Closing`)}
-            className="inline-flex items-center justify-center rounded-md bg-white px-6 py-3 text-base font-medium text-brand-700 shadow-sm transition hover:bg-brand-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            className="inline-flex items-center justify-center rounded-md bg-white px-6 py-3 text-base font-medium text-brand-700 shadow-sm transition hover:bg-brand-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white dark:bg-slate-900 dark:text-brand-300 dark:hover:bg-brand-500/15"
           >
             Start drawing
           </a>

@@ -2,7 +2,9 @@ import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import './globals.css';
 import {
+  APPEARANCE_BOOT_SCRIPT,
   BRAND_ICONS,
+  DARK_READER_LOCK,
   JsonLd,
   PageViewBoot,
   PUBLIC_VIEWPORT,
@@ -49,6 +51,7 @@ export const metadata: Metadata = {
   // opaque iOS tile from app/apple-icon.tsx. Shared with telemetry + the
   // editor; see BRAND_ICONS in @livediagram/ui for why each entry is there.
   icons: BRAND_ICONS,
+  other: DARK_READER_LOCK,
 };
 
 // Brand-tinted mobile chrome + light colour scheme, shared with the help
@@ -132,11 +135,14 @@ const VIEW_TRANSITION_OPT_IN =
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en-GB">
+    // suppressHydrationWarning: the pre-paint script may add `dark` to <html>.
+    <html lang="en-GB" suppressHydrationWarning>
       <head>
         <style>{VIEW_TRANSITION_OPT_IN}</style>
       </head>
-      <body className="bg-slate-50 text-slate-800 antialiased">
+      <body className="bg-slate-50 text-slate-800 antialiased dark:bg-slate-950 dark:text-slate-200">
+        {/* Appearance before first paint (docs/specs/004-interface-design/appearance.md). */}
+        <script dangerouslySetInnerHTML={{ __html: APPEARANCE_BOOT_SCRIPT }} />
         <JsonLd data={JSON_LD} />
         <PageViewBoot />
         {children}

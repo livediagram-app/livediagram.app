@@ -7,8 +7,8 @@ import { TruthArmBoot } from '@/components/providers/TruthArmBoot';
 import { ConfirmProvider } from '@/hooks/ui/useConfirm';
 import { ToastProvider } from '@/hooks/ui/useToast';
 import { googleFontsHref } from '@livediagram/diagram';
-import { BRAND_ICONS } from '@livediagram/ui';
-import { APPEARANCE_BOOT_SCRIPT, REDUCE_MOTION_BOOT_SCRIPT } from './pre-hydration-scripts';
+import { APPEARANCE_BOOT_SCRIPT, BRAND_ICONS, DARK_READER_LOCK } from '@livediagram/ui';
+import { REDUCE_MOTION_BOOT_SCRIPT } from './pre-hydration-scripts';
 import './globals.css';
 
 // The live app is the product, not a content surface. Every route
@@ -40,13 +40,7 @@ export const metadata: Metadata = {
     index: false,
     follow: false,
   },
-  // The editor paints its own dark chrome; Dark Reader stands down on sight of
-  // this meta instead of recolouring it (docs/specs/007-editor/live-app.md, Appearance).
-  // Dark Reader keys on the name alone; the content is non-empty because Next
-  // drops a meta whose content is empty.
-  other: {
-    'darkreader-lock': 'true',
-  },
+  other: DARK_READER_LOCK,
 };
 
 // Pin the viewport so mobile browsers don't auto-zoom the page. The
@@ -103,8 +97,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             honours it — including /live/new and the welcome / template-picker
             flow, which never mount the TabBar that's the only caller of
             useAppearance. Without this they'd render light over the dark body.
-            The snippets (and what each stored value means) live in
-            pre-hydration-scripts.ts, where they are executed by a test. */}
+            The appearance snippet is shared by every app (@livediagram/ui);
+            both are executed by tests against stub globals. */}
         <script dangerouslySetInnerHTML={{ __html: APPEARANCE_BOOT_SCRIPT }} />
         <script dangerouslySetInnerHTML={{ __html: REDUCE_MOTION_BOOT_SCRIPT }} />
         <ErrorTelemetryBoot />

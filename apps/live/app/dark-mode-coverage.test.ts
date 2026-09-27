@@ -94,10 +94,10 @@ describe('tiles of light-canvas illustration art', () => {
     expect(veil).toMatch(/mix-blend-mode:\s*darken/);
   });
 
-  it("leave the marketing gallery's dark tile as it was", () => {
-    expect(RELIGHT_CSS).toMatch(
-      /\.preview-art-tile-dark \{\s*filter: invert\(0\.9\) hue-rotate\(180deg\);\s*\}/,
-    );
+  it("are the one rule, the marketing gallery's included", () => {
+    // The gallery had its own always-on re-light, which landed on a neutral charcoal plate;
+    // it now follows the appearance through this rule like the editor's picker.
+    expect(RELIGHT_CSS).not.toMatch(/preview-art-tile-dark/);
   });
 
   it('no longer prop up the old light-plate workaround', () => {

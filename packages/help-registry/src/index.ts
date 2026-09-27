@@ -1474,8 +1474,9 @@ export const articles: Article[] = [
     // what a reader searches for even though the control is now three-way.
     slug: 'dark-mode',
     title: 'Appearance: Light, Dark, System',
-    description: 'Set the editor chrome to light, dark, or your device setting.',
-    keywords: 'night theme appearance dark light system os device switch toggle cycle eyes mode',
+    description: 'Set livediagram to light, dark, or your device setting, everywhere at once.',
+    keywords:
+      'night theme appearance dark light system os device switch toggle cycle eyes mode website help header',
     category: 'Tools',
     categorySlug: 'tools',
   },

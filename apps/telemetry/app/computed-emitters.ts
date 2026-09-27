@@ -43,6 +43,14 @@ const MCP_TOOLS = [
   ...read('mcp/src/tools.ts').matchAll(/registerTool\(\s*server,\s*env,\s*'([a-z_]+)'/g),
 ].map((m) => pascalToken(m[1]!));
 
+// The Appearance settings' labels (packages/ui appearance-cycle.ts), the
+// editor's `UI·Toggled` type on an explicit pick.
+const APPEARANCE_LABELS = tokensAfter(
+  read('../packages/ui/src/appearance/appearance-cycle.ts'),
+  'export const APPEARANCE_LABEL',
+  '};',
+);
+
 // The presenter settings: `Presentation-<field>` per PresentationConfig key.
 const PRESENTATION_FIELDS = (() => {
   const source = read('live/lib/presentation-config.ts');
@@ -228,6 +236,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: ['Banner', 'Callout', 'StatRow'],
     open: 'elementTelemetryType of the web component a row was added to',
   },
+  'apps/live/hooks/ui/useAppearance.ts UI·Toggled': { values: APPEARANCE_LABELS },
   'apps/live/hooks/persistence/useShareLinks.ts Diagram·Shared': {
     values: ['ExpiryWeek', 'ExpiryMonth', 'ExpirySixMonths'],
   },

@@ -13,7 +13,7 @@ const PROOF_POINTS = [
 
 function ProofPoints() {
   return (
-    <ul className="mx-auto mt-6 flex max-w-2xl flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-slate-600">
+    <ul className="mx-auto mt-6 flex max-w-2xl flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-slate-600 dark:text-slate-300">
       {PROOF_POINTS.map((point) => (
         <li key={point} className="flex items-center gap-1.5">
           <svg viewBox="0 0 16 16" className="h-4 w-4 text-emerald-500" aria-hidden>
@@ -38,14 +38,14 @@ export function Hero() {
     <section className="relative overflow-hidden">
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 -top-40 -z-10 h-[600px] bg-gradient-to-b from-brand-100 via-brand-50 to-transparent"
+        className="pointer-events-none absolute inset-x-0 -top-40 -z-10 h-[600px] bg-gradient-to-b from-brand-100 via-brand-50 to-transparent dark:from-brand-500/20 dark:via-brand-500/5"
       />
       <div className="mx-auto max-w-6xl px-6 pt-24 pb-20 text-center sm:pt-32 sm:pb-28">
         {/* Says what it is and the one thing that sets it apart (docs/specs/019-marketing/marketing-site.md). */}
-        <h1 className="mx-auto max-w-3xl text-balance text-5xl font-semibold tracking-tight text-slate-900 sm:text-7xl">
-          Diagram together, <span className="text-brand-600">live</span>.
+        <h1 className="mx-auto max-w-3xl text-balance text-5xl font-semibold tracking-tight text-slate-900 sm:text-7xl dark:text-slate-100">
+          Diagram together, <span className="text-brand-600 dark:text-brand-300">live</span>.
         </h1>
-        <p className="mx-auto mt-6 max-w-2xl text-pretty text-lg leading-relaxed text-slate-600 sm:text-xl">
+        <p className="mx-auto mt-6 max-w-2xl text-pretty text-lg leading-relaxed text-slate-600 sm:text-xl dark:text-slate-300">
           Sketch an idea, start from a template, or map a whole system. Share a link and your team
           builds it with you in real time.
         </p>

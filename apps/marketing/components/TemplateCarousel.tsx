@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { BAND_LABEL } from '@/components/band-classes';
 
 // One category's row of the template gallery (docs/specs/019-marketing/marketing-site.md): a scroll-snapping
 // track that shows four cards across on desktop (two on a tablet, one on a
@@ -56,7 +57,7 @@ export function TemplateCarousel({
   return (
     <div className={reveal ? 'tg-reveal' : undefined}>
       <div className="flex items-center justify-between gap-4">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">{label}</h3>
+        <h3 className={BAND_LABEL}>{label}</h3>
         {paged ? (
           <div className="flex items-center gap-1.5">
             <CarouselArrow
@@ -75,12 +76,14 @@ export function TemplateCarousel({
         ) : null}
       </div>
       {/* Each card is a snap point sized to a quarter / half / all of the
-          track less the gaps, so a page is always whole cards. The
+          track less the gaps, so a page is always whole cards. A category
+          with fewer cards than a page grows them to fill the row, so its
+          edges line up with the band (a lone search hit stops at half). The
           scrollbar is hidden: the arrows and swipe are the controls. */}
       <ul
         ref={track}
         onScroll={measure}
-        className="tg-reveal-track mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [&>li]:shrink-0 [&>li]:snap-start [&>li]:basis-full sm:[&>li]:basis-[calc((100%-0.75rem)/2)] lg:[&>li]:basis-[calc((100%-2.25rem)/4)]"
+        className="tg-reveal-track mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [&>li]:shrink-0 [&>li]:grow [&>li]:snap-start [&>li]:basis-full sm:[&>li]:max-w-[calc((100%-0.75rem)/2)] sm:[&>li]:basis-[calc((100%-0.75rem)/2)] lg:[&>li]:basis-[calc((100%-2.25rem)/4)]"
       >
         {children}
       </ul>
@@ -106,7 +109,7 @@ function CarouselArrow({
       onClick={onClick}
       disabled={disabled}
       aria-label={`${prev ? 'Previous' : 'Next'} ${label} templates`}
-      className="flex items-center justify-center rounded-full border border-slate-700 bg-slate-800 p-1.5 text-slate-300 transition enabled:hover:border-brand-400 enabled:hover:text-white disabled:cursor-default disabled:opacity-35 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400"
+      className="flex items-center justify-center rounded-full border border-slate-200 bg-white p-1.5 text-slate-600 transition enabled:hover:border-brand-300 enabled:hover:text-brand-700 disabled:cursor-default disabled:opacity-35 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:enabled:hover:border-brand-500/60 dark:enabled:hover:text-white"
     >
       <svg
         width="18"

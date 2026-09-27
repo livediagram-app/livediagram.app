@@ -21,7 +21,7 @@ import {
   type Tab,
   type ThemeDefinition,
 } from '@livediagram/diagram';
-import { getResolvedAppearance } from '@/hooks/ui/appearance-store';
+import { getResolvedAppearance } from '@livediagram/ui';
 import { lookupCustomTheme } from './custom-theme-registry';
 
 // Pass through the shared engine so `@/lib/themes` stays the editor's theme API.

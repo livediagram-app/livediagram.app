@@ -22,8 +22,8 @@ export function MiniDiagram({
 }) {
   return (
     <div className="flex flex-col items-center gap-1">
-      <div className="w-20 rounded-md border border-slate-200 bg-white p-1 shadow-sm">
-        <div className="flex gap-0.5 border-b border-slate-100 pb-0.5">
+      <div className="w-20 rounded-md border border-slate-200 bg-white p-1 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div className="flex gap-0.5 border-b border-slate-100 pb-0.5 dark:border-slate-800">
           {tabs.map((t, i) => (
             <span
               key={i}
@@ -36,7 +36,7 @@ export function MiniDiagram({
             />
           ))}
         </div>
-        <div className="mt-1 h-6 rounded-sm bg-[radial-gradient(circle_at_center,_#e2e8f0_1px,_transparent_1px)] bg-[size:8px_8px]" />
+        <div className="mt-1 h-6 rounded-sm bg-(color:--art-paper) bg-[radial-gradient(circle_at_center,_var(--art-grid)_1px,_transparent_1px)] bg-[size:8px_8px]" />
       </div>
       <span className="text-[7px] text-slate-400">{label}</span>
     </div>
@@ -81,6 +81,7 @@ export function SearchGlyph({ kind }: { kind: string }) {
   );
 }
 
+// Depicts one appearance or the other, so neither half follows the page's.
 export function MiniEditorMock({ dark }: { dark: boolean }) {
   const panel = dark ? 'border-slate-700 bg-slate-900' : 'border-slate-200 bg-white';
   const bar = dark ? 'border-slate-700 bg-slate-800' : 'border-slate-100 bg-slate-50';

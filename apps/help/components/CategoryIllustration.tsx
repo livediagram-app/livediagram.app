@@ -951,7 +951,7 @@ export function CategoryIllustration({ slug }: { slug: string }) {
   return (
     <svg
       viewBox={VIEWBOX}
-      className="h-full w-full"
+      className="help-art h-full w-full"
       preserveAspectRatio="xMidYMid meet"
       aria-hidden
     >

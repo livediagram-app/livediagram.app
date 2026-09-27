@@ -47,10 +47,10 @@ export default function AlternativesIndexPage() {
       <BreadcrumbJsonLd name="Alternatives" path="/alternatives" />
       <Header surface="Compare" />
       <main className="mx-auto max-w-3xl px-6 py-16 sm:py-20">
-        <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
+        <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl dark:text-slate-100">
           How livediagram compares
         </h1>
-        <p className="mt-4 text-lg leading-relaxed text-slate-600">
+        <p className="mt-4 text-lg leading-relaxed text-slate-600 dark:text-slate-300">
           Thinking about another tool? Here&rsquo;s an honest, side-by-side look at how livediagram
           compares, including where each one is the better pick.
         </p>
@@ -59,23 +59,25 @@ export default function AlternativesIndexPage() {
             <li key={alt.slug}>
               <a
                 href={`/alternatives/${alt.slug}`}
-                className="flex items-center justify-between gap-4 rounded-lg border border-slate-200 bg-white p-4 transition hover:border-brand-300 hover:shadow-sm"
+                className="flex items-center justify-between gap-4 rounded-lg border border-slate-200 bg-white p-4 transition hover:border-brand-300 hover:shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:hover:border-brand-500/60"
               >
                 <span>
-                  <span className="block font-semibold text-slate-900">{alt.h1}</span>
-                  <span className="mt-0.5 block text-sm text-slate-500">
+                  <span className="block font-semibold text-slate-900 dark:text-slate-100">
+                    {alt.h1}
+                  </span>
+                  <span className="mt-0.5 block text-sm text-slate-500 dark:text-slate-400">
                     livediagram vs {alt.name}
                   </span>
                 </span>
-                <span aria-hidden className="text-brand-500">
+                <span aria-hidden className="text-brand-500 dark:text-brand-300">
                   →
                 </span>
               </a>
             </li>
           ))}
         </ul>
-        <div className="mt-12 rounded-lg border border-slate-200 bg-slate-50 p-6 text-center">
-          <p className="text-slate-700">Or just try it, no sign-up required.</p>
+        <div className="mt-12 rounded-lg border border-slate-200 bg-slate-50 p-6 text-center dark:border-slate-800 dark:bg-slate-950">
+          <p className="text-slate-700 dark:text-slate-200">Or just try it, no sign-up required.</p>
           <CtaLink href={ctaHref('/new', 'Compare.Card')} size="sm" className="mt-3">
             Start drawing
           </CtaLink>

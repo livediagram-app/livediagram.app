@@ -10,10 +10,10 @@ import { BreadcrumbTrail, type BreadcrumbItem } from '@livediagram/ui';
 
 export function Breadcrumb({ items }: { items: BreadcrumbItem[] }) {
   return (
-    <div className="border-b border-slate-200 bg-slate-50/85 backdrop-blur">
+    <div className="border-b border-slate-200 bg-slate-50/85 backdrop-blur dark:border-slate-800 dark:bg-slate-900/85">
       <nav
         aria-label="Breadcrumb"
-        className="mx-auto flex min-w-0 max-w-6xl flex-wrap items-center gap-2 px-6 py-2.5 text-sm text-slate-500"
+        className="mx-auto flex min-w-0 max-w-6xl flex-wrap items-center gap-2 px-6 py-2.5 text-sm text-slate-500 dark:text-slate-400"
       >
         <BreadcrumbTrail items={items} rootLabel="Home" />
       </nav>

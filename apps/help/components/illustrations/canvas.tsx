@@ -294,9 +294,11 @@ export function ThemePicker() {
                 className={`fill-white ${sel ? 'stroke-brand-500' : 'stroke-slate-200'}`}
                 strokeWidth={sel ? 2.5 : 1.5}
               />
-              <rect x={sx + 10} y={sy + 12} width={22} height={16} rx={3} className={a} />
-              <rect x={sx + 38} y={sy + 12} width={22} height={16} rx={3} className={b} />
-              <rect x={sx + 10} y={sy + 34} width={50} height={14} rx={3} className={c} />
+              <g className="help-art-as-drawn">
+                <rect x={sx + 10} y={sy + 12} width={22} height={16} rx={3} className={a} />
+                <rect x={sx + 38} y={sy + 12} width={22} height={16} rx={3} className={b} />
+                <rect x={sx + 10} y={sy + 34} width={50} height={14} rx={3} className={c} />
+              </g>
             </g>
           );
         })}
@@ -555,7 +557,14 @@ export function Annotation() {
       <Shape x={70} y={80} w={96} h={52} kind="rect" label="Server" />
       <g transform="translate(158 72)">
         <circle r={11} className="fill-amber-400 stroke-white" strokeWidth={2.5} />
-        <Label x={0} y={1} anchor="middle" size={13} weight={700} tone="onAccent">
+        <Label
+          x={0}
+          y={1}
+          anchor="middle"
+          size={13}
+          weight={700}
+          className="fill-white dark:fill-slate-950"
+        >
           i
         </Label>
       </g>

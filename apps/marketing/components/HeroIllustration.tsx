@@ -31,7 +31,7 @@
 // first window centred, and reduced-motion settles every build, the canvas
 // tint, and hides the laser.
 
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
 import {
   Brand,
   ChevronDownIcon,
@@ -51,7 +51,6 @@ import {
   SLIDES,
   SlideDeckDiagram,
   TimelineDiagram,
-  type Theme,
 } from './hero-diagrams';
 import {
   EyeGlyph,
@@ -71,13 +70,12 @@ const GAP = 3;
 
 type TabDef = { name: string; color: string; active?: boolean };
 
-// Each window sits on its own themed canvas. The flowchart animates between
-// these two (the recolour beat, via the hero-theme / hero-theme-canvas
-// keyframes); the others hold a single distinct theme.
-const FLOW_REST = '#eff6ff'; // blue-50 resting tint of the flowchart canvas
-const VIOLET: Theme = { canvas: '#f5f3ff', fill: '#ede9fe', stroke: '#7c3aed', text: '#4c1d95' };
-const AMBER: Theme = { canvas: '#fffbeb', fill: '#fef3c7', stroke: '#b45309', text: '#78350f' };
-const TEAL: Theme = { canvas: '#f0fdfa', fill: '#ccfbf1', stroke: '#0d9488', text: '#134e4a' };
+// Every window sits on the Default scheme's canvas (the --art-* palette in
+// hero-animations.css, its light or dark half with the appearance), dotted as the
+// editor dots it: 1px dots on a 24px grid. The flowchart recolours from it to Forest
+// in light and Pine in dark (the hero-theme / hero-theme-canvas keyframes).
+const CANVAS =
+  'bg-(color:--art-paper) bg-[radial-gradient(circle_at_center,_var(--hero-grid,var(--art-grid))_1px,_transparent_1px)] bg-[size:24px_24px]';
 
 const CARDS: {
   key: string;
@@ -91,7 +89,6 @@ const CARDS: {
   showCursor: boolean;
   shared: boolean;
   theming: boolean;
-  canvasTint: string;
   // Presenting (docs/specs/012-collaboration/presentation-mode.md): the panels give way to the presenting HUD, and
   // the canvas shows the deck's slides instead of the whole diagram.
   presenting?: boolean;
@@ -113,7 +110,6 @@ const CARDS: {
     showCursor: true,
     shared: true,
     theming: true,
-    canvasTint: FLOW_REST,
   },
   {
     key: 'slides',
@@ -128,7 +124,6 @@ const CARDS: {
     showCursor: false,
     shared: true,
     theming: false,
-    canvasTint: FLOW_REST,
     presenting: true,
   },
   {
@@ -144,7 +139,6 @@ const CARDS: {
     showCursor: false,
     shared: true,
     theming: false,
-    canvasTint: VIOLET.canvas,
   },
   {
     key: 'timeline',
@@ -159,7 +153,6 @@ const CARDS: {
     showCursor: false,
     shared: false,
     theming: false,
-    canvasTint: AMBER.canvas,
     layers: true,
   },
   {
@@ -175,20 +168,63 @@ const CARDS: {
     showCursor: false,
     shared: true,
     theming: false,
-    canvasTint: TEAL.canvas,
   },
 ];
 
-// The theme cards the Look & Feel dialog mock offers; Default is what the
-// flowchart wears until Forest is picked and the recolour follows.
-const THEME_CARDS: { name: string; swatch: string; current?: boolean; picked?: boolean }[] = [
-  { name: 'Default', swatch: '#0284c7', current: true },
-  { name: 'Forest', swatch: '#16a34a', picked: true },
-  { name: 'Ocean', swatch: '#0891b2' },
-  { name: 'Sunset', swatch: '#ea580c' },
-  { name: 'Lavender', swatch: '#7c3aed' },
-  { name: 'Rose', swatch: '#e11d48' },
+// A tab pill in the accent it is given as --tab. Dark lifts that accent 60% toward
+// white, as the editor's legibleTabAccent does for the dark bar.
+const TAB_PILL =
+  'flex items-center gap-2 rounded-md px-2 py-1 text-xs font-medium text-(--tab) dark:text-[color-mix(in_srgb,var(--tab)_40%,white)]';
+
+// The theme cards the Look & Feel dialog mock offers, each its scheme's canvas ringed
+// in its stroke (packages/diagram themes-data.ts). Default is what the flowchart
+// wears until the pick. In light the pick is Forest; in dark the dialog shows the
+// Dark category (darkCategorySchemes in apps/live), the Default scheme's dark half
+// first, and the pick is Pine.
+type ThemeCard = {
+  name: string;
+  canvas: string;
+  stroke: string;
+  current?: boolean;
+  picked?: boolean;
+};
+const THEME_CARDS: ThemeCard[] = [
+  { name: 'Default', canvas: '#ffffff', stroke: '#0ea5e9', current: true },
+  { name: 'Forest', canvas: '#f0fdf4', stroke: '#15803d', picked: true },
+  { name: 'Ocean', canvas: '#ecfeff', stroke: '#0e7490' },
+  { name: 'Sunset', canvas: '#fff7ed', stroke: '#c2410c' },
+  { name: 'Lavender', canvas: '#faf5ff', stroke: '#7e22ce' },
+  { name: 'Rose', canvas: '#fff1f2', stroke: '#be123c' },
 ];
+const DARK_THEME_CARDS: ThemeCard[] = [
+  { name: 'Default', canvas: '#0d121a', stroke: '#64748b', current: true },
+  { name: 'Midnight', canvas: '#0f172a', stroke: '#94a3b8' },
+  { name: 'Pine', canvas: '#14532d', stroke: '#86efac', picked: true },
+  { name: 'Plum', canvas: '#241436', stroke: '#c4b5fd' },
+  { name: 'Abyss', canvas: '#042f2e', stroke: '#5eead4' },
+  { name: 'Espresso', canvas: '#231a12', stroke: '#d6b78f' },
+];
+
+// A theme card; the current one starts ringed, the picked one takes the ring.
+function ThemeCardView({ card }: { card: ThemeCard }) {
+  return (
+    <span
+      className={`flex flex-col items-center gap-1 rounded-lg border py-1.5 text-[8px] font-medium text-slate-600 dark:text-slate-300 ${
+        card.picked
+          ? 'hero-dialog-pick border-slate-200 dark:border-slate-700'
+          : card.current
+            ? 'hero-dialog-was border-brand-400 ring-1 ring-brand-300'
+            : 'border-slate-200 dark:border-slate-700'
+      }`}
+    >
+      <span
+        className="h-4 w-4 rounded-full"
+        style={{ backgroundColor: card.canvas, boxShadow: `inset 0 0 0 2px ${card.stroke}` }}
+      />
+      {card.name}
+    </span>
+  );
+}
 
 // The palette mock's Favourites grid: the editor's default go-to tiles.
 const PALETTE_TILES: { kind: string; label: string }[] = [
@@ -248,13 +284,13 @@ export function HeroIllustration() {
             const playing = i === active;
             const diagram =
               c.key === 'mindmap' ? (
-                <MindMapDiagram playing={playing} theme={VIOLET} />
+                <MindMapDiagram playing={playing} />
               ) : c.key === 'slides' ? (
                 <SlideDeckDiagram />
               ) : c.key === 'comments' ? (
-                <ArchitectureDiagram theme={TEAL} />
+                <ArchitectureDiagram />
               ) : c.key === 'timeline' ? (
-                <TimelineDiagram theme={AMBER} />
+                <TimelineDiagram />
               ) : (
                 <FlowchartDiagram />
               );
@@ -275,7 +311,6 @@ export function HeroIllustration() {
                   tabs={c.tabs}
                   shared={c.shared}
                   theming={c.theming}
-                  canvasTint={c.canvasTint}
                   showCursor={c.showCursor}
                   layers={c.layers ?? false}
                   presenting={c.presenting ?? false}
@@ -293,7 +328,7 @@ export function HeroIllustration() {
           window so a visitor moves between them at their own pace (the
           auto-advance timer resets on each choice). */}
       <div className="mt-6 flex flex-col items-center gap-3">
-        <p className="text-sm text-slate-500" aria-live="polite">
+        <p className="text-sm text-slate-500 dark:text-slate-400" aria-live="polite">
           {current.label}
         </p>
         <div className="flex items-center gap-2" role="group" aria-label="Hero examples">
@@ -306,7 +341,9 @@ export function HeroIllustration() {
               onClick={() => setActive(i)}
               className={
                 'h-2 rounded-full transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 ' +
-                (i === active ? 'w-7 bg-brand-500' : 'w-2 bg-slate-300 hover:bg-slate-400')
+                (i === active
+                  ? 'w-7 bg-brand-500'
+                  : 'w-2 bg-slate-300 hover:bg-slate-400 dark:bg-slate-600')
               }
             />
           ))}
@@ -326,7 +363,6 @@ function EditorWindow({
   playing,
   shared,
   theming,
-  canvasTint,
   showCursor,
   layers,
   tool,
@@ -338,15 +374,14 @@ function EditorWindow({
   playing: boolean;
   shared: boolean;
   theming: boolean;
-  canvasTint: string;
   showCursor: boolean;
   layers: boolean;
   tool: string | [string, string];
   presenting: boolean;
 }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-2 shadow-xl shadow-brand-500/10">
-      <div className="relative overflow-hidden rounded-lg border border-slate-100">
+    <div className="rounded-xl border border-slate-200 bg-white p-2 shadow-xl shadow-brand-500/10 dark:border-slate-800 dark:bg-slate-900">
+      <div className="relative overflow-hidden rounded-lg border border-slate-100 dark:border-slate-800">
         {/* The fade. While playing it lifts from light grey over the first
             beat and drops back to it over the last second, timed to the 16s cycle,
             so the window's ending is the same whatever its last beat was and
@@ -356,7 +391,7 @@ function EditorWindow({
         <div
           key={playing ? 'play' : 'idle'}
           aria-hidden
-          className={`pointer-events-none absolute inset-0 z-20 bg-slate-200 ${
+          className={`pointer-events-none absolute inset-0 z-20 bg-slate-200 dark:bg-slate-950 ${
             playing ? 'hero-fade' : 'hero-fade-out'
           }`}
         />
@@ -365,11 +400,11 @@ function EditorWindow({
         {presenting ? null : (
           <>
             {/* Editor header strip (static chrome) */}
-            <div className="flex items-center justify-between gap-2 border-b border-slate-100 bg-white px-3 py-2">
+            <div className="flex items-center justify-between gap-2 border-b border-slate-100 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-900">
               <div className="flex items-center gap-2">
                 <Brand size="sm" />
                 {/* The Editor menu, as the real header carries it. */}
-                <span className="hidden items-center gap-1 rounded-md border border-slate-200 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 sm:inline-flex">
+                <span className="hidden items-center gap-1 rounded-md border border-slate-200 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 sm:inline-flex dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
                   <MenuIcon size={9} strokeWidth={1.6} />
                   Editor
                   <ChevronDownIcon size={8} strokeWidth={1.6} />
@@ -378,14 +413,14 @@ function EditorWindow({
               <div className="flex min-w-0 items-center gap-2">
                 <span className="hidden truncate text-xs text-slate-400 sm:inline">{title}</span>
                 {shared ? (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-700 ring-1 ring-emerald-200">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30">
                     <span className="text-emerald-500">
                       <SharedDotIcon />
                     </span>
                     Shared
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-700 ring-1 ring-amber-200">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-700 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/30">
                     <span className="text-amber-500">
                       <PrivateDotIcon />
                     </span>
@@ -393,7 +428,7 @@ function EditorWindow({
                   </span>
                 )}
               </div>
-              <span className="inline-flex items-center gap-1 rounded-md bg-brand-500 px-2 py-0.5 text-[10px] font-semibold text-white">
+              <span className="inline-flex items-center gap-1 rounded-md bg-brand-500 px-2 py-0.5 text-[10px] font-semibold text-white dark:bg-brand-600">
                 <ShareGlyph />
                 Share
               </span>
@@ -401,13 +436,13 @@ function EditorWindow({
           </>
         )}
 
-        {/* Canvas surface. Each window has its own themed canvas tint; the
-            flowchart additionally animates blue→green (overriding the resting
-            tint) while it is centred. */}
+        {/* Canvas surface. The flowchart additionally animates its theme beat
+            (overriding the resting colour) while it is centred. */}
         <div
-          style={{ backgroundColor: canvasTint }}
           className={
-            'relative bg-[radial-gradient(circle_at_center,_#cbd5e1_1.2px,_transparent_1.2px)] bg-[size:24px_24px] ' +
+            'relative ' +
+            CANVAS +
+            ' ' +
             (presenting ? 'h-[382px] sm:h-[442px]' : 'h-[300px] sm:h-[360px]') +
             (theming && playing ? ' hero-theme-canvas' : '')
           }
@@ -440,8 +475,8 @@ function EditorWindow({
             </div>
           ) : null}
           {layers ? (
-            <div className="absolute right-2 top-2 hidden items-center gap-3 rounded-lg border border-slate-200 bg-white px-2 py-1 shadow-md sm:flex">
-              <p className="text-[8px] font-semibold uppercase tracking-wider text-slate-500">
+            <div className="absolute right-2 top-2 hidden items-center gap-3 rounded-lg border border-slate-200 bg-white px-2 py-1 shadow-md sm:flex dark:border-slate-800 dark:bg-slate-900">
+              <p className="text-[8px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 Palette
               </p>
               <span className="text-[10px] leading-none text-slate-400">+</span>
@@ -449,20 +484,20 @@ function EditorWindow({
           ) : null}
           <div
             className={
-              'absolute right-2 top-2 w-40 flex-col rounded-lg border border-slate-200 bg-white shadow-md ' +
+              'absolute right-2 top-2 w-40 flex-col rounded-lg border border-slate-200 bg-white shadow-md dark:border-slate-800 dark:bg-slate-900 ' +
               (layers || presenting ? 'hidden' : 'hidden sm:flex')
             }
           >
-            <div className="flex items-center justify-between border-b border-slate-100 px-2 py-1">
-              <p className="text-[8px] font-semibold uppercase tracking-wider text-slate-500">
+            <div className="flex items-center justify-between border-b border-slate-100 px-2 py-1 dark:border-slate-800">
+              <p className="text-[8px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 Palette
               </p>
-              <span className="flex gap-1 text-slate-300">
+              <span className="flex gap-1 text-slate-300 dark:text-slate-600">
                 <span className="h-1.5 w-1.5 rounded-full bg-current" />
                 <span className="h-1.5 w-1.5 rounded-full bg-current" />
               </span>
             </div>
-            <div className="flex items-center justify-between border-b border-slate-100 px-2 py-1 text-[9px] font-medium text-slate-600">
+            <div className="flex items-center justify-between border-b border-slate-100 px-2 py-1 text-[9px] font-medium text-slate-600 dark:border-slate-800 dark:text-slate-300">
               <span className="inline-flex items-center gap-0.5">
                 {typeof tool === 'string' ? (
                   tool
@@ -485,7 +520,7 @@ function EditorWindow({
               </span>
             </div>
             <div className="px-1.5 pt-1.5">
-              <div className="rounded-md border border-slate-200 px-1.5 py-0.5 text-[8px] text-slate-400">
+              <div className="rounded-md border border-slate-200 px-1.5 py-0.5 text-[8px] text-slate-400 dark:border-slate-700 dark:bg-slate-800">
                 Search all elements
               </div>
             </div>
@@ -493,10 +528,12 @@ function EditorWindow({
               {PALETTE_TILES.map((t) => (
                 <span
                   key={t.kind}
-                  className="flex flex-col items-center gap-0.5 rounded py-0.5 text-slate-500"
+                  className="flex flex-col items-center gap-0.5 rounded py-0.5 text-slate-500 dark:text-slate-400"
                 >
                   <Shape kind={t.kind} />
-                  <span className="text-[7px] leading-none text-slate-500">{t.label}</span>
+                  <span className="text-[7px] leading-none text-slate-500 dark:text-slate-400">
+                    {t.label}
+                  </span>
                 </span>
               ))}
             </div>
@@ -505,8 +542,8 @@ function EditorWindow({
           {/* The Layers panel (docs/specs/006-diagram/layers.md), docked on the timeline window: one
               row per layer with its eye toggle, the hidden one dimmed. */}
           {layers ? (
-            <div className="absolute left-2 top-2 hidden w-32 flex-col rounded-lg border border-slate-200 bg-white shadow-md sm:flex">
-              <p className="border-b border-slate-100 px-2 py-1 text-[8px] font-semibold uppercase tracking-wider text-slate-500">
+            <div className="absolute left-2 top-2 hidden w-32 flex-col rounded-lg border border-slate-200 bg-white shadow-md sm:flex dark:border-slate-800 dark:bg-slate-900">
+              <p className="border-b border-slate-100 px-2 py-1 text-[8px] font-semibold uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:text-slate-400">
                 Layers
               </p>
               {LAYER_ROWS.map((row) => (
@@ -514,7 +551,9 @@ function EditorWindow({
                   key={row.name}
                   className={
                     'flex items-center gap-1.5 px-2 py-1 text-[9px] font-medium ' +
-                    (row.hidden ? 'text-slate-300' : 'text-slate-600')
+                    (row.hidden
+                      ? 'text-slate-300 dark:text-slate-600'
+                      : 'text-slate-600 dark:text-slate-300')
                   }
                 >
                   <EyeGlyph off={row.hidden} />
@@ -529,22 +568,22 @@ function EditorWindow({
               look-and-feel brush, and the zoom readout. */}
           <div
             className={
-              'absolute bottom-2 right-2 items-center gap-1.5 text-slate-500 ' +
+              'absolute bottom-2 right-2 items-center gap-1.5 text-slate-500 dark:text-slate-400 ' +
               (presenting ? 'hidden' : 'hidden sm:flex')
             }
           >
-            <span className="flex h-7 items-center rounded-md border border-slate-200 bg-white px-0.5 shadow-sm">
+            <span className="flex h-7 items-center rounded-md border border-slate-200 bg-white px-0.5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
               <ToolGlyph kind="history" small />
               <ToolGlyph kind="undo" small />
               <ToolGlyph kind="redo" small />
             </span>
-            <span className="flex h-7 items-center rounded-md border border-slate-200 bg-white px-0.5 shadow-sm">
+            <span className="flex h-7 items-center rounded-md border border-slate-200 bg-white px-0.5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
               <ToolGlyph kind="layers" small />
             </span>
-            <span className="flex h-7 items-center rounded-md border border-slate-200 bg-white px-0.5 shadow-sm">
+            <span className="flex h-7 items-center rounded-md border border-slate-200 bg-white px-0.5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
               <ToolGlyph kind="brush" small />
             </span>
-            <span className="flex h-7 items-center rounded-md border border-slate-200 bg-white px-2 text-[9px] font-medium shadow-sm">
+            <span className="flex h-7 items-center rounded-md border border-slate-200 bg-white px-2 text-[9px] font-medium shadow-sm dark:border-slate-800 dark:bg-slate-900">
               <span className="px-1.5">−</span>
               100%
               <span className="px-1.5">+</span>
@@ -575,9 +614,9 @@ function EditorWindow({
               a theme card is picked (the selection ring moves, the pointer
               dips), it closes, and the recolour follows. Themed window only. */}
           {theming && playing ? (
-            <div className="hero-dialog absolute left-1/2 top-1/2 z-10 hidden w-64 -translate-x-1/2 -translate-y-1/2 flex-col rounded-xl border border-slate-200 bg-white shadow-2xl sm:flex">
+            <div className="hero-dialog absolute left-1/2 top-1/2 z-10 hidden w-64 -translate-x-1/2 -translate-y-1/2 flex-col rounded-xl border border-slate-200 bg-white shadow-2xl sm:flex dark:border-slate-700 dark:bg-slate-900">
               <div className="flex items-center justify-between px-3 py-2">
-                <span className="text-[11px] font-semibold text-slate-800">
+                <span className="text-[11px] font-semibold text-slate-800 dark:text-slate-100">
                   Tab Look &amp; Feel
                 </span>
                 <span className="flex items-center gap-2 text-[10px] text-slate-400">
@@ -585,28 +624,21 @@ function EditorWindow({
                   <span>✕</span>
                 </span>
               </div>
-              <div className="mx-3 flex rounded-md bg-slate-100 p-0.5 text-[9px] font-medium text-slate-500">
-                <span className="flex-1 rounded bg-white py-0.5 text-center text-slate-800 shadow-sm">
+              <div className="mx-3 flex rounded-md bg-slate-100 p-0.5 text-[9px] font-medium text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                <span className="flex-1 rounded bg-white py-0.5 text-center text-slate-800 shadow-sm dark:bg-slate-900 dark:text-slate-100">
                   Theme
                 </span>
                 <span className="flex-1 py-0.5 text-center">Canvas</span>
                 <span className="flex-1 py-0.5 text-center">Font</span>
               </div>
-              <div className="grid grid-cols-3 gap-1.5 p-3">
+              <div className="grid grid-cols-3 gap-1.5 p-3 dark:hidden">
                 {THEME_CARDS.map((t) => (
-                  <span
-                    key={t.name}
-                    className={`flex flex-col items-center gap-1 rounded-lg border py-1.5 text-[8px] font-medium text-slate-600 ${
-                      t.picked
-                        ? 'hero-dialog-pick border-slate-200'
-                        : t.current
-                          ? 'hero-dialog-was border-brand-400 ring-1 ring-brand-300'
-                          : 'border-slate-200'
-                    }`}
-                  >
-                    <span className="h-4 w-4 rounded-full" style={{ backgroundColor: t.swatch }} />
-                    {t.name}
-                  </span>
+                  <ThemeCardView key={t.name} card={t} />
+                ))}
+              </div>
+              <div className="hidden grid-cols-3 gap-1.5 p-3 dark:grid">
+                {DARK_THEME_CARDS.map((t) => (
+                  <ThemeCardView key={t.name} card={t} />
                 ))}
               </div>
               <span className="hero-dialog-cursor pointer-events-none absolute" aria-hidden>
@@ -653,7 +685,7 @@ function EditorWindow({
           <>
             {/* Bottom tab bar (static chrome): colour-coded tabs relevant to this
                 diagram + the toolbelt the page advertises. */}
-            <div className="flex items-center gap-2 border-t border-slate-100 bg-white px-2 py-2">
+            <div className="flex items-center gap-2 border-t border-slate-100 bg-white px-2 py-2 dark:border-slate-800 dark:bg-slate-900">
               <span
                 className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400"
                 aria-hidden
@@ -665,17 +697,21 @@ function EditorWindow({
                 {tabs.map((t) => (
                   <span
                     key={t.name}
-                    style={{
-                      color: t.color,
-                      ...(t.active ? { backgroundColor: `${t.color}1a` } : {}),
-                    }}
-                    className="flex items-center gap-2 rounded-md px-2 py-1 text-xs font-medium"
+                    style={
+                      {
+                        '--tab': t.color,
+                        ...(t.active ? { backgroundColor: `${t.color}1a` } : {}),
+                      } as CSSProperties
+                    }
+                    className={TAB_PILL}
                   >
                     <span
                       className="h-2.5 w-2.5 rounded-full"
                       style={{ backgroundColor: t.color }}
                     />
-                    <span className={t.active ? '' : 'text-slate-500'}>{t.name}</span>
+                    <span className={t.active ? '' : 'text-slate-500 dark:text-slate-400'}>
+                      {t.name}
+                    </span>
                     {/* Presence lives IN the tab, as the editor's TabPresenceStack
                         draws it: a stack of small initials between the tab name
                         and its ellipsis, one per person on that tab (you, and on

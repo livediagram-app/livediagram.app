@@ -19,22 +19,22 @@ export default function HelpHome() {
     <div>
       <Breadcrumb items={[]} />
       <section className="relative py-16 text-center md:py-24">
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-brand-100/60 via-brand-50/30 to-transparent" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-brand-100/60 via-brand-50/30 to-transparent dark:from-brand-500/15 dark:via-brand-500/5" />
         <div className="relative mx-auto max-w-2xl px-4">
-          <h1 className="mb-4 text-4xl font-bold text-slate-900 md:text-5xl">
+          <h1 className="mb-4 text-4xl font-bold text-slate-900 md:text-5xl dark:text-slate-100">
             How can{' '}
-            <span className="bg-gradient-to-r from-brand-500 to-brand-700 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-brand-500 to-brand-700 bg-clip-text text-transparent dark:from-brand-200 dark:to-brand-400">
               we help
             </span>
             ?
           </h1>
-          <p className="mb-8 text-base leading-relaxed text-slate-600 md:text-lg">
+          <p className="mb-8 text-base leading-relaxed text-slate-600 md:text-lg dark:text-slate-300">
             Search our guides and tutorials, or browse by category below.
           </p>
           <SearchInput large />
           <a
             href="/help/contact/"
-            className="mt-6 inline-flex items-center gap-2 text-sm text-slate-500 transition-colors hover:text-slate-800"
+            className="mt-6 inline-flex items-center gap-2 text-sm text-slate-500 transition-colors hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"
           >
             <svg
               className="h-4 w-4"
@@ -66,7 +66,7 @@ export default function HelpHome() {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 pb-12 md:px-8">
-        <div className="mb-10 border-t border-slate-200" />
+        <div className="mb-10 border-t border-slate-200 dark:border-slate-800" />
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {supportCategories.map((category) => (
             <CategoryCard key={category.slug} category={category} />
@@ -75,9 +75,11 @@ export default function HelpHome() {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 pb-16 md:px-8">
-        <div className="mb-10 border-t border-slate-200" />
-        <h2 className="mb-2 text-2xl font-bold text-slate-900 md:text-3xl">Features</h2>
-        <p className="mb-8 text-base leading-relaxed text-slate-500 md:text-lg">
+        <div className="mb-10 border-t border-slate-200 dark:border-slate-800" />
+        <h2 className="mb-2 text-2xl font-bold text-slate-900 md:text-3xl dark:text-slate-100">
+          Features
+        </h2>
+        <p className="mb-8 text-base leading-relaxed text-slate-500 md:text-lg dark:text-slate-400">
           In-depth guides for everything in the editor, grouped by area.
         </p>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

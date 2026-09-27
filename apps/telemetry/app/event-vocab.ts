@@ -6,6 +6,8 @@
 // enums; this module only turns it into human-readable strings.)
 
 import { titleCase, type TelemetryCategory, type TelemetryCount } from '@livediagram/api-schema';
+import type { Appearance } from '@livediagram/ui';
+import { forAppearance } from './appearance-colours';
 
 // One-line plain-language explanation per category, shown under the
 // group heading so visitors can read the dashboard cold without
@@ -59,7 +61,8 @@ export const CATEGORY_DESCRIPTIONS: Record<TelemetryCategory, string> = {
 // picked so adjacent slices in the stacked bar stay visually distinct
 // (no two adjacent blues). Keyed by the full TelemetryCategory union so a
 // new category fails the typecheck until it gets its own colour; the
-// `categoryColor` accessor keeps a slate fallback for stray strings.
+// `categoryColor` accessor keeps a slate fallback for stray strings. In dark
+// it hands back the hue lifted to read on the dark card (appearance-colours).
 const CATEGORY_COLORS: Record<TelemetryCategory, string> = {
   Diagram: '#0ea5e9',
   Element: '#10b981',
@@ -95,7 +98,8 @@ const CATEGORY_COLORS: Record<TelemetryCategory, string> = {
   Email: '#0d9488',
   Error: '#dc2626',
 };
-export const categoryColor = (c: string) => CATEGORY_COLORS[c as TelemetryCategory] ?? '#94a3b8';
+export const categoryColor = (c: string, appearance: Appearance = 'light') =>
+  forAppearance(CATEGORY_COLORS[c as TelemetryCategory] ?? '#94a3b8', appearance);
 
 // Re-exported from the shared api-schema helper so the dashboard's
 // existing `./event-vocab` import surface (MetricPicker, RankCard) keeps

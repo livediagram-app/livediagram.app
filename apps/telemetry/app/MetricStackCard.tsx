@@ -1,5 +1,6 @@
 'use client';
 
+import { useAppearance } from '@livediagram/ui';
 import { fmtDay } from './chart-utils';
 import {
   headlineCaption,
@@ -43,7 +44,8 @@ export function MetricStackCard({
   const before = headlineTotal(stack, previousCounts);
   const inHeadline = headlineMembers(stack);
   const caption = headlineCaption(stack);
-  const accent = stackAccent(stack.members);
+  const { appearance } = useAppearance();
+  const accent = stackAccent(stack.members, appearance);
   const { chart, legend, hidden } = headView(stack.title, series, counts, inHeadline, accent);
 
   return (

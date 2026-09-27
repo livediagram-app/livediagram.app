@@ -2,7 +2,8 @@
 
 import { useId, useMemo, useRef, useState, type ReactNode } from 'react';
 import { TextInput } from '@livediagram/ui';
-import { categoryColor, eventLabel, titleCase } from './event-vocab';
+import { eventLabel, titleCase } from './event-vocab';
+import { useCategoryColor } from './useCategoryColor';
 import { SearchGlyph } from './glyphs';
 import { EventIcon } from './telemetry-event-icon';
 import type { Metric } from './metrics';
@@ -54,10 +55,13 @@ function Chevron() {
 }
 
 function CategorySwatch({ category }: { category: string }) {
+  const tone = useCategoryColor();
   return (
+    // The dark hues are lifted to read on the dark card, so their initial
+    // reads in the card's own ink rather than white.
     <span
-      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[11px] font-semibold text-white"
-      style={{ backgroundColor: categoryColor(category) }}
+      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[11px] font-semibold text-white dark:text-slate-950"
+      style={{ backgroundColor: tone(category) }}
     >
       {category.slice(0, 1)}
     </span>
@@ -73,7 +77,7 @@ function EventChip({
   action: string;
   type: string | null;
 }) {
-  const color = categoryColor(category);
+  const color = useCategoryColor()(category);
   return (
     <span
       className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md"
@@ -278,7 +282,7 @@ export function MetricPicker({
           aria-label="Clear search"
           onMouseDown={(e) => e.preventDefault()}
           onClick={() => reset('')}
-          className="absolute right-2.5 top-1/2 flex h-5 w-5 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800"
+          className="absolute right-2.5 top-1/2 flex h-5 w-5 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300"
         >
           <span aria-hidden className="text-sm leading-none">
             ✕
@@ -300,7 +304,7 @@ export function MetricPicker({
                 if (blurTimer.current) clearTimeout(blurTimer.current);
                 back();
               }}
-              className="flex w-full cursor-pointer items-center gap-1.5 border-b border-slate-100 px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-500 transition hover:text-slate-700 dark:border-slate-800 dark:hover:text-slate-300"
+              className="flex w-full cursor-pointer items-center gap-1.5 border-b border-slate-100 px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-500 transition hover:text-slate-700 dark:border-slate-800 dark:hover:text-slate-300 dark:text-slate-400"
             >
               <span aria-hidden className="text-sm leading-none">
                 ‹

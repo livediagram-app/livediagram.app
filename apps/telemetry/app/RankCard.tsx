@@ -3,12 +3,13 @@
 import { EmptyState } from '@livediagram/ui';
 import { metricKey, type TelemetryCount, type TelemetryDaily } from '@livediagram/api-schema';
 import { pct } from './chart-utils';
-import { categoryColor, typeLabel } from './event-vocab';
+import { typeLabel } from './event-vocab';
 import { ActivityGlyph } from './glyphs';
 import { MiniSparkline } from './MiniSparkline';
 import { aliasedSeries, foldAliases, type TypeAliases } from './rank';
 import { TrendBadge } from './TrendBadge';
 import type { RankTrend } from './windows';
+import { useCategoryColor } from './useCategoryColor';
 
 // A ranked usage list: rows sorted most-to-least, each with a share bar and
 // (on desktop) a mini trend line, the top row tagged Most used. (No "least
@@ -69,7 +70,7 @@ function RankList({
   ordered = false,
   label = typeLabel,
 }: RankListProps) {
-  const color = categoryColor(category);
+  const color = useCategoryColor()(category);
   // Each row's count in the previous window, folded like the items were.
   const before = new Map<string, number>();
   if (trend) {

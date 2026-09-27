@@ -1,8 +1,7 @@
-// Mini illustrations for the dark Privacy section on the landing page.
-// Same shape as FeatureArt (each export is a Frame-wrapped scene with
-// a few CSS-animated SVG bits) but with a darker surface + cooler
-// palette so they read against the section's bg-slate-900 background
-// without looking like they wandered in from a different page.
+// Mini illustrations for the Privacy section on the landing page. Same shape as
+// FeatureArt (each export is a Frame-wrapped scene with a few CSS-animated SVG bits),
+// in a palette of CSS custom properties with a light and a dark half
+// (app/privacy-art.css), so each piece fits the band in either appearance.
 //
 // Motion classes (fa-fade, fa-pulse, fa-grow, fa-spin) come from
 // globals.css so the static export still inherits the keyframes
@@ -11,19 +10,22 @@
 
 import type { ReactNode } from 'react';
 
-const SKY = '#38bdf8';
-const SKY_FAINT = 'rgba(56, 189, 248, 0.18)';
-const SLATE = '#94a3b8';
-const SLATE_FAINT = 'rgba(148, 163, 184, 0.25)';
-const ROSE = '#fb7185';
+const SKY = 'var(--pa-sky)';
+const SKY_FAINT = 'var(--pa-sky-faint)';
+const SLATE = 'var(--pa-slate)';
+const SLATE_FAINT = 'var(--pa-slate-faint)';
+const ROSE = 'var(--pa-rose)';
+const ROSE_FAINT = 'var(--pa-rose-faint)';
+const ON_SKY = 'var(--pa-on-sky)';
+const SURFACE = 'var(--pa-surface)';
 
-// Bordered dark canvas every privacy illustration sits in. Same
+// Bordered surface every privacy illustration sits in. Same
 // dimensions as the FeatureArt Frame so the grid lays out evenly.
-function DarkFrame({ children }: { children: ReactNode }) {
+function PrivacyFrame({ children }: { children: ReactNode }) {
   return (
     <div
       aria-hidden
-      className="relative mb-4 h-24 w-full overflow-hidden rounded-md border border-slate-700/60 bg-slate-950/60"
+      className="relative mb-4 h-24 w-full overflow-hidden rounded-md border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950/60"
     >
       {children}
     </div>
@@ -35,7 +37,7 @@ function DarkFrame({ children }: { children: ReactNode }) {
    in. The cross + dashed line read at a glance. */
 export function NoTrackersArt() {
   return (
-    <DarkFrame>
+    <PrivacyFrame>
       <svg viewBox="0 0 220 90" className="absolute inset-0 h-full w-full">
         {/* Your browser */}
         <rect x="14" y="22" width="52" height="42" rx="4" fill={SKY_FAINT} stroke={SKY} />
@@ -43,15 +45,7 @@ export function NoTrackersArt() {
         <rect x="20" y="35" width="28" height="3" rx="1" fill={SLATE} />
         <rect x="20" y="40" width="34" height="3" rx="1" fill={SLATE} />
         {/* Tracker (third party) on the right */}
-        <rect
-          x="160"
-          y="22"
-          width="48"
-          height="42"
-          rx="4"
-          fill="rgba(251, 113, 133, 0.12)"
-          stroke={ROSE}
-        />
+        <rect x="160" y="22" width="48" height="42" rx="4" fill={ROSE_FAINT} stroke={ROSE} />
         <text x="184" y="48" textAnchor="middle" fontSize="10" fontWeight="700" fill={ROSE}>
           tracker
         </text>
@@ -74,7 +68,7 @@ export function NoTrackersArt() {
           />
         </g>
       </svg>
-    </DarkFrame>
+    </PrivacyFrame>
   );
 }
 
@@ -82,7 +76,7 @@ export function NoTrackersArt() {
    server icon back into the user's avatar — the "comes home" beat. */
 export function DataIsYoursArt() {
   return (
-    <DarkFrame>
+    <PrivacyFrame>
       <svg viewBox="0 0 220 90" className="absolute inset-0 h-full w-full">
         {/* Server cluster on the left */}
         <g>
@@ -102,19 +96,19 @@ export function DataIsYoursArt() {
         />
         <g className="fa-fade" style={{ animationDuration: '4s' }}>
           <rect x="100" y="14" width="40" height="14" rx="3" fill={SKY} />
-          <text x="120" y="24" textAnchor="middle" fontSize="9" fontWeight="600" fill="#0c1929">
+          <text x="120" y="24" textAnchor="middle" fontSize="9" fontWeight="600" fill={ON_SKY}>
             diagram
           </text>
         </g>
         {/* User avatar on the right */}
         <g>
           <circle cx="180" cy="46" r="18" fill={SKY} />
-          <text x="180" y="50" textAnchor="middle" fontSize="14" fontWeight="700" fill="#0c1929">
+          <text x="180" y="50" textAnchor="middle" fontSize="14" fontWeight="700" fill={ON_SKY}>
             You
           </text>
         </g>
       </svg>
-    </DarkFrame>
+    </PrivacyFrame>
   );
 }
 
@@ -124,7 +118,7 @@ export function DataIsYoursArt() {
    corner denomination so it reads as currency at thumbnail size. */
 export function NoSaleArt() {
   return (
-    <DarkFrame>
+    <PrivacyFrame>
       <svg viewBox="0 0 220 90" className="absolute inset-0 h-full w-full">
         {/* Banknote */}
         <g className="fa-fade" style={{ animationDuration: '5s' }}>
@@ -176,7 +170,7 @@ export function NoSaleArt() {
           />
         </g>
       </svg>
-    </DarkFrame>
+    </PrivacyFrame>
   );
 }
 
@@ -184,7 +178,7 @@ export function NoSaleArt() {
    blocks unspooling beneath it, hinting at AES blocks. */
 export function EncryptedArt() {
   return (
-    <DarkFrame>
+    <PrivacyFrame>
       <svg viewBox="0 0 220 90" className="absolute inset-0 h-full w-full">
         {/* Big padlock */}
         <g>
@@ -234,7 +228,7 @@ export function EncryptedArt() {
           </g>
         ))}
       </svg>
-    </DarkFrame>
+    </PrivacyFrame>
   );
 }
 
@@ -242,7 +236,7 @@ export function EncryptedArt() {
    "Open" button to the side toggles on/off with the fa-pulse beat. */
 export function PrivateByDefaultArt() {
   return (
-    <DarkFrame>
+    <PrivacyFrame>
       <svg viewBox="0 0 220 90" className="absolute inset-0 h-full w-full">
         {/* Private diagram */}
         <rect
@@ -260,7 +254,7 @@ export function PrivateByDefaultArt() {
         <rect x="28" y="44" width="48" height="3" rx="1" fill={SLATE} />
         {/* Lock badge in the corner */}
         <g>
-          <circle cx="112" cy="28" r="10" fill="#0f172a" stroke={SKY} strokeWidth="1.5" />
+          <circle cx="112" cy="28" r="10" fill={SURFACE} stroke={SKY} strokeWidth="1.5" />
           <rect x="107" y="27" width="10" height="7" rx="1" fill={SKY} />
           <path
             d="M109 27 L109 23 A 3 3 0 0 1 115 23 L115 27"
@@ -271,28 +265,20 @@ export function PrivateByDefaultArt() {
         </g>
         {/* Share link, optional, pulses to suggest it can be turned on later */}
         <g className="fa-pulse" style={{ transformOrigin: '170px 45px' }}>
-          <rect
-            x="140"
-            y="30"
-            width="60"
-            height="30"
-            rx="15"
-            fill="rgba(56, 189, 248, 0.15)"
-            stroke={SKY}
-          />
+          <rect x="140" y="30" width="60" height="30" rx="15" fill={SKY_FAINT} stroke={SKY} />
           <text x="170" y="49" textAnchor="middle" fontSize="11" fontWeight="600" fill={SKY}>
             Share?
           </text>
         </g>
       </svg>
-    </DarkFrame>
+    </PrivacyFrame>
   );
 }
 
 /* Open source: a code-bracket pair with the source rolling through. */
 export function OpenSourceArt() {
   return (
-    <DarkFrame>
+    <PrivacyFrame>
       <svg viewBox="0 0 220 90" className="absolute inset-0 h-full w-full">
         {/* Left bracket */}
         <text x="35" y="62" fontSize="56" fontWeight="700" fill={SKY}>
@@ -320,11 +306,11 @@ export function OpenSourceArt() {
         {/* MIT badge */}
         <g>
           <rect x="90" y="72" width="40" height="12" rx="3" fill={SKY} />
-          <text x="110" y="81" textAnchor="middle" fontSize="9" fontWeight="700" fill="#0c1929">
+          <text x="110" y="81" textAnchor="middle" fontSize="9" fontWeight="700" fill={ON_SKY}>
             MIT
           </text>
         </g>
       </svg>
-    </DarkFrame>
+    </PrivacyFrame>
   );
 }

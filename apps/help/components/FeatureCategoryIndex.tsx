@@ -28,14 +28,18 @@ export function FeatureCategoryIndex({ slug }: { slug: string }) {
     <div>
       <Breadcrumb items={[{ label: cat.title }]} />
       <div className="mx-auto max-w-7xl px-4 py-8 md:px-8">
-        <h1 className="mb-2 text-3xl font-bold text-slate-900 md:text-4xl">{cat.title}</h1>
-        <p className="mb-8 text-base leading-relaxed text-slate-500 md:text-lg">
+        <h1 className="mb-2 text-3xl font-bold text-slate-900 md:text-4xl dark:text-slate-100">
+          {cat.title}
+        </h1>
+        <p className="mb-8 text-base leading-relaxed text-slate-500 md:text-lg dark:text-slate-400">
           {cat.description}
         </p>
         {groups.map(({ group, articles }) => (
           <section key={group || 'all'} className="mb-10 last:mb-0">
             {group && (
-              <h2 className="mb-4 text-lg font-semibold text-slate-800 md:text-xl">{group}</h2>
+              <h2 className="mb-4 text-lg font-semibold text-slate-800 md:text-xl dark:text-slate-100">
+                {group}
+              </h2>
             )}
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
               {articles.map((article) => (

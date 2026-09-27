@@ -1,7 +1,7 @@
 import { Tooltip } from '@livediagram/ui';
 import { pct } from './chart-utils';
 import { bestSlot, formatRate, rate, type FunnelSurface } from './cta-funnel';
-import { categoryColor } from './event-vocab';
+import { useCategoryColor } from './useCategoryColor';
 
 // One public surface's landing funnel (docs/specs/019-marketing/landing-funnel.md): its three counts as a
 // shrinking bar, the step rate between each, then every CTA slot on it with
@@ -21,8 +21,9 @@ export function FunnelSurfaceCard({
   // Read by CardColumns to balance the columns; see funnelCardWeight.
   weight: number;
 }) {
-  const viewColor = categoryColor('Page');
-  const ctaColor = categoryColor('Cta');
+  const tone = useCategoryColor();
+  const viewColor = tone('Page');
+  const ctaColor = tone('Cta');
   const widest = Math.max(surface.views, surface.arrived, surface.created, 1);
   const best = bestSlot(surface.slots);
   const busiest = Math.max(...surface.slots.map((s) => s.arrived), 1);
@@ -85,7 +86,7 @@ export function FunnelSurfaceCard({
             return (
               <tr
                 key={slot.source}
-                className={`border-t border-slate-100 dark:border-slate-800 ${unused ? 'text-slate-400 dark:text-slate-500' : 'text-slate-700 dark:text-slate-200'}`}
+                className={`border-t border-slate-100 dark:border-slate-800 ${unused ? 'text-slate-400' : 'text-slate-700 dark:text-slate-200'}`}
               >
                 <td className="py-2 pr-3">
                   <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 sm:flex-nowrap">
@@ -96,11 +97,12 @@ export function FunnelSurfaceCard({
                   </span>
                   <span
                     aria-hidden
-                    className="mt-1 block h-1 rounded-full"
+                    // Paler on a white card; on the dark one a faded bar sinks
+                    // into the card instead, so it keeps more of its colour.
+                    className="mt-1 block h-1 rounded-full opacity-45 dark:opacity-70"
                     style={{
                       width: `${pct(slot.arrived, busiest)}%`,
                       backgroundColor: ctaColor,
-                      opacity: 0.45,
                     }}
                   />
                 </td>
@@ -141,8 +143,8 @@ function FunnelStep({
       </div>
       <div className="mt-1 h-2.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
         <div
-          className="funnel-bar h-full rounded-full"
-          style={{ width: `${width}%`, backgroundColor: color, opacity: faded ? 0.6 : 1 }}
+          className={`funnel-bar h-full rounded-full${faded ? ' opacity-60 dark:opacity-80' : ''}`}
+          style={{ width: `${width}%`, backgroundColor: color }}
         />
       </div>
     </li>

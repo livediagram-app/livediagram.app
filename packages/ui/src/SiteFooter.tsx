@@ -6,34 +6,43 @@ import { REPO_URL } from './site';
 // the right, and a thin legal/credits strip below.
 export function SiteFooter() {
   return (
-    <footer className="border-t border-slate-200 bg-white">
+    <footer className="border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
       <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-6 px-6 py-10 sm:flex-row sm:items-center">
         <div>
           <Brand size="sm" />
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             Free diagrams and mindmaps for teams who think together.
           </p>
         </div>
         <nav
           aria-label="Footer"
-          className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-slate-500"
+          className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-slate-500 dark:text-slate-400"
         >
-          <a href="/alternatives" className="hover:text-slate-900">
+          <a href="/alternatives" className="hover:text-slate-900 dark:hover:text-slate-100">
             Compare
           </a>
-          <a href="/faq" className="hover:text-slate-900">
+          <a href="/faq" className="hover:text-slate-900 dark:hover:text-slate-100">
             FAQ
           </a>
-          <a href="/help/policies/terms/" className="hover:text-slate-900">
+          <a
+            href="/help/policies/terms/"
+            className="hover:text-slate-900 dark:hover:text-slate-100"
+          >
             Terms
           </a>
-          <a href="/help/policies/privacy-policy/" className="hover:text-slate-900">
+          <a
+            href="/help/policies/privacy-policy/"
+            className="hover:text-slate-900 dark:hover:text-slate-100"
+          >
             Privacy
           </a>
-          <a href="/status" className="hover:text-slate-900">
+          <a href="/status" className="hover:text-slate-900 dark:hover:text-slate-100">
             Status
           </a>
-          <a href="mailto:hello@livediagram.app" className="hover:text-slate-900">
+          <a
+            href="mailto:hello@livediagram.app"
+            className="hover:text-slate-900 dark:hover:text-slate-100"
+          >
             Contact
           </a>
           <a
@@ -41,13 +50,13 @@ export function SiteFooter() {
             target="_blank"
             rel="noopener noreferrer"
             aria-label="livediagram on GitHub"
-            className="inline-flex items-center hover:text-slate-900"
+            className="inline-flex items-center hover:text-slate-900 dark:hover:text-slate-100"
           >
             <GitHubIcon />
           </a>
         </nav>
       </div>
-      <div className="border-t border-slate-100">
+      <div className="border-t border-slate-100 dark:border-slate-800">
         <div className="mx-auto flex max-w-6xl flex-col gap-1.5 px-6 py-4 text-xs text-slate-400 sm:flex-row sm:items-center sm:justify-between">
           <p>
             <span>&copy; {new Date().getFullYear()} livediagram. MIT licensed.</span>
@@ -59,7 +68,7 @@ export function SiteFooter() {
                 href="https://manager-toolkit.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-medium text-slate-500 hover:text-brand-600"
+                className="font-medium text-slate-500 hover:text-brand-600 dark:text-slate-400 dark:hover:text-brand-200"
               >
                 Try Manager Toolkit
               </a>
@@ -71,7 +80,7 @@ export function SiteFooter() {
                 href="https://www.tommcclean.me"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-medium text-slate-500 hover:text-brand-600"
+                className="font-medium text-slate-500 hover:text-brand-600 dark:text-slate-400 dark:hover:text-brand-200"
               >
                 Tom McClean
               </a>

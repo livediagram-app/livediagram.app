@@ -20,7 +20,7 @@ export function StoryBeat({ beat, index }: { beat: LandingBeat; index: number })
   return (
     <section
       id={beat.id}
-      className={`scroll-mt-20 border-t border-slate-200/70 ${tinted ? 'bg-brand-50/60' : 'bg-white'}`}
+      className={`scroll-mt-20 border-t border-slate-200/70 dark:border-slate-800/70 ${tinted ? 'bg-brand-50/60 dark:bg-brand-500/10' : 'bg-white dark:bg-slate-900'}`}
     >
       <div className="mx-auto grid max-w-6xl items-center gap-10 px-6 py-20 sm:py-24 lg:grid-cols-2 lg:gap-16">
         <div className={`enter-on-scroll ${artFirst ? 'lg:order-2' : ''}`}>
@@ -33,11 +33,11 @@ export function StoryBeat({ beat, index }: { beat: LandingBeat; index: number })
             >
               {number}
             </span>
-            <h2 className="text-3xl font-semibold tracking-tight text-balance text-slate-900 sm:text-4xl">
+            <h2 className="text-3xl font-semibold tracking-tight text-balance text-slate-900 sm:text-4xl dark:text-slate-100">
               {beat.title}
             </h2>
           </div>
-          <p className="mt-4 text-lg leading-relaxed text-pretty text-slate-600">
+          <p className="mt-4 text-lg leading-relaxed text-pretty text-slate-600 dark:text-slate-300">
             {beat.description}
           </p>
 
@@ -50,13 +50,13 @@ export function StoryBeat({ beat, index }: { beat: LandingBeat; index: number })
                 <li key={section.id}>
                   <a
                     href={`/features/${section.id}`}
-                    className="group inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/80 py-1 pr-2 pl-2.5 text-sm text-slate-700 shadow-xs transition hover:border-brand-300 hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
+                    className="group inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/80 py-1 pr-2 pl-2.5 text-sm text-slate-700 shadow-xs transition hover:border-brand-300 hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 dark:border-slate-800 dark:bg-slate-900/80 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:text-brand-200"
                   >
                     {Icon ? (
-                      <Icon className="text-brand-500 transition group-hover:text-brand-600" />
+                      <Icon className="text-brand-500 transition group-hover:text-brand-600 dark:text-brand-300 dark:group-hover:text-brand-200" />
                     ) : null}
                     {section.label}
-                    <span className="rounded-full bg-slate-100 px-1.5 text-xs text-slate-500 tabular-nums transition group-hover:bg-brand-50 group-hover:text-brand-700">
+                    <span className="rounded-full bg-slate-100 px-1.5 text-xs text-slate-500 tabular-nums transition group-hover:bg-brand-50 dark:group-hover:bg-brand-500/15 group-hover:text-brand-700 dark:bg-slate-800 dark:text-slate-400 dark:group-hover:text-brand-200">
                       {section.items.length}
                     </span>
                   </a>

@@ -99,7 +99,7 @@ export function PresenceSelection() {
       />
       <Avatar cx={174} cy={58} r={11} initial="J" colour="violet" />
       <g transform="translate(196 78)">
-        <rect width={132} height={22} rx={6} className="fill-violet-500" />
+        <rect width={132} height={22} rx={6} className="fill-violet-500 dark:fill-violet-700" />
         <Label x={11} y={12} tone="onAccent" size={10} weight={600}>
           Locked to Jae
         </Label>
@@ -361,29 +361,31 @@ export function EmbeddedDiagram() {
       <Shape x={60} y={88} w={64} h={36} kind="rect" label="A" />
       <Shape x={176} y={108} w={64} h={36} kind="circle" label="B" />
       {/* Open-in-livediagram badge */}
-      <g transform="translate(196 70)">
+      <g transform="translate(196 70)" className="help-art-as-drawn">
         <rect width={74} height={16} rx={5} className="fill-slate-800/80" />
         <Label x={8} y={9} size={8} weight={600} tone="onAccent">
           Open in app
         </Label>
       </g>
-      {/* Embed code snippet */}
-      <rect x={288} y={66} width={88} height={96} rx={8} className="fill-slate-800" />
-      <Label x={300} y={82} size={8} weight={600} className="fill-emerald-400">
-        &lt;iframe
-      </Label>
-      <Label x={306} y={96} size={8} className="fill-slate-300">
-        src=&quot;…&quot;
-      </Label>
-      <Label x={306} y={110} size={8} className="fill-slate-300">
-        width=600
-      </Label>
-      <Label x={306} y={124} size={8} className="fill-slate-300">
-        height=400
-      </Label>
-      <Label x={300} y={138} size={8} weight={600} className="fill-emerald-400">
-        /&gt;
-      </Label>
+      {/* Embed code snippet, dark in both appearances */}
+      <g className="help-art-as-drawn">
+        <rect x={288} y={66} width={88} height={96} rx={8} className="fill-slate-800" />
+        <Label x={300} y={82} size={8} weight={600} className="fill-emerald-400">
+          &lt;iframe
+        </Label>
+        <Label x={306} y={96} size={8} className="fill-slate-300">
+          src=&quot;…&quot;
+        </Label>
+        <Label x={306} y={110} size={8} className="fill-slate-300">
+          width=600
+        </Label>
+        <Label x={306} y={124} size={8} className="fill-slate-300">
+          height=400
+        </Label>
+        <Label x={300} y={138} size={8} weight={600} className="fill-emerald-400">
+          /&gt;
+        </Label>
+      </g>
       <TextBar x={44} y={184} w={320} tone="faint" />
       <TextBar x={44} y={200} w={240} tone="faint" />
     </Scene>

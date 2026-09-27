@@ -9,9 +9,9 @@ export function OtherCategories({ currentId }: { currentId: string }) {
   const others = LANDING_SECTIONS.filter((section) => section.id !== currentId);
 
   return (
-    <section className="border-t border-slate-200/70 bg-white">
+    <section className="border-t border-slate-200/70 bg-white dark:border-slate-800/70 dark:bg-slate-900">
       <div className="mx-auto max-w-6xl px-6 py-16">
-        <h2 className="text-center text-2xl font-semibold tracking-tight text-slate-900">
+        <h2 className="text-center text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
           Explore more of livediagram
         </h2>
         <ul className="mt-8 flex flex-wrap justify-center gap-3">
@@ -19,7 +19,7 @@ export function OtherCategories({ currentId }: { currentId: string }) {
             <li key={section.id}>
               <a
                 href={`/features/${section.id}`}
-                className="inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-brand-300 hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
+                className="inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-brand-300 hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:text-brand-200"
               >
                 {section.title}
               </a>

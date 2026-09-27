@@ -1,6 +1,49 @@
 /* Hero illustration animations (landing page), split out of globals.css to
    keep each file under the ~1000-line budget. Imported from globals.css. */
 
+/* The editor's canvas for every diagram in the mock-ups, here and in the feature art
+   (docs/specs/004-interface-design/appearance.md, docs/specs/019-marketing/marketing-site.md): the
+   Default colour scheme (packages/diagram/src/themes-data.ts, canvas-colors.ts), light half under
+   :root and dark half under .dark, and the colours packages/diagram/src/colors.ts gives an
+   unpainted element on it: a shape's ink, a text element, an arrow and its label, a table's
+   grid, and the shade a heading band or marker takes above a shape. The --art-pick-* set is the
+   scheme the hero's theme beat picks: Forest in light, Pine in dark. app/dark-art.test.ts holds
+   every value to its source. Markup reads them through utilities, keyframes through var(). */
+:root {
+  --art-paper: #ffffff;
+  --art-grid: #cbd5e1;
+  --art-ink-fill: #f0f9ff;
+  --art-ink-stroke: #0ea5e9;
+  --art-ink-text: #075985;
+  --art-ink-shade: #e0f2fe;
+  --art-text: #1e293b;
+  --art-arrow: #334155;
+  --art-arrow-label: #334155;
+  --art-table-line: #94a3b8;
+  --art-pick-paper: #f0fdf4;
+  --art-pick-grid: #bbf7d0;
+  --art-pick-fill: #dcfce7;
+  --art-pick-stroke: #15803d;
+  --art-pick-text: #14532d;
+}
+.dark {
+  --art-paper: #0d121a;
+  --art-grid: #1c2735;
+  --art-ink-fill: #141b26;
+  --art-ink-stroke: #64748b;
+  --art-ink-text: #ffffff;
+  --art-ink-shade: #1c2533;
+  --art-text: #ffffff;
+  --art-arrow: #64748b;
+  --art-arrow-label: #94a3b8;
+  --art-table-line: #64748b;
+  --art-pick-paper: #14532d;
+  --art-pick-grid: #166534;
+  --art-pick-fill: #166534;
+  --art-pick-stroke: #86efac;
+  --art-pick-text: #dcfce7;
+}
+
 /*
  * Hero illustration: a single 16 s timeline with NO per-element delays, so
  * the whole canvas clears together at the end (then a brief blank) instead
@@ -250,28 +293,36 @@
 @keyframes hero-theme {
   0%,
   40% {
-    fill: #dbeafe;
-    stroke: #0284c7;
+    fill: var(--art-ink-fill);
+    stroke: var(--art-ink-stroke);
   }
   48%,
   100% {
-    fill: #dcfce7;
-    stroke: #16a34a;
+    fill: var(--art-pick-fill);
+    stroke: var(--art-pick-stroke);
   }
 }
 /* the themed (first) card tints its canvas in step with the recolour, so the
-   whole surface shifts palette, not just the shapes. */
+   whole surface shifts palette, not just the shapes. It runs from the
+   Default canvas to Forest in light and to Pine in dark, so the grid, the labels and
+   the arrows (utilities reading these inherited properties) change with it. */
 .hero-theme-canvas {
   animation: hero-theme-canvas 16s ease-in-out infinite;
 }
 @keyframes hero-theme-canvas {
   0%,
   40% {
-    background-color: #eff6ff;
+    background-color: var(--art-paper);
+    --hero-grid: var(--art-grid);
+    --hero-label: var(--art-ink-text);
+    --hero-arrow: var(--art-arrow);
   }
   48%,
   100% {
-    background-color: #f0fdf4;
+    background-color: var(--art-pick-paper);
+    --hero-grid: var(--art-pick-grid);
+    --hero-label: var(--art-pick-text);
+    --hero-arrow: var(--art-pick-stroke);
   }
 }
 
@@ -672,19 +723,27 @@
     transform: translate(-50%, -50%) scale(1);
   }
 }
+/* The theme cards in dark: the dialog card border, the selection ring the editor draws there,
+   and where Pine sits (third in the Dark category, where Forest is second in light). */
+.dark .hero-dialog {
+  --hero-pick-x: 197px;
+  --hero-card-border: var(--color-slate-700);
+  --hero-pick-ring: var(--color-brand-300);
+  --hero-pick-border: var(--color-brand-400);
+}
 .hero-dialog-was {
   animation: hero-dialog-was 16s step-end infinite;
 }
 @keyframes hero-dialog-was {
   0%,
   35% {
-    box-shadow: 0 0 0 1px #7dd3fc;
-    border-color: #38bdf8;
+    box-shadow: 0 0 0 1px var(--hero-pick-ring, #7dd3fc);
+    border-color: var(--hero-pick-border, #38bdf8);
   }
   36%,
   100% {
     box-shadow: none;
-    border-color: #e2e8f0;
+    border-color: var(--hero-card-border, #e2e8f0);
   }
 }
 .hero-dialog-pick {
@@ -694,7 +753,7 @@
   0%,
   35% {
     box-shadow: none;
-    border-color: #e2e8f0;
+    border-color: var(--hero-card-border, #e2e8f0);
     transform: none;
   }
   36% {
@@ -702,8 +761,8 @@
   }
   37%,
   100% {
-    box-shadow: 0 0 0 1px #7dd3fc;
-    border-color: #38bdf8;
+    box-shadow: 0 0 0 1px var(--hero-pick-ring, #7dd3fc);
+    border-color: var(--hero-pick-border, #38bdf8);
     transform: none;
   }
 }
@@ -727,7 +786,7 @@
   35.5% {
     opacity: 1;
     top: 92px;
-    left: 118px;
+    left: var(--hero-pick-x, 118px);
     transform: none;
   }
   36% {
@@ -737,14 +796,14 @@
   39% {
     opacity: 1;
     top: 92px;
-    left: 118px;
+    left: var(--hero-pick-x, 118px);
     transform: none;
   }
   41%,
   100% {
     opacity: 0;
     top: 92px;
-    left: 118px;
+    left: var(--hero-pick-x, 118px);
   }
 }
 
@@ -971,4 +1030,24 @@
   transition-property: opacity, transform, scale, filter;
   transition-duration: 500ms;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Reduced motion, for the beats the shared list in globals.css leaves out: the deck
+   holds its last slide, the whole flow, as the peeking card does, and the HUD names it;
+   the assigned action shows ticked. The HUD selector is doubled to outrank the rule
+   there that hides every counter. */
+@media (prefers-reduced-motion: reduce) {
+  .hero-slide1,
+  .hero-slide2,
+  .hero-slide3 {
+    animation: none;
+    transform: translate(600px, 0);
+  }
+  .hero-slide-hud.hero-slide-hud4 {
+    opacity: 1;
+  }
+  .hero-action-tick {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
 }

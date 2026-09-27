@@ -42,7 +42,7 @@ const HomeIcon = (
 
 const ChevronIcon = (
   <svg
-    className="h-3.5 w-3.5 shrink-0 text-slate-300"
+    className="h-3.5 w-3.5 shrink-0 text-slate-300 dark:text-slate-600"
     fill="none"
     stroke="currentColor"
     viewBox="0 0 24 24"
@@ -75,7 +75,7 @@ export function BreadcrumbTrail({
     <>
       <Link
         href={rootHref}
-        className="flex shrink-0 items-center gap-1.5 transition-colors hover:text-slate-900"
+        className="flex shrink-0 items-center gap-1.5 transition-colors hover:text-slate-900 dark:hover:text-slate-100"
       >
         {HomeIcon}
         {rootLabel}
@@ -84,11 +84,14 @@ export function BreadcrumbTrail({
         <span key={i} className="flex min-w-0 items-center gap-2">
           {ChevronIcon}
           {item.href ? (
-            <Link href={item.href} className="truncate transition-colors hover:text-slate-900">
+            <Link
+              href={item.href}
+              className="truncate transition-colors hover:text-slate-900 dark:hover:text-slate-100"
+            >
               {item.label}
             </Link>
           ) : (
-            <span className="truncate text-slate-700">{item.label}</span>
+            <span className="truncate text-slate-700 dark:text-slate-200">{item.label}</span>
           )}
         </span>
       ))}

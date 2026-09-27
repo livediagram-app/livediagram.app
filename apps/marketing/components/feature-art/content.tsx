@@ -6,7 +6,8 @@ import { Frame, PINK } from './shared';
 
 // Editable table element: a coloured header row over body cells, with one
 // cell ringed as if mid-edit (the real table opens a cell on double-click)
-// and the header tinted to show the per-table header colours.
+// and the header tinted to show the per-table header colours. The body is an
+// unpainted table: no fill, the Default grid lines and text.
 export function TablesArt() {
   const headers = ['Item', 'Owner', 'Status'];
   const rows = [
@@ -16,7 +17,7 @@ export function TablesArt() {
   return (
     <Frame canvas>
       <div className="flex h-full items-center justify-center">
-        <div className="overflow-hidden rounded-[3px] border border-slate-300 bg-white shadow-sm">
+        <div className="overflow-hidden rounded-[3px] border border-(--art-table-line) shadow-sm">
           <div className="flex">
             {headers.map((h) => (
               <div
@@ -28,11 +29,11 @@ export function TablesArt() {
             ))}
           </div>
           {rows.map((row, ri) => (
-            <div key={ri} className="flex border-t border-slate-200">
+            <div key={ri} className="flex border-t border-(--art-table-line)">
               {row.map((cell, ci) => (
                 <div
                   key={ci}
-                  className="relative w-[50px] border-r border-slate-200 px-2 py-1 text-[7px] text-slate-600 last:border-r-0"
+                  className="relative w-[50px] border-r border-(--art-table-line) px-2 py-1 text-[7px] text-(--art-text) last:border-r-0"
                 >
                   {cell}
                   {ri === 1 && ci === 1 && (
@@ -55,12 +56,14 @@ export function IconsArt() {
   return (
     <Frame>
       <div className="flex h-full flex-col justify-center gap-1.5 px-3">
-        <p className="text-[8px] font-semibold uppercase tracking-wider text-slate-500">Icons</p>
+        <p className="text-[8px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+          Icons
+        </p>
         <div className="grid grid-cols-4 gap-1.5">
           {icons.map((g, i) => (
             <span
               key={g}
-              className="relative flex h-7 items-center justify-center rounded border border-slate-200 bg-white text-brand-600"
+              className="relative flex h-7 items-center justify-center rounded border border-slate-200 bg-white text-brand-600 dark:border-slate-800 dark:bg-slate-900 dark:text-brand-300"
             >
               <span
                 className="fa-hl pointer-events-none absolute inset-0 rounded ring-2 ring-brand-500"
@@ -165,11 +168,11 @@ export function RichTextArt() {
   return (
     <Frame>
       <div className="flex h-full flex-col justify-center gap-2 px-3">
-        <div className="flex w-max items-center gap-0.5 rounded-md border border-slate-200 bg-white px-1 py-0.5 shadow-sm">
+        <div className="flex w-max items-center gap-0.5 rounded-md border border-slate-200 bg-white px-1 py-0.5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           {tools.map((t, i) => (
             <span
               key={t.k}
-              className="relative flex h-4 w-4 items-center justify-center rounded text-[9px] text-slate-700"
+              className="relative flex h-4 w-4 items-center justify-center rounded text-[9px] text-slate-700 dark:text-slate-200"
               style={{
                 fontWeight: t.weight,
                 fontStyle: t.italic ? 'italic' : 'normal',
@@ -183,8 +186,8 @@ export function RichTextArt() {
             </span>
           ))}
         </div>
-        <p className="text-[10px] leading-relaxed text-slate-700">
-          A <span className="font-bold text-slate-900">bold</span> claim, an{' '}
+        <p className="text-[10px] leading-relaxed text-slate-700 dark:text-slate-200">
+          A <span className="font-bold text-slate-900 dark:text-slate-100">bold</span> claim, an{' '}
           <span className="italic">italic</span> aside, and a{' '}
           <span className="font-semibold" style={{ color: PINK }}>
             splash
@@ -197,15 +200,16 @@ export function RichTextArt() {
 }
 
 // Link card: paste a URL and it unfurls into a bookmark with a preview
-// image, favicon, title and host.
+// image, favicon, title and host. A link card keeps its own colours on any
+// canvas, as in the editor, so it stays light in dark.
 export function LinkCardArt() {
   return (
     <Frame canvas>
       <div className="flex h-full items-center justify-center">
         <div className="fa-pop w-[122px] overflow-hidden rounded-[4px] border border-slate-300 bg-white shadow-sm">
-          <div className="h-8 bg-gradient-to-br from-sky-200 to-brand-300" />
+          <div className="h-8 bg-gradient-to-br from-sky-200 to-[#7dd3fc]" />
           <div className="flex items-center gap-1.5 px-2 py-1.5">
-            <span className="h-4 w-4 shrink-0 rounded-[2px] bg-brand-500" />
+            <span className="h-4 w-4 shrink-0 rounded-[2px] bg-[#0ea5e9]" />
             <span className="flex min-w-0 flex-col">
               <span className="truncate text-[8px] font-semibold text-slate-800">
                 Design review
@@ -235,7 +239,7 @@ export function TechIconsArt() {
   return (
     <Frame>
       <div className="flex h-full flex-col justify-center gap-1.5 px-3">
-        <p className="text-[8px] font-semibold uppercase tracking-wider text-slate-500">
+        <p className="text-[8px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
           Technology
         </p>
         <div className="grid grid-cols-3 gap-1.5">
@@ -271,7 +275,7 @@ export function ComponentsArt() {
     <Frame>
       <div className="flex h-full flex-col justify-center gap-2 px-3">
         {/* Banner — accent bar with title + subtitle */}
-        <div className="fa-pop rounded-md bg-brand-500 px-2 py-1.5 text-white">
+        <div className="fa-pop rounded-md bg-brand-500 px-2 py-1.5 text-white dark:bg-brand-600">
           <p className="text-[9px] font-semibold leading-tight">Launch plan</p>
           <p className="text-[7px] leading-tight text-brand-50">Q3 rollout overview</p>
         </div>
@@ -280,10 +284,12 @@ export function ComponentsArt() {
           {stats.map((s, i) => (
             <div
               key={s.cap}
-              className="fa-pop flex flex-1 flex-col items-center rounded-md border border-slate-200 bg-white py-1"
+              className="fa-pop flex flex-1 flex-col items-center rounded-md border border-slate-200 bg-white py-1 dark:border-slate-800 dark:bg-slate-900"
               style={{ animationDelay: `${0.4 + i * 0.3}s` }}
             >
-              <span className="text-[11px] font-bold leading-none text-brand-600">{s.n}</span>
+              <span className="text-[11px] font-bold leading-none text-brand-600 dark:text-brand-300">
+                {s.n}
+              </span>
               <span className="mt-0.5 text-[6px] font-medium uppercase tracking-wide text-slate-400">
                 {s.cap}
               </span>

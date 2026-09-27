@@ -3,37 +3,35 @@
 // (window chrome + card rotation + animation timing) reads as
 // layout / state and these stay as pure SVG markup. Each diagram is
 // a stateless function: inputs are limited to the `playing` flag
-// (mind map only) and a Theme tint. The hero-* class names drive
+// (mind map only); every colour comes from the canvas palette. The hero-* class names drive
 // the keyframe animations defined alongside HeroIllustration's
 // stylesheet, so the markup must keep those classes intact.
 
-const BLUE_TEXT = '#0c4a6e';
-
-// Tint applied to a diagram canvas. The flowchart animates between
-// two of these via the hero-theme keyframes; the mind map and
-// timeline each hold one for the life of the animation.
-export type Theme = { canvas: string; fill: string; stroke: string; text: string };
+// Every window wears the Default scheme (the --art-* palette in hero-animations.css,
+// its light or dark half with the appearance): shapes in its ink, arrows and connectors
+// in its arrow colour. While the flowchart recolours to Forest or Pine, its canvas
+// carries --hero-label / --hero-arrow so the labels and arrows follow it.
+const INK = 'fill-(--art-ink-fill) stroke-(--art-ink-stroke)';
+const INK_LABEL = 'fill-(--art-ink-text)';
+const ARROW = 'stroke-(--art-arrow)';
+const FLOW_LABEL = 'fill-[var(--hero-label,var(--art-ink-text))]';
+// An editor popover (comment thread, action card) in dark, as CommentThreadPopover draws it.
+const POPOVER = 'dark:fill-slate-900 dark:stroke-slate-700';
 
 export function FlowchartDiagram() {
   return (
     <>
-      <g
-        className="hero-theme"
-        fill="#dbeafe"
-        stroke="#0284c7"
-        strokeWidth="2"
-        strokeLinejoin="round"
-      >
+      <g className={`hero-theme ${INK}`} strokeWidth="2" strokeLinejoin="round">
         <g className="hero-pop1">
           <rect x="80" y="34" width="120" height="44" rx="22" />
           <text
+            className={FLOW_LABEL}
             x="140"
             y="62"
             textAnchor="middle"
             fontFamily="ui-sans-serif, system-ui, sans-serif"
             fontWeight="600"
             fontSize="14"
-            fill={BLUE_TEXT}
             stroke="none"
           >
             Start
@@ -43,27 +41,25 @@ export function FlowchartDiagram() {
         <g className="hero-pop2">
           <rect x="80" y="118" width="120" height="52" rx="8" />
           <text
-            className="hero-text-out"
+            className={`hero-text-out ${FLOW_LABEL}`}
             x="140"
             y="150"
             textAnchor="middle"
             fontFamily="ui-sans-serif, system-ui, sans-serif"
             fontWeight="600"
             fontSize="14"
-            fill={BLUE_TEXT}
             stroke="none"
           >
             Plan
           </text>
           <text
-            className="hero-text-in"
+            className={`hero-text-in ${FLOW_LABEL}`}
             x="140"
             y="150"
             textAnchor="middle"
             fontFamily="ui-sans-serif, system-ui, sans-serif"
             fontWeight="600"
             fontSize="14"
-            fill={BLUE_TEXT}
             stroke="none"
           >
             Build
@@ -73,13 +69,13 @@ export function FlowchartDiagram() {
         <g className="hero-pop3">
           <polygon points="290,108 360,140 290,172 220,140" />
           <text
+            className={FLOW_LABEL}
             x="290"
             y="145"
             textAnchor="middle"
             fontFamily="ui-sans-serif, system-ui, sans-serif"
             fontWeight="600"
             fontSize="13"
-            fill={BLUE_TEXT}
             stroke="none"
           >
             Ready?
@@ -89,13 +85,13 @@ export function FlowchartDiagram() {
         <g className="hero-pop4">
           <rect x="400" y="118" width="120" height="52" rx="8" />
           <text
+            className={FLOW_LABEL}
             x="460"
             y="150"
             textAnchor="middle"
             fontFamily="ui-sans-serif, system-ui, sans-serif"
             fontWeight="600"
             fontSize="14"
-            fill={BLUE_TEXT}
             stroke="none"
           >
             Ship
@@ -105,13 +101,13 @@ export function FlowchartDiagram() {
         <g className="hero-pop5">
           <rect x="400" y="206" width="120" height="44" rx="22" />
           <text
+            className={FLOW_LABEL}
             x="460"
             y="234"
             textAnchor="middle"
             fontFamily="ui-sans-serif, system-ui, sans-serif"
             fontWeight="600"
             fontSize="14"
-            fill={BLUE_TEXT}
             stroke="none"
           >
             Done
@@ -121,7 +117,7 @@ export function FlowchartDiagram() {
 
       {/* Arrows (each a path that traces the line then its barbs, so the head
           draws in last with the stroke). */}
-      <g style={{ color: '#0284c7' }} fill="none">
+      <g className="text-[var(--hero-arrow,var(--art-arrow))]" fill="none">
         <path
           className="hero-line1"
           d="M140 78 L140 118 M134 111 L140 118 L146 111"
@@ -164,7 +160,7 @@ export function FlowchartDiagram() {
 // laser pointer rings the top-left node, moves to the bottom-right node and
 // rings it. It does not recolour. Reuses the hero-pop / hero-line build
 // keyframes; the highlighter and laser use their own hero-* keyframes.
-export function MindMapDiagram({ playing, theme }: { playing: boolean; theme: Theme }) {
+export function MindMapDiagram({ playing }: { playing: boolean }) {
   const nodes = [
     { cls: 'hero-pop2', x: 70, y: 30, w: 110, h: 36, label: 'Research' },
     { cls: 'hero-pop3', x: 420, y: 30, w: 110, h: 36, label: 'Design' },
@@ -179,8 +175,8 @@ export function MindMapDiagram({ playing, theme }: { playing: boolean; theme: Th
       fontFamily="ui-sans-serif, system-ui, sans-serif"
       fontWeight="600"
       fontSize={size}
-      fill={theme.text}
       stroke="none"
+      className={INK_LABEL}
     >
       {text}
     </text>
@@ -188,30 +184,30 @@ export function MindMapDiagram({ playing, theme }: { playing: boolean; theme: Th
   return (
     <>
       {/* Branches draw first underneath the nodes. */}
-      <g style={{ color: theme.stroke }} fill="none">
+      <g fill="none">
         <path
-          className="hero-line1"
+          className={`hero-line1 ${ARROW}`}
           d="M255 125 L180 66"
           stroke="currentColor"
           strokeWidth="2"
           strokeLinecap="round"
         />
         <path
-          className="hero-line2"
+          className={`hero-line2 ${ARROW}`}
           d="M345 125 L420 66"
           stroke="currentColor"
           strokeWidth="2"
           strokeLinecap="round"
         />
         <path
-          className="hero-line3"
+          className={`hero-line3 ${ARROW}`}
           d="M255 155 L180 214"
           stroke="currentColor"
           strokeWidth="2"
           strokeLinecap="round"
         />
         <path
-          className="hero-line4"
+          className={`hero-line4 ${ARROW}`}
           d="M345 155 L420 214"
           stroke="currentColor"
           strokeWidth="2"
@@ -219,7 +215,7 @@ export function MindMapDiagram({ playing, theme }: { playing: boolean; theme: Th
         />
       </g>
 
-      <g fill={theme.fill} stroke={theme.stroke} strokeWidth="2" strokeLinejoin="round">
+      <g className={INK} strokeWidth="2" strokeLinejoin="round">
         {/* Central node */}
         <g className="hero-pop1">
           <rect x="250" y="120" width="100" height="40" rx="20" />
@@ -268,7 +264,7 @@ export function MindMapDiagram({ playing, theme }: { playing: boolean; theme: Th
 // Card 3 diagram: a release timeline. The axis draws left to right (four
 // hero-line segments) while milestones pop in above and below it. It does not
 // recolour.
-export function TimelineDiagram({ theme }: { theme: Theme }) {
+export function TimelineDiagram() {
   const milestones = [
     { cls: 'hero-pop1', x: 80, above: true, title: 'Kickoff', date: 'Jan' },
     { cls: 'hero-pop2', x: 190, above: false, title: 'Design', date: 'Mar' },
@@ -279,30 +275,30 @@ export function TimelineDiagram({ theme }: { theme: Theme }) {
   return (
     <>
       {/* Axis, drawn in four segments left to right. */}
-      <g style={{ color: theme.stroke }} fill="none">
+      <g fill="none">
         <path
-          className="hero-line1"
+          className={`hero-line1 ${ARROW}`}
           d="M80 140 L190 140"
           stroke="currentColor"
           strokeWidth="2"
           strokeLinecap="round"
         />
         <path
-          className="hero-line2"
+          className={`hero-line2 ${ARROW}`}
           d="M190 140 L300 140"
           stroke="currentColor"
           strokeWidth="2"
           strokeLinecap="round"
         />
         <path
-          className="hero-line3"
+          className={`hero-line3 ${ARROW}`}
           d="M300 140 L410 140"
           stroke="currentColor"
           strokeWidth="2"
           strokeLinecap="round"
         />
         <path
-          className="hero-line4"
+          className={`hero-line4 ${ARROW}`}
           d="M410 140 L520 140"
           stroke="currentColor"
           strokeWidth="2"
@@ -310,7 +306,7 @@ export function TimelineDiagram({ theme }: { theme: Theme }) {
         />
       </g>
 
-      <g fill={theme.fill} stroke={theme.stroke} strokeWidth="2" strokeLinejoin="round">
+      <g className={INK} strokeWidth="2" strokeLinejoin="round">
         {milestones.map((m) => {
           const cardY = m.above ? 70 : 168;
           const connFrom = m.above ? 106 : 168;
@@ -322,11 +318,11 @@ export function TimelineDiagram({ theme }: { theme: Theme }) {
                 y1={connFrom}
                 x2={m.x}
                 y2={connTo}
-                stroke={theme.stroke}
                 strokeWidth="2"
                 strokeLinecap="round"
+                className={ARROW}
               />
-              <circle cx={m.x} cy="140" r="6" fill={theme.stroke} stroke="none" />
+              <circle className="fill-(--art-ink-stroke)" cx={m.x} cy="140" r="6" stroke="none" />
               <rect x={m.x - 46} y={cardY} width="92" height="36" rx="6" />
               <text
                 x={m.x}
@@ -335,8 +331,8 @@ export function TimelineDiagram({ theme }: { theme: Theme }) {
                 fontFamily="ui-sans-serif, system-ui, sans-serif"
                 fontWeight="600"
                 fontSize="12"
-                fill={theme.text}
                 stroke="none"
+                className={INK_LABEL}
               >
                 {m.title}
               </text>
@@ -349,6 +345,7 @@ export function TimelineDiagram({ theme }: { theme: Theme }) {
                 fontSize="9"
                 fill="#64748b"
                 stroke="none"
+                className="dark:fill-slate-400"
               >
                 {m.date}
               </text>
@@ -408,14 +405,14 @@ export function SlideDeckDiagram() {
       {SLIDES.map((slide, i) => (
         <g key={slide.name} transform={slideTransform(slide.nodes)}>
           <g className={`hero-slide hero-slide${i + 1}`}>
-            <g fill="none" stroke="#0284c7" strokeWidth="2" strokeLinecap="round">
+            <g className={ARROW} fill="none" stroke="#0284c7" strokeWidth="2" strokeLinecap="round">
               {FLOW_EDGES.filter(
                 (e) => slide.nodes.includes(e.from) && slide.nodes.includes(e.to),
               ).map((e) => (
                 <path key={`${e.from}-${e.to}`} d={e.d} />
               ))}
             </g>
-            <g fill="#dbeafe" stroke="#0284c7" strokeWidth="2" strokeLinejoin="round">
+            <g className={INK} strokeWidth="2" strokeLinejoin="round">
               {slide.nodes.map((n) => {
                 const b = FLOW_NODES[n];
                 return (
@@ -426,13 +423,13 @@ export function SlideDeckDiagram() {
                       <rect x={b.x} y={b.y} width={b.w} height={b.h} rx={b.rx} />
                     )}
                     <text
+                      className={INK_LABEL}
                       x={b.x + b.w / 2}
                       y={b.y + b.h / 2 + 5}
                       textAnchor="middle"
                       fontFamily="ui-sans-serif, system-ui, sans-serif"
                       fontWeight="600"
                       fontSize="14"
-                      fill={BLUE_TEXT}
                       stroke="none"
                     >
                       {b.label}
@@ -453,13 +450,13 @@ export function SlideDeckDiagram() {
 // beside it (docs/specs/012-collaboration/comment-pin.md), then an assigned action lands on the database
 // (docs/specs/012-collaboration/assigned-actions.md) and, near the end of the cycle, gets ticked off. The peeking
 // card settles with both in place and the action done.
-export function ArchitectureDiagram({ theme }: { theme: Theme }) {
+export function ArchitectureDiagram() {
   const boxes = [
     { cls: 'hero-pop1', x: 60, label: 'Web app' },
     { cls: 'hero-pop2', x: 240, label: 'API' },
     { cls: 'hero-pop3', x: 420, label: 'Database' },
   ];
-  const label = (x: number, y: number, text: string, size = 14, fill = theme.text) => (
+  const label = (x: number, y: number, text: string, size = 14, fill?: string) => (
     <text
       x={x}
       y={y}
@@ -469,29 +466,30 @@ export function ArchitectureDiagram({ theme }: { theme: Theme }) {
       fontSize={size}
       fill={fill}
       stroke="none"
+      className={fill ? undefined : INK_LABEL}
     >
       {text}
     </text>
   );
   return (
     <>
-      <g style={{ color: theme.stroke }} fill="none">
+      <g fill="none">
         <path
-          className="hero-line1"
+          className={`hero-line1 ${ARROW}`}
           d="M180 144 L240 144 M234 138 L240 144 L234 150"
           stroke="currentColor"
           strokeWidth="2"
           strokeLinecap="round"
         />
         <path
-          className="hero-line2"
+          className={`hero-line2 ${ARROW}`}
           d="M360 144 L420 144 M414 138 L420 144 L414 150"
           stroke="currentColor"
           strokeWidth="2"
           strokeLinecap="round"
         />
       </g>
-      <g fill={theme.fill} stroke={theme.stroke} strokeWidth="2" strokeLinejoin="round">
+      <g className={INK} strokeWidth="2" strokeLinejoin="round">
         {boxes.map((b) => (
           <g key={b.label} className={b.cls}>
             <rect x={b.x} y="118" width="120" height="52" rx="8" />
@@ -500,17 +498,52 @@ export function ArchitectureDiagram({ theme }: { theme: Theme }) {
         ))}
       </g>
 
-      {/* Comment pin on the API box, with the thread beside it. */}
+      {/* Comment pin on the API box, with the thread beside it. The thread and the
+          action card are editor popovers, so they go dark with the chrome while
+          the canvas keeps the Default scheme. */}
       <g className="hero-note">
         <circle cx="360" cy="118" r="11" fill="#ec4899" stroke="white" strokeWidth="2" />
         {label(360, 122, 'JR', 9, 'white')}
         <g transform="translate(372 52)">
-          <rect x="0" y="0" width="150" height="52" rx="8" fill="white" stroke="#e2e8f0" />
+          <rect
+            className={POPOVER}
+            x="0"
+            y="0"
+            width="150"
+            height="52"
+            rx="8"
+            fill="white"
+            stroke="#e2e8f0"
+          />
           <circle cx="16" cy="16" r="7" fill="#ec4899" />
           {label(16, 19, 'JR', 7, 'white')}
-          <rect x="30" y="11" width="64" height="7" rx="3.5" fill="#cbd5e1" />
-          <rect x="10" y="30" width="118" height="6" rx="3" fill="#e2e8f0" />
-          <rect x="10" y="40" width="84" height="6" rx="3" fill="#e2e8f0" />
+          <rect
+            className="dark:fill-slate-600"
+            x="30"
+            y="11"
+            width="64"
+            height="7"
+            rx="3.5"
+            fill="#cbd5e1"
+          />
+          <rect
+            className="dark:fill-slate-700"
+            x="10"
+            y="30"
+            width="118"
+            height="6"
+            rx="3"
+            fill="#e2e8f0"
+          />
+          <rect
+            className="dark:fill-slate-700"
+            x="10"
+            y="40"
+            width="84"
+            height="6"
+            rx="3"
+            fill="#e2e8f0"
+          />
         </g>
       </g>
 
@@ -519,7 +552,16 @@ export function ArchitectureDiagram({ theme }: { theme: Theme }) {
           on the inner one, which would replace an SVG transform attribute. */}
       <g transform="translate(396 190)">
         <g className="hero-action">
-          <rect x="0" y="0" width="168" height="40" rx="8" fill="white" stroke="#e2e8f0" />
+          <rect
+            className={POPOVER}
+            x="0"
+            y="0"
+            width="168"
+            height="40"
+            rx="8"
+            fill="white"
+            stroke="#e2e8f0"
+          />
           <rect
             x="10"
             y="11"
@@ -547,6 +589,7 @@ export function ArchitectureDiagram({ theme }: { theme: Theme }) {
             fontSize="10"
             fill="#0f172a"
             stroke="none"
+            className="dark:fill-slate-100"
           >
             Add a read replica
           </text>
@@ -558,6 +601,7 @@ export function ArchitectureDiagram({ theme }: { theme: Theme }) {
             fontSize="8.5"
             fill="#64748b"
             stroke="none"
+            className="dark:fill-slate-400"
           >
             Assigned to JR
           </text>

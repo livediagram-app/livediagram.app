@@ -19,21 +19,24 @@ export function Section({
   children,
   variant = 'default',
 }: SectionProps) {
-  const bg = variant === 'tinted' ? 'bg-brand-50/60' : 'bg-white';
+  const bg =
+    variant === 'tinted' ? 'bg-brand-50/60 dark:bg-brand-500/10' : 'bg-white dark:bg-slate-900';
   return (
-    <section id={id} className={`${bg} border-t border-slate-200/70`}>
+    <section id={id} className={`${bg} border-t border-slate-200/70 dark:border-slate-800/70`}>
       <div className="mx-auto max-w-6xl px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-2xl text-center">
           {eyebrow ? (
-            <p className="text-sm font-semibold tracking-wide text-brand-600 uppercase">
+            <p className="text-sm font-semibold tracking-wide text-brand-600 uppercase dark:text-brand-300">
               {eyebrow}
             </p>
           ) : null}
-          <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
+          <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl dark:text-slate-100">
             {title}
           </h2>
           {description ? (
-            <p className="mt-4 text-lg leading-relaxed text-slate-600">{description}</p>
+            <p className="mt-4 text-lg leading-relaxed text-slate-600 dark:text-slate-300">
+              {description}
+            </p>
           ) : null}
         </div>
         {children ? <div className="mt-14">{children}</div> : null}
@@ -84,11 +87,13 @@ function FeatureCard({ title, description, art, href }: FeatureProps) {
     <>
       <div className="flex flex-1 flex-col p-6">
         {art}
-        <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
-        <p className="mt-2 text-sm leading-relaxed text-slate-600">{description}</p>
+        <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{title}</h3>
+        <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+          {description}
+        </p>
       </div>
       {href ? (
-        <div className="flex items-center justify-between gap-2 border-t border-slate-100 bg-slate-50/70 px-6 py-3 text-sm font-medium text-brand-600 transition-colors group-hover:bg-brand-50 group-hover:text-brand-700">
+        <div className="flex items-center justify-between gap-2 border-t border-slate-100 bg-slate-50/70 px-6 py-3 text-sm font-medium text-brand-600 transition-colors group-hover:bg-brand-50 dark:group-hover:bg-brand-500/15 group-hover:text-brand-700 dark:border-slate-800 dark:bg-slate-900/70 dark:text-brand-300 dark:group-hover:text-brand-200">
           <span>
             Learn more<span className="sr-only"> (opens in a new tab)</span>
           </span>
@@ -105,7 +110,7 @@ function FeatureCard({ title, description, art, href }: FeatureProps) {
   // it (docs/specs/019-marketing/marketing-site.md). scroll-mt keeps it clear of the sticky header on arrival.
   const id = featureAnchor(title);
   const className =
-    'group flex h-full scroll-mt-24 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition duration-micro hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md';
+    'group flex h-full scroll-mt-24 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition duration-micro hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-brand-500/60';
 
   return href ? (
     <a

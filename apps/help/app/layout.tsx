@@ -6,7 +6,14 @@ import { Footer } from '@/components/Footer';
 import { BackToTop } from '@/components/BackToTop';
 import { webSiteJsonLd } from '@/lib/structured-data';
 import './globals.css';
-import { JsonLd, PageViewBoot, PUBLIC_VIEWPORT, SITE_URL } from '@livediagram/ui';
+import {
+  APPEARANCE_BOOT_SCRIPT,
+  DARK_READER_LOCK,
+  JsonLd,
+  PageViewBoot,
+  PUBLIC_VIEWPORT,
+  SITE_URL,
+} from '@livediagram/ui';
 
 // The livediagram help centre (docs/specs/018-help/help-app.md). Indexable static site served
 // under /help by the router. No third-party scripts, it stays
@@ -33,6 +40,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
   },
   robots: { index: true, follow: true },
+  other: DARK_READER_LOCK,
   // Favicon is served BY this app: `app/icon.svg` (Next auto-injects it,
   // basePath-aware at /help/icon.svg) so the help centre owns its icon
   // instead of relying on the router forwarding a bare /icon.svg to another
@@ -43,8 +51,11 @@ export const viewport: Viewport = PUBLIC_VIEWPORT;
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en-GB">
-      <body className="flex min-h-screen flex-col bg-slate-50 text-slate-800 antialiased">
+    // suppressHydrationWarning: the pre-paint script may add `dark` to <html>.
+    <html lang="en-GB" suppressHydrationWarning>
+      <body className="flex min-h-screen flex-col bg-slate-50 text-slate-800 antialiased dark:bg-slate-950 dark:text-slate-200">
+        {/* Appearance before first paint (docs/specs/004-interface-design/appearance.md). */}
+        <script dangerouslySetInnerHTML={{ __html: APPEARANCE_BOOT_SCRIPT }} />
         <JsonLd data={webSiteJsonLd()} />
         <ErrorTelemetryBoot />
         <PageViewBoot />

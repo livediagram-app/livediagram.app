@@ -134,7 +134,7 @@ mode (their backdrop). Tabs holding the previous dark half are migrated on read;
 | Identity colour outside the participant set   | `identityDeep` darkens in 5 % steps until white reads at 4.5:1 (D20)                                           |
 | Non-hex identity colour                       | Passed through unchanged                                                                                       |
 | Tile art darker than `#f3faff`                | Untouched by the `darken` veil; inverted with hue kept                                                         |
-| Marketing gallery tile                        | `.preview-art-tile-dark` rule unchanged                                                                        |
+| Marketing gallery tile                        | The same `.dark .preview-art-tile` rule as the editor picker                                                   |
 | Disabled solid button in dark                 | `dark:disabled:*` sorts after `dark:bg-*`; inactive controls are exempt (1.4.3)                                |
 
 ## Security and trust

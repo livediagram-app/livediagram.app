@@ -1,6 +1,6 @@
 // Feature illustrations — canvas + real-time scenes. Split from
 // FeatureArt.tsx; see ./shared for Frame + color constants.
-import { BLUE_FILL, BLUE_STROKE, Frame, PINK, SKY } from './shared';
+import { ARROW_STROKE, BLUE_STROKE, Frame, INK_FILL, INK_STROKE, PINK, SKY } from './shared';
 import { ActionIcon } from '@livediagram/ui';
 import {
   ClockIcon,
@@ -24,7 +24,7 @@ export function TemplatesArt() {
         {tiles.map((name, i) => (
           <div
             key={name}
-            className="relative h-16 w-1/3 overflow-hidden rounded border border-slate-200 bg-white p-1"
+            className="relative h-16 w-1/3 overflow-hidden rounded border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-900"
           >
             <span
               className="fa-hl pointer-events-none absolute inset-0 rounded ring-2 ring-brand-500"
@@ -32,13 +32,30 @@ export function TemplatesArt() {
             />
             <svg viewBox="0 0 60 32" className="h-8 w-full">
               {i === 0 ? (
-                <g fill={BLUE_FILL} stroke={BLUE_STROKE} strokeWidth="1.5">
+                <g
+                  className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
+                  fill={INK_FILL}
+                  stroke={INK_STROKE}
+                  strokeWidth="1.5"
+                >
                   <rect x="22" y="2" width="16" height="8" rx="2" />
                   <rect x="22" y="20" width="16" height="8" rx="2" />
-                  <line x1="30" y1="10" x2="30" y2="20" stroke={BLUE_STROKE} />
+                  <line
+                    className="stroke-(--art-arrow)"
+                    x1="30"
+                    y1="10"
+                    x2="30"
+                    y2="20"
+                    stroke={ARROW_STROKE}
+                  />
                 </g>
               ) : i === 1 ? (
-                <g fill={BLUE_FILL} stroke={BLUE_STROKE} strokeWidth="1.5">
+                <g
+                  className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
+                  fill={INK_FILL}
+                  stroke={INK_STROKE}
+                  strokeWidth="1.5"
+                >
                   <line x1="30" y1="16" x2="12" y2="6" />
                   <line x1="30" y1="16" x2="48" y2="6" />
                   <line x1="30" y1="16" x2="14" y2="26" />
@@ -48,9 +65,24 @@ export function TemplatesArt() {
                   <circle cx="13" cy="26" r="3.5" />
                 </g>
               ) : (
-                <g fill={BLUE_FILL} stroke={BLUE_STROKE} strokeWidth="1.2">
-                  <rect x="4" y="3" width="14" height="26" rx="2" fill="#f1f5f9" stroke="#cbd5e1" />
+                <g
+                  className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
+                  fill={INK_FILL}
+                  stroke={INK_STROKE}
+                  strokeWidth="1.2"
+                >
                   <rect
+                    className="dark:fill-slate-800 dark:stroke-slate-700"
+                    x="4"
+                    y="3"
+                    width="14"
+                    height="26"
+                    rx="2"
+                    fill="#f1f5f9"
+                    stroke="#cbd5e1"
+                  />
+                  <rect
+                    className="dark:fill-slate-800 dark:stroke-slate-700"
                     x="23"
                     y="3"
                     width="14"
@@ -60,6 +92,7 @@ export function TemplatesArt() {
                     stroke="#cbd5e1"
                   />
                   <rect
+                    className="dark:fill-slate-800 dark:stroke-slate-700"
                     x="42"
                     y="3"
                     width="14"
@@ -74,7 +107,9 @@ export function TemplatesArt() {
                 </g>
               )}
             </svg>
-            <p className="mt-0.5 text-center text-[7px] font-medium text-slate-500">{name}</p>
+            <p className="mt-0.5 text-center text-[7px] font-medium text-slate-500 dark:text-slate-400">
+              {name}
+            </p>
           </div>
         ))}
       </div>
@@ -86,13 +121,28 @@ export function ThemesArt() {
   return (
     <Frame>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
-        <rect className="fa-theme-bg" x="40" y="14" width="140" height="68" rx="8" />
-        <g className="fa-theme" strokeWidth="2">
+        {/* Each recolouring piece rests in the Default look, which is what reduced motion shows. */}
+        <rect
+          className="fa-theme-bg fill-(--art-paper)"
+          x="40"
+          y="14"
+          width="140"
+          height="68"
+          rx="8"
+          fill="#f0f9ff"
+        />
+        <g
+          className="fa-theme fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
+          fill={INK_FILL}
+          stroke={INK_STROKE}
+          strokeWidth="2"
+        >
           <rect x="58" y="30" width="46" height="22" rx="6" />
           <rect x="120" y="46" width="46" height="22" rx="6" />
         </g>
         <line
-          className="fa-theme"
+          className="fa-theme stroke-(--art-arrow)"
+          stroke={ARROW_STROKE}
           x1="104"
           y1="41"
           x2="120"
@@ -101,7 +151,7 @@ export function ThemesArt() {
           strokeLinecap="round"
         />
       </svg>
-      <span className="absolute bottom-1.5 right-2 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-slate-500 shadow-sm">
+      <span className="absolute bottom-1.5 right-2 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-slate-500 shadow-sm dark:bg-slate-900/90 dark:text-slate-400">
         one click
       </span>
     </Frame>
@@ -120,17 +170,18 @@ export function MarqueeArt() {
         {boxes.map((b, i) => (
           <g key={i}>
             <rect
+              className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
               x={b.x}
               y={b.y}
               width="40"
               height="22"
               rx="5"
-              fill={BLUE_FILL}
-              stroke={BLUE_STROKE}
+              fill={INK_FILL}
+              stroke={INK_STROKE}
               strokeWidth="2"
             />
             <rect
-              className="fa-pulse"
+              className="fa-pulse dark:stroke-brand-500"
               x={b.x - 3}
               y={b.y - 3}
               width="46"
@@ -145,7 +196,7 @@ export function MarqueeArt() {
         ))}
         {/* marquee selection rectangle */}
         <rect
-          className="fa-grow"
+          className="fa-grow dark:fill-brand-500/10 dark:stroke-brand-500"
           x="20"
           y="22"
           width="174"
@@ -158,7 +209,7 @@ export function MarqueeArt() {
         />
       </svg>
       <span
-        className="fa-pop absolute left-1/2 top-1.5 -translate-x-1/2 rounded bg-slate-900 px-1.5 py-0.5 text-[8px] font-semibold text-white"
+        className="fa-pop absolute left-1/2 top-1.5 -translate-x-1/2 rounded bg-slate-900 px-1.5 py-0.5 text-[8px] font-semibold text-white dark:bg-slate-700"
         style={{ animationDelay: '1.4s' }}
       >
         3 selected
@@ -172,13 +223,14 @@ export function CommentsArt() {
     <Frame canvas>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
         <rect
+          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
           x="26"
           y="34"
           width="58"
           height="30"
           rx="6"
-          fill={BLUE_FILL}
-          stroke={BLUE_STROKE}
+          fill={INK_FILL}
+          stroke={INK_STROKE}
           strokeWidth="2"
         />
       </svg>
@@ -188,7 +240,7 @@ export function CommentsArt() {
         <span className="relative">2</span>
       </span>
       {/* thread popover */}
-      <div className="fa-fade absolute right-2 top-3 w-[52%] rounded-md border border-slate-200 bg-white p-1.5 shadow-md">
+      <div className="fa-fade absolute right-2 top-3 w-[52%] rounded-md border border-slate-200 bg-white p-1.5 shadow-md dark:border-slate-800 dark:bg-slate-900">
         <div className="flex items-center gap-1">
           <span
             className="flex h-3.5 w-3.5 items-center justify-center rounded-full text-[6px] font-bold text-white"
@@ -196,10 +248,12 @@ export function CommentsArt() {
           >
             JR
           </span>
-          <span className="text-[7px] font-semibold text-slate-600">Jordan</span>
+          <span className="text-[7px] font-semibold text-slate-600 dark:text-slate-300">
+            Jordan
+          </span>
         </div>
-        <div className="mt-1 h-1.5 w-full rounded bg-slate-100" />
-        <div className="mt-0.5 h-1.5 w-3/4 rounded bg-slate-100" />
+        <div className="mt-1 h-1.5 w-full rounded bg-slate-100 dark:bg-slate-800" />
+        <div className="mt-0.5 h-1.5 w-3/4 rounded bg-slate-100 dark:bg-slate-800" />
       </div>
     </Frame>
   );
@@ -210,13 +264,14 @@ export function AssignedActionsArt() {
     <Frame canvas>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
         <rect
+          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
           x="26"
           y="34"
           width="58"
           height="30"
           rx="6"
-          fill={BLUE_FILL}
-          stroke={BLUE_STROKE}
+          fill={INK_FILL}
+          stroke={INK_STROKE}
           strokeWidth="2"
         />
       </svg>
@@ -225,8 +280,8 @@ export function AssignedActionsArt() {
         <ActionIcon size={12} strokeWidth={1.75} className="h-3 w-3" />
       </span>
       {/* action card */}
-      <div className="fa-fade absolute right-2 top-3 w-[54%] rounded-md border border-slate-200 bg-white p-1.5 shadow-md">
-        <div className="h-1.5 w-4/5 rounded bg-slate-200" />
+      <div className="fa-fade absolute right-2 top-3 w-[54%] rounded-md border border-slate-200 bg-white p-1.5 shadow-md dark:border-slate-800 dark:bg-slate-900">
+        <div className="h-1.5 w-4/5 rounded bg-slate-200 dark:bg-slate-700" />
         <div className="mt-1 flex items-center gap-1">
           <span
             className="flex h-3.5 w-3.5 items-center justify-center rounded-full text-[6px] font-bold text-white"
@@ -234,7 +289,9 @@ export function AssignedActionsArt() {
           >
             AS
           </span>
-          <span className="text-[7px] font-semibold text-slate-600">Assigned to Ana</span>
+          <span className="text-[7px] font-semibold text-slate-600 dark:text-slate-300">
+            Assigned to Ana
+          </span>
         </div>
         <span className="fa-pop mt-1 inline-block rounded bg-emerald-500 px-1 py-0.5 text-[7px] font-semibold text-white">
           Complete
@@ -244,27 +301,50 @@ export function AssignedActionsArt() {
   );
 }
 
+// The style the format painter copies (the fa-paint keyframes paint the same pair).
+const PAINTED_FILL = '#dbeafe';
+const PAINTED_STROKE = '#0284c7';
+
 export function FormatPainterArt() {
   return (
     <Frame canvas>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
-        {/* styled source */}
+        {/* styled source: a painted style, not the theme's ink, so it keeps its colours on
+            any canvas (the painter's subject is colour) */}
         <rect
           x="26"
           y="35"
           width="54"
           height="26"
           rx="6"
-          fill={BLUE_FILL}
-          stroke={BLUE_STROKE}
+          fill={PAINTED_FILL}
+          stroke={PAINTED_STROKE}
           strokeWidth="2"
         />
-        {/* target adopts the style */}
-        <rect className="fa-paint" x="140" y="35" width="54" height="26" rx="6" strokeWidth="2" />
+        {/* target adopts the style; it rests painted, which is what reduced motion shows */}
+        <rect
+          className="fa-paint"
+          x="140"
+          y="35"
+          width="54"
+          height="26"
+          rx="6"
+          fill={PAINTED_FILL}
+          stroke={PAINTED_STROKE}
+          strokeWidth="2"
+        />
         {/* travelling brush */}
         <g className="fa-brush">
-          <circle cx="92" cy="34" r="8" fill="white" stroke="#94a3b8" strokeWidth="1.5" />
-          <path d="M88 34 l4 -4 l3 3 l-4 4 z" fill={BLUE_STROKE} />
+          <circle
+            className="dark:fill-slate-900 dark:stroke-slate-500"
+            cx="92"
+            cy="34"
+            r="8"
+            fill="white"
+            stroke="#94a3b8"
+            strokeWidth="1.5"
+          />
+          <path className="dark:fill-brand-300" d="M88 34 l4 -4 l3 3 l-4 4 z" fill={BLUE_STROKE} />
         </g>
       </svg>
     </Frame>
@@ -276,7 +356,7 @@ export function TabsArt() {
   return (
     <Frame>
       <div className="flex h-full flex-col">
-        <div className="relative flex items-center gap-1 border-b border-slate-200 px-2 pt-2">
+        <div className="relative flex items-center gap-1 border-b border-slate-200 px-2 pt-2 dark:border-slate-800">
           {/* sliding active indicator */}
           <span
             className="fa-tab absolute bottom-0 left-2 h-[2px] w-[52px] rounded bg-brand-500"
@@ -285,7 +365,7 @@ export function TabsArt() {
           {tabs.map((t) => (
             <span
               key={t}
-              className="rounded-t px-1.5 py-1 text-[8px] font-medium text-slate-600"
+              className="rounded-t px-1.5 py-1 text-[8px] font-medium text-slate-600 dark:text-slate-300"
               style={{ width: 52, display: 'inline-block', textAlign: 'center' }}
             >
               {t}
@@ -296,39 +376,41 @@ export function TabsArt() {
         <div className="relative flex-1">
           <svg viewBox="0 0 220 56" className="absolute inset-0 h-full w-full">
             <rect
+              className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
               x="30"
               y="14"
               width="46"
               height="20"
               rx="5"
-              fill={BLUE_FILL}
-              stroke={BLUE_STROKE}
+              fill={INK_FILL}
+              stroke={INK_STROKE}
               strokeWidth="1.8"
             />
             <rect
+              className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
               x="120"
               y="20"
               width="46"
               height="20"
               rx="5"
-              fill={BLUE_FILL}
-              stroke={BLUE_STROKE}
+              fill={INK_FILL}
+              stroke={INK_STROKE}
               strokeWidth="1.8"
             />
             <line
-              className="fa-draw"
+              className="fa-draw stroke-(--art-arrow)"
               x1="76"
               y1="24"
               x2="120"
               y2="30"
-              stroke={BLUE_STROKE}
+              stroke={ARROW_STROKE}
               strokeWidth="1.8"
               strokeLinecap="round"
             />
           </svg>
           {/* cross-tab link chip */}
           <span
-            className="fa-fade absolute right-3 top-2 flex items-center gap-0.5 rounded bg-white px-1 py-0.5 text-[7px] font-medium text-brand-600 shadow-sm ring-1 ring-slate-200"
+            className="fa-fade absolute right-3 top-2 flex items-center gap-0.5 rounded bg-white px-1 py-0.5 text-[7px] font-medium text-brand-600 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:text-brand-300 dark:ring-slate-800"
             style={{ animationDelay: '0.6s' }}
           >
             ↗ Data
@@ -342,7 +424,7 @@ export function TabsArt() {
 export function FoldersArt() {
   return (
     <Frame>
-      <div className="flex h-full flex-col justify-center gap-1 px-3 text-[8px] text-slate-600">
+      <div className="flex h-full flex-col justify-center gap-1 px-3 text-[8px] text-slate-600 dark:text-slate-300">
         <div className="flex items-center gap-1 font-medium">
           <svg
             className="fa-chev"
@@ -360,11 +442,11 @@ export function FoldersArt() {
         </div>
         <div className="fa-reveal ml-4 flex items-center gap-1" style={{ animationDelay: '0s' }}>
           <DiagramIcon />
-          <span className="text-slate-500">Architecture</span>
+          <span className="text-slate-500 dark:text-slate-400">Architecture</span>
         </div>
         <div className="fa-reveal ml-4 flex items-center gap-1" style={{ animationDelay: '0.15s' }}>
           <DiagramIcon />
-          <span className="text-slate-500">Onboarding flow</span>
+          <span className="text-slate-500 dark:text-slate-400">Onboarding flow</span>
         </div>
         <div className="ml-0 flex items-center gap-1 text-slate-400">
           <FolderIcon muted />
@@ -386,18 +468,18 @@ export function TabFoldersArt() {
     <Frame>
       <div className="flex h-full items-center justify-center gap-1.5 px-3">
         {/* A folder chip grouping two member tabs. */}
-        <span className="flex items-center gap-1 rounded border border-slate-200 bg-white px-1 py-0.5">
-          <span className="flex items-center gap-1 px-1 text-[7px] font-semibold text-slate-600">
+        <span className="flex items-center gap-1 rounded border border-slate-200 bg-white px-1 py-0.5 dark:border-slate-800 dark:bg-slate-900">
+          <span className="flex items-center gap-1 px-1 text-[7px] font-semibold text-slate-600 dark:text-slate-300">
             <FolderIcon />
             <span>Backend</span>
-            <span className="rounded-full bg-slate-200 px-1 text-[6px] font-semibold text-slate-500">
+            <span className="rounded-full bg-slate-200 px-1 text-[6px] font-semibold text-slate-500 dark:bg-slate-700 dark:text-slate-400">
               2
             </span>
           </span>
           {members.map((t) => (
             <span
               key={t.name}
-              className="flex items-center gap-1 rounded bg-slate-50 px-1.5 py-1 text-[7px] font-medium text-slate-600"
+              className="flex items-center gap-1 rounded bg-slate-50 px-1.5 py-1 text-[7px] font-medium text-slate-600 dark:bg-slate-950 dark:text-slate-300"
             >
               <span className="h-2.5 w-1 rounded-full" style={{ backgroundColor: t.c }} />
               {t.name}
@@ -405,7 +487,7 @@ export function TabFoldersArt() {
           ))}
         </span>
         {/* A loose tab outside the folder. */}
-        <span className="flex items-center gap-1 rounded border border-slate-200 bg-white px-1.5 py-1 text-[7px] font-medium text-slate-600">
+        <span className="flex items-center gap-1 rounded border border-slate-200 bg-white px-1.5 py-1 text-[7px] font-medium text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
           <span className="h-2.5 w-1 rounded-full" style={{ backgroundColor: SKY }} />
           Notes
         </span>
@@ -440,7 +522,9 @@ export function PresenceArt() {
               key={t.name}
               className={
                 'relative flex flex-col items-center gap-1 rounded-md border px-2 py-1.5 ' +
-                (t.active ? 'border-brand-300 bg-white' : 'border-slate-200 bg-slate-50')
+                (t.active
+                  ? 'border-brand-300 bg-white dark:border-brand-500/50 dark:bg-slate-900 dark:[--avatar-gap:var(--color-slate-900)]'
+                  : 'border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:[--avatar-gap:var(--color-slate-950)]')
               }
             >
               <div className="flex h-[14px] -space-x-1.5">
@@ -450,7 +534,7 @@ export function PresenceArt() {
                     className="fa-pop flex h-[14px] w-[14px] items-center justify-center rounded-full text-[6px] font-bold text-white"
                     style={{
                       backgroundColor: p.color,
-                      boxShadow: `0 0 0 1.5px white, 0 0 0 3px ${p.ring}`,
+                      boxShadow: `0 0 0 1.5px var(--avatar-gap, white), 0 0 0 3px ${p.ring}`,
                       animationDelay: `${0.3 + (ti + i) * 0.5}s`,
                     }}
                   >
@@ -458,7 +542,9 @@ export function PresenceArt() {
                   </span>
                 ))}
               </div>
-              <span className="text-[7px] font-medium text-slate-500">{t.name}</span>
+              <span className="text-[7px] font-medium text-slate-500 dark:text-slate-400">
+                {t.name}
+              </span>
               {t.active ? (
                 <span className="absolute -bottom-px left-2 right-2 h-[2px] rounded bg-brand-500" />
               ) : null}
@@ -483,13 +569,14 @@ export function SelectionGlowArt() {
     <Frame canvas>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
         <rect
+          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
           x="78"
           y="33"
           width="64"
           height="32"
           rx="6"
-          fill={BLUE_FILL}
-          stroke={BLUE_STROKE}
+          fill={INK_FILL}
+          stroke={INK_STROKE}
           strokeWidth="2"
         />
         {/* remote collaborator's coloured glow */}
@@ -522,7 +609,17 @@ export function RealtimeArt() {
   return (
     <Frame canvas>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
-        <rect className="fa-lww" x="79" y="34" width="62" height="30" rx="6" strokeWidth="2" />
+        <rect
+          className="fa-lww fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
+          x="79"
+          y="34"
+          width="62"
+          height="30"
+          rx="6"
+          fill={INK_FILL}
+          stroke={INK_STROKE}
+          strokeWidth="2"
+        />
       </svg>
       <span className="absolute left-6 top-5">
         <Cursor color={SKY} label="TM" />
@@ -530,7 +627,7 @@ export function RealtimeArt() {
       <span className="absolute bottom-4 right-5">
         <Cursor color={PINK} label="JR" />
       </span>
-      <span className="absolute bottom-1.5 left-1/2 -translate-x-1/2 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-slate-500 shadow-sm">
+      <span className="absolute bottom-1.5 left-1/2 -translate-x-1/2 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-slate-500 shadow-sm dark:bg-slate-900/90 dark:text-slate-400">
         in sync
       </span>
     </Frame>
@@ -539,22 +636,32 @@ export function RealtimeArt() {
 
 export function ShareLinksArt() {
   const links = [
-    { code: '/d/9fk2…', role: 'Edit', cls: 'bg-brand-100 text-brand-700' },
-    { code: '/d/qp7x…', role: 'View', cls: 'bg-slate-200 text-slate-600' },
+    {
+      code: '/d/9fk2…',
+      role: 'Edit',
+      cls: 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-300',
+    },
+    {
+      code: '/d/qp7x…',
+      role: 'View',
+      cls: 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300',
+    },
   ];
   return (
     <Frame>
       <div className="flex h-full flex-col gap-1.5 px-3 py-2">
-        <div className="flex items-center gap-1 text-[9px] font-semibold text-slate-700">
+        <div className="flex items-center gap-1 text-[9px] font-semibold text-slate-700 dark:text-slate-200">
           <LinkIcon /> Share
         </div>
         {links.map((l, i) => (
           <div
             key={l.role}
-            className="fa-pop flex items-center justify-between rounded border border-slate-200 bg-white px-1.5 py-1"
+            className="fa-pop flex items-center justify-between rounded border border-slate-200 bg-white px-1.5 py-1 dark:border-slate-800 dark:bg-slate-900"
             style={{ animationDelay: `${0.4 + i * 0.7}s` }}
           >
-            <span className="font-mono text-[8px] text-slate-500">{l.code}</span>
+            <span className="font-mono text-[8px] text-slate-500 dark:text-slate-400">
+              {l.code}
+            </span>
             <span className={'rounded px-1.5 py-0.5 text-[7px] font-semibold ' + l.cls}>
               {l.role}
             </span>
@@ -572,22 +679,24 @@ export function LaserArt() {
         {/* faint reference diagram */}
         <g opacity="0.6">
           <rect
+            className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
             x="24"
             y="20"
             width="40"
             height="18"
             rx="4"
-            fill="#eef2f7"
+            fill={INK_FILL}
             stroke="#cbd5e1"
             strokeWidth="1.5"
           />
           <rect
+            className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
             x="150"
             y="58"
             width="40"
             height="18"
             rx="4"
-            fill="#eef2f7"
+            fill={INK_FILL}
             stroke="#cbd5e1"
             strokeWidth="1.5"
           />
@@ -604,7 +713,7 @@ export function LaserArt() {
         />
         <circle className="fa-pulse" cx="170" cy="66" r="3.5" fill="#f43f5e" />
       </svg>
-      <span className="absolute bottom-1.5 right-2 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-rose-500 shadow-sm">
+      <span className="absolute bottom-1.5 right-2 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-rose-500 shadow-sm dark:bg-slate-900/90">
         laser
       </span>
     </Frame>
@@ -628,11 +737,12 @@ export function ActivityArt() {
             style={{ animationDelay: `${0.3 + i * 0.6}s` }}
           >
             <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: r.c }} />
-            <span className="text-slate-600">
-              <span className="font-semibold text-slate-700">{r.who}</span> {r.what}
+            <span className="text-slate-600 dark:text-slate-300">
+              <span className="font-semibold text-slate-700 dark:text-slate-200">{r.who}</span>{' '}
+              {r.what}
             </span>
             {r.revert ? (
-              <span className="fa-pulse ml-auto flex items-center gap-0.5 rounded bg-slate-100 px-1 py-0.5 text-[7px] font-medium text-slate-500">
+              <span className="fa-pulse ml-auto flex items-center gap-0.5 rounded bg-slate-100 px-1 py-0.5 text-[7px] font-medium text-slate-500 dark:bg-slate-800 dark:text-slate-400">
                 <RevertIcon /> revert
               </span>
             ) : null}
@@ -649,21 +759,21 @@ export function RevokeArt() {
       <div className="flex h-full flex-col items-center justify-center gap-2 px-3">
         {/* status badge crossfades Shared ⇄ Private */}
         <div className="relative h-4 w-14 text-center">
-          <span className="fa-on absolute inset-0 rounded-full bg-brand-100 text-[8px] font-semibold leading-4 text-brand-700">
+          <span className="fa-on absolute inset-0 rounded-full bg-brand-100 text-[8px] font-semibold leading-4 text-brand-700 dark:bg-brand-500/20 dark:text-brand-300">
             Shared
           </span>
-          <span className="fa-off absolute inset-0 rounded-full bg-rose-100 text-[8px] font-semibold leading-4 text-rose-600">
+          <span className="fa-off absolute inset-0 rounded-full bg-rose-100 text-[8px] font-semibold leading-4 text-rose-600 dark:bg-rose-500/15 dark:text-rose-300">
             Private
           </span>
         </div>
         {/* toggle */}
-        <span className="relative inline-flex h-4 w-8 items-center rounded-full bg-slate-200">
+        <span className="relative inline-flex h-4 w-8 items-center rounded-full bg-slate-200 dark:bg-slate-600">
           <span className="fa-on absolute inset-0 rounded-full bg-brand-500" />
           <span className="fa-knob relative z-10 ml-0.5 h-3 w-3 rounded-full bg-white shadow" />
         </span>
         {/* link row, struck through when revoked */}
-        <div className="relative flex items-center gap-1 rounded border border-slate-200 bg-white px-1.5 py-0.5">
-          <span className="font-mono text-[8px] text-slate-500">/d/9fk2…</span>
+        <div className="relative flex items-center gap-1 rounded border border-slate-200 bg-white px-1.5 py-0.5 dark:border-slate-800 dark:bg-slate-900">
+          <span className="font-mono text-[8px] text-slate-500 dark:text-slate-400">/d/9fk2…</span>
           <span className="fa-off absolute left-1.5 top-1/2 h-[1px] w-[46px] -translate-y-1/2 bg-rose-400" />
         </div>
       </div>
@@ -673,14 +783,29 @@ export function RevokeArt() {
 
 export function TeamsArt() {
   const members = [
-    { c: SKY, who: 'You', role: 'Admin', cls: 'bg-brand-100 text-brand-700' },
-    { c: PINK, who: 'Jordan', role: 'Member', cls: 'bg-slate-200 text-slate-600' },
-    { c: '#8b5cf6', who: 'Alex', role: 'Member', cls: 'bg-slate-200 text-slate-600' },
+    {
+      c: SKY,
+      who: 'You',
+      role: 'Admin',
+      cls: 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-300',
+    },
+    {
+      c: PINK,
+      who: 'Jordan',
+      role: 'Member',
+      cls: 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300',
+    },
+    {
+      c: '#8b5cf6',
+      who: 'Alex',
+      role: 'Member',
+      cls: 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300',
+    },
   ];
   return (
     <Frame>
       <div className="flex h-full flex-col gap-1 px-3 py-2">
-        <div className="flex items-center gap-1 text-[9px] font-semibold text-slate-700">
+        <div className="flex items-center gap-1 text-[9px] font-semibold text-slate-700 dark:text-slate-200">
           <TeamIcon /> Design team
           <span className="ml-auto text-[7px] font-medium text-slate-400">3 people</span>
         </div>
@@ -696,7 +821,7 @@ export function TeamsArt() {
             >
               {m.who[0]}
             </span>
-            <span className="font-semibold text-slate-700">{m.who}</span>
+            <span className="font-semibold text-slate-700 dark:text-slate-200">{m.who}</span>
             <span className={'ml-auto rounded px-1.5 py-0.5 text-[7px] font-semibold ' + m.cls}>
               {m.role}
             </span>
@@ -711,21 +836,21 @@ export function ExpiryArt() {
   return (
     <Frame>
       <div className="flex h-full flex-col gap-1.5 px-3 py-2">
-        <div className="flex items-center gap-1 text-[9px] font-semibold text-slate-700">
+        <div className="flex items-center gap-1 text-[9px] font-semibold text-slate-700 dark:text-slate-200">
           <ClockIcon /> Link expiry
         </div>
         {/* an active link counting down */}
-        <div className="flex items-center justify-between rounded border border-slate-200 bg-white px-1.5 py-1">
-          <span className="font-mono text-[8px] text-slate-500">/d/9fk2…</span>
-          <span className="fa-pulse rounded bg-brand-100 px-1.5 py-0.5 text-[7px] font-semibold text-brand-700">
+        <div className="flex items-center justify-between rounded border border-slate-200 bg-white px-1.5 py-1 dark:border-slate-800 dark:bg-slate-900">
+          <span className="font-mono text-[8px] text-slate-500 dark:text-slate-400">/d/9fk2…</span>
+          <span className="fa-pulse rounded bg-brand-100 px-1.5 py-0.5 text-[7px] font-semibold text-brand-700 dark:bg-brand-500/20 dark:text-brand-300">
             6d left
           </span>
         </div>
         {/* a lapsed link, kept so it can be extended */}
-        <div className="flex items-center justify-between rounded border border-slate-200 bg-white px-1.5 py-1">
+        <div className="flex items-center justify-between rounded border border-slate-200 bg-white px-1.5 py-1 dark:border-slate-800 dark:bg-slate-900">
           <span className="font-mono text-[8px] text-slate-400 line-through">/d/qp7x…</span>
           <span
-            className="fa-pop rounded bg-slate-100 px-1.5 py-0.5 text-[7px] font-semibold text-slate-500"
+            className="fa-pop rounded bg-slate-100 px-1.5 py-0.5 text-[7px] font-semibold text-slate-500 dark:bg-slate-800 dark:text-slate-400"
             style={{ animationDelay: '0.7s' }}
           >
             Extend
@@ -740,10 +865,23 @@ export function RefreshArt() {
   return (
     <Frame canvas>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
-        <g className="fa-dip" fill={BLUE_FILL} stroke={BLUE_STROKE} strokeWidth="2">
+        <g
+          className="fa-dip fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
+          fill={INK_FILL}
+          stroke={INK_STROKE}
+          strokeWidth="2"
+        >
           <rect x="36" y="34" width="48" height="24" rx="6" />
           <rect x="132" y="34" width="48" height="24" rx="6" />
-          <line x1="84" y1="46" x2="132" y2="46" stroke={BLUE_STROKE} strokeWidth="2" />
+          <line
+            className="stroke-(--art-arrow)"
+            x1="84"
+            y1="46"
+            x2="132"
+            y2="46"
+            stroke={ARROW_STROKE}
+            strokeWidth="2"
+          />
         </g>
         {/* reload glyph (translate on the outer group, spin on the inner) */}
         <g transform="translate(110 78)">
@@ -753,7 +891,7 @@ export function RefreshArt() {
           </g>
         </g>
       </svg>
-      <span className="absolute bottom-1 right-2 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-slate-500 shadow-sm">
+      <span className="absolute bottom-1 right-2 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-slate-500 shadow-sm dark:bg-slate-900/90 dark:text-slate-400">
         reload · intact
       </span>
     </Frame>
@@ -769,26 +907,36 @@ export function SpotlightArt() {
     <Frame canvas>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
         <rect
+          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
           x="26"
           y="20"
           width="46"
           height="22"
           rx="5"
-          fill={BLUE_FILL}
-          stroke={BLUE_STROKE}
+          fill={INK_FILL}
+          stroke={INK_STROKE}
           strokeWidth="2"
         />
         <rect
+          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
           x="150"
           y="56"
           width="46"
           height="22"
           rx="5"
-          fill={BLUE_FILL}
-          stroke={BLUE_STROKE}
+          fill={INK_FILL}
+          stroke={INK_STROKE}
           strokeWidth="2"
         />
-        <line x1="72" y1="31" x2="150" y2="67" stroke="#cbd5e1" strokeWidth="2" />
+        <line
+          className="stroke-(--art-arrow)"
+          x1="72"
+          y1="31"
+          x2="150"
+          y2="67"
+          stroke="#cbd5e1"
+          strokeWidth="2"
+        />
       </svg>
       {/* the travelling light: a clear hole, everything else shrouded dark */}
       <span
@@ -800,7 +948,7 @@ export function SpotlightArt() {
           style={{ boxShadow: '0 0 5px 1px rgba(255,255,255,0.9)' }}
         />
       </span>
-      <span className="absolute bottom-1.5 right-2 z-10 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-slate-500 shadow-sm">
+      <span className="absolute bottom-1.5 right-2 z-10 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-slate-500 shadow-sm dark:bg-slate-900/90 dark:text-slate-400">
         spotlight
       </span>
     </Frame>
@@ -812,23 +960,25 @@ export function AvatarModeArt() {
     <Frame canvas>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
         <rect
+          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
           x="16"
           y="18"
           width="44"
           height="20"
           rx="5"
-          fill={BLUE_FILL}
-          stroke={BLUE_STROKE}
+          fill={INK_FILL}
+          stroke={INK_STROKE}
           strokeWidth="2"
         />
         <rect
+          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
           x="150"
           y="18"
           width="52"
           height="22"
           rx="5"
-          fill={BLUE_FILL}
-          stroke={BLUE_STROKE}
+          fill={INK_FILL}
+          stroke={INK_STROKE}
           strokeWidth="2"
         />
         {/* "you are here" ring on the box being talked about */}
@@ -842,7 +992,15 @@ export function AvatarModeArt() {
           stroke={SKY}
           strokeWidth="2"
         />
-        <line x1="60" y1="28" x2="146" y2="28" stroke="#cbd5e1" strokeWidth="2" />
+        <line
+          className="stroke-(--art-arrow)"
+          x1="60"
+          y1="28"
+          x2="146"
+          y2="28"
+          stroke="#cbd5e1"
+          strokeWidth="2"
+        />
         {/* the walked path */}
         <path
           d="M70 78 q46 8 84 -4"
@@ -855,7 +1013,7 @@ export function AvatarModeArt() {
         <PixelWalker x={58} shirt={SKY} flag />
         <PixelWalker x={148} shirt={PINK} />
       </svg>
-      <span className="absolute bottom-1.5 right-2 z-10 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-slate-500 shadow-sm">
+      <span className="absolute bottom-1.5 right-2 z-10 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-slate-500 shadow-sm dark:bg-slate-900/90 dark:text-slate-400">
         avatar mode
       </span>
     </Frame>
@@ -870,9 +1028,9 @@ export function CustomThemesArt() {
   return (
     <Frame>
       <div className="flex h-full flex-col gap-1.5 px-3 py-2">
-        <div className="flex items-center gap-1 text-[9px] font-semibold text-slate-700">
+        <div className="flex items-center gap-1 text-[9px] font-semibold text-slate-700 dark:text-slate-200">
           <SlidersIcon /> Theme builder
-          <span className="ml-auto rounded bg-violet-100 px-1.5 py-0.5 text-[7px] font-semibold text-violet-700">
+          <span className="ml-auto rounded bg-violet-100 px-1.5 py-0.5 text-[7px] font-semibold text-violet-700 dark:bg-violet-500/15 dark:text-violet-300">
             My brand
           </span>
         </div>
@@ -881,15 +1039,15 @@ export function CustomThemesArt() {
             <span
               key={c}
               className={
-                'fa-pop h-4 w-4 rounded-full ' +
-                (i === 0 ? 'ring-2 ring-violet-500 ring-offset-1' : '')
+                'fa-pop h-4 w-4 rounded-full dark:shadow-[inset_0_0_0_1px_rgb(255_255_255/0.15)] ' +
+                (i === 0 ? 'ring-2 ring-violet-500 ring-offset-1 dark:ring-offset-slate-950' : '')
               }
               style={{ backgroundColor: c, animationDelay: `${0.2 + i * 0.25}s` }}
             />
           ))}
         </div>
-        {/* preview canvas adopting the saved palette */}
-        <div className="relative mt-0.5 flex-1 rounded border border-slate-200 bg-white">
+        {/* preview canvas adopting the saved palette: a named theme, so it stays light in dark */}
+        <div className="relative mt-0.5 flex-1 rounded border border-slate-200 bg-white dark:border-slate-800">
           <svg viewBox="0 0 196 38" className="absolute inset-0 h-full w-full">
             <rect
               x="14"

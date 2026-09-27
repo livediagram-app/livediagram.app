@@ -163,10 +163,10 @@ export default function FaqPage() {
       <BreadcrumbJsonLd name="FAQ" path="/faq" />
       <Header surface="Faq" />
       <main className="mx-auto max-w-3xl px-6 py-16 sm:py-20">
-        <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
+        <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl dark:text-slate-100">
           Frequently asked questions
         </h1>
-        <p className="mt-3 text-lg text-slate-600">
+        <p className="mt-3 text-lg text-slate-600 dark:text-slate-300">
           Everything you might want to know before you open the canvas.
         </p>
         <div className="legal-prose mt-10">
@@ -177,8 +177,8 @@ export default function FaqPage() {
             </div>
           ))}
         </div>
-        <div className="mt-12 rounded-lg border border-slate-200 bg-slate-50 p-6 text-center">
-          <p className="text-slate-700">Still have a question?</p>
+        <div className="mt-12 rounded-lg border border-slate-200 bg-slate-50 p-6 text-center dark:border-slate-800 dark:bg-slate-950">
+          <p className="text-slate-700 dark:text-slate-200">Still have a question?</p>
           <CtaLink href={ctaHref('/new', 'Faq.Card')} size="sm" className="mt-3">
             Just start drawing
           </CtaLink>

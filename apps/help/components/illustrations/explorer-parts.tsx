@@ -60,7 +60,9 @@ export function SidebarRow({
             width={22}
             height={14}
             rx={7}
-            className={active ? 'fill-brand-500' : 'fill-slate-200'}
+            className={
+              active ? 'fill-brand-500' : 'fill-slate-200 dark:fill-(--help-art-slate-800)'
+            }
           />
           <Label
             x={x + w - 19}
@@ -226,7 +228,7 @@ export function DiagramCard({
             anchor="middle"
             size={7.5}
             weight={700}
-            className="fill-emerald-600"
+            className="fill-emerald-600 dark:fill-emerald-400"
           >
             shared
           </Label>

@@ -96,12 +96,16 @@
 }
 
 /* one-click theme recolour, fill + stroke cycle together (one shorthand
- * per element, so fill and stroke must live in a single keyframe set) */
+ * per element, so fill and stroke must live in a single keyframe set). The
+ * Default step reads the dark canvas palette (hero-animations.css) in dark
+ * appearance and falls back to the light tint; the named themes look the same
+ * in both, as in the editor. fa-lww below does the same; fa-paint paints a style
+ * of its own, since the painter's subject is colour. */
 @keyframes fa-theme {
   0%,
   16% {
-    fill: #dbeafe;
-    stroke: #0284c7;
+    fill: var(--art-ink-fill);
+    stroke: var(--art-ink-stroke);
   }
   25%,
   41% {
@@ -119,14 +123,14 @@
     stroke: #7c3aed;
   }
   100% {
-    fill: #dbeafe;
-    stroke: #0284c7;
+    fill: var(--art-ink-fill);
+    stroke: var(--art-ink-stroke);
   }
 }
 @keyframes fa-theme-bg {
   0%,
   16% {
-    fill: #f0f9ff;
+    fill: var(--art-paper);
   }
   25%,
   41% {
@@ -141,7 +145,7 @@
     fill: #f5f3ff;
   }
   100% {
-    fill: #f0f9ff;
+    fill: var(--art-paper);
   }
 }
 .fa-theme {
@@ -237,8 +241,8 @@
 @keyframes fa-lww {
   0%,
   34% {
-    fill: #dbeafe;
-    stroke: #0284c7;
+    fill: var(--art-ink-fill);
+    stroke: var(--art-ink-stroke);
   }
   54%,
   88% {
@@ -247,8 +251,8 @@
   }
   96%,
   100% {
-    fill: #dbeafe;
-    stroke: #0284c7;
+    fill: var(--art-ink-fill);
+    stroke: var(--art-ink-stroke);
   }
 }
 .fa-lww {
