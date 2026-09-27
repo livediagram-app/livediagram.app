@@ -1001,3 +1001,23 @@
   transition-duration: 500ms;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+/* Reduced motion, for the beats the shared list in globals.css leaves out: the deck
+   holds its last slide, the whole flow, as the peeking card does, and the HUD names it;
+   the assigned action shows ticked. The HUD selector is doubled to outrank the rule
+   there that hides every counter. */
+@media (prefers-reduced-motion: reduce) {
+  .hero-slide1,
+  .hero-slide2,
+  .hero-slide3 {
+    animation: none;
+    transform: translate(600px, 0);
+  }
+  .hero-slide-hud.hero-slide-hud4 {
+    opacity: 1;
+  }
+  .hero-action-tick {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+}

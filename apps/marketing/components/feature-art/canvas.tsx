@@ -121,13 +121,28 @@ export function ThemesArt() {
   return (
     <Frame>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
-        <rect className="fa-theme-bg" x="40" y="14" width="140" height="68" rx="8" />
-        <g className="fa-theme" strokeWidth="2">
+        {/* Each recolouring piece rests in the Default look, which is what reduced motion shows. */}
+        <rect
+          className="fa-theme-bg dark:fill-(--art-paper)"
+          x="40"
+          y="14"
+          width="140"
+          height="68"
+          rx="8"
+          fill="#f0f9ff"
+        />
+        <g
+          className="fa-theme dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+          fill={BLUE_FILL}
+          stroke={BLUE_STROKE}
+          strokeWidth="2"
+        >
           <rect x="58" y="30" width="46" height="22" rx="6" />
           <rect x="120" y="46" width="46" height="22" rx="6" />
         </g>
         <line
-          className="fa-theme"
+          className="fa-theme dark:stroke-(--art-ink-stroke)"
+          stroke={BLUE_STROKE}
           x1="104"
           y1="41"
           x2="120"
@@ -302,8 +317,18 @@ export function FormatPainterArt() {
           stroke={BLUE_STROKE}
           strokeWidth="2"
         />
-        {/* target adopts the style */}
-        <rect className="fa-paint" x="140" y="35" width="54" height="26" rx="6" strokeWidth="2" />
+        {/* target adopts the style; it rests painted, which is what reduced motion shows */}
+        <rect
+          className="fa-paint dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+          x="140"
+          y="35"
+          width="54"
+          height="26"
+          rx="6"
+          fill={BLUE_FILL}
+          stroke={BLUE_STROKE}
+          strokeWidth="2"
+        />
         {/* travelling brush */}
         <g className="fa-brush">
           <circle
@@ -580,7 +605,17 @@ export function RealtimeArt() {
   return (
     <Frame canvas>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
-        <rect className="fa-lww" x="79" y="34" width="62" height="30" rx="6" strokeWidth="2" />
+        <rect
+          className="fa-lww dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+          x="79"
+          y="34"
+          width="62"
+          height="30"
+          rx="6"
+          fill={BLUE_FILL}
+          stroke={BLUE_STROKE}
+          strokeWidth="2"
+        />
       </svg>
       <span className="absolute left-6 top-5">
         <Cursor color={SKY} label="TM" />

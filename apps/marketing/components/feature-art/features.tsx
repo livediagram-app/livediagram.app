@@ -150,7 +150,17 @@ export function UndoRedoArt() {
     <Frame canvas>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
         {/* a shape whose state toggles, as if a change is applied then undone */}
-        <rect className="fa-lww" x="86" y="26" width="48" height="26" rx="6" strokeWidth="2" />
+        <rect
+          className="fa-lww dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+          x="86"
+          y="26"
+          width="48"
+          height="26"
+          rx="6"
+          fill={BLUE_FILL}
+          stroke={BLUE_STROKE}
+          strokeWidth="2"
+        />
       </svg>
       <div className="absolute inset-x-0 bottom-3 flex items-center justify-center gap-3">
         <span className="fa-pulse flex h-7 w-7 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-600 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
