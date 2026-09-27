@@ -29,12 +29,27 @@ function toSql(value: unknown): SQLInputValue {
   return value as SQLInputValue;
 }
 
-export function sqliteD1(base: Partial<Env> = {}): SqliteD1 {
+function migrationFiles(): string[] {
+  return readdirSync(MIGRATIONS_DIR)
+    .filter((f) => f.endsWith('.sql'))
+    .sort();
+}
+
+// Run the one migration whose file name starts with `prefix` (e.g. '0049'),
+// for a test that seeds rows under the previous schema first.
+export function applyMigration(sql: DatabaseSync, prefix: string): void {
+  const file = migrationFiles().find((f) => f.startsWith(`${prefix}_`));
+  if (!file) throw new Error(`no migration ${prefix}`);
+  sql.exec(readFileSync(MIGRATIONS_DIR + file, 'utf8'));
+}
+
+// `before` stops short of that migration (e.g. '0049'), leaving it for the
+// test to apply with applyMigration.
+export function sqliteD1(base: Partial<Env> = {}, opts: { before?: string } = {}): SqliteD1 {
   const sql = new DatabaseSync(':memory:');
   sql.exec('PRAGMA foreign_keys = ON');
-  for (const file of readdirSync(MIGRATIONS_DIR)
-    .filter((f) => f.endsWith('.sql'))
-    .sort()) {
+  for (const file of migrationFiles()) {
+    if (opts.before && file >= opts.before) break;
     sql.exec(readFileSync(MIGRATIONS_DIR + file, 'utf8'));
   }
 

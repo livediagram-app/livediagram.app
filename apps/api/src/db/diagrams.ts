@@ -7,6 +7,7 @@ import { rowToTabSummary, type TabRow } from '../tab-row';
 import type { DiagramDTO, DiagramSummary, Env, TabSummaryDTO } from '../types';
 import { getParticipant } from './participants';
 import { collabIndexCopyStatements } from './collab-index';
+import { diagramRemovalStatements } from './diagram-removal';
 
 type DiagramRow = {
   id: string;
@@ -33,10 +34,6 @@ async function listTabSummariesFor(env: Env, diagramId: string): Promise<TabSumm
   // Read through the diagram_tabs link table (migration 0011 /
   // docs/specs/006-diagram/tab-diagram-many-to-many.md) — order_index now lives on the link, not on the tab,
   // so two diagrams that share a tab can order it independently.
-  // The legacy tabs.diagram_id + tabs.order_index columns still
-  // exist for one more phase as a fallback; we read the canonical
-  // path here and let writes keep both in sync until they're
-  // dropped in a follow-up migration.
   const result = await env.DB.prepare(
     `SELECT t.id, dt.diagram_id, t.name, dt.order_index, '' AS data, t.updated_at, dt.folder
        FROM diagram_tabs dt
@@ -172,9 +169,12 @@ export async function upsertDiagramMeta(
   // `source` (provenance, docs/specs/013-workspace/folders.md) is written on INSERT but deliberately
   // absent from the DO UPDATE SET, so it's set once at create time and
   // never rewritten by a later metadata upsert (rename / autosave / move).
+  // `presentation` likewise: a create carries the deck an Offline Mode sync
+  // built (docs/specs/006-diagram/offline-mode.md); after that only
+  // setDiagramPresentation writes it.
   await env.DB.prepare(
-    `INSERT INTO diagrams (id, owner_id, name, shareable, folder_id, source, saved_at, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `INSERT INTO diagrams (id, owner_id, name, shareable, folder_id, source, presentation, saved_at, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(id) DO UPDATE SET
        owner_id = excluded.owner_id,
        name = excluded.name,
@@ -187,6 +187,7 @@ export async function upsertDiagramMeta(
       d.shareable ? 1 : 0,
       d.folderId,
       d.source ?? null,
+      d.presentation ?? null,
       d.savedAt,
       d.createdAt,
     )
@@ -271,8 +272,10 @@ export async function setDiagramSharePassword(
     .run();
 }
 
+// Every delete path lands here: the Explorer, a teammate on a team diagram,
+// and Take Offline. A tab another diagram still holds survives it.
 export async function deleteDiagram(env: Env, id: string): Promise<void> {
-  await env.DB.prepare('DELETE FROM diagrams WHERE id = ?').bind(id).run();
+  await env.DB.batch(diagramRemovalStatements(env, { column: 'id', value: id }));
   // Drop the cached SVG snapshot (docs/specs/006-diagram/diagram-snapshots.md) alongside the row so a
   // deleted diagram doesn't leave an orphaned R2 object behind. Best
   // effort: a missing binding or a missing object is a no-op, and a
@@ -364,10 +367,12 @@ export async function copyDiagram(
     const freshTabId = tabIdMap.get(row.id)!;
     const data = remapTabDataLinks(row.data, tabIdMap);
     return [
-      env.DB.prepare(
-        `INSERT INTO tabs (id, diagram_id, name, order_index, data, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?)`,
-      ).bind(freshTabId, newId, row.name, row.order_index, data, now),
+      env.DB.prepare(`INSERT INTO tabs (id, name, data, updated_at) VALUES (?, ?, ?, ?)`).bind(
+        freshTabId,
+        row.name,
+        data,
+        now,
+      ),
       env.DB.prepare(
         `INSERT INTO diagram_tabs (diagram_id, tab_id, order_index, added_at)
          VALUES (?, ?, ?, ?)`,

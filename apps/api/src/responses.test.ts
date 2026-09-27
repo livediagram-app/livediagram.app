@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { DIAGRAM_CONVERSION_HEADER } from '@livediagram/api-schema';
 import {
   aiError,
   badRequest,
@@ -184,6 +185,12 @@ describe('CORS_HEADERS', () => {
     expect(allowHeaders).toContain('X-Image-Height');
     expect(allowHeaders).toContain('X-Image-Original-Name');
     expect(allowHeaders).toContain('Content-Type');
+  });
+
+  it('allows the conversion header Take Offline and Sync Diagram send', () => {
+    // Missing, a cross-origin editor (dev on its own port, or a self-host
+    // with the api elsewhere) had both conversions fail at the preflight.
+    expect(CORS_HEADERS['Access-Control-Allow-Headers']).toContain(DIAGRAM_CONVERSION_HEADER);
   });
 
   it('allows the five HTTP methods the live editor uses', () => {

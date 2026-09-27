@@ -5,6 +5,7 @@ import {
   firstDeck,
   parseStoredPresentation,
   presentableSlides,
+  remapPresentationTabs,
   resolveSlide,
   slideBounds,
   slideName,
@@ -189,6 +190,17 @@ describe('deckTabIds', () => {
       slides: [slide({ tabId: 'a' }), slide({ tabId: 'c' }), slide({ tabId: 'a' })],
     };
     expect([...deckTabIds(deck)].sort()).toEqual(['a', 'c']);
+  });
+});
+
+describe('remapPresentationTabs', () => {
+  it('re-points slides on a re-minted tab and leaves the rest', () => {
+    const stored = {
+      decks: [{ slides: [slide({ id: 's1', tabId: 'a' }), slide({ id: 's2', tabId: 'b' })] }],
+    };
+    const next = remapPresentationTabs(stored, new Map([['a', 'a2']]));
+    expect(next.decks[0]!.slides.map((s) => s.tabId)).toEqual(['a2', 'b']);
+    expect(stored.decks[0]!.slides[0]!.tabId).toBe('a');
   });
 });
 

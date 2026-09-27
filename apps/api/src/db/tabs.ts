@@ -3,16 +3,15 @@
 
 import type { Tab } from '@livediagram/diagram';
 import { rowToTab, type TabRow } from '../tab-row';
+import type { SharedTabsSummary } from '@livediagram/api-schema';
 import type { Env, TabDTO } from '../types';
 import { collabIndexStatements } from './collab-index';
 
 export async function getTab(env: Env, diagramId: string, tabId: string): Promise<TabDTO | null> {
-  // Resolve via the diagram_tabs link table (docs/specs/006-diagram/tab-diagram-many-to-many.md) so linked
-  // tabs surface from every diagram that contains them, not just
-  // the legacy tabs.diagram_id column (which points only at the
-  // tab's original diagram). The link table also carries the
-  // per-diagram order_index, so the returned summary's position
-  // is correct for whichever diagram the caller asked about.
+  // Resolve via the diagram_tabs link table (docs/specs/006-diagram/tab-diagram-many-to-many.md) so a
+  // linked tab surfaces from every diagram that contains it. The link
+  // also carries the per-diagram order_index, so the returned summary's
+  // position is correct for whichever diagram the caller asked about.
   const row = await env.DB.prepare(
     `SELECT t.id, dt.diagram_id, t.name, dt.order_index, t.data, t.updated_at, dt.folder
        FROM tabs t
@@ -79,25 +78,22 @@ export async function upsertTab(
   const { id, name, ...rest } = tab;
   const data = JSON.stringify(rest);
   const now = Date.now();
-  // Phase-1 (migration 0011 / docs/specs/006-diagram/tab-diagram-many-to-many.md): write to both `tabs` and
-  // `diagram_tabs` so the link table is the canonical read path
-  // but the legacy denormalised columns stay in sync until a
-  // follow-up migration drops them. The two writes are
-  // independent — even if the link upsert no-ops (existing entry)
+  // The body goes to `tabs`, this diagram's position to its `diagram_tabs`
+  // link (docs/specs/006-diagram/tab-diagram-many-to-many.md). The two writes
+  // are independent — even if the link upsert no-ops (existing entry)
   // the tab body still gets updated.
   // One DB.batch instead of three sequential round trips: this runs
   // once per 600ms per active editor (the autosave), so the two extra
   // serial D1 hops were the single largest latency item on the path.
   await env.DB.batch([
     env.DB.prepare(
-      `INSERT INTO tabs (id, diagram_id, name, order_index, data, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?)
+      `INSERT INTO tabs (id, name, data, updated_at)
+       VALUES (?, ?, ?, ?)
        ON CONFLICT(id) DO UPDATE SET
          name = excluded.name,
-         order_index = excluded.order_index,
          data = excluded.data,
          updated_at = excluded.updated_at`,
-    ).bind(id, diagramId, name, orderIndex, data, now),
+    ).bind(id, name, data, now),
     env.DB.prepare(
       `INSERT INTO diagram_tabs (diagram_id, tab_id, order_index, added_at)
        VALUES (?, ?, ?, ?)
@@ -127,14 +123,13 @@ export async function seedTabs(env: Env, diagramId: string, tabs: Tab[]): Promis
     const data = JSON.stringify(rest);
     return [
       env.DB.prepare(
-        `INSERT INTO tabs (id, diagram_id, name, order_index, data, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?)
+        `INSERT INTO tabs (id, name, data, updated_at)
+         VALUES (?, ?, ?, ?)
          ON CONFLICT(id) DO UPDATE SET
            name = excluded.name,
-           order_index = excluded.order_index,
            data = excluded.data,
            updated_at = excluded.updated_at`,
-      ).bind(id, diagramId, name, idx, data, now),
+      ).bind(id, name, data, now),
       env.DB.prepare(
         `INSERT INTO diagram_tabs (diagram_id, tab_id, order_index, added_at)
          VALUES (?, ?, ?, ?)
@@ -147,6 +142,26 @@ export async function seedTabs(env: Env, diagramId: string, tabs: Tab[]): Promis
   // copy from a share link can carry actions and threads in on create.
   for (const tab of tabs) stmts.push(...collabIndexStatements(env, tab.id, tab.elements));
   await env.DB.batch(stmts);
+}
+
+// Which of `tabIds` already name a tab that is NOT in `diagramId`: a create
+// seeding one of those would write into a tab another diagram holds, so the
+// create re-mints it (docs/specs/006-diagram/offline-mode.md, "Shared tabs fork").
+// A tab already in this diagram is a retried create and keeps its id.
+export async function tabIdsHeldElsewhere(
+  env: Env,
+  diagramId: string,
+  tabIds: string[],
+): Promise<Set<string>> {
+  if (tabIds.length === 0) return new Set();
+  const rows = await env.DB.prepare(
+    `SELECT id FROM tabs
+      WHERE id IN (SELECT value FROM json_each(?))
+        AND NOT EXISTS (SELECT 1 FROM diagram_tabs dt WHERE dt.diagram_id = ? AND dt.tab_id = tabs.id)`,
+  )
+    .bind(JSON.stringify(tabIds), diagramId)
+    .all<{ id: string }>();
+  return new Set((rows.results ?? []).map((r) => r.id));
 }
 
 // Remove the tab from this diagram (drops the `diagram_tabs` link
@@ -230,6 +245,22 @@ export async function tabLinkedToOwnedDiagram(
   return row !== null;
 }
 
+// How many of this diagram's tabs are shared (also linked into another
+// diagram), and across how many other diagrams: what deleting or taking the
+// diagram offline leaves behind (docs/specs/006-diagram/tab-diagram-many-to-many.md,
+// "Shared-tab notice").
+export async function sharedTabsSummary(env: Env, diagramId: string): Promise<SharedTabsSummary> {
+  const row = await env.DB.prepare(
+    `SELECT COUNT(DISTINCT dt.tab_id) AS tabs, COUNT(DISTINCT o.diagram_id) AS diagrams
+       FROM diagram_tabs dt
+       JOIN diagram_tabs o ON o.tab_id = dt.tab_id AND o.diagram_id <> dt.diagram_id
+      WHERE dt.diagram_id = ?`,
+  )
+    .bind(diagramId)
+    .first<SharedTabsSummary>();
+  return { tabs: row?.tabs ?? 0, diagrams: row?.diagrams ?? 0 };
+}
+
 // Look up every diagram id that links the given tab. Used by the
 // link endpoint's auth check (caller must own at least one of
 // them) and would also drive a future "this tab is shared with N
@@ -268,19 +299,14 @@ export async function reorderTabs(
   entries: ReorderEntry[],
 ): Promise<void> {
   const now = Date.now();
-  // Update the link-table order + folder alongside the legacy
-  // order_index column. Phase-1 keeps both order columns in sync per
-  // docs/specs/006-diagram/tab-diagram-many-to-many.md; folder lives only on the link (no legacy equivalent).
-  const batch = entries.flatMap((entry, idx) => {
+  // Order and folder live on the link, per diagram
+  // (docs/specs/006-diagram/tab-diagram-many-to-many.md): moving a tab here
+  // leaves its place in every other diagram, and its body, untouched.
+  const batch = entries.map((entry, idx) => {
     const { id: tabId, folder } = normalizeReorderEntry(entry);
-    return [
-      env.DB.prepare(
-        'UPDATE diagram_tabs SET order_index = ?, folder = ? WHERE diagram_id = ? AND tab_id = ?',
-      ).bind(idx, folder, diagramId, tabId),
-      env.DB.prepare(
-        'UPDATE tabs SET order_index = ?, updated_at = ? WHERE id = ? AND diagram_id = ?',
-      ).bind(idx, now, tabId, diagramId),
-    ];
+    return env.DB.prepare(
+      'UPDATE diagram_tabs SET order_index = ?, folder = ? WHERE diagram_id = ? AND tab_id = ?',
+    ).bind(idx, folder, diagramId, tabId);
   });
   if (batch.length > 0) await env.DB.batch(batch);
   await env.DB.prepare('UPDATE diagrams SET saved_at = ? WHERE id = ?').bind(now, diagramId).run();

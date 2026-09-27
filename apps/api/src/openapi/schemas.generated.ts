@@ -4143,6 +4143,22 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "SharedTabsSummary": {
+    "additionalProperties": false,
+    "properties": {
+      "diagrams": {
+        "type": "number"
+      },
+      "tabs": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "tabs",
+      "diagrams"
+    ],
+    "type": "object"
+  },
   "SharedWithItem": {
     "additionalProperties": false,
     "properties": {

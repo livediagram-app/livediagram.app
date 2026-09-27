@@ -206,6 +206,21 @@ export async function ownsDiagram(
   return ctx.resolveOwner() === diagram.ownerId;
 }
 
+// May `ctx` delete this diagram? Its owner, OR a joined member of its team
+// (docs/specs/013-workspace/team-shared-diagrams.md: members fully manage team
+// diagrams, delete included). NOT a share-link visitor: editing content via a
+// link is one thing, destroying the diagram is owner/team-only. Also gates
+// what the delete confirmation reads first (the shared-tabs notice).
+export async function mayDeleteDiagram(
+  ctx: RouteContext,
+  diagram: Pick<DiagramDTO, 'ownerId' | 'teamId'>,
+): Promise<boolean> {
+  if (await ownsDiagram(ctx, diagram)) return true;
+  if (!diagram.teamId || !ctx.verifiedUserId) return false;
+  const membership = await getMembership(ctx.env, diagram.teamId, ctx.verifiedUserId);
+  return membership?.status === 'joined';
+}
+
 // Owner-only resource: resolve the caller, load the diagram, and confirm
 // the caller owns it. Returns the diagram, or 400 (no owner) / 404
 // (missing) / 403 (foreign). 404-before-403 means a foreign id can't be

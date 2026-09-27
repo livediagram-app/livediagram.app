@@ -15,6 +15,7 @@ import {
   apiLoadTab,
   apiSaveDiagramMeta,
   apiSaveTab,
+  apiSharedTabs,
   apiUploadImage,
   setSessionSharePassword,
   setTokenProvider,
@@ -484,6 +485,33 @@ describe('apiCreateDiagram persisted body (docs/specs/006-diagram/tab-folders.md
     expect(body.tabs[0]).not.toHaveProperty('folder');
     expect(body.tabs[0]).toMatchObject({ id: 't1', name: 'Tab' });
     expect(out).toEqual({ id: 'd1' });
+  });
+});
+
+describe('apiSharedTabs (docs/specs/006-diagram/tab-diagram-many-to-many.md)', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('reads the counts for the delete confirmation', async () => {
+    const fetchSpy = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(JSON.stringify({ sharedTabs: { tabs: 2, diagrams: 3 } }), { status: 200 }),
+      );
+    vi.stubGlobal('fetch', fetchSpy);
+    const signal = new AbortController().signal;
+
+    const out = await apiSharedTabs('owner', 'd1', signal);
+
+    const [url, init] = fetchSpy.mock.calls[0] as [string, RequestInit];
+    expect(String(url)).toMatch(/\/diagrams\/d1\/shared-tabs$/);
+    expect(init.signal).toBe(signal);
+    expect(out).toEqual({ tabs: 2, diagrams: 3 });
+  });
+
+  it('throws on a refused read, so the caller can open without the notice', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}', { status: 403 })));
+
+    await expect(apiSharedTabs('owner', 'd1')).rejects.toThrow();
   });
 });
 

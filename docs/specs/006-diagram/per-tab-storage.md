@@ -18,7 +18,7 @@ D1. Cost grows linearly with the diagram's tab count.
 
 ## Non-goals (V1)
 
-- ~~Sharing a tab across diagrams~~ — landed in [Tab ↔ diagram many-to-many](tab-diagram-many-to-many.md) (migration 0011). The link table lives next to `tabs`; `tabs` itself is unchanged in this spec's terms.
+- ~~Sharing a tab across diagrams~~ — landed in [Tab ↔ diagram many-to-many](tab-diagram-many-to-many.md) (migration 0011). The link table lives next to `tabs` and holds the per-diagram placement.
 - Per-element rows / CRDT. Each tab still serialises its `elements`
   array as JSON within its row; the granularity stops at the tab.
 - Online migration. The cutover is one D1 migration; the live app
@@ -26,39 +26,24 @@ D1. Cost grows linearly with the diagram's tab count.
 
 ## Data model
 
-Migration `0005_tabs.sql`:
-
-As originally shipped in `0005_tabs.sql`:
-
 ```sql
--- One row per tab. The diagram_id column + cascade kept cleanup
--- automatic when this migration landed; docs/specs/006-diagram/tab-diagram-many-to-many.md since added the
--- diagram_tabs link table that makes the relationship many-to-many
--- and migrates the canonical "which diagram does this tab belong
--- to" pointer off this row. The legacy diagram_id + order_index
--- columns are kept in sync by writes during the dual-write phase
--- and will be dropped in a follow-up migration once every reader
--- has moved off them.
 CREATE TABLE tabs (
-  id           TEXT PRIMARY KEY,
-  diagram_id   TEXT NOT NULL,       -- legacy, see docs/specs/006-diagram/tab-diagram-many-to-many.md
-  name         TEXT NOT NULL,
-  order_index  INTEGER NOT NULL,    -- legacy, see docs/specs/006-diagram/tab-diagram-many-to-many.md
+  id          TEXT    PRIMARY KEY,
+  name        TEXT    NOT NULL,
   -- Same JSON shape as the Tab type minus { id, name } (which live
   -- on the row). Holds elements + per-tab metadata: theme,
   -- backgroundColor, backgroundPattern, backgroundOpacity,
   -- patternColor, locked. `templateChosen` is intentionally ephemeral
-  -- client state (see migration 0009) — stripped before persistence,
+  -- client state (see migration 0009), stripped before persistence,
   -- never stored here.
-  data         TEXT NOT NULL,
-  updated_at   INTEGER NOT NULL,
-  FOREIGN KEY (diagram_id) REFERENCES diagrams(id) ON DELETE CASCADE
+  data        TEXT    NOT NULL,
+  updated_at  INTEGER NOT NULL
 );
-
-CREATE INDEX tabs_diagram_idx ON tabs(diagram_id, order_index);
 ```
 
-Migration 0011 ([Tab ↔ diagram many-to-many](tab-diagram-many-to-many.md)) added `diagram_tabs (diagram_id, tab_id, order_index, added_at)`. Reads now go through the link table; writes touch both `tabs.diagram_id` / `tabs.order_index` (for compat) and `diagram_tabs` (canonical). The legacy two columns will be dropped once every reader is off them.
+A `tabs` row is the tab's body and nothing else. Which diagrams contain it, and its order and folder in each, live on the `diagram_tabs` link ([Tab ↔ diagram many-to-many](tab-diagram-many-to-many.md)). Nothing on the row points at a diagram, so nothing cascades from `diagrams` into `tabs`: removing a tab from a diagram, deleting a diagram and deleting an account each drop a tab explicitly once no diagram links it. `change_log`, `collab_actions` and `collab_threads` cascade from `tabs(id)`, so a dropped tab takes its history and index rows with it.
+
+The table was introduced by `0005_tabs.sql` and has this shape since `0049_tabs_drop_legacy_columns.sql`, which removed the original `diagram_id` + `order_index` columns and the `diagram_id` foreign key.
 
 `diagrams` keeps `id`, `owner_id`, `name`, `shareable`, `folder_id`, `saved_at`, `created_at`. The `data` column was dropped in migration 0006 once the live app had been on the new schema for a release window.
 

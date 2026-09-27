@@ -20,6 +20,7 @@ import {
 } from '@/lib/api-client';
 import { duplicateDiagram as duplicate } from '@/lib/duplicate-diagram';
 import { markDiagramDeleted } from '@/lib/diagram-tombstones';
+import { fetchSharedTabsNotice } from '@/lib/shared-tabs-notice';
 import { track } from '@/lib/telemetry';
 import type { useConfirm } from '@/hooks/ui/useConfirm';
 import type { useToast } from '@/hooks/ui/useToast';
@@ -140,10 +141,17 @@ export function useDiagramListActions(deps: DiagramListActionsDeps) {
         id === currentDiagram?.id
           ? { name: currentDiagram.name }
           : diagramList.find((d) => d.id === id);
+      // Tabs also in other diagrams stay there; say so before it happens.
+      const notice = await fetchSharedTabsNotice(ownerId, id, 'delete');
       const ok = await confirm({
         title: `Delete "${target?.name || 'this diagram'}"?`,
-        message:
-          'Every tab, change-log entry, and share link on this diagram is removed. Visitors holding a share link will see a 404. This cannot be undone.',
+        message: [
+          'Its tabs, change-log entries, and share links are removed.',
+          notice,
+          'Visitors holding a share link will see a 404. This cannot be undone.',
+        ]
+          .filter(Boolean)
+          .join(' '),
         confirmLabel: 'Delete diagram',
       });
       if (!ok) return;

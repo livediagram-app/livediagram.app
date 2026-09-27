@@ -76,7 +76,7 @@ Tabs got their own table in migration 0005 (see [13-per-tab-storage.md](../006-d
 
 - `DELETE /api/diagrams/:id/log/tab/:tabId` still exists: the editor's Activity Panel surfaces it as the per-tab "Clear" button so a user can wipe one tab's audit trail intentionally without deleting the tab itself.
 
-Diagram delete no longer cascades to `change_log` rows directly: post #14 there's no `diagram_id` column to hang the cascade off, only `tab_id`. Deleting a diagram drops the `diagrams` row + cascades to `diagram_tabs` link rows, but tabs that were only linked to the deleted diagram survive as orphans in the `tabs` table (no explicit sweep, intentional under the many-to-many model in [Tab ↔ diagram many-to-many](../006-diagram/tab-diagram-many-to-many.md)), and their `change_log` entries survive with them. The 90-day retention cron (item #16) sweeps the latter eventually.
+Diagram delete reaches `change_log` only through tabs: there is no `diagram_id` column to hang a cascade off, only `tab_id`. Deleting a diagram drops every tab no other diagram links, and each dropped tab takes its log entries with it; a tab still linked into another diagram keeps its whole history there, because the log lives on the tab ([Tab ↔ diagram many-to-many](../006-diagram/tab-diagram-many-to-many.md), "Delete a diagram").
 
 ## API surface
 

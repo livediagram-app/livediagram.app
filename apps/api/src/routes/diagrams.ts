@@ -29,7 +29,6 @@ import {
   getDiagram,
   getFolder,
   countDiagramsByOwner,
-  getMembership,
   getParticipant,
   insertChangeLogEntry,
   listChangeLog,
@@ -38,6 +37,7 @@ import {
   reorderTabs,
   seedTabs,
   setDiagramPresentation,
+  tabIdsHeldElsewhere,
   upsertDiagramMeta,
 } from '../db';
 import {
@@ -64,13 +64,15 @@ import {
 } from '../timeline';
 import { markTimelineEventsDeletedBySource } from '../db/timeline';
 import { handleDiagramPlacement } from './diagram-placement-route';
+import { handleDiagramSharedTabs } from './diagram-shared-tabs-route';
+import { forkTakenTabIds } from '../tab-id-fork';
 import { handleDiagramRoomRoutes } from './diagram-room-routes';
 import { handleDiagramSubresources } from './diagram-subresource-routes';
 import type { ChangeLogEntryDTO, DiagramDTO } from '../types';
 import {
   gateEdit,
   gateGrant,
-  ownsDiagram,
+  mayDeleteDiagram,
   requireDiagramGrant,
   requireOwnedDiagram,
   requireOwner,
@@ -130,6 +132,21 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
         const folder = await getFolder(env, folderId);
         if (!folder || folder.teamId !== null || folder.ownerId !== owner) folderId = null;
       }
+      // A seeded tab whose id another diagram holds is created under a fresh
+      // id, never upserted over it: that is how a synced-back offline copy of a
+      // shared tab forks (docs/specs/006-diagram/offline-mode.md), and why a
+      // create can't rewrite someone else's tab by naming its id.
+      const seeded = Array.isArray(body.tabs)
+        ? forkTakenTabIds(
+            body.tabs,
+            typeof body.presentation === 'string' ? body.presentation : null,
+            await tabIdsHeldElsewhere(
+              env,
+              body.id,
+              body.tabs.map((t) => t.id),
+            ),
+          )
+        : null;
       const now = Date.now();
       // Diagram meta first so the FK in tabs can resolve.
       await upsertDiagramMeta(env, {
@@ -144,7 +161,9 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
         teamId: null,
         // Usually none. An Offline Mode sync carries the deck it built
         // offline (docs/specs/006-diagram/offline-mode.md), which would otherwise be lost with the local copy.
-        presentation: typeof body.presentation === 'string' ? body.presentation : null,
+        presentation:
+          seeded?.presentation ??
+          (typeof body.presentation === 'string' ? body.presentation : null),
         // Provenance (docs/specs/013-workspace/folders.md): only the closed set of generated sources
         // is accepted; anything else (or absent) is a user-made diagram.
         source: body.source === 'ai' || body.source === 'mcp' ? body.source : null,
@@ -155,8 +174,8 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       // welcome flow uses this when it commits a fresh diagram
       // id — it ships the templated tab inline so the very
       // first per-tab fetch already has data.
-      if (Array.isArray(body.tabs)) {
-        await seedTabs(env, body.id, body.tabs);
+      if (seeded) {
+        await seedTabs(env, body.id, seeded.tabs);
       }
       const diagram = await getDiagram(env, body.id);
       // docs/specs/013-workspace/timeline.md §4.2: only a GENUINE create earns a timeline event. A
@@ -288,27 +307,14 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       return json({ diagram: diagram ? redactDiagramForReader(diagram, owner) : diagram });
     }
     if (request.method === 'DELETE') {
-      // Owner, OR a joined member of the diagram's team (docs/specs/013-workspace/team-shared-diagrams.md:
-      // members fully manage team diagrams, delete included). NOT a
-      // share-link visitor — editing content via a link is one thing,
-      // destroying the diagram is owner/team-only. Resolve the caller
-      // first (400 with no auth), then 404 on a missing diagram (no
-      // existence leak), then 403 on a caller with no claim.
+      // Owner or joined teammate, never a share-link visitor (mayDeleteDiagram).
+      // Resolve the caller first (400 with no auth), then 404 on a missing
+      // diagram (no existence leak), then 403 on a caller with no claim.
       const owner = requireOwner(ctx);
       if (owner instanceof Response) return owner;
       const existing = await getDiagram(env, id);
       if (!existing) return notFound();
-      // `ownsDiagram`, not `owner === existing.ownerId`: a TEAM diagram's
-      // owner id is a Clerk id every teammate can read, so proving ownership
-      // of one needs a verified account id rather than the X-Owner-Id header
-      // (see routes/context.ts). The membership leg below already worked that
-      // way; this leg didn't, so a stale member holding the owner's id could
-      // delete a team diagram.
-      let allowed = await ownsDiagram(ctx, existing);
-      if (!allowed && existing.teamId && ctx.verifiedUserId) {
-        const membership = await getMembership(env, existing.teamId, ctx.verifiedUserId);
-        allowed = membership?.status === 'joined';
-      }
+      const allowed = await mayDeleteDiagram(ctx, existing);
       if (!allowed) return forbidden();
       // docs/specs/013-workspace/timeline.md §3.5: a deleted diagram leaves NO trace on the Timeline.
       // Its history is swept and no tombstone is written — from the feed's
@@ -411,6 +417,13 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
   {
     const placementResp = await handleDiagramPlacement(ctx);
     if (placementResp) return placementResp;
+  }
+
+  // /api/diagrams/<id>/shared-tabs — what a delete leaves behind in other
+  // diagrams (docs/specs/006-diagram/tab-diagram-many-to-many.md).
+  {
+    const sharedTabsResp = await handleDiagramSharedTabs(ctx);
+    if (sharedTabsResp) return sharedTabsResp;
   }
 
   // /api/diagrams/<id>/thumbnail — cached SVG snapshot (docs/specs/006-diagram/diagram-snapshots.md). Read-

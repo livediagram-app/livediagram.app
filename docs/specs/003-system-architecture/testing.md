@@ -55,6 +55,11 @@ export default defineProject({ test: { environment: 'jsdom' } });
   in-memory SQLite (`node:sqlite`) with every migration applied and foreign
   keys on, as D1 has them. Use the second wherever the behaviour lives in the
   schema: cascades, primary-key collisions, `INSERT OR IGNORE` outcomes.
+  A migration that rebuilds a table is tested the same way: stop short of it
+  (`sqliteD1({}, { before: '0049' })`), seed rows under the old schema, run it
+  with `applyMigration`, and compare every row. A rebuilt **parent** table
+  cascades into its children on `DROP TABLE`, so this is the only test that
+  can see that loss.
 
 ## Scripts
 

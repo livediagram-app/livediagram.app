@@ -275,9 +275,7 @@ export async function diagramReferencesImage(
   // A tab-scoped visitor (docs/specs/013-workspace/tab-scoped-share-links.md): only their tab counts.
   onlyTabId: string | null = null,
 ): Promise<boolean> {
-  // Tabs live behind diagram_tabs (many-to-many per docs/specs/006-diagram/tab-diagram-many-to-many.md), so the
-  // lookup joins through the link table rather than reading the
-  // legacy `tabs.diagram_id` column directly.
+  // Tabs live behind diagram_tabs (many-to-many per docs/specs/006-diagram/tab-diagram-many-to-many.md).
   const rows = await env.DB.prepare(
     `SELECT t.data
        FROM diagram_tabs dt

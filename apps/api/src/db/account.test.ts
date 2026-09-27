@@ -31,7 +31,9 @@ function fakeEnv(opts: {
       }),
     };
   };
-  return { DB: { prepare }, IMAGES: opts.images } as unknown as Env;
+  const batch = (stmts: { run: () => Promise<unknown> }[]) =>
+    Promise.all(stmts.map((s) => s.run()));
+  return { DB: { prepare, batch }, IMAGES: opts.images } as unknown as Env;
 }
 
 describe('deleteAccount snapshot cleanup (docs/specs/006-diagram/diagram-snapshots.md)', () => {

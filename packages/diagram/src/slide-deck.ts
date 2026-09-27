@@ -160,6 +160,24 @@ export function deckTabIds(deck: Deck): Set<TabId> {
   return new Set(deck.slides.map((s) => s.tabId));
 }
 
+/**
+ * Re-point every slide on a re-minted tab (old → new in `tabIdMap`), the deck's
+ * half of what remapTabLinks does for element links.
+ */
+export function remapPresentationTabs(
+  stored: StoredPresentation,
+  tabIdMap: Map<TabId, TabId>,
+): StoredPresentation {
+  return {
+    decks: stored.decks.map((deck) => ({
+      slides: deck.slides.map((s) => {
+        const next = tabIdMap.get(s.tabId);
+        return next ? { ...s, tabId: next } : s;
+      }),
+    })),
+  };
+}
+
 export const EMPTY_DECK: Deck = { slides: [] };
 
 // --- Reading what was stored ------------------------------------------------

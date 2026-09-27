@@ -4,6 +4,8 @@
 // error-body envelope, CORS preflight header set) have a single
 // canonical home that the next route can grep for.
 
+import { DIAGRAM_CONVERSION_HEADER } from '@livediagram/api-schema';
+
 // CORS for the browser. Live app runs at the same hostname as the
 // API (router worker stitches them together) so this is mostly a
 // safety net for local dev where origins may differ. Headers list
@@ -20,9 +22,9 @@ export const CORS_HEADERS = {
   // Image upload uses custom X-Image-* headers (docs/specs/009-elements/images.md). The browser
   // rejects the POST preflight if any header the client sends isn't
   // in this list, which surfaces as "Failed to fetch" with no other
-  // signal, so each new header has to land here too.
-  'Access-Control-Allow-Headers':
-    'Authorization, Content-Type, X-Owner-Id, X-Owner-Sig, X-Share-Code, X-Share-Password, X-Allow-Empty, X-Room-Cursor, X-Image-Sha256, X-Image-Width, X-Image-Height, X-Image-Original-Name',
+  // signal, so each new header has to land here too. Take Offline and Sync
+  // Diagram declare themselves with DIAGRAM_CONVERSION_HEADER.
+  'Access-Control-Allow-Headers': `Authorization, Content-Type, X-Owner-Id, X-Owner-Sig, X-Share-Code, X-Share-Password, X-Allow-Empty, X-Room-Cursor, X-Image-Sha256, X-Image-Width, X-Image-Height, X-Image-Original-Name, ${DIAGRAM_CONVERSION_HEADER}`,
   'Access-Control-Max-Age': '86400',
 };
 
