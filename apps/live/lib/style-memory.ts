@@ -21,7 +21,7 @@ export type StyleMemory = Partial<Record<StyleKindKey, RememberedStyle>>;
 // The fields memory records and applies. The label colour and a preset's
 // binding ride with the colours, so a remembered background never lands under
 // unreadable text and a remembered preset look follows the theme.
-const SHAPE_FIELDS = {
+const SHAPE_MEMORY_FIELDS = {
   strokeColor: 'string',
   strokeSwatch: 'number',
   fillColor: 'string',
@@ -33,7 +33,7 @@ const SHAPE_FIELDS = {
   textAlignX: 'string',
   iconPosition: 'string',
 } as const;
-const ARROW_FIELDS = {
+const ARROW_MEMORY_FIELDS = {
   strokeColor: 'string',
   strokeSwatch: 'number',
   strokeWidth: 'number',
@@ -59,7 +59,7 @@ export function styleKindOf(el: Element): StyleKindKey | null {
 }
 
 function fieldsFor(kind: StyleKindKey): FieldTypes {
-  return kind === 'arrow' ? ARROW_FIELDS : SHAPE_FIELDS;
+  return kind === 'arrow' ? ARROW_MEMORY_FIELDS : SHAPE_MEMORY_FIELDS;
 }
 
 function isKnownKind(key: string): key is StyleKindKey {

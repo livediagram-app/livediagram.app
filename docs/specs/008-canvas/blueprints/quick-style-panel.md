@@ -30,18 +30,18 @@ Scope, by file:
 
 ## Domain and naming
 
-| Term             | Identifier                                       | Meaning                                                            |
-| ---------------- | ------------------------------------------------ | ------------------------------------------------------------------ |
-| Quick swatch     | `QuickSwatch = { slot, color, name }`            | One colour option                                                  |
-| Swatch role      | `QuickSwatchRole = 'stroke' \| 'fill'`           | Which row (Stroke / Background) it belongs to                      |
-| Slot             | `QuickSwatchSlot = 1..6`; `0` = theme default    | The stable id of a colour across themes                            |
-| Swatch binding   | `strokeSwatch`, `fillSwatch` on the element      | The slot a colour was picked from; absent = unbound                |
-| Section          | `QuickSectionId`                                 | `stroke`, `background`, `width`, `style`, `textAlign`, `iconAlign` |
-| Style target     | `isQuickStyleTarget(el)`                         | An unlocked `shape` or `arrow`                                     |
-| Kind key         | `styleKindOf(el)`                                | `shape:<ShapeKind>` for shapes, `arrow` for arrows                 |
-| Style memory     | `StyleMemory = Record<KindKey, RememberedStyle>` | Per kind, the last value chosen for each memorable field           |
-| Memorable fields | `SHAPE_MEMORY_FIELDS`, `ARROW_MEMORY_FIELDS`     | The fields memory records and applies (below)                      |
-| Placement        | `placeQuickStylePanel(input) => { left, top }`   | Where the panel sits, in viewport px                               |
+| Term             | Identifier                                                     | Meaning                                                            |
+| ---------------- | -------------------------------------------------------------- | ------------------------------------------------------------------ |
+| Quick swatch     | `QuickSwatch = { slot, color, name }`                          | One colour option                                                  |
+| Swatch role      | `QuickSwatchRole = 'stroke' \| 'fill'`                         | Which row (Stroke / Background) it belongs to                      |
+| Slot             | `QuickSwatchSlot = 1..6`; `0` = theme default                  | The stable id of a colour across themes                            |
+| Swatch binding   | `strokeSwatch`, `fillSwatch` on the element                    | The slot a colour was picked from; absent = unbound                |
+| Section          | `QuickSectionId`                                               | `stroke`, `background`, `width`, `style`, `textAlign`, `iconAlign` |
+| Style target     | `isQuickStyleTarget(el)`                                       | An unlocked `shape` or `arrow`                                     |
+| Kind key         | `StyleKindKey`, `styleKindOf(el)`                              | `shape:<ShapeKind>` for shapes, `arrow` for arrows                 |
+| Style memory     | `StyleMemory = Partial<Record<StyleKindKey, RememberedStyle>>` | Per kind, the last value chosen for each memorable field           |
+| Memorable fields | `SHAPE_MEMORY_FIELDS`, `ARROW_MEMORY_FIELDS`                   | The fields memory records and applies (below)                      |
+| Placement        | `placeQuickStylePanel(input) => { left, top }`                 | Where the panel sits, in viewport px                               |
 
 Banned synonyms: "format panel" (that is the painter's panel), "editor panel" (the removed one),
 "preset" for a swatch, "default style" for memory.
@@ -149,7 +149,7 @@ calls `forget` with the kind keys of every target it changed.
 
 ## Style memory
 
-`StyleMemory` is `Partial<Record<KindKey, Partial<Record<MemorableField, unknown>>>>`.
+`StyleMemory` is `Partial<Record<StyleKindKey, RememberedStyle>>`, a remembered style being `Record<field, string | number>`.
 
 - `recordStyleEdit(memory, before, after, theme)`: for every element present in both lists with the
   same id that `isQuickStyleTarget(after)`, for every memorable field of its kind whose value changed
