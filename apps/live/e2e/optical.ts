@@ -30,6 +30,7 @@ type Probe = {
   // sits at it: a word by its advance (its side bearings are the typeface's), anything else by ink.
   horizontal: {
     shortGlyph: boolean;
+    controls: { left: number; right: number } | null;
     text: { left: number; right: number } | null;
     otherLeft: number;
     otherRight: number;
@@ -182,6 +183,18 @@ function discover(args: { attr: string; shape: typeof SHAPE; tol: number }) {
       cs.textAlign === 'center' ||
       shrinkWrapped;
     const shortGlyph = !text || /^\S{1,3}$/.test(text);
+    // A shape holding two or more controls (a segmented switch) centres its controls' boxes; a
+    // segment's fill is part of the control, not ink to balance against the other side's text.
+    const controls = [...el.children].filter((c) =>
+      c.matches('button, a, [role="tab"], [role="radio"]'),
+    );
+    const controlBoxes =
+      controls.length >= 2
+        ? {
+            left: Math.min(...controls.map((c) => c.getBoundingClientRect().left)) - r.left,
+            right: Math.max(...controls.map((c) => c.getBoundingClientRect().right)) - r.left,
+          }
+        : null;
     const first = el.firstElementChild;
     const fr = first?.getBoundingClientRect();
     const leadingDisc =
@@ -199,11 +212,19 @@ function discover(args: { attr: string; shape: typeof SHAPE; tol: number }) {
       hideSelf: false,
       capBands,
       iconsOnly: icons > 0 && capBands.length === 0,
-      capsOnly: capBands.length > 0 && icons === 0 && /^[A-Z0-9]{1,3}$/.test(text),
+      // Rendered in capitals (by content or text-transform): the text's own ink is its cap band.
+      capsOnly:
+        capBands.length > 0 &&
+        textNodes(el).every(
+          (n) =>
+            /^[A-Z0-9 +]+$/.test(n.data.trim()) ||
+            getComputedStyle(n.parentElement!).textTransform === 'uppercase',
+        ),
       concentric: leadingDisc ? { lead: fr.left - r.left, vertical: fr.top - r.top } : null,
       horizontal: centredIntent
         ? {
             shortGlyph,
+            controls: controlBoxes,
             text: text0 ? { left: text0.left - r.left, right: text0.right - r.left } : null,
             otherLeft: otherLeft - r.left,
             otherRight: otherRight - r.left,
@@ -236,7 +257,13 @@ function discover(args: { attr: string; shape: typeof SHAPE; tol: number }) {
         iconsOnly: true,
         capsOnly: false,
         concentric: null,
-        horizontal: { shortGlyph: true, text: null, otherLeft: Infinity, otherRight: -Infinity },
+        horizontal: {
+          shortGlyph: true,
+          controls: null,
+          text: null,
+          otherLeft: Infinity,
+          otherRight: -Infinity,
+        },
       });
     }
   }
@@ -339,7 +366,7 @@ async function setHideRule(page: Page, css: string | null) {
 
 export async function auditOptical(page: Page): Promise<OpticalReport> {
   // The audit tags the DOM; tagging a tree React is still hydrating reads as a hydration mismatch.
-  await page.waitForLoadState("networkidle");
+  await page.waitForLoadState('networkidle');
   await page.mouse.move(0, 0);
   const { probes, stacks } = await page.evaluate(discover, {
     attr: PROBE_ATTR,
@@ -357,7 +384,21 @@ export async function auditOptical(page: Page): Promise<OpticalReport> {
       fail(p, `text "${band.text}" cap band, vertical`, band.mid - midY);
     if (p.concentric)
       fail(p, 'leading disc, concentric', p.concentric.lead - p.concentric.vertical);
-    const clip = { x: p.box.x, y: p.box.y, width: p.box.w, height: p.box.h };
+    // Clip on the device-pixel grid, one pixel out, and keep the shape's exact box inside it: a clip at
+    // the shape's fractional edges would snap them and skew every centre by up to a device pixel.
+    const dpr = await page.evaluate(() => devicePixelRatio);
+    const snap = (v: number, f: (n: number) => number) => f(v * dpr) / dpr;
+    const x0 = snap(p.box.x, Math.floor) - 1 / dpr;
+    const y0 = snap(p.box.y, Math.floor) - 1 / dpr;
+    const clip = {
+      x: x0,
+      y: y0,
+      width: snap(p.box.x + p.box.w, Math.ceil) + 1 / dpr - x0,
+      height: snap(p.box.y + p.box.h, Math.ceil) + 1 / dpr - y0,
+    };
+    // The shape's centre, in the clip's CSS px.
+    const cx = p.box.x - x0 + p.box.w / 2;
+    const cy = p.box.y - y0 + p.box.h / 2;
     const shot = () => page.screenshot({ clip, animations: 'disabled', caret: 'hide' });
     const all = await shot();
     await setHideRule(
@@ -370,18 +411,40 @@ export async function auditOptical(page: Page): Promise<OpticalReport> {
     await setHideRule(page, null);
     const ink = await diffInk(page, all, bare);
     if (!ink) continue;
-    const scale = ink.w / p.box.w;
+    const scale = dpr;
+    // Pixel k covers [k, k + 1) device px, so an ink run's centre is the mean of its edges.
+    const midX = (a: number, b: number) => (a + b + 1) / 2 / scale;
     const h = p.horizontal;
     if (h && !p.concentric) {
       const inkLeft = ink.left / scale;
       const inkRight = (ink.right + 1) / scale;
+      const boxLeft = p.box.x - x0;
       const t = h.shortGlyph ? null : h.text;
-      const left = t && t.left < h.otherLeft ? t.left : inkLeft;
-      const right = t && t.right > h.otherRight ? t.right : inkRight;
-      fail(p, 'content, horizontal', (left + right) / 2 - p.box.w / 2);
+      // DOM edges are relative to the shape's box; ink edges to the clip.
+      const left = h.controls
+        ? boxLeft + h.controls.left
+        : t && t.left < h.otherLeft
+          ? boxLeft + t.left
+          : inkLeft;
+      const right = h.controls
+        ? boxLeft + h.controls.right
+        : t && t.right > h.otherRight
+          ? boxLeft + t.right
+          : inkRight;
+      fail(p, 'content, horizontal', (left + right) / 2 - cx);
     }
-    if (p.iconsOnly || p.capsOnly)
-      fail(p, 'ink, vertical', ((ink.top + ink.bottom) / 2 - (ink.h - 1) / 2) / scale);
+    if (p.iconsOnly) fail(p, 'ink, vertical', midX(ink.top, ink.bottom) - cy);
+    if (p.capsOnly) {
+      // The text alone: hide only the glyph fill, so an icon beside it stays out of the reading.
+      await setHideRule(
+        page,
+        `${p.hide}, ${p.hide} * { -webkit-text-fill-color: transparent !important }`,
+      );
+      const noText = await shot();
+      await setHideRule(page, null);
+      const text = await diffInk(page, all, noText);
+      if (text) fail(p, 'caps ink, vertical', midX(text.top, text.bottom) - cy);
+    }
   }
   await page.evaluate(
     (attr) => document.querySelectorAll(`[${attr}]`).forEach((n) => n.removeAttribute(attr)),
