@@ -262,19 +262,13 @@ A vertex with `shape=image` becomes an `image` element in its box, its label as 
 stores image bytes in its image pipeline ([Image element + per-owner gallery](../009-elements/images.md)),
 never inside the diagram, so the bytes are **not** written into the element:
 
-- `image=data:...` (an embedded image): the element is a **placeholder** (`imageId: null`) and the
-  image joins the result's **pending images** list (element id + data URL). Counted
-  (`image-placeholder`).
-- Any other `image=` (a web URL, or one of draw.io's own library paths such as
-  `img/lib/azure2/...`, unless it matched an icon above): a placeholder, the URL kept in the pending
-  list. Counted (`image-unavailable`): the importer never fetches from third parties.
+- `image=data:...` (an embedded image): the element is a **placeholder** (`imageId: null`) and the image joins the result's **pending images**: a request shaped like the shared import image pipeline's (element id, a key shared by identical pictures, the data URL, the element's size), plus the tab it lands on. Counted (`image-placeholder`).
+- Any other `image=` (a web URL, or one of draw.io's own library paths such as `img/lib/azure2/...`, unless it matched an icon above): a placeholder, not requested. Counted (`image-unavailable`): the importer never fetches from third parties.
 - An `image=` on a shape that is not an image shape (a `label` style with an icon): the shape
   imports without the picture. Counted (`image-unavailable`).
 - A page `backgroundImage`: dropped. Counted (`image-unavailable`).
 
-The pending list is the seam for the shared import image pipeline (browser resize to WebP, then the
-existing upload, within the hosted per-owner cap): once it lands, the hook hands the list to it and each
-uploaded image fills its placeholder's `imageId`. Anything the pipeline cannot place (the cap, a failed
+The pending images are the seam for the shared [import image pipeline](import-image-pipeline.md) (browser resize to WebP, then the existing upload, within the hosted per-owner cap): the hook hands each page's requests to it before the tabs change, and each stored image fills its placeholder's `imageId`. Anything the pipeline cannot place (the cap, a failed
 upload, an unsupported format) stays a placeholder and stays counted; an import never fails because of
 an image.
 

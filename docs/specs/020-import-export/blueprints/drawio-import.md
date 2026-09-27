@@ -96,7 +96,7 @@ Never throws: any exception inside is caught and refused as `unreadable`, logged
 
 - `decompressDiagram(text, budget)`: remove whitespace, `atob` → bytes, `inflateBytes(bytes,
 'deflate-raw', budget)`, decode as Latin-1 (the payload is URI-encoded ASCII), then
-  `decodeURIComponent`; if that throws, the Latin-1 text itself (an unencoded payload, D1). Finally
+  `decodeURIComponent`; if that throws, the Latin-1 text itself (an unencoded payload, D11). Finally
   remove C0 control characters other than tab, LF, CR (draw.io's `zapGremlins`).
 - `inflateBytes(bytes, format, budget)`: pipe a one-chunk `ReadableStream` through
   `new DecompressionStream(format)`; accumulate chunks; after each, `budget.take(chunk.length)`,
@@ -106,7 +106,7 @@ Never throws: any exception inside is caught and refused as `unreadable`, logged
 
 ### 4. PNG (`extractPngDiagram(bytes, budget)`)
 
-Walk chunks from offset 8: `length` (u32 BE), `type` (4 ASCII), data, CRC (not checked, D2). Stop at
+Walk chunks from offset 8: `length` (u32 BE), `type` (4 ASCII), data, CRC (not checked, D12). Stop at
 `IDAT`, `IEND`, or a chunk running past the end. For each:
 
 - `tEXt`: split at the first `0`; keyword `mxfile` or `mxGraphModel` → value as Latin-1.
@@ -143,7 +143,7 @@ The first match wins. Its value: while it starts with `%`, `decodeURIComponent` 
 
 `undefined`, `''`, `default`, `inherit` → `{ kind: 'unset' }`; `none` → `{ kind: 'none' }`;
 `light-dark(a, b)` → `readColour(a)`; `#rgb`, `#rrggbb`, `#rrggbbaa` → `{ kind: 'hex', value }`
-lower-cased; `rgb(...)` / `rgba(...)` → `{ kind: 'hex' }` of its RGB; anything else → `unset` (D3).
+lower-cased; `rgb(...)` / `rgba(...)` → `{ kind: 'hex' }` of its RGB; anything else → `unset` (D13).
 
 ### 7. Cells (`readGraph(model)`)
 
@@ -212,7 +212,7 @@ flip (every kind except `square`, `circle`, `diamond`, `hexagon`, `cylinder`, `c
 1. `fillColor`: `hex` → value; `none` → `'transparent'`; `unset` → omitted.
 2. `strokeColor`: `hex` → value; `none` → `strokeWidth: 'none'`.
 3. `strokeWidth` px → nearest of `BORDER_STROKE_PX` (`thin` 1, `medium` 2, `thick` 4,
-   `extra-thick` 7), ties to the thinner (D4); `0` → `'none'`. Absent → `thin` (draw.io's 1 px, D5).
+   `extra-thick` 7), ties to the thinner (D14); `0` → `'none'`. Absent → `thin` (draw.io's 1 px, D15).
 4. `dashed=1` → `dashed`; with `dashPattern` `"a b ..."` where every dash ≤ its gap → `dotted`.
 5. `rounded=1` on `square`: radius = `absoluteArcSize=1` ? `arcSize` px : `arcSize` (default
    `DRAWIO_DEFAULT_ARC_SIZE`) % of `min(width, height)`; nearest of `BORDER_RADIUS_PX` excluding
@@ -286,7 +286,7 @@ label equal to it → that id; contains `mono`, `courier`, `consol` → `roboto-
    nearest `ARROWHEAD_SIZE_PX` to `endSize` (else `startSize`, default 6), omitted at `medium`.
    `arrowhead-approximated` += 1 when either head is not exact, or both ends carry heads of
    different shapes.
-5. **Stroke.** `strokeColor` hex → `strokeColor` (`none` → `opacity: 0`, D6); `strokeWidth` px →
+5. **Stroke.** `strokeColor` hex → `strokeColor` (`none` → `opacity: 0`, D16); `strokeWidth` px →
    `strokeWidth` (number, omitted at 2, the default). `dashed` / `dashPattern` as vertices.
    `opacity` as vertices.
 6. **Labels.** Parts: the edge's own plain label, then each child vertex's with `edgeLabel` or
@@ -300,10 +300,7 @@ label equal to it → that id; contains `mono`, `courier`, `consol` → `roboto-
 ### 13. Images
 
 `image` class: `{ type: 'image', imageId: null, x, y, width, height, alt?: plain label }`.
-`style.str('image')`: starts with `data:` → pending `{ kind: 'data-url', dataUrl }` (a draw.io
-`data:image/png,<base64>` without `;base64` is normalised to `data:image/png;base64,<base64>`),
-`image-placeholder` += 1; any other non-empty value → pending `{ kind: 'url', url }`,
-`image-unavailable` += 1; empty → placeholder, no pending, `image-unavailable` += 1. A non-image kind
+`style.str('image')`: starts with `data:` → a pending image `{ tabId, elementId, key, source: { kind: 'data-url', dataUrl }, hint: { width, height } }` (a base64 payload without `;base64`, as draw.io writes it, gains the marker; `key` is `drawio-image-<n>`, one per distinct data URL across the import), `image-placeholder` += 1; any other value (a web or library URL) or none → placeholder only, `image-unavailable` += 1. A non-image kind
 whose style carries `image=` → `image-unavailable` += 1. A page with `backgroundImage` →
 `image-unavailable` += 1.
 
@@ -452,7 +449,7 @@ Refusals (the `error` string, final copy):
   `isValidElement` / `isValidTab`, saved by the existing per-tab storage.
 - Image bytes are never written into elements (a data URL in a tab would breach `MAX_TAB_BYTES`);
   they live only in the in-memory pending list for the seam.
-- No D1 migration, no api change, no `api-schema` change.
+- No D11 migration, no api change, no `api-schema` change.
 - Undo: the import is one `commitTabs` entry; undo removes the new tabs and restores the active tab.
 
 ## Errors and edge cases
@@ -461,9 +458,9 @@ Refusals (the `error` string, final copy):
 | ------------------------------------------- | ----------------------------------------------------------------- |
 | Empty text / only whitespace                | Refused `not-xml` (the dialog's Import button is disabled anyway) |
 | A `diagram` with no content                 | An empty page: an empty tab, counted in `pages`                   |
-| A cell with no geometry                     | Vertex: skipped, `hidden-skipped` += 1 (D7); edge: fine           |
+| A cell with no geometry                     | Vertex: skipped, `hidden-skipped` += 1 (D17); edge: fine          |
 | Zero or negative width / height             | Clamped to 1                                                      |
-| Duplicate cell ids                          | Last one wins in the map; both walk (D8)                          |
+| Duplicate cell ids                          | Last one wins in the map; both walk (D18)                         |
 | A parent id that does not exist             | Treated as a child of the first layer                             |
 | A cycle in parents                          | The walk visits each id once; the cycle is broken                 |
 | Edge source = target (self-loop)            | Both ends pinned to the element, different anchors kept as mapped |
@@ -589,11 +586,11 @@ End to end: the live app via PM2, playwright-cli importing every fixture file, s
 | `DRAWIO_MAX_PAGES`            | 100                                                                                                                                                         | Spec; 1 to 500                                    |
 | `MAX_ELEMENTS_PER_TAB`        | 10 000                                                                                                                                                      | `@livediagram/diagram` validate.ts                |
 | `DRAWIO_DEFAULT_ARC_SIZE`     | 10 (%)                                                                                                                                                      | draw.io's `mxConstants.RECTANGLE_ROUNDING_FACTOR` |
-| `DRAWIO_SHADOW`               | `{2, 3, 3, 0.25}`                                                                                                                                           | draw.io's shadow offset (2, 3) and opacity, D9    |
-| `DRAWIO_CAPTION_LINE_PX`      | 18                                                                                                                                                          | One `sm` caption line with leading, D10; 14 to 24 |
-| `DRAWIO_CAPTION_CHAR_PX`      | 7                                                                                                                                                           | `sm` average glyph width, D10; 6 to 9             |
-| `DRAWIO_LABEL_CENTRE_EPSILON` | 0.05                                                                                                                                                        | D11; 0 to 0.2                                     |
-| `DRAWIO_REPORT_NAMES_MAX`     | 5                                                                                                                                                           | D12; 3 to 10                                      |
+| `DRAWIO_SHADOW`               | `{2, 3, 3, 0.25}`                                                                                                                                           | draw.io's shadow offset (2, 3) and opacity, D19   |
+| `DRAWIO_CAPTION_LINE_PX`      | 18                                                                                                                                                          | One `sm` caption line with leading, D20; 14 to 24 |
+| `DRAWIO_CAPTION_CHAR_PX`      | 7                                                                                                                                                           | `sm` average glyph width, D20; 6 to 9             |
+| `DRAWIO_LABEL_CENTRE_EPSILON` | 0.05                                                                                                                                                        | D21; 0 to 0.2                                     |
+| `DRAWIO_REPORT_NAMES_MAX`     | 5                                                                                                                                                           | D22; 3 to 10                                      |
 | `DRAWIO_ANGLED_EDGE_STYLES`   | `orthogonalEdgeStyle`, `elbowEdgeStyle`, `entityRelationEdgeStyle`, `segmentEdgeStyle`, `isometricEdgeStyle`, `sideToSideEdgeStyle`, `topToBottomEdgeStyle` | draw.io's `mxEdgeStyle` routers                   |
 | `DRAWIO_MARKERS`              | the table in step 12.4                                                                                                                                      | draw.io's marker names                            |
 

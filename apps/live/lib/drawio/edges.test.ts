@@ -18,6 +18,7 @@ function convert(xml: string) {
     pageIdToTab: new Map(),
     tabId: 't',
     images: [],
+    imageKeys: new Map(),
   });
   const arrow = page.elements.find((e): e is ArrowElement => e.type === 'arrow')!;
   const idOf = (label: string) => page.elements.find((e) => 'label' in e && e.label === label)?.id;

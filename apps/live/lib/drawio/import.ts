@@ -59,12 +59,19 @@ export async function importDrawio(
     const tabIds = kept.map((_, i) => options.tabIdForPage(i));
     const pageIdToTab = new Map(kept.map((p, i) => [p.id, tabIds[i]!]));
     const images: PendingImage[] = [];
+    const imageKeys = new Map<string, string>();
     const pages: ImportedPage[] = [];
 
     for (const [index, source] of kept.entries()) {
       if (index > 0) await yieldToEventLoop();
       const graph = readGraph(source.model);
-      const converted = convertPage(graph, { tally, pageIdToTab, tabId: tabIds[index]!, images });
+      const converted = convertPage(graph, {
+        tally,
+        pageIdToTab,
+        tabId: tabIds[index]!,
+        images,
+        imageKeys,
+      });
       pages.push({ tabId: tabIds[index]!, name: source.name, ...converted });
       console.debug('[drawio-import] page', {
         index,

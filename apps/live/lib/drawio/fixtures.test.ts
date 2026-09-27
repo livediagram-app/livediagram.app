@@ -243,16 +243,13 @@ describe('cloud-architecture.drawio', () => {
         {
           tabId: 'tab-1',
           elementId: logo.id,
+          key: 'drawio-image-1',
           source: {
             kind: 'data-url',
             dataUrl:
               'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
           },
-        },
-        {
-          tabId: 'tab-1',
-          elementId: expect.any(String),
-          source: { kind: 'url', url: 'https://example.com/status-badge.png' },
+          hint: { width: 80, height: 80 },
         },
       ]);
     }

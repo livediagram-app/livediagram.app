@@ -118,7 +118,7 @@ export function convertPage(graph: DrawioGraph, ctx: PageContext): ConvertedPage
     if (!cell.vertex) return;
     const rawRect = absoluteRect(graph, id);
     if (!rawRect || !cell.geometry) {
-      ctx.tally.add('hidden-skipped', 1 + countSubtree(id)); // D7
+      ctx.tally.add('hidden-skipped', 1 + countSubtree(id)); // D17
       forward.set(id, '');
       return;
     }

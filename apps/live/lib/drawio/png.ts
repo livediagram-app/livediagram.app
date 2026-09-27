@@ -65,7 +65,7 @@ export async function extractPngDiagram(
         return text;
       }
     }
-    at = end + 4; // skip the CRC (D2)
+    at = end + 4; // skip the CRC (D12)
   }
   return null;
 }

@@ -20,7 +20,12 @@ import { DRAWIO_CAPTION_CHAR_PX, DRAWIO_CAPTION_LINE_PX } from './limits';
 import { shapeTurn, type VertexClass } from './shapes';
 import { boxedProps, radiusPreset, textProps, type ConvertContext } from './vertex-props';
 
-export type PageContext = ConvertContext & { tabId: string; images: PendingImage[] };
+export type PageContext = ConvertContext & {
+  tabId: string;
+  images: PendingImage[];
+  /** One key per distinct embedded image, across the whole import. */
+  imageKeys: Map<string, string>;
+};
 
 export type BuiltVertex = Element | null;
 
@@ -125,26 +130,33 @@ function buildLine(cell: DrawioCell, rect: Rect, ctx: PageContext, id: string): 
   };
 }
 
-// draw.io writes an embedded image as `data:image/png,<base64>` (the `;` of
-// `;base64` would end the style pair), so restore the standard form.
+// draw.io writes an embedded image as `data:<type>,<base64>` (the `;` of
+// `;base64` would end the style pair), so restore the standard form when the
+// payload is base64; a percent-encoded or raw payload stays as it is.
 function normaliseDataUrl(url: string): string {
   const m = /^data:([^,;]+),(.*)$/s.exec(url);
-  return m && !m[1]!.includes('svg') ? `data:${m[1]};base64,${m[2]}` : url;
+  return m && /^[A-Za-z0-9+/]+=*$/.test(m[2]!) ? `data:${m[1]};base64,${m[2]}` : url;
 }
 
 function buildImage(cell: DrawioCell, rect: Rect, ctx: PageContext, id: string): ImageElement {
   const source = cell.style.str('image') ?? '';
   if (source.startsWith('data:')) {
+    const dataUrl = normaliseDataUrl(source);
+    let key = ctx.imageKeys.get(dataUrl);
+    if (!key) {
+      key = `drawio-image-${ctx.imageKeys.size + 1}`;
+      ctx.imageKeys.set(dataUrl, key);
+    }
     ctx.images.push({
       tabId: ctx.tabId,
       elementId: id,
-      source: { kind: 'data-url', dataUrl: normaliseDataUrl(source) },
+      key,
+      source: { kind: 'data-url', dataUrl },
+      hint: { width: rect.width, height: rect.height },
     });
     ctx.tally.add('image-placeholder');
   } else {
-    if (source !== '') {
-      ctx.images.push({ tabId: ctx.tabId, elementId: id, source: { kind: 'url', url: source } });
-    }
+    // A web or library URL: never fetched from a third party.
     ctx.tally.add('image-unavailable');
   }
   const { opacity, rotation, locked, link, note } = boxedProps(cell, ctx);

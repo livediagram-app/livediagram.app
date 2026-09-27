@@ -104,7 +104,13 @@ describe('resolvePendingImages', () => {
   it('places nothing until the image pipeline lands', async () => {
     expect(
       await resolvePendingImages([
-        { tabId: 't', elementId: 'e', source: { kind: 'url', url: 'https://x' } },
+        {
+          tabId: 't',
+          elementId: 'e',
+          key: 'k',
+          source: { kind: 'data-url', dataUrl: 'data:image/png;base64,AA==' },
+          hint: { width: 1, height: 1 },
+        },
       ]),
     ).toEqual({ placed: 0 });
   });

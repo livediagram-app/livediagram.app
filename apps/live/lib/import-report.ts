@@ -55,12 +55,16 @@ export type ImportReport = {
   notes: ImportNote[];
 };
 
-/** An image an import could not store itself: the seam for the shared import
- *  image pipeline (docs/specs/020-import-export/drawio-import.md "Images"). */
+/** An embedded image an import could not store itself, shaped like the
+ *  shared import image pipeline's request (plus the tab it lands on): the seam
+ *  for that pipeline (docs/specs/020-import-export/drawio-import.md "Images").
+ *  Requests sharing a `key` carry the same bytes and are stored once. */
 export type PendingImage = {
   tabId: string;
   elementId: string;
-  source: { kind: 'data-url'; dataUrl: string } | { kind: 'url'; url: string };
+  key: string;
+  source: { kind: 'data-url'; dataUrl: string };
+  hint: { width: number; height: number };
 };
 
 const DEFAULT_NAMES_MAX = 5;

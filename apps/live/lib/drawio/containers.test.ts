@@ -13,6 +13,7 @@ function convert(xml: string) {
     pageIdToTab: new Map(),
     tabId: 't',
     images: [],
+    imageKeys: new Map(),
   });
   return { elements: page.elements, notes: tally.notes() };
 }

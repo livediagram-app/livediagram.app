@@ -13,6 +13,7 @@ function convert(xml: string, attrs = '') {
     pageIdToTab: new Map(),
     tabId: 't',
     images: [],
+    imageKeys: new Map(),
   });
   return { page, notes: tally.notes() };
 }
@@ -69,6 +70,36 @@ describe('convertPage', () => {
       'backgroundImage="{&quot;src&quot;:&quot;x&quot;}"',
     );
     expect(notes).toEqual([{ kind: 'image-unavailable', count: 2 }]);
+  });
+
+  it('requests each embedded image once per distinct picture, and never a URL', () => {
+    const images: import('@/lib/import-report').PendingImage[] = [];
+    const tally = new ReportTally();
+    const img = (id: string, src: string) =>
+      vertex(id, `shape=image;image=${src};`, 'width="20" height="10"', 'parent="1"');
+    convertPage(
+      readGraph(
+        model(
+          img('a', 'data:image/png,QUJD') +
+            img('b', 'data:image/png,QUJD') +
+            img('c', 'data:image/svg+xml,PHN2Zy8+') +
+            img('d', 'https://x.test/y.png') +
+            img('e', 'data:image/svg+xml,%3Csvg%2F%3E'),
+        ),
+      ),
+      { tally, pageIdToTab: new Map(), tabId: 't', images, imageKeys: new Map() },
+    );
+    expect(images.map((i) => [i.key, i.source.dataUrl])).toEqual([
+      ['drawio-image-1', 'data:image/png;base64,QUJD'],
+      ['drawio-image-1', 'data:image/png;base64,QUJD'],
+      ['drawio-image-2', 'data:image/svg+xml;base64,PHN2Zy8+'],
+      ['drawio-image-3', 'data:image/svg+xml,%3Csvg%2F%3E'],
+    ]);
+    expect(images[0]!.hint).toEqual({ width: 20, height: 10 });
+    expect(tally.notes()).toEqual([
+      { kind: 'image-placeholder', count: 4 },
+      { kind: 'image-unavailable', count: 1 },
+    ]);
   });
 
   it('leaves one layer implicit', () => {
