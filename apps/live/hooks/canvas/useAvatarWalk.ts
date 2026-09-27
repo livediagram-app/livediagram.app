@@ -205,25 +205,34 @@ export function useAvatarWalk({
   // hand instead of one stranded off-screen).
   // The body reads the live viewport (rects, centre, zoom) at the moment `active` flips, as an effect
   // event, so a zoom or pan never re-runs it (which would needlessly re-spawn).
+  //
+  // Leaving the mode drops any walk / hop in progress (the position stays) and
+  // vacates the chair, like disconnecting does. What render shows of that is
+  // reset while rendering, keyed on `active`; the loop's refs and the
+  // publish to peers are reset by the effect below.
+  const [wasActive, setWasActive] = useState(active);
+  if (active !== wasActive) {
+    setWasActive(active);
+    if (!active) {
+      setPose(null);
+      setWalking(false);
+      setLift(0);
+      setWave(null);
+      setSeatedOn(null);
+    }
+  }
   const enterOrLeave = useEffectEvent((isActive: boolean) => {
     if (!isActive) {
-      // Leaving the mode drops any walk / hop in progress; the position stays.
       targetRef.current = null;
       heldRef.current = { ...NO_KEYS_HELD };
       liftRef.current = 0;
       jumpVyRef.current = 0;
       waveStartRef.current = null;
       reactionRef.current = null;
-      setPose(null);
       publishedLookRef.current = null;
-      setWalking(false);
-      setLift(0);
-      setWave(null);
       // Tell peers to drop our character.
       onPresence?.(null);
-      // Leaving the mode vacates the chair, like disconnecting does.
       seatedRef.current = null;
-      setSeatedOn(null);
       return;
     }
     // A button asked for the character HERE: honour it even if the remembered
