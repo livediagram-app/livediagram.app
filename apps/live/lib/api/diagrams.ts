@@ -1,6 +1,10 @@
 // Diagram-level calls: load / create / save-meta / delete / list, the
 // copy-into-my-files flow, and the "Shared with you" list.
-import { DIAGRAM_CONVERSION_HEADER, type DiagramConversion } from '@livediagram/api-schema';
+import {
+  DIAGRAM_CONVERSION_HEADER,
+  type DiagramConversion,
+  type SharedTabsSummary,
+} from '@livediagram/api-schema';
 import type {
   Diagram,
   DiagramListResponse,
@@ -59,6 +63,23 @@ async function _apiLoadDiagram(ownerId: string, id: string): Promise<Diagram | n
   return body?.diagram ?? null;
 }
 export const apiLoadDiagram = dedupeInFlight(_apiLoadDiagram, (ownerId, id) => `${ownerId}|${id}`);
+
+// How many of the diagram's tabs are also in other diagrams, and how many
+// diagrams (docs/specs/006-diagram/tab-diagram-many-to-many.md, "Shared-tab
+// notice"). Null for an offline diagram: its tabs live only in this browser.
+export async function apiSharedTabs(
+  ownerId: string,
+  id: string,
+  signal?: AbortSignal,
+): Promise<SharedTabsSummary | null> {
+  if (await isOfflineId(id)) return null;
+  const res = await apiFetch(`${API_BASE}/diagrams/${id}/shared-tabs`, {
+    headers: await apiHeaders(ownerId),
+    ...(signal ? { signal } : {}),
+  });
+  const { sharedTabs } = await expectOk<{ sharedTabs: SharedTabsSummary }>(res, 'shared tabs');
+  return sharedTabs;
+}
 
 // Persist diagram-level metadata: name (rename), tab order, and each
 // tab's per-diagram folder (docs/specs/006-diagram/tab-folders.md). Used for tab reorders + rename

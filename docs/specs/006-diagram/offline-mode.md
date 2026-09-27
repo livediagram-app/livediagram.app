@@ -136,8 +136,9 @@ Share dialog gate).
 Action: **"Take Offline"**. This is **destructive on the server** and gated by a
 confirmation:
 
-- **Confirmation** warns clearly: _"This removes the diagram from your account
-  and every other device. It will exist only in this browser, with no backup."_
+- **Confirmation** warns clearly: _"This removes it from your account and every
+  other device. It will exist only in this browser, with no backup."_ When the
+  diagram has shared tabs, the shared-tab notice follows (see below).
 - On confirm: download the diagram's tabs + meta into IndexedDB, register it in
   the local index, then **delete the server record** (via a raw delete so the
   now-offline id isn't re-routed to the local store) and any share links. The

@@ -103,11 +103,10 @@ function ExplorerImpl({
     exitingDiagramIds,
     deleteConfirm,
     setDeleteConfirm,
-    deleteAnchorRef,
     deletedTeamIds,
     openDeleteConfirm,
     runDelete,
-  } = useExplorerRowDelete({ diagrams, teamDiagrams, onDeleteDiagram });
+  } = useExplorerRowDelete({ diagrams, teamDiagrams, ownerId, onDeleteDiagram });
 
   // (Previously: `if (hideOnMobile) return null;` — Explorer now
   // renders on mobile too, banner-collapsed by default. The panel
@@ -412,14 +411,16 @@ function ExplorerImpl({
           })()
         : null}
 
-      {deleteConfirm && deleteAnchorRef.current ? (
+      {deleteConfirm ? (
         <ConfirmPopover
-          anchor={deleteAnchorRef.current}
+          anchor={deleteConfirm.anchor}
           message={`Delete "${
             diagrams.find((d) => d.id === deleteConfirm.id)?.name ||
             teamDiagrams.find((d) => d.id === deleteConfirm.id)?.name ||
             'this diagram'
-          }"? Its tabs, history and share links go with it.`}
+          }"? Its tabs, history and share links go with it.${
+            deleteConfirm.notice ? ` ${deleteConfirm.notice}` : ''
+          }`}
           confirmLabel="Delete"
           onConfirm={() => {
             const id = deleteConfirm.id;

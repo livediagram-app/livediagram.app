@@ -90,6 +90,15 @@ export type DiagramSummary = {
   createdAt: number;
 };
 
+// A diagram's shared tabs: how many of its tabs are also linked into another
+// diagram, and how many other diagrams hold them. What the delete and Take
+// Offline confirmations say stays behind
+// (docs/specs/006-diagram/tab-diagram-many-to-many.md, "Shared-tab notice").
+export type SharedTabsSummary = {
+  tabs: number;
+  diagrams: number;
+};
+
 // One row of the "Shared with you" list (shared_with, migration 0010):
 // a diagram a non-owner has previously opened via a share link. The api
 // worker (`listSharedWith` in db/shared.ts) builds this by joining

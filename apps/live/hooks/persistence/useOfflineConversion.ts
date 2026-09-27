@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useConfirm } from '@/hooks/ui/useConfirm';
 import { useToast } from '@/hooks/ui/useToast';
+import { fetchSharedTabsNotice } from '@/lib/shared-tabs-notice';
 import { track } from '@/lib/telemetry';
 import {
   saveOfflineToCloud,
@@ -44,10 +45,16 @@ export function useOfflineConversion(
   const takeOffline = async () => {
     if (!ownerId || converting) return;
     close();
+    // A shared tab stays in its other diagrams and forks here (docs/specs/006-diagram/offline-mode.md).
+    const notice = await fetchSharedTabsNotice(ownerId, diagram.id, 'offline');
     const ok = await confirm({
       title: `Take “${diagram.name}” offline?`,
-      message:
+      message: [
         'This removes it from your account and every other device. It will exist only in this browser, with no backup.',
+        notice,
+      ]
+        .filter(Boolean)
+        .join(' '),
       confirmLabel: 'Take Offline',
       variant: 'danger',
     });

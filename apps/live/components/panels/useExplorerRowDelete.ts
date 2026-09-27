@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { fetchSharedTabsNotice } from '@/lib/shared-tabs-notice';
 import type { ExplorerProps } from './Explorer.types';
 
 // The Explorer's row-delete lifecycle (docs/specs/013-workspace/folders.md), lifted out of the
@@ -10,8 +11,9 @@ import type { ExplorerProps } from './Explorer.types';
 export function useExplorerRowDelete({
   diagrams,
   teamDiagrams,
+  ownerId,
   onDeleteDiagram,
-}: Pick<ExplorerProps, 'diagrams' | 'onDeleteDiagram'> & {
+}: Pick<ExplorerProps, 'diagrams' | 'ownerId' | 'onDeleteDiagram'> & {
   teamDiagrams: NonNullable<ExplorerProps['teamDiagrams']>;
 }) {
   // Diagrams currently mid slide-out animation. Adding the id to this
@@ -24,9 +26,16 @@ export function useExplorerRowDelete({
   // Inline delete confirmation: the row's menu hands up the id + its menu
   // button as the anchor; we open a ConfirmPopover beside it. Confirming
   // runs the delete (skipping the modal — the popover IS the confirm) and
-  // slides the row out first via the beforeRemove hook.
-  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string } | null>(null);
-  const deleteAnchorRef = useRef<HTMLElement | null>(null);
+  // slides the row out first via the beforeRemove hook. `notice` is the
+  // shared-tab sentence (docs/specs/006-diagram/tab-diagram-many-to-many.md),
+  // read before the popover opens so it never grows under the pointer.
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    id: string;
+    notice: string | null;
+    anchor: HTMLElement;
+  } | null>(null);
+  // The latest row asked about: a slower answer for an earlier row is dropped.
+  const pendingDeleteRef = useRef<string | null>(null);
   // Team diagrams aren't in the personal `diagrams` prop, so the parent's
   // delete (which prunes the personal list + fires a fire-and-forget API
   // DELETE) can't drop a team row from view, and the team-library sweep
@@ -34,9 +43,12 @@ export function useExplorerRowDelete({
   // those rows optimistically; the set is pruned once the sweep catches up.
   const [deletedTeamIds, setDeletedTeamIds] = useState<Set<string>>(new Set());
   const openDeleteConfirm = onDeleteDiagram
-    ? (id: string, anchor: HTMLElement | null) => {
-        deleteAnchorRef.current = anchor;
-        setDeleteConfirm({ id });
+    ? async (id: string, anchor: HTMLElement | null) => {
+        pendingDeleteRef.current = id;
+        const notice = ownerId ? await fetchSharedTabsNotice(ownerId, id, 'delete') : null;
+        if (pendingDeleteRef.current !== id) return;
+        pendingDeleteRef.current = null;
+        if (anchor) setDeleteConfirm({ id, notice, anchor });
       }
     : undefined;
   const runDelete = (id: string) => {
@@ -104,7 +116,6 @@ export function useExplorerRowDelete({
     exitingDiagramIds,
     deleteConfirm,
     setDeleteConfirm,
-    deleteAnchorRef,
     deletedTeamIds,
     openDeleteConfirm,
     runDelete,

@@ -163,6 +163,17 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [204, 401, 403, 404],
   },
   {
+    method: 'GET',
+    path: '/diagrams/{id}/shared-tabs',
+    segment: 'diagrams',
+    tag: 'Diagrams',
+    summary: 'Count the tabs a delete would leave in other diagrams.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    responseSchema: wrap('sharedTabs', 'SharedTabsSummary'),
+    statuses: [200, 400, 401, 403, 404],
+  },
+  {
     method: 'POST',
     path: '/diagrams/{id}/copy',
     segment: 'diagrams',

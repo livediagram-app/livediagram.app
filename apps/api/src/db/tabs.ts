@@ -3,6 +3,7 @@
 
 import type { Tab } from '@livediagram/diagram';
 import { rowToTab, type TabRow } from '../tab-row';
+import type { SharedTabsSummary } from '@livediagram/api-schema';
 import type { Env, TabDTO } from '../types';
 import { collabIndexStatements } from './collab-index';
 
@@ -242,6 +243,22 @@ export async function tabLinkedToOwnedDiagram(
     .bind(tabId, ownerId)
     .first<{ present: number }>();
   return row !== null;
+}
+
+// How many of this diagram's tabs are shared (also linked into another
+// diagram), and across how many other diagrams: what deleting or taking the
+// diagram offline leaves behind (docs/specs/006-diagram/tab-diagram-many-to-many.md,
+// "Shared-tab notice").
+export async function sharedTabsSummary(env: Env, diagramId: string): Promise<SharedTabsSummary> {
+  const row = await env.DB.prepare(
+    `SELECT COUNT(DISTINCT dt.tab_id) AS tabs, COUNT(DISTINCT o.diagram_id) AS diagrams
+       FROM diagram_tabs dt
+       JOIN diagram_tabs o ON o.tab_id = dt.tab_id AND o.diagram_id <> dt.diagram_id
+      WHERE dt.diagram_id = ?`,
+  )
+    .bind(diagramId)
+    .first<SharedTabsSummary>();
+  return { tabs: row?.tabs ?? 0, diagrams: row?.diagrams ?? 0 };
 }
 
 // Look up every diagram id that links the given tab. Used by the

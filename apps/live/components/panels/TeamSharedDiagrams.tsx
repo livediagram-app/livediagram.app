@@ -17,6 +17,7 @@ import {
 import { useConfirm } from '@/hooks/ui/useConfirm';
 import { useTeamLibrary } from '@/hooks/persistence/useTeamLibrary';
 import { apiCreateFolder } from '@/lib/api-client';
+import { fetchSharedTabsNotice } from '@/lib/shared-tabs-notice';
 import { track } from '@/lib/telemetry';
 import { useRelativeTimeTick } from '@/lib/relative-time';
 import { folderDescendants } from '@/lib/folder-tree';
@@ -167,9 +168,16 @@ export function TeamSharedDiagrams({
   const duplicateDiagram = (id: string) => void lib.duplicateDiagram(id);
   const deleteDiagram = async (id: string) => {
     const d = lib.diagrams.find((x) => x.id === id);
+    const notice = await fetchSharedTabsNotice(ownerId, id, 'delete');
     const ok = await confirm({
       title: 'Delete team diagram?',
-      message: `"${d?.name || 'This diagram'}" will be permanently deleted for the whole team. This can't be undone.`,
+      message: [
+        `"${d?.name || 'This diagram'}" will be permanently deleted for the whole team.`,
+        notice,
+        "This can't be undone.",
+      ]
+        .filter(Boolean)
+        .join(' '),
       confirmLabel: 'Delete',
     });
     if (ok) void lib.deleteDiagram(id);

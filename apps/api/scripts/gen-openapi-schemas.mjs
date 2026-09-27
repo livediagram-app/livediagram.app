@@ -28,6 +28,7 @@ const OUTPUT = resolve(here, '../src/openapi/schemas.generated.ts');
 export const ROOT_TYPES = [
   'Diagram',
   'DiagramSummary',
+  'SharedTabsSummary',
   'DiagramSource',
   'TabSummary',
   'Tab',

@@ -40,6 +40,17 @@ The link is the only place a tab meets a diagram. `tabs` holds the body (`id, na
 - **Remove tab from a diagram** — `DELETE FROM diagram_tabs WHERE diagram_id = ? AND tab_id = ?`. If no rows remain referencing the tab, the `tabs` row AND every `change_log` entry keyed by that tab id are dropped in the same call (atomic on the server). When other diagrams still link the tab, both the body and the change_log entries stay: the activity log lives on the tab, so any diagram that still surfaces the tab still surfaces its history. Client-side cascades for tab delete (`apiDeleteChangeLogForTab`) are no longer fired in this path; the server handles it correctly with full knowledge of the link-count.
 - **Delete a diagram** — the diagram-scoped form of removing a tab, in one atomic batch (`diagramRemovalStatements`, `apps/api/src/db/diagram-removal.ts`): every tab linked into the diagram that no other diagram links is dropped with its `change_log` and collaboration-index rows, then the diagram row goes and `ON DELETE CASCADE` from `diagrams` removes its link rows. A tab another diagram still links survives whole there: body, history, index rows, and its order and folder in that diagram. Every path that removes a diagram takes this route: the Explorer delete, a teammate deleting a team-library diagram, Take Offline ([Offline Mode](offline-mode.md)), and account deletion (which keeps a tab shared into a diagram another owner holds).
 
+### Shared-tab notice
+
+A **shared tab** is a tab linked into more than one diagram. Removing a diagram is safe for its shared tabs, but the user cannot see that from the diagram alone, so every confirmation that removes a diagram from the server says it first. `GET /api/diagrams/:id/shared-tabs` answers `{ sharedTabs: { tabs, diagrams } }`: how many of the diagram's tabs are also linked elsewhere, and how many distinct other diagrams hold them. It answers exactly the callers who may delete the diagram (owner, or a joined member of its team; `mayDeleteDiagram`), in the DELETE's order: 400 with no caller, 404 when missing, 403 otherwise.
+
+The confirmation reads the counts before it opens (`fetchSharedTabsNotice`, `apps/live/lib/shared-tabs-notice.ts`) and, when `tabs` is above zero, adds one sentence:
+
+- **Delete** (the Explorer page and editor modal, the Explorer panel's inline confirm, the team-library modal): _"3 of its tabs are also used in 2 other diagrams; they stay there."_
+- **Take Offline** ([Offline Mode](offline-mode.md)): _"2 of its tabs are also used in 1 other diagram; they stay there, and the copies in this browser no longer share edits with them."_
+
+Singular forms read _"1 of its tabs is ... it stays there"_ and _"1 other diagram"_. An offline diagram has no shared tabs and makes no request. The read waits at most `SHARED_TABS_NOTICE_TIMEOUT_MS` (1500 ms); when it fails or runs out of time the confirmation opens without the sentence (the api client reports the failure), since the server keeps shared tabs either way and the notice is information, not the safeguard. The counts are read before the dialog renders so its content never changes under the pointer.
+
 ## API impact
 
 `GET /api/diagrams/:id` returns the diagram with its tab summaries — the join now goes through `diagram_tabs`:
