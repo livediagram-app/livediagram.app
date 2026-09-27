@@ -14,7 +14,7 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 const element = createShape('square', 0, 0);
 
 function Harness({ onCommit }: { onCommit: RichTextEditorProps['onCommit'] }) {
-  const session = useRichTextSession({
+  const { editorRef, syncFromDom } = useRichTextSession({
     element,
     initialLabel: 'Hello',
     textSize: 'md',
@@ -26,10 +26,10 @@ function Harness({ onCommit }: { onCommit: RichTextEditorProps['onCommit'] }) {
   return (
     <div
       data-testid="editor"
-      ref={session.editorRef}
+      ref={editorRef}
       contentEditable
       suppressContentEditableWarning
-      onInput={session.syncFromDom}
+      onInput={syncFromDom}
     />
   );
 }
