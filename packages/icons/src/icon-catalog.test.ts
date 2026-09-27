@@ -87,3 +87,35 @@ describe('Lucide-backed entries', () => {
     expect(CATALOG.find((d) => d.id === id)?.prims).toEqual(prims);
   });
 });
+
+// Ids that deliberately draw the same prims as another id, each with the reason.
+const ALIASES: Record<string, { of: string; reason: string }> = {
+  gear: {
+    of: 'settings',
+    reason: 'one meaning, one glyph: the settings gear, offered again under the Animated chip',
+  },
+};
+
+describe('line-art glyphs', () => {
+  const lineArt = CATALOG.filter((d) => !d.prims.some((p) => p.t === 'text'));
+
+  it('never draws two ids with identical prims, bar the listed aliases', () => {
+    const firstBySignature = new Map<string, string>();
+    const clashes: string[] = [];
+    for (const d of lineArt) {
+      const signature = JSON.stringify(d.prims);
+      const first = firstBySignature.get(signature);
+      if (first === undefined) firstBySignature.set(signature, d.id);
+      else if (ALIASES[d.id]?.of !== first) clashes.push(`${d.id} = ${first}`);
+    }
+    expect(clashes).toEqual([]);
+  });
+
+  it('lists only aliases that still draw their original', () => {
+    const prims = (id: string) => JSON.stringify(lineArt.find((d) => d.id === id)?.prims ?? null);
+    const stale = Object.entries(ALIASES)
+      .filter(([id, { of }]) => prims(id) === 'null' || prims(id) !== prims(of))
+      .map(([id]) => id);
+    expect(stale).toEqual([]);
+  });
+});
