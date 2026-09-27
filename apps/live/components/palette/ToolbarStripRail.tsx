@@ -1,6 +1,13 @@
 'use client';
 
-import { isValidElement, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import {
+  isValidElement,
+  useEffectEvent,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
 import { MOTION_MS } from '@livediagram/tailwind-config/motion';
 
 // The moving part of the Toolbar layout's strip (docs/specs/007-editor/toolbar-layout.md): the tiles of the
@@ -72,7 +79,9 @@ export function ToolbarStripRail({
   const keys = items.map(itemKey);
   const order = `${railKey}|${keys.join(',')}`;
 
-  useLayoutEffect(() => {
+  // One FLIP pass, as an effect event: it reads the newest items (for the nodes that fell off), while
+  // the layout effect below runs only when the order changes.
+  const flip = useEffectEvent((order: string, railKey: string) => {
     const el = contentRef.current;
     if (!el) return;
     const prev = slots.current;
@@ -119,9 +128,8 @@ export function ToolbarStripRail({
       Math.max(REORDER_MS, RAIL_LEAVE_MS),
     );
     return () => window.clearTimeout(done);
-    // `items` is read for the dropped nodes only; `order` is what changes.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [order, railKey]);
+  });
+  useLayoutEffect(() => flip(order, railKey), [order, railKey]);
 
   useLayoutEffect(() => {
     const el = contentRef.current;
