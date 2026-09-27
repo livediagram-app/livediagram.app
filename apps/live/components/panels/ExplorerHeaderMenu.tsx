@@ -4,7 +4,7 @@ import { OpenIcon, PlusIcon } from '@/components/primitives/explorer-icons';
 import { useState, type ReactNode } from 'react';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import { MenuActionRow, MenuGroupSeparator, PortalMenu } from '@/components/primitives/PortalMenu';
-import { GearIcon, GithubIcon, SearchGlyph } from '@/components/chrome/tab-bar-icons';
+import { SettingsIcon, GithubIcon, SearchGlyph } from '@/components/chrome/tab-bar-icons';
 import { REPO_URL, Glyph } from '@livediagram/ui';
 import type { ExplorerMenuActions } from './Explorer.types';
 import type { HelpArticleKey } from '@/lib/help-articles';
@@ -118,7 +118,7 @@ export function ExplorerHeaderMenu({
           <MenuActionRow
             key="settings"
             plain
-            icon={<GearIcon />}
+            icon={<SettingsIcon />}
             label="Settings"
             onClick={run(actions.onOpenSettings)}
           />

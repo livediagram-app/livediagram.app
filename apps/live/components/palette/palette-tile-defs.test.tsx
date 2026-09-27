@@ -1,3 +1,4 @@
+import { renderToStaticMarkup } from 'react-dom/server';
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { EVENT_STORMING_NOTES } from '@livediagram/diagram';
@@ -5,6 +6,7 @@ import { PALETTE_CATEGORIES } from './palette-categories';
 import { BEHAVIOUR_GROUPS } from './palette-create-tabs';
 import {
   PALETTE_TILES,
+  TILE_GLYPH_PX,
   TOOL_GROUPS,
   tilesForCategory,
   tilesInSection,
@@ -260,4 +262,16 @@ describe('grouped palette tabs draw every tile they hold', () => {
       expect(empty).toEqual([]);
     });
   }
+});
+
+// One tile strip, one size step (docs/specs/004-interface-design/iconography.md): every tile glyph
+// that renders through Glyph does so at TILE_GLYPH_PX, so a strip of tiles reads as one set.
+describe('palette tile glyph size', () => {
+  const glyphTiles = PALETTE_TILES.map(
+    (t) => [t.id, renderToStaticMarkup(<>{t.icon}</>)] as const,
+  ).filter(([, svg]) => svg.includes('lvd-glyph'));
+
+  it.each(glyphTiles)('%s renders at the tile step', (_id, svg) => {
+    expect(Number(/width="([\d.]+)"/.exec(svg)![1])).toBe(TILE_GLYPH_PX);
+  });
 });

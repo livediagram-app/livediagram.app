@@ -58,12 +58,15 @@ Every icon livediagram draws follows one grammar, so a glyph looks the same weig
 ## Guarding
 
 - A glyph's drawn geometry (bounding-box centre, stroke included) sits within 0.5px of its viewBox centre at its rendered size. Glyphs asymmetric by design (the play triangle) carry a named, logged exception.
-- A unit test over `packages/ui/src/icons` and `packages/icons` enforces the centring rule.
+- Unit tests enforce the centring rule over the shared icons, the Icons catalogue, the technology tiles, the context-menu icons and the Settings category glyphs.
+- Unit tests pin the size steps: every context-menu icon at its step, every palette tile glyph at 18px.
 - A lint rule rejects raw `<svg>` outside the icon homes and the art allow-list.
-- A contact sheet of every icon (`pnpm icons:sheet`) renders each glyph at 1x and 4x; a screenshot test of it makes weight or shape drift visible in review.
+- A contact sheet of every icon (`pnpm icons:sheet`) renders each glyph at 1x and 4x for review on demand. It is not a CI snapshot: pixel output varies across machines, and the code diff already carries the drawing.
 
 ## Relation to optical alignment
 
 - Icons in controls come in size steps of 12, 14, 16, 20 and 24px. Status badges (under 12px) and illustration-scale glyphs sit outside the steps.
+- One control family uses one size step, drawn on the 24-unit grid so the ink reads the same size: menu rows and section headers 14px, a menu's icon-only quick-action buttons 16px.
+- One glyph carries one meaning: settings are sliders, tools a wrench.
 - Icons keep their rendered box sizes when their geometry changes, so layout does not shift.
-- Iconography owns the drawing: path data, weight, the vocabulary, the icon primitive, the lint rule and the centring test. Optical alignment (`optical-alignment.md`, landing with that work) owns everything around the glyph: containers, slots, text centring, row baselines and the ink audit. Its primitives take any icon as a child.
+- Iconography owns the drawing: path data, weight, the vocabulary, the icon primitive, the lint rule and the centring test. [Optical alignment](optical-alignment.md) owns everything around the glyph: containers, slots, text centring, row baselines and the ink audit. Its primitives take any icon as a child.

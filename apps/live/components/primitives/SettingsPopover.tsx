@@ -2,7 +2,7 @@
 
 import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { Portal } from '@/components/primitives/Portal';
-import { GearIcon } from '@/components/chrome/tab-bar-icons';
+import { SettingsIcon } from '@/components/chrome/tab-bar-icons';
 import { ResetPositionGlyph } from '@/components/primitives/ResetPositionGlyph';
 import { useClickOutside, useEscape, HoverCard } from '@livediagram/ui';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
@@ -102,7 +102,7 @@ export function SettingsPopover({
               : 'text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100'
           }`}
         >
-          <GearIcon />
+          <SettingsIcon />
         </button>
       </HoverCard>
       {open ? (

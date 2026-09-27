@@ -22,7 +22,9 @@ import { withNone } from '@/components/palette/context-menu-tiles';
 // re-exported here so the context-menu row imports stay a single source.
 import { ColourRow, IconPositionGrid, MenuToggleRow } from './context-menu-input-rows';
 import { NoMarkerGlyph, PercentSliderRow } from './context-menu-data-rows';
-import { Glyph } from '@livediagram/ui';
+import { lucideGlyph } from '@livediagram/ui';
+import { lucideCircleDot } from '@livediagram/icons/lucide';
+import { MENU_ICON_PX } from '@/components/palette/context-menu-icons';
 
 // Data-shape rows (rail / rating / pie / progress editors + AnimTiles)
 // live in context-menu-data-rows.tsx; re-exported so importers keep
@@ -70,13 +72,7 @@ export function BorderGrid({
 }
 
 // The "Markers" category glyph — a small filled status dot.
-export function MarkersMenuGlyph() {
-  return (
-    <Glyph size={12} units={16} filled>
-      <circle cx="8" cy="8" r="4.5" />
-    </Glyph>
-  );
-}
+export const MarkersMenuGlyph = lucideGlyph(lucideCircleDot, MENU_ICON_PX);
 
 // Markers control (docs/specs/009-elements/shape-markers.md): a None option + one illustrated tile per marker,
 // then a Size row (Scale / S / M / L, mirroring the Text size control).

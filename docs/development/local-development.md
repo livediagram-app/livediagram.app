@@ -90,6 +90,7 @@ Run from the repo root:
 | `pnpm format`                              | Prettier write across the repo.                                                                                                                       |
 | `pnpm format:check`                        | Prettier check (this is what CI runs).                                                                                                                |
 | `pnpm icons:vendor`                        | Regenerate the vendored Lucide glyphs from `packages/icons/lucide-manifest.json` ([Iconography](../specs/004-interface-design/iconography.md)).       |
+| `pnpm icons:sheet`                         | Render every editor icon at 1x and 4x into HTML + PNG contact sheets (`$ICON_SHEET_DIR`, default `/tmp/icon-sheet`) for review.                       |
 | `pnpm demo:sticky-vision`                  | Bundle + serve the sticky-detection demo at <http://localhost:4199> ([Event storming](../specs/021-event-storming/event-storming.md)).                |
 
 Turbo caches results, so re-running with no changes is a no-op.

@@ -68,19 +68,13 @@ export function ThemeModeBanner({ themeId }: { themeId: string | undefined }) {
 
 function MoonIcon() {
   return (
-    <svg width="17" height="17" viewBox="0 0 16 16" fill="none" aria-hidden>
+    <Glyph size={17} units={16}>
       <path
         d="M13 9.5A5.5 5.5 0 0 1 6.5 3a5.5 5.5 0 1 0 6.5 6.5Z"
         fill="currentColor"
-        opacity="0.18"
+        fillOpacity="0.18"
       />
-      <path
-        d="M13 9.5A5.5 5.5 0 0 1 6.5 3a5.5 5.5 0 1 0 6.5 6.5Z"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        strokeLinejoin="round"
-      />
-    </svg>
+    </Glyph>
   );
 }
 

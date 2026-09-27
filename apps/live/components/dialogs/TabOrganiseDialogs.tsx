@@ -8,6 +8,7 @@
 // shared placement browser (docs/specs/013-workspace/folders.md), with room to breathe and a filter for
 // long diagram lists. Single-click commits — both are one-shot pickers.
 
+import { lucideFolderX } from '@livediagram/icons/lucide';
 import { useState } from 'react';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
@@ -17,7 +18,7 @@ import {
   PlacementCard,
 } from '@/components/placement/PlacementCard';
 import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
-import { useEscape, Glyph } from '@livediagram/ui';
+import { lucideGlyph, useEscape } from '@livediagram/ui';
 import { matches } from '@/lib/search';
 
 // Shared modal frame: header (title + sub + close) over a scrollable body.
@@ -60,16 +61,8 @@ function OrganiseDialogFrame({
   );
 }
 
-// A "loose tabs" glyph for the No Folder tile — a bar of tab pills.
-function NoFolderIcon() {
-  return (
-    <Glyph size={20} units={20}>
-      <rect x="2.5" y="8" width="5" height="4" rx="1.2" />
-      <rect x="9" y="8" width="5" height="4" rx="1.2" />
-      <path d="M15.5 8h2v4h-2" />
-    </Glyph>
-  );
-}
+// The No Folder tile: a folder struck out.
+const NoFolderIcon = lucideGlyph(lucideFolderX, 20);
 
 // Add to Folder (docs/specs/006-diagram/tab-folders.md): a tile per existing tab folder, a No Folder tile
 // (the loose end of the bar), and the create-in-place New Folder tile.

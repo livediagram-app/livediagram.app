@@ -7,7 +7,8 @@
 // chevrons, menu, search) come from @livediagram/ui instead, so the hero
 // mirrors the editor rather than a copy of it.
 
-import { SearchIcon, Glyph, GlyphDisc } from '@livediagram/ui';
+import { lucideShare2 } from '@livediagram/icons/lucide';
+import { Glyph, GlyphDisc, Prims, SearchIcon } from '@livediagram/ui';
 
 // A tab's presence avatar, sized as the editor's TabPresenceStack sizes them:
 // small initials on the participant's colour, a ring of the bar's own surface, overlapping the
@@ -223,11 +224,11 @@ export function StarGlyph() {
   );
 }
 
+// The editor's Share button mark.
 export function ShareGlyph() {
   return (
-    <Glyph size={9} units={12} strokeLinejoin="miter">
-      <path d="M6 7.5V1.5M3.5 4 6 1.5 8.5 4" />
-      <path d="M2.5 6.5v3.5h7V6.5" />
+    <Glyph size={9} units={24}>
+      <Prims prims={lucideShare2} />
     </Glyph>
   );
 }

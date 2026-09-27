@@ -3,7 +3,8 @@
 import { PencilIcon, TrashIcon } from '@/components/primitives/explorer-icons';
 import { useRef, useState } from 'react';
 import { isLayerLocked, layerOpacityOf, type Layer } from '@livediagram/diagram';
-import { LockIcon } from '@/components/panels/layers-panel-icons';
+import { EyeIcon, LockIcon } from '@/components/panels/layers-panel-icons';
+import { ClearIcon } from '@/components/chrome/tab-bar-icons';
 import { Portal } from '@/components/primitives/Portal';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import {
@@ -15,8 +16,14 @@ import {
   MenuToolButton,
 } from '@/components/primitives/PortalMenu';
 import { OpacityRow } from '@/components/palette/context-menu-rows';
-import { LayerDownIcon, LayersGlyph, LayerUpIcon } from '@/components/palette/context-menu-icons';
-import { useClickOutside, useEscape, Glyph } from '@livediagram/ui';
+import {
+  LayerDownIcon,
+  LayersGlyph,
+  LayerUpIcon,
+  MENU_ICON_PX,
+} from '@/components/palette/context-menu-icons';
+import { lucideGlyph, useClickOutside, useEscape } from '@livediagram/ui';
+import { lucideFileText, lucideMerge } from '@livediagram/icons/lucide';
 
 // Right-click menu for a Layers-panel row (docs/specs/006-diagram/layers.md), styled like the tab
 // menu: a quick-verbs toolbar (Rename / Delete) over collapsible
@@ -158,7 +165,7 @@ export function LayerRowMenu({
               onClick={onSendToBottom}
             />
             <MenuTile
-              icon={<SoloEyeIcon />}
+              icon={<EyeIcon />}
               label="Hide Others"
               disabled={isTop && isBottom}
               onClick={() => {
@@ -233,43 +240,5 @@ export function LayerRowMenu({
   );
 }
 
-function SoloEyeIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
-      <path
-        d="M1.5 7S3.5 3.5 7 3.5 12.5 7 12.5 7 10.5 10.5 7 10.5 1.5 7 1.5 7z"
-        stroke="currentColor"
-        strokeWidth="1.2"
-        strokeLinejoin="round"
-      />
-      <circle cx="7" cy="7" r="1.6" fill="currentColor" />
-    </svg>
-  );
-}
-
-function ContentGlyph() {
-  return (
-    <Glyph size={12} units={14}>
-      <rect x="2" y="2" width="10" height="10" rx="1.5" />
-      <path d="M4.5 5.5h5M4.5 8.5h3" />
-    </Glyph>
-  );
-}
-
-function ClearIcon() {
-  return (
-    <Glyph size={14} units={14}>
-      <rect x="2" y="2" width="10" height="10" rx="1.5" />
-      <path d="M4.5 4.5l5 5M9.5 4.5l-5 5" />
-    </Glyph>
-  );
-}
-
-function MergeGlyph() {
-  return (
-    <Glyph size={12} units={14}>
-      <path d="M2.5 3.5h9M2.5 10.5h9" />
-      <path d="M7 5v4M5.2 7.2 7 9l1.8-1.8" />
-    </Glyph>
-  );
-}
+const ContentGlyph = lucideGlyph(lucideFileText, MENU_ICON_PX);
+const MergeGlyph = lucideGlyph(lucideMerge, MENU_ICON_PX);

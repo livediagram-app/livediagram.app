@@ -7,6 +7,9 @@ import {
   type Element,
 } from '@livediagram/diagram';
 import type { TemplateKind } from '@livediagram/templates';
+import { primsBounds } from '@livediagram/icons';
+import { ICON_CATALOG_1 } from '@livediagram/icons/icon-catalog-1';
+import { ICON_CATALOG_2 } from '@livediagram/icons/icon-catalog-2';
 import { buildTemplate, buildTemplatedTab } from './template-builders';
 import { isTechIconId } from './tech-icons';
 
@@ -388,6 +391,73 @@ describe('floor plan geometry', () => {
       }
     }
     expect(clashes).toEqual([]);
+  });
+
+  // The drawn ink of an icon element (its glyph bounds scaled to the box, rotated in quarter
+  // turns about the centre), not its square box: a door's arc or a sofa's back is what reads.
+  const inkOf = (el: Element) => {
+    const b = boxOf(el);
+    const def = [...ICON_CATALOG_1, ...ICON_CATALOG_2].find(
+      (d) => d.id === (el as { iconId?: string }).iconId,
+    )!;
+    const g = primsBounds(def.prims)!;
+    const k = (b.x2 - b.x1) / 24;
+    const turns = (((el as { rotation?: number }).rotation ?? 0) / 90) % 4;
+    // Rotate the 0..24 bounds clockwise about 12,12, one quarter at a time.
+    let [x1, y1, x2, y2] = [g.minX, g.minY, g.maxX, g.maxY];
+    for (let t = 0; t < turns; t++) [x1, y1, x2, y2] = [24 - y2, x1, 24 - y1, x2];
+    return { x1: b.x1 + x1 * k, y1: b.y1 + y1 * k, x2: b.x1 + x2 * k, y2: b.y1 + y2 * k };
+  };
+  const overlap = (a: ReturnType<typeof boxOf>, b: ReturnType<typeof boxOf>) =>
+    a.x1 < b.x2 - 0.5 && b.x1 < a.x2 - 0.5 && a.y1 < b.y2 - 0.5 && b.y1 < a.y2 - 0.5;
+  const icons = elements.filter((el) => el.type === 'shape' && el.shape === 'icon');
+  const doors = icons.filter((el) => (el as { iconId?: string }).iconId === 'door');
+  // Room captions: the text's own run, ~7px a character at the caption size, not its full-width box.
+  const captions = elements
+    .filter((el) => el.type === 'text' && / m²$/.test((el as { label?: string }).label ?? ''))
+    .filter((el) => !(el as { label: string }).label.startsWith('Floor plan'))
+    .map((el) => {
+      const b = boxOf(el);
+      return {
+        label: (el as { label: string }).label,
+        box: { ...b, x2: b.x1 + (el as { label: string }).label.length * 7 },
+      };
+    });
+
+  it('keeps every room caption clear of furniture and door swings', () => {
+    const hits = captions.flatMap((c) =>
+      icons
+        .filter((el) => overlap(inkOf(el), c.box))
+        .map((el) => `${c.label} / ${(el as { iconId?: string }).iconId}`),
+    );
+    expect(hits).toEqual([]);
+  });
+
+  it('swings every door clear of the furniture', () => {
+    const hits = doors.flatMap((d) =>
+      furniture
+        .filter((f) => overlap(inkOf(d), inkOf(f)))
+        .map((f) => (f as { iconId?: string }).iconId),
+    );
+    expect(hits).toEqual([]);
+  });
+
+  it('seats the desk on its own drawn chair, not a second one', () => {
+    const desk = inkOf(furniture.find((f) => (f as { iconId?: string }).iconId === 'desk')!);
+    const room = rooms.find(
+      (r) => desk.x1 >= r.x1 && desk.x2 <= r.x2 && desk.y1 >= r.y1 && desk.y2 <= r.y2,
+    )!;
+    const chairs = furniture.filter((f) => {
+      const c = boxOf(f);
+      return (
+        (f as { iconId?: string }).iconId === 'chair' &&
+        c.x1 >= room.x1 &&
+        c.x2 <= room.x2 &&
+        c.y1 >= room.y1 &&
+        c.y2 <= room.y2
+      );
+    });
+    expect(chairs).toEqual([]);
   });
 
   it('sizes furniture by real footprints, not by whatever fitted', () => {
