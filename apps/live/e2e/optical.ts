@@ -38,9 +38,9 @@ type Probe = {
 
 const PROBE_ATTR = 'data-optical-probe';
 const HIDE_STYLE_ID = 'optical-audit-hide';
-// D25: what counts as a shape.
+// D41: what counts as a shape.
 const SHAPE = { minH: 8, maxH: 44, minW: 8, maxW: 220, maxChars: 28, maxDescendants: 8 };
-// D30: summed RGB difference that counts as ink at 4x.
+// D46: summed RGB difference that counts as ink at 4x.
 const INK_THRESHOLD = 96;
 
 // Runs in the page: discover candidates, tag them, and measure what the DOM can tell us.

@@ -5,7 +5,7 @@ import { auditOptical, OPTICAL_TOLERANCE_PX } from './optical';
 
 // Optical alignment audit (docs/specs/004-interface-design/optical-alignment.md): on each screen, every glyph
 // in a small painted shape sits within OPTICAL_TOLERANCE_PX of the shape's centre, and stack rows share one
-// line. Rendered at 4x (D31) so a half pixel is two device pixels.
+// line. Rendered at 4x (D47) so a half pixel is two device pixels.
 
 test.use({
   colorScheme: 'dark',

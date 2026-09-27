@@ -4,7 +4,7 @@ import { CAP_HEIGHT_EM, capBandBaselineY } from './svg-cap-band';
 // SVG text in a shape sits on its cap band (docs/specs/004-interface-design/optical-alignment.md):
 // alphabetic baseline, half the face's cap height below the shape's centre.
 describe('capBandBaselineY', () => {
-  it('uses the UI faces cap height (D27)', () => {
+  it('uses the UI faces cap height (D43)', () => {
     expect(CAP_HEIGHT_EM).toBe(0.72);
   });
 

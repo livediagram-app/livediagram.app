@@ -70,7 +70,7 @@
 }
 
 /* Tracked capitals carry a letter-space after their last letter, which pushes the run off-centre in
- * its chip; give it back so the box ends where the ink does (optical-alignment.md; D26). */
+ * its chip; give it back so the box ends where the ink does (optical-alignment.md; D42). */
 @utility text-optical-caps {
   text-transform: uppercase;
   letter-spacing: var(--optical-tracking, 0.05em);

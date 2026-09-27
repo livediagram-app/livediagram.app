@@ -19,7 +19,7 @@ describe('text-optical-centre', () => {
 });
 
 describe('text-optical-caps', () => {
-  it('tracks capitals and gives back the letter-space after the last one (D26)', () => {
+  it('tracks capitals and gives back the letter-space after the last one (D42)', () => {
     const rule = utility('text-optical-caps');
     expect(rule).toMatch(/text-transform:\s*uppercase/);
     expect(rule).toMatch(/letter-spacing:\s*var\(--optical-tracking, 0\.05em\)/);

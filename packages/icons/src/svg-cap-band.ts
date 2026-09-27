@@ -2,7 +2,7 @@
 // SVG has no text trimming, and `dominant-baseline: central` centres the em box, not the letters, so text
 // keeps the alphabetic baseline and is placed half the face's cap height below the shape's centre.
 
-/** Cap height of the UI faces, in em: they measure 0.70-0.73 (Segoe UI, SF, Roboto, Inter, DejaVu); D27. */
+/** Cap height of the UI faces, in em: they measure 0.70-0.73 (Segoe UI, SF, Roboto, Inter, DejaVu); D43. */
 export const CAP_HEIGHT_EM = 0.72;
 
 /** The alphabetic baseline that centres a text run's cap band on `centreY`. */
