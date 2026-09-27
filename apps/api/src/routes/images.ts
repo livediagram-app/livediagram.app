@@ -39,6 +39,27 @@ export function parsePositiveCap(raw: string | undefined): number | null {
   return n;
 }
 
+// The 403 a full gallery answers with, or null when the upload fits.
+function galleryFull(
+  caps: { maxImages: number | null; maxBytes: number | null },
+  totals: { count: number; bytes: number },
+  incomingBytes: number,
+): Response | null {
+  if (caps.maxImages !== null && totals.count >= caps.maxImages) {
+    return json(
+      { error: 'gallery_full', reason: 'count', limit: caps.maxImages, current: totals.count },
+      { status: 403 },
+    );
+  }
+  if (caps.maxBytes !== null && totals.bytes + incomingBytes > caps.maxBytes) {
+    return json(
+      { error: 'gallery_full', reason: 'bytes', limit: caps.maxBytes, current: totals.bytes },
+      { status: 403 },
+    );
+  }
+  return null;
+}
+
 // Per-owner gallery + dedup'd upload + auth-gated byte read.
 // When the R2 binding is absent (self-host without R2), every
 // endpoint returns 503 so the live app can hide the feature
@@ -111,30 +132,10 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
     // dedupe case without the parse.
     const maxImages = parsePositiveCap(env.IMAGE_MAX_PER_OWNER);
     const maxBytes = parsePositiveCap(env.IMAGE_MAX_BYTES_PER_OWNER);
+    const caps = { maxImages, maxBytes };
     if (maxImages !== null || maxBytes !== null) {
-      const totals = await imageTotalsByOwner(env, owner);
-      if (maxImages !== null && totals.count >= maxImages) {
-        return json(
-          {
-            error: 'gallery_full',
-            reason: 'count',
-            limit: maxImages,
-            current: totals.count,
-          },
-          { status: 403 },
-        );
-      }
-      if (maxBytes !== null && totals.bytes + declaredLen > maxBytes) {
-        return json(
-          {
-            error: 'gallery_full',
-            reason: 'bytes',
-            limit: maxBytes,
-            current: totals.bytes,
-          },
-          { status: 403 },
-        );
-      }
+      const full = galleryFull(caps, await imageTotalsByOwner(env, owner), declaredLen);
+      if (full) return full;
     }
     const width = Number(request.headers.get('X-Image-Width') ?? '0');
     const height = Number(request.headers.get('X-Image-Height') ?? '0');
@@ -197,16 +198,32 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
         originalName: originalName ?? '',
       },
     });
-    const image = await insertImage(env, {
-      id,
-      ownerId: owner,
-      contentType: sniffed,
-      byteSize: storedBytes.byteLength,
-      width,
-      height,
-      sha256: sha,
-      originalName,
-    });
+    const image = await insertImage(
+      env,
+      {
+        id,
+        ownerId: owner,
+        contentType: sniffed,
+        byteSize: storedBytes.byteLength,
+        width,
+        height,
+        sha256: sha,
+        originalName,
+      },
+      caps,
+    );
+    if (!image) {
+      // A concurrent upload filled the gallery after the check above; the
+      // insert refused atomically, so the bytes just written are an orphan.
+      await env.IMAGES.delete(id);
+      console.info('[images] cap refused a racing upload', { owner });
+      const totals = await imageTotalsByOwner(env, owner);
+      // Room again already (an image was deleted meanwhile): let the client retry.
+      return (
+        galleryFull(caps, totals, storedBytes.byteLength) ??
+        json({ error: 'upload_conflict' }, { status: 409 })
+      );
+    }
     // docs/specs/013-workspace/timeline.md §4.5: only a genuinely NEW upload. The dedupe branches
     // above return early, so pasting the same screenshot twice is one
     // event, and the day's uploads coalesce into one counted bubble.

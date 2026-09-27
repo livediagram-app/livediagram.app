@@ -577,7 +577,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
       properties: { image: ref('ImageSummary'), deduped: { type: 'boolean' } },
       required: ['image', 'deduped'],
     },
-    statuses: [200, 400, 401, 403, 413, 415, 503],
+    statuses: [200, 400, 401, 403, 409, 413, 415, 503],
   },
   {
     method: 'GET',
