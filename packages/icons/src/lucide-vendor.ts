@@ -1,24 +1,15 @@
 // Lucide vendoring (docs/specs/004-interface-design/iconography.md, "Source"): turns the pinned
 // `lucide-static` SVGs named in lucide-manifest.json into catalogue prims, written to
 // lucide.generated.ts by scripts/vendor-lucide.ts. Pure, so the test can prove the file is current.
+// Explicit .ts: the vendor script runs this module under Node type stripping.
+import { svgElements } from './svg-tokens.ts';
 import type { IconPrim } from './types';
 
 export type LucideManifest = { version: string; glyphs: string[] };
 
-const ELEMENT = /<([a-z]+)\b([^>]*?)\/?>/g;
-const ATTR = /([a-zA-Z][\w:-]*)="([^"]*)"/g;
-
-function attrs(raw: string): Record<string, string> {
-  const out: Record<string, string> = {};
-  for (const m of raw.matchAll(ATTR)) out[m[1]!] = m[2]!;
-  return out;
-}
-
 export function svgToPrims(svg: string, name: string): IconPrim[] {
   const prims: IconPrim[] = [];
-  for (const m of svg.matchAll(ELEMENT)) {
-    const tag = m[1]!;
-    const a = attrs(m[2]!);
+  for (const { tag, attrs: a } of svgElements(svg)) {
     const n = (k: string) => Number(a[k] ?? 0);
     switch (tag) {
       case 'svg':

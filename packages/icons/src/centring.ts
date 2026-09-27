@@ -2,17 +2,11 @@
 // the drawn geometry's bounding-box centre, stroke included, measured against the viewBox centre.
 // Test-only surface (subpath `@livediagram/icons/centring`); app code never imports it.
 import { pathBounds, unionBounds, type Bounds } from './ink';
+import { svgElements } from './svg-tokens';
 
 export type { Bounds };
 
-const ELEMENT = /<(path|circle|ellipse|rect|line|polyline|polygon)\b([^>]*)>/g;
-const ATTR = /([a-zA-Z][\w:-]*)="([^"]*)"/g;
-
-function attrs(raw: string): Record<string, string> {
-  const out: Record<string, string> = {};
-  for (const m of raw.matchAll(ATTR)) out[m[1]!] = m[2]!;
-  return out;
-}
+const SHAPES = new Set(['path', 'circle', 'ellipse', 'rect', 'line', 'polyline', 'polygon']);
 
 function elementBounds(tag: string, a: Record<string, string>): Bounds | null {
   const n = (k: string) => Number(a[k] ?? 0);
@@ -65,7 +59,9 @@ function elementBounds(tag: string, a: Record<string, string>): Bounds | null {
 export function markupBounds(markup: string, strokeUnits: number): Bounds | null {
   if (/\btransform=/.test(markup)) return null;
   const b = unionBounds(
-    [...markup.matchAll(ELEMENT)].map((m) => elementBounds(m[1]!, attrs(m[2]!))),
+    svgElements(markup)
+      .filter((e) => SHAPES.has(e.tag))
+      .map((e) => elementBounds(e.tag, e.attrs)),
   );
   if (!b) return null;
   const p = strokeUnits / 2;
