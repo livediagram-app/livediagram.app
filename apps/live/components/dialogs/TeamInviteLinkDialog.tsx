@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { Button } from '@livediagram/ui';
 import type { TeamInviteLink } from '@livediagram/api-schema';
 import { apiGenerateTeamInviteLink, apiRevokeTeamInviteLink } from '@/lib/api-client';
@@ -8,6 +8,7 @@ import { Dialog } from '@/components/dialogs/Dialog';
 import { LinkIcon } from '@/components/panels/team-pane-parts';
 import { track } from '@/lib/telemetry';
 import { useCopiedFlash } from '@livediagram/ui';
+import { useRelativeNow } from '@/lib/relative-time';
 
 // "Invite by link" (docs/specs/013-workspace/teams.md): the admin actively turns on a shareable
 // join link that expires after a week. Anyone signed in who opens the
@@ -21,8 +22,8 @@ function joinUrlFor(token: string): string {
   return `${origin}/join?token=${encodeURIComponent(token)}`;
 }
 
-function expiryLabel(expiresAt: number): string {
-  const ms = expiresAt - Date.now();
+function expiryLabel(expiresAt: number, now: number): string {
+  const ms = expiresAt - now;
   if (ms <= 0) return 'Expired';
   const days = Math.ceil(ms / 86_400_000);
   if (days <= 1) return 'Expires within a day';
@@ -45,15 +46,23 @@ export function TeamInviteLinkDialog({
   onInviteLinkChange: (link: TeamInviteLink | null) => void;
 }) {
   const [busy, setBusy] = useState(false);
-  const { copied, flash, reset: resetCopied } = useCopiedFlash(1800);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const now = useRelativeNow();
 
-  useEffect(() => {
-    if (!open) return;
-    resetCopied();
-    setError(null);
-  }, [open]);
+  // Each open is a new session: the error resets during render, and "Copied" flashes the session
+  // it was copied in, so a reopen inside the flash never inherits the previous session's label.
+  const [session, setSession] = useState(0);
+  const [wasOpen, setWasOpen] = useState(open);
+  if (open !== wasOpen) {
+    setWasOpen(open);
+    if (open) {
+      setSession(session + 1);
+      setError(null);
+    }
+  }
+  const { copied: copiedIn, flash, reset: resetCopied } = useCopiedFlash<number>(1800);
+  const copied = copiedIn === session;
 
   const generate = async () => {
     if (busy) return;
@@ -95,7 +104,7 @@ export function TeamInviteLinkDialog({
       // "Copied" after the catch told the user a blocked clipboard
       // succeeded (mirrors ShareDialog.copy).
       track('UI', 'Copied', 'TeamInviteLink'); // docs/specs/017-telemetry/telemetry.md: mirrors ShareLink/EmbedCode copies
-      flash();
+      flash(session);
     } catch {
       // Clipboard blocked (insecure context / permissions): fall back
       // to selecting the field so the user can copy by hand.
@@ -140,7 +149,7 @@ export function TeamInviteLinkDialog({
               </Button>
             </div>
             <p className="mt-2 text-xs text-slate-400 dark:text-slate-400">
-              {expiryLabel(inviteLink.expiresAt)}
+              {expiryLabel(inviteLink.expiresAt, now)}
             </p>
           </div>
         ) : (

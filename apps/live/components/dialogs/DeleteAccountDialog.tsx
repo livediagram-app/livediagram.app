@@ -56,14 +56,20 @@ export function DeleteAccountDialog({
   const dialogRef = useRef<HTMLDivElement>(null);
   useFocusTrap(dialogRef, open);
 
-  // Reset state every time the dialog opens. Without this, a user
+  // Reset state every time the dialog opens (adjusted during render). Without this, a user
   // who cancels mid-flow and re-opens it sees a stale typed value
   // and possibly a stale error.
+  const [wasOpen, setWasOpen] = useState(open);
+  if (open !== wasOpen) {
+    setWasOpen(open);
+    if (open) {
+      setTyped('');
+      setPhase('idle');
+      setErrorMsg('');
+    }
+  }
   useEffect(() => {
     if (!open) return;
-    setTyped('');
-    setPhase('idle');
-    setErrorMsg('');
     // Focus the input on next tick so the modal mount completes
     // first — focusing during render is silently dropped.
     const handle = window.setTimeout(() => inputRef.current?.focus(), 30);
