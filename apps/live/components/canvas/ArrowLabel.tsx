@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useEffectEvent,
   useRef,
   type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
@@ -78,8 +79,10 @@ export function ArrowLabel({
   onContextMenu,
 }: ArrowLabelProps) {
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
-  useEffect(() => {
-    if (isEditing && inputRef.current) {
+  // cursorAtEnd is fixed for the lifetime of an edit session, so it is read
+  // once, when editing begins: an effect event keyed on isEditing.
+  const focusForEditing = useEffectEvent(() => {
+    if (inputRef.current) {
       const node = inputRef.current;
       node.focus();
       if (cursorAtEnd) {
@@ -89,10 +92,9 @@ export function ArrowLabel({
         node.select();
       }
     }
-    // cursorAtEnd is fixed for the lifetime of an edit session, so
-    // reading it once when editing begins is correct; intentionally
-    // not a dep.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  });
+  useEffect(() => {
+    if (isEditing) focusForEditing();
   }, [isEditing]);
   const { center, width, height, lines, fontPx, lineHeightPx } = layout;
   const left = center.x - width / 2;

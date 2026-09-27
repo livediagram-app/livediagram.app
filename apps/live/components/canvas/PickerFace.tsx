@@ -18,7 +18,7 @@
 // A view-role visitor still gets to roll and watch it; it simply isn't written
 // back, which is why `shared` exists — see below.
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { spinFrameDelays, spinReel, type PickerCandidate } from '@/lib/picker';
 import { ParticipantAvatar } from '@/components/primitives/ParticipantAvatar';
@@ -86,8 +86,12 @@ export function PickerFace({
   // it land or because it was on the element when we arrived. Seeded from the
   // first render, so joining a diagram where somebody already rolled shows the
   // answer rather than replaying a spin nobody is waiting for.
+  //
+  // Keyed on the landing alone: re-running when the candidate list changes
+  // (somebody joining the room) would re-spin a result that already landed,
+  // so the response is an effect event.
   const seenResult = useRef(result);
-  useEffect(() => {
+  const onResult = useEffectEvent((result: string | undefined) => {
     if (result === seenResult.current) return;
     seenResult.current = result;
     // One press writes at most one result change, so the arming is spent here
@@ -101,10 +105,8 @@ export function PickerFace({
     // Match the name back to a live person where we can, so a peer's roll
     // spins past avatars here exactly as it did on the presser's screen.
     runReel(candidates.find((c) => c.label === result) ?? { label: result });
-    // Keyed on the landing alone: re-running when the candidate list changes
-    // (somebody joining the room) would re-spin a result that already landed.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [result]);
+  });
+  useEffect(() => onResult(result), [result]);
 
   const roll = () => {
     if (!onRoll || spinning !== null) return;

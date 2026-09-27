@@ -7,7 +7,7 @@
 // offsetTop is layout units, untouched by either transform. So the delta is
 // already in the units the translate is applied in.
 
-import { useLayoutEffect, useRef } from 'react';
+import { useEffectEvent, useLayoutEffect, useRef } from 'react';
 
 function motionReduced(): boolean {
   if (typeof window === 'undefined') return true;
@@ -24,7 +24,9 @@ export function useFlipList(order: string[]) {
   const last = useRef(new Map<string, number>());
   const key = order.join('|');
 
-  useLayoutEffect(() => {
+  // Keyed on `key`, which stands in for `order` (a fresh array every render):
+  // the flip itself is an effect event reading the order as it is now.
+  const flip = useEffectEvent(() => {
     const before = last.current;
     const after = new Map<string, number>();
     const reduce = motionReduced();
@@ -52,9 +54,8 @@ export function useFlipList(order: string[]) {
       }
     }
     last.current = after;
-    // `key` stands in for `order`, which is a fresh array every render.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key]);
+  });
+  useLayoutEffect(() => flip(), [key]);
 
   return (id: string) => (node: HTMLElement | null) => {
     if (node) nodes.current.set(id, node);
