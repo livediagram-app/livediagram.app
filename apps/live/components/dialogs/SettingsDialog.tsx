@@ -26,6 +26,7 @@ import {
   useSettingsViewMemory,
 } from '@/components/dialogs/settings/useSettingsViewMemory';
 import type { UserPreferences } from '@/lib/user-preferences';
+import { isPowerUserMode } from '@/lib/power-user-mode';
 
 type SettingsDialogProps = {
   settings: UserPreferences;
@@ -66,9 +67,12 @@ export function SettingsDialog({
   const { emailEnabled } = useCapabilities();
   const { clerkUserId, isSignedIn } = useClerkApiBootstrap();
   const signedIn = Boolean(isSignedIn && clerkUserId);
+  // Power-user-only rows appear the moment the mode's own row switches on
+  // (docs/specs/007-editor/power-user-mode.md), so this reads the live settings, not a snapshot.
+  const powerUserMode = isPowerUserMode(settings);
   const categories = useMemo(
-    () => visibleCategories(aiCapable === true, { emailEnabled, signedIn }),
-    [aiCapable, emailEnabled, signedIn],
+    () => visibleCategories(aiCapable === true, { emailEnabled, signedIn, powerUserMode }),
+    [aiCapable, emailEnabled, signedIn, powerUserMode],
   );
 
   // The category the reader chose; null is the phone's root list. Desktop
@@ -85,6 +89,13 @@ export function SettingsDialog({
   );
 
   const [query, setQuery] = useState('');
+  // The row to ring: a targeted open's, or one the power user preset readout
+  // went to (docs/specs/007-editor/power-user-mode.md#in-settings).
+  const [goTo, setGoTo] = useState(focus ?? null);
+  const offeredRowKeys = useMemo(
+    () => new Set(categories.flatMap((c) => c.rows.map((r) => r.key))),
+    [categories],
+  );
   const result = useMemo(() => searchSettings(categories, query), [categories, query]);
 
   // While searching, the rail shows every category (with a match badge) and
@@ -228,7 +239,13 @@ export function SettingsDialog({
               category={selected}
               settings={settings}
               onChange={onChange}
-              focusRowKey={focus?.categoryId === selected.id ? focus.rowKey : null}
+              focusRowKey={goTo?.categoryId === selected.id ? goTo.rowKey : null}
+              offeredRowKeys={offeredRowKeys}
+              onGoToRow={(categoryId, rowKey) => {
+                setQuery('');
+                select(categoryId);
+                setGoTo({ categoryId, rowKey });
+              }}
             />
           </div>
         ) : result.searching && !isMobile ? (

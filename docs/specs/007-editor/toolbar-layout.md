@@ -166,7 +166,7 @@ ringed, so the difference is visible before switching ([User preferences](user-p
 ## Layout details
 
 - The strip sits at `top-3`, centred, at `z-toolbar`. The top-centre stack
-  (owner badge, mode banners, multi-select toolbar, timer, [Canvas and palette](../008-canvas/canvas-and-palette.md)) moves
+  (follow-me pill, mode banners, timer, [Canvas and palette](../008-canvas/canvas-and-palette.md)) moves
   down to clear it.
 - Event-storming boards ([Event storming](../021-event-storming/event-storming.md)) hide the Palette's header; the strip
   hides both its pickers the same way and shows the notation's tiles.

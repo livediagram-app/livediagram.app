@@ -607,6 +607,11 @@ export const EXACT: Readonly<Record<string, string>> = {
     'In the Toolbar panel layout, someone clicked the top-left menu button to open the Explorer as a popover.',
   'UI|Opened|ToolbarMore':
     'In the Toolbar panel layout, someone clicked "More" to see every tile in the current palette category.',
+  'UI|Opened|PowerUserOffer':
+    'The one-time offer of power user mode appeared, after 20 editing days or 50 keyboard shortcuts on one device.',
+  'UI|Used|PowerUserOffer': 'Someone accepted the power user mode offer, switching the mode on.',
+  'UI|Declined|PowerUserOffer':
+    'Someone said no thanks to the power user mode offer, or closed it.',
   'UI|Opened|TourOffer':
     'The welcome tour\'s offer card was shown, either automatically on a first visit or replayed from Settings\' "Show Welcome Tour".',
   'UI|Opened|activity':
@@ -959,7 +964,8 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
     'Someone picked an option from a dropdown, or clicked through on a banner, somewhere in the editor.',
   'UI|Started': 'Someone started a presentation or the welcome tour.',
   'UI|Toggled': 'Someone turned an editor setting on or off.',
-  'UI|Used': 'Someone used a wizard-skipping entry point into a new diagram.',
+  'UI|Used': 'Someone used a wizard-skipping entry point into a new diagram, or accepted an offer.',
+  'UI|Declined': 'Someone turned down an offer the editor made them.',
   'UI|View': 'The welcome tour advanced to (or back to) a particular stage.',
 };
 

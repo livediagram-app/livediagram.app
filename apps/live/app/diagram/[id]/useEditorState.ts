@@ -36,6 +36,8 @@ import { useClipboard } from '@/hooks/canvas/useClipboard';
 import { useDiagramActions } from '@/hooks/canvas/useDiagramActions';
 import { useEditorContextMenu } from '@/hooks/canvas/useEditorContextMenu';
 import { useEditorPreferences } from '@/hooks/persistence/useEditorPreferences';
+import { useViewPreview } from './useViewPreview';
+import { usePowerUserOffer } from '@/hooks/ui/usePowerUserOffer';
 import { useDiagramHistory } from '@/hooks/canvas/useDiagramHistory';
 import { useCanvasA11y } from '@/hooks/canvas/useCanvasA11y';
 import { useLaneSettle } from '@/hooks/canvas/useLaneSettle';
@@ -501,12 +503,17 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // Per-user editor preferences (docs/specs/007-editor/user-preferences.md): the state, the ref mirrors
   // the drag hook reads, and the localStorage read + D1 sync effects.
   // See useEditorPreferences.
-  const { userPreferences, setUserPreferences, autoRebindArrowsRef, alignmentGuidesRef } =
-    useEditorPreferences({
-      ownerId: selfParticipant.id,
-      passwordGated: sharePasswordGate !== null,
-      setAiPanelVisible: panelLayout.setAiPanelVisible,
-    });
+  const {
+    userPreferences,
+    setUserPreferences,
+    prefsSettled,
+    autoRebindArrowsRef,
+    alignmentGuidesRef,
+  } = useEditorPreferences({
+    ownerId: selfParticipant.id,
+    passwordGated: sharePasswordGate !== null,
+    setAiPanelVisible: panelLayout.setAiPanelVisible,
+  });
 
   // Hide / show a diagram in the Explorer panel's Recent list (docs/specs/013-workspace/hide-from-recent.md).
   // Read-modify-writes from the CACHE, not the React snapshot: the PUT
@@ -662,12 +669,32 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // code's role (docs/specs/013-workspace/embeds.md): a view code renders a read-only viewer, an edit
   // code an editable embed. The api enforces the role on every write, so
   // this is presentation-side only.
-  const isReadOnly = sessionRole === 'view';
+  // The role pill's local read-only preview (docs/specs/007-editor/live-app.md#role-pill).
+  const { viewPreview, canToggleRole, toggleViewPreview } = useViewPreview(sessionRole, () => {
+    setSelectedId(null);
+    setMultiSelectedIds(new Set());
+    setEditingId(null);
+  });
+  const isReadOnly = sessionRole === 'view' || viewPreview;
   // The diagram's structure (tabs, their order and folders, the name, the
   // deck) is read-only for a view link and for any tab-scoped link: a scoped
   // edit link edits its one tab's content, nothing around it
   // (docs/specs/013-workspace/tab-scoped-share-links.md).
   const isStructureReadOnly = isReadOnly || sessionTabScope !== null;
+  // The once-ever power user mode offer (docs/specs/007-editor/power-user-mode.md). Its shortcut
+  // counter rides the keyboard hook below.
+  const powerUserOffer = usePowerUserOffer({
+    prefs: userPreferences,
+    settled: prefsSettled,
+    editable: hydrated && !isReadOnly,
+    embed: embedMode,
+    zen: panelLayout.zenMode,
+    apply: (next) => {
+      setUserPreferences(next);
+      writeUserPreferences(next, selfParticipant.id);
+    },
+    offer: toast.offer,
+  });
 
   // Per-tab autosave. The previous snapshot lives in a ref so we can
   // diff: any tab whose object reference changed since last save is
@@ -2764,6 +2791,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     zenMode: panelLayout.zenMode,
     onToggleZen: toggleZenMode,
     onOpenSearch: () => dialogs.setSearchOpen(true),
+    onShortcutUsed: powerUserOffer.onShortcutUsed,
     enabled: keyboardEnabled,
   });
 
@@ -2772,6 +2800,9 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     sessionTabScope,
     isOutOfScope,
     isStructureReadOnly,
+    viewPreview,
+    canToggleRole,
+    toggleViewPreview,
     // The id the dot-vote knows us by (docs/specs/012-collaboration/collab-race-hardening.md): every vote reader compares
     // against this, never the owner id.
     voteSelfId,

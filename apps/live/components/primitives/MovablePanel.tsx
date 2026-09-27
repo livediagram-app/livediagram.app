@@ -15,7 +15,8 @@ import { usePhoneDock } from './phone-dock-context';
 import type { MovablePanelDockProps, MovablePanelProps } from './MovablePanel.types';
 import { useMovablePanelDrag } from './useMovablePanelDrag';
 import { useMovablePanelMeasure } from './useMovablePanelMeasure';
-import { MovablePanelHeader } from './MovablePanelHeader';
+import { MovablePanelHeader, PanelTitle } from './MovablePanelHeader';
+import { useMinimalChrome } from '@/components/providers/minimal-chrome';
 
 export type { MovablePanelDockProps };
 
@@ -60,6 +61,7 @@ export function MovablePanel({
   dataTourId,
   children,
 }: MovablePanelProps) {
+  const minimalChrome = useMinimalChrome();
   const ref = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
   // Banner-collapse state. Only meaningful when `collapsible` is
@@ -276,14 +278,12 @@ export function MovablePanel({
             those stay accessible. Reset-position / drag affordances are
             intentionally omitted — there's no drag in this layout. */}
         <div className="flex items-center justify-between gap-2 rounded-t-lg border-b border-slate-200 px-2 py-1.5 dark:border-slate-800">
-          <span className="select-none text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-200">
-            {title}
-          </span>
-          {headerExtra || headerActions || helpArticle ? (
-            <div className="flex items-center gap-1">
+          <PanelTitle title={title} />
+          {headerExtra || headerActions || (helpArticle && !minimalChrome) ? (
+            <div className="ml-auto flex items-center gap-1">
               {headerExtra}
               {headerActions}
-              {helpArticle ? <HelpArticleLink article={helpArticle} /> : null}
+              {helpArticle && !minimalChrome ? <HelpArticleLink article={helpArticle} /> : null}
             </div>
           ) : null}
         </div>

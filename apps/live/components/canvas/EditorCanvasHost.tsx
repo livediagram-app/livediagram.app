@@ -10,7 +10,6 @@ import { isVoteHost } from '@livediagram/diagram';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
 import { LockedElementMenu, type LockHolder } from '@/components/canvas/LockedElementMenu';
 import { participantKey } from '@/lib/identity';
-import { resolveOwnerBadge } from '@/lib/presence-rows';
 import { usePreferenceHandlers } from '@/hooks/ui/usePreferenceHandlers';
 import { useQuickConnectStart } from '@/hooks/canvas/useQuickConnectStart';
 import { useEditModeContextMenu } from '@/hooks/canvas/useEditModeContextMenu';
@@ -188,9 +187,6 @@ export function EditorCanvasHost() {
     diagramList,
     diagramListLoading,
     diagramName,
-    diagramOwnerColor,
-    diagramOwnerId,
-    diagramOwnerName,
     dismissSharedDiagram,
     distGuides,
     dropIconOnElement,
@@ -431,17 +427,6 @@ export function EditorCanvasHost() {
         activeTabId={activeTab.id}
         tabLocked={activeTabLocked}
         readOnly={isReadOnly}
-        // Three-tier owner-badge resolution (self / live presence row /
-        // joined fetch fallback) — see resolveOwnerBadge in presence-rows.
-        ownerParticipant={resolveOwnerBadge({
-          isOwner,
-          selfParticipant,
-          livePresence,
-          diagramOwnerId,
-          diagramOwnerName,
-          diagramOwnerColor,
-        })}
-        isOwner={isOwner}
         diagramName={diagramName}
         tabBackgroundPattern={backdrop.backgroundPattern ?? 'grid'}
         tabBackgroundColor={backdrop.backgroundColor}

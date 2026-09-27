@@ -6,6 +6,7 @@ import { visibleCategories } from './settings/settings-catalogue';
 import { SETTINGS_ROW_ATTRIBUTE } from './settings/settings-scroll-anchor';
 import { readSettingsView, writeSettingsView } from './settings/settings-view-memory';
 import type { UserPreferences } from '@/lib/user-preferences';
+import { setPowerUserMode } from '@/lib/power-user-mode';
 
 // The dialog takes BOTH iOS Settings shapes, one per viewport (docs/specs/007-editor/user-preferences.md): the
 // iPad split view on desktop, the iPhone push navigation on a phone. Which
@@ -45,6 +46,30 @@ afterEach(() => {
 });
 
 describe('SettingsDialog', () => {
+  it('goes from the power user preset readout to the setting in its own category', () => {
+    setViewport(false);
+    Element.prototype.scrollIntoView = vi.fn();
+    renderDialog(setPowerUserMode({}, true).prefs);
+    fireEvent.click(screen.getByRole('button', { name: 'Change Panel Layout in Appearance' }));
+    // Appearance is open, with the Panel Layout row ringed.
+    expect(screen.getByRole('radiogroup', { name: 'Panel Layout' })).toBeTruthy();
+    const ringed = document.querySelector('[data-settings-row="panelLayout"]');
+    expect(ringed?.className).toContain('ring-2');
+  });
+
+  it('shows Minimal Chrome only while power user mode is on', () => {
+    setViewport(false);
+    const { onChange } = renderDialog();
+    expect(screen.queryByRole('switch', { name: 'Minimal Chrome' })).toBeNull();
+    fireEvent.click(screen.getByRole('switch', { name: 'Power User Mode' }));
+    const next = onChange.mock.calls[0]![0] as UserPreferences;
+    expect(next.powerUserMode).toBe(true);
+    expect(next.panelLayout).toBe('toolbar');
+    cleanup();
+    renderDialog(next);
+    expect(screen.getByRole('switch', { name: 'Minimal Chrome' })).toBeTruthy();
+  });
+
   it('opens on desktop with the rail and the first category already showing', () => {
     setViewport(false);
     renderDialog();

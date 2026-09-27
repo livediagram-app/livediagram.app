@@ -1,6 +1,8 @@
 import { useRef } from 'react';
 import { useEdgeAwarePlacement } from '@/hooks/canvas/useEdgeAwarePlacement';
 import { FloatingTitle } from '@/components/chrome/FloatingTitle';
+import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
+import { useMinimalChrome } from '@/components/providers/minimal-chrome';
 import { CommentIcon, DuplicateIcon, LockIcon, TrashIcon, HoverCard } from '@livediagram/ui';
 import {
   BringToFrontIcon,
@@ -84,6 +86,12 @@ export function SelectionPopover({
   title,
 }: SelectionPopoverProps) {
   const ellipsisRef = useRef<HTMLButtonElement>(null);
+  // Desktop right-clicks for the menu and presses Delete for the bin; touch
+  // can do neither, so it keeps both buttons (docs/specs/008-canvas/canvas-and-palette.md#selection-popover).
+  const touch = useCoarsePointer();
+  const minimalChrome = useMinimalChrome();
+  const showMore = !!onOpenContextMenu && touch;
+  const showDelete = !!onDelete && (touch || !minimalChrome);
   // Counter-scaled placement: the popover renders at its natural on-screen size
   // regardless of zoom, pinned to the selection's nearest centre edge.
   const { ref, placeAbove, style } = useEdgeAwarePlacement(
@@ -101,11 +109,13 @@ export function SelectionPopover({
         e.preventDefault();
         e.stopPropagation();
       }}
+      role="toolbar"
+      aria-label={title}
       className="pointer-events-auto absolute z-[var(--z-toolbar)] flex animate-fade-in items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-950/40"
       style={style}
     >
-      {title ? <FloatingTitle title={title} placeAbove={placeAbove} /> : null}
-      {onOpenContextMenu ? (
+      {title && !minimalChrome ? <FloatingTitle title={title} placeAbove={placeAbove} /> : null}
+      {showMore && onOpenContextMenu ? (
         <>
           <HoverCard title="More" description="Open the element menu.">
             <button
@@ -213,7 +223,7 @@ export function SelectionPopover({
           </button>
         </HoverCard>
       ) : null}
-      {onDelete ? (
+      {showDelete ? (
         <>
           <HoverCard
             title="Delete"

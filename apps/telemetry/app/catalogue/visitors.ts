@@ -8,6 +8,7 @@ import {
   EDITOR_REASONS_OPENED,
   EXPLORER_REASONS_OPENED,
   TOUR_OFFERED,
+  POWER_USER_OFFERED,
 } from './features';
 import { chart } from './helpers';
 
@@ -174,6 +175,31 @@ export const WELCOME_TOUR: MetricStack = {
     TOURS_SKIPPED,
   ],
   headline: TOURS_STARTED,
+};
+
+// The once-ever power user mode offer (docs/specs/007-editor/power-user-mode.md), as a funnel.
+export const POWER_USER_OFFER_ACCEPTED = chart(
+  'UI',
+  'Used',
+  'Power User Offer Accepted',
+  'Try power user mode, pressed on the offer.',
+  { types: ['PowerUserOffer'] },
+);
+
+export const POWER_USER_OFFER_DECLINED = chart(
+  'UI',
+  'Declined',
+  'Power User Offer Declined',
+  'No thanks, or the offer closed.',
+  { types: ['PowerUserOffer'], rising: 'neutral' },
+);
+
+export const POWER_USER_OFFER: MetricStack = {
+  stack: true,
+  title: 'Power User Offer',
+  blurb: 'The one-time offer of power user mode: shown, then accepted or declined.',
+  members: [POWER_USER_OFFERED, POWER_USER_OFFER_ACCEPTED, POWER_USER_OFFER_DECLINED],
+  headline: POWER_USER_OFFER_ACCEPTED,
 };
 
 // Sign-in prompts, by where each one happens (docs/specs/014-identity/sign-in-encouragement.md). The same bottom

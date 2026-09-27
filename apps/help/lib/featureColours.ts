@@ -45,6 +45,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   about: '#0891b2',
   minimap: '#94a3b8',
   settings: '#475569',
+  'power-user-mode': '#0f766e',
   // Canvas sub-article guides
   'adding-elements': '#22c55e',
   'pan-and-zoom': '#0891b2',

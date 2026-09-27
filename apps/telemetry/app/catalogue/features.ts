@@ -611,6 +611,14 @@ export const TOUR_OFFERED = opened(
   (t) => t === 'TourOffer',
 );
 
+// The power user mode offer (docs/specs/007-editor/power-user-mode.md); charted in its funnel on
+// the Visitors tab.
+export const POWER_USER_OFFERED = opened(
+  'Power User Mode Offered',
+  'The offer shown, after 20 editing days or 50 shortcuts on one device.',
+  (t) => t === 'PowerUserOffer',
+);
+
 export const SLIDE_DECK_OPENED = opened(
   'Slide Deck Opened',
   'The Slide Deck panel or presentation settings opened.',

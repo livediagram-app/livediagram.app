@@ -5,6 +5,19 @@ import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import { ResetPositionGlyph } from '@/components/primitives/ResetPositionGlyph';
 import { HoverCard } from '@livediagram/ui';
+import { useMinimalChrome } from '@/components/providers/minimal-chrome';
+
+// A panel's title. Minimal chrome (docs/specs/007-editor/power-user-mode.md) keeps it for
+// assistive technology only; the header keeps its height from its buttons.
+export function PanelTitle({ title }: { title: string }) {
+  const minimalChrome = useMinimalChrome();
+  if (minimalChrome) return <span className="sr-only">{title}</span>;
+  return (
+    <span className="select-none text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-200">
+      {title}
+    </span>
+  );
+}
 
 // The floating panel's header row, lifted out of MovablePanel: the
 // drag handle (the whole row), the title, the caller's extra header
@@ -42,21 +55,22 @@ export function MovablePanelHeader({
   onToggleCollapsed: () => void;
   onMinimize?: () => void;
 }) {
+  const minimalChrome = useMinimalChrome();
   return (
     <div
       ref={headerRef}
       onPointerDown={beginDrag}
       className={`flex items-center justify-between gap-2 rounded-t-lg border-b border-slate-200 px-2 pb-1.5 pt-2 dark:border-slate-800 ${dragging ? 'cursor-grabbing' : 'cursor-grab'}`}
     >
-      <span className="select-none text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-200">
-        {title}
-      </span>
+      <PanelTitle title={title} />
       {headerExtra ? (
         <div onPointerDown={(e) => e.stopPropagation()} className="ml-auto mr-1 flex items-center">
           {headerExtra}
         </div>
       ) : null}
-      <div className="flex items-center gap-1">
+      {/* ml-auto keeps the buttons at the right when Minimal chrome hides the
+          title (docs/specs/007-editor/power-user-mode.md): nothing moves. */}
+      <div className="ml-auto flex items-center gap-1">
         {headerActions ? (
           <div onPointerDown={(e) => e.stopPropagation()} className="flex items-center gap-1">
             {headerActions}
@@ -66,7 +80,7 @@ export function MovablePanelHeader({
             it sits in the same spot on every panel. stopPropagation because
             the header is the drag handle: pressing `?` must open the article,
             not start moving the panel. */}
-        {helpArticle ? (
+        {helpArticle && !minimalChrome ? (
           <div onPointerDown={(e) => e.stopPropagation()} className="flex items-center">
             <HelpArticleLink article={helpArticle} />
           </div>

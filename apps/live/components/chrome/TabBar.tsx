@@ -15,6 +15,7 @@ import { TabsLabelIcon } from '@livediagram/ui';
 import { TabFolderChip } from '@/components/chrome/TabFolderChip';
 import { useTabReorderDrag } from './useTabReorderDrag';
 import { ChromeControls } from '@/components/chrome/ChromeControls';
+import { useMinimalChrome } from '@/components/providers/minimal-chrome';
 // Lazy: the tab context menu (and the 18 kB icon module it drags in)
 // only loads on the first right-click — it was the largest single
 // eager block left in the editor chunk after the dialogs went dynamic.
@@ -62,6 +63,8 @@ type TabBarProps = {
   canvasMenu?: CanvasMenuTarget | null;
   onCloseCanvasMenu?: () => void;
   canvasActions?: CanvasMenuActions;
+  // Minimal chrome's role icon (docs/specs/007-editor/power-user-mode.md), first in the bar.
+  roleIcon?: ReactNode;
   tabs: Tab[];
   activeId: string;
   // Folder membership actions (docs/specs/006-diagram/tab-folders.md), menu-only. Move the active tab
@@ -191,7 +194,9 @@ export function TabBar({
   canvasMenu,
   onCloseCanvasMenu,
   canvasActions,
+  roleIcon,
 }: TabBarProps) {
+  const minimalChrome = useMinimalChrome();
   const [menuFor, setMenuFor] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   // The command palette requests an active-tab rename by bumping
@@ -320,13 +325,17 @@ export function TabBar({
         data-editor-tabbar
         className="flex h-12 shrink-0 items-center gap-2 border-t border-slate-200 bg-slate-50 px-3 dark:border-slate-800 dark:bg-slate-900"
       >
-        <span
-          className="hidden items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 sm:flex dark:text-slate-400"
-          aria-hidden
-        >
-          <TabsLabelIcon />
-          Tabs
-        </span>
+        {roleIcon}
+        {/* Minimal chrome drops the label; it was never announced (aria-hidden). */}
+        {minimalChrome ? null : (
+          <span
+            className="hidden items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 sm:flex dark:text-slate-400"
+            aria-hidden
+          >
+            <TabsLabelIcon />
+            Tabs
+          </span>
+        )}
         {/* -m-1/p-1 gives the scroll clip 4px of clearance on every side
             without moving the content: the active pill's accent ring and
             drop shadow are box-shadows, which an overflow container clips
@@ -376,7 +385,8 @@ export function TabBar({
           onOpenSettings={onOpenSettings}
           settingsLabel="Application settings"
           settingsDescription="Your editor preferences — they follow your account, not this diagram."
-          labelled
+          // Icons only under Minimal chrome; each keeps its hover card, titled with its name.
+          labelled={!minimalChrome}
           github={false}
         />
       </div>

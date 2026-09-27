@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { NameEditor } from '@/components/primitives/NameEditor';
 import { Brand, ProductNav, HoverCard, SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
 import { AuthControls } from '@/components/chrome/AuthControls';
@@ -61,6 +61,8 @@ type EditorHeaderProps = {
   // edit mode (the palette can't reach this component's local editing state).
   // A monotonic counter; each increment opens the editor (unless read-only).
   renameNonce?: number;
+  // The role pill (docs/specs/007-editor/live-app.md#role-pill), after the visibility badge.
+  rolePill?: ReactNode;
 };
 
 export function EditorHeader({
@@ -77,6 +79,7 @@ export function EditorHeader({
   onOpenShare,
   onRename,
   renameNonce = 0,
+  rolePill,
 }: EditorHeaderProps) {
   const [editing, setEditing] = useState(false);
 
@@ -128,6 +131,7 @@ export function EditorHeader({
             )}
             <span className="hidden sm:contents">
               <SharedBadge shareable={shareable} team={teamDiagram} offline={offline} />
+              {rolePill ? <span className="ml-1 inline-flex">{rolePill}</span> : null}
             </span>
           </div>
         )}

@@ -4,23 +4,19 @@ import { FormatPainterIcon } from '@livediagram/ui';
 import { isMobileViewportSync } from '@/lib/responsive';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { ModeBanner } from '@/components/chrome/ModeBanner';
-import { ParticipantAvatar } from '@/components/primitives/ParticipantAvatar';
 import { TimerWidget } from '@/components/chrome/TimerWidget';
 import { TopCenterBanner, TopCenterRow, TopCenterStack } from '@/components/chrome/TopCenter';
 import { VoteBanner } from '@/components/chrome/VoteBanner';
 
-// Everything that floats at the top of the canvas: the owner / role
-// badge, the active editor-mode banner, the session timer and the vote
+// Everything that floats at the top of the canvas: the follow-me pill,
+// the active editor-mode banner, the session timer and the vote
 // banner. (The multi-selection toolbar now floats over the selection
 // itself, via Canvas + FloatingToolbar.) Extracted from CanvasChrome so the
 // chrome shell stays lean — this is one cohesive concern (the top-centre
 // stack and its non-overlap layout) with its own props.
 type TopCenterChromeProps = Pick<
   CanvasProps,
-  | 'isOwner'
   | 'toolbarLayout'
-  | 'zenMode'
-  | 'ownerParticipant'
   | 'selfParticipant'
   | 'readOnly'
   | 'pendingDraw'
@@ -51,9 +47,6 @@ type TopCenterChromeProps = Pick<
 
 export function TopCenterChrome({
   toolbarLayout,
-  isOwner,
-  zenMode,
-  ownerParticipant,
   selfParticipant,
   readOnly,
   pendingDraw,
@@ -104,35 +97,6 @@ export function TopCenterChrome({
           </TopCenterBanner>
         </TopCenterRow>
       ) : null}
-      {/* Visitor-only owner + role badge. Desktop-only: the top row is
-          too tight on a phone, and the role stays discoverable from the
-          no-add palette + locked-element affordances. */}
-      {!isOwner && !zenMode ? (
-        <TopCenterRow className="hidden sm:flex">
-          {ownerParticipant ? (
-            // gap-2.5, not the 1.5 this row would otherwise take: the
-            // avatar's presence ring is a box-shadow sitting 4px outside its
-            // layout box, so it eats the gap on both sides and the name ends
-            // up touching it.
-            <div className="flex items-center gap-2.5 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-medium text-slate-700 shadow-sm dark:bg-slate-900/90 dark:text-slate-200">
-              <span className="text-slate-500 dark:text-slate-400">Owner:</span>
-              <ParticipantAvatar participant={ownerParticipant} size={14} />
-              <span className="max-w-[10rem] truncate">{ownerParticipant.name}</span>
-            </div>
-          ) : null}
-          <div
-            className={
-              'rounded-full px-2.5 py-1 text-[11px] font-medium shadow-sm ' +
-              (readOnly
-                ? 'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-200'
-                : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-200')
-            }
-          >
-            {readOnly ? 'Viewing' : 'Editing'}
-          </div>
-        </TopCenterRow>
-      ) : null}
-
       {/* Active mode banner / multi-selection toolbar + the session timer.
           The timer sits to the RIGHT of the banner on desktop
           (sm:flex-row) and stacks UNDERNEATH it on mobile (flex-col).

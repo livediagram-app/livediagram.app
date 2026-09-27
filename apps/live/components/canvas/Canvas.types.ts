@@ -43,12 +43,6 @@ export type CanvasProps = {
   // True for a view-only ('view' share role) session: the editing chrome
   // (palette, selection + multi-select toolbars) is suppressed.
   readOnly: boolean;
-  // Owner of the diagram, looked up by the page (selfParticipant when
-  // the viewer is the owner; the live-presence row for the owner-id
-  // otherwise). `null` when the owner is not currently in the room,
-  // in which case the owner half of the top-middle badge is hidden.
-  ownerParticipant: import('@/lib/identity').Participant | null;
-  isOwner: boolean;
   diagramName: string;
   tabBackgroundPattern: BackgroundPattern;
   tabBackgroundColor: string;

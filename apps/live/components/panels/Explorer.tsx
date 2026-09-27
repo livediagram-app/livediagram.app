@@ -8,6 +8,7 @@ import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { MoveToFolderDialog } from '@/components/dialogs/MoveToFolderDialog';
 import { apiCreateFolder } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
+import { useMinimalChrome } from '@/components/providers/minimal-chrome';
 import { SignInPrompt } from '@/components/chrome/SignInPrompt';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { ExplorerHeaderMenu } from '@/components/panels/ExplorerHeaderMenu';
@@ -64,6 +65,7 @@ function ExplorerImpl({
   favouriteIds,
   onToggleFavourite,
 }: ExplorerProps) {
+  const minimalChrome = useMinimalChrome();
   // Mobile viewport ⇒ render nothing. Mobile users reach the
   // Explorer from the AuthControls "Explorer" menu item (docs/specs/007-editor/live-app.md)
   // instead, freeing the small canvas of the floating panel and
@@ -186,7 +188,13 @@ function ExplorerImpl({
       // The ⋯ menu (docs/specs/013-workspace/folders.md): new / open, share / export, then search /
       // GitHub / settings. It replaced a "+ New" chip whose popover held
       // only the first two.
-      headerActions={<ExplorerHeaderMenu onNewDiagram={onNewDiagram} actions={menuActions} />}
+      headerActions={
+        <ExplorerHeaderMenu
+          onNewDiagram={onNewDiagram}
+          actions={menuActions}
+          helpArticle="explorerPanel"
+        />
+      }
       {...dock}
       onSize={onSize}
       mobileOpenOverride={mobileOpenOverride}
@@ -325,8 +333,9 @@ function ExplorerImpl({
           onMoveDiagramToFolder={onMoveDiagramToFolder}
         />
 
-        {/* Sign-in prompt for signed-out guests. */}
-        <SignInPrompt />
+        {/* Sign-in prompt for signed-out guests; an onboarding notice, so
+            Minimal chrome drops it (docs/specs/007-editor/power-user-mode.md). */}
+        {minimalChrome ? null : <SignInPrompt />}
       </div>
 
       {/* Move-destination modal (docs/specs/013-workspace/folders.md), the same shared placement

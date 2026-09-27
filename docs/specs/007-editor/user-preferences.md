@@ -202,6 +202,25 @@ type UserPreferences = {
   // like every other preference so a palette you have built follows you
   // between devices.
   customSwatches?: string[];
+
+  // Power user mode (docs/specs/007-editor/power-user-mode.md). True while the mode is on.
+  // Switching it on applies the preset once; see powerUserBaseline.
+  powerUserMode?: boolean;
+  // What switching the mode on changed, per preset setting: the values
+  // before (a key absent here was absent then) and the values written.
+  // Switching off restores `before` for every setting whose current
+  // values still equal `applied`, then deletes this. Present only while
+  // the mode is on.
+  powerUserBaseline?: Record<
+    string,
+    { before: Partial<UserPreferences>; applied: Partial<UserPreferences> }
+  >;
+  // Minimal chrome, a power-user-only setting. Honoured only while
+  // powerUserMode is on; the preset writes true.
+  minimalChrome?: boolean;
+  // True once the power user mode offer has been shown, answered or not,
+  // so it is made once per account.
+  powerUserOfferShown?: boolean;
 };
 ```
 
@@ -279,6 +298,16 @@ Missing key === undefined === default behaviour. Concretely:
   breakage. The gate is read fresh on each toast push (a synchronous
   `readUserPreferences()` call in `hooks/ui/useToast.tsx`), so a flip
   applies immediately with no subscription.
+
+- `powerUserMode` undefined / false → the mode is off (the default). Switching it
+  on applies the preset and records `powerUserBaseline`; switching it off restores
+  every preset setting the user did not change and deletes the baseline
+  ([Power user mode](power-user-mode.md)). Emits `UI`/`Toggled`/`PowerUserMode{On,Off}`.
+- `minimalChrome` → honoured only while `powerUserMode` is on, where undefined /
+  true is on. Off the mode it has no effect whatever its value. Emits
+  `UI`/`Toggled`/`MinimalChrome{On,Off}`.
+- `powerUserOfferShown` undefined → the offer may still be made, once its
+  thresholds are met.
 
 Empty (or missing entirely) localStorage entry, AND no row in
 `user_preferences` for this owner, is therefore the "everything
@@ -385,7 +414,8 @@ and the dialog stays as the one complete, browsable index of them.
     you flip things whose effect is on the canvas behind it.
 
   **It is the central place to find every preference.** Categories:
-  **Editor** (quick-add on hover, alignment guides, auto-attach arrows),
+  **Editor** (quick-add on hover, alignment guides, auto-attach arrows, then a
+  **Power User** section: power user mode, and Minimal chrome while the mode is on),
   **Appearance** (theme; minimal panel layout, minimap, panel opacity),
   **Controls** (middle-mouse pan), **Keyboard** (the Keyboard Shortcuts
   on/off switch, then the full shortcut catalogue as collapsible groups),
@@ -471,6 +501,14 @@ and the dialog stays as the one complete, browsable index of them.
   ([Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md)) and the reader is signed in - a guest has no address, so those
   switches could never apply. A category left with no applicable rows drops
   out entirely rather than becoming a row that pushes a blank pane.
+  **Power-user-only rows** (Minimal chrome) are absent the same way unless
+  power user mode is on ([Power user mode](power-user-mode.md)); they appear the
+  moment the mode's row is switched on, without reopening the dialog.
+
+  A row may have a **parent** row: its children render directly beneath it,
+  indented, as one group named "<parent label> settings" (the power user mode
+  row's Minimal Chrome and its preset readout). A child whose parent is not
+  among the rows shown (a search match) renders on its own.
 
   (Element add is a single always-on tap-or-drag gesture with no setting, see
   [Canvas and palette](../008-canvas/canvas-and-palette.md).) The

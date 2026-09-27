@@ -7,6 +7,9 @@ import { MenuActionRow, MenuGroupSeparator, PortalMenu } from '@/components/prim
 import { GearIcon, GithubIcon, SearchGlyph } from '@/components/chrome/tab-bar-icons';
 import { REPO_URL } from '@livediagram/ui';
 import type { ExplorerMenuActions } from './Explorer.types';
+import type { HelpArticleKey } from '@/lib/help-articles';
+import { HelpMarkIcon, openHelpArticle } from '@/components/primitives/HelpArticleLink';
+import { useMinimalChrome } from '@/components/providers/minimal-chrome';
 
 // The Explorer panel header's ⋯ menu (docs/specs/013-workspace/folders.md): the diagram-level verbs that
 // used to be split between a "+ New" chip here and the editor's bottom bar.
@@ -18,10 +21,15 @@ import type { ExplorerMenuActions } from './Explorer.types';
 export function ExplorerHeaderMenu({
   onNewDiagram,
   actions = {},
+  helpArticle,
 }: {
   onNewDiagram?: () => void;
   actions?: ExplorerMenuActions;
+  // The panel's article. Minimal chrome hides the header's `?`, so Help moves
+  // here (docs/specs/007-editor/power-user-mode.md).
+  helpArticle?: HelpArticleKey;
 }) {
+  const minimalChrome = useMinimalChrome();
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   const close = () => setAnchor(null);
   const run = (fn: () => void) => () => {
@@ -79,6 +87,15 @@ export function ExplorerHeaderMenu({
     {
       key: 'app',
       rows: [
+        helpArticle && minimalChrome ? (
+          <MenuActionRow
+            key="help"
+            plain
+            icon={<HelpMarkIcon />}
+            label="Help"
+            onClick={run(() => openHelpArticle(helpArticle))}
+          />
+        ) : null,
         actions.onSearch ? (
           <MenuActionRow
             key="search"

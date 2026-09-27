@@ -9,7 +9,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { CloseIcon } from '@livediagram/ui';
+import { buttonClassName, CloseIcon } from '@livediagram/ui';
 import { Portal } from '@/components/primitives/Portal';
 import { readUserPreferences } from '@/lib/user-preferences';
 
@@ -45,22 +45,36 @@ const AUTO_DISMISS_MS = 4_000;
 
 type ToastTone = 'error' | 'success' | 'info';
 
+// An offer (docs/specs/007-editor/power-user-mode.md): an info toast that asks something, so it
+// carries two answers and waits for one: no timeout (WCAG 2.2.1). Closing it
+// is the decline.
+export type ToastOffer = {
+  message: string;
+  confirmLabel: string;
+  declineLabel: string;
+  onConfirm: () => void;
+  onDecline: () => void;
+};
+
 type ToastEntry = {
   id: number;
   message: string;
   tone: ToastTone;
+  offer?: ToastOffer;
 };
 
 type ToastApi = {
   error: (message: string) => void;
   success: (message: string) => void;
   info: (message: string) => void;
+  offer: (offer: ToastOffer) => void;
 };
 
 const noop: ToastApi = {
   error: () => {},
   success: () => {},
   info: () => {},
+  offer: () => {},
 };
 
 const ToastContext = createContext<ToastApi>(noop);
@@ -74,7 +88,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  const push = useCallback((message: string, tone: ToastTone) => {
+  const push = useCallback((message: string, tone: ToastTone, offer?: ToastOffer) => {
     // Errors always surface; success / info are gated on the
     // "Show notifications" preference (default on). Read fresh per
     // push so a Settings flip applies without a subscription.
@@ -84,7 +98,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       // loop doesn't stack visual duplicates. The existing entry
       // stays in place (its dismiss timer keeps running).
       if (prev.some((t) => t.message === message && t.tone === tone)) return prev;
-      return [...prev, { id: nextId++, message, tone }];
+      return [...prev, { id: nextId++, message, tone, offer }];
     });
   }, []);
 
@@ -93,6 +107,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       error: (msg) => push(msg, 'error'),
       success: (msg) => push(msg, 'success'),
       info: (msg) => push(msg, 'info'),
+      offer: (offer) => push(offer.message, 'info', offer),
     }),
     [push],
   );
@@ -137,10 +152,18 @@ function ToastStack({
 }
 
 function ToastBubble({ toast, onDismiss }: { toast: ToastEntry; onDismiss: () => void }) {
+  const offer = toast.offer;
   useEffect(() => {
+    if (offer) return;
     const id = setTimeout(onDismiss, AUTO_DISMISS_MS);
     return () => clearTimeout(id);
-  }, [onDismiss]);
+  }, [onDismiss, offer]);
+  const answer = (confirm: boolean) => {
+    onDismiss();
+    if (!offer) return;
+    if (confirm) offer.onConfirm();
+    else offer.onDecline();
+  };
 
   const palette =
     toast.tone === 'error'
@@ -155,10 +178,30 @@ function ToastBubble({ toast, onDismiss }: { toast: ToastEntry; onDismiss: () =>
       className={`pointer-events-auto flex max-w-sm items-start gap-3 rounded-lg border px-3 py-2 shadow-sm animate-fade-in ${palette}`}
     >
       <ToneGlyph tone={toast.tone} />
-      <p className="flex-1 text-sm leading-snug">{toast.message}</p>
+      <div className="flex flex-1 flex-col gap-2">
+        <p className="text-sm leading-snug">{toast.message}</p>
+        {offer ? (
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => answer(true)}
+              className={buttonClassName({ size: 'xs' })}
+            >
+              {offer.confirmLabel}
+            </button>
+            <button
+              type="button"
+              onClick={() => answer(false)}
+              className={buttonClassName({ size: 'xs', variant: 'secondary' })}
+            >
+              {offer.declineLabel}
+            </button>
+          </div>
+        ) : null}
+      </div>
       <button
         type="button"
-        onClick={onDismiss}
+        onClick={() => answer(false)}
         aria-label="Dismiss"
         className="rounded-md p-1 text-current opacity-60 transition hover:opacity-100"
       >

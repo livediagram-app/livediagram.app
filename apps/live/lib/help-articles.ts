@@ -84,6 +84,7 @@ export const HELP_ARTICLES = {
   // Settings
   minimalPanels: 'palette/minimal-panels',
   toolbarLayout: 'palette/toolbar-layout',
+  powerUserMode: 'user-interface/power-user-mode',
   welcomeTour: 'getting-started/welcome-tour',
   whatWeCollect: 'privacy-and-security/what-we-collect',
   offlineMode: 'privacy-and-security/offline-mode',
@@ -295,6 +296,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   toolbarLayout: {
     title: 'Learn about the toolbar layout',
     description: 'The palette as one strip across the top of the canvas.',
+  },
+  powerUserMode: {
+    title: 'Learn about power user mode',
+    description: 'The recommended settings it applies, and Minimal chrome.',
   },
   welcomeTour: {
     title: 'Learn about the Welcome Tour',

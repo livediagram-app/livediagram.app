@@ -111,7 +111,7 @@ truncated in one surface and not the other.
   while running; it flashes when a countdown hits 0:00. Edit-role sees inline
   pause/resume + reset; view-role sees a read-only clock. It renders inside the
   shared **`TopCenterStack`** (`TopCenter.tsx`), which lays out every floating
-  top pill — owner/role badge, mode banners, multi-selection toolbar, timer,
+  top pill — follow-me pill, mode banners, timer,
   vote — as one non-overlapping column. The stack centres at the top from `sm:`
   up but anchors to the top **left** on mobile, so it clears the mobile dock
   buttons (Explorer / Palette) at the top right. The timer shares a row

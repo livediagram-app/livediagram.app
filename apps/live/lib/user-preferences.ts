@@ -181,6 +181,19 @@ export type UserPreferences = {
   // palette you have built follows you between devices.
   customSwatches?: string[];
   recentExcludedIds?: string[];
+  // Power user mode (docs/specs/007-editor/power-user-mode.md). Read and written through
+  // lib/power-user-mode.ts, never directly: switching it applies or restores
+  // the preset, recorded in `powerUserBaseline` while the mode is on.
+  powerUserMode?: boolean;
+  powerUserBaseline?: Record<
+    string,
+    { before: Partial<UserPreferences>; applied: Partial<UserPreferences> }
+  >;
+  // A power-user-only setting: honoured only while `powerUserMode` is on,
+  // where missing means on. Read through `isMinimalChrome`.
+  minimalChrome?: boolean;
+  // One-way latch: the power user mode offer has been shown to this account.
+  powerUserOfferShown?: boolean;
 };
 
 // How many excluded ids we keep. A diagram id is a 36-char UUID, so 200
