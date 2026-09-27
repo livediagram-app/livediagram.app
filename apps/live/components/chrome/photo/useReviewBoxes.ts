@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import type { DetectedSticky, Truth } from '@livediagram/sticky-vision';
 import { boxesFromLabel } from '@/lib/photo-boxes';
 
@@ -20,13 +20,14 @@ export function useReviewBoxes(detected: DetectedSticky[], detectionKey: unknown
   const drawnId = useRef(-1);
 
   // The surface mounts before the detector answers; take its boxes as they
-  // land. Keyed on the DETECTION, never on a re-render.
-  useEffect(() => {
+  // land, during render. Keyed on the DETECTION, never on a re-render.
+  const [boxesFor, setBoxesFor] = useState(detectionKey);
+  if (detectionKey !== boxesFor) {
+    setBoxesFor(detectionKey);
     setBoxes(detected);
     setTicked(new Set(detected.map((s) => s.id)));
     setSelected(null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [detectionKey]);
+  }
 
   const toggle = useCallback((id: number) => {
     setTicked((prev) => {

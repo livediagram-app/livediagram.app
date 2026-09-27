@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useSyncExternalStore } from 'react';
 import type { DetectedSticky } from '@livediagram/sticky-vision';
 import { downloadTruth, truthArmed, truthOf } from '@/lib/photo-truth';
 
@@ -17,8 +17,13 @@ import { downloadTruth, truthArmed, truthOf } from '@/lib/photo-truth';
 // Nothing is uploaded: the file goes to this machine's disk, because the labels
 // describe somebody's real workshop wall, like the photo does.
 //
-// The flag is read in an EFFECT rather than during render: these pages are
-// prerendered to static HTML, where there is no `localStorage` to ask.
+// The flag is read as an external store whose server snapshot is off: these
+// pages are prerendered to static HTML, where there is no `localStorage` to
+// ask, and the render that hydrates must match it.
+// Nothing announces a change to the flag: it is armed from the URL on load.
+const subscribeNever = () => () => {};
+const disarmed = () => false;
+
 export function TruthExport({
   photoName,
   size,
@@ -37,8 +42,7 @@ export function TruthExport({
   onOpen: (file: File) => void;
 }) {
   const picker = useRef<HTMLInputElement | null>(null);
-  const [armed, setArmed] = useState(false);
-  useEffect(() => setArmed(truthArmed()), []);
+  const armed = useSyncExternalStore(subscribeNever, truthArmed, disarmed);
   const kept = notes
     .filter((note) => ticked.has(note.id))
     .map((note) => ({ ...note, text: textOf(note.id) }));
