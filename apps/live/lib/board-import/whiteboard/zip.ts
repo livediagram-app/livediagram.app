@@ -100,7 +100,10 @@ export function listZip(
   return { ok: true, entries };
 }
 
-async function inflateRaw(data: Uint8Array<ArrayBuffer>, budget: ByteBudget): Promise<Uint8Array> {
+async function inflateRaw(
+  data: Uint8Array<ArrayBuffer>,
+  budget: ByteBudget,
+): Promise<Uint8Array<ArrayBuffer>> {
   const stream = new ReadableStream<Uint8Array<ArrayBuffer>>({
     start(controller) {
       controller.enqueue(data);
