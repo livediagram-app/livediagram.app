@@ -46,8 +46,8 @@ only reason it can be always-there rather than on-demand.
   (panels, dock popovers, the Toolbar strip and its More popover, the bottom-right cluster), by
   trying fixed candidate spots in order and taking the first that overlaps none of them:
   1. the right edge, centred;
-  2. the right edge, just below the lowest obstacle on that edge;
-  3. the right edge, just above the highest obstacle on that edge;
+  2. the right edge, just below an obstacle on that edge, the highest spot first;
+  3. the right edge, just above an obstacle on that edge, the lowest spot first;
   4. directly left of the obstacles on the right edge, centred;
   5. the left edge, centred.
 

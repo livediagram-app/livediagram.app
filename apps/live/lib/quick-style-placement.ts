@@ -45,11 +45,15 @@ export function placeQuickStylePanel(input: {
 
   const candidates: [QuickStyleCandidate, number, number][] = [['centre', rightX, centreY]];
   if (edge.length > 0) {
-    candidates.push(
-      ['below', rightX, Math.max(...edge.map(bottom)) + gap],
-      ['above', rightX, Math.min(...edge.map((o) => o.top)) - gap - panel.height],
-      ['beside', Math.min(...edge.map((o) => o.left)) - gap - panel.width, centreY],
-    );
+    // Just below each edge obstacle, highest first; then just above each,
+    // lowest first; then beside all of them.
+    for (const b of [...new Set(edge.map(bottom))].sort((x, y) => x - y)) {
+      candidates.push(['below', rightX, b + gap]);
+    }
+    for (const t of [...new Set(edge.map((o) => o.top))].sort((x, y) => y - x)) {
+      candidates.push(['above', rightX, t - gap - panel.height]);
+    }
+    candidates.push(['beside', Math.min(...edge.map((o) => o.left)) - gap - panel.width, centreY]);
   }
   candidates.push(['left-edge', area.left + gap, centreY]);
 

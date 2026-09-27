@@ -192,9 +192,10 @@ arrow), `useElementCreation.dropPaletteItem`, `useArrowConnect.connectArrowTo`,
 
 1. `rightX = area.right - gap - panel.width`; `centreY = area.top + (area.height - panel.height) / 2`.
 2. `edge` = obstacles whose rect intersects the band `[rightX - gap, area.right]` horizontally.
-3. Candidates in order: (a) `(rightX, centreY)`; (b) `(rightX, max(edge.bottom) + gap)`;
-   (c) `(rightX, min(edge.top) - gap - panel.height)`; (d) `(min(edge.left) - gap - panel.width,
-centreY)`; (e) `(area.left + gap, centreY)`. (b) to (d) only when `edge` is non-empty.
+3. Candidates in order: (a) `(rightX, centreY)`; (b) `(rightX, o.bottom + gap)` for each distinct
+   edge bottom, ascending; (c) `(rightX, o.top - gap - panel.height)` for each distinct edge top,
+   descending; (d) `(min(edge.left) - gap - panel.width, centreY)`; (e) `(area.left + gap, centreY)`.
+   (b) to (d) only when `edge` is non-empty.
 4. A candidate is valid when it lies inside `area` inset by `gap` and intersects no obstacle inflated
    by `gap`. The first valid wins; none → (a) with `fallback: true` (logged).
 

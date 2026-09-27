@@ -23,6 +23,12 @@ describe('placeQuickStylePanel', () => {
     expect(place([docked])).toMatchObject({ top: 188, candidate: 'above' });
   });
 
+  it('drops below the palette even when the zoom cluster sits under it', () => {
+    const palette = { left: 950, top: 12, width: 238, height: 300 };
+    const zoom = { left: 900, top: 740, width: 288, height: 48 };
+    expect(place([palette, zoom])).toMatchObject({ top: 324, candidate: 'below' });
+  });
+
   it('steps left of a tall palette that fills the right edge', () => {
     const palette = { left: 950, top: 12, width: 238, height: 776 };
     expect(place([palette])).toMatchObject({ left: 738, top: 250, candidate: 'beside' });

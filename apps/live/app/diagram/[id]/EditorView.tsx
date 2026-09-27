@@ -45,6 +45,7 @@ import { MinimalChromeProvider } from '@/components/providers/minimal-chrome';
 import { isMinimalChrome } from '@/lib/power-user-mode';
 // Each major area fails on its own and reports which one it was (docs/specs/017-telemetry/telemetry.md).
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
+import { QuickStylePanel } from '@/components/canvas/QuickStylePanel';
 
 // How long a guest edits before the sign-in nudge appears (docs/specs/014-identity/sign-in-encouragement.md).
 // Long enough that it never greets someone the instant they open a
@@ -70,6 +71,7 @@ export function EditorView() {
     followMe,
     anyWelcomeOpen,
     embedMode,
+    quickStyle,
     autoAlignTab,
     autoLayoutTab,
     previewCleanup,
@@ -424,6 +426,17 @@ export function EditorView() {
               />
             </AreaErrorBoundary>
           )}
+          {/* Quick style panel (docs/specs/008-canvas/quick-style-panel.md): the most-used style choices beside
+              a selection. Stands down in zen / embeds / presenting and while an
+              element menu is open, which is the complete home of every setting. */}
+          <AreaErrorBoundary area="QuickStyle">
+            <QuickStylePanel
+              quickStyle={quickStyle}
+              hidden={
+                zenMode || embedMode || (contextMenu !== null && contextMenu.mode !== 'canvas')
+              }
+            />
+          </AreaErrorBoundary>
           <AreaErrorBoundary area="Search">
             <EditorSearchPanel />
           </AreaErrorBoundary>
