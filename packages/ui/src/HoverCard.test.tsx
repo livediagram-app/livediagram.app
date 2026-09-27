@@ -18,6 +18,9 @@ describe('HoverCard', () => {
     expect(card.dataset.hint).toBe('hover-card');
     expect(card.textContent).toBe('Zoom inZoom in by 10%.');
     expect(card.className).toContain('bg-white');
+    expect(card.className.split(' ')).toEqual(
+      expect.arrayContaining(['dark:bg-slate-800', 'dark:border-slate-700']),
+    );
     expect(card.className).toContain('pointer-events-auto');
   });
 

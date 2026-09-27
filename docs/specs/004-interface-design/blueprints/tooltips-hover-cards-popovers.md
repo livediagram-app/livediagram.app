@@ -193,10 +193,10 @@ surface.
 
 ## Presentation and UX
 
-| Hint       | Surface classes (light / dark)                                                                                                              | Gap  | Arrow |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ---- | ----- |
-| Tooltip    | `rounded-md bg-slate-900 px-2 py-1 text-xs font-medium text-white` / `dark:bg-slate-700 dark:text-slate-50 dark:ring-1 dark:ring-slate-600` | 6px  | 8px   |
-| Hover card | `w-56 rounded-lg border bg-white px-3 py-2 shadow-lg` / `dark:border-slate-700 dark:bg-slate-800` (unchanged)                               | 10px | 10px  |
+| Hint       | Surface classes (light / dark)                                                                                                                 | Gap  | Arrow |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ---- | ----- |
+| Tooltip    | `rounded-md bg-slate-900 px-2 py-1 text-xs font-medium text-white` / `dark:border dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100` | 6px  | 8px   |
+| Hover card | `w-56 rounded-lg border bg-white px-3 py-2 shadow-lg` / `dark:border-slate-700 dark:bg-slate-800`                                              | 10px | 10px  |
 
 - Tooltip: `max-w-xs`, text wraps, never truncates (D28).
 - Both: `fixed`, `z-[var(--z-toast)]`, `pointer-events-auto` (hoverable), `animate-fade-in motion-reduce:animate-none`;
@@ -210,7 +210,9 @@ surface.
 - **Keyboard:** T5 opens on `:focus-visible` at once; Escape closes.
 - **Name:** a Tooltip's `label` equals the control's accessible name; the dev-and-prod check in Observability flags
   drift. Non-interactive text carries the same words as visually hidden text.
-- **Contrast:** white on slate 900 is 17.9:1; slate 50 on slate 700 is 10.4:1; hover card text unchanged (≥ 7:1).
+- **Contrast:** light, white on slate 900 is 17.9:1. Dark, under Steel: tooltip slate 100 on slate 900 (`#131b26`) is
+  15.8:1; hover card title slate 100 on slate 800 (`#16202e`) is 15.0:1 and description slate 300 is 11.0:1. The dark
+  border (slate 700, 1.7:1 against the surface) is decorative: the text identifies the hint, so 1.4.11 does not apply.
 - **Reduced motion:** `motion-reduce:animate-none`, plus the editor's `.reduce-motion` rule.
 - **Touch:** T8 to T12.
 
@@ -248,7 +250,7 @@ surface.
 | Name check warns                            | `Tooltip.test.tsx`                                                 |
 | Native `title` rejected, exceptions allowed | `packages/eslint-config/native-title.test.ts`                      |
 | Palette tile carries the right hint         | `PaletteIconButton.test.tsx`                                       |
-| Dark look                                   | e2e in `colorScheme: 'dark'`                                       |
+| Dark look: Steel surface, border, 4.5:1     | e2e `hints.spec.ts`, Hints in dark mode                            |
 
 ## Constants and configuration
 
