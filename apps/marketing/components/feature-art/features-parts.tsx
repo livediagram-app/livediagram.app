@@ -36,7 +36,7 @@ export function MiniDiagram({
             />
           ))}
         </div>
-        <div className="mt-1 h-6 rounded-sm bg-[radial-gradient(circle_at_center,_#e2e8f0_1px,_transparent_1px)] bg-[size:8px_8px] dark:bg-(color:--art-paper) dark:bg-[radial-gradient(circle_at_center,_var(--art-grid)_1px,_transparent_1px)]" />
+        <div className="mt-1 h-6 rounded-sm bg-(color:--art-paper) bg-[radial-gradient(circle_at_center,_var(--art-grid)_1px,_transparent_1px)] bg-[size:8px_8px]" />
       </div>
       <span className="text-[7px] text-slate-400">{label}</span>
     </div>

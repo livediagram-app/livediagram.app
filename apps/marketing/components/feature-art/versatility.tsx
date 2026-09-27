@@ -1,6 +1,6 @@
 // Feature illustrations — versatility + AI / rotation / layout scenes.
 // Split from FeatureArt.tsx; see ./shared for Frame + color constants.
-import { BLUE_FILL, BLUE_STROKE, Frame, SKY } from './shared';
+import { ARROW_STROKE, Frame, INK_FILL, INK_STROKE, SKY } from './shared';
 import { NoteIcon, PencilGlyph, ShapeGlyph, SparkleIcon, WandIcon } from './versatility-parts';
 
 /* ──────────────── Section: versatility (shapes / notes / borders /
@@ -53,14 +53,14 @@ export function NotesArt() {
     <Frame canvas>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
         <rect
-          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
           x="22"
           y="36"
           width="64"
           height="32"
           rx="6"
-          fill={BLUE_FILL}
-          stroke={BLUE_STROKE}
+          fill={INK_FILL}
+          stroke={INK_STROKE}
           strokeWidth="2"
         />
       </svg>
@@ -99,14 +99,14 @@ export function BorderStyleArt() {
           return (
             <g key={i}>
               <rect
-                className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+                className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
                 x={x}
                 y="32"
                 width="52"
                 height="32"
                 rx={v.rx}
-                fill={BLUE_FILL}
-                stroke={BLUE_STROKE}
+                fill={INK_FILL}
+                stroke={INK_STROKE}
                 strokeWidth="2.5"
                 strokeDasharray={v.dash}
                 strokeLinecap="round"
@@ -152,27 +152,27 @@ export function ArrowsArt() {
             markerHeight="5"
             orient="auto-start-reverse"
           >
-            <path className="dark:fill-(--art-arrow)" d="M0 0 L10 5 L0 10 z" fill={BLUE_STROKE} />
+            <path className="fill-(--art-arrow)" d="M0 0 L10 5 L0 10 z" fill={ARROW_STROKE} />
           </marker>
         </defs>
         {/* straight */}
         <line
-          className="dark:stroke-(--art-arrow)"
+          className="stroke-(--art-arrow)"
           x1="24"
           y1="20"
           x2="150"
           y2="20"
-          stroke={BLUE_STROKE}
+          stroke={ARROW_STROKE}
           strokeWidth="2.5"
           strokeLinecap="round"
           markerEnd="url(#li-arrowhead)"
         />
         {/* curved, with a draggable control knob at the apex */}
         <path
-          className="dark:stroke-(--art-arrow)"
+          className="stroke-(--art-arrow)"
           d="M24 50 Q 87 30, 150 50"
           fill="none"
-          stroke={BLUE_STROKE}
+          stroke={ARROW_STROKE}
           strokeWidth="2.5"
           strokeLinecap="round"
           markerEnd="url(#li-arrowhead)"
@@ -197,10 +197,10 @@ export function ArrowsArt() {
         />
         {/* angled, with a draggable elbow knob at the bend */}
         <path
-          className="dark:stroke-(--art-arrow)"
+          className="stroke-(--art-arrow)"
           d="M24 80 L96 80 L96 66 L150 66"
           fill="none"
-          stroke={BLUE_STROKE}
+          stroke={ARROW_STROKE}
           strokeWidth="2.5"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -253,10 +253,10 @@ export function PencilArt() {
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
         {/* hand-drawn, wobbly rectangle outline being sketched */}
         <path
-          className="fa-draw dark:stroke-(--art-ink-stroke)"
+          className="fa-draw stroke-(--art-ink-stroke)"
           d="M22 34 C 40 30, 64 31, 78 33 C 80 44, 79 56, 77 64 C 58 66, 38 65, 23 63 C 21 52, 21 43, 22 34 Z"
           fill="none"
-          stroke={BLUE_STROKE}
+          stroke={INK_STROKE}
           strokeWidth="2.5"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -272,14 +272,14 @@ export function PencilArt() {
         />
         {/* recognised clean shape */}
         <rect
-          className="fa-fade dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+          className="fa-fade fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
           x="138"
           y="32"
           width="58"
           height="34"
           rx="6"
-          fill={BLUE_FILL}
-          stroke={BLUE_STROKE}
+          fill={INK_FILL}
+          stroke={INK_STROKE}
           strokeWidth="2.5"
         />
       </svg>
@@ -306,26 +306,26 @@ export function AlignmentGuidesArt() {
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
         {/* neighbour above — shares a left edge with the dragged shape */}
         <rect
-          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
           x="58"
           y="12"
           width="52"
           height="22"
           rx="5"
-          fill={BLUE_FILL}
-          stroke={BLUE_STROKE}
+          fill={INK_FILL}
+          stroke={INK_STROKE}
           strokeWidth="2"
         />
         {/* neighbour to the right — shares a top edge with the dragged shape */}
         <rect
-          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
           x="150"
           y="54"
           width="44"
           height="22"
           rx="5"
-          fill={BLUE_FILL}
-          stroke={BLUE_STROKE}
+          fill={INK_FILL}
+          stroke={INK_STROKE}
           strokeWidth="2"
         />
         {/* selection ring on the shape being dragged into line */}
@@ -341,14 +341,14 @@ export function AlignmentGuidesArt() {
           strokeWidth="1.5"
         />
         <rect
-          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
           x="58"
           y="54"
           width="52"
           height="22"
           rx="5"
-          fill={BLUE_FILL}
-          stroke={BLUE_STROKE}
+          fill={INK_FILL}
+          stroke={INK_STROKE}
           strokeWidth="2"
         />
         {/* vertical guide — the two stacked shapes' left edges line up */}
@@ -413,7 +413,7 @@ export function CanvasBackdropArt() {
         {pats.map((p, i) => (
           <div
             key={p.key}
-            className="relative h-16 w-1/4 overflow-hidden rounded border border-slate-200 bg-white dark:border-slate-800 dark:bg-(color:--art-paper) dark:[--swatch-line:var(--color-slate-700)]"
+            className="relative h-16 w-1/4 overflow-hidden rounded border border-slate-200 bg-(color:--art-paper) dark:border-slate-800 dark:[--swatch-line:var(--color-slate-700)]"
           >
             <span
               className="absolute inset-0"
@@ -445,38 +445,38 @@ export function AiAssistArt() {
         {/* shapes the assistant just generated, popping in */}
         <g className="fa-pop" style={{ animationDelay: '0.5s' }}>
           <rect
-            className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+            className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
             x="18"
             y="20"
             width="46"
             height="20"
             rx="5"
-            fill={BLUE_FILL}
-            stroke={BLUE_STROKE}
+            fill={INK_FILL}
+            stroke={INK_STROKE}
             strokeWidth="2"
           />
         </g>
         <line
-          className="fa-draw dark:stroke-(--art-arrow)"
+          className="fa-draw stroke-(--art-arrow)"
           x1="41"
           y1="40"
           x2="50"
           y2="56"
-          stroke={BLUE_STROKE}
+          stroke={ARROW_STROKE}
           strokeWidth="2"
           strokeLinecap="round"
           style={{ animationDelay: '1s' }}
         />
         <g className="fa-pop" style={{ animationDelay: '1.2s' }}>
           <rect
-            className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+            className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
             x="32"
             y="56"
             width="46"
             height="20"
             rx="5"
-            fill={BLUE_FILL}
-            stroke={BLUE_STROKE}
+            fill={INK_FILL}
+            stroke={INK_STROKE}
             strokeWidth="2"
           />
         </g>
@@ -543,14 +543,14 @@ export function RotateArt() {
           />
           {/* the shape itself */}
           <rect
-            className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+            className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
             x="78"
             y="34"
             width="64"
             height="32"
             rx="6"
-            fill={BLUE_FILL}
-            stroke={BLUE_STROKE}
+            fill={INK_FILL}
+            stroke={INK_STROKE}
             strokeWidth="2"
           />
         </g>
@@ -661,7 +661,7 @@ export function ZenModeArt() {
         </span>
       </div>
       {/* the content you focus on — stays put while the chrome fades */}
-      <div className="absolute left-1/2 top-1/2 h-7 w-12 -translate-x-1/2 -translate-y-1/2 rounded-md border-2 border-[#0284c7] bg-[#dbeafe] dark:border-(--art-ink-stroke) dark:bg-(color:--art-ink-fill)" />
+      <div className="absolute left-1/2 top-1/2 h-7 w-12 -translate-x-1/2 -translate-y-1/2 rounded-md border-2 border-(--art-ink-stroke) bg-(color:--art-ink-fill)" />
     </Frame>
   );
 }
@@ -732,54 +732,54 @@ export function MarkdownImportArt() {
         <polygon points="120,48 113,44 113,52" fill="rgb(100 116 139)" />
         {/* right: a tiny tree (root + two children) */}
         <line
-          className="dark:stroke-(--art-arrow)"
+          className="stroke-(--art-arrow)"
           x1="150"
           y1="48"
           x2="178"
           y2="28"
-          stroke={BLUE_STROKE}
+          stroke={ARROW_STROKE}
           strokeWidth="1.5"
         />
         <line
-          className="dark:stroke-(--art-arrow)"
+          className="stroke-(--art-arrow)"
           x1="150"
           y1="48"
           x2="178"
           y2="68"
-          stroke={BLUE_STROKE}
+          stroke={ARROW_STROKE}
           strokeWidth="1.5"
         />
         <rect
-          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
           x="132"
           y="40"
           width="22"
           height="16"
           rx="3"
-          fill={BLUE_FILL}
-          stroke={BLUE_STROKE}
+          fill={INK_FILL}
+          stroke={INK_STROKE}
           strokeWidth="1.5"
         />
         <rect
-          className="dark:stroke-(--art-ink-stroke) dark:fill-(--art-ink-fill)"
+          className="stroke-(--art-ink-stroke) fill-(--art-ink-fill)"
           x="176"
           y="20"
           width="22"
           height="16"
           rx="3"
-          fill="white"
-          stroke={BLUE_STROKE}
+          fill={INK_FILL}
+          stroke={INK_STROKE}
           strokeWidth="1.25"
         />
         <rect
-          className="dark:stroke-(--art-ink-stroke) dark:fill-(--art-ink-fill)"
+          className="stroke-(--art-ink-stroke) fill-(--art-ink-fill)"
           x="176"
           y="60"
           width="22"
           height="16"
           rx="3"
-          fill="white"
-          stroke={BLUE_STROKE}
+          fill={INK_FILL}
+          stroke={INK_STROKE}
           strokeWidth="1.25"
         />
       </svg>
@@ -821,63 +821,63 @@ export function MermaidArt() {
         <polygon points="120,48 113,44 113,52" fill="rgb(100 116 139)" />
         {/* edges: start -> a, a -> b, b back to start (a real cycle) */}
         <line
-          className="dark:stroke-(--art-arrow)"
+          className="stroke-(--art-arrow)"
           x1="143"
           y1="26"
           x2="176"
           y2="26"
-          stroke={BLUE_STROKE}
+          stroke={ARROW_STROKE}
           strokeWidth="1.5"
         />
         <line
-          className="dark:stroke-(--art-arrow)"
+          className="stroke-(--art-arrow)"
           x1="187"
           y1="36"
           x2="155"
           y2="60"
-          stroke={BLUE_STROKE}
+          stroke={ARROW_STROKE}
           strokeWidth="1.5"
         />
         <line
-          className="dark:stroke-(--art-arrow)"
+          className="stroke-(--art-arrow)"
           x1="144"
           y1="60"
           x2="134"
           y2="38"
-          stroke={BLUE_STROKE}
+          stroke={ARROW_STROKE}
           strokeWidth="1.5"
         />
         <rect
-          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
           x="122"
           y="18"
           width="22"
           height="16"
           rx="8"
-          fill={BLUE_FILL}
-          stroke={BLUE_STROKE}
+          fill={INK_FILL}
+          stroke={INK_STROKE}
           strokeWidth="1.5"
         />
         <rect
-          className="dark:stroke-(--art-ink-stroke) dark:fill-(--art-ink-fill)"
+          className="stroke-(--art-ink-stroke) fill-(--art-ink-fill)"
           x="176"
           y="18"
           width="22"
           height="16"
           rx="3"
-          fill="white"
-          stroke={BLUE_STROKE}
+          fill={INK_FILL}
+          stroke={INK_STROKE}
           strokeWidth="1.25"
         />
         <rect
-          className="dark:stroke-(--art-ink-stroke) dark:fill-(--art-ink-fill)"
+          className="stroke-(--art-ink-stroke) fill-(--art-ink-fill)"
           x="133"
           y="58"
           width="22"
           height="16"
           rx="3"
-          fill="white"
-          stroke={BLUE_STROKE}
+          fill={INK_FILL}
+          stroke={INK_STROKE}
           strokeWidth="1.25"
         />
       </svg>

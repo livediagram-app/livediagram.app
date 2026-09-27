@@ -5,7 +5,7 @@
 // to a still frame under prefers-reduced-motion — the same contract the
 // real editor's animations honour.
 import type { ReactNode } from 'react';
-import { BLUE_FILL, BLUE_STROKE, Frame, SKY } from './shared';
+import { ARROW_STROKE, BLUE_STROKE, Frame, INK_FILL, INK_STROKE, SKY } from './shared';
 
 // Animated shapes: a looping animation on a boxed element to convey flow,
 // signal status, or draw the eye. One demo each for Pulse / Glow / Blink.
@@ -17,7 +17,7 @@ export function AnimatedShapesArt() {
         <div className="flex flex-col items-center gap-1.5">
           <svg width="46" height="46" viewBox="0 0 46 46" className="overflow-visible">
             <circle
-              className="fa-ripple dark:stroke-(--art-ink-stroke)"
+              className="fa-ripple stroke-(--art-ink-stroke)"
               cx="23"
               cy="23"
               r="11"
@@ -26,12 +26,12 @@ export function AnimatedShapesArt() {
               strokeWidth="2"
             />
             <circle
-              className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+              className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
               cx="23"
               cy="23"
               r="11"
-              fill={BLUE_FILL}
-              stroke={BLUE_STROKE}
+              fill={INK_FILL}
+              stroke={INK_STROKE}
               strokeWidth="2"
             />
           </svg>
@@ -41,7 +41,7 @@ export function AnimatedShapesArt() {
         <div className="flex flex-col items-center gap-1.5">
           <svg width="46" height="46" viewBox="0 0 46 46" className="overflow-visible">
             <rect
-              className="fa-glow dark:fill-(--art-ink-stroke)"
+              className="fa-glow fill-(--art-ink-stroke)"
               x="10"
               y="14"
               width="26"
@@ -51,14 +51,14 @@ export function AnimatedShapesArt() {
               style={{ filter: 'blur(3px)' }}
             />
             <rect
-              className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+              className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
               x="12"
               y="15"
               width="22"
               height="16"
               rx="4"
-              fill={BLUE_FILL}
-              stroke={BLUE_STROKE}
+              fill={INK_FILL}
+              stroke={INK_STROKE}
               strokeWidth="2"
             />
           </svg>
@@ -84,30 +84,30 @@ export function FlowingArrowsArt() {
     <Frame canvas>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
         <rect
-          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
           x="20"
           y="37"
           width="46"
           height="22"
           rx="5"
-          fill={BLUE_FILL}
-          stroke={BLUE_STROKE}
+          fill={INK_FILL}
+          stroke={INK_STROKE}
           strokeWidth="2"
         />
         <rect
-          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
           x="154"
           y="37"
           width="46"
           height="22"
           rx="5"
-          fill={BLUE_FILL}
-          stroke={BLUE_STROKE}
+          fill={INK_FILL}
+          stroke={INK_STROKE}
           strokeWidth="2"
         />
         {/* faint static rail under the marching dashes */}
         <line
-          className="dark:stroke-(--art-grid)"
+          className="stroke-(--art-grid)"
           x1="66"
           y1="48"
           x2="148"
@@ -116,16 +116,16 @@ export function FlowingArrowsArt() {
           strokeWidth="2"
         />
         <line
-          className="fa-flow dark:stroke-(--art-arrow)"
+          className="fa-flow stroke-(--art-arrow)"
           x1="66"
           y1="48"
           x2="148"
           y2="48"
-          stroke={BLUE_STROKE}
+          stroke={ARROW_STROKE}
           strokeWidth="2.5"
           strokeLinecap="round"
         />
-        <path className="dark:fill-(--art-arrow)" d="M154 48 l-8 -4.5 v9 z" fill={BLUE_STROKE} />
+        <path className="fill-(--art-arrow)" d="M154 48 l-8 -4.5 v9 z" fill={ARROW_STROKE} />
       </svg>
       <span className="absolute bottom-1.5 right-2 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-slate-500 shadow-sm dark:bg-slate-900/90 dark:text-slate-400">
         flow
@@ -166,14 +166,14 @@ export function LivingBackgroundArt() {
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
         <g opacity="0.85">
           <rect
-            className="dark:stroke-(--art-ink-stroke) dark:fill-(--art-ink-fill)"
+            className="stroke-(--art-ink-stroke) fill-(--art-ink-fill)"
             x="76"
             y="34"
             width="68"
             height="30"
             rx="6"
-            fill="white"
-            stroke={BLUE_STROKE}
+            fill={INK_FILL}
+            stroke={INK_STROKE}
             strokeWidth="2"
           />
         </g>

@@ -17,7 +17,7 @@ export function TablesArt() {
   return (
     <Frame canvas>
       <div className="flex h-full items-center justify-center">
-        <div className="overflow-hidden rounded-[3px] border border-slate-300 bg-white shadow-sm dark:border-(--art-table-line) dark:bg-transparent">
+        <div className="overflow-hidden rounded-[3px] border border-(--art-table-line) shadow-sm">
           <div className="flex">
             {headers.map((h) => (
               <div
@@ -29,11 +29,11 @@ export function TablesArt() {
             ))}
           </div>
           {rows.map((row, ri) => (
-            <div key={ri} className="flex border-t border-slate-200 dark:border-(--art-table-line)">
+            <div key={ri} className="flex border-t border-(--art-table-line)">
               {row.map((cell, ci) => (
                 <div
                   key={ci}
-                  className="relative w-[50px] border-r border-slate-200 px-2 py-1 text-[7px] text-slate-600 last:border-r-0 dark:border-(--art-table-line) dark:text-(--art-text)"
+                  className="relative w-[50px] border-r border-(--art-table-line) px-2 py-1 text-[7px] text-(--art-text) last:border-r-0"
                 >
                   {cell}
                   {ri === 1 && ci === 1 && (

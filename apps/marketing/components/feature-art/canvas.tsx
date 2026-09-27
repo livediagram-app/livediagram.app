@@ -1,6 +1,6 @@
 // Feature illustrations — canvas + real-time scenes. Split from
 // FeatureArt.tsx; see ./shared for Frame + color constants.
-import { BLUE_FILL, BLUE_STROKE, Frame, PINK, SKY } from './shared';
+import { ARROW_STROKE, BLUE_STROKE, Frame, INK_FILL, INK_STROKE, PINK, SKY } from './shared';
 import { ActionIcon } from '@livediagram/ui';
 import {
   ClockIcon,
@@ -33,27 +33,27 @@ export function TemplatesArt() {
             <svg viewBox="0 0 60 32" className="h-8 w-full">
               {i === 0 ? (
                 <g
-                  className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
-                  fill={BLUE_FILL}
-                  stroke={BLUE_STROKE}
+                  className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
+                  fill={INK_FILL}
+                  stroke={INK_STROKE}
                   strokeWidth="1.5"
                 >
                   <rect x="22" y="2" width="16" height="8" rx="2" />
                   <rect x="22" y="20" width="16" height="8" rx="2" />
                   <line
-                    className="dark:stroke-(--art-arrow)"
+                    className="stroke-(--art-arrow)"
                     x1="30"
                     y1="10"
                     x2="30"
                     y2="20"
-                    stroke={BLUE_STROKE}
+                    stroke={ARROW_STROKE}
                   />
                 </g>
               ) : i === 1 ? (
                 <g
-                  className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
-                  fill={BLUE_FILL}
-                  stroke={BLUE_STROKE}
+                  className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
+                  fill={INK_FILL}
+                  stroke={INK_STROKE}
                   strokeWidth="1.5"
                 >
                   <line x1="30" y1="16" x2="12" y2="6" />
@@ -66,9 +66,9 @@ export function TemplatesArt() {
                 </g>
               ) : (
                 <g
-                  className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
-                  fill={BLUE_FILL}
-                  stroke={BLUE_STROKE}
+                  className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
+                  fill={INK_FILL}
+                  stroke={INK_STROKE}
                   strokeWidth="1.2"
                 >
                   <rect
@@ -123,7 +123,7 @@ export function ThemesArt() {
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
         {/* Each recolouring piece rests in the Default look, which is what reduced motion shows. */}
         <rect
-          className="fa-theme-bg dark:fill-(--art-paper)"
+          className="fa-theme-bg fill-(--art-paper)"
           x="40"
           y="14"
           width="140"
@@ -132,17 +132,17 @@ export function ThemesArt() {
           fill="#f0f9ff"
         />
         <g
-          className="fa-theme dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
-          fill={BLUE_FILL}
-          stroke={BLUE_STROKE}
+          className="fa-theme fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
+          fill={INK_FILL}
+          stroke={INK_STROKE}
           strokeWidth="2"
         >
           <rect x="58" y="30" width="46" height="22" rx="6" />
           <rect x="120" y="46" width="46" height="22" rx="6" />
         </g>
         <line
-          className="fa-theme dark:stroke-(--art-arrow)"
-          stroke={BLUE_STROKE}
+          className="fa-theme stroke-(--art-arrow)"
+          stroke={ARROW_STROKE}
           x1="104"
           y1="41"
           x2="120"
@@ -170,14 +170,14 @@ export function MarqueeArt() {
         {boxes.map((b, i) => (
           <g key={i}>
             <rect
-              className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+              className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
               x={b.x}
               y={b.y}
               width="40"
               height="22"
               rx="5"
-              fill={BLUE_FILL}
-              stroke={BLUE_STROKE}
+              fill={INK_FILL}
+              stroke={INK_STROKE}
               strokeWidth="2"
             />
             <rect
@@ -223,14 +223,14 @@ export function CommentsArt() {
     <Frame canvas>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
         <rect
-          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
           x="26"
           y="34"
           width="58"
           height="30"
           rx="6"
-          fill={BLUE_FILL}
-          stroke={BLUE_STROKE}
+          fill={INK_FILL}
+          stroke={INK_STROKE}
           strokeWidth="2"
         />
       </svg>
@@ -264,14 +264,14 @@ export function AssignedActionsArt() {
     <Frame canvas>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
         <rect
-          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
           x="26"
           y="34"
           width="58"
           height="30"
           rx="6"
-          fill={BLUE_FILL}
-          stroke={BLUE_STROKE}
+          fill={INK_FILL}
+          stroke={INK_STROKE}
           strokeWidth="2"
         />
       </svg>
@@ -376,34 +376,34 @@ export function TabsArt() {
         <div className="relative flex-1">
           <svg viewBox="0 0 220 56" className="absolute inset-0 h-full w-full">
             <rect
-              className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+              className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
               x="30"
               y="14"
               width="46"
               height="20"
               rx="5"
-              fill={BLUE_FILL}
-              stroke={BLUE_STROKE}
+              fill={INK_FILL}
+              stroke={INK_STROKE}
               strokeWidth="1.8"
             />
             <rect
-              className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+              className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
               x="120"
               y="20"
               width="46"
               height="20"
               rx="5"
-              fill={BLUE_FILL}
-              stroke={BLUE_STROKE}
+              fill={INK_FILL}
+              stroke={INK_STROKE}
               strokeWidth="1.8"
             />
             <line
-              className="fa-draw dark:stroke-(--art-arrow)"
+              className="fa-draw stroke-(--art-arrow)"
               x1="76"
               y1="24"
               x2="120"
               y2="30"
-              stroke={BLUE_STROKE}
+              stroke={ARROW_STROKE}
               strokeWidth="1.8"
               strokeLinecap="round"
             />
@@ -569,14 +569,14 @@ export function SelectionGlowArt() {
     <Frame canvas>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
         <rect
-          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
           x="78"
           y="33"
           width="64"
           height="32"
           rx="6"
-          fill={BLUE_FILL}
-          stroke={BLUE_STROKE}
+          fill={INK_FILL}
+          stroke={INK_STROKE}
           strokeWidth="2"
         />
         {/* remote collaborator's coloured glow */}
@@ -610,14 +610,14 @@ export function RealtimeArt() {
     <Frame canvas>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
         <rect
-          className="fa-lww dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+          className="fa-lww fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
           x="79"
           y="34"
           width="62"
           height="30"
           rx="6"
-          fill={BLUE_FILL}
-          stroke={BLUE_STROKE}
+          fill={INK_FILL}
+          stroke={INK_STROKE}
           strokeWidth="2"
         />
       </svg>
@@ -679,24 +679,24 @@ export function LaserArt() {
         {/* faint reference diagram */}
         <g opacity="0.6">
           <rect
-            className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+            className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
             x="24"
             y="20"
             width="40"
             height="18"
             rx="4"
-            fill="#eef2f7"
+            fill={INK_FILL}
             stroke="#cbd5e1"
             strokeWidth="1.5"
           />
           <rect
-            className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+            className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
             x="150"
             y="58"
             width="40"
             height="18"
             rx="4"
-            fill="#eef2f7"
+            fill={INK_FILL}
             stroke="#cbd5e1"
             strokeWidth="1.5"
           />
@@ -866,20 +866,20 @@ export function RefreshArt() {
     <Frame canvas>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
         <g
-          className="fa-dip dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
-          fill={BLUE_FILL}
-          stroke={BLUE_STROKE}
+          className="fa-dip fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
+          fill={INK_FILL}
+          stroke={INK_STROKE}
           strokeWidth="2"
         >
           <rect x="36" y="34" width="48" height="24" rx="6" />
           <rect x="132" y="34" width="48" height="24" rx="6" />
           <line
-            className="dark:stroke-(--art-arrow)"
+            className="stroke-(--art-arrow)"
             x1="84"
             y1="46"
             x2="132"
             y2="46"
-            stroke={BLUE_STROKE}
+            stroke={ARROW_STROKE}
             strokeWidth="2"
           />
         </g>
@@ -907,29 +907,29 @@ export function SpotlightArt() {
     <Frame canvas>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
         <rect
-          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
           x="26"
           y="20"
           width="46"
           height="22"
           rx="5"
-          fill={BLUE_FILL}
-          stroke={BLUE_STROKE}
+          fill={INK_FILL}
+          stroke={INK_STROKE}
           strokeWidth="2"
         />
         <rect
-          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
           x="150"
           y="56"
           width="46"
           height="22"
           rx="5"
-          fill={BLUE_FILL}
-          stroke={BLUE_STROKE}
+          fill={INK_FILL}
+          stroke={INK_STROKE}
           strokeWidth="2"
         />
         <line
-          className="dark:stroke-(--art-arrow)"
+          className="stroke-(--art-arrow)"
           x1="72"
           y1="31"
           x2="150"
@@ -960,25 +960,25 @@ export function AvatarModeArt() {
     <Frame canvas>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
         <rect
-          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
           x="16"
           y="18"
           width="44"
           height="20"
           rx="5"
-          fill={BLUE_FILL}
-          stroke={BLUE_STROKE}
+          fill={INK_FILL}
+          stroke={INK_STROKE}
           strokeWidth="2"
         />
         <rect
-          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
           x="150"
           y="18"
           width="52"
           height="22"
           rx="5"
-          fill={BLUE_FILL}
-          stroke={BLUE_STROKE}
+          fill={INK_FILL}
+          stroke={INK_STROKE}
           strokeWidth="2"
         />
         {/* "you are here" ring on the box being talked about */}
@@ -993,7 +993,7 @@ export function AvatarModeArt() {
           strokeWidth="2"
         />
         <line
-          className="dark:stroke-(--art-arrow)"
+          className="stroke-(--art-arrow)"
           x1="60"
           y1="28"
           x2="146"

@@ -1,6 +1,6 @@
 // Feature illustrations — foundations + 'simple by design' scenes.
 // Split from FeatureArt.tsx; see ./shared for Frame + color constants.
-import { BLUE_FILL, BLUE_STROKE, BLUE_TEXT, Frame, PINK, SKY } from './shared';
+import { ARROW_STROKE, Frame, INK_FILL, INK_STROKE, INK_TEXT, PINK, SKY } from './shared';
 
 /* ─────────────────────── Section: foundations ────────────────────── */
 
@@ -227,24 +227,24 @@ export function EasyStartArt() {
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
         <g className="fa-pop" style={{ animationDelay: '0.5s' }}>
           <rect
-            className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+            className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
             x="74"
             y="33"
             width="66"
             height="30"
             rx="15"
-            fill={BLUE_FILL}
-            stroke={BLUE_STROKE}
+            fill={INK_FILL}
+            stroke={INK_STROKE}
             strokeWidth="2"
           />
           <text
-            className="dark:fill-(--art-ink-text)"
+            className="fill-(--art-ink-text)"
             x="107"
             y="52"
             textAnchor="middle"
             fontSize="12"
             fontWeight="600"
-            fill={BLUE_TEXT}
+            fill={INK_TEXT}
           >
             Start
           </text>
@@ -281,14 +281,14 @@ export function DepthArt() {
     <Frame canvas>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
         <rect
-          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
           x="28"
           y="38"
           width="58"
           height="30"
           rx="6"
-          fill={BLUE_FILL}
-          stroke={BLUE_STROKE}
+          fill={INK_FILL}
+          stroke={INK_STROKE}
           strokeWidth="2"
         />
         <rect
@@ -398,14 +398,14 @@ export function MultiplayerArt() {
     <Frame canvas>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
         <rect
-          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
           x="82"
           y="36"
           width="56"
           height="28"
           rx="6"
-          fill={BLUE_FILL}
-          stroke={BLUE_STROKE}
+          fill={INK_FILL}
+          stroke={INK_STROKE}
           strokeWidth="2"
         />
         <rect
@@ -436,7 +436,7 @@ export function AnyDeviceArt() {
         {/* shared mini diagram, drawn inside each screen via <use>-like repetition */}
         {/* Laptop */}
         <rect
-          className="dark:fill-(--art-paper) dark:stroke-slate-600"
+          className="fill-(--art-paper) dark:stroke-slate-600"
           x="8"
           y="12"
           width="70"
@@ -455,18 +455,18 @@ export function AnyDeviceArt() {
           strokeLinejoin="round"
         />
         <g
-          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
-          fill={BLUE_FILL}
-          stroke={BLUE_STROKE}
+          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
+          fill={INK_FILL}
+          stroke={INK_STROKE}
           strokeWidth="1.2"
         >
           <line
-            className="dark:stroke-(--art-arrow)"
+            className="stroke-(--art-arrow)"
             x1="40"
             y1="27"
             x2="48"
             y2="41"
-            stroke={BLUE_STROKE}
+            stroke={ARROW_STROKE}
           />
           <rect x="22" y="22" width="18" height="10" rx="2" />
           <rect x="48" y="36" width="18" height="10" rx="2" />
@@ -497,7 +497,7 @@ export function AnyDeviceArt() {
 
         {/* Tablet */}
         <rect
-          className="dark:fill-(--art-paper) dark:stroke-slate-600"
+          className="fill-(--art-paper) dark:stroke-slate-600"
           x="92"
           y="12"
           width="46"
@@ -508,18 +508,18 @@ export function AnyDeviceArt() {
           strokeWidth="1.5"
         />
         <g
-          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
-          fill={BLUE_FILL}
-          stroke={BLUE_STROKE}
+          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
+          fill={INK_FILL}
+          stroke={INK_STROKE}
           strokeWidth="1.2"
         >
           <line
-            className="dark:stroke-(--art-arrow)"
+            className="stroke-(--art-arrow)"
             x1="110"
             y1="34"
             x2="121"
             y2="44"
-            stroke={BLUE_STROKE}
+            stroke={ARROW_STROKE}
           />
           <rect x="100" y="24" width="18" height="10" rx="2" />
           <rect x="113" y="44" width="18" height="10" rx="2" />
@@ -550,7 +550,7 @@ export function AnyDeviceArt() {
 
         {/* Phone */}
         <rect
-          className="dark:fill-(--art-paper) dark:stroke-slate-600"
+          className="fill-(--art-paper) dark:stroke-slate-600"
           x="150"
           y="14"
           width="30"
@@ -570,18 +570,18 @@ export function AnyDeviceArt() {
           fill="#cbd5e1"
         />
         <g
-          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
-          fill={BLUE_FILL}
-          stroke={BLUE_STROKE}
+          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
+          fill={INK_FILL}
+          stroke={INK_STROKE}
           strokeWidth="1.2"
         >
           <line
-            className="dark:stroke-(--art-arrow)"
+            className="stroke-(--art-arrow)"
             x1="163"
             y1="34"
             x2="167"
             y2="42"
-            stroke={BLUE_STROKE}
+            stroke={ARROW_STROKE}
           />
           <rect x="155" y="24" width="20" height="9" rx="2" />
           <rect x="156" y="42" width="20" height="9" rx="2" />
@@ -623,7 +623,7 @@ export function ExportArt() {
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
         {/* On the canvas. */}
         <rect
-          className="dark:fill-(--art-paper) dark:stroke-slate-700"
+          className="fill-(--art-paper) dark:stroke-slate-700"
           x="16"
           y="22"
           width="74"
@@ -634,38 +634,38 @@ export function ExportArt() {
           strokeWidth="1.5"
         />
         <rect
-          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
           x="28"
           y="32"
           width="30"
           height="15"
           rx="3"
-          fill={BLUE_FILL}
-          stroke={BLUE_STROKE}
+          fill={INK_FILL}
+          stroke={INK_STROKE}
           strokeWidth="2"
         />
         <path
-          className="dark:stroke-(--art-arrow)"
+          className="stroke-(--art-arrow)"
           d="M43 47 v9"
-          stroke={BLUE_STROKE}
+          stroke={ARROW_STROKE}
           strokeWidth="2"
         />
         <path
-          className="dark:stroke-(--art-arrow)"
+          className="stroke-(--art-arrow)"
           d="M39 53 l4 5 4-5"
           fill="none"
-          stroke={BLUE_STROKE}
+          stroke={ARROW_STROKE}
           strokeWidth="2"
         />
         <rect
-          className="dark:stroke-(--art-ink-stroke) dark:fill-(--art-ink-fill)"
+          className="stroke-(--art-ink-stroke) fill-(--art-ink-fill)"
           x="28"
           y="56"
           width="30"
           height="12"
           rx="3"
-          fill="#fff"
-          stroke={BLUE_STROKE}
+          fill={INK_FILL}
+          stroke={INK_STROKE}
           strokeWidth="2"
         />
         <circle cx="74" cy="60" r="6" fill={PINK} opacity="0.85" />
@@ -689,7 +689,7 @@ export function ExportArt() {
 
         {/* The file: the same marks, in the same places. */}
         <rect
-          className="dark:fill-(--art-paper) dark:stroke-brand-400"
+          className="fill-(--art-paper) dark:stroke-brand-400"
           x="126"
           y="22"
           width="74"
@@ -700,38 +700,38 @@ export function ExportArt() {
           strokeWidth="2"
         />
         <rect
-          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
           x="138"
           y="32"
           width="30"
           height="15"
           rx="3"
-          fill={BLUE_FILL}
-          stroke={BLUE_STROKE}
+          fill={INK_FILL}
+          stroke={INK_STROKE}
           strokeWidth="2"
         />
         <path
-          className="dark:stroke-(--art-arrow)"
+          className="stroke-(--art-arrow)"
           d="M153 47 v9"
-          stroke={BLUE_STROKE}
+          stroke={ARROW_STROKE}
           strokeWidth="2"
         />
         <path
-          className="dark:stroke-(--art-arrow)"
+          className="stroke-(--art-arrow)"
           d="M149 53 l4 5 4-5"
           fill="none"
-          stroke={BLUE_STROKE}
+          stroke={ARROW_STROKE}
           strokeWidth="2"
         />
         <rect
-          className="dark:stroke-(--art-ink-stroke) dark:fill-(--art-ink-fill)"
+          className="stroke-(--art-ink-stroke) fill-(--art-ink-fill)"
           x="138"
           y="56"
           width="30"
           height="12"
           rx="3"
-          fill="#fff"
-          stroke={BLUE_STROKE}
+          fill={INK_FILL}
+          stroke={INK_STROKE}
           strokeWidth="2"
         />
         <circle cx="184" cy="60" r="6" fill={PINK} opacity="0.85" />
@@ -751,11 +751,11 @@ export function ExportArt() {
               strokeWidth="1.5"
             />
             <text
-              className="dark:fill-(--art-ink-text)"
+              className="fill-(--art-ink-text)"
               x={137 + i * 26}
               y="87"
               textAnchor="middle"
-              fill={BLUE_TEXT}
+              fill={INK_TEXT}
               fontSize="7"
               fontWeight="700"
             >

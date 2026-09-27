@@ -1,15 +1,31 @@
 /* Hero illustration animations (landing page), split out of globals.css to
    keep each file under the ~1000-line budget. Imported from globals.css. */
 
-/* The editor's canvas in dark appearance, for every diagram in the mock-ups here and in the
-   feature art (docs/specs/004-interface-design/appearance.md): the Default colour scheme's dark
-   half (packages/diagram/src/canvas-colors.ts) and the colours packages/diagram/src/colors.ts
-   gives an unpainted element there: a shape's ink, a text element, an arrow and its label, a
-   table's grid, and the shade a heading band or marker takes above a shape. The --art-pick-*
-   set is Pine (packages/diagram/src/themes-data.ts), the scheme the hero's theme beat picks in
-   dark. app/dark-art.test.ts holds every value to its source. Light keeps each piece's own
-   tints, so these exist under .dark only: markup reaches them through dark: utilities,
-   keyframes through a var() whose fallback is the light colour. */
+/* The editor's canvas for every diagram in the mock-ups, here and in the feature art
+   (docs/specs/004-interface-design/appearance.md, docs/specs/019-marketing/marketing-site.md): the
+   Default colour scheme (packages/diagram/src/themes-data.ts, canvas-colors.ts), light half under
+   :root and dark half under .dark, and the colours packages/diagram/src/colors.ts gives an
+   unpainted element on it: a shape's ink, a text element, an arrow and its label, a table's
+   grid, and the shade a heading band or marker takes above a shape. The --art-pick-* set is the
+   scheme the hero's theme beat picks: Forest in light, Pine in dark. app/dark-art.test.ts holds
+   every value to its source. Markup reads them through utilities, keyframes through var(). */
+:root {
+  --art-paper: #ffffff;
+  --art-grid: #cbd5e1;
+  --art-ink-fill: #f0f9ff;
+  --art-ink-stroke: #0ea5e9;
+  --art-ink-text: #075985;
+  --art-ink-shade: #e0f2fe;
+  --art-text: #1e293b;
+  --art-arrow: #334155;
+  --art-arrow-label: #334155;
+  --art-table-line: #94a3b8;
+  --art-pick-paper: #f0fdf4;
+  --art-pick-grid: #bbf7d0;
+  --art-pick-fill: #dcfce7;
+  --art-pick-stroke: #15803d;
+  --art-pick-text: #14532d;
+}
 .dark {
   --art-paper: #0d121a;
   --art-grid: #1c2735;
@@ -277,33 +293,33 @@
 @keyframes hero-theme {
   0%,
   40% {
-    fill: var(--art-ink-fill, #dbeafe);
-    stroke: var(--art-ink-stroke, #0284c7);
+    fill: var(--art-ink-fill);
+    stroke: var(--art-ink-stroke);
   }
   48%,
   100% {
-    fill: var(--art-pick-fill, #dcfce7);
-    stroke: var(--art-pick-stroke, #16a34a);
+    fill: var(--art-pick-fill);
+    stroke: var(--art-pick-stroke);
   }
 }
 /* the themed (first) card tints its canvas in step with the recolour, so the
-   whole surface shifts palette, not just the shapes. In dark it runs from
-   the dark Default canvas to Pine, so the grid, the labels and the arrows (dark:
-   utilities reading these inherited properties) change with it. */
+   whole surface shifts palette, not just the shapes. It runs from the
+   Default canvas to Forest in light and to Pine in dark, so the grid, the labels and
+   the arrows (utilities reading these inherited properties) change with it. */
 .hero-theme-canvas {
   animation: hero-theme-canvas 16s ease-in-out infinite;
 }
 @keyframes hero-theme-canvas {
   0%,
   40% {
-    background-color: var(--art-paper, #eff6ff);
+    background-color: var(--art-paper);
     --hero-grid: var(--art-grid);
     --hero-label: var(--art-ink-text);
     --hero-arrow: var(--art-arrow);
   }
   48%,
   100% {
-    background-color: var(--art-pick-paper, #f0fdf4);
+    background-color: var(--art-pick-paper);
     --hero-grid: var(--art-pick-grid);
     --hero-label: var(--art-pick-text);
     --hero-arrow: var(--art-pick-stroke);

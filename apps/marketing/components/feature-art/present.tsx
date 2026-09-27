@@ -6,7 +6,7 @@
 // from a diagram, one slide filling a screen, notes only the presenter opens,
 // the fact that nobody else is dragged along, and the board tilted into 3D.
 
-import { BLUE_FILL, BLUE_STROKE, BLUE_TEXT, Frame, SKY } from './shared';
+import { ARROW_STROKE, BLUE_STROKE, Frame, INK_FILL, INK_STROKE, INK_TEXT, SKY } from './shared';
 
 const SLATE_FILL = '#eef2f7';
 const SLATE_STROKE = '#cbd5e1';
@@ -21,7 +21,7 @@ export function SlideDeckArt() {
         {/* The diagram: four boxes and their connectors. */}
         <g opacity="0.75">
           <rect
-            className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke) dark:opacity-50"
+            className="fill-(--art-ink-fill) stroke-(--art-ink-stroke) opacity-50"
             x="14"
             y="16"
             width="34"
@@ -32,18 +32,18 @@ export function SlideDeckArt() {
             strokeWidth="1.5"
           />
           <rect
-            className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+            className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
             x="14"
             y="42"
             width="34"
             height="15"
             rx="4"
-            fill={BLUE_FILL}
-            stroke={BLUE_STROKE}
+            fill={INK_FILL}
+            stroke={INK_STROKE}
             strokeWidth="1.5"
           />
           <rect
-            className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke) dark:opacity-50"
+            className="fill-(--art-ink-fill) stroke-(--art-ink-stroke) opacity-50"
             x="14"
             y="68"
             width="34"
@@ -54,7 +54,7 @@ export function SlideDeckArt() {
             strokeWidth="1.5"
           />
           <path
-            className="dark:stroke-(--art-arrow)"
+            className="stroke-(--art-arrow)"
             d="M31 31v11M31 57v11"
             stroke={SLATE_STROKE}
             strokeWidth="1.5"
@@ -65,7 +65,7 @@ export function SlideDeckArt() {
         {/* Three slides cut from it, the middle one selected. */}
         <g>
           <rect
-            className="dark:fill-(--art-paper) dark:stroke-slate-700"
+            className="fill-(--art-paper) dark:stroke-slate-700"
             x="78"
             y="12"
             width="58"
@@ -76,7 +76,7 @@ export function SlideDeckArt() {
             strokeWidth="1.5"
           />
           <rect
-            className="dark:fill-(--art-ink-fill)"
+            className="fill-(--art-ink-fill)"
             x="88"
             y="22"
             width="24"
@@ -86,7 +86,7 @@ export function SlideDeckArt() {
           />
 
           <rect
-            className="dark:fill-(--art-paper) dark:stroke-brand-500"
+            className="fill-(--art-paper) dark:stroke-brand-500"
             x="90"
             y="34"
             width="58"
@@ -97,17 +97,17 @@ export function SlideDeckArt() {
             strokeWidth="2"
           />
           <rect
-            className="dark:fill-(--art-ink-fill)"
+            className="fill-(--art-ink-fill)"
             x="100"
             y="44"
             width="24"
             height="10"
             rx="2.5"
-            fill={BLUE_FILL}
+            fill={INK_FILL}
           />
 
           <rect
-            className="dark:fill-(--art-paper) dark:stroke-slate-700"
+            className="fill-(--art-paper) dark:stroke-slate-700"
             x="102"
             y="56"
             width="58"
@@ -118,7 +118,7 @@ export function SlideDeckArt() {
             strokeWidth="1.5"
           />
           <rect
-            className="dark:fill-(--art-ink-fill)"
+            className="fill-(--art-ink-fill)"
             x="112"
             y="66"
             width="24"
@@ -153,40 +153,40 @@ export function FullScreenSlideArt() {
         <rect x="8" y="8" width="204" height="80" rx="6" fill="#0f172a" className={SCREEN} />
         {/* The slide's content, big. */}
         <rect
-          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
           x="52"
           y="28"
           width="52"
           height="26"
           rx="4"
-          fill={BLUE_FILL}
-          stroke={BLUE_STROKE}
+          fill={INK_FILL}
+          stroke={INK_STROKE}
           strokeWidth="2"
         />
         <rect
-          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
           x="124"
           y="28"
           width="52"
           height="26"
           rx="4"
-          fill="#e2e8f0"
+          fill={INK_FILL}
           stroke={SLATE_STROKE}
           strokeWidth="2"
         />
         <path
-          className="dark:stroke-(--art-arrow)"
+          className="stroke-(--art-arrow)"
           d="M104 41h20"
-          stroke={BLUE_STROKE}
+          stroke={ARROW_STROKE}
           strokeWidth="2"
           strokeLinecap="round"
           markerEnd=""
         />
         <path
-          className="dark:stroke-(--art-arrow)"
+          className="stroke-(--art-arrow)"
           d="M118 37l6 4-6 4"
           fill="none"
-          stroke={BLUE_STROKE}
+          stroke={ARROW_STROKE}
           strokeWidth="2"
         />
         {/* The HUD's counter, top right. */}
@@ -206,14 +206,14 @@ export function PresenterNotesArt() {
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
         <rect x="8" y="8" width="204" height="80" rx="6" fill="#0f172a" className={SCREEN} />
         <rect
-          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
           x="26"
           y="28"
           width="60"
           height="30"
           rx="4"
-          fill={BLUE_FILL}
-          stroke={BLUE_STROKE}
+          fill={INK_FILL}
+          stroke={INK_STROKE}
           strokeWidth="2"
         />
         {/* The notes card, hanging off the HUD. */}
@@ -238,14 +238,14 @@ export function PresentLocallyArt() {
         {/* Yours: presenting. */}
         <rect x="14" y="20" width="86" height="56" rx="6" fill="#0f172a" className={SCREEN} />
         <rect
-          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
           x="34"
           y="38"
           width="46"
           height="20"
           rx="3"
-          fill={BLUE_FILL}
-          stroke={BLUE_STROKE}
+          fill={INK_FILL}
+          stroke={INK_STROKE}
           strokeWidth="2"
         />
         <text
@@ -271,7 +271,7 @@ export function PresentLocallyArt() {
           Everyone else
         </text>
         <rect
-          className="dark:fill-(--art-paper) dark:stroke-slate-700"
+          className="fill-(--art-paper) dark:stroke-slate-700"
           x="120"
           y="20"
           width="86"
@@ -283,7 +283,7 @@ export function PresentLocallyArt() {
         />
         <g opacity="0.85">
           <rect
-            className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+            className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
             x="132"
             y="30"
             width="28"
@@ -294,7 +294,7 @@ export function PresentLocallyArt() {
             strokeWidth="1.2"
           />
           <rect
-            className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+            className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
             x="168"
             y="30"
             width="26"
@@ -305,18 +305,18 @@ export function PresentLocallyArt() {
             strokeWidth="1.2"
           />
           <rect
-            className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+            className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
             x="132"
             y="52"
             width="28"
             height="12"
             rx="3"
-            fill={BLUE_FILL}
-            stroke={BLUE_STROKE}
+            fill={INK_FILL}
+            stroke={INK_STROKE}
             strokeWidth="1.2"
           />
           <path
-            className="dark:stroke-(--art-arrow)"
+            className="stroke-(--art-arrow)"
             d="M146 42v10M181 42v10"
             stroke={SLATE_STROKE}
             strokeWidth="1.2"
@@ -344,33 +344,33 @@ export function IsometricArt() {
             opacity="0.85"
           />
           <path
-            className="dark:stroke-(--art-ink-stroke) dark:fill-slate-800"
+            className="stroke-(--art-ink-stroke) dark:fill-slate-800"
             d="M40 58 110 76 180 58 110 40Z"
             fill="#e0f2fe"
-            stroke={BLUE_STROKE}
+            stroke={INK_STROKE}
             opacity="0.9"
           />
           <path
-            className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+            className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
             d="M40 42 110 60 180 42 110 24Z"
-            fill={BLUE_FILL}
-            stroke={BLUE_STROKE}
+            fill={INK_FILL}
+            stroke={INK_STROKE}
           />
         </g>
         {/* Two elements standing on the top plane, to say the content is
             unchanged — only the way you are looking at it. */}
         <g strokeWidth="1.4" strokeLinejoin="round">
           <path
-            className="dark:stroke-(--art-ink-stroke) dark:fill-(--art-ink-fill)"
+            className="stroke-(--art-ink-stroke) fill-(--art-ink-fill)"
             d="M86 38 104 43 104 33 86 28Z"
-            fill="#fff"
-            stroke={BLUE_STROKE}
+            fill={INK_FILL}
+            stroke={INK_STROKE}
           />
           <path
-            className="dark:stroke-(--art-ink-stroke) dark:fill-(--art-ink-fill)"
+            className="stroke-(--art-ink-stroke) fill-(--art-ink-fill)"
             d="M120 44 138 39 138 29 120 34Z"
-            fill="#fff"
-            stroke={BLUE_STROKE}
+            fill={INK_FILL}
+            stroke={INK_STROKE}
           />
         </g>
         {/* The orbit handle. */}
@@ -426,10 +426,10 @@ export function FacilitatorArt() {
         />
         <circle cx="29" cy="71" r="3.5" fill="#f43f5e" className="fa-pulse" />
         <text
-          className="dark:fill-(--art-ink-text)"
+          className="fill-(--art-ink-text)"
           x="39"
           y="75"
-          fill={BLUE_TEXT}
+          fill={INK_TEXT}
           fontSize="9"
           fontWeight="700"
         >
@@ -506,22 +506,22 @@ export function BringFocusArt() {
           <animate attributeName="opacity" values="0.5;0" dur="2.4s" repeatCount="indefinite" />
         </circle>
         <rect
-          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
           x="86"
           y="36"
           width="48"
           height="24"
           rx="4"
-          fill={BLUE_FILL}
-          stroke={BLUE_STROKE}
+          fill={INK_FILL}
+          stroke={INK_STROKE}
           strokeWidth="2"
         />
         <text
-          className="dark:fill-(--art-ink-text)"
+          className="fill-(--art-ink-text)"
           x="110"
           y="51"
           textAnchor="middle"
-          fill={BLUE_TEXT}
+          fill={INK_TEXT}
           fontSize="8"
           fontWeight="700"
         >
@@ -531,7 +531,7 @@ export function BringFocusArt() {
         {/* Two other people's viewports, arriving. */}
         <g className="fa-fade">
           <rect
-            className="dark:fill-(--art-paper) dark:stroke-slate-500"
+            className="fill-(--art-paper) dark:stroke-slate-500"
             x="18"
             y="26"
             width="40"
@@ -559,7 +559,7 @@ export function BringFocusArt() {
         </g>
         <g className="fa-fade" style={{ animationDelay: '0.6s' }}>
           <rect
-            className="dark:fill-(--art-paper) dark:stroke-slate-500"
+            className="fill-(--art-paper) dark:stroke-slate-500"
             x="162"
             y="46"
             width="40"

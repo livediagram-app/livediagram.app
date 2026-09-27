@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import {
   DEFAULT_SCHEME_DARK,
+  DEFAULT_SCHEME_LIGHT,
   THEMES,
   defaultArrowLabelColor,
   defaultArrowStrokeColor,
@@ -82,6 +83,16 @@ function expectPick(selector: ':root' | '.dark', id: string) {
   expect(artProperty(selector, 'art-pick-stroke')).toBe(hex(pick.elementStroke ?? ''));
   expect(artProperty(selector, 'art-pick-text')).toBe(hex(pick.elementText ?? ''));
 }
+
+describe('mock-up palette, light half', () => {
+  it('is the Default scheme light half and the ink it gives unpainted elements', () => {
+    expectDefaultScheme(':root', 'light', DEFAULT_SCHEME_LIGHT);
+  });
+
+  it('recolours the hero flowchart to Forest', () => {
+    expectPick(':root', 'forest');
+  });
+});
 
 describe('mock-up palette, dark half', () => {
   it('is the Default scheme dark half and the ink it gives unpainted elements', () => {

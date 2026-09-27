@@ -1,6 +1,6 @@
 // Feature illustrations — tabs, reliability, and editor-feature scenes.
 // Split from FeatureArt.tsx; see ./shared for Frame + color constants.
-import { BLUE_FILL, BLUE_STROKE, Frame, PINK, SKY } from './shared';
+import { ARROW_STROKE, Frame, INK_FILL, INK_STROKE, PINK, SKY } from './shared';
 import { SearchIcon } from '@livediagram/ui';
 import { LockIcon, MiniDiagram, MiniEditorMock, SearchGlyph } from './features-parts';
 
@@ -151,14 +151,14 @@ export function UndoRedoArt() {
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
         {/* a shape whose state toggles, as if a change is applied then undone */}
         <rect
-          className="fa-lww dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+          className="fa-lww fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
           x="86"
           y="26"
           width="48"
           height="26"
           rx="6"
-          fill={BLUE_FILL}
-          stroke={BLUE_STROKE}
+          fill={INK_FILL}
+          stroke={INK_STROKE}
           strokeWidth="2"
         />
       </svg>
@@ -202,13 +202,13 @@ export function LockArt() {
     <Frame canvas>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
         <rect
-          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
           x="78"
           y="32"
           width="64"
           height="32"
           rx="6"
-          fill="#eef2f7"
+          fill={INK_FILL}
           stroke="#94a3b8"
           strokeWidth="2"
         />
@@ -248,26 +248,26 @@ export function DragDuplicateArt() {
     <Frame canvas>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
         <rect
-          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
           x="42"
           y="30"
           width="52"
           height="26"
           rx="5"
-          fill={BLUE_FILL}
-          stroke={BLUE_STROKE}
+          fill={INK_FILL}
+          stroke={INK_STROKE}
           strokeWidth="2"
         />
         <g className="fa-drag-dup">
           <rect
-            className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+            className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
             x="42"
             y="30"
             width="52"
             height="26"
             rx="5"
-            fill={BLUE_FILL}
-            stroke={BLUE_STROKE}
+            fill={INK_FILL}
+            stroke={INK_STROKE}
             strokeWidth="2"
             strokeDasharray="5 3"
           />
@@ -356,7 +356,7 @@ export function AccountSyncArt() {
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
         {/* laptop */}
         <rect
-          className="dark:fill-(--art-paper) dark:stroke-slate-600"
+          className="fill-(--art-paper) dark:stroke-slate-600"
           x="14"
           y="22"
           width="58"
@@ -375,25 +375,25 @@ export function AccountSyncArt() {
           strokeLinejoin="round"
         />
         <g
-          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
-          fill={BLUE_FILL}
-          stroke={BLUE_STROKE}
+          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
+          fill={INK_FILL}
+          stroke={INK_STROKE}
           strokeWidth="1.2"
         >
           <line
-            className="dark:stroke-(--art-arrow)"
+            className="stroke-(--art-arrow)"
             x1="40"
             y1="34"
             x2="46"
             y2="46"
-            stroke={BLUE_STROKE}
+            stroke={ARROW_STROKE}
           />
           <rect x="24" y="30" width="16" height="8" rx="2" />
           <rect x="46" y="42" width="16" height="8" rx="2" />
         </g>
         {/* phone */}
         <rect
-          className="dark:fill-(--art-paper) dark:stroke-slate-600"
+          className="fill-(--art-paper) dark:stroke-slate-600"
           x="156"
           y="20"
           width="28"
@@ -404,18 +404,18 @@ export function AccountSyncArt() {
           strokeWidth="1.5"
         />
         <g
-          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
-          fill={BLUE_FILL}
-          stroke={BLUE_STROKE}
+          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
+          fill={INK_FILL}
+          stroke={INK_STROKE}
           strokeWidth="1.2"
         >
           <line
-            className="dark:stroke-(--art-arrow)"
+            className="stroke-(--art-arrow)"
             x1="170"
             y1="34"
             x2="171"
             y2="46"
-            stroke={BLUE_STROKE}
+            stroke={ARROW_STROKE}
           />
           <rect x="161" y="28" width="18" height="8" rx="2" />
           <rect x="162" y="44" width="18" height="8" rx="2" />
@@ -532,14 +532,14 @@ export function ImagesArt() {
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
         {/* image element placed on the canvas */}
         <rect
-          className="dark:stroke-(--art-ink-stroke)"
+          className="stroke-(--art-ink-stroke)"
           x="18"
           y="20"
           width="98"
           height="58"
           rx="4"
           fill="#fff"
-          stroke={BLUE_STROKE}
+          stroke={INK_STROKE}
           strokeWidth="2"
         />
         <clipPath id="li-img-clip">

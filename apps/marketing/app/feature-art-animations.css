@@ -104,8 +104,8 @@
 @keyframes fa-theme {
   0%,
   16% {
-    fill: var(--art-ink-fill, #dbeafe);
-    stroke: var(--art-ink-stroke, #0284c7);
+    fill: var(--art-ink-fill);
+    stroke: var(--art-ink-stroke);
   }
   25%,
   41% {
@@ -123,14 +123,14 @@
     stroke: #7c3aed;
   }
   100% {
-    fill: var(--art-ink-fill, #dbeafe);
-    stroke: var(--art-ink-stroke, #0284c7);
+    fill: var(--art-ink-fill);
+    stroke: var(--art-ink-stroke);
   }
 }
 @keyframes fa-theme-bg {
   0%,
   16% {
-    fill: var(--art-paper, #f0f9ff);
+    fill: var(--art-paper);
   }
   25%,
   41% {
@@ -145,7 +145,7 @@
     fill: #f5f3ff;
   }
   100% {
-    fill: var(--art-paper, #f0f9ff);
+    fill: var(--art-paper);
   }
 }
 .fa-theme {
@@ -241,8 +241,8 @@
 @keyframes fa-lww {
   0%,
   34% {
-    fill: var(--art-ink-fill, #dbeafe);
-    stroke: var(--art-ink-stroke, #0284c7);
+    fill: var(--art-ink-fill);
+    stroke: var(--art-ink-stroke);
   }
   54%,
   88% {
@@ -251,8 +251,8 @@
   }
   96%,
   100% {
-    fill: var(--art-ink-fill, #dbeafe);
-    stroke: var(--art-ink-stroke, #0284c7);
+    fill: var(--art-ink-fill);
+    stroke: var(--art-ink-stroke);
   }
 }
 .fa-lww {

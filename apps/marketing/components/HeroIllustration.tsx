@@ -51,7 +51,6 @@ import {
   SLIDES,
   SlideDeckDiagram,
   TimelineDiagram,
-  type Theme,
 } from './hero-diagrams';
 import {
   EyeGlyph,
@@ -71,16 +70,12 @@ const GAP = 3;
 
 type TabDef = { name: string; color: string; active?: boolean };
 
-// Each window sits on its own canvas. In dark every one is the Default scheme's dark
-// half, dotted as the editor dots it (1px dots on a 24px grid), and the flowchart
-// recolours from it to Pine (the hero-theme / hero-theme-canvas keyframes). In light
-// the flowchart and its slide deck wear a blue-50 tint and the flowchart recolours to
-// Forest; the others hold a tint of their own (canvasTint).
-const DARK_CANVAS =
-  'dark:bg-(color:--art-paper) dark:bg-[radial-gradient(circle_at_center,_var(--hero-grid,var(--art-grid))_1px,_transparent_1px)]';
-const VIOLET: Theme = { canvas: '#f5f3ff', fill: '#ede9fe', stroke: '#7c3aed', text: '#4c1d95' };
-const AMBER: Theme = { canvas: '#fffbeb', fill: '#fef3c7', stroke: '#b45309', text: '#78350f' };
-const TEAL: Theme = { canvas: '#f0fdfa', fill: '#ccfbf1', stroke: '#0d9488', text: '#134e4a' };
+// Every window sits on the Default scheme's canvas (the --art-* palette in
+// hero-animations.css, its light or dark half with the appearance), dotted as the
+// editor dots it: 1px dots on a 24px grid. The flowchart recolours from it to Forest
+// in light and Pine in dark (the hero-theme / hero-theme-canvas keyframes).
+const CANVAS =
+  'bg-(color:--art-paper) bg-[radial-gradient(circle_at_center,_var(--hero-grid,var(--art-grid))_1px,_transparent_1px)] bg-[size:24px_24px]';
 
 const CARDS: {
   key: string;
@@ -94,8 +89,6 @@ const CARDS: {
   showCursor: boolean;
   shared: boolean;
   theming: boolean;
-  // The light canvas colour of a window on a named theme; null is the Default scheme.
-  canvasTint: string | null;
   // Presenting (docs/specs/012-collaboration/presentation-mode.md): the panels give way to the presenting HUD, and
   // the canvas shows the deck's slides instead of the whole diagram.
   presenting?: boolean;
@@ -117,7 +110,6 @@ const CARDS: {
     showCursor: true,
     shared: true,
     theming: true,
-    canvasTint: null,
   },
   {
     key: 'slides',
@@ -132,7 +124,6 @@ const CARDS: {
     showCursor: false,
     shared: true,
     theming: false,
-    canvasTint: null,
     presenting: true,
   },
   {
@@ -148,7 +139,6 @@ const CARDS: {
     showCursor: false,
     shared: true,
     theming: false,
-    canvasTint: VIOLET.canvas,
   },
   {
     key: 'timeline',
@@ -163,7 +153,6 @@ const CARDS: {
     showCursor: false,
     shared: false,
     theming: false,
-    canvasTint: AMBER.canvas,
     layers: true,
   },
   {
@@ -179,7 +168,6 @@ const CARDS: {
     showCursor: false,
     shared: true,
     theming: false,
-    canvasTint: TEAL.canvas,
   },
 ];
 
@@ -188,26 +176,27 @@ const CARDS: {
 const TAB_PILL =
   'flex items-center gap-2 rounded-md px-2 py-1 text-xs font-medium text-(--tab) dark:text-[color-mix(in_srgb,var(--tab)_40%,white)]';
 
-// The theme cards the Look & Feel dialog mock offers; Default is what the
-// flowchart wears until Forest is picked and the recolour follows. In dark the
-// dialog shows the Dark category (darkCategorySchemes in apps/live): the Default
-// scheme's dark half, then the dark schemes of packages/diagram themes-data.ts,
-// each card its canvas ringed in its stroke, and Pine is the pick.
-const THEME_CARDS: { name: string; swatch: string; current?: boolean; picked?: boolean }[] = [
-  { name: 'Default', swatch: '#0284c7', current: true },
-  { name: 'Forest', swatch: '#16a34a', picked: true },
-  { name: 'Ocean', swatch: '#0891b2' },
-  { name: 'Sunset', swatch: '#ea580c' },
-  { name: 'Lavender', swatch: '#7c3aed' },
-  { name: 'Rose', swatch: '#e11d48' },
-];
-const DARK_THEME_CARDS: {
+// The theme cards the Look & Feel dialog mock offers, each its scheme's canvas ringed
+// in its stroke (packages/diagram themes-data.ts). Default is what the flowchart
+// wears until the pick. In light the pick is Forest; in dark the dialog shows the
+// Dark category (darkCategorySchemes in apps/live), the Default scheme's dark half
+// first, and the pick is Pine.
+type ThemeCard = {
   name: string;
   canvas: string;
   stroke: string;
   current?: boolean;
   picked?: boolean;
-}[] = [
+};
+const THEME_CARDS: ThemeCard[] = [
+  { name: 'Default', canvas: '#ffffff', stroke: '#0ea5e9', current: true },
+  { name: 'Forest', canvas: '#f0fdf4', stroke: '#15803d', picked: true },
+  { name: 'Ocean', canvas: '#ecfeff', stroke: '#0e7490' },
+  { name: 'Sunset', canvas: '#fff7ed', stroke: '#c2410c' },
+  { name: 'Lavender', canvas: '#faf5ff', stroke: '#7e22ce' },
+  { name: 'Rose', canvas: '#fff1f2', stroke: '#be123c' },
+];
+const DARK_THEME_CARDS: ThemeCard[] = [
   { name: 'Default', canvas: '#0d121a', stroke: '#64748b', current: true },
   { name: 'Midnight', canvas: '#0f172a', stroke: '#94a3b8' },
   { name: 'Pine', canvas: '#14532d', stroke: '#86efac', picked: true },
@@ -217,14 +206,24 @@ const DARK_THEME_CARDS: {
 ];
 
 // A theme card; the current one starts ringed, the picked one takes the ring.
-function themeCardClass(t: { current?: boolean; picked?: boolean }): string {
-  return `flex flex-col items-center gap-1 rounded-lg border py-1.5 text-[8px] font-medium text-slate-600 dark:text-slate-300 ${
-    t.picked
-      ? 'hero-dialog-pick border-slate-200 dark:border-slate-700'
-      : t.current
-        ? 'hero-dialog-was border-brand-400 ring-1 ring-brand-300'
-        : 'border-slate-200 dark:border-slate-700'
-  }`;
+function ThemeCardView({ card }: { card: ThemeCard }) {
+  return (
+    <span
+      className={`flex flex-col items-center gap-1 rounded-lg border py-1.5 text-[8px] font-medium text-slate-600 dark:text-slate-300 ${
+        card.picked
+          ? 'hero-dialog-pick border-slate-200 dark:border-slate-700'
+          : card.current
+            ? 'hero-dialog-was border-brand-400 ring-1 ring-brand-300'
+            : 'border-slate-200 dark:border-slate-700'
+      }`}
+    >
+      <span
+        className="h-4 w-4 rounded-full"
+        style={{ backgroundColor: card.canvas, boxShadow: `inset 0 0 0 2px ${card.stroke}` }}
+      />
+      {card.name}
+    </span>
+  );
 }
 
 // The palette mock's Favourites grid: the editor's default go-to tiles.
@@ -285,13 +284,13 @@ export function HeroIllustration() {
             const playing = i === active;
             const diagram =
               c.key === 'mindmap' ? (
-                <MindMapDiagram playing={playing} theme={VIOLET} />
+                <MindMapDiagram playing={playing} />
               ) : c.key === 'slides' ? (
                 <SlideDeckDiagram />
               ) : c.key === 'comments' ? (
-                <ArchitectureDiagram theme={TEAL} />
+                <ArchitectureDiagram />
               ) : c.key === 'timeline' ? (
-                <TimelineDiagram theme={AMBER} />
+                <TimelineDiagram />
               ) : (
                 <FlowchartDiagram />
               );
@@ -312,7 +311,6 @@ export function HeroIllustration() {
                   tabs={c.tabs}
                   shared={c.shared}
                   theming={c.theming}
-                  canvasTint={c.canvasTint}
                   showCursor={c.showCursor}
                   layers={c.layers ?? false}
                   presenting={c.presenting ?? false}
@@ -365,7 +363,6 @@ function EditorWindow({
   playing,
   shared,
   theming,
-  canvasTint,
   showCursor,
   layers,
   tool,
@@ -377,7 +374,6 @@ function EditorWindow({
   playing: boolean;
   shared: boolean;
   theming: boolean;
-  canvasTint: string | null;
   showCursor: boolean;
   layers: boolean;
   tool: string | [string, string];
@@ -443,11 +439,9 @@ function EditorWindow({
         {/* Canvas surface. The flowchart additionally animates its theme beat
             (overriding the resting colour) while it is centred. */}
         <div
-          style={canvasTint ? ({ '--tint': canvasTint } as CSSProperties) : undefined}
           className={
-            'relative bg-[radial-gradient(circle_at_center,_#cbd5e1_1.2px,_transparent_1.2px)] bg-[size:24px_24px] ' +
-            (canvasTint ? 'bg-(color:--tint) ' : 'bg-[#eff6ff] ') +
-            DARK_CANVAS +
+            'relative ' +
+            CANVAS +
             ' ' +
             (presenting ? 'h-[382px] sm:h-[442px]' : 'h-[300px] sm:h-[360px]') +
             (theming && playing ? ' hero-theme-canvas' : '')
@@ -639,24 +633,12 @@ function EditorWindow({
               </div>
               <div className="grid grid-cols-3 gap-1.5 p-3 dark:hidden">
                 {THEME_CARDS.map((t) => (
-                  <span key={t.name} className={themeCardClass(t)}>
-                    <span className="h-4 w-4 rounded-full" style={{ backgroundColor: t.swatch }} />
-                    {t.name}
-                  </span>
+                  <ThemeCardView key={t.name} card={t} />
                 ))}
               </div>
               <div className="hidden grid-cols-3 gap-1.5 p-3 dark:grid">
                 {DARK_THEME_CARDS.map((t) => (
-                  <span key={t.name} className={themeCardClass(t)}>
-                    <span
-                      className="h-4 w-4 rounded-full"
-                      style={{
-                        backgroundColor: t.canvas,
-                        boxShadow: `inset 0 0 0 2px ${t.stroke}`,
-                      }}
-                    />
-                    {t.name}
-                  </span>
+                  <ThemeCardView key={t.name} card={t} />
                 ))}
               </div>
               <span className="hero-dialog-cursor pointer-events-none absolute" aria-hidden>
