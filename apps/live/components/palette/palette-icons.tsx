@@ -13,9 +13,17 @@
 
 import type { TextAlignX, TextAlignY } from '@livediagram/diagram';
 import {
+  lucideArmchair,
+  lucideChartNoAxesColumnIncreasing,
+  lucideCircleCheck,
   lucideFileDown,
   lucideFileUp,
+  lucideFootprints,
+  lucideLightbulb,
+  lucideScanEye,
+  lucideSpade,
   lucideSquareDashedMousePointer,
+  lucideThermometer,
 } from '@livediagram/icons/lucide';
 import { Glyph, lucideGlyph, Prims } from '@livediagram/ui';
 
@@ -202,22 +210,13 @@ export function SpotlightIcon({ size = 14 }: IconSizeProps = {}) {
   );
 }
 
-// Avatar mode (docs/specs/008-canvas/avatar-mode.md): a mid-stride walking figure — a head, a body,
-// and legs caught in a step — so the picker entry reads as "a character
-// that walks" rather than a person / profile photo (which is what the
+// Avatar mode (docs/specs/008-canvas/avatar-mode.md): footprints, so the picker entry reads as "a
+// character that walks" rather than a person / profile photo (which is what the
 // palette's Avatar ELEMENT tile means).
 export function AvatarModeIcon({ size = 14 }: IconSizeProps = {}) {
   return (
-    <Glyph size={size} units={16}>
-      <circle cx="8.6" cy="3" r="1.7" />
-      {/* torso */}
-      <path d="M8.4 5.4v4" />
-      {/* stride */}
-      <path d="M8.4 9.4l-2.4 4.4" />
-      <path d="M8.4 9.4l2.6 4.4" />
-      {/* swinging arms */}
-      <path d="M8.4 6.6L5.6 8" />
-      <path d="M8.4 6.6l2.8 1" />
+    <Glyph size={size} units={24}>
+      <Prims prims={lucideFootprints} />
     </Glyph>
   );
 }
@@ -324,38 +323,17 @@ export function TimerIcon({ size = 14 }: IconSizeProps = {}) {
   );
 }
 
-export function VoteIcon() {
-  return (
-    <Glyph size={14} units={16}>
-      {/* three dots landing on a card — dot voting, docs/specs/012-collaboration/session-tools.md */}
-      <rect x="2" y="8.4" width="12" height="5.6" rx="1.4" />
-      <circle cx="5" cy="4.4" r="1.5" fill="currentColor" stroke="none" />
-      <circle cx="9" cy="3.2" r="1.5" fill="currentColor" stroke="none" />
-      <circle cx="12.6" cy="5.2" r="1.5" fill="currentColor" stroke="none" />
-    </Glyph>
-  );
-}
+// Vote and Poll: the same glyphs as their context-menu categories.
+export const VoteIcon = lucideGlyph(lucideCircleCheck, 14);
 
-export function PollIcon() {
-  return (
-    <Glyph size={14} units={16}>
-      {/* a question with two answer bars beneath it */}
-      <path d="M5.6 4.2a2.4 2.4 0 1 1 2.8 2.4v1" />
-      <circle cx="8.4" cy="9.6" r="0.7" fill="currentColor" stroke="none" />
-      <path d="M2.6 12.6h10.8" />
-      <path d="M4.6 14.6h6.8" />
-    </Glyph>
-  );
-}
+export const PollIcon = lucideGlyph(lucideChartNoAxesColumnIncreasing, 14);
 
 // --- Reveal zone (docs/specs/009-elements/reveal-zone.md) + Picker (docs/specs/012-collaboration/picker.md) ------------------------------
 
 export function RevealIcon({ size = 14 }: IconSizeProps = {}) {
   return (
-    <Glyph size={size} units={16}>
-      {/* a card being lifted off what is underneath */}
-      <path d="M2.4 9.6l5.6-3.2 5.6 3.2-5.6 3.2z" />
-      <path d="M4.6 4.6l3.4-2 3.4 2" opacity="0.55" />
+    <Glyph size={size} units={24}>
+      <Prims prims={lucideScanEye} />
     </Glyph>
   );
 }
@@ -373,8 +351,8 @@ export function PickerIcon({ size = 14 }: IconSizeProps = {}) {
 }
 
 // --- Chair + the collaboration family (docs/specs/009-elements/chair.md, docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md) -----
-// One shared frame so the seven read as a set beside PickerIcon above: 13px
-// rendered on a 16-unit grid, 1.4 stroke, round caps.
+// In-house members share one 16-unit frame; the rest are Lucide (chair, estimate card, thermometer,
+// light bulb).
 
 function CollabGlyph({ size, children }: { size: number; children: React.ReactNode }) {
   return (
@@ -386,48 +364,33 @@ function CollabGlyph({ size, children }: { size: number; children: React.ReactNo
 
 export function ChairIcon({ size = 14 }: IconSizeProps = {}) {
   return (
-    <CollabGlyph size={size}>
-      {/* a chair from the side: back, seat, two legs */}
-      <path d="M4.5 2.4v6.2" />
-      <path d="M4.5 8.6h7.2" />
-      <path d="M5.6 8.6v4.8" />
-      <path d="M10.8 8.6v4.8" />
-    </CollabGlyph>
+    <Glyph size={size} units={24}>
+      <Prims prims={lucideArmchair} />
+    </Glyph>
   );
 }
 
 export function EstimateIcon({ size = 14 }: IconSizeProps = {}) {
   return (
-    <CollabGlyph size={size}>
-      {/* two poker cards, the front one face-down */}
-      <rect x="2.2" y="3.4" width="7" height="9.6" rx="1.4" />
-      <path d="M11 3.9l2.4.9a1.2 1.2 0 0 1 .7 1.6l-2.5 6.4" />
-      <path d="M4.6 8.2h2.2" />
-    </CollabGlyph>
+    <Glyph size={size} units={24}>
+      <Prims prims={lucideSpade} />
+    </Glyph>
   );
 }
 
 export function TemperatureIcon({ size = 14 }: IconSizeProps = {}) {
   return (
-    <CollabGlyph size={size}>
-      {/* five rising bars: the shape of the room, not an average */}
-      <path d="M2.6 12.4v-1.8" />
-      <path d="M5.3 12.4v-4" />
-      <path d="M8 12.4v-6.6" />
-      <path d="M10.7 12.4v-3.2" />
-      <path d="M13.4 12.4v-5" />
-    </CollabGlyph>
+    <Glyph size={size} units={24}>
+      <Prims prims={lucideThermometer} />
+    </Glyph>
   );
 }
 
 export function IdeaBoxIcon({ size = 14 }: IconSizeProps = {}) {
   return (
-    <CollabGlyph size={size}>
-      {/* a ballot box with a card going in through the slot */}
-      <path d="M2.6 7.4h10.8v6H2.6z" />
-      <path d="M5.4 7.4V4.2h5.2v3.2" />
-      <path d="M6.6 5.6h2.8" />
-    </CollabGlyph>
+    <Glyph size={size} units={24}>
+      <Prims prims={lucideLightbulb} />
+    </Glyph>
   );
 }
 
