@@ -221,7 +221,7 @@ Transitions are driven by selection and those flags only; the panel owns no stat
 shadow-lg` with `dark:border-slate-800 dark:bg-slate-900`; `data-quick-style-panel`; stops
   `pointerdown` / `contextmenu` from reaching the canvas.
 - Section: title `text-[10px] font-semibold uppercase tracking-wider text-slate-500
-dark:text-slate-400` (hidden when `showTitles` is false), then the row; `gap-2` between sections;
+dark:text-slate-400` (hidden when `showTitles` is false), then the row; `gap-2.5` between sections;
   a divider above Actions.
 - Colour row: seven 24 px swatches, 4 px apart (192 px); the swatch paints its colour, a selected
   swatch shows a 2 px ring in `brand-500`.
@@ -256,17 +256,17 @@ label", "Icon after label"; "Clear styles". The panel's region label: "Quick sty
 
 ## Errors and edge cases
 
-| Case                                      | Handling                                                            |
-| ----------------------------------------- | ------------------------------------------------------------------- |
-| Storage read throws / malformed           | Empty memory; `console.warn('[style-memory] unreadable', key)`      |
-| Storage write throws                      | Session-only memory (safe writer); logged once per diagram          |
-| Invalid slot on an element                | Ignored by re-derive; rejected by validation on load                |
-| Theme with a short palette                | Padded from the toned set                                           |
-| No clear placement                        | Candidate (a); `console.debug('[quick-style] placement fallback')`  |
-| Selection changes while a tooltip is open | Tooltip unmounts with its option                                    |
-| Element deleted by a peer mid-choice      | The commit maps the live elements; a missing id is simply not there |
-| Locked element in the selection           | Not a target; never written                                         |
-| `diagramId` null                          | Memory inert                                                        |
+| Case                                      | Handling                                                                 |
+| ----------------------------------------- | ------------------------------------------------------------------------ |
+| Storage read throws / malformed           | Empty memory; `console.warn('[style-memory] unreadable', key)`           |
+| Storage write fails                       | Session-only memory (safe writer); the read-back mismatch is logged once |
+| Invalid slot on an element                | Ignored by re-derive; rejected by validation on load                     |
+| Theme with a short palette                | Padded from the toned set                                                |
+| No clear placement                        | Candidate (a); `console.debug('[quick-style] placement fallback')`       |
+| Selection changes while a tooltip is open | Tooltip unmounts with its option                                         |
+| Element deleted by a peer mid-choice      | The commit maps the live elements; a missing id is simply not there      |
+| Locked element in the selection           | Not a target; never written                                              |
+| `diagramId` null                          | Memory inert                                                             |
 
 ## Security and trust
 

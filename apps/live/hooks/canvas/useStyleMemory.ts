@@ -38,6 +38,7 @@ export function useStyleMemory({
   const memoryRef = useRef<StyleMemory>({});
   const loadedFor = useRef<string | null>(null);
   const pending = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const warnedWrite = useRef(false);
 
   // Read synchronously on the first call for a diagram, so an element drawn in
   // the same tick as the load already sees it.
@@ -59,7 +60,14 @@ export function useStyleMemory({
     pending.current = null;
     const id = loadedFor.current;
     if (!id) return;
-    writeLocalStorageSafe(styleMemoryKey(id), JSON.stringify(memoryRef.current));
+    const json = JSON.stringify(memoryRef.current);
+    writeLocalStorageSafe(styleMemoryKey(id), json);
+    // The safe writer swallows quota / private-mode failures; say so once, as
+    // memory then lasts only for this session.
+    if (!warnedWrite.current && readLocalStorageSafe(styleMemoryKey(id)) !== json) {
+      warnedWrite.current = true;
+      console.warn('[style-memory] write failed', styleMemoryKey(id));
+    }
   };
 
   const schedule = () => {
