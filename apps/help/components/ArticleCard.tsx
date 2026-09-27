@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { articleHref, type Article } from '@/lib/articles';
 import { FEATURE_ICONS } from '@/lib/featureIcons';
 import { SUPPORT_ARTICLE_ICONS, SUPPORT_ARTICLE_FALLBACK } from '@/lib/articleIcons';
+import { ArrowRightIcon } from '@/lib/chrome-icons';
 
 export function ArticleCard({ article, number }: { article: Article; number?: number }) {
   // A numbered card (e.g. Getting Started) leads with its step badge; every
@@ -44,20 +45,7 @@ export function ArticleCard({ article, number }: { article: Article; number?: nu
       </p>
       <span className="mt-3 inline-flex items-center gap-1 text-sm text-brand-600 transition-all group-hover:gap-2 dark:text-brand-300">
         Read article
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M5 12h14" />
-          <path d="m12 5 7 7-7 7" />
-        </svg>
+        <ArrowRightIcon />
       </span>
     </Link>
   );

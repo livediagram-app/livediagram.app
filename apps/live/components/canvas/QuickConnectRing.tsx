@@ -6,7 +6,7 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from 'react';
 import { MOTION_MS } from '@livediagram/tailwind-config/motion';
-import { PlusWideIcon, HoverCard } from '@livediagram/ui';
+import { PlusIcon, HoverCard } from '@livediagram/ui';
 import type { QuickConnectDirection, QuickConnectKind } from '@/lib/canvas';
 import { FLOATING_CONTROL_GAP, FLOATING_CONTROL_SIZE } from '@/components/chrome/floating-controls';
 import {
@@ -316,7 +316,7 @@ export function QuickConnectRing({
         onMouseEnter={handleHoverEnter}
         onMouseLeave={handleHoverLeave}
       >
-        <PlusWideIcon
+        <PlusIcon
           style={{
             transform: open ? 'rotate(45deg)' : 'none',
             transition: 'transform var(--transition-duration-micro)',

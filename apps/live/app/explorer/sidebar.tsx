@@ -18,6 +18,7 @@ import { FolderSolidIcon, TreeChevronIcon } from '@/components/primitives/explor
 import type { FolderActions } from './explorer-view-props';
 import { folderMenuHandlers, type SelectedNode } from './views';
 import { FolderActionsMenu } from './folder-actions-menu';
+import { Glyph } from '@livediagram/ui';
 
 // Indent step per tree level. Matches the Windows Explorer visual
 // of a chevron + folder glyph + name with each child nudged in.
@@ -25,19 +26,10 @@ const INDENT_STEP = 16;
 
 export function SearchSidebarIcon() {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      aria-hidden
-    >
+    <Glyph size={14} units={16} strokeLinejoin="miter">
       <circle cx="7" cy="7" r="4" />
       <path d="M10 10l3.5 3.5" />
-    </svg>
+    </Glyph>
   );
 }
 

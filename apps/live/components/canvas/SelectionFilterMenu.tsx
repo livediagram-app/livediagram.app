@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react';
 import { elementKindLabel, type Element } from '@livediagram/diagram';
 import { PortalMenu, MenuTile, MenuTileGrid } from '@/components/primitives/PortalMenu';
-import { HoverCard } from '@livediagram/ui';
+import { HoverCard, Glyph } from '@livediagram/ui';
 
 // One selectable bucket in the Filter Selection menu: a human label plus the
 // ids of every selected element that belongs to it.
@@ -117,36 +117,17 @@ export function SelectionFilterMenu({ selectedElements, onFilter }: SelectionFil
 
 function FilterIcon() {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={14} units={16}>
       <path d="M2.5 3.5h11l-4.25 5v4l-2.5 1.25v-5.25L2.5 3.5Z" />
-    </svg>
+    </Glyph>
   );
 }
 
 function ShapesIcon() {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={14} units={16} strokeLinecap="butt">
       <rect x="2" y="6" width="8" height="8" rx="1.25" />
       <circle cx="11" cy="5" r="3.25" />
-    </svg>
+    </Glyph>
   );
 }

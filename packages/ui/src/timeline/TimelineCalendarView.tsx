@@ -24,6 +24,7 @@ import type {
   TimelineRendererContext,
   TimelineRendererRegistry,
 } from './types';
+import { Glyph } from '@livediagram/ui';
 
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -246,19 +247,13 @@ function MonthArrow({
       onClick={() => onPick(target)}
       className="rounded p-1 text-slate-500 transition hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
     >
-      <svg
-        className="h-4 w-4"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth={2}
-        viewBox="0 0 24 24"
-      >
+      <Glyph size={16} units={24} className="h-4 w-4" strokeLinecap="butt" strokeLinejoin="miter">
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
           d={direction === 1 ? 'M9 5l7 7-7 7' : 'M15 19l-7-7 7-7'}
         />
-      </svg>
+      </Glyph>
     </button>
   );
 }

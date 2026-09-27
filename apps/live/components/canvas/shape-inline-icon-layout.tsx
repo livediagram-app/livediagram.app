@@ -100,7 +100,7 @@ export function ShapeInlineIconLayout({
       style={{ width: iconSize, height: iconSize }}
       onPointerDown={draggableIcon ? onIconPointerDown : undefined}
     >
-      <IconGlyph iconId={element.iconId} stroke={iconStroke} strokeWidth={2} hasLabel={false} />
+      <IconGlyph iconId={element.iconId} stroke={iconStroke} hasLabel={false} />
     </div>
   );
   // Only the draggable icon earns a hover card (the affordance hint); a static

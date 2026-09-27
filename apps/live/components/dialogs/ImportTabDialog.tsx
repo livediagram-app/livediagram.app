@@ -6,6 +6,7 @@ import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { TextImportPanel } from './TextImportPanel';
 import type { ImportOutcome } from '@/lib/import-tab';
 import { DialogHeader } from './DialogHeader';
+import { Glyph } from '@livediagram/ui';
 
 type Format = 'json' | 'markdown' | 'mermaid' | 'excalidraw';
 
@@ -185,20 +186,10 @@ function FormatIcon({ kind }: { kind: Format }) {
 
 function WarningIcon() {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={14} units={16}>
       <path d="M8 2.5 1.5 14h13L8 2.5Z" />
       <path d="M8 6.5v3.5" />
       <path d="M8 12h.01" />
-    </svg>
+    </Glyph>
   );
 }

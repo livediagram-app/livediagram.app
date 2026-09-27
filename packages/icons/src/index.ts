@@ -15,7 +15,30 @@
 
 export type { IconDef, IconPrim, TechIconDef, TechProvider } from './types';
 export { xmlEscape } from './xml';
-export { iconPrimsMarkup, techIconArtMarkup, type IconExportArt } from './markup';
+export {
+  inkInsets,
+  pathBounds,
+  primBounds,
+  primsBounds,
+  unionBounds,
+  type Bounds,
+  type InkInsets,
+} from './ink';
+export {
+  GLYPH_SIZES,
+  ICON_SMALL_MAX_PX,
+  ICON_STROKE_PX,
+  ICON_STROKE_PX_SMALL,
+  glyphStrokePx,
+  strokeUnits,
+  type GlyphSize,
+} from './weight';
+export {
+  iconPrimsMarkup,
+  techGlyphStrokeUnits,
+  techIconArtMarkup,
+  type IconExportArt,
+} from './markup';
 export { isTechIconId, TECH_ICON_IDS } from './tech-icon-ids';
 export { isStickerId, isLegacyEmojiIconId } from './sticker-ids';
 export { STICKER_ASPECT, type StickerDef, type StickerTone } from './sticker-types';

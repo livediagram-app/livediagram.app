@@ -17,6 +17,9 @@ import {
   type ArrowFlow,
   type ChartLegendPosition,
   ICON_SIZES,
+  ICON_WEIGHTS,
+  ICON_WEIGHT_PX,
+  type IconWeight,
   type ElementAnimation,
   type IconAnimation,
   type IconSize,
@@ -29,6 +32,8 @@ import {
 } from '@/components/palette/context-menu-icons';
 import { MenuToggleRow } from '@/components/palette/context-menu-input-rows';
 import { onMouseHover, useRevertOnUnmount } from '@/components/primitives/hover-preview';
+import { IconPrims } from '@/components/primitives/icon-glyph';
+import { Glyph } from '@livediagram/ui';
 
 // Stable no-op so a tile grid without preview handlers (e.g. a future caller)
 // still calls useRevertOnUnmount unconditionally (hook-rule safe).
@@ -412,6 +417,57 @@ export function IconSizeTiles({
           onPointerLeave={onPreviewEnd ? onMouseHover(onPreviewEnd) : undefined}
         >
           <TileLabel glyph={<IconSizeGlyph size={s} />} label={ICON_SIZE_LABEL[s]} />
+        </SizeButton>
+      ))}
+    </div>
+  );
+}
+
+const ICON_WEIGHT_LABEL: Record<IconWeight, string> = {
+  thin: 'Thin',
+  regular: 'Regular',
+  bold: 'Bold',
+};
+
+// The selected glyph itself at each weight, so the row previews the real result.
+const WEIGHT_TILE_PX = 22;
+function IconWeightGlyph({ iconId, weight }: { iconId: string | undefined; weight: IconWeight }) {
+  return (
+    <Glyph size={WEIGHT_TILE_PX} units={24} weight={ICON_WEIGHT_PX[weight]}>
+      <IconPrims iconId={iconId} />
+    </Glyph>
+  );
+}
+
+// Thin / Regular / Bold for a line-art icon (docs/specs/004-interface-design/iconography.md).
+export function IconWeightTiles({
+  iconId,
+  value,
+  onSet,
+  onPreview,
+  onPreviewEnd,
+}: {
+  // The glyph the tiles preview (the menu's target icon).
+  iconId: string | undefined;
+  value: IconWeight;
+  onSet: (v: IconWeight) => void;
+  onPreview?: (v: IconWeight) => void;
+  onPreviewEnd?: () => void;
+}) {
+  return (
+    <div className="grid grid-cols-3 gap-1 px-2 py-1.5">
+      {ICON_WEIGHTS.map((w) => (
+        <SizeButton
+          key={w}
+          active={value === w}
+          onClick={() => onSet(w)}
+          onPointerEnter={onPreview ? onMouseHover(() => onPreview(w)) : undefined}
+          onPointerLeave={onPreviewEnd ? onMouseHover(onPreviewEnd) : undefined}
+        >
+          <TileLabel
+            glyph={<IconWeightGlyph iconId={iconId} weight={w} />}
+            label={ICON_WEIGHT_LABEL[w]}
+          />
         </SizeButton>
       ))}
     </div>

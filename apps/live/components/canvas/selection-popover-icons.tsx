@@ -1,3 +1,4 @@
+import { Glyph } from '@livediagram/ui';
 // 16px stroke-currentColor action icons used by the floating SelectionPopover
 // toolbar that are specific to it (edit text, bring to front / send to back).
 // The duplicate / lock / comment / delete glyphs it shares with the other
@@ -17,21 +18,11 @@ export { EllipsisIcon } from '@/components/rich-text/rich-text-toolbar-icons';
 // element already has a label to edit.
 export function TextIcon() {
   return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.75"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={16} units={16}>
       <path d="M3.5 4.5h9" />
       <path d="M8 4.5v7" />
       <path d="M6 11.5h4" />
-    </svg>
+    </Glyph>
   );
 }
 
@@ -40,40 +31,22 @@ export function TextIcon() {
 // goes underneath" without needing the label.
 export function BringToFrontIcon() {
   return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.7"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={18} units={24} strokeLinecap="butt">
       {/* The other card first (so it paints underneath), then the filled
           selection ON TOP and raised — front reads as both over and up. */}
       <rect x="9" y="9" width="11" height="11" rx="1.5" strokeDasharray="2.5 2.5" />
       <rect x="4" y="4" width="11" height="11" rx="1.5" fill="currentColor" fillOpacity="0.2" />
-    </svg>
+    </Glyph>
   );
 }
 
 export function SendToBackIcon() {
   return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.7"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={18} units={24} strokeLinecap="butt">
       {/* The filled selection first (so it paints underneath) and dropped
           low — back reads as both behind and down. */}
       <rect x="9" y="9" width="11" height="11" rx="1.5" fill="currentColor" fillOpacity="0.2" />
       <rect x="4" y="4" width="11" height="11" rx="1.5" strokeDasharray="2.5 2.5" />
-    </svg>
+    </Glyph>
   );
 }

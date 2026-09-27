@@ -8,7 +8,7 @@
 // absent end-to-end without Clerk.
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Brand, SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
+import { Brand, SOLID_BRAND_DARK_CONTROL, Glyph } from '@livediagram/ui';
 import { AnimatedLinesBackdrop } from '@/components/canvas/AnimatedLinesBackdrop';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
 import { apiExchangeOauthToken } from '@/lib/api-client';
@@ -44,19 +44,11 @@ function HelpLink() {
       rel="noopener noreferrer"
       className="mt-5 inline-flex items-center gap-1.5 text-xs font-medium text-slate-400 transition hover:text-brand-600 dark:hover:text-brand-400"
     >
-      <svg
-        width="13"
-        height="13"
-        viewBox="0 0 16 16"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        aria-hidden="true"
-      >
+      <Glyph size={13} units={16} strokeLinecap="butt" strokeLinejoin="miter">
         <circle cx="8" cy="8" r="6.5" />
         <path d="M6.2 6.3a1.8 1.8 0 1 1 2.3 1.8c-.5.2-.7.5-.7 1.1" strokeLinecap="round" />
         <circle cx="8" cy="11.4" r="0.5" fill="currentColor" stroke="none" />
-      </svg>
+      </Glyph>
       Learn about connecting AI tools
     </a>
   );

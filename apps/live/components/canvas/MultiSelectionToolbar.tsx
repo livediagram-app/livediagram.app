@@ -1,5 +1,12 @@
 import type { Element } from '@livediagram/diagram';
-import { DuplicateIcon, EllipsisIcon, LockIcon, TrashIcon, HoverCard } from '@livediagram/ui';
+import {
+  DuplicateIcon,
+  EllipsisIcon,
+  LockIcon,
+  TrashIcon,
+  HoverCard,
+  Glyph,
+} from '@livediagram/ui';
 import { buildFilterGroups, SelectionFilterMenu } from '@/components/canvas/SelectionFilterMenu';
 import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
 import { useMinimalChrome } from '@/components/providers/minimal-chrome';
@@ -129,7 +136,7 @@ export function MultiSelectionToolbar({
               : 'flex h-7 w-7 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900'
           }
         >
-          <LockIcon closed={anyLocked} size={14} strokeWidth={1.5} />
+          <LockIcon closed={anyLocked} size={14} />
         </button>
       </HoverCard>
       {showDelete ? (
@@ -150,7 +157,7 @@ export function MultiSelectionToolbar({
                 : 'flex h-7 w-7 items-center justify-center rounded-md text-slate-600 transition hover:bg-rose-50 hover:text-rose-700 dark:text-slate-300 dark:hover:bg-rose-500/15 dark:hover:text-rose-300'
             }
           >
-            <TrashIcon size={14} strokeWidth={1.5} />
+            <TrashIcon size={14} />
           </button>
         </HoverCard>
       ) : null}
@@ -160,20 +167,10 @@ export function MultiSelectionToolbar({
 
 function ExportIcon() {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={14} units={16}>
       <path d="M8 2v8" />
       <path d="M5 6.5 8 10l3-3.5" />
       <path d="M2.75 11.5v1.25a1 1 0 0 0 1 1h8.5a1 1 0 0 0 1-1V11.5" />
-    </svg>
+    </Glyph>
   );
 }

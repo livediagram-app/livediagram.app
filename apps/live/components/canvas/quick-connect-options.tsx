@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import type { QuickConnectKind } from '@/lib/canvas';
+import { Glyph } from '@livediagram/ui';
 
 // The quick-connect ring's option catalogue + glyphs (docs/specs/008-canvas/canvas-and-palette.md / 51),
 // split out of QuickConnectRing the same way the other per-surface
@@ -190,41 +191,23 @@ function AddColumnIcon() {
 // A node with a branch running off it.
 function MindChildIcon() {
   return (
-    <svg
-      width={OPTION_ICON_SIZE}
-      height={OPTION_ICON_SIZE}
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      aria-hidden
-    >
+    <Glyph size={OPTION_ICON_SIZE} units={16} strokeLinejoin="miter">
       <rect x="1" y="6" width="5" height="4" rx="1" />
       <path d="M6 8h3.5" />
       <rect x="10" y="2.5" width="5" height="4" rx="1" />
       <rect x="10" y="9.5" width="5" height="4" rx="1" />
       <path d="M9.5 8V4.5M9.5 8v3.5" />
-    </svg>
+    </Glyph>
   );
 }
 
 // Two nodes side by side at the same level.
 function MindSiblingIcon() {
   return (
-    <svg
-      width={OPTION_ICON_SIZE}
-      height={OPTION_ICON_SIZE}
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      aria-hidden
-    >
+    <Glyph size={OPTION_ICON_SIZE} units={16} strokeLinejoin="miter">
       <rect x="9" y="1.5" width="6" height="4.5" rx="1" />
       <rect x="9" y="9.5" width="6" height="4.5" rx="1" />
       <path d="M1 8h4M5 8V3.75h4M5 8v3.75h4" />
-    </svg>
+    </Glyph>
   );
 }

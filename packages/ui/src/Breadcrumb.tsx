@@ -1,4 +1,5 @@
 import type { ComponentType, ReactNode } from 'react';
+import { Glyph } from '@livediagram/ui';
 
 // The breadcrumb trail shared by the marketing site and the help centre: a
 // home-icon root, chevron separators, and truncating labels.
@@ -30,26 +31,26 @@ const AnchorLink: LinkLike = ({ href, className, children }) => (
 );
 
 const HomeIcon = (
-  <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+  <Glyph size={14} units={24} className="h-3.5 w-3.5" strokeLinecap="butt" strokeLinejoin="miter">
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
       strokeWidth={2}
       d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1"
     />
-  </svg>
+  </Glyph>
 );
 
 const ChevronIcon = (
-  <svg
+  <Glyph
+    size={14}
+    units={24}
     className="h-3.5 w-3.5 shrink-0 text-slate-300 dark:text-slate-600"
-    fill="none"
-    stroke="currentColor"
-    viewBox="0 0 24 24"
-    aria-hidden
+    strokeLinecap="butt"
+    strokeLinejoin="miter"
   >
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-  </svg>
+  </Glyph>
 );
 
 /**

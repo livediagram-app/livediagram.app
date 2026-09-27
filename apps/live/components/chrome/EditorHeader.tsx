@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { NameEditor } from '@/components/primitives/NameEditor';
-import { Brand, ProductNav, HoverCard, SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
+import { Brand, ProductNav, HoverCard, SOLID_BRAND_DARK_CONTROL, Glyph } from '@livediagram/ui';
 import { AuthControls } from '@/components/chrome/AuthControls';
 import { SharedBadge } from '@/components/chrome/SharedBadge';
 
@@ -187,40 +187,20 @@ export function EditorHeader({
 
 function CopyIcon() {
   return (
-    <svg
-      width="13"
-      height="13"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={13} units={16}>
       <rect x="5" y="5" width="8" height="8.5" rx="1.5" />
       <path d="M3 11V3.5A1.5 1.5 0 0 1 4.5 2H10" />
-    </svg>
+    </Glyph>
   );
 }
 
 function ShareIcon() {
   return (
-    <svg
-      width="13"
-      height="13"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={13} units={16}>
       <circle cx="4" cy="8" r="1.6" />
       <circle cx="12" cy="3.5" r="1.6" />
       <circle cx="12" cy="12.5" r="1.6" />
       <path d="M5.4 7.2l5.2-3M5.4 8.8l5.2 3" />
-    </svg>
+    </Glyph>
   );
 }

@@ -147,7 +147,7 @@ export function DiagramActionsMenu({
         {onRemoveFromTimeline ? (
           <MenuActionRow
             plain
-            icon={<CloseIcon size={11} strokeWidth={1.8} />}
+            icon={<CloseIcon size={11} />}
             label="Remove from Timeline"
             onClick={then(onRemoveFromTimeline)}
           />
@@ -266,7 +266,7 @@ export function DiagramActionsMenu({
       {onRemoveFromTimeline ? (
         <MenuActionRow
           plain
-          icon={<CloseIcon size={11} strokeWidth={1.8} />}
+          icon={<CloseIcon size={11} />}
           label="Remove from Timeline"
           onClick={then(onRemoveFromTimeline)}
         />

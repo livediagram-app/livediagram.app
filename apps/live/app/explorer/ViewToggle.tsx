@@ -2,7 +2,7 @@
 
 import { track } from '@/lib/telemetry';
 import type { ExplorerViewMode } from './useExplorerViewMode';
-import { HoverCard } from '@livediagram/ui';
+import { HoverCard, Glyph } from '@livediagram/ui';
 
 // The List / Card segmented toggle in the Explorer header (docs/specs/006-diagram/diagram-snapshots.md).
 // Lets you switch how the browse views render the same folders +
@@ -83,40 +83,22 @@ function ToggleButton({
 
 function ListIcon() {
   return (
-    <svg
-      width="15"
-      height="15"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      aria-hidden
-    >
+    <Glyph size={15} units={16} strokeLinejoin="miter">
       <path d="M5 4h8M5 8h8M5 12h8" />
       <circle cx="2.5" cy="4" r="0.6" fill="currentColor" stroke="none" />
       <circle cx="2.5" cy="8" r="0.6" fill="currentColor" stroke="none" />
       <circle cx="2.5" cy="12" r="0.6" fill="currentColor" stroke="none" />
-    </svg>
+    </Glyph>
   );
 }
 
 function GridIcon() {
   return (
-    <svg
-      width="15"
-      height="15"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={15} units={16} strokeLinecap="butt">
       <rect x="2.5" y="2.5" width="4.5" height="4.5" rx="1" />
       <rect x="9" y="2.5" width="4.5" height="4.5" rx="1" />
       <rect x="2.5" y="9" width="4.5" height="4.5" rx="1" />
       <rect x="9" y="9" width="4.5" height="4.5" rx="1" />
-    </svg>
+    </Glyph>
   );
 }

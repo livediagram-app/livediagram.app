@@ -1,6 +1,7 @@
 'use client';
 
 import type { KeyboardEvent, MouseEvent, ReactNode } from 'react';
+import { Glyph } from '@livediagram/ui';
 
 // The deck frame of a stack's head card (docs/specs/017-telemetry/telemetry.md): one or two faux-card
 // layers stepping out behind it so it reads as a deck (the Timeline stack's
@@ -97,20 +98,10 @@ export function StackDeck({
 // Three offset cards: the stack itself, rather than any one member's event.
 function StackGlyph() {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      width="16"
-      height="16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={16} units={24}>
       <rect x="3" y="3" width="13" height="10" rx="2" />
       <path d="M7 17h11a2 2 0 0 0 2-2V8" />
       <path d="M11 21h8" opacity="0.6" />
-    </svg>
+    </Glyph>
   );
 }

@@ -292,7 +292,7 @@ function GalleryTile({
         aria-label={`Delete ${image.originalName ?? 'image'}`}
         className="absolute right-1 top-1 hidden rounded bg-white/90 p-1 text-rose-700 shadow transition hover:bg-rose-50 group-hover:block dark:bg-slate-900/90 dark:text-rose-300 dark:hover:bg-rose-500/15"
       >
-        <TrashIcon strokeWidth={1.6} />
+        <TrashIcon />
       </button>
     </li>
   );

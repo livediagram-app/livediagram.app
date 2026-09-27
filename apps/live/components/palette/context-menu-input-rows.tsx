@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Tooltip } from '@livediagram/ui';
+import { Tooltip, Glyph } from '@livediagram/ui';
 import { useEyeDropper } from '@/hooks/ui/useEyeDropper';
 import { hexish, ToggleSwitch } from '@/components/palette/palette-controls';
 import { DirArrow } from '@/components/palette/context-menu-icons';
@@ -313,20 +313,10 @@ export function MenuToggleRow({
 // A pipette: the tool that lifts a colour off something already there.
 function PipetteIcon() {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={14} units={24}>
       <path d="m2 22 1-1h3l9-9" />
       <path d="M3 21v-3l9-9" />
       <path d="m15 6 3.4-3.4a2.1 2.1 0 1 1 3 3L18 9l.9.9a1 1 0 0 1 0 1.4l-1.4 1.4a1 1 0 0 1-1.4 0L11.3 8.1a1 1 0 0 1 0-1.4l1.4-1.4a1 1 0 0 1 1.4 0L15 6z" />
-    </svg>
+    </Glyph>
   );
 }

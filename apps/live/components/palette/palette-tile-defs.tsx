@@ -33,6 +33,31 @@ import {
   TemperatureIcon,
   TimerIcon,
 } from '@/components/palette/palette-icons';
+import {
+  lucideCircle,
+  lucideDiamond,
+  lucideImage,
+  lucideMoveRight,
+  lucidePanelTop,
+  lucidePenTool,
+  lucideSquare,
+  lucideStickyNote,
+  lucideTable,
+  lucideType,
+} from '@livediagram/icons/lucide';
+import { Glyph, Prims } from '@livediagram/ui';
+
+// Every palette tile glyph is drawn at this size (docs/specs/004-interface-design/iconography.md), so a strip of
+// tiles reads as one set.
+const TILE_GLYPH_PX = 18;
+
+// Lucide's sticky-note as its two paths: the note body takes the paper fill, the corner fold does not.
+const pathD = (i: number) => {
+  const p = lucideStickyNote[i];
+  if (p?.t !== 'path') throw new Error('lucideStickyNote: expected a path');
+  return p.d;
+};
+const lucideStickyNotePaths = { body: pathD(0), fold: pathD(1) };
 
 // The shared palette tile catalogue (docs/specs/010-palette/palette-favourites.md): every creation tile across
 // the Shapes / Tools / Data / Components / Devices categories as one data
@@ -205,18 +230,9 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'square' },
     icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-        <rect
-          x="3"
-          y="3"
-          width="12"
-          height="12"
-          rx="2"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-        />
-      </svg>
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <Prims prims={lucideSquare} />
+      </Glyph>
     ),
   },
   {
@@ -228,9 +244,9 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'circle' },
     icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-        <circle cx="9" cy="9" r="6" fill="none" stroke="currentColor" strokeWidth="2" />
-      </svg>
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <Prims prims={lucideCircle} />
+      </Glyph>
     ),
   },
   {
@@ -242,15 +258,9 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'diamond' },
     icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-        <polygon
-          points="9,2.5 15.5,9 9,15.5 2.5,9"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinejoin="round"
-        />
-      </svg>
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <Prims prims={lucideDiamond} />
+      </Glyph>
     ),
   },
   {
@@ -262,24 +272,10 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'cylinder' },
     icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-        <path
-          d="M3 5 L3 13 A6 1.8 0 0 0 15 13 L15 5"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.6"
-          strokeLinejoin="round"
-        />
-        <ellipse
-          cx="9"
-          cy="5"
-          rx="6"
-          ry="1.8"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.6"
-        />
-      </svg>
+      <Glyph size={18} units={18}>
+        <path d="M3 5 L3 13 A6 1.8 0 0 0 15 13 L15 5" />
+        <ellipse cx="9" cy="5" rx="6" ry="1.8" />
+      </Glyph>
     ),
   },
   {
@@ -291,15 +287,9 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'parallelogram' },
     icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-        <polygon
-          points="5,3 16,3 13,15 2,15"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinejoin="round"
-        />
-      </svg>
+      <Glyph size={18} units={18}>
+        <polygon points="5,3 16,3 13,15 2,15" />
+      </Glyph>
     ),
   },
   {
@@ -310,15 +300,9 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'hexagon' },
     icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-        <polygon
-          points="5,3 13,3 16,9 13,15 5,15 2,9"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinejoin="round"
-        />
-      </svg>
+      <Glyph size={18} units={18}>
+        <polygon points="5,3 13,3 16,9 13,15 5,15 2,9" />
+      </Glyph>
     ),
   },
   {
@@ -329,15 +313,9 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'document' },
     icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-        <path
-          d="M3 3 L15 3 L15 13 C13 15.3 11 11.8 9 13.5 C7 15.3 5 11.8 3 13.5 Z"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.6"
-          strokeLinejoin="round"
-        />
-      </svg>
+      <Glyph size={18} units={18}>
+        <path d="M3 3 L15 3 L15 13 C13 15.3 11 11.8 9 13.5 C7 15.3 5 11.8 3 13.5 Z" />
+      </Glyph>
     ),
   },
   {
@@ -348,18 +326,9 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'stadium' },
     icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-        <rect
-          x="1.5"
-          y="6"
-          width="15"
-          height="6"
-          rx="3"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.6"
-        />
-      </svg>
+      <Glyph size={18} units={18}>
+        <rect x="1.5" y="6" width="15" height="6" rx="3" />
+      </Glyph>
     ),
   },
   {
@@ -370,18 +339,9 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'cloud' },
     icon: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 18 18"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-        aria-hidden
-      >
+      <Glyph size={18} units={18} strokeLinecap="butt">
         <path d="M5.5 13.5 C3.2 13.5 2 11.7 3.4 10.2 C2.4 8.7 4 7 5.5 7.7 C6 5.4 9.4 5.2 9.9 7.6 C11.9 6.7 13.5 8.6 12.2 10.2 C13.5 11.2 12.6 13.5 10.8 13.5 Z" />
-      </svg>
+      </Glyph>
     ),
   },
   {
@@ -392,15 +352,9 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'triangle' },
     icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-        <polygon
-          points="9,3 16,15 2,15"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinejoin="round"
-        />
-      </svg>
+      <Glyph size={18} units={18}>
+        <polygon points="9,3 16,15 2,15" />
+      </Glyph>
     ),
   },
   {
@@ -411,15 +365,9 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'trapezoid' },
     icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-        <polygon
-          points="5,4 13,4 16,15 2,15"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinejoin="round"
-        />
-      </svg>
+      <Glyph size={18} units={18}>
+        <polygon points="5,4 13,4 16,15 2,15" />
+      </Glyph>
     ),
   },
   {
@@ -430,15 +378,9 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'star' },
     icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-        <polygon
-          points="9,1.5 10.8,6.6 16.1,6.7 11.9,9.9 13.4,15.1 9,12 4.6,15.1 6.1,9.9 1.9,6.7 7.2,6.6"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.6"
-          strokeLinejoin="round"
-        />
-      </svg>
+      <Glyph size={18} units={18}>
+        <polygon points="9,1.5 10.8,6.6 16.1,6.7 11.9,9.9 13.4,15.1 9,12 4.6,15.1 6.1,9.9 1.9,6.7 7.2,6.6" />
+      </Glyph>
     ),
   },
   {
@@ -450,18 +392,9 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'speech-bubble' },
     icon: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 18 18"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-        aria-hidden
-      >
+      <Glyph size={18} units={18} strokeLinecap="butt">
         <path d="M4 3 H14 a2 2 0 0 1 2 2 V10 a2 2 0 0 1 -2 2 H7 L4.5 15.5 L5.5 12 H4 a2 2 0 0 1 -2 -2 V5 a2 2 0 0 1 2 -2 Z" />
-      </svg>
+      </Glyph>
     ),
   },
   // --- Tools --------------------------------------------------------------
@@ -475,23 +408,13 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'A mind-map node. With one selected, Tab adds a child to its right and Enter adds a sibling below — each connected and ready to type into.',
     action: { type: 'shape', kind: 'mind-node' },
     icon: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden
-      >
+      <Glyph size={18} units={24}>
         {/* A parent node with two branches: the picture IS the behaviour. */}
         <rect x="1.5" y="9" width="8" height="6" rx="2" />
         <rect x="15" y="3" width="7.5" height="5" rx="2" />
         <rect x="15" y="16" width="7.5" height="5" rx="2" />
         <path d="M9.5 12h2.5v-6.5H15M12 12v6.5h3" />
-      </svg>
+      </Glyph>
     ),
   },
   {
@@ -508,24 +431,10 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     description: 'A paper-sized surface for rich text. Double-click to write.',
     action: { type: 'shape', kind: 'page' },
     icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-        <rect
-          x="3.5"
-          y="1.5"
-          width="11"
-          height="15"
-          rx="1.5"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.3"
-        />
-        <path
-          d="M6 5.5h6M6 8.5h6M6 11.5h3.5"
-          stroke="currentColor"
-          strokeWidth="1.3"
-          strokeLinecap="round"
-        />
-      </svg>
+      <Glyph size={18} units={18}>
+        <rect x="3.5" y="1.5" width="11" height="15" rx="1.5" />
+        <path d="M6 5.5h6M6 8.5h6M6 11.5h3.5" />
+      </Glyph>
     ),
   },
   {
@@ -538,14 +447,9 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     shortcut: 'T',
     action: { type: 'text' },
     icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-        <path
-          d="M3 5h12M9 5v9M6.5 14h5"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-        />
-      </svg>
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <Prims prims={lucideType} />
+      </Glyph>
     ),
   },
   {
@@ -560,17 +464,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     shortcut: 'P',
     action: { type: 'freehand' },
     icon: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 18 18"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden
-      >
+      <Glyph size={18} units={18}>
         {/* Diagonal pencil. Body angled bottom-left to top-right, with a
             separated tip + eraser segment so the silhouette reads as
             "pencil" even at the 18 px palette size. Pairs with the cursor
@@ -580,7 +474,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
         <path d="M5 13 L12 6 L14 8 L7 15 Z" />
         <path d="M12 6 L15 3 L17 5 L14 8" />
         <path d="M2 16 L5 13" />
-      </svg>
+      </Glyph>
     ),
   },
   {
@@ -595,25 +489,9 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     shortcut: '6',
     action: { type: 'shape-pen' },
     icon: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 18 18"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden
-      >
-        {/* The same diagonal nib as Freehand, shrunk to make room for a
-            dashed square: the nib says "drawing", the square says "this one
-            lands as a shape". Pairs with the shape-pen cursor glyph. */}
-        <path d="M1.5 16.5 L4 14" />
-        <path d="M3.5 14.5 L9 9 L10.5 10.5 L5 16 Z" />
-        <path d="M9 9 L11 7 L12.5 8.5 L10.5 10.5" />
-        <rect x="9.5" y="1.5" width="7" height="7" rx="0.8" strokeDasharray="2 1.6" />
-      </svg>
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <Prims prims={lucidePenTool} />
+      </Glyph>
     ),
   },
   {
@@ -650,17 +528,9 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     shortcut: 'A',
     action: { type: 'arrow' },
     icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-        <line
-          x1="3"
-          y1="9"
-          x2="15"
-          y2="9"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          strokeLinecap="round"
-        />
-      </svg>
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <Prims prims={lucideMoveRight} />
+      </Glyph>
     ),
   },
   {
@@ -675,22 +545,11 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     noTint: true,
     action: { type: 'sticky' },
     icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-        <path
-          d="M3 3h9l3 3v9H3z"
-          fill="rgb(254 243 199)"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M12 3v3h3"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinejoin="round"
-        />
-      </svg>
+      // The note keeps its paper colour (noTint): Lucide sticky-note, body filled.
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <path d={lucideStickyNotePaths.body} fill="rgb(254 243 199)" />
+        <path d={lucideStickyNotePaths.fold} />
+      </Glyph>
     ),
   },
   {
@@ -701,21 +560,9 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     description: 'Editable grid. Double-click a cell to type.',
     action: { type: 'table' },
     icon: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 18 18"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        aria-hidden
-      >
-        <rect x="2.5" y="3.5" width="13" height="11" rx="1" />
-        <line x1="2.5" y1="7.5" x2="15.5" y2="7.5" />
-        <line x1="2.5" y1="11" x2="15.5" y2="11" />
-        <line x1="7" y1="3.5" x2="7" y2="14.5" />
-        <line x1="11" y1="3.5" x2="11" y2="14.5" />
-      </svg>
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <Prims prims={lucideTable} />
+      </Glyph>
     ),
   },
   {
@@ -916,21 +763,11 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'portal' },
     icon: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 18 18"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden
-      >
+      <Glyph size={18} units={18}>
         {/* The standing oval ring, with the far side showing through it. */}
         <ellipse cx="9" cy="9" rx="4.6" ry="7" />
         <ellipse cx="9" cy="9" rx="2.1" ry="3.6" strokeWidth="1.1" opacity="0.6" />
-      </svg>
+      </Glyph>
     ),
   },
   {
@@ -1023,23 +860,13 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'done-check' },
     icon: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden
-      >
+      <Glyph size={18} units={24}>
         {/* Two ticked rows over one still waiting. */}
         <path d="M3.2 7.2 4.6 8.6 7.4 5.8" />
         <path d="M3.2 13 4.6 14.4 7.4 11.6" />
         <circle cx="4.8" cy="19" r="1.5" />
         <path d="M10.5 7.2h10.3M10.5 13h10.3M10.5 19h6.4" />
-      </svg>
+      </Glyph>
     ),
   },
   {
@@ -1145,20 +972,11 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'focus-button' },
     icon: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        aria-hidden
-      >
+      <Glyph size={18} units={24} strokeLinejoin="miter">
         <circle cx="12" cy="12" r="7.5" />
         <circle cx="12" cy="12" r="2.2" fill="currentColor" stroke="none" />
         <path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3" />
-      </svg>
+      </Glyph>
     ),
   },
   {
@@ -1196,20 +1014,10 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'comment-pin' },
     icon: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden
-      >
+      <Glyph size={18} units={24}>
         <path d="M20.5 12.2c0 3.9-3.8 7-8.5 7-.9 0-1.8-.1-2.6-.3l-5 3.1 1.1-4.5A6.6 6.6 0 0 1 3.5 12.2c0-3.9 3.8-7 8.5-7s8.5 3.1 8.5 7z" />
         <path d="M8.6 11.9h.01M12 11.9h.01M15.4 11.9h.01" />
-      </svg>
+      </Glyph>
     ),
   },
   {
@@ -1227,21 +1035,11 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'action-card' },
     icon: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden
-      >
+      <Glyph size={18} units={24}>
         <path d="M9 4.5H7a1.5 1.5 0 0 0-1.5 1.5v13.5A1.5 1.5 0 0 0 7 21h10a1.5 1.5 0 0 0 1.5-1.5V6A1.5 1.5 0 0 0 17 4.5h-2" />
         <rect x="9" y="3" width="6" height="3.5" rx="1" />
         <path d="m9 13.5 2.2 2.2 4-4.5" />
-      </svg>
+      </Glyph>
     ),
   },
   {
@@ -1383,23 +1181,13 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'checklist' },
     icon: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 18 18"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden
-      >
+      <Glyph size={18} units={18}>
         <rect x="2.5" y="3" width="4" height="4" rx="1" />
         <path d="M3.7 5 L4.6 5.9 L6 4.3" strokeWidth="1.2" />
         <path d="M9 5 H15.5" />
         <rect x="2.5" y="10.5" width="4" height="4" rx="1" />
         <path d="M9 12.5 H15.5" />
-      </svg>
+      </Glyph>
     ),
   },
   {
@@ -1413,27 +1201,9 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     needsImage: true,
     action: { type: 'image' },
     icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-        <rect
-          x="2.5"
-          y="3"
-          width="13"
-          height="12"
-          rx="1.5"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-        />
-        <circle cx="7" cy="7" r="1.25" fill="currentColor" />
-        <path
-          d="M2.5 12 L6.5 8.5 L10 11 L13 8 L15.5 10.5"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinejoin="round"
-          strokeLinecap="round"
-        />
-      </svg>
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <Prims prims={lucideImage} />
+      </Glyph>
     ),
   },
   {
@@ -1585,21 +1355,11 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     needsImage: true,
     action: { type: 'component', kind: 'avatar' },
     icon: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden
-      >
+      <Glyph size={18} units={24}>
         <circle cx="12" cy="12" r="9" />
         <circle cx="12" cy="9.5" r="3" />
         <path d="M6.5 19a6 6 0 0 1 11 0" />
-      </svg>
+      </Glyph>
     ),
   },
   {
@@ -1612,21 +1372,11 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'A UML class or ER entity: a title bar over a list of name / type fields. Edit the fields from its right-click menu.',
     action: { type: 'shape', kind: 'entity' },
     icon: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden
-      >
+      <Glyph size={18} units={24}>
         {/* A titled box with rows: the classic class-diagram silhouette. */}
         <rect x="3.5" y="3" width="17" height="18" rx="2" />
         <path d="M3.5 8.5h17M7 12h6M7 15.5h9" />
-      </svg>
+      </Glyph>
     ),
   },
   {
@@ -1639,22 +1389,12 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'A swimlane: a horizontal band with a title down its left edge. Dragging it carries everything inside, like a frame.',
     action: { type: 'shape', kind: 'lane' },
     icon: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden
-      >
+      <Glyph size={18} units={24}>
         {/* Two stacked bands, each with its title gutter. */}
         <rect x="2" y="5" width="20" height="6.5" rx="1.5" />
         <rect x="2" y="13" width="20" height="6.5" rx="1.5" />
         <path d="M8 5v6.5M8 13v6.5" />
-      </svg>
+      </Glyph>
     ),
   },
   {
@@ -1666,19 +1406,9 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     shortcut: 'F',
     action: { type: 'shape', kind: 'frame' },
     icon: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 18 18"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        strokeLinejoin="round"
-        aria-hidden
-      >
-        <rect x="2.5" y="4" width="13" height="10.5" />
-        <path d="M2.5 6.8 H8.5" />
-      </svg>
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <Prims prims={lucidePanelTop} />
+      </Glyph>
     ),
   },
   {
@@ -1697,21 +1427,11 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'annotation' },
     icon: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden
-      >
+      <Glyph size={18} units={24}>
         <path d="M4 5.5h16A1.5 1.5 0 0 1 21.5 7v8a1.5 1.5 0 0 1-1.5 1.5H10l-4 3v-3H4A1.5 1.5 0 0 1 2.5 15V7A1.5 1.5 0 0 1 4 5.5Z" />
         <path d="M6.5 9.75h11" />
         <path d="M6.5 12.5h7" />
-      </svg>
+      </Glyph>
     ),
   },
   {
@@ -1731,20 +1451,10 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     noTint: true,
     action: { type: 'link-card' },
     icon: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden
-      >
+      <Glyph size={18} units={24}>
         <path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1.5 1.5" />
         <path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1.5-1.5" />
-      </svg>
+      </Glyph>
     ),
   },
   {
@@ -1800,11 +1510,11 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'bar-chart' },
     icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <Glyph size={18} units={24} filled>
         <rect x="4" y="12" width="4" height="8" rx="1" opacity="0.45" />
         <rect x="10" y="7" width="4" height="13" rx="1" />
         <rect x="16" y="10" width="4" height="10" rx="1" opacity="0.7" />
-      </svg>
+      </Glyph>
     ),
   },
   {
@@ -1818,19 +1528,9 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'line-chart' },
     icon: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden
-      >
+      <Glyph size={18} units={24}>
         <path d="M4 18 L9 11 L14 14 L20 6" />
-      </svg>
+      </Glyph>
     ),
   },
   {
@@ -1844,21 +1544,12 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'legend' },
     icon: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        aria-hidden
-      >
+      <Glyph size={18} units={24} strokeLinejoin="miter">
         <circle cx="5" cy="6" r="1.8" fill="currentColor" stroke="none" />
         <circle cx="5" cy="12" r="1.8" fill="currentColor" stroke="none" />
         <circle cx="5" cy="18" r="1.8" fill="currentColor" stroke="none" />
         <path d="M10 6 H20 M10 12 H20 M10 18 H16" />
-      </svg>
+      </Glyph>
     ),
   },
   {
@@ -1896,10 +1587,10 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'progress-ring' },
     icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" aria-hidden>
+      <Glyph size={18} units={18} strokeLinecap="butt" strokeLinejoin="miter">
         <circle cx="9" cy="9" r="6" strokeWidth="2.4" opacity="0.3" />
         <path d="M9 3 a6 6 0 0 1 5.2 9" strokeWidth="2.4" strokeLinecap="round" />
-      </svg>
+      </Glyph>
     ),
   },
   {
@@ -1933,21 +1624,11 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     noTint: true,
     action: { type: 'component', kind: 'banner' },
     icon: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden
-      >
+      <Glyph size={18} units={24}>
         <rect x="2.5" y="5.5" width="19" height="13" rx="2" />
         <path d="M7 10.75h10" strokeWidth="2.2" />
         <path d="M9 14.25h6" />
-      </svg>
+      </Glyph>
     ),
   },
   {
@@ -1962,21 +1643,11 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     noTint: true,
     action: { type: 'component', kind: 'callout' },
     icon: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden
-      >
+      <Glyph size={18} units={24}>
         <rect x="2.5" y="4.5" width="19" height="15" rx="2" />
         <circle cx="7" cy="9" r="2" fill="currentColor" stroke="none" />
         <path d="M11 8.5h8M6 13h13M6 16h9" />
-      </svg>
+      </Glyph>
     ),
   },
   {
@@ -1991,22 +1662,12 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     noTint: true,
     action: { type: 'component', kind: 'stat' },
     icon: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden
-      >
+      <Glyph size={18} units={24}>
         <rect x="2" y="6" width="6" height="12" rx="1" />
         <rect x="9" y="6" width="6" height="12" rx="1" />
         <rect x="16" y="6" width="6" height="12" rx="1" />
         <path d="M3.5 10.5h3M10.5 10.5h3M17.5 10.5h3" />
-      </svg>
+      </Glyph>
     ),
   },
   {
@@ -2021,22 +1682,12 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     noTint: true,
     action: { type: 'component', kind: 'process' },
     icon: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden
-      >
+      <Glyph size={18} units={24}>
         <circle cx="5" cy="12" r="3" />
         <circle cx="12" cy="12" r="3" />
         <circle cx="19" cy="12" r="3" />
         <path d="M8 12h1M15 12h1" />
-      </svg>
+      </Glyph>
     ),
   },
   {
@@ -2052,21 +1703,11 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     needsImage: true,
     action: { type: 'component', kind: 'hero' },
     icon: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden
-      >
+      <Glyph size={18} units={24}>
         <rect x="2.5" y="3.5" width="19" height="17" rx="2" />
         <path d="M2.5 14l5-4 4 3 3-2.5 7 5.5" />
         <path d="M7 17.5h10" strokeWidth="2.2" />
-      </svg>
+      </Glyph>
     ),
   },
   {
@@ -2081,21 +1722,11 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     noTint: true,
     action: { type: 'component', kind: 'header' },
     icon: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden
-      >
+      <Glyph size={18} units={24}>
         <rect x="2.5" y="6.5" width="19" height="11" rx="2" />
         <circle cx="7" cy="12" r="2.2" />
         <path d="M14 10.5h5M14 13.5h5" />
-      </svg>
+      </Glyph>
     ),
   },
   // --- Devices (docs/specs/008-canvas/canvas-and-palette.md) ------------------------------------------------------
@@ -2109,19 +1740,10 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'browser' },
     icon: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 18 18"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-        aria-hidden
-      >
+      <Glyph size={18} units={18} strokeLinecap="butt">
         <rect x="2" y="3" width="14" height="12" rx="1.5" />
         <path d="M2 7 L16 7" />
-      </svg>
+      </Glyph>
     ),
   },
   {
@@ -2134,20 +1756,11 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'monitor' },
     icon: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 18 18"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-        aria-hidden
-      >
+      <Glyph size={18} units={18} strokeLinecap="butt">
         <rect x="2" y="2.5" width="14" height="9" rx="1" />
         <path d="M6 15.5 L12 15.5" />
         <path d="M9 11.5 L9 15.5" />
-      </svg>
+      </Glyph>
     ),
   },
   {
@@ -2159,19 +1772,10 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'laptop' },
     icon: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 18 18"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-        aria-hidden
-      >
+      <Glyph size={18} units={18} strokeLinecap="butt">
         <rect x="3.5" y="3" width="11" height="8" rx="1" />
         <path d="M1.5 14 L16.5 14 L15 11 L3 11 Z" />
-      </svg>
+      </Glyph>
     ),
   },
   {
@@ -2183,18 +1787,9 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'phone' },
     icon: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 18 18"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-        aria-hidden
-      >
+      <Glyph size={18} units={18} strokeLinecap="butt">
         <rect x="5.5" y="1.5" width="7" height="15" rx="1.6" />
-      </svg>
+      </Glyph>
     ),
   },
   {
@@ -2206,18 +1801,9 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'tablet' },
     icon: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 18 18"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-        aria-hidden
-      >
+      <Glyph size={18} units={18} strokeLinecap="butt">
         <rect x="3" y="2" width="12" height="14" rx="1.2" />
-      </svg>
+      </Glyph>
     ),
   },
   {
@@ -2230,19 +1816,10 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'foldable' },
     icon: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 18 18"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-        aria-hidden
-      >
+      <Glyph size={18} units={18} strokeLinecap="butt">
         <rect x="1.5" y="3" width="15" height="12" rx="1.2" />
         <path d="M9 3 V15" />
-      </svg>
+      </Glyph>
     ),
   },
   {
@@ -2255,19 +1832,10 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'smartwatch' },
     icon: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 18 18"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-        aria-hidden
-      >
+      <Glyph size={18} units={18} strokeLinecap="butt">
         <rect x="5.5" y="4" width="7" height="10" rx="2.2" />
         <path d="M7 4 V1.8 M11 4 V1.8 M7 14 V16.2 M11 14 V16.2 M12.5 8 H14" />
-      </svg>
+      </Glyph>
     ),
   },
   // The Event Storming notation (docs/specs/021-event-storming/event-storming.md): one tile per note kind, derived

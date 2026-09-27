@@ -252,7 +252,7 @@ export function useTimelineEntityMenus(): {
               { label: 'Accept Invite', icon: <CheckIcon />, onClick: () => accept(invite) },
               {
                 label: 'Decline Invite',
-                icon: <CloseIcon size={11} strokeWidth={1.8} />,
+                icon: <CloseIcon size={11} />,
                 onClick: () => void declineInvite(invite),
                 danger: true,
               },
@@ -280,7 +280,7 @@ export function useTimelineEntityMenus(): {
         }
         items.push({
           label: 'Leave Team',
-          icon: <CloseIcon size={11} strokeWidth={1.8} />,
+          icon: <CloseIcon size={11} />,
           onClick: () => void leaveTeam(team),
           danger: true,
         });

@@ -1,5 +1,7 @@
 'use client';
 
+import { Glyph } from '@livediagram/ui';
+
 // The BOARD-level controls at the top of the palette's Event Storming category
 // (docs/specs/021-event-storming/event-storming.md). Everything below them adds a note; these change what the board
 // itself does, so they sit above the notation with a rule under them rather
@@ -56,18 +58,9 @@ export function EventStormingBoardRows({ controls }: { controls: EsBoardControls
 // A camera: the act is "photograph the wall", not "upload a file".
 function CameraIcon() {
   return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.7"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={16} units={24} strokeLinecap="butt">
       <path d="M3 8.5A1.5 1.5 0 0 1 4.5 7h2.2l1.1-1.8A1 1 0 0 1 8.7 4.7h6.6a1 1 0 0 1 .9.5L17.3 7h2.2A1.5 1.5 0 0 1 21 8.5v9A1.5 1.5 0 0 1 19.5 19h-15A1.5 1.5 0 0 1 3 17.5z" />
       <circle cx="12" cy="12.8" r="3.2" />
-    </svg>
+    </Glyph>
   );
 }

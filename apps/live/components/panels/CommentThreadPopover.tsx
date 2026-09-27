@@ -276,7 +276,7 @@ function CommentRow({
           onClick={onDelete}
           className="self-start rounded p-0.5 text-slate-400 opacity-0 transition hover:bg-rose-50 hover:text-rose-700 group-hover:opacity-100 dark:text-slate-400 dark:hover:bg-rose-500/15 dark:hover:text-rose-300"
         >
-          <TrashIcon size={12} strokeWidth={1.5} />
+          <TrashIcon size={12} />
         </button>
       ) : null}
     </li>

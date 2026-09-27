@@ -19,7 +19,7 @@ import { ChevronDownIcon, HoverCard } from '@livediagram/ui';
 // bug).
 export const noFocusSteal = (e: React.MouseEvent) => e.preventDefault();
 
-const CHEVRON = <ChevronDownIcon size={12} strokeWidth={1.6} />;
+const CHEVRON = <ChevronDownIcon size={12} />;
 
 export function ToolbarDropdown({
   label,

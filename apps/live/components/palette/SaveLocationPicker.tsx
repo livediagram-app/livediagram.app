@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { BrandMark } from '@livediagram/ui';
+import { BrandMark, Glyph } from '@livediagram/ui';
 import { PlacementCard } from '@/components/placement/PlacementCard';
 import { SAVE_LOCATIONS, type SaveLocationId } from '@/lib/save-locations';
 
@@ -48,20 +48,10 @@ const LOCATION_ICONS: Record<SaveLocationId, ReactNode> = {
 
 function BrowserWindowIcon() {
   return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 20 20"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={20} units={20}>
       <rect x="2.5" y="4" width="15" height="12" rx="2" />
       <path d="M2.5 7.5h15" />
       <path d="M5 5.8h.01M7.2 5.8h.01" />
-    </svg>
+    </Glyph>
   );
 }

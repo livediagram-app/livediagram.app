@@ -1,5 +1,7 @@
 'use client';
 
+import { Glyph } from '@livediagram/ui';
+
 // A full-width "go back to the overview" bar. Far more obvious than a small
 // pill in the corner: the whole row is the target. One bar for every
 // two-level browse (themes, templates, the custom theme builder, folder
@@ -75,22 +77,13 @@ export function BackBar({
 
 function ChevronGlyph() {
   return (
-    <svg
-      width="13"
-      height="13"
-      viewBox="0 0 12 12"
-      fill="none"
-      aria-hidden
+    <Glyph
+      size={13}
+      units={12}
       className="transition-transform duration-micro group-enabled:group-hover:-translate-x-0.5"
     >
-      <path
-        d="M7.5 2.5 4 6l3.5 3.5"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
+      <path d="M7.5 2.5 4 6l3.5 3.5" />
+    </Glyph>
   );
 }
 

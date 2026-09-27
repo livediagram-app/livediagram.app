@@ -4,6 +4,7 @@ import { CategoryCard } from '@/components/CategoryCard';
 import { Breadcrumb } from '@/components/Breadcrumb';
 import { featureCategories, supportCategories } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
+import { MailIcon } from '@/lib/chrome-icons';
 
 // The one page that spells out the " | livediagram" suffix: the root layout's
 // title template only reaches child segments, not this root index.
@@ -36,30 +37,7 @@ export default function HelpHome() {
             href="/help/contact/"
             className="mt-6 inline-flex items-center gap-2 text-sm text-slate-500 transition-colors hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"
           >
-            <svg
-              className="h-4 w-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              aria-hidden
-            >
-              <rect
-                width="20"
-                height="16"
-                x="2"
-                y="4"
-                rx="2"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+            <MailIcon className="h-4 w-4" />
             Can&apos;t find what you need? Contact us
           </a>
         </div>

@@ -1,5 +1,5 @@
 import { hexish } from '@/components/palette/palette-controls';
-import { ChevronDownIcon, CopyIcon } from '@livediagram/ui';
+import { ChevronDownIcon, CopyIcon, Glyph } from '@livediagram/ui';
 
 export type Painter = {
   copied: string | null;
@@ -66,7 +66,7 @@ export function ColorTile({
             aria-label={`Copy ${label} colour`}
             className="absolute right-0.5 top-0.5 flex h-4 w-4 items-center justify-center rounded bg-white/85 text-slate-600 shadow-sm transition hover:text-brand-600 dark:bg-slate-900/80 dark:text-slate-200"
           >
-            <CopyIcon size={9} strokeWidth={1.6} />
+            <CopyIcon size={9} />
           </button>
         ) : (
           // Paste overlay: covers the input so a click applies the copied
@@ -137,38 +137,25 @@ export function ColorDot({
 
 export function ResetGlyph() {
   return (
-    <svg
-      width="13"
-      height="13"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={13} units={16}>
       <path d="M3 8a5 5 0 1 1 1.5 3.5" />
       <path d="M3 5.5V8h2.5" />
-    </svg>
+    </Glyph>
   );
 }
 
 function PasteGlyph() {
   return (
-    <svg
-      width="11"
-      height="11"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
+    <Glyph
+      size={11}
+      units={16}
       className="text-brand-700 dark:text-brand-200"
-      aria-hidden
+      strokeLinecap="butt"
+      strokeLinejoin="miter"
     >
       <path d="M3 3l4 4M3 7V3h4" strokeLinecap="round" strokeLinejoin="round" />
       <path d="M7 13h6M10 10v6" strokeLinecap="round" />
-    </svg>
+    </Glyph>
   );
 }
 

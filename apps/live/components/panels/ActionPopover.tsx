@@ -9,6 +9,7 @@ import {
   useClickOutside,
   useEscape,
   SOLID_BRAND_DARK,
+  Glyph,
 } from '@livediagram/ui';
 import { useRef, useState } from 'react';
 import type { ElementAction } from '@livediagram/diagram';
@@ -216,55 +217,25 @@ function FooterButton({
 
 function CheckIcon({ size = 11 }: { size?: number }) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.25"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={size} units={16}>
       <path d="M2.5 8.5 6.5 12.5 13.5 4" />
-    </svg>
+    </Glyph>
   );
 }
 
 function ReopenIcon() {
   return (
-    <svg
-      width="11"
-      height="11"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.75"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={11} units={16}>
       <path d="M2.5 6.5A6 6 0 1 1 2 9.5" />
       <path d="M2.5 2.5v4h4" />
-    </svg>
+    </Glyph>
   );
 }
 
 function PencilIcon() {
   return (
-    <svg
-      width="11"
-      height="11"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.75"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={11} units={16}>
       <path d="M11.5 2.5a1.4 1.4 0 0 1 2 2L5 13l-2.75.75L3 11z" />
-    </svg>
+    </Glyph>
   );
 }

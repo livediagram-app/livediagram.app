@@ -9,7 +9,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { buttonClassName, CloseIcon } from '@livediagram/ui';
+import { buttonClassName, CloseIcon, Glyph } from '@livediagram/ui';
 import { Portal } from '@/components/primitives/Portal';
 import { readUserPreferences } from '@/lib/user-preferences';
 
@@ -205,7 +205,7 @@ function ToastBubble({ toast, onDismiss }: { toast: ToastEntry; onDismiss: () =>
         aria-label="Dismiss"
         className="rounded-md p-1 text-current opacity-60 transition hover:opacity-100"
       >
-        <CloseIcon size={12} strokeWidth={1.6} />
+        <CloseIcon size={12} />
       </button>
     </div>
   );
@@ -214,57 +214,24 @@ function ToastBubble({ toast, onDismiss }: { toast: ToastEntry; onDismiss: () =>
 function ToneGlyph({ tone }: { tone: ToastTone }) {
   if (tone === 'error') {
     return (
-      <svg
-        width="16"
-        height="16"
-        viewBox="0 0 16 16"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden
-        className="mt-0.5 shrink-0"
-      >
+      <Glyph size={16} units={16} className="mt-0.5 shrink-0">
         <circle cx="8" cy="8" r="6.5" />
         <path d="M8 4.5v4M8 11h0" />
-      </svg>
+      </Glyph>
     );
   }
   if (tone === 'success') {
     return (
-      <svg
-        width="16"
-        height="16"
-        viewBox="0 0 16 16"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden
-        className="mt-0.5 shrink-0"
-      >
+      <Glyph size={16} units={16} className="mt-0.5 shrink-0">
         <circle cx="8" cy="8" r="6.5" />
         <path d="M5 8.3l2 2 4-4.6" />
-      </svg>
+      </Glyph>
     );
   }
   return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-      className="mt-0.5 shrink-0"
-    >
+    <Glyph size={16} units={16} className="mt-0.5 shrink-0">
       <circle cx="8" cy="8" r="6.5" />
       <path d="M8 11v-3M8 5h0" />
-    </svg>
+    </Glyph>
   );
 }

@@ -2,7 +2,14 @@
 // element (BoxedElementView, for shape==='icon') and the palette icon
 // picker so the on-canvas glyph and the picker thumbnail can't drift.
 
-import type { AnimationSpeed, IconAnimation, TextAlignX, TextAlignY } from '@livediagram/diagram';
+import {
+  ICON_WEIGHT_PX,
+  type AnimationSpeed,
+  type IconAnimation,
+  type TextAlignX,
+  type TextAlignY,
+} from '@livediagram/diagram';
+import { Glyph } from '@livediagram/ui';
 
 import { iconBandClass } from '@/components/primitives/icon-band';
 
@@ -92,6 +99,16 @@ export function IconPrims({
   );
 }
 
+// A catalogue glyph as an 18px palette thumbnail (Icons tab, category tiles, favourites) at the
+// chrome weight (docs/specs/004-interface-design/iconography.md).
+export function CatalogIconThumb({ iconId }: { iconId: string }) {
+  return (
+    <Glyph size={18} units={24}>
+      <IconPrims iconId={iconId} />
+    </Glyph>
+  );
+}
+
 // Full-box icon overlay for a shape==='icon' element. When the icon
 // carries a label the glyph scales into the band OPPOSITE the caption
 // (iconBandClass — the same inverse-alignment bands as Technology
@@ -102,7 +119,7 @@ export function IconPrims({
 export function IconGlyph({
   iconId,
   stroke,
-  strokeWidth = 2,
+  strokeWidth = ICON_WEIGHT_PX.regular,
   hasLabel = false,
   labelAlignX = 'center',
   labelAlignY = 'bottom',

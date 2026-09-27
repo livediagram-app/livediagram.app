@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@livediagram/ui';
+import { Button, Glyph } from '@livediagram/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
@@ -50,20 +50,10 @@ export function ShareOfflineGate({
 
       <div className="flex flex-col items-center gap-4 px-6 py-7 text-center">
         <span className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-50 text-amber-600 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/30">
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden
-          >
+          <Glyph size={24} units={24}>
             <path d="M6 16.5h10a3.5 3.5 0 0 0 .4-6.98 5 5 0 0 0-9.2-1.1A3.4 3.4 0 0 0 6 16.5Z" />
             <path d="M3.5 3.5l17 17" />
-          </svg>
+          </Glyph>
         </span>
         <div className="flex flex-col gap-1.5">
           <p className="text-sm font-medium text-slate-800 dark:text-slate-100">

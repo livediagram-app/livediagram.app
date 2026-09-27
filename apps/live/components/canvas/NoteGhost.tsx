@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import { PlusWideIcon } from '@livediagram/ui';
+import { PlusIcon } from '@livediagram/ui';
 import { eventStormingNote, type EventStormingNoteKind } from '@livediagram/diagram';
 
 // A note that is about to be added (docs/specs/021-event-storming/event-storming.md): a dashed outline in the note's
@@ -45,7 +45,7 @@ export function NoteGhost({
       className="pointer-events-none z-[var(--z-chrome)] flex flex-col items-center justify-center font-semibold"
       style={style}
     >
-      <PlusWideIcon size={box.height * 0.12} />
+      <PlusIcon size={box.height * 0.12} />
       {kind ? eventStormingNote(kind).label : 'Sticky note'}
     </div>
   );

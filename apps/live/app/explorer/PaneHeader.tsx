@@ -6,7 +6,7 @@
 // so that barrel holds the list/row primitives while the header chrome (and
 // its private hamburger / caret icons) stands on its own.
 import { DiagramIcon, FolderOutlineIcon, PlusIcon } from '@/components/primitives/explorer-icons';
-import { Button } from '@livediagram/ui';
+import { Button, Glyph } from '@livediagram/ui';
 import { useRef, useState, type ReactNode } from 'react';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import type { HelpArticleKey } from '@/lib/help-articles';
@@ -17,37 +17,17 @@ import type { ExplorerViewMode } from './useExplorerViewMode';
 
 function HamburgerIcon() {
   return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 18 18"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.75"
-      strokeLinecap="round"
-      aria-hidden
-    >
+    <Glyph size={18} units={18} strokeLinejoin="miter">
       <path d="M3 5h12M3 9h12M3 13h12" />
-    </svg>
+    </Glyph>
   );
 }
 
 function CaretDownIcon() {
   return (
-    <svg
-      width="10"
-      height="10"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-      className="-mr-0.5"
-    >
+    <Glyph size={10} units={16} className="-mr-0.5">
       <path d="M4 6l4 4 4-4" />
-    </svg>
+    </Glyph>
   );
 }
 

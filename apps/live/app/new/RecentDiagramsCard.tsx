@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { apiListDiagrams } from '@/lib/api-client';
 import { relativeSince, useRelativeTimeTick } from '@/lib/relative-time';
+import { Glyph } from '@livediagram/ui';
 
 type RecentItem = { id: string; name: string; savedAt: number | null };
 
@@ -105,39 +106,21 @@ export function RecentDiagramsCard({
 
 function ClockIcon() {
   return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-      className="shrink-0 text-brand-500 dark:text-brand-400"
-    >
+    <Glyph size={16} units={16} className="shrink-0 text-brand-500 dark:text-brand-400">
       <circle cx="8" cy="8" r="6" />
       <path d="M8 5v3l2 1.5" />
-    </svg>
+    </Glyph>
   );
 }
 
 function ChevronRight() {
   return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 12 12"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
+    <Glyph
+      size={12}
+      units={12}
       className="shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-brand-500 dark:text-slate-600"
     >
       <path d="M4.5 2.5L8 6l-3.5 3.5" />
-    </svg>
+    </Glyph>
   );
 }

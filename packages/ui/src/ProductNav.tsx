@@ -16,6 +16,7 @@ import { useRef, useState, type ReactNode } from 'react';
 import { useClickOutside } from './useClickOutside';
 import { useEscape } from './useEscape';
 import { ChevronDownIcon } from './icons';
+import { Glyph } from '@livediagram/ui';
 
 type ProductNavKey = 'home' | 'explorer' | 'editor' | 'help' | 'telemetry';
 
@@ -24,18 +25,9 @@ type ProductNavKey = 'home' | 'explorer' | 'editor' | 'help' | 'telemetry';
 // icon, so it always reads as "open the apps menu".
 function NavSvg({ children }: { children: ReactNode }) {
   return (
-    <svg
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-      className="h-4 w-4"
-    >
+    <Glyph size={16} units={16} className="h-4 w-4">
       {children}
-    </svg>
+    </Glyph>
   );
 }
 // Functions, not pre-built elements: building JSX at module scope would
@@ -126,17 +118,9 @@ export function ProductNav({
       >
         {/* Hamburger affordance so the label reads as an openable menu, not a
             static section name. */}
-        <svg
-          viewBox="0 0 16 16"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.6"
-          strokeLinecap="round"
-          aria-hidden
-          className="h-3.5 w-3.5"
-        >
+        <Glyph size={14} units={16} className="h-3.5 w-3.5" strokeLinejoin="miter">
           <path d="M2.5 5h11M2.5 8h11M2.5 11h11" />
-        </svg>
+        </Glyph>
         {/* Hide the section label on phones (the hamburger + chevron still read
             as a menu, and the aria-label carries the current section) so the
             header's Brand + menu + "Start drawing" CTA stop crowding each other
@@ -144,7 +128,6 @@ export function ProductNav({
         <span className="hidden sm:inline">{active.label}</span>
         <ChevronDownIcon
           size={12}
-          strokeWidth={1.2}
           className={`h-3 w-3 opacity-60 transition-transform duration-micro group-hover:[transform:rotate(180deg)] group-focus-within:[transform:rotate(180deg)] ${
             open ? '[transform:rotate(180deg)]' : ''
           }`}

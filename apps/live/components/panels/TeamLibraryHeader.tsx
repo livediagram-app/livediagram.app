@@ -2,7 +2,7 @@
 
 import { DiagramIcon, FolderOutlineIcon, PlusIcon } from '@/components/primitives/explorer-icons';
 import { useRef, useState } from 'react';
-import { Button } from '@livediagram/ui';
+import { Button, Glyph } from '@livediagram/ui';
 import { MenuTile, MenuTileGrid, PortalMenu } from '@/components/primitives/PortalMenu';
 import { ViewToggle } from '@/app/explorer/ViewToggle';
 import type { ExplorerViewMode } from '@/app/explorer/useExplorerViewMode';
@@ -95,20 +95,9 @@ export function TeamLibraryHeader({
           >
             <PlusIcon />
             Create
-            <svg
-              width="9"
-              height="9"
-              viewBox="0 0 16 16"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden
-              className="-mr-0.5"
-            >
+            <Glyph size={9} units={16} className="-mr-0.5">
               <path d="M4 6l4 4 4-4" />
-            </svg>
+            </Glyph>
           </Button>
           {createOpen ? (
             <PortalMenu

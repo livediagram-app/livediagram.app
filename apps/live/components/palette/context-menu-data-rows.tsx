@@ -41,6 +41,7 @@ export function NoMarkerGlyph() {
 import { SizeButton } from '@/components/palette/palette-controls';
 import { ProgressAnimKindGlyph } from '@/components/palette/context-menu-icons';
 import { SpeedTiles, TileLabel, withNone } from '@/components/palette/context-menu-tiles';
+import { Glyph } from '@livediagram/ui';
 
 // Progress percentage slider (docs/specs/009-elements/progress.md). Mirrors OpacityRow but on a 0–100
 // integer scale.
@@ -103,9 +104,9 @@ function StarGlyph({ filled, size = 16 }: { filled: boolean; size?: number }) {
 // The "Rating" category glyph.
 export function RatingMenuGlyph() {
   return (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+    <Glyph size={12} units={24} filled>
       <path d="M12 2.6l2.7 5.47 6.04.88-4.37 4.26 1.03 6.02L12 16.85 6.6 19.23l1.03-6.02L3.26 8.95l6.04-.88z" />
-    </svg>
+    </Glyph>
   );
 }
 
@@ -224,39 +225,20 @@ function PieGlyph({ size = 16 }: { size?: number }) {
 // for the animation tiles) would stand out; this matches them.
 export function DataMenuGlyph() {
   return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={12} units={24} strokeLinecap="butt">
       <circle cx="12" cy="12" r="9" />
       <path d="M12 12 L12 3 M12 12 L20.5 15" />
-    </svg>
+    </Glyph>
   );
 }
 
 // Bars-in-a-frame — the "Chart" (display options) category glyph.
 export function ChartMenuGlyph() {
   return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={12} units={24}>
       <path d="M4 4 V20 H20" />
       <path d="M8 16 V13 M12 16 V9 M16 16 V11" />
-    </svg>
+    </Glyph>
   );
 }
 

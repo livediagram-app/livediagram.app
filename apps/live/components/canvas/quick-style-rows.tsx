@@ -5,7 +5,7 @@
 // names repeated by a Tooltip. Arrow keys move and choose, one tab stop a row.
 
 import { useRef, type KeyboardEvent, type ReactNode } from 'react';
-import { Tooltip } from '@livediagram/ui';
+import { Tooltip, Glyph } from '@livediagram/ui';
 import { isLightColor } from '@livediagram/diagram';
 
 export type QuickOption<V> = {
@@ -255,20 +255,10 @@ export function IconAlignGlyph({ align }: { align: 'left' | 'above' | 'right' })
 
 export function ClearStylesGlyph() {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={14} units={16}>
       <path d="M9.5 2.5 13.5 6.5 7 13H3.5L2 11.5z" />
       <path d="M6 6l4 4" />
       <path d="M8 13h6" />
-    </svg>
+    </Glyph>
   );
 }

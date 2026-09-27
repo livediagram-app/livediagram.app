@@ -1,3 +1,4 @@
+import { Glyph } from '@livediagram/ui';
 // Inline SVG icons for the rich-text toolbars (the overflow ellipsis and the
 // font-family glyph). Pure presentational; split out of RichTextToolbar.
 //
@@ -17,10 +18,10 @@ export function EllipsisIcon() {
 // A serif "A" — the font/typeface glyph for the Font submenu row.
 export function FontGlyph() {
   return (
-    <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden fill="currentColor">
+    <Glyph size={14} units={16} filled>
       <text x="8" y="12" textAnchor="middle" fontSize="12" fontFamily="Georgia, serif">
         A
       </text>
-    </svg>
+    </Glyph>
   );
 }

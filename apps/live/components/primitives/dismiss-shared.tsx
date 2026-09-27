@@ -12,5 +12,5 @@ export const DISMISS_SHARED = {
 };
 
 export function DismissSharedIcon() {
-  return <CloseIcon size={11} strokeWidth={1.8} />;
+  return <CloseIcon size={11} />;
 }

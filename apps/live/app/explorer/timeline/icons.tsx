@@ -19,19 +19,13 @@
 import { TeamIcon } from '@/components/primitives/explorer-icons';
 import type { ReactNode } from 'react';
 import type { KnownTimelineEventType } from '@livediagram/api-schema';
+import { Glyph as UiGlyph } from '@livediagram/ui';
 
 function Glyph({ d }: { d: string }) {
   return (
-    <svg
-      className="h-4 w-4"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.8}
-      viewBox="0 0 24 24"
-      aria-hidden
-    >
-      <path strokeLinecap="round" strokeLinejoin="round" d={d} />
-    </svg>
+    <UiGlyph size={16} units={24} className="h-4 w-4">
+      <path d={d} />
+    </UiGlyph>
   );
 }
 

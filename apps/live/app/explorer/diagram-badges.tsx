@@ -9,7 +9,7 @@ import { SharedDotIcon } from '@/components/chrome/share-state-icons';
 import { FolderOutlineIcon, StarIcon } from '@/components/primitives/explorer-icons';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import type { PaneDiagram } from './views';
-import { HoverCard } from '@livediagram/ui';
+import { HoverCard, Glyph } from '@livediagram/ui';
 
 const badgeBase =
   'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ring-1';
@@ -82,20 +82,10 @@ export function VisibilityBadge({ diagram }: { diagram: PaneDiagram }) {
         <span
           className={`${badgeBase} bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/30`}
         >
-          <svg
-            width="9"
-            height="9"
-            viewBox="0 0 9 9"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.3"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden
-          >
+          <Glyph size={9} units={9}>
             <path d="M2.4 6.6h3.4a1.4 1.4 0 0 0 .2-2.8 1.9 1.9 0 0 0-3.3-.5A1.35 1.35 0 0 0 2.4 6.6Z" />
             <path d="M1.4 1.4l6.2 6.2" />
-          </svg>
+          </Glyph>
           Offline
         </span>
       </HoverCard>
@@ -122,21 +112,12 @@ export function VisibilityBadge({ diagram }: { diagram: PaneDiagram }) {
         <span
           className={`${badgeBase} bg-brand-50 text-brand-700 ring-brand-200 dark:bg-brand-500/10 dark:text-brand-300 dark:ring-brand-500/30`}
         >
-          <svg
-            width="9"
-            height="9"
-            viewBox="0 0 9 9"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.2"
-            strokeLinecap="round"
-            aria-hidden
-          >
+          <Glyph size={9} units={9} strokeLinejoin="miter">
             <circle cx="3.2" cy="3.2" r="1.4" />
             <path d="M1.2 7.8c.3-1.4 1-2.1 2-2.1s1.7.7 2 2.1" />
             <circle cx="6.6" cy="3.6" r="1.1" />
             <path d="M6.3 5.7c.9.1 1.5.7 1.7 1.8" />
-          </svg>
+          </Glyph>
           Team
         </span>
       </HoverCard>
@@ -147,20 +128,10 @@ export function VisibilityBadge({ diagram }: { diagram: PaneDiagram }) {
       <span
         className={`${badgeBase} bg-slate-100 text-slate-500 ring-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700`}
       >
-        <svg
-          width="9"
-          height="9"
-          viewBox="0 0 9 9"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.4"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden
-        >
+        <Glyph size={9} units={9}>
           <rect x="1.6" y="4" width="5.8" height="3.6" rx="0.9" />
           <path d="M3 4V2.9a1.5 1.5 0 0 1 3 0V4" />
-        </svg>
+        </Glyph>
         Private
       </span>
     </HoverCard>

@@ -1,9 +1,17 @@
+// Line-art geometry derived from Feather (MIT) and Lucide (ISC); notices in THIRD_PARTY_NOTICES.md.
 // Icon catalogue data, part 1 of 2 (general / arrows / etc). Split in two
 // purely to keep each file under the ~1000-line budget; the parts are
 // concatenated back together by consumers: the editor's lib/icon-registry.ts
 // dynamic-imports them (async chunk, off its first-load JS — import it ONLY
 // through the registry there), and the Workers static-import via ./resolve.
 // Order matters (the first entry is the default icon), so part 1 stays first.
+import {
+  lucideDatabase,
+  lucidePackage,
+  lucideSettings,
+  lucideWifi,
+  lucideWrench,
+} from './lucide.generated';
 import type { IconDef } from './types';
 
 export const ICON_CATALOG_1: IconDef[] = [
@@ -42,11 +50,7 @@ export const ICON_CATALOG_1: IconDef[] = [
     id: 'database',
     label: 'Database',
     keywords: 'db storage sql data',
-    prims: [
-      { t: 'ellipse', cx: 12, cy: 5, rx: 9, ry: 3 },
-      { t: 'path', d: 'M21 5v6c0 1.66-4 3-9 3s-9-1.34-9-3V5' },
-      { t: 'path', d: 'M3 11v6c0 1.66 4 3 9 3s9-1.34 9-3v-6' },
-    ],
+    prims: [...lucideDatabase],
   },
   {
     id: 'cloud',
@@ -104,14 +108,8 @@ export const ICON_CATALOG_1: IconDef[] = [
     id: 'package',
     label: 'Package',
     keywords: 'box build artifact module bundle',
-    prims: [
-      {
-        t: 'path',
-        d: 'M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z',
-      },
-      { t: 'polyline', points: '3.27 6.96 12 12.01 20.73 6.96' },
-      { t: 'line', x1: 12, y1: 22.08, x2: 12, y2: 12 },
-    ],
+    // Carton with its tape band: distinct from the plain box.
+    prims: [...lucidePackage],
   },
   {
     id: 'globe',
@@ -156,12 +154,7 @@ export const ICON_CATALOG_1: IconDef[] = [
     id: 'wifi',
     label: 'Wi-Fi',
     keywords: 'network wireless signal internet connection',
-    prims: [
-      { t: 'path', d: 'M5 12.55a11 11 0 0 1 14.08 0' },
-      { t: 'path', d: 'M1.42 9a16 16 0 0 1 21.16 0' },
-      { t: 'path', d: 'M8.53 16.11a6 6 0 0 1 6.95 0' },
-      { t: 'line', x1: 12, y1: 20, x2: 12.01, y2: 20 },
-    ],
+    prims: [...lucideWifi],
   },
   {
     id: 'monitor',
@@ -235,13 +228,7 @@ export const ICON_CATALOG_1: IconDef[] = [
     id: 'settings',
     label: 'Settings',
     keywords: 'gear cog config preferences options',
-    prims: [
-      { t: 'circle', cx: 12, cy: 12, r: 3 },
-      {
-        t: 'path',
-        d: 'M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z',
-      },
-    ],
+    prims: [...lucideSettings],
   },
   {
     id: 'search',
@@ -592,12 +579,7 @@ export const ICON_CATALOG_1: IconDef[] = [
     id: 'tool',
     label: 'Tool',
     keywords: 'wrench spanner fix settings build',
-    prims: [
-      {
-        t: 'path',
-        d: 'M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z',
-      },
-    ],
+    prims: [...lucideWrench],
   },
   {
     id: 'power',

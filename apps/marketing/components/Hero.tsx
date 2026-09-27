@@ -1,5 +1,5 @@
 import { ctaHref } from '@livediagram/api-schema';
-import { buttonClassName } from '@livediagram/ui';
+import { buttonClassName, Glyph } from '@livediagram/ui';
 import { HeroIllustration } from './HeroIllustration';
 
 // Each one true today (docs/specs/019-marketing/marketing-site.md's golden rule): no paid tier, the canvas works
@@ -16,16 +16,9 @@ function ProofPoints() {
     <ul className="mx-auto mt-6 flex max-w-2xl flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-slate-600 dark:text-slate-300">
       {PROOF_POINTS.map((point) => (
         <li key={point} className="flex items-center gap-1.5">
-          <svg viewBox="0 0 16 16" className="h-4 w-4 text-emerald-500" aria-hidden>
-            <path
-              d="M3.5 8.5l3 3 6-7"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+          <Glyph size={16} units={16} className="h-4 w-4 text-emerald-500">
+            <path d="M3.5 8.5l3 3 6-7" />
+          </Glyph>
           {point}
         </li>
       ))}

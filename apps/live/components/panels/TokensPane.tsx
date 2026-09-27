@@ -6,7 +6,7 @@
 import { useState } from 'react';
 import type { ApiToken } from '@livediagram/api-schema';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
-import { EmptyState, Tooltip } from '@livediagram/ui';
+import { EmptyState, Tooltip, Glyph } from '@livediagram/ui';
 import { TOKEN_REVOKE_MESSAGE } from './token-copy';
 
 const DAY = 86_400_000;
@@ -174,19 +174,9 @@ export function TokensPane({
 
 function KeyIcon() {
   return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={16} units={16}>
       <circle cx="5.5" cy="5.5" r="3" />
       <path d="M7.6 7.6 L13 13 M11 11l1.5-1.5M10 13l1.5-1.5" />
-    </svg>
+    </Glyph>
   );
 }

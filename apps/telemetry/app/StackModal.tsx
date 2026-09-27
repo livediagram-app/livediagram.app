@@ -105,7 +105,7 @@ export function StackModal({
             aria-label={`Close ${title}`}
             className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-slate-400 hover:bg-slate-200 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
           >
-            <CloseIcon size={16} strokeWidth={1.17} />
+            <CloseIcon size={16} />
           </button>
         </div>
         <div

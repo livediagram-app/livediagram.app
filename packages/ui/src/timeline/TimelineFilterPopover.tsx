@@ -19,6 +19,7 @@ import { MODE_LABELS, ModeIcon, TIMELINE_MODES } from './ModeIcon';
 import type { TimelineActorFilter } from './useTimelineControls';
 import type { TimelineMode } from './types';
 import { SOLID_BRAND_DARK_CONTROL } from '../brand-classes';
+import { Glyph } from '@livediagram/ui';
 
 const WIDTH = 272;
 const GAP = 8;
@@ -261,18 +262,12 @@ export function TimelineFilterPopover({
 
 function Chevron({ direction }: { direction: 1 | -1 }) {
   return (
-    <svg
-      className="h-3.5 w-3.5"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      viewBox="0 0 24 24"
-    >
+    <Glyph size={14} units={24} className="h-3.5 w-3.5" strokeLinecap="butt" strokeLinejoin="miter">
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
         d={direction === 1 ? 'M9 5l7 7-7 7' : 'M15 19l-7-7 7-7'}
       />
-    </svg>
+    </Glyph>
   );
 }

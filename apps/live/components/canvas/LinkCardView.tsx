@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { defaultTextColor, type LinkCardElement } from '@livediagram/diagram';
+import { Glyph } from '@livediagram/ui';
 
 // Inner content of a link-card element (docs/specs/009-elements/link-cards.md): a favicon / glyph + title +
 // destination row, with the OG image as a top banner when a URL has unfurled.
@@ -109,19 +110,9 @@ export function LinkCardView({
         // Right-arrow affordance: nudges right on hover so the row reads as a
         // "go to link" hotspot.
         <span className="pointer-events-none shrink-0 self-center text-slate-400 transition-transform duration-150 group-hover:translate-x-1 dark:text-slate-400">
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 16 16"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden
-          >
+          <Glyph size={16} units={16}>
             <path d="M3 8h9M8.5 4.5 12 8l-3.5 3.5" />
-          </svg>
+          </Glyph>
         </span>
       ) : null}
     </>
@@ -143,20 +134,10 @@ export function LinkCardView({
         // No OG image unfurled: a neutral placeholder banner so the card keeps
         // its image-on-top shape instead of collapsing the layout.
         <div className="flex min-h-0 flex-1 items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200 text-slate-300 dark:from-slate-800 dark:to-slate-700 dark:text-slate-400">
-          <svg
-            width="28"
-            height="28"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden
-          >
+          <Glyph size={28} units={24}>
             <circle cx="12" cy="12" r="9" />
             <path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
-          </svg>
+          </Glyph>
         </div>
       )}
       {onFollow ? (
@@ -185,17 +166,7 @@ export function LinkCardView({
 function LinkGlyph({ kind }: { kind: NonNullable<LinkCardElement['link']>['kind'] }) {
   return (
     <span className="flex h-4 w-4 shrink-0 items-center justify-center text-slate-400 dark:text-slate-400">
-      <svg
-        width="13"
-        height="13"
-        viewBox="0 0 16 16"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden
-      >
+      <Glyph size={13} units={16}>
         {kind === 'diagram' ? (
           // Stacked-pages glyph for a diagram link.
           <>
@@ -213,7 +184,7 @@ function LinkGlyph({ kind }: { kind: NonNullable<LinkCardElement['link']>['kind'
             <path d="M8.5 11.5 7.3 12.7a2.4 2.4 0 0 1-3.4-3.4l1.2-1.2" />
           </>
         )}
-      </svg>
+      </Glyph>
     </span>
   );
 }

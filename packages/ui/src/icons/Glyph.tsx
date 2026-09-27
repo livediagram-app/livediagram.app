@@ -1,10 +1,13 @@
-import type { SVGProps } from 'react';
+import { glyphStrokePx, inkInsets, primsBounds } from '@livediagram/icons';
+import type { CSSProperties, SVGProps } from 'react';
+
+import { childPrims } from './glyph-ink';
 
 // The chrome-icon base: a square, stroke-currentColor, decorative SVG. Every
 // named icon in this folder is a Glyph with its own path data and a default
-// size + stroke weight (the rendering most of its call sites used before the
-// copies were collapsed here). Colour always comes from the parent's text
-// colour via `currentColor`.
+// size. Weight is on-screen px (docs/specs/004-interface-design/iconography.md),
+// converted to viewBox units here, so every glyph reads the same weight
+// whatever its grid. Colour always comes from the parent's text colour.
 //
 // Distinct from @livediagram/icons, which is the CANVAS icon catalogue as SVG
 // markup strings; these are React components for app chrome.
@@ -12,8 +15,8 @@ import type { SVGProps } from 'react';
 export type IconProps = Omit<SVGProps<SVGSVGElement>, 'width' | 'height' | 'strokeWidth'> & {
   // Rendered width and height in px.
   size?: number;
-  // Stroke weight in viewBox units.
-  strokeWidth?: number;
+  // On-screen stroke in px; defaults to the house weight for the size.
+  weight?: number;
 };
 
 type GlyphProps = IconProps & {
@@ -25,18 +28,23 @@ type GlyphProps = IconProps & {
 
 export function Glyph({
   size = 16,
-  strokeWidth = 1.5,
+  weight,
   units = 16,
   filled = false,
+  className,
+  style,
   children,
   ...rest
 }: GlyphProps) {
+  const strokePx = filled ? 0 : (weight ?? glyphStrokePx(size));
   const paint = filled
     ? { fill: 'currentColor' }
     : {
         fill: 'none',
         stroke: 'currentColor',
-        strokeWidth,
+        // On-screen px: every child is non-scaling (.lvd-glyph in the shared theme), so CSS sizing and
+        // canvas zoom leave the weight alone.
+        strokeWidth: strokePx,
         strokeLinecap: 'round' as const,
         strokeLinejoin: 'round' as const,
       };
@@ -46,10 +54,35 @@ export function Glyph({
       height={size}
       viewBox={`0 0 ${units} ${units}`}
       aria-hidden
+      className={className ? `lvd-glyph ${className}` : 'lvd-glyph'}
+      style={inkStyle(children, units, size, strokePx, style)}
       {...paint}
       {...rest}
     >
       {children}
     </svg>
   );
+}
+
+// Ink insets (docs/specs/004-interface-design/iconography.md, "Ink insets"): the blank margin the drawing leaves on
+// each side, stroke included, in rendered px, as --glyph-ink-l/r/t/b. Containers pull an edge icon out by
+// it so their padding is measured to the ink. Absent when a child's geometry can't be read.
+function inkStyle(
+  children: GlyphProps['children'],
+  units: number,
+  sizePx: number,
+  strokePx: number,
+  style: CSSProperties | undefined,
+): CSSProperties | undefined {
+  const prims = childPrims(children);
+  const bounds = prims && primsBounds(prims);
+  if (!bounds) return style;
+  const i = inkInsets(bounds, { units, sizePx, strokePx });
+  return {
+    '--glyph-ink-l': `${i.l}px`,
+    '--glyph-ink-r': `${i.r}px`,
+    '--glyph-ink-t': `${i.t}px`,
+    '--glyph-ink-b': `${i.b}px`,
+    ...style,
+  } as CSSProperties;
 }

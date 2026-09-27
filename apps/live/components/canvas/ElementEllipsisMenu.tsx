@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { Portal } from '@/components/primitives/Portal';
+import { Glyph } from '@livediagram/ui';
 
 // A small `…` menu attached to an element's own face.
 //
@@ -82,11 +83,11 @@ export function ElementEllipsisMenu({
         className="flex h-5 w-5 cursor-pointer items-center justify-center rounded transition hover:bg-black/10 dark:hover:bg-white/10"
         style={color ? { color } : undefined}
       >
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden>
+        <Glyph size={14} units={16} filled>
           <circle cx="3.2" cy="8" r="1.35" />
           <circle cx="8" cy="8" r="1.35" />
           <circle cx="12.8" cy="8" r="1.35" />
-        </svg>
+        </Glyph>
       </button>
       {open && at ? (
         <Portal>
@@ -213,11 +214,11 @@ export function ElementSettingsButton({
         className="flex h-5 w-5 cursor-pointer items-center justify-center rounded transition hover:bg-black/10 dark:hover:bg-white/10"
         style={color ? { color } : undefined}
       >
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden>
+        <Glyph size={14} units={16} filled>
           <circle cx="3.2" cy="8" r="1.35" />
           <circle cx="8" cy="8" r="1.35" />
           <circle cx="12.8" cy="8" r="1.35" />
-        </svg>
+        </Glyph>
       </button>
     </div>
   );

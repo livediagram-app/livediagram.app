@@ -33,6 +33,7 @@ import {
   type ElementShadow,
   type IconAnimation,
   type IconSize,
+  type IconWeight,
   type RunBoolKey,
   type TextRun,
 } from '@livediagram/diagram';
@@ -121,6 +122,7 @@ export function paintableBoxedFields(source: BoxedElement): Partial<BoxedElement
     iconAnimationSpeed?: AnimationSpeed;
     iconAnimationRepeat?: boolean;
     iconSize?: IconSize;
+    iconWeight?: IconWeight;
   };
   // Effective whole-label formatting: a uniform richText run wins over
   // the (often unset) element-level flag, otherwise the element field.
@@ -165,6 +167,7 @@ export function paintableBoxedFields(source: BoxedElement): Partial<BoxedElement
     out.iconAnimationSpeed = ext.iconAnimationSpeed;
     out.iconAnimationRepeat = ext.iconAnimationRepeat;
     out.iconSize = ext.iconSize;
+    out.iconWeight = ext.iconWeight;
   }
   return out as Partial<BoxedElement>;
 }

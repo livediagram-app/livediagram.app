@@ -5,6 +5,8 @@ import {
   DEFAULT_BORDER_STYLE,
   defaultFillColor,
   defaultStrokeColor,
+  ICON_REMOTE_HIGHLIGHT_PX,
+  iconWeightPx,
   isBarShape,
   isChecklistShape,
   isLegendShape,
@@ -104,7 +106,7 @@ export function ShapeContentRouter({
     <IconGlyph
       iconId={element.iconId}
       stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)}
-      strokeWidth={remoteBorderColor ? 3 : 2}
+      strokeWidth={remoteBorderColor ? ICON_REMOTE_HIGHLIGHT_PX : iconWeightPx(element.iconWeight)}
       hasLabel={(element.label ?? '').trim().length > 0}
       labelAlignX={element.textAlignX ?? 'center'}
       labelAlignY={element.textAlignY ?? 'bottom'}

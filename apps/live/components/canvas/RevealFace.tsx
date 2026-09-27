@@ -20,25 +20,15 @@
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
 import { Hatching } from '@/components/canvas/paper-kit';
-import { HoverCard } from '@livediagram/ui';
+import { HoverCard, Glyph } from '@livediagram/ui';
 
 function EyeIcon({ off = false }: { off?: boolean }) {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={14} units={16}>
       <path d="M1.6 8s2.4-4 6.4-4 6.4 4 6.4 4-2.4 4-6.4 4-6.4-4-6.4-4z" />
       <circle cx="8" cy="8" r="1.8" />
       {off ? <path d="M2.4 2.4l11.2 11.2" /> : null}
-    </svg>
+    </Glyph>
   );
 }
 

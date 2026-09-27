@@ -109,6 +109,9 @@ importers:
       '@livediagram/help-registry':
         specifier: workspace:*
         version: link:../../packages/help-registry
+      '@livediagram/icons':
+        specifier: workspace:^
+        version: link:../../packages/icons
       '@livediagram/telemetry-client':
         specifier: workspace:*
         version: link:../../packages/telemetry-client
@@ -614,6 +617,10 @@ importers:
         version: '@typescript/typescript6@6.0.2'
 
   packages/icons:
+    dependencies:
+      svg-path-bbox:
+        specifier: 2.1.0
+        version: 2.1.0
     devDependencies:
       '@livediagram/eslint-config':
         specifier: workspace:*
@@ -621,6 +628,9 @@ importers:
       '@livediagram/vitest-config':
         specifier: workspace:*
         version: link:../vitest-config
+      '@types/node':
+        specifier: ^26.6.2
+        version: 26.6.2
       '@typescript/native':
         specifier: npm:typescript@^7.0.2
         version: typescript@7.0.2
@@ -630,6 +640,9 @@ importers:
       eslint:
         specifier: ^10.11.0
         version: 10.11.0(jiti@2.7.0)
+      lucide-static:
+        specifier: 1.48.0
+        version: 1.48.0
       typescript:
         specifier: npm:@typescript/typescript6@^6.0.2
         version: '@typescript/typescript6@6.0.2'
@@ -820,6 +833,9 @@ importers:
       '@livediagram/api-schema':
         specifier: workspace:*
         version: link:../api-schema
+      '@livediagram/icons':
+        specifier: workspace:^
+        version: link:../icons
       '@livediagram/tailwind-config':
         specifier: workspace:*
         version: link:../tailwind-config
@@ -3095,6 +3111,9 @@ packages:
   lru-cache@5.1.1:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}
 
+  lucide-static@1.48.0:
+    resolution: {integrity: sha512-ZUGgZ4rzlLfVbhN2Zi37TMrTaSpXAbWx6Y/xZxKSDLPiqxtTK7Mw2M+oBJa0gjV8p3+CWBHh48u+IC9+jKlUjA==}
+
   lz-string@1.5.0:
     resolution: {integrity: sha512-h5bgJWpxJNswbU7qCrV0tIKQCaS3blPDrqKWx+QxzuzL1zGUzij9XCWLrSLsJPu5t+eWA/ycetzYAO5IOMcWAQ==}
     hasBin: true
@@ -3739,6 +3758,14 @@ packages:
   supports-color@7.2.0:
     resolution: {integrity: sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw==}
     engines: {node: '>=8'}
+
+  svg-path-bbox@2.1.0:
+    resolution: {integrity: sha512-PEoSQFbBvL7FOCE4cN8Knej6L7bXdNkjPcUYsfMMpq0HpnqiO0sE2mcXTd7LX160aOyh5HbaeN/SoY8thMk5Kg==}
+    engines: {node: '>=6.17.1'}
+    hasBin: true
+
+  svgpath@2.6.0:
+    resolution: {integrity: sha512-OIWR6bKzXvdXYyO4DK/UWa1VA1JeKq8E+0ug2DG98Y/vOmMpfZNj+TIG988HjfYSqtcy/hFOtZq/n/j5GSESNg==}
 
   tailwindcss@4.3.3:
     resolution: {integrity: sha512-gOhV3P7ufE62QDGg1zVaTgCR+EtPv92k2nIhVcVKcLmxT1sUBsQGhnZj175j+MqRt4zLF7ic+sCYjfhxMxj7YQ==}
@@ -6162,6 +6189,8 @@ snapshots:
     dependencies:
       yallist: 3.1.1
 
+  lucide-static@1.48.0: {}
+
   lz-string@1.5.0: {}
 
   magic-string@0.30.21:
@@ -7173,6 +7202,12 @@ snapshots:
   supports-color@7.2.0:
     dependencies:
       has-flag: 4.0.0
+
+  svg-path-bbox@2.1.0:
+    dependencies:
+      svgpath: 2.6.0
+
+  svgpath@2.6.0: {}
 
   tailwindcss@4.3.3: {}
 

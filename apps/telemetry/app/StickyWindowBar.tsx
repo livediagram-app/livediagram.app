@@ -2,17 +2,17 @@
 
 import { useEffect, useState, type ReactNode, type RefObject } from 'react';
 import type { TelemetryWindowKey } from '@livediagram/api-schema';
-import { Tooltip } from '@livediagram/ui';
+import { Tooltip, Glyph } from '@livediagram/ui';
 import { WINDOW_META } from './windows';
 
 // Three dots — the "more / switch view" affordance in the sticky bar.
 function EllipsisIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden>
+    <Glyph size={16} units={16} filled>
       <circle cx="3" cy="8" r="1.5" />
       <circle cx="8" cy="8" r="1.5" />
       <circle cx="13" cy="8" r="1.5" />
-    </svg>
+    </Glyph>
   );
 }
 

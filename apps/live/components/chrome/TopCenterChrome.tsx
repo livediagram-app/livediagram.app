@@ -1,6 +1,6 @@
 import { drawBannerMessage, isMarkerIntent } from '@/lib/draw-mode';
 import { participantKey } from '@/lib/identity';
-import { FormatPainterIcon } from '@livediagram/ui';
+import { FormatPainterIcon, Glyph } from '@livediagram/ui';
 import { isMobileViewportSync } from '@/lib/responsive';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { ModeBanner } from '@/components/chrome/ModeBanner';
@@ -113,7 +113,7 @@ export function TopCenterChrome({
             (which also flips isPaintMode true). */}
         {canvasTool === 'format' ? (
           <ModeBanner
-            icon={<FormatPainterIcon strokeWidth={1.75} />}
+            icon={<FormatPainterIcon />}
             message={
               formatSourceId
                 ? 'Tap elements to paint this style onto them'
@@ -124,7 +124,7 @@ export function TopCenterChrome({
           />
         ) : isPaintMode ? (
           <ModeBanner
-            icon={<FormatPainterIcon strokeWidth={1.75} />}
+            icon={<FormatPainterIcon />}
             message="Click an element to apply formatting"
             onAction={onCancelFormatPainter}
           />
@@ -176,18 +176,9 @@ export function TopCenterChrome({
 
 function DrawIcon() {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={14} units={16} strokeLinecap="butt">
       <rect x="2.5" y="2.5" width="11" height="11" rx="1.5" strokeDasharray="2 1.5" />
       <path d="M5.5 5.5l5 5" />
-    </svg>
+    </Glyph>
   );
 }

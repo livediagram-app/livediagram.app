@@ -1,7 +1,7 @@
 'use client';
 
 import { isDragTravel } from '@/lib/press-gestures';
-import { HoverCard } from '@livediagram/ui';
+import { HoverCard, Glyph } from '@livediagram/ui';
 
 // Orbit control for the isometric view (docs/specs/008-canvas/isometric-view.md). Drag it to orbit the
 // camera the same way Shift-drag does on the canvas — horizontal motion
@@ -16,21 +16,11 @@ import { HoverCard } from '@livediagram/ui';
 // flat 2D "rotate" curl.
 function OrbitGlyph() {
   return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={16} units={24}>
       <ellipse cx="12" cy="12" rx="10" ry="4.5" transform="rotate(-30 12 12)" />
       <circle cx="12" cy="12" r="2.4" fill="currentColor" stroke="none" />
       <circle cx="20.2" cy="7.3" r="1.5" fill="currentColor" stroke="none" />
-    </svg>
+    </Glyph>
   );
 }
 

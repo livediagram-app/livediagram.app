@@ -5,7 +5,7 @@ import { useState, type ReactNode } from 'react';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import { MenuActionRow, MenuGroupSeparator, PortalMenu } from '@/components/primitives/PortalMenu';
 import { GearIcon, GithubIcon, SearchGlyph } from '@/components/chrome/tab-bar-icons';
-import { REPO_URL } from '@livediagram/ui';
+import { REPO_URL, Glyph } from '@livediagram/ui';
 import type { ExplorerMenuActions } from './Explorer.types';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import { HelpMarkIcon, openHelpArticle } from '@/components/primitives/HelpArticleLink';
@@ -156,41 +156,21 @@ export function ExplorerHeaderMenu({
 // Three linked nodes, the usual share mark.
 function ShareGlyph() {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={14} units={16}>
       <circle cx="12" cy="3.5" r="1.75" />
       <circle cx="4" cy="8" r="1.75" />
       <circle cx="12" cy="12.5" r="1.75" />
       <path d="M5.5 7.1 10.5 4.4M5.5 8.9l5 2.7" />
-    </svg>
+    </Glyph>
   );
 }
 
 // A tray with an arrow leaving it: the tab going out as a file.
 function ExportGlyph() {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={14} units={16}>
       <path d="M8 10V2.5M5 5.5 8 2.5l3 3" />
       <path d="M2.5 10v2.5a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1V10" />
-    </svg>
+    </Glyph>
   );
 }

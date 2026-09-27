@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Button, TextInput } from '@livediagram/ui';
+import { Button, TextInput, Glyph } from '@livediagram/ui';
 
 type SharePasswordGateProps = {
   // True when the visitor already submitted a wrong password (vs the
@@ -73,17 +73,9 @@ export function SharePasswordGate({ invalid, ownerName, onSubmit }: SharePasswor
 
 function LockIcon() {
   return (
-    <svg
-      width="22"
-      height="22"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      aria-hidden
-    >
+    <Glyph size={22} units={16} strokeLinecap="butt" strokeLinejoin="miter">
       <rect x="3" y="7" width="10" height="7" rx="1.8" />
       <path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" strokeLinecap="round" />
-    </svg>
+    </Glyph>
   );
 }

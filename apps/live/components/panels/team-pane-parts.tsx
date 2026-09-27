@@ -1,4 +1,4 @@
-import { CloseIcon, Select, HoverCard } from '@livediagram/ui';
+import { CloseIcon, Select, HoverCard, Glyph } from '@livediagram/ui';
 import type { TeamMember, TeamRole } from '@/lib/api-client';
 import { colorForKey, initialsOf } from '@/lib/identity';
 import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
@@ -55,15 +55,9 @@ function RolePill({ member, pinned }: { member: TeamMember; pinned: boolean }) {
 
 export function LinkIcon() {
   return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path
-        d="M10 13a5 5 0 0 0 7.07 0l1.41-1.41a5 5 0 0 0-7.07-7.07L10 5.93M14 11a5 5 0 0 0-7.07 0L5.5 12.4a5 5 0 0 0 7.07 7.07L13.9 18.2"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
+    <Glyph size={15} units={24}>
+      <path d="M10 13a5 5 0 0 0 7.07 0l1.41-1.41a5 5 0 0 0-7.07-7.07L10 5.93M14 11a5 5 0 0 0-7.07 0L5.5 12.4a5 5 0 0 0 7.07 7.07L13.9 18.2" />
+    </Glyph>
   );
 }
 
@@ -162,7 +156,7 @@ export function TeamMemberRow({
             aria-label={`Remove ${name}`}
             className="inline-flex h-7 w-7 items-center justify-center rounded text-slate-300 opacity-0 transition hover:bg-rose-50 hover:text-rose-700 focus-visible:opacity-100 group-hover:opacity-100 dark:text-slate-600 dark:hover:bg-rose-500/15 dark:hover:text-rose-300"
           >
-            <CloseIcon size={11} strokeWidth={1.6} />
+            <CloseIcon size={11} />
           </button>
         ) : null}
       </span>

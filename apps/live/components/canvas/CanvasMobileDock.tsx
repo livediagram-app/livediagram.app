@@ -10,7 +10,7 @@ import {
   SpotlightIcon,
 } from '@/components/palette/palette-icons';
 import type { MobilePanel } from '@/hooks/canvas/useCanvasMobileDock';
-import { SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
+import { SOLID_BRAND_DARK_CONTROL, Glyph } from '@livediagram/ui';
 
 // Top-right mobile dock (docs/specs/007-editor/live-app.md "Mobile chrome"): a compact button row
 // that replaces the four full-width collapse banners on mobile, opening
@@ -83,14 +83,9 @@ export function CanvasMobileDock({
             id: 'explorer',
             label: 'Explorer',
             icon: (
-              <svg width="16" height="16" viewBox="0 0 14 14" fill="none" aria-hidden>
-                <path
-                  d="M2 3.5C2 2.67 2.67 2 3.5 2h2.25l1.5 1.5H10.5c.83 0 1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5h-7C2.67 11.5 2 10.83 2 10V3.5z"
-                  stroke="currentColor"
-                  strokeWidth="1.2"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              <Glyph size={16} units={14}>
+                <path d="M2 3.5C2 2.67 2.67 2 3.5 2h2.25l1.5 1.5H10.5c.83 0 1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5h-7C2.67 11.5 2 10.83 2 10V3.5z" />
+              </Glyph>
             ),
           },
           ...(!readOnly
@@ -99,41 +94,12 @@ export function CanvasMobileDock({
                   id: 'palette' as const,
                   label: 'Palette',
                   icon: (
-                    <svg width="16" height="16" viewBox="0 0 14 14" fill="none" aria-hidden>
-                      <rect
-                        x="2"
-                        y="2"
-                        width="4"
-                        height="4"
-                        rx="0.8"
-                        stroke="currentColor"
-                        strokeWidth="1.2"
-                      />
-                      <rect
-                        x="8"
-                        y="2"
-                        width="4"
-                        height="4"
-                        rx="2"
-                        stroke="currentColor"
-                        strokeWidth="1.2"
-                      />
-                      <rect
-                        x="2"
-                        y="8"
-                        width="4"
-                        height="4"
-                        rx="0.8"
-                        stroke="currentColor"
-                        strokeWidth="1.2"
-                      />
-                      <path
-                        d="M10 8v4M8 10h4"
-                        stroke="currentColor"
-                        strokeWidth="1.2"
-                        strokeLinecap="round"
-                      />
-                    </svg>
+                    <Glyph size={16} units={14}>
+                      <rect x="2" y="2" width="4" height="4" rx="0.8" />
+                      <rect x="8" y="2" width="4" height="4" rx="2" />
+                      <rect x="2" y="8" width="4" height="4" rx="0.8" />
+                      <path d="M10 8v4M8 10h4" />
+                    </Glyph>
                   ),
                 },
               ]
@@ -144,20 +110,10 @@ export function CanvasMobileDock({
                   id: 'collaborate' as const,
                   label: 'Collaborate',
                   icon: (
-                    <svg width="16" height="16" viewBox="0 0 14 14" fill="none" aria-hidden>
-                      <path
-                        d="M2 4.2C2 3.26 2.76 2.5 3.7 2.5h6.6c.94 0 1.7.76 1.7 1.7v3.1c0 .94-.76 1.7-1.7 1.7H7.2L4.7 11V9H3.7C2.76 9 2 8.24 2 7.3V4.2z"
-                        stroke="currentColor"
-                        strokeWidth="1.2"
-                        strokeLinejoin="round"
-                      />
-                      <path
-                        d="M4.8 5.75h4.4"
-                        stroke="currentColor"
-                        strokeWidth="1.2"
-                        strokeLinecap="round"
-                      />
-                    </svg>
+                    <Glyph size={16} units={14}>
+                      <path d="M2 4.2C2 3.26 2.76 2.5 3.7 2.5h6.6c.94 0 1.7.76 1.7 1.7v3.1c0 .94-.76 1.7-1.7 1.7H7.2L4.7 11V9H3.7C2.76 9 2 8.24 2 7.3V4.2z" />
+                      <path d="M4.8 5.75h4.4" />
+                    </Glyph>
                   ),
                 },
               ]
@@ -253,15 +209,10 @@ export function CanvasMobileDock({
                   id: 'ai' as const,
                   label: 'AI',
                   icon: (
-                    <svg width="16" height="16" viewBox="0 0 14 14" fill="none" aria-hidden>
-                      <path
-                        d="M7 2v1.5M7 10.5V12M2 7h1.5M10.5 7H12M3.8 3.8l1 1M9.2 9.2l1 1M3.8 10.2l1-1M9.2 4.8l1-1"
-                        stroke="currentColor"
-                        strokeWidth="1.2"
-                        strokeLinecap="round"
-                      />
-                      <circle cx="7" cy="7" r="2" stroke="currentColor" strokeWidth="1.2" />
-                    </svg>
+                    <Glyph size={16} units={14}>
+                      <path d="M7 2v1.5M7 10.5V12M2 7h1.5M10.5 7H12M3.8 3.8l1 1M9.2 9.2l1 1M3.8 10.2l1-1M9.2 4.8l1-1" />
+                      <circle cx="7" cy="7" r="2" />
+                    </Glyph>
                   ),
                 },
               ]

@@ -32,7 +32,7 @@ export function DialogCloseButton({
           : '-mr-2 flex h-7 w-7 shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200'
       }
     >
-      {compact ? <CloseIcon size={16} strokeWidth={1.6} /> : <CloseIcon />}
+      {compact ? <CloseIcon size={16} /> : <CloseIcon />}
     </button>
   );
 }

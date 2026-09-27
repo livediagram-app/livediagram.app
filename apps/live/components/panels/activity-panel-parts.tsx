@@ -9,7 +9,7 @@ import { useEffect, useRef } from 'react';
 import type { ChangeLogEntry } from '@/lib/api-client';
 import { formatRelativeTimeShort, useRelativeTimeTick } from '@/lib/relative-time';
 import type { SaveStatus } from '@/components/chrome/EditorHeader';
-import { HoverCard } from '@livediagram/ui';
+import { HoverCard, Glyph } from '@livediagram/ui';
 
 // Save-status badge that lived in the footer; the Activity panel
 // title is its new home — same factual content, paired with the
@@ -84,21 +84,11 @@ function SpinnerDot() {
 
 function WarningIcon() {
   return (
-    <svg
-      width="10"
-      height="10"
-      viewBox="0 0 10 10"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={10} units={10}>
       <path d="M5 1.5l3.7 6.5H1.3z" />
       <path d="M5 4.2v2" />
       <circle cx="5" cy="7.3" r="0.4" fill="currentColor" stroke="none" />
-    </svg>
+    </Glyph>
   );
 }
 
@@ -234,58 +224,28 @@ export function UndoRedoButton({
 
 export function UndoIcon() {
   return (
-    <svg
-      width="13"
-      height="13"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={13} units={16}>
       <path d="M3.5 6.5h6.75A3.25 3.25 0 0 1 13.5 9.75v0a3.25 3.25 0 0 1-3.25 3.25H6" />
       <path d="M6 3.5L3 6.5L6 9.5" />
-    </svg>
+    </Glyph>
   );
 }
 
 export function RedoIcon() {
   return (
-    <svg
-      width="13"
-      height="13"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={13} units={16}>
       <path d="M12.5 6.5H5.75A3.25 3.25 0 0 0 2.5 9.75v0A3.25 3.25 0 0 0 5.75 13H10" />
       <path d="M10 3.5L13 6.5L10 9.5" />
-    </svg>
+    </Glyph>
   );
 }
 
 function RevertIcon() {
   return (
-    <svg
-      width="10"
-      height="10"
-      viewBox="0 0 12 12"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={10} units={12}>
       <path d="M2.5 5h6.25A2.25 2.25 0 0 1 11 7.25v0A2.25 2.25 0 0 1 8.75 9.5H5" />
       <path d="M4.5 2.5L2 5L4.5 7.5" />
-    </svg>
+    </Glyph>
   );
 }
 
@@ -293,20 +253,10 @@ function RevertIcon() {
 // Lines up with the Activity panel's role as the editorial timeline.
 export function ActivityIcon() {
   return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 20 20"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={20} units={20}>
       <path d="M3.5 6.5A6.5 6.5 0 1 1 3 10.5" />
       <path d="M3 3.5V6.5H6" />
       <path d="M10 6.5V10.5L12.75 12" />
-    </svg>
+    </Glyph>
   );
 }

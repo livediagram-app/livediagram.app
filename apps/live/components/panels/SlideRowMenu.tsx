@@ -16,7 +16,7 @@
 import { DuplicateIcon, PencilIcon, TrashIcon } from '@/components/primitives/explorer-icons';
 import { useRef, useState } from 'react';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
-import { PlusIcon } from '@livediagram/ui';
+import { PlusIcon, Glyph } from '@livediagram/ui';
 
 import { slideName, type Slide } from '@livediagram/diagram';
 
@@ -33,36 +33,18 @@ import { NoteMenuIcon } from '@/components/palette/context-menu-icons';
 
 function SelectionIcon() {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={14} units={16} strokeLinecap="butt">
       <rect x="1.8" y="1.8" width="5.5" height="5.5" rx="1" />
       <rect x="8.7" y="8.7" width="5.5" height="5.5" rx="1" />
-    </svg>
+    </Glyph>
   );
 }
 
 function MinusIcon() {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      aria-hidden
-    >
+    <Glyph size={14} units={16} strokeLinejoin="miter">
       <path d="M3.5 8h9" />
-    </svg>
+    </Glyph>
   );
 }
 

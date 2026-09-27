@@ -21,7 +21,7 @@ import { ToggleSwitch } from '@/components/palette/palette-controls';
 import type { SessionToolsProps } from '@/components/chrome/session-tools-props';
 import { votePhase, voteTurnout, type VotePhase } from './session-studio';
 import { StudioButton, StudioCallout, StudioLabel, StudioSegmented } from './studio-ui';
-import { SOLID_BRAND_DARK } from '@livediagram/ui';
+import { SOLID_BRAND_DARK, Glyph } from '@livediagram/ui';
 
 type VotePaneProps = Pick<
   SessionToolsProps,
@@ -383,39 +383,19 @@ function Stat({ value, label, live = false }: { value: number; label: string; li
 
 function CursorOffGlyph() {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={14} units={16}>
       <path d="M3.5 2.5l3.2 10 1.6-4.2 4.2-1.6z" />
       <path d="M2 14L14 2" />
-    </svg>
+    </Glyph>
   );
 }
 
 function TallyOffGlyph() {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={14} units={16}>
       <path d="M1.5 8s2.4-4.5 6.5-4.5S14.5 8 14.5 8s-2.4 4.5-6.5 4.5S1.5 8 1.5 8z" />
       <circle cx="8" cy="8" r="1.8" />
       <path d="M2.5 13.5l11-11" />
-    </svg>
+    </Glyph>
   );
 }

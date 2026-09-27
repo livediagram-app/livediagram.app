@@ -40,6 +40,7 @@ const richShape = {
   iconAnimationSpeed: 'fast' as const,
   iconAnimationRepeat: true,
   iconSize: 'lg' as const,
+  iconWeight: 'bold' as const,
   aspectLocked: true,
 } as unknown as Parameters<typeof paintableBoxedFields>[0];
 

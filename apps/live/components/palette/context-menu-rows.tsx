@@ -22,6 +22,7 @@ import { withNone } from '@/components/palette/context-menu-tiles';
 // re-exported here so the context-menu row imports stay a single source.
 import { ColourRow, IconPositionGrid, MenuToggleRow } from './context-menu-input-rows';
 import { NoMarkerGlyph, PercentSliderRow } from './context-menu-data-rows';
+import { Glyph } from '@livediagram/ui';
 
 // Data-shape rows (rail / rating / pie / progress editors + AnimTiles)
 // live in context-menu-data-rows.tsx; re-exported so importers keep
@@ -71,9 +72,9 @@ export function BorderGrid({
 // The "Markers" category glyph — a small filled status dot.
 export function MarkersMenuGlyph() {
   return (
-    <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" aria-hidden>
+    <Glyph size={12} units={16} filled>
       <circle cx="8" cy="8" r="4.5" />
-    </svg>
+    </Glyph>
   );
 }
 

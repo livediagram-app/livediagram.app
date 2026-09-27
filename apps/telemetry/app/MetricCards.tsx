@@ -2,7 +2,7 @@
 
 import { Fragment, useState } from 'react';
 import { cascadeDelayMs } from '@livediagram/tailwind-config/motion';
-import { useAppearance } from '@livediagram/ui';
+import { useAppearance, Glyph } from '@livediagram/ui';
 import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
 import { MetricCard } from './MetricCard';
 import { MetricStackCard } from './MetricStackCard';
@@ -166,15 +166,9 @@ function SeeAlsoLink({ label, onClick }: { label: string; onClick: () => void })
       className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-sky-600 transition-colors hover:border-sky-300 hover:bg-sky-50 dark:border-slate-700 dark:bg-slate-900 dark:text-brand-300 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10"
     >
       {label}
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden>
-        <path
-          d="M5 12h14M13 6l6 6-6 6"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
+      <Glyph size={16} units={24}>
+        <path d="M5 12h14M13 6l6 6-6 6" />
+      </Glyph>
     </button>
   );
 }

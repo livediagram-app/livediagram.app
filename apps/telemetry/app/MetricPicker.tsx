@@ -1,7 +1,7 @@
 'use client';
 
 import { useId, useMemo, useRef, useState, type ReactNode } from 'react';
-import { TextInput } from '@livediagram/ui';
+import { TextInput, Glyph } from '@livediagram/ui';
 import { eventLabel, titleCase } from './event-vocab';
 import { useCategoryColor } from './useCategoryColor';
 import { SearchGlyph } from './glyphs';
@@ -35,22 +35,9 @@ type Row = {
 
 function Chevron() {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 14 14"
-      fill="none"
-      aria-hidden
-      className="text-slate-300 dark:text-slate-600"
-    >
-      <path
-        d="M5 3 L9 7 L5 11"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
+    <Glyph size={14} units={14} className="text-slate-300 dark:text-slate-600">
+      <path d="M5 3 L9 7 L5 11" />
+    </Glyph>
   );
 }
 

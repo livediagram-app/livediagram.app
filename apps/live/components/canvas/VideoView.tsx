@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { HoverCard, SOLID_BRAND_DARK_CONTROL, Tooltip } from '@livediagram/ui';
+import { HoverCard, SOLID_BRAND_DARK_CONTROL, Tooltip, Glyph } from '@livediagram/ui';
 import {
   EMBED_PROVIDER_HINT,
   EMBED_PROVIDER_LABEL,
@@ -196,20 +196,11 @@ function BlockedNotice({ target }: { target: EmbedTarget }) {
 // A frame with a slash through it: "this will not go in here".
 function BlockedGlyph() {
   return (
-    <svg
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      aria-hidden
-    >
+    <Glyph size={24} units={24} strokeLinejoin="miter">
       <rect x="3" y="4.5" width="18" height="15" rx="2" />
       <path d="M3 8.5h18" />
       <path d="m5 20.5 14-16" />
-    </svg>
+    </Glyph>
   );
 }
 
@@ -291,21 +282,10 @@ function PlayerControls({
             onPointerDown={(e) => e.stopPropagation()}
             className="pointer-events-auto flex h-6 w-6 cursor-pointer items-center justify-center rounded-md bg-slate-900/70 text-white transition hover:bg-slate-900/90"
           >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
-              <path
-                d="M9 3.5h3.5V7M12.5 3.5 8 8"
-                stroke="currentColor"
-                strokeWidth="1.4"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M11.5 9.5v2.2a1 1 0 0 1-1 1h-6a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1h2.2"
-                stroke="currentColor"
-                strokeWidth="1.4"
-                strokeLinecap="round"
-              />
-            </svg>
+            <Glyph size={16} units={16}>
+              <path d="M9 3.5h3.5V7M12.5 3.5 8 8" />
+              <path d="M11.5 9.5v2.2a1 1 0 0 1-1 1h-6a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1h2.2" />
+            </Glyph>
           </a>
         </HoverCard>
       ) : null}
@@ -417,21 +397,10 @@ function EmptyState({
 // service it comes from.
 function EmbedGlyph() {
   return (
-    <svg
-      width="30"
-      height="30"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-      className="text-slate-400 opacity-80"
-    >
+    <Glyph size={30} units={24} className="text-slate-400 opacity-80">
       <rect x="2.5" y="4" width="19" height="16" rx="2.5" />
       <path d="M2.5 8h19" />
       <path d="M10.5 12.2v3.6l3.2-1.8z" fill="currentColor" stroke="none" />
-    </svg>
+    </Glyph>
   );
 }

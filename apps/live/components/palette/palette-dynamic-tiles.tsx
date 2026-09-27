@@ -3,7 +3,7 @@ import { getIconCatalog } from '@/lib/icons';
 import { getTechIcon, searchTechIcons } from '@/lib/tech-icons';
 import { getSticker, searchStickers } from '@/lib/stickers';
 import { StickerArt } from '@/components/canvas/StickerView';
-import { IconPrims } from '@/components/primitives/icon-glyph';
+import { CatalogIconThumb } from '@/components/primitives/icon-glyph';
 import { TechIconArt } from '@/components/primitives/tech-icon-glyph';
 import { tileById, type PaletteTileDef } from './palette-tile-defs';
 
@@ -19,6 +19,8 @@ import { tileById, type PaletteTileDef } from './palette-tile-defs';
 const ICON_FAVOURITE_PREFIX = 'icon:';
 const TECH_FAVOURITE_PREFIX = 'tech:';
 const STICKER_FAVOURITE_PREFIX = 'sticker:';
+// Rendered tile size; TechIconArt weights its glyph for it.
+const TECH_TILE_PX = 18;
 
 export function iconTileDef(icon: IconDef): PaletteTileDef {
   return {
@@ -27,21 +29,7 @@ export function iconTileDef(icon: IconDef): PaletteTileDef {
     label: `Add ${icon.label}`,
     description: 'Drops this icon at the viewport centre, tinted by the element stroke.',
     action: { type: 'icon', iconId: icon.id },
-    icon: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden
-      >
-        <IconPrims iconId={icon.id} />
-      </svg>
-    ),
+    icon: <CatalogIconThumb iconId={icon.id} />,
   };
 }
 
@@ -56,8 +44,8 @@ export function techTileDef(icon: TechIconDef): PaletteTileDef {
     noTint: true,
     action: { type: 'tech-icon', iconId: icon.id },
     icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden>
-        <TechIconArt iconId={icon.id} />
+      <svg width={TECH_TILE_PX} height={TECH_TILE_PX} viewBox="0 0 24 24" aria-hidden>
+        <TechIconArt iconId={icon.id} sizePx={TECH_TILE_PX} />
       </svg>
     ),
   };

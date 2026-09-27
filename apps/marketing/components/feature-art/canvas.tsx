@@ -277,7 +277,7 @@ export function AssignedActionsArt() {
       </svg>
       {/* action badge on the element */}
       <span className="absolute left-[34%] top-5 flex h-5 w-5 items-center justify-center rounded-full bg-sky-500 text-white shadow">
-        <ActionIcon size={12} strokeWidth={1.75} className="h-3 w-3" />
+        <ActionIcon size={12} className="h-3 w-3" />
       </span>
       {/* action card */}
       <div className="fa-fade absolute right-2 top-3 w-[54%] rounded-md border border-slate-200 bg-white p-1.5 shadow-md dark:border-slate-800 dark:bg-slate-900">

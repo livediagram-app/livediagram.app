@@ -1,4 +1,4 @@
-import { Tooltip } from '@livediagram/ui';
+import { Tooltip, Glyph } from '@livediagram/ui';
 import { pct } from './chart-utils';
 import { bestSlot, formatRate, rate, type FunnelSurface } from './cta-funnel';
 import { useCategoryColor } from './useCategoryColor';
@@ -158,9 +158,9 @@ function StepRate({ value, verb }: { value: number | null; verb: string }) {
       aria-label={`${formatRate(value)} ${verb}`}
       className="flex items-center gap-2 py-1.5 pl-1 text-xs text-slate-400"
     >
-      <svg viewBox="0 0 10 10" className="h-2.5 w-2.5" aria-hidden>
-        <path d="M5 1v8M2 6l3 3 3-3" fill="none" stroke="currentColor" strokeWidth="1.5" />
-      </svg>
+      <Glyph size={10} units={10} className="h-2.5 w-2.5">
+        <path d="M5 1v8M2 6l3 3 3-3" />
+      </Glyph>
       <span>
         <span className="font-semibold text-slate-600 tabular-nums dark:text-slate-300">
           {formatRate(value)}

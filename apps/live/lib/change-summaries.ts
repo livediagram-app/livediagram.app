@@ -86,7 +86,7 @@ const ANIMATION_KEYS = [
   'pieAnimRepeat',
   'pieAnimSpeed',
 ];
-const ICON_KEYS = ['iconId', 'iconPosition', 'iconSize'];
+const ICON_KEYS = ['iconId', 'iconPosition', 'iconSize', 'iconWeight'];
 const CHART_KEYS = [
   'pieSlices',
   'lineCategories',

@@ -26,6 +26,7 @@ import { PaletteFavouritesDialog } from '@/components/dialogs/PaletteFavouritesD
 import { PaletteFavouritesReorder } from './PaletteFavouritesReorder';
 import { orderByRecent } from '@/lib/toolbar-recent-tiles';
 import { usePaletteRecent } from './palette-recent-context';
+import { Glyph } from '@livediagram/ui';
 
 // The Favourites category (docs/specs/010-palette/palette-favourites.md): the user's go-to creation tiles in one
 // grid, the palette's default landing. The grid renders the saved tiles
@@ -314,21 +315,11 @@ export function PaletteFavouritesTab({
               // Nothing to arrange with one tile, and nothing at all with none.
               disabled={favourites.length < 2}
             >
-              <svg
-                width="11"
-                height="11"
-                viewBox="0 0 14 14"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden
-              >
+              <Glyph size={11} units={14}>
                 {/* Four-way move arrows: the gesture, not the outcome. */}
                 <path d="M7 1.5v11M1.5 7h11" />
                 <path d="M5 3.5 7 1.5l2 2M5 10.5l2 2 2-2M3.5 5l-2 2 2 2M10.5 5l2 2-2 2" />
-              </svg>
+              </Glyph>
               Reorder
             </FooterButton>
             <FooterButton
@@ -337,19 +328,9 @@ export function PaletteFavouritesTab({
                 setEditing(true);
               }}
             >
-              <svg
-                width="11"
-                height="11"
-                viewBox="0 0 14 14"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden
-              >
+              <Glyph size={11} units={14}>
                 <path d="M9.7 1.8 12.2 4.3 5 11.5l-3.2.7.7-3.2z" />
-              </svg>
+              </Glyph>
               Edit
             </FooterButton>
           </>

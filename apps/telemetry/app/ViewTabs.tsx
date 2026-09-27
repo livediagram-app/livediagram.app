@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { Glyph } from '@livediagram/ui';
 
 // The dashboard's view selector (docs/specs/017-telemetry/telemetry.md). The `leads` (the Dashboard, then
 // Search) stand on their own to the left: the overview and the way to find any
@@ -22,15 +23,9 @@ type TabOption<K extends string> = { key: K; label: string; icon: ReactNode };
 
 function Chevron({ dir }: { dir: 'left' | 'right' }) {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
-      <path
-        d={dir === 'left' ? 'M10 3 L5 8 L10 13' : 'M6 3 L11 8 L6 13'}
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
+    <Glyph size={16} units={16}>
+      <path d={dir === 'left' ? 'M10 3 L5 8 L10 13' : 'M6 3 L11 8 L6 13'} />
+    </Glyph>
   );
 }
 

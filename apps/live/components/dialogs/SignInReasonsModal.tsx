@@ -12,7 +12,14 @@
 // keyboard / screen-reader users get the same modal semantics.
 
 import Link from 'next/link';
-import { buttonClassName, CloseIcon, SparkleIcon, useFocusTrap, useEscape } from '@livediagram/ui';
+import {
+  buttonClassName,
+  CloseIcon,
+  SparkleIcon,
+  useFocusTrap,
+  useEscape,
+  Glyph,
+} from '@livediagram/ui';
 import { SignInIcon } from '@/components/chrome/AuthControls';
 import { useRef } from 'react';
 import type { ReactNode } from 'react';
@@ -234,18 +241,8 @@ function PlugIcon() {
 
 function Svg({ children }: { children: ReactNode }) {
   return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 18 18"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={18} units={18}>
       {children}
-    </svg>
+    </Glyph>
   );
 }

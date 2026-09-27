@@ -1,3 +1,4 @@
+import { FileIcon } from '@/lib/chrome-icons';
 // The small "N articles" / "N guides" tally in the bottom-right corner of a
 // card. CategoryCard and FeatureArticleCard each carried their own copy: the
 // same wrapper, the same pill classes, and the same fourteen lines of inline
@@ -15,20 +16,7 @@ export function CountPill({ count, noun }: { count: number; noun: string }) {
   return (
     <div className="mt-4 flex justify-end">
       <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs text-slate-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="12"
-          height="12"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
-          <polyline points="14 2 14 8 20 8" />
-        </svg>
+        <FileIcon />
         {`${count} ${noun}${count === 1 ? '' : 's'}`}
       </span>
     </div>

@@ -10,7 +10,7 @@
 // surrounding tone (default / danger / disabled) without needing per-icon
 // variants.
 
-import { ActionIcon, CommentIcon, LinkIcon, NoteIcon } from '@livediagram/ui';
+import { ActionIcon, CommentIcon, LinkIcon, NoteIcon, Glyph } from '@livediagram/ui';
 import type {
   ArrowFlow,
   ElementAnimation,
@@ -20,37 +20,19 @@ import type {
 
 export function LayerUpIcon() {
   return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={12} units={16} strokeLinecap="butt">
       <rect x="3" y="3" width="7" height="7" rx="1" />
       <rect x="6" y="6" width="7" height="7" rx="1" fill="white" />
-    </svg>
+    </Glyph>
   );
 }
 
 export function LayerDownIcon() {
   return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={12} units={16} strokeLinecap="butt">
       <rect x="6" y="6" width="7" height="7" rx="1" />
       <rect x="3" y="3" width="7" height="7" rx="1" fill="white" />
-    </svg>
+    </Glyph>
   );
 }
 
@@ -71,82 +53,44 @@ export function CommentMenuIcon() {
 }
 
 export function LinkMenuIcon() {
-  return <LinkIcon size={12} strokeWidth={1.6} />;
+  return <LinkIcon size={12} />;
 }
 
 export function SquareMenuIcon() {
   return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      aria-hidden
-    >
+    <Glyph size={12} units={16} strokeLinecap="butt" strokeLinejoin="miter">
       <rect x="3" y="3" width="10" height="10" rx="1.5" />
-    </svg>
+    </Glyph>
   );
 }
 
 export function PaletteMenuIcon() {
   return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={12} units={16}>
       <path d="M8 2a6 6 0 1 0 0 12 1.2 1.2 0 0 0 0-2.4 1.2 1.2 0 0 1 0-2.4h1.4A3.4 3.4 0 0 0 12.8 5.8 4 4 0 0 0 8 2z" />
       <circle cx="5" cy="6.5" r="0.6" fill="currentColor" />
       <circle cx="8" cy="5" r="0.6" fill="currentColor" />
       <circle cx="11" cy="7" r="0.6" fill="currentColor" />
-    </svg>
+    </Glyph>
   );
 }
 
 export function AutoAlignIcon() {
   return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={12} units={16}>
       <path d="M2 4h12M2 8h12M2 12h12" />
-    </svg>
+    </Glyph>
   );
 }
 
 // Clock - the Timer session-tool category glyph.
 export function TimerMenuIcon() {
   return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={12} units={16}>
       <path d="M6.5 2h3" />
       <circle cx="8" cy="9.5" r="5" />
       <path d="M8 9.5V6.8M8 9.5l2.1 1.3" />
-    </svg>
+    </Glyph>
   );
 }
 
@@ -156,20 +100,10 @@ export function TimerMenuIcon() {
 // 16px. Without it Vote and Poll read as visibly smaller than their neighbours.
 export function VoteMenuIcon({ size = 12 }: { size?: number } = {}) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={size} units={16}>
       <circle cx="8" cy="8" r="6" />
       <path d="M5.4 8.2l1.8 1.8 3.4-3.7" />
-    </svg>
+    </Glyph>
   );
 }
 
@@ -178,22 +112,12 @@ export function VoteMenuIcon({ size = 12 }: { size?: number } = {}) {
 // under one entry instead of four top-level rows.
 export function CollaborateMenuIcon() {
   return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={12} units={16}>
       <circle cx="6" cy="5.5" r="2.2" />
       <path d="M2.5 13c0-2 1.6-3.2 3.5-3.2s3.5 1.2 3.5 3.2" />
       <path d="M11 4.2a2.2 2.2 0 010 4.3" />
       <path d="M12.2 13c0-1.5-.5-2.5-1.4-3.1" />
-    </svg>
+    </Glyph>
   );
 }
 
@@ -205,151 +129,82 @@ export function CollaborateMenuIcon() {
 // 16px. Without it Vote and Poll read as visibly smaller than their neighbours.
 export function PollMenuIcon({ size = 12 }: { size?: number } = {}) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={size} units={16}>
       <path d="M4 12V9.5" />
       <path d="M8 12V4.5" />
       <path d="M12 12V7" />
-    </svg>
+    </Glyph>
   );
 }
 
 // Two sparkles - the Cleanup category glyph (tidy / auto-align / auto-layout).
 export function CleanupMenuIcon() {
   return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.3"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={12} units={16} strokeLinecap="butt">
       <path d="M6.5 2.5l1.1 2.9 2.9 1.1-2.9 1.1-1.1 2.9-1.1-2.9L2.5 6.5l2.9-1.1z" />
       <path d="M12 9.5l.6 1.5 1.5.6-1.5.6-.6 1.5-.6-1.5-1.5-.6 1.5-.6z" />
-    </svg>
+    </Glyph>
   );
 }
 
 // Hierarchy of connected nodes - the Auto Layout action glyph.
 export function AutoLayoutMenuIcon() {
   return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={12} units={16}>
       <rect x="5.5" y="1.5" width="5" height="3.2" rx="0.8" />
       <rect x="1.5" y="11.3" width="5" height="3.2" rx="0.8" />
       <rect x="9.5" y="11.3" width="5" height="3.2" rx="0.8" />
       <path d="M8 4.7v2.8M4 11.3V8.5h8v2.8M12 11.3V8.5" />
-    </svg>
+    </Glyph>
   );
 }
 
 // Two boxes joined by a downward arrow - the Flowchart (down) layout style.
 export function FlowDownMenuIcon() {
   return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={12} units={16}>
       <rect x="4.5" y="1.5" width="7" height="3.4" rx="0.8" />
       <rect x="4.5" y="11.1" width="7" height="3.4" rx="0.8" />
       <path d="M8 4.9v6.2M6.2 9.3L8 11.1l1.8-1.8" />
-    </svg>
+    </Glyph>
   );
 }
 
 // Two boxes joined by a rightward arrow - the Flowchart (right) layout style.
 export function FlowRightMenuIcon() {
   return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={12} units={16}>
       <rect x="1.5" y="4.5" width="3.4" height="7" rx="0.8" />
       <rect x="11.1" y="4.5" width="3.4" height="7" rx="0.8" />
       <path d="M4.9 8h6.2M9.3 6.2L11.1 8l-1.8 1.8" />
-    </svg>
+    </Glyph>
   );
 }
 
 // Root over three reports - the Tree (org chart) layout style.
 export function TreeMenuIcon() {
   return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={12} units={16}>
       <rect x="5.8" y="1.5" width="4.4" height="3" rx="0.8" />
       <rect x="1.2" y="11.5" width="3.6" height="3" rx="0.8" />
       <rect x="6.2" y="11.5" width="3.6" height="3" rx="0.8" />
       <rect x="11.2" y="11.5" width="3.6" height="3" rx="0.8" />
       <path d="M8 4.5v2M3 11.5V8.5h10v3M8 8.5v3" />
-    </svg>
+    </Glyph>
   );
 }
 
 // Hub with four spokes - the Mindmap (radial) layout style.
 export function MindmapMenuIcon() {
   return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={12} units={16}>
       <circle cx="8" cy="8" r="2.2" />
       <circle cx="2.8" cy="3" r="1.4" />
       <circle cx="13.2" cy="3" r="1.4" />
       <circle cx="2.8" cy="13" r="1.4" />
       <circle cx="13.2" cy="13" r="1.4" />
       <path d="M6.5 6.6L3.8 4M9.5 6.6L12.2 4M6.5 9.4L3.8 12M9.5 9.4L12.2 12" />
-    </svg>
+    </Glyph>
   );
 }
 
@@ -358,20 +213,9 @@ export function MindmapMenuIcon() {
 export function DirArrow({ dir }: { dir: 'up' | 'down' | 'left' | 'right' }) {
   const rot = { up: 0, right: 90, down: 180, left: 270 }[dir];
   return (
-    <svg
-      width="11"
-      height="11"
-      viewBox="0 0 12 12"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-      style={{ transform: `rotate(${rot}deg)` }}
-    >
+    <Glyph size={11} units={12} style={{ transform: `rotate(${rot}deg)` }}>
       <path d="M6 2.5V9.5M3 5.5 6 2.5 9 5.5" />
-    </svg>
+    </Glyph>
   );
 }
 
@@ -380,116 +224,61 @@ export function DirArrow({ dir }: { dir: 'up' | 'down' | 'left' | 'right' }) {
 // at a glance which way the element will end up facing.
 export function RotationGlyph({ deg }: { deg: number }) {
   return (
-    <svg
-      width="15"
-      height="15"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={15} units={16}>
       <g transform={`rotate(${deg} 8 8)`}>
         <rect x="3.5" y="3.5" width="9" height="9" rx="1.5" />
         {/* Filled tab centred on the top edge marks "up". */}
         <circle cx="8" cy="3.5" r="1.3" fill="currentColor" stroke="none" />
       </g>
-    </svg>
+    </Glyph>
   );
 }
 
 // Diagonal stroke — the "Line" section glyph.
 export function LineGlyph() {
   return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      aria-hidden
-    >
+    <Glyph size={12} units={16} strokeLinejoin="miter">
       <path d="M3 13L13 3" />
-    </svg>
+    </Glyph>
   );
 }
 
 // Arrow → glyph — the "Pointer" section.
 export function PointerGlyph() {
   return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={12} units={16}>
       <path d="M2.5 8h10M9 4.5 12.5 8 9 11.5" />
-    </svg>
+    </Glyph>
   );
 }
 
 // Grid glyph — the "Table" section.
 export function TableGlyph() {
   return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={12} units={16} strokeLinecap="butt">
       <rect x="2.5" y="3" width="11" height="10" rx="1.5" />
       <path d="M2.5 6.5h11M6.5 6.5V13M2.5 9.8h11" />
-    </svg>
+    </Glyph>
   );
 }
 
 // Picture glyph — the "Image" section.
 export function ImageGlyph() {
   return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={12} units={16} strokeLinecap="butt">
       <rect x="2.5" y="3" width="11" height="10" rx="1.5" />
       <circle cx="6" cy="6.5" r="1" />
       <path d="M3 12l3-3 2.5 2.5L11 8l2 2" />
-    </svg>
+    </Glyph>
   );
 }
 
 // Rounded-square outline — the "Border" section glyph.
 export function BorderGlyph() {
   return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      aria-hidden
-    >
+    <Glyph size={12} units={16} strokeLinecap="butt" strokeLinejoin="miter">
       <rect x="2.5" y="2.5" width="11" height="11" rx="2.5" />
-    </svg>
+    </Glyph>
   );
 }
 
@@ -516,20 +305,10 @@ export function ShadowMenuGlyph() {
 // shared context-menu icons.
 export function LayersGlyph() {
   return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={12} units={16}>
       <path d="M8 2 14 5.5 8 9 2 5.5z" />
       <path d="m3.5 8 4.5 2.6L12.5 8M3.5 11l4.5 2.6L12.5 11" />
-    </svg>
+    </Glyph>
   );
 }
 
@@ -537,21 +316,11 @@ export function LayersGlyph() {
 // reading as "this element animates".
 export function AnimationMenuGlyph() {
   return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={12} units={16}>
       <circle cx="8" cy="8" r="2" />
       <path d="M11.5 4.5a5 5 0 0 1 0 7" />
       <path d="M4.5 11.5a5 5 0 0 1 0-7" />
-    </svg>
+    </Glyph>
   );
 }
 
@@ -574,39 +343,19 @@ export function ToolsMenuGlyph() {
 
 export function StyleMenuGlyph() {
   return (
-    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden>
-      <path
-        d="M13.5 2.5c-2.4.8-5.1 2.9-6.6 4.9l1.7 1.7c2-1.5 4.1-4.2 4.9-6.6z"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M6.4 8.1c-1 .2-1.8 1-2 2-.2 1-.9 1.6-1.9 1.9 1.2 1.3 3.4 1.4 4.6.2.8-.8 1-2 .6-3z"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        strokeLinejoin="round"
-      />
-    </svg>
+    <Glyph size={12} units={16}>
+      <path d="M13.5 2.5c-2.4.8-5.1 2.9-6.6 4.9l1.7 1.7c2-1.5 4.1-4.2 4.9-6.6z" />
+      <path d="M6.4 8.1c-1 .2-1.8 1-2 2-.2 1-.9 1.6-1.9 1.9 1.2 1.3 3.4 1.4 4.6.2.8-.8 1-2 .6-3z" />
+    </Glyph>
   );
 }
 
 export function PresetsMenuGlyph() {
   return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={12} units={16}>
       <path d="M10 2.2l0.9 1.9 1.9 0.9-1.9 0.9-0.9 1.9-0.9-1.9-1.9-0.9 1.9-0.9z" />
       <path d="M3 13l5-5" />
-    </svg>
+    </Glyph>
   );
 }
 
@@ -615,19 +364,9 @@ export function PresetsMenuGlyph() {
 // set their own fill since the wrapping <svg> is stroke-only.
 function AnimSvg({ children }: { children: React.ReactNode }) {
   return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={16} units={16}>
       {children}
-    </svg>
+    </Glyph>
   );
 }
 
@@ -1167,20 +906,10 @@ export function IconAnimKindGlyph({ kind }: { kind: IconAnimation | null }) {
 // Progress section icon (docs/specs/009-elements/progress.md): a half-filled pill.
 export function ProgressMenuGlyph() {
   return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={12} units={16}>
       <rect x="2" y="6" width="12" height="4" rx="2" />
       <rect x="2" y="6" width="6" height="4" rx="2" fill="currentColor" stroke="none" />
-    </svg>
+    </Glyph>
   );
 }
 
@@ -1232,47 +961,27 @@ export function ProgressAnimKindGlyph({ kind }: { kind: ProgressAnim | null }) {
 // reads as "keep the proportion".
 export function SizeMenuIcon() {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.3"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={14} units={16}>
       <rect x="2" y="3.5" width="12" height="9" rx="1.2" />
       <path d="M5 8h6M5 8l1.4-1.4M5 8l1.4 1.4M11 8l-1.4-1.4M11 8l-1.4 1.4" />
-    </svg>
+    </Glyph>
   );
 }
 
 // Rectangle with corner ticks - the "lock aspect ratio" Layer-row glyph.
 export function AspectLockMenuIcon() {
   return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={12} units={16}>
       <rect x="2.5" y="2.5" width="11" height="11" rx="1.5" />
       <path d="M5 8.5v2.5h2.5M11 7.5V5H8.5" />
-    </svg>
+    </Glyph>
   );
 }
 
 // A serif "A" - the "Text" category glyph.
 export function TextGlyph() {
   return (
-    <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" aria-hidden>
+    <Glyph size={12} units={16} filled>
       <text
         x="8"
         y="12"
@@ -1283,45 +992,26 @@ export function TextGlyph() {
       >
         A
       </text>
-    </svg>
+    </Glyph>
   );
 }
 
 // A star - the "Icon" category glyph (the un-slashed sibling of RemoveIconGlyph).
 export function IconCategoryGlyph() {
   return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={12} units={16} strokeLinecap="butt">
       <path d="M8 2.5l1.6 3.3 3.6.5-2.6 2.5.6 3.6L8 11.2 4.8 12.9l.6-3.6L2.8 6.8l3.6-.5z" />
-    </svg>
+    </Glyph>
   );
 }
 
 // A star glyph with a slash - "remove the inline icon".
 export function RemoveIconGlyph() {
   return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={12} units={16}>
       <path d="M8 2.5l1.6 3.3 3.6.5-2.6 2.5.6 3.6L8 11.2 4.8 12.9l.6-3.6L2.8 6.8l3.6-.5z" />
       <path d="M2.5 13.5l11-11" />
-    </svg>
+    </Glyph>
   );
 }
 
@@ -1330,76 +1020,38 @@ export function RemoveIconGlyph() {
 // the rest of the menu's icon weight.
 export function CutIcon() {
   return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.7"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={16} units={24}>
       <circle cx="6" cy="18" r="2.6" />
       <circle cx="18" cy="18" r="2.6" />
       <path d="M7.8 16.2 18.5 4.5M16.2 16.2 5.5 4.5" />
-    </svg>
+    </Glyph>
   );
 }
 
 export function CopyIcon() {
   return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.7"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={16} units={24} strokeLinecap="butt">
       <rect x="8.5" y="8.5" width="11" height="11" rx="1.6" />
       <path d="M15.5 5.5h-9a2 2 0 0 0-2 2v9" strokeLinecap="round" />
-    </svg>
+    </Glyph>
   );
 }
 
 export function DuplicateMenuIcon() {
   return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.7"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={16} units={24} strokeLinecap="butt">
       <rect x="4" y="4" width="11" height="11" rx="1.6" />
       <rect x="9" y="9" width="11" height="11" rx="1.6" />
-    </svg>
+    </Glyph>
   );
 }
 
 export function RemoveIcon() {
   return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.7"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={16} units={24}>
       <path d="M4.5 6.5h15M9.5 6.5V4.8a1.3 1.3 0 0 1 1.3-1.3h2.4a1.3 1.3 0 0 1 1.3 1.3v1.7" />
       <path d="M6.8 6.5 7.8 19a1.5 1.5 0 0 0 1.5 1.4h5.4a1.5 1.5 0 0 0 1.5-1.4l1-12.5" />
-    </svg>
+    </Glyph>
   );
 }
 
@@ -1409,22 +1061,12 @@ export function RemoveIcon() {
 // would read as the same verb in two places.
 export function PasteMenuIcon() {
   return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.7"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={16} units={24}>
       <path d="M9 4h6v3H9z" />
       <path d="M9 5.5H6.5A1.5 1.5 0 0 0 5 7v12a1.5 1.5 0 0 0 1.5 1.5H11" />
       <path d="M15 5.5h2.5A1.5 1.5 0 0 1 19 7v4" />
       <rect x="13" y="13" width="7" height="8" rx="1.2" />
-    </svg>
+    </Glyph>
   );
 }
 
@@ -1474,18 +1116,9 @@ export function FillColourIcon() {
 /** Border: the same box with only its edge drawn. */
 export function BorderColourIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden>
-      <rect
-        x="2.5"
-        y="3.5"
-        width="11"
-        height="9"
-        rx="2"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-      />
-    </svg>
+    <Glyph size={14} units={16}>
+      <rect x="2.5" y="3.5" width="11" height="9" rx="2" />
+    </Glyph>
   );
 }
 

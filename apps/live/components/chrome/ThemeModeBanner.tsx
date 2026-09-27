@@ -14,7 +14,7 @@
 // keyed to the specific mismatch, not forever).
 
 import { useState } from 'react';
-import { CloseIcon, SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
+import { CloseIcon, SOLID_BRAND_DARK_CONTROL, Glyph } from '@livediagram/ui';
 import { isLightColor } from '@livediagram/diagram';
 import { getTheme } from '@/lib/themes';
 import { useAppearance } from '@/hooks/ui/useAppearance';
@@ -59,7 +59,7 @@ export function ThemeModeBanner({ themeId }: { themeId: string | undefined }) {
           aria-label="Dismiss"
           className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-200"
         >
-          <CloseIcon size={15} strokeWidth={1.4875} />
+          <CloseIcon size={15} />
         </button>
       </div>
     </div>
@@ -86,18 +86,9 @@ function MoonIcon() {
 
 function SunIcon() {
   return (
-    <svg
-      width="17"
-      height="17"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.4"
-      strokeLinecap="round"
-      aria-hidden
-    >
+    <Glyph size={17} units={16} strokeLinejoin="miter">
       <circle cx="8" cy="8" r="3" />
       <path d="M8 1.5v1.5M8 13v1.5M1.5 8H3M13 8h1.5M3.4 3.4l1 1M11.6 11.6l1 1M12.6 3.4l-1 1M4.4 11.6l-1 1" />
-    </svg>
+    </Glyph>
   );
 }

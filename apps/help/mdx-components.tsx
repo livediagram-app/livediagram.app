@@ -10,6 +10,7 @@ import {
 } from '@/lib/featureColours';
 import { featureIcon } from '@/lib/featureIcons';
 import { Figure } from './components/Figure';
+import { NoteIcon, TipIcon } from '@/lib/chrome-icons';
 
 /** Numbered step indicator for walkthroughs. Shows section.step numbering
  *  via CSS counters (see globals.css). */
@@ -29,20 +30,7 @@ function Step({ n, children }: { n: number; children: ReactNode }) {
 function Tip({ children }: { children: ReactNode }) {
   return (
     <div className="my-5 flex gap-3 rounded-xl border border-brand-200 bg-brand-50 p-4 dark:border-brand-500/30 dark:bg-brand-500/15">
-      <svg
-        className="mt-0.5 h-5 w-5 flex-shrink-0 text-brand-500 dark:text-brand-300"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-        aria-hidden
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-        />
-      </svg>
+      <TipIcon className="mt-0.5 h-5 w-5 flex-shrink-0 text-brand-500 dark:text-brand-300" />
       <div className="text-sm leading-relaxed text-slate-600 dark:text-slate-300 [&>p]:mb-0">
         {children}
       </div>
@@ -54,20 +42,7 @@ function Tip({ children }: { children: ReactNode }) {
 function Note({ children }: { children: ReactNode }) {
   return (
     <div className="my-5 flex gap-3 rounded-xl border border-amber-300 bg-amber-50 p-4 dark:border-amber-500/50 dark:bg-amber-500/10">
-      <svg
-        className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-500"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-        aria-hidden
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-        />
-      </svg>
+      <NoteIcon className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-500" />
       <div className="text-sm leading-relaxed text-slate-600 dark:text-slate-300 [&>p]:mb-0">
         {children}
       </div>

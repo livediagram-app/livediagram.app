@@ -5,7 +5,7 @@
 // the overview and the category detail view.
 
 import type { CustomTheme } from '@livediagram/api-schema';
-import { CopyIcon, PencilIcon, PlusIcon, TrashSimpleIcon } from '@livediagram/ui';
+import { CopyIcon, PencilIcon, PlusIcon, TrashIcon } from '@livediagram/ui';
 import { PickerCard } from '@/components/palette/PickerCard';
 import { type ThemeDefinition } from '@/lib/themes';
 import { themeDescription } from '@/lib/themes-taxonomy';
@@ -160,7 +160,7 @@ export function CustomThemeCard({
           aria-label={`Edit ${theme.name}`}
           className="rounded bg-white/90 p-0.5 text-slate-500 shadow-sm hover:text-brand-600 dark:bg-slate-800/90 dark:text-slate-300"
         >
-          <PencilIcon size={12} strokeWidth={1.4} />
+          <PencilIcon size={12} />
         </button>
         <button
           type="button"
@@ -168,7 +168,7 @@ export function CustomThemeCard({
           aria-label={`Delete ${theme.name}`}
           className="rounded bg-white/90 p-0.5 text-slate-500 shadow-sm hover:text-rose-600 dark:bg-slate-800/90 dark:text-slate-300"
         >
-          <TrashSimpleIcon size={12} strokeWidth={1.4} />
+          <TrashIcon size={12} />
         </button>
       </div>
     </div>

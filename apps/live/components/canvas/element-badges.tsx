@@ -112,7 +112,7 @@ export function BadgeStrip({
       node: (
         <HoverCard title="Follow link" description={linkLabel ?? 'Open the linked destination.'}>
           <BadgeButton label="Follow link" color={badgeColor} onClick={onFollowLink}>
-            <LinkIcon size={13} strokeWidth={2} />
+            <LinkIcon size={13} />
           </BadgeButton>
         </HoverCard>
       ),
@@ -123,7 +123,7 @@ export function BadgeStrip({
       key: 'note',
       node: (
         <BadgeButton label="Open note" color={badgeColor} onClick={onOpenNote}>
-          <NoteIcon size={13} strokeWidth={1.75} />
+          <NoteIcon size={13} />
         </BadgeButton>
       ),
     });
@@ -139,7 +139,7 @@ export function BadgeStrip({
             onClick={onOpenAction}
             dataAttr="data-action-trigger"
           >
-            <ActionIcon size={13} strokeWidth={1.75} />
+            <ActionIcon size={13} />
           </BadgeButton>
         </HoverCard>
       ),
@@ -155,7 +155,7 @@ export function BadgeStrip({
           onClick={onOpenComments}
           dataAttr="data-comment-trigger"
         >
-          <CommentIcon size={13} strokeWidth={1.75} />
+          <CommentIcon size={13} />
           <span className="absolute right-0 top-0 flex h-3 min-w-[12px] items-center justify-center rounded-full bg-rose-500 px-0.5 text-[8px] font-semibold leading-none text-white">
             <span className="text-optical-centre">{commentCount}</span>
           </span>

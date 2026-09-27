@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react';
-import { PlusWideIcon, TrashIcon as SharedTrashIcon } from '@livediagram/ui';
+import { PlusIcon as SharedPlusIcon, TrashIcon as SharedTrashIcon, Glyph } from '@livediagram/ui';
 
 // The one glyph set for both Explorer surfaces: the full-page /explorer
 // route and the editor's floating Explorer panel, plus the menus and panes
@@ -80,13 +80,13 @@ export function TreeChevronIcon({ open = false, size = 10 }: IconProps & { open?
 // The page's filled folder, which opens when its subtree is expanded.
 export function FolderSolidIcon({ open = false, size = 13 }: IconProps & { open?: boolean }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 16 16" fill="currentColor" aria-hidden>
+    <Glyph size={size} units={16} filled>
       {open ? (
         <path d="M1.5 4.5a1.5 1.5 0 0 1 1.5-1.5h3.4a1 1 0 0 1 .77.37l1 1.24a1 1 0 0 0 .78.39h4.05A1.5 1.5 0 0 1 14.5 6.5H1.5v-2zm0 3h13l-.93 4.65a1.5 1.5 0 0 1-1.47 1.2H3.9a1.5 1.5 0 0 1-1.47-1.2L1.5 7.5z" />
       ) : (
         <path d="M1.5 4.5A1.5 1.5 0 0 1 3 3h3.4a1 1 0 0 1 .77.37l1 1.24a1 1 0 0 0 .78.39H13a1.5 1.5 0 0 1 1.5 1.5v5A1.5 1.5 0 0 1 13 13H3a1.5 1.5 0 0 1-1.5-1.5v-7z" />
       )}
-    </svg>
+    </Glyph>
   );
 }
 
@@ -287,7 +287,7 @@ export function InviteIcon({ size = 13 }: IconProps) {
 
 // The shared plus and trash from @livediagram/ui, at this set's default sizes.
 export function PlusIcon({ size = 12 }: IconProps) {
-  return <PlusWideIcon size={size} />;
+  return <SharedPlusIcon size={size} />;
 }
 
 export function CheckIcon({ size = 12 }: IconProps) {
@@ -316,12 +316,9 @@ export function DuplicateIcon({ size = 13 }: IconProps) {
   );
 }
 
-// `strokeWidth` as well as `size`, because the delete buttons that share
-// this can differ in weight as well as size (ActivityPanel 12/1.5,
-// MultiSelectionToolbar 14/1.5, GalleryPane + ImagePicker 13/1.6,
-// SelectionPopover 16/1.75).
-export function TrashIcon({ size = 13, strokeWidth = 1.5 }: IconProps & { strokeWidth?: number }) {
-  return <SharedTrashIcon size={size} strokeWidth={strokeWidth} />;
+// Size varies by host (12-16); weight is the house weight (Glyph).
+export function TrashIcon({ size = 13 }: IconProps) {
+  return <SharedTrashIcon size={size} />;
 }
 
 export function OpenIcon({ size = 13 }: IconProps) {

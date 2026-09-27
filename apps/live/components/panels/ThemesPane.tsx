@@ -18,7 +18,7 @@ import {
   EmptyState,
   PencilIcon,
   PlusIcon,
-  TrashSimpleIcon,
+  TrashIcon,
   HoverCard,
   SOLID_BRAND_DARK_CONTROL,
 } from '@livediagram/ui';
@@ -104,7 +104,7 @@ export function ThemesPane() {
                     danger
                     onClick={() => void confirmDelete(t.id, t.name)}
                   >
-                    <TrashSimpleIcon />
+                    <TrashIcon />
                   </IconBtn>
                 </HoverCard>
               </div>
@@ -115,7 +115,7 @@ export function ThemesPane() {
             onClick={() => setBuilding('new')}
             className="flex min-h-[7rem] flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-slate-300 text-slate-500 transition hover:border-brand-400 hover:text-brand-600 dark:border-slate-600 dark:text-slate-400"
           >
-            <PlusIcon size={20} strokeWidth={1.5} />
+            <PlusIcon size={20} />
             <span className="text-xs font-medium">New theme</span>
           </button>
         </div>

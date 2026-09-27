@@ -1,6 +1,7 @@
 'use client';
 
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
+import { Glyph } from '@livediagram/ui';
 
 // Empty-canvas hint (docs/specs/007-editor/new-diagram-route.md). A subdued bottom banner shown while the active
 // tab has no elements — replacing the old centre-of-canvas card so the hint
@@ -29,20 +30,10 @@ export function EmptyCanvasBanner({
     >
       <div className="pointer-events-auto flex w-full max-w-xl animate-fly-up-in items-center gap-3 rounded-xl border border-slate-200 bg-white/95 px-4 py-2.5 shadow-lg shadow-slate-900/5 backdrop-blur dark:border-slate-700 dark:bg-slate-900/95">
         <span className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-500 sm:flex dark:bg-brand-500/15 dark:text-brand-400">
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden
-          >
+          <Glyph size={18} units={24}>
             <rect x="3" y="6" width="10" height="10" rx="1.5" />
             <circle cx="16" cy="14" r="5" />
-          </svg>
+          </Glyph>
         </span>
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-medium text-slate-800 dark:text-slate-100">

@@ -3,6 +3,7 @@
 import { memo } from 'react';
 import { BORDER_RADIUS_PX, type ImageElement } from '@livediagram/diagram';
 import { useImageBlobUrl } from '@/hooks/persistence/useImageBlobUrl';
+import { Glyph } from '@livediagram/ui';
 
 // Renders the bitmap (or upload placeholder) for an ImageElement.
 // Mounted inside BoxedElementView's transformed wrapper so it picks
@@ -141,41 +142,21 @@ export const ImageElementView = memo(ImageElementViewImpl);
 
 function ImageIcon() {
   return (
-    <svg
-      width="22"
-      height="22"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={22} units={24}>
       <rect x="3" y="3" width="18" height="18" rx="2" />
       <circle cx="8.5" cy="9" r="1.5" />
       <path d="M3.5 17l5-5 4 4 3-3 5 5" />
-    </svg>
+    </Glyph>
   );
 }
 
 function BrokenIcon() {
   return (
-    <svg
-      width="22"
-      height="22"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
+    <Glyph size={22} units={24}>
       <rect x="3" y="3" width="18" height="18" rx="2" />
       <path d="M3 17l5-5 4 4 2-2" />
       <path d="M16 6l5 5" />
       <path d="M21 6l-5 5" />
-    </svg>
+    </Glyph>
   );
 }
