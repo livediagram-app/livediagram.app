@@ -102,7 +102,7 @@ export function boardHtml(anchors: string[], opts: { background?: string } = {})
 <head>
 <meta charSet="utf-8" />
 <meta httpEquiv="Content-Type" content="text/html; charset=utf-8" />
-<style>.anchor { position: absolute; transform-origin: 0 0; }</style>
+<style>.anchor { position: absolute; transform-origin: 0 0; } .canvasBackground { position: absolute; } .inkHitTestOverlay { fill: none; stroke: transparent; }</style>
 </head>
 <body style="overflow: auto;">
 <div class="exportedCanvas" style="transform: translate(24px, 18px) scale(0.5);">
