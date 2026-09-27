@@ -74,7 +74,8 @@ async function encodeWithFallback(
       'image/webp',
       IMPORT_IMAGE_WEBP_QUALITY,
     );
-    if (!webp || webp.type === 'image/webp') return webp;
+    if (webp?.type === 'image/webp') return webp;
+    // No WebP from the canvas or the WASM encoder: the widely encodable fallback.
     const type = fallbackOutputType(sourceMime);
     const quality = type === 'image/jpeg' ? IMPORT_IMAGE_JPEG_QUALITY : 1;
     return await codec.encode(decoded, width, height, type, quality);

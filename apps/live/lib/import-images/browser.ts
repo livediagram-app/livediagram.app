@@ -8,6 +8,7 @@ import { apiUploadImage } from '../api/images';
 import { isOfflineIdSync } from '../offline/offline-store';
 import { createImportImageSession } from './session';
 import type { DecodedImage, ImageCodec, ImportImageSession } from './types';
+import { createWebpEncoder, type WasmWebpEncode } from './webp';
 
 type Drawable = ImageBitmap | HTMLImageElement;
 type BrowserDecoded = DecodedImage & { source: Drawable };
@@ -44,6 +45,53 @@ async function decodeRaster(blob: Blob): Promise<BrowserDecoded | null> {
   }
 }
 
+type Canvas2D = OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D;
+
+// Draw the image at the target size; OffscreenCanvas where there is one.
+function draw(
+  source: Drawable,
+  width: number,
+  height: number,
+): { ctx: Canvas2D; toBlob: (type: string, quality: number) => Promise<Blob | null> } | null {
+  if (typeof OffscreenCanvas !== 'undefined') {
+    const canvas = new OffscreenCanvas(width, height);
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(source, 0, 0, width, height);
+    return { ctx, toBlob: (type, quality) => canvas.convertToBlob({ type, quality }) };
+  }
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return null;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(source, 0, 0, width, height);
+  return {
+    ctx,
+    toBlob: (type, quality) =>
+      new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, type, quality)),
+  };
+}
+
+// A tainted canvas (an SVG with foreignObject in some engines) refuses to export
+// or to be read; both surface as null.
+const orNull = async <T>(run: () => Promise<T | null> | T | null): Promise<T | null> => {
+  try {
+    return await run();
+  } catch {
+    return null;
+  }
+};
+
+// libwebp as WASM (@jsquash/webp, Apache-2.0; libwebp BSD-3-Clause), fetched
+// only when a canvas cannot encode WebP itself: its own chunk and .wasm asset.
+const webpEncoder = createWebpEncoder({
+  loadWasm: async () => (await import('@jsquash/webp/encode')).default as WasmWebpEncode,
+  log: (fingerprint, outcome, detail) => console.info(fingerprint, outcome, detail),
+});
+
 async function encode(
   image: DecodedImage,
   width: number,
@@ -51,28 +99,20 @@ async function encode(
   type: string,
   quality: number,
 ): Promise<Blob | null> {
-  const { source } = image as BrowserDecoded;
-  try {
-    if (typeof OffscreenCanvas !== 'undefined') {
-      const canvas = new OffscreenCanvas(width, height);
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return null;
-      ctx.imageSmoothingQuality = 'high';
-      ctx.drawImage(source, 0, 0, width, height);
-      return await canvas.convertToBlob({ type, quality });
-    }
-    const canvas = document.createElement('canvas');
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return null;
-    ctx.imageSmoothingQuality = 'high';
-    ctx.drawImage(source, 0, 0, width, height);
-    return await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, type, quality));
-  } catch {
-    // A tainted canvas (an SVG with foreignObject in some engines) refuses to export.
-    return null;
-  }
+  const drawn = await orNull(() => draw((image as BrowserDecoded).source, width, height));
+  if (!drawn) return null;
+  if (type !== 'image/webp') return orNull(() => drawn.toBlob(type, quality));
+  return webpEncoder.encode({
+    encodeNative: () => orNull(() => drawn.toBlob(type, quality)),
+    readPixels: () => {
+      try {
+        return drawn.ctx.getImageData(0, 0, width, height);
+      } catch {
+        return null;
+      }
+    },
+    quality,
+  });
 }
 
 export const browserImageCodec: ImageCodec = {

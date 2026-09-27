@@ -58,11 +58,34 @@ and dedupes (hosted is free for everyone; server cost stays near zero).
   the canvas) is a failure, `unsupported`.
 - **Anything else the browser can decode** (AVIF, BMP, ICO, HEIC in Safari) is re-encoded to WebP,
   so a format the gallery refuses can still arrive.
-- **When the browser cannot encode WebP** (the encoded blob comes back as another type), the
-  output falls back to JPEG for a JPEG source and PNG for everything else.
+- **When the canvas cannot encode WebP** (Safari: a canvas asked for a type it cannot write hands
+  back a PNG), WebP comes from a **WASM build of libwebp** instead. Support is detected by the
+  type of the blob the canvas returns, never by user agent, and remembered for the page so later
+  images skip the wasted canvas attempt. The encoder is fetched on demand, only on such a browser,
+  only once, as its own chunk plus one `.wasm` file (the SIMD build where the browser has SIMD,
+  about 340 KB, else the plain one, about 280 KB), so it never reaches the editor's first bundle
+  and a browser with native WebP never downloads it. See "The WASM WebP encoder" below.
+- **When no WebP comes back at all** (the WASM encoder could not load or failed, or the canvas
+  cannot be read), the output falls back to JPEG for a JPEG source and PNG for everything else.
+  A failed load is retried on the next image rather than remembered.
 - A source over **50 MB** is refused before decoding (`too-large`), so one enormous file cannot
   exhaust the tab's memory. An encoded result over the gallery's 10 MB per-file cap is refused
   too.
+
+### The WASM WebP encoder
+
+- **Package:** [`@jsquash/webp`](https://github.com/jamsinclair/jSquash) 1.5.0, Squoosh's libwebp
+  codec repackaged for the browser; its one dependency is `wasm-feature-detect` (SIMD detection).
+- **Licences:** `@jsquash/webp` and `wasm-feature-detect` are Apache-2.0; the libwebp code
+  compiled into the `.wasm` is BSD-3-Clause (Google). Both are permissive and compatible with
+  livediagram's MIT licence and neither is copyleft. Both ask that their licence and copyright
+  notices accompany redistributed copies. The deployed bundles carry no third-party notices yet,
+  for this or any other bundled dependency; that gap is repo-wide and open.
+- **Quality:** the same 0.85, passed as libwebp's `quality: 85`; everything else is libwebp's
+  default (method 4).
+- **Proof:** Playwright's WebKit on Linux encodes WebP natively, so the Safari path is proven by
+  making the canvas answer WebP requests with PNG, as Safari's does; the same test runs in
+  Chromium in CI and in WebKit on demand ([End-to-end smoke tests](../003-system-architecture/e2e-smoke.md)).
 
 Re-encoding is deterministic within one browser, so importing the same file twice uploads the
 same bytes and the gallery's SHA-256 dedupe recognises them. Across browsers the WebP bytes may

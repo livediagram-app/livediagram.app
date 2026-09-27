@@ -49,6 +49,17 @@ describe('prepareImportImage', () => {
     expect(calls.encode.map((c) => c.type)).toEqual(['image/webp', 'image/png']);
   });
 
+  it('falls back to PNG when no WebP encoder answers at all (WASM unavailable)', async () => {
+    const { codec, calls } = fakeCodec({
+      size: { width: 3000, height: 3000 },
+      encodedSize: (type) => (type === 'image/webp' ? null : 1000),
+    });
+    const src = await bytesOf(fakeImageBlob('image/png', 5000));
+    const out = await prepareImportImage(src, 'image/png', undefined, codec);
+    expect(out).toMatchObject({ ok: true, mimeType: 'image/png' });
+    expect(calls.encode.map((c) => c.type)).toEqual(['image/webp', 'image/png']);
+  });
+
   it('falls back to JPEG for a JPEG source', async () => {
     const { codec } = fakeCodec({ size: { width: 3000, height: 1500 }, encodable: ['image/jpeg'] });
     const src = await bytesOf(fakeImageBlob('image/jpeg', 5000));

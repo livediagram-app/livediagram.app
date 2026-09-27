@@ -16,6 +16,7 @@ Scope, by file (all under `apps/live/lib/import-images/`):
 | `session.ts`      | `createImportImageSession`: concurrency, offline budget, short-circuit, logging                |
 | `attach.ts`       | `attachImportImages`: key dedupe, element patching, progress, the report                       |
 | `report.ts`       | `emptyImportImageReport`, `describeImportImageReport`: tallies and the dialog copy             |
+| `webp.ts`         | `createWebpEncoder`: canvas WebP, else the on-demand WASM encoder, detection remembered        |
 | `browser.ts`      | `browserImageCodec`, `createBrowserImportImageSession`: the DOM codec + the api/offline wiring |
 | `index.ts`        | Public surface for importers (everything but the browser wiring)                               |
 | `test-fakes.ts`   | Fake codec and typed image blobs for the unit tests; imported by tests only                    |
@@ -97,13 +98,35 @@ Scaled sizes are `max(1, round(side * scale))`.
 1. `decoded = await codec.decode(blob, mimeType)`; `null` or a throw: `unsupported`.
 2. `plan = planImageEncoding(...)` with `decoded.width/height`.
 3. `keep`: the original blob with its sniffed accepted type.
-4. `encode`: `out = await codec.encode(decoded, w, h, 'image/webp', WEBP_QUALITY)`. When
+4. `encode`: `out = await codec.encode(decoded, w, h, 'image/webp', WEBP_QUALITY)` (the browser
+   codec's WebP step is `createWebpEncoder`, below). When `out` is `null` or
    `out.type !== 'image/webp'`: `out = await codec.encode(decoded, w, h, fallbackOutputType(mime),
 quality)`. `null` or a throw: `unsupported`. With `keepIfSmaller` and
    `original.size <= out.size`: the original.
 5. `decoded.close()` in a `finally`.
 6. The chosen blob's bytes are sniffed: not an accepted type: `unsupported`. Over
    `MAX_IMAGE_BYTES`: `too-large`.
+
+### `createWebpEncoder({ loadWasm, log })` → `{ encode({ encodeNative, readPixels, quality }) }`
+
+The WebP step of the browser codec (`webp.ts`, pure; D11, D12). State: `nativeSupported`
+(`undefined` until a canvas has answered), `wasm` (the in-flight or loaded encoder promise).
+
+1. `nativeSupported !== false`: `native = await encodeNative()`. `null` → return `null` (support
+   stays unknown). Else `nativeSupported = native.type === 'image/webp'`; true → return `native`.
+2. `pixels = readPixels()`; `null` (tainted canvas) → return `null`.
+3. `encode = await loadWasm()`, memoised; a rejected load clears the memo, logs
+   `webp-wasm-unavailable` and returns `null`.
+4. `bytes = await encode(pixels, { quality: round(quality × 100) })` → `Blob([bytes], image/webp)`,
+   logged `webp-wasm`; a throw logs `webp-wasm-failed` and returns `null`.
+
+`null` from here makes `prepareImportImage` encode the fallback type (JPEG for a JPEG source,
+else PNG).
+
+`loadWasm` in `browser.ts` is `(await import('@jsquash/webp/encode')).default`: a dynamic import,
+so the glue is its own chunk; jSquash picks `webp_enc_simd.wasm` or `webp_enc.wasm` with
+`wasm-feature-detect` and fetches it through `new URL(…, import.meta.url)`, which the bundler emits
+as a hashed `_next/static/media/*.wasm` asset.
 
 ### `failureFromUploadError(error)`
 
@@ -179,7 +202,8 @@ export type DecodedImage = { width: number; height: number; close(): void };
 browser); SVG decodes through an `<img>` on an object URL (revoked after load or error), whose
 `naturalWidth/Height` may be 0. `encode` draws into an `OffscreenCanvas` when available
 (`convertToBlob({ type, quality })`), else a detached `<canvas>` (`toBlob`); a canvas `SecurityError`
-resolves `null`. Drawing uses `imageSmoothingQuality = 'high'`.
+resolves `null`. For `image/webp` it hands `createWebpEncoder` the canvas encode and
+`ctx.getImageData(0, 0, w, h)` as `readPixels`. Drawing uses `imageSmoothingQuality = 'high'`.
 
 `createBrowserImportImageSession({ ownerId, diagramId })`: `offline = !!diagramId &&
 isOfflineIdSync(diagramId)`; `upload` computes `sha256Hex` and calls `apiUploadImage` with the
@@ -230,6 +254,9 @@ No new persisted fields. A stored image sets the existing `ImageElement.imageId`
 
 - Peak memory ≈ 3 × (source bytes + decoded RGBA at ≤ 2048² × 4 = 16 MB) ≈ 100 MB worst case.
 - Encode of a 2048² canvas to WebP: ~50 to 150 ms on a laptop; 30 images ≈ 2 to 5 s plus upload.
+- WASM encoder, only without canvas WebP: one chunk (~20 KB) plus one `.wasm` (340 KB SIMD, 280 KB
+  plain), fetched once per page. Never in the editor's first bundle (verified against the built
+  `diagram/placeholder.html`'s chunk list).
 - Hosted server cost per image: one D1 sha lookup, one totals query, one R2 put (new) or none.
 - Offline budget caps the tab body growth from one import at 8 MB.
 
@@ -240,26 +267,43 @@ No new persisted fields. A stored image sets the existing `ImageElement.imageId`
 - `console.info('[import-images]', 'missing-bytes', { key })` per key without a source (from
   `attachImportImages`, which never hands those to the session).
 - `console.info('[import-images] report', report)` once per `attachImportImages`.
+- `console.info('[import-images]', 'webp-wasm' | 'webp-wasm-unavailable' | 'webp-wasm-failed', detail)`
+  from the WASM path.
 - Failures that come from a throw also `console.warn('[import-images] error', failure, error)`.
 
 ## Testing
 
-| Rule                                                  | Test                                |
-| ----------------------------------------------------- | ----------------------------------- |
-| Longest side 2048, never upscale                      | `policy.test.ts` scale cases        |
-| PNG/JPEG within size: encode, keep if smaller         | `policy.test.ts`, `prepare.test.ts` |
-| WebP within size kept                                 | `policy.test.ts`                    |
-| GIF kept when it fits, flattened when not             | `policy.test.ts`                    |
-| SVG raster size from intrinsic/hint/default           | `policy.test.ts`                    |
-| WebP fallback type                                    | `policy.test.ts`, `prepare.test.ts` |
-| 50 MB source cap, 10 MB output cap                    | `source.test.ts`, `prepare.test.ts` |
-| Data URL parsing, MIME sniff                          | `source.test.ts`                    |
-| Upload error mapping                                  | `upload-error.test.ts`              |
-| Unavailable short-circuit; cap keeps trying           | `session.test.ts`                   |
-| Offline embed + budget                                | `session.test.ts`                   |
-| Concurrency never above 3                             | `session.test.ts`                   |
-| Key dedupe, element patch, report invariant, progress | `attach.test.ts`                    |
-| Report copy                                           | `report.test.ts`                    |
+| Rule                                                  | Test                                                       |
+| ----------------------------------------------------- | ---------------------------------------------------------- |
+| Longest side 2048, never upscale                      | `policy.test.ts` scale cases                               |
+| PNG/JPEG within size: encode, keep if smaller         | `policy.test.ts`, `prepare.test.ts`                        |
+| WebP within size kept                                 | `policy.test.ts`                                           |
+| GIF kept when it fits, flattened when not             | `policy.test.ts`                                           |
+| SVG raster size from intrinsic/hint/default           | `policy.test.ts`                                           |
+| WebP fallback type                                    | `policy.test.ts`, `prepare.test.ts`                        |
+| 50 MB source cap, 10 MB output cap                    | `source.test.ts`, `prepare.test.ts`                        |
+| Data URL parsing, MIME sniff                          | `source.test.ts`                                           |
+| Upload error mapping                                  | `upload-error.test.ts`                                     |
+| Unavailable short-circuit; cap keeps trying           | `session.test.ts`                                          |
+| Offline embed + budget                                | `session.test.ts`                                          |
+| Concurrency never above 3                             | `session.test.ts`                                          |
+| Key dedupe, element patch, report invariant, progress | `attach.test.ts`                                           |
+| Report copy                                           | `report.test.ts`                                           |
+| Canvas WebP used when present; WASM never loaded      | `webp.test.ts`                                             |
+| No canvas WebP detected by blob type; WASM encodes    | `webp.test.ts`                                             |
+| Detection remembered; failed load retried             | `webp.test.ts`                                             |
+| No WebP at all → PNG / JPEG fallback                  | `prepare.test.ts`                                          |
+| Safari path end to end, in Chromium and WebKit        | `apps/live/e2e/import-images.spec.ts` (canvas answers PNG) |
 
-All with a fake `ImageCodec` and fake `upload` / `toDataUrl`; the browser codec is proven end to
-end in the running editor.
+All with a fake `ImageCodec` and fake `upload` / `toDataUrl` / `loadWasm`; the browser codec is
+proven end to end by the e2e spec, in WebKit with `E2E_WEBKIT=1`.
+
+## Assets and external resources
+
+| Asset                                  | Source                             | Licence                                      |
+| -------------------------------------- | ---------------------------------- | -------------------------------------------- |
+| `@jsquash/webp` 1.5.0 (glue + `.wasm`) | npm, pinned exactly in `apps/live` | Apache-2.0; libwebp inside the `.wasm` BSD-3 |
+| `wasm-feature-detect` (jSquash's dep)  | npm, via the lockfile              | Apache-2.0                                   |
+
+Reproducible: `pnpm install` resolves both from the lockfile; the build emits the `.wasm` files
+with content hashes.
