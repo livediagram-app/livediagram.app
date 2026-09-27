@@ -115,16 +115,16 @@ Placement is recomputed when the chrome moves or resizes, never on a timer.
 
 Top to bottom, each a small title over one row of option buttons:
 
-| Section        | Applies to       | Options                            |
-| -------------- | ---------------- | ---------------------------------- |
-| Stroke         | Shapes + arrows  | 7 colours                          |
-| Background     | Shapes           | 7 colours                          |
-| Stroke width   | Shapes + arrows  | Thin / Medium / Thick              |
-| Stroke style   | Shapes           | Solid / Dashed / Dotted            |
-|                | Arrows           | Solid / Dashed / Flowing           |
-| Text alignment | Shapes           | Left / Centre / Right (horizontal) |
-| Icon alignment | Shapes with icon | Before / Above / After the label   |
-| Actions        | Shapes + arrows  | Clear styles                       |
+| Section        | Applies to                                        | Options                            |
+| -------------- | ------------------------------------------------- | ---------------------------------- |
+| Stroke         | Shapes + arrows                                   | 7 colours                          |
+| Background     | Shapes                                            | 7 colours                          |
+| Stroke width   | Shapes + arrows                                   | Thin / Medium / Thick              |
+| Stroke style   | Shapes                                            | Solid / Dashed / Dotted            |
+|                | Arrows                                            | Solid / Dashed / Flowing           |
+| Text alignment | Shapes whose label it moves (`supportsTextAlign`) | Left / Centre / Right (horizontal) |
+| Icon alignment | Shapes with icon                                  | Before / Above / After the label   |
+| Actions        | Shapes + arrows                                   | Clear styles                       |
 
 - **Flowing** is a dashed line with the marching-dashes flow animation (`strokeStyle: 'dashed'`,
   `flow: 'dashes'`). So the plain arrow and the animated dashed arrow are each one click, the two
@@ -133,7 +133,11 @@ Top to bottom, each a small title over one row of option buttons:
   map to `iconPosition` left / above / right. "Below" stays in the context menu: it is the rarest
   arrangement, and a fourth option would break the row rhythm.
 - **Text alignment** is the horizontal axis only. Vertical alignment is the less-used half and stays
-  in the menu's 3×3 grid.
+  in the menu's 3×3 grid. It shows only where it moves something: not on self-drawing kinds (no
+  label) and not on kinds with their own face (the collab panels such as the Q&A board and agenda,
+  the session tools, the chair, the comment and action panels, the portal), whose label is a fixed
+  title. One predicate, `supportsTextAlign` in `@livediagram/diagram`, gates both this panel and the
+  context menu's Text Alignment section, so the two can't disagree.
 - A section shows when at least one selected element supports it (a background for a shape that has
   one, a border for a shape that draws one, a label slot for alignment). Sticky notes, text, tables,
   images and other non-shape elements are not styled by the panel; a selection holding only those

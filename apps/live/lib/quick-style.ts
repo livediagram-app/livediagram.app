@@ -8,7 +8,7 @@ import {
   arrowThicknessOf,
   canvasSurface,
   defaultArrowStrokeColor,
-  isSelfDrawingShape,
+  supportsTextAlign,
   quickSwatches,
   supportsBorderControls,
   supportsColours,
@@ -65,7 +65,7 @@ export function supportsQuickSection(el: QuickStyleTarget, section: QuickSection
     case 'style':
       return el.type === 'arrow' || supportsBorderControls(el);
     case 'textAlign':
-      return el.type === 'shape' && !isSelfDrawingShape(el.shape);
+      return el.type === 'shape' && supportsTextAlign(el.shape);
     case 'iconAlign':
       return el.type === 'shape' && acceptsInlineIcon(el) && !!el.iconId;
   }

@@ -54,6 +54,13 @@ describe('quickStyleView: which sections show', () => {
     expect(sections([shape('a')])).toEqual(['stroke', 'background', 'width', 'style', 'textAlign']);
   });
 
+  it('offers no text alignment on a kind with its own face, but keeps it on a web component', () => {
+    for (const kind of ['qa-board', 'agenda', 'session-button', 'comment-pin'] as const) {
+      expect(sections([shape('a', { shape: kind })]), kind).not.toContain('textAlign');
+    }
+    expect(sections([shape('a', { shape: 'banner' })])).toContain('textAlign');
+  });
+
   it('adds icon alignment only when a shape carries an inline icon', () => {
     expect(sections([shape('a', { iconId: 'server' })])).toContain('iconAlign');
   });

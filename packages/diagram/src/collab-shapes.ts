@@ -10,6 +10,7 @@
 
 import type { ShapeKind } from './index';
 import { isQaBoardShape } from './qa-board';
+import { isSelfDrawingShape } from './data-shapes';
 
 // --- Estimate card (docs/specs/012-collaboration/estimate-card.md) ---------------------------------------------
 
@@ -240,4 +241,35 @@ export function isCollabPanelShape(kind: ShapeKind): boolean {
     isRollCallShape(kind) ||
     isDecisionShape(kind)
   );
+}
+
+// Kinds whose resting face draws its own layout and shows the label as a
+// plain title (the collab panels, the session tools, the chair, the comment
+// and action panels, the portal): the editor's ElementFaceRouter hands them
+// the label string, never the aligned label node, so text alignment has
+// nothing to move on them. Kept here, beside the kind predicates, so the
+// router's list and the text-align gate below can't drift apart.
+export function hasOwnFace(kind: ShapeKind): boolean {
+  return (
+    isCollabPanelShape(kind) ||
+    kind === 'chair' ||
+    kind === 'mode-button' ||
+    kind === 'session-button' ||
+    kind === 'focus-button' ||
+    kind === 'reveal' ||
+    kind === 'picker' ||
+    kind === 'comment-pin' ||
+    kind === 'action-card' ||
+    kind === 'reaction-pad' ||
+    kind === 'portal'
+  );
+}
+
+// Whether text alignment does anything on this kind: not a self-drawing kind
+// (no label at all) and not one with its own face (the label is a fixed
+// title). The one gate for both the context menu and the quick style panel.
+// Web components (banner, callout, header), pages and icons keep it: they
+// render the aligned label.
+export function supportsTextAlign(kind: ShapeKind): boolean {
+  return !isSelfDrawingShape(kind) && !hasOwnFace(kind);
 }
