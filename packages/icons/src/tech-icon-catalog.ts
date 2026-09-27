@@ -81,7 +81,7 @@ export const TECH_ICON_CATALOG: TechIconDef[] = [
     keywords: 'amazon dns domain routing',
     color: '#8C4FFF',
     glyph:
-      '<circle cx="12" cy="12" r="5.5"/><path d="M6.5 12h11M12 6.5c2.6 2.9 2.6 8.1 0 11M12 6.5c-2.6 2.9-2.6 8.1 0 11"/>',
+      '<path d="M12 5.5v13M9.5 18.5h5"/><path d="M12 7h4.5l1.5 1.5-1.5 1.5H12M12 11.5H7.5L6 13l1.5 1.5H12"/>',
   },
   {
     id: 'aws-vpc',
@@ -290,7 +290,7 @@ export const TECH_ICON_CATALOG: TechIconDef[] = [
     keywords: 'database relational sql dolphin',
     color: '#00758F',
     glyph:
-      '<ellipse cx="12" cy="8" rx="5" ry="2"/><path d="M7 8v8c0 1.1 2.2 2 5 2s5-.9 5-2V8"/><path d="M7 12c0 1.1 2.2 2 5 2s5-.9 5-2"/>',
+      '<rect x="6" y="6.5" width="12" height="11" rx="1.5"/><path d="M6 10h12M6 13.75h12M10.5 10v7.5"/>',
   },
   {
     id: 'redis',
@@ -325,7 +325,7 @@ export const TECH_ICON_CATALOG: TechIconDef[] = [
     provider: 'generic',
     keywords: 'web server reverse proxy load balancer',
     color: '#009639',
-    glyph: '<path d="M8 17.5V7.5l8 9v-9" stroke-width="1.8"/>',
+    glyph: '<path d="M8 17.5V7.5l8 9v-9"/>',
   },
   {
     id: 'rabbitmq',
@@ -343,7 +343,7 @@ export const TECH_ICON_CATALOG: TechIconDef[] = [
     provider: 'generic',
     keywords: 'search index lucene elk log',
     color: '#00BFB3',
-    glyph: '<path d="M6.5 8.5h11M6.5 12h8.5M6.5 15.5h6" stroke-width="1.8"/>',
+    glyph: '<path d="M6.5 8.5h11M6.5 12h8.5M6.5 15.5h6"/>',
   },
   {
     id: 'graphql',
@@ -394,7 +394,8 @@ export const TECH_ICON_CATALOG: TechIconDef[] = [
     provider: 'generic',
     keywords: 'hosting deploy edge frontend serverless',
     color: '#000000',
-    glyph: '<path d="M12 4 21 20H3Z" fill="#fff" stroke="none"/>',
+    glyph:
+      '<path d="M12 4.5c2.4 1.9 3.6 4.6 3.6 7.9v3H8.4v-3c0-3.3 1.2-6 3.6-7.9Z"/><circle cx="12" cy="10" r="1.4"/><path d="M8.4 12.8 6 15.3v2.4l2.4-1.3M15.6 12.8l2.4 2.5v2.4l-2.4-1.3M10.6 17.8 12 19.5l1.4-1.7"/>',
   },
   {
     id: 'supabase',
@@ -439,7 +440,7 @@ export const TECH_ICON_CATALOG: TechIconDef[] = [
     keywords: 'cloudflare serverless function compute edge',
     color: '#F38020',
     glyph:
-      '<circle cx="12" cy="12" r="3"/><path d="M12 6.2V8M12 16v1.8M6.2 12H8M16 12h1.8M8 8l1.3 1.3M16 16l-1.3-1.3M8 16l1.3-1.3M16 8l-1.3 1.3"/>',
+      '<path d="M9 6.5c-1.4 0-2 .6-2 2v1.6c0 1-.5 1.6-1.5 1.9 1 .3 1.5.9 1.5 1.9v1.6c0 1.4.6 2 2 2M15 6.5c1.4 0 2 .6 2 2v1.6c0 1 .5 1.6 1.5 1.9-1 .3-1.5.9-1.5 1.9v1.6c0 1.4-.6 2-2 2"/><path d="M12.8 9 10.8 12.4h2.4L11.2 15.5"/>',
   },
   {
     id: 'cf-pages',

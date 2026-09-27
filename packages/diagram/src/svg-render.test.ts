@@ -583,6 +583,20 @@ describe('renderElementsToSvg', () => {
       expect(clamped).toContain('width="60" height="60" viewBox="0 0 24 24"');
     });
 
+    it('strokes a Technology glyph at the chrome weight for its preset size (docs/specs/004-interface-design/iconography.md)', () => {
+      const art = () => ({ markup: '<circle/>', colored: true });
+      const strokeOf = (el: Parameters<typeof icon>[0]) =>
+        renderElementsToSvg(tab([icon(el)]), { resolveIconArt: art }).match(
+          /viewBox="0 0 24 24"[^>]*stroke-width="([0-9.]+)"/,
+        )?.[1];
+      // 1.5px on screen: 1.5 * 24 / preset px, in tile box units.
+      expect(strokeOf({ width: 200, height: 200 })).toBe('0.75'); // md, 48px
+      expect(strokeOf({ width: 200, height: 200, iconSize: 'sm' })).toBe('1.125');
+      expect(strokeOf({ width: 200, height: 200, iconSize: 'lg' })).toBe('0.5625');
+      // A preset clamped by a small box scales as one picture, weight included.
+      expect(strokeOf({ width: 60, height: 60, iconSize: 'xl' })).toBe('0.375');
+    });
+
     it('sends a top-captioned Technology mark to the bottom band (docs/specs/010-palette/technology-icons.md)', () => {
       const art = () => ({ markup: '<circle/>', colored: true });
       const svg = renderElementsToSvg(

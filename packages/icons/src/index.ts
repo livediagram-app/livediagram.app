@@ -24,7 +24,12 @@ export {
   strokeUnits,
   type GlyphSize,
 } from './weight';
-export { iconPrimsMarkup, techIconArtMarkup, type IconExportArt } from './markup';
+export {
+  iconPrimsMarkup,
+  techGlyphStrokeUnits,
+  techIconArtMarkup,
+  type IconExportArt,
+} from './markup';
 export { isTechIconId, TECH_ICON_IDS } from './tech-icon-ids';
 export { isStickerId, isLegacyEmojiIconId } from './sticker-ids';
 export { STICKER_ASPECT, type StickerDef, type StickerTone } from './sticker-types';

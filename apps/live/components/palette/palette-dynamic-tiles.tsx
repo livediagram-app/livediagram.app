@@ -19,6 +19,8 @@ import { tileById, type PaletteTileDef } from './palette-tile-defs';
 const ICON_FAVOURITE_PREFIX = 'icon:';
 const TECH_FAVOURITE_PREFIX = 'tech:';
 const STICKER_FAVOURITE_PREFIX = 'sticker:';
+// Rendered tile size; TechIconArt weights its glyph for it.
+const TECH_TILE_PX = 18;
 
 export function iconTileDef(icon: IconDef): PaletteTileDef {
   return {
@@ -42,8 +44,8 @@ export function techTileDef(icon: TechIconDef): PaletteTileDef {
     noTint: true,
     action: { type: 'tech-icon', iconId: icon.id },
     icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden>
-        <TechIconArt iconId={icon.id} />
+      <svg width={TECH_TILE_PX} height={TECH_TILE_PX} viewBox="0 0 24 24" aria-hidden>
+        <TechIconArt iconId={icon.id} sizePx={TECH_TILE_PX} />
       </svg>
     ),
   };

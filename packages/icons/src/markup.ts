@@ -6,6 +6,7 @@
 // ./resolve).
 
 import type { IconPrim, TechIconDef } from './types';
+import { glyphStrokePx, strokeUnits } from './weight';
 import { xmlEscape } from './xml';
 
 // The resolved art a renderer draws for one `iconId`, in a 0..24 art box.
@@ -69,12 +70,23 @@ export function iconPrimsMarkup(prims: IconPrim[]): string {
   return prims.map(iconPrimMarkup).join('');
 }
 
+// The `stroke-width` (tile box units) of a Technology tile's white glyph at
+// the tile's rendered size: the chrome weight on screen
+// (docs/specs/004-interface-design/iconography.md, "Technology tiles").
+// The editor (TechIconArt) and the export (svgIconShape) both set it, from
+// the tile's size preset, so the two draw the same weight.
+export function techGlyphStrokeUnits(sizePx: number): number {
+  return strokeUnits(glyphStrokePx(sizePx), sizePx, 24);
+}
+
 // A Technology brand mark: the brand-coloured rounded tile + the white
 // line-art glyph group, matching TechIconArt (tech-icon-glyph.tsx). The
-// glyph markup is our own authored catalogue data, not user content.
+// group carries no stroke-width: it inherits the one the enclosing <svg>
+// sets for the rendered size (techGlyphStrokeUnits). The glyph markup is
+// our own authored catalogue data, not user content.
 export function techIconArtMarkup(icon: TechIconDef): string {
   return (
     `<rect x="1.5" y="1.5" width="21" height="21" rx="4.5" fill="${icon.color}"/>` +
-    `<g fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${icon.glyph}</g>`
+    `<g fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round">${icon.glyph}</g>`
   );
 }

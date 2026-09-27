@@ -18,6 +18,7 @@ import {
   type TextAlignX,
   type TextAlignY,
 } from '@livediagram/diagram';
+import { techGlyphStrokeUnits } from '@livediagram/icons';
 
 import { iconAnimationClass, iconAnimationStyle } from '@/lib/icons';
 import { getTechIcon, isTechIconId } from '@/lib/tech-icons';
@@ -26,21 +27,21 @@ import { iconBandClass } from '@/components/primitives/icon-band';
 
 // The white line-art group the glyph markup sits in. A bare path/circle in
 // the markup strokes white; a filled mark sets fill="#fff" stroke="none"
-// itself. non-scaling-stroke keeps the glyph weight crisp at any element
-// size — matching the line-art icons.
+// itself. The stroke width is set per render for the tile's size.
 const GLYPH_GROUP = {
   fill: 'none',
   stroke: '#fff',
-  strokeWidth: 1.5,
   strokeLinecap: 'round' as const,
   strokeLinejoin: 'round' as const,
-  vectorEffect: 'non-scaling-stroke' as const,
 };
 
 // The tile + glyph in a 0..24 coordinate space, with no outer <svg>. The
 // caller owns the <svg> + viewBox so the same art renders at catalogue
-// thumbnail size and at element size.
-export function TechIconArt({ iconId }: { iconId: string | undefined }) {
+// thumbnail size and at element size; `sizePx` is that size, and sets the
+// glyph weight to the chrome weight on screen (techGlyphStrokeUnits, shared
+// with the export). The stroke scales with the tile, so the mark stays one
+// picture at any zoom, exactly as the export draws it.
+export function TechIconArt({ iconId, sizePx }: { iconId: string | undefined; sizePx: number }) {
   // The colour/glyph data lives in the async catalogue chunk
   // (lib/icon-registry.ts); subscribe so the brand mark pops in the moment it
   // lands (and kick the load if this is the first icon surface to mount).
@@ -69,7 +70,11 @@ export function TechIconArt({ iconId }: { iconId: string | undefined }) {
       <rect x="1.5" y="1.5" width="21" height="21" rx="4.5" fill={icon.color} />
       {/* The glyph markup is our own authored SVG from the catalogue, not
           user content — safe to inject. */}
-      <g {...GLYPH_GROUP} dangerouslySetInnerHTML={{ __html: icon.glyph }} />
+      <g
+        {...GLYPH_GROUP}
+        strokeWidth={techGlyphStrokeUnits(sizePx)}
+        dangerouslySetInnerHTML={{ __html: icon.glyph }}
+      />
     </>
   );
 }
@@ -128,10 +133,10 @@ export function TechIconGlyph({
       >
         {animClass ? (
           <g className={animClass} style={iconAnimationStyle(animationSpeed, animationRepeat)}>
-            <TechIconArt iconId={iconId} />
+            <TechIconArt iconId={iconId} sizePx={px} />
           </g>
         ) : (
-          <TechIconArt iconId={iconId} />
+          <TechIconArt iconId={iconId} sizePx={px} />
         )}
       </svg>
     </div>

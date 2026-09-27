@@ -11,6 +11,7 @@
 // can't drift, and they keep rendering as the bare tinted glyph those
 // elements have always been. The palette does not offer them — the Stickers
 // category owns them now, as their own element kind with their own artwork.
+import { lucideHeartPulse, lucideSettings, lucideSignal } from './lucide.generated';
 import { STICKER_CATALOG } from './sticker-catalog';
 import type { IconDef } from './types';
 
@@ -436,75 +437,98 @@ export const ICON_CATALOG_2: IconDef[] = [
   // --- Furniture / room (docs/specs/008-canvas/canvas-and-palette.md) -----------------------------------------
   // Top-down floor-plan symbols for sketching room layouts: same single-
   // weight 0..24 outline style as the rest, drawn as if looking straight
-  // down on the piece. Grouped under the "Furniture" category chip.
+  // down on the piece. Grouped under the "Furniture" category chip. The side
+  // that stands against a wall (headboard, sofa back, cistern, tap) faces the
+  // top of the box, and no two pieces share a silhouette.
   {
     id: 'bed',
     label: 'Bed',
     keywords: 'bedroom sleep mattress double furniture room',
+    // Headboard bar, two pillows and the turned-down duvet.
     prims: [
-      { t: 'rect', x: 3, y: 3, w: 18, h: 18, rx: 2 },
-      { t: 'line', x1: 3, y1: 9, x2: 21, y2: 9 },
-      { t: 'rect', x: 5, y: 5, w: 5, h: 3, rx: 1 },
-      { t: 'rect', x: 14, y: 5, w: 5, h: 3, rx: 1 },
+      { t: 'rect', x: 4.5, y: 3, w: 15, h: 18, rx: 2 },
+      { t: 'line', x1: 4.5, y1: 6, x2: 19.5, y2: 6 },
+      { t: 'rect', x: 6.5, y: 8, w: 4.5, h: 3, rx: 1 },
+      { t: 'rect', x: 13, y: 8, w: 4.5, h: 3, rx: 1 },
+      { t: 'line', x1: 4.5, y1: 14, x2: 19.5, y2: 14 },
     ],
   },
   {
     id: 'sofa',
     label: 'Sofa',
     keywords: 'couch settee lounge living room furniture seating',
+    // Back and arms in a U around three seat cushions.
     prims: [
-      { t: 'rect', x: 2, y: 6, w: 20, h: 12, rx: 2 },
-      { t: 'rect', x: 5, y: 10, w: 14, h: 8, rx: 1 },
+      { t: 'rect', x: 2, y: 7, w: 20, h: 10, rx: 1.5 },
+      { t: 'path', d: 'M5.5 17V10.5h13V17' },
+      { t: 'line', x1: 9.83, y1: 10.5, x2: 9.83, y2: 17 },
+      { t: 'line', x1: 14.17, y1: 10.5, x2: 14.17, y2: 17 },
     ],
   },
   {
     id: 'armchair',
     label: 'Armchair',
     keywords: 'chair seat lounge living room furniture',
+    // One seat inside the U of back and arms.
     prims: [
-      { t: 'rect', x: 6, y: 6, w: 12, h: 12, rx: 2 },
-      { t: 'rect', x: 9, y: 10, w: 6, h: 8, rx: 1 },
+      { t: 'rect', x: 3, y: 4, w: 18, h: 16, rx: 3 },
+      { t: 'path', d: 'M7 20V9h10v11' },
     ],
   },
   {
     id: 'chair',
     label: 'Chair',
     keywords: 'seat dining furniture',
+    // Seat under a back rest whose posts wrap its back corners.
     prims: [
-      { t: 'rect', x: 7, y: 5, w: 10, h: 3, rx: 1 },
-      { t: 'rect', x: 7, y: 9, w: 10, h: 9, rx: 1 },
+      { t: 'path', d: 'M5 12V5.5A1.5 1.5 0 0 1 6.5 4h11A1.5 1.5 0 0 1 19 5.5V12' },
+      { t: 'rect', x: 7.5, y: 7.5, w: 9, h: 12.5, rx: 1.5 },
     ],
   },
   {
     id: 'dining-table',
     label: 'Dining table',
     keywords: 'table dining kitchen furniture',
-    prims: [{ t: 'rect', x: 5, y: 6, w: 14, h: 12, rx: 2 }],
+    // Table with six chairs drawn in around it.
+    prims: [
+      { t: 'rect', x: 6.5, y: 5, w: 11, h: 14, rx: 1.5 },
+      { t: 'line', x1: 3.5, y1: 7.5, x2: 3.5, y2: 10.5 },
+      { t: 'line', x1: 3.5, y1: 13.5, x2: 3.5, y2: 16.5 },
+      { t: 'line', x1: 20.5, y1: 7.5, x2: 20.5, y2: 10.5 },
+      { t: 'line', x1: 20.5, y1: 13.5, x2: 20.5, y2: 16.5 },
+      { t: 'line', x1: 10.5, y1: 2, x2: 13.5, y2: 2 },
+      { t: 'line', x1: 10.5, y1: 22, x2: 13.5, y2: 22 },
+    ],
   },
   {
     id: 'coffee-table',
     label: 'Coffee table',
     keywords: 'table living room low furniture',
-    prims: [{ t: 'rect', x: 4, y: 9, w: 16, h: 6, rx: 2 }],
+    // Low oval top with an inset rim.
+    prims: [
+      { t: 'ellipse', cx: 12, cy: 12, rx: 9.5, ry: 5.5 },
+      { t: 'ellipse', cx: 12, cy: 12, rx: 6.5, ry: 2.5 },
+    ],
   },
   {
     id: 'tv',
     label: 'TV',
     keywords: 'television screen entertainment monitor',
+    // Slim screen seen from above, on its stand foot.
     prims: [
-      { t: 'rect', x: 2, y: 4, w: 20, h: 12, rx: 2 },
-      { t: 'line', x1: 12, y1: 16, x2: 12, y2: 19 },
-      { t: 'line', x1: 8, y1: 19, x2: 16, y2: 19 },
+      { t: 'rect', x: 2, y: 8.5, w: 20, h: 3, rx: 1 },
+      { t: 'path', d: 'M9.5 11.5 8 15.5h8l-1.5-4' },
     ],
   },
   {
     id: 'desk',
     label: 'Desk',
     keywords: 'office workspace table drawers furniture',
+    // Desk top against the wall with its chair pulled in.
     prims: [
-      { t: 'rect', x: 3, y: 8, w: 18, h: 4, rx: 1 },
-      { t: 'rect', x: 14, y: 12, w: 7, h: 7, rx: 1 },
-      { t: 'line', x1: 5, y1: 12, x2: 5, y2: 18 },
+      { t: 'rect', x: 3, y: 3.5, w: 18, h: 7, rx: 1 },
+      { t: 'rect', x: 8.5, y: 12.5, w: 7, h: 6, rx: 1.5 },
+      { t: 'line', x1: 8, y1: 20.5, x2: 16, y2: 20.5 },
     ],
   },
   {
@@ -522,10 +546,11 @@ export const ICON_CATALOG_2: IconDef[] = [
     id: 'bathtub',
     label: 'Bathtub',
     keywords: 'bath tub bathroom washroom',
+    // Rounded tub, inner basin, drain at one end.
     prims: [
       { t: 'rect', x: 3, y: 6, w: 18, h: 12, rx: 4 },
-      { t: 'rect', x: 6, y: 8, w: 11, h: 8, rx: 3 },
-      { t: 'circle', cx: 8, cy: 12, r: 1 },
+      { t: 'rect', x: 5.5, y: 8.5, w: 13, h: 7, rx: 3.5 },
+      { t: 'circle', cx: 8.5, cy: 12, r: 0.75 },
     ],
   },
   {
@@ -533,18 +558,19 @@ export const ICON_CATALOG_2: IconDef[] = [
     label: 'Toilet',
     keywords: 'wc bathroom loo washroom',
     prims: [
-      { t: 'rect', x: 8, y: 3, w: 8, h: 4, rx: 1 },
-      { t: 'ellipse', cx: 12, cy: 14, rx: 4, ry: 5 },
+      { t: 'rect', x: 8, y: 4, w: 8, h: 4, rx: 1 },
+      { t: 'ellipse', cx: 12, cy: 15, rx: 4, ry: 5 },
     ],
   },
   {
     id: 'sink',
     label: 'Sink',
     keywords: 'basin washbasin bathroom kitchen tap',
+    // Oval basin set in a counter, tap from the wall edge.
     prims: [
-      { t: 'rect', x: 5, y: 6, w: 14, h: 11, rx: 3 },
-      { t: 'circle', cx: 12, cy: 11, r: 1 },
-      { t: 'line', x1: 12, y1: 6, x2: 12, y2: 4 },
+      { t: 'rect', x: 4, y: 5, w: 16, h: 14, rx: 1.5 },
+      { t: 'ellipse', cx: 12, cy: 13, rx: 5, ry: 3.5 },
+      { t: 'path', d: 'M12 5v4M10 7h4' },
     ],
   },
   {
@@ -574,21 +600,24 @@ export const ICON_CATALOG_2: IconDef[] = [
     id: 'plant',
     label: 'Plant',
     keywords: 'pot houseplant greenery decor tree',
+    // Pot rim with a five-leaf rosette.
     prims: [
-      { t: 'path', d: 'M9 14 H15 L14 21 H10 Z' },
-      { t: 'line', x1: 12, y1: 14, x2: 12, y2: 8 },
-      { t: 'path', d: 'M12 10 C 8 9 8 4 11 3' },
-      { t: 'path', d: 'M12 10 C 16 9 16 4 13 3' },
+      { t: 'circle', cx: 12, cy: 12, r: 9 },
+      {
+        t: 'path',
+        d: 'M12 12Q14.6 8.4 12 5Q9.4 8.4 12 12M12 12Q16.23 13.36 18.66 9.84Q14.62 8.41 12 12M12 12Q12.01 16.44 16.11 17.66Q16.22 13.38 12 12M12 12Q7.78 13.38 7.89 17.66Q11.99 16.44 12 12M12 12Q9.38 8.41 5.34 9.84Q7.77 13.36 12 12',
+      },
     ],
   },
   {
     id: 'door',
     label: 'Door',
     keywords: 'doorway entrance swing opening',
+    // Leaf and swing; the closed leaf sits on y = 20 (the floor-plan template places doors by it).
     prims: [
-      { t: 'line', x1: 5, y1: 20, x2: 5, y2: 6 },
-      { t: 'path', d: 'M5 6 A 14 14 0 0 1 19 20' },
-      { t: 'line', x1: 5, y1: 20, x2: 19, y2: 20 },
+      { t: 'line', x1: 4, y1: 20, x2: 4, y2: 4 },
+      { t: 'path', d: 'M4 4A16 16 0 0 1 20 20' },
+      { t: 'line', x1: 4, y1: 20, x2: 20, y2: 20 },
     ],
   },
   {
@@ -601,8 +630,7 @@ export const ICON_CATALOG_2: IconDef[] = [
       { t: 'line', x1: 5, y1: 11, x2: 19, y2: 11 },
       { t: 'line', x1: 5, y1: 15, x2: 19, y2: 15 },
     ],
-  },
-  // Animated icons (docs/specs/008-canvas/canvas-and-palette.md "Animated elements"). Ordinary `icon` glyphs whose
+  }, // Animated icons (docs/specs/008-canvas/canvas-and-palette.md "Animated elements"). Ordinary `icon` glyphs whose
   // SVG animates via a CSS class (see ANIMATED_ICONS + iconAnimationClass).
   // The prims are the resting frame, so they read fine frozen (reduced-motion
   // / export).
@@ -617,39 +645,22 @@ export const ICON_CATALOG_2: IconDef[] = [
     id: 'gear',
     label: 'Gear',
     keywords: 'gear cog settings spin processing animated',
-    // Hub + eight radial teeth; spins about its centre.
-    prims: [
-      { t: 'circle', cx: 12, cy: 12, r: 3.5 },
-      { t: 'line', x1: 12, y1: 1.5, x2: 12, y2: 5 },
-      { t: 'line', x1: 12, y1: 19, x2: 12, y2: 22.5 },
-      { t: 'line', x1: 1.5, y1: 12, x2: 5, y2: 12 },
-      { t: 'line', x1: 19, y1: 12, x2: 22.5, y2: 12 },
-      { t: 'line', x1: 4.6, y1: 4.6, x2: 7.1, y2: 7.1 },
-      { t: 'line', x1: 16.9, y1: 16.9, x2: 19.4, y2: 19.4 },
-      { t: 'line', x1: 4.6, y1: 19.4, x2: 7.1, y2: 16.9 },
-      { t: 'line', x1: 16.9, y1: 7.1, x2: 19.4, y2: 4.6 },
-    ],
+    // The settings gear, offered again under the Animated chip; spins about its centre.
+    prims: [...lucideSettings],
   },
   {
     id: 'heartbeat',
     label: 'Heartbeat',
     keywords: 'heart like love favourite favorite beat pulse animated',
-    prims: [
-      {
-        t: 'path',
-        d: 'M12 20.5 C12 20.5 4 14 4 8.8 A4 4 0 0 1 12 6.2 A4 4 0 0 1 20 8.8 C20 14 12 20.5 12 20.5 Z',
-      },
-    ],
+    // A heart with a pulse trace: distinct from the plain heart.
+    prims: [...lucideHeartPulse],
   },
   {
     id: 'signal',
     label: 'Signal',
     keywords: 'signal wifi wireless network broadcast live pulse animated',
-    prims: [
-      { t: 'path', d: 'M5 12.5 a9 9 0 0 1 14 0' },
-      { t: 'path', d: 'M8 15.5 a5 5 0 0 1 8 0' },
-      { t: 'circle', cx: 12, cy: 18.5, r: 1 },
-    ],
+    // Rising strength bars: distinct from Wi-Fi's arcs.
+    prims: [...lucideSignal],
   },
   ...LEGACY_EMOJI_ICONS,
 ];

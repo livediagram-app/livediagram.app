@@ -80,7 +80,11 @@ type TechIconDef = {
   category colour**. It is authored in-repo as compact SVG, not the verbatim
   vendor asset packs — keeps the bundle small, renders crisply at icon size, and
   sidesteps redistributing proprietary SVGs from a public MIT repo (see [Open source + distribution](../002-project-scope/open-source-and-business-model.md),
-  [Secrets policy](../002-project-scope/secrets-policy.md)). Swapping in a vendor's official SVG later is a per-id edit.
+  [Secrets policy](../002-project-scope/secrets-policy.md)).
+- Glyphs are generic: no vendor trademark mark (Vercel draws a rocket, a generic deploy
+  glyph). Two services of one provider never share a glyph (Route 53 is a DNS
+  signpost beside CloudFront's globe; Workers is braces around a bolt), which
+  `tech-icon-catalog.test.ts` enforces. Glyph markup never sets its own stroke width.
 
 ### v1 coverage (curated common set, ~38)
 
@@ -128,6 +132,15 @@ icon-fold-into-shape gesture (`useEditorDrag`, which absorbs a dragged line-art
 `TechIconGlyph` paints the brand-coloured tile + the icon's white `glyph` markup
 inside an `<svg>`. No stroke tint is applied; the brand colour is the tile fill
 and the glyph is white.
+
+**The glyph stroke is the chrome weight for the tile's rendered size**
+([Iconography](../004-interface-design/iconography.md)): 1.5px on screen, 1.25px at
+12px or less, expressed in tile-box units by `techGlyphStrokeUnits(sizePx)`
+(`@livediagram/icons`). On the canvas `sizePx` is the size preset (32 / 48 / 64 /
+96px); in the palette it is the thumbnail size (18px category and favourite tiles,
+22px picker tiles). The stroke scales with the tile, so canvas zoom, or a box too
+small for its preset, shrinks the mark as one picture, and the export draws the
+same weight.
 
 **The mark renders at a fixed pixel size, not scaled to the element box.**
 Resizing a Technology icon element gives the caption more room / adds
@@ -213,7 +226,8 @@ label convention), the active preset highlighted. Picking one writes
 **Exports and headless renders draw the same art.** The shared SVG renderer
 (`packages/diagram/src/svg-render.ts`) takes an injected `resolveIconArt`
 resolver; with it, a `shape: 'icon'` element exports its real glyph — a
-Technology mark as its self-coloured tile, a line-art icon stroke-tinted, each
+Technology mark as its self-coloured tile (its glyph stroke set from the size
+preset by `techGlyphStrokeUnits`, exactly as on the canvas), a line-art icon stroke-tinted, each
 with the caption in the bottom band — instead of the old box-with-caption
 fallback (which remains the output for an unknown id or a resolver-less
 caller). The in-app SVG / PNG / PDF export resolves from the loaded icon
