@@ -23,8 +23,10 @@ import { apiFetchDiagramThumbnailUrl } from '@/lib/api-client';
 // contain so the whole diagram stays visible at any aspect ratio.
 
 type State =
-  | { status: 'idle' | 'loading' | 'broken' }
-  | { status: 'ready'; src: string; backgroundColor: string | null };
+  { status: 'idle' | 'broken' } | { status: 'ready'; src: string; backgroundColor: string | null };
+// A fetch's outcome, tagged with the inputs it was fetched for.
+type Loaded = State & { key: string };
+const IDLE: State = { status: 'idle' };
 
 const DEFAULT_BOX =
   'h-7 w-9 rounded border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-900/40';
@@ -56,7 +58,11 @@ export function DiagramThumbnail({
 }) {
   const ref = useRef<HTMLSpanElement>(null);
   const [visible, setVisible] = useState(false);
-  const [state, setState] = useState<State>({ status: 'idle' });
+  // The latest outcome counts only for the inputs it was fetched for: anything else (a new version
+  // still loading, no viewer yet) is idle, so a revoked blob URL is never shown.
+  const fetchKey = JSON.stringify([ownerId, diagramId, version, shareCode ?? null]);
+  const [loaded, setLoaded] = useState<Loaded | null>(null);
+  const state: State = loaded?.key === fetchKey ? loaded : IDLE;
 
   // Defer the fetch until the row/card is near the viewport.
   useEffect(() => {
@@ -79,7 +85,6 @@ export function DiagramThumbnail({
     if (offline || !visible || !ownerId) return;
     let cancelled = false;
     let activeUrl: string | null = null;
-    setState({ status: 'loading' });
     apiFetchDiagramThumbnailUrl(ownerId, diagramId, { version, shareCode: shareCode ?? null })
       .then((result) => {
         if (cancelled) {
@@ -87,20 +92,25 @@ export function DiagramThumbnail({
           return;
         }
         if (!result) {
-          setState({ status: 'broken' });
+          setLoaded({ key: fetchKey, status: 'broken' });
           return;
         }
         activeUrl = result.url;
-        setState({ status: 'ready', src: result.url, backgroundColor: result.backgroundColor });
+        setLoaded({
+          key: fetchKey,
+          status: 'ready',
+          src: result.url,
+          backgroundColor: result.backgroundColor,
+        });
       })
       .catch(() => {
-        if (!cancelled) setState({ status: 'broken' });
+        if (!cancelled) setLoaded({ key: fetchKey, status: 'broken' });
       });
     return () => {
       cancelled = true;
       if (activeUrl) URL.revokeObjectURL(activeUrl);
     };
-  }, [offline, visible, ownerId, diagramId, version, shareCode]);
+  }, [offline, visible, ownerId, diagramId, version, shareCode, fetchKey]);
 
   // Offline Mode (docs/specs/006-diagram/offline-mode.md): a fixed illustration, no fetch, no snapshot.
   if (offline) {
