@@ -5,7 +5,7 @@ import { LightDarkToggle } from '@/components/illustrations/tools';
 export const metadata = helpMetadata({
   title: 'Appearance: Light, Dark, System',
   description:
-    'Set the editor to Light, Dark, or System with the toggle on the tab bar. New visitors start on System, so it matches their device. It recolours the editor around your work, your choice is remembered, and the Default theme follows it.',
+    'Set livediagram to Light, Dark, or System with the toggle on the tab bar or in the site header. New visitors start on System, so it matches their device. One choice covers the editor, the website and this help centre, it is remembered, and the Default theme follows it.',
   path: '/help/tools/dark-mode/',
 });
 
@@ -16,7 +16,9 @@ export const metadata = helpMetadata({
   categorySlug="tools"
 >
 
-**Appearance** is how the editor itself looks, just for you. It is the small sun / moon / monitor button on the right edge of the tab bar, and clicking it walks through three settings in turn: **Light**, **Dark**, then **System**. The glyph shows where you are, and the hover card tells you where the next click takes you.
+**Appearance** is how livediagram itself looks, just for you. In the editor it is the small sun / moon / monitor button on the right edge of the tab bar; on the website, this help centre and the telemetry dashboard it is the same button in the header, next to the call-to-action buttons. Clicking it walks through three settings in turn: **Light**, **Dark**, then **System**. The glyph shows where you are, and the button's name tells you where the next click takes you.
+
+**One choice covers everything.** Pick Dark in the help centre and the editor opens dark too, and the other way round.
 
 <Figure caption="The toggle on the tab bar cycles the editor's appearance between Light, Dark, and System.">
   <LightDarkToggle />
@@ -56,8 +58,8 @@ Tabs on the Default scheme never trigger it. They already match — that is the 
 
 ## Your choice sticks
 
-- **Remembered.** Your pick is saved in your browser, so a refresh, or your next visit, keeps the appearance you chose.
-- **No flash.** It is worked out before the page first paints — your saved pick, or your device setting if you have not made one — on every screen including the welcome and new-diagram flows, so you never see a flash of the wrong one.
+- **Remembered.** Your pick is saved in your browser, so a refresh, or your next visit, keeps the appearance you chose, on every livediagram page.
+- **No flash.** It is worked out before the page first paints — your saved pick, or your device setting if you have not made one — on every screen including the website, this help centre and the welcome and new-diagram flows, so you never see a flash of the wrong one.
 
 <Tip>
   Prefer a dark workspace? Set it once and forget it. Leave your tabs on the Default theme and the
