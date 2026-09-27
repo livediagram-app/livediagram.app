@@ -153,7 +153,7 @@ Nine tools. The search/view capability is two tools (find, then read); create,
 add_tab, and update are separate because their inputs and intent differ;
 list_templates exposes the template catalogue ([§4.5](#45-list_templates));
 share, rename, and delete complete the CRUD verbs
-([§4.8](#48-share_diagram), [§4.9](#49-rename_diagram-and-delete_diagram)).
+([§4.8](#48-share_diagram), [§4.9](#49-rename_diagram-and-delete_diagram), [§4.9a](#49a-list_trash-and-restore_diagram)).
 Every one of them declares its behaviour as **annotations**
 ([§4.14](#414-tool-annotations-behaviour-hints)) and describes itself in facts
 rather than instructions ([§4.15](#415-descriptions-state-facts-not-instructions)).
@@ -331,17 +331,34 @@ assistant to "rename that" or "delete the old one":
   (`PUT /api/diagrams/<id>` `{ name }`), or one tab when `tabId` is given (no
   tab-name-only route, so it reads the tab and writes it back with the new
   name). Non-destructive.
-- **`delete_diagram`** — `{ diagramId, tabId?, permanent? }`. Moves the
-  diagram to the [Trash](../013-workspace/trash.md) (`DELETE /api/diagrams/<id>`),
-  restorable for 30 days, and says so in its result (`trashed: true`,
-  `restorableForDays`). `permanent: true` deletes it for good at once
-  (`?permanent=true`), and is described as for an explicit request only. With
-  `tabId` it deletes one tab (`DELETE …/tabs/<tabId>`) outright: tabs have no
-  Trash. Still destructive, so the description tells the model to confirm with
-  the user first; the api refuses deleting a diagram's last remaining tab, and a
-  diagram already in the Trash answers 410, which the tool turns into "already in
-  the Trash; pass permanent: true". Both inherit the ordinary owner/team authorization the routes
-  already enforce ([Public API and API tokens §3.4](public-api-and-tokens.md)).
+- **`delete_diagram`** — `{ diagramId, tabId? }`. Moves the diagram to the
+  [Trash](../013-workspace/trash.md) (`DELETE /api/diagrams/<id>`), restorable
+  for 30 days, and says so in its result (`trashed: true`, `restorableForDays`).
+  There is no permanent option: an AI tool can only ever bin a diagram, never
+  destroy it. A permanent delete stays with the person (Settings › Trash) or
+  the REST API's `?permanent=true` ([Public API and API tokens](public-api-and-tokens.md)).
+  With `tabId` it deletes one tab (`DELETE …/tabs/<tabId>`) outright: tabs have
+  no Trash. Still destructive, so the description tells the model to confirm
+  with the user first; the api refuses deleting a diagram's last remaining tab,
+  and a diagram already in the Trash answers 410, which the tool reports as
+  already in the Trash, pointing at `list_trash`.
+
+Both inherit the ordinary owner/team authorization the routes already enforce
+([Public API and API tokens §3.4](public-api-and-tokens.md)).
+
+### 4.9a `list_trash` and `restore_diagram`
+
+The way back from `delete_diagram`, with exactly the REST Trash's authority
+(`GET /api/trash`, `POST /api/trash/<id>/restore`): the user's personal Trash
+and every team Trash they have joined.
+
+- **`list_trash`** — `{}`. Read-only. Each diagram the user may restore:
+  `{ id, name, library, deletedAt, purgeAt }`, `library` being `personal` or
+  the team's name, the two times ISO 8601.
+- **`restore_diagram`** — `{ diagramId }`. Restores it to its folder, or
+  Unsorted when that folder is gone, and returns `{ restored, id, name, url }`.
+  A 404 (not in the Trash, or not the user's) becomes a model-correctable error
+  pointing at `list_trash`.
 
 ### 4.10 Prompts (discoverability)
 
@@ -425,14 +442,14 @@ while a destructive one always asks. Directory listings (the Claude connectors
 portal among them) also require them, and a missing block is a listing blocker,
 which is how the gap was found.
 
-Three behaviours cover the nine tools, and each is a preset in
+Three behaviours cover the eleven tools, and each is a preset in
 `apps/mcp/src/tool-annotations.ts`:
 
-| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                          |
-| --------------- | -------------- | ----------------- | -------------------------------------------------------------- |
-| **read**        | `true`         | (not applicable)  | `find_diagrams`, `read_diagram`, `list_templates`              |
-| **write**       | `false`        | `false`           | `create_diagram`, `add_tab`, `share_diagram`, `rename_diagram` |
-| **destructive** | `false`        | `true`            | `update_diagram`, `delete_diagram`                             |
+| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                             |
+| --------------- | -------------- | ----------------- | --------------------------------------------------------------------------------- |
+| **read**        | `true`         | (not applicable)  | `find_diagrams`, `read_diagram`, `list_templates`, `list_trash`                   |
+| **write**       | `false`        | `false`           | `create_diagram`, `add_tab`, `share_diagram`, `rename_diagram`, `restore_diagram` |
+| **destructive** | `false`        | `true`            | `update_diagram`, `delete_diagram`                                                |
 
 The split mirrors §4.11's read-only-token boundary exactly (what a
 `read_only = 1` token can still reach is what `read` annotates), so the hint a

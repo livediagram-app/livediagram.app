@@ -18,8 +18,8 @@ import {
   type Tab,
 } from '@livediagram/diagram';
 import { TEMPLATES, TEMPLATE_CATEGORIES, templateCategory } from '@livediagram/templates';
-import { TRASH_RETENTION_DAYS } from '@livediagram/api-schema';
-import { apiFetch, apiJson, reportApiFailure } from './api';
+import { TRASH_RETENTION_DAYS, type TrashedDiagram } from '@livediagram/api-schema';
+import { ApiError, apiFetch, apiJson, reportApiFailure } from './api';
 import type { Env } from './env';
 import { fetchTeamLibraries, matchDiagrams } from './find-diagrams';
 import {
@@ -47,6 +47,8 @@ import {
   createDiagramShape,
   findDiagramsShape,
   deleteDiagramShape,
+  listTrashShape,
+  restoreDiagramShape,
   readDiagramShape,
   renameDiagramShape,
   shareDiagramShape,
@@ -457,20 +459,19 @@ export function registerTools(server: McpServer, env: Env): void {
       behaviour: 'destructive',
       title: 'Delete a diagram or tab',
       description:
-        'Delete a diagram by moving it to the Trash, where the user can restore it for ' +
-        `${TRASH_RETENTION_DAYS} days before it is purged; with permanent: true it is deleted ` +
-        'for good at once. With tabId, delete just one of its tabs, outright. Confirm with ' +
-        'the user first. A diagram must keep at least one tab.',
+        'Delete a diagram by moving it to the Trash, where it can be restored for ' +
+        `${TRASH_RETENTION_DAYS} days (with restore_diagram, or from Settings › Trash) before ` +
+        'it is purged. With tabId, delete just one of its tabs, outright: tabs have no ' +
+        'Trash. Confirm with the user first. A diagram must keep at least one tab.',
       inputSchema: deleteDiagramShape,
     },
     async (args, extra) => {
       const token = requireToken(extra as Extra);
-      // A whole diagram goes to the Trash (docs/specs/013-workspace/trash.md)
-      // unless the call asks for a permanent delete; a tab has no Trash.
-      const permanent = args.permanent === true;
+      // A whole diagram only ever goes to the Trash (docs/specs/013-workspace/trash.md):
+      // a permanent delete is the REST API's, never an AI tool's. A tab has no Trash.
       const path = args.tabId
         ? `/diagrams/${args.diagramId}/tabs/${args.tabId}`
-        : `/diagrams/${args.diagramId}${permanent ? '?permanent=true' : ''}`;
+        : `/diagrams/${args.diagramId}`;
       // DELETE returns 204 with no body, so use apiFetch (apiJson would choke
       // parsing an empty response) and surface a clear message on failure.
       const res = await apiFetch(env, token, path, { method: 'DELETE' });
@@ -483,22 +484,91 @@ export function registerTools(server: McpServer, env: Env): void {
             (args.tabId
               ? 'A diagram must keep at least one tab — you cannot delete the last one.'
               : res.status === 410
-                ? 'It is already in the Trash; pass permanent: true to delete it for good.'
+                ? 'It is already in the Trash (see list_trash).'
                 : 'Check the diagram id and that you own it.'),
         );
       }
       return textResult(
         args.tabId
           ? { deleted: 'tab', diagramId: args.diagramId, tabId: args.tabId }
-          : permanent
-            ? { deleted: 'diagram', diagramId: args.diagramId, trashed: false }
-            : {
-                deleted: 'diagram',
-                diagramId: args.diagramId,
-                trashed: true,
-                restorableForDays: TRASH_RETENTION_DAYS,
-              },
+          : {
+              deleted: 'diagram',
+              diagramId: args.diagramId,
+              trashed: true,
+              restorableForDays: TRASH_RETENTION_DAYS,
+            },
       );
+    },
+  );
+
+  // The Trash (docs/specs/013-workspace/trash.md, docs/specs/015-api/mcp-server.md §4.9):
+  // what delete_diagram put there, and the way back. Same authorisation as
+  // GET /api/trash and POST /api/trash/<id>/restore: the user's personal Trash
+  // and every team Trash they have joined.
+  registerTool(
+    server,
+    env,
+    'list_trash',
+    {
+      behaviour: 'read',
+      title: 'List the Trash',
+      description:
+        'List the diagrams in the user’s Trash (their own and every team they belong to), ' +
+        `each restorable with restore_diagram until it is purged ${TRASH_RETENTION_DAYS} days ` +
+        'after deletion. Returns id, name, library, when it was deleted, and when it goes.',
+      inputSchema: listTrashShape,
+    },
+    async (_args, extra) => {
+      const token = requireToken(extra as Extra);
+      const { trash } = await apiJson<{ trash?: TrashedDiagram[] }>(env, token, '/trash');
+      return textResult({
+        trash: (trash ?? []).map((t) => ({
+          id: t.id,
+          name: t.name,
+          library: t.teamName ?? (t.teamId ? 'team' : 'personal'),
+          deletedAt: new Date(t.trashedAt).toISOString(),
+          purgeAt: new Date(t.purgeAt).toISOString(),
+        })),
+      });
+    },
+  );
+
+  registerTool(
+    server,
+    env,
+    'restore_diagram',
+    {
+      behaviour: 'write',
+      title: 'Restore a diagram from the Trash',
+      description:
+        'Bring a deleted diagram back from the Trash, to the folder it was in (or Unsorted ' +
+        'if that folder is gone), with its tabs and share links. Find it with list_trash.',
+      inputSchema: restoreDiagramShape,
+    },
+    async (args, extra) => {
+      const token = requireToken(extra as Extra);
+      try {
+        const { diagram } = await apiJson<{ diagram?: { id: string; name: string } | null }>(
+          env,
+          token,
+          `/trash/${encodeURIComponent(args.diagramId)}/restore`,
+          { method: 'POST' },
+        );
+        return textResult({
+          restored: 'diagram',
+          id: diagram?.id ?? args.diagramId,
+          name: diagram?.name ?? null,
+          url: deepLink(diagram?.id ?? args.diagramId),
+        });
+      } catch (err) {
+        // Not in the Trash, or not the user's to restore: model-correctable.
+        if (err instanceof ApiError && err.status === 404) {
+          return errorResult(
+            'That diagram is not in the Trash, or is not yours to restore. Check the id with list_trash.',
+          );
+        }
+        throw err;
+      }
     },
   );
 }

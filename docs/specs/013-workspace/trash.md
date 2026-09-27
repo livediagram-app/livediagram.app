@@ -10,6 +10,11 @@ deletion still feels permanent, the delete confirmations stay, and nothing nags
 about where the diagram went. Someone who deleted the wrong thing can go and
 fetch it back.
 
+Every delete confirmation says so once, quietly, and nothing else does: "It
+can be restored from Settings › Trash for 30 days." (for a team diagram, "Any
+teammate can restore it …"). There is no undo toast and no "moved to Trash"
+message.
+
 Every delete of a whole diagram goes to the Trash: the Explorer, the editor,
 the team library, the public API with a token, and the MCP server. The rule is
 the same for guests and signed-in users. Tabs are not trashed; deleting a tab
@@ -54,8 +59,14 @@ Trash are always confirmed. Restore is not: it destroys nothing.
 "Days left" counts whole days until the purge is due, rounded up, so a diagram
 deleted a moment ago shows 30 and one due within the day shows 1.
 
-The Trash is reached from a menu, never a sidebar row, so it stays out of the
-way of everyday work.
+The Trash is reached from Settings only, never a sidebar row or the account
+menu, so it stays out of the way of everyday work: **Settings › Account** has a **Trash** row, for everyone,
+guests and deployments without accounts included, because Settings is the one
+menu every deployment has. The view itself lives at `/explorer/trash`.
+
+Empty Trash empties **one group**: your diagrams, one team's, or this
+browser's. Emptying a team's Trash is said to be for the whole team in its
+confirmation; nothing empties more than one group at once.
 
 ## Restore
 
@@ -95,8 +106,12 @@ rather than a generic error:
 - **Edits and saves** are rejected with a named error, `diagram_trashed`, so an
   editor left open on another device stops and says why instead of failing
   silently.
-- **Opening it by URL** shows the deleted state. Someone with the authority to
-  restore it is offered **Restore** there as well.
+- **Opening it by URL** shows the deleted state, a card saying the diagram was
+  deleted. Someone with the authority to restore it (the diagram is in their
+  own Trash) is offered **Restore** on that card, with the days it has left;
+  a share-link visitor only learns that it was deleted, and that the link
+  works again if it is restored. The same card replaces an editor that was
+  open when the diagram was trashed.
 
 Who learns that a diagram is trashed, rather than simply not found: anyone who
 could have opened it (its owner, a joined team member, a share-link holder).
@@ -131,8 +146,8 @@ diagrams they name.
 An offline diagram lives only in this browser, so its Trash does too. Deleting
 one marks its IndexedDB record as trashed with the time; the record keeps
 everything it had. The local Trash follows the same 30-day rule, applied
-whenever the app runs rather than by a server cron: listing diagrams purges any
-local record past its 30 days first. A browser that is not opened for months
+whenever the app runs rather than by a server cron: listing diagrams, or
+opening the Trash, purges any local record past its 30 days first. A browser that is not opened for months
 keeps its trashed records until it is.
 
 ## The API
@@ -154,8 +169,11 @@ An API token reaches the Trash like it reaches everything else
 ([Public API and API tokens](../015-api/public-api-and-tokens.md)); a
 read-only token may list but not restore or purge.
 
-The MCP `delete_diagram` tool moves a diagram to the Trash, and takes
-`permanent: true` to delete it for good ([MCP server](../015-api/mcp-server.md)).
+The MCP server ([MCP server](../015-api/mcp-server.md)) goes to the Trash only:
+`delete_diagram` moves a diagram there and has no permanent option, so an AI
+tool can bin a diagram but never destroy one. `list_trash` and
+`restore_diagram` are the way back, with the REST Trash's authority. The
+permanent delete stays with the person and the REST API.
 
 ## Designed for a mirror
 
@@ -165,6 +183,14 @@ restores it, and emptying Drive's bin purges it. The three operations are plain
 calls with no HTTP concerns (`trashDiagram`, `restoreDiagram`,
 `purgeDiagrams`), each taking a diagram id and a time, so the mirror calls them
 directly.
+
+## Telemetry
+
+One category, `Trash` ([Telemetry](../017-telemetry/telemetry.md)): `Opened`
+(`Settings`), and `Restored` / `Deleted` (for good) / `Cleared` (Empty
+Trash), each typed by the Trash it happened in: `Personal`, `Team` or
+`Local`. The delete itself stays `Diagram·Deleted`. Whether anyone ever comes
+back for a deleted diagram is the question these answer; no names are sent.
 
 ## Decided trade-offs
 
@@ -181,5 +207,12 @@ directly.
 - **Timeline history is hidden, not swept.** A hard delete sweeps a diagram's
   Timeline events; trashing hides them, so a restored diagram comes back with
   its history. The purge sweeps them.
+- **A teammate's Take Offline goes to the team Trash.** Only the owner's Take
+  Offline bypasses the Trash. When a teammate takes a team diagram into their
+  own browser it leaves the owner and the team for good, which from their side
+  is a deletion, the same reading the Timeline already gives it.
+- **The image gallery still counts a trashed diagram as using its images.** It
+  does reference them until the purge, and deleting such an image would break
+  the diagram the moment it is restored.
 - **Milestones count trashed diagrams.** The diagram-count milestone email
   counts what an owner created, so binning and restoring never re-earns one.

@@ -253,10 +253,10 @@ export function DeleteDialog() {
         </Label>
         <TextBar x={132} y={92} w={170} />
         <Label x={102} y={116} size={9} tone="muted">
-          Its share links stop working. You can
+          Its share links stop working. It can be
         </Label>
         <Label x={102} y={130} size={9} tone="muted">
-          restore it from the Trash within 30 days.
+          restored from Settings › Trash for 30 days.
         </Label>
         <Button x={102} y={154} w={92} label="Cancel" variant="default" />
         <Button x={206} y={154} w={112} label="Delete" variant="primary" />

@@ -118,7 +118,7 @@ tabs in a create_diagram call.
 // resources (docs/specs/015-api/mcp-server.md §4.5). Phrased as facts about the server (what it does
 // with what you send, and where the format is written down), not as rules for
 // the calling model (docs/specs/015-api/mcp-server.md §4.15).
-export const SERVER_INSTRUCTIONS = `Tools to find, view, create, add tabs to, edit, share, rename, and delete the user's livediagram diagrams.
+export const SERVER_INSTRUCTIONS = `Tools to find, view, create, add tabs to, edit, share, rename, delete (to the Trash) and restore the user's livediagram diagrams.
 The calling model produces the diagram elements AND decides their layout; this
 server validates, persists, and renders them, and only auto-arranges the graph
 when you ask it to (or leave nodes unplaced). The full element format is
@@ -308,15 +308,15 @@ export const deleteDiagramShape = {
         'least one tab, so deleting the last remaining tab is refused. A tab is deleted ' +
         'outright; it does not go to the Trash.',
     ),
-  permanent: z
-    .boolean()
-    .optional()
-    .describe(
-      'Delete the whole diagram for good instead of moving it to the Trash, where it can ' +
-        'otherwise be restored for 30 days. Only when the user explicitly asks for a ' +
-        'permanent delete.',
-    ),
 };
+
+// The Trash (docs/specs/013-workspace/trash.md): restore one diagram by id.
+export const restoreDiagramShape = {
+  diagramId: z.string().describe('The diagram to restore (from list_trash).'),
+};
+
+// Listing the Trash takes no arguments: it is everything the user may restore.
+export const listTrashShape = {};
 
 export const renameDiagramShape = {
   diagramId: z.string().describe('The diagram to rename (from find_diagrams / read_diagram).'),
