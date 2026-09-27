@@ -16,10 +16,7 @@
 // `activeTab.elements`, `tick`, `zoomRef`, etc. on every move event,
 // but we don't want to re-attach those listeners every render. A ref
 // gives the effect a stable hook (one attach per drag start) plus a
-// fresh view of the parent state on every fire. The previous inline
-// shape used an `// eslint-disable-next-line react-hooks/exhaustive-deps`
-// comment for the same reason; the ref is the lint-clean version of
-// that pattern.
+// fresh view of the parent state on every fire.
 
 import { useEffect, useRef, useState } from 'react';
 import {

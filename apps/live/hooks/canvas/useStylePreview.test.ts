@@ -1,14 +1,11 @@
-import { describe, it, expect, vi } from 'vitest';
+// @vitest-environment jsdom
+
+import { renderHook } from '@testing-library/react';
+import { describe, it, expect } from 'vitest';
 
 // useStylePreview keeps one piece of React state — a `useRef` holding the
-// pre-hover snapshot. The test runner is the Node environment (no React
-// renderer; see vitest.config.ts), so we stub `useRef` with a plain mutable
-// box. The hook is invoked once per harness and reuses that single box across
-// the closures it returns, which is exactly the per-instance behaviour we want.
-vi.mock('react', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('react')>();
-  return { ...actual, useRef: <T>(init: T) => ({ current: init }) };
-});
+// pre-hover snapshot. The hook renders once per harness and its closures share
+// that one ref, which is exactly the per-instance behaviour we want.
 
 import { createShape, type Element, type Tab } from '@livediagram/diagram';
 import type { ShapeColorPreset } from '@/lib/themes';
@@ -44,21 +41,22 @@ function harness() {
   const a = createShape('square', 0, 0);
   let committed: Tab[] = [{ id: 'tab1', name: 'Tab', elements: [a] }];
   const tabsRef = { current: committed };
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const preview = useStylePreview({
-    editsBlocked: false,
-    activeId: 'tab1',
-    currentSelectionIds: () => new Set([a.id]),
-    tabsRef: tabsRef as React.MutableRefObject<Tab[]>,
-    tickTabs: (map) => {
-      committed = map(committed);
-    },
-    commitTabs: (map) => {
-      committed = map(committed);
-    },
-    emitChange: () => {},
-    previewingRef: { current: false } as React.MutableRefObject<boolean>,
-  });
+  const preview = renderHook(() =>
+    useStylePreview({
+      editsBlocked: false,
+      activeId: 'tab1',
+      currentSelectionIds: () => new Set([a.id]),
+      tabsRef: tabsRef as React.MutableRefObject<Tab[]>,
+      tickTabs: (map) => {
+        committed = map(committed);
+      },
+      commitTabs: (map) => {
+        committed = map(committed);
+      },
+      emitChange: () => {},
+      previewingRef: { current: false } as React.MutableRefObject<boolean>,
+    }),
+  ).result.current;
   return {
     preview,
     a,
