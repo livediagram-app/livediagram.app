@@ -23,7 +23,7 @@ Scope, by file:
 | `apps/live/hooks/canvas/useStyleMemory.ts`                                  | Per-diagram memory state + `localStorage`; `recordEdit`, `styleNewElement`, `forget`     |
 | `apps/live/hooks/canvas/useQuickStyle.ts`                                   | Panel actions: one commit per choice, memory, telemetry                                  |
 | `apps/live/hooks/ui/useQuickStylePlacement.ts`                              | Measures chrome and the panel, runs the walk, re-runs on chrome change                   |
-| `apps/live/components/canvas/QuickStylePanel.tsx`                           | The panel                                                                                |
+| `apps/live/components/canvas/QuickStylePanel.tsx`                           | The panel: docked (Palette dress) or compact by layout                                   |
 | `apps/live/components/canvas/quick-style-rows.tsx`                          | `QuickRadioRow`, swatch and glyph options, roving focus                                  |
 | `apps/live/app/diagram/[id]/useEditorState.ts`                              | Wires memory into the style hooks and the creation hooks; exposes the panel's view-model |
 | `apps/live/app/diagram/[id]/EditorView.tsx`                                 | Mounts the panel                                                                         |
@@ -188,7 +188,26 @@ arrow), `useElementCreation.dropPaletteItem`, `useArrowConnect.connectArrowTo`,
 
 ## Placement
 
-`placeQuickStylePanel({ area, panel, obstacles, gap })`, all rects in viewport px, `gap = 12`:
+`placeQuickStylePanel({ layout, area, panel, obstacles, anchor, gap })`, all rects in viewport px,
+`gap = QUICK_STYLE_GAP_PX = 12`; `layout` is `resolvePanelLayout(userPreferences)`; `anchor` is
+the floating Palette's rect or `null`. `inner` = `area` inset by `gap`.
+
+**Floating with an anchor** (`dockToPalette`), `D = QUICK_STYLE_DOCK_GAP_PX = 16`:
+
+1. `left = clamp(anchor.left, inner.left, inner.right - panel.width)`; `panel.width` is the
+   anchor's width (the panel is sized to the Palette before it is measured).
+2. `others` = obstacles other than the anchor's own rect; `column` = those overlapping
+   `[left, left + panel.width]` horizontally.
+3. Beneath: `top = anchor.bottom + D`. Repeat: a `column` obstacle covering `top` moves
+   `top` to its bottom + `D`; else `next` = the nearest `column` obstacle below,
+   `room = min(inner.bottom, next.top - D) - top`. `room >= panel.height` → **under-palette**.
+   The first `room >= QUICK_STYLE_DOCK_MIN_HEIGHT_PX = 160` is kept as the scrolling choice
+   (`maxHeight = room`). Continue from `next.bottom + D`; stop when there is no `next`.
+4. Above: `top = anchor.top - D - panel.height`, stepping above any `others` hit, while
+   `top >= inner.top`: a clear box → **over-palette**.
+5. Else the scrolling choice, if any; else the right-edge walk.
+
+**Right edge** (Toolbar, Minimal, and the Floating fallback):
 
 1. `rightX = area.right - gap - panel.width`; `centreY = area.top + (area.height - panel.height) / 2`.
 2. `edge` = obstacles whose rect intersects the band `[rightX - gap, area.right]` horizontally.
@@ -196,15 +215,20 @@ arrow), `useElementCreation.dropPaletteItem`, `useArrowConnect.connectArrowTo`,
    edge bottom, ascending; (c) `(rightX, o.top - gap - panel.height)` for each distinct edge top,
    descending; (d) `(min(edge.left) - gap - panel.width, centreY)`; (e) `(area.left + gap, centreY)`.
    (b) to (d) only when `edge` is non-empty.
-4. A candidate is valid when it lies inside `area` inset by `gap` and intersects no obstacle inflated
-   by `gap`. The first valid wins; none → (a) with `fallback: true` (logged).
+4. A candidate is valid when it lies inside `inner` and intersects no obstacle inflated by `gap`.
+   The first valid wins; none → (a) with `fallback: true` (logged).
 
-`useQuickStylePlacement(panelRef, active)` measures `main[data-canvas-a11y-root]` (area), the panel,
-and obstacles `[data-tour-id="palette"], [data-toolbar-more], [data-floating-panel],
-[data-zoom-cluster]` with a non-empty rect, in a layout effect before paint, then again on:
-`ResizeObserver` (area, panel, obstacles), `resize`, `pointerup` / `keyup` (capture),
-`transitionend`, and `livediagram:panel-layout-changed`; coalesced to one run per animation frame.
-Until the first measure the panel renders `visibility: hidden` so it never paints in the wrong spot.
+`useQuickStylePlacement(panelRef, active, layout) => { left, top, width, maxHeight } | null`
+measures `main[data-canvas-a11y-root]` (area), the panel, the anchor
+`[data-tour-id="palette"][data-floating-panel]` (Floating only) and obstacles
+`[data-tour-id="palette"], [data-toolbar-more], [data-floating-panel], [data-zoom-cluster]` with a
+non-empty rect, in a layout effect before paint, then again on: `ResizeObserver` (area, panel,
+obstacles, so a collapsing Palette is followed), a `MutationObserver` on the anchor's
+`style` / `class` (so a dragged Palette is followed live), `resize`, `pointerup` / `keyup`
+(capture), `transitionend`, and `livediagram:panel-layout-changed`; coalesced to one run per
+animation frame. The panel's height is its NATURAL height (`[data-quick-style-body]` scroll
+height), never the capped one, so the cap cannot oscillate. Until the first measure the panel
+renders `visibility: hidden` so it never paints in the wrong spot.
 
 ## Behaviour and state
 
@@ -217,13 +241,18 @@ Transitions are driven by selection and those flags only; the panel owns no stat
 
 ## Presentation and UX
 
-- Container: `fixed`, `z-[var(--z-panel)]`, width `w-52` (208 px), `rounded-lg border bg-white p-2
-shadow-lg` with `dark:border-slate-800 dark:bg-slate-900`; `data-quick-style-panel`; stops
-  `pointerdown` / `contextmenu` from reaching the canvas.
+- Floating (docked): the Palette's dress: `rounded-lg border bg-white shadow-lg`
+  (`dark:border-slate-800 dark:bg-slate-900`), `data-panel-translucent`, a header copied from
+  `MovablePanelHeader` (title "Quick style" + `HelpArticleLink article="quickStylePanel"`, no drag or
+  collapse), and a body `[data-quick-style-body]` with `p-2.5`, `overflow-y-auto` under a cap; width
+  and `maxHeight` from the placement.
+- Toolbar / Minimal (compact): the same surface with no header, width `w-52` (208 px), `p-2`.
+- Both: `fixed`, `z-[var(--z-panel)]`, `data-quick-style-panel`, `data-layout`; stop `pointerdown` /
+  `contextmenu` from reaching the canvas.
 - Section: title `text-[10px] font-semibold uppercase tracking-wider text-slate-500
 dark:text-slate-400` (hidden when `showTitles` is false), then the row; `gap-2.5` between sections;
   a divider above Actions.
-- Colour row: seven 24 px swatches, 4 px apart (192 px); the swatch paints its colour, a selected
+- Colour row: seven 24 px swatches, at least 4 px apart, spread across the row (`justify-between`); the swatch paints its colour, a selected
   swatch shows a 2 px ring in `brand-500`.
 - Three-option rows: three equal buttons, 28 px tall, glyph-only (line weights, dash patterns, align
   glyphs, icon-before / above / after glyphs); selected = `bg-brand-50 text-brand-700 ring-brand-300`,
@@ -295,23 +324,26 @@ QuickTextAlign | QuickIconAlign | QuickClearStyles`.
 
 ## Testing
 
-| Spec rule                                             | Test                                                   |
-| ----------------------------------------------------- | ------------------------------------------------------ |
-| Seven swatches, default first, six from the palette   | `quick-swatches.test.ts`                               |
-| Toned hues, readable backgrounds, visible strokes     | `quick-swatches.test.ts`                               |
-| Bound colours follow a theme change (shapes + arrows) | `quick-swatch-rederive.test.ts`                        |
-| Hand-set colour / preset / reset clears the binding   | `style-presets.test.ts`, `quick-style.test.ts`         |
-| Painter carries a binding only with its colour        | `format-painter.test.ts`, `format-config.test.ts`      |
-| Validation rejects a bad slot                         | `validate.test.ts`                                     |
-| Sections, mixed selection, shared value, style set    | `quick-style.test.ts`                                  |
-| Flowing in one choice                                 | `quick-style.test.ts`, `e2e/quick-style-panel.spec.ts` |
-| Clear styles resets fields and forgets kinds          | `quick-style.test.ts`, `style-memory.test.ts`, e2e     |
-| Memory per kind, arrows separate, field by field      | `style-memory.test.ts`                                 |
-| Theme defaults are not memories                       | `style-memory.test.ts`                                 |
-| Carries to the next drawn element of the kind only    | `style-memory.test.ts`, e2e                            |
-| Parse drops junk                                      | `style-memory.test.ts`                                 |
-| Placement order and fallback                          | `quick-style-placement.test.ts`                        |
-| Radio groups, names, keyboard                         | `QuickStylePanel.test.tsx`                             |
+| Spec rule                                                                     | Test                                                             |
+| ----------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| Seven swatches, default first, six from the palette                           | `quick-swatches.test.ts`                                         |
+| Toned hues, readable backgrounds, visible strokes                             | `quick-swatches.test.ts`                                         |
+| Bound colours follow a theme change (shapes + arrows)                         | `quick-swatch-rederive.test.ts`                                  |
+| Hand-set colour / preset / reset clears the binding                           | `style-presets.test.ts`, `quick-style.test.ts`                   |
+| Painter carries a binding only with its colour                                | `format-painter.test.ts`, `format-config.test.ts`                |
+| Validation rejects a bad slot                                                 | `validate.test.ts`                                               |
+| Sections, mixed selection, shared value, style set                            | `quick-style.test.ts`                                            |
+| Flowing in one choice                                                         | `quick-style.test.ts`, `e2e/quick-style-panel.spec.ts`           |
+| Clear styles resets fields and forgets kinds                                  | `quick-style.test.ts`, `style-memory.test.ts`, e2e               |
+| Memory per kind, arrows separate, field by field                              | `style-memory.test.ts`                                           |
+| Theme defaults are not memories                                               | `style-memory.test.ts`                                           |
+| Carries to the next drawn element of the kind only                            | `style-memory.test.ts`, e2e                                      |
+| Parse drops junk                                                              | `style-memory.test.ts`                                           |
+| Placement order and fallback                                                  | `quick-style-placement.test.ts`                                  |
+| Floating docks under the Palette, follows collapse / move, scrolls when short | `quick-style-placement.test.ts`, `e2e/quick-style-panel.spec.ts` |
+| Toolbar sits on the right edge, centred                                       | `quick-style-placement.test.ts`, `e2e/quick-style-panel.spec.ts` |
+| One click on Flowing sets dashed + flow                                       | `e2e/quick-style-panel.spec.ts`                                  |
+| Radio groups, names, keyboard                                                 | `QuickStylePanel.test.tsx`                                       |
 
 ## Constants and configuration
 
@@ -323,5 +355,7 @@ QuickTextAlign | QuickIconAlign | QuickClearStyles`.
 | Lightness clamp, light / dark    | 0.36 to 0.52 / 0.6 to 0.74 | D37                                | 0.25 to 0.8 |
 | `FILL_WASH` light / dark         | 0.2 / 0.3                  | D37                                | 0.1 to 0.4  |
 | `QUICK_STYLE_GAP_PX`             | 12                         | Existing corner insets (`right-3`) | 8 to 24     |
+| `QUICK_STYLE_DOCK_GAP_PX`        | 16                         | panel-docking.md corner-stack gap  | 8 to 24     |
+| `QUICK_STYLE_DOCK_MIN_HEIGHT_PX` | 160                        | D41: header + two rows             | 120 to 240  |
 | `STYLE_MEMORY_WRITE_DEBOUNCE_MS` | 250                        | D36                                | 100 to 1000 |
 | Swatch size / gap                | 24 / 4 px                  | WCAG 2.2 2.5.8 target size         | 24+ / 2+    |

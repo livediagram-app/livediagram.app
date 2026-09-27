@@ -40,20 +40,56 @@ only reason it can be always-there rather than on-demand.
 
 ## Where it sits
 
-- **Right edge, vertically centred** in the canvas area, in every desktop panel layout (Floating,
-  Minimal, Toolbar, [Toolbar layout](../007-editor/toolbar-layout.md)).
-- **Never over the Palette.** The panel is placed after the Palette and the other floating chrome
-  (panels, dock popovers, the Toolbar strip and its More popover, the bottom-right cluster), by
-  trying fixed candidate spots in order and taking the first that overlaps none of them:
-  1. the right edge, centred;
-  2. the right edge, just below an obstacle on that edge, the highest spot first;
-  3. the right edge, just above an obstacle on that edge, the lowest spot first;
-  4. directly left of the obstacles on the right edge, centred;
-  5. the left edge, centred.
+The panel is **docked to the right side**, and each panel layout gives it the home that layout's
+chrome already implies.
 
-  If none is clear, the first is used. The order is fixed so the panel always lands in the same
-  place for the same chrome, and the right edge is preferred because that is where people look for
-  it. Placement is recomputed when the chrome moves or resizes, never on a timer.
+### Floating: the next panel under the Palette
+
+In the Floating layout the Palette is the right-hand floating panel, so the quick style panel
+joins it: **right beneath the Palette**, left edges aligned, the Palette's width, one corner-stack
+gap (16 px, [Panel corner docking](../007-editor/panel-docking.md)) below it. It wears the Palette's
+panel dress: the same surface, border, radius and shadow, a header with its title
+("Quick style") and a help link, and the panel-opacity preference
+([User preferences](../007-editor/user-preferences.md)). It is not draggable and has no collapse
+button of its own: it follows the Palette rather than being placed, and it leaves when the
+selection does.
+
+Reading it as the Palette's companion is the point: the place you pick a thing to draw and the
+place you dress what you drew sit together, and nothing new appears somewhere else on the canvas.
+
+- **The Palette collapses** to its banner: the panel rises with it, staying one gap below.
+- **The Palette moves**, docked to another corner or dragged free: the panel follows, live during
+  the drag, under wherever the Palette now is.
+- **Something is already stacked under the Palette** (Comments, AI): the panel steps down past it,
+  one gap below the lowest panel in the Palette's column.
+- **No room beneath** (a Palette docked at the bottom, or a short window): directly above the Palette
+  if it fits there whole; else beneath it with a capped height and a scrolling body, as long as at
+  least 160 px (the header and two rows) is free; else it falls back to the right-edge placement
+  below.
+- **No Palette on screen**: the right-edge placement below.
+
+### Toolbar and Minimal: the right edge
+
+In the Toolbar layout ([Toolbar layout](../007-editor/toolbar-layout.md)) the Palette is a strip
+across the top, so there is no panel to dock under. The quick style panel sits **on the right edge,
+vertically centred**, in its compact form (no header). Minimal does the same: its Palette is a
+popover that comes and goes, not a resting panel.
+
+### Collisions
+
+Never over the Palette or the other floating chrome (panels, dock popovers, the Toolbar strip and
+its More popover, the bottom-right cluster). The right-edge placement tries fixed candidate spots in
+order and takes the first that overlaps none of them:
+
+1. the right edge, centred;
+2. the right edge, just below an obstacle on that edge, the highest spot first;
+3. the right edge, just above an obstacle on that edge, the lowest spot first;
+4. directly left of the obstacles on the right edge, centred;
+5. the left edge, centred.
+
+If none is clear, the first is used. The orders are fixed so the panel always lands in the same place
+for the same chrome, and the right edge is preferred because that is where people look for it.
+Placement is recomputed when the chrome moves or resizes, never on a timer.
 
 - **Not on phones.** A phone's canvas has no spare edge, and the context menu covers the same
   choices. The panel shows from the `sm` breakpoint up.
@@ -201,7 +237,7 @@ WCAG 2.2 AA.
   Tab moves between rows.
 - Every icon-only option has an accessible name and a **Tooltip** that repeats it (the name after a
   1 s hover, at once on keyboard focus, see
-  [Tooltips, hover cards and popovers](../004-interface-design/README.md)).
+  [Tooltips, hover cards and popovers](../004-interface-design/tooltips-hover-cards-popovers.md)).
 - Focus is always visible. Options are at least 24 px targets.
 - **Section titles are separate from the names**: a row's accessible name does not depend on its
   visible title, so hiding the titles (a Minimal chrome option in Power user mode may do this) is a
