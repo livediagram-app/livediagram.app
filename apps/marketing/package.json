@@ -23,6 +23,7 @@
     "react-dom": "^19.3.0"
   },
   "devDependencies": {
+    "@livediagram/diagram": "workspace:*",
     "@livediagram/eslint-config": "workspace:*",
     "@livediagram/tailwind-config": "workspace:*",
     "@livediagram/vitest-config": "workspace:*",

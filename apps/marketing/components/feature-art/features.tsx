@@ -202,7 +202,7 @@ export function LockArt() {
     <Frame canvas>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
         <rect
-          className="dark:fill-(--art-ink-fill)"
+          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
           x="78"
           y="32"
           width="64"
@@ -381,7 +381,7 @@ export function AccountSyncArt() {
           strokeWidth="1.2"
         >
           <line
-            className="dark:stroke-(--art-ink-stroke)"
+            className="dark:stroke-(--art-arrow)"
             x1="40"
             y1="34"
             x2="46"
@@ -410,7 +410,7 @@ export function AccountSyncArt() {
           strokeWidth="1.2"
         >
           <line
-            className="dark:stroke-(--art-ink-stroke)"
+            className="dark:stroke-(--art-arrow)"
             x1="170"
             y1="34"
             x2="171"

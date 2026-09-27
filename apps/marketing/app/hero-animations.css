@@ -1,19 +1,31 @@
 /* Hero illustration animations (landing page), split out of globals.css to
    keep each file under the ~1000-line budget. Imported from globals.css. */
 
-/* The editor's canvas in dark appearance, for every mock-up here and in the feature art
-   (docs/specs/004-interface-design/appearance.md): the Default colour scheme's dark half
-   (packages/diagram/src/canvas-colors.ts) and the ink it gives an unpainted element (DARK_INK in
-   packages/diagram/src/colors.ts); app/dark-art.test.ts holds them equal. Light keeps each
-   piece's own tints, so these exist under .dark only: markup reaches them through dark:
-   utilities, keyframes through a var() whose fallback is the light colour. A themed canvas
-   (Forest, violet, amber, teal) looks the same in both appearances and never reads them. */
+/* The editor's canvas in dark appearance, for every diagram in the mock-ups here and in the
+   feature art (docs/specs/004-interface-design/appearance.md): the Default colour scheme's dark
+   half (packages/diagram/src/canvas-colors.ts) and the colours packages/diagram/src/colors.ts
+   gives an unpainted element there: a shape's ink, a text element, an arrow and its label, a
+   table's grid, and the shade a heading band or marker takes above a shape. The --art-pick-*
+   set is Pine (packages/diagram/src/themes-data.ts), the scheme the hero's theme beat picks in
+   dark. app/dark-art.test.ts holds every value to its source. Light keeps each piece's own
+   tints, so these exist under .dark only: markup reaches them through dark: utilities,
+   keyframes through a var() whose fallback is the light colour. */
 .dark {
   --art-paper: #0d121a;
   --art-grid: #1c2735;
   --art-ink-fill: #141b26;
   --art-ink-stroke: #64748b;
   --art-ink-text: #ffffff;
+  --art-ink-shade: #1c2533;
+  --art-text: #ffffff;
+  --art-arrow: #64748b;
+  --art-arrow-label: #94a3b8;
+  --art-table-line: #64748b;
+  --art-pick-paper: #14532d;
+  --art-pick-grid: #166534;
+  --art-pick-fill: #166534;
+  --art-pick-stroke: #86efac;
+  --art-pick-text: #dcfce7;
 }
 
 /*
@@ -270,14 +282,14 @@
   }
   48%,
   100% {
-    fill: #dcfce7;
-    stroke: #16a34a;
+    fill: var(--art-pick-fill, #dcfce7);
+    stroke: var(--art-pick-stroke, #16a34a);
   }
 }
 /* the themed (first) card tints its canvas in step with the recolour, so the
-   whole surface shifts palette, not just the shapes. In dark the Default half is
-   the dark canvas, so the grid, the labels and the arrows (dark: utilities reading
-   these inherited properties) change with it; Forest then looks as it does in light. */
+   whole surface shifts palette, not just the shapes. In dark it runs from
+   the dark Default canvas to Pine, so the grid, the labels and the arrows (dark:
+   utilities reading these inherited properties) change with it. */
 .hero-theme-canvas {
   animation: hero-theme-canvas 16s ease-in-out infinite;
 }
@@ -287,14 +299,14 @@
     background-color: var(--art-paper, #eff6ff);
     --hero-grid: var(--art-grid);
     --hero-label: var(--art-ink-text);
-    --hero-arrow: var(--art-ink-stroke);
+    --hero-arrow: var(--art-arrow);
   }
   48%,
   100% {
-    background-color: #f0fdf4;
-    --hero-grid: #cbd5e1;
-    --hero-label: #0c4a6e;
-    --hero-arrow: #0284c7;
+    background-color: var(--art-pick-paper, #f0fdf4);
+    --hero-grid: var(--art-pick-grid);
+    --hero-label: var(--art-pick-text);
+    --hero-arrow: var(--art-pick-stroke);
   }
 }
 
@@ -695,8 +707,10 @@
     transform: translate(-50%, -50%) scale(1);
   }
 }
-/* The theme cards in dark: the dialog card border and the selection ring the editor draws there. */
+/* The theme cards in dark: the dialog card border, the selection ring the editor draws there,
+   and where Pine sits (third in the Dark category, where Forest is second in light). */
 .dark .hero-dialog {
+  --hero-pick-x: 197px;
   --hero-card-border: var(--color-slate-700);
   --hero-pick-ring: var(--color-brand-300);
   --hero-pick-border: var(--color-brand-400);
@@ -756,7 +770,7 @@
   35.5% {
     opacity: 1;
     top: 92px;
-    left: 118px;
+    left: var(--hero-pick-x, 118px);
     transform: none;
   }
   36% {
@@ -766,14 +780,14 @@
   39% {
     opacity: 1;
     top: 92px;
-    left: 118px;
+    left: var(--hero-pick-x, 118px);
     transform: none;
   }
   41%,
   100% {
     opacity: 0;
     top: 92px;
-    left: 118px;
+    left: var(--hero-pick-x, 118px);
   }
 }
 

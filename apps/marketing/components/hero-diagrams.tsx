@@ -9,12 +9,13 @@
 
 const BLUE_TEXT = '#0c4a6e';
 
-// The flowchart and the slide deck wear the Default scheme, drawn in blue tints
-// in light and in the dark canvas ink in dark (the --art-* palette in
-// hero-animations.css). While the flowchart recolours to Forest, its canvas
-// carries --hero-label / --hero-arrow so the labels and arrows follow it.
+// In dark every window wears the Default scheme's dark half (the --art-* palette in
+// hero-animations.css): shapes in its ink, arrows and connectors in its arrow colour.
+// While the flowchart recolours to Pine, its canvas carries --hero-label / --hero-arrow
+// so the labels and arrows follow it.
 const INK = 'dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)';
 const INK_LABEL = 'dark:fill-(--art-ink-text)';
+const ARROW = 'dark:stroke-(--art-arrow)';
 const FLOW_LABEL = 'dark:fill-[var(--hero-label,var(--art-ink-text))]';
 // An editor popover (comment thread, action card) in dark, as CommentThreadPopover draws it.
 const POPOVER = 'dark:fill-slate-900 dark:stroke-slate-700';
@@ -135,7 +136,7 @@ export function FlowchartDiagram() {
 
       {/* Arrows (each a path that traces the line then its barbs, so the head
           draws in last with the stroke). */}
-      <g className="text-[#0284c7] dark:text-[var(--hero-arrow,var(--art-ink-stroke))]" fill="none">
+      <g className="text-[#0284c7] dark:text-[var(--hero-arrow,var(--art-arrow))]" fill="none">
         <path
           className="hero-line1"
           d="M140 78 L140 118 M134 111 L140 118 L146 111"
@@ -195,6 +196,7 @@ export function MindMapDiagram({ playing, theme }: { playing: boolean; theme: Th
       fontSize={size}
       fill={theme.text}
       stroke="none"
+      className={INK_LABEL}
     >
       {text}
     </text>
@@ -204,28 +206,28 @@ export function MindMapDiagram({ playing, theme }: { playing: boolean; theme: Th
       {/* Branches draw first underneath the nodes. */}
       <g style={{ color: theme.stroke }} fill="none">
         <path
-          className="hero-line1"
+          className={`hero-line1 ${ARROW}`}
           d="M255 125 L180 66"
           stroke="currentColor"
           strokeWidth="2"
           strokeLinecap="round"
         />
         <path
-          className="hero-line2"
+          className={`hero-line2 ${ARROW}`}
           d="M345 125 L420 66"
           stroke="currentColor"
           strokeWidth="2"
           strokeLinecap="round"
         />
         <path
-          className="hero-line3"
+          className={`hero-line3 ${ARROW}`}
           d="M255 155 L180 214"
           stroke="currentColor"
           strokeWidth="2"
           strokeLinecap="round"
         />
         <path
-          className="hero-line4"
+          className={`hero-line4 ${ARROW}`}
           d="M345 155 L420 214"
           stroke="currentColor"
           strokeWidth="2"
@@ -233,7 +235,13 @@ export function MindMapDiagram({ playing, theme }: { playing: boolean; theme: Th
         />
       </g>
 
-      <g fill={theme.fill} stroke={theme.stroke} strokeWidth="2" strokeLinejoin="round">
+      <g
+        className={INK}
+        fill={theme.fill}
+        stroke={theme.stroke}
+        strokeWidth="2"
+        strokeLinejoin="round"
+      >
         {/* Central node */}
         <g className="hero-pop1">
           <rect x="250" y="120" width="100" height="40" rx="20" />
@@ -295,28 +303,28 @@ export function TimelineDiagram({ theme }: { theme: Theme }) {
       {/* Axis, drawn in four segments left to right. */}
       <g style={{ color: theme.stroke }} fill="none">
         <path
-          className="hero-line1"
+          className={`hero-line1 ${ARROW}`}
           d="M80 140 L190 140"
           stroke="currentColor"
           strokeWidth="2"
           strokeLinecap="round"
         />
         <path
-          className="hero-line2"
+          className={`hero-line2 ${ARROW}`}
           d="M190 140 L300 140"
           stroke="currentColor"
           strokeWidth="2"
           strokeLinecap="round"
         />
         <path
-          className="hero-line3"
+          className={`hero-line3 ${ARROW}`}
           d="M300 140 L410 140"
           stroke="currentColor"
           strokeWidth="2"
           strokeLinecap="round"
         />
         <path
-          className="hero-line4"
+          className={`hero-line4 ${ARROW}`}
           d="M410 140 L520 140"
           stroke="currentColor"
           strokeWidth="2"
@@ -324,7 +332,13 @@ export function TimelineDiagram({ theme }: { theme: Theme }) {
         />
       </g>
 
-      <g fill={theme.fill} stroke={theme.stroke} strokeWidth="2" strokeLinejoin="round">
+      <g
+        className={INK}
+        fill={theme.fill}
+        stroke={theme.stroke}
+        strokeWidth="2"
+        strokeLinejoin="round"
+      >
         {milestones.map((m) => {
           const cardY = m.above ? 70 : 168;
           const connFrom = m.above ? 106 : 168;
@@ -339,8 +353,16 @@ export function TimelineDiagram({ theme }: { theme: Theme }) {
                 stroke={theme.stroke}
                 strokeWidth="2"
                 strokeLinecap="round"
+                className={ARROW}
               />
-              <circle cx={m.x} cy="140" r="6" fill={theme.stroke} stroke="none" />
+              <circle
+                className="dark:fill-(--art-ink-stroke)"
+                cx={m.x}
+                cy="140"
+                r="6"
+                fill={theme.stroke}
+                stroke="none"
+              />
               <rect x={m.x - 46} y={cardY} width="92" height="36" rx="6" />
               <text
                 x={m.x}
@@ -351,6 +373,7 @@ export function TimelineDiagram({ theme }: { theme: Theme }) {
                 fontSize="12"
                 fill={theme.text}
                 stroke="none"
+                className={INK_LABEL}
               >
                 {m.title}
               </text>
@@ -363,6 +386,7 @@ export function TimelineDiagram({ theme }: { theme: Theme }) {
                 fontSize="9"
                 fill="#64748b"
                 stroke="none"
+                className="dark:fill-slate-400"
               >
                 {m.date}
               </text>
@@ -422,13 +446,7 @@ export function SlideDeckDiagram() {
       {SLIDES.map((slide, i) => (
         <g key={slide.name} transform={slideTransform(slide.nodes)}>
           <g className={`hero-slide hero-slide${i + 1}`}>
-            <g
-              className="dark:stroke-(--art-ink-stroke)"
-              fill="none"
-              stroke="#0284c7"
-              strokeWidth="2"
-              strokeLinecap="round"
-            >
+            <g className={ARROW} fill="none" stroke="#0284c7" strokeWidth="2" strokeLinecap="round">
               {FLOW_EDGES.filter(
                 (e) => slide.nodes.includes(e.from) && slide.nodes.includes(e.to),
               ).map((e) => (
@@ -496,6 +514,7 @@ export function ArchitectureDiagram({ theme }: { theme: Theme }) {
       fontSize={size}
       fill={fill}
       stroke="none"
+      className={fill === theme.text ? INK_LABEL : undefined}
     >
       {text}
     </text>
@@ -504,21 +523,27 @@ export function ArchitectureDiagram({ theme }: { theme: Theme }) {
     <>
       <g style={{ color: theme.stroke }} fill="none">
         <path
-          className="hero-line1"
+          className={`hero-line1 ${ARROW}`}
           d="M180 144 L240 144 M234 138 L240 144 L234 150"
           stroke="currentColor"
           strokeWidth="2"
           strokeLinecap="round"
         />
         <path
-          className="hero-line2"
+          className={`hero-line2 ${ARROW}`}
           d="M360 144 L420 144 M414 138 L420 144 L414 150"
           stroke="currentColor"
           strokeWidth="2"
           strokeLinecap="round"
         />
       </g>
-      <g fill={theme.fill} stroke={theme.stroke} strokeWidth="2" strokeLinejoin="round">
+      <g
+        className={INK}
+        fill={theme.fill}
+        stroke={theme.stroke}
+        strokeWidth="2"
+        strokeLinejoin="round"
+      >
         {boxes.map((b) => (
           <g key={b.label} className={b.cls}>
             <rect x={b.x} y="118" width="120" height="52" rx="8" />
@@ -529,7 +554,7 @@ export function ArchitectureDiagram({ theme }: { theme: Theme }) {
 
       {/* Comment pin on the API box, with the thread beside it. The thread and the
           action card are editor popovers, so they go dark with the chrome while
-          the teal canvas keeps its theme. */}
+          the canvas keeps its theme. */}
       <g className="hero-note">
         <circle cx="360" cy="118" r="11" fill="#ec4899" stroke="white" strokeWidth="2" />
         {label(360, 122, 'JR', 9, 'white')}

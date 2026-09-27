@@ -152,16 +152,12 @@ export function ArrowsArt() {
             markerHeight="5"
             orient="auto-start-reverse"
           >
-            <path
-              className="dark:fill-(--art-ink-stroke)"
-              d="M0 0 L10 5 L0 10 z"
-              fill={BLUE_STROKE}
-            />
+            <path className="dark:fill-(--art-arrow)" d="M0 0 L10 5 L0 10 z" fill={BLUE_STROKE} />
           </marker>
         </defs>
         {/* straight */}
         <line
-          className="dark:stroke-(--art-ink-stroke)"
+          className="dark:stroke-(--art-arrow)"
           x1="24"
           y1="20"
           x2="150"
@@ -173,7 +169,7 @@ export function ArrowsArt() {
         />
         {/* curved, with a draggable control knob at the apex */}
         <path
-          className="dark:stroke-(--art-ink-stroke)"
+          className="dark:stroke-(--art-arrow)"
           d="M24 50 Q 87 30, 150 50"
           fill="none"
           stroke={BLUE_STROKE}
@@ -201,7 +197,7 @@ export function ArrowsArt() {
         />
         {/* angled, with a draggable elbow knob at the bend */}
         <path
-          className="dark:stroke-(--art-ink-stroke)"
+          className="dark:stroke-(--art-arrow)"
           d="M24 80 L96 80 L96 66 L150 66"
           fill="none"
           stroke={BLUE_STROKE}
@@ -461,7 +457,7 @@ export function AiAssistArt() {
           />
         </g>
         <line
-          className="fa-draw dark:stroke-(--art-ink-stroke)"
+          className="fa-draw dark:stroke-(--art-arrow)"
           x1="41"
           y1="40"
           x2="50"
@@ -736,7 +732,7 @@ export function MarkdownImportArt() {
         <polygon points="120,48 113,44 113,52" fill="rgb(100 116 139)" />
         {/* right: a tiny tree (root + two children) */}
         <line
-          className="dark:stroke-(--art-ink-stroke)"
+          className="dark:stroke-(--art-arrow)"
           x1="150"
           y1="48"
           x2="178"
@@ -745,7 +741,7 @@ export function MarkdownImportArt() {
           strokeWidth="1.5"
         />
         <line
-          className="dark:stroke-(--art-ink-stroke)"
+          className="dark:stroke-(--art-arrow)"
           x1="150"
           y1="48"
           x2="178"
@@ -825,7 +821,7 @@ export function MermaidArt() {
         <polygon points="120,48 113,44 113,52" fill="rgb(100 116 139)" />
         {/* edges: start -> a, a -> b, b back to start (a real cycle) */}
         <line
-          className="dark:stroke-(--art-ink-stroke)"
+          className="dark:stroke-(--art-arrow)"
           x1="143"
           y1="26"
           x2="176"
@@ -834,7 +830,7 @@ export function MermaidArt() {
           strokeWidth="1.5"
         />
         <line
-          className="dark:stroke-(--art-ink-stroke)"
+          className="dark:stroke-(--art-arrow)"
           x1="187"
           y1="36"
           x2="155"
@@ -843,7 +839,7 @@ export function MermaidArt() {
           strokeWidth="1.5"
         />
         <line
-          className="dark:stroke-(--art-ink-stroke)"
+          className="dark:stroke-(--art-arrow)"
           x1="144"
           y1="60"
           x2="134"

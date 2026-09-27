@@ -461,7 +461,7 @@ export function AnyDeviceArt() {
           strokeWidth="1.2"
         >
           <line
-            className="dark:stroke-(--art-ink-stroke)"
+            className="dark:stroke-(--art-arrow)"
             x1="40"
             y1="27"
             x2="48"
@@ -514,7 +514,7 @@ export function AnyDeviceArt() {
           strokeWidth="1.2"
         >
           <line
-            className="dark:stroke-(--art-ink-stroke)"
+            className="dark:stroke-(--art-arrow)"
             x1="110"
             y1="34"
             x2="121"
@@ -576,7 +576,7 @@ export function AnyDeviceArt() {
           strokeWidth="1.2"
         >
           <line
-            className="dark:stroke-(--art-ink-stroke)"
+            className="dark:stroke-(--art-arrow)"
             x1="163"
             y1="34"
             x2="167"
@@ -645,13 +645,13 @@ export function ExportArt() {
           strokeWidth="2"
         />
         <path
-          className="dark:stroke-(--art-ink-stroke)"
+          className="dark:stroke-(--art-arrow)"
           d="M43 47 v9"
           stroke={BLUE_STROKE}
           strokeWidth="2"
         />
         <path
-          className="dark:stroke-(--art-ink-stroke)"
+          className="dark:stroke-(--art-arrow)"
           d="M39 53 l4 5 4-5"
           fill="none"
           stroke={BLUE_STROKE}
@@ -711,13 +711,13 @@ export function ExportArt() {
           strokeWidth="2"
         />
         <path
-          className="dark:stroke-(--art-ink-stroke)"
+          className="dark:stroke-(--art-arrow)"
           d="M153 47 v9"
           stroke={BLUE_STROKE}
           strokeWidth="2"
         />
         <path
-          className="dark:stroke-(--art-ink-stroke)"
+          className="dark:stroke-(--art-arrow)"
           d="M149 53 l4 5 4-5"
           fill="none"
           stroke={BLUE_STROKE}

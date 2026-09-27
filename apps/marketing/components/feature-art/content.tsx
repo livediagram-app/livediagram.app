@@ -6,7 +6,8 @@ import { Frame, PINK } from './shared';
 
 // Editable table element: a coloured header row over body cells, with one
 // cell ringed as if mid-edit (the real table opens a cell on double-click)
-// and the header tinted to show the per-table header colours.
+// and the header tinted to show the per-table header colours. The body is an
+// unpainted table: no fill, the Default grid lines and text.
 export function TablesArt() {
   const headers = ['Item', 'Owner', 'Status'];
   const rows = [
@@ -16,7 +17,7 @@ export function TablesArt() {
   return (
     <Frame canvas>
       <div className="flex h-full items-center justify-center">
-        <div className="overflow-hidden rounded-[3px] border border-slate-300 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <div className="overflow-hidden rounded-[3px] border border-slate-300 bg-white shadow-sm dark:border-(--art-table-line) dark:bg-transparent">
           <div className="flex">
             {headers.map((h) => (
               <div
@@ -28,11 +29,11 @@ export function TablesArt() {
             ))}
           </div>
           {rows.map((row, ri) => (
-            <div key={ri} className="flex border-t border-slate-200 dark:border-slate-800">
+            <div key={ri} className="flex border-t border-slate-200 dark:border-(--art-table-line)">
               {row.map((cell, ci) => (
                 <div
                   key={ci}
-                  className="relative w-[50px] border-r border-slate-200 px-2 py-1 text-[7px] text-slate-600 last:border-r-0 dark:border-slate-800 dark:text-slate-300"
+                  className="relative w-[50px] border-r border-slate-200 px-2 py-1 text-[7px] text-slate-600 last:border-r-0 dark:border-(--art-table-line) dark:text-(--art-text)"
                 >
                   {cell}
                   {ri === 1 && ci === 1 && (

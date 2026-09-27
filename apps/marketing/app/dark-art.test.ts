@@ -1,50 +1,95 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import {
+  DEFAULT_SCHEME_DARK,
+  THEMES,
+  defaultArrowLabelColor,
+  defaultArrowStrokeColor,
+  defaultFillColor,
+  defaultStrokeColor,
+  defaultTextColor,
+  unpaintedShapeInk,
+  type BoxedElement,
+  type CanvasSurface,
+  type ThemeDefinition,
+} from '@livediagram/diagram';
 import { describe, expect, it } from 'vitest';
 
-// In dark appearance the mock-ups show the editor as it looks in dark
-// (docs/specs/004-interface-design/appearance.md): a Default-scheme canvas is the scheme's dark
-// half and an unpainted element wears its dark ink. The art keeps those values as CSS custom
-// properties, so these read the sources and hold them to the editor's own constants rather than
-// letting a copy drift.
+// Every diagram in the mock-ups is drawn as the editor draws it on the Default theme
+// (docs/specs/004-interface-design/appearance.md, docs/specs/019-marketing/marketing-site.md).
+// The art keeps those colours as CSS custom properties (app/hero-animations.css), so these hold
+// each one to what packages/diagram itself returns rather than letting a copy drift.
 
 const APP = fileURLToPath(new URL('..', import.meta.url));
 const read = (path: string) => readFileSync(`${APP}${path}`, 'utf8');
+const css = read('app/hero-animations.css');
 
-function tsConstant(source: string, name: string): string {
-  const match = source.match(new RegExp(`${name} = '(#[0-9a-f]{6})'`));
-  if (!match?.[1]) throw new Error(`${name} not found`);
-  return match[1];
+/** `#rrggbb` for a hex or an `rgb(r g b)` colour, so both notations compare. */
+function hex(colour: string): string {
+  const rgb = colour.match(/^rgb\((\d+)[ ,]+(\d+)[ ,]+(\d+)\)$/);
+  if (!rgb) return colour.toLowerCase();
+  return `#${rgb
+    .slice(1)
+    .map((n) => Number(n).toString(16).padStart(2, '0'))
+    .join('')}`;
 }
 
-function darkInk(source: string, key: 'fill' | 'stroke' | 'text'): string {
-  const block = source.match(/const DARK_INK = \{([\s\S]*?)\}/)?.[1] ?? '';
-  const match = block.match(new RegExp(`${key}: '(#[0-9a-f]{6})'`));
-  if (!match?.[1]) throw new Error(`DARK_INK.${key} not found`);
-  return match[1];
-}
-
-function artProperty(css: string, name: string): string {
-  const block = css.match(/(?:^|\n)\.dark \{([\s\S]*?)\}/)?.[1] ?? '';
+function artProperty(selector: ':root' | '.dark', name: string): string {
+  const escaped = selector.replace('.', '\\.');
+  const block = css.match(new RegExp(`(?:^|\\n)${escaped} \\{([\\s\\S]*?)\\}`))?.[1] ?? '';
   const match = block.match(new RegExp(`--${name}: (#[0-9a-f]{6});`));
-  if (!match?.[1]) throw new Error(`--${name} not set under .dark`);
+  if (!match?.[1]) throw new Error(`--${name} not set under ${selector}`);
   return match[1];
 }
 
-describe('dark mock-up palette', () => {
-  const css = read('app/hero-animations.css');
-  const canvas = read('../../packages/diagram/src/canvas-colors.ts');
-  const colours = read('../../packages/diagram/src/colors.ts');
+function element(type: BoxedElement['type']): BoxedElement {
+  return { id: '', type, x: 0, y: 0, width: 0, height: 0 } as BoxedElement;
+}
 
-  it('paints the Default scheme dark half on the canvas', () => {
-    expect(artProperty(css, 'art-paper')).toBe(tsConstant(canvas, 'DARK_CANVAS_BACKGROUND_COLOR'));
-    expect(artProperty(css, 'art-grid')).toBe(tsConstant(canvas, 'DARK_CANVAS_PATTERN_COLOR'));
+function theme(id: string): ThemeDefinition {
+  const found = THEMES.find((t) => t.id === id);
+  if (!found) throw new Error(`theme ${id} not found`);
+  return found;
+}
+
+function expectDefaultScheme(
+  selector: ':root' | '.dark',
+  surface: CanvasSurface,
+  scheme: ThemeDefinition,
+) {
+  const ink = unpaintedShapeInk(surface);
+  expect(artProperty(selector, 'art-paper')).toBe(hex(scheme.backgroundColor));
+  expect(artProperty(selector, 'art-grid')).toBe(hex(scheme.patternColor));
+  expect(artProperty(selector, 'art-ink-fill')).toBe(hex(ink.fill));
+  expect(artProperty(selector, 'art-ink-stroke')).toBe(hex(ink.stroke));
+  expect(artProperty(selector, 'art-ink-text')).toBe(hex(ink.text));
+  expect(artProperty(selector, 'art-ink-shade')).toBe(
+    hex(defaultFillColor(element('annotation'), surface)),
+  );
+  expect(artProperty(selector, 'art-text')).toBe(hex(defaultTextColor(element('text'), surface)));
+  expect(artProperty(selector, 'art-arrow')).toBe(hex(defaultArrowStrokeColor(surface)));
+  expect(artProperty(selector, 'art-arrow-label')).toBe(hex(defaultArrowLabelColor({}, surface)));
+  expect(artProperty(selector, 'art-table-line')).toBe(
+    hex(defaultStrokeColor(element('table'), surface)),
+  );
+}
+
+function expectPick(selector: ':root' | '.dark', id: string) {
+  const pick = theme(id);
+  expect(artProperty(selector, 'art-pick-paper')).toBe(hex(pick.backgroundColor));
+  expect(artProperty(selector, 'art-pick-grid')).toBe(hex(pick.patternColor));
+  expect(artProperty(selector, 'art-pick-fill')).toBe(hex(pick.elementFill ?? ''));
+  expect(artProperty(selector, 'art-pick-stroke')).toBe(hex(pick.elementStroke ?? ''));
+  expect(artProperty(selector, 'art-pick-text')).toBe(hex(pick.elementText ?? ''));
+}
+
+describe('mock-up palette, dark half', () => {
+  it('is the Default scheme dark half and the ink it gives unpainted elements', () => {
+    expectDefaultScheme('.dark', 'dark', DEFAULT_SCHEME_DARK);
   });
 
-  it('draws unpainted elements in the dark ink', () => {
-    expect(artProperty(css, 'art-ink-fill')).toBe(darkInk(colours, 'fill'));
-    expect(artProperty(css, 'art-ink-stroke')).toBe(darkInk(colours, 'stroke'));
-    expect(artProperty(css, 'art-ink-text')).toBe(darkInk(colours, 'text'));
+  it('recolours the hero flowchart to Pine', () => {
+    expectPick('.dark', 'pine');
   });
 });
 

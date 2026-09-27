@@ -116,7 +116,7 @@ export function FlowingArrowsArt() {
           strokeWidth="2"
         />
         <line
-          className="fa-flow dark:stroke-(--art-ink-stroke)"
+          className="fa-flow dark:stroke-(--art-arrow)"
           x1="66"
           y1="48"
           x2="148"
@@ -125,11 +125,7 @@ export function FlowingArrowsArt() {
           strokeWidth="2.5"
           strokeLinecap="round"
         />
-        <path
-          className="dark:fill-(--art-ink-stroke)"
-          d="M154 48 l-8 -4.5 v9 z"
-          fill={BLUE_STROKE}
-        />
+        <path className="dark:fill-(--art-arrow)" d="M154 48 l-8 -4.5 v9 z" fill={BLUE_STROKE} />
       </svg>
       <span className="absolute bottom-1.5 right-2 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-slate-500 shadow-sm dark:bg-slate-900/90 dark:text-slate-400">
         flow

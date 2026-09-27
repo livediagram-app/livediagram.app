@@ -21,7 +21,7 @@ export function SlideDeckArt() {
         {/* The diagram: four boxes and their connectors. */}
         <g opacity="0.75">
           <rect
-            className="dark:fill-slate-900 dark:stroke-slate-700"
+            className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke) dark:opacity-50"
             x="14"
             y="16"
             width="34"
@@ -43,7 +43,7 @@ export function SlideDeckArt() {
             strokeWidth="1.5"
           />
           <rect
-            className="dark:fill-slate-900 dark:stroke-slate-700"
+            className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke) dark:opacity-50"
             x="14"
             y="68"
             width="34"
@@ -54,7 +54,7 @@ export function SlideDeckArt() {
             strokeWidth="1.5"
           />
           <path
-            className="dark:stroke-slate-700"
+            className="dark:stroke-(--art-arrow)"
             d="M31 31v11M31 57v11"
             stroke={SLATE_STROKE}
             strokeWidth="1.5"
@@ -76,7 +76,7 @@ export function SlideDeckArt() {
             strokeWidth="1.5"
           />
           <rect
-            className="dark:fill-slate-900"
+            className="dark:fill-(--art-ink-fill)"
             x="88"
             y="22"
             width="24"
@@ -118,7 +118,7 @@ export function SlideDeckArt() {
             strokeWidth="1.5"
           />
           <rect
-            className="dark:fill-slate-900"
+            className="dark:fill-(--art-ink-fill)"
             x="112"
             y="66"
             width="24"
@@ -164,6 +164,7 @@ export function FullScreenSlideArt() {
           strokeWidth="2"
         />
         <rect
+          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
           x="124"
           y="28"
           width="52"
@@ -174,7 +175,7 @@ export function FullScreenSlideArt() {
           strokeWidth="2"
         />
         <path
-          className="dark:stroke-(--art-ink-stroke)"
+          className="dark:stroke-(--art-arrow)"
           d="M104 41h20"
           stroke={BLUE_STROKE}
           strokeWidth="2"
@@ -182,7 +183,7 @@ export function FullScreenSlideArt() {
           markerEnd=""
         />
         <path
-          className="dark:stroke-(--art-ink-stroke)"
+          className="dark:stroke-(--art-arrow)"
           d="M118 37l6 4-6 4"
           fill="none"
           stroke={BLUE_STROKE}
@@ -282,7 +283,7 @@ export function PresentLocallyArt() {
         />
         <g opacity="0.85">
           <rect
-            className="dark:fill-slate-900 dark:stroke-slate-700"
+            className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
             x="132"
             y="30"
             width="28"
@@ -293,7 +294,7 @@ export function PresentLocallyArt() {
             strokeWidth="1.2"
           />
           <rect
-            className="dark:fill-slate-900 dark:stroke-slate-700"
+            className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
             x="168"
             y="30"
             width="26"
@@ -315,7 +316,7 @@ export function PresentLocallyArt() {
             strokeWidth="1.2"
           />
           <path
-            className="dark:stroke-slate-700"
+            className="dark:stroke-(--art-arrow)"
             d="M146 42v10M181 42v10"
             stroke={SLATE_STROKE}
             strokeWidth="1.2"

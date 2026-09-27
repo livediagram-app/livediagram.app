@@ -15,7 +15,11 @@ export function MindMapArt() {
         <span className="relative rounded-[5px] border border-brand-300 bg-brand-50 px-2 py-1.5 text-[7px] font-semibold text-brand-700 dark:border-(--art-ink-stroke) dark:bg-(color:--art-ink-fill) dark:text-(--art-ink-text)">
           Roadmap
         </span>
-        <svg className="h-14 w-5 shrink-0 text-slate-400" viewBox="0 0 20 56" aria-hidden>
+        <svg
+          className="h-14 w-5 shrink-0 text-slate-400 dark:text-(--art-arrow)"
+          viewBox="0 0 20 56"
+          aria-hidden
+        >
           <path
             d="M0 28h7M7 28V9h13M7 28h13M7 28v19h13"
             fill="none"
@@ -42,7 +46,9 @@ export function MindMapArt() {
   );
 }
 
-// Swimlanes: three titled bands with steps sitting inside them.
+// Swimlanes: three titled bands with steps sitting inside them. Lanes, entities
+// and mind nodes are unpainted shapes, so dark draws them in the Default ink, a
+// heading band a shade above the body.
 export function LanesArt() {
   const lanes = [
     { role: 'Design', steps: 2 },
@@ -55,9 +61,9 @@ export function LanesArt() {
         {lanes.map((lane) => (
           <div
             key={lane.role}
-            className="flex items-center overflow-hidden rounded-[3px] border border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-900"
+            className="flex items-center overflow-hidden rounded-[3px] border border-slate-300 bg-white dark:border-(--art-ink-stroke) dark:bg-(color:--art-ink-fill)"
           >
-            <span className="w-[46px] shrink-0 border-r border-slate-300 bg-slate-100 px-1.5 py-1.5 text-[6px] font-semibold text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+            <span className="w-[46px] shrink-0 border-r border-slate-300 bg-slate-100 px-1.5 py-1.5 text-[6px] font-semibold text-slate-600 dark:border-(--art-ink-stroke) dark:bg-(color:--art-ink-shade) dark:text-(--art-ink-text)">
               {lane.role}
             </span>
             <span className="flex flex-1 items-center gap-1.5 px-2">
@@ -85,29 +91,33 @@ export function EntityArt() {
   return (
     <Frame canvas>
       <div className="flex h-full items-center justify-center gap-2 px-3">
-        <div className="overflow-hidden rounded-[3px] border border-slate-300 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
-          <div className="border-b border-slate-300 bg-slate-100 px-2 py-1 text-[7px] font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
+        <div className="overflow-hidden rounded-[3px] border border-slate-300 bg-white shadow-sm dark:border-(--art-ink-stroke) dark:bg-(color:--art-ink-fill)">
+          <div className="border-b border-slate-300 bg-slate-100 px-2 py-1 text-[7px] font-semibold text-slate-700 dark:border-(--art-ink-stroke) dark:bg-(color:--art-ink-shade) dark:text-(--art-ink-text)">
             User
           </div>
           {fields.map(([name, type]) => (
             <div key={name} className="flex w-[86px] justify-between px-2 py-[3px]">
-              <span className="text-[6px] text-slate-600 dark:text-slate-300">{name}</span>
+              <span className="text-[6px] text-slate-600 dark:text-(--art-ink-text)">{name}</span>
               <span className="text-[6px] text-slate-400">{type}</span>
             </div>
           ))}
         </div>
-        <svg className="h-3 w-6 shrink-0 text-slate-400" viewBox="0 0 24 12" aria-hidden>
+        <svg
+          className="h-3 w-6 shrink-0 text-slate-400 dark:text-(--art-arrow)"
+          viewBox="0 0 24 12"
+          aria-hidden
+        >
           <path d="M0 6h18" stroke="currentColor" strokeWidth="1.2" fill="none" />
           <path d="M18 2.5 23 6l-5 3.5z" fill="none" stroke="currentColor" strokeWidth="1.2" />
         </svg>
-        <div className="overflow-hidden rounded-[3px] border border-slate-300 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
-          <div className="border-b border-slate-300 bg-slate-100 px-2 py-1 text-[7px] font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
+        <div className="overflow-hidden rounded-[3px] border border-slate-300 bg-white shadow-sm dark:border-(--art-ink-stroke) dark:bg-(color:--art-ink-fill)">
+          <div className="border-b border-slate-300 bg-slate-100 px-2 py-1 text-[7px] font-semibold text-slate-700 dark:border-(--art-ink-stroke) dark:bg-(color:--art-ink-shade) dark:text-(--art-ink-text)">
             Team
           </div>
-          <div className="w-[72px] px-2 py-[3px] text-[6px] text-slate-600 dark:text-slate-300">
+          <div className="w-[72px] px-2 py-[3px] text-[6px] text-slate-600 dark:text-(--art-ink-text)">
             id
           </div>
-          <div className="w-[72px] px-2 py-[3px] text-[6px] text-slate-600 dark:text-slate-300">
+          <div className="w-[72px] px-2 py-[3px] text-[6px] text-slate-600 dark:text-(--art-ink-text)">
             name
           </div>
         </div>

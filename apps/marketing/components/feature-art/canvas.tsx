@@ -41,7 +41,7 @@ export function TemplatesArt() {
                   <rect x="22" y="2" width="16" height="8" rx="2" />
                   <rect x="22" y="20" width="16" height="8" rx="2" />
                   <line
-                    className="dark:stroke-(--art-ink-stroke)"
+                    className="dark:stroke-(--art-arrow)"
                     x1="30"
                     y1="10"
                     x2="30"
@@ -141,7 +141,7 @@ export function ThemesArt() {
           <rect x="120" y="46" width="46" height="22" rx="6" />
         </g>
         <line
-          className="fa-theme dark:stroke-(--art-ink-stroke)"
+          className="fa-theme dark:stroke-(--art-arrow)"
           stroke={BLUE_STROKE}
           x1="104"
           y1="41"
@@ -301,32 +301,36 @@ export function AssignedActionsArt() {
   );
 }
 
+// The style the format painter copies (the fa-paint keyframes paint the same pair).
+const PAINTED_FILL = '#dbeafe';
+const PAINTED_STROKE = '#0284c7';
+
 export function FormatPainterArt() {
   return (
     <Frame canvas>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
-        {/* styled source */}
+        {/* styled source: a painted style, not the theme's ink, so it keeps its colours on
+            any canvas (the painter's subject is colour) */}
         <rect
-          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
           x="26"
           y="35"
           width="54"
           height="26"
           rx="6"
-          fill={BLUE_FILL}
-          stroke={BLUE_STROKE}
+          fill={PAINTED_FILL}
+          stroke={PAINTED_STROKE}
           strokeWidth="2"
         />
         {/* target adopts the style; it rests painted, which is what reduced motion shows */}
         <rect
-          className="fa-paint dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+          className="fa-paint"
           x="140"
           y="35"
           width="54"
           height="26"
           rx="6"
-          fill={BLUE_FILL}
-          stroke={BLUE_STROKE}
+          fill={PAINTED_FILL}
+          stroke={PAINTED_STROKE}
           strokeWidth="2"
         />
         {/* travelling brush */}
@@ -394,7 +398,7 @@ export function TabsArt() {
               strokeWidth="1.8"
             />
             <line
-              className="fa-draw dark:stroke-(--art-ink-stroke)"
+              className="fa-draw dark:stroke-(--art-arrow)"
               x1="76"
               y1="24"
               x2="120"
@@ -870,7 +874,7 @@ export function RefreshArt() {
           <rect x="36" y="34" width="48" height="24" rx="6" />
           <rect x="132" y="34" width="48" height="24" rx="6" />
           <line
-            className="dark:stroke-(--art-ink-stroke)"
+            className="dark:stroke-(--art-arrow)"
             x1="84"
             y1="46"
             x2="132"
@@ -925,7 +929,7 @@ export function SpotlightArt() {
           strokeWidth="2"
         />
         <line
-          className="dark:stroke-(--art-ink-stroke)"
+          className="dark:stroke-(--art-arrow)"
           x1="72"
           y1="31"
           x2="150"
@@ -989,7 +993,7 @@ export function AvatarModeArt() {
           strokeWidth="2"
         />
         <line
-          className="dark:stroke-(--art-ink-stroke)"
+          className="dark:stroke-(--art-arrow)"
           x1="60"
           y1="28"
           x2="146"
