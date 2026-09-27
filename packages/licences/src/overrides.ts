@@ -32,13 +32,7 @@ export const OVERRIDES: readonly Override[] = [
   {
     package: 'onnxruntime-web',
     version: '1.22.0-dev.20250409-89f8206ba4',
-    texts: [
-      { label: 'LICENSE (onnxruntime 89f8206)', file: 'onnxruntime-89f8206ba4-LICENSE.txt' },
-      {
-        label: 'ThirdPartyNotices.txt (onnxruntime 89f8206)',
-        file: 'onnxruntime-89f8206ba4-ThirdPartyNotices.txt',
-      },
-    ],
+    texts: [{ label: 'LICENSE (onnxruntime 89f8206)', file: 'onnxruntime-89f8206ba4-LICENSE.txt' }],
   },
   {
     package: 'seedrandom',

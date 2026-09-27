@@ -94,7 +94,8 @@ export const EMBEDDED_WORKS: readonly EmbeddedWork[] = [
     trigger: { assets: TFJS_WASM },
     texts: text('psimd-072586a-LICENSE.txt'),
   },
-  // ONNX Runtime's own notices cover the libraries compiled into its WASM.
+  // ONNX Runtime's own notices cover the libraries compiled into its WASM; the
+  // onnxruntime-web package entry carries only its MIT licence.
   {
     id: 'onnxruntime',
     name: 'ONNX Runtime (WebAssembly)',
@@ -126,7 +127,7 @@ export const EMBEDDED_WORKS: readonly EmbeddedWork[] = [
     name: 'Emscripten runtime',
     version: '3.x',
     licence: 'MIT OR NCSA',
-    carrier: 'the TensorFlow.js, ONNX Runtime and libwebp WebAssembly builds',
+    carrier: 'WebAssembly modules compiled with Emscripten',
     homepage: 'https://github.com/emscripten-core/emscripten',
     trigger: { assets: new RegExp(`${TFJS_WASM.source}|${ORT_WASM.source}|${WEBP_WASM.source}`) },
     texts: text('emscripten-3.1.28-LICENSE.txt'),

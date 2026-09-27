@@ -17,7 +17,7 @@ const pnpmNext = '[project]/node_modules/.pnpm/next@16.3.6_react@19.3.0/node_mod
 
 const sample = {
   sources: [
-    { path: pnpmNext },
+    { path: pnpmNext, parent_source_index: null },
     { parent_source_index: 0, path: 'dist/client/index.js' },
     { parent_source_index: 0, path: 'dist/server/render.js' },
     { path: '[project]/apps/live/app/page.tsx' },

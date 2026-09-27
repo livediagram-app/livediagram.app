@@ -3,7 +3,8 @@ import { LicencesError } from './errors.ts';
 // One app's shipped modules and emitted files, as the bundler reports them.
 export type DecodedBundle = { sources: string[]; assets: string[] };
 
-type Source = { path: string; parent_source_index?: number };
+// The tree root carries a null parent.
+type Source = { path: string; parent_source_index?: number | null };
 type ChunkPart = { source_index: number; output_file_index: number };
 type OutputFile = { filename: string };
 
@@ -27,7 +28,7 @@ function arrayOf<T>(value: unknown, field: string, ok: (item: unknown) => item i
 const isSource = (v: unknown): v is Source =>
   isRecord(v) &&
   typeof v.path === 'string' &&
-  (v.parent_source_index === undefined || isIndex(v.parent_source_index));
+  (v.parent_source_index == null || isIndex(v.parent_source_index));
 const isChunkPart = (v: unknown): v is ChunkPart =>
   isRecord(v) && isIndex(v.source_index) && isIndex(v.output_file_index);
 const isOutputFile = (v: unknown): v is OutputFile => isRecord(v) && typeof v.filename === 'string';
@@ -58,8 +59,8 @@ export function decodeAnalyzeData(bytes: Uint8Array): DecodedBundle {
     const known = paths.get(index);
     if (known !== undefined) return known;
     let path = '';
-    let at: number | undefined = index;
-    for (let hops = 0; at !== undefined; hops += 1) {
+    let at: number | null | undefined = index;
+    for (let hops = 0; at != null; hops += 1) {
       if (hops > sources.length) fail('source parents form a cycle');
       const source: Source | undefined = sources[at];
       if (!source) fail(`source parent ${at} is out of range`);
