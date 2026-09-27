@@ -14,25 +14,6 @@ body {
   overflow-x: hidden;
 }
 
-/* Thin custom scrollbar for dropdowns + sidebar */
-.scrollbar-thin::-webkit-scrollbar {
-  width: 6px;
-}
-.scrollbar-thin::-webkit-scrollbar-track {
-  background: transparent;
-}
-.scrollbar-thin::-webkit-scrollbar-thumb {
-  background: rgba(14, 165, 233, 0.35); /* brand-500 */
-  border-radius: 3px;
-}
-.scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  background: rgba(14, 165, 233, 0.55);
-}
-.scrollbar-thin {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(14, 165, 233, 0.35) transparent;
-}
-
 /* Article intro: the paragraph(s) before the first h2. A lead callout
    with a left brand accent and slightly larger text. */
 .article-intro {

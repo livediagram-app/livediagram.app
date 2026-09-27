@@ -72,7 +72,7 @@ export function SearchInput({ large = false }: { large?: boolean }) {
         />
       </div>
       {isOpen && results.length > 0 && (
-        <div className="scrollbar-thin absolute left-0 right-0 top-full z-50 mt-2 max-h-80 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl">
+        <div className="scrollbar-slim absolute left-0 right-0 top-full z-50 mt-2 max-h-80 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl">
           {results.map((article) => (
             <Link
               key={`${article.categorySlug}/${article.slug}`}

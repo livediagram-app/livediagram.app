@@ -323,38 +323,49 @@
 }
 
 /*
- * Slim scrollbar, shared by every app. Used by the editor's TabBar when there
- * are too many tabs to fit, its dense panels and dialogs, and the telemetry
- * dashboard's stack popovers and modals: anywhere the OS default scrollbar
- * would dominate the chrome. Firefox gets `scrollbar-width: thin`;
- * Chromium/Safari get a thin pseudo-element track with a rounded thumb. The
- * colours sit at the slate-300/-400 level (slate-600/-500 in dark mode) so the
- * scrollbar reads as neutral chrome, not content.
+ * Scrollbars (docs/specs/004-interface-design/scrollbars.md). The themed bar is the DEFAULT for every
+ * element that scrolls, in every app, so no surface is born on the OS scrollbar (a bright white bar
+ * in dark mode). Thin, no track, a rounded slate-500 thumb: slate 500 is the lightest slate that
+ * reaches 3:1 (WCAG 1.4.11) on white and on the dark surfaces alike. In the base layer, so any
+ * utility, and a surface's own `scrollbar-width: none`, outranks it. The standard properties paint
+ * Firefox and Chromium (which then ignores the webkit rules); the webkit rules paint Safari.
  */
-.scrollbar-slim {
-  scrollbar-width: thin;
-  scrollbar-color: var(--color-slate-300) transparent;
+@layer base {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-slate-500) transparent;
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track,
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--color-slate-500);
+    border: 2px solid transparent;
+    border-radius: 9999px;
+    background-clip: padding-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-slate-600);
+  }
+  .dark ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-slate-400);
+  }
 }
+
+/*
+ * The one narrower variant, for dense strips where even the thin default crowds the content (the
+ * editor's tab bar, packed panel lists and dialogs, the dashboard's stack modals). Same colours as
+ * the default; only the webkit width differs, since `thin` is already the standard's narrowest.
+ */
 .scrollbar-slim::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
-.scrollbar-slim::-webkit-scrollbar-track {
-  background: transparent;
-}
 .scrollbar-slim::-webkit-scrollbar-thumb {
-  background-color: var(--color-slate-300);
-  border-radius: 9999px;
-}
-.scrollbar-slim::-webkit-scrollbar-thumb:hover {
-  background-color: var(--color-slate-400);
-}
-.dark .scrollbar-slim {
-  scrollbar-color: var(--color-slate-600) transparent;
-}
-.dark .scrollbar-slim::-webkit-scrollbar-thumb {
-  background-color: var(--color-slate-600);
-}
-.dark .scrollbar-slim::-webkit-scrollbar-thumb:hover {
-  background-color: var(--color-slate-500);
+  border-width: 1px;
 }
