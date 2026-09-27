@@ -4,7 +4,8 @@ import { pastePointer } from '@/lib/canvas-pointer';
 import { dropThenDisarm } from '@/lib/palette-drop';
 import { resolvePanelLayout } from '@/lib/user-preferences';
 import { describeOne } from '@/lib/element-names';
-import { DEFAULT_BUTTON_MODE } from '@livediagram/document';
+import { DEFAULT_BUTTON_MODE, isWhiteboardTab, WHITEBOARD_INK } from '@livediagram/document';
+import { createInkProjector } from '@/lib/whiteboard-ink';
 import { useMemo, useState } from 'react';
 import { isVoteHost } from '@livediagram/document';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
@@ -391,6 +392,14 @@ export function EditorCanvasHost() {
     return true;
   };
   const backdrop = resolveTabBackdrop(activeTab, appearance);
+  // A whiteboard draws every unpainted element in its ink (docs/specs/023-whiteboard/whiteboard.md
+  // "Appearance"). Display only: the projector caches per element, so an
+  // unchanged element keeps its identity and the memoised views stay quiet.
+  const [projectInk] = useState(createInkProjector);
+  const shownElements = presentingElements ?? activeTab.elements;
+  const canvasElements = isWhiteboardTab(activeTab)
+    ? projectInk(shownElements, WHITEBOARD_INK[appearance])
+    : shownElements;
   const activeTabChangeLog = useMemo(
     () => changeLog.filter((entry) => entry.tabId === activeId),
     [changeLog, activeId],
@@ -460,7 +469,7 @@ export function EditorCanvasHost() {
         // real canvas still draws them — a slide has to respond to clicks and
         // carry live element state, and there is then exactly one thing that
         // knows how an element looks.
-        elements={presentingElements ?? activeTab.elements}
+        elements={canvasElements}
         tabLayers={activeTab.layers}
         tabKind={activeTab.kind}
         layerInertIds={layerInertIds}

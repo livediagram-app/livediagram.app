@@ -1,4 +1,5 @@
 import type {
+  ArrowEnds,
   ComponentKind,
   EmbedProvider,
   EstimateScale,
@@ -64,7 +65,9 @@ export type PendingDraw =
   // the choice has to survive the gesture or "Add Loom" would place a bare
   // embed the user then has to go and re-point.
   | { type: 'video'; provider?: EmbedProvider }
-  | { type: 'arrow' }
+  // `ends` rides the arrow intent for the whiteboard's Line and Arrow shapes
+  // (docs/specs/023-whiteboard/whiteboard.md), which differ only in their heads.
+  | { type: 'arrow'; ends?: ArrowEnds }
   // A composite Component (docs/specs/008-canvas/canvas-and-palette.md): banner / hero / header / callout / stat /
   // process / avatar. Draws to size exactly like a shape — a tap drops it at
   // its natural size, a drag scales the whole group to the dragged box.
@@ -85,6 +88,16 @@ export type PendingDraw =
   // to check before every stroke. It is now which pen you picked, so the
   // answer is the tile you clicked.
   | { type: 'freehand'; variant?: 'highlighter' | 'shape-pen' }
+  // A whiteboard pen (docs/specs/023-whiteboard/whiteboard.md "Pens"): held like the highlighter,
+  // carrying the pen's colour (null = the board's ink), width in px and whether
+  // shape recognition is on.
+  | {
+      type: 'freehand';
+      variant: 'whiteboard';
+      colour: string | null;
+      width: number;
+      recognise: boolean;
+    }
   // Polygon tool (docs/specs/008-canvas/polygon-tool.md): click-to-place vertices rather than a
   // drag gesture. The canvas accumulates clicked points; closing on
   // the start vertex or double-click / Enter commits a
@@ -140,6 +153,12 @@ export function isMarkerIntent(intent: PendingDraw | null | undefined): boolean 
   return intent?.type === 'freehand' && intent.variant === 'highlighter';
 }
 
+// A pen held in the hand rather than armed for one gesture: the highlighter and
+// a whiteboard pen (docs/specs/023-whiteboard/whiteboard.md "Pens"). Neither wears the one-shot banner.
+export function isHeldPenIntent(intent: PendingDraw | null | undefined): boolean {
+  return isMarkerIntent(intent) || (intent?.type === 'freehand' && intent.variant === 'whiteboard');
+}
+
 export function drawBannerMessage(intent: PendingDraw, isMobile: boolean): string {
   switch (intent.type) {
     case 'shape':
@@ -179,6 +198,9 @@ export function drawBannerMessage(intent: PendingDraw, isMobile: boolean): strin
       // difference between it and Freehand (docs/specs/008-canvas/two-pens.md).
       if (intent.variant === 'shape-pen')
         return isMobile ? 'Draw a shape' : 'Draw a rough shape — it snaps to the real one';
+      // A whiteboard pen is held and never closes (docs/specs/023-whiteboard/whiteboard.md); its dock
+      // button says it is in hand, so this copy only reaches a screen reader.
+      if (intent.variant === 'whiteboard') return 'Drag to draw';
       return isMobile ? 'Drag to draw' : 'Drag to draw (release near the start to close)';
     case 'polygon':
       // The close / finish affordances overflow a phone-width banner,
@@ -274,6 +296,15 @@ export function drawIntentCursor(intent: PendingDraw): string {
       // at a glance rather than another black pen nib.
       return drawCursorFromGlyph(
         `<path d="M15 20 L20 15 L23 18 L18 23 Z" fill="rgb(253 224 71)" stroke="black" stroke-width="1.3" stroke-linejoin="round" /><path d="M20 15 L22 12 L25 15 L23 18 Z" fill="none" stroke="black" stroke-width="1.3" stroke-linejoin="round" /><path d="M12 26 H24" stroke="rgb(250 204 21)" stroke-width="4" stroke-linecap="round" />`,
+      );
+    }
+    if (intent.variant === 'whiteboard') {
+      // The nib with a dot of the pen's own colour (docs/specs/023-whiteboard/whiteboard.md): which pen
+      // is in hand, at the pointer. Ink shows as dark with a light rim so it
+      // reads on either board.
+      const dot = intent.colour ?? 'rgb(28 25 23)';
+      return drawCursorFromGlyph(
+        `<path d="M14 22 L20 16 L23 19 L17 25 Z M20 16 L22 14" stroke="black" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" fill="none" /><circle cx="23.5" cy="12.5" r="3" fill="${dot}" stroke="white" stroke-width="1" />`,
       );
     }
     if (intent.variant === 'shape-pen') {

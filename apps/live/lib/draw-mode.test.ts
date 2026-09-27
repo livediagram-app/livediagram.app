@@ -9,9 +9,10 @@ import { drawBannerMessage, drawIntentCursor, type PendingDraw } from './draw-mo
 // and 'component' both shipped with dedicated branches in BOTH exported
 // functions while the sweeps below walked straight past them.
 type FreehandVariant = NonNullable<Extract<PendingDraw, { type: 'freehand' }>['variant']>;
-const FREEHAND_VARIANTS: Record<FreehandVariant, true> = {
-  highlighter: true,
-  'shape-pen': true,
+const FREEHAND_VARIANTS: Record<FreehandVariant, PendingDraw> = {
+  highlighter: { type: 'freehand', variant: 'highlighter' },
+  'shape-pen': { type: 'freehand', variant: 'shape-pen' },
+  whiteboard: { type: 'freehand', variant: 'whiteboard', colour: null, width: 4, recognise: false },
 };
 
 // One sample per discriminant. Typing it as a Record over PendingDraw['type']
@@ -38,13 +39,7 @@ const INTENT_SAMPLES: Record<PendingDraw['type'], PendingDraw[]> = {
   // sample is enough here.
   component: [{ type: 'component', kind: 'banner' }],
   // Plain pen plus every variant.
-  freehand: [
-    { type: 'freehand' },
-    ...(Object.keys(FREEHAND_VARIANTS) as FreehandVariant[]).map((variant): PendingDraw => ({
-      type: 'freehand',
-      variant,
-    })),
-  ],
+  freehand: [{ type: 'freehand' }, ...Object.values(FREEHAND_VARIANTS)],
 };
 
 const ALL_INTENTS: PendingDraw[] = Object.values(INTENT_SAMPLES).flat();
