@@ -16,7 +16,10 @@ vi.mock('@/lib/api-client', () => ({
 beforeAll(() => {
   // Everything is in view at once.
   globalThis.IntersectionObserver = class {
-    constructor(private cb: IntersectionObserverCallback) {}
+    private cb: IntersectionObserverCallback;
+    constructor(cb: IntersectionObserverCallback) {
+      this.cb = cb;
+    }
     observe() {
       this.cb([{ isIntersecting: true } as IntersectionObserverEntry], this as never);
     }
