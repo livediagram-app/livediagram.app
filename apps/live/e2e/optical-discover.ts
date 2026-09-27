@@ -69,7 +69,13 @@ export function discover(args: { attr: string; shape: typeof SHAPE; tol: number 
       const label = n.getAttribute('aria-label') || n.getAttribute('data-testid');
       parts.unshift(label ? `${n.tagName.toLowerCase()}[${label}]` : n.tagName.toLowerCase());
     }
-    return `${parts.join(' > ')} "${(el.textContent ?? '').trim().slice(0, 24)}"`;
+    const own = (el.textContent ?? '').trim();
+    // A textless shape (an icon tile) is named by the control it sits in, so rows of look-alike tiles are
+    // told apart.
+    const context = own
+      ? ''
+      : ` in "${(el.closest('button, a, [role="menuitem"], li')?.textContent ?? '').trim().slice(0, 24)}"`;
+    return `${parts.join(' > ')} "${own.slice(0, 24)}"${context}`;
   };
   const rectOf = (el: Element) => {
     const r = el.getBoundingClientRect();

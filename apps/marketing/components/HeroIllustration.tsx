@@ -405,7 +405,7 @@ function EditorWindow({
               <div className="flex items-center gap-2">
                 <Brand size="sm" />
                 {/* The Editor menu, as the real header carries it. */}
-                <span className="hidden items-center gap-1 rounded-md border border-slate-200 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 sm:inline-flex dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                <span className="optical-edges hidden items-center gap-1 rounded-md border border-slate-200 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 sm:inline-flex dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
                   <MenuIcon size={9} />
                   <span className="text-optical-line">Editor</span>
                   <ChevronDownIcon size={8} />
@@ -434,7 +434,7 @@ function EditorWindow({
                   </Chip>
                 )}
               </div>
-              <span className="inline-flex items-center gap-1 rounded-md bg-brand-500 px-2 py-0.5 text-[10px] font-semibold text-white dark:bg-brand-600">
+              <span className="optical-edges inline-flex items-center gap-1 rounded-md bg-brand-500 px-2 py-0.5 text-[10px] font-semibold text-white dark:bg-brand-600">
                 <ShareGlyph />
                 <span className="text-optical-line">Share</span>
               </span>
