@@ -1,9 +1,10 @@
 'use client';
 
 import { useMemo, type CSSProperties } from 'react';
-import { categoryColor, typeLabel } from './event-vocab';
+import { typeLabel } from './event-vocab';
 import { MetricBreadcrumb, metricCrumbs, type CloudPath } from './MetricBreadcrumb';
 import type { Metric } from './metrics';
+import { useCategoryColor } from './useCategoryColor';
 
 // The Search view's word cloud (docs/specs/017-telemetry/telemetry.md): what shows while no metric is
 // picked. Every category as a word, sized by how many events it had in the
@@ -59,6 +60,7 @@ export function MetricCloud({
   onSelect: (metric: Metric) => void;
 }) {
   const [category, action] = path;
+  const categoryColor = useCategoryColor();
 
   const words = useMemo<Word[]>(() => {
     const countOf = (m: Metric) => counts.get(m.key) ?? 0;
@@ -101,7 +103,7 @@ export function MetricCloud({
         color,
         activate: () => onSelect(m),
       }));
-  }, [metrics, counts, category, action, setPath, onSelect]);
+  }, [metrics, counts, category, action, setPath, onSelect, categoryColor]);
 
   const laidOut = centreOut(words, (w) => w.count);
   const top = Math.max(1, ...words.map((w) => w.count));
@@ -142,11 +144,15 @@ export function MetricCloud({
         >
           {laidOut.map((w, i) => {
             const t = scale(w.count);
-            const style: CSSProperties & Record<'--o', number> = {
+            // In dark only the words with no events fade: fading a word into the
+            // dark card takes it below reading contrast, so size and weight
+            // carry the count there.
+            const style: CSSProperties & Record<'--o' | '--o-dark', number> = {
               fontSize: `${MIN_PX + (MAX_PX - MIN_PX) * t}px`,
               fontWeight: Math.round(500 + 300 * t),
               color: w.color,
               '--o': w.count === 0 ? 0.3 : 0.6 + 0.4 * t,
+              '--o-dark': w.count === 0 ? 0.4 : 1,
               animationDelay: `${Math.min(i * CLOUD_BEAT_MS, CLOUD_BEAT_CAP_MS)}ms`,
             };
             return (
@@ -156,12 +162,12 @@ export function MetricCloud({
                 onClick={w.activate}
                 aria-label={`${w.label}, ${w.count.toLocaleString()} ${w.count === 1 ? 'event' : 'events'}`}
                 style={style}
-                className="cloud-word group/word relative cursor-pointer leading-none tracking-tight dark:brightness-[1.35] opacity-[var(--o)] transition duration-micro hover:-translate-y-0.5 hover:!opacity-100 focus-visible:!opacity-100 focus-visible:outline-none group-hover/cloud:opacity-40"
+                className="cloud-word group/word relative cursor-pointer leading-none tracking-tight opacity-[var(--o)] transition dark:opacity-[var(--o-dark)] duration-micro hover:-translate-y-0.5 hover:!opacity-100 focus-visible:!opacity-100 focus-visible:outline-none group-hover/cloud:opacity-40"
               >
                 {w.label}
                 <span
                   aria-hidden
-                  className="pointer-events-none absolute -top-5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-slate-900 px-2 py-0.5 text-[11px] font-semibold tabular-nums text-white opacity-0 shadow transition group-hover/word:opacity-100 group-focus-visible/word:opacity-100 dark:bg-white dark:text-slate-900"
+                  className="pointer-events-none absolute -top-5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-slate-900 px-2 py-0.5 text-[11px] font-semibold tabular-nums text-white opacity-0 shadow transition group-hover/word:opacity-100 group-focus-visible/word:opacity-100 dark:bg-slate-200 dark:text-slate-900"
                 >
                   {w.count.toLocaleString()}
                 </span>

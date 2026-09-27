@@ -4,10 +4,10 @@ import { useMemo, useState, type CSSProperties, type ReactNode } from 'react';
 import { EmptyState } from '@livediagram/ui';
 import type { TelemetryDaily, TelemetryWindow, TelemetryWindowKey } from '@livediagram/api-schema';
 import { eventExplanation } from './event-explanation';
-import { categoryColor } from './event-vocab';
 import { ActivityGlyph } from './glyphs';
 import { buildMetrics, type Metric } from './metrics';
 import { MetricBreadcrumb, metricCrumbs, type CloudPath } from './MetricBreadcrumb';
+import { useCategoryColor } from './useCategoryColor';
 import { MetricCloud } from './MetricCloud';
 import { MetricPicker } from './MetricPicker';
 import { EventIcon } from './telemetry-event-icon';
@@ -99,7 +99,7 @@ function SelectedMetric({
   daily: TelemetryDaily;
   active: TelemetryWindowKey;
 }) {
-  const color = categoryColor(metric.category);
+  const color = useCategoryColor()(metric.category);
   const series = daily.byMetric[metric.key] ?? [];
   // Everything below the breadcrumb eases in, one beat after another: the
   // icon, the title, the description, the three counts, then the trend line

@@ -1,11 +1,12 @@
 'use client';
 
 import { eventExplanation } from './event-explanation';
-import { categoryColor, eventLabel } from './event-vocab';
+import { eventLabel } from './event-vocab';
 import { isAggregate, type Metric } from './metric-series';
 import { EventIcon } from './telemetry-event-icon';
 import { TrendBadge } from './TrendBadge';
 import { TrendChart } from './TrendChart';
+import { useCategoryColor } from './useCategoryColor';
 
 // One curated metric as a card: the selected-window count + a 30-day trend
 // line. `color` overrides the category colour, so a card fanned out of a chart
@@ -18,7 +19,7 @@ export function MetricCard({
   highlightFromIndex,
   previous,
   against,
-  color = categoryColor(m.category),
+  color: override,
 }: {
   metric: Metric;
   count: number;
@@ -31,6 +32,8 @@ export function MetricCard({
   against: string | null;
   color?: string;
 }) {
+  const tone = useCategoryColor();
+  const color = override ?? tone(m.category);
   // An aggregate has no single type, so the icon + label drop the type.
   const iconType = isAggregate(m) ? null : (m.type ?? null);
   return (

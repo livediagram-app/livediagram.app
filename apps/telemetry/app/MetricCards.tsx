@@ -2,6 +2,7 @@
 
 import { Fragment, useState } from 'react';
 import { cascadeDelayMs } from '@livediagram/tailwind-config/motion';
+import { useAppearance } from '@livediagram/ui';
 import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
 import { MetricCard } from './MetricCard';
 import { MetricStackCard } from './MetricStackCard';
@@ -54,6 +55,7 @@ export function MetricGroups({
   // another stack replaces it. View state only: nothing persists it.
   const [open, setOpen] = useState<OpenStack | null>(null);
   const close = () => setOpen(null);
+  const { appearance } = useAppearance();
 
   return (
     <div className="mt-6 flex flex-col gap-8">
@@ -82,7 +84,7 @@ export function MetricGroups({
               const opened = open?.key === key ? open : null;
               const counts = item.members.map((m) => windowCount(summary, active, m));
               const lines = stackDrawsLines(item.members.length);
-              const colors = stackMemberColors(item.members);
+              const colors = stackMemberColors(item.members, appearance);
               const series = item.members.map((m, i) => ({
                 label: m.title,
                 color: colors[i]!,
@@ -161,7 +163,7 @@ function SeeAlsoLink({ label, onClick }: { label: string; onClick: () => void })
     <button
       type="button"
       onClick={onClick}
-      className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-sky-600 transition-colors hover:border-sky-300 hover:bg-sky-50 dark:border-slate-700 dark:bg-slate-900 dark:text-sky-400 dark:hover:border-sky-700 dark:hover:bg-sky-950"
+      className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-sky-600 transition-colors hover:border-sky-300 hover:bg-sky-50 dark:border-slate-700 dark:bg-slate-900 dark:text-brand-300 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10"
     >
       {label}
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden>

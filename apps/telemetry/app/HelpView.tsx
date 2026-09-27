@@ -62,7 +62,7 @@ export function HelpView({
         : reads and per-article feedback, the articles opened from inside the editor, and how far
         people get through the welcome tour.
       </p>
-      <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
+      <p className="mt-1 text-xs text-slate-400">
         Rows before late September 2026 for format-painter and command-palette also count the Tips
         and Tricks articles of the same name, which report on their own since then.
       </p>
