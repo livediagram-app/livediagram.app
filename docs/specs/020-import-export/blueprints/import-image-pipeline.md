@@ -155,7 +155,7 @@ requests.length`.
 - `lines`: `"{n} image(s) imported"` when `imported > 0`; `"{n} already in your gallery"` when
   `deduped > 0`; `"{n} left as placeholder(s)"` when placeholders > 0.
 - `failures`: in `IMPORT_IMAGE_FAILURES` order, only non-zero, with the spec's sentence.
-- `hint`: `"Click a placeholder to add its image."` when placeholders > 0, else `null`.
+- `hint`: `"Double-click a placeholder to add its image."` when placeholders > 0, else `null`.
 
 ## Interfaces and contracts
 

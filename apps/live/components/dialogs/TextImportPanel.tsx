@@ -84,7 +84,18 @@ export function TextImportPanel({
         </p>
       ) : null}
       <div className="mt-4 flex items-center justify-between gap-3">
-        {note ?? <span />}
+        {/* The left slot carries the format's note, or, while images store, the
+            progress (announced politely). Progress lives here rather than in
+            the button so the buttons never move while it counts. */}
+        <div aria-live="polite" className="min-w-0">
+          {busy && progress && progress.total > 0 ? (
+            <p className="text-xs text-slate-600 tabular-nums dark:text-slate-300">
+              Importing images {progress.done} of {progress.total}…
+            </p>
+          ) : (
+            note
+          )}
+        </div>
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -97,17 +108,12 @@ export function TextImportPanel({
           <Button
             variant="primary"
             size="md"
+            // Wide enough for "Importing…", so the label swap moves nothing.
+            className="min-w-[7.5rem]"
             onClick={() => void run((onProgress) => onImportText(text, onProgress))}
             disabled={busy || text.trim().length === 0}
           >
-            {/* Announced politely so a screen reader hears the image count move. */}
-            <span aria-live="polite">
-              {!busy
-                ? 'Import'
-                : progress && progress.total > 0
-                  ? `Importing images ${progress.done} of ${progress.total}…`
-                  : 'Importing…'}
-            </span>
+            {busy ? 'Importing…' : 'Import'}
           </Button>
         </div>
       </div>

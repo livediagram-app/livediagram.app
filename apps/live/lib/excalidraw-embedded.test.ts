@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { extractExcalidrawScene } from './excalidraw-embedded';
 
@@ -182,5 +184,28 @@ describe('extractExcalidrawScene', () => {
       text: SCENE,
       container: 'json',
     });
+  });
+});
+
+// Real exports from excalidraw.com ("Embed scene" on), a text and a rectangle;
+// provenance in docs/specs/020-import-export/blueprints/excalidraw-import.md.
+describe('real Excalidraw exports', () => {
+  const fixture = (name: string) =>
+    new Uint8Array(readFileSync(fileURLToPath(new URL(`./__fixtures__/${name}`, import.meta.url))));
+
+  it.each([
+    ['excalidraw-export.excalidraw.png', 'png'],
+    ['excalidraw-export.excalidraw.svg', 'svg'],
+  ] as const)('reads the scene inside %s', async (name, container) => {
+    const r = await extractExcalidrawScene(fixture(name));
+    if (!r.ok) throw new Error(r.error);
+    expect(r.container).toBe(container);
+    const scene = JSON.parse(r.text) as {
+      type: string;
+      elements: { type: string; text?: string }[];
+    };
+    expect(scene.type).toBe('excalidraw');
+    expect(scene.elements.map((e) => e.type).sort()).toEqual(['rectangle', 'text']);
+    expect(scene.elements.find((e) => e.type === 'text')?.text).toBe('Imported from Excalidraw');
   });
 });

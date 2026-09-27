@@ -168,7 +168,7 @@ with the colours you see, not blanks.
 - **Import dialog** ([Markdown import](markdown-import.md) + [Mermaid import & export](mermaid.md)): a fourth format card, "Excalidraw",
   opening the same paste-or-file panel; the file picker accepts
   `.excalidraw`, `.json`, `.png` and `.svg`. Same replace-the-tab semantics +
-  single undo step. While images upload the Import button reads
+  single undo step. While images upload the footer beside the buttons reads
   "Importing images 3 of 12…"; an import with images ends on the pipeline's
   report instead of closing.
 - **Export dialog** ([Mermaid import & export](mermaid.md)): a seventh card in the text-format group with the

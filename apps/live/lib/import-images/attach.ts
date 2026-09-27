@@ -33,6 +33,7 @@ export async function attachImportImages(
   await Promise.all(
     [...firstByKey.values()].map(async (r) => {
       if (!r.source) {
+        console.info('[import-images]', 'missing-bytes', { key: r.key });
         outcomes.set(r.key, { ok: false, failure: 'missing-bytes' });
         return;
       }

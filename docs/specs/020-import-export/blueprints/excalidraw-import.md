@@ -89,9 +89,10 @@ diagramId })`, `attachImportImages(elements, images, session, onProgress)`.
 ### Dialog
 
 - `ImportOutcome` `done` gains `images?: ImportImageReport`.
-- `TextImportPanel`: runners receive `onProgress`; while busy with `progress.total > 0` the
-  primary button reads `Importing images {done} of {total}…`, else `Importing…`. On `done` it calls
-  `onDone(outcome)`.
+- `TextImportPanel`: runners receive `onProgress`. While busy with `progress.total > 0` the
+  footer's left slot (where a format's note sits) reads `Importing images {done} of {total}…` in an
+  `aria-live="polite"` region; the primary button reads `Importing…` and has a minimum width
+  (`min-w-[7.5rem]`) so neither label swap moves a button. On `done` it calls `onDone(outcome)`.
 - `ImportTabDialog`: `onDone(outcome)` with `outcome.images` → the dialog shows
   `<ImportImageReport report onDone={onClose} />` in place of the panel; otherwise `onClose()`.
 
@@ -115,15 +116,16 @@ Copy is the pipeline spec's; pluralisation `1 image` / `2 images`, `1 placeholde
 
 - The report container has `role="status"` so the result is announced on arrival.
 - `Done` receives focus when the report mounts; Enter / Space closes; Escape closes (dialog).
-- Progress label changes are announced through the button text inside an `aria-live="polite"`
-  region wrapping the busy label.
+- Progress is announced from the footer's `aria-live="polite"` region, which exists before the
+  count starts so each change is read.
 - Contrast: body `slate-700` / muted `slate-600` on white, `slate-300` on `slate-900`: ≥ 4.5:1.
 
 ## Web Experience
 
 - The pipeline and extractor are lazy-imported on import only: no editor bundle growth (LCP).
 - The report replaces the panel in the same dialog box; the dialog keeps its size class, so no
-  layout shift outside the dialog (CLS). The progress label swaps text in a fixed-size button.
+  layout shift outside the dialog (CLS). Progress appears in the footer's left slot and the primary button has a minimum width, so
+  no trigger moves while it counts.
 - Uploads run off the input handler's path (awaited promises), so typing and canvas interaction stay
   responsive (INP).
 

@@ -114,8 +114,8 @@ to the pipeline.
 ## Order: images first, then the tab
 
 An import stores every image first and then replaces the tab once, so the import stays a single
-undo step with no half-filled state. While images upload, the Import dialog's button reports
-progress ("Importing images 3 of 12…"). The tab changes only when every image has an outcome.
+undo step with no half-filled state. While images upload, the Import dialog's footer reports
+progress beside its buttons ("Importing images 3 of 12…"), so the buttons never move. The tab changes only when every image has an outcome.
 
 ## The report
 
@@ -142,8 +142,7 @@ without images closes the dialog as before. Copy per failure:
 | `offline-budget`     | This offline diagram reached its image limit for one import.               |
 | `upload-failed`      | The upload didn't go through. Check your connection and try again.         |
 
-Every summary that lists placeholders ends with the same way forward: _Click a placeholder to add
-its image._
+Every summary that lists placeholders ends with the same way forward: _Double-click a placeholder to add its image._
 
 ## Observability
 

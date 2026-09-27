@@ -13,7 +13,7 @@ const FAILURE_SENTENCES: Record<ImportImageFailure, string> = {
   'upload-failed': "The upload didn't go through. Check your connection and try again.",
 };
 
-const PLACEHOLDER_HINT = 'Click a placeholder to add its image.';
+const PLACEHOLDER_HINT = 'Double-click a placeholder to add its image.';
 
 export const emptyImportImageReport = (): ImportImageReport => ({
   imported: 0,

@@ -37,7 +37,7 @@ describe('describeImportImageReport', () => {
         sentence: "The upload didn't go through. Check your connection and try again.",
       },
     ]);
-    expect(d.hint).toBe('Click a placeholder to add its image.');
+    expect(d.hint).toBe('Double-click a placeholder to add its image.');
   });
 
   it('says one placeholder in the singular', () => {
