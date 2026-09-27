@@ -11,9 +11,10 @@
 // about right now, and a second tab opened on the same diagram is a different
 // seat at the table, not the same one.
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useState } from 'react';
 import type { FacilitatorReason } from '@livediagram/api-schema';
 import { track } from '@/lib/telemetry';
+import { useLatest } from '@/hooks/ui/useLatest';
 
 /** Where a diagram's baton token lives while the tab is open. */
 const tokenKey = (diagramId: string) => `livediagram:facilitator:${diagramId}`;
@@ -103,16 +104,17 @@ export function useFacilitator(deps: {
   const [isFacilitator, setIsFacilitator] = useState(false);
   // Live deps so the socket handler never reads a stale closure: it is wired
   // once, and the names it announces change every time somebody renames.
-  const ref = useRef(deps);
-  ref.current = deps;
+  const ref = useLatest(deps);
 
-  // A different diagram is a different session.
-  useEffect(() => {
+  // A different diagram is a different session, reset during render.
+  const [sessionDiagramId, setSessionDiagramId] = useState(diagramId);
+  if (diagramId !== sessionDiagramId) {
+    setSessionDiagramId(diagramId);
     setFacilitatorId(null);
     setIsFacilitator(false);
-  }, [diagramId]);
+  }
 
-  const readFacilitatorToken = useCallback(() => readToken(ref.current.diagramId), []);
+  const readFacilitatorToken = useCallback(() => readToken(ref.current.diagramId), [ref]);
 
   const receiveFacilitator = useCallback(
     (msg: { holder: string | null; by?: string; reason: FacilitatorReason; token?: string }) => {
@@ -146,7 +148,7 @@ export function useFacilitator(deps: {
       }
       onNotice(`${nameOf(msg.holder)} is now facilitating`);
     },
-    [],
+    [ref],
   );
 
   // Telemetry (docs/specs/017-telemetry/telemetry.md) on the ASK rather than the answer: a refused ask is
@@ -155,22 +157,22 @@ export function useFacilitator(deps: {
   const claimFacilitator = useCallback(() => {
     ref.current.send({ kind: 'facilitator', action: 'claim' });
     track('Facilitator', 'Started', 'Claimed');
-  }, []);
+  }, [ref]);
 
   const grantFacilitator = useCallback((presenceId: string) => {
     ref.current.send({ kind: 'facilitator', action: 'grant', to: presenceId });
     track('Facilitator', 'Changed', 'Granted');
-  }, []);
+  }, [ref]);
 
   const releaseFacilitator = useCallback(() => {
     ref.current.send({ kind: 'facilitator', action: 'release' });
     track('Facilitator', 'Ended', 'Released');
-  }, []);
+  }, [ref]);
 
   const releaseSelectionLock = useCallback((presenceId: string, elementId: string) => {
     ref.current.send({ kind: 'facilitator', action: 'unlock', target: presenceId, elementId });
     track('Facilitator', 'Changed', 'Unlocked');
-  }, []);
+  }, [ref]);
 
   return {
     facilitatorId,
