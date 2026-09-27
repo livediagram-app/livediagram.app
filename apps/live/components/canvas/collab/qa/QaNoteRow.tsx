@@ -54,10 +54,12 @@ export const QaNoteRow = forwardRef<
       <div className="flex min-w-0 flex-1 flex-col gap-1 pr-1">
         {top ? (
           <span
-            className="self-start rounded-full px-1.5 py-px text-[9px] font-bold uppercase tracking-[0.08em]"
+            className="inline-flex items-center self-start rounded-full px-1.5 py-px text-[9px] font-bold"
             style={{ color: QA_ACCENT_INK, backgroundColor: tint(QA_ACCENT, 0.14) }}
           >
-            Most wanted
+            <span className="text-optical-line text-optical-caps [--optical-tracking:0.08em]">
+              Most wanted
+            </span>
           </span>
         ) : null}
         <p

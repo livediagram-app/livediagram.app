@@ -262,11 +262,11 @@ export function RichTextEditor({
             bar sits above the element, below it when below), matching every
             other floating toolbar's caption. */}
         <span
-          className={`pointer-events-none absolute left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-white/90 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 shadow-sm ring-1 ring-slate-200 dark:bg-slate-700 dark:text-white dark:ring-0 ${
+          className={`inline-flex items-center pointer-events-none absolute left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-white/90 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500 shadow-sm ring-1 ring-slate-200 dark:bg-slate-700 dark:text-white dark:ring-0 ${
             placeBelow ? 'top-full mt-1' : 'bottom-full mb-1'
           }`}
         >
-          Selected Text
+          <span className="text-optical-line text-optical-caps">Selected Text</span>
         </span>
         <RichTextToolbar
           active={active}

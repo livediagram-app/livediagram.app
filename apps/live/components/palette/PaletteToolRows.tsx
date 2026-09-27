@@ -116,8 +116,10 @@ function PaletteToolRow({
         ) : null}
       </span>
       {def.shortcut ? (
-        <kbd className="shrink-0 rounded-[3px] border border-slate-300 bg-white px-1 text-[9px] font-semibold uppercase leading-4 text-slate-600 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-300">
-          {def.shortcut}
+        <kbd className="inline-flex items-center shrink-0 rounded-[3px] border border-slate-300 bg-white px-1 text-[9px] font-semibold leading-4 text-slate-600 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-300">
+          <span className="text-optical-line text-optical-caps [--optical-tracking:0em]">
+            {def.shortcut}
+          </span>
         </kbd>
       ) : null}
     </button>

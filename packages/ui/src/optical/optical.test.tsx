@@ -105,7 +105,7 @@ describe('Chip', () => {
     expect(chip.className).toContain('rounded-full');
     expect(chip.className).toContain('px-2');
     const label = chip.lastElementChild as HTMLElement;
-    expect(label.className).toContain('text-optical-centre');
+    expect(label.className).toContain('text-optical-line');
     expect(label.className).not.toContain('text-optical-caps');
   });
 
@@ -119,6 +119,11 @@ describe('Chip', () => {
     expect(slot.dataset.optical).toBe('slot');
     expect(slot.style.width).toBe('9px');
     expect(container.firstElementChild!.firstElementChild).toBe(slot);
+  });
+
+  it('keeps its natural height when none is pinned', () => {
+    const { container } = render(<Chip className="px-2 py-0.5">Private</Chip>);
+    expect((container.firstElementChild as HTMLElement).style.height).toBe('');
   });
 
   it('can be a rectangular badge instead of a pill', () => {
@@ -143,7 +148,7 @@ describe('Chip', () => {
         Private
       </Chip>,
     );
-    const label = container.querySelector('.text-optical-centre') as HTMLElement;
+    const label = container.querySelector('.text-optical-line') as HTMLElement;
     expect(label.className).toContain('text-optical-caps');
   });
 });

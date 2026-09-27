@@ -17,8 +17,8 @@ const TOGGLE_HINT: Record<Role, string> = {
   view: 'Switch to editing',
 };
 
-const PILL =
-  'inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider';
+// The word sits in text-optical-line + text-optical-caps (optical-alignment.md), so the pill carries no case.
+const PILL = 'inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold';
 const PILL_TONE: Record<Role, string> = {
   edit: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-200',
   view: 'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-200',
@@ -56,7 +56,7 @@ export function RolePill({
       data-role-pill={role}
       className={`${PILL} ${PILL_TONE[role]} ${PILL_TOGGLE_TONE[role]}`}
     >
-      {word}
+      <span className="text-optical-line text-optical-caps">{word}</span>
       <span id={hintId} className="sr-only">
         {TOGGLE_HINT[role]}
       </span>
@@ -65,7 +65,7 @@ export function RolePill({
     // Static for a view-link visitor, and focusable so the Tooltip naming the
     // owner can be reached by keyboard too.
     <span tabIndex={0} data-role-pill={role} className={`${PILL} ${PILL_TONE[role]}`}>
-      {word}
+      <span className="text-optical-line text-optical-caps">{word}</span>
       {owner ? <span className="sr-only">{`. ${owner}`}</span> : null}
     </span>
   );

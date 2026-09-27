@@ -231,7 +231,7 @@ export function DecisionMenuSection({
                 type="button"
                 onClick={() => onSetStatus(s)}
                 aria-pressed={status === s}
-                className={`cursor-pointer rounded-md border px-1.5 py-1 text-[10px] font-semibold uppercase tracking-[0.04em] transition ${
+                className={`inline-flex items-center cursor-pointer rounded-md border px-1.5 py-1 text-[10px] font-semibold transition ${
                   status === s
                     ? 'border-transparent'
                     : 'border-slate-200 bg-white text-slate-600 hover:border-brand-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300'
@@ -247,7 +247,9 @@ export function DecisionMenuSection({
                     : undefined
                 }
               >
-                {DECISION_STATUS_LABELS[s]}
+                <span className="text-optical-line text-optical-caps [--optical-tracking:0.04em]">
+                  {DECISION_STATUS_LABELS[s]}
+                </span>
               </button>
             ))}
           </div>

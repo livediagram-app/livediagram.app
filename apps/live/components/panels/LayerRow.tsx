@@ -161,8 +161,10 @@ export function LayerRow({
         (and prune) at a glance — the blank preview alone
         doesn't read as "nothing here". */}
       {empty && renamingId !== layer.id ? (
-        <span className="shrink-0 rounded bg-slate-100 px-1 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-slate-400 dark:bg-slate-800">
-          Empty
+        <span className="inline-flex items-center shrink-0 rounded bg-slate-100 px-1 py-0.5 text-[9px] font-semibold text-slate-400 dark:bg-slate-800">
+          <span className="text-optical-line text-optical-caps [--optical-tracking:0.025em]">
+            Empty
+          </span>
         </span>
       ) : null}
       {locked ? (

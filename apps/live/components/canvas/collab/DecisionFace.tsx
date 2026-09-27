@@ -54,10 +54,12 @@ export function DecisionFace({
         // the box, and a card that turned green on accept would fight every
         // other element on a themed board (docs/specs/012-collaboration/decision-record.md).
         <span
-          className="rounded-full px-2 py-[3px] text-[9px] font-semibold uppercase tracking-[0.06em]"
+          className="inline-flex items-center rounded-full px-2 py-[3px] text-[9px] font-semibold"
           style={{ backgroundColor: chip.bg, color: chip.text }}
         >
-          {DECISION_STATUS_LABELS[status]}
+          <span className="text-optical-line text-optical-caps [--optical-tracking:0.06em]">
+            {DECISION_STATUS_LABELS[status]}
+          </span>
         </span>
       }
       footer={
