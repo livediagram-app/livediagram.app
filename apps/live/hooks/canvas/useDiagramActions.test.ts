@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/rules-of-hooks -- the two hooks useDiagramActions calls are mocked below, so it runs as a plain function here. */
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const trackMock = vi.fn();

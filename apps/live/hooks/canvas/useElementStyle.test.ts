@@ -20,7 +20,6 @@ function harness(elements: Element[], selection: Set<string>) {
   let committed = tab;
   // useElementStyle builds plain closures from its deps (no internal React
   // hooks), so calling it outside a component is safe here.
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const style = useElementStyle({
     currentSelectionIds: () => new Set(selection),
     selectionPrimary: () => elements.find((e) => selection.has(e.id)) ?? null,

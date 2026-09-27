@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/rules-of-hooks -- useTabSession calls no React hooks (every handler writes through commitTabs), so running it outside a component is safe; see the harness note below. */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Tab } from '@livediagram/diagram';
 

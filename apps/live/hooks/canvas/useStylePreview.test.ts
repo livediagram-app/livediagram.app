@@ -44,7 +44,6 @@ function harness() {
   const a = createShape('square', 0, 0);
   let committed: Tab[] = [{ id: 'tab1', name: 'Tab', elements: [a] }];
   const tabsRef = { current: committed };
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const preview = useStylePreview({
     editsBlocked: false,
     activeId: 'tab1',
