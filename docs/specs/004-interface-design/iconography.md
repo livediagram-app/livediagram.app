@@ -30,7 +30,8 @@ Every icon livediagram draws follows one grammar, so a glyph looks the same weig
 
 ## One home, one icon per meaning
 
-- Chrome icons live in `packages/ui/src/icons` and render through one icon primitive. App code does not draw raw `<svg>` icons; art is allow-listed.
+- Every chrome icon renders through one icon primitive (`Glyph`), which owns size, weight, caps and joins. App code does not draw raw `<svg>` icons; art is allow-listed.
+- Icons used by two or more apps live in `packages/ui/src/icons`; an app's own icons live in its icon modules.
 - Each meaning has one glyph (one copy, one duplicate, one share, one folder, one sparkle, one trash, one plus). A second drawing of the same meaning is a bug.
 - A glyph's name says what it depicts; a glyph depicts its meaning (align is not a window, reactions are not a sun).
 
