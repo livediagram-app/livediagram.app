@@ -417,7 +417,7 @@ Snapping during the drag considers every anchor each shape offers (sixteen on a 
 - **Add / remove bend points.** Curved and angled arrows can carry multiple bend points (`curvePoints`, deltas from the chord midpoint like `curveOffset`). Dragging the line inserts a point where it was grabbed ([Bending arrows and the double-press rule](arrow-bending.md)); there is no "+" handle. Each point shows its own draggable `CurveHandle`; **right-clicking a point deletes it**. Deleting the **last** bend point leaves nothing to curve through, so the arrow reverts to a **plain straight line** (the `curvePoints`, `curveOffset`, `elbowOffset` and the curved/angled `arrowStyle` are all dropped) rather than snapping back to a single-handle bow the user didn't ask for.
 - **Touch targets.** The endpoint handles and the bend-point / elbow `CurveHandle`s are small fixed-size SVG marks — fine for a mouse, fiddly for a fingertip. On coarse-pointer (touch) devices each one carries an invisible larger hit circle (~44px diameter, the iOS HIG target) so it's reliably tappable, without enlarging the visible grip on desktop. The box resize handles do the same via a `pointer-coarse` hit pad (corner + N/S/E/W edge handles, `element-parts.tsx`).
 - **Click the empty canvas** deselects.
-- The selection popover applies to arrows the same way it does to shapes (lock + delete).
+- The selection popover applies to arrows the same way it does to shapes (lock + delete). It floats clear of the arrow's label as well as its line ([Arrow labels](arrow-labels.md) "Selection").
 
 ### Cascading delete
 
@@ -907,7 +907,7 @@ While multi-selected:
 
 Marquee hits include both boxed elements (shape, text, sticky) and arrows whose segment AABB is fully enclosed by the rectangle. Duplicating a marquee that contains both carries the connectors across with their endpoints remapped to the duplicated targets.
 
-The floating `MultiSelectionToolbar` appears for **any** 2 + selection, **including an arrow-only one**: it floats over the union bounds of every selected element (arrows contribute their endpoint AABB, via `unionElementBounds`), anchored independently of the union **resize** box. The resize box and its handles stay **boxed-only** (there's no box to drag-resize an arrow by), so an arrow-only selection shows the toolbar but no resize handles. This is what makes "select five arrows → toolbar → **More** → **Flow** → animate them all in one action" reachable; the selection-wide setters (`setArrowFlowSelected` et al.) then apply to every matching member.
+The floating `MultiSelectionToolbar` appears for **any** 2 + selection, **including an arrow-only one**: it floats over the union bounds of every selected element (arrows contribute their selection extent, the endpoint AABB together with their label, see [Arrow labels](arrow-labels.md) "Selection"), anchored independently of the union **resize** box. The resize box and its handles stay **boxed-only** (there's no box to drag-resize an arrow by), so an arrow-only selection shows the toolbar but no resize handles. This is what makes "select five arrows → toolbar → **More** → **Flow** → animate them all in one action" reachable; the selection-wide setters (`setArrowFlowSelected` et al.) then apply to every matching member.
 
 ## Quick add + connect
 

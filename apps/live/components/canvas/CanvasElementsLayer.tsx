@@ -23,7 +23,7 @@ import type { PointerEvent as ReactPointerEvent } from 'react';
 import { type QuickConnectDirection } from '@/lib/canvas';
 import { ArrowDefs } from '@/components/canvas/arrow-defs';
 import { ArrowView } from '@/components/canvas/ArrowView';
-import { useArrowLabelLayouts } from '@/hooks/canvas/useArrowLabelLayouts';
+import type { ArrowLabels } from '@/hooks/canvas/useArrowLabelLayouts';
 import { FreeArrowSelection } from '@/components/canvas/FreeArrowSelection';
 import { BoxedElementView } from '@/components/canvas/BoxedElementView';
 import { LaserOverlay } from '@/components/canvas/LaserOverlay';
@@ -47,6 +47,8 @@ const EMPTY_REMOTE_SELECTORS: { id: string; name: string; color: string }[] = []
 // raw props.
 type ElementsExtras = {
   hasArrows: boolean;
+  // Every arrow label laid out once per element change (Canvas owns the pass).
+  arrowLabels: ArrowLabels;
   showHandles: (id: string) => boolean;
   showAnchorsFor: (id: string) => boolean;
   badgeColor: string;
@@ -89,6 +91,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     handleArrowSelect,
     handleElementContextSelect,
     hasArrows,
+    arrowLabels,
     imageContext,
     isPaintMode,
     laserTrails,
@@ -247,7 +250,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   // Auto-fit measures the face it paints, and webfonts land after first
   // paint — re-render this layer once they are in so every fitted label
   // re-measures in its real face (see useFontsReady).
-  const fontsReady = useFontsReady();
+  useFontsReady();
   // Resolved tab default font once; per-element falls back to it (docs/specs/004-interface-design/fonts.md).
   const tabFontStack = resolveFontStack(tabFont);
   // Highest dot count on the tab (docs/specs/012-collaboration/session-tools.md), computed once so each element's
@@ -266,9 +269,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     () => (hasArrows ? buildElementIndex(elements) : null),
     [hasArrows, elements],
   );
-  // Every arrow label laid out once per element change, avoiding each other
-  // (docs/specs/008-canvas/arrow-labels.md).
-  const arrowLabels = useArrowLabelLayouts(elements, hasArrows, tabFont, fontsReady);
   // Insert-between preview (docs/specs/021-event-storming/event-storming.md): while a palette drag hovers a gap on an
   // event-storming board, the elements at and after the insertion point RENDER
   // shifted right to show the slot opening — see useInsertShift.

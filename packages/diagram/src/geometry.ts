@@ -10,7 +10,7 @@ import {
 } from './index';
 import { anchorLayoutPoint } from './anchor-layouts';
 import { anchorFraction, anchorLiesOn, offeredAnchors } from './anchors';
-import { rotatePoint, unionRects, type Point, type Rect } from './geometry-primitives';
+import { rotatePoint, type Point, type Rect } from './geometry-primitives';
 import { anchorOutline, connectorBox, projectOntoOutline } from './shape-outline';
 
 // --- Geometry helpers ------------------------------------------------------
@@ -165,15 +165,4 @@ export function elementBounds(element: Element, elements: Element[]): Rect {
     width: Math.abs(to.x - from.x),
     height: Math.abs(to.y - from.y),
   };
-}
-
-// Union bounding box of any selection, INCLUDING arrows (their endpoint
-// AABB). Unlike `unionBoxedBounds`, which only spans boxed elements, this
-// covers arrow-only / mixed selections — used to anchor the floating
-// selection toolbar over a marquee that grabbed arrows. Returns null when
-// no listed id matches.
-export function unionElementBounds(elements: Element[], ids: Set<ElementId>): Rect | null {
-  return unionRects(
-    elements.filter((el) => ids.has(el.id)).map((el) => elementBounds(el, elements)),
-  );
 }

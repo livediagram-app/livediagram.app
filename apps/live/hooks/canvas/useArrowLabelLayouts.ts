@@ -80,7 +80,7 @@ export function useArrowLabelLayouts(
     const claimed = (id: ElementId) =>
       [...renders]
         .filter(([other]) => other !== id)
-        .flatMap(([, r]) => (r.layout ? [r.layout.knockout ?? plateOf(r.layout)] : []));
+        .flatMap(([, r]) => (r.layout ? [r.layout.knockout ?? labelPlate(r.layout)] : []));
     return (arrow: ArrowElement, text: string): ArrowLabelLayout | null =>
       layoutArrowLabel(arrow, text, {
         elements,
@@ -94,13 +94,26 @@ export function useArrowLabelLayouts(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [renders, elements, tabFont, optionsKey]);
 
-  return {
-    renderOf: (id: ElementId): ArrowLabelRender => renders.get(id) ?? NONE,
-    draftLayout,
-  };
+  // Stable per layout pass: the selection derivation is memoised on it.
+  return useMemo(
+    () => ({
+      renderOf: (id: ElementId): ArrowLabelRender => renders.get(id) ?? NONE,
+      // Where an arrow's label is drawn, if it has one: the toolbars clear it
+      // as part of its arrow.
+      labelRectOf: (id: ElementId): Rect | null => {
+        const layout = renders.get(id)?.layout;
+        return layout ? labelPlate(layout) : null;
+      },
+      draftLayout,
+    }),
+    [renders, draftLayout],
+  );
 }
 
-function plateOf(l: ArrowLabelLayout): Rect {
+export type ArrowLabels = ReturnType<typeof useArrowLabelLayouts>;
+
+// The label's drawn box: its plate, centred on the label anchor.
+export function labelPlate(l: ArrowLabelLayout): Rect {
   return {
     x: l.center.x - l.width / 2,
     y: l.center.y - l.height / 2,

@@ -73,6 +73,8 @@ import { useStampGhost } from '@/components/canvas/useStampGhost';
 import { useCanvasPolygonGesture } from '@/components/canvas/useCanvasPolygonGesture';
 import { useCanvasSurfaceGestures } from '@/hooks/canvas/useCanvasSurfaceGestures';
 import { useCanvasSelectHandlers } from '@/hooks/canvas/useCanvasSelectHandlers';
+import { useArrowLabelLayouts } from '@/hooks/canvas/useArrowLabelLayouts';
+import { useFontsReady } from '@/components/canvas/useFontsReady';
 
 export function Canvas(props: CanvasProps) {
   const {
@@ -216,6 +218,16 @@ export function Canvas(props: CanvasProps) {
     setZoomTo: handleSetZoom,
   } = useZoomControls(viewportZoom, setViewportZoom);
 
+  // "Are there any arrows" decides whether to mount the ArrowDefs and lay out
+  // labels. `some` short-circuits on the first arrow, so the typical render
+  // pays O(1).
+  const hasArrows = elements.some((el) => el.type === 'arrow');
+  // Every arrow label laid out once per element change, avoiding each other
+  // (docs/specs/008-canvas/arrow-labels.md). Laid out here, not in the element
+  // layer, because the selection toolbars clear a label as part of its arrow.
+  const fontsReady = useFontsReady();
+  const arrowLabels = useArrowLabelLayouts(elements, hasArrows, props.tabFont, fontsReady);
+
   // Selection-display derivation (primary element, bounds, and every
   // "show this chrome?" predicate) lives in lib/canvas-selection.ts so
   // it's unit-tested. Memoised because it walks the elements and Canvas
@@ -232,6 +244,7 @@ export function Canvas(props: CanvasProps) {
         readOnly,
         esBoard: isEventStormingTab({ kind: tabKind, layers: tabLayers }),
         elementMenuOpen: props.elementMenuOpen === true,
+        labelRectOf: arrowLabels.labelRectOf,
       }),
     [
       elements,
@@ -244,6 +257,7 @@ export function Canvas(props: CanvasProps) {
       tabLayers,
       tabKind,
       props.elementMenuOpen,
+      arrowLabels,
     ],
   );
   const {
@@ -255,16 +269,6 @@ export function Canvas(props: CanvasProps) {
     unionResizePrimaryId,
     showUnionResize,
   } = canvasSelection;
-
-  // Cached check only. Render loops iterate `elements` directly so
-  // arrows and boxed elements interleave in z-order (see render
-  // block below); the only thing we still need eagerly is "are
-  // there any arrows" to decide whether to mount the ArrowDefs.
-  // `some` short-circuits on the first arrow (which is usually
-  // near the front of the list once a diagram has any), so the
-  // typical render pays O(1); the prior reduce was unconditional
-  // O(N) for the sole purpose of computing a boolean.
-  const hasArrows = elements.some((el) => el.type === 'arrow');
 
   // Spotlight presenter tool (docs/specs/008-canvas/canvas-and-palette.md): screen-space light position +
   // radius. Local to Canvas so the click handlers, the pointer tracker, and
@@ -672,6 +676,7 @@ export function Canvas(props: CanvasProps) {
             onPressModeButton={pressModeButton}
             onPressFocusButton={props.onPressFocusButton}
             hasArrows={hasArrows}
+            arrowLabels={arrowLabels}
             showHandles={showHandles}
             showAnchorsFor={showAnchorsFor}
             badgeColor={badgeColor}

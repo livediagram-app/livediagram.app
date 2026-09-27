@@ -13,8 +13,10 @@ Scope, by file:
 | `packages/diagram/src/arrow-label.ts`                                                                | `arrowLabelFontSize`: the caption size presets                                           |
 | `packages/diagram/src/svg-render.ts`                                                                 | `contentBounds` counts routes and label plates; one pass per render                      |
 | `packages/diagram/src/svg-render-arrows.ts`                                                          | Export: multi-line caption, plate, knockout mask from the same layout                    |
-| `apps/live/hooks/canvas/useArrowLabelLayouts.ts`                                                     | One `arrowLabelPass` per element change; `draftLayout` for the editor; `sameLabelRender` |
-| `apps/live/components/canvas/CanvasElementsLayer.tsx`                                                | Calls the hook and hands each `ArrowView` its render                                     |
+| `apps/live/hooks/canvas/useArrowLabelLayouts.ts`                                                     | One `arrowLabelPass` per element change; `draftLayout`; `labelRectOf`; `sameLabelRender` |
+| `apps/live/components/canvas/Canvas.tsx`                                                             | Calls the hook; feeds `labelRectOf` to the selection derivation                          |
+| `apps/live/components/canvas/CanvasElementsLayer.tsx`                                                | Hands each `ArrowView` its render from the `arrowLabels` it is given                     |
+| `apps/live/lib/canvas-selection.ts`                                                                  | Toolbar anchors span each selected arrow's selection extent                              |
 | `apps/live/lib/export-tab.ts`                                                                        | PNG / PDF rasterise arrows from `svgArrow`; SVG export shares one pass                   |
 | `apps/live/hooks/ui/useSlideThumbnails.ts`, `useLayerThumbnails.ts`, `components/canvas/Minimap.tsx` | One pass each, with their own mask-id prefix                                             |
 | `apps/live/components/canvas/ArrowView.tsx`                                                          | Knockout mask on the line + halo; renders the layout it is given                         |
@@ -22,16 +24,18 @@ Scope, by file:
 
 ## Domain and naming
 
-| Term         | Identifier                                  | Meaning                                                         |
-| ------------ | ------------------------------------------- | --------------------------------------------------------------- |
-| Label layout | `ArrowLabelLayout`                          | Where and how one label renders                                 |
-| Layout mode  | `mode: 'on-line' \| 'beside' \| 'placed'`   | Auto on the route / auto beside it / user-dragged `labelOffset` |
-| Route        | `route: Pt[]` (polyline, draw order)        | `arrowPathPolyline` of the resolved (spread) endpoints          |
-| Placement    | `placementOf(arrow, route, clear, blockOn)` | The span a label may occupy and its preferred centre `sc`       |
-| Open run     | `openRunOf(span, clearances)`               | A span minus end / corner clearances                            |
-| Label block  | `LabelBlock = { lines, width, height }`     | Wrapped text plus padding; `width`/`height` are the plate size  |
-| Footprint    | `footprintAlong(block, dir)`                | Length of route the block covers when centred on it             |
-| Knockout     | `knockout: Rect \| null`                    | The block inflated by `KNOCKOUT_MARGIN_PX`, cut from lines      |
+| Term             | Identifier                                       | Meaning                                                         |
+| ---------------- | ------------------------------------------------ | --------------------------------------------------------------- |
+| Label layout     | `ArrowLabelLayout`                               | Where and how one label renders                                 |
+| Layout mode      | `mode: 'on-line' \| 'beside' \| 'placed'`        | Auto on the route / auto beside it / user-dragged `labelOffset` |
+| Route            | `route: Pt[]` (polyline, draw order)             | `arrowPathPolyline` of the resolved (spread) endpoints          |
+| Placement        | `placementOf(arrow, route, clear, blockOn)`      | The span a label may occupy and its preferred centre `sc`       |
+| Open run         | `openRunOf(span, clearances)`                    | A span minus end / corner clearances                            |
+| Label block      | `LabelBlock = { lines, width, height }`          | Wrapped text plus padding; `width`/`height` are the plate size  |
+| Footprint        | `footprintAlong(block, dir)`                     | Length of route the block covers when centred on it             |
+| Knockout         | `knockout: Rect \| null`                         | The block inflated by `KNOCKOUT_MARGIN_PX`, cut from lines      |
+| Plate rect       | `labelPlate(layout): Rect`                       | The plate as a rect, centred on `center`                        |
+| Selection extent | `selectionExtent(el)` in `deriveCanvasSelection` | `elementBounds` unioned with the arrow's plate rect, if any     |
 
 Banned synonyms: "caption box" (say label block), "gap" in code (say knockout), "midpoint" for the
 label anchor (the anchor may slide).
@@ -113,6 +117,18 @@ type ArrowLabelLayout = {
 Text is `arrow.label`, split on `\n` into explicit lines (kept), each wrapped. Words split on
 whitespace; a single word wider than the cap is not broken (D22).
 
+## Selection
+
+- `useArrowLabelLayouts` returns `{ renderOf, labelRectOf, draftLayout }`, memoised on the pass, so
+  a stable object feeds `deriveCanvasSelection`'s `useMemo`. `labelRectOf(id)` is
+  `labelPlate(layout)` or `null` when the arrow has no label.
+- `deriveCanvasSelection({ ..., labelRectOf? })`: `selectionBounds` and `multiToolbarBounds` are the
+  union of each selected element's selection extent. Only arrows consult `labelRectOf`; boxed elements keep
+  `elementBounds`. The extent uses the plate, not the knockout (D31): the toolbar gap already
+  clears it.
+- `Canvas` owns the pass (it needs it for the selection) and passes `arrowLabels` to
+  `CanvasElementsLayer`.
+
 ## Rendering
 
 - Canvas and export draw `lines` as one `<text>` with a `<tspan x dy>` per line, centred on
@@ -170,6 +186,10 @@ vertical width hits the cap, diagonal blends, balance avoids an orphan, explicit
 clearance moves the centre, obstacle slides the anchor, slide stays within a quarter run of its centre, beside
 when too short, beside side flips on an obstacle, placed knockout on and off, own knockout
 only. Export parity: `svg-render.test.ts` asserts the export wraps and masks the same lines.
+Selection: `canvas-selection.test.ts` (an arrow's bounds span its label, unlabelled arrow unchanged,
+boxed element unaffected, multi-toolbar spans labels), `useArrowLabelLayouts.test.ts` (`labelPlate`),
+and `e2e/arrow-labels.spec.ts` (the toolbar never overlaps a label above its line across 100 to
+170 % zoom).
 
 ## Constants
 

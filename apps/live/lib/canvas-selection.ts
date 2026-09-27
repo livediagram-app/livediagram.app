@@ -9,8 +9,9 @@ import {
   elementBounds,
   isBoxed,
   unionBoxedBounds,
-  unionElementBounds,
+  unionRects,
   type Element,
+  type ElementId,
 } from '@livediagram/diagram';
 
 type Bounds = { x: number; y: number; width: number; height: number };
@@ -62,6 +63,10 @@ export function deriveCanvasSelection(input: {
   // other's verbs, so the menu — the deliberate, more specific gesture —
   // owns the moment and the popover (with its pluses) stands down.
   elementMenuOpen?: boolean;
+  // Where an arrow's label is drawn, if it has one. The label belongs to its
+  // line (docs/specs/008-canvas/arrow-labels.md), so the floating toolbars
+  // clear it as they clear the line.
+  labelRectOf?: (id: ElementId) => Bounds | null;
 }): CanvasSelection {
   const {
     elements,
@@ -73,7 +78,16 @@ export function deriveCanvasSelection(input: {
     readOnly,
     esBoard,
     elementMenuOpen,
+    labelRectOf,
   } = input;
+
+  // An element's selection extent (docs/specs/008-canvas/arrow-labels.md): an arrow spans
+  // its label too.
+  const selectionExtent = (el: Element): Bounds => {
+    const own = elementBounds(el, elements);
+    const label = el.type === 'arrow' ? labelRectOf?.(el.id) : null;
+    return label ? unionRects([own, label])! : own;
+  };
 
   const multiPrimaryId =
     multiSelectedIds.size > 0
@@ -85,7 +99,7 @@ export function deriveCanvasSelection(input: {
     null;
   const selectionScope: 'single' | 'multi' = multiSelectedIds.size > 0 ? 'multi' : 'single';
   const selectedIsBoxed = selected ? isBoxed(selected) : false;
-  const selectionBounds: Bounds | null = selected ? elementBounds(selected, elements) : null;
+  const selectionBounds: Bounds | null = selected ? selectionExtent(selected) : null;
 
   const selectedLocked = selected ? selected.locked === true : false;
   const showPopover = !!(
@@ -179,7 +193,9 @@ export function deriveCanvasSelection(input: {
   // toolbar (and thus the Flow / animate controls). The resize handles above
   // stay boxed-only because there's no box to drag-resize an arrow by.
   const multiToolbarBounds =
-    multiSelectedIds.size > 1 ? unionElementBounds(elements, multiSelectedIds) : null;
+    multiSelectedIds.size > 1
+      ? unionRects(elements.filter((el) => multiSelectedIds.has(el.id)).map(selectionExtent))
+      : null;
   const showMultiToolbar =
     !!multiToolbarBounds && multiSelectedIds.size > 1 && !isPaintMode && !tabLocked && !readOnly;
 

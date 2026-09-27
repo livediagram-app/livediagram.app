@@ -18,6 +18,8 @@ Breaking the line around the label avoids the overlap and keeps the ownership.
 - **Route**: the drawn path of the arrow, measured by length along the line.
 - **Open run**: the part of the route a label may occupy: the route minus the arrowheads and a clear
   stub at each end, so the line still visibly leaves one element and reaches the other.
+- **Selection extent**: the line's box together with its label's plate; what the selection toolbars
+  float clear of.
 - **Label anchor**: the point on the route the label is centred on.
 - **Local direction**: the direction of the route around the label anchor, averaged over the
   label's own extent, so a curve is judged where the label sits rather than by its chord.
@@ -77,6 +79,13 @@ Explicit line breaks the author types are kept, and each explicit line still wra
 - **Enter** commits, **Shift+Enter** inserts a line break, **Escape** cancels, blur commits.
 - The editor grows as the text wraps and re-lays out live while typing.
 - An empty commit removes the label, as before.
+
+## Selection
+
+A label is part of its arrow when the arrow is selected. The floating selection toolbar clears the
+label as it clears the line: it anchors on the arrow **selection extent**, the line's box together with the
+label's plate, so it never sits on the label at any zoom. The same holds for the multi-selection
+toolbar over a marquee that holds arrows.
 
 ## Existing diagrams
 

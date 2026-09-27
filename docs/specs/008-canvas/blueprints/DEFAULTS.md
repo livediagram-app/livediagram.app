@@ -34,3 +34,4 @@ One row per default applied where a spec is silent or qualitative.
 | D28 | arrow-bending | Snapping while bending by the line                        | None; the handles keep their snapping, a line bend is freehand                                                      |
 | D29 | arrow-bending | Bowing a zero-length arrow                                | Inserts one bend point instead                                                                                      |
 | D30 | arrow-bending | "Close together" for a double-press                       | Within 8 screen px and 450 ms, the existing window                                                                  |
+| D31 | arrow-labels  | Which label box the selection toolbars clear              | The plate rect; the toolbar gap already clears the knockout margin                                                  |
