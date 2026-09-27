@@ -3,6 +3,7 @@ import { IconGlyph } from '@/components/primitives/icon-glyph';
 import { InlineTextLine } from '@/components/canvas/InlineTextLine';
 import { LabelRegion } from '@/components/canvas/web/LabelRegion';
 import { rectStyle, type WebFaceProps } from '@/components/canvas/web/web-face-props';
+import { GlyphDisc } from '@livediagram/ui';
 
 // Header (docs/specs/009-elements/web-components-and-no-groups.md): a website header bar — a round logo, the brand (the
 // label) and the nav links right-aligned, each edited in place. The logo is
@@ -35,14 +36,14 @@ export function SiteHeaderFace({
           borderRadius: BORDER_RADIUS_PX[element.borderRadius ?? 'md'],
         }}
       />
-      <div
+      <GlyphDisc
+        as="div"
+        size={d}
         aria-hidden
-        className="pointer-events-none absolute flex items-center justify-center rounded-full font-bold"
+        className="pointer-events-none absolute font-bold"
         style={{
           left: l.logo.cx - l.logo.r,
           top: l.logo.cy - l.logo.r,
-          width: d,
-          height: d,
           backgroundColor: textColor,
           color: bar,
           opacity: 0.92,
@@ -57,7 +58,7 @@ export function SiteHeaderFace({
         ) : (
           initial
         )}
-      </div>
+      </GlyphDisc>
       <LabelRegion rect={l.brand}>{labelNode}</LabelRegion>
       {l.links.map((k, i) => (
         <div

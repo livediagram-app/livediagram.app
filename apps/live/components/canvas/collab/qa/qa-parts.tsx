@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { QaNote } from '@livediagram/diagram';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { tint } from '../collab-chrome';
-import { HoverCard, Glyph } from '@livediagram/ui';
+import { HoverCard, Glyph, GlyphDisc } from '@livediagram/ui';
 import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
 
 // The board's accent marks what is YOURS and what is LIVE. It is the tab
@@ -114,17 +114,13 @@ export function AuthorChip({
   const initial = note.author.name.trim().charAt(0).toUpperCase() || '?';
   return (
     <span className="inline-flex min-w-0 items-center gap-1" style={{ color: textColor }}>
-      <span
-        className={`inline-flex shrink-0 items-center justify-center rounded-full font-bold text-white ${IDENTITY_FILL}`}
-        style={{
-          ...identityVars(note.author.color),
-          width: size,
-          height: size,
-          fontSize: size * 0.55,
-        }}
+      <GlyphDisc
+        size={size}
+        className={`font-bold text-white ${IDENTITY_FILL}`}
+        style={{ ...identityVars(note.author.color), fontSize: size * 0.55 }}
       >
         {initial}
-      </span>
+      </GlyphDisc>
       <span className="truncate opacity-70">{note.author.name}</span>
     </span>
   );
@@ -231,16 +227,18 @@ export function RoundAction({
   const color = tone === 'accent' ? QA_ACCENT_INK : tone === 'danger' ? '#e11d48' : textColor;
   return (
     <HoverCard title={label} description={description}>
-      <button
+      <GlyphDisc
+        size={24}
+        as="button"
         type="button"
         {...press}
         {...stopPointer}
         aria-label={label}
-        className="pointer-events-auto inline-flex h-6 w-6 cursor-pointer items-center justify-center rounded-full transition hover:scale-110"
+        className="pointer-events-auto cursor-pointer transition hover:scale-110"
         style={{ color, backgroundColor: tint(color, 0.12) }}
       >
         {children}
-      </button>
+      </GlyphDisc>
     </HoverCard>
   );
 }

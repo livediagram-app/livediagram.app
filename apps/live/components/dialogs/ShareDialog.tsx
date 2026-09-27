@@ -2,7 +2,15 @@
 
 import { TrashIcon } from '@/components/primitives/explorer-icons';
 import { useState } from 'react';
-import { Button, LinkIcon, RefreshIcon, Select, TextInput, HoverCard } from '@livediagram/ui';
+import {
+  Button,
+  LinkIcon,
+  RefreshIcon,
+  Select,
+  TextInput,
+  HoverCard,
+  GlyphDisc,
+} from '@livediagram/ui';
 import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { initialsOf, randomName } from '@/lib/identity';
@@ -173,16 +181,18 @@ export function ShareDialog({
           <div className="flex flex-col gap-1.5">
             <p className={sectionLabel}>Your name</p>
             <div className="flex items-center gap-2.5">
-              <div
+              <GlyphDisc
+                size={32}
+                as="div"
                 role="img"
                 aria-label={`Your avatar colour: ${participant.color}`}
                 style={{
                   ...identityVars(participant.color),
                 }}
-                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white ${IDENTITY_FILL}`}
+                className={`text-xs font-semibold text-white ${IDENTITY_FILL}`}
               >
                 {initialsOf(effectiveName)}
-              </div>
+              </GlyphDisc>
               <TextInput
                 id="share-name"
                 value={name}

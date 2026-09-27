@@ -4,7 +4,7 @@ import {
   type BoxedElement,
   type TabVote,
 } from '@livediagram/diagram';
-import { HoverCard, SOLID_BRAND_DARK } from '@livediagram/ui';
+import { HoverCard, SOLID_BRAND_DARK, GlyphDisc } from '@livediagram/ui';
 
 // The dot-vote overlay (docs/specs/012-collaboration/session-tools.md), lifted out of BoxedElementView: the
 // tally pill on the element's bottom-right corner — live count,
@@ -183,7 +183,9 @@ function VoteStepButton({
   children: React.ReactNode;
 }) {
   return (
-    <button
+    <GlyphDisc
+      size={24}
+      as="button"
       type="button"
       aria-label={label}
       disabled={disabled}
@@ -191,9 +193,9 @@ function VoteStepButton({
         e.stopPropagation();
         onClick();
       }}
-      className="flex h-6 w-6 items-center justify-center rounded-full text-[15px] font-semibold leading-none text-slate-600 transition enabled:hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-30 dark:text-slate-300 dark:enabled:hover:bg-slate-700"
+      className="text-[15px] font-semibold text-slate-600 transition enabled:hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-30 dark:text-slate-300 dark:enabled:hover:bg-slate-700"
     >
       {children}
-    </button>
+    </GlyphDisc>
   );
 }

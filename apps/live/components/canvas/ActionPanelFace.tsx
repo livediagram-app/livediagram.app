@@ -7,7 +7,7 @@ import type { ShapeElement } from '@livediagram/diagram';
 import { ActionMenuIcon } from '@/components/palette/context-menu-icons';
 import { initialsOf } from '@/lib/identity';
 import { relativeSince } from '@/lib/relative-time';
-import { SOLID_BRAND_DARK } from '@livediagram/ui';
+import { SOLID_BRAND_DARK, GlyphDisc } from '@livediagram/ui';
 import { useTouchScrollBody } from '@/hooks/ui/useTouchScrollBody';
 
 // The face of an Action panel (docs/specs/012-collaboration/action-panel.md): a card on the board that carries ONE
@@ -130,12 +130,13 @@ function AssigneeRow({
 }) {
   return (
     <span className="mx-2.5 mb-1.5 flex shrink-0 items-center gap-2 rounded-md bg-black/[0.04] px-2 py-1.5 dark:bg-white/[0.06]">
-      <span
+      <GlyphDisc
+        size={24}
         aria-hidden
-        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-500 text-[9px] font-semibold text-white ${SOLID_BRAND_DARK}`}
+        className={`bg-brand-500 text-[9px] font-semibold text-white ${SOLID_BRAND_DARK}`}
       >
         {initialsOf(name)}
-      </span>
+      </GlyphDisc>
       <span className="flex min-w-0 flex-col">
         <span className="truncate text-[11px] font-medium">
           {mine ? 'Assigned to you' : `Assigned to ${name}`}

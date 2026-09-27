@@ -12,7 +12,7 @@
 // deliberately NOT treated this way (element-parts.tsx): interaction
 // grips need a constant hit size.
 import { initialsOf } from '@/lib/identity';
-import { ActionIcon, CommentIcon, LinkIcon, NoteIcon, HoverCard } from '@livediagram/ui';
+import { ActionIcon, CommentIcon, LinkIcon, NoteIcon, HoverCard, GlyphDisc } from '@livediagram/ui';
 import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
 
 // Below this canvas zoom the on-element adornments (badge pill, lock
@@ -46,13 +46,15 @@ export function RemoteSelectorsStrip({
             title={`Locked to ${p.name}`}
             description="Selected by them; you can't edit it right now."
           >
-            <div
+            <GlyphDisc
+              size={20}
+              as="div"
               aria-label={`Locked to ${p.name}`}
               style={identityVars(p.color)}
-              className={`flex h-5 w-5 items-center justify-center rounded-full border border-white text-[9px] font-semibold text-white shadow-sm ${IDENTITY_FILL}`}
+              className={`border border-white text-[9px] font-semibold text-white shadow-sm ${IDENTITY_FILL}`}
             >
               {initialsOf(p.name)}
-            </div>
+            </GlyphDisc>
           </HoverCard>
         </div>
       ))}

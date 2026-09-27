@@ -1,7 +1,14 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Button, CloseIcon, TrashIcon, useClickOutside, useEscape } from '@livediagram/ui';
+import {
+  Button,
+  CloseIcon,
+  TrashIcon,
+  useClickOutside,
+  useEscape,
+  GlyphDisc,
+} from '@livediagram/ui';
 import { Portal } from '@/components/primitives/Portal';
 import { useReposition } from '@/hooks/canvas/useReposition';
 import type { Comment, CommentThread } from '@livediagram/diagram';
@@ -249,13 +256,15 @@ function CommentRow({
 }) {
   return (
     <li className={`group flex gap-2 py-2 ${resolved ? 'opacity-60' : ''}`}>
-      <div
+      <GlyphDisc
+        size={24}
+        as="div"
         aria-hidden
         style={identityVars(comment.authorColor)}
-        className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold text-white ${IDENTITY_FILL}`}
+        className={`mt-0.5 text-[10px] font-semibold text-white ${IDENTITY_FILL}`}
       >
         {initialsOf(comment.authorName)}
-      </div>
+      </GlyphDisc>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5 text-[11px]">
           <span className="truncate font-semibold text-slate-800 dark:text-slate-100">

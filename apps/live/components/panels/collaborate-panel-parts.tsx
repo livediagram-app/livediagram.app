@@ -4,7 +4,7 @@ import { formatRelativeTimeShort } from '@/lib/relative-time';
 import { initialsOf } from '@/lib/identity';
 import { ActionMenuIcon, CommentMenuIcon } from '@/components/palette/context-menu-icons';
 import type { ActionRow, CommentRow } from './CollaboratePanel';
-import { HoverCard, SOLID_BRAND_DARK, Glyph } from '@livediagram/ui';
+import { HoverCard, SOLID_BRAND_DARK, Glyph, GlyphDisc } from '@livediagram/ui';
 import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
 
 // The COLLABORATE panel's row + filter-control components, lifted out
@@ -98,12 +98,13 @@ function RowShell({
         </span>
         <span className="flex shrink-0 flex-col items-end gap-0.5">
           <HoverCard title={avatar.name} description={avatar.detail}>
-            <span
-              className={`flex h-5 w-5 items-center justify-center rounded-full text-[8px] font-semibold text-white ${avatar.colorClass ?? ''} ${avatar.color ? IDENTITY_FILL : ''}`}
+            <GlyphDisc
+              size={20}
+              className={`text-[8px] font-semibold text-white ${avatar.colorClass ?? ''} ${avatar.color ? IDENTITY_FILL : ''}`}
               style={avatar.color ? identityVars(avatar.color) : undefined}
             >
               {initialsOf(avatar.name)}
-            </span>
+            </GlyphDisc>
           </HoverCard>
           <span className="text-[10px] text-slate-400">
             {formatRelativeTimeShort(Date.now() - at)}

@@ -2,7 +2,7 @@
 
 import type { PointerEvent } from 'react';
 import { EVENT_STORMING_NOTES } from '@livediagram/diagram';
-import { HoverCard, Tooltip } from '@livediagram/ui';
+import { HoverCard, Tooltip, GlyphDisc } from '@livediagram/ui';
 import type { Corner } from '@/lib/photo-boxes';
 
 // What a SELECTED box offers (docs/specs/021-event-storming/event-storming.md Phase 9): its tick, a handle on each
@@ -91,14 +91,16 @@ export function BoxEditControls({
             );
           })}
           <HoverCard title="Delete this box" description="Shortcut: Del">
-            <button
+            <GlyphDisc
+              size={20}
+              as="button"
               type="button"
               aria-label="Delete this box"
               onClick={onDelete}
-              className="ml-1 flex h-5 w-5 items-center justify-center rounded-full text-sm leading-none text-white hover:bg-red-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-white"
+              className="ml-1 text-sm text-white hover:bg-red-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-white"
             >
               ×
-            </button>
+            </GlyphDisc>
           </HoverCard>
         </div>
       </div>
