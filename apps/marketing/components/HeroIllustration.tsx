@@ -406,7 +406,7 @@ function EditorWindow({
                 {/* The Editor menu, as the real header carries it. */}
                 <span className="hidden items-center gap-1 rounded-md border border-slate-200 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 sm:inline-flex dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
                   <MenuIcon size={9} />
-                  Editor
+                  <span className="text-optical-line">Editor</span>
                   <ChevronDownIcon size={8} />
                 </span>
               </div>
@@ -417,20 +417,20 @@ function EditorWindow({
                     <span className="text-emerald-500">
                       <SharedDotIcon />
                     </span>
-                    Shared
+                    <span className="text-optical-line text-optical-caps">Shared</span>
                   </span>
                 ) : (
                   <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-700 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/30">
                     <span className="text-amber-500">
                       <PrivateDotIcon />
                     </span>
-                    Private
+                    <span className="text-optical-line text-optical-caps">Private</span>
                   </span>
                 )}
               </div>
               <span className="inline-flex items-center gap-1 rounded-md bg-brand-500 px-2 py-0.5 text-[10px] font-semibold text-white dark:bg-brand-600">
                 <ShareGlyph />
-                Share
+                <span className="text-optical-line">Share</span>
               </span>
             </div>
           </>
@@ -520,8 +520,8 @@ function EditorWindow({
               </span>
             </div>
             <div className="px-1.5 pt-1.5">
-              <div className="rounded-md border border-slate-200 px-1.5 py-0.5 text-[8px] text-slate-400 dark:border-slate-700 dark:bg-slate-800">
-                Search all elements
+              <div className="flex rounded-md border border-slate-200 px-1.5 py-0.5 text-[8px] text-slate-400 dark:border-slate-700 dark:bg-slate-800">
+                <span className="text-optical-line">Search all elements</span>
               </div>
             </div>
             <div className="grid grid-cols-3 gap-0.5 p-1.5">

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Breadcrumb } from '@/components/Breadcrumb';
 import { helpMetadata } from '@/lib/seo';
-import { buttonClassName, REPO_URL } from '@livediagram/ui';
+import { buttonClassName, REPO_URL, ButtonContent } from '@livediagram/ui';
 import { ExternalLinkIcon } from '@/lib/chrome-icons';
 
 export const metadata: Metadata = helpMetadata({
@@ -34,7 +34,7 @@ export default function ContactPage() {
               you.
             </p>
             <a href="mailto:hello@livediagram.app" className={buttonClassName({ size: 'cta-sm' })}>
-              hello@livediagram.app
+              <ButtonContent>hello@livediagram.app</ButtonContent>
             </a>
           </div>
 
@@ -52,8 +52,10 @@ export default function ContactPage() {
               rel="noopener noreferrer"
               className={buttonClassName({ variant: 'secondary', size: 'cta-sm' })}
             >
-              Open an issue on GitHub
-              {ExternalIcon}
+              <ButtonContent>
+                Open an issue on GitHub
+                {ExternalIcon}
+              </ButtonContent>
             </a>
           </div>
 

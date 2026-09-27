@@ -665,8 +665,8 @@ export function ShareLinksArt() {
             <span className="font-mono text-[8px] text-slate-500 dark:text-slate-400">
               {l.code}
             </span>
-            <span className={'rounded px-1.5 py-0.5 text-[7px] font-semibold ' + l.cls}>
-              {l.role}
+            <span className={'flex rounded px-1.5 py-0.5 text-[7px] font-semibold ' + l.cls}>
+              <span className="text-optical-line">{l.role}</span>
             </span>
           </div>
         ))}
@@ -826,8 +826,10 @@ export function TeamsArt() {
               {m.who[0]}
             </GlyphDisc>
             <span className="font-semibold text-slate-700 dark:text-slate-200">{m.who}</span>
-            <span className={'ml-auto rounded px-1.5 py-0.5 text-[7px] font-semibold ' + m.cls}>
-              {m.role}
+            <span
+              className={'ml-auto flex rounded px-1.5 py-0.5 text-[7px] font-semibold ' + m.cls}
+            >
+              <span className="text-optical-line">{m.role}</span>
             </span>
           </div>
         ))}
