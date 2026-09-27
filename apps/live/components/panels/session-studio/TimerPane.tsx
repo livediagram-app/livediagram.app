@@ -155,7 +155,7 @@ function LiveTimer({
         )}
         <TransportButton label="End" icon={<StopGlyph />} onClick={onClearTimer} />
       </div>
-      <p className="text-center text-[10px] leading-snug text-slate-400 dark:text-slate-500">
+      <p className="text-center text-[10px] leading-snug text-slate-400">
         A tab runs one timer. End this one to start a different kind.
       </p>
     </div>

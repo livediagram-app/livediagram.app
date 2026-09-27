@@ -127,7 +127,7 @@ export function OfflineNode({
       />
       {expanded.offline ? (
         diagrams.length === 0 ? (
-          <p className="px-8 py-1.5 text-[10px] text-slate-400 dark:text-slate-500">
+          <p className="px-8 py-1.5 text-[10px] text-slate-400 dark:text-slate-400">
             Diagrams saved only in this browser collect here.
           </p>
         ) : (

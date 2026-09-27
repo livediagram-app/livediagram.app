@@ -220,7 +220,7 @@ export function IconButton({
       {showCornerLetter ? (
         <span
           aria-hidden
-          className="pointer-events-none absolute bottom-0 right-0.5 text-[8px] font-medium uppercase leading-none text-slate-400 dark:text-slate-500"
+          className="pointer-events-none absolute bottom-0 right-0.5 text-[8px] font-medium uppercase leading-none text-slate-400"
         >
           {shortcut}
         </span>

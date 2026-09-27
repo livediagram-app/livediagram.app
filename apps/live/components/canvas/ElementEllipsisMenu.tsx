@@ -242,7 +242,7 @@ export function ElementMenuSettingsRow({ onOpen }: { onOpen: () => void }) {
 /** A heading between groups of rows. */
 export function ElementMenuLabel({ children }: { children: React.ReactNode }) {
   return (
-    <span className="block px-3 pb-0.5 pt-1.5 text-[10px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
+    <span className="block px-3 pb-0.5 pt-1.5 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
       {children}
     </span>
   );

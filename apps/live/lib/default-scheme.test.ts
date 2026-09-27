@@ -24,13 +24,13 @@ describe('getTheme under an appearance', () => {
     setAppearance('light');
     expect(getTheme('brand').backgroundColor).toBe('#ffffff');
     setAppearance('dark');
-    expect(getTheme('brand').backgroundColor).toBe('#2b2b33');
+    expect(getTheme('brand').backgroundColor).toBe('#0d121a');
   });
 
   it('resolves an unthemed tab the same way', () => {
     // A tab that never had a scheme picked IS on Default, so it follows too.
     setAppearance('dark');
-    expect(getTheme(undefined).backgroundColor).toBe('#2b2b33');
+    expect(getTheme(undefined).backgroundColor).toBe('#0d121a');
   });
 
   it('leaves every other scheme alone', () => {
@@ -39,13 +39,11 @@ describe('getTheme under an appearance', () => {
     // get to reinterpret it.
     expect(getTheme('slate').backgroundColor).toBe('#fdf2f8');
     expect(getTheme('midnight').backgroundColor).toBe('#0f172a');
-    // Including the legacy scheme Default absorbed.
-    expect(getTheme('charcoal').elementFill).toBe('#2c2c33');
   });
 
   it('takes an explicit appearance, for callers that are not the viewer', () => {
     setAppearance('light');
-    expect(getTheme('brand', 'dark').backgroundColor).toBe('#2b2b33');
+    expect(getTheme('brand', 'dark').backgroundColor).toBe('#0d121a');
   });
 });
 
@@ -54,8 +52,8 @@ describe('resolveTabBackdrop', () => {
     const t = tab({ theme: 'brand', backgroundColor: '#ffffff', patternColor: '#cbd5e1' });
     setAppearance('dark');
     expect(resolveTabBackdrop(t)).toMatchObject({
-      backgroundColor: '#2b2b33',
-      patternColor: '#636373',
+      backgroundColor: '#0d121a',
+      patternColor: '#1c2735',
     });
     setAppearance('light');
     expect(resolveTabBackdrop(t)).toMatchObject({
@@ -68,14 +66,14 @@ describe('resolveTabBackdrop', () => {
     // Someone in dark chrome picked Default, so the tab carries the dark
     // backdrop. A light-chrome viewer must still see white, or the whole
     // point of merging the two schemes is lost.
-    const t = tab({ theme: 'brand', backgroundColor: '#2b2b33', patternColor: '#636373' });
+    const t = tab({ theme: 'brand', backgroundColor: '#0d121a', patternColor: '#1c2735' });
     setAppearance('light');
     expect(resolveTabBackdrop(t).backgroundColor).toBe('#ffffff');
   });
 
   it('paints an unthemed tab as Default', () => {
     setAppearance('dark');
-    expect(resolveTabBackdrop(tab()).backgroundColor).toBe('#2b2b33');
+    expect(resolveTabBackdrop(tab()).backgroundColor).toBe('#0d121a');
   });
 
   it('never overrides a hand-picked canvas colour', () => {
@@ -149,7 +147,7 @@ describe('switching away from Default', () => {
     // would read the other half as a hand-picked colour and refuse to move.
     const prev = getTheme('brand', 'light');
     const next = getTheme('slate');
-    const savedInDark = { backgroundColor: '#2b2b33', patternColor: '#636373' };
+    const savedInDark = { backgroundColor: '#0d121a', patternColor: '#1c2735' };
     expect(switchThemeBackdrop(savedInDark, prev, next)).toMatchObject({
       backgroundColor: next.backgroundColor,
       patternColor: next.patternColor,

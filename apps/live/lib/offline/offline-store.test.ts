@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Tab } from '@livediagram/diagram';
 import type { OfflineDiagramRecord } from './offline-store';
 import {
@@ -88,6 +88,21 @@ describe('offline store ops (in-memory backend)', () => {
     await offlineDeleteDiagram('d1');
     expect(await isOfflineId('d1')).toBe(false);
     expect(await offlineLoadDiagram('d1')).toBeNull();
+  });
+
+  it('migrates a tab saved against a retired scheme on load (docs/specs/011-theme/retired-schemes.md)', async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    __setOfflineBackend(memBackend());
+    const charcoal = tab('t1', {
+      theme: 'charcoal',
+      backgroundColor: '#2b2b33',
+      patternColor: '#636373',
+    });
+    await offlineCreateDiagram({ id: 'd1', name: 'Doc', tabs: [charcoal] }, 100);
+    expect(await offlineLoadTab('d1', 't1')).toMatchObject({
+      theme: 'brand',
+      backgroundColor: '#0d121a',
+    });
   });
 
   it('saves + loads + deletes individual tabs', async () => {

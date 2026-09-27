@@ -170,7 +170,7 @@ export function ArrowLineControls({
               <span className="text-[11px] text-slate-600 dark:text-slate-300">
                 Pass behind boxes
               </span>
-              <span className="text-[10px] leading-snug text-slate-400 dark:text-slate-500">
+              <span className="text-[10px] leading-snug text-slate-400">
                 Break the line where it crosses another box.
               </span>
             </span>

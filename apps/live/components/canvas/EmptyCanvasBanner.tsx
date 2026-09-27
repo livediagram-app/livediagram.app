@@ -28,7 +28,7 @@ export function EmptyCanvasBanner({
       className={`pointer-events-none fixed inset-x-0 flex justify-center px-4 ${placementClassName}`}
     >
       <div className="pointer-events-auto flex w-full max-w-xl animate-fly-up-in items-center gap-3 rounded-xl border border-slate-200 bg-white/95 px-4 py-2.5 shadow-lg shadow-slate-900/5 backdrop-blur dark:border-slate-700 dark:bg-slate-900/95">
-        <span className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-500 sm:flex dark:bg-brand-500/15">
+        <span className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-500 sm:flex dark:bg-brand-500/15 dark:text-brand-400">
           <svg
             width="18"
             height="18"

@@ -153,19 +153,19 @@ export function canvasSurface(backgroundColor: string | undefined | null): Canva
   return isLightColor(backgroundColor) ? 'light' : 'dark';
 }
 
-// The ink for dark paper: the neutral zinc set the Default scheme's dark half
-// (formerly the Charcoal scheme) was built around — fill a step above the
-// backdrop, stroke and text well clear of it. Sticky notes, images, link cards
+// The ink for dark paper: the blue-slate set of the Default scheme's dark half
+// (docs/specs/008-canvas/canvas-and-palette.md) — fill a step above the backdrop, a slate-500 stroke
+// at 3:1 or better on both, white text. Sticky notes, images, link cards
 // and videos are absent on purpose: their colours are their identity, and they
 // look the same on any paper.
 const DARK_INK = {
-  fill: '#2c2c33',
-  stroke: '#a1a1aa',
-  text: '#e4e4e7',
+  fill: '#141b26',
+  stroke: '#64748b',
+  text: '#ffffff',
   // A shade above the shape fill, so a marker still reads as a chip ON a
   // shape rather than a hole in it (the light set does the same, brand-100
   // over brand-50).
-  annotationFill: '#3a3a44',
+  annotationFill: '#1c2533',
 } as const;
 
 export function defaultTextColor(element: BoxedElement, surface: CanvasSurface = 'light'): string {
@@ -493,4 +493,20 @@ const RADIUS_SHAPES = new Set<string>([
 export function defaultArrowStrokeColor(surface: CanvasSurface = 'light'): string {
   if (surface === 'dark') return DARK_INK.stroke; // matches the shapes it connects
   return 'rgb(51 65 85)'; // slate-700, same as ArrowView's fallback
+}
+
+// slate-400: on dark paper an uncoloured arrow's caption is a step lighter than
+// its line, so the words read before the wire.
+const DARK_ARROW_LABEL_COLOR = '#94a3b8';
+
+// The colour an arrow caption is painted in, for the canvas and the export
+// alike. A caption with its own colour keeps it; otherwise it follows the line,
+// except an uncoloured arrow on dark paper, whose caption is DARK_ARROW_LABEL_COLOR.
+export function defaultArrowLabelColor(
+  arrow: { strokeColor?: string; textColor?: string },
+  surface: CanvasSurface = 'light',
+): string {
+  if (arrow.textColor) return arrow.textColor;
+  if (arrow.strokeColor) return arrow.strokeColor;
+  return surface === 'dark' ? DARK_ARROW_LABEL_COLOR : defaultArrowStrokeColor(surface);
 }

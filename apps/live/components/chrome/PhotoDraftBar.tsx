@@ -13,6 +13,7 @@
 
 // What each reader failure MEANS, in the bar's own voice: short enough for the
 // line, specific enough that the author knows whether retrying will help.
+import { SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
 const READ_ERROR_LINES: Record<string, string> = {
   ai_quota: 'the model key has used up its quota',
   rate_limited: 'the model is busy right now',
@@ -74,7 +75,7 @@ export function PhotoDraftBar({
           type="button"
           onClick={onAccept}
           disabled={busy || draftCount === 0}
-          className="rounded-full bg-brand-500 px-3 py-1 text-[11px] font-semibold text-white transition hover:bg-brand-600 disabled:opacity-50"
+          className={`rounded-full bg-brand-500 px-3 py-1 text-[11px] font-semibold text-white transition hover:bg-brand-600 disabled:opacity-50 ${SOLID_BRAND_DARK_CONTROL}`}
         >
           Add {draftCount} {draftCount === 1 ? 'note' : 'notes'}
         </button>

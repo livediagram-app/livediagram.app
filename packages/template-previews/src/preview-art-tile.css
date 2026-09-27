@@ -9,10 +9,7 @@
    Re-light the whole tile rather than redraw forty-eight illustrations:
    inverting lightness and spinning the hue back puts the art on dark paper
    with its hues intact (a blue node stays blue, an amber sticky stays amber),
-   and it keeps working for previews nobody has drawn yet. The invert stops
-   short of 1 so white lands on a soft near-black rather than pure #000,
-   matching the canvas's own dark paper instead of punching holes in the
-   dialog.
+   and it keeps working for previews nobody has drawn yet.
 
    Deliberately NOT applied to colour-scheme swatches: those are showing you a
    scheme's actual colours, so re-lighting them would be a lie.
@@ -22,7 +19,27 @@
    `.dark` chrome, and the marketing site's template gallery, which sits on
    a dark band whatever the visitor's scheme and so opts a tile in with
    `preview-art-tile-dark`. */
-.dark .preview-art-tile,
 .preview-art-tile-dark {
   filter: invert(0.9) hue-rotate(180deg);
+}
+
+/* In the editor the re-lit paper lands on the dark CANVAS colour (#0d121a), so a thumbnail
+   previews the canvas you will get (docs/specs/007-editor/live-app.md). Everything lighter than
+   #f3faff (the plate and the art's white fills) is clamped to it by a darken veil before the
+   filter, and the filter maps #f3faff to #0d1318: the nearest it reaches to the canvas, measured.
+   Darker ink passes the veil untouched and keeps its hue. */
+.dark .preview-art-tile {
+  position: relative;
+  isolation: isolate;
+  background-color: #f3faff;
+  filter: invert(0.95) hue-rotate(180deg);
+}
+.dark .preview-art-tile::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: #f3faff;
+  mix-blend-mode: darken;
+  pointer-events: none;
 }

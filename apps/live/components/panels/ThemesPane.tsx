@@ -13,7 +13,14 @@ import { useConfirm } from '@/hooks/ui/useConfirm';
 import { materialiseCustomTheme } from '@/lib/custom-theme-registry';
 import { useCustomThemes } from '@/components/primitives/CustomThemeProvider';
 import type { CustomThemeDraft } from '@/components/palette/CustomThemeBuilder';
-import { CopyIcon, EmptyState, PencilIcon, PlusIcon, TrashSimpleIcon } from '@livediagram/ui';
+import {
+  CopyIcon,
+  EmptyState,
+  PencilIcon,
+  PlusIcon,
+  TrashSimpleIcon,
+  SOLID_BRAND_DARK_CONTROL,
+} from '@livediagram/ui';
 import { ThemeBuilderModal, themeDeleteConfirm } from './ThemeBuilderModal';
 import { ThemeSwatch } from '@/components/primitives/ThemeSwatch';
 import { Tooltip } from '@/components/primitives/Tooltip';
@@ -61,7 +68,7 @@ export function ThemesPane() {
           <button
             type="button"
             onClick={() => setBuilding('new')}
-            className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-500"
+            className={`rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-500 ${SOLID_BRAND_DARK_CONTROL}`}
           >
             New theme
           </button>

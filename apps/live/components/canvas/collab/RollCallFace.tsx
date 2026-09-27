@@ -7,6 +7,7 @@ import type { RollCallEntry, ShapeElement } from '@livediagram/diagram';
 import { initialsOf } from '@/lib/identity';
 import { CollabButton, CollabEmpty, CollabPanel } from './collab-chrome';
 import { Perforation, TornEdge } from '@/components/canvas/paper-kit';
+import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
 
 // The stored name + colour, drawn as the presence avatar it was copied from.
 // NOT ParticipantAvatar: that takes a live Participant with a presence status,
@@ -17,8 +18,8 @@ function RollAvatar({ entry }: { entry: RollCallEntry }) {
     <span
       role="img"
       aria-label={entry.name}
-      className="flex h-[20px] w-[20px] shrink-0 items-center justify-center rounded-full text-[9px] font-semibold text-white"
-      style={{ backgroundColor: entry.color }}
+      className={`flex h-[20px] w-[20px] shrink-0 items-center justify-center rounded-full text-[9px] font-semibold text-white ${IDENTITY_FILL}`}
+      style={identityVars(entry.color)}
     >
       {initialsOf(entry.name)}
     </span>

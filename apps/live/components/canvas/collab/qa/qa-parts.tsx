@@ -7,6 +7,7 @@ import type { QaNote } from '@livediagram/diagram';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { Tooltip } from '@/components/primitives/Tooltip';
 import { tint } from '../collab-chrome';
+import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
 
 // The board's accent marks what is YOURS and what is LIVE. It is the tab
 // theme's colour, not the board's own: QaBoardFace sets `--qa-accent` from the
@@ -124,12 +125,12 @@ export function AuthorChip({
   return (
     <span className="inline-flex min-w-0 items-center gap-1" style={{ color: textColor }}>
       <span
-        className="inline-flex shrink-0 items-center justify-center rounded-full font-bold text-white"
+        className={`inline-flex shrink-0 items-center justify-center rounded-full font-bold text-white ${IDENTITY_FILL}`}
         style={{
+          ...identityVars(note.author.color),
           width: size,
           height: size,
           fontSize: size * 0.55,
-          backgroundColor: note.author.color,
         }}
       >
         {initial}

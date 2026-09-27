@@ -21,6 +21,7 @@ import { ToggleSwitch } from '@/components/palette/palette-controls';
 import type { SessionToolsProps } from '@/components/chrome/session-tools-props';
 import { votePhase, voteTurnout, type VotePhase } from './session-studio';
 import { StudioButton, StudioCallout, StudioLabel, StudioSegmented } from './studio-ui';
+import { SOLID_BRAND_DARK } from '@livediagram/ui';
 
 type VotePaneProps = Pick<
   SessionToolsProps,
@@ -94,7 +95,7 @@ export function VoteSetupBody({
             onChange={setStacking}
             options={STACKING_OPTIONS}
           />
-          <span className="text-[10px] leading-snug text-slate-400 dark:text-slate-500">
+          <span className="text-[10px] leading-snug text-slate-400">
             {stacking === 'one'
               ? `Each person backs ${dots} different items, one dot apiece.`
               : 'People can pile several dots on one item they feel strongly about.'}
@@ -113,7 +114,7 @@ export function VoteSetupBody({
               ...voteLayers.map((l) => ({ value: l.id, label: l.name })),
             ]}
           />
-          <span className="text-[10px] leading-snug text-slate-400 dark:text-slate-500">
+          <span className="text-[10px] leading-snug text-slate-400">
             {layerId
               ? 'Only this layer takes dots. The rest stay visible, dimmed.'
               : 'Every votable element on the tab takes dots.'}
@@ -222,7 +223,7 @@ function PrivacyCard({
       <span
         className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md ${
           checked
-            ? 'bg-brand-500 text-white'
+            ? `bg-brand-500 text-white ${SOLID_BRAND_DARK}`
             : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-300'
         }`}
       >
@@ -259,19 +260,19 @@ function PhaseTrack({ phase }: { phase: VotePhase }) {
                 aria-current={current ? 'step' : undefined}
                 className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold ${
                   current
-                    ? 'bg-brand-500 text-white ring-4 ring-brand-500/15'
+                    ? `bg-brand-500 text-white ring-4 ring-brand-500/15 ${SOLID_BRAND_DARK}`
                     : done
                       ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/25 dark:text-brand-200'
-                      : 'bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500'
+                      : 'bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-400'
                 }`}
               >
-                {done ? '✓' : i + 1}
+                {done ? '✓' : <span className="text-optical-centre">{i + 1}</span>}
               </span>
               <span
                 className={`text-[10px] font-medium ${
                   current
                     ? 'text-slate-800 dark:text-slate-100'
-                    : 'text-slate-400 dark:text-slate-500'
+                    : 'text-slate-400 dark:text-slate-400'
                 }`}
               >
                 {p.label}
@@ -351,7 +352,7 @@ function LiveVote({
               Clear vote
             </StudioButton>
           ) : null}
-          <span className="text-center text-[10px] leading-snug text-slate-400 dark:text-slate-500">
+          <span className="text-center text-[10px] leading-snug text-slate-400">
             {phase === 'casting'
               ? 'Ending keeps every dot; nobody can add more.'
               : phase === 'closed'

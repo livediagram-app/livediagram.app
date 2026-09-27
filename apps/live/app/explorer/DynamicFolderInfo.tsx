@@ -35,7 +35,7 @@ function InfoIcon() {
       viewBox="0 0 14 14"
       aria-hidden
       fill="none"
-      className="mt-px shrink-0 text-slate-400 dark:text-slate-500"
+      className="mt-px shrink-0 text-slate-400"
     >
       <circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeWidth="1.3" />
       <path d="M7 6.2v3.3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />

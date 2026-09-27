@@ -1,6 +1,6 @@
 import {
   isEventStormingTab,
-  migrateStoredElements,
+  migrateStoredTab,
   settleNotesOnLanes,
   type Tab,
 } from '@livediagram/diagram';
@@ -16,10 +16,10 @@ import {
 // were all there, but the palette, the stationery and the note menu were
 // gone, with nothing to say why (docs/specs/021-event-storming/event-storming.md). Without `layers`, every imported
 // element's `layerId` dangles and the bands it was organised into are lost.
-// A file is a stored tab like any other, so its elements take the same
-// migrations on the way in (retired groups and docks).
+// A file is a stored tab like any other, so it takes the same migrations on
+// the way in (retired schemes, retired groups and docks).
 export function mergeImportedTab(receiving: Tab, imported: Tab): Tab {
-  const merged = mergeFields(receiving, imported);
+  const merged = mergeFields(receiving, migrateStoredTab(imported));
   // An event-storming board's workshop notes always sit on a lane
   // (docs/specs/021-event-storming/event-storming.md "Always on a lane"): an import lands every one on its
   // nearest lane, x untouched, and the board is settled.
@@ -34,7 +34,7 @@ export function mergeImportedTab(receiving: Tab, imported: Tab): Tab {
 function mergeFields(receiving: Tab, imported: Tab): Tab {
   return {
     ...receiving,
-    elements: migrateStoredElements(imported.elements),
+    elements: imported.elements,
     kind: imported.kind ?? receiving.kind,
     layers: imported.layers ?? receiving.layers,
     theme: imported.theme ?? receiving.theme,

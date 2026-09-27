@@ -195,14 +195,14 @@ export function PaletteFavouritesDialog({
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search controls…"
             aria-label="Search controls"
-            className="min-w-0 flex-1 rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-sm text-slate-800 outline-none placeholder:text-slate-400 focus:border-brand-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
+            className="min-w-0 flex-1 rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-sm text-slate-800 outline-none placeholder:text-slate-400 focus:border-brand-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-400"
           />
         </div>
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3">
         {tiles.length === 0 ? (
-          <p className="px-3 py-6 text-center text-sm text-slate-400 dark:text-slate-500">
+          <p className="px-3 py-6 text-center text-sm text-slate-400">
             {/* While the catalogue chunk is in flight an empty grid means
                 "not here yet", not "nothing matches". */}
             {loadingCategory ? 'Loading icons…' : 'No controls match.'}

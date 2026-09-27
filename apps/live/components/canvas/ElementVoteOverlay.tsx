@@ -5,6 +5,7 @@ import {
   type TabVote,
 } from '@livediagram/diagram';
 import { Tooltip } from '@/components/primitives/Tooltip';
+import { SOLID_BRAND_DARK } from '@livediagram/ui';
 
 // The dot-vote overlay (docs/specs/012-collaboration/session-tools.md), lifted out of BoxedElementView: the
 // tally pill on the element's bottom-right corner — live count,
@@ -155,11 +156,11 @@ export function ElementVoteOverlay({
               className={
                 'flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[11px] font-semibold shadow-sm ' +
                 (myVotes > 0
-                  ? 'bg-brand-500 text-white'
+                  ? `bg-brand-500 text-white ${SOLID_BRAND_DARK}`
                   : 'border border-slate-200 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100')
               }
             >
-              {voteTotal}
+              <span className="text-optical-centre">{voteTotal}</span>
             </span>
           </Tooltip>
         </div>

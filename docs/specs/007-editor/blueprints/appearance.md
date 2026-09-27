@@ -20,7 +20,7 @@ Scope, by file:
 | `packages/diagram/src/colors.ts`                       | `CanvasSurface`, `canvasSurface`, `isLightColor`, the `default*Color` inks    |
 | `packages/diagram/src/canvas-colors.ts`                | The Default scheme's light and dark canvas colours                            |
 | `packages/tailwind-config/theme.css`                   | The `dark:` class variant and the brand / slate tokens                        |
-| `packages/template-previews/src/preview-art-tile.css`  | Re-lights light-canvas preview art under `.dark`                              |
+| `packages/template-previews/src/preview-art-tile.css`  | Re-lights light-canvas preview art onto the dark canvas colour under `.dark`  |
 
 ## Domain and naming
 
@@ -142,9 +142,10 @@ layout inlines the real string rather than a client-reference stub.
 ## Accessibility
 
 - The control is a real `<button>` with an `aria-label` that states current and next setting.
-- Dark tokens: `slate-950` page, `slate-900` surfaces, with the primary-action shade open (see Open questions).
-- Contrast of the brand ramp against white text fails AA in both appearances ([#74](https://github.com/livediagram-app/livediagram.app/issues/74));
-  unresolved, so this category is not yet covered.
+- Dark tokens, the Steel ramp and the solid-fill rule are the [dark palette blueprint](../../004-interface-design/blueprints/dark-palette.md);
+  its contrast audit covers dark mode.
+- Light mode's brand-on-white contrast is the light half of [#74](https://github.com/livediagram-app/livediagram.app/issues/74),
+  owned by Thomas; unresolved, so this category is not yet covered.
 
 ## Web Experience
 
@@ -177,15 +178,15 @@ layout inlines the real string rather than a client-reference stub.
 
 ## Constants and configuration
 
-| Constant                       | Value                            | Provenance                                | Safe range                            |
-| ------------------------------ | -------------------------------- | ----------------------------------------- | ------------------------------------- |
-| `APPEARANCE_STORAGE_KEY`       | `'livediagram:v2:ui-mode'`       | Stored data; renaming resets every user   | Fixed; no quote, backslash or newline |
-| `DARK_MEDIA_QUERY`             | `'(prefers-color-scheme: dark)'` | CSS Media Queries Level 5                 | Fixed                                 |
-| `DEFAULT_APPEARANCE_SETTING`   | `'system'`                       | Spec: System is the default               | One of the three literals             |
-| `DEFAULT_BACKGROUND_COLOR`     | `#ffffff`                        | Colour scheme: canvas is pure white       | Light (`isLightColor` true)           |
-| `DARK_CANVAS_BACKGROUND_COLOR` | `#2b2b33`                        | Default scheme's dark half (neutral zinc) | Dark (`isLightColor` false)           |
-| `DARK_CANVAS_PATTERN_COLOR`    | `#636373`                        | A step above the dark backdrop            | Visible against `#2b2b33`             |
-| `darkreader-lock` content      | `'true'`                         | D2                                        | Any non-empty string                  |
+| Constant                       | Value                            | Provenance                              | Safe range                            |
+| ------------------------------ | -------------------------------- | --------------------------------------- | ------------------------------------- |
+| `APPEARANCE_STORAGE_KEY`       | `'livediagram:v2:ui-mode'`       | Stored data; renaming resets every user | Fixed; no quote, backslash or newline |
+| `DARK_MEDIA_QUERY`             | `'(prefers-color-scheme: dark)'` | CSS Media Queries Level 5               | Fixed                                 |
+| `DEFAULT_APPEARANCE_SETTING`   | `'system'`                       | Spec: System is the default             | One of the three literals             |
+| `DEFAULT_BACKGROUND_COLOR`     | `#ffffff`                        | Colour scheme: canvas is pure white     | Light (`isLightColor` true)           |
+| `DARK_CANVAS_BACKGROUND_COLOR` | `#0d121a`                        | Default scheme's dark half (blue-slate) | Dark (`isLightColor` false)           |
+| `DARK_CANVAS_PATTERN_COLOR`    | `#1c2735`                        | `#2e4057` at 45 % over the backdrop     | Visible against `#0d121a`             |
+| `darkreader-lock` content      | `'true'`                         | D2                                      | Any non-empty string                  |
 
 ## Defaults ledger
 
@@ -195,7 +196,4 @@ See [DEFAULTS.md](DEFAULTS.md), rows D1 and D2.
 
 Resolved in the spec first, then here. Until then these stay out of the blueprint:
 
-- The primary-action shade in dark mode: the spec says `brand-400`, `Button` paints `brand-500` in both appearances, and
-  #74 is weighing a darker fill for AA. The `proto/dark-palette` prototype also trials a darker slate and a blue brand
-  ramp under `.dark`.
 - Observability for the silent paths (boot script `catch`, storage fallbacks, OS-driven repaint).

@@ -205,7 +205,7 @@ export function AddTabToDiagramDialog({
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Filter diagrams…"
         aria-label="Filter diagrams"
-        className="mb-3 w-full rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-sm text-slate-800 outline-none placeholder:text-slate-400 focus:border-brand-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
+        className="mb-3 w-full rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-sm text-slate-800 outline-none placeholder:text-slate-400 focus:border-brand-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-400"
       />
       {visible.length === 0 ? (
         <p className="px-1 py-8 text-center text-xs text-slate-400 dark:text-slate-400">

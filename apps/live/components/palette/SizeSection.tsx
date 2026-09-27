@@ -77,9 +77,7 @@ function SizeField({
           }}
           className="w-full rounded-md border border-slate-200 bg-white py-1 pl-2 pr-7 text-xs tabular-nums text-slate-700 outline-none transition focus:border-brand-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
         />
-        <span className="pointer-events-none absolute right-2 text-[10px] text-slate-400 dark:text-slate-500">
-          px
-        </span>
+        <span className="pointer-events-none absolute right-2 text-[10px] text-slate-400">px</span>
       </span>
     </label>
   );

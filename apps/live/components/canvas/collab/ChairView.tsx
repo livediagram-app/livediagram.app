@@ -7,6 +7,7 @@ import {
   DEFAULT_CHAIR_FACING,
   type ShapeElement,
 } from '@livediagram/diagram';
+import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
 
 // A chair (docs/specs/009-elements/chair.md): furniture an Avatar-mode character sits down in.
 //
@@ -108,8 +109,8 @@ export function ChairView({
         // outside the svg — a sideways-facing chair should not print its
         // sitter's name sideways.
         <span
-          className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-[110%] whitespace-nowrap rounded-full px-1.5 py-[1px] text-[9px] font-semibold text-white shadow-sm"
-          style={{ backgroundColor: ringColor }}
+          className={`absolute left-1/2 top-0 -translate-x-1/2 -translate-y-[110%] whitespace-nowrap rounded-full px-1.5 py-[1px] text-[9px] font-semibold text-white shadow-sm ${IDENTITY_FILL}`}
+          style={identityVars(ringColor)}
         >
           {sitters.map((s) => s.name).join(', ')}
         </span>

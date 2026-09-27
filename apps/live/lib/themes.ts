@@ -7,7 +7,6 @@
 import {
   getBuiltInTheme,
   defaultScheme,
-  LEGACY_THEMES,
   THEMES,
   DEFAULT_BACKGROUND_COLOR,
   DEFAULT_PATTERN_COLOR,
@@ -67,7 +66,7 @@ export function resolveTheme(
   // Default is the one scheme with two halves; `defaultScheme` picks the
   // viewer's. Everything else is stored colour and reads the same for everyone.
   if (id === DEFAULT_SCHEME_ID) return defaultScheme(appearance);
-  return THEMES.find((t) => t.id === id) ?? LEGACY_THEMES.find((t) => t.id === id);
+  return THEMES.find((t) => t.id === id);
 }
 
 // Custom themes (docs/specs/011-theme/custom-themes.md) win: the editor registers the owner's saved themes
@@ -91,7 +90,7 @@ export function getTheme(
 // The backdrop a tab actually PAINTS, which is not always the backdrop it
 // stores. A tab on the Default scheme whose canvas is still the scheme's own
 // (nobody has hand-picked a colour) follows the viewer's appearance instead:
-// white grid in light chrome, charcoal grid in dark. Nothing is written back —
+// white grid in light chrome, blue-slate grid in dark. Nothing is written back —
 // the diagram keeps whichever half was current when the scheme was applied,
 // and every other viewer resolves it to their own.
 //

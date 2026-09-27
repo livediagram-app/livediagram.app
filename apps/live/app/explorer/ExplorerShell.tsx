@@ -165,7 +165,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
                   type="button"
                   onClick={() => setMobileNavOpen(false)}
                   aria-label="Close"
-                  className="flex h-8 w-8 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                  className="flex h-8 w-8 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
                 >
                   <CloseIcon size={11} strokeWidth={1.8} />
                 </button>

@@ -109,7 +109,7 @@ export function HighlighterPanel({
             onPick={(id) => onSetWidth(highlighterWidthPx(id))}
           />
         </div>
-        <p className="px-1 pt-1.5 text-[10px] leading-snug text-slate-400 dark:text-slate-500">
+        <p className="px-1 pt-1.5 text-[10px] leading-snug text-slate-400">
           Drag across the board to highlight. The marker stays in your hand until you pick another
           tool, and each pass is its own undo.
         </p>

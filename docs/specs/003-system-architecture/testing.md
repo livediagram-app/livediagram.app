@@ -136,6 +136,10 @@ v5 test runner with every check green: nothing invoked the broken path.
     pure component-adjacent logic (template previews + bounds, placement,
     auth-shared), and the cross-app guard that every `HELP_ARTICLES` deep
     link resolves to a real help page.
+    Source guards read the class strings where a rule cannot fail a build:
+    `dark-mode-coverage.test.ts` and `dark-palette.test.ts` (the dark palette's
+    tokens, solid brand fills, brand text, optical numerals, identity
+    colours; [Colour scheme](../004-interface-design/color-scheme.md)).
   - `apps/api` (46 suites): auth guards (Clerk, diagram access, tokens),
     every defensive D1 row mapper, the `DiagramRoom` Durable Object's
     security-critical paths, route handlers (diagrams, share, images,

@@ -63,7 +63,7 @@ function ActionRow({
         aria-expanded={open}
         className="flex w-full items-center justify-between gap-2 rounded-md px-1 py-1 text-left transition hover:bg-slate-100 dark:hover:bg-slate-800"
       >
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-400">
           {label}
         </span>
         <span className="text-slate-400">
@@ -141,7 +141,7 @@ export function AvatarPanel({
               type="button"
               onClick={onRandomise}
               aria-label="Randomise avatar"
-              className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-md text-slate-400 transition hover:bg-white hover:text-brand-600 dark:text-slate-500 dark:hover:bg-slate-900 dark:hover:text-brand-300"
+              className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-md text-slate-400 transition hover:bg-white hover:text-brand-600 dark:hover:bg-slate-900 dark:hover:text-brand-300"
             >
               <RefreshIcon />
             </button>

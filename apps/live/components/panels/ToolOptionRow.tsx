@@ -51,8 +51,8 @@ export function ToolOptionRow<T extends string>({
       open={open}
       onToggle={onToggle}
       headerClassName="flex w-full items-center justify-between gap-2 py-1.5 text-left"
-      titleClassName="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500"
-      chevronClassName="text-slate-400 dark:text-slate-500"
+      titleClassName="text-[10px] font-semibold uppercase tracking-wider text-slate-400"
+      chevronClassName="text-slate-400"
       bodyClassName="pb-2"
       // The value stays visible while collapsed, so a panel reads as a summary
       // of the tool rather than four mystery rows.

@@ -45,7 +45,7 @@ export function Brand({
       />
       <span className={wordmarkClassName}>
         live
-        <span className={accentColor ? '' : 'text-brand-500'} style={accentStyle}>
+        <span className={accentColor ? '' : 'text-brand-500 dark:text-sky-400'} style={accentStyle}>
           diagram
         </span>
       </span>

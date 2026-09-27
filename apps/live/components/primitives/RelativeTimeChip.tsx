@@ -15,8 +15,6 @@ import { relativeSince } from '@/lib/relative-time';
 // two apps share. If a second app ever grows a timestamp, both move together.
 export function RelativeTimeChip({ at }: { at: number }) {
   return (
-    <span className="text-[11px] uppercase tracking-wider text-slate-400 dark:text-slate-500">
-      {relativeSince(at)}
-    </span>
+    <span className="text-[11px] uppercase tracking-wider text-slate-400">{relativeSince(at)}</span>
   );
 }

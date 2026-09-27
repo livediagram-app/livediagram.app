@@ -7,6 +7,7 @@ import type { ShapeElement } from '@livediagram/diagram';
 import { ActionMenuIcon } from '@/components/palette/context-menu-icons';
 import { initialsOf } from '@/lib/identity';
 import { relativeSince } from '@/lib/relative-time';
+import { SOLID_BRAND_DARK } from '@livediagram/ui';
 
 // The face of an Action panel (docs/specs/012-collaboration/action-panel.md): a card on the board that carries ONE
 // assigned action (docs/specs/012-collaboration/assigned-actions.md) and shows it in place.
@@ -125,7 +126,7 @@ function AssigneeRow({
     <span className="mx-2.5 mb-1.5 flex shrink-0 items-center gap-2 rounded-md bg-black/[0.04] px-2 py-1.5 dark:bg-white/[0.06]">
       <span
         aria-hidden
-        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-500 text-[9px] font-semibold text-white"
+        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-500 text-[9px] font-semibold text-white ${SOLID_BRAND_DARK}`}
       >
         {initialsOf(name)}
       </span>

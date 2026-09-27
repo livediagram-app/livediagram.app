@@ -85,7 +85,7 @@ export function StateFrame({
         className={
           current
             ? 'fill-brand-600 text-[8px] font-semibold dark:fill-brand-300'
-            : 'fill-slate-400 text-[8px] dark:fill-slate-500'
+            : 'fill-slate-400 text-[8px]'
         }
       >
         {caption}

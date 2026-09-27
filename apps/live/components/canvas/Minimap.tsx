@@ -237,7 +237,7 @@ export function Minimap({
           ref={svgRef}
           viewBox={vb}
           preserveAspectRatio="xMidYMid meet"
-          className={`block w-full cursor-pointer touch-none bg-slate-50/60 text-slate-400 dark:bg-slate-950/40 dark:text-slate-500 ${MAP_HEIGHT[size]}`}
+          className={`block w-full cursor-pointer touch-none bg-slate-50/60 text-slate-400 dark:bg-slate-950/40 ${MAP_HEIGHT[size]}`}
           role="img"
           aria-label="Canvas map — tap or drag to navigate, scroll to zoom"
           onPointerDown={(e) => {

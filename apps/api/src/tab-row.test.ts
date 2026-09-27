@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { rowToTab, rowToTabSummary, type TabRow } from './tab-row';
 
 // rowToTab + rowToTabSummary translate every D1 tab row into the
@@ -29,6 +29,40 @@ const baseRow = (override: Partial<TabRow> = {}): TabRow => ({
 });
 
 describe('rowToTab', () => {
+  it('migrates a tab saved against the retired Charcoal scheme (docs/specs/011-theme/retired-schemes.md)', () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const elements = [
+      {
+        id: 'a',
+        type: 'shape',
+        shape: 'square',
+        x: 0,
+        y: 0,
+        width: 1,
+        height: 1,
+        fillColor: '#2c2c33',
+        strokeColor: '#a1a1aa',
+        textColor: '#e4e4e7',
+      },
+    ];
+    const dto = rowToTab(
+      baseRow({
+        data: bodyJson({
+          theme: 'charcoal',
+          backgroundColor: '#2b2b33',
+          patternColor: '#636373',
+          elements,
+        }),
+      }),
+    );
+    expect(dto).toMatchObject({
+      theme: 'brand',
+      backgroundColor: '#0d121a',
+      patternColor: '#1c2735',
+    });
+    expect(dto.elements[0]).not.toHaveProperty('fillColor');
+  });
+
   it('freezes a legacy group out of the stored elements (docs/specs/009-elements/web-components-and-no-groups.md)', () => {
     const elements = [
       { id: 'a', type: 'shape', shape: 'square', x: 0, y: 0, width: 100, height: 40, groupId: 'g' },

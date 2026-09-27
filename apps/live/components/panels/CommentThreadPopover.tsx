@@ -9,6 +9,7 @@ import { initialsOf } from '@/lib/identity';
 import { isMobileViewportSync } from '@/lib/responsive';
 import { formatRelativeTimeCompact } from '@/lib/relative-time';
 import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@/lib/clamp-to-viewport';
+import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
 
 type CommentThreadPopoverProps = {
   // Element this thread belongs to. The popover anchors itself by querying
@@ -213,7 +214,7 @@ export function CommentThreadPopover({
               }}
               placeholder="Add a comment…"
               rows={2}
-              className="w-full resize-none rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-800 outline-none transition focus:border-brand-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
+              className="w-full resize-none rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-800 outline-none transition focus:border-brand-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-400"
             />
             <div className="mt-1 flex items-center justify-between">
               <p className="text-[10px] text-slate-400 dark:text-slate-400">⌘↵ to send</p>
@@ -250,8 +251,8 @@ function CommentRow({
     <li className={`group flex gap-2 py-2 ${resolved ? 'opacity-60' : ''}`}>
       <div
         aria-hidden
-        style={{ backgroundColor: comment.authorColor }}
-        className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold text-white"
+        style={identityVars(comment.authorColor)}
+        className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold text-white ${IDENTITY_FILL}`}
       >
         {initialsOf(comment.authorName)}
       </div>

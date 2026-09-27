@@ -14,6 +14,7 @@ import { CARD_PREVIEW, CARD_SHELL } from '../cardGrid';
 import { eventTone, toneColor, toneSoftColor } from './eventTone';
 import { timeLabel } from './useTimelineGrouping';
 import type { TimelineCardRender, TimelineCardSlots, TimelineEvent } from './types';
+import { SOLID_BRAND_DARK } from '../brand-classes';
 
 // Swallow anything that would otherwise bubble to the card's own
 // handlers. A wrapper rather than asking each host slot to remember.
@@ -100,7 +101,9 @@ export function TimelineCard({
           </div>
         )}
         {isNew && (
-          <span className="absolute left-2 top-2 rounded bg-brand-600 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-white shadow-sm">
+          <span
+            className={`absolute left-2 top-2 rounded bg-brand-600 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-white shadow-sm ${SOLID_BRAND_DARK}`}
+          >
             New
           </span>
         )}
@@ -141,7 +144,7 @@ export function TimelineCard({
             renderer's own meta trails it as running text, so a long one
             ("Rotate it before it lapses…") wraps word by word rather
             than being clipped or dropping whole onto its own line. */}
-        <p className="break-words text-[10px] leading-snug text-slate-400 dark:text-slate-500">
+        <p className="break-words text-[10px] leading-snug text-slate-400">
           <time dateTime={new Date(event.occurredAt).toISOString()}>
             {timeLabel(event.occurredAt)}
           </time>

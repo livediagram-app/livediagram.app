@@ -125,7 +125,7 @@ export function SpotlightPanel({
             onPick={(id) => onChange('shape', id)}
           />
         </div>
-        <p className="px-1 pt-1.5 text-[10px] leading-snug text-slate-400 dark:text-slate-500">
+        <p className="px-1 pt-1.5 text-[10px] leading-snug text-slate-400">
           Only you see the shroud — everyone else sees the whole diagram. Click the canvas to grow
           the light, right-click to shrink it.
         </p>

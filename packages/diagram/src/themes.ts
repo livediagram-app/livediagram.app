@@ -11,8 +11,8 @@ import {
 } from './index';
 import { rederiveColorPresetForTheme, rederiveTablePresetForTheme } from './theme-presets';
 import { isAccentBarShape } from './web-components';
-import { DEFAULT_SCHEME_DARK, DEFAULT_SCHEME_LIGHT, LEGACY_THEMES, THEMES } from './themes-data';
-export { THEMES, LEGACY_THEMES, DEFAULT_SCHEME_LIGHT, DEFAULT_SCHEME_DARK };
+import { DEFAULT_SCHEME_DARK, DEFAULT_SCHEME_LIGHT, THEMES } from './themes-data';
+export { THEMES, DEFAULT_SCHEME_LIGHT, DEFAULT_SCHEME_DARK };
 
 // A preset theme bundles a canvas backdrop (background colour + pattern +
 // pattern colour) with the default colours used for newly added boxed
@@ -43,7 +43,6 @@ export type ThemeId =
   | 'pine'
   | 'steel'
   | 'mocha'
-  | 'charcoal'
   // Further dark-backdrop themes (the picker's Dark category).
   | 'plum'
   | 'abyss'
@@ -173,9 +172,9 @@ function backdropVariants(scheme: ThemeDefinition): ThemeDefinition[] {
   return scheme.id === DEFAULT_SCHEME_ID ? [DEFAULT_SCHEME_LIGHT, DEFAULT_SCHEME_DARK] : [scheme];
 }
 
-// Resolve an id to a BUILT-IN ThemeDefinition, falling back to Default. Looks
-// through the offered catalogue and then the legacy schemes (ids that are no
-// longer listed but still resolve, so old diagrams keep their look).
+// Resolve an id to a BUILT-IN ThemeDefinition, falling back to Default. A
+// retired scheme is not resolved here: its tabs are migrated on read
+// (docs/specs/011-theme/retired-schemes.md).
 //
 // `appearance` only ever changes the answer for Default, which has a light and
 // a dark half; it defaults to light so pure callers with no viewer to ask
@@ -188,11 +187,7 @@ export function getBuiltInTheme(
   appearance: Appearance = 'light',
 ): ThemeDefinition {
   if (id === undefined || id === DEFAULT_SCHEME_ID) return defaultScheme(appearance);
-  return (
-    THEMES.find((t) => t.id === id) ??
-    LEGACY_THEMES.find((t) => t.id === id) ??
-    defaultScheme(appearance)
-  );
+  return THEMES.find((t) => t.id === id) ?? defaultScheme(appearance);
 }
 
 // Which element-colour fields each element type writes from a theme.
@@ -205,7 +200,7 @@ export function getBuiltInTheme(
 // every theme (same rule `addBoxed` applies to ad-hoc sticky creation),
 // and an image renders its bytes so its colour fields are inert (see
 // ImageElement in @livediagram/diagram).
-type ThemeColourField = {
+export type ThemeColourField = {
   element: 'fillColor' | 'strokeColor' | 'textColor';
   theme: 'elementFill' | 'elementStroke' | 'elementText';
 };
@@ -255,7 +250,7 @@ const THEME_COLOUR_FIELDS: Record<Element['type'], ThemeColourField[]> = {
 // distinction that makes the timeline readable). All three transforms
 // below funnel through this so the opt-out can't apply to one and silently
 // drift from the others. Stroke + text stay themed.
-function themeColourFields(el: Element): ThemeColourField[] {
+export function themeColourFields(el: Element): ThemeColourField[] {
   // An accent-bar web component (docs/specs/009-elements/web-components-and-no-groups.md) paints its bar in the stroke
   // (unless a fill is picked) under white text, so only the stroke follows
   // the theme: the theme's element fill and ink are the pale-card pair, and
@@ -263,7 +258,8 @@ function themeColourFields(el: Element): ThemeColourField[] {
   if (el.type === 'shape' && isAccentBarShape(el.shape)) {
     return [{ element: 'strokeColor', theme: 'elementStroke' }];
   }
-  const fields = THEME_COLOUR_FIELDS[el.type];
+  // Unknown kinds (a malformed stored element) expose nothing to theming.
+  const fields = THEME_COLOUR_FIELDS[el.type] ?? [];
   if ((el as { themeLockFill?: boolean }).themeLockFill) {
     return fields.filter((f) => f.element !== 'fillColor');
   }

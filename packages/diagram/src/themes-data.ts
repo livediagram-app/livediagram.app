@@ -28,36 +28,14 @@ export const DEFAULT_SCHEME_LIGHT: ThemeDefinition = {
   elementText: null,
 };
 
-// The Default colour scheme, dark half — the canvas that used to be a separate
-// scheme called Charcoal. Neutral grey on near-black, no hue: the zinc ramp the
-// app's own dark chrome uses, with the dots a step up from the backdrop so the
-// grid and the element outlines read as one material.
+// The Default colour scheme, dark half: the blue-slate canvas of the dark
+// palette (docs/specs/008-canvas/canvas-and-palette.md, Default scheme, dark half), one hue with the
+// dark chrome so paper and panels read as one material.
 export const DEFAULT_SCHEME_DARK: ThemeDefinition = {
   ...DEFAULT_SCHEME_LIGHT,
   backgroundColor: DARK_CANVAS_BACKGROUND_COLOR,
   patternColor: DARK_CANVAS_PATTERN_COLOR,
 };
-
-// Schemes that are no longer OFFERED but must still RESOLVE, because diagrams
-// saved against them are out there and their elements carry baked colours to
-// match. Dropping an id here would silently repaint someone's board.
-export const LEGACY_THEMES: ThemeDefinition[] = [
-  {
-    // Merged into Default as its dark half. The entry survives with the exact
-    // colours it shipped with, so an old Charcoal tab still looks like itself —
-    // including for a viewer in light chrome, since those element colours are
-    // baked and only this backdrop keeps them legible.
-    id: 'charcoal',
-    label: 'Charcoal',
-    backgroundColor: DARK_CANVAS_BACKGROUND_COLOR,
-    backgroundPattern: 'grid',
-    patternColor: DARK_CANVAS_PATTERN_COLOR,
-    elementFill: '#2c2c33',
-    elementStroke: '#a1a1aa',
-    elementText: '#e4e4e7',
-    extra: true,
-  },
-];
 
 export const THEMES: ThemeDefinition[] = [
   DEFAULT_SCHEME_LIGHT,

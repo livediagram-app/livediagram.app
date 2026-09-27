@@ -60,7 +60,7 @@ export function FolderChip({ label, onOpen }: { label: string; onOpen: () => voi
           e.stopPropagation();
           onOpen();
         }}
-        className="inline-flex max-w-[10rem] items-center gap-1 rounded px-1 py-0.5 text-[11px] text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-slate-300"
+        className="inline-flex max-w-[10rem] items-center gap-1 rounded px-1 py-0.5 text-[11px] text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300"
       >
         <span className="shrink-0 [&_svg]:h-3 [&_svg]:w-3">
           <FolderOutlineIcon />

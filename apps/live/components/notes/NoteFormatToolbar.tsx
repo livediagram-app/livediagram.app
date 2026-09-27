@@ -21,6 +21,7 @@ import { BlockTypePicker } from '@/components/rich-text/BlockTypePicker';
 import type { ActiveFormat } from '@/components/rich-text/rich-text-format';
 import { Tooltip } from '@/components/primitives/Tooltip';
 import { normaliseUrl } from '@/lib/url-safety';
+import { SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
 
 // preventDefault on mousedown keeps focus + the live selection in the
 // contentEditable when a control is clicked (the classic rich-text-toolbar
@@ -159,7 +160,7 @@ function NoteLinkField({
         placeholder="example.com"
         aria-label="Link address"
         aria-invalid={invalid}
-        className={`min-w-0 flex-1 rounded-md border bg-white px-2 py-1 text-xs text-slate-800 outline-none placeholder:text-slate-400 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 ${
+        className={`min-w-0 flex-1 rounded-md border bg-white px-2 py-1 text-xs text-slate-800 outline-none placeholder:text-slate-400 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-400 ${
           invalid
             ? 'border-rose-400 focus:ring-2 focus:ring-rose-100 dark:border-rose-500'
             : 'border-slate-200 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 dark:border-slate-700'
@@ -169,7 +170,7 @@ function NoteLinkField({
         type="button"
         onMouseDown={noFocusSteal}
         onClick={apply}
-        className="rounded-md bg-brand-600 px-2 py-1 text-xs font-medium text-white transition hover:bg-brand-700"
+        className={`rounded-md bg-brand-600 px-2 py-1 text-xs font-medium text-white transition hover:bg-brand-700 ${SOLID_BRAND_DARK_CONTROL}`}
       >
         Apply
       </button>

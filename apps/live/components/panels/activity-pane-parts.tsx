@@ -10,7 +10,8 @@ import { CountBadge } from '@/components/primitives/CountBadge';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import type { ActivityAction, ActivityPlace, ActivityThread } from '@livediagram/api-schema';
-import { EmptyState } from '@livediagram/ui';
+import { EmptyState, SOLID_BRAND_DARK, SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
+import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
 import { ActionMenuIcon, CommentMenuIcon } from '@/components/palette/context-menu-icons';
 import { Tooltip } from '@/components/primitives/Tooltip';
 import { collabDeepLinkHref, type CollabPopover } from '@/lib/collab-deep-link';
@@ -66,7 +67,9 @@ export function ActivityActionRow({
         detail: action.assignedToMe
           ? `Assigned by ${action.assigner.name?.trim() || 'a teammate'}`
           : `Assigned to ${assignee}`,
-        colorClass: action.assignedToMe ? 'bg-brand-500' : 'bg-slate-400 dark:bg-slate-600',
+        colorClass: action.assignedToMe
+          ? `bg-brand-500 ${SOLID_BRAND_DARK}`
+          : 'bg-slate-400 dark:bg-slate-600',
       }}
       at={action.updatedAt}
     />
@@ -133,7 +136,7 @@ function ActivityRowShell({
         onClick={onOpen}
         className="group flex w-full items-start gap-3 px-4 py-3 text-left transition hover:bg-slate-50 dark:hover:bg-slate-700"
       >
-        <span aria-hidden className="mt-0.5 shrink-0 text-slate-400 dark:text-slate-500">
+        <span aria-hidden className="mt-0.5 shrink-0 text-slate-400 dark:text-slate-400">
           {icon}
         </span>
         <span className="min-w-0 flex-1">
@@ -152,7 +155,7 @@ function ActivityRowShell({
               {detail}
             </span>
           ) : null}
-          <span className="mt-1 flex min-w-0 items-center gap-1.5 text-[11px] text-slate-400 dark:text-slate-500">
+          <span className="mt-1 flex min-w-0 items-center gap-1.5 text-[11px] text-slate-400 dark:text-slate-400">
             <PlaceChip place={place} />
             <span className="truncate">
               {place.elementLabel} · {place.tabName}
@@ -162,13 +165,13 @@ function ActivityRowShell({
         <span className="flex shrink-0 flex-col items-end gap-0.5">
           <Tooltip title={avatar.name} description={avatar.detail}>
             <span
-              className={`flex h-6 w-6 items-center justify-center rounded-full text-[9px] font-semibold text-white ${avatar.colorClass ?? ''}`}
-              style={avatar.color ? { backgroundColor: avatar.color } : undefined}
+              className={`flex h-6 w-6 items-center justify-center rounded-full text-[9px] font-semibold text-white ${avatar.colorClass ?? ''} ${avatar.color ? IDENTITY_FILL : ''}`}
+              style={avatar.color ? identityVars(avatar.color) : undefined}
             >
               {initialsOf(avatar.name)}
             </span>
           </Tooltip>
-          <span className="text-[10px] text-slate-400 dark:text-slate-500">
+          <span className="text-[10px] text-slate-400 dark:text-slate-400">
             {formatRelativeTimeShort(Date.now() - at)}
           </span>
         </span>
@@ -183,7 +186,7 @@ function PlaceChip({ place }: { place: ActivityPlace }) {
   return (
     <span className="inline-flex max-w-[14rem] shrink-0 items-center gap-1 rounded-full bg-slate-100 px-1.5 py-0.5 font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300">
       {place.via === 'team' ? (
-        <span aria-hidden className="text-slate-400 dark:text-slate-500">
+        <span aria-hidden className="text-slate-400">
           <TeamIcon />
         </span>
       ) : null}
@@ -205,7 +208,7 @@ export function ActivityEmptyState() {
         href={helpArticleHref('assignedActions')}
         target="_blank"
         rel="noreferrer noopener"
-        className="inline-flex items-center gap-1.5 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-500"
+        className={`inline-flex items-center gap-1.5 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-500 ${SOLID_BRAND_DARK_CONTROL}`}
       >
         How actions work
       </a>
@@ -220,13 +223,11 @@ export function ActivityFailedState({ onRetry }: { onRetry: () => void }) {
       <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
         Couldn&apos;t load your activity
       </p>
-      <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
-        Check your connection and try again.
-      </p>
+      <p className="mt-1 text-xs text-slate-400">Check your connection and try again.</p>
       <button
         type="button"
         onClick={onRetry}
-        className="mt-3 inline-block rounded-md bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-brand-500"
+        className={`mt-3 inline-block rounded-md bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-brand-500 ${SOLID_BRAND_DARK_CONTROL}`}
       >
         Try again
       </button>

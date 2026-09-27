@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { Tab } from '@livediagram/diagram';
 import { mergeImportedTab } from './import-merge';
 
@@ -51,14 +51,28 @@ describe('mergeImportedTab', () => {
     expect(out.esLanesSettled).toBeUndefined();
   });
 
+  // A file is a stored tab like any other (docs/specs/011-theme/retired-schemes.md).
+  it('migrates an imported tab saved against a retired scheme', () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const out = mergeImportedTab(
+      tab(),
+      tab({ theme: 'charcoal', backgroundColor: '#2b2b33', patternColor: '#636373' }),
+    );
+    expect(out).toMatchObject({
+      theme: 'brand',
+      backgroundColor: '#0d121a',
+      patternColor: '#1c2735',
+    });
+  });
+
   it('keeps what the import does not specify', () => {
     const mine = tab({
-      theme: 'charcoal',
+      theme: 'midnight',
       kind: 'event-storming',
       layers: [{ id: 'a', name: 'A' }],
     });
     const out = mergeImportedTab(mine, tab());
-    expect(out.theme).toBe('charcoal');
+    expect(out.theme).toBe('midnight');
     expect(out.kind).toBe('event-storming');
     expect(out.layers).toEqual([{ id: 'a', name: 'A' }]);
   });

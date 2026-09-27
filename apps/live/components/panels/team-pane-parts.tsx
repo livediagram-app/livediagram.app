@@ -2,6 +2,7 @@ import { CloseIcon, Select } from '@livediagram/ui';
 import { Tooltip } from '@/components/primitives/Tooltip';
 import type { TeamMember, TeamRole } from '@/lib/api-client';
 import { colorForKey, initialsOf } from '@/lib/identity';
+import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
 
 // What a member row is called. Self rows use the account display name
 // so the list reads as people, not pronouns; everyone else is their
@@ -100,10 +101,12 @@ export function TeamMemberRow({
     <li key={m.id} className="group flex items-center gap-3 px-4 py-2.5">
       <span
         aria-hidden
-        style={{ backgroundColor: colorForKey(m.email ?? m.userId ?? m.id) }}
+        style={{
+          ...identityVars(colorForKey(m.email ?? m.userId ?? m.id)),
+        }}
         className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white ${
           pending ? 'opacity-50' : ''
-        }`}
+        } ${IDENTITY_FILL}`}
       >
         {initialsOf(name)}
       </span>
@@ -133,7 +136,7 @@ export function TeamMemberRow({
             {m.email}
           </span>
         ) : pending ? (
-          <span className="block truncate text-xs text-slate-400 dark:text-slate-500">
+          <span className="block truncate text-xs text-slate-400 dark:text-slate-400">
             Waiting for them to accept
           </span>
         ) : null}

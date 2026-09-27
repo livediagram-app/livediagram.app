@@ -8,7 +8,7 @@ import { isDarkCanvas } from './dark-canvas';
 // knowing anything about themes.
 describe('isDarkCanvas', () => {
   it('flags the dark theme backdrops', () => {
-    expect(isDarkCanvas('#2b2b33')).toBe(true); // Charcoal
+    expect(isDarkCanvas('#0d121a')).toBe(true); // Default, dark half
     expect(isDarkCanvas('#0f172a')).toBe(true); // Midnight-ish
     expect(isDarkCanvas('#18181b')).toBe(true);
   });
