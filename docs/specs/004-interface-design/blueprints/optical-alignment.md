@@ -62,7 +62,7 @@ root element, so callers keep their colour classes, `identityVars(...)`, ARIA an
 
 ```ts
 type GlyphDiscProps = {
-  size: number; // diameter, px; 12..56
+  size?: number; // diameter, px; 12..56; omitted only when breakpoint classes (h-* / w-*) size it
   children: ReactNode; // a string/number (a text glyph) or an icon element
   as?: 'span' | 'div' | 'button'; // default 'span'
 } & HTMLAttributes<HTMLElement>;

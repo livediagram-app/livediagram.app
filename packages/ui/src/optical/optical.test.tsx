@@ -47,6 +47,29 @@ describe('GlyphDisc', () => {
     expect(disc.className).toContain('[&>svg]:block');
   });
 
+  it('treats mixed text children as one text glyph', () => {
+    const overflow = 3;
+    const { container } = render(<GlyphDisc size={16}>+{overflow}</GlyphDisc>);
+    expect(container.querySelector('.text-optical-centre')?.textContent).toBe('+3');
+  });
+
+  it('leaves sizing to responsive classes when no size is given', () => {
+    const { container } = render(<GlyphDisc className="h-9 w-9 sm:h-10 sm:w-10">1</GlyphDisc>);
+    const disc = container.firstElementChild as HTMLElement;
+    expect(disc.style.width).toBe('');
+    expect(disc.style.height).toBe('');
+    expect(disc.className).toContain('sm:h-10');
+  });
+
+  it('can be a disabled button', () => {
+    const { container } = render(
+      <GlyphDisc as="button" size={24} type="button" disabled>
+        −
+      </GlyphDisc>,
+    );
+    expect((container.firstElementChild as HTMLButtonElement).disabled).toBe(true);
+  });
+
   it('can be a button', () => {
     const { container } = render(
       <GlyphDisc as="button" size={32} type="button" aria-label="Close">
