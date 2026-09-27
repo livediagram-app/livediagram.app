@@ -179,7 +179,7 @@ function VoteTurnout({ vote, participantCount }: { vote: TabVote; participantCou
         </div>
         <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
           <div
-            className="h-full rounded-full bg-brand-500 transition-[width] duration-300"
+            className="h-full rounded-full bg-brand-500 transition-[width] duration-short"
             style={{ width: `${dotsTotal > 0 ? (dotsCast / dotsTotal) * 100 : 0}%` }}
           />
         </div>

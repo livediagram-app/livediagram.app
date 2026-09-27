@@ -75,7 +75,7 @@ export function TimelineLanesOverlay({
     <svg
       aria-hidden
       data-testid="timeline-lanes-overlay"
-      className="pointer-events-none fixed inset-0 z-[var(--z-chrome)] h-screen w-screen motion-safe:transition-opacity motion-safe:duration-150"
+      className="pointer-events-none fixed inset-0 z-[var(--z-chrome)] h-screen w-screen motion-safe:transition-opacity motion-safe:duration-micro"
     >
       {bands.map((band) => {
         const top = toClientY(laneTop(band.index, timeline));

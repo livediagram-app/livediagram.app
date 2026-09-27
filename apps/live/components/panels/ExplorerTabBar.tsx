@@ -38,7 +38,7 @@ export function ExplorerTabBar({
       {tabs.length > 0 ? (
         <span
           aria-hidden
-          className={`pointer-events-none absolute bottom-0.5 left-0.5 top-0.5 rounded-md bg-white shadow-sm transition-[transform,opacity] duration-200 ease-out dark:bg-slate-700 ${
+          className={`pointer-events-none absolute bottom-0.5 left-0.5 top-0.5 rounded-md bg-white shadow-sm transition-[transform,opacity] duration-short ease-out dark:bg-slate-700 ${
             activeIndex < 0 ? 'opacity-0' : 'opacity-100'
           }`}
           style={{

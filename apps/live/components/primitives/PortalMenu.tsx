@@ -149,11 +149,11 @@ export function MenuAccordionSection({
           {title}
         </span>
         <ChevronDownIcon
-          className={`transition-transform duration-200 ${open ? '' : '-rotate-90'}`}
+          className={`transition-transform duration-short ${open ? '' : '-rotate-90'}`}
         />
       </button>
       <div
-        className={`grid transition-all duration-200 ease-out ${
+        className={`grid transition-all duration-short ease-out ${
           open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
         }`}
       >

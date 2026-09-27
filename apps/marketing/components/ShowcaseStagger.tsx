@@ -43,9 +43,7 @@ export function ShowcaseStagger({ children }: { children: ReactNode }) {
         return (
           <li
             key={i}
-            className={
-              'transition-opacity duration-500 ' + (isActive ? '' : `${styles.frozen} opacity-60`)
-            }
+            className={`${styles.scene} ` + (isActive ? '' : `${styles.frozen} opacity-60`)}
           >
             {scene}
           </li>

@@ -24,7 +24,7 @@ packages/
   telemetry-client/ shared browser telemetry emitter (buffer / flush / page-hide beacon)
   eslint-config/  shared ESLint flat config
   prettier-config/shared Prettier config
-  tailwind-config/shared Tailwind theme (brand palette)
+  tailwind-config/shared Tailwind theme (brand palette, motion tokens) + the motion-budget guard
   vitest-config/  shared Vitest defaults
 docs/specs/          product source of truth, read these before adding features
 scripts/        repo-wide dev tooling (next-dev.mjs: shared Next.js dev launcher)
@@ -60,7 +60,7 @@ Each app pulls these in via `workspace:*`:
 - **`@livediagram/templates`** owns the template library: the catalogue (kinds, titles, categories, per-template canvas overrides) and the pure per-template element builders. Two callers: the editor's Quick Start picker (which layers its theme recolour on top in `apps/live/lib/template-builders.ts`) and the mcp worker's `list_templates` / `template` tools ([MCP server](../specs/015-api/mcp-server.md)), so the scaffolds can't drift between them.
 - **`@livediagram/template-previews`** owns the per-template preview illustrations: one static SVG per `TemplateKind`, rendered by the editor's template picker and by the marketing site's template gallery, so a template's card looks the same wherever it is offered and a new kind gets its artwork in one place. Its tests assert every listed template has a preview and that each drawing stays inside its viewBox.
 - **`@livediagram/help-registry`** owns the help-centre article + category registry: slugs, titles, descriptions, and per-article search keywords, plus the pure href/search helpers. Two callers: the help app's browse + search (`apps/help/lib/articles.ts` re-exports it) and the live editor's search-panel Help group (`apps/live/lib/help-search.ts`), so adding an article once makes it findable in both.
-- **`@livediagram/eslint-config`** / **`prettier-config`** / **`tailwind-config`** / **`vitest-config`** own the shared lint / format / theme / test configs so every workspace stays consistent.
+- **`@livediagram/eslint-config`** / **`prettier-config`** / **`tailwind-config`** / **`vitest-config`** own the shared lint / format / theme / test configs so every workspace stays consistent. `tailwind-config` also owns the motion tokens (`duration-micro` / `-short` / `-long`, mirrored as numbers in `@livediagram/tailwind-config/motion`) and the static motion-budget guard every app runs in its tests ([Motion](../specs/004-interface-design/motion.md)).
 
 ## Tech stack
 

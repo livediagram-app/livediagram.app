@@ -119,7 +119,7 @@ export function TourPopover({
       onPointerDown={(e) => e.stopPropagation()}
       className={`pointer-events-auto fixed z-[var(--z-toast)] flex max-w-[calc(100vw-1.5rem)] flex-col gap-2 rounded-xl border border-slate-200 bg-white p-4 shadow-2xl shadow-slate-900/20 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/40 ${
         card ? 'w-[21rem]' : 'w-80'
-      } ${animatePos ? 'transition-[left,top] duration-300 ease-out' : ''}`}
+      } ${animatePos ? 'transition-[left,top] duration-long ease-out' : ''}`}
       style={
         pos
           ? { left: pos.left, top: pos.top }

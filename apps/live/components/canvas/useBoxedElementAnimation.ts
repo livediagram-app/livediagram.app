@@ -10,7 +10,7 @@ import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 
 // The looping-animation slice (docs/specs/008-canvas/canvas-and-palette.md), lifted out of BoxedElementView:
 // which surface each animation kind rides (the wrapper box, the rendered
-// text glyphs, or the shape's true SVG outline), the one-shot pop-in
+// text glyphs, or the shape's true SVG outline), the one-shot element-pop-in
 // entry class and its drop-off timer, and the CSS custom properties the
 // keyframes read. The view mounts the returned classes / style on its
 // wrapper and label nodes.
@@ -91,7 +91,7 @@ export function useBoxedElementAnimation(element: BoxedElement, textColor: strin
       : `lvd-anim-${element.animation}`
     : entered
       ? ''
-      : 'animate-pop-in';
+      : 'animate-element-pop-in';
 
   // Pulse / glow rings take the element's accent (its stroke, else its
   // text colour); the speed factor scales the keyframe duration. See

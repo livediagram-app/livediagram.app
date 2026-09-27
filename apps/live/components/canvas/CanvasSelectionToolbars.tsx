@@ -80,7 +80,8 @@ export function CanvasSelectionToolbars({
             // Transition visibility too so it stays interactive through the
             // fade-out then goes non-interactive (hidden) at the end.
             visibility: toolbarsStale ? 'hidden' : 'visible',
-            transition: 'opacity 150ms ease, visibility 150ms ease',
+            transition:
+              'opacity var(--transition-duration-micro) ease, visibility var(--transition-duration-micro) ease',
           }}
         >
           <SelectionPopover
@@ -156,7 +157,8 @@ export function CanvasSelectionToolbars({
             transform: `scale(${viewportZoom}) translate(${viewportOffset.x}px, ${viewportOffset.y}px)`,
             opacity: insertionOpen ? 0 : 1,
             visibility: insertionOpen ? 'hidden' : 'visible',
-            transition: 'opacity 150ms ease, visibility 150ms ease',
+            transition:
+              'opacity var(--transition-duration-micro) ease, visibility var(--transition-duration-micro) ease',
           }}
         >
           <FloatingToolbar

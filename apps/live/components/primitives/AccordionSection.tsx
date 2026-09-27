@@ -46,7 +46,7 @@ export function AccordionSection({
         </span>
       </button>
       <div
-        className={`grid transition-[grid-template-rows] duration-200 ease-out ${
+        className={`grid transition-[grid-template-rows] duration-short ease-out ${
           open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
         }`}
       >

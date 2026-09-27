@@ -39,7 +39,7 @@ export function WizardSteps({
           {i > 0 ? (
             <div className="h-1.5 w-3 overflow-hidden rounded-full bg-slate-200 sm:w-9 dark:bg-slate-700">
               <div
-                className={`h-full rounded-full bg-brand-500 transition-[width] duration-300 ease-out ${
+                className={`h-full rounded-full bg-brand-500 transition-[width] duration-short ease-out ${
                   i <= idx ? 'w-full' : 'w-0'
                 }`}
               />

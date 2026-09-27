@@ -781,12 +781,12 @@ Comment mutations bypass the [undo/redo history](#undo--redo) (so typing a comme
 
 ## Motion and animations
 
-The editor uses subtle, purposeful motion to feel fluid and modern. All animations are defined as `@keyframes` in `apps/live/app/globals.css` and exposed as Tailwind utility classes via `@theme`:
+The editor uses subtle, purposeful motion to feel fluid and modern. Chrome motion (menus, panels, dialogs, the entrances below) follows [Motion](../004-interface-design/motion.md): it settles within 250ms, and hovers within 150ms. Canvas motion is content and lives in `apps/live/app/canvas-motion.css`. The keyframes are exposed as Tailwind utility classes via `@theme`:
 
-- **`pop-in`** — `scale(0) → scale(1.06) → scale(1)` over 240 ms with a spring-easing curve. Applied to `BoxedElementView` so newly added shapes / text / stickies pop into existence. Transform-based, so it must only be used on elements that don't carry their own inline `transform` style.
-- **`fade-in`** — pure `opacity` 0 → 1 over 180 ms. Used wherever the element already has an inline `transform` (the selection popover, plus buttons, mode banner, portal menus, tab-link picker, tooltips) so the animation doesn't fight positioning.
-- **`fly-up-in`** — combined `translateY(16px) scale(0.96) → 0 / 1` over 280 ms. Applied to modal-style surfaces (template picker, empty-state card).
-- **`fade-scale-in`** — reserved for surfaces that want a scale entrance without conflicting positioning.
+- **`element-pop-in`**: `scale(0) → scale(1.06) → scale(1)` over 360 ms with a spring-easing curve. It's canvas motion, applied to `BoxedElementView` so newly added shapes, text and stickies pop into existence. It carries the element's own rotation through every frame.
+- **`pop-in`**: the same keyframe at the chrome `micro` token (150 ms), for small chrome surfaces entering (cluster bars, the zoom menu, toolbar-strip tiles). It's transform-based, so it must only be used on elements that don't carry their own inline `transform` style.
+- **`fade-in`**: pure `opacity` 0 → 1 at `micro` (150 ms). It's used wherever the element already has an inline `transform` (the selection popover, plus buttons, mode banner, portal menus, tab-link picker, tooltips), so the animation doesn't fight positioning.
+- **`fly-up-in`**: combined `translateY(16px) scale(0.96) → 0 / 1` at `long` (250 ms). It's applied to modal-style surfaces (dialogs, template picker, empty-state card).
 
 Animations only fire on mount, so they naturally trigger once per element. Switching tabs unmounts the old tab's elements and mounts the new ones, so the destination tab's elements animate in too — a side-effect that makes tab switches feel lively.
 

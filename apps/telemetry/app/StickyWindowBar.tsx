@@ -75,7 +75,7 @@ export function StickyWindowBar({
     <div
       aria-hidden={!stuck}
       className={
-        'fixed inset-x-0 top-24 z-30 flex justify-center px-4 transition-all duration-200 ' +
+        'fixed inset-x-0 top-24 z-30 flex justify-center px-4 transition-all duration-short ' +
         (stuck ? 'translate-y-0 opacity-100' : 'pointer-events-none -translate-y-3 opacity-0')
       }
     >

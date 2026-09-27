@@ -58,7 +58,7 @@ export function RecentDiagramsCard({
     // the positioning; this is just the card. A gentle hover lift gives it
     // life without tilting the text (a sub-pixel rotation made the resting
     // card render blurry).
-    <div className="pointer-events-auto w-64 rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-900/10 ring-1 ring-black/5 transition duration-200 hover:-translate-y-0.5 hover:shadow-2xl dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40">
+    <div className="pointer-events-auto w-64 rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-900/10 ring-1 ring-black/5 transition duration-micro hover:-translate-y-0.5 hover:shadow-2xl dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40">
       <div className="flex items-center gap-2 rounded-t-2xl border-b border-slate-100 bg-gradient-to-r from-brand-50 to-transparent px-4 py-3 dark:border-slate-800 dark:from-brand-500/10">
         <ClockIcon />
         <div className="flex flex-col">

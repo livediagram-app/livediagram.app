@@ -145,7 +145,7 @@ export function ProductNav({
         <ChevronDownIcon
           size={12}
           strokeWidth={1.2}
-          className={`h-3 w-3 opacity-60 transition-transform duration-200 group-hover:[transform:rotate(180deg)] group-focus-within:[transform:rotate(180deg)] ${
+          className={`h-3 w-3 opacity-60 transition-transform duration-micro group-hover:[transform:rotate(180deg)] group-focus-within:[transform:rotate(180deg)] ${
             open ? '[transform:rotate(180deg)]' : ''
           }`}
         />
@@ -155,7 +155,7 @@ export function ProductNav({
           to the card without crossing a gap that would close the menu. The
           `open` state mirrors the CSS hover/focus visibility for touch taps. */}
       <div
-        className={`absolute left-0 top-full z-50 pt-2 transition-all duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100 ${
+        className={`absolute left-0 top-full z-50 pt-2 transition-all duration-micro group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100 ${
           open ? 'visible opacity-100' : 'invisible opacity-0'
         }`}
       >

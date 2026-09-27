@@ -3,7 +3,8 @@
 // switch, and the outgoing set leaves on an inert layer.
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { ToolbarStripRail } from './ToolbarStripRail';
+import { MOTION_MS } from '@livediagram/tailwind-config/motion';
+import { RAIL_LEAVE_MS, ToolbarStripRail } from './ToolbarStripRail';
 
 beforeAll(() => {
   globalThis.ResizeObserver ??= class {
@@ -38,6 +39,18 @@ describe('ToolbarStripRail', () => {
     expect(ws.map((w) => w.textContent)).toEqual(['two', 'three']);
     for (const w of ws) expect(w.className).toContain('stagger-enter animate-pop-in');
     expect(ws.map((w) => w.style.getPropertyValue('--stagger-i'))).toEqual(['0', '1']);
+    // The beat is the shared cascade step (docs/specs/004-interface-design/motion.md), not a
+    // local override, so the whole switch settles within the motion budget.
+    for (const w of ws) expect(w.style.getPropertyValue('--stagger-step')).toBe('');
+  });
+
+  it('holds the outgoing layer exactly as long as its pop-out runs', () => {
+    const { container } = render(
+      <ToolbarStripRail railKey="b" items={items('two')} leavingItems={items('one')} />,
+    );
+    const leaving = container.querySelector('[aria-hidden] .animate-pop-out') as HTMLElement;
+    expect(RAIL_LEAVE_MS).toBe(MOTION_MS.micro);
+    expect(leaving.style.animationDuration).toBe(`${MOTION_MS.micro}ms`);
   });
 
   it('lays the outgoing set over the top, inert and hidden from assistive tech', () => {

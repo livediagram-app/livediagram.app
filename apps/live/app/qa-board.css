@@ -74,6 +74,17 @@
   animation: qa-climb 900ms ease-out;
 }
 
+/* A reordered note slides home (useFlipList). The hook writes the inverted
+   start frame inline with transitions off, then adds this class to play it. */
+.qa-flip-move {
+  transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* A note's heat bar eases to its new share of the top note's votes. */
+.qa-heat {
+  transition: width 500ms ease-out;
+}
+
 /* The live dot on the "Now discussing" rail. */
 @keyframes qa-live {
   0%,

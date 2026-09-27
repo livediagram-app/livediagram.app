@@ -19,8 +19,9 @@ import { buildWindowCounts, WINDOW_META, windowHighlightFrom } from './windows';
 // then action, then type), then see just that metric charted over time. The metric universe is exactly the
 // keys of `daily.byMetric`, so anything offered has a line to draw.
 
-// The beat between each piece of a charted metric easing in.
-const RISE_STEP_MS = 60;
+// The beat between each piece of a charted metric easing in (dataviz-motion.css
+// paces the reveal).
+const RISE_STEP_MS = 30;
 
 export function MetricSearch({
   windows,
@@ -102,7 +103,7 @@ function SelectedMetric({
   const series = daily.byMetric[metric.key] ?? [];
   // Everything below the breadcrumb eases in, one beat after another: the
   // icon, the title, the description, the three counts, then the trend line
-  // draws itself left to right (globals.css; off under reduced motion).
+  // draws itself left to right (dataviz-motion.css; off under reduced motion).
   // Keyed by the metric so stepping to another one replays it.
   const rise = (step: number): CSSProperties => ({ animationDelay: `${step * RISE_STEP_MS}ms` });
   return (

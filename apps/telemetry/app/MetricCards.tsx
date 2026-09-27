@@ -1,6 +1,7 @@
 'use client';
 
 import { Fragment, useState } from 'react';
+import { cascadeDelayMs } from '@livediagram/tailwind-config/motion';
 import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
 import { MetricCard } from './MetricCard';
 import { MetricStackCard } from './MetricStackCard';
@@ -26,10 +27,6 @@ import type { MetricGroup } from './metric-series';
 // members open in a modal over the page (StackModal). Shared by every
 // metric-card view so each is just a list of metric groups rendered
 // identically.
-
-// Slower than a page cascade: an expansion is a deliberate act on a handful
-// of cards, so the fan is worth seeing (the Timeline's rate, docs/specs/013-workspace/timeline.md §2.6).
-const EXPAND_STAGGER_MS = 60;
 
 const GRID = 'grid gap-4 sm:grid-cols-2 xl:grid-cols-3';
 
@@ -130,7 +127,8 @@ export function MetricGroups({
                         <div
                           key={metricKey(m)}
                           className="tl-fan-out"
-                          style={{ animationDelay: `${i * EXPAND_STAGGER_MS}ms` }}
+                          // The Timeline's fan, on the shared cascade (docs/specs/004-interface-design/motion.md).
+                          style={{ animationDelay: `${cascadeDelayMs(i)}ms` }}
                         >
                           <MetricCard
                             metric={m}

@@ -259,7 +259,10 @@ Missing key === undefined === default behaviour. Concretely:
   `globals.css` always honours. Setting it to `true` adds
   `.reduce-motion` to `<html>` (via `useReduceMotion`), collapsing every
   decorative animation + transition to ~instant for motion-sensitive
-  users who want it on regardless of their OS setting.
+  users who want it on regardless of their OS setting. Full motion is
+  itself bounded for everyone: chrome settles within 250ms and hovers
+  within 150ms ([Motion](../004-interface-design/motion.md)); reduce
+  motion is the stricter of the two and wins.
 - `notifyDiagramJoin` / `notifyInviteResponse` undefined / true → the
   matching email notification is on (the default; [Account settings & email notifications](../014-identity/profile-and-email-notifications.md)). Setting
   either to `false` is the only state that suppresses its email. Read

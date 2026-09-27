@@ -17,7 +17,7 @@ export function ArticleCard({ article, number }: { article: Article; number?: nu
   return (
     <Link
       href={articleHref(article)}
-      className="card-glow group block rounded-xl bg-white p-5 transition-colors duration-300 hover:bg-brand-50/30 sm:p-6"
+      className="card-glow group block rounded-xl bg-white p-5 transition-colors duration-micro hover:bg-brand-50/30 sm:p-6"
     >
       <div className="flex items-start gap-3">
         {number !== undefined ? (

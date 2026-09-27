@@ -28,8 +28,9 @@ import type { Metric } from './metrics';
 
 const MIN_PX = 14;
 const MAX_PX = 48;
-const STAGGER_MS = 22;
-const STAGGER_CAP_MS = 500;
+// The cloud's arrival beat and its cap (dataviz-motion.css paces the reveal).
+const CLOUD_BEAT_MS = 11;
+const CLOUD_BEAT_CAP_MS = 250;
 
 type Word = { key: string; label: string; count: number; color: string; activate: () => void };
 
@@ -146,7 +147,7 @@ export function MetricCloud({
               fontWeight: Math.round(500 + 300 * t),
               color: w.color,
               '--o': w.count === 0 ? 0.3 : 0.6 + 0.4 * t,
-              animationDelay: `${Math.min(i * STAGGER_MS, STAGGER_CAP_MS)}ms`,
+              animationDelay: `${Math.min(i * CLOUD_BEAT_MS, CLOUD_BEAT_CAP_MS)}ms`,
             };
             return (
               <button
@@ -155,7 +156,7 @@ export function MetricCloud({
                 onClick={w.activate}
                 aria-label={`${w.label}, ${w.count.toLocaleString()} ${w.count === 1 ? 'event' : 'events'}`}
                 style={style}
-                className="cloud-word group/word relative cursor-pointer leading-none tracking-tight dark:brightness-[1.35] opacity-[var(--o)] transition duration-200 hover:-translate-y-0.5 hover:!opacity-100 focus-visible:!opacity-100 focus-visible:outline-none group-hover/cloud:opacity-40"
+                className="cloud-word group/word relative cursor-pointer leading-none tracking-tight dark:brightness-[1.35] opacity-[var(--o)] transition duration-micro hover:-translate-y-0.5 hover:!opacity-100 focus-visible:!opacity-100 focus-visible:outline-none group-hover/cloud:opacity-40"
               >
                 {w.label}
                 <span

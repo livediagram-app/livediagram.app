@@ -15,7 +15,7 @@ export function ChevronIcon({ open, className }: { open: boolean; className?: st
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden
-      className={`transition-transform duration-150 ${open ? 'rotate-180' : ''}${
+      className={`transition-transform duration-micro ${open ? 'rotate-180' : ''}${
         className ? ` ${className}` : ''
       }`}
     >

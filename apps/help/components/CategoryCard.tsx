@@ -7,7 +7,7 @@ export function CategoryCard({ category }: { category: Category }) {
   return (
     <Link
       href={categoryHref(category.slug)}
-      className="card-glow group block overflow-hidden rounded-xl bg-white transition-colors duration-300 hover:bg-brand-50/30"
+      className="card-glow group block overflow-hidden rounded-xl bg-white transition-colors duration-micro hover:bg-brand-50/30"
     >
       {/* On-brand banner illustration evoking this area of the app (docs/specs/018-help/help-app.md). */}
       <div className="h-16 w-full overflow-hidden border-b border-slate-100 bg-gradient-to-b from-brand-100 to-brand-50">

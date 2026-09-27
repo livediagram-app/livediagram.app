@@ -11,7 +11,7 @@ export function PanelSnapSlot({ height }: { height: number }) {
     <div
       aria-hidden
       style={{ height: Math.max(height, 48) }}
-      className="pointer-events-none w-64 max-w-[calc(100vw-2rem)] shrink-0 rounded-lg border-2 border-dashed border-brand-500 bg-brand-500/10 transition-[height] duration-150 dark:border-brand-400 dark:bg-brand-400/10"
+      className="pointer-events-none w-64 max-w-[calc(100vw-2rem)] shrink-0 rounded-lg border-2 border-dashed border-brand-500 bg-brand-500/10 transition-[height] duration-micro dark:border-brand-400 dark:bg-brand-400/10"
     />
   );
 }

@@ -624,7 +624,7 @@ single "here" to have been last at.
 
 Cards fan in rather than appearing at once: each starts pulled to the
 right with a small tilt and scale-down, then springs into place,
-staggered 35ms by position. The motion originates from the right
+staggered 10ms by position, each card at the 150ms `micro` token ([Motion](../004-interface-design/motion.md)). The motion originates from the right
 because that is where a collapsed stack's faux-card layers sit, so it
 reads as cards dealt from the deck. The collapsed stack uses the mirror
 motion, arriving from below, so folding a run reads as closing.
@@ -637,10 +637,11 @@ Three details:
 - **The stagger index is precomputed** into a map rather than
   incremented inside the JSX, so it is identical however many times
   React calls the render function and doesn't depend on child
-  evaluation order. It is **capped at 700ms** total: ungapped, a
-  50-event page starts its last card 1.7s in and the bottom sits
-  blank long after the top has settled.
-- **Expansion staggers at 60ms and restarts from zero** for the run.
+  evaluation order. It is **capped at 100ms**, so the whole feed settles within the
+  250ms cascade budget of [Motion](../004-interface-design/motion.md): ungapped, a
+  50-event page would start its last card half a second in and the
+  bottom would sit blank long after the top had settled.
+- **Expansion staggers at 10ms (capped at 100ms) and restarts from zero** for the run.
   What just arrived is those cards; carrying the page's global offset
   would make a stack halfway down sit still before unfolding.
 

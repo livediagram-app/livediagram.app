@@ -81,7 +81,7 @@ function ChevronGlyph() {
       viewBox="0 0 12 12"
       fill="none"
       aria-hidden
-      className="transition-transform duration-150 group-enabled:group-hover:-translate-x-0.5"
+      className="transition-transform duration-micro group-enabled:group-hover:-translate-x-0.5"
     >
       <path
         d="M7.5 2.5 4 6l3.5 3.5"

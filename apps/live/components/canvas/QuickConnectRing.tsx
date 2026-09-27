@@ -5,6 +5,7 @@ import {
   useState,
   type PointerEvent as ReactPointerEvent,
 } from 'react';
+import { MOTION_MS } from '@livediagram/tailwind-config/motion';
 import { PlusWideIcon } from '@livediagram/ui';
 import type { QuickConnectDirection, QuickConnectKind } from '@/lib/canvas';
 import { Tooltip } from '@/components/primitives/Tooltip';
@@ -90,8 +91,9 @@ const GAP = FLOATING_CONTROL_GAP;
 const OPTION_SIZE = 32;
 // Gap (screen px) between the plus and the near edge of the control.
 const MENU_GAP = 8;
-// How long the exit transition runs before the control unmounts.
-const EXIT_MS = 200;
+// How long the exit transition runs before the control unmounts: an exit hold
+// on the ring's own short motion token (docs/specs/004-interface-design/motion.md).
+const EXIT_MS = MOTION_MS.short;
 // Distance from the plus centre to the control's near edge.
 const NEAR = SIZE / 2 + MENU_GAP;
 
@@ -316,7 +318,10 @@ export function QuickConnectRing({
         onMouseLeave={handleHoverLeave}
       >
         <PlusWideIcon
-          style={{ transform: open ? 'rotate(45deg)' : 'none', transition: 'transform 150ms' }}
+          style={{
+            transform: open ? 'rotate(45deg)' : 'none',
+            transition: 'transform var(--transition-duration-micro)',
+          }}
         />
       </button>
 
@@ -336,7 +341,8 @@ export function QuickConnectRing({
             transformOrigin: menu.origin,
             transform: active ? `${menu.base} scale(1)` : `${menu.base} ${menu.collapsed}`,
             opacity: active ? 1 : 0,
-            transition: 'transform 220ms cubic-bezier(0.34, 1.4, 0.64, 1), opacity 140ms ease',
+            transition:
+              'transform var(--transition-duration-short) cubic-bezier(0.34, 1.4, 0.64, 1), opacity var(--transition-duration-micro) ease',
           }}
         >
           {options.map((option, i) => {

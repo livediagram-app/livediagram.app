@@ -225,7 +225,7 @@ export function ArticleLayout({
               <div className="flex gap-3">
                 <button
                   onClick={() => cast('yes')}
-                  className={`cursor-pointer rounded-xl px-5 py-2.5 text-sm font-semibold transition-all duration-200 ${
+                  className={`cursor-pointer rounded-xl px-5 py-2.5 text-sm font-semibold transition-all duration-micro ${
                     feedback === 'yes'
                       ? 'bg-emerald-600 text-white'
                       : 'border border-slate-300 bg-white text-slate-600 hover:border-slate-400 hover:bg-slate-50'
@@ -235,7 +235,7 @@ export function ArticleLayout({
                 </button>
                 <button
                   onClick={() => cast('no')}
-                  className={`cursor-pointer rounded-xl px-5 py-2.5 text-sm font-semibold transition-all duration-200 ${
+                  className={`cursor-pointer rounded-xl px-5 py-2.5 text-sm font-semibold transition-all duration-micro ${
                     feedback === 'no'
                       ? 'bg-rose-600 text-white'
                       : 'border border-slate-300 bg-white text-slate-600 hover:border-slate-400 hover:bg-slate-50'

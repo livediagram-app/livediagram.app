@@ -67,7 +67,10 @@ export function TreeChevronIcon({ open = false, size = 10 }: IconProps & { open?
       size={size}
       viewBox="0 0 10 10"
       strokeWidth={1.8}
-      style={{ transform: open ? 'rotate(90deg)' : 'none', transition: 'transform 0.12s' }}
+      style={{
+        transform: open ? 'rotate(90deg)' : 'none',
+        transition: 'transform var(--transition-duration-micro)',
+      }}
     >
       <path d="M3 2l4 3-4 3" />
     </StrokeGlyph>

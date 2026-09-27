@@ -1,3 +1,9 @@
+/* A scene dims and brightens as the showcase cycles. Illustration motion
+   (docs/specs/004-interface-design/motion.md), so it keeps its own pace. */
+.scene {
+  transition: opacity 500ms;
+}
+
 /* Pause every animation inside a non-active showcase scene. The `!important`
    is load-bearing: the feature mocks animate via `fa-*` classes whose
    `animation` shorthand resets animation-play-state back to `running`, and

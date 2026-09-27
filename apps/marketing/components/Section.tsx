@@ -105,7 +105,7 @@ function FeatureCard({ title, description, art, href }: FeatureProps) {
   // it (docs/specs/019-marketing/marketing-site.md). scroll-mt keeps it clear of the sticky header on arrival.
   const id = featureAnchor(title);
   const className =
-    'group flex h-full scroll-mt-24 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition duration-200 hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md';
+    'group flex h-full scroll-mt-24 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition duration-micro hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md';
 
   return href ? (
     <a

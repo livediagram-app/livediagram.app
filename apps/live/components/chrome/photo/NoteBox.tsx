@@ -108,7 +108,7 @@ export function NoteBox({
       // The box's BODY takes no clicks: only its tick and its word pill do.
       // A box drawn over another's corner must not bury that box's tick, and a
       // drag that starts over a box still draws — the photo is underneath.
-      className="pointer-events-none absolute transition-[opacity,transform] duration-300 motion-reduce:transition-none"
+      className="pointer-events-none absolute transition-[opacity,transform] duration-short motion-reduce:transition-none"
       style={{
         left: `${(note.x / frame.width) * 100}%`,
         top: `${(note.y / frame.height) * 100}%`,
