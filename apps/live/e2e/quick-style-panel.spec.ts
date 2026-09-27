@@ -130,7 +130,9 @@ test.describe('quick style panel', () => {
     await drawShape(page, 'o', { x: 500, y: 400 });
     await expect(panel(page)).toBeVisible();
     expect((await panel(page).boundingBox())!.width).toBeCloseTo(184, 0);
-    const swatches = panel(page).getByRole('radiogroup', { name: 'Stroke', exact: true }).getByRole('radio');
+    const swatches = panel(page)
+      .getByRole('radiogroup', { name: 'Stroke', exact: true })
+      .getByRole('radio');
     await expect(swatches).toHaveCount(7);
     for (const box of await Promise.all((await swatches.all()).map((s) => s.boundingBox()))) {
       expect(box!.width).toBeGreaterThanOrEqual(24);
@@ -155,6 +157,13 @@ test.describe('quick style panel', () => {
     const custom = stroke.getByRole('radio', { name: 'Custom orange, in place of Green' });
     await expect(custom).toBeFocused();
     await expect(custom.locator('[data-swatch-marker]')).toHaveCount(1);
+    // Kept per user and per theme, in the synced preferences.
+    const stored = await page.evaluate(
+      () =>
+        JSON.parse(localStorage.getItem('livediagram:user-preferences:v1') ?? '{}')
+          .quickSwatchOverrides,
+    );
+    expect(stored).toEqual([{ t: expect.any(String), s: { 4: '#ff5500' } }]);
     // Editing the palette styled nothing; choosing the swatch does.
     await custom.click();
     const els = await saved(page, (e) => shapesOf(e, 'circle')[0]?.strokeColor === '#ff5500');
