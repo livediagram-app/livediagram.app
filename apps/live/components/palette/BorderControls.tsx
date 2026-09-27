@@ -5,7 +5,7 @@ import {
   BorderRadiusIcon,
   BorderStrokeIcon,
   BorderStyleIcon,
-} from '@/components/palette/palette-icons';
+} from '@/components/palette/palette-style-previews';
 import { BorderGrid } from '@/components/palette/context-menu-rows';
 import { onMouseHover } from '@/components/primitives/hover-preview';
 

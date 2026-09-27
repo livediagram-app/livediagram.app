@@ -18,8 +18,8 @@ Derived from [Iconography](../iconography.md).
 | Element field      | `iconWeight?: IconWeight`                                                                                            | `BoxedElement` in `element-types.ts`                 |
 | Vendored Lucide    | one `lucide<Name>` export per glyph in `packages/icons/src/lucide.generated.ts`, subpath `@livediagram/icons/lucide` | written by `packages/icons/scripts/vendor-lucide.ts` |
 | Vendor manifest    | `packages/icons/lucide-manifest.json`                                                                                | pinned version + glyph names                         |
-| Centring exception | `CENTRING_EXCEPTIONS`                                                                                                | `packages/icons/src/centring.ts`                     |
-| Art allow-list     | `ICON_ART_ALLOWLIST`                                                                                                 | packages/eslint-config/raw-svg.js (planned)          |
+| Centring exception | `CENTRING_EXCEPTIONS`, `ASYMMETRIC`                                                                                  | each centring test (named glyph → reason)            |
+| Art allow-list     | `ICON_ART_ALLOWLIST`, `RAW_ICON_SVG`                                                                                 | `packages/eslint-config/raw-svg.js`                  |
 
 "Glyph" is the rendered icon; "icon" in `shape: 'icon'` is the canvas element. Do not use either as a synonym for the other in code.
 
@@ -129,8 +129,8 @@ export function iconWeightPx(w: IconWeight | undefined): number;
 | Weight on elements                | `style-presets.test.ts` (`applyIconWeightToEl`), `format-painter.test.ts`                                |
 | Furniture silhouettes distinct    | `icon-catalog.test.ts`: no two ids share prims                                                           |
 | No same-provider tech glyph dupes | `tech-icon-catalog.test.ts`                                                                              |
-| No raw svg outside homes          | lint rule `livediagram/no-raw-svg` + its rule test                                                       |
-| Contact sheet drift               | Playwright snapshot of `pnpm icons:sheet` output                                                         |
+| No raw svg outside homes          | `no-restricted-syntax` with `RAW_ICON_SVG` (literal width 8–24px), `raw-svg.test.ts`                     |
+| Contact sheet drift               | `pnpm icons:sheet` (on-demand review sheets)                                                             |
 
 ## Constants and configuration
 

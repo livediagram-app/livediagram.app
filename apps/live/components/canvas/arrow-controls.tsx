@@ -24,7 +24,7 @@ import {
   ArrowStyleIcon,
   BorderStyleIcon,
   ThicknessIcon,
-} from '@/components/palette/palette-icons';
+} from '@/components/palette/palette-style-previews';
 import { HoverCard } from '@livediagram/ui';
 
 const LINE_PATTERN_ORDER: readonly BorderStyle[] = [
