@@ -5,7 +5,13 @@ import type { Tab } from '@livediagram/diagram';
 import { rowToTab, type TabRow } from '../tab-row';
 import type { SharedTabsSummary } from '@livediagram/api-schema';
 import type { Env, TabDTO } from '../types';
+import { imageRefIds, imageRefIdsFromData } from '../image-refs/extract';
 import { collabIndexStatements } from './collab-index';
+import {
+  imageRefAddStatements,
+  imageRefPruneTabStatement,
+  imageRefReplaceStatements,
+} from './image-refs';
 
 export async function getTab(env: Env, diagramId: string, tabId: string): Promise<TabDTO | null> {
   // Resolve via the diagram_tabs link table (docs/specs/006-diagram/tab-diagram-many-to-many.md) so a
@@ -106,6 +112,9 @@ export async function upsertTab(
     // rows, replaced in the SAME batch as the blob they mirror so the two
     // can never drift. After the tabs upsert, which the rows' FK needs.
     ...collabIndexStatements(env, id, tab.elements),
+    // The image reference index (docs/specs/009-elements/images.md, "Reference index"), for the same
+    // reason: a reference this batch missed is an image the retention sweep reaps.
+    ...imageRefReplaceStatements(env, id, imageRefIds(tab.elements)),
   ]);
 }
 
@@ -140,7 +149,10 @@ export async function seedTabs(env: Env, diagramId: string, tabs: Tab[]): Promis
   stmts.push(env.DB.prepare('UPDATE diagrams SET saved_at = ? WHERE id = ?').bind(now, diagramId));
   // Index rows for every seeded tab (docs/specs/013-workspace/activity-page.md §2.1): a JSON import or a
   // copy from a share link can carry actions and threads in on create.
-  for (const tab of tabs) stmts.push(...collabIndexStatements(env, tab.id, tab.elements));
+  for (const tab of tabs) {
+    stmts.push(...collabIndexStatements(env, tab.id, tab.elements));
+    stmts.push(...imageRefReplaceStatements(env, tab.id, imageRefIds(tab.elements)));
+  }
   await env.DB.batch(stmts);
 }
 
@@ -184,8 +196,12 @@ export async function deleteTabRow(env: Env, diagramId: string, tabId: string): 
     .bind(tabId)
     .first<{ n: number }>();
   if ((remaining?.n ?? 0) === 0) {
-    await env.DB.prepare('DELETE FROM tabs WHERE id = ?').bind(tabId).run();
-    await env.DB.prepare('DELETE FROM change_log WHERE tab_id = ?').bind(tabId).run();
+    // image_refs has no FK to cascade from `tabs`, so its rows go explicitly.
+    await env.DB.batch([
+      imageRefPruneTabStatement(env, tabId),
+      env.DB.prepare('DELETE FROM tabs WHERE id = ?').bind(tabId),
+      env.DB.prepare('DELETE FROM change_log WHERE tab_id = ?').bind(tabId),
+    ]);
   }
 }
 
@@ -320,7 +336,9 @@ export async function reorderTabs(
 //
 // Only `data` and `updated_at` move: a board write never renames, reorders or
 // relinks the tab, and it touches no action or thread, so the collaboration
-// index (docs/specs/013-workspace/activity-page.md) has nothing to mirror.
+// index (docs/specs/013-workspace/activity-page.md) has nothing to mirror. The
+// image reference index is only ever ADDED to here: the swap can lose to a
+// concurrent save, and a delete would then drop references the winner wrote.
 export async function swapTabData(
   env: Env,
   diagramId: string,
@@ -329,12 +347,16 @@ export async function swapTabData(
   nextData: string,
 ): Promise<boolean> {
   const now = Date.now();
-  const res = await env.DB.prepare(
-    'UPDATE tabs SET data = ?, updated_at = ? WHERE id = ? AND data = ?',
-  )
-    .bind(nextData, now, tabId, expectedData)
-    .run();
-  if ((res.meta?.changes ?? 0) === 0) return false;
+  const [res] = await env.DB.batch([
+    env.DB.prepare('UPDATE tabs SET data = ?, updated_at = ? WHERE id = ? AND data = ?').bind(
+      nextData,
+      now,
+      tabId,
+      expectedData,
+    ),
+    ...imageRefAddStatements(env, tabId, imageRefIdsFromData(nextData)),
+  ]);
+  if ((res?.meta?.changes ?? 0) === 0) return false;
   await env.DB.prepare('UPDATE diagrams SET saved_at = ? WHERE id = ?').bind(now, diagramId).run();
   return true;
 }
