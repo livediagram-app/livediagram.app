@@ -11,7 +11,7 @@
 // can't drift, and they keep rendering as the bare tinted glyph those
 // elements have always been. The palette does not offer them — the Stickers
 // category owns them now, as their own element kind with their own artwork.
-import { lucideSignal } from './lucide.generated';
+import { lucideHeartPulse, lucideSettings, lucideSignal } from './lucide.generated';
 import { STICKER_CATALOG } from './sticker-catalog';
 import type { IconDef } from './types';
 
@@ -645,29 +645,15 @@ export const ICON_CATALOG_2: IconDef[] = [
     id: 'gear',
     label: 'Gear',
     keywords: 'gear cog settings spin processing animated',
-    // Hub + eight radial teeth; spins about its centre.
-    prims: [
-      { t: 'circle', cx: 12, cy: 12, r: 3.5 },
-      { t: 'line', x1: 12, y1: 1.5, x2: 12, y2: 5 },
-      { t: 'line', x1: 12, y1: 19, x2: 12, y2: 22.5 },
-      { t: 'line', x1: 1.5, y1: 12, x2: 5, y2: 12 },
-      { t: 'line', x1: 19, y1: 12, x2: 22.5, y2: 12 },
-      { t: 'line', x1: 4.6, y1: 4.6, x2: 7.1, y2: 7.1 },
-      { t: 'line', x1: 16.9, y1: 16.9, x2: 19.4, y2: 19.4 },
-      { t: 'line', x1: 4.6, y1: 19.4, x2: 7.1, y2: 16.9 },
-      { t: 'line', x1: 16.9, y1: 7.1, x2: 19.4, y2: 4.6 },
-    ],
+    // The settings gear, offered again under the Animated chip; spins about its centre.
+    prims: [...lucideSettings],
   },
   {
     id: 'heartbeat',
     label: 'Heartbeat',
     keywords: 'heart like love favourite favorite beat pulse animated',
-    prims: [
-      {
-        t: 'path',
-        d: 'M12 20.5 C12 20.5 4 14 4 8.8 A4 4 0 0 1 12 6.2 A4 4 0 0 1 20 8.8 C20 14 12 20.5 12 20.5 Z',
-      },
-    ],
+    // A heart with a pulse trace: distinct from the plain heart.
+    prims: [...lucideHeartPulse],
   },
   {
     id: 'signal',

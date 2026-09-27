@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { markupBounds } from './centring';
+import * as LUCIDE from './lucide.generated';
 import { ICON_CATALOG_1 } from './icon-catalog-1';
 import { ICON_CATALOG_2 } from './icon-catalog-2';
 import { iconPrimsMarkup } from './markup';
@@ -64,5 +65,25 @@ describe('floor-plan furniture', () => {
       .filter(({ span }) => span < FURNITURE_MIN_SPAN)
       .map(({ id, span }) => `${id} ${span}`);
     expect(small).toEqual([]);
+  });
+});
+
+// Catalogue entries drawn from vendored Lucide data rather than hand-copied paths
+// (docs/specs/004-interface-design/iconography.md, "Source").
+const LUCIDE_BACKED: Record<string, readonly unknown[]> = {
+  database: LUCIDE.lucideDatabase,
+  wifi: LUCIDE.lucideWifi,
+  tool: LUCIDE.lucideWrench,
+  signal: LUCIDE.lucideSignal,
+  package: LUCIDE.lucidePackage,
+  settings: LUCIDE.lucideSettings,
+  gear: LUCIDE.lucideSettings,
+  heartbeat: LUCIDE.lucideHeartPulse,
+};
+
+describe('Lucide-backed entries', () => {
+  it.each(Object.entries(LUCIDE_BACKED))('draws %s from the vendored glyph', (id, prims) => {
+    expect(prims).toBeDefined();
+    expect(CATALOG.find((d) => d.id === id)?.prims).toEqual(prims);
   });
 });

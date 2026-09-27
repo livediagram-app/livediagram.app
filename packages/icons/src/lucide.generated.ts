@@ -49,8 +49,11 @@ SOFTWARE.
 import type { IconPrim } from './types';
 
 export const lucideDatabase: readonly IconPrim[] = [{"t":"ellipse","cx":12,"cy":5,"rx":9,"ry":3},{"t":"path","d":"M3 5V19A9 3 0 0 0 21 19V5"},{"t":"path","d":"M3 12A9 3 0 0 0 21 12"}];
+export const lucideHeartPulse: readonly IconPrim[] = [{"t":"path","d":"M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"},{"t":"path","d":"M3.22 13H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27"}];
 export const lucideHistory: readonly IconPrim[] = [{"t":"path","d":"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"},{"t":"path","d":"M3 3v5h5"},{"t":"path","d":"M12 7v5l4 2"}];
+export const lucidePackage: readonly IconPrim[] = [{"t":"path","d":"M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z"},{"t":"path","d":"M12 22V12"},{"t":"polyline","points":"3.29 7 12 12 20.71 7"},{"t":"path","d":"m7.5 4.27 9 5.15"}];
 export const lucidePaintRoller: readonly IconPrim[] = [{"t":"rect","x":2,"y":2,"w":16,"h":6,"rx":2},{"t":"path","d":"M10 16v-2a2 2 0 0 1 2-2h8a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"},{"t":"rect","x":8,"y":16,"w":4,"h":6,"rx":1}];
+export const lucideSettings: readonly IconPrim[] = [{"t":"path","d":"M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"},{"t":"circle","cx":12,"cy":12,"r":3}];
 export const lucideSignal: readonly IconPrim[] = [{"t":"path","d":"M2 20h.01"},{"t":"path","d":"M7 20v-4"},{"t":"path","d":"M12 20v-8"},{"t":"path","d":"M17 20V8"},{"t":"path","d":"M22 4v16"}];
 export const lucideWifi: readonly IconPrim[] = [{"t":"path","d":"M12 20h.01"},{"t":"path","d":"M2 8.82a15 15 0 0 1 20 0"},{"t":"path","d":"M5 12.859a10 10 0 0 1 14 0"},{"t":"path","d":"M8.5 16.429a5 5 0 0 1 7 0"}];
 export const lucideWrench: readonly IconPrim[] = [{"t":"path","d":"M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.106-3.105c.32-.322.863-.22.983.218a6 6 0 0 1-8.259 7.057l-7.91 7.91a1 1 0 0 1-2.999-3l7.91-7.91a6 6 0 0 1 7.057-8.259c.438.12.54.662.219.984z"}];
