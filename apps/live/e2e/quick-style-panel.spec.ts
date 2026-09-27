@@ -268,6 +268,7 @@ test.describe('quick style panel', () => {
       'true',
     );
     await page.mouse.click(500, 300, { button: 'right' });
+    await expect(page.getByRole('menu').first()).toBeVisible();
     await expect(panel(page)).toBeHidden();
     expectNoPageErrors(pageErrors);
   });
