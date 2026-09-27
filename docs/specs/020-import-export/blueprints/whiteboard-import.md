@@ -8,27 +8,29 @@ from real exports). A row marked _pending E-C1_ is not built until a real export
 
 Scope, by file (all under `apps/live/` unless stated):
 
-| File                                                | Role                                                                           |
-| --------------------------------------------------- | ------------------------------------------------------------------------------ |
-| `lib/board-import/whiteboard/limits.ts`             | Named constants of this blueprint                                              |
-| `lib/board-import/whiteboard/refusals.ts`           | `WhiteboardRefusal`, `refusalMessage`: the named rejections and their copy     |
-| `lib/board-import/whiteboard/zip.ts`                | `readZip`: central directory, stored and deflated entries, byte budget         |
-| `lib/board-import/whiteboard/envelope.ts`           | `readWhiteboardFile`: sniff Zip / HTML / picture, find the board               |
-| `lib/board-import/whiteboard/matrix.ts`             | `Matrix`, `parseCssTransform`, `parseSvgTransform`, `compose`, `apply`         |
-| `lib/board-import/whiteboard/svg-path.ts`           | `flattenPath`: SVG path data to polylines                                      |
-| `lib/board-import/whiteboard/colour.ts`             | `readColour`: `rgba()` / `rgb()` / hex / named to `{ hex, alpha }`             |
-| `lib/board-import/whiteboard/canvas.ts`             | `readBoard`: the canvas root, anchors in stacking order, placement, background |
-| `lib/board-import/whiteboard/ink.ts`                | `readInk`: strokes of one ink anchor, centreline or outline, width, pen        |
-| `lib/board-import/whiteboard/items.ts`              | `readItem`: notes, text, shapes, connectors, images, reactions (E-C1)          |
-| `lib/board-import/whiteboard/fit.ts` | `fitToTab`: the tab budget loop over the shared `simplifyPolyline` |
-| `lib/board-import/whiteboard/convert.ts`            | `convertBoard`: board to elements, image requests, report                      |
-| `lib/board-import/whiteboard/import.ts`             | `importWhiteboard`: the entry point                                            |
-| `lib/board-import/whiteboard/__fixtures__/`         | Fixtures and their generator                                                   |
-| `lib/board-import/whiteboard/test-support.ts`       | DOM test helpers: a board document from markup, fixture bytes                  |
-| `hooks/persistence/useTabImport.ts`                 | The `whiteboard` format: bytes in, one undo step, fit, telemetry, log          |
-| `components/dialogs/ImportTabDialog.tsx`            | The Microsoft Whiteboard card (file only) and its report                       |
-| `apps/help/app/…/import-from-microsoft-whiteboard/` | The help article                                                               |
-| `e2e/whiteboard-import.spec.ts`                     | Fixtures through the real dialog on the production build, persistence and undo |
+| File                                                | Role                                                                                      |
+| --------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `lib/board-import/whiteboard/limits.ts`             | Named constants of this blueprint                                                         |
+| `lib/board-import/whiteboard/refusals.ts`           | `WhiteboardRefusal`, `refusalMessage`: the named rejections and their copy                |
+| `lib/board-import/whiteboard/zip.ts`                | `readZip`: central directory, stored and deflated entries, byte budget                    |
+| `lib/board-import/whiteboard/envelope.ts`           | `readWhiteboardFile`: sniff Zip / HTML / picture, find the board                          |
+| `lib/board-import/whiteboard/matrix.ts`             | `Matrix`, `parseCssTransform`, `parseSvgTransform`, `compose`, `apply`                    |
+| `lib/board-import/whiteboard/svg-path.ts`           | `flattenPath`: SVG path data to polylines                                                 |
+| `lib/board-import/whiteboard/colour.ts`             | `readColour`: `rgba()` / `rgb()` / hex / named to `{ hex, alpha }`                        |
+| `lib/board-import/whiteboard/placement.ts`          | `anchorMatrix`, `innerMatrix`, `inlineStyle`, `px`: markup to board px                    |
+| `lib/board-import/whiteboard/canvas.ts`             | `readBoard`, `isWhiteboardCanvas`: the canvas root, anchors in stacking order, background |
+| `lib/board-import/whiteboard/ink.ts`                | `readInk`: strokes of one ink anchor, centreline or outline, width, pen                   |
+| `lib/board-import/whiteboard/items.ts`              | `readItem`: notes, text, shapes, connectors, images, reactions (E-C1)                     |
+| `lib/board-import/whiteboard/fit.ts`                | `fitToTab`: the tab budget loop over the shared `simplifyPolyline`                        |
+| `lib/board-import/whiteboard/convert.ts`            | `convertBoard`: board to elements and stroke drafts, per-kind tally                       |
+| `lib/board-import/whiteboard/import.ts`             | `importWhiteboard`: the entry point                                                       |
+| `lib/fnv1a.ts`                                      | `fnv1a32`: the hash behind `sourceId` (shared with `identity.ts`)                         |
+| `lib/board-import/whiteboard/__fixtures__/`         | Fixtures and their generator                                                              |
+| `lib/board-import/whiteboard/test-support.ts`       | DOM test helpers: a board document from markup, fixture bytes                             |
+| `hooks/persistence/useTabImport.ts`                 | The `whiteboard` format: bytes in, one undo step, fit, telemetry, log                     |
+| `components/dialogs/ImportTabDialog.tsx`            | The Microsoft Whiteboard card (file only) and its report                                  |
+| `apps/help/app/…/import-from-microsoft-whiteboard/` | The help article                                                                          |
+| `e2e/whiteboard-import.spec.ts`                     | Fixtures through the real dialog on the production build, persistence and undo            |
 
 The shared image pipeline (`lib/import-images/`, [import image pipeline](../import-image-pipeline.md))
 and the shared import report (`lib/import-report.ts`, [draw.io import](../drawio-import.md) "The
@@ -44,7 +46,9 @@ machinery of its own.
 | Board item      | `BoardItem`         | One anchor: `{ id, kind, schema, placement, node }`                                                  |
 | Item kind       | `BoardItemKind`     | The anchor's `data-whiteboard-type`, or the schema the content reveals (below)                       |
 | Placement       | `Placement`         | The anchor's board matrix: `left` / `top` then its CSS `transform`                                   |
-| Ink stroke      | `InkStroke`         | `{ outline: Point[][]; centreline: Point[] \| null; widthPx; colour; alpha; pen }`                   |
+| Ink stroke      | `InkStroke`         | `{ outline: Point[][]; centreline: Point[] \| null; widthPx; colour: { hex, alpha }; pen; effect }`  |
+| Stroke draft    | `StrokeDraft`       | `{ raw: Point[]; closed; props }`: a stroke before the fit stage simplifies and builds it            |
+| Tally           | `WhiteboardTally`   | `{ rows: { kind, imported, degraded: { reason: n }, skipped }[] }`, one row per kind                 |
 | Pen             | `InkPen`            | `'pen'` or `'highlighter'`                                                                           |
 | Board px        | (unit)              | A CSS pixel of the board; one board px is one canvas unit                                            |
 | Source id       | `sourceId`          | `mswb:<title>:<hash>`, the hash an FNV-1a of the sorted item ids                                     |
@@ -58,14 +62,15 @@ element is a **sticky**).
 
 ### 1. Entry
 
-`importWhiteboard(file: { name: string; bytes: Uint8Array }) => Promise<WhiteboardImportResult>`:
+`importWhiteboard(file: { name: string; bytes: Uint8Array<ArrayBuffer> }) => Promise<WhiteboardImportResult>`:
 
 1. `bytes.length > WHITEBOARD_MAX_FILE_BYTES` → refuse `too-large`.
 2. `readWhiteboardFile(file)` → a `WhiteboardFile` or a refusal.
-3. Picture route: result `{ ok: true, route: 'picture', title, image: { key: 'board', source: { kind: 'blob', blob } } }`.
-4. Board route: `readBoard(parseHtml(html))`, then `convertBoard(board, comments)`, then
-   `fitToTab(elements)`.
-5. Result `{ ok: true, route: 'board', title, sourceId, elements, images, report, backgroundColor }`.
+3. Picture route: result `{ ok: true, route: 'picture', title, blob, mimeType }`.
+4. Board route: `readBoard(doc)`, then `convertBoard(board)`, then `fitToTab(items)`.
+5. Result `{ ok: true, route: 'board', title, sourceId, elements, tally, simplified, backgroundColor? }`;
+   `simplified` is true when the fit took more than one round. Image requests and comments join
+   the result with E-C1.
 
 Never throws: an exception inside is caught, logged, and refused as `unreadable`.
 
@@ -197,8 +202,12 @@ derived from outlines._
 
 ### 9. Convert (`convertBoard`)
 
-- Walk items in order; each reader returns elements and a report entry.
-- Translate every element by `(−minX, −minY)` of the union of element bounds, rounded to whole px.
+- Walk items in order; an anchor holding `g.inkStroke` is read as ink, any other kind is skipped
+  and counted under its `data-whiteboard-type` (`unknown` when absent) until its reader lands
+  (E-C1). Each reader returns elements or stroke drafts and tally entries.
+- Translate every element and draft by `(−minX, −minY)` of their top-left corners (draft points,
+  element `x` / `y`), rounded to whole px. Every element the converter makes is boxed
+  (`BoxedElement`); arrows join with connectors (E-C1).
 - Ids are minted fresh (`crypto.randomUUID()`); a map from item id to element id lets connectors
   and comments find their item.
 - Images become `image` elements with `imageId: null` plus an image request `{ elementId, key,
@@ -216,19 +225,20 @@ type WhiteboardImportResult =
       title: string;
       sourceId: string;
       elements: Element[];
-      images: ImportImageRequest[];
-      report: ImportReport;
+      tally: WhiteboardTally;
+      simplified: boolean;
       backgroundColor?: string;
     }
-  | { ok: true; route: 'picture'; title: string; image: ImportImageRequest }
+  | { ok: true; route: 'picture'; title: string; blob: Blob; mimeType: AcceptedImageType }
   | { ok: false; refusal: WhiteboardRefusal; error: string };
 ```
 
 - Every returned element passes `isValidElement` (`packages/diagram/src/validate.ts`); a unit test
   holds this over every fixture.
-- `ImportImageRequest` and `ImportReport` are the shared types; the import report's
-  `source` gains `'microsoft-whiteboard'` and its note kinds gain `ink-outline`, `ink-simplified`,
-  `width-clamped`, `effect-pen`, `item-skipped` (with names), `comment-unanchored`.
+- On adoption of the shared pipeline and report, image requests are `ImportImageRequest`s and the
+  tally maps onto `ImportReport`: its `source` gains `'microsoft-whiteboard'` and its note kinds
+  gain `ink-outline`, `ink-simplified`, `width-clamped`, `effect-pen`, `item-skipped` (with
+  names), `comment-unanchored`.
 
 ## Data and persistence
 
