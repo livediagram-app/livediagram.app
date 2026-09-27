@@ -1186,7 +1186,10 @@ Decisions from the operator:
   open, a draft still waiting on the board, a board that cannot take notes, an
   unsupported file — says which, in a toast, every time. Silence is the one
   answer that leaves the author with no move except to try again, and a refusal
-  that repeats silently reads as breakage.
+  that repeats silently reads as breakage. While the palette's **Add from photo**
+  row is disabled because a draft is waiting, its second line says so ("Finish
+  the current draft first") in place of its description: a disabled button takes
+  no focus and may get no hover, so the reason is never a hint.
 - **Nothing found keeps the photo up.** "No stickies found in this photo" with
   the retake advice appears IN the overlay, over the photograph it is about, and
   the author can still drag boxes by hand or cancel. Closing the dialog would

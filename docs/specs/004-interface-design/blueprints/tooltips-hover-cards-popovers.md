@@ -19,7 +19,8 @@ Scope, by file:
 | `packages/ui/src/HoverCard.tsx`                      | `HoverCard`: title + description, instant, on the layout wrapper it always had |
 | `packages/ui/src/index.ts`                           | Exports `Tooltip`, `HoverCard` and their prop types                            |
 | `packages/eslint-config/index.js`                    | `no-restricted-syntax`: native `title` outside the exceptions                  |
-| `apps/live/components/palette/PaletteIconButton.tsx` | Which hint a palette tile carries                                              |
+| `apps/live/components/palette/PaletteIconButton.tsx` | Which hint a palette tile carries (`tileHint`)                                 |
+| `apps/live/components/palette/palette-controls.tsx`  | `SizeButton` names its swatch with a Tooltip                                   |
 
 ## Domain and naming
 
@@ -51,8 +52,13 @@ Banned: "tooltip" for anything with a description, "hover tooltip", "info popove
 `useHint(kind)` owns one hint. React state is `open: boolean` and `source: HintOpenSource | null`; everything else is a
 ref, so pointer traffic re-renders nothing until the hint actually opens or closes.
 
-Refs: `overTrigger`, `overSurface`, `focused` (keyboard-visible only), `dismissed`, `suppressClick`, `pressStart`, and
-the timers `openTimer`, `closeTimer`, `pressTimer`, `lingerTimer`.
+One `Machine` ref holds the rest: the wrapper element, `open`, `source`, `overTrigger`, `overSurface`, `focused`
+(keyboard-visible only), `dismissed`, `suppressClick`, `pressStart`, and the timers `openTimer`, `closeTimer`,
+`pressTimer`, `lingerTimer`. A `useState` token (a plain object) identifies the hint to the registry, so `close` may
+change identity between renders.
+
+Presses (T7 to T11) are heard in the capture phase (`onPointerDownCapture` and friends): many canvas controls stop their
+pointer events from bubbling, and the hint must still see them.
 
 ### Transitions
 
@@ -80,7 +86,8 @@ the timers `openTimer`, `closeTimer`, `pressTimer`, `lingerTimer`.
 `openDelayMs(kind, now)`: `0` for a hover card; for a tooltip, `0` when `isTooltipWarm(now)`, else
 `TOOLTIP_OPEN_DELAY_MS`.
 
-Opening calls `claimHint(close)`, which closes the previous holder (T14). Closing calls `releaseHint(close, kind, now)`,
+Opening calls `claimHint(token, close, kind)`, which closes the previous holder (T14). Closing calls
+`releaseHint(token, kind, now)`,
 which, for a tooltip, stamps the warm-up clock.
 
 ### Invariants
@@ -107,6 +114,16 @@ export type HoverCardProps = {
   children: ReactNode;
 };
 export function HoverCard(props: HoverCardProps): JSX.Element;
+
+// The engine both components share; exported inside the package only.
+export function useHint(kind: HintKind): {
+  open: boolean;
+  source: HintOpenSource | null;
+  attach: (el: HTMLSpanElement | null) => void; // callback ref for the wrapper
+  anchor: () => Element | null;
+  triggerProps: HintTriggerProps; // spread on the wrapper
+  surfaceProps: HintSurfaceProps; // spread on the surface
+};
 
 export function placeHint(input: {
   trigger: {
@@ -143,20 +160,22 @@ None. Hints persist nothing; the registry and warm-up clock are per page and res
 
 ## Errors and edge cases
 
-| Case                                               | Handling                                                                                            |
-| -------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| Rendered on the server (no `document`)             | Surface renders `null`; wrapper renders; nothing to hydrate differently                             |
-| `:focus-visible` unsupported (`matches` throws)    | Treated as visible, so keyboard users still get the hint                                            |
-| Trigger disabled                                   | Browser may send no pointer events; the hint simply does not open. Palette tiles skip it (as today) |
-| Trigger unmounts while open                        | T15: timers cleared, registry released, portal removed                                              |
-| Pointer enters, leaves within 1 s                  | T2 cancels the timer; nothing opens                                                                 |
-| Press before the tooltip opened                    | T7 cancels it and sets `dismissed`; it stays shut until the pointer leaves                          |
-| Long press and the browser then sends no `click`   | `suppressClick` is cleared on the next touch `pointerdown` (T8), so it cannot eat a later tap       |
-| Trigger has visible text on touch                  | T8 guard: no long press, no suppressed click                                                        |
-| Scroll or resize while open                        | `HintSurface` re-measures on `scroll` (capture) and `resize`                                        |
-| Label changes while open                           | Layout effect depends on the content, so it re-measures                                             |
-| Surface wider than the viewport                    | `clampIntoRange` keeps the lower bound: pinned to the left margin                                   |
-| `label` differs from the trigger's accessible name | `console.warn` fingerprint (see Observability); still renders                                       |
+| Case                                               | Handling                                                                                                                                                                                            |
+| -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Rendered on the server (no `document`)             | Surface renders `null`; wrapper renders; nothing to hydrate differently                                                                                                                             |
+| `:focus-visible` unsupported (`matches` throws)    | Treated as visible, so keyboard users still get the hint                                                                                                                                            |
+| Trigger disabled                                   | Browser may send no pointer events; the hint simply does not open. Palette tiles skip it (as today); a disabled control whose reason matters says it in visible text instead (the photo-import row) |
+| Trigger stops its pointer events from bubbling     | Presses are heard in the capture phase, so T7 to T11 still run                                                                                                                                      |
+| A press on the hint surface itself                 | The surface stops `pointerdown`, `mousedown`, `click`, `dblclick` and `contextmenu`, so a portal event never reaches the trigger's React ancestors                                                  |
+| Trigger unmounts while open                        | T15: timers cleared, registry released, portal removed                                                                                                                                              |
+| Pointer enters, leaves within 1 s                  | T2 cancels the timer; nothing opens                                                                                                                                                                 |
+| Press before the tooltip opened                    | T7 cancels it and sets `dismissed`; it stays shut until the pointer leaves                                                                                                                          |
+| Long press and the browser then sends no `click`   | `suppressClick` is cleared on the next touch `pointerdown` (T8), so it cannot eat a later tap                                                                                                       |
+| Trigger has visible text on touch                  | T8 guard: no long press, no suppressed click                                                                                                                                                        |
+| Scroll or resize while open                        | `HintSurface` re-measures on `scroll` (capture) and `resize`                                                                                                                                        |
+| Label changes while open                           | Layout effect depends on the content, so it re-measures                                                                                                                                             |
+| Surface wider than the viewport                    | `clampIntoRange` keeps the lower bound: pinned to the left margin                                                                                                                                   |
+| `label` differs from the trigger's accessible name | `console.warn` fingerprint (see Observability); still renders                                                                                                                                       |
 
 ## Security and trust
 
@@ -180,7 +199,8 @@ surface.
 | Hover card | `w-56 rounded-lg border bg-white px-3 py-2 shadow-lg` / `dark:border-slate-700 dark:bg-slate-800` (unchanged)                               | 10px | 10px  |
 
 - Tooltip: `max-w-xs`, text wraps, never truncates (D12).
-- Both: `fixed`, `z-[var(--z-toast)]`, `pointer-events-auto` (hoverable), `animate-fade-in motion-reduce:animate-none`.
+- Both: `fixed`, `z-[var(--z-toast)]`, `pointer-events-auto` (hoverable), `animate-fade-in motion-reduce:animate-none`;
+  `fade-in` runs at the `micro` motion token (150ms).
   Measured off-screen and `visibility: hidden` for the first frame so the fade starts in place.
 - The arrow is a rotated square carrying the surface's own colour classes.
 
@@ -218,7 +238,9 @@ surface.
 | Hover card opens at once                    | `HoverCard.test.tsx`; e2e zoom control                             |
 | Escape dismisses and passes through         | `useHint.test.tsx`; e2e                                            |
 | Hoverable, grace                            | `useHint.test.tsx`                                                 |
-| Press closes and cancels                    | `useHint.test.tsx`                                                 |
+| Press closes and cancels                    | `useHint.test.tsx`, including a control that stops bubbling        |
+| Presses on the hint stay on the hint        | `useHint.test.tsx`                                                 |
+| A disabled reason is visible text           | `EventStormingBoardRows.test.tsx`                                  |
 | One at a time                               | `hint-registry.test.ts`, `Tooltip.test.tsx`                        |
 | Touch long press, slop, linger, click eaten | `useHint.test.tsx`                                                 |
 | Touch gate on visible text                  | `trigger-text.test.ts`, `useHint.test.tsx`                         |
