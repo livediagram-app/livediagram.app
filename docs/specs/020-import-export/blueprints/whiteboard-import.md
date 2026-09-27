@@ -20,7 +20,7 @@ Scope, by file (all under `apps/live/` unless stated):
 | `lib/board-import/whiteboard/canvas.ts`             | `readBoard`: the canvas root, anchors in stacking order, placement, background |
 | `lib/board-import/whiteboard/ink.ts`                | `readInk`: strokes of one ink anchor, centreline or outline, width, pen        |
 | `lib/board-import/whiteboard/items.ts`              | `readItem`: notes, text, shapes, connectors, images, reactions (E-C1)          |
-| `lib/board-import/whiteboard/simplify.ts`           | `simplifyPolyline` (Ramer-Douglas-Peucker), `fitToTab`: the tab budget loop    |
+| `lib/board-import/whiteboard/fit.ts` | `fitToTab`: the tab budget loop over the shared `simplifyPolyline` |
 | `lib/board-import/whiteboard/convert.ts`            | `convertBoard`: board to elements, image requests, report                      |
 | `lib/board-import/whiteboard/import.ts`             | `importWhiteboard`: the entry point                                            |
 | `lib/board-import/whiteboard/__fixtures__/`         | Fixtures and their generator                                                   |
@@ -183,10 +183,10 @@ derived from outlines._
 | Loop, app frame | the export's placeholder markup                           | pending E-C1                                          |
 | Anything else   | —                                                         | skipped, named by `data-whiteboard-type` or `unknown` |
 
-### 8. Simplify and fit (`simplify.ts`)
+### 8. Simplify and fit (`fit.ts`)
 
-- `simplifyPolyline(points, tolerancePx)`: Ramer-Douglas-Peucker, iterative (no recursion depth
-  limit), endpoints kept, at least two points kept.
+- `simplifyPolyline(points, tolerancePx)` is the shared Ramer-Douglas-Peucker of
+  `packages/diagram/src/polyline.ts` (iterative, endpoints kept).
 - Freehand points are normalised to the element's box and rounded to `WHITEBOARD_POINT_DECIMALS`.
 - `fitToTab(elements)`: tolerance starts at `WHITEBOARD_SIMPLIFY_TOLERANCE_PX`; while
   `JSON.stringify` of the elements exceeds `WHITEBOARD_TAB_BYTES_BUDGET`, multiply the tolerance by
