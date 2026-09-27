@@ -11,9 +11,11 @@ import type { QuickConnectDirection } from '@/lib/canvas';
 
 export function useQuickRing(selectedId: string | null) {
   const [quickRingOpen, setQuickRingOpen] = useState<QuickConnectDirection | null>(null);
-  useEffect(() => {
+  const [ringSelection, setRingSelection] = useState(selectedId);
+  if (selectedId !== ringSelection) {
+    setRingSelection(selectedId);
     setQuickRingOpen(null);
-  }, [selectedId]);
+  }
   useEffect(() => {
     if (!quickRingOpen) return;
     const onDown = (e: PointerEvent) => {
