@@ -14,7 +14,7 @@ A new Next.js app, `apps/help`, deployed as the `livediagram-help` Worker and st
 - The router strips `/help` and forwards to the worker, which serves `./out`.
 - Content is **MDX** (`@next/mdx`) plus a TypeScript article index (`lib/articles.ts`). Navigation/index pages are TSX.
 
-It behaves **exactly like the Manager Toolkit help centre**: hero + client-side search, a category grid, a "Feature Guides" grid, article pages with an auto-generated table of contents, breadcrumbs, "Was this helpful?" feedback, reading time, related-guide sidebar, and a back-to-top button. The difference is the categories/content (livediagram's) and the **brand**: livediagram is light + sky-blue (`brand-500`, see [Theme](../004-interface-design/color-scheme.md)), not MT's dark purple, so every surface uses the shared `@livediagram/tailwind-config` brand ramp and slate neutrals to match `apps/marketing` and `apps/telemetry`.
+It behaves **exactly like the Manager Toolkit help centre**: hero + client-side search, a category grid, a "Feature Guides" grid, article pages with an auto-generated table of contents, breadcrumbs, "Was this helpful?" feedback, reading time, related-guide sidebar, and a back-to-top button. The difference is the categories/content (livediagram's) and the **brand**: livediagram is sky-blue (`brand-500`, see [Theme](../004-interface-design/color-scheme.md)) on light or dark chrome ([Appearance](../004-interface-design/appearance.md)), not MT's dark purple, so every surface uses the shared `@livediagram/tailwind-config` brand ramp and slate neutrals to match `apps/marketing` and `apps/telemetry`.
 
 ### No paid tier
 

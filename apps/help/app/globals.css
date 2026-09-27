@@ -7,11 +7,18 @@
  * is symlinked. */
 @source '../../../packages/ui/src';
 
+@import './help-art.css';
+
 html,
 body {
   background-color: #f8fafc; /* slate-50 */
   color: #0f172a; /* slate-900 */
   overflow-x: hidden;
+}
+.dark,
+.dark body {
+  background-color: var(--color-slate-950);
+  color: var(--color-slate-200);
 }
 
 /* Article intro: the paragraph(s) before the first h2. A lead callout
@@ -26,6 +33,12 @@ body {
   line-height: 1.85;
   color: #475569; /* slate-600 */
   margin-bottom: 0;
+}
+.dark .article-intro {
+  border-left-color: color-mix(in oklab, var(--color-brand-500) 50%, transparent);
+}
+.dark .article-intro p {
+  color: var(--color-slate-300);
 }
 
 /* Article sections with alternating backgrounds. Alt sections use a
@@ -55,6 +68,10 @@ body {
   border-bottom: 1px solid rgba(15, 23, 42, 0.05);
   z-index: -1;
   pointer-events: none;
+}
+.dark .article-section-alt::before {
+  background-color: color-mix(in oklab, var(--color-brand-500) 5%, transparent);
+  border-color: color-mix(in oklab, var(--color-slate-700) 35%, transparent);
 }
 
 /* Prose section counter for numbered h2 headings */
@@ -94,6 +111,15 @@ body {
   box-shadow:
     0 8px 20px -10px rgba(14, 165, 233, 0.25),
     0 0 0 1px rgba(14, 165, 233, 0.15);
+}
+.dark .card-glow {
+  border-color: var(--color-slate-800);
+}
+.dark .card-glow:hover {
+  border-color: color-mix(in oklab, var(--color-brand-500) 60%, transparent);
+  box-shadow:
+    0 8px 20px -10px rgb(0 0 0 / 0.6),
+    0 0 0 1px color-mix(in oklab, var(--color-brand-500) 25%, transparent);
 }
 
 /* Print styles */

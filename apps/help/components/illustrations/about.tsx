@@ -109,38 +109,40 @@ export function OpenCanvas() {
 export function OpenSource() {
   return (
     <Scene w={420} h={210} bg="plain">
-      {/* Code window */}
-      <rect
-        x={32}
-        y={36}
-        width={176}
-        height={138}
-        rx={10}
-        className="fill-slate-800"
-        strokeWidth={2}
-      />
-      <rect x={32} y={36} width={176} height={22} rx={10} className="fill-slate-700" />
-      <circle cx={46} cy={47} r={3} className="fill-rose-400" />
-      <circle cx={58} cy={47} r={3} className="fill-amber-400" />
-      <circle cx={70} cy={47} r={3} className="fill-emerald-400" />
-      {[
-        ['fill-emerald-400', 70, 48],
-        ['fill-slate-400', 86, 96],
-        ['fill-brand-300', 102, 72],
-        ['fill-slate-400', 118, 120],
-        ['fill-emerald-400', 134, 60],
-        ['fill-slate-400', 150, 104],
-      ].map(([cls, y, w], i) => (
+      {/* Code window, dark in both appearances */}
+      <g className="help-art-as-drawn">
         <rect
-          key={i}
-          x={48 + (i % 2) * 10}
-          y={y as number}
-          width={w as number}
-          height={6}
-          rx={3}
-          className={cls as string}
+          x={32}
+          y={36}
+          width={176}
+          height={138}
+          rx={10}
+          className="fill-slate-800 dark:stroke-slate-700"
+          strokeWidth={2}
         />
-      ))}
+        <rect x={32} y={36} width={176} height={22} rx={10} className="fill-slate-700" />
+        <circle cx={46} cy={47} r={3} className="fill-rose-400" />
+        <circle cx={58} cy={47} r={3} className="fill-amber-400" />
+        <circle cx={70} cy={47} r={3} className="fill-emerald-400" />
+        {[
+          ['fill-emerald-400', 70, 48],
+          ['fill-slate-400', 86, 96],
+          ['fill-brand-300', 102, 72],
+          ['fill-slate-400', 118, 120],
+          ['fill-emerald-400', 134, 60],
+          ['fill-slate-400', 150, 104],
+        ].map(([cls, y, w], i) => (
+          <rect
+            key={i}
+            x={48 + (i % 2) * 10}
+            y={y as number}
+            width={w as number}
+            height={6}
+            rx={3}
+            className={cls as string}
+          />
+        ))}
+      </g>
 
       {/* Flow to a runnable copy */}
       <Arrow from={[214, 105]} to={[268, 105]} tone="accent" />

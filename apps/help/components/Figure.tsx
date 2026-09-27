@@ -23,7 +23,7 @@ export function Figure({
 }) {
   return (
     <figure className={`my-6 ${width === 'narrow' ? 'mx-auto max-w-md' : ''}`}>
-      <div className="overflow-hidden rounded-xl border border-slate-200 bg-gradient-to-br from-brand-50/60 to-white p-4 shadow-sm md:p-6 dark:border-slate-800">
+      <div className="overflow-hidden rounded-xl border border-slate-200 bg-gradient-to-br from-brand-50/60 to-white p-4 shadow-sm md:p-6 dark:border-slate-800 dark:bg-slate-900 dark:from-brand-500/10 dark:to-slate-900">
         {children}
       </div>
       {caption && (

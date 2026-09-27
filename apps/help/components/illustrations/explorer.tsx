@@ -346,7 +346,9 @@ export function ImageGallery() {
                 width={t.used ? 44 : 50}
                 height={13}
                 rx={6.5}
-                className={t.used ? 'fill-brand-100' : 'fill-slate-200'}
+                className={
+                  t.used ? 'fill-brand-100' : 'fill-slate-200 dark:fill-(--help-art-slate-800)'
+                }
               />
               <Label
                 x={tx + 10}
@@ -547,8 +549,22 @@ export function TimelineStacking() {
         Wed, 6 Aug
       </Label>
       {/* The two layers stepping out to the right are the rest of the run. */}
-      <rect x={54} y={54} width={310} height={40} rx={7} className="fill-slate-100" />
-      <rect x={48} y={50} width={310} height={44} rx={7} className="fill-slate-200/70" />
+      <rect
+        x={54}
+        y={54}
+        width={310}
+        height={40}
+        rx={7}
+        className="fill-slate-100 dark:fill-(--help-art-slate-700)"
+      />
+      <rect
+        x={48}
+        y={50}
+        width={310}
+        height={44}
+        rx={7}
+        className="fill-slate-200/70 dark:fill-(--help-art-slate-800)"
+      />
       <TimelineEventBubble
         y={46}
         tint="sky"
@@ -586,7 +602,14 @@ export function ActivityList() {
       <Label x={40} y={60} size={8} weight={700} tone="muted">
         ASSIGNED TO YOU
       </Label>
-      <rect x={72} y={53} width={12} height={12} rx={6} className="fill-slate-200" />
+      <rect
+        x={72}
+        y={53}
+        width={12}
+        height={12}
+        rx={6}
+        className="fill-slate-200 dark:fill-(--help-art-slate-800)"
+      />
       <Label x={78} y={60} anchor="middle" size={7} weight={700} tone="muted">
         2
       </Label>
@@ -610,7 +633,14 @@ export function ActivityList() {
       <Label x={40} y={146} size={8} weight={700} tone="muted">
         OPEN COMMENT THREADS
       </Label>
-      <rect x={140} y={139} width={12} height={12} rx={6} className="fill-slate-200" />
+      <rect
+        x={140}
+        y={139}
+        width={12}
+        height={12}
+        rx={6}
+        className="fill-slate-200 dark:fill-(--help-art-slate-800)"
+      />
       <Label x={146} y={146} anchor="middle" size={7} weight={700} tone="muted">
         1
       </Label>

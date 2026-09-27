@@ -119,7 +119,7 @@ export function SlideMenu() {
             size={8.5}
             anchor="middle"
             weight={600}
-            className={i === 3 ? 'fill-rose-500' : 'fill-slate-600'}
+            className={i === 3 ? 'fill-rose-500 dark:fill-rose-400' : 'fill-slate-600'}
           >
             {label}
           </Label>
@@ -210,45 +210,47 @@ export function PresenterHud() {
       <rect x={8} y={16} width={404} height={198} rx={10} className="fill-slate-50" />
       <Shape x={60} y={110} w={110} h={44} label="Rollout" />
       <Shape x={230} y={110} w={110} h={44} accent label="Week one" />
-      {/* The HUD itself */}
-      <rect x={100} y={32} width={304} height={30} rx={9} className="fill-slate-800" />
-      <Label x={112} y={47} size={10} weight={700} tone="onAccent">
-        7 / 23
-      </Label>
-      <Label x={146} y={47} size={9} className="fill-slate-400">
-        Rollout plan
-      </Label>
-      <Label x={212} y={47} size={9.5} weight={600} className="fill-slate-300">
-        12:04
-      </Label>
-      <rect x={238} y={39} width={50} height={16} rx={4} className="fill-amber-400/25" />
-      <Label x={263} y={47} size={9} weight={600} anchor="middle" className="fill-amber-300">
-        4:12 / 3:00
-      </Label>
-      {['‹', '›'].map((g, i) => (
-        <Label key={g} x={300 + i * 14} y={47} size={13} anchor="middle" tone="onAccent">
-          {g}
+      {/* The HUD itself, dark in both appearances */}
+      <g className="help-art-as-drawn">
+        <rect x={100} y={32} width={304} height={30} rx={9} className="fill-slate-800" />
+        <Label x={112} y={47} size={10} weight={700} tone="onAccent">
+          7 / 23
         </Label>
-      ))}
-      {/* Jump: the four-pane grid the button wears. */}
-      <g className="stroke-white" strokeWidth={1.3} fill="none">
-        <rect x={326} y={40} width={6} height={6} rx={1.5} />
-        <rect x={334} y={40} width={6} height={6} rx={1.5} />
-        <rect x={326} y={48} width={6} height={6} rx={1.5} />
-        <rect x={334} y={48} width={6} height={6} rx={1.5} />
-      </g>
-      {/* Notes: a written card, shown only on a slide that has any. */}
-      <g className="stroke-white" strokeWidth={1.3} fill="none">
-        <rect x={348} y={39} width={13} height={16} rx={2} />
-        <path d="M351 44h7M351 48h4" strokeLinecap="round" />
-      </g>
-      {/* Settings, then close. */}
-      <g className="stroke-white" strokeWidth={1.3} fill="none" transform="translate(375 47)">
-        <circle r={5} />
-        <circle r={1.6} />
-      </g>
-      <g className="stroke-white" strokeWidth={1.4} fill="none" strokeLinecap="round">
-        <path d="M391 43l8 8M399 43l-8 8" />
+        <Label x={146} y={47} size={9} className="fill-slate-400">
+          Rollout plan
+        </Label>
+        <Label x={212} y={47} size={9.5} weight={600} className="fill-slate-300">
+          12:04
+        </Label>
+        <rect x={238} y={39} width={50} height={16} rx={4} className="fill-amber-400/25" />
+        <Label x={263} y={47} size={9} weight={600} anchor="middle" className="fill-amber-300">
+          4:12 / 3:00
+        </Label>
+        {['‹', '›'].map((g, i) => (
+          <Label key={g} x={300 + i * 14} y={47} size={13} anchor="middle" tone="onAccent">
+            {g}
+          </Label>
+        ))}
+        {/* Jump: the four-pane grid the button wears. */}
+        <g className="stroke-white" strokeWidth={1.3} fill="none">
+          <rect x={326} y={40} width={6} height={6} rx={1.5} />
+          <rect x={334} y={40} width={6} height={6} rx={1.5} />
+          <rect x={326} y={48} width={6} height={6} rx={1.5} />
+          <rect x={334} y={48} width={6} height={6} rx={1.5} />
+        </g>
+        {/* Notes: a written card, shown only on a slide that has any. */}
+        <g className="stroke-white" strokeWidth={1.3} fill="none">
+          <rect x={348} y={39} width={13} height={16} rx={2} />
+          <path d="M351 44h7M351 48h4" strokeLinecap="round" />
+        </g>
+        {/* Settings, then close. */}
+        <g className="stroke-white" strokeWidth={1.3} fill="none" transform="translate(375 47)">
+          <circle r={5} />
+          <circle r={1.6} />
+        </g>
+        <g className="stroke-white" strokeWidth={1.4} fill="none" strokeLinecap="round">
+          <path d="M391 43l8 8M399 43l-8 8" />
+        </g>
       </g>
       <Label x={210} y={196} size={10} tone="muted" anchor="middle">
         Fades when the pointer rests, back the moment you move

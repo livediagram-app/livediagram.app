@@ -34,7 +34,7 @@ export function Scene({
   return (
     <svg
       viewBox={`0 0 ${w} ${h}`}
-      className="h-auto w-full"
+      className="help-art h-auto w-full"
       preserveAspectRatio="xMidYMid meet"
       role="img"
     >
@@ -79,7 +79,8 @@ export function Label({
       muted: 'fill-slate-400',
       strong: 'fill-slate-800',
       accent: 'fill-brand-600',
-      onAccent: 'fill-white',
+      // White on a solid accent in both appearances (see app/help-art.css).
+      onAccent: 'fill-white help-art-as-drawn',
     }[tone];
   return (
     <text
@@ -324,10 +325,10 @@ export function Cursor({
 }) {
   const fill = {
     brand: 'fill-brand-500',
-    emerald: 'fill-emerald-500',
-    violet: 'fill-violet-500',
-    amber: 'fill-amber-500',
-    rose: 'fill-rose-500',
+    emerald: 'fill-emerald-500 dark:fill-emerald-700',
+    violet: 'fill-violet-500 dark:fill-violet-700',
+    amber: 'fill-amber-500 dark:fill-amber-700',
+    rose: 'fill-rose-500 dark:fill-rose-700',
   }[colour];
   return (
     <g transform={`translate(${x} ${y})`}>
@@ -360,11 +361,12 @@ export function Avatar({
 }) {
   const fill = {
     brand: 'fill-brand-500',
-    emerald: 'fill-emerald-500',
-    violet: 'fill-violet-500',
-    amber: 'fill-amber-500',
-    rose: 'fill-rose-500',
-    slate: 'fill-slate-400',
+    emerald: 'fill-emerald-500 dark:fill-emerald-700',
+    violet: 'fill-violet-500 dark:fill-violet-700',
+    amber: 'fill-amber-500 dark:fill-amber-700',
+    rose: 'fill-rose-500 dark:fill-rose-700',
+    // slate-500 is retargeted inside the art, so read its captured original.
+    slate: 'fill-slate-400 dark:fill-(--help-art-slate-500)',
   }[colour];
   return (
     <g>

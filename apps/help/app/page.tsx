@@ -19,11 +19,11 @@ export default function HelpHome() {
     <div>
       <Breadcrumb items={[]} />
       <section className="relative py-16 text-center md:py-24">
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-brand-100/60 via-brand-50/30 to-transparent" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-brand-100/60 via-brand-50/30 to-transparent dark:from-brand-500/15 dark:via-brand-500/5" />
         <div className="relative mx-auto max-w-2xl px-4">
           <h1 className="mb-4 text-4xl font-bold text-slate-900 md:text-5xl dark:text-slate-100">
             How can{' '}
-            <span className="bg-gradient-to-r from-brand-500 to-brand-700 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-brand-500 to-brand-700 bg-clip-text text-transparent dark:from-brand-200 dark:to-brand-400">
               we help
             </span>
             ?

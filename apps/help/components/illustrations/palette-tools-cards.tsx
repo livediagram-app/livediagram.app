@@ -42,40 +42,43 @@ export function CodeBlockCard() {
   ];
   return (
     <Scene w={420} h={220}>
-      <rect
-        x={x}
-        y={y}
-        width={w}
-        height={h}
-        rx={10}
-        className="fill-slate-800 stroke-slate-600"
-        strokeWidth={2}
-      />
-      {/* Language badge, top-right */}
-      <rect x={x + w - 42} y={y + 12} width={30} height={16} rx={5} className="fill-slate-700" />
-      <Label x={x + w - 27} y={y + 21} anchor="middle" size={9} weight={600} tone="muted">
-        TS
-      </Label>
-      {/* Token bars */}
-      {lines.map(([indent, tokens], row) => {
-        let tx = x + 18 + indent;
-        const ty = y + 26 + row * 20;
-        return tokens.map(([tw, cls], i) => {
-          const bar = (
-            <rect
-              key={`${row}-${i}`}
-              x={tx}
-              y={ty}
-              width={tw}
-              height={7}
-              rx={3.5}
-              className={cls}
-            />
-          );
-          tx += tw + 8;
-          return bar;
-        });
-      })}
+      {/* The code block is dark in both appearances. */}
+      <g className="help-art-as-drawn">
+        <rect
+          x={x}
+          y={y}
+          width={w}
+          height={h}
+          rx={10}
+          className="fill-slate-800 stroke-slate-600"
+          strokeWidth={2}
+        />
+        {/* Language badge, top-right */}
+        <rect x={x + w - 42} y={y + 12} width={30} height={16} rx={5} className="fill-slate-700" />
+        <Label x={x + w - 27} y={y + 21} anchor="middle" size={9} weight={600} tone="muted">
+          TS
+        </Label>
+        {/* Token bars */}
+        {lines.map(([indent, tokens], row) => {
+          let tx = x + 18 + indent;
+          const ty = y + 26 + row * 20;
+          return tokens.map(([tw, cls], i) => {
+            const bar = (
+              <rect
+                key={`${row}-${i}`}
+                x={tx}
+                y={ty}
+                width={tw}
+                height={7}
+                rx={3.5}
+                className={cls}
+              />
+            );
+            tx += tw + 8;
+            return bar;
+          });
+        })}
+      </g>
     </Scene>
   );
 }

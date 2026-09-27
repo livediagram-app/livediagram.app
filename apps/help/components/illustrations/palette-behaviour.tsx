@@ -502,7 +502,7 @@ export function RevealZone() {
       <TextBar x={248} y={88} w={110} />
       <TextBar x={248} y={104} w={84} />
       <TextBar x={248} y={120} w={98} />
-      <g>
+      <g className="help-art-as-drawn">
         <rect x={340} y={46} width={50} height={18} rx={9} className="fill-slate-800" />
         <Eye x={352} y={55} off />
         <Label x={366} y={56} size={9} weight={600} tone="onAccent">
