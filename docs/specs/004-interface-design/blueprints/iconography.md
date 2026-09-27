@@ -4,19 +4,19 @@ Derived from [Iconography](../iconography.md).
 
 ## Domain and naming
 
-| Term (spec)        | Identifier                                                | Home                                          |
-| ------------------ | --------------------------------------------------------- | --------------------------------------------- |
-| On-screen stroke   | `ICON_STROKE_PX`, `ICON_STROKE_PX_SMALL`                  | packages/icons/src/weight.ts (planned)        |
-| Stroke in units    | `strokeUnits(px, sizePx, units)`                          | packages/icons/src/weight.ts (planned)        |
-| Icon size step     | `GlyphSize` = `12 \| 14 \| 16 \| 20 \| 24`, `GLYPH_SIZES` | packages/icons/src/weight.ts (planned)        |
-| Icon primitive     | `Glyph`                                                   | `packages/ui/src/icons/Glyph.tsx`             |
-| Icon weight        | `IconWeight` = `'thin' \| 'regular' \| 'bold'`            | packages/diagram/src/icon-weight.ts (planned) |
-| Icon weight px     | `ICON_WEIGHT_PX`, `DEFAULT_ICON_WEIGHT`                   | packages/diagram/src/icon-weight.ts (planned) |
-| Element field      | `iconWeight?: IconWeight`                                 | `BoxedElement` in `element-types.ts`          |
-| Vendored Lucide    | packages/icons/src/lucide.generated.ts (planned)          | written by scripts/vendor-lucide.ts (planned) |
-| Vendor manifest    | packages/icons/lucide-manifest.json (planned)             | pinned version + glyph names                  |
-| Centring exception | `CENTRING_EXCEPTIONS`                                     | `packages/icons/src/centring.ts`              |
-| Art allow-list     | `ICON_ART_ALLOWLIST`                                      | packages/eslint-config/raw-svg.js (planned)   |
+| Term (spec)        | Identifier                                                                                                           | Home                                                 |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| On-screen stroke   | `ICON_STROKE_PX`, `ICON_STROKE_PX_SMALL`                                                                             | `packages/icons/src/weight.ts`                       |
+| Stroke in units    | `strokeUnits(px, sizePx, units)`                                                                                     | `packages/icons/src/weight.ts`                       |
+| Icon size step     | `GlyphSize` = `12 \| 14 \| 16 \| 20 \| 24`, `GLYPH_SIZES`                                                            | `packages/icons/src/weight.ts`                       |
+| Icon primitive     | `Glyph`                                                                                                              | `packages/ui/src/icons/Glyph.tsx`                    |
+| Icon weight        | `IconWeight` = `'thin' \| 'regular' \| 'bold'`                                                                       | packages/diagram/src/icon-weight.ts (planned)        |
+| Icon weight px     | `ICON_WEIGHT_PX`, `DEFAULT_ICON_WEIGHT`                                                                              | packages/diagram/src/icon-weight.ts (planned)        |
+| Element field      | `iconWeight?: IconWeight`                                                                                            | `BoxedElement` in `element-types.ts`                 |
+| Vendored Lucide    | one `lucide<Name>` export per glyph in `packages/icons/src/lucide.generated.ts`, subpath `@livediagram/icons/lucide` | written by `packages/icons/scripts/vendor-lucide.ts` |
+| Vendor manifest    | `packages/icons/lucide-manifest.json`                                                                                | pinned version + glyph names                         |
+| Centring exception | `CENTRING_EXCEPTIONS`                                                                                                | `packages/icons/src/centring.ts`                     |
+| Art allow-list     | `ICON_ART_ALLOWLIST`                                                                                                 | packages/eslint-config/raw-svg.js (planned)          |
 
 "Glyph" is the rendered icon; "icon" in `shape: 'icon'` is the canvas element. Do not use either as a synonym for the other in code.
 
@@ -81,7 +81,8 @@ export function iconWeightPx(w: IconWeight | undefined): number;
 
 ## Performance and limits
 
-- The vendored module holds only manifest glyphs, currently under 200. It is tree-shaken per export.
+- The vendored module holds only manifest glyphs, one named export each, so a bundle keeps only the glyphs it imports.
+- `lucide.generated.ts` is excluded from Prettier (`.prettierignore`) because its test compares the raw generator output.
 - There is no runtime cost beyond one multiplication per rendered `Glyph`.
 
 ## Presentation and UX
@@ -109,19 +110,19 @@ export function iconWeightPx(w: IconWeight | undefined): number;
 
 ## Testing
 
-| Spec rule                         | Test                                                                          |
-| --------------------------------- | ----------------------------------------------------------------------------- |
-| On-screen weight by size          | `weight.test.ts`: `glyphStrokePx`, `strokeUnits`                              |
-| One weight whatever viewBox       | `Glyph.test.tsx`: 16u@16px and 24u@24px give the same px                      |
-| Glyph centred within 0.5px        | `centring.test.ts` over every exported glyph in both homes                    |
-| Vendored, pinned, attributed      | `lucide.test.ts`: manifest equals generated names; header carries the licence |
-| Icon weight default + map         | `icon-weight.test.ts`                                                         |
-| Export honours weight             | `svg-render.test.ts`                                                          |
-| Weight UI                         | e2e `icon-weight.spec.ts`: set Bold, reload, export                           |
-| Furniture silhouettes distinct    | `icon-catalog.test.ts`: no two ids share prims                                |
-| No same-provider tech glyph dupes | `tech-icon-catalog.test.ts`                                                   |
-| No raw svg outside homes          | lint rule `livediagram/no-raw-svg` + its rule test                            |
-| Contact sheet drift               | Playwright snapshot of `pnpm icons:sheet` output                              |
+| Spec rule                         | Test                                                                                             |
+| --------------------------------- | ------------------------------------------------------------------------------------------------ |
+| On-screen weight by size          | `weight.test.ts`: `glyphStrokePx`, `strokeUnits`                                                 |
+| One weight whatever viewBox       | `Glyph.test.tsx`: 16u@16px and 24u@24px give the same px                                         |
+| Glyph centred within 0.5px        | `centring.test.ts` over every exported glyph in both homes                                       |
+| Vendored, pinned, attributed      | `lucide-vendor.test.ts`: pinned version, manifest equals exports, file current, licence verbatim |
+| Icon weight default + map         | `icon-weight.test.ts`                                                                            |
+| Export honours weight             | `svg-render.test.ts`                                                                             |
+| Weight UI                         | e2e `icon-weight.spec.ts`: set Bold, reload, export                                              |
+| Furniture silhouettes distinct    | `icon-catalog.test.ts`: no two ids share prims                                                   |
+| No same-provider tech glyph dupes | `tech-icon-catalog.test.ts`                                                                      |
+| No raw svg outside homes          | lint rule `livediagram/no-raw-svg` + its rule test                                               |
+| Contact sheet drift               | Playwright snapshot of `pnpm icons:sheet` output                                                 |
 
 ## Constants and configuration
 
@@ -138,7 +139,7 @@ export function iconWeightPx(w: IconWeight | undefined): number;
 
 ## Assets and external resources
 
-- Lucide: `lucide-static` pinned in packages/icons/lucide-manifest.json (planned), ISC, source <https://github.com/lucide-icons/lucide>. The glyph data is generated by `pnpm icons:vendor`.
+- Lucide: `lucide-static` pinned in `packages/icons/lucide-manifest.json`, ISC, source <https://github.com/lucide-icons/lucide>. The glyph data is generated by `pnpm icons:vendor`.
 - Feather: the paths already in `icon-catalog-1.ts` (ids 1–98 of the review), MIT, <https://github.com/feathericons/feather>.
 - Both notices are printed in full in `THIRD_PARTY_NOTICES.md`. `packages/icons/src/index.ts` and the generated file header point to it.
 

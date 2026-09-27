@@ -89,6 +89,7 @@ Run from the repo root:
 | `pnpm --filter @livediagram/live test:e2e` | Playwright smoke suite ([End-to-end smoke tests](../specs/003-system-architecture/e2e-smoke.md)); reuses a running `pnpm dev` or boots its own stack. |
 | `pnpm format`                              | Prettier write across the repo.                                                                                                                       |
 | `pnpm format:check`                        | Prettier check (this is what CI runs).                                                                                                                |
+| `pnpm icons:vendor`                        | Regenerate the vendored Lucide glyphs from `packages/icons/lucide-manifest.json` ([Iconography](../specs/004-interface-design/iconography.md)).       |
 | `pnpm demo:sticky-vision`                  | Bundle + serve the sticky-detection demo at <http://localhost:4199> ([Event storming](../specs/021-event-storming/event-storming.md)).                |
 
 Turbo caches results, so re-running with no changes is a no-op.

@@ -1,4 +1,7 @@
+import { lucidePaintRoller } from '@livediagram/icons/lucide';
+
 import { Glyph, type IconProps } from './Glyph';
+import { Prims } from './Prims';
 
 // Edit-action glyphs: the delete / duplicate / copy / edit / lock / refresh /
 // add / close / confirm buttons that recur across the editor's toolbars,
@@ -130,9 +133,7 @@ export function CheckIcon({ size = 12, ...rest }: IconProps) {
 export function FormatPainterIcon({ size = 14, ...rest }: IconProps) {
   return (
     <Glyph size={size} units={24} {...rest}>
-      <rect width="16" height="6" x="2" y="2" rx="2" />
-      <path d="M10 16v-2a2 2 0 0 1 2-2h8a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
-      <rect width="4" height="6" x="8" y="16" rx="1" />
+      <Prims prims={lucidePaintRoller} />
     </Glyph>
   );
 }

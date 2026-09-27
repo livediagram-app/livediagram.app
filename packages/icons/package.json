@@ -13,21 +13,25 @@
     "./tech-icon-catalog": "./src/tech-icon-catalog.ts",
     "./resolve": "./src/resolve.ts",
     "./sticker-catalog": "./src/sticker-catalog.ts",
-    "./centring": "./src/centring.ts"
+    "./centring": "./src/centring.ts",
+    "./lucide": "./src/lucide.generated.ts"
   },
   "scripts": {
     "lint": "eslint .",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit",
-    "clean": "rm -rf node_modules .turbo coverage"
+    "clean": "rm -rf node_modules .turbo coverage",
+    "vendor:lucide": "node scripts/vendor-lucide.ts"
   },
   "devDependencies": {
     "@livediagram/eslint-config": "workspace:*",
     "@livediagram/vitest-config": "workspace:*",
+    "@types/node": "^26.6.2",
     "@typescript/native": "npm:typescript@^7.0.2",
     "@vitest/coverage-v8": "^5.0.1",
     "eslint": "^10.11.0",
+    "lucide-static": "1.48.0",
     "svg-path-bbox": "2.1.0",
     "typescript": "npm:@typescript/typescript6@^6.0.2",
     "vitest": "^5.0.1"

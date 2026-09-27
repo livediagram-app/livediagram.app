@@ -1,8 +1,14 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "lib": ["ES2023", "DOM"],
+    // Tests (and the vendor script) read files with `node:fs`; the source does not.
+    "types": ["node"],
+    "resolveJsonModule": true,
+    // The vendor script runs under Node type stripping, which needs explicit .ts imports.
+    "allowImportingTsExtensions": true,
     "noEmit": true
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "scripts/**/*.ts"],
   "exclude": ["node_modules"]
 }

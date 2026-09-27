@@ -17,7 +17,8 @@
     "demo:sticky-vision": "pnpm demo:sticky-vision:build && node docs/demo/sticky-vision/serve.mjs",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
-    "clean": "turbo run clean && rm -rf node_modules"
+    "clean": "turbo run clean && rm -rf node_modules",
+    "icons:vendor": "pnpm --filter @livediagram/icons vendor:lucide"
   },
   "devDependencies": {
     "@livediagram/eslint-config": "workspace:*",
