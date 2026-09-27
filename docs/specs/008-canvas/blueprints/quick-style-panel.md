@@ -25,23 +25,28 @@ Scope, by file:
 | `apps/live/hooks/ui/useQuickStylePlacement.ts`                              | Measures chrome and the panel, runs the walk, re-runs on chrome change                   |
 | `apps/live/components/canvas/QuickStylePanel.tsx`                           | The panel: docked (Palette dress) or compact by layout                                   |
 | `apps/live/components/canvas/quick-style-rows.tsx`                          | `QuickRadioRow`, swatch and glyph options, roving focus                                  |
+| `apps/live/lib/swatch-overrides.ts`                                         | Pure: override shape, apply to a row, parse, the hue-word name                           |
+| `apps/live/hooks/canvas/useSwatchOverrides.ts`                              | Per-diagram overrides + `localStorage` (provisional store)                               |
+| `apps/live/components/canvas/SwatchOverridePopover.tsx`                     | The right-click popover: picker, hex field, Clear override                               |
 | `apps/live/app/diagram/[id]/useEditorState.ts`                              | Wires memory into the style hooks and the creation hooks; exposes the panel's view-model |
 | `apps/live/app/diagram/[id]/EditorView.tsx`                                 | Mounts the panel                                                                         |
 
 ## Domain and naming
 
-| Term             | Identifier                                                     | Meaning                                                            |
-| ---------------- | -------------------------------------------------------------- | ------------------------------------------------------------------ |
-| Quick swatch     | `QuickSwatch = { slot, color, name }`                          | One colour option                                                  |
-| Swatch role      | `QuickSwatchRole = 'stroke' \| 'fill'`                         | Which row (Stroke / Background) it belongs to                      |
-| Slot             | `QuickSwatchSlot = 1..6`; `0` = theme default                  | The stable id of a colour across themes                            |
-| Swatch binding   | `strokeSwatch`, `fillSwatch` on the element                    | The slot a colour was picked from; absent = unbound                |
-| Section          | `QuickSectionId`                                               | `stroke`, `background`, `width`, `style`, `textAlign`, `iconAlign` |
-| Style target     | `isQuickStyleTarget(el)`                                       | An unlocked `shape` or `arrow`                                     |
-| Kind key         | `StyleKindKey`, `styleKindOf(el)`                              | `shape:<ShapeKind>` for shapes, `arrow` for arrows                 |
-| Style memory     | `StyleMemory = Partial<Record<StyleKindKey, RememberedStyle>>` | Per kind, the last value chosen for each memorable field           |
-| Memorable fields | `SHAPE_MEMORY_FIELDS`, `ARROW_MEMORY_FIELDS`                   | The fields memory records and applies (below)                      |
-| Placement        | `placeQuickStylePanel(input) => { left, top }`                 | Where the panel sits, in viewport px                               |
+| Term             | Identifier                                                                           | Meaning                                                                                                |
+| ---------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------ |
+| Quick swatch     | `QuickSwatch = { slot, color, name }`                                                | One colour option                                                                                      |
+| Swatch role      | `QuickSwatchRole = 'stroke' \| 'fill'`                                               | Which row (Stroke / Background) it belongs to                                                          |
+| Slot             | `QuickSwatchSlot = 1..6`; `0` = theme default                                        | The stable id of a colour across themes                                                                |
+| Swatch binding   | `strokeSwatch`, `fillSwatch` on the element                                          | The slot a colour was picked from; absent = unbound                                                    |
+| Section          | `QuickSectionId`                                                                     | `stroke`, `background`, `width`, `style`, `textAlign`, `iconAlign`                                     |
+| Style target     | `isQuickStyleTarget(el)`                                                             | An unlocked `shape` or `arrow`                                                                         |
+| Kind key         | `StyleKindKey`, `styleKindOf(el)`                                                    | `shape:<ShapeKind>` for shapes, `arrow` for arrows                                                     |
+| Style memory     | `StyleMemory = Partial<Record<StyleKindKey, RememberedStyle>>`                       | Per kind, the last value chosen for each memorable field                                               |
+| Memorable fields | `SHAPE_MEMORY_FIELDS`, `ARROW_MEMORY_FIELDS`                                         | The fields memory records and applies (below)                                                          |
+| Placement        | `placeQuickStylePanel(input) => { left, top }`                                       | Where the panel sits, in viewport px                                                                   |
+| Swatch override  | `SwatchOverrides = { stroke?, fill? }`, each `Partial<Record<QuickSwatchSlot, Hex>>` | A custom colour replacing a slot's theme colour in the row                                             |
+| Row density      | `density: 'compact' \| 'roomy'`                                                      | Compact (Toolbar, Minimal): 20 px swatches in 24 px targets, touching; roomy (Floating): 24 px, spread |
 
 Banned synonyms: "format panel" (that is the painter's panel), "editor panel" (the removed one),
 "preset" for a swatch, "default style" for memory.
@@ -96,6 +101,42 @@ case-insensitively, else `null`.
   colour was painted with a defined binding; a painted colour without one deletes it.
 - Validation: `isValidElement` rejects a shape or arrow whose `strokeSwatch` / `fillSwatch` is present
   and not `isQuickSwatchSlot`.
+
+## Swatch overrides
+
+- `Hex` is `#rrggbb`, lower case (`normaliseHex` accepts `#RGB` / `#RRGGBB` with or without `#`,
+  anything else is rejected). Slots 1 to 6 only; slot 0 is never overridden.
+- `applySwatchOverrides(swatches, row)` returns the row with each overridden slot replaced by
+  `{ slot, color: hex, name: \`Custom ${hueName(hex).toLowerCase()}, in place of ${theme.name}\`,
+  override: { themeColor, themeName } }`. Unoverridden swatches are returned as they are.
+- `quickStyleView(elements, theme, overrides)` builds both rows through it. A shape or arrow's value:
+  its bound slot when that slot is NOT overridden; else the displayed swatch whose colour matches its
+  colour (case-insensitive), slot 0 matching as before; else `null`.
+- `applyQuickStroke` / `applyQuickFill` with an overridden slot write the custom colour, clear the
+  binding (`strokeSwatch` / `fillSwatch` undefined) and `colorPreset`: a custom colour does not
+  follow the theme.
+- `parseSwatchOverrides(raw)`: `safeJson`; keeps `stroke` / `fill` maps whose keys are slots 1-6 and
+  whose values normalise to a hex; drops the rest (D44).
+- Store (provisional, pending the operator's persistence decision): `localStorage` key
+  `livediagram:v2:swatch-overrides:<diagramId>`, written on every change (a change is one popover
+  commit, never a drag tick). `useSwatchOverrides({ diagramId })` returns `{ overrides,
+setOverride(role, slot, hex), clearOverride(role, slot) }`; inert while `diagramId` is null. The
+  storage lives only in this hook, so moving it is one file.
+- Popover (`SwatchOverridePopover`): `role="dialog"`, `aria-label` "Custom colour for <theme
+  name>, <Stroke | Background>". Contents: a native `<input type="color">` (label "Colour"), a hex
+  text field (label "Hex", commits on Enter or blur when valid, shows "Enter a colour like #1a2b3c"
+  when not), **Clear override** (disabled while the slot is not overridden) and **Done**. The colour
+  input commits on `change` (the picker's close), never per `input` tick. Portalled to `body`,
+  `fixed`, `z-[var(--z-toolbar)]`; placed left of the panel (right edge 8 px left of it), top at the
+  swatch's top, clamped into the viewport. Opens with focus on the colour input; Escape, Done or a
+  pointer-down outside closes it and returns focus to the swatch.
+- Opening: `contextmenu` on a slot 1-6 swatch (mouse, the context-menu key and Shift+F10 all
+  dispatch it), plus an explicit `keydown` for Shift+F10 / `ContextMenu`, which prevents the
+  default so the browser menu never shows. Slot 0 prevents the browser menu and opens nothing.
+- Marker: a 6 px dot at the swatch's top-right, `#0f172a` on light colours and `#ffffff` on dark
+  (`isLightColor`), with a 1 px ring of the opposite; `aria-hidden`, since the name says it.
+- Telemetry: `UI·Changed·QuickSwatchCustom` on a committed override, `UI·Changed·QuickSwatchReset`
+  on Clear override.
 
 ## Sections and shared values
 
@@ -246,13 +287,16 @@ Transitions are driven by selection and those flags only; the panel owns no stat
   `MovablePanelHeader` (title "Quick style" + `HelpArticleLink article="quickStylePanel"`, no drag or
   collapse), and a body `[data-quick-style-body]` with `p-2.5`, `overflow-y-auto` under a cap; width
   and `maxHeight` from the placement.
-- Toolbar / Minimal (compact): the same surface with no header, width `w-52` (208 px), `p-2`.
+- Toolbar / Minimal (compact): the same surface with no header, width `w-46` (184 px: seven 24 px
+  targets plus 8 px padding a side), `p-2`; rows at `density="compact"`.
 - Both: `fixed`, `z-[var(--z-panel)]`, `data-quick-style-panel`, `data-layout`; stop `pointerdown` /
   `contextmenu` from reaching the canvas.
 - Section: title `text-[10px] font-semibold uppercase tracking-wider text-slate-500
 dark:text-slate-400` (hidden when `showTitles` is false), then the row; `gap-2.5` between sections;
   a divider above Actions.
-- Colour row: seven 24 px swatches, at least 4 px apart, spread across the row (`justify-between`); the swatch paints its colour, a selected
+- Colour row: seven 24 × 24 px target buttons, each drawing an inner colour chip: compact 20 px chips
+  in touching targets (the row is exactly 168 px), roomy 24 px chips spread across the row
+  (`justify-between`); the swatch paints its colour, a selected
   swatch shows a 2 px ring in `brand-500`.
 - Three-option rows: three equal buttons, 28 px tall, glyph-only (line weights, dash patterns, align
   glyphs, icon-before / above / after glyphs); selected = `bg-brand-50 text-brand-700 ring-brand-300`,
@@ -272,6 +316,10 @@ label", "Icon after label"; "Clear styles". The panel's region label: "Quick sty
 - Option `role="radio"`, `aria-checked`, `aria-label` = its name, wrapped in `Tooltip` with the same
   name. Roving `tabIndex`: the checked option, else the first, is `0`; the rest `-1`.
 - Keys: ArrowRight / ArrowDown next, ArrowLeft / ArrowUp previous (wrapping), Home / End first /
+- Shift+F10 / the context-menu key on a slot 1-6 swatch opens its override popover (a labelled
+  dialog); Escape returns focus to the swatch.
+- An overridden swatch's name and tooltip say "Custom <hue>, in place of <theme colour>"; the corner
+  marker is decoration.
   last: each moves focus and chooses. Space / Enter chooses the focused option.
 - `focus-visible:ring-2 ring-brand-500 ring-offset-1` on every option.
 - Swatch contrast against the panel: each swatch carries a `border-black/15 dark:border-white/20`
@@ -289,6 +337,8 @@ label", "Icon after label"; "Clear styles". The panel's region label: "Quick sty
 | ----------------------------------------- | ------------------------------------------------------------------------ |
 | Storage read throws / malformed           | Empty memory; `console.warn('[style-memory] unreadable', key)`           |
 | Storage write fails                       | Session-only memory (safe writer); the read-back mismatch is logged once |
+| Override hex invalid                      | Not committed; the field says "Enter a colour like #1a2b3c"              |
+| Override store unreadable                 | No overrides; `[swatch-overrides] unreadable` (warn)                     |
 | Invalid slot on an element                | Ignored by re-derive; rejected by validation on load                     |
 | Theme with a short palette                | Padded from the toned set                                                |
 | No clear placement                        | Candidate (a); `console.debug('[quick-style] placement fallback')`       |
@@ -324,26 +374,30 @@ QuickTextAlign | QuickIconAlign | QuickClearStyles`.
 
 ## Testing
 
-| Spec rule                                                                     | Test                                                             |
-| ----------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| Seven swatches, default first, six from the palette                           | `quick-swatches.test.ts`                                         |
-| Toned hues, readable backgrounds, visible strokes                             | `quick-swatches.test.ts`                                         |
-| Bound colours follow a theme change (shapes + arrows)                         | `quick-swatch-rederive.test.ts`                                  |
-| Hand-set colour / preset / reset clears the binding                           | `style-presets.test.ts`, `quick-style.test.ts`                   |
-| Painter carries a binding only with its colour                                | `format-painter.test.ts`, `format-config.test.ts`                |
-| Validation rejects a bad slot                                                 | `validate.test.ts`                                               |
-| Sections, mixed selection, shared value, style set                            | `quick-style.test.ts`                                            |
-| Flowing in one choice                                                         | `quick-style.test.ts`, `e2e/quick-style-panel.spec.ts`           |
-| Clear styles resets fields and forgets kinds                                  | `quick-style.test.ts`, `style-memory.test.ts`, e2e               |
-| Memory per kind, arrows separate, field by field                              | `style-memory.test.ts`                                           |
-| Theme defaults are not memories                                               | `style-memory.test.ts`                                           |
-| Carries to the next drawn element of the kind only                            | `style-memory.test.ts`, e2e                                      |
-| Parse drops junk                                                              | `style-memory.test.ts`                                           |
-| Placement order and fallback                                                  | `quick-style-placement.test.ts`                                  |
-| Floating docks under the Palette, follows collapse / move, scrolls when short | `quick-style-placement.test.ts`, `e2e/quick-style-panel.spec.ts` |
-| Toolbar sits on the right edge, centred                                       | `quick-style-placement.test.ts`, `e2e/quick-style-panel.spec.ts` |
-| One click on Flowing sets dashed + flow                                       | `e2e/quick-style-panel.spec.ts`                                  |
-| Radio groups, names, keyboard                                                 | `QuickStylePanel.test.tsx`                                       |
+| Spec rule                                                                         | Test                                                             |
+| --------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| Seven swatches, default first, six from the palette                               | `quick-swatches.test.ts`                                         |
+| Toned hues, readable backgrounds, visible strokes                                 | `quick-swatches.test.ts`                                         |
+| Bound colours follow a theme change (shapes + arrows)                             | `quick-swatch-rederive.test.ts`                                  |
+| Hand-set colour / preset / reset clears the binding                               | `style-presets.test.ts`, `quick-style.test.ts`                   |
+| Painter carries a binding only with its colour                                    | `format-painter.test.ts`, `format-config.test.ts`                |
+| Validation rejects a bad slot                                                     | `validate.test.ts`                                               |
+| Sections, mixed selection, shared value, style set                                | `quick-style.test.ts`                                            |
+| Flowing in one choice                                                             | `quick-style.test.ts`, `e2e/quick-style-panel.spec.ts`           |
+| Clear styles resets fields and forgets kinds                                      | `quick-style.test.ts`, `style-memory.test.ts`, e2e               |
+| Memory per kind, arrows separate, field by field                                  | `style-memory.test.ts`                                           |
+| Theme defaults are not memories                                                   | `style-memory.test.ts`                                           |
+| Carries to the next drawn element of the kind only                                | `style-memory.test.ts`, e2e                                      |
+| Parse drops junk                                                                  | `style-memory.test.ts`                                           |
+| Placement order and fallback                                                      | `quick-style-placement.test.ts`                                  |
+| Floating docks under the Palette, follows collapse / move, scrolls when short     | `quick-style-placement.test.ts`, `e2e/quick-style-panel.spec.ts` |
+| Toolbar sits on the right edge, centred                                           | `quick-style-placement.test.ts`, `e2e/quick-style-panel.spec.ts` |
+| One click on Flowing sets dashed + flow                                           | `e2e/quick-style-panel.spec.ts`                                  |
+| Overrides replace a slot, name it, never slot 0; parse drops junk                 | `swatch-overrides.test.ts`                                       |
+| Overridden slot applies the custom colour unbound; highlight by colour            | `quick-style.test.ts`                                            |
+| Right-click / Shift+F10 opens the popover; picking saves; Clear override restores | `QuickStylePanel.test.tsx`, `e2e/quick-style-panel.spec.ts`      |
+| Toolbar panel is 184 px, targets 24 × 24                                          | `e2e/quick-style-panel.spec.ts`                                  |
+| Radio groups, names, keyboard                                                     | `QuickStylePanel.test.tsx`                                       |
 
 ## Constants and configuration
 
