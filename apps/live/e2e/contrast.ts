@@ -15,6 +15,8 @@ export type ContrastFailure = {
 
 export type ContrastReport = {
   measured: number;
+  // The lowest ratio measured (Infinity when nothing was), so a check can state its own bar.
+  lowest: number;
   failures: ContrastFailure[];
   // Text the audit cannot measure honestly, by reason; reported, never failed (D7 in
   // docs/specs/004-interface-design/blueprints/DEFAULTS.md).
@@ -22,7 +24,7 @@ export type ContrastReport = {
 };
 
 // Evaluated in the browser: keep it self-contained (no imports, no closures over module scope).
-function auditInPage(): ContrastReport {
+function auditInPage(rootSelector: string | null): ContrastReport {
   type RGBA = [number, number, number, number];
   // Any CSS colour (rgb, oklch, oklab, color-mix already resolved...) to sRGB bytes: paint it into a
   // 1x1 canvas and read the pixel back. Tailwind v4 computes its palette in oklch, so a parser that
@@ -82,8 +84,11 @@ function auditInPage(): ContrastReport {
   };
   const failures: ContrastFailure[] = [];
   let measured = 0;
+  let lowest = Infinity;
 
-  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  const root = rootSelector ? document.querySelector(rootSelector) : document.body;
+  if (!root) return { measured, lowest, failures, skipped };
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
   for (let node = walker.nextNode(); node; node = walker.nextNode()) {
     const text = (node.textContent ?? '').trim();
     const el = node.parentElement;
@@ -174,6 +179,7 @@ function auditInPage(): ContrastReport {
       if (r < worst) [worst, worstBg] = [r, bg];
     }
     measured += 1;
+    lowest = Math.min(lowest, worst);
     if (worst + 1e-6 < required) {
       failures.push({
         text: text.slice(0, 40),
@@ -185,16 +191,19 @@ function auditInPage(): ContrastReport {
       });
     }
   }
-  return { measured, failures, skipped };
+  return { measured, lowest, failures, skipped };
 }
 
-/** Finish every running animation, then audit the page as it rests. */
-export async function auditContrast(page: Page): Promise<ContrastReport> {
+/**
+ * Finish every running animation, then audit the page as it rests; with `root`, only the text
+ * inside the first element that selector matches.
+ */
+export async function auditContrast(page: Page, root?: string): Promise<ContrastReport> {
   await page.evaluate(() =>
     document.getAnimations().forEach((a) => {
       // An infinite animation (a spinner, an ambient float) cannot finish; it is left running.
       if (a.effect?.getComputedTiming().endTime !== Infinity) a.finish();
     }),
   );
-  return page.evaluate(auditInPage);
+  return page.evaluate(auditInPage, root ?? null);
 }

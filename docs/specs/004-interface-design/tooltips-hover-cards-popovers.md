@@ -41,9 +41,8 @@ A control has at most one hint. If a hover card is present, it carries the name 
   focusing its first control) does not open it.
 - **The name only**, on one line where it fits, in the interface's small text. It may wrap; it never
   truncates.
-- **Inverse pill.** A dark pill with light text (slate 900 on light pages, slate 700 on dark), with a
-  small pointer towards the control. It reads apart from the white hover card, so the two are never
-  confused.
+- **Inverse pill.** On light pages, a dark pill (slate 900) with white text and a small pointer
+  towards the control. It reads apart from the white hover card, so the two are never confused.
 - **Never the only carrier of meaning.** The control keeps an accessible name, from its visible text
   or its `aria-label`, and the tooltip says the same words. On non-interactive text, such as a clipped
   name or a figure, the same words are in the document as visually hidden text.
@@ -53,7 +52,7 @@ A control has at most one hint. If a hover card is present, it carries the name 
 - **Opens instantly** on hover and on keyboard-visible focus. It is chosen where the explanation is
   wanted at once: a control whose purpose is not obvious from its glyph.
 - **A bold title over a one-line description.** The description may run to two or three short lines.
-- **White card** on light pages, slate 800 on dark, with a border, a soft shadow and a pointer.
+- **White card** on light pages, with a border, a soft shadow and a pointer.
 - Hover cards are not part of the tooltip warm-up; they have no delay to skip.
 
 ## Behaviour shared by both hints
@@ -77,6 +76,11 @@ These meet WCAG 2.2 AA, including 1.4.13 Content on Hover or Focus.
   motion. The 1 s wait before a tooltip is an intent timer, not motion, and does not count against the
   motion budget.
 - **Dark-aware.** Both follow the app's appearance, not the operating system's native tooltip style.
+- **Dark mode uses the dark chrome's colours.** In dark mode a hint is never a lighter card on the
+  dark chrome: it takes the colours of the editor's dark menus and cards under the
+  [Steel palette](./color-scheme.md). A tooltip is the dark surface (slate 900) and a hover card the dark
+  card surface (slate 800), each with light text and a dark border (slate 700). Text on either meets
+  4.5:1 in both appearances.
 
 ## Touch
 

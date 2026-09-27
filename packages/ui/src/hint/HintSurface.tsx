@@ -20,13 +20,16 @@ import {
 import { placeHint, type HintLayout, type HintPlacement } from './place-hint';
 import type { HintSurfaceProps } from './useHint';
 
-// The two looks (spec: inverse pill for a tooltip, white card for a hover
-// card). The arrow repeats the surface's colours so it reads as one shape.
+// The two looks (docs/specs/004-interface-design/tooltips-hover-cards-popovers.md): an inverse pill
+// for a tooltip, a white card for a hover card. In dark mode both take the dark chrome's own
+// colours, the Steel surface with a slate 700 border and light text, like the editor's menus;
+// neither is ever a lighter card on the dark chrome. The arrow repeats the surface's colours so
+// it reads as one shape.
 const LOOK: Record<HintKind, { surface: string; arrow: string; gap: number; arrowPx: number }> = {
   tooltip: {
     surface:
-      'max-w-xs rounded-md bg-slate-900 px-2 py-1 text-xs font-medium leading-snug text-white shadow-md shadow-slate-900/20 dark:bg-slate-700 dark:text-slate-50 dark:ring-1 dark:ring-slate-600 dark:shadow-slate-950/40',
-    arrow: 'bg-slate-900 dark:bg-slate-700 dark:border-slate-600',
+      'max-w-xs rounded-md bg-slate-900 px-2 py-1 text-xs font-medium leading-snug text-white shadow-md shadow-slate-900/20 dark:border dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40',
+    arrow: 'bg-slate-900 dark:border-slate-700 dark:bg-slate-900',
     gap: TOOLTIP_GAP_PX,
     arrowPx: TOOLTIP_ARROW_PX,
   },
@@ -131,8 +134,8 @@ function Arrow({
 }) {
   const half = size / 2;
   // Literal class strings: Tailwind only generates classes it can read.
-  // The tooltip pill has a ring (not a border) in dark mode only, so its
-  // arrow borders only there.
+  // The tooltip pill is bordered in dark mode only, so its arrow borders
+  // only there.
   const edges: Record<HintPlacement, { style: CSSProperties; border: string; darkBorder: string }> =
     {
       top: {

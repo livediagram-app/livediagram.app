@@ -32,8 +32,18 @@ describe('Tooltip', () => {
     advance(1);
     expect(hint()).toHaveProperty('textContent', 'Zoom in');
     expect(hint()?.dataset.hint).toBe('tooltip');
-    expect(hint()?.className).toContain('bg-slate-900');
-    expect(hint()?.className).toContain('dark:bg-slate-700');
+    // Light: an inverse pill. Dark: the dark chrome surface, light text, a dark border.
+    const classes = hint()?.className.split(' ') ?? [];
+    expect(classes).toEqual(expect.arrayContaining(['bg-slate-900', 'text-white']));
+    expect(classes).toEqual(
+      expect.arrayContaining([
+        'dark:bg-slate-900',
+        'dark:text-slate-100',
+        'dark:border',
+        'dark:border-slate-700',
+      ]),
+    );
+    expect(classes.filter((c) => /^dark:bg-slate-[1-7]00$/.test(c))).toEqual([]);
   });
 
   it('adds no box to the layout around its control', () => {
