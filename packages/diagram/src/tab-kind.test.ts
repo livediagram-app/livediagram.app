@@ -11,6 +11,11 @@ describe('tabKindOf', () => {
 
   it('reads a specialised kind', () => {
     expect(tabKindOf(tab({ kind: 'event-storming' }))).toBe('event-storming');
+    expect(tabKindOf(tab({ kind: 'whiteboard' }))).toBe('whiteboard');
+  });
+
+  it('reads a kind it does not know as an ordinary diagram', () => {
+    expect(tabKindOf({ kind: 'mindmap' })).toBe('diagram');
   });
 
   it('treats a tab written before the field as an ordinary diagram', () => {
@@ -35,6 +40,8 @@ describe('stampTabKind', () => {
     expect(stampTabKind(already)).toBe(already);
     const es = tab({ kind: 'event-storming' });
     expect(stampTabKind(es)).toBe(es);
+    const wb = tab({ kind: 'whiteboard' });
+    expect(stampTabKind(wb)).toBe(wb);
   });
 
   it('does not otherwise touch the tab', () => {

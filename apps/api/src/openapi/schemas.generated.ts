@@ -4454,7 +4454,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "TabKind": {
     "enum": [
       "diagram",
-      "event-storming"
+      "event-storming",
+      "whiteboard"
     ],
     "type": "string"
   },
