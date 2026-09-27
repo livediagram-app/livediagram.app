@@ -1,7 +1,9 @@
-import { describe, expect, it } from 'vitest';
-import { flattenPath } from './svg-path';
+import { describe, expect, it, vi } from 'vitest';
+import { flattenSvgPath, sampleSvgPath } from './svg-path-outline';
 
-describe('flattenPath', () => {
+const flattenPath = (d: string, stepPx: number) => flattenSvgPath(d, { stepPx });
+
+describe('flattenSvgPath', () => {
   it('reads absolute moves and lines into one sub-path', () => {
     expect(flattenPath('M 0 0 L 10 0 L 10 10 Z', 2)).toEqual([
       {
@@ -56,8 +58,11 @@ describe('flattenPath', () => {
     expect(flattenPath('M0 0L1 1M5 5L6 6', 2)).toHaveLength(2);
   });
 
-  it('stops a sub-path at malformed data and keeps what came before', () => {
+  it('stops a sub-path at malformed data, keeps what came before, and says so', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const subs = flattenPath('M0 0L1 1L2 x', 2);
+    expect(warn).toHaveBeenCalledWith('[svg-path] malformed', { at: 7 });
+    warn.mockRestore();
     expect(subs).toHaveLength(1);
     expect(subs[0]!.points).toEqual([
       { x: 0, y: 0 },
@@ -67,5 +72,27 @@ describe('flattenPath', () => {
 
   it('returns nothing for empty data', () => {
     expect(flattenPath('', 2)).toEqual([]);
+  });
+});
+
+describe('flattenSvgPath by segments per curve', () => {
+  it('samples each curve into a fixed number of segments', () => {
+    const [sub] = flattenSvgPath('M0 0C0 10 10 10 10 0', { segmentsPerCurve: 4 });
+    expect(sub!.points).toHaveLength(5);
+  });
+});
+
+describe('sampleSvgPath', () => {
+  it('samples the first sub-path, arcs included', () => {
+    expect(sampleSvgPath('M 0 0 L 10 0 C 10 5, 5 10, 0 10 Z', 4)).toHaveLength(6);
+    expect(sampleSvgPath('M 0 0 A 5 5 0 0 1 10 0 Z')!.length).toBeGreaterThan(2);
+  });
+
+  it('returns null when nothing can be read', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    expect(sampleSvgPath('')).toBeNull();
+    expect(sampleSvgPath('Q')).toBeNull();
+    expect(warn).toHaveBeenCalledTimes(1);
+    warn.mockRestore();
   });
 });

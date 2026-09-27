@@ -15,7 +15,7 @@ Scope, by file (all under `apps/live/` unless stated):
 | `lib/board-import/whiteboard/zip.ts`                | `readZip`: central directory, stored and deflated entries, byte budget                    |
 | `lib/board-import/whiteboard/envelope.ts`           | `readWhiteboardFile`: sniff Zip / HTML / picture, find the board                          |
 | `lib/board-import/whiteboard/matrix.ts`             | `Matrix`, `parseCssTransform`, `parseSvgTransform`, `compose`, `apply`                    |
-| `lib/board-import/whiteboard/svg-path.ts`           | `flattenPath`: SVG path data to polylines                                                 |
+| `packages/diagram/src/svg-path-outline.ts` | `flattenSvgPath`: SVG path data to polylines, shared with shape outlines |
 | `lib/board-import/whiteboard/colour.ts`             | `readColour`: `rgba()` / `rgb()` / hex / named to `{ hex, alpha }`                        |
 | `lib/board-import/whiteboard/placement.ts`          | `anchorMatrix`, `innerMatrix`, `inlineStyle`, `px`: markup to board px                    |
 | `lib/board-import/whiteboard/canvas.ts`             | `readBoard`, `isWhiteboardCanvas`: the canvas root, anchors in stacking order, background |
@@ -145,7 +145,7 @@ without its extension; empty → `Whiteboard` (D40).
 
 Per `g.inkStroke` inside the anchor (E-5):
 
-- `outline`: every `path` `d` flattened (`flattenPath`, beziers at `WHITEBOARD_BEZIER_STEP_PX`),
+- `outline`: every `path` `d` flattened (`flattenSvgPath`, curves at `WHITEBOARD_BEZIER_STEP_PX`),
   mapped to board px.
 - `centreline`: the sibling `polyline.inkHitTestOverlay` `points`, mapped; empty or absent → null.
 - `colour`, `alpha`: the last `path`'s `fill` (`rgba(r,g,b,a)`, E-5); a `url(#…)` pattern fill

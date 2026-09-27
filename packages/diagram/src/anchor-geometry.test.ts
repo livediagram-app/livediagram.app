@@ -186,12 +186,8 @@ describe('anchor sets in snapping and outlines', () => {
     expect(anchorPosition(shape({ shape: 'cloud' }), 'n').y).toBeLessThan(2);
   });
 
-  it('samples an absolute M/L/C/Z path and rejects other commands', () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  it('samples the geometry table paths into outlines', () => {
     expect(sampleSvgPath('M 0 0 L 10 0 C 10 5, 5 10, 0 10 Z', 4)).toHaveLength(6);
-    expect(sampleSvgPath('M 0 0 A 5 5 0 0 1 10 0 Z')).toBeNull();
-    expect(warn).toHaveBeenCalledWith('[shape-outline] unsupported path command=A');
-    warn.mockRestore();
   });
 });
 

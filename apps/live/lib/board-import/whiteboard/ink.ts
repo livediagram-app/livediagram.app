@@ -5,7 +5,7 @@
 // A centreline becomes an editable pen stroke; an outline alone is kept as a
 // filled shape that looks the same.
 
-import { BORDER_STROKE_PX, type BorderStroke } from '@livediagram/diagram';
+import { BORDER_STROKE_PX, flattenSvgPath, type BorderStroke } from '@livediagram/diagram';
 import type { BoardItem } from './canvas';
 import { readColour, type Colour } from './colour';
 import type { StrokeDraft } from './fit';
@@ -17,7 +17,6 @@ import {
 } from './limits';
 import { apply, compose, type Matrix, type Point } from './matrix';
 import { innerMatrix, inlineStyle } from './placement';
-import { flattenPath } from './svg-path';
 
 export type InkPen = 'pen' | 'highlighter';
 
@@ -101,7 +100,9 @@ function readStroke(g: Element, item: BoardItem, unknown: string[]): InkStroke |
   unknown.push(...inner.unknown);
   const toBoard: Matrix = compose(item.matrix, inner.matrix);
   const outline = paths
-    .flatMap((p) => flattenPath(p.getAttribute('d') ?? '', WHITEBOARD_BEZIER_STEP_PX))
+    .flatMap((p) =>
+      flattenSvgPath(p.getAttribute('d') ?? '', { stepPx: WHITEBOARD_BEZIER_STEP_PX }),
+    )
     .map((sub) => sub.points.map((pt) => apply(toBoard, pt)))
     .filter((pts) => pts.length >= 3);
   if (outline.length === 0) return null;

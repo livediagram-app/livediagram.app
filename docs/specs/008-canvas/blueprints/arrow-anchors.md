@@ -168,10 +168,11 @@ first for which `sideOffered(el, side)`. Null for a zero direction.
 
 ### Path outlines (`svg-path-outline.ts`)
 
-`sampleSvgPath(d, segmentsPerCurve = PATH_CURVE_SEGMENTS): Point[] | null` walks an absolute path
-of `M`, `L`, `C` and `Z` commands, emitting each line end and `segmentsPerCurve` points per cubic
-(end included). Any other command returns null and logs O4; `anchorOutline` then falls back to the
-box.
+`sampleSvgPath(d, segmentsPerCurve = PATH_CURVE_SEGMENTS): Point[] | null` is the first sub-path of
+`flattenSvgPath(d, { segmentsPerCurve })`, the shared parser of the whole path grammar (absolute and
+relative), emitting each line end and `segmentsPerCurve` points per curve (end included). Malformed
+data ends the path and logs O4; nothing readable returns null, and `anchorOutline` then falls back
+to the box.
 
 ### Creation anchor (`bestAnchorTowards`)
 
@@ -474,7 +475,7 @@ swaps log, plus the anchor fallbacks (O5, O6, prefix `[arrow-anchors]`); never a
 | O1  | Step 4, per re-evaluated end              | `[arrow-rebind] trigger arrow=<id> end=<from\|to> element=<id> side=<s> <old>-><new>`, plus ` fallback=<side\|class\|side,class>` when E16 / E17 applied, or ` kept=<facing\|no-side>` when kept |
 | O2  | Swap applied                              | `[arrow-rebind] swap element=<id> arrows=<a>,<b> <anchorA><-><anchorB>`                                                                                                                          |
 | O3  | Side over the cap                         | `[arrow-rebind] swap skipped element=<id> side=<s> ends=<n>`                                                                                                                                     |
-| O4  | `sampleSvgPath`, unsupported command      | `console.warn` `[shape-outline] unsupported path command=<c>`                                                                                                                                    |
+| O4  | `flattenSvgPath`, malformed path data     | `console.warn` `[svg-path] malformed { at: <token index> }`                                                                                                                                      |
 | O5  | `nearestOfferedAnchor`, a remap only      | `[arrow-anchors] remap element=<id> <asked>-><offered>`                                                                                                                                          |
 | O6  | `bestAnchorTowards`, a side fallback only | `[arrow-anchors] creation element=<id> side=<s> fallback=side`                                                                                                                                   |
 
@@ -491,7 +492,7 @@ swaps log, plus the anchor fallbacks (O5, O6, prefix `[arrow-anchors]`); never a
 | Fallback logs O1, O5, O6                                                                                 | triangle side fallback, circle class fallback, remap, creation; silent otherwise          | `arrow-rebind.test.ts`, `anchor-geometry.test.ts`                |
 | Quick-connect from a side without anchors                                                                | `nearestOfferedAnchor(triangle, n)`                                                       | `anchor-geometry.test.ts`                                        |
 | A quarter on a circle re-anchors to a corner                                                             | morphed-circle end flips side                                                             | `arrow-rebind.test.ts`                                           |
-| Cloud and document outlines, path sampler, O4                                                            | anchors on the outline; unsupported command → null + warn                                 | `anchor-geometry.test.ts`                                        |
+| Cloud and document outlines, path sampler, O4                                                            | anchors on the outline; malformed data → warn, nothing readable → null                    | `anchor-geometry.test.ts`, `svg-path-flatten.test.ts`            |
 | Box positions                                                                                            | all 16 on a box                                                                           | `anchor-geometry.test.ts`                                        |
 | Outline projection incl. quarters                                                                        | circle, diamond, star, stadium, actor points lie on the outline                           | `anchor-geometry.test.ts`                                        |
 | Rotation                                                                                                 | a quarter on a 90° element                                                                | `anchor-geometry.test.ts`                                        |
