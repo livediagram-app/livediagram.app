@@ -124,6 +124,13 @@ The modal also surfaces the soft-cap usage as a tiny bar at the bottom ("3.2 / 1
 
 When the picker is opened for an element that already has an attached image, a **Remove from element** action sits in the modal footer. It clears the element's `imageId` (returning the canvas back to the placeholder state) and drops `naturalWidth` / `naturalHeight` so a later "Reset to natural size" doesn't snap to stale dimensions. The gallery copy is untouched; users can re-attach the same image (or a different one) without re-uploading.
 
+### Imported images
+
+Images inside an imported board (an Excalidraw scene's `files`, and the other importers') are
+resized in the browser and stored through the same `POST /api/images`, under the same caps, by the
+[Import image pipeline](../020-import-export/import-image-pipeline.md). Hitting the per-owner cap
+there leaves placeholders and a count, never a failed import.
+
 ### Resize behaviour
 
 `naturalWidth` / `naturalHeight` are captured on load so a future "Reset to natural size" affordance can snap back to them — but that menu entry is **not yet wired** (the right-click context menu currently exposes Link / Remove icon / layer order / Note / Comment only). Aspect lock defaults to true on first paint (the user can explicitly unlock via the Shape accordion's existing aspect-lock toggle, which works on ImageElement the same way it works on shapes).
@@ -145,7 +152,7 @@ The same `renderElementsToSvg` powers the headless snapshot behind the Explorer 
 
 R2 is a Cloudflare-only binding. Self-hosters on alternative runtimes (Node, Bun, other edge providers) won't have it. To keep [Open source + distribution](../002-project-scope/open-source-and-business-model.md)'s self-host promise intact:
 
-- `apps/api/src/types.ts`: `Env.IMAGES` is optional. When unbound, every `/api/images*` endpoint returns 503 with `{ error: 'images-unavailable' }`.
+- `apps/api/src/types.ts`: `Env.IMAGES` is optional. When unbound, every `/api/images*` endpoint returns 503 with `{ error: 'images_unavailable' }`.
 - `apps/live/components/panels/ImagePicker.tsx`: a 503 response surfaces as a friendly "Image uploads aren't enabled on this deployment" notice instead of a generic error.
 - The Image palette entry hides entirely when a probe `GET /api/images` returns 503, so self-hosters without R2 don't see a dead-end button.
 - A future "S3-compatible storage" adapter can land alongside without changing the schema or the client (the R2 calls are localized to a handful of `env.IMAGES` put / get / delete calls in `apps/api/src/routes/images.ts`, so a Node-fs / S3 alternative could be slotted in from there).
