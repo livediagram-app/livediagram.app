@@ -55,8 +55,8 @@
   --animate-empty-ring: empty-ring 2.8s cubic-bezier(0, 0, 0.2, 1) infinite;
 }
 
-/* A numeral (or capital) centred in a circle or pill: centre its INK, not its line box
- * (docs/specs/004-interface-design/color-scheme.md, Usage rules). A digit has no descender, so a
+/* A glyph centred in a circle, chip or badge centres its CAP BAND, not its line box
+ * (docs/specs/004-interface-design/optical-alignment.md). A capital or a digit has no descender, so a
  * centred line box leaves it sitting high; trimming the box to cap height and baseline lets flex
  * centring land on the glyph itself. Without text-box support, nudge by the UI face's measured
  * cap-to-line-box offset instead. Layout only, so it holds in both appearances. */
@@ -67,6 +67,14 @@
   @supports not (text-box: trim-both cap alphabetic) {
     transform: translateY(0.1em);
   }
+}
+
+/* Tracked capitals carry a letter-space after their last letter, which pushes the run off-centre in
+ * its chip; give it back so the box ends where the ink does (optical-alignment.md; D26). */
+@utility text-optical-caps {
+  text-transform: uppercase;
+  letter-spacing: var(--optical-tracking, 0.05em);
+  margin-inline-end: calc(-1 * var(--optical-tracking, 0.05em));
 }
 
 /* The dark palette, Steel (docs/specs/004-interface-design/color-scheme.md). Dark mode is its own

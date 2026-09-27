@@ -33,6 +33,7 @@ export {
   strokeUnits,
   type GlyphSize,
 } from './weight';
+export { CAP_HEIGHT_EM, capBandBaselineY } from './svg-cap-band';
 export {
   iconPrimsMarkup,
   techGlyphStrokeUnits,

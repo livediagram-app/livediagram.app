@@ -43,3 +43,4 @@ export {
   type BreadcrumbCrumb,
 } from './seo';
 export * from './appearance';
+export * from './optical';

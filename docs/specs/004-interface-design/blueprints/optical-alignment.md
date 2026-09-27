@@ -13,7 +13,7 @@ Derived from [Optical alignment](../optical-alignment.md). Icon drawings and the
 | `packages/ui/src/optical/IconSlot.tsx`                       | Icon slot                                                                                                              |
 | `packages/ui/src/optical/index.ts`                           | Re-exports; `export * from './optical'` in `packages/ui/src/index.ts`                                                  |
 | `packages/ui/src/optical/optical.test.tsx`                   | Primitive contracts                                                                                                    |
-| `packages/diagram/src/svg-cap-band.ts`                       | `CAP_HEIGHT_EM`, `capBandBaselineY` for SVG text in a shape                                                            |
+| `packages/icons/src/svg-cap-band.ts`                         | `CAP_HEIGHT_EM`, `capBandBaselineY` for SVG text in a shape (`icons` is the lowest package both SVG renderers use)     |
 | `packages/tailwind-config/src/optical-guard.ts`              | Static guard `checkOpticalAlignment(root)`; export `./optical-guard`                                                   |
 | `apps/{live,help,marketing,telemetry}/optical-guard.test.ts` | Each app runs the guard over its own sources (as `motion-budget.test.ts`)                                              |
 | `packages/ui/optical-guard.test.ts`                          | The guard over `packages/ui/src`                                                                                       |
