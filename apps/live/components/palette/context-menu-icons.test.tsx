@@ -23,7 +23,7 @@ const ASYMMETRIC = new Map([
 ]);
 const QUICK = new Set(['CutIcon', 'CopyIcon', 'DuplicateMenuIcon', 'RemoveIcon', 'PasteMenuIcon']);
 
-const glyphs = Object.entries(icons).filter(
+const glyphs = Object.entries(icons as Record<string, unknown>).filter(
   (e): e is [string, ComponentType] =>
     typeof e[1] === 'function' && /(Icon|Glyph)$/.test(e[0]) && !PREVIEWS.has(e[0]),
 );
