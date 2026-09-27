@@ -114,6 +114,13 @@ export const TELEMETRY_CATEGORIES = [
   // table ('Home.Hero', 'Feature.Closing'), never a visitor or a URL; the
   // editor sends both, the marketing site still sends only page views.
   'Cta',
+  // Trash (docs/specs/013-workspace/trash.md): the quiet backstop behind every
+  // diagram delete. 'Opened' with `type` where from ('Settings' |
+  // 'DeletedCard'); 'Restored' / 'Deleted' (for good) / 'Cleared' (Empty
+  // Trash) with `type` the Trash it happened in ('Personal' | 'Team' |
+  // 'Local'). Whether people ever come back for a deleted diagram is the
+  // question; never a diagram or team name.
+  'Trash',
 ] as const;
 export type TelemetryCategory = (typeof TELEMETRY_CATEGORIES)[number];
 
@@ -183,6 +190,9 @@ export const TELEMETRY_ACTIONS = [
   // later UTC day. Paired with 'Participant'/'Created', gated once per
   // UTC day client-side; type is 'Anonymous' | 'Authenticated'.
   'Returned',
+  // Trash (docs/specs/013-workspace/trash.md): a deleted diagram was brought
+  // back from the Trash.
+  'Restored',
   // Email (docs/specs/014-identity/transactional-email.md): a transactional / lifecycle email left the worker for
   // the provider. Only ever paired with the 'Email' category.
   'Sent',

@@ -106,7 +106,7 @@ export const categories: Category[] = [
     title: 'Account and Data',
     description:
       'Stay in control of your work: how guest access, signing in, syncing, exporting, deletion, API tokens, connecting AI tools, and email notifications work.',
-    articleCount: 7,
+    articleCount: 8,
   },
   {
     slug: 'privacy-and-security',
@@ -527,6 +527,15 @@ export const articles: Article[] = [
     title: 'Deleting Your Data',
     description: 'How to remove a diagram or clear everything tied to your id.',
     keywords: 'delete remove erase gdpr clear account wipe forget',
+    category: 'Account and Data',
+    categorySlug: 'account-and-data',
+  },
+  {
+    slug: 'trash',
+    title: 'Trash',
+    description: 'Deleted diagrams wait 30 days: restore one, or delete it for good.',
+    keywords:
+      'trash bin recycle deleted undo undelete restore recover get back permanently empty thirty days',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },

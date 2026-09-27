@@ -49,6 +49,7 @@ export const HELP_ARTICLES = {
   // Tabs / import-export
   exportingDiagrams: 'account-and-data/exporting-diagrams',
   apiTokens: 'account-and-data/api-tokens',
+  trash: 'account-and-data/trash',
   importTabs: 'tabs/import-tabs',
   markdownImport: 'tools/markdown-import',
   linkingTabs: 'tabs/linking-tabs',
@@ -188,6 +189,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   apiTokens: {
     title: 'Learn about API tokens',
     description: 'Create tokens to call the livediagram API from your own scripts.',
+  },
+  trash: {
+    title: 'Learn about the Trash',
+    description: 'How long deleted diagrams wait, and how to restore one.',
   },
   importTabs: {
     title: 'Learn about importing tabs',

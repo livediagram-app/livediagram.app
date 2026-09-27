@@ -759,6 +759,18 @@ describe('DiagramRoom op-role enforcement', () => {
     expect(opsReceived(victim.ws)).toHaveLength(0);
   });
 
+  it("never relays 'diagram-trashed' from a client socket, even at edit role", () => {
+    // A forged one would end everyone's session with the deleted state.
+    const { room } = newRoom();
+    const editor = connect(room, 'editor', 'edit');
+    const victim = connect(room, 'victim', 'view');
+    victim.ws.sent.length = 0;
+
+    sendFrame(room, editor.ws, { kind: 'op', op: { kind: 'diagram-trashed' } });
+
+    expect(opsReceived(victim.ws)).toHaveLength(0);
+  });
+
   it('drops frames over the size cap before they fan out', () => {
     const { room } = newRoom();
     const editor = connect(room, 'editor', 'edit');

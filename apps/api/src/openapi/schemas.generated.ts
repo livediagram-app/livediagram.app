@@ -5027,6 +5027,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Helpful",
       "Unhelpful",
       "Returned",
+      "Restored",
       "Sent",
       "Api",
       "Client",
@@ -5062,7 +5063,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Timeline",
       "Activity",
       "Page",
-      "Cta"
+      "Cta",
+      "Trash"
     ],
     "type": "string"
   },

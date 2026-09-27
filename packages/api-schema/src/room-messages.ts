@@ -149,7 +149,16 @@ export const MUTATION_OP_KINDS = [
 //
 // `share-rescoped` (docs/specs/013-workspace/tab-scoped-share-links.md) for the same reason as
 // `share-revoked`: a forged one would reload every holder of a code.
-export const SYSTEM_OP_KINDS = ['share-revoked', 'share-rescoped', 'qa'] as const;
+//
+// `diagram-trashed` (docs/specs/013-workspace/trash.md): the diagram went to the
+// Trash, so every session ends with the deleted state. A forged one would end
+// everyone's session.
+export const SYSTEM_OP_KINDS = [
+  'share-revoked',
+  'share-rescoped',
+  'qa',
+  'diagram-trashed',
+] as const;
 
 // The whole vocabulary. Every op the editor sends or handles is one of these
 // three kinds of thing, and which one it is decides its ordering, its role gate,
@@ -514,7 +523,11 @@ export type RoomOp =
   | { kind: 'share-rescoped'; code: string }
   // A Q&A board's whole state after a server write (docs/specs/012-collaboration/qa-board.md). Replaces the
   // element's notes when `rev` is newer than the local `qaRev`.
-  | { kind: 'qa'; tabId: string; elementId: string; notes: QaNote[]; rev: number };
+  | { kind: 'qa'; tabId: string; elementId: string; notes: QaNote[]; rev: number }
+  // The diagram went to the Trash (docs/specs/013-workspace/trash.md). Every
+  // session shows the deleted state; the room then closes every socket (4004).
+  // Worker-originated, like share-revoked.
+  | { kind: 'diagram-trashed' };
 
 // Client-side narrowings of `ClientMessage` / `ServerMessage` that
 // pin `op` to `RoomOp` for type-safe send/receive in the editor.

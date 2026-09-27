@@ -51,6 +51,9 @@ const APPEARANCE_LABELS = tokensAfter(
   '};',
 );
 
+// The Trash a Trash action happened in: TrashGroup's `telemetryType`.
+const TRASH_TYPES = tokensAfter(read('live/lib/trash-groups.ts'), 'telemetryType:', ';');
+
 // The presenter settings: `Presentation-<field>` per PresentationConfig key.
 const PRESENTATION_FIELDS = (() => {
   const source = read('live/lib/presentation-config.ts');
@@ -167,6 +170,12 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
       'other',
     ],
   },
+  // Which Trash (docs/specs/013-workspace/trash.md): lib/trash-groups.ts's
+  // telemetryType, the one closed set both sites send.
+  'apps/live/hooks/persistence/useTrash.ts Trash·Restored': { values: TRASH_TYPES },
+  'apps/live/hooks/persistence/useTrash.ts Trash·Deleted': { values: TRASH_TYPES },
+  'apps/live/hooks/persistence/useTrash.ts Trash·Cleared': { values: TRASH_TYPES },
+  'apps/live/app/diagram/[id]/useDiagramTrashed.ts Trash·Restored': { values: TRASH_TYPES },
   'apps/live/app/new/page.tsx Theme·Changed': { values: THEMES, open: THEME_WHY },
   'apps/live/app/new/page.tsx Template·Used': { values: TEMPLATES, open: TEMPLATE_WHY },
   // The landing funnel (docs/specs/019-marketing/landing-funnel.md): the CTA a /new visit came from.
