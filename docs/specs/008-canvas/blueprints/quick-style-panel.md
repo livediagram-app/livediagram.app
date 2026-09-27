@@ -306,12 +306,14 @@ Transitions are driven by selection and those flags only; the panel owns no stat
   `MovablePanelHeader` (title "Quick style" + `HelpArticleLink article="quickStylePanel"`, no drag or
   collapse), and a body `[data-quick-style-body]` with `p-2.5`, `overflow-y-auto` under a cap; width
   and `maxHeight` from the placement.
+- Under Minimal chrome (`useMinimalChrome()`): the docked header is not rendered (its title and help
+  link would both be hidden); the section titles stay. The docked body carries `scrollbar-slim`.
 - Toolbar / Minimal (compact): the same surface with no header, width `w-46` (184 px: seven 24 px
   targets plus 8 px padding a side), `p-2`; rows at `density="compact"`.
 - Both: `fixed`, `z-[var(--z-panel)]`, `data-quick-style-panel`, `data-layout`; stop `pointerdown` /
   `contextmenu` from reaching the canvas.
 - Section: title `text-[10px] font-semibold uppercase tracking-wider text-slate-500
-dark:text-slate-400` (hidden when `showTitles` is false), then the row; `gap-2.5` between sections;
+dark:text-slate-400` (always shown, Minimal chrome included; a caller may pass `showTitles={false}`), then the row; `gap-2.5` between sections;
   a divider above Actions.
 - Colour row: seven 24 × 24 px target buttons, each drawing an inner colour chip: compact 20 px chips
   in touching targets (the row is exactly 168 px), roomy 24 px chips spread across the row

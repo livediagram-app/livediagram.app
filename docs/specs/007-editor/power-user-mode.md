@@ -113,9 +113,12 @@ Minimal chrome is exposed as **one flag** that any chrome surface reads (`useMin
 is on and Minimal chrome is on. A surface decides for itself what it hides, within the rule above: words and hints go,
 controls stay.
 
-Future consumers:
+Other consumers:
 
-- The **quick style panel** hides its section titles under Minimal chrome.
+- The **quick style panel** ([Quick style panel](../008-canvas/quick-style-panel.md)) drops its docked header (whose
+  title and help button Minimal chrome would hide) but **keeps its section titles**: they name what each row changes,
+  and two rows of coloured squares are otherwise indistinguishable at a glance. Words that teach go; words that name
+  what a control changes stay.
 
 ## Discovery: the offer
 

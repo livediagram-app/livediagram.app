@@ -89,13 +89,15 @@ export function QuickStylePanel({
   layout: QuickStyleLayout;
   // Zen, embeds, presenting, or a context menu open: the panel stands down.
   hidden: boolean;
-  // Section titles; hidden under Minimal chrome (docs/specs/007-editor/power-user-mode.md) unless given.
-  // The rows keep their names either way.
+  // Section titles; on unless a caller turns them off. The rows keep their
+  // names either way.
   showTitles?: boolean;
 }) {
   const isMobile = useIsMobileViewport();
   const minimalChrome = useMinimalChrome();
-  const titles = showTitles ?? !minimalChrome;
+  // Section titles stay under Minimal chrome: they are what tells two rows of
+  // coloured squares (Stroke, Background) apart at a glance.
+  const titles = showTitles ?? true;
   const { view } = quickStyle;
   const active = !hidden && !isMobile && view !== null;
   const panelRef = useRef<HTMLDivElement>(null);
@@ -145,17 +147,22 @@ export function QuickStylePanel({
       }
       className={`pointer-events-auto fixed z-[var(--z-panel)] flex flex-col rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 motion-safe:animate-fade-in dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40 ${docked ? '' : 'w-46 gap-2.5 p-2'}`}
     >
-      {docked ? (
+      {docked && !minimalChrome ? (
         // The Palette's header language (MovablePanelHeader), minus the drag
         // and collapse: the panel follows the Palette rather than moving itself.
+        // Minimal chrome hides a panel's title and help button, which would
+        // leave this header an empty strip, so it goes; the region keeps its
+        // name and the section titles stay.
         <div className="flex items-center justify-between gap-2 rounded-t-lg border-b border-slate-200 px-2 pb-1.5 pt-2 dark:border-slate-800">
           <PanelTitle title="Quick style" />
-          {minimalChrome ? null : <HelpArticleLink article="quickStylePanel" />}
+          <HelpArticleLink article="quickStylePanel" />
         </div>
       ) : null}
       <div
         data-quick-style-body=""
-        className={docked ? 'flex min-h-0 flex-col gap-2.5 overflow-y-auto p-2.5' : 'contents'}
+        className={
+          docked ? 'scrollbar-slim flex min-h-0 flex-col gap-2.5 overflow-y-auto p-2.5' : 'contents'
+        }
       >
         <QuickStyleSections
           view={view}

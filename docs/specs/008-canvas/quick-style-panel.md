@@ -317,8 +317,15 @@ WCAG 2.2 AA.
   only through its marker. Its popover is a labelled dialog ("Custom colour for Green, Stroke"),
   reached by right-click, Shift+F10 or the context-menu key, and Escape returns focus to the swatch.
 - **Section titles are separate from the names**: a row's accessible name does not depend on its
-  visible title, so hiding the titles under Minimal chrome
-  ([Power user mode](../007-editor/power-user-mode.md)) is a clean toggle.
+  visible title.
+- **Minimal chrome keeps the section titles** ([Power user mode](../007-editor/power-user-mode.md)).
+  Minimal chrome removes words that teach the interface; these name what each row changes. Two
+  rows of seven coloured squares (Stroke, Background) look alike without them, and a user who
+  knows the editor still has to tell them apart at a glance. The docked panel's header follows the
+  panel rule instead: Minimal chrome hides a panel's title and help button, which would leave an
+  empty strip, so the header is not shown; the panel keeps its accessible name ("Quick style").
+- **Scrolling is in-theme**: when the docked body scrolls, its scrollbar is the app's slim themed
+  one (`scrollbar-slim`), light and dark, not the operating system's.
 - **No layout shift.** Showing, hiding or re-placing the panel moves nothing else; it floats above
   the canvas.
 - **Reduced motion**: the panel fades in within the `micro` budget ([Motion](../004-interface-design/motion.md)),

@@ -3,6 +3,11 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { QuickRadioRow } from './quick-style-rows';
 import { SwatchOverridePopover } from './SwatchOverridePopover';
+import { QuickStylePanel } from './QuickStylePanel';
+import { MinimalChromeProvider } from '@/components/providers/minimal-chrome';
+
+// The panel is desktop only; jsdom has no viewport to measure.
+vi.mock('@/hooks/ui/useIsMobileViewport', () => ({ useIsMobileViewport: () => false }));
 
 // docs/specs/008-canvas/quick-style-panel.md "Accessibility": each row is a named radio group; arrows
 // move and choose; one tab stop per row; titles are separate from the names.
@@ -181,5 +186,50 @@ describe('SwatchOverridePopover', () => {
     fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Escape' });
     expect(onClose).toHaveBeenCalled();
     expect(document.activeElement).toBe(anchor);
+  });
+});
+
+describe('QuickStylePanel under Minimal chrome (docs/specs/007-editor/power-user-mode.md)', () => {
+  const quickStyle = {
+    view: {
+      targetIds: ['a'],
+      sections: {
+        width: { value: 'medium' as const },
+        style: { value: 'solid' as const, options: ['solid', 'dashed', 'dotted'] as const },
+      },
+    },
+    setStroke: vi.fn(),
+    setBackground: vi.fn(),
+    setWidth: vi.fn(),
+    setStrokeStyle: vi.fn(),
+    setTextAlign: vi.fn(),
+    setIconAlign: vi.fn(),
+    clearStyles: vi.fn(),
+    setSwatchOverride: vi.fn(),
+    clearSwatchOverride: vi.fn(),
+  };
+  const renderPanel = (minimal: boolean) =>
+    render(
+      <MinimalChromeProvider value={minimal}>
+        <QuickStylePanel quickStyle={quickStyle} hidden={false} layout="floating" />
+      </MinimalChromeProvider>,
+    );
+
+  it('keeps its section titles', () => {
+    renderPanel(true);
+    expect(screen.getByText('Stroke width')).toBeTruthy();
+    expect(screen.getByText('Stroke style')).toBeTruthy();
+    expect(screen.getByText('Actions')).toBeTruthy();
+  });
+
+  it('drops the docked header, which would be empty, and keeps its name', () => {
+    renderPanel(true);
+    expect(screen.queryByLabelText('Learn about the quick style panel')).toBeNull();
+    expect(screen.getByLabelText('Quick style')).toBeTruthy();
+  });
+
+  it('shows the header with its help link otherwise', () => {
+    renderPanel(false);
+    expect(screen.getByLabelText('Learn about the quick style panel')).toBeTruthy();
   });
 });
