@@ -31,7 +31,7 @@
 // first window centred, and reduced-motion settles every build, the canvas
 // tint, and hides the laser.
 
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
 import {
   Brand,
   ChevronDownIcon,
@@ -71,10 +71,13 @@ const GAP = 3;
 
 type TabDef = { name: string; color: string; active?: boolean };
 
-// Each window sits on its own themed canvas. The flowchart animates between
-// these two (the recolour beat, via the hero-theme / hero-theme-canvas
-// keyframes); the others hold a single distinct theme.
-const FLOW_REST = '#eff6ff'; // blue-50 resting tint of the flowchart canvas
+// Each window sits on its own canvas. The flowchart and its slide deck wear the
+// Default scheme, which follows the appearance like the editor's (a blue-50 tint
+// in light, the dark canvas in dark); the flowchart recolours from it to Forest
+// (the hero-theme / hero-theme-canvas keyframes). The others hold one named
+// theme, which looks the same in both appearances.
+const DEFAULT_CANVAS =
+  'bg-[#eff6ff] dark:bg-(color:--art-paper) dark:bg-[radial-gradient(circle_at_center,_var(--hero-grid,var(--art-grid))_1.2px,_transparent_1.2px)]';
 const VIOLET: Theme = { canvas: '#f5f3ff', fill: '#ede9fe', stroke: '#7c3aed', text: '#4c1d95' };
 const AMBER: Theme = { canvas: '#fffbeb', fill: '#fef3c7', stroke: '#b45309', text: '#78350f' };
 const TEAL: Theme = { canvas: '#f0fdfa', fill: '#ccfbf1', stroke: '#0d9488', text: '#134e4a' };
@@ -91,7 +94,8 @@ const CARDS: {
   showCursor: boolean;
   shared: boolean;
   theming: boolean;
-  canvasTint: string;
+  // A named theme's canvas colour; null is the Default scheme (DEFAULT_CANVAS).
+  canvasTint: string | null;
   // Presenting (docs/specs/012-collaboration/presentation-mode.md): the panels give way to the presenting HUD, and
   // the canvas shows the deck's slides instead of the whole diagram.
   presenting?: boolean;
@@ -113,7 +117,7 @@ const CARDS: {
     showCursor: true,
     shared: true,
     theming: true,
-    canvasTint: FLOW_REST,
+    canvasTint: null,
   },
   {
     key: 'slides',
@@ -128,7 +132,7 @@ const CARDS: {
     showCursor: false,
     shared: true,
     theming: false,
-    canvasTint: FLOW_REST,
+    canvasTint: null,
     presenting: true,
   },
   {
@@ -178,6 +182,11 @@ const CARDS: {
     canvasTint: TEAL.canvas,
   },
 ];
+
+// A tab pill in the accent it is given as --tab. Dark lifts that accent 60% toward
+// white, as the editor's legibleTabAccent does for the dark bar.
+const TAB_PILL =
+  'flex items-center gap-2 rounded-md px-2 py-1 text-xs font-medium text-(--tab) dark:text-[color-mix(in_srgb,var(--tab)_40%,white)]';
 
 // The theme cards the Look & Feel dialog mock offers; Default is what the
 // flowchart wears until Forest is picked and the recolour follows.
@@ -340,7 +349,7 @@ function EditorWindow({
   playing: boolean;
   shared: boolean;
   theming: boolean;
-  canvasTint: string;
+  canvasTint: string | null;
   showCursor: boolean;
   layers: boolean;
   tool: string | [string, string];
@@ -358,7 +367,7 @@ function EditorWindow({
         <div
           key={playing ? 'play' : 'idle'}
           aria-hidden
-          className={`pointer-events-none absolute inset-0 z-20 bg-slate-200 dark:bg-slate-700 ${
+          className={`pointer-events-none absolute inset-0 z-20 bg-slate-200 dark:bg-slate-950 ${
             playing ? 'hero-fade' : 'hero-fade-out'
           }`}
         />
@@ -371,7 +380,7 @@ function EditorWindow({
               <div className="flex items-center gap-2">
                 <Brand size="sm" />
                 {/* The Editor menu, as the real header carries it. */}
-                <span className="hidden items-center gap-1 rounded-md border border-slate-200 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 sm:inline-flex dark:border-slate-800 dark:text-slate-300">
+                <span className="hidden items-center gap-1 rounded-md border border-slate-200 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 sm:inline-flex dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
                   <MenuIcon size={9} strokeWidth={1.6} />
                   Editor
                   <ChevronDownIcon size={8} strokeWidth={1.6} />
@@ -395,7 +404,7 @@ function EditorWindow({
                   </span>
                 )}
               </div>
-              <span className="inline-flex items-center gap-1 rounded-md bg-brand-500 px-2 py-0.5 text-[10px] font-semibold text-white">
+              <span className="inline-flex items-center gap-1 rounded-md bg-brand-500 px-2 py-0.5 text-[10px] font-semibold text-white dark:bg-brand-600">
                 <ShareGlyph />
                 Share
               </span>
@@ -407,9 +416,10 @@ function EditorWindow({
             flowchart additionally animates blue→green (overriding the resting
             tint) while it is centred. */}
         <div
-          style={{ backgroundColor: canvasTint }}
+          style={canvasTint ? { backgroundColor: canvasTint } : undefined}
           className={
             'relative bg-[radial-gradient(circle_at_center,_#cbd5e1_1.2px,_transparent_1.2px)] bg-[size:24px_24px] ' +
+            (canvasTint ? '' : DEFAULT_CANVAS + ' ') +
             (presenting ? 'h-[382px] sm:h-[442px]' : 'h-[300px] sm:h-[360px]') +
             (theming && playing ? ' hero-theme-canvas' : '')
           }
@@ -487,7 +497,7 @@ function EditorWindow({
               </span>
             </div>
             <div className="px-1.5 pt-1.5">
-              <div className="rounded-md border border-slate-200 px-1.5 py-0.5 text-[8px] text-slate-400 dark:border-slate-800">
+              <div className="rounded-md border border-slate-200 px-1.5 py-0.5 text-[8px] text-slate-400 dark:border-slate-700 dark:bg-slate-800">
                 Search all elements
               </div>
             </div>
@@ -581,7 +591,7 @@ function EditorWindow({
               a theme card is picked (the selection ring moves, the pointer
               dips), it closes, and the recolour follows. Themed window only. */}
           {theming && playing ? (
-            <div className="hero-dialog absolute left-1/2 top-1/2 z-10 hidden w-64 -translate-x-1/2 -translate-y-1/2 flex-col rounded-xl border border-slate-200 bg-white shadow-2xl sm:flex dark:border-slate-800 dark:bg-slate-900">
+            <div className="hero-dialog absolute left-1/2 top-1/2 z-10 hidden w-64 -translate-x-1/2 -translate-y-1/2 flex-col rounded-xl border border-slate-200 bg-white shadow-2xl sm:flex dark:border-slate-700 dark:bg-slate-900">
               <div className="flex items-center justify-between px-3 py-2">
                 <span className="text-[11px] font-semibold text-slate-800 dark:text-slate-100">
                   Tab Look &amp; Feel
@@ -604,10 +614,10 @@ function EditorWindow({
                     key={t.name}
                     className={`flex flex-col items-center gap-1 rounded-lg border py-1.5 text-[8px] font-medium text-slate-600 dark:text-slate-300 ${
                       t.picked
-                        ? 'hero-dialog-pick border-slate-200 dark:border-slate-800'
+                        ? 'hero-dialog-pick border-slate-200 dark:border-slate-700'
                         : t.current
                           ? 'hero-dialog-was border-brand-400 ring-1 ring-brand-300'
-                          : 'border-slate-200 dark:border-slate-800'
+                          : 'border-slate-200 dark:border-slate-700'
                     }`}
                   >
                     <span className="h-4 w-4 rounded-full" style={{ backgroundColor: t.swatch }} />
@@ -671,11 +681,13 @@ function EditorWindow({
                 {tabs.map((t) => (
                   <span
                     key={t.name}
-                    style={{
-                      color: t.color,
-                      ...(t.active ? { backgroundColor: `${t.color}1a` } : {}),
-                    }}
-                    className="flex items-center gap-2 rounded-md px-2 py-1 text-xs font-medium"
+                    style={
+                      {
+                        '--tab': t.color,
+                        ...(t.active ? { backgroundColor: `${t.color}1a` } : {}),
+                      } as CSSProperties
+                    }
+                    className={TAB_PILL}
                   >
                     <span
                       className="h-2.5 w-2.5 rounded-full"

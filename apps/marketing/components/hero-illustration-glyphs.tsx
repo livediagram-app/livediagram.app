@@ -10,7 +10,7 @@
 import { SearchIcon } from '@livediagram/ui';
 
 // A tab's presence avatar, sized as the editor's TabPresenceStack sizes them:
-// small initials on the participant's colour, a white ring, overlapping the
+// small initials on the participant's colour, a ring of the bar's own surface, overlapping the
 // next one by a hair (the last carries no overlap so the stack sits inside
 // the pill's padding).
 export function TabAvatar({
@@ -25,7 +25,7 @@ export function TabAvatar({
   return (
     <span
       style={{ backgroundColor: color }}
-      className={`inline-flex h-4 w-4 items-center justify-center rounded-full border-2 border-white text-[7px] font-semibold text-white ${
+      className={`inline-flex h-4 w-4 items-center justify-center rounded-full border-2 border-white text-[7px] dark:border-slate-900 font-semibold text-white ${
         last ? '' : '-mr-0.5'
       }`}
     >
@@ -70,8 +70,8 @@ export function ToolGlyph({
       ) : kind === 'sliders' ? (
         <svg {...common}>
           <path d="M2 5h12M2 11h12" />
-          <circle cx="6" cy="5" r="1.6" fill="white" />
-          <circle cx="10.5" cy="11" r="1.6" fill="white" />
+          <circle cx="6" cy="5" r="1.6" fill="white" className="dark:fill-slate-900" />
+          <circle cx="10.5" cy="11" r="1.6" fill="white" className="dark:fill-slate-900" />
         </svg>
       ) : kind === 'history' ? (
         <svg {...common}>

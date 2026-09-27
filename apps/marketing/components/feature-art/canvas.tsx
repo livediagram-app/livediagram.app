@@ -32,13 +32,30 @@ export function TemplatesArt() {
             />
             <svg viewBox="0 0 60 32" className="h-8 w-full">
               {i === 0 ? (
-                <g fill={BLUE_FILL} stroke={BLUE_STROKE} strokeWidth="1.5">
+                <g
+                  className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+                  fill={BLUE_FILL}
+                  stroke={BLUE_STROKE}
+                  strokeWidth="1.5"
+                >
                   <rect x="22" y="2" width="16" height="8" rx="2" />
                   <rect x="22" y="20" width="16" height="8" rx="2" />
-                  <line x1="30" y1="10" x2="30" y2="20" stroke={BLUE_STROKE} />
+                  <line
+                    className="dark:stroke-(--art-ink-stroke)"
+                    x1="30"
+                    y1="10"
+                    x2="30"
+                    y2="20"
+                    stroke={BLUE_STROKE}
+                  />
                 </g>
               ) : i === 1 ? (
-                <g fill={BLUE_FILL} stroke={BLUE_STROKE} strokeWidth="1.5">
+                <g
+                  className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+                  fill={BLUE_FILL}
+                  stroke={BLUE_STROKE}
+                  strokeWidth="1.5"
+                >
                   <line x1="30" y1="16" x2="12" y2="6" />
                   <line x1="30" y1="16" x2="48" y2="6" />
                   <line x1="30" y1="16" x2="14" y2="26" />
@@ -48,9 +65,24 @@ export function TemplatesArt() {
                   <circle cx="13" cy="26" r="3.5" />
                 </g>
               ) : (
-                <g fill={BLUE_FILL} stroke={BLUE_STROKE} strokeWidth="1.2">
-                  <rect x="4" y="3" width="14" height="26" rx="2" fill="#f1f5f9" stroke="#cbd5e1" />
+                <g
+                  className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+                  fill={BLUE_FILL}
+                  stroke={BLUE_STROKE}
+                  strokeWidth="1.2"
+                >
                   <rect
+                    className="dark:fill-slate-800 dark:stroke-slate-700"
+                    x="4"
+                    y="3"
+                    width="14"
+                    height="26"
+                    rx="2"
+                    fill="#f1f5f9"
+                    stroke="#cbd5e1"
+                  />
+                  <rect
+                    className="dark:fill-slate-800 dark:stroke-slate-700"
                     x="23"
                     y="3"
                     width="14"
@@ -60,6 +92,7 @@ export function TemplatesArt() {
                     stroke="#cbd5e1"
                   />
                   <rect
+                    className="dark:fill-slate-800 dark:stroke-slate-700"
                     x="42"
                     y="3"
                     width="14"
@@ -88,13 +121,28 @@ export function ThemesArt() {
   return (
     <Frame>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
-        <rect className="fa-theme-bg" x="40" y="14" width="140" height="68" rx="8" />
-        <g className="fa-theme" strokeWidth="2">
+        {/* Each recolouring piece rests in the Default look, which is what reduced motion shows. */}
+        <rect
+          className="fa-theme-bg dark:fill-(--art-paper)"
+          x="40"
+          y="14"
+          width="140"
+          height="68"
+          rx="8"
+          fill="#f0f9ff"
+        />
+        <g
+          className="fa-theme dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+          fill={BLUE_FILL}
+          stroke={BLUE_STROKE}
+          strokeWidth="2"
+        >
           <rect x="58" y="30" width="46" height="22" rx="6" />
           <rect x="120" y="46" width="46" height="22" rx="6" />
         </g>
         <line
-          className="fa-theme"
+          className="fa-theme dark:stroke-(--art-ink-stroke)"
+          stroke={BLUE_STROKE}
           x1="104"
           y1="41"
           x2="120"
@@ -122,6 +170,7 @@ export function MarqueeArt() {
         {boxes.map((b, i) => (
           <g key={i}>
             <rect
+              className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
               x={b.x}
               y={b.y}
               width="40"
@@ -132,7 +181,7 @@ export function MarqueeArt() {
               strokeWidth="2"
             />
             <rect
-              className="fa-pulse"
+              className="fa-pulse dark:stroke-brand-500"
               x={b.x - 3}
               y={b.y - 3}
               width="46"
@@ -147,7 +196,7 @@ export function MarqueeArt() {
         ))}
         {/* marquee selection rectangle */}
         <rect
-          className="fa-grow"
+          className="fa-grow dark:fill-brand-500/10 dark:stroke-brand-500"
           x="20"
           y="22"
           width="174"
@@ -160,7 +209,7 @@ export function MarqueeArt() {
         />
       </svg>
       <span
-        className="fa-pop absolute left-1/2 top-1.5 -translate-x-1/2 rounded bg-slate-900 px-1.5 py-0.5 text-[8px] font-semibold text-white"
+        className="fa-pop absolute left-1/2 top-1.5 -translate-x-1/2 rounded bg-slate-900 px-1.5 py-0.5 text-[8px] font-semibold text-white dark:bg-slate-700"
         style={{ animationDelay: '1.4s' }}
       >
         3 selected
@@ -174,6 +223,7 @@ export function CommentsArt() {
     <Frame canvas>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
         <rect
+          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
           x="26"
           y="34"
           width="58"
@@ -214,6 +264,7 @@ export function AssignedActionsArt() {
     <Frame canvas>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
         <rect
+          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
           x="26"
           y="34"
           width="58"
@@ -256,6 +307,7 @@ export function FormatPainterArt() {
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
         {/* styled source */}
         <rect
+          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
           x="26"
           y="35"
           width="54"
@@ -265,12 +317,30 @@ export function FormatPainterArt() {
           stroke={BLUE_STROKE}
           strokeWidth="2"
         />
-        {/* target adopts the style */}
-        <rect className="fa-paint" x="140" y="35" width="54" height="26" rx="6" strokeWidth="2" />
+        {/* target adopts the style; it rests painted, which is what reduced motion shows */}
+        <rect
+          className="fa-paint dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+          x="140"
+          y="35"
+          width="54"
+          height="26"
+          rx="6"
+          fill={BLUE_FILL}
+          stroke={BLUE_STROKE}
+          strokeWidth="2"
+        />
         {/* travelling brush */}
         <g className="fa-brush">
-          <circle cx="92" cy="34" r="8" fill="white" stroke="#94a3b8" strokeWidth="1.5" />
-          <path d="M88 34 l4 -4 l3 3 l-4 4 z" fill={BLUE_STROKE} />
+          <circle
+            className="dark:fill-slate-900 dark:stroke-slate-500"
+            cx="92"
+            cy="34"
+            r="8"
+            fill="white"
+            stroke="#94a3b8"
+            strokeWidth="1.5"
+          />
+          <path className="dark:fill-brand-300" d="M88 34 l4 -4 l3 3 l-4 4 z" fill={BLUE_STROKE} />
         </g>
       </svg>
     </Frame>
@@ -302,6 +372,7 @@ export function TabsArt() {
         <div className="relative flex-1">
           <svg viewBox="0 0 220 56" className="absolute inset-0 h-full w-full">
             <rect
+              className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
               x="30"
               y="14"
               width="46"
@@ -312,6 +383,7 @@ export function TabsArt() {
               strokeWidth="1.8"
             />
             <rect
+              className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
               x="120"
               y="20"
               width="46"
@@ -322,7 +394,7 @@ export function TabsArt() {
               strokeWidth="1.8"
             />
             <line
-              className="fa-draw"
+              className="fa-draw dark:stroke-(--art-ink-stroke)"
               x1="76"
               y1="24"
               x2="120"
@@ -447,8 +519,8 @@ export function PresenceArt() {
               className={
                 'relative flex flex-col items-center gap-1 rounded-md border px-2 py-1.5 ' +
                 (t.active
-                  ? 'border-brand-300 bg-white dark:border-brand-500/50 dark:bg-slate-900'
-                  : 'border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950')
+                  ? 'border-brand-300 bg-white dark:border-brand-500/50 dark:bg-slate-900 dark:[--avatar-gap:var(--color-slate-900)]'
+                  : 'border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:[--avatar-gap:var(--color-slate-950)]')
               }
             >
               <div className="flex h-[14px] -space-x-1.5">
@@ -458,7 +530,7 @@ export function PresenceArt() {
                     className="fa-pop flex h-[14px] w-[14px] items-center justify-center rounded-full text-[6px] font-bold text-white"
                     style={{
                       backgroundColor: p.color,
-                      boxShadow: `0 0 0 1.5px white, 0 0 0 3px ${p.ring}`,
+                      boxShadow: `0 0 0 1.5px var(--avatar-gap, white), 0 0 0 3px ${p.ring}`,
                       animationDelay: `${0.3 + (ti + i) * 0.5}s`,
                     }}
                   >
@@ -493,6 +565,7 @@ export function SelectionGlowArt() {
     <Frame canvas>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
         <rect
+          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
           x="78"
           y="33"
           width="64"
@@ -532,7 +605,17 @@ export function RealtimeArt() {
   return (
     <Frame canvas>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
-        <rect className="fa-lww" x="79" y="34" width="62" height="30" rx="6" strokeWidth="2" />
+        <rect
+          className="fa-lww dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+          x="79"
+          y="34"
+          width="62"
+          height="30"
+          rx="6"
+          fill={BLUE_FILL}
+          stroke={BLUE_STROKE}
+          strokeWidth="2"
+        />
       </svg>
       <span className="absolute left-6 top-5">
         <Cursor color={SKY} label="TM" />
@@ -592,6 +675,7 @@ export function LaserArt() {
         {/* faint reference diagram */}
         <g opacity="0.6">
           <rect
+            className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
             x="24"
             y="20"
             width="40"
@@ -602,6 +686,7 @@ export function LaserArt() {
             strokeWidth="1.5"
           />
           <rect
+            className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
             x="150"
             y="58"
             width="40"
@@ -678,9 +763,9 @@ export function RevokeArt() {
           </span>
         </div>
         {/* toggle */}
-        <span className="relative inline-flex h-4 w-8 items-center rounded-full bg-slate-200 dark:bg-slate-700">
+        <span className="relative inline-flex h-4 w-8 items-center rounded-full bg-slate-200 dark:bg-slate-600">
           <span className="fa-on absolute inset-0 rounded-full bg-brand-500" />
-          <span className="fa-knob relative z-10 ml-0.5 h-3 w-3 rounded-full bg-white shadow dark:bg-slate-900" />
+          <span className="fa-knob relative z-10 ml-0.5 h-3 w-3 rounded-full bg-white shadow" />
         </span>
         {/* link row, struck through when revoked */}
         <div className="relative flex items-center gap-1 rounded border border-slate-200 bg-white px-1.5 py-0.5 dark:border-slate-800 dark:bg-slate-900">
@@ -776,10 +861,23 @@ export function RefreshArt() {
   return (
     <Frame canvas>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
-        <g className="fa-dip" fill={BLUE_FILL} stroke={BLUE_STROKE} strokeWidth="2">
+        <g
+          className="fa-dip dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+          fill={BLUE_FILL}
+          stroke={BLUE_STROKE}
+          strokeWidth="2"
+        >
           <rect x="36" y="34" width="48" height="24" rx="6" />
           <rect x="132" y="34" width="48" height="24" rx="6" />
-          <line x1="84" y1="46" x2="132" y2="46" stroke={BLUE_STROKE} strokeWidth="2" />
+          <line
+            className="dark:stroke-(--art-ink-stroke)"
+            x1="84"
+            y1="46"
+            x2="132"
+            y2="46"
+            stroke={BLUE_STROKE}
+            strokeWidth="2"
+          />
         </g>
         {/* reload glyph (translate on the outer group, spin on the inner) */}
         <g transform="translate(110 78)">
@@ -805,6 +903,7 @@ export function SpotlightArt() {
     <Frame canvas>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
         <rect
+          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
           x="26"
           y="20"
           width="46"
@@ -815,6 +914,7 @@ export function SpotlightArt() {
           strokeWidth="2"
         />
         <rect
+          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
           x="150"
           y="56"
           width="46"
@@ -824,7 +924,15 @@ export function SpotlightArt() {
           stroke={BLUE_STROKE}
           strokeWidth="2"
         />
-        <line x1="72" y1="31" x2="150" y2="67" stroke="#cbd5e1" strokeWidth="2" />
+        <line
+          className="dark:stroke-(--art-ink-stroke)"
+          x1="72"
+          y1="31"
+          x2="150"
+          y2="67"
+          stroke="#cbd5e1"
+          strokeWidth="2"
+        />
       </svg>
       {/* the travelling light: a clear hole, everything else shrouded dark */}
       <span
@@ -832,7 +940,7 @@ export function SpotlightArt() {
         style={{ boxShadow: '0 0 0 999px rgba(15,23,42,0.6)' }}
       >
         <span
-          className="h-1.5 w-1.5 rounded-full bg-white dark:bg-slate-900"
+          className="h-1.5 w-1.5 rounded-full bg-white"
           style={{ boxShadow: '0 0 5px 1px rgba(255,255,255,0.9)' }}
         />
       </span>
@@ -848,6 +956,7 @@ export function AvatarModeArt() {
     <Frame canvas>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
         <rect
+          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
           x="16"
           y="18"
           width="44"
@@ -858,6 +967,7 @@ export function AvatarModeArt() {
           strokeWidth="2"
         />
         <rect
+          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
           x="150"
           y="18"
           width="52"
@@ -878,7 +988,15 @@ export function AvatarModeArt() {
           stroke={SKY}
           strokeWidth="2"
         />
-        <line x1="60" y1="28" x2="146" y2="28" stroke="#cbd5e1" strokeWidth="2" />
+        <line
+          className="dark:stroke-(--art-ink-stroke)"
+          x1="60"
+          y1="28"
+          x2="146"
+          y2="28"
+          stroke="#cbd5e1"
+          strokeWidth="2"
+        />
         {/* the walked path */}
         <path
           d="M70 78 q46 8 84 -4"
@@ -917,15 +1035,15 @@ export function CustomThemesArt() {
             <span
               key={c}
               className={
-                'fa-pop h-4 w-4 rounded-full ' +
-                (i === 0 ? 'ring-2 ring-violet-500 ring-offset-1' : '')
+                'fa-pop h-4 w-4 rounded-full dark:shadow-[inset_0_0_0_1px_rgb(255_255_255/0.15)] ' +
+                (i === 0 ? 'ring-2 ring-violet-500 ring-offset-1 dark:ring-offset-slate-950' : '')
               }
               style={{ backgroundColor: c, animationDelay: `${0.2 + i * 0.25}s` }}
             />
           ))}
         </div>
-        {/* preview canvas adopting the saved palette */}
-        <div className="relative mt-0.5 flex-1 rounded border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+        {/* preview canvas adopting the saved palette: a named theme, so it stays light in dark */}
+        <div className="relative mt-0.5 flex-1 rounded border border-slate-200 bg-white dark:border-slate-800">
           <svg viewBox="0 0 196 38" className="absolute inset-0 h-full w-full">
             <rect
               x="14"

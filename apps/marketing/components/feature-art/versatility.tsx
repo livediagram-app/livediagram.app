@@ -53,6 +53,7 @@ export function NotesArt() {
     <Frame canvas>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
         <rect
+          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
           x="22"
           y="36"
           width="64"
@@ -75,8 +76,8 @@ export function NotesArt() {
         <div className="flex items-center gap-1 text-[7px] font-semibold text-amber-700 dark:text-amber-300">
           <NoteIcon /> Note
         </div>
-        <div className="mt-1 h-1.5 w-full rounded bg-amber-200/80" />
-        <div className="mt-0.5 h-1.5 w-3/4 rounded bg-amber-200/80" />
+        <div className="mt-1 h-1.5 w-full rounded bg-amber-200/80 dark:bg-amber-500/30" />
+        <div className="mt-0.5 h-1.5 w-3/4 rounded bg-amber-200/80 dark:bg-amber-500/30" />
       </div>
     </Frame>
   );
@@ -98,6 +99,7 @@ export function BorderStyleArt() {
           return (
             <g key={i}>
               <rect
+                className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
                 x={x}
                 y="32"
                 width="52"
@@ -110,7 +112,7 @@ export function BorderStyleArt() {
                 strokeLinecap="round"
               />
               <rect
-                className="fa-hl"
+                className="fa-hl dark:stroke-brand-500"
                 x={x - 4}
                 y="28"
                 width="60"
@@ -150,11 +152,16 @@ export function ArrowsArt() {
             markerHeight="5"
             orient="auto-start-reverse"
           >
-            <path d="M0 0 L10 5 L0 10 z" fill={BLUE_STROKE} />
+            <path
+              className="dark:fill-(--art-ink-stroke)"
+              d="M0 0 L10 5 L0 10 z"
+              fill={BLUE_STROKE}
+            />
           </marker>
         </defs>
         {/* straight */}
         <line
+          className="dark:stroke-(--art-ink-stroke)"
           x1="24"
           y1="20"
           x2="150"
@@ -166,6 +173,7 @@ export function ArrowsArt() {
         />
         {/* curved, with a draggable control knob at the apex */}
         <path
+          className="dark:stroke-(--art-ink-stroke)"
           d="M24 50 Q 87 30, 150 50"
           fill="none"
           stroke={BLUE_STROKE}
@@ -174,7 +182,7 @@ export function ArrowsArt() {
           markerEnd="url(#li-arrowhead)"
         />
         <circle
-          className="fa-pulse"
+          className="fa-pulse dark:stroke-brand-500"
           cx="87"
           cy="40"
           r="6"
@@ -182,9 +190,18 @@ export function ArrowsArt() {
           stroke={SKY}
           strokeWidth="2"
         />
-        <circle cx="87" cy="40" r="3.5" fill="#fff" stroke={SKY} strokeWidth="1.5" />
+        <circle
+          className="dark:stroke-brand-500"
+          cx="87"
+          cy="40"
+          r="3.5"
+          fill="#fff"
+          stroke={SKY}
+          strokeWidth="1.5"
+        />
         {/* angled, with a draggable elbow knob at the bend */}
         <path
+          className="dark:stroke-(--art-ink-stroke)"
           d="M24 80 L96 80 L96 66 L150 66"
           fill="none"
           stroke={BLUE_STROKE}
@@ -194,7 +211,7 @@ export function ArrowsArt() {
           markerEnd="url(#li-arrowhead)"
         />
         <circle
-          className="fa-pulse"
+          className="fa-pulse dark:stroke-brand-500"
           cx="96"
           cy="80"
           r="6"
@@ -203,7 +220,15 @@ export function ArrowsArt() {
           strokeWidth="2"
           style={{ animationDelay: '1s' }}
         />
-        <circle cx="96" cy="80" r="3.5" fill="#fff" stroke={SKY} strokeWidth="1.5" />
+        <circle
+          className="dark:stroke-brand-500"
+          cx="96"
+          cy="80"
+          r="3.5"
+          fill="#fff"
+          stroke={SKY}
+          strokeWidth="1.5"
+        />
         {/* style labels */}
         <text x="166" y="23" fontSize="8" fontWeight="500" fill="#94a3b8">
           straight
@@ -232,7 +257,7 @@ export function PencilArt() {
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
         {/* hand-drawn, wobbly rectangle outline being sketched */}
         <path
-          className="fa-draw"
+          className="fa-draw dark:stroke-(--art-ink-stroke)"
           d="M22 34 C 40 30, 64 31, 78 33 C 80 44, 79 56, 77 64 C 58 66, 38 65, 23 63 C 21 52, 21 43, 22 34 Z"
           fill="none"
           stroke={BLUE_STROKE}
@@ -251,7 +276,7 @@ export function PencilArt() {
         />
         {/* recognised clean shape */}
         <rect
-          className="fa-fade"
+          className="fa-fade dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
           x="138"
           y="32"
           width="58"
@@ -285,6 +310,7 @@ export function AlignmentGuidesArt() {
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
         {/* neighbour above — shares a left edge with the dragged shape */}
         <rect
+          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
           x="58"
           y="12"
           width="52"
@@ -296,6 +322,7 @@ export function AlignmentGuidesArt() {
         />
         {/* neighbour to the right — shares a top edge with the dragged shape */}
         <rect
+          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
           x="150"
           y="54"
           width="44"
@@ -307,6 +334,7 @@ export function AlignmentGuidesArt() {
         />
         {/* selection ring on the shape being dragged into line */}
         <rect
+          className="dark:stroke-brand-500"
           x="54"
           y="50"
           width="60"
@@ -317,6 +345,7 @@ export function AlignmentGuidesArt() {
           strokeWidth="1.5"
         />
         <rect
+          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
           x="58"
           y="54"
           width="52"
@@ -328,7 +357,7 @@ export function AlignmentGuidesArt() {
         />
         {/* vertical guide — the two stacked shapes' left edges line up */}
         <line
-          className="fa-pulse"
+          className="fa-pulse dark:stroke-brand-500"
           x1="58"
           y1="6"
           x2="58"
@@ -339,7 +368,7 @@ export function AlignmentGuidesArt() {
         />
         {/* horizontal guide — the dragged shape + right neighbour share a top edge */}
         <line
-          className="fa-pulse"
+          className="fa-pulse dark:stroke-brand-500"
           x1="44"
           y1="54"
           x2="200"
@@ -363,22 +392,22 @@ export function CanvasBackdropArt() {
   const pats: { key: string; bg: string; size: string }[] = [
     {
       key: 'grid',
-      bg: 'linear-gradient(#cbd5e1 1px, transparent 1px), linear-gradient(90deg, #cbd5e1 1px, transparent 1px)',
+      bg: 'linear-gradient(var(--swatch-line, #cbd5e1) 1px, transparent 1px), linear-gradient(90deg, var(--swatch-line, #cbd5e1) 1px, transparent 1px)',
       size: '9px 9px',
     },
     {
       key: 'lines',
-      bg: 'repeating-linear-gradient(0deg, #cbd5e1 0 1px, transparent 1px 9px)',
+      bg: 'repeating-linear-gradient(0deg, var(--swatch-line, #cbd5e1) 0 1px, transparent 1px 9px)',
       size: 'auto',
     },
     {
       key: 'crosshatch',
-      bg: 'repeating-linear-gradient(45deg, #cbd5e1 0 1px, transparent 1px 8px), repeating-linear-gradient(-45deg, #cbd5e1 0 1px, transparent 1px 8px)',
+      bg: 'repeating-linear-gradient(45deg, var(--swatch-line, #cbd5e1) 0 1px, transparent 1px 8px), repeating-linear-gradient(-45deg, var(--swatch-line, #cbd5e1) 0 1px, transparent 1px 8px)',
       size: 'auto',
     },
     {
       key: 'dots',
-      bg: 'radial-gradient(#cbd5e1 1.2px, transparent 1.2px)',
+      bg: 'radial-gradient(var(--swatch-line, #cbd5e1) 1.2px, transparent 1.2px)',
       size: '9px 9px',
     },
   ];
@@ -388,7 +417,7 @@ export function CanvasBackdropArt() {
         {pats.map((p, i) => (
           <div
             key={p.key}
-            className="relative h-16 w-1/4 overflow-hidden rounded border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900"
+            className="relative h-16 w-1/4 overflow-hidden rounded border border-slate-200 bg-white dark:border-slate-800 dark:bg-(color:--art-paper) dark:[--swatch-line:var(--color-slate-700)]"
           >
             <span
               className="absolute inset-0"
@@ -420,6 +449,7 @@ export function AiAssistArt() {
         {/* shapes the assistant just generated, popping in */}
         <g className="fa-pop" style={{ animationDelay: '0.5s' }}>
           <rect
+            className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
             x="18"
             y="20"
             width="46"
@@ -431,7 +461,7 @@ export function AiAssistArt() {
           />
         </g>
         <line
-          className="fa-draw"
+          className="fa-draw dark:stroke-(--art-ink-stroke)"
           x1="41"
           y1="40"
           x2="50"
@@ -443,6 +473,7 @@ export function AiAssistArt() {
         />
         <g className="fa-pop" style={{ animationDelay: '1.2s' }}>
           <rect
+            className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
             x="32"
             y="56"
             width="46"
@@ -504,6 +535,7 @@ export function RotateArt() {
         >
           {/* selection ring */}
           <rect
+            className="dark:stroke-brand-500"
             x="74"
             y="30"
             width="72"
@@ -515,6 +547,7 @@ export function RotateArt() {
           />
           {/* the shape itself */}
           <rect
+            className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
             x="78"
             y="34"
             width="64"
@@ -571,9 +604,9 @@ export function MinimalPanelArt() {
         </span>
       </div>
       {/* toggle (synced with the crossfade above) */}
-      <span className="absolute right-2 top-2 inline-flex h-4 w-8 items-center rounded-full bg-slate-200 shadow-sm dark:bg-slate-700">
+      <span className="absolute right-2 top-2 inline-flex h-4 w-8 items-center rounded-full bg-slate-200 shadow-sm dark:bg-slate-600">
         <span className="fa-off absolute inset-0 rounded-full bg-brand-500" />
-        <span className="fa-knob relative z-10 ml-0.5 h-3 w-3 rounded-full bg-white shadow dark:bg-slate-900" />
+        <span className="fa-knob relative z-10 ml-0.5 h-3 w-3 rounded-full bg-white shadow" />
       </span>
     </Frame>
   );
@@ -632,10 +665,7 @@ export function ZenModeArt() {
         </span>
       </div>
       {/* the content you focus on — stays put while the chrome fades */}
-      <div
-        className="absolute left-1/2 top-1/2 h-7 w-12 -translate-x-1/2 -translate-y-1/2 rounded-md border-2"
-        style={{ borderColor: BLUE_STROKE, backgroundColor: BLUE_FILL }}
-      />
+      <div className="absolute left-1/2 top-1/2 h-7 w-12 -translate-x-1/2 -translate-y-1/2 rounded-md border-2 border-[#0284c7] bg-[#dbeafe] dark:border-(--art-ink-stroke) dark:bg-(color:--art-ink-fill)" />
     </Frame>
   );
 }
@@ -705,9 +735,26 @@ export function MarkdownImportArt() {
         <line x1="96" y1="48" x2="120" y2="48" stroke="rgb(100 116 139)" strokeWidth="2" />
         <polygon points="120,48 113,44 113,52" fill="rgb(100 116 139)" />
         {/* right: a tiny tree (root + two children) */}
-        <line x1="150" y1="48" x2="178" y2="28" stroke={BLUE_STROKE} strokeWidth="1.5" />
-        <line x1="150" y1="48" x2="178" y2="68" stroke={BLUE_STROKE} strokeWidth="1.5" />
+        <line
+          className="dark:stroke-(--art-ink-stroke)"
+          x1="150"
+          y1="48"
+          x2="178"
+          y2="28"
+          stroke={BLUE_STROKE}
+          strokeWidth="1.5"
+        />
+        <line
+          className="dark:stroke-(--art-ink-stroke)"
+          x1="150"
+          y1="48"
+          x2="178"
+          y2="68"
+          stroke={BLUE_STROKE}
+          strokeWidth="1.5"
+        />
         <rect
+          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
           x="132"
           y="40"
           width="22"
@@ -718,6 +765,7 @@ export function MarkdownImportArt() {
           strokeWidth="1.5"
         />
         <rect
+          className="dark:stroke-(--art-ink-stroke) dark:fill-(--art-ink-fill)"
           x="176"
           y="20"
           width="22"
@@ -728,6 +776,7 @@ export function MarkdownImportArt() {
           strokeWidth="1.25"
         />
         <rect
+          className="dark:stroke-(--art-ink-stroke) dark:fill-(--art-ink-fill)"
           x="176"
           y="60"
           width="22"
@@ -775,10 +824,35 @@ export function MermaidArt() {
         <line x1="96" y1="48" x2="120" y2="48" stroke="rgb(100 116 139)" strokeWidth="2" />
         <polygon points="120,48 113,44 113,52" fill="rgb(100 116 139)" />
         {/* edges: start -> a, a -> b, b back to start (a real cycle) */}
-        <line x1="143" y1="26" x2="176" y2="26" stroke={BLUE_STROKE} strokeWidth="1.5" />
-        <line x1="187" y1="36" x2="155" y2="60" stroke={BLUE_STROKE} strokeWidth="1.5" />
-        <line x1="144" y1="60" x2="134" y2="38" stroke={BLUE_STROKE} strokeWidth="1.5" />
+        <line
+          className="dark:stroke-(--art-ink-stroke)"
+          x1="143"
+          y1="26"
+          x2="176"
+          y2="26"
+          stroke={BLUE_STROKE}
+          strokeWidth="1.5"
+        />
+        <line
+          className="dark:stroke-(--art-ink-stroke)"
+          x1="187"
+          y1="36"
+          x2="155"
+          y2="60"
+          stroke={BLUE_STROKE}
+          strokeWidth="1.5"
+        />
+        <line
+          className="dark:stroke-(--art-ink-stroke)"
+          x1="144"
+          y1="60"
+          x2="134"
+          y2="38"
+          stroke={BLUE_STROKE}
+          strokeWidth="1.5"
+        />
         <rect
+          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
           x="122"
           y="18"
           width="22"
@@ -789,6 +863,7 @@ export function MermaidArt() {
           strokeWidth="1.5"
         />
         <rect
+          className="dark:stroke-(--art-ink-stroke) dark:fill-(--art-ink-fill)"
           x="176"
           y="18"
           width="22"
@@ -799,6 +874,7 @@ export function MermaidArt() {
           strokeWidth="1.25"
         />
         <rect
+          className="dark:stroke-(--art-ink-stroke) dark:fill-(--art-ink-fill)"
           x="133"
           y="58"
           width="22"
