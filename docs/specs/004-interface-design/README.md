@@ -2,6 +2,7 @@
 
 Follow the references below only as needed; never upfront.
 
+- ./appearance.md - when touching light / dark / system: one origin-wide setting, the no-flash boot script, the header toggle
 - ./color-scheme.md - when working on Theme: Brand color and visual design tokens
 - ./fonts.md - when working on Fonts: Eleven Google Fonts, pickable per element + as a per-tab default
 - ./canvas-accessibility.md - when working on Canvas accessibility baseline: Baseline canvas a11y: Tab/Shift+Tab element traversal (selection as focus), aria-labels on element views, SR-only polite live region for selection/delete/undo

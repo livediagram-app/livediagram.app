@@ -78,11 +78,11 @@ export function ShareRail() {
   }
 
   const iconButton =
-    'flex h-8 w-8 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500';
+    'flex h-8 w-8 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100';
 
   return (
     <div className="fixed right-0 top-1/2 z-40 hidden -translate-y-1/2 xl:block">
-      <div className="flex flex-col items-center gap-1 rounded-l-xl border border-r-0 border-slate-200 bg-white/90 py-3 pl-2 pr-1.5 shadow-lg backdrop-blur">
+      <div className="flex flex-col items-center gap-1 rounded-l-xl border border-r-0 border-slate-200 bg-white/90 py-3 pl-2 pr-1.5 shadow-lg backdrop-blur dark:border-slate-800 dark:bg-slate-900/90">
         <span className="mb-1 rotate-180 text-[10px] font-semibold uppercase tracking-[0.15em] text-slate-400 [writing-mode:vertical-rl]">
           Share
         </span>
@@ -100,7 +100,7 @@ export function ShareRail() {
             </svg>
           </a>
         ))}
-        <span aria-hidden="true" className="my-0.5 h-px w-5 bg-slate-200" />
+        <span aria-hidden="true" className="my-0.5 h-px w-5 bg-slate-200 dark:bg-slate-700" />
         <button
           type="button"
           onClick={copyLink}

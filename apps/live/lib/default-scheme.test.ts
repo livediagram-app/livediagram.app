@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { createShape, type Tab } from '@livediagram/diagram';
-import { resetAppearanceForTests, setAppearance } from '@/hooks/ui/appearance-store';
+import { resetAppearanceForTests, setAppearance } from '@livediagram/ui';
 import { deriveNewBoxedColours, getTheme, resolveTabBackdrop, switchThemeBackdrop } from './themes';
 
 // The Default theme follows the VIEWER (docs/specs/007-editor/live-app.md): the diagram stores

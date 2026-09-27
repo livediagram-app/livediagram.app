@@ -1,7 +1,7 @@
-import { readLocalStorageSafe, writeLocalStorageSafe } from '@/lib/local-storage-safe';
 import { APPEARANCE_STORAGE_KEY, DARK_MEDIA_QUERY } from './appearance-storage';
 
-// The Appearance value and its side effects, split from the hook so both are
+// The Appearance value and its side effects, shared by every app on the origin
+// (docs/specs/004-interface-design/appearance.md), split from the hook so both are
 // reachable without React. The hook (useAppearance) owns the subscription and
 // the telemetry; everything here is what "the appearance changed" actually
 // means.
@@ -21,6 +21,26 @@ export type Appearance = 'light' | 'dark';
 /** What the user picked. */
 export type AppearanceSetting = Appearance | 'system';
 
+// Storage can be absent (the server) or throw (private mode, partitioned storage);
+// either way the setting falls back to the default and a write lasts the session.
+function readStored(): string | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    return window.localStorage.getItem(APPEARANCE_STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function writeStored(value: string): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(APPEARANCE_STORAGE_KEY, value);
+  } catch {
+    // Quota / private browsing: in-memory only.
+  }
+}
+
 // The default, for a visitor who has never touched the control: follow the
 // device. Somebody whose machine is dark has already said what they want, and
 // System is the setting that hears it.
@@ -28,11 +48,11 @@ export const DEFAULT_APPEARANCE_SETTING: AppearanceSetting = 'system';
 
 // Anything that is not one of the three literals reads as the default. That
 // covers a missing key, a value written by an older build, and a hand-edited or
-// corrupted one — none of which should leave the editor in a mode the user
+// corrupted one — none of which should leave the page in a mode the user
 // cannot explain. An explicit Light or Dark still wins over the device: System
-// is where the choice STARTS, not a rule (docs/specs/007-editor/live-app.md).
+// is where the choice STARTS, not a rule (docs/specs/004-interface-design/appearance.md).
 export function readAppearanceSetting(): AppearanceSetting {
-  const stored = readLocalStorageSafe(APPEARANCE_STORAGE_KEY);
+  const stored = readStored();
   return stored === 'dark' || stored === 'light' || stored === 'system'
     ? stored
     : DEFAULT_APPEARANCE_SETTING;
@@ -93,6 +113,12 @@ export function getServerAppearance(): Appearance {
   return 'light';
 }
 
+// The setting the server renders a control with: the default, which is what most
+// readers hold, so the control rarely changes its glyph on hydration.
+export function getServerAppearanceSetting(): AppearanceSetting {
+  return DEFAULT_APPEARANCE_SETTING;
+}
+
 export function subscribeAppearance(listener: () => void): () => void {
   watchSystem();
   listeners.add(listener);
@@ -124,7 +150,7 @@ function watchSystem(): void {
 // the telemetry emit, double-wrote localStorage, and double-applied the class.
 export function setAppearance(next: AppearanceSetting): void {
   current = next;
-  writeLocalStorageSafe(APPEARANCE_STORAGE_KEY, next);
+  writeStored(next);
   watchSystem();
   applyAppearance(resolveAppearance(next));
   listeners.forEach((l) => l());

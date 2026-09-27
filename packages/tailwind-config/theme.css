@@ -74,7 +74,14 @@
  * and an accent drawn from that hue. Tokens only, so every slate-* / brand-* utility keeps its name,
  * and light mode keeps every colour above. A themed tab's tint (useEditorAccent) is written with a
  * more specific selector, so it outranks this base whatever order the stylesheets load in. */
+/* The painted appearance tells the UA too (docs/specs/004-interface-design/appearance.md), so native
+ * controls and scrollbars follow the reader's pick rather than the OS. */
+:root {
+  color-scheme: light;
+}
+
 .dark {
+  color-scheme: dark;
   --color-slate-950: #0b0f16;
   --color-slate-900: #131b26;
   --color-slate-800: #16202e;

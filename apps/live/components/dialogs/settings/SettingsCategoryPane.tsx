@@ -16,7 +16,7 @@ import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { track } from '@/lib/telemetry';
 import { SETTINGS_ROW_ATTRIBUTE } from './settings-scroll-anchor';
-import type { AppearanceSetting } from '@/hooks/ui/appearance-store';
+import type { AppearanceSetting } from '@livediagram/ui';
 import {
   choiceTelemetryType,
   type SettingsAppearanceRowSpec,

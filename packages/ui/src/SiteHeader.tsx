@@ -1,5 +1,6 @@
 import { ctaHref, type CtaSurface } from '@livediagram/api-schema';
 import type { ReactNode } from 'react';
+import { SiteAppearanceToggle } from './appearance/SiteAppearanceToggle';
 import { Brand } from './Brand';
 import { buttonClassName } from './Button';
 import { ProductNav, type ProductNavKey } from './ProductNav';
@@ -12,7 +13,8 @@ import { ShareRail } from './ShareRail';
 // primary "Choose Template", /new, the encouraged wizard path), with the
 // ShareRail pinned to the page edge below. Cross-surface navigation (Help,
 // Explorer, Telemetry, ...) lives in the apps menu, so the header itself
-// carries just those CTAs.
+// carries just those CTAs, plus the quiet Appearance toggle just left of them
+// (docs/specs/004-interface-design/appearance.md), on every public page.
 //
 // `productNav` is the current section key for the apps-menu dropdown next to
 // the logo (the landing page passes 'home', which reads as "Welcome").
@@ -48,7 +50,7 @@ export function SiteHeader({
 }) {
   return (
     <>
-      <header className="sticky top-0 z-50 h-18 border-y border-slate-200/70 bg-slate-50/80 backdrop-blur [view-transition-name:site-header]">
+      <header className="sticky top-0 z-50 h-18 border-y border-slate-200/70 bg-slate-50/80 backdrop-blur dark:border-slate-800/70 dark:bg-slate-950/80 [view-transition-name:site-header]">
         {/* gap-* guarantees breathing room between the left cluster and the CTA
             even when justify-between collapses to zero on a narrow phone (where
             Brand + the apps-menu dropdown + CTA otherwise sit flush). Mobile
@@ -70,6 +72,7 @@ export function SiteHeader({
             </div>
           ) : null}
           <div className="flex shrink-0 items-center gap-2">
+            <SiteAppearanceToggle />
             {actions ?? <DefaultActions ctaSurface={ctaSurface} />}
           </div>
         </div>

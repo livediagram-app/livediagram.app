@@ -5,6 +5,7 @@ import {
   getAppearanceSetting,
   getResolvedAppearance,
   getServerAppearance,
+  getServerAppearanceSetting,
   readAppearanceSetting,
   resetAppearanceForTests,
   resolveAppearance,
@@ -245,6 +246,13 @@ describe('getServerAppearance', () => {
   it('is light whatever the client store holds', () => {
     setAppearance('dark');
     expect(getServerAppearance()).toBe('light');
+  });
+});
+
+describe('getServerAppearanceSetting', () => {
+  it('is the System default whatever the client store holds', () => {
+    setAppearance('dark');
+    expect(getServerAppearanceSetting()).toBe('system');
   });
 });
 
