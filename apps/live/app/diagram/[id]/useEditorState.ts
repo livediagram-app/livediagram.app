@@ -23,6 +23,7 @@ import { useEraserConfig } from '@/hooks/canvas/useEraserConfig';
 import { useFormatConfig } from '@/hooks/canvas/useFormatConfig';
 import { useStyleMemory } from '@/hooks/canvas/useStyleMemory';
 import { useQuickStyle } from '@/hooks/canvas/useQuickStyle';
+import { useSwatchOverrides } from '@/hooks/canvas/useSwatchOverrides';
 import { getTheme } from '@/lib/themes';
 import { usePortalSetters } from '@/hooks/canvas/usePortalSetters';
 import { useBehaviourElements } from '@/hooks/canvas/useBehaviourElements';
@@ -2431,6 +2432,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- the selection IS these two
     [selectedId, multiSelectedIds],
   );
+  const swatchOverrides = useSwatchOverrides({ diagramId });
   const quickStyle = useQuickStyle({
     activeTab,
     theme: activeTheme,
@@ -2439,6 +2441,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     liveElements: liveActiveElements,
     commit,
     memory: styleMemory,
+    swatchOverrides,
   });
 
   // Portal links (docs/specs/009-elements/portal-element.md) live off the style hook: a link can point at a

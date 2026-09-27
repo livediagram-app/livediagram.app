@@ -253,3 +253,43 @@ describe('clearQuickStyle', () => {
       expect(cleared).not.toHaveProperty(f);
   });
 });
+
+describe('custom swatches (docs/specs/008-canvas/quick-style-panel.md "Custom swatches")', () => {
+  const custom = { stroke: { 4: '#ff5500' }, fill: { 2: '#123456' } };
+
+  it('shows the custom colour in the overridden slot of its row', () => {
+    const view = quickStyleView([shape('a')], forest, custom)!;
+    expect(view.sections.stroke?.swatches[4]).toMatchObject({ color: '#ff5500' });
+    expect(view.sections.stroke?.swatches[4]?.override?.themeName).toBe('Green');
+    expect(view.sections.background?.swatches[2]).toMatchObject({ color: '#123456' });
+  });
+
+  it('applies the custom colour itself and binds no slot, so it never follows the theme', () => {
+    const next = applyQuickStroke(
+      shape('a', { strokeSwatch: 1 }),
+      forest,
+      4,
+      custom,
+    ) as ShapeElement;
+    expect(next.strokeColor).toBe('#ff5500');
+    expect(next.strokeSwatch).toBeUndefined();
+    const filled = applyQuickFill(shape('a'), forest, 2, custom) as ShapeElement;
+    expect(filled).toMatchObject({ fillColor: '#123456' });
+    expect(filled.fillSwatch).toBeUndefined();
+  });
+
+  it('highlights the custom swatch for an element painted with it', () => {
+    const view = quickStyleView([shape('a', { strokeColor: '#FF5500' })], forest, custom)!;
+    expect(view.sections.stroke?.value).toBe(4);
+  });
+
+  it('stops claiming a slot whose theme colour has been replaced', () => {
+    const green = quickSwatchColor(forest, 'stroke', 4);
+    const view = quickStyleView(
+      [shape('a', { strokeColor: green, strokeSwatch: 4 })],
+      forest,
+      custom,
+    )!;
+    expect(view.sections.stroke?.value).toBeNull();
+  });
+});

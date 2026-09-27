@@ -302,7 +302,8 @@ Per [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md), 
 against menu use (which is the evidence the Actions section asks for): `QuickStroke`,
 `QuickBackground`, `QuickStrokeWidth`, `QuickStrokeStyle`, `QuickTextAlign`, `QuickIconAlign`, and
 `QuickClearStyles`. Editing the palette is a setting, not a style change: `UI·Changed·QuickSwatchCustom`
-when a swatch is overridden, `UI·Changed·QuickSwatchReset` when an override is cleared.
+when a swatch is overridden, `UI·Changed·QuickSwatchReset` when an override is cleared, both
+counted as Custom Swatches in the dashboard's Look & Feel stack.
 
 ## Out of scope
 

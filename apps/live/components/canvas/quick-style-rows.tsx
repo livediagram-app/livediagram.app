@@ -6,6 +6,7 @@
 
 import { useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { Tooltip } from '@livediagram/ui';
+import { isLightColor } from '@livediagram/diagram';
 
 export type QuickOption<V> = {
   value: V;
@@ -14,7 +15,14 @@ export type QuickOption<V> = {
   content: ReactNode;
   // A swatch paints its own colour; every other option is a glyph button.
   swatch?: string;
+  // A custom colour in place of the theme's: drawn with a corner marker.
+  overridden?: boolean;
 };
+
+// Compact (Toolbar, Minimal): 20 px chips in touching 24 px targets, so the row
+// is exactly seven targets wide. Roomy (Floating): 24 px chips spread across
+// the Palette's width. Every target is 24 x 24 px either way (WCAG 2.5.8).
+export type QuickRowDensity = 'compact' | 'roomy';
 
 export function QuickRadioRow<V extends string | number>({
   title,
@@ -22,6 +30,8 @@ export function QuickRadioRow<V extends string | number>({
   options,
   value,
   onChoose,
+  onOptionContext,
+  density = 'roomy',
   testId,
 }: {
   title: string;
@@ -29,6 +39,9 @@ export function QuickRadioRow<V extends string | number>({
   options: readonly QuickOption<V>[];
   value: V | null;
   onChoose: (value: V) => void;
+  // Right-click, Shift+F10 or the context-menu key on an option.
+  onOptionContext?: (value: V, button: HTMLButtonElement) => void;
+  density?: QuickRowDensity;
   testId: string;
 }) {
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -40,7 +53,17 @@ export function QuickRadioRow<V extends string | number>({
     refs.current[next]?.focus();
     onChoose(options[next]!.value);
   };
+  const openContext = (index: number) => {
+    const button = refs.current[index];
+    if (button && onOptionContext) onOptionContext(options[index]!.value, button);
+  };
   const onKeyDown = (e: KeyboardEvent<HTMLButtonElement>, index: number) => {
+    if ((e.key === 'F10' && e.shiftKey) || e.key === 'ContextMenu') {
+      e.preventDefault();
+      e.stopPropagation();
+      openContext(index);
+      return;
+    }
     const step =
       e.key === 'ArrowRight' || e.key === 'ArrowDown'
         ? 1
@@ -56,6 +79,7 @@ export function QuickRadioRow<V extends string | number>({
   };
 
   const isSwatchRow = options.some((o) => o.swatch !== undefined);
+  const compact = density === 'compact';
   return (
     <div className="flex flex-col gap-1">
       {showTitle ? (
@@ -70,7 +94,9 @@ export function QuickRadioRow<V extends string | number>({
         role="radiogroup"
         aria-label={title}
         data-testid={testId}
-        className={isSwatchRow ? 'flex justify-between gap-1' : 'grid grid-cols-3 gap-1'}
+        className={
+          isSwatchRow ? (compact ? 'flex' : 'flex justify-between gap-1') : 'grid grid-cols-3 gap-1'
+        }
       >
         {options.map((o, i) => {
           const checked = i === checkedIndex;
@@ -85,30 +111,77 @@ export function QuickRadioRow<V extends string | number>({
                 aria-checked={checked}
                 aria-label={o.name}
                 tabIndex={i === tabStop ? 0 : -1}
+                data-overridden={o.overridden ? '' : undefined}
                 onClick={() => onChoose(o.value)}
                 onKeyDown={(e) => onKeyDown(e, i)}
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  openContext(i);
+                }}
                 className={
                   o.swatch !== undefined
-                    ? `h-6 w-6 shrink-0 rounded-md border border-black/15 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1 dark:border-white/20 dark:focus-visible:ring-offset-slate-900 ${
-                        checked
-                          ? 'ring-2 ring-brand-500 ring-offset-1 dark:ring-brand-300 dark:ring-offset-slate-900'
-                          : 'hover:scale-110'
-                      }`
+                    ? 'group relative flex h-6 w-6 shrink-0 items-center justify-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500'
                     : `flex h-7 w-full items-center justify-center rounded-md transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${
                         checked
                           ? 'bg-brand-50 text-brand-700 ring-1 ring-brand-300 dark:bg-brand-500/15 dark:text-brand-200 dark:ring-brand-500/40'
                           : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
                       }`
                 }
-                style={o.swatch !== undefined ? { backgroundColor: o.swatch } : undefined}
               >
-                {o.content}
+                {o.swatch !== undefined ? (
+                  <SwatchChip
+                    colour={o.swatch}
+                    checked={checked}
+                    compact={compact}
+                    overridden={o.overridden === true}
+                  />
+                ) : (
+                  o.content
+                )}
               </button>
             </Tooltip>
           );
         })}
       </div>
     </div>
+  );
+}
+
+// The colour itself, inside its 24 px target.
+function SwatchChip({
+  colour,
+  checked,
+  compact,
+  overridden,
+}: {
+  colour: string;
+  checked: boolean;
+  compact: boolean;
+  overridden: boolean;
+}) {
+  return (
+    <span
+      aria-hidden
+      style={{ backgroundColor: colour }}
+      className={`relative block rounded-[5px] border border-black/15 transition dark:border-white/20 ${
+        compact ? 'h-5 w-5' : 'h-6 w-6'
+      } ${
+        checked
+          ? 'ring-2 ring-brand-500 ring-offset-1 dark:ring-brand-300 dark:ring-offset-slate-900'
+          : 'group-hover:scale-110'
+      }`}
+    >
+      {overridden ? (
+        // The corner marker: the name says "Custom", this shows it.
+        <span
+          data-swatch-marker=""
+          className={`absolute -right-0.5 -top-0.5 h-1.5 w-1.5 rounded-full ring-1 ${
+            isLightColor(colour) ? 'bg-slate-900 ring-white' : 'bg-white ring-slate-900'
+          }`}
+        />
+      ) : null}
+    </span>
   );
 }
 

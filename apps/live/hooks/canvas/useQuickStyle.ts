@@ -5,7 +5,14 @@
 // under its own telemetry token so panel use reads apart from menu use.
 
 import { useMemo } from 'react';
-import type { Element, Tab, TextAlignX, ThemeDefinition } from '@livediagram/diagram';
+import type {
+  Element,
+  QuickSwatchRole,
+  QuickSwatchSlot,
+  Tab,
+  TextAlignX,
+  ThemeDefinition,
+} from '@livediagram/diagram';
 import { track } from '@/lib/telemetry';
 import {
   applyQuickFill,
@@ -24,6 +31,7 @@ import {
 } from '@/lib/quick-style';
 import { styleKindOf, type StyleKindKey } from '@/lib/style-memory';
 import type { StyleMemoryApi } from './useStyleMemory';
+import type { SwatchOverridesApi } from './useSwatchOverrides';
 
 export type QuickStyleApi = {
   view: QuickStyleView | null;
@@ -34,6 +42,9 @@ export type QuickStyleApi = {
   setTextAlign: (align: TextAlignX) => void;
   setIconAlign: (align: QuickIconAlign) => void;
   clearStyles: () => void;
+  // Custom swatches (docs/specs/008-canvas/quick-style-panel.md): edit the palette, style nothing.
+  setSwatchOverride: (role: QuickSwatchRole, slot: QuickSwatchSlot, hex: string) => void;
+  clearSwatchOverride: (role: QuickSwatchRole, slot: QuickSwatchSlot) => void;
 };
 
 export function useQuickStyle(deps: {
@@ -45,16 +56,18 @@ export function useQuickStyle(deps: {
   liveElements: () => Element[];
   commit: (mapElements: (els: Element[]) => Element[]) => void;
   memory: StyleMemoryApi;
+  swatchOverrides: SwatchOverridesApi;
 }): QuickStyleApi {
   const { activeTab, theme, selectionIds, editsBlocked, liveElements, commit, memory } = deps;
+  const { overrides } = deps.swatchOverrides;
 
   const selected = useMemo(
     () => activeTab.elements.filter((el) => selectionIds.has(el.id)),
     [activeTab.elements, selectionIds],
   );
   const view = useMemo(
-    () => (editsBlocked ? null : quickStyleView(selected, theme)),
-    [editsBlocked, selected, theme],
+    () => (editsBlocked ? null : quickStyleView(selected, theme, overrides)),
+    [editsBlocked, selected, theme, overrides],
   );
 
   // Map the view's targets through `apply`, as one commit, then remember it.
@@ -71,8 +84,9 @@ export function useQuickStyle(deps: {
 
   return {
     view,
-    setStroke: (slot) => run((el) => applyQuickStroke(el, theme, slot), 'QuickStroke'),
-    setBackground: (slot) => run((el) => applyQuickFill(el, theme, slot), 'QuickBackground'),
+    setStroke: (slot) => run((el) => applyQuickStroke(el, theme, slot, overrides), 'QuickStroke'),
+    setBackground: (slot) =>
+      run((el) => applyQuickFill(el, theme, slot, overrides), 'QuickBackground'),
     setWidth: (width) => run((el) => applyQuickWidth(el, width), 'QuickStrokeWidth'),
     setStrokeStyle: (style) => run((el) => applyQuickStrokeStyle(el, style), 'QuickStrokeStyle'),
     setTextAlign: (align) => run((el) => applyQuickTextAlign(el, align), 'QuickTextAlign'),
@@ -89,6 +103,14 @@ export function useQuickStyle(deps: {
         if (kind) kinds.add(kind);
       }
       memory.forget([...kinds]);
+    },
+    setSwatchOverride: (role, slot, hex) => {
+      track('UI', 'Changed', 'QuickSwatchCustom');
+      deps.swatchOverrides.setOverride(role, slot, hex);
+    },
+    clearSwatchOverride: (role, slot) => {
+      track('UI', 'Changed', 'QuickSwatchReset');
+      deps.swatchOverrides.clearOverride(role, slot);
     },
   };
 }

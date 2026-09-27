@@ -5,7 +5,7 @@
 // menu stays the complete home of every setting; this is the fast path to a
 // handful of them, and never grows into the old Editor panel.
 
-import { useRef, type PointerEvent } from 'react';
+import { useRef, useState, type PointerEvent } from 'react';
 import { BorderStrokeIcon, BorderStyleIcon } from '@/components/palette/palette-icons';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { useQuickStylePlacement } from '@/hooks/ui/useQuickStylePlacement';
@@ -24,12 +24,20 @@ import {
   type QuickWidth,
 } from '@/lib/quick-style';
 import type { QuickStyleApi } from '@/hooks/canvas/useQuickStyle';
-import type { QuickSwatch, TextAlignX } from '@livediagram/diagram';
+import {
+  isQuickSwatchSlot,
+  type QuickSwatchRole,
+  type QuickSwatchSlot,
+  type TextAlignX,
+} from '@livediagram/diagram';
+import type { ShownSwatch } from '@/lib/swatch-overrides';
+import { SwatchOverridePopover } from './SwatchOverridePopover';
 import {
   ClearStylesGlyph,
   FlowingLineGlyph,
   IconAlignGlyph,
   QuickRadioRow,
+  type QuickRowDensity,
   TextAlignGlyph,
   type QuickOption,
 } from './quick-style-rows';
@@ -52,8 +60,18 @@ const ICON_ALIGN_NAMES: Record<QuickIconAlign, string> = {
   right: 'Icon after label',
 };
 
-const swatchOptions = (swatches: QuickSwatch[]): QuickOption<number>[] =>
-  swatches.map((s) => ({ value: s.slot, name: s.name, content: null, swatch: s.color }));
+const swatchOptions = (swatches: ShownSwatch[]): QuickOption<number>[] =>
+  swatches.map((s) => ({
+    value: s.slot,
+    name: s.name,
+    content: null,
+    swatch: s.color,
+    overridden: s.override !== undefined,
+  }));
+
+// The swatch whose custom-colour popover is open.
+type Editing = { role: QuickSwatchRole; slot: QuickSwatchSlot; anchor: HTMLButtonElement };
+const ROW_NAME: Record<QuickSwatchRole, string> = { stroke: 'Stroke', fill: 'Background' };
 
 // Pressing inside the panel must never reach the canvas: no marquee, no pan,
 // no deselect, no tab menu.
@@ -82,8 +100,19 @@ export function QuickStylePanel({
   const active = !hidden && !isMobile && view !== null;
   const panelRef = useRef<HTMLDivElement>(null);
   const spot = useQuickStylePlacement(panelRef, active, layout);
+  const [editing, setEditing] = useState<Editing | null>(null);
+  // A popover outlives neither the panel nor its swatch.
+  const editingGone =
+    editing !== null &&
+    (!active ||
+      !editing.anchor.isConnected ||
+      !view?.sections[editing.role === 'stroke' ? 'stroke' : 'background']);
+  if (editingGone) setEditing(null);
   if (!active) return null;
   const docked = layout === 'floating';
+  const editedSwatch = editing
+    ? view.sections[editing.role === 'stroke' ? 'stroke' : 'background']?.swatches[editing.slot]
+    : undefined;
 
   return (
     <div
@@ -114,7 +143,7 @@ export function QuickStylePanel({
             // in the wrong spot.
             { left: 0, top: 0, visibility: 'hidden' }
       }
-      className={`pointer-events-auto fixed z-[var(--z-panel)] flex w-52 flex-col rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 motion-safe:animate-fade-in dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40 ${docked ? '' : 'gap-2.5 p-2'}`}
+      className={`pointer-events-auto fixed z-[var(--z-panel)] flex flex-col rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 motion-safe:animate-fade-in dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40 ${docked ? '' : 'w-46 gap-2.5 p-2'}`}
     >
       {docked ? (
         // The Palette's header language (MovablePanelHeader), minus the drag
@@ -128,7 +157,13 @@ export function QuickStylePanel({
         data-quick-style-body=""
         className={docked ? 'flex min-h-0 flex-col gap-2.5 overflow-y-auto p-2.5' : 'contents'}
       >
-        <QuickStyleSections view={view} quickStyle={quickStyle} showTitles={titles} />
+        <QuickStyleSections
+          view={view}
+          quickStyle={quickStyle}
+          showTitles={titles}
+          density={docked ? 'roomy' : 'compact'}
+          onEditSwatch={(role, slot, anchor) => setEditing({ role, slot, anchor })}
+        />
         <div className="flex flex-col gap-1 border-t border-slate-200 pt-2 dark:border-slate-800">
           {titles ? (
             <span
@@ -151,6 +186,19 @@ export function QuickStylePanel({
           </div>
         </div>
       </div>
+      {editing && editedSwatch ? (
+        <SwatchOverridePopover
+          key={`${editing.role}-${editing.slot}`}
+          anchor={editing.anchor}
+          label={`Custom colour for ${editedSwatch.override?.themeName ?? editedSwatch.name}, ${ROW_NAME[editing.role]}`}
+          colour={editedSwatch.color}
+          overridden={editedSwatch.override !== undefined}
+          themeNote={`Theme colour: ${editedSwatch.override?.themeName ?? editedSwatch.name}`}
+          onSave={(hex) => quickStyle.setSwatchOverride(editing.role, editing.slot, hex)}
+          onClear={() => quickStyle.clearSwatchOverride(editing.role, editing.slot)}
+          onClose={() => setEditing(null)}
+        />
+      ) : null}
     </div>
   );
 }
@@ -159,11 +207,19 @@ function QuickStyleSections({
   view,
   quickStyle,
   showTitles,
+  density,
+  onEditSwatch,
 }: {
   view: QuickStyleView;
   quickStyle: QuickStyleApi;
   showTitles: boolean;
+  density: QuickRowDensity;
+  onEditSwatch: (role: QuickSwatchRole, slot: QuickSwatchSlot, anchor: HTMLButtonElement) => void;
 }) {
+  // Slot 0 is the way back to the theme and is never overridden.
+  const editFor = (role: QuickSwatchRole) => (slot: number, anchor: HTMLButtonElement) => {
+    if (isQuickSwatchSlot(slot)) onEditSwatch(role, slot, anchor);
+  };
   const { stroke, background, width, style, textAlign, iconAlign } = view.sections;
   return (
     <>
@@ -173,6 +229,8 @@ function QuickStyleSections({
           testId="quick-style-stroke"
           showTitle={showTitles}
           options={swatchOptions(stroke.swatches)}
+          density={density}
+          onOptionContext={editFor('stroke')}
           value={stroke.value}
           onChoose={(slot) => quickStyle.setStroke(slot as QuickSwatchValue)}
         />
@@ -183,6 +241,8 @@ function QuickStyleSections({
           testId="quick-style-background"
           showTitle={showTitles}
           options={swatchOptions(background.swatches)}
+          density={density}
+          onOptionContext={editFor('fill')}
           value={background.value}
           onChoose={(slot) => quickStyle.setBackground(slot as QuickSwatchValue)}
         />
@@ -192,6 +252,7 @@ function QuickStyleSections({
           title="Stroke width"
           testId="quick-style-width"
           showTitle={showTitles}
+          density={density}
           options={QUICK_WIDTHS.map((w) => ({
             value: w,
             name: WIDTH_NAMES[w],
@@ -220,6 +281,7 @@ function QuickStyleSections({
           title="Text alignment"
           testId="quick-style-text-align"
           showTitle={showTitles}
+          density={density}
           options={QUICK_TEXT_ALIGNS.map((a) => ({
             value: a,
             name: TEXT_ALIGN_NAMES[a],
@@ -234,6 +296,7 @@ function QuickStyleSections({
           title="Icon alignment"
           testId="quick-style-icon-align"
           showTitle={showTitles}
+          density={density}
           options={QUICK_ICON_ALIGNS.map((a) => ({
             value: a,
             name: ICON_ALIGN_NAMES[a],

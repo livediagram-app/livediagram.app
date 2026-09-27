@@ -9,20 +9,19 @@ import {
   canvasSurface,
   defaultArrowStrokeColor,
   isSelfDrawingShape,
-  quickSwatchSlotOf,
   quickSwatches,
   supportsBorderControls,
   supportsColours,
   supportsFillColor,
   type ArrowElement,
   type Element,
-  type QuickSwatch,
   type QuickSwatchRole,
   type QuickSwatchSlot,
   type ShapeElement,
   type TextAlignX,
   type ThemeDefinition,
 } from '@livediagram/diagram';
+import { applySwatchOverrides, type ShownSwatch, type SwatchOverrides } from './swatch-overrides';
 
 export type QuickStyleTarget = ShapeElement | ArrowElement;
 export type QuickSectionId =
@@ -42,8 +41,8 @@ export type QuickStyleView = {
   // The elements the panel styles, in selection order.
   targetIds: string[];
   sections: {
-    stroke?: { value: QuickSwatchValue | null; swatches: QuickSwatch[] };
-    background?: { value: QuickSwatchValue | null; swatches: QuickSwatch[] };
+    stroke?: { value: QuickSwatchValue | null; swatches: ShownSwatch[] };
+    background?: { value: QuickSwatchValue | null; swatches: ShownSwatch[] };
     width?: { value: QuickWidth | null };
     style?: { value: QuickStrokeStyle | null; options: readonly QuickStrokeStyle[] };
     textAlign?: { value: TextAlignX | null };
@@ -83,17 +82,19 @@ function swatchValue(
   el: QuickStyleTarget,
   theme: ThemeDefinition,
   role: QuickSwatchRole,
-  swatches: QuickSwatch[],
+  swatches: ShownSwatch[],
 ): QuickSwatchValue | null {
   const bound = role === 'stroke' ? el.strokeSwatch : el.type === 'shape' ? el.fillSwatch : null;
-  if (bound) return bound;
+  // A bound slot counts only while the row still shows its theme colour.
+  if (bound && !swatches[bound]?.override) return bound;
   const colour =
     role === 'stroke' ? el.strokeColor : el.type === 'shape' ? el.fillColor : undefined;
   if (colour === undefined) return 0;
   const own = role === 'stroke' ? theme.elementStroke : theme.elementFill;
   const lower = colour.toLowerCase();
   if (lower === swatches[0]!.color.toLowerCase() || lower === own?.toLowerCase()) return 0;
-  return quickSwatchSlotOf(theme, role, colour);
+  const shown = swatches.find((s) => s.slot !== 0 && s.color.toLowerCase() === lower);
+  return shown && shown.slot !== 0 ? shown.slot : null;
 }
 
 function widthOf(el: QuickStyleTarget): QuickWidth | null {
@@ -117,6 +118,7 @@ function iconAlignOf(el: QuickStyleTarget): QuickIconAlign | null {
 export function quickStyleView(
   elements: readonly Element[],
   theme: ThemeDefinition,
+  overrides: SwatchOverrides = {},
 ): QuickStyleView | null {
   const targets = elements.filter(isQuickStyleTarget);
   const supporting = (s: QuickSectionId) => targets.filter((el) => supportsQuickSection(el, s));
@@ -124,7 +126,7 @@ export function quickStyleView(
 
   const stroke = supporting('stroke');
   if (stroke.length > 0) {
-    const swatches = quickSwatches(theme, 'stroke');
+    const swatches = applySwatchOverrides(quickSwatches(theme, 'stroke'), overrides.stroke);
     // An arrow's unpainted line is its own ink, not a shape's: show that when
     // only arrows are being stroked and the theme paints none.
     if (theme.elementStroke === null && stroke.every((el) => el.type === 'arrow')) {
@@ -140,7 +142,7 @@ export function quickStyleView(
   }
   const background = supporting('background');
   if (background.length > 0) {
-    const swatches = quickSwatches(theme, 'fill');
+    const swatches = applySwatchOverrides(quickSwatches(theme, 'fill'), overrides.fill);
     sections.background = {
       swatches,
       value: shared(background.map((el) => swatchValue(el, theme, 'fill', swatches))),
@@ -173,35 +175,46 @@ export function quickStyleView(
 // Each transform is a no-op (returns `el`) on an element the section does not
 // support, so a whole selection can be mapped through it.
 
+// A slot's colour for applying: the custom one when overridden (unbound: a
+// custom colour does not follow the theme), else the theme's, bound to its slot.
+function pickFor(
+  theme: ThemeDefinition,
+  role: QuickSwatchRole,
+  slot: QuickSwatchValue,
+  overrides: SwatchOverrides,
+): { colour: string | undefined; bind: QuickSwatchSlot | undefined } {
+  if (slot === 0) {
+    const own = role === 'stroke' ? theme.elementStroke : theme.elementFill;
+    return { colour: own ?? undefined, bind: undefined };
+  }
+  const custom = overrides[role]?.[slot];
+  if (custom) return { colour: custom, bind: undefined };
+  return { colour: quickSwatches(theme, role)[slot]!.color, bind: slot };
+}
+
 export function applyQuickStroke(
   el: Element,
   theme: ThemeDefinition,
   slot: QuickSwatchValue,
+  overrides: SwatchOverrides = {},
 ): Element {
   if (!isQuickStyleTarget(el) || !supportsQuickSection(el, 'stroke')) return el;
-  const colour =
-    slot === 0 ? (theme.elementStroke ?? undefined) : quickSwatches(theme, 'stroke')[slot]!.color;
-  const strokeSwatch = slot === 0 ? undefined : slot;
+  const { colour, bind } = pickFor(theme, 'stroke', slot, overrides);
   return el.type === 'shape'
-    ? { ...el, strokeColor: colour, strokeSwatch, colorPreset: undefined }
-    : { ...el, strokeColor: colour, strokeSwatch };
+    ? { ...el, strokeColor: colour, strokeSwatch: bind, colorPreset: undefined }
+    : { ...el, strokeColor: colour, strokeSwatch: bind };
 }
 
 export function applyQuickFill(
   el: Element,
   theme: ThemeDefinition,
   slot: QuickSwatchValue,
+  overrides: SwatchOverrides = {},
 ): Element {
   if (el.type !== 'shape' || !isQuickStyleTarget(el) || !supportsQuickSection(el, 'background'))
     return el;
-  const colour =
-    slot === 0 ? (theme.elementFill ?? undefined) : quickSwatches(theme, 'fill')[slot]!.color;
-  return {
-    ...el,
-    fillColor: colour,
-    fillSwatch: slot === 0 ? undefined : slot,
-    colorPreset: undefined,
-  };
+  const { colour, bind } = pickFor(theme, 'fill', slot, overrides);
+  return { ...el, fillColor: colour, fillSwatch: bind, colorPreset: undefined };
 }
 
 export function applyQuickWidth(el: Element, width: QuickWidth): Element {
