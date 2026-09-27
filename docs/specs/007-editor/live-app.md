@@ -57,7 +57,7 @@ The **role pill** says whether you are editing or viewing this diagram. Everyone
 - **Who owns the diagram** is disclosed progressively: a Tooltip on the pill reads "Owned by <name>" ("Owned by you"
   for the owner), and the pill's accessible name carries the same words after its role. There is no separate owner
   badge. With no known owner (the owner has never joined the room), the pill has no Tooltip.
-- **A toggle when your role allows editing.** For the owner, and for a visitor whose link grants edit, the pill is a
+- **A toggle when your role allows editing.** For the owner, and equally for a visitor whose link grants edit, the pill is a
   button: clicking it switches between Editing and **Viewing**, a read-only preview of the diagram as a view-link
   visitor sees it. The preview is local to this tab and this visit: it changes nothing on the server, nothing other
   participants see, and a reload returns to Editing. The pill's accessible description says what a click does

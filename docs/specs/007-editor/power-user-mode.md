@@ -76,7 +76,8 @@ the interface, and leaves the controls:
 - **The "Tabs" label** before the tab pills is hidden.
 - **Panel titles and help buttons.** Floating panels (Explorer, Palette, Map, Layers, Activity, ...) hide their
   header title and their `?` help button. A panel with a `⋯` menu gains a **Help** row there, opening the same
-  article. The Explorer is the one panel with a `⋯` menu today.
+  article. The Explorer is the one panel with a `⋯` menu today. A panel without one simply drops its `?`: no menu is
+  added to hold it, and the help centre stays one click away in the header's **Editor** menu.
 - **Onboarding notices and hints.** The modifier-key hint banner, the Explorer's sign-in / "saved to this browser"
   notice, and the match-theme nudge are not shown.
 - **The bin** (Delete) in the selection toolbars, on desktop. Touch devices keep it: they have no Delete key.
@@ -88,6 +89,7 @@ Kept as they are:
 
 - Keyboard shortcut hints inside hover cards and tooltips.
 - Every control. Minimal chrome hides words, not abilities.
+- The empty-canvas banner ("Tab 1 is empty"): it holds actions (Help, Quick Start), so it is a control, not a hint.
 
 #### Accessibility of hidden labels
 

@@ -110,6 +110,11 @@ in `prefs`, so JSON round-trips it faithfully: an absent key stays absent.
 in `MinimalChromeProvider value={isMinimalChrome(userPreferences)}`; `useMinimalChrome()` defaults to `false` outside a
 provider, so the Explorer page and `/new` are unaffected.
 
+- Panel help under the flag: `MovablePanelHeader` and the dock-popover header in `MovablePanel` render no
+  `HelpArticleLink`. Only a panel that already has a `⋯` menu gets a Help row (`ExplorerHeaderMenu`); no menu is created
+  to hold one. The help centre stays in the header's ProductNav (**Editor**) menu.
+- `EmptyCanvasBanner` does not read the flag: it holds actions, so it stays.
+
 ### Offer
 
 `OfferCounters` in `localStorage` under `livediagram:power-user-offer:v1`.
@@ -137,7 +142,8 @@ false && editable && !embed && !zen`.
 - `viewPreview: boolean` in `useEditorState`, initial `false`, never persisted (spec: a reload returns to Editing).
 - `isReadOnly = sessionRole === 'view' || viewPreview`; everything downstream (`isStructureReadOnly`, `editsBlocked`,
   the palette, the toolbars) already follows `isReadOnly`.
-- `canToggleRole = sessionRole === 'edit'`. `toggleViewPreview()` flips it and deselects (a selection toolbar for an
+- `canToggleRole = sessionRole === 'edit'`: true for the owner and for an edit-link visitor alike, false for a
+  view-link visitor. `toggleViewPreview()` flips it and deselects (a selection toolbar for an
   edit session must not linger into view mode).
 - `sessionRole` itself is untouched: presence still reports the real role, so peers see no change.
 
@@ -331,9 +337,11 @@ boolean`, computed by `SettingsDialog` from `isPowerUserMode(settings)` (so the 
 | Settings: Minimal chrome row absent while off             | `settings-catalogue.test.ts`                                   |
 | Settings: mode row writes the preset                      | same                                                           |
 | Delete and Backspace delete the selection; count shortcut | `hooks/canvas/useEditorKeyboardShortcuts.dom.test.tsx` (jsdom) |
+| Toggle for owner and edit link, none for view link        | `app/diagram/[id]/useViewPreview.test.tsx` (jsdom)             |
 | Role pill: toggle vs static, names, Tooltip label         | `components/chrome/RoleIndicator.test.tsx` (jsdom)             |
 | Toolbars: More touch-only, bin rule, caption, name        | `components/canvas/SelectionPopover.test.tsx` (jsdom)          |
 | Toast offer: actions, no timeout                          | `hooks/ui/useToast.test.tsx` (jsdom)                           |
+| Panels without `⋯` drop `?`; empty-canvas banner stays    | `e2e/power-user-mode.spec.ts` (dark mode)                      |
 | Minimal chrome hides + tooltips, role icon toggles        | `e2e/power-user-mode.spec.ts` (dark mode)                      |
 | Role pill toggles view preview for the owner              | same                                                           |
 | Mode on / off with a changed and an untouched setting     | same                                                           |

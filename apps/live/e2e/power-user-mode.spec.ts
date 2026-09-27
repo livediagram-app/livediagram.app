@@ -96,6 +96,10 @@ test.describe('Power user mode', () => {
     await closeSettings(page);
     await page.screenshot({ path: 'test-results/power-user-minimal-chrome.png' });
 
+    // Kept: the empty-canvas banner holds actions, so it is a control, not a hint.
+    await expect(page.getByText('Tab 1 is empty')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Quick Start' })).toBeVisible();
+
     // Status bar: icons only, names kept.
     await expect(tabBar(page).getByText('Tabs', { exact: true })).toHaveCount(0);
     await expect(tabBar(page).getByText('Search', { exact: true })).toHaveCount(0);
@@ -146,6 +150,14 @@ test.describe('Power user mode', () => {
     const layersTitle = page.locator('.sr-only', { hasText: /^Layers$/ });
     await expect(layersTitle).toHaveCount(1);
     await expect(page.getByRole('link', { name: /learn about layers/i })).toHaveCount(0);
+    // A panel without a ⋯ menu just drops its help; the help centre stays in
+    // the header's Editor menu.
+    await page.keyboard.press('Escape');
+    await page.getByRole('button', { name: /^Switch section, currently Editor$/ }).click();
+    await expect(page.getByRole('menuitem', { name: /^Help/ })).toHaveAttribute(
+      'href',
+      /\/help\/?$/,
+    );
     expectNoPageErrors(pageErrors);
   });
 
