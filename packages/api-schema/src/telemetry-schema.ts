@@ -115,8 +115,8 @@ export const TELEMETRY_CATEGORIES = [
   // editor sends both, the marketing site still sends only page views.
   'Cta',
   // Trash (docs/specs/013-workspace/trash.md): the quiet backstop behind every
-  // diagram delete. 'Opened' with `type` where from ('Settings' |
-  // 'DeletedCard'); 'Restored' / 'Deleted' (for good) / 'Cleared' (Empty
+  // diagram delete. 'Opened' with `type` 'Settings' (its one way in);
+  // 'Restored' / 'Deleted' (for good) / 'Cleared' (Empty
   // Trash) with `type` the Trash it happened in ('Personal' | 'Team' |
   // 'Local'). Whether people ever come back for a deleted diagram is the
   // question; never a diagram or team name.

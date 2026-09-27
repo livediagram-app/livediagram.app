@@ -60,6 +60,9 @@ the **Delete account** trigger lives on the profile page's Danger zone and is
 no drift). The dialog component itself is unchanged and simply reused — the
 confirmation flow (type your email, then Clerk re-verification, then wipe) is
 exactly as [Transactional & lifecycle email (Resend)](transactional-email.md) describes.
+Account deletion is immediate and total: it removes the account's diagrams
+**including every one in its [Trash](../013-workspace/trash.md)**, which the
+dialog and the Danger Zone row both say.
 
 **Teams on deletion** (`detachUserFromTeams`, runs before the row wipe): the
 account's memberships are removed so no ghost member (or dead sole admin)

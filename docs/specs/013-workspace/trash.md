@@ -1,6 +1,6 @@
 # Trash
 
-Status: in progress
+Status: shipped
 
 ## What
 
@@ -27,8 +27,9 @@ Three things bypass it:
   browser, so there is nothing to restore.
 - **Account deletion** is a full, immediate hard delete of everything the
   account holds, its Trash included.
-- **Delete permanently**, from the Trash or through the documented `permanent`
-  option on the API and MCP delete.
+- **Delete permanently**, from the Trash, or through the documented
+  `?permanent=true` on the REST API's delete. The MCP server has no permanent
+  delete: an AI tool can bin a diagram, never destroy one.
 
 ## Where things live
 
@@ -57,12 +58,13 @@ permanently**; each group offers **Empty Trash**. Delete permanently and Empty
 Trash are always confirmed. Restore is not: it destroys nothing.
 
 "Days left" counts whole days until the purge is due, rounded up, so a diagram
-deleted a moment ago shows 30 and one due within the day shows 1.
+deleted a moment ago shows 30 and one due within the day shows 1. A diagram
+past its 30 days but not yet swept reads "Removed at the next clean-up".
 
 The Trash is reached from Settings only, never a sidebar row or the account
-menu, so it stays out of the way of everyday work: **Settings › Account** has a **Trash** row, for everyone,
-guests and deployments without accounts included, because Settings is the one
-menu every deployment has. The view itself lives at `/explorer/trash`.
+menu, so it stays out of the way of everyday work: **Settings › Account** has
+a **Trash** row, for everyone, guests and deployments without accounts
+included, because Settings is the one menu every deployment has. The view itself lives at `/explorer/trash`.
 
 Empty Trash empties **one group**: your diagrams, one team's, or this
 browser's. Emptying a team's Trash is said to be for the whole team in its
@@ -181,8 +183,10 @@ A later Google Drive mirror will map Drive's bin onto this Trash: binning a
 diagram's file in Drive moves the diagram to the Trash, restoring it in Drive
 restores it, and emptying Drive's bin purges it. The three operations are plain
 calls with no HTTP concerns (`trashDiagram`, `restoreDiagram`,
-`purgeDiagrams`), each taking a diagram id and a time, so the mirror calls them
-directly.
+`purgeDiagrams`) in `apps/api/src/db/trash.ts`: trash takes an id and the time,
+restore an id, purge a list of ids. Each keeps its own guard (only a live
+diagram is trashed, only a trashed one restored or purged), so the mirror calls
+them directly without re-checking state.
 
 ## Telemetry
 
