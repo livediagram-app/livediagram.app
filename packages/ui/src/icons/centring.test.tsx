@@ -22,7 +22,8 @@ function offset(Icon: ComponentType<IconProps>) {
   const svg = renderToStaticMarkup(<Icon />);
   const units = Number(/viewBox="0 0 ([\d.]+)/.exec(svg)![1]);
   const size = Number(/width="([\d.]+)"/.exec(svg)![1]);
-  const sw = Number(/stroke-width="([\d.]+)"/.exec(svg)?.[1] ?? 0);
+  // On-screen px (non-scaling) back to viewBox units for the geometry.
+  const sw = (Number(/stroke-width="([\d.]+)"/.exec(svg)?.[1] ?? 0) * units) / size;
   return centreOffsetPx(svg, { units, sizePx: size, strokeUnits: sw });
 }
 

@@ -1,4 +1,4 @@
-import { glyphStrokePx, strokeUnits } from '@livediagram/icons';
+import { glyphStrokePx } from '@livediagram/icons';
 import type { SVGProps } from 'react';
 
 // The chrome-icon base: a square, stroke-currentColor, decorative SVG. Every
@@ -29,6 +29,7 @@ export function Glyph({
   weight,
   units = 16,
   filled = false,
+  className,
   children,
   ...rest
 }: GlyphProps) {
@@ -37,7 +38,9 @@ export function Glyph({
     : {
         fill: 'none',
         stroke: 'currentColor',
-        strokeWidth: strokeUnits(weight ?? glyphStrokePx(size), size, units),
+        // On-screen px: every child is non-scaling (.lvd-glyph in the shared theme), so CSS sizing and
+        // canvas zoom leave the weight alone.
+        strokeWidth: weight ?? glyphStrokePx(size),
         strokeLinecap: 'round' as const,
         strokeLinejoin: 'round' as const,
       };
@@ -47,6 +50,7 @@ export function Glyph({
       height={size}
       viewBox={`0 0 ${units} ${units}`}
       aria-hidden
+      className={className ? `lvd-glyph ${className}` : 'lvd-glyph'}
       {...paint}
       {...rest}
     >

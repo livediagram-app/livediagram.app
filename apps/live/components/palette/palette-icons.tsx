@@ -22,7 +22,8 @@ import type {
   TextAlignX,
   TextAlignY,
 } from '@livediagram/diagram';
-import { Glyph } from '@livediagram/ui';
+import { lucideSquareDashedMousePointer } from '@livediagram/icons/lucide';
+import { Glyph, Prims } from '@livediagram/ui';
 
 export function BorderStrokeIcon({ value }: { value: BorderStroke }) {
   if (value === 'none') {
@@ -330,10 +331,8 @@ export function PanIcon() {
 
 export function SelectIcon() {
   return (
-    <Glyph size={14} units={16}>
-      <rect x="2" y="2" width="9" height="9" strokeDasharray="2 1.5" />
-      <path d="M11 11l3 3" />
-      <path d="M11 11l-1.5 -0.5l-0.5 -1.5" />
+    <Glyph size={14} units={24}>
+      <Prims prims={lucideSquareDashedMousePointer} />
     </Glyph>
   );
 }

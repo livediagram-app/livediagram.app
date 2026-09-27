@@ -376,3 +376,9 @@
 .scrollbar-slim::-webkit-scrollbar-thumb {
   border-width: 1px;
 }
+
+/* Chrome icons (docs/specs/004-interface-design/iconography.md): the Glyph primitive draws its stroke in
+   on-screen px, so a glyph keeps its weight when CSS resizes it or a canvas zoom scales it. */
+.lvd-glyph * {
+  vector-effect: non-scaling-stroke;
+}

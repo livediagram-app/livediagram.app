@@ -33,7 +33,31 @@ import {
   TemperatureIcon,
   TimerIcon,
 } from '@/components/palette/palette-icons';
-import { Glyph } from '@livediagram/ui';
+import {
+  lucideCircle,
+  lucideDiamond,
+  lucideImage,
+  lucideMoveRight,
+  lucidePanelTop,
+  lucidePenTool,
+  lucideSquare,
+  lucideStickyNote,
+  lucideTable,
+  lucideType,
+} from '@livediagram/icons/lucide';
+import { Glyph, Prims } from '@livediagram/ui';
+
+// Every palette tile glyph is drawn at this size (docs/specs/004-interface-design/iconography.md), so a strip of
+// tiles reads as one set.
+const TILE_GLYPH_PX = 18;
+
+// Lucide's sticky-note as its two paths: the note body takes the paper fill, the corner fold does not.
+const pathD = (i: number) => {
+  const p = lucideStickyNote[i];
+  if (p?.t !== 'path') throw new Error('lucideStickyNote: expected a path');
+  return p.d;
+};
+const lucideStickyNotePaths = { body: pathD(0), fold: pathD(1) };
 
 // The shared palette tile catalogue (docs/specs/010-palette/palette-favourites.md): every creation tile across
 // the Shapes / Tools / Data / Components / Devices categories as one data
@@ -206,8 +230,8 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'square' },
     icon: (
-      <Glyph size={18} units={18}>
-        <rect x="3" y="3" width="12" height="12" rx="2" />
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <Prims prims={lucideSquare} />
       </Glyph>
     ),
   },
@@ -220,8 +244,8 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'circle' },
     icon: (
-      <Glyph size={18} units={18}>
-        <circle cx="9" cy="9" r="6" />
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <Prims prims={lucideCircle} />
       </Glyph>
     ),
   },
@@ -234,8 +258,8 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'diamond' },
     icon: (
-      <Glyph size={18} units={18}>
-        <polygon points="9,2.5 15.5,9 9,15.5 2.5,9" />
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <Prims prims={lucideDiamond} />
       </Glyph>
     ),
   },
@@ -423,8 +447,8 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     shortcut: 'T',
     action: { type: 'text' },
     icon: (
-      <Glyph size={18} units={18}>
-        <path d="M3 5h12M9 5v9M6.5 14h5" />
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <Prims prims={lucideType} />
       </Glyph>
     ),
   },
@@ -465,14 +489,8 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     shortcut: '6',
     action: { type: 'shape-pen' },
     icon: (
-      <Glyph size={18} units={18}>
-        {/* The same diagonal nib as Freehand, shrunk to make room for a
-            dashed square: the nib says "drawing", the square says "this one
-            lands as a shape". Pairs with the shape-pen cursor glyph. */}
-        <path d="M1.5 16.5 L4 14" />
-        <path d="M3.5 14.5 L9 9 L10.5 10.5 L5 16 Z" />
-        <path d="M9 9 L11 7 L12.5 8.5 L10.5 10.5" />
-        <rect x="9.5" y="1.5" width="7" height="7" rx="0.8" strokeDasharray="2 1.6" />
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <Prims prims={lucidePenTool} />
       </Glyph>
     ),
   },
@@ -510,8 +528,8 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     shortcut: 'A',
     action: { type: 'arrow' },
     icon: (
-      <Glyph size={18} units={18}>
-        <line x1="3" y1="9" x2="15" y2="9" />
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <Prims prims={lucideMoveRight} />
       </Glyph>
     ),
   },
@@ -527,22 +545,11 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     noTint: true,
     action: { type: 'sticky' },
     icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-        <path
-          d="M3 3h9l3 3v9H3z"
-          fill="rgb(254 243 199)"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M12 3v3h3"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinejoin="round"
-        />
-      </svg>
+      // The note keeps its paper colour (noTint): Lucide sticky-note, body filled.
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <path d={lucideStickyNotePaths.body} fill="rgb(254 243 199)" />
+        <path d={lucideStickyNotePaths.fold} />
+      </Glyph>
     ),
   },
   {
@@ -553,12 +560,8 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     description: 'Editable grid. Double-click a cell to type.',
     action: { type: 'table' },
     icon: (
-      <Glyph size={18} units={18} strokeLinecap="butt" strokeLinejoin="miter">
-        <rect x="2.5" y="3.5" width="13" height="11" rx="1" />
-        <line x1="2.5" y1="7.5" x2="15.5" y2="7.5" />
-        <line x1="2.5" y1="11" x2="15.5" y2="11" />
-        <line x1="7" y1="3.5" x2="7" y2="14.5" />
-        <line x1="11" y1="3.5" x2="11" y2="14.5" />
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <Prims prims={lucideTable} />
       </Glyph>
     ),
   },
@@ -1198,27 +1201,9 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     needsImage: true,
     action: { type: 'image' },
     icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-        <rect
-          x="2.5"
-          y="3"
-          width="13"
-          height="12"
-          rx="1.5"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-        />
-        <circle cx="7" cy="7" r="1.25" fill="currentColor" />
-        <path
-          d="M2.5 12 L6.5 8.5 L10 11 L13 8 L15.5 10.5"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinejoin="round"
-          strokeLinecap="round"
-        />
-      </svg>
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <Prims prims={lucideImage} />
+      </Glyph>
     ),
   },
   {
@@ -1421,9 +1406,8 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     shortcut: 'F',
     action: { type: 'shape', kind: 'frame' },
     icon: (
-      <Glyph size={18} units={18} strokeLinecap="butt">
-        <rect x="2.5" y="4" width="13" height="10.5" />
-        <path d="M2.5 6.8 H8.5" />
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <Prims prims={lucidePanelTop} />
       </Glyph>
     ),
   },
