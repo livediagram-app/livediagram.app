@@ -21,7 +21,7 @@ export function SettingsSliderRow({
   // Follow the stored value when it changes elsewhere (the Palette popover
   // sets the same preference); adjusted during render.
   const [followed, setFollowed] = useState(value);
-  if (value !== followed) {
+  if (!Object.is(value, followed)) {
     setFollowed(value);
     setDraft(value);
   }
