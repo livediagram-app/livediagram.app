@@ -65,6 +65,11 @@ Reserved for status — never used decoratively.
 - **Numerals in a circle or pill** (step numbers, counts) centre their ink, not their line box: the digit sits in
   `text-optical-centre`, a shared utility that trims the text box to cap height and baseline. It is layout, not
   colour, so it holds in both appearances.
+- **A circle at the end of a pill is concentric with it.** When a pill holds a circle at its start that fills the
+  pill's height bar the inset (a step number, an avatar; not a small glyph such as a spinner), the circle sits as far
+  from the pill's leading edge as from its top and bottom: the leading padding equals the vertical padding, at every
+  breakpoint, so the pill's round cap hugs the circle instead of leaving a crescent of pill around it. The trailing
+  side may be roomier; it frames text, not the circle.
 
 ## Dark palette (Steel)
 

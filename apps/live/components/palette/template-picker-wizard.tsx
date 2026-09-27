@@ -34,7 +34,7 @@ export function WizardSteps({
   const steps = includeSettings ? WIZARD_STEPS : WIZARD_STEPS.filter((s) => s.key !== 'settings');
   const idx = steps.findIndex((s) => s.key === step);
   return (
-    <div className="-ml-1.5 flex items-center justify-start gap-1 sm:-ml-2.5 sm:gap-1.5">
+    <div className="-ml-1 flex items-center justify-start gap-1 sm:gap-1.5">
       {steps.map((s, i) => (
         <Fragment key={s.key}>
           {i > 0 ? (
@@ -76,7 +76,9 @@ function StepChip({
   const text = lit ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400';
   // The current step sits in a soft brand pill so "you are here" reads at
   // a glance; the other chips stay flush (matching padding keeps the row
-  // from shifting as the active step moves).
+  // from shifting as the active step moves). The pill's round cap is
+  // concentric with the circle: pl-1 equals py-1 at every breakpoint
+  // (docs/specs/004-interface-design/color-scheme.md, Usage rules).
   const pill =
     state === 'active'
       ? 'rounded-full bg-brand-50 dark:bg-brand-500/15'
@@ -107,12 +109,12 @@ function StepChip({
     <button
       type="button"
       onClick={onClick}
-      className={`flex items-center gap-1.5 px-1.5 py-1 transition-colors sm:gap-2 sm:px-2.5 ${pill}`}
+      className={`flex items-center gap-1.5 py-1 pl-1 pr-1.5 transition-colors sm:gap-2 sm:pr-2.5 ${pill}`}
     >
       {inner}
     </button>
   ) : (
-    <div className={`flex items-center gap-1.5 px-1.5 py-1 sm:gap-2 sm:px-2.5 ${pill}`}>
+    <div className={`flex items-center gap-1.5 py-1 pl-1 pr-1.5 sm:gap-2 sm:pr-2.5 ${pill}`}>
       {inner}
     </div>
   );

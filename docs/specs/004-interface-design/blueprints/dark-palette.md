@@ -162,6 +162,9 @@ filter: invert(0.95) hue-rotate(180deg)`, plus `::after { inset: 0; background: 
 border-radius: inherit; pointer-events: none }`.
 - Optical centring: the digit (or poll letter) is wrapped in `<span class="text-optical-centre">`; hosts that took
   their height from padding become `inline-flex items-center` at their previous rendered height (D12).
+- Concentric step pill: the wizard's step chip pads `py-1 pl-1` at every breakpoint (the circle's 4px inset on
+  three sides), trailing `pr-1.5 sm:pr-2.5` for the label; the rail sits at `-ml-1` so the first circle meets the
+  heading's left edge. Measured: 4 / 4 / 4px at 1440 and 390px wide, in both modes.
 - Secondary text in dark: `dark:text-slate-400`, dropped where the base class is already `text-slate-400` (D21).
 - Identity colours: `identityVars(color)` in style, `IDENTITY_FILL` in class, text stays `text-white`.
 
@@ -207,6 +210,7 @@ The Charcoal migration logs as its blueprint states.
 | Surface + Steel tokens; light ramp unchanged (I1)            | `apps/live/app/dark-palette.test.ts`, "the dark palette tokens"            |
 | Wordmark accent dark-only                                    | `dark-palette.test.ts`, "the wordmark"                                     |
 | I2 solid fills, I3 brand text                                | `dark-palette.test.ts`, "solid brand fills", "brand-coloured text"         |
+| Step pill concentric with its circle at every breakpoint     | `apps/live/components/palette/template-picker-wizard.test.tsx`             |
 | Optical utility defined; every counted value wrapped         | `dark-palette.test.ts`, "optical numerals"                                 |
 | I5 identity colours                                          | `dark-palette.test.ts`, "white text on an identity colour"                 |
 | `identityDeep` at AA on every colour; fallback; pass-through | `apps/live/lib/identity-fill.test.ts`                                      |

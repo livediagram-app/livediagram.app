@@ -283,7 +283,11 @@ The welcome screen is a **two-step wizard** rather than one long page:
   The step number and each category card's template-count badge centre the
   digit's ink in their circle / pill (`text-optical-centre`,
   [Colour scheme](../004-interface-design/color-scheme.md#usage-rules)), in both
-  appearances: a digit centred by its line box sits visibly high.
+  appearances: a digit centred by its line box sits visibly high. The current
+  step sits in a soft pill whose round cap is concentric with the step circle:
+  4px from the circle to the pill's left edge, the same as top and bottom
+  ([Colour scheme](../004-interface-design/color-scheme.md#usage-rules)). The
+  rail's first circle lines up with the dialog heading.
 - **Skip** (either step) commits the documented defaults straight away: the
   **Blank** template and the **Default** theme. (This is why the welcome screen now
   has a Skip control where it previously had none.) The header **X** still

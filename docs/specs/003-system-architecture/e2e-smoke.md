@@ -90,7 +90,7 @@ vehicle that exercises code paths.
    ([Motion](../004-interface-design/motion.md)). Under reduced motion,
    each must be instant, with no uncaught error.
 
-5. **Contrast audit, dark mode** (`contrast-audit.spec.ts`): on the New
+6. **Contrast audit, dark mode** (`contrast-audit.spec.ts`): on the New
    Diagram wizard, the editor with a seeded diagram, the Join dialog, the
    Settings dialog, the panels and the Explorer, every visible text node is
    measured against the background actually painted under it (each ancestor's
