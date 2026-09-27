@@ -65,5 +65,7 @@ Every icon livediagram draws follows one grammar, so a glyph looks the same weig
 ## Relation to optical alignment
 
 - Icons in controls come in size steps of 12, 14, 16, 20 and 24px. Status badges (under 12px) and illustration-scale glyphs sit outside the steps.
+- One control family uses one size step, drawn on the 24-unit grid so the ink reads the same size: menu rows and section headers 14px, a menu's icon-only quick-action buttons 16px.
+- One glyph carries one meaning: settings are sliders, tools a wrench.
 - Icons keep their rendered box sizes when their geometry changes, so layout does not shift.
 - Iconography owns the drawing: path data, weight, the vocabulary, the icon primitive, the lint rule and the centring test. Optical alignment (`optical-alignment.md`, landing with that work) owns everything around the glyph: containers, slots, text centring, row baselines and the ink audit. Its primitives take any icon as a child.

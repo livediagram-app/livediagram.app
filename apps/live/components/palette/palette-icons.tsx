@@ -22,8 +22,14 @@ import type {
   TextAlignX,
   TextAlignY,
 } from '@livediagram/diagram';
-import { lucideSquareDashedMousePointer } from '@livediagram/icons/lucide';
-import { Glyph, Prims } from '@livediagram/ui';
+import {
+  lucideFileDown,
+  lucideFileUp,
+  lucideSquareDashedMousePointer,
+} from '@livediagram/icons/lucide';
+import { Glyph, lucideGlyph, Prims } from '@livediagram/ui';
+
+import { MENU_ICON_PX } from '@/components/palette/context-menu-icons';
 
 export function BorderStrokeIcon({ value }: { value: BorderStroke }) {
   if (value === 'none') {
@@ -295,25 +301,9 @@ export function ArrowEndsIcon({ ends }: { ends: ArrowEnds }) {
   );
 }
 
-export function FileImportIcon() {
-  return (
-    <Glyph size={12} units={16}>
-      <path d="M8 13.5V5.5" />
-      <path d="M5 10.5l3 3 3-3" />
-      <path d="M2.5 3v-0.5h11V3" />
-    </Glyph>
-  );
-}
-
-export function FileExportIcon() {
-  return (
-    <Glyph size={12} units={16}>
-      <path d="M8 2v8" />
-      <path d="M5 5l3-3 3 3" />
-      <path d="M2.5 11v2.5h11V11" />
-    </Glyph>
-  );
-}
+// Import into / export out of a tab (the tab menu's Content rows).
+export const FileImportIcon = lucideGlyph(lucideFileDown, MENU_ICON_PX);
+export const FileExportIcon = lucideGlyph(lucideFileUp, MENU_ICON_PX);
 
 export function PanIcon() {
   // Open hand (four fingers + thumb): the classic pan/grab glyph.

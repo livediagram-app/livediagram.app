@@ -11,7 +11,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { ChevronLeftIcon, ChevronRightIcon, CloseIcon, Tooltip, Glyph } from '@livediagram/ui';
 
-import { GearIcon } from '@/components/chrome/tab-bar-icons';
+import { SettingsIcon } from '@/components/chrome/tab-bar-icons';
 
 // How long the pointer must be still before the HUD gets out of the way.
 const IDLE_MS = 2600;
@@ -223,10 +223,10 @@ export function PresentationHud({
         ) : null}
         {/* The app's own settings glyph, not a cog. A cog's spokes around a
             central circle read as a SUN at this size — which is exactly why it
-            was replaced everywhere else (see GearIcon), and doubly wrong on a
+            was replaced everywhere else (see SettingsIcon), and doubly wrong on a
             dark HUD where the stroke is light. */}
         <HudButton label="Presentation settings" onPress={onToggleSettings} active={settingsOpen}>
-          <GearIcon />
+          <SettingsIcon />
         </HudButton>
         <HudButton label="Exit presentation" onPress={onClose}>
           <CloseIcon />

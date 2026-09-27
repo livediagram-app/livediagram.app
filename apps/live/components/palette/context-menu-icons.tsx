@@ -1,16 +1,51 @@
-// 12 px stroke-currentColor icons used exclusively by the editor's
-// right-click context menu (element and canvas modes). They lived
-// inline at the bottom of editor-page.tsx; pulled out here so the
-// page file stays focused on orchestration rather than the SVG
-// vocabulary. No behaviour change.
-//
-// All icons share the same visual contract: 12x12, 16-unit viewBox,
-// stroke="currentColor", `aria-hidden`. The row that mounts one sets the
-// colour via Tailwind's text-* utilities so each icon picks up the
-// surrounding tone (default / danger / disabled) without needing per-icon
-// variants.
+// Icons of the editor's context menus (element, multi-selection, canvas, layer row). One family
+// (docs/specs/004-interface-design/iconography.md, "Size steps"): row and section icons render at
+// MENU_ICON_PX, the pinned quick-action buttons at QUICK_ACTION_ICON_PX, all on the 24-unit grid so
+// their ink reads the same size. Lucide where it has the meaning; in-house glyphs follow the same grid.
+// Option tiles (animation kinds, layout styles, rotation) are previews and keep their own drawing.
 
-import { ActionIcon, CommentIcon, LinkIcon, NoteIcon, Glyph } from '@livediagram/ui';
+import {
+  ActionIcon,
+  CommentIcon,
+  CopyIcon as SharedCopyIcon,
+  DuplicateIcon,
+  Glyph,
+  LinkIcon,
+  lucideGlyph,
+  NoteIcon,
+  SparkleIcon,
+  TrashIcon,
+} from '@livediagram/ui';
+import {
+  lucideAlignStartVertical,
+  lucideArrowRight,
+  lucideBaseline,
+  lucideBringToFront,
+  lucideChartNoAxesColumnIncreasing,
+  lucideCircleCheck,
+  lucideClipboardPaste,
+  lucideImage,
+  lucideLayers,
+  lucideNetwork,
+  lucidePalette,
+  lucidePaintbrush,
+  lucideProportions,
+  lucideRadio,
+  lucideRotateCwSquare,
+  lucideScaling,
+  lucideScissors,
+  lucideSendToBack,
+  lucideShapes,
+  lucideSquare,
+  lucideStar,
+  lucideStarOff,
+  lucideTable,
+  lucideTimer,
+  lucideType,
+  lucideUsers,
+  lucideWandSparkles,
+  lucideWrench,
+} from '@livediagram/icons/lucide';
 import type {
   ArrowFlow,
   ElementAnimation,
@@ -18,143 +53,63 @@ import type {
   ProgressAnim,
 } from '@livediagram/diagram';
 
-export function LayerUpIcon() {
-  return (
-    <Glyph size={12} units={16} strokeLinecap="butt">
-      <rect x="3" y="3" width="7" height="7" rx="1" />
-      <rect x="6" y="6" width="7" height="7" rx="1" fill="white" />
-    </Glyph>
-  );
-}
+/** Size step of every menu row and section icon. */
+export const MENU_ICON_PX = 14;
+/** Size step of the icon-only quick-action buttons pinned to the top of a menu. */
+export const QUICK_ACTION_ICON_PX = 16;
 
-export function LayerDownIcon() {
-  return (
-    <Glyph size={12} units={16} strokeLinecap="butt">
-      <rect x="6" y="6" width="7" height="7" rx="1" />
-      <rect x="3" y="3" width="7" height="7" rx="1" fill="white" />
-    </Glyph>
-  );
-}
+export const LayerUpIcon = lucideGlyph(lucideBringToFront, MENU_ICON_PX);
+export const LayerDownIcon = lucideGlyph(lucideSendToBack, MENU_ICON_PX);
 
-// The note / action / comment / link glyphs are the shared element-affordance
-// drawings (@livediagram/ui), the same ones the on-element badge pill shows,
-// pinned here to the menu's 12px.
+// The note / action / comment / link glyphs are the shared element-affordance drawings
+// (@livediagram/ui), the same ones the on-element badge pill shows, at the menu step.
 export function NoteMenuIcon() {
-  return <NoteIcon />;
+  return <NoteIcon size={MENU_ICON_PX} />;
 }
 
 // Clipboard-with-tick glyph for the Assign Action tile (docs/specs/012-collaboration/assigned-actions.md).
 export function ActionMenuIcon() {
-  return <ActionIcon />;
+  return <ActionIcon size={MENU_ICON_PX} />;
 }
 
 export function CommentMenuIcon() {
-  return <CommentIcon size={12} />;
+  return <CommentIcon size={MENU_ICON_PX} />;
 }
 
 export function LinkMenuIcon() {
-  return <LinkIcon size={12} />;
+  return <LinkIcon size={MENU_ICON_PX} />;
 }
 
-export function SquareMenuIcon() {
-  return (
-    <Glyph size={12} units={16} strokeLinecap="butt" strokeLinejoin="miter">
-      <rect x="3" y="3" width="10" height="10" rx="1.5" />
-    </Glyph>
-  );
-}
+// The "Shape" section: the element's outline.
+export const SquareMenuIcon = lucideGlyph(lucideShapes, MENU_ICON_PX);
+export const PaletteMenuIcon = lucideGlyph(lucidePalette, MENU_ICON_PX);
+// Auto align: shapes pulled to one edge.
+export const AutoAlignIcon = lucideGlyph(lucideAlignStartVertical, MENU_ICON_PX);
+// The Timer session-tool category glyph.
+export const TimerMenuIcon = lucideGlyph(lucideTimer, MENU_ICON_PX);
+// The Vote session-tool category glyph (a cast dot-vote). The mobile dock passes 16 to match its
+// neighbours.
+export const VoteMenuIcon = lucideGlyph(lucideCircleCheck, MENU_ICON_PX);
+// The Collaborate parent category glyph: the flyout grouping the live session tools.
+export const CollaborateMenuIcon = lucideGlyph(lucideUsers, MENU_ICON_PX);
+// The Poll session-tool category glyph (docs/specs/012-collaboration/live-poll.md, a live tally),
+// distinct from Vote's check: a poll counts answers from people.
+export const PollMenuIcon = lucideGlyph(lucideChartNoAxesColumnIncreasing, MENU_ICON_PX);
 
-export function PaletteMenuIcon() {
-  return (
-    <Glyph size={12} units={16}>
-      <path d="M8 2a6 6 0 1 0 0 12 1.2 1.2 0 0 0 0-2.4 1.2 1.2 0 0 1 0-2.4h1.4A3.4 3.4 0 0 0 12.8 5.8 4 4 0 0 0 8 2z" />
-      <circle cx="5" cy="6.5" r="0.6" fill="currentColor" />
-      <circle cx="8" cy="5" r="0.6" fill="currentColor" />
-      <circle cx="11" cy="7" r="0.6" fill="currentColor" />
-    </Glyph>
-  );
-}
-
-export function AutoAlignIcon() {
-  return (
-    <Glyph size={12} units={16}>
-      <path d="M2 4h12M2 8h12M2 12h12" />
-    </Glyph>
-  );
-}
-
-// Clock - the Timer session-tool category glyph.
-export function TimerMenuIcon() {
-  return (
-    <Glyph size={12} units={16}>
-      <path d="M6.5 2h3" />
-      <circle cx="8" cy="9.5" r="5" />
-      <path d="M8 9.5V6.8M8 9.5l2.1 1.3" />
-    </Glyph>
-  );
-}
-
-// Check-in-circle - the Vote session-tool category glyph (a cast dot-vote).
-// `size` defaults to the 12px the context menus use; the mobile dock passes
-// 16 so these sit at the same weight as the other dock icons, which are all
-// 16px. Without it Vote and Poll read as visibly smaller than their neighbours.
-export function VoteMenuIcon({ size = 12 }: { size?: number } = {}) {
-  return (
-    <Glyph size={size} units={16}>
-      <circle cx="8" cy="8" r="6" />
-      <path d="M5.4 8.2l1.8 1.8 3.4-3.7" />
-    </Glyph>
-  );
-}
-
-// Two figures - the Collaborate parent category glyph: the side-flyout row
-// that groups the live session tools (Countdown / Stopwatch / Vote / Poll)
-// under one entry instead of four top-level rows.
-export function CollaborateMenuIcon() {
-  return (
-    <Glyph size={12} units={16}>
-      <circle cx="6" cy="5.5" r="2.2" />
-      <path d="M2.5 13c0-2 1.6-3.2 3.5-3.2s3.5 1.2 3.5 3.2" />
-      <path d="M11 4.2a2.2 2.2 0 010 4.3" />
-      <path d="M12.2 13c0-1.5-.5-2.5-1.4-3.1" />
-    </Glyph>
-  );
-}
-
-// Three rising bars - the Poll session-tool category glyph (docs/specs/012-collaboration/live-poll.md, a
-// live tally). Distinct from VoteMenuIcon's cast-a-dot check: a poll
-// counts answers from people, not dots on elements.
-// `size` defaults to the 12px the context menus use; the mobile dock passes
-// 16 so these sit at the same weight as the other dock icons, which are all
-// 16px. Without it Vote and Poll read as visibly smaller than their neighbours.
-export function PollMenuIcon({ size = 12 }: { size?: number } = {}) {
-  return (
-    <Glyph size={size} units={16}>
-      <path d="M4 12V9.5" />
-      <path d="M8 12V4.5" />
-      <path d="M12 12V7" />
-    </Glyph>
-  );
-}
-
-// Two sparkles - the Cleanup category glyph (tidy / auto-align / auto-layout).
+// The Cleanup category glyph (tidy / auto-align / auto-layout): the one shared sparkle.
 export function CleanupMenuIcon() {
-  return (
-    <Glyph size={12} units={16} strokeLinecap="butt">
-      <path d="M6.5 2.5l1.1 2.9 2.9 1.1-2.9 1.1-1.1 2.9-1.1-2.9L2.5 6.5l2.9-1.1z" />
-      <path d="M12 9.5l.6 1.5 1.5.6-1.5.6-.6 1.5-.6-1.5-1.5-.6 1.5-.6z" />
-    </Glyph>
-  );
+  return <SparkleIcon size={MENU_ICON_PX} />;
 }
 
-// Hierarchy of connected nodes - the Auto Layout action glyph.
-export function AutoLayoutMenuIcon() {
+// The Auto Layout action glyph: a hierarchy of connected nodes.
+export const AutoLayoutMenuIcon = lucideGlyph(lucideNetwork, MENU_ICON_PX);
+
+// Layout-style option previews (flowchart down / right, tree, mindmap). 16-unit drawings at the
+// menu step.
+function LayoutPreview({ children }: { children: React.ReactNode }) {
   return (
-    <Glyph size={12} units={16}>
-      <rect x="5.5" y="1.5" width="5" height="3.2" rx="0.8" />
-      <rect x="1.5" y="11.3" width="5" height="3.2" rx="0.8" />
-      <rect x="9.5" y="11.3" width="5" height="3.2" rx="0.8" />
-      <path d="M8 4.7v2.8M4 11.3V8.5h8v2.8M12 11.3V8.5" />
+    <Glyph size={MENU_ICON_PX} units={16}>
+      {children}
     </Glyph>
   );
 }
@@ -162,49 +117,49 @@ export function AutoLayoutMenuIcon() {
 // Two boxes joined by a downward arrow - the Flowchart (down) layout style.
 export function FlowDownMenuIcon() {
   return (
-    <Glyph size={12} units={16}>
+    <LayoutPreview>
       <rect x="4.5" y="1.5" width="7" height="3.4" rx="0.8" />
       <rect x="4.5" y="11.1" width="7" height="3.4" rx="0.8" />
       <path d="M8 4.9v6.2M6.2 9.3L8 11.1l1.8-1.8" />
-    </Glyph>
+    </LayoutPreview>
   );
 }
 
 // Two boxes joined by a rightward arrow - the Flowchart (right) layout style.
 export function FlowRightMenuIcon() {
   return (
-    <Glyph size={12} units={16}>
+    <LayoutPreview>
       <rect x="1.5" y="4.5" width="3.4" height="7" rx="0.8" />
       <rect x="11.1" y="4.5" width="3.4" height="7" rx="0.8" />
       <path d="M4.9 8h6.2M9.3 6.2L11.1 8l-1.8 1.8" />
-    </Glyph>
+    </LayoutPreview>
   );
 }
 
 // Root over three reports - the Tree (org chart) layout style.
 export function TreeMenuIcon() {
   return (
-    <Glyph size={12} units={16}>
+    <LayoutPreview>
       <rect x="5.8" y="1.5" width="4.4" height="3" rx="0.8" />
       <rect x="1.2" y="11.5" width="3.6" height="3" rx="0.8" />
       <rect x="6.2" y="11.5" width="3.6" height="3" rx="0.8" />
       <rect x="11.2" y="11.5" width="3.6" height="3" rx="0.8" />
       <path d="M8 4.5v2M3 11.5V8.5h10v3M8 8.5v3" />
-    </Glyph>
+    </LayoutPreview>
   );
 }
 
 // Hub with four spokes - the Mindmap (radial) layout style.
 export function MindmapMenuIcon() {
   return (
-    <Glyph size={12} units={16}>
+    <LayoutPreview>
       <circle cx="8" cy="8" r="2.2" />
       <circle cx="2.8" cy="3" r="1.4" />
       <circle cx="13.2" cy="3" r="1.4" />
       <circle cx="2.8" cy="13" r="1.4" />
       <circle cx="13.2" cy="13" r="1.4" />
       <path d="M6.5 6.6L3.8 4M9.5 6.6L12.2 4M6.5 9.4L3.8 12M9.5 9.4L12.2 12" />
-    </Glyph>
+    </LayoutPreview>
   );
 }
 
@@ -219,9 +174,11 @@ export function DirArrow({ dir }: { dir: 'up' | 'down' | 'left' | 'right' }) {
   );
 }
 
-// Orientation preview for the Rotation category: a small square with a
-// marker on its top edge, rotated by `deg` about its centre. The tilt shows
-// at a glance which way the element will end up facing.
+// The Rotation category glyph: a turn arrow round a square.
+export const RotationMenuIcon = lucideGlyph(lucideRotateCwSquare, MENU_ICON_PX);
+
+// Orientation preview for a Rotation option: a square with a marker on its top edge, rotated by
+// `deg` about its centre, so each option shows which way the element will face.
 export function RotationGlyph({ deg }: { deg: number }) {
   return (
     <Glyph size={15} units={16}>
@@ -234,130 +191,53 @@ export function RotationGlyph({ deg }: { deg: number }) {
   );
 }
 
-// Diagonal stroke — the "Line" section glyph.
+// Diagonal stroke - the "Line" section glyph.
 export function LineGlyph() {
   return (
-    <Glyph size={12} units={16} strokeLinejoin="miter">
-      <path d="M3 13L13 3" />
+    <Glyph size={MENU_ICON_PX} units={24}>
+      <path d="M5 19 19 5" />
     </Glyph>
   );
 }
 
-// Arrow → glyph — the "Pointer" section.
-export function PointerGlyph() {
-  return (
-    <Glyph size={12} units={16}>
-      <path d="M2.5 8h10M9 4.5 12.5 8 9 11.5" />
-    </Glyph>
-  );
-}
+// The "Pointer" section.
+export const PointerGlyph = lucideGlyph(lucideArrowRight, MENU_ICON_PX);
+export const TableGlyph = lucideGlyph(lucideTable, MENU_ICON_PX);
+export const ImageGlyph = lucideGlyph(lucideImage, MENU_ICON_PX);
+// The "Border" section: the outline alone.
+export const BorderGlyph = lucideGlyph(lucideSquare, MENU_ICON_PX);
 
-// Grid glyph — the "Table" section.
-export function TableGlyph() {
-  return (
-    <Glyph size={12} units={16} strokeLinecap="butt">
-      <rect x="2.5" y="3" width="11" height="10" rx="1.5" />
-      <path d="M2.5 6.5h11M6.5 6.5V13M2.5 9.8h11" />
-    </Glyph>
-  );
-}
-
-// Picture glyph — the "Image" section.
-export function ImageGlyph() {
-  return (
-    <Glyph size={12} units={16} strokeLinecap="butt">
-      <rect x="2.5" y="3" width="11" height="10" rx="1.5" />
-      <circle cx="6" cy="6.5" r="1" />
-      <path d="M3 12l3-3 2.5 2.5L11 8l2 2" />
-    </Glyph>
-  );
-}
-
-// Rounded-square outline — the "Border" section glyph.
-export function BorderGlyph() {
-  return (
-    <Glyph size={12} units={16} strokeLinecap="butt" strokeLinejoin="miter">
-      <rect x="2.5" y="2.5" width="11" height="11" rx="2.5" />
-    </Glyph>
-  );
-}
-
-// The "Shadow" category glyph (docs/specs/008-canvas/element-shadows.md) — a box with an offset shade behind.
+// The "Shadow" category glyph (docs/specs/008-canvas/element-shadows.md): a box with an offset
+// shade behind.
 export function ShadowMenuGlyph() {
   return (
-    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden>
-      <rect x="5" y="5" width="9" height="9" rx="2" fill="currentColor" opacity="0.35" />
+    <Glyph size={MENU_ICON_PX} units={24}>
       <rect
-        x="2"
-        y="2"
-        width="9"
-        height="9"
+        x="6"
+        y="6"
+        width="16"
+        height="16"
         rx="2"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        fill="none"
+        fill="currentColor"
+        stroke="none"
+        opacity="0.35"
       />
-    </svg>
-  );
-}
-
-// Stacked diamonds — the "Layer" section glyph. 12x12 stroke style of the
-// shared context-menu icons.
-export function LayersGlyph() {
-  return (
-    <Glyph size={12} units={16}>
-      <path d="M8 2 14 5.5 8 9 2 5.5z" />
-      <path d="m3.5 8 4.5 2.6L12.5 8M3.5 11l4.5 2.6L12.5 11" />
+      <rect x="2" y="2" width="16" height="16" rx="2" />
     </Glyph>
   );
 }
 
-// Animation section glyph (docs/specs/008-canvas/canvas-and-palette.md): a dot with a couple of "motion" arcs,
-// reading as "this element animates".
-export function AnimationMenuGlyph() {
-  return (
-    <Glyph size={12} units={16}>
-      <circle cx="8" cy="8" r="2" />
-      <path d="M11.5 4.5a5 5 0 0 1 0 7" />
-      <path d="M4.5 11.5a5 5 0 0 1 0-7" />
-    </Glyph>
-  );
-}
-
-// A magic wand with a sparkle tip — the "Presets" category glyph (docs/specs/010-palette/style-presets.md):
-// one-click styled looks. 12x12 stroke style of the shared context-menu icons.
-// The "Style" flyout row's glyph (docs/specs/008-canvas/canvas-and-palette.md): a paintbrush, distinct from
-// the Colours child's palette and the Presets child's wand so the parent
-// row and its children never wear the same icon side by side.
-// The "Tools" flyout row's glyph (docs/specs/008-canvas/canvas-and-palette.md): slider knobs, for the band
-// folding the data-shape controls (progress / rating / chart / rail).
-export function ToolsMenuGlyph() {
-  return (
-    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden>
-      <path d="M2.5 5h11M2.5 11h11" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-      <circle cx="6" cy="5" r="1.8" fill="#fff" stroke="currentColor" strokeWidth="1.4" />
-      <circle cx="10.5" cy="11" r="1.8" fill="#fff" stroke="currentColor" strokeWidth="1.4" />
-    </svg>
-  );
-}
-
-export function StyleMenuGlyph() {
-  return (
-    <Glyph size={12} units={16}>
-      <path d="M13.5 2.5c-2.4.8-5.1 2.9-6.6 4.9l1.7 1.7c2-1.5 4.1-4.2 4.9-6.6z" />
-      <path d="M6.4 8.1c-1 .2-1.8 1-2 2-.2 1-.9 1.6-1.9 1.9 1.2 1.3 3.4 1.4 4.6.2.8-.8 1-2 .6-3z" />
-    </Glyph>
-  );
-}
-
-export function PresetsMenuGlyph() {
-  return (
-    <Glyph size={12} units={16}>
-      <path d="M10 2.2l0.9 1.9 1.9 0.9-1.9 0.9-0.9 1.9-0.9-1.9-1.9-0.9 1.9-0.9z" />
-      <path d="M3 13l5-5" />
-    </Glyph>
-  );
-}
+// The "Layer" section glyph.
+export const LayersGlyph = lucideGlyph(lucideLayers, MENU_ICON_PX);
+// Animation section glyph (docs/specs/008-canvas/canvas-and-palette.md): a dot with motion arcs.
+export const AnimationMenuGlyph = lucideGlyph(lucideRadio, MENU_ICON_PX);
+// The "Tools" / "Session" / "Scale" rows: a wrench (sliders are Settings).
+export const ToolsMenuGlyph = lucideGlyph(lucideWrench, MENU_ICON_PX);
+// The "Style" flyout row (docs/specs/008-canvas/canvas-and-palette.md): a paintbrush, distinct from
+// the Colours child's palette and the Presets child's wand.
+export const StyleMenuGlyph = lucideGlyph(lucidePaintbrush, MENU_ICON_PX);
+// The "Presets" category (docs/specs/010-palette/style-presets.md): one-click styled looks.
+export const PresetsMenuGlyph = lucideGlyph(lucideWandSparkles, MENU_ICON_PX);
 
 // Illustrations for the Animation + Flow context-menu tiles (docs/specs/008-canvas/canvas-and-palette.md), so
 // each option reads at a glance. 16-unit viewBox, currentColor; filled dots
@@ -906,9 +786,9 @@ export function IconAnimKindGlyph({ kind }: { kind: IconAnimation | null }) {
 // Progress section icon (docs/specs/009-elements/progress.md): a half-filled pill.
 export function ProgressMenuGlyph() {
   return (
-    <Glyph size={12} units={16}>
-      <rect x="2" y="6" width="12" height="4" rx="2" />
-      <rect x="2" y="6" width="6" height="4" rx="2" fill="currentColor" stroke="none" />
+    <Glyph size={MENU_ICON_PX} units={24}>
+      <rect x="2" y="8" width="20" height="8" rx="4" />
+      <path d="M6 8h5v8H6a4 4 0 0 1 0-8Z" fill="currentColor" stroke="none" />
     </Glyph>
   );
 }
@@ -956,168 +836,58 @@ export function ProgressAnimKindGlyph({ kind }: { kind: ProgressAnim | null }) {
   return <AnimNoneGlyph />;
 }
 
-// A box with a double-headed arrow across it - the Size category glyph
-// (docs/specs/008-canvas/element-size.md). Reads as "how big", against the aspect-lock mark below which
-// reads as "keep the proportion".
-export function SizeMenuIcon() {
-  return (
-    <Glyph size={14} units={16}>
-      <rect x="2" y="3.5" width="12" height="9" rx="1.2" />
-      <path d="M5 8h6M5 8l1.4-1.4M5 8l1.4 1.4M11 8l-1.4-1.4M11 8l-1.4 1.4" />
-    </Glyph>
-  );
-}
+// The Size category glyph (docs/specs/008-canvas/element-size.md): "how big", against the
+// aspect-lock mark below which reads as "keep the proportion".
+export const SizeMenuIcon = lucideGlyph(lucideScaling, MENU_ICON_PX);
+// The "lock aspect ratio" row glyph.
+export const AspectLockMenuIcon = lucideGlyph(lucideProportions, MENU_ICON_PX);
+// The "Text" category glyph.
+export const TextGlyph = lucideGlyph(lucideType, MENU_ICON_PX);
+// The "Icon" category glyph, and its struck-through sibling "remove the inline icon".
+export const IconCategoryGlyph = lucideGlyph(lucideStar, MENU_ICON_PX);
+export const RemoveIconGlyph = lucideGlyph(lucideStarOff, MENU_ICON_PX);
 
-// Rectangle with corner ticks - the "lock aspect ratio" Layer-row glyph.
-export function AspectLockMenuIcon() {
-  return (
-    <Glyph size={12} units={16}>
-      <rect x="2.5" y="2.5" width="11" height="11" rx="1.5" />
-      <path d="M5 8.5v2.5h2.5M11 7.5V5H8.5" />
-    </Glyph>
-  );
-}
-
-// A serif "A" - the "Text" category glyph.
-export function TextGlyph() {
-  return (
-    <Glyph size={12} units={16} filled>
-      <text
-        x="8"
-        y="12"
-        textAnchor="middle"
-        fontSize="13"
-        fontWeight="600"
-        fontFamily="Georgia, serif"
-      >
-        A
-      </text>
-    </Glyph>
-  );
-}
-
-// A star - the "Icon" category glyph (the un-slashed sibling of RemoveIconGlyph).
-export function IconCategoryGlyph() {
-  return (
-    <Glyph size={12} units={16} strokeLinecap="butt">
-      <path d="M8 2.5l1.6 3.3 3.6.5-2.6 2.5.6 3.6L8 11.2 4.8 12.9l.6-3.6L2.8 6.8l3.6-.5z" />
-    </Glyph>
-  );
-}
-
-// A star glyph with a slash - "remove the inline icon".
-export function RemoveIconGlyph() {
-  return (
-    <Glyph size={12} units={16}>
-      <path d="M8 2.5l1.6 3.3 3.6.5-2.6 2.5.6 3.6L8 11.2 4.8 12.9l.6-3.6L2.8 6.8l3.6-.5z" />
-      <path d="M2.5 13.5l11-11" />
-    </Glyph>
-  );
-}
-
-// Verb glyphs for the event-storming note menu (docs/specs/021-event-storming/event-storming.md): scissors, two
-// sheets, a plus-on-sheet, and a bin. Plain single-stroke marks, matching
-// the rest of the menu's icon weight.
-export function CutIcon() {
-  return (
-    <Glyph size={16} units={24}>
-      <circle cx="6" cy="18" r="2.6" />
-      <circle cx="18" cy="18" r="2.6" />
-      <path d="M7.8 16.2 18.5 4.5M16.2 16.2 5.5 4.5" />
-    </Glyph>
-  );
-}
+// Quick-action verbs (cut / copy / duplicate / remove / paste): the shared glyphs where one exists.
+export const CutIcon = lucideGlyph(lucideScissors, QUICK_ACTION_ICON_PX);
 
 export function CopyIcon() {
-  return (
-    <Glyph size={16} units={24} strokeLinecap="butt">
-      <rect x="8.5" y="8.5" width="11" height="11" rx="1.6" />
-      <path d="M15.5 5.5h-9a2 2 0 0 0-2 2v9" strokeLinecap="round" />
-    </Glyph>
-  );
+  return <SharedCopyIcon size={QUICK_ACTION_ICON_PX} />;
 }
 
 export function DuplicateMenuIcon() {
-  return (
-    <Glyph size={16} units={24} strokeLinecap="butt">
-      <rect x="4" y="4" width="11" height="11" rx="1.6" />
-      <rect x="9" y="9" width="11" height="11" rx="1.6" />
-    </Glyph>
-  );
+  return <DuplicateIcon size={QUICK_ACTION_ICON_PX} />;
 }
 
 export function RemoveIcon() {
-  return (
-    <Glyph size={16} units={24}>
-      <path d="M4.5 6.5h15M9.5 6.5V4.8a1.3 1.3 0 0 1 1.3-1.3h2.4a1.3 1.3 0 0 1 1.3 1.3v1.7" />
-      <path d="M6.8 6.5 7.8 19a1.5 1.5 0 0 0 1.5 1.4h5.4a1.5 1.5 0 0 0 1.5-1.4l1-12.5" />
-    </Glyph>
-  );
+  return <TrashIcon size={QUICK_ACTION_ICON_PX} />;
 }
 
-// Paste: a clipboard with a sheet lifting off it. Deliberately NOT the
-// same clipboard glyph as Copy's two sheets — the canvas menu shows Paste
-// where the element menu shows Copy, and two near-identical clipboards
-// would read as the same verb in two places.
-export function PasteMenuIcon() {
-  return (
-    <Glyph size={16} units={24}>
-      <path d="M9 4h6v3H9z" />
-      <path d="M9 5.5H6.5A1.5 1.5 0 0 0 5 7v12a1.5 1.5 0 0 0 1.5 1.5H11" />
-      <path d="M15 5.5h2.5A1.5 1.5 0 0 1 19 7v4" />
-      <rect x="13" y="13" width="7" height="8" rx="1.2" />
-    </Glyph>
-  );
-}
+// Paste: a clipboard with a sheet lifting off it, so it never reads as Copy's two sheets.
+export const PasteMenuIcon = lucideGlyph(lucideClipboardPaste, QUICK_ACTION_ICON_PX);
 
-// Colour-category marks (docs/specs/008-canvas/canvas-and-palette.md Colours). "Text", "Background", "Border" and
-// "Heading" are four labels of similar length and shape; in a dense menu the
-// glyph is what separates them at a glance, before anyone reads a word. Each
-// draws the SURFACE it paints, not a generic paint pot.
+// Colour-category marks (docs/specs/008-canvas/canvas-and-palette.md Colours). "Text",
+// "Background", "Border" and "Heading" are four labels of similar length; the glyph separates them
+// at a glance. Each draws the SURFACE it paints, not a generic paint pot.
 
-/** Text colour: a letterform over a colour bar, the underline-swatch idiom. */
-export function TextColourIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden>
-      <text
-        x="8"
-        y="10.5"
-        textAnchor="middle"
-        fill="currentColor"
-        fontSize="10"
-        fontWeight="700"
-        fontFamily="Georgia, serif"
-      >
-        A
-      </text>
-      <rect x="2.5" y="12.5" width="11" height="2.5" rx="1" fill="currentColor" />
-    </svg>
-  );
-}
+/** Text colour: a letterform over a baseline. */
+export const TextColourIcon = lucideGlyph(lucideBaseline, MENU_ICON_PX);
 
-/** Background: a filled box, the whole face flooded. */
+const BOX = 'M5 4h14a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3Z';
+
+/** Background: the box, its whole face flooded. */
 export function FillColourIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden>
-      <rect
-        x="2.5"
-        y="3.5"
-        width="11"
-        height="9"
-        rx="2"
-        fill="currentColor"
-        stroke="currentColor"
-        strokeWidth="1.3"
-      />
-    </svg>
+    <Glyph size={MENU_ICON_PX} units={24}>
+      <path d={BOX} fill="currentColor" />
+    </Glyph>
   );
 }
 
 /** Border: the same box with only its edge drawn. */
 export function BorderColourIcon() {
   return (
-    <Glyph size={14} units={16}>
-      <rect x="2.5" y="3.5" width="11" height="9" rx="2" />
+    <Glyph size={MENU_ICON_PX} units={24}>
+      <path d={BOX} />
     </Glyph>
   );
 }
@@ -1125,28 +895,19 @@ export function BorderColourIcon() {
 /** Heading: the box again, with just its top band filled. */
 export function HeadingColourIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden>
-      <rect
-        x="2.5"
-        y="3.5"
-        width="11"
-        height="9"
-        rx="2"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.3"
-      />
-      <path d="M2.5 5.5a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v1.5h-11Z" fill="currentColor" />
-    </svg>
+    <Glyph size={MENU_ICON_PX} units={24}>
+      <path d={BOX} />
+      <path d="M5 4h14a3 3 0 0 1 3 3v2H2V7a3 3 0 0 1 3-3Z" fill="currentColor" />
+    </Glyph>
   );
 }
 
 /** Pointer: an arrowhead, for the colour of the heads rather than the line. */
 export function PointerColourIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden>
-      <path d="M2 8h7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-      <path d="M8.5 4.5 14 8l-5.5 3.5Z" fill="currentColor" />
-    </svg>
+    <Glyph size={MENU_ICON_PX} units={24}>
+      <path d="M2 12h11" />
+      <path d="M13 6.5 22 12l-9 5.5Z" fill="currentColor" />
+    </Glyph>
   );
 }

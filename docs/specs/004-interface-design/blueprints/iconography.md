@@ -94,6 +94,8 @@ export function iconWeightPx(w: IconWeight | undefined): number;
 - The icon context menu gains a **Weight** accordion section of three tiles (Thin, Regular, Bold), each drawing the selected glyph at that weight (`IconWeightTiles`). The multi-selection menu shows the same row when the selection holds a line-art icon.
 - Copy: row label "Weight"; tiles "Thin", "Regular", "Bold".
 - Hover previews the weight live, as the Size row does.
+- Menu icons: `MENU_ICON_PX = 14` (rows, section headers, tiles) and `QUICK_ACTION_ICON_PX = 16` (icon-only buttons), exported from `apps/live/components/palette/context-menu-icons.tsx`; every menu glyph module sizes to them.
+- Contact sheet: `pnpm icons:sheet` renders every exported `*Icon` / `*Glyph` of the editor's icon modules and `@livediagram/ui`, plus every palette tile, at 1x and 4x into `$ICON_SHEET_DIR` (default `/tmp/icon-sheet`), then screenshots each page (dark, 2x) (`apps/live/scripts/icon-sheet/`).
 
 ## Accessibility
 
