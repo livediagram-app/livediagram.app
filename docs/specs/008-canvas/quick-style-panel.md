@@ -207,8 +207,38 @@ colour of your own.
   itself and binds no slot; a theme change leaves it where it is, like any hand-picked colour.
   The slot's theme colour comes back only through Clear override.
 - **Style memory** remembers a custom colour like any other colour.
-- **Where overrides are kept**: provisionally in this browser, per diagram and per row, beside the
-  style memory. This is pending an operator decision and may move.
+
+### Where overrides live
+
+An override is **yours, synced, and keyed by theme**: it means "in this theme, this slot is this
+colour". It is kept in the synced user preferences ([User preferences](../007-editor/user-preferences.md)),
+beside `customSwatches`, and travels the same way: to your account when signed in, to your guest
+identity otherwise, and into this browser's cache either way.
+
+- **Keyed by theme, because the slots are.** Each theme derives its own six colours, so "slot 4" is
+  a different colour in Forest than in Ocean. An override is recorded against the theme it was made
+  in, and switching theme shows that theme's own slots with whatever overrides you set for it,
+  and none from other themes.
+- **Per user, not per diagram.** A palette you build is a working habit that follows you between
+  diagrams and devices, like `customSwatches`. Colours a diagram should share with everyone who
+  opens it are what [custom themes](../011-theme/custom-themes.md) are for: one mechanism for
+  shared colours, not two. Keeping overrides per diagram and per user would fragment them further,
+  so the same person would rebuild the same palette in every diagram.
+- **Multi-colour themes** work the same way: their six slots are the branch colours, and an
+  override replaces one of them in the panel only. The theme's branch colouring of the diagram is
+  untouched.
+- **Clear override** removes the entry for that slot in that theme; the swatch shows the colour
+  the theme derives for the slot again, and a theme left with no overrides is removed from the
+  store. Elements already painted with the custom colour keep it.
+- **A deleted custom theme takes its overrides with it**: when it is deleted, and when your list of
+  custom themes loads without it (deleted on another device). Built-in themes are never pruned.
+- **Limits**, because the whole preferences blob shares the api's 4 KB cap: at most 12 overrides
+  per theme (six slots in each of the two rows, by construction), at most 8 themes, and at most
+  800 bytes in all. Past either limit, the theme edited least recently is dropped first. Colours
+  are validated as hex (`#rgb` or `#rrggbb`, stored as lower-case `#rrggbb`); anything else, a slot
+  outside 1 to 6, or a theme id over 64 characters is dropped when read, never failing the rest.
+- **The Default scheme** is one theme with a light and a dark half; an override set on it applies
+  in both appearances.
 
 ## Multi-selection
 

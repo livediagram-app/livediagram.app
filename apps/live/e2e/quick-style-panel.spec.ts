@@ -69,7 +69,10 @@ async function drawArrow(page: Page, from: { x: number; y: number }, to: { x: nu
 
 const panel = (page: Page) => page.getByRole('region', { name: 'Quick style' });
 const choose = (page: Page, row: string, option: string) =>
-  panel(page).getByRole('radiogroup', { name: row }).getByRole('radio', { name: option }).click();
+  panel(page)
+    .getByRole('radiogroup', { name: row, exact: true })
+    .getByRole('radio', { name: option, exact: true })
+    .click();
 
 const shapesOf = (els: El[], kind: string) => els.filter((e) => e.shape === kind);
 
@@ -119,6 +122,49 @@ test.describe('quick style panel', () => {
     // Collapse the Palette to its banner: the panel rises with it.
     await page.locator(PALETTE).getByRole('button', { name: 'Collapse palette' }).click();
     await expect(docked).toPass();
+    expectNoPageErrors(pageErrors);
+  });
+
+  test('Toolbar: narrow, seven 24 px swatch targets a row', async ({ page, pageErrors }) => {
+    await openBoard(page, 'toolbar');
+    await drawShape(page, 'o', { x: 500, y: 400 });
+    await expect(panel(page)).toBeVisible();
+    expect((await panel(page).boundingBox())!.width).toBeCloseTo(184, 0);
+    const swatches = panel(page).getByRole('radiogroup', { name: 'Stroke', exact: true }).getByRole('radio');
+    await expect(swatches).toHaveCount(7);
+    for (const box of await Promise.all((await swatches.all()).map((s) => s.boundingBox()))) {
+      expect(box!.width).toBeGreaterThanOrEqual(24);
+      expect(box!.height).toBeGreaterThanOrEqual(24);
+    }
+    expectNoPageErrors(pageErrors);
+  });
+
+  test('a right-clicked swatch takes a custom colour, used on click, and Clear override restores it', async ({
+    page,
+    pageErrors,
+  }) => {
+    await openBoard(page);
+    await drawShape(page, 'o', { x: 500, y: 300 });
+    const stroke = panel(page).getByRole('radiogroup', { name: 'Stroke' });
+    await stroke.getByRole('radio', { name: 'Green' }).click({ button: 'right' });
+    const dialog = page.getByRole('dialog', { name: 'Custom colour for Green, Stroke' });
+    await expect(dialog).toBeVisible();
+    await dialog.getByLabel('Hex').fill('#ff5500');
+    await dialog.getByLabel('Hex').press('Enter');
+    await dialog.getByRole('button', { name: 'Done' }).click();
+    const custom = stroke.getByRole('radio', { name: 'Custom orange, in place of Green' });
+    await expect(custom).toBeFocused();
+    await expect(custom.locator('[data-swatch-marker]')).toHaveCount(1);
+    // Editing the palette styled nothing; choosing the swatch does.
+    await custom.click();
+    const els = await saved(page, (e) => shapesOf(e, 'circle')[0]?.strokeColor === '#ff5500');
+    expect(shapesOf(els, 'circle')[0]!.strokeSwatch).toBeUndefined();
+    // Keyboard: Shift+F10 on the focused swatch opens the same popover.
+    await custom.focus();
+    await page.keyboard.press('Shift+F10');
+    await page.getByRole('dialog').getByRole('button', { name: 'Clear override' }).click();
+    await expect(stroke.getByRole('radio', { name: 'Green' })).toBeVisible();
+    await expect(stroke.locator('[data-swatch-marker]')).toHaveCount(0);
     expectNoPageErrors(pageErrors);
   });
 

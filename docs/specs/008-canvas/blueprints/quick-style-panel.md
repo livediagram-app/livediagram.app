@@ -25,8 +25,10 @@ Scope, by file:
 | `apps/live/hooks/ui/useQuickStylePlacement.ts`                              | Measures chrome and the panel, runs the walk, re-runs on chrome change                   |
 | `apps/live/components/canvas/QuickStylePanel.tsx`                           | The panel: docked (Palette dress) or compact by layout                                   |
 | `apps/live/components/canvas/quick-style-rows.tsx`                          | `QuickRadioRow`, swatch and glyph options, roving focus                                  |
-| `apps/live/lib/swatch-overrides.ts`                                         | Pure: override shape, apply to a row, parse, the hue-word name                           |
-| `apps/live/hooks/canvas/useSwatchOverrides.ts`                              | Per-diagram overrides + `localStorage` (provisional store)                               |
+| `apps/live/lib/swatch-overrides.ts`                                         | Pure: apply to a row, the theme-keyed store (set, clear, prune, caps), parse             |
+| `apps/live/lib/swatch-override-prefs.ts`                                    | Prunes a deleted custom theme's overrides from the preferences blob                      |
+| `apps/live/hooks/canvas/useSwatchOverrides.ts`                              | The active theme's overrides, read from and written to the synced preferences            |
+| `apps/live/components/primitives/CustomThemeProvider.tsx`                   | Calls the prune on delete and when the custom-theme list loads                           |
 | `apps/live/components/canvas/SwatchOverridePopover.tsx`                     | The right-click popover: picker, hex field, Clear override                               |
 | `apps/live/app/diagram/[id]/useEditorState.ts`                              | Wires memory into the style hooks and the creation hooks; exposes the panel's view-model |
 | `apps/live/app/diagram/[id]/EditorView.tsx`                                 | Mounts the panel                                                                         |
@@ -115,13 +117,30 @@ case-insensitively, else `null`.
 - `applyQuickStroke` / `applyQuickFill` with an overridden slot write the custom colour, clear the
   binding (`strokeSwatch` / `fillSwatch` undefined) and `colorPreset`: a custom colour does not
   follow the theme.
-- `parseSwatchOverrides(raw)`: `safeJson`; keeps `stroke` / `fill` maps whose keys are slots 1-6 and
-  whose values normalise to a hex; drops the rest (D44).
-- Store (provisional, pending the operator's persistence decision): `localStorage` key
-  `livediagram:v2:swatch-overrides:<diagramId>`, written on every change (a change is one popover
-  commit, never a drag tick). `useSwatchOverrides({ diagramId })` returns `{ overrides,
-setOverride(role, slot, hex), clearOverride(role, slot) }`; inert while `diagramId` is null. The
-  storage lives only in this hook, so moving it is one file.
+- Store: `UserPreferences.quickSwatchOverrides: SwatchOverrideStore`, an array of
+  `{ t: themeId, s?: SwatchOverrideRow, f?: SwatchOverrideRow }`, newest-edited first, one entry per
+  theme (`s` = Stroke, `f` = Background). Synced through `writeUserPreferences(prefs, ownerId)`
+  exactly as `customSwatches` is; the api stores the blob opaquely (4 KB cap, no per-field
+  validation), so there is no api-schema change and all validation is client-side on read.
+- `overridesForTheme(store, themeId)` → `SwatchOverrides` for the active tab's theme
+  (`activeTab.theme ?? DEFAULT_SCHEME_ID`).
+- `storeWithOverride(store, t, role, slot, hex)`: the entry for `t` gains the slot and moves to the
+  front; then the caps apply: at most `SWATCH_OVERRIDE_MAX_THEMES = 8` entries, and entries dropped
+  from the back while `JSON.stringify(store).length > SWATCH_OVERRIDE_MAX_BYTES = 800` (always
+  keeping the first).
+- `storeWithoutOverride(store, t, role, slot)`: removes the slot; an empty row is deleted, an
+  entry with no rows is removed; the input is returned by reference when nothing changes.
+- `pruneSwatchOverrideStore(store, keep)` and `pruneCustomThemeSwatchOverrides(ownerId, exists)`:
+  entries whose `t` starts with `custom:` and no longer exists are removed, from
+  `CustomThemeProvider` on delete and after its list loads; built-in ids are never pruned. A write
+  only happens when something was pruned (`[swatch-overrides] pruned`, debug).
+- `parseSwatchOverrideStore(value)`: an array only; per entry, `t` a non-empty string of at most
+  `SWATCH_OVERRIDE_MAX_THEME_ID = 64` chars, first entry per theme wins, rows keep slots 1-6 whose
+  values pass `normaliseHex`, an entry with no rows is dropped, then the caps apply (D44).
+- `useSwatchOverrides({ themeId, userPreferences, setUserPreferences, writeUserPreferences,
+ownerId })` → `{ overrides, setOverride(role, slot, hex), clearOverride(role, slot) }`. Writes
+  read the freshest cached preferences (`readUserPreferences`), change only this key (removed when
+  the store is empty), then `setUserPreferences` + `writeUserPreferences`.
 - Popover (`SwatchOverridePopover`): `role="dialog"`, `aria-label` "Custom colour for <theme
   name>, <Stroke | Background>". Contents: a native `<input type="color">` (label "Colour"), a hex
   text field (label "Hex", commits on Enter or blur when valid, shows "Enter a colour like #1a2b3c"
@@ -333,25 +352,30 @@ label", "Icon after label"; "Clear styles". The panel's region label: "Quick sty
 
 ## Errors and edge cases
 
-| Case                                      | Handling                                                                 |
-| ----------------------------------------- | ------------------------------------------------------------------------ |
-| Storage read throws / malformed           | Empty memory; `console.warn('[style-memory] unreadable', key)`           |
-| Storage write fails                       | Session-only memory (safe writer); the read-back mismatch is logged once |
-| Override hex invalid                      | Not committed; the field says "Enter a colour like #1a2b3c"              |
-| Override store unreadable                 | No overrides; `[swatch-overrides] unreadable` (warn)                     |
-| Invalid slot on an element                | Ignored by re-derive; rejected by validation on load                     |
-| Theme with a short palette                | Padded from the toned set                                                |
-| No clear placement                        | Candidate (a); `console.debug('[quick-style] placement fallback')`       |
-| Selection changes while a tooltip is open | Tooltip unmounts with its option                                         |
-| Element deleted by a peer mid-choice      | The commit maps the live elements; a missing id is simply not there      |
-| Locked element in the selection           | Not a target; never written                                              |
-| `diagramId` null                          | Memory inert                                                             |
+| Case                                      | Handling                                                                   |
+| ----------------------------------------- | -------------------------------------------------------------------------- |
+| Storage read throws / malformed           | Empty memory; `console.warn('[style-memory] unreadable', key)`             |
+| Storage write fails                       | Session-only memory (safe writer); the read-back mismatch is logged once   |
+| Override hex invalid                      | Not committed; the field says "Enter a colour like #1a2b3c"                |
+| Override store malformed                  | Invalid entries dropped on read (D44); a write stores the cleaned store    |
+| Custom theme deleted                      | Its overrides are pruned on delete and on the next custom-theme list load  |
+| Preferences PUT over 4 KB                 | Prevented by the 800-byte cap (D45); the cache keeps the change regardless |
+| Invalid slot on an element                | Ignored by re-derive; rejected by validation on load                       |
+| Theme with a short palette                | Padded from the toned set                                                  |
+| No clear placement                        | Candidate (a); `console.debug('[quick-style] placement fallback')`         |
+| Selection changes while a tooltip is open | Tooltip unmounts with its option                                           |
+| Element deleted by a peer mid-choice      | The commit maps the live elements; a missing id is simply not there        |
+| Locked element in the selection           | Not a target; never written                                                |
+| `diagramId` null                          | Memory inert                                                               |
 
 ## Security and trust
 
 Memory is device-local, never sent, and only ever applied to elements the user draws, as style
 fields of known primitive type (`parseStyleMemory`). Swatch bindings arriving from the api, MCP or
-an import pass `isValidElement`; an out-of-range slot rejects the element. No new network surface.
+an import pass `isValidElement`; an out-of-range slot rejects the element. Swatch overrides ride the
+existing preferences PUT (the owner's own blob, same auth, same 4 KB cap); they are only ever read
+back through `parseSwatchOverrideStore` and only ever used as a swatch colour, never as markup. No
+new network surface.
 
 ## Performance and limits
 
@@ -393,7 +417,8 @@ QuickTextAlign | QuickIconAlign | QuickClearStyles`.
 | Floating docks under the Palette, follows collapse / move, scrolls when short     | `quick-style-placement.test.ts`, `e2e/quick-style-panel.spec.ts` |
 | Toolbar sits on the right edge, centred                                           | `quick-style-placement.test.ts`, `e2e/quick-style-panel.spec.ts` |
 | One click on Flowing sets dashed + flow                                           | `e2e/quick-style-panel.spec.ts`                                  |
-| Overrides replace a slot, name it, never slot 0; parse drops junk                 | `swatch-overrides.test.ts`                                       |
+| Overrides replace a slot, keyed by theme, capped, pruned; parse drops junk        | `swatch-overrides.test.ts`, `swatch-override-prefs.test.ts`      |
+| Synced per user; theme switch shows that theme's slots; Clear override restores   | `useSwatchOverrides.test.tsx`                                    |
 | Overridden slot applies the custom colour unbound; highlight by colour            | `quick-style.test.ts`                                            |
 | Right-click / Shift+F10 opens the popover; picking saves; Clear override restores | `QuickStylePanel.test.tsx`, `e2e/quick-style-panel.spec.ts`      |
 | Toolbar panel is 184 px, targets 24 × 24                                          | `e2e/quick-style-panel.spec.ts`                                  |
@@ -401,15 +426,18 @@ QuickTextAlign | QuickIconAlign | QuickClearStyles`.
 
 ## Constants and configuration
 
-| Constant                         | Value                      | Provenance                         | Safe range  |
-| -------------------------------- | -------------------------- | ---------------------------------- | ----------- |
-| `QUICK_STROKE_MIN_CONTRAST`      | 3                          | WCAG 2.2 1.4.11                    | 3 to 4.5    |
-| `QUICK_FILL_MIN_TEXT_CONTRAST`   | 4.5                        | WCAG 2.2 1.4.3                     | 4.5 to 7    |
-| Saturation clamp                 | 0.45 to 0.85               | D38                                | 0.3 to 1    |
-| Lightness clamp, light / dark    | 0.36 to 0.52 / 0.6 to 0.74 | D38                                | 0.25 to 0.8 |
-| `FILL_WASH` light / dark         | 0.2 / 0.3                  | D38                                | 0.1 to 0.4  |
-| `QUICK_STYLE_GAP_PX`             | 12                         | Existing corner insets (`right-3`) | 8 to 24     |
-| `QUICK_STYLE_DOCK_GAP_PX`        | 16                         | panel-docking.md corner-stack gap  | 8 to 24     |
-| `QUICK_STYLE_DOCK_MIN_HEIGHT_PX` | 96                         | D42: header + one row              | 80 to 240   |
-| `STYLE_MEMORY_WRITE_DEBOUNCE_MS` | 250                        | D37                                | 100 to 1000 |
-| Swatch size / gap                | 24 / 4 px                  | WCAG 2.2 2.5.8 target size         | 24+ / 2+    |
+| Constant                         | Value                      | Provenance                                      | Safe range  |
+| -------------------------------- | -------------------------- | ----------------------------------------------- | ----------- |
+| `QUICK_STROKE_MIN_CONTRAST`      | 3                          | WCAG 2.2 1.4.11                                 | 3 to 4.5    |
+| `QUICK_FILL_MIN_TEXT_CONTRAST`   | 4.5                        | WCAG 2.2 1.4.3                                  | 4.5 to 7    |
+| Saturation clamp                 | 0.45 to 0.85               | D38                                             | 0.3 to 1    |
+| Lightness clamp, light / dark    | 0.36 to 0.52 / 0.6 to 0.74 | D38                                             | 0.25 to 0.8 |
+| `FILL_WASH` light / dark         | 0.2 / 0.3                  | D38                                             | 0.1 to 0.4  |
+| `QUICK_STYLE_GAP_PX`             | 12                         | Existing corner insets (`right-3`)              | 8 to 24     |
+| `QUICK_STYLE_DOCK_GAP_PX`        | 16                         | panel-docking.md corner-stack gap               | 8 to 24     |
+| `QUICK_STYLE_DOCK_MIN_HEIGHT_PX` | 96                         | D42: header + one row                           | 80 to 240   |
+| `SWATCH_OVERRIDE_MAX_THEMES`     | 8                          | D45                                             | 1 to 20     |
+| `SWATCH_OVERRIDE_MAX_BYTES`      | 800                        | D45: 4 KB blob, recent exclusions up to ~2.4 KB | 300 to 1200 |
+| `SWATCH_OVERRIDE_MAX_THEME_ID`   | 64                         | `custom:<uuid>` is 43                           | 43 to 128   |
+| `STYLE_MEMORY_WRITE_DEBOUNCE_MS` | 250                        | D37                                             | 100 to 1000 |
+| Swatch size / gap                | 24 / 4 px                  | WCAG 2.2 2.5.8 target size                      | 24+ / 2+    |

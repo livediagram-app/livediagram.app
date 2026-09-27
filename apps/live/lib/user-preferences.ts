@@ -17,6 +17,7 @@ export type MapSize = 'short' | 'medium' | 'tall';
 // their own `localStorage.setItem` (like `lib/telemetry.ts`'s
 // in-memory gate cache) still refresh promptly.
 
+import type { SwatchOverrideStore } from './swatch-overrides';
 import { USER_PREFERENCES_STORAGE_KEY } from '@livediagram/telemetry-client';
 import { apiGetPreferences, apiPutPreferences } from './api-client';
 import { readLocalStorageSafe, writeLocalStorageSafe } from './local-storage-safe';
@@ -180,6 +181,11 @@ export type UserPreferences = {
   // Newest first, capped, and synced like every other preference so a
   // palette you have built follows you between devices.
   customSwatches?: string[];
+  // The quick style panel's custom swatches (docs/specs/008-canvas/quick-style-panel.md "Custom
+  // swatches"): per theme, which of a row's six slots you replaced with a
+  // colour of your own. Read and written through lib/swatch-overrides, which
+  // validates it and keeps it inside its share of the 4 KB cap.
+  quickSwatchOverrides?: SwatchOverrideStore;
   recentExcludedIds?: string[];
   // Power user mode (docs/specs/007-editor/power-user-mode.md). Read and written through
   // lib/power-user-mode.ts, never directly: switching it applies or restores

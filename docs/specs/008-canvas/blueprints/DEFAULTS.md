@@ -47,8 +47,9 @@ One row per default applied where a spec is silent or qualitative.
 | D41 | quick-style-panel | "Right beneath the Palette"                               | Left edges aligned, the Palette's width, one corner-stack gap (16 px) below                                         |
 | D42 | quick-style-panel | Too little room beneath the Palette                       | Whole fit above it first, then beneath with a scrolling body if 96 px is free, then the right edge                  |
 | D43 | quick-style-panel | Following a Palette mid-drag                              | Live, via a MutationObserver on the Palette's style, coalesced per frame                                            |
-| D44 | quick-style-panel | Stored overrides with unknown rows, slots or colours      | Dropped entry by entry on read; the rest survive                                                                    |
-| D45 | quick-style-panel | Where overrides are kept until the operator decides       | This browser, per diagram, beside style memory (`livediagram:v2:swatch-overrides:<id>`)                             |
+| D44 | quick-style-panel | Stored overrides with unknown themes, slots or colours    | Dropped entry by entry on read; the first entry per theme wins; the rest survive                                    |
+| D45 | quick-style-panel | How overrides fit the 4 KB preferences cap                | Short keys, at most 8 themes and 800 bytes, least recently edited theme dropped first                               |
 | D46 | quick-style-panel | Where the override popover opens                          | Left of the panel, level with the swatch, clamped into the viewport                                                 |
 | D47 | quick-style-panel | When a picked colour is saved                             | On the picker's `change` (close) or a valid hex on Enter / blur; never per drag tick                                |
 | D48 | quick-style-panel | How narrow the Toolbar panel is                           | 184 px: seven touching 24 px targets plus 8 px padding a side                                                       |
+| D49 | quick-style-panel | Default scheme light and dark halves                      | One theme id, so one set of overrides for both appearances                                                          |

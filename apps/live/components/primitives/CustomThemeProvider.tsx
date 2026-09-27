@@ -1,5 +1,6 @@
 'use client';
 
+import { pruneCustomThemeSwatchOverrides } from '@/lib/swatch-override-prefs';
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { CustomTheme, CustomThemeDefinition } from '@livediagram/api-schema';
@@ -88,6 +89,10 @@ export function CustomThemeProvider({
         if (!alive) return;
         registerCustomThemes(list);
         setThemes(list);
+        // A custom theme deleted on another device takes its quick-style
+        // swatch overrides with it (docs/specs/008-canvas/quick-style-panel.md).
+        const live = new Set(list.map((t) => t.id));
+        pruneCustomThemeSwatchOverrides(ownerId, (id) => live.has(id));
       } catch {
         // Silent: custom themes are optional; diagrams fall back to
         // built-ins via getTheme. The next mount retries.
@@ -145,6 +150,7 @@ export function CustomThemeProvider({
       // the dead id still resolving — but keeping this order means the
       // registry and the canvas never disagree mid-delete.
       onThemeDeleted?.(id);
+      pruneCustomThemeSwatchOverrides(ownerId, (themeId) => themeId !== id);
       setThemes((prev) => prev.filter((t) => t.id !== id));
       unregisterCustomTheme(id);
       // The local unregister above is optimistic; the count follows the server.

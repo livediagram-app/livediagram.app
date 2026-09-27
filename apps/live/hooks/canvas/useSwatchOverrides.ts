@@ -1,61 +1,75 @@
 'use client';
 
-// Custom swatches' state and storage (docs/specs/008-canvas/quick-style-panel.md "Custom swatches").
-// PROVISIONAL store: this browser, per diagram, beside style memory, pending the
-// operator's persistence decision. The storage lives only in this hook, so
-// moving it is this one file. The logic is pure, in lib/swatch-overrides.
+// Custom swatches' state (docs/specs/008-canvas/quick-style-panel.md "Custom swatches"): per user, synced,
+// keyed by theme, in the preferences blob beside `customSwatches`, and
+// written the way `customSwatches` is (the same owner, guest or signed in).
+// The logic is pure, in lib/swatch-overrides.
 
-import { useState } from 'react';
+import { useMemo } from 'react';
 import type { QuickSwatchRole, QuickSwatchSlot } from '@livediagram/diagram';
-import { readLocalStorageSafe, writeLocalStorageSafe } from '@/lib/local-storage-safe';
+import { readUserPreferences, type UserPreferences } from '@/lib/user-preferences';
 import {
-  parseSwatchOverrides,
-  withOverride,
-  withoutOverride,
+  overridesForTheme,
+  parseSwatchOverrideStore,
+  storeWithOverride,
+  storeWithoutOverride,
+  type SwatchOverrideStore,
   type SwatchOverrides,
 } from '@/lib/swatch-overrides';
 
-const keyFor = (diagramId: string) => `livediagram:v2:swatch-overrides:${diagramId}`;
-
 export type SwatchOverridesApi = {
+  // The active theme's overrides only: another theme shows its own slots.
   overrides: SwatchOverrides;
   setOverride: (role: QuickSwatchRole, slot: QuickSwatchSlot, hex: string) => void;
   clearOverride: (role: QuickSwatchRole, slot: QuickSwatchSlot) => void;
 };
 
-function load(diagramId: string | null): SwatchOverrides {
-  if (!diagramId) return {};
-  const raw = readLocalStorageSafe(keyFor(diagramId));
-  const parsed = parseSwatchOverrides(raw);
-  if (raw !== null && raw !== '{}' && Object.keys(parsed).length === 0) {
-    console.warn('[swatch-overrides] unreadable', keyFor(diagramId));
-  }
-  return parsed;
+export function withSwatchOverrideStore(
+  prefs: UserPreferences,
+  store: SwatchOverrideStore,
+): UserPreferences {
+  const next = { ...prefs };
+  if (store.length === 0) delete next.quickSwatchOverrides;
+  else next.quickSwatchOverrides = store;
+  return next;
 }
 
 export function useSwatchOverrides({
-  diagramId,
+  themeId,
+  userPreferences,
+  setUserPreferences,
+  writeUserPreferences,
+  ownerId,
 }: {
-  diagramId: string | null;
+  themeId: string;
+  userPreferences: UserPreferences;
+  setUserPreferences: (prefs: UserPreferences) => void;
+  writeUserPreferences: (prefs: UserPreferences, ownerId?: string | null) => void;
+  ownerId: string | null;
 }): SwatchOverridesApi {
-  const [state, setState] = useState(() => ({ id: diagramId, overrides: load(diagramId) }));
-  // Another diagram: its own overrides, read during render so the first frame
-  // is already right.
-  let current = state;
-  if (state.id !== diagramId) {
-    current = { id: diagramId, overrides: load(diagramId) };
-    setState(current);
-  }
+  const stored = userPreferences.quickSwatchOverrides;
+  const overrides = useMemo(
+    () => overridesForTheme(parseSwatchOverrideStore(stored), themeId),
+    [stored, themeId],
+  );
 
-  const write = (next: SwatchOverrides) => {
-    if (!diagramId) return;
-    setState({ id: diagramId, overrides: next });
-    writeLocalStorageSafe(keyFor(diagramId), JSON.stringify(next));
+  // Written off the FRESHEST stored preferences, not this render's snapshot:
+  // the PUT sends the whole blob, so a stale base would undo other writes.
+  const update = (next: (store: SwatchOverrideStore) => SwatchOverrideStore) => {
+    const latest = readUserPreferences();
+    const current = parseSwatchOverrideStore(latest.quickSwatchOverrides);
+    const changed = next(current);
+    if (changed === current) return;
+    const merged = withSwatchOverrideStore(latest, changed);
+    setUserPreferences(merged);
+    writeUserPreferences(merged, ownerId);
   };
 
   return {
-    overrides: current.overrides,
-    setOverride: (role, slot, hex) => write(withOverride(current.overrides, role, slot, hex)),
-    clearOverride: (role, slot) => write(withoutOverride(current.overrides, role, slot)),
+    overrides,
+    setOverride: (role, slot, hex) =>
+      update((store) => storeWithOverride(store, themeId, role, slot, hex)),
+    clearOverride: (role, slot) =>
+      update((store) => storeWithoutOverride(store, themeId, role, slot)),
   };
 }

@@ -25,6 +25,7 @@ import { useStyleMemory } from '@/hooks/canvas/useStyleMemory';
 import { useQuickStyle } from '@/hooks/canvas/useQuickStyle';
 import { useSwatchOverrides } from '@/hooks/canvas/useSwatchOverrides';
 import { getTheme } from '@/lib/themes';
+import { DEFAULT_SCHEME_ID } from '@livediagram/diagram';
 import { usePortalSetters } from '@/hooks/canvas/usePortalSetters';
 import { useBehaviourElements } from '@/hooks/canvas/useBehaviourElements';
 import { useCollabElements } from '@/hooks/canvas/useCollabElements';
@@ -2432,7 +2433,13 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- the selection IS these two
     [selectedId, multiSelectedIds],
   );
-  const swatchOverrides = useSwatchOverrides({ diagramId });
+  const swatchOverrides = useSwatchOverrides({
+    themeId: activeTab.theme ?? DEFAULT_SCHEME_ID,
+    userPreferences,
+    setUserPreferences,
+    writeUserPreferences,
+    ownerId: selfParticipant.id,
+  });
   const quickStyle = useQuickStyle({
     activeTab,
     theme: activeTheme,
