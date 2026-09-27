@@ -12,6 +12,7 @@ import { tint } from '@/lib/element-tint';
 export { tint };
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { HoverCard } from '@livediagram/ui';
+import { useTouchScrollBody } from '@/hooks/ui/useTouchScrollBody';
 
 // Scales a Collaborate card's contents to the element's box (docs/specs/012-collaboration/participant-responses.md).
 //
@@ -125,6 +126,7 @@ export function CollabPanel({
   // CollabScale).
   reflow?: boolean;
 }) {
+  const touchScroll = useTouchScrollBody<HTMLDivElement>();
   return (
     // Pinned with `absolute inset-0` rather than sized with `h-full w-full`,
     // and clipped to the element's own corner radius.
@@ -186,8 +188,13 @@ export function CollabPanel({
           `touch-none` because a scroller resets touch-action: the element
           wrapper's touch-none stops at it, so without its own a finger on the
           body was claimed by the browser as a scroll (pointercancel) and the
-          card couldn't be dragged on a phone. The canvas owns touch. */}
-          <div className="-mx-1 -my-1 flex min-h-0 flex-1 touch-none flex-col gap-2.5 overflow-y-auto px-1 py-1">
+          card couldn't be dragged on a phone. useTouchScrollBody puts finger
+          scrolling back for a finger that lands on the cards inside; one on
+          the body's padding or gaps, or the header / footer, still drags. */}
+          <div
+            {...touchScroll}
+            className="-mx-1 -my-1 flex min-h-0 flex-1 touch-none flex-col gap-2.5 overflow-y-auto px-1 py-1"
+          >
             {children}
           </div>
           {footer ? <div className="flex shrink-0 flex-wrap gap-2 pt-0.5">{footer}</div> : null}

@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { activeCommentCount, type ShapeElement } from '@livediagram/diagram';
 
 import { relativeSince } from '@/lib/relative-time';
+import { useTouchScrollBody } from '@/hooks/ui/useTouchScrollBody';
 
 // The face of a Comment panel (docs/specs/012-collaboration/comment-pin.md): a card on the board that carries a
 // comment thread, collapsing to a one-line summary and opening to the thread.
@@ -39,6 +40,7 @@ export function CommentPanelFace({
   onResolve?: () => void;
   onUnresolve?: () => void;
 }) {
+  const touchScroll = useTouchScrollBody<HTMLDivElement>();
   const [draft, setDraft] = useState('');
   const thread = element.commentThread;
   const comments = thread?.comments ?? [];
@@ -75,8 +77,11 @@ export function CommentPanelFace({
         </span>
       </span>
 
-      {/* touch-none: see CollabPanel's body; a scroller resets touch-action. */}
-      <div className="flex min-h-0 flex-1 touch-none flex-col gap-1.5 overflow-y-auto px-2.5 pb-1">
+      {/* touch-none + useTouchScrollBody: see CollabPanel's body. */}
+      <div
+        {...touchScroll}
+        className="flex min-h-0 flex-1 touch-none flex-col gap-1.5 overflow-y-auto px-2.5 pb-1"
+      >
         {comments.length === 0 ? (
           <span className="text-[10px] italic opacity-50">
             Nothing yet. Say what this is about.
