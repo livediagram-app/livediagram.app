@@ -9,7 +9,7 @@
 // restore, active format, format commands) lives in useRichTextDocument,
 // shared with the note editor (docs/specs/009-elements/rich-text-notes.md).
 
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useLayoutEffect, useRef, useState } from 'react';
 import { runsFromPlainText, runsPlainText, type TextRun } from '@livediagram/diagram';
 import { fitMultilineFontPx } from '@/lib/fit-multiline-text';
 import {
@@ -120,11 +120,16 @@ export function useRichTextSession({
       : null;
   const basePx = fitted ?? staticBasePx;
 
-  const initialKey = useRef(JSON.stringify(runsRef.current));
+  // The runs the session opened with, as a key: the unmount safety net
+  // commits only when they changed. Taken at mount, before anything can edit.
+  const initialKey = useRef<string | null>(null);
 
   // Mount: paint, focus, place the caret (select-all on double-click,
-  // caret-at-end on type-to-edit), seed the toolbar state.
-  useLayoutEffect(() => {
+  // caret-at-end on type-to-edit), seed the toolbar state. Once per session
+  // (the editor remounts per session, so cursorAtEnd is fixed for it): an
+  // effect event run from a mount-only layout effect.
+  const mountSession = useEffectEvent(() => {
+    initialKey.current = JSON.stringify(runsRef.current);
     const el = editorRef.current;
     if (!el) return;
     paintRuns();
@@ -153,10 +158,8 @@ export function useRichTextSession({
     }
     selectionRef.current = { start: cursorAtEnd ? len : 0, end: len };
     refreshActive();
-    // Mount-only: cursorAtEnd is fixed for an edit session (editor remounts
-    // per session). The other reads are refs.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  });
+  useLayoutEffect(() => mountSession(), []);
 
   useEffect(() => {
     // Clear the toolbar-interaction flag once the pointer is released, so a
@@ -216,21 +219,16 @@ export function useRichTextSession({
   // Unmount safety net (canvas click that skips blur) + StrictMode guard:
   // commit the final value, but skip when nothing changed so the dev
   // mount-unmount-mount cycle doesn't spuriously close the editor.
-  useEffect(() => {
-    // Intentionally reads the refs at UNMOUNT time (the latest DOM / runs),
-    // which is the whole point of the safety net; the exhaustive-deps
-    // ref-in-cleanup heuristic is a false positive here.
-    /* eslint-disable react-hooks/exhaustive-deps */
-    return () => {
-      if (settledRef.current) return;
-      const runs = currentRuns();
-      if (JSON.stringify(runs) === initialKey.current) return;
-      onCommit(runsPlainText(runs), runs);
-    };
-    /* eslint-enable react-hooks/exhaustive-deps */
-    // Mount/unmount-only safety net; onCommit is stable for the session.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // It reads the runs at UNMOUNT time (the latest DOM / runs), which is the
+  // whole point of the safety net, so it is an effect event run from the
+  // mount-only effect's cleanup.
+  const commitOnUnmount = useEffectEvent(() => {
+    if (settledRef.current) return;
+    const runs = currentRuns();
+    if (JSON.stringify(runs) === initialKey.current) return;
+    onCommit(runsPlainText(runs), runs);
+  });
+  useEffect(() => () => commitOnUnmount(), []);
 
   const handleCancel = () => {
     settledRef.current = true;

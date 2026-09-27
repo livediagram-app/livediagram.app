@@ -25,7 +25,7 @@ function setup(onCommitPolygon: CanvasProps['onCommitPolygon'] = vi.fn()) {
         viewportZoom: 1,
         onCommitPolygon: p.onCommitPolygon,
       }),
-    { initialProps: { pendingDraw: POLYGON, onCommitPolygon } },
+    { initialProps: { pendingDraw: POLYGON as PendingDraw | null, onCommitPolygon } },
   );
 }
 
