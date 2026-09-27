@@ -10,7 +10,7 @@
 // ephemeral presence snapshot handed to `onPresence` for peers (docs/specs/008-canvas/avatar-mode.md
 // Realtime), which the room relays like a cursor.
 
-import { useEffect, useRef, useState, useInsertionEffect } from 'react';
+import { useEffect, useEffectEvent, useInsertionEffect, useRef, useState } from 'react';
 import type { Element } from '@livediagram/diagram';
 import { avatarScale, type AvatarConfig } from '@/lib/avatar-config';
 import { reactionPose, type AvatarReactionKind, type ReactionPose } from '@/lib/avatar-reactions';
@@ -32,7 +32,6 @@ import {
   type AvatarFacing,
   type AvatarPoint,
 } from '@/lib/avatar-walk';
-import { useLatest } from '@/hooks/ui/useLatest';
 
 // Canvas px of travel per leg swing. Tuned against AVATAR_SPEED so the
 // cadence reads as a walk rather than a shuffle (~6 steps/second at speed).
@@ -151,18 +150,10 @@ export function useAvatarWalk({
   const arrivedPortalRef = useRef<string | null>(null);
   // Fires once when the current walk target is reached, then clears itself.
   const arriveRef = useRef<(() => void) | null>(null);
-  const portalRef = useLatest(onWalkIntoPortal);
-  const chairRef = useLatest(onWalkIntoChair);
-  const padRef = useLatest(onWalkIntoReactionPad);
   const seatedRef = useRef<string | null>(null);
   // The costume last published as a standing snapshot; null = nothing published
   // since the mode was entered. Keeps the entry publish to once per change.
   const publishedLookRef = useRef<string | null>(null);
-  // Live costume for the loop's presence packets + the hit-test scale.
-  const configRef = useLatest(config);
-  // Facing, for the heartbeat below: a ref so the timer's dep list stays fixed
-  // (a dep array that changes length is a React error) and it never re-arms.
-  const facingRef = useLatest(facing);
   // NOTE: posRef is deliberately NOT re-synced from `pos` on every render. The
   // LOOP owns the position; `pos` is a copy for rendering. Assigning
   // `posRef.current = pos` here used to walk the character BACKWARDS whenever
@@ -186,9 +177,6 @@ export function useAvatarWalk({
       offsetRef.current = viewportOffset;
     }
   }, [viewportOffset]);
-  // Presence publisher, reached through a ref so the loop never re-attaches
-  // just because the editor re-rendered.
-  const presenceRef = useLatest(onPresence);
 
   const mainNode = () => (mainRef && 'current' in mainRef ? mainRef.current : null);
 
@@ -215,8 +203,10 @@ export function useAvatarWalk({
   // is still on screen (so a quick detour to Select doesn't teleport the
   // avatar, but panning away — or switching tabs — gives you a fresh one at
   // hand instead of one stranded off-screen).
-  useEffect(() => {
-    if (!active) {
+  // The body reads the live viewport (rects, centre, zoom) at the moment `active` flips, as an effect
+  // event, so a zoom or pan never re-runs it (which would needlessly re-spawn).
+  const enterOrLeave = useEffectEvent((isActive: boolean) => {
+    if (!isActive) {
       // Leaving the mode drops any walk / hop in progress; the position stays.
       targetRef.current = null;
       heldRef.current = { ...NO_KEYS_HELD };
@@ -230,7 +220,7 @@ export function useAvatarWalk({
       setLift(0);
       setWave(null);
       // Tell peers to drop our character.
-      presenceRef.current?.(null);
+      onPresence?.(null);
       // Leaving the mode vacates the chair, like disconnecting does.
       seatedRef.current = null;
       setSeatedOn(null);
@@ -265,9 +255,9 @@ export function useAvatarWalk({
       setPos(centre);
       setFacing('down');
     }
-    // viewportCentre / rects read live refs; re-running on zoom changes would
-    // needlessly re-spawn, so the entry effect keys on `active` alone.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  });
+  useEffect(() => {
+    enterOrLeave(active);
   }, [active]);
 
   // Click / tap anywhere on the canvas: walk there. Arrow-key steering wins
@@ -319,7 +309,6 @@ export function useAvatarWalk({
     heldRef.current = { ...NO_KEYS_HELD };
     posRef.current = seat;
     setPos(seat);
-    facingRef.current = seatFacing;
     setFacing(seatFacing);
     seatedRef.current = chairId;
     setSeatedOn(chairId);
@@ -386,6 +375,126 @@ export function useAvatarWalk({
   // The animation loop. Only runs while the mode is active, and only writes
   // state on frames where something actually changed, so an idle avatar costs
   // one no-op rAF callback per frame and no re-renders.
+  // One frame of the walk, as an effect event: it reads the newest facing, costume, zoom and callbacks,
+  // so the loop below attaches once per activation instead of re-attaching whenever they change.
+  const frame = useEffectEvent((now: number, dt: number) => {
+    const from = posRef.current;
+    if (from) {
+      // Arrow-key steering (a direction) or a click-walk (a target); the
+      // key listeners clear the target, so only one is ever live.
+      const held = arrowDirection(heldRef.current);
+      const travel = AVATAR_SPEED * dt;
+      const step = held ? null : stepTowards(from, targetRef.current, dt);
+      const next = held ? { x: from.x + held.x * travel, y: from.y + held.y * travel } : step!.pos;
+      // Target reached — drop it so the avatar goes idle rather than
+      // re-arriving on every subsequent frame, and fire whatever was waiting
+      // on the arrival (the shove, docs/specs/008-canvas/avatar-mode.md). `stepTowards` already decides
+      // this, including the within-a-hair case; re-deriving it here from the
+      // coordinates was a second, subtly different definition of "arrived".
+      if (!held && targetRef.current && step?.arrived) {
+        targetRef.current = null;
+        const arrived = arriveRef.current;
+        arriveRef.current = null;
+        arrived?.();
+      }
+      const dx = next.x - from.x;
+      const dy = next.y - from.y;
+      const moved = Math.hypot(dx, dy);
+      // --- Reactions (docs/specs/008-canvas/avatar-mode.md) ---
+      // A reaction owns the pose (and its own hop height) for its duration.
+      const playing = reactionRef.current;
+      if (playing) {
+        const elapsed = now - playing.startedAt;
+        const next = reactionPose(playing.kind, elapsed);
+        if (next.done) {
+          reactionRef.current = null;
+          setPose(null);
+          setLift(0);
+          liftRef.current = 0;
+        } else {
+          setPose(next);
+          // The reaction's hop drives the same lift the jump uses, so the
+          // contact shadow and the sprite's rise come along for free.
+          liftRef.current = next.lift;
+          setLift(next.lift);
+          if (next.facing) setFacing(next.facing);
+        }
+      }
+      // --- Jump + flag wave ---
+      if (!playing && liftRef.current > 0) {
+        const hop = jumpStep(liftRef.current, jumpVyRef.current, dt);
+        liftRef.current = hop.lift;
+        jumpVyRef.current = hop.vy;
+        setLift(hop.lift);
+      }
+      if (waveStartRef.current !== null) {
+        const frame = waveFrame(
+          now - waveStartRef.current,
+          // The wave outlasts the hop by a beat, so it reads as a
+          // celebration rather than stopping dead on landing.
+          AVATAR_WAVE_TAIL_MS + 600,
+        );
+        setWave(frame);
+        if (frame === null) waveStartRef.current = null;
+      }
+      if (moved > 0) {
+        posRef.current = next;
+        travelledRef.current += moved;
+        setPos(next);
+        setTravelled(travelledRef.current);
+        setWalking(true);
+        const nextFacing = facingFromDelta(dx, dy);
+        if (nextFacing) setFacing(nextFacing);
+        // Camera follow: keep the avatar clear of the viewport edges. The
+        // correction is already in canvas px, so it applies straight to the
+        // viewport offset (which is translated before the zoom scale).
+        const r = rects();
+        if (r) {
+          const screen = {
+            x: r.wrapper.left + next.x * viewportZoom - r.main.left,
+            y: r.wrapper.top + next.y * viewportZoom - r.main.top,
+          };
+          const fix = followCorrection(
+            screen,
+            { width: r.main.width, height: r.main.height },
+            viewportZoom,
+          );
+          if (fix.x !== 0 || fix.y !== 0) {
+            const prev = offsetRef.current;
+            const nextOffset = { x: prev.x + fix.x, y: prev.y + fix.y };
+            offsetRef.current = nextOffset;
+            offsetWrittenRef.current = nextOffset;
+            setViewportOffset(nextOffset);
+          }
+        }
+      } else {
+        setWalking(false);
+      }
+      // Publish to the room. The broadcaster throttles; sending only on
+      // frames where the character is doing something (moving, airborne, or
+      // waving) keeps an idle avatar off the wire entirely.
+      if (
+        moved > 0 ||
+        liftRef.current > 0 ||
+        waveStartRef.current !== null ||
+        reactionRef.current !== null
+      ) {
+        const live = reactionRef.current;
+        onPresence?.({
+          x: next.x,
+          y: next.y,
+          facing: facingFromDelta(dx, dy) ?? facing,
+          config,
+          walking: moved > 0,
+          stepFrame: Math.floor(travelledRef.current / STEP_LENGTH) % 2,
+          lift: liftRef.current,
+          wave: waveStartRef.current === null ? null : 0,
+          seatedOn: seatedRef.current,
+          ...(live ? { reaction: { kind: live.kind, elapsedMs: now - live.startedAt } } : null),
+        });
+      }
+    }
+  });
   useEffect(() => {
     if (!active) return;
     let raf = 0;
@@ -393,134 +502,12 @@ export function useAvatarWalk({
     const tick = (now: number) => {
       const dt = Math.min(0.05, (now - last) / 1000); // cap after a tab-out
       last = now;
-      const from = posRef.current;
-      if (from) {
-        // Arrow-key steering (a direction) or a click-walk (a target); the
-        // key listeners clear the target, so only one is ever live.
-        const held = arrowDirection(heldRef.current);
-        const travel = AVATAR_SPEED * dt;
-        const step = held ? null : stepTowards(from, targetRef.current, dt);
-        const next = held
-          ? { x: from.x + held.x * travel, y: from.y + held.y * travel }
-          : step!.pos;
-        // Target reached — drop it so the avatar goes idle rather than
-        // re-arriving on every subsequent frame, and fire whatever was waiting
-        // on the arrival (the shove, docs/specs/008-canvas/avatar-mode.md). `stepTowards` already decides
-        // this, including the within-a-hair case; re-deriving it here from the
-        // coordinates was a second, subtly different definition of "arrived".
-        if (!held && targetRef.current && step?.arrived) {
-          targetRef.current = null;
-          const arrived = arriveRef.current;
-          arriveRef.current = null;
-          arrived?.();
-        }
-        const dx = next.x - from.x;
-        const dy = next.y - from.y;
-        const moved = Math.hypot(dx, dy);
-        // --- Reactions (docs/specs/008-canvas/avatar-mode.md) ---
-        // A reaction owns the pose (and its own hop height) for its duration.
-        const playing = reactionRef.current;
-        if (playing) {
-          const elapsed = now - playing.startedAt;
-          const next = reactionPose(playing.kind, elapsed);
-          if (next.done) {
-            reactionRef.current = null;
-            setPose(null);
-            setLift(0);
-            liftRef.current = 0;
-          } else {
-            setPose(next);
-            // The reaction's hop drives the same lift the jump uses, so the
-            // contact shadow and the sprite's rise come along for free.
-            liftRef.current = next.lift;
-            setLift(next.lift);
-            if (next.facing) setFacing(next.facing);
-          }
-        }
-        // --- Jump + flag wave ---
-        if (!playing && liftRef.current > 0) {
-          const hop = jumpStep(liftRef.current, jumpVyRef.current, dt);
-          liftRef.current = hop.lift;
-          jumpVyRef.current = hop.vy;
-          setLift(hop.lift);
-        }
-        if (waveStartRef.current !== null) {
-          const frame = waveFrame(
-            now - waveStartRef.current,
-            // The wave outlasts the hop by a beat, so it reads as a
-            // celebration rather than stopping dead on landing.
-            AVATAR_WAVE_TAIL_MS + 600,
-          );
-          setWave(frame);
-          if (frame === null) waveStartRef.current = null;
-        }
-        if (moved > 0) {
-          posRef.current = next;
-          travelledRef.current += moved;
-          setPos(next);
-          setTravelled(travelledRef.current);
-          setWalking(true);
-          const nextFacing = facingFromDelta(dx, dy);
-          if (nextFacing) setFacing(nextFacing);
-          // Camera follow: keep the avatar clear of the viewport edges. The
-          // correction is already in canvas px, so it applies straight to the
-          // viewport offset (which is translated before the zoom scale).
-          const r = rects();
-          if (r) {
-            const screen = {
-              x: r.wrapper.left + next.x * viewportZoom - r.main.left,
-              y: r.wrapper.top + next.y * viewportZoom - r.main.top,
-            };
-            const fix = followCorrection(
-              screen,
-              { width: r.main.width, height: r.main.height },
-              viewportZoom,
-            );
-            if (fix.x !== 0 || fix.y !== 0) {
-              const prev = offsetRef.current;
-              const nextOffset = { x: prev.x + fix.x, y: prev.y + fix.y };
-              offsetRef.current = nextOffset;
-              offsetWrittenRef.current = nextOffset;
-              setViewportOffset(nextOffset);
-            }
-          }
-        } else {
-          setWalking(false);
-        }
-        // Publish to the room. The broadcaster throttles; sending only on
-        // frames where the character is doing something (moving, airborne, or
-        // waving) keeps an idle avatar off the wire entirely.
-        if (
-          moved > 0 ||
-          liftRef.current > 0 ||
-          waveStartRef.current !== null ||
-          reactionRef.current !== null
-        ) {
-          const live = reactionRef.current;
-          presenceRef.current?.({
-            x: next.x,
-            y: next.y,
-            facing: facingFromDelta(dx, dy) ?? facing,
-            config: configRef.current,
-            walking: moved > 0,
-            stepFrame: Math.floor(travelledRef.current / STEP_LENGTH) % 2,
-            lift: liftRef.current,
-            wave: waveStartRef.current === null ? null : 0,
-            seatedOn: seatedRef.current,
-            ...(live ? { reaction: { kind: live.kind, elapsedMs: now - live.startedAt } } : null),
-          });
-        }
-      }
+      frame(now, dt);
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-    // setViewportOffset is a stable state setter; viewportZoom is read for
-    // the follow maths and re-attaching the loop on a zoom change is fine.
-    // `facing` is only read as a fallback for the presence packet; the costume
-    // comes through configRef.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [active, viewportZoom, setViewportOffset]);
+  }, [active]);
 
   // Publish a STANDING snapshot on entry and whenever the look flips, so a peer
   // sees the character (and any costume change) without waiting for it to move.
@@ -528,14 +515,13 @@ export function useAvatarWalk({
   // arrives a commit after `active` flips — keying on `active` alone published
   // a null position, i.e. nothing, and a peer saw no character until the
   // walker moved (which needs animation frames the tab may not be getting).
-  useEffect(() => {
-    if (!active || !pos) return;
+  const publishStanding = useEffectEvent((at: AvatarPoint) => {
     const costume = JSON.stringify(config);
     if (publishedLookRef.current === costume) return;
     publishedLookRef.current = costume;
-    presenceRef.current?.({
-      x: pos.x,
-      y: pos.y,
+    onPresence?.({
+      x: at.x,
+      y: at.y,
       facing,
       config,
       walking: false,
@@ -544,9 +530,11 @@ export function useAvatarWalk({
       wave: null,
       seatedOn: seatedRef.current,
     });
-    // `facing` is read as the snapshot's value only; re-publishing on a turn
-    // would fight the loop, which already publishes while walking.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  });
+  // `facing` is read as the snapshot's value only (an effect event), since re-publishing on a turn would
+  // fight the loop, which already publishes while walking.
+  useEffect(() => {
+    if (active && pos) publishStanding(pos);
   }, [active, pos, config]);
 
   // Which element the avatar is standing on (the "you are here" ring). Cheap
@@ -559,39 +547,35 @@ export function useAvatarWalk({
   // A slow republish (every few seconds, only while idle) fixes that for the
   // price of one packet per peer per interval, well under the ~30 Hz the walk
   // itself costs.
+  const heartbeat = useEffectEvent(() => {
+    const at = posRef.current;
+    // Only while genuinely idle: a walk publishes at its own rate, and a
+    // reaction / jump is a performance the peer is already following.
+    if (!at || targetRef.current || reactionRef.current || liftRef.current > 0) return;
+    onPresence?.({
+      x: at.x,
+      y: at.y,
+      facing,
+      config,
+      walking: false,
+      stepFrame: 0,
+      lift: 0,
+      wave: null,
+      seatedOn: seatedRef.current,
+    });
+  });
   useEffect(() => {
     if (!active) return;
-    const beat = window.setInterval(() => {
-      const at = posRef.current;
-      // Only while genuinely idle: a walk publishes at its own rate, and a
-      // reaction / jump is a performance the peer is already following.
-      if (!at || targetRef.current || reactionRef.current || liftRef.current > 0) return;
-      presenceRef.current?.({
-        x: at.x,
-        y: at.y,
-        facing: facingRef.current,
-        config: configRef.current,
-        walking: false,
-        stepFrame: 0,
-        lift: 0,
-        wave: null,
-        seatedOn: seatedRef.current,
-      });
-    }, AVATAR_HEARTBEAT_MS);
+    const beat = window.setInterval(heartbeat, AVATAR_HEARTBEAT_MS);
     return () => window.clearInterval(beat);
-  }, [active, configRef, facingRef, presenceRef]);
+  }, [active]);
 
   // Portals (docs/specs/009-elements/portal-element.md): walking a character ONTO a portal travels through it. Fired
   // from an effect on ARRIVAL (the element under the feet changed) rather than
   // every frame it stands there, and skipped for the portal it was just teleported
   // into until it steps off — otherwise the pair would bounce the character back
   // and forth forever.
-  useEffect(() => {
-    if (!active) {
-      lastUnderFeetRef.current = null;
-      arrivedPortalRef.current = null;
-      return;
-    }
+  const arriveOn = useEffectEvent((standingOnId: string | null) => {
     const previous = lastUnderFeetRef.current;
     lastUnderFeetRef.current = standingOnId;
     if (standingOnId === null) {
@@ -601,19 +585,26 @@ export function useAvatarWalk({
     }
     if (standingOnId === previous || standingOnId === arrivedPortalRef.current) return;
     const el = elements.find((e) => e.id === standingOnId);
-    if (el && el.type === 'shape' && el.shape === 'portal') portalRef.current?.(el);
+    if (el && el.type === 'shape' && el.shape === 'portal') onWalkIntoPortal?.(el);
     // Chair (docs/specs/009-elements/chair.md): the same arrival hook, so sitting down costs no second
     // mechanism. Skipped while already seated somewhere.
     if (el && el.type === 'shape' && el.shape === 'chair' && !seatedRef.current) {
-      chairRef.current?.(el);
+      onWalkIntoChair?.(el);
     }
     // Reaction pad (docs/specs/009-elements/reaction-pad.md). Fires on ARRIVAL like the others, so standing
     // on a pad throws one burst rather than one per frame; stepping off and
     // back on is a deliberate second press.
-    if (el && el.type === 'shape' && el.shape === 'reaction-pad') padRef.current?.(el);
-    // `elements` is read for the arrival lookup only; the trigger is the change
-    // in what the feet are on.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (el && el.type === 'shape' && el.shape === 'reaction-pad') onWalkIntoReactionPad?.(el);
+  });
+  // `elements` is read for the arrival lookup only (an effect event); the trigger is the change in what
+  // the feet are on.
+  useEffect(() => {
+    if (!active) {
+      lastUnderFeetRef.current = null;
+      arrivedPortalRef.current = null;
+      return;
+    }
+    arriveOn(standingOnId);
   }, [active, standingOnId]);
 
   return {
