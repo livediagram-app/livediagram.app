@@ -30,7 +30,8 @@ export function TextImportPanel({
   note?: ReactNode;
   onImportText: (text: string) => Promise<ImportOutcome>;
   onImportFile: () => Promise<ImportOutcome>;
-  onDone: () => void;
+  // A finished import: the parent closes, or shows its report.
+  onDone: (outcome: Extract<ImportOutcome, { status: 'done' }>) => void;
   onBack: () => void;
 }) {
   const [text, setText] = useState('');
@@ -48,7 +49,7 @@ export function TextImportPanel({
       error: "Couldn't import that. Check the file and try again.",
     }));
     if (outcome.status === 'done') {
-      onDone();
+      onDone(outcome);
     } else {
       if (outcome.status === 'error') setError(outcome.error);
       setBusy(false);

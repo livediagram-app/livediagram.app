@@ -8,8 +8,13 @@
 // The result of an import attempt, surfaced back to the Import dialog:
 // 'done' (replaced the tab — close), 'cancelled' (file dialog dismissed
 // — stay open, no error), or 'error' (parse / build failed — show it).
+// A 'done' import that degraded anything carries its report
+// (docs/specs/020-import-export/drawio-import.md "The import report"), which
+// the dialog shows instead of closing.
 export type ImportOutcome =
-  { status: 'done' } | { status: 'cancelled' } | { status: 'error'; error: string };
+  | { status: 'done'; report?: ImportReport }
+  | { status: 'cancelled' }
+  | { status: 'error'; error: string };
 
 // JSON forward-compat: the envelope carries a numeric `schemaVersion`.
 // Files at or below `TAB_SCHEMA_VERSION` are accepted; newer files are
@@ -19,6 +24,7 @@ export type ImportOutcome =
 // parseImportedTab that walks old shapes forward.
 
 import { isValidElement, type Tab } from '@livediagram/diagram';
+import type { ImportReport } from './import-report';
 import { TAB_SCHEMA_VERSION, type ExportedTabEnvelope } from './export-tab';
 
 type ImportResult = { ok: true; tab: Tab } | { ok: false; error: string };
@@ -80,9 +86,13 @@ export function parseImportedTab(text: string): ImportResult {
 // fires; if no `change` lands shortly after, it was a cancel. Without
 // this the promise hangs forever and the caller (e.g. the Import dialog)
 // is stuck "busy" with its buttons disabled.
+// The picked file's text, plus the File itself for a format that may be
+// binary (an Excalidraw PNG export).
+export type PickedTabFile = { name: string; text: string; file: File };
+
 export function pickTabFile(
   accept = 'application/json,.json,text/markdown,.md,.markdown,.mdown,.mkd,text/plain',
-): Promise<{ name: string; text: string } | null> {
+): Promise<PickedTabFile | null> {
   return new Promise((resolve) => {
     const input = document.createElement('input');
     input.type = 'file';
@@ -93,7 +103,7 @@ export function pickTabFile(
     // await the file's text), so the focus-based cancel check below never
     // misfires for a slow-reading large file.
     let picked = false;
-    const finish = (value: { name: string; text: string } | null) => {
+    const finish = (value: PickedTabFile | null) => {
       if (settled) return;
       settled = true;
       window.removeEventListener('focus', onFocus);
@@ -118,7 +128,7 @@ export function pickTabFile(
       }
       try {
         const text = await file.text();
-        finish({ name: file.name, text });
+        finish({ name: file.name, text, file });
       } catch {
         finish(null);
       }

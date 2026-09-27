@@ -2,10 +2,13 @@
 // id re-mint imported elements go through, the single-undo-step content
 // replace, and the format-dispatched importer (JSON / DSL / Markdown)
 // with its lazy-loaded parser cluster (JSON / Markdown / Mermaid /
-// Excalidraw, docs/specs/020-import-export/excalidraw-import-export.md).
+// Excalidraw, docs/specs/020-import-export/excalidraw-import-export.md, and
+// draw.io, docs/specs/020-import-export/drawio-import.md, whose extra pages
+// become new tabs).
 
 import { remapElementRefs, type Element, type Tab } from '@livediagram/diagram';
 import { mergeImportedTab } from '@/lib/import-merge';
+import type { DrawioInput } from '@/lib/drawio/import';
 import type { ImportOutcome } from '@/lib/import-tab';
 import { track } from '@/lib/telemetry';
 
@@ -28,8 +31,14 @@ export const remintElementIds = (elements: Element[]): Element[] => {
   return remapElementRefs(next, idMap);
 };
 
+export type ImportFormat = 'json' | 'markdown' | 'mermaid' | 'excalidraw' | 'drawio';
+
 type TabImportDeps = {
   tabs: Tab[];
+  // A fresh tab for each further page of a multi-page import, marked loaded
+  // once committed so the per-tab loader does not fetch it (useTabActions).
+  createTab: (name: string) => Tab;
+  markTabLoaded: (id: string) => void;
   activeId: string;
   commitTabs: (mapTabs: (ts: Tab[]) => Tab[]) => void;
   setSelectedId: (id: string | null) => void;
@@ -43,6 +52,8 @@ type TabImportDeps = {
 
 export function useTabImport({
   tabs,
+  createTab,
+  markTabLoaded,
   activeId,
   commitTabs,
   setSelectedId,
@@ -66,6 +77,41 @@ export function useTabImport({
     if (imported.elements.length > 0) requestFit();
   };
 
+  // draw.io (docs/specs/020-import-export/drawio-import.md): the first page
+  // replaces the active tab, every further page becomes a new tab after it,
+  // all in ONE commit so a single undo takes the whole import back. Images go
+  // through the pending-image seam BEFORE the tabs change, for the same reason.
+  const importDrawioInput = async (input: DrawioInput): Promise<ImportOutcome> => {
+    const [{ importDrawio }, { applyDrawioPages }, { attachPendingImages }] = await Promise.all([
+      import('@/lib/drawio/import'),
+      import('./drawio-apply'),
+      import('@/lib/import-report'),
+    ]);
+    const result = await importDrawio(input, {
+      tabIdForPage: (index) => (index === 0 ? activeId : crypto.randomUUID()),
+    });
+    if (!result.ok) return { status: 'error', error: result.error };
+    const { pages, placed } = await attachPendingImages(result.pages, result.images);
+    if (result.images.length > 0) {
+      console.info('[drawio-import] pending-images', { count: result.images.length, placed });
+    }
+    setImportError(null);
+    commitTabs((ts) => applyDrawioPages(ts, activeId, pages, createTab));
+    for (const page of pages.slice(1)) markTabLoaded(page.tabId);
+    setSelectedId(null);
+    setEditingId(null);
+    setFormatSourceId(null);
+    if ((pages[0]?.elements.length ?? 0) > 0) requestFit();
+    track('Tab', 'Imported', 'Drawio');
+    const { report } = result;
+    console.info('[drawio-import] applied', {
+      pages: report.pages,
+      elements: report.elements,
+      notes: Object.fromEntries(report.notes.map((n) => [n.kind, n.count])),
+    });
+    return report.notes.length > 0 ? { status: 'done', report } : { status: 'done' };
+  };
+
   // Import TEXT of a given format into the active tab (docs/specs/020-import-export/markdown-import.md + docs/specs/020-import-export/mermaid.md).
   // Shared by the Import dialog's paste-editor path and the file path
   // (which reads the file then hands the text here), so both routes run
@@ -73,13 +119,15 @@ export function useTabImport({
   // code stays out of the editor's initial bundle. Never throws — returns
   // the outcome the dialog renders (close / stay / show error).
   const importTextIntoActiveTab = async (
-    format: 'json' | 'markdown' | 'mermaid' | 'excalidraw',
+    format: ImportFormat,
     text: string,
   ): Promise<ImportOutcome> => {
     const active = tabs.find((t) => t.id === activeId);
     if (active?.locked) {
       return { status: 'error', error: 'This tab is locked. Unlock it before importing.' };
     }
+
+    if (format === 'drawio') return importDrawioInput({ kind: 'text', text });
 
     if (format === 'excalidraw') {
       const { buildElementsFromExcalidraw } = await import('@/lib/excalidraw-import');
@@ -137,9 +185,7 @@ export function useTabImport({
   // chosen format, then hands its text to importTextIntoActiveTab so the
   // file and paste paths converge on one parser. Returns the dialog
   // outcome; 'cancelled' when the file picker is dismissed.
-  const importIntoActiveTab = async (
-    format: 'json' | 'markdown' | 'mermaid' | 'excalidraw',
-  ): Promise<ImportOutcome> => {
+  const importIntoActiveTab = async (format: ImportFormat): Promise<ImportOutcome> => {
     const active = tabs.find((t) => t.id === activeId);
     if (active?.locked) {
       return { status: 'error', error: 'This tab is locked. Unlock it before importing.' };
@@ -151,10 +197,19 @@ export function useTabImport({
           ? '.mmd,.mermaid,.txt,text/plain'
           : format === 'excalidraw'
             ? '.excalidraw,.json,application/json'
-            : '.json,application/json';
+            : format === 'drawio'
+              ? '.drawio,.xml,.svg,.png,application/xml,text/xml,image/svg+xml,image/png'
+              : '.json,application/json';
     const { pickTabFile } = await import('@/lib/import-tab');
     const picked = await pickTabFile(accept);
     if (!picked) return { status: 'cancelled' };
+    // A .drawio.png is binary, so draw.io reads the bytes.
+    if (format === 'drawio') {
+      return importDrawioInput({
+        kind: 'bytes',
+        bytes: new Uint8Array(await picked.file.arrayBuffer()),
+      });
+    }
     return importTextIntoActiveTab(format, picked.text);
   };
 

@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
   IMPORT_NOTE_ORDER,
+  attachPendingImages,
   ReportTally,
   describeImportNote,
   importSummaryLine,
   namesLine,
-  resolvePendingImages,
 } from './import-report';
 
 describe('ReportTally', () => {
@@ -100,10 +100,11 @@ describe('importSummaryLine', () => {
   });
 });
 
-describe('resolvePendingImages', () => {
+describe('attachPendingImages', () => {
   it('places nothing until the image pipeline lands', async () => {
+    const pages = [{ tabId: 't', elements: [] }];
     expect(
-      await resolvePendingImages([
+      await attachPendingImages(pages, [
         {
           tabId: 't',
           elementId: 'e',
@@ -112,6 +113,6 @@ describe('resolvePendingImages', () => {
           hint: { width: 1, height: 1 },
         },
       ]),
-    ).toEqual({ placed: 0 });
+    ).toEqual({ pages, placed: 0 });
   });
 });

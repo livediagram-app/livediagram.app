@@ -3,6 +3,8 @@
 // set of kinds, a count each, and the copy the Import dialog's summary shows,
 // so "nothing degrades silently" is one vocabulary rather than one per format.
 
+import type { Element } from '@livediagram/diagram';
+
 export type ImportNoteKind =
   | 'shape-unmatched'
   | 'shape-approximated'
@@ -159,11 +161,15 @@ export function importSummaryLine({ pages, elements }: ImportReport): string {
 }
 
 /**
- * Upload the images an import could not store itself. The seam for the shared
- * import image pipeline: until it lands, nothing is placed and every
- * placeholder stays (and stays counted). The pipeline replaces this body.
+ * Store the images an import could not store itself and fill their
+ * placeholders. The seam for the shared import image pipeline: until it lands,
+ * nothing is stored and every placeholder stays (and stays counted). The
+ * pipeline replaces this body with its session and `attachImportImages` per page.
  */
-export async function resolvePendingImages(images: PendingImage[]): Promise<{ placed: number }> {
+export async function attachPendingImages<P extends { tabId: string; elements: Element[] }>(
+  pages: P[],
+  images: PendingImage[],
+): Promise<{ pages: P[]; placed: number }> {
   void images;
-  return { placed: 0 };
+  return { pages, placed: 0 };
 }
