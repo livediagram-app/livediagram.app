@@ -1,7 +1,7 @@
 import { useAppearance, nextAppearanceSetting } from '@/hooks/ui/useAppearance';
 import type { AppearanceSetting } from '@/hooks/ui/appearance-store';
-import { Tooltip } from '@/components/primitives/Tooltip';
 import { CHROME_BTN, CHROME_BTN_LABELLED, ChromeLabel } from '@/components/chrome/chrome-button';
+import { HoverCard } from '@livediagram/ui';
 
 // The Appearance control: one button that CYCLES Light → Dark → System.
 // A self-contained feature (its own hook + icons) that the tab bar
@@ -13,7 +13,7 @@ import { CHROME_BTN, CHROME_BTN_LABELLED, ChromeLabel } from '@/components/chrom
 // The glyph shows the CURRENT setting, not the next one. As a two-state
 // toggle it could get away with showing the target (a moon meaning "go
 // dark"); with three states, and one of them deferring to the OS, the
-// only readable thing is where you are — so the tooltip carries where
+// only readable thing is where you are — so the hover card carries where
 // the next click takes you.
 
 const LABEL: Record<AppearanceSetting, string> = {
@@ -33,7 +33,7 @@ export function AppearanceToggle({ labelled = false }: { labelled?: boolean }) {
   const next = nextAppearanceSetting(setting);
   const label = `Appearance: ${LABEL[setting]}. Switch to ${LABEL[next]}.`;
   return (
-    <Tooltip title={`Appearance: ${LABEL[setting]}`} description={DESCRIPTION[setting]}>
+    <HoverCard title={`Appearance: ${LABEL[setting]}`} description={DESCRIPTION[setting]}>
       <button
         type="button"
         onClick={cycle}
@@ -43,7 +43,7 @@ export function AppearanceToggle({ labelled = false }: { labelled?: boolean }) {
         {setting === 'dark' ? <MoonIcon /> : setting === 'system' ? <SystemIcon /> : <SunIcon />}
         <ChromeLabel show={labelled}>{LABEL[setting]}</ChromeLabel>
       </button>
-    </Tooltip>
+    </HoverCard>
   );
 }
 

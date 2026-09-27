@@ -86,7 +86,7 @@ Changing a link's scope broadcasts a system op `share-rescoped { code }`. Sessio
 ## Visitor experience
 
 - A scoped visitor lands **on their tab**, whatever tab the diagram last had open.
-- Other tabs render as **"Not shared" pills**: greyed, an eye-off glyph, the label "Not shared", not clickable, not draggable, no context menu. The tooltip reads "This tab isn't shared with you". They never sit inside a tab folder (the folder name is withheld too).
+- Other tabs render as **"Not shared" pills**: greyed, an eye-off glyph, the label "Not shared", not clickable, not draggable, no context menu. The hover card reads "This tab isn't shared with you". They never sit inside a tab folder (the folder name is withheld too).
 - Everything that works across tabs, or on the tab bar itself, is off for a scoped visitor: the add-tab button, the tab menu (so rename, duplicate, delete, lock and the tab's session tools too), drag-reordering, tab folders, diagram rename, and the slide deck (picking it says "The slide deck isn't shared with you").
 - An element link, search result or keyboard switch pointing at a tab outside the scope does nothing but show the toast "That tab isn't shared with you".
 - Make a copy takes their tab only.

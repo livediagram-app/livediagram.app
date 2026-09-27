@@ -10,7 +10,6 @@
 
 import { AlignmentGrid } from '@/components/palette/palette-controls';
 import { AlignIcon as AlignLinesIcon } from '@/components/canvas/table-icons';
-import { Tooltip } from '@/components/primitives/Tooltip';
 import { BlockTypePicker } from '@/components/rich-text/BlockTypePicker';
 import {
   runToggles,
@@ -26,6 +25,7 @@ import type {
   TextAlignX,
   TextAlignY,
 } from '@livediagram/diagram';
+import { HoverCard } from '@livediagram/ui';
 
 // Matches the element toolbar's PopoverButton (h-8 w-8 rounded-md, same
 // active + hover tones) so the two toolbars read as one system.
@@ -56,7 +56,7 @@ export function RichTextToolbar({
   return (
     <div className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-950/40">
       {toggles.map((t) => (
-        <Tooltip key={t.key} title={t.label} description={t.description}>
+        <HoverCard key={t.key} title={t.label} description={t.description}>
           <button
             type="button"
             aria-label={t.label}
@@ -67,7 +67,7 @@ export function RichTextToolbar({
           >
             {t.icon}
           </button>
-        </Tooltip>
+        </HoverCard>
       ))}
       {TOOLBAR_DIVIDER}
       {/* Block type (docs/specs/009-elements/block-type-picker.md): heading level and list style are one choice
@@ -94,7 +94,7 @@ export function RichTextToolbar({
         <AlignmentGrid alignX={alignX} alignY={alignY} onChange={onSetAlign} />
       </ToolbarDropdown>
       {TOOLBAR_DIVIDER}
-      <Tooltip title="Text colour" description="Colour the selected text.">
+      <HoverCard title="Text colour" description="Colour the selected text.">
         <label
           className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
           aria-label="Text color"
@@ -112,7 +112,7 @@ export function RichTextToolbar({
             className="absolute h-0 w-0 opacity-0"
           />
         </label>
-      </Tooltip>
+      </HoverCard>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { Tooltip } from '@livediagram/ui';
+import { HoverCard } from '@livediagram/ui';
 import { fmtDay } from './chart-utils';
 import { linePath, plot, VIEW_H, VIEW_W } from './TrendChart';
 
@@ -76,7 +76,7 @@ export function StackTrendChart({
       {/* Transparent per-day hover columns: every series' count that day. */}
       <div className="absolute inset-0 flex">
         {days.map((day, i) => (
-          <Tooltip
+          <HoverCard
             key={day}
             title={fmtDay(day)}
             description={series
@@ -85,7 +85,7 @@ export function StackTrendChart({
             className="h-full flex-1"
           >
             <div className="h-full w-full" />
-          </Tooltip>
+          </HoverCard>
         ))}
       </div>
     </div>

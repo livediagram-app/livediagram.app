@@ -4,8 +4,7 @@ import {
   type BoxedElement,
   type TabVote,
 } from '@livediagram/diagram';
-import { Tooltip } from '@/components/primitives/Tooltip';
-import { SOLID_BRAND_DARK } from '@livediagram/ui';
+import { HoverCard, SOLID_BRAND_DARK } from '@livediagram/ui';
 
 // The dot-vote overlay (docs/specs/012-collaboration/session-tools.md), lifted out of BoxedElementView: the
 // tally pill on the element's bottom-right corner — live count,
@@ -141,7 +140,7 @@ export function ElementVoteOverlay({
           className="absolute bottom-1.5 right-1.5 origin-bottom-right"
           style={{ transform: `scale(${1 / zoom})` }}
         >
-          <Tooltip
+          <HoverCard
             title={
               tallyHidden
                 ? `Your ${voteTotal} ${voteTotal === 1 ? 'dot' : 'dots'}`
@@ -162,7 +161,7 @@ export function ElementVoteOverlay({
             >
               <span className="text-optical-centre">{voteTotal}</span>
             </span>
-          </Tooltip>
+          </HoverCard>
         </div>
       ) : null}
     </>

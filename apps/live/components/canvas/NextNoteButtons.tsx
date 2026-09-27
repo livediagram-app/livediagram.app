@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { PlusWideIcon } from '@livediagram/ui';
+import { PlusWideIcon, Tooltip } from '@livediagram/ui';
 import {
   ES_NOTE_GAP,
   eventStormingKindOf,
@@ -120,53 +120,53 @@ export function NextNoteButtons({
         // Centred in the gutter beside the note.
         const inset = Math.max(0, (ES_NOTE_GAP - t.tabWidth) / 2);
         return (
-          <button
-            key={t.key}
-            type="button"
-            title={t.name}
-            aria-label={t.name}
-            data-next-note={t.side}
-            onPointerDown={(e) => e.stopPropagation()}
-            onPointerEnter={() => setPreviewKey(t.key)}
-            onPointerLeave={() => setPreviewKey((k) => (k === t.key ? null : k))}
-            onFocus={() => setPreviewKey(t.key)}
-            onBlur={() => setPreviewKey((k) => (k === t.key ? null : k))}
-            onClick={(e) => {
-              e.stopPropagation();
-              setPreviewKey(null);
-              onAdd(t.fromId, t.side);
-            }}
-            className={`group absolute flex items-center focus-visible:outline-none ${
-              outward ? 'justify-start' : 'justify-end'
-            }`}
-            style={{
-              left: outward ? t.edgeX : t.edgeX - hitWidth,
-              top: t.centreY - hitHeight / 2,
-              width: hitWidth,
-              height: hitHeight,
-            }}
-          >
-            <span
-              aria-hidden
-              data-next-note-tab={t.side}
-              className="flex items-center justify-center overflow-visible text-slate-800/80 opacity-50 ring-1 ring-black/5 transition duration-150 group-hover:text-slate-900 group-hover:opacity-100 group-hover:shadow-sm group-focus-visible:opacity-100 group-focus-visible:ring-2 group-focus-visible:ring-brand-500"
+          <Tooltip key={t.key} label={t.name}>
+            <button
+              type="button"
+              aria-label={t.name}
+              data-next-note={t.side}
+              onPointerDown={(e) => e.stopPropagation()}
+              onPointerEnter={() => setPreviewKey(t.key)}
+              onPointerLeave={() => setPreviewKey((k) => (k === t.key ? null : k))}
+              onFocus={() => setPreviewKey(t.key)}
+              onBlur={() => setPreviewKey((k) => (k === t.key ? null : k))}
+              onClick={(e) => {
+                e.stopPropagation();
+                setPreviewKey(null);
+                onAdd(t.fromId, t.side);
+              }}
+              className={`group absolute flex items-center focus-visible:outline-none ${
+                outward ? 'justify-start' : 'justify-end'
+              }`}
               style={{
-                width: t.tabWidth,
-                height: t.tabHeight,
-                ...(outward ? { marginLeft: inset } : { marginRight: inset }),
-                background: eventStormingNote(t.next).fill,
-                borderRadius: outward
-                  ? `${inner}px ${outer}px ${outer}px ${inner}px`
-                  : `${outer}px ${inner}px ${inner}px ${outer}px`,
+                left: outward ? t.edgeX : t.edgeX - hitWidth,
+                top: t.centreY - hitHeight / 2,
+                width: hitWidth,
+                height: hitHeight,
               }}
             >
-              <PlusWideIcon
-                size={t.tabHeight * (PLUS_RATIO / TAB_HEIGHT_RATIO)}
-                strokeWidth={2.2}
-                className="shrink-0"
-              />
-            </span>
-          </button>
+              <span
+                aria-hidden
+                data-next-note-tab={t.side}
+                className="flex items-center justify-center overflow-visible text-slate-800/80 opacity-50 ring-1 ring-black/5 transition duration-150 group-hover:text-slate-900 group-hover:opacity-100 group-hover:shadow-sm group-focus-visible:opacity-100 group-focus-visible:ring-2 group-focus-visible:ring-brand-500"
+                style={{
+                  width: t.tabWidth,
+                  height: t.tabHeight,
+                  ...(outward ? { marginLeft: inset } : { marginRight: inset }),
+                  background: eventStormingNote(t.next).fill,
+                  borderRadius: outward
+                    ? `${inner}px ${outer}px ${outer}px ${inner}px`
+                    : `${outer}px ${inner}px ${inner}px ${outer}px`,
+                }}
+              >
+                <PlusWideIcon
+                  size={t.tabHeight * (PLUS_RATIO / TAB_HEIGHT_RATIO)}
+                  strokeWidth={2.2}
+                  className="shrink-0"
+                />
+              </span>
+            </button>
+          </Tooltip>
         );
       })}
     </>

@@ -12,6 +12,7 @@
 // screen, which the drill-in categories already made affordable: you arrive
 // here having chosen a group of three to eight tools, not facing all 28.
 
+import { Tooltip } from '@livediagram/ui';
 import { StarIcon } from '@/components/primitives/explorer-icons';
 import { useEffect, useRef } from 'react';
 import { setPaletteDragPreview } from '@/lib/palette-drag-preview';
@@ -108,7 +109,7 @@ function PaletteToolRow({
         </span>
         {def.blurb ? (
           // Two lines at most: past that a "short description" is a paragraph,
-          // and the tooltip already carries the fuller version.
+          // and the hover card already carries the fuller version.
           <span className="line-clamp-2 text-[10px] leading-snug text-slate-500 dark:text-slate-400">
             {def.blurb}
           </span>
@@ -124,6 +125,14 @@ function PaletteToolRow({
 
   if (!onToggleFavourite) return row;
 
+  // The CAPTION, not `def.label`: a catalogue label is phrased as the action
+  // that places it ("Add Laughing face"), which read as "Add Add Laughing face
+  // to favourites".
+  const caption = tileCaption(def.label, def.caption);
+  const starLabel = favourite
+    ? `Remove ${caption} from favourites`
+    : `Add ${caption} to favourites`;
+
   // The star is a SIBLING of the row, not a child: a button inside a button is
   // invalid, and nesting one would make the whole row's click ambiguous. It
   // sits absolutely at the right edge, and the row reserves space for it with
@@ -132,37 +141,31 @@ function PaletteToolRow({
   return (
     <div className="group/row relative">
       {row}
-      <button
-        type="button"
-        // The CAPTION, not `def.label`: a catalogue label is phrased as the
-        // action that places it ("Add Laughing face"), which read as "Add Add
-        // Laughing face to favourites".
-        aria-label={
-          favourite
-            ? `Remove ${tileCaption(def.label, def.caption)} from favourites`
-            : `Add ${tileCaption(def.label, def.caption)} to favourites`
-        }
-        aria-pressed={favourite}
-        title={favourite ? 'Remove from favourites' : 'Add to favourites'}
-        onClick={(e) => {
-          // The row underneath adds the element to the canvas. Starring must
-          // not also do that.
-          e.stopPropagation();
-          onToggleFavourite(def.id);
-        }}
-        // ALWAYS visible, not hover-revealed. A hover-only control is
-        // undiscoverable — you have to already know it is there — and on a
-        // touchscreen there is no hover at all, so it would simply not exist.
-        // An unfavourited star is muted instead: present enough to find, quiet
-        // enough that a list of twenty rows is not twenty invitations.
-        className={`absolute right-1.5 top-1/2 flex h-6 w-6 -translate-y-1/2 cursor-pointer items-center justify-center rounded transition ${
-          favourite
-            ? 'text-amber-400 hover:bg-amber-50 hover:text-amber-500 dark:hover:bg-amber-500/15'
-            : 'text-slate-300 hover:bg-slate-100 hover:text-amber-400 dark:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-amber-400'
-        }`}
-      >
-        <StarIcon size={14} filled={favourite === true} />
-      </button>
+      <Tooltip label={starLabel}>
+        <button
+          type="button"
+          aria-label={starLabel}
+          aria-pressed={favourite}
+          onClick={(e) => {
+            // The row underneath adds the element to the canvas. Starring must
+            // not also do that.
+            e.stopPropagation();
+            onToggleFavourite(def.id);
+          }}
+          // ALWAYS visible, not hover-revealed. A hover-only control is
+          // undiscoverable — you have to already know it is there — and on a
+          // touchscreen there is no hover at all, so it would simply not exist.
+          // An unfavourited star is muted instead: present enough to find, quiet
+          // enough that a list of twenty rows is not twenty invitations.
+          className={`absolute right-1.5 top-1/2 flex h-6 w-6 -translate-y-1/2 cursor-pointer items-center justify-center rounded transition ${
+            favourite
+              ? 'text-amber-400 hover:bg-amber-50 hover:text-amber-500 dark:hover:bg-amber-500/15'
+              : 'text-slate-300 hover:bg-slate-100 hover:text-amber-400 dark:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-amber-400'
+          }`}
+        >
+          <StarIcon size={14} filled={favourite === true} />
+        </button>
+      </Tooltip>
     </div>
   );
 }

@@ -10,7 +10,7 @@
 import { legendFontPx, type ShapeElement } from '@livediagram/diagram';
 import { chartAnim, chartFrame } from '@/lib/chart';
 import { useChartHover } from '@/hooks/canvas/useChartHover';
-import { ChartTooltip } from '@/components/primitives/ChartTooltip';
+import { ChartReadout } from '@/components/primitives/ChartReadout';
 import { ChartSurface } from '@/components/primitives/ChartSurface';
 
 export function BarChartView({
@@ -52,9 +52,9 @@ export function BarChartView({
       textColor={textColor}
       fontFamily={fontFamily}
       fontPx={legendFontPx(element.textSize)}
-      tooltip={
+      readout={
         hover !== null && data[hover] ? (
-          <ChartTooltip
+          <ChartReadout
             leftPct={((x0 + slot * (hover + 0.5)) / w) * 100}
             topPct={((baseY - (Math.max(0, data[hover]!.value) / maxVal) * fullH) / h) * 100}
             label={data[hover]!.label}

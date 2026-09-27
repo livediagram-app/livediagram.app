@@ -84,7 +84,7 @@ export function EstimateFace({
             textColor={textColor}
             onPress={onSetRevealed && !revealed ? () => onSetRevealed(true) : undefined}
             disabled={revealed}
-            tooltip={{
+            hoverCard={{
               title: 'Reveal every answer',
               description:
                 'Shows everyone what everyone picked, at once. You can reveal before the whole room has answered.',
@@ -95,7 +95,7 @@ export function EstimateFace({
           <CollabButton
             textColor={textColor}
             onPress={onClear && responses.length > 0 ? onClear : undefined}
-            tooltip={{
+            hoverCard={{
               title: 'Clear for the next round',
               description: 'Empties every answer and hides the card again.',
             }}

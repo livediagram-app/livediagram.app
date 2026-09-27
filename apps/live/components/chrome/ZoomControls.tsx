@@ -1,7 +1,7 @@
 import { IsometricOrbitButton } from '@/components/chrome/IsometricOrbitButton';
 import { ZoomMenu } from '@/components/chrome/ZoomMenu';
 import { ZenExitIcon, ZenIcon } from '@/components/palette/palette-icons';
-import { Tooltip } from '@/components/primitives/Tooltip';
+import { HoverCard } from '@livediagram/ui';
 
 type ZoomControlsProps = {
   zoom: number;
@@ -57,7 +57,7 @@ export function ZoomControls({
       className="pointer-events-auto flex items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/5 dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-950/40"
     >
       {pinchOnly ? null : (
-        <Tooltip title="Zoom out" description="Zoom out by 10%.">
+        <HoverCard title="Zoom out" description="Zoom out by 10%.">
           <IconButton onClick={onZoomOut} label="Zoom out">
             <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
               <line
@@ -71,11 +71,11 @@ export function ZoomControls({
               />
             </svg>
           </IconButton>
-        </Tooltip>
+        </HoverCard>
       )}
       <ZoomMenu zoom={zoom} onSetZoom={onSetZoom} onFitToScreen={onFitToScreen} />
       {pinchOnly ? null : (
-        <Tooltip title="Zoom in" description="Zoom in by 10%.">
+        <HoverCard title="Zoom in" description="Zoom in by 10%.">
           <IconButton onClick={onZoomIn} label="Zoom in">
             <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
               <line
@@ -98,7 +98,7 @@ export function ZoomControls({
               />
             </svg>
           </IconButton>
-        </Tooltip>
+        </HoverCard>
       )}
       {/* Mobile-only Fit: below `sm` the percentage button (whose click
           is Fit on desktop) is hidden, and hover popovers don't exist on
@@ -107,7 +107,7 @@ export function ZoomControls({
         {pinchOnly ? null : (
           <div className="mx-0.5 h-6 w-px bg-slate-200 dark:bg-slate-700" aria-hidden />
         )}
-        <Tooltip title="Fit to screen" description="Pan and zoom so everything on the tab fits.">
+        <HoverCard title="Fit to screen" description="Pan and zoom so everything on the tab fits.">
           <button
             type="button"
             onClick={onFitToScreen}
@@ -116,7 +116,7 @@ export function ZoomControls({
           >
             Fit
           </button>
-        </Tooltip>
+        </HoverCard>
       </span>
       {onIsoOrbit && onIsoReset ? (
         <>
@@ -132,7 +132,7 @@ export function ZoomControls({
         // keeps the old enter button too.
         <>
           <div className="mx-0.5 h-6 w-px bg-slate-200 dark:bg-slate-700" aria-hidden />
-          <Tooltip
+          <HoverCard
             title={zenActive ? 'Exit zen mode' : 'Zen mode'}
             description={
               zenActive
@@ -143,7 +143,7 @@ export function ZoomControls({
             <IconButton onClick={onToggleZen} label={zenActive ? 'Exit zen mode' : 'Zen mode'}>
               {zenActive ? <ZenExitIcon /> : <ZenIcon />}
             </IconButton>
-          </Tooltip>
+          </HoverCard>
         </>
       ) : null}
     </div>

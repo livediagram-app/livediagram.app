@@ -1,7 +1,7 @@
 import { type TextAlignX, type TextAlignY } from '@livediagram/diagram';
 import { AlignIcon } from '@/components/palette/palette-icons';
-import { Tooltip } from '@/components/primitives/Tooltip';
 import { onMouseHover } from '@/components/primitives/hover-preview';
+import { HoverCard, Tooltip } from '@livediagram/ui';
 
 // The theme-tinted palette tile + its tint context moved to
 // PaletteIconButton.tsx; re-exported so existing imports keep working.
@@ -12,7 +12,7 @@ export function SizeButton({
   onClick,
   onPointerEnter,
   onPointerLeave,
-  title,
+  label,
   children,
 }: {
   active: boolean;
@@ -21,9 +21,9 @@ export function SizeButton({
   // preview a preset live on the canvas while the pointer is over the tile.
   onPointerEnter?: (e: React.PointerEvent) => void;
   onPointerLeave?: (e: React.PointerEvent) => void;
-  // Accessible name (+ shared Tooltip) for tiles whose children are purely
-  // visual (a colour swatch, an icon) and so carry no readable text.
-  title?: string;
+  // Accessible name, repeated by a Tooltip, for tiles whose children are
+  // purely visual (a colour swatch, an icon) and so carry no readable text.
+  label?: string;
   children: React.ReactNode;
 }) {
   // Stretches to fill its parent grid cell so the row reads as four
@@ -41,22 +41,15 @@ export function SizeButton({
       onPointerEnter={onPointerEnter}
       onPointerLeave={onPointerLeave}
       aria-pressed={active}
-      aria-label={title}
+      aria-label={label}
       className={`${base} ${styled}`}
     >
       {children}
     </button>
   );
-  // The shared Tooltip (block so the tile still fills its grid cell), the
-  // same treatment as AlignmentGrid below — this was the last native
-  // title= tooltip on an interactive control in the editor.
-  return title ? (
-    <Tooltip title={title} block>
-      {button}
-    </Tooltip>
-  ) : (
-    button
-  );
+  // The Tooltip wrapper is display: contents, so the tile still fills its
+  // grid cell.
+  return label ? <Tooltip label={label}>{button}</Tooltip> : button;
 }
 
 export function PatternButton({
@@ -134,7 +127,7 @@ export function AlignmentGrid({
       {ALIGN_GRID.map(({ x, y }) => {
         const active = alignX === x && alignY === y;
         return (
-          <Tooltip
+          <HoverCard
             key={`${y}-${x}`}
             title={alignLabel(x, y)}
             description="Align text to this corner of the element."
@@ -154,7 +147,7 @@ export function AlignmentGrid({
             >
               <AlignIcon x={x} y={y} />
             </button>
-          </Tooltip>
+          </HoverCard>
         );
       })}
     </div>

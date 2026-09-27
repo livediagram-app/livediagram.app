@@ -11,7 +11,7 @@
 import { legendFontPx, type ShapeElement } from '@livediagram/diagram';
 import { chartAnim, chartFrame } from '@/lib/chart';
 import { useChartHover } from '@/hooks/canvas/useChartHover';
-import { ChartTooltip } from '@/components/primitives/ChartTooltip';
+import { ChartReadout } from '@/components/primitives/ChartReadout';
 import { ChartSurface } from '@/components/primitives/ChartSurface';
 
 export function PieChartView({
@@ -45,7 +45,7 @@ export function PieChartView({
     const a1 = angle + frac * Math.PI * 2;
     angle = a1;
     const color = colorAt(i, s);
-    // Tooltip anchor: the slice's mid-angle at ~half radius (full circle
+    // Readout anchor: the slice's mid-angle at ~half radius (full circle
     // anchors at the top), as a viewBox point converted to a % of the box.
     const mid = frac >= 0.999 ? -Math.PI / 2 : (a0 + a1) / 2;
     const leftPct = ((cx + rad * 0.55 * Math.cos(mid)) / w) * 100;
@@ -77,9 +77,9 @@ export function PieChartView({
       textColor={textColor}
       fontFamily={fontFamily}
       fontPx={legendFontPx(element.textSize)}
-      tooltip={
+      readout={
         hover !== null && wedges[hover] ? (
-          <ChartTooltip
+          <ChartReadout
             leftPct={wedges[hover]!.leftPct}
             topPct={wedges[hover]!.topPct}
             label={slices[hover]!.label}

@@ -24,7 +24,7 @@ function IconTile({ icon, onAdd }: { icon: IconDef; onAdd: (id: string) => void 
     <IconButton
       label={`Add ${icon.label}`}
       description="Click to add, or drag onto a shape to set its icon."
-      hideTooltip
+      hint="tooltip"
       hideCaption
       onClick={() => onAdd(icon.id)}
       draggable
@@ -78,7 +78,7 @@ export function IconPickerTab({
       id: cat.id,
       label: cat.label,
       // No description: "People" and "Arrows" say what they hold, and a
-      // tooltip restating the label would just be a delay.
+      // hover card restating the label would just be a delay.
       icon: first ? (
         <svg
           width="18"

@@ -96,7 +96,7 @@ export const HELP_ARTICLES = {
 
 export type HelpArticleKey = keyof typeof HELP_ARTICLES;
 
-// The tooltip every help link shows for an article unless a surface passes
+// The hover card every help link shows for an article unless a surface passes
 // its own (docs/specs/018-help/contextual-help-links.md): a "Learn about …" title naming the thing the reader is
 // looking at, and one line saying what the article will do for them. One
 // table, so a panel, a dialog header and a settings row that all point at

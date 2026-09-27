@@ -2,9 +2,9 @@
 
 import { useRef, useState, type ReactNode } from 'react';
 import { MenuTile, MenuTileGrid, PortalMenu } from '@/components/primitives/PortalMenu';
-import { Tooltip } from '@/components/primitives/Tooltip';
 import { useToast } from '@/hooks/ui/useToast';
 import { track } from '@/lib/telemetry';
+import { HoverCard } from '@livediagram/ui';
 
 // A labelled Share-dialog button that drops a menu of clipboard-copy
 // actions (docs/specs/013-workspace/embeds.md + docs/specs/013-workspace/live-image-share.md). Shared by the Embed and Live image
@@ -24,16 +24,16 @@ type ShareCopyItem = {
 
 export function ShareCopyMenu({
   label,
-  tooltipTitle,
-  tooltipDescription,
+  hoverCardTitle,
+  hoverCardDescription,
   // Telemetry `type` for the copy event (UI / Copied / <trackType>).
   trackType,
   items,
   header,
 }: {
   label: string;
-  tooltipTitle: string;
-  tooltipDescription: string;
+  hoverCardTitle: string;
+  hoverCardDescription: string;
   trackType: string;
   items: ShareCopyItem[];
   // Optional controls pinned above the copy rows inside the menu — used
@@ -59,7 +59,7 @@ export function ShareCopyMenu({
 
   return (
     <>
-      <Tooltip title={tooltipTitle} description={tooltipDescription}>
+      <HoverCard title={hoverCardTitle} description={hoverCardDescription}>
         <button
           ref={ref}
           type="button"
@@ -71,7 +71,7 @@ export function ShareCopyMenu({
           {label}
           <EllipsisGlyph />
         </button>
-      </Tooltip>
+      </HoverCard>
       {open ? (
         <PortalMenu anchor={ref.current} placement="below" onClose={() => setOpen(false)}>
           {header ? (

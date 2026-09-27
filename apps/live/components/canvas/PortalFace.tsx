@@ -12,7 +12,7 @@
 //
 // A LINKED portal is lit: rim at full strength, mouth glowing, motes visible.
 // An unlinked one is a dead ring — dim, no bloom, inert to clicks — and its
-// tooltip says why. A portal that silently swallows a click is worse than one
+// hover card says why. A portal that silently swallows a click is worse than one
 // that admits it isn't wired up.
 //
 // Interaction rules match the Selection Mode button (docs/specs/009-elements/mode-button.md): a real <button>
@@ -21,8 +21,8 @@
 // pointer-down left alone so dragging still moves it.
 
 import { useId } from 'react';
-import { Tooltip } from '@/components/primitives/Tooltip';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
+import { HoverCard } from '@livediagram/ui';
 
 function PortalArt({ stroke, open }: { stroke: string; open: boolean }) {
   const id = useId().replace(/:/g, '');
@@ -114,33 +114,33 @@ export function PortalFace({
   targetName,
   onEnter,
 }: {
-  // The portal's name. Announced and used in tooltips only — see below.
+  // The portal's name. Announced and used in hover cards only — see below.
   label: string;
   strokeColor: string;
-  // The linked portal's name, for the tooltip. Null when this one is unlinked.
+  // The linked portal's name, for the hover card. Null when this one is unlinked.
   targetName: string | null;
   // Undefined when unlinked, or on a read-only surface with no viewport to move.
   onEnter?: () => void;
 }) {
   // The name is NOT drawn: a caption across the energy read as a sticker on a
   // window, and the ring is recognisable without one. It lives in the element
-  // menu (PortalMenuSection), the tooltips here, and the accessible name.
+  // menu (PortalMenuSection), the hover cards here, and the accessible name.
   const press = usePressWithoutDrag(onEnter);
   const face = <PortalArt stroke={strokeColor} open={!!onEnter} />;
   if (!onEnter) {
     return (
-      <Tooltip
+      <HoverCard
         block
         className="h-full w-full"
         title="Portal (not linked)"
         description="Right-click the portal and open Portal to pick the one it leads to."
       >
         <div className="pointer-events-auto relative h-full w-full cursor-default">{face}</div>
-      </Tooltip>
+      </HoverCard>
     );
   }
   return (
-    <Tooltip
+    <HoverCard
       block
       className="h-full w-full"
       title={`Go to ${targetName ?? 'the linked portal'}`}
@@ -159,6 +159,6 @@ export function PortalFace({
       >
         {face}
       </button>
-    </Tooltip>
+    </HoverCard>
   );
 }

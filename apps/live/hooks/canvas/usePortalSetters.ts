@@ -7,7 +7,7 @@
 //
 // Three actions, all keyed off the current selection:
 //  - link this portal to another (either tab), or unlink it,
-//  - rename it (the name shows in the menu + tooltips, never on the canvas),
+//  - rename it (the name shows in the menu + hover cards, never on the canvas),
 //  - create a fresh portal already linked to this one, for when the place you
 //    want to lead to doesn't exist yet.
 
@@ -91,7 +91,7 @@ export function usePortalSetters({
     track('Element', 'Changed', 'Portal');
   };
 
-  // The portal's name. It is menu-and-tooltip only — the canvas ring stays
+  // The portal's name. It is menu-and-hover-card only — the canvas ring stays
   // clean — so this is the only place it can be typed, and an empty name falls
   // back to the positional "Portal 2" everywhere it's shown.
   const setPortalNameSelected = (name: string) => {

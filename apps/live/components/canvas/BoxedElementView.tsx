@@ -1,4 +1,5 @@
 import { memo, useRef, useState } from 'react';
+import { Tooltip } from '@livediagram/ui';
 import {
   BORDER_DASH_ARRAY,
   BORDER_RADIUS_PX,
@@ -630,27 +631,29 @@ function BoxedElementViewImpl({
       {/* …and the counterpart on a note the photo matched: it is already here,
           so nothing is being added for it. */}
       {photoMatched ? (
-        <span
-          data-photo-matched=""
-          title={photoReadAs ? `Already here. Read as: ${photoReadAs}` : 'Already here'}
-          aria-label={photoReadAs ? `Already here, read as ${photoReadAs}` : 'Already here'}
-          className="pointer-events-auto absolute -right-2 -top-2 flex items-center justify-center rounded-full bg-slate-700 text-white shadow dark:bg-slate-200 dark:text-slate-900"
-          style={{ width: 18 / zoom, height: 18 / zoom }}
-        >
-          <svg
-            width={12 / zoom}
-            height={12 / zoom}
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="3"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden
+        <Tooltip label={photoMatchedLabel(photoReadAs)}>
+          <span
+            data-photo-matched=""
+            role="img"
+            aria-label={photoMatchedLabel(photoReadAs)}
+            className="pointer-events-auto absolute -right-2 -top-2 flex items-center justify-center rounded-full bg-slate-700 text-white shadow dark:bg-slate-200 dark:text-slate-900"
+            style={{ width: 18 / zoom, height: 18 / zoom }}
           >
-            <path d="M5 13l4 4L19 7" />
-          </svg>
-        </span>
+            <svg
+              width={12 / zoom}
+              height={12 / zoom}
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <path d="M5 13l4 4L19 7" />
+            </svg>
+          </span>
+        </Tooltip>
       ) : null}
 
       {/* Selection chrome (resize / edge-grip handles) rides in its own
@@ -685,3 +688,8 @@ function BoxedElementViewImpl({
 // changed), every other prop is a primitive or an id-bearing
 // callback that the parent keeps stable.
 export const BoxedElementView = memo(BoxedElementViewImpl);
+
+// The badge on a note a wall photo matched: already on the board.
+function photoMatchedLabel(readAs: string | undefined): string {
+  return readAs ? `Already here, read as ${readAs}` : 'Already here';
+}

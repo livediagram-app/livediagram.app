@@ -41,8 +41,8 @@ is the only way the editor links to a help article. It:
   `md` for a dialog header, matching `DialogCloseButton`'s `h-7`);
 - opens `/help/<slug>/` in a new tab (`target="_blank"`,
   `rel="noreferrer noopener"`), matching the existing header Help link;
-- wraps the trigger in the shared `Tooltip` (custom tooltips only, never a
-  native `title` - see the toolbar-tooltip rule). The tooltip's copy comes
+- wraps the trigger in the shared `HoverCard` (never a native `title`; see
+  [Tooltips, hover cards and popovers](../004-interface-design/tooltips-hover-cards-popovers.md)). The hover card's copy comes
   from `HELP_LINK_COPY` in `apps/live/lib/help-articles.ts`, one entry per
   article key: a **"Learn about …"** title naming the thing the reader is
   looking at ("Learn about the Explorer") and one line saying what the

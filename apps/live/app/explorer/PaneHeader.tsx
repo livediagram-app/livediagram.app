@@ -67,7 +67,7 @@ export function PaneHeader({
   crumbs: { name: string; onClick?: () => void }[];
   // Section-scoped Help button, rendered to the left of Create (or alone
   // when the section has no Create action). Deep-links the matching
-  // help-centre article (docs/specs/018-help/contextual-help-links.md) for this Explorer section; its tooltip
+  // help-centre article (docs/specs/018-help/contextual-help-links.md) for this Explorer section; its hover card
   // copy comes from HELP_LINK_COPY.
   helpArticle?: HelpArticleKey;
   // Mobile only: opens the section drawer (the sidebar is hidden below

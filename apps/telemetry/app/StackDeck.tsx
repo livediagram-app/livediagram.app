@@ -12,7 +12,7 @@ import type { KeyboardEvent, MouseEvent, ReactNode } from 'react';
 // renders it unconditionally so opening never remounts it and replays its
 // arrival.
 //
-// A div with role="button" rather than a <button>: bodies hold Tooltip
+// A div with role="button" rather than a <button>: bodies hold HoverCard
 // triggers (a chart's hover columns), and interactive content inside a
 // <button> is invalid.
 export function StackDeck({

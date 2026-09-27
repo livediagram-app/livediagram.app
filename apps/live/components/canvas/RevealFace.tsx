@@ -3,7 +3,7 @@
 //
 // The cover is opaque rather than blurred ON PURPOSE. A blur would imply the
 // content underneath is protected, and it isn't: everything under a cover is
-// still in the document, the export, and the API response. The tooltip says
+// still in the document, the export, and the API response. The hover card says
 // so, and the spec is the honest record of it.
 //
 // Uncovering locally takes a DOUBLE press: a cover exists to stay closed, and
@@ -17,10 +17,10 @@
 // completely — pointer-events included, so the content underneath is editable
 // — leaving one small Hide pill to put it back.
 
-import { Tooltip } from '@/components/primitives/Tooltip';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
 import { Hatching } from '@/components/canvas/paper-kit';
+import { HoverCard } from '@livediagram/ui';
 
 function EyeIcon({ off = false }: { off?: boolean }) {
   return (
@@ -76,7 +76,7 @@ export function RevealFace({
       // Only the pill takes pointers, so a locally-revealed zone doesn't sit
       // between the user and the content they came to read.
       <div className="pointer-events-none absolute inset-0">
-        <Tooltip
+        <HoverCard
           className="pointer-events-auto absolute right-1 top-1"
           title="Hide it again"
           description="Only affects your screen."
@@ -89,12 +89,12 @@ export function RevealFace({
             <EyeIcon off />
             Hide
           </button>
-        </Tooltip>
+        </HoverCard>
       </div>
     );
   }
 
-  // No tooltip on the cover. It wrapped the WHOLE element, so hovering
+  // No hover card on the cover. It wrapped the WHOLE element, so hovering
   // anywhere on a reveal popped a card over the selection toolbar sitting
   // just above it — and it was redundant besides: the face already shows the
   // label and "<gesture> to reveal" in the middle of it, and the button's

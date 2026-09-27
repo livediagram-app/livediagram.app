@@ -1,7 +1,7 @@
 'use client';
 
 import { ActivityIcon, RedoIcon, UndoIcon } from '@/components/panels/ActivityPanel';
-import { Tooltip } from '@/components/primitives/Tooltip';
+import { HoverCard } from '@livediagram/ui';
 
 // The Activity strip in the bottom-right cluster (docs/specs/012-collaboration/activity-and-audit.md): the Tab Activity
 // button with inline Undo / Redo, so the most common history actions don't
@@ -58,15 +58,15 @@ export function ActivityClusterStrip({
       }}
       className="pointer-events-auto flex animate-pop-in items-stretch overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
     >
-      {/* No tooltip while open: it would sit over the panel it names. */}
+      {/* No hover card while open: it would sit over the panel it names. */}
       {popoverOpen ? (
         activityButton
       ) : (
-        <Tooltip title="Open Tab Activity" description="Expand the Tab Activity panel.">
+        <HoverCard title="Open Tab Activity" description="Expand the Tab Activity panel.">
           {activityButton}
-        </Tooltip>
+        </HoverCard>
       )}
-      <Tooltip title="Undo" description="Undo last edit.">
+      <HoverCard title="Undo" description="Undo last edit.">
         <button
           type="button"
           onPointerDown={(e) => e.stopPropagation()}
@@ -77,8 +77,8 @@ export function ActivityClusterStrip({
         >
           <UndoIcon />
         </button>
-      </Tooltip>
-      <Tooltip title="Redo" description="Redo last undone edit.">
+      </HoverCard>
+      <HoverCard title="Redo" description="Redo last undone edit.">
         <button
           type="button"
           onPointerDown={(e) => e.stopPropagation()}
@@ -89,7 +89,7 @@ export function ActivityClusterStrip({
         >
           <RedoIcon />
         </button>
-      </Tooltip>
+      </HoverCard>
     </div>
   );
 }

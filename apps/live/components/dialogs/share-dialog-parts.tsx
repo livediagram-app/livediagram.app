@@ -1,5 +1,5 @@
-import { Tooltip } from '@/components/primitives/Tooltip';
 import type { ShareLinkExpiry } from '@/lib/api-client';
+import { HoverCard } from '@livediagram/ui';
 
 // Presentational parts of the share dialog: the expiry-label lookup and
 // the Role segmented button + the Embed / Live image glyphs. Split out of ShareDialog.
@@ -21,7 +21,7 @@ export function RoleButton({
   onClick: () => void;
 }) {
   return (
-    <Tooltip title={label} description={description} block>
+    <HoverCard title={label} description={description} block>
       <button
         type="button"
         onClick={onClick}
@@ -34,7 +34,7 @@ export function RoleButton({
       >
         {label}
       </button>
-    </Tooltip>
+    </HoverCard>
   );
 }
 

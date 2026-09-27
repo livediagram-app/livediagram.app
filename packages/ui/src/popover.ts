@@ -1,13 +1,9 @@
-// Shared primitives for portal-positioned floating UI (tooltips,
-// confirm popovers, note popovers, edge-aware menus). Before this, the
-// viewport-edge inset was defined twice — once in this package's
-// Tooltip (`VIEWPORT_MARGIN`) and once in the live app's
-// clamp-to-viewport (`VIEWPORT_EDGE_MARGIN`) — and every floating box
-// hand-rolled the same one-dimensional clamp. Both now live here so the
-// inset is a single source and the clamp is one function.
+// Shared primitives for portal-positioned floating UI (tooltips, hover
+// cards, confirm popovers, note popovers, edge-aware menus): the one
+// viewport-edge inset and the one-dimensional clamp every floating box uses.
 //
-// Note: each floating element keeps its OWN width/height (a tooltip
-// card, a confirm popover, and a note editor are deliberately different
+// Note: each floating element keeps its OWN width/height (a tooltip pill,
+// a hover card, a confirm popover, and a note editor are deliberately different
 // sizes) and its OWN placement strategy (prefer-top vs flip-left-right
 // vs anchor-below). Those are per-component design choices, not shared
 // state — only the edge inset and the clamp arithmetic are common.

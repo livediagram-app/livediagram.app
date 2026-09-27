@@ -1,7 +1,6 @@
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { isLayerLocked, isLayerVisible, type Layer } from '@livediagram/diagram';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
-import { Tooltip } from '@/components/primitives/Tooltip';
 import { onMouseHover } from '@/components/primitives/hover-preview';
 import {
   EllipsisIcon,
@@ -9,6 +8,7 @@ import {
   EyeOffIcon,
   LockIcon,
 } from '@/components/panels/layers-panel-icons';
+import { HoverCard } from '@livediagram/ui';
 
 // ONE ROW OF THE LAYERS PANEL: the eye, the thumbnail, the name (or its rename
 // input), the count / Empty / lock chips, and the options button.
@@ -95,7 +95,7 @@ export function LayerRow({
       onClick={() => onSelectLayer(layer.id)}
       onDoubleClick={() => setRenamingId(layer.id)}
     >
-      <Tooltip
+      <HoverCard
         title={visible ? 'Hide layer' : 'Show layer'}
         description={
           visible ? 'Hide every element on this layer.' : 'Show this layer’s elements again.'
@@ -116,7 +116,7 @@ export function LayerRow({
         >
           {visible ? <EyeIcon /> : <EyeOffIcon />}
         </button>
-      </Tooltip>
+      </HoverCard>
       {showPreview ? (
         <span className="flex h-11 w-16 shrink-0 items-center justify-center overflow-hidden rounded border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-950">
           {thumbViewBox && thumbMarkup.get(layer.id) ? (
@@ -173,7 +173,7 @@ export function LayerRow({
           <LockIcon />
         </span>
       ) : null}
-      <Tooltip title="Layer options" description="Rename, restack, lock, merge, and more.">
+      <HoverCard title="Layer options" description="Rename, restack, lock, merge, and more.">
         <button
           type="button"
           aria-label={`${layer.name} options`}
@@ -185,7 +185,7 @@ export function LayerRow({
         >
           <EllipsisIcon />
         </button>
-      </Tooltip>
+      </HoverCard>
     </li>
   );
 }

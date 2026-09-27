@@ -1,9 +1,9 @@
 import type { PointerEvent as ReactPointerEvent, RefObject } from 'react';
 import type { ElementLink, TableCellStyle, TableElement } from '@livediagram/diagram';
-import { Tooltip } from '@/components/primitives/Tooltip';
 import { CellLinkIcon } from '@/components/canvas/table-icons';
 import { TableCellEditor } from '@/components/canvas/TableCellEditor';
 import { describeLink } from '@/lib/link-label';
+import { HoverCard } from '@livediagram/ui';
 
 // Cell font size per preset (element-space px; the canvas zoom scales
 // it like everything else). 'scale' has no per-element basis on a grid,
@@ -281,7 +281,7 @@ export function TableCellView({
           Clicking it follows the link (works in view + edit
           sessions) without selecting / editing the cell. */}
       {cs?.link && !isEditingCell ? (
-        <Tooltip title="Follow link" description={describeLink(cs.link, tabSummaries)}>
+        <HoverCard title="Follow link" description={describeLink(cs.link, tabSummaries)}>
           <button
             type="button"
             onPointerDown={(e) => e.stopPropagation()}
@@ -294,7 +294,7 @@ export function TableCellView({
           >
             <CellLinkIcon />
           </button>
-        </Tooltip>
+        </HoverCard>
       ) : null}
     </div>
   );

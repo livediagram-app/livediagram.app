@@ -9,9 +9,8 @@ import {
   type PointerEventHandler,
   type ReactNode,
 } from 'react';
-import { ChevronDownIcon } from '@livediagram/ui';
+import { ChevronDownIcon, HoverCard } from '@livediagram/ui';
 import { Portal } from '@/components/primitives/Portal';
-import { Tooltip } from '@/components/primitives/Tooltip';
 import { clampToViewport } from '@/lib/clamp-to-viewport';
 import { useReposition } from '@/hooks/canvas/useReposition';
 
@@ -311,7 +310,7 @@ export function MenuToolbar({ children }: { children: ReactNode }) {
 
 type MenuToolButtonProps = {
   icon: ReactNode;
-  // Tooltip title — also the accessible label, since the button is icon-only.
+  // HoverCard title — also the accessible label, since the button is icon-only.
   label: string;
   description: string;
   onClick: () => void;
@@ -339,7 +338,7 @@ export function MenuToolButton({
         ? 'text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-500/15'
         : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800';
   return (
-    <Tooltip title={label} description={description}>
+    <HoverCard title={label} description={description}>
       <button
         type="button"
         onClick={onClick}
@@ -353,7 +352,7 @@ export function MenuToolButton({
       >
         {icon}
       </button>
-    </Tooltip>
+    </HoverCard>
   );
 }
 

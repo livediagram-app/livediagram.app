@@ -241,7 +241,7 @@ export function useSelectionEditing(opts: {
     // element selected, so block it — for plain select AND for format-
     // paint targets, since painting would mutate an element someone
     // else is working on. The not-allowed cursor + "Locked to <name>"
-    // tooltip on the element communicate why. Hidden / locked-layer
+    // hover card on the element communicate why. Hidden / locked-layer
     // elements (docs/specs/006-diagram/layers.md) are equally untouchable.
     if (lockedByOther(id) || layerInertIds.has(id)) return;
     // Persistent Format tool: first click arms the source, each later click

@@ -15,7 +15,6 @@ import {
 } from '@/components/primitives/explorer-icons';
 import Link from 'next/link';
 import { SignInIcon } from '@/components/chrome/AuthControls';
-import { Tooltip } from '@/components/primitives/Tooltip';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { useExplorer } from './ExplorerContext';
@@ -29,6 +28,7 @@ import {
   SidebarSectionLabel,
   TeamFolderSubtree,
 } from './sidebar';
+import { HoverCard } from '@livediagram/ui';
 
 // The Explorer's section tree (docs/specs/013-workspace/folders.md), shared by the desktop
 // sidebar and the mobile drawer in ExplorerShell. Every navigation
@@ -101,7 +101,7 @@ export function ExplorerSidebar() {
           have no profile, so theirs is plain text. */}
       <SidebarSectionLabel first>
         {clerkUserId ? (
-          <Tooltip
+          <HoverCard
             title="Account"
             description="Your account, email notifications, and everything else, in Settings."
           >
@@ -112,7 +112,7 @@ export function ExplorerSidebar() {
             >
               Hi {clerkDisplayName ?? 'there'}
             </button>
-          </Tooltip>
+          </HoverCard>
         ) : (
           <>Hi {clerkDisplayName ?? 'there'}</>
         )}
@@ -193,7 +193,7 @@ export function ExplorerSidebar() {
           mirrors the Teams section: add a root-level folder. */}
       <SidebarSectionLabel
         action={
-          <Tooltip title="New Folder" description="Add a root-level folder.">
+          <HoverCard title="New Folder" description="Add a root-level folder.">
             <button
               type="button"
               onClick={() => void createFolder(null)}
@@ -202,7 +202,7 @@ export function ExplorerSidebar() {
             >
               <PlusIcon />
             </button>
-          </Tooltip>
+          </HoverCard>
         }
       >
         Personal Space
@@ -274,10 +274,10 @@ export function ExplorerSidebar() {
           sign-in banner instead. A no-auth self-host never has teams. */}
       {teamsEnabled ? (
         <>
-          {/* New-team lives as a plus on the section label, with a tooltip. */}
+          {/* New-team lives as a plus on the section label, with a hover card. */}
           <SidebarSectionLabel
             action={
-              <Tooltip title="New Team" description="Create a team and invite people by email.">
+              <HoverCard title="New Team" description="Create a team and invite people by email.">
                 <button
                   type="button"
                   onClick={() => {
@@ -289,7 +289,7 @@ export function ExplorerSidebar() {
                 >
                   <PlusIcon />
                 </button>
-              </Tooltip>
+              </HoverCard>
             }
           >
             Team Spaces

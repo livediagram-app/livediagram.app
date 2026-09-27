@@ -33,7 +33,7 @@ result for a click whose obvious meaning is "tell me about this person".
 - Each row shows the avatar, the name, badges (**You**, **Editor** / **Viewer**
   when the role is known, **Following** for the person you follow), and the
   status line: the presence word plus how long ago they were last active, the
-  same text the avatar tooltip uses.
+  same text the avatar hover card uses.
 - **One person, one entry.** The room mints an id per connection, so the same
   browser open in two tabs used to show up twice (once as "You", once as a
   peer with your name). Every tab in a browser shares one collab key

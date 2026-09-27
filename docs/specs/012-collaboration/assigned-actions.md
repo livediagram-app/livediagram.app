@@ -290,7 +290,7 @@ which crowded the same corner:
   right — an avatar bubble (brand-tinted when the action is **yours**,
   whose rows sort first; the comment author's colour otherwise) sitting
   above the relative time, with the name (and the thread's comment
-  count) on the avatar's hover tooltip rather than spent inline.
+  count) on the avatar's hover card rather than spent inline.
   Everything interleaves newest-first on its own timestamp (an action's
   createdAt, a thread's latest comment).
 - **Row click selects the element and opens its matching popover**

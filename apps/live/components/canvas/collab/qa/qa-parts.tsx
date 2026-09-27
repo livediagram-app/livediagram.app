@@ -5,8 +5,8 @@
 import { useEffect, useRef, useState } from 'react';
 import type { QaNote } from '@livediagram/diagram';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
-import { Tooltip } from '@/components/primitives/Tooltip';
 import { tint } from '../collab-chrome';
+import { HoverCard } from '@livediagram/ui';
 import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
 
 // The board's accent marks what is YOURS and what is LIVE. It is the tab
@@ -212,12 +212,12 @@ export function VotePill({
   );
   if (frozen || !onToggle) return body;
   return (
-    <Tooltip
+    <HoverCard
       title={mine ? 'Withdraw your vote' : 'Upvote'}
       description="One vote per person per note. The most voted rise to the top."
     >
       {body}
-    </Tooltip>
+    </HoverCard>
   );
 }
 
@@ -240,7 +240,7 @@ export function RoundAction({
   const press = usePressWithoutDrag(onPress);
   const color = tone === 'accent' ? QA_ACCENT_INK : tone === 'danger' ? '#e11d48' : textColor;
   return (
-    <Tooltip title={label} description={description}>
+    <HoverCard title={label} description={description}>
       <button
         type="button"
         {...press}
@@ -251,6 +251,6 @@ export function RoundAction({
       >
         {children}
       </button>
-    </Tooltip>
+    </HoverCard>
   );
 }

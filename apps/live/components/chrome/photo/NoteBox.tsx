@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type PointerEvent } from 'react';
 import { EVENT_STORMING_NOTES } from '@livediagram/diagram';
+import { Tooltip } from '@livediagram/ui';
 import type { DetectedSticky } from '@livediagram/sticky-vision';
 import type { Corner } from '@/lib/photo-boxes';
 import { BoxEditControls } from './BoxEditControls';
@@ -187,26 +188,29 @@ export function NoteBox({
           className="pointer-events-auto absolute inset-x-0 bottom-0 z-10 w-full rounded-b-sm border border-brand-400 bg-white px-1 py-0.5 text-[11px] leading-tight text-slate-900 outline-none"
         />
       ) : (
-        <button
-          ref={chip}
-          type="button"
-          data-testid={`note-words-${note.id}`}
-          title={words === '' ? 'Type the words on this note' : words}
-          onClick={open}
-          onPointerDown={(e) => e.stopPropagation()}
-          style={{
-            top: chipTop,
-            fontSize: fontPx,
-            ...(chrome
-              ? { transform: chrome, transformOrigin: 'top left', width: `${zoom * 100}%` }
-              : {}),
-          }}
-          className={`pointer-events-auto absolute inset-x-0 z-10 block w-full line-clamp-2 break-words rounded-b-sm bg-slate-900/85 px-1 py-0.5 text-left leading-tight text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-white ${
-            ticked ? '' : 'opacity-40'
-          }`}
-        >
-          {words === '' ? <span className="text-slate-300">Type the words…</span> : words}
-        </button>
+        // The chip clamps to two lines; the Tooltip gives the whole words.
+        // An empty chip shows its own prompt, so it needs none.
+        <Tooltip label={words}>
+          <button
+            ref={chip}
+            type="button"
+            data-testid={`note-words-${note.id}`}
+            onClick={open}
+            onPointerDown={(e) => e.stopPropagation()}
+            style={{
+              top: chipTop,
+              fontSize: fontPx,
+              ...(chrome
+                ? { transform: chrome, transformOrigin: 'top left', width: `${zoom * 100}%` }
+                : {}),
+            }}
+            className={`pointer-events-auto absolute inset-x-0 z-10 block w-full line-clamp-2 break-words rounded-b-sm bg-slate-900/85 px-1 py-0.5 text-left leading-tight text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-white ${
+              ticked ? '' : 'opacity-40'
+            }`}
+          >
+            {words === '' ? <span className="text-slate-300">Type the words…</span> : words}
+          </button>
+        </Tooltip>
       )}
       {selected && onResizeStart && onKind && onDelete ? (
         <BoxEditControls

@@ -7,9 +7,9 @@
 
 import { SharedDotIcon } from '@/components/chrome/share-state-icons';
 import { FolderOutlineIcon, StarIcon } from '@/components/primitives/explorer-icons';
-import { Tooltip } from '@/components/primitives/Tooltip';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import type { PaneDiagram } from './views';
+import { HoverCard } from '@livediagram/ui';
 
 const badgeBase =
   'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ring-1';
@@ -25,14 +25,14 @@ const badgeBase =
 // where a favourite is a positive you actively scan for.
 export function FavouriteMarker() {
   return (
-    <Tooltip
+    <HoverCard
       title="Favourite"
       description="Starred by you. Find it under Favourites in Quick find."
     >
       <span className="inline-flex shrink-0 items-center text-amber-500 dark:text-amber-400">
         <StarIcon filled />
       </span>
-    </Tooltip>
+    </HoverCard>
   );
 }
 
@@ -50,7 +50,7 @@ export function FavouriteMarker() {
 // containing folder is the identifying bit in practice.
 export function FolderChip({ label, onOpen }: { label: string; onOpen: () => void }) {
   return (
-    <Tooltip title={label} description="Go to this folder.">
+    <HoverCard title={label} description="Go to this folder.">
       <button
         type="button"
         onClick={(e) => {
@@ -67,18 +67,18 @@ export function FolderChip({ label, onOpen }: { label: string; onOpen: () => voi
         </span>
         <span className="truncate">{label}</span>
       </button>
-    </Tooltip>
+    </HoverCard>
   );
 }
 
 // The visibility badge: Offline (saved only in this browser, docs/specs/006-diagram/offline-mode.md), Shared
 // (a shared-with-me row / a share-link owned row), Team, or Private. Each
-// carries a concise hover tooltip explaining what the state means. Offline
+// carries a concise hover card explaining what the state means. Offline
 // wins first: an offline diagram is never shared or in a team.
 export function VisibilityBadge({ diagram }: { diagram: PaneDiagram }) {
   if (diagram.ownerId === OFFLINE_OWNER_ID) {
     return (
-      <Tooltip title="Offline" description="Saved only in this browser. Not synced or backed up.">
+      <HoverCard title="Offline" description="Saved only in this browser. Not synced or backed up.">
         <span
           className={`${badgeBase} bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/30`}
         >
@@ -98,24 +98,24 @@ export function VisibilityBadge({ diagram }: { diagram: PaneDiagram }) {
           </svg>
           Offline
         </span>
-      </Tooltip>
+      </HoverCard>
     );
   }
   if (diagram.shared || diagram.shareCode) {
     return (
-      <Tooltip title="Shared" description="Anyone with the link can open it.">
+      <HoverCard title="Shared" description="Anyone with the link can open it.">
         <span
           className={`${badgeBase} bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30`}
         >
           <SharedDotIcon />
           Shared
         </span>
-      </Tooltip>
+      </HoverCard>
     );
   }
   if (diagram.team) {
     return (
-      <Tooltip
+      <HoverCard
         title="Team"
         description="In a team library, so every member of the team can open it."
       >
@@ -139,11 +139,11 @@ export function VisibilityBadge({ diagram }: { diagram: PaneDiagram }) {
           </svg>
           Team
         </span>
-      </Tooltip>
+      </HoverCard>
     );
   }
   return (
-    <Tooltip title="Private" description="Only visible to you.">
+    <HoverCard title="Private" description="Only visible to you.">
       <span
         className={`${badgeBase} bg-slate-100 text-slate-500 ring-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700`}
       >
@@ -163,6 +163,6 @@ export function VisibilityBadge({ diagram }: { diagram: PaneDiagram }) {
         </svg>
         Private
       </span>
-    </Tooltip>
+    </HoverCard>
   );
 }

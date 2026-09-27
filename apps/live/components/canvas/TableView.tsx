@@ -62,7 +62,7 @@ export function TableView({
   element: TableElement;
   isSelected: boolean;
   readOnly: boolean;
-  // This diagram's tabs (id + name), so a linked cell's tooltip can
+  // This diagram's tabs (id + name), so a linked cell's hover card can
   // name the tab/element it points at (docs/specs/008-canvas/canvas-and-palette.md).
   tabSummaries: { id: string; name: string }[];
   // Resolved CSS font-family for the table's text (docs/specs/004-interface-design/fonts.md). Set on the

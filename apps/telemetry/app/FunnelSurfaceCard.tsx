@@ -1,3 +1,4 @@
+import { Tooltip } from '@livediagram/ui';
 import { pct } from './chart-utils';
 import { bestSlot, formatRate, rate, type FunnelSurface } from './cta-funnel';
 import { categoryColor } from './event-vocab';
@@ -88,9 +89,9 @@ export function FunnelSurfaceCard({
               >
                 <td className="py-2 pr-3">
                   <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 sm:flex-nowrap">
-                    <span className="min-w-0 sm:truncate" title={slot.label}>
-                      {slot.label}
-                    </span>
+                    <Tooltip label={slot.label}>
+                      <span className="min-w-0 sm:truncate">{slot.label}</span>
+                    </Tooltip>
                     {slot.source === best ? <BestTag /> : null}
                   </span>
                   <span

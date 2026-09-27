@@ -31,7 +31,7 @@ const BROWSE_KINDS = new Set([
 ]);
 
 // Each Explorer section deep-links its matching help-centre article from a
-// Help button in the pane header (docs/specs/018-help/contextual-help-links.md); the button's tooltip copy comes
+// Help button in the pane header (docs/specs/018-help/contextual-help-links.md); the button's hover card copy comes
 // from HELP_LINK_COPY. Sections without a guide (team, invites) simply omit
 // it.
 const SECTION_HELP: Partial<Record<string, HelpArticleKey>> = {

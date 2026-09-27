@@ -1,10 +1,10 @@
 'use client';
 
 import type { PointerEvent as ReactPointerEvent, ReactNode, RefObject } from 'react';
-import { Tooltip } from '@/components/primitives/Tooltip';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import { ResetPositionGlyph } from '@/components/primitives/ResetPositionGlyph';
+import { HoverCard } from '@livediagram/ui';
 
 // The floating panel's header row, lifted out of MovablePanel: the
 // drag handle (the whole row), the title, the caller's extra header
@@ -77,7 +77,7 @@ export function MovablePanelHeader({
           // see beginDrag above), so a reset-position affordance has
           // nothing to reset. The button reappears on `sm:` and up
           // where dragging the title row pans the panel.
-          <Tooltip title="Reset position" description="Snap back to the default corner.">
+          <HoverCard title="Reset position" description="Snap back to the default corner.">
             <button
               type="button"
               onPointerDown={(e) => e.stopPropagation()}
@@ -89,9 +89,9 @@ export function MovablePanelHeader({
                   currentColor (and its hover), not the fixed slate. */}
               <ResetPositionGlyph size={12} className="" />
             </button>
-          </Tooltip>
+          </HoverCard>
         ) : null}
-        <Tooltip
+        <HoverCard
           title={
             collapsible
               ? effectiveCollapsed
@@ -168,7 +168,7 @@ export function MovablePanelHeader({
               </svg>
             )}
           </button>
-        </Tooltip>
+        </HoverCard>
       </div>
     </div>
   );

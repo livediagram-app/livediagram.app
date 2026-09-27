@@ -5,7 +5,6 @@ import { memo } from 'react';
 import type { ChangeLogEntry } from '@/lib/api-client';
 import type { SaveStatus } from '@/components/chrome/EditorHeader';
 import { MovablePanel, type MovablePanelDockProps } from '@/components/primitives/MovablePanel';
-import { Tooltip } from '@/components/primitives/Tooltip';
 import type { DockAnchor } from '@/lib/canvas-chrome';
 import {
   ActivityRow,
@@ -14,6 +13,7 @@ import {
   UndoIcon,
   UndoRedoButton,
 } from './activity-panel-parts';
+import { HoverCard } from '@livediagram/ui';
 
 // The row / badge / button parts and their icons moved to
 // activity-panel-parts.tsx; the icons CanvasChrome consumes are
@@ -199,7 +199,7 @@ function ActivityPanelImpl({
 
         {onClearActivity ? (
           <div className="border-t border-slate-100 pt-2 dark:border-slate-800">
-            <Tooltip
+            <HoverCard
               block
               title="Clear Activity"
               description="Delete every entry for this tab. The diagram is untouched."
@@ -213,7 +213,7 @@ function ActivityPanelImpl({
                 <TrashIcon size={12} />
                 Clear Activity
               </button>
-            </Tooltip>
+            </HoverCard>
           </div>
         ) : null}
       </div>

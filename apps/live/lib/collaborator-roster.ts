@@ -59,7 +59,7 @@ export function buildCollaboratorRoster<T extends RosterTab>(input: {
 }
 
 // The chips beside a participant's name wherever they are listed (the
-// presence-stack tooltip and the Collaborators modal row): "You" plus your
+// presence-stack hover card and the Collaborators modal row): "You" plus your
 // role, a peer's role when the room told us it, and "Following" for the
 // person we follow (docs/specs/012-collaboration/follow-me-viewport.md).
 export function participantBadges(

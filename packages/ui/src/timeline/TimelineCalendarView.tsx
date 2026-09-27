@@ -9,6 +9,7 @@
 // it.
 
 import { useMemo, useRef, useState } from 'react';
+import { Tooltip } from '../Tooltip';
 import { dateKey } from './useTimelineGrouping';
 import { buildMonthCells, formatMonth, monthKeyOf, shiftMonth } from './monthCells';
 import { CARD_GRID } from '../cardGrid';
@@ -168,22 +169,24 @@ export function TimelineCalendarView({
                 {tones.map((tone) => {
                   const key = `${cell.key}::${tone}`;
                   const count = byDayAndTone.get(key)?.length ?? 0;
+                  const name = `${count} ${TONE_LABELS[tone].toLowerCase()} event${count === 1 ? '' : 's'}`;
                   return (
-                    <button
-                      key={tone}
-                      type="button"
-                      title={`${count} ${TONE_LABELS[tone].toLowerCase()} event${count === 1 ? '' : 's'}`}
-                      onMouseDown={(e) => e.stopPropagation()}
-                      onClick={() => setOpenCell((open) => (open === key ? null : key))}
-                      className="flex items-center gap-1 rounded px-1 py-0.5 text-[10px] transition hover:bg-slate-900/5 dark:hover:bg-white/10"
-                      style={{ color: toneColor(tone) }}
-                    >
-                      <span
-                        className="h-2 w-2 rounded-full"
-                        style={{ backgroundColor: toneColor(tone) }}
-                      />
-                      {count > 1 && <span className="font-semibold">{count}</span>}
-                    </button>
+                    <Tooltip key={tone} label={name}>
+                      <button
+                        type="button"
+                        aria-label={name}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onClick={() => setOpenCell((open) => (open === key ? null : key))}
+                        className="flex items-center gap-1 rounded px-1 py-0.5 text-[10px] transition hover:bg-slate-900/5 dark:hover:bg-white/10"
+                        style={{ color: toneColor(tone) }}
+                      >
+                        <span
+                          className="h-2 w-2 rounded-full"
+                          style={{ backgroundColor: toneColor(tone) }}
+                        />
+                        {count > 1 && <span className="font-semibold">{count}</span>}
+                      </button>
+                    </Tooltip>
                   );
                 })}
               </div>

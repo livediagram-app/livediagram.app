@@ -1,6 +1,5 @@
 import { initialsOf, randomName, type Participant } from '@/lib/identity';
-import { Tooltip } from '@/components/primitives/Tooltip';
-import { RefreshIcon } from '@livediagram/ui';
+import { RefreshIcon, HoverCard } from '@livediagram/ui';
 import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
 
 // The picker's identity row (docs/specs/007-editor/new-diagram-route.md welcome + join flows): the avatar
@@ -57,7 +56,7 @@ export function TemplatePickerIdentityRow({
         />
       </div>
       {nameLocked ? null : (
-        <Tooltip title="Shuffle name" description="Pick a different random name.">
+        <HoverCard title="Shuffle name" description="Pick a different random name.">
           <button
             type="button"
             onClick={() => onChangeName(randomName())}
@@ -66,7 +65,7 @@ export function TemplatePickerIdentityRow({
           >
             <RefreshIcon />
           </button>
-        </Tooltip>
+        </HoverCard>
       )}
     </div>
   );

@@ -6,9 +6,8 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from 'react';
 import { MOTION_MS } from '@livediagram/tailwind-config/motion';
-import { PlusWideIcon } from '@livediagram/ui';
+import { PlusWideIcon, HoverCard } from '@livediagram/ui';
 import type { QuickConnectDirection, QuickConnectKind } from '@/lib/canvas';
-import { Tooltip } from '@/components/primitives/Tooltip';
 import { FLOATING_CONTROL_GAP, FLOATING_CONTROL_SIZE } from '@/components/chrome/floating-controls';
 import {
   ADD_COLUMN_OPTION,
@@ -357,7 +356,7 @@ export function QuickConnectRing({
                     }`}
                   />
                 ) : null}
-                <Tooltip title={option.label} description={option.description}>
+                <HoverCard title={option.label} description={option.description}>
                   <button
                     type="button"
                     aria-label={option.label}
@@ -388,7 +387,7 @@ export function QuickConnectRing({
                   >
                     {option.icon}
                   </button>
-                </Tooltip>
+                </HoverCard>
               </Fragment>
             );
           })}

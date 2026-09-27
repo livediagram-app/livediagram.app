@@ -167,7 +167,7 @@ v5 test runner with every check green: nothing invoked the broken path.
     generator.
   - `apps/telemetry` (1 suite): the dashboard's event-vocab layer —
     category grouping/ordering, row labels, category colours, and the
-    layered tooltip explanations' never-blank guarantee.
+    layered hover-card explanations' never-blank guarantee.
   - `apps/help` (3 suites): the article registry's consistency with the
     filesystem (slugs ↔ `page.mdx`, per-category `articleCount`), the
     registry query / href helpers, the internal-link guard (every

@@ -101,7 +101,7 @@ describe('helpArticleHref / helpArticleTelemetryId', () => {
 });
 
 describe('HELP_LINK_COPY (docs/specs/018-help/contextual-help-links.md)', () => {
-  // The tooltip on every help link: a "Learn about …" title naming what the
+  // The hover card on every help link: a "Learn about …" title naming what the
   // reader is looking at, and one line on what the article does for them.
   // The Record type already forces an entry per key; this guards the shape
   // of the copy, so a `?` never says a bare "Learn more" again.

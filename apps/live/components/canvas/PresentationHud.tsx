@@ -9,7 +9,7 @@
 // popover would be left orphaned over the slide.
 
 import { useEffect, useRef, useState } from 'react';
-import { ChevronLeftIcon, ChevronRightIcon, CloseIcon } from '@livediagram/ui';
+import { ChevronLeftIcon, ChevronRightIcon, CloseIcon, Tooltip } from '@livediagram/ui';
 
 import { GearIcon } from '@/components/chrome/tab-bar-icons';
 
@@ -163,25 +163,29 @@ export function PresentationHud({
             the diagram's. The budget is a TARGET: going over is marked, never
             enforced, because a deck that advanced itself mid-answer would be
             worse than no budget at all. */}
+        {/* Each figure carries its meaning twice: a Tooltip for the eye and
+            the same words, visually hidden, for a screen reader. */}
         {elapsedMs !== null ? (
-          <span
-            className="select-none text-[11px] font-semibold tabular-nums text-white/70"
-            title="Time since the presentation started"
-          >
-            {formatElapsed(elapsedMs)}
-          </span>
+          <Tooltip label={ELAPSED_LABEL}>
+            <span className="select-none text-[11px] font-semibold tabular-nums text-white/70">
+              <span className="sr-only">{ELAPSED_LABEL}: </span>
+              {formatElapsed(elapsedMs)}
+            </span>
+          </Tooltip>
         ) : null}
         {budget ? (
-          <span
-            className={`select-none rounded px-1.5 py-0.5 text-[11px] font-semibold tabular-nums ${
-              budget.onSlideMs > budget.minutes * 60_000
-                ? 'bg-amber-400/20 text-amber-200'
-                : 'text-white/70'
-            }`}
-            title={`This slide is budgeted ${budget.minutes} min`}
-          >
-            {formatElapsed(budget.onSlideMs)} / {budget.minutes}:00
-          </span>
+          <Tooltip label={budgetLabel(budget.minutes)}>
+            <span
+              className={`select-none rounded px-1.5 py-0.5 text-[11px] font-semibold tabular-nums ${
+                budget.onSlideMs > budget.minutes * 60_000
+                  ? 'bg-amber-400/20 text-amber-200'
+                  : 'text-white/70'
+              }`}
+            >
+              <span className="sr-only">{budgetLabel(budget.minutes)}: </span>
+              {formatElapsed(budget.onSlideMs)} / {budget.minutes}:00
+            </span>
+          </Tooltip>
         ) : null}
         {/* Step through the deck by pointer as well as by key. A presenter on
             a projector often has a mouse and no keyboard within reach, and
@@ -293,3 +297,6 @@ export function PresentationHud({
     </>
   );
 }
+
+const ELAPSED_LABEL = 'Time since the presentation started';
+const budgetLabel = (minutes: number) => `This slide is budgeted ${minutes} min`;

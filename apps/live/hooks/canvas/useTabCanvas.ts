@@ -29,7 +29,7 @@ import { useDebouncedCanvasTelemetry } from './useDebouncedCanvasTelemetry';
 // Human-readable names for the activity log, so an entry reads
 // "Changed default text size to Medium" rather than leaking the raw
 // internal code ("md"). These mirror the labels shown on the controls
-// themselves (TabSection tooltips for sizes, `PATTERNS` for patterns).
+// themselves (TabSection hover cards for sizes, `PATTERNS` for patterns).
 const TEXT_SIZE_LABELS: Record<TextSize, string> = {
   scale: 'Scale to fit',
   sm: 'Small',

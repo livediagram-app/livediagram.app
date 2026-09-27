@@ -86,7 +86,7 @@ The word **"Offline"** identifies these diagrams everywhere the status is shown:
 - **Editor header badge.** Today the status pill reads Private / Shared / Team
   (the `SharedBadge` in `EditorHeader`). For an offline diagram it reads
   **"Offline"** (a new state that supersedes "Private" for these diagrams), with
-  its own tone + icon, and a tooltip restating _"Saved only in this browser."_
+  its own tone + icon, and a hover card restating _"Saved only in this browser."_
 - **Explorer.** Offline diagrams appear in **Recent** (and the other lists)
   alongside cloud diagrams. The full-page Explorer marks each with an
   **"Offline"** visibility badge; every surface (panel + full page) shows the

@@ -310,7 +310,7 @@ export function BackgroundEngineeringIcon() {
 
 // ── Animated pattern previews (docs/specs/008-canvas/canvas-and-palette.md) ──────────────────────────────────
 // Still glyphs that depict each animated backdrop's resting frame; the
-// "animated" nature is conveyed by the picker tooltip, not the icon.
+// "animated" nature is conveyed by the picker hover card, not the icon.
 
 // Flow: streaming diagonal dashes.
 export function BackgroundFlowIcon() {

@@ -1,5 +1,6 @@
 'use client';
 
+import { HoverCard } from '@livediagram/ui';
 import { SettingsPopover, SettingsPopoverResetRow } from '@/components/primitives/SettingsPopover';
 import { SettingsToggleRow } from '@/components/panels/SettingsToggleRow';
 import {
@@ -44,20 +45,20 @@ function ChoiceRow<T extends string | number>({
       {hint ? <span className="text-[10px] leading-tight text-slate-400">{hint}</span> : null}
       <div className="flex gap-1 pt-0.5">
         {options.map((o) => (
-          <button
-            key={String(o.id)}
-            type="button"
-            title={o.hint}
-            aria-pressed={value === o.id}
-            onClick={() => onPick(o.id)}
-            className={`flex-1 cursor-pointer rounded-md border px-1 py-1 text-[10px] font-medium transition ${
-              value === o.id
-                ? 'border-brand-300 bg-brand-50 text-brand-700 dark:border-brand-500/50 dark:bg-brand-500/15 dark:text-brand-200'
-                : 'border-slate-200 text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800'
-            }`}
-          >
-            {o.label}
-          </button>
+          <HoverCard key={String(o.id)} title={o.label} description={o.hint} className="flex-1">
+            <button
+              type="button"
+              aria-pressed={value === o.id}
+              onClick={() => onPick(o.id)}
+              className={`flex-1 cursor-pointer rounded-md border px-1 py-1 text-[10px] font-medium transition ${
+                value === o.id
+                  ? 'border-brand-300 bg-brand-50 text-brand-700 dark:border-brand-500/50 dark:bg-brand-500/15 dark:text-brand-200'
+                  : 'border-slate-200 text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800'
+              }`}
+            >
+              {o.label}
+            </button>
+          </HoverCard>
         ))}
       </div>
     </div>

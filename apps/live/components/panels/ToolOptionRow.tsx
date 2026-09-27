@@ -1,7 +1,7 @@
 'use client';
 
 import { AccordionSection } from '@/components/primitives/AccordionSection';
-import { Tooltip } from '@/components/primitives/Tooltip';
+import { HoverCard } from '@livediagram/ui';
 
 // One collapsible row of mutually-exclusive choices, the shape every
 // tool-config panel is built from (docs/specs/008-canvas/avatar-mode.md, docs/specs/008-canvas/laser-panel.md, docs/specs/008-canvas/spotlight-panel.md, docs/specs/008-canvas/eraser-panel.md):
@@ -11,7 +11,7 @@ import { Tooltip } from '@/components/primitives/Tooltip';
 // Avatar, Eraser, Laser and Spotlight each carried their own copy of this,
 // under two different names (OptionSection / OptionRow), identical down to the
 // four AccordionSection class strings. They had not gone wrong yet, but they
-// had started to diverge: three grew per-option Tooltip hints, one grew a
+// had started to diverge: three grew per-option HoverCard hints, one grew a
 // colour swatch, one grew a "Custom" header label. Each addition landed in one
 // copy, so the next one costs four edits or silently makes the panels
 // inconsistent. The union of all four lives here, with every extra optional so
@@ -96,9 +96,9 @@ export function ToolOptionRow<T extends string>({
             </button>
           );
           return option.hint ? (
-            <Tooltip key={option.id} title={option.label} description={option.hint}>
+            <HoverCard key={option.id} title={option.label} description={option.hint}>
               {button}
-            </Tooltip>
+            </HoverCard>
           ) : (
             button
           );

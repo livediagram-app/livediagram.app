@@ -20,7 +20,6 @@ const TemplatePicker = dynamic(() =>
 );
 
 import { ThemeBrushIcon } from '@/components/palette/palette-icons';
-import { Tooltip } from '@/components/primitives/Tooltip';
 import { ZoomControls } from '@/components/chrome/ZoomControls';
 import { OffscreenContentHint } from '@/components/canvas/OffscreenContentHint';
 import { CanvasMobileDock } from '@/components/canvas/CanvasMobileDock';
@@ -39,6 +38,7 @@ import { usePaletteDragGuides } from '@/hooks/canvas/usePaletteDragGuides';
 import { PhoneDockProvider } from '@/components/primitives/phone-dock-context';
 import { PANEL_CORNERS, PANEL_IDS, cornerBottomInset, type PanelCorner } from '@/lib/panel-layout';
 import type { StampGhost } from '@/components/canvas/useStampGhost';
+import { HoverCard } from '@livediagram/ui';
 
 // Values the Canvas computes (selection projection + layout/dock/zoom
 // state) and threads into the chrome alongside its own props.
@@ -549,7 +549,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 }}
                 className="pointer-events-auto flex animate-pop-in items-stretch overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
               >
-                <Tooltip
+                <HoverCard
                   title="Theme & canvas"
                   description="Change this tab's theme and canvas background."
                 >
@@ -562,7 +562,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
                   >
                     <ThemeBrushIcon />
                   </button>
-                </Tooltip>
+                </HoverCard>
               </div>
             ) : null}
             <ZoomControls

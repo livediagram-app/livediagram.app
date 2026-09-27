@@ -1,7 +1,7 @@
 'use client';
 
-import { Tooltip } from '@/components/primitives/Tooltip';
 import { isDragTravel } from '@/lib/press-gestures';
+import { HoverCard } from '@livediagram/ui';
 
 // Orbit control for the isometric view (docs/specs/008-canvas/isometric-view.md). Drag it to orbit the
 // camera the same way Shift-drag does on the canvas — horizontal motion
@@ -48,7 +48,7 @@ export function IsometricOrbitButton({
   onReset: () => void;
 }) {
   return (
-    <Tooltip title="Orbit" description="Drag to orbit, click to reset the angle.">
+    <HoverCard title="Orbit" description="Drag to orbit, click to reset the angle.">
       <button
         type="button"
         // Begin the orbit drag, and watch for a no-drag release (a tap) to
@@ -81,6 +81,6 @@ export function IsometricOrbitButton({
       >
         <OrbitGlyph />
       </button>
-    </Tooltip>
+    </HoverCard>
   );
 }

@@ -1,8 +1,8 @@
 'use client';
 
-import { Tooltip } from '@/components/primitives/Tooltip';
 import { track } from '@/lib/telemetry';
 import type { ExplorerViewMode } from './useExplorerViewMode';
+import { HoverCard } from '@livediagram/ui';
 
 // The List / Card segmented toggle in the Explorer header (docs/specs/006-diagram/diagram-snapshots.md).
 // Lets you switch how the browse views render the same folders +
@@ -62,7 +62,7 @@ function ToggleButton({
   children: React.ReactNode;
 }) {
   return (
-    <Tooltip title={label} description={description}>
+    <HoverCard title={label} description={description}>
       <button
         type="button"
         onClick={onClick}
@@ -77,7 +77,7 @@ function ToggleButton({
       >
         {children}
       </button>
-    </Tooltip>
+    </HoverCard>
   );
 }
 

@@ -25,7 +25,7 @@ import {
   BorderStyleIcon,
   ThicknessIcon,
 } from '@/components/palette/palette-icons';
-import { Tooltip } from '@/components/primitives/Tooltip';
+import { HoverCard } from '@livediagram/ui';
 
 const LINE_PATTERN_ORDER: readonly BorderStyle[] = [
   'solid',
@@ -104,7 +104,7 @@ export function ArrowLineControls({
                 ['extra-thick', 'Extra thick'],
               ] as [ArrowThickness, string][]
             ).map(([id, label]) => (
-              <Tooltip
+              <HoverCard
                 key={id}
                 title={label}
                 description={`Sets the arrow stroke width to ${ARROW_THICKNESS_PX[id]}px.`}
@@ -112,7 +112,7 @@ export function ArrowLineControls({
                 <SizeButton active={thickness === id} onClick={() => onSetThickness(id)}>
                   <ThicknessIcon px={ARROW_THICKNESS_PX[id]} />
                 </SizeButton>
-              </Tooltip>
+              </HoverCard>
             ))}
           </div>
         </>
@@ -129,11 +129,11 @@ export function ArrowLineControls({
                 ['angled', 'Angled', 'Axis-aligned L-connector with a single right-angle bend.'],
               ] as [ArrowStyle, string, string][]
             ).map(([id, label, desc]) => (
-              <Tooltip key={id} title={label} description={desc}>
+              <HoverCard key={id} title={label} description={desc}>
                 <SizeButton active={style === id} onClick={() => onSetStyle(id)}>
                   <ArrowStyleIcon style={id} />
                 </SizeButton>
-              </Tooltip>
+              </HoverCard>
             ))}
           </div>
         </>
@@ -144,7 +144,7 @@ export function ArrowLineControls({
           <p className={subLabel}>Line pattern</p>
           <div className="mt-1 grid grid-cols-3 gap-1">
             {LINE_PATTERN_ORDER.map((value) => (
-              <Tooltip
+              <HoverCard
                 key={value}
                 block
                 title={LINE_PATTERN_LABEL[value]}
@@ -153,7 +153,7 @@ export function ArrowLineControls({
                 <SizeButton active={strokeStyle === value} onClick={() => onSetStrokeStyle(value)}>
                   <BorderStyleIcon value={value} />
                 </SizeButton>
-              </Tooltip>
+              </HoverCard>
             ))}
           </div>
         </>
@@ -210,11 +210,11 @@ export function ArrowPointerControls({
             ['none', 'No pointers', 'No arrowhead on either end: a plain connector / line.'],
           ] as [ArrowEnds, string, string][]
         ).map(([id, label, desc]) => (
-          <Tooltip key={id} title={label} description={desc}>
+          <HoverCard key={id} title={label} description={desc}>
             <SizeButton active={ends === id} onClick={() => onSetEnds(id)}>
               <ArrowEndsIcon ends={id} />
             </SizeButton>
-          </Tooltip>
+          </HoverCard>
         ))}
       </div>
       {headSize !== null && ends !== 'none' ? (
@@ -230,7 +230,7 @@ export function ArrowPointerControls({
                 ['extra-large', 'Extra large'],
               ] as [ArrowheadSize, string][]
             ).map(([id, label]) => (
-              <Tooltip
+              <HoverCard
                 key={id}
                 title={label}
                 description={`Marker size ${ARROWHEAD_SIZE_PX[id]}, independent of line thickness.`}
@@ -238,7 +238,7 @@ export function ArrowPointerControls({
                 <SizeButton active={headSize === id} onClick={() => onSetHeadSize(id)}>
                   <ArrowheadSizeIcon px={ARROWHEAD_SIZE_PX[id]} />
                 </SizeButton>
-              </Tooltip>
+              </HoverCard>
             ))}
           </div>
         </>
@@ -249,7 +249,7 @@ export function ArrowPointerControls({
           <p className={subLabel}>Arrowhead shape</p>
           <div className="mt-1 grid grid-cols-4 gap-1">
             {ARROWHEAD_SHAPES.map((shape) => (
-              <Tooltip
+              <HoverCard
                 key={shape}
                 title={ARROWHEAD_SHAPE_LABEL[shape]}
                 description={ARROWHEAD_SHAPE_DESC[shape]}
@@ -257,7 +257,7 @@ export function ArrowPointerControls({
                 <SizeButton active={headShape === shape} onClick={() => onSetHeadShape(shape)}>
                   <ArrowheadShapeIcon shape={shape} />
                 </SizeButton>
-              </Tooltip>
+              </HoverCard>
             ))}
           </div>
         </>

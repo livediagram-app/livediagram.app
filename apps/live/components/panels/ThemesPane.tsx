@@ -19,11 +19,11 @@ import {
   PencilIcon,
   PlusIcon,
   TrashSimpleIcon,
+  HoverCard,
   SOLID_BRAND_DARK_CONTROL,
 } from '@livediagram/ui';
 import { ThemeBuilderModal, themeDeleteConfirm } from './ThemeBuilderModal';
 import { ThemeSwatch } from '@/components/primitives/ThemeSwatch';
-import { Tooltip } from '@/components/primitives/Tooltip';
 
 export function ThemesPane() {
   const { themes, loading, createTheme, updateTheme, deleteTheme } = useCustomThemes();
@@ -85,20 +85,20 @@ export function ThemesPane() {
                 {t.name}
               </span>
               <div className="flex items-center gap-1">
-                <Tooltip title="Edit" description="Open this theme in the builder.">
+                <HoverCard title="Edit" description="Open this theme in the builder.">
                   <IconBtn label="Edit theme" onClick={() => setBuilding(t.id)}>
                     <PencilIcon />
                   </IconBtn>
-                </Tooltip>
-                <Tooltip title="Duplicate" description="Create a copy of this theme.">
+                </HoverCard>
+                <HoverCard title="Duplicate" description="Create a copy of this theme.">
                   <IconBtn
                     label="Duplicate theme"
                     onClick={() => void createTheme(`${t.name} copy`, t.definition)}
                   >
                     <CopyIcon />
                   </IconBtn>
-                </Tooltip>
-                <Tooltip title="Delete" description="Remove this theme.">
+                </HoverCard>
+                <HoverCard title="Delete" description="Remove this theme.">
                   <IconBtn
                     label="Delete theme"
                     danger
@@ -106,7 +106,7 @@ export function ThemesPane() {
                   >
                     <TrashSimpleIcon />
                   </IconBtn>
-                </Tooltip>
+                </HoverCard>
               </div>
             </div>
           ))}

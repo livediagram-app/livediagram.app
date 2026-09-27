@@ -410,7 +410,7 @@ export type CanvasProps = {
   onResetExplorer: () => void;
   diagramList: DiagramListItem[];
   // Lightweight id + name of this diagram's tabs, so a link badge's
-  // tooltip can name the tab/element a link points at (docs/specs/008-canvas/canvas-and-palette.md). Kept
+  // hover card can name the tab/element a link points at (docs/specs/008-canvas/canvas-and-palette.md). Kept
   // minimal + memoised by the caller so element edits don't churn it.
   tabSummaries: { id: string; name: string }[];
   // Portals (docs/specs/009-elements/portal-element.md) link ACROSS tabs, so the canvas needs every tab's

@@ -12,8 +12,7 @@
 // second copy of this would drift on the first behaviour fix.
 
 import { useEffect, useRef, useState } from 'react';
-import { ChevronDownIcon } from '@livediagram/ui';
-import { Tooltip } from '@/components/primitives/Tooltip';
+import { ChevronDownIcon, HoverCard } from '@livediagram/ui';
 
 // preventDefault on mousedown keeps focus + the live selection in the
 // contentEditable when a control is clicked (the classic rich-text-toolbar
@@ -49,7 +48,7 @@ export function ToolbarDropdown({
   }, [open]);
   return (
     <div className="relative" ref={rootRef}>
-      <Tooltip title={label} description={description}>
+      <HoverCard title={label} description={description}>
         <button
           type="button"
           aria-haspopup="listbox"
@@ -66,7 +65,7 @@ export function ToolbarDropdown({
           {trigger}
           {hideChevron ? null : CHEVRON}
         </button>
-      </Tooltip>
+      </HoverCard>
       {open ? (
         <div
           role="listbox"

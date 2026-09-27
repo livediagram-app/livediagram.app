@@ -1,7 +1,7 @@
 // A tiny, dependency-free SVG line sparkline for dense contexts (the
 // events table's per-row trend). Deliberately simpler than TrendChart —
 // no fills, dots, axis labels, or per-day hover — so dozens can render in
-// a table without the tooltip/markup weight. Stretched to its box with
+// a table without the hover card/markup weight. Stretched to its box with
 // `preserveAspectRatio="none"` + a non-scaling stroke, like TrendChart.
 
 const W = 100;

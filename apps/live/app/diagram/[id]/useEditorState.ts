@@ -272,7 +272,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     cancelGesture();
   };
 
-  // Stable id + name projection of the tabs for link-badge tooltips
+  // Stable id + name projection of the tabs for link-badge hover cards
   // (docs/specs/008-canvas/canvas-and-palette.md): keyed on a signature so it only changes when a tab is
   // added / removed / renamed, NOT on every element edit, keeping the
   // memoised element views from re-rendering as the user types.

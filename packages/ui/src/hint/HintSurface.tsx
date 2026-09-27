@@ -1,0 +1,167 @@
+'use client';
+
+import {
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from 'react';
+import { createPortal } from 'react-dom';
+import { POPOVER_VIEWPORT_MARGIN } from '../popover';
+import {
+  HOVER_CARD_ARROW_PX,
+  HOVER_CARD_GAP_PX,
+  TOOLTIP_ARROW_PX,
+  TOOLTIP_GAP_PX,
+  type HintKind,
+} from './hint-constants';
+import { placeHint, type HintLayout, type HintPlacement } from './place-hint';
+import type { HintSurfaceProps } from './useHint';
+
+// The two looks (spec: inverse pill for a tooltip, white card for a hover
+// card). The arrow repeats the surface's colours so it reads as one shape.
+const LOOK: Record<HintKind, { surface: string; arrow: string; gap: number; arrowPx: number }> = {
+  tooltip: {
+    surface:
+      'max-w-xs rounded-md bg-slate-900 px-2 py-1 text-xs font-medium leading-snug text-white shadow-md shadow-slate-900/20 dark:bg-slate-700 dark:text-slate-50 dark:ring-1 dark:ring-slate-600 dark:shadow-slate-950/40',
+    arrow: 'bg-slate-900 dark:bg-slate-700 dark:border-slate-600',
+    gap: TOOLTIP_GAP_PX,
+    arrowPx: TOOLTIP_ARROW_PX,
+  },
+  'hover-card': {
+    surface:
+      'w-56 rounded-lg border border-slate-200 bg-white px-3 py-2 text-left shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-800 dark:shadow-slate-950/40',
+    arrow: 'border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800',
+    gap: HOVER_CARD_GAP_PX,
+    arrowPx: HOVER_CARD_ARROW_PX,
+  },
+};
+
+// The portalled box both hints paint into. Measured off-screen and hidden
+// for its first frame, then placed beside the anchor; re-placed on scroll
+// and resize while open. Portalled to <body> so it is never clipped by a
+// panel and never moves the page (spec: no layout shift).
+export function HintSurface({
+  kind,
+  anchor,
+  surfaceProps,
+  children,
+}: {
+  kind: HintKind;
+  anchor: () => Element | null;
+  surfaceProps: HintSurfaceProps;
+  children: ReactNode;
+}) {
+  const id = useId();
+  const ref = useRef<HTMLDivElement>(null);
+  const [layout, setLayout] = useState<HintLayout | null>(null);
+  const look = LOOK[kind];
+
+  useLayoutEffect(() => {
+    const place = () => {
+      const target = anchor();
+      const surface = ref.current;
+      if (!target || !surface) return;
+      const box = surface.getBoundingClientRect();
+      setLayout(
+        placeHint({
+          trigger: target.getBoundingClientRect(),
+          surface: { width: box.width, height: box.height },
+          viewport: { width: window.innerWidth, height: window.innerHeight },
+          gap: look.gap,
+          margin: POPOVER_VIEWPORT_MARGIN,
+        }),
+      );
+    };
+    place();
+    window.addEventListener('scroll', place, true);
+    window.addEventListener('resize', place);
+    return () => {
+      window.removeEventListener('scroll', place, true);
+      window.removeEventListener('resize', place);
+    };
+  }, [anchor, look.gap, children]);
+
+  if (typeof document === 'undefined') return null;
+  return createPortal(
+    <div
+      ref={ref}
+      id={id}
+      role="tooltip"
+      data-hint={kind}
+      {...surfaceProps}
+      className={`pointer-events-auto fixed z-[var(--z-toast)] animate-fade-in motion-reduce:animate-none ${look.surface}`}
+      style={
+        layout
+          ? { left: layout.left, top: layout.top }
+          : { left: -9999, top: -9999, visibility: 'hidden' }
+      }
+    >
+      {children}
+      {layout ? (
+        <Arrow
+          placement={layout.placement}
+          offset={layout.arrowOffset}
+          size={look.arrowPx}
+          className={look.arrow}
+          bordered={kind === 'hover-card'}
+        />
+      ) : null}
+    </div>,
+    document.body,
+  );
+}
+
+// A rotated square half-tucked under the surface, pointing at the trigger.
+// Only the two outward edges carry a border, so it merges with the box.
+function Arrow({
+  placement,
+  offset,
+  size,
+  className,
+  bordered,
+}: {
+  placement: HintPlacement;
+  offset: number;
+  size: number;
+  className: string;
+  bordered: boolean;
+}) {
+  const half = size / 2;
+  // Literal class strings: Tailwind only generates classes it can read.
+  // The tooltip pill has a ring (not a border) in dark mode only, so its
+  // arrow borders only there.
+  const edges: Record<HintPlacement, { style: CSSProperties; border: string; darkBorder: string }> =
+    {
+      top: {
+        style: { bottom: -half, left: offset - half },
+        border: 'border-r border-b',
+        darkBorder: 'dark:border-r dark:border-b',
+      },
+      bottom: {
+        style: { top: -half, left: offset - half },
+        border: 'border-l border-t',
+        darkBorder: 'dark:border-l dark:border-t',
+      },
+      right: {
+        style: { left: -half, top: offset - half },
+        border: 'border-l border-b',
+        darkBorder: 'dark:border-l dark:border-b',
+      },
+      left: {
+        style: { right: -half, top: offset - half },
+        border: 'border-r border-t',
+        darkBorder: 'dark:border-r dark:border-t',
+      },
+    };
+  const edge = edges[placement];
+  return (
+    <span
+      aria-hidden
+      className={`absolute ${bordered ? edge.border : edge.darkBorder} ${className}`}
+      style={{ ...edge.style, width: size, height: size, transform: 'rotate(45deg)' }}
+    />
+  );
+}

@@ -1,6 +1,6 @@
 import type { ElementLink } from '@livediagram/diagram';
 
-// Human-readable destination for a link, shown in the hover tooltip on a
+// Human-readable destination for a link, shown in the hover card on a
 // link badge so a user can see WHERE a link goes before clicking it.
 // `tabs` (id + name of this diagram's tabs) lets tab / element links
 // name their target tab instead of a generic phrase; pass it wherever

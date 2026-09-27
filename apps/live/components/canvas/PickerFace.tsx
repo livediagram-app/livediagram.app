@@ -19,11 +19,11 @@
 // back, which is why `shared` exists — see below.
 
 import { useEffect, useRef, useState } from 'react';
-import { Tooltip } from '@/components/primitives/Tooltip';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { spinFrameDelays, spinReel, type PickerCandidate } from '@/lib/picker';
 import { ParticipantAvatar } from '@/components/primitives/ParticipantAvatar';
 import { ReelWindow } from '@/components/canvas/paper-kit';
+import { HoverCard } from '@livediagram/ui';
 
 export function PickerFace({
   label,
@@ -158,7 +158,7 @@ export function PickerFace({
         </span>
       </span>
       {onRoll ? (
-        <Tooltip
+        <HoverCard
           title={empty ? 'Nothing to pick from' : 'Pick one'}
           description={
             empty
@@ -176,7 +176,7 @@ export function PickerFace({
           >
             {spinning ? 'Picking…' : result ? 'Again' : 'Pick'}
           </button>
-        </Tooltip>
+        </HoverCard>
       ) : null}
     </div>
   );

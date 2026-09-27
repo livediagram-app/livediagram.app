@@ -12,8 +12,7 @@
 // deliberately NOT treated this way (element-parts.tsx): interaction
 // grips need a constant hit size.
 import { initialsOf } from '@/lib/identity';
-import { ActionIcon, CommentIcon, LinkIcon, NoteIcon } from '@livediagram/ui';
-import { Tooltip } from '@/components/primitives/Tooltip';
+import { ActionIcon, CommentIcon, LinkIcon, NoteIcon, HoverCard } from '@livediagram/ui';
 import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
 
 // Below this canvas zoom the on-element adornments (badge pill, lock
@@ -34,7 +33,7 @@ export function RemoteSelectorsStrip({
       className="pointer-events-none absolute -left-1 -top-1 flex"
     >
       {selectors.map((p, i) => (
-        // Margin / z-index live on the outer wrapper so the Tooltip's
+        // Margin / z-index live on the outer wrapper so the HoverCard's
         // inline-flex span doesn't disturb the overlap stack.
         <div
           key={p.id}
@@ -43,7 +42,7 @@ export function RemoteSelectorsStrip({
             zIndex: selectors.length - i,
           }}
         >
-          <Tooltip
+          <HoverCard
             title={`Locked to ${p.name}`}
             description="Selected by them; you can't edit it right now."
           >
@@ -54,7 +53,7 @@ export function RemoteSelectorsStrip({
             >
               {initialsOf(p.name)}
             </div>
-          </Tooltip>
+          </HoverCard>
         </div>
       ))}
     </div>
@@ -83,7 +82,7 @@ export function BadgeStrip({
 }: {
   zoom: number;
   linked: boolean;
-  // Destination shown in the link badge's hover tooltip (e.g. the URL),
+  // Destination shown in the link badge's hover card (e.g. the URL),
   // so a user sees where a link goes before clicking. Undefined when
   // unlinked.
   linkLabel?: string;
@@ -92,7 +91,7 @@ export function BadgeStrip({
   // Open assigned action (docs/specs/012-collaboration/assigned-actions.md): shown only while the element's
   // action has status 'open' — finished work should not shout.
   hasOpenAction?: boolean;
-  // Hover tooltip body for the action badge ("Assigned to {name}").
+  // Hover card body for the action badge ("Assigned to {name}").
   actionLabel?: string;
   badgeColor: string;
   onFollowLink: () => void;
@@ -111,11 +110,11 @@ export function BadgeStrip({
     segments.push({
       key: 'link',
       node: (
-        <Tooltip title="Follow link" description={linkLabel ?? 'Open the linked destination.'}>
+        <HoverCard title="Follow link" description={linkLabel ?? 'Open the linked destination.'}>
           <BadgeButton label="Follow link" color={badgeColor} onClick={onFollowLink}>
             <LinkIcon size={13} strokeWidth={2} />
           </BadgeButton>
-        </Tooltip>
+        </HoverCard>
       ),
     });
   }
@@ -133,7 +132,7 @@ export function BadgeStrip({
     segments.push({
       key: 'action',
       node: (
-        <Tooltip title="Open action" description={actionLabel ?? 'An assigned action is open.'}>
+        <HoverCard title="Open action" description={actionLabel ?? 'An assigned action is open.'}>
           <BadgeButton
             label="Open action"
             color={badgeColor}
@@ -142,7 +141,7 @@ export function BadgeStrip({
           >
             <ActionIcon size={13} strokeWidth={1.75} />
           </BadgeButton>
-        </Tooltip>
+        </HoverCard>
       ),
     });
   }

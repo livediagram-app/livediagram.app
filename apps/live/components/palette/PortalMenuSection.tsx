@@ -9,7 +9,7 @@
 // data sections need.
 //
 // The NAME lives here and only here. It shows in this picker, in the travel
-// tooltip, and in the linked portal's label — never drawn on the canvas ring,
+// hover card, and in the linked portal's label — never drawn on the canvas ring,
 // where a caption over the energy looked like a sticker on a window.
 
 import { useEffect, useState } from 'react';

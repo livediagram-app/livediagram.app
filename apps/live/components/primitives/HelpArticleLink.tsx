@@ -1,7 +1,6 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { Tooltip } from '@/components/primitives/Tooltip';
 import {
   HELP_LINK_COPY,
   helpArticleHref,
@@ -9,17 +8,18 @@ import {
   type HelpArticleKey,
 } from '@/lib/help-articles';
 import { track } from '@/lib/telemetry';
+import { HoverCard } from '@livediagram/ui';
 
 type HelpArticleLinkProps = {
   /** Which help article to deep-link (key in HELP_ARTICLES). */
   article: HelpArticleKey;
   /**
-   * Tooltip title (custom Tooltip, never a native `title`). Defaults to the
+   * HoverCard title (custom HoverCard, never a native `title`). Defaults to the
    * article's entry in HELP_LINK_COPY ("Learn about the Explorer"); pass one
    * only when the surface needs a different framing.
    */
   title?: string;
-  /** One-line tooltip elaboration; defaults from HELP_LINK_COPY too. */
+  /** One-line hover card elaboration; defaults from HELP_LINK_COPY too. */
   description?: string;
   /**
    * `icon` (default): a bare `?` ghost button to sit beside a control label
@@ -70,7 +70,7 @@ export function HelpArticleLink({
 
   if (variant === 'text') {
     return (
-      <Tooltip title={title} description={description}>
+      <HoverCard title={title} description={description}>
         <a
           {...common}
           className={`inline-flex items-center gap-1 text-xs font-medium text-blue-600 underline-offset-2 transition hover:text-blue-700 hover:underline dark:text-blue-400 dark:hover:text-blue-300${
@@ -80,7 +80,7 @@ export function HelpArticleLink({
           {label}
           <ArrowOutIcon />
         </a>
-      </Tooltip>
+      </HoverCard>
     );
   }
 
@@ -89,7 +89,7 @@ export function HelpArticleLink({
     // primary button's shape (e.g. the explorer "+ Create") but stays neutral
     // slate/white rather than brand, so it reads as a secondary action.
     return (
-      <Tooltip title={title} description={description}>
+      <HoverCard title={title} description={description}>
         <a
           {...common}
           aria-label={title}
@@ -100,7 +100,7 @@ export function HelpArticleLink({
           {icon ?? <HelpMarkIcon />}
           {label === 'Learn more' ? 'Help' : label}
         </a>
-      </Tooltip>
+      </HoverCard>
     );
   }
 
@@ -118,7 +118,7 @@ export function HelpArticleLink({
   // placement beside a long control label never squashes it.
   const box = size === 'md' ? 'h-7 w-7 text-[15px]' : 'h-5 w-5 text-[13px]';
   return (
-    <Tooltip title={title} description={description}>
+    <HoverCard title={title} description={description}>
       <a
         {...common}
         aria-label={title}
@@ -128,7 +128,7 @@ export function HelpArticleLink({
       >
         ?
       </a>
-    </Tooltip>
+    </HoverCard>
   );
 }
 

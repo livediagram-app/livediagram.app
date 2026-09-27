@@ -1,3 +1,4 @@
+import { Tooltip } from '@livediagram/ui';
 import type { Rising } from './metric-series';
 
 // The arrow beside a number saying which way it moved against the span just
@@ -43,16 +44,18 @@ export function TrendBadge({
   now: number;
   before: number;
   rising?: Rising;
-  against: string; // "the 7 days before", for the tooltip
+  against: string; // "the 7 days before", for the Tooltip
 }) {
   const { tone, arrow, amount } = readTrend(now, before, rising);
+  const comparison = `Against ${against}: ${before.toLocaleString()}`;
   return (
-    <span
-      className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium tabular-nums ${TONES[tone]}`}
-      title={`Against ${against}: ${before.toLocaleString()}`}
-    >
-      {arrow} {amount}
-      <span className="sr-only"> against {against}</span>
-    </span>
+    <Tooltip label={comparison}>
+      <span
+        className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium tabular-nums ${TONES[tone]}`}
+      >
+        {arrow} {amount}
+        <span className="sr-only"> ({comparison})</span>
+      </span>
+    </Tooltip>
   );
 }

@@ -2,10 +2,9 @@
 
 import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { Portal } from '@/components/primitives/Portal';
-import { Tooltip } from '@/components/primitives/Tooltip';
 import { GearIcon } from '@/components/chrome/tab-bar-icons';
 import { ResetPositionGlyph } from '@/components/primitives/ResetPositionGlyph';
-import { useClickOutside, useEscape } from '@livediagram/ui';
+import { useClickOutside, useEscape, HoverCard } from '@livediagram/ui';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
 
 const GAP = 8; // space between the trigger and the popover
@@ -24,9 +23,9 @@ export function SettingsPopover({
   width,
   children,
 }: {
-  // Names the control: drives the tooltip title + aria-labels ("<label> settings").
+  // Names the control: drives the hover card title + aria-labels ("<label> settings").
   label: string;
-  // Tooltip body shown under the title.
+  // HoverCard body shown under the title.
   description: string;
   // Per-instance trigger marker (e.g. 'data-map-settings-trigger'). The
   // outside-click guard whitelists this exact selector so the gear's own click
@@ -87,7 +86,7 @@ export function SettingsPopover({
   const title = `${label} settings`;
   return (
     <>
-      <Tooltip title={title} description={description}>
+      <HoverCard title={title} description={description}>
         <button
           ref={triggerRef}
           type="button"
@@ -105,7 +104,7 @@ export function SettingsPopover({
         >
           <GearIcon />
         </button>
-      </Tooltip>
+      </HoverCard>
       {open ? (
         <Portal>
           <div

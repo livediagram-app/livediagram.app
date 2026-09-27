@@ -48,7 +48,7 @@ Pressing a linked portal does up to three things:
 
 ## Unlinked portals are inert and say so
 
-A portal with no target is a dead ring — dimmed, no bloom, no clicks — and its tooltip reads _"Portal (not linked) — Right-click the portal and open Portal to pick the one it leads to."_ A portal that silently swallows clicks is worse than one that admits it isn't wired up. The same forgiveness runs through resolution: a target that was deleted, re-pointed at a non-portal, or points at itself resolves to unlinked rather than erroring, because a diagram is edited in any order and a half-wired portal is a normal intermediate state.
+A portal with no target is a dead ring — dimmed, no bloom, no clicks — and its hover card reads _"Portal (not linked) — Right-click the portal and open Portal to pick the one it leads to."_ A portal that silently swallows clicks is worse than one that admits it isn't wired up. The same forgiveness runs through resolution: a target that was deleted, re-pointed at a non-portal, or points at itself resolves to unlinked rather than erroring, because a diagram is edited in any order and a half-wired portal is a normal intermediate state.
 
 ## Model + validation
 

@@ -28,10 +28,9 @@ import {
 } from '@/lib/avatar-config';
 import { AVATAR_REACTIONS, type AvatarReactionKind } from '@/lib/avatar-reactions';
 import { AvatarSprite } from '@/components/canvas/avatar-sprite';
-import { Tooltip } from '@/components/primitives/Tooltip';
 // The same glyph the welcome flow's "shuffle a random name" button uses — same
 // meaning (give me another random one), so it stays the same icon.
-import { RefreshIcon } from '@livediagram/ui';
+import { RefreshIcon, HoverCard } from '@livediagram/ui';
 import { ToolOptionRow } from '@/components/panels/ToolOptionRow';
 import { REACTION_EMOJI, REACTION_LABEL, REACTIONS, type Reaction } from '@livediagram/diagram';
 import { ModePanel, type ModePanelProps } from '@/components/panels/ModePanel';
@@ -136,7 +135,10 @@ export function AvatarPanel({
           />
           {/* Dice-roll in the corner of the portrait: a whole new character in
               one click, for when you'd rather not walk the four rows. */}
-          <Tooltip title="Randomise" description="Roll a new character. Your size choice is kept.">
+          <HoverCard
+            title="Randomise"
+            description="Roll a new character. Your size choice is kept."
+          >
             <button
               type="button"
               onClick={onRandomise}
@@ -145,7 +147,7 @@ export function AvatarPanel({
             >
               <RefreshIcon />
             </button>
-          </Tooltip>
+          </HoverCard>
         </div>
         <div className="divide-y divide-slate-100 dark:divide-slate-800">
           <ToolOptionRow
