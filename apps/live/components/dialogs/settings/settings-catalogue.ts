@@ -74,6 +74,10 @@ type RowBase = {
   // sharing a section must be ADJACENT; the pane groups consecutive runs, so
   // a section cannot be split and silently re-headed further down.
   section?: string;
+  // The key of a row in the same category this one belongs to: it renders
+  // directly beneath that row, indented, in a group named after it
+  // (docs/specs/007-editor/power-user-mode.md#in-settings).
+  parent?: string;
 };
 
 export type SettingsToggleRowSpec = RowBase & {
@@ -146,6 +150,10 @@ export type SettingsShortcutListRowSpec = RowBase & { kind: 'shortcutList' };
 export type SettingsIdentityRowSpec = RowBase & { kind: 'identity' };
 export type SettingsDeleteAccountRowSpec = RowBase & { kind: 'deleteAccount' };
 
+// What power user mode's preset set, as a live readout: each line's value is
+// its own row's, changed in that row (docs/specs/007-editor/power-user-mode.md#in-settings).
+export type SettingsPresetSummaryRowSpec = RowBase & { kind: 'presetSummary' };
+
 export type SettingsRowSpec =
   | SettingsToggleRowSpec
   | SettingsChoiceRowSpec
@@ -156,7 +164,8 @@ export type SettingsRowSpec =
   | SettingsShortcutsRowSpec
   | SettingsShortcutListRowSpec
   | SettingsIdentityRowSpec
-  | SettingsDeleteAccountRowSpec;
+  | SettingsDeleteAccountRowSpec
+  | SettingsPresetSummaryRowSpec;
 
 export type SettingsCategorySpec = {
   id: SettingsCategoryId;
@@ -234,10 +243,22 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         description:
           'Hides labels and hints you no longer need: palette captions, panel titles, the selection caption, status bar text and onboarding notices. Every control stays; its name shows when you hover or focus it.',
         helpArticle: 'powerUserMode',
+        parent: 'powerUserMode',
         available: (ctx) => ctx.powerUserMode === true,
         read: (p) => p.minimalChrome !== false,
         write: (p, v) => ({ ...p, minimalChrome: v }),
         event: { category: 'UI', on: 'MinimalChromeOn', off: 'MinimalChromeOff' },
+      },
+      {
+        kind: 'presetSummary',
+        key: 'powerUserPreset',
+        keywords: 'power user preset recommended defaults restore',
+        section: 'Power User',
+        label: 'Set By Power User Mode',
+        description:
+          'What switching the mode on set. Change any of them in its own row; switching the mode off restores the ones you left alone.',
+        parent: 'powerUserMode',
+        available: (ctx) => ctx.powerUserMode === true,
       },
     ],
   },

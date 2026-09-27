@@ -84,10 +84,15 @@ test.describe('Power user mode', () => {
     await expect(tabBar(page).getByText('Search', { exact: true })).toBeVisible();
 
     await setPowerUserMode(page, true);
-    await expect(dialog(page).getByRole('switch', { name: 'Minimal Chrome' })).toHaveAttribute(
+    // The mode's children, nested beneath it: Minimal Chrome, then what the preset set.
+    const children = dialog(page).getByRole('group', { name: 'Power User Mode settings' });
+    await expect(children.getByRole('switch', { name: 'Minimal Chrome' })).toHaveAttribute(
       'aria-checked',
       'true',
     );
+    await expect(
+      children.getByRole('list', { name: 'Set By Power User Mode' }).getByRole('listitem'),
+    ).toHaveCount(5);
     await closeSettings(page);
     await page.screenshot({ path: 'test-results/power-user-minimal-chrome.png' });
 
@@ -163,10 +168,17 @@ test.describe('Power user mode', () => {
       alignmentGuides: true,
     });
 
-    // Change one preset setting while the mode is on.
-    await dialog(page).getByRole('button', { name: 'Appearance' }).click();
+    // Change one preset setting while the mode is on, reached from the readout.
+    await dialog(page).getByRole('button', { name: 'Change Panel Layout in Appearance' }).click();
     await dialog(page).getByRole('radio', { name: 'Minimal' }).click();
     await dialog(page).getByRole('button', { name: 'Editor' }).click();
+    const readout = dialog(page).getByRole('list', { name: 'Set By Power User Mode' });
+    await expect(readout.getByRole('listitem').first()).toContainText(
+      'Changed: kept when you switch off',
+    );
+    await expect(readout.getByRole('listitem').nth(1)).toContainText(
+      'Restored when you switch off',
+    );
     await dialog(page).getByRole('switch', { name: 'Power User Mode' }).click();
     await closeSettings(page);
 

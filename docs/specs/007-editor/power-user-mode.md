@@ -47,6 +47,22 @@ Settings that exist only for the mode are **visible only while the mode is on**:
 not disabled, and settings search does not find them. While the mode is off they have no effect, whatever their
 stored value.
 
+### In Settings
+
+The mode's row sits in Editor, under a **Power User** heading. While the mode is on, its **children** follow it
+directly, indented beneath it as one group named "Power User Mode settings":
+
+1. The power-user-only settings: **Minimal Chrome**.
+2. **Set By Power User Mode**: a readout of the preset, one line per preset setting other than Minimal chrome (Panel
+   Layout, Alignment Guides, Auto-Attach Arrows, Show Welcome Tour, Suggested Prompts), each with its current value
+   and the category it lives in. Each is still changed in its own row, and a **Change** button on the line goes to
+   that row, ringed. A line whose value the user has changed since switching on says so ("Changed: kept when you
+   switch off"); the others read "Restored when you switch off". A setting whose row is not offered here (Suggested
+   Prompts without AI) shows its value without the button.
+
+With the mode off the group is absent. Keyboard order follows the visual order: the mode's switch, then the group.
+While searching, a child that matches shows on its own, like any other row.
+
 ### Minimal chrome
 
 On by default when the mode switches on (the preset writes it). Minimal chrome removes words and hints that teach

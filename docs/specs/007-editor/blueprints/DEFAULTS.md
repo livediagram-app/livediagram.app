@@ -14,3 +14,5 @@ One row per default applied where a spec is silent or qualitative.
 | D8  | power-user-mode | Look of the role status icon                  | The status bar control box, in the role's emerald or amber rather than the bar's slate                     |
 | D9  | power-user-mode | Malformed offer counters                      | Reset to zero with a `[power-user-offer]` warning                                                          |
 | D10 | power-user-mode | Where Help sits in the Explorer's menu        | First row of the app band, above Search                                                                    |
+| D11 | power-user-mode | Order of the mode's children                  | Minimal Chrome first (a setting), then the preset readout (a summary)                                      |
+| D12 | power-user-mode | How "Change" goes to a row                    | Select the row's category and ring the row, the search result path                                         |

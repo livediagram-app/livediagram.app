@@ -1,6 +1,8 @@
 'use client';
 
-import { useEffect, useRef, type ReactNode } from 'react';
+import { Fragment, useEffect, useRef, type ReactNode } from 'react';
+import { SettingsPresetSummaryRow } from './SettingsPresetSummaryRow';
+import type { SettingsCategoryId } from './settings-icons';
 
 import { SettingsChoiceRow } from './SettingsChoiceRow';
 import { SettingsRow } from './SettingsRow';
@@ -19,6 +21,7 @@ import {
   choiceTelemetryType,
   type SettingsAppearanceRowSpec,
   type SettingsCategorySpec,
+  type SettingsRowSpec,
 } from './settings-catalogue';
 import type { UserPreferences } from '@/lib/user-preferences';
 
@@ -31,12 +34,18 @@ export function SettingsCategoryPane({
   settings,
   onChange,
   focusRowKey = null,
+  onGoToRow,
+  offeredRowKeys,
 }: {
   category: SettingsCategorySpec;
   settings: UserPreferences;
   onChange: (next: UserPreferences) => void;
   // Row to scroll to and ring, when Settings was opened from a search result.
   focusRowKey?: string | null;
+  // Go to a row, possibly in another category (the power user preset readout).
+  onGoToRow?: (categoryId: SettingsCategoryId, rowKey: string) => void;
+  // Row keys the dialog offers right now, across every category.
+  offeredRowKeys?: ReadonlySet<string>;
 }) {
   const isMobile = useIsMobileViewport();
   // Group CONSECUTIVE rows by section, so a category holding several
@@ -44,8 +53,13 @@ export function SettingsCategoryPane({
   // per cluster instead of one undifferentiated list. Consecutive rather than
   // by-value on purpose: a section that reappeared further down would head
   // itself twice, and the catalogue's order is the intended reading order.
+  // A row with a parent in this list renders under it (docs/specs/007-editor/power-user-mode.md#in-settings);
+  // one whose parent is not here (a search match) stands on its own.
+  const listed = new Set(category.rows.map((r) => r.key));
+  const nested = (row: SettingsRowSpec) => !!row.parent && listed.has(row.parent);
+  const childrenOf = (row: SettingsRowSpec) => category.rows.filter((r) => r.parent === row.key);
   const groups: { section?: string; rows: typeof category.rows }[] = [];
-  for (const row of category.rows) {
+  for (const row of category.rows.filter((r) => !nested(r))) {
     const last = groups[groups.length - 1];
     if (last && last.section === row.section) last.rows.push(row);
     else groups.push({ section: row.section, rows: [row] });
@@ -60,11 +74,33 @@ export function SettingsCategoryPane({
               {group.section}
             </h3>
           ) : null}
-          {group.rows.map((row) => (
-            <FocusRing key={row.key} rowKey={row.key} focused={row.key === focusRowKey}>
-              {renderRow(row)}
-            </FocusRing>
-          ))}
+          {group.rows.map((row) => {
+            const children = childrenOf(row);
+            return (
+              <Fragment key={row.key}>
+                <FocusRing rowKey={row.key} focused={row.key === focusRowKey}>
+                  {renderRow(row)}
+                </FocusRing>
+                {children.length > 0 ? (
+                  <div
+                    role="group"
+                    aria-label={`${row.label} settings`}
+                    className="-mt-2 ml-3 flex flex-col gap-5 border-l-2 border-slate-200 pl-4 dark:border-slate-700"
+                  >
+                    {children.map((child) => (
+                      <FocusRing
+                        key={child.key}
+                        rowKey={child.key}
+                        focused={child.key === focusRowKey}
+                      >
+                        {renderRow(child)}
+                      </FocusRing>
+                    ))}
+                  </div>
+                ) : null}
+              </Fragment>
+            );
+          })}
         </section>
       ))}
     </div>
@@ -134,6 +170,15 @@ export function SettingsCategoryPane({
         return <SettingsIdentityRow row={row} />;
       case 'deleteAccount':
         return <SettingsDeleteAccountRow row={row} />;
+      case 'presetSummary':
+        return (
+          <SettingsPresetSummaryRow
+            row={row}
+            settings={settings}
+            offered={offeredRowKeys}
+            onGoToRow={onGoToRow}
+          />
+        );
     }
   }
 }

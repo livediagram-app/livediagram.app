@@ -89,6 +89,13 @@ export function SettingsDialog({
   );
 
   const [query, setQuery] = useState('');
+  // The row to ring: a targeted open's, or one the power user preset readout
+  // went to (docs/specs/007-editor/power-user-mode.md#in-settings).
+  const [goTo, setGoTo] = useState(focus ?? null);
+  const offeredRowKeys = useMemo(
+    () => new Set(categories.flatMap((c) => c.rows.map((r) => r.key))),
+    [categories],
+  );
   const result = useMemo(() => searchSettings(categories, query), [categories, query]);
 
   // While searching, the rail shows every category (with a match badge) and
@@ -232,7 +239,13 @@ export function SettingsDialog({
               category={selected}
               settings={settings}
               onChange={onChange}
-              focusRowKey={focus?.categoryId === selected.id ? focus.rowKey : null}
+              focusRowKey={goTo?.categoryId === selected.id ? goTo.rowKey : null}
+              offeredRowKeys={offeredRowKeys}
+              onGoToRow={(categoryId, rowKey) => {
+                setQuery('');
+                select(categoryId);
+                setGoTo({ categoryId, rowKey });
+              }}
             />
           </div>
         ) : result.searching && !isMobile ? (

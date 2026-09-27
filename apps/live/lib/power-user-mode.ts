@@ -61,6 +61,14 @@ function switchOn(prefs: UserPreferences): Switched {
   return { prefs: next as UserPreferences, restored: [], kept: [] };
 }
 
+// Does this preset setting still hold what switching on wrote? Switch-off
+// restores exactly these; the Settings readout says which will be.
+export function isUntouched(prefs: UserPreferences, entry: PowerUserBaselineEntry): boolean {
+  const current = prefs as Bag;
+  const applied = entry.applied as Bag;
+  return Object.keys(applied).every((key) => Object.is(current[key], applied[key]));
+}
+
 function switchOff(prefs: UserPreferences): Switched {
   const next: Bag = { ...(prefs as Bag) };
   const restored: string[] = [];
@@ -68,8 +76,7 @@ function switchOff(prefs: UserPreferences): Switched {
   for (const [setting, entry] of Object.entries(prefs.powerUserBaseline ?? {})) {
     const applied = entry.applied as Bag;
     const before = entry.before as Bag;
-    const untouched = Object.keys(applied).every((key) => Object.is(next[key], applied[key]));
-    if (!untouched) {
+    if (!isUntouched(prefs, entry)) {
       kept.push(setting);
       continue;
     }

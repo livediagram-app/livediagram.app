@@ -505,6 +505,11 @@ and the dialog stays as the one complete, browsable index of them.
   power user mode is on ([Power user mode](power-user-mode.md)); they appear the
   moment the mode's row is switched on, without reopening the dialog.
 
+  A row may have a **parent** row: its children render directly beneath it,
+  indented, as one group named "<parent label> settings" (the power user mode
+  row's Minimal Chrome and its preset readout). A child whose parent is not
+  among the rows shown (a search match) renders on its own.
+
   (Element add is a single always-on tap-or-drag gesture with no setting, see
   [Canvas and palette](../008-canvas/canvas-and-palette.md).) The
   **Controls** group holds `middleMousePan` (default on): holding the
