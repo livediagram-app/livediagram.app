@@ -27,10 +27,7 @@ export function useQuickStylePlacement(
   const [spot, setSpot] = useState<{ left: number; top: number } | null>(null);
 
   useLayoutEffect(() => {
-    if (!active) {
-      setSpot(null);
-      return;
-    }
+    if (!active) return;
     const panel = panelRef.current;
     const area = document.querySelector(AREA_SELECTOR);
     if (!panel || !area) return;

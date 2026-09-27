@@ -1,0 +1,65 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Quick Style Panel',
+  description:
+    'Restyle selected shapes and arrows in one click from the panel on the right edge: stroke and background colours, width, line style, text and icon alignment, and Clear styles. The next shape of the same kind remembers the style.',
+  path: '/help/canvas/quick-style-panel/',
+});
+
+<ArticleLayout
+  title="Quick Style Panel"
+  description="The most-used style choices, one click away whenever shapes or arrows are selected, and remembered for the next one you draw."
+  categoryTitle="Canvas"
+  categorySlug="canvas"
+>
+
+Select one or more shapes or arrows and a small **quick style** panel appears on the right edge of the canvas. It holds the handful of style choices people make most often, so restyling is one click rather than a trip through the right-click menu. The right-click menu is still the home of every setting; the panel only repeats the favourites.
+
+## What's in it
+
+From top to bottom:
+
+- **Stroke**: seven colours for the outline or line. The first is the theme's own default.
+- **Background**: seven colours for a shape's fill.
+- **Stroke width**: thin, medium or thick.
+- **Stroke style**: solid, dashed or dotted for shapes. For arrows it is solid, dashed or **flowing**, a dashed line that marches along its direction, so an animated connector is a single click.
+- **Text alignment**: left, centre or right.
+- **Icon alignment**, when a shape carries an icon: before, above or after its label.
+- **Clear styles**, at the bottom.
+
+A section only shows when something in the selection can use it, so an arrow on its own shows stroke, width and style, and a shape with an icon gains icon alignment.
+
+## Colours that follow the theme
+
+The seven colours come from the diagram's theme. A multi-colour theme offers its own six branch colours; any other theme offers red, orange, yellow, green, blue and violet in its own tone, so a muted theme gets muted colours. Backgrounds always keep the label readable.
+
+Switch the theme later and colours picked here move with it: a shape you made green stays green, in the new theme's green.
+
+## Styling many at once
+
+Select several shapes and arrows, even of different kinds, and a choice applies to every one that supports it. A highlighted option means every selected element shares it; when they differ, nothing is highlighted. Each choice is one undo step.
+
+## The next shape remembers
+
+When you change a shape's colours, width, style or alignment, from this panel or from the right-click menu, the next shape **of the same kind** you draw arrives the same way. Make a circle green and the next circle is green; the next square is not. Arrows remember their own style, separately from shapes.
+
+This only applies to shapes and arrows you draw yourself, from the palette, a tool or a quick-connect plus. Pasted, duplicated and templated elements keep their own looks. The memory belongs to the diagram and stays in this browser.
+
+## Clear styles
+
+**Clear styles** returns the selection to the theme's defaults and forgets the remembered style for those kinds, so the next shape is plain again. Use it when a style was meant as a one-off.
+
+<Tip>
+  Building a flowchart? Style the first decision diamond, the first step box and the first arrow the
+  way you want, then keep drawing: every new diamond, box and arrow follows on its own.
+</Tip>
+
+## Good to know
+
+- The panel is there on desktop layouts only. On a phone the long-press menu has the same options.
+- It steps aside for the [palette](/help/palette/) and other panels, and hides while a right-click menu is open.
+- Every option has a name for screen readers and a tooltip; each row is a group you move through with the arrow keys.
+
+</ArticleLayout>

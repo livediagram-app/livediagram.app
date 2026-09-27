@@ -622,6 +622,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "strokeStyle": {
         "$ref": "#/components/schemas/BorderStyle"
       },
+      "strokeSwatch": {
+        "$ref": "#/components/schemas/QuickSwatchSlot"
+      },
       "strokeWidth": {
         "type": "number"
       },
@@ -3454,6 +3457,17 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "QuickSwatchSlot": {
+    "enum": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "type": "number"
+  },
   "RatingAnim": {
     "enum": [
       "pop",
@@ -3684,6 +3698,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "fillColor": {
         "type": "string"
+      },
+      "fillSwatch": {
+        "$ref": "#/components/schemas/QuickSwatchSlot"
       },
       "fixedSize": {
         "type": "boolean"
@@ -3933,6 +3950,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "strokeStyle": {
         "$ref": "#/components/schemas/BorderStyle"
+      },
+      "strokeSwatch": {
+        "$ref": "#/components/schemas/QuickSwatchSlot"
       },
       "strokeWidth": {
         "$ref": "#/components/schemas/BorderStroke"

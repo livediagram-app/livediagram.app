@@ -37,8 +37,6 @@ export function useStyleMemory({
 }): StyleMemoryApi {
   const memoryRef = useRef<StyleMemory>({});
   const loadedFor = useRef<string | null>(null);
-  const themeRef = useRef(theme);
-  themeRef.current = theme;
   const pending = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Read synchronously on the first call for a diagram, so an element drawn in
@@ -82,12 +80,12 @@ export function useStyleMemory({
   return {
     recordEdit: (before, after) => {
       if (!ensureLoaded()) return;
-      const next = recordStyleEdit(memoryRef.current, before, after, themeRef.current);
+      const next = recordStyleEdit(memoryRef.current, before, after, theme);
       commit(next, 'recorded', Object.keys(next));
     },
     styleNewElement: <T extends Element>(el: T): T => {
       if (!ensureLoaded()) return el;
-      const dressed = applyStyleMemory(el, memoryRef.current, themeRef.current);
+      const dressed = applyStyleMemory(el, memoryRef.current, theme);
       if (dressed !== el) console.debug('[style-memory] applied', styleKindOf(el));
       return dressed;
     },
