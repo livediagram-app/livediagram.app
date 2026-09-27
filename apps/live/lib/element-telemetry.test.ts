@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Element } from '@livediagram/diagram';
+import { SHAPE_KINDS, type Element } from '@livediagram/diagram';
+import { ALL_PALETTE_TELEMETRY_TYPES } from '@livediagram/api-schema';
 
 const trackMock = vi.fn();
 vi.mock('@/lib/telemetry', () => ({
@@ -7,7 +8,8 @@ vi.mock('@/lib/telemetry', () => ({
   titleCaseType: (v: string) => (v.length === 0 ? v : v[0]!.toUpperCase() + v.slice(1)),
 }));
 
-const { elementTelemetryType, trackDuplicated } = await import('./element-telemetry');
+const { elementTelemetryType, shapeTelemetryToken, trackDuplicated } =
+  await import('./element-telemetry');
 
 const box = (over: Partial<Element> = {}) =>
   ({
@@ -97,10 +99,7 @@ describe('shapeTelemetryToken', () => {
   // Every shape kind reports a token the Palette tab ranks. A kind whose token
   // is missing from the catalogue is counted nowhere on the dashboard: that is
   // how 'Session-button' and friends read zero while being drawn every day.
-  it('maps every shape kind to a token the palette catalogue knows', async () => {
-    const { SHAPE_KINDS } = await import('@livediagram/diagram');
-    const { ALL_PALETTE_TELEMETRY_TYPES } = await import('@livediagram/api-schema');
-    const { shapeTelemetryToken } = await import('./element-telemetry');
+  it('maps every shape kind to a token the palette catalogue knows', () => {
     const known = new Set(ALL_PALETTE_TELEMETRY_TYPES);
     const unknown = [...SHAPE_KINDS].filter((k) => !known.has(shapeTelemetryToken(k)));
     expect(unknown).toEqual([]);
