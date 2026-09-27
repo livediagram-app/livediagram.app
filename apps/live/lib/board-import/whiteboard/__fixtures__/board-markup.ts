@@ -34,13 +34,13 @@ export function strokeOutline(points: Pt[], width: number): string {
       .slice(1)
       .map((p) => `L${r(p.x)},${r(p.y)}`)
       .join('') +
-    `A${r(half)},${r(half)} 0 0 1 ${r(last.x)},${r(last.y)}` +
+    `A${r(half)},${r(half)} 0 0 0 ${r(last.x)},${r(last.y)}` +
     right
       .slice(0, -1)
       .reverse()
       .map((p) => `L${r(p.x)},${r(p.y)}`)
       .join('') +
-    `A${r(half)},${r(half)} 0 0 1 ${r(first.x)},${r(first.y)}Z`
+    `A${r(half)},${r(half)} 0 0 0 ${r(first.x)},${r(first.y)}Z`
   );
 }
 
