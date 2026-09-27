@@ -34,6 +34,7 @@ shipped strings. The standalone Windows, iOS and Android apps retired on
 ## Import (PNG)
 
 - The card accepts `.png` (and `.jpg`, `.webp` for users who converted).
+- The import lands on a **whiteboard tab** ([Whiteboard](../023-whiteboard/whiteboard.md)).
 - The image becomes one `image` element at the tab's origin, sized to the
   picture's aspect ratio, through the asset stage: resized to the longest side
   of [Board import](board-import.md) (2,048 px), WebP, uploaded, or embedded in an

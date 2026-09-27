@@ -138,7 +138,7 @@ file is never the diagram's home. So Drive never becomes a tile here, the
 wizard does not change when the mirror ships, and a diagram created with
 **livediagram** is mirrored like any other. Local Browser diagrams have no
 server copy and are not mirrored. The mirror itself (connection, folder tree,
-rename, move, delete to Trash, "Open with") is specified with the mirror, not
+rename, move, delete to Trash, "Open with") is specified in [Google Drive mirror](../022-drive-mirror/drive-mirror.md), not
 here.
 
 ## Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))
