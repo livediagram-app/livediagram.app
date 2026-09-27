@@ -121,9 +121,9 @@ differ, and the second copy is stored once more.
   SHA-256 dedupe before the cap, so an image the owner already has still lands at no cost;
   images that would grow the gallery fail as `gallery-full` in turn. The server spends one
   indexed lookup and one aggregate query per refusal and never reads the body.
-- **After ** (409: the cap refused the insert, yet the gallery had room again by
+- **After `upload_conflict`** (409: the cap refused the insert, yet the gallery had room again by
   the time the server looked, because an image was deleted meanwhile) the pipeline retries that
-  image once; a second conflict leaves it a placeholder as .
+  image once; a second conflict leaves it a placeholder as `upload-failed`.
 
 ## One import session
 
