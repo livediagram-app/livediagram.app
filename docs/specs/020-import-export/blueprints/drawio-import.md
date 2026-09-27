@@ -251,11 +251,19 @@ label equal to it → that id; contains `mono`, `courier`, `consol` → `roboto-
 1. **Lane** (`buildLane(cell, rect, graph, ctx, id)`): `shape: 'lane'`, box from the cell,
    `horizontal=0` → `textAlignX 'left'`, `textAlignY 'middle'`; else `textAlignX 'center'`,
    `textAlignY 'top'`. `fillColor` → `headerFill` (per step 10.1); `swimlaneFillColor` →
-   `fillColor`, absent or `none` → `'transparent'`. `headerSize` = `startSize` (23 when absent),
-   except for a titled `horizontal=0` lane: `label-moved` += 1 and `headerSize = max(startSize,
-min(needed, room))`, `needed` = longest title line × `TITLE_CHAR_PX` (8) + `TITLE_PADDING_PX`
-   (16), `room` = the smallest `x` offset of a visible vertex child from the lane's left edge (half
-   the lane's width without one). Children convert as normal elements after the lane.
+   `fillColor`, absent or `none` → `'transparent'`. A horizontal lane: `headerSize` =
+   `startSize` (23 when absent). A `horizontal=0` lane: `laneLayout(graph, id)` gives
+   `{ growth, gutter }`; the box becomes `x - growth`, `width + growth` (right edge fixed) and
+   `headerSize = min(max(startSize, gutter), width)`; a titled one counts `lane-title-turned` += 1.
+   Children convert as normal elements after the lane, unmoved.
+   - `laneTitleWidth(title)` = longest line length × `TITLE_CHAR_PX` (9) + `TITLE_PADDING_PX` (16).
+   - `ownNeed(lane)`: `gutter` = `max(startSize, laneTitleWidth(title))` (`startSize` untitled);
+     `room` = the smallest `child.x - laneLayout(child).growth - lane.x` over visible vertex
+     children (`Infinity` without any).
+   - `laneLayout(lane)`: the stack = the parent's children that are vertical lanes within 1 px of
+     the lane's left edge and width; `gutter` = the stack's largest `ownNeed.gutter`; `growth` =
+     the largest `gutter - ownNeed.room` over the stack, at least 0; memoised per graph for every
+     member. Recursion runs bottom-up through children; a parent cycle resolves to no growth.
 2. **Entity** (`buildEntity`): a swimlane with `childLayout=stackLayout` and at least one child,
    every child a vertex whose `shapeName` is `''` with named style `text`, or `line`, and none with
    children of its own. `shape: 'entity'`, label = the swimlane's plain label, `entityFields` = the
@@ -418,6 +426,7 @@ export type ImportNoteKind =
   | 'arrowhead-approximated'
   | 'connection-loosened'
   | 'label-moved'
+  | 'lane-title-turned'
   | 'group-flattened'
   | 'hidden-skipped'
   | 'collapsed-skipped'
@@ -584,7 +593,8 @@ Refusals (the `error` string, final copy):
   - `image-unavailable`: "n image(s) link to files outside the diagram and came in as placeholders or were left out."
   - `arrowhead-approximated`: "n connection(s) use arrowheads livediagram doesn't draw; they have the nearest one."
   - `connection-loosened`: "n connection end(s) couldn't stay attached and were left where they were."
-  - `label-moved`: "n label(s) were moved: inside their shape, across a lane's title strip, or merged onto one line."
+  - `label-moved`: "n label(s) were moved inside their shape or merged onto one line."
+  - `lane-title-turned`: "n lane title(s) written upright in draw.io now read(s) across; lanes grew to the left where a title needed the room."
   - `group-flattened`: "n group(s) were dropped; their shapes kept their places."
   - `hidden-skipped`: "n hidden item(s) were left out."
   - `collapsed-skipped`: "n item(s) inside collapsed containers were left out."
@@ -634,7 +644,7 @@ Unit tests (Vitest), files beside their modules; the DOM ones carry `// @vitest-
 | Labels, plain and HTML                                          | `label.test.ts`                                                     |
 | Shape table, stencils, unmatched                                | `shapes.test.ts`                                                    |
 | Vertex properties                                               | `vertex-props.test.ts`                                              |
-| Lanes, entities, tables                                         | `containers.test.ts`                                                |
+| Lanes (vertical titles, stacks, pools), entities, tables        | `containers.test.ts`                                                |
 | Edges                                                           | `edges.test.ts`                                                     |
 | Images, groups, hidden, collapsed, truncation, report           | `convert-page.test.ts`                                              |
 | Pages to tabs, page links, refusals, size limit                 | `fixtures.test.ts` (via `importDrawio`)                             |
@@ -660,7 +670,7 @@ End to end: `e2e/drawio-import.spec.ts` on the production build (`scripts/e2e-st
 | `DRAWIO_CAPTION_LINE_PX`                            | 18                                                                                                                                                          | One `sm` caption line with leading, D20; 14 to 24               |
 | `DRAWIO_CAPTION_CHAR_PX`                            | 7                                                                                                                                                           | `sm` average glyph width, D20; 6 to 9                           |
 | `DRAWIO_CAPTION_PADDING_PX`                         | 16                                                                                                                                                          | The icon caption area's inner padding, both sides, D20; 8 to 24 |
-| `TITLE_CHAR_PX`, `TITLE_PADDING_PX` (containers.ts) | 8, 16                                                                                                                                                       | A lane title reading across, D20; 7 to 10, 8 to 24              |
+| `TITLE_CHAR_PX`, `TITLE_PADDING_PX` (containers.ts) | 9, 16                                                                                                                                                       | A lane title reading across, D20; 7 to 10, 8 to 24              |
 | `INK_ON_LIGHT`, `INK_ON_DARK` (vertex-props.ts)     | `#1e293b`, `#ffffff`                                                                                                                                        | The editor's light-paper text ink and dark-paper text, D28      |
 | `WHITE` (convert-page.ts)                           | `#fff`, `#ffffff`, `#ffffffff`                                                                                                                              | draw.io's default page                                          |
 | `DRAWIO_LABEL_CENTRE_EPSILON`                       | 0.05                                                                                                                                                        | D21; 0 to 0.2                                                   |

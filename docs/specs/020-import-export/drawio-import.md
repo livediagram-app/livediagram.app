@@ -191,9 +191,16 @@ When the cell has no label, the box is labelled with the stencil's readable name
   cell per cell, the row heights and the first row's column widths carried over, and each cell's fill,
   text colour, bold / italic / underline and alignment. A table's own label (the title draw.io draws in
   its `startSize` strip) comes in as a `text` element above the grid, counted (`shape-approximated`).
-- **Vertical lane titles.** draw.io writes a `horizontal=0` lane's title up its strip; a livediagram
-  lane title reads across. The title strip widens to hold the title, but only into the free space
-  before the lane's first shape (never over the content), and the change is counted (`label-moved`).
+- **Vertical lane titles.** draw.io writes a `horizontal=0` lane's title upright in a thin strip
+  (`startSize`, usually 20 px). A livediagram lane title cannot be turned: it reads across. So the
+  title strip widens to hold the whole title on one line, and the lane grows **to the left** by
+  whatever the gap before its first shape cannot give. The lane's content, its right edge and every
+  connection stay exactly where draw.io put them; nothing sits over a title. Lanes stacked in a pool
+  (siblings sharing a left edge and width) share one strip width and grow together, so the stack
+  stays aligned. A pool of lanes resolves from the inside out: it grows to make room for its lanes'
+  widened strips and then for its own title. Growing left can overlap something drawn close to the
+  lane's left side; that is accepted. Every titled vertical lane is counted
+  (`lane-title-turned`).
 - **Frames** (`umlFrame`, AWS and GCP groups) keep their title in the top-left corner, as a
   livediagram frame does.
 
@@ -311,7 +318,8 @@ that occurred, with its count. The kinds are a closed set shared by every import
 | `image-unavailable`      | an image the importer cannot bring (a web or library URL, a page background, an image on a non-image shape) |
 | `arrowhead-approximated` | an arrowhead livediagram does not draw, imported as the nearest one                                         |
 | `connection-loosened`    | a connection whose end could not stay attached                                                              |
-| `label-moved`            | a label moved inside its shape, a vertical lane title set across, or several edge labels merged             |
+| `label-moved`            | a label moved inside its shape, or several edge labels merged                                               |
+| `lane-title-turned`      | a vertical lane title that now reads across, its lane grown left where the title needed room                |
 | `group-flattened`        | a group dropped, its members kept in place                                                                  |
 | `hidden-skipped`         | a hidden shape or connection not imported                                                                   |
 | `collapsed-skipped`      | a shape inside a collapsed container not imported                                                           |

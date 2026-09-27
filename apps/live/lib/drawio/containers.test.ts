@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { ENTITY_MAX_FIELDS } from '@livediagram/diagram';
 import { ReportTally } from '@/lib/import-report';
 import { readGraph } from './cells';
+import { laneTitleWidth } from './containers';
 import { convertPage } from './convert-page';
 import { model, vertex } from './test-support';
 
@@ -111,5 +112,97 @@ describe('tables', () => {
         ],
       }),
     ]);
+  });
+});
+
+describe('vertical lane titles', () => {
+  // A pool of two vertical-title lanes, as draw.io's library draws them: the
+  // pool's strip is 20 wide, each lane's strip 20 wide, the first step 40 in.
+  const pool =
+    vertex(
+      'pool',
+      'swimlane;horizontal=0;startSize=20;childLayout=stackLayout;',
+      'x="100" y="0" width="500" height="200"',
+      'parent="1" value="Hiring"',
+    ) +
+    vertex(
+      'l1',
+      'swimlane;horizontal=0;startSize=20;',
+      'x="20" width="480" height="100"',
+      'parent="pool" value="Candidate"',
+    ) +
+    vertex('a', '', 'x="40" y="20" width="100" height="60"', 'parent="l1" value="Apply"') +
+    vertex(
+      'l2',
+      'swimlane;horizontal=0;startSize=20;',
+      'x="20" y="100" width="480" height="100"',
+      'parent="pool" value="Recruiter team lead"',
+    ) +
+    vertex('b', '', 'x="200" y="20" width="100" height="60"', 'parent="l2" value="Screen"');
+
+  it('widens every title strip to hold its title on one line, growing lanes left of their content', () => {
+    const { elements, notes } = convert(pool);
+    const by = (label: string) =>
+      elements.find((e) => 'label' in e && e.label === label) as {
+        x: number;
+        width: number;
+        headerSize: number;
+      };
+    // Content never moves.
+    expect(by('Apply')).toMatchObject({ x: 160 });
+    expect(by('Screen')).toMatchObject({ x: 320 });
+    for (const title of ['Hiring', 'Candidate', 'Recruiter team lead']) {
+      const lane = by(title);
+      expect(lane.headerSize).toBeGreaterThanOrEqual(laneTitleWidth(title));
+    }
+    // A lane's strip ends before its first shape: no content sits over a title.
+    expect(by('Candidate').x + by('Candidate').headerSize).toBeLessThanOrEqual(160);
+    expect(by('Recruiter team lead').x + by('Recruiter team lead').headerSize).toBeLessThanOrEqual(
+      320,
+    );
+    // The pool's strip ends before its (grown) lanes begin.
+    const lanes = Math.min(by('Candidate').x, by('Recruiter team lead').x);
+    expect(by('Hiring').x + by('Hiring').headerSize).toBeLessThanOrEqual(lanes);
+    // Lanes stacked in the pool keep one left edge and one strip width.
+    expect(by('Candidate').x).toBe(by('Recruiter team lead').x);
+    expect(by('Candidate').headerSize).toBe(by('Recruiter team lead').headerSize);
+    // Right edges stay where draw.io put them.
+    expect(by('Hiring').x + by('Hiring').width).toBe(600);
+    expect(by('Candidate').x + by('Candidate').width).toBe(600);
+    expect(notes).toEqual([{ kind: 'lane-title-turned', count: 3 }]);
+  });
+
+  it('does not grow a lane whose content leaves room for its title', () => {
+    const { elements } = convert(
+      vertex(
+        'l',
+        'swimlane;horizontal=0;startSize=20;',
+        'x="0" width="600" height="100"',
+        'parent="1" value="Ops"',
+      ) + vertex('c', '', 'x="200" y="20" width="100" height="60"', 'parent="l"'),
+    );
+    expect(elements[0]).toMatchObject({ x: 0, width: 600, headerSize: laneTitleWidth('Ops') });
+  });
+
+  it('leaves horizontal lanes and untitled vertical lanes as draw.io drew them', () => {
+    const { elements, notes } = convert(
+      vertex(
+        'h',
+        'swimlane;startSize=30;',
+        'x="0" width="300" height="100"',
+        'parent="1" value="Column"',
+      ) +
+        vertex(
+          'u',
+          'swimlane;horizontal=0;startSize=20;',
+          'x="400" width="300" height="100"',
+          'parent="1"',
+        ),
+    );
+    expect(elements).toEqual([
+      expect.objectContaining({ x: 0, headerSize: 30 }),
+      expect.objectContaining({ x: 400, headerSize: 20 }),
+    ]);
+    expect(notes).toEqual([]);
   });
 });

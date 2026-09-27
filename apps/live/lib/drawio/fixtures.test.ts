@@ -127,8 +127,16 @@ describe('swimlanes.drawio', () => {
       // Vertical titles read across: the pool and its three lanes.
       expect(report).toMatchObject({
         elements: 17,
-        notes: [{ kind: 'label-moved', count: 4 }],
+        notes: [{ kind: 'lane-title-turned', count: 4 }],
       });
+      // Titles read in full: the three stacked lanes share a strip wide enough
+      // for the longest title and grow left of their content to hold it; the
+      // pool grows left of its lanes to hold its own.
+      for (const title of ['Candidate', 'Recruiter', 'Team']) {
+        expect(byLabel(page, title)).toMatchObject({ x: 23, width: 777, headerSize: 97 });
+      }
+      expect(byLabel(page, 'Hiring')).toMatchObject({ x: -47, width: 847, headerSize: 70 });
+      expect(byLabel(page, 'Apply')).toMatchObject({ x: 120 });
       const lanes = shapes(page).filter((s) => s.shape === 'lane');
       expect(lanes.map((l) => l.label)).toEqual([
         'Hiring',
@@ -138,10 +146,7 @@ describe('swimlanes.drawio', () => {
         'Sprint board',
       ]);
       expect(byLabel(page, 'Candidate')).toMatchObject({
-        x: 60,
         y: 40,
-        // The gutter widens into the room before the first step (60 px).
-        headerSize: 60,
         headerFill: '#dae8fc',
         textColor: '#1e293b',
         fillColor: '#f5f9ff',

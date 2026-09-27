@@ -14,6 +14,7 @@ export type ImportNoteKind =
   | 'arrowhead-approximated'
   | 'connection-loosened'
   | 'label-moved'
+  | 'lane-title-turned'
   | 'group-flattened'
   | 'hidden-skipped'
   | 'collapsed-skipped'
@@ -31,6 +32,7 @@ export const IMPORT_NOTE_ORDER: readonly ImportNoteKind[] = [
   'arrowhead-approximated',
   'connection-loosened',
   'label-moved',
+  'lane-title-turned',
   'group-flattened',
   'hidden-skipped',
   'collapsed-skipped',
@@ -131,7 +133,9 @@ export function describeImportNote({ kind, count: n }: ImportNote): string {
     case 'connection-loosened':
       return `${s('connection end', 'connection ends')} couldn't stay attached and ${plural(n, 'was', 'were')} left where ${plural(n, 'it was', 'they were')}.`;
     case 'label-moved':
-      return `${s('label was', 'labels were')} moved: inside ${plural(n, 'its shape', 'their shapes')}, across a lane's title strip, or merged onto one line.`;
+      return `${s('label was', 'labels were')} moved inside ${plural(n, 'its shape', 'their shapes')} or merged onto one line.`;
+    case 'lane-title-turned':
+      return `${s('lane title', 'lane titles')} written upright in draw.io now ${plural(n, 'reads', 'read')} across; lanes grew to the left where a title needed the room.`;
     case 'group-flattened':
       return `${s('group was', 'groups were')} dropped; ${plural(n, 'its', 'their')} shapes kept their places.`;
     case 'hidden-skipped':
