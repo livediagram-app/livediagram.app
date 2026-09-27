@@ -47,6 +47,27 @@ Derived from [Optical alignment](../optical-alignment.md). Icon drawings and the
     transform: translateY(0.1em);
   }
 }
+/* A control's label: trimmed like text-optical-centre, but given back half the line's leftover height above
+ * and below, so the box stays one line tall and the control keeps its height. */
+@utility text-optical-line {
+  display: inline-block;
+  text-box: trim-both cap alphabetic;
+  margin-block: calc((1lh - 1cap) / 2);
+  @supports not (text-box: trim-both cap alphabetic) {
+    margin-block: 0;
+  }
+}
+/* An icon at a control's edge pulls in by its own blank margin, read from the catalogue (Glyph). */
+@utility optical-edges {
+  & > svg:first-child,
+  & > [data-optical='slot']:first-child > svg {
+    margin-inline-start: calc(-1 * var(--glyph-ink-l, 0px));
+  }
+  & > svg:last-child,
+  & > [data-optical='slot']:last-child > svg {
+    margin-inline-end: calc(-1 * var(--glyph-ink-r, 0px));
+  }
+}
 /* A tracked caps label gives back the trailing letter-space after its last letter (D42). */
 @utility text-optical-caps {
   text-transform: uppercase;
@@ -90,6 +111,21 @@ select-none [&>svg]:block`, `style={{ width: size, height: size, ...style }}`. A
   or `Chip` is always inside `.text-optical-centre`; `IconSlot` never has a computed box other than
   `size × size`.
 
+## Button labels and icon edges
+
+- `Button` renders its children through `ButtonContent`: each string or number child becomes
+  `<span class="text-optical-line">`; elements pass through. Anchors styled with `buttonClassName` wrap
+  their children in `ButtonContent` too.
+- `buttonClassName`'s base and `Chip`'s root carry `optical-edges`.
+- Invariant: a host with `optical-edges` holds its text in elements, never bare text nodes; CSS
+  `:first-child` ignores text, so `Next<svg/>` would make the arrow both first and last child.
+  `ButtonContent` and `Chip` guarantee it.
+- Contract with the icon catalogue (owned by [Iconography](../iconography.md)): `Glyph` computes the union
+  bbox of its drawn children from their geometry, stroke included, at the rendered size, and sets
+  `--glyph-ink-l`, `--glyph-ink-r`, `--glyph-ink-t`, `--glyph-ink-b` (px, two decimals, at least 0) on its
+  `<svg>`'s style. Pure and synchronous, so static exports carry the values and nothing shifts after
+  paint. An svg without the variables compensates by 0.
+
 ## Header stack row
 
 - `HEADER_ACTION_BTN` keeps its column layout. Every header action renders its glyph as
@@ -124,7 +160,8 @@ export const capBandBaselineY = (centreY: number, fontPx: number) =>
 2. **Text, vertical.** For each non-blank text node: `ctx.font` from its computed style;
    `baseline = firstClientRect.top + measureText('H').fontBoundingBoxAscent`;
    `capMid = baseline - measureText('H').actualBoundingBoxAscent / 2`; offset `capMid - boxMidY`.
-3. **Ink, both axes.** Screenshot the candidate; inject
+3. **Ink, both axes.** (Numerals only, such as `7` or `12`, are judged horizontally by their advance, not
+   their ink.) Screenshot the candidate; inject
    `[probe] * { visibility: hidden } [probe] { -webkit-text-fill-color: transparent }`; screenshot
    again; the ink box is every pixel whose summed RGB difference exceeds 96. Horizontal offset:
    ink centre minus box centre. Vertical offset from ink applies to candidates holding only icons.

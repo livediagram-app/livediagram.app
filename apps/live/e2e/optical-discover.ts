@@ -194,7 +194,9 @@ export function discover(args: { attr: string; shape: typeof SHAPE; tol: number 
           ? `shrink-wrapped (${(occupied + gap * (items - 1)).toFixed(1)} of ${(inner.right - inner.left).toFixed(1)}px)`
           : null;
     const centredIntent = intent !== null;
-    const shortGlyph = !text || /^\S{1,3}$/.test(text);
+    // Initials and symbols are judged by ink; numerals by their advance, which the typeface
+    // designs a leaning "1" or "7" into (optical-alignment.md).
+    const shortGlyph = !text || (/^\S{1,3}$/.test(text) && !/^\d+$/.test(text));
     // A shape holding two or more controls (a segmented switch) centres its controls' boxes; a
     // segment's fill is part of the control, not ink to balance against the other side's text.
     const controls = [...el.children].filter((c) =>

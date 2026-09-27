@@ -81,6 +81,20 @@
   }
 }
 
+/* An icon at a control's first or last edge is drawn inside its box with blank space around it, so
+ * padding measured to the box reads lopsided. Pull the icon in by its own blank margin, which its Glyph
+ * reports from its geometry (optical-alignment.md); an svg without the variables moves by nothing. */
+@utility optical-edges {
+  & > svg:first-child,
+  & > [data-optical='slot']:first-child > svg {
+    margin-inline-start: calc(-1 * var(--glyph-ink-l, 0px));
+  }
+  & > svg:last-child,
+  & > [data-optical='slot']:last-child > svg {
+    margin-inline-end: calc(-1 * var(--glyph-ink-r, 0px));
+  }
+}
+
 /* Tracked capitals carry a letter-space after their last letter, which pushes the run off-centre in
  * its chip; give it back so the box ends where the ink does (optical-alignment.md; D42). */
 @utility text-optical-caps {

@@ -42,9 +42,17 @@ opposite of what a diagramming tool has to look like.
   centring lands on the letters. This covers initials, step numbers, counts, poll letters and
   all-caps chips. Mixed-case text is centred the same way: descenders hang below the band, as in
   type.
-- **Horizontal centring is by ink.** Tracked (letter-spaced) text carries a trailing space after its
-  last letter, so a tracked label gives it back: the run's trailing edge is pulled in by one
-  tracking step.
+- **Horizontal centring is by ink, except where the typeface decides.** Each edge of the content is
+  judged by what sits at it: an icon, a dot or a disc by its ink; a word by its advance, whose side
+  bearings are the typeface's spacing. Initials and symbols are judged by ink. **Numerals are
+  advance-centred**: a "1" or a "7" leans inside its advance by design, and is left as the typeface
+  draws it.
+- **Tracked text gives back its trailing space.** Tracked (letter-spaced) text carries a space after
+  its last letter, so a tracked label pulls its trailing edge in by one tracking step.
+- **An icon at an edge is compensated by its own margin.** An icon drawn inside its box leaves blank
+  space at the box's edges. When the icon is the first or last thing in a button or chip, that side's
+  padding is reduced by the icon's blank margin, so the padding is measured to the ink. Each icon's
+  margins come from the icon catalogue, computed from its drawing, never measured in the browser.
 - **Icons are drawn centred.** An icon's geometry, stroke included, is centred in its viewBox at its
   rendered size. An icon that is asymmetric on purpose, such as a play triangle, is a named, logged
   exception. The rule is enforced in the icon catalogue ([Iconography](iconography.md)); this spec

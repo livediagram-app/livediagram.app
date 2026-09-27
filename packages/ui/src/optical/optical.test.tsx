@@ -132,6 +132,11 @@ describe('Chip', () => {
     expect(chip.className).not.toContain('rounded-full');
   });
 
+  it("measures its padding to an edge icon's ink", () => {
+    const { container } = render(<Chip height={18}>Private</Chip>);
+    expect((container.firstElementChild as HTMLElement).className).toContain('optical-edges');
+  });
+
   it('gives a caps label back its trailing letter-space', () => {
     const { container } = render(
       <Chip height={18} caps>

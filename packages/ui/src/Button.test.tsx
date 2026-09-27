@@ -28,6 +28,11 @@ describe('Button label', () => {
     ]);
   });
 
+  it("measures its padding to an edge icon's ink", () => {
+    const { container } = render(<Button>Save</Button>);
+    expect(container.querySelector('button')!.className).toContain('optical-edges');
+  });
+
   it('is available to links styled as buttons', () => {
     const { container } = render(
       <a href="/new">

@@ -28,7 +28,7 @@ export function Chip({
   return (
     <span
       data-optical="chip"
-      className={`inline-flex shrink-0 items-center gap-1 leading-none ${radius === 'full' ? 'rounded-full' : 'rounded'} ${className}`}
+      className={`optical-edges inline-flex shrink-0 items-center gap-1 leading-none ${radius === 'full' ? 'rounded-full' : 'rounded'} ${className}`}
       style={{ height, ...style }}
       {...rest}
     >
