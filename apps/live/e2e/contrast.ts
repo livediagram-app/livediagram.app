@@ -31,10 +31,12 @@ function auditInPage(): ContrastReport {
   const cache = new Map<string, RGBA | null>();
   const parse = (value: string): RGBA | null => {
     if (!value || value === 'none' || value === 'transparent') return null;
+    // A canvas silently ignores a colour it cannot parse and keeps its previous fillStyle, which
+    // would report the last colour instead; reject what is not a colour up front.
+    if (!CSS.supports('color', value)) return null;
     const hit = cache.get(value);
     if (hit !== undefined) return hit;
     probe.clearRect(0, 0, 1, 1);
-    probe.fillStyle = 'rgba(0, 0, 0, 0)';
     probe.fillStyle = value;
     probe.fillRect(0, 0, 1, 1);
     const [r, g, b, a] = probe.getImageData(0, 0, 1, 1).data;
