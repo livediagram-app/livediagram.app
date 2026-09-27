@@ -197,7 +197,7 @@ export const categories: Category[] = [
     title: 'Canvas',
     description:
       'Master the infinite canvas where diagrams come together: placing, selecting, linking, annotating, noting, layering, rotating, animating, shadowing, locking, theming, and templating.',
-    articleCount: 20,
+    articleCount: 21,
     kind: 'feature',
   },
   {
@@ -1605,6 +1605,15 @@ export const articles: Article[] = [
     title: 'Element Shadows',
     description: 'Lift an element with a drop shadow: five presets plus offset/blur sliders.',
     keywords: 'shadow drop depth elevation blur offset lift float soft hard card 3d shade',
+    category: 'Canvas',
+    categorySlug: 'canvas',
+  },
+  {
+    slug: 'quick-style-panel',
+    title: 'Quick Style Panel',
+    description: 'Restyle a selection in one click; the next shape of that kind remembers it.',
+    keywords:
+      'quick style panel colour color stroke background fill width thickness dashed dotted flowing animated arrow align alignment icon remember memory next shape clear styles reset format custom swatch override picker hex brand',
     category: 'Canvas',
     categorySlug: 'canvas',
   },

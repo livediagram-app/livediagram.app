@@ -1378,6 +1378,17 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <rect x="4" y="4" width="12" height="12" rx="2" {...s} />
     </Glyph>
   ),
+  // A selected box with a slim panel of swatches beside it: the panel is what
+  // the article is about, so it carries the dots and the selection stays plain.
+  'quick-style-panel': (
+    <Glyph>
+      <rect x="2.5" y="8" width="9" height="8" rx="1.5" strokeDasharray="2 1.5" {...s} />
+      <rect x="14.5" y="3.5" width="7" height="17" rx="1.5" {...s} />
+      <circle cx="18" cy="7.5" r="1.2" fill="currentColor" stroke="none" />
+      <circle cx="18" cy="11.5" r="1.2" fill="currentColor" stroke="none" />
+      <path d="M16.5 15.5h3M16.5 17.5h3" {...s} />
+    </Glyph>
+  ),
   locking: (
     <Glyph>
       <rect x="4.5" y="10.5" width="15" height="10" rx="2" {...s} />

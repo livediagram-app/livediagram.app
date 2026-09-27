@@ -60,6 +60,9 @@ type ShapeDrawingDeps = {
   openImagePickerFor?: (elementId: string) => void;
   // Live viewport zoom — scales the freehand simplification tolerance.
   zoomRef: React.RefObject<number>;
+  // Style memory (docs/specs/008-canvas/quick-style-panel.md): dresses every user-drawn shape and arrow in
+  // the remembered style of its kind. Identity for anything memory does not know.
+  styleNewElement: <T extends Element>(el: T) => T;
 };
 
 export function useShapeDrawing(deps: ShapeDrawingDeps) {
@@ -75,6 +78,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     setEditingId,
     openImagePickerFor,
     zoomRef,
+    styleNewElement,
   } = deps;
 
   // Pending draw-to-size intent. Picking a palette element stashes it here;
@@ -139,13 +143,8 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     // wholesale would revert anything that landed mid-drag. New
     // elements default to the FRONT of z-order (see addBoxed).
     if (intent.type === 'arrow') {
-      const arrow = buildDrawnArrow(
-        startX,
-        startY,
-        endX,
-        endY,
-        activeTab.elements,
-        getTheme(activeTab.theme),
+      const arrow = styleNewElement(
+        buildDrawnArrow(startX, startY, endX, endY, activeTab.elements, getTheme(activeTab.theme)),
       );
       commit((els) => [...els, arrow]);
       setSelectedId(arrow.id);
@@ -164,13 +163,8 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
       return;
     }
     if (intent.type === 'component') {
-      const placed = buildDrawnComponent(
-        intent.kind,
-        startX,
-        startY,
-        endX,
-        endY,
-        getTheme(activeTab.theme),
+      const placed = styleNewElement(
+        buildDrawnComponent(intent.kind, startX, startY, endX, endY, getTheme(activeTab.theme)),
       );
       commit((els) => [...els, placed]);
       setSelectedId(placed.id);
@@ -178,14 +172,8 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
       track('Element', 'Added', componentTelemetryType(intent.kind));
       return;
     }
-    const sized = buildDrawnBoxed(
-      intent,
-      startX,
-      startY,
-      endX,
-      endY,
-      inheritSizeRef.current,
-      activeTab,
+    const sized = styleNewElement(
+      buildDrawnBoxed(intent, startX, startY, endX, endY, inheritSizeRef.current, activeTab),
     );
     // Frames don't need special-casing here: the canvas + exporters
     // route through `framesFirst`, which keeps every frame painted
@@ -313,6 +301,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     highlighterColor,
     highlighterWidth,
     zoomRef,
+    styleNewElement,
   });
 
   // Canvas-driven commit for the polygon tool (docs/specs/008-canvas/polygon-tool.md). Receives the

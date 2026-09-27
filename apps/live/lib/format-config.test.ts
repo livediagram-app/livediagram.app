@@ -132,6 +132,7 @@ describe('filterPaintedFields', () => {
       'routeBehind',
       'strokeColor',
       'strokeStyle',
+      'strokeSwatch',
       'strokeWidth',
     ]);
   });

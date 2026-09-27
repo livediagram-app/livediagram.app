@@ -202,6 +202,18 @@ type UserPreferences = {
   // like every other preference so a palette you have built follows you
   // between devices.
   customSwatches?: string[];
+  // The quick style panel's custom swatches (../008-canvas/quick-style-panel.md
+  // "Custom swatches"): per theme, newest-edited first, which of a row's six
+  // slots you replaced with your own colour. `t` is the theme id, `s` the
+  // Stroke row and `f` the Background row, slot (1-6) to lower-case #rrggbb.
+  // Short keys because the blob shares the 4 KB cap; at most 8 themes and
+  // 800 bytes, oldest-edited dropped first. Validated on read in the client
+  // (lib/swatch-overrides), like every field here.
+  quickSwatchOverrides?: {
+    t: string;
+    s?: Record<1 | 2 | 3 | 4 | 5 | 6, string>;
+    f?: Record<1 | 2 | 3 | 4 | 5 | 6, string>;
+  }[];
 
   // Power user mode (docs/specs/007-editor/power-user-mode.md). True while the mode is on.
   // Switching it on applies the preset once; see powerUserBaseline.

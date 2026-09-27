@@ -10,6 +10,7 @@ import type { ElementAction } from './element-action';
 import type { BorderStroke, BorderStyle, BorderRadius } from './border-style';
 import type { ElementShadow } from './shadow';
 import type { ShapeMarker } from './shape-marker';
+import type { QuickSwatchSlot } from './quick-swatches';
 import type { CodeThemeId } from './code-themes';
 import type { MindFlow } from './mind-flow';
 import type { ChartPaletteId } from './chart-palettes';
@@ -195,6 +196,12 @@ export type ShapeElement = {
   // moment the user hand-edits a colour or resets to theme, since the binding
   // no longer holds. Only meaningful on shapes.
   colorPreset?: string;
+  // Quick-swatch bindings (docs/specs/008-canvas/quick-style-panel.md): the slot (1-6) a stroke or
+  // background colour was picked from in the quick style panel, stored beside
+  // the concrete colour so a theme change re-derives it from the new theme's
+  // same slot. Cleared the moment that colour is set any other way.
+  strokeSwatch?: QuickSwatchSlot;
+  fillSwatch?: QuickSwatchSlot;
   // Mode Button (docs/specs/009-elements/mode-button.md): which selection mode pressing this element hands
   // whoever clicked it. Only meaningful on the 'mode-button' kind, and absent
   // means DEFAULT_BUTTON_MODE ('avatar') — so a button authored without one

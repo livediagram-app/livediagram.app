@@ -48,11 +48,13 @@ const FIELD_GROUP: Record<string, FormatGroup> = {
   // Fill.
   fillColor: 'fill',
   colorPreset: 'fill',
+  fillSwatch: 'fill',
   themeLockFill: 'fill',
   headerFill: 'fill',
   // Border — and, for an arrow, the whole line look: an arrowhead is to a
   // connector what a corner radius is to a box.
   strokeColor: 'border',
+  strokeSwatch: 'border',
   strokeWidth: 'border',
   strokeStyle: 'border',
   borderRadius: 'border',

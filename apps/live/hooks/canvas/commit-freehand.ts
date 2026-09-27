@@ -44,6 +44,7 @@ export function makeCommitFreehand({
   highlighterColor,
   highlighterWidth,
   zoomRef,
+  styleNewElement = (el) => el,
 }: {
   editsBlocked: boolean;
   activeTab: Tab;
@@ -58,6 +59,10 @@ export function makeCommitFreehand({
   highlighterColor: string;
   highlighterWidth: number;
   zoomRef: MutableRefObject<number> | { current: number };
+  // Style memory (docs/specs/008-canvas/quick-style-panel.md): a recognised shape or line is user-drawn, so
+  // it takes the remembered style of its kind. A plain sketch is not a kind
+  // the memory knows.
+  styleNewElement?: <T extends Element>(el: T) => T;
 }) {
   // Canvas-driven commit for the pen gesture. Receives the raw
   // pointer-sample polyline in canvas coords and applies:
@@ -156,7 +161,7 @@ export function makeCommitFreehand({
           };
           // Functional commit for the same mid-gesture-staleness reason
           // as the arrow branch above.
-          commit((els) => [...els, arrow]);
+          commit((els) => [...els, styleNewElement(arrow)]);
           setSelectedId(arrow.id);
           setPendingDraw(null);
           track('Element', 'Added', 'Arrow');
@@ -180,7 +185,7 @@ export function makeCommitFreehand({
           width: Math.max(16, detected.bbox.width),
           height: Math.max(16, detected.bbox.height),
         };
-        commit((els) => [...els, sized]);
+        commit((els) => [...els, styleNewElement(sized)]);
         setSelectedId(sized.id);
         setPendingDraw(null);
         track('Element', 'Added', titleCaseType(detected.kind));

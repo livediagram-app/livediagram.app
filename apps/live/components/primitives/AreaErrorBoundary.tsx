@@ -30,6 +30,7 @@ export type ErrorArea =
   | 'Collaborators'
   | 'Presentation'
   | 'Search'
+  | 'QuickStyle'
   | 'Modals'
   | 'Popovers'
   | 'ContextMenu'
@@ -48,6 +49,7 @@ const AREA_LABEL: Record<ErrorArea, string> = {
   Collaborators: 'the collaborators panel',
   Presentation: 'the presentation',
   Search: 'search',
+  QuickStyle: 'the quick style panel',
   Modals: 'a dialog',
   Popovers: 'a popover',
   ContextMenu: 'the menu',

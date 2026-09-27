@@ -53,6 +53,7 @@ import { NAV_LINKS_MAX, PROCESS_MAX_STEPS, STATS_MAX, WEB_TEXT_MAX } from './web
 import { isCodeThemeId } from './code-themes';
 import { isChartPaletteId } from './chart-palettes';
 import { isMindFlow } from './mind-flow';
+import { isQuickSwatchSlot } from './quick-swatches';
 
 // Bounds. Generous vs any real diagram, tight vs an abuse payload.
 export const MAX_ELEMENTS_PER_TAB = 10_000;
@@ -222,6 +223,12 @@ export function isValidElement(el: unknown): el is Element {
   if (!isObj(el) || !isNonEmptyStr(el.id)) return false;
   const t = el.type;
   if (typeof t !== 'string' || !ELEMENT_TYPES.has(t)) return false;
+
+  // Quick-swatch bindings (docs/specs/008-canvas/quick-style-panel.md): a slot 1-6 or absent. A junk slot is
+  // rejected like any other closed-set field; the re-derive would ignore it,
+  // but it has no business being written into a diagram.
+  if (el.strokeSwatch !== undefined && !isQuickSwatchSlot(el.strokeSwatch)) return false;
+  if (el.fillSwatch !== undefined && !isQuickSwatchSlot(el.fillSwatch)) return false;
 
   if (t === 'arrow') {
     return isValidEndpoint(el.from) && isValidEndpoint(el.to);

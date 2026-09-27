@@ -60,6 +60,10 @@ export function applyColorPresetToEl(el: Element, p: ShapeColorPreset): Element 
     strokeWidth: p.borderStroke,
     strokeStyle: p.borderStyle,
     colorPreset: p.id,
+    // A preset is a whole look: it replaces any quick-swatch binding
+    // (docs/specs/008-canvas/quick-style-panel.md) along with the colours it bound.
+    strokeSwatch: undefined,
+    fillSwatch: undefined,
   };
 }
 
@@ -114,17 +118,21 @@ export function applyCodeThemeToEl(el: Element, id: CodeThemeId): Element {
 // theme change must preserve them rather than re-deriving a look they have
 // already edited away from. Fill applies to shapes + sticky / freehand / table.
 export function applyFillColorToEl(el: Element, color: string): Element {
-  if (el.type === 'shape') return { ...el, fillColor: color, colorPreset: undefined };
+  // Also drops the quick-swatch binding (docs/specs/008-canvas/quick-style-panel.md): the slot no longer
+  // describes the colour.
+  if (el.type === 'shape')
+    return { ...el, fillColor: color, colorPreset: undefined, fillSwatch: undefined };
   if (el.type === 'table') return { ...el, fillColor: color, tablePreset: undefined };
   if (el.type === 'sticky' || el.type === 'freehand') return { ...el, fillColor: color };
   return el;
 }
 
 export function applyStrokeColorToEl(el: Element, color: string): Element {
-  if (el.type === 'shape') return { ...el, strokeColor: color, colorPreset: undefined };
+  if (el.type === 'shape')
+    return { ...el, strokeColor: color, colorPreset: undefined, strokeSwatch: undefined };
   if (el.type === 'table') return { ...el, strokeColor: color, tablePreset: undefined };
-  if (el.type === 'sticky' || el.type === 'arrow' || el.type === 'freehand')
-    return { ...el, strokeColor: color };
+  if (el.type === 'arrow') return { ...el, strokeColor: color, strokeSwatch: undefined };
+  if (el.type === 'sticky' || el.type === 'freehand') return { ...el, strokeColor: color };
   return el;
 }
 

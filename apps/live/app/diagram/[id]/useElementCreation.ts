@@ -62,9 +62,16 @@ export function useElementCreation(opts: {
     canvasX: number,
     canvasY: number,
     make: (x: number, y: number) => T,
-    opts?: { edit?: boolean; insertion?: InsertionSlot | null },
+    opts?: {
+      edit?: boolean;
+      insertion?: InsertionSlot | null;
+      style?: <E extends BoxedElement>(el: E) => E;
+    },
   ) => void;
   beginDraw: (intent: PendingDraw) => void;
+  // Style memory (docs/specs/008-canvas/quick-style-panel.md) for the user-drawn adds made here: a palette
+  // drop and a click-to-connect arrow.
+  styleNewElement: <T extends Element>(el: T) => T;
 }) {
   const {
     editsBlocked,
@@ -79,6 +86,7 @@ export function useElementCreation(opts: {
     placePrebuilt,
     addBoxedAt,
     beginDraw,
+    styleNewElement,
   } = opts;
 
   // Telemetry for these arming handlers fires on commit (see
@@ -279,6 +287,7 @@ export function useElementCreation(opts: {
     setSelectedId,
     beginDraw,
     commitTabs,
+    styleNewElement,
   });
 
   // Drag-from-palette drop (docs/specs/008-canvas/canvas-and-palette.md): place the dragged kind centred on the
@@ -338,7 +347,7 @@ export function useElementCreation(opts: {
           const size = stickerDropSize(getSticker(stickerId), el);
           return { ...el, ...size, stickerId };
         },
-        { insertion },
+        { insertion, style: styleNewElement },
       );
       track('Element', 'Added', 'Sticker');
       return;
@@ -393,7 +402,7 @@ export function useElementCreation(opts: {
             },
       // Shapes and icons open for typing too; takesTypedLabel filters out the
       // kinds whose face isn't text (stickers, session buttons, ...).
-      { edit: true, insertion },
+      { edit: true, insertion, style: styleNewElement },
     );
     // A tech-icon id maps to its own telemetry type (see addTechIcon);
     // line-art icons + shapes use the kind.

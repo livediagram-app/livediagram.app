@@ -710,6 +710,16 @@ export const CUSTOM_THEMES = chart(
   { actionIn: ['Changed', 'Deleted'], typeIn: (t) => CUSTOM_THEME_TYPES.has(t ?? '') },
 );
 
+// The quick style panel's own palette (docs/specs/008-canvas/quick-style-panel.md): a swatch replaced with
+// a colour of your own, or put back to the theme's.
+export const CUSTOM_SWATCHES = chart(
+  'UI',
+  'Changed',
+  'Custom Swatches',
+  'A quick style panel swatch replaced with a colour of your own, or put back to the theme colour.',
+  { types: ['QuickSwatchCustom', 'QuickSwatchReset'], rising: 'neutral' },
+);
+
 export const LOOK_AND_FEEL: MetricStack = {
   stack: true,
   title: 'Look & Feel',
@@ -721,6 +731,7 @@ export const LOOK_AND_FEEL: MetricStack = {
     CANVAS_STYLES_PICKED,
     CANVAS_CONTROLS_TWEAKED,
     CUSTOM_THEMES,
+    CUSTOM_SWATCHES,
   ],
   headline: [THEMES_CHOSEN, CANVAS_STYLES_PICKED],
   seeAlso: { view: 'lookfeel', label: 'See Each Preset on the Look & Feel Tab' },

@@ -11,6 +11,7 @@ import type { ArrowFlow, ElementId, ElementLink, TextSize } from './index';
 import type { ArrowheadShape, ArrowheadSize, ArrowStyle } from './arrow-style';
 import type { AnimationSpeed } from './animation';
 import type { BorderStyle } from './border-style';
+import type { QuickSwatchSlot } from './quick-swatches';
 
 // The sixteen anchors of a boxed element, named after the compass rose
 // (docs/specs/008-canvas/arrow-anchors.md): corners, edge midpoints and the
@@ -82,6 +83,9 @@ export type ArrowElement = {
   // default arrow slate when unset. There's no fill or text on an
   // arrow so this is the only colour field.
   strokeColor?: string;
+  // The quick-swatch slot the stroke was picked from (docs/specs/008-canvas/quick-style-panel.md), so a
+  // theme change re-derives it rather than resetting it to the theme stroke.
+  strokeSwatch?: QuickSwatchSlot;
   // Arrowhead colour, when it should differ from the line's. Unset means the
   // heads take the line's colour, which is the usual case and how every arrow
   // drawn before this behaved: the shared markers inherit it through SVG's

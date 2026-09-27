@@ -28,6 +28,7 @@ import {
   type BorderRadius,
   type BorderStroke,
   type BorderStyle,
+  type QuickSwatchSlot,
   type BoxedElement,
   type ElementShadow,
   type IconAnimation,
@@ -109,6 +110,8 @@ export function paintableBoxedFields(source: BoxedElement): Partial<BoxedElement
     strokeStyle?: BorderStyle;
     borderRadius?: BorderRadius;
     colorPreset?: string;
+    strokeSwatch?: QuickSwatchSlot;
+    fillSwatch?: QuickSwatchSlot;
     themeLockFill?: boolean;
     headerFill?: string;
     headerTextColor?: string;
@@ -153,6 +156,9 @@ export function paintableBoxedFields(source: BoxedElement): Partial<BoxedElement
     // like the source did. applyPaint decides whether the binding holds.
     out.colorPreset = ext.colorPreset;
     out.themeLockFill = ext.themeLockFill;
+    // Quick-swatch bindings (docs/specs/008-canvas/quick-style-panel.md), beside the colours they bind.
+    out.strokeSwatch = ext.strokeSwatch;
+    out.fillSwatch = ext.fillSwatch;
     // Per-icon glyph animation + speed and the Technology mark's fixed
     // size preset (docs/specs/008-canvas/canvas-and-palette.md / docs/specs/010-palette/technology-icons.md).
     out.iconAnimation = ext.iconAnimation;
@@ -170,6 +176,7 @@ export function paintableBoxedFields(source: BoxedElement): Partial<BoxedElement
 export function paintableArrowFields(source: ArrowElement): Partial<ArrowElement> {
   return {
     strokeColor: source.strokeColor,
+    strokeSwatch: source.strokeSwatch,
     strokeWidth: source.strokeWidth,
     strokeStyle: source.strokeStyle,
     opacity: source.opacity,
@@ -216,6 +223,10 @@ const RUN_OVERRIDES: readonly (readonly [string, RunBoolKey | 'color' | 'size'])
 ];
 
 const PRESET_COLOURS = ['fillColor', 'strokeColor', 'textColor'] as const;
+const SWATCH_BINDINGS = [
+  ['fillColor', 'fillSwatch'],
+  ['strokeColor', 'strokeSwatch'],
+] as const;
 
 // Lay a (filtered) projection onto the target. Defined values are set,
 // `undefined` values clear the target's override (see the header), and
@@ -241,6 +252,14 @@ export function applyPaint<T extends BoxedElement | ArrowElement>(
     next.colorPreset = painted.colorPreset;
   } else if (colours > 0) {
     delete next.colorPreset;
+  }
+
+  // A quick-swatch binding (docs/specs/008-canvas/quick-style-panel.md) holds only while it still names the
+  // colour beside it: painted together it lands, a colour painted alone drops it.
+  for (const [colour, binding] of SWATCH_BINDINGS) {
+    if (!(colour in painted)) continue;
+    if (painted[binding] !== undefined) next[binding] = painted[binding];
+    else delete next[binding];
   }
 
   const runs = next.richText as TextRun[] | undefined;
