@@ -49,7 +49,7 @@ describe('recordStyleEdit', () => {
   });
 
   it('keeps arrows in their own bucket', () => {
-    const m = edit({}, [arrow('a')], (el) => ({ ...el, strokeWidth: 4 }));
+    const m = edit({}, [arrow('a')], (el) => ({ ...el, strokeWidth: 4 }) as Element);
     expect(m).toEqual({ arrow: { strokeWidth: 4 } });
   });
 
@@ -60,7 +60,11 @@ describe('recordStyleEdit', () => {
   });
 
   it('remembers field by field, keeping what was chosen before', () => {
-    const first = edit({}, [shape('a', 'circle')], (el) => ({ ...el, strokeWidth: 'thick' }));
+    const first = edit(
+      {},
+      [shape('a', 'circle')],
+      (el) => ({ ...el, strokeWidth: 'thick' }) as Element,
+    );
     const second = edit(first, [shape('b', 'circle')], (el) => ({ ...el, fillColor: '#eeeeee' }));
     expect(second['shape:circle']).toEqual({ strokeWidth: 'thick', fillColor: '#eeeeee' });
   });

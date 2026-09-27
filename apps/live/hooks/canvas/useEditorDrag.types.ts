@@ -99,6 +99,9 @@ export type EditorDragDeps = {
   // mid-drag toggle takes effect on the next pointermove without
   // re-attaching listeners.
   autoRebindArrowsRef: React.RefObject<boolean>;
+  // Style memory (docs/specs/008-canvas/quick-style-panel.md): dresses a quick-connect arrow and a
+  // Shift-chained one, both user-drawn, in the remembered arrow style.
+  styleNewElement: <T extends Element>(el: T) => T;
   // Per-user preference (docs/specs/008-canvas/canvas-and-palette.md) controlling whether the faint
   // alignment guides are drawn during a move / resize. Defaults to
   // true; `false` suppresses the guide lines (the snap itself is

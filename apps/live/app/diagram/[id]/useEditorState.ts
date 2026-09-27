@@ -21,6 +21,9 @@ import { useCanvasTool } from '@/hooks/canvas/useCanvasTool';
 import { useLaserConfig } from '@/hooks/canvas/useLaserConfig';
 import { useEraserConfig } from '@/hooks/canvas/useEraserConfig';
 import { useFormatConfig } from '@/hooks/canvas/useFormatConfig';
+import { useStyleMemory } from '@/hooks/canvas/useStyleMemory';
+import { useQuickStyle } from '@/hooks/canvas/useQuickStyle';
+import { getTheme } from '@/lib/themes';
 import { usePortalSetters } from '@/hooks/canvas/usePortalSetters';
 import { useBehaviourElements } from '@/hooks/canvas/useBehaviourElements';
 import { useCollabElements } from '@/hooks/canvas/useCollabElements';
@@ -1618,6 +1621,26 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     emitChange(activeId, liveTab.elements, next.elements);
   };
 
+  // Style memory (docs/specs/008-canvas/quick-style-panel.md): what the panel or the context menu last
+  // chose per element kind, applied to the next element the user draws. The
+  // style hooks below get `commit` / `tickTabs` wrapped to record into it.
+  const activeTheme = getTheme(activeTab.theme);
+  const styleMemory = useStyleMemory({ diagramId, theme: activeTheme });
+  const liveActiveElements = () =>
+    (tabsRef.current.find((t) => t.id === activeId) ?? activeTab).elements;
+  const rememberingCommit = (mapElements: (els: Element[]) => Element[]) => {
+    const before = liveActiveElements();
+    commit(mapElements);
+    if (!editsBlocked) styleMemory.recordEdit(before, mapElements(before));
+  };
+  const rememberingTickTabs = (mapTabs: (ts: Tab[]) => Tab[]) => {
+    const beforeTabs = tabsRef.current;
+    tickTabs(mapTabs);
+    const before = beforeTabs.find((t) => t.id === activeId)?.elements;
+    const after = mapTabs(beforeTabs).find((t) => t.id === activeId)?.elements;
+    if (before && after && !editsBlocked) styleMemory.recordEdit(before, after);
+  };
+
   // Layers domain slice (docs/specs/006-diagram/layers.md): the active layer, the panel /
   // context-menu ops, and the hidden / locked element-id sets every
   // interaction gate below reads.
@@ -2186,6 +2209,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setEditingId,
     openImagePickerFor,
     zoomRef,
+    styleNewElement: styleMemory.styleNewElement,
   });
 
   // Palette element-creation handlers. See useElementCreation.
@@ -2229,6 +2253,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     addBoxedAt,
     placePrebuilt,
     beginDraw,
+    styleNewElement: styleMemory.styleNewElement,
   });
 
   // Inline-icon attach/detach mutators (a shape's single inline icon).
@@ -2391,11 +2416,29 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     activeTab,
     activeId,
     editsBlocked,
-    commit,
+    // Every style setter the context menu reaches records into style memory.
+    commit: rememberingCommit,
     commitActiveTab,
-    tickTabs,
+    tickTabs: rememberingTickTabs,
     markCheckpoint,
     scheduleElementChangeLog,
+  });
+
+  // The quick style panel (docs/specs/008-canvas/quick-style-panel.md): its view of the selection and one
+  // action per choice. The panel itself decides where and whether it shows.
+  const quickSelectionIds = useMemo(
+    () => currentSelectionIds(),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- the selection IS these two
+    [selectedId, multiSelectedIds],
+  );
+  const quickStyle = useQuickStyle({
+    activeTab,
+    theme: activeTheme,
+    selectionIds: quickSelectionIds,
+    editsBlocked,
+    liveElements: liveActiveElements,
+    commit,
+    memory: styleMemory,
   });
 
   // Portal links (docs/specs/009-elements/portal-element.md) live off the style hook: a link can point at a
@@ -2491,6 +2534,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     commitTabs,
     emitChange,
     previewingRef,
+    onCommitted: styleMemory.recordEdit,
   });
 
   // The same idea one level up (docs/specs/008-canvas/layout-cleanup.md): hovering a Cleanup row in the tab
@@ -2662,6 +2706,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     // (docs/specs/009-elements/annotations.md). Blocked alongside other edits on a locked / read-only tab.
     onAnnotationClicked: editsBlocked ? undefined : openNote,
     autoRebindArrowsRef,
+    styleNewElement: styleMemory.styleNewElement,
     alignmentGuidesRef,
     isPinchingRef,
     // Insert between (docs/specs/021-event-storming/event-storming.md): dragging a note already on the board into a
@@ -2839,6 +2884,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     // insert-between preview (docs/specs/021-event-storming/event-storming.md) never offers a slot the drop
     // would refuse.
     createBlocked,
+    quickStyle,
     // Note acts on an event-storming board (docs/specs/021-event-storming/event-storming.md).
     ...noteActions,
     // Photo import (docs/specs/021-event-storming/event-storming.md Phase 8): the draft run, whether the entry

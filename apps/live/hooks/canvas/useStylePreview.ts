@@ -100,6 +100,10 @@ export function useStylePreview(deps: {
   // tick (the preview mutates `tabs` to render, but must not be persisted).
   // Cleared by the commit and the revert.
   previewingRef: MutableRefObject<boolean>;
+  // Told about every committed change, with the exact lists committed, so
+  // style memory (docs/specs/008-canvas/quick-style-panel.md) learns from the context menu too. The
+  // preview's own restore is not a change and is never reported.
+  onCommitted?: (before: Element[], after: Element[]) => void;
 }) {
   const {
     editsBlocked,
@@ -110,6 +114,7 @@ export function useStylePreview(deps: {
     commitTabs,
     emitChange,
     previewingRef,
+    onCommitted,
   } = deps;
 
   const previewRef = useRef<Snapshot | null>(null);
@@ -201,6 +206,7 @@ export function useStylePreview(deps: {
     writeElements(before);
     commitTabs((ts) => ts.map((t) => (t.id === activeId ? { ...t, elements: after } : t)));
     emitChange(activeId, before, after);
+    onCommitted?.(before, after);
     track('Element', 'Changed', telemetryType);
   };
 

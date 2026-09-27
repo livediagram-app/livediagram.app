@@ -181,8 +181,10 @@ export function applyQuickStroke(
   if (!isQuickStyleTarget(el) || !supportsQuickSection(el, 'stroke')) return el;
   const colour =
     slot === 0 ? (theme.elementStroke ?? undefined) : quickSwatches(theme, 'stroke')[slot]!.color;
-  const next = { ...el, strokeColor: colour, strokeSwatch: slot === 0 ? undefined : slot };
-  return el.type === 'shape' ? { ...next, colorPreset: undefined } : next;
+  const strokeSwatch = slot === 0 ? undefined : slot;
+  return el.type === 'shape'
+    ? { ...el, strokeColor: colour, strokeSwatch, colorPreset: undefined }
+    : { ...el, strokeColor: colour, strokeSwatch };
 }
 
 export function applyQuickFill(

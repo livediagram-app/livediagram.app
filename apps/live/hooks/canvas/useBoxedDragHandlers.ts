@@ -146,7 +146,7 @@ export function useBoxedDragHandlers({
     // select it so the user can reposition it by hand.
     if (opts?.placeOutPx) {
       const dir = anchorOutward(anchor);
-      const placed: ArrowElement = {
+      const placed: ArrowElement = d.styleNewElement({
         id: crypto.randomUUID(),
         type: 'arrow',
         from: fromEnd,
@@ -156,19 +156,19 @@ export function useBoxedDragHandlers({
           y: start.y + dir.y * opts.placeOutPx,
         },
         ...(inheritedStroke ? { strokeColor: inheritedStroke } : {}),
-      };
+      });
       d.commit((els) => [...els, placed]);
       d.setSelectedId(placed.id);
       track('Element', 'Added', 'Arrow');
       return;
     }
-    const arrow: ArrowElement = {
+    const arrow: ArrowElement = d.styleNewElement({
       id: crypto.randomUUID(),
       type: 'arrow',
       from: fromEnd,
       to: { kind: 'free', x: start.x, y: start.y },
       ...(inheritedStroke ? { strokeColor: inheritedStroke } : {}),
-    };
+    });
     d.commit((els) => [...els, arrow]);
     d.setSelectedId(arrow.id);
     track('Element', 'Added', 'Arrow');

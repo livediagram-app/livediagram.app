@@ -499,13 +499,13 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
         x: drag.startCanvasX + (e.clientX - drag.startClientX) / d.zoomRef.current,
         y: drag.startCanvasY + (e.clientY - drag.startClientY) / d.zoomRef.current,
       };
-      const arrow: ArrowElement = {
+      const arrow: ArrowElement = d.styleNewElement({
         id: crypto.randomUUID(),
         type: 'arrow',
         from: placed.from,
         to: { kind: 'free', x: cursor.x, y: cursor.y },
         ...(placed.strokeColor ? { strokeColor: placed.strokeColor } : {}),
-      };
+      });
       d.commit((els) => [...els, arrow]);
       d.setSelectedId(arrow.id);
       track('Element', 'Added', 'Arrow');

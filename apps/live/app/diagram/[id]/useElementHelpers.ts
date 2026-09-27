@@ -74,7 +74,13 @@ export function useElementHelpers(opts: {
     make: (x: number, y: number) => T,
     // `insertion` is the slot an event-storming drag was offering (docs/specs/021-event-storming/event-storming.md):
     // the drop then ripples the board open and adds the note as ONE change.
-    opts?: { edit?: boolean; insertion?: InsertionSlot | null },
+    // `style` dresses the built element last, after the theme colours: style
+    // memory (docs/specs/008-canvas/quick-style-panel.md) for a palette drop.
+    opts?: {
+      edit?: boolean;
+      insertion?: InsertionSlot | null;
+      style?: <E extends BoxedElement>(el: E) => E;
+    },
   ) => {
     placeBoxed(
       make,
@@ -82,6 +88,7 @@ export function useElementHelpers(opts: {
       /* inheritSize */ false,
       opts?.edit === true,
       opts?.insertion ?? null,
+      opts?.style,
     );
   };
 
@@ -91,6 +98,7 @@ export function useElementHelpers(opts: {
     inheritSize = true,
     edit = false,
     insertion: InsertionSlot | null = null,
+    style: <E extends BoxedElement>(el: E) => E = (el) => el,
   ) => {
     if (editsBlocked) return;
     const base = make(0, 0);
@@ -113,7 +121,7 @@ export function useElementHelpers(opts: {
       patternColor: activeTab.patternColor,
       theme: activeTab.theme,
     });
-    const el: T = {
+    const el: T = style({
       ...base,
       ...colours,
       x: centre.x - width / 2,
@@ -122,7 +130,7 @@ export function useElementHelpers(opts: {
       height,
       // Seed the tab's default text size onto the new element (docs/specs/004-interface-design/fonts.md).
       ...(activeTab.defaultTextSize ? { textSize: activeTab.defaultTextSize } : {}),
-    };
+    });
     // Single commit that both adds the element and marks the template
     // picker as dismissed for this tab (if it was still showing).
     // Append (not prepend) so new elements land at the FRONT of the

@@ -1,5 +1,11 @@
 import { useState } from 'react';
-import { bestAnchorTowards, isBoxed, type ArrowElement, type Tab } from '@livediagram/diagram';
+import {
+  bestAnchorTowards,
+  isBoxed,
+  type ArrowElement,
+  type Element,
+  type Tab,
+} from '@livediagram/diagram';
 import { getTheme } from '@/lib/themes';
 import { track } from '@/lib/telemetry';
 
@@ -24,6 +30,7 @@ export function useArrowConnect({
   setSelectedId,
   beginDraw,
   commitTabs,
+  styleNewElement,
 }: {
   editsBlocked: boolean;
   activeId: string;
@@ -32,6 +39,8 @@ export function useArrowConnect({
   setSelectedId: (id: string | null) => void;
   beginDraw: (intent: { type: 'arrow' }) => void;
   commitTabs: (fn: (tabs: Tab[]) => Tab[]) => void;
+  // Style memory (docs/specs/008-canvas/quick-style-panel.md): the connecting arrow is user-drawn.
+  styleNewElement: <T extends Element>(el: T) => T;
 }) {
   // Click-to-connect (docs/specs/008-canvas/canvas-and-palette.md): when the arrow tool is picked WITH a
   // shape selected, the next element click connects the two with a
@@ -72,7 +81,7 @@ export function useArrowConnect({
     // arrow is allowed; the fan separates the heads.
     const theme = getTheme(activeTab.theme);
     const stroke = from.strokeColor ?? theme.elementStroke ?? undefined;
-    const arrow: ArrowElement = {
+    const arrow: ArrowElement = styleNewElement({
       id: crypto.randomUUID(),
       type: 'arrow',
       from: {
@@ -86,7 +95,7 @@ export function useArrowConnect({
         anchor: bestAnchorTowards(to, fromCenter),
       },
       ...(stroke ? { strokeColor: stroke } : {}),
-    };
+    });
     commitTabs((ts) =>
       ts.map((t) =>
         t.id === activeId ? { ...t, elements: [...t.elements, arrow], templateChosen: true } : t,
