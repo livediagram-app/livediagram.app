@@ -60,7 +60,7 @@ Every icon livediagram draws follows one grammar, so a glyph looks the same weig
 - A glyph's drawn geometry (bounding-box centre, stroke included) sits within 0.5px of its viewBox centre at its rendered size. Glyphs asymmetric by design (the play triangle) carry a named, logged exception.
 - A unit test over `packages/ui/src/icons` and `packages/icons` enforces the centring rule.
 - A lint rule rejects raw `<svg>` outside the icon homes and the art allow-list.
-- A contact sheet of every icon (`pnpm icons:sheet`) renders each glyph at 1x and 4x; a screenshot test of it makes weight or shape drift visible in review.
+- A contact sheet of every icon (`pnpm icons:sheet`) renders each glyph at 1x and 4x for review on demand. It is not a CI snapshot: pixel output varies across machines, and the code diff already carries the drawing.
 
 ## Relation to optical alignment
 
