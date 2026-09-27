@@ -8,7 +8,13 @@ import {
   type StrokeSpec,
 } from './__fixtures__/board-markup';
 import { readBoard } from './canvas';
-import { inkStrokeElements, readInkStrokes } from './ink';
+import { buildStroke } from './fit';
+import { inkStrokeDrafts, readInkStrokes, type InkStroke } from './ink';
+
+const inkStrokeElements = (stroke: InkStroke) => {
+  const { drafts, degraded } = inkStrokeDrafts(stroke);
+  return { elements: drafts.map((d) => buildStroke(d, 0.35)), degraded };
+};
 
 const line = (length: number, y = 0) =>
   Array.from({ length: length / 5 + 1 }, (_, i) => ({ x: i * 5, y }));
@@ -90,7 +96,7 @@ describe('readInkStrokes', () => {
   });
 });
 
-describe('inkStrokeElements', () => {
+describe('inkStrokeDrafts', () => {
   const read = (spec: StrokeSpec) => strokesOf([spec]).strokes[0]!;
 
   it('makes a pen stroke an open freehand with its colour and nearest width', () => {

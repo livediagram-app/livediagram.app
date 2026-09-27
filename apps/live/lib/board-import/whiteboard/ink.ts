@@ -5,14 +5,10 @@
 // A centreline becomes an editable pen stroke; an outline alone is kept as a
 // filled shape that looks the same.
 
-import {
-  BORDER_STROKE_PX,
-  createFreehand,
-  type BorderStroke,
-  type FreehandElement,
-} from '@livediagram/diagram';
+import { BORDER_STROKE_PX, type BorderStroke } from '@livediagram/diagram';
 import type { BoardItem } from './canvas';
 import { readColour, type Colour } from './colour';
+import type { StrokeDraft } from './fit';
 import {
   WHITEBOARD_BEZIER_STEP_PX,
   WHITEBOARD_CLAMP_WARN_PX,
@@ -173,9 +169,9 @@ function dotted(points: Point[], widthPx: number): Point[] {
 
 const withOpacity = (alpha: number) => (alpha < 1 ? { opacity: alpha } : {});
 
-/** The livediagram elements for one stroke and what was lost on the way. */
-export function inkStrokeElements(stroke: InkStroke): {
-  elements: FreehandElement[];
+/** The strokes one Whiteboard stroke becomes (built by the fit stage) and what was lost. */
+export function inkStrokeDrafts(stroke: InkStroke): {
+  drafts: StrokeDraft[];
   degraded: InkDegradation[];
 } {
   const degraded: InkDegradation[] = [];
@@ -184,33 +180,46 @@ export function inkStrokeElements(stroke: InkStroke): {
 
   if (!stroke.centreline) {
     degraded.push('ink-outline');
-    const elements = stroke.outline.map((pts): FreehandElement => ({
-      ...createFreehand(pts, true),
-      straightEdges: true,
-      fillColor: hex,
-      strokeColor: hex,
-      strokeWidth: 'thin',
-      ...withOpacity(alpha),
+    const drafts = stroke.outline.map((raw): StrokeDraft => ({
+      raw,
+      closed: true,
+      props: {
+        straightEdges: true,
+        fillColor: hex,
+        strokeColor: hex,
+        strokeWidth: 'thin',
+        ...withOpacity(alpha),
+      },
     }));
-    return { elements, degraded };
+    return { drafts, degraded };
   }
 
-  const base = createFreehand(dotted(stroke.centreline, stroke.widthPx), false);
+  const raw = dotted(stroke.centreline, stroke.widthPx);
   if (stroke.pen === 'highlighter') {
-    const element: FreehandElement = {
-      ...base,
-      pen: 'highlighter',
-      penWidth: Math.round(stroke.widthPx),
-      strokeColor: hex,
+    return {
+      drafts: [
+        {
+          raw,
+          closed: false,
+          props: { pen: 'highlighter', penWidth: Math.round(stroke.widthPx), strokeColor: hex },
+        },
+      ],
+      degraded,
     };
-    return { elements: [element], degraded };
   }
   if (stroke.widthPx > WHITEBOARD_CLAMP_WARN_PX) degraded.push('width-clamped');
-  const element: FreehandElement = {
-    ...base,
-    strokeColor: hex,
-    strokeWidth: nearestStroke(stroke.widthPx),
-    ...withOpacity(alpha),
+  return {
+    drafts: [
+      {
+        raw,
+        closed: false,
+        props: {
+          strokeColor: hex,
+          strokeWidth: nearestStroke(stroke.widthPx),
+          ...withOpacity(alpha),
+        },
+      },
+    ],
+    degraded,
   };
-  return { elements: [element], degraded };
 }
