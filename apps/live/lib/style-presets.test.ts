@@ -312,3 +312,35 @@ describe('applyShadowToEl', () => {
     }
   });
 });
+
+describe('any other colour edit drops a quick-swatch binding (docs/specs/008-canvas/quick-style-panel.md)', () => {
+  const bound = el('shape', { strokeSwatch: 2, fillSwatch: 4 });
+
+  it('a hand-set background drops the background binding only', () => {
+    const next = applyFillColorToEl(bound, '#abcdef');
+    expect(next).toMatchObject({ fillColor: '#abcdef', fillSwatch: undefined, strokeSwatch: 2 });
+  });
+
+  it('a hand-set stroke drops the stroke binding, on shapes and arrows', () => {
+    expect(applyStrokeColorToEl(bound, '#abcdef')).toMatchObject({
+      strokeSwatch: undefined,
+      fillSwatch: 4,
+    });
+    expect(applyStrokeColorToEl(el('arrow', { strokeSwatch: 1 }), '#abcdef')).toHaveProperty(
+      'strokeSwatch',
+      undefined,
+    );
+  });
+
+  it('a preset drops both', () => {
+    const next = applyColorPresetToEl(bound, {
+      id: 'cp',
+      fill: '#f',
+      stroke: '#s',
+      text: '#t',
+      borderStroke: 'thin',
+      borderStyle: 'solid',
+    } as ShapeColorPreset);
+    expect(next).toMatchObject({ strokeSwatch: undefined, fillSwatch: undefined });
+  });
+});

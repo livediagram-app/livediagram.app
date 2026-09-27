@@ -143,8 +143,11 @@ export function useColorStyleSetters(deps: {
             ...(theme.elementText !== null
               ? { textColor: theme.elementText }
               : { textColor: undefined }),
-            // Reset-to-theme also drops any colour-preset binding (docs/specs/010-palette/style-presets.md).
+            // Reset-to-theme also drops any colour-preset binding (docs/specs/010-palette/style-presets.md)
+            // and any quick-swatch binding (docs/specs/008-canvas/quick-style-panel.md).
             colorPreset: undefined,
+            strokeSwatch: undefined,
+            fillSwatch: undefined,
           };
         }
         if (el.type === 'text') {
@@ -187,6 +190,7 @@ export function useColorStyleSetters(deps: {
             ...(theme.elementStroke !== null
               ? { strokeColor: theme.elementStroke }
               : { strokeColor: undefined }),
+            strokeSwatch: undefined,
           };
         }
         return el;

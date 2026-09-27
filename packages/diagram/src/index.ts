@@ -431,6 +431,8 @@ export * from './responses';
 export * from './collab-shapes';
 export * from './shape-geometry';
 export * from './color-wash';
+export * from './quick-swatches';
+export * from './quick-swatch-rederive';
 // The Q&A board (docs/specs/012-collaboration/qa-board.md)
 export * from './qa-board';
 export * from './web-components';

@@ -218,3 +218,24 @@ describe('mode button validation (docs/specs/009-elements/mode-button.md)', () =
     expect(isValidElement({ ...button, mode: 42 })).toBe(false);
   });
 });
+
+describe('quick-swatch bindings (docs/specs/008-canvas/quick-style-panel.md)', () => {
+  const shape = { id: 's', type: 'shape', shape: 'square', ...box };
+  const arrow = {
+    id: 'a',
+    type: 'arrow',
+    from: { kind: 'free', x: 0, y: 0 },
+    to: { kind: 'free', x: 10, y: 0 },
+  };
+
+  it('accepts a slot from 1 to 6 on a shape and an arrow', () => {
+    expect(isValidElement({ ...shape, strokeSwatch: 1, fillSwatch: 6 })).toBe(true);
+    expect(isValidElement({ ...arrow, strokeSwatch: 3 })).toBe(true);
+  });
+
+  it('rejects anything else, rather than coercing it', () => {
+    expect(isValidElement({ ...shape, fillSwatch: 0 })).toBe(false);
+    expect(isValidElement({ ...shape, strokeSwatch: '2' })).toBe(false);
+    expect(isValidElement({ ...arrow, strokeSwatch: 7 })).toBe(false);
+  });
+});

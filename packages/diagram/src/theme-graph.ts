@@ -1,6 +1,7 @@
 import type { Element } from './index';
 import { assignBranches, branchOfArrow, ROOT_BRANCH } from './hierarchy';
 import { rederiveColorPresetForTheme, rederiveTablePresetForTheme } from './theme-presets';
+import { rederiveQuickSwatches } from './quick-swatch-rederive';
 import {
   recolourElementForTheme,
   resetThemeElement,
@@ -135,13 +136,17 @@ function rederivePresetForTheme(el: Element, theme: ThemeDefinition): Element | 
 // entry point.
 export function recolourElementsForTheme(elements: Element[], theme: ThemeDefinition): Element[] {
   const branches = theme.palette ? branchMapFor('recolour', theme, elements) : null;
-  return elements.map(
-    (el) =>
+  return elements.map((el) =>
+    // A quick-swatch binding (docs/specs/008-canvas/quick-style-panel.md) is re-read last, from the theme
+    // itself, so a slot is one colour whatever branch the element sits on.
+    rederiveQuickSwatches(
       // An element bound to a preset (docs/specs/010-palette/style-presets.md) takes the preset's variant for
       // this theme, not the plain branch / base colours — so a template's Bold
       // key element stays Bold in whatever theme it's built with.
       rederivePresetForTheme(el, theme) ??
-      recolourElementForTheme(el, elementThemeView(theme, el, branches)),
+        recolourElementForTheme(el, elementThemeView(theme, el, branches)),
+      theme,
+    ),
   );
 }
 
@@ -160,18 +165,20 @@ export function switchThemeElements(
       : null;
   const prevBranches = prev.palette ? branches : null;
   const nextBranches = next.palette ? branches : null;
-  return elements.map(
-    (el) =>
+  return elements.map((el) =>
+    rederiveQuickSwatches(
       // Preset-bound elements (docs/specs/010-palette/style-presets.md) re-derive their preset for the new
       // theme instead of being preserved as a manual override: picking a new
       // theme moves a Bold-preset shape, or a Banded table, to that theme's
       // version of the look rather than stranding it on the old colours.
       rederivePresetForTheme(el, next) ??
-      switchThemeElement(
-        el,
-        elementThemeView(prev, el, prevBranches),
-        elementThemeView(next, el, nextBranches),
-      ),
+        switchThemeElement(
+          el,
+          elementThemeView(prev, el, prevBranches),
+          elementThemeView(next, el, nextBranches),
+        ),
+      next,
+    ),
   );
 }
 
@@ -179,7 +186,9 @@ export function switchThemeElements(
 // theme" button. Force-repaints every branch from the palette.
 export function resetThemeElementsToTheme(elements: Element[], theme: ThemeDefinition): Element[] {
   const branches = theme.palette ? branchMapFor('reset', theme, elements) : null;
-  return elements.map((el) => resetThemeElement(el, elementThemeView(theme, el, branches)));
+  return elements.map((el) =>
+    rederiveQuickSwatches(resetThemeElement(el, elementThemeView(theme, el, branches)), theme),
+  );
 }
 
 // Force every ARROW back to the theme's stroke, overwriting any
@@ -193,6 +202,9 @@ export function resetThemeElementsToTheme(elements: Element[], theme: ThemeDefin
 export function resetArrowsToTheme(elements: Element[], theme: ThemeDefinition): Element[] {
   const branches = theme.palette ? branchMapFor('reset-arrows', theme, elements) : null;
   return elements.map((el) =>
-    el.type === 'arrow' ? resetThemeElement(el, elementThemeView(theme, el, branches)) : el,
+    el.type === 'arrow'
+      ? // A bound stroke (docs/specs/008-canvas/quick-style-panel.md) follows its slot instead.
+        rederiveQuickSwatches(resetThemeElement(el, elementThemeView(theme, el, branches)), theme)
+      : el,
   );
 }

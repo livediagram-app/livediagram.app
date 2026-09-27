@@ -220,7 +220,10 @@ export function useShapeStyleSetters({
           shadow: undefined,
           // Drop the colour-preset binding too — reset returns to the plain
           // theme look, so there's no preset to re-derive on a theme change.
+          // The same for quick-swatch bindings (docs/specs/008-canvas/quick-style-panel.md).
           colorPreset: undefined,
+          strokeSwatch: undefined,
+          fillSwatch: undefined,
         };
       }),
     );

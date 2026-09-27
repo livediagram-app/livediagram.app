@@ -209,6 +209,30 @@ export function defaultTextColor(element: BoxedElement, surface: CanvasSurface =
   }
 }
 
+// The ink a plain shape wears when it carries no colour of its own, on the
+// given paper: what the Default scheme's elements look like, and so what a
+// "theme default" swatch shows there (docs/specs/008-canvas/quick-style-panel.md).
+const PLAIN_SHAPE: ShapeElement = {
+  id: '',
+  type: 'shape',
+  shape: 'square',
+  x: 0,
+  y: 0,
+  width: 0,
+  height: 0,
+};
+export function unpaintedShapeInk(surface: CanvasSurface): {
+  fill: string;
+  stroke: string;
+  text: string;
+} {
+  return {
+    fill: defaultFillColor(PLAIN_SHAPE, surface),
+    stroke: defaultStrokeColor(PLAIN_SHAPE, surface),
+    text: defaultTextColor(PLAIN_SHAPE, surface),
+  };
+}
+
 export function defaultTextAlign(element: BoxedElement): { x: TextAlignX; y: TextAlignY } {
   if (element.type === 'sticky') return { x: 'left', y: 'top' };
   return { x: 'center', y: 'middle' };

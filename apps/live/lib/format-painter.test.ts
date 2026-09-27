@@ -389,3 +389,36 @@ describe('applyPaint', () => {
     });
   });
 });
+
+describe('quick-swatch bindings (docs/specs/008-canvas/quick-style-panel.md)', () => {
+  const source = {
+    ...fullyStyledShape,
+    strokeSwatch: 2,
+    fillSwatch: 4,
+  } as BoxedElement;
+
+  it('travel in the projection beside their colours', () => {
+    expect(paintableBoxedFields(source)).toMatchObject({ strokeSwatch: 2, fillSwatch: 4 });
+    expect(
+      paintableArrowFields({ ...fullyStyledArrow, strokeSwatch: 3 } as ArrowElement),
+    ).toMatchObject({ strokeSwatch: 3 });
+  });
+
+  it('land only with the colour they bind', () => {
+    const target = { ...fullyStyledShape, fillSwatch: 1 } as BoxedElement;
+    const painted = applyPaint(target, { fillColor: '#abcdef', fillSwatch: 5 } as never) as {
+      fillSwatch?: number;
+    };
+    expect(painted.fillSwatch).toBe(5);
+  });
+
+  it('are dropped when their colour is painted without one', () => {
+    const target = { ...fullyStyledShape, fillSwatch: 1, strokeSwatch: 1 } as BoxedElement;
+    const painted = applyPaint(target, { fillColor: '#abcdef' }) as {
+      fillSwatch?: number;
+      strokeSwatch?: number;
+    };
+    expect(painted).not.toHaveProperty('fillSwatch');
+    expect(painted.strokeSwatch).toBe(1);
+  });
+});
