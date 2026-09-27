@@ -5,6 +5,10 @@
 // `.fa-*` classes (apps/marketing/app/feature-art-animations.css), which the
 // reduced-motion guard in globals.css settles to a clean static frame. Purely
 // decorative, so the whole SVG is aria-hidden.
+
+// The pen's bands are the CTA band's own colour showing through (brand-600 in dark).
+const BAND_STROKE = 'dark:stroke-brand-600';
+
 export function StartDrawingArt() {
   return (
     <svg
@@ -58,8 +62,14 @@ export function StartDrawingArt() {
           strokeWidth={1.5}
           strokeLinejoin="round"
         />
-        <path d="M0 6 L8 6" stroke="#0ea5e9" strokeWidth={1.5} />
-        <path d="M4 27 L4 22" stroke="#0ea5e9" strokeWidth={1.5} strokeLinecap="round" />
+        <path d="M0 6 L8 6" stroke="#0ea5e9" strokeWidth={1.5} className={BAND_STROKE} />
+        <path
+          d="M4 27 L4 22"
+          stroke="#0ea5e9"
+          strokeWidth={1.5}
+          strokeLinecap="round"
+          className={BAND_STROKE}
+        />
       </g>
 
       {/* Flowing arrow A → B. */}

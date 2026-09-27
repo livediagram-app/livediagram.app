@@ -100,6 +100,7 @@ export function NoteIcon() {
 export function WandIcon() {
   return (
     <svg
+      className="dark:stroke-brand-300"
       width="9"
       height="9"
       viewBox="0 0 16 16"
@@ -109,6 +110,7 @@ export function WandIcon() {
     >
       <path d="M3 13 L11 5" strokeLinecap="round" />
       <path
+        className="dark:fill-brand-300"
         d="M12 2 l0.7 1.8 L14.5 4.5 l-1.8 0.7 L12 7 l-0.7-1.8 L9.5 4.5 l1.8-0.7 Z"
         fill={BLUE_STROKE}
         stroke="none"
@@ -127,7 +129,14 @@ export function PencilGlyph() {
 
 export function SparkleIcon({ light = false }: { light?: boolean }) {
   return (
-    <svg width="9" height="9" viewBox="0 0 16 16" fill={light ? '#fff' : BLUE_STROKE} aria-hidden>
+    <svg
+      width="9"
+      height="9"
+      viewBox="0 0 16 16"
+      fill={light ? '#fff' : BLUE_STROKE}
+      className={light ? undefined : 'dark:fill-brand-300'}
+      aria-hidden
+    >
       <path d="M8 1 l1.4 4.2 L13.6 6.6 l-4.2 1.4 L8 12.2 l-1.4 -4.2 L2.4 6.6 l4.2 -1.4 Z" />
       <path d="M13 9.5 l0.55 1.65 L15.2 11.7 l-1.65 0.55 L13 13.9 l-0.55 -1.65 L10.8 11.7 l1.65 -0.55 Z" />
     </svg>

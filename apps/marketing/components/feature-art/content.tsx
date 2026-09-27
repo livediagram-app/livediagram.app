@@ -199,17 +199,18 @@ export function RichTextArt() {
 }
 
 // Link card: paste a URL and it unfurls into a bookmark with a preview
-// image, favicon, title and host.
+// image, favicon, title and host. A link card keeps its own colours on any
+// canvas, as in the editor, so it stays light in dark.
 export function LinkCardArt() {
   return (
     <Frame canvas>
       <div className="flex h-full items-center justify-center">
-        <div className="fa-pop w-[122px] overflow-hidden rounded-[4px] border border-slate-300 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
-          <div className="h-8 bg-gradient-to-br from-sky-200 to-brand-300" />
+        <div className="fa-pop w-[122px] overflow-hidden rounded-[4px] border border-slate-300 bg-white shadow-sm">
+          <div className="h-8 bg-gradient-to-br from-sky-200 to-[#7dd3fc]" />
           <div className="flex items-center gap-1.5 px-2 py-1.5">
-            <span className="h-4 w-4 shrink-0 rounded-[2px] bg-brand-500" />
+            <span className="h-4 w-4 shrink-0 rounded-[2px] bg-[#0ea5e9]" />
             <span className="flex min-w-0 flex-col">
-              <span className="truncate text-[8px] font-semibold text-slate-800 dark:text-slate-100">
+              <span className="truncate text-[8px] font-semibold text-slate-800">
                 Design review
               </span>
               <span className="truncate text-[7px] text-slate-400">livediagram.app</span>
@@ -273,7 +274,7 @@ export function ComponentsArt() {
     <Frame>
       <div className="flex h-full flex-col justify-center gap-2 px-3">
         {/* Banner — accent bar with title + subtitle */}
-        <div className="fa-pop rounded-md bg-brand-500 px-2 py-1.5 text-white">
+        <div className="fa-pop rounded-md bg-brand-500 px-2 py-1.5 text-white dark:bg-brand-600">
           <p className="text-[9px] font-semibold leading-tight">Launch plan</p>
           <p className="text-[7px] leading-tight text-brand-50">Q3 rollout overview</p>
         </div>

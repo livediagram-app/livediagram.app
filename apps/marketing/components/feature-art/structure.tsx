@@ -6,12 +6,13 @@ import { Frame } from './shared';
 
 // Mind map: a root with three branches, drawn as the keyboard would build it
 // — parent on the left, children stacked to the right on their connectors.
+// Unpainted nodes, so dark draws them in the Default scheme's dark ink.
 export function MindMapArt() {
   const branches = ['Discovery', 'Design', 'Build'];
   return (
     <Frame canvas>
       <div className="flex h-full items-center gap-3 px-4">
-        <span className="relative rounded-[5px] border border-brand-300 bg-brand-50 px-2 py-1.5 text-[7px] font-semibold text-brand-700 dark:border-brand-500/50 dark:bg-brand-500/15 dark:text-brand-300">
+        <span className="relative rounded-[5px] border border-brand-300 bg-brand-50 px-2 py-1.5 text-[7px] font-semibold text-brand-700 dark:border-(--art-ink-stroke) dark:bg-(color:--art-ink-fill) dark:text-(--art-ink-text)">
           Roadmap
         </span>
         <svg className="h-14 w-5 shrink-0 text-slate-400" viewBox="0 0 20 56" aria-hidden>
@@ -26,7 +27,7 @@ export function MindMapArt() {
           {branches.map((b, i) => (
             <span
               key={b}
-              className="relative rounded-[5px] border border-slate-300 bg-white px-2 py-1 text-[7px] font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
+              className="relative rounded-[5px] border border-slate-300 bg-white px-2 py-1 text-[7px] font-medium text-slate-600 dark:border-(--art-ink-stroke) dark:bg-(color:--art-ink-fill) dark:text-(--art-ink-text)"
             >
               {b}
               {/* The last one blinks as if just grown by a keystroke. */}
@@ -63,7 +64,7 @@ export function LanesArt() {
               {Array.from({ length: lane.steps }).map((_, i) => (
                 <span
                   key={i}
-                  className="h-3 w-7 rounded-[2px] border border-brand-300 bg-brand-50 dark:border-brand-500/50 dark:bg-brand-500/15"
+                  className="h-3 w-7 rounded-[2px] border border-brand-300 bg-brand-50 dark:border-(--art-ink-stroke) dark:bg-(color:--art-ink-fill)"
                 />
               ))}
             </span>
@@ -124,7 +125,7 @@ export function EmbedArt() {
         <div className="relative h-[62px] w-[110px] overflow-hidden rounded-[4px] border border-slate-300 bg-slate-900 shadow-sm dark:border-slate-700">
           {/* A suggestion of a poster frame behind the button. */}
           <span className="absolute inset-0 bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900" />
-          <span className="absolute inset-x-0 bottom-0 h-1.5 bg-white/10 dark:bg-slate-900/10" />
+          <span className="absolute inset-x-0 bottom-0 h-1.5 bg-white/10" />
           <span className="absolute left-1/2 top-1/2 flex h-5 w-7 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-[4px] bg-[#ff0000]">
             <svg viewBox="0 0 12 12" className="h-2.5 w-2.5" aria-hidden>
               <path d="M4 2.5 9 6l-5 3.5z" fill="#fff" />

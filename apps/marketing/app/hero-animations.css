@@ -1,6 +1,21 @@
 /* Hero illustration animations (landing page), split out of globals.css to
    keep each file under the ~1000-line budget. Imported from globals.css. */
 
+/* The editor's canvas in dark appearance, for every mock-up here and in the feature art
+   (docs/specs/004-interface-design/appearance.md): the Default colour scheme's dark half
+   (packages/diagram/src/canvas-colors.ts) and the ink it gives an unpainted element (DARK_INK in
+   packages/diagram/src/colors.ts); app/dark-art.test.ts holds them equal. Light keeps each
+   piece's own tints, so these exist under .dark only: markup reaches them through dark:
+   utilities, keyframes through a var() whose fallback is the light colour. A themed canvas
+   (Forest, violet, amber, teal) looks the same in both appearances and never reads them. */
+.dark {
+  --art-paper: #0d121a;
+  --art-grid: #1c2735;
+  --art-ink-fill: #141b26;
+  --art-ink-stroke: #64748b;
+  --art-ink-text: #ffffff;
+}
+
 /*
  * Hero illustration: a single 16 s timeline with NO per-element delays, so
  * the whole canvas clears together at the end (then a brief blank) instead
@@ -250,8 +265,8 @@
 @keyframes hero-theme {
   0%,
   40% {
-    fill: #dbeafe;
-    stroke: #0284c7;
+    fill: var(--art-ink-fill, #dbeafe);
+    stroke: var(--art-ink-stroke, #0284c7);
   }
   48%,
   100% {
@@ -260,18 +275,26 @@
   }
 }
 /* the themed (first) card tints its canvas in step with the recolour, so the
-   whole surface shifts palette, not just the shapes. */
+   whole surface shifts palette, not just the shapes. In dark the Default half is
+   the dark canvas, so the grid, the labels and the arrows (dark: utilities reading
+   these inherited properties) change with it; Forest then looks as it does in light. */
 .hero-theme-canvas {
   animation: hero-theme-canvas 16s ease-in-out infinite;
 }
 @keyframes hero-theme-canvas {
   0%,
   40% {
-    background-color: #eff6ff;
+    background-color: var(--art-paper, #eff6ff);
+    --hero-grid: var(--art-grid);
+    --hero-label: var(--art-ink-text);
+    --hero-arrow: var(--art-ink-stroke);
   }
   48%,
   100% {
     background-color: #f0fdf4;
+    --hero-grid: #cbd5e1;
+    --hero-label: #0c4a6e;
+    --hero-arrow: #0284c7;
   }
 }
 
@@ -672,19 +695,25 @@
     transform: translate(-50%, -50%) scale(1);
   }
 }
+/* The theme cards in dark: the dialog card border and the selection ring the editor draws there. */
+.dark .hero-dialog {
+  --hero-card-border: var(--color-slate-700);
+  --hero-pick-ring: var(--color-brand-300);
+  --hero-pick-border: var(--color-brand-400);
+}
 .hero-dialog-was {
   animation: hero-dialog-was 16s step-end infinite;
 }
 @keyframes hero-dialog-was {
   0%,
   35% {
-    box-shadow: 0 0 0 1px #7dd3fc;
-    border-color: #38bdf8;
+    box-shadow: 0 0 0 1px var(--hero-pick-ring, #7dd3fc);
+    border-color: var(--hero-pick-border, #38bdf8);
   }
   36%,
   100% {
     box-shadow: none;
-    border-color: #e2e8f0;
+    border-color: var(--hero-card-border, #e2e8f0);
   }
 }
 .hero-dialog-pick {
@@ -694,7 +723,7 @@
   0%,
   35% {
     box-shadow: none;
-    border-color: #e2e8f0;
+    border-color: var(--hero-card-border, #e2e8f0);
     transform: none;
   }
   36% {
@@ -702,8 +731,8 @@
   }
   37%,
   100% {
-    box-shadow: 0 0 0 1px #7dd3fc;
-    border-color: #38bdf8;
+    box-shadow: 0 0 0 1px var(--hero-pick-ring, #7dd3fc);
+    border-color: var(--hero-pick-border, #38bdf8);
     transform: none;
   }
 }

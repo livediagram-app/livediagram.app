@@ -36,7 +36,7 @@ export function MiniDiagram({
             />
           ))}
         </div>
-        <div className="mt-1 h-6 rounded-sm bg-[radial-gradient(circle_at_center,_#e2e8f0_1px,_transparent_1px)] bg-[size:8px_8px]" />
+        <div className="mt-1 h-6 rounded-sm bg-[radial-gradient(circle_at_center,_#e2e8f0_1px,_transparent_1px)] bg-[size:8px_8px] dark:bg-(color:--art-paper) dark:bg-[radial-gradient(circle_at_center,_var(--art-grid)_1px,_transparent_1px)]" />
       </div>
       <span className="text-[7px] text-slate-400">{label}</span>
     </div>
@@ -81,14 +81,11 @@ export function SearchGlyph({ kind }: { kind: string }) {
   );
 }
 
+// Depicts one appearance or the other, so neither half follows the page's.
 export function MiniEditorMock({ dark }: { dark: boolean }) {
-  const panel = dark
-    ? 'border-slate-700 bg-slate-900'
-    : 'border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900';
-  const bar = dark
-    ? 'border-slate-700 bg-slate-800'
-    : 'border-slate-100 bg-slate-50 dark:border-slate-800 dark:bg-slate-950';
-  const dot = dark ? 'bg-slate-600' : 'bg-slate-300 dark:bg-slate-600';
+  const panel = dark ? 'border-slate-700 bg-slate-900' : 'border-slate-200 bg-white';
+  const bar = dark ? 'border-slate-700 bg-slate-800' : 'border-slate-100 bg-slate-50';
+  const dot = dark ? 'bg-slate-600' : 'bg-slate-300';
   const shapeFill = dark ? '#0c4a6e' : BLUE_FILL;
   const grid = dark ? '#1e293b' : '#d8dee8';
   return (

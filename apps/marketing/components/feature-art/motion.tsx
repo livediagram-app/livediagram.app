@@ -17,7 +17,7 @@ export function AnimatedShapesArt() {
         <div className="flex flex-col items-center gap-1.5">
           <svg width="46" height="46" viewBox="0 0 46 46" className="overflow-visible">
             <circle
-              className="fa-ripple"
+              className="fa-ripple dark:stroke-(--art-ink-stroke)"
               cx="23"
               cy="23"
               r="11"
@@ -25,7 +25,15 @@ export function AnimatedShapesArt() {
               stroke={SKY}
               strokeWidth="2"
             />
-            <circle cx="23" cy="23" r="11" fill={BLUE_FILL} stroke={BLUE_STROKE} strokeWidth="2" />
+            <circle
+              className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+              cx="23"
+              cy="23"
+              r="11"
+              fill={BLUE_FILL}
+              stroke={BLUE_STROKE}
+              strokeWidth="2"
+            />
           </svg>
           <span className="text-[8px] font-medium text-slate-500 dark:text-slate-400">Pulse</span>
         </div>
@@ -33,7 +41,7 @@ export function AnimatedShapesArt() {
         <div className="flex flex-col items-center gap-1.5">
           <svg width="46" height="46" viewBox="0 0 46 46" className="overflow-visible">
             <rect
-              className="fa-glow"
+              className="fa-glow dark:fill-(--art-ink-stroke)"
               x="10"
               y="14"
               width="26"
@@ -43,6 +51,7 @@ export function AnimatedShapesArt() {
               style={{ filter: 'blur(3px)' }}
             />
             <rect
+              className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
               x="12"
               y="15"
               width="22"
@@ -75,6 +84,7 @@ export function FlowingArrowsArt() {
     <Frame canvas>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
         <rect
+          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
           x="20"
           y="37"
           width="46"
@@ -85,6 +95,7 @@ export function FlowingArrowsArt() {
           strokeWidth="2"
         />
         <rect
+          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
           x="154"
           y="37"
           width="46"
@@ -95,9 +106,17 @@ export function FlowingArrowsArt() {
           strokeWidth="2"
         />
         {/* faint static rail under the marching dashes */}
-        <line x1="66" y1="48" x2="148" y2="48" stroke="#d8dee8" strokeWidth="2" />
         <line
-          className="fa-flow"
+          className="dark:stroke-(--art-grid)"
+          x1="66"
+          y1="48"
+          x2="148"
+          y2="48"
+          stroke="#d8dee8"
+          strokeWidth="2"
+        />
+        <line
+          className="fa-flow dark:stroke-(--art-ink-stroke)"
           x1="66"
           y1="48"
           x2="148"
@@ -106,7 +125,11 @@ export function FlowingArrowsArt() {
           strokeWidth="2.5"
           strokeLinecap="round"
         />
-        <path d="M154 48 l-8 -4.5 v9 z" fill={BLUE_STROKE} />
+        <path
+          className="dark:fill-(--art-ink-stroke)"
+          d="M154 48 l-8 -4.5 v9 z"
+          fill={BLUE_STROKE}
+        />
       </svg>
       <span className="absolute bottom-1.5 right-2 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-slate-500 shadow-sm dark:bg-slate-900/90 dark:text-slate-400">
         flow
@@ -147,6 +170,7 @@ export function LivingBackgroundArt() {
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
         <g opacity="0.85">
           <rect
+            className="dark:stroke-(--art-ink-stroke) dark:fill-(--art-ink-fill)"
             x="76"
             y="34"
             width="68"
@@ -166,14 +190,15 @@ export function LivingBackgroundArt() {
 }
 
 // Animated icons: ordinary glyphs that animate (Spinner, Gear, Heartbeat,
-// Signal) — picked from the Animated chip of the Icons palette.
+// Signal) — picked from the Animated chip of the Icons palette. The tiles are
+// palette chrome, so the glyphs take the chrome accent in dark.
 export function AnimatedIconsArt() {
   return (
     <Frame>
       <div className="flex h-full items-center justify-center gap-3">
         <IconTile label="Spinner">
           <path
-            className="fa-spin-cont"
+            className="fa-spin-cont dark:stroke-brand-300"
             d="M12 3 a9 9 0 1 1 -7 3.3"
             fill="none"
             stroke={BLUE_STROKE}
@@ -182,7 +207,12 @@ export function AnimatedIconsArt() {
           />
         </IconTile>
         <IconTile label="Gear">
-          <g className="fa-spin-cont" stroke={BLUE_STROKE} strokeWidth="1.8" fill="none">
+          <g
+            className="fa-spin-cont dark:stroke-brand-300"
+            stroke={BLUE_STROKE}
+            strokeWidth="1.8"
+            fill="none"
+          >
             {Array.from({ length: 8 }).map((_, i) => (
               <line
                 key={i}
@@ -205,8 +235,21 @@ export function AnimatedIconsArt() {
           />
         </IconTile>
         <IconTile label="Signal">
-          <g fill="none" stroke={SKY} strokeWidth="2" strokeLinecap="round">
-            <circle cx="12" cy="18" r="1.6" fill={SKY} stroke="none" />
+          <g
+            className="dark:stroke-brand-300"
+            fill="none"
+            stroke={SKY}
+            strokeWidth="2"
+            strokeLinecap="round"
+          >
+            <circle
+              className="dark:fill-brand-300"
+              cx="12"
+              cy="18"
+              r="1.6"
+              fill={SKY}
+              stroke="none"
+            />
             <path
               className="fa-pulse"
               d="M7.5 14 a6 6 0 0 1 9 0"

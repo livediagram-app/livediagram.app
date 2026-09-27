@@ -32,6 +32,7 @@ export function Cursor({ color, label }: { color: string; label?: string }) {
 export function FolderIcon({ muted = false }: { muted?: boolean }) {
   return (
     <svg
+      className={muted ? 'dark:fill-slate-600 dark:stroke-slate-500' : 'dark:stroke-brand-300'}
       width="11"
       height="11"
       viewBox="0 0 16 16"
@@ -57,6 +58,7 @@ export function DiagramIcon() {
 export function LinkIcon() {
   return (
     <svg
+      className="dark:stroke-brand-300"
       width="11"
       height="11"
       viewBox="0 0 16 16"
@@ -91,6 +93,7 @@ export function RevertIcon() {
 export function TeamIcon() {
   return (
     <svg
+      className="dark:stroke-brand-300"
       width="11"
       height="11"
       viewBox="0 0 16 16"
@@ -108,6 +111,7 @@ export function TeamIcon() {
 export function ClockIcon() {
   return (
     <svg
+      className="dark:stroke-brand-300"
       width="11"
       height="11"
       viewBox="0 0 16 16"
@@ -167,6 +171,7 @@ export function PixelWalker({
 export function SlidersIcon() {
   return (
     <svg
+      className="dark:stroke-brand-300"
       width="11"
       height="11"
       viewBox="0 0 16 16"
@@ -175,9 +180,11 @@ export function SlidersIcon() {
       strokeWidth="1.5"
     >
       <path d="M2 4 H14 M2 8 H14 M2 12 H14" strokeLinecap="round" />
-      <circle cx="5" cy="4" r="1.6" fill="white" />
-      <circle cx="11" cy="8" r="1.6" fill="white" />
-      <circle cx="7" cy="12" r="1.6" fill="white" />
+      <g fill="white" className="dark:fill-slate-950">
+        <circle cx="5" cy="4" r="1.6" />
+        <circle cx="11" cy="8" r="1.6" />
+        <circle cx="7" cy="12" r="1.6" />
+      </g>
     </svg>
   );
 }

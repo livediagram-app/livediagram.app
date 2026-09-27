@@ -16,7 +16,7 @@ export function MitArt() {
           <span className="text-[9px] font-semibold text-slate-700 dark:text-slate-200">
             livediagram
           </span>
-          <span className="rounded bg-slate-900 px-1.5 py-0.5 text-[7px] font-semibold text-white">
+          <span className="rounded bg-slate-900 px-1.5 py-0.5 text-[7px] font-semibold text-white dark:bg-slate-700">
             MIT
           </span>
         </div>
@@ -98,7 +98,7 @@ function SparkIcon() {
 
 function GitHubIcon() {
   return (
-    <svg width="12" height="12" viewBox="0 0 16 16" fill="#334155">
+    <svg className="dark:fill-slate-300" width="12" height="12" viewBox="0 0 16 16" fill="#334155">
       <path d="M8 0C3.6 0 0 3.6 0 8c0 3.5 2.3 6.5 5.5 7.6.4.1.5-.2.5-.4v-1.4c-2.2.5-2.7-1-2.7-1-.4-.9-.9-1.2-.9-1.2-.7-.5.1-.5.1-.5.8.1 1.2.8 1.2.8.7 1.2 1.9.9 2.3.7.1-.5.3-.9.5-1.1-1.8-.2-3.6-.9-3.6-3.9 0-.9.3-1.6.8-2.1-.1-.2-.4-1 .1-2.1 0 0 .7-.2 2.2.8.6-.2 1.3-.3 2-.3.7 0 1.4.1 2 .3 1.5-1 2.2-.8 2.2-.8.5 1.1.2 1.9.1 2.1.5.5.8 1.2.8 2.1 0 3-1.8 3.7-3.6 3.9.3.3.6.8.6 1.6v2.3c0 .2.1.5.6.4C13.7 14.5 16 11.5 16 8c0-4.4-3.6-8-8-8z" />
     </svg>
   );
@@ -227,6 +227,7 @@ export function EasyStartArt() {
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
         <g className="fa-pop" style={{ animationDelay: '0.5s' }}>
           <rect
+            className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
             x="74"
             y="33"
             width="66"
@@ -236,7 +237,15 @@ export function EasyStartArt() {
             stroke={BLUE_STROKE}
             strokeWidth="2"
           />
-          <text x="107" y="52" textAnchor="middle" fontSize="12" fontWeight="600" fill={BLUE_TEXT}>
+          <text
+            className="dark:fill-(--art-ink-text)"
+            x="107"
+            y="52"
+            textAnchor="middle"
+            fontSize="12"
+            fontWeight="600"
+            fill={BLUE_TEXT}
+          >
             Start
           </text>
         </g>
@@ -272,6 +281,7 @@ export function DepthArt() {
     <Frame canvas>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
         <rect
+          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
           x="28"
           y="38"
           width="58"
@@ -282,7 +292,7 @@ export function DepthArt() {
           strokeWidth="2"
         />
         <rect
-          className="fa-pulse"
+          className="fa-pulse dark:stroke-brand-500"
           x="24"
           y="34"
           width="66"
@@ -319,7 +329,15 @@ function GroupGlyph() {
       strokeWidth="1.4"
     >
       <rect x="2" y="2" width="8" height="8" rx="1.5" />
-      <rect x="6" y="6" width="8" height="8" rx="1.5" fill="white" />
+      <rect
+        className="dark:fill-slate-900"
+        x="6"
+        y="6"
+        width="8"
+        height="8"
+        rx="1.5"
+        fill="white"
+      />
     </svg>
   );
 }
@@ -380,6 +398,7 @@ export function MultiplayerArt() {
     <Frame canvas>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
         <rect
+          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
           x="82"
           y="36"
           width="56"
@@ -417,6 +436,7 @@ export function AnyDeviceArt() {
         {/* shared mini diagram, drawn inside each screen via <use>-like repetition */}
         {/* Laptop */}
         <rect
+          className="dark:fill-(--art-paper) dark:stroke-slate-600"
           x="8"
           y="12"
           width="70"
@@ -427,19 +447,32 @@ export function AnyDeviceArt() {
           strokeWidth="1.5"
         />
         <path
+          className="dark:fill-slate-700 dark:stroke-slate-600"
           d="M2 58 L84 58 L80 62 L6 62 Z"
           fill="#e2e8f0"
           stroke="#cbd5e1"
           strokeWidth="1"
           strokeLinejoin="round"
         />
-        <g fill={BLUE_FILL} stroke={BLUE_STROKE} strokeWidth="1.2">
-          <line x1="40" y1="27" x2="48" y2="41" stroke={BLUE_STROKE} />
+        <g
+          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+          fill={BLUE_FILL}
+          stroke={BLUE_STROKE}
+          strokeWidth="1.2"
+        >
+          <line
+            className="dark:stroke-(--art-ink-stroke)"
+            x1="40"
+            y1="27"
+            x2="48"
+            y2="41"
+            stroke={BLUE_STROKE}
+          />
           <rect x="22" y="22" width="18" height="10" rx="2" />
           <rect x="48" y="36" width="18" height="10" rx="2" />
         </g>
         <rect
-          className="fa-hl"
+          className="fa-hl dark:stroke-brand-500"
           x="4"
           y="8"
           width="78"
@@ -450,12 +483,21 @@ export function AnyDeviceArt() {
           strokeWidth="2"
           style={{ animationDelay: '0s' }}
         />
-        <text x="43" y="74" textAnchor="middle" fontSize="7" fontWeight="500" fill="#64748b">
+        <text
+          className="dark:fill-slate-400"
+          x="43"
+          y="74"
+          textAnchor="middle"
+          fontSize="7"
+          fontWeight="500"
+          fill="#64748b"
+        >
           Laptop
         </text>
 
         {/* Tablet */}
         <rect
+          className="dark:fill-(--art-paper) dark:stroke-slate-600"
           x="92"
           y="12"
           width="46"
@@ -465,13 +507,25 @@ export function AnyDeviceArt() {
           stroke="#cbd5e1"
           strokeWidth="1.5"
         />
-        <g fill={BLUE_FILL} stroke={BLUE_STROKE} strokeWidth="1.2">
-          <line x1="110" y1="34" x2="121" y2="44" stroke={BLUE_STROKE} />
+        <g
+          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+          fill={BLUE_FILL}
+          stroke={BLUE_STROKE}
+          strokeWidth="1.2"
+        >
+          <line
+            className="dark:stroke-(--art-ink-stroke)"
+            x1="110"
+            y1="34"
+            x2="121"
+            y2="44"
+            stroke={BLUE_STROKE}
+          />
           <rect x="100" y="24" width="18" height="10" rx="2" />
           <rect x="113" y="44" width="18" height="10" rx="2" />
         </g>
         <rect
-          className="fa-hl"
+          className="fa-hl dark:stroke-brand-500"
           x="88"
           y="8"
           width="54"
@@ -482,12 +536,21 @@ export function AnyDeviceArt() {
           strokeWidth="2"
           style={{ animationDelay: '2s' }}
         />
-        <text x="115" y="80" textAnchor="middle" fontSize="7" fontWeight="500" fill="#64748b">
+        <text
+          className="dark:fill-slate-400"
+          x="115"
+          y="80"
+          textAnchor="middle"
+          fontSize="7"
+          fontWeight="500"
+          fill="#64748b"
+        >
           Tablet
         </text>
 
         {/* Phone */}
         <rect
+          className="dark:fill-(--art-paper) dark:stroke-slate-600"
           x="150"
           y="14"
           width="30"
@@ -497,14 +560,34 @@ export function AnyDeviceArt() {
           stroke="#cbd5e1"
           strokeWidth="1.5"
         />
-        <rect x="160" y="17" width="10" height="1.6" rx="0.8" fill="#cbd5e1" />
-        <g fill={BLUE_FILL} stroke={BLUE_STROKE} strokeWidth="1.2">
-          <line x1="163" y1="34" x2="167" y2="42" stroke={BLUE_STROKE} />
+        <rect
+          className="dark:fill-slate-600"
+          x="160"
+          y="17"
+          width="10"
+          height="1.6"
+          rx="0.8"
+          fill="#cbd5e1"
+        />
+        <g
+          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+          fill={BLUE_FILL}
+          stroke={BLUE_STROKE}
+          strokeWidth="1.2"
+        >
+          <line
+            className="dark:stroke-(--art-ink-stroke)"
+            x1="163"
+            y1="34"
+            x2="167"
+            y2="42"
+            stroke={BLUE_STROKE}
+          />
           <rect x="155" y="24" width="20" height="9" rx="2" />
           <rect x="156" y="42" width="20" height="9" rx="2" />
         </g>
         <rect
-          className="fa-hl"
+          className="fa-hl dark:stroke-brand-500"
           x="146"
           y="10"
           width="38"
@@ -515,7 +598,15 @@ export function AnyDeviceArt() {
           strokeWidth="2"
           style={{ animationDelay: '4s' }}
         />
-        <text x="165" y="80" textAnchor="middle" fontSize="7" fontWeight="500" fill="#64748b">
+        <text
+          className="dark:fill-slate-400"
+          x="165"
+          y="80"
+          textAnchor="middle"
+          fontSize="7"
+          fontWeight="500"
+          fill="#64748b"
+        >
           Phone
         </text>
       </svg>
@@ -532,6 +623,7 @@ export function ExportArt() {
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
         {/* On the canvas. */}
         <rect
+          className="dark:fill-(--art-paper) dark:stroke-slate-700"
           x="16"
           y="22"
           width="74"
@@ -542,6 +634,7 @@ export function ExportArt() {
           strokeWidth="1.5"
         />
         <rect
+          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
           x="28"
           y="32"
           width="30"
@@ -551,9 +644,21 @@ export function ExportArt() {
           stroke={BLUE_STROKE}
           strokeWidth="2"
         />
-        <path d="M43 47 v9" stroke={BLUE_STROKE} strokeWidth="2" />
-        <path d="M39 53 l4 5 4-5" fill="none" stroke={BLUE_STROKE} strokeWidth="2" />
+        <path
+          className="dark:stroke-(--art-ink-stroke)"
+          d="M43 47 v9"
+          stroke={BLUE_STROKE}
+          strokeWidth="2"
+        />
+        <path
+          className="dark:stroke-(--art-ink-stroke)"
+          d="M39 53 l4 5 4-5"
+          fill="none"
+          stroke={BLUE_STROKE}
+          strokeWidth="2"
+        />
         <rect
+          className="dark:stroke-(--art-ink-stroke) dark:fill-(--art-ink-fill)"
           x="28"
           y="56"
           width="30"
@@ -566,8 +671,15 @@ export function ExportArt() {
         <circle cx="74" cy="60" r="6" fill={PINK} opacity="0.85" />
 
         {/* Out. */}
-        <path d="M96 48 h22" stroke={SKY} strokeWidth="2" strokeLinecap="round" />
         <path
+          className="dark:stroke-brand-400"
+          d="M96 48 h22"
+          stroke={SKY}
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+        <path
+          className="dark:stroke-brand-400"
           d="M113 43 l6 5 -6 5"
           fill="none"
           stroke={SKY}
@@ -577,6 +689,7 @@ export function ExportArt() {
 
         {/* The file: the same marks, in the same places. */}
         <rect
+          className="dark:fill-(--art-paper) dark:stroke-brand-400"
           x="126"
           y="22"
           width="74"
@@ -587,6 +700,7 @@ export function ExportArt() {
           strokeWidth="2"
         />
         <rect
+          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
           x="138"
           y="32"
           width="30"
@@ -596,9 +710,21 @@ export function ExportArt() {
           stroke={BLUE_STROKE}
           strokeWidth="2"
         />
-        <path d="M153 47 v9" stroke={BLUE_STROKE} strokeWidth="2" />
-        <path d="M149 53 l4 5 4-5" fill="none" stroke={BLUE_STROKE} strokeWidth="2" />
+        <path
+          className="dark:stroke-(--art-ink-stroke)"
+          d="M153 47 v9"
+          stroke={BLUE_STROKE}
+          strokeWidth="2"
+        />
+        <path
+          className="dark:stroke-(--art-ink-stroke)"
+          d="M149 53 l4 5 4-5"
+          fill="none"
+          stroke={BLUE_STROKE}
+          strokeWidth="2"
+        />
         <rect
+          className="dark:stroke-(--art-ink-stroke) dark:fill-(--art-ink-fill)"
           x="138"
           y="56"
           width="30"
@@ -614,6 +740,7 @@ export function ExportArt() {
         {['PNG', 'SVG', 'PDF'].map((label, i) => (
           <g key={label} className="fa-pop" style={{ animationDelay: `${i * 0.25}s` }}>
             <rect
+              className="dark:fill-slate-900 dark:stroke-slate-600"
               x={126 + i * 26}
               y="78"
               width="22"
@@ -624,6 +751,7 @@ export function ExportArt() {
               strokeWidth="1.5"
             />
             <text
+              className="dark:fill-(--art-ink-text)"
               x={137 + i * 26}
               y="87"
               textAnchor="middle"

@@ -192,6 +192,7 @@ export function LockArt() {
     <Frame canvas>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
         <rect
+          className="dark:fill-(--art-ink-fill)"
           x="78"
           y="32"
           width="64"
@@ -203,9 +204,23 @@ export function LockArt() {
         />
         <g transform="translate(110 47)">
           <g className="fa-pop" style={{ animationDelay: '0.4s' }}>
-            <rect x="-7" y="-1" width="14" height="11" rx="2" fill="#475569" />
-            <path d="M-4 -1 V-4 a4 4 0 0 1 8 0 V-1" fill="none" stroke="#475569" strokeWidth="2" />
-            <circle cx="0" cy="4.5" r="1.4" fill="#fff" />
+            <rect
+              className="dark:fill-slate-300"
+              x="-7"
+              y="-1"
+              width="14"
+              height="11"
+              rx="2"
+              fill="#475569"
+            />
+            <path
+              className="dark:stroke-slate-300"
+              d="M-4 -1 V-4 a4 4 0 0 1 8 0 V-1"
+              fill="none"
+              stroke="#475569"
+              strokeWidth="2"
+            />
+            <circle className="dark:fill-slate-900" cx="0" cy="4.5" r="1.4" fill="#fff" />
           </g>
         </g>
       </svg>
@@ -223,6 +238,7 @@ export function DragDuplicateArt() {
     <Frame canvas>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
         <rect
+          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
           x="42"
           y="30"
           width="52"
@@ -234,6 +250,7 @@ export function DragDuplicateArt() {
         />
         <g className="fa-drag-dup">
           <rect
+            className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
             x="42"
             y="30"
             width="52"
@@ -262,8 +279,22 @@ export function LayersArt() {
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
         {/* Bottom plane + its square, always resting. */}
         <g transform="translate(110 62)">
-          <path d="M-42 0 0 16 42 0 0 -16 Z" fill="#eef2f7" stroke="#94a3b8" strokeWidth="2" />
-          <rect x="-9" y="-7" width="18" height="12" rx="2" fill="#cbd5e1" />
+          <path
+            className="dark:fill-slate-800 dark:stroke-slate-500"
+            d="M-42 0 0 16 42 0 0 -16 Z"
+            fill="#eef2f7"
+            stroke="#94a3b8"
+            strokeWidth="2"
+          />
+          <rect
+            className="dark:fill-slate-600"
+            x="-9"
+            y="-7"
+            width="18"
+            height="12"
+            rx="2"
+            fill="#cbd5e1"
+          />
         </g>
         {/* Middle plane, brand-tinted, pops in second. */}
         <g className="fa-pop" style={{ animationDelay: '0.35s' }}>
@@ -283,14 +314,21 @@ export function LayersArt() {
         {/* Eye chip beside the stack: the hide/show affordance. */}
         <g className="fa-pop" style={{ animationDelay: '1.1s' }}>
           <g transform="translate(178 26)">
-            <circle r="9" fill="#fff" stroke="#e2e8f0" strokeWidth="1.5" />
+            <circle
+              className="dark:fill-slate-900 dark:stroke-slate-700"
+              r="9"
+              fill="#fff"
+              stroke="#e2e8f0"
+              strokeWidth="1.5"
+            />
             <path
+              className="dark:stroke-slate-300"
               d="M-4.5 0 C-2.5 -3 2.5 -3 4.5 0 C2.5 3 -2.5 3 -4.5 0 Z"
               fill="none"
               stroke="#475569"
               strokeWidth="1.4"
             />
-            <circle r="1.4" fill="#475569" />
+            <circle className="dark:fill-slate-300" r="1.4" fill="#475569" />
           </g>
         </g>
       </svg>
@@ -308,6 +346,7 @@ export function AccountSyncArt() {
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
         {/* laptop */}
         <rect
+          className="dark:fill-(--art-paper) dark:stroke-slate-600"
           x="14"
           y="22"
           width="58"
@@ -318,19 +357,33 @@ export function AccountSyncArt() {
           strokeWidth="1.5"
         />
         <path
+          className="dark:fill-slate-700 dark:stroke-slate-600"
           d="M8 60 L78 60 L74 64 L12 64 Z"
           fill="#e2e8f0"
           stroke="#cbd5e1"
           strokeWidth="1"
           strokeLinejoin="round"
         />
-        <g fill={BLUE_FILL} stroke={BLUE_STROKE} strokeWidth="1.2">
-          <line x1="40" y1="34" x2="46" y2="46" stroke={BLUE_STROKE} />
+        <g
+          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+          fill={BLUE_FILL}
+          stroke={BLUE_STROKE}
+          strokeWidth="1.2"
+        >
+          <line
+            className="dark:stroke-(--art-ink-stroke)"
+            x1="40"
+            y1="34"
+            x2="46"
+            y2="46"
+            stroke={BLUE_STROKE}
+          />
           <rect x="24" y="30" width="16" height="8" rx="2" />
           <rect x="46" y="42" width="16" height="8" rx="2" />
         </g>
         {/* phone */}
         <rect
+          className="dark:fill-(--art-paper) dark:stroke-slate-600"
           x="156"
           y="20"
           width="28"
@@ -340,13 +393,26 @@ export function AccountSyncArt() {
           stroke="#cbd5e1"
           strokeWidth="1.5"
         />
-        <g fill={BLUE_FILL} stroke={BLUE_STROKE} strokeWidth="1.2">
-          <line x1="170" y1="34" x2="171" y2="46" stroke={BLUE_STROKE} />
+        <g
+          className="dark:fill-(--art-ink-fill) dark:stroke-(--art-ink-stroke)"
+          fill={BLUE_FILL}
+          stroke={BLUE_STROKE}
+          strokeWidth="1.2"
+        >
+          <line
+            className="dark:stroke-(--art-ink-stroke)"
+            x1="170"
+            y1="34"
+            x2="171"
+            y2="46"
+            stroke={BLUE_STROKE}
+          />
           <rect x="161" y="28" width="18" height="8" rx="2" />
           <rect x="162" y="44" width="18" height="8" rx="2" />
         </g>
         {/* dotted connectors to the sync cloud */}
         <line
+          className="dark:stroke-slate-600"
           x1="78"
           y1="42"
           x2="96"
@@ -356,6 +422,7 @@ export function AccountSyncArt() {
           strokeDasharray="3 2"
         />
         <line
+          className="dark:stroke-slate-600"
           x1="124"
           y1="42"
           x2="154"
@@ -367,13 +434,20 @@ export function AccountSyncArt() {
         {/* sync cloud with pulsing arrows */}
         <g transform="translate(98 31)">
           <path
+            className="dark:fill-brand-500/20 dark:stroke-brand-400"
             d="M5 20 a5 5 0 0 1 0 -10 a5.5 5.5 0 0 1 10.5 -1.4 A4 4 0 0 1 19 20 Z"
             fill="#e0f2fe"
             stroke={SKY}
             strokeWidth="1.5"
             strokeLinejoin="round"
           />
-          <g className="fa-pulse" stroke={SKY} strokeWidth="1.3" fill="none" strokeLinecap="round">
+          <g
+            className="fa-pulse dark:stroke-brand-400"
+            stroke={SKY}
+            strokeWidth="1.3"
+            fill="none"
+            strokeLinecap="round"
+          >
             <path d="M7.5 13 a4 4 0 0 1 8 -0.6" />
             <path d="M15.5 9.5 v3 h-3" />
             <path d="M16.5 15 a4 4 0 0 1 -8 0.6" />
@@ -448,6 +522,7 @@ export function ImagesArt() {
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
         {/* image element placed on the canvas */}
         <rect
+          className="dark:stroke-(--art-ink-stroke)"
           x="18"
           y="20"
           width="98"
@@ -468,7 +543,7 @@ export function ImagesArt() {
         </g>
         {/* selection ring + corner handles */}
         <rect
-          className="fa-pulse"
+          className="fa-pulse dark:stroke-brand-500"
           x="14"
           y="16"
           width="106"
@@ -487,6 +562,7 @@ export function ImagesArt() {
           ] as const
         ).map(([cx, cy], i) => (
           <rect
+            className="dark:stroke-brand-500"
             key={i}
             x={cx - 2.5}
             y={cy - 2.5}
@@ -502,6 +578,7 @@ export function ImagesArt() {
         {thumbs.map((t, i) => (
           <g key={i} transform={`translate(150 ${14 + i * 24})`}>
             <rect
+              className="dark:fill-slate-900 dark:stroke-slate-600"
               x="0"
               y="0"
               width="52"
@@ -514,7 +591,7 @@ export function ImagesArt() {
             <rect x="2" y="2" width="48" height="16" rx="1.5" fill={t.sky} />
             <path d="M2 18 L18 9 L30 16 L40 10 L50 18 Z" fill={t.hill} />
             <rect
-              className="fa-hl"
+              className="fa-hl dark:stroke-brand-500"
               x="-2"
               y="-2"
               width="56"
@@ -573,7 +650,7 @@ export function ShortcutsArt() {
         <div className="mt-0.5 flex items-center justify-between">
           <span className="text-[7px] text-slate-400">On this device</span>
           <span className="relative inline-flex h-3 w-6 items-center rounded-full bg-brand-500">
-            <span className="absolute right-0.5 h-2.5 w-2.5 rounded-full bg-white shadow dark:bg-slate-900" />
+            <span className="absolute right-0.5 h-2.5 w-2.5 rounded-full bg-white shadow" />
           </span>
         </div>
       </div>
@@ -592,9 +669,9 @@ export function DarkModeArt() {
       <div className="fa-off absolute inset-0 p-2">
         <MiniEditorMock dark />
       </div>
-      <span className="absolute bottom-1.5 right-2 inline-flex h-4 w-8 items-center rounded-full bg-slate-200 shadow-sm dark:bg-slate-700">
+      <span className="absolute bottom-1.5 right-2 inline-flex h-4 w-8 items-center rounded-full bg-slate-200 shadow-sm dark:bg-slate-600">
         <span className="fa-off absolute inset-0 rounded-full bg-slate-700" />
-        <span className="fa-knob relative z-10 ml-0.5 h-3 w-3 rounded-full bg-white shadow dark:bg-slate-900" />
+        <span className="fa-knob relative z-10 ml-0.5 h-3 w-3 rounded-full bg-white shadow" />
       </span>
     </Frame>
   );
@@ -612,10 +689,8 @@ export function SessionToolsArt() {
             2:30
           </span>
         </div>
-        <div className="rounded-[3px] border border-sky-600/40 bg-sky-50 px-3 py-1.5 dark:bg-sky-500/10">
-          <span className="text-[8px] font-medium text-sky-900 dark:text-sky-200">
-            Ship the redesign
-          </span>
+        <div className="rounded-[3px] border border-sky-600/40 bg-sky-50 px-3 py-1.5">
+          <span className="text-[8px] font-medium text-sky-900">Ship the redesign</span>
           <div className="mt-1 flex gap-1">
             {[0, 1, 2, 3].map((i) => (
               <span
