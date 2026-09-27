@@ -56,6 +56,15 @@ describe('flowchart.drawio', () => {
     expect(page!.name).toBe('Order flow');
     // draw.io's white page is its default paper: the theme decides.
     expect(page!.backgroundColor).toBeUndefined();
+    // Default colours follow the tab theme; picked colours are kept verbatim.
+    const ship = byLabel(page!, 'Ship order')!;
+    expect(ship).not.toHaveProperty('fillColor');
+    expect(ship).not.toHaveProperty('strokeColor');
+    expect(ship).not.toHaveProperty('textColor');
+    expect(byLabel(page!, 'Order received')).toMatchObject({
+      fillColor: '#d5e8d4',
+      strokeColor: '#82b366',
+    });
     expect(shapes(page!).map((s) => s.shape)).toEqual([
       'stadium',
       'square',

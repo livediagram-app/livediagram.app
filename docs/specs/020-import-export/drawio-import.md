@@ -203,8 +203,11 @@ When the cell has no label, the box is labelled with the stencil's readable name
   is kept verbatim; `none` is `transparent` for a fill and `strokeWidth: 'none'` for a stroke;
   `light-dark(a, b)` takes the light value `a`. **`default`, or no colour at all, is left unset**, so
   the element takes the tab's theme like anything drawn in livediagram: draw.io's white-and-black
-  defaults become the theme's defaults (a documented decision, not a loss). The same goes for the
-  page: draw.io's white page is its default paper and leaves the tab's background unset.
+  defaults become the theme's defaults. The same goes for the page: draw.io's white page is its
+  default paper and leaves the tab's background unset. This is an operator decision, not a loss:
+  default colours and the white page follow the tab theme, and colours the author picked are kept.
+  Keeping draw.io's white page and black-on-white shapes was considered and rejected, because it
+  leaves a white island on a dark canvas.
 - **Legible labels on own fills.** A label with no colour of its own on a shape (or lane title, entity,
   table cell) with a fill of its own takes the ink that reads on that fill: dark on a light fill, white
   on a dark one. draw.io's default label ink is black on paper, and the theme's text colour pairs with

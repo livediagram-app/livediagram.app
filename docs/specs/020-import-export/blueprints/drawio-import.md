@@ -213,7 +213,7 @@ flip (every kind except `square`, `circle`, `diamond`, `hexagon`, `cylinder`, `c
 
 ### 10. Vertex properties (`boxedProps`, `textProps`)
 
-1. `fillColor`: `hex` → value; `none` → `'transparent'`; `unset` → omitted.
+1. `fillColor`: `hex` → value; `none` → `'transparent'`; `unset` → omitted. Unset colours stay omitted by the spec's operator decision (default colours and the white page follow the tab theme); this applies to every colour map below.
 2. `strokeColor`: `hex` → value; `none` → `strokeWidth: 'none'`.
 3. `strokeWidth` px → nearest of `BORDER_STROKE_PX` (`thin` 1, `medium` 2, `thick` 4,
    `extra-thick` 7), ties to the thinner (D14); `0` → `'none'`. Absent → `thin` (draw.io's 1 px, D15).
