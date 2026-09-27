@@ -331,6 +331,8 @@ export default function NewDocumentPage() {
     track('Document', 'Created', offline ? 'Offline' : 'Cloud');
     track('Theme', 'Changed', themeTelemetryLabel(themeId));
     if (templateKind) track('Template', 'Used', titleCaseType(templateKind));
+    // A whiteboard tab born from the wizard (docs/specs/023-whiteboard/whiteboard.md "Telemetry").
+    if (templateKind === 'whiteboard') track('Whiteboard', 'Created', 'Template');
     cta.trackCreated();
     // Placement. The Settings step's picker (docs/specs/006-document/offline-mode.md) is authoritative: the
     // URL context (/new?folder=<id>, /new?team=<id>&folder=<id>) pre-seeds it

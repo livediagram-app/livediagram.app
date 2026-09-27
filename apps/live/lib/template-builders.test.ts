@@ -85,6 +85,7 @@ const ALL_KINDS = [
   'state-machine',
   'floor-plan',
   'event-storming',
+  'whiteboard',
 ] as const satisfies readonly TemplateKind[];
 
 // Real exhaustiveness check: any TemplateKind missing from
@@ -111,6 +112,12 @@ function coordsOf(el: Element): { x: number; y: number }[] {
   }
   return [{ x: el.x, y: el.y }];
 }
+
+describe('the whiteboard template', () => {
+  it('starts empty: a whiteboard is a clean board to draw on', () => {
+    expect(buildTemplate('whiteboard', 0, 0)).toEqual([]);
+  });
+});
 
 describe('the event-storming template', () => {
   it('seeds one domain event reading Board Created, and no text element', () => {
@@ -145,7 +152,7 @@ describe('buildTemplate translation invariance', () => {
   // 'blank' is intentionally empty (no seeded element, docs/specs/007-editor/new-document-route.md), so it has no
   // coordinates to shift — excluded from this invariance check (it stays in
   // ALL_KINDS above for the exhaustiveness assertion).
-  it.each(ALL_KINDS.filter((k) => k !== 'blank'))(
+  it.each(ALL_KINDS.filter((k) => k !== 'blank' && k !== 'whiteboard'))(
     '%s: every coordinate shifts by (cx, cy)',
     (kind) => {
       const atOrigin = buildTemplate(kind, 0, 0);

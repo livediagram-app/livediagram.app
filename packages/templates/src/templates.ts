@@ -125,7 +125,11 @@ export type TemplateKind =
   // exploring a business domain — orange domain events first, the rest
   // of the notation arrives incrementally. Colours ARE the semantics,
   // so its stickies pin their fills with `themeLockFill`.
-  | 'event-storming';
+  | 'event-storming'
+  // Whiteboard (docs/specs/023-whiteboard/whiteboard.md): a blank tab of the whiteboard KIND, drawn on
+  // with a dock of pens rather than the palette. Shown beside Blank as a
+  // quick-pick, never inside a category grid.
+  | 'whiteboard';
 
 export type TemplateDescriptor = {
   kind: TemplateKind;
@@ -153,6 +157,11 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'blank',
     title: 'Blank diagram',
     description: 'An empty canvas to start with whatever you like.',
+  },
+  {
+    kind: 'whiteboard',
+    title: 'Whiteboard',
+    description: 'A plain board to draw on with pens, stickies and shapes.',
   },
   {
     kind: 'mindmap',
@@ -584,6 +593,8 @@ const TEMPLATE_CATEGORY: Record<TemplateKind, TemplateCategory> = {
   'uml-class': 'technical',
   'state-machine': 'technical',
   'event-storming': 'technical',
+  // Nominal, like Blank: the picker shows Whiteboard only as a quick-pick.
+  whiteboard: 'design',
 };
 
 export function templateCategory(kind: TemplateKind): TemplateCategory {
@@ -697,6 +708,8 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   'empathy-map': 'grid',
   funnel: 'blank',
   storyboard: 'crosshatch',
+  // A whiteboard starts Plain (docs/specs/023-whiteboard/whiteboard.md "Board background").
+  whiteboard: 'blank',
 };
 
 // Tab-level overrides a specific template ships with, applied on top
@@ -724,6 +737,7 @@ export function templateCanvasOverrides(kind: TemplateKind): Partial<Tab> {
   // The kind, not a layer id, is what the editor reads to decide it is a
   // workshop board, so it must land on every application path: the picker,
   // /new, and the MCP worker all go through here.
+  if (kind === 'whiteboard') overrides.kind = 'whiteboard';
   if (kind === 'event-storming') {
     overrides.kind = 'event-storming';
     // The seed note is built on a lane, so the board is born settled and the

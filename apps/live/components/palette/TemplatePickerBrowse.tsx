@@ -20,6 +20,7 @@ export function TemplatePickerBrowse({
   openCategory,
   setOpenCategory,
   blankTemplate,
+  whiteboardTemplate,
   categoryTemplates,
   templateKind,
   onTemplateCommit,
@@ -34,6 +35,8 @@ export function TemplatePickerBrowse({
   openCategory: TemplateCategory | null;
   setOpenCategory: (c: TemplateCategory | null) => void;
   blankTemplate: TemplateDescriptor | undefined;
+  // The whiteboard quick-pick beside Blank (docs/specs/023-whiteboard/whiteboard.md).
+  whiteboardTemplate: TemplateDescriptor | undefined;
   categoryTemplates: (category: TemplateCategory) => TemplateDescriptor[];
   templateKind: TemplateKind;
   // Single-click a template card: select it AND advance to the theme step
@@ -116,6 +119,14 @@ export function TemplatePickerBrowse({
                 onCommit={() => onTemplateCommit('blank')}
               />
             ) : null}
+            {whiteboardTemplate ? (
+              <TemplateCard
+                template={whiteboardTemplate}
+                active={templateKind === 'whiteboard'}
+                onSelect={() => onTemplateCommit('whiteboard')}
+                onCommit={() => onTemplateCommit('whiteboard')}
+              />
+            ) : null}
             {TEMPLATE_CATEGORIES.map((cat) => {
               const items = categoryTemplates(cat.id);
               if (items.length === 0) return null;
@@ -126,7 +137,11 @@ export function TemplatePickerBrowse({
                   description={cat.description}
                   count={items.length}
                   previews={items.map((t) => t.kind)}
-                  selected={templateKind !== 'blank' && templateCategory(templateKind) === cat.id}
+                  selected={
+                    templateKind !== 'blank' &&
+                    templateKind !== 'whiteboard' &&
+                    templateCategory(templateKind) === cat.id
+                  }
                   onOpen={() => setOpenCategory(cat.id)}
                 />
               );

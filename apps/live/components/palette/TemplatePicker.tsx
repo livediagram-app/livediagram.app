@@ -20,7 +20,8 @@ import { NewDocumentSettingsStep } from './template-picker-settings';
 import { DEFAULT_SAVE_LOCATION, type SaveLocationId } from '@/lib/save-locations';
 import { TemplatePickerIdentityRow } from './TemplatePickerIdentityRow';
 import { PencilIcon } from './template-picker-icons';
-import { WizardSteps } from './template-picker-wizard';
+import { WizardSteps, resolveWizardStep, type WizardStep } from './template-picker-wizard';
+import { DEFAULT_SCHEME_ID } from '@livediagram/diagram';
 
 // Whether this render is past hydration, as a store with nothing to subscribe to: prerender and
 // hydration read the server snapshot, every later render the client one.
@@ -231,7 +232,16 @@ export function TemplatePicker({
   // the keyed step container below.
   const [stepDir, setStepDir] = useState<'forward' | 'backward'>('forward');
   const STEP_ORDER = ['template', 'theme', 'settings'] as const;
-  const goToStep = (next: 'template' | 'theme' | 'settings') => {
+  // `kind` is passed by a card click, whose setTemplateKind has not applied yet.
+  const goToStep = (requested: WizardStep, kind: TemplateKind = templateKind) => {
+    const next = resolveWizardStep(requested, kind, isWelcome);
+    // A whiteboard has no theme step (docs/specs/023-whiteboard/whiteboard.md): it keeps the Default
+    // scheme, and Quick Start, having no Location step, lands it at once.
+    if (next !== requested) setThemeId(DEFAULT_SCHEME_ID);
+    if (next === 'commit') {
+      onPick(kind, effectiveName, DEFAULT_SCHEME_ID, { saveLocation });
+      return;
+    }
     // The Settings step only exists on the welcome flow (an existing
     // document has no name / placement / offline choice to make).
     if (next === 'settings' && !isWelcome) return;
@@ -271,9 +281,14 @@ export function TemplatePicker({
   // "start from scratch" card on the overview; `categoryTemplates` returns
   // a category's templates with Blank excluded (it keeps the shuffled
   // order so the preview collages rotate on each open).
+  // Whiteboard sits beside it the same way: a kind of tab to start, not a
+  // scaffold (docs/specs/023-whiteboard/whiteboard.md "Creating one").
   const blankTemplate = TEMPLATES.find((t) => t.kind === 'blank');
+  const whiteboardTemplate = TEMPLATES.find((t) => t.kind === 'whiteboard');
   const categoryTemplates = (category: TemplateCategory) =>
-    templates.filter((t) => t.kind !== 'blank' && templateCategory(t.kind) === category);
+    templates.filter(
+      (t) => t.kind !== 'blank' && t.kind !== 'whiteboard' && templateCategory(t.kind) === category,
+    );
 
   // Section visibility. In wizard mode only the active step's section
   // shows; identity mode shows neither.
@@ -296,7 +311,7 @@ export function TemplatePicker({
   // needs to pick a theme) rather than committing the whole wizard.
   const onTemplateCommit = (kind: TemplateKind) => {
     setTemplateKind(kind);
-    if (isWizard) goToStep('theme');
+    if (isWizard) goToStep('theme', kind);
     else onPick(kind, effectiveName, themeId, { saveLocation });
   };
   // Double-clicking a destination card on the Settings step selects it AND
@@ -435,6 +450,7 @@ export function TemplatePicker({
                 openCategory={openCategory}
                 setOpenCategory={setOpenCategory}
                 blankTemplate={blankTemplate}
+                whiteboardTemplate={whiteboardTemplate}
                 categoryTemplates={categoryTemplates}
                 templateKind={templateKind}
                 onTemplateCommit={onTemplateCommit}

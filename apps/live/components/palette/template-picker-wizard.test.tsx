@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { WizardSteps } from './template-picker-wizard';
+import { WizardSteps, resolveWizardStep } from './template-picker-wizard';
 
 // A circle at the start of a pill is concentric with it (docs/specs/004-interface-design/color-scheme.md,
 // Usage rules): the leading padding equals the vertical padding at every breakpoint, so the pill's round
@@ -38,5 +38,23 @@ describe('the wizard step rail', () => {
       expect(inset.left, `leading inset ${bp || 'base'}`).toBe(inset.top);
       expect(inset.top, `vertical insets ${bp || 'base'}`).toBe(inset.bottom);
     }
+  });
+});
+
+describe('resolveWizardStep', () => {
+  it('walks an ordinary template through the theme step', () => {
+    expect(resolveWizardStep('theme', 'kanban', true)).toBe('theme');
+    expect(resolveWizardStep('theme', 'kanban', false)).toBe('theme');
+  });
+
+  it('skips the theme step for a whiteboard, which has no theme', () => {
+    // docs/specs/023-whiteboard/whiteboard.md "Creating one".
+    expect(resolveWizardStep('theme', 'whiteboard', true)).toBe('settings');
+    expect(resolveWizardStep('theme', 'whiteboard', false)).toBe('commit');
+  });
+
+  it('leaves every other step alone', () => {
+    expect(resolveWizardStep('settings', 'whiteboard', true)).toBe('settings');
+    expect(resolveWizardStep('template', 'whiteboard', false)).toBe('template');
   });
 });

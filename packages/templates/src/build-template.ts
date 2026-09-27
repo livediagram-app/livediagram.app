@@ -164,6 +164,10 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
       return buildFloorPlan(cx, cy);
     case 'event-storming':
       return buildEventStorming(cx, cy);
+    // A whiteboard is a clean board (docs/specs/023-whiteboard/whiteboard.md): what makes it one is its
+    // kind, which templateCanvasOverrides sets, not any seeded element.
+    case 'whiteboard':
+      return [];
   }
 }
 

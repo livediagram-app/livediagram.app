@@ -180,4 +180,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'UI·Toggled',
   'UI·Used',
   'UI·View',
+  // Whiteboard tabs (docs/specs/023-whiteboard/whiteboard.md): created (Template / NewTab / Import).
+  'Whiteboard·Created',
 ];

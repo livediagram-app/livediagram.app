@@ -126,6 +126,8 @@ export function useTemplateFlow(opts: {
     // so emit Theme / Changed in the same flow that /live/new uses for
     // its symmetric "create with a chosen theme" event.
     track('Template', 'Used', titleCaseType(kind));
+    // Quick Start is the new-tab entry (docs/specs/023-whiteboard/whiteboard.md "Telemetry").
+    if (kind === 'whiteboard') track('Whiteboard', 'Created', 'NewTab');
     if (themeId) {
       track('Theme', 'Changed', themeTelemetryLabel(themeId));
     }
