@@ -3,6 +3,7 @@ import { articleHref, type Article } from '@/lib/articles';
 import { FEATURE_ICONS } from '@/lib/featureIcons';
 import { SUPPORT_ARTICLE_ICONS, SUPPORT_ARTICLE_FALLBACK } from '@/lib/articleIcons';
 import { ArrowRightIcon } from '@/lib/chrome-icons';
+import { GlyphDisc } from '@livediagram/ui';
 
 export function ArticleCard({ article, number }: { article: Article; number?: number }) {
   // A numbered card (e.g. Getting Started) leads with its step badge; every
@@ -22,12 +23,13 @@ export function ArticleCard({ article, number }: { article: Article; number?: nu
     >
       <div className="flex items-start gap-3">
         {number !== undefined ? (
-          <span
+          <GlyphDisc
+            size={28}
             aria-hidden
-            className="flex size-7 shrink-0 items-center justify-center rounded-full bg-brand-600 text-sm font-semibold text-white transition-colors group-hover:bg-brand-700"
+            className="bg-brand-600 text-sm font-semibold text-white transition-colors group-hover:bg-brand-700"
           >
             {number}
-          </span>
+          </GlyphDisc>
         ) : (
           <span
             aria-hidden
