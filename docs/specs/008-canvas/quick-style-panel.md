@@ -63,9 +63,16 @@ place you dress what you drew sit together, and nothing new appears somewhere el
 - **Something is already stacked under the Palette** (Comments, AI): the panel steps down past it,
   one gap below the lowest panel in the Palette's column.
 - **No room beneath** (a Palette docked at the bottom, or a short window): directly above the Palette
-  if it fits there whole; else beneath it with a capped height and a scrolling body, as long as at
-  least 96 px (the header and one row) is free: docked and scrolling is better than jumping into the middle of the canvas; else it falls back to the right-edge placement
-  below.
+  if it fits there whole; else it **stays docked and scrolls**: beneath the Palette with its height
+  capped to the room there and its body scrolling, as long as at least 96 px (the header and one
+  row) is free. Only below that does it fall back to the right-edge placement.
+
+  Staying docked is the decision, not a compromise: the panel's place is the Palette's stack, and a
+  panel that jumps into the middle of the canvas when the window is a little short covers the very
+  diagram it is styling and is no longer where the eye left it. A common case is a 900 px window
+  with the Palette open on Favourites, where the last row (Actions) scrolls into view; collapsing
+  the Palette gives the panel its full height back.
+
 - **No Palette on screen**: the right-edge placement below.
 
 ### Toolbar and Minimal: the right edge
@@ -74,6 +81,13 @@ In the Toolbar layout ([Toolbar layout](../007-editor/toolbar-layout.md)) the Pa
 across the top, so there is no panel to dock under. The quick style panel sits **on the right edge,
 vertically centred**, in its compact form (no header). Minimal does the same: its Palette is a
 popover that comes and goes, not a resting panel.
+
+The compact form is **narrow** (184 px, against the Floating panel's Palette width), because on
+the right edge it stands alone over the canvas rather than inside a column of chrome, and a wide
+block there reads as a second sidebar. The colour swatches draw a little smaller (20 px) but each
+still sits in a **24 × 24 px target** (WCAG 2.2, 2.5.8 target size), seven to a row with the
+targets touching, so the row is exactly seven targets wide. The three-option rows share the same
+width.
 
 ### Collisions
 
@@ -167,6 +181,35 @@ The seven colours are **theme-relative**:
 - Every swatch is named by a colour word ("Theme default", "Green", "Deep orange"), never a hex, for
   its tooltip and its accessible name.
 
+## Custom swatches
+
+A theme's six colours are a good start and never the whole story: a brand colour, a status colour
+a team already uses, the exact blue of last quarter's deck. Any of the six can be replaced with a
+colour of your own.
+
+- **Right-click a swatch** (slots 1 to 6, in either row) to open a small popover: a colour picker
+  with a hex field, and **Clear override**. Picking a colour saves it **into that swatch**,
+  replacing that slot's theme colour; the swatch is then used like any other. The popover styles
+  nothing by itself: choosing the swatch (a left click) is what applies it, so editing the palette
+  and styling the selection stay two separate acts.
+- **Clear override** puts the slot's theme colour back. Elements already painted with the custom
+  colour keep it; the override only ever changed what the swatch offers.
+- **Keyboard**: on a focused swatch, **Shift+F10** or the **context-menu key** opens the same
+  popover, focus moves into it, and Escape closes it and returns focus to the swatch. (Touch
+  long-press does not apply: the panel is desktop only.)
+- **Slot 0, the theme default, cannot be overridden.** It is the one-click way back to the theme;
+  replacing it would remove that.
+- **An overridden swatch is marked**: a small dot in its corner, drawn to contrast with the colour
+  underneath. It is **named accurately** for assistive technology and in its tooltip:
+  "Custom orange, in place of Green", the custom colour's hue word first, then the theme colour
+  it replaces.
+- **A custom colour does not follow the theme.** It is yours, so picking it writes the colour
+  itself and binds no slot; a theme change leaves it where it is, like any hand-picked colour.
+  The slot's theme colour comes back only through Clear override.
+- **Style memory** remembers a custom colour like any other colour.
+- **Where overrides are kept**: provisionally in this browser, per diagram and per row, beside the
+  style memory. This is pending an operator decision and may move.
+
 ## Multi-selection
 
 The panel styles every selected shape and arrow at once, including mixed kinds: select three
@@ -238,10 +281,14 @@ WCAG 2.2 AA.
 - Every icon-only option has an accessible name and a **Tooltip** that repeats it (the name after a
   1 s hover, at once on keyboard focus, see
   [Tooltips, hover cards and popovers](../004-interface-design/tooltips-hover-cards-popovers.md)).
-- Focus is always visible. Options are at least 24 px targets.
+- Focus is always visible. Every option is a target of at least 24 × 24 px, including the
+  compact swatches whose colour draws smaller inside it.
+- An overridden swatch says so in its name and tooltip ("Custom orange, in place of Green"), not
+  only through its marker. Its popover is a labelled dialog ("Custom colour for Green, Stroke"),
+  reached by right-click, Shift+F10 or the context-menu key, and Escape returns focus to the swatch.
 - **Section titles are separate from the names**: a row's accessible name does not depend on its
-  visible title, so hiding the titles (a Minimal chrome option in Power user mode may do this) is a
-  clean toggle.
+  visible title, so hiding the titles under Minimal chrome
+  ([Power user mode](../007-editor/power-user-mode.md)) is a clean toggle.
 - **No layout shift.** Showing, hiding or re-placing the panel moves nothing else; it floats above
   the canvas.
 - **Reduced motion**: the panel fades in within the `micro` budget ([Motion](../004-interface-design/motion.md)),
@@ -254,7 +301,8 @@ Per [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md), 
 `Element·Changed` with its own token, distinct from the context menu's, so panel use can be read
 against menu use (which is the evidence the Actions section asks for): `QuickStroke`,
 `QuickBackground`, `QuickStrokeWidth`, `QuickStrokeStyle`, `QuickTextAlign`, `QuickIconAlign`, and
-`QuickClearStyles`.
+`QuickClearStyles`. Editing the palette is a setting, not a style change: `UI·Changed·QuickSwatchCustom`
+when a swatch is overridden, `UI·Changed·QuickSwatchReset` when an override is cleared.
 
 ## Out of scope
 
