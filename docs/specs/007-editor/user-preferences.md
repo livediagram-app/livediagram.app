@@ -492,6 +492,15 @@ and the dialog stays as the one complete, browsable index of them.
   and the row rings Toolbar there (`read(prefs, { mobile })`). Minimal and
   Toolbar both work on a phone.
 
+  A whole row can be desktop only too (`desktopOnly` on the row, holding the
+  note to show). On a phone-sized viewport the row stays visible, greyed,
+  showing its stored value, but its control (and its illustration) takes no
+  input, and the note says why; the stored value is untouched, so it still
+  applies on a desktop. The minimap's rows (Show Minimap, Dim Outside the
+  View, Minimap Size) are desktop only: a phone never draws the minimap
+  ([Minimap](../008-canvas/minimap.md)), so flipping them there did nothing
+  and read as broken.
+
   **Show Welcome Tour** is inverted against the stored `tourSeen`: the row
   asks "show me the tour?", the preference records "already seen". Because
   `tourSeen !== true` is necessary but NOT sufficient for the offer (TourHost
