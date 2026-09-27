@@ -3,7 +3,6 @@
 import { useId } from 'react';
 import { PencilIcon, Tooltip } from '@livediagram/ui';
 import { EyeIcon } from '@/components/panels/layers-panel-icons';
-import { CHROME_BTN } from '@/components/chrome/chrome-button';
 
 // Whether you are editing or viewing this diagram, in two shapes
 // (docs/specs/007-editor/live-app.md#role-pill): the title bar's pill, and Minimal chrome's
@@ -74,9 +73,13 @@ export function RolePill({
 }
 
 const ICON_LABEL: Record<Role, string> = { edit: 'Editing', view: 'Viewing (read-only)' };
+// The status bar control's box (chrome-button's CHROME_BTN), in the role's own
+// colour rather than the bar's slate.
+const ICON_BOX =
+  'flex h-7 min-w-7 shrink-0 items-center justify-center rounded-md transition hover:bg-slate-100 dark:hover:bg-slate-800';
 const ICON_TONE: Record<Role, string> = {
-  edit: 'text-emerald-600 dark:text-emerald-300',
-  view: 'text-amber-600 dark:text-amber-300',
+  edit: 'text-emerald-700 dark:text-emerald-300',
+  view: 'text-amber-700 dark:text-amber-300',
 };
 
 // Minimal chrome's stand-in for the pill: first in the status bar.
@@ -89,7 +92,7 @@ export function RoleStatusIcon({ role, onToggle }: { role: Role; onToggle?: () =
       onClick={onToggle}
       aria-label={label}
       data-role-icon={role}
-      className={`${CHROME_BTN} !ml-0 ${ICON_TONE[role]}`}
+      className={`${ICON_BOX} ${ICON_TONE[role]}`}
     >
       {glyph}
     </button>
@@ -99,7 +102,7 @@ export function RoleStatusIcon({ role, onToggle }: { role: Role; onToggle?: () =
       tabIndex={0}
       aria-label={label}
       data-role-icon={role}
-      className={`${CHROME_BTN} !ml-0 ${ICON_TONE[role]}`}
+      className={`${ICON_BOX} ${ICON_TONE[role]}`}
     >
       {glyph}
     </span>

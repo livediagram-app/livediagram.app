@@ -280,7 +280,7 @@ export function MovablePanel({
         <div className="flex items-center justify-between gap-2 rounded-t-lg border-b border-slate-200 px-2 py-1.5 dark:border-slate-800">
           <PanelTitle title={title} />
           {headerExtra || headerActions || (helpArticle && !minimalChrome) ? (
-            <div className="flex items-center gap-1">
+            <div className="ml-auto flex items-center gap-1">
               {headerExtra}
               {headerActions}
               {helpArticle && !minimalChrome ? <HelpArticleLink article={helpArticle} /> : null}

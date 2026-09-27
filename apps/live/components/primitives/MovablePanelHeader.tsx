@@ -68,7 +68,9 @@ export function MovablePanelHeader({
           {headerExtra}
         </div>
       ) : null}
-      <div className="flex items-center gap-1">
+      {/* ml-auto keeps the buttons at the right when Minimal chrome hides the
+          title (docs/specs/007-editor/power-user-mode.md): nothing moves. */}
+      <div className="ml-auto flex items-center gap-1">
         {headerActions ? (
           <div onPointerDown={(e) => e.stopPropagation()} className="flex items-center gap-1">
             {headerActions}

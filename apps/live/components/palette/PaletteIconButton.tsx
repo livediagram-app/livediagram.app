@@ -203,9 +203,13 @@ export function IconButton({
         onDragEnd?.(e);
       }}
       className={
-        captionHidden
+        hideCaption
           ? `relative flex h-9 w-9 items-center justify-center rounded-md transition disabled:cursor-not-allowed disabled:opacity-50 ${tone}`
-          : `relative flex w-full flex-col items-center justify-start gap-0.5 rounded-md px-0.5 py-1 transition disabled:cursor-not-allowed disabled:opacity-50 ${tone}`
+          : minimalChrome
+            ? // Keeps its grid cell's width, so the icon stays centred where the
+              // captioned tile had it.
+              `relative flex h-9 w-full items-center justify-center rounded-md transition disabled:cursor-not-allowed disabled:opacity-50 ${tone}`
+            : `relative flex w-full flex-col items-center justify-start gap-0.5 rounded-md px-0.5 py-1 transition disabled:cursor-not-allowed disabled:opacity-50 ${tone}`
       }
     >
       {captionHidden ? (
