@@ -60,7 +60,7 @@ import {
 
 // Every palette tile glyph is drawn at this size (docs/specs/004-interface-design/iconography.md), so a strip of
 // tiles reads as one set.
-const TILE_GLYPH_PX = 18;
+export const TILE_GLYPH_PX = 18;
 
 // Lucide's sticky-note as its two paths: the note body takes the paper fill, the corner fold does not.
 const pathD = (i: number) => {
@@ -600,7 +600,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     // The mode's OWN glyph, the one the canvas-tool popover shows for it
     // (buildCanvasToolOptions): eight identical pointers told the reader
     // nothing about which mode a row would hand out.
-    icon: <AvatarModeIcon />,
+    icon: <AvatarModeIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'tools:mode-select',
@@ -617,7 +617,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     // The mode's OWN glyph, the one the canvas-tool popover shows for it
     // (buildCanvasToolOptions): eight identical pointers told the reader
     // nothing about which mode a row would hand out.
-    icon: <SelectIcon />,
+    icon: <SelectIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'tools:mode-pan',
@@ -634,7 +634,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     // The mode's OWN glyph, the one the canvas-tool popover shows for it
     // (buildCanvasToolOptions): eight identical pointers told the reader
     // nothing about which mode a row would hand out.
-    icon: <PanIcon />,
+    icon: <PanIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'tools:mode-laser',
@@ -651,7 +651,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     // The mode's OWN glyph, the one the canvas-tool popover shows for it
     // (buildCanvasToolOptions): eight identical pointers told the reader
     // nothing about which mode a row would hand out.
-    icon: <LaserIcon />,
+    icon: <LaserIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'tools:mode-spotlight',
@@ -668,7 +668,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     // The mode's OWN glyph, the one the canvas-tool popover shows for it
     // (buildCanvasToolOptions): eight identical pointers told the reader
     // nothing about which mode a row would hand out.
-    icon: <SpotlightIcon />,
+    icon: <SpotlightIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'tools:mode-eraser',
@@ -685,7 +685,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     // The mode's OWN glyph, the one the canvas-tool popover shows for it
     // (buildCanvasToolOptions): eight identical pointers told the reader
     // nothing about which mode a row would hand out.
-    icon: <EraserIcon />,
+    icon: <EraserIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'tools:mode-format',
@@ -702,7 +702,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     // The mode's OWN glyph, the one the canvas-tool popover shows for it
     // (buildCanvasToolOptions): eight identical pointers told the reader
     // nothing about which mode a row would hand out.
-    icon: <FormatPainterIcon />,
+    icon: <FormatPainterIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'tools:mode-highlighter',
@@ -719,7 +719,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     // The mode's OWN glyph, the one the canvas-tool popover shows for it
     // (buildCanvasToolOptions): eight identical pointers told the reader
     // nothing about which mode a row would hand out.
-    icon: <HighlighterIcon />,
+    icon: <HighlighterIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'tools:mode-isometric',
@@ -736,7 +736,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     // The mode's OWN glyph, the one the canvas-tool popover shows for it
     // (buildCanvasToolOptions): eight identical pointers told the reader
     // nothing about which mode a row would hand out.
-    icon: <IsometricIcon />,
+    icon: <IsometricIcon size={TILE_GLYPH_PX} />,
   },
   {
     // Portal (docs/specs/009-elements/portal-element.md): step in here, come out of the portal it is linked to.
@@ -779,7 +779,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'A button that starts a countdown for everyone in the room. Pressing it again pauses, and again continues. Set the minutes from its right-click menu.',
     filled: true,
     action: { type: 'shape', kind: 'session-button', session: 'timer' },
-    icon: <TimerIcon />,
+    icon: <TimerIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'tools:session-stopwatch',
@@ -793,7 +793,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'A button that starts a stopwatch for everyone in the room, counting up from zero. Pressing it again pauses, and again continues. Nothing to set — a stopwatch has no length.',
     filled: true,
     action: { type: 'shape', kind: 'session-button', session: 'stopwatch' },
-    icon: <TimerIcon />,
+    icon: <TimerIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'tools:session-vote',
@@ -836,7 +836,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'A cover over part of the canvas. Click it to uncover it just for you, or reveal it for everyone from the menu.',
     filled: true,
     action: { type: 'shape', kind: 'reveal' },
-    icon: <RevealIcon />,
+    icon: <RevealIcon size={TILE_GLYPH_PX} />,
   },
   {
     // Done check (docs/specs/012-collaboration/done-check.md): who has finished, live.
@@ -947,7 +947,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'Press it to choose at random — one of the people in the room, or one of the options you write on it.',
     filled: true,
     action: { type: 'shape', kind: 'picker' },
-    icon: <PickerIcon />,
+    icon: <PickerIcon size={TILE_GLYPH_PX} />,
   },
   {
     // Bring Focus (docs/specs/012-collaboration/bring-focus.md): Navigate, beside Portal and Chair, because all
@@ -986,7 +986,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'Furniture for Avatar mode: walk your character into one and it sits down. Give the room a seating plan.',
     filled: true,
     action: { type: 'shape', kind: 'chair' },
-    icon: <ChairIcon />,
+    icon: <ChairIcon size={TILE_GLYPH_PX} />,
   },
   // --- Collaborate (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md) ----------------------------------
   // Elements that collect what the ROOM thinks. Rows with a blurb, like
@@ -1049,7 +1049,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'Planning poker on the canvas: everyone picks privately, then one Reveal shows every answer and the spread. Uses the classic story-point scale, where the gaps widen as the numbers grow so nobody argues over 6 versus 7.',
     filled: true,
     action: { type: 'shape', kind: 'estimate', estimateScale: 'fibonacci' },
-    icon: <EstimateIcon />,
+    icon: <EstimateIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'collab:estimate-tshirt',
@@ -1063,7 +1063,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'Planning poker on the canvas: everyone picks privately, then one Reveal shows every answer and the spread. Uses sizes rather than numbers, for a room that starts haggling the moment it sees a digit.',
     filled: true,
     action: { type: 'shape', kind: 'estimate', estimateScale: 'tshirt' },
-    icon: <EstimateIcon />,
+    icon: <EstimateIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'collab:estimate-powers',
@@ -1077,7 +1077,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'Planning poker on the canvas: everyone picks privately, then one Reveal shows every answer and the spread. Uses doubling steps, for sizing where each step up is meant to feel twice the work.',
     filled: true,
     action: { type: 'shape', kind: 'estimate', estimateScale: 'powers' },
-    icon: <EstimateIcon />,
+    icon: <EstimateIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'collab:temperature',
@@ -1091,7 +1091,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'A fist-of-five gauge. Everyone registers 1 to 5 and the bars and average move as the answers land.',
     filled: true,
     action: { type: 'shape', kind: 'temperature' },
-    icon: <TemperatureIcon />,
+    icon: <TemperatureIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'collab:idea-box',
@@ -1105,7 +1105,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'Anyone can drop in an idea without their name on it. Nothing shows until you open the box.',
     filled: true,
     action: { type: 'shape', kind: 'idea-box' },
-    icon: <IdeaBoxIcon />,
+    icon: <IdeaBoxIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'collab:qa-board',
@@ -1119,7 +1119,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'Anyone can add a note, named or anonymous, and upvote others. The most wanted rise to the top; the facilitator spotlights one to discuss.',
     filled: true,
     action: { type: 'shape', kind: 'qa-board' },
-    icon: <QaBoardIcon />,
+    icon: <QaBoardIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'collab:agenda',
@@ -1133,7 +1133,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'The run of the session. Press a segment and it starts the tab timer for that long and marks where the room is.',
     filled: true,
     action: { type: 'shape', kind: 'agenda' },
-    icon: <AgendaIcon />,
+    icon: <AgendaIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'collab:decision',
@@ -1147,7 +1147,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'A decision on the diagram beside the thing it decided: the statement, a status, the date, and what drove it.',
     filled: true,
     action: { type: 'shape', kind: 'decision' },
-    icon: <DecisionIcon />,
+    icon: <DecisionIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'collab:roll-call',
@@ -1161,7 +1161,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'Press Take roll and it records everyone in the room at that moment, and keeps them after they leave.',
     filled: true,
     action: { type: 'shape', kind: 'roll-call' },
-    icon: <RollCallIcon />,
+    icon: <RollCallIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'tools:checklist',

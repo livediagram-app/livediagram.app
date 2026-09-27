@@ -21,6 +21,9 @@ import { Glyph, lucideGlyph, Prims } from '@livediagram/ui';
 
 import { MENU_ICON_PX } from '@/components/palette/context-menu-icons';
 
+// Palette glyphs draw at 14px in toolbars and menus; the tile grid asks for its own step.
+type IconSizeProps = { size?: number };
+
 export function BoldIcon() {
   return (
     <span className="text-[13px] font-bold leading-none text-slate-700 dark:text-slate-200">B</span>
@@ -73,12 +76,12 @@ export function ResetIcon() {
 export const FileImportIcon = lucideGlyph(lucideFileDown, MENU_ICON_PX);
 export const FileExportIcon = lucideGlyph(lucideFileUp, MENU_ICON_PX);
 
-export function PanIcon() {
+export function PanIcon({ size = 14 }: IconSizeProps = {}) {
   // Open hand (four fingers + thumb): the classic pan/grab glyph.
   // Each finger is a capsule; the palm curls in from the wrist so the
   // silhouette still reads as a hand at the 13 px palette size.
   return (
-    <Glyph size={14} units={24}>
+    <Glyph size={size} units={24}>
       <path d="M18 11V6a2 2 0 0 0-4 0" />
       <path d="M14 10V4a2 2 0 0 0-4 0v2" />
       <path d="M10 10.5V6a2 2 0 0 0-4 0v8" />
@@ -87,19 +90,19 @@ export function PanIcon() {
   );
 }
 
-export function SelectIcon() {
+export function SelectIcon({ size = 14 }: IconSizeProps = {}) {
   return (
-    <Glyph size={14} units={24}>
+    <Glyph size={size} units={24}>
       <Prims prims={lucideSquareDashedMousePointer} />
     </Glyph>
   );
 }
 
-export function LaserIcon() {
+export function LaserIcon({ size = 14 }: IconSizeProps = {}) {
   // Stylised laser pointer: a beam emerging from a small body in the
   // bottom-left toward a glowing dot in the top-right.
   return (
-    <Glyph size={14} units={16}>
+    <Glyph size={size} units={16}>
       <path d="M2.5 13.5l8-8" />
       <circle cx="11.5" cy="4.5" r="1.4" fill="currentColor" stroke="none" />
       <path d="M10 3.2l.7-1" strokeWidth="1.2" />
@@ -112,9 +115,9 @@ export function LaserIcon() {
 // Isometric view tool (docs/specs/008-canvas/isometric-view.md): a cube drawn in isometric projection —
 // a top rhombus plus the two front faces — signalling "see the diagram in
 // 3-D, tilted". The shared vertical edge hints at the extruded depth.
-export function IsometricIcon() {
+export function IsometricIcon({ size = 14 }: IconSizeProps = {}) {
   return (
-    <Glyph size={14} units={16}>
+    <Glyph size={size} units={16}>
       {/* top face (rhombus) */}
       <path d="M8 1.8l5.2 3v0L8 7.8 2.8 4.8z" />
       {/* left + right front faces share the centre vertical edge */}
@@ -131,9 +134,9 @@ export function IsometricIcon() {
 // separates it from the pencil at 13px, where the two nibs are the same three
 // strokes. Monochrome (unlike the old palette tile's fixed yellow) because this
 // glyph rides the tool dropdown and a Mode Button face, both of which tint it.
-export function HighlighterIcon() {
+export function HighlighterIcon({ size = 14 }: IconSizeProps = {}) {
   return (
-    <Glyph size={14} units={16}>
+    <Glyph size={size} units={16}>
       <path d="M3.5 10.5 L9 5 L11.5 7.5 L6 13 Z" />
       <path d="M9 5 L11 2.5 L14 5.5 L11.5 7.5" />
       <path d="M2 14.5 H9" strokeWidth="2.4" opacity="0.45" />
@@ -153,9 +156,9 @@ export function SlideDeckIcon() {
   );
 }
 
-export function EraserIcon() {
+export function EraserIcon({ size = 14 }: IconSizeProps = {}) {
   return (
-    <Glyph size={14} units={16}>
+    <Glyph size={size} units={16}>
       <path d="M3 10.5l4.5-4.5a1.3 1.3 0 0 1 1.8 0l2.7 2.7a1.3 1.3 0 0 1 0 1.8l-2.7 2.7H5.2z" />
       <path d="M6.2 7.3l3.5 3.5" />
       <path d="M2.5 13.5h11" />
@@ -186,9 +189,9 @@ export { FormatPainterIcon } from '@livediagram/ui';
 // Spotlight tool (docs/specs/008-canvas/canvas-and-palette.md): a focus glyph — a bright centre dot ringed
 // by a circle with short rays beaming outward, reading as "the cursor
 // emits light" without copying the laser-pointer beam.
-export function SpotlightIcon() {
+export function SpotlightIcon({ size = 14 }: IconSizeProps = {}) {
   return (
-    <Glyph size={14} units={16}>
+    <Glyph size={size} units={16}>
       <circle cx="8" cy="8" r="3.2" />
       <circle cx="8" cy="8" r="1" fill="currentColor" stroke="none" />
       <path d="M8 1.5v2" />
@@ -203,9 +206,9 @@ export function SpotlightIcon() {
 // and legs caught in a step — so the picker entry reads as "a character
 // that walks" rather than a person / profile photo (which is what the
 // palette's Avatar ELEMENT tile means).
-export function AvatarModeIcon() {
+export function AvatarModeIcon({ size = 14 }: IconSizeProps = {}) {
   return (
-    <Glyph size={14} units={16}>
+    <Glyph size={size} units={16}>
       <circle cx="8.6" cy="3" r="1.7" />
       {/* torso */}
       <path d="M8.4 5.4v4" />
@@ -308,9 +311,9 @@ export function AlignIcon({ x, y }: { x: TextAlignX; y: TextAlignY }) {
 // The three glyphs a Session button wears, in the same 16-grid, 1.4-stroke
 // house style as the mode icons above so a row of Behaviour tiles matches.
 
-export function TimerIcon() {
+export function TimerIcon({ size = 14 }: IconSizeProps = {}) {
   return (
-    <Glyph size={14} units={16}>
+    <Glyph size={size} units={16}>
       {/* a stopwatch: crown, dial, and a hand at ten past */}
       <path d="M6.4 1.6h3.2" />
       <path d="M8 1.6v1.6" />
@@ -347,9 +350,9 @@ export function PollIcon() {
 
 // --- Reveal zone (docs/specs/009-elements/reveal-zone.md) + Picker (docs/specs/012-collaboration/picker.md) ------------------------------
 
-export function RevealIcon() {
+export function RevealIcon({ size = 14 }: IconSizeProps = {}) {
   return (
-    <Glyph size={14} units={16}>
+    <Glyph size={size} units={16}>
       {/* a card being lifted off what is underneath */}
       <path d="M2.4 9.6l5.6-3.2 5.6 3.2-5.6 3.2z" />
       <path d="M4.6 4.6l3.4-2 3.4 2" opacity="0.55" />
@@ -357,9 +360,9 @@ export function RevealIcon() {
   );
 }
 
-export function PickerIcon() {
+export function PickerIcon({ size = 14 }: IconSizeProps = {}) {
   return (
-    <Glyph size={14} units={16}>
+    <Glyph size={size} units={16}>
       {/* a die mid-roll */}
       <rect x="2.6" y="2.6" width="10.8" height="10.8" rx="2.2" />
       <circle cx="5.8" cy="5.8" r="0.9" fill="currentColor" stroke="none" />
@@ -373,17 +376,17 @@ export function PickerIcon() {
 // One shared frame so the seven read as a set beside PickerIcon above: 13px
 // rendered on a 16-unit grid, 1.4 stroke, round caps.
 
-function CollabGlyph({ children }: { children: React.ReactNode }) {
+function CollabGlyph({ size, children }: { size: number; children: React.ReactNode }) {
   return (
-    <Glyph size={14} units={16}>
+    <Glyph size={size} units={16}>
       {children}
     </Glyph>
   );
 }
 
-export function ChairIcon() {
+export function ChairIcon({ size = 14 }: IconSizeProps = {}) {
   return (
-    <CollabGlyph>
+    <CollabGlyph size={size}>
       {/* a chair from the side: back, seat, two legs */}
       <path d="M4.5 2.4v6.2" />
       <path d="M4.5 8.6h7.2" />
@@ -393,9 +396,9 @@ export function ChairIcon() {
   );
 }
 
-export function EstimateIcon() {
+export function EstimateIcon({ size = 14 }: IconSizeProps = {}) {
   return (
-    <CollabGlyph>
+    <CollabGlyph size={size}>
       {/* two poker cards, the front one face-down */}
       <rect x="2.2" y="3.4" width="7" height="9.6" rx="1.4" />
       <path d="M11 3.9l2.4.9a1.2 1.2 0 0 1 .7 1.6l-2.5 6.4" />
@@ -404,9 +407,9 @@ export function EstimateIcon() {
   );
 }
 
-export function TemperatureIcon() {
+export function TemperatureIcon({ size = 14 }: IconSizeProps = {}) {
   return (
-    <CollabGlyph>
+    <CollabGlyph size={size}>
       {/* five rising bars: the shape of the room, not an average */}
       <path d="M2.6 12.4v-1.8" />
       <path d="M5.3 12.4v-4" />
@@ -417,9 +420,9 @@ export function TemperatureIcon() {
   );
 }
 
-export function IdeaBoxIcon() {
+export function IdeaBoxIcon({ size = 14 }: IconSizeProps = {}) {
   return (
-    <CollabGlyph>
+    <CollabGlyph size={size}>
       {/* a ballot box with a card going in through the slot */}
       <path d="M2.6 7.4h10.8v6H2.6z" />
       <path d="M5.4 7.4V4.2h5.2v3.2" />
@@ -428,9 +431,9 @@ export function IdeaBoxIcon() {
   );
 }
 
-export function QaBoardIcon() {
+export function QaBoardIcon({ size = 14 }: IconSizeProps = {}) {
   return (
-    <CollabGlyph>
+    <CollabGlyph size={size}>
       {/* a ranked list with an upvote chevron on the top row */}
       <path d="M2.4 5.6l1.6-1.6 1.6 1.6" />
       <path d="M7.4 4.8h6.2" />
@@ -442,9 +445,9 @@ export function QaBoardIcon() {
   );
 }
 
-export function AgendaIcon() {
+export function AgendaIcon({ size = 14 }: IconSizeProps = {}) {
   return (
-    <CollabGlyph>
+    <CollabGlyph size={size}>
       {/* a run of segments, each with its time against it */}
       <path d="M2.6 4.4h6.2" />
       <path d="M2.6 8h6.2" />
@@ -455,9 +458,9 @@ export function AgendaIcon() {
   );
 }
 
-export function DecisionIcon() {
+export function DecisionIcon({ size = 14 }: IconSizeProps = {}) {
   return (
-    <CollabGlyph>
+    <CollabGlyph size={size}>
       {/* a record card with a tick in its corner chip */}
       <rect x="2.4" y="2.8" width="11.2" height="10.4" rx="1.6" />
       <path d="M4.8 6.2h4.4" />
@@ -467,9 +470,9 @@ export function DecisionIcon() {
   );
 }
 
-export function RollCallIcon() {
+export function RollCallIcon({ size = 14 }: IconSizeProps = {}) {
   return (
-    <CollabGlyph>
+    <CollabGlyph size={size}>
       {/* three heads: who was here, not who is here */}
       <circle cx="5" cy="5.6" r="2" />
       <circle cx="11.2" cy="5.6" r="2" />
