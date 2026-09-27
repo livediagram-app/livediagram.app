@@ -1,11 +1,11 @@
 # Public API and API tokens
 
-**Status: implemented** on branch `external-connections` (PR #20); awaiting
-merge + the operator rollout in [§6](#6-rollout). This spec sequences opening
-the REST API to external, programmatic callers. The input-validation hardening
-(see [§5](#5-input-validation-prerequisite--shipped)) shipped to `main` first;
-the token model + the §4 `X-Owner-Id` hardening are built on the branch and
-verified (api typecheck + lint + tests green).
+**Status: shipped.** Everything below is live on `main`: API tokens (§3),
+the `X-Owner-Id` hardening (§4, §4.1) and the input validation (§5). One part
+is an operator switch rather than code: the guest signature requirement of §4
+is enforced only once a deployment sets `GUEST_ID_HMAC_SECRET` and a past
+`GUEST_SIG_ENFORCE_AFTER` ([§6](#6-rollout)). This spec sequenced opening the
+REST API to external, programmatic callers.
 
 ## 1. Goal
 
@@ -26,45 +26,70 @@ hardening in [§4](#4-x-owner-id-trust-change) is a separate track).
 This must not weaken the friction-free guest model ([Auth + guest access](../014-identity/auth-and-guest-access.md))
 or self-hosting ([Open source + distribution](../002-project-scope/open-source-and-business-model.md)).
 
-## 2. Why the API isn't safe to expose as-is — and a current weakness
+## 2. Why the API wasn't safe to expose as-is (history)
 
-Today the worker resolves the caller two ways ([Auth + guest access](../014-identity/auth-and-guest-access.md)):
+**History, not the current API.** This section records the weakness that
+motivated §4, as it stood before this work shipped. Every surface it names has
+since been closed; [Where it stands now](#where-it-stands-now) says how, and
+what is still a deployment switch.
 
-- **Clerk JWT** in `Authorization: Bearer <jwt>` — verified (signature, exp,
+The worker resolved the caller two ways ([Auth + guest access](../014-identity/auth-and-guest-access.md)):
+
+- **Clerk JWT** in `Authorization: Bearer <jwt>`, verified (signature, exp,
   optional issuer/audience) in `apps/api/src/auth/clerk.ts`. Sound.
 - **Guest path**: an `X-Owner-Id` header carrying a per-browser UUID, **trusted
-  verbatim** (`resolveOwner()` in `apps/api/src/index.ts`), with **no
-  signature** on the REST path. (The realtime WS upgrade _does_ require an HMAC
-  proof, `?g=`; REST does not.)
+  verbatim** by `resolveOwner()` in `apps/api/src/index.ts`, with **no
+  signature** on the REST path. (The realtime WS upgrade of the time required an
+  HMAC proof, `?g=`; REST did not.)
 
-The guest header is the blocker, and the owner id it carries is **not a secret
-in practice.** The obvious REST surfaces are redacted for non-owners — the
-shared diagram DTO (`redactOwner`, `routes/share.ts`) and comment author ids on
-tab read (`redactCommentAuthorIds`, `routes/diagrams.ts`) — but two surfaces
-still expose a collaborator to the owner's id:
+The guest header was the blocker, and the owner id it carried was **not a
+secret in practice.** The obvious REST surfaces were already redacted for
+non-owners (the shared diagram DTO, `redactOwner`; comment author ids on tab
+read, `redactCommentAuthorIds`), but two surfaces still exposed a
+collaborator to the owner's id:
 
-- **Realtime presence** — `broadcastPresence` (`diagram-room.ts`) sends every
-  connected participant's `id`, unredacted, to all room peers. The participant
-  id _is_ the owner id (`apps/live/lib/api/core.ts`: "X-Owner-Id set to the
-  current participant's id"). So any co-present collaborator — including a
-  **view-only** share visitor who opens the diagram while the owner is
-  connected — reads it off a presence frame.
-- **Change-log / Activity** — `GET /diagrams/<id>/log` returns each entry's
+- **Realtime presence**: `broadcastPresence` (`diagram-room.ts`) sent every
+  connected participant's `id`, unredacted, to all room peers, and that id was
+  the owner id. Any co-present collaborator, including a **view-only** share
+  visitor, could read it off a presence frame.
+- **Change-log / Activity**: `GET /diagrams/<id>/log` returned each entry's
   `participantId` unredacted to any **edit-access** collaborator (edit-share
   holders, joined team members). A static, reliable harvest.
 
-Because REST trusts `X-Owner-Id` with no signature, a collaborator who harvests
-an owner's id can then call the API **as** that owner across ALL their content:
-`GET /api/diagrams` lists every diagram the id owns, each then readable /
-editable / deletable. So today, **sharing one diagram (or being in a team) can
-escalate to impersonating the owner account-wide** — a current cross-object
-authorization hole, not merely a future-external concern. It applies to
-signed-in owners too: their id is the Clerk `sub`, and the `X-Owner-Id` fallback
-accepts it whenever a request carries no Bearer token.
+Because REST trusted `X-Owner-Id` with no signature, a collaborator who
+harvested an owner's id could call the API **as** that owner across ALL their
+content: `GET /api/diagrams` listed every diagram the id owned, each then
+readable / editable / deletable. **Sharing one diagram (or being in a team)
+could escalate to impersonating the owner account-wide.** It applied to
+signed-in owners too: their id is the Clerk `sub`, and the `X-Owner-Id`
+fallback accepted it whenever a request carried no Bearer token.
 
-Conclusion: external access needs a real, server-verifiable credential — AND
-the bare `X-Owner-Id` trust must be replaced, which also closes the current
-escalation above. The fix is [§4](#4-x-owner-id-trust-change).
+Conclusion at the time: external access needed a real, server-verifiable
+credential, AND the bare `X-Owner-Id` trust had to be replaced, which also
+closed the escalation. The fix is [§4](#4-x-owner-id-trust-change).
+
+### Where it stands now
+
+- **The WS upgrade no longer takes `?g=`.** It admits a caller by a one-time
+  room ticket minted over authenticated REST, a personal diagram's owner id, or
+  a share code, with the share password where one is set (`t` / `o` / `s` /
+  `p`, `routes/diagram-room-routes.ts`; [API app](api.md)).
+- **Presence carries no owner id.** The room mints a random presence id per
+  socket and builds each presence entry itself (`helloPresence`,
+  `diagram-room-rules.ts`); a client never supplies or learns one.
+- **The change log is redacted.** `GET /diagrams/<id>/log` blanks
+  `participantId` for every caller but the diagram owner (`routes/diagrams.ts`).
+- **An account id is never a guest credential.** A Clerk-shaped `X-Owner-Id`
+  is refused on every owner-scoped route with `401
+account_id_not_a_guest_credential`, unconditionally ([§4.1](#41-a-clerk-account-id-in-x-owner-id-is-refused-unconditionally)).
+- **External callers have a real credential**: API tokens ([§3](#3-design-api-tokens)).
+- **Still a switch, not a guarantee:** the signature requirement on a _guest_
+  `X-Owner-Id` (§4) is enforced only when a deployment sets
+  `GUEST_ID_HMAC_SECRET` and a past `GUEST_SIG_ENFORCE_AFTER`. Until then REST
+  accepts an unsigned guest id, so a guest id obtained some other way still acts
+  as that guest; the surfaces above simply stop handing it out. Check the
+  deployment, not the source: `POST /api/guest-id` answering
+  `"ownerSig": null` means signing is off.
 
 ## 3. Design: API tokens
 
@@ -115,9 +140,10 @@ regardless.
 A token authenticates as a third identity path, resolved once in `fetch`
 alongside Clerk + the guest header:
 
-1. `Authorization: Bearer lvd_…` → hash → look up a non-revoked, non-expired
-   row → the request's owner id is the row's `owner_id`; stamp `last_used_at`.
-2. Else the existing Clerk JWT path.
+1. A Clerk JWT in `Authorization: Bearer`, when it verifies.
+2. Else `Authorization: Bearer lvd_…` → hash → look up a non-revoked,
+   non-expired row → the request's owner id is the row's `owner_id`; stamp
+   `last_used_at`. (A token and a JWT can't both be the bearer.)
 3. Else the guest `X-Owner-Id` path — now requiring a valid HMAC signature on
    the header (see [§4](#4-x-owner-id-trust-change)). Tokens never resolve to a
    guest id, so this path is for the first-party app only; it grants no token.
@@ -226,7 +252,7 @@ SaaS dependency beyond the optional Clerk that teams already need.
 ## 4. `X-Owner-Id` trust change
 
 The bare header must stop being a usable credential — both for external callers
-and to close the [§2](#2-why-the-api-isnt-safe-to-expose-as-is--and-a-current-weakness)
+and to close the [§2](#2-why-the-api-wasnt-safe-to-expose-as-is-history)
 escalation. Two options were weighed:
 
 - **(a) First-party origin gate — rejected as the sole fix.** Accept
@@ -236,19 +262,19 @@ escalation. Two options were weighed:
   caller forges `Origin: https://livediagram.app` and passes the gate. Origin
   is hygiene, not an authorization boundary.
 - **(b) Require an HMAC proof on the header — chosen.** Extend the guest-id
-  HMAC already used on the WS upgrade (`?g=`, `auth/owner-signature.ts`) to
-  REST: an `X-Owner-Id` request must also carry a valid `X-Owner-Sig` for that
+  HMAC (`auth/owner-signature.ts`, then also carried on the WS upgrade as
+  `?g=`, since replaced by the room ticket) to REST: an `X-Owner-Id` request must also carry a valid `X-Owner-Sig` for that
   id, verified against `GUEST_ID_HMAC_SECRET`. The legitimate guest holds its
   signature (minted at `POST /api/guest-id`); a collaborator who merely
   _harvested_ an id (a guest UUID, or a Clerk `sub`) has no valid signature, so
   the spoof is rejected. Signed-in users keep using the Clerk Bearer (a real
   credential) and never the header.
 
-**Explicit guarantee for signed-up users.** Today `resolveOwner()`
-(`apps/api/src/index.ts`) is `clerkUserId ?? X-Owner-Id`, with no check binding
-the credential _type_ to the owner id — so a caller with no Bearer and
-`X-Owner-Id: <a Clerk sub>` is accepted AS that account (verified: the sub leaks
-via presence / the change-log, and nothing rejects it). After (b), a Clerk
+**Explicit guarantee for signed-up users.** Before this work `resolveOwner()`
+(`apps/api/src/index.ts`) was `clerkUserId ?? X-Owner-Id`, with no check binding
+the credential _type_ to the owner id, so a caller with no Bearer and
+`X-Owner-Id: <a Clerk sub>` was accepted AS that account (verified at the time:
+the sub leaked via presence / the change-log, and nothing rejected it). After (b), a Clerk
 account's diagrams are reachable **only via a verified Bearer token**: an
 `X-Owner-Id` carrying a Clerk `sub` has no guest signature (one is never minted
 for a Clerk id), so it is rejected. The post-fix invariant is therefore "once
@@ -347,9 +373,11 @@ hardening landed first:
 ## 6. Rollout
 
 1. ✅ Input hardening (done).
-2. **The `X-Owner-Id` HMAC requirement ([§4](#4-x-owner-id-trust-change)).**
-   Pulled to the FRONT: it closes the current cross-object escalation in
-   [§2](#2-why-the-api-isnt-safe-to-expose-as-is--and-a-current-weakness) and
+2. ✅ **The `X-Owner-Id` HMAC requirement ([§4](#4-x-owner-id-trust-change)).**
+   Shipped behind the grace switch; the operator arms it by setting
+   `GUEST_SIG_ENFORCE_AFTER` ([Self-hosting](../../operations/self-hosting.md)).
+   Pulled to the FRONT: it closed the cross-object escalation in
+   [§2](#2-why-the-api-wasnt-safe-to-expose-as-is-history) and
    is independent of the token work, so it ships first (with the legacy-guest
    grace). **Stop emitting the raw owner id where a collaborator can read it**
    (do this, not just "consider" — shrinking the attack surface is worth it
@@ -372,15 +400,16 @@ hardening landed first:
      collab key — see [Per-participant responses](../012-collaboration/participant-responses.md), which also
      explains why the owner id can't be it and why leaving the key claimable
      costs nothing.
-3. `api_tokens` table + migration (`expires_at` fixed to +6 months) + token
+3. ✅ `api_tokens` table + migration (`expires_at` fixed to +6 months) + token
    mint/verify (`auth/`), Clerk-gated `/api/tokens` routes (the team-route
    gate, [Teams](../013-workspace/teams.md)).
-4. The **Explorer "API tokens" section** under Themes (`TokensPane`, mirroring
+4. ✅ The **Explorer "API tokens" section** under Themes (`TokensPane`, mirroring
    `ThemesPane`) — the management UI ([§3.6](#36-management--a-new-explorer-library-page)),
    rendered only when `clerkEnabled` so it's absent on a no-auth self-host
    ([§3.7](#37-self-hosting)).
-5. Wire token resolution into `resolveOwner`; enforce scopes.
-6. **Docs + help, shipped WITH the feature** (help articles describe live
+5. ✅ Wire token resolution into `resolveOwner`; enforce the read-only flag
+   ([§3.4](#34-access--full-read--write-with-an-optional-read-only-flag)).
+6. ✅ **Docs + help, shipped WITH the feature** (help articles describe live
    features and must be registered — see the help-centre rule in `AGENTS.md`,
    so this copy lands when the feature does, not before):
    - A new help article (e.g. `account-and-data/api-tokens`) covering what
