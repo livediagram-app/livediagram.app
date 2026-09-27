@@ -10,7 +10,7 @@
 // the palette's Favourites grid visibly updates behind the modal.
 
 import { useState } from 'react';
-import { Button, CheckIcon, Select } from '@livediagram/ui';
+import { Button, CheckIcon, Select, Glyph } from '@livediagram/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { matches } from '@/lib/search';
@@ -97,14 +97,9 @@ function ToggleTile({
           isFavourite ? 'bg-red-500' : 'bg-emerald-500'
         }`}
       >
-        <svg width="8" height="8" viewBox="0 0 8 8" aria-hidden>
-          <path
-            d={isFavourite ? 'M1 4h6' : 'M4 1v6M1 4h6'}
-            stroke="currentColor"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-          />
-        </svg>
+        <Glyph size={8} units={8}>
+          <path d={isFavourite ? 'M1 4h6' : 'M4 1v6M1 4h6'} />
+        </Glyph>
       </span>
     </button>
   );

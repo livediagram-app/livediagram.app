@@ -206,18 +206,9 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'square' },
     icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-        <rect
-          x="3"
-          y="3"
-          width="12"
-          height="12"
-          rx="2"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-        />
-      </svg>
+      <Glyph size={18} units={18}>
+        <rect x="3" y="3" width="12" height="12" rx="2" />
+      </Glyph>
     ),
   },
   {
@@ -229,9 +220,9 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'circle' },
     icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-        <circle cx="9" cy="9" r="6" fill="none" stroke="currentColor" strokeWidth="2" />
-      </svg>
+      <Glyph size={18} units={18}>
+        <circle cx="9" cy="9" r="6" />
+      </Glyph>
     ),
   },
   {
@@ -243,15 +234,9 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'diamond' },
     icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-        <polygon
-          points="9,2.5 15.5,9 9,15.5 2.5,9"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinejoin="round"
-        />
-      </svg>
+      <Glyph size={18} units={18}>
+        <polygon points="9,2.5 15.5,9 9,15.5 2.5,9" />
+      </Glyph>
     ),
   },
   {
@@ -263,24 +248,10 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'cylinder' },
     icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-        <path
-          d="M3 5 L3 13 A6 1.8 0 0 0 15 13 L15 5"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.6"
-          strokeLinejoin="round"
-        />
-        <ellipse
-          cx="9"
-          cy="5"
-          rx="6"
-          ry="1.8"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.6"
-        />
-      </svg>
+      <Glyph size={18} units={18}>
+        <path d="M3 5 L3 13 A6 1.8 0 0 0 15 13 L15 5" />
+        <ellipse cx="9" cy="5" rx="6" ry="1.8" />
+      </Glyph>
     ),
   },
   {
@@ -292,15 +263,9 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'parallelogram' },
     icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-        <polygon
-          points="5,3 16,3 13,15 2,15"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinejoin="round"
-        />
-      </svg>
+      <Glyph size={18} units={18}>
+        <polygon points="5,3 16,3 13,15 2,15" />
+      </Glyph>
     ),
   },
   {
@@ -311,15 +276,9 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'hexagon' },
     icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-        <polygon
-          points="5,3 13,3 16,9 13,15 5,15 2,9"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinejoin="round"
-        />
-      </svg>
+      <Glyph size={18} units={18}>
+        <polygon points="5,3 13,3 16,9 13,15 5,15 2,9" />
+      </Glyph>
     ),
   },
   {
@@ -330,15 +289,9 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'document' },
     icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-        <path
-          d="M3 3 L15 3 L15 13 C13 15.3 11 11.8 9 13.5 C7 15.3 5 11.8 3 13.5 Z"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.6"
-          strokeLinejoin="round"
-        />
-      </svg>
+      <Glyph size={18} units={18}>
+        <path d="M3 3 L15 3 L15 13 C13 15.3 11 11.8 9 13.5 C7 15.3 5 11.8 3 13.5 Z" />
+      </Glyph>
     ),
   },
   {
@@ -349,18 +302,9 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'stadium' },
     icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-        <rect
-          x="1.5"
-          y="6"
-          width="15"
-          height="6"
-          rx="3"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.6"
-        />
-      </svg>
+      <Glyph size={18} units={18}>
+        <rect x="1.5" y="6" width="15" height="6" rx="3" />
+      </Glyph>
     ),
   },
   {
@@ -384,15 +328,9 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'triangle' },
     icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-        <polygon
-          points="9,3 16,15 2,15"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinejoin="round"
-        />
-      </svg>
+      <Glyph size={18} units={18}>
+        <polygon points="9,3 16,15 2,15" />
+      </Glyph>
     ),
   },
   {
@@ -403,15 +341,9 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'trapezoid' },
     icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-        <polygon
-          points="5,4 13,4 16,15 2,15"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinejoin="round"
-        />
-      </svg>
+      <Glyph size={18} units={18}>
+        <polygon points="5,4 13,4 16,15 2,15" />
+      </Glyph>
     ),
   },
   {
@@ -422,15 +354,9 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'star' },
     icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-        <polygon
-          points="9,1.5 10.8,6.6 16.1,6.7 11.9,9.9 13.4,15.1 9,12 4.6,15.1 6.1,9.9 1.9,6.7 7.2,6.6"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.6"
-          strokeLinejoin="round"
-        />
-      </svg>
+      <Glyph size={18} units={18}>
+        <polygon points="9,1.5 10.8,6.6 16.1,6.7 11.9,9.9 13.4,15.1 9,12 4.6,15.1 6.1,9.9 1.9,6.7 7.2,6.6" />
+      </Glyph>
     ),
   },
   {
@@ -481,24 +407,10 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     description: 'A paper-sized surface for rich text. Double-click to write.',
     action: { type: 'shape', kind: 'page' },
     icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-        <rect
-          x="3.5"
-          y="1.5"
-          width="11"
-          height="15"
-          rx="1.5"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.3"
-        />
-        <path
-          d="M6 5.5h6M6 8.5h6M6 11.5h3.5"
-          stroke="currentColor"
-          strokeWidth="1.3"
-          strokeLinecap="round"
-        />
-      </svg>
+      <Glyph size={18} units={18}>
+        <rect x="3.5" y="1.5" width="11" height="15" rx="1.5" />
+        <path d="M6 5.5h6M6 8.5h6M6 11.5h3.5" />
+      </Glyph>
     ),
   },
   {
@@ -511,14 +423,9 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     shortcut: 'T',
     action: { type: 'text' },
     icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-        <path
-          d="M3 5h12M9 5v9M6.5 14h5"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-        />
-      </svg>
+      <Glyph size={18} units={18}>
+        <path d="M3 5h12M9 5v9M6.5 14h5" />
+      </Glyph>
     ),
   },
   {
@@ -603,17 +510,9 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     shortcut: 'A',
     action: { type: 'arrow' },
     icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-        <line
-          x1="3"
-          y1="9"
-          x2="15"
-          y2="9"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          strokeLinecap="round"
-        />
-      </svg>
+      <Glyph size={18} units={18}>
+        <line x1="3" y1="9" x2="15" y2="9" />
+      </Glyph>
     ),
   },
   {

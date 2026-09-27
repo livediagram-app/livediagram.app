@@ -343,20 +343,10 @@ export function ToolsMenuGlyph() {
 
 export function StyleMenuGlyph() {
   return (
-    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden>
-      <path
-        d="M13.5 2.5c-2.4.8-5.1 2.9-6.6 4.9l1.7 1.7c2-1.5 4.1-4.2 4.9-6.6z"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M6.4 8.1c-1 .2-1.8 1-2 2-.2 1-.9 1.6-1.9 1.9 1.2 1.3 3.4 1.4 4.6.2.8-.8 1-2 .6-3z"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        strokeLinejoin="round"
-      />
-    </svg>
+    <Glyph size={12} units={16}>
+      <path d="M13.5 2.5c-2.4.8-5.1 2.9-6.6 4.9l1.7 1.7c2-1.5 4.1-4.2 4.9-6.6z" />
+      <path d="M6.4 8.1c-1 .2-1.8 1-2 2-.2 1-.9 1.6-1.9 1.9 1.2 1.3 3.4 1.4 4.6.2.8-.8 1-2 .6-3z" />
+    </Glyph>
   );
 }
 
@@ -1126,18 +1116,9 @@ export function FillColourIcon() {
 /** Border: the same box with only its edge drawn. */
 export function BorderColourIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden>
-      <rect
-        x="2.5"
-        y="3.5"
-        width="11"
-        height="9"
-        rx="2"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-      />
-    </svg>
+    <Glyph size={14} units={16}>
+      <rect x="2.5" y="3.5" width="11" height="9" rx="2" />
+    </Glyph>
   );
 }
 

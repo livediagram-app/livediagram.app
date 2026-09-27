@@ -99,18 +99,9 @@ export function BorderRadiusIcon({ value }: { value: BorderRadius }) {
   // 'full' → half the 12-wide rect, so the preview reads as a circle/pill.
   const rx = { none: 0, sm: 2, md: 4.5, lg: 7, full: 6 }[value];
   return (
-    <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-      <rect
-        x="3"
-        y="3"
-        width="12"
-        height="12"
-        rx={rx}
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.6"
-      />
-    </svg>
+    <Glyph size={18} units={18}>
+      <rect x="3" y="3" width="12" height="12" rx={rx} />
+    </Glyph>
   );
 }
 

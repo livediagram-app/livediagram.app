@@ -4,7 +4,7 @@ import type { PointerEvent as ReactPointerEvent, ReactNode, RefObject } from 're
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import { ResetPositionGlyph } from '@/components/primitives/ResetPositionGlyph';
-import { HoverCard } from '@livediagram/ui';
+import { HoverCard, Glyph } from '@livediagram/ui';
 import { useMinimalChrome } from '@/components/providers/minimal-chrome';
 
 // A panel's title. Minimal chrome (docs/specs/007-editor/power-user-mode.md) keeps it for
@@ -148,38 +148,14 @@ export function MovablePanelHeader({
               // Plus glyph: expand the body. Same 12 x 12 grid as
               // the dash so the button slot doesn't visually
               // jitter when the icon flips.
-              <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden>
-                <line
-                  x1="6"
-                  y1="2.5"
-                  x2="6"
-                  y2="9.5"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                />
-                <line
-                  x1="2.5"
-                  y1="6"
-                  x2="9.5"
-                  y2="6"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                />
-              </svg>
+              <Glyph size={12} units={12}>
+                <line x1="6" y1="2.5" x2="6" y2="9.5" />
+                <line x1="2.5" y1="6" x2="9.5" y2="6" />
+              </Glyph>
             ) : (
-              <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden>
-                <line
-                  x1="2.5"
-                  y1="6"
-                  x2="9.5"
-                  y2="6"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                />
-              </svg>
+              <Glyph size={12} units={12}>
+                <line x1="2.5" y1="6" x2="9.5" y2="6" />
+              </Glyph>
             )}
           </button>
         </HoverCard>

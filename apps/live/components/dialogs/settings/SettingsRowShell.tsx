@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { SettingsIllustration } from './settings-illustrations';
 import type { SettingsRowSpec } from './settings-catalogue';
+import { Glyph } from '@livediagram/ui';
 
 // Everything a settings row has in common, whatever its control is: the
 // bordered card holding the label and the control, then the grey footnote
@@ -113,16 +114,9 @@ export function SettingsRowShell({
 
 function InfoGlyph() {
   return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 12 12"
-      fill="none"
-      aria-hidden
-      className="mt-0.5 shrink-0 text-brand-500 dark:text-brand-400"
-    >
-      <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.2" />
-      <path d="M6 5.4v3M6 3.6h.01" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-    </svg>
+    <Glyph size={12} units={12} className="mt-0.5 shrink-0 text-brand-500 dark:text-brand-400">
+      <circle cx="6" cy="6" r="5" />
+      <path d="M6 5.4v3M6 3.6h.01" />
+    </Glyph>
   );
 }

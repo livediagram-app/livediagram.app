@@ -1,3 +1,4 @@
+import { Glyph } from '@livediagram/ui';
 // A diagonal arrow tucking back into a corner: the "snap back to the
 // default corner" glyph shared by the panel settings popovers (Palette,
 // Map) and the MovablePanel header reset button, so the reset affordances
@@ -11,29 +12,10 @@ export function ResetPositionGlyph({
   className?: string;
 } = {}) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 12 12"
-      aria-hidden
-      fill="none"
-      className={className}
-    >
-      <path
-        d="M6.5 3H9v2.5"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path d="M9 3L5 7" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-      <path
-        d="M3 7v2h6"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
+    <Glyph size={size} units={12} className={className}>
+      <path d="M6.5 3H9v2.5" />
+      <path d="M9 3L5 7" />
+      <path d="M3 7v2h6" />
+    </Glyph>
   );
 }

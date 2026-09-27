@@ -18,14 +18,9 @@ import { Glyph } from '@livediagram/ui';
 /** Icon buttons, shared so the two surfaces cannot drift on the glyphs either. */
 export function TimerCloseIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden>
-      <path
-        d="M4.5 4.5l7 7M11.5 4.5l-7 7"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-      />
-    </svg>
+    <Glyph size={14} units={16}>
+      <path d="M4.5 4.5l7 7M11.5 4.5l-7 7" />
+    </Glyph>
   );
 }
 

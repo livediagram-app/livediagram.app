@@ -16,7 +16,7 @@ import {
 } from '@/components/primitives/PortalMenu';
 import { OpacityRow } from '@/components/palette/context-menu-rows';
 import { LayerDownIcon, LayersGlyph, LayerUpIcon } from '@/components/palette/context-menu-icons';
-import { useClickOutside, useEscape } from '@livediagram/ui';
+import { useClickOutside, useEscape, Glyph } from '@livediagram/ui';
 
 // Right-click menu for a Layers-panel row (docs/specs/006-diagram/layers.md), styled like the tab
 // menu: a quick-verbs toolbar (Rename / Delete) over collapsible
@@ -249,48 +249,27 @@ function SoloEyeIcon() {
 
 function ContentGlyph() {
   return (
-    <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden>
-      <rect x="2" y="2" width="10" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.2" />
-      <path
-        d="M4.5 5.5h5M4.5 8.5h3"
-        stroke="currentColor"
-        strokeWidth="1.2"
-        strokeLinecap="round"
-      />
-    </svg>
+    <Glyph size={12} units={14}>
+      <rect x="2" y="2" width="10" height="10" rx="1.5" />
+      <path d="M4.5 5.5h5M4.5 8.5h3" />
+    </Glyph>
   );
 }
 
 function ClearIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
-      <rect x="2" y="2" width="10" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.2" />
-      <path
-        d="M4.5 4.5l5 5M9.5 4.5l-5 5"
-        stroke="currentColor"
-        strokeWidth="1.2"
-        strokeLinecap="round"
-      />
-    </svg>
+    <Glyph size={14} units={14}>
+      <rect x="2" y="2" width="10" height="10" rx="1.5" />
+      <path d="M4.5 4.5l5 5M9.5 4.5l-5 5" />
+    </Glyph>
   );
 }
 
 function MergeGlyph() {
   return (
-    <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden>
-      <path
-        d="M2.5 3.5h9M2.5 10.5h9"
-        stroke="currentColor"
-        strokeWidth="1.2"
-        strokeLinecap="round"
-      />
-      <path
-        d="M7 5v4M5.2 7.2 7 9l1.8-1.8"
-        stroke="currentColor"
-        strokeWidth="1.2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
+    <Glyph size={12} units={14}>
+      <path d="M2.5 3.5h9M2.5 10.5h9" />
+      <path d="M7 5v4M5.2 7.2 7 9l1.8-1.8" />
+    </Glyph>
   );
 }

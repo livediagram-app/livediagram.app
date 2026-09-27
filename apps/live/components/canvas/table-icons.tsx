@@ -1,3 +1,4 @@
+import { Glyph } from '@livediagram/ui';
 // Small stroke-currentColor icons used exclusively by the table editor
 // (TableView): the row/column move arrows, the menu-trigger chevron, the cell
 // text-align glyph, the delete-row/column trash, and the cell-link glyph. They
@@ -14,15 +15,9 @@ export function ArrowIcon({ dir }: { dir: 'left' | 'right' | 'up' | 'down' }) {
     down: 'M7 3v8M7 11l-3-3M7 11l3-3',
   }[dir];
   return (
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
-      <path
-        d={d}
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
+    <Glyph size={14} units={14}>
+      <path d={d} />
+    </Glyph>
   );
 }
 
@@ -44,15 +39,9 @@ export function AlignIcon({ dir }: { dir: 'left' | 'center' | 'right' }) {
 
 export function TrashIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
-      <path
-        d="M3 4h8M5.5 4V2.8h3V4M4 4l.4 7.2h5.2L10 4"
-        stroke="currentColor"
-        strokeWidth="1.2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
+    <Glyph size={14} units={14}>
+      <path d="M3 4h8M5.5 4V2.8h3V4M4 4l.4 7.2h5.2L10 4" />
+    </Glyph>
   );
 }
 

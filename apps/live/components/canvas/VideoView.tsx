@@ -282,21 +282,10 @@ function PlayerControls({
             onPointerDown={(e) => e.stopPropagation()}
             className="pointer-events-auto flex h-6 w-6 cursor-pointer items-center justify-center rounded-md bg-slate-900/70 text-white transition hover:bg-slate-900/90"
           >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
-              <path
-                d="M9 3.5h3.5V7M12.5 3.5 8 8"
-                stroke="currentColor"
-                strokeWidth="1.4"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M11.5 9.5v2.2a1 1 0 0 1-1 1h-6a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1h2.2"
-                stroke="currentColor"
-                strokeWidth="1.4"
-                strokeLinecap="round"
-              />
-            </svg>
+            <Glyph size={16} units={16}>
+              <path d="M9 3.5h3.5V7M12.5 3.5 8 8" />
+              <path d="M11.5 9.5v2.2a1 1 0 0 1-1 1h-6a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1h2.2" />
+            </Glyph>
           </a>
         </HoverCard>
       ) : null}

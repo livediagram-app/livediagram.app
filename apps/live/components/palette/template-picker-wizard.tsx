@@ -1,5 +1,5 @@
 import { Fragment } from 'react';
-import { SOLID_BRAND_DARK } from '@livediagram/ui';
+import { SOLID_BRAND_DARK, Glyph } from '@livediagram/ui';
 
 type WizardStep = 'template' | 'theme' | 'settings';
 const WIZARD_STEPS: { key: WizardStep; label: string }[] = [
@@ -89,15 +89,9 @@ function StepChip({
         className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-semibold transition-colors ${circle}`}
       >
         {state === 'done' ? (
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden>
-            <path
-              d="M2.5 6.2 5 8.5l4.5-5"
-              stroke="currentColor"
-              strokeWidth="1.6"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+          <Glyph size={12} units={12}>
+            <path d="M2.5 6.2 5 8.5l4.5-5" />
+          </Glyph>
         ) : (
           <span className="text-optical-centre">{n}</span>
         )}
